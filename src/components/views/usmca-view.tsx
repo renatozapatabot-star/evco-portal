@@ -5,7 +5,7 @@ import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
-const T = { bg: '#F7F6F3', surface: '#FFFFFF', border: '#E6E3DC', surfaceAlt: '#F2F1EE', text: '#18160F', textSub: '#68635A', textMuted: '#9C9690', navy: '#0D2340', gold: '#B8860B', goldBg: '#FDF5DC', goldBorder: '#E8C84A', green: '#166534', greenBg: '#DCFCE7', shadow: '0 1px 3px rgba(0,0,0,0.07)' }
+const T = { bg: '#FAFAF8', surface: '#FFFFFF', border: '#E8E6E0', surfaceAlt: '#F5F3EF', text: '#1A1A1A', textSub: '#6B6B6B', textMuted: '#999999', navy: '#BA7517', gold: '#BA7517', goldBg: '#FFF8EB', goldBorder: '#E8C84A', green: '#16A34A', greenBg: '#EAF3DE', shadow: '0 1px 3px rgba(0,0,0,0.07)' }
 
 const ORIGIN_CRITERIA = [
   { code: 'A', label: 'A — Wholly obtained or produced entirely in USMCA territory' },

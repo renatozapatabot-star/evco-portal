@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import { Search, Download, ChevronLeft, ChevronRight } from 'lucide-react'
 import { CLIENT_NAME, CLIENT_CLAVE, PATENTE } from '@/lib/client-config'
-import { fmtId, fmtDesc, fmtKg, fmtUSD, fmtDate, fmtCompact, calcPriority, priorityClass } from '@/lib/format-utils'
+import { fmtId, fmtDesc, fmtKg, fmtUSD, fmtUSDCompact, fmtDate, calcPriority, priorityClass } from '@/lib/format-utils'
 import { TraficoDetail } from '@/components/trafico-detail'
 
 interface TraficoRow {
@@ -37,17 +37,11 @@ export default function TraficosPage() {
   const [tab, setTab] = useState<FilterTab>('todos')
   const [detailId, setDetailId] = useState<string | null>(null)
   const [page, setPage] = useState(0)
-  const [riskScores, setRiskScores] = useState<Record<string, { score: number; factors: string[] }>>({})
-  const [crossPred, setCrossPred] = useState<Record<string, { avgDays: number; predictedDate: string; confidence: string }>>({})
-
   useEffect(() => {
     setLoading(true)
     fetch(`/api/data?table=traficos&trafico_prefix=${CLIENT_CLAVE}-&limit=5000&order_by=fecha_llegada&order_dir=desc`)
       .then(r => r.json()).then(d => setRows(d.data ?? d ?? []))
       .catch(() => {}).finally(() => setLoading(false))
-    // Load risk scores
-    fetch('/api/risk-scores').then(r => r.json()).then(d => setRiskScores(d.scores || {})).catch(() => {})
-    fetch('/api/crossing-prediction').then(r => r.json()).then(d => setCrossPred(d.predictions || {})).catch(() => {})
   }, [])
 
   const filtered = useMemo(() => {
@@ -72,7 +66,7 @@ export default function TraficosPage() {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
         <div>
-          <h1 className="pg-title">Traficos</h1>
+          <h1 className="pg-title">Tráficos</h1>
           <p className="pg-meta">{rows.length.toLocaleString('es-MX')} embarques &middot; {CLIENT_NAME} &middot; Patente {PATENTE}</p>
         </div>
       </div>
@@ -93,7 +87,7 @@ export default function TraficosPage() {
           <div className="tbl-actions">
             <div className="tbl-search">
               <Search size={11} />
-              <input placeholder="Trafico, pedimento..." value={search}
+              <input placeholder="Tráfico, pedimento..." value={search}
                 onChange={e => { setSearch(e.target.value); setPage(0) }} />
             </div>
             <button className="act-btn" onClick={() => exportCSV(filtered)}>
@@ -111,7 +105,7 @@ export default function TraficosPage() {
             <div className="sum-sep" />
             <div className="sum-stat"><span className="sum-val" style={{ color: 'var(--status-green)' }}>{cruzados.toLocaleString('es-MX')}</span><span className="sum-lbl">Cruzado</span></div>
             <div className="sum-sep" />
-            <div className="sum-stat"><span className="sum-val">{fmtCompact(totalValor)}</span><span className="sum-lbl">valor importado</span></div>
+            <div className="sum-stat"><span className="sum-val">{fmtUSDCompact(totalValor)}</span><span className="sum-lbl">valor importado</span></div>
           </div>
         )}
 
@@ -121,15 +115,13 @@ export default function TraficosPage() {
             <thead>
               <tr>
                 <th style={{ width: 24 }}></th>
-                <th style={{ width: 180 }}>Trafico</th>
+                <th style={{ width: 180 }}>Tráfico</th>
                 <th style={{ width: 110 }}>Estado</th>
                 <th style={{ width: 110 }}>Fecha</th>
-                <th>Descripcion</th>
+                <th>Descripción</th>
                 <th style={{ width: 100, textAlign: 'right' }}>Peso</th>
                 <th style={{ width: 100, textAlign: 'right' }}>Importe</th>
                 <th style={{ width: 100 }}>Pedimento</th>
-                <th style={{ width: 55, textAlign: 'center' }}>Pred.</th>
-                <th style={{ width: 50, textAlign: 'center' }}>Risk</th>
                 <th style={{ width: 20 }}></th>
               </tr>
             </thead>
@@ -148,12 +140,12 @@ export default function TraficosPage() {
                 </tr>
               ))}
               {!loading && paged.length === 0 && (
-                <tr><td colSpan={9} style={{ textAlign: 'center', padding: '48px 0', color: 'var(--t2)' }}>No se encontraron resultados</td></tr>
+                <tr><td colSpan={8} style={{ textAlign: 'center', padding: '48px 0', color: 'var(--text-muted)' }}>No se encontraron resultados</td></tr>
               )}
               {paged.map(r => {
                 const ps = calcPriority(r)
                 return (
-                  <tr key={r.trafico} onClick={() => setDetailId(r.trafico)}>
+                  <tr key={r.trafico} className={(r.estatus || '').toLowerCase().includes('cruz') ? '' : 'row-amber'} onClick={() => setDetailId(r.trafico)}>
                     <td style={{ width: 24, paddingRight: 4 }}>
                       {ps > 0 && <span className={`priority ${priorityClass(ps)}`} />}
                     </td>
@@ -166,22 +158,7 @@ export default function TraficosPage() {
                     <td className="c-desc" title={fmtDesc(r.descripcion_mercancia)}>{fmtDesc(r.descripcion_mercancia)}</td>
                     <td className="c-num">{fmtKg(r.peso_bruto)}</td>
                     <td className="c-num">{fmtUSD(r.importe_total)}</td>
-                    <td>{r.pedimento ? <span className="ped">{r.pedimento}</span> : <span className="c-dim">-</span>}</td>
-                    <td style={{ textAlign: 'center' }}>{(() => {
-                      const pred = crossPred[r.trafico]
-                      if (!pred) return <span className="c-dim">—</span>
-                      const d = pred.avgDays
-                      const color = d > 5 ? 'var(--red-text)' : d > 3 ? 'var(--amber-text)' : 'var(--green-text)'
-                      return <span title={`Est. ${pred.predictedDate} · ${pred.confidence}`} className="mono" style={{ color, fontSize: 11, fontWeight: 600, cursor: 'help' }}>~{d}d</span>
-                    })()}</td>
-                    <td style={{ textAlign: 'center' }}>{(() => {
-                      const risk = riskScores[r.trafico]
-                      if (!risk) return <span className="c-dim">—</span>
-                      const s = risk.score
-                      const bg = s >= 50 ? 'var(--red-bg)' : s >= 20 ? 'var(--amber-bg)' : 'var(--green-bg)'
-                      const color = s >= 50 ? 'var(--red-text)' : s >= 20 ? 'var(--amber-text)' : 'var(--green-text)'
-                      return <span title={risk.factors.join('\n')} style={{ background: bg, color, borderRadius: 4, padding: '2px 6px', fontSize: 10, fontWeight: 700, fontFamily: 'var(--font-mono)', cursor: 'help' }}>{s}</span>
-                    })()}</td>
+                    <td>{r.pedimento ? <span className="ped">{r.pedimento}</span> : <span className="c-dim">—</span>}</td>
                     <td><span className="c-arr">&#8250;</span></td>
                   </tr>
                 )

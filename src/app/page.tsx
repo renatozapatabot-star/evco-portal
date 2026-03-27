@@ -85,23 +85,23 @@ export default function Dashboard() {
   const maxProv = proveedores[0]?.total ?? 1
 
   const kpiCards = [
-    { label: 'Traficos Activos', value: kpi ? kpi.total.toLocaleString('es-MX') : '-', sub: 'Total cargados', icon: Truck },
-    { label: 'Valor Importado', value: kpi ? fmtUSD(kpi.valor) : '-', sub: 'Acumulado USD', icon: DollarSign },
-    { label: 'Pedimentos', value: kpi ? kpi.pedimentos.toLocaleString() : '-', sub: 'Con pedimento', icon: FileText },
-    { label: 'Entradas', value: kpi ? kpi.entradas.toLocaleString() : '-', sub: 'Remesas bodega', icon: Package },
+    { label: 'Tráficos Activos', value: kpi ? kpi.total.toLocaleString('es-MX') : '-', sub: 'Total cargados', icon: Truck, hero: true },
+    { label: 'Valor Importado', value: kpi ? fmtUSD(kpi.valor) : '-', sub: 'Acumulado USD', icon: DollarSign, hero: true },
+    { label: 'Pedimentos', value: kpi ? kpi.pedimentos.toLocaleString() : '-', sub: 'Con pedimento', icon: FileText, hero: false },
+    { label: 'Entradas', value: kpi ? kpi.entradas.toLocaleString() : '-', sub: 'Remesas bodega', icon: Package, hero: false },
   ]
 
   return (
     <div style={{ padding: 32 }}>
       {/* Hero — MVE Countdown */}
       {mveDays <= 30 && (
-        <div className="card anim-0" style={{ marginBottom: 24, borderLeft: '4px solid var(--status-red)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 32 }}>
+        <div className={`card anim-0 ${mveDays <= 4 ? 'a-critical' : mveDays <= 10 ? 'a-warning' : 'a-info'}`} style={{ marginBottom: 24, borderLeft: `4px solid ${mveDays <= 4 ? 'var(--status-red)' : mveDays <= 10 ? 'var(--status-yellow)' : 'var(--amber-500)'}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 32 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
-            <div className="mono" style={{ fontSize: 64, fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1 }}>{mveDays}</div>
+            <div className="mono" style={{ fontSize: 64, fontWeight: 600, color: mveDays <= 4 ? 'var(--status-red)' : 'var(--text-primary)', lineHeight: 1 }}>{mveDays}</div>
             <div>
-              <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)' }}>Dias restantes — MVE</div>
-              <div style={{ fontSize: 14, color: 'var(--text-secondary)', marginTop: 4 }}>Fecha limite: 31 marzo 2026</div>
-              <div style={{ fontSize: 14, color: 'var(--text-muted)', marginTop: 4 }}>Mercancia en Virtual Export requiere declaracion antes del deadline</div>
+              <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)' }}>Días restantes — MVE</div>
+              <div style={{ fontSize: 14, color: 'var(--text-secondary)', marginTop: 4 }}>Fecha límite: 31 marzo 2026</div>
+              <div style={{ fontSize: 14, color: 'var(--text-muted)', marginTop: 4 }}>Mercancía en Virtual Export requiere declaración antes del deadline</div>
             </div>
           </div>
           <Link href="/mve" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '8px 24px', borderRadius: 8, background: 'var(--amber-100)', border: '1px solid var(--border-primary)', color: 'var(--amber-600)', fontSize: 14, fontWeight: 500, textDecoration: 'none' }}>
@@ -117,7 +117,7 @@ export default function Dashboard() {
           return (
             <div key={card.label} className="kpi-card">
               <div className="kpi-label">{card.label}</div>
-              <div className="kpi-value">{card.value}</div>
+              <div className="kpi-value" style={card.hero ? { fontSize: 36 } : undefined}>{card.value}</div>
               <div className="kpi-sub">{card.sub}</div>
               <div className="kpi-icon"><Icon size={16} /></div>
             </div>
@@ -125,18 +125,38 @@ export default function Dashboard() {
         })}
       </div>
 
+      {/* Top Proveedores — full width bar chart */}
+      {proveedores.length > 0 && (
+        <div className="card anim-2" style={{ marginBottom: 16, padding: 20 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--amber-700)', marginBottom: 16 }}>Top Proveedores</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+            {proveedores.map(p => (
+              <div key={p.proveedor}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                  <span style={{ fontSize: 13, color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 200 }}>{p.proveedor}</span>
+                  <span className="mono" style={{ fontSize: 13, color: 'var(--text-primary)', flexShrink: 0 }}>${(p.total / 1_000_000).toFixed(1)}M</span>
+                </div>
+                <div style={{ height: 4, borderRadius: 2, background: 'var(--border-light)' }}>
+                  <div style={{ width: `${(p.total / maxProv) * 100}%`, height: '100%', borderRadius: 2, background: 'var(--amber-500)', transition: 'width 500ms ease' }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Two columns */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 16 }} className="anim-2">
-        {/* LEFT — Traficos Recientes */}
+        {/* LEFT — Tráficos Recientes */}
         <div className="card">
           <div className="card-head">
-            <span className="card-title">Traficos Recientes</span>
+            <span className="card-title">Tráficos Recientes</span>
             <Link href="/traficos" style={{ fontSize: 14, color: 'var(--amber-600)', textDecoration: 'none' }}>Ver todos &rarr;</Link>
           </div>
           <div style={{ overflowX: 'auto' }}>
             <table className="data-table">
               <thead><tr>
-                <th>Trafico</th><th>Fecha</th><th style={{ textAlign: 'right' }}>Peso</th><th>Estado</th>
+                <th>Tráfico</th><th>Fecha</th><th style={{ textAlign: 'right' }}>Peso</th><th>Estado</th>
               </tr></thead>
               <tbody>
                 {loading && Array.from({ length: 6 }).map((_, i) => (
@@ -184,22 +204,6 @@ export default function Dashboard() {
               })}
               {activity.length === 0 && <div style={{ padding: 24, textAlign: 'center', fontSize: 14, color: 'var(--text-muted)' }}>Sin actividad reciente</div>}
             </div>
-          </div>
-
-          {/* Top Proveedores */}
-          <div className="card" style={{ padding: 16 }}>
-            <div style={{ fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--amber-700)', marginBottom: 16 }}>Top Proveedores</div>
-            {proveedores.map(p => (
-              <div key={p.proveedor} style={{ marginBottom: 12 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                  <span style={{ fontSize: 14, color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 200 }}>{p.proveedor}</span>
-                  <span className="mono" style={{ fontSize: 14, color: 'var(--text-primary)', flexShrink: 0 }}>${(p.total / 1_000_000).toFixed(1)}M</span>
-                </div>
-                <div style={{ height: 4, borderRadius: 2, background: 'var(--border-light)' }}>
-                  <div style={{ width: `${(p.total / maxProv) * 100}%`, height: '100%', borderRadius: 2, background: 'var(--amber-500)', transition: 'width 500ms ease' }} />
-                </div>
-              </div>
-            ))}
           </div>
 
           {/* Bridge Summary */}

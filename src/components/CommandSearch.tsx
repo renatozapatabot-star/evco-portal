@@ -7,7 +7,7 @@ import { Search, X, Truck, FileText, Package, Factory, Clock } from 'lucide-reac
 interface Result { type: string; id: string; primary: string; secondary?: string; href: string }
 
 const ICONS: Record<string, any> = { traficos: Truck, entradas: Package, pedimentos: FileText, proveedores: Factory }
-const LABELS: Record<string, string> = { traficos: 'Traficos', entradas: 'Entradas', pedimentos: 'Pedimentos', proveedores: 'Proveedores' }
+const LABELS: Record<string, string> = { traficos: 'Tráficos', entradas: 'Entradas', pedimentos: 'Pedimentos', proveedores: 'Proveedores' }
 
 export function CommandSearch() {
   const [open, setOpen] = useState(false)

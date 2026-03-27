@@ -43,7 +43,7 @@ export default async function StatusPage() {
     <div style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", background: '#F7F6F3', color: '#18160F', padding: '40px 20px', minHeight: '100vh' }}>
       <div style={{ maxWidth: 640, margin: '0 auto' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 32 }}>
-          <div style={{ width: 40, height: 40, background: '#0D2340', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 900, fontSize: 18 }}>E</div>
+          <div style={{ width: 40, height: 40, background: 'var(--amber-600, #BA7517)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 900, fontSize: 18 }}>E</div>
           <div>
             <h1 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>Estado del Sistema</h1>
             <p style={{ color: '#9C9690', fontSize: 12, margin: 0 }}>Renato Zapata & Company · CRUZ Platform</p>

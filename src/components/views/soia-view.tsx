@@ -59,7 +59,7 @@ export function SoiaView() {
   return (
     <div style={{ padding: 32 }}>
       <div style={{ marginBottom: 24 }}>
-        <h1 className="pg-title">SOIA — Semaforo Aduanal</h1>
+        <h1 className="pg-title">SOIA — Semáforo Aduanal</h1>
         <p className="pg-meta">Aduana 240 Nuevo Laredo &middot; {cruces.length} registros</p>
       </div>
 
@@ -104,7 +104,7 @@ export function SoiaView() {
           <EmptyState
             icon={<Landmark size={20} style={{ color: 'var(--amber-600)' }} />}
             title="Sin datos SOIA"
-            subtitle="La tabla soia_cruces esta vacia. Se poblara cuando GlobalPC sincronice datos de cruces."
+            subtitle="La tabla soia_cruces está vacía. Se poblará cuando GlobalPC sincronice datos de cruces."
           />
         </div>
       ) : (

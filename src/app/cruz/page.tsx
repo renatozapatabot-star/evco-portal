@@ -15,7 +15,7 @@ export default async function CRUZDashboard() {
   ])
 
   const metrics = [
-    { label: 'Traficos', value: (tR.count || 0).toLocaleString(), icon: '🚢' },
+    { label: 'Tráficos', value: (tR.count || 0).toLocaleString(), icon: '🚢' },
     { label: 'Entradas', value: (eR.count || 0).toLocaleString(), icon: '📦' },
     { label: 'Facturas', value: (fR.count || 0).toLocaleString(), icon: '📄' },
     { label: 'Documentos', value: (dR.count || 0).toLocaleString(), icon: '🗂️' },

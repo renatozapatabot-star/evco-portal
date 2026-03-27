@@ -3,18 +3,12 @@
 import { useEffect, useState, useMemo } from 'react'
 import { DollarSign, TrendingUp, TrendingDown, CreditCard, Search } from 'lucide-react'
 import { CLIENT_CLAVE } from '@/lib/client-config'
+import { fmtMXN, fmtDate } from '@/lib/format-utils'
 
 interface CarteraRow { consecutivo: number; cve_cliente: string; tipo: string; referencia: string; fecha: string; importe: number; saldo: number; moneda: string; observaciones: string }
 interface IngresoRow { consecutivo: number; cve_cliente: string; forma_ingreso: string; referencia: string; fecha: string; importe: number; moneda: string; concepto: string }
 interface EgresoRow { consecutivo: number; cve_cliente: string; forma_egreso: string; tipo_egreso: string; beneficiario: string; referencia: string; fecha: string; importe: number; moneda: string; concepto: string }
 interface FacturaRow { consecutivo: number; cve_cliente: string; serie: string; folio: number; fecha: string; subtotal: number; iva: number; total: number; moneda: string; observaciones: string }
-
-const fmtMXN = (n: number) => `$${Number(n || 0).toLocaleString('es-MX', { minimumFractionDigits: 0 })}`
-const fmtDate = (s: string | null) => {
-  if (!s) return '—'
-  try { return new Date(s).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' }) }
-  catch { return s }
-}
 
 type Tab = 'resumen' | 'cartera' | 'ingresos' | 'egresos' | 'facturas'
 
@@ -61,7 +55,7 @@ export function CuentasView() {
 
   if (loading) return (
     <div className="flex justify-center items-center h-64">
-      <div className="w-7 h-7 rounded-full" style={{ border: '3px solid #e5e7eb', borderTopColor: '#0f1624', animation: 'spin 0.7s linear infinite' }} />
+      <div className="w-7 h-7 rounded-full" style={{ border: '3px solid var(--border-primary)', borderTopColor: 'var(--amber-600)', animation: 'spin 0.7s linear infinite' }} />
       <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
     </div>
   )
@@ -70,8 +64,8 @@ export function CuentasView() {
     <div className="p-6">
       <div className="flex items-start justify-between mb-4">
         <div>
-          <h1 className="text-[18px] font-semibold" style={{ color: '#111827' }}>Cuentas & Finanzas</h1>
-          <p className="text-[12.5px] mt-0.5" style={{ color: '#6b7280' }}>
+          <h1 className="text-[18px] font-semibold" style={{ color: 'var(--text-primary)' }}>Cuentas & Finanzas</h1>
+          <p className="text-[12.5px] mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
             eConta · {cartera.length.toLocaleString()} movimientos cartera · Clave {CLIENT_CLAVE}
           </p>
         </div>

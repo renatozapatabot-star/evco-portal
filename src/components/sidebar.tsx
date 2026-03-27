@@ -7,7 +7,7 @@ import { CLIENT_NAME, PATENTE, ADUANA } from '@/lib/client-config'
 
 const navGroups = [
   { label: 'OPERATIONS', items: [
-    { href: '/traficos', label: 'Traficos', icon: Truck },
+    { href: '/traficos', label: 'Tráficos', icon: Truck },
     { href: '/entradas', label: 'Entradas', icon: Package },
     { href: '/pedimentos', label: 'Pedimentos', icon: FileText },
     { href: '/expedientes', label: 'Expedientes', icon: FolderOpen },
@@ -23,7 +23,7 @@ const navGroups = [
     { href: '/proveedores', label: 'Proveedores', icon: Factory },
     { href: '/documentos', label: 'Documentos', icon: Files },
     { href: '/cuentas', label: 'Cuentas', icon: CreditCard },
-    { href: '/cotizacion', label: 'Cotizacion', icon: Calculator },
+    { href: '/cotizacion', label: 'Cotización', icon: Calculator },
     { href: '/carriers', label: 'Carriers', icon: Truck },
   ]},
 ]
@@ -43,7 +43,7 @@ export default function Sidebar() {
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 600, color: 'white' }}>RZ</span>
         </div>
         {!collapsed && <div style={{ flex: 1, overflow: 'hidden' }}>
-          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>{CLIENT_NAME}</div>
+          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{CLIENT_NAME}</div>
           <div style={{ fontSize: 12, color: 'var(--text-tertiary)', marginTop: 1 }}>Portal Aduanal</div>
         </div>}
         <button onClick={toggle} style={{ width: 24, height: 24, borderRadius: 6, background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>

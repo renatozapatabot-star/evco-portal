@@ -10,7 +10,7 @@ interface Props {
 export default function EmptyState({
   icon,
   title = 'Sin datos',
-  subtitle = 'No hay informacion disponible',
+  subtitle = 'No hay información disponible',
   action,
 }: Props) {
   return (

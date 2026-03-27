@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Search, ChevronLeft, ChevronRight } from 'lucide-react'
 import { CLIENT_NAME, CLIENT_CLAVE } from '@/lib/client-config'
-import { fmtDesc } from '@/lib/format-utils'
+import { fmtDesc, fmtDate } from '@/lib/format-utils'
 import Link from 'next/link'
 
 interface EntradaRow {
@@ -19,13 +19,6 @@ interface EntradaRow {
 }
 
 const PAGE_SIZE = 50
-
-const fmtDate = (s: string | null | undefined) => {
-  if (!s) return '-'
-  try {
-    return new Date(s).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })
-  } catch { return s }
-}
 
 const fmtTrafico = (id: string) => {
   const clean = id.replace(/[\u2013\u2014]/g, '-')
@@ -104,7 +97,7 @@ export default function EntradasPage() {
             <Search size={13} strokeWidth={2} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
             <input
               type="text"
-              placeholder="Trafico, entrada, descripcion..."
+              placeholder="Tráfico, entrada, descripción..."
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(0) }}
               className="flex-1 bg-transparent outline-none text-[12.5px]"
@@ -123,9 +116,9 @@ export default function EntradasPage() {
             <thead>
               <tr>
                 <th>Entrada</th>
-                <th>Trafico</th>
+                <th>Tráfico</th>
                 <th>Fecha Llegada</th>
-                <th>Descripcion</th>
+                <th>Descripción</th>
                 <th style={{ textAlign: 'right' }}>Bultos</th>
                 <th style={{ textAlign: 'right' }}>Peso (kg)</th>
                 <th>Estado</th>
@@ -151,7 +144,7 @@ export default function EntradasPage() {
                 </tr>
               )}
               {paged.map((r) => (
-                <tr key={r.cve_entrada}>
+                <tr key={r.cve_entrada} className={r.mercancia_danada || r.tiene_faltantes ? 'row-red' : ''}>
                   <td>
                     <span className="mono text-[12.5px] font-medium" style={{ color: 'var(--text-primary)' }}>
                       {r.cve_entrada}

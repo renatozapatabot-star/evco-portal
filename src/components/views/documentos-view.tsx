@@ -7,16 +7,16 @@ import { Upload, CheckCircle, AlertTriangle } from 'lucide-react'
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
 const LEGAL_DOCS = [
-  { id: 'poder_notarial', category: 'Corporativo', label: 'Poder Notarial', desc: 'Autorizacion ante agente aduanal', required: true, renew: 'Cada 5 anos' },
-  { id: 'encargo_conferido', category: 'Corporativo', label: 'Encargo Conferido', desc: 'VUCEM authorization', required: true, renew: 'Segun contrato' },
-  { id: 'rfc_constancia', category: 'Fiscal', label: 'RFC Constancia de Situacion', desc: 'SAT situacion fiscal actualizada', required: true, renew: 'Anual' },
-  { id: 'efirma', category: 'Digital', label: 'e.Firma (SAT)', desc: 'Firma electronica avanzada', required: true, renew: 'Cada 4 anos', expiry: '2028-01-01' },
-  { id: 'immex', category: 'Programa', label: 'Autorizacion IMMEX', desc: 'Programa de importacion temporal', required: true, renew: 'Anual' },
+  { id: 'poder_notarial', category: 'Corporativo', label: 'Poder Notarial', desc: 'Autorización ante agente aduanal', required: true, renew: 'Cada 5 años' },
+  { id: 'encargo_conferido', category: 'Corporativo', label: 'Encargo Conferido', desc: 'VUCEM authorization', required: true, renew: 'Según contrato' },
+  { id: 'rfc_constancia', category: 'Fiscal', label: 'RFC Constancia de Situación', desc: 'SAT situación fiscal actualizada', required: true, renew: 'Anual' },
+  { id: 'efirma', category: 'Digital', label: 'e.Firma (SAT)', desc: 'Firma electrónica avanzada', required: true, renew: 'Cada 4 años', expiry: '2028-01-01' },
+  { id: 'immex', category: 'Programa', label: 'Autorización IMMEX', desc: 'Programa de importación temporal', required: true, renew: 'Anual' },
   { id: 'padron_importadores', category: 'Operativo', label: 'Padron de Importadores', desc: 'Registro activo SAT', required: true, renew: 'Verificar anualmente' },
-  { id: 'acta_constitutiva', category: 'Corporativo', label: 'Acta Constitutiva', desc: 'Escritura de constitucion', required: true, renew: 'Permanente' },
+  { id: 'acta_constitutiva', category: 'Corporativo', label: 'Acta Constitutiva', desc: 'Escritura de constitución', required: true, renew: 'Permanente' },
   { id: 'vucem_acceso', category: 'Digital', label: 'Acceso VUCEM', desc: 'Portal ventanilla unica', required: true, renew: 'Verificar vigencia' },
-  { id: 'nom_plasticos', category: 'Regulatorio', label: 'NOM Plasticos', desc: 'Normas aplicables Cap. 39', required: false, renew: 'Segun NOM' },
-  { id: 'contrato_agencia', category: 'Contractual', label: 'Contrato de Agencia', desc: 'Contrato con Renato Zapata & Company', required: true, renew: 'Segun contrato' },
+  { id: 'nom_plasticos', category: 'Regulatorio', label: 'NOM Plasticos', desc: 'Normas aplicables Cap. 39', required: false, renew: 'Según NOM' },
+  { id: 'contrato_agencia', category: 'Contractual', label: 'Contrato de Agencia', desc: 'Contrato con Renato Zapata & Company', required: true, renew: 'Según contrato' },
   { id: 'seguro_mercancias', category: 'Financiero', label: 'Seguro de Mercancias', desc: 'Poliza de seguro de carga', required: false, renew: 'Anual' },
   { id: 'certificado_origen', category: 'Comercio', label: 'Certificados T-MEC', desc: 'USMCA certificates on file', required: true, renew: 'Por embarque o anual' },
 ]

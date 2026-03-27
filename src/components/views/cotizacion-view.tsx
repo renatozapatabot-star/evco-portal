@@ -59,7 +59,7 @@ export function CotizacionView() {
   return (
     <div style={{ padding: 32 }}>
       <div style={{ marginBottom: 24 }}>
-        <h1 className="pg-title">Cotizacion Aduanal</h1>
+        <h1 className="pg-title">Cotización Aduanal</h1>
         <p className="pg-meta">Calculadora de contribuciones &middot; DTA + IGI + IVA &middot; Patente 3596</p>
       </div>
 
@@ -144,7 +144,7 @@ export function CotizacionView() {
                 const text = `COTIZACION ADUANAL\nValor: ${fmtUSD(result.valorUSD)} USD\nValor Aduana: ${fmtMXN(result.valorAduanaMXN)} MXN\nDTA: ${fmtMXN(result.dta)}\nIGI: ${result.igi === 0 ? 'T-MEC $0' : fmtMXN(result.igi)}\nIVA: ${fmtMXN(result.iva)}\nTOTAL: ${fmtMXN(result.total)}\n\nRenato Zapata III — Patente 3596`
                 const blob = new Blob([text], { type: 'text/plain' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `evco_cotizacion_${new Date().toISOString().split('T')[0]}.txt`; a.click()
               }} style={{ width: '100%', height: 48, marginTop: 24, background: 'var(--amber-600)', border: 'none', borderRadius: 8, color: '#000', fontSize: 16, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
-                Generar Cotizacion
+                Generar Cotización
               </button>
 
               <div style={{ marginTop: 16, fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.6, textAlign: 'center' }}>

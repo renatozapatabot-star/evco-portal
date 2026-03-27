@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import { Search, Download, ChevronDown, ChevronRight, ChevronLeft } from 'lucide-react'
 import { CLIENT_CLAVE } from '@/lib/client-config'
+import { fmtUSDFull as fmtUSD, fmtMXN, fmtDate } from '@/lib/format-utils'
 
 interface FacturaRow {
   referencia: string
@@ -24,21 +25,16 @@ interface PedGroup {
   totalDta: number
   totalIgi: number
   totalIva: number
-  proveedores: number
+  fecha: string | null
+  referencia: string
+  tc: number | null
+  proveedores: string[]
   tmec: boolean
 }
 
 const PAGE_SIZE = 30
 
-const fmtMXN = (n: number | null | undefined) =>
-  n != null ? `$${Number(n).toLocaleString('es-MX', { minimumFractionDigits: 0 })}` : '-'
-const fmtUSD = (n: number | null | undefined) =>
-  n != null ? `$${Number(n).toLocaleString('en-US', { minimumFractionDigits: 0 })}` : '-'
-const fmtDate = (s: string | null | undefined) => {
-  if (!s) return '-'
-  try { return new Date(s).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' }) }
-  catch { return s }
-}
+// Use shared formatters — imported at top
 
 function exportCSV(rows: FacturaRow[]) {
   const headers = ['Referencia', 'Pedimento', 'Fecha Pago', 'Proveedor', 'TC', 'Valor USD', 'DTA', 'IGI', 'IVA']
@@ -93,30 +89,38 @@ export default function PedimentosPage() {
       map.get(key)!.push(r)
     })
 
-    return Array.from(map.entries()).map(([pedimento, rows]) => ({
-      pedimento,
-      rows,
-      totalValor: rows.reduce((s, r) => s + (Number(r.valor_usd) || 0), 0),
-      totalDta: rows.reduce((s, r) => s + (Number(r.dta) || 0), 0),
-      totalIgi: rows.reduce((s, r) => s + (Number(r.igi) || 0), 0),
-      totalIva: rows.reduce((s, r) => s + (Number(r.iva) || 0), 0),
-      proveedores: new Set(rows.map(r => r.proveedor).filter(Boolean)).size,
-      tmec: rows.every(r => (r.igi || 0) === 0),
-    }))
+    return Array.from(map.entries()).map(([pedimento, rows]) => {
+      // Financial values are pedimento-level totals duplicated on every row.
+      // Use the first row's values — they're the same across all rows.
+      const first = rows[0]
+      return {
+        pedimento,
+        rows,
+        totalValor: Number(first.valor_usd) || 0,
+        totalDta: Number(first.dta) || 0,
+        totalIgi: Number(first.igi) || 0,
+        totalIva: Number(first.iva) || 0,
+        fecha: first.fecha_pago,
+        referencia: first.referencia,
+        tc: first.tc,
+        proveedores: [...new Set(rows.map(r => r.proveedor).filter(Boolean))] as string[],
+        tmec: (Number(first.igi) || 0) === 0,
+      }
+    })
   }, [rows, search, dateFrom, dateTo, tmecOnly])
 
   const totalPages = Math.ceil(groups.length / PAGE_SIZE)
   const pagedGroups = groups.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
 
-  const totals = useMemo(() => rows.reduce(
-    (acc, r) => ({
-      valor: acc.valor + (Number(r.valor_usd) || 0),
-      dta: acc.dta + (Number(r.dta) || 0),
-      igi: acc.igi + (Number(r.igi) || 0),
-      iva: acc.iva + (Number(r.iva) || 0),
+  const totals = useMemo(() => groups.reduce(
+    (acc, g) => ({
+      valor: acc.valor + g.totalValor,
+      dta: acc.dta + g.totalDta,
+      igi: acc.igi + g.totalIgi,
+      iva: acc.iva + g.totalIva,
     }),
     { valor: 0, dta: 0, igi: 0, iva: 0 }
-  ), [rows])
+  ), [groups])
 
   const toggle = (ped: string) => {
     setExpanded(prev => {
@@ -214,9 +218,11 @@ export default function PedimentosPage() {
                   <div className="flex items-center gap-3">
                     {expanded.has(g.pedimento) ? <ChevronDown size={14} style={{ color: '#C9A84C' }} /> : <ChevronRight size={14} style={{ color: 'var(--text-muted)' }} />}
                     <span className="ped-pill">{g.pedimento}</span>
+                    {g.referencia && <span className="mono text-[11.5px]" style={{ color: 'var(--text-secondary)' }}>{g.referencia}</span>}
                     <span className="text-[11.5px]" style={{ color: 'var(--text-muted)' }}>
-                      {g.proveedores} proveedor{g.proveedores !== 1 ? 'es' : ''} &middot; {g.rows.length} linea{g.rows.length !== 1 ? 's' : ''}
+                      {g.proveedores.length} proveedor{g.proveedores.length !== 1 ? 'es' : ''}
                     </span>
+                    {g.fecha && <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{fmtDate(g.fecha)}</span>}
                     {g.tmec && (
                       <span className="text-[10.5px] font-semibold px-2 py-0.5 rounded-[4px]" style={{ background: 'var(--green-bg)', color: 'var(--green-text)' }}>T-MEC</span>
                     )}
@@ -224,37 +230,48 @@ export default function PedimentosPage() {
                   <span className="mono text-[13px] font-semibold" style={{ color: 'var(--text-primary)' }}>{fmtUSD(g.totalValor)}</span>
                 </div>
 
-                {/* Expanded rows */}
+                {/* Expanded detail */}
                 {expanded.has(g.pedimento) && (
-                  <div style={{ borderTop: '1px solid rgba(0,0,0,0.04)' }}>
-                    <table className="data-table">
-                      <thead>
-                        <tr>
-                          <th>Referencia</th>
-                          <th>Fecha Pago</th>
-                          <th>Proveedor</th>
-                          <th style={{ textAlign: 'right' }}>T/C</th>
-                          <th style={{ textAlign: 'right' }}>Valor USD</th>
-                          <th style={{ textAlign: 'right' }}>DTA</th>
-                          <th style={{ textAlign: 'right' }}>IGI</th>
-                          <th style={{ textAlign: 'right' }}>IVA</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {g.rows.map((r, i) => (
-                          <tr key={`${r.referencia}-${i}`} style={{ cursor: 'default' }}>
-                            <td><span className="mono text-[12px] font-semibold" style={{ color: 'var(--text-primary)' }}>{r.referencia ?? '-'}</span></td>
-                            <td className="text-[12px]" style={{ color: 'var(--text-secondary)' }}>{fmtDate(r.fecha_pago)}</td>
-                            <td className="text-[12px] max-w-[200px] truncate" style={{ color: 'var(--text-secondary)' }} title={r.proveedor ?? undefined}>{r.proveedor ?? '-'}</td>
-                            <td className="text-right mono text-[12px]" style={{ color: 'var(--text-muted)' }}>{r.tc ? `$${Number(r.tc).toFixed(4)}` : '-'}</td>
-                            <td className="text-right"><span className="mono text-[12px] font-semibold" style={{ color: 'var(--text-primary)' }}>{fmtUSD(r.valor_usd)}</span></td>
-                            <td className="text-right mono text-[12px]" style={{ color: 'var(--text-secondary)' }}>{fmtMXN(r.dta)}</td>
-                            <td className="text-right mono text-[12px]" style={{ color: 'var(--text-secondary)' }}>{fmtMXN(r.igi)}</td>
-                            <td className="text-right mono text-[12px]" style={{ color: 'var(--text-secondary)' }}>{fmtMXN(r.iva)}</td>
-                          </tr>
+                  <div style={{ borderTop: '1px solid rgba(0,0,0,0.04)', padding: '16px 20px 20px', background: 'var(--bg-elevated, #F5F3EF)' }}>
+                    {/* Pedimento totals — shown once */}
+                    <div className="flex items-center gap-6 flex-wrap mb-4" style={{ padding: '12px 16px', background: 'var(--bg-card, #fff)', borderRadius: 8, border: '1px solid var(--border-light, #F0EDE8)' }}>
+                      <div>
+                        <div className="text-[10px] font-semibold uppercase tracking-[0.06em]" style={{ color: 'var(--text-muted)' }}>Valor Total USD</div>
+                        <div className="mono text-[16px] font-semibold" style={{ color: 'var(--text-primary)' }}>{fmtUSD(g.totalValor)}</div>
+                      </div>
+                      <div>
+                        <div className="text-[10px] font-semibold uppercase tracking-[0.06em]" style={{ color: 'var(--text-muted)' }}>DTA</div>
+                        <div className="mono text-[14px] font-medium" style={{ color: 'var(--text-secondary)' }}>{fmtMXN(g.totalDta)}</div>
+                      </div>
+                      <div>
+                        <div className="text-[10px] font-semibold uppercase tracking-[0.06em]" style={{ color: 'var(--text-muted)' }}>IGI</div>
+                        <div className="mono text-[14px] font-medium" style={{ color: g.tmec ? 'var(--status-green, #16A34A)' : 'var(--text-secondary)' }}>{g.tmec ? '$0 (T-MEC)' : fmtMXN(g.totalIgi)}</div>
+                      </div>
+                      <div>
+                        <div className="text-[10px] font-semibold uppercase tracking-[0.06em]" style={{ color: 'var(--text-muted)' }}>IVA</div>
+                        <div className="mono text-[14px] font-medium" style={{ color: 'var(--text-secondary)' }}>{fmtMXN(g.totalIva)}</div>
+                      </div>
+                      {g.tc && (
+                        <div>
+                          <div className="text-[10px] font-semibold uppercase tracking-[0.06em]" style={{ color: 'var(--text-muted)' }}>Tipo Cambio</div>
+                          <div className="mono text-[14px] font-medium" style={{ color: 'var(--text-secondary)' }}>${Number(g.tc).toFixed(4)}</div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Proveedores list */}
+                    <div>
+                      <div className="text-[10px] font-semibold uppercase tracking-[0.06em] mb-2" style={{ color: 'var(--text-muted)' }}>
+                        Proveedores ({g.proveedores.length})
+                      </div>
+                      <div className="flex flex-wrap gap-x-4 gap-y-1">
+                        {g.proveedores.map(p => (
+                          <div key={p} className="flex items-center gap-1.5 text-[12px]" style={{ color: 'var(--text-secondary)' }}>
+                            <span style={{ color: 'var(--text-muted)' }}>·</span> {p}
+                          </div>
                         ))}
-                      </tbody>
-                    </table>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>

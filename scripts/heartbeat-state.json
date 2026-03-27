@@ -1,12 +1,12 @@
 {
   "supabase": {
     "status": "ok",
-    "last_ok": "2026-03-27T22:00:00.856Z",
+    "last_ok": "2026-03-27T22:30:00.986Z",
     "alerted": false
   },
   "portal": {
     "status": "ok",
-    "last_ok": "2026-03-27T22:00:00.856Z",
+    "last_ok": "2026-03-27T22:30:00.986Z",
     "alerted": false
   },
   "morning_report": {

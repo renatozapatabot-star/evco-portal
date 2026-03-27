@@ -1,0 +1,88 @@
+{
+  "generated": "2026-03-27T16:11:28.268Z",
+  "total_suppliers": 71,
+  "new_last_30_days": 4,
+  "dormant_6_months": 0,
+  "top_10": [
+    {
+      "name": "RR DONNELLEY AND SONS COMPANY",
+      "total_valor_usd": 11086843,
+      "operations": 49,
+      "first_seen": "2025-11-14",
+      "last_seen": "2026-03-09",
+      "fracciones": []
+    },
+    {
+      "name": "FORMERRA, LLC",
+      "total_valor_usd": 8565573,
+      "operations": 31,
+      "first_seen": "2025-11-26",
+      "last_seen": "2026-03-09",
+      "fracciones": []
+    },
+    {
+      "name": "COVESTRO LLC",
+      "total_valor_usd": 6176127,
+      "operations": 19,
+      "first_seen": "2025-11-14",
+      "last_seen": "2026-03-09",
+      "fracciones": []
+    },
+    {
+      "name": "WASHINGTON PENN PLASTIC CO. INC",
+      "total_valor_usd": 5459169,
+      "operations": 22,
+      "first_seen": "2025-11-14",
+      "last_seen": "2026-03-09",
+      "fracciones": []
+    },
+    {
+      "name": "NEXEO PLASTICS LLC",
+      "total_valor_usd": 2993008,
+      "operations": 18,
+      "first_seen": "2025-11-14",
+      "last_seen": "2026-03-09",
+      "fracciones": []
+    },
+    {
+      "name": "SW ANDERSON COMPANY",
+      "total_valor_usd": 2943423,
+      "operations": 17,
+      "first_seen": "2025-11-14",
+      "last_seen": "2026-03-09",
+      "fracciones": []
+    },
+    {
+      "name": "CICERO PLASTIC PRODUCTS INC",
+      "total_valor_usd": 2101980,
+      "operations": 11,
+      "first_seen": "2025-11-14",
+      "last_seen": "2026-03-05",
+      "fracciones": []
+    },
+    {
+      "name": "M.HOLLAND COMPANY",
+      "total_valor_usd": 1754438,
+      "operations": 6,
+      "first_seen": "2025-12-08",
+      "last_seen": "2026-03-09",
+      "fracciones": []
+    },
+    {
+      "name": "MCMASTER-CARR SUPPLY COMPANY",
+      "total_valor_usd": 1751693,
+      "operations": 11,
+      "first_seen": "2025-12-04",
+      "last_seen": "2026-03-09",
+      "fracciones": []
+    },
+    {
+      "name": "CHASE PLASTIC SERVICES, INC",
+      "total_valor_usd": 1669408,
+      "operations": 11,
+      "first_seen": "2025-12-08",
+      "last_seen": "2026-03-04",
+      "fracciones": []
+    }
+  ]
+}

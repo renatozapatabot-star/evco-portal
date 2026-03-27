@@ -1,0 +1,20 @@
+{
+  "supabase": {
+    "status": "ok",
+    "last_ok": "2026-03-27T22:00:00.856Z",
+    "alerted": false
+  },
+  "portal": {
+    "status": "ok",
+    "last_ok": "2026-03-27T22:00:00.856Z",
+    "alerted": false
+  },
+  "morning_report": {
+    "last_run": null,
+    "alerted": true
+  },
+  "globalpc": {
+    "status": "connected",
+    "last_ok": null
+  }
+}

@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Hide scrollbar on horizontal pill-scroll containers */
+.pill-scroll::-webkit-scrollbar { display: none; }
+
 /*
  * CRUZ DESIGN SYSTEM v5.0
  * Renato Zapata & Company · Patente 3596 · Est. 1941

@@ -127,6 +127,32 @@ export default function Dashboard() {
     return items.slice(0, 5)
   }, [urgentes, incidencias])
 
+  // ── Dismissed actions (localStorage) ──
+  const [dismissed, setDismissed] = useState<Set<string>>(() => {
+    if (typeof window === 'undefined') return new Set()
+    const saved = localStorage.getItem('cruz_dismissed_actions')
+    return saved ? new Set(JSON.parse(saved) as string[]) : new Set()
+  })
+  const [showResueltos, setShowResueltos] = useState(false)
+
+  const dismissAction = (id: string) => {
+    const next = new Set(dismissed)
+    next.add(id)
+    setDismissed(next)
+    localStorage.setItem('cruz_dismissed_actions', JSON.stringify([...next]))
+  }
+
+  const restoreAction = (id: string) => {
+    const next = new Set(dismissed)
+    next.delete(id)
+    setDismissed(next)
+    localStorage.setItem('cruz_dismissed_actions', JSON.stringify([...next]))
+  }
+
+  // ── Visible vs dismissed actions ──
+  const visibleActions = useMemo(() => actions.filter(a => !dismissed.has(a.id)), [actions, dismissed])
+  const dismissedActions = useMemo(() => actions.filter(a => dismissed.has(a.id)), [actions, dismissed])
+
   // ── Status sentence color ──
   const statusDotColor = statusSentence?.level === 'red' ? TOKEN.red : statusSentence?.level === 'amber' ? TOKEN.amber : TOKEN.green
 
@@ -219,6 +245,9 @@ export default function Dashboard() {
         )}
       </div>
 
+      {/* ═══ On mobile: bridges BEFORE KPI cards (3 AM driver needs this first) ═══ */}
+      {isMobile && <BridgesSection />}
+
       {/* ═══ SECTION B — THREE CARDS ═══ */}
       <div style={{
         display: 'grid',
@@ -298,17 +327,12 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* ═══ On mobile: bridges FIRST (3 AM driver needs this), then attention ═══ */}
-      {/* ═══ On desktop: attention first, then bridges ═══ */}
-
-      {isMobile && <BridgesSection />}
-
       {/* ═══ SECTION C — NECESITAN TU ATENCIÓN ═══ */}
       {actions.length > 0 ? (
         <div style={{ marginBottom: 32 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
             <span style={{ fontSize: 15, fontWeight: 700, color: TOKEN.text }}>
-              Necesitan tu atención ({actions.length})
+              Necesitan tu atención{visibleActions.length > 0 ? ` (${visibleActions.length})` : ''}
             </span>
             {(urgentes.length + incidencias.length) > 5 && (
               <Link href="/traficos" style={{ fontSize: 13, fontWeight: 700, color: TOKEN.gold, textDecoration: 'none' }}>
@@ -316,35 +340,136 @@ export default function Dashboard() {
               </Link>
             )}
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {actions.map(a => (
-              <Link key={a.id} href={a.link} style={{
-                display: 'flex', alignItems: 'center', gap: 12,
-                padding: '14px 16px',
-                background: TOKEN.surfaceCard, border: `1px solid ${TOKEN.border}`,
-                borderRadius: TOKEN.radiusMd, textDecoration: 'none', color: 'inherit',
-                minHeight: 60,
-              }}>
-                <span style={{
-                  width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
-                  background: a.severity === 'red' ? TOKEN.red : TOKEN.amber,
-                }} />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: TOKEN.text }}>{a.description}</div>
-                  <div style={{ fontSize: 12, color: TOKEN.textSecondary, fontFamily: 'var(--font-jetbrains-mono)', marginTop: 2 }}>
-                    {fmtDate(a.date)}
+          {visibleActions.length > 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {visibleActions.map(a => {
+                const daysOld = a.date ? Math.floor((Date.now() - new Date(a.date).getTime()) / 86400000) : 0
+                const borderColor = daysOld > 30
+                  ? '#E8E5E0'
+                  : daysOld > 14
+                  ? '#D1CEC7'
+                  : a.severity === 'red' ? TOKEN.red : TOKEN.amber
+                return (
+                  <div key={a.id} style={{
+                    display: 'flex', alignItems: 'center', gap: 12,
+                    padding: '14px 16px',
+                    background: TOKEN.surfaceCard,
+                    border: `1px solid ${borderColor}`,
+                    borderRadius: TOKEN.radiusMd,
+                    minHeight: 60,
+                  }}>
+                    <Link href={a.link} style={{
+                      display: 'flex', alignItems: 'center', gap: 12,
+                      flex: 1, minWidth: 0, textDecoration: 'none', color: 'inherit',
+                    }}>
+                      <span style={{
+                        width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
+                        background: a.severity === 'red' ? TOKEN.red : TOKEN.amber,
+                      }} />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 14, fontWeight: 600, color: TOKEN.text }}>
+                          {a.description}
+                          {daysOld > 14 && (
+                            <span style={{ fontSize: 11, color: '#9C9890', marginLeft: 8, fontWeight: 400 }}>
+                              sin movimiento {daysOld} días
+                            </span>
+                          )}
+                        </div>
+                        <div style={{ fontSize: 12, color: TOKEN.textSecondary, fontFamily: 'var(--font-jetbrains-mono)', marginTop: 2 }}>
+                          {fmtDate(a.date)}
+                        </div>
+                      </div>
+                      <span style={{
+                        fontSize: 13, fontWeight: 700, color: TOKEN.gold,
+                        flexShrink: 0, padding: '6px 12px',
+                        border: `1px solid ${TOKEN.gold}`, borderRadius: TOKEN.radiusMd,
+                      }}>
+                        {a.action}
+                      </span>
+                    </Link>
+                    <button
+                      onClick={() => dismissAction(a.id)}
+                      style={{
+                        fontSize: 11, color: TOKEN.gray, background: 'none',
+                        border: 'none', cursor: 'pointer', padding: '4px 8px',
+                        flexShrink: 0, whiteSpace: 'nowrap',
+                      }}
+                      title="Descartar"
+                    >
+                      Descartar
+                    </button>
                   </div>
+                )
+              })}
+            </div>
+          ) : (
+            <div style={{
+              padding: 24, textAlign: 'center',
+              background: TOKEN.surfaceCard, border: `1px solid ${TOKEN.border}`,
+              borderRadius: TOKEN.radiusMd,
+            }}>
+              <CheckCircle size={20} style={{ color: TOKEN.green, margin: '0 auto 8px', display: 'block' }} />
+              <div style={{ fontSize: 15, fontWeight: 600, color: TOKEN.text }}>
+                Sin pendientes — Todas las operaciones están en orden
+              </div>
+            </div>
+          )}
+          {/* ── Resueltos (dismissed) collapsed section ── */}
+          {dismissedActions.length > 0 && (
+            <div style={{ marginTop: 12 }}>
+              <button
+                onClick={() => setShowResueltos(!showResueltos)}
+                style={{
+                  fontSize: 13, color: TOKEN.textSecondary, background: 'none',
+                  border: 'none', cursor: 'pointer', padding: '4px 0',
+                  fontWeight: 600,
+                }}
+              >
+                Resueltos ({dismissedActions.length}) {showResueltos ? '\u25B2' : '\u25BC'}
+              </button>
+              {showResueltos && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
+                  {dismissedActions.map(a => (
+                    <div key={a.id} style={{
+                      display: 'flex', alignItems: 'center', gap: 12,
+                      padding: '14px 16px',
+                      background: TOKEN.surfaceCard,
+                      border: `1px solid ${TOKEN.border}`,
+                      borderRadius: TOKEN.radiusMd,
+                      opacity: 0.6,
+                      minHeight: 60,
+                    }}>
+                      <Link href={a.link} style={{
+                        display: 'flex', alignItems: 'center', gap: 12,
+                        flex: 1, minWidth: 0, textDecoration: 'none', color: 'inherit',
+                      }}>
+                        <span style={{
+                          width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
+                          background: TOKEN.gray,
+                        }} />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 14, fontWeight: 600, color: TOKEN.textSecondary }}>{a.description}</div>
+                          <div style={{ fontSize: 12, color: TOKEN.gray, fontFamily: 'var(--font-jetbrains-mono)', marginTop: 2 }}>
+                            {fmtDate(a.date)}
+                          </div>
+                        </div>
+                      </Link>
+                      <button
+                        onClick={() => restoreAction(a.id)}
+                        style={{
+                          fontSize: 11, color: TOKEN.gold, background: 'none',
+                          border: 'none', cursor: 'pointer', padding: '4px 8px',
+                          flexShrink: 0, whiteSpace: 'nowrap', fontWeight: 600,
+                        }}
+                      >
+                        Restaurar
+                      </button>
+                    </div>
+                  ))}
                 </div>
-                <span style={{
-                  fontSize: 13, fontWeight: 700, color: TOKEN.gold,
-                  flexShrink: 0, padding: '6px 12px',
-                  border: `1px solid ${TOKEN.gold}`, borderRadius: TOKEN.radiusMd,
-                }}>
-                  {a.action}
-                </span>
-              </Link>
-            ))}
-          </div>
+              )}
+            </div>
+          )}
         </div>
       ) : !loading ? (
         <div style={{

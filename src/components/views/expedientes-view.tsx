@@ -48,6 +48,24 @@ function getDocLabel(t: string): string {
   return DOC_LABELS[t] || t.replace(/_/g, ' ')
 }
 
+function getDocUrgency(deadline: string | null | undefined): { color: string; label: string } {
+  if (!deadline) return { color: '#9C9890', label: '' }
+  const now = new Date()
+  const due = new Date(deadline)
+  const daysUntil = Math.ceil((due.getTime() - now.getTime()) / 86400000)
+
+  if (daysUntil < 0) return { color: '#C23B22', label: `Venció hace ${Math.abs(daysUntil)} días` }
+  if (daysUntil <= 7) return { color: '#C23B22', label: `Vence en ${daysUntil} día${daysUntil !== 1 ? 's' : ''}` }
+  if (daysUntil <= 30) return { color: '#C47F17', label: `Vence en ${daysUntil} días` }
+  if (daysUntil <= 90) return { color: '#D4952A', label: `Vence en ${daysUntil} días` }
+  return { color: '#9C9890', label: '' }
+}
+
+function getImplicitDeadline(fechaLlegada: string | null): string | null {
+  if (!fechaLlegada) return null
+  return new Date(new Date(fechaLlegada).getTime() + 14 * 86400000).toISOString()
+}
+
 // ── Summary Card ────────────────────────────────────────
 
 function SummaryCard({
@@ -135,7 +153,17 @@ function FilterTabs({
     { key: 'todos', label: 'Todos', count: counts.todos },
   ]
   return (
-    <div style={{ display: 'flex', gap: 4, marginBottom: 16, flexWrap: 'wrap' }}>
+    <div className="pill-scroll" style={{
+      display: 'flex',
+      gap: 4,
+      marginBottom: 16,
+      overflowX: 'auto',
+      whiteSpace: 'nowrap',
+      WebkitOverflowScrolling: 'touch',
+      paddingBottom: 4,
+      scrollbarWidth: 'none',
+      msOverflowStyle: 'none',
+    }}>
       {tabs.map((tab) => {
         const isActive = active === tab.key
         return (
@@ -143,16 +171,18 @@ function FilterTabs({
             key={tab.key}
             onClick={() => onChange(tab.key)}
             style={{
+              flexShrink: 0,
               padding: '8px 16px',
               border: `1px solid ${isActive ? '#B8953F' : '#E8E5E0'}`,
               background: isActive ? '#F5F0E4' : '#FFFFFF',
               color: isActive ? '#B8953F' : '#6B6B6B',
-              borderRadius: 8,
+              borderRadius: 9999,
               fontSize: 13,
               fontWeight: isActive ? 700 : 500,
               cursor: 'pointer',
               fontFamily: 'inherit',
               minHeight: 40,
+              whiteSpace: 'nowrap',
             }}
           >
             {tab.label}{' '}
@@ -187,12 +217,16 @@ function ProgressBar({ pct: p }: { pct: number }) {
 
 function MobileCard({ row, onNavigate }: { row: TraficoRow; onNavigate: (id: string) => void }) {
   const noPedimento = !row.pedimento_num
+  const deadline = getImplicitDeadline(row.fecha_llegada)
+  const urgency = row.missing.length > 0 ? getDocUrgency(deadline) : { color: '#9C9890', label: '' }
+  const isOverdue = deadline ? Math.ceil((new Date(deadline).getTime() - Date.now()) / 86400000) < 0 : false
+
   return (
     <div
       style={{
-        background: '#FFFFFF',
+        background: isOverdue && row.missing.length > 0 ? 'rgba(194,59,34,0.04)' : '#FFFFFF',
         border: '1px solid #E8E5E0',
-        borderLeft: noPedimento ? '4px solid #C23B22' : '1px solid #E8E5E0',
+        borderLeft: row.missing.length > 0 ? `4px solid ${urgency.color}` : noPedimento ? '4px solid #C23B22' : '1px solid #E8E5E0',
         borderRadius: 8,
         padding: 16,
         marginBottom: 8,
@@ -218,6 +252,13 @@ function MobileCard({ row, onNavigate }: { row: TraficoRow; onNavigate: (id: str
         }}>
           <AlertTriangle size={12} style={{ color: '#C23B22' }} />
           <span style={{ fontSize: 11, fontWeight: 700, color: '#991B1B' }}>Sin pedimento</span>
+        </div>
+      )}
+
+      {/* Urgency label */}
+      {urgency.label && row.missing.length > 0 && (
+        <div style={{ fontSize: 11, fontWeight: 600, color: urgency.color, marginBottom: 6, fontFamily: 'var(--font-jetbrains-mono)' }}>
+          {urgency.label}
         </div>
       )}
 
@@ -482,12 +523,17 @@ export function ExpedientesView() {
                 <tbody>
                   {pageRows.map((row) => {
                     const noPedimento = !row.pedimento_num
+                    const rowDeadline = getImplicitDeadline(row.fecha_llegada)
+                    const rowUrgency = row.missing.length > 0 ? getDocUrgency(rowDeadline) : { color: '#9C9890', label: '' }
+                    const rowOverdue = rowDeadline ? Math.ceil((new Date(rowDeadline).getTime() - Date.now()) / 86400000) < 0 : false
+
                     return (
                       <tr
                         key={row.trafico}
                         style={{
                           cursor: 'pointer',
-                          borderLeft: noPedimento ? '4px solid #C23B22' : undefined,
+                          borderLeft: row.missing.length > 0 ? `4px solid ${rowUrgency.color}` : noPedimento ? '4px solid #C23B22' : undefined,
+                          background: rowOverdue && row.missing.length > 0 ? 'rgba(194,59,34,0.04)' : undefined,
                         }}
                         className="expediente-row"
                         onClick={() => handleNavigate(row.trafico)}
@@ -542,24 +588,29 @@ export function ExpedientesView() {
                         {/* FALTANTES */}
                         <td style={{ maxWidth: 220 }}>
                           {row.missing.length > 0 ? (
-                            <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                              {row.missing.slice(0, 3).map((m) => (
-                                <span
-                                  key={m}
-                                  style={{
-                                    fontSize: 10, fontWeight: 600,
-                                    padding: '2px 8px', borderRadius: 4,
-                                    background: '#FEF2F2', border: '1px solid #FECACA',
-                                    color: '#991B1B', whiteSpace: 'nowrap',
-                                  }}
-                                >
-                                  {getDocLabel(m)}
-                                </span>
-                              ))}
-                              {row.missing.length > 3 && (
-                                <span style={{ fontSize: 10, color: '#9C9890', padding: '2px 4px', fontWeight: 600 }}>
-                                  +{row.missing.length - 3}
-                                </span>
+                            <div>
+                              <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                                {row.missing.slice(0, 3).map((m) => (
+                                  <span
+                                    key={m}
+                                    style={{
+                                      fontSize: 10, fontWeight: 600,
+                                      padding: '2px 8px', borderRadius: 4,
+                                      background: '#FEF2F2', border: '1px solid #FECACA',
+                                      color: '#991B1B', whiteSpace: 'nowrap',
+                                    }}
+                                  >
+                                    {getDocLabel(m)}
+                                  </span>
+                                ))}
+                                {row.missing.length > 3 && (
+                                  <span style={{ fontSize: 10, color: '#9C9890', padding: '2px 4px', fontWeight: 600 }}>
+                                    +{row.missing.length - 3}
+                                  </span>
+                                )}
+                              </div>
+                              {rowUrgency.label && (
+                                <div style={{ fontSize: 11, color: rowUrgency.color, fontWeight: 600, marginTop: 4 }}>{rowUrgency.label}</div>
                               )}
                             </div>
                           ) : (

@@ -18,6 +18,19 @@ type Tab = 'financiero' | 'transportista' | 'rectificacion'
 
 const REQUIRED_DOCS = ['FACTURA', 'LISTA DE EMPAQUE', 'PEDIMENTO', 'ACUSE DE COVE', 'CARTA', 'ACUSE DE E-DOCUMENT']
 
+function getDocUrgency(deadline: string | null | undefined): { color: string; label: string } {
+  if (!deadline) return { color: '#9C9890', label: '' }
+  const now = new Date()
+  const due = new Date(deadline)
+  const daysUntil = Math.ceil((due.getTime() - now.getTime()) / 86400000)
+
+  if (daysUntil < 0) return { color: '#C23B22', label: `Venció hace ${Math.abs(daysUntil)} días` }
+  if (daysUntil <= 7) return { color: '#C23B22', label: `Vence en ${daysUntil} día${daysUntil !== 1 ? 's' : ''}` }
+  if (daysUntil <= 30) return { color: '#C47F17', label: `Vence en ${daysUntil} días` }
+  if (daysUntil <= 90) return { color: '#D4952A', label: `Vence en ${daysUntil} días` }
+  return { color: '#9C9890', label: '' }
+}
+
 const fmtPedimento = (p: string | null) => {
   if (!p) return '—'
   const clean = p.replace(/\s/g, '')
@@ -303,25 +316,40 @@ export default function TraficoDetailPage() {
               </div>
             </div>
 
-            {/* Missing docs */}
-            {missingDocs.length > 0 && (
-              <div style={{ padding: '12px 16px', background: 'var(--danger-bg)', border: '1px solid rgba(220,38,38,0.15)', borderRadius: 'var(--r-md)', marginBottom: 16 }}>
-                <div style={{ fontSize: 11, fontWeight: 800, color: '#991B1B', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>Documentos Faltantes</div>
-                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(140px, 1fr))', gap: 6 }}>
-                  {missingDocs.map(doc => (
-                    <label key={doc} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '10px 12px', borderRadius: 'var(--r-md)', border: '2px dashed rgba(220,38,38,0.3)', background: 'white', cursor: 'pointer', fontSize: isMobile ? 14 : 12, fontWeight: 600, color: '#991B1B', minHeight: 60, width: '100%' }}>
-                      {uploadingDoc === doc ? <span style={{ color: GOLD }}>Subiendo...</span> : (
-                        <>
-                          <Upload size={isMobile ? 16 : 12} />
-                          {doc}
-                          <input type="file" accept=".pdf,.jpg,.jpeg,.png,.xml" style={{ display: 'none' }} onChange={e => handleUpload(e.target.files?.[0], doc)} />
-                        </>
-                      )}
-                    </label>
-                  ))}
+            {/* Missing docs with urgency tiers */}
+            {missingDocs.length > 0 && (() => {
+              const implicitDeadline = t.fecha_llegada
+                ? new Date(new Date(t.fecha_llegada).getTime() + 14 * 86400000).toISOString()
+                : null
+              const urgency = getDocUrgency(implicitDeadline)
+              const isOverdue = implicitDeadline ? Math.ceil((new Date(implicitDeadline).getTime() - Date.now()) / 86400000) < 0 : false
+
+              return (
+                <div style={{ padding: '12px 16px', background: isOverdue ? 'rgba(194,59,34,0.04)' : 'var(--danger-bg)', border: '1px solid rgba(220,38,38,0.15)', borderRadius: 'var(--r-md)', marginBottom: 16 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                    <div style={{ fontSize: 11, fontWeight: 800, color: '#991B1B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Documentos Faltantes</div>
+                    {urgency.label && (
+                      <div style={{ fontSize: 11, fontWeight: 700, color: urgency.color, fontFamily: 'var(--font-data)' }}>{urgency.label}</div>
+                    )}
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(140px, 1fr))', gap: 6 }}>
+                    {missingDocs.map(doc => (
+                      <label key={doc} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4, padding: '10px 12px', borderRadius: 'var(--r-md)', borderLeft: `4px solid ${urgency.color}`, border: `2px dashed rgba(220,38,38,0.3)`, borderLeftWidth: 4, borderLeftStyle: 'solid', borderLeftColor: urgency.color, background: isOverdue ? 'rgba(194,59,34,0.04)' : 'white', cursor: 'pointer', fontSize: isMobile ? 14 : 12, fontWeight: 600, color: '#991B1B', minHeight: 60, width: '100%' }}>
+                        {uploadingDoc === doc ? <span style={{ color: GOLD }}>Subiendo...</span> : (
+                          <>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                              <Upload size={isMobile ? 16 : 12} />
+                              {doc}
+                            </div>
+                            <input type="file" accept=".pdf,.jpg,.jpeg,.png,.xml" style={{ display: 'none' }} onChange={e => handleUpload(e.target.files?.[0], doc)} />
+                          </>
+                        )}
+                      </label>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )
+            })()}
 
             {/* Present docs */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 8 }}>

@@ -12,8 +12,9 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
-import { CLIENT_CLAVE, COMPANY_ID, CLIENT_NAME, PATENTE } from '@/lib/client-config'
+import { CLIENT_CLAVE, COMPANY_ID, CLIENT_NAME } from '@/lib/client-config'
 import { GOLD } from '@/lib/design-system'
+import { useIsMobile } from '@/hooks/use-mobile'
 const CLAVE = CLIENT_CLAVE
 
 const T = {
@@ -171,6 +172,21 @@ function EstadoDeCuenta() {
   )
 }
 
+function getDateFilter(range: '7d' | '30d' | 'year' | 'all'): string | null {
+  const now = new Date()
+  if (range === '7d') return new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString()
+  if (range === '30d') return new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString()
+  if (range === 'year') return new Date(now.getFullYear(), 0, 1).toISOString()
+  return null // 'all' = no date filter
+}
+
+const DATE_RANGE_OPTIONS: { key: '7d' | '30d' | 'year' | 'all'; label: string }[] = [
+  { key: '7d', label: 'Últimos 7 días' },
+  { key: '30d', label: 'Últimos 30 días' },
+  { key: 'year', label: 'Este año' },
+  { key: 'all', label: 'Histórico' },
+]
+
 export function ReportesView() {
   const [weeklyData, setWeeklyData] = useState<any[]>([])
   const [proveedores, setProveedores] = useState<any[]>([])
@@ -180,6 +196,8 @@ export function ReportesView() {
   const [summary, setSummary] = useState<any>({})
   const [loading, setLoading] = useState(true)
   const [monthlyReports, setMonthlyReports] = useState<any[]>([])
+  const [dateRange, setDateRange] = useState<'7d' | '30d' | 'year' | 'all'>('30d')
+  const isMobile = useIsMobile()
 
   useEffect(() => {
     supabase.from('monthly_intelligence_reports')
@@ -190,17 +208,26 @@ export function ReportesView() {
 
   useEffect(() => {
     async function load() {
+      const dateFilter = getDateFilter(dateRange)
+
+      let factQuery = supabase.from('aduanet_facturas')
+        .select('valor_usd, dta, igi, iva, fecha_pago, proveedor')
+        .eq('clave_cliente', CLAVE)
+        .order('fecha_pago', { ascending: true })
+      if (dateFilter) factQuery = factQuery.gte('fecha_pago', dateFilter)
+
+      let trafQuery = supabase.from('traficos')
+        .select('estatus, fecha_llegada, peso_bruto')
+        .eq('company_id', COMPANY_ID)
+      if (dateFilter) trafQuery = trafQuery.gte('fecha_llegada', dateFilter)
+
+      let entQuery = supabase.from('entradas')
+        .select('tiene_faltantes, mercancia_danada, peso_bruto, fecha_llegada_mercancia')
+        .eq('company_id', COMPANY_ID)
+      if (dateFilter) entQuery = entQuery.gte('fecha_llegada_mercancia', dateFilter)
+
       const [factRes, trafRes, entRes] = await Promise.all([
-        supabase.from('aduanet_facturas')
-          .select('valor_usd, dta, igi, iva, fecha_pago, proveedor')
-          .eq('clave_cliente', CLAVE)
-          .order('fecha_pago', { ascending: true }),
-        supabase.from('traficos')
-          .select('estatus, fecha_llegada, peso_bruto')
-          .eq('company_id', COMPANY_ID),
-        supabase.from('entradas')
-          .select('tiene_faltantes, mercancia_danada, peso_bruto, fecha_llegada_mercancia')
-          .eq('company_id', COMPANY_ID),
+        factQuery, trafQuery, entQuery,
       ])
 
       const facturas = factRes.data || []
@@ -271,12 +298,14 @@ export function ReportesView() {
       setLoading(false)
     }
     load()
-  }, [])
+  }, [dateRange])
+
+  const isHistorico = dateRange === 'all'
 
   if (loading) return (
     <div style={{ padding: '24px 28px' }}>
       <div className="skeleton" style={{ width: 200, height: 24, marginBottom: 20 }} />
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 24 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: 12, marginBottom: 24 }}>
         {[0,1,2,3].map(i => <div key={i} className="skeleton" style={{ height: 80, borderRadius: 12 }} />)}
       </div>
       <div className="skeleton" style={{ height: 280, borderRadius: 12, marginBottom: 16 }} />
@@ -289,7 +318,7 @@ export function ReportesView() {
       <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
           <h2 style={{ color: T.text, fontSize: 18, fontWeight: 700, margin: 0 }}>Reportes & Analítica</h2>
-          <p style={{ color: T.textMuted, fontSize: 12, margin: '4px 0 0' }}>{CLIENT_NAME} · Datos históricos completos · Patente {PATENTE}</p>
+          <p style={{ color: T.textMuted, fontSize: 12, margin: '4px 0 0' }}>{CLIENT_NAME} · Datos históricos</p>
         </div>
         <button onClick={() => window.print()} style={{
           display: 'flex', alignItems: 'center', gap: 6,
@@ -299,6 +328,30 @@ export function ReportesView() {
         }}>
           Exportar PDF
         </button>
+      </div>
+
+      {/* Date range filter */}
+      <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
+        {DATE_RANGE_OPTIONS.map(opt => (
+          <button
+            key={opt.key}
+            onClick={() => setDateRange(opt.key)}
+            style={{
+              padding: '6px 14px',
+              borderRadius: 9999,
+              border: `1px solid ${dateRange === opt.key ? T.navy : T.border}`,
+              background: dateRange === opt.key ? T.goldBg : T.surface,
+              color: dateRange === opt.key ? T.navy : T.textSub,
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: 'pointer',
+              transition: 'all 150ms',
+              minHeight: 36,
+            }}
+          >
+            {opt.label}
+          </button>
+        ))}
       </div>
 
       {/* Summary header */}
@@ -313,16 +366,16 @@ export function ReportesView() {
       </Card>
 
       {/* KPI strip — client-facing: positive metrics only */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 24 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: 12, marginBottom: 24 }}>
         {[
-          { label: 'Valor Total Importado', value: fmtUSD(summary.totalValor), sub: 'USD acumulado · histórico', color: T.navy },
+          { label: 'Valor Total Importado', value: fmtUSD(summary.totalValor), sub: isHistorico ? 'USD acumulado · histórico' : 'USD acumulado', color: T.navy },
           { label: 'T-MEC Aplicado', value: `${summary.tmecPct}%`, sub: `${fmtNum(summary.tmecCount)} de ${fmtNum(summary.totalFacturas)} pedimentos`, color: T.green },
-          { label: 'Tráficos Completados', value: fmtNum(summary.totalTraficos), sub: `${fmtNum(summary.totalEntradas)} entradas · histórico`, color: T.navy },
-          { label: 'Cruces Exitosos', value: fmtNum(summary.docsCompletos), sub: `de ${fmtNum(summary.totalTraficos)} tráficos totales`, color: T.green },
+          { label: 'Tráficos Completados', value: fmtNum(summary.docsCompletos), sub: `${fmtNum(summary.docsCompletos)} de ${fmtNum(summary.totalTraficos)} tráficos`, color: T.navy },
+          { label: 'Tasa de Éxito', value: summary.totalTraficos > 0 ? `${Math.round((summary.docsCompletos / summary.totalTraficos) * 100)}%` : '—', sub: 'Incluye rectificaciones y reclasificaciones', color: T.green },
         ].map(k => (
           <Card key={k.label} style={{ padding: '14px 16px' }}>
             <div className="kpi-label">{k.label}</div>
-            <div className="kpi-value" style={{ fontSize: 36, color: k.color }}>{k.value}</div>
+            <div className="kpi-value" style={{ fontSize: isMobile ? 28 : 36, color: k.color }}>{k.value}</div>
             <div style={{ color: T.textMuted, fontSize: 11, marginTop: 3 }}>{k.sub}</div>
           </Card>
         ))}

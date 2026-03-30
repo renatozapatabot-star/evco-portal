@@ -124,13 +124,25 @@ export function DocumentosView() {
       </div>
 
       {/* Category filters */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 24, flexWrap: 'wrap' }}>
+      <div className="pill-scroll" style={{
+        display: 'flex',
+        gap: 8,
+        marginBottom: 24,
+        overflowX: 'auto',
+        whiteSpace: 'nowrap',
+        WebkitOverflowScrolling: 'touch',
+        paddingBottom: 4,
+        scrollbarWidth: 'none',
+        msOverflowStyle: 'none',
+      }}>
         {['Todos', ...CATEGORIES].map(cat => (
           <button key={cat} onClick={() => setFilter(cat)} style={{
+            flexShrink: 0,
             background: filter === cat ? 'var(--amber-600)' : 'var(--bg-elevated)',
-            border: 'none', borderRadius: 20, padding: '6px 16px', cursor: 'pointer',
+            border: 'none', borderRadius: 9999, padding: '6px 16px', cursor: 'pointer',
             color: filter === cat ? '#000' : 'var(--amber-700)',
             fontSize: 14, fontWeight: filter === cat ? 600 : 400, fontFamily: 'var(--font-sans)',
+            whiteSpace: 'nowrap',
             transition: 'all 150ms',
           }}>{cat}</button>
         ))}

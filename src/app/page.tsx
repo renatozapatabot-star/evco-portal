@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import { CheckCircle } from 'lucide-react'
 import { CLIENT_CLAVE, COMPANY_ID } from '@/lib/client-config'
-import { fmtId, fmtDate, fmtDateTime, fmtDateTimeLocal } from '@/lib/format-utils'
+import { fmtId, fmtDate, fmtDateTime } from '@/lib/format-utils'
 import { calculateCruzScore, extractScoreInput } from '@/lib/cruz-score'
 import { statusDays } from '@/lib/cruz-score'
 import { useIsMobile } from '@/hooks/use-mobile'
@@ -119,13 +119,6 @@ export default function Dashboard() {
     entradas.filter((e: Record<string, unknown>) => e.mercancia_danada || e.tiene_faltantes)
   , [entradas])
 
-  // ── Last crossing date (for empty state) ──
-  const lastCrossingDate = useMemo(() => {
-    const crossed = traficos.filter(t => (t.estatus || '').toLowerCase().includes('cruz'))
-    if (crossed.length === 0) return null
-    const dates = crossed.map(t => t.fecha_cruce || t.updated_at).filter(Boolean).sort().reverse()
-    return dates[0] ?? null
-  }, [traficos])
 
   // ── KPI trend indicators ──
   const [trends, setTrends] = useState<{ enRuta: number | null; cruzados: number | null; valor: number | null }>({ enRuta: null, cruzados: null, valor: null })
@@ -158,7 +151,7 @@ export default function Dashboard() {
 
   // ── Action queue (max 5) ──
   const actions = useMemo(() => {
-    const items: { id: string; severity: 'red' | 'amber'; description: string; date: string | null; link: string; action: string }[] = []
+    const items: { id: string; severity: 'red' | 'amber'; description: string; date: string | null; link: string; action: string; valor: number }[] = []
     urgentes.slice(0, 3).forEach(t => {
       const score = calculateCruzScore(extractScoreInput(t))
       const days = statusDays(t.fecha_llegada ?? null)
@@ -177,6 +170,7 @@ export default function Dashboard() {
         date: t.fecha_llegada,
         link: `/traficos/${encodeURIComponent(t.trafico)}`,
         action: actionText,
+        valor: Number(t.importe_total) || 0,
       })
     })
     incidencias.slice(0, 2).forEach((e: Record<string, unknown>) => {
@@ -188,6 +182,7 @@ export default function Dashboard() {
         date: e.fecha_llegada_mercancia as string | null,
         link: `/entradas/${e.cve_entrada}`,
         action: daysOld > 14 ? 'Contactar Agente' : 'Ver Incidencia',
+        valor: 0,
       })
     })
     return items.slice(0, 5)
@@ -222,9 +217,6 @@ export default function Dashboard() {
   // ── Status sentence color ──
   const statusDotColor = statusSentence?.level === 'red' ? TOKEN.red : statusSentence?.level === 'amber' ? TOKEN.amber : TOKEN.green
 
-  // ── Today formatted ──
-  const todayFormatted = fmtDate(new Date().toISOString())
-
   // ── Data freshness indicator ──
   const dataFreshness = useMemo(() => {
     if (traficos.length === 0) return null
@@ -236,76 +228,104 @@ export default function Dashboard() {
     return { date: mostRecent, stale: ageHours > 2 }
   }, [traficos])
 
-  // ── Bridges section (reused for mobile-first and desktop ordering) ──
-  const BridgesSection = () => (
-    <div style={{ marginBottom: 32 }}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: TOKEN.text, marginBottom: 12 }}>
-        Puentes ahora
-      </div>
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
-        gap: 12,
+
+  // ── Split actions into critical (red) and warning (amber) ──
+  const criticalActions = useMemo(() => visibleActions.filter(a => a.severity === 'red'), [visibleActions])
+  const warningActions = useMemo(() => visibleActions.filter(a => a.severity === 'amber'), [visibleActions])
+
+  // ── T-MEC count from traficos ──
+  const tmecCount = useMemo(() => {
+    return traficos.filter(t =>
+      (t.descripcion_mercancia || '').toLowerCase().includes('t-mec') ||
+      (t.descripcion_mercancia || '').toLowerCase().includes('tmec') ||
+      (t.descripcion_mercancia || '').toLowerCase().includes('usmca')
+    ).length
+  }, [traficos])
+
+  // ── Render a case card (shared between critical and warning feeds) ──
+  const renderCaseCard = (a: typeof visibleActions[0], borderColor: string) => {
+    const hint = getIntelligenceHint(a, traficos)
+    const daysOld = a.date ? Math.floor((Date.now() - new Date(a.date).getTime()) / 86400000) : 0
+    return (
+      <div key={a.id} style={{
+        background: TOKEN.surfaceCard,
+        border: `1px solid ${borderColor}`,
+        borderLeft: `4px solid ${borderColor}`,
+        borderRadius: TOKEN.radiusMd,
+        padding: isMobile ? '16px' : '20px 24px',
+        marginBottom: 8,
       }}>
-        {liveBridges ? liveBridges.bridges.map(b => {
-          const waitMin = b.commercial
-          const hasData = waitMin !== null && waitMin !== undefined
-          const displayMin = hasData && waitMin > 480 ? null : waitMin
-          const isRecommended = hasData && displayMin !== null && displayMin < 120
-          const waitColor = !hasData || displayMin === null
-            ? TOKEN.gray
-            : displayMin <= 30 ? TOKEN.green
-            : displayMin <= 60 ? TOKEN.amber
-            : TOKEN.red
-          const sourceLabel = b.updated
-            ? `(CBP ${fmtDateTimeLocal(b.updated).split(' · ')[1] || fmtDateTimeLocal(b.updated)})`
-            : '(estimado)'
-          return (
-            <div key={b.id} style={{
-              padding: '16px', borderRadius: TOKEN.radiusMd,
-              background: TOKEN.surfaceCard,
-              border: isRecommended ? `2px solid ${TOKEN.green}` : `1px solid ${TOKEN.border}`,
-            }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: TOKEN.textSecondary, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>
-                {b.nameEs}
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
+          {/* Days stuck — big number */}
+          {daysOld > 0 && (
+            <div style={{ flexShrink: 0, textAlign: 'center', minWidth: 48 }}>
+              <div style={{ fontSize: 28, fontWeight: 900, fontFamily: 'var(--font-jetbrains-mono)', color: borderColor, lineHeight: 1 }}>
+                {daysOld}
               </div>
-              {hasData && displayMin !== null ? (
-                <>
-                  <div style={{ fontSize: 32, fontWeight: 900, fontFamily: 'var(--font-jetbrains-mono)', color: waitColor, lineHeight: 1 }}>
-                    {displayMin}
-                    <span style={{ fontSize: 14, fontWeight: 600, marginLeft: 2 }}>min</span>
-                  </div>
-                  <div style={{ fontSize: 11, color: TOKEN.textSecondary, marginTop: 4, fontFamily: 'var(--font-jetbrains-mono)' }}>{sourceLabel}</div>
-                  {isRecommended && (
-                    <div style={{ fontSize: 11, fontWeight: 800, color: TOKEN.green, marginTop: 4 }}>Recomendado</div>
-                  )}
-                </>
-              ) : (
-                <div style={{ fontSize: 14, color: TOKEN.gray, fontWeight: 600 }}>Sin datos de puentes — verificando conexión CBP</div>
-              )}
+              <div style={{ fontSize: 10, fontWeight: 600, color: TOKEN.gray, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                {daysOld === 1 ? 'dia' : 'dias'}
+              </div>
             </div>
-          )
-        }) : (
-          [0, 1, 2, 3].map(i => (
-            <div key={i} style={{ padding: 16, borderRadius: TOKEN.radiusMd, background: TOKEN.surfaceCard, border: `1px solid ${TOKEN.border}` }}>
-              <div className="skeleton" style={{ height: 14, width: 100, marginBottom: 8, borderRadius: 4 }} />
-              <div className="skeleton" style={{ height: 36, width: 60, borderRadius: 4 }} />
+          )}
+          {/* Content */}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 14, fontWeight: 600, color: TOKEN.text, marginBottom: 4 }}>
+              {a.description}
             </div>
-          ))
-        )}
-      </div>
-      {liveBridges?.fetched && (
-        <div style={{ fontSize: 12, color: TOKEN.textSecondary, marginTop: 8, fontFamily: 'var(--font-jetbrains-mono)' }}>
-          Actualizado: {fmtDateTime(liveBridges.fetched)}
+            {a.valor > 0 && (
+              <div style={{ fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-jetbrains-mono)', color: TOKEN.text, marginBottom: 4 }}>
+                {fmtUSD(a.valor)} <span style={{ fontSize: 11, fontWeight: 600, color: TOKEN.gray }}>USD en riesgo</span>
+              </div>
+            )}
+            <div style={{ fontSize: 12, color: TOKEN.textSecondary, fontFamily: 'var(--font-jetbrains-mono)' }}>
+              {fmtDate(a.date)}
+            </div>
+            {hint && (
+              <div style={{ fontSize: 12, color: '#0D9488', marginTop: 6, lineHeight: 1.4, fontWeight: 500 }}>
+                {hint}
+              </div>
+            )}
+          </div>
         </div>
-      )}
-    </div>
-  )
+        {/* Action buttons row */}
+        <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
+          <Link href={a.link} style={{
+            fontSize: 13, fontWeight: 700, color: TOKEN.surfaceCard,
+            background: a.severity === 'red' ? TOKEN.red : TOKEN.amber,
+            padding: '8px 16px', borderRadius: TOKEN.radiusMd,
+            textDecoration: 'none', minHeight: 36,
+            display: 'inline-flex', alignItems: 'center',
+          }}>
+            {a.action}
+          </Link>
+          <Link href={a.link} style={{
+            fontSize: 13, fontWeight: 600, color: TOKEN.gold,
+            padding: '8px 16px', borderRadius: TOKEN.radiusMd,
+            border: `1px solid ${TOKEN.border}`,
+            textDecoration: 'none', minHeight: 36,
+            display: 'inline-flex', alignItems: 'center',
+          }}>
+            Ver cronologia →
+          </Link>
+          <button
+            onClick={() => dismissAction(a.id)}
+            style={{
+              fontSize: 13, color: TOKEN.gray, background: 'none',
+              border: `1px solid ${TOKEN.border}`, borderRadius: TOKEN.radiusMd,
+              cursor: 'pointer', padding: '8px 16px', minHeight: 36,
+            }}
+          >
+            Descartar
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div style={{ padding: isMobile ? 16 : 32, maxWidth: 960, margin: '0 auto' }}>
 
-      {/* ═══ SECTION A — STATUS SENTENCE ═══ */}
+      {/* ═══ 1. STATUS SENTENCE ═══ */}
       <div style={{ marginBottom: 24 }}>
         {statusSentence ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -320,7 +340,6 @@ export default function Dashboard() {
         ) : (
           <div className="skeleton" style={{ height: 28, width: 350, borderRadius: TOKEN.radiusMd }} />
         )}
-        {/* FIX 8 — Data freshness indicator */}
         {!loading && dataFreshness && (
           <div style={{
             fontSize: 12, marginTop: 6,
@@ -332,214 +351,136 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* ═══ On mobile: bridges BEFORE KPI cards (3 AM driver needs this first) ═══ */}
-      {isMobile && <BridgesSection />}
-
-      {/* ═══ SECTION B — THREE CARDS ═══ */}
+      {/* ═══ 2. HERO SECTION — dark gradient card ═══ */}
       <div style={{
-        display: 'grid',
-        gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
-        gap: 12,
-        marginBottom: 32,
+        background: 'linear-gradient(135deg, #1A1A18 0%, #2A2A28 100%)',
+        borderRadius: 12, padding: isMobile ? '24px 20px' : '32px 40px',
+        color: '#E8E5DF', marginBottom: 24,
       }}>
-        {/* EN RUTA */}
-        <div style={{
-          background: TOKEN.surfaceCard, border: `1px solid ${TOKEN.border}`,
-          borderRadius: TOKEN.radiusMd, padding: '20px 24px',
-        }}>
-          <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: TOKEN.textSecondary, marginBottom: 8 }}>
-            En Ruta
-          </div>
-          {loading ? (
-            <div className="skeleton" style={{ height: 36, width: 60, borderRadius: 4 }} />
-          ) : enProceso.length > 0 ? (
-            <>
-              <div style={{ fontSize: 36, fontWeight: 900, fontFamily: 'var(--font-jetbrains-mono)', color: TOKEN.text, lineHeight: 1 }}>
-                {enProceso.length}
-              </div>
-              <div style={{ fontSize: 13, color: TOKEN.textSecondary, marginTop: 4 }}>tráficos</div>
-              {trends.enRuta !== null && (
-                <div style={{ fontSize: 11, fontWeight: 600, marginTop: 4, fontFamily: 'var(--font-jetbrains-mono)', color: trends.enRuta > 0 ? TOKEN.green : trends.enRuta < 0 ? TOKEN.red : TOKEN.gray }}>
-                  {trends.enRuta > 0 ? `↑ ${trends.enRuta} más que ayer` : trends.enRuta < 0 ? `↓ ${Math.abs(trends.enRuta)} menos` : '↔ sin cambio'}
-                </div>
-              )}
-            </>
-          ) : (
-            <div style={{ fontSize: 14, color: TOKEN.gray, fontWeight: 600 }}>Sin embarques activos — Todos los tráficos recientes han cruzado</div>
-          )}
+        <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: TOKEN.gray, marginBottom: 8 }}>
+          Valor en operacion
+        </div>
+        <div style={{ fontSize: isMobile ? 40 : 56, fontWeight: 900, fontFamily: 'var(--font-jetbrains-mono)', lineHeight: 1, letterSpacing: '-0.02em' }}>
+          {loading ? '...' : fmtUSD(valorEnProceso)}
+          <span style={{ fontSize: 16, fontWeight: 600, marginLeft: 4, color: TOKEN.gray }}>USD</span>
         </div>
 
-        {/* CRUZADOS HOY */}
-        <div style={{
-          background: TOKEN.surfaceCard, border: `1px solid ${TOKEN.border}`,
-          borderRadius: TOKEN.radiusMd, padding: '20px 24px',
-        }}>
-          <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: TOKEN.textSecondary, marginBottom: 8 }}>
-            Cruzados Hoy
+        {(urgentes.length + incidencias.length) > 0 && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12 }}>
+            <span style={{ width: 8, height: 8, borderRadius: '50%', background: TOKEN.red, animation: 'cruzPulse 2s infinite' }} />
+            <span style={{ fontSize: 14, fontWeight: 600, color: '#E8E5DF' }}>
+              {urgentes.length + incidencias.length} operacion{(urgentes.length + incidencias.length) !== 1 ? 'es' : ''} requiere{(urgentes.length + incidencias.length) === 1 ? '' : 'n'} atencion
+            </span>
           </div>
-          {loading ? (
-            <div className="skeleton" style={{ height: 36, width: 60, borderRadius: 4 }} />
-          ) : cruzadosHoy.length > 0 ? (
-            <>
-              <div style={{ fontSize: 36, fontWeight: 900, fontFamily: 'var(--font-jetbrains-mono)', color: TOKEN.green, lineHeight: 1 }}>
-                {cruzadosHoy.length}
-              </div>
-              <div style={{ fontSize: 13, color: TOKEN.textSecondary, marginTop: 4 }}>{todayFormatted}</div>
-              {trends.cruzados !== null && (
-                <div style={{ fontSize: 11, fontWeight: 600, marginTop: 4, fontFamily: 'var(--font-jetbrains-mono)', color: trends.cruzados > 0 ? TOKEN.green : trends.cruzados < 0 ? TOKEN.red : TOKEN.gray }}>
-                  {trends.cruzados > 0 ? `↑ ${trends.cruzados} más que ayer` : trends.cruzados < 0 ? `↓ ${Math.abs(trends.cruzados)} menos` : '↔ sin cambio'}
-                </div>
-              )}
-            </>
-          ) : (
-            <>
-              <div style={{ fontSize: 36, fontWeight: 900, fontFamily: 'var(--font-jetbrains-mono)', color: TOKEN.gray, lineHeight: 1 }}>
-                0
-              </div>
-              <div style={{ fontSize: 13, color: TOKEN.gray, marginTop: 4 }}>
-                {lastCrossingDate ? `Último cruce: ${fmtDate(lastCrossingDate)}` : `Sin cruces — ${todayFormatted}`}
-              </div>
-            </>
-          )}
-        </div>
+        )}
 
-        {/* VALOR ACTIVO */}
-        <div style={{
-          background: TOKEN.surfaceCard, border: `1px solid ${TOKEN.border}`,
-          borderRadius: TOKEN.radiusMd, padding: '20px 24px',
-        }}>
-          <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: TOKEN.textSecondary, marginBottom: 8 }}>
-            Valor Activo
+        <div style={{ display: 'flex', gap: isMobile ? 16 : 32, marginTop: 20, flexWrap: 'wrap' }}>
+          <div>
+            <div style={{ fontSize: 24, fontWeight: 900, fontFamily: 'var(--font-jetbrains-mono)' }}>{urgentes.length}</div>
+            <div style={{ fontSize: 11, color: TOKEN.gray, fontWeight: 600 }}>Detenidos</div>
           </div>
-          {loading ? (
-            <div className="skeleton" style={{ height: 36, width: 100, borderRadius: 4 }} />
-          ) : valorEnProceso > 0 ? (
-            <>
-              <div style={{ fontSize: 36, fontWeight: 900, fontFamily: 'var(--font-jetbrains-mono)', color: TOKEN.text, lineHeight: 1 }}>
-                {fmtUSD(valorEnProceso)}
-              </div>
-              <div style={{ fontSize: 13, color: TOKEN.textSecondary, marginTop: 4 }}>USD</div>
-              {trends.valor !== null && (
-                <div style={{ fontSize: 11, fontWeight: 600, marginTop: 4, fontFamily: 'var(--font-jetbrains-mono)', color: trends.valor > 0 ? TOKEN.green : trends.valor < 0 ? TOKEN.red : TOKEN.gray }}>
-                  {trends.valor > 0 ? `↑ ${trends.valor}% vs ayer` : trends.valor < 0 ? `↓ ${Math.abs(trends.valor)}% vs ayer` : '↔ sin cambio'}
-                </div>
-              )}
-            </>
-          ) : (
-            <div style={{ fontSize: 15, color: TOKEN.gray, fontWeight: 600 }}>Sin datos</div>
-          )}
+          <div>
+            <div style={{ fontSize: 24, fontWeight: 900, fontFamily: 'var(--font-jetbrains-mono)' }}>{incidencias.length}</div>
+            <div style={{ fontSize: 11, color: TOKEN.gray, fontWeight: 600 }}>Demorados</div>
+          </div>
+          <div>
+            <div style={{ fontSize: 24, fontWeight: 900, fontFamily: 'var(--font-jetbrains-mono)' }}>{enProceso.length}</div>
+            <div style={{ fontSize: 11, color: TOKEN.gray, fontWeight: 600 }}>En ruta</div>
+          </div>
+          <div>
+            <div style={{ fontSize: 24, fontWeight: 900, fontFamily: 'var(--font-jetbrains-mono)', color: cruzadosHoy.length > 0 ? TOKEN.green : TOKEN.gray }}>{cruzadosHoy.length}</div>
+            <div style={{ fontSize: 11, color: TOKEN.gray, fontWeight: 600 }}>Cruzados hoy</div>
+          </div>
         </div>
       </div>
 
-      {/* ═══ SECTION C — NECESITAN TU ATENCIÓN ═══ */}
-      {loading ? (
-        <div style={{ marginBottom: 32 }}>
-          <div style={{ fontSize: 15, fontWeight: 700, color: TOKEN.text, marginBottom: 12 }}>
-            Necesitan tu atención
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {[0, 1, 2].map(i => (
-              <div key={i} style={{
-                display: 'flex', alignItems: 'center', gap: 12,
-                padding: '14px 16px',
-                background: TOKEN.surfaceCard,
-                border: `1px solid ${TOKEN.border}`,
-                borderRadius: TOKEN.radiusMd,
-                minHeight: 72,
+      {/* ═══ 3. BRIDGE STRIP ═══ */}
+      {liveBridges && liveBridges.bridges.length > 0 && (
+        <div style={{
+          display: 'flex', gap: isMobile ? 8 : 12, marginBottom: 24,
+          overflowX: 'auto', whiteSpace: 'nowrap',
+          WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none',
+        }} className="pill-scroll">
+          {liveBridges.bridges.map(b => {
+            const w = b.commercial
+            const color = !w ? TOKEN.gray : w <= 30 ? TOKEN.green : w <= 60 ? TOKEN.amber : TOKEN.red
+            return (
+              <div key={b.id} style={{
+                flexShrink: 0, display: 'flex', alignItems: 'center', gap: 8,
+                padding: '8px 14px', borderRadius: 9999,
+                background: TOKEN.surfaceCard, border: `1px solid ${TOKEN.border}`,
               }}>
-                <div className="skeleton" style={{ width: 8, height: 8, borderRadius: '50%', flexShrink: 0 }} />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div className="skeleton" style={{ height: 14, width: '60%', borderRadius: 4, marginBottom: 6 }} />
-                  <div className="skeleton" style={{ height: 12, width: '30%', borderRadius: 4 }} />
-                </div>
-                <div className="skeleton" style={{ height: 32, width: 100, borderRadius: TOKEN.radiusMd, flexShrink: 0 }} />
+                <span style={{ fontSize: 13, fontWeight: 600, color: TOKEN.textSecondary }}>{b.nameEs}</span>
+                <span style={{ fontSize: 14, fontWeight: 800, fontFamily: 'var(--font-jetbrains-mono)', color }}>
+                  {w ? `${w}min` : '\u2014'}
+                </span>
               </div>
-            ))}
-          </div>
+            )
+          })}
         </div>
-      ) : actions.length > 0 ? (
-        <div style={{ marginBottom: 32 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-            <span style={{ fontSize: 15, fontWeight: 700, color: TOKEN.text }}>
-              Necesitan tu atención{visibleActions.length > 0 ? ` (${visibleActions.length})` : ''}
-            </span>
-            {(urgentes.length + incidencias.length) > 5 && (
-              <Link href="/traficos" style={{ fontSize: 13, fontWeight: 700, color: TOKEN.gold, textDecoration: 'none' }}>
-                Ver todas →
-              </Link>
-            )}
-          </div>
-          {visibleActions.length > 0 ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {visibleActions.map(a => {
-                const hint = getIntelligenceHint(a, traficos)
-                const daysOld = a.date ? Math.floor((Date.now() - new Date(a.date).getTime()) / 86400000) : 0
-                const borderColor = daysOld > 30
-                  ? '#E8E5E0'
-                  : daysOld > 14
-                  ? '#D1CEC7'
-                  : a.severity === 'red' ? TOKEN.red : TOKEN.amber
-                return (
-                  <div key={a.id} style={{
-                    display: 'flex', alignItems: 'center', gap: 12,
-                    padding: '14px 16px',
-                    background: TOKEN.surfaceCard,
-                    border: `1px solid ${borderColor}`,
-                    borderRadius: TOKEN.radiusMd,
-                    minHeight: 60,
-                  }}>
-                    <Link href={a.link} style={{
-                      display: 'flex', alignItems: 'center', gap: 12,
-                      flex: 1, minWidth: 0, textDecoration: 'none', color: 'inherit',
-                    }}>
-                      <span style={{
-                        width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
-                        background: a.severity === 'red' ? TOKEN.red : TOKEN.amber,
-                      }} />
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 14, fontWeight: 600, color: TOKEN.text }}>
-                          {a.description}
-                          {daysOld > 14 && (
-                            <span style={{ fontSize: 11, color: '#9C9890', marginLeft: 8, fontWeight: 400 }}>
-                              sin movimiento {daysOld} días
-                            </span>
-                          )}
-                        </div>
-                        <div style={{ fontSize: 12, color: TOKEN.textSecondary, fontFamily: 'var(--font-jetbrains-mono)', marginTop: 2 }}>
-                          {fmtDate(a.date)}
-                        </div>
-                        {hint && (
-                          <div style={{ fontSize: 11, color: '#0D9488', marginTop: 4, lineHeight: 1.3 }}>
-                            {hint}
-                          </div>
-                        )}
-                      </div>
-                      <span style={{
-                        fontSize: 13, fontWeight: 700, color: TOKEN.gold,
-                        flexShrink: 0, padding: '6px 12px',
-                        border: `1px solid ${TOKEN.gold}`, borderRadius: TOKEN.radiusMd,
-                      }}>
-                        {a.action}
-                      </span>
-                    </Link>
-                    <button
-                      onClick={() => dismissAction(a.id)}
-                      style={{
-                        fontSize: 11, color: TOKEN.gray, background: 'none',
-                        border: 'none', cursor: 'pointer', padding: '4px 8px',
-                        flexShrink: 0, whiteSpace: 'nowrap',
-                      }}
-                      title="Descartar"
-                    >
-                      Descartar
-                    </button>
-                  </div>
-                )
-              })}
+      )}
+
+      {/* ═══ 4. NEXT BEST ACTION ═══ */}
+      {visibleActions.length > 0 && (
+        <Link href={visibleActions[0].link} style={{
+          display: 'flex', alignItems: 'center', gap: 12,
+          padding: '16px 20px', marginBottom: 24,
+          background: '#FEF3C7', border: '1px solid #FDE68A',
+          borderRadius: TOKEN.radiusMd, textDecoration: 'none', color: '#92400E',
+        }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>
+              Proxima accion recomendada
             </div>
-          ) : (
+            <div style={{ fontSize: 14, fontWeight: 700 }}>
+              {visibleActions[0].description}
+            </div>
+          </div>
+          <span style={{ fontSize: 13, fontWeight: 700, color: TOKEN.gold, flexShrink: 0 }}>
+            {visibleActions[0].action} →
+          </span>
+        </Link>
+      )}
+
+      {/* ═══ 5. CRITICAL FEED — red-bordered case cards ═══ */}
+      {loading ? (
+        <div style={{ marginBottom: 24 }}>
+          <div className="skeleton" style={{ height: 16, width: 180, borderRadius: 4, marginBottom: 12 }} />
+          {[0, 1].map(i => (
+            <div key={i} style={{
+              padding: 20, background: TOKEN.surfaceCard, border: `1px solid ${TOKEN.border}`,
+              borderRadius: TOKEN.radiusMd, marginBottom: 8,
+            }}>
+              <div className="skeleton" style={{ height: 14, width: '60%', borderRadius: 4, marginBottom: 8 }} />
+              <div className="skeleton" style={{ height: 12, width: '30%', borderRadius: 4 }} />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <>
+          {criticalActions.length > 0 && (
+            <div style={{ marginBottom: 24 }}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: TOKEN.text, marginBottom: 12 }}>
+                Operaciones criticas ({criticalActions.length})
+              </div>
+              {criticalActions.map(a => renderCaseCard(a, TOKEN.red))}
+            </div>
+          )}
+
+          {/* ═══ 6. WARNING FEED — amber-bordered case cards ═══ */}
+          {warningActions.length > 0 && (
+            <div style={{ marginBottom: 24 }}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: TOKEN.text, marginBottom: 12 }}>
+                Requieren seguimiento ({warningActions.length})
+              </div>
+              {warningActions.map(a => renderCaseCard(a, TOKEN.amber))}
+            </div>
+          )}
+
+          {/* All clear state */}
+          {visibleActions.length === 0 && actions.length === 0 && (
             <div style={{
-              padding: 24, textAlign: 'center',
+              marginBottom: 24, padding: 24, textAlign: 'center',
               background: TOKEN.surfaceCard, border: `1px solid ${TOKEN.border}`,
               borderRadius: TOKEN.radiusMd,
             }}>
@@ -552,9 +493,27 @@ export default function Dashboard() {
               </div>
             </div>
           )}
+
+          {/* All dismissed state */}
+          {visibleActions.length === 0 && actions.length > 0 && (
+            <div style={{
+              marginBottom: 24, padding: 24, textAlign: 'center',
+              background: TOKEN.surfaceCard, border: `1px solid ${TOKEN.border}`,
+              borderRadius: TOKEN.radiusMd,
+            }}>
+              <CheckCircle size={24} style={{ color: TOKEN.green, margin: '0 auto 8px', display: 'block' }} />
+              <div style={{ fontSize: 16, fontWeight: 700, color: TOKEN.text }}>
+                Todo despachado
+              </div>
+              <div style={{ fontSize: 13, color: TOKEN.textSecondary, marginTop: 4 }}>
+                No hay operaciones pendientes hoy. Buen trabajo.
+              </div>
+            </div>
+          )}
+
           {/* ── Resueltos (dismissed) collapsed section ── */}
           {dismissedActions.length > 0 && (
-            <div style={{ marginTop: 12 }}>
+            <div style={{ marginBottom: 24 }}>
               <button
                 onClick={() => setShowResueltos(!showResueltos)}
                 style={{
@@ -608,24 +567,74 @@ export default function Dashboard() {
               )}
             </div>
           )}
-        </div>
-      ) : (
-        <div style={{
-          marginBottom: 32, padding: 24, textAlign: 'center',
-          background: TOKEN.surfaceCard, border: `1px solid ${TOKEN.border}`,
-          borderRadius: TOKEN.radiusMd,
-        }}>
-          <CheckCircle size={24} style={{ color: TOKEN.green, margin: '0 auto 8px', display: 'block' }} />
-          <div style={{ fontSize: 16, fontWeight: 700, color: TOKEN.text }}>
-            Todo despachado
-          </div>
-          <div style={{ fontSize: 13, color: TOKEN.textSecondary, marginTop: 4 }}>
-            No hay operaciones pendientes hoy. Buen trabajo.
-          </div>
-        </div>
+        </>
       )}
 
-      {!isMobile && <BridgesSection />}
+      {/* ═══ 7. BOTTOM METRICS — 4-card grid ═══ */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
+        gap: 12,
+        marginBottom: 32,
+      }}>
+        <div style={{
+          background: TOKEN.surfaceCard, border: `1px solid ${TOKEN.border}`,
+          borderRadius: TOKEN.radiusMd, padding: '16px 20px',
+        }}>
+          <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: TOKEN.textSecondary, marginBottom: 6 }}>
+            En ruta
+          </div>
+          <div style={{ fontSize: 24, fontWeight: 900, fontFamily: 'var(--font-jetbrains-mono)', color: enProceso.length > 0 ? TOKEN.text : TOKEN.gray, lineHeight: 1 }}>
+            {loading ? '...' : enProceso.length}
+          </div>
+          {trends.enRuta !== null && (
+            <div style={{ fontSize: 11, fontWeight: 600, marginTop: 4, fontFamily: 'var(--font-jetbrains-mono)', color: trends.enRuta > 0 ? TOKEN.green : trends.enRuta < 0 ? TOKEN.red : TOKEN.gray }}>
+              {trends.enRuta > 0 ? `+${trends.enRuta}` : trends.enRuta < 0 ? `${trends.enRuta}` : '0'} vs ayer
+            </div>
+          )}
+        </div>
+
+        <div style={{
+          background: TOKEN.surfaceCard, border: `1px solid ${TOKEN.border}`,
+          borderRadius: TOKEN.radiusMd, padding: '16px 20px',
+        }}>
+          <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: TOKEN.textSecondary, marginBottom: 6 }}>
+            Demorados
+          </div>
+          <div style={{ fontSize: 24, fontWeight: 900, fontFamily: 'var(--font-jetbrains-mono)', color: (urgentes.length + incidencias.length) > 0 ? TOKEN.red : TOKEN.gray, lineHeight: 1 }}>
+            {loading ? '...' : urgentes.length + incidencias.length}
+          </div>
+        </div>
+
+        <div style={{
+          background: TOKEN.surfaceCard, border: `1px solid ${TOKEN.border}`,
+          borderRadius: TOKEN.radiusMd, padding: '16px 20px',
+        }}>
+          <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: TOKEN.textSecondary, marginBottom: 6 }}>
+            Valor activo
+          </div>
+          <div style={{ fontSize: 24, fontWeight: 900, fontFamily: 'var(--font-jetbrains-mono)', color: valorEnProceso > 0 ? TOKEN.text : TOKEN.gray, lineHeight: 1 }}>
+            {loading ? '...' : fmtUSD(valorEnProceso)}
+          </div>
+          {trends.valor !== null && (
+            <div style={{ fontSize: 11, fontWeight: 600, marginTop: 4, fontFamily: 'var(--font-jetbrains-mono)', color: trends.valor > 0 ? TOKEN.green : trends.valor < 0 ? TOKEN.red : TOKEN.gray }}>
+              {trends.valor > 0 ? `+${trends.valor}%` : trends.valor < 0 ? `${trends.valor}%` : '0%'} vs ayer
+            </div>
+          )}
+        </div>
+
+        <div style={{
+          background: TOKEN.surfaceCard, border: `1px solid ${TOKEN.border}`,
+          borderRadius: TOKEN.radiusMd, padding: '16px 20px',
+        }}>
+          <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: TOKEN.textSecondary, marginBottom: 6 }}>
+            T-MEC aplicado
+          </div>
+          <div style={{ fontSize: 24, fontWeight: 900, fontFamily: 'var(--font-jetbrains-mono)', color: tmecCount > 0 ? TOKEN.text : TOKEN.gray, lineHeight: 1 }}>
+            {loading ? '...' : tmecCount}
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

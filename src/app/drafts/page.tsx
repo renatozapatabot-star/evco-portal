@@ -19,28 +19,71 @@ const TIER_CONFIG: Record<number, { label: string; time: string; color: string; 
   3: { label: 'Revisión completa', time: 'Sin límite', color: '#DC2626', bg: '#FEF2F2', border: '#FECACA' },
 }
 
+// Resolve approved_pending → approved after 5-second cancellation window
+function resolveStatus(draft: { status: string; updated_at: string }): string {
+  if (draft.status === 'approved_pending') {
+    const elapsed = Date.now() - new Date(draft.updated_at).getTime()
+    if (elapsed > 5000) return 'approved'
+  }
+  return draft.status
+}
+
 export default function DraftsPage() {
   const router = useRouter()
   const [filter, setFilter] = useState<'all' | 'pending' | 'approved'>('pending')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase returns dynamic draft_data shapes
   const [drafts, setDrafts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [showBlessing, setShowBlessing] = useState<string | null>(null)
+  const previousStatuses = useState<Map<string, string>>(new Map())[0]
 
+  // Auto-dismiss blessing after 3 seconds
   useEffect(() => {
-    async function load() {
-      let q = supabase.from('pedimento_drafts')
-        .select('*')
-        .eq('company_id', CLIENT_CLAVE)
-        .order('created_at', { ascending: false })
-        .limit(50)
-
-      if (filter === 'pending') q = q.in('status', ['draft', 'pending'])
-      else if (filter === 'approved') q = q.eq('status', 'approved')
-
-      const { data } = await q
-      setDrafts(data || [])
-      setLoading(false)
+    if (showBlessing) {
+      const timer = setTimeout(() => setShowBlessing(null), 3000)
+      return () => clearTimeout(timer)
     }
-    load()
+  }, [showBlessing])
+
+  // Load drafts function (reusable for polling)
+  const loadDrafts = async () => {
+    let q = supabase.from('pedimento_drafts')
+      .select('*')
+      .eq('company_id', CLIENT_CLAVE)
+      .order('created_at', { ascending: false })
+      .limit(50)
+
+    if (filter === 'pending') q = q.in('status', ['draft', 'pending', 'approved_pending'])
+    else if (filter === 'approved') q = q.in('status', ['approved', 'approved_pending', 'approved_corrected'])
+
+    const { data } = await q
+    const freshDrafts = data || []
+
+    // Detect blessing transition: draft/pending → approved/approved_pending(expired)/approved_corrected
+    for (const d of freshDrafts) {
+      const prev = previousStatuses.get(d.id)
+      const resolved = resolveStatus(d)
+      if (prev && (prev === 'draft' || prev === 'pending') &&
+          (resolved === 'approved' || resolved === 'approved_corrected')) {
+        setShowBlessing(d.id)
+      }
+      previousStatuses.set(d.id, resolved)
+    }
+
+    setDrafts(freshDrafts)
+    setLoading(false)
+  }
+
+  // Initial load + filter change
+  useEffect(() => {
+    setLoading(true)
+    loadDrafts()
+  }, [filter])
+
+  // Poll every 3 seconds for real-time status changes
+  useEffect(() => {
+    const interval = setInterval(loadDrafts, 3000)
+    return () => clearInterval(interval)
   }, [filter])
 
   return (
@@ -110,6 +153,33 @@ export default function DraftsPage() {
               </div>
             )
           })}
+        </div>
+      )}
+
+      {/* Blessing animation — triggers when Tito approves via Telegram */}
+      {showBlessing && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 9999,
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          background: 'rgba(13,13,12,0.95)',
+          animation: 'fadeIn 0.5s ease',
+        }}>
+          <div style={{
+            width: 120, height: 120,
+            background: 'linear-gradient(135deg, #B8953F 0%, #D4B05C 50%, #8B6914 100%)',
+            borderRadius: 28,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 64, fontWeight: 900, color: '#1A1710',
+            fontFamily: 'Georgia, serif',
+            animation: 'scaleIn 0.6s cubic-bezier(0.2, 0.9, 0.4, 1.1)',
+          }}>Z</div>
+          <div style={{ color: '#E8E5DF', fontSize: 24, fontWeight: 800, marginTop: 24, letterSpacing: '-0.02em' }}>
+            Patente 3596 honrada
+          </div>
+          <div style={{ color: '#9C9890', fontSize: 16, marginTop: 8 }}>
+            Gracias, Tito.
+          </div>
+          <div style={{ fontSize: 32, marginTop: 16 }}>🦀</div>
         </div>
       )}
     </div>

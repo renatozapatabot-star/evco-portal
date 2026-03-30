@@ -1063,6 +1063,7 @@ body {
 ══════════════════════════════ */
 @keyframes fadeIn  { from{opacity:0} to{opacity:1} }
 @keyframes fadein  { from{opacity:0} to{opacity:1} }
+@keyframes scaleIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
 @keyframes slideIn { from{transform:translateX(20px);opacity:0} to{transform:translateX(0);opacity:1} }
 @keyframes slidein { from{transform:translateX(16px);opacity:0} to{transform:translateX(0);opacity:1} }
 @keyframes fadeUp  { from{transform:translateY(8px);opacity:0} to{transform:translateY(0);opacity:1} }

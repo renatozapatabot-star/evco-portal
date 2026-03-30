@@ -33,6 +33,19 @@ async function sendTelegramReply(chatId: string | number, text: string, replyToM
   })
 }
 
+async function sendTelegramMessage(chatId: number, text: string, replyMarkup?: object) {
+  await fetch(`${TELEGRAM_API}/sendMessage`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      chat_id: chatId,
+      text,
+      parse_mode: 'HTML',
+      ...(replyMarkup ? { reply_markup: replyMarkup } : {}),
+    }),
+  })
+}
+
 async function answerCallbackQuery(callbackQueryId: string, text?: string) {
   await fetch(`${TELEGRAM_API}/answerCallbackQuery`, {
     method: 'POST',
@@ -50,7 +63,54 @@ function isAuthorized(userId: number): boolean {
   return AUTHORIZED_USERS.includes(String(userId))
 }
 
-async function handleApproval(draftId: string, chatId: number, userId: number, username: string) {
+async function handleCancellation(draftId: string, chatId: number, userId: number, username: string) {
+  const supabase = createServerClient()
+
+  // Only revert if still in approved_pending (5-second window)
+  const { data: draft, error: fetchErr } = await supabase
+    .from('pedimento_drafts')
+    .select('id, status, draft_data')
+    .eq('id', draftId)
+    .single()
+
+  if (fetchErr || !draft) {
+    return `❌ Borrador <code>${draftId.substring(0, 8)}</code> no encontrado.`
+  }
+
+  if (draft.status !== 'approved_pending') {
+    return `⚠️ La ventana de cancelación ya expiró. Estado actual: <code>${draft.status}</code>`
+  }
+
+  // Revert to draft status
+  const { error: updateErr } = await supabase
+    .from('pedimento_drafts')
+    .update({
+      status: 'draft',
+      reviewed_by: null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', draftId)
+
+  if (updateErr) {
+    return `❌ Error cancelando aprobación: ${updateErr.message}`
+  }
+
+  // Audit log — cancellation within window
+  await supabase.from('audit_log').insert({
+    action: 'draft_approval_cancelled_telegram',
+    details: {
+      draft_id: draftId,
+      cancelled_by: username || String(userId),
+      channel: 'telegram',
+    },
+    actor: 'tito',
+    timestamp: new Date().toISOString(),
+  }).then(() => {}, () => {})
+
+  return `↩️ Aprobación cancelada. Borrador regresado a pendiente.`
+}
+
+async function handleApproval(draftId: string, chatId: number, userId: number, username: string): Promise<string | null> {
   const supabase = createServerClient()
 
   // Verify draft exists and is pending
@@ -64,15 +124,15 @@ async function handleApproval(draftId: string, chatId: number, userId: number, u
     return `❌ Borrador <code>${draftId.substring(0, 8)}</code> no encontrado.`
   }
 
-  if (draft.status === 'approved') {
+  if (draft.status === 'approved' || draft.status === 'approved_pending') {
     return `⚠️ Este borrador ya fue aprobado.`
   }
 
-  // Update status
+  // Update status to approved_pending — 5-second cancellation window (Approval Gate)
   const { error: updateErr } = await supabase
     .from('pedimento_drafts')
     .update({
-      status: 'approved',
+      status: 'approved_pending',
       reviewed_by: 'tito',
       updated_at: new Date().toISOString(),
     })
@@ -91,13 +151,22 @@ async function handleApproval(draftId: string, chatId: number, userId: number, u
       supplier: draft.draft_data?.supplier,
       valor_usd: draft.draft_data?.valor_total_usd,
       channel: 'telegram',
+      status: 'approved_pending',
     },
     actor: 'tito',
     timestamp: new Date().toISOString(),
   }).then(() => {}, () => {})
 
   const supplier = draft.draft_data?.supplier || 'Desconocido'
-  return `✅ Patente 3596 honrada. Gracias, Tito. 🦀\n\nBorrador <b>${supplier}</b> aprobado.`
+
+  // Send approval message with 5-second cancel button
+  await sendTelegramMessage(chatId, `✅ Aprobado: <b>${supplier}</b>\n\nTienes 5 segundos para cancelar.`, {
+    inline_keyboard: [[
+      { text: '❌ Cancelar aprobación', callback_data: `cancelar_${draftId}` },
+    ]],
+  })
+
+  return null
 }
 
 async function handleRejection(draftId: string, reason: string, chatId: number, userId: number, username: string) {
@@ -208,6 +277,11 @@ export async function POST(request: NextRequest) {
     if (action === 'aprobar') {
       await answerCallbackQuery(cb.id, '✅ Aprobando...')
       const reply = await handleApproval(draftId, chatId, userId, username)
+      // reply is null when approval succeeded (message sent with cancel button)
+      if (reply) await sendTelegramReply(chatId, reply)
+    } else if (action === 'cancelar') {
+      await answerCallbackQuery(cb.id, '↩️ Cancelando...')
+      const reply = await handleCancellation(draftId, chatId, userId, username)
       await sendTelegramReply(chatId, reply)
     } else if (action === 'rechazar') {
       await answerCallbackQuery(cb.id, '📝 Escribe el motivo del rechazo...')
@@ -263,7 +337,7 @@ export async function POST(request: NextRequest) {
 
       if (action === 'aprobar') {
         const reply = await handleApproval(draftId, chatId, userId, username)
-        await sendTelegramReply(chatId, reply, msg.message_id)
+        if (reply) await sendTelegramReply(chatId, reply, msg.message_id)
       } else if (action === 'rechazar') {
         pendingActions.set(key, { action: 'rechazar', draftId, expires: Date.now() + 5 * 60 * 1000 })
         await sendTelegramReply(chatId, `❌ <b>Rechazar borrador</b>\n\nEscribe el motivo del rechazo:`, msg.message_id)

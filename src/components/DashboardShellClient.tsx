@@ -2,18 +2,16 @@
 
 import { usePathname } from 'next/navigation'
 import { useEffect, useState, useRef } from 'react'
-import Sidebar from './sidebar'
-import TopBar from './top-bar'
+import { TopNav } from './TopNav'
+import { StatusStrip } from './StatusStrip'
 import { CommandPalette } from './command-palette'
 import { ShortcutHelp } from './shortcut-help'
 import { ToastProvider } from './Toast'
 import { useKeyboardShortcuts } from '@/hooks/use-shortcuts'
 import { useIsMobile } from '@/hooks/use-mobile'
-import { MobileHeader } from './mobile-header'
 import { MobileBottomNav } from './mobile-bottom-nav'
 import { CruzFAB } from './cruz-fab'
 import { WelcomeOverlay } from './WelcomeOverlay'
-import { daysUntilMVE } from '@/lib/compliance-dates'
 
 interface Props { children: React.ReactNode }
 
@@ -36,8 +34,6 @@ export default function DashboardShellClient({ children }: Props) {
   const pathname = usePathname()
   const isMobile = useIsMobile()
   const scrollRef = useRef<HTMLDivElement>(null)
-  const [scrolled, setScrolled] = useState(false)
-  const [alertCount, setAlertCount] = useState(0)
   const [idle, setIdle] = useState(false)
   const [showWarning, setShowWarning] = useState(false)
   const [isOffline, setIsOffline] = useState(false)
@@ -45,19 +41,6 @@ export default function DashboardShellClient({ children }: Props) {
   const warnTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
 
   useKeyboardShortcuts()
-
-  useEffect(() => {
-    const el = scrollRef.current
-    if (!el) return
-    const handler = () => setScrolled(el.scrollTop > 8)
-    el.addEventListener('scroll', handler, { passive: true })
-    return () => el.removeEventListener('scroll', handler)
-  }, [])
-
-  useEffect(() => {
-    const mveDays = daysUntilMVE()
-    setAlertCount(mveDays <= 30 ? 1 : 0)
-  }, [])
 
   useEffect(() => {
     document.body.setAttribute('data-page', pathname)
@@ -101,15 +84,9 @@ export default function DashboardShellClient({ children }: Props) {
       <a href="#main-content" className="skip-link">Ir al contenido</a>
       <div className="shell">
         <LoadingBar />
-        {!isMobile && <Sidebar />}
+        <TopNav />
+        {!isMobile && <StatusStrip />}
         <div className="shell-main">
-          {isMobile ? (
-            <MobileHeader alertCount={alertCount} />
-          ) : (
-            <div className={`topbar ${scrolled ? 'topbar-scrolled' : ''}`}>
-              <TopBar />
-            </div>
-          )}
           <main id="main-content" ref={scrollRef} className="page-wrap">
             <PageTransition>{children}</PageTransition>
           </main>
@@ -122,7 +99,7 @@ export default function DashboardShellClient({ children }: Props) {
 
       {/* Offline banner */}
       {isOffline && (
-        <div className="offline-banner">Sin conexión — mostrando datos en caché</div>
+        <div className="offline-banner">Sin conexion -- mostrando datos en cache</div>
       )}
 
       {/* Welcome overlay for first-time users */}
@@ -131,7 +108,7 @@ export default function DashboardShellClient({ children }: Props) {
       {/* Session idle warning */}
       {showWarning && !idle && (
         <div className="idle-warning">
-          <span>&#9201;</span> Sesión inactiva — se bloqueará en 5 minutos
+          <span>&#9201;</span> Sesion inactiva -- se bloqueara en 5 minutos
         </div>
       )}
 
@@ -139,7 +116,7 @@ export default function DashboardShellClient({ children }: Props) {
       {idle && (
         <div className="idle-overlay" onClick={() => { setIdle(false); setShowWarning(false) }}>
           <div style={{ fontSize: 48, marginBottom: 16 }}>&#128274;</div>
-          <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 8 }}>Sesión bloqueada</div>
+          <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 8 }}>Sesion bloqueada</div>
           <div style={{ fontSize: 13, color: '#94a3b8', marginBottom: 20 }}>Haz clic o toca para continuar</div>
         </div>
       )}

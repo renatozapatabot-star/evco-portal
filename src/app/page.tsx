@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import { CheckCircle } from 'lucide-react'
 import { CLIENT_CLAVE, COMPANY_ID } from '@/lib/client-config'
-import { fmtId, fmtDate, fmtDateTime } from '@/lib/format-utils'
+import { fmtId, fmtDate } from '@/lib/format-utils'
 import { calculateCruzScore, extractScoreInput } from '@/lib/cruz-score'
 import { statusDays } from '@/lib/cruz-score'
 import { useIsMobile } from '@/hooks/use-mobile'
@@ -71,11 +71,7 @@ export default function Dashboard() {
   const [entradas, setEntradas] = useState<Record<string, unknown>[]>([])
   const [loading, setLoading] = useState(true)
   const [liveBridges, setLiveBridges] = useState<{ bridges: BridgeTime[]; recommended: number | null; fetched: string | null } | null>(null)
-  const [statusSentence, setStatusSentence] = useState<{ level: string; sentence: string; count: number } | null>(() => {
-    if (typeof window === 'undefined') return null
-    const cached = localStorage.getItem(`cruz_status_${CLIENT_CLAVE}`)
-    return cached ? JSON.parse(cached) : null
-  })
+  // Status sentence now lives in StatusStrip (global nav)
 
   useEffect(() => {
     Promise.all([
@@ -91,14 +87,7 @@ export default function Dashboard() {
       setLiveBridges(data)
     }).catch(() => {})
 
-    // Status sentence with localStorage cache
-    fetch('/api/status-sentence').then(r => r.json()).then(fresh => {
-      setStatusSentence(fresh)
-      localStorage.setItem(`cruz_status_${CLIENT_CLAVE}`, JSON.stringify({
-        ...fresh,
-        cached_at: Date.now()
-      }))
-    }).catch(() => {})
+    // Status sentence moved to global StatusStrip component
   }, [])
 
   // ── Computed values ──
@@ -214,19 +203,7 @@ export default function Dashboard() {
   const visibleActions = useMemo(() => actions.filter(a => !dismissed.has(a.id)), [actions, dismissed])
   const dismissedActions = useMemo(() => actions.filter(a => dismissed.has(a.id)), [actions, dismissed])
 
-  // ── Status sentence color ──
-  const statusDotColor = statusSentence?.level === 'red' ? TOKEN.red : statusSentence?.level === 'amber' ? TOKEN.amber : TOKEN.green
-
-  // ── Data freshness indicator ──
-  const dataFreshness = useMemo(() => {
-    if (traficos.length === 0) return null
-    const updatedDates = traficos.map(t => t.updated_at).filter(Boolean) as string[]
-    if (updatedDates.length === 0) return null
-    const mostRecent = updatedDates.sort().reverse()[0]
-    const ageMs = Date.now() - new Date(mostRecent).getTime()
-    const ageHours = ageMs / (1000 * 60 * 60)
-    return { date: mostRecent, stale: ageHours > 2 }
-  }, [traficos])
+  // Status sentence + data freshness moved to global StatusStrip
 
 
   // ── Split actions into critical (red) and warning (amber) ──
@@ -325,33 +302,7 @@ export default function Dashboard() {
   return (
     <div style={{ padding: isMobile ? 16 : 32, maxWidth: 960, margin: '0 auto' }}>
 
-      {/* ═══ 1. STATUS SENTENCE ═══ */}
-      <div style={{ marginBottom: 24 }}>
-        {statusSentence ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{
-              width: 10, height: 10, borderRadius: '50%',
-              background: statusDotColor, flexShrink: 0,
-            }} />
-            <span style={{ fontSize: 16, fontWeight: 600, color: TOKEN.text, lineHeight: 1.4 }}>
-              {statusSentence.sentence}
-            </span>
-          </div>
-        ) : (
-          <div className="skeleton" style={{ height: 28, width: 350, borderRadius: TOKEN.radiusMd }} />
-        )}
-        {!loading && dataFreshness && (
-          <div style={{
-            fontSize: 12, marginTop: 6,
-            color: dataFreshness.stale ? TOKEN.amber : TOKEN.gray,
-            fontFamily: 'var(--font-jetbrains-mono)',
-          }}>
-            Datos actualizados: {fmtDateTime(dataFreshness.date)} {dataFreshness.stale ? '⚠ hace +2h' : ''}
-          </div>
-        )}
-      </div>
-
-      {/* ═══ 2. HERO SECTION — dark gradient card ═══ */}
+      {/* ═══ HERO SECTION — dark gradient card ═══ */}
       <div style={{
         background: 'linear-gradient(135deg, #1A1A18 0%, #2A2A28 100%)',
         borderRadius: 12, padding: isMobile ? '24px 20px' : '32px 40px',

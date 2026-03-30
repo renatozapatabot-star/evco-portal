@@ -226,7 +226,7 @@ export default function EntradasPage() {
                           {fmtTrafico(r.trafico)}
                         </Link>
                       ) : (
-                        <span className="c-empty">&middot;</span>
+                        <span style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic' }}>No vinculado</span>
                       )}
                     </td>
                     <td className="text-[12px]" style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-jetbrains-mono)' }}>

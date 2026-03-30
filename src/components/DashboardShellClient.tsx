@@ -10,7 +10,7 @@ import { ToastProvider } from './Toast'
 import { useKeyboardShortcuts } from '@/hooks/use-shortcuts'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { MobileBottomNav } from './mobile-bottom-nav'
-import { CruzFAB } from './cruz-fab'
+// CruzFAB removed — CRUZ is accessible from bottom nav
 import { WelcomeOverlay } from './WelcomeOverlay'
 
 interface Props { children: React.ReactNode }
@@ -85,7 +85,7 @@ export default function DashboardShellClient({ children }: Props) {
       <div className="shell">
         <LoadingBar />
         <TopNav />
-        {!isMobile && <StatusStrip />}
+        <StatusStrip />
         <div className="shell-main">
           <main id="main-content" ref={scrollRef} className="page-wrap">
             <PageTransition>{children}</PageTransition>
@@ -94,7 +94,7 @@ export default function DashboardShellClient({ children }: Props) {
         <CommandPalette />
         {!isMobile && <ShortcutHelp />}
         {isMobile && <MobileBottomNav />}
-        {isMobile && <CruzFAB />}
+        {/* CruzFAB removed — CRUZ is in bottom nav */}
       </div>
 
       {/* Offline banner */}

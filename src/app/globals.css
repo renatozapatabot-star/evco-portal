@@ -222,6 +222,18 @@ body {
 .shell-main { flex: 1; display: flex; flex-direction: column; min-width: 0; overflow: hidden; padding-left: 0; padding-top: 140px; }
 .page-wrap  { flex: 1; overflow-y: auto; padding: 36px; background: var(--bg-page); }
 
+/* ─── STATUS STRIP (responsive) ─── */
+.status-strip { top: 96px; height: 44px; }
+.status-strip-dot { width: 8px; height: 8px; }
+.status-strip-text { font-size: 13px; }
+.status-strip-skeleton { height: 16px; width: 300px; }
+@media (max-width: 768px) {
+  .status-strip { top: 56px; height: 36px; }
+  .status-strip-dot { width: 6px; height: 6px; }
+  .status-strip-text { font-size: 12px; }
+  .status-strip-skeleton { width: 200px; height: 14px; }
+}
+
 /* ══════════════════════════════
    ICON RAIL (replaced by TopNav)
 ══════════════════════════════ */
@@ -270,7 +282,7 @@ body {
 /* Hide old sidebar */
 .sidebar { display:none !important; }
 
-@media (max-width:768px) { .icon-rail { display:none !important; } .shell-main { padding-left:0 !important; padding-top:68px !important; } }
+@media (max-width:768px) { .icon-rail { display:none !important; } .shell-main { padding-left:0 !important; padding-top:104px !important; } }
 
 /* ─── CRUZ Logo ─── */
 .sb-logo {
@@ -1112,7 +1124,7 @@ body {
 @media (max-width: 768px) {
   .mobile-nav { display: flex !important; }
   .sidebar, .sidebar-desktop { display: none !important; }
-  .page-wrap { padding: 16px; padding-bottom: 74px; }
+  .page-wrap { padding: 16px; padding-bottom: 80px; }
   .kpi-grid { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
   .command-center { grid-template-columns: 1fr !important; }
   .topbar { padding: 0 16px; }
@@ -1489,7 +1501,8 @@ body {
   transition:transform 0.15s ease,box-shadow 0.15s ease;
 }
 .cruz-fab:active { transform:translateX(-50%) scale(0.92);box-shadow:0 2px 8px rgba(201,168,76,0.3); }
-@media (max-width:768px) { .cruz-fab { display:flex; } }
+/* CruzFAB killed — CRUZ is in bottom nav */
+@media (max-width:768px) { .cruz-fab { display:none !important; } }
 
 /* Empty cell placeholder */
 .c-empty { color:var(--n-200);font-size:12px;font-weight:400;font-style:normal;user-select:none; }

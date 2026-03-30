@@ -164,13 +164,15 @@ export default function Dashboard() {
     })
     incidencias.slice(0, 2).forEach((e: Record<string, unknown>) => {
       const daysOld = e.fecha_llegada_mercancia ? Math.floor((Date.now() - new Date(e.fecha_llegada_mercancia as string).getTime()) / 86400000) : 0
+      const hasTrafico = Boolean(e.trafico)
+      const linkStatus = hasTrafico ? '' : ' · Tráfico no vinculado'
       items.push({
         id: `i-${e.cve_entrada}`,
         severity: 'amber',
-        description: `Entrada ${e.cve_entrada} — ${(e.mercancia_danada ? 'Mercancía dañada' : 'Faltantes reportados')}`,
+        description: `Entrada ${e.cve_entrada} — ${(e.mercancia_danada ? 'Mercancía dañada' : 'Faltantes reportados')}${linkStatus}`,
         date: e.fecha_llegada_mercancia as string | null,
-        link: `/entradas/${e.cve_entrada}`,
-        action: daysOld > 14 ? 'Contactar Agente' : 'Ver Incidencia',
+        link: hasTrafico ? `/traficos/${encodeURIComponent(String(e.trafico))}` : `/entradas/${e.cve_entrada}`,
+        action: hasTrafico ? 'Ver Tráfico' : daysOld > 14 ? 'Contactar Agente' : 'Ver Incidencia',
         valor: 0,
       })
     })

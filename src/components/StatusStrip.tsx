@@ -20,18 +20,18 @@ export function StatusStrip() {
   const dotColor = status?.level === 'red' ? '#C03030' : status?.level === 'amber' ? '#C07A18' : '#1A7A34'
 
   return (
-    <div style={{
-      position: 'fixed', top: 96, left: 0, right: 0, height: 44, zIndex: 898,
+    <div className="status-strip" style={{
+      position: 'fixed', left: 0, right: 0, zIndex: 898,
       background: '#F7F6F3', borderBottom: '1px solid #F0ECE4',
       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
     }}>
       {status ? (
         <>
-          <span style={{ width: 8, height: 8, borderRadius: '50%', background: dotColor, flexShrink: 0 }} />
-          <span style={{ fontSize: 13, fontWeight: 600, color: '#1A1A18' }}>{status.sentence}</span>
+          <span className="status-strip-dot" style={{ borderRadius: '50%', background: dotColor, flexShrink: 0 }} />
+          <span className="status-strip-text" style={{ fontWeight: 600, color: '#1A1A18' }}>{status.sentence}</span>
         </>
       ) : (
-        <div className="skeleton" style={{ height: 16, width: 300, borderRadius: 4 }} />
+        <div className="skeleton status-strip-skeleton" style={{ borderRadius: 4 }} />
       )}
     </div>
   )

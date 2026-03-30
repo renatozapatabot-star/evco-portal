@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { ArrowLeft, FileText, Upload } from 'lucide-react'
+import { ArrowLeft, FileText, Upload, Package } from 'lucide-react'
 import { fmtId, fmtDate, fmtUSD, fmtKg, fmtDesc, fmtMXNInt, fmtCurrency, formatAbsoluteETA, formatAbsoluteDate } from '@/lib/format-utils'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { GOLD } from '@/lib/design-system'
@@ -14,7 +14,7 @@ import { COMPANY_ID, CLIENT_NAME } from '@/lib/client-config'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
-type Tab = 'financiero' | 'transportista' | 'rectificacion'
+type Tab = 'financiero' | 'transportista' | 'entradas' | 'rectificacion'
 
 const REQUIRED_DOCS = ['FACTURA', 'LISTA DE EMPAQUE', 'PEDIMENTO', 'ACUSE DE COVE', 'CARTA', 'ACUSE DE E-DOCUMENT']
 
@@ -150,9 +150,10 @@ export default function TraficoDetailPage() {
   const currentStepIdx = steps.findIndex(s => getStepState(s.num) === 'current')
   const visibleSteps = steps
 
-  const TABS: { key: Tab; label: string }[] = [
+  const TABS: { key: Tab; label: string; badge?: number }[] = [
     { key: 'financiero', label: 'Financiero' },
     { key: 'transportista', label: 'Transportista' },
+    { key: 'entradas', label: 'Entradas', badge: entradas.length },
     { key: 'rectificacion', label: 'Rectificación' },
   ]
 
@@ -419,8 +420,17 @@ export default function TraficoDetailPage() {
                 cursor: 'pointer', fontSize: 13, fontWeight: activeTab === tab.key ? 700 : 500,
                 color: activeTab === tab.key ? 'var(--n-900)' : 'var(--n-400)',
                 whiteSpace: 'nowrap', marginBottom: -1,
+                display: 'inline-flex', alignItems: 'center', gap: 6,
               }}>
                 {tab.label}
+                {tab.badge !== undefined && tab.badge > 0 && (
+                  <span style={{
+                    fontSize: 10, fontWeight: 700, fontFamily: 'var(--font-data)',
+                    background: activeTab === tab.key ? GOLD : 'var(--n-200)',
+                    color: activeTab === tab.key ? '#FFFFFF' : 'var(--n-600)',
+                    borderRadius: 9999, padding: '1px 6px', lineHeight: '16px',
+                  }}>{tab.badge}</span>
+                )}
               </button>
             ))}
           </div>
@@ -512,6 +522,53 @@ export default function TraficoDetailPage() {
                 )}
               </div>
             </div>
+          )}
+
+          {/* TAB — ENTRADAS */}
+          {activeTab === 'entradas' && (
+            entradas.length > 0 ? (
+              <div className="card" style={{ padding: 20 }}>
+                <div style={{ border: '1px solid var(--n-150)', borderRadius: 'var(--r-md)', overflow: 'hidden' }}>
+                  {entradas.map((e: any, idx: number) => {
+                    const hasIncidencia = e.incidencia || e.estatus_entrada === 'incidencia' || e.mercancia_danada || e.tiene_faltantes
+                    return (
+                      <div key={e.cve_entrada}
+                        style={{
+                          padding: '10px 16px',
+                          borderBottom: idx < entradas.length - 1 ? '1px solid var(--n-150)' : 'none',
+                          borderLeft: hasIncidencia ? '3px solid #DC2626' : '3px solid transparent',
+                          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                          minHeight: 60,
+                        }}>
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <span style={{ fontWeight: 700, fontSize: 14, fontFamily: 'var(--font-data)' }}>{e.cve_entrada}</span>
+                            <span style={{ fontSize: 12, color: 'var(--n-400)', fontFamily: 'var(--font-data)' }}>{fmtDate(e.fecha_llegada_mercancia)}</span>
+                          </div>
+                          <div style={{ fontSize: 12, color: 'var(--n-500)', marginTop: 2 }}>
+                            {fmtDesc(e.descripcion_mercancia || e.descripcion || '') || '—'}
+                            {e.peso_bruto && <span style={{ marginLeft: 8, fontFamily: 'var(--font-data)' }}>{fmtKg(e.peso_bruto)}</span>}
+                          </div>
+                        </div>
+                        <div>
+                          {hasIncidencia ? (
+                            <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 'var(--r-full, 9999px)', background: '#FEF2F2', color: '#991B1B', border: '1px solid rgba(220,38,38,0.2)' }}>Incidencia</span>
+                          ) : (
+                            <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 'var(--r-full, 9999px)', background: '#F0FDF4', color: '#16A34A', border: '1px solid #BBF7D0' }}>OK</span>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            ) : (
+              <div style={{ padding: 32, textAlign: 'center', color: 'var(--n-400)' }}>
+                <Package size={32} strokeWidth={1.5} style={{ color: 'var(--n-300)', margin: '0 auto 12px' }} />
+                <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--n-700)', marginBottom: 4 }}>No hay entradas registradas</div>
+                <div style={{ fontSize: 13 }}>Las entradas vinculadas a este tráfico aparecerán aquí</div>
+              </div>
+            )
           )}
 
           {/* TAB 5 — RECTIFICACIÓN */}

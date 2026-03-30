@@ -3,9 +3,10 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { Send, ArrowRight, Mic, Volume2, ThumbsUp, ThumbsDown, ChevronRight, Square, X } from 'lucide-react'
+import { Send, ArrowRight, Mic, Volume2, ThumbsUp, ThumbsDown, ChevronRight, Square, X, AlertTriangle, Clock, FileText } from 'lucide-react'
 import { GOLD, GOLD_GRADIENT } from '@/lib/design-system'
-import { CLIENT_CLAVE } from '@/lib/client-config'
+import { CLIENT_CLAVE, COMPANY_ID } from '@/lib/client-config'
+import { useIsMobile } from '@/hooks/use-mobile'
 
 interface Message {
   id: string
@@ -38,26 +39,40 @@ function buildDynamicPrompts(statusData: any): string[] {
   return prompts.slice(0, 6)
 }
 
-// Dark theme tokens
+// Warm cream theme — AI bubbles dark, everything else light
 const D = {
-  bg: '#0D0D0C',
-  surface: 'rgba(255,255,255,0.05)',
-  border: 'rgba(255,255,255,0.08)',
-  text: '#F5F3EE',
-  textMuted: 'rgba(245,243,238,0.40)',
-  textSub: 'rgba(245,243,238,0.60)',
-  userBubble: `rgba(201,168,76,0.15)`,
-  userBorder: `rgba(201,168,76,0.25)`,
-  aiBubble: 'rgba(255,255,255,0.05)',
-  aiBorder: 'rgba(255,255,255,0.08)',
+  bg: '#F7F6F3',
+  surface: '#FFFFFF',
+  border: '#E8E5E0',
+  text: '#1A1A18',
+  textMuted: '#9C9890',
+  textSub: '#6B6B6B',
+  userBubble: 'rgba(184,149,63,0.08)',
+  userBorder: 'rgba(184,149,63,0.20)',
+  aiBubble: '#1A1A18',
+  aiBorder: '#2A2A28',
+  aiText: '#E8E5DF',
+}
+
+interface BriefingData {
+  enProceso: number
+  urgent: number
+  alertTitle: string | null
 }
 
 export default function CruzChatPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const traficoContext = searchParams.get('trafico')
+  const isMobile = useIsMobile()
   const [suggestions, setSuggestions] = useState(DEFAULT_SUGGESTIONS)
   const [cruzAlerts, setCruzAlerts] = useState<{ icon: string; title: string; action: string; prompt: string }[]>([])
+
+  // Briefing state
+  const [briefing, setBriefing] = useState<string>('Cargando resumen operativo...')
+  const [panelData, setPanelData] = useState<{ enProceso: any[]; urgent: any[]; alertTitle: string | null }>({
+    enProceso: [], urgent: [], alertTitle: null,
+  })
 
   useEffect(() => {
     fetch('/api/status-summary').then(r => r.json())
@@ -66,6 +81,31 @@ export default function CruzChatPage() {
     fetch('/api/cruz-alerts').then(r => r.json())
       .then(data => setCruzAlerts(data.alerts ?? []))
       .catch(() => {})
+  }, [])
+
+  // Proactive briefing fetch
+  useEffect(() => {
+    Promise.all([
+      fetch(`/api/data?table=traficos&company_id=${COMPANY_ID}&trafico_prefix=${CLIENT_CLAVE}-&limit=1000`).then(r => r.json()),
+      fetch('/api/cruz-alerts').then(r => r.json()).catch(() => ({ alerts: [] })),
+    ]).then(([trafData, alertData]) => {
+      const traficos = trafData.data ?? []
+      const enProceso = traficos.filter((t: any) => !(t.estatus || '').toLowerCase().includes('cruz'))
+      const urgent = enProceso.filter((t: any) => !t.pedimento)
+      const hour = new Date().getHours()
+      const greeting = hour < 12 ? 'Buenos días' : hour < 18 ? 'Buenas tardes' : 'Buenas noches'
+      const lines = [`${greeting}.`]
+      if (enProceso.length > 0) lines.push(`${enProceso.length} tráficos en proceso.`)
+      if (urgent.length > 0) lines.push(`${urgent.length} requieren documentos.`)
+      if (alertData.alerts?.length > 0) lines.push(alertData.alerts[0].title + '.')
+      lines.push('\n¿En qué puedo ayudarte?')
+      setBriefing(lines.join(' '))
+      setPanelData({
+        enProceso: enProceso.slice(0, 5),
+        urgent: urgent.slice(0, 5),
+        alertTitle: alertData.alerts?.[0]?.title ?? null,
+      })
+    }).catch(() => setBriefing('Sistema operativo. ¿En qué puedo ayudarte?'))
   }, [])
 
   const [messages, setMessages] = useState<Message[]>(() => {
@@ -219,13 +259,14 @@ export default function CruzChatPage() {
     })
   }
 
-  const formatMessage = (text: string) => {
+  const formatMessage = (text: string, isAi: boolean) => {
+    const textColor = isAi ? D.aiText : D.text
     return text.split('\n').map((line, li) => {
       const nodes: React.ReactNode[] = []
       const boldParts = line.split(/(\*\*.*?\*\*)/g)
       boldParts.forEach((seg, si) => {
         if (seg.startsWith('**') && seg.endsWith('**')) {
-          nodes.push(<strong key={`${li}-b-${si}`} style={{ color: D.text, fontWeight: 700 }}>{seg.slice(2, -2)}</strong>)
+          nodes.push(<strong key={`${li}-b-${si}`} style={{ color: textColor, fontWeight: 700 }}>{seg.slice(2, -2)}</strong>)
         } else {
           const codeParts = seg.split(/(`.*?`)/g)
           codeParts.forEach((cp, ci) => {
@@ -247,12 +288,10 @@ export default function CruzChatPage() {
     })
   }
 
-  const greeting = new Date().getHours() < 12 ? 'Buenos días' : new Date().getHours() < 18 ? 'Buenas tardes' : 'Buenas noches'
-
   return (
     <div style={{ background: D.bg, color: D.text, display: 'flex', flexDirection: 'column', height: 'calc(100vh - 56px)', overflow: 'hidden' }}>
       {/* Header */}
-      <div style={{ padding: '16px 24px', borderBottom: `1px solid ${D.border}`, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div style={{ padding: '16px 24px', borderBottom: `1px solid ${D.border}`, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: D.surface }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
           <div style={{
             width: 40, height: 40, borderRadius: 10,
@@ -265,7 +304,7 @@ export default function CruzChatPage() {
           <div>
             <h1 style={{ fontSize: 18, fontWeight: 800, color: D.text, letterSpacing: '-0.02em', margin: 0 }}>CRUZ</h1>
             <div style={{ fontSize: 12, color: D.textMuted }}>
-              {traficoContext ? `Contexto: ${traficoContext}` : '6 herramientas · Voz · Respuesta en tiempo real'}
+              {traficoContext ? `Contexto: ${traficoContext}` : 'Tu asistente aduanal \u00b7 Respuesta en tiempo real'}
             </div>
           </div>
         </div>
@@ -274,158 +313,234 @@ export default function CruzChatPage() {
         </button>
       </div>
 
-      {/* Messages */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '24px 28px', display: 'flex', flexDirection: 'column', gap: 16, WebkitOverflowScrolling: 'touch' }}>
-        {messages.length === 0 && !loading && (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: 12, paddingTop: 60 }}>
-            <div style={{
-              width: 64, height: 64, borderRadius: 16,
-              background: GOLD_GRADIENT,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: '0 4px 16px rgba(201,168,76,0.3)',
-              marginBottom: 16,
-            }}>
-              <span style={{ fontFamily: 'Georgia, serif', fontSize: 32, fontWeight: 700, color: '#1A1710' }}>Z</span>
-            </div>
-            <h2 style={{ fontSize: 24, fontWeight: 900, color: D.text, letterSpacing: '-0.02em' }}>
-              {greeting}
-            </h2>
-            <p style={{ fontSize: 14, color: D.textMuted, marginBottom: 24 }}>
-              6 herramientas · Voz · Contexto en tiempo real
-            </p>
-            {cruzAlerts.length > 0 && (
-              <div style={{ maxWidth: 480, width: '100%', marginBottom: 16 }}>
-                {cruzAlerts.map((alert, i) => (
-                  <div key={i} onClick={() => sendMessage(alert.prompt)} style={{
-                    padding: 16, borderRadius: 8,
-                    border: '1px solid rgba(255,255,255,0.10)',
-                    background: 'rgba(255,255,255,0.04)',
-                    cursor: 'pointer',
-                    marginBottom: 8,
-                    transition: 'all 0.15s',
-                  }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(201,168,76,0.3)' }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.10)' }}
-                  >
-                    <div style={{ fontSize: 14, fontWeight: 600, color: D.text }}>
-                      {alert.icon} {alert.title}
-                    </div>
-                    <div style={{ fontSize: 13, color: GOLD, fontWeight: 600, marginTop: 4 }}>
-                      {alert.action}
-                    </div>
+      {/* Main content: chat + optional desktop panel */}
+      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+        {/* Chat column */}
+        <div style={{ flex: isMobile ? 1 : 0.65, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          {/* Messages */}
+          <div style={{ flex: 1, overflowY: 'auto', padding: '24px 28px', display: 'flex', flexDirection: 'column', gap: 16, WebkitOverflowScrolling: 'touch' }}>
+            {/* Briefing card when no messages */}
+            {messages.length === 0 && !loading && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16, paddingTop: 24 }}>
+                <div style={{
+                  background: D.surface, borderLeft: '3px solid #B8953F',
+                  borderRadius: 8, padding: '14px 16px', marginBottom: 16,
+                  maxWidth: 500,
+                }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: '#B8953F', marginBottom: 6,
+                                letterSpacing: '0.06em', textTransform: 'uppercase' as const }}>
+                    CRUZ Briefing
                   </div>
-                ))}
+                  <div style={{ fontSize: 13, color: D.text, lineHeight: 1.5, whiteSpace: 'pre-wrap' as const }}>
+                    {briefing}
+                  </div>
+                </div>
+
+                {/* Dynamic context chips — horizontal scroll pills */}
+                <div style={{
+                  display: 'flex', gap: 8, flexWrap: 'nowrap', overflowX: 'auto',
+                  WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none',
+                  padding: '8px 0',
+                }} className="pill-scroll">
+                  {suggestions.slice(0, 4).map(s => (
+                    <button key={s} onClick={() => sendMessage(s)} style={{
+                      flexShrink: 0, padding: '8px 14px', borderRadius: 9999,
+                      border: `1px solid ${D.border}`, background: D.surface,
+                      fontSize: 12, fontWeight: 600, color: D.textSub,
+                      cursor: 'pointer', whiteSpace: 'nowrap',
+                    }}>
+                      {s}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, maxWidth: 480, width: '100%' }}>
-              {suggestions.map(s => (
-                <button key={s} onClick={() => sendMessage(s)} style={{
-                  padding: '14px 16px', border: `1px solid ${D.border}`, borderRadius: 12,
-                  fontSize: 13, fontWeight: 600, color: D.textSub, cursor: 'pointer',
-                  transition: 'all 0.15s', background: 'transparent', textAlign: 'left', lineHeight: 1.4,
-                }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(201,168,76,0.4)'; e.currentTarget.style.color = GOLD }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = D.border; e.currentTarget.style.color = D.textSub }}
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
 
-        {messages.map(msg => (
-          <div key={msg.id} style={{ display: 'flex', gap: 12, maxWidth: msg.role === 'user' ? '75%' : '85%', marginLeft: msg.role === 'user' ? 'auto' : 0, flexDirection: msg.role === 'user' ? 'row-reverse' : 'row' }}>
-            <div style={{
-              padding: '12px 18px', borderRadius: msg.role === 'user' ? '16px 16px 2px 16px' : '2px 16px 16px 16px',
-              background: msg.role === 'user' ? D.userBubble : D.aiBubble,
-              border: `1px solid ${msg.role === 'user' ? D.userBorder : D.aiBorder}`,
-              fontSize: 14, lineHeight: 1.6, fontWeight: msg.role === 'user' ? 600 : 400,
-              color: D.text,
-            }}>
-              {msg.role === 'user' ? msg.content : formatMessage(msg.content)}
-              {msg.navigate && (
-                <div onClick={() => router.push(msg.navigate!)} style={{
-                  display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, padding: '8px 12px',
-                  background: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.2)',
-                  borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600, color: GOLD,
+            {messages.map(msg => (
+              <div key={msg.id} style={{ display: 'flex', gap: 12, maxWidth: msg.role === 'user' ? '75%' : '85%', marginLeft: msg.role === 'user' ? 'auto' : 0, flexDirection: msg.role === 'user' ? 'row-reverse' : 'row' }}>
+                <div style={{
+                  padding: '12px 18px', borderRadius: msg.role === 'user' ? '16px 16px 2px 16px' : '2px 16px 16px 16px',
+                  background: msg.role === 'user' ? D.userBubble : D.aiBubble,
+                  border: `1px solid ${msg.role === 'user' ? D.userBorder : D.aiBorder}`,
+                  fontSize: 14, lineHeight: 1.6, fontWeight: msg.role === 'user' ? 600 : 400,
+                  color: msg.role === 'user' ? D.text : D.aiText,
                 }}>
-                  <ArrowRight size={14} /> Ir a {msg.navigate}
+                  {msg.role === 'user' ? msg.content : formatMessage(msg.content, true)}
+                  {msg.navigate && (
+                    <div onClick={() => router.push(msg.navigate!)} style={{
+                      display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, padding: '8px 12px',
+                      background: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.2)',
+                      borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600, color: GOLD,
+                    }}>
+                      <ArrowRight size={14} /> Ir a {msg.navigate}
+                    </div>
+                  )}
+                  {msg.role === 'assistant' && (
+                    <div style={{ display: 'flex', gap: 4, marginTop: 8, opacity: 0.4 }}>
+                      <button onClick={() => speak(msg.content)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: D.aiText, padding: 4 }}><Volume2 size={13} /></button>
+                      <button onClick={() => saveFeedback(msg.id, true)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: msg.feedback === true ? '#16A34A' : D.aiText, padding: 4 }}><ThumbsUp size={13} /></button>
+                      <button onClick={() => saveFeedback(msg.id, false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: msg.feedback === false ? '#DC2626' : D.aiText, padding: 4 }}><ThumbsDown size={13} /></button>
+                    </div>
+                  )}
                 </div>
-              )}
-              {msg.role === 'assistant' && (
-                <div style={{ display: 'flex', gap: 4, marginTop: 8, opacity: 0.4 }}>
-                  <button onClick={() => speak(msg.content)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: D.textMuted, padding: 4 }}><Volume2 size={13} /></button>
-                  <button onClick={() => saveFeedback(msg.id, true)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: msg.feedback === true ? '#16A34A' : D.textMuted, padding: 4 }}><ThumbsUp size={13} /></button>
-                  <button onClick={() => saveFeedback(msg.id, false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: msg.feedback === false ? '#DC2626' : D.textMuted, padding: 4 }}><ThumbsDown size={13} /></button>
+              </div>
+            ))}
+
+            {loading && (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8 }}>
+                <div style={{ padding: '12px 18px', background: D.aiBubble, border: `1px solid ${D.aiBorder}`, borderRadius: '2px 16px 16px 16px', display: 'flex', gap: 4 }}>
+                  {[0, 1, 2].map(i => (
+                    <div key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: D.aiText, animation: `typing-dot 1.2s infinite ${i * 0.15}s` }} />
+                  ))}
                 </div>
-              )}
+                <button onClick={() => { abortRef.current?.abort(); setLoading(false) }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 12px', border: `1px solid ${D.border}`, borderRadius: 8, background: 'transparent', fontSize: 11, fontWeight: 600, color: D.textMuted, cursor: 'pointer' }}>
+                  <Square size={8} fill="currentColor" /> Detener
+                </button>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Input bar — white card */}
+          <div style={{ padding: '12px 24px 16px', borderTop: `1px solid ${D.border}`, flexShrink: 0, background: D.surface }}>
+            {listening && <div style={{ fontSize: 12, color: GOLD, fontWeight: 600, textAlign: 'center', marginBottom: 6 }}>Escuchando...</div>}
+            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10 }}>
+              <textarea
+                ref={inputRef}
+                className="cruz-input"
+                value={input}
+                onChange={e => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Pregunta sobre tráficos, puentes, impuestos..."
+                rows={1}
+                disabled={loading}
+                style={{
+                  flex: 1, minHeight: 48, maxHeight: 120, padding: '12px 16px',
+                  border: `1px solid ${D.border}`, borderRadius: 14,
+                  fontSize: 15, fontFamily: 'var(--font-ui)', fontWeight: 450,
+                  color: D.text, resize: 'none', outline: 'none',
+                  background: D.bg, lineHeight: 1.5,
+                }}
+              />
+              <button
+                onClick={listening ? stopVoice : startVoice}
+                style={{
+                  width: 48, height: 48, borderRadius: 14, border: 'none', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                  background: listening ? GOLD : D.bg, color: listening ? '#1A1710' : D.textMuted,
+                  transition: 'all 0.15s',
+                }}
+              >
+                <Mic size={20} />
+              </button>
+              <button
+                onClick={() => sendMessage(input)}
+                disabled={loading || !input.trim()}
+                style={{
+                  width: 48, height: 48, borderRadius: 14, border: 'none', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                  background: GOLD_GRADIENT, color: '#1A1710',
+                  opacity: loading || !input.trim() ? 0.4 : 1,
+                  transition: 'opacity 0.15s',
+                }}
+              >
+                <Send size={18} strokeWidth={2} />
+              </button>
             </div>
           </div>
-        ))}
-
-        {loading && (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8 }}>
-            <div style={{ padding: '12px 18px', background: D.aiBubble, border: `1px solid ${D.aiBorder}`, borderRadius: '2px 16px 16px 16px', display: 'flex', gap: 4 }}>
-              {[0, 1, 2].map(i => (
-                <div key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: D.textMuted, animation: `typing-dot 1.2s infinite ${i * 0.15}s` }} />
-              ))}
-            </div>
-            <button onClick={() => { abortRef.current?.abort(); setLoading(false) }}
-              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 12px', border: `1px solid ${D.border}`, borderRadius: 8, background: 'transparent', fontSize: 11, fontWeight: 600, color: D.textMuted, cursor: 'pointer' }}>
-              <Square size={8} fill="currentColor" /> Detener
-            </button>
-          </div>
-        )}
-        <div ref={messagesEndRef} />
-      </div>
-
-      {/* Input bar */}
-      <div style={{ padding: '12px 24px 16px', borderTop: `1px solid ${D.border}`, flexShrink: 0, background: D.bg }}>
-        {listening && <div style={{ fontSize: 12, color: GOLD, fontWeight: 600, textAlign: 'center', marginBottom: 6 }}>Escuchando...</div>}
-        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10 }}>
-          <textarea
-            ref={inputRef}
-            className="cruz-input"
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Pregunta sobre tráficos, puentes, impuestos..."
-            rows={1}
-            disabled={loading}
-            style={{
-              flex: 1, minHeight: 48, maxHeight: 120, padding: '12px 16px',
-              border: `1px solid ${D.border}`, borderRadius: 14,
-              fontSize: 15, fontFamily: 'var(--font-ui)', fontWeight: 450,
-              color: D.text, resize: 'none', outline: 'none',
-              background: D.surface, lineHeight: 1.5,
-            }}
-          />
-          <button
-            onClick={listening ? stopVoice : startVoice}
-            style={{
-              width: 48, height: 48, borderRadius: 14, border: 'none', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-              background: listening ? GOLD : D.surface, color: listening ? '#1A1710' : D.textMuted,
-              transition: 'all 0.15s',
-            }}
-          >
-            <Mic size={20} />
-          </button>
-          <button
-            onClick={() => sendMessage(input)}
-            disabled={loading || !input.trim()}
-            style={{
-              width: 48, height: 48, borderRadius: 14, border: 'none', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-              background: GOLD_GRADIENT, color: '#1A1710',
-              opacity: loading || !input.trim() ? 0.4 : 1,
-              transition: 'opacity 0.15s',
-            }}
-          >
-            <Send size={18} strokeWidth={2} />
-          </button>
         </div>
+
+        {/* Desktop context panel — right 35% */}
+        {!isMobile && (
+          <aside style={{
+            width: '35%', borderLeft: `1px solid ${D.border}`,
+            padding: 20, overflowY: 'auto', background: D.bg,
+            display: 'flex', flexDirection: 'column', gap: 20,
+          }}>
+            {/* Críticos ahora */}
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#B8953F', marginBottom: 10,
+                            letterSpacing: '0.06em', textTransform: 'uppercase' as const }}>
+                Críticos ahora
+              </div>
+              {panelData.urgent.length > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {panelData.urgent.map((t: any, i: number) => (
+                    <div key={i} style={{
+                      background: D.surface, border: `1px solid ${D.border}`,
+                      borderRadius: 8, padding: '10px 12px',
+                      display: 'flex', alignItems: 'center', gap: 8,
+                    }}>
+                      <AlertTriangle size={14} style={{ color: '#C47F17', flexShrink: 0 }} />
+                      <div style={{ fontSize: 12, color: D.text, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {t.trafico_number || t.id || 'Sin número'}
+                      </div>
+                      <div style={{ fontSize: 11, color: D.textMuted, marginLeft: 'auto', flexShrink: 0 }}>
+                        Sin pedimento
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ fontSize: 12, color: D.textMuted, padding: '8px 0' }}>
+                  Sin tráficos críticos
+                </div>
+              )}
+            </div>
+
+            {/* En proceso */}
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#B8953F', marginBottom: 10,
+                            letterSpacing: '0.06em', textTransform: 'uppercase' as const }}>
+                En proceso ({panelData.enProceso.length})
+              </div>
+              {panelData.enProceso.length > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {panelData.enProceso.map((t: any, i: number) => (
+                    <div key={i} style={{
+                      background: D.surface, border: `1px solid ${D.border}`,
+                      borderRadius: 8, padding: '10px 12px',
+                      display: 'flex', alignItems: 'center', gap: 8,
+                    }}>
+                      <Clock size={14} style={{ color: D.textMuted, flexShrink: 0 }} />
+                      <div style={{ fontSize: 12, color: D.text, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {t.trafico_number || t.id || 'Sin número'}
+                      </div>
+                      <div style={{ fontSize: 11, color: D.textMuted, marginLeft: 'auto', flexShrink: 0 }}>
+                        {t.estatus || 'En proceso'}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ fontSize: 12, color: D.textMuted, padding: '8px 0' }}>
+                  Sin tráficos en proceso
+                </div>
+              )}
+            </div>
+
+            {/* Alertas */}
+            {panelData.alertTitle && (
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#B8953F', marginBottom: 10,
+                              letterSpacing: '0.06em', textTransform: 'uppercase' as const }}>
+                  Alerta activa
+                </div>
+                <div style={{
+                  background: D.surface, border: `1px solid ${D.border}`,
+                  borderRadius: 8, padding: '10px 12px',
+                  display: 'flex', alignItems: 'center', gap: 8,
+                }}>
+                  <FileText size={14} style={{ color: '#C47F17', flexShrink: 0 }} />
+                  <div style={{ fontSize: 12, color: D.text }}>
+                    {panelData.alertTitle}
+                  </div>
+                </div>
+              </div>
+            )}
+          </aside>
+        )}
       </div>
 
       <style>{`
@@ -433,6 +548,7 @@ export default function CruzChatPage() {
           0%, 60%, 100% { opacity: 0.2; transform: translateY(0); }
           30% { opacity: 1; transform: translateY(-4px); }
         }
+        .pill-scroll::-webkit-scrollbar { display: none; }
       `}</style>
     </div>
   )

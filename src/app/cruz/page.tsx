@@ -1,9 +1,11 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { Send, ArrowRight, Mic, Volume2, ThumbsUp, ThumbsDown, Sun, ChevronRight, Square } from 'lucide-react'
+import { Send, ArrowRight, Mic, Volume2, ThumbsUp, ThumbsDown, ChevronRight, Square, X } from 'lucide-react'
+import { GOLD, GOLD_GRADIENT } from '@/lib/design-system'
+import { CLIENT_CLAVE } from '@/lib/client-config'
 
 interface Message {
   id: string
@@ -36,24 +38,24 @@ function buildDynamicPrompts(statusData: any): string[] {
   return prompts.slice(0, 6)
 }
 
-const getPageContext = (): string => {
-  const path = typeof window !== 'undefined' ? window.location.pathname : '/'
-  const contexts: Record<string, string> = {
-    '/': 'User is on the main dashboard',
-    '/traficos': 'User is viewing the shipments list',
-    '/entradas': 'User is viewing warehouse entries',
-    '/pedimentos': 'User is viewing customs declarations',
-    '/expedientes': 'User is viewing digital document files',
-    '/reportes': 'User is viewing analytics and reports',
-    '/cuentas': 'User is viewing financial accounts',
-    '/anexo24': 'User is viewing Anexo 24 IMMEX reconciliation',
-    '/cruz': 'User is in the CRUZ AI chat interface',
-  }
-  return contexts[path] || 'User is on the portal'
+// Dark theme tokens
+const D = {
+  bg: '#0D0D0C',
+  surface: 'rgba(255,255,255,0.05)',
+  border: 'rgba(255,255,255,0.08)',
+  text: '#F5F3EE',
+  textMuted: 'rgba(245,243,238,0.40)',
+  textSub: 'rgba(245,243,238,0.60)',
+  userBubble: `rgba(201,168,76,0.15)`,
+  userBorder: `rgba(201,168,76,0.25)`,
+  aiBubble: 'rgba(255,255,255,0.05)',
+  aiBorder: 'rgba(255,255,255,0.08)',
 }
 
 export default function CruzChatPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const traficoContext = searchParams.get('trafico')
   const [suggestions, setSuggestions] = useState(DEFAULT_SUGGESTIONS)
 
   useEffect(() => {
@@ -71,13 +73,10 @@ export default function CruzChatPage() {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [listening, setListening] = useState(false)
-  const [briefing, setBriefing] = useState<string | null>(null)
-  const [briefingLoading, setBriefingLoading] = useState(false)
-  const [briefingExpanded, setBriefingExpanded] = useState(false)
-  const [briefingDismissed, setBriefingDismissed] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const recognitionRef = useRef<any>(null)
+  const abortRef = useRef<AbortController | null>(null)
 
   const [sessionId] = useState(() => {
     if (typeof window === 'undefined') return 'ssr'
@@ -90,20 +89,13 @@ export default function CruzChatPage() {
   useEffect(() => { inputRef.current?.focus() }, [])
   useEffect(() => { if (messages.length > 0) sessionStorage.setItem('cruz-chat', JSON.stringify(messages)) }, [messages])
 
-  // Proactive briefing on first load
+  // Tráfico context injection
   useEffect(() => {
-    if (messages.length > 0) return
-    setBriefingLoading(true)
-    fetch('/api/cruz-chat', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        messages: [{ role: 'user', content: 'Dame un resumen ejecutivo rapido de hoy. Incluye: traficos pendientes, valor total, MVE status, y la accion mas urgente. Se conciso, maximo 4 lineas.' }],
-        context: { page: 'Proactive briefing on page load', auto: true }, sessionId,
-      }),
-    }).then(r => r.json()).then(data => setBriefing(data.message)).catch(() => {}).finally(() => setBriefingLoading(false))
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
-
-  const abortRef = useRef<AbortController | null>(null)
+    if (traficoContext && messages.length === 0) {
+      const contextMsg = `Estoy viendo el tráfico ${traficoContext}. ¿Cuál es su estatus actual?`
+      sendMessage(contextMsg)
+    }
+  }, [traficoContext]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const sendMessage = useCallback(async (text: string) => {
     if (!text.trim() || loading) return
@@ -116,35 +108,68 @@ export default function CruzChatPage() {
     const controller = new AbortController()
     abortRef.current = controller
 
+    // Add placeholder AI message for streaming
+    const aiMsgId = crypto.randomUUID()
+    setMessages(prev => [...prev, { id: aiMsgId, role: 'assistant', content: '', feedback: null }])
+
     try {
       const apiMessages = newMessages.map(m => ({ role: m.role, content: m.content }))
+      const contextInfo = traficoContext
+        ? `User is asking about tráfico ${traficoContext}. Include specific data for this tráfico.`
+        : `User is in the CRUZ AI chat interface.`
+
       const res = await fetch('/api/cruz-chat', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: apiMessages, context: { page: getPageContext(), timestamp: new Date().toISOString() }, sessionId }),
+        body: JSON.stringify({
+          messages: apiMessages,
+          context: { page: contextInfo, timestamp: new Date().toISOString() },
+          sessionId,
+        }),
         signal: controller.signal,
       })
-      const data = await res.json()
-      const aiMsg: Message = { id: crypto.randomUUID(), role: 'assistant', content: data.message || 'Sin respuesta.', navigate: data.navigate || undefined, feedback: null }
-      setMessages(prev => [...prev, aiMsg])
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}))
+        throw new Error(errData.message || 'Error del servidor')
+      }
+
+      const navigate = res.headers.get('X-Navigate') || undefined
+      const reader = res.body!.getReader()
+      const decoder = new TextDecoder()
+      let aiText = ''
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        aiText += decoder.decode(value, { stream: true })
+        const currentText = aiText
+        setMessages(prev => prev.map(m =>
+          m.id === aiMsgId ? { ...m, content: currentText, navigate: navigate || undefined } : m
+        ))
+      }
+
+      // Final update with complete text
+      if (!aiText) aiText = 'Sin respuesta.'
+      setMessages(prev => prev.map(m =>
+        m.id === aiMsgId ? { ...m, content: aiText, navigate: navigate || undefined } : m
+      ))
     } catch (err: any) {
       if (err.name !== 'AbortError') {
-        const lastInput = text.trim()
-        let suggestion = 'Intenta reformular tu pregunta o usa una de las sugerencias.'
-        if (lastInput.includes('Y') || /^\d{4}/.test(lastInput)) {
-          suggestion = 'Verifica el número completo del tráfico. Ej: CLAVE-Y4466'
-        } else if (lastInput.length < 5) {
-          suggestion = 'Intenta con una pregunta más específica. Ej: "¿Cuántos tráficos están en proceso?"'
-        }
-        setMessages(prev => [...prev, { id: crypto.randomUUID(), role: 'assistant', content: `No pude procesar esa consulta. ${suggestion}`, feedback: null }])
+        let suggestion = 'Intenta reformular tu pregunta.'
+        if (text.includes('Y') || /^\d{4}/.test(text)) suggestion = 'Verifica el número completo del tráfico.'
+        else if (text.length < 5) suggestion = 'Intenta con una pregunta más específica.'
+        setMessages(prev => prev.map(m =>
+          m.id === aiMsgId ? { ...m, content: `No pude procesar esa consulta. ${suggestion}` } : m
+        ))
       }
     } finally { setLoading(false) }
-  }, [messages, loading, sessionId])
+  }, [messages, loading, sessionId, traficoContext])
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(input) }
   }
 
-  // Voice input
+  // Voice
   const startVoice = () => {
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
     if (!SR) return
@@ -162,7 +187,6 @@ export default function CruzChatPage() {
   }
   const stopVoice = () => { recognitionRef.current?.stop(); setListening(false) }
 
-  // Voice output
   const speak = (text: string) => {
     speechSynthesis.cancel()
     const u = new SpeechSynthesisUtterance(text.replace(/\*\*/g, '').replace(/`/g, ''))
@@ -173,19 +197,20 @@ export default function CruzChatPage() {
     speechSynthesis.speak(u)
   }
 
-  // Feedback
   const saveFeedback = async (msgId: string, helpful: boolean) => {
     setMessages(prev => prev.map(m => m.id === msgId ? { ...m, feedback: helpful } : m))
     try { await fetch('/api/cruz-feedback', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sessionId, helpful }) }) } catch {}
   }
 
   const linkifyEntities = (text: string): React.ReactNode[] => {
-    const parts = text.split(/(9254-Y\d{4}|[67]\d{6})/g)
+    const traficoPattern = new RegExp(`(${CLIENT_CLAVE}-[A-Z]\\d{4}|[67]\\d{6})`, 'g')
+    const traficoTest = new RegExp(`^${CLIENT_CLAVE}-[A-Z]\\d{4}$`)
+    const parts = text.split(traficoPattern)
     return parts.map((part, i) => {
-      if (/^9254-Y\d{4}$/.test(part))
-        return <Link key={i} href={`/traficos/${part}`} className="cruz-entity">{part}</Link>
+      if (traficoTest.test(part))
+        return <Link key={i} href={`/traficos/${part}`} style={{ color: GOLD, fontWeight: 700, fontFamily: 'var(--font-data)', textDecoration: 'none', borderBottom: `1px solid rgba(201,168,76,0.4)` }}>{part}</Link>
       if (/^[67]\d{6}$/.test(part))
-        return <Link key={i} href={`/pedimentos?search=${part}`} className="cruz-entity">{part}</Link>
+        return <Link key={i} href={`/pedimentos?search=${part}`} style={{ color: GOLD, fontWeight: 700, fontFamily: 'var(--font-data)', textDecoration: 'none' }}>{part}</Link>
       return <span key={i}>{part}</span>
     })
   }
@@ -193,19 +218,15 @@ export default function CruzChatPage() {
   const formatMessage = (text: string) => {
     return text.split('\n').map((line, li) => {
       const nodes: React.ReactNode[] = []
-      // Bold
       const boldParts = line.split(/(\*\*.*?\*\*)/g)
       boldParts.forEach((seg, si) => {
         if (seg.startsWith('**') && seg.endsWith('**')) {
-          nodes.push(<strong key={`${li}-b-${si}`}>{seg.slice(2, -2)}</strong>)
-        } else if (seg.startsWith('`') && seg.endsWith('`')) {
-          nodes.push(<code key={`${li}-c-${si}`}>{seg.slice(1, -1)}</code>)
+          nodes.push(<strong key={`${li}-b-${si}`} style={{ color: D.text, fontWeight: 700 }}>{seg.slice(2, -2)}</strong>)
         } else {
-          // Entity link inside text
           const codeParts = seg.split(/(`.*?`)/g)
           codeParts.forEach((cp, ci) => {
             if (cp.startsWith('`') && cp.endsWith('`')) {
-              nodes.push(<code key={`${li}-cd-${ci}`}>{cp.slice(1, -1)}</code>)
+              nodes.push(<code key={`${li}-cd-${ci}`} style={{ fontFamily: 'var(--font-data)', fontSize: 13, background: 'rgba(201,168,76,0.1)', padding: '1px 5px', borderRadius: 3, color: GOLD }}>{cp.slice(1, -1)}</code>)
             } else {
               nodes.push(...linkifyEntities(cp))
             }
@@ -215,69 +236,69 @@ export default function CruzChatPage() {
       const isBullet = line.startsWith('- ') || line.startsWith('* ')
       return (
         <span key={li} style={{ display: 'block', marginBottom: 2 }}>
-          {isBullet && <span style={{ display: 'inline-block', width: 12, color: 'var(--gold-500)' }}>•</span>}
-          {isBullet ? nodes.map((n, i) => i === 0 && typeof n === 'object' ? null : n) : nodes}
-          {isBullet ? linkifyEntities(line.slice(2)) : null}
+          {isBullet && <span style={{ display: 'inline-block', width: 12, color: GOLD }}>•</span>}
+          {isBullet ? linkifyEntities(line.slice(2)) : nodes}
         </span>
       )
     })
   }
 
-  const greeting = new Date().getHours() < 12 ? 'Buenos dias' : new Date().getHours() < 18 ? 'Buenas tardes' : 'Buenas noches'
+  const greeting = new Date().getHours() < 12 ? 'Buenos días' : new Date().getHours() < 18 ? 'Buenas tardes' : 'Buenas noches'
 
   return (
-    <div className="cruz-chat">
-      <div className="cruz-chat-header">
-        <div className="cruz-chat-icon"><span>Z</span></div>
-        <div>
-          <div className="cruz-chat-title">CRUZ Intelligence</div>
-          <div className="cruz-chat-sub">17 herramientas &middot; Voz &middot; Contexto en tiempo real</div>
+    <div style={{ background: D.bg, color: D.text, display: 'flex', flexDirection: 'column', height: 'calc(100vh - 56px)', overflow: 'hidden' }}>
+      {/* Header */}
+      <div style={{ padding: '16px 24px', borderBottom: `1px solid ${D.border}`, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <div style={{
+            width: 40, height: 40, borderRadius: 10,
+            background: GOLD_GRADIENT,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 2px 8px rgba(201,168,76,0.35)',
+          }}>
+            <span style={{ fontFamily: 'Georgia, serif', fontSize: 20, fontWeight: 700, color: '#1A1710' }}>Z</span>
+          </div>
+          <div>
+            <h1 style={{ fontSize: 18, fontWeight: 800, color: D.text, letterSpacing: '-0.02em', margin: 0 }}>CRUZ</h1>
+            <div style={{ fontSize: 12, color: D.textMuted }}>
+              {traficoContext ? `Contexto: ${traficoContext}` : '6 herramientas · Voz · Streaming'}
+            </div>
+          </div>
         </div>
+        <button onClick={() => router.back()} style={{ background: 'none', border: 'none', cursor: 'pointer', color: D.textMuted, padding: 8 }}>
+          <X size={18} />
+        </button>
       </div>
 
-      <div className="cruz-messages">
+      {/* Messages */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '24px 28px', display: 'flex', flexDirection: 'column', gap: 16, WebkitOverflowScrolling: 'touch' }}>
         {messages.length === 0 && !loading && (
-          <div className="cruz-suggestions">
-            {/* Collapsed briefing strip */}
-            {!briefingDismissed && (briefing || briefingLoading) && (
-              <div className={`cruz-briefing-strip ${briefingExpanded ? 'cruz-briefing-strip--expanded' : ''}`}>
-                <div className="cruz-briefing-strip-bar" onClick={() => !briefingLoading && setBriefingExpanded(prev => !prev)}>
-                  <div className="cruz-briefing-strip-summary">
-                    {briefingLoading ? (
-                      <span className="cruz-briefing-strip-text">☀️ Cargando resumen...</span>
-                    ) : (
-                      <span className="cruz-briefing-strip-text">☀️ {(() => {
-                        const text = briefing || ''
-                        const enProcesoMatch = text.match(/(\d+)\s*(?:tráficos?\s*)?(?:en\s*proceso|pendientes?|activos?)/i)
-                        const mveMatch = text.match(/MVE[:\s]*(\d+)\s*d/i) || text.match(/(\d+)\s*días?\s*(?:para\s*)?MVE/i)
-                        const enProceso = enProcesoMatch ? enProcesoMatch[1] : '—'
-                        const mveDays = mveMatch ? mveMatch[1] : '—'
-                        return `${enProceso} en proceso · MVE ${mveDays}d · Haz clic para detalles`
-                      })()}</span>
-                    )}
-                  </div>
-                  <ChevronRight size={14} className="cruz-briefing-strip-chevron" />
-                </div>
-                {briefingExpanded && briefing && (
-                  <div className="cruz-briefing-strip-detail">
-                    {formatMessage(briefing)}
-                  </div>
-                )}
-              </div>
-            )}
-
-            <div className="cruz-ai-hero">
-              <div className="cruz-chat-icon"><span>Z</span></div>
-              <h2 style={{ fontSize: 28, fontWeight: 900, color: 'var(--n-900)', marginTop: 16, letterSpacing: '-0.02em' }}>
-                CRUZ Intelligence
-              </h2>
-              <p style={{ fontSize: 15, color: 'var(--n-400)', marginTop: 6 }}>
-                17 herramientas &middot; Voz &middot; Contexto en tiempo real
-              </p>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: 12, paddingTop: 60 }}>
+            <div style={{
+              width: 64, height: 64, borderRadius: 16,
+              background: GOLD_GRADIENT,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: '0 4px 16px rgba(201,168,76,0.3)',
+              marginBottom: 16,
+            }}>
+              <span style={{ fontFamily: 'Georgia, serif', fontSize: 32, fontWeight: 700, color: '#1A1710' }}>Z</span>
             </div>
-            <div className="cruz-prompts-grid">
+            <h2 style={{ fontSize: 24, fontWeight: 900, color: D.text, letterSpacing: '-0.02em' }}>
+              {greeting}
+            </h2>
+            <p style={{ fontSize: 14, color: D.textMuted, marginBottom: 24 }}>
+              6 herramientas · Voz · Contexto en tiempo real
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, maxWidth: 480, width: '100%' }}>
               {suggestions.map(s => (
-                <button key={s} className="cruz-suggestion" onClick={() => sendMessage(s)}>
+                <button key={s} onClick={() => sendMessage(s)} style={{
+                  padding: '14px 16px', border: `1px solid ${D.border}`, borderRadius: 12,
+                  fontSize: 13, fontWeight: 600, color: D.textSub, cursor: 'pointer',
+                  transition: 'all 0.15s', background: 'transparent', textAlign: 'left', lineHeight: 1.4,
+                }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(201,168,76,0.4)'; e.currentTarget.style.color = GOLD }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = D.border; e.currentTarget.style.color = D.textSub }}
+                >
                   {s}
                 </button>
               ))}
@@ -285,20 +306,30 @@ export default function CruzChatPage() {
           </div>
         )}
 
-        {messages.map((msg) => (
-          <div key={msg.id} className={`cruz-msg cruz-msg-${msg.role === 'user' ? 'user' : 'ai'}`}>
-            <div className={`cruz-bubble cruz-bubble-${msg.role === 'user' ? 'user' : 'ai'}`}>
+        {messages.map(msg => (
+          <div key={msg.id} style={{ display: 'flex', gap: 12, maxWidth: msg.role === 'user' ? '75%' : '85%', marginLeft: msg.role === 'user' ? 'auto' : 0, flexDirection: msg.role === 'user' ? 'row-reverse' : 'row' }}>
+            <div style={{
+              padding: '12px 18px', borderRadius: msg.role === 'user' ? '16px 16px 2px 16px' : '2px 16px 16px 16px',
+              background: msg.role === 'user' ? D.userBubble : D.aiBubble,
+              border: `1px solid ${msg.role === 'user' ? D.userBorder : D.aiBorder}`,
+              fontSize: 14, lineHeight: 1.6, fontWeight: msg.role === 'user' ? 600 : 400,
+              color: D.text,
+            }}>
               {msg.role === 'user' ? msg.content : formatMessage(msg.content)}
               {msg.navigate && (
-                <div className="cruz-nav-card" onClick={() => router.push(msg.navigate!)}>
+                <div onClick={() => router.push(msg.navigate!)} style={{
+                  display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, padding: '8px 12px',
+                  background: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.2)',
+                  borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600, color: GOLD,
+                }}>
                   <ArrowRight size={14} /> Ir a {msg.navigate}
                 </div>
               )}
               {msg.role === 'assistant' && (
-                <div className="cruz-feedback">
-                  <button className="cruz-speak" onClick={() => speak(msg.content)} aria-label="Escuchar"><Volume2 size={13} /></button>
-                  <button className={`cruz-fb-btn ${msg.feedback === true ? 'cruz-fb-active' : ''}`} onClick={() => saveFeedback(msg.id, true)} aria-label="Util"><ThumbsUp size={13} /></button>
-                  <button className={`cruz-fb-btn ${msg.feedback === false ? 'cruz-fb-active-bad' : ''}`} onClick={() => saveFeedback(msg.id, false)} aria-label="No util"><ThumbsDown size={13} /></button>
+                <div style={{ display: 'flex', gap: 4, marginTop: 8, opacity: 0.4 }}>
+                  <button onClick={() => speak(msg.content)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: D.textMuted, padding: 4 }}><Volume2 size={13} /></button>
+                  <button onClick={() => saveFeedback(msg.id, true)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: msg.feedback === true ? '#16A34A' : D.textMuted, padding: 4 }}><ThumbsUp size={13} /></button>
+                  <button onClick={() => saveFeedback(msg.id, false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: msg.feedback === false ? '#DC2626' : D.textMuted, padding: 4 }}><ThumbsDown size={13} /></button>
                 </div>
               )}
             </div>
@@ -306,38 +337,75 @@ export default function CruzChatPage() {
         ))}
 
         {loading && (
-          <>
-            <div className="cruz-msg cruz-msg-ai">
-              <div className="cruz-bubble cruz-bubble-ai">
-                <div className="cruz-typing">
-                  <div className="cruz-typing-dot" /><div className="cruz-typing-dot" /><div className="cruz-typing-dot" />
-                </div>
-              </div>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8 }}>
+            <div style={{ padding: '12px 18px', background: D.aiBubble, border: `1px solid ${D.aiBorder}`, borderRadius: '2px 16px 16px 16px', display: 'flex', gap: 4 }}>
+              {[0, 1, 2].map(i => (
+                <div key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: D.textMuted, animation: `typing-dot 1.2s infinite ${i * 0.15}s` }} />
+              ))}
             </div>
             <button onClick={() => { abortRef.current?.abort(); setLoading(false) }}
-              style={{ display:'flex',alignItems:'center',gap:6,padding:'6px 14px',border:'var(--b-default)',borderRadius:'var(--r-md)',background:'var(--bg-card)',fontSize:12,fontWeight:600,color:'var(--n-500)',cursor:'pointer',margin:'8px auto' }}>
-              <Square size={10} fill="currentColor" /> Detener
+              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 12px', border: `1px solid ${D.border}`, borderRadius: 8, background: 'transparent', fontSize: 11, fontWeight: 600, color: D.textMuted, cursor: 'pointer' }}>
+              <Square size={8} fill="currentColor" /> Detener
             </button>
-          </>
+          </div>
         )}
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="cruz-input-area">
-        {listening && <div className="cruz-listening-text">Escuchando...</div>}
-        <div className="cruz-input-row">
-          <textarea ref={inputRef} className="cruz-input" value={input} onChange={e => setInput(e.target.value)}
-            onKeyDown={handleKeyDown} placeholder="Pregunta sobre traficos, pedimentos, puentes, impuestos..."
-            rows={1} disabled={loading} />
-          <button className={`cruz-mic ${listening ? 'cruz-mic-active' : ''}`}
-            onClick={listening ? stopVoice : startVoice} aria-label={listening ? 'Dejar de escuchar' : 'Hablar'}>
+      {/* Input bar */}
+      <div style={{ padding: '12px 24px 16px', borderTop: `1px solid ${D.border}`, flexShrink: 0, background: D.bg }}>
+        {listening && <div style={{ fontSize: 12, color: GOLD, fontWeight: 600, textAlign: 'center', marginBottom: 6 }}>Escuchando...</div>}
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10 }}>
+          <textarea
+            ref={inputRef}
+            className="cruz-input"
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Pregunta sobre tráficos, puentes, impuestos..."
+            rows={1}
+            disabled={loading}
+            style={{
+              flex: 1, minHeight: 48, maxHeight: 120, padding: '12px 16px',
+              border: `1px solid ${D.border}`, borderRadius: 14,
+              fontSize: 15, fontFamily: 'var(--font-ui)', fontWeight: 450,
+              color: D.text, resize: 'none', outline: 'none',
+              background: D.surface, lineHeight: 1.5,
+            }}
+          />
+          <button
+            onClick={listening ? stopVoice : startVoice}
+            style={{
+              width: 48, height: 48, borderRadius: 14, border: 'none', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+              background: listening ? GOLD : D.surface, color: listening ? '#1A1710' : D.textMuted,
+              transition: 'all 0.15s',
+            }}
+          >
             <Mic size={20} />
           </button>
-          <button className="cruz-send" onClick={() => sendMessage(input)} disabled={loading || !input.trim()} aria-label="Enviar">
+          <button
+            onClick={() => sendMessage(input)}
+            disabled={loading || !input.trim()}
+            style={{
+              width: 48, height: 48, borderRadius: 14, border: 'none', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+              background: GOLD_GRADIENT, color: '#1A1710',
+              opacity: loading || !input.trim() ? 0.4 : 1,
+              transition: 'opacity 0.15s',
+            }}
+          >
             <Send size={18} strokeWidth={2} />
           </button>
         </div>
       </div>
+
+      <style>{`
+        @keyframes typing-dot {
+          0%, 60%, 100% { opacity: 0.2; transform: translateY(0); }
+          30% { opacity: 1; transform: translateY(-4px); }
+        }
+      `}</style>
     </div>
   )
 }

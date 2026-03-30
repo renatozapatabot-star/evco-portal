@@ -865,26 +865,47 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Save conversation to database
+    // Save conversation to database (async, don't block stream)
     const toolsUsed = loopMessages
       .filter((m: any) => m.role === 'assistant' && Array.isArray(m.content))
       .flatMap((m: any) => m.content.filter((b: any) => b.type === 'tool_use').map((b: any) => b.name))
-    try {
-      const userMsg = messages[messages.length - 1]?.content || ''
-      await supabase.from('cruz_conversations').insert({
-        session_id: sessionId || 'anonymous',
-        company_id: 'evco',
-        user_message: typeof userMsg === 'string' ? userMsg.substring(0, 2000) : JSON.stringify(userMsg).substring(0, 2000),
-        cruz_response: text.substring(0, 5000),
-        tools_used: toolsUsed.length > 0 ? toolsUsed : null,
-        page_context: context?.page || '',
-        response_time_ms: Date.now() - startTime,
-      })
-    } catch (e) {
-      console.error('Failed to save conversation:', e)
-    }
+    const userMsg = messages[messages.length - 1]?.content || ''
+    supabase.from('cruz_conversations').insert({
+      session_id: sessionId || 'anonymous',
+      company_id: 'evco',
+      user_message: typeof userMsg === 'string' ? userMsg.substring(0, 2000) : JSON.stringify(userMsg).substring(0, 2000),
+      cruz_response: text.substring(0, 5000),
+      tools_used: toolsUsed.length > 0 ? toolsUsed : null,
+      page_context: context?.page || '',
+      response_time_ms: Date.now() - startTime,
+    }).then(() => {}, (e: unknown) => console.error('Failed to save conversation:', e))
 
-    return NextResponse.json({ message: text, navigate: navigatePath })
+    // Stream response to client
+    const encoder = new TextEncoder()
+    const stream = new ReadableStream({
+      async start(controller) {
+        // Stream text in small chunks for progressive rendering
+        const words = text.split(/(\s+)/)
+        let batch = ''
+        for (let i = 0; i < words.length; i++) {
+          batch += words[i]
+          if (i % 4 === 3 || i === words.length - 1) {
+            controller.enqueue(encoder.encode(batch))
+            batch = ''
+            await new Promise(r => setTimeout(r, 12))
+          }
+        }
+        controller.close()
+      }
+    })
+
+    return new Response(stream, {
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Cache-Control': 'no-cache',
+        'X-Navigate': navigatePath || '',
+      }
+    })
   } catch (err: any) {
     console.error('CRUZ Chat error:', err)
     return NextResponse.json({ message: 'Error al procesar tu solicitud. Intenta de nuevo.', error: err.message }, { status: 500 })

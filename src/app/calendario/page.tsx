@@ -100,7 +100,7 @@ export default function CalendarioPage() {
 
     // Fetch IMMEX temporal limits
     try {
-      const res = await fetch(`/api/data?table=traficos&clave_cliente=${CLIENT_CLAVE}&trafico_prefix=${CLIENT_CLAVE}-&limit=500&order_by=fecha_llegada&order_dir=desc`)
+      const res = await fetch(`/api/data?table=traficos&company_id=${COMPANY_ID}&trafico_prefix=${CLIENT_CLAVE}-&limit=500&order_by=fecha_llegada&order_dir=desc`)
       const data = await res.json()
       const traficos = data.data ?? data ?? []
       const today = new Date().toISOString().split('T')[0]

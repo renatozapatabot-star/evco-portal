@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { AlertTriangle, CheckCircle, Clock, Package, ShieldAlert } from 'lucide-react'
 import { calculateCruzScore, extractScoreInput } from '@/lib/cruz-score'
-import { CLIENT_CLAVE } from '@/lib/client-config'
+import { CLIENT_CLAVE, COMPANY_ID } from '@/lib/client-config'
 import { fmtDateShort } from '@/lib/format-utils'
 
 interface Alert {
@@ -44,7 +44,7 @@ export default function AlertasPage() {
         const fifteenDaysAgo = new Date(Date.now() - 15 * 86400000).toISOString().split('T')[0]
 
         const [trafRes, entRes] = await Promise.all([
-          fetch(`/api/data?table=traficos&clave_cliente=${CLIENT_CLAVE}&trafico_prefix=${CLIENT_CLAVE}-&limit=500&order_by=fecha_llegada&order_dir=desc`).then(r => r.json()),
+          fetch(`/api/data?table=traficos&company_id=${COMPANY_ID}&trafico_prefix=${CLIENT_CLAVE}-&limit=500&order_by=fecha_llegada&order_dir=desc`).then(r => r.json()),
           fetch(`/api/data?table=entradas&cve_cliente=${CLIENT_CLAVE}&limit=200&order_by=fecha_llegada_mercancia&order_dir=desc`).then(r => r.json()),
         ])
         const traf = (trafRes.data ?? []).filter((t: any) =>

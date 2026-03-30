@@ -4,6 +4,7 @@ import { Search, Bell, X } from 'lucide-react'
 import { daysUntilMVE, mveIsCritical } from '@/lib/compliance-dates'
 import { CLIENT_NAME, CLIENT_CLAVE } from '@/lib/client-config'
 import { useRouter } from 'next/navigation'
+import { NightModeToggle } from '@/components/NightModeToggle'
 
 export function MobileHeader({ alertCount = 0 }: { alertCount?: number }) {
   const [searching, setSearching] = useState(false)
@@ -43,6 +44,7 @@ export function MobileHeader({ alertCount = 0 }: { alertCount?: number }) {
             <span className="m-mve-dot" />MVE {mveDays}d
           </div>
         )}
+        <NightModeToggle />
         <button className="m-header-btn" onClick={() => setSearching(true)} aria-label="Buscar">
           <Search size={20} />
         </button>

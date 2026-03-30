@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 // FEATURE 16 — SAAI/CIITA Direct Integration (Stub)
 // SAAI = Sistema Automatizado Aduanero Integral
-// CIITA = Centro Integral de Informacion de Tramites Aduaneros
+// CIITA = Centro Integral de Información de Trámites Aduaneros
 // Full implementation requires NUA (Numero Unico de Autorizacion) credentials
 // Contact: SHCP / Aduanas for API access
 

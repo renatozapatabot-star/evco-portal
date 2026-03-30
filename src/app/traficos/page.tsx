@@ -56,7 +56,7 @@ export default function TraficosPage() {
 
   useEffect(() => {
     setLoading(true)
-    fetch(`/api/data?table=traficos&clave_cliente=${CLIENT_CLAVE}&trafico_prefix=${CLIENT_CLAVE}-&limit=5000&order_by=fecha_llegada&order_dir=desc`)
+    fetch(`/api/data?table=traficos&company_id=${COMPANY_ID}&trafico_prefix=${CLIENT_CLAVE}-&limit=5000&order_by=fecha_llegada&order_dir=desc`)
       .then(r => r.json()).then(d => setRows(d.data ?? d ?? []))
       .catch(() => {}).finally(() => setLoading(false))
     fetch('/api/crossing-prediction').then(r => r.json()).then(d => setPredictions(d.predictions ?? {})).catch(() => {})
@@ -127,7 +127,7 @@ export default function TraficosPage() {
   const SortArrow = ({ col }: { col: string }) => sort.column === col ? <span style={{ marginLeft: 4, fontSize: 10 }}>{sort.direction === 'asc' ? '↑' : '↓'}</span> : null
 
   return (
-    <div style={{ padding: '20px 24px' }}>
+    <div className="page-container" style={{ padding: '20px 24px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
         <div>
           <h1 className="pg-title">Tráficos</h1>
@@ -258,7 +258,7 @@ export default function TraficosPage() {
                     <tr className={`${rowClass} ${isExpanded ? 'row-expanded' : ''}`}
                       onClick={() => setExpandedId(isExpanded ? null : r.trafico)}>
                       <td style={{ width: 28, paddingRight: 0 }}>
-                        {isCrossing ? <span className="crossing-pulse" /> : ps > 0 ? <span className={`priority ${priorityClass(ps)}`} title={`Score: ${ps}`} /> : null}
+                        {isCrossing ? <><span className="crossing-pulse" /><span className="sr-only">En cruce</span></> : ps > 0 ? <><span className={`priority ${priorityClass(ps)}`} title={`Score: ${ps}`} /><span className="sr-only">Prioridad: {ps}</span></> : null}
                       </td>
                       <td>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -281,7 +281,7 @@ export default function TraficosPage() {
                       <td>{r.pedimento ? <span className="ped-pill">{r.pedimento}</span> : <span style={{ color: 'var(--n-400)' }}>—</span>}</td>
                       <td>
                         <span className={`badge ${isCruzado ? 'badge-green' : 'badge-amber'}`}>
-                          <span className="badge-dot" />{isCruzado ? 'Cruzado' : 'En Proceso'}
+                          <span className="badge-dot" /><span className="sr-only">Estado: </span>{isCruzado ? 'Cruzado' : 'En Proceso'}
                           {!isCruzado && r.fecha_llegada && (
                             <span style={{ marginLeft: 4, fontSize: 11, color: 'var(--n-400)' }}>· {fmtDate(r.fecha_llegada)}</span>
                           )}

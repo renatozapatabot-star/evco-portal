@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { CLIENT_CLAVE } from '@/lib/client-config'
+import { CLIENT_CLAVE, COMPANY_ID } from '@/lib/client-config'
 import { GOLD } from '@/lib/design-system'
 import { fmtDateTimeLocal } from '@/lib/format-utils'
 
@@ -13,7 +13,7 @@ export default function WarRoom() {
   useEffect(() => {
     const load = async () => {
       const [trafRes, bridgeRes, compRes, riskRes] = await Promise.all([
-        fetch(`/api/data?table=traficos&clave_cliente=${CLIENT_CLAVE}&limit=2000`).then(r => r.json()).catch(() => ({ data: [] })),
+        fetch(`/api/data?table=traficos&company_id=${COMPANY_ID}&limit=2000`).then(r => r.json()).catch(() => ({ data: [] })),
         fetch('/api/data?table=bridge_intelligence&limit=50&order_by=updated_at&order_dir=desc').then(r => r.json()).catch(() => ({ data: [] })),
         fetch('/api/data?table=compliance_predictions&limit=50').then(r => r.json()).catch(() => ({ data: [] })),
         fetch('/api/data?table=pedimento_risk_scores&limit=50&order_by=overall_score&order_dir=desc').then(r => r.json()).catch(() => ({ data: [] })),

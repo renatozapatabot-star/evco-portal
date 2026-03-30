@@ -6,6 +6,7 @@ import { CLIENT_CLAVE } from '@/lib/client-config'
 import { fmtUSDFull as fmtUSD, fmtMXN, fmtDate } from '@/lib/format-utils'
 import { getTariffRate } from '@/lib/cruz-score'
 import { GOLD } from '@/lib/design-system'
+import { useIsMobile } from '@/hooks/use-mobile'
 
 const titleCase = (s: string) => {
   if (!s) return ''
@@ -58,6 +59,7 @@ function exportCSV(rows: FacturaRow[]) {
 }
 
 export default function PedimentosPage() {
+  const isMobile = useIsMobile()
   const [rows, setRows] = useState<FacturaRow[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -145,8 +147,8 @@ export default function PedimentosPage() {
   ]
 
   return (
-    <div className="p-6">
-      <div className="flex items-start justify-between mb-4">
+    <div className="page-container" style={{ padding: isMobile ? 16 : 24 }}>
+      <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'stretch' : 'flex-start', justifyContent: 'space-between', marginBottom: 16, gap: isMobile ? 12 : 0 }}>
         <div>
           <h1 className="page-title">Pedimentos</h1>
           <p className="text-[12.5px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
@@ -249,27 +251,74 @@ export default function PedimentosPage() {
         ))}
       </div>
 
-      <div className="rounded-[3px] overflow-hidden" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
-        {loading ? (
-          <div className="text-center py-12 text-[13px]" style={{ color: 'var(--text-muted)' }}>Cargando pedimentos...</div>
-        ) : pagedGroups.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-            <FileText size={32} strokeWidth={1.5} style={{ color: 'var(--n-300)', margin: '0 auto 12px', display: 'block' }} />
-            <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--n-700)', marginBottom: 4 }}>Sin pedimentos registrados</div>
-            <div style={{ fontSize: 13, color: 'var(--n-400)' }}>Los pedimentos aparecerán aquí</div>
-          </div>
-        ) : (
+      {/* Loading */}
+      {loading && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={`skel-${i}`} className="h-16 rounded bg-gray-200 animate-pulse" />
+          ))}
+        </div>
+      )}
+
+      {/* Empty state */}
+      {!loading && pagedGroups.length === 0 && (
+        <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+          <FileText size={32} strokeWidth={1.5} style={{ color: 'var(--n-300)', margin: '0 auto 12px', display: 'block' }} />
+          <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--n-700)', marginBottom: 4 }}>Sin pedimentos registrados</div>
+          <div style={{ fontSize: 13, color: 'var(--n-400)' }}>Los pedimentos aparecerán aquí</div>
+        </div>
+      )}
+
+      {/* Mobile card layout */}
+      {!loading && pagedGroups.length > 0 && isMobile && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {pagedGroups.map((g) => (
+            <div
+              key={g.pedimento}
+              onClick={() => toggle(g.pedimento)}
+              style={{
+                background: 'var(--bg-surface)',
+                border: '1px solid var(--border)',
+                borderLeft: `4px solid ${g.tmec ? '#16A34A' : GOLD}`,
+                borderRadius: 'var(--r-md, 8px)',
+                padding: '12px 14px',
+                cursor: 'pointer',
+                minHeight: 60,
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                <span style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-jetbrains-mono)', color: 'var(--text-primary)' }}>{g.pedimento}</span>
+                {g.tmec && <span className="badge-tmec">T-MEC</span>}
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'var(--font-jetbrains-mono)' }}>{g.fecha ? fmtDate(g.fecha) : ''}</span>
+                <span style={{ fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-jetbrains-mono)', color: 'var(--n-900)' }}>{fmtUSD(g.totalValor)}</span>
+              </div>
+              {g.proveedores.length > 0 && (
+                <div style={{ fontSize: 12, color: 'var(--n-500)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {titleCase(g.proveedores[0])}
+                  {g.proveedores.length > 1 && ` +${g.proveedores.length - 1}`}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Desktop table layout */}
+      {!loading && pagedGroups.length > 0 && !isMobile && (
+        <div className="rounded-[3px] overflow-hidden" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
           <div className="overflow-auto" style={{ maxHeight: 'calc(100vh - 260px)' }}>
             <table className="data-table">
               <thead>
                 <tr>
-                  <th style={{ width: 28 }}></th>
-                  <th>Pedimento</th>
-                  <th>Tráfico</th>
-                  <th>Proveedores</th>
-                  <th>Fecha</th>
-                  <th>T-MEC</th>
-                  <th style={{ textAlign: 'right' }}>Valor USD</th>
+                  <th scope="col" style={{ width: 28 }}></th>
+                  <th scope="col">Pedimento</th>
+                  <th scope="col">Tráfico</th>
+                  <th scope="col">Proveedores</th>
+                  <th scope="col">Fecha</th>
+                  <th scope="col">T-MEC</th>
+                  <th scope="col" style={{ textAlign: 'right' }}>Valor USD</th>
                 </tr>
               </thead>
               <tbody>
@@ -308,8 +357,8 @@ export default function PedimentosPage() {
               </tbody>
             </table>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {totalPages > 1 && (
         <div className="flex items-center justify-between mt-3 px-1">

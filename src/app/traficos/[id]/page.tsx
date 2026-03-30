@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { ArrowLeft, FileText, Upload } from 'lucide-react'
 import { fmtId, fmtDate, fmtUSD, fmtKg, fmtDesc, fmtMXNInt, fmtCurrency, formatAbsoluteETA, formatAbsoluteDate } from '@/lib/format-utils'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { GOLD } from '@/lib/design-system'
 import { fmtCarrier, countryFlag } from '@/lib/carrier-names'
 import { CruzScore } from '@/components/cruz-score'
@@ -29,6 +30,7 @@ const fmtPedimento = (p: string | null) => {
 export default function TraficoDetailPage() {
   const { id } = useParams()
   const router = useRouter()
+  const isMobile = useIsMobile()
   const [trafico, setTrafico] = useState<any>(null)
   const [documentos, setDocumentos] = useState<any[]>([])
   const [entradas, setEntradas] = useState<any[]>([])
@@ -147,9 +149,9 @@ export default function TraficoDetailPage() {
   ]
 
   return (
-    <div style={{ padding: 24, maxWidth: 1200, margin: '0 auto' }}>
+    <div className="page-container" style={{ padding: isMobile ? 16 : 24, maxWidth: 1200, margin: '0 auto' }}>
       {/* Breadcrumb */}
-      <button onClick={() => router.push('/traficos')}
+      <button onClick={() => router.push('/traficos')} aria-label="Volver a Tráficos"
         style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 20, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--n-400)', fontSize: 12 }}>
         <ArrowLeft size={13} /> Tráficos → {fmtId(t.trafico)}
       </button>
@@ -163,7 +165,7 @@ export default function TraficoDetailPage() {
             </h1>
             <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--n-500)', letterSpacing: '0.02em' }}>US → MX</span>
             <span className={`badge ${isCruzado ? 'badge-green' : 'badge-amber'}`}>
-              <span className="badge-dot" />{t.estatus || 'En Proceso'}
+              <span className="badge-dot" /><span className="sr-only">Estado: </span>{t.estatus || 'En Proceso'}
             </span>
           </div>
           <div style={{ marginTop: 8, fontSize: 13, color: 'var(--n-500)', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -181,7 +183,7 @@ export default function TraficoDetailPage() {
               {fmtUSD(Number(t.importe_total))} USD
             </div>
           )}
-          <div style={{ marginTop: 10, display: 'flex', gap: 8 }}>
+          <div style={{ marginTop: 10, display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 8 }}>
             <button
               disabled={solicitando || solicitadoOk || missingDocs.length === 0}
               onClick={async () => {
@@ -205,12 +207,15 @@ export default function TraficoDetailPage() {
                 }
               }}
               style={{
-                padding: '6px 14px', fontSize: 12, fontWeight: 700,
+                padding: isMobile ? '12px 14px' : '6px 14px',
+                fontSize: isMobile ? 14 : 12, fontWeight: 700,
                 border: 'var(--b-default)', borderRadius: 'var(--r-md)',
                 background: solicitadoOk ? '#F0FDF4' : 'var(--bg-card)',
                 cursor: solicitando || solicitadoOk || missingDocs.length === 0 ? 'default' : 'pointer',
                 color: solicitadoOk ? '#16A34A' : 'var(--n-600)',
                 opacity: solicitando ? 0.6 : 1,
+                width: isMobile ? '100%' : undefined,
+                minHeight: isMobile ? 60 : undefined,
               }}
             >
               {solicitando ? 'Solicitando...' : solicitadoOk ? '✓ Solicitados' : 'Solicitar Docs'}
@@ -219,7 +224,14 @@ export default function TraficoDetailPage() {
               const url = `${window.location.origin}/traficos/${encodeURIComponent(t.trafico)}`
               navigator.clipboard.writeText(url)
               setTrackingCopied(true); setTimeout(() => setTrackingCopied(false), 2000)
-            }} style={{ padding: '6px 14px', fontSize: 12, fontWeight: 700, border: 'var(--b-default)', borderRadius: 'var(--r-md)', background: 'var(--bg-card)', cursor: 'pointer', color: 'var(--n-600)' }}>
+            }} style={{
+              padding: isMobile ? '12px 14px' : '6px 14px',
+              fontSize: isMobile ? 14 : 12, fontWeight: 700,
+              border: 'var(--b-default)', borderRadius: 'var(--r-md)',
+              background: 'var(--bg-card)', cursor: 'pointer', color: 'var(--n-600)',
+              width: isMobile ? '100%' : undefined,
+              minHeight: isMobile ? 60 : undefined,
+            }}>
               {trackingCopied ? '✓ Copiado' : 'Compartir'}
             </button>
           </div>
@@ -231,7 +243,7 @@ export default function TraficoDetailPage() {
       </div>
 
       {/* ═══ MAIN LAYOUT — Timeline left, Tabs right ═══ */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 280px) 1fr', gap: 24 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'minmax(0, 280px) 1fr', gap: isMobile ? 16 : 24 }}>
 
         {/* ── 12-STEP TIMELINE ── */}
         <div className="card" style={{ padding: 20, alignSelf: 'start' }}>
@@ -304,12 +316,12 @@ export default function TraficoDetailPage() {
             {missingDocs.length > 0 && (
               <div style={{ padding: '12px 16px', background: 'var(--danger-bg)', border: '1px solid rgba(220,38,38,0.15)', borderRadius: 'var(--r-md)', marginBottom: 16 }}>
                 <div style={{ fontSize: 11, fontWeight: 800, color: '#991B1B', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>Documentos Faltantes</div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 6 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(140px, 1fr))', gap: 6 }}>
                   {missingDocs.map(doc => (
-                    <label key={doc} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 10px', borderRadius: 'var(--r-md)', border: '2px dashed rgba(220,38,38,0.3)', background: 'white', cursor: 'pointer', fontSize: 12, fontWeight: 600, color: '#991B1B', minHeight: 44 }}>
+                    <label key={doc} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '10px 12px', borderRadius: 'var(--r-md)', border: '2px dashed rgba(220,38,38,0.3)', background: 'white', cursor: 'pointer', fontSize: isMobile ? 14 : 12, fontWeight: 600, color: '#991B1B', minHeight: 60, width: '100%' }}>
                       {uploadingDoc === doc ? <span style={{ color: GOLD }}>Subiendo...</span> : (
                         <>
-                          <Upload size={12} />
+                          <Upload size={isMobile ? 16 : 12} />
                           {doc}
                           <input type="file" accept=".pdf,.jpg,.jpeg,.png,.xml" style={{ display: 'none' }} onChange={e => handleUpload(e.target.files?.[0], doc)} />
                         </>
@@ -380,7 +392,7 @@ export default function TraficoDetailPage() {
           )}
 
           {/* ── TABS — secondary data below documents ── */}
-          <div style={{ display: 'flex', gap: 2, marginBottom: 20, borderBottom: '1px solid var(--n-150)', overflow: 'auto' }}>
+          <div style={{ display: 'flex', gap: 2, marginBottom: 12, borderBottom: '1px solid var(--n-150)', overflow: 'auto' }}>
             {TABS.map(tab => (
               <button key={tab.key} onClick={() => setActiveTab(tab.key)} style={{
                 padding: '8px 16px', background: 'none', border: 'none',
@@ -424,7 +436,7 @@ export default function TraficoDetailPage() {
 
                   return (
                     <table className="data-table" style={{ fontSize: 13 }}>
-                      <thead><tr><th>Concepto</th><th style={{ textAlign: 'right' }}>Monto</th><th style={{ width: 40 }}></th></tr></thead>
+                      <thead><tr><th scope="col">Concepto</th><th scope="col" style={{ textAlign: 'right' }}>Monto</th><th scope="col" style={{ width: 40 }}></th></tr></thead>
                       <tbody>
                         {rows.map(r => (
                           <React.Fragment key={r.key}>

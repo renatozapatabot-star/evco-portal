@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from 'react'
 import { CheckCircle } from 'lucide-react'
-import { CLIENT_CLAVE } from '@/lib/client-config'
+import { CLIENT_CLAVE, COMPANY_ID } from '@/lib/client-config'
 import { fmtId, fmtDate, fmtDateTime, fmtDateTimeLocal } from '@/lib/format-utils'
 import { calculateCruzScore, extractScoreInput } from '@/lib/cruz-score'
 import { useIsMobile } from '@/hooks/use-mobile'
@@ -53,7 +53,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     Promise.all([
-      fetch(`/api/data?table=traficos&clave_cliente=${CLIENT_CLAVE}&trafico_prefix=${CLIENT_CLAVE}-&limit=1000&order_by=fecha_llegada&order_dir=desc`).then(r => r.json()),
+      fetch(`/api/data?table=traficos&company_id=${COMPANY_ID}&trafico_prefix=${CLIENT_CLAVE}-&limit=1000&order_by=fecha_llegada&order_dir=desc`).then(r => r.json()),
       fetch(`/api/data?table=entradas&cve_cliente=${CLIENT_CLAVE}&limit=500&order_by=fecha_llegada_mercancia&order_dir=desc`).then(r => r.json()),
     ]).then(([trafData, entData]) => {
       setTraficos(trafData.data ?? [])

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { CLIENT_CLAVE } from '@/lib/client-config'
+import { CLIENT_CLAVE, COMPANY_ID } from '@/lib/client-config'
 import { GOLD } from '@/lib/design-system'
 
 interface TickerItem { text: string; href: string }
@@ -13,7 +13,7 @@ export function IntelligenceTicker() {
     async function load() {
       try {
         const [statusRes, bridgeRes] = await Promise.all([
-          fetch(`/api/data?table=traficos&clave_cliente=${CLIENT_CLAVE}&limit=1000`).then(r => r.json()).catch(() => ({ data: [] })),
+          fetch(`/api/data?table=traficos&company_id=${COMPANY_ID}&limit=1000`).then(r => r.json()).catch(() => ({ data: [] })),
           fetch('/api/data?table=bridge_intelligence&limit=20&order_by=updated_at&order_dir=desc').then(r => r.json()).catch(() => ({ data: [] })),
         ])
 

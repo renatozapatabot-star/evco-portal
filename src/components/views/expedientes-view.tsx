@@ -204,7 +204,7 @@ function MobileCard({ row, onNavigate }: { row: TraficoRow; onNavigate: (id: str
         <span
           className={`badge ${row.estatus === 'Cruzado' ? 'badge-cruzado' : row.estatus === 'Detenido' ? 'badge-hold' : 'badge-proceso'}`}
         >
-          <span className="badge-dot" />
+          <span className="badge-dot" /><span className="sr-only">Estado: </span>
           {row.estatus}
         </span>
       </div>
@@ -471,12 +471,12 @@ export function ExpedientesView() {
               <table className="data-table" style={{ width: '100%' }}>
                 <thead>
                   <tr>
-                    <th>Tráfico</th>
-                    <th>Estado</th>
-                    <th>Docs</th>
-                    <th>Completitud</th>
-                    <th>Faltantes</th>
-                    <th style={{ textAlign: 'right' }}>Acción</th>
+                    <th scope="col">Tráfico</th>
+                    <th scope="col">Estado</th>
+                    <th scope="col">Docs</th>
+                    <th scope="col">Completitud</th>
+                    <th scope="col">Faltantes</th>
+                    <th scope="col" style={{ textAlign: 'right' }}>Acción</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -508,7 +508,7 @@ export function ExpedientesView() {
                             <span
                               className={`badge ${row.estatus === 'Cruzado' ? 'badge-cruzado' : row.estatus === 'Detenido' ? 'badge-hold' : 'badge-proceso'}`}
                             >
-                              <span className="badge-dot" />
+                              <span className="badge-dot" /><span className="sr-only">Estado: </span>
                               {row.estatus}
                             </span>
                             {noPedimento && (

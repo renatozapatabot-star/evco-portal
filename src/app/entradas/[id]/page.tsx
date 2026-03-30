@@ -153,7 +153,7 @@ export default function EntradaDetailPage() {
 
       <div className="card" style={{ marginBottom: 20 }}>
         <div className="card-header">
-          <span className="card-title">Informacion de Entrada</span>
+          <span className="card-title">Información de Entrada</span>
         </div>
         <div style={{ padding: 20 }}>
           <div className="d-grid">

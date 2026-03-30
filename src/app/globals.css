@@ -1834,3 +1834,73 @@ button:active { transform:scale(0.98); }
   from { opacity:0;transform:translateX(-4px); }
   to { opacity:1;transform:translateX(0); }
 }
+
+/* ══════════════════════════════
+   V6 MOBILE OVERHAUL
+══════════════════════════════ */
+body { overflow-x: hidden; }
+
+.page-container {
+  padding-bottom: 100px; /* prevent bottom nav from occluding content */
+}
+
+@media (max-width: 768px) {
+  button, a[role="button"], [role="listitem"] {
+    min-height: 60px;
+  }
+  .data-table { font-size: 12px; }
+}
+
+/* ── Screen reader only ── */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* ══════════════════════════════
+   V6 SKELETON (upgraded)
+══════════════════════════════ */
+.skeleton {
+  background: linear-gradient(90deg,
+    var(--surface-subtle, #F5F4F0) 25%,
+    var(--border-default, #E8E5DF) 50%,
+    var(--surface-subtle, #F5F4F0) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+  border-radius: var(--radius-sm, 4px);
+}
+@keyframes skeleton-loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ══════════════════════════════
+   V6 NIGHT MODE
+══════════════════════════════ */
+[data-theme="dark"] {
+  --surface-primary: #1A1A18;
+  --surface-card: #242422;
+  --surface-subtle: #2A2A28;
+  --text-primary: #E8E5DF;
+  --text-secondary: #9C9890;
+  --text-tertiary: #78716C;
+  --border-default: #333330;
+  --border-strong: #444440;
+  --bg-primary: #1A1A18;
+  --bg-card: #242422;
+  --bg-page: #1A1A18;
+  --bg-elevated: #2A2A28;
+  --bg-card-hover: #333330;
+  --n-0: #242422;
+  --n-50: #2A2A28;
+  --n-100: #333330;
+  --n-900: #E8E5DF;
+}

@@ -2,10 +2,11 @@
 import { useEffect, useState } from 'react'
 import { Bell } from 'lucide-react'
 import Link from 'next/link'
-import { CLIENT_NAME, CLIENT_CLAVE } from '@/lib/client-config'
+import { CLIENT_NAME, CLIENT_CLAVE, COMPANY_ID } from '@/lib/client-config'
 import { SearchBar } from '@/components/layout/search-bar'
 import { daysUntilMVE, mveIsUrgent } from '@/lib/compliance-dates'
 import { fmtDate } from '@/lib/format-utils'
+import { NightModeToggle } from '@/components/NightModeToggle'
 
 function LiveClock() {
   const [now, setNow] = useState(new Date())
@@ -27,7 +28,7 @@ export default function TopBar() {
       .then(d => setAlertCount((d.urgentes || 0) + (d.enProceso > 50 ? 1 : 0)))
       .catch(() => {})
 
-    fetch(`/api/data?table=traficos&clave_cliente=${CLIENT_CLAVE}&select=updated_at&limit=1&order_by=updated_at&order_dir=desc`)
+    fetch(`/api/data?table=traficos&company_id=${COMPANY_ID}&select=updated_at&limit=1&order_by=updated_at&order_dir=desc`)
       .then(r => r.json())
       .then(d => {
         const ts = d.data?.[0]?.updated_at
@@ -76,6 +77,7 @@ export default function TopBar() {
               display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{alertCount > 9 ? '9+' : alertCount}</span>
           )}
         </Link>
+        <NightModeToggle />
         <div className="tb-avatar">RZ</div>
       </div>
     </>

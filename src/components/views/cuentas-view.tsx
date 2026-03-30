@@ -194,7 +194,7 @@ export function CuentasView() {
                 ].map(b => (
                   <div key={b.label}>
                     <div style={{ fontSize: 11, fontWeight: 800, color: b.color, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{b.label}</div>
-                    <div style={{ fontSize: 18, fontWeight: 900, color: 'var(--n-900)', marginTop: 4 }}>{fmtMXN(b.value)}</div>
+                    <div style={{ fontSize: 18, fontWeight: 900, color: 'var(--n-900)', marginTop: 4, fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtMXN(b.value)}</div>
                   </div>
                 ))}
               </div>
@@ -210,7 +210,7 @@ export function CuentasView() {
                 <div className="text-[13px] font-semibold" style={{ color: '#111827' }}>Últimos Ingresos</div>
               </div>
               <table className="data-table">
-                <thead><tr><th>Fecha</th><th>Referencia</th><th style={{ textAlign: 'right' }}>Importe</th></tr></thead>
+                <thead><tr><th scope="col">Fecha</th><th scope="col">Referencia</th><th scope="col" style={{ textAlign: 'right' }}>Importe</th></tr></thead>
                 <tbody>
                   {ingresos.slice(0, 8).map(r => (
                     <tr key={r.consecutivo}>
@@ -228,7 +228,7 @@ export function CuentasView() {
                   <div className="text-[13px] font-semibold" style={{ color: '#111827' }}>Ultimos Egresos</div>
                 </div>
                 <table className="data-table">
-                  <thead><tr><th>Fecha</th><th>Beneficiario</th><th style={{ textAlign: 'right' }}>Importe</th></tr></thead>
+                  <thead><tr><th scope="col">Fecha</th><th scope="col">Beneficiario</th><th scope="col" style={{ textAlign: 'right' }}>Importe</th></tr></thead>
                   <tbody>
                     {egresos.slice(0, 8).map(r => (
                       <tr key={r.consecutivo}>
@@ -249,7 +249,7 @@ export function CuentasView() {
             <span className="card-title">Ultimas Facturas ({facturas.length})</span>
           </div>
           <table className="data-table">
-            <thead><tr><th>Serie-Folio</th><th>Fecha</th><th style={{ textAlign: 'right' }}>Total</th><th>Moneda</th></tr></thead>
+            <thead><tr><th scope="col">Serie-Folio</th><th scope="col">Fecha</th><th scope="col" style={{ textAlign: 'right' }}>Total</th><th scope="col">Moneda</th></tr></thead>
             <tbody>
               {facturas.slice(0, 8).map(r => (
                 <tr key={r.consecutivo}>

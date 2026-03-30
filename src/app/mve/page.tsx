@@ -36,7 +36,7 @@ export default function MvePage() {
   const daysLeft = getDaysLeft()
 
   useEffect(() => {
-    fetch(`/api/data?table=traficos&clave_cliente=${CLIENT_CLAVE}&trafico_prefix=${CLIENT_CLAVE}-&limit=5000&order_by=fecha_llegada&order_dir=desc`)
+    fetch(`/api/data?table=traficos&company_id=${COMPANY_ID}&trafico_prefix=${CLIENT_CLAVE}-&limit=5000&order_by=fecha_llegada&order_dir=desc`)
       .then(r => r.json())
       .then(data => setRows(data.data ?? []))
       .catch(() => {})

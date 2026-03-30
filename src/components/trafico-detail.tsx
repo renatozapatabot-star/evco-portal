@@ -180,16 +180,16 @@ export function TraficoDetail({ traficoId, onClose }: { traficoId: string; onClo
                           <span style={{ color: T.navy, fontSize: 13, fontWeight: 700 }}>
                             {f.pedimento || f.referencia || `Factura ${i+1}`}
                           </span>
-                          <span style={{ color: T.text, fontSize: 13, fontWeight: 700 }}>{fmtUSD(f.valor_usd)}</span>
+                          <span style={{ color: T.text, fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtUSD(f.valor_usd)}</span>
                         </div>
                         <div style={{ color: T.textSub, fontSize: 11, marginBottom: 4 }}>{f.proveedor}</div>
                         <div style={{ display: 'flex', gap: 16 }}>
                           <span style={{ color: T.textMuted, fontSize: 11 }}>T/C: ${Number(f.tipo_cambio || 0).toFixed(4)}</span>
-                          <span style={{ color: T.textMuted, fontSize: 11 }}>DTA: {fmtUSD(f.dta)}</span>
-                          <span style={{ color: (f.igi || 0) === 0 ? T.green : T.textMuted, fontSize: 11 }}>
+                          <span style={{ color: T.textMuted, fontSize: 11, fontFamily: 'var(--font-jetbrains-mono)' }}>DTA: {fmtUSD(f.dta)}</span>
+                          <span style={{ color: (f.igi || 0) === 0 ? T.green : T.textMuted, fontSize: 11, fontFamily: 'var(--font-jetbrains-mono)' }}>
                             IGI: {(f.igi || 0) === 0 ? 'T-MEC' : fmtUSD(f.igi)}
                           </span>
-                          <span style={{ color: T.textMuted, fontSize: 11 }}>IVA: {fmtUSD(f.iva)}</span>
+                          <span style={{ color: T.textMuted, fontSize: 11, fontFamily: 'var(--font-jetbrains-mono)' }}>IVA: {fmtUSD(f.iva)}</span>
                         </div>
                       </div>
                     ))}

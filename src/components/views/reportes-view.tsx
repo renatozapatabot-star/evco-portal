@@ -390,7 +390,7 @@ export function ReportesView() {
               <div key={p.name} style={{ marginBottom: 10 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                   <span style={{ color: T.text, fontSize: 11, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 180, fontWeight: i === 0 ? 700 : 400 }} title={p.fullName}>{p.name}</span>
-                  <span style={{ color: T.textSub, fontSize: 11, fontWeight: 600, flexShrink: 0, marginLeft: 8 }}>{fmtUSD(p.valor)}</span>
+                  <span style={{ color: T.textSub, fontSize: 11, fontWeight: 600, flexShrink: 0, marginLeft: 8, fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtUSD(p.valor)}</span>
                 </div>
                 <div style={{ height: 4, background: T.border, borderRadius: 99, overflow: 'hidden' }}>
                   <div style={{ width: `${(p.valor / max) * 100}%`, height: '100%', background: i === 0 ? T.navy : i < 3 ? T.gold : '#CEC9BF', borderRadius: 99 }} />
@@ -424,8 +424,8 @@ export function ReportesView() {
             <div style={{ color: T.textMuted, fontSize: 12, marginTop: 6 }}>Pedimentos con tasa preferencial aplicada</div>
           </div>
           <div style={{ background: T.surfaceAlt, border: `1px solid ${T.border}`, borderTop: `3px solid ${T.amber}`, borderRadius: 8, padding: '14px 16px' }}>
-            <div style={{ color: T.amber, fontSize: 14, fontWeight: 700 }}>{fmtNum(summary.noTmecCount)} sin T-MEC · Valor: {fmtUSD(summary.noTmecValor)} USD</div>
-            <div style={{ color: T.textSub, fontSize: 13, fontWeight: 600, marginTop: 6 }}>Ahorro potencial: ~{fmtUSD(summary.estimatedSavings)}*</div>
+            <div style={{ color: T.amber, fontSize: 14, fontWeight: 700 }}>{fmtNum(summary.noTmecCount)} sin T-MEC · Valor: <span style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtUSD(summary.noTmecValor)}</span> USD</div>
+            <div style={{ color: T.textSub, fontSize: 13, fontWeight: 600, marginTop: 6 }}>Ahorro potencial: ~<span style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtUSD(summary.estimatedSavings)}</span>*</div>
             <div style={{ color: T.textMuted, fontSize: 10, marginTop: 6, fontStyle: 'italic' }}>* Estimado por fracción. Verificar con su agente aduanal antes de contabilizar.</div>
           </div>
         </div>

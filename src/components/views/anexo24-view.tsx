@@ -74,7 +74,7 @@ export function Anexo24View() {
         <table className="data-table">
           <thead>
             <tr>
-              {cols.map(c => <th key={c} style={isNumCol(c) ? { textAlign: 'right' } : undefined}>{c.replace(/_/g, ' ')}</th>)}
+              {cols.map(c => <th key={c} scope="col" style={isNumCol(c) ? { textAlign: 'right' } : undefined}>{c.replace(/_/g, ' ')}</th>)}
             </tr>
           </thead>
           <tbody>

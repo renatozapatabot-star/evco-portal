@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { CLIENT_CLAVE, CLIENT_NAME } from '@/lib/client-config'
+import { CLIENT_CLAVE, CLIENT_NAME, COMPANY_ID } from '@/lib/client-config'
 import { GOLD_GRADIENT } from '@/lib/design-system'
 
 interface WelcomeData {
@@ -29,7 +29,7 @@ export function WelcomeOverlay() {
 
     // Load summary data
     Promise.all([
-      fetch(`/api/data?table=traficos&clave_cliente=${CLIENT_CLAVE}&trafico_prefix=${CLIENT_CLAVE}-&limit=1000&order_by=fecha_llegada&order_dir=desc`).then(r => r.json()).catch(() => ({ data: [] })),
+      fetch(`/api/data?table=traficos&company_id=${COMPANY_ID}&trafico_prefix=${CLIENT_CLAVE}-&limit=1000&order_by=fecha_llegada&order_dir=desc`).then(r => r.json()).catch(() => ({ data: [] })),
       fetch('/api/data?table=client_benchmarks&limit=10').then(r => r.json()).catch(() => ({ data: [] })),
       fetch('/api/data?table=compliance_predictions&limit=50').then(r => r.json()).catch(() => ({ data: [] })),
     ]).then(([trafRes, benchRes, compRes]) => {

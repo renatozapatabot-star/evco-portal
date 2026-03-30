@@ -26,7 +26,7 @@ export function SavingsWidget() {
     // Try pre-calculated first, then calculate from raw data
     Promise.all([
       fetch(`/api/data?table=aduanet_facturas&clave_cliente=${CLIENT_CLAVE}&limit=500&order_by=fecha_pago&order_dir=desc`).then(r => r.json()).catch(() => ({ data: [] })),
-      fetch(`/api/data?table=traficos&clave_cliente=${CLIENT_CLAVE}&limit=500&order_by=fecha_cruce&order_dir=desc`).then(r => r.json()).catch(() => ({ data: [] })),
+      fetch(`/api/data?table=traficos&company_id=${COMPANY_ID}&limit=500&order_by=fecha_cruce&order_dir=desc`).then(r => r.json()).catch(() => ({ data: [] })),
     ]).then(([factRes, trafRes]) => {
       const facturas = factRes.data || []
       const traficos = trafRes.data || []

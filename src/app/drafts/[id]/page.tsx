@@ -319,7 +319,7 @@ export default function DraftReviewPage() {
         <div>
           <div className="card" style={{ marginBottom: 16 }}>
             <table className="data-table" style={{ fontSize: 13 }}>
-              <thead><tr><th>Campo</th><th style={{ textAlign: 'right' }}>Valor</th></tr></thead>
+              <thead><tr><th scope="col">Campo</th><th scope="col" style={{ textAlign: 'right' }}>Valor</th></tr></thead>
               <tbody>
                 {[
                   { label: 'Valor Aduana', value: `${fmtUSD(draft.valor_total_usd)} USD` },

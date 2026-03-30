@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Search, ChevronLeft, ChevronRight, Package } from 'lucide-react'
 import { CLIENT_NAME, CLIENT_CLAVE } from '@/lib/client-config'
 import { fmtDesc, fmtDate } from '@/lib/format-utils'
+import { useIsMobile } from '@/hooks/use-mobile'
 import Link from 'next/link'
 
 interface EntradaRow {
@@ -46,6 +47,7 @@ const fmtTrafico = (id: string) => {
 
 export default function EntradasPage() {
   const router = useRouter()
+  const isMobile = useIsMobile()
   const [rows, setRows] = useState<EntradaRow[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -83,15 +85,15 @@ export default function EntradasPage() {
   const paged = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
 
   return (
-    <div className="p-6">
-      <div className="flex items-start justify-between mb-4">
+    <div className="page-container" style={{ padding: isMobile ? 16 : 24 }}>
+      <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'stretch' : 'flex-start', justifyContent: 'space-between', marginBottom: 16, gap: isMobile ? 12 : 0 }}>
         <div>
           <h1 className="page-title">Entradas</h1>
           <p className="text-[12.5px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
             {rows.length.toLocaleString()} remesas &middot; {CLIENT_NAME} {CLIENT_CLAVE}
           </p>
         </div>
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5" style={{ flexWrap: 'wrap' }}>
           <div className="flex items-center gap-1.5">
             <input type="date" value={dateFrom} onChange={e => { setDateFrom(e.target.value); setPage(0) }}
               className="rounded-[6px] px-2 py-1 text-[11px] outline-none"
@@ -112,7 +114,7 @@ export default function EntradasPage() {
           </label>
           <div
             className="flex items-center gap-2 rounded-[3px] px-3 py-1.5"
-            style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', width: 220 }}
+            style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', width: isMobile ? '100%' : 220 }}
           >
             <Search size={13} strokeWidth={2} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
             <input
@@ -127,91 +129,135 @@ export default function EntradasPage() {
         </div>
       </div>
 
-      <div
-        className="rounded-[3px] overflow-hidden"
-        style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}
-      >
-        <div className="overflow-auto" style={{ maxHeight: 'calc(100vh - 200px)' }}>
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Entrada</th>
-                <th>Tráfico</th>
-                <th>Fecha Llegada</th>
-                <th>Descripción</th>
-                <th style={{ textAlign: 'right' }}>Bultos</th>
-                <th style={{ textAlign: 'right' }}>Peso (kg)</th>
-                <th>Estado</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading && Array.from({ length: 8 }).map((_, i) => (
-                <tr key={`skel-${i}`}>
-                  <td><div className="h-3.5 w-16 rounded bg-gray-200 animate-pulse" /></td>
-                  <td><div className="h-4 w-24 rounded bg-gray-200 animate-pulse" /></td>
-                  <td><div className="h-3.5 w-20 rounded bg-gray-200 animate-pulse" /></td>
-                  <td><div className="h-3.5 w-32 rounded bg-gray-200 animate-pulse" /></td>
-                  <td><div className="h-3.5 w-10 rounded bg-gray-200 animate-pulse ml-auto" /></td>
-                  <td><div className="h-3.5 w-16 rounded bg-gray-200 animate-pulse ml-auto" /></td>
-                  <td><div className="h-5 w-16 rounded-full bg-gray-200 animate-pulse" /></td>
-                </tr>
-              ))}
-              {!loading && paged.length === 0 && (
-                <tr>
-                  <td colSpan={7} style={{ textAlign: 'center', padding: '60px 20px' }}>
-                    <Package size={32} strokeWidth={1.5} style={{ color: 'var(--n-300)', margin: '0 auto 12px' }} />
-                    <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--n-700)', marginBottom: 4 }}>Sin entradas registradas</div>
-                    <div style={{ fontSize: 13, color: 'var(--n-400)' }}>Los registros aparecerán aquí</div>
-                  </td>
-                </tr>
-              )}
-              {paged.map((r) => (
-                <tr key={r.cve_entrada} className={r.mercancia_danada || r.tiene_faltantes ? 'row-critical' : 'row-healthy'}
-                  onClick={() => router.push(`/entradas/${r.cve_entrada}`)} style={{ cursor: 'pointer' }}>
-                  <td>
-                    <span className="mono text-[12.5px] font-medium" style={{ color: 'var(--text-primary)' }}>
-                      {r.cve_entrada}
-                    </span>
-                  </td>
-                  <td>
-                    {r.trafico ? (
-                      <Link href={`/traficos/${encodeURIComponent(fmtTrafico(r.trafico))}`} className="mono text-[12.5px] font-semibold"
-                        style={{ color: '#1A6BFF', textDecoration: 'none' }}
-                        onClick={e => e.stopPropagation()}>
-                        {fmtTrafico(r.trafico)}
-                      </Link>
-                    ) : (
-                      <span className="c-empty">&middot;</span>
-                    )}
-                  </td>
-                  <td className="text-[12px]" style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-jetbrains-mono)' }}>
-                    {fmtDate(r.fecha_llegada_mercancia)}
-                  </td>
-                  <td
-                    className="text-[12px] max-w-[200px] truncate"
-                    style={{ color: r.descripcion_mercancia ? 'var(--text-secondary)' : 'var(--text-muted)' }}
-                  >
-                    {fmtDesc(r.descripcion_mercancia)}
-                  </td>
-                  <td className="text-right mono text-[12px]" style={{ color: 'var(--text-secondary)' }}>
-                    {r.cantidad_bultos ?? '-'}
-                  </td>
-                  <td className="text-right mono text-[12px]" style={{ color: 'var(--text-secondary)' }}>
-                    {r.peso_bruto ? Number(r.peso_bruto).toLocaleString('es-MX') : '-'}
-                  </td>
-                  <td>
-                    {r.mercancia_danada || r.tiene_faltantes ? (
-                      <span className="badge badge-hold"><span className="badge-dot" />Incidencia</span>
-                    ) : (
-                      <span className="badge badge-cruzado"><span className="badge-dot" />OK</span>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {/* Loading skeleton */}
+      {loading && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={`skel-${i}`} className="h-16 rounded bg-gray-200 animate-pulse" />
+          ))}
         </div>
-      </div>
+      )}
+
+      {/* Empty state */}
+      {!loading && paged.length === 0 && (
+        <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+          <Package size={32} strokeWidth={1.5} style={{ color: 'var(--n-300)', margin: '0 auto 12px' }} />
+          <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--n-700)', marginBottom: 4 }}>Sin entradas registradas</div>
+          <div style={{ fontSize: 13, color: 'var(--n-400)' }}>Los registros aparecerán aquí</div>
+        </div>
+      )}
+
+      {/* Mobile card layout */}
+      {!loading && paged.length > 0 && isMobile && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {paged.map((r) => {
+            const hasIncidencia = r.mercancia_danada || r.tiene_faltantes
+            const statusColor = hasIncidencia ? '#DC2626' : '#16A34A'
+            return (
+              <div
+                key={r.cve_entrada}
+                onClick={() => router.push(`/entradas/${r.cve_entrada}`)}
+                style={{
+                  background: 'var(--bg-surface)',
+                  border: '1px solid var(--border)',
+                  borderLeft: `4px solid ${statusColor}`,
+                  borderRadius: 'var(--r-md, 8px)',
+                  padding: '12px 14px',
+                  cursor: 'pointer',
+                  minHeight: 60,
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                  <span className="mono" style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{r.cve_entrada}</span>
+                  {hasIncidencia ? (
+                    <span className="badge badge-hold"><span className="badge-dot" />Incidencia</span>
+                  ) : (
+                    <span className="badge badge-cruzado"><span className="badge-dot" />OK</span>
+                  )}
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtDate(r.fecha_llegada_mercancia)}</span>
+                  {r.peso_bruto && (
+                    <span className="mono" style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{Number(r.peso_bruto).toLocaleString('es-MX')} kg</span>
+                  )}
+                </div>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {fmtDesc(r.descripcion_mercancia)}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
+
+      {/* Desktop table layout */}
+      {!loading && paged.length > 0 && !isMobile && (
+        <div
+          className="rounded-[3px] overflow-hidden"
+          style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}
+        >
+          <div className="overflow-auto" style={{ maxHeight: 'calc(100vh - 200px)' }}>
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Entrada</th>
+                  <th>Tráfico</th>
+                  <th>Fecha Llegada</th>
+                  <th>Descripción</th>
+                  <th style={{ textAlign: 'right' }}>Bultos</th>
+                  <th style={{ textAlign: 'right' }}>Peso (kg)</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paged.map((r) => (
+                  <tr key={r.cve_entrada} className={r.mercancia_danada || r.tiene_faltantes ? 'row-critical' : 'row-healthy'}
+                    onClick={() => router.push(`/entradas/${r.cve_entrada}`)} style={{ cursor: 'pointer' }}>
+                    <td>
+                      <span className="mono text-[12.5px] font-medium" style={{ color: 'var(--text-primary)' }}>
+                        {r.cve_entrada}
+                      </span>
+                    </td>
+                    <td>
+                      {r.trafico ? (
+                        <Link href={`/traficos/${encodeURIComponent(fmtTrafico(r.trafico))}`} className="mono text-[12.5px] font-semibold"
+                          style={{ color: '#1A6BFF', textDecoration: 'none' }}
+                          onClick={e => e.stopPropagation()}>
+                          {fmtTrafico(r.trafico)}
+                        </Link>
+                      ) : (
+                        <span className="c-empty">&middot;</span>
+                      )}
+                    </td>
+                    <td className="text-[12px]" style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-jetbrains-mono)' }}>
+                      {fmtDate(r.fecha_llegada_mercancia)}
+                    </td>
+                    <td
+                      className="text-[12px] max-w-[200px] truncate"
+                      style={{ color: r.descripcion_mercancia ? 'var(--text-secondary)' : 'var(--text-muted)' }}
+                    >
+                      {fmtDesc(r.descripcion_mercancia)}
+                    </td>
+                    <td className="text-right mono text-[12px]" style={{ color: 'var(--text-secondary)' }}>
+                      {r.cantidad_bultos ?? '-'}
+                    </td>
+                    <td className="text-right mono text-[12px]" style={{ color: 'var(--text-secondary)' }}>
+                      {r.peso_bruto ? Number(r.peso_bruto).toLocaleString('es-MX') : '-'}
+                    </td>
+                    <td>
+                      {r.mercancia_danada || r.tiene_faltantes ? (
+                        <span className="badge badge-hold"><span className="badge-dot" />Incidencia</span>
+                      ) : (
+                        <span className="badge badge-cruzado"><span className="badge-dot" />OK</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {totalPages > 1 && (
         <div className="flex items-center justify-between mt-3 px-1">

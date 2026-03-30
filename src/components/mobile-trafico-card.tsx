@@ -21,7 +21,7 @@ export function MobileTraficoCard({ trafico: r, onClick }: Props) {
         <div className="m-card-right">
           <CruzScore score={cruzScore} size="sm" />
           <span className={`badge ${isCruzado ? 'badge-success' : isHold ? 'badge-danger' : 'badge-warning'}`} style={{ height: 20, fontSize: 11 }}>
-            <span className="badge-dot" />{isCruzado ? 'Cruzado' : isHold ? 'Detenido' : 'Proceso'}
+            <span className="badge-dot" /><span className="sr-only">Estado: </span>{isCruzado ? 'Cruzado' : isHold ? 'Detenido' : 'Proceso'}
           </span>
         </div>
       </div>

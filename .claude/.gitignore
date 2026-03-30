@@ -1,0 +1,6 @@
+# CRUZ Evolution — ALL memory files are committed to preserve learning across clones
+# The whole point of the evolution system is persistence. Don't exclude it.
+
+# Local overrides (machine-specific, not shared)
+CLAUDE.local.md
+.claude/settings.local.json

@@ -1,0 +1,432 @@
+'use client'
+
+import { useState, useEffect, useRef } from 'react'
+import { useParams, useRouter } from 'next/navigation'
+import { ArrowLeft, Check, X, AlertTriangle, FileText, ChevronDown, ChevronRight } from 'lucide-react'
+import { createClient } from '@supabase/supabase-js'
+import { GOLD, GOLD_GRADIENT, Z_RED } from '@/lib/design-system'
+import { CLIENT_CLAVE } from '@/lib/client-config'
+import { formatAbsoluteETA } from '@/lib/format-utils'
+
+const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
+
+const TIER_CONFIG = {
+  1: { label: 'Alta confianza', time: '~2 min', color: '#16A34A', bg: '#F0FDF4' },
+  2: { label: 'Confianza media', time: '~5 min', color: '#D97706', bg: '#FFFBEB' },
+  3: { label: 'Revisión completa', time: 'Sin límite · precisión sobre velocidad', color: '#DC2626', bg: '#FEF2F2' },
+}
+
+function mapDraftRow(row: any) {
+  const d = row.draft_data || {}
+  const products = d.products || []
+  const confidence = d.confidence ?? products[0]?.confidence ?? 0
+  const tier = confidence >= 90 ? 1 : confidence >= 70 ? 2 : 3
+  return {
+    id: row.id,
+    trafico: row.trafico_id || d.trafico || '',
+    status: row.status || 'draft',
+    supplier: d.supplier || '',
+    country: d.country || 'US',
+    confidence,
+    tier,
+    created_at: row.created_at,
+    products,
+    valor_total_usd: d.valor_total_usd || products.reduce((s: number, p: any) => s + (p.valor_usd || 0), 0),
+    tipo_cambio: d.tipo_cambio || 17.5,
+    regimen: d.regimen || 'IMD',
+    checklist: d.checklist || [],
+  }
+}
+
+export default function DraftReviewPage() {
+  const { id } = useParams()
+  const router = useRouter()
+  const [draft, setDraft] = useState<any>(null)
+  const [loadingDraft, setLoadingDraft] = useState(true)
+
+  useEffect(() => {
+    supabase.from('pedimento_drafts')
+      .select('*')
+      .eq('id', id)
+      .eq('company_id', CLIENT_CLAVE)
+      .single()
+      .then(({ data }) => {
+        if (data) setDraft(mapDraftRow(data))
+        setLoadingDraft(false)
+      })
+  }, [id])
+
+  const [rates, setRates] = useState({ dta: 0.008, iva: 0.16, tc: 17.49 })
+  useEffect(() => {
+    Promise.all([
+      supabase.from('system_config').select('value').eq('key', 'dta_rates').single(),
+      supabase.from('system_config').select('value').eq('key', 'iva_rate').single(),
+      supabase.from('system_config').select('value').eq('key', 'banxico_exchange_rate').single(),
+    ]).then(([d, i, t]) => {
+      setRates({
+        dta: d.data?.value?.A1?.rate ?? 0.008,
+        iva: i.data?.value?.rate ?? 0.16,
+        tc: t.data?.value?.rate ?? 17.49,
+      })
+    })
+  }, [])
+
+  const [activeTab, setActiveTab] = useState<'review' | 'products' | 'checklist'>('review')
+  const [approvalState, setApprovalState] = useState<'idle' | 'countdown' | 'blessing' | 'automating' | 'done' | 'rejected'>('idle')
+  const [countdown, setCountdown] = useState(5)
+  const [correctionNote, setCorrectionNote] = useState('')
+  const [rejectReason, setRejectReason] = useState('')
+  const [automationStep, setAutomationStep] = useState(0)
+  const countdownRef = useRef<ReturnType<typeof setInterval>>(undefined)
+
+  // Countdown timer
+  useEffect(() => {
+    if (approvalState === 'countdown') {
+      setCountdown(5)
+      countdownRef.current = setInterval(() => {
+        setCountdown(prev => {
+          if (prev <= 1) {
+            clearInterval(countdownRef.current)
+            setApprovalState('blessing')
+            // Write approval to Supabase
+            if (draft) {
+              supabase.from('pedimento_drafts').update({
+                status: 'approved', reviewed_by: 'tito', reviewed_at: new Date().toISOString()
+              }).eq('id', draft.id).then(() => {})
+              supabase.from('audit_log').insert({
+                tenant_id: '52762e3c-bd8a-49b8-9a32-296e526b7238',
+                action: 'draft_approved',
+                resource: 'draft',
+                resource_id: String(draft.id),
+                diff: { trafico: draft.trafico, correction: correctionNote || null }
+              }).then(() => {})
+              if (correctionNote) {
+                supabase.from('draft_corrections').insert({
+                  draft_id: draft.id, correction_note: correctionNote, corrected_by: 'tito'
+                }).then(() => {})
+              }
+            }
+            setTimeout(() => {
+              setApprovalState('automating')
+              // Simulate automation steps
+              let step = 0
+              const stepInterval = setInterval(() => {
+                step++
+                setAutomationStep(step)
+                if (step >= 6) {
+                  clearInterval(stepInterval)
+                  setTimeout(() => setApprovalState('done'), 500)
+                }
+              }, 800)
+            }, 2500)
+            return 0
+          }
+          return prev - 1
+        })
+      }, 1000)
+      return () => clearInterval(countdownRef.current)
+    }
+  }, [approvalState])
+
+  if (loadingDraft) return (
+    <div style={{ padding: 24, maxWidth: 1000, margin: '0 auto' }}>
+      <div className="skeleton" style={{ width: 120, height: 16, marginBottom: 20 }} />
+      <div className="skeleton" style={{ width: 300, height: 32, marginBottom: 12 }} />
+      <div className="skeleton" style={{ height: 200, borderRadius: 'var(--r-md)' }} />
+    </div>
+  )
+
+  if (!draft) return (
+    <div style={{ padding: 24 }}>
+      <button onClick={() => router.push('/drafts')} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--n-400)', fontSize: 13, marginBottom: 20 }}>
+        <ArrowLeft size={14} /> Borradores
+      </button>
+      <p style={{ color: 'var(--n-400)' }}>Borrador no encontrado.</p>
+    </div>
+  )
+
+  const tier = TIER_CONFIG[draft.tier as 1 | 2 | 3]
+  const tc = rates.tc || draft.tipo_cambio
+  const valMXN = draft.valor_total_usd * tc
+  const dta = Math.round(valMXN * rates.dta)
+  const igi = 0 // T-MEC
+  const ivaBase = valMXN + dta + igi // Cascading base — NOT flat
+  const iva = Math.round(ivaBase * rates.iva)
+  const totalContrib = dta + igi + iva
+
+  const AUTOMATION_STEPS = [
+    'Creando tráfico en GlobalPC',
+    'Ingresando factura',
+    'Ingresando productos',
+    'Generando COVE → VUCEM',
+    'Confirmando folio',
+    'Pedimento listo',
+  ]
+
+  // ═══ COUNTDOWN OVERLAY ═══
+  if (approvalState === 'countdown') return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,0.85)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
+      <div style={{ position: 'relative', width: 120, height: 120, marginBottom: 24 }}>
+        <svg width={120} height={120} viewBox="0 0 120 120">
+          <circle cx={60} cy={60} r={54} fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth={6} />
+          <circle cx={60} cy={60} r={54} fill="none" stroke={GOLD} strokeWidth={6} strokeLinecap="round"
+            strokeDasharray={339.29} strokeDashoffset={339.29 * (countdown / 5)}
+            transform="rotate(-90 60 60)" style={{ transition: 'stroke-dashoffset 1s linear' }} />
+        </svg>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 48, fontWeight: 900, fontFamily: 'var(--font-data)' }}>
+          {countdown}
+        </div>
+      </div>
+      <button onClick={() => { clearInterval(countdownRef.current); setApprovalState('idle') }}
+        style={{ padding: '16px 40px', borderRadius: 12, border: '2px solid #DC2626', background: 'transparent', color: '#DC2626', fontSize: 16, fontWeight: 800, cursor: 'pointer', minHeight: 60 }}>
+        CANCELAR — esto no enviará nada
+      </button>
+      <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', marginTop: 12 }}>
+        Se enviará automáticamente en {countdown} segundo{countdown !== 1 ? 's' : ''}
+      </div>
+    </div>
+  )
+
+  // ═══ BLESSING ANIMATION ═══
+  if (approvalState === 'blessing') return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 200, background: '#0D0D0C', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{
+        width: 80, height: 80, borderRadius: 20,
+        background: GOLD_GRADIENT,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        boxShadow: '0 0 60px rgba(201,168,76,0.4)',
+        animation: 'blessing-pulse 0.8s ease-in-out',
+        marginBottom: 24,
+      }}>
+        <span style={{ fontFamily: 'Georgia, serif', fontSize: 40, fontWeight: 700, color: '#1A1710' }}>Z</span>
+      </div>
+      <div style={{ fontSize: 20, fontWeight: 800, color: '#F5F3EE', letterSpacing: '-0.02em', marginBottom: 8 }}>
+        Patente 3596 honrada.
+      </div>
+      <div style={{ fontSize: 16, color: GOLD, fontWeight: 600 }}>
+        Gracias, Tito.
+      </div>
+      <style>{`
+        @keyframes blessing-pulse {
+          0% { transform: scale(0.8); opacity: 0; box-shadow: 0 0 0 0 rgba(201,168,76,0.6); }
+          50% { transform: scale(1.1); opacity: 1; box-shadow: 0 0 80px 20px rgba(201,168,76,0.3); }
+          100% { transform: scale(1); opacity: 1; box-shadow: 0 0 60px rgba(201,168,76,0.4); }
+        }
+      `}</style>
+    </div>
+  )
+
+  // ═══ AUTOMATION PROGRESS ═══
+  if (approvalState === 'automating') return (
+    <div style={{ padding: 32, maxWidth: 600, margin: '60px auto' }}>
+      <h2 style={{ fontSize: 20, fontWeight: 800, color: 'var(--n-900)', marginBottom: 24 }}>Automatización en curso</h2>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {AUTOMATION_STEPS.map((step, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: 'var(--bg-card)', border: 'var(--b-default)', borderRadius: 'var(--r-md)' }}>
+            <div style={{ width: 24, height: 24, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+              background: i < automationStep ? '#16A34A' : i === automationStep ? GOLD : 'var(--n-100)',
+              color: i <= automationStep ? 'white' : 'var(--n-400)',
+            }}>
+              {i < automationStep ? <Check size={14} /> : <span style={{ fontSize: 11, fontWeight: 700 }}>{i + 1}</span>}
+            </div>
+            <span style={{ fontSize: 14, fontWeight: i === automationStep ? 700 : 500, color: i <= automationStep ? 'var(--n-900)' : 'var(--n-400)' }}>
+              {step}
+            </span>
+            {i === automationStep && <span style={{ marginLeft: 'auto', fontSize: 11, color: GOLD, fontWeight: 700 }}>En proceso...</span>}
+            {i < automationStep && <span style={{ marginLeft: 'auto', fontSize: 11, color: '#16A34A', fontFamily: 'var(--font-data)' }}>✓</span>}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+
+  // ═══ DONE ═══
+  if (approvalState === 'done') return (
+    <div style={{ padding: 32, maxWidth: 500, margin: '80px auto', textAlign: 'center' }}>
+      <Check size={48} style={{ color: '#16A34A', margin: '0 auto 16px' }} />
+      <h2 style={{ fontSize: 22, fontWeight: 900, color: 'var(--n-900)', marginBottom: 8 }}>Pedimento transmitido</h2>
+      <p style={{ fontSize: 14, color: 'var(--n-500)', marginBottom: 24 }}>Tráfico {draft.trafico} procesado exitosamente</p>
+      <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
+        <button onClick={() => router.push(`/traficos/${draft.trafico}`)} className="btn-gold" style={{ padding: '12px 24px', fontSize: 14, borderRadius: 8 }}>
+          Ver tráfico →
+        </button>
+        <button onClick={() => router.push('/drafts')} style={{ padding: '12px 24px', border: 'var(--b-default)', borderRadius: 8, background: 'var(--bg-card)', cursor: 'pointer', fontSize: 14, fontWeight: 600 }}>
+          Siguiente borrador
+        </button>
+      </div>
+    </div>
+  )
+
+  // ═══ REJECTED ═══
+  if (approvalState === 'rejected') return (
+    <div style={{ padding: 32, maxWidth: 500, margin: '80px auto', textAlign: 'center' }}>
+      <X size={48} style={{ color: '#DC2626', margin: '0 auto 16px' }} />
+      <h2 style={{ fontSize: 22, fontWeight: 900, color: 'var(--n-900)', marginBottom: 8 }}>Borrador rechazado</h2>
+      <p style={{ fontSize: 14, color: 'var(--n-500)', marginBottom: 24 }}>Motivo: {rejectReason || 'Sin motivo especificado'}</p>
+      <button onClick={() => router.push('/drafts')} style={{ padding: '12px 24px', border: 'var(--b-default)', borderRadius: 8, background: 'var(--bg-card)', cursor: 'pointer', fontSize: 14, fontWeight: 600 }}>
+        Volver a borradores
+      </button>
+    </div>
+  )
+
+  // ═══ MAIN REVIEW INTERFACE ═══
+  return (
+    <div style={{ padding: 24, maxWidth: 1000, margin: '0 auto' }}>
+      <button onClick={() => router.push('/drafts')} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--n-400)', fontSize: 12, marginBottom: 20 }}>
+        <ArrowLeft size={13} /> Borradores → {draft.id}
+      </button>
+
+      {/* Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20, gap: 16, flexWrap: 'wrap' }}>
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+            <span style={{ fontSize: 11, fontWeight: 800, padding: '3px 10px', borderRadius: 4, background: tier.bg, color: tier.color, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+              Revisión Requerida · Tier {draft.tier}
+            </span>
+            <span style={{ fontSize: 12, color: 'var(--n-400)' }}>{tier.time}</span>
+          </div>
+          <h1 style={{ fontFamily: 'var(--font-data)', fontSize: 24, fontWeight: 900, color: 'var(--n-900)', margin: 0 }}>{draft.trafico}</h1>
+          <div style={{ fontSize: 13, color: 'var(--n-500)', marginTop: 4 }}>
+            {draft.supplier} · {draft.country} · Recibido {formatAbsoluteETA(draft.created_at)}
+          </div>
+        </div>
+        <div style={{ textAlign: 'right' }}>
+          <div style={{ fontSize: 36, fontWeight: 900, fontFamily: 'var(--font-data)', color: tier.color }}>{draft.confidence}%</div>
+          <div style={{ fontSize: 11, color: 'var(--n-400)' }}>confianza CRUZ</div>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div style={{ display: 'flex', gap: 2, marginBottom: 20, borderBottom: '1px solid var(--n-150)' }}>
+        {([
+          { key: 'review' as const, label: 'Datos Generales' },
+          { key: 'products' as const, label: `Productos (${draft.products.length})` },
+          { key: 'checklist' as const, label: 'Checklist' },
+        ]).map(tab => (
+          <button key={tab.key} onClick={() => setActiveTab(tab.key)} style={{
+            padding: '8px 16px', background: 'none', border: 'none',
+            borderBottom: activeTab === tab.key ? `2px solid ${GOLD}` : '2px solid transparent',
+            cursor: 'pointer', fontSize: 13, fontWeight: activeTab === tab.key ? 700 : 500,
+            color: activeTab === tab.key ? 'var(--n-900)' : 'var(--n-400)', marginBottom: -1,
+          }}>
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* TAB: DATOS GENERALES */}
+      {activeTab === 'review' && (
+        <div>
+          <div className="card" style={{ marginBottom: 16 }}>
+            <table className="data-table" style={{ fontSize: 13 }}>
+              <thead><tr><th>Campo</th><th style={{ textAlign: 'right' }}>Valor</th></tr></thead>
+              <tbody>
+                {[
+                  { label: 'Valor Aduana', value: `$${draft.valor_total_usd.toLocaleString('en-US', { minimumFractionDigits: 2 })} USD` },
+                  { label: 'Tipo de Cambio', value: `$${tc.toFixed(4)} MXN/USD` },
+                  { label: 'Valor MXN', value: `$${valMXN.toLocaleString('es-MX', { maximumFractionDigits: 0 })} MXN` },
+                  { label: `DTA (${(rates.dta * 100).toFixed(1)}%)`, value: `$${dta.toLocaleString()} MXN` },
+                  { label: 'IGI', value: '$0 MXN (T-MEC ✅)' },
+                  { label: 'Base IVA', value: `$${ivaBase.toLocaleString('es-MX', { maximumFractionDigits: 0 })} MXN`, note: 'Valor + DTA + IGI' },
+                  { label: 'IVA (16%)', value: `$${iva.toLocaleString()} MXN` },
+                  { label: 'Total Contribuciones', value: `$${totalContrib.toLocaleString()} MXN`, bold: true },
+                ].map(r => (
+                  <tr key={r.label}>
+                    <td style={{ color: 'var(--n-700)' }}>
+                      {r.label}
+                      {(r as any).note && <span style={{ fontSize: 10, color: 'var(--n-400)', marginLeft: 6 }}>({(r as any).note})</span>}
+                    </td>
+                    <td style={{ textAlign: 'right', fontFamily: 'var(--font-data)', fontWeight: (r as any).bold ? 800 : 600, color: (r as any).bold ? GOLD : 'var(--n-900)' }}>{r.value}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div style={{ fontSize: 11, color: 'var(--n-400)', marginBottom: 16 }}>
+            Base IVA = Valor aduana + DTA + IGI (cálculo cascada, no 16% flat sobre factura)
+          </div>
+        </div>
+      )}
+
+      {/* TAB: PRODUCTOS */}
+      {activeTab === 'products' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {draft.products.map((p: any, i: number) => {
+            const borderColor = p.confidence >= 90 ? '#16A34A' : p.confidence >= 75 ? '#D97706' : '#DC2626'
+            return (
+              <div key={i} style={{ padding: '16px 20px', background: 'var(--bg-card)', border: `1px solid var(--n-150)`, borderLeft: `4px solid ${borderColor}`, borderRadius: 'var(--r-md)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--n-900)' }}>{p.description}</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: borderColor, fontFamily: 'var(--font-data)' }}>{p.confidence}%</span>
+                </div>
+                <div style={{ display: 'flex', gap: 16, fontSize: 12, color: 'var(--n-500)' }}>
+                  <span style={{ fontFamily: 'var(--font-data)', fontWeight: 600 }}>{p.fraccion}</span>
+                  <span>{p.qty.toLocaleString()} {p.unit}</span>
+                  <span style={{ fontFamily: 'var(--font-data)', fontWeight: 600 }}>${p.valor_usd.toLocaleString('en-US', { minimumFractionDigits: 2 })} USD</span>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
+
+      {/* TAB: CHECKLIST */}
+      {activeTab === 'checklist' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {draft.checklist.map((c: any, i: number) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: 'var(--bg-card)', border: 'var(--b-default)', borderRadius: 'var(--r-md)', minHeight: 48 }}>
+              {c.status === 'ok' && <Check size={16} style={{ color: '#16A34A', flexShrink: 0 }} />}
+              {c.status === 'warning' && <AlertTriangle size={16} style={{ color: '#D97706', flexShrink: 0 }} />}
+              {c.status === 'error' && <X size={16} style={{ color: '#DC2626', flexShrink: 0 }} />}
+              <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--n-800)', flex: 1 }}>{c.label}</span>
+              {c.detail && <span style={{ fontSize: 12, color: c.status === 'ok' ? 'var(--n-400)' : c.status === 'warning' ? '#92400E' : '#991B1B' }}>{c.detail}</span>}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* ═══ APPROVAL BUTTONS (sticky bottom) ═══ */}
+      <div style={{ position: 'sticky', bottom: 0, left: 0, right: 0, padding: '16px 0', background: 'var(--bg-primary)', borderTop: '1px solid var(--n-150)', marginTop: 24 }}>
+        <div style={{ display: 'flex', gap: 10, maxWidth: 1000, margin: '0 auto' }}>
+          {/* Aprobar */}
+          <button onClick={() => setApprovalState('countdown')} className="btn-gold"
+            style={{ flex: 2, padding: '14px 24px', fontSize: 15, borderRadius: 10, minHeight: 60, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+            <Check size={18} /> Aprobar
+          </button>
+
+          {/* Aprobar con correcciones */}
+          <button onClick={() => {
+            const note = prompt('Nota de corrección (mínimo 20 caracteres):')
+            if (note && note.length >= 20) { setCorrectionNote(note); setApprovalState('countdown') }
+            else if (note) alert('La nota debe tener al menos 20 caracteres.')
+          }}
+            style={{ flex: 1, padding: '14px 16px', border: 'var(--b-default)', borderRadius: 10, background: 'var(--bg-card)', cursor: 'pointer', fontSize: 13, fontWeight: 700, color: 'var(--n-700)', minHeight: 60 }}>
+            Con correcciones
+          </button>
+
+          {/* Rechazar */}
+          <button onClick={() => {
+            const reason = prompt('Motivo de rechazo:')
+            if (reason) {
+              setRejectReason(reason)
+              if (draft) {
+                supabase.from('pedimento_drafts').update({
+                  status: 'rejected', reviewed_by: 'tito', reviewed_at: new Date().toISOString()
+                }).eq('id', draft.id).then(() => {})
+                supabase.from('audit_log').insert({
+                  tenant_id: '52762e3c-bd8a-49b8-9a32-296e526b7238',
+                  action: 'draft_rejected', resource: 'draft', resource_id: String(draft.id),
+                  diff: { trafico: draft.trafico, reason }
+                }).then(() => {})
+              }
+              setApprovalState('rejected')
+            }
+          }}
+            style={{ padding: '14px 16px', border: '1px solid rgba(220,38,38,0.3)', borderRadius: 10, background: 'rgba(220,38,38,0.05)', cursor: 'pointer', fontSize: 13, fontWeight: 700, color: '#DC2626', minHeight: 60 }}>
+            Rechazar
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}

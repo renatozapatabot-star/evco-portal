@@ -100,6 +100,37 @@ async function getPreviousBaseline(tableName) {
   return null
 }
 
+async function visualRegressionCheck() {
+  try {
+    const res = await fetch('https://evco-portal.vercel.app')
+    const html = await res.text()
+
+    const FORBIDDEN_STRINGS = [
+      '50 clientes', '754 tráficos activos', 'Ollama',
+      'GlobalPC MySQL', 'SCORE GENERAL', 'Exposición total',
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ]
+
+    const violations = FORBIDDEN_STRINGS.filter(s =>
+      html.toLowerCase().includes(s.toLowerCase())
+    )
+
+    if (violations.length > 0) {
+      await sendTelegram(
+        `🔴 REGRESIÓN DETECTADA en portal EVCO\n` +
+        `Strings prohibidos encontrados:\n${violations.map(v => `• "${v}"`).join('\n')}\n` +
+        `— CRUZ 🦀`
+      )
+      console.log(`  ⚠️  Visual regression: ${violations.length} forbidden string(s) found`)
+    } else {
+      console.log('  ✅ Visual regression check passed — no forbidden strings')
+    }
+  } catch (err) {
+    console.log('⚠️ Visual regression check skipped:', err.message)
+  }
+}
+
 async function runGuard() {
   const timestamp = nowCST()
   console.log(`\uD83D\uDEE1\uFE0F  CRUZ Regression Guard \u2014 ${timestamp}`)
@@ -219,6 +250,9 @@ async function runGuard() {
     await sendTelegram(msg)
     console.log(`\n  \u2705 No regressions \u2014 all clear`)
   }
+
+  // V6: Visual regression check against live portal
+  await visualRegressionCheck()
 }
 
 runGuard().catch(async (err) => {

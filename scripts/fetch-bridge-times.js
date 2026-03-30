@@ -31,7 +31,7 @@ const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN
 const TELEGRAM_CHAT = '-5085543275'
 const SCRIPT_NAME = 'fetch-bridge-times.js'
 const CBP_API_URL = 'https://bwt.cbp.gov/api/bwtnew?port=2304'
-const MAX_VALID_WAIT_MINUTES = 300 // Discard anything above this — garbage data
+const MAX_VALID_WAIT_MINUTES = 480 // 8 hours — anything above is a data error
 const API_TIMEOUT_MS = 15000
 
 function nowCST() {
@@ -167,6 +167,11 @@ async function run() {
             day_of_week: dayOfWeek
           })
           console.log(`  🚛 ${bridgeName}: commercial ${commercialWait}min, passenger ${passengerWait ?? 'N/A'}min`)
+
+          // Anomaly alert: extreme wait time
+          if (commercialWait > 300) {
+            await sendTelegram(`⚠️ Bridge data anomaly: ${bridgeName} shows ${commercialWait} min — verify CBP source`)
+          }
         } else if (passengerWait !== null) {
           // Only passenger data available — still worth storing
           records.push({
@@ -178,6 +183,11 @@ async function run() {
             day_of_week: dayOfWeek
           })
           console.log(`  🚗 ${bridgeName}: passenger ${passengerWait}min (no commercial data)`)
+
+          // Anomaly alert: extreme wait time
+          if (passengerWait > 300) {
+            await sendTelegram(`⚠️ Bridge data anomaly: ${bridgeName} shows ${passengerWait} min — verify CBP source`)
+          }
         } else {
           // Both values exceeded MAX_VALID_WAIT_MINUTES — use historical average
           console.warn(`  ⚠️  ${bridgeName}: wait times exceeded ${MAX_VALID_WAIT_MINUTES}min — using historical average`)

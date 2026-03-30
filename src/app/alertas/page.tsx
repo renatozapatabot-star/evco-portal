@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { AlertTriangle, CheckCircle, Clock, Package, ShieldAlert } from 'lucide-react'
 import { calculateCruzScore, extractScoreInput } from '@/lib/cruz-score'
 import { CLIENT_CLAVE } from '@/lib/client-config'
+import { fmtDateShort } from '@/lib/format-utils'
 
 interface Alert {
   id: string
@@ -43,7 +44,7 @@ export default function AlertasPage() {
         const fifteenDaysAgo = new Date(Date.now() - 15 * 86400000).toISOString().split('T')[0]
 
         const [trafRes, entRes] = await Promise.all([
-          fetch(`/api/data?table=traficos&trafico_prefix=${CLIENT_CLAVE}-&limit=500&order_by=fecha_llegada&order_dir=desc`).then(r => r.json()),
+          fetch(`/api/data?table=traficos&clave_cliente=${CLIENT_CLAVE}&trafico_prefix=${CLIENT_CLAVE}-&limit=500&order_by=fecha_llegada&order_dir=desc`).then(r => r.json()),
           fetch(`/api/data?table=entradas&cve_cliente=${CLIENT_CLAVE}&limit=200&order_by=fecha_llegada_mercancia&order_dir=desc`).then(r => r.json()),
         ])
         const traf = (trafRes.data ?? []).filter((t: any) =>
@@ -123,11 +124,7 @@ export default function AlertasPage() {
 
   const filtered = alerts.filter(a => tab === 'pendientes' ? !a.resolved : a.resolved)
 
-  const fmtTime = (d: string) => {
-    if (!d) return ''
-    try { return new Date(d).toLocaleDateString('es-MX', { day: '2-digit', month: 'short' }) }
-    catch { return '' }
-  }
+  const fmtTime = (d: string) => fmtDateShort(d)
 
   return (
     <div className="p-6">
@@ -178,7 +175,7 @@ export default function AlertasPage() {
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--n-900)' }}>{a.title}</span>
-                    <span style={{ fontSize: 10, color: 'var(--n-400)', flexShrink: 0 }}>{fmtTime(a.time)}</span>
+                    <span style={{ fontSize: 10, color: 'var(--n-400)', flexShrink: 0, fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtTime(a.time)}</span>
                   </div>
                   <div style={{ fontSize: 12, color: 'var(--n-500)', marginTop: 2 }}>{a.sub}</div>
                 </div>

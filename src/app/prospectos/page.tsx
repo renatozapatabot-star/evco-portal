@@ -230,7 +230,7 @@ export default function ProspectosPage() {
 
               {/* Stats row */}
               <div style={{ display: 'flex', gap: 12, fontSize: 12, color: 'var(--n-500)', marginBottom: 8 }}>
-                <span><strong style={{ color: 'var(--text-primary)' }}>{fmtUSD(p.total_valor_usd)}</strong> USD</span>
+                <span><strong style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtUSD(p.total_valor_usd)}</strong> USD</span>
                 <span><strong style={{ color: 'var(--text-primary)' }}>{p.total_pedimentos}</strong> pedimentos</span>
                 {p.uses_immex && <span style={{ color: 'var(--info)' }}>IMMEX</span>}
               </div>
@@ -240,7 +240,7 @@ export default function ProspectosPage() {
                 <StatusPill status={p.status} />
                 {p.likely_tmec_eligible && (
                   <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 3, background: 'rgba(22,163,74,0.08)', color: 'var(--success)', fontWeight: 600 }}>
-                    T-MEC {fmtMXN(p.tmec_savings_opportunity_mxn)}/año
+                    T-MEC <span style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtMXN(p.tmec_savings_opportunity_mxn)}</span>/año
                   </span>
                 )}
                 {p.high_value_importer && (
@@ -252,7 +252,7 @@ export default function ProspectosPage() {
 
               {/* Est. fees */}
               <div style={{ marginTop: 8, fontSize: 11, color: 'var(--n-400)', display: 'flex', justifyContent: 'space-between' }}>
-                <span>Est. honorarios: <strong style={{ color: 'var(--success)' }}>{fmtMXN(p.estimated_annual_fees_mxn)}/año</strong></span>
+                <span>Est. honorarios: <strong style={{ color: 'var(--success)', fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtMXN(p.estimated_annual_fees_mxn)}/año</strong></span>
                 <span>{p.top_proveedores?.length || 0} proveedores</span>
               </div>
 
@@ -263,7 +263,7 @@ export default function ProspectosPage() {
                     <div><span style={{ color: 'var(--n-400)' }}>Primera operación:</span><br />{p.first_seen_date || '—'}</div>
                     <div><span style={{ color: 'var(--n-400)' }}>Última operación:</span><br />{p.last_seen_date || '—'}</div>
                     <div><span style={{ color: 'var(--n-400)' }}>Régimen:</span><br />{p.primary_regime || '—'}</div>
-                    <div><span style={{ color: 'var(--n-400)' }}>Valor promedio:</span><br />{fmtUSD(p.avg_valor_por_pedimento)} USD/ped</div>
+                    <div><span style={{ color: 'var(--n-400)' }}>Valor promedio:</span><br /><span style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtUSD(p.avg_valor_por_pedimento)}</span> USD/ped</div>
                   </div>
                   {p.top_proveedores && p.top_proveedores.length > 0 && (
                     <div style={{ marginTop: 8, fontSize: 12 }}>

@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { GOLD, RED, AMBER, GREEN } from '@/lib/design-system'
+import { fmtDateTimeLocal } from '@/lib/format-utils'
 
 export const dynamic = 'force-dynamic'
 
@@ -35,7 +36,7 @@ export default async function RadarPage() {
     <div style={{ padding: '24px 28px', fontFamily: 'var(--font-geist-sans)', color: '#E8E6E0' }}>
       <h1 style={{ fontSize: 22, fontWeight: 800, margin: '0 0 4px' }}>Radar de Riesgos</h1>
       <p style={{ color: '#666', fontSize: 13, margin: '0 0 24px' }}>
-        Monitoreo de amenazas en tiempo real &middot; {new Date().toLocaleString('es-MX', { timeZone: 'America/Chicago', hour: '2-digit', minute: '2-digit' })} CST
+        Monitoreo de amenazas en tiempo real &middot; <span style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtDateTimeLocal(new Date()).split(' · ')[1] || fmtDateTimeLocal(new Date())}</span> CST
       </p>
 
       {(!signals || signals.length === 0) ? (

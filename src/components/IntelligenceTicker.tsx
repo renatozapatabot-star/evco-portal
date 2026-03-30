@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { CLIENT_CLAVE } from '@/lib/client-config'
 import { GOLD } from '@/lib/design-system'
 
 interface TickerItem { text: string; href: string }
@@ -12,7 +13,7 @@ export function IntelligenceTicker() {
     async function load() {
       try {
         const [statusRes, bridgeRes] = await Promise.all([
-          fetch('/api/data?table=traficos&limit=1000').then(r => r.json()).catch(() => ({ data: [] })),
+          fetch(`/api/data?table=traficos&clave_cliente=${CLIENT_CLAVE}&limit=1000`).then(r => r.json()).catch(() => ({ data: [] })),
           fetch('/api/data?table=bridge_intelligence&limit=20&order_by=updated_at&order_dir=desc').then(r => r.json()).catch(() => ({ data: [] })),
         ])
 
@@ -49,7 +50,7 @@ export function IntelligenceTicker() {
         if (daysToMVE > 0 && daysToMVE <= 30) {
           ticker.push({ text: `⏰ MVE E2: ${daysToMVE} días · ${mveCount} pendientes`, href: '/mve' })
         }
-        ticker.push({ text: `📊 50 clientes activos · Aduana 240 Nuevo Laredo`, href: '/admin' })
+        ticker.push({ text: `📊 Aduana 240 Nuevo Laredo · Patente 3596`, href: '/admin' })
 
         setItems(ticker)
       } catch {}

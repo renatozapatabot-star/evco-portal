@@ -3,6 +3,7 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { GOLD, GOLD_HOVER, GOLD_GRADIENT, GREEN, AMBER, RED } from '@/lib/design-system'
+import { fmtDate, fmtDateTime } from '@/lib/format-utils'
 
 export const dynamic = 'force-dynamic'
 
@@ -66,7 +67,7 @@ export default async function AdminPage() {
           </h1>
         </div>
         <p style={{ color: T.muted, fontSize: 13, margin: '4px 0 0 48px' }}>
-          {totalClients} clients &middot; Aduana 240 Nuevo Laredo &middot; {new Date().toLocaleDateString('es-MX')}
+          {totalClients} clients &middot; Aduana 240 Nuevo Laredo &middot; <span style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtDate(new Date())}</span>
         </p>
       </div>
 
@@ -142,8 +143,8 @@ export default async function AdminPage() {
                       {score}%
                     </span>
                   </td>
-                  <td style={{ padding: '10px 14px', fontSize: 11, color: T.muted }}>
-                    {c.last_sync ? new Date(c.last_sync).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—'}
+                  <td style={{ padding: '10px 14px', fontSize: 11, color: T.muted, fontFamily: 'var(--font-jetbrains-mono)' }}>
+                    {c.last_sync ? fmtDateTime(c.last_sync) : '—'}
                   </td>
                   <td style={{ padding: '10px 14px' }}>
                     {clientAlerts > 0 ? (

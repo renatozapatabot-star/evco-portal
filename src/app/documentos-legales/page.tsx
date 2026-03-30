@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { AlertTriangle, CheckCircle, Clock, Shield, Plus } from 'lucide-react'
 import Link from 'next/link'
 import { COMPANY_ID, CLIENT_NAME } from '@/lib/client-config'
+import { fmtDate as fmtDateLib } from '@/lib/format-utils'
 
 interface LegalDoc {
   id: string
@@ -107,10 +108,7 @@ export default function DocumentosLegalesPage() {
   const valid = docs.filter(d => d.status === 'valid')
   const needVerify = docs.filter(d => d.status === 'verify')
 
-  const fmtDate = (s: string | null) => {
-    if (!s) return '—'
-    return new Date(s).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' })
-  }
+  const fmtDate = (s: string | null) => fmtDateLib(s)
 
   const getDocLabel = (key: string) => DOC_TYPES.find(d => d.key === key)?.label || key
 
@@ -142,12 +140,12 @@ export default function DocumentosLegalesPage() {
           </div>
           {expired.map(d => (
             <div key={d.id} style={{ fontSize: 12, color: 'var(--danger)', marginLeft: 24, marginTop: 4 }}>
-              {d.client_name} — {getDocLabel(d.document_type)} — Expirado {fmtDate(d.expiry_date)}
+              {d.client_name} — {getDocLabel(d.document_type)} — Expirado <span style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtDate(d.expiry_date)}</span>
             </div>
           ))}
           {expiringSoon.map(d => (
             <div key={d.id} style={{ fontSize: 12, color: 'var(--warning)', marginLeft: 24, marginTop: 4 }}>
-              {d.client_name} — {getDocLabel(d.document_type)} — Vence {fmtDate(d.expiry_date)} ({daysUntilExpiry(d.expiry_date)}d)
+              {d.client_name} — {getDocLabel(d.document_type)} — Vence <span style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtDate(d.expiry_date)}</span> (<span style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>{daysUntilExpiry(d.expiry_date)}d</span>)
             </div>
           ))}
         </div>
@@ -192,8 +190,8 @@ export default function DocumentosLegalesPage() {
                       {doc.notes && <div style={{ fontSize: 11, color: 'var(--n-400)', marginTop: 2 }}>{doc.notes}</div>}
                     </td>
                     <td style={{ fontSize: 13 }}>{doc.client_name}</td>
-                    <td style={{ fontSize: 13, color: 'var(--n-500)' }}>{fmtDate(doc.issued_date)}</td>
-                    <td style={{ fontSize: 13, fontWeight: doc.status !== 'valid' ? 600 : 400 }}>{fmtDate(doc.expiry_date)}</td>
+                    <td style={{ fontSize: 13, color: 'var(--n-500)', fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtDate(doc.issued_date)}</td>
+                    <td style={{ fontSize: 13, fontWeight: doc.status !== 'valid' ? 600 : 400, fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtDate(doc.expiry_date)}</td>
                     <td><StatusBadge status={doc.status} days={days} /></td>
                     <td style={{ fontSize: 13, color: 'var(--n-500)' }}>{doc.responsible || '—'}</td>
                     <td>

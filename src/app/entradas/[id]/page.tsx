@@ -147,7 +147,7 @@ export default function EntradaDetailPage() {
           <span className="badge badge-cruzado"><span className="badge-dot" />OK</span>
         )}
         {entrada.peso_bruto && (
-          <span style={{ fontSize: 14, color: 'var(--n-500)' }}>{fmtKg(entrada.peso_bruto)}</span>
+          <span style={{ fontSize: 14, color: 'var(--n-500)', fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtKg(entrada.peso_bruto)}</span>
         )}
       </div>
 
@@ -177,7 +177,7 @@ export default function EntradaDetailPage() {
             </div>
             <div className="d-cell">
               <div className="d-label">Fecha Llegada</div>
-              <div className="d-val">{fmtDate(entrada.fecha_llegada_mercancia)}</div>
+              <div className="d-val mono">{fmtDate(entrada.fecha_llegada_mercancia)}</div>
             </div>
             <div className="d-cell">
               <div className="d-label">Bultos Recibidos</div>

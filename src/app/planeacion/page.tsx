@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useMemo } from 'react'
-import { fmtId } from '@/lib/format-utils'
+import { fmtId, fmtDate } from '@/lib/format-utils'
 import { COMPANY_ID } from '@/lib/client-config'
 import { Calendar, Package, AlertTriangle, CheckCircle } from 'lucide-react'
 
@@ -125,12 +125,12 @@ export default function PlaneacionPage() {
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{p.product}</div>
                       <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
-                        Cada ~{p.avgInterval} días · {p.count} importaciones · Último: {p.lastDate || new Date(Date.now() - p.daysSinceLast * 86400000).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}
+                        Cada ~{p.avgInterval} días · {p.count} importaciones · Último: {p.lastDate || fmtDate(new Date(Date.now() - p.daysSinceLast * 86400000))}
                       </div>
                     </div>
                     <div style={{ textAlign: 'right' }}>
                       <div className="mono" style={{ fontSize: 20, fontWeight: 700, color: p.daysUntilNext <= 3 ? 'var(--status-red)' : p.daysUntilNext <= 7 ? 'var(--status-yellow)' : 'var(--text-primary)' }}>
-                        {new Date(Date.now() + p.daysUntilNext * 86400000).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}
+                        {fmtDate(new Date(Date.now() + p.daysUntilNext * 86400000))}
                       </div>
                       <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>estimado</div>
                     </div>
@@ -151,7 +151,7 @@ export default function PlaneacionPage() {
                   <CheckCircle size={14} style={{ color: 'var(--status-green)', flexShrink: 0, marginTop: 3 }} />
                   <div>
                     <div style={{ fontSize: 13, color: 'var(--text-primary)' }}>{p.description}</div>
-                    {p.due_date && <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Est: {new Date(p.due_date).toLocaleDateString('es-MX')}</div>}
+                    {p.due_date && <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Est: {fmtDate(p.due_date)}</div>}
                   </div>
                 </div>
               ))}

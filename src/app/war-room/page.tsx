@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { CLIENT_CLAVE } from '@/lib/client-config'
 import { GOLD } from '@/lib/design-system'
+import { fmtDateTimeLocal } from '@/lib/format-utils'
 
 export default function WarRoom() {
   const router = useRouter()
@@ -11,7 +13,7 @@ export default function WarRoom() {
   useEffect(() => {
     const load = async () => {
       const [trafRes, bridgeRes, compRes, riskRes] = await Promise.all([
-        fetch('/api/data?table=traficos&limit=2000').then(r => r.json()).catch(() => ({ data: [] })),
+        fetch(`/api/data?table=traficos&clave_cliente=${CLIENT_CLAVE}&limit=2000`).then(r => r.json()).catch(() => ({ data: [] })),
         fetch('/api/data?table=bridge_intelligence&limit=50&order_by=updated_at&order_dir=desc').then(r => r.json()).catch(() => ({ data: [] })),
         fetch('/api/data?table=compliance_predictions&limit=50').then(r => r.json()).catch(() => ({ data: [] })),
         fetch('/api/data?table=pedimento_risk_scores&limit=50&order_by=overall_score&order_dir=desc').then(r => r.json()).catch(() => ({ data: [] })),
@@ -52,7 +54,7 @@ export default function WarRoom() {
           <span style={{ fontSize: 16, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase' }}>WAR ROOM — CRUZ</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <span style={{ fontSize: 12, color: '#666', fontFamily: 'var(--font-jetbrains-mono)' }}>{new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+          <span style={{ fontSize: 12, color: '#666', fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtDateTimeLocal(new Date()).split(' · ')[1] || fmtDateTimeLocal(new Date())}</span>
           <button onClick={() => router.back()} style={{ background: '#1A1A1A', border: '1px solid #333', borderRadius: 6, color: '#999', padding: '4px 12px', fontSize: 12, cursor: 'pointer' }}>ESC</button>
         </div>
       </div>

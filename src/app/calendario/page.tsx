@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import { Plus, Bell, BellOff, Check, X } from 'lucide-react'
 import { COMPANY_ID, CLIENT_NAME, PATENTE, CLIENT_CLAVE } from '@/lib/client-config'
+import { fmtDateShort, fmtDate } from '@/lib/format-utils'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -99,7 +100,7 @@ export default function CalendarioPage() {
 
     // Fetch IMMEX temporal limits
     try {
-      const res = await fetch(`/api/data?table=traficos&trafico_prefix=${CLIENT_CLAVE}-&limit=500&order_by=fecha_llegada&order_dir=desc`)
+      const res = await fetch(`/api/data?table=traficos&clave_cliente=${CLIENT_CLAVE}&trafico_prefix=${CLIENT_CLAVE}-&limit=500&order_by=fecha_llegada&order_dir=desc`)
       const data = await res.json()
       const traficos = data.data ?? data ?? []
       const today = new Date().toISOString().split('T')[0]
@@ -260,14 +261,14 @@ export default function CalendarioPage() {
               }}>
                 <span style={{ width: 8, height: 8, borderRadius: '50%', background: c.dot, flexShrink: 0 }} />
                 <span style={{ fontSize: 12, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', width: 80, flexShrink: 0 }}>
-                  {new Date(e.due_date + 'T12:00:00').toLocaleDateString('es-MX', { day: '2-digit', month: 'short' })}
+                  {fmtDateShort(new Date(e.due_date + 'T12:00:00'))}
                 </span>
                 <span style={{ fontSize: 16, flexShrink: 0 }}>{typeIcons[e.event_type] || '📌'}</span>
                 <span style={{ color: 'var(--text-primary)', fontSize: 13, fontWeight: 500, flex: 1, textDecoration: e.completed ? 'line-through' : 'none' }}>
                   {e.title}
                 </span>
                 <span className="mono text-[10px]" style={{ color: daysUntil <= 7 ? c.text : 'var(--text-muted)', flexShrink: 0 }}>
-                  {new Date(e.due_date + 'T12:00:00').toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}
+                  {fmtDate(new Date(e.due_date + 'T12:00:00'))}
                 </span>
                 {e.id && (
                   <button onClick={() => toggleReminder(e)} title={e.telegram_reminder ? 'Reminder ON' : 'Reminder OFF'}
@@ -298,7 +299,7 @@ export default function CalendarioPage() {
                 <div key={`done-${i}`} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '8px 16px', borderBottom: '1px solid var(--border-light)', opacity: 0.5 }}>
                   <Check size={14} style={{ color: 'var(--green)', flexShrink: 0 }} />
                   <span style={{ fontSize: 12, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', width: 80, flexShrink: 0 }}>
-                    {new Date(e.due_date + 'T12:00:00').toLocaleDateString('es-MX', { day: '2-digit', month: 'short' })}
+                    {fmtDateShort(new Date(e.due_date + 'T12:00:00'))}
                   </span>
                   <span style={{ color: 'var(--text-secondary)', fontSize: 13, textDecoration: 'line-through', flex: 1 }}>{e.title}</span>
                 </div>
@@ -312,7 +313,7 @@ export default function CalendarioPage() {
             <button onClick={() => { const d = new Date(gridYear, gridMonth - 2, 1); setMonth(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`) }}
               style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-default)', borderRadius: 6, padding: '4px 10px', color: 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'inherit' }}>←</button>
             <span style={{ color: 'var(--text-primary)', fontSize: 15, fontWeight: 600 }}>
-              {new Date(gridYear, gridMonth - 1).toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })}
+              {new Date(gridYear, gridMonth - 1).toLocaleDateString('es-MX', { month: 'long', year: 'numeric', timeZone: 'America/Chicago' })}
             </span>
             <button onClick={() => { const d = new Date(gridYear, gridMonth, 1); setMonth(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`) }}
               style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-default)', borderRadius: 6, padding: '4px 10px', color: 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'inherit' }}>→</button>

@@ -16,5 +16,6 @@
   "globalpc": {
     "status": "connected",
     "last_ok": null
-  }
+  },
+  "morning_report_last_run": "2026-03-30T19:07:43.694Z"
 }

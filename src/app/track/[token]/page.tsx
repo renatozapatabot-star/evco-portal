@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { GOLD } from '@/lib/design-system'
+import { fmtDate } from '@/lib/format-utils'
 
 type Step = {
   key: string
@@ -37,8 +38,7 @@ const STATUS_COLORS: Record<string, string> = {
 
 function formatDate(iso: string | null): string {
   if (!iso) return '--'
-  const d = new Date(iso)
-  return d.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' })
+  return fmtDate(iso)
 }
 
 export default function TrackingPage() {
@@ -157,7 +157,7 @@ export default function TrackingPage() {
                 borderRadius: 10,
               }}>
                 <div style={{ fontSize: 11, color: MUTED, marginBottom: 4 }}>Entrega Estimada</div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: GOLD }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: GOLD, fontFamily: 'var(--font-jetbrains-mono)' }}>
                   {data.status === 'DELIVERED' ? 'Entregado' : formatDate(data.estimatedDelivery)}
                 </div>
               </div>
@@ -223,7 +223,7 @@ export default function TrackingPage() {
             {/* Last updated */}
             {data.lastUpdated && (
               <div style={{ fontSize: 11, color: MUTED, textAlign: 'center' }}>
-                Ultima actualizacion: {formatDate(data.lastUpdated)}
+                Ultima actualizacion: <span style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>{formatDate(data.lastUpdated)}</span>
               </div>
             )}
           </>

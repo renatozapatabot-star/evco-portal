@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import { CheckCircle } from 'lucide-react'
 import { CLIENT_CLAVE } from '@/lib/client-config'
-import { fmtId, fmtDate, fmtDateTime } from '@/lib/format-utils'
+import { fmtId, fmtDate, fmtDateTime, fmtDateTimeLocal } from '@/lib/format-utils'
 import { calculateCruzScore, extractScoreInput } from '@/lib/cruz-score'
 import { useIsMobile } from '@/hooks/use-mobile'
 import Link from 'next/link'
@@ -53,7 +53,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     Promise.all([
-      fetch(`/api/data?table=traficos&trafico_prefix=${CLIENT_CLAVE}-&limit=1000&order_by=fecha_llegada&order_dir=desc`).then(r => r.json()),
+      fetch(`/api/data?table=traficos&clave_cliente=${CLIENT_CLAVE}&trafico_prefix=${CLIENT_CLAVE}-&limit=1000&order_by=fecha_llegada&order_dir=desc`).then(r => r.json()),
       fetch(`/api/data?table=entradas&cve_cliente=${CLIENT_CLAVE}&limit=500&order_by=fecha_llegada_mercancia&order_dir=desc`).then(r => r.json()),
     ]).then(([trafData, entData]) => {
       setTraficos(trafData.data ?? [])
@@ -305,7 +305,7 @@ export default function Dashboard() {
 
             // Source label from updated timestamp
             const sourceLabel = b.updated
-              ? `(CBP ${new Date(b.updated).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Chicago' })})`
+              ? `(CBP ${fmtDateTimeLocal(b.updated).split(' · ')[1] || fmtDateTimeLocal(b.updated)})`
               : '(estimado)'
 
             return (
@@ -323,7 +323,7 @@ export default function Dashboard() {
                       {displayMin}
                       <span style={{ fontSize: 14, fontWeight: 600, marginLeft: 2 }}>min</span>
                     </div>
-                    <div style={{ fontSize: 11, color: TOKEN.textSecondary, marginTop: 4 }}>{sourceLabel}</div>
+                    <div style={{ fontSize: 11, color: TOKEN.textSecondary, marginTop: 4, fontFamily: 'var(--font-jetbrains-mono)' }}>{sourceLabel}</div>
                     {isRecommended && (
                       <div style={{ fontSize: 11, fontWeight: 800, color: TOKEN.green, marginTop: 4 }}>
                         Recomendado

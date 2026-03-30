@@ -23,8 +23,8 @@ export default function AccionesPage() {
 
   useEffect(() => {
     Promise.all([
-      fetch(`/api/data?table=traficos&trafico_prefix=${CLIENT_CLAVE}-&limit=2000&order_by=fecha_llegada&order_dir=desc`).then(r => r.json()),
-      fetch('/api/data?table=entradas&limit=500&order_by=fecha_llegada_mercancia&order_dir=desc').then(r => r.json()),
+      fetch(`/api/data?table=traficos&clave_cliente=${CLIENT_CLAVE}&trafico_prefix=${CLIENT_CLAVE}-&limit=2000&order_by=fecha_llegada&order_dir=desc`).then(r => r.json()),
+      fetch(`/api/data?table=entradas&cve_cliente=${CLIENT_CLAVE}&limit=500&order_by=fecha_llegada_mercancia&order_dir=desc`).then(r => r.json()),
     ]).then(([t, e]) => {
       setTraficos(t.data ?? [])
       setEntradas(e.data ?? [])
@@ -85,7 +85,7 @@ export default function AccionesPage() {
   const total = actions.urgent.length + actions.today.length + actions.week.length
   const doneCount = done.size
 
-  const todayStr = new Date().toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+  const todayStr = new Date().toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'America/Chicago' })
 
   return (
     <div className="acciones-page" style={{ padding: '24px 16px' }}>

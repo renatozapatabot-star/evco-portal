@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { GOLD_GRADIENT } from '@/lib/design-system'
+import { fmtDateTime } from '@/lib/format-utils'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -15,7 +16,7 @@ export default async function StatusPage() {
     .order('checked_at', { ascending: false })
 
   const integrations = healthRes.data || []
-  const now = new Date().toLocaleString('es-MX', { timeZone: 'America/Chicago', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+  const now = fmtDateTime(new Date())
 
   // Client-friendly label mapping — hide internal service names
   const friendlyName: Record<string, string> = {
@@ -67,7 +68,7 @@ export default async function StatusPage() {
             <span style={{ width: 12, height: 12, borderRadius: '50%', background: allOp ? '#16A34A' : '#D97706', display: 'inline-block' }} />
             <div>
               <div style={{ fontWeight: 700, fontSize: 16 }}>{allOp ? 'Todos los sistemas operacionales' : 'Algunos sistemas requieren atención'}</div>
-              <div style={{ color: '#666', fontSize: 12, marginTop: 2 }}>Actualizado: {now} CST</div>
+              <div style={{ color: '#666', fontSize: 12, marginTop: 2 }}>Actualizado: <span style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>{now}</span> CST</div>
             </div>
           </div>
         </div>

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { CheckCircle } from 'lucide-react'
 import { GOLD } from '@/lib/design-system'
-import { formatAbsoluteETA } from '@/lib/format-utils'
+import { formatAbsoluteETA, fmtUSD } from '@/lib/format-utils'
 import { CLIENT_CLAVE } from '@/lib/client-config'
 import { createClient } from '@supabase/supabase-js'
 
@@ -100,7 +100,7 @@ export default function DraftsPage() {
                   </div>
                   <div style={{ fontSize: 13, color: 'var(--n-600)' }}>{supplier} · {product}</div>
                   <div style={{ fontSize: 12, color: 'var(--n-400)', marginTop: 2, fontFamily: 'var(--font-data)' }}>
-                    {formatAbsoluteETA(d.created_at)} {valorUSD > 0 && `· $${Number(valorUSD).toLocaleString('en-US', { minimumFractionDigits: 2 })} USD`}
+                    {formatAbsoluteETA(d.created_at)} {valorUSD > 0 && `· ${fmtUSD(Number(valorUSD))} USD`}
                   </div>
                 </div>
                 <div style={{ textAlign: 'right' }}>

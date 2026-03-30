@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import { Send, Inbox, FileText, PenLine, X } from 'lucide-react'
 import { COMPANY_ID } from '@/lib/client-config'
+import { fmtDateTime } from '@/lib/format-utils'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
@@ -91,11 +92,7 @@ export default function ComunicacionesPage() {
     setTimeout(() => setSendStatus(''), 5000)
   }
 
-  function fmtDate(d: string) {
-    if (!d) return ''
-    try { return new Date(d).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) }
-    catch { return d }
-  }
+  const fmtDate = (d: string) => fmtDateTime(d)
 
   const tabs: { key: Tab; label: string; icon: any }[] = [
     { key: 'inbox', label: `Bandeja (${events.length})`, icon: Inbox },
@@ -240,7 +237,7 @@ export default function ComunicacionesPage() {
                         <span style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{(e.from_address || '').substring(0, 35)}</span>
                       </td>
                       <td style={{ maxWidth: 280, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.subject || ''}</td>
-                      <td style={{ color: 'var(--text-muted)', fontSize: 12, whiteSpace: 'nowrap' }}>{fmtDate(e.scanned_at || e.date)}</td>
+                      <td style={{ color: 'var(--text-muted)', fontSize: 12, whiteSpace: 'nowrap', fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtDate(e.scanned_at || e.date)}</td>
                       <td>
                         {(e.urgent_keywords || []).map((k: string, j: number) => (
                           <span key={j} style={{ background: 'var(--amber-100)', color: 'var(--amber-800)', borderRadius: 4, padding: '1px 6px', fontSize: 10, fontWeight: 600, marginRight: 4 }}>{k}</span>

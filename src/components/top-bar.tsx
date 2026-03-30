@@ -27,7 +27,7 @@ export default function TopBar() {
       .then(d => setAlertCount((d.urgentes || 0) + (d.enProceso > 50 ? 1 : 0)))
       .catch(() => {})
 
-    fetch('/api/data?table=traficos&select=updated_at&limit=1&order_by=updated_at&order_dir=desc')
+    fetch(`/api/data?table=traficos&clave_cliente=${CLIENT_CLAVE}&select=updated_at&limit=1&order_by=updated_at&order_dir=desc`)
       .then(r => r.json())
       .then(d => {
         const ts = d.data?.[0]?.updated_at

@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { ArrowLeft, FileText, Upload } from 'lucide-react'
-import { fmtId, fmtDate, fmtUSD, fmtKg, fmtDesc, formatAbsoluteETA, formatAbsoluteDate } from '@/lib/format-utils'
+import { fmtId, fmtDate, fmtUSD, fmtKg, fmtDesc, fmtMXNInt, fmtCurrency, formatAbsoluteETA, formatAbsoluteDate } from '@/lib/format-utils'
 import { GOLD } from '@/lib/design-system'
 import { fmtCarrier, countryFlag } from '@/lib/carrier-names'
 import { CruzScore } from '@/components/cruz-score'
@@ -36,7 +36,6 @@ export default function TraficoDetailPage() {
   const [activeTab, setActiveTab] = useState<Tab>('financiero')
   const [missingDocs, setMissingDocs] = useState<string[]>([])
   const [uploadingDoc, setUploadingDoc] = useState<string | null>(null)
-  const [timelineExpanded, setTimelineExpanded] = useState(false)
   const [trackingCopied, setTrackingCopied] = useState(false)
   const [porqueOpen, setPorqueOpen] = useState<string | null>(null)
   const [rates, setRates] = useState({ dta: 0.008, iva: 0.16, tc: 17.49 })
@@ -179,7 +178,7 @@ export default function TraficoDetailPage() {
           )}
           {t.importe_total && (
             <div style={{ marginTop: 6, fontFamily: 'var(--font-data)', fontSize: 20, fontWeight: 800, color: 'var(--gold-700)' }}>
-              ${Number(t.importe_total).toLocaleString('en-US', { minimumFractionDigits: 0 })} USD
+              {fmtUSD(Number(t.importe_total))} USD
             </div>
           )}
           <div style={{ marginTop: 10, display: 'flex', gap: 8 }}>
@@ -415,12 +414,12 @@ export default function TraficoDetailPage() {
                   const total = dta + igi + iva
 
                   const rows = [
-                    { key: 'valor', label: 'Valor Aduana', value: val ? `$${val.toLocaleString('en-US', { minimumFractionDigits: 2 })} USD` : '—', porque: val ? `Valor declarado en factura comercial: ${val.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}. Convertido a MXN: $${valMXN.toLocaleString()} (TC ${tc.toFixed(4)}).` : null },
+                    { key: 'valor', label: 'Valor Aduana', value: val ? `${fmtUSD(val)} USD` : '—', porque: val ? `Valor declarado en factura comercial: ${fmtUSD(val)}. Convertido a MXN: ${fmtMXNInt(valMXN)} (TC ${tc.toFixed(4)}).` : null },
                     { key: 'tc', label: 'Tipo de Cambio', value: tc ? `$${tc.toFixed(4)} MXN/USD` : '—', porque: tc ? `Tipo de cambio Banxico vigente al momento de pago del pedimento.` : null },
-                    { key: 'dta', label: 'DTA', value: val && tc ? `$${dta.toLocaleString()} MXN` : '—', porque: val && tc ? `DTA = Valor aduana MXN × 0.8% = $${valMXN.toLocaleString()} × 0.008 = $${dta.toLocaleString()} MXN. Régimen ${t.regimen || 'A1'}.` : null },
-                    { key: 'igi', label: 'IGI', value: '$0 MXN (T-MEC)', porque: `IGI exento porque: proveedor USA · certificado T-MEC vigente. Sin T-MEC: estimado $${Math.round(valMXN * 0.05).toLocaleString()} MXN (5%).` },
-                    { key: 'iva', label: 'IVA (16%)', value: val && tc ? `$${iva.toLocaleString()} MXN` : '—', porque: val && tc ? `IVA = 16% × (Valor aduana + DTA + IGI) = 16% × ($${valMXN.toLocaleString()} + $${dta.toLocaleString()} + $0) = $${iva.toLocaleString()} MXN. Base ≠ factura.` : null },
-                    { key: 'total', label: 'Total Contribuciones', value: val && tc ? `$${total.toLocaleString()} MXN` : '—', porque: val && tc ? `DTA $${dta.toLocaleString()} + IGI $0 + IVA $${iva.toLocaleString()} = $${total.toLocaleString()} MXN total.` : null },
+                    { key: 'dta', label: 'DTA', value: val && tc ? `${fmtMXNInt(dta)} MXN` : '—', porque: val && tc ? `DTA = Valor aduana MXN × 0.8% = ${fmtMXNInt(valMXN)} × 0.008 = ${fmtMXNInt(dta)} MXN. Régimen ${t.regimen || 'A1'}.` : null },
+                    { key: 'igi', label: 'IGI', value: '$0 MXN (T-MEC)', porque: `IGI exento porque: proveedor USA · certificado T-MEC vigente. Sin T-MEC: estimado ${fmtMXNInt(Math.round(valMXN * 0.05))} MXN (5%).` },
+                    { key: 'iva', label: 'IVA (16%)', value: val && tc ? `${fmtMXNInt(iva)} MXN` : '—', porque: val && tc ? `IVA = 16% × (Valor aduana + DTA + IGI) = 16% × (${fmtMXNInt(valMXN)} + ${fmtMXNInt(dta)} + $0) = ${fmtMXNInt(iva)} MXN. Base ≠ factura.` : null },
+                    { key: 'total', label: 'Total Contribuciones', value: val && tc ? `${fmtMXNInt(total)} MXN` : '—', porque: val && tc ? `DTA ${fmtMXNInt(dta)} + IGI $0 + IVA ${fmtMXNInt(iva)} = ${fmtMXNInt(total)} MXN total.` : null },
                   ]
 
                   return (

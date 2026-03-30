@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import { Search, FileText, Download, Save, Check, AlertTriangle } from 'lucide-react'
 import { CLIENT_RFC, CLIENT_CLAVE, CLIENT_NAME } from '@/lib/client-config'
+import { fmtUSD as fmtUSDLib, fmtMXN as fmtMXNLib } from '@/lib/format-utils'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -180,8 +181,8 @@ export default function NuevoPedimentoPage() {
     if (!error) setSaved(true)
   }
 
-  function fmtMXN(n: number) { return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }
-  function fmtUSD(n: number) { return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' USD' }
+  const fmtMXN = (n: number) => fmtMXNLib(n)
+  const fmtUSD = (n: number) => `${fmtUSDLib(n)} USD`
 
   return (
     <div className="p-6">

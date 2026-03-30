@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { GOLD } from '@/lib/design-system'
+import { fmtDateTime, fmtDateTimeLocal } from '@/lib/format-utils'
 
 export const dynamic = 'force-dynamic'
 
@@ -58,7 +59,7 @@ export default async function OperacionesPage() {
     .limit(20)
 
   const allHealthy = sourceData.every(s => !s.last || s.last.status === 'success')
-  const now = new Date().toLocaleString('es-MX', { timeZone: 'America/Chicago', hour: '2-digit', minute: '2-digit' })
+  const now = fmtDateTimeLocal(new Date()).split(' · ')[1] || fmtDateTimeLocal(new Date())
 
   const statusColor = (status: string | undefined) => {
     if (!status) return '#666'
@@ -142,8 +143,8 @@ export default async function OperacionesPage() {
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <span style={{ width: 6, height: 6, borderRadius: '50%', background: statusColor(r.status) }} />
-                    <span style={{ fontSize: 11, color: '#666' }}>
-                      {new Date(r.started_at).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
+                    <span style={{ fontSize: 11, color: '#666', fontFamily: 'var(--font-jetbrains-mono)' }}>
+                      {fmtDateTimeLocal(r.started_at).split(' · ')[1] || fmtDateTimeLocal(r.started_at)}
                     </span>
                   </div>
                 </div>
@@ -171,8 +172,8 @@ export default async function OperacionesPage() {
                     color: c.estatus === 'Cruzado' ? '#16A34A' : c.estatus === 'Detenido' ? '#DC2626' : '#D97706'
                   }}>{c.estatus}</span>
                 </div>
-                <span style={{ fontSize: 11, color: '#666' }}>
-                  {new Date(c.updated_at).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
+                <span style={{ fontSize: 11, color: '#666', fontFamily: 'var(--font-jetbrains-mono)' }}>
+                  {fmtDateTimeLocal(c.updated_at).split(' · ')[1] || fmtDateTimeLocal(c.updated_at)}
                 </span>
               </div>
             ))}

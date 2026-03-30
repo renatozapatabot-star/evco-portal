@@ -140,7 +140,7 @@ export default function PipelinePage() {
                     {col.label}
                   </div>
                   <div style={{ fontSize: 11, color: 'var(--n-400)', marginTop: 2 }}>
-                    {stats.count} · {fmtMXN(stats.value)}/año
+                    {stats.count} · <span style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtMXN(stats.value)}</span>/año
                   </div>
                 </div>
                 <span style={{
@@ -182,8 +182,8 @@ export default function PipelinePage() {
                     </span>
                   </div>
                   <div style={{ fontSize: 11, color: 'var(--n-400)', display: 'flex', gap: 8 }}>
-                    <span>{fmtUSD(p.total_valor_usd)} USD</span>
-                    <span style={{ color: 'var(--success)' }}>{fmtMXN(p.estimated_annual_fees_mxn)}/yr</span>
+                    <span style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtUSD(p.total_valor_usd)} USD</span>
+                    <span style={{ color: 'var(--success)', fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtMXN(p.estimated_annual_fees_mxn)}/yr</span>
                   </div>
                   {p.next_follow_up && (
                     <div style={{ fontSize: 10, color: 'var(--warning)', marginTop: 4 }}>

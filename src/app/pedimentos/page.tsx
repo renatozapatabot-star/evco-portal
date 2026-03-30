@@ -215,13 +215,13 @@ export default function PedimentosPage() {
                   T-MEC: {tmecCount} de {groups.length} pedimentos ({groups.length > 0 ? Math.round(tmecCount / groups.length * 100) : 0}%)
                 </div>
                 <div style={{ fontSize: 12, color: 'var(--n-500)', marginTop: 2 }}>
-                  {nonTmecCount} pedimentos sin T-MEC · Valor: {fmtUSD(nonTmecValue)}
+                  {nonTmecCount} pedimentos sin T-MEC · Valor: <span style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtUSD(nonTmecValue)}</span>
                 </div>
               </div>
               {estimatedSavings > 0 && (
                 <div style={{ textAlign: 'right' }}>
                   <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--gold-600)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Ahorro potencial*</div>
-                  <div style={{ fontSize: 24, fontWeight: 900, color: 'var(--gold-700)' }}>{fmtUSD(estimatedSavings)}</div>
+                  <div style={{ fontSize: 24, fontWeight: 900, color: 'var(--gold-700)', fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtUSD(estimatedSavings)}</div>
                 </div>
               )}
             </div>
@@ -230,7 +230,7 @@ export default function PedimentosPage() {
                 {nonTmecGroups.slice(0, 3).map(g => (
                   <div key={g.pedimento} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, padding: '3px 0' }}>
                     <span style={{ fontWeight: 700 }}>{g.pedimento} — {titleCase(g.proveedores?.[0] || '')}</span>
-                    <span style={{ fontWeight: 800, color: 'var(--gold-700)' }}>{fmtUSD(g.totalValor * getTariffRate(g.proveedores?.[0] || ''))}</span>
+                    <span style={{ fontWeight: 800, color: 'var(--gold-700)', fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtUSD(g.totalValor * getTariffRate(g.proveedores?.[0] || ''))}</span>
                   </div>
                 ))}
                 <div style={{ fontSize: 10, color: 'var(--n-400)', marginTop: 6 }}>* Estimado por fracción arancelaria. Verificar para cálculo exacto.</div>
@@ -296,7 +296,7 @@ export default function PedimentosPage() {
                         <span className="c-empty">&middot;</span>
                       )}
                     </td>
-                    <td className="text-[12px]" style={{ color: 'var(--text-secondary)' }}>{g.fecha ? fmtDate(g.fecha) : ''}</td>
+                    <td className="text-[12px]" style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-jetbrains-mono)' }}>{g.fecha ? fmtDate(g.fecha) : ''}</td>
                     <td>
                       {g.tmec && (
                         <span className="badge-tmec">T-MEC</span>

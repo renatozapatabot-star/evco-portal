@@ -46,7 +46,8 @@ export async function GET(req: NextRequest) {
   const claveCliente = params.get('clave_cliente')
   const cveCliente = params.get('cve_cliente')
   const companyId = params.get('company_id')
-  const hasClientFilter = !!(claveCliente || cveCliente || companyId)
+  const traficoPrefix = params.get('trafico_prefix')
+  const hasClientFilter = !!(claveCliente || cveCliente || companyId || traficoPrefix)
 
   if (CLIENT_SCOPED_TABLES.has(table) && !hasClientFilter) {
     return NextResponse.json(
@@ -66,7 +67,6 @@ export async function GET(req: NextRequest) {
   if (cveCliente) q = q.eq('cve_cliente', cveCliente)
   if (companyId) q = q.eq('company_id', companyId)
 
-  const traficoPrefix = params.get('trafico_prefix')
   if (traficoPrefix) q = q.like('trafico', `${traficoPrefix}%`)
 
   const cveTrafico = params.get('cve_trafico')

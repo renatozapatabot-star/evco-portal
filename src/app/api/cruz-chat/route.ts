@@ -22,12 +22,10 @@ IDENTIDAD:
 - Siglas inglés aceptables: T-MEC, IMMEX, USMCA
 
 DATOS DEL SISTEMA:
-- 50 clientes activos, incluyendo la Embajada de EE.UU.
-- 32,000+ tráficos en base de datos con historial completo
-- GlobalPC MySQL + Supabase + Qwen AI local
+- Historial completo de tráficos disponible para consulta
 - MVE formato E2 obligatorio desde 31 marzo 2026
 - Patente 3596, Aduana 240 Nuevo Laredo
-- Puentes: World Trade, Colombia, Juárez-Lincoln, Gateway
+- Puentes comerciales: World Trade, Colombia, Juárez-Lincoln, Gateway
 
 VOZ:
 Bien: "Tráfico Y4466 tiene 3 documentos faltantes. Recomiendo solicitar el COVE al proveedor antes de las 2 PM."
@@ -267,7 +265,7 @@ const TOOLS = [
   },
   {
     name: 'integration_status',
-    description: 'Check if all systems are working. GlobalPC, Supabase, APIs, Telegram, Vapi, Qwen.',
+    description: 'Check if all systems are working — portal, data sync, AI, notifications.',
     input_schema: { type: 'object' as const, properties: {} }
   },
   {
@@ -720,7 +718,8 @@ async function executeTool(name: string, input: any): Promise<string> {
           ...(predictions || []).map((p: any) => ({ type: p.prediction_type, description: p.description, due_date: p.due_date, severity: p.severity })),
           ...(mveIssues?.length ? [{ type: 'MVE', description: `${mveIssues.length} tráficos sin folio MVE`, due_date: '2026-03-31', severity: 'critical' }] : []),
         ]
-        return JSON.stringify({ deadlines, total_exposure: deadlines.filter(d => d.severity === 'critical').length * 7190 + ' MXN max', action: 'navigate', path: '/cumplimiento' })
+        const MVE_PENALTY_MAX = 7190 // from system_config mve_penalty_max
+        return JSON.stringify({ deadlines, total_exposure: deadlines.filter(d => d.severity === 'critical').length * MVE_PENALTY_MAX + ' MXN max', action: 'navigate', path: '/cumplimiento' })
       }
       case 'find_prospects': {
         const minScore = input.min_score || 50

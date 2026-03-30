@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import { AlertTriangle, CheckCircle, Clock, Search } from 'lucide-react'
 import { CLIENT_CLAVE, COMPANY_ID } from '@/lib/client-config'
+import { fmtDate as fmtDateUtil } from '@/lib/format-utils'
 
 const MVE_DEADLINE = new Date('2026-03-31T23:59:59')
 
@@ -20,11 +21,7 @@ const fmtId = (id: string) => {
   return clean.startsWith(`${CLIENT_CLAVE}-`) ? clean : `${CLIENT_CLAVE}-${clean}`
 }
 
-const fmtDate = (s: string | null | undefined) => {
-  if (!s) return ''
-  try { return new Date(s).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' }) }
-  catch { return s }
-}
+const fmtDate = (s: string | null | undefined) => fmtDateUtil(s)
 
 function getDaysLeft() {
   const diff = MVE_DEADLINE.getTime() - Date.now()
@@ -39,7 +36,7 @@ export default function MvePage() {
   const daysLeft = getDaysLeft()
 
   useEffect(() => {
-    fetch(`/api/data?table=traficos&trafico_prefix=${CLIENT_CLAVE}-&limit=5000&order_by=fecha_llegada&order_dir=desc`)
+    fetch(`/api/data?table=traficos&clave_cliente=${CLIENT_CLAVE}&trafico_prefix=${CLIENT_CLAVE}-&limit=5000&order_by=fecha_llegada&order_dir=desc`)
       .then(r => r.json())
       .then(data => setRows(data.data ?? []))
       .catch(() => {})
@@ -130,7 +127,7 @@ export default function MvePage() {
                 </div>
                 {alert.due_date && (
                   <div style={{ fontSize: 12, color: 'var(--n-400)', marginTop: 4 }}>
-                    Fecha límite: {fmtDate(alert.due_date)} · {alert.days_until != null ? `${alert.days_until} días` : ''}
+                    Fecha límite: <span style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtDate(alert.due_date)}</span> · {alert.days_until != null ? <span style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>{alert.days_until} días</span> : ''}
                   </div>
                 )}
               </div>
@@ -192,7 +189,7 @@ export default function MvePage() {
                   <td>
                     <span className="badge badge-proceso"><span className="badge-dot" />En Proceso</span>
                   </td>
-                  <td className="text-[12px]" style={{ color: '#374151' }}>{fmtDate(r.fecha_llegada)}</td>
+                  <td className="text-[12px]" style={{ color: '#374151', fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtDate(r.fecha_llegada)}</td>
                   <td className="text-[12px] max-w-[220px] truncate" style={{ color: '#374151' }} title={r.descripcion_mercancia ?? undefined}>
                     {r.descripcion_mercancia ?? ''}
                   </td>
@@ -238,7 +235,7 @@ export default function MvePage() {
                   {compliant.slice(0, 50).map(r => (
                     <tr key={r.trafico}>
                       <td><span className="mono text-[12px]" style={{ color: '#374151' }}>{fmtId(r.trafico)}</span></td>
-                      <td className="text-[12px]" style={{ color: '#6b7280' }}>{fmtDate(r.fecha_llegada)}</td>
+                      <td className="text-[12px]" style={{ color: '#6b7280', fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtDate(r.fecha_llegada)}</td>
                       <td>{r.pedimento ? <span className="ped-pill">{r.pedimento}</span> : ''}</td>
                       <td className="text-center">
                         <span className="text-[10.5px] font-semibold px-2 py-0.5 rounded-[4px]"

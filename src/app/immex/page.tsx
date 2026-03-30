@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo } from 'react'
 import { CLIENT_NAME, CLIENT_CLAVE } from '@/lib/client-config'
+import { fmtDate } from '@/lib/format-utils'
 
 type ImmexRow = { trafico: string; fecha_llegada: string; estatus: string; descripcion_mercancia: string; peso_bruto: number; importe_total: number; pedimento: string }
 
@@ -10,7 +11,7 @@ export default function ImmexPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch(`/api/data?table=traficos&trafico_prefix=${CLIENT_CLAVE}-&limit=5000&order_by=fecha_llegada&order_dir=desc`)
+    fetch(`/api/data?table=traficos&clave_cliente=${CLIENT_CLAVE}&trafico_prefix=${CLIENT_CLAVE}-&limit=5000&order_by=fecha_llegada&order_dir=desc`)
       .then(r => r.json()).then(d => { setRows(d.data ?? d ?? []); setLoading(false) }).catch(() => setLoading(false))
   }, [])
 
@@ -91,8 +92,8 @@ export default function ImmexPage() {
               {immexData.map(d => (
                 <tr key={d.trafico}>
                   <td><span className="mono" style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{d.trafico}</span></td>
-                  <td style={{ color: 'var(--text-secondary)', fontSize: 12 }}>{new Date(d.fecha_llegada).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: '2-digit' })}</td>
-                  <td style={{ color: 'var(--text-secondary)', fontSize: 12 }}>{new Date(d.limit18m).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: '2-digit' })}</td>
+                  <td style={{ color: 'var(--text-secondary)', fontSize: 12, fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtDate(d.fecha_llegada)}</td>
+                  <td style={{ color: 'var(--text-secondary)', fontSize: 12, fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtDate(d.limit18m)}</td>
                   <td className="mono" style={{ textAlign: 'right', fontWeight: 600, color: barColor(d.daysRemaining) }}>{d.daysRemaining}d</td>
                   <td>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

@@ -141,7 +141,7 @@ export function TraficoDetail({ traficoId, onClose }: { traficoId: string; onClo
                         borderRadius: 8, padding: '12px 14px' }}>
                         <div style={{ color: T.textMuted, fontSize: 10, fontWeight: 700,
                           letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 5 }}>{k.label}</div>
-                        <div style={{ color: k.color, fontSize: 16, fontWeight: 700 }}>{k.value}</div>
+                        <div style={{ color: k.color, fontSize: 16, fontWeight: 700, fontFamily: 'var(--font-jetbrains-mono)' }}>{k.value}</div>
                       </div>
                     ))}
                   </div>

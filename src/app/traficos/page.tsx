@@ -27,7 +27,7 @@ function exportCSV(rows: TraficoRow[], activeFilter: string) {
   const meta = [
     'CRUZ — Renato Zapata & Company',
     `RFC: EPM001109I74 · Clave: ${CLIENT_CLAVE}`,
-    `Exportado: ${new Date().toLocaleString('es-MX')}`,
+    `Exportado: ${fmtDate(new Date())}`,
     `Filtro: ${activeFilter}`,
     `Total registros: ${rows.length}`,
     '',
@@ -56,14 +56,15 @@ export default function TraficosPage() {
 
   useEffect(() => {
     setLoading(true)
-    fetch(`/api/data?table=traficos&trafico_prefix=${CLIENT_CLAVE}-&limit=5000&order_by=fecha_llegada&order_dir=desc`)
+    fetch(`/api/data?table=traficos&clave_cliente=${CLIENT_CLAVE}&trafico_prefix=${CLIENT_CLAVE}-&limit=5000&order_by=fecha_llegada&order_dir=desc`)
       .then(r => r.json()).then(d => setRows(d.data ?? d ?? []))
       .catch(() => {}).finally(() => setLoading(false))
     fetch('/api/crossing-prediction').then(r => r.json()).then(d => setPredictions(d.predictions ?? {})).catch(() => {})
     fetch(`/api/data?table=pedimento_risk_scores&company_id=${COMPANY_ID}&limit=2000&order_by=calculated_at&order_dir=desc`)
+
       .then(r => r.json()).then(d => {
-        const map = new Map<string, any>()
-        ;(d.data ?? []).forEach((r: any) => { if (r.trafico_id && !map.has(r.trafico_id)) map.set(r.trafico_id, r) })
+        const map = new Map<string, Record<string, unknown>>()
+        ;(d.data ?? []).forEach((r: Record<string, unknown>) => { if (r.trafico_id && !map.has(r.trafico_id as string)) map.set(r.trafico_id as string, r) })
         setRiskMap(map)
       }).catch(() => {})
   }, [])
@@ -286,7 +287,7 @@ export default function TraficosPage() {
                           )}
                         </span>
                       </td>
-                      <td style={{ fontSize: 12.5, color: 'var(--text-secondary)' }}>{fmtDate(r.fecha_llegada)}</td>
+                      <td style={{ fontSize: 12.5, color: 'var(--text-secondary)', fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtDate(r.fecha_llegada)}</td>
                       <td className="c-desc" title={fmtDesc(r.descripcion_mercancia)}>{fmtDesc(r.descripcion_mercancia) || <span style={{ color: 'var(--n-400)' }}>—</span>}</td>
                       <td className="col-num">{fmtKg(r.peso_bruto) || <span style={{ color: 'var(--n-400)' }}>—</span>}</td>
                       <td className="col-num">{(r.importe_total != null && Number(r.importe_total) > 0) ? fmtUSD(r.importe_total) : <span style={{ color: 'var(--n-400)' }}>—</span>}</td>

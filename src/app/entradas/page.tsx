@@ -184,7 +184,7 @@ export default function EntradasPage() {
                       <span className="c-empty">&middot;</span>
                     )}
                   </td>
-                  <td className="text-[12px]" style={{ color: 'var(--text-secondary)' }}>
+                  <td className="text-[12px]" style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-jetbrains-mono)' }}>
                     {fmtDate(r.fecha_llegada_mercancia)}
                   </td>
                   <td

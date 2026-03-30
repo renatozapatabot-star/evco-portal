@@ -6,7 +6,7 @@ import { ArrowLeft, Check, X, AlertTriangle, FileText, ChevronDown, ChevronRight
 import { createClient } from '@supabase/supabase-js'
 import { GOLD, GOLD_GRADIENT, Z_RED } from '@/lib/design-system'
 import { CLIENT_CLAVE } from '@/lib/client-config'
-import { formatAbsoluteETA } from '@/lib/format-utils'
+import { formatAbsoluteETA, fmtUSD, fmtMXNInt, fmtCurrency } from '@/lib/format-utils'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
@@ -322,14 +322,14 @@ export default function DraftReviewPage() {
               <thead><tr><th>Campo</th><th style={{ textAlign: 'right' }}>Valor</th></tr></thead>
               <tbody>
                 {[
-                  { label: 'Valor Aduana', value: `$${draft.valor_total_usd.toLocaleString('en-US', { minimumFractionDigits: 2 })} USD` },
+                  { label: 'Valor Aduana', value: `${fmtUSD(draft.valor_total_usd)} USD` },
                   { label: 'Tipo de Cambio', value: `$${tc.toFixed(4)} MXN/USD` },
-                  { label: 'Valor MXN', value: `$${valMXN.toLocaleString('es-MX', { maximumFractionDigits: 0 })} MXN` },
-                  { label: `DTA (${(rates.dta * 100).toFixed(1)}%)`, value: `$${dta.toLocaleString()} MXN` },
+                  { label: 'Valor MXN', value: `${fmtMXNInt(valMXN)} MXN` },
+                  { label: `DTA (${(rates.dta * 100).toFixed(1)}%)`, value: `${fmtMXNInt(dta)} MXN` },
                   { label: 'IGI', value: '$0 MXN (T-MEC ✅)' },
-                  { label: 'Base IVA', value: `$${ivaBase.toLocaleString('es-MX', { maximumFractionDigits: 0 })} MXN`, note: 'Valor + DTA + IGI' },
-                  { label: 'IVA (16%)', value: `$${iva.toLocaleString()} MXN` },
-                  { label: 'Total Contribuciones', value: `$${totalContrib.toLocaleString()} MXN`, bold: true },
+                  { label: 'Base IVA', value: `${fmtMXNInt(ivaBase)} MXN`, note: 'Valor + DTA + IGI' },
+                  { label: 'IVA (16%)', value: `${fmtMXNInt(iva)} MXN` },
+                  { label: 'Total Contribuciones', value: `${fmtMXNInt(totalContrib)} MXN`, bold: true },
                 ].map(r => (
                   <tr key={r.label}>
                     <td style={{ color: 'var(--n-700)' }}>
@@ -361,8 +361,8 @@ export default function DraftReviewPage() {
                 </div>
                 <div style={{ display: 'flex', gap: 16, fontSize: 12, color: 'var(--n-500)' }}>
                   <span style={{ fontFamily: 'var(--font-data)', fontWeight: 600 }}>{p.fraccion}</span>
-                  <span>{p.qty.toLocaleString()} {p.unit}</span>
-                  <span style={{ fontFamily: 'var(--font-data)', fontWeight: 600 }}>${p.valor_usd.toLocaleString('en-US', { minimumFractionDigits: 2 })} USD</span>
+                  <span style={{ fontFamily: 'var(--font-data)' }}>{p.qty.toLocaleString()} {p.unit}</span>
+                  <span style={{ fontFamily: 'var(--font-data)', fontWeight: 600 }}>{fmtUSD(p.valor_usd)} USD</span>
                 </div>
               </div>
             )

@@ -5,7 +5,7 @@ export const fmtCurrency = (
   n: number | null | undefined,
   opts: { decimals?: number; compact?: boolean; currency?: string } = {}
 ): string => {
-  if (n == null) return ''
+  if (n == null) return '—'
   const { decimals = 2, compact = false, currency = 'USD' } = opts
 
   if (compact) {
@@ -141,24 +141,6 @@ export const fmtDesc = (s: string | null | undefined): string => {
   ).join(' ')
 }
 
-// Relative time — "hace 3d", "Ayer", "hace 2h"
-export const fmtRelative = (s: any): string => {
-  if (!s) return ''
-  try {
-    const d = new Date(s)
-    const diffMs  = Date.now() - d.getTime()
-    const diffMin = Math.floor(diffMs / 60000)
-    const diffHr  = Math.floor(diffMs / 3600000)
-    const diffDay = Math.floor(diffMs / 86400000)
-    if (diffMin < 1)   return 'Ahora'
-    if (diffMin < 60)  return `hace ${diffMin}m`
-    if (diffHr  < 24)  return `hace ${diffHr}h`
-    if (diffDay === 1) return 'Ayer'
-    if (diffDay < 7)   return `hace ${diffDay}d`
-    return fmtDate(d)
-  } catch { return String(s) }
-}
-
 // Priority scoring
 export const calcPriority = (row: any): number => {
   let score = 0
@@ -207,25 +189,6 @@ export const fmtDateTimeLocal = (s: any): string => {
 
 export const pluralize = (count: number, singular: string, plural: string): string =>
   count === 1 ? singular : plural
-
-// ── Relative time (enhanced with freshness class) ───
-
-export const formatRelativeTime = (date: string | Date | null | undefined): string => {
-  if (!date) return ''
-  try {
-    const d = new Date(date)
-    const diffMs = Date.now() - d.getTime()
-    const diffMin = Math.floor(diffMs / 60000)
-    const diffHr = Math.floor(diffMs / 3600000)
-    const diffDay = Math.floor(diffMs / 86400000)
-    if (diffMin < 1) return 'ahora mismo'
-    if (diffMin < 60) return `hace ${diffMin}m`
-    if (diffHr < 24) return `hace ${diffHr}h`
-    if (diffDay === 1) return 'ayer'
-    if (diffDay < 7) return `hace ${diffDay}d`
-    return fmtDate(d)
-  } catch { return '' }
-}
 
 // v6.0 — Absolute ETA format. Never relative. es-MX locale with CST suffix.
 export const formatAbsoluteETA = (s: any): string => {

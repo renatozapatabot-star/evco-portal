@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Calendar, FileText, Phone } from 'lucide-react'
-import { COMPANY_ID } from '@/lib/client-config'
+import { CLIENT_CLAVE, COMPANY_ID } from '@/lib/client-config'
 
 export default function CumplimientoPage() {
   const [deadlineCount, setDeadlineCount] = useState(0)
@@ -10,7 +10,7 @@ export default function CumplimientoPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch(`/api/data?table=traficos&limit=500&order_by=fecha_llegada&order_dir=desc`)
+    fetch(`/api/data?table=traficos&clave_cliente=${CLIENT_CLAVE}&limit=500&order_by=fecha_llegada&order_dir=desc`)
       .then(r => r.json())
       .then(res => {
         const traficos = res.data || []

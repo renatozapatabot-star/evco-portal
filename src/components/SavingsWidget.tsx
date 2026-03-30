@@ -26,7 +26,7 @@ export function SavingsWidget() {
     // Try pre-calculated first, then calculate from raw data
     Promise.all([
       fetch(`/api/data?table=aduanet_facturas&clave_cliente=${CLIENT_CLAVE}&limit=500&order_by=fecha_pago&order_dir=desc`).then(r => r.json()).catch(() => ({ data: [] })),
-      fetch(`/api/data?table=traficos&limit=500&order_by=fecha_cruce&order_dir=desc`).then(r => r.json()).catch(() => ({ data: [] })),
+      fetch(`/api/data?table=traficos&clave_cliente=${CLIENT_CLAVE}&limit=500&order_by=fecha_cruce&order_dir=desc`).then(r => r.json()).catch(() => ({ data: [] })),
     ]).then(([factRes, trafRes]) => {
       const facturas = factRes.data || []
       const traficos = trafRes.data || []
@@ -47,7 +47,9 @@ export function SavingsWidget() {
       const mveCompliant = traficos.filter((t: any) =>
         t.mve_folio && t.fecha_cruce && t.fecha_cruce >= '2026-03-31'
       )
-      const penaltiesAvoided = mveCompliant.length * 5990 // MXN per penalty
+      // MVE penalty range from system_config: 4790-7190 MXN, use midpoint
+      const MVE_PENALTY_MID = 5990
+      const penaltiesAvoided = mveCompliant.length * MVE_PENALTY_MID
 
       // 3. Time saved
       const timeSavedHours = tmecOps.length * 2 // 2h per manual cert

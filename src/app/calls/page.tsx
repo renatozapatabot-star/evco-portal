@@ -5,6 +5,7 @@ import { createClient } from '@supabase/supabase-js'
 import { Phone, Clock, CheckCircle, ChevronDown, ChevronRight } from 'lucide-react'
 import { GOLD } from '@/lib/design-system'
 import { COMPANY_ID } from '@/lib/client-config'
+import { fmtDateShort } from '@/lib/format-utils'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -120,7 +121,7 @@ export default function CallsPage() {
                 >
                   {isExpanded ? <ChevronDown size={14} style={{ color: GOLD }} /> : <ChevronRight size={14} style={{ color: 'var(--text-muted)' }} />}
                   <span className="mono text-[11.5px]" style={{ color: 'var(--text-muted)', width: 90, flexShrink: 0 }}>
-                    {new Date(call.transcribed_at).toLocaleDateString('es-MX', { day: '2-digit', month: 'short' })}
+                    {fmtDateShort(call.transcribed_at)}
                   </span>
                   <span className="mono text-[11.5px]" style={{ color: 'var(--text-secondary)', width: 50, flexShrink: 0 }}>
                     {fmtDuration(call.duration_seconds)}

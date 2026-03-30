@@ -122,7 +122,7 @@ async function runHealthChecks() {
 
   // Alert on failures
   const down = results.filter(r => r.status === 'down')
-  if (down.length > 0 && process.env.TELEGRAM_BOT_TOKEN) {
+  if (down.length > 0 && process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_SILENT !== 'true') {
     await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

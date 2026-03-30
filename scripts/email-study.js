@@ -40,6 +40,7 @@ const FULL_INBOX = { email: 'ai@renatozapata.com', mode: 'full' }
 // ── Notifications ─────────────────────────────────────────────────────────
 
 async function sendTelegram(msg) {
+  if (process.env.TELEGRAM_SILENT === 'true') return
   if (!TELEGRAM_TOKEN) { console.log('[TG skip]', msg); return }
   try {
     await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {

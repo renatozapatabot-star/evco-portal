@@ -16,6 +16,7 @@ function fmtUSD(n) { return '$' + Number(n || 0).toLocaleString('en-US', { maxim
 function fmtNum(n) { return Number(n || 0).toLocaleString('es-MX') }
 
 async function sendTG(msg) {
+  if (process.env.TELEGRAM_SILENT === 'true') return
   if (!TELEGRAM_TOKEN) { console.log(msg); return }
   await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
     method: 'POST',

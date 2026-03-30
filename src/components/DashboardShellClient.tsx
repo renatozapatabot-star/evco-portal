@@ -12,7 +12,6 @@ import { useIsMobile } from '@/hooks/use-mobile'
 import { MobileHeader } from './mobile-header'
 import { MobileBottomNav } from './mobile-bottom-nav'
 import { CruzFAB } from './cruz-fab'
-import { IntelligenceTicker } from './IntelligenceTicker'
 import { WelcomeOverlay } from './WelcomeOverlay'
 import { daysUntilMVE } from '@/lib/compliance-dates'
 
@@ -100,7 +99,6 @@ export default function DashboardShellClient({ children }: Props) {
   return (
     <ToastProvider>
       <a href="#main-content" className="skip-link">Ir al contenido</a>
-      {!isMobile && <IntelligenceTicker />}
       <div className="shell">
         <LoadingBar />
         {!isMobile && <Sidebar />}

@@ -122,7 +122,7 @@ REGLAS:
 - Sé conciso: máximo 200 palabras
 - Intent detectado: ${intent}
 - Si el intent es 'action': confirma la acción antes de ejecutar
-- Incluye IDs de tráfico en formato 9254-XXXX cuando sea relevante
+- Incluye IDs de tráfico en formato ${CLIENT_CLAVE}-XXXX cuando sea relevante
 - Si mencionas un tráfico, incluye link: /traficos/[id]`
 
   try {

@@ -24,6 +24,7 @@ const CHAT = '-5085543275'
 const DAYS = parseInt(process.argv.find(a => a.startsWith('--days='))?.split('=')[1] || '30')
 
 async function tg(msg) {
+  if (process.env.TELEGRAM_SILENT === 'true') return
   if (!TG) { console.log('[TG]', msg); return }
   await fetch(`https://api.telegram.org/bot${TG}/sendMessage`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },

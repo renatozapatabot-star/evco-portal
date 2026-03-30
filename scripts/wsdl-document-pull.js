@@ -21,7 +21,29 @@ const TG = process.env.TELEGRAM_BOT_TOKEN
 const CHAT = '-5085543275'
 const CHECKPOINT = '/tmp/wsdl-doc-pull-checkpoint.json'
 const ERROR_LOG = '/tmp/wsdl-doc-pull-errors.log'
-const REAUTH_INTERVAL = 100 // re-auth every N tráficos
+const REAUTH_INTERVAL = 1 // GlobalPC keys are single-use — auth before every call
+
+// Map WSDL Spanish labels → check-constrained doc_type codes
+const DOC_TYPE_MAP = {
+  'FACTURA': 'factura_comercial',
+  'FACTURA DOLARES': 'factura_comercial',
+  'FACTURA PESOS': 'factura_comercial',
+  'LISTA DE EMPAQUE': 'packing_list',
+  'DETALLE DE COVE': 'cove',
+  'XML DE COVE': 'cove',
+  'ACUSE DE COVE': 'acuse_cove',
+  'ACUSE DE E-DOCUMENT': 'acuse_cove',
+  'PEDIMENTO': 'pedimento_detallado',
+  'PEDIMENTO DETALLADO': 'pedimento_detallado',
+  'PEDIMENTO SIMPLIFICADO': 'pedimento_detallado',
+  'QR DODA': 'doda',
+  'ARCHIVOS DE VALIDACION': 'archivos_validacion',
+  'XML DE FACTURA': 'factura_comercial',
+  'CARTA': 'otro',
+}
+function mapDocType(wsdlLabel) {
+  return DOC_TYPE_MAP[(wsdlLabel || '').toUpperCase()] || 'otro'
+}
 
 async function tg(msg) {
   if (process.env.TELEGRAM_SILENT === 'true') return
@@ -154,8 +176,9 @@ async function run() {
           // Retry this tráfico with new key
           const retry = await pullDocsForTrafico(client, key, t.sCveTrafico)
           if (retry.docs.length > 0) {
-            await insertDocs(retry.docs, t)
-            docsFound += retry.docs.length
+            const ok = await insertDocs(retry.docs, t)
+            if (ok) docsFound += retry.docs.length
+            else errors++
           } else {
             noDocsCount++
           }
@@ -168,8 +191,9 @@ async function run() {
         errors++
         fs.appendFileSync(ERROR_LOG, `${new Date().toISOString()} | ${t.sCveTrafico} | ${result.error}\n`)
       } else if (result.docs.length > 0) {
-        await insertDocs(result.docs, t)
-        docsFound += result.docs.length
+        const ok = await insertDocs(result.docs, t)
+        if (ok) docsFound += result.docs.length
+        else errors++
       } else {
         noDocsCount++
       }
@@ -225,19 +249,21 @@ async function run() {
 
 async function insertDocs(docs, trafico) {
   const rows = docs.map(d => ({
-    trafico_id: trafico.sCveTrafico,
-    doc_type: d.tipo_documento || 'unknown',
+    pedimento_id: trafico.sCveTrafico,
+    doc_type: mapDocType(d.tipo_documento),
     file_name: d.descripcion || '',
-    globalpc_doc_id: d.id || null,
+    file_url: `globalpc://doc/${d.id}`,
     company_id: trafico.sCveCliente || 'unknown',
-    source: 'globalpc_wsdl',
-    created_at: new Date().toISOString()
+    uploaded_by: 'globalpc_wsdl',
+    metadata: { globalpc_doc_id: d.id || null, id_tipo_documento: d.id_tipo_documento || null, wsdl_label: d.tipo_documento }
   }))
 
   const { error } = await supabase.from('expediente_documentos').insert(rows)
   if (error && !error.message.includes('duplicate')) {
     fs.appendFileSync(ERROR_LOG, `${new Date().toISOString()} | ${trafico.sCveTrafico} | INSERT: ${error.message}\n`)
+    return false
   }
+  return true
 }
 
 run().catch(async (e) => {

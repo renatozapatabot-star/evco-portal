@@ -73,31 +73,55 @@ export const fmtKg = (n: number | null | undefined): string => {
 }
 
 // Date — standardize to "27 mar 2026" everywhere
-export const fmtDate = (s: any): string => {
-  if (!s) return ''
+export const fmtDate = (date: string | Date | null | undefined): string => {
+  if (!date) return '—'
   try {
-    return new Date(s).toLocaleDateString('es-MX', {
+    return new Date(date).toLocaleDateString('es-MX', {
       day: '2-digit',
       month: 'short',
       year: 'numeric',
+      timeZone: 'America/Chicago'
     })
-  } catch { return String(s) }
+  } catch { return '—' }
 }
 
 // Date with time — "27 mar 2026 · 04:31"
-export const fmtDateTime = (s: any): string => {
-  if (!s) return ''
+export const fmtDateTime = (date: string | Date | null | undefined): string => {
+  if (!date) return '—'
   try {
-    const d = new Date(s)
-    return `${d.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })} · ${d.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}`
-  } catch { return String(s) }
+    return new Date(date).toLocaleString('es-MX', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'America/Chicago'
+    })
+  } catch { return '—' }
 }
 
 // Short date — "27 mar"
-export const fmtDateShort = (s: any): string => {
-  if (!s) return ''
-  try { return new Date(s).toLocaleDateString('es-MX', { day: '2-digit', month: 'short' }) }
-  catch { return String(s) }
+export const fmtDateShort = (date: string | Date | null | undefined): string => {
+  if (!date) return '—'
+  try {
+    return new Date(date).toLocaleDateString('es-MX', {
+      day: '2-digit',
+      month: 'short',
+      timeZone: 'America/Chicago'
+    })
+  } catch { return '—' }
+}
+
+// Compact date — "27 mar" (alias for fmtDateShort with explicit typing)
+export const fmtDateCompact = (date: string | Date | null | undefined): string => {
+  if (!date) return '—'
+  try {
+    return new Date(date).toLocaleDateString('es-MX', {
+      day: '2-digit',
+      month: 'short',
+      timeZone: 'America/Chicago'
+    })
+  } catch { return '—' }
 }
 
 // ID formatter — no em-dashes, client-prefix aware
@@ -203,27 +227,25 @@ export const formatRelativeTime = (date: string | Date | null | undefined): stri
   } catch { return '' }
 }
 
-// v5.0 — Absolute ETA format. Never relative. "March 29, 2026 · 4:13 PM CST"
+// v6.0 — Absolute ETA format. Never relative. es-MX locale with CST suffix.
 export const formatAbsoluteETA = (s: any): string => {
-  if (!s) return ''
+  if (!s) return '—'
   try {
-    const d = new Date(s)
-    return d.toLocaleString('en-US', {
+    return new Date(s).toLocaleString('es-MX', {
       timeZone: 'America/Chicago',
-      month: 'long', day: 'numeric', year: 'numeric',
-      hour: 'numeric', minute: '2-digit',
-      hour12: true,
+      day: '2-digit', month: 'short', year: 'numeric',
+      hour: '2-digit', minute: '2-digit',
     }) + ' CST'
-  } catch { return String(s) }
+  } catch { return '—' }
 }
 
-// v5.0 — Absolute date only (no time). "March 29, 2026"
+// v6.0 — Absolute date only (no time). es-MX locale.
 export const formatAbsoluteDate = (s: any): string => {
-  if (!s) return ''
+  if (!s) return '—'
   try {
-    return new Date(s).toLocaleDateString('en-US', {
+    return new Date(s).toLocaleDateString('es-MX', {
       timeZone: 'America/Chicago',
-      month: 'long', day: 'numeric', year: 'numeric',
+      day: '2-digit', month: 'short', year: 'numeric',
     })
-  } catch { return String(s) }
+  } catch { return '—' }
 }

@@ -23,10 +23,11 @@ licenses, final authority on all operations and regulatory matters.
 
 **Stack:** Next.js App Router · Supabase Pro · Vercel · Anthropic API · Tailwind · TypeScript
 
-**Live:** evco-portal.vercel.app · Primary client: EVCO Plastics de México (clave: 9254)
+**Live:** evco-portal.vercel.app (login: evco2026) · Primary client: EVCO Plastics de México (clave: 9254)
 
 **Next client:** MAFESA — get RFC + GlobalPC clave from Tito first.
 Run white-label dry-run (find every hardcoded "9254") BEFORE promising anything.
+GlobalPC clave is the same connection for all clients — only the client filter changes.
 
 ---
 
@@ -37,11 +38,13 @@ simultaneously. Not one. Not two. All three.
 
 **Standard 1 — 11 PM Executive**
 Opens app. Absolute certainty in under 3 seconds. Closes app. Sleeps.
-No drilling down. No calling anyone. Certain.
+The status sentence at the top of Inicio IS this standard. It must appear
+instantly from cache, update silently when fresh data arrives.
 
 **Standard 2 — SAT Audit**
 Immutable chain of custody. Patente 3596 protected. Every pedimento traceable:
 who filed it, what value, what documents, what time. Append-only. Never deleted.
+Global search → pedimento number → complete chain view. One search, zero clicks.
 
 **Standard 3 — 3 AM Driver**
 World Trade Bridge. Cracked Android. No signal. Gloved hands.
@@ -91,24 +94,31 @@ npx supabase gen types typescript --local > types/supabase.ts
 ```
 src/
   app/
-    api/               # Route handlers — thin, call lib/ only
-    dashboard/
-      traficos/        # Active shipments
-      pedimentos/      # Customs entries
-      expedientes/     # Document expedientes
-      documentos/      # Document management
-      compliance/      # MVE + alerts
-      crossing/        # Bridge status + semáforo
-      drafts/          # Draft review + approval
-      cruz-ai/         # CRUZ AI full-screen interface
+    inicio/            # Dashboard — status sentence, 3 cards, attention feed, bridges
+    traficos/          # Shipments list + [id] detail
+    reportes/          # Analytics + finance merged (T-MEC + Estado de Cuenta)
+    documentos/        # Expedientes + upload (formerly /expedientes)
+    cruz/              # CRUZ AI full-screen dark interface
+    cumplimiento/      # CLIENT-SAFE only — no scores, no penalties
+    pedimentos/        # Customs declarations
+    drafts/            # Draft review + Telegram approval
+    api/
+      search/          # Global search — pedimento chain view
+      telegram-webhook/ # /aprobar /rechazar /corregir
   components/
     ui/                # shadcn primitives only
+    empty-state.tsx    # icon + title + subtitle + action — use everywhere
+    status-badge.tsx   # Global badge mapping — NEVER inline badge styles
   lib/
-    supabase.ts        # Supabase client
-    auth.ts            # Auth helpers
-    rates.ts           # getDTARates() + getExchangeRate() — ONE source, never duplicate
-    cruz-ai.ts         # Anthropic integration
-    audit.ts           # Audit log writer
+    supabase.ts                   # Supabase client
+    auth.ts                       # Auth helpers
+    rates.ts                      # getDTARates() + getExchangeRate() — ONE source
+    format-utils.ts               # fmtDate() fmtDateTime() fmtDateCompact() — es-MX always
+    compute-status-sentence.ts    # Dashboard status — 4 parallel queries + localStorage cache
+    solicitar-documentos.ts       # Doc request workflow + documento_solicitudes tracking
+    client-config.ts              # CLIENT_CLAVE, COMPANY_ID — never hardcoded
+    cruz-ai.ts                    # Anthropic integration
+    audit.ts                      # Audit log writer
   types/
   hooks/
   utils/
@@ -116,9 +126,18 @@ supabase/
   migrations/          # RLS required in every migration
 .claude/
   commands/            # /boot /review /fix-issue /evolve /audit
-  rules/               # core-invariants, design-system, supabase-rls, etc.
+  rules/               # core-invariants, design-system, supabase-rls, cruz-api, performance
   agents/              # aduanero, architect, reviewer
   memory/              # learned-rules.md, corrections, observations
+scripts/
+  email-intake.js          # Gmail → Sonnet extraction → draft + Telegram inline buttons
+  heartbeat.js             # pm2 + Supabase + Vercel health check every 15 min
+  regression-guard.js      # Post-sync coverage % and row count delta
+  draft-escalation.js      # 30min WhatsApp → 2h Telegram → 4h manual flag
+  fetch-bridge-times.js    # CBP API → 480min ceiling → historical fallback
+  wsdl-document-pull.js    # GlobalPC WSDL → expediente_documentos
+  expedientes-monitor.js   # Nightly expediente coverage vs yesterday
+  email-study.js           # Study mode: eloisa@ + claudia@ → email_intelligence table
 ```
 
 Dependency flow: `app/api/ → lib/ → types/`
@@ -126,88 +145,101 @@ Business logic in `lib/`. Never in route handlers or components.
 
 ---
 
-## DESIGN SYSTEM v5.0 — LOCKED
+## DESIGN SYSTEM v6.0 — LOCKED
 
-Do not deviate. Do not reinterpret. Audited and finalized.
-Any earlier dark-mode references are superseded.
+Do not deviate. Do not reinterpret. V6 upgrades gold to #B8953F (WCAG AA).
 
 **Canvas:**
-```
---bg-primary: #FAFAF8   (warm white — EVERY portal page)
---bg-dark:    #0D0D0C   (login + CRUZ AI screens ONLY — nowhere else)
---bg-card:    #FFFFFF
---border:     #E8E5E0
+```css
+--surface-primary: #FAFAF8;  /* warm white — ALL portal pages */
+--surface-card:    #FFFFFF;
+--surface-dark:    #0D0D0C;  /* login + CRUZ AI ONLY — nowhere else */
+--surface-subtle:  #F5F4F0;  /* hover states */
 ```
 
 **Gold:**
-```
---gold-500:   #C9A84C   (buttons, accents — NEVER text on light bg)
---gold-700:   #8B6914   (gold text on light — WCAG AA 5.2:1 ✅)
---gold-hover: #B8933B
-```
-
-**Brand:** `--z-red: #CC1B2F` (Z mark ONLY — nothing else uses this)
-
-**Status colors:**
-```
---amber:      #D4952A   (borders/bg ONLY — never text on white)
---amber-text: #92400E   (WCAG AA 7.3:1 ✅)
---red-text:   #991B1B
+```css
+--gold:        #B8953F;  /* WCAG AA 4.6:1 on white ✅ — buttons, accents, active nav */
+--gold-hover:  #A6832F;
+--gold-subtle: #F5F0E4;  /* gold ~10% for card backgrounds */
+--z-red:       #CC1B2F;  /* Z mark ONLY */
 ```
 
-**Emotional colors (max 3 visible simultaneously on any screen):**
-```
---teal:      #0D9488   (CERTAINTY — confirmed facts, locked ETAs)
---slate:     #475569   (WAITING — in progress, on schedule)
---warm-gray: #78716C   (ARCHIVED — done, historical, not actionable)
---plum:      #7E22CE   (REGULATORY — not urgent today, urgent soon)
+**Status:**
+```css
+--status-green: #2D8540;  /* Cruzado, Completo */
+--status-amber: #C47F17;  /* En Proceso, Atención */
+--status-red:   #C23B22;  /* Urgente, Crítico */
+--status-gray:  #9C9890;  /* Zero, Sin datos — NEVER green for zero */
+--status-teal:  #0D9488;  /* CERTAINTY — confirmed ETAs */
+--status-plum:  #7E22CE;  /* REGULATORY — upcoming deadline */
 ```
 
 **Typography:**
 ```
-Body:    Geist via next/font (var(--font-geist-sans))
-Numeric: JetBrains Mono via next/font (var(--font-jetbrains-mono))
-         ALL financial figures. ALL timestamps. No exceptions.
-         Never load via CDN @import — next/font only.
+Body:    Geist via next/font — var(--font-geist-sans)
+Numeric: JetBrains Mono via next/font — var(--font-jetbrains-mono)
+         ALL financial figures. ALL timestamps. ALL tráfico IDs. No exceptions.
+         Never CDN @import — next/font only.
 ```
 
-**Spacing:** 4px base. `p-1 p-2 p-4 p-6 p-8`. No arbitrary values.
+**Spacing:** 8px base grid. Tokens from --space-1 (4px) to --space-12 (48px). No arbitrary values.
+**Radius:** --radius-sm: 4px | --radius-md: 8px (max for cards) | --radius-full: 9999px (pills only)
 
-**Status badges (global mapping — never per-page custom):**
+**Status badges (global — NEVER per-page custom):**
 ```
 En proceso  → bg-amber-50  text-amber-700  border-amber-200
 Cruzado     → bg-green-50  text-green-700  border-green-200
 Warning     → bg-orange-50 text-orange-700 border-orange-200
 Error       → bg-red-50    text-red-700    border-red-200
 Pending     → bg-gray-50   text-gray-600   border-gray-200
-T-MEC       → gold pill ONLY (same amber tokens)
+T-MEC       → gold pill ONLY
 ```
 
-Use `<StatusBadge status={status} />` always. Never inline badge styles.
+Empty states: `<EmptyState icon title subtitle action />` — never blank white space.
 
-Empty states: icon + message + action. Never blank white space.
+**Zero in any KPI card is NEVER green.** Zero = `--status-gray`. Always.
 
-**Client dashboard rule:** No MVE countdowns, compliance alerts, or missing
-document warnings visible to the client. Operational urgency belongs in
-internal reports and Telegram. The client portal shows certainty, not anxiety.
+**Navigation:** 5 items only: Inicio · Tráficos · CRUZ · Reportes · Documentos.
+Broker pages are never in client nav.
+
+---
+
+## DATE AND TIME — NON-NEGOTIABLE
+
+All dates are absolute. Relative time is banned from the portal.
+
+```typescript
+// ONLY use these from src/lib/format-utils.ts:
+fmtDate(date)        // → "20 mar 2026"         NEVER "March 20, 2026"
+fmtDateTime(date)    // → "20 mar 2026, 14:32"   NEVER "hace 2 días"
+fmtDateCompact(date) // → "20 mar"               mobile compact
+
+// All use timeZone: 'America/Chicago', locale: 'es-MX'
+```
+
+Verification:
+```bash
+grep -rn "toLocaleDateString" src/app/ --include="*.tsx" | grep -v "es-MX"
+# Expected: 0 — all dates use fmtDate()
+grep -rn "hace\|ayer\|timeAgo\|fromNow\|relative" src/app/ --include="*.tsx"
+# Expected: 0
+```
 
 ---
 
 ## FINANCIAL CONFIG — NEVER HARDCODE
 
 ```typescript
-// CORRECT — from lib/rates.ts
-import { getDTARates, getExchangeRate } from '@/lib/rates'
-
-// NEVER:
-const exchangeRate = 17.49   // ← hardcoded = instant bug
-const DTA_RATE = 0.008       // ← hardcoded = wrong at scale
+import { getAllRates } from '@/lib/rates'
+const { dta, iva, tc } = await getAllRates()
+const dtaAmount   = Math.round(valorMXN * dta.rate)
+const ivaBase     = valorMXN + dtaAmount + igiAmount  // cascading — never flat
+const ivaAmount   = Math.round(ivaBase * iva.rate)
 ```
 
-If `system_config.valid_to < today` → pipeline **refuses to calculate**
-and sends Telegram alert. No silent fallback. Ever.
-
-**IVA base = valor_aduana + DTA + IGI** (never `invoice_value × 0.16` flat)
+If `system_config.valid_to < today` → pipeline refuses to calculate + Telegram alert.
+No silent fallback. Ever.
 
 ---
 
@@ -220,168 +252,116 @@ Opus    → OCA opinions, complex regulatory (rare, expensive)
 Qwen    → bulk processing, privacy-sensitive (local Ollama on Throne)
 ```
 
-Never use Opus where Sonnet works. Never use Sonnet where Haiku works.
-Cost discipline is not optional at scale.
-
 ---
 
 ## CUSTOMS DOMAIN RULES
 
-**Pedimento numbers:**
-Format: `DD AD PPPP SSSSSSS` → `26 24 3596 6500441`
-Always stored and displayed WITH spaces. Regex: `/^\d{2}\s\d{2}\s\d{4}\s\d{7}$/`
-Any code that strips or normalizes spaces breaks every downstream lookup.
+**Pedimento numbers:** `DD AD PPPP SSSSSSS` → `26 24 3596 6500441`
+Always WITH spaces. Regex: `/^\d{2}\s\d{2}\s\d{4}\s\d{7}$/`
+Strip spaces = break every downstream lookup.
 
-**Fracciones arancelarias:**
-`XXXX.XX.XX` — dots preserved always. Store with dots. Display with dots.
-Never strip to numeric only. Dot removal breaks tariff lookups.
+**Fracciones arancelarias:** `XXXX.XX.XX` — dots preserved always.
+Strip dots = break tariff lookups.
 
-**IVA calculation:**
-Base = `valor_aduana + DTA + IGI`. Never `amount × 0.16` flat.
-This is the most common accounting error in customs software.
+**IVA:** Base = `valor_aduana + DTA + IGI`. Never flat 0.16.
 
-**Currency:** Every monetary field has explicit MXN or USD label. Always.
-An `amount` field without currency is a bug.
+**Currency:** Every monetary field carries explicit MXN or USD. Always.
 
-**Timezone:** Store UTC. Display and calculate in `America/Chicago` (Laredo CST/CDT).
-`new Date()` without timezone on a compliance deadline = silent wrong answer.
-Off by 1–2 hours = real regulatory exposure.
+**Timezone:** Store UTC. Display/calculate in `America/Chicago`.
 
-**Client isolation:** Every query filters by `clave_cliente`.
-No literal `'9254'` or `'EVCO'` in production data-fetching code.
-Use `session.clientCode` or parameterized variables.
+**Client isolation:** Every query filters by `clave_cliente` from `client-config.ts`.
+Never `'9254'` or `'EVCO'` as literals.
 
-**Semáforo:** Verde/Rojo at step 8. Bridge + lane at step 9 ONLY.
-These are separate events. Never conflate.
+**Semáforo:** Step 8 = Verde/Rojo assigned. Step 9 = bridge + lane.
+Never conflate. Never show "Verde" on unfilled timeline circle.
 
-**Aduana codes:** Aduana 240 = Nuevo Laredo. Verify any code mapping
-aduana codes. Common error: confusing Laredo 240 with other crossings.
+**Data metrics must carry denominators:**
+"56.4% (211 de 374 líneas)" not "56.4%"
+"$67.0M USD · ene 2024–mar 2026" not "$67.0M"
+
+**Aduana 240 = Nuevo Laredo.** Verify any aduana code mapping.
 
 ---
 
 ## SUPABASE RULES
 
 - RLS on every table. No exceptions. Test in migration file.
-- `clave_cliente` isolation on every client data query — defense-in-depth beyond RLS.
-- Parameterized queries only. SQL string concatenation = stop immediately.
-- Generate types after every migration: `npx supabase gen types typescript`
+- `clave_cliente` isolation on every client data query.
+- Parameterized queries only. SQL concatenation = stop immediately.
+- Generate types after every migration.
 - Service role key: server-side only. Never in `NEXT_PUBLIC_` vars.
-- RLS on joined queries can silently return empty — test with non-admin user.
 
 ---
 
-## APPROVAL GATE — NON-NEGOTIABLE
+## APPROVAL GATE
 
 Nothing reaches clients without Tito or Renato IV sign-off.
-Emails, portal access, videos, documents, reports — all of it.
-
 **CRUZ proposes. Humans authorize. This boundary is permanent.**
-
-After Tito approves a draft: **5-second visible cancellation window**
-before automation executes. Observable and interruptible.
-Automation that cannot be stopped is automation that cannot be trusted.
+5-second cancellation window after approval before automation executes.
+Tito approves via Telegram: `/aprobar_[uuid]` → "Patente 3596 honrada. Gracias, Tito. 🦀"
 
 ---
 
 ## CONVENTIONS
 
 - TypeScript strict. No `any`. No `@ts-ignore` without linked issue.
-- Error pattern: `{ data: T | null, error: AppError | null }`. Never throw across boundaries.
-- Zod validation on every external input before it touches logic.
-- Naming: camelCase functions, PascalCase types/components, SCREAMING_SNAKE constants.
-- Imports: `@/` absolute paths. Order: node → external → internal → relative → types.
-- No `console.log` in production. Structured logger or remove.
-- Functions: max 30 lines, max 3 nesting levels, max 4 params.
-- Comments: WHY, never WHAT. Delete dead code.
-- **Spanish primary, English secondary.** All user-facing strings, error messages,
-  empty states, toast notifications, CRUZ AI responses. English is never the default.
-- Mobile-first: 375px minimum. Touch targets ≥ 60px.
-
-**Git commits:** `type(scope): description`
-Types: feat | fix | refactor | docs | style | test | chore
-Scope: traficos | expedientes | drafts | auth | design-system | pipeline | ai
+- Error: `{ data: T | null, error: AppError | null }`. Never throw across boundaries.
+- Zod on every external input.
+- **Spanish primary.** All user-facing strings. English never the default.
+- Mobile-first: 375px. Touch targets ≥ 60px.
+- Git: `type(scope): description`
 
 ---
 
-## SECURITY
-
-- Deny-by-default. Auth + RLS before any data access.
-- No secrets in code. `.env.local` / Vercel env vars only.
-- Sanitize ALL AI output before rendering. DOMPurify on dynamic content.
-  AI-extracted supplier data = untrusted input always.
-- Never log PII, tokens, pedimento details, or client financial data.
-- CSP headers in `next.config.js`.
-- IDOR: every endpoint with resource ID verifies ownership via RLS.
-- Document uploads: validate type, size limit, minimum 1200px resolution.
-
----
-
-## PIPELINE HEALTH — SILENT FAILURE IS NOT ACCEPTABLE
+## PIPELINE HEALTH
 
 ```
-Script completes → green Telegram checkmark ✅
-Script fails     → red Telegram alert with specific error ❌
-                   BEFORE morning report goes out
+Script completes → green Telegram ✅
+Script fails     → red Telegram ❌ BEFORE morning report
 ```
 
-The pm2 process died for 10 days unnoticed. That never happens again.
-After every new process or restart on Throne: `pm2 save`. Every time.
+`TELEGRAM_SILENT=true` in `.env.local` silences all notifications. Flip to `false` when needed.
+After every restart on Throne: `pm2 save`. Every time.
 
-Post-sync regression guard: after every nightly sync compare coverage %,
-row count delta, unmatched count. Alert if > 2% wrong direction.
-
-Every external API call (CBP, Banxico, Gmail, Anthropic) has a fallback.
-Fallback hierarchy: live API → last known Supabase value → historical average → alert.
+**Active crons (PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin must be line 1):**
+```
+*/5 6-22 * * 1-6   email-intake.js
+*/15 * * * *        heartbeat.js
+30 1 * * *          regression-guard.js
+*/15 * * * *        draft-escalation.js
+30 2 * * *          expedientes-monitor.js
+0 0 * * *           ghost-trafico-detector.js
+*/30 * * * *        fetch-bridge-times.js
+0 2 * * *           aduanet scraper (last 7 days)
+```
 
 ---
 
 ## BUILD QUALITY SEQUENCE
 
-Every substantial build runs all five gates. No exceptions.
-
 ```
-GATE 1 — stress-test the build document (before writing any code)
-GATE 2 — write the code
-GATE 3A — ten-out-of-ten, domain: frontend, target ≥ 9.0
-GATE 3B — critique-loop Lean mode, Opus ≥ 8.5, zero CRITICAL findings
-GATE 4 — deploy to Vercel, wait for green checkmark
-GATE 5 — /audit in Claude in Chrome
+GATE 1 — stress-test build document
+GATE 2 — write code
+GATE 3A — ten-out-of-ten frontend ≥ 9.0
+GATE 3B — critique-loop Lean, Opus ≥ 8.5, zero CRITICAL
+GATE 4 — deploy → Vercel green
+GATE 5 — /audit Claude in Chrome
 ```
 
-Three focused passes beat ten unfocused ones.
-Ship at 9.5+. Never ship at 8.5 when one more pass reaches 9.5.
+Ship at 9.5+. Never at 8.5 when one more pass reaches 9.5.
 
 ---
 
-## POST-BUILD AUDIT WORKFLOW
-
-Deploy → **Claude in Chrome** → audit live portal. No screenshots.
+## POST-BUILD AUDIT PROMPT
 
 ```
-/audit 1 standard prompt:
-"Go to evco-portal.vercel.app, log in with evco2026, audit every page.
-Check: warm white background, CRUZ wordmark, 13 nav items, JetBrains Mono
-on numbers, no relative times, gold text is #8B6914, status badge colors
-correct, no dark mode on light pages, empty states not blank.
-Report everything that fails."
+Go to evco-portal.vercel.app, log in with evco2026, audit every page.
+Check: warm white background, 5 nav items only, JetBrains Mono on all numbers,
+no relative times anywhere, no English dates, gold is #B8953F,
+status badges consistent, no dark mode outside /cruz and login,
+empty states not blank, no firm-wide data, no compliance scores or
+penalty amounts visible to client. Report everything that fails.
 ```
-
-Screenshots only for initial before-baseline (Audit 0). Chrome for all others.
-Full audit prompt library in `.claude/commands/audit.md`.
-
----
-
-## CRUZ AI + AUDIT LOGGING
-
-Every interaction logged:
-```typescript
-{ prompt_hash, model, tokens_used, response_summary,
-  user_id, client_code, timestamp }
-```
-
-AI output never rendered raw. Sanitize before display.
-Rate limit: 10 requests/minute per authenticated user.
-Timeout: 30s. Graceful error on timeout — never a hanging request.
 
 ---
 
@@ -392,27 +372,20 @@ ALL must pass before any task is done:
 1. `npm run typecheck` — zero errors
 2. `npm run lint` — zero errors
 3. `npm run build` — succeeds
-4. No orphan TODO/FIXME without tracking issue
+4. No orphan TODO/FIXME
 5. New modules have test files
-6. Mobile responsive at 375px verified (60px touch targets)
-7. Empty states handled for any new table/list
+6. Mobile 375px verified, 60px touch targets
+7. Empty states use `<EmptyState />`
 8. RLS on any new/modified table
-9. Spanish + English for any new UI text
-10. JetBrains Mono on any new financial/timestamp display
-11. `grep -r "CRUD" src/` → zero matches
-12. `grep -r "'9254'" src/` → zero matches in query files
-13. `/audit` in Claude in Chrome passes after deploy
-
----
-
-## SELF-EVOLUTION PROTOCOL
-
-1. **Observe.** Non-obvious pattern? → `.claude/memory/observations.jsonl`
-2. **Learn.** Corrected by Renato? → `.claude/memory/corrections.jsonl`
-   Second correction on same pattern → promote to learned rule immediately.
-3. **Consult.** Read `.claude/memory/learned-rules.md` before complex tasks.
-4. **Boot.** Run `/boot` at session start. Fix violations before building.
-5. **Evolve.** Run `/evolve` weekly to promote/prune rules.
+9. Spanish primary on all new UI text
+10. JetBrains Mono on all financial/timestamp display
+11. `grep -r "CRUD" src/` → 0
+12. `grep -r "'9254'" src/` → 0 in query files
+13. `grep -rn "toLocaleDateString" src/app/ | grep -v "es-MX"` → 0
+14. `grep -rn "hace\|timeAgo\|fromNow" src/app/` → 0
+15. `grep -rn "50 clientes\|754 tráficos\|Ollama\|GlobalPC MySQL" src/app/` → 0
+16. `/audit` Claude in Chrome passes
+17. 5 nav items only — count before deploy
 
 ---
 
@@ -420,42 +393,52 @@ ALL must pass before any task is done:
 
 **Code:**
 - Commit to main directly
-- Read or modify `.env` / `.env.local`
-- Run destructive database commands without confirmation
-- Hardcode colors outside design system tokens
-- Hardcode exchange rates, DTA rates, or IVA — always from `system_config`
+- Modify `.env` / `.env.local`
+- Run destructive DB commands without confirmation
+- Hardcode colors (including old gold #C9A84C — use #B8953F)
+- Hardcode rates or IVA — always from `system_config`
 - Skip RLS on any table
 - Render unsanitized AI output
 - Expose cross-client data
-- Use `'9254'` or `'EVCO'` as literals in production queries
+- Use `'9254'` or `'EVCO'` literals in production queries
 - Strip spaces from pedimento numbers
 - Strip dots from fracciones arancelarias
-- Load fonts via CDN `@import` — next/font only
+- Load fonts via CDN — next/font only
 - Calculate IVA as `value × 0.16` flat
 - Use `new Date()` without timezone on compliance deadlines
-- Store monetary amounts without explicit MXN or USD label
+- Store monetary amounts without MXN or USD label
+- Render dates in English format — always `es-MX` via `fmtDate()`
+- Show relative times anywhere in the portal
+
+**Portal — data:**
+- Show firm-wide data on single-client portal
+- Show compliance scores, penalties, or MVE exposure to client
+- Expose internal services (Ollama, Supabase, GlobalPC MySQL) to clients
+- Show "50 clients" or broker-internal counts in client portal
+- Show contradictory percentages/totals without denominators
 
 **Platform:**
-- Write "CRUD" anywhere in the codebase
+- Write "CRUD" anywhere in codebase
 - Send anything to clients without Tito or Renato IV approval
-- Trigger irreversible automation without a visible cancellation window
-- Let a script fail silently — every failure fires Telegram before the morning report
+- Trigger irreversible automation without cancellation window
+- Let a script fail silently
 - Skip `pm2 save` after any process change on Throne
-- Modify `.claude/memory/learned-rules.md` without running `/evolve`
-- Promise MAFESA a portal before running the white-label dry-run
-- Show compliance countdowns, MVE alerts, or missing-doc warnings on the client dashboard
+- Modify `learned-rules.md` without `/evolve`
+- Promise MAFESA portal before white-label dry-run
+- Show compliance countdowns or MVE alerts on client dashboard
 
 ---
 
 ## DEFINITION OF DONE
 
-Done when BOTH are simultaneously true:
+Both simultaneously true:
 
-**1.** EVCO plant manager opens dashboard at 11 PM.
-Sees absolute certainty. Closes app. Sleeps.
+**1.** Ursula Banda opens dashboard at 11 PM on her phone.
+Status sentence appears instantly. Absolute certainty in 2 seconds.
+Closes app. Sleeps.
 
-**2.** Tito reviews real draft. Corrects something. Taps approve.
-Watches automation. Sees **"Patente 3596 honrada. Gracias, Tito."**
+**2.** Tito reviews real draft. Taps `/aprobar` in Telegram.
+Sees **"Patente 3596 honrada. Gracias, Tito. 🦀"**
 Says "está bien."
 
 Not a demo. A real pedimento. A real broker. A real clearance.

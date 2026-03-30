@@ -437,7 +437,7 @@ async function executeTool(name: string, input: any): Promise<string> {
       }
       case 'check_mve_compliance': {
         const { data } = await supabase.from('traficos').select('trafico, estatus, fecha_llegada, descripcion_mercancia')
-          .ilike('trafico', '9254-%').neq('estatus', 'Cruzado').order('fecha_llegada', { ascending: false }).limit(50)
+          .ilike('trafico', `${CLIENT_CLAVE}-%`).neq('estatus', 'Cruzado').order('fecha_llegada', { ascending: false }).limit(50)
         const deadline = new Date('2026-03-31')
         const daysLeft = Math.max(0, Math.ceil((deadline.getTime() - Date.now()) / 86400000))
         return JSON.stringify({ daysUntilDeadline: daysLeft, enProcesoCount: data?.length || 0, sample: data?.slice(0, 10) })
@@ -476,7 +476,7 @@ async function executeTool(name: string, input: any): Promise<string> {
         return JSON.stringify({ action: 'navigate', path: input.path, label: input.label })
       case 'get_summary': {
         const [traf, ent] = await Promise.all([
-          supabase.from('traficos').select('estatus, importe_total').ilike('trafico', '9254-%').limit(5000),
+          supabase.from('traficos').select('estatus, importe_total').ilike('trafico', `${CLIENT_CLAVE}-%`).limit(5000),
           supabase.from('entradas').select('*', { count: 'exact', head: true }),
         ])
         const traficos = traf.data || []

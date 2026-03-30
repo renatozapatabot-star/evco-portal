@@ -11,6 +11,7 @@ const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.
 const TG = process.env.TELEGRAM_BOT_TOKEN
 const CHAT = '-5085543275'
 async function tg(msg) { if (!TG) return; await fetch(`https://api.telegram.org/bot${TG}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: CHAT, text: msg, parse_mode: 'HTML' }) }).catch(() => {}) }
+  if (process.env.TELEGRAM_SILENT === 'true') return
 
 // Map e-Conta MySQL tables to Supabase tables
 const TABLE_MAP = [

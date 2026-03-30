@@ -24,6 +24,7 @@ const TELEGRAM_CHAT = '-5085543275'
 const OLLAMA_URL = 'http://localhost:11434/api/generate'
 
 async function tg(msg) {
+  if (process.env.TELEGRAM_SILENT === 'true') return
   if (!TELEGRAM_TOKEN) { console.log('[TG]', msg.replace(/<[^>]+>/g, '')); return }
   await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
     method: 'POST',

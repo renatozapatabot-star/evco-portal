@@ -166,7 +166,7 @@ export function ReportesView() {
       const tmecCount = facturas.filter((f: any) => (f.igi || 0) === 0).length
       const faltantes = entradas.filter((e: any) => e.tiene_faltantes).length
       setSummary({
-        totalValor, tmecCount,
+        totalValor, tmecCount, totalFacturas: facturas.length,
         tmecPct: facturas.length > 0 ? ((tmecCount / facturas.length) * 100).toFixed(1) : 0,
         totalTraficos: traficos.length, totalEntradas: entradas.length,
         faltantesPct: entradas.length > 0 ? ((faltantes / entradas.length) * 100).toFixed(2) : 0,
@@ -211,17 +211,17 @@ export function ReportesView() {
           <span style={{ fontSize: 15, fontWeight: 700, color: T.text }}>Resumen Operativo</span>
         </div>
         <div style={{ fontSize: 12, color: T.textSub }}>
-          {fmtNum(summary.totalTraficos)} tráficos procesados · {fmtUSD(summary.totalValor)} USD importado · {summary.tmecPct}% T-MEC aplicado
+          {fmtNum(summary.totalTraficos)} tráficos procesados · {fmtUSD(summary.totalValor)} USD importado (histórico) · {summary.tmecPct}% T-MEC aplicado ({fmtNum(summary.tmecCount)} de {fmtNum(summary.totalFacturas)} facturas)
         </div>
       </Card>
 
       {/* KPI strip — client-facing: positive metrics only */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 24 }}>
         {[
-          { label: 'Valor Total Importado', value: fmtUSD(summary.totalValor), sub: 'USD acumulado', color: T.navy },
-          { label: 'T-MEC Aplicado', value: `${summary.tmecPct}%`, sub: `${fmtNum(summary.tmecCount)} operaciones`, color: T.green },
-          { label: 'Tráficos Completados', value: fmtNum(summary.totalTraficos), sub: `${fmtNum(summary.totalEntradas)} entradas`, color: T.navy },
-          { label: 'Documentación', value: '100%', sub: 'Completa para cruces', color: T.green },
+          { label: 'Valor Total Importado', value: fmtUSD(summary.totalValor), sub: 'USD acumulado · histórico', color: T.navy },
+          { label: 'T-MEC Aplicado', value: `${summary.tmecPct}%`, sub: `${fmtNum(summary.tmecCount)} de ${fmtNum(summary.totalFacturas)} facturas`, color: T.green },
+          { label: 'Tráficos Completados', value: fmtNum(summary.totalTraficos), sub: `${fmtNum(summary.totalEntradas)} entradas · histórico`, color: T.navy },
+          { label: 'Docs para Cruce', value: '100%', sub: 'Documentación lista por operación', color: T.green },
         ].map(k => (
           <Card key={k.label} style={{ padding: '14px 16px' }}>
             <div className="kpi-label">{k.label}</div>

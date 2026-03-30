@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { FolderOpen } from 'lucide-react'
 import { createClient } from '@supabase/supabase-js'
+import { CLIENT_CLAVE } from '@/lib/client-config'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -75,7 +76,7 @@ export function ExpedientesView() {
     // Query traficos directly — 9254-% covers all EVCO tráficos
     let q = supabase.from('traficos')
       .select('trafico, pedimento, estatus, fecha_llegada, descripcion_mercancia, proveedores, importe_total', { count: 'exact' })
-      .ilike('trafico', '9254-%')
+      .ilike('trafico', `${CLIENT_CLAVE}-%`)
       .order('created_at', { ascending: false })
       .range(page * PAGE, (page + 1) * PAGE - 1)
     if (search) q = q.ilike('trafico', `%${search}%`)

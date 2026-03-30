@@ -340,7 +340,7 @@ export default function TraficoDetailPage() {
                   const val = Number(t.importe_total) || 0
                   const tc = Number(t.tipo_cambio) || 0
                   const valMXN = val * tc
-                  const IVA_RATE = 0.16 // from system_config via lib/rates.ts — statutory rate
+                  const IVA_RATE = 0.16 // TODO(V6): hardcoded — should use getIVARate() from @/lib/rates. Cascading base is correct below.
                   const dta = Math.round(valMXN * 0.008)
                   const igi = 0 // T-MEC
                   const ivaBase = valMXN + dta + igi

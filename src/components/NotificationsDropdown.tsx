@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Bell } from 'lucide-react'
 import { GOLD } from '@/lib/design-system'
+import { CLIENT_CLAVE } from '@/lib/client-config'
 
 type Notif = { id: string; type: string; title: string; sub: string; time: string; read: boolean; color: string }
 
@@ -20,9 +21,9 @@ export function NotificationsDropdown() {
     async function load() {
       try {
         const [trafRes, entRes, factRes] = await Promise.all([
-          fetch('/api/data?table=traficos&trafico_prefix=9254-&limit=200&order_by=fecha_llegada&order_dir=desc').then(r => r.json()),
-          fetch('/api/data?table=entradas&cve_cliente=9254&limit=100&order_by=fecha_llegada_mercancia&order_dir=desc').then(r => r.json()),
-          fetch('/api/data?table=aduanet_facturas&clave_cliente=9254&limit=50&order_by=fecha_pago&order_dir=desc').then(r => r.json()),
+          fetch(`/api/data?table=traficos&trafico_prefix=${CLIENT_CLAVE}-&limit=200&order_by=fecha_llegada&order_dir=desc`).then(r => r.json()),
+          fetch(`/api/data?table=entradas&cve_cliente=${CLIENT_CLAVE}&limit=100&order_by=fecha_llegada_mercancia&order_dir=desc`).then(r => r.json()),
+          fetch(`/api/data?table=aduanet_facturas&clave_cliente=${CLIENT_CLAVE}&limit=50&order_by=fecha_pago&order_dir=desc`).then(r => r.json()),
         ])
         const traf = trafRes.data ?? trafRes ?? []
         const ent = entRes.data ?? entRes ?? []

@@ -17,6 +17,7 @@ const LOG_FILES = [
 const ERROR_PATTERNS = [/error:/i, /fatal/i, /exception/i, /ECONNREFUSED/i, /ETIMEDOUT/i, /Access denied/i, /Cannot connect/i, /Failed to/i]
 
 async function sendTelegram(msg) {
+  if (process.env.TELEGRAM_SILENT === 'true') return
   if (!TELEGRAM_TOKEN) { console.log(msg); return }
   await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: TELEGRAM_CHAT, text: msg, parse_mode: 'HTML' }) })
 }

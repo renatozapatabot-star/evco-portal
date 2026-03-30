@@ -49,7 +49,7 @@ export function CotizacionView() {
     const dta = form.regimen === 'IN' ? 347.09 : valorAduanaMXN * 0.008
     const igiRate = form.tmec ? 0 : (parseFloat(form.igi_rate) || 0) / 100
     const igi = valorAduanaMXN * igiRate
-    const IVA_RATE = 0.16 // from system_config via lib/rates.ts — statutory rate
+    const IVA_RATE = 0.16 // TODO(V6): hardcoded — should use getIVARate() from @/lib/rates. Cascading base is correct below.
     const iva = (valorAduanaMXN + igi + dta) * IVA_RATE
     const prev = 347.09
     const total = dta + igi + iva + prev

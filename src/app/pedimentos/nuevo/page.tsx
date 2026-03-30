@@ -117,7 +117,7 @@ export default function NuevoPedimentoPage() {
       // Estimate contributions
       const igiRate = tmecEligible ? 0 : 0.05 // 5% default, 0% T-MEC
       const dtaRate = 0.008 // 8 al millar
-      const ivaRate = 0.16
+      const ivaRate = 0.16 // TODO(V6): hardcoded — should use getIVARate() from @/lib/rates. Cascading base is correct below.
 
       const dta = valorMXN * dtaRate
       const igi = valorMXN * igiRate

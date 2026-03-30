@@ -95,11 +95,13 @@ async function runSmokeTests() {
       ? `✅ SMOKE TEST PASSED\n${passed}/${results.length} checks OK\nPortal listo para el lunes\n— CRUZ 🦀`
       : `❌ SMOKE TEST: ${failed} FAILED\n${results.filter(r => !r.pass).map(r => `• ${r.test}`).join('\n')}\n— CRUZ 🦀`
 
-    await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: '-5085543275', text: msg })
-    }).catch(() => {})
+    if (process.env.TELEGRAM_SILENT !== 'true') {
+      await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: '-5085543275', text: msg })
+      }).catch(() => {})
+    }
   }
 
   return failed === 0

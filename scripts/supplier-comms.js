@@ -15,6 +15,7 @@ const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY
 const GMAIL_TOKEN = process.env.GMAIL_REFRESH_TOKEN
 
 async function sendTG(msg) {
+  if (process.env.TELEGRAM_SILENT === 'true') return
   if (!TELEGRAM_TOKEN) { console.log('[TG]', msg.replace(/<[^>]+>/g, '')); return }
   await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },

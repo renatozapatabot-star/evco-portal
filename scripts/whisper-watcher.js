@@ -21,6 +21,7 @@ const supabase = createClient(
 
 function log(msg) { console.log(`[${new Date().toLocaleTimeString('es-MX')}] ${msg}`) }
 async function sendTG(msg) { if (!TELEGRAM_TOKEN) { log(msg); return }; await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: TELEGRAM_CHAT, text: msg, parse_mode: 'HTML' }) }) }
+  if (process.env.TELEGRAM_SILENT === 'true') return
 function hasWhisper() { try { execSync('which whisper', { stdio: 'pipe' }); return true } catch { return false } }
 
 function transcribe(audioPath) {

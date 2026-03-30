@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import { Plus, Bell, BellOff, Check, X } from 'lucide-react'
-import { COMPANY_ID, CLIENT_NAME, PATENTE } from '@/lib/client-config'
+import { COMPANY_ID, CLIENT_NAME, PATENTE, CLIENT_CLAVE } from '@/lib/client-config'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -99,7 +99,7 @@ export default function CalendarioPage() {
 
     // Fetch IMMEX temporal limits
     try {
-      const res = await fetch('/api/data?table=traficos&trafico_prefix=9254-&limit=500&order_by=fecha_llegada&order_dir=desc')
+      const res = await fetch(`/api/data?table=traficos&trafico_prefix=${CLIENT_CLAVE}-&limit=500&order_by=fecha_llegada&order_dir=desc`)
       const data = await res.json()
       const traficos = data.data ?? data ?? []
       const today = new Date().toISOString().split('T')[0]

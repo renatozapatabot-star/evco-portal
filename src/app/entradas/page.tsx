@@ -175,7 +175,7 @@ export default function EntradasPage() {
                   </td>
                   <td>
                     {r.trafico ? (
-                      <Link href="/traficos" className="mono text-[12.5px] font-semibold"
+                      <Link href={`/traficos/${encodeURIComponent(fmtTrafico(r.trafico))}`} className="mono text-[12.5px] font-semibold"
                         style={{ color: '#1A6BFF', textDecoration: 'none' }}
                         onClick={e => e.stopPropagation()}>
                         {fmtTrafico(r.trafico)}

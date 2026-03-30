@@ -1,6 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
 import { GOLD_GRADIENT } from '@/lib/design-system'
-import { PORTAL_URL } from '@/lib/client-config'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -10,29 +9,36 @@ const supabase = createClient(
 export const dynamic = 'force-dynamic'
 
 export default async function StatusPage() {
-  const [statusRes, healthRes, companiesRes] = await Promise.all([
-    supabase.from('traficos').select('*', { count: 'exact', head: true }),
-    supabase.from('integration_health').select('*').order('checked_at', { ascending: false }),
-    supabase.from('companies').select('*', { count: 'exact', head: true }).eq('active', true)
-  ])
+  const healthRes = await supabase
+    .from('integration_health')
+    .select('*')
+    .order('checked_at', { ascending: false })
 
   const integrations = healthRes.data || []
   const now = new Date().toLocaleString('es-MX', { timeZone: 'America/Chicago', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
 
+  // Client-friendly label mapping — hide internal service names
+  const friendlyName: Record<string, string> = {
+    'Portal CRUZ': 'Portal Web',
+    'Base de Datos': 'Sincronización de Datos',
+    'GlobalPC MySQL': 'Sincronización de Datos',
+    'Supabase': 'Sincronización de Datos',
+    'CRUZ Intelligence': 'CRUZ AI',
+    'Telegram Bot': 'Notificaciones',
+    'Ollama': 'CRUZ AI',
+  }
+
   // If no integration_health data, show defaults
   const systems = integrations.length > 0
     ? integrations.map(i => ({
-        name: i.integration_name,
+        name: friendlyName[i.integration_name] || i.integration_name,
         status: i.status as string,
-        detail: i.status === 'healthy'
-          ? `${i.response_time_ms}ms`
-          : i.error_message || 'Check pending',
+        detail: i.status === 'healthy' ? 'Activo' : 'Sin conexión',
       }))
     : [
-        { name: 'Portal CRUZ', status: 'operational', detail: PORTAL_URL },
-        { name: 'Base de Datos', status: 'operational', detail: `${(statusRes.count || 0).toLocaleString()} tráficos` },
-        { name: 'GlobalPC MySQL', status: 'operational', detail: 'bd_demo_38 connected' },
-        { name: 'CRUZ Intelligence', status: 'operational', detail: 'Throne · Laredo TX · qwen3.5:35b' },
+        { name: 'Portal Web', status: 'operational', detail: 'Activo' },
+        { name: 'Sincronización de Datos', status: 'operational', detail: 'Activo' },
+        { name: 'CRUZ AI', status: 'operational', detail: 'Activo' },
       ]
 
   const cfg: Record<string, { color: string; bg: string; label: string; dot: string }> = {
@@ -52,7 +58,7 @@ export default async function StatusPage() {
           <div style={{ width: 40, height: 40, background: GOLD_GRADIENT, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1A1710', fontWeight: 900, fontSize: 18, fontFamily: 'Georgia, serif' }}>Z</div>
           <div>
             <h1 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>Estado del Sistema</h1>
-            <p style={{ color: '#666', fontSize: 12, margin: 0 }}>CRUZ Intelligence Platform &middot; {companiesRes.count || 0} clients</p>
+            <p style={{ color: '#666', fontSize: 12, margin: 0 }}>CRUZ Intelligence Platform</p>
           </div>
         </div>
 

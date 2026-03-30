@@ -41,6 +41,7 @@ const CLIENTS = [
 const CLIENT_FILTER = process.env.CLIENT_ID
 
 async function sendTelegram(chatId, text) {
+  if (process.env.TELEGRAM_SILENT === 'true') return
   const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`
   const res = await fetch(url, {
     method: 'POST',

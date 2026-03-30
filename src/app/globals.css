@@ -141,6 +141,39 @@
   --shadow-hover: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
   --shadow-drawer: -8px 0 32px rgba(0,0,0,0.12);
 
+  /* ─── V6 SURFACE TOKENS ─── */
+  --surface-primary: #FAFAF8;
+  --surface-card: #FFFFFF;
+  --surface-dark: #0D0D0C;
+  --surface-subtle: #F5F4F0;
+
+  /* ─── V6 STATUS COLORS ─── */
+  --status-green: #2D8540;
+  --status-amber: #C47F17;
+  --status-red: #C23B22;
+  --status-gray: #9C9890;
+  --status-teal: #0D9488;
+  --status-plum: #7E22CE;
+
+  /* ─── V6 SPACING (8px grid) ─── */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* ─── V6 RADIUS ─── */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-full: 9999px;
+
+  /* ─── V6 SHADOWS ─── */
+  --shadow-v6-sm: 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-v6-md: 0 4px 8px rgba(0,0,0,0.08);
+
   /* ─── MOTION (v5.0) ─── */
   --t-fast:   150ms;
   --t-base:   250ms;

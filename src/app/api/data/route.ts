@@ -20,12 +20,39 @@ const ALLOWED_TABLES = [
   'trade_prospects', 'prospect_sightings', 'competitor_sightings',
 ]
 
+// Tables that contain client-specific data and MUST be filtered by a client identifier.
+// Querying these without company_id, clave_cliente, or cve_cliente is a cross-client data leak risk.
+const CLIENT_SCOPED_TABLES = new Set([
+  'traficos',
+  'entradas',
+  'expedientes',
+  'pedimentos',
+  'expediente_documentos',
+  'globalpc_facturas',
+  'aduanet_facturas',
+  'econta_cartera',
+  'econta_ingresos',
+])
+
 export async function GET(req: NextRequest) {
   const params = req.nextUrl.searchParams
   const table = params.get('table')
 
   if (!table || !ALLOWED_TABLES.includes(table)) {
     return NextResponse.json({ error: 'Invalid table' }, { status: 400 })
+  }
+
+  // Enforce client isolation: client-scoped tables MUST include a client filter
+  const claveCliente = params.get('clave_cliente')
+  const cveCliente = params.get('cve_cliente')
+  const companyId = params.get('company_id')
+  const hasClientFilter = !!(claveCliente || cveCliente || companyId)
+
+  if (CLIENT_SCOPED_TABLES.has(table) && !hasClientFilter) {
+    return NextResponse.json(
+      { error: 'Client filter required for this table' },
+      { status: 400 }
+    )
   }
 
   const limit = Math.min(Number(params.get('limit') || '50'), 5000)
@@ -35,13 +62,8 @@ export async function GET(req: NextRequest) {
   let q = supabase.from(table).select('*').limit(limit)
 
   // Apply filters
-  const claveCliente = params.get('clave_cliente')
   if (claveCliente) q = q.eq('clave_cliente', claveCliente)
-
-  const cveCliente = params.get('cve_cliente')
   if (cveCliente) q = q.eq('cve_cliente', cveCliente)
-
-  const companyId = params.get('company_id')
   if (companyId) q = q.eq('company_id', companyId)
 
   const traficoPrefix = params.get('trafico_prefix')

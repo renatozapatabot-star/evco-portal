@@ -19,6 +19,7 @@ const COMPANY_ID = 'evco'
 const BATCH_SIZE = 1000
 
 async function tg(msg) {
+  if (process.env.TELEGRAM_SILENT === 'true') return
   if (!TG) { console.log('[TG]', msg); return }
   await fetch(`https://api.telegram.org/bot${TG}/sendMessage`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },

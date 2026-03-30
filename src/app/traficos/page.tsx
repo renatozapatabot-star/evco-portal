@@ -11,6 +11,7 @@ import { MobileTraficoCard } from '@/components/mobile-trafico-card'
 import { calculateCruzScore, extractScoreInput, statusDays } from '@/lib/cruz-score'
 import { useSort } from '@/hooks/use-sort'
 import { useIsMobile } from '@/hooks/use-mobile'
+import Link from 'next/link'
 
 interface TraficoRow {
   trafico: string; estatus?: string; fecha_llegada?: string | null
@@ -50,9 +51,17 @@ export default function TraficosPage() {
   const [predictions, setPredictions] = useState<Record<string, { avgDays: number; predictedDate: string; confidence: string }>>({})
   const [riskMap, setRiskMap] = useState<Map<string, any>>(new Map())
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [selectedId, setSelectedId] = useState<string | null>(null)
   const { sort, toggleSort } = useSort('traficos', { column: 'fecha_llegada', direction: 'desc' })
   const router = useRouter()
   const isMobile = useIsMobile()
+
+  // Escape key closes quick-view panel
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setSelectedId(null) }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [])
 
   useEffect(() => {
     setLoading(true)
@@ -253,7 +262,7 @@ export default function TraficosPage() {
                 return (
                   <Fragment key={r.trafico}>
                     <tr className={`${rowClass} ${isExpanded ? 'row-expanded' : ''}`}
-                      onClick={() => setExpandedId(isExpanded ? null : r.trafico)}>
+                      onClick={() => isMobile ? setExpandedId(isExpanded ? null : r.trafico) : setSelectedId(selectedId === r.trafico ? null : r.trafico)}>
                       <td style={{ width: 28, paddingRight: 0 }}>
                         {isCrossing ? <><span className="crossing-pulse" /><span className="sr-only">En cruce</span></> : ps > 0 ? <><span className={`priority ${priorityClass(ps)}`} /><span className="sr-only">Requiere atención</span></> : null}
                       </td>
@@ -348,6 +357,164 @@ export default function TraficosPage() {
           </div>
         )}
       </div>
+
+      {/* ═══ Quick-View Side Panel ═══ */}
+      {selectedId && (
+        <>
+          <div
+            onClick={() => setSelectedId(null)}
+            style={{
+              position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)',
+              backdropFilter: 'blur(2px)', zIndex: 998,
+            }}
+          />
+          <div style={{
+            position: 'fixed', top: 0, right: 0, bottom: 0,
+            width: 400, maxWidth: '90vw',
+            background: '#FFFFFF',
+            borderLeft: '1px solid #E8E5E0',
+            boxShadow: '-8px 0 32px rgba(0,0,0,0.12)',
+            zIndex: 999,
+            overflowY: 'auto',
+            padding: 24,
+            animation: 'slideInRight 0.3s ease',
+          }}>
+            <QuickView traficoId={selectedId} onClose={() => setSelectedId(null)} />
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
+function QuickView({ traficoId, onClose }: { traficoId: string; onClose: () => void }) {
+  const [data, setData] = useState<Record<string, unknown> | null>(null)
+  const [docs, setDocs] = useState<Record<string, unknown>[]>([])
+  const [error, setError] = useState(false)
+
+  useEffect(() => {
+    setData(null)
+    setDocs([])
+    setError(false)
+    fetch(`/api/trafico/${encodeURIComponent(traficoId)}`)
+      .then(r => r.json())
+      .then(d => {
+        setData(d.trafico ?? null)
+        setDocs(d.documents ?? [])
+      })
+      .catch(() => setError(true))
+  }, [traficoId])
+
+  if (error) {
+    return (
+      <div style={{ textAlign: 'center', padding: '48px 0', color: '#9C9890' }}>
+        <div style={{ fontSize: 14, fontWeight: 600 }}>Error al cargar datos</div>
+        <button onClick={onClose} style={{
+          marginTop: 12, background: 'none', border: '1px solid #E8E5E0',
+          padding: '8px 16px', borderRadius: 8, cursor: 'pointer', fontSize: 13,
+        }}>
+          Cerrar
+        </button>
+      </div>
+    )
+  }
+
+  if (!data) {
+    return (
+      <div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+          <div className="skeleton" style={{ height: 24, width: 160, borderRadius: 4 }} />
+          <button onClick={onClose} aria-label="Cerrar" style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, color: '#9C9890' }}>
+            &times;
+          </button>
+        </div>
+        <div className="skeleton" style={{ height: 200, borderRadius: 8 }} />
+      </div>
+    )
+  }
+
+  const isCruzado = ((data.estatus as string) || '').toLowerCase().includes('cruz')
+  const totalDocs = docs.length
+  const importe = Number(data.importe_total) || 0
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
+        <div>
+          <div style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 18, fontWeight: 800, color: '#1A1A1A' }}>
+            {fmtId(data.trafico as string)}
+          </div>
+          <span style={{
+            display: 'inline-block', marginTop: 6, fontSize: 12, fontWeight: 700,
+            padding: '3px 10px', borderRadius: 9999,
+            background: isCruzado ? '#f0fdf4' : '#fffbeb',
+            color: isCruzado ? '#2D8540' : '#C47F17',
+            border: `1px solid ${isCruzado ? '#bbf7d0' : '#fde68a'}`,
+          }}>
+            {isCruzado ? 'Cruzado' : 'En Proceso'}
+          </span>
+        </div>
+        <button onClick={onClose} aria-label="Cerrar" style={{
+          background: 'none', border: 'none', cursor: 'pointer',
+          fontSize: 22, color: '#9C9890', padding: 4, lineHeight: 1,
+          minWidth: 32, minHeight: 32,
+        }}>
+          &times;
+        </button>
+      </div>
+
+      {/* Facts grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 }}>
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#6B6B6B', marginBottom: 4 }}>Pedimento</div>
+          <div style={{ fontSize: 13, fontFamily: 'var(--font-jetbrains-mono)', color: '#1A1A1A' }}>
+            {(data.pedimento as string) || '—'}
+          </div>
+        </div>
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#6B6B6B', marginBottom: 4 }}>Fecha Llegada</div>
+          <div style={{ fontSize: 13, fontFamily: 'var(--font-jetbrains-mono)', color: '#1A1A1A' }}>
+            {fmtDate(data.fecha_llegada as string | null)}
+          </div>
+        </div>
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#6B6B6B', marginBottom: 4 }}>Importe USD</div>
+          <div style={{ fontSize: 13, fontFamily: 'var(--font-jetbrains-mono)', color: '#1A1A1A' }}>
+            {importe > 0 ? fmtUSD(importe) : '—'}
+          </div>
+        </div>
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#6B6B6B', marginBottom: 4 }}>Documentos</div>
+          <div style={{ fontSize: 13, fontFamily: 'var(--font-jetbrains-mono)', color: '#1A1A1A' }}>
+            {totalDocs > 0 ? `${totalDocs} archivos` : '—'}
+          </div>
+        </div>
+      </div>
+
+      {/* Description */}
+      {typeof data.descripcion_mercancia === 'string' && data.descripcion_mercancia && (
+        <div style={{ marginBottom: 20, padding: 12, background: '#FAFAF8', borderRadius: 8, border: '1px solid #E8E5E0' }}>
+          <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#6B6B6B', marginBottom: 4 }}>Descripción</div>
+          <div style={{ fontSize: 13, color: '#1A1A1A', lineHeight: 1.4 }}>
+            {fmtDesc(data.descripcion_mercancia as string)}
+          </div>
+        </div>
+      )}
+
+      {/* CTA */}
+      <Link
+        href={`/traficos/${encodeURIComponent(traficoId)}`}
+        style={{
+          display: 'block', textAlign: 'center',
+          padding: '12px 24px', borderRadius: 8,
+          background: 'none', border: '1px solid #B8953F',
+          color: '#B8953F', fontWeight: 700, fontSize: 14,
+          textDecoration: 'none', minHeight: 60,
+          lineHeight: '36px',
+        }}
+      >
+        Ver completo &rarr;
+      </Link>
     </div>
   )
 }

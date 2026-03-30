@@ -57,10 +57,14 @@ export default function CruzChatPage() {
   const searchParams = useSearchParams()
   const traficoContext = searchParams.get('trafico')
   const [suggestions, setSuggestions] = useState(DEFAULT_SUGGESTIONS)
+  const [cruzAlerts, setCruzAlerts] = useState<{ icon: string; title: string; action: string; prompt: string }[]>([])
 
   useEffect(() => {
     fetch('/api/status-summary').then(r => r.json())
       .then(data => setSuggestions(buildDynamicPrompts(data)))
+      .catch(() => {})
+    fetch('/api/cruz-alerts').then(r => r.json())
+      .then(data => setCruzAlerts(data.alerts ?? []))
       .catch(() => {})
   }, [])
 
@@ -289,6 +293,30 @@ export default function CruzChatPage() {
             <p style={{ fontSize: 14, color: D.textMuted, marginBottom: 24 }}>
               6 herramientas · Voz · Contexto en tiempo real
             </p>
+            {cruzAlerts.length > 0 && (
+              <div style={{ maxWidth: 480, width: '100%', marginBottom: 16 }}>
+                {cruzAlerts.map((alert, i) => (
+                  <div key={i} onClick={() => sendMessage(alert.prompt)} style={{
+                    padding: 16, borderRadius: 8,
+                    border: '1px solid rgba(255,255,255,0.10)',
+                    background: 'rgba(255,255,255,0.04)',
+                    cursor: 'pointer',
+                    marginBottom: 8,
+                    transition: 'all 0.15s',
+                  }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(201,168,76,0.3)' }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.10)' }}
+                  >
+                    <div style={{ fontSize: 14, fontWeight: 600, color: D.text }}>
+                      {alert.icon} {alert.title}
+                    </div>
+                    <div style={{ fontSize: 13, color: GOLD, fontWeight: 600, marginTop: 4 }}>
+                      {alert.action}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, maxWidth: 480, width: '100%' }}>
               {suggestions.map(s => (
                 <button key={s} onClick={() => sendMessage(s)} style={{

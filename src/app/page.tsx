@@ -25,6 +25,31 @@ interface BridgeTime {
 
 const fmtUSD = (n: number) => n >= 1e6 ? `$${(n / 1e6).toFixed(1)}M` : n >= 1e3 ? `$${(n / 1e3).toFixed(0)}K` : `$${n.toFixed(0)}`
 
+function getIntelligenceHint(action: { description: string }, allTraficos: TraficoRow[]): string | null {
+  if (action.description.includes('Sin pedimento')) {
+    const resolved = allTraficos.filter(t => t.pedimento && t.fecha_llegada)
+    if (resolved.length > 5) {
+      const avgDays = Math.round(resolved.reduce((s, t) => {
+        const arrived = new Date(t.fecha_llegada!).getTime()
+        const now = Date.now()
+        return s + ((now - arrived) / 86400000)
+      }, 0) / resolved.length)
+      return `Promedio de resoluci\u00F3n: ${avgDays} d\u00EDas`
+    }
+    return 'Solicitar documentos al proveedor acelera el proceso'
+  }
+  if (action.description.includes('Incidencia') || action.description.includes('danada') || action.description.includes('Faltantes')) {
+    return 'Reportar al almac\u00E9n dentro de 24h para mantener cobertura de seguro'
+  }
+  if (action.description.includes('Sin movimiento')) {
+    return 'Contactar al agente aduanal para actualizaci\u00F3n de estatus'
+  }
+  if (action.description.includes('seguimiento')) {
+    return 'Revisar documentaci\u00F3n faltante para agilizar despacho'
+  }
+  return null
+}
+
 // V6 design tokens
 const TOKEN = {
   surfacePrimary: '#FAFAF8',
@@ -94,6 +119,43 @@ export default function Dashboard() {
     entradas.filter((e: Record<string, unknown>) => e.mercancia_danada || e.tiene_faltantes)
   , [entradas])
 
+  // ── Last crossing date (for empty state) ──
+  const lastCrossingDate = useMemo(() => {
+    const crossed = traficos.filter(t => (t.estatus || '').toLowerCase().includes('cruz'))
+    if (crossed.length === 0) return null
+    const dates = crossed.map(t => t.fecha_cruce || t.updated_at).filter(Boolean).sort().reverse()
+    return dates[0] ?? null
+  }, [traficos])
+
+  // ── KPI trend indicators ──
+  const [trends, setTrends] = useState<{ enRuta: number | null; cruzados: number | null; valor: number | null }>({ enRuta: null, cruzados: null, valor: null })
+
+  useEffect(() => {
+    if (loading) return
+    const todayKey = new Date().toISOString().split('T')[0]
+    const stored = localStorage.getItem('cruz_kpi_history')
+    const history: Record<string, { enRuta: number; cruzados: number; valor: number }> = stored ? JSON.parse(stored) : {}
+
+    // Find most recent entry that is not today
+    const dates = Object.keys(history).filter(d => d !== todayKey).sort().reverse()
+    if (dates.length > 0) {
+      const prev = history[dates[0]]
+      setTrends({
+        enRuta: enProceso.length - (prev.enRuta ?? enProceso.length),
+        cruzados: cruzadosHoy.length - (prev.cruzados ?? cruzadosHoy.length),
+        valor: valorEnProceso > 0 && prev.valor > 0 ? Math.round(((valorEnProceso - prev.valor) / prev.valor) * 100) : null,
+      })
+    }
+
+    // Store today's values
+    history[todayKey] = { enRuta: enProceso.length, cruzados: cruzadosHoy.length, valor: valorEnProceso }
+    // Keep only last 7 days
+    const recent = Object.fromEntries(
+      Object.entries(history).sort(([a], [b]) => a.localeCompare(b)).slice(-7)
+    )
+    localStorage.setItem('cruz_kpi_history', JSON.stringify(recent))
+  }, [loading, enProceso.length, cruzadosHoy.length, valorEnProceso])
+
   // ── Action queue (max 5) ──
   const actions = useMemo(() => {
     const items: { id: string; severity: 'red' | 'amber'; description: string; date: string | null; link: string; action: string }[] = []
@@ -105,23 +167,27 @@ export default function Dashboard() {
         : days > 14
         ? `Sin movimiento desde ${fmtDate(t.fecha_llegada)}`
         : 'Pendiente de seguimiento'
+      const actionText = !t.pedimento ? 'Solicitar Docs'
+        : !t.fecha_pago ? 'Ver Estado de Pago'
+        : 'Ver Detalle'
       items.push({
         id: `u-${t.trafico}`,
         severity: score < 50 ? 'red' : 'amber',
         description: `${fmtId(t.trafico)} — ${reason}`,
         date: t.fecha_llegada,
         link: `/traficos/${encodeURIComponent(t.trafico)}`,
-        action: 'Revisar',
+        action: actionText,
       })
     })
     incidencias.slice(0, 2).forEach((e: Record<string, unknown>) => {
+      const daysOld = e.fecha_llegada_mercancia ? Math.floor((Date.now() - new Date(e.fecha_llegada_mercancia as string).getTime()) / 86400000) : 0
       items.push({
         id: `i-${e.cve_entrada}`,
         severity: 'amber',
         description: `Entrada ${e.cve_entrada} — ${(e.mercancia_danada ? 'Mercancia danada' : 'Faltantes reportados')}`,
         date: e.fecha_llegada_mercancia as string | null,
         link: `/entradas/${e.cve_entrada}`,
-        action: 'Ver',
+        action: daysOld > 14 ? 'Contactar Agente' : 'Ver Incidencia',
       })
     })
     return items.slice(0, 5)
@@ -158,6 +224,17 @@ export default function Dashboard() {
 
   // ── Today formatted ──
   const todayFormatted = fmtDate(new Date().toISOString())
+
+  // ── Data freshness indicator ──
+  const dataFreshness = useMemo(() => {
+    if (traficos.length === 0) return null
+    const updatedDates = traficos.map(t => t.updated_at).filter(Boolean) as string[]
+    if (updatedDates.length === 0) return null
+    const mostRecent = updatedDates.sort().reverse()[0]
+    const ageMs = Date.now() - new Date(mostRecent).getTime()
+    const ageHours = ageMs / (1000 * 60 * 60)
+    return { date: mostRecent, stale: ageHours > 2 }
+  }, [traficos])
 
   // ── Bridges section (reused for mobile-first and desktop ordering) ──
   const BridgesSection = () => (
@@ -204,7 +281,7 @@ export default function Dashboard() {
                   )}
                 </>
               ) : (
-                <div style={{ fontSize: 14, color: TOKEN.gray, fontWeight: 600 }}>Sin datos — verificando</div>
+                <div style={{ fontSize: 14, color: TOKEN.gray, fontWeight: 600 }}>Sin datos de puentes — verificando conexión CBP</div>
               )}
             </div>
           )
@@ -243,6 +320,16 @@ export default function Dashboard() {
         ) : (
           <div className="skeleton" style={{ height: 28, width: 350, borderRadius: TOKEN.radiusMd }} />
         )}
+        {/* FIX 8 — Data freshness indicator */}
+        {!loading && dataFreshness && (
+          <div style={{
+            fontSize: 12, marginTop: 6,
+            color: dataFreshness.stale ? TOKEN.amber : TOKEN.gray,
+            fontFamily: 'var(--font-jetbrains-mono)',
+          }}>
+            Datos actualizados: {fmtDateTime(dataFreshness.date)} {dataFreshness.stale ? '⚠ hace +2h' : ''}
+          </div>
+        )}
       </div>
 
       {/* ═══ On mobile: bridges BEFORE KPI cards (3 AM driver needs this first) ═══ */}
@@ -271,9 +358,14 @@ export default function Dashboard() {
                 {enProceso.length}
               </div>
               <div style={{ fontSize: 13, color: TOKEN.textSecondary, marginTop: 4 }}>tráficos</div>
+              {trends.enRuta !== null && (
+                <div style={{ fontSize: 11, fontWeight: 600, marginTop: 4, fontFamily: 'var(--font-jetbrains-mono)', color: trends.enRuta > 0 ? TOKEN.green : trends.enRuta < 0 ? TOKEN.red : TOKEN.gray }}>
+                  {trends.enRuta > 0 ? `↑ ${trends.enRuta} más que ayer` : trends.enRuta < 0 ? `↓ ${Math.abs(trends.enRuta)} menos` : '↔ sin cambio'}
+                </div>
+              )}
             </>
           ) : (
-            <div style={{ fontSize: 15, color: TOKEN.gray, fontWeight: 600 }}>Sin tráficos activos</div>
+            <div style={{ fontSize: 14, color: TOKEN.gray, fontWeight: 600 }}>Sin embarques activos — Todos los tráficos recientes han cruzado</div>
           )}
         </div>
 
@@ -293,13 +385,20 @@ export default function Dashboard() {
                 {cruzadosHoy.length}
               </div>
               <div style={{ fontSize: 13, color: TOKEN.textSecondary, marginTop: 4 }}>{todayFormatted}</div>
+              {trends.cruzados !== null && (
+                <div style={{ fontSize: 11, fontWeight: 600, marginTop: 4, fontFamily: 'var(--font-jetbrains-mono)', color: trends.cruzados > 0 ? TOKEN.green : trends.cruzados < 0 ? TOKEN.red : TOKEN.gray }}>
+                  {trends.cruzados > 0 ? `↑ ${trends.cruzados} más que ayer` : trends.cruzados < 0 ? `↓ ${Math.abs(trends.cruzados)} menos` : '↔ sin cambio'}
+                </div>
+              )}
             </>
           ) : (
             <>
               <div style={{ fontSize: 36, fontWeight: 900, fontFamily: 'var(--font-jetbrains-mono)', color: TOKEN.gray, lineHeight: 1 }}>
                 0
               </div>
-              <div style={{ fontSize: 13, color: TOKEN.gray, marginTop: 4 }}>Sin cruces — {todayFormatted}</div>
+              <div style={{ fontSize: 13, color: TOKEN.gray, marginTop: 4 }}>
+                {lastCrossingDate ? `Último cruce: ${fmtDate(lastCrossingDate)}` : `Sin cruces — ${todayFormatted}`}
+              </div>
             </>
           )}
         </div>
@@ -320,6 +419,11 @@ export default function Dashboard() {
                 {fmtUSD(valorEnProceso)}
               </div>
               <div style={{ fontSize: 13, color: TOKEN.textSecondary, marginTop: 4 }}>USD</div>
+              {trends.valor !== null && (
+                <div style={{ fontSize: 11, fontWeight: 600, marginTop: 4, fontFamily: 'var(--font-jetbrains-mono)', color: trends.valor > 0 ? TOKEN.green : trends.valor < 0 ? TOKEN.red : TOKEN.gray }}>
+                  {trends.valor > 0 ? `↑ ${trends.valor}% vs ayer` : trends.valor < 0 ? `↓ ${Math.abs(trends.valor)}% vs ayer` : '↔ sin cambio'}
+                </div>
+              )}
             </>
           ) : (
             <div style={{ fontSize: 15, color: TOKEN.gray, fontWeight: 600 }}>Sin datos</div>
@@ -328,7 +432,32 @@ export default function Dashboard() {
       </div>
 
       {/* ═══ SECTION C — NECESITAN TU ATENCIÓN ═══ */}
-      {actions.length > 0 ? (
+      {loading ? (
+        <div style={{ marginBottom: 32 }}>
+          <div style={{ fontSize: 15, fontWeight: 700, color: TOKEN.text, marginBottom: 12 }}>
+            Necesitan tu atención
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {[0, 1, 2].map(i => (
+              <div key={i} style={{
+                display: 'flex', alignItems: 'center', gap: 12,
+                padding: '14px 16px',
+                background: TOKEN.surfaceCard,
+                border: `1px solid ${TOKEN.border}`,
+                borderRadius: TOKEN.radiusMd,
+                minHeight: 72,
+              }}>
+                <div className="skeleton" style={{ width: 8, height: 8, borderRadius: '50%', flexShrink: 0 }} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div className="skeleton" style={{ height: 14, width: '60%', borderRadius: 4, marginBottom: 6 }} />
+                  <div className="skeleton" style={{ height: 12, width: '30%', borderRadius: 4 }} />
+                </div>
+                <div className="skeleton" style={{ height: 32, width: 100, borderRadius: TOKEN.radiusMd, flexShrink: 0 }} />
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : actions.length > 0 ? (
         <div style={{ marginBottom: 32 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
             <span style={{ fontSize: 15, fontWeight: 700, color: TOKEN.text }}>
@@ -343,6 +472,7 @@ export default function Dashboard() {
           {visibleActions.length > 0 ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {visibleActions.map(a => {
+                const hint = getIntelligenceHint(a, traficos)
                 const daysOld = a.date ? Math.floor((Date.now() - new Date(a.date).getTime()) / 86400000) : 0
                 const borderColor = daysOld > 30
                   ? '#E8E5E0'
@@ -378,6 +508,11 @@ export default function Dashboard() {
                         <div style={{ fontSize: 12, color: TOKEN.textSecondary, fontFamily: 'var(--font-jetbrains-mono)', marginTop: 2 }}>
                           {fmtDate(a.date)}
                         </div>
+                        {hint && (
+                          <div style={{ fontSize: 11, color: '#0D9488', marginTop: 4, lineHeight: 1.3 }}>
+                            {hint}
+                          </div>
+                        )}
                       </div>
                       <span style={{
                         fontSize: 13, fontWeight: 700, color: TOKEN.gold,
@@ -408,9 +543,12 @@ export default function Dashboard() {
               background: TOKEN.surfaceCard, border: `1px solid ${TOKEN.border}`,
               borderRadius: TOKEN.radiusMd,
             }}>
-              <CheckCircle size={20} style={{ color: TOKEN.green, margin: '0 auto 8px', display: 'block' }} />
-              <div style={{ fontSize: 15, fontWeight: 600, color: TOKEN.text }}>
-                Sin pendientes — Todas las operaciones están en orden
+              <CheckCircle size={24} style={{ color: TOKEN.green, margin: '0 auto 8px', display: 'block' }} />
+              <div style={{ fontSize: 16, fontWeight: 700, color: TOKEN.text }}>
+                Todo despachado
+              </div>
+              <div style={{ fontSize: 13, color: TOKEN.textSecondary, marginTop: 4 }}>
+                No hay operaciones pendientes hoy. Buen trabajo.
               </div>
             </div>
           )}
@@ -471,18 +609,21 @@ export default function Dashboard() {
             </div>
           )}
         </div>
-      ) : !loading ? (
+      ) : (
         <div style={{
           marginBottom: 32, padding: 24, textAlign: 'center',
           background: TOKEN.surfaceCard, border: `1px solid ${TOKEN.border}`,
           borderRadius: TOKEN.radiusMd,
         }}>
-          <CheckCircle size={20} style={{ color: TOKEN.green, margin: '0 auto 8px', display: 'block' }} />
-          <div style={{ fontSize: 15, fontWeight: 600, color: TOKEN.text }}>
-            Sin pendientes — Todas las operaciones están en orden
+          <CheckCircle size={24} style={{ color: TOKEN.green, margin: '0 auto 8px', display: 'block' }} />
+          <div style={{ fontSize: 16, fontWeight: 700, color: TOKEN.text }}>
+            Todo despachado
+          </div>
+          <div style={{ fontSize: 13, color: TOKEN.textSecondary, marginTop: 4 }}>
+            No hay operaciones pendientes hoy. Buen trabajo.
           </div>
         </div>
-      ) : null}
+      )}
 
       {!isMobile && <BridgesSection />}
     </div>

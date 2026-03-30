@@ -11,6 +11,7 @@ import { fmtCarrier, countryFlag } from '@/lib/carrier-names'
 import { createClient } from '@supabase/supabase-js'
 // Link removed — entradas now embedded inline
 import { COMPANY_ID, CLIENT_NAME } from '@/lib/client-config'
+import { SolicitarModal } from '@/components/SolicitarModal'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
@@ -52,8 +53,10 @@ export default function TraficoDetailPage() {
   const [trackingCopied, setTrackingCopied] = useState(false)
   const [porqueOpen, setPorqueOpen] = useState<string | null>(null)
   const [rates, setRates] = useState({ dta: 0.008, iva: 0.16, tc: 17.49 })
-  const [solicitando, setSolicitando] = useState(false)
+  const [showSolicitarModal, setShowSolicitarModal] = useState(false)
   const [solicitadoOk, setSolicitadoOk] = useState(false)
+  const [solicitudes, setSolicitudes] = useState<Array<{ id: string; doc_type: string; status: string; solicitado_at: string; escalate_after: string }>>([])
+
 
   const handleUpload = async (file: File | undefined, docType: string) => {
     if (!file) return
@@ -95,6 +98,17 @@ export default function TraficoDetailPage() {
       setLoading(false)
       fetch(`/api/data?table=entradas&trafico=${encodeURIComponent(tId)}&limit=20&order_by=fecha_llegada_mercancia&order_dir=desc`)
         .then(r => r.json()).then(ed => setEntradas(ed.data ?? [])).catch(() => {})
+      // Fetch active solicitudes for this tráfico
+      supabase
+        .from('documento_solicitudes')
+        .select('id, doc_type, status, solicitado_at, escalate_after')
+        .eq('trafico_id', tId)
+        .eq('company_id', COMPANY_ID)
+        .order('solicitado_at', { ascending: false })
+        .limit(20)
+        .then(({ data: solData }) => {
+          if (solData && solData.length > 0) setSolicitudes(solData)
+        })
     }).catch(() => setLoading(false))
     fetch('/api/rates').then(r => r.json()).then(d => {
       if (!d.error) setRates({ dta: d.dta?.rate ?? 0.008, iva: d.iva?.rate ?? 0.16, tc: d.tc?.rate ?? 17.49 })
@@ -194,40 +208,20 @@ export default function TraficoDetailPage() {
           )}
           <div style={{ marginTop: 10, display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 8 }}>
             <button
-              disabled={solicitando || solicitadoOk || missingDocs.length === 0}
-              onClick={async () => {
-                setSolicitando(true)
-                try {
-                  const res = await fetch('/api/solicitar-documentos', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ traficoId: t.trafico, missingDocs }),
-                  })
-                  const data = await res.json()
-                  if (data.success) {
-                    setSolicitadoOk(true)
-                  } else {
-                    alert(data.error || 'Error al solicitar documentos')
-                  }
-                } catch {
-                  alert('Error de conexión')
-                } finally {
-                  setSolicitando(false)
-                }
-              }}
+              disabled={solicitadoOk || missingDocs.length === 0}
+              onClick={() => setShowSolicitarModal(true)}
               style={{
                 padding: isMobile ? '12px 14px' : '6px 14px',
                 fontSize: isMobile ? 14 : 12, fontWeight: 700,
                 border: 'var(--b-default)', borderRadius: 'var(--r-md)',
                 background: solicitadoOk ? '#F0FDF4' : 'var(--bg-card)',
-                cursor: solicitando || solicitadoOk || missingDocs.length === 0 ? 'default' : 'pointer',
+                cursor: solicitadoOk || missingDocs.length === 0 ? 'default' : 'pointer',
                 color: solicitadoOk ? '#16A34A' : 'var(--n-600)',
-                opacity: solicitando ? 0.6 : 1,
                 width: isMobile ? '100%' : undefined,
                 minHeight: isMobile ? 60 : undefined,
               }}
             >
-              {solicitando ? 'Solicitando...' : solicitadoOk ? '✓ Solicitados' : 'Solicitar Docs'}
+              {solicitadoOk ? '✓ Solicitados' : 'Solicitar Docs'}
             </button>
             <button onClick={() => {
               const url = `${window.location.origin}/traficos/${encodeURIComponent(t.trafico)}`
@@ -583,6 +577,55 @@ export default function TraficoDetailPage() {
       </div>
 
       {/* Entradas now embedded in the right panel above tabs */}
+
+      {/* ═══ SOLICITUDES ACTIVAS — only renders when rows exist ═══ */}
+      {solicitudes.length > 0 && (
+        <div className="card" style={{ padding: 20, marginTop: 24 }}>
+          <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--n-900)', marginBottom: 12 }}>
+            Solicitudes activas ({solicitudes.length})
+          </div>
+          <div style={{ border: '1px solid var(--n-150)', borderRadius: 'var(--r-md)', overflow: 'hidden' }}>
+            {solicitudes.map((sol, idx) => {
+              const isEscalated = sol.escalate_after ? new Date(sol.escalate_after) < new Date() : false
+              return (
+                <div key={sol.id} style={{
+                  padding: '10px 16px',
+                  borderBottom: idx < solicitudes.length - 1 ? '1px solid var(--n-150)' : 'none',
+                  borderLeft: isEscalated ? '3px solid #C23B22' : '3px solid #C47F17',
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                  minHeight: 48,
+                }}>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--n-900)' }}>{sol.doc_type}</div>
+                    <div style={{ fontSize: 11, color: 'var(--n-500)', fontFamily: 'var(--font-data)', marginTop: 2 }}>
+                      Solicitado {fmtDate(sol.solicitado_at)}
+                    </div>
+                  </div>
+                  <span style={{
+                    fontSize: 11, fontWeight: 700, padding: '2px 8px',
+                    borderRadius: 'var(--r-full, 9999px)',
+                    background: isEscalated ? '#FEF2F2' : '#FFFBEB',
+                    color: isEscalated ? '#991B1B' : '#92400E',
+                    border: isEscalated ? '1px solid rgba(220,38,38,0.2)' : '1px solid rgba(196,127,23,0.2)',
+                  }}>
+                    {isEscalated ? 'Escalado' : sol.status === 'solicitado' ? 'Solicitado' : sol.status}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ═══ SOLICITAR MODAL ═══ */}
+      {showSolicitarModal && (
+        <SolicitarModal
+          traficoId={t.trafico}
+          missingDocs={missingDocs}
+          onClose={() => setShowSolicitarModal(false)}
+          onSuccess={() => setSolicitadoOk(true)}
+        />
+      )}
 
       <style>{`@keyframes pulse-dot { 0%,100% { transform:scale(1); } 50% { transform:scale(1.15); } }`}</style>
     </div>

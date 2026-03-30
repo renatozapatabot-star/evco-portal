@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis,
@@ -32,6 +32,12 @@ function fmtUSD(v: any) {
   if (n >= 1000000) return '$' + (n / 1000000).toFixed(1) + 'M'
   if (n >= 1000) return '$' + (n / 1000).toFixed(0) + 'K'
   return '$' + n.toLocaleString('en-US')
+}
+function fmtUSDCompact(v: number | undefined | null) {
+  const n = Number(v || 0)
+  if (n >= 1000000) return '$' + (n / 1000000).toFixed(1) + 'M USD'
+  if (n >= 1000) return '$' + (n / 1000).toFixed(0) + 'K USD'
+  return '$' + n.toLocaleString('en-US') + ' USD'
 }
 function fmtNum(v: any) { return Number(v || 0).toLocaleString('es-MX') }
 
@@ -84,6 +90,58 @@ function CustomTooltip({ active, payload, label }: any) {
 
 function fmtMXN(v: number) {
   return 'MX$' + v.toLocaleString('es-MX', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
+}
+
+function ExecutiveHero({ summary, isMobile }: { summary: Record<string, number | string>; isMobile: boolean }) {
+  const executiveSentence = useMemo(() => {
+    if (!summary || !summary.totalTraficos) return 'Cargando resumen...'
+    const parts: string[] = []
+    if (Number(summary.totalTraficos) > 0) parts.push(`${Number(summary.totalTraficos).toLocaleString()} tráficos procesados`)
+    if (Number(summary.totalValor) > 0) parts.push(`${fmtUSDCompact(Number(summary.totalValor))} importados`)
+    if (Number(summary.tmecCount) > 0) parts.push(`${summary.tmecPct}% con T-MEC`)
+    return `${CLIENT_NAME}: ${parts.join(' · ')}.`
+  }, [summary])
+
+  const heroKPIs = useMemo(() => {
+    const totalTraficos = Number(summary?.totalTraficos || 0)
+    const docsCompletosPct = Number(summary?.docsCompletosPct || 0)
+    const tasaExito = totalTraficos > 0
+      ? Math.round((Number(summary.docsCompletos || 0) / totalTraficos) * 100)
+      : 0
+    return [
+      { label: 'Importado', value: fmtUSDCompact(Number(summary?.totalValor)), trend: null as string | null },
+      { label: 'T-MEC', value: `${summary?.tmecPct ?? 0}%`, trend: null as string | null },
+      { label: 'Multas', value: '$0', trend: null as string | null },
+      { label: 'Tasa éxito', value: `${tasaExito}%`, trend: null as string | null },
+      { label: 'Docs completos', value: `${docsCompletosPct}%`, trend: null as string | null },
+    ]
+  }, [summary])
+
+  return (
+    <div style={{
+      background: 'linear-gradient(135deg, #1E1A16 0%, #2A2520 100%)',
+      borderRadius: 16, padding: isMobile ? '20px' : '28px 32px', marginBottom: 24,
+      color: '#EAE6DC',
+    }}>
+      <div style={{ fontSize: 12, fontWeight: 700, color: '#B8973A', marginBottom: 10, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+        Resumen Ejecutivo
+      </div>
+      <div style={{ fontSize: 14, color: '#EAE6DC', marginBottom: 20, lineHeight: 1.5 }}>
+        {executiveSentence}
+      </div>
+      <div style={{ display: 'flex', gap: isMobile ? 16 : 28, flexWrap: 'wrap' }}>
+        {heroKPIs.map(kpi => (
+          <div key={kpi.label} style={{ textAlign: 'center', minWidth: 60 }}>
+            <div style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: isMobile ? 18 : 22, fontWeight: 700, color: '#FFF' }}>
+              {kpi.value}
+            </div>
+            <div style={{ fontSize: 10, color: '#7C7870', marginTop: 2 }}>{kpi.label}</div>
+            {kpi.trend && <div style={{ fontSize: 10, color: '#B8973A' }}>{kpi.trend}</div>}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
 }
 
 function EstadoDeCuenta() {
@@ -287,12 +345,16 @@ export function ReportesView() {
       // Estimated savings: ~5% of non-T-MEC value as potential IGI savings
       const estimatedSavings = Math.round(noTmecValor * 0.05)
       const docsCompletos = traficos.filter((t: any) => t.estatus === 'Cruzado' || t.estatus === 'Pedimento Pagado').length
+      const docsCompletosPct = traficos.length > 0 ? Math.round((docsCompletos / traficos.length) * 100) : 0
+      // Estimated savings from T-MEC applied: ~5% of T-MEC value as avoided IGI
+      const tmecValor = facturas.filter((f: any) => (f.igi || 0) === 0).reduce((s: number, f: any) => s + (f.valor_usd || 0), 0)
+      const tmecSavings = Math.round(tmecValor * 0.05)
       setSummary({
         totalValor, tmecCount, totalFacturas: facturas.length,
         tmecPct: facturas.length > 0 ? ((tmecCount / facturas.length) * 100).toFixed(0) : 0,
-        noTmecCount, noTmecValor, estimatedSavings,
+        noTmecCount, noTmecValor, estimatedSavings, tmecSavings, tmecValor,
         totalTraficos: traficos.length, totalEntradas: entradas.length,
-        docsCompletos,
+        docsCompletos, docsCompletosPct,
         faltantesPct: entradas.length > 0 ? ((faltantes / entradas.length) * 100).toFixed(2) : 0,
       })
       setLoading(false)
@@ -354,6 +416,9 @@ export function ReportesView() {
         ))}
       </div>
 
+      {/* Executive hero card — CFO screenshot target */}
+      <ExecutiveHero summary={summary} isMobile={isMobile} />
+
       {/* Summary header */}
       <Card style={{ padding: '16px 20px', marginBottom: 20, borderTop: `3px solid ${T.green}` }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
@@ -368,14 +433,19 @@ export function ReportesView() {
       {/* KPI strip — client-facing: positive metrics only */}
       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: 12, marginBottom: 24 }}>
         {[
-          { label: 'Valor Total Importado', value: fmtUSD(summary.totalValor), sub: isHistorico ? 'USD acumulado · histórico' : 'USD acumulado', color: T.navy },
-          { label: 'T-MEC Aplicado', value: `${summary.tmecPct}%`, sub: `${fmtNum(summary.tmecCount)} de ${fmtNum(summary.totalFacturas)} pedimentos`, color: T.green },
-          { label: 'Tráficos Completados', value: fmtNum(summary.docsCompletos), sub: `${fmtNum(summary.docsCompletos)} de ${fmtNum(summary.totalTraficos)} tráficos`, color: T.navy },
-          { label: 'Tasa de Éxito', value: summary.totalTraficos > 0 ? `${Math.round((summary.docsCompletos / summary.totalTraficos) * 100)}%` : '—', sub: 'Incluye rectificaciones y reclasificaciones', color: T.green },
+          { label: 'Valor Total Importado', value: fmtUSD(summary.totalValor), sub: isHistorico ? 'USD acumulado · histórico' : 'USD acumulado', color: T.navy, trend: null as string | null },
+          { label: 'T-MEC Aplicado', value: `${summary.tmecPct}%`, sub: `${fmtNum(summary.tmecCount)} de ${fmtNum(summary.totalFacturas)} pedimentos`, color: T.green, trend: Number(summary.tmecPct) >= 50 ? '↑' : null as string | null },
+          { label: 'Tráficos Completados', value: fmtNum(summary.docsCompletos), sub: `${fmtNum(summary.docsCompletos)} de ${fmtNum(summary.totalTraficos)} tráficos`, color: T.navy, trend: null as string | null },
+          { label: 'Tasa de Éxito', value: summary.totalTraficos > 0 ? `${summary.docsCompletosPct}%` : '—', sub: 'Incluye rectificaciones y reclasificaciones', color: T.green, trend: Number(summary.docsCompletosPct) >= 90 ? '↑' : null as string | null },
         ].map(k => (
           <Card key={k.label} style={{ padding: '14px 16px' }}>
             <div className="kpi-label">{k.label}</div>
-            <div className="kpi-value" style={{ fontSize: isMobile ? 28 : 36, color: k.color }}>{k.value}</div>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+              <div className="kpi-value" style={{ fontSize: isMobile ? 28 : 36, color: k.color }}>{k.value}</div>
+              {k.trend && (
+                <span style={{ fontSize: 14, fontWeight: 700, color: T.green }}>{k.trend}</span>
+              )}
+            </div>
             <div style={{ color: T.textMuted, fontSize: 11, marginTop: 3 }}>{k.sub}</div>
           </Card>
         ))}
@@ -468,19 +538,33 @@ export function ReportesView() {
         </div>
       </Card>
 
-      {/* T-MEC Analysis */}
+      {/* T-MEC Analysis — two-panel: applied vs opportunity */}
       <Card style={{ padding: 20, marginTop: 20 }}>
         <SectionTitle title="Análisis T-MEC" sub="Cobertura de tratado y oportunidades" />
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-          <div style={{ background: T.surfaceAlt, border: `1px solid ${T.border}`, borderTop: `3px solid ${T.green}`, borderRadius: 8, padding: '14px 16px' }}>
-            <div style={{ color: T.green, fontSize: 14, fontWeight: 700 }}>T-MEC: {fmtNum(summary.tmecCount)} de {fmtNum(summary.totalFacturas)} pedimentos ({summary.tmecPct}%)</div>
-            <div style={{ color: T.textMuted, fontSize: 12, marginTop: 6 }}>Pedimentos con tasa preferencial aplicada</div>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 16 }}>
+          {/* Left panel — T-MEC applied (green) */}
+          <div style={{ background: '#F0FAF2', border: `1px solid #BBF0C8`, borderTop: `3px solid ${T.green}`, borderRadius: 8, padding: '16px 18px' }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: T.green, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>T-MEC Aplicado</div>
+            <div style={{ fontSize: 28, fontWeight: 800, color: T.green, fontFamily: 'var(--font-jetbrains-mono)' }}>{summary.tmecPct ?? 0}%</div>
+            <div style={{ fontSize: 12, color: T.textSub, marginTop: 4 }}>{fmtNum(summary.tmecCount)} de {fmtNum(summary.totalFacturas)} pedimentos</div>
+            <div style={{ marginTop: 12, padding: '8px 12px', background: '#E0F5E5', borderRadius: 6 }}>
+              <div style={{ fontSize: 11, color: T.textMuted, marginBottom: 2 }}>Ahorro estimado por T-MEC</div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: T.green, fontFamily: 'var(--font-jetbrains-mono)' }}>~{fmtUSD(summary.tmecSavings)}</div>
+            </div>
           </div>
-          <div style={{ background: T.surfaceAlt, border: `1px solid ${T.border}`, borderTop: `3px solid ${T.amber}`, borderRadius: 8, padding: '14px 16px' }}>
-            <div style={{ color: T.amber, fontSize: 14, fontWeight: 700 }}>{fmtNum(summary.noTmecCount)} sin T-MEC · Valor: <span style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtUSD(summary.noTmecValor)}</span> USD</div>
-            <div style={{ color: T.textSub, fontSize: 13, fontWeight: 600, marginTop: 6 }}>Ahorro potencial: ~<span style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtUSD(summary.estimatedSavings)}</span>*</div>
-            <div style={{ color: T.textMuted, fontSize: 10, marginTop: 6, fontStyle: 'italic' }}>* Estimado por fracción. Verificar con su agente aduanal antes de contabilizar.</div>
+          {/* Right panel — opportunity gap (amber) */}
+          <div style={{ background: '#FFFBEB', border: `1px solid #FDE68A`, borderTop: `3px solid ${T.amber}`, borderRadius: 8, padding: '16px 18px' }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: T.amber, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>Oportunidad</div>
+            <div style={{ fontSize: 28, fontWeight: 800, color: T.amber, fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtNum(summary.noTmecCount)}</div>
+            <div style={{ fontSize: 12, color: T.textSub, marginTop: 4 }}>pedimentos sin T-MEC · {fmtUSD(summary.noTmecValor)} USD</div>
+            <div style={{ marginTop: 12, padding: '8px 12px', background: '#FEF3C7', borderRadius: 6 }}>
+              <div style={{ fontSize: 11, color: T.textMuted, marginBottom: 2 }}>Ahorro potencial adicional</div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: T.amber, fontFamily: 'var(--font-jetbrains-mono)' }}>~{fmtUSD(summary.estimatedSavings)}</div>
+            </div>
           </div>
+        </div>
+        <div style={{ color: T.textMuted, fontSize: 10, marginTop: 12, fontStyle: 'italic', textAlign: 'center' }}>
+          ~ Estimaciones basadas en tasa promedio por fracción arancelaria. Verificar con su agente aduanal antes de contabilizar.
         </div>
       </Card>
 

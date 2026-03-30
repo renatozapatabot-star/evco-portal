@@ -32,12 +32,14 @@ const DOC_LABELS: Record<string, string> = {
 }
 
 type FilterTab = 'incompletos' | 'completos' | 'todos'
+type SortOption = 'menos_completo' | 'mayor_valor' | 'fecha_entrada'
 
 interface TraficoRow {
   trafico: string
   estatus: string
   fecha_llegada: string | null
   pedimento_num: string | null
+  valor_factura: number | null
   docs: string[]
   docCount: number
   pct: number
@@ -72,19 +74,31 @@ function SummaryCard({
   incompletos,
   total,
   globalPct,
+  totalMissingDocs,
   onSolicitarTodos,
+  soliciting,
 }: {
   incompletos: number
   total: number
   globalPct: number
+  totalMissingDocs: number
   onSolicitarTodos: () => void
+  soliciting: boolean
 }) {
   return (
-    <div className="card" style={{ padding: '20px 24px', marginBottom: 16 }}>
+    <div className="card" style={{
+      padding: '20px 24px',
+      marginBottom: 16,
+      position: 'sticky',
+      top: 0,
+      zIndex: 10,
+      background: '#FFFFFF',
+      borderBottom: '1px solid #E8E5E0',
+    }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
         <div style={{ flex: 1, minWidth: 200 }}>
           <p style={{ fontSize: 14, fontWeight: 600, color: '#1A1A1A', margin: 0 }}>
-            {incompletos} expediente{incompletos !== 1 ? 's' : ''} incompleto{incompletos !== 1 ? 's' : ''} de {total} activo{total !== 1 ? 's' : ''}
+            {incompletos} expediente{incompletos !== 1 ? 's' : ''} incompleto{incompletos !== 1 ? 's' : ''}
           </p>
           {/* Progress bar */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 8 }}>
@@ -112,24 +126,28 @@ function SummaryCard({
         </div>
         <button
           onClick={onSolicitarTodos}
+          disabled={soliciting || totalMissingDocs === 0}
           style={{
             display: 'flex',
             alignItems: 'center',
             gap: 6,
             padding: '10px 20px',
-            background: '#B8953F',
+            background: soliciting || totalMissingDocs === 0 ? '#D4C9A8' : '#B8953F',
             color: '#FFFFFF',
             border: 'none',
             borderRadius: 8,
             fontSize: 13,
             fontWeight: 600,
-            cursor: 'pointer',
+            cursor: soliciting || totalMissingDocs === 0 ? 'default' : 'pointer',
             minHeight: 44,
             fontFamily: 'inherit',
+            opacity: soliciting ? 0.7 : 1,
           }}
         >
           <Send size={14} />
-          Solicitar Todos los Faltantes
+          {soliciting
+            ? 'Solicitando...'
+            : `Solicitar todos los faltantes (${totalMissingDocs})`}
         </button>
       </div>
     </div>
@@ -156,7 +174,6 @@ function FilterTabs({
     <div className="pill-scroll" style={{
       display: 'flex',
       gap: 4,
-      marginBottom: 16,
       overflowX: 'auto',
       whiteSpace: 'nowrap',
       WebkitOverflowScrolling: 'touch',
@@ -323,6 +340,8 @@ export function ExpedientesView() {
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<FilterTab>('incompletos')
+  const [sortBy, setSortBy] = useState<SortOption>('menos_completo')
+  const [soliciting, setSoliciting] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -331,7 +350,7 @@ export function ExpedientesView() {
     // Paginate the filtered set
     let q = supabase
       .from('traficos')
-      .select('trafico, pedimento, estatus, fecha_llegada', { count: 'exact' })
+      .select('trafico, pedimento, estatus, fecha_llegada, valor_factura', { count: 'exact' })
       .ilike('trafico', `${CLIENT_CLAVE}-%`)
       .order('created_at', { ascending: false })
 
@@ -378,6 +397,7 @@ export function ExpedientesView() {
         estatus: r.estatus || 'En Proceso',
         fecha_llegada: r.fecha_llegada,
         pedimento_num: r.pedimento || null,
+        valor_factura: r.valor_factura ?? null,
         docs,
         docCount,
         pct: p,
@@ -390,7 +410,7 @@ export function ExpedientesView() {
   }, [search])
 
   useEffect(() => { load() }, [load])
-  useEffect(() => { setPage(0) }, [search, filter])
+  useEffect(() => { setPage(0) }, [search, filter, sortBy])
 
   // ── Derived data ──────────────────────────────────────
 
@@ -407,22 +427,36 @@ export function ExpedientesView() {
     return Math.round((totalDocs / totalExpected) * 100)
   }, [rawTraficos])
 
+  const totalMissingDocs = useMemo(() => {
+    return rawTraficos.reduce((acc, r) => acc + r.missing.length, 0)
+  }, [rawTraficos])
+
   const filtered = useMemo(() => {
     let rows = rawTraficos
     if (filter === 'incompletos') rows = rows.filter((r) => r.pct < 100)
     if (filter === 'completos') rows = rows.filter((r) => r.pct >= 100)
 
-    // Sort: sin pedimento first, then lowest completion, then by trafico
     return [...rows].sort((a, b) => {
-      // Sin pedimento always first
+      // Sin pedimento always first regardless of sort
       const aNoPed = a.pedimento_num ? 0 : 1
       const bNoPed = b.pedimento_num ? 0 : 1
       if (aNoPed !== bNoPed) return bNoPed - aNoPed
-      // Lowest completion first
-      if (a.pct !== b.pct) return a.pct - b.pct
-      return 0
+
+      switch (sortBy) {
+        case 'mayor_valor':
+          return (b.valor_factura ?? 0) - (a.valor_factura ?? 0)
+        case 'fecha_entrada': {
+          const aDate = a.fecha_llegada ? new Date(a.fecha_llegada).getTime() : 0
+          const bDate = b.fecha_llegada ? new Date(b.fecha_llegada).getTime() : 0
+          return bDate - aDate
+        }
+        case 'menos_completo':
+        default:
+          if (a.pct !== b.pct) return a.pct - b.pct
+          return 0
+      }
     })
-  }, [rawTraficos, filter])
+  }, [rawTraficos, filter, sortBy])
 
   // Paginate the filtered set
   const pageRows = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
@@ -430,11 +464,31 @@ export function ExpedientesView() {
 
   const handleNavigate = (id: string) => router.push(`/traficos/${id}`)
 
-  const handleSolicitarTodos = () => {
-    // Future: batch-request all missing docs via solicitar-documentos
-    // For now, navigate to first incomplete expediente
-    const first = rawTraficos.find((r) => r.pct < 100)
-    if (first) router.push(`/traficos/${first.trafico}`)
+  const handleSolicitarTodos = async () => {
+    const incompleteRows = rawTraficos.filter((r) => r.missing.length > 0)
+    if (incompleteRows.length === 0) return
+
+    setSoliciting(true)
+    try {
+      await Promise.all(
+        incompleteRows.map((row) =>
+          fetch('/api/solicitar-documentos', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              traficoId: row.trafico,
+              missingDocs: row.missing,
+            }),
+          })
+        )
+      )
+      // Reload data after soliciting
+      await load()
+    } catch {
+      // Errors handled per-request by the API
+    } finally {
+      setSoliciting(false)
+    }
   }
 
   return (
@@ -482,11 +536,38 @@ export function ExpedientesView() {
             incompletos={counts.incompletos}
             total={counts.todos}
             globalPct={globalPct}
+            totalMissingDocs={totalMissingDocs}
             onSolicitarTodos={handleSolicitarTodos}
+            soliciting={soliciting}
           />
 
-          {/* Filter tabs */}
-          <FilterTabs active={filter} counts={counts} onChange={setFilter} />
+          {/* Filter tabs + sort controls */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
+            <FilterTabs active={filter} counts={counts} onChange={setFilter} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 12, color: '#9C9890', whiteSpace: 'nowrap' }}>Ordenar:</span>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as SortOption)}
+                style={{
+                  padding: '6px 12px',
+                  border: '1px solid #E8E5E0',
+                  borderRadius: 8,
+                  background: '#FFFFFF',
+                  color: '#1A1A1A',
+                  fontSize: 13,
+                  fontFamily: 'inherit',
+                  cursor: 'pointer',
+                  outline: 'none',
+                  minHeight: 36,
+                }}
+              >
+                <option value="menos_completo">Menos completo</option>
+                <option value="mayor_valor">Mayor valor</option>
+                <option value="fecha_entrada">Fecha de entrada</option>
+              </select>
+            </div>
+          </div>
 
           {/* Content */}
           {pageRows.length === 0 ? (

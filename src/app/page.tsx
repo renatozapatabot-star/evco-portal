@@ -346,30 +346,46 @@ export default function Dashboard() {
       </div>
 
       {/* ═══ 3. BRIDGE STRIP ═══ */}
-      {liveBridges && liveBridges.bridges.length > 0 && (
-        <div style={{
-          display: 'flex', gap: isMobile ? 8 : 12, marginBottom: 24,
-          overflowX: 'auto', whiteSpace: 'nowrap',
-          WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none',
-        }} className="pill-scroll">
-          {liveBridges.bridges.map(b => {
-            const w = b.commercial
-            const color = !w ? TOKEN.gray : w <= 30 ? TOKEN.green : w <= 60 ? TOKEN.amber : TOKEN.red
-            return (
-              <div key={b.id} style={{
-                flexShrink: 0, display: 'flex', alignItems: 'center', gap: 8,
-                padding: '8px 14px', borderRadius: 9999,
-                background: TOKEN.surfaceCard, border: `1px solid ${TOKEN.border}`,
-              }}>
-                <span style={{ fontSize: 13, fontWeight: 600, color: TOKEN.textSecondary }}>{b.nameEs}</span>
+      {/* ═══ BRIDGE STRIP — always visible ═══ */}
+      <div style={{
+        display: 'flex', gap: isMobile ? 8 : 12, marginBottom: 24,
+        overflowX: 'auto', whiteSpace: 'nowrap',
+        WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none',
+      }} className="pill-scroll">
+        {(liveBridges?.bridges && liveBridges.bridges.length > 0
+          ? liveBridges.bridges
+          : [
+              { id: 1, name: 'World Trade', nameEs: 'World Trade', commercial: null, status: 'unknown', updated: null },
+              { id: 2, name: 'Colombia', nameEs: 'Colombia', commercial: null, status: 'unknown', updated: null },
+              { id: 3, name: 'Juárez-Lincoln', nameEs: 'Juárez-Lincoln', commercial: null, status: 'unknown', updated: null },
+              { id: 4, name: 'Gateway', nameEs: 'Gateway', commercial: null, status: 'unknown', updated: null },
+            ]
+        ).map(b => {
+          const w = b.commercial
+          const hasData = w !== null && w !== undefined
+          const color = !hasData ? TOKEN.gray : w <= 30 ? TOKEN.green : w <= 60 ? TOKEN.amber : TOKEN.red
+          return (
+            <div key={b.id} style={{
+              flexShrink: 0, display: 'flex', alignItems: 'center', gap: 8,
+              padding: '8px 14px', borderRadius: 9999,
+              background: TOKEN.surfaceCard,
+              borderLeft: `3px solid ${color}`,
+              border: `1px solid ${TOKEN.border}`,
+            }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: TOKEN.textSecondary }}>{b.nameEs}</span>
+              {hasData ? (
                 <span style={{ fontSize: 14, fontWeight: 800, fontFamily: 'var(--font-jetbrains-mono)', color }}>
-                  {w ? `${w}min` : '\u2014'}
+                  {w}min
                 </span>
-              </div>
-            )
-          })}
-        </div>
-      )}
+              ) : (
+                <span style={{ fontSize: 12, color: TOKEN.gray, fontStyle: 'italic' }}>
+                  Sin datos
+                </span>
+              )}
+            </div>
+          )
+        })}
+      </div>
 
       {/* ═══ 4. NEXT BEST ACTION ═══ */}
       {visibleActions.length > 0 && (

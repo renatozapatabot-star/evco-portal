@@ -59,11 +59,13 @@ function hdr(headers, name) { return (headers?.find(h => h.name?.toLowerCase() =
 
 // ── Notifications ─────────────────────────────────────────────────────────
 
-async function sendTG(msg) {
+async function sendTG(msg, inlineKeyboard) {
   if (!TELEGRAM_TOKEN) return
+  const payload = { chat_id: TELEGRAM_CHAT, text: msg, parse_mode: 'HTML' }
+  if (inlineKeyboard) payload.reply_markup = JSON.stringify({ inline_keyboard: inlineKeyboard })
   await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chat_id: TELEGRAM_CHAT, text: msg, parse_mode: 'HTML' }),
+    body: JSON.stringify(payload),
   }).catch(() => {})
 }
 
@@ -104,12 +106,40 @@ async function extractInvoice(b64, mime, filename, subject) {
   return parseJSON(text)
 }
 
-async function classifyProducts(products) {
+async function lookupSupplierPattern(supplier) {
+  if (!supplier) return null
+  try {
+    const { data } = await supabase.from('email_intelligence')
+      .select('fraccion').ilike('supplier', `%${supplier}%`).not('fraccion', 'is', null)
+    if (!data?.length) return null
+    const counts = {}
+    for (const row of data) counts[row.fraccion] = (counts[row.fraccion] || 0) + 1
+    const top = Object.entries(counts).sort((a, b) => b[1] - a[1])[0]
+    return top ? { fraccion: top[0], uses: top[1] } : null
+  } catch { return null }
+}
+
+async function classifyProducts(products, supplierName) {
   if (!products?.length) return []
   const text = await callAI('claude-haiku-4-5-20251001',
     'Mexican customs tariff classifier. Return ONLY JSON array: [{description,fraccion(XXXX.XX.XX),confidence(0-100)}]. Common: Polipropileno 3902.10.01, Polietileno 3901.20.01, Masterbatch 3206.49.99, Moldes 8480.71.01, Etiquetas 4821.10.01',
     JSON.stringify(products.map(p => ({ description: p.description || p.description_en, qty: p.qty, unit: p.unit }))), 2048)
-  try { return JSON.parse(text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()) } catch { return [] }
+  let cls = []
+  try { cls = JSON.parse(text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()) } catch { return [] }
+
+  // Fallback: when Haiku returns 0% confidence, check email_intelligence
+  for (let i = 0; i < cls.length; i++) {
+    if (cls[i].confidence === 0 || !cls[i].fraccion) {
+      const pattern = await lookupSupplierPattern(supplierName)
+      if (pattern) {
+        console.log(`        📚 email_intelligence: ${pattern.fraccion} (${pattern.uses}x) for "${supplierName}"`)
+        cls[i].fraccion = pattern.fraccion
+        cls[i].confidence = 70
+        cls[i].source = 'email_intelligence'
+      }
+    }
+  }
+  return cls
 }
 
 // ── Draft (FULL mode) ─────────────────────────────────────────────────────
@@ -177,7 +207,7 @@ async function processEmail(gmail, msgId, mode, inbox, rates) {
     console.log(`        ✅ ${inv.supplier} · $${inv.valor_total_usd} ${inv.currency}`)
 
     console.log('        🏷️  Haiku...')
-    const cls = await classifyProducts(inv.products)
+    const cls = await classifyProducts(inv.products, inv.supplier)
     console.log(`        ✅ ${cls.map(c => c.fraccion+'('+c.confidence+'%)').join(', ') || '—'}`)
 
     if (mode === 'full') {
@@ -231,7 +261,11 @@ async function run() {
           else if (r.id) {
             drafts++
             const tier = r.overallConfidence >= 90 ? 'T1' : r.overallConfidence >= 70 ? 'T2' : 'T3'
-            await sendTG(`📋 <b>Borrador CRUZ</b>\n${r.supplier}\n$${r.valorUSD.toLocaleString('en-US',{minimumFractionDigits:2})} USD · ${r.products.length} prod · ${tier}\n<a href="https://evco-portal.vercel.app/drafts/${r.id}">Revisar →</a>`)
+            await sendTG(`📋 <b>Borrador CRUZ</b>\n${r.supplier}\n$${r.valorUSD.toLocaleString('en-US',{minimumFractionDigits:2})} USD · ${r.products.length} prod · ${tier}\n<a href="https://evco-portal.vercel.app/drafts/${r.id}">Revisar →</a>`, [[
+              { text: '✅ Aprobar', callback_data: `aprobar_${r.id}` },
+              { text: '❌ Rechazar', callback_data: `rechazar_${r.id}` },
+              { text: '✏️ Corregir', callback_data: `corregir_${r.id}` },
+            ]])
             if (TITO_PHONE) await sendWA(TITO_PHONE, `📋 CRUZ\n${r.supplier} · $${r.valorUSD.toLocaleString('en-US',{minimumFractionDigits:2})} USD · ${tier}\nevco-portal.vercel.app/drafts/${r.id}`)
           }
         }

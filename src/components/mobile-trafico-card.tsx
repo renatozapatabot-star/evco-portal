@@ -1,7 +1,5 @@
 'use client'
 import { fmtId, fmtDesc, fmtKg, fmtUSD, fmtDate } from '@/lib/format-utils'
-import { CruzScore } from '@/components/cruz-score'
-import { calculateCruzScore, extractScoreInput } from '@/lib/cruz-score'
 
 interface Props { trafico: any; onClick: () => void }
 
@@ -9,7 +7,6 @@ export function MobileTraficoCard({ trafico: r, onClick }: Props) {
   const isCruzado = (r.estatus ?? '').toLowerCase().includes('cruz')
   const isHold = (r.estatus ?? '').toLowerCase().includes('hold') || (r.estatus ?? '').toLowerCase().includes('deten')
   const dotClass = isCruzado ? 'm-card-dot--success' : isHold ? 'm-card-dot--danger' : 'm-card-dot--warning'
-  const cruzScore = r._cruzScore ?? calculateCruzScore(extractScoreInput(r))
 
   return (
     <button className="m-card" onClick={onClick}>
@@ -19,7 +16,6 @@ export function MobileTraficoCard({ trafico: r, onClick }: Props) {
           <span className="m-card-id">{fmtId(r.trafico)}</span>
         </div>
         <div className="m-card-right">
-          <CruzScore score={cruzScore} size="sm" />
           <span className={`badge ${isCruzado ? 'badge-success' : isHold ? 'badge-danger' : 'badge-warning'}`} style={{ height: 20, fontSize: 11 }}>
             <span className="badge-dot" /><span className="sr-only">Estado: </span>{isCruzado ? 'Cruzado' : isHold ? 'Detenido' : 'Proceso'}
           </span>

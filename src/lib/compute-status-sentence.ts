@@ -15,14 +15,15 @@ export async function computeStatusSentence(
   clientClave: string
 ): Promise<StatusResult> {
 
+  // Use ilike trafico prefix (same filter as dashboard) for consistent counts
+  const prefix = `${clientClave}-%`
   const [criticalRes, overdueRes, semaforoRes, enRutaRes] = await Promise.all([
     supabase
       .from('traficos')
       .select('id', { count: 'exact', head: true })
-      .ilike('trafico', `${clientClave}-%`)
+      .ilike('trafico', prefix)
       .not('estatus', 'ilike', '%cruz%')
-      .or('score.lt.50,incidencia_abierta.eq.true')
-      .not('pedimento', 'is', null),
+      .is('pedimento', null),
 
     supabase
       .from('expediente_documentos')
@@ -34,14 +35,14 @@ export async function computeStatusSentence(
     supabase
       .from('traficos')
       .select('trafico', { count: 'exact', head: true })
-      .ilike('trafico', `${clientClave}-%`)
+      .ilike('trafico', prefix)
       .eq('semaforo', 1)
       .is('fecha_cruce', null),
 
     supabase
       .from('traficos')
       .select('id', { count: 'exact', head: true })
-      .ilike('trafico', `${clientClave}-%`)
+      .ilike('trafico', prefix)
       .not('estatus', 'ilike', '%cruz%')
   ])
 
@@ -54,7 +55,7 @@ export async function computeStatusSentence(
   if (semaforoRojo > 0) {
     return {
       level: 'red',
-      sentence: `Accion urgente — ${semaforoRojo} semaforo${semaforoRojo > 1 ? 's' : ''} rojo${semaforoRojo > 1 ? 's' : ''} pendiente${semaforoRojo > 1 ? 's' : ''}`,
+      sentence: `Acción urgente — ${semaforoRojo} semaforo${semaforoRojo > 1 ? 's' : ''} rojo${semaforoRojo > 1 ? 's' : ''} pendiente${semaforoRojo > 1 ? 's' : ''}`,
       count: total
     }
   }
@@ -62,7 +63,7 @@ export async function computeStatusSentence(
   if (total > 5) {
     return {
       level: 'red',
-      sentence: `${total} operaciones requieren atencion inmediata`,
+      sentence: `${total} operaciones requieren atención inmediata`,
       count: total
     }
   }
@@ -70,7 +71,7 @@ export async function computeStatusSentence(
   if (total > 0) {
     const parts: string[] = []
     if (overdueCount > 0) parts.push(`${overdueCount} documento${overdueCount > 1 ? 's' : ''} vencido${overdueCount > 1 ? 's' : ''}`)
-    if (criticalCount > 0) parts.push(`${criticalCount} trafico${criticalCount > 1 ? 's' : ''} critico${criticalCount > 1 ? 's' : ''}`)
+    if (criticalCount > 0) parts.push(`${criticalCount} tráfico${criticalCount > 1 ? 's' : ''} crítico${criticalCount > 1 ? 's' : ''}`)
     return {
       level: 'amber',
       sentence: `${total} acciones pendientes — ${parts.join(', ')}`,

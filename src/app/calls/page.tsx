@@ -139,7 +139,7 @@ export default function CallsPage() {
                   {call.traficos_mentioned?.length > 0 && (
                     <span className="text-[10.5px] px-2 py-0.5 rounded-[4px]"
                       style={{ background: 'var(--green-bg)', color: 'var(--green-text)' }}>
-                      {call.traficos_mentioned.length} traficos
+                      {call.traficos_mentioned.length} tráficos
                     </span>
                   )}
                 </div>

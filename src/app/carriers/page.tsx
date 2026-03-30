@@ -62,7 +62,7 @@ export default function CarriersPage() {
       <div className="mb-4">
         <h1 className="text-[18px] font-semibold" style={{ color: 'var(--text-primary)' }}>Carrier Performance</h1>
         <p className="text-[12.5px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
-          {carriers.length} transportistas &middot; {total.toLocaleString()} traficos analizados
+          {carriers.length} transportistas &middot; {total.toLocaleString()} tráficos analizados
         </p>
       </div>
 
@@ -185,7 +185,7 @@ export default function CarriersPage() {
                         background: selected.score >= 90 ? '#DCFCE7' : selected.score >= 70 ? '#FEF3C7' : '#FEE2E2',
                         color: selected.score >= 90 ? '#166534' : selected.score >= 70 ? '#92400E' : '#991B1B',
                       }}>
-                      {selected.score >= 90 ? 'Excelente' : selected.score >= 70 ? 'Aceptable' : 'Requiere Atencion'}
+                      {selected.score >= 90 ? 'Excelente' : selected.score >= 70 ? 'Aceptable' : 'Requiere Atención'}
                     </span>
                   </div>
                 </div>

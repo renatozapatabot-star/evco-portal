@@ -5,6 +5,7 @@ import { CheckCircle } from 'lucide-react'
 import { CLIENT_CLAVE, COMPANY_ID } from '@/lib/client-config'
 import { fmtId, fmtDate, fmtDateTime, fmtDateTimeLocal } from '@/lib/format-utils'
 import { calculateCruzScore, extractScoreInput } from '@/lib/cruz-score'
+import { statusDays } from '@/lib/cruz-score'
 import { useIsMobile } from '@/hooks/use-mobile'
 import Link from 'next/link'
 
@@ -98,10 +99,16 @@ export default function Dashboard() {
     const items: { id: string; severity: 'red' | 'amber'; description: string; date: string | null; link: string; action: string }[] = []
     urgentes.slice(0, 3).forEach(t => {
       const score = calculateCruzScore(extractScoreInput(t))
+      const days = statusDays(t.fecha_llegada ?? null)
+      const reason = !t.pedimento
+        ? 'Sin pedimento'
+        : days > 14
+        ? `Sin movimiento desde ${fmtDate(t.fecha_llegada)}`
+        : 'Pendiente de seguimiento'
       items.push({
         id: `u-${t.trafico}`,
         severity: score < 50 ? 'red' : 'amber',
-        description: `${fmtId(t.trafico)} requiere seguimiento — score ${score}`,
+        description: `${fmtId(t.trafico)} — ${reason}`,
         date: t.fecha_llegada,
         link: `/traficos/${encodeURIComponent(t.trafico)}`,
         action: 'Revisar',
@@ -125,6 +132,72 @@ export default function Dashboard() {
 
   // ── Today formatted ──
   const todayFormatted = fmtDate(new Date().toISOString())
+
+  // ── Bridges section (reused for mobile-first and desktop ordering) ──
+  const BridgesSection = () => (
+    <div style={{ marginBottom: 32 }}>
+      <div style={{ fontSize: 15, fontWeight: 700, color: TOKEN.text, marginBottom: 12 }}>
+        Puentes ahora
+      </div>
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
+        gap: 12,
+      }}>
+        {liveBridges ? liveBridges.bridges.map(b => {
+          const waitMin = b.commercial
+          const hasData = waitMin !== null && waitMin !== undefined
+          const displayMin = hasData && waitMin > 480 ? null : waitMin
+          const isRecommended = hasData && displayMin !== null && displayMin < 120
+          const waitColor = !hasData || displayMin === null
+            ? TOKEN.gray
+            : displayMin <= 30 ? TOKEN.green
+            : displayMin <= 60 ? TOKEN.amber
+            : TOKEN.red
+          const sourceLabel = b.updated
+            ? `(CBP ${fmtDateTimeLocal(b.updated).split(' · ')[1] || fmtDateTimeLocal(b.updated)})`
+            : '(estimado)'
+          return (
+            <div key={b.id} style={{
+              padding: '16px', borderRadius: TOKEN.radiusMd,
+              background: TOKEN.surfaceCard,
+              border: isRecommended ? `2px solid ${TOKEN.green}` : `1px solid ${TOKEN.border}`,
+            }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: TOKEN.textSecondary, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>
+                {b.nameEs}
+              </div>
+              {hasData && displayMin !== null ? (
+                <>
+                  <div style={{ fontSize: 32, fontWeight: 900, fontFamily: 'var(--font-jetbrains-mono)', color: waitColor, lineHeight: 1 }}>
+                    {displayMin}
+                    <span style={{ fontSize: 14, fontWeight: 600, marginLeft: 2 }}>min</span>
+                  </div>
+                  <div style={{ fontSize: 11, color: TOKEN.textSecondary, marginTop: 4, fontFamily: 'var(--font-jetbrains-mono)' }}>{sourceLabel}</div>
+                  {isRecommended && (
+                    <div style={{ fontSize: 11, fontWeight: 800, color: TOKEN.green, marginTop: 4 }}>Recomendado</div>
+                  )}
+                </>
+              ) : (
+                <div style={{ fontSize: 14, color: TOKEN.gray, fontWeight: 600 }}>Sin datos — verificando</div>
+              )}
+            </div>
+          )
+        }) : (
+          [0, 1, 2, 3].map(i => (
+            <div key={i} style={{ padding: 16, borderRadius: TOKEN.radiusMd, background: TOKEN.surfaceCard, border: `1px solid ${TOKEN.border}` }}>
+              <div className="skeleton" style={{ height: 14, width: 100, marginBottom: 8, borderRadius: 4 }} />
+              <div className="skeleton" style={{ height: 36, width: 60, borderRadius: 4 }} />
+            </div>
+          ))
+        )}
+      </div>
+      {liveBridges?.fetched && (
+        <div style={{ fontSize: 12, color: TOKEN.textSecondary, marginTop: 8, fontFamily: 'var(--font-jetbrains-mono)' }}>
+          Actualizado: {fmtDateTime(liveBridges.fetched)}
+        </div>
+      )}
+    </div>
+  )
 
   return (
     <div style={{ padding: isMobile ? 16 : 32, maxWidth: 960, margin: '0 auto' }}>
@@ -168,10 +241,10 @@ export default function Dashboard() {
               <div style={{ fontSize: 36, fontWeight: 900, fontFamily: 'var(--font-jetbrains-mono)', color: TOKEN.text, lineHeight: 1 }}>
                 {enProceso.length}
               </div>
-              <div style={{ fontSize: 13, color: TOKEN.textSecondary, marginTop: 4 }}>traficos</div>
+              <div style={{ fontSize: 13, color: TOKEN.textSecondary, marginTop: 4 }}>tráficos</div>
             </>
           ) : (
-            <div style={{ fontSize: 15, color: TOKEN.gray, fontWeight: 600 }}>Sin traficos activos</div>
+            <div style={{ fontSize: 15, color: TOKEN.gray, fontWeight: 600 }}>Sin tráficos activos</div>
           )}
         </div>
 
@@ -225,12 +298,17 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* ═══ SECTION C — NECESITAN TU ATENCION ═══ */}
+      {/* ═══ On mobile: bridges FIRST (3 AM driver needs this), then attention ═══ */}
+      {/* ═══ On desktop: attention first, then bridges ═══ */}
+
+      {isMobile && <BridgesSection />}
+
+      {/* ═══ SECTION C — NECESITAN TU ATENCIÓN ═══ */}
       {actions.length > 0 ? (
         <div style={{ marginBottom: 32 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
             <span style={{ fontSize: 15, fontWeight: 700, color: TOKEN.text }}>
-              Necesitan tu atencion ({actions.length})
+              Necesitan tu atención ({actions.length})
             </span>
             {(urgentes.length + incidencias.length) > 5 && (
               <Link href="/traficos" style={{ fontSize: 13, fontWeight: 700, color: TOKEN.gold, textDecoration: 'none' }}>
@@ -276,84 +354,12 @@ export default function Dashboard() {
         }}>
           <CheckCircle size={20} style={{ color: TOKEN.green, margin: '0 auto 8px', display: 'block' }} />
           <div style={{ fontSize: 15, fontWeight: 600, color: TOKEN.text }}>
-            Sin pendientes — Todas las operaciones estan en orden
+            Sin pendientes — Todas las operaciones están en orden
           </div>
         </div>
       ) : null}
 
-      {/* ═══ SECTION D — PUENTES AHORA ═══ */}
-      <div>
-        <div style={{ fontSize: 15, fontWeight: 700, color: TOKEN.text, marginBottom: 12 }}>
-          Puentes ahora
-        </div>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
-          gap: 12,
-        }}>
-          {liveBridges ? liveBridges.bridges.map(b => {
-            const waitMin = b.commercial
-            const hasData = waitMin !== null && waitMin !== undefined
-            // Cap at 480 min — data error beyond that
-            const displayMin = hasData && waitMin > 480 ? null : waitMin
-            const isRecommended = hasData && displayMin !== null && displayMin < 120
-            const waitColor = !hasData || displayMin === null
-              ? TOKEN.gray
-              : displayMin <= 30 ? TOKEN.green
-              : displayMin <= 60 ? TOKEN.amber
-              : TOKEN.red
-
-            // Source label from updated timestamp
-            const sourceLabel = b.updated
-              ? `(CBP ${fmtDateTimeLocal(b.updated).split(' · ')[1] || fmtDateTimeLocal(b.updated)})`
-              : '(estimado)'
-
-            return (
-              <div key={b.id} style={{
-                padding: '16px', borderRadius: TOKEN.radiusMd,
-                background: TOKEN.surfaceCard,
-                border: isRecommended ? `2px solid ${TOKEN.green}` : `1px solid ${TOKEN.border}`,
-              }}>
-                <div style={{ fontSize: 12, fontWeight: 700, color: TOKEN.textSecondary, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>
-                  {b.nameEs}
-                </div>
-                {hasData && displayMin !== null ? (
-                  <>
-                    <div style={{ fontSize: 32, fontWeight: 900, fontFamily: 'var(--font-jetbrains-mono)', color: waitColor, lineHeight: 1 }}>
-                      {displayMin}
-                      <span style={{ fontSize: 14, fontWeight: 600, marginLeft: 2 }}>min</span>
-                    </div>
-                    <div style={{ fontSize: 11, color: TOKEN.textSecondary, marginTop: 4, fontFamily: 'var(--font-jetbrains-mono)' }}>{sourceLabel}</div>
-                    {isRecommended && (
-                      <div style={{ fontSize: 11, fontWeight: 800, color: TOKEN.green, marginTop: 4 }}>
-                        Recomendado
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <div style={{ fontSize: 14, color: TOKEN.gray, fontWeight: 600 }}>Sin datos — verificando</div>
-                )}
-              </div>
-            )
-          }) : (
-            // Skeleton while loading
-            [0, 1, 2, 3].map(i => (
-              <div key={i} style={{
-                padding: 16, borderRadius: TOKEN.radiusMd,
-                background: TOKEN.surfaceCard, border: `1px solid ${TOKEN.border}`,
-              }}>
-                <div className="skeleton" style={{ height: 14, width: 100, marginBottom: 8, borderRadius: 4 }} />
-                <div className="skeleton" style={{ height: 36, width: 60, borderRadius: 4 }} />
-              </div>
-            ))
-          )}
-        </div>
-        {liveBridges?.fetched && (
-          <div style={{ fontSize: 12, color: TOKEN.textSecondary, marginTop: 8, fontFamily: 'var(--font-jetbrains-mono)' }}>
-            Actualizado: {fmtDateTime(liveBridges.fetched)}
-          </div>
-        )}
-      </div>
+      {!isMobile && <BridgesSection />}
     </div>
   )
 }

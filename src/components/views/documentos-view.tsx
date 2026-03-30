@@ -9,7 +9,7 @@ const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env
 
 const LEGAL_DOCS = [
   { id: 'poder_notarial', category: 'Corporativo', label: 'Poder Notarial', desc: 'Autorización ante agente aduanal', required: true, renew: 'Cada 5 años' },
-  { id: 'encargo_conferido', category: 'Corporativo', label: 'Encargo Conferido', desc: 'VUCEM authorization', required: true, renew: 'Según contrato' },
+  { id: 'encargo_conferido', category: 'Corporativo', label: 'Encargo Conferido', desc: 'Autorización VUCEM', required: true, renew: 'Según contrato' },
   { id: 'rfc_constancia', category: 'Fiscal', label: 'RFC Constancia de Situación', desc: 'SAT situación fiscal actualizada', required: true, renew: 'Anual' },
   { id: 'efirma', category: 'Digital', label: 'e.Firma (SAT)', desc: 'Firma electrónica avanzada', required: true, renew: 'Cada 4 años', expiry: '2028-01-01' },
   { id: 'immex', category: 'Programa', label: 'Autorización IMMEX', desc: 'Programa de importación temporal', required: true, renew: 'Anual' },

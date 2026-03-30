@@ -240,7 +240,7 @@ export default function CalendarioPage() {
       {overdue.length > 0 && (
         <div style={{ background: 'var(--red-bg, #FEE2E2)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8, padding: '10px 16px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10 }}>
           <span>🚨</span>
-          <span style={{ color: 'var(--red-text, #991B1B)', fontSize: 13, fontWeight: 600 }}>{overdue.length} evento(s) vencido(s) — requieren atencion inmediata</span>
+          <span style={{ color: 'var(--red-text, #991B1B)', fontSize: 13, fontWeight: 600 }}>{overdue.length} evento(s) vencido(s) — requieren atención inmediata</span>
         </div>
       )}
 

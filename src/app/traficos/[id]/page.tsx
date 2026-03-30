@@ -7,16 +7,14 @@ import { fmtId, fmtDate, fmtUSD, fmtKg, fmtDesc, fmtMXNInt, fmtCurrency, formatA
 import { useIsMobile } from '@/hooks/use-mobile'
 import { GOLD } from '@/lib/design-system'
 import { fmtCarrier, countryFlag } from '@/lib/carrier-names'
-import { CruzScore } from '@/components/cruz-score'
-import { calculateCruzScore, calculateCruzScoreDetailed, extractScoreInput, scoreReason } from '@/lib/cruz-score'
-import { ScoreBreakdown } from '@/components/ScoreBreakdown'
+// cruz-score imports removed — scores are internal broker data, not shown to clients
 import { createClient } from '@supabase/supabase-js'
 // Link removed — entradas now embedded inline
 import { COMPANY_ID, CLIENT_NAME } from '@/lib/client-config'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
-type Tab = 'financiero' | 'score' | 'transportista' | 'rectificacion'
+type Tab = 'financiero' | 'transportista' | 'rectificacion'
 
 const REQUIRED_DOCS = ['FACTURA', 'LISTA DE EMPAQUE', 'PEDIMENTO', 'ACUSE DE COVE', 'CARTA', 'ACUSE DE E-DOCUMENT']
 
@@ -109,8 +107,6 @@ export default function TraficoDetailPage() {
   const t = trafico
   const isCruzado = (t.estatus || '').toLowerCase().includes('cruz')
   const isPagado = (t.estatus || '').toLowerCase().includes('pagado')
-  const score = calculateCruzScore(extractScoreInput(t))
-  const detailed = calculateCruzScoreDetailed(extractScoreInput(t))
   const docCompleteness = Math.round((documentos.length / REQUIRED_DOCS.length) * 100)
 
   // ── 12-STEP TIMELINE ──
@@ -143,7 +139,6 @@ export default function TraficoDetailPage() {
 
   const TABS: { key: Tab; label: string }[] = [
     { key: 'financiero', label: 'Financiero' },
-    { key: 'score', label: 'Score' },
     { key: 'transportista', label: 'Transportista' },
     { key: 'rectificacion', label: 'Rectificación' },
   ]
@@ -235,10 +230,6 @@ export default function TraficoDetailPage() {
               {trackingCopied ? '✓ Copiado' : 'Compartir'}
             </button>
           </div>
-        </div>
-        <div style={{ textAlign: 'center' }}>
-          <CruzScore score={score} size="lg" showLabel />
-          {scoreReason(t) && <div style={{ fontSize: 11, color: 'var(--n-400)', marginTop: 4, maxWidth: 120 }}>{scoreReason(t)}</div>}
         </div>
       </div>
 
@@ -467,42 +458,7 @@ export default function TraficoDetailPage() {
             </div>
           )}
 
-          {/* TAB 3 — SCORE */}
-          {activeTab === 'score' && (
-            <div style={{ display: 'flex', gap: 32, flexWrap: 'wrap' }}>
-              <div style={{ textAlign: 'center' }}>
-                <svg width={160} height={160} viewBox="0 0 160 160">
-                  <circle cx={80} cy={80} r={68} fill="none" stroke="var(--n-100)" strokeWidth={12} />
-                  <circle cx={80} cy={80} r={68} fill="none"
-                    stroke={score >= 70 ? '#16A34A' : score >= 40 ? '#D97706' : '#DC2626'}
-                    strokeWidth={12} strokeLinecap="round"
-                    strokeDasharray={427.26}
-                    strokeDashoffset={427.26 * ((100 - score) / 100)}
-                    transform="rotate(-90 80 80)"
-                    style={{ transition: 'stroke-dashoffset 0.8s ease-out' }}
-                  />
-                  <text x={80} y={80} textAnchor="middle" dominantBaseline="central"
-                    fontSize={36} fontWeight={900} fontFamily="var(--font-data)"
-                    fill={score >= 70 ? '#16A34A' : score >= 40 ? '#D97706' : '#DC2626'}>
-                    {score}
-                  </text>
-                  <text x={80} y={105} textAnchor="middle" fontSize={11} fontWeight={600} fill="var(--n-400)">
-                    de 100
-                  </text>
-                </svg>
-              </div>
-              <div style={{ flex: 1, minWidth: 240 }}>
-                <ScoreBreakdown breakdown={detailed.breakdown} score={detailed.score} />
-                {detailed.reasons.length > 0 && (
-                  <div style={{ marginTop: 12, fontSize: 12, color: 'var(--n-500)' }}>
-                    {detailed.reasons.join(' · ')}
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* TAB 4 — TRANSPORTISTA */}
+          {/* TAB 3 — TRANSPORTISTA */}
           {activeTab === 'transportista' && (
             <div className="card" style={{ padding: 20 }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>

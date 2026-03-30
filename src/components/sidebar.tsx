@@ -2,18 +2,18 @@
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { GOLD_GRADIENT } from '@/lib/design-system'
 import {
   LayoutDashboard, Truck, FolderOpen, BarChart3,
-  Users, UserPlus, Shield, Cpu,
+  MessageSquare, Users, UserPlus, Shield, Cpu,
   Monitor, BookOpen, TrendingUp,
 } from 'lucide-react'
 
-/* V6 client nav: exactly 5 items (Inicio + 3 below + CRUZ at bottom).
-   Removed routes remain accessible by URL — just not in the sidebar. */
+/* V6 client nav: exactly 5 items — Inicio, Tráficos, CRUZ, Reportes, Documentos.
+   CRUZ is gold-accented as item #3. Removed routes remain accessible by URL. */
 const NAV = [
   { href: '/',             icon: LayoutDashboard, label: 'Inicio' },
   { href: '/traficos',     icon: Truck,           label: 'Tráficos' },
+  { href: '/cruz',         icon: MessageSquare,   label: 'CRUZ',     gold: true },
   { href: '/reportes',     icon: BarChart3,       label: 'Reportes' },
   { href: '/documentos',   icon: FolderOpen,      label: 'Documentos' },
 ]
@@ -51,7 +51,7 @@ export default function Sidebar() {
           <Link
             key={item.href}
             href={item.href}
-            className={`ir-item ${isActive(item.href) ? 'ir-active' : ''}`}
+            className={`${item.gold ? 'ir-cruz-nav' : 'ir-item'} ${isActive(item.href) ? 'ir-active' : ''}`}
             aria-label={item.label}
             aria-current={isActive(item.href) ? 'page' : undefined}
           >
@@ -80,20 +80,6 @@ export default function Sidebar() {
         )}
       </div>
 
-      <Link
-        href="/cruz"
-        className={`ir-cruz ${isActive('/cruz') ? 'ir-active' : ''}`}
-        aria-label="CRUZ AI"
-      >
-        <div style={{
-          width: 22, height: 22, borderRadius: 6,
-          background: GOLD_GRADIENT,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 13, fontWeight: 700, fontFamily: 'Georgia, serif',
-          color: '#1A1710',
-        }}>Z</div>
-        <span className="ir-tooltip">CRUZ AI</span>
-      </Link>
     </nav>
   )
 }

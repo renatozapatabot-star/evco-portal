@@ -7,7 +7,7 @@ import { CLIENT_NAME, CLIENT_CLAVE, PATENTE, COMPANY_ID } from '@/lib/client-con
 import { fmtId, fmtDesc, fmtKg, fmtUSD, fmtUSDCompact, fmtDate, calcPriority, priorityClass } from '@/lib/format-utils'
 import { fmtCarrier } from '@/lib/carrier-names'
 import { MobileTraficoCard } from '@/components/mobile-trafico-card'
-import { CruzScore } from '@/components/cruz-score'
+// CruzScore removed from client-facing UI — scores are internal only
 import { calculateCruzScore, extractScoreInput, statusDays } from '@/lib/cruz-score'
 import { useSort } from '@/hooks/use-sort'
 import { useIsMobile } from '@/hooks/use-mobile'
@@ -178,10 +178,9 @@ export default function TraficosPage() {
         {isMobile && (
           <div className="traficos-cards" style={{ padding: '8px 12px' }}>
             <div className="m-card-list">
-              {paged.map(r => {
-                const cs = calculateCruzScore(extractScoreInput(r))
-                return <MobileTraficoCard key={r.trafico} trafico={{ ...r, _cruzScore: cs }} onClick={() => router.push(`/traficos/${encodeURIComponent(r.trafico)}`)} />
-              })}
+              {paged.map(r => (
+                <MobileTraficoCard key={r.trafico} trafico={r} onClick={() => router.push(`/traficos/${encodeURIComponent(r.trafico)}`)} />
+              ))}
               {!loading && paged.length === 0 && (
                 <div style={{ textAlign: 'center', padding: '48px 0', color: 'var(--text-muted)' }}>
                   <div style={{ fontSize: 20, marginBottom: 8 }}>🚚</div>
@@ -205,7 +204,6 @@ export default function TraficosPage() {
                 <th scope="col">Descripción</th>
                 <th scope="col" style={{ width: 100, textAlign: 'right', cursor: 'pointer' }} onClick={() => toggleSort('peso_bruto')} className={sort.column === 'peso_bruto' ? 'sorted' : ''} aria-sort={sort.column === 'peso_bruto' ? (sort.direction === 'asc' ? 'ascending' : 'descending') : undefined}>Peso<SortArrow col="peso_bruto" /></th>
                 <th scope="col" style={{ width: 110, textAlign: 'right', cursor: 'pointer' }} onClick={() => toggleSort('importe_total')} className={sort.column === 'importe_total' ? 'sorted' : ''} aria-sort={sort.column === 'importe_total' ? (sort.direction === 'asc' ? 'ascending' : 'descending') : undefined}>Importe<SortArrow col="importe_total" /></th>
-                <th scope="col" style={{ width: 50, textAlign: 'center' }}>Score</th>
               </tr>
             </thead>
             <tbody>
@@ -219,11 +217,10 @@ export default function TraficosPage() {
                   <td><div className="skel" style={{ width: 140, height: 13 }} /></td>
                   <td><div className="skel" style={{ width: 50, height: 13, marginLeft: 'auto' }} /></td>
                   <td><div className="skel" style={{ width: 60, height: 13, marginLeft: 'auto' }} /></td>
-                  <td><div className="skel" style={{ width: 28, height: 28, borderRadius: '50%', margin: '0 auto' }} /></td>
                 </tr>
               ))}
               {!loading && paged.length === 0 && (
-                <tr><td colSpan={9}>
+                <tr><td colSpan={8}>
                   {search.trim() ? (
                     <div style={{ textAlign: 'center', padding: '48px 0', color: 'var(--text-muted)' }}>
                       <div style={{ fontSize: 20, marginBottom: 8 }}>🔍</div>
@@ -258,7 +255,7 @@ export default function TraficosPage() {
                     <tr className={`${rowClass} ${isExpanded ? 'row-expanded' : ''}`}
                       onClick={() => setExpandedId(isExpanded ? null : r.trafico)}>
                       <td style={{ width: 28, paddingRight: 0 }}>
-                        {isCrossing ? <><span className="crossing-pulse" /><span className="sr-only">En cruce</span></> : ps > 0 ? <><span className={`priority ${priorityClass(ps)}`} title={`Score: ${ps}`} /><span className="sr-only">Prioridad: {ps}</span></> : null}
+                        {isCrossing ? <><span className="crossing-pulse" /><span className="sr-only">En cruce</span></> : ps > 0 ? <><span className={`priority ${priorityClass(ps)}`} /><span className="sr-only">Requiere atención</span></> : null}
                       </td>
                       <td>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -291,12 +288,11 @@ export default function TraficosPage() {
                       <td className="c-desc" title={fmtDesc(r.descripcion_mercancia)}>{fmtDesc(r.descripcion_mercancia) || <span style={{ color: 'var(--n-400)' }}>—</span>}</td>
                       <td className="col-num">{fmtKg(r.peso_bruto) || <span style={{ color: 'var(--n-400)' }}>—</span>}</td>
                       <td className="col-num">{(r.importe_total != null && Number(r.importe_total) > 0) ? fmtUSD(r.importe_total) : <span style={{ color: 'var(--n-400)' }}>—</span>}</td>
-                      <td style={{ textAlign: 'center' }}><CruzScore score={cruzScore} size="sm" /></td>
                     </tr>
 
                     {isExpanded && (
                       <tr className="expansion-row">
-                        <td colSpan={9}>
+                        <td colSpan={8}>
                           <div className="expansion-content">
                             <div className="expansion-grid">
                               <div className="expansion-fact">
@@ -325,7 +321,6 @@ export default function TraficosPage() {
                               </div>
                             </div>
                             <div className="expansion-right">
-                              <CruzScore score={cruzScore} size="lg" showLabel />
                               <button className="expansion-cta" onClick={e => { e.stopPropagation(); router.push(`/traficos/${encodeURIComponent(r.trafico)}`) }}>
                                 Ver completo →
                               </button>
@@ -341,15 +336,6 @@ export default function TraficosPage() {
           </table>
         </div>}
 
-        {/* Score Legend */}
-        <div style={{ padding: '8px 16px', fontSize: 11, color: 'var(--n-400)', borderTop: '1px solid var(--border-default)', display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center' }}>
-          <span style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>Score:</span>
-          <span><span style={{ color: 'var(--status-red)' }}>●</span> 0–49 Urgente</span>
-          <span><span style={{ color: 'var(--status-amber)' }}>●</span> 50–74 Atención</span>
-          <span><span style={{ color: 'var(--status-green)' }}>●</span> 75–100 Normal</span>
-          <span style={{ color: 'var(--n-300)' }}>|</span>
-          <span>40% docs · 30% días · 20% pago · 10% semáforo</span>
-        </div>
 
         {totalPages > 1 && (
           <div className="pag">

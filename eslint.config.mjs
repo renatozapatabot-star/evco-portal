@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Node.js CommonJS pipeline scripts — linted separately
+    "scripts/**",
+    "ecosystem.config.js",
   ]),
 ]);
 

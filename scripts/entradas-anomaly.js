@@ -63,14 +63,6 @@ async function runEntradasAnomaly() {
   console.log(`  Sin packing list: ${sinPacking.length}`)
 
   if (!hasIssues) {
-    const msg = [
-      `✅ <b>ENTRADAS — SIN ANOMALÍAS</b>`,
-      `${nowCST()} · Últimos 30 días`,
-      `Entradas revisadas: ${fmt(entradas.length)}`,
-      `Todo en orden.`,
-      `— CRUZ 🦀`
-    ].join('\n')
-    await sendTelegram(msg)
     console.log('✅ No anomalies found')
     return
   }

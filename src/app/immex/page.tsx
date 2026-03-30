@@ -68,7 +68,11 @@ export default function ImmexPage() {
         {loading ? (
           <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>Cargando datos IMMEX...</div>
         ) : immexData.length === 0 ? (
-          <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>Sin tráficos temporales activos</div>
+          <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--n-300)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ margin: '0 auto 12px', display: 'block' }}><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+            <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--n-700)', marginBottom: 4 }}>Sin tráficos temporales activos</div>
+            <div style={{ fontSize: 13, color: 'var(--n-400)' }}>Todo bajo control</div>
+          </div>
         ) : (
           <table className="data-table">
             <thead>
@@ -97,7 +101,7 @@ export default function ImmexPage() {
                       <span className="mono" style={{ fontSize: 10, color: barColor(d.daysRemaining), fontWeight: 700, minWidth: 32 }}>{d.pctUsed}%</span>
                     </div>
                   </td>
-                  <td style={{ fontSize: 12, color: 'var(--text-secondary)', maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.descripcion_mercancia || '—'}</td>
+                  <td style={{ fontSize: 12, color: 'var(--text-secondary)', maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.descripcion_mercancia || ''}</td>
                   <td style={{ textAlign: 'center' }}>
                     <span style={{ background: d.daysRemaining <= 60 ? 'var(--red-bg)' : d.daysRemaining <= 180 ? 'var(--amber-bg)' : 'var(--green-bg)', color: d.daysRemaining <= 60 ? 'var(--red-text)' : d.daysRemaining <= 180 ? 'var(--amber-text)' : 'var(--green-text)', borderRadius: 4, padding: '2px 8px', fontSize: 10, fontWeight: 700 }}>
                       {d.daysRemaining <= 60 ? 'CRÍTICO' : d.daysRemaining <= 180 ? 'ATENCIÓN' : 'OK'}

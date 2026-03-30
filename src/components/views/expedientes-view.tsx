@@ -1,6 +1,8 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
+import { FolderOpen } from 'lucide-react'
 import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(
@@ -8,26 +10,7 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
-const COMPANY_ID = 'evco'
 const PAGE = 25
-
-const DOC_TYPES = [
-  { type: 'factura_comercial', label: 'Factura Comercial', cat: 'A', critical: true },
-  { type: 'packing_list', label: 'Packing List', cat: 'A', critical: true },
-  { type: 'bill_of_lading', label: 'Bill of Lading', cat: 'A', critical: true },
-  { type: 'cove', label: 'COVE', cat: 'B', critical: true },
-  { type: 'mve_folio', label: 'MVE Folio', cat: 'B', critical: true },
-  { type: 'usmca_cert', label: 'USMCA Certificate', cat: 'C' },
-  { type: 'cfdi_xml', label: 'CFDI XML', cat: 'D' },
-  { type: 'carta_porte', label: 'Carta Porte', cat: 'F' },
-  { type: 'nom_cert', label: 'NOM Certificate', cat: 'E' },
-  { type: 'immex_auth', label: 'IMMEX Auth', cat: 'E' },
-  { type: 'msds', label: 'MSDS', cat: 'I' },
-  { type: 'technical_datasheet', label: 'Technical Datasheet', cat: 'I' },
-  { type: 'insurance_cert', label: 'Insurance Cert', cat: 'F' },
-  { type: 'proof_of_payment', label: 'Proof of Payment', cat: 'G' },
-  { type: 'poder_notarial', label: 'Poder Notarial', cat: 'H' },
-]
 
 const T = {
   bg: '#FAFAF8', surface: '#FFFFFF', border: '#E8E6E0', surfaceAlt: '#F5F3EF',
@@ -41,9 +24,31 @@ const T = {
 
 const EXPECTED_DOCS = 10 // realistic target per trafico
 function pct(docs: number) { return Math.min(100, Math.round((docs / EXPECTED_DOCS) * 100)) }
-function pctColor(p: number) { return p >= 100 ? '#16A34A' : p >= 50 ? '#D4952A' : p >= 1 ? '#CA8A04' : '#DC2626' }
+function pctColor(p: number) { return p >= 100 ? '#16A34A' : p >= 50 ? '#D4952A' : p >= 1 ? '#CA8A04' : '#999999' }
 
-function DocBar({ docs }: { docs: number }) {
+function DocBar({ docs, pedimento }: { docs: number; pedimento: string | null }) {
+  // No pedimento assigned yet — not a completeness problem
+  if (!pedimento) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span style={{ background: '#E8E6E0', color: '#6B6B6B', fontSize: 10, fontWeight: 600,
+          borderRadius: 20, padding: '2px 10px' }}>Sin pedimento</span>
+      </div>
+    )
+  }
+  // Has pedimento but no docs yet — pending sync
+  if (docs === 0) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ flex: 1, height: 5, background: T.border, borderRadius: 99, overflow: 'hidden', position: 'relative' }}>
+          <div style={{ width: '100%', height: '100%', borderRadius: 99,
+            background: 'linear-gradient(90deg, #E8E6E0 25%, #F5F3EF 50%, #E8E6E0 75%)',
+            backgroundSize: '200% 100%', animation: 'shimmer 1.5s ease-in-out infinite' }} />
+        </div>
+        <span style={{ color: T.textMuted, fontSize: 11, fontWeight: 600, minWidth: 52 }}>Pendiente</span>
+      </div>
+    )
+  }
   const p = pct(docs)
   const color = pctColor(p)
   return (
@@ -58,79 +63,57 @@ function DocBar({ docs }: { docs: number }) {
 
 export function ExpedientesView() {
   const [traficos, setTraficos] = useState<any[]>([])
+  const router = useRouter()
   const [documents, setDocuments] = useState<Record<string, string[]>>({})
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(0)
-  const [selected, setSelected] = useState<any>(null)
-  const [uploading, setUploading] = useState(false)
-  const [uploadStatus, setUploadStatus] = useState('')
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
 
   const load = useCallback(async () => {
     setLoading(true)
-    // Query globalpc_facturas which has real 9254-YXXXX trafico IDs
-    let q = supabase.from('globalpc_facturas')
-      .select('cve_trafico, cve_cliente, cve_proveedor, fecha_facturacion, valor_comercial, moneda, cove_vucem', { count: 'exact' })
-      .eq('cve_cliente', '9254')
-      .not('cve_trafico', 'is', null)
-      .ilike('cve_trafico', '9254-%')
-      .order('fecha_facturacion', { ascending: false })
+    // Query traficos directly — 9254-% covers all EVCO tráficos
+    let q = supabase.from('traficos')
+      .select('trafico, pedimento, estatus, fecha_llegada, descripcion_mercancia, proveedores, importe_total', { count: 'exact' })
+      .ilike('trafico', '9254-%')
+      .order('created_at', { ascending: false })
       .range(page * PAGE, (page + 1) * PAGE - 1)
-    if (search) q = q.ilike('cve_trafico', `%${search}%`)
+    if (search) q = q.ilike('trafico', `%${search}%`)
     const { data: rawData, count } = await q
 
-    // Deduplicate by cve_trafico (multiple facturas per trafico)
-    const seen = new Set<string>()
-    const data = (rawData || []).filter(r => {
-      if (!r.cve_trafico || seen.has(r.cve_trafico)) return false
-      seen.add(r.cve_trafico)
-      return true
-    }).map(r => ({
-      trafico: r.cve_trafico,
-      estatus: 'En Proceso',
-      fecha_llegada: r.fecha_facturacion,
-      descripcion_mercancia: `Proveedor: ${r.cve_proveedor || '—'} · ${r.moneda} $${r.valor_comercial?.toLocaleString() || '0'}`,
-      pedimento: r.cove_vucem || '—',
+    const ids = (rawData || []).map(r => r.trafico)
+
+    const data = (rawData || []).map(r => ({
+      trafico: r.trafico,
+      estatus: r.estatus || 'En Proceso',
+      fecha_llegada: r.fecha_llegada,
+      descripcion_mercancia: `${r.descripcion_mercancia || ''} · $${r.importe_total?.toLocaleString() || '0'}`,
+      pedimento_num: r.pedimento || null,
     }))
-    const uniqueCount = new Set((rawData || []).map(r => r.cve_trafico)).size
     setTraficos(data)
-    setTotal(uniqueCount)
+    setTotal(count || 0)
 
-    // Load documents for visible traficos from BOTH tables
-    if (data && data.length > 0) {
-      const ids = data.map((t: any) => t.trafico)
-      // Also build short IDs (e.g. 'Y4457') for expediente_documentos matching
-      const shortIds = ids.map(id => id.replace('9254-', ''))
-      const allMatchIds = [...ids, ...shortIds]
+    // Load documents — query BOTH tables and merge
+    if (ids.length > 0) {
+      const [r1, r2] = await Promise.all([
+        supabase.from('documents')
+          .select('trafico_id, document_type')
+          .in('trafico_id', ids),
+        supabase.from('expediente_documentos')
+          .select('trafico_id, doc_type')
+          .in('trafico_id', ids)
+      ])
+
       const map: Record<string, string[]> = {}
-
-      const addDoc = (trafico: string, docType: string) => {
-        // Normalize short IDs (Y4457) to full format (9254-Y4457)
-        const tid = trafico.startsWith('9254-') ? trafico : `9254-${trafico}`
-        if (!ids.includes(tid)) return
-        if (!map[tid]) map[tid] = []
-        if (docType && !map[tid].includes(docType)) map[tid].push(docType)
-      }
-
-      // Source 1: expediente_documentos — keyed by pedimento_id (9254-Y4141 or Y4060 format)
-      const { data: expDocs } = await supabase.from('expediente_documentos')
-        .select('pedimento_id, doc_type')
-        .eq('company_id', 'evco')
-        .in('pedimento_id', allMatchIds)
-      ;(expDocs || []).forEach((d: any) => addDoc(d.pedimento_id, d.doc_type))
-
-      // Source 2: documents table — trafico stored in metadata->>'trafico'
-      const { data: metaDocs } = await supabase.from('documents')
-        .select('document_type, metadata')
-        .not('metadata', 'is', null)
-        .limit(10000)
-      ;(metaDocs || []).forEach((d: any) => {
-        const trafico = d.metadata?.trafico
-        if (trafico && ids.includes(trafico)) {
-          const dtype = (d.document_type || '').toLowerCase().replace(/\s+/g, '_')
-          addDoc(trafico, dtype)
-        }
+      ;(r1.data || []).forEach((d: any) => {
+        if (!map[d.trafico_id]) map[d.trafico_id] = []
+        if (d.document_type && !map[d.trafico_id].includes(d.document_type))
+          map[d.trafico_id].push(d.document_type)
+      })
+      ;(r2.data || []).forEach((d: any) => {
+        if (!map[d.trafico_id]) map[d.trafico_id] = []
+        if (d.doc_type && !map[d.trafico_id].includes(d.doc_type))
+          map[d.trafico_id].push(d.doc_type)
       })
 
       setDocuments(map)
@@ -141,42 +124,13 @@ export function ExpedientesView() {
   useEffect(() => { load() }, [load])
   useEffect(() => { setPage(0) }, [search])
 
-  async function handleUpload(traficoId: string, docType: string, file: File) {
-    setUploading(true)
-    setUploadStatus('Subiendo...')
-    try {
-      const form = new FormData()
-      form.append('file', file)
-      form.append('trafico_id', traficoId)
-      form.append('doc_type', docType)
-      const res = await fetch('/api/upload', { method: 'POST', body: form })
-      const data = await res.json()
-      if (data.success) {
-        setUploadStatus(`✅ ${file.name} subido correctamente`)
-        setDocuments(prev => ({
-          ...prev,
-          [traficoId]: [...(prev[traficoId] || []).filter(d => d !== docType), docType]
-        }))
-        if (selected?.trafico === traficoId) {
-          setSelected((s: any) => ({ ...s }))
-        }
-      } else {
-        setUploadStatus(`❌ Error: ${data.error}`)
-      }
-    } catch (e: any) {
-      setUploadStatus(`❌ Error: ${e.message}`)
-    }
-    setUploading(false)
-    setTimeout(() => setUploadStatus(''), 4000)
-  }
-
   return (
     <div style={{ padding: '24px 28px', fontFamily: "'DM Sans', sans-serif" }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 20 }}>
         <div>
-          <h2 style={{ color: T.text, fontSize: 18, fontWeight: 700, margin: 0 }}>Expedientes Digitales</h2>
+          <h2 className="page-title" style={{ margin: 0 }}>Expedientes Digitales</h2>
           <p style={{ color: T.textMuted, fontSize: 12, margin: '4px 0 0' }}>
-            {total.toLocaleString()} tráficos activos · Click para subir documentos
+            {total.toLocaleString()} tráficos activos
           </p>
         </div>
         <div style={{ position: 'relative' }}>
@@ -188,66 +142,81 @@ export function ExpedientesView() {
         </div>
       </div>
 
-      {uploadStatus && (
-        <div style={{ background: uploadStatus.includes('✅') ? T.greenBg : T.redBg,
-          border: `1px solid ${uploadStatus.includes('✅') ? T.green : T.red}30`,
-          borderRadius: 8, padding: '10px 16px', marginBottom: 16,
-          color: uploadStatus.includes('✅') ? T.green : T.red, fontSize: 13, fontWeight: 600 }}>
-          {uploadStatus}
-        </div>
-      )}
-
-      <div style={{ display: 'grid', gridTemplateColumns: selected ? '1fr 1fr' : '1fr', gap: 20 }}>
-        {/* List */}
-        <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 12, overflow: 'hidden', boxShadow: T.shadow }}>
+      <div className="card">
           {loading ? (
             <div style={{ display: 'flex', justifyContent: 'center', padding: 60 }}>
               <div style={{ width: 28, height: 28, border: `3px solid ${T.border}`, borderTopColor: T.navy,
                 borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
             </div>
+          ) : traficos.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+              <FolderOpen size={32} strokeWidth={1.5} style={{ color: 'var(--n-300)', margin: '0 auto 12px' }} />
+              <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--n-700)', marginBottom: 4 }}>Sin expedientes</div>
+              <div style={{ fontSize: 13, color: 'var(--n-400)' }}>Los expedientes vinculados aparecerán aquí</div>
+            </div>
           ) : (
             <>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <table className="data-table">
                 <thead>
-                  <tr style={{ background: T.surfaceAlt, borderBottom: `1px solid ${T.border}` }}>
-                    {['Tráfico', 'Estado', 'Documentos', 'Completitud', ''].map(h => (
-                      <th key={h} style={{ padding: '10px 14px', textAlign: 'left', color: T.textMuted,
-                        fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>{h}</th>
-                    ))}
+                  <tr>
+                    <th>Trafico</th>
+                    <th>Estado</th>
+                    <th>Documentos</th>
+                    <th>Completitud</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {traficos.map((t, i) => {
+                  {[...traficos].sort((a, b) => {
+                    // En Proceso first
+                    const aActive = a.estatus === 'Cruzado' ? 1 : 0
+                    const bActive = b.estatus === 'Cruzado' ? 1 : 0
+                    if (aActive !== bActive) return aActive - bActive
+                    // Lowest doc count first
+                    const aDocs = (documents[a.trafico] || []).length
+                    const bDocs = (documents[b.trafico] || []).length
+                    return aDocs - bDocs
+                  }).map((t) => {
                     const docs = documents[t.trafico] || []
                     const docCount = docs.length
-                    const isSelected = selected?.trafico === t.trafico
                     return (
-                      <tr key={t.trafico}
-                        style={{ borderBottom: i < traficos.length - 1 ? `1px solid ${T.border}` : 'none',
-                          background: isSelected ? T.navy + '08' : 'transparent', cursor: 'pointer' }}
-                        onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = T.surfaceAlt }}
-                        onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = 'transparent' }}
-                        onClick={() => setSelected(isSelected ? null : { ...t, docs })}>
-                        <td style={{ padding: '11px 14px' }}>
-                          <div style={{ color: T.navy, fontSize: 12, fontWeight: 700 }}>{t.trafico}</div>
-                          <div style={{ color: T.textMuted, fontSize: 10 }}>
-                            {t.fecha_llegada ? new Date(t.fecha_llegada).toLocaleDateString('es-MX', { day: '2-digit', month: 'short' }) : '—'}
+                      <tr key={t.trafico} onClick={() => router.push(`/traficos/${t.trafico}`)}
+                        className="expediente-row">
+                        <td>
+                          <span className="c-id">{t.trafico}</span>
+                          <div style={{ color: 'var(--n-400)', fontSize: 11, marginTop: 2 }}>
+                            {t.fecha_llegada ? new Date(t.fecha_llegada).toLocaleDateString('es-MX', { day: '2-digit', month: 'short' }) : ''}
                           </div>
                         </td>
-                        <td style={{ padding: '11px 14px' }}>
-                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5,
-                            background: t.estatus === 'Cruzado' ? T.greenBg : t.estatus === 'Detenido' ? T.redBg : T.amberBg,
-                            color: t.estatus === 'Cruzado' ? T.green : t.estatus === 'Detenido' ? T.red : T.amber,
-                            borderRadius: 20, padding: '3px 9px', fontSize: 11, fontWeight: 600 }}>
-                            {t.estatus}
+                        <td>
+                          <span className={`badge ${t.estatus === 'Cruzado' ? 'badge-cruzado' : t.estatus === 'Detenido' ? 'badge-hold' : 'badge-proceso'}`}>
+                            <span className="badge-dot" />{t.estatus}
                           </span>
                         </td>
-                        <td style={{ padding: '11px 14px', color: T.text, fontSize: 12 }}>
-                          {docCount}<span style={{ color: T.textMuted }}>/{EXPECTED_DOCS}</span>
+                        <td>
+                          {t.pedimento_num
+                            ? <span className="c-num" style={{ textAlign: 'left' }}>{docCount}<span style={{ color: 'var(--n-400)', fontWeight: 400 }}>/{EXPECTED_DOCS}</span></span>
+                            : ''
+                          }
                         </td>
-                        <td style={{ padding: '11px 14px', minWidth: 140 }}><DocBar docs={docCount} /></td>
-                        <td style={{ padding: '11px 14px' }}>
-                          <span style={{ color: T.textMuted, fontSize: 16 }}>{isSelected ? '✕' : '›'}</span>
+                        <td style={{ minWidth: 160 }}>
+                          <DocBar docs={docCount} pedimento={t.pedimento_num} />
+                          {docCount > 0 && (
+                            <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 4 }}>
+                              {docs.slice(0, 4).map((dtype: string) => (
+                                <span key={dtype} style={{ fontSize: 11, fontWeight: 600,
+                                  padding: '2px 8px', borderRadius: 'var(--r-sm, 4px)',
+                                  background: 'var(--n-50, #F9F9F8)', border: '1px solid var(--n-100, #E8E6E0)',
+                                  color: 'var(--n-600, #6B6B6B)', whiteSpace: 'nowrap' }}>
+                                  {dtype.replace(/_/g, ' ')}
+                                </span>
+                              ))}
+                              {docs.length > 4 && (
+                                <span style={{ fontSize: 9, color: T.textMuted, padding: '1px 4px' }}>
+                                  +{docs.length - 4}
+                                </span>
+                              )}
+                            </div>
+                          )}
                         </td>
                       </tr>
                     )
@@ -271,79 +240,7 @@ export function ExpedientesView() {
           )}
         </div>
 
-        {/* Document panel */}
-        {selected && (
-          <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 12,
-            padding: 20, boxShadow: T.shadow, position: 'sticky', top: 20, alignSelf: 'start', maxHeight: '80vh', overflowY: 'auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-              <div>
-                <div style={{ color: T.navy, fontSize: 14, fontWeight: 700 }}>{selected.trafico}</div>
-                <div style={{ color: T.textMuted, fontSize: 11 }}>{selected.descripcion_mercancia?.substring(0, 50) || '—'}</div>
-              </div>
-              <button onClick={() => setSelected(null)}
-                style={{ background: 'none', border: 'none', color: T.textMuted, cursor: 'pointer', fontSize: 20 }}>×</button>
-            </div>
-
-            <div style={{ background: T.surfaceAlt, border: `1px solid ${T.border}`, borderRadius: 8,
-              padding: '10px 14px', marginBottom: 16 }}>
-              <DocBar docs={(documents[selected.trafico] || []).length} />
-              <div style={{ color: T.textMuted, fontSize: 11, marginTop: 4 }}>
-                {(documents[selected.trafico] || []).length}/{EXPECTED_DOCS} documentos
-              </div>
-            </div>
-
-            {/* Real documents on file */}
-            <div style={{ color: T.textMuted, fontSize: 10, fontWeight: 700, letterSpacing: '0.08em',
-              textTransform: 'uppercase', marginBottom: 8 }}>Documentos en Archivo</div>
-
-            {(documents[selected.trafico] || []).length > 0 ? (
-              (documents[selected.trafico] || []).map(dtype => (
-                <div key={dtype} style={{ display: 'flex', alignItems: 'center', gap: 8,
-                  padding: '6px 0', borderBottom: `1px solid ${T.border}` }}>
-                  <span style={{ fontSize: 12 }}>✅</span>
-                  <span style={{ color: T.green, fontSize: 12, fontWeight: 500 }}>
-                    {dtype.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
-                  </span>
-                </div>
-              ))
-            ) : (
-              <div style={{ color: T.textMuted, fontSize: 12, padding: '12px 0' }}>Sin documentos — sync pendiente</div>
-            )}
-
-            {/* Expected checklist */}
-            <div style={{ color: T.textMuted, fontSize: 10, fontWeight: 700, letterSpacing: '0.08em',
-              textTransform: 'uppercase', marginTop: 16, marginBottom: 8 }}>Checklist Requerido</div>
-
-            {DOC_TYPES.filter(dt => dt.critical).map(dt => {
-              const allDocs = documents[selected.trafico] || []
-              const present = allDocs.some(d => d.includes(dt.type.split('_')[0]) || dt.type.includes(d.split('_')[0]))
-              return (
-                <div key={dt.type} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  padding: '6px 0', borderBottom: `1px solid ${T.border}` }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ fontSize: 12 }}>{present ? '✅' : '🔴'}</span>
-                    <span style={{ color: present ? T.green : T.red, fontSize: 12, fontWeight: 600 }}>{dt.label}</span>
-                  </div>
-                  {!present && (
-                    <label style={{ background: T.navy, color: '#fff', borderRadius: 6,
-                      padding: '4px 10px', fontSize: 10, fontWeight: 600, cursor: uploading ? 'default' : 'pointer' }}>
-                      {uploading ? '...' : 'Subir'}
-                      <input type="file" accept=".pdf,.jpg,.jpeg,.png,.xml" style={{ display: 'none' }}
-                        disabled={uploading}
-                        onChange={e => {
-                          const file = e.target.files?.[0]
-                          if (file) handleUpload(selected.trafico, dt.type, file)
-                          e.target.value = ''
-                        }} />
-                    </label>
-                  )}
-                </div>
-              )
-            })}
-          </div>
-        )}
-      </div>
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } } @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } } .expediente-row { cursor: pointer; transition: background 0.15s ease; } .expediente-row:hover { background: #FFF8EB !important; }`}</style>
     </div>
   )
 }

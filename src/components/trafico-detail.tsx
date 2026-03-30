@@ -16,7 +16,7 @@ const T = {
 function fmtUSD(v: any) { return '$' + Number(v || 0).toLocaleString('en-US', { maximumFractionDigits: 0 }) }
 function fmtNum(v: any) { return Number(v || 0).toLocaleString('es-MX') }
 function fmtDate(v: any) {
-  if (!v) return '—'
+  if (!v) return ''
   return new Date(v).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })
 }
 
@@ -72,7 +72,7 @@ export function TraficoDetail({ traficoId, onClose }: { traficoId: string; onClo
               </div>
               {t && (
                 <div style={{ color: '#6B6B6B', fontSize: 12, marginTop: 3 }}>
-                  {t.descripcion_mercancia?.substring(0, 50) || '—'}
+                  {t.descripcion_mercancia?.substring(0, 50) || ''}
                 </div>
               )}
             </div>
@@ -214,7 +214,7 @@ export function TraficoDetail({ traficoId, onClose }: { traficoId: string; onClo
                           <span style={{ color: T.textMuted, fontSize: 11 }}>{fmtDate(e.fecha_llegada_mercancia)}</span>
                         </div>
                         <div style={{ color: T.text, fontSize: 12, marginBottom: 4 }}>
-                          {e.descripcion_mercancia?.substring(0, 60) || '—'}
+                          {e.descripcion_mercancia?.substring(0, 60) || ''}
                         </div>
                         <div style={{ display: 'flex', gap: 12 }}>
                           <span style={{ color: T.textMuted, fontSize: 11 }}>{e.cantidad_bultos || '?'} bultos</span>

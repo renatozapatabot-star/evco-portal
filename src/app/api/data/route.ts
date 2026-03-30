@@ -12,6 +12,12 @@ const ALLOWED_TABLES = [
   'globalpc_ordenes_carga', 'globalpc_proveedores', 'globalpc_productos', 'globalpc_bultos',
   'econta_facturas', 'econta_facturas_detalle', 'econta_cartera', 'econta_aplicaciones',
   'econta_ingresos', 'econta_egresos', 'econta_anticipos', 'econta_polizas',
+  'product_intelligence', 'financial_intelligence', 'crossing_intelligence', 'warehouse_intelligence',
+  'pre_arrival_briefs', 'duplicates_detected', 'compliance_predictions', 'pedimento_risk_scores',
+  'anomaly_baselines', 'supplier_contacts', 'crossing_predictions', 'monthly_intelligence_reports',
+  'client_benchmarks', 'oca_database', 'supplier_network', 'bridge_intelligence',
+  'regulatory_alerts', 'document_metadata', 'communication_events', 'compliance_events',
+  'trade_prospects', 'prospect_sightings', 'competitor_sightings',
 ]
 
 export async function GET(req: NextRequest) {
@@ -52,5 +58,15 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  return NextResponse.json({ data })
+  // Cache control based on table type
+  const LONG_CACHE = new Set(['oca_database', 'supplier_network', 'anomaly_baselines'])
+  const MEDIUM_CACHE = new Set(['aduanet_facturas', 'econta_facturas', 'econta_cartera', 'product_intelligence'])
+  const maxAge = LONG_CACHE.has(table) ? 3600 : MEDIUM_CACHE.has(table) ? 300 : 30
+  const stale = maxAge * 2
+
+  return NextResponse.json({ data }, {
+    headers: {
+      'Cache-Control': `s-maxage=${maxAge}, stale-while-revalidate=${stale}`,
+    },
+  })
 }

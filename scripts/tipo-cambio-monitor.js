@@ -105,14 +105,6 @@ async function runTipoCambioMonitor() {
 
   if (flags.length === 0) {
     console.log('✅ All tipo_cambio values within 1% of Banxico rate')
-    await sendTelegram([
-      `✅ <b>TIPO DE CAMBIO — OK</b>`,
-      `${nowCST()}`,
-      `Banxico FIX: $${fmt4(banxicoRate)} MXN/USD`,
-      `Pedimentos revisados: ${rows.length}`,
-      `Sin desviaciones > 1%`,
-      `— CRUZ 🦀`
-    ].join('\n'))
   } else {
     console.log(`⚠️  ${flags.length} pedimento(s) with deviation > 1%:`)
     flags.forEach(f => console.log(`  ${f.referencia}: $${fmt4(f.tipo_cambio)} (${f.deviation_pct}% off)`))

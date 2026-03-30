@@ -10,12 +10,13 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 )
-const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN
-const TELEGRAM_CHAT = '-5085543275'
 const COMPANY_ID = 'evco'
 const CLIENT_CLAVE = '9254'
 const TENANT_ID = '52762e3c-bd8a-49b8-9a32-296e526b7238'
 const BATCH = 500
+const OLLAMA_URL = process.env.OLLAMA_BASE_URL || 'http://localhost:11434'
+const OLLAMA_MODEL = 'qwen3:32b'
+const OLLAMA_BATCH = 50
 const CHECKPOINT_DIR = path.join(__dirname, '.sync-checkpoints')
 
 // ─── Helpers ───
@@ -32,17 +33,6 @@ function saveCP(name, data) {
 function clearCP(name) {
   const f = path.join(CHECKPOINT_DIR, name + '.json')
   if (fs.existsSync(f)) fs.unlinkSync(f)
-}
-
-async function tg(msg) {
-  if (!TELEGRAM_TOKEN) { console.log(msg); return }
-  try {
-    await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: TELEGRAM_CHAT, text: msg, parse_mode: 'HTML' })
-    })
-  } catch (e) { console.error('TG error:', e.message) }
 }
 
 async function getMySQLTrafico() {
@@ -124,12 +114,6 @@ async function run() {
   const t0 = Date.now()
   console.log('🚀 COMPREHENSIVE GLOBALPC + ECONTA SYNC')
   console.log('═'.repeat(50))
-
-  await tg([
-    `🚀 <b>SYNC COMPLETO INICIADO</b>`,
-    `MySQL Tráfico + eConta + WSDL`,
-    `— CRUZ 🦀`
-  ].join('\n'))
 
   // ─── PHASE 1: MySQL Tráfico (bd_demo_38) ───
   console.log('\n══ PHASE 1: MySQL Tráfico ══')
@@ -386,12 +370,6 @@ async function run() {
   await db.end()
   console.log('\n✅ Phase 1 complete — MySQL Tráfico')
 
-  await tg([
-    `✅ <b>PHASE 1 COMPLETE — MySQL Tráfico</b>`,
-    `10 tables synced from bd_demo_38`,
-    `— CRUZ 🦀`
-  ].join('\n'))
-
   // ─── PHASE 2: MySQL eConta (bd_econta_rz) ───
   console.log('\n══ PHASE 2: MySQL eConta ══')
   let ec
@@ -568,12 +546,6 @@ async function run() {
   await ec.end()
   console.log('\n✅ Phase 2 complete — MySQL eConta')
 
-  await tg([
-    `✅ <b>PHASE 2 COMPLETE — MySQL eConta</b>`,
-    `8 tables synced from bd_econta_rz`,
-    `— CRUZ 🦀`
-  ].join('\n'))
-
   // ─── PHASE 3: WSDL Document Pull ───
   // Token expires in 60s. Refresh every 45s.
   // Use getListaDocumentosTrafico per tipo_documento (getDocumentosNotificacionTrafico returns empty).
@@ -741,7 +713,6 @@ async function run() {
         if (scanned % 50 === 0) {
           saveCP('wsdl_docs', { offset: i + 1, synced: totalDocs })
           console.log(`   WSDL: ${scanned}/${traficos.length} tráficos · ${totalDocs} docs · ${filesUploaded} PDFs`)
-          await tg(`📄 WSDL: ${scanned}/${traficos.length} · ${totalDocs} docs · ${filesUploaded} PDFs\n— CRUZ 🦀`)
         }
       }
 
@@ -750,6 +721,98 @@ async function run() {
     }
   } catch (e) {
     console.log('⚠️  WSDL error:', e.message, '— skipping Phase 3')
+  }
+
+  // ─── PHASE 4: Ollama TIGIE Classification ───
+  console.log('\n══ PHASE 4: Ollama Fraccion Classification (qwen3:32b) ══')
+  try {
+    // Check Ollama is available
+    const ollamaCheck = await fetch(`${OLLAMA_URL}/api/tags`, { signal: AbortSignal.timeout(5000) })
+    if (!ollamaCheck.ok) throw new Error('Ollama not responding')
+    const ollamaModels = await ollamaCheck.json()
+    const hasModel = ollamaModels.models?.some(m => m.name.includes('qwen3:32b'))
+    if (!hasModel) throw new Error('qwen3:32b model not found in Ollama')
+    console.log(`✅ Ollama connected — ${OLLAMA_MODEL} available`)
+
+    // Load checkpoint
+    const fracCP = loadCP('fraccion_classify')
+    let classified = fracCP.synced || 0
+    let lastId = fracCP.lastId || null
+    console.log(`   Resuming from: ${classified} classified${lastId ? `, after id=${lastId}` : ''}`)
+
+    let totalClassified = classified
+    let batchCount = 0
+    let done = false
+
+    while (!done) {
+      // Fetch products with null fraccion from Supabase
+      let query = supabase
+        .from('globalpc_productos')
+        .select('id, cve_producto, descripcion, descripcion_ingles')
+        .or('fraccion.is.null,fraccion.eq.')
+        .order('id', { ascending: true })
+        .limit(OLLAMA_BATCH)
+
+      if (lastId) query = query.gt('id', lastId)
+
+      const { data: products, error: fetchErr } = await query
+      if (fetchErr) { console.error('   ❌ Supabase fetch error:', fetchErr.message); break }
+      if (!products || products.length === 0) { console.log('   ✅ No more products to classify'); done = true; break }
+
+      // Classify each product via Ollama
+      for (const prod of products) {
+        const desc = prod.descripcion || prod.descripcion_ingles || prod.cve_producto
+        if (!desc) { lastId = prod.id; continue }
+
+        const prompt = `Classify this product under Mexico's TIGIE tariff schedule. Return only the 8-digit fraccion arancelaria. Product: ${desc}`
+
+        try {
+          const res = await fetch(`${OLLAMA_URL}/api/generate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              model: OLLAMA_MODEL,
+              prompt,
+              stream: false,
+              options: { temperature: 0.1, num_predict: 30 }
+            }),
+            signal: AbortSignal.timeout(30000)
+          })
+
+          if (!res.ok) { console.error(`   Ollama HTTP ${res.status} for ${prod.cve_producto}`); lastId = prod.id; continue }
+          const data = await res.json()
+          const raw = data.response?.trim() || ''
+          // Extract 8-digit fraccion (may have dots: 3901.10.01 or plain: 39011001)
+          const match = raw.match(/(\d{4})[.\s]?(\d{2})[.\s]?(\d{2})/)
+          if (match) {
+            const fraccion = `${match[1]}.${match[2]}.${match[3]}`
+            const { error: upErr } = await supabase
+              .from('globalpc_productos')
+              .update({ fraccion, fraccion_source: 'ollama_qwen3_32b', fraccion_classified_at: new Date().toISOString() })
+              .eq('id', prod.id)
+            if (upErr) console.error(`   ❌ Update error for ${prod.cve_producto}: ${upErr.message}`)
+            else totalClassified++
+          }
+        } catch (e) {
+          console.error(`   Ollama timeout/error for ${prod.cve_producto}: ${e.message}`)
+        }
+        lastId = prod.id
+      }
+
+      batchCount++
+
+      // Checkpoint every 500 (10 batches of 50)
+      if (batchCount % 10 === 0) {
+        saveCP('fraccion_classify', { synced: totalClassified, lastId })
+        console.log(`   [checkpoint] ${totalClassified.toLocaleString()} classified, last_id=${lastId}`)
+      }
+
+    }
+
+    clearCP('fraccion_classify')
+    console.log(`   ✅ Phase 4 complete — ${totalClassified.toLocaleString()} products classified`)
+  } catch (e) {
+    console.log('⚠️  Ollama error:', e.message, '— skipping Phase 4')
   }
 
   // ─── DONE ───
@@ -766,17 +829,10 @@ async function run() {
     console.log('✅ Portal revalidated')
   }
 
-  await tg([
-    `✅ <b>SYNC COMPLETO TERMINADO</b>`,
-    `Tiempo total: ${totalMin} min`,
-    `18 tablas sincronizadas`,
-    `MySQL Tráfico ✅ · eConta ✅ · WSDL ✅`,
-    `Portal actualizado`,
-    `— CRUZ 🦀`
-  ].join('\n'))
+  console.log(`📄 Sync completo · ${totalMin} min · MySQL ✅ · eConta ✅ · WSDL ✅ · TIGIE ✅`)
 }
 
 run().catch(err => {
   console.error('Fatal error:', err)
-  tg(`❌ <b>SYNC FAILED</b>\n${err.message}\n— CRUZ 🦀`).then(() => process.exit(1))
+  process.exit(1)
 })

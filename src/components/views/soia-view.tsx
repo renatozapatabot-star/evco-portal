@@ -24,11 +24,29 @@ function StatusBadge({ value }: { value: string }) {
 export function SoiaView() {
   const [cruces, setCruces] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [bridgeRec, setBridgeRec] = useState<{ name: string; avg: number } | null>(null)
 
   useEffect(() => {
     fetch('/api/data?table=soia_cruces&limit=200&order_by=created_at&order_dir=desc')
       .then(r => r.json()).then(d => setCruces(d.data || []))
       .catch(() => {}).finally(() => setLoading(false))
+    // Bridge intelligence
+    fetch('/api/data?table=bridge_intelligence&company_id=evco&limit=500')
+      .then(r => r.json()).then(d => {
+        const today = new Date().getDay()
+        const records = (d.data || []).filter((b: any) => b.day_of_week === today)
+        const avgByBridge: Record<string, number[]> = {}
+        records.forEach((b: any) => {
+          const name = b.bridge_id || b.bridge_name || 'unknown'
+          if (!avgByBridge[name]) avgByBridge[name] = []
+          avgByBridge[name].push(b.crossing_hours)
+        })
+        const bridges = Object.entries(avgByBridge).map(([name, hours]) => ({
+          name: name.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+          avg: hours.reduce((a, b) => a + b, 0) / hours.length,
+        })).sort((a, b) => a.avg - b.avg)
+        if (bridges[0]) setBridgeRec(bridges[0])
+      }).catch(() => {})
   }, [])
 
   // Derive summary stats
@@ -62,6 +80,38 @@ export function SoiaView() {
         <h1 className="pg-title">SOIA — Semáforo Aduanal</h1>
         <p className="pg-meta">Aduana 240 Nuevo Laredo &middot; {cruces.length} registros</p>
       </div>
+
+      {/* Bridge Intelligence Recommendation */}
+      {bridgeRec && (
+        <div style={{ padding: '14px 18px', background: 'var(--success-bg)', border: '1px solid var(--success-b)', borderRadius: 'var(--r-lg)', marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <div style={{ fontSize: 10.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.09em', color: 'var(--success)', marginBottom: 4 }}>
+              Recomendado Hoy — {['domingo','lunes','martes','miércoles','jueves','viernes','sábado'][new Date().getDay()]}
+            </div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--n-900)' }}>{bridgeRec.name}</div>
+            <div style={{ fontSize: 12, color: 'var(--n-400)', marginTop: 2 }}>Promedio hoy: {bridgeRec.avg.toFixed(1)}h · basado en historial real</div>
+          </div>
+          <div style={{ width: 10, height: 10, borderRadius: '50%', background: 'var(--success)', boxShadow: '0 0 0 4px var(--success-bg)' }} />
+        </div>
+      )}
+
+      {/* Crossing Recommendation */}
+      {(() => {
+        const best = BRIDGES.find(b => b.status === 'green' && b.type === 'Comercial')
+        if (!best) return null
+        return (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', background: 'var(--green-bg, rgba(22,163,74,0.08))', border: '1px solid var(--green-border, rgba(22,163,74,0.2))', borderRadius: 'var(--r-lg, 12px)', marginBottom: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ width: 10, height: 10, borderRadius: '50%', background: 'var(--green, #16A34A)', boxShadow: '0 0 0 3px var(--green-bg, rgba(22,163,74,0.08))' }} />
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--green, #16A34A)', marginBottom: 2 }}>Cruce Recomendado</div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{best.name} — {best.sub}</div>
+                <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>Semáforo verde &middot; Comercial disponible</div>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
 
       {/* Bridge Status Grid 2x2 */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16, marginBottom: 24 }}>

@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 
 const T = { surface: '#FFFFFF', surfaceAlt: '#F5F3EF', border: '#E8E6E0', text: '#1A1A1A', textSub: '#6B6B6B', textMuted: '#999999', navy: '#1A1A1A', gold: '#BA7517', shadow: '0 8px 32px rgba(0,0,0,0.12)' }
 type Message = { role: 'user' | 'assistant'; content: string; ts: string }
-const SUGGESTIONS = ['Muéstrame tráficos con faltantes', 'Valor total importado este mes', 'Cuáles tráficos están detenidos?', 'Top 5 proveedores por valor']
+const SUGGESTIONS = ['Mostrar tráficos con faltantes o daños', '¿Cuál es el valor total importado este mes?', '¿Qué tráficos están vencidos más de 7 días?', '¿Hay oportunidades T-MEC sin certificado?', 'Resumen de incidencias últimas 4 semanas']
 
 export function AIChat() {
   const [open, setOpen] = useState(false)

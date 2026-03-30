@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>EVCO Weekly Audit — 16 de marzo de 2026 — 22 de marzo de 2026</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#0f0f1a;color:#e2e8f0;font-size:12px;line-height:1.4}
+
+/* Header */
+.header{background:#1a1a2e;border-bottom:3px solid #C9A84C;padding:22px 44px;display:flex;justify-content:space-between;align-items:center}
+.brand{font-size:22px;font-weight:900;letter-spacing:-1px;color:#fff}
+.brand em{color:#C9A84C;font-style:normal}
+.brand-sub{font-size:11px;color:#64748b;margin-top:2px}
+.hr{text-align:right}
+.rl{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#C9A84C;font-weight:700}
+.rw{font-size:11px;color:#94a3b8;margin-top:3px;font-weight:500}
+.rc{font-size:10px;color:#475569;margin-top:2px}
+
+.body{padding:24px 44px 32px}
+
+/* Section titles */
+.section-title{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#C9A84C;font-weight:700;margin:24px 0 12px;padding-bottom:8px;border-bottom:1px solid rgba(201,168,76,0.2)}
+.section-title:first-child{margin-top:0}
+
+/* KPI rows */
+.row6{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:10px}
+.row5{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:10px}
+.row4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:10px}
+.row3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px}
+
+.kpi{background:#1a1a2e;border:1px solid rgba(255,255,255,0.08);border-radius:7px;padding:16px 18px;position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.kpi.gold::before{background:#C9A84C}
+.kpi.green::before{background:#4ade80}
+.kpi.amber::before{background:#fbbf24}
+.kpi.blue::before{background:#60a5fa}
+.kpi.red::before{background:#f87171}
+.kpi.purple::before{background:#a78bfa}
+
+.kl{font-size:8.5px;letter-spacing:2px;text-transform:uppercase;color:#64748b;margin-bottom:6px;font-weight:600}
+.kv{font-size:24px;font-weight:800;letter-spacing:-0.5px;color:#fff;line-height:1}
+.ks{font-size:9.5px;color:#475569;margin-top:4px}
+
+.sep{height:1px;background:rgba(201,168,76,0.15);margin:18px 0}
+
+/* Cards */
+.card{background:#1a1a2e;border:1px solid rgba(255,255,255,0.08);border-radius:7px;padding:18px 20px;margin-bottom:14px}
+.ch{font-size:8.5px;letter-spacing:2.5px;text-transform:uppercase;color:#C9A84C;font-weight:700;padding-bottom:10px;border-bottom:1px solid rgba(201,168,76,0.15);margin-bottom:14px}
+
+/* Flags */
+.flag{display:flex;gap:10px;padding:10px 14px;border-radius:6px;margin-bottom:8px;align-items:flex-start}
+.flag.ok{background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.2);border-left:3px solid #4ade80}
+.flag.warn{background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);border-left:3px solid #fbbf24}
+.flag.info{background:rgba(96,165,250,0.08);border:1px solid rgba(96,165,250,0.2);border-left:3px solid #60a5fa}
+.ft{font-size:10px;font-weight:700;color:#e2e8f0;margin-bottom:2px}
+.fm{font-size:10px;color:#94a3b8;line-height:1.5}
+
+/* Tables */
+table{width:100%;border-collapse:collapse}
+thead th{font-size:8.5px;letter-spacing:1.5px;text-transform:uppercase;color:#64748b;padding:8px 10px;border-bottom:2px solid rgba(201,168,76,0.15);text-align:left;font-weight:600;background:rgba(26,26,46,0.8);white-space:nowrap}
+tbody td{font-size:11px;color:#94a3b8;padding:9px 10px;border-bottom:1px solid rgba(255,255,255,0.04);vertical-align:top}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:rgba(201,168,76,0.04)}
+.mono{font-family:'SF Mono','Fira Code',monospace;font-size:10.5px}
+.gold-text{color:#C9A84C}
+.total-row td{font-weight:700;color:#C9A84C;border-top:2px solid rgba(201,168,76,0.3);background:rgba(201,168,76,0.05)}
+
+/* Bar charts */
+.bar-wrap{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.bar-label{font-size:10px;color:#94a3b8;width:160px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar-track{flex:1;height:6px;background:rgba(255,255,255,0.05);border-radius:3px;overflow:hidden}
+.bar-fill{height:100%;background:linear-gradient(90deg,#C9A84C,#e8d48a);border-radius:3px}
+.bar-val{font-size:10px;color:#64748b;width:65px;text-align:right;flex-shrink:0}
+
+/* Footer */
+.footer{background:#1a1a2e;border-top:2px solid #C9A84C;padding:14px 44px;display:flex;justify-content:space-between;align-items:center;font-size:9px;color:#475569;letter-spacing:0.5px}
+.footer a{color:#C9A84C;text-decoration:none}
+</style>
+</head>
+<body>
+
+<!-- ═══════ HEADER ═══════ -->
+<div class="header">
+  <div>
+    <div class="brand">EVCO <em>Plastics</em> <span style="color:#475569;font-weight:300;font-size:14px">Auditoría Semanal</span></div>
+    <div class="brand-sub">EVCO PLASTICS DE MEXICO S. DE R.L. DE C.V.</div>
+  </div>
+  <div class="hr">
+    <div class="rl">Reporte Semanal Aduanal · W12</div>
+    <div class="rw">16 de marzo de 2026 — 22 de marzo de 2026</div>
+    <div class="rc">RFC EPM001109I74 · Patente 3596 · Clave 9254 · Aduana 240 Nuevo Laredo · 28 mar 2026, 08:21 p.m. CST</div>
+  </div>
+</div>
+
+<div class="body">
+
+<!-- ═══════ SECTION I: KPI CARDS ═══════ -->
+<div class="section-title">I. Indicadores Clave de la Semana</div>
+
+<div class="row6">
+  <div class="kpi gold">
+    <div class="kl">Valor Importado</div>
+    <div class="kv">$0.00</div>
+    <div class="ks">USD declarado</div>
+    <div style="font-size:10px;font-weight:600;margin-top:4px;color:#f87171">↓ 100% vs semana anterior</div>
+  </div>
+  <div class="kpi blue">
+    <div class="kl">Pedimentos</div>
+    <div class="kv">0</div>
+    <div class="ks">0 facturas · 0 proveedores</div>
+  </div>
+  <div class="kpi purple">
+    <div class="kl">Tráficos</div>
+    <div class="kv">0</div>
+    <div class="ks">movimientos registrados</div>
+  </div>
+  <div class="kpi green">
+    <div class="kl">Remesas</div>
+    <div class="kv">41</div>
+    <div class="ks">entradas de bodega</div>
+  </div>
+  <div class="kpi amber">
+    <div class="kl">Peso Total</div>
+    <div class="kv">0 kg</div>
+    <div class="ks">kg brutos declarados</div>
+  </div>
+  <div class="kpi red">
+    <div class="kl">Incidencias</div>
+    <div class="kv">5</div>
+    <div class="ks">mercancía dañada / faltante</div>
+  </div>
+</div>
+
+<!-- Secondary KPIs -->
+<div class="row4">
+  <div class="kpi gold">
+    <div class="kl">YTD — Valor Total</div>
+    <div class="kv" style="font-size:20px">$4.38M</div>
+    <div class="ks">89 pedimentos · 2025–2026</div>
+  </div>
+  <div class="kpi">
+    <div class="kl">T-MEC Aplicado</div>
+    <div class="kv" style="font-size:20px">0 / 0</div>
+    <div class="ks">pedimentos con arancel cero</div>
+  </div>
+  <div class="kpi">
+    <div class="kl">Tipo de Cambio</div>
+    <div class="kv" style="font-size:20px">$0.0000</div>
+    <div class="ks">MXN/USD promedio</div>
+  </div>
+  <div class="kpi">
+    <div class="kl">COVEs</div>
+    <div class="kv" style="font-size:20px">0</div>
+    <div class="ks">cartas de valor electrónicas</div>
+  </div>
+</div>
+
+<div class="sep"></div>
+
+<!-- ═══════ SECTION II: FINANCIAL SUMMARY ═══════ -->
+<div class="section-title">II. Resumen Financiero — Contribuciones</div>
+
+<div class="card">
+  <table>
+    <thead>
+      <tr>
+        <th>Referencia</th>
+        <th>Pedimento</th>
+        <th>Fecha Pago</th>
+        <th style="text-align:right">Valor USD</th>
+        <th style="text-align:right">DTA</th>
+        <th style="text-align:right">IGI</th>
+        <th style="text-align:right">IVA</th>
+        <th style="text-align:right">Gravamen Total</th>
+        <th style="text-align:center">T-MEC</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td colspan="9" style="text-align:center;padding:32px;color:#475569">Sin pedimentos registrados esta semana</td></tr>
+      
+    </tbody>
+  </table>
+</div>
+
+<!-- ═══════ SECTION III: DETALLE POR PROVEEDOR ═══════ -->
+<div class="section-title">III. Detalle de Pedimentos por Proveedor</div>
+
+
+<div class="card">
+  <div class="ch">9254-Y4463 · Pedimento 6500204 · 2 líneas / 2 proveedores · TRANS_MEX_593 / TRANS_EXT_6</div>
+  <table>
+    <thead><tr>
+      <th>Tráfico</th>
+      <th>Pedimento</th>
+      <th>Fecha Pago</th>
+      <th>Fecha Cruce</th>
+      <th>Proveedor</th>
+      <th>Factura</th>
+      <th>COVE</th>
+      <th style="text-align:right">Valor USD</th>
+      <th>Transp MX</th>
+      <th>Transp EXT</th>
+      <th style="text-align:center">Estatus</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td class="mono gold-text" style="font-weight:700">9254-Y4463</td>
+        <td class="mono" style="color:#64748b">6500204</td>
+        <td class="mono" style="color:#64748b">—</td>
+        <td class="mono" style="color:#64748b">—</td>
+        <td style="font-size:10px;color:#94a3b8">NEXEO PLASTICS LLC</td>
+        <td class="mono" style="font-size:10px;color:#e2e8f0">49028549</td>
+        <td class="mono" style="font-size:9px;color:#64748b">COVE2680BA5O2</td>
+        <td style="text-align:right;font-weight:700;color:#fff">$28K</td>
+        <td style="font-size:10px;color:#94a3b8">TRANS_MEX_593</td>
+        <td style="font-size:10px;color:#94a3b8">TRANS_EXT_6</td>
+        <td style="text-align:center"><span style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(255,255,255,0.08);color:#94a3b8;border:1px solid rgba(255,255,255,0.1)">En Proceso</span></td>
+      </tr><tr>
+        <td class="mono gold-text" style="font-weight:700">9254-Y4463</td>
+        <td class="mono" style="color:#64748b">6500204</td>
+        <td class="mono" style="color:#64748b">—</td>
+        <td class="mono" style="color:#64748b">—</td>
+        <td style="font-size:10px;color:#94a3b8">SW ANDERSON COMPANY</td>
+        <td class="mono" style="font-size:10px;color:#e2e8f0">INV940262</td>
+        <td class="mono" style="font-size:9px;color:#64748b">COVE2680F5WC5</td>
+        <td style="text-align:right;font-weight:700;color:#fff">$332.75</td>
+        <td style="font-size:10px;color:#94a3b8">TRANS_MEX_593</td>
+        <td style="font-size:10px;color:#94a3b8">TRANS_EXT_6</td>
+        <td style="text-align:center"><span style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(255,255,255,0.08);color:#94a3b8;border:1px solid rgba(255,255,255,0.1)">En Proceso</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<div class="card">
+  <div class="ch">9254-Y4472 · Pedimento 6500213 · 1 línea / 1 proveedor · TRANS_MEX_593 / 2</div>
+  <table>
+    <thead><tr>
+      <th>Tráfico</th>
+      <th>Pedimento</th>
+      <th>Fecha Pago</th>
+      <th>Fecha Cruce</th>
+      <th>Proveedor</th>
+      <th>Factura</th>
+      <th>COVE</th>
+      <th style="text-align:right">Valor USD</th>
+      <th>Transp MX</th>
+      <th>Transp EXT</th>
+      <th style="text-align:center">Estatus</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td class="mono gold-text" style="font-weight:700">9254-Y4472</td>
+        <td class="mono" style="color:#64748b">6500213</td>
+        <td class="mono" style="color:#64748b">2026-03-20T00:27:02+00:00</td>
+        <td class="mono" style="color:#64748b">2026-03-20T01:42:26+00:00</td>
+        <td style="font-size:10px;color:#94a3b8">PLASTIC PROCESS EQUIPMENT INC</td>
+        <td class="mono" style="font-size:10px;color:#e2e8f0">4516206</td>
+        <td class="mono" style="font-size:9px;color:#64748b">COVE2680EVTX8</td>
+        <td style="text-align:right;font-weight:700;color:#fff">$970.15</td>
+        <td style="font-size:10px;color:#94a3b8">TRANS_MEX_593</td>
+        <td style="font-size:10px;color:#94a3b8">2</td>
+        <td style="text-align:center"><span style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(255,255,255,0.08);color:#94a3b8;border:1px solid rgba(255,255,255,0.1)">Cruzado</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<div class="card">
+  <div class="ch">9254-Y4482 · Pedimento 6500224 · 3 líneas / 3 proveedores · TRANS_MEX_584 / 2</div>
+  <table>
+    <thead><tr>
+      <th>Tráfico</th>
+      <th>Pedimento</th>
+      <th>Fecha Pago</th>
+      <th>Fecha Cruce</th>
+      <th>Proveedor</th>
+      <th>Factura</th>
+      <th>COVE</th>
+      <th style="text-align:right">Valor USD</th>
+      <th>Transp MX</th>
+      <th>Transp EXT</th>
+      <th style="text-align:center">Estatus</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td class="mono gold-text" style="font-weight:700">9254-Y4482</td>
+        <td class="mono" style="color:#64748b">6500224</td>
+        <td class="mono" style="color:#64748b">2026-03-24T05:00:00+00:00</td>
+        <td class="mono" style="color:#64748b">2026-03-24T05:00:00+00:00</td>
+        <td style="font-size:10px;color:#94a3b8">SW ANDERSON COMPANY</td>
+        <td class="mono" style="font-size:10px;color:#e2e8f0">INV940412</td>
+        <td class="mono" style="font-size:9px;color:#64748b">COVE2680NUP02</td>
+        <td style="text-align:right;font-weight:700;color:#fff">$2K</td>
+        <td style="font-size:10px;color:#94a3b8">TRANS_MEX_584</td>
+        <td style="font-size:10px;color:#94a3b8">2</td>
+        <td style="text-align:center"><span style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(255,255,255,0.08);color:#94a3b8;border:1px solid rgba(255,255,255,0.1)">Cruzado</span></td>
+      </tr><tr>
+        <td class="mono gold-text" style="font-weight:700">9254-Y4482</td>
+        <td class="mono" style="color:#64748b">6500224</td>
+        <td class="mono" style="color:#64748b">2026-03-24T05:00:00+00:00</td>
+        <td class="mono" style="color:#64748b">2026-03-24T05:00:00+00:00</td>
+        <td style="font-size:10px;color:#94a3b8">NEXEO PLASTICS LLC</td>
+        <td class="mono" style="font-size:10px;color:#e2e8f0">49028908</td>
+        <td class="mono" style="font-size:9px;color:#64748b">COVE2680NUMM6</td>
+        <td style="text-align:right;font-weight:700;color:#fff">$14K</td>
+        <td style="font-size:10px;color:#94a3b8">TRANS_MEX_584</td>
+        <td style="font-size:10px;color:#94a3b8">2</td>
+        <td style="text-align:center"><span style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(255,255,255,0.08);color:#94a3b8;border:1px solid rgba(255,255,255,0.1)">Cruzado</span></td>
+      </tr><tr>
+        <td class="mono gold-text" style="font-weight:700">9254-Y4482</td>
+        <td class="mono" style="color:#64748b">6500224</td>
+        <td class="mono" style="color:#64748b">2026-03-24T05:00:00+00:00</td>
+        <td class="mono" style="color:#64748b">2026-03-24T05:00:00+00:00</td>
+        <td style="font-size:10px;color:#94a3b8">SOUTHLAND POLYMERS INC</td>
+        <td class="mono" style="font-size:10px;color:#e2e8f0">IN167778</td>
+        <td class="mono" style="font-size:9px;color:#64748b">COVE2680NUP11</td>
+        <td style="text-align:right;font-weight:700;color:#fff">$13K</td>
+        <td style="font-size:10px;color:#94a3b8">TRANS_MEX_584</td>
+        <td style="font-size:10px;color:#94a3b8">2</td>
+        <td style="text-align:center"><span style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(255,255,255,0.08);color:#94a3b8;border:1px solid rgba(255,255,255,0.1)">Cruzado</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<div class="card">
+  <div class="ch">9254-Y4487 · Pedimento 6500229 · 1 línea / 1 proveedor · TRANS_MEX_593 / 1</div>
+  <table>
+    <thead><tr>
+      <th>Tráfico</th>
+      <th>Pedimento</th>
+      <th>Fecha Pago</th>
+      <th>Fecha Cruce</th>
+      <th>Proveedor</th>
+      <th>Factura</th>
+      <th>COVE</th>
+      <th style="text-align:right">Valor USD</th>
+      <th>Transp MX</th>
+      <th>Transp EXT</th>
+      <th style="text-align:center">Estatus</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td class="mono gold-text" style="font-weight:700">9254-Y4487</td>
+        <td class="mono" style="color:#64748b">6500229</td>
+        <td class="mono" style="color:#64748b">2026-03-25T22:37:02+00:00</td>
+        <td class="mono" style="color:#64748b">2026-03-26T01:55:49+00:00</td>
+        <td style="font-size:10px;color:#94a3b8">CHROMA COLOR CORPORATION</td>
+        <td class="mono" style="font-size:10px;color:#e2e8f0">792720</td>
+        <td class="mono" style="font-size:9px;color:#64748b">COVE2680PNW36</td>
+        <td style="text-align:right;font-weight:700;color:#fff">$781.47</td>
+        <td style="font-size:10px;color:#94a3b8">TRANS_MEX_593</td>
+        <td style="font-size:10px;color:#94a3b8">1</td>
+        <td style="text-align:center"><span style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(255,255,255,0.08);color:#94a3b8;border:1px solid rgba(255,255,255,0.1)">Cruzado</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<div class="card">
+  <div class="ch">9254-Y4488 · Pedimento 6500230 · 1 línea / 1 proveedor · TRANS_MEX_593 / 2</div>
+  <table>
+    <thead><tr>
+      <th>Tráfico</th>
+      <th>Pedimento</th>
+      <th>Fecha Pago</th>
+      <th>Fecha Cruce</th>
+      <th>Proveedor</th>
+      <th>Factura</th>
+      <th>COVE</th>
+      <th style="text-align:right">Valor USD</th>
+      <th>Transp MX</th>
+      <th>Transp EXT</th>
+      <th style="text-align:center">Estatus</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td class="mono gold-text" style="font-weight:700">9254-Y4488</td>
+        <td class="mono" style="color:#64748b">6500230</td>
+        <td class="mono" style="color:#64748b">2026-03-25T23:48:10+00:00</td>
+        <td class="mono" style="color:#64748b">2026-03-26T01:55:49+00:00</td>
+        <td style="font-size:10px;color:#94a3b8">M.HOLLAND COMPANY</td>
+        <td class="mono" style="font-size:10px;color:#e2e8f0">26010281</td>
+        <td class="mono" style="font-size:9px;color:#64748b">COVE2680QM2Y4</td>
+        <td style="text-align:right;font-weight:700;color:#fff">$5K</td>
+        <td style="font-size:10px;color:#94a3b8">TRANS_MEX_593</td>
+        <td style="font-size:10px;color:#94a3b8">2</td>
+        <td style="text-align:center"><span style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(255,255,255,0.08);color:#94a3b8;border:1px solid rgba(255,255,255,0.1)">Cruzado</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<div class="card">
+  <div class="ch">9254-Y4489 · Pedimento 6500231 · 1 línea / 1 proveedor · TRANS_MEX_593 / 3</div>
+  <table>
+    <thead><tr>
+      <th>Tráfico</th>
+      <th>Pedimento</th>
+      <th>Fecha Pago</th>
+      <th>Fecha Cruce</th>
+      <th>Proveedor</th>
+      <th>Factura</th>
+      <th>COVE</th>
+      <th style="text-align:right">Valor USD</th>
+      <th>Transp MX</th>
+      <th>Transp EXT</th>
+      <th style="text-align:center">Estatus</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td class="mono gold-text" style="font-weight:700">9254-Y4489</td>
+        <td class="mono" style="color:#64748b">6500231</td>
+        <td class="mono" style="color:#64748b">2026-03-26T23:39:06+00:00</td>
+        <td class="mono" style="color:#64748b">2026-03-27T02:06:33+00:00</td>
+        <td style="font-size:10px;color:#94a3b8">TOWER FASTENERS LLC</td>
+        <td class="mono" style="font-size:10px;color:#e2e8f0">30506937</td>
+        <td class="mono" style="font-size:9px;color:#64748b">COVE2680TKQC3</td>
+        <td style="text-align:right;font-weight:700;color:#fff">$148.40</td>
+        <td style="font-size:10px;color:#94a3b8">TRANS_MEX_593</td>
+        <td style="font-size:10px;color:#94a3b8">3</td>
+        <td style="text-align:center"><span style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(255,255,255,0.08);color:#94a3b8;border:1px solid rgba(255,255,255,0.1)">Cruzado</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="sep"></div>
+
+<!-- ═══════ SECTION IV: REMESAS BY DAY ═══════ -->
+<div class="section-title">IV. Remesas por Día de la Semana</div>
+
+<div class="card">
+  <div class="ch">Distribución de Entradas de Bodega · 41 remesas</div>
+  
+  <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:16px">
+    
+    <div style="text-align:center;padding:12px 8px;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.2);border-radius:6px">
+      <div style="font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:#64748b;margin-bottom:6px">Lun</div>
+      <div style="font-size:22px;font-weight:800;color:#C9A84C">11</div>
+      <div style="font-size:9px;color:#475569;margin-top:2px">58.9t</div>
+    </div>
+    <div style="text-align:center;padding:12px 8px;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.2);border-radius:6px">
+      <div style="font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:#64748b;margin-bottom:6px">Mar</div>
+      <div style="font-size:22px;font-weight:800;color:#C9A84C">9</div>
+      <div style="font-size:9px;color:#475569;margin-top:2px">7.9t</div>
+    </div>
+    <div style="text-align:center;padding:12px 8px;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.2);border-radius:6px">
+      <div style="font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:#64748b;margin-bottom:6px">Mié</div>
+      <div style="font-size:22px;font-weight:800;color:#C9A84C">2</div>
+      <div style="font-size:9px;color:#475569;margin-top:2px">11.7t</div>
+    </div>
+    <div style="text-align:center;padding:12px 8px;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.2);border-radius:6px">
+      <div style="font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:#64748b;margin-bottom:6px">Jue</div>
+      <div style="font-size:22px;font-weight:800;color:#C9A84C">7</div>
+      <div style="font-size:9px;color:#475569;margin-top:2px">3.5t</div>
+    </div>
+    <div style="text-align:center;padding:12px 8px;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.2);border-radius:6px">
+      <div style="font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:#64748b;margin-bottom:6px">Vie</div>
+      <div style="font-size:22px;font-weight:800;color:#C9A84C">12</div>
+      <div style="font-size:9px;color:#475569;margin-top:2px">17.4t</div>
+    </div>
+    <div style="text-align:center;padding:12px 8px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:6px">
+      <div style="font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:#64748b;margin-bottom:6px">Sáb</div>
+      <div style="font-size:22px;font-weight:800;color:#334155">0</div>
+      <div style="font-size:9px;color:#475569;margin-top:2px">—</div>
+    </div>
+    <div style="text-align:center;padding:12px 8px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:6px">
+      <div style="font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:#64748b;margin-bottom:6px">Dom</div>
+      <div style="font-size:22px;font-weight:800;color:#334155">0</div>
+      <div style="font-size:9px;color:#475569;margin-top:2px">—</div>
+    </div>
+  </div>
+
+  
+  <table>
+    <thead><tr>
+      <th>Entrada</th>
+      <th>Proveedor</th>
+      <th>Fecha Llegada</th>
+      <th>Transportista</th>
+      <th>No. Pedido</th>
+      <th style="text-align:right">Peso Bruto</th>
+      <th style="text-align:center">Bultos</th>
+      <th style="text-align:center">Estado</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td class="mono gold-text" style="font-weight:700">972290</td>
+        <td style="font-size:10px;color:#94a3b8">PRV_2484</td>
+        <td style="white-space:nowrap;color:#64748b;font-size:10px">2026-03-16</td>
+        <td style="font-size:10px;color:#94a3b8">2</td>
+        <td class="mono" style="font-size:10px;color:#64748b">106943</td>
+        <td style="text-align:right;font-weight:600;color:#e2e8f0">24kg</td>
+        <td style="text-align:center;color:#94a3b8">1</td>
+        <td style="text-align:center"><span style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3)">OK</span></td>
+      </tr><tr>
+        <td class="mono gold-text" style="font-weight:700">972292</td>
+        <td style="font-size:10px;color:#94a3b8">PRV_2514</td>
+        <td style="white-space:nowrap;color:#64748b;font-size:10px">2026-03-16</td>
+        <td style="font-size:10px;color:#94a3b8">4110</td>
+        <td class="mono" style="font-size:10px;color:#64748b">106313</td>
+        <td style="text-align:right;font-weight:600;color:#e2e8f0">410kg</td>
+        <td style="text-align:center;color:#94a3b8">1</td>
+        <td style="text-align:center"><span style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3)">OK</span></td>
+      </tr><tr>
+        <td class="mono gold-text" style="font-weight:700">972293</td>
+        <td style="font-size:10px;color:#94a3b8">PRV_2678</td>
+        <td style="white-space:nowrap;color:#64748b;font-size:10px">2026-03-16</td>
+        <td style="font-size:10px;color:#94a3b8">TRANS_EXT_62</td>
+        <td class="mono" style="font-size:10px;color:#64748b">107060</td>
+        <td style="text-align:right;font-weight:600;color:#e2e8f0">339kg</td>
+        <td style="text-align:center;color:#94a3b8">1</td>
+        <td style="text-align:center"><span style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3)">OK</span></td>
+      </tr><tr>
+        <td class="mono gold-text" style="font-weight:700">972298</td>
+        <td style="font-size:10px;color:#94a3b8">PRV_1814</td>
+        <td style="white-space:nowrap;color:#64748b;font-size:10px">2026-03-16</td>
+        <td style="font-size:10px;color:#94a3b8">14</td>
+        <td class="mono" style="font-size:10px;color:#64748b">NO CHARGE SAMPLE</td>
+        <td style="text-align:right;font-weight:600;color:#e2e8f0">3.17t</td>
+        <td style="text-align:center;color:#94a3b8">2</td>
+        <td style="text-align:center"><span style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3)">OK</span></td>
+      </tr><tr>
+        <td class="mono gold-text" style="font-weight:700">972299</td>
+        <td style="font-size:10px;color:#94a3b8">PRV_1828</td>
+        <td style="white-space:nowrap;color:#64748b;font-size:10px">2026-03-16</td>
+        <td style="font-size:10px;color:#94a3b8">TRANS_EXT_37</td>
+        <td class="mono" style="font-size:10px;color:#64748b">106739</td>
+        <td style="text-align:right;font-weight:600;color:#e2e8f0">10.50t</td>
+        <td style="text-align:center;color:#94a3b8">6</td>
+        <td style="text-align:center"><span style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3)">OK</span></td>
+      </tr><tr>
+        <td class="mono gold-text" style="font-weight:700">972303</td>
+        <td style="font-size:10px;color:#94a3b8">PRV_2603</td>
+        <td style="white-space:nowrap;color:#64748b;font-size:10px">2026-03-16</td>
+        <td style="font-size:10px;color:#94a3b8">2</td>
+        <td class="mono" style="font-size:10px;color:#64748b">107788</td>
+        <td style="text-align:right;font-weight:600;color:#e2e8f0">30kg</td>
+        <td style="text-align:center;color:#94a3b8">1</td>
+        <td style="text-align:center"><span style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3)">OK</span></td>
+      </tr><tr>
+        <td class="mono gold-text" style="font-weight:700">972304</td>
+        <td style="font-size:10px;color:#94a3b8">PRV_2603</td>
+        <td style="white-space:nowrap;color:#64748b;font-size:10px">2026-03-16</td>
+        <td style="font-size:10px;color:#94a3b8">2</td>
+        <td class="mono" style="font-size:10px;color:#64748b">107739</td>
+        <td style="text-align:right;font-weight:600;color:#e2e8f0">9kg</td>
+        <td style="text-align:center;color:#94a3b8">1</td>
+        <td style="text-align:center"><span style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3)">OK</span></td>
+      </tr><tr>
+        <td class="mono gold-text" style="font-weight:700">972305</td>
+        <td style="font-size:10px;color:#94a3b8">PRV_2603</td>
+        <td style="white-space:nowrap;color:#64748b;font-size:10px">2026-03-16</td>
+        <td style="font-size:10px;color:#94a3b8">2</td>
+        <td class="mono" style="font-size:10px;color:#64748b">107739</td>
+        <td style="text-align:right;font-weight:600;color:#e2e8f0">1kg</td>
+        <td style="text-align:center;color:#94a3b8">1</td>
+        <td style="text-align:center"><span style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3)">OK</span></td>
+      </tr><tr>
+        <td class="mono gold-text" style="font-weight:700">972306</td>
+        <td style="font-size:10px;color:#94a3b8">PRV_2603</td>
+        <td style="white-space:nowrap;color:#64748b;font-size:10px">2026-03-16</td>
+        <td style="font-size:10px;color:#94a3b8">2</td>
+        <td class="mono" style="font-size:10px;color:#64748b">107739</td>
+        <td style="text-align:right;font-weight:600;color:#e2e8f0">7kg</td>
+        <td style="text-align:center;color:#94a3b8">1</td>
+        <td style="text-align:center"><span style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3)">OK</span></td>
+      </tr><tr>
+        <td class="mono gold-text" style="font-weight:700">972307</td>
+        <td style="font-size:10px;color:#94a3b8">PRV_2603</td>
+        <td style="white-space:nowrap;color:#64748b;font-size:10px">2026-03-16</td>
+        <td style="font-size:10px;color:#94a3b8">2</td>
+        <td class="mono" style="font-size:10px;color:#64748b">107739</td>
+        <td style="text-align:right;font-weight:600;color:#e2e8f0">1kg</td>
+        <td style="text-align:center;color:#94a3b8">1</td>
+        <td style="text-align:center"><span style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3)">OK</span></td>
+      </tr><tr>
+        <td class="mono gold-text" style="font-weight:700">972308</td>
+        <td style="font-size:10px;color:#94a3b8">PRV_1814</td>
+        <td style="white-space:nowrap;color:#64748b;font-size:10px">2026-03-16</td>
+        <td style="font-size:10px;color:#94a3b8">TRANS_EXT_46</td>
+        <td class="mono" style="font-size:10px;color:#64748b">106792</td>
+        <td style="text-align:right;font-weight:600;color:#e2e8f0">44.38t</td>
+        <td style="text-align:center;color:#94a3b8">28</td>
+        <td style="text-align:center"><span style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3)">OK</span></td>
+      </tr><tr>
+        <td class="mono gold-text" style="font-weight:700">972309</td>
+        <td style="font-size:10px;color:#94a3b8">PRV_2603</td>
+        <td style="white-space:nowrap;color:#64748b;font-size:10px">2026-03-17</td>
+        <td style="font-size:10px;color:#94a3b8">2</td>
+        <td class="mono" style="font-size:10px;color:#64748b">107788</td>
+        <td style="text-align:right;font-weight:600;color:#e2e8f0">2kg</td>
+        <td style="text-align:center;color:#94a3b8">1</td>
+        <td style="text-align:center"><span style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3)">OK</span></td>
+      </tr><tr>
+        <td class="mono gold-text" style="font-weight:700">972310</td>
+        <td style="font-size:10px;color:#94a3b8">PRV_2603</td>
+        <td style="white-space:nowrap;color:#64748b;font-size:10px">2026-03-17</td>
+        <td style="font-size:10px;color:#94a3b8">2</td>
+        <td class="mono" style="font-size:10px;color:#64748b">107739</td>
+        <td style="text-align:right;font-weight:600;color:#e2e8f0">7kg</td>
+        <td style="text-align:center;color:#94a3b8">1</td>
+        <td style="text-align:center"><span style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3)">OK</span></td>
+      </tr><tr>
+        <td class="mono gold-text" style="font-weight:700">972312</td>
+        <td style="font-size:10px;color:#94a3b8">PRV_2559</td>
+        <td style="white-space:nowrap;color:#64748b;font-size:10px">2026-03-17</td>
+        <td style="font-size:10px;color:#94a3b8">5</td>
+        <td class="mono" style="font-size:10px;color:#64748b">107977</td>
+        <td style="text-align:right;font-weight:600;color:#e2e8f0">312kg</td>
+        <td style="text-align:center;color:#94a3b8">1</td>
+        <td style="text-align:center"><span style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3)">OK</span></td>
+      </tr><tr>
+        <td class="mono gold-text" style="font-weight:700">972313</td>
+        <td style="font-size:10px;color:#94a3b8">DOTR</td>
+        <td style="white-space:nowrap;color:#64748b;font-size:10px">2026-03-17</td>
+        <td style="font-size:10px;color:#94a3b8">TRANS_EXT_11</td>
+        <td class="mono" style="font-size:10px;color:#64748b">9642331565</td>
+        <td style="text-align:right;font-weight:600;color:#e2e8f0">39kg</td>
+        <td style="text-align:center;color:#94a3b8">3</td>
+        <td style="text-align:center"><span style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(248,113,113,0.15);color:#f87171;border:1px solid rgba(248,113,113,0.3)">⚠ Dañada</span></td>
+      </tr><tr>
+        <td class="mono gold-text" style="font-weight:700">972314</td>
+        <td style="font-size:10px;color:#94a3b8">PRV_2042</td>
+        <td style="white-space:nowrap;color:#64748b;font-size:10px">2026-03-17</td>
+        <td style="font-size:10px;color:#94a3b8">TRANS_EXT_37</td>
+        <td class="mono" style="font-size:10px;color:#64748b">108251</td>
+        <td style="text-align:right;font-weight:600;color:#e2e8f0">4.57t</td>
+        <td style="text-align:center;color:#94a3b8">2</td>
+        <td style="text-align:center"><span style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3)">OK</span></td>
+      </tr><tr>
+        <td class="mono gold-text" style="font-weight:700">972315</td>
+        <td style="font-size:10px;color:#94a3b8">MONR</td>
+        <td style="white-space:nowrap;color:#64748b;font-size:10px">2026-03-17</td>
+        <td style="font-size:10px;color:#94a3b8">TRANS_EXT_86</td>
+        <td class="mono" style="font-size:10px;color:#64748b">105582,105527,104929,</td>
+        <td style="text-align:right;font-weight:600;color:#e2e8f0">2.80t</td>
+        <td style="text-align:center;color:#94a3b8">3</td>
+        <td style="text-align:center"><span style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(248,113,113,0.15);color:#f87171;border:1px solid rgba(248,113,113,0.3)">⚠ Dañada</span></td>
+      </tr><tr>
+        <td class="mono gold-text" style="font-weight:700">972316</td>
+        <td style="font-size:10px;color:#94a3b8">PRV_2640</td>
+        <td style="white-space:nowrap;color:#64748b;font-size:10px">2026-03-17</td>
+        <td style="font-size:10px;color:#94a3b8">TRANS_EXT_11</td>
+        <td class="mono" style="font-size:10px;color:#64748b">105670</td>
+        <td style="text-align:right;font-weight:600;color:#e2e8f0">145kg</td>
+        <td style="text-align:center;color:#94a3b8">1</td>
+        <td style="text-align:center"><span style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(248,113,113,0.15);color:#f87171;border:1px solid rgba(248,113,113,0.3)">⚠ Dañada</span></td>
+      </tr><tr>
+        <td class="mono gold-text" style="font-weight:700">972319</td>
+        <td style="font-size:10px;color:#94a3b8">PRV_887</td>
+        <td style="white-space:nowrap;color:#64748b;font-size:10px">2026-03-17</td>
+        <td style="font-size:10px;color:#94a3b8">2</td>
+        <td class="mono" style="font-size:10px;color:#64748b">108481</td>
+        <td style="text-align:right;font-weight:600;color:#e2e8f0">2kg</td>
+        <td style="text-align:center;color:#94a3b8">1</td>
+        <td style="text-align:center"><span style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3)">OK</span></td>
+      </tr><tr>
+        <td class="mono gold-text" style="font-weight:700">972320</td>
+        <td style="font-size:10px;color:#94a3b8">PRV_2304</td>
+        <td style="white-space:nowrap;color:#64748b;font-size:10px">2026-03-17</td>
+        <td style="font-size:10px;color:#94a3b8">2</td>
+        <td class="mono" style="font-size:10px;color:#64748b">108630</td>
+        <td style="text-align:right;font-weight:600;color:#e2e8f0">2kg</td>
+        <td style="text-align:center;color:#94a3b8">1</td>
+        <td style="text-align:center"><span style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3)">OK</span></td>
+      </tr><tr>
+        <td class="mono gold-text" style="font-weight:700">972324</td>
+        <td style="font-size:10px;color:#94a3b8">PRV_2647</td>
+        <td style="white-space:nowrap;color:#64748b;font-size:10px">2026-03-18</td>
+        <td style="font-size:10px;color:#94a3b8">6</td>
+        <td class="mono" style="font-size:10px;color:#64748b">107126</td>
+        <td style="text-align:right;font-weight:600;color:#e2e8f0">11.70t</td>
+        <td style="text-align:center;color:#94a3b8">7</td>
+        <td style="text-align:center"><span style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(248,113,113,0.15);color:#f87171;border:1px solid rgba(248,113,113,0.3)">⚠ Dañada</span></td>
+      </tr><tr>
+        <td class="mono gold-text" style="font-weight:700">972327</td>
+        <td style="font-size:10px;color:#94a3b8">PRV_2640</td>
+        <td style="white-space:nowrap;color:#64748b;font-size:10px">2026-03-18</td>
+        <td style="font-size:10px;color:#94a3b8">TRANS_EXT_11</td>
+        <td class="mono" style="font-size:10px;color:#64748b">7248824100</td>
+        <td style="text-align:right;font-weight:600;color:#e2e8f0">2kg</td>
+        <td style="text-align:center;color:#94a3b8">1</td>
+        <td style="text-align:center"><span style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3)">OK</span></td>
+      </tr><tr>
+        <td class="mono gold-text" style="font-weight:700">972343</td>
+        <td style="font-size:10px;color:#94a3b8">PRV_1275</td>
+        <td style="white-space:nowrap;color:#64748b;font-size:10px">2026-03-19</td>
+        <td style="font-size:10px;color:#94a3b8">2</td>
+        <td class="mono" style="font-size:10px;color:#64748b">106946</td>
+        <td style="text-align:right;font-weight:600;color:#e2e8f0">1kg</td>
+        <td style="text-align:center;color:#94a3b8">1</td>
+        <td style="text-align:center"><span style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3)">OK</span></td>
+      </tr><tr>
+        <td class="mono gold-text" style="font-weight:700">972332</td>
+        <td style="font-size:10px;color:#94a3b8">PRV_1865</td>
+        <td style="white-space:nowrap;color:#64748b;font-size:10px">2026-03-19</td>
+        <td style="font-size:10px;color:#94a3b8">TRANS_EXT_38</td>
+        <td class="mono" style="font-size:10px;color:#64748b">107179</td>
+        <td style="text-align:right;font-weight:600;color:#e2e8f0">1.73t</td>
+        <td style="text-align:center;color:#94a3b8">1</td>
+        <td style="text-align:center"><span style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3)">OK</span></td>
+      </tr><tr>
+        <td class="mono gold-text" style="font-weight:700">972337</td>
+        <td style="font-size:10px;color:#94a3b8">PRV_19</td>
+        <td style="white-space:nowrap;color:#64748b;font-size:10px">2026-03-19</td>
+        <td style="font-size:10px;color:#94a3b8">2</td>
+        <td class="mono" style="font-size:10px;color:#64748b">108668</td>
+        <td style="text-align:right;font-weight:600;color:#e2e8f0">13kg</td>
+        <td style="text-align:center;color:#94a3b8">1</td>
+        <td style="text-align:center"><span style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3)">OK</span></td>
+      </tr><tr>
+        <td class="mono gold-text" style="font-weight:700">972339</td>
+        <td style="font-size:10px;color:#94a3b8">PRV_2304</td>
+        <td style="white-space:nowrap;color:#64748b;font-size:10px">2026-03-19</td>
+        <td style="font-size:10px;color:#94a3b8">2</td>
+        <td class="mono" style="font-size:10px;color:#64748b">105523</td>
+        <td style="text-align:right;font-weight:600;color:#e2e8f0">13kg</td>
+        <td style="text-align:center;color:#94a3b8">1</td>
+        <td style="text-align:center"><span style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3)">OK</span></td>
+      </tr><tr>
+        <td class="mono gold-text" style="font-weight:700">972340</td>
+        <td style="font-size:10px;color:#94a3b8">PRV_2304</td>
+        <td style="white-space:nowrap;color:#64748b;font-size:10px">2026-03-19</td>
+        <td style="font-size:10px;color:#94a3b8">2</td>
+        <td class="mono" style="font-size:10px;color:#64748b">107137</td>
+        <td style="text-align:right;font-weight:600;color:#e2e8f0">10kg</td>
+        <td style="text-align:center;color:#94a3b8">1</td>
+        <td style="text-align:center"><span style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3)">OK</span></td>
+      </tr><tr>
+        <td class="mono gold-text" style="font-weight:700">972341</td>
+        <td style="font-size:10px;color:#94a3b8">PRV_782</td>
+        <td style="white-space:nowrap;color:#64748b;font-size:10px">2026-03-19</td>
+        <td style="font-size:10px;color:#94a3b8">TRANS_EXT_46</td>
+        <td class="mono" style="font-size:10px;color:#64748b">106911</td>
+        <td style="text-align:right;font-weight:600;color:#e2e8f0">715kg</td>
+        <td style="text-align:center;color:#94a3b8">1</td>
+        <td style="text-align:center"><span style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3)">OK</span></td>
+      </tr><tr>
+        <td class="mono gold-text" style="font-weight:700">972342</td>
+        <td style="font-size:10px;color:#94a3b8">PRV_782</td>
+        <td style="white-space:nowrap;color:#64748b;font-size:10px">2026-03-19</td>
+        <td style="font-size:10px;color:#94a3b8">TRANS_EXT_46</td>
+        <td class="mono" style="font-size:10px;color:#64748b">105015</td>
+        <td style="text-align:right;font-weight:600;color:#e2e8f0">1.04t</td>
+        <td style="text-align:center;color:#94a3b8">3</td>
+        <td style="text-align:center"><span style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3)">OK</span></td>
+      </tr><tr>
+        <td class="mono gold-text" style="font-weight:700">972352</td>
+        <td style="font-size:10px;color:#94a3b8">PRV_2712</td>
+        <td style="white-space:nowrap;color:#64748b;font-size:10px">2026-03-20</td>
+        <td style="font-size:10px;color:#94a3b8">3</td>
+        <td class="mono" style="font-size:10px;color:#64748b">104001</td>
+        <td style="text-align:right;font-weight:600;color:#e2e8f0">1kg</td>
+        <td style="text-align:center;color:#94a3b8">1</td>
+        <td style="text-align:center"><span style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3)">OK</span></td>
+      </tr><tr>
+        <td class="mono gold-text" style="font-weight:700">972357</td>
+        <td style="font-size:10px;color:#94a3b8">MONR</td>
+        <td style="white-space:nowrap;color:#64748b;font-size:10px">2026-03-20</td>
+        <td style="font-size:10px;color:#94a3b8">TRANS_EXT_86</td>
+        <td class="mono" style="font-size:10px;color:#64748b">105529</td>
+        <td style="text-align:right;font-weight:600;color:#e2e8f0">369kg</td>
+        <td style="text-align:center;color:#94a3b8">1</td>
+        <td style="text-align:center"><span style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3)">OK</span></td>
+      </tr><tr>
+        <td class="mono gold-text" style="font-weight:700">972344</td>
+        <td style="font-size:10px;color:#94a3b8">PRV_2603</td>
+        <td style="white-space:nowrap;color:#64748b;font-size:10px">2026-03-20</td>
+        <td style="font-size:10px;color:#94a3b8">2</td>
+        <td class="mono" style="font-size:10px;color:#64748b">108315</td>
+        <td style="text-align:right;font-weight:600;color:#e2e8f0">7kg</td>
+        <td style="text-align:center;color:#94a3b8">1</td>
+        <td style="text-align:center"><span style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3)">OK</span></td>
+      </tr><tr>
+        <td class="mono gold-text" style="font-weight:700">972345</td>
+        <td style="font-size:10px;color:#94a3b8">PRV_2603</td>
+        <td style="white-space:nowrap;color:#64748b;font-size:10px">2026-03-20</td>
+        <td style="font-size:10px;color:#94a3b8">2</td>
+        <td class="mono" style="font-size:10px;color:#64748b">108315</td>
+        <td style="text-align:right;font-weight:600;color:#e2e8f0">7kg</td>
+        <td style="text-align:center;color:#94a3b8">1</td>
+        <td style="text-align:center"><span style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3)">OK</span></td>
+      </tr><tr>
+        <td class="mono gold-text" style="font-weight:700">972346</td>
+        <td style="font-size:10px;color:#94a3b8">PRV_2603</td>
+        <td style="white-space:nowrap;color:#64748b;font-size:10px">2026-03-20</td>
+        <td style="font-size:10px;color:#94a3b8">2</td>
+        <td class="mono" style="font-size:10px;color:#64748b">108315</td>
+        <td style="text-align:right;font-weight:600;color:#e2e8f0">7kg</td>
+        <td style="text-align:center;color:#94a3b8">1</td>
+        <td style="text-align:center"><span style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3)">OK</span></td>
+      </tr><tr>
+        <td class="mono gold-text" style="font-weight:700">972347</td>
+        <td style="font-size:10px;color:#94a3b8">PRV_2603</td>
+        <td style="white-space:nowrap;color:#64748b;font-size:10px">2026-03-20</td>
+        <td style="font-size:10px;color:#94a3b8">2</td>
+        <td class="mono" style="font-size:10px;color:#64748b">108315</td>
+        <td style="text-align:right;font-weight:600;color:#e2e8f0">15kg</td>
+        <td style="text-align:center;color:#94a3b8">1</td>
+        <td style="text-align:center"><span style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3)">OK</span></td>
+      </tr><tr>
+        <td class="mono gold-text" style="font-weight:700">972348</td>
+        <td style="font-size:10px;color:#94a3b8">PRV_2603</td>
+        <td style="white-space:nowrap;color:#64748b;font-size:10px">2026-03-20</td>
+        <td style="font-size:10px;color:#94a3b8">2</td>
+        <td class="mono" style="font-size:10px;color:#64748b">108317</td>
+        <td style="text-align:right;font-weight:600;color:#e2e8f0">7kg</td>
+        <td style="text-align:center;color:#94a3b8">1</td>
+        <td style="text-align:center"><span style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3)">OK</span></td>
+      </tr><tr>
+        <td class="mono gold-text" style="font-weight:700">972349</td>
+        <td style="font-size:10px;color:#94a3b8">PRV_2678</td>
+        <td style="white-space:nowrap;color:#64748b;font-size:10px">2026-03-20</td>
+        <td style="font-size:10px;color:#94a3b8">TRANS_EXT_46</td>
+        <td class="mono" style="font-size:10px;color:#64748b">107069</td>
+        <td style="text-align:right;font-weight:600;color:#e2e8f0">6.79t</td>
+        <td style="text-align:center;color:#94a3b8">3</td>
+        <td style="text-align:center"><span style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3)">OK</span></td>
+      </tr><tr>
+        <td class="mono gold-text" style="font-weight:700">972350</td>
+        <td style="font-size:10px;color:#94a3b8">PRV_2042</td>
+        <td style="white-space:nowrap;color:#64748b;font-size:10px">2026-03-20</td>
+        <td style="font-size:10px;color:#94a3b8">TRANS_EXT_38</td>
+        <td class="mono" style="font-size:10px;color:#64748b">VARIOS PO 106162,107517</td>
+        <td style="text-align:right;font-weight:600;color:#e2e8f0">3.30t</td>
+        <td style="text-align:center;color:#94a3b8">3</td>
+        <td style="text-align:center"><span style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3)">OK</span></td>
+      </tr><tr>
+        <td class="mono gold-text" style="font-weight:700">972351</td>
+        <td style="font-size:10px;color:#94a3b8">PRV_2647</td>
+        <td style="white-space:nowrap;color:#64748b;font-size:10px">2026-03-20</td>
+        <td style="font-size:10px;color:#94a3b8">6</td>
+        <td class="mono" style="font-size:10px;color:#64748b">106222</td>
+        <td style="text-align:right;font-weight:600;color:#e2e8f0">5.31t</td>
+        <td style="text-align:center;color:#94a3b8">3</td>
+        <td style="text-align:center"><span style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3)">OK</span></td>
+      </tr><tr>
+        <td class="mono gold-text" style="font-weight:700">972355</td>
+        <td style="font-size:10px;color:#94a3b8">PRV_1889</td>
+        <td style="white-space:nowrap;color:#64748b;font-size:10px">2026-03-20</td>
+        <td style="font-size:10px;color:#94a3b8">108</td>
+        <td class="mono" style="font-size:10px;color:#64748b">103203</td>
+        <td style="text-align:right;font-weight:600;color:#e2e8f0">645kg</td>
+        <td style="text-align:center;color:#94a3b8">2</td>
+        <td style="text-align:center"><span style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(248,113,113,0.15);color:#f87171;border:1px solid rgba(248,113,113,0.3)">⚠ Dañada</span></td>
+      </tr><tr>
+        <td class="mono gold-text" style="font-weight:700">972356</td>
+        <td style="font-size:10px;color:#94a3b8">PRV_2647</td>
+        <td style="white-space:nowrap;color:#64748b;font-size:10px">2026-03-20</td>
+        <td style="font-size:10px;color:#94a3b8">TRANS_EXT_86</td>
+        <td class="mono" style="font-size:10px;color:#64748b">106185</td>
+        <td style="text-align:right;font-weight:600;color:#e2e8f0">902kg</td>
+        <td style="text-align:center;color:#94a3b8">1</td>
+        <td style="text-align:center"><span style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3)">OK</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ═══════ SECTION V: FRACCIONES ARANCELARIAS ═══════ -->
+<div class="section-title">V. Fracciones Arancelarias</div>
+
+<div class="card">
+  <div class="ch">Clasificaciones Utilizadas esta Semana · 0 fracciones únicas</div>
+  <div style="text-align:center;padding:20px;color:#475569">Sin fracciones registradas esta semana</div>
+</div>
+
+</div><!-- /body -->
+
+<!-- ═══════ FOOTER ═══════ -->
+<div class="footer">
+  <div>
+    <strong style="color:#C9A84C">Grupo Aduanal Renato Zapata S.C.</strong> · Laredo, TX · Uso Confidencial
+  </div>
+  <div style="text-align:center">
+    Sistema de Inteligencia: <strong style="color:#C9A84C">Zapata AI Platform</strong>
+  </div>
+  <div style="text-align:right">
+    <a href="https://evco-portal.vercel.app">evco-portal.vercel.app</a> · EVCO PLASTICS DE MEXICO S. DE R.L. DE C.V. · RFC EPM001109I74
+  </div>
+</div>
+
+</body>
+</html>

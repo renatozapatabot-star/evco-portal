@@ -10,17 +10,33 @@ const supabase = createClient(
 )
 
 // ── CLIENT CONFIG ─────────────────────────────────────────
-// Pass as args: node onboard-client.js "Client Name" rfc clave company_id
+// Pass as args: node onboard-client.js [--dry-run] "Client Name" rfc clave company_id
 // Example: node onboard-client.js "Duratech Industries" DUR001234567 1234 duratech
+// Dry run: node onboard-client.js --dry-run "Duratech Industries" DUR001234567 1234 duratech
 
-const CLIENT_NAME  = process.argv[2]
-const CLIENT_RFC   = process.argv[3]
-const CLIENT_CLAVE = process.argv[4]
-const COMPANY_ID   = process.argv[5]
+const args = process.argv.slice(2)
+const dryRun = args.includes('--dry-run')
+const cleanArgs = args.filter(a => !a.startsWith('--'))
+
+const CLIENT_NAME  = cleanArgs[0]
+const CLIENT_RFC   = cleanArgs[1]
+const CLIENT_CLAVE = cleanArgs[2]
+const COMPANY_ID   = cleanArgs[3]
 
 if (!CLIENT_NAME || !CLIENT_RFC || !CLIENT_CLAVE || !COMPANY_ID) {
-  console.log('Usage: node scripts/onboard-client.js "Client Name" RFC CLAVE company_id')
-  console.log('Example: node scripts/onboard-client.js "Duratech Industries" DUR001234567 1234 duratech')
+  console.log('Usage: node scripts/onboard-client.js [--dry-run] "COMPANY NAME" RFC CLAVE company_id')
+  console.log('Example: node scripts/onboard-client.js "MAFESA" RFC001 0001 mafesa')
+  console.log('Dry run: node scripts/onboard-client.js --dry-run "MAFESA" RFC001 0001 mafesa')
+  process.exit(1)
+}
+
+if (dryRun) {
+  console.log('DRY RUN MODE — no changes will be made')
+  console.log('Would onboard:', CLIENT_NAME)
+  console.log('RFC:', CLIENT_RFC)
+  console.log('Clave:', CLIENT_CLAVE)
+  console.log('Company ID:', COMPANY_ID)
+  console.log('Would deploy to: https://' + COMPANY_ID + '-portal.vercel.app')
   process.exit(0)
 }
 

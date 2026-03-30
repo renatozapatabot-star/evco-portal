@@ -66,9 +66,9 @@ export function CotizacionView() {
       <div style={{ display: 'grid', gridTemplateColumns: '55% 45%', gap: 24 }}>
         {/* Form */}
         <div className="card" style={{ padding: 24 }}>
-          <div style={{ color: 'var(--amber-700)', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 24 }}>Parametros del Embarque</div>
+          <div style={{ color: 'var(--amber-700)', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 24 }}>Parámetros del Embarque</div>
 
-          <Field label="Valor de la Mercancia (USD)">
+          <Field label="Valor de la Mercancía (USD)">
             <input type="number" value={form.valor_usd} onChange={e => set('valor_usd', e.target.value)} placeholder="50000.00" style={inputStyle}
               onFocus={e => e.target.style.borderColor = 'var(--amber-600)'} onBlur={e => e.target.style.borderColor = 'var(--border-primary)'} />
           </Field>
@@ -94,7 +94,7 @@ export function CotizacionView() {
                 {['EXW','FOB','FCA','CPT','CIP','DAP','DDP','CFR','CIF'].map(i => <option key={i} value={i}>{i}</option>)}
               </select>
             </Field>
-            <Field label="Regimen">
+            <Field label="Régimen">
               <select value={form.regimen} onChange={e => set('regimen', e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }}>
                 <option value="A1">A1 — Definitiva</option><option value="IN">IN — IMMEX</option>
               </select>
@@ -135,20 +135,28 @@ export function CotizacionView() {
               <Row label="TOTAL CONTRIBUCIONES" value={fmtMXN(result.total)} bold highlight />
 
               {result.tmecSavings > 0 && (
-                <div style={{ marginTop: 16, padding: 16, borderRadius: 8, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)' }}>
-                  <div style={{ color: 'var(--status-green)', fontSize: 14, fontWeight: 600 }}>Ahorro T-MEC: {fmtMXN(result.tmecSavings)}</div>
+                <div style={{ marginTop: 16, padding: '14px 16px', background: 'var(--green-bg, rgba(22,163,74,0.08))', border: '1px solid var(--green-border, rgba(22,163,74,0.2))', borderRadius: 'var(--r-md, 8px)' }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--green, #16A34A)', marginBottom: 6 }}>
+                    T-MEC / USMCA Aplicable
+                  </div>
+                  <div className="mono" style={{ fontSize: 28, fontWeight: 700, color: 'var(--green, #16A34A)' }}>
+                    {fmtMXN(result.tmecSavings)}
+                  </div>
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
+                    ahorro vs arancel general {result.igiRate.toFixed(1)}%
+                  </div>
                 </div>
               )}
 
               <button onClick={() => {
-                const text = `COTIZACION ADUANAL\nValor: ${fmtUSD(result.valorUSD)} USD\nValor Aduana: ${fmtMXN(result.valorAduanaMXN)} MXN\nDTA: ${fmtMXN(result.dta)}\nIGI: ${result.igi === 0 ? 'T-MEC $0' : fmtMXN(result.igi)}\nIVA: ${fmtMXN(result.iva)}\nTOTAL: ${fmtMXN(result.total)}\n\nRenato Zapata III — Patente 3596`
+                const text = `COTIZACIÓN ADUANAL\nValor: ${fmtUSD(result.valorUSD)} USD\nValor Aduana: ${fmtMXN(result.valorAduanaMXN)} MXN\nDTA: ${fmtMXN(result.dta)}\nIGI: ${result.igi === 0 ? 'T-MEC $0' : fmtMXN(result.igi)}\nIVA: ${fmtMXN(result.iva)}\nTOTAL: ${fmtMXN(result.total)}\n\nRenato Zapata III — Patente 3596`
                 const blob = new Blob([text], { type: 'text/plain' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `evco_cotizacion_${new Date().toISOString().split('T')[0]}.txt`; a.click()
               }} style={{ width: '100%', height: 48, marginTop: 24, background: 'var(--amber-600)', border: 'none', borderRadius: 8, color: '#000', fontSize: 16, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
                 Generar Cotización
               </button>
 
               <div style={{ marginTop: 16, fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.6, textAlign: 'center' }}>
-                Estimado sujeto a verificacion &middot; Renato Zapata III — Patente 3596
+                Estimado sujeto a verificación &middot; Renato Zapata III — Patente 3596
               </div>
             </>
           )}

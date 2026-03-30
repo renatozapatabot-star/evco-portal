@@ -1,0 +1,184 @@
+import { createClient } from '@supabase/supabase-js'
+import { cookies } from 'next/headers'
+import { redirect } from 'next/navigation'
+import { GOLD } from '@/lib/design-system'
+
+export const dynamic = 'force-dynamic'
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
+
+const SOURCES = [
+  { key: 'globalpc_delta', label: 'GlobalPC Delta', interval: '15 min', icon: '⚡' },
+  { key: 'aduanet', label: 'Aduanet Pedimentos', interval: '30 min', icon: '📋' },
+  { key: 'soia', label: 'SOIA / Puentes', interval: '15 min', icon: '🚦' },
+  { key: 'nightly', label: 'Nightly Pipeline', interval: '1 AM daily', icon: '🌙' },
+]
+
+export default async function OperacionesPage() {
+  const cookieStore = await cookies()
+  const role = cookieStore.get('user_role')?.value
+  if (role !== 'admin') redirect('/login')
+
+  // Get last runs per source
+  const sourceData = await Promise.all(
+    SOURCES.map(async (src) => {
+      const { data } = await supabase
+        .from('scrape_runs')
+        .select('started_at, completed_at, status, records_found, records_new, error_message')
+        .eq('source', src.key)
+        .order('started_at', { ascending: false })
+        .limit(5)
+
+      const last = data?.[0]
+      const minutesAgo = last?.completed_at
+        ? Math.round((Date.now() - new Date(last.completed_at).getTime()) / 60000)
+        : null
+
+      const last24h = (data || []).filter(r => {
+        const t = new Date(r.started_at).getTime()
+        return t > Date.now() - 24 * 3600000
+      })
+      const totalNew24h = last24h.reduce((s, r) => s + (r.records_new || 0), 0)
+      const runs24h = last24h.length
+
+      return { ...src, last, minutesAgo, runs24h, totalNew24h, recentRuns: data || [] }
+    })
+  )
+
+  // Recent status changes
+  const twoHoursAgo = new Date(Date.now() - 2 * 3600000).toISOString()
+  const { data: recentChanges } = await supabase
+    .from('traficos')
+    .select('trafico, estatus, updated_at, company_id')
+    .gte('updated_at', twoHoursAgo)
+    .order('updated_at', { ascending: false })
+    .limit(20)
+
+  const allHealthy = sourceData.every(s => !s.last || s.last.status === 'success')
+  const now = new Date().toLocaleString('es-MX', { timeZone: 'America/Chicago', hour: '2-digit', minute: '2-digit' })
+
+  const statusColor = (status: string | undefined) => {
+    if (!status) return '#666'
+    if (status === 'success') return '#16A34A'
+    if (status === 'running') return '#D97706'
+    return '#DC2626'
+  }
+
+  return (
+    <div style={{ padding: '24px 28px', fontFamily: "'DM Sans', sans-serif", color: '#E8E6E0' }}>
+      <div style={{ marginBottom: 24 }}>
+        <h1 style={{ fontSize: 22, fontWeight: 800, margin: 0 }}>Operaciones Autónomas</h1>
+        <p style={{ color: '#666', fontSize: 13, margin: '4px 0 0' }}>
+          CRUZ se observa solo &middot; {now} CST &middot;
+          <span style={{ color: allHealthy ? '#16A34A' : '#DC2626', fontWeight: 700, marginLeft: 6 }}>
+            {allHealthy ? 'Todos los flujos activos' : 'Requiere atención'}
+          </span>
+        </p>
+      </div>
+
+      {/* Source Cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 24 }}>
+        {sourceData.map(src => (
+          <div key={src.key} style={{
+            background: '#161616', border: '1px solid #2A2A2A', borderRadius: 12,
+            padding: 16, borderTop: `3px solid ${statusColor(src.last?.status)}`
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <span style={{ fontSize: 20 }}>{src.icon}</span>
+              <span style={{
+                width: 8, height: 8, borderRadius: '50%',
+                background: statusColor(src.last?.status)
+              }} />
+            </div>
+            <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>{src.label}</div>
+            <div style={{ fontSize: 11, color: '#666', marginBottom: 12 }}>Cada {src.interval}</div>
+
+            <div style={{ fontSize: 24, fontWeight: 800, color: GOLD }}>
+              {src.totalNew24h.toLocaleString()}
+              <span style={{ fontSize: 11, fontWeight: 400, color: '#666', marginLeft: 4 }}>nuevos 24h</span>
+            </div>
+
+            <div style={{ fontSize: 11, color: '#9C9690', marginTop: 8 }}>
+              {src.minutesAgo !== null ? (
+                src.minutesAgo < 60
+                  ? `Hace ${src.minutesAgo}m`
+                  : `Hace ${Math.round(src.minutesAgo / 60)}h`
+              ) : 'Sin datos'}
+              {src.runs24h > 0 && ` · ${src.runs24h} runs`}
+            </div>
+
+            {src.last?.error_message && (
+              <div style={{ fontSize: 11, color: '#DC2626', marginTop: 4, lineHeight: 1.3 }}>
+                {src.last.error_message.substring(0, 60)}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Recent Activity Feed */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+        <div style={{ background: '#161616', border: '1px solid #2A2A2A', borderRadius: 12, overflow: 'hidden' }}>
+          <div style={{ padding: '14px 16px', borderBottom: '1px solid #2A2A2A' }}>
+            <h2 style={{ fontSize: 14, fontWeight: 700, margin: 0, color: '#9C9690', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              Últimas Ejecuciones
+            </h2>
+          </div>
+          <div style={{ maxHeight: 400, overflowY: 'auto' }}>
+            {sourceData.flatMap(s => s.recentRuns.map(r => ({ ...r, sourceLabel: s.label, sourceIcon: s.icon })))
+              .sort((a, b) => new Date(b.started_at).getTime() - new Date(a.started_at).getTime())
+              .slice(0, 15)
+              .map((r, i) => (
+                <div key={i} style={{ padding: '10px 16px', borderBottom: '1px solid #2A2A2A', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <span style={{ marginRight: 6 }}>{r.sourceIcon}</span>
+                    <span style={{ fontSize: 13, fontWeight: 600 }}>{r.sourceLabel}</span>
+                    <span style={{ fontSize: 11, color: '#666', marginLeft: 8 }}>
+                      {r.records_new > 0 ? `+${r.records_new} nuevos` : 'sin cambios'}
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: statusColor(r.status) }} />
+                    <span style={{ fontSize: 11, color: '#666' }}>
+                      {new Date(r.started_at).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </div>
+                </div>
+              ))}
+          </div>
+        </div>
+
+        <div style={{ background: '#161616', border: '1px solid #2A2A2A', borderRadius: 12, overflow: 'hidden' }}>
+          <div style={{ padding: '14px 16px', borderBottom: '1px solid #2A2A2A' }}>
+            <h2 style={{ fontSize: 14, fontWeight: 700, margin: 0, color: '#9C9690', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              Cambios de Estado (2h)
+            </h2>
+          </div>
+          <div style={{ maxHeight: 400, overflowY: 'auto' }}>
+            {(recentChanges || []).length === 0 && (
+              <div style={{ padding: 24, textAlign: 'center', color: '#666', fontSize: 13 }}>
+                Sin cambios en las últimas 2 horas
+              </div>
+            )}
+            {(recentChanges || []).map((c, i) => (
+              <div key={i} style={{ padding: '10px 16px', borderBottom: '1px solid #2A2A2A', display: 'flex', justifyContent: 'space-between' }}>
+                <div>
+                  <span style={{ fontSize: 13, fontWeight: 600, fontFamily: 'monospace' }}>{c.trafico}</span>
+                  <span style={{ fontSize: 12, marginLeft: 8,
+                    color: c.estatus === 'Cruzado' ? '#16A34A' : c.estatus === 'Detenido' ? '#DC2626' : '#D97706'
+                  }}>{c.estatus}</span>
+                </div>
+                <span style={{ fontSize: 11, color: '#666' }}>
+                  {new Date(c.updated_at).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}

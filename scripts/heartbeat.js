@@ -149,22 +149,6 @@ async function runHeartbeat() {
     console.log(`⚠️  ${issues.length} issue(s) — alert sent`)
   } else {
     console.log('✅ All systems healthy — no alert needed')
-
-    // Send daily healthy summary at 7AM only
-    const hour = new Date().toLocaleString('en-US', {
-      timeZone: 'America/Chicago', hour: 'numeric', hour12: false
-    })
-    if (parseInt(hour) === 7) {
-      await sendTelegram([
-        `💓 <b>CRUZ HEARTBEAT — OK</b>`,
-        `${nowCST()}`,
-        `✅ Supabase: ${sbCheck.message}`,
-        `✅ Portal: ${portalCheck.message}`,
-        `✅ Morning Report: ${mrCheck.message}`,
-        `${globalpcConfigured ? '✅' : '⏳'} GlobalPC: ${state.globalpc.status}`,
-        `— CRUZ 🦀`
-      ].join('\n'))
-    }
   }
 }
 

@@ -1,20 +1,39 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Search, ChevronLeft, ChevronRight } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { Search, ChevronLeft, ChevronRight, Package } from 'lucide-react'
 import { CLIENT_NAME, CLIENT_CLAVE } from '@/lib/client-config'
 import { fmtDesc, fmtDate } from '@/lib/format-utils'
 import Link from 'next/link'
 
 interface EntradaRow {
+  id: number
   cve_entrada: string
+  cve_embarque?: number | null
+  cve_cliente?: string | null
+  cve_proveedor?: string | null
   trafico?: string | null
   fecha_llegada_mercancia?: string | null
   descripcion_mercancia?: string | null
   cantidad_bultos?: number | null
   peso_bruto?: number | null
+  peso_neto?: number | null
+  tipo_operacion?: string | null
+  tipo_carga?: string | null
+  transportista_americano?: string | null
+  transportista_mexicano?: string | null
+  recibido_por?: string | null
   mercancia_danada?: boolean | null
   tiene_faltantes?: boolean | null
+  recibio_facturas?: boolean | null
+  recibio_packing_list?: boolean | null
+  num_pedido?: string | null
+  num_talon?: string | null
+  num_caja_trailer?: string | null
+  comentarios_faltantes?: string | null
+  comentarios_danada?: string | null
+  comentarios_generales?: string | null
   [key: string]: unknown
 }
 
@@ -26,6 +45,7 @@ const fmtTrafico = (id: string) => {
 }
 
 export default function EntradasPage() {
+  const router = useRouter()
   const [rows, setRows] = useState<EntradaRow[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -66,7 +86,7 @@ export default function EntradasPage() {
     <div className="p-6">
       <div className="flex items-start justify-between mb-4">
         <div>
-          <h1 className="text-[18px] font-semibold" style={{ color: 'var(--text-primary)' }}>Entradas</h1>
+          <h1 className="page-title">Entradas</h1>
           <p className="text-[12.5px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
             {rows.length.toLocaleString()} remesas &middot; {CLIENT_NAME} {CLIENT_CLAVE}
           </p>
@@ -138,13 +158,16 @@ export default function EntradasPage() {
               ))}
               {!loading && paged.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="text-center py-12 text-[13px]" style={{ color: 'var(--text-muted)' }}>
-                    No se encontraron resultados
+                  <td colSpan={7} style={{ textAlign: 'center', padding: '60px 20px' }}>
+                    <Package size={32} strokeWidth={1.5} style={{ color: 'var(--n-300)', margin: '0 auto 12px' }} />
+                    <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--n-700)', marginBottom: 4 }}>Sin entradas registradas</div>
+                    <div style={{ fontSize: 13, color: 'var(--n-400)' }}>Los registros aparecerán aquí</div>
                   </td>
                 </tr>
               )}
               {paged.map((r) => (
-                <tr key={r.cve_entrada} className={r.mercancia_danada || r.tiene_faltantes ? 'row-red' : ''}>
+                <tr key={r.cve_entrada} className={r.mercancia_danada || r.tiene_faltantes ? 'row-critical' : 'row-healthy'}
+                  onClick={() => router.push(`/entradas/${r.cve_entrada}`)} style={{ cursor: 'pointer' }}>
                   <td>
                     <span className="mono text-[12.5px] font-medium" style={{ color: 'var(--text-primary)' }}>
                       {r.cve_entrada}
@@ -152,11 +175,13 @@ export default function EntradasPage() {
                   </td>
                   <td>
                     {r.trafico ? (
-                      <Link href="/traficos" className="trafico-pill">
+                      <Link href="/traficos" className="mono text-[12.5px] font-semibold"
+                        style={{ color: '#1A6BFF', textDecoration: 'none' }}
+                        onClick={e => e.stopPropagation()}>
                         {fmtTrafico(r.trafico)}
                       </Link>
                     ) : (
-                      <span style={{ color: 'var(--text-disabled)' }}>-</span>
+                      <span className="c-empty">&middot;</span>
                     )}
                   </td>
                   <td className="text-[12px]" style={{ color: 'var(--text-secondary)' }}>
@@ -214,6 +239,7 @@ export default function EntradasPage() {
           </div>
         </div>
       )}
+
     </div>
   )
 }

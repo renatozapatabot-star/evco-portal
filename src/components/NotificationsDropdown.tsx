@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { Bell } from 'lucide-react'
+import { GOLD } from '@/lib/design-system'
 
 type Notif = { id: string; type: string; title: string; sub: string; time: string; read: boolean; color: string }
 
@@ -51,7 +52,7 @@ export function NotificationsDropdown() {
         const igiAlerts = fact.filter((f: any) => (f.igi || 0) > 0).slice(0, 3)
         igiAlerts.forEach((f: any) => notifs.push({
           id: `igi-${f.referencia}`, type: 'info', title: `IGI pagado: ${f.referencia}`,
-          sub: `$${Number(f.igi || 0).toLocaleString('es-MX')} MXN — verificar T-MEC`, time: f.fecha_pago || '', read: false, color: '#C9A84C',
+          sub: `$${Number(f.igi || 0).toLocaleString('es-MX')} MXN — verificar T-MEC`, time: f.fecha_pago || '', read: false, color: GOLD,
         }))
 
         // En Proceso > 7 days
@@ -103,10 +104,10 @@ export function NotificationsDropdown() {
 
       {open && (
         <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: 8, width: 360,
-          background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 10,
-          boxShadow: '0 8px 32px rgba(0,0,0,0.15)', zIndex: 1000, overflow: 'hidden', maxHeight: 440 }}>
+          background: 'var(--bg-card)', border: '1px solid var(--border-primary)', borderRadius: 10,
+          boxShadow: 'var(--shadow-lg)', zIndex: 1000, overflow: 'hidden', maxHeight: 440 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 14px',
-            borderBottom: '1px solid var(--border)' }}>
+            borderBottom: '1px solid var(--border-primary)' }}>
             <span style={{ color: 'var(--text-primary)', fontSize: 13, fontWeight: 700 }}>Notificaciones</span>
             {unread > 0 && (
               <button onClick={markAllRead}
@@ -120,7 +121,7 @@ export function NotificationsDropdown() {
               <div style={{ padding: '32px 14px', textAlign: 'center', color: 'var(--text-muted)', fontSize: 12 }}>Sin notificaciones</div>
             ) : items.map(n => (
               <div key={n.id} style={{ display: 'flex', gap: 10, padding: '10px 14px',
-                borderBottom: '1px solid var(--border-soft)', background: n.read ? 'transparent' : 'rgba(201,168,76,0.04)',
+                borderBottom: '1px solid var(--border-light)', background: n.read ? 'transparent' : 'rgba(201,168,76,0.04)',
                 cursor: 'pointer' }}>
                 <span style={{ width: 8, height: 8, borderRadius: '50%', background: n.color, marginTop: 5, flexShrink: 0 }} />
                 <div style={{ flex: 1, minWidth: 0 }}>

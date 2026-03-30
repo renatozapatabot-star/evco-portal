@@ -6,8 +6,8 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-const COMPANY_ID = 'evco'
-const CLAVE = '9254'
+import { CLIENT_CLAVE, COMPANY_ID } from '@/lib/client-config'
+const CLAVE = CLIENT_CLAVE
 
 export async function GET(request: NextRequest) {
   const q = request.nextUrl.searchParams.get('q')?.trim()
@@ -36,17 +36,17 @@ export async function GET(request: NextRequest) {
   const results = [
     ...(trafRes.data || []).map(t => ({
       type: 'trafico', id: t.trafico, title: t.trafico,
-      sub: `${t.estatus} · ${t.descripcion_mercancia?.substring(0, 40) || '—'}`,
+      sub: `${t.estatus} · ${t.descripcion_mercancia?.substring(0, 40) || ''}`,
       date: t.fecha_llegada, view: 'traficos',
     })),
     ...(entRes.data || []).map(e => ({
       type: 'entrada', id: e.cve_entrada, title: e.cve_entrada,
-      sub: e.descripcion_mercancia?.substring(0, 50) || '—',
+      sub: e.descripcion_mercancia?.substring(0, 50) || '',
       date: e.fecha_llegada_mercancia, view: 'entradas',
     })),
     ...(factRes.data || []).map(f => ({
-      type: 'factura', id: f.referencia || f.pedimento, title: f.pedimento || f.referencia || '—',
-      sub: `${f.proveedor?.substring(0, 35) || '—'} · $${Number(f.valor_usd || 0).toLocaleString('en-US', { maximumFractionDigits: 0 })}`,
+      type: 'factura', id: f.referencia || f.pedimento, title: f.pedimento || f.referencia || '',
+      sub: `${f.proveedor?.substring(0, 35) || ''} · $${Number(f.valor_usd || 0).toLocaleString('en-US', { maximumFractionDigits: 0 })}`,
       date: f.fecha_pago, view: 'pedimentos',
     })),
   ]

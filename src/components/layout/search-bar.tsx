@@ -4,9 +4,9 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 
 const T = {
-  surface: '#FFFFFF', border: '#E8E6E0', surfaceAlt: '#F5F3EF',
-  text: '#1A1A1A', textSub: '#6B6B6B', textMuted: '#999999',
-  navy: '#BA7517', shadow: '0 4px 12px rgba(0,0,0,0.08)',
+  surface: 'var(--bg-card)', border: 'var(--border-primary)', surfaceAlt: 'var(--bg-elevated)',
+  text: 'var(--text-primary)', textSub: 'var(--text-secondary)', textMuted: 'var(--text-muted)',
+  navy: 'var(--amber-600)', shadow: 'var(--shadow-lg)',
 }
 
 const TYPE_ICONS: Record<string, string> = {

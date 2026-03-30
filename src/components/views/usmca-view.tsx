@@ -115,7 +115,7 @@ export function USMCAView() {
               <span style={{ fontSize: 18 }}>{cert.qualifies ? '✅' : '⚠️'}</span>
               <div><div style={{ color: cert.qualifies ? T.green : '#991B1B', fontSize: 13, fontWeight: 700 }}>{cert.qualifies ? 'QUALIFIES FOR USMCA' : 'REVIEW REQUIRED'}</div><div style={{ color: cert.qualifies ? T.green : '#991B1B', fontSize: 11, marginTop: 2 }}>{cert.assessment}</div></div>
             </div>
-            {[{ label: 'Exporter', value: form.exporter_name || '—' }, { label: 'Importer', value: form.importer_name }, { label: 'HS Code', value: form.hs_code }, { label: 'Criterion', value: form.origin_criterion }, { label: 'Coverage', value: `${form.blanket_from} to ${form.blanket_to}` }].map(f => (
+            {[{ label: 'Exporter', value: form.exporter_name || '' }, { label: 'Importer', value: form.importer_name }, { label: 'HS Code', value: form.hs_code }, { label: 'Criterion', value: form.origin_criterion }, { label: 'Coverage', value: `${form.blanket_from} to ${form.blanket_to}` }].map(f => (
               <div key={f.label} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: `1px solid ${T.border}` }}>
                 <span style={{ color: T.textMuted, fontSize: 12 }}>{f.label}</span><span style={{ color: T.text, fontSize: 12, fontWeight: 500 }}>{f.value}</span>
               </div>

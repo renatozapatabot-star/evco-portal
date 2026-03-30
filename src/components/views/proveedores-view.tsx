@@ -9,6 +9,8 @@ const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env
 const FLAGS: Record<string, string> = { USA: '🇺🇸', MX: '🇲🇽', CA: '🇨🇦', MEX: '🇲🇽', CAN: '🇨🇦', DEU: '🇩🇪', CHN: '🇨🇳', JPN: '🇯🇵', TWN: '🇹🇼', KOR: '🇰🇷', THA: '🇹🇭', VNM: '🇻🇳', ITA: '🇮🇹', BEL: '🇧🇪', AUS: '🇦🇺', CHE: '🇨🇭', IND: '🇮🇳', MYS: '🇲🇾' }
 const flag = (c: string | null) => FLAGS[(c || '').toUpperCase()] || '🌐'
 
+type ViewTab = 'proveedores' | 'productos'
+
 export function ProveedoresView() {
   const [suppliers, setSuppliers] = useState<any[]>([])
   const [selected, setSelected] = useState<any>(null)
@@ -16,6 +18,22 @@ export function ProveedoresView() {
   const [form, setForm] = useState<any>({})
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [viewTab, setViewTab] = useState<ViewTab>('proveedores')
+  const [products, setProducts] = useState<any[]>([])
+  const [productsLoading, setProductsLoading] = useState(false)
+  const [networkMap, setNetworkMap] = useState<Map<string, any>>(new Map())
+
+  useEffect(() => {
+    supabase.from('supplier_network').select('supplier_name, supplier_name_normalized, reliability_score, tmec_eligible, incident_rate, total_operations')
+      .then(({ data }) => {
+        const map = new Map<string, any>()
+        ;(data || []).forEach(s => {
+          map.set((s.supplier_name || '').toLowerCase().trim(), s)
+          if (s.supplier_name_normalized) map.set(s.supplier_name_normalized.toLowerCase().trim(), s)
+        })
+        setNetworkMap(map)
+      })
+  }, [])
 
   async function load() {
     const { data } = await supabase.from('supplier_contacts').select('*').eq('company_id', 'evco').order('proveedor', { ascending: true })
@@ -31,6 +49,16 @@ export function ProveedoresView() {
   }
   useEffect(() => { load() }, [])
 
+  useEffect(() => {
+    if (viewTab === 'productos' && products.length === 0) {
+      setProductsLoading(true)
+      fetch('/api/data?table=product_intelligence&company_id=evco&limit=200&order_by=total_value_usd&order_dir=desc')
+        .then(r => r.json())
+        .then(d => { setProducts(d.data ?? []); setProductsLoading(false) })
+        .catch(() => setProductsLoading(false))
+    }
+  }, [viewTab, products.length])
+
   async function save() {
     setSaving(true)
     const { error } = await supabase.from('supplier_contacts').upsert({ ...form, company_id: 'evco', updated_at: new Date().toISOString() }, { onConflict: 'id' })
@@ -44,8 +72,21 @@ export function ProveedoresView() {
     { key: 'proveedor', label: 'Proveedor', render: (r: any) => <span style={{ fontWeight: 500, color: 'var(--text-primary)', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>{r.proveedor}</span> },
     { key: 'country', label: 'Pais', render: (r: any) => <span>{flag(r.country)} {r.country || 'USA'}</span> },
     { key: 'contact', label: 'Contacto', sortable: false, render: (r: any) => r.contact_email || r.contact_phone ? <span style={{ color: 'var(--status-green)' }}>Verificado</span> : <span style={{ color: 'var(--text-muted)' }}>—</span> },
-    { key: 'usmca_eligible', label: 'T-MEC', render: (r: any) => r.usmca_eligible !== false ? <span style={{ color: 'var(--status-green)' }}>✓</span> : <span style={{ color: 'var(--text-muted)' }}>—</span> },
-  ], [])
+    { key: 'usmca_eligible', label: 'T-MEC', render: (r: any) => r.usmca_eligible !== false ? <span style={{ color: 'var(--success)' }}>✓</span> : <span style={{ color: 'var(--n-400)' }}>—</span> },
+    { key: 'reliability', label: 'Confiabilidad', sortable: false, render: (r: any) => {
+      const intel = networkMap.get((r.proveedor || '').toLowerCase().trim())
+      if (!intel?.reliability_score) return <span style={{ color: 'var(--n-400)' }}>—</span>
+      const score = intel.reliability_score
+      return <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, color: score >= 90 ? 'var(--success)' : score >= 70 ? 'var(--warning)' : 'var(--danger)' }}>{score}</span>
+    }},
+    { key: 'operations', label: 'Ops', sortable: false, render: (r: any) => {
+      const intel = networkMap.get((r.proveedor || '').toLowerCase().trim())
+      return <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--n-600)' }}>{intel?.total_operations || ''}</span>
+    }},
+  ], [networkMap])
+
+  const trendIcon = (t: string) => t === 'up' ? '↑' : t === 'down' ? '↓' : '→'
+  const trendColor = (t: string) => t === 'up' ? 'var(--status-red, #ef4444)' : t === 'down' ? 'var(--status-green, #22c55e)' : 'var(--text-muted)'
 
   return (
     <div style={{ padding: 32 }}>
@@ -54,7 +95,68 @@ export function ProveedoresView() {
         <p className="pg-meta">{suppliers.length} proveedores &middot; {withContacts} con contacto</p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: selected ? '1fr 400px' : '1fr', gap: 16 }}>
+      <div style={{ display: 'flex', gap: 2, marginBottom: 20, borderBottom: '1px solid var(--border-light)' }}>
+        {([{ key: 'proveedores', label: `Proveedores (${suppliers.length})` }, { key: 'productos', label: 'Productos Top' }] as const).map(t => (
+          <button key={t.key} onClick={() => setViewTab(t.key)}
+            style={{
+              padding: '8px 16px', background: 'none', border: 'none',
+              borderBottom: viewTab === t.key ? '2px solid var(--gold)' : '2px solid transparent',
+              cursor: 'pointer', fontSize: 13.5, fontWeight: viewTab === t.key ? 600 : 400,
+              color: viewTab === t.key ? 'var(--text-primary)' : 'var(--text-muted)',
+              marginBottom: -1,
+            }}>{t.label}</button>
+        ))}
+      </div>
+
+      {viewTab === 'productos' && (
+        <div>
+          {productsLoading ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {[1,2,3,4,5].map(i => <div key={i} className="skeleton" style={{ height: 48, borderRadius: 8 }} />)}
+            </div>
+          ) : products.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>
+              <p style={{ fontSize: 14 }}>Sin datos de producto. Ejecuta el script product-intelligence primero.</p>
+            </div>
+          ) : (
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid var(--border-light)' }}>
+                    <th style={{ textAlign: 'left', padding: '10px 12px', color: 'var(--text-muted)', fontWeight: 600, fontSize: 11.5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>#</th>
+                    <th style={{ textAlign: 'left', padding: '10px 12px', color: 'var(--text-muted)', fontWeight: 600, fontSize: 11.5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Descripción</th>
+                    <th style={{ textAlign: 'left', padding: '10px 12px', color: 'var(--text-muted)', fontWeight: 600, fontSize: 11.5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Fracción</th>
+                    <th style={{ textAlign: 'right', padding: '10px 12px', color: 'var(--text-muted)', fontWeight: 600, fontSize: 11.5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Precio Prom.</th>
+                    <th style={{ textAlign: 'center', padding: '10px 12px', color: 'var(--text-muted)', fontWeight: 600, fontSize: 11.5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Tendencia</th>
+                    <th style={{ textAlign: 'right', padding: '10px 12px', color: 'var(--text-muted)', fontWeight: 600, fontSize: 11.5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Valor Total</th>
+                    <th style={{ textAlign: 'center', padding: '10px 12px', color: 'var(--text-muted)', fontWeight: 600, fontSize: 11.5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Proveedores</th>
+                    <th style={{ textAlign: 'left', padding: '10px 12px', color: 'var(--text-muted)', fontWeight: 600, fontSize: 11.5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Última Import.</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {products.slice(0, 20).map((p: any, i: number) => (
+                    <tr key={p.id || i} style={{ borderBottom: '1px solid var(--border-light)' }}>
+                      <td style={{ padding: '10px 12px', color: 'var(--text-muted)', fontFamily: 'var(--font-data)' }}>{i + 1}</td>
+                      <td style={{ padding: '10px 12px', color: 'var(--text-primary)', fontWeight: 500, maxWidth: 280, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {p.descripcion}
+                        {p.anomaly_flag && <span style={{ marginLeft: 6, fontSize: 10, background: 'rgba(239,68,68,0.15)', color: '#ef4444', padding: '1px 5px', borderRadius: 4, fontWeight: 600 }}>ANOMALÍA</span>}
+                      </td>
+                      <td style={{ padding: '10px 12px', fontFamily: 'var(--font-data)', color: 'var(--amber-600)' }}>{p.fraccion}</td>
+                      <td style={{ padding: '10px 12px', textAlign: 'right', fontFamily: 'var(--font-data)', color: 'var(--text-primary)' }}>${Number(p.avg_unit_price || 0).toLocaleString('en-US', { maximumFractionDigits: 2 })}</td>
+                      <td style={{ padding: '10px 12px', textAlign: 'center', fontWeight: 700, color: trendColor(p.price_trend), fontSize: 16 }}>{trendIcon(p.price_trend)}</td>
+                      <td style={{ padding: '10px 12px', textAlign: 'right', fontFamily: 'var(--font-data)', color: 'var(--text-primary)' }}>${Number(p.total_value_usd || 0).toLocaleString('en-US', { maximumFractionDigits: 0 })}</td>
+                      <td style={{ padding: '10px 12px', textAlign: 'center', fontFamily: 'var(--font-data)' }}>{p.supplier_count}</td>
+                      <td style={{ padding: '10px 12px', color: 'var(--text-muted)', fontSize: 12 }}>{p.last_imported ? new Date(p.last_imported).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      {viewTab === 'proveedores' && <div style={{ display: 'grid', gridTemplateColumns: selected ? '1fr 400px' : '1fr', gap: 16 }}>
         <DataTable
           columns={columns}
           data={suppliers}
@@ -103,7 +205,7 @@ export function ProveedoresView() {
             )}
           </div>
         )}
-      </div>
+      </div>}
     </div>
   )
 }

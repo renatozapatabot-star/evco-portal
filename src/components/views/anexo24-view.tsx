@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { Table2 } from 'lucide-react'
 import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
@@ -12,6 +13,11 @@ const T = {
 }
 
 function fmtNum(n: any) { return Number(n || 0).toLocaleString('es-MX') }
+function fmtUSD(n: any) { return n != null ? `$${Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '' }
+function fmtDate(s: any) { if (!s) return ''; try { return new Date(s).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' }) } catch { return String(s) } }
+function isDateCol(c: string) { return /fecha|date|created_at|updated_at/i.test(c) }
+function titleCase(s: string) { if (!s) return ''; return s.toLowerCase().replace(/(?:^|\s|[-/])\w/g, c => c.toUpperCase()) }
+function isProvCol(c: string) { return /proveedor|proveedores|supplier/i.test(c) }
 
 function Card({ children, style = {} }: any) {
   return <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 12, boxShadow: T.shadow, ...style }}>{children}</div>
@@ -53,22 +59,36 @@ export function Anexo24View() {
   ]
 
   function renderTable(data: any[]) {
-    if (data.length === 0) return <div style={{ textAlign: 'center', padding: 40, color: T.textMuted }}>📋 Sin datos</div>
+    if (data.length === 0) return (
+      <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+        <Table2 size={32} strokeWidth={1.5} style={{ color: 'var(--n-300)', margin: '0 auto 12px' }} />
+        <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--n-700)', marginBottom: 4 }}>Sin datos de Anexo 24</div>
+        <div style={{ fontSize: 13, color: 'var(--n-400)' }}>Los artículos temporales aparecerán aquí</div>
+      </div>
+    )
     const cols = Object.keys(data[0]).filter(k => k !== 'id' && k !== 'tenant_id').slice(0, 8)
+    const isNumCol = (c: string) => /valor|importe|total|cantidad|peso/i.test(c)
     return (
-      <div style={{ overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 600 }}>
+      <div className="overflow-auto">
+        <table className="data-table">
           <thead>
-            <tr style={{ background: T.surfaceAlt, borderBottom: `1px solid ${T.border}` }}>
-              {cols.map(c => <th key={c} style={{ padding: '10px 14px', textAlign: 'left', color: T.textMuted, fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{c.replace(/_/g, ' ')}</th>)}
+            <tr>
+              {cols.map(c => <th key={c} style={isNumCol(c) ? { textAlign: 'right' } : undefined}>{c.replace(/_/g, ' ')}</th>)}
             </tr>
           </thead>
           <tbody>
             {data.map((row, i) => (
-              <tr key={i} style={{ borderBottom: i < data.length - 1 ? `1px solid ${T.border}` : 'none' }}
-                onMouseEnter={e => (e.currentTarget.style.background = T.surfaceAlt)}
-                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                {cols.map(c => <td key={c} style={{ padding: '10px 14px', color: T.text, fontSize: 11, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row[c] != null ? String(row[c]).substring(0, 50) : '—'}</td>)}
+              <tr key={i}>
+                {cols.map(c => (
+                  <td key={c} className={isNumCol(c) ? 'c-num' : ''} style={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {row[c] != null && String(row[c]).trim() !== ''
+                      ? isNumCol(c) ? fmtUSD(row[c])
+                      : isDateCol(c) ? fmtDate(row[c])
+                      : isProvCol(c) ? titleCase(String(row[c]).substring(0, 50))
+                      : String(row[c]).substring(0, 50)
+                      : <span className="c-empty">&middot;</span>}
+                  </td>
+                ))}
               </tr>
             ))}
           </tbody>
@@ -80,11 +100,34 @@ export function Anexo24View() {
   return (
     <div style={{ padding: '24px 28px', fontFamily: "'DM Sans', sans-serif" }}>
       <div style={{ marginBottom: 20 }}>
-        <h2 style={{ color: T.text, fontSize: 18, fontWeight: 700, margin: 0 }}>Anexo 24 — IMMEX</h2>
+        <h2 className="page-title" style={{ margin: 0 }}>Anexo 24 — IMMEX</h2>
         <p style={{ color: T.textMuted, fontSize: 12, margin: '4px 0 0' }}>Reconciliación maquila · EVCO Plastics de México</p>
       </div>
 
-      <div style={{ display: 'flex', gap: 10, marginBottom: 20, flexWrap: 'wrap' }}>
+      {/* IMMEX Temporal Compliance */}
+      {pedimentos.length > 0 && (() => {
+        const getMonths = (d: string) => d ? Math.floor((Date.now() - new Date(d).getTime()) / (86400000 * 30)) : 0
+        const dateField = pedimentos[0]?.fecha_presentacion !== undefined && pedimentos[0]?.fecha_presentacion !== null ? 'fecha_presentacion' : 'fecha_pago'
+        const withDate = pedimentos.filter((r: any) => r[dateField])
+        const violations = withDate.filter((r: any) => getMonths(r[dateField]) >= 18).length
+        const approaching = withDate.filter((r: any) => { const m = getMonths(r[dateField]); return m >= 15 && m < 18 }).length
+        return (
+          <>
+            {violations > 0 && (
+              <div style={{ background: '#FEE2E2', borderLeft: '4px solid #DC2626', padding: '14px 20px', borderRadius: '0 8px 8px 0', marginBottom: 12, fontSize: 14, fontWeight: 800, color: '#DC2626' }}>
+                {violations} operaciones EXCEDIERON el plazo de 18 meses. Riesgo de multa inmediato.
+              </div>
+            )}
+            {approaching > 0 && (
+              <div style={{ background: '#FFFBEB', borderLeft: '4px solid #D4952A', padding: '12px 20px', borderRadius: '0 8px 8px 0', marginBottom: 12, fontSize: 13, fontWeight: 700, color: '#92400E' }}>
+                {approaching} operaciones se acercan al plazo (15-18 meses).
+              </div>
+            )}
+          </>
+        )
+      })()}
+
+      <div className="kpi-grid" style={{ marginBottom: 20, gridTemplateColumns: 'repeat(5, 1fr)' }}>
         {[
           { label: 'Pedimentos', count: counts.pedimentos },
           { label: 'Fracciones', count: counts.fracciones },
@@ -92,19 +135,22 @@ export function Anexo24View() {
           { label: 'Partidas', count: counts.partidas },
           { label: 'Proveedores', count: counts.proveedores },
         ].map(s => (
-          <Card key={s.label} style={{ padding: '10px 16px', textAlign: 'center', flex: 1, minWidth: 100 }}>
-            <div style={{ color: T.navy, fontSize: 18, fontWeight: 800 }}>{fmtNum(s.count)}</div>
-            <div style={{ color: T.textMuted, fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', marginTop: 2 }}>{s.label}</div>
-          </Card>
+          <div key={s.label} className="kpi-card" style={{ textAlign: 'center' }}>
+            <div className="kpi-value" style={{ fontSize: 28 }}>{fmtNum(s.count)}</div>
+            <div className="kpi-label" style={{ marginTop: 4 }}>{s.label}</div>
+          </div>
         ))}
       </div>
 
-      <div style={{ display: 'flex', gap: 4, marginBottom: 16, background: T.surfaceAlt, borderRadius: 8, padding: 3, width: 'fit-content', border: `1px solid ${T.border}` }}>
+      <div className="flex gap-1 rounded-[7px] p-0.5 mb-4 w-fit" style={{ background: 'var(--n-100)' }}>
         {TABS.map(tab => (
           <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-            style={{ background: activeTab === tab.id ? T.surface : 'none', border: activeTab === tab.id ? `1px solid ${T.border}` : '1px solid transparent', borderRadius: 6, padding: '5px 12px', cursor: 'pointer', fontFamily: 'inherit', color: activeTab === tab.id ? T.text : T.textSub, fontSize: 12, fontWeight: activeTab === tab.id ? 600 : 400, display: 'flex', alignItems: 'center', gap: 6 }}>
+            className="f-chip"
+            style={activeTab === tab.id
+              ? { background: '#fff', color: 'var(--n-900)', boxShadow: '0 1px 3px rgba(0,0,0,0.08)', fontWeight: 600 }
+              : { color: 'var(--n-500)' }}>
             {tab.label}
-            {tab.count > 0 && <span style={{ background: T.navy, color: '#fff', borderRadius: 99, padding: '1px 5px', fontSize: 9, fontWeight: 700 }}>{fmtNum(tab.count)}</span>}
+            {tab.count > 0 && <span style={{ background: 'var(--gold-500)', color: '#fff', borderRadius: 99, padding: '1px 5px', fontSize: 9, fontWeight: 700, marginLeft: 4 }}>{fmtNum(tab.count)}</span>}
           </button>
         ))}
       </div>

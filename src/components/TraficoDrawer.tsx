@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react'
 import { X, AlertTriangle, Clock } from 'lucide-react'
 import { CLIENT_CLAVE } from '@/lib/client-config'
+import { fmtCarrier } from '@/lib/carrier-names'
+import { GOLD } from '@/lib/design-system'
 
 interface Trafico {
   trafico: string
@@ -38,7 +40,7 @@ const fmtUSD = (n: number | null | undefined) =>
     : '—'
 
 const fmtDate = (s: string | null | undefined) => {
-  if (!s) return '—'
+  if (!s) return ''
   try {
     return new Date(s).toLocaleDateString('es-MX', {
       day: '2-digit',
@@ -152,8 +154,8 @@ function Timeline({ traficoId }: { traficoId: string }) {
               className="absolute rounded-full"
               style={{
                 left: -23, top: 3, width: 8, height: 8,
-                background: i === 0 ? '#C9A84C' : '#d1d5db',
-                border: `2px solid ${i === 0 ? '#C9A84C' : '#e5e7eb'}`,
+                background: i === 0 ? GOLD : '#d1d5db',
+                border: `2px solid ${i === 0 ? GOLD : '#e5e7eb'}`,
               }}
             />
             <div className="text-[11px] font-medium" style={{ color: '#111827' }}>
@@ -187,7 +189,7 @@ function RealDocuments({ traficoId }: { traficoId: string }) {
       try {
         const res1 = await fetch(`/api/data?table=expediente_documentos&pedimento_id=${encodeURIComponent(traficoId)}&limit=50`)
         const d1 = await res1.json()
-        ;(d1.data ?? d1 ?? []).forEach((d: any) => all.push({ type: d.doc_type || 'unknown', name: d.file_name || d.doc_type || '—', url: d.file_url }))
+        ;(d1.data ?? d1 ?? []).forEach((d: any) => all.push({ type: d.doc_type || 'unknown', name: d.file_name || d.doc_type || '', url: d.file_url }))
       } catch {}
       // Source 2: documents table (match by file_url containing trafico ID)
       try {
@@ -197,7 +199,7 @@ function RealDocuments({ traficoId }: { traficoId: string }) {
           const metaTrafico = d.metadata?.trafico
           const urlMatch = d.file_url?.includes(traficoId)
           if (metaTrafico === traficoId || urlMatch) {
-            all.push({ type: d.document_type || 'unknown', name: d.metadata?.nombre || d.file_url?.split('/').pop() || d.document_type || '—', url: d.file_url })
+            all.push({ type: d.document_type || 'unknown', name: d.metadata?.nombre || d.file_url?.split('/').pop() || d.document_type || '', url: d.file_url })
           }
         })
       } catch {}
@@ -231,7 +233,7 @@ function RealDocuments({ traficoId }: { traficoId: string }) {
               </div>
               {d.url && d.url.startsWith('http') && (
                 <a href={d.url} target="_blank" rel="noopener noreferrer"
-                  style={{ fontSize: 10, color: '#C9A84C', textDecoration: 'none', fontWeight: 600, flexShrink: 0 }}
+                  style={{ fontSize: 10, color: GOLD, textDecoration: 'none', fontWeight: 600, flexShrink: 0 }}
                   onClick={e => e.stopPropagation()}>
                   Ver ↗
                 </a>
@@ -322,7 +324,7 @@ export default function TraficoDrawer({ trafico, onClose }: Props) {
             </div>
             <div className="grid grid-cols-2 gap-2">
               <DetailItem label="Tráfico"        value={fmtId(trafico.trafico)} mono />
-              <DetailItem label="Pedimento"       value={trafico.pedimento ?? '—'} mono />
+              <DetailItem label="Pedimento"       value={trafico.pedimento ?? ''} mono />
               <DetailItem label="Fecha Llegada"   value={fmtDate(trafico.fecha_llegada)} />
               <DetailItem label="Peso Bruto"      value={fmtPeso(trafico.peso_bruto)} mono />
               <DetailItem label="Valor USD"        value={fmtUSD(trafico.importe_total)} mono />
@@ -342,11 +344,11 @@ export default function TraficoDrawer({ trafico, onClose }: Props) {
               <div className="grid grid-cols-2 gap-2">
                 <DetailItem
                   label="Transp. Mexicano"
-                  value={trafico.transportista_mexicano ?? '—'}
+                  value={fmtCarrier(trafico.transportista_mexicano)}
                 />
                 <DetailItem
                   label="Transp. Extranjero"
-                  value={trafico.transportista_extranjero ?? '—'}
+                  value={fmtCarrier(trafico.transportista_extranjero)}
                 />
               </div>
             </div>

@@ -232,15 +232,6 @@ async function runTMECGuardian() {
   if (alerts.length === 0) {
     console.log('\n✅ All active traficos with high-priority fracciones have USMCA coverage')
     console.log('   (or no T-MEC-eligible items found)\n')
-
-    await sendTG([
-      `🛡️ <b>T-MEC GUARDIAN — OK</b>`,
-      `${activeTraficos.length} traficos activos revisados`,
-      `${checked} con datos de partidas`,
-      `${highPriorityFracs.size} fracciones prioritarias monitoreadas`,
-      `✅ Sin alertas`,
-      `— CRUZ 🦀`,
-    ].join('\n'))
     return
   }
 

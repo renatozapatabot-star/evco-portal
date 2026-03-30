@@ -1,9 +1,16 @@
 'use client'
 
 import { useEffect, useState, useMemo } from 'react'
-import { Search, Download, ChevronDown, ChevronRight, ChevronLeft } from 'lucide-react'
+import { Search, Download, ChevronDown, ChevronRight, ChevronLeft, FileText } from 'lucide-react'
 import { CLIENT_CLAVE } from '@/lib/client-config'
 import { fmtUSDFull as fmtUSD, fmtMXN, fmtDate } from '@/lib/format-utils'
+import { getTariffRate } from '@/lib/cruz-score'
+import { GOLD } from '@/lib/design-system'
+
+const titleCase = (s: string) => {
+  if (!s) return ''
+  return s.toLowerCase().replace(/(?:^|\s|[-/])\w/g, c => c.toUpperCase())
+}
 
 interface FacturaRow {
   referencia: string
@@ -133,7 +140,7 @@ export default function PedimentosPage() {
   const summaryCards = [
     { label: 'Valor Total USD', value: fmtUSD(totals.valor), accent: false },
     { label: 'DTA Total', value: fmtMXN(totals.dta), accent: false },
-    { label: 'IGI Total', value: fmtMXN(totals.igi), accent: true },
+    { label: 'IGI Total', value: fmtMXN(totals.igi), accent: false },
     { label: 'IVA Total', value: fmtMXN(totals.iva), accent: false },
   ]
 
@@ -141,7 +148,7 @@ export default function PedimentosPage() {
     <div className="p-6">
       <div className="flex items-start justify-between mb-4">
         <div>
-          <h1 className="text-[18px] font-semibold" style={{ color: 'var(--text-primary)' }}>Pedimentos</h1>
+          <h1 className="page-title">Pedimentos</h1>
           <p className="text-[12.5px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
             {groups.length.toLocaleString()} pedimentos &middot; {rows.length.toLocaleString()} lineas &middot; Clave {CLIENT_CLAVE}
           </p>
@@ -189,11 +196,55 @@ export default function PedimentosPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-4 gap-3 mb-4">
+      {/* T-MEC Savings Banner */}
+      {groups.length > 0 && (() => {
+        const tmecCount = groups.filter(g => g.tmec).length
+        const nonTmecCount = groups.filter(g => !g.tmec).length
+        const nonTmecGroups = groups.filter(g => !g.tmec).sort((a, b) => b.totalValor - a.totalValor)
+        const nonTmecValue = nonTmecGroups.reduce((s, g) => s + g.totalValor, 0)
+        const estimatedSavings = nonTmecGroups.reduce((s, g) => s + g.totalValor * getTariffRate(g.proveedores?.[0] || ''), 0)
+        return (
+          <div style={{
+            background: 'var(--gold-50)', border: '1px solid var(--gold-200)',
+            borderRadius: 'var(--r-lg)', padding: '16px 20px',
+            marginBottom: 20,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--n-900)' }}>
+                  T-MEC: {tmecCount} de {groups.length} pedimentos ({groups.length > 0 ? Math.round(tmecCount / groups.length * 100) : 0}%)
+                </div>
+                <div style={{ fontSize: 12, color: 'var(--n-500)', marginTop: 2 }}>
+                  {nonTmecCount} pedimentos sin T-MEC · Valor: {fmtUSD(nonTmecValue)}
+                </div>
+              </div>
+              {estimatedSavings > 0 && (
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--gold-600)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Ahorro potencial*</div>
+                  <div style={{ fontSize: 24, fontWeight: 900, color: 'var(--gold-700)' }}>{fmtUSD(estimatedSavings)}</div>
+                </div>
+              )}
+            </div>
+            {nonTmecGroups.length > 0 && (
+              <div style={{ marginTop: 10 }}>
+                {nonTmecGroups.slice(0, 3).map(g => (
+                  <div key={g.pedimento} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, padding: '3px 0' }}>
+                    <span style={{ fontWeight: 700 }}>{g.pedimento} — {titleCase(g.proveedores?.[0] || '')}</span>
+                    <span style={{ fontWeight: 800, color: 'var(--gold-700)' }}>{fmtUSD(g.totalValor * getTariffRate(g.proveedores?.[0] || ''))}</span>
+                  </div>
+                ))}
+                <div style={{ fontSize: 10, color: 'var(--n-400)', marginTop: 6 }}>* Estimado por fracción arancelaria. Verificar para cálculo exacto.</div>
+              </div>
+            )}
+          </div>
+        )
+      })()}
+
+      <div className="kpi-grid" style={{ marginBottom: 24 }}>
         {summaryCards.map((c) => (
-          <div key={c.label} className="rounded-[3px] p-4" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
-            <div className="text-[10.5px] font-semibold uppercase tracking-[0.07em] mb-1.5" style={{ color: 'var(--text-muted)' }}>{c.label}</div>
-            <div className="mono text-[20px] font-semibold" style={{ color: c.accent ? '#C9A84C' : '#111827' }}>{c.value}</div>
+          <div key={c.label} className="kpi-card">
+            <div className="kpi-label">{c.label}</div>
+            <div className="kpi-value" style={{ fontSize: 28, color: 'var(--n-900)' }}>{c.value}</div>
           </div>
         ))}
       </div>
@@ -202,80 +253,60 @@ export default function PedimentosPage() {
         {loading ? (
           <div className="text-center py-12 text-[13px]" style={{ color: 'var(--text-muted)' }}>Cargando pedimentos...</div>
         ) : pagedGroups.length === 0 ? (
-          <div className="text-center py-12 text-[13px]" style={{ color: 'var(--text-muted)' }}>No se encontraron registros</div>
+          <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+            <FileText size={32} strokeWidth={1.5} style={{ color: 'var(--n-300)', margin: '0 auto 12px', display: 'block' }} />
+            <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--n-700)', marginBottom: 4 }}>Sin pedimentos registrados</div>
+            <div style={{ fontSize: 13, color: 'var(--n-400)' }}>Los pedimentos aparecerán aquí</div>
+          </div>
         ) : (
-          <div>
-            {pagedGroups.map((g) => (
-              <div key={g.pedimento} style={{ borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
-                {/* Group header */}
-                <div
-                  onClick={() => toggle(g.pedimento)}
-                  className="flex items-center justify-between px-4 py-3"
-                  style={{ cursor: 'pointer', background: expanded.has(g.pedimento) ? '#f5f7ff' : 'transparent' }}
-                  onMouseEnter={e => { if (!expanded.has(g.pedimento)) e.currentTarget.style.background = '#fafbfc' }}
-                  onMouseLeave={e => { if (!expanded.has(g.pedimento)) e.currentTarget.style.background = 'transparent' }}
-                >
-                  <div className="flex items-center gap-3">
-                    {expanded.has(g.pedimento) ? <ChevronDown size={14} style={{ color: '#C9A84C' }} /> : <ChevronRight size={14} style={{ color: 'var(--text-muted)' }} />}
-                    <span className="ped-pill">{g.pedimento}</span>
-                    {g.referencia && <span className="mono text-[11.5px]" style={{ color: 'var(--text-secondary)' }}>{g.referencia}</span>}
-                    <span className="text-[11.5px]" style={{ color: 'var(--text-muted)' }}>
-                      {g.proveedores.length} proveedor{g.proveedores.length !== 1 ? 'es' : ''}
-                    </span>
-                    {g.fecha && <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{fmtDate(g.fecha)}</span>}
-                    {g.tmec && (
-                      <span className="text-[10.5px] font-semibold px-2 py-0.5 rounded-[4px]" style={{ background: 'var(--green-bg)', color: 'var(--green-text)' }}>T-MEC</span>
-                    )}
-                  </div>
-                  <span className="mono text-[13px] font-semibold" style={{ color: 'var(--text-primary)' }}>{fmtUSD(g.totalValor)}</span>
-                </div>
-
-                {/* Expanded detail */}
-                {expanded.has(g.pedimento) && (
-                  <div style={{ borderTop: '1px solid rgba(0,0,0,0.04)', padding: '16px 20px 20px', background: 'var(--bg-elevated, #F5F3EF)' }}>
-                    {/* Pedimento totals — shown once */}
-                    <div className="flex items-center gap-6 flex-wrap mb-4" style={{ padding: '12px 16px', background: 'var(--bg-card, #fff)', borderRadius: 8, border: '1px solid var(--border-light, #F0EDE8)' }}>
-                      <div>
-                        <div className="text-[10px] font-semibold uppercase tracking-[0.06em]" style={{ color: 'var(--text-muted)' }}>Valor Total USD</div>
-                        <div className="mono text-[16px] font-semibold" style={{ color: 'var(--text-primary)' }}>{fmtUSD(g.totalValor)}</div>
-                      </div>
-                      <div>
-                        <div className="text-[10px] font-semibold uppercase tracking-[0.06em]" style={{ color: 'var(--text-muted)' }}>DTA</div>
-                        <div className="mono text-[14px] font-medium" style={{ color: 'var(--text-secondary)' }}>{fmtMXN(g.totalDta)}</div>
-                      </div>
-                      <div>
-                        <div className="text-[10px] font-semibold uppercase tracking-[0.06em]" style={{ color: 'var(--text-muted)' }}>IGI</div>
-                        <div className="mono text-[14px] font-medium" style={{ color: g.tmec ? 'var(--status-green, #16A34A)' : 'var(--text-secondary)' }}>{g.tmec ? '$0 (T-MEC)' : fmtMXN(g.totalIgi)}</div>
-                      </div>
-                      <div>
-                        <div className="text-[10px] font-semibold uppercase tracking-[0.06em]" style={{ color: 'var(--text-muted)' }}>IVA</div>
-                        <div className="mono text-[14px] font-medium" style={{ color: 'var(--text-secondary)' }}>{fmtMXN(g.totalIva)}</div>
-                      </div>
-                      {g.tc && (
-                        <div>
-                          <div className="text-[10px] font-semibold uppercase tracking-[0.06em]" style={{ color: 'var(--text-muted)' }}>Tipo Cambio</div>
-                          <div className="mono text-[14px] font-medium" style={{ color: 'var(--text-secondary)' }}>${Number(g.tc).toFixed(4)}</div>
-                        </div>
+          <div className="overflow-auto" style={{ maxHeight: 'calc(100vh - 260px)' }}>
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th style={{ width: 28 }}></th>
+                  <th>Pedimento</th>
+                  <th>Tráfico</th>
+                  <th>Proveedores</th>
+                  <th>Fecha</th>
+                  <th>T-MEC</th>
+                  <th style={{ textAlign: 'right' }}>Valor USD</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pagedGroups.map((g) => (
+                  <tr key={g.pedimento} onClick={() => toggle(g.pedimento)} style={{ cursor: 'pointer' }}>
+                    <td style={{ padding: '0 4px 0 12px' }}>
+                      {expanded.has(g.pedimento) ? <ChevronDown size={14} style={{ color: GOLD }} /> : <ChevronRight size={14} style={{ color: 'var(--text-muted)' }} />}
+                    </td>
+                    <td><span className="c-id">{g.pedimento}</span></td>
+                    <td><span className="c-id">{g.referencia}</span></td>
+                    <td>
+                      {g.proveedores.length > 0 ? (
+                        <>
+                          <span style={{ fontSize: 13, color: 'var(--n-700)' }}>
+                            {titleCase(g.proveedores[0])}
+                          </span>
+                          {g.proveedores.length > 1 && (
+                            <span className="ml-1.5 text-[10px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: 'var(--n-100)', color: 'var(--n-500)' }}>
+                              +{g.proveedores.length - 1}
+                            </span>
+                          )}
+                        </>
+                      ) : (
+                        <span className="c-empty">&middot;</span>
                       )}
-                    </div>
-
-                    {/* Proveedores list */}
-                    <div>
-                      <div className="text-[10px] font-semibold uppercase tracking-[0.06em] mb-2" style={{ color: 'var(--text-muted)' }}>
-                        Proveedores ({g.proveedores.length})
-                      </div>
-                      <div className="flex flex-wrap gap-x-4 gap-y-1">
-                        {g.proveedores.map(p => (
-                          <div key={p} className="flex items-center gap-1.5 text-[12px]" style={{ color: 'var(--text-secondary)' }}>
-                            <span style={{ color: 'var(--text-muted)' }}>·</span> {p}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
+                    </td>
+                    <td className="text-[12px]" style={{ color: 'var(--text-secondary)' }}>{g.fecha ? fmtDate(g.fecha) : ''}</td>
+                    <td>
+                      {g.tmec && (
+                        <span className="badge-tmec">T-MEC</span>
+                      )}
+                    </td>
+                    <td className="c-num">{fmtUSD(g.totalValor)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>

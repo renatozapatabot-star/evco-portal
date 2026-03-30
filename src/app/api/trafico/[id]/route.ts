@@ -6,8 +6,8 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-const COMPANY_ID = 'evco'
-const CLAVE = '9254'
+import { CLIENT_CLAVE, COMPANY_ID } from '@/lib/client-config'
+const CLAVE = CLIENT_CLAVE
 
 export async function GET(
   request: NextRequest,

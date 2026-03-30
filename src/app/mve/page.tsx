@@ -21,7 +21,7 @@ const fmtId = (id: string) => {
 }
 
 const fmtDate = (s: string | null | undefined) => {
-  if (!s) return '—'
+  if (!s) return ''
   try { return new Date(s).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' }) }
   catch { return s }
 }
@@ -35,6 +35,7 @@ export default function MvePage() {
   const [rows, setRows] = useState<TraficoRow[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [compAlerts, setCompAlerts] = useState<any[]>([])
   const daysLeft = getDaysLeft()
 
   useEffect(() => {
@@ -43,6 +44,11 @@ export default function MvePage() {
       .then(data => setRows(data.data ?? []))
       .catch(() => {})
       .finally(() => setLoading(false))
+    // Compliance predictions for MVE
+    fetch('/api/data?table=compliance_predictions&company_id=evco&limit=50&order_by=severity&order_dir=asc')
+      .then(r => r.json())
+      .then(d => setCompAlerts((d.data ?? []).filter((a: any) => !a.resolved)))
+      .catch(() => {})
   }, [])
 
   const { pending, compliant } = useMemo(() => {
@@ -87,7 +93,7 @@ export default function MvePage() {
           className={`mono text-[28px] font-bold ${isUrgent ? 'mve-dot' : ''}`}
           style={{ color: isUrgent ? '#ef4444' : '#f59e0b' }}
         >
-          {isToday ? 'HOY' : `${daysLeft}d`}
+          31 mar 2026
         </div>
       </div>
 
@@ -106,6 +112,32 @@ export default function MvePage() {
           <div className="mono text-[22px] font-semibold" style={{ color: '#10b981' }}>{compliant.length.toLocaleString()}</div>
         </div>
       </div>
+
+      {/* Compliance Predictions */}
+      {compAlerts.length > 0 && (
+        <div style={{ marginBottom: 16 }}>
+          {compAlerts.map(alert => {
+            const isCritical = alert.severity === 'critical'
+            return (
+              <div key={alert.id} style={{
+                padding: '12px 16px', marginBottom: 8, borderRadius: 'var(--r-md)',
+                background: isCritical ? 'var(--danger-bg)' : 'var(--warning-bg)',
+                border: `1px solid ${isCritical ? 'var(--danger-b)' : 'var(--warning-b)'}`,
+                borderLeft: `4px solid ${isCritical ? 'var(--danger)' : 'var(--warning)'}`,
+              }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: isCritical ? 'var(--danger-t)' : 'var(--warning-t)' }}>
+                  {alert.title || alert.description}
+                </div>
+                {alert.due_date && (
+                  <div style={{ fontSize: 12, color: 'var(--n-400)', marginTop: 4 }}>
+                    Fecha límite: {fmtDate(alert.due_date)} · {alert.days_until != null ? `${alert.days_until} días` : ''}
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      )}
 
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
@@ -139,9 +171,16 @@ export default function MvePage() {
               </tr>
             </thead>
             <tbody>
-              {loading && (
-                <tr><td colSpan={6} className="text-center py-12 text-[13px]" style={{ color: '#9ca3af' }}>Cargando...</td></tr>
-              )}
+              {loading && Array.from({ length: 6 }).map((_, i) => (
+                <tr key={`sk-${i}`}>
+                  <td><div className="skeleton" style={{ width: 100, height: 14 }} /></td>
+                  <td><div className="skeleton" style={{ width: 80, height: 14 }} /></td>
+                  <td><div className="skeleton" style={{ width: 70, height: 14 }} /></td>
+                  <td><div className="skeleton" style={{ width: 140, height: 14 }} /></td>
+                  <td><div className="skeleton" style={{ width: 70, height: 14 }} /></td>
+                  <td><div className="skeleton" style={{ width: 60, height: 14, margin: '0 auto' }} /></td>
+                </tr>
+              ))}
               {!loading && pending.length === 0 && (
                 <tr><td colSpan={6} className="text-center py-12 text-[13px]" style={{ color: '#10b981' }}>
                   Todos los tráficos cumplen con MVE
@@ -155,7 +194,7 @@ export default function MvePage() {
                   </td>
                   <td className="text-[12px]" style={{ color: '#374151' }}>{fmtDate(r.fecha_llegada)}</td>
                   <td className="text-[12px] max-w-[220px] truncate" style={{ color: '#374151' }} title={r.descripcion_mercancia ?? undefined}>
-                    {r.descripcion_mercancia ?? '—'}
+                    {r.descripcion_mercancia ?? ''}
                   </td>
                   <td>
                     {r.pedimento
@@ -200,7 +239,7 @@ export default function MvePage() {
                     <tr key={r.trafico}>
                       <td><span className="mono text-[12px]" style={{ color: '#374151' }}>{fmtId(r.trafico)}</span></td>
                       <td className="text-[12px]" style={{ color: '#6b7280' }}>{fmtDate(r.fecha_llegada)}</td>
-                      <td>{r.pedimento ? <span className="ped-pill">{r.pedimento}</span> : '—'}</td>
+                      <td>{r.pedimento ? <span className="ped-pill">{r.pedimento}</span> : ''}</td>
                       <td className="text-center">
                         <span className="text-[10.5px] font-semibold px-2 py-0.5 rounded-[4px]"
                           style={{ background: '#d1fae5', color: '#065f46' }}>OK</span>

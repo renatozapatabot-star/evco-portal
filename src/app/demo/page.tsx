@@ -1,8 +1,10 @@
+import { GOLD } from '@/lib/design-system'
+
 export default function DemoPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#09090C', color: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: "'Inter', -apple-system, sans-serif", padding: 40 }}>
       <div style={{ width: 56, height: 56, borderRadius: 12, background: 'rgba(201,168,76,0.1)', border: '1.5px solid rgba(201,168,76,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24 }}>
-        <span style={{ fontSize: 24, fontWeight: 700, color: '#C9A84C' }}>RZ</span>
+        <span style={{ fontSize: 24, fontWeight: 700, color: GOLD }}>RZ</span>
       </div>
       <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.02em', marginBottom: 8 }}>CRUZ Intelligence Platform</h1>
       <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 14, marginBottom: 32, textAlign: 'center', maxWidth: 480 }}>
@@ -20,7 +22,7 @@ export default function DemoPage() {
           { label: 'Scripts', value: '31', sub: 'Automated processes' },
         ].map(k => (
           <div key={k.label} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, padding: '16px 20px', textAlign: 'center' }}>
-            <div style={{ fontSize: 24, fontWeight: 800, color: '#C9A84C', fontFamily: "'JetBrains Mono', monospace" }}>{k.value}</div>
+            <div style={{ fontSize: 24, fontWeight: 800, color: GOLD, fontFamily: "'JetBrains Mono', monospace" }}>{k.value}</div>
             <div style={{ fontSize: 12, fontWeight: 600, color: '#fff', marginTop: 4 }}>{k.label}</div>
             <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', marginTop: 2 }}>{k.sub}</div>
           </div>
@@ -34,7 +36,7 @@ export default function DemoPage() {
           { label: 'System Status', href: '/status', desc: 'Health monitoring' },
         ].map(l => (
           <a key={l.href} href={l.href} style={{ background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.25)', borderRadius: 10, padding: '14px 24px', textDecoration: 'none', textAlign: 'center', transition: 'border-color 0.15s' }}>
-            <div style={{ color: '#C9A84C', fontSize: 14, fontWeight: 700 }}>{l.label}</div>
+            <div style={{ color: GOLD, fontSize: 14, fontWeight: 700 }}>{l.label}</div>
             <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: 11, marginTop: 4 }}>{l.desc}</div>
           </a>
         ))}

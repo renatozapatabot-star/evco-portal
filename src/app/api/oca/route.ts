@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+const OLLAMA_BASE_URL = process.env.OLLAMA_BASE_URL || 'http://localhost:11434'
+
 export async function POST(request: NextRequest) {
   const { product, material, uso, opinionNum } = await request.json()
   if (!product?.trim()) return NextResponse.json({ error: 'Descripción del producto requerida' }, { status: 400 })
-
-  const apiKey = process.env.ANTHROPIC_API_KEY
-  if (!apiKey) return NextResponse.json({ error: 'ANTHROPIC_API_KEY no configurada. Agregar al .env.local' }, { status: 500 })
 
   const prompt = `Eres un experto en clasificación arancelaria de México con 20 años de experiencia.
 Clasifica el siguiente producto bajo la TIGIE (Tarifa de los Impuestos Generales de Importación y Exportación de México).
@@ -30,15 +29,15 @@ Responde ÚNICAMENTE con un JSON válido con esta estructura exacta:
 No incluyas texto fuera del JSON.`
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch(`${OLLAMA_BASE_URL}/api/generate`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
-      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 800, messages: [{ role: 'user', content: prompt }] }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'qwen3:32b', prompt, stream: false }),
     })
     const data = await res.json()
-    const text = data.content?.[0]?.text || ''
+    const text = data.response || ''
     const jsonMatch = text.match(/\{[\s\S]*\}/)
-    if (!jsonMatch) throw new Error('No se pudo parsear la respuesta')
+    if (!jsonMatch) throw new Error('No se pudo parsear la respuesta del modelo')
     return NextResponse.json(JSON.parse(jsonMatch[0]))
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 500 })

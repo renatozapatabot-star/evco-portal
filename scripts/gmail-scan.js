@@ -114,27 +114,7 @@ async function scanInbox() {
       console.log(`     ⚠️  Compliance alert sent!`)
     }
 
-    // Alert for GlobalPC
-    if (senderTag === 'GlobalPC') {
-      alerts++
-      await sendTG([
-        `📩 <b>EMAIL DE GLOBALPC</b>`,
-        `De: ${from.substring(0, 50)}`,
-        `Asunto: ${subject.substring(0, 60)}`,
-        `Revisar: Posibles credenciales o actualizaciones`,
-        `— CRUZ 🦀`
-      ].join('\n'))
-    }
-
-    // Alert for EVCO / Ursula
-    if (senderTag === 'EVCO') {
-      await sendTG([
-        `📩 <b>EMAIL DE EVCO</b>`,
-        `De: ${from.substring(0, 50)}`,
-        `Asunto: ${subject.substring(0, 60)}`,
-        `— CRUZ 🦀`
-      ].join('\n'))
-    }
+    // GlobalPC and EVCO sender alerts removed — only compliance keyword alerts are sent
 
     console.log('')
   }

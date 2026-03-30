@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { ArrowLeft, Share2, Check, FileText, Upload, ChevronDown, ChevronUp, Truck, Phone } from 'lucide-react'
+import { ArrowLeft, FileText, Upload } from 'lucide-react'
 import { fmtId, fmtDate, fmtUSD, fmtKg, fmtDesc, formatAbsoluteETA, formatAbsoluteDate } from '@/lib/format-utils'
 import { GOLD } from '@/lib/design-system'
 import { fmtCarrier, countryFlag } from '@/lib/carrier-names'
@@ -10,12 +10,12 @@ import { CruzScore } from '@/components/cruz-score'
 import { calculateCruzScore, calculateCruzScoreDetailed, extractScoreInput, scoreReason } from '@/lib/cruz-score'
 import { ScoreBreakdown } from '@/components/ScoreBreakdown'
 import { createClient } from '@supabase/supabase-js'
-import Link from 'next/link'
+// Link removed — entradas now embedded inline
 import { COMPANY_ID, CLIENT_NAME } from '@/lib/client-config'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
-type Tab = 'documentos' | 'financiero' | 'score' | 'transportista' | 'rectificacion'
+type Tab = 'financiero' | 'score' | 'transportista' | 'rectificacion'
 
 const REQUIRED_DOCS = ['FACTURA', 'LISTA DE EMPAQUE', 'PEDIMENTO', 'ACUSE DE COVE', 'CARTA', 'ACUSE DE E-DOCUMENT']
 
@@ -33,12 +33,15 @@ export default function TraficoDetailPage() {
   const [documentos, setDocumentos] = useState<any[]>([])
   const [entradas, setEntradas] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<Tab>('documentos')
+  const [activeTab, setActiveTab] = useState<Tab>('financiero')
   const [missingDocs, setMissingDocs] = useState<string[]>([])
   const [uploadingDoc, setUploadingDoc] = useState<string | null>(null)
   const [timelineExpanded, setTimelineExpanded] = useState(false)
   const [trackingCopied, setTrackingCopied] = useState(false)
   const [porqueOpen, setPorqueOpen] = useState<string | null>(null)
+  const [rates, setRates] = useState({ dta: 0.008, iva: 0.16, tc: 17.49 })
+  const [solicitando, setSolicitando] = useState(false)
+  const [solicitadoOk, setSolicitadoOk] = useState(false)
 
   const handleUpload = async (file: File | undefined, docType: string) => {
     if (!file) return
@@ -81,6 +84,9 @@ export default function TraficoDetailPage() {
       fetch(`/api/data?table=entradas&trafico=${encodeURIComponent(tId)}&limit=20&order_by=fecha_llegada_mercancia&order_dir=desc`)
         .then(r => r.json()).then(ed => setEntradas(ed.data ?? [])).catch(() => {})
     }).catch(() => setLoading(false))
+    fetch('/api/rates').then(r => r.json()).then(d => {
+      if (!d.error) setRates({ dta: d.dta?.rate ?? 0.008, iva: d.iva?.rate ?? 0.16, tc: d.tc?.rate ?? 17.49 })
+    }).catch(() => {})
   }, [id])
 
   if (loading) return (
@@ -132,10 +138,9 @@ export default function TraficoDetailPage() {
   ]
 
   const currentStepIdx = steps.findIndex(s => getStepState(s.num) === 'current')
-  const visibleSteps = timelineExpanded ? steps : steps.filter((_, i) => Math.abs(i - Math.max(0, currentStepIdx)) <= 1)
+  const visibleSteps = steps
 
   const TABS: { key: Tab; label: string }[] = [
-    { key: 'documentos', label: `Documentos (${documentos.length})` },
     { key: 'financiero', label: 'Financiero' },
     { key: 'score', label: 'Score' },
     { key: 'transportista', label: 'Transportista' },
@@ -157,7 +162,7 @@ export default function TraficoDetailPage() {
             <h1 style={{ fontFamily: 'var(--font-data)', fontSize: 28, fontWeight: 900, color: 'var(--n-900)', letterSpacing: '-0.02em', margin: 0 }}>
               {fmtId(t.trafico)}
             </h1>
-            <span style={{ fontSize: 18 }}>🇺🇸→🇲🇽</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--n-500)', letterSpacing: '0.02em' }}>US → MX</span>
             <span className={`badge ${isCruzado ? 'badge-green' : 'badge-amber'}`}>
               <span className="badge-dot" />{t.estatus || 'En Proceso'}
             </span>
@@ -167,17 +172,49 @@ export default function TraficoDetailPage() {
             {t.proveedores && <><span>·</span><span>{t.proveedores.split(',')[0]?.trim()}</span></>}
             {t.pais_procedencia && <><span>·</span><span>{countryFlag(t.pais_procedencia)} {t.pais_procedencia}</span></>}
           </div>
+          {!isCruzado && t.fecha_llegada && (
+            <div style={{ marginTop: 4, fontSize: 12, color: 'var(--n-500)', fontFamily: 'var(--font-data)' }}>
+              En proceso desde {fmtDate(t.fecha_llegada)}
+            </div>
+          )}
           {t.importe_total && (
             <div style={{ marginTop: 6, fontFamily: 'var(--font-data)', fontSize: 20, fontWeight: 800, color: 'var(--gold-700)' }}>
               ${Number(t.importe_total).toLocaleString('en-US', { minimumFractionDigits: 0 })} USD
             </div>
           )}
           <div style={{ marginTop: 10, display: 'flex', gap: 8 }}>
-            <button onClick={() => {
-              const body = `Solicitud de documentos — Tráfico ${fmtId(t.trafico)}\n\nDocumentos faltantes:\n${missingDocs.map(d => `• ${d}`).join('\n')}\n\n— Renato Zapata & Company`
-              navigator.clipboard.writeText(body)
-            }} style={{ padding: '6px 14px', fontSize: 12, fontWeight: 700, border: 'var(--b-default)', borderRadius: 'var(--r-md)', background: 'var(--bg-card)', cursor: 'pointer', color: 'var(--n-600)' }}>
-              Solicitar Docs
+            <button
+              disabled={solicitando || solicitadoOk || missingDocs.length === 0}
+              onClick={async () => {
+                setSolicitando(true)
+                try {
+                  const res = await fetch('/api/solicitar-documentos', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ traficoId: t.trafico, missingDocs }),
+                  })
+                  const data = await res.json()
+                  if (data.success) {
+                    setSolicitadoOk(true)
+                  } else {
+                    alert(data.error || 'Error al solicitar documentos')
+                  }
+                } catch {
+                  alert('Error de conexión')
+                } finally {
+                  setSolicitando(false)
+                }
+              }}
+              style={{
+                padding: '6px 14px', fontSize: 12, fontWeight: 700,
+                border: 'var(--b-default)', borderRadius: 'var(--r-md)',
+                background: solicitadoOk ? '#F0FDF4' : 'var(--bg-card)',
+                cursor: solicitando || solicitadoOk || missingDocs.length === 0 ? 'default' : 'pointer',
+                color: solicitadoOk ? '#16A34A' : 'var(--n-600)',
+                opacity: solicitando ? 0.6 : 1,
+              }}
+            >
+              {solicitando ? 'Solicitando...' : solicitadoOk ? '✓ Solicitados' : 'Solicitar Docs'}
             </button>
             <button onClick={() => {
               const url = `${window.location.origin}/traficos/${encodeURIComponent(t.trafico)}`
@@ -244,26 +281,106 @@ export default function TraficoDetailPage() {
               )
             })}
           </ol>
-          {!timelineExpanded && (
-            <button onClick={() => setTimelineExpanded(true)} style={{
-              display: 'flex', alignItems: 'center', gap: 4, marginTop: 12,
-              fontSize: 12, fontWeight: 700, color: 'var(--gold-700)', background: 'none', border: 'none', cursor: 'pointer', width: '100%', justifyContent: 'center',
-            }}>
-              Ver historial completo <ChevronDown size={14} />
-            </button>
-          )}
-          {timelineExpanded && (
-            <button onClick={() => setTimelineExpanded(false)} style={{
-              display: 'flex', alignItems: 'center', gap: 4, marginTop: 12,
-              fontSize: 12, fontWeight: 700, color: 'var(--gold-700)', background: 'none', border: 'none', cursor: 'pointer', width: '100%', justifyContent: 'center',
-            }}>
-              Colapsar <ChevronUp size={14} />
-            </button>
-          )}
+          {/* Timeline always expanded per V6 spec */}
         </div>
 
-        {/* ── TABS PANEL ── */}
+        {/* ── RIGHT PANEL: Documents (always visible) + Tabs ── */}
         <div>
+          {/* ── DOCUMENTOS — always visible above tabs ── */}
+          <div className="card" style={{ padding: 20, marginBottom: 20 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--n-900)' }}>
+                Documentos ({documentos.length}/{REQUIRED_DOCS.length})
+              </div>
+              <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--n-600)', fontFamily: 'var(--font-data)' }}>{docCompleteness}%</span>
+            </div>
+            {/* Completeness bar */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+              <div style={{ flex: 1, height: 6, background: 'var(--n-100)', borderRadius: 3, overflow: 'hidden' }}>
+                <div style={{ width: `${docCompleteness}%`, height: '100%', background: GOLD, borderRadius: 3, transition: 'width 0.6s ease' }} />
+              </div>
+            </div>
+
+            {/* Missing docs */}
+            {missingDocs.length > 0 && (
+              <div style={{ padding: '12px 16px', background: 'var(--danger-bg)', border: '1px solid rgba(220,38,38,0.15)', borderRadius: 'var(--r-md)', marginBottom: 16 }}>
+                <div style={{ fontSize: 11, fontWeight: 800, color: '#991B1B', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>Documentos Faltantes</div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 6 }}>
+                  {missingDocs.map(doc => (
+                    <label key={doc} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 10px', borderRadius: 'var(--r-md)', border: '2px dashed rgba(220,38,38,0.3)', background: 'white', cursor: 'pointer', fontSize: 12, fontWeight: 600, color: '#991B1B', minHeight: 44 }}>
+                      {uploadingDoc === doc ? <span style={{ color: GOLD }}>Subiendo...</span> : (
+                        <>
+                          <Upload size={12} />
+                          {doc}
+                          <input type="file" accept=".pdf,.jpg,.jpeg,.png,.xml" style={{ display: 'none' }} onChange={e => handleUpload(e.target.files?.[0], doc)} />
+                        </>
+                      )}
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Present docs */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 8 }}>
+              {documentos.map((doc: any, i: number) => (
+                <div key={i} style={{ padding: '12px 14px', background: 'var(--bg-card)', border: '1px solid #BBF7D0', borderRadius: 'var(--r-md)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ color: '#16A34A', fontSize: 14 }}>✅</span>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--n-800)' }}>{(doc.document_type || 'Documento').replace(/_/g, ' ')}</span>
+                  </div>
+                  {doc.file_url && <a href={doc.file_url} target="_blank" rel="noopener noreferrer" style={{ fontSize: 11, color: GOLD, fontWeight: 700, textDecoration: 'none' }}>Ver →</a>}
+                </div>
+              ))}
+            </div>
+            {documentos.length === 0 && missingDocs.length === 0 && (
+              <div style={{ padding: 32, textAlign: 'center', color: 'var(--n-400)' }}>Documentos pendientes de sincronización</div>
+            )}
+          </div>
+
+          {/* ── ENTRADAS — embedded sub-section ── */}
+          {entradas.length > 0 && (
+            <div className="card" style={{ padding: 20, marginBottom: 20 }}>
+              <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--n-900)', marginBottom: 12 }}>
+                Entradas ({entradas.length})
+              </div>
+              <div style={{ border: '1px solid var(--n-150)', borderRadius: 'var(--r-md)', overflow: 'hidden' }}>
+                {entradas.map((e: any, idx: number) => {
+                  const hasIncidencia = e.incidencia || e.estatus_entrada === 'incidencia'
+                  return (
+                    <div key={e.cve_entrada}
+                      style={{
+                        padding: '10px 16px',
+                        borderBottom: idx < entradas.length - 1 ? '1px solid var(--n-150)' : 'none',
+                        borderLeft: hasIncidencia ? '3px solid #DC2626' : '3px solid transparent',
+                        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                        minHeight: 60,
+                      }}>
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <span style={{ fontWeight: 700, fontSize: 14, fontFamily: 'var(--font-data)' }}>{e.cve_entrada}</span>
+                          <span style={{ fontSize: 12, color: 'var(--n-400)', fontFamily: 'var(--font-data)' }}>{fmtDate(e.fecha_llegada_mercancia)}</span>
+                        </div>
+                        <div style={{ fontSize: 12, color: 'var(--n-500)', marginTop: 2 }}>
+                          {fmtDesc(e.descripcion_mercancia || e.descripcion || '') || '—'}
+                          {e.peso_bruto && <span style={{ marginLeft: 8, fontFamily: 'var(--font-data)' }}>{fmtKg(e.peso_bruto)}</span>}
+                        </div>
+                      </div>
+                      <div>
+                        {hasIncidencia ? (
+                          <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 'var(--r-full, 9999px)', background: '#FEF2F2', color: '#991B1B', border: '1px solid rgba(220,38,38,0.2)' }}>Incidencia</span>
+                        ) : (
+                          <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 'var(--r-full, 9999px)', background: '#F0FDF4', color: '#16A34A', border: '1px solid #BBF7D0' }}>OK</span>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* ── TABS — secondary data below documents ── */}
           <div style={{ display: 'flex', gap: 2, marginBottom: 20, borderBottom: '1px solid var(--n-150)', overflow: 'auto' }}>
             {TABS.map(tab => (
               <button key={tab.key} onClick={() => setActiveTab(tab.key)} style={{
@@ -278,55 +395,6 @@ export default function TraficoDetailPage() {
             ))}
           </div>
 
-          {/* TAB 1 — DOCUMENTOS */}
-          {activeTab === 'documentos' && (
-            <div>
-              {/* Completeness bar */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-                <div style={{ flex: 1, height: 6, background: 'var(--n-100)', borderRadius: 3, overflow: 'hidden' }}>
-                  <div style={{ width: `${docCompleteness}%`, height: '100%', background: GOLD, borderRadius: 3, transition: 'width 0.6s ease' }} />
-                </div>
-                <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--n-600)', fontFamily: 'var(--font-data)' }}>{docCompleteness}%</span>
-              </div>
-
-              {/* Missing docs */}
-              {missingDocs.length > 0 && (
-                <div style={{ padding: '12px 16px', background: 'var(--danger-bg)', border: '1px solid rgba(220,38,38,0.15)', borderRadius: 'var(--r-md)', marginBottom: 16 }}>
-                  <div style={{ fontSize: 11, fontWeight: 800, color: '#991B1B', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>Documentos Faltantes</div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 6 }}>
-                    {missingDocs.map(doc => (
-                      <label key={doc} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 10px', borderRadius: 'var(--r-md)', border: '2px dashed rgba(220,38,38,0.3)', background: 'white', cursor: 'pointer', fontSize: 12, fontWeight: 600, color: '#991B1B', minHeight: 44 }}>
-                        {uploadingDoc === doc ? <span style={{ color: GOLD }}>Subiendo...</span> : (
-                          <>
-                            <Upload size={12} />
-                            {doc}
-                            <input type="file" accept=".pdf,.jpg,.jpeg,.png,.xml" style={{ display: 'none' }} onChange={e => handleUpload(e.target.files?.[0], doc)} />
-                          </>
-                        )}
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Present docs */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 8 }}>
-                {documentos.map((doc: any, i: number) => (
-                  <div key={i} style={{ padding: '12px 14px', background: 'var(--bg-card)', border: '1px solid #BBF7D0', borderRadius: 'var(--r-md)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <span style={{ color: '#16A34A', fontSize: 14 }}>✅</span>
-                      <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--n-800)' }}>{(doc.document_type || 'Documento').replace(/_/g, ' ')}</span>
-                    </div>
-                    {doc.file_url && <a href={doc.file_url} target="_blank" rel="noopener noreferrer" style={{ fontSize: 11, color: GOLD, fontWeight: 700, textDecoration: 'none' }}>Ver →</a>}
-                  </div>
-                ))}
-              </div>
-              {documentos.length === 0 && missingDocs.length === 0 && (
-                <div style={{ padding: 32, textAlign: 'center', color: 'var(--n-400)' }}>Documentos pendientes de sincronización</div>
-              )}
-            </div>
-          )}
-
           {/* TAB 2 — FINANCIERO */}
           {activeTab === 'financiero' && (
             <div>
@@ -340,11 +408,10 @@ export default function TraficoDetailPage() {
                   const val = Number(t.importe_total) || 0
                   const tc = Number(t.tipo_cambio) || 0
                   const valMXN = val * tc
-                  const IVA_RATE = 0.16 // TODO(V6): hardcoded — should use getIVARate() from @/lib/rates. Cascading base is correct below.
-                  const dta = Math.round(valMXN * 0.008)
+                  const dta = Math.round(valMXN * rates.dta)
                   const igi = 0 // T-MEC
                   const ivaBase = valMXN + dta + igi
-                  const iva = Math.round(ivaBase * IVA_RATE)
+                  const iva = Math.round(ivaBase * rates.iva)
                   const total = dta + igi + iva
 
                   const rows = [
@@ -463,22 +530,7 @@ export default function TraficoDetailPage() {
         </div>
       </div>
 
-      {/* Entradas section */}
-      {entradas.length > 0 && (
-        <div className="card" style={{ marginTop: 24 }}>
-          <div className="card-header"><span className="card-title">Entradas ({entradas.length})</span></div>
-          {entradas.map((e: any) => (
-            <Link href={`/entradas/${e.cve_entrada}`} key={e.cve_entrada}
-              style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 16px', borderBottom: 'var(--b-default)', textDecoration: 'none', color: 'inherit', minHeight: 48 }}>
-              <div>
-                <span style={{ fontWeight: 700, fontSize: 14, fontFamily: 'var(--font-data)' }}>{e.cve_entrada}</span>
-                <span style={{ fontSize: 12, color: 'var(--n-400)', marginLeft: 8 }}>{formatAbsoluteDate(e.fecha_llegada_mercancia)}</span>
-              </div>
-              <span style={{ fontSize: 13, color: 'var(--n-600)', fontFamily: 'var(--font-data)' }}>{e.peso_bruto ? `${Number(e.peso_bruto).toLocaleString()} kg` : '—'}</span>
-            </Link>
-          ))}
-        </div>
-      )}
+      {/* Entradas now embedded in the right panel above tabs */}
 
       <style>{`@keyframes pulse-dot { 0%,100% { transform:scale(1); } 50% { transform:scale(1.15); } }`}</style>
     </div>

@@ -51,10 +51,17 @@ export default function NuevoPedimentoPage() {
   const [tipoCambio, setTipoCambio] = useState(0)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [sysRates, setSysRates] = useState({ dta: 0.008, iva: 0.16, tc: 17.49 })
   const [error, setError] = useState('')
 
-  // Fetch live Banxico tipo de cambio on mount
+  // Fetch live rates on mount
   useEffect(() => {
+    fetch('/api/rates').then(r => r.json()).then(d => {
+      if (!d.error) {
+        setSysRates({ dta: d.dta?.rate ?? 0.008, iva: d.iva?.rate ?? 0.16, tc: d.tc?.rate ?? 17.49 })
+        if (d.tc?.rate) setTipoCambio(d.tc.rate)
+      }
+    }).catch(() => {})
     fetch('/api/tipo-cambio')
       .then(r => r.json())
       .then(d => { if (d.rate) setTipoCambio(Number(d.rate)) })
@@ -117,7 +124,7 @@ export default function NuevoPedimentoPage() {
       // Estimate contributions
       const igiRate = tmecEligible ? 0 : 0.05 // 5% default, 0% T-MEC
       const dtaRate = 0.008 // 8 al millar
-      const ivaRate = 0.16 // TODO(V6): hardcoded — should use getIVARate() from @/lib/rates. Cascading base is correct below.
+      const ivaRate = sysRates.iva
 
       const dta = valorMXN * dtaRate
       const igi = valorMXN * igiRate

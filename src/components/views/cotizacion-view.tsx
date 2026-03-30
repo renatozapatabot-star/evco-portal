@@ -34,7 +34,14 @@ function Row({ label, value, bold, highlight }: { label: string; value: string; 
 export function CotizacionView() {
   const [form, setForm] = useState({ valor_usd: '50000', tipo_cambio: '17.50', incoterm: 'EXW', flete_usd: '0', seguro_usd: '0', igi_rate: '5', regimen: 'A1', tmec: true })
   const [result, setResult] = useState<any>(null)
+  const [rates, setRates] = useState({ dta: 0.008, iva: 0.16, tc: 17.50 })
   const set = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }))
+
+  useEffect(() => {
+    fetch('/api/rates').then(r => r.json()).then(d => {
+      if (!d.error) setRates({ dta: d.dta?.rate ?? 0.008, iva: d.iva?.rate ?? 0.16, tc: d.tc?.rate ?? 17.50 })
+    }).catch(() => {})
+  }, [])
 
   const calculate = useCallback(() => {
     const valorUSD = parseFloat(form.valor_usd) || 0
@@ -49,8 +56,7 @@ export function CotizacionView() {
     const dta = form.regimen === 'IN' ? 347.09 : valorAduanaMXN * 0.008
     const igiRate = form.tmec ? 0 : (parseFloat(form.igi_rate) || 0) / 100
     const igi = valorAduanaMXN * igiRate
-    const IVA_RATE = 0.16 // TODO(V6): hardcoded — should use getIVARate() from @/lib/rates. Cascading base is correct below.
-    const iva = (valorAduanaMXN + igi + dta) * IVA_RATE
+    const iva = (valorAduanaMXN + igi + dta) * rates.iva
     const prev = 347.09
     const total = dta + igi + iva + prev
     setResult({ valorUSD, tc, valorAduanaMXN, dta, igi, iva, prev, total, igiRate: igiRate * 100, tmecSavings: form.tmec ? valorAduanaMXN * ((parseFloat(form.igi_rate) || 0) / 100) : 0 })

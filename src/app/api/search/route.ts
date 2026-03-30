@@ -15,6 +15,76 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ results: [] })
   }
 
+  // Detect pedimento format: 7 digits → return full chain instead of search results
+  if (/^\d{7}$/.test(q)) {
+    const [pedRes, trafRes] = await Promise.all([
+      supabase.from('aduanet_facturas')
+        .select('referencia, pedimento, proveedor, valor_usd, dta, igi, iva, fecha_pago, cove, moneda')
+        .eq('clave_cliente', CLAVE)
+        .ilike('pedimento', `%${q}%`)
+        .limit(1),
+      supabase.from('traficos')
+        .select('trafico, estatus, fecha_llegada, fecha_cruce, importe_total, pedimento, descripcion_mercancia')
+        .eq('company_id', COMPANY_ID)
+        .ilike('pedimento', `%${q}%`)
+        .limit(1),
+    ])
+
+    const pedimento = pedRes.data?.[0]
+    const trafico = trafRes.data?.[0]
+    const traficoId = trafico?.trafico || pedimento?.referencia
+
+    if (traficoId) {
+      const [entRes, docsRes] = await Promise.all([
+        supabase.from('entradas')
+          .select('cve_entrada, descripcion_mercancia, peso_bruto, fecha_llegada_mercancia, tiene_faltantes, mercancia_danada')
+          .eq('trafico', traficoId)
+          .eq('company_id', COMPANY_ID)
+          .limit(50),
+        supabase.from('expediente_documentos')
+          .select('doc_type, file_url, uploaded_at, nombre')
+          .eq('pedimento_id', traficoId)
+          .limit(20),
+      ])
+
+      return NextResponse.json({
+        type: 'pedimento_chain',
+        query: q,
+        pedimento: pedimento ? {
+          num: pedimento.pedimento,
+          fecha_pago: pedimento.fecha_pago,
+          valor_usd: pedimento.valor_usd,
+          dta: pedimento.dta,
+          igi: pedimento.igi,
+          iva: pedimento.iva,
+          proveedor: pedimento.proveedor,
+          cove: pedimento.cove,
+        } : null,
+        trafico: trafico ? {
+          trafico_id: trafico.trafico,
+          estatus: trafico.estatus,
+          fecha_llegada: trafico.fecha_llegada,
+          fecha_cruce: trafico.fecha_cruce,
+          valor_usd: trafico.importe_total,
+          descripcion: trafico.descripcion_mercancia,
+        } : null,
+        entradas: (entRes.data || []).map(e => ({
+          id: e.cve_entrada,
+          descripcion: e.descripcion_mercancia,
+          peso: e.peso_bruto,
+          fecha: e.fecha_llegada_mercancia,
+          incidencia: e.tiene_faltantes || e.mercancia_danada,
+        })),
+        documentos: (docsRes.data || []).map(d => ({
+          tipo: d.doc_type,
+          nombre: d.nombre,
+          file_url: d.file_url,
+          uploaded_at: d.uploaded_at,
+        })),
+      })
+    }
+  }
+
   const [trafRes, entRes, factRes] = await Promise.all([
     supabase.from('traficos')
       .select('trafico, estatus, fecha_llegada, descripcion_mercancia')
@@ -51,5 +121,5 @@ export async function GET(request: NextRequest) {
     })),
   ]
 
-  return NextResponse.json({ results, query: q })
+  return NextResponse.json({ type: 'search_results', results, query: q })
 }

@@ -4,25 +4,18 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { GOLD_GRADIENT } from '@/lib/design-system'
 import {
-  Truck, Package, FileText, FolderOpen,
-  BarChart3, CreditCard, Table2, Activity,
-  Users, UserPlus, Shield, Mic, Cpu,
-  Monitor, BookOpen, TrendingUp, Bell, Landmark,
+  LayoutDashboard, Truck, FolderOpen, BarChart3,
+  Users, UserPlus, Shield, Cpu,
+  Monitor, BookOpen, TrendingUp,
 } from 'lucide-react'
 
+/* V6 client nav: exactly 5 items (Inicio + 3 below + CRUZ at bottom).
+   Removed routes remain accessible by URL — just not in the sidebar. */
 const NAV = [
-  { href: '/traficos',     icon: Truck,      label: 'Tráficos' },
-  { href: '/entradas',     icon: Package,    label: 'Entradas' },
-  { href: '/pedimentos',   icon: FileText,   label: 'Pedimentos' },
-  { href: '/expedientes',  icon: FolderOpen, label: 'Expedientes' },
-  { href: '/reportes',     icon: BarChart3,  label: 'Reportes' },
-  { href: '/cuentas',      icon: CreditCard, label: 'Cuentas' },
-  { href: '/cumplimiento', icon: Shield,     label: 'Cumplimiento' },
-  { href: '/anexo24',      icon: Table2,     label: 'Anexo 24' },
-  { href: '/immex',        icon: Package,    label: 'IMMEX' },
-  { href: '/soia',         icon: Landmark,   label: 'SOIA' },
-  { href: '/alertas',      icon: Bell,       label: 'Alertas' },
-  { href: '/status',       icon: Activity,   label: 'Sistema' },
+  { href: '/',             icon: LayoutDashboard, label: 'Inicio' },
+  { href: '/traficos',     icon: Truck,           label: 'Tráficos' },
+  { href: '/reportes',     icon: BarChart3,       label: 'Reportes' },
+  { href: '/documentos',   icon: FolderOpen,      label: 'Documentos' },
 ]
 
 const ADMIN_NAV = [

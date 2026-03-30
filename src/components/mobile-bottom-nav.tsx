@@ -9,7 +9,7 @@ const TABS = [
   { href: '/traficos',  label: 'Tráficos',  icon: Truck },
   { href: '/cruz',      label: 'CRUZ',      icon: null as any, center: true },
   { href: '/reportes',  label: 'Reportes',  icon: BarChart3 },
-  { href: '/expedientes', label: 'Docs',     icon: FolderOpen },
+  { href: '/documentos',  label: 'Documentos', icon: FolderOpen },
 ]
 
 export function MobileBottomNav() {

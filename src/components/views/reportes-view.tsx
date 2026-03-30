@@ -81,6 +81,96 @@ function CustomTooltip({ active, payload, label }: any) {
   )
 }
 
+function fmtMXN(v: number) {
+  return 'MX$' + v.toLocaleString('es-MX', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
+}
+
+function EstadoDeCuenta() {
+  const [data, setData] = useState<{ totalFacturado: number; porCobrar: number; promDias: number; ultimosPagos: Array<{ fecha: string; importe: number }> } | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function load() {
+      const { data: cartera } = await supabase.from('econta_cartera')
+        .select('tipo, importe, saldo, fecha')
+        .eq('cve_cliente', CLAVE)
+        .order('fecha', { ascending: false })
+        .limit(2000)
+
+      if (!cartera || cartera.length === 0) { setLoading(false); return }
+
+      const totalFacturado = cartera.filter((r: any) => r.tipo === 'C').reduce((s: number, r: any) => s + (r.importe || 0), 0)
+      const porCobrar = cartera.reduce((s: number, r: any) => s + (r.saldo || 0), 0)
+
+      // Find last 3 payments (abonos)
+      const pagos = cartera.filter((r: any) => r.tipo === 'A').slice(0, 3)
+
+      // Average days between charges and payments (rough estimate)
+      const cargos = cartera.filter((r: any) => r.tipo === 'C' && r.fecha)
+      const abonos = cartera.filter((r: any) => r.tipo === 'A' && r.fecha)
+      let promDias = 0
+      if (cargos.length > 0 && abonos.length > 0) {
+        const avgCargoDate = cargos.slice(0, 20).reduce((s: number, r: any) => s + new Date(r.fecha).getTime(), 0) / Math.min(cargos.length, 20)
+        const avgAbonoDate = abonos.slice(0, 20).reduce((s: number, r: any) => s + new Date(r.fecha).getTime(), 0) / Math.min(abonos.length, 20)
+        promDias = Math.max(0, Math.round((avgAbonoDate - avgCargoDate) / (1000 * 60 * 60 * 24)))
+      }
+
+      setData({
+        totalFacturado,
+        porCobrar: Math.abs(porCobrar),
+        promDias,
+        ultimosPagos: pagos.map((p: any) => ({ fecha: p.fecha, importe: p.importe || 0 })),
+      })
+      setLoading(false)
+    }
+    load()
+  }, [])
+
+  if (loading) return (
+    <Card style={{ padding: 20, marginTop: 20 }}>
+      <div className="skeleton" style={{ height: 120, borderRadius: 8 }} />
+    </Card>
+  )
+
+  if (!data) return null
+
+  return (
+    <Card style={{ padding: 20, marginTop: 20 }}>
+      <SectionTitle title="Estado de Cuenta" sub="Resumen financiero del cliente" />
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16, marginBottom: 16 }}>
+        <div style={{ background: T.surfaceAlt, borderRadius: 8, padding: '12px 16px' }}>
+          <div style={{ color: T.textMuted, fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total Facturado</div>
+          <div style={{ color: T.text, fontSize: 20, fontWeight: 800, fontFamily: 'var(--font-jetbrains-mono)', marginTop: 4 }}>{fmtMXN(data.totalFacturado)}</div>
+        </div>
+        <div style={{ background: T.surfaceAlt, borderRadius: 8, padding: '12px 16px' }}>
+          <div style={{ color: T.textMuted, fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Por Cobrar</div>
+          <div style={{ color: data.porCobrar > 0 ? T.amber : T.green, fontSize: 20, fontWeight: 800, fontFamily: 'var(--font-jetbrains-mono)', marginTop: 4 }}>{fmtMXN(data.porCobrar)}</div>
+        </div>
+        <div style={{ background: T.surfaceAlt, borderRadius: 8, padding: '12px 16px' }}>
+          <div style={{ color: T.textMuted, fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Promedio Días Pago</div>
+          <div style={{ color: T.text, fontSize: 20, fontWeight: 800, fontFamily: 'var(--font-jetbrains-mono)', marginTop: 4 }}>{data.promDias} días</div>
+        </div>
+      </div>
+      {data.ultimosPagos.length > 0 && (
+        <div>
+          <div style={{ color: T.textSub, fontSize: 12, fontWeight: 600, marginBottom: 8 }}>Últimos 3 Pagos</div>
+          {data.ultimosPagos.map((p, i) => (
+            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: i < data.ultimosPagos.length - 1 ? `1px solid ${T.border}` : 'none' }}>
+              <span style={{ color: T.textSub, fontSize: 12, fontFamily: 'var(--font-jetbrains-mono)' }}>
+                {p.fecha ? new Date(p.fecha).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'America/Chicago' }) : '—'}
+              </span>
+              <span style={{ color: T.green, fontSize: 12, fontWeight: 600, fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtMXN(p.importe)}</span>
+            </div>
+          ))}
+        </div>
+      )}
+      <div style={{ marginTop: 12, textAlign: 'right' }}>
+        <a href="/cuentas" style={{ color: T.navy, fontSize: 12, fontWeight: 600, textDecoration: 'none' }}>Ver estado completo →</a>
+      </div>
+    </Card>
+  )
+}
+
 export function ReportesView() {
   const [weeklyData, setWeeklyData] = useState<any[]>([])
   const [proveedores, setProveedores] = useState<any[]>([])
@@ -164,11 +254,18 @@ export function ReportesView() {
       // Summary
       const totalValor = facturas.reduce((s: number, f: any) => s + (f.valor_usd || 0), 0)
       const tmecCount = facturas.filter((f: any) => (f.igi || 0) === 0).length
+      const noTmecCount = facturas.length - tmecCount
+      const noTmecValor = facturas.filter((f: any) => (f.igi || 0) > 0).reduce((s: number, f: any) => s + (f.valor_usd || 0), 0)
       const faltantes = entradas.filter((e: any) => e.tiene_faltantes).length
+      // Estimated savings: ~5% of non-T-MEC value as potential IGI savings
+      const estimatedSavings = Math.round(noTmecValor * 0.05)
+      const docsCompletos = traficos.filter((t: any) => t.estatus === 'Cruzado' || t.estatus === 'Pedimento Pagado').length
       setSummary({
         totalValor, tmecCount, totalFacturas: facturas.length,
-        tmecPct: facturas.length > 0 ? ((tmecCount / facturas.length) * 100).toFixed(1) : 0,
+        tmecPct: facturas.length > 0 ? ((tmecCount / facturas.length) * 100).toFixed(0) : 0,
+        noTmecCount, noTmecValor, estimatedSavings,
         totalTraficos: traficos.length, totalEntradas: entradas.length,
+        docsCompletos,
         faltantesPct: entradas.length > 0 ? ((faltantes / entradas.length) * 100).toFixed(2) : 0,
       })
       setLoading(false)
@@ -211,7 +308,7 @@ export function ReportesView() {
           <span style={{ fontSize: 15, fontWeight: 700, color: T.text }}>Resumen Operativo</span>
         </div>
         <div style={{ fontSize: 12, color: T.textSub }}>
-          {fmtNum(summary.totalTraficos)} tráficos procesados · {fmtUSD(summary.totalValor)} USD importado (histórico) · {summary.tmecPct}% T-MEC aplicado ({fmtNum(summary.tmecCount)} de {fmtNum(summary.totalFacturas)} facturas)
+          {fmtNum(summary.totalTraficos)} tráficos procesados · {fmtUSD(summary.totalValor)} USD importado (histórico) · T-MEC: {fmtNum(summary.tmecCount)} de {fmtNum(summary.totalFacturas)} pedimentos ({summary.tmecPct}%)
         </div>
       </Card>
 
@@ -219,9 +316,9 @@ export function ReportesView() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 24 }}>
         {[
           { label: 'Valor Total Importado', value: fmtUSD(summary.totalValor), sub: 'USD acumulado · histórico', color: T.navy },
-          { label: 'T-MEC Aplicado', value: `${summary.tmecPct}%`, sub: `${fmtNum(summary.tmecCount)} de ${fmtNum(summary.totalFacturas)} facturas`, color: T.green },
+          { label: 'T-MEC Aplicado', value: `${summary.tmecPct}%`, sub: `${fmtNum(summary.tmecCount)} de ${fmtNum(summary.totalFacturas)} pedimentos`, color: T.green },
           { label: 'Tráficos Completados', value: fmtNum(summary.totalTraficos), sub: `${fmtNum(summary.totalEntradas)} entradas · histórico`, color: T.navy },
-          { label: 'Docs para Cruce', value: '100%', sub: 'Documentación lista por operación', color: T.green },
+          { label: 'Cruces Exitosos', value: fmtNum(summary.docsCompletos), sub: `de ${fmtNum(summary.totalTraficos)} tráficos totales`, color: T.green },
         ].map(k => (
           <Card key={k.label} style={{ padding: '14px 16px' }}>
             <div className="kpi-label">{k.label}</div>
@@ -312,11 +409,30 @@ export function ReportesView() {
             <div key={s.status} style={{ flex: 1, background: T.surfaceAlt, border: `1px solid ${T.border}`, borderTop: `3px solid ${T.green}`, borderRadius: 8, padding: '14px 16px' }}>
               <div style={{ color: T.green, fontSize: 28, fontWeight: 800, letterSpacing: '-0.02em' }}>{fmtNum(s.count)}</div>
               <div style={{ color: T.text, fontSize: 12, fontWeight: 600, marginTop: 4 }}>{s.status}</div>
-              <div style={{ color: T.textMuted, fontSize: 11, marginTop: 2 }}>{s.pct}% del total</div>
+              <div style={{ color: T.textMuted, fontSize: 11, marginTop: 2 }}>{s.pct}% del total ({fmtNum(s.count)} de {fmtNum(summary.totalTraficos)})</div>
             </div>
           ))}
         </div>
       </Card>
+
+      {/* T-MEC Analysis */}
+      <Card style={{ padding: 20, marginTop: 20 }}>
+        <SectionTitle title="Análisis T-MEC" sub="Cobertura de tratado y oportunidades" />
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          <div style={{ background: T.surfaceAlt, border: `1px solid ${T.border}`, borderTop: `3px solid ${T.green}`, borderRadius: 8, padding: '14px 16px' }}>
+            <div style={{ color: T.green, fontSize: 14, fontWeight: 700 }}>T-MEC: {fmtNum(summary.tmecCount)} de {fmtNum(summary.totalFacturas)} pedimentos ({summary.tmecPct}%)</div>
+            <div style={{ color: T.textMuted, fontSize: 12, marginTop: 6 }}>Pedimentos con tasa preferencial aplicada</div>
+          </div>
+          <div style={{ background: T.surfaceAlt, border: `1px solid ${T.border}`, borderTop: `3px solid ${T.amber}`, borderRadius: 8, padding: '14px 16px' }}>
+            <div style={{ color: T.amber, fontSize: 14, fontWeight: 700 }}>{fmtNum(summary.noTmecCount)} sin T-MEC · Valor: {fmtUSD(summary.noTmecValor)} USD</div>
+            <div style={{ color: T.textSub, fontSize: 13, fontWeight: 600, marginTop: 6 }}>Ahorro potencial: ~{fmtUSD(summary.estimatedSavings)}*</div>
+            <div style={{ color: T.textMuted, fontSize: 10, marginTop: 6, fontStyle: 'italic' }}>* Estimado por fracción. Verificar con su agente aduanal antes de contabilizar.</div>
+          </div>
+        </div>
+      </Card>
+
+      {/* Estado de Cuenta */}
+      <EstadoDeCuenta />
 
       {/* Monthly Intelligence Reports */}
       {monthlyReports.length > 0 && (

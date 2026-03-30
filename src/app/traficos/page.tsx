@@ -10,6 +10,7 @@ import { MobileTraficoCard } from '@/components/mobile-trafico-card'
 import { CruzScore } from '@/components/cruz-score'
 import { calculateCruzScore, extractScoreInput, statusDays } from '@/lib/cruz-score'
 import { useSort } from '@/hooks/use-sort'
+import { useIsMobile } from '@/hooks/use-mobile'
 
 interface TraficoRow {
   trafico: string; estatus?: string; fecha_llegada?: string | null
@@ -19,7 +20,7 @@ interface TraficoRow {
   fecha_pago?: string | null; [key: string]: unknown
 }
 
-type FilterTab = 'todos' | 'proceso' | 'cruzado'
+type FilterTab = 'todos' | 'proceso' | 'atencion' | 'cruzado'
 const PAGE_SIZE = 50
 
 function exportCSV(rows: TraficoRow[], activeFilter: string) {
@@ -51,6 +52,7 @@ export default function TraficosPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const { sort, toggleSort } = useSort('traficos', { column: 'fecha_llegada', direction: 'desc' })
   const router = useRouter()
+  const isMobile = useIsMobile()
 
   useEffect(() => {
     setLoading(true)
@@ -86,10 +88,19 @@ export default function TraficosPage() {
     updateURL(newTab, search)
   }
 
+  const isAtencion = useCallback((r: TraficoRow): boolean => {
+    const score = calculateCruzScore(extractScoreInput(r))
+    const docCount = (r as Record<string, unknown>)._docCount as number | undefined
+    const docCompletitud = docCount != null ? docCount / 10 : undefined
+    const incidencia = !!(r as Record<string, unknown>).incidencia_abierta
+    return score < 50 || incidencia || (docCompletitud != null && docCompletitud < 0.3)
+  }, [])
+
   const filtered = useMemo(() => {
     let out = rows
     if (tab === 'proceso') out = out.filter(r => !(r.estatus ?? '').toLowerCase().includes('cruz'))
     if (tab === 'cruzado') out = out.filter(r => (r.estatus ?? '').toLowerCase().includes('cruz'))
+    if (tab === 'atencion') out = out.filter(r => isAtencion(r))
     if (search.trim()) {
       const q = search.toLowerCase()
       out = out.filter(r => fmtId(r.trafico).toLowerCase().includes(q) || (r.pedimento ?? '').toLowerCase().includes(q) || (r.descripcion_mercancia ?? '').toLowerCase().includes(q))
@@ -103,12 +114,13 @@ export default function TraficosPage() {
       const cmp = aVal < bVal ? -1 : aVal > bVal ? 1 : 0
       return sort.direction === 'asc' ? cmp : -cmp
     })
-  }, [rows, tab, search, sort])
+  }, [rows, tab, search, sort, isAtencion])
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE)
   const paged = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
   const enProceso = rows.filter(r => !(r.estatus ?? '').toLowerCase().includes('cruz')).length
   const cruzados = rows.filter(r => (r.estatus ?? '').toLowerCase().includes('cruz')).length
+  const atencionCount = rows.filter(r => isAtencion(r)).length
   const totalValor = rows.reduce((s, r) => s + (Number(r.importe_total) || 0), 0)
 
   const SortArrow = ({ col }: { col: string }) => sort.column === col ? <span style={{ marginLeft: 4, fontSize: 10 }}>{sort.direction === 'asc' ? '↑' : '↓'}</span> : null
@@ -125,13 +137,17 @@ export default function TraficosPage() {
       <div className="card">
         <div className="tbl-controls">
           <div className="tbl-filters">
-            {(['todos', 'proceso', 'cruzado'] as FilterTab[]).map(key => (
-              <button key={key} className={`f-btn${tab === key ? ' on' : ''}`}
-                onClick={() => handleTabChange(key)}>
-                {key === 'todos' ? 'Todos' : key === 'proceso' ? 'En Proceso' : 'Cruzado'}
-                <span className="f-count">{key === 'todos' ? rows.length : key === 'proceso' ? enProceso : cruzados}</span>
-              </button>
-            ))}
+            {(['todos', 'proceso', 'atencion', 'cruzado'] as FilterTab[]).map(key => {
+              const label = key === 'todos' ? 'Todos' : key === 'proceso' ? 'En Proceso' : key === 'atencion' ? 'Atención' : 'Cruzado'
+              const count = key === 'todos' ? rows.length : key === 'proceso' ? enProceso : key === 'atencion' ? atencionCount : cruzados
+              return (
+                <button key={key} className={`f-btn${tab === key ? ' on' : ''}`}
+                  onClick={() => handleTabChange(key)}>
+                  {label}
+                  <span className="f-count">{count}</span>
+                </button>
+              )
+            })}
           </div>
           <div className="tbl-actions">
             <div className="tbl-search">
@@ -158,17 +174,25 @@ export default function TraficosPage() {
         )}
 
         {/* Mobile Cards */}
-        <div className="traficos-cards" style={{ display: 'none', padding: '8px 12px' }}>
-          <div className="m-card-list">
-            {paged.map(r => {
-              const cs = calculateCruzScore(extractScoreInput(r))
-              return <MobileTraficoCard key={r.trafico} trafico={{ ...r, _cruzScore: cs }} onClick={() => router.push(`/traficos/${encodeURIComponent(r.trafico)}`)} />
-            })}
+        {isMobile && (
+          <div className="traficos-cards" style={{ padding: '8px 12px' }}>
+            <div className="m-card-list">
+              {paged.map(r => {
+                const cs = calculateCruzScore(extractScoreInput(r))
+                return <MobileTraficoCard key={r.trafico} trafico={{ ...r, _cruzScore: cs }} onClick={() => router.push(`/traficos/${encodeURIComponent(r.trafico)}`)} />
+              })}
+              {!loading && paged.length === 0 && (
+                <div style={{ textAlign: 'center', padding: '48px 0', color: 'var(--text-muted)' }}>
+                  <div style={{ fontSize: 20, marginBottom: 8 }}>🚚</div>
+                  <div style={{ fontSize: 14, fontWeight: 600 }}>Sin tráficos{tab === 'atencion' ? ' que requieren atención' : ''}</div>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* Table */}
-        <div className="traficos-table-wrap table-wrap" style={{ maxHeight: 'calc(100vh - 280px)', overflowY: 'auto' }}>
+        {/* Table — desktop only */}
+        {!isMobile && <div className="traficos-table-wrap table-wrap" style={{ maxHeight: 'calc(100vh - 280px)', overflowY: 'auto' }}>
           <table className="data-table">
             <thead>
               <tr>
@@ -209,7 +233,7 @@ export default function TraficosPage() {
                   ) : (
                     <div style={{ textAlign: 'center', padding: '48px 0', color: 'var(--text-muted)' }}>
                       <div style={{ fontSize: 20, marginBottom: 8 }}>🚚</div>
-                      <div style={{ fontSize: 14, fontWeight: 600 }}>Sin tráficos {tab !== 'todos' ? (tab === 'proceso' ? 'en proceso' : 'cruzados') : 'activos'}</div>
+                      <div style={{ fontSize: 14, fontWeight: 600 }}>Sin tráficos {tab !== 'todos' ? (tab === 'proceso' ? 'en proceso' : tab === 'atencion' ? 'que requieren atención' : 'cruzados') : 'activos'}</div>
                       <div style={{ fontSize: 12, color: 'var(--n-400)', marginTop: 4 }}>No hay operaciones para el período seleccionado</div>
                     </div>
                   )}
@@ -253,7 +277,7 @@ export default function TraficosPage() {
                           })()}
                         </div>
                       </td>
-                      <td>{r.pedimento ? <span className="ped-pill">{r.pedimento}</span> : null}</td>
+                      <td>{r.pedimento ? <span className="ped-pill">{r.pedimento}</span> : <span style={{ color: 'var(--n-400)' }}>—</span>}</td>
                       <td>
                         <span className={`badge ${isCruzado ? 'badge-green' : 'badge-amber'}`}>
                           <span className="badge-dot" />{isCruzado ? 'Cruzado' : 'En Proceso'}
@@ -263,9 +287,9 @@ export default function TraficosPage() {
                         </span>
                       </td>
                       <td style={{ fontSize: 12.5, color: 'var(--text-secondary)' }}>{fmtDate(r.fecha_llegada)}</td>
-                      <td className="c-desc" title={fmtDesc(r.descripcion_mercancia)}>{fmtDesc(r.descripcion_mercancia)}</td>
-                      <td className="col-num">{fmtKg(r.peso_bruto)}</td>
-                      <td className="col-num">{fmtUSD(r.importe_total)}</td>
+                      <td className="c-desc" title={fmtDesc(r.descripcion_mercancia)}>{fmtDesc(r.descripcion_mercancia) || <span style={{ color: 'var(--n-400)' }}>—</span>}</td>
+                      <td className="col-num">{fmtKg(r.peso_bruto) || <span style={{ color: 'var(--n-400)' }}>—</span>}</td>
+                      <td className="col-num">{(r.importe_total != null && Number(r.importe_total) > 0) ? fmtUSD(r.importe_total) : <span style={{ color: 'var(--n-400)' }}>—</span>}</td>
                       <td style={{ textAlign: 'center' }}><CruzScore score={cruzScore} size="sm" /></td>
                     </tr>
 
@@ -280,11 +304,11 @@ export default function TraficosPage() {
                               </div>
                               <div className="expansion-fact">
                                 <span className="expansion-label">Peso Bruto</span>
-                                <span className="expansion-value mono">{fmtKg(r.peso_bruto)} kg</span>
+                                <span className="expansion-value mono">{fmtKg(r.peso_bruto) ? `${fmtKg(r.peso_bruto)} kg` : '—'}</span>
                               </div>
                               <div className="expansion-fact">
                                 <span className="expansion-label">Importe USD</span>
-                                <span className="expansion-value mono">{fmtUSD(r.importe_total)}</span>
+                                <span className="expansion-value mono">{(r.importe_total != null && Number(r.importe_total) > 0) ? fmtUSD(r.importe_total) : '—'}</span>
                               </div>
                               <div className="expansion-fact">
                                 <span className="expansion-label">Fecha Llegada</span>
@@ -292,7 +316,7 @@ export default function TraficosPage() {
                               </div>
                               <div className="expansion-fact">
                                 <span className="expansion-label">Predicción Cruce</span>
-                                <span className="expansion-value mono">{predictions[r.trafico] ? `~${predictions[r.trafico].avgDays}d` : ''}</span>
+                                <span className="expansion-value mono">{predictions[r.trafico] ? `~${predictions[r.trafico].avgDays}d` : '—'}</span>
                               </div>
                               <div className="expansion-fact">
                                 <span className="expansion-label">Descripción</span>
@@ -314,6 +338,16 @@ export default function TraficosPage() {
               })}
             </tbody>
           </table>
+        </div>}
+
+        {/* Score Legend */}
+        <div style={{ padding: '8px 16px', fontSize: 11, color: 'var(--n-400)', borderTop: '1px solid var(--border-default)', display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center' }}>
+          <span style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>Score:</span>
+          <span><span style={{ color: 'var(--status-red)' }}>●</span> 0–49 Urgente</span>
+          <span><span style={{ color: 'var(--status-amber)' }}>●</span> 50–74 Atención</span>
+          <span><span style={{ color: 'var(--status-green)' }}>●</span> 75–100 Normal</span>
+          <span style={{ color: 'var(--n-300)' }}>|</span>
+          <span>40% docs · 30% días · 20% pago · 10% semáforo</span>
         </div>
 
         {totalPages > 1 && (

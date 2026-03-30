@@ -79,7 +79,7 @@ export function IntelligenceTicker() {
           <a key={i} href={item.href} style={{
             padding: '0 24px', fontSize: 12, fontWeight: 500,
             color: GOLD, textDecoration: 'none',
-            fontFamily: "'JetBrains Mono', monospace",
+            fontFamily: 'var(--font-jetbrains-mono)',
             letterSpacing: '0.02em'
           }}>
             {item.text}

@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@supabase/supabase-js'
 
+import { COMPANY_ID, CLIENT_NAME, CLIENT_RFC } from '@/lib/client-config'
+
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
 const T = { bg: '#FAFAF8', surface: '#FFFFFF', border: '#E8E6E0', surfaceAlt: '#F5F3EF', text: '#1A1A1A', textSub: '#6B6B6B', textMuted: '#999999', navy: '#BA7517', gold: '#BA7517', goldBg: '#FFF8EB', goldBorder: '#E8C84A', green: '#16A34A', greenBg: '#EAF3DE', shadow: '0 1px 3px rgba(0,0,0,0.07)' }
@@ -23,14 +25,14 @@ export function USMCAView() {
     certifier_name: 'Renato Zapata III', certifier_title: 'Director General', certifier_company: 'Renato Zapata & Company',
     certifier_address: '8402 Killam Industrial Blvd, Laredo, Texas 78045', certifier_email: 'ai@renatozapata.com',
     exporter_name: '', exporter_address: '', producer_name: '', producer_address: '',
-    importer_name: 'EVCO PLASTICS DE MEXICO S. DE R.L. DE C.V.', importer_address: 'RFC EPM001109I74 — México',
+    importer_name: CLIENT_NAME.toUpperCase(), importer_address: `RFC ${CLIENT_RFC} — México`,
     goods_description: '', hs_code: '', origin_criterion: 'C',
     blanket_from: new Date().toISOString().split('T')[0],
     blanket_to: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0],
     blanket: true,
   })
 
-  useEffect(() => { supabase.from('supplier_contacts').select('proveedor, contact_name, address').eq('company_id', 'evco').order('proveedor').then(({ data }) => setSuppliers(data || [])) }, [])
+  useEffect(() => { supabase.from('supplier_contacts').select('proveedor, contact_name, address').eq('company_id', COMPANY_ID).order('proveedor').then(({ data }) => setSuppliers(data || [])) }, [])
 
   const set = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }))
 
@@ -61,7 +63,7 @@ export function USMCAView() {
   }
 
   return (
-    <div style={{ padding: '24px 28px', fontFamily: "'DM Sans', sans-serif" }}>
+    <div style={{ padding: '24px 28px', fontFamily: 'var(--font-geist-sans)' }}>
       <div style={{ marginBottom: 20 }}>
         <h2 style={{ color: T.text, fontSize: 18, fontWeight: 700, margin: 0 }}>USMCA / T-MEC Certificate Generator</h2>
         <p style={{ color: T.textMuted, fontSize: 12, margin: '4px 0 0' }}>Certificado de Origen · USMCA Art. 5.2 · Firmado por Renato Zapata III</p>

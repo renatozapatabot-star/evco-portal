@@ -68,7 +68,7 @@ export default async function OperacionesPage() {
   }
 
   return (
-    <div style={{ padding: '24px 28px', fontFamily: "'DM Sans', sans-serif", color: '#E8E6E0' }}>
+    <div style={{ padding: '24px 28px', fontFamily: 'var(--font-geist-sans)', color: '#E8E6E0' }}>
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: 22, fontWeight: 800, margin: 0 }}>Operaciones Autónomas</h1>
         <p style={{ color: '#666', fontSize: 13, margin: '4px 0 0' }}>
@@ -166,7 +166,7 @@ export default async function OperacionesPage() {
             {(recentChanges || []).map((c, i) => (
               <div key={i} style={{ padding: '10px 16px', borderBottom: '1px solid #2A2A2A', display: 'flex', justifyContent: 'space-between' }}>
                 <div>
-                  <span style={{ fontSize: 13, fontWeight: 600, fontFamily: 'monospace' }}>{c.trafico}</span>
+                  <span style={{ fontSize: 13, fontWeight: 600, fontFamily: 'var(--font-jetbrains-mono)' }}>{c.trafico}</span>
                   <span style={{ fontSize: 12, marginLeft: 8,
                     color: c.estatus === 'Cruzado' ? '#16A34A' : c.estatus === 'Detenido' ? '#DC2626' : '#D97706'
                   }}>{c.estatus}</span>

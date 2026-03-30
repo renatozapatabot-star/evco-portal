@@ -51,7 +51,7 @@ export default function LoginPage() {
   return (
     <div style={{ minHeight: '100vh', background: T.bg, display: 'flex',
       alignItems: 'center', justifyContent: 'center', padding: 20,
-      fontFamily: "'DM Sans', -apple-system, sans-serif" }}>
+      fontFamily: 'var(--font-geist-sans)' }}>
       <div style={{ width: '100%', maxWidth: 400 }}>
 
         <div style={{ textAlign: 'center', marginBottom: 32 }}>

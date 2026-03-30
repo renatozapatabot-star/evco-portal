@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { ChevronLeft, Check, AlertTriangle, X } from 'lucide-react'
-import { CLIENT_CLAVE } from '@/lib/client-config'
+import { CLIENT_CLAVE, CLIENT_NAME, PATENTE } from '@/lib/client-config'
 import { fmtDate, fmtDesc } from '@/lib/format-utils'
 import { fmtCarrier } from '@/lib/carrier-names'
 import { createClient } from '@supabase/supabase-js'
@@ -130,7 +130,7 @@ export default function EntradaDetailPage() {
 
       <div className="page-header">
         <h1 className="page-title">Entrada {entrada.cve_entrada}</h1>
-        <p className="page-sub">EVCO Plastics de Mexico &middot; Patente 3596</p>
+        <p className="page-sub">{CLIENT_NAME} &middot; Patente {PATENTE}</p>
       </div>
 
       {entrada.trafico && (

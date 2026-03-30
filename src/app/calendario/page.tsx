@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import { Plus, Bell, BellOff, Check, X } from 'lucide-react'
+import { COMPANY_ID, CLIENT_NAME, PATENTE } from '@/lib/client-config'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -24,10 +25,10 @@ type CalEvent = {
 }
 
 const STATIC_EVENTS: CalEvent[] = [
-  { title: 'MVE Deadline — EVCO Plastics', due_date: '2026-03-31', event_type: 'compliance', severity: 'high', telegram_reminder: true, completed: true, source: 'static' },
+  { title: `MVE Deadline — ${CLIENT_NAME.split(' ')[0]} Plastics`, due_date: '2026-03-31', event_type: 'compliance', severity: 'high', telegram_reminder: true, completed: true, source: 'static' },
   { title: 'Declaracion mensual SAT (marzo)', due_date: '2026-04-17', event_type: 'compliance', severity: 'medium', telegram_reminder: true, completed: false, source: 'static' },
   { title: 'Declaracion mensual SAT (abril)', due_date: '2026-05-17', event_type: 'compliance', severity: 'medium', telegram_reminder: true, completed: false, source: 'static' },
-  { title: 'Verificar e.Firma SAT — EVCO', due_date: '2026-06-25', event_type: 'compliance', severity: 'high', telegram_reminder: true, completed: false, source: 'static' },
+  { title: `Verificar e.Firma SAT — ${CLIENT_NAME.split(' ')[0]}`, due_date: '2026-06-25', event_type: 'compliance', severity: 'high', telegram_reminder: true, completed: false, source: 'static' },
   { title: 'Verificar Autorización IMMEX', due_date: '2026-04-27', event_type: 'compliance', severity: 'high', telegram_reminder: true, completed: false, source: 'static' },
   { title: 'Verificar Padron de Importadores', due_date: '2026-09-27', event_type: 'compliance', severity: 'medium', telegram_reminder: true, completed: false, source: 'static' },
 ]
@@ -38,7 +39,7 @@ function getMondays(count: number): CalEvent[] {
   d.setDate(d.getDate() + (1 + 7 - d.getDay()) % 7 || 7)
   for (let i = 0; i < count; i++) {
     const mon = new Date(d); mon.setDate(d.getDate() + i * 7)
-    dates.push({ title: 'Auditoria Semanal EVCO', due_date: mon.toISOString().split('T')[0], event_type: 'audit', severity: 'low', telegram_reminder: true, completed: false, source: 'static' })
+    dates.push({ title: `Auditoria Semanal ${CLIENT_NAME.split(' ')[0]}`, due_date: mon.toISOString().split('T')[0], event_type: 'audit', severity: 'low', telegram_reminder: true, completed: false, source: 'static' })
   }
   return dates
 }
@@ -80,7 +81,7 @@ export default function CalendarioPage() {
     // Load from Supabase compliance_events table
     const { data: dbEvents } = await supabase.from('compliance_events')
       .select('*')
-      .eq('company_id', 'evco')
+      .eq('company_id', COMPANY_ID)
       .order('due_date', { ascending: true })
 
     const fromDb: CalEvent[] = (dbEvents || []).map((e: any) => ({
@@ -134,7 +135,7 @@ export default function CalendarioPage() {
       due_date: newEvent.due_date,
       event_type: newEvent.event_type,
       severity: newEvent.severity,
-      company_id: 'evco',
+      company_id: COMPANY_ID,
       telegram_reminder: true,
       completed: false,
     })
@@ -182,7 +183,7 @@ export default function CalendarioPage() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
         <div>
           <h1 className="pg-title">Calendario de Cumplimiento</h1>
-          <p className="pg-meta">{events.length} eventos &middot; EVCO Plastics &middot; Patente 3596</p>
+          <p className="pg-meta">{events.length} eventos &middot; {CLIENT_NAME.split(' ')[0]} Plastics &middot; Patente {PATENTE}</p>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <button onClick={() => setShowAdd(true)}

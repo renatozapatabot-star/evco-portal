@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo } from 'react'
 import { fmtId } from '@/lib/format-utils'
+import { COMPANY_ID } from '@/lib/client-config'
 import { Calendar, Package, AlertTriangle, CheckCircle } from 'lucide-react'
 
 interface Prediction { description: string; due_date?: string; severity: string; prediction_type: string }
@@ -15,15 +16,15 @@ export default function PlaneacionPage() {
 
   useEffect(() => {
     Promise.all([
-      fetch('/api/data?table=compliance_predictions&company_id=evco&limit=50').then(r => r.json()),
-      fetch('/api/data?table=traficos&company_id=evco&limit=200&order_by=fecha_llegada&order_dir=desc').then(r => r.json()),
+      fetch(`/api/data?table=compliance_predictions&company_id=${COMPANY_ID}&limit=50`).then(r => r.json()),
+      fetch(`/api/data?table=traficos&company_id=${COMPANY_ID}&limit=200&order_by=fecha_llegada&order_dir=desc`).then(r => r.json()),
     ]).then(([pRes, tRes]) => {
       setPredictions((pRes.data || []).filter((p: any) => p.prediction_type === 'import_forecast'))
       setTraficos(tRes.data || [])
     }).catch(() => {}).finally(() => setLoading(false))
 
     // Load weekly prep data
-    fetch('/api/data?table=compliance_predictions&company_id=evco&limit=50&order_by=created_at&order_dir=desc')
+    fetch(`/api/data?table=compliance_predictions&company_id=${COMPANY_ID}&limit=50&order_by=created_at&order_dir=desc`)
       .then(r => r.json())
       .then(res => {
         const prep = (res.data || []).find((p: any) => p.prediction_type === 'weekly_prep')

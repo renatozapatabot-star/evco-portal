@@ -356,7 +356,7 @@ export default function VozPage() {
         alignItems: 'center',
         justifyContent: 'center',
         padding: 24,
-        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+        fontFamily: 'var(--font-geist-sans)',
       }}>
         <div style={{
           width: 80,
@@ -440,7 +440,7 @@ export default function VozPage() {
         alignItems: 'center',
         justifyContent: 'space-between',
         padding: '48px 24px 32px',
-        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+        fontFamily: 'var(--font-geist-sans)',
         position: 'relative',
         overflow: 'hidden',
         userSelect: 'none',

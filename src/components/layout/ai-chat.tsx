@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { CLIENT_NAME, PATENTE } from '@/lib/client-config'
 
 const T = { surface: '#FFFFFF', surfaceAlt: '#F5F3EF', border: '#E8E6E0', text: '#1A1A1A', textSub: '#6B6B6B', textMuted: '#999999', navy: '#1A1A1A', gold: '#BA7517', shadow: '0 8px 32px rgba(0,0,0,0.12)' }
 type Message = { role: 'user' | 'assistant'; content: string; ts: string }
@@ -14,7 +15,7 @@ export function AIChat() {
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  useEffect(() => { if (open) { setTimeout(() => inputRef.current?.focus(), 100); if (messages.length === 0) setMessages([{ role: 'assistant', content: 'Hola, soy CRUZ. Puedo consultar datos EVCO en tiempo real. ¿Qué necesitas?', ts: new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }) }]) } }, [open])
+  useEffect(() => { if (open) { setTimeout(() => inputRef.current?.focus(), 100); if (messages.length === 0) setMessages([{ role: 'assistant', content: `Hola, soy CRUZ. Puedo consultar datos ${CLIENT_NAME.split(' ')[0]} en tiempo real. ¿Qué necesitas?`, ts: new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }) }]) } }, [open])
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
 
   async function sendMessage(text?: string) {
@@ -63,11 +64,11 @@ export function AIChat() {
       </button>
 
       {open && (
-        <div style={{ position: 'fixed', bottom: 80, right: 24, width: 380, height: 520, background: T.surface, border: `1px solid ${T.border}`, borderRadius: 16, boxShadow: T.shadow, zIndex: 199, display: 'flex', flexDirection: 'column', fontFamily: "'DM Sans', sans-serif", overflow: 'hidden' }}>
+        <div style={{ position: 'fixed', bottom: 80, right: 24, width: 380, height: 520, background: T.surface, border: `1px solid ${T.border}`, borderRadius: 16, boxShadow: T.shadow, zIndex: 199, display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-geist-sans)', overflow: 'hidden' }}>
           <div style={{ background: 'var(--amber-600, #BA7517)', padding: '14px 16px', flexShrink: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round"><path d="M12 2L13.5 8.5L20 10L13.5 11.5L12 18L10.5 11.5L4 10L10.5 8.5L12 2Z"/></svg>
-              <div><div style={{ color: '#fff', fontSize: 14, fontWeight: 700 }}>CRUZ Intelligence</div><div style={{ color: 'rgba(255,255,255,0.7)', fontSize: 11 }}>EVCO Plastics &middot; Patente 3596</div></div>
+              <div><div style={{ color: '#fff', fontSize: 14, fontWeight: 700 }}>CRUZ Intelligence</div><div style={{ color: 'rgba(255,255,255,0.7)', fontSize: 11 }}>{CLIENT_NAME.split(' ')[0]} Plastics &middot; Patente {PATENTE}</div></div>
             </div>
           </div>
           <div style={{ flex: 1, overflowY: 'auto', padding: 14, display: 'flex', flexDirection: 'column', gap: 10 }}>

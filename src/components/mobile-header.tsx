@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { Search, Bell, X } from 'lucide-react'
 import { daysUntilMVE, mveIsCritical } from '@/lib/compliance-dates'
+import { CLIENT_NAME, CLIENT_CLAVE } from '@/lib/client-config'
 import { useRouter } from 'next/navigation'
 
 export function MobileHeader({ alertCount = 0 }: { alertCount?: number }) {
@@ -33,7 +34,7 @@ export function MobileHeader({ alertCount = 0 }: { alertCount?: number }) {
         <div className="m-zmark"><span>Z</span></div>
         <div className="m-header-titles">
           <span className="m-header-cruz">CRUZ</span>
-          <span className="m-header-client">EVCO Plastics · 9254</span>
+          <span className="m-header-client">{CLIENT_NAME.split(' ')[0]} Plastics · {CLIENT_CLAVE}</span>
         </div>
       </div>
       <div className="m-header-actions">

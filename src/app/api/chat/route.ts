@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
-import { CLIENT_CLAVE, COMPANY_ID } from '@/lib/client-config'
+import { CLIENT_CLAVE, COMPANY_ID, CLIENT_NAME, CLIENT_RFC } from '@/lib/client-config'
 const CLAVE = CLIENT_CLAVE
 
 const INTENTS: Record<string, string[]> = {
@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
   const context = await getContextData(lastMsg)
 
   const sys = `Eres CRUZ, el sistema de inteligencia operativa de Renato Zapata & Company, agencia aduanal en Laredo, Texas.
-Tienes acceso REAL a datos de EVCO Plastics de México (Clave ${CLAVE}).
+Tienes acceso REAL a datos de ${CLIENT_NAME} (Clave ${CLAVE}).
 
 DATOS ACTUALES:
 ${context}
@@ -110,7 +110,7 @@ CAPACIDADES:
 - T-MEC certificate tracking
 
 HECHOS CLAVE:
-- Cliente: EVCO Plastics de México (RFC: EPM001109I74)
+- Cliente: ${CLIENT_NAME} (RFC: ${CLIENT_RFC})
 - Patente: 3596 · Aduana: 240 Nuevo Laredo
 - MVE deadline: 31 marzo 2026
 - Jueves es el día más rápido de cruce

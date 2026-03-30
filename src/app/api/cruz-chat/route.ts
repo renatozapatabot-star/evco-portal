@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { CLIENT_CLAVE } from '@/lib/client-config'
+import { CLIENT_CLAVE, COMPANY_ID, CLIENT_NAME, PORTAL_URL } from '@/lib/client-config'
+import { getIVARate } from '@/lib/rates'
 
 // In-memory rate limiting — 20 queries per session per hour
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>()
@@ -422,7 +423,9 @@ async function executeTool(name: string, input: any): Promise<string> {
         return JSON.stringify({ count: data?.length, total, results: data?.slice(0, 10) })
       }
       case 'check_bridge_status': {
-        const day = input.day_of_week ?? new Date().getDay()
+        const laredoDayStr = new Date().toLocaleDateString('en-US', { timeZone: 'America/Chicago', weekday: 'short' })
+        const laredoDayMap: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 }
+        const day = input.day_of_week ?? (laredoDayMap[laredoDayStr] ?? new Date().getDay())
         const { data } = await supabase.from('bridge_intelligence').select('bridge_name, crossing_hours, day_of_week').eq('day_of_week', day)
         const bridges: Record<string, number[]> = {}
         ;(data || []).forEach((b: any) => { if (!bridges[b.bridge_name]) bridges[b.bridge_name] = []; bridges[b.bridge_name].push(b.crossing_hours) })
@@ -452,7 +455,8 @@ async function executeTool(name: string, input: any): Promise<string> {
         const valueMXN = value * tc
         const dta = valueMXN * 0.008
         const igi = input.tmec ? 0 : valueMXN * 0.05
-        const iva = (valueMXN + dta + igi) * 0.16
+        const ivaRate = await getIVARate()
+        const iva = (valueMXN + dta + igi) * ivaRate
         return JSON.stringify({
           value_usd: value, exchange_rate: tc, value_mxn: Math.round(valueMXN),
           dta: Math.round(dta * 100) / 100, igi: Math.round(igi * 100) / 100,
@@ -498,7 +502,7 @@ async function executeTool(name: string, input: any): Promise<string> {
       case 'check_documents': {
         const { data: docs } = await supabase.from('expediente_documentos')
           .select('pedimento_id, doc_type, file_name')
-          .eq('company_id', 'evco')
+          .eq('company_id', COMPANY_ID)
           .or(`pedimento_id.eq.${input.trafico_id},pedimento_id.like.%${input.trafico_id.split('-')[1] || input.trafico_id}`)
           .limit(50)
         const types = [...new Set((docs || []).map((d: any) => d.doc_type))]
@@ -545,14 +549,14 @@ async function executeTool(name: string, input: any): Promise<string> {
         return JSON.stringify({ date: today, active_traficos: active, critical: alerts?.filter((a: any) => a.severity === 'critical').length, warnings: alerts?.filter((a: any) => a.severity === 'warning').length })
       }
       case 'client_health': {
-        const cid = input.company_id || 'evco'
+        const cid = input.company_id || COMPANY_ID
         const { data: company } = await supabase.from('companies').select('*').eq('company_id', cid).single()
         const { data: alerts } = await supabase.from('compliance_predictions').select('severity').eq('company_id', cid).eq('resolved', false)
         const { data: risks } = await supabase.from('pedimento_risk_scores').select('overall_score').eq('company_id', cid).gte('overall_score', 50)
         return JSON.stringify({ company: company?.name, health_score: company?.health_score, traficos: company?.traficos_count, critical_alerts: alerts?.filter((a: any) => a.severity === 'critical').length, high_risk: risks?.length, last_sync: company?.last_sync })
       }
       case 'duty_savings': {
-        const cid2 = input.company_id || 'evco'
+        const cid2 = input.company_id || COMPANY_ID
         const { data: savings } = await supabase.from('financial_intelligence').select('metric_name, metric_value, details').eq('company_id', cid2)
         return JSON.stringify({ company_id: cid2, metrics: savings })
       }
@@ -591,7 +595,7 @@ async function executeTool(name: string, input: any): Promise<string> {
         return JSON.stringify({ carrier: input.carrier_name, total_operations: total, completed: cruzados, completion_rate: total > 0 ? `${((cruzados/total)*100).toFixed(1)}%` : '0%', avg_crossing_days: avgDays.toFixed(1) })
       }
       case 'tmec_opportunity': {
-        const cid3 = input.company_id || 'evco'
+        const cid3 = input.company_id || COMPANY_ID
         const { data: tmecData } = await supabase.from('financial_intelligence').select('details').eq('company_id', cid3).eq('metric_name', 'tmec_optimization').single()
         if (tmecData?.details) return JSON.stringify(tmecData.details)
         return JSON.stringify({ note: 'T-MEC optimization not yet calculated for this client. Run tmec-optimizer script.' })
@@ -608,7 +612,7 @@ async function executeTool(name: string, input: any): Promise<string> {
         return JSON.stringify({ total_clients: companies?.length, companies: companies?.map(c => ({ ...c, alerts: alertMap[c.company_id] || 0 })) })
       }
       case 'simulate_audit': {
-        const cid4 = input.company_id || 'evco'
+        const cid4 = input.company_id || COMPANY_ID
         const year = input.year || new Date().getFullYear()
         const { data: traf } = await supabase.from('traficos').select('trafico, pedimento, estatus').eq('company_id', cid4).limit(1000)
         const noPedimento = (traf || []).filter(t => !t.pedimento).length
@@ -635,11 +639,11 @@ async function executeTool(name: string, input: any): Promise<string> {
         await supabase.from('upload_tokens').insert({
           token,
           trafico_id: input.trafico_id,
-          company_id: 'evco',
+          company_id: COMPANY_ID,
           required_docs: input.required_docs || [],
           expires_at: new Date(Date.now() + 72 * 3600000).toISOString()
         })
-        const url = `https://evco-portal.vercel.app/upload/${token}`
+        const url = `https://${PORTAL_URL}/upload/${token}`
         return JSON.stringify({ url, token, trafico_id: input.trafico_id, expires_in: '72 hours', instruction: 'Send this link to the supplier via WhatsApp or email.' })
       }
       case 'check_risk_radar': {
@@ -651,7 +655,7 @@ async function executeTool(name: string, input: any): Promise<string> {
         return JSON.stringify({ signals: signals || [], total: signals?.length || 0 })
       }
       case 'get_memory': {
-        const memCid = input.company_id || 'evco'
+        const memCid = input.company_id || COMPANY_ID
         let q = supabase.from('cruz_memory').select('pattern_key, pattern_value, confidence, observations, last_seen').eq('company_id', memCid)
         if (input.pattern_type) q = q.eq('pattern_type', input.pattern_type)
         const { data: memories } = await q.order('confidence', { ascending: false }).limit(20)
@@ -696,21 +700,21 @@ async function executeTool(name: string, input: any): Promise<string> {
         }
       }
       case 'compare_to_benchmark': {
-        const { data: evcoMetrics } = await supabase.from('client_benchmarks').select('*').eq('company_id', 'evco').order('calculated_at', { ascending: false }).limit(10)
+        const { data: clientMetrics } = await supabase.from('client_benchmarks').select('*').eq('company_id', COMPANY_ID).order('calculated_at', { ascending: false }).limit(10)
         const { data: fleetMetrics } = await supabase.from('client_benchmarks').select('*').eq('company_id', 'fleet').order('calculated_at', { ascending: false }).limit(10)
-        const comparison = (evcoMetrics || []).map((e: any) => {
+        const comparison = (clientMetrics || []).map((e: any) => {
           const fleet = (fleetMetrics || []).find((f: any) => f.metric_name === e.metric_name)
           return {
-            metric: e.metric_name, evco: e.metric_value, fleet_avg: fleet?.fleet_average, fleet_median: fleet?.fleet_median,
+            metric: e.metric_name, client: e.metric_value, fleet_avg: fleet?.fleet_average, fleet_median: fleet?.fleet_median,
             top_quartile: fleet?.top_quartile, delta_pct: fleet?.fleet_average ? (((e.metric_value - fleet.fleet_average) / fleet.fleet_average) * 100).toFixed(1) + '%' : 'N/A',
           }
         })
-        return JSON.stringify({ comparison, insight: 'EVCO T-MEC utilization at 56.4% vs 68.3% fleet average. Closing this gap is worth approximately $380K MXN/year.' })
+        return JSON.stringify({ comparison, insight: `${CLIENT_NAME} T-MEC utilization at 56.4% vs 68.3% fleet average. Closing this gap is worth approximately $380K MXN/year.` })
       }
       case 'show_compliance_calendar': {
         const daysAhead = input.days_ahead || 90
         const futureDate = new Date(Date.now() + daysAhead * 86400000).toISOString()
-        const { data: predictions } = await supabase.from('compliance_predictions').select('*').eq('company_id', 'evco').eq('resolved', false).lte('due_date', futureDate).order('due_date', { ascending: true }).limit(30)
+        const { data: predictions } = await supabase.from('compliance_predictions').select('*').eq('company_id', COMPANY_ID).eq('resolved', false).lte('due_date', futureDate).order('due_date', { ascending: true }).limit(30)
         const { data: mveIssues } = await supabase.from('traficos').select('trafico, estatus').is('mve_folio', null).limit(20)
         const deadlines = [
           ...(predictions || []).map((p: any) => ({ type: p.prediction_type, description: p.description, due_date: p.due_date, severity: p.severity })),
@@ -872,7 +876,7 @@ export async function POST(req: NextRequest) {
     const userMsg = messages[messages.length - 1]?.content || ''
     supabase.from('cruz_conversations').insert({
       session_id: sessionId || 'anonymous',
-      company_id: 'evco',
+      company_id: COMPANY_ID,
       user_message: typeof userMsg === 'string' ? userMsg.substring(0, 2000) : JSON.stringify(userMsg).substring(0, 2000),
       cruz_response: text.substring(0, 5000),
       tools_used: toolsUsed.length > 0 ? toolsUsed : null,

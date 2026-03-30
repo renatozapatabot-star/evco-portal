@@ -59,7 +59,7 @@ export function TraficoDetail({ traficoId, onClose }: { traficoId: string; onClo
       {/* Panel */}
       <div style={{ position: 'fixed', right: 0, top: 0, bottom: 0, width: 560,
         background: T.surface, boxShadow: T.shadow, zIndex: 101,
-        display: 'flex', flexDirection: 'column', fontFamily: "'DM Sans', sans-serif",
+        display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-geist-sans)',
         animation: 'slideIn 0.2s ease-out' }}>
 
         {/* Header */}

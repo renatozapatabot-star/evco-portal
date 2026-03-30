@@ -34,7 +34,7 @@ export default async function ConocimientoPage() {
   }
 
   return (
-    <div style={{ padding: '24px 28px', fontFamily: "'DM Sans', sans-serif", color: '#E8E6E0' }}>
+    <div style={{ padding: '24px 28px', fontFamily: 'var(--font-geist-sans)', color: '#E8E6E0' }}>
       <h1 style={{ fontSize: 22, fontWeight: 800, margin: '0 0 4px' }}>Base de Conocimiento</h1>
       <p style={{ color: '#666', fontSize: 13, margin: '0 0 24px' }}>
         Memoria institucional de CRUZ &middot; {(knowledge || []).length} precedentes
@@ -53,7 +53,7 @@ export default async function ConocimientoPage() {
                   {k.knowledge_type}
                 </span>
               </div>
-              <span style={{ fontSize: 11, color: '#666', fontFamily: 'monospace' }}>{k.confidence}% confianza</span>
+              <span style={{ fontSize: 11, color: '#666', fontFamily: 'var(--font-jetbrains-mono)' }}>{k.confidence}% confianza</span>
             </div>
             <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 6 }}>{k.title}</div>
             <div style={{ fontSize: 13, color: '#9C9690', lineHeight: 1.5 }}>{k.content}</div>

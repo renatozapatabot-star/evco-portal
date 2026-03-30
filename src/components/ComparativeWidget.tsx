@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { GOLD } from '@/lib/design-system'
+import { COMPANY_ID, CLIENT_NAME } from '@/lib/client-config'
 
 /* ── Types ── */
 interface BenchmarkRow {
@@ -166,20 +167,20 @@ function MetricBar({ config, clientRow, fleetRow }: {
 
 /* ── Main Widget ── */
 export default function ComparativeWidget() {
-  const [evcoData, setEvcoData]   = useState<BenchmarkRow[]>([])
+  const [clientData, setClientData]   = useState<BenchmarkRow[]>([])
   const [fleetData, setFleetData] = useState<BenchmarkRow[]>([])
   const [loading, setLoading]     = useState(true)
 
   useEffect(() => {
     async function load() {
       try {
-        const [evcoRes, fleetRes] = await Promise.all([
-          fetch('/api/data?table=client_benchmarks&company_id=evco'),
+        const [clientRes, fleetRes] = await Promise.all([
+          fetch(`/api/data?table=client_benchmarks&company_id=${COMPANY_ID}`),
           fetch('/api/data?table=client_benchmarks&company_id=fleet'),
         ])
-        const evco  = await evcoRes.json()
+        const client  = await clientRes.json()
         const fleet = await fleetRes.json()
-        setEvcoData(Array.isArray(evco) ? evco : evco.data || [])
+        setClientData(Array.isArray(client) ? client : client.data || [])
         setFleetData(Array.isArray(fleet) ? fleet : fleet.data || [])
       } catch (e) {
         console.error('ComparativeWidget fetch error:', e)
@@ -191,12 +192,12 @@ export default function ComparativeWidget() {
   }, [])
 
   // Index by metric_name
-  const evcoByMetric:  Record<string, BenchmarkRow> = {}
+  const clientByMetric:  Record<string, BenchmarkRow> = {}
   const fleetByMetric: Record<string, BenchmarkRow> = {}
-  evcoData.forEach(r  => { evcoByMetric[r.metric_name] = r })
+  clientData.forEach(r  => { clientByMetric[r.metric_name] = r })
   fleetData.forEach(r => { fleetByMetric[r.metric_name] = r })
 
-  const insights = generateInsights(evcoByMetric, fleetByMetric)
+  const insights = generateInsights(clientByMetric, fleetByMetric)
 
   return (
     <div style={{
@@ -213,7 +214,7 @@ export default function ComparativeWidget() {
           <h3 style={{ margin: 0, color: GOLD, fontSize: 15, fontWeight: 700, letterSpacing: 0.5 }}>
             ¿CÓMO TE COMPARAS?
           </h3>
-          <span style={{ fontSize: 11, color: MUTED }}>EVCO vs. Portafolio Completo</span>
+          <span style={{ fontSize: 11, color: MUTED }}>{CLIENT_NAME.split(' ')[0]} vs. Portafolio Completo</span>
         </div>
       </div>
 
@@ -229,7 +230,7 @@ export default function ComparativeWidget() {
         <MetricBar
           key={m.key}
           config={m}
-          clientRow={evcoByMetric[m.key]}
+          clientRow={clientByMetric[m.key]}
           fleetRow={fleetByMetric[m.key]}
         />
       ))}
@@ -264,7 +265,7 @@ export default function ComparativeWidget() {
         display: 'flex', gap: 16, marginTop: 14,
         fontSize: 10, color: MUTED,
       }}>
-        <span><span style={{ display: 'inline-block', width: 10, height: 10, background: GOLD, borderRadius: 2, marginRight: 4, verticalAlign: 'middle' }} />EVCO</span>
+        <span><span style={{ display: 'inline-block', width: 10, height: 10, background: GOLD, borderRadius: 2, marginRight: 4, verticalAlign: 'middle' }} />{CLIENT_NAME.split(' ')[0]}</span>
         <span><span style={{ display: 'inline-block', width: 10, height: 10, background: GRAY, borderRadius: 2, marginRight: 4, verticalAlign: 'middle' }} />Flota</span>
         <span><span style={{ display: 'inline-block', width: 10, height: 0, borderTop: `2px dashed ${MUTED}`, marginRight: 4, verticalAlign: 'middle' }} />Top 25%</span>
       </div>

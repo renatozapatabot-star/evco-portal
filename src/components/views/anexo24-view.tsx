@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Table2 } from 'lucide-react'
+import { CLIENT_NAME } from '@/lib/client-config'
 import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
@@ -98,10 +99,10 @@ export function Anexo24View() {
   }
 
   return (
-    <div style={{ padding: '24px 28px', fontFamily: "'DM Sans', sans-serif" }}>
+    <div style={{ padding: '24px 28px', fontFamily: 'var(--font-geist-sans)' }}>
       <div style={{ marginBottom: 20 }}>
         <h2 className="page-title" style={{ margin: 0 }}>Anexo 24 — IMMEX</h2>
-        <p style={{ color: T.textMuted, fontSize: 12, margin: '4px 0 0' }}>Reconciliación maquila · EVCO Plastics de México</p>
+        <p style={{ color: T.textMuted, fontSize: 12, margin: '4px 0 0' }}>Reconciliación maquila · {CLIENT_NAME}</p>
       </div>
 
       {/* IMMEX Temporal Compliance */}

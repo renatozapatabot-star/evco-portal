@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo, Fragment, useCallback } from 'react'
 import { Search, Download, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { CLIENT_NAME, CLIENT_CLAVE, PATENTE } from '@/lib/client-config'
+import { CLIENT_NAME, CLIENT_CLAVE, PATENTE, COMPANY_ID } from '@/lib/client-config'
 import { fmtId, fmtDesc, fmtKg, fmtUSD, fmtUSDCompact, fmtDate, calcPriority, priorityClass } from '@/lib/format-utils'
 import { fmtCarrier } from '@/lib/carrier-names'
 import { MobileTraficoCard } from '@/components/mobile-trafico-card'
@@ -34,7 +34,7 @@ function exportCSV(rows: TraficoRow[], activeFilter: string) {
   const h = ['Trafico','Estatus','Fecha','Descripcion','Peso_kg','Importe_USD','Pedimento']
   const c = rows.map(r => [r.trafico, r.estatus??'', r.fecha_llegada?.split('T')[0]??'', (r.descripcion_mercancia??'').replace(/,/g,' '), r.peso_bruto??'', r.importe_total??'', r.pedimento??''].join(','))
   const b = new Blob([[...meta, h.join(','), ...c].join('\n')], { type: 'text/csv' })
-  const fname = `EVCO_Traficos_${activeFilter !== 'todos' ? activeFilter + '_' : ''}${new Date().toISOString().split('T')[0]}.csv`
+  const fname = `${COMPANY_ID.toUpperCase()}_Traficos_${activeFilter !== 'todos' ? activeFilter + '_' : ''}${new Date().toISOString().split('T')[0]}.csv`
   const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = fname; a.click()
 }
 
@@ -58,7 +58,7 @@ export default function TraficosPage() {
       .then(r => r.json()).then(d => setRows(d.data ?? d ?? []))
       .catch(() => {}).finally(() => setLoading(false))
     fetch('/api/crossing-prediction').then(r => r.json()).then(d => setPredictions(d.predictions ?? {})).catch(() => {})
-    fetch('/api/data?table=pedimento_risk_scores&company_id=evco&limit=2000&order_by=calculated_at&order_dir=desc')
+    fetch(`/api/data?table=pedimento_risk_scores&company_id=${COMPANY_ID}&limit=2000&order_by=calculated_at&order_dir=desc`)
       .then(r => r.json()).then(d => {
         const map = new Map<string, any>()
         ;(d.data ?? []).forEach((r: any) => { if (r.trafico_id && !map.has(r.trafico_id)) map.set(r.trafico_id, r) })

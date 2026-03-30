@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { CLIENT_CLAVE } from '@/lib/client-config'
+import { CLIENT_CLAVE, COMPANY_ID } from '@/lib/client-config'
 
 interface SavingsData {
   total_mxn: number
@@ -69,7 +69,7 @@ export function SavingsWidget() {
         })
       } else {
         // Fallback to pre-calculated
-        fetch('/api/data?table=compliance_predictions&company_id=evco&limit=1&order_by=created_at&order_dir=desc')
+        fetch(`/api/data?table=compliance_predictions&company_id=${COMPANY_ID}&limit=1&order_by=created_at&order_dir=desc`)
           .then(r => r.json())
           .then(res => {
             const items = res.data || []

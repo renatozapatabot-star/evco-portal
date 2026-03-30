@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import crypto from 'crypto'
+import { COMPANY_ID } from '@/lib/client-config'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -24,7 +25,7 @@ export async function POST(req: NextRequest) {
     const { url, events, secret, company_id } = body
     if (!url || !events?.length) return NextResponse.json({ error: 'url and events required' }, { status: 400 })
     const { data, error } = await supabase.from('webhook_subscriptions')
-      .insert({ company_id: company_id || 'evco', url, events, secret: secret || crypto.randomUUID() })
+      .insert({ company_id: company_id || COMPANY_ID, url, events, secret: secret || crypto.randomUUID() })
       .select().single()
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     return NextResponse.json({ subscription: data })

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import { Send, Inbox, FileText, PenLine, X } from 'lucide-react'
+import { COMPANY_ID } from '@/lib/client-config'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
@@ -233,7 +234,7 @@ export default function ComunicacionesPage() {
                     <tr key={e.id || i}>
                       <td>
                         <span style={{ width: 8, height: 8, borderRadius: '50%', display: 'inline-block',
-                          background: e.is_urgent ? 'var(--status-red, #ef4444)' : (e.from_address || '').includes('evco') ? '#3b82f6' : 'var(--green)' }} />
+                          background: e.is_urgent ? 'var(--status-red, #ef4444)' : (e.from_address || '').includes(COMPANY_ID) ? '#3b82f6' : 'var(--green)' }} />
                       </td>
                       <td style={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         <span style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{(e.from_address || '').substring(0, 35)}</span>

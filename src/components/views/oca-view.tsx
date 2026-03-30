@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { CLIENT_NAME, CLIENT_RFC } from '@/lib/client-config'
 
 const T = { bg: '#FAFAF8', surface: '#FFFFFF', border: '#E8E6E0', surfaceAlt: '#F5F3EF', text: '#1A1A1A', textSub: '#6B6B6B', textMuted: '#999999', navy: '#BA7517', gold: '#BA7517', goldBg: '#FFF8EB', goldBorder: '#E8C84A', green: '#16A34A', greenBg: '#EAF3DE', shadow: '0 1px 3px rgba(0,0,0,0.07)' }
 
@@ -34,13 +35,13 @@ export function OCAView() {
 
   function downloadOpinion() {
     if (!result) return
-    const content = [`OPINIÓN DE CLASIFICACIÓN ARANCELARIA`, `No. ${opinionNum}`, ``, `Fecha: ${new Date().toLocaleDateString('es-MX', { day: '2-digit', month: 'long', year: 'numeric' })}`, `Cliente: EVCO Plastics de México S. de R.L. de C.V.`, `RFC: EPM001109I74`, ``, `I. PRODUCTO`, product, material ? `Material: ${material}` : '', uso ? `Uso: ${uso}` : '', ``, `II. CLASIFICACIÓN`, `Fracción Arancelaria: ${result.fraccion}`, `Descripción TIGIE: ${result.descripcion}`, `Arancel General: ${result.arancel}`, `T-MEC/USMCA: ${result.tmec}`, ``, `III. ANÁLISIS`, result.analisis, ``, `IV. FUNDAMENTO LEGAL`, result.fundamento, ``, `─`.repeat(60), `Renato Zapata III — Director General`, `Renato Zapata & Company · Patente 3596`].filter(Boolean).join('\n')
+    const content = [`OPINIÓN DE CLASIFICACIÓN ARANCELARIA`, `No. ${opinionNum}`, ``, `Fecha: ${new Date().toLocaleDateString('es-MX', { day: '2-digit', month: 'long', year: 'numeric' })}`, `Cliente: ${CLIENT_NAME}`, `RFC: ${CLIENT_RFC}`, ``, `I. PRODUCTO`, product, material ? `Material: ${material}` : '', uso ? `Uso: ${uso}` : '', ``, `II. CLASIFICACIÓN`, `Fracción Arancelaria: ${result.fraccion}`, `Descripción TIGIE: ${result.descripcion}`, `Arancel General: ${result.arancel}`, `T-MEC/USMCA: ${result.tmec}`, ``, `III. ANÁLISIS`, result.analisis, ``, `IV. FUNDAMENTO LEGAL`, result.fundamento, ``, `─`.repeat(60), `Renato Zapata III — Director General`, `Renato Zapata & Company · Patente 3596`].filter(Boolean).join('\n')
     const blob = new Blob([content], { type: 'text/plain;charset=utf-8' })
     const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `${opinionNum}.txt`; a.click(); URL.revokeObjectURL(url)
   }
 
   return (
-    <div style={{ padding: '24px 28px', fontFamily: "'DM Sans', sans-serif" }}>
+    <div style={{ padding: '24px 28px', fontFamily: 'var(--font-geist-sans)' }}>
       <div style={{ marginBottom: 20 }}>
         <h2 style={{ color: T.text, fontSize: 18, fontWeight: 700, margin: 0 }}>OCA — Opinión de Clasificación Arancelaria</h2>
         <p style={{ color: T.textMuted, fontSize: 12, margin: '4px 0 0' }}>Generador automático · Patente 3596 · Firmado por Renato Zapata III</p>
@@ -82,7 +83,7 @@ export function OCAView() {
             </div>
             <div style={{ background: T.goldBg, border: `1px solid ${T.goldBorder}`, borderRadius: 10, padding: '14px 16px', marginBottom: 16, textAlign: 'center' }}>
               <div style={{ color: T.textMuted, fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>Fracción Arancelaria</div>
-              <div style={{ color: T.gold, fontSize: 28, fontWeight: 800, letterSpacing: '0.05em', fontFamily: 'monospace' }}>{result.fraccion}</div>
+              <div style={{ color: T.gold, fontSize: 28, fontWeight: 800, letterSpacing: '0.05em', fontFamily: 'var(--font-jetbrains-mono)' }}>{result.fraccion}</div>
               <div style={{ color: T.textSub, fontSize: 12, marginTop: 4 }}>{result.descripcion}</div>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>

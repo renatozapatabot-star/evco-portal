@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from 'react'
 import DataTable, { Column } from '@/components/DataTable'
 import EmptyState from '@/components/EmptyState'
 import { Landmark } from 'lucide-react'
+import { COMPANY_ID } from '@/lib/client-config'
 
 const BRIDGES = [
   { name: 'Puente Internacional I', sub: 'Gateway to Americas', type: 'Pasajero', status: 'green', wait: '-' },
@@ -31,7 +32,7 @@ export function SoiaView() {
       .then(r => r.json()).then(d => setCruces(d.data || []))
       .catch(() => {}).finally(() => setLoading(false))
     // Bridge intelligence
-    fetch('/api/data?table=bridge_intelligence&company_id=evco&limit=500')
+    fetch(`/api/data?table=bridge_intelligence&company_id=${COMPANY_ID}&limit=500`)
       .then(r => r.json()).then(d => {
         const today = new Date().getDay()
         const records = (d.data || []).filter((b: any) => b.day_of_week === today)
@@ -164,7 +165,7 @@ export function SoiaView() {
           loading={false}
           keyField="id"
           pageSize={50}
-          exportFilename="evco_soia"
+          exportFilename={`${COMPANY_ID}_soia`}
           searchPlaceholder="Buscar cruce..."
           emptyMessage="Sin cruces recientes"
         />

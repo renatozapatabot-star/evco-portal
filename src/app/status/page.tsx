@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { GOLD_GRADIENT } from '@/lib/design-system'
+import { PORTAL_URL } from '@/lib/client-config'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -28,7 +29,7 @@ export default async function StatusPage() {
           : i.error_message || 'Check pending',
       }))
     : [
-        { name: 'Portal CRUZ', status: 'operational', detail: 'evco-portal.vercel.app' },
+        { name: 'Portal CRUZ', status: 'operational', detail: PORTAL_URL },
         { name: 'Base de Datos', status: 'operational', detail: `${(statusRes.count || 0).toLocaleString()} tráficos` },
         { name: 'GlobalPC MySQL', status: 'operational', detail: 'bd_demo_38 connected' },
         { name: 'CRUZ Intelligence', status: 'operational', detail: 'Throne · Laredo TX · qwen3.5:35b' },
@@ -45,7 +46,7 @@ export default async function StatusPage() {
   const allOp = systems.every(s => s.status === 'operational' || s.status === 'healthy')
 
   return (
-    <div style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", background: '#0D0D0D', color: '#E8E6E0', padding: '40px 20px', minHeight: '100vh' }}>
+    <div style={{ fontFamily: 'var(--font-geist-sans)', background: 'var(--bg-dark)', color: '#E8E6E0', padding: '40px 20px', minHeight: '100vh' }}>
       <div style={{ maxWidth: 640, margin: '0 auto' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 32 }}>
           <div style={{ width: 40, height: 40, background: GOLD_GRADIENT, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1A1710', fontWeight: 900, fontSize: 18, fontFamily: 'Georgia, serif' }}>Z</div>

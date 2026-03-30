@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import { Truck, DollarSign, AlertTriangle, ChevronRight, CheckCircle, Clock, Package, Shield, Activity } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { CLIENT_CLAVE } from '@/lib/client-config'
+import { CLIENT_CLAVE, COMPANY_ID } from '@/lib/client-config'
 import { fmtId, fmtUSDCompact, formatAbsoluteETA, formatAbsoluteDate, fmtDate } from '@/lib/format-utils'
 import { AnimatedNumber } from '@/components/AnimatedNumber'
 import { calculateCruzScore, extractScoreInput } from '@/lib/cruz-score'
@@ -36,7 +36,7 @@ export default function Dashboard() {
     Promise.all([
       fetch(`/api/data?table=traficos&trafico_prefix=${CLIENT_CLAVE}-&limit=1000&order_by=fecha_llegada&order_dir=desc`).then(r => r.json()),
       fetch(`/api/data?table=entradas&cve_cliente=${CLIENT_CLAVE}&limit=500&order_by=fecha_llegada_mercancia&order_dir=desc`).then(r => r.json()),
-      fetch(`/api/data?table=bridge_intelligence&company_id=evco&limit=500`).then(r => r.json()).catch(() => ({ data: [] })),
+      fetch(`/api/data?table=bridge_intelligence&company_id=${COMPANY_ID}&limit=500`).then(r => r.json()).catch(() => ({ data: [] })),
     ]).then(([trafData, entData, bridgeRes]) => {
       setTraficos(trafData.data ?? [])
       setEntradas(entData.data ?? [])
@@ -53,7 +53,7 @@ export default function Dashboard() {
     )
   }, [traficos])
   const urgentes = useMemo(() =>
-    enProceso.filter(t => calculateCruzScore(extractScoreInput(t)) < 50)
+    enProceso.filter(t => t.pedimento && calculateCruzScore(extractScoreInput(t)) < 50)
   , [enProceso])
   const valorEnProceso = useMemo(() =>
     enProceso.reduce((s, t) => s + (Number(t.importe_total) || 0), 0)

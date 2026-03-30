@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import { Upload, CheckCircle, AlertTriangle } from 'lucide-react'
+import { CLIENT_NAME } from '@/lib/client-config'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
@@ -119,7 +120,7 @@ export function DocumentosView() {
     <div style={{ padding: 32 }}>
       <div style={{ marginBottom: 24 }}>
         <h1 className="pg-title">Documentos Legales</h1>
-        <p className="pg-meta">EVCO Plastics de Mexico &middot; Documentos corporativos y de cumplimiento</p>
+        <p className="pg-meta">{CLIENT_NAME} &middot; Documentos corporativos y de cumplimiento</p>
       </div>
 
       {/* Category filters */}

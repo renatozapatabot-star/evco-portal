@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
+import { COMPANY_ID } from '@/lib/client-config'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -42,7 +43,7 @@ export async function POST(request: NextRequest) {
       file_url: fileUrl,
       uploaded_by: 'portal-upload',
       uploaded_at: new Date().toISOString(),
-      company_id: 'evco',
+      company_id: COMPANY_ID,
     })
 
     if (dbError) {

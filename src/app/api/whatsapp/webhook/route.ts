@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { COMPANY_ID } from '@/lib/client-config'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -103,7 +104,7 @@ export async function POST(request: NextRequest) {
             file_url: fileUrl,
             uploaded_by: `whatsapp:${sanitizedPhone}`,
             uploaded_at: new Date().toISOString(),
-            company_id: 'evco',
+            company_id: COMPANY_ID,
           })
           if (docError) console.error(`[WhatsApp Webhook] DB insert error: ${docError.message}`)
 
@@ -116,7 +117,7 @@ export async function POST(request: NextRequest) {
       // Log the inbound message with media
       const { error: mediaLogError } = await supabase.from('whatsapp_conversations').insert({
         trafico_id: traficoId,
-        company_id: 'evco',
+        company_id: COMPANY_ID,
         supplier_phone: from,
         direction: 'inbound',
         message_body: body || `[${numMedia} archivo(s) recibido(s)]`,
@@ -133,7 +134,7 @@ export async function POST(request: NextRequest) {
     // No media -- just a text message
     const { error: textLogError } = await supabase.from('whatsapp_conversations').insert({
       trafico_id: traficoId,
-      company_id: 'evco',
+      company_id: COMPANY_ID,
       supplier_phone: from,
       direction: 'inbound',
       message_body: body,

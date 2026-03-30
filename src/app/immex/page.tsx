@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useMemo } from 'react'
+import { CLIENT_NAME } from '@/lib/client-config'
 
 type ImmexRow = { trafico: string; fecha_llegada: string; estatus: string; descripcion_mercancia: string; peso_bruto: number; importe_total: number; pedimento: string }
 
@@ -37,7 +38,7 @@ export default function ImmexPage() {
     <div style={{ padding: 32 }}>
       <div style={{ marginBottom: 24 }}>
         <h1 className="pg-title">IMMEX — Importación Temporal</h1>
-        <p className="pg-meta">{immexData.length} tráficos temporales activos · Límite 18 meses · EVCO Plastics</p>
+        <p className="pg-meta">{immexData.length} tráficos temporales activos · Límite 18 meses · {CLIENT_NAME.split(' ')[0]} Plastics</p>
       </div>
 
       {/* KPI strip */}

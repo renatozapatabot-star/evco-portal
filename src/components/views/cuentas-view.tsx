@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from 'react'
 import { DollarSign, TrendingUp, TrendingDown, CreditCard, Search, BarChart3, AlertTriangle } from 'lucide-react'
-import { CLIENT_CLAVE } from '@/lib/client-config'
+import { CLIENT_CLAVE, COMPANY_ID } from '@/lib/client-config'
 import { fmtMXN, fmtDate } from '@/lib/format-utils'
 import { GOLD } from '@/lib/design-system'
 
@@ -40,7 +40,7 @@ export function CuentasView() {
     }).catch(() => setLoading(false))
 
     // Load financial intelligence (non-blocking)
-    fetch('/api/data?table=financial_intelligence&company_id=evco&limit=24&order_by=period&order_dir=desc')
+    fetch(`/api/data?table=financial_intelligence&company_id=${COMPANY_ID}&limit=24&order_by=period&order_dir=desc`)
       .then(r => r.json())
       .then(d => setFinIntel((d.data ?? []).reverse()))
       .catch(() => {})

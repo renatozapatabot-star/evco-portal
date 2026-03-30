@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import { Phone, Clock, CheckCircle, ChevronDown, ChevronRight } from 'lucide-react'
 import { GOLD } from '@/lib/design-system'
+import { COMPANY_ID } from '@/lib/client-config'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -40,7 +41,7 @@ export default function CallsPage() {
   useEffect(() => {
     supabase.from('call_transcripts')
       .select('*')
-      .eq('company_id', 'evco')
+      .eq('company_id', COMPANY_ID)
       .order('transcribed_at', { ascending: false })
       .limit(100)
       .then(({ data }) => { setCalls(data || []); setLoading(false) })

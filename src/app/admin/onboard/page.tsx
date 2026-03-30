@@ -3,9 +3,10 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { GOLD, GREEN, RED } from '@/lib/design-system'
+import { PORTAL_URL } from '@/lib/client-config'
 
 const T = {
-  bg: '#0D0D0D', surface: '#161616', border: '#2A2A2A',
+  bg: 'var(--bg-dark)', surface: '#161616', border: '#2A2A2A',
   text: '#E8E6E0', sub: '#9C9690', muted: '#666',
   gold: GOLD, green: GREEN, red: RED,
 }
@@ -61,7 +62,7 @@ export default function OnboardPage() {
   }
 
   return (
-    <div style={{ padding: '24px 28px', fontFamily: "'DM Sans', sans-serif", color: T.text, maxWidth: 600 }}>
+    <div style={{ padding: '24px 28px', fontFamily: 'var(--font-geist-sans)', color: T.text, maxWidth: 600 }}>
       <h1 style={{ fontSize: 20, fontWeight: 800, margin: '0 0 4px' }}>Nuevo Cliente</h1>
       <p style={{ color: T.muted, fontSize: 13, margin: '0 0 28px' }}>
         Paso {Math.min(step, 4)} de 4 &middot; Onboarding wizard
@@ -82,7 +83,7 @@ export default function OnboardPage() {
               <div>
                 <label style={labelStyle}>Razón Social *</label>
                 <input style={inputStyle} value={form.name} onChange={e => set('name', e.target.value)}
-                  placeholder="EVCO Plastics de México S.A. de C.V." />
+                  placeholder="Empresa S.A. de C.V." />
               </div>
               <div>
                 <label style={labelStyle}>RFC *</label>
@@ -159,7 +160,7 @@ export default function OnboardPage() {
               <div>
                 <label style={labelStyle}>Contraseña del Portal</label>
                 <div style={{ display: 'flex', gap: 8 }}>
-                  <input style={{ ...inputStyle, fontFamily: 'monospace', letterSpacing: '0.05em' }}
+                  <input style={{ ...inputStyle, fontFamily: 'var(--font-jetbrains-mono)', letterSpacing: '0.05em' }}
                     value={form.portal_password} onChange={e => set('portal_password', e.target.value)} />
                   <button onClick={() => set('portal_password', generatePassword())}
                     style={{ padding: '0 12px', background: T.bg, border: `1px solid ${T.border}`,
@@ -217,7 +218,7 @@ export default function OnboardPage() {
             <h2 style={{ fontSize: 18, fontWeight: 700, margin: '0 0 8px' }}>Cliente Activado</h2>
             <p style={{ color: T.sub, fontSize: 14, margin: '0 0 24px' }}>{form.name} ya tiene acceso al portal</p>
             <div style={{ background: T.bg, borderRadius: 8, padding: 16, fontSize: 13, lineHeight: 2, textAlign: 'left' }}>
-              <div><strong>URL:</strong> https://evco-portal.vercel.app</div>
+              <div><strong>URL:</strong> https://{PORTAL_URL}</div>
               <div><strong>Password:</strong> <code style={{ background: T.border, padding: '2px 8px', borderRadius: 4 }}>{form.portal_password}</code></div>
               <div><strong>Company ID:</strong> {result.company_id}</div>
             </div>

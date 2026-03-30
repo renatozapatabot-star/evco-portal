@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { PORTAL_URL } from '@/lib/client-config'
 
 const ENDPOINTS = [
   { method: 'GET', path: '/api/v1/intelligence?type=risk&id={trafico_id}', desc: 'Risk score for a tráfico', example: '?type=risk&id=9254-Y4396' },
@@ -44,7 +45,7 @@ export default function ApiDocsPage() {
 
       <div className="card" style={{ marginBottom: 24, padding: '16px 20px', background: 'var(--amber-100, #FFF8EB)' }}>
         <div style={{ fontSize: 13, color: 'var(--amber-800, #633806)' }}>
-          <strong>Base URL:</strong> <code style={{ background: 'rgba(0,0,0,0.06)', padding: '2px 6px', borderRadius: 4 }}>https://evco-portal.vercel.app</code>
+          <strong>Base URL:</strong> <code style={{ background: 'rgba(0,0,0,0.06)', padding: '2px 6px', borderRadius: 4 }}>https://{PORTAL_URL}</code>
         </div>
       </div>
 

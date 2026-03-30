@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { AlertTriangle, CheckCircle, Clock, Shield, Plus } from 'lucide-react'
 import Link from 'next/link'
+import { COMPANY_ID, CLIENT_NAME } from '@/lib/client-config'
 
 interface LegalDoc {
   id: string
@@ -63,11 +64,11 @@ function StatusBadge({ status, days }: { status: LegalDoc['status']; days: numbe
 
 // ── Hardcoded initial data (will be dynamic from DB) ──
 const INITIAL_DOCS: LegalDoc[] = [
-  { id: '1', document_type: 'poder_notarial', client_name: 'EVCO Plastics de México', company_id: 'evco', issued_date: '2024-01-15', expiry_date: '2027-01-15', status: 'valid', notes: 'Poder amplio para despacho', responsible: 'Tito' },
-  { id: '2', document_type: 'encargo_conferido', client_name: 'EVCO Plastics de México', company_id: 'evco', issued_date: '2025-06-01', expiry_date: '2026-06-01', status: 'expiring_90', notes: 'Renovar antes de jun 2026', responsible: 'Ursula' },
-  { id: '3', document_type: 'padron_importadores', client_name: 'EVCO Plastics de México', company_id: 'evco', issued_date: null, expiry_date: null, status: 'verify', notes: 'Verificar vigencia en SAT', responsible: 'Juan José' },
-  { id: '4', document_type: 'efirma', client_name: 'EVCO Plastics de México', company_id: 'evco', issued_date: '2023-03-10', expiry_date: '2027-03-10', status: 'valid', notes: null, responsible: 'Ursula' },
-  { id: '5', document_type: 'immex', client_name: 'EVCO Plastics de México', company_id: 'evco', issued_date: '2024-08-01', expiry_date: '2027-08-01', status: 'valid', notes: 'Programa activo', responsible: 'Tito' },
+  { id: '1', document_type: 'poder_notarial', client_name: CLIENT_NAME, company_id: COMPANY_ID, issued_date: '2024-01-15', expiry_date: '2027-01-15', status: 'valid', notes: 'Poder amplio para despacho', responsible: 'Tito' },
+  { id: '2', document_type: 'encargo_conferido', client_name: CLIENT_NAME, company_id: COMPANY_ID, issued_date: '2025-06-01', expiry_date: '2026-06-01', status: 'expiring_90', notes: 'Renovar antes de jun 2026', responsible: 'Ursula' },
+  { id: '3', document_type: 'padron_importadores', client_name: CLIENT_NAME, company_id: COMPANY_ID, issued_date: null, expiry_date: null, status: 'verify', notes: 'Verificar vigencia en SAT', responsible: 'Juan José' },
+  { id: '4', document_type: 'efirma', client_name: CLIENT_NAME, company_id: COMPANY_ID, issued_date: '2023-03-10', expiry_date: '2027-03-10', status: 'valid', notes: null, responsible: 'Ursula' },
+  { id: '5', document_type: 'immex', client_name: CLIENT_NAME, company_id: COMPANY_ID, issued_date: '2024-08-01', expiry_date: '2027-08-01', status: 'valid', notes: 'Programa activo', responsible: 'Tito' },
 ]
 
 export default function DocumentosLegalesPage() {

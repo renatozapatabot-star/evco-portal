@@ -57,13 +57,13 @@ export function BridgeTimes() {
             <div style={{ display: 'flex', gap: 12 }}>
               <div>
                 <div style={{ color: 'var(--text-muted)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Comercial</div>
-                <div style={{ color: statusColor(b.status), fontSize: 18, fontWeight: 800, fontFamily: "'JetBrains Mono', monospace" }}>
+                <div style={{ color: statusColor(b.status), fontSize: 18, fontWeight: 800, fontFamily: 'var(--font-jetbrains-mono)' }}>
                   {b.commercial !== null ? `${b.commercial} min` : '—'}
                 </div>
               </div>
               <div>
                 <div style={{ color: 'var(--text-muted)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Pasajero</div>
-                <div style={{ color: 'var(--text-secondary)', fontSize: 14, fontWeight: 600, fontFamily: "'JetBrains Mono', monospace" }}>
+                <div style={{ color: 'var(--text-secondary)', fontSize: 14, fontWeight: 600, fontFamily: 'var(--font-jetbrains-mono)' }}>
                   {b.passenger !== null ? `${b.passenger} min` : '—'}
                 </div>
               </div>

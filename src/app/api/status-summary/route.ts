@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { COMPANY_ID } from '@/lib/client-config'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -10,7 +11,7 @@ export async function GET() {
   const { data } = await supabase
     .from('traficos')
     .select('estatus, cruz_score, fecha_cruce, fecha_pago, updated_at')
-    .eq('company_id', 'evco')
+    .eq('company_id', COMPANY_ID)
 
   const rows = data || []
   const today = new Date().toISOString().split('T')[0]

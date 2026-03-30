@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import DataTable, { Column } from '@/components/DataTable'
+import { COMPANY_ID } from '@/lib/client-config'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
@@ -36,7 +37,7 @@ export function ProveedoresView() {
   }, [])
 
   async function load() {
-    const { data } = await supabase.from('supplier_contacts').select('*').eq('company_id', 'evco').order('proveedor', { ascending: true })
+    const { data } = await supabase.from('supplier_contacts').select('*').eq('company_id', COMPANY_ID).order('proveedor', { ascending: true })
     // Deduplicate by proveedor name (case-insensitive), keep most complete
     const seen = new Map<string, any>()
     ;(data || []).forEach(s => {
@@ -52,7 +53,7 @@ export function ProveedoresView() {
   useEffect(() => {
     if (viewTab === 'productos' && products.length === 0) {
       setProductsLoading(true)
-      fetch('/api/data?table=product_intelligence&company_id=evco&limit=200&order_by=total_value_usd&order_dir=desc')
+      fetch(`/api/data?table=product_intelligence&company_id=${COMPANY_ID}&limit=200&order_by=total_value_usd&order_dir=desc`)
         .then(r => r.json())
         .then(d => { setProducts(d.data ?? []); setProductsLoading(false) })
         .catch(() => setProductsLoading(false))
@@ -61,7 +62,7 @@ export function ProveedoresView() {
 
   async function save() {
     setSaving(true)
-    const { error } = await supabase.from('supplier_contacts').upsert({ ...form, company_id: 'evco', updated_at: new Date().toISOString() }, { onConflict: 'id' })
+    const { error } = await supabase.from('supplier_contacts').upsert({ ...form, company_id: COMPANY_ID, updated_at: new Date().toISOString() }, { onConflict: 'id' })
     if (!error) { await load(); setEditing(false); setSelected({ ...form }) }
     setSaving(false)
   }
@@ -163,7 +164,7 @@ export function ProveedoresView() {
           loading={loading}
           keyField="id"
           pageSize={50}
-          exportFilename="evco_proveedores"
+          exportFilename={`${COMPANY_ID}_proveedores`}
           searchPlaceholder="Buscar proveedor..."
           onRowClick={(r) => { setSelected(r); setForm(r); setEditing(false) }}
         />

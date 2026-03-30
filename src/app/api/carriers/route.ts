@@ -1,12 +1,13 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
+import { COMPANY_ID } from '@/lib/client-config'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 
 export async function GET() {
   const [trafRes, entRes] = await Promise.all([
-    supabase.from('traficos').select('trafico, estatus, transportista_extranjero, transportista_mexicano, fecha_llegada, peso_bruto').eq('company_id', 'evco').not('transportista_extranjero', 'is', null).limit(5000),
-    supabase.from('entradas').select('trafico, tiene_faltantes, mercancia_danada').eq('company_id', 'evco').limit(10000),
+    supabase.from('traficos').select('trafico, estatus, transportista_extranjero, transportista_mexicano, fecha_llegada, peso_bruto').eq('company_id', COMPANY_ID).not('transportista_extranjero', 'is', null).limit(5000),
+    supabase.from('entradas').select('trafico, tiene_faltantes, mercancia_danada').eq('company_id', COMPANY_ID).limit(10000),
   ])
 
   const traficos = trafRes.data || []

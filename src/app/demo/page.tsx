@@ -1,8 +1,9 @@
 import { GOLD } from '@/lib/design-system'
+import { CLIENT_NAME } from '@/lib/client-config'
 
 export default function DemoPage() {
   return (
-    <div style={{ minHeight: '100vh', background: '#09090C', color: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: "'Inter', -apple-system, sans-serif", padding: 40 }}>
+    <div style={{ minHeight: '100vh', background: '#09090C', color: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-geist-sans)', padding: 40 }}>
       <div style={{ width: 56, height: 56, borderRadius: 12, background: 'rgba(201,168,76,0.1)', border: '1.5px solid rgba(201,168,76,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24 }}>
         <span style={{ fontSize: 24, fontWeight: 700, color: GOLD }}>RZ</span>
       </div>
@@ -22,7 +23,7 @@ export default function DemoPage() {
           { label: 'Scripts', value: '31', sub: 'Automated processes' },
         ].map(k => (
           <div key={k.label} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, padding: '16px 20px', textAlign: 'center' }}>
-            <div style={{ fontSize: 24, fontWeight: 800, color: GOLD, fontFamily: "'JetBrains Mono', monospace" }}>{k.value}</div>
+            <div style={{ fontSize: 24, fontWeight: 800, color: GOLD, fontFamily: 'var(--font-jetbrains-mono)' }}>{k.value}</div>
             <div style={{ fontSize: 12, fontWeight: 600, color: '#fff', marginTop: 4 }}>{k.label}</div>
             <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', marginTop: 2 }}>{k.sub}</div>
           </div>
@@ -31,7 +32,7 @@ export default function DemoPage() {
 
       <div style={{ display: 'flex', gap: 16, marginBottom: 40 }}>
         {[
-          { label: 'Portal EVCO', href: '/', desc: 'Client-facing portal' },
+          { label: `Portal ${CLIENT_NAME.split(' ')[0]}`, href: '/', desc: 'Client-facing portal' },
           { label: 'CRUZ Dashboard', href: '/cruz', desc: 'Internal ops view' },
           { label: 'System Status', href: '/status', desc: 'Health monitoring' },
         ].map(l => (

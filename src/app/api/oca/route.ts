@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { CLIENT_NAME, CLIENT_RFC } from '@/lib/client-config'
 
 const OLLAMA_BASE_URL = process.env.OLLAMA_BASE_URL || 'http://localhost:11434'
 
@@ -13,8 +14,8 @@ PRODUCTO: ${product}
 ${material ? `MATERIAL/COMPOSICIÓN: ${material}` : ''}
 ${uso ? `USO/APLICACIÓN: ${uso}` : ''}
 
-CONTEXTO: Este producto será importado a México por EVCO Plastics de México S. de R.L. de C.V.
-(RFC EPM001109I74) desde Estados Unidos de América.
+CONTEXTO: Este producto será importado a México por ${CLIENT_NAME}
+(RFC ${CLIENT_RFC}) desde Estados Unidos de América.
 
 Responde ÚNICAMENTE con un JSON válido con esta estructura exacta:
 {

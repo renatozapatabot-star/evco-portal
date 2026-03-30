@@ -32,7 +32,7 @@ export default async function RadarPage() {
   const sevBg: Record<string, string> = { critical: 'rgba(220,38,38,0.1)', high: 'rgba(217,119,6,0.1)', medium: 'rgba(201,168,76,0.1)', low: 'rgba(22,163,74,0.1)' }
 
   return (
-    <div style={{ padding: '24px 28px', fontFamily: "'DM Sans', sans-serif", color: '#E8E6E0' }}>
+    <div style={{ padding: '24px 28px', fontFamily: 'var(--font-geist-sans)', color: '#E8E6E0' }}>
       <h1 style={{ fontSize: 22, fontWeight: 800, margin: '0 0 4px' }}>Radar de Riesgos</h1>
       <p style={{ color: '#666', fontSize: 13, margin: '0 0 24px' }}>
         Monitoreo de amenazas en tiempo real &middot; {new Date().toLocaleString('es-MX', { timeZone: 'America/Chicago', hour: '2-digit', minute: '2-digit' })} CST
@@ -77,7 +77,7 @@ export default async function RadarPage() {
               return (
                 <div key={name} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #2A2A2A' }}>
                   <span style={{ fontSize: 14 }}>{name}</span>
-                  <span style={{ fontFamily: 'monospace', color: avg > 2 ? '#DC2626' : avg > 1 ? '#D97706' : '#16A34A', fontWeight: 700 }}>{Math.round(avg * 60)}min</span>
+                  <span style={{ fontFamily: 'var(--font-jetbrains-mono)', color: avg > 2 ? '#DC2626' : avg > 1 ? '#D97706' : '#16A34A', fontWeight: 700 }}>{Math.round(avg * 60)}min</span>
                 </div>
               )
             })

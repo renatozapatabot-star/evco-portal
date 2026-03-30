@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from 'react'
 import { AlertTriangle, CheckCircle, Clock, Search } from 'lucide-react'
-import { CLIENT_CLAVE } from '@/lib/client-config'
+import { CLIENT_CLAVE, COMPANY_ID } from '@/lib/client-config'
 
 const MVE_DEADLINE = new Date('2026-03-31T23:59:59')
 
@@ -45,7 +45,7 @@ export default function MvePage() {
       .catch(() => {})
       .finally(() => setLoading(false))
     // Compliance predictions for MVE
-    fetch('/api/data?table=compliance_predictions&company_id=evco&limit=50&order_by=severity&order_dir=asc')
+    fetch(`/api/data?table=compliance_predictions&company_id=${COMPANY_ID}&limit=50&order_by=severity&order_dir=asc`)
       .then(r => r.json())
       .then(d => setCompAlerts((d.data ?? []).filter((a: any) => !a.resolved)))
       .catch(() => {})

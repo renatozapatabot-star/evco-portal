@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Shield, AlertTriangle, CheckCircle, Clock, Calendar, DollarSign, ExternalLink } from 'lucide-react'
 import { GOLD } from '@/lib/design-system'
+import { COMPANY_ID, CLIENT_NAME, PATENTE } from '@/lib/client-config'
 
 interface Prediction { id: string; prediction_type: string; severity: string; description: string; due_date?: string; resolved: boolean }
 interface Report { id: string; period: string; score: number; summary: string; created_at: string }
@@ -37,8 +38,8 @@ export default function CumplimientoPage() {
 
   useEffect(() => {
     Promise.all([
-      fetch('/api/data?table=compliance_predictions&company_id=evco&limit=50&order_by=created_at&order_dir=desc').then(r => r.json()),
-      fetch('/api/data?table=monthly_intelligence_reports&company_id=evco&limit=12&order_by=created_at&order_dir=desc').then(r => r.json()),
+      fetch(`/api/data?table=compliance_predictions&company_id=${COMPANY_ID}&limit=50&order_by=created_at&order_dir=desc`).then(r => r.json()),
+      fetch(`/api/data?table=monthly_intelligence_reports&company_id=${COMPANY_ID}&limit=12&order_by=created_at&order_dir=desc`).then(r => r.json()),
       fetch('/api/data?table=traficos&limit=500&order_by=fecha_llegada&order_dir=desc').then(r => r.json()),
     ]).then(([pRes, rRes, tRes]) => {
       const preds = pRes.data || []
@@ -113,11 +114,11 @@ export default function CumplimientoPage() {
       // Encargo conferido
       builtDeadlines.push({
         id: 'encargo-conferido',
-        label: 'Renovación Encargo Conferido EVCO',
+        label: `Renovación Encargo Conferido ${CLIENT_NAME.split(' ')[0]}`,
         description: 'Encargo conferido debe renovarse antes de vencimiento',
         due_date: new Date(now.getTime() + 67 * 86400000).toISOString().slice(0, 10),
         severity: 'info',
-        penalty: 'No puede actuar como agente aduanal para EVCO',
+        penalty: `No puede actuar como agente aduanal para ${CLIENT_NAME.split(' ')[0]}`,
         exposure: 'Operación detenida',
         responsible: 'Renato Zapata III',
         link: '/cumplimiento',
@@ -176,7 +177,7 @@ export default function CumplimientoPage() {
     <div style={{ padding: 32 }}>
       <div style={{ marginBottom: 24 }}>
         <h1 className="pg-title">{isMonday ? 'LUNES — REVISIÓN SEMANAL DE CUMPLIMIENTO' : 'Cumplimiento'}</h1>
-        <p className="pg-meta">Calendario de compliance · EVCO Plastics · Patente 3596</p>
+        <p className="pg-meta">Calendario de compliance · {CLIENT_NAME.split(' ')[0]} Plastics · Patente {PATENTE}</p>
       </div>
 
       {loading ? (

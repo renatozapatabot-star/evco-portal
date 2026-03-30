@@ -38,8 +38,8 @@ export async function POST(request: NextRequest) {
       httpOnly: true, secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax', maxAge: 60 * 60 * 24 * 7, path: '/',
     })
-    response.cookies.set('company_id', 'evco', { path: '/', maxAge: 86400 })
-    response.cookies.set('company_name', encodeURIComponent('EVCO Plastics de México'), { path: '/', maxAge: 86400 })
+    response.cookies.set('company_id', EVCO_ID, { path: '/', maxAge: 86400 })
+    response.cookies.set('company_name', encodeURIComponent(CLIENT_NAME), { path: '/', maxAge: 86400 })
     response.cookies.set('company_clave', CLIENT_CLAVE, { path: '/', maxAge: 86400 })
     response.cookies.set('user_role', 'client', { path: '/', maxAge: 86400 })
     return response

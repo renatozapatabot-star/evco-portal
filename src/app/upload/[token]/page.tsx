@@ -46,7 +46,7 @@ export default function UploadPage() {
 
   if (error) {
     return (
-      <div style={{ minHeight: '100vh', background: '#0D0D0D', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Sans', sans-serif", color: '#E8E6E0' }}>
+      <div style={{ minHeight: '100vh', background: 'var(--bg-dark)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-geist-sans)', color: '#E8E6E0' }}>
         <div style={{ textAlign: 'center', maxWidth: 400 }}>
           <div style={{ fontSize: 48, marginBottom: 16 }}>⚠️</div>
           <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>{error === 'expired' ? 'Link Expirado' : error === 'not_found' ? 'Link No Válido' : 'Error'}</div>
@@ -58,7 +58,7 @@ export default function UploadPage() {
 
   if (!info) {
     return (
-      <div style={{ minHeight: '100vh', background: '#0D0D0D', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ minHeight: '100vh', background: 'var(--bg-dark)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ width: 32, height: 32, border: '3px solid #2A2A2A', borderTopColor: GOLD, borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
@@ -66,7 +66,7 @@ export default function UploadPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0D0D0D', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Sans', sans-serif", color: '#E8E6E0', padding: 20 }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg-dark)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-geist-sans)', color: '#E8E6E0', padding: 20 }}>
       <div style={{ width: '100%', maxWidth: 420 }}>
         <div style={{ textAlign: 'center', marginBottom: 24 }}>
           <div style={{ width: 48, height: 48, background: GOLD_GRADIENT, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', fontSize: 20, fontWeight: 900, color: '#1A1710', fontFamily: 'Georgia, serif' }}>Z</div>
@@ -75,7 +75,7 @@ export default function UploadPage() {
 
         <div style={{ background: '#161616', border: '1px solid #2A2A2A', borderRadius: 16, padding: '24px 20px' }}>
           <div style={{ fontSize: 11, color: '#666', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Tráfico</div>
-          <div style={{ fontSize: 20, fontWeight: 800, marginBottom: 16, fontFamily: 'monospace' }}>{info.trafico_id}</div>
+          <div style={{ fontSize: 20, fontWeight: 800, marginBottom: 16, fontFamily: 'var(--font-jetbrains-mono)' }}>{info.trafico_id}</div>
 
           {info.required_docs?.length > 0 && (
             <div style={{ marginBottom: 20 }}>

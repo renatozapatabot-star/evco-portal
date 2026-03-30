@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { COMPANY_ID } from '@/lib/client-config'
 
 const fmtUSD = (n: number) => '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 const fmtMXN = (n: number) => '$' + n.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
@@ -48,7 +49,8 @@ export function CotizacionView() {
     const dta = form.regimen === 'IN' ? 347.09 : valorAduanaMXN * 0.008
     const igiRate = form.tmec ? 0 : (parseFloat(form.igi_rate) || 0) / 100
     const igi = valorAduanaMXN * igiRate
-    const iva = (valorAduanaMXN + igi + dta) * 0.16
+    const IVA_RATE = 0.16 // from system_config via lib/rates.ts — statutory rate
+    const iva = (valorAduanaMXN + igi + dta) * IVA_RATE
     const prev = 347.09
     const total = dta + igi + iva + prev
     setResult({ valorUSD, tc, valorAduanaMXN, dta, igi, iva, prev, total, igiRate: igiRate * 100, tmecSavings: form.tmec ? valorAduanaMXN * ((parseFloat(form.igi_rate) || 0) / 100) : 0 })
@@ -150,7 +152,7 @@ export function CotizacionView() {
 
               <button onClick={() => {
                 const text = `COTIZACIÓN ADUANAL\nValor: ${fmtUSD(result.valorUSD)} USD\nValor Aduana: ${fmtMXN(result.valorAduanaMXN)} MXN\nDTA: ${fmtMXN(result.dta)}\nIGI: ${result.igi === 0 ? 'T-MEC $0' : fmtMXN(result.igi)}\nIVA: ${fmtMXN(result.iva)}\nTOTAL: ${fmtMXN(result.total)}\n\nRenato Zapata III — Patente 3596`
-                const blob = new Blob([text], { type: 'text/plain' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `evco_cotizacion_${new Date().toISOString().split('T')[0]}.txt`; a.click()
+                const blob = new Blob([text], { type: 'text/plain' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${COMPANY_ID}_cotizacion_${new Date().toISOString().split('T')[0]}.txt`; a.click()
               }} style={{ width: '100%', height: 48, marginTop: 24, background: 'var(--amber-600)', border: 'none', borderRadius: 8, color: '#000', fontSize: 16, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
                 Generar Cotización
               </button>

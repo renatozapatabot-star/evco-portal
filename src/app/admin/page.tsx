@@ -42,7 +42,7 @@ export default async function AdminPage() {
   alerts.forEach(a => { alertMap[a.company_id] = (alertMap[a.company_id] || 0) + 1 })
 
   const T = {
-    bg: '#0D0D0D', surface: '#161616', border: '#2A2A2A',
+    bg: 'var(--bg-dark)', surface: '#161616', border: '#2A2A2A',
     text: '#E8E6E0', sub: '#9C9690', muted: '#666',
     gold: GOLD, green: GREEN, amber: AMBER, red: RED,
   }
@@ -54,7 +54,7 @@ export default async function AdminPage() {
   }
 
   return (
-    <div style={{ padding: '24px 28px', fontFamily: "'DM Sans', sans-serif", color: T.text, minHeight: '100vh' }}>
+    <div style={{ padding: '24px 28px', fontFamily: 'var(--font-geist-sans)', color: T.text, minHeight: '100vh' }}>
       {/* Header */}
       <div style={{ marginBottom: 28 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4 }}>
@@ -134,7 +134,7 @@ export default async function AdminPage() {
               return (
                 <tr key={c.company_id} style={{ borderBottom: `1px solid ${T.border}` }}>
                   <td style={{ padding: '10px 14px', fontSize: 13, fontWeight: 600 }}>{c.name}</td>
-                  <td style={{ padding: '10px 14px', fontSize: 12, color: T.sub, fontFamily: 'monospace' }}>{c.clave_cliente || '—'}</td>
+                  <td style={{ padding: '10px 14px', fontSize: 12, color: T.sub, fontFamily: 'var(--font-jetbrains-mono)' }}>{c.clave_cliente || '—'}</td>
                   <td style={{ padding: '10px 14px', fontSize: 13, fontWeight: 600 }}>{(c.traficos_count || 0).toLocaleString()}</td>
                   <td style={{ padding: '10px 14px' }}>
                     <span style={{ background: badge.bg, color: badge.color, border: `1px solid ${badge.border}`,

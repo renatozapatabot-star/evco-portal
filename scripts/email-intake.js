@@ -60,6 +60,7 @@ function hdr(headers, name) { return (headers?.find(h => h.name?.toLowerCase() =
 // ── Notifications ─────────────────────────────────────────────────────────
 
 async function sendTG(msg, inlineKeyboard) {
+  if (process.env.TELEGRAM_SILENT === 'true') return
   if (!TELEGRAM_TOKEN) return
   const payload = { chat_id: TELEGRAM_CHAT, text: msg, parse_mode: 'HTML' }
   if (inlineKeyboard) payload.reply_markup = JSON.stringify({ inline_keyboard: inlineKeyboard })

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import { Search, FileText, Download, Save, Check, AlertTriangle } from 'lucide-react'
-import { CLIENT_RFC, CLIENT_CLAVE } from '@/lib/client-config'
+import { CLIENT_RFC, CLIENT_CLAVE, CLIENT_NAME } from '@/lib/client-config'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -136,7 +136,7 @@ export default function NuevoPedimentoPage() {
 
       setDraft({
         importador_rfc: CLIENT_RFC,
-        importador_nombre: 'EVCO PLASTICS DE MEXICO S.A. DE C.V.',
+        importador_nombre: CLIENT_NAME.toUpperCase(),
         proveedor: prov?.nombre || factura.cve_proveedor || '',
         proveedor_pais: prov?.pais || 'US',
         valor_comercial: valorUSD,

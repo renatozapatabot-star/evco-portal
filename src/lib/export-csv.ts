@@ -1,3 +1,5 @@
+import { COMPANY_ID } from '@/lib/client-config'
+
 export function exportCSV(data: Record<string, any>[], columns: { key: string; label: string }[], filename: string) {
   const headers = columns.map(c => c.label)
   const rows = data.map(row => columns.map(c => {
@@ -9,7 +11,7 @@ export function exportCSV(data: Record<string, any>[], columns: { key: string; l
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
   const a = document.createElement('a')
   a.href = URL.createObjectURL(blob)
-  a.download = `evco_${filename}_${new Date().toISOString().split('T')[0]}.csv`
+  a.download = `${COMPANY_ID}_${filename}_${new Date().toISOString().split('T')[0]}.csv`
   a.click()
   URL.revokeObjectURL(a.href)
 }

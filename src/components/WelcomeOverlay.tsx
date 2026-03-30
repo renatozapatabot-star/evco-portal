@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { CLIENT_CLAVE } from '@/lib/client-config'
+import { CLIENT_CLAVE, CLIENT_NAME } from '@/lib/client-config'
 import { GOLD_GRADIENT } from '@/lib/design-system'
 
 interface WelcomeData {
@@ -47,7 +47,7 @@ export function WelcomeOverlay() {
       const fmtVal = totalValor >= 1_000_000 ? `$${(totalValor / 1e6).toFixed(1)}M USD` : `$${Math.round(totalValor / 1e3)}K USD`
 
       setData({
-        companyName: 'EVCO Plastics de México',
+        companyName: CLIENT_NAME,
         activeTraficos: active.length,
         valorYTD: fmtVal,
         complianceScore: compScore,

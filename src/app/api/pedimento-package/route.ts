@@ -1,5 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
+import { getIVARate } from '@/lib/rates'
+import { CLIENT_RFC, CLIENT_NAME } from '@/lib/client-config'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 
@@ -55,7 +57,8 @@ export async function GET(request: NextRequest) {
   const igiRate = tmecApplicable && usmcaCertOnFile ? 0 : 0.05
   const dta = valorMXN * 0.008
   const igi = valorMXN * igiRate
-  const iva = (valorMXN + dta + igi) * 0.16
+  const ivaRate = await getIVARate()
+  const iva = (valorMXN + dta + igi) * ivaRate
   const totalGravamen = dta + igi + iva
 
   // Document completeness
@@ -79,7 +82,7 @@ export async function GET(request: NextRequest) {
 
   return NextResponse.json({
     trafico,
-    importador: { rfc: 'EPM001109I74', nombre: 'EVCO PLASTICS DE MEXICO S.A. DE C.V.' },
+    importador: { rfc: CLIENT_RFC, nombre: CLIENT_NAME },
     proveedores,
     valor_aduana_usd: Math.round(valorUSD * 100) / 100,
     valor_aduana_mxn: Math.round(valorMXN * 100) / 100,

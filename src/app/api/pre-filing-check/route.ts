@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { COMPANY_ID } from '@/lib/client-config'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -35,7 +36,8 @@ async function runPreFilingCheck(traficoId: string, companyId: string) {
   // 2. MVE folio
   const { data: trafico } = await supabase
     .from('traficos').select('*').eq('trafico', traficoId).single()
-  const mveMandatory = new Date() >= new Date('2026-03-31')
+  const nowLaredo = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Chicago' }))
+  const mveMandatory = nowLaredo >= new Date('2026-03-31T00:00:00-05:00')
   checks.push({
     name: 'MVE Folio',
     passed: !mveMandatory || !!trafico?.mve_folio,
@@ -126,6 +128,6 @@ export async function POST(request: NextRequest) {
   if (!trafico_id) {
     return NextResponse.json({ error: 'trafico_id required' }, { status: 400 })
   }
-  const result = await runPreFilingCheck(trafico_id, company_id || 'evco')
+  const result = await runPreFilingCheck(trafico_id, company_id || COMPANY_ID)
   return NextResponse.json(result)
 }

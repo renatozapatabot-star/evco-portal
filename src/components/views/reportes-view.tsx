@@ -12,7 +12,7 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
-import { CLIENT_CLAVE, COMPANY_ID } from '@/lib/client-config'
+import { CLIENT_CLAVE, COMPANY_ID, CLIENT_NAME, PATENTE } from '@/lib/client-config'
 import { GOLD } from '@/lib/design-system'
 const CLAVE = CLIENT_CLAVE
 
@@ -188,11 +188,11 @@ export function ReportesView() {
   )
 
   return (
-    <div style={{ padding: '24px 28px', fontFamily: "'DM Sans', sans-serif" }}>
+    <div style={{ padding: '24px 28px', fontFamily: 'var(--font-geist-sans)' }}>
       <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
           <h2 style={{ color: T.text, fontSize: 18, fontWeight: 700, margin: 0 }}>Reportes & Analítica</h2>
-          <p style={{ color: T.textMuted, fontSize: 12, margin: '4px 0 0' }}>EVCO Plastics de México · Datos históricos completos · Patente 3596</p>
+          <p style={{ color: T.textMuted, fontSize: 12, margin: '4px 0 0' }}>{CLIENT_NAME} · Datos históricos completos · Patente {PATENTE}</p>
         </div>
         <button onClick={() => window.print()} style={{
           display: 'flex', alignItems: 'center', gap: 6,

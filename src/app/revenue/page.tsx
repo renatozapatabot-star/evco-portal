@@ -37,7 +37,7 @@ export default async function RevenuePage() {
   const saasAnnual = (m.saas_value_annual_mxn || 2100000).toLocaleString()
 
   return (
-    <div style={{ padding: '24px 28px', fontFamily: "'DM Sans', sans-serif", color: '#E8E6E0' }}>
+    <div style={{ padding: '24px 28px', fontFamily: 'var(--font-geist-sans)', color: '#E8E6E0' }}>
       <h1 style={{ fontSize: 22, fontWeight: 800, margin: '0 0 4px' }}>Motor de Ingresos</h1>
       <p style={{ color: '#666', fontSize: 13, margin: '0 0 24px' }}>Visión ejecutiva del valor generado por CRUZ</p>
 

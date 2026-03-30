@@ -125,7 +125,7 @@ export function ExpedientesView() {
   useEffect(() => { setPage(0) }, [search])
 
   return (
-    <div style={{ padding: '24px 28px', fontFamily: "'DM Sans', sans-serif" }}>
+    <div style={{ padding: '24px 28px', fontFamily: 'var(--font-geist-sans)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 20 }}>
         <div>
           <h2 className="page-title" style={{ margin: 0 }}>Expedientes Digitales</h2>

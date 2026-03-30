@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
+import { COMPANY_ID } from '@/lib/client-config'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 
@@ -9,7 +10,7 @@ export async function GET() {
   // Get historical crossing times using REAL fecha_cruce column
   const { data: cruzados } = await supabase.from('traficos')
     .select('trafico, transportista_extranjero, fecha_llegada, fecha_cruce, estatus')
-    .eq('company_id', 'evco')
+    .eq('company_id', COMPANY_ID)
     .ilike('estatus', '%cruz%')
     .not('fecha_llegada', 'is', null)
     .not('fecha_cruce', 'is', null)
@@ -49,7 +50,7 @@ export async function GET() {
   // Get active En Proceso tráficos and predict
   const { data: active } = await supabase.from('traficos')
     .select('trafico, transportista_extranjero, fecha_llegada, estatus')
-    .eq('company_id', 'evco').eq('estatus', 'En Proceso')
+    .eq('company_id', COMPANY_ID).eq('estatus', 'En Proceso')
     .not('fecha_llegada', 'is', null).limit(500)
 
   const predictions: Record<string, { avgDays: number; predictedDate: string; confidence: string; carrier: string }> = {}

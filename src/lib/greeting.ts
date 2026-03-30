@@ -1,6 +1,16 @@
+function getLaredoHour(): number {
+  return parseInt(new Date().toLocaleString('en-US', { timeZone: 'America/Chicago', hour: 'numeric', hour12: false }), 10)
+}
+
+function getLaredoDay(): number {
+  const dayStr = new Date().toLocaleDateString('en-US', { timeZone: 'America/Chicago', weekday: 'short' })
+  const map: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 }
+  return map[dayStr] ?? new Date().getDay()
+}
+
 export function getGreeting(name?: string): string {
-  const hour = new Date().getHours()
-  const day = new Date().getDay()
+  const hour = getLaredoHour()
+  const day = getLaredoDay()
   const displayName = name || ''
 
   let greeting: string
@@ -24,7 +34,7 @@ export function getContextBriefing(stats: {
   if (stats.mveDays <= 7 && stats.mvePending > 0) return `MVE obligatorio en ${stats.mveDays}d — ${stats.mvePending} operaciones pendientes.`
   if (stats.urgentCount > 0) return `${stats.urgentCount} tráfico${stats.urgentCount !== 1 ? 's' : ''} necesita${stats.urgentCount !== 1 ? 'n' : ''} atención hoy.`
 
-  const day = new Date().getDay()
+  const day = getLaredoDay()
   if (day === 1) return `Inicio de semana — ${stats.enProcesoCount} tráficos activos.`
   if (day === 5) return `Viernes — ${stats.enProcesoCount} operaciones en proceso.`
 

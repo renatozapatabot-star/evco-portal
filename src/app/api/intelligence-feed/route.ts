@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { COMPANY_ID } from '@/lib/client-config'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 
@@ -9,18 +10,18 @@ export async function GET(req: NextRequest) {
   const [compRes, anomRes, crossRes] = await Promise.all([
     supabase.from('compliance_predictions')
       .select('id, prediction_type, description, severity, created_at, due_date, risk_level')
-      .eq('company_id', 'evco')
+      .eq('company_id', COMPANY_ID)
       .order('created_at', { ascending: false })
       .limit(30),
     supabase.from('anomaly_baselines')
       .select('id, metric_type, metric_key, mean_value, calculated_at')
-      .eq('company_id', 'evco')
+      .eq('company_id', COMPANY_ID)
       .eq('metric_type', 'value_guard')
       .order('calculated_at', { ascending: false })
       .limit(10),
     supabase.from('crossing_predictions')
       .select('id, trafico_id, predicted_crossing_date, confidence, created_at')
-      .eq('company_id', 'evco')
+      .eq('company_id', COMPANY_ID)
       .order('created_at', { ascending: false })
       .limit(5),
   ])

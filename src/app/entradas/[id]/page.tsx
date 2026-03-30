@@ -202,7 +202,7 @@ export default function EntradaDetailPage() {
       {entrada.descripcion_mercancia && (
         <div className="card" style={{ marginBottom: 20 }}>
           <div className="card-header">
-            <span className="card-title">Mercancia</span>
+            <span className="card-title">Mercancía</span>
           </div>
           <div style={{ padding: 20, fontSize: 15, fontWeight: 600, color: 'var(--n-900)' }}>
             {fmtDesc(entrada.descripcion_mercancia)}
@@ -232,17 +232,17 @@ export default function EntradaDetailPage() {
 
       <div className="card" style={{ marginBottom: 20 }}>
         <div className="card-header">
-          <span className="card-title">Revision de Recepcion</span>
+          <span className="card-title">Revisión de Recepción</span>
         </div>
         <div style={{ padding: 20 }}>
           <div className="d-grid">
             <div className="d-cell">
               <div className="d-label">Faltantes</div>
-              <div className="d-val"><BoolBadge value={entrada.tiene_faltantes} labelTrue="Si — Faltantes" labelFalse="Sin faltantes" /></div>
+              <div className="d-val"><BoolBadge value={entrada.tiene_faltantes} labelTrue="Sí — Faltantes" labelFalse="Sin faltantes" /></div>
             </div>
             <div className="d-cell">
-              <div className="d-label">Mercancia Danada</div>
-              <div className="d-val"><BoolBadge value={entrada.mercancia_danada} labelTrue="Si — Dano" labelFalse="Sin dano" /></div>
+              <div className="d-label">Mercancía Dañada</div>
+              <div className="d-val"><BoolBadge value={entrada.mercancia_danada} labelTrue="Sí — Daño" labelFalse="Sin daño" /></div>
             </div>
             <div className="d-cell">
               <div className="d-label">Facturas</div>
@@ -278,7 +278,7 @@ export default function EntradaDetailPage() {
             )}
             {entrada.comentarios_danada && (
               <div style={{ background: 'var(--danger-bg)', color: 'var(--danger-t)', borderRadius: 'var(--r-md)', padding: 12, fontSize: 13, fontWeight: 600 }}>
-                Dano: {entrada.comentarios_danada}
+                Daño: {entrada.comentarios_danada}
               </div>
             )}
             {entrada.comentarios_generales && (

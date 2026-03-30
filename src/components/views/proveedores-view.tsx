@@ -198,7 +198,7 @@ export function ProveedoresView() {
                 ))}
                 {!selected.contact_email && !selected.contact_phone && (
                   <div style={{ textAlign: 'center', padding: '32px 0', color: 'var(--text-muted)' }}>
-                    <div style={{ fontSize: 14, marginBottom: 8 }}>Sin informacion de contacto</div>
+                    <div style={{ fontSize: 14, marginBottom: 8 }}>Sin información de contacto</div>
                     <button onClick={() => setEditing(true)} style={{ background: 'var(--amber-100)', border: '1px solid var(--border-primary)', borderRadius: 8, padding: '8px 20px', color: 'var(--amber-600)', fontSize: 14, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>+ Agregar contacto</button>
                   </div>
                 )}

@@ -147,7 +147,7 @@ export default function TrackingPage() {
                   backgroundColor: SURFACE,
                   borderRadius: 10,
                 }}>
-                  <div style={{ fontSize: 11, color: MUTED, marginBottom: 4 }}>Mercancia</div>
+                  <div style={{ fontSize: 11, color: MUTED, marginBottom: 4 }}>Mercancía</div>
                   <div style={{ fontSize: 13, fontWeight: 600 }}>{data.description}</div>
                 </div>
               )}

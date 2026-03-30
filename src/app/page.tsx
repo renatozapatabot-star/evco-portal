@@ -38,7 +38,7 @@ function getIntelligenceHint(action: { description: string }, allTraficos: Trafi
     }
     return 'Solicitar documentos al proveedor acelera el proceso'
   }
-  if (action.description.includes('Incidencia') || action.description.includes('danada') || action.description.includes('Faltantes')) {
+  if (action.description.includes('Incidencia') || action.description.includes('dañada') || action.description.includes('Faltantes')) {
     return 'Reportar al almac\u00E9n dentro de 24h para mantener cobertura de seguro'
   }
   if (action.description.includes('Sin movimiento')) {
@@ -167,7 +167,7 @@ export default function Dashboard() {
       items.push({
         id: `i-${e.cve_entrada}`,
         severity: 'amber',
-        description: `Entrada ${e.cve_entrada} — ${(e.mercancia_danada ? 'Mercancia danada' : 'Faltantes reportados')}`,
+        description: `Entrada ${e.cve_entrada} — ${(e.mercancia_danada ? 'Mercancía dañada' : 'Faltantes reportados')}`,
         date: e.fecha_llegada_mercancia as string | null,
         link: `/entradas/${e.cve_entrada}`,
         action: daysOld > 14 ? 'Contactar Agente' : 'Ver Incidencia',
@@ -282,7 +282,7 @@ export default function Dashboard() {
             textDecoration: 'none', minHeight: 36,
             display: 'inline-flex', alignItems: 'center',
           }}>
-            Ver cronologia →
+            Ver cronología →
           </Link>
           <button
             onClick={() => dismissAction(a.id)}
@@ -309,7 +309,7 @@ export default function Dashboard() {
         color: '#E8E5DF', marginBottom: 24,
       }}>
         <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: TOKEN.gray, marginBottom: 8 }}>
-          Valor en operacion
+          Valor en operación
         </div>
         <div style={{ fontSize: isMobile ? 40 : 56, fontWeight: 900, fontFamily: 'var(--font-jetbrains-mono)', lineHeight: 1, letterSpacing: '-0.02em' }}>
           {loading ? '...' : fmtUSD(valorEnProceso)}
@@ -320,7 +320,7 @@ export default function Dashboard() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12 }}>
             <span style={{ width: 8, height: 8, borderRadius: '50%', background: TOKEN.red, animation: 'cruzPulse 2s infinite' }} />
             <span style={{ fontSize: 14, fontWeight: 600, color: '#E8E5DF' }}>
-              {urgentes.length + incidencias.length} operacion{(urgentes.length + incidencias.length) !== 1 ? 'es' : ''} requiere{(urgentes.length + incidencias.length) === 1 ? '' : 'n'} atencion
+              {urgentes.length + incidencias.length} operación{(urgentes.length + incidencias.length) !== 1 ? 'es' : ''} requiere{(urgentes.length + incidencias.length) === 1 ? '' : 'n'} atención
             </span>
           </div>
         )}
@@ -412,7 +412,7 @@ export default function Dashboard() {
           {criticalActions.length > 0 && (
             <div style={{ marginBottom: 24 }}>
               <div style={{ fontSize: 15, fontWeight: 700, color: TOKEN.text, marginBottom: 12 }}>
-                Operaciones criticas ({criticalActions.length})
+                Operaciones críticas ({criticalActions.length})
               </div>
               {criticalActions.map(a => renderCaseCard(a, TOKEN.red))}
             </div>

@@ -265,7 +265,7 @@ export default function CruzChatPage() {
           <div>
             <h1 style={{ fontSize: 18, fontWeight: 800, color: D.text, letterSpacing: '-0.02em', margin: 0 }}>CRUZ</h1>
             <div style={{ fontSize: 12, color: D.textMuted }}>
-              {traficoContext ? `Contexto: ${traficoContext}` : '6 herramientas · Voz · Streaming'}
+              {traficoContext ? `Contexto: ${traficoContext}` : '6 herramientas · Voz · Respuesta en tiempo real'}
             </div>
           </div>
         </div>

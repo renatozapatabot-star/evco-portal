@@ -220,7 +220,7 @@ export function TraficoDetail({ traficoId, onClose }: { traficoId: string; onClo
                           <span style={{ color: T.textMuted, fontSize: 11 }}>{e.cantidad_bultos || '?'} bultos</span>
                           <span style={{ color: T.textMuted, fontSize: 11 }}>{fmtNum(e.peso_bruto)} kg</span>
                           {e.tiene_faltantes && <span style={{ color: T.red, fontSize: 11, fontWeight: 700 }}>Faltantes</span>}
-                          {e.mercancia_danada && <span style={{ color: T.red, fontSize: 11, fontWeight: 700 }}>Danos</span>}
+                          {e.mercancia_danada && <span style={{ color: T.red, fontSize: 11, fontWeight: 700 }}>Daños</span>}
                         </div>
                       </div>
                     ))}

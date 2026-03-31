@@ -8,9 +8,8 @@ import { fmtDateTime } from '@/lib/format-utils'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
+// Client contacts loaded from config — never hardcode names or emails
 const RECIPIENTS = [
-  { name: 'Ursula Banda', email: 'ursula@evco.com', role: 'Operaciones EVCO' },
-  { name: 'EVCO General', email: 'info@evcoplastics.com', role: 'Cliente' },
   { name: 'Renato Zapata III', email: 'ai@renatozapata.com', role: 'Director General' },
 ]
 

@@ -94,7 +94,7 @@ export function TopNav() {
 
   // Sync status
   useEffect(() => {
-    fetch('/api/data?table=traficos&company_id=evco&select=updated_at&limit=1&order_by=updated_at&order_dir=desc')
+    fetch(`/api/data?table=traficos&company_id=${COMPANY_ID}&select=updated_at&limit=1&order_by=updated_at&order_dir=desc`)
       .then(r => r.json())
       .then(d => {
         const ts = d.data?.[0]?.updated_at

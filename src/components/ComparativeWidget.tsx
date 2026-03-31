@@ -41,10 +41,10 @@ const GREEN  = '#4ade80'
 const RED    = '#f87171'
 
 /* ── Insight Generator ── */
-function generateInsights(evco: Record<string, BenchmarkRow>, fleet: Record<string, BenchmarkRow>): string[] {
+function generateInsights(client: Record<string, BenchmarkRow>, fleet: Record<string, BenchmarkRow>): string[] {
   const tips: string[] = []
 
-  const crossing   = evco['avg_crossing_time_hours']
+  const crossing   = client['avg_crossing_time_hours']
   const fleetCross = fleet['avg_crossing_time_hours']
   if (crossing && fleetCross?.fleet_average) {
     const diff = ((fleetCross.fleet_average - crossing.metric_value) / fleetCross.fleet_average * 100).toFixed(0)
@@ -55,13 +55,13 @@ function generateInsights(evco: Record<string, BenchmarkRow>, fleet: Record<stri
     }
   }
 
-  const docs      = evco['doc_completeness_pct']
+  const docs      = client['doc_completeness_pct']
   const fleetDocs = fleet['doc_completeness_pct']
   if (docs && fleetDocs?.top_quartile && docs.metric_value < fleetDocs.top_quartile) {
     tips.push('Subir completitud documental al top 25% reduciría demoras en aduana')
   }
 
-  const compliance      = evco['compliance_score']
+  const compliance      = client['compliance_score']
   const fleetCompliance = fleet['compliance_score']
   if (compliance && fleetCompliance?.fleet_average) {
     if (compliance.metric_value > fleetCompliance.fleet_average) {

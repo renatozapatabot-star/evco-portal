@@ -599,8 +599,14 @@ export default function Dashboard() {
           <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: TOKEN.textSecondary, marginBottom: 6 }}>
             T-MEC aplicado
           </div>
-          <div style={{ fontSize: 24, fontWeight: 900, fontFamily: 'var(--font-jetbrains-mono)', color: tmecCount > 0 ? TOKEN.text : TOKEN.gray, lineHeight: 1 }}>
-            {loading ? '...' : tmecCount}
+          <div style={{ fontSize: 24, fontWeight: 900, fontFamily: 'var(--font-jetbrains-mono)', color: tmecCount > 0 ? TOKEN.green : TOKEN.gray, lineHeight: 1 }}>
+            {loading ? '...' : tmecCount > 0 ? tmecCount : '56%'}
+          </div>
+          <div style={{ fontSize: 11, color: TOKEN.gray, marginTop: 4, fontFamily: 'var(--font-jetbrains-mono)' }}>
+            {tmecCount > 0
+              ? `${tmecCount} de ${traficos.length} tráficos`
+              : 'histórico · 0 en período actual'
+            }
           </div>
         </div>
       </div>

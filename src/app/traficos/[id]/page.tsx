@@ -12,12 +12,21 @@ import { createClient } from '@supabase/supabase-js'
 // Link removed — entradas now embedded inline
 import { COMPANY_ID, CLIENT_NAME } from '@/lib/client-config'
 import { SolicitarModal } from '@/components/SolicitarModal'
+import { getMissingDocs, REQUIRED_DOC_TYPES } from '@/lib/documents'
+import { useToast } from '@/components/Toast'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
 type Tab = 'financiero' | 'transportista' | 'entradas' | 'rectificacion'
 
-const REQUIRED_DOCS = ['FACTURA', 'LISTA DE EMPAQUE', 'PEDIMENTO', 'ACUSE DE COVE', 'CARTA', 'ACUSE DE E-DOCUMENT']
+interface Solicitud {
+  id: string
+  doc_types: string[]
+  status: string
+  solicitado_at: string
+  deadline: string | null
+  recipient_name: string | null
+}
 
 function getDocUrgency(deadline: string | null | undefined): { color: string; label: string } {
   if (!deadline) return { color: '#9C9890', label: '' }
@@ -43,6 +52,7 @@ export default function TraficoDetailPage() {
   const { id } = useParams()
   const router = useRouter()
   const isMobile = useIsMobile()
+  const { toast } = useToast()
   const [trafico, setTrafico] = useState<any>(null)
   const [documentos, setDocumentos] = useState<any[]>([])
   const [entradas, setEntradas] = useState<any[]>([])
@@ -55,7 +65,7 @@ export default function TraficoDetailPage() {
   const [rates, setRates] = useState({ dta: 0.008, iva: 0.16, tc: 17.49 })
   const [showSolicitarModal, setShowSolicitarModal] = useState(false)
   const [solicitadoOk, setSolicitadoOk] = useState(false)
-  const [solicitudes, setSolicitudes] = useState<Array<{ id: string; doc_type: string; status: string; solicitado_at: string; escalate_after: string }>>([])
+  const [solicitudes, setSolicitudes] = useState<Solicitud[]>([])
 
 
   const handleUpload = async (file: File | undefined, docType: string) => {
@@ -81,6 +91,40 @@ export default function TraficoDetailPage() {
     finally { setUploadingDoc(null) }
   }
 
+  const markSolicitudCompleta = async (solicitudId: string) => {
+    const now = new Date().toISOString()
+    const { error: updateError } = await supabase
+      .from('documento_solicitudes')
+      .update({ status: 'completa', completed_at: now })
+      .eq('id', solicitudId)
+
+    if (updateError) {
+      toast(`Error al actualizar: ${updateError.message}`, 'error')
+      return
+    }
+
+    // Insert notification (non-fatal)
+    const tId = decodeURIComponent(String(id))
+    await supabase
+      .from('notifications')
+      .insert({
+        type: 'solicitud_completada',
+        title: `Solicitud completada para ${tId}`,
+        body: 'Documentos recibidos y marcados como completos',
+        company_id: COMPANY_ID,
+        metadata: { trafico_id: tId, solicitud_id: solicitudId },
+      })
+
+    // Haptic feedback
+    if ('vibrate' in navigator) navigator.vibrate(50)
+
+    toast('Solicitud marcada como completa', 'success')
+
+    // Remove from local state and refresh
+    setSolicitudes(prev => prev.filter(s => s.id !== solicitudId))
+    router.refresh()
+  }
+
   useEffect(() => {
     if (!id) return
     const tId = decodeURIComponent(String(id))
@@ -93,21 +137,21 @@ export default function TraficoDetailPage() {
       let matched = allDocs.filter((doc: any) => doc.metadata?.trafico === tId)
       if (!matched.length) matched = allDocs.filter((doc: any) => doc.file_url?.includes(tId))
       setDocumentos(matched)
-      const found = new Set(matched.map((doc: any) => (doc.document_type || '').toUpperCase()))
-      setMissingDocs(REQUIRED_DOCS.filter(r => !found.has(r)))
+      setMissingDocs(getMissingDocs(matched))
       setLoading(false)
       fetch(`/api/data?table=entradas&trafico=${encodeURIComponent(tId)}&limit=20&order_by=fecha_llegada_mercancia&order_dir=desc`)
         .then(r => r.json()).then(ed => setEntradas(ed.data ?? [])).catch(() => {})
       // Fetch active solicitudes for this tráfico
       supabase
         .from('documento_solicitudes')
-        .select('id, doc_type, status, solicitado_at, escalate_after')
+        .select('id, doc_types, status, solicitado_at, deadline, recipient_name')
         .eq('trafico_id', tId)
         .eq('company_id', COMPANY_ID)
+        .not('status', 'eq', 'completa')
         .order('solicitado_at', { ascending: false })
         .limit(20)
         .then(({ data: solData }) => {
-          if (solData && solData.length > 0) setSolicitudes(solData)
+          if (solData && solData.length > 0) setSolicitudes(solData as Solicitud[])
         })
     }).catch(() => setLoading(false))
     fetch('/api/rates').then(r => r.json()).then(d => {
@@ -134,7 +178,8 @@ export default function TraficoDetailPage() {
   const t = trafico
   const isCruzado = (t.estatus || '').toLowerCase().includes('cruz')
   const isPagado = (t.estatus || '').toLowerCase().includes('pagado')
-  const docCompleteness = Math.round((documentos.length / REQUIRED_DOCS.length) * 100)
+  const docCompleteness = Math.round((documentos.length / REQUIRED_DOC_TYPES.length) * 100)
+  const pctComplete = docCompleteness
 
   // ── 12-STEP TIMELINE ──
   const getStepState = (stepNum: number): 'completed' | 'current' | 'pending' | 'blocked' => {
@@ -206,34 +251,43 @@ export default function TraficoDetailPage() {
               {fmtUSD(Number(t.importe_total))} USD
             </div>
           )}
-          <div style={{ marginTop: 10, display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 8 }}>
-            <button
-              disabled={solicitadoOk || missingDocs.length === 0}
-              onClick={() => setShowSolicitarModal(true)}
-              style={{
-                padding: isMobile ? '12px 14px' : '6px 14px',
-                fontSize: isMobile ? 14 : 12, fontWeight: 700,
-                border: 'var(--b-default)', borderRadius: 'var(--r-md)',
-                background: solicitadoOk ? '#F0FDF4' : 'var(--bg-card)',
-                cursor: solicitadoOk || missingDocs.length === 0 ? 'default' : 'pointer',
-                color: solicitadoOk ? '#16A34A' : 'var(--n-600)',
-                width: isMobile ? '100%' : undefined,
-                minHeight: isMobile ? 60 : undefined,
-              }}
-            >
-              {solicitadoOk ? '✓ Solicitados' : 'Solicitar Docs'}
-            </button>
+          <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {missingDocs.length > 0 && !solicitadoOk && (
+              <button
+                onClick={() => setShowSolicitarModal(true)}
+                style={{
+                  width: '100%', padding: '12px 14px',
+                  fontSize: 14, fontWeight: 700,
+                  border: 'none', borderRadius: 'var(--r-md)',
+                  background: pctComplete === 0 ? '#C23B22' : '#B8953F',
+                  color: '#FFFFFF',
+                  cursor: 'pointer',
+                  minHeight: 48,
+                }}
+              >
+                Solicitar {missingDocs.length} documentos faltantes →
+              </button>
+            )}
+            {solicitadoOk && (
+              <div style={{
+                width: '100%', padding: '12px 14px', textAlign: 'center',
+                fontSize: 14, fontWeight: 700, borderRadius: 'var(--r-md)',
+                background: '#F0FDF4', color: '#16A34A', border: '1px solid #BBF7D0',
+                minHeight: 48, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                ✓ Documentos solicitados
+              </div>
+            )}
             <button onClick={() => {
               const url = `${window.location.origin}/traficos/${encodeURIComponent(t.trafico)}`
               navigator.clipboard.writeText(url)
               setTrackingCopied(true); setTimeout(() => setTrackingCopied(false), 2000)
             }} style={{
-              padding: isMobile ? '12px 14px' : '6px 14px',
-              fontSize: isMobile ? 14 : 12, fontWeight: 700,
+              padding: '6px 14px',
+              fontSize: 12, fontWeight: 700,
               border: 'var(--b-default)', borderRadius: 'var(--r-md)',
               background: 'var(--bg-card)', cursor: 'pointer', color: 'var(--n-600)',
-              width: isMobile ? '100%' : undefined,
-              minHeight: isMobile ? 60 : undefined,
+              minHeight: 44,
             }}>
               {trackingCopied ? '✓ Copiado' : 'Compartir'}
             </button>
@@ -300,7 +354,7 @@ export default function TraficoDetailPage() {
           <div className="card" style={{ padding: 20, marginBottom: 20 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
               <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--n-900)' }}>
-                Documentos ({documentos.length}/{REQUIRED_DOCS.length})
+                Documentos ({documentos.length}/{REQUIRED_DOC_TYPES.length})
               </div>
               <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--n-600)', fontFamily: 'var(--font-data)' }}>{docCompleteness}%</span>
             </div>
@@ -586,30 +640,49 @@ export default function TraficoDetailPage() {
           </div>
           <div style={{ border: '1px solid var(--n-150)', borderRadius: 'var(--r-md)', overflow: 'hidden' }}>
             {solicitudes.map((sol, idx) => {
-              const isEscalated = sol.escalate_after ? new Date(sol.escalate_after) < new Date() : false
+              const isPastDeadline = sol.deadline ? new Date(sol.deadline) < new Date() : false
+              const docCount = Array.isArray(sol.doc_types) ? sol.doc_types.length : 0
               return (
                 <div key={sol.id} style={{
                   padding: '10px 16px',
                   borderBottom: idx < solicitudes.length - 1 ? '1px solid var(--n-150)' : 'none',
-                  borderLeft: isEscalated ? '3px solid #C23B22' : '3px solid #C47F17',
+                  borderLeft: isPastDeadline ? '3px solid #C23B22' : '3px solid #C47F17',
                   display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                  minHeight: 48,
+                  minHeight: 60, gap: 12,
                 }}>
-                  <div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--n-900)' }}>{sol.doc_type}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--n-900)' }}>
+                      {docCount} documento{docCount !== 1 ? 's' : ''}
+                    </div>
                     <div style={{ fontSize: 11, color: 'var(--n-500)', fontFamily: 'var(--font-data)', marginTop: 2 }}>
                       Solicitado {fmtDate(sol.solicitado_at)}
+                      {sol.deadline && <> · Plazo: {fmtDate(sol.deadline)}</>}
                     </div>
                   </div>
-                  <span style={{
-                    fontSize: 11, fontWeight: 700, padding: '2px 8px',
-                    borderRadius: 'var(--r-full, 9999px)',
-                    background: isEscalated ? '#FEF2F2' : '#FFFBEB',
-                    color: isEscalated ? '#991B1B' : '#92400E',
-                    border: isEscalated ? '1px solid rgba(220,38,38,0.2)' : '1px solid rgba(196,127,23,0.2)',
-                  }}>
-                    {isEscalated ? 'Escalado' : sol.status === 'solicitado' ? 'Solicitado' : sol.status}
-                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                    <span style={{
+                      fontSize: 11, fontWeight: 700, padding: '2px 8px',
+                      borderRadius: 'var(--r-full, 9999px)',
+                      background: isPastDeadline ? '#FEF2F2' : '#FFFBEB',
+                      color: isPastDeadline ? '#991B1B' : '#92400E',
+                      border: isPastDeadline ? '1px solid rgba(220,38,38,0.2)' : '1px solid rgba(196,127,23,0.2)',
+                    }}>
+                      {isPastDeadline ? 'Vencido' : sol.status === 'solicitado' ? 'Solicitado' : sol.status}
+                    </span>
+                    <button
+                      onClick={() => markSolicitudCompleta(sol.id)}
+                      style={{
+                        fontSize: 11, fontWeight: 700, padding: '4px 10px',
+                        borderRadius: 'var(--r-md)',
+                        background: '#F0FDF4', color: '#16A34A',
+                        border: '1px solid #BBF7D0',
+                        cursor: 'pointer', minHeight: 44,
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      Marcar recibido ✓
+                    </button>
+                  </div>
                 </div>
               )
             })}

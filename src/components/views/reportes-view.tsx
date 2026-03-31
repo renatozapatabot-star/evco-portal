@@ -423,16 +423,16 @@ export function ReportesView() {
       {/* Executive hero card — CFO screenshot target */}
       <ExecutiveHero summary={summary} isMobile={isMobile} />
 
-      {/* Summary header */}
-      <Card style={{ padding: '16px 20px', marginBottom: 20, borderTop: `3px solid ${T.green}` }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-          <span style={{ width: 10, height: 10, borderRadius: '50%', background: T.green }} />
-          <span style={{ fontSize: 15, fontWeight: 700, color: T.text }}>Resumen Operativo</span>
-        </div>
-        <div style={{ fontSize: 12, color: T.textSub }}>
-          {fmtNum(summary.totalTraficos)} tráficos procesados · {fmtUSD(summary.totalValor)} USD importado (histórico) · T-MEC: {fmtNum(summary.tmecCount)} de {fmtNum(summary.totalFacturas)} pedimentos ({summary.tmecPct}%)
-        </div>
-      </Card>
+      {/* Summary header — shows data NOT in ExecutiveHero (rectificaciones, entradas, faltantes) */}
+      <div style={{
+        background: 'rgba(45,133,64,0.06)', border: '1px solid rgba(45,133,64,0.2)',
+        borderRadius: 10, padding: '12px 16px', marginBottom: 20,
+      }}>
+        <span style={{ fontSize: 13, color: T.text }}>
+          <strong>Período actual:</strong>{' '}
+          {fmtNum(summary.totalTraficos)} tráficos · {fmtNum(summary.totalEntradas || 0)} entradas · {summary.faltantesPct || 0}% con faltantes
+        </span>
+      </div>
 
       {/* KPI strip — client-facing: positive metrics only */}
       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: 12, marginBottom: 24 }}>

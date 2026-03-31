@@ -114,7 +114,18 @@ export function DocumentosView() {
   const filtered = filter === 'Todos' ? LEGAL_DOCS : LEGAL_DOCS.filter(d => d.category === filter)
   const requiredDocs = LEGAL_DOCS.filter(d => d.required)
   const completedRequired = requiredDocs.filter(d => companyDocs.some(cd => cd.tipo_documento?.toLowerCase().includes(d.id.toLowerCase())) || uploaded[d.id]).length
+  const requiredIncomplete = requiredDocs.length - completedRequired
   const withExpiry = LEGAL_DOCS.filter(d => (d as any).expiry).length
+
+  const scrollToFirstMissing = () => {
+    const firstMissing = requiredDocs.find(d =>
+      !companyDocs.some(cd => cd.tipo_documento?.toLowerCase().includes(d.id.toLowerCase())) && !uploaded[d.id]
+    )
+    if (firstMissing) {
+      const el = document.getElementById(`doc-${firstMissing.id}`)
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+  }
 
   return (
     <div style={{ padding: 32 }}>
@@ -122,6 +133,37 @@ export function DocumentosView() {
         <h1 className="pg-title">Documentos Legales</h1>
         <p className="pg-meta">{CLIENT_NAME} &middot; Documentos corporativos y de cumplimiento</p>
       </div>
+
+      {/* Urgency banner for missing required documents */}
+      {!loading && requiredIncomplete > 0 && (
+        <div style={{
+          background: 'rgba(192,48,48,0.06)',
+          border: '1px solid rgba(192,48,48,0.25)',
+          borderRadius: 10, padding: '14px 16px', marginBottom: 20,
+          display: 'flex', justifyContent: 'space-between',
+          alignItems: 'center', gap: 12, flexWrap: 'wrap',
+        }}>
+          <div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--status-red, #C23B22)', marginBottom: 4 }}>
+              {requiredIncomplete} documento{requiredIncomplete !== 1 ? 's' : ''} requerido{requiredIncomplete !== 1 ? 's' : ''} sin cargar
+            </div>
+            <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+              Riesgo de observaci&oacute;n ante SAT en pr&oacute;xima revisi&oacute;n.
+            </div>
+          </div>
+          <button
+            onClick={scrollToFirstMissing}
+            style={{
+              background: 'var(--status-red, #C23B22)', color: '#FFF',
+              border: 'none', borderRadius: 8,
+              padding: '10px 16px', fontSize: 13, fontWeight: 700,
+              cursor: 'pointer', flexShrink: 0, minHeight: 44,
+            }}
+          >
+            Ver faltantes ({requiredIncomplete})
+          </button>
+        </div>
+      )}
 
       {/* Category filters */}
       <div className="pill-scroll" style={{
@@ -182,7 +224,7 @@ export function DocumentosView() {
           const isComplete = inSystem || !!up
 
           return (
-            <div key={doc.id} style={{ background: 'var(--bg-card)', border: '1px solid var(--border-primary)', borderRadius: 8, padding: 24 }}>
+            <div key={doc.id} id={`doc-${doc.id}`} style={{ background: 'var(--bg-card)', border: '1px solid var(--border-primary)', borderRadius: 8, padding: 24 }}>
               {/* Top row: name + status */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
                 <div style={{ flex: 1 }}>

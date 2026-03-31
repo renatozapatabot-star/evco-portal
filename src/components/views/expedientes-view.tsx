@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { FolderOpen, AlertTriangle, FileText, Send, Eye, Search } from 'lucide-react'
 import { createClient } from '@supabase/supabase-js'
-import { CLIENT_CLAVE } from '@/lib/client-config'
+import { CLIENT_CLAVE, COMPANY_ID } from '@/lib/client-config'
 import { fmtId, fmtDateCompact } from '@/lib/format-utils'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { EmptyState } from '@/components/empty-state'
@@ -39,7 +39,7 @@ interface TraficoRow {
   estatus: string
   fecha_llegada: string | null
   pedimento_num: string | null
-  valor_factura: number | null
+  importe_total: number | null
   docs: string[]
   docCount: number
   pct: number
@@ -346,64 +346,62 @@ export function ExpedientesView() {
   const load = useCallback(async () => {
     setLoading(true)
 
-    // Fetch all tráficos for this client (no pagination on raw — we filter client-side by tab)
-    // Paginate the filtered set
+    // 1. Fetch active tráficos for the client using company_id
     let q = supabase
       .from('traficos')
-      .select('trafico, pedimento, estatus, fecha_llegada, valor_factura', { count: 'exact' })
-      .ilike('trafico', `${CLIENT_CLAVE}-%`)
-      .order('created_at', { ascending: false })
+      .select('id, trafico, estatus, fecha_llegada, importe_total, pedimento, proveedores, descripcion_mercancia', { count: 'exact' })
+      .eq('company_id', COMPANY_ID)
+      .not('estatus', 'ilike', '%cruz%')
+      .order('fecha_llegada', { ascending: true })
+      .limit(500)
 
     if (search) q = q.ilike('trafico', `%${search}%`)
 
-    const { data: rawData, count } = await q
-    const allRows = rawData || []
-    setTotal(count || 0)
-
-    // Batch-load documents for all rows
-    const ids = allRows.map((r) => r.trafico)
-    let docMap: Record<string, string[]> = {}
-
-    if (ids.length > 0) {
-      const [r1, r2] = await Promise.all([
-        supabase.from('documents').select('trafico_id, document_type').in('trafico_id', ids),
-        supabase.from('expediente_documentos').select('trafico_id, doc_type').in('trafico_id', ids),
-      ])
-
-      const map: Record<string, Set<string>> = {}
-      ;(r1.data || []).forEach((d: { trafico_id: string; document_type: string }) => {
-        if (!map[d.trafico_id]) map[d.trafico_id] = new Set()
-        if (d.document_type) map[d.trafico_id].add(d.document_type)
-      })
-      ;(r2.data || []).forEach((d: { trafico_id: string; doc_type: string }) => {
-        if (!map[d.trafico_id]) map[d.trafico_id] = new Set()
-        if (d.doc_type) map[d.trafico_id].add(d.doc_type)
-      })
-
-      docMap = Object.fromEntries(
-        Object.entries(map).map(([k, v]) => [k, Array.from(v)])
-      )
+    const { data: traficos, error: traficoError, count } = await q
+    if (traficoError) {
+      setRawTraficos([])
+      setTotal(0)
+      setLoading(false)
+      return
     }
 
-    // Build enriched rows
+    const allRows = traficos || []
+    setTotal(count || 0)
+
+    // 2. Batch-load documents using trafico_id FK
+    const traficoIds = allRows.map((t) => t.trafico)
+    const docMap = new Map<string, Set<string>>()
+
+    if (traficoIds.length > 0) {
+      const { data: allDocs } = await supabase
+        .from('documents')
+        .select('trafico_id, document_type')
+        .in('trafico_id', traficoIds)
+
+      allDocs?.forEach((d: { trafico_id: string; document_type: string | null }) => {
+        if (!docMap.has(d.trafico_id)) docMap.set(d.trafico_id, new Set())
+        if (d.document_type) docMap.get(d.trafico_id)!.add(d.document_type.toUpperCase())
+      })
+    }
+
+    // 3. Build enriched rows with completeness calculation
     const enriched: TraficoRow[] = allRows.map((r) => {
-      const docs = docMap[r.trafico] || []
-      const found = new Set(docs.map((d) => d.toUpperCase()))
-      const missing = REQUIRED_DOCS.filter((rd) => !found.has(rd))
-      const docCount = REQUIRED_DOCS.length - missing.length
-      const p = Math.round((docCount / REQUIRED_DOCS.length) * 100)
+      const present = docMap.get(r.trafico) ?? new Set<string>()
+      const docsPresent = REQUIRED_DOCS.filter((rd) => present.has(rd)).length
+      const missing = REQUIRED_DOCS.filter((rd) => !present.has(rd))
+      const pct = Math.round((docsPresent / REQUIRED_DOCS.length) * 100)
       return {
         trafico: r.trafico,
         estatus: r.estatus || 'En Proceso',
         fecha_llegada: r.fecha_llegada,
         pedimento_num: r.pedimento || null,
-        valor_factura: r.valor_factura ?? null,
-        docs,
-        docCount,
-        pct: p,
+        importe_total: r.importe_total ?? null,
+        docs: Array.from(present),
+        docCount: docsPresent,
+        pct,
         missing,
       }
-    })
+    }).sort((a, b) => a.pct - b.pct)
 
     setRawTraficos(enriched)
     setLoading(false)
@@ -444,7 +442,7 @@ export function ExpedientesView() {
 
       switch (sortBy) {
         case 'mayor_valor':
-          return (b.valor_factura ?? 0) - (a.valor_factura ?? 0)
+          return (b.importe_total ?? 0) - (a.importe_total ?? 0)
         case 'fecha_entrada': {
           const aDate = a.fecha_llegada ? new Date(a.fecha_llegada).getTime() : 0
           const bDate = b.fecha_llegada ? new Date(b.fecha_llegada).getTime() : 0
@@ -528,7 +526,30 @@ export function ExpedientesView() {
           />
         </div>
       ) : rawTraficos.length === 0 ? (
-        <EmptyState page="expedientes" />
+        /* No active tráficos */
+        <div className="card" style={{ padding: '60px 20px', textAlign: 'center' }}>
+          <FolderOpen size={32} strokeWidth={1.5} style={{ color: '#2D8540', margin: '0 auto 12px' }} />
+          <p style={{ fontSize: 14, fontWeight: 600, color: '#1A1A1A' }}>Sin tráficos activos</p>
+          <p style={{ fontSize: 12, color: '#9C9890' }}>No hay tráficos activos en este momento.</p>
+        </div>
+      ) : rawTraficos.length > 0 && rawTraficos.every((r) => r.docs.length === 0) ? (
+        /* Tráficos exist but zero documents found — cannot calculate completeness */
+        <div className="card" style={{ padding: '60px 20px', textAlign: 'center' }}>
+          <AlertTriangle size={32} strokeWidth={1.5} style={{ color: '#C47F17', margin: '0 auto 12px' }} />
+          <p style={{ fontSize: 14, fontWeight: 600, color: '#1A1A1A' }}>No se pudo calcular completitud</p>
+          <p style={{ fontSize: 12, color: '#9C9890' }}>
+            Hay {rawTraficos.length} tráfico{rawTraficos.length !== 1 ? 's' : ''} activo{rawTraficos.length !== 1 ? 's' : ''} pero sin datos de documentos.
+          </p>
+        </div>
+      ) : rawTraficos.length > 0 && rawTraficos.every((r) => r.pct >= 100) ? (
+        /* All expedientes complete */
+        <div className="card" style={{ padding: '60px 20px', textAlign: 'center' }}>
+          <FileText size={32} strokeWidth={1.5} style={{ color: '#2D8540', margin: '0 auto 12px' }} />
+          <p style={{ fontSize: 14, fontWeight: 600, color: '#2D8540' }}>Todos los expedientes completos</p>
+          <p style={{ fontSize: 12, color: '#9C9890' }}>
+            Los {rawTraficos.length} tráficos activos tienen todos sus documentos en orden.
+          </p>
+        </div>
       ) : (
         <>
           {/* Summary card */}

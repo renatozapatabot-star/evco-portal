@@ -1124,7 +1124,7 @@ body {
 @media (max-width: 768px) {
   .mobile-nav { display: flex !important; }
   .sidebar, .sidebar-desktop { display: none !important; }
-  .page-wrap { padding: 16px; padding-bottom: 80px; }
+  .page-wrap { padding: 16px; padding-bottom: 84px; }
   .kpi-grid { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
   .command-center { grid-template-columns: 1fr !important; }
   .topbar { padding: 0 16px; }
@@ -1339,7 +1339,7 @@ body {
   .toast-container { left:16px;right:16px;bottom:80px; }
   .toast { min-width:auto; }
   .acc-greeting { font-size:22px; }
-  .page-wrap { padding-bottom:80px !important; }
+  .page-wrap { padding-bottom:84px !important; }
 }
 @media (max-width:480px) { .m-dash-kpis { grid-template-columns:1fr 1fr 1fr; } }
 @media (max-width:768px) {
@@ -1489,25 +1489,18 @@ body {
 .cruz-suggestion:hover { border-color:var(--gold-200);background:var(--gold-50);color:var(--n-900);transform:translateY(-1px);box-shadow:var(--s-sm); }
 @media (max-width:768px) { .cruz-prompts-grid { grid-template-columns:1fr;max-width:100%; } }
 
-/* CRUZ FAB */
-.cruz-fab {
-  display:none;position:fixed;
-  bottom:calc(30px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);
-  width:56px;height:56px;border-radius:50%;
-  background:linear-gradient(135deg,#C9A84C,#E5C06A,#A87A22);
-  box-shadow:0 4px 16px rgba(201,168,76,0.45),0 2px 4px rgba(0,0,0,0.15);
-  border:none;cursor:pointer;align-items:center;justify-content:center;
-  color:#1C1F2E;z-index:35;-webkit-tap-highlight-color:transparent;
-  transition:transform 0.15s ease,box-shadow 0.15s ease;
+/* CRUZ FAB — permanently killed */
+.cruz-fab,
+[class*="FloatingButton"],
+[class*="CruzFab"],
+[class*="cruz-fab"] {
+  display: none !important;
 }
-.cruz-fab:active { transform:translateX(-50%) scale(0.92);box-shadow:0 2px 8px rgba(201,168,76,0.3); }
-/* CruzFAB killed — CRUZ is in bottom nav */
-@media (max-width:768px) { .cruz-fab { display:none !important; } }
 
 /* Empty cell placeholder */
 .c-empty { color:var(--n-200);font-size:12px;font-weight:400;font-style:normal;user-select:none; }
 
-/* Hide FAB on /cruz */
+/* Hide FAB on /cruz — redundant but kept for safety */
 body[data-page^="/cruz"] .cruz-fab { display:none !important; }
 
 /* Mobile chat */

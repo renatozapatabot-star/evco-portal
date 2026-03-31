@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Send, ArrowRight, Mic, Volume2, ThumbsUp, ThumbsDown, ChevronRight, Square, X, AlertTriangle, Clock, FileText } from 'lucide-react'
+import ReactMarkdown from 'react-markdown'
 import { GOLD, GOLD_GRADIENT } from '@/lib/design-system'
 import { CLIENT_CLAVE, COMPANY_ID } from '@/lib/client-config'
 import { useIsMobile } from '@/hooks/use-mobile'
@@ -365,7 +366,22 @@ export default function CruzChatPage() {
                   fontSize: 14, lineHeight: 1.6, fontWeight: msg.role === 'user' ? 600 : 400,
                   color: msg.role === 'user' ? D.text : D.aiText,
                 }}>
-                  {msg.role === 'user' ? msg.content : formatMessage(msg.content, true)}
+                  {msg.role === 'user' ? msg.content : (
+                    <div style={{ fontSize: 14, lineHeight: 1.6, color: D.aiText }}>
+                      <ReactMarkdown
+                        components={{
+                          h2: ({ children }) => <h2 style={{ fontSize: '1em', fontWeight: 700, color: 'inherit', marginBottom: 6, marginTop: 10 }}>{children}</h2>,
+                          strong: ({ children }) => <strong style={{ fontWeight: 700 }}>{children}</strong>,
+                          li: ({ children }) => <li style={{ marginLeft: 16, marginBottom: 3 }}>{children}</li>,
+                          ul: ({ children }) => <ul style={{ marginBottom: 8, paddingLeft: 0 }}>{children}</ul>,
+                          p: ({ children }) => <p style={{ marginBottom: 8 }}>{children}</p>,
+                          code: ({ children }) => <code style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85em', background: 'rgba(255,255,255,0.1)', padding: '2px 5px', borderRadius: 4 }}>{children}</code>,
+                        }}
+                      >
+                        {msg.content}
+                      </ReactMarkdown>
+                    </div>
+                  )}
                   {msg.navigate && (
                     <div onClick={() => router.push(msg.navigate!)} style={{
                       display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, padding: '8px 12px',

@@ -29,8 +29,8 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-const { callQwen } = require('../core/qwen-client-v2');
-const { recordCorrection } = require('../core/correction-flywheel');
+const { callQwen } = require('./qwen-client-v2');
+const { recordCorrection } = require('./correction-flywheel');
 
 // ============================================================================
 // COMMAND HANDLERS

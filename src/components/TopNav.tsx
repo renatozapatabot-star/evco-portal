@@ -66,6 +66,8 @@ export function TopNav() {
     localStorage.setItem('cruz-theme-preference', next ? 'dark' : 'light')
   }
 
+  const [syncMins, setSyncMins] = useState<number | null>(null)
+
   // Sync status
   useEffect(() => {
     fetch('/api/data?table=traficos&company_id=evco&select=updated_at&limit=1&order_by=updated_at&order_dir=desc')
@@ -74,6 +76,7 @@ export function TopNav() {
         const ts = d.data?.[0]?.updated_at
         if (ts) {
           const mins = Math.floor((Date.now() - new Date(ts as string).getTime()) / 60000)
+          setSyncMins(mins)
           setSyncLabel(mins < 5 ? 'Ahora' : mins < 60 ? `${mins}m` : `${Math.floor(mins / 60)}h`)
         }
       }).catch(() => { /* silent */ })
@@ -214,8 +217,17 @@ export function TopNav() {
           <span style={{ fontSize: 12, color: '#9C9890' }}>Buscar trafico, pedimento... \u2318K</span>
         </div>
         {syncLabel && (
-          <div style={{ position: 'absolute', right: 24, fontSize: 11, color: '#9C9890', fontFamily: 'var(--font-jetbrains-mono)' }}>
-            Sync: {syncLabel}
+          <div style={{ position: 'absolute', right: 24, fontSize: 11, color: syncMins !== null && syncMins > 120 ? '#C47F17' : '#9C9890', fontFamily: 'var(--font-jetbrains-mono)', display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{
+              width: 7, height: 7, borderRadius: '50%', display: 'inline-block',
+              background: syncMins !== null && syncMins <= 30 ? '#2D8540' : syncMins !== null && syncMins > 120 ? '#C47F17' : '#9C9890',
+            }} />
+            {syncMins !== null && syncMins <= 30
+              ? `Datos de hoy, ${syncLabel}`
+              : syncMins !== null && syncMins > 120
+                ? `\u26A0 Actualizado hace ${syncLabel} \u2014 verificar datos`
+                : `Sync: ${syncLabel}`
+            }
           </div>
         )}
       </div>

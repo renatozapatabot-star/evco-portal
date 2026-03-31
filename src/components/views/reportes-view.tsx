@@ -15,6 +15,7 @@ const supabase = createClient(
 import { CLIENT_CLAVE, COMPANY_ID, CLIENT_NAME } from '@/lib/client-config'
 import { GOLD } from '@/lib/design-system'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { TrendArrow } from '@/components/TrendArrow'
 const CLAVE = CLIENT_CLAVE
 
 const T = {
@@ -123,8 +124,11 @@ function ExecutiveHero({ summary, isMobile }: { summary: Record<string, number |
       borderRadius: 16, padding: isMobile ? '20px' : '28px 32px', marginBottom: 24,
       color: '#EAE6DC',
     }}>
-      <div style={{ fontSize: 12, fontWeight: 700, color: '#B8973A', marginBottom: 10, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+      <div style={{ fontSize: 12, fontWeight: 700, color: '#B8973A', marginBottom: 4, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
         Resumen Ejecutivo
+      </div>
+      <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginBottom: 16, letterSpacing: '0.05em' }}>
+        {CLIENT_NAME} &middot; Patente 3596 &middot; Aduana 240, Nuevo Laredo
       </div>
       <div style={{ fontSize: 14, color: '#EAE6DC', marginBottom: 20, lineHeight: 1.5 }}>
         {executiveSentence}

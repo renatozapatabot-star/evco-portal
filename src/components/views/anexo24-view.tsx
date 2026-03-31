@@ -1,173 +1,359 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { Table2 } from 'lucide-react'
-import { CLIENT_NAME } from '@/lib/client-config'
-import { createClient } from '@supabase/supabase-js'
+import { useEffect, useState, useMemo } from 'react'
+import { Package, AlertTriangle, Clock, Search, Info } from 'lucide-react'
+import { COMPANY_ID, CLIENT_CLAVE } from '@/lib/client-config'
+import { fmtDate } from '@/lib/format-utils'
 
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
-
+// ── Dark theme tokens ──
 const T = {
-  bg: '#FAFAF8', surface: '#FFFFFF', border: '#E8E6E0', surfaceAlt: '#F5F3EF',
-  text: '#1A1A1A', textSub: '#6B6B6B', textMuted: '#999999',
-  navy: '#BA7517', gold: '#BA7517', shadow: '0 1px 3px rgba(0,0,0,0.07)',
+  bg: '#0D0D0C',
+  card: '#1A1814',
+  cardAlt: '#14120F',
+  border: '#302C23',
+  gold: '#B8953F',
+  goldSubtle: 'rgba(184,149,63,0.12)',
+  text: '#F5F0E8',
+  textSec: '#A09882',
+  textMuted: '#6B6560',
+  red: '#C23B22',
+  redBg: 'rgba(194,59,34,0.12)',
+  redBorder: 'rgba(194,59,34,0.25)',
+  amber: '#C47F17',
+  amberBg: 'rgba(196,127,23,0.12)',
+  green: '#2D8540',
+  greenBg: 'rgba(45,133,64,0.12)',
+  r: 8,
+} as const
+
+interface EntradaRow {
+  cve_entrada: string
+  fecha_llegada_mercancia: string | null
+  cantidad_bultos: number | null
+  peso_bruto: number | null
+  company_id: string | null
+  importe_total: number | null
+  descripcion_mercancia: string | null
+  [k: string]: unknown
 }
 
-function fmtNum(n: any) { return Number(n || 0).toLocaleString('es-MX') }
-function fmtUSD(n: any) { return n != null ? `$${Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '' }
-function fmtDate(s: any) { if (!s) return ''; try { return new Date(s).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' }) } catch { return String(s) } }
-function isDateCol(c: string) { return /fecha|date|created_at|updated_at/i.test(c) }
-function titleCase(s: string) { if (!s) return ''; return s.toLowerCase().replace(/(?:^|\s|[-/])\w/g, c => c.toUpperCase()) }
-function isProvCol(c: string) { return /proveedor|proveedores|supplier/i.test(c) }
+function daysSince(date: string | null): number {
+  if (!date) return 0
+  return Math.floor((Date.now() - new Date(date).getTime()) / 86400000)
+}
 
-function Card({ children, style = {} }: any) {
-  return <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 12, boxShadow: T.shadow, ...style }}>{children}</div>
+function fmtNum(n: number): string {
+  return n.toLocaleString('es-MX')
+}
+
+function fmtUSD(n: number): string {
+  if (n >= 1e6) return `$${(n / 1e6).toFixed(1)}M`
+  if (n >= 1e3) return `$${(n / 1e3).toFixed(0)}K`
+  return `$${n.toFixed(0)}`
 }
 
 export function Anexo24View() {
-  const [pedimentos, setPedimentos] = useState<any[]>([])
-  const [fracciones, setFracciones] = useState<any[]>([])
-  const [proveedores, setProveedores] = useState<any[]>([])
-  const [counts, setCounts] = useState<any>({})
-  const [activeTab, setActiveTab] = useState('pedimentos')
+  const [entradas, setEntradas] = useState<EntradaRow[]>([])
   const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState('')
+  const [companyFilter, setCompanyFilter] = useState('')
 
   useEffect(() => {
-    async function load() {
-      const [pedRes, fracRes, provRes, c1, c2, c3, c4, c5] = await Promise.all([
-        supabase.from('anexo24_pedimentos').select('*').order('created_at', { ascending: false }).limit(50),
-        supabase.from('anexo24_fracciones').select('*').limit(50),
-        supabase.from('anexo24_proveedores').select('*').limit(50),
-        supabase.from('anexo24_pedimentos').select('*', { count: 'exact', head: true }),
-        supabase.from('anexo24_fracciones').select('*', { count: 'exact', head: true }),
-        supabase.from('anexo24_numeros_parte').select('*', { count: 'exact', head: true }),
-        supabase.from('anexo24_partidas').select('*', { count: 'exact', head: true }),
-        supabase.from('anexo24_proveedores').select('*', { count: 'exact', head: true }),
-      ])
-      setPedimentos(pedRes.data || [])
-      setFracciones(fracRes.data || [])
-      setProveedores(provRes.data || [])
-      setCounts({ pedimentos: c1.count || 0, fracciones: c2.count || 0, numeros_parte: c3.count || 0, partidas: c4.count || 0, proveedores: c5.count || 0 })
-      setLoading(false)
-    }
-    load()
+    fetch(`/api/data?table=entradas&company_id=${COMPANY_ID}&limit=2000&order_by=fecha_llegada_mercancia&order_dir=desc`)
+      .then(r => r.json())
+      .then(d => setEntradas((d.data ?? []) as EntradaRow[]))
+      .catch(() => {})
+      .finally(() => setLoading(false))
   }, [])
 
-  const TABS = [
-    { id: 'pedimentos', label: 'Pedimentos', count: counts.pedimentos },
-    { id: 'fracciones', label: 'Fracciones', count: counts.fracciones },
-    { id: 'proveedores', label: 'Proveedores', count: counts.proveedores },
-  ]
+  // ── Derived data ──
+  const companies = useMemo(() => {
+    const set = new Set<string>()
+    for (const e of entradas) {
+      if (e.company_id) set.add(e.company_id)
+    }
+    return [...set].sort()
+  }, [entradas])
 
-  function renderTable(data: any[]) {
-    if (data.length === 0) return (
-      <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-        <Table2 size={32} strokeWidth={1.5} style={{ color: 'var(--n-300)', margin: '0 auto 12px' }} />
-        <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--n-700)', marginBottom: 4 }}>Anexo 24 pendiente de sincronización</div>
-        <div style={{ fontSize: 13, color: 'var(--n-400)' }}>Los artículos temporales aparecerán aquí</div>
-      </div>
-    )
-    const cols = Object.keys(data[0]).filter(k => k !== 'id' && k !== 'tenant_id').slice(0, 8)
-    const isNumCol = (c: string) => /valor|importe|total|cantidad|peso/i.test(c)
+  const filtered = useMemo(() => {
+    let rows = entradas
+    if (companyFilter) rows = rows.filter(e => e.company_id === companyFilter)
+    if (search) {
+      const q = search.toLowerCase()
+      rows = rows.filter(e =>
+        (e.cve_entrada || '').toLowerCase().includes(q) ||
+        (e.descripcion_mercancia || '').toLowerCase().includes(q) ||
+        (e.company_id || '').toLowerCase().includes(q)
+      )
+    }
+    return rows
+  }, [entradas, companyFilter, search])
+
+  const totalItems = filtered.length
+  const pendingReturn = useMemo(() => filtered.filter(e => daysSince(e.fecha_llegada_mercancia) > 180).length, [filtered])
+  const overLimit = useMemo(() => filtered.filter(e => daysSince(e.fecha_llegada_mercancia) > 365).length, [filtered])
+  const totalValue = useMemo(() => filtered.reduce((s, e) => s + (Number(e.importe_total) || 0), 0), [filtered])
+
+  if (loading) {
     return (
-      <div className="overflow-auto">
-        <table className="data-table">
-          <thead>
-            <tr>
-              {cols.map(c => <th key={c} scope="col" style={isNumCol(c) ? { textAlign: 'right' } : undefined}>{c.replace(/_/g, ' ')}</th>)}
-            </tr>
-          </thead>
-          <tbody>
-            {data.map((row, i) => (
-              <tr key={i}>
-                {cols.map(c => (
-                  <td key={c} className={isNumCol(c) ? 'c-num' : ''} style={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {row[c] != null && String(row[c]).trim() !== ''
-                      ? isNumCol(c) ? fmtUSD(row[c])
-                      : isDateCol(c) ? fmtDate(row[c])
-                      : isProvCol(c) ? titleCase(String(row[c]).substring(0, 50))
-                      : String(row[c]).substring(0, 50)
-                      : <span className="c-empty">&middot;</span>}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div style={{ padding: 32, maxWidth: 1100, margin: '0 auto' }}>
+        <div style={{ height: 32, width: 300, borderRadius: 4, background: T.border, marginBottom: 32 }} className="skeleton" />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 32 }}>
+          {[0, 1, 2].map(i => <div key={i} style={{ height: 96, borderRadius: T.r, background: T.card }} className="skeleton" />)}
+        </div>
+        <div style={{ height: 400, borderRadius: T.r, background: T.card }} className="skeleton" />
       </div>
     )
   }
 
   return (
-    <div style={{ padding: '24px 28px', fontFamily: 'var(--font-geist-sans)' }}>
-      <div style={{ marginBottom: 20 }}>
-        <h2 className="page-title" style={{ margin: 0 }}>Anexo 24 — IMMEX</h2>
-        <p style={{ color: T.textMuted, fontSize: 12, margin: '4px 0 0' }}>Reconciliación maquila · {CLIENT_NAME}</p>
+    <div style={{ padding: 32, maxWidth: 1100, margin: '0 auto' }}>
+      {/* ── Header ── */}
+      <div style={{ marginBottom: 32 }}>
+        <h1 style={{ fontSize: 24, fontWeight: 800, color: T.text, margin: 0 }}>
+          Anexo 24 — IMMEX
+        </h1>
+        <p style={{ fontSize: 14, color: T.textSec, margin: '4px 0 0' }}>
+          Inventario de importaciones temporales · Control de permanencia
+        </p>
       </div>
 
-      {/* IMMEX Temporal Compliance */}
-      {pedimentos.length > 0 && (() => {
-        const getMonths = (d: string) => d ? Math.floor((Date.now() - new Date(d).getTime()) / (86400000 * 30)) : 0
-        const dateField = pedimentos[0]?.fecha_presentacion !== undefined && pedimentos[0]?.fecha_presentacion !== null ? 'fecha_presentacion' : 'fecha_pago'
-        const withDate = pedimentos.filter((r: any) => r[dateField])
-        const violations = withDate.filter((r: any) => getMonths(r[dateField]) >= 18).length
-        const approaching = withDate.filter((r: any) => { const m = getMonths(r[dateField]); return m >= 15 && m < 18 }).length
-        return (
-          <>
-            {violations > 0 && (
-              <div style={{ background: '#FEE2E2', borderLeft: '4px solid #DC2626', padding: '14px 20px', borderRadius: '0 8px 8px 0', marginBottom: 12, fontSize: 14, fontWeight: 800, color: '#DC2626' }}>
-                {violations} operaciones EXCEDIERON el plazo de 18 meses. Riesgo de multa inmediato.
-              </div>
-            )}
-            {approaching > 0 && (
-              <div style={{ background: '#FFFBEB', borderLeft: '4px solid #D4952A', padding: '12px 20px', borderRadius: '0 8px 8px 0', marginBottom: 12, fontSize: 13, fontWeight: 700, color: '#92400E' }}>
-                {approaching} operaciones se acercan al plazo (15-18 meses).
-              </div>
-            )}
-          </>
-        )
-      })()}
-
-      <div className="kpi-grid" style={{ marginBottom: 20, gridTemplateColumns: 'repeat(5, 1fr)' }}>
-        {[
-          { label: 'Pedimentos', count: counts.pedimentos },
-          { label: 'Fracciones', count: counts.fracciones },
-          { label: 'Núm. Parte', count: counts.numeros_parte },
-          { label: 'Partidas', count: counts.partidas },
-          { label: 'Proveedores', count: counts.proveedores },
-        ].map(s => (
-          <div key={s.label} className="kpi-card" style={{ textAlign: 'center' }}>
-            <div className="kpi-value" style={{ fontSize: 28 }}>{fmtNum(s.count)}</div>
-            <div className="kpi-label" style={{ marginTop: 4 }}>{s.label}</div>
+      {/* ── SECTION 1: Summary cards ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 32 }}>
+        {/* Total items */}
+        <div style={{
+          background: T.card, border: `1px solid ${T.border}`,
+          borderRadius: T.r, padding: '20px 24px',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+            <Package size={16} style={{ color: T.gold }} />
+            <span style={{ fontSize: 12, fontWeight: 700, color: T.textSec, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+              Artículos en inventario
+            </span>
           </div>
-        ))}
-      </div>
-
-      <div className="flex gap-1 rounded-[7px] p-0.5 mb-4 w-fit" style={{ background: 'var(--n-100)' }}>
-        {TABS.map(tab => (
-          <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-            className="f-chip"
-            style={activeTab === tab.id
-              ? { background: '#fff', color: 'var(--n-900)', boxShadow: '0 1px 3px rgba(0,0,0,0.08)', fontWeight: 600 }
-              : { color: 'var(--n-500)' }}>
-            {tab.label}
-            {tab.count > 0 && <span style={{ background: 'var(--gold-500)', color: '#fff', borderRadius: 99, padding: '1px 5px', fontSize: 9, fontWeight: 700, marginLeft: 4 }}>{fmtNum(tab.count)}</span>}
-          </button>
-        ))}
-      </div>
-
-      {loading ? (
-        <div style={{ display: 'flex', justifyContent: 'center', padding: 60 }}>
-          <div style={{ width: 28, height: 28, border: `3px solid ${T.border}`, borderTopColor: T.navy, borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
+          <div style={{ fontSize: 32, fontWeight: 900, color: T.text, fontFamily: 'var(--font-jetbrains-mono)' }}>
+            {fmtNum(totalItems)}
+          </div>
+          {overLimit > 0 && (
+            <div style={{ fontSize: 12, color: T.red, fontWeight: 700, marginTop: 4 }}>
+              {overLimit} exceden 365 días
+            </div>
+          )}
         </div>
-      ) : (
-        <Card>
-          {activeTab === 'pedimentos' && renderTable(pedimentos)}
-          {activeTab === 'fracciones' && renderTable(fracciones)}
-          {activeTab === 'proveedores' && renderTable(proveedores)}
-        </Card>
+
+        {/* Pending return */}
+        <div style={{
+          background: pendingReturn > 0 ? T.amberBg : T.card,
+          border: `1px solid ${pendingReturn > 0 ? 'rgba(196,127,23,0.25)' : T.border}`,
+          borderRadius: T.r, padding: '20px 24px',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+            <Clock size={16} style={{ color: pendingReturn > 0 ? T.amber : T.textSec }} />
+            <span style={{ fontSize: 12, fontWeight: 700, color: T.textSec, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+              Pendientes retorno/cambio
+            </span>
+          </div>
+          <div style={{ fontSize: 32, fontWeight: 900, color: pendingReturn > 0 ? T.amber : T.textMuted, fontFamily: 'var(--font-jetbrains-mono)' }}>
+            {fmtNum(pendingReturn)}
+          </div>
+          <div style={{ fontSize: 12, color: T.textSec, marginTop: 4 }}>
+            &gt; 180 días en territorio
+          </div>
+        </div>
+
+        {/* Value estimate */}
+        <div style={{
+          background: T.card, border: `1px solid ${T.border}`,
+          borderRadius: T.r, padding: '20px 24px',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+            <span style={{ fontSize: 12, fontWeight: 700, color: T.textSec, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+              Valor inventario virtual
+            </span>
+          </div>
+          <div style={{ fontSize: 32, fontWeight: 900, color: T.text, fontFamily: 'var(--font-jetbrains-mono)' }}>
+            {totalValue > 0 ? fmtUSD(totalValue) : '\u2014'}
+          </div>
+          <div style={{ fontSize: 12, color: T.textSec, marginTop: 4 }}>
+            USD estimado
+          </div>
+        </div>
+      </div>
+
+      {/* ── Over-limit alert ── */}
+      {overLimit > 0 && (
+        <div style={{
+          background: T.redBg, border: `1px solid ${T.redBorder}`,
+          borderLeft: `4px solid ${T.red}`,
+          borderRadius: `0 ${T.r}px ${T.r}px 0`,
+          padding: '14px 20px', marginBottom: 24,
+          display: 'flex', alignItems: 'center', gap: 12,
+        }}>
+          <AlertTriangle size={18} style={{ color: T.red, flexShrink: 0 }} />
+          <div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: T.red }}>
+              {overLimit} artículo{overLimit !== 1 ? 's' : ''} excede{overLimit === 1 ? '' : 'n'} el plazo anual IMMEX (365 días)
+            </div>
+            <div style={{ fontSize: 12, color: T.textSec, marginTop: 2 }}>
+              Riesgo de sanción por incumplimiento de régimen temporal. Requiere retorno o cambio de régimen.
+            </div>
+          </div>
+        </div>
       )}
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+
+      {/* ── SECTION 2: Search + filter bar ── */}
+      <div style={{
+        display: 'flex', gap: 12, marginBottom: 16, flexWrap: 'wrap',
+      }}>
+        <div style={{
+          flex: 1, minWidth: 200, display: 'flex', alignItems: 'center', gap: 8,
+          background: T.cardAlt, border: `1px solid ${T.border}`,
+          borderRadius: T.r, padding: '0 12px', height: 40,
+        }}>
+          <Search size={14} style={{ color: T.textMuted }} />
+          <input
+            type="text"
+            placeholder="Buscar entrada, mercancía..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            style={{
+              flex: 1, background: 'transparent', border: 'none', outline: 'none',
+              fontSize: 14, color: T.text,
+              fontFamily: 'var(--font-geist-sans)',
+            }}
+          />
+        </div>
+        <select
+          value={companyFilter}
+          onChange={e => setCompanyFilter(e.target.value)}
+          style={{
+            background: T.cardAlt, border: `1px solid ${T.border}`,
+            borderRadius: T.r, padding: '0 12px', height: 40,
+            fontSize: 14, color: T.text,
+            fontFamily: 'var(--font-geist-sans)',
+          }}
+        >
+          <option value="">Todos los clientes</option>
+          {companies.map(c => <option key={c} value={c}>{c}</option>)}
+        </select>
+      </div>
+
+      {/* ── Inventory table ── */}
+      <div style={{
+        background: T.card, border: `1px solid ${T.border}`,
+        borderRadius: T.r, overflow: 'hidden',
+      }}>
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
+            <thead>
+              <tr style={{ borderBottom: `1px solid ${T.border}` }}>
+                {['Entrada', 'Fecha Llegada', 'Bultos', 'Peso Bruto', 'Cliente', 'Días en MX', 'Estado'].map(h => (
+                  <th key={h} style={{
+                    padding: '12px 16px', textAlign: 'left',
+                    fontSize: 12, fontWeight: 700, color: T.textSec,
+                    textTransform: 'uppercase', letterSpacing: '0.06em',
+                    whiteSpace: 'nowrap',
+                  }}>
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={7} style={{ padding: '48px 16px', textAlign: 'center', color: T.textMuted }}>
+                    <Package size={24} style={{ margin: '0 auto 8px', display: 'block', color: T.textMuted }} />
+                    Sin entradas registradas
+                  </td>
+                </tr>
+              ) : (
+                filtered.slice(0, 100).map(e => {
+                  const days = daysSince(e.fecha_llegada_mercancia)
+                  const isOver = days > 365
+                  const isWarning = days > 180 && days <= 365
+                  const rowBg = isOver ? T.redBg : 'transparent'
+                  return (
+                    <tr key={e.cve_entrada} style={{ borderBottom: `1px solid ${T.border}`, background: rowBg }}>
+                      <td style={{ padding: '12px 16px', fontFamily: 'var(--font-jetbrains-mono)', fontWeight: 700, color: T.gold }}>
+                        {e.cve_entrada}
+                      </td>
+                      <td style={{ padding: '12px 16px', fontFamily: 'var(--font-jetbrains-mono)', color: T.text }}>
+                        {e.fecha_llegada_mercancia ? fmtDate(e.fecha_llegada_mercancia) : '\u2014'}
+                      </td>
+                      <td style={{ padding: '12px 16px', fontFamily: 'var(--font-jetbrains-mono)', color: T.text }}>
+                        {e.cantidad_bultos != null ? fmtNum(e.cantidad_bultos) : '\u2014'}
+                      </td>
+                      <td style={{ padding: '12px 16px', fontFamily: 'var(--font-jetbrains-mono)', color: T.text }}>
+                        {e.peso_bruto != null ? `${fmtNum(Math.round(Number(e.peso_bruto)))} kg` : '\u2014'}
+                      </td>
+                      <td style={{ padding: '12px 16px' }}>
+                        <span style={{
+                          fontSize: 12, fontWeight: 700, color: T.textSec,
+                          background: 'rgba(255,255,255,0.06)', borderRadius: 4, padding: '2px 8px',
+                        }}>
+                          {e.company_id || '\u2014'}
+                        </span>
+                      </td>
+                      <td style={{
+                        padding: '12px 16px', fontFamily: 'var(--font-jetbrains-mono)',
+                        fontWeight: 800,
+                        color: isOver ? T.red : isWarning ? T.amber : T.text,
+                      }}>
+                        {days}d
+                      </td>
+                      <td style={{ padding: '12px 16px' }}>
+                        {isOver ? (
+                          <span style={{ fontSize: 12, fontWeight: 700, color: T.red, background: T.redBg, borderRadius: 4, padding: '2px 8px' }}>
+                            Excedido
+                          </span>
+                        ) : isWarning ? (
+                          <span style={{ fontSize: 12, fontWeight: 700, color: T.amber, background: T.amberBg, borderRadius: 4, padding: '2px 8px' }}>
+                            Alerta
+                          </span>
+                        ) : (
+                          <span style={{ fontSize: 12, fontWeight: 700, color: T.green, background: T.greenBg, borderRadius: 4, padding: '2px 8px' }}>
+                            Vigente
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  )
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+        {filtered.length > 100 && (
+          <div style={{ padding: '12px 16px', fontSize: 12, color: T.textSec, borderTop: `1px solid ${T.border}` }}>
+            Mostrando 100 de {fmtNum(filtered.length)} entradas
+          </div>
+        )}
+      </div>
+
+      {/* ── SECTION 3: Info card ── */}
+      <div style={{
+        background: T.goldSubtle, border: `1px solid rgba(184,149,63,0.2)`,
+        borderRadius: T.r, padding: '24px 28px', marginTop: 32,
+        display: 'flex', gap: 16, alignItems: 'flex-start',
+      }}>
+        <Info size={20} style={{ color: T.gold, flexShrink: 0, marginTop: 2 }} />
+        <div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: T.text, marginBottom: 8 }}>
+            Gestión completa de Anexo 24 próximamente
+          </div>
+          <div style={{ fontSize: 14, color: T.textSec, lineHeight: 1.6 }}>
+            El Anexo 24 es el registro oficial de mercancías importadas temporalmente bajo el programa IMMEX.
+            Cada artículo debe retornarse, cambiar de régimen, o transferirse dentro de los plazos establecidos
+            (generalmente 18 meses para manufactura, 36 meses para activo fijo). El incumplimiento genera
+            multas y posible cancelación del programa IMMEX.
+          </div>
+          <div style={{ fontSize: 14, color: T.textSec, lineHeight: 1.6, marginTop: 12 }}>
+            CRUZ monitoreará automáticamente los plazos de permanencia, alertará sobre vencimientos próximos,
+            y generará los reportes de descargo requeridos por la autoridad.
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

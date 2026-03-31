@@ -68,6 +68,158 @@ function ProveedoresCard({ proveedores, pais }: { proveedores: string; pais: str
 }
 
 /* ═══════════════════════════════════════════════════════
+   TIMELINE TAB — real-time event feed
+   ═══════════════════════════════════════════════════════ */
+
+interface TimelineEvent {
+  id: string
+  trafico_id: string
+  event_type: string
+  content_es: string | null
+  source: string | null
+  created_at: string
+}
+
+const EVENT_ICONS: Record<string, string> = {
+  status_changed: '\uD83D\uDD04',
+  doc_uploaded: '\uD83D\uDCCE',
+  note: '\uD83D\uDCAC',
+}
+
+function fmtRelative(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime()
+  const mins = Math.floor(diff / 60000)
+  if (mins < 1) return 'ahora'
+  if (mins < 60) return `hace ${mins}m`
+  const hrs = Math.floor(mins / 60)
+  if (hrs < 24) return `hace ${hrs}h`
+  const days = Math.floor(hrs / 24)
+  if (days < 30) return `hace ${days}d`
+  return `hace ${Math.floor(days / 30)}mo`
+}
+
+function sourceBadge(source: string | null) {
+  if (!source) return null
+  const colors: Record<string, { bg: string; text: string }> = {
+    system: { bg: 'rgba(156,152,144,0.15)', text: '#9C9890' },
+    mobile: { bg: 'rgba(13,148,136,0.15)', text: '#0D9488' },
+    portal: { bg: 'rgba(184,149,63,0.15)', text: '#B8953F' },
+  }
+  const c = colors[source] ?? colors.system
+  return (
+    <span style={{
+      fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 4,
+      background: c.bg, color: c.text, textTransform: 'uppercase', letterSpacing: '0.04em',
+    }}>
+      {source}
+    </span>
+  )
+}
+
+function TimelineTab({ traficoId }: { traficoId: string }) {
+  const [events, setEvents] = useState<TimelineEvent[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    supabase
+      .from('trafico_timeline')
+      .select('id, trafico_id, event_type, content_es, source, created_at')
+      .eq('trafico_id', traficoId)
+      .order('created_at', { ascending: false })
+      .limit(100)
+      .then(({ data }) => {
+        setEvents((data ?? []) as TimelineEvent[])
+        setLoading(false)
+      })
+
+    // Real-time subscription
+    const channel = supabase
+      .channel(`timeline-${traficoId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'trafico_timeline',
+          filter: `trafico_id=eq.${traficoId}`,
+        },
+        (payload) => {
+          setEvents(prev => [payload.new as TimelineEvent, ...prev])
+        }
+      )
+      .subscribe()
+
+    return () => { supabase.removeChannel(channel) }
+  }, [traficoId])
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: 16 }}>
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={`tl-skel-${i}`} style={{ height: 48, borderRadius: 8, background: 'rgba(255,255,255,0.04)', animation: 'pulse 1.5s infinite' }} />
+        ))}
+      </div>
+    )
+  }
+
+  if (events.length === 0) {
+    return (
+      <div style={{
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+        background: '#252219', borderRadius: 12, padding: '48px 32px', textAlign: 'center',
+      }}>
+        <div style={{ fontSize: 48, lineHeight: 1, marginBottom: 16 }}>{'\uD83D\uDCC5'}</div>
+        <h3 style={{ fontSize: 16, fontWeight: 700, color: '#F5F0E8', margin: '0 0 8px' }}>
+          Sin eventos registrados aún
+        </h3>
+        <p style={{ fontSize: 14, color: '#A09882', margin: 0, maxWidth: 320, lineHeight: 1.5 }}>
+          Los eventos aparecerán aquí conforme el tráfico avanza
+        </p>
+      </div>
+    )
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+      {events.map((ev, i) => {
+        const icon = EVENT_ICONS[ev.event_type] ?? '\u2022'
+        const isLast = i === events.length - 1
+        return (
+          <div key={ev.id} style={{ display: 'flex', gap: 12, position: 'relative' }}>
+            {/* Vertical line + icon */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 32, flexShrink: 0 }}>
+              <div style={{
+                width: 28, height: 28, borderRadius: '50%',
+                background: '#252219', border: '1px solid #3A3830',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 14, lineHeight: 1, flexShrink: 0,
+              }}>
+                {icon}
+              </div>
+              {!isLast && (
+                <div style={{ width: 1, flex: 1, background: '#3A3830', minHeight: 16 }} />
+              )}
+            </div>
+            {/* Content */}
+            <div style={{ flex: 1, paddingBottom: isLast ? 0 : 16 }}>
+              <div style={{ fontSize: 13, fontWeight: 500, color: '#F5F0E8', lineHeight: 1.5 }}>
+                {ev.content_es || ev.event_type.replace(/_/g, ' ')}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
+                <span style={{ fontSize: 11, color: '#7C7870', fontFamily: 'var(--font-jetbrains-mono)' }}>
+                  {fmtRelative(ev.created_at)}
+                </span>
+                {sourceBadge(ev.source)}
+              </div>
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+/* ═══════════════════════════════════════════════════════
    TRÁFICO HUB — 4-tab detail page
    ═══════════════════════════════════════════════════════ */
 export default function TraficoDetailPage() {
@@ -817,18 +969,7 @@ export default function TraficoDetailPage() {
           TAB 4 — TIMELINE (placeholder)
          ═══════════════════════════════════════════ */}
       {activeTab === 'timeline' && (
-        <div style={{
-          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-          background: '#252219', borderRadius: 12, padding: '56px 32px', textAlign: 'center',
-        }}>
-          <Clock size={48} strokeWidth={1.2} style={{ color: '#B8953F', marginBottom: 16 }} />
-          <h3 style={{ fontSize: 18, fontWeight: 700, color: '#F5F0E8', margin: '0 0 8px' }}>
-            Próximamente
-          </h3>
-          <p style={{ fontSize: 14, color: '#A09882', margin: 0, maxWidth: 320, lineHeight: 1.5 }}>
-            Historial de eventos — cada acción, cada cambio, cada documento registrado en orden cronológico
-          </p>
-        </div>
+        <TimelineTab traficoId={decodeURIComponent(String(id))} />
       )}
 
       {/* ═══ SOLICITAR MODAL ═══ */}

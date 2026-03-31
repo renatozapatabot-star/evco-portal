@@ -5,9 +5,11 @@ import { useRouter } from 'next/navigation'
 import { CLIENT_CLAVE, COMPANY_ID } from '@/lib/client-config'
 import { GOLD } from '@/lib/design-system'
 import { fmtDateTimeLocal } from '@/lib/format-utils'
+import { useStatusSentence } from '@/hooks/use-status-sentence'
 
 export default function WarRoom() {
   const router = useRouter()
+  const statusSentence = useStatusSentence()
   const [data, setData] = useState<any>(null)
 
   useEffect(() => {
@@ -39,10 +41,7 @@ export default function WarRoom() {
     return () => { clearInterval(i); window.removeEventListener('keydown', esc) }
   }, [router])
 
-  const urgentes = data?.enProceso?.filter((t: any) => {
-    if (!t.fecha_llegada) return false
-    return (Date.now() - new Date(t.fecha_llegada).getTime()) / 86400000 > 7
-  }).length || 0
+  const urgentes = statusSentence.urgentes
   const ambient = urgentes > 5 ? 'rgba(220,38,38,0.05)' : 'rgba(22,163,74,0.03)'
 
   return (

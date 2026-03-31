@@ -8,6 +8,7 @@ import { fmtId, fmtDate } from '@/lib/format-utils'
 import { calculateCruzScore, extractScoreInput } from '@/lib/cruz-score'
 import { statusDays } from '@/lib/cruz-score'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { useStatusSentence } from '@/hooks/use-status-sentence'
 import CountingNumber from '@/components/ui/CountingNumber'
 import Skeleton from '@/components/ui/Skeleton'
 import Link from 'next/link'
@@ -70,6 +71,7 @@ const TOKEN = {
 
 export default function Dashboard() {
   const isMobile = useIsMobile()
+  const statusSentence = useStatusSentence()
   const [traficos, setTraficos] = useState<TraficoRow[]>([])
   const [entradas, setEntradas] = useState<Record<string, unknown>[]>([])
   const [loading, setLoading] = useState(true)
@@ -348,11 +350,11 @@ export default function Dashboard() {
           {!loading && <span style={{ fontSize: 16, fontWeight: 600, marginLeft: 4, color: TOKEN.gray }}>USD</span>}
         </div>
 
-        {(urgentes.length + incidencias.length) > 0 && (
+        {statusSentence.urgentes > 0 && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12 }}>
             <span style={{ width: 8, height: 8, borderRadius: '50%', background: TOKEN.red, animation: 'cruzPulse 2s infinite' }} />
             <span style={{ fontSize: 14, fontWeight: 600, color: '#E8E5DF' }}>
-              {urgentes.length + incidencias.length} operación{(urgentes.length + incidencias.length) !== 1 ? 'es' : ''} requiere{(urgentes.length + incidencias.length) === 1 ? '' : 'n'} atención
+              {statusSentence.urgentes} operación{statusSentence.urgentes !== 1 ? 'es' : ''} requiere{statusSentence.urgentes === 1 ? '' : 'n'} atención
             </span>
           </div>
         )}
@@ -676,8 +678,8 @@ export default function Dashboard() {
           <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: TOKEN.textSecondary, marginBottom: 6 }}>
             Demorados
           </div>
-          <div style={{ fontSize: 24, fontWeight: 900, color: (urgentes.length + incidencias.length) > 0 ? TOKEN.red : TOKEN.gray, lineHeight: 1 }}>
-            {loading ? <Skeleton width={48} height={24} /> : <CountingNumber value={urgentes.length + incidencias.length} style={{ fontSize: 24, fontWeight: 900 }} />}
+          <div style={{ fontSize: 24, fontWeight: 900, color: statusSentence.urgentes > 0 ? TOKEN.red : TOKEN.gray, lineHeight: 1 }}>
+            {loading ? <Skeleton width={48} height={24} /> : <CountingNumber value={statusSentence.urgentes} style={{ fontSize: 24, fontWeight: 900 }} />}
           </div>
         </Link>
 

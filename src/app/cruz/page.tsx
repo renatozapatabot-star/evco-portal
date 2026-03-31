@@ -8,6 +8,7 @@ import ReactMarkdown from 'react-markdown'
 import { GOLD, GOLD_GRADIENT } from '@/lib/design-system'
 import { CLIENT_CLAVE, COMPANY_ID } from '@/lib/client-config'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { useStatusSentence } from '@/hooks/use-status-sentence'
 import { getMostActionableChips, PriorityChip } from '@/lib/cruz-priority'
 
 interface Message {
@@ -77,10 +78,11 @@ export default function CruzChatPage() {
     enProceso: [], urgent: [], alertTitle: null,
   })
 
+  const statusData = useStatusSentence()
   useEffect(() => {
-    fetch('/api/status-summary').then(r => r.json())
-      .then(data => setSuggestions(buildDynamicPrompts(data)))
-      .catch(() => {})
+    if (!statusData.loading) setSuggestions(buildDynamicPrompts(statusData))
+  }, [statusData.loading, statusData.urgentes, statusData.enProceso])
+  useEffect(() => {
     fetch('/api/cruz-alerts').then(r => r.json())
       .then(data => setCruzAlerts(data.alerts ?? []))
       .catch(() => {})

@@ -36,7 +36,7 @@ export function SolicitarModal({ traficoId, missingDocs, onClose, onSuccess }: P
   const [selected, setSelected] = useState<string[]>(missingDocs)
   const [recipient, setRecipient] = useState(RECIPIENTS[0].id)
   const [deadline, setDeadline] = useState('48')
-  const [sending, setSending] = useState(false)
+  const [sendState, setSendState] = useState<'idle' | 'sending' | 'sent'>('idle')
 
   const toggle = (doc: string) => {
     setSelected(prev =>
@@ -45,8 +45,8 @@ export function SolicitarModal({ traficoId, missingDocs, onClose, onSuccess }: P
   }
 
   const handleSend = async () => {
-    if (selected.length === 0) return
-    setSending(true)
+    if (selected.length === 0 || sendState !== 'idle') return
+    setSendState('sending')
 
     const deadlineHours = parseInt(deadline, 10)
     const now = new Date()
@@ -56,6 +56,22 @@ export function SolicitarModal({ traficoId, missingDocs, onClose, onSuccess }: P
     const selectedRecipient = RECIPIENTS.find(r => r.id === recipient)
 
     try {
+      // Duplicate check: if solicitud exists for this tráfico in last 24h
+      const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString()
+      const { data: existing } = await supabase
+        .from('documento_solicitudes')
+        .select('id')
+        .eq('trafico_id', traficoId)
+        .eq('company_id', COMPANY_ID)
+        .gte('solicitado_at', twentyFourHoursAgo)
+        .limit(1)
+
+      if (existing && existing.length > 0) {
+        toast('Solicitud ya enviada recientemente', 'error')
+        setSendState('idle')
+        return
+      }
+
       // Insert into documento_solicitudes with doc_types as TEXT[]
       const { error: solError } = await supabase
         .from('documento_solicitudes')
@@ -71,8 +87,8 @@ export function SolicitarModal({ traficoId, missingDocs, onClose, onSuccess }: P
         })
 
       if (solError) {
-        toast(`Error al crear solicitud: ${solError.message}`, 'error')
-        setSending(false)
+        toast('Error al crear solicitud', 'error')
+        setSendState('idle')
         return
       }
 
@@ -91,14 +107,17 @@ export function SolicitarModal({ traficoId, missingDocs, onClose, onSuccess }: P
       // Haptic feedback
       if ('vibrate' in navigator) navigator.vibrate(50)
 
-      toast(`${selected.length} documento${selected.length !== 1 ? 's' : ''} solicitado${selected.length !== 1 ? 's' : ''}`, 'success')
+      setSendState('sent')
       onSuccess()
-      onClose()
-      router.refresh()
+
+      // Auto-close after 2 seconds
+      setTimeout(() => {
+        onClose()
+        router.refresh()
+      }, 2000)
     } catch {
       toast('Error al enviar solicitud', 'error')
-    } finally {
-      setSending(false)
+      setSendState('idle')
     }
   }
 
@@ -246,20 +265,25 @@ export function SolicitarModal({ traficoId, missingDocs, onClose, onSuccess }: P
           </button>
           <button
             onClick={handleSend}
-            disabled={sending || selected.length === 0}
+            disabled={sendState !== 'idle' || selected.length === 0}
             style={{
               flex: 2, padding: '12px', borderRadius: 8,
               border: 'none',
-              background: selected.length > 0 ? '#B8953F' : '#E8E5E0',
-              color: selected.length > 0 ? '#FFFFFF' : '#9C9890',
+              background: sendState === 'sent' ? '#2D8540'
+                : selected.length > 0 && sendState === 'idle' ? '#B8953F'
+                : '#E8E5E0',
+              color: sendState === 'sent' || (selected.length > 0 && sendState === 'idle') ? '#FFFFFF' : '#9C9890',
               fontSize: 14, fontWeight: 700,
-              cursor: selected.length > 0 ? 'pointer' : 'default',
+              cursor: sendState === 'idle' && selected.length > 0 ? 'pointer' : 'default',
               minHeight: 60,
+              transition: 'background 0.2s ease',
             }}
           >
-            {sending
+            {sendState === 'sent'
+              ? '\u2713 Solicitud enviada'
+              : sendState === 'sending'
               ? 'Enviando...'
-              : `Enviar solicitud (${selected.length} docs) \u2192`}
+              : `Enviar solicitud (${selected.length} documentos) \u2192`}
           </button>
         </div>
       </div>

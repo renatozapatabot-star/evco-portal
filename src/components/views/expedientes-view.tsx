@@ -339,72 +339,97 @@ export function ExpedientesView() {
   const [page, setPage] = useState(0)
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
+  const [retrying, setRetrying] = useState(false)
   const [filter, setFilter] = useState<FilterTab>('incompletos')
   const [sortBy, setSortBy] = useState<SortOption>('menos_completo')
   const [soliciting, setSoliciting] = useState(false)
 
-  const load = useCallback(async () => {
-    setLoading(true)
+  const load = useCallback(async (attempt = 0): Promise<void> => {
+    const MAX_RETRIES = 3
+    const BASE_DELAY = 800
 
-    // 1. Fetch active tráficos for the client using company_id
-    let q = supabase
-      .from('traficos')
-      .select('id, trafico, estatus, fecha_llegada, importe_total, pedimento, proveedores, descripcion_mercancia', { count: 'exact' })
-      .eq('company_id', COMPANY_ID)
-      .not('estatus', 'ilike', '%cruz%')
-      .order('fecha_llegada', { ascending: true })
-      .limit(500)
+    if (attempt === 0) {
+      setLoading(true)
+      setLoadError(null)
+    } else {
+      setRetrying(true)
+    }
 
-    if (search) q = q.ilike('trafico', `%${search}%`)
+    try {
+      // 1. Fetch active tráficos for the client using company_id
+      let q = supabase
+        .from('traficos')
+        .select('id, trafico, estatus, fecha_llegada, importe_total, pedimento, proveedores, descripcion_mercancia', { count: 'exact' })
+        .eq('company_id', COMPANY_ID)
+        .not('estatus', 'ilike', '%cruz%')
+        .order('fecha_llegada', { ascending: true })
+        .limit(500)
 
-    const { data: traficos, error: traficoError, count } = await q
-    if (traficoError) {
+      if (search) q = q.ilike('trafico', `%${search}%`)
+
+      const { data: traficos, error: traficoError, count } = await q
+      if (traficoError) throw new Error(traficoError.message)
+
+      const allRows = traficos || []
+      setTotal(count || 0)
+
+      // 2. Batch-load documents using trafico_id FK
+      const traficoIds = allRows.map((t) => t.trafico)
+      const docMap = new Map<string, Set<string>>()
+
+      if (traficoIds.length > 0) {
+        const { data: allDocs, error: docError } = await supabase
+          .from('documents')
+          .select('trafico_id, document_type')
+          .in('trafico_id', traficoIds)
+
+        if (docError) throw new Error(docError.message)
+
+        allDocs?.forEach((d: { trafico_id: string; document_type: string | null }) => {
+          if (!docMap.has(d.trafico_id)) docMap.set(d.trafico_id, new Set())
+          if (d.document_type) docMap.get(d.trafico_id)!.add(d.document_type.toUpperCase())
+        })
+      }
+
+      // 3. Build enriched rows with completeness calculation
+      const enriched: TraficoRow[] = allRows.map((r) => {
+        const present = docMap.get(r.trafico) ?? new Set<string>()
+        const docsPresent = REQUIRED_DOCS.filter((rd) => present.has(rd)).length
+        const missing = REQUIRED_DOCS.filter((rd) => !present.has(rd))
+        const pct = Math.round((docsPresent / REQUIRED_DOCS.length) * 100)
+        return {
+          trafico: r.trafico,
+          estatus: r.estatus || 'En Proceso',
+          fecha_llegada: r.fecha_llegada,
+          pedimento_num: r.pedimento || null,
+          importe_total: r.importe_total ?? null,
+          docs: Array.from(present),
+          docCount: docsPresent,
+          pct,
+          missing,
+        }
+      }).sort((a, b) => a.pct - b.pct)
+
+      setRawTraficos(enriched)
+      setLoadError(null)
+    } catch (err) {
+      // Log full error for debugging — never expose to user
+      console.error('[Expedientes] Load error:', err)
+
+      if (attempt < MAX_RETRIES - 1) {
+        const delay = BASE_DELAY * Math.pow(2, attempt) // 800 → 1600 → 3200
+        await new Promise(resolve => setTimeout(resolve, delay))
+        return load(attempt + 1)
+      }
+
       setRawTraficos([])
       setTotal(0)
+      setLoadError('No se pudieron cargar los expedientes')
+    } finally {
       setLoading(false)
-      return
+      setRetrying(false)
     }
-
-    const allRows = traficos || []
-    setTotal(count || 0)
-
-    // 2. Batch-load documents using trafico_id FK
-    const traficoIds = allRows.map((t) => t.trafico)
-    const docMap = new Map<string, Set<string>>()
-
-    if (traficoIds.length > 0) {
-      const { data: allDocs } = await supabase
-        .from('documents')
-        .select('trafico_id, document_type')
-        .in('trafico_id', traficoIds)
-
-      allDocs?.forEach((d: { trafico_id: string; document_type: string | null }) => {
-        if (!docMap.has(d.trafico_id)) docMap.set(d.trafico_id, new Set())
-        if (d.document_type) docMap.get(d.trafico_id)!.add(d.document_type.toUpperCase())
-      })
-    }
-
-    // 3. Build enriched rows with completeness calculation
-    const enriched: TraficoRow[] = allRows.map((r) => {
-      const present = docMap.get(r.trafico) ?? new Set<string>()
-      const docsPresent = REQUIRED_DOCS.filter((rd) => present.has(rd)).length
-      const missing = REQUIRED_DOCS.filter((rd) => !present.has(rd))
-      const pct = Math.round((docsPresent / REQUIRED_DOCS.length) * 100)
-      return {
-        trafico: r.trafico,
-        estatus: r.estatus || 'En Proceso',
-        fecha_llegada: r.fecha_llegada,
-        pedimento_num: r.pedimento || null,
-        importe_total: r.importe_total ?? null,
-        docs: Array.from(present),
-        docCount: docsPresent,
-        pct,
-        missing,
-      }
-    }).sort((a, b) => a.pct - b.pct)
-
-    setRawTraficos(enriched)
-    setLoading(false)
   }, [search])
 
   useEffect(() => { load() }, [load])
@@ -573,7 +598,34 @@ export function ExpedientesView() {
         </div>
       </div>
 
-      {loading ? (
+      {loadError ? (
+        <div style={{
+          padding: 48, textAlign: 'center',
+          background: '#FFFFFF', border: '1px solid #E8E5E0',
+          borderRadius: 8, marginTop: 16,
+        }}>
+          <AlertTriangle size={32} style={{ color: '#C23B22', margin: '0 auto 12px', display: 'block' }} />
+          <div style={{ fontSize: 16, fontWeight: 700, color: '#1A1A1A', marginBottom: 6 }}>
+            No se pudieron cargar los expedientes
+          </div>
+          <div style={{ fontSize: 13, color: '#9C9890', marginBottom: 16 }}>
+            Error temporal · reintentando automáticamente
+          </div>
+          <button
+            onClick={() => load()}
+            disabled={retrying}
+            style={{
+              padding: '10px 24px', borderRadius: 8,
+              border: 'none', background: '#B8953F', color: '#FFFFFF',
+              fontSize: 14, fontWeight: 700, cursor: retrying ? 'default' : 'pointer',
+              minHeight: 60, fontFamily: 'inherit',
+              opacity: retrying ? 0.7 : 1,
+            }}
+          >
+            {retrying ? 'Reintentando...' : 'Reintentar ahora'}
+          </button>
+        </div>
+      ) : loading ? (
         <div style={{ display: 'flex', justifyContent: 'center', padding: 80 }}>
           <div
             style={{

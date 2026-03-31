@@ -7,6 +7,7 @@ import { SearchBar } from '@/components/layout/search-bar'
 import { daysUntilMVE, mveIsUrgent } from '@/lib/compliance-dates'
 import { fmtDate } from '@/lib/format-utils'
 import { NightModeToggle } from '@/components/NightModeToggle'
+import { useStatusSentence } from '@/hooks/use-status-sentence'
 
 function LiveClock() {
   const [now, setNow] = useState(new Date())
@@ -20,14 +21,11 @@ function LiveClock() {
 
 export default function TopBar() {
   const mveDays = daysUntilMVE()
-  const [alertCount, setAlertCount] = useState(0)
+  const { urgentes, enProceso } = useStatusSentence()
+  const alertCount = urgentes + (enProceso > 50 ? 1 : 0)
   const [lastSync, setLastSync] = useState('')
 
   useEffect(() => {
-    fetch('/api/status-summary').then(r => r.json())
-      .then(d => setAlertCount((d.urgentes || 0) + (d.enProceso > 50 ? 1 : 0)))
-      .catch(() => {})
-
     fetch(`/api/data?table=traficos&company_id=${COMPANY_ID}&select=updated_at&limit=1&order_by=updated_at&order_dir=desc`)
       .then(r => r.json())
       .then(d => {

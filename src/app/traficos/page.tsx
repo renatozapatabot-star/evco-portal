@@ -218,7 +218,7 @@ export default function TraficosPage() {
               {!loading && paged.length === 0 && (
                 <div style={{ textAlign: 'center', padding: '48px 0', color: 'var(--text-muted)' }}>
                   <div style={{ fontSize: 20, marginBottom: 8 }}>🚚</div>
-                  <div style={{ fontSize: 14, fontWeight: 600 }}>Sin tráficos{tab === 'atención' ? ' que requieren atención' : ''}</div>
+                  <div style={{ fontSize: 14, fontWeight: 600 }}>Sin tráficos{tab === 'atención' ? ' pendientes' : ''}</div>
                 </div>
               )}
             </div>
@@ -267,7 +267,7 @@ export default function TraficosPage() {
                   ) : (
                     <div style={{ textAlign: 'center', padding: '48px 0', color: 'var(--text-muted)' }}>
                       <div style={{ fontSize: 20, marginBottom: 8 }}>🚚</div>
-                      <div style={{ fontSize: 14, fontWeight: 600 }}>Sin tráficos {tab !== 'todos' ? (tab === 'proceso' ? 'en proceso' : tab === 'atención' ? 'que requieren atención' : 'cruzados') : 'activos'}</div>
+                      <div style={{ fontSize: 14, fontWeight: 600 }}>Sin tráficos {tab !== 'todos' ? (tab === 'proceso' ? 'en proceso' : tab === 'atención' ? 'pendientes' : 'cruzados') : 'activos'}</div>
                       <div style={{ fontSize: 12, color: 'var(--n-400)', marginTop: 4 }}>No hay operaciones para el período seleccionado</div>
                     </div>
                   )}

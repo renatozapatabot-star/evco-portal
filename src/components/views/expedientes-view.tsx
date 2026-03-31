@@ -410,6 +410,64 @@ export function ExpedientesView() {
   useEffect(() => { load() }, [load])
   useEffect(() => { setPage(0) }, [search, filter, sortBy])
 
+  // ── Realtime: refresh row when documents change ──────
+  useEffect(() => {
+    if (rawTraficos.length === 0) return
+
+    const channel = supabase
+      .channel('expediente-docs')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'documents',
+        },
+        (payload) => {
+          const record = (payload.new ?? payload.old) as
+            | { trafico_id?: string }
+            | null
+          const traficoId = record?.trafico_id
+          if (!traficoId) return
+
+          // Only refresh if this tráfico is in our current set
+          if (!rawTraficos.some((t) => t.trafico === traficoId)) return
+
+          // Refresh just this row's documents — not the entire list
+          supabase
+            .from('documents')
+            .select('trafico_id, document_type')
+            .eq('trafico_id', traficoId)
+            .then(({ data: docs }) => {
+              if (!docs) return
+              const present = new Set(
+                docs
+                  .map((d: { document_type: string | null }) =>
+                    d.document_type?.toUpperCase()
+                  )
+                  .filter(Boolean) as string[]
+              )
+              const docsPresent = REQUIRED_DOCS.filter((rd) => present.has(rd)).length
+              const missing = REQUIRED_DOCS.filter((rd) => !present.has(rd))
+              const pct = Math.round((docsPresent / REQUIRED_DOCS.length) * 100)
+
+              setRawTraficos((prev) =>
+                prev.map((t) =>
+                  t.trafico === traficoId
+                    ? { ...t, docs: Array.from(present), docCount: docsPresent, pct, missing }
+                    : t
+                )
+              )
+            })
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [rawTraficos])
+
   // ── Derived data ──────────────────────────────────────
 
   const counts = useMemo(() => {

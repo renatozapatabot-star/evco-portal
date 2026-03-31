@@ -7,7 +7,7 @@ import { createClient } from '@supabase/supabase-js'
 import { getCookieValue } from '@/lib/client-config'
 import { fmtId, fmtDateCompact } from '@/lib/format-utils'
 import { useIsMobile } from '@/hooks/use-mobile'
-import { EmptyState } from '@/components/empty-state'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -646,16 +646,12 @@ export function ExpedientesView() {
           />
         </div>
       ) : rawTraficos.length === 0 ? (
-        /* No active tráficos — genuinely empty */
-        <div style={{ padding: 24, textAlign: 'center' }}>
-          <div style={{ fontSize: 24, marginBottom: 8 }}>✓</div>
-          <p style={{ fontSize: 14, fontWeight: 600 }}>
-            Sin tráficos activos en este momento
-          </p>
-          <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4 }}>
-            Última verificación: hace 5 min
-          </p>
-        </div>
+        <EmptyState
+          icon="📁"
+          title="No hay expedientes"
+          description="Los expedientes de sus tráficos aparecerán aquí"
+          cta={{ label: "Ver tráficos", href: "/traficos" }}
+        />
       ) : rawTraficos.length > 0 && rawTraficos.every((r) => r.docs.length === 0) ? (
         /* Tráficos found but no completeness data — join is broken. NEVER show "all complete" */
         <div style={{ padding: 24, textAlign: 'center', color: 'var(--status-warning, #C47F17)' }}>

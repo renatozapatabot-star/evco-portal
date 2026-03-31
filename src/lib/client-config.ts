@@ -39,9 +39,9 @@ export async function getCompanyId(): Promise<string> {
   try {
     const { cookies } = await import('next/headers')
     const cookieStore = await cookies()
-    return cookieStore.get('company_id')?.value ?? 'evco'
+    return cookieStore.get('company_id')?.value ?? ''
   } catch {
-    return 'evco'
+    return ''
   }
 }
 
@@ -49,9 +49,9 @@ export async function getClientClave(): Promise<string> {
   try {
     const { cookies } = await import('next/headers')
     const cookieStore = await cookies()
-    return cookieStore.get('company_clave')?.value ?? '9254'
+    return cookieStore.get('company_clave')?.value ?? ''
   } catch {
-    return '9254'
+    return ''
   }
 }
 

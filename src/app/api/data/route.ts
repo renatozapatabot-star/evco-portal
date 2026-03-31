@@ -18,6 +18,7 @@ const ALLOWED_TABLES = [
   'client_benchmarks', 'oca_database', 'supplier_network', 'bridge_intelligence',
   'regulatory_alerts', 'document_metadata', 'communication_events', 'compliance_events',
   'trade_prospects', 'prospect_sightings', 'competitor_sightings',
+  'pipeline_overview',
 ]
 
 // Tables that contain client-specific data and MUST be filtered by a client identifier.
@@ -32,6 +33,7 @@ const CLIENT_SCOPED_TABLES = new Set([
   'aduanet_facturas',
   'econta_cartera',
   'econta_ingresos',
+  'pipeline_overview',
 ])
 
 export async function GET(req: NextRequest) {
@@ -42,18 +44,27 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid table' }, { status: 400 })
   }
 
-  // Multi-tenant: always resolve company_id from the auth cookie, never from query params.
-  // This prevents cross-client data leakage when client components pass a hardcoded value.
+  // Multi-tenant: resolve identity from auth cookies.
+  const cookieRole = req.cookies.get('user_role')?.value
+  const isInternal = cookieRole === 'broker' || cookieRole === 'admin'
+
   const cookieCompanyId = req.cookies.get('company_id')?.value
   const cookieClave = req.cookies.get('company_clave')?.value
 
-  const claveCliente = params.get('clave_cliente') || cookieClave || undefined
+  // For broker/admin: internal company_id values ('admin','internal') are not real
+  // client identifiers — they must not be applied as filters on client-scoped tables.
+  const effectiveCookieCompanyId = isInternal ? undefined : cookieCompanyId
+  const effectiveCookieClave = isInternal ? undefined : cookieClave
+
+  const claveCliente = params.get('clave_cliente') || effectiveCookieClave || undefined
   const cveCliente = params.get('cve_cliente') || undefined
-  const companyId = cookieCompanyId || params.get('company_id') || undefined
+  const companyId = effectiveCookieCompanyId || params.get('company_id') || undefined
   const traficoPrefix = params.get('trafico_prefix')
   const hasClientFilter = !!(claveCliente || cveCliente || companyId || traficoPrefix)
 
-  if (CLIENT_SCOPED_TABLES.has(table) && !hasClientFilter) {
+  // Broker/admin can query client-scoped tables without a filter (they see all data).
+  // Client role MUST always have a filter — no exceptions.
+  if (CLIENT_SCOPED_TABLES.has(table) && !hasClientFilter && !isInternal) {
     return NextResponse.json(
       { error: 'Client filter required for this table' },
       { status: 400 }
@@ -66,7 +77,7 @@ export async function GET(req: NextRequest) {
 
   let q = supabase.from(table).select('*').limit(limit)
 
-  // Apply filters — company_id from cookie takes precedence
+  // Apply filters — only real client identifiers, not internal placeholders
   if (claveCliente) q = q.eq('clave_cliente', claveCliente)
   if (cveCliente) q = q.eq('cve_cliente', cveCliente)
   if (companyId) q = q.eq('company_id', companyId)

@@ -1,10 +1,283 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Calendar, FileText, Phone } from 'lucide-react'
-import { CLIENT_CLAVE, COMPANY_ID } from '@/lib/client-config'
+import { Calendar, FileText, Phone, Shield, AlertTriangle, FileCheck } from 'lucide-react'
+import { CLIENT_CLAVE, COMPANY_ID, getCookieValue } from '@/lib/client-config'
+import { daysUntilMVE } from '@/lib/compliance-dates'
+import { fmtDate } from '@/lib/format-utils'
 
-export default function CumplimientoPage() {
+/* ── Dark theme tokens (broker view) ── */
+const T = {
+  card: '#1A1814',
+  border: '#302C23',
+  gold: '#B8953F',
+  textPrimary: '#F5F0E8',
+  textSecondary: '#A09882',
+  textMuted: '#6B6355',
+  red: '#C23B22',
+  redBg: '#2A1215',
+  redBorder: '#5C2226',
+  green: '#2D8F4E',
+  greenBg: '#1A3A2A',
+  greenBorder: '#2D8F4E',
+  amber: '#D4A017',
+  amberBg: '#2A2415',
+  amberBorder: '#5C4D22',
+  radius: 8,
+} as const
+
+/* ══════════════════════════════════════════
+   BROKER / ADMIN VIEW — full compliance data
+   ══════════════════════════════════════════ */
+
+function BrokerCumplimientoView() {
+  const [loading, setLoading] = useState(true)
+  const [semaforoRojo, setSemaforoRojo] = useState(0)
+  const [blockingDocs, setBlockingDocs] = useState(0)
+  const [usmcaExpiring, setUsmcaExpiring] = useState<{ trafico: string; fecha: string }[]>([])
+
+  const mveDays = daysUntilMVE()
+  const mveUrgent = mveDays <= 7
+
+  useEffect(() => {
+    Promise.all([
+      // Semáforo rojo: across all clients (broker sees everything)
+      fetch(`/api/data?table=traficos&company_id=${COMPANY_ID}&limit=500&order_by=updated_at&order_dir=desc`)
+        .then(r => r.json()),
+    ])
+      .then(([traficoRes]) => {
+        const traficos = traficoRes.data ?? []
+
+        // semáforo rojo = semaforo === 1, not yet crossed
+        const rojos = traficos.filter(
+          (t: Record<string, unknown>) =>
+            Number(t.semaforo) === 1 && !t.fecha_cruce
+        )
+        setSemaforoRojo(rojos.length)
+
+        // Blocking docs = no pedimento, not completed
+        const blocking = traficos.filter(
+          (t: Record<string, unknown>) => {
+            const s = String(t.estatus || '').toLowerCase()
+            return !t.pedimento && !s.includes('cruz') && !s.includes('complet') && !s.includes('cancel')
+          }
+        )
+        setBlockingDocs(blocking.length)
+
+        // USMCA expiry: traficos with usmca/t-mec tag and fecha_cruce in next 30 days
+        const now = Date.now()
+        const thirtyDays = 30 * 86400000
+        const expiring = traficos
+          .filter((t: Record<string, unknown>) => {
+            const desc = String(t.descripcion_mercancia || '').toLowerCase()
+            const hasUsmca = desc.includes('t-mec') || desc.includes('tmec') || desc.includes('usmca')
+            if (!hasUsmca || !t.fecha_cruce) return false
+            const cruceTime = new Date(String(t.fecha_cruce)).getTime()
+            return cruceTime > now && cruceTime - now < thirtyDays
+          })
+          .map((t: Record<string, unknown>) => ({
+            trafico: String(t.trafico),
+            fecha: String(t.fecha_cruce),
+          }))
+        setUsmcaExpiring(expiring)
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [])
+
+  if (loading) {
+    return (
+      <div style={{ padding: 32, minHeight: '100vh' }}>
+        <div style={{ maxWidth: 960, margin: '0 auto' }}>
+          {[1, 2, 3, 4].map(i => (
+            <div key={i} style={{
+              background: T.card, border: `1px solid ${T.border}`,
+              borderRadius: T.radius, height: 120, marginBottom: 16, opacity: 0.5,
+            }} />
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div style={{ padding: 32, minHeight: '100vh' }}>
+      <div style={{ maxWidth: 960, margin: '0 auto' }}>
+        <div style={{ marginBottom: 32 }}>
+          <h1 style={{ fontSize: 24, fontWeight: 700, color: T.textPrimary, marginBottom: 4 }}>
+            Cumplimiento — Panel Interno
+          </h1>
+          <p style={{ fontSize: 14, color: T.textSecondary }}>
+            Estado regulatorio y alertas operativas
+          </p>
+        </div>
+
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+          gap: 16, marginBottom: 24,
+        }}>
+
+          {/* ── MVE Countdown ── */}
+          <div style={{
+            background: mveUrgent ? T.redBg : T.card,
+            border: `1px solid ${mveUrgent ? T.redBorder : T.border}`,
+            borderRadius: T.radius, padding: 24,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+              <Shield size={20} style={{ color: mveUrgent ? T.red : T.gold }} />
+              <span style={{
+                fontSize: 12, fontWeight: 700, textTransform: 'uppercase',
+                letterSpacing: '0.06em', color: mveUrgent ? T.red : T.gold,
+              }}>
+                MVE Formato E2
+              </span>
+            </div>
+            <div style={{
+              fontSize: 48, fontWeight: 900, lineHeight: 1,
+              fontFamily: 'var(--font-jetbrains-mono)',
+              color: mveUrgent ? T.red : T.textPrimary,
+            }}>
+              {mveDays}
+            </div>
+            <div style={{ fontSize: 13, color: T.textSecondary, marginTop: 8 }}>
+              {mveDays === 0
+                ? 'Vence hoy — acción inmediata requerida'
+                : `día${mveDays !== 1 ? 's' : ''} para vencimiento`}
+            </div>
+          </div>
+
+          {/* ── Semáforo Rojo ── */}
+          <div style={{
+            background: semaforoRojo > 0 ? T.redBg : T.card,
+            border: `1px solid ${semaforoRojo > 0 ? T.redBorder : T.border}`,
+            borderRadius: T.radius, padding: 24,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+              <AlertTriangle size={20} style={{ color: semaforoRojo > 0 ? T.red : T.gold }} />
+              <span style={{
+                fontSize: 12, fontWeight: 700, textTransform: 'uppercase',
+                letterSpacing: '0.06em', color: semaforoRojo > 0 ? T.red : T.gold,
+              }}>
+                Semáforo Rojo
+              </span>
+            </div>
+            <div style={{
+              fontSize: 48, fontWeight: 900, lineHeight: 1,
+              fontFamily: 'var(--font-jetbrains-mono)',
+              color: semaforoRojo > 0 ? T.red : T.textMuted,
+            }}>
+              {semaforoRojo}
+            </div>
+            <div style={{ fontSize: 13, color: T.textSecondary, marginTop: 8 }}>
+              {semaforoRojo === 0
+                ? 'Sin inspecciones pendientes'
+                : `tráfico${semaforoRojo !== 1 ? 's' : ''} en revisión aduanera`}
+            </div>
+          </div>
+
+          {/* ── Blocking Docs ── */}
+          <div style={{
+            background: blockingDocs > 0 ? T.amberBg : T.card,
+            border: `1px solid ${blockingDocs > 0 ? T.amberBorder : T.border}`,
+            borderRadius: T.radius, padding: 24,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+              <FileText size={20} style={{ color: blockingDocs > 0 ? T.amber : T.gold }} />
+              <span style={{
+                fontSize: 12, fontWeight: 700, textTransform: 'uppercase',
+                letterSpacing: '0.06em', color: blockingDocs > 0 ? T.amber : T.gold,
+              }}>
+                Documentos Bloqueantes
+              </span>
+            </div>
+            <div style={{
+              fontSize: 48, fontWeight: 900, lineHeight: 1,
+              fontFamily: 'var(--font-jetbrains-mono)',
+              color: blockingDocs > 0 ? T.amber : T.textMuted,
+            }}>
+              {blockingDocs}
+            </div>
+            <div style={{ fontSize: 13, color: T.textSecondary, marginTop: 8 }}>
+              {blockingDocs === 0
+                ? 'Todos los tráficos con documentación completa'
+                : `tráfico${blockingDocs !== 1 ? 's' : ''} sin pedimento asignado`}
+            </div>
+          </div>
+
+          {/* ── USMCA Expiry ── */}
+          <div style={{
+            background: usmcaExpiring.length > 0 ? T.amberBg : T.card,
+            border: `1px solid ${usmcaExpiring.length > 0 ? T.amberBorder : T.border}`,
+            borderRadius: T.radius, padding: 24,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+              <FileCheck size={20} style={{ color: usmcaExpiring.length > 0 ? T.amber : T.gold }} />
+              <span style={{
+                fontSize: 12, fontWeight: 700, textTransform: 'uppercase',
+                letterSpacing: '0.06em', color: usmcaExpiring.length > 0 ? T.amber : T.gold,
+              }}>
+                Certificados USMCA
+              </span>
+            </div>
+            {usmcaExpiring.length === 0 ? (
+              <>
+                <div style={{
+                  fontSize: 48, fontWeight: 900, lineHeight: 1,
+                  fontFamily: 'var(--font-jetbrains-mono)', color: T.textMuted,
+                }}>
+                  0
+                </div>
+                <div style={{ fontSize: 13, color: T.textSecondary, marginTop: 8 }}>
+                  Sin vencimientos en los próximos 30 días
+                </div>
+              </>
+            ) : (
+              <>
+                <div style={{
+                  fontSize: 48, fontWeight: 900, lineHeight: 1,
+                  fontFamily: 'var(--font-jetbrains-mono)', color: T.amber,
+                }}>
+                  {usmcaExpiring.length}
+                </div>
+                <div style={{ fontSize: 13, color: T.textSecondary, marginTop: 8 }}>
+                  certificado{usmcaExpiring.length !== 1 ? 's' : ''} por vencer en 30 días
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 12 }}>
+                  {usmcaExpiring.slice(0, 5).map(item => (
+                    <div key={item.trafico} style={{
+                      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                      padding: '8px 12px', background: 'rgba(0,0,0,0.2)', borderRadius: 6,
+                    }}>
+                      <span style={{
+                        fontSize: 13, fontWeight: 700, color: T.gold,
+                        fontFamily: 'var(--font-jetbrains-mono)',
+                      }}>
+                        {item.trafico}
+                      </span>
+                      <span style={{
+                        fontSize: 12, color: T.textSecondary,
+                        fontFamily: 'var(--font-jetbrains-mono)',
+                      }}>
+                        {fmtDate(item.fecha)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ══════════════════════════════════════════
+   CLIENT VIEW — safe, no internal data exposed
+   ══════════════════════════════════════════ */
+
+function ClientCumplimientoView() {
   const [deadlineCount, setDeadlineCount] = useState(0)
   const [pendingDocsCount, setPendingDocsCount] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -17,7 +290,6 @@ export default function CumplimientoPage() {
         const now = new Date()
         const oneWeekMs = 7 * 86400000
 
-        // Count traficos with upcoming activity this week (not completed/cancelled)
         const activeThisWeek = traficos.filter((t: Record<string, string>) => {
           if (t.estatus === 'Despachado' || t.estatus === 'Cancelado') return false
           if (!t.fecha_llegada) return false
@@ -26,7 +298,6 @@ export default function CumplimientoPage() {
         })
         setDeadlineCount(activeThisWeek.length)
 
-        // Count traficos missing key documents (no expediente or pending status)
         const pendingDocs = traficos.filter((t: Record<string, string>) => {
           if (t.estatus === 'Despachado' || t.estatus === 'Cancelado') return false
           return !t.expediente_id || t.estatus === 'En proceso'
@@ -55,7 +326,6 @@ export default function CumplimientoPage() {
         <div style={{ textAlign: 'center', padding: 64, color: '#9B9B9B' }}>Cargando...</div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
-          {/* Card 1: Upcoming deadlines this week */}
           <div style={{
             background: '#FFFFFF', border: '1px solid #E8E5E0', borderRadius: 8,
             padding: 24, borderTop: '4px solid var(--gold, #B8953F)',
@@ -76,7 +346,6 @@ export default function CumplimientoPage() {
             </p>
           </div>
 
-          {/* Card 2: Pending documents */}
           <div style={{
             background: '#FFFFFF', border: '1px solid #E8E5E0', borderRadius: 8,
             padding: 24, borderTop: '4px solid var(--gold, #B8953F)',
@@ -97,7 +366,6 @@ export default function CumplimientoPage() {
             </p>
           </div>
 
-          {/* Card 3: Contact agent */}
           <div style={{
             background: '#FFFFFF', border: '1px solid #E8E5E0', borderRadius: 8,
             padding: 24, borderTop: '4px solid var(--gold, #B8953F)',
@@ -119,4 +387,18 @@ export default function CumplimientoPage() {
       )}
     </div>
   )
+}
+
+/* ══════════════════════════════════════════
+   PAGE — role gate
+   ══════════════════════════════════════════ */
+
+export default function CumplimientoPage() {
+  const role = getCookieValue('user_role')
+
+  if (role === 'broker' || role === 'admin') {
+    return <BrokerCumplimientoView />
+  }
+
+  return <ClientCumplimientoView />
 }

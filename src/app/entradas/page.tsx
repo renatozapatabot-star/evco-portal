@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Search, ChevronLeft, ChevronRight, Package } from 'lucide-react'
+import { Search, ChevronLeft, ChevronRight } from 'lucide-react'
 import { CLIENT_NAME, CLIENT_CLAVE } from '@/lib/client-config'
 import { fmtDesc, fmtDate } from '@/lib/format-utils'
 import { useIsMobile } from '@/hooks/use-mobile'
 import Link from 'next/link'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 interface EntradaRow {
   id: number
@@ -140,11 +141,12 @@ export default function EntradasPage() {
 
       {/* Empty state */}
       {!loading && paged.length === 0 && (
-        <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-          <Package size={32} strokeWidth={1.5} style={{ color: 'var(--n-300)', margin: '0 auto 12px' }} />
-          <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--n-700)', marginBottom: 4 }}>Sin entradas registradas</div>
-          <div style={{ fontSize: 13, color: 'var(--n-400)' }}>Los registros aparecerán aquí</div>
-        </div>
+        <EmptyState
+          icon="📦"
+          title="No hay entradas registradas"
+          description="Las solicitudes de embarque aparecerán aquí"
+          cta={{ label: "Nueva entrada", href: "/entradas/nueva" }}
+        />
       )}
 
       {/* Mobile card layout */}

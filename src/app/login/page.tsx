@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { GOLD, GOLD_GRADIENT, RED } from '@/lib/design-system'
 
@@ -20,18 +20,18 @@ export default function LoginPage() {
   const router = useRouter()
 
   // Check if already authenticated
-  useState(() => {
+  useEffect(() => {
     if (typeof document === 'undefined') return
     const authMatch = document.cookie.match(/(^| )portal_auth=([^;]+)/)
     const roleMatch = document.cookie.match(/(^| )user_role=([^;]+)/)
     const nameMatch = document.cookie.match(/(^| )company_name=([^;]+)/)
-    if (authMatch && authMatch[2] === 'authenticated' && roleMatch) {
+    if (roleMatch) {
       setSession({
         role: roleMatch[2],
         name: nameMatch ? decodeURIComponent(nameMatch[2]) : '',
       })
     }
-  })
+  }, [])
 
   function getHomeRoute(role: string): string {
     if (role === 'broker') return '/broker'

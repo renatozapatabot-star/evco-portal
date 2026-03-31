@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useMemo } from 'react'
 import { CheckCircle } from 'lucide-react'
-import { CLIENT_CLAVE, COMPANY_ID } from '@/lib/client-config'
+import { CLIENT_CLAVE, COMPANY_ID, getCookieValue } from '@/lib/client-config'
+import ClientInicioView from '@/components/views/client-inicio-view'
 import { daysUntilMVE } from '@/lib/compliance-dates'
 import { fmtId, fmtDate } from '@/lib/format-utils'
 import { calculateCruzScore, extractScoreInput } from '@/lib/cruz-score'
@@ -19,6 +20,15 @@ interface TraficoRow {
   pedimento: string | null; descripcion_mercancia: string | null
   proveedores: string | null; fecha_cruce: string | null
   fecha_pago: string | null; updated_at?: string
+  [k: string]: unknown
+}
+
+interface PipelineRow {
+  trafico_number: string
+  descripcion_mercancia: string | null
+  score: number | null
+  company_id: string | null
+  pipeline_status: string | null
   [k: string]: unknown
 }
 
@@ -78,6 +88,7 @@ export default function Dashboard() {
   const [liveBridges, setLiveBridges] = useState<{ bridges: BridgeTime[]; recommended: number | null; fetched: string | null } | null>(null)
   const [mananaItems, setMananaItems] = useState<{ solicitudes: number; mveUrgent: boolean; mveDays: number }>({ solicitudes: 0, mveUrgent: false, mveDays: 0 })
   const [pendingEntradas, setPendingEntradas] = useState<{ cve_entrada: string; fecha_llegada_mercancia: string | null; cantidad_bultos: number | null; peso_bruto: number | null; tiene_faltantes: boolean; mercancia_danada: boolean }[]>([])
+  const [pipelineRows, setPipelineRows] = useState<PipelineRow[]>([])
   // Status sentence now lives in StatusStrip (global nav)
 
   useEffect(() => {
@@ -118,6 +129,12 @@ export default function Dashboard() {
       .then(d => {
         setPendingEntradas((d.data ?? []) as typeof pendingEntradas)
       })
+      .catch(() => {})
+
+    // Pipeline overview (broker/admin only — filtered server-side by company_id cookie)
+    fetch(`/api/data?table=pipeline_overview&company_id=${COMPANY_ID}&limit=500`)
+      .then(r => r.json())
+      .then(d => setPipelineRows((d.data ?? []) as PipelineRow[]))
       .catch(() => {})
   }, [])
 
@@ -332,6 +349,10 @@ export default function Dashboard() {
     )
   }
 
+  // Client role gets a dedicated simplified view
+  const userRole = getCookieValue('user_role')
+  if (userRole === 'client') return <ClientInicioView />
+
   return (
     <div style={{ padding: isMobile ? 16 : 32, maxWidth: 960, margin: '0 auto' }}>
 
@@ -345,10 +366,12 @@ export default function Dashboard() {
           Valor en operación
         </div>
         <div style={{ fontSize: isMobile ? 40 : 56, fontWeight: 900, fontFamily: 'var(--font-jetbrains-mono)', lineHeight: 1, letterSpacing: '-0.02em' }}>
-          {loading ? <Skeleton width={200} height={isMobile ? 40 : 56} borderRadius={8} style={{ background: 'rgba(255,255,255,0.08)' }} /> : (
+          {loading ? <Skeleton width={200} height={isMobile ? 40 : 56} borderRadius={8} style={{ background: 'rgba(255,255,255,0.08)' }} /> : valorEnProceso > 0 ? (
             <CountingNumber value={valorEnProceso} duration={1000} format={fmtUSD} style={{ fontFamily: 'var(--font-jetbrains-mono)' }} />
+          ) : (
+            <span style={{ fontFamily: 'var(--font-jetbrains-mono)', color: TOKEN.gray }}>{'\u2014'}</span>
           )}
-          {!loading && <span style={{ fontSize: 16, fontWeight: 600, marginLeft: 4, color: TOKEN.gray }}>USD</span>}
+          {!loading && valorEnProceso > 0 && <span style={{ fontSize: 16, fontWeight: 600, marginLeft: 4, color: TOKEN.gray }}>USD</span>}
         </div>
 
         {statusSentence.urgentes > 0 && (
@@ -370,7 +393,10 @@ export default function Dashboard() {
             <div style={{ fontSize: 11, color: TOKEN.gray, fontWeight: 600 }}>Demorados</div>
           </Link>
           <Link href="/traficos?estatus=En Proceso" style={{ textDecoration: 'none', color: 'inherit' }}>
-            <CountingNumber value={enProceso.length} style={{ fontSize: 24, fontWeight: 900, fontFamily: 'var(--font-jetbrains-mono)', display: 'block' }} />
+            {enProceso.length > 0
+              ? <CountingNumber value={enProceso.length} style={{ fontSize: 24, fontWeight: 900, fontFamily: 'var(--font-jetbrains-mono)', display: 'block' }} />
+              : <span style={{ fontSize: 24, fontWeight: 900, fontFamily: 'var(--font-jetbrains-mono)', display: 'block', color: TOKEN.gray }}>{'\u2014'}</span>
+            }
             <div style={{ fontSize: 11, color: TOKEN.gray, fontWeight: 600 }}>En ruta</div>
           </Link>
           <Link href="/traficos?sort=importe_total&order=desc" style={{ textDecoration: 'none', color: 'inherit' }}>
@@ -677,7 +703,7 @@ export default function Dashboard() {
             En ruta
           </div>
           <div style={{ fontSize: 24, fontWeight: 900, color: enProceso.length > 0 ? TOKEN.text : TOKEN.gray, lineHeight: 1 }}>
-            {loading ? <Skeleton width={48} height={24} /> : <CountingNumber value={enProceso.length} style={{ fontSize: 24, fontWeight: 900 }} />}
+            {loading ? <Skeleton width={48} height={24} /> : enProceso.length > 0 ? <CountingNumber value={enProceso.length} style={{ fontSize: 24, fontWeight: 900 }} /> : '\u2014'}
           </div>
           {trends.enRuta !== null && (
             <div style={{ fontSize: 11, fontWeight: 600, marginTop: 4, fontFamily: 'var(--font-jetbrains-mono)', color: trends.enRuta > 0 ? TOKEN.green : trends.enRuta < 0 ? TOKEN.red : TOKEN.gray }}>
@@ -706,7 +732,7 @@ export default function Dashboard() {
             Valor activo
           </div>
           <div style={{ fontSize: 24, fontWeight: 900, color: valorEnProceso > 0 ? TOKEN.text : TOKEN.gray, lineHeight: 1 }}>
-            {loading ? <Skeleton width={80} height={24} /> : <CountingNumber value={valorEnProceso} format={(n) => fmtUSD(n)} style={{ fontSize: 24, fontWeight: 900 }} />}
+            {loading ? <Skeleton width={80} height={24} /> : valorEnProceso > 0 ? <CountingNumber value={valorEnProceso} format={(n) => fmtUSD(n)} style={{ fontSize: 24, fontWeight: 900 }} /> : '\u2014'}
           </div>
           {trends.valor !== null && (
             <div style={{ fontSize: 11, fontWeight: 600, marginTop: 4, fontFamily: 'var(--font-jetbrains-mono)', color: trends.valor > 0 ? TOKEN.green : trends.valor < 0 ? TOKEN.red : TOKEN.gray }}>
@@ -733,6 +759,131 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+
+      {/* ═══ PIPELINE KANBAN — broker/admin only ═══ */}
+      {(userRole === 'broker' || userRole === 'admin') && (() => {
+        const COLUMNS: { key: string; label: string; color: string; bg: string; borderColor: string }[] = [
+          { key: 'needs_docs', label: 'Necesita Docs', color: TOKEN.red, bg: '#FEF2F2', borderColor: '#FECACA' },
+          { key: 'in_progress', label: 'En Proceso', color: TOKEN.amber, bg: '#FFFBEB', borderColor: '#FDE68A' },
+          { key: 'ready_to_file', label: 'Listo para Despacho', color: TOKEN.gold, bg: '#F5F0E4', borderColor: '#D4C48A' },
+          { key: 'ready_to_cross', label: 'Listo para Cruce', color: TOKEN.green, bg: '#F0FDF4', borderColor: '#BBF7D0' },
+        ]
+        const grouped = COLUMNS.map(col => ({
+          ...col,
+          items: pipelineRows.filter(r => (r.pipeline_status || '').toLowerCase().replace(/\s+/g, '_') === col.key),
+        }))
+
+        if (pipelineRows.length === 0) return null
+
+        return (
+          <div style={{ marginBottom: 32 }}>
+            <div style={{ fontSize: 15, fontWeight: 700, color: TOKEN.text, marginBottom: 12 }}>
+              Pipeline de operaciones
+            </div>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)',
+              gap: 12,
+            }}>
+              {grouped.map(col => (
+                <div key={col.key} style={{
+                  background: col.bg,
+                  border: `1px solid ${col.borderColor}`,
+                  borderRadius: TOKEN.radiusMd,
+                  padding: 12,
+                  minHeight: 120,
+                }}>
+                  <div style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    marginBottom: 10,
+                  }}>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: col.color }}>
+                      {col.label}
+                    </span>
+                    <span style={{
+                      fontSize: 11, fontWeight: 800, color: col.color,
+                      background: 'rgba(255,255,255,0.7)',
+                      borderRadius: 9999, padding: '2px 8px',
+                      fontFamily: 'var(--font-jetbrains-mono)',
+                    }}>
+                      {col.items.length}
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {col.items.slice(0, 5).map(row => (
+                      <Link
+                        key={row.trafico_number}
+                        href={`/traficos/${encodeURIComponent(row.trafico_number)}`}
+                        style={{ textDecoration: 'none', color: 'inherit' }}
+                      >
+                        <div style={{
+                          background: TOKEN.surfaceCard,
+                          border: `1px solid ${TOKEN.border}`,
+                          borderRadius: 6, padding: '10px 12px',
+                        }}>
+                          <div style={{
+                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                            marginBottom: 4,
+                          }}>
+                            <span style={{
+                              fontSize: 13, fontWeight: 700, color: TOKEN.text,
+                              fontFamily: 'var(--font-jetbrains-mono)',
+                            }}>
+                              {fmtId(row.trafico_number)}
+                            </span>
+                            {row.company_id && (
+                              <span style={{
+                                fontSize: 10, fontWeight: 700, color: TOKEN.textSecondary,
+                                background: '#F5F4F0', borderRadius: 4, padding: '1px 6px',
+                              }}>
+                                {row.company_id}
+                              </span>
+                            )}
+                          </div>
+                          <div style={{
+                            fontSize: 11, color: TOKEN.textSecondary,
+                            overflow: 'hidden', textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap', marginBottom: 6,
+                          }}>
+                            {row.descripcion_mercancia || 'Sin descripción'}
+                          </div>
+                          {/* Score progress bar */}
+                          {row.score != null && (
+                            <div style={{
+                              height: 4, borderRadius: 2,
+                              background: '#E8E5E0',
+                              overflow: 'hidden',
+                            }}>
+                              <div style={{
+                                height: '100%', borderRadius: 2,
+                                width: `${Math.min(Math.max(row.score, 0), 100)}%`,
+                                background: row.score >= 80 ? TOKEN.green : row.score >= 50 ? TOKEN.amber : TOKEN.red,
+                                transition: 'width 0.3s ease',
+                              }} />
+                            </div>
+                          )}
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                  {col.items.length > 5 && (
+                    <Link
+                      href={`/traficos?pipeline_status=${col.key}`}
+                      style={{
+                        display: 'block', marginTop: 8,
+                        fontSize: 12, fontWeight: 600, color: TOKEN.gold,
+                        textDecoration: 'none',
+                      }}
+                    >
+                      Ver todos ({col.items.length}) →
+                    </Link>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )
+      })()}
     </div>
   )
 }

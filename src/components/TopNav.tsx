@@ -3,8 +3,8 @@
 import { usePathname, useRouter } from 'next/navigation'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
-import { Bell, Search, ChevronDown } from 'lucide-react'
-import { COMPANY_ID, getCookieValue } from '@/lib/client-config'
+import { Bell, Search, ChevronDown, LayoutDashboard } from 'lucide-react'
+import { getCookieValue } from '@/lib/client-config'
 import { daysUntilMVE, mveIsCritical } from '@/lib/compliance-dates'
 import { fmtDate } from '@/lib/format-utils'
 import { useIsMobile } from '@/hooks/use-mobile'
@@ -12,7 +12,7 @@ import { NightModeToggle } from '@/components/NightModeToggle'
 import { NotificationPanel } from '@/components/NotificationPanel'
 import {
   INTERNAL_TOP, INTERNAL_GROUPS, INTERNAL_BOTTOM,
-  CLIENT_NAV, getActiveGroup,
+  CLIENT_NAV, CLIENT_GROUPS, getActiveGroup,
   type UserRole, type NavGroup,
 } from '@/components/nav/nav-config'
 
@@ -125,6 +125,7 @@ export function TopNav() {
   const [syncMins, setSyncMins] = useState<number | null>(null)
   const [clientClave, setClientClave] = useState('')
   const [companyName, setCompanyName] = useState('')
+  const [companyId, setCompanyId] = useState('')
   const avatarRef = useRef<HTMLDivElement>(null)
 
   // Read role + client info, set body attr for CSS layout
@@ -133,6 +134,7 @@ export function TopNav() {
     if (r === 'admin' || r === 'broker') setRole(r as UserRole)
     else setRole('client')
     setClientClave(getCookieValue('company_clave') ?? '')
+    setCompanyId(getCookieValue('company_id') ?? '')
     const cn = getCookieValue('company_name')
     setCompanyName(cn ? decodeURIComponent(cn) : '')
     document.body.setAttribute('data-nav-role', (r === 'admin' || r === 'broker') ? 'internal' : 'client')
@@ -159,15 +161,17 @@ export function TopNav() {
 
   // Notification count
   useEffect(() => {
-    fetch(`/api/data?table=notifications&company_id=${COMPANY_ID}&select=id&limit=1&read=false`)
+    if (!companyId) return
+    fetch(`/api/data?table=notifications&company_id=${companyId}&select=id&limit=1&read=false`)
       .then(r => r.json())
       .then(d => setUnreadCount(d.count ?? (d.data?.length ?? 0)))
       .catch(() => {})
-  }, [])
+  }, [companyId])
 
   // Sync freshness
   useEffect(() => {
-    fetch(`/api/data?table=traficos&company_id=${COMPANY_ID}&select=updated_at&limit=1&order_by=updated_at&order_dir=desc`)
+    if (!companyId) return
+    fetch(`/api/data?table=traficos&company_id=${companyId}&select=updated_at&limit=1&order_by=updated_at&order_dir=desc`)
       .then(r => r.json())
       .then(d => {
         const ts = d.data?.[0]?.updated_at
@@ -177,7 +181,7 @@ export function TopNav() {
           setSyncLabel(mins < 5 ? 'Ahora' : mins < 60 ? `${mins}m` : `${Math.floor(mins / 60)}h`)
         }
       }).catch(() => {})
-  }, [])
+  }, [companyId])
 
   const navigate = useCallback((href: string) => router.push(href), [router])
 
@@ -314,20 +318,45 @@ export function TopNav() {
               })}
             </>
           ) : (
-            /* Client nav — flat tabs */
-            CLIENT_NAV.map(item => {
-              const Icon = item.icon
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`tn-tab ${isActive(item.href) ? 'tn-tab-active' : ''}`}
-                >
-                  <Icon size={16} />
-                  {item.label}
-                </Link>
-              )
-            })
+            /* Client nav — dropdown groups */
+            <>
+              {/* Inicio */}
+              <Link
+                href="/"
+                className={`tn-tab ${isActive('/') && pathname === '/' ? 'tn-tab-active' : ''}`}
+              >
+                <LayoutDashboard size={16} />
+                Inicio
+              </Link>
+
+              {CLIENT_GROUPS.map(group => {
+                const clientActiveGroup = getActiveGroup(pathname, CLIENT_GROUPS)
+                if (group.children.length === 1) {
+                  /* Flat link — no dropdown (e.g. Cumplimiento) */
+                  const child = group.children[0]
+                  const Icon = group.icon
+                  return (
+                    <Link
+                      key={group.key}
+                      href={child.href}
+                      className={`tn-tab ${isActive(child.href) ? 'tn-tab-active' : ''}`}
+                    >
+                      <Icon size={16} />
+                      {group.label}
+                    </Link>
+                  )
+                }
+                return (
+                  <NavDropdown
+                    key={group.key}
+                    group={group}
+                    isActive={clientActiveGroup === group.key}
+                    pathname={pathname}
+                    onNavigate={navigate}
+                  />
+                )
+              })}
+            </>
           )}
         </div>
 

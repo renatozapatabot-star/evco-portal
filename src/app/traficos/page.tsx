@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect, useState, useMemo, Fragment, useCallback } from 'react'
+import { useEffect, useState, useMemo, Fragment, useCallback, Suspense } from 'react'
 import { Search, Download, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { CLIENT_NAME, CLIENT_CLAVE, PATENTE, COMPANY_ID } from '@/lib/client-config'
+import { getCookieValue } from '@/lib/client-config'
 import { fmtId, fmtDesc, fmtKg, fmtUSD, fmtUSDCompact, fmtDate, calcPriority, priorityClass } from '@/lib/format-utils'
 import { fmtCarrier } from '@/lib/carrier-names'
 import { MobileTraficoCard } from '@/components/mobile-trafico-card'
@@ -12,6 +12,8 @@ import { calculateCruzScore, extractScoreInput, statusDays } from '@/lib/cruz-sc
 import { useSort } from '@/hooks/use-sort'
 import { useIsMobile } from '@/hooks/use-mobile'
 import Link from 'next/link'
+import { ErrorBoundary } from '@/components/error-boundary'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 interface TraficoRow {
   trafico: string; estatus?: string; fecha_llegada?: string | null
@@ -24,10 +26,10 @@ interface TraficoRow {
 type FilterTab = 'todos' | 'proceso' | 'atención' | 'cruzado'
 const PAGE_SIZE = 50
 
-function exportCSV(rows: TraficoRow[], activeFilter: string) {
+function exportCSV(rows: TraficoRow[], activeFilter: string, clientClave: string, companyId: string) {
   const meta = [
     'CRUZ — Renato Zapata & Company',
-    `RFC: EPM001109I74 · Clave: ${CLIENT_CLAVE}`,
+    `Clave: ${clientClave}`,
     `Exportado: ${fmtDate(new Date())}`,
     `Filtro: ${activeFilter}`,
     `Total registros: ${rows.length}`,
@@ -36,11 +38,21 @@ function exportCSV(rows: TraficoRow[], activeFilter: string) {
   const h = ['Trafico','Estatus','Fecha','Descripcion','Peso_kg','Importe_USD','Pedimento']
   const c = rows.map(r => [r.trafico, r.estatus??'', r.fecha_llegada?.split('T')[0]??'', (r.descripcion_mercancia??'').replace(/,/g,' '), r.peso_bruto??'', r.importe_total??'', r.pedimento??''].join(','))
   const b = new Blob([[...meta, h.join(','), ...c].join('\n')], { type: 'text/csv' })
-  const fname = `${COMPANY_ID.toUpperCase()}_Traficos_${activeFilter !== 'todos' ? activeFilter + '_' : ''}${new Date().toISOString().split('T')[0]}.csv`
+  const fname = `${(companyId || 'export').toUpperCase()}_Traficos_${activeFilter !== 'todos' ? activeFilter + '_' : ''}${new Date().toISOString().split('T')[0]}.csv`
   const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = fname; a.click()
 }
 
 export default function TraficosPage() {
+  return (
+    <ErrorBoundary fallbackTitle="Error al cargar tráficos">
+      <Suspense fallback={<div className="page-container" style={{ padding: '20px 24px' }}><div className="skel" style={{ width: 200, height: 24 }} /></div>}>
+        <TraficosContent />
+      </Suspense>
+    </ErrorBoundary>
+  )
+}
+
+function TraficosContent() {
   const [rows, setRows] = useState<TraficoRow[]>([])
   const [loading, setLoading] = useState(true)
   const searchParams = useSearchParams()
@@ -60,6 +72,24 @@ export default function TraficosPage() {
   const router = useRouter()
   const isMobile = useIsMobile()
 
+  // Cookie values in state to avoid SSR/client hydration mismatch.
+  // getCookieValue returns undefined during SSR (no document), so we
+  // initialize to '' and populate on mount.
+  const [companyId, setCompanyId] = useState('')
+  const [clientClave, setClientClave] = useState('')
+  const [companyName, setCompanyName] = useState('')
+  const [userRole, setUserRole] = useState('')
+  const [cookiesReady, setCookiesReady] = useState(false)
+
+  useEffect(() => {
+    setCompanyId(getCookieValue('company_id') ?? '')
+    setClientClave(getCookieValue('company_clave') ?? '')
+    setUserRole(getCookieValue('user_role') ?? '')
+    const cn = getCookieValue('company_name')
+    setCompanyName(cn ? decodeURIComponent(cn) : '')
+    setCookiesReady(true)
+  }, [])
+
   // Escape key closes quick-view panel
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setSelectedId(null) }
@@ -68,16 +98,32 @@ export default function TraficosPage() {
   }, [])
 
   useEffect(() => {
+    if (!cookiesReady) return
+    const isInternal = userRole === 'broker' || userRole === 'admin'
+    // Client role needs companyId to fetch; broker/admin fetch all
+    if (!isInternal && !companyId) { setLoading(false); return }
     setLoading(true)
-    fetch(`/api/data?table=traficos&company_id=${COMPANY_ID}&trafico_prefix=${CLIENT_CLAVE}-&limit=5000&order_by=fecha_llegada&order_dir=desc`)
-      .then(r => r.json()).then(d => setRows(d.data ?? d ?? []))
-      .catch(() => {}).finally(() => setLoading(false))
+
+    // Broker/admin: no company_id or trafico_prefix filters → see all tráficos
+    const traficosParams = new URLSearchParams({ table: 'traficos', limit: '5000', order_by: 'fecha_llegada', order_dir: 'desc' })
+    if (!isInternal) {
+      traficosParams.set('company_id', companyId)
+      if (clientClave) traficosParams.set('trafico_prefix', `${clientClave}-`)
+    }
+    fetch(`/api/data?${traficosParams}`)
+      .then(r => r.json())
+      .then(d => { const arr = d.data ?? d; setRows(Array.isArray(arr) ? arr : []) })
+      .catch(() => setRows([]))
+      .finally(() => setLoading(false))
     fetch('/api/crossing-prediction').then(r => r.json()).then(d => setPredictions(d.predictions ?? {})).catch(() => {})
-    // Fetch document counts per trafico for DOCS column
-    fetch(`/api/data?table=documents&company_id=${COMPANY_ID}&select=trafico_id,document_type&limit=10000`)
+
+    // Document counts
+    const docParams = new URLSearchParams({ table: 'documents', select: 'trafico_id,document_type', limit: '10000' })
+    if (!isInternal) docParams.set('company_id', companyId)
+    fetch(`/api/data?${docParams}`)
       .then(r => r.json())
       .then(d => {
-        const docs = d.data ?? []
+        const docs = Array.isArray(d.data) ? d.data : []
         const map = new Map<string, number>()
         docs.forEach((doc: { trafico_id?: string }) => {
           if (doc.trafico_id) map.set(doc.trafico_id, (map.get(doc.trafico_id) || 0) + 1)
@@ -85,14 +131,18 @@ export default function TraficosPage() {
         setDocCountMap(map)
       })
       .catch(() => {})
-    fetch(`/api/data?table=pedimento_risk_scores&company_id=${COMPANY_ID}&limit=2000&order_by=calculated_at&order_dir=desc`)
 
+    // Risk scores
+    const riskParams = new URLSearchParams({ table: 'pedimento_risk_scores', limit: '2000', order_by: 'calculated_at', order_dir: 'desc' })
+    if (!isInternal) riskParams.set('company_id', companyId)
+    fetch(`/api/data?${riskParams}`)
       .then(r => r.json()).then(d => {
         const map = new Map<string, Record<string, unknown>>()
-        ;(d.data ?? []).forEach((r: Record<string, unknown>) => { if (r.trafico_id && !map.has(r.trafico_id as string)) map.set(r.trafico_id as string, r) })
+        const arr = Array.isArray(d.data) ? d.data : []
+        arr.forEach((r: Record<string, unknown>) => { if (r.trafico_id && !map.has(r.trafico_id as string)) map.set(r.trafico_id as string, r) })
         setRiskMap(map)
       }).catch(() => {})
-  }, [])
+  }, [cookiesReady, companyId, clientClave, userRole])
 
   // Debounced search
   useEffect(() => {
@@ -165,7 +215,7 @@ export default function TraficosPage() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
         <div>
           <h1 className="pg-title">Tráficos</h1>
-          <p className="pg-meta">{rows.length.toLocaleString('es-MX')} embarques · {CLIENT_NAME} · Patente {PATENTE}</p>
+          <p className="pg-meta">{rows.length.toLocaleString('es-MX')} embarques{companyName ? ` · ${companyName}` : ''}</p>
         </div>
       </div>
 
@@ -190,7 +240,7 @@ export default function TraficosPage() {
               <input placeholder="Tráfico, pedimento..." value={searchInput}
                 onChange={e => setSearchInput(e.target.value)} />
             </div>
-            <button className="act-btn" onClick={() => exportCSV(filtered, tab)}>
+            <button className="act-btn" onClick={() => exportCSV(filtered, tab, clientClave, companyId)}>
               <Download size={11} /> CSV
             </button>
           </div>
@@ -200,11 +250,11 @@ export default function TraficosPage() {
           <div className="sum-bar">
             <div className="sum-stat"><span className="sum-val">{rows.length.toLocaleString('es-MX')}</span><span className="sum-lbl">total</span></div>
             <div className="sum-sep" />
-            <div className="sum-stat"><span className="sum-val" style={{ color: 'var(--status-yellow)' }}>{enProceso.toLocaleString('es-MX')}</span><span className="sum-lbl">En Proceso</span></div>
+            <div className="sum-stat"><span className="sum-val" style={{ color: enProceso > 0 ? 'var(--status-yellow)' : 'var(--status-gray, #9C9890)' }}>{enProceso > 0 ? enProceso.toLocaleString('es-MX') : '\u2014'}</span><span className="sum-lbl">En Proceso</span></div>
             <div className="sum-sep" />
-            <div className="sum-stat"><span className="sum-val" style={{ color: 'var(--status-green)' }}>{cruzados.toLocaleString('es-MX')}</span><span className="sum-lbl">Cruzado</span></div>
+            <div className="sum-stat"><span className="sum-val" style={{ color: cruzados > 0 ? 'var(--status-green)' : 'var(--status-gray, #9C9890)' }}>{cruzados > 0 ? cruzados.toLocaleString('es-MX') : '\u2014'}</span><span className="sum-lbl">Cruzado</span></div>
             <div className="sum-sep" />
-            <div className="sum-stat"><span className="sum-val">{fmtUSDCompact(totalValor)}</span><span className="sum-lbl">valor importado</span></div>
+            <div className="sum-stat"><span className="sum-val" style={{ color: totalValor > 0 ? undefined : 'var(--status-gray, #9C9890)' }}>{totalValor > 0 ? fmtUSDCompact(totalValor) : '\u2014'}</span><span className="sum-lbl">valor importado</span></div>
           </div>
         )}
 
@@ -216,10 +266,12 @@ export default function TraficosPage() {
                 <MobileTraficoCard key={r.trafico} trafico={r} onClick={() => router.push(`/traficos/${encodeURIComponent(r.trafico)}`)} />
               ))}
               {!loading && paged.length === 0 && (
-                <div style={{ textAlign: 'center', padding: '48px 0', color: 'var(--text-muted)' }}>
-                  <div style={{ fontSize: 20, marginBottom: 8 }}>🚚</div>
-                  <div style={{ fontSize: 14, fontWeight: 600 }}>Sin tráficos{tab === 'atención' ? ' pendientes' : ''}</div>
-                </div>
+                <EmptyState
+                  icon="🚛"
+                  title="No hay tráficos activos"
+                  description="Sus embarques activos aparecerán aquí"
+                  cta={{ label: "Contactar a su agente", href: "/comunicaciones" }}
+                />
               )}
             </div>
           </div>
@@ -265,11 +317,12 @@ export default function TraficosPage() {
                       <button onClick={() => { setSearchInput(''); setSearch('') }} style={{ marginTop: 12, background: 'none', border: '1px solid var(--border-default)', padding: '6px 16px', borderRadius: 6, cursor: 'pointer', fontSize: 12, color: 'var(--gold-600)' }}>Limpiar filtros</button>
                     </div>
                   ) : (
-                    <div style={{ textAlign: 'center', padding: '48px 0', color: 'var(--text-muted)' }}>
-                      <div style={{ fontSize: 20, marginBottom: 8 }}>🚚</div>
-                      <div style={{ fontSize: 14, fontWeight: 600 }}>Sin tráficos {tab !== 'todos' ? (tab === 'proceso' ? 'en proceso' : tab === 'atención' ? 'pendientes' : 'cruzados') : 'activos'}</div>
-                      <div style={{ fontSize: 12, color: 'var(--n-400)', marginTop: 4 }}>No hay operaciones para el período seleccionado</div>
-                    </div>
+                    <EmptyState
+                      icon="🚛"
+                      title="No hay tráficos activos"
+                      description="Sus embarques activos aparecerán aquí"
+                      cta={{ label: "Contactar a su agente", href: "/comunicaciones" }}
+                    />
                   )}
                 </td></tr>
               )}

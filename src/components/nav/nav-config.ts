@@ -3,6 +3,7 @@ import {
   BarChart3, DollarSign, Users2, BookOpen,
   Shield, Calendar, Award,
   Settings, MessageSquare, Package,
+  History, Archive, Clock, ClipboardList, Receipt, Send, Phone,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -103,6 +104,64 @@ export const CLIENT_NAV: NavTopLevel[] = [
 ]
 
 // ---------------------------------------------------------------------------
+// CLIENT NAV GROUPS — client role (dropdown menus, same as admin structure)
+// ---------------------------------------------------------------------------
+
+export const CLIENT_GROUPS: NavGroup[] = [
+  {
+    key: 'operaciones',
+    label: 'Operaciones',
+    icon: Truck,
+    children: [
+      { href: '/traficos',    label: 'Tráficos Activos', icon: Truck },
+      { href: '/historial',   label: 'Historial',        icon: History },
+      { href: '/entradas',    label: 'Entradas',         icon: Package },
+      { href: '/calendario',  label: 'Calendario',       icon: Calendar },
+    ],
+  },
+  {
+    key: 'documentos',
+    label: 'Documentos',
+    icon: FolderOpen,
+    children: [
+      { href: '/expedientes',            label: 'Por Tráfico',  icon: FolderOpen },
+      { href: '/documentos',             label: 'Repositorio',  icon: Archive },
+      { href: '/documentos/pendientes',  label: 'Pendientes',   icon: Clock },
+      { href: '/documentos/plantillas',  label: 'Plantillas',   icon: ClipboardList },
+    ],
+  },
+  {
+    key: 'costos',
+    label: 'Costos',
+    icon: DollarSign,
+    children: [
+      { href: '/financiero',      label: 'Resumen de Cuenta', icon: DollarSign },
+      { href: '/pedimentos',      label: 'Por Pedimento',     icon: FileText },
+      { href: '/reportes/usmca',  label: 'Ahorros USMCA',    icon: Award },
+      { href: '/facturas',        label: 'Facturas',          icon: Receipt },
+    ],
+  },
+  {
+    key: 'cumplimiento',
+    label: 'Cumplimiento',
+    icon: Shield,
+    children: [
+      { href: '/cumplimiento', label: 'Cumplimiento', icon: Shield },
+    ],
+  },
+  {
+    key: 'soporte',
+    label: 'Soporte',
+    icon: MessageSquare,
+    children: [
+      { href: '/comunicaciones', label: 'Mensajes',     icon: MessageSquare },
+      { href: '/solicitudes',    label: 'Solicitudes',  icon: Send },
+      { href: '/contacto',       label: 'Contacto',     icon: Phone },
+    ],
+  },
+]
+
+// ---------------------------------------------------------------------------
 // MOBILE BOTTOM NAV
 // ---------------------------------------------------------------------------
 
@@ -184,7 +243,9 @@ export const CLIENT_ROUTES = [
 
 /** Get all flat routes for a role (used for search/command palette filtering) */
 export function getRoutesForRole(role: UserRole): NavRoute[] {
-  if (role === 'client') return CLIENT_NAV
+  if (role === 'client') {
+    return CLIENT_GROUPS.flatMap(g => g.children)
+  }
 
   const routes: NavRoute[] = [
     ...INTERNAL_TOP,
@@ -195,8 +256,9 @@ export function getRoutesForRole(role: UserRole): NavRoute[] {
 }
 
 /** Check if a path belongs to a nav group (for auto-expanding accordion) */
-export function getActiveGroup(pathname: string): string | null {
-  for (const group of INTERNAL_GROUPS) {
+export function getActiveGroup(pathname: string, groups?: NavGroup[]): string | null {
+  const searchGroups = groups ?? INTERNAL_GROUPS
+  for (const group of searchGroups) {
     if (group.children.some(child =>
       child.href === '/' ? pathname === '/' : pathname.startsWith(child.href)
     )) {

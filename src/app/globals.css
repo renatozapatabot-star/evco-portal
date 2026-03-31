@@ -2071,3 +2071,20 @@ body { overflow-x: hidden; }
   --n-100: #333330;
   --n-900: #E8E5DF;
 }
+
+/* ══════════════════════════════
+   DARK SURFACE + SKELETON TOKENS
+══════════════════════════════ */
+:root {
+  --surface-0: #0F0E0C;
+  --surface-1: #1A1814;
+  --surface-2: #252219;
+  --surface-3: #302C23;
+  --green-ok: #2D8F4E;
+  --yellow-warning: #D4A017;
+  --skeleton-base: #252219;
+  --skeleton-shine: #302C23;
+  --dark-text-primary: #F5F0E8;
+  --dark-text-secondary: #A09882;
+  --dark-text-muted: #6B6355;
+}

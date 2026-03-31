@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, useCallback } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import { Upload, CheckCircle, AlertTriangle } from 'lucide-react'
 import { CLIENT_NAME } from '@/lib/client-config'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
@@ -125,6 +126,23 @@ export function DocumentosView() {
       const el = document.getElementById(`doc-${firstMissing.id}`)
       el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
     }
+  }
+
+  if (!loading && companyDocs.length === 0 && Object.keys(uploaded).length === 0) {
+    return (
+      <div style={{ padding: 32 }}>
+        <div style={{ marginBottom: 24 }}>
+          <h1 className="pg-title">Documentos Legales</h1>
+          <p className="pg-meta">{CLIENT_NAME} &middot; Documentos corporativos y de cumplimiento</p>
+        </div>
+        <EmptyState
+          icon="📄"
+          title="No hay documentos"
+          description="Los documentos de sus embarques aparecerán aquí"
+          cta={{ label: "Ver expedientes", href: "/expedientes" }}
+        />
+      </div>
+    )
   }
 
   return (

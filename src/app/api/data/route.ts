@@ -19,6 +19,7 @@ const ALLOWED_TABLES = [
   'regulatory_alerts', 'document_metadata', 'communication_events', 'compliance_events',
   'trade_prospects', 'prospect_sightings', 'competitor_sightings',
   'pipeline_overview',
+  'trafico_completeness',
 ]
 
 // Tables that contain client-specific data and MUST be filtered by a client identifier.

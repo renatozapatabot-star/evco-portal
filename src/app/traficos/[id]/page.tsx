@@ -1,23 +1,22 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { ArrowLeft, FileText, Upload, Package } from 'lucide-react'
-import { fmtId, fmtDate, fmtUSD, fmtKg, fmtDesc, fmtMXNInt, fmtCurrency, formatAbsoluteETA, formatAbsoluteDate } from '@/lib/format-utils'
+import { ArrowLeft, Upload, Clock, FileText, Truck, BarChart3 } from 'lucide-react'
+import { fmtId, fmtDate, fmtUSD, fmtKg, fmtDesc, fmtMXNInt, formatAbsoluteETA } from '@/lib/format-utils'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { GOLD } from '@/lib/design-system'
 import { fmtCarrier, countryFlag } from '@/lib/carrier-names'
-// cruz-score imports removed — scores are internal broker data, not shown to clients
 import { createClient } from '@supabase/supabase-js'
-// Link removed — entradas now embedded inline
-import { getCookieValue, CLIENT_NAME } from '@/lib/client-config'
+import { getCookieValue } from '@/lib/client-config'
 import { SolicitarModal } from '@/components/SolicitarModal'
 import { getMissingDocs, REQUIRED_DOC_TYPES } from '@/lib/documents'
 import { useToast } from '@/components/Toast'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
-type Tab = 'financiero' | 'transportista' | 'entradas' | 'rectificacion'
+type Tab = 'resumen' | 'documentos' | 'entradas' | 'timeline'
 
 interface Solicitud {
   id: string
@@ -28,49 +27,71 @@ interface Solicitud {
   recipient_name: string | null
 }
 
-function getDocUrgency(deadline: string | null | undefined): { color: string; label: string } {
-  if (!deadline) return { color: '#9C9890', label: '' }
-  const now = new Date()
-  const due = new Date(deadline)
-  const daysUntil = Math.ceil((due.getTime() - now.getTime()) / 86400000)
-
-  if (daysUntil < 0) return { color: '#C23B22', label: `Venció hace ${Math.abs(daysUntil)} días` }
-  if (daysUntil <= 7) return { color: '#C23B22', label: `Vence en ${daysUntil} día${daysUntil !== 1 ? 's' : ''}` }
-  if (daysUntil <= 30) return { color: '#C47F17', label: `Vence en ${daysUntil} días` }
-  if (daysUntil <= 90) return { color: '#D4952A', label: `Vence en ${daysUntil} días` }
-  return { color: '#9C9890', label: '' }
+interface Completeness {
+  trafico_id: string
+  score: number | null
+  blocking_count: number
+  blocking_docs: string[] | null
+  can_file: boolean | null
+  can_cross: boolean | null
 }
 
 const fmtPedimento = (p: string | null) => {
   if (!p) return null
   const clean = p.replace(/\s/g, '')
-  if (clean.length === 15) return `${clean.slice(0,2)} ${clean.slice(2,4)} ${clean.slice(4,8)} ${clean.slice(8)}`
+  if (clean.length === 15) return `${clean.slice(0, 2)} ${clean.slice(2, 4)} ${clean.slice(4, 8)} ${clean.slice(8)}`
   return p
 }
 
+function ProveedoresCard({ proveedores, pais }: { proveedores: string; pais: string }) {
+  const list = proveedores.split(',').map(p => p.trim()).filter(Boolean)
+  if (list.length === 0) return null
+  return (
+    <div className="card" style={{ padding: 20 }}>
+      <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--n-400)', marginBottom: 10 }}>
+        Proveedores
+      </div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+        {list.map(prov => (
+          <span key={prov} style={{
+            fontSize: 13, fontWeight: 600, padding: '6px 14px',
+            borderRadius: 8, background: 'var(--n-50, #F9F9F8)',
+            color: 'var(--n-800)', border: '1px solid var(--n-150, #EDECE8)',
+          }}>
+            {prov}
+            {pais ? <span style={{ marginLeft: 6, fontSize: 12 }}>{countryFlag(pais)}</span> : null}
+          </span>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+/* ═══════════════════════════════════════════════════════
+   TRÁFICO HUB — 4-tab detail page
+   ═══════════════════════════════════════════════════════ */
 export default function TraficoDetailPage() {
   const companyId = getCookieValue('company_id') ?? 'evco'
   const { id } = useParams()
   const router = useRouter()
   const isMobile = useIsMobile()
   const { toast } = useToast()
-  const [trafico, setTrafico] = useState<any>(null)
-  const [documentos, setDocumentos] = useState<any[]>([])
-  const [entradas, setEntradas] = useState<any[]>([])
+
+  // ── State ──
+  const [trafico, setTrafico] = useState<Record<string, unknown> | null>(null)
+  const [documentos, setDocumentos] = useState<Record<string, unknown>[]>([])
+  const [entradas, setEntradas] = useState<Record<string, unknown>[]>([])
+  const [completeness, setCompleteness] = useState<Completeness | null>(null)
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<Tab>('financiero')
+  const [activeTab, setActiveTab] = useState<Tab>('resumen')
   const [missingDocs, setMissingDocs] = useState<string[]>([])
   const [uploadingDoc, setUploadingDoc] = useState<string | null>(null)
-  const [trackingCopied, setTrackingCopied] = useState(false)
-  const [porqueOpen, setPorqueOpen] = useState<string | null>(null)
-  const [rates, setRates] = useState({ dta: 0.008, iva: 0.16, tc: 17.49 })
   const [showSolicitarModal, setShowSolicitarModal] = useState(false)
   const [solicitadoOk, setSolicitadoOk] = useState(false)
   const [solicitudes, setSolicitudes] = useState<Solicitud[]>([])
-  const [showStickyBar, setShowStickyBar] = useState(false)
-  const [entradaOrigen, setEntradaOrigen] = useState<{ cve_entrada: string; fecha_llegada_mercancia: string | null; cantidad_bultos: number | null; peso_bruto: number | null; mercancia_danada: boolean; comentarios_danada: string | null } | null>(null)
+  const [rates, setRates] = useState({ dta: 0.008, iva: 0.16, tc: 17.49 })
 
-
+  // ── Upload handler ──
   const handleUpload = async (file: File | undefined, docType: string) => {
     if (!file) return
     if (file.size > 10 * 1024 * 1024) { toast('Máximo 10MB', 'error'); return }
@@ -94,114 +115,98 @@ export default function TraficoDetailPage() {
     finally { setUploadingDoc(null) }
   }
 
+  // ── Mark solicitud complete ──
   const markSolicitudCompleta = async (solicitudId: string) => {
     const now = new Date().toISOString()
     const { error: updateError } = await supabase
       .from('documento_solicitudes')
       .update({ status: 'completa', completed_at: now })
       .eq('id', solicitudId)
-
-    if (updateError) {
-      toast(`Error al actualizar: ${updateError.message}`, 'error')
-      return
-    }
-
-    // Insert notification (non-fatal)
+    if (updateError) { toast(`Error: ${updateError.message}`, 'error'); return }
     const tId = decodeURIComponent(String(id))
-    await supabase
-      .from('notifications')
-      .insert({
-        type: 'solicitud_completada',
-        title: `Solicitud completada para ${tId}`,
-        body: 'Documentos recibidos y marcados como completos',
-        company_id: companyId,
-        metadata: { trafico_id: tId, solicitud_id: solicitudId },
-      })
-
-    // Haptic feedback
+    await supabase.from('notifications').insert({
+      type: 'solicitud_completada',
+      title: `Solicitud completada para ${tId}`,
+      body: 'Documentos recibidos y marcados como completos',
+      company_id: companyId,
+      metadata: { trafico_id: tId, solicitud_id: solicitudId },
+    })
     if ('vibrate' in navigator) navigator.vibrate(50)
-
     toast('Solicitud marcada como completa', 'success')
-
-    // Remove from local state and refresh
     setSolicitudes(prev => prev.filter(s => s.id !== solicitudId))
     router.refresh()
   }
 
+  // ── Data fetch ──
   useEffect(() => {
     if (!id) return
     const tId = decodeURIComponent(String(id))
+
     Promise.all([
-      fetch(`/api/trafico/${encodeURIComponent(tId)}`).then(r => r.json()).catch(() => ({ data: null })),
-      fetch(`/api/data?table=documents&limit=200`).then(r => r.json()).catch(() => ({ data: [] })),
-    ]).then(([t, d]) => {
-      setTrafico(t.trafico ?? t.data ?? null)
-      const allDocs = d.data ?? []
-      let matched = allDocs.filter((doc: any) => doc.metadata?.trafico === tId)
-      if (!matched.length) matched = allDocs.filter((doc: any) => doc.file_url?.includes(tId))
-      setDocumentos(matched)
-      setMissingDocs(getMissingDocs(matched))
+      fetch(`/api/trafico/${encodeURIComponent(tId)}`).then(r => r.json()).catch(() => ({})),
+      fetch('/api/rates').then(r => r.json()).catch(() => ({})),
+      fetch(`/api/data?table=trafico_completeness&limit=500`).then(r => r.json()).catch(() => ({ data: [] })),
+    ]).then(([tRes, ratesRes, compRes]) => {
+      const t = tRes.trafico ?? tRes.data ?? null
+      const docs = tRes.documents ?? []
+      const ent = tRes.entradas ?? []
+      setTrafico(t)
+      setDocumentos(docs)
+      setMissingDocs(getMissingDocs(docs))
+      setEntradas(ent)
+      if (!ratesRes.error) setRates({ dta: ratesRes.dta?.rate ?? 0.008, iva: ratesRes.iva?.rate ?? 0.16, tc: ratesRes.tc?.rate ?? 17.49 })
+
+      // Match completeness row for this trafico
+      const allComp = (compRes.data ?? []) as Completeness[]
+      const match = allComp.find(c => c.trafico_id === tId) ?? null
+      setCompleteness(match)
+
       setLoading(false)
-      fetch(`/api/data?table=entradas&trafico=${encodeURIComponent(tId)}&limit=20&order_by=fecha_llegada_mercancia&order_dir=desc`)
-        .then(r => r.json()).then(ed => setEntradas(ed.data ?? [])).catch(() => {})
-      // Fetch entrada origin from real entradas table (GlobalPC)
-      supabase
-        .from('entradas')
-        .select('cve_entrada, fecha_llegada_mercancia, cantidad_bultos, peso_bruto, mercancia_danada, comentarios_danada')
-        .eq('trafico', tId)
-        .eq('company_id', companyId)
-        .limit(1)
-        .then(({ data: elData }) => {
-          if (elData && elData.length > 0) setEntradaOrigen(elData[0])
-        })
-      // Fetch active solicitudes for this tráfico
-      supabase
-        .from('documento_solicitudes')
-        .select('id, doc_types, status, solicitado_at, deadline, recipient_name')
-        .eq('trafico_id', tId)
-        .eq('company_id', companyId)
-        .not('status', 'eq', 'completa')
-        .order('solicitado_at', { ascending: false })
-        .limit(20)
-        .then(({ data: solData }) => {
-          if (solData && solData.length > 0) setSolicitudes(solData as Solicitud[])
-        })
     }).catch(() => setLoading(false))
-    fetch('/api/rates').then(r => r.json()).then(d => {
-      if (!d.error) setRates({ dta: d.dta?.rate ?? 0.008, iva: d.iva?.rate ?? 0.16, tc: d.tc?.rate ?? 17.49 })
-    }).catch(() => {})
-  }, [id])
 
-  useEffect(() => {
-    const onScroll = () => setShowStickyBar(window.scrollY > 200)
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
+    // Fetch solicitudes
+    supabase
+      .from('documento_solicitudes')
+      .select('id, doc_types, status, solicitado_at, deadline, recipient_name')
+      .eq('trafico_id', tId)
+      .eq('company_id', companyId)
+      .not('status', 'eq', 'completa')
+      .order('solicitado_at', { ascending: false })
+      .limit(20)
+      .then(({ data: solData }) => {
+        if (solData && solData.length > 0) setSolicitudes(solData as Solicitud[])
+      })
+  }, [id, companyId])
 
-  if (loading) return (
-    <div style={{ padding: 24 }}>
-      <div className="skeleton" style={{ height: 32, width: 200, marginBottom: 24 }} />
-      <div className="skeleton" style={{ height: 300, borderRadius: 12 }} />
-    </div>
-  )
-
-  if (!trafico) return (
-    <div style={{ padding: 24 }}>
-      <button onClick={() => router.push('/traficos')} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: 13 }}>
-        <ArrowLeft size={14} /> Volver a Tráficos
-      </button>
-      <p style={{ color: 'var(--text-muted)' }}>Tráfico no encontrado.</p>
-    </div>
-  )
-
-  const t = trafico
-  const isCruzado = (t.estatus || '').toLowerCase().includes('cruz')
-  const isPagado = (t.estatus || '').toLowerCase().includes('pagado')
+  // ── Derived ──
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const t = trafico as Record<string, any> | null
+  const isCruzado = t ? ((t.estatus as string) || '').toLowerCase().includes('cruz') : false
+  const isPagado = t ? ((t.estatus as string) || '').toLowerCase().includes('pagado') : false
   const docCompleteness = Math.round((documentos.length / REQUIRED_DOC_TYPES.length) * 100)
-  const pctComplete = docCompleteness
 
-  // ── 12-STEP TIMELINE ──
+  // ── Grouped docs ──
+  const groupedDocs = useMemo(() => {
+    const groups: Record<string, Record<string, unknown>[]> = {}
+    for (const doc of documentos) {
+      const docType = ((doc.document_type as string) || 'Otro').replace(/_/g, ' ')
+      if (!groups[docType]) groups[docType] = []
+      groups[docType].push(doc)
+    }
+    return groups
+  }, [documentos])
+
+  // ── Tab config ──
+  const TABS: { key: Tab; label: string; icon: React.ReactNode; badge?: number }[] = [
+    { key: 'resumen', label: 'Resumen', icon: <BarChart3 size={14} /> },
+    { key: 'documentos', label: 'Documentos', icon: <FileText size={14} />, badge: documentos.length },
+    { key: 'entradas', label: 'Entradas', icon: <Truck size={14} />, badge: entradas.length },
+    { key: 'timeline', label: 'Timeline', icon: <Clock size={14} /> },
+  ]
+
+  // ── 12-step timeline logic ──
   const getStepState = (stepNum: number): 'completed' | 'current' | 'pending' | 'blocked' => {
+    if (!t) return 'pending'
     if (isCruzado) return stepNum <= 10 ? 'completed' : stepNum === 12 ? 'pending' : 'completed'
     if (isPagado) return stepNum <= 7 ? 'completed' : stepNum === 8 ? 'current' : 'pending'
     if (t.fecha_pago) return stepNum <= 7 ? 'completed' : stepNum === 8 ? 'current' : 'pending'
@@ -210,338 +215,531 @@ export default function TraficoDetailPage() {
     return stepNum === 1 ? 'current' : 'pending'
   }
 
-  const steps = [
-    { num: 1, label: 'Documentos recibidos', detail: documentos.length > 0 ? `${documentos.length} documentos vinculados` : 'Pendiente de documentos', date: t.fecha_llegada || null },
-    { num: 2, label: 'CRUZ procesó', detail: documentos.length > 0 ? `${documentos.length} docs · Confianza: ${docCompleteness}%` : 'Disponible al recibir documentos', date: null },
-    { num: 3, label: 'Revisado y autorizado', detail: t.pedimento ? 'Autorizado · Patente 3596' : 'Disponible al procesar documentos', date: null },
-    { num: 4, label: 'COVE generado', detail: t.pedimento ? 'Generado' : 'Disponible al transmitir pedimento', date: null },
-    { num: 5, label: 'Previo', detail: 'No requerido por SAT', date: null },
-    { num: 6, label: 'Pedimento transmitido', detail: t.pedimento ? `No. ${fmtPedimento(t.pedimento)} · SAAI` : 'Disponible al transmitir pedimento', date: t.fecha_transmision || null },
-    { num: 7, label: 'Pedimento pagado', detail: t.fecha_pago ? formatAbsoluteETA(t.fecha_pago) : 'Disponible al transmitir pedimento', date: t.fecha_pago || null },
-    { num: 8, label: 'Semáforo asignado', detail: t.semaforo === 0 ? 'Verde' : t.semaforo === 1 ? 'Rojo' : 'Disponible al pagar pedimento', date: t.fecha_modulacion || null },
-    { num: 9, label: 'En cruce', detail: t.fecha_cruce ? `Ingresó: ${formatAbsoluteETA(t.fecha_cruce)}` : 'Disponible al asignar semáforo', date: t.fecha_cruce || null },
-    { num: 10, label: 'Cruzado', detail: isCruzado && t.fecha_cruce ? formatAbsoluteETA(t.fecha_cruce) : 'Disponible al iniciar cruce', date: isCruzado ? t.fecha_cruce || null : null },
-    { num: 11, label: 'En ruta', detail: fmtCarrier(t.transportista_mexicano) || 'Transportista por asignar', date: null },
-    { num: 12, label: 'Entregado', detail: t.fecha_entrega ? formatAbsoluteETA(t.fecha_entrega) : 'Disponible al confirmar cruce', date: t.fecha_entrega || null },
-  ]
+  const steps = t ? [
+    { num: 1, label: 'Documentos recibidos', detail: documentos.length > 0 ? `${documentos.length} docs vinculados` : 'Pendiente', date: t.fecha_llegada as string | null },
+    { num: 2, label: 'CRUZ procesó', detail: documentos.length > 0 ? `${documentos.length} docs · ${docCompleteness}%` : 'Pendiente', date: null },
+    { num: 3, label: 'Revisado y autorizado', detail: t.pedimento ? 'Patente 3596' : 'Pendiente', date: null },
+    { num: 4, label: 'COVE generado', detail: t.pedimento ? 'Generado' : 'Pendiente', date: null },
+    { num: 5, label: 'Previo', detail: 'No requerido', date: null },
+    { num: 6, label: 'Pedimento transmitido', detail: t.pedimento ? `${fmtPedimento(t.pedimento as string)}` : 'Pendiente', date: (t.fecha_transmision as string | null) || null },
+    { num: 7, label: 'Pedimento pagado', detail: t.fecha_pago ? formatAbsoluteETA(t.fecha_pago as string) : 'Pendiente', date: (t.fecha_pago as string | null) || null },
+    { num: 8, label: 'Semáforo asignado', detail: (t.semaforo as number) === 0 ? 'Verde' : (t.semaforo as number) === 1 ? 'Rojo' : 'Pendiente', date: (t.fecha_modulacion as string | null) || null },
+    { num: 9, label: 'En cruce', detail: t.fecha_cruce ? formatAbsoluteETA(t.fecha_cruce as string) : 'Pendiente', date: (t.fecha_cruce as string | null) || null },
+    { num: 10, label: 'Cruzado', detail: isCruzado && t.fecha_cruce ? formatAbsoluteETA(t.fecha_cruce as string) : 'Pendiente', date: isCruzado ? (t.fecha_cruce as string | null) : null },
+    { num: 11, label: 'En ruta', detail: fmtCarrier(t.transportista_mexicano as string) || 'Por asignar', date: null },
+    { num: 12, label: 'Entregado', detail: t.fecha_entrega ? formatAbsoluteETA(t.fecha_entrega as string) : 'Pendiente', date: (t.fecha_entrega as string | null) || null },
+  ] : []
 
-  // Compute duration between consecutive completed steps with dates
-  const getStepDuration = (prevIdx: number, currIdx: number): number | null => {
-    const prevDate = steps[prevIdx]?.date
-    const currDate = steps[currIdx]?.date
-    if (!prevDate || !currDate) return null
-    const prevState = getStepState(steps[prevIdx].num)
-    const currState = getStepState(steps[currIdx].num)
-    if (prevState !== 'completed' && prevState !== 'current') return null
-    if (currState !== 'completed' && currState !== 'current') return null
-    const diffMs = new Date(currDate).getTime() - new Date(prevDate).getTime()
-    if (diffMs < 0) return null
-    return Math.round(diffMs / 86400000)
-  }
+  // ── Loading ──
+  if (loading) return (
+    <div style={{ padding: 24, maxWidth: 1200, margin: '0 auto' }}>
+      <div className="skeleton" style={{ height: 32, width: 200, marginBottom: 24 }} />
+      <div className="skeleton" style={{ height: 120, borderRadius: 12, marginBottom: 16 }} />
+      <div className="skeleton" style={{ height: 300, borderRadius: 12 }} />
+    </div>
+  )
 
-  const currentStepIdx = steps.findIndex(s => getStepState(s.num) === 'current')
-  const visibleSteps = steps
+  // ── Not found ──
+  if (!t) return (
+    <div style={{ padding: 24 }}>
+      <button onClick={() => router.push('/traficos')} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: 13 }}>
+        <ArrowLeft size={14} /> Volver a Tráficos
+      </button>
+      <EmptyState icon="🔍" title="Tráfico no encontrado" description="No se encontró un tráfico con este identificador" cta={{ label: 'Ver todos los tráficos', href: '/traficos' }} />
+    </div>
+  )
 
-  const TABS: { key: Tab; label: string; badge?: number }[] = [
-    { key: 'financiero', label: 'Financiero' },
-    { key: 'transportista', label: 'Transportista' },
-    { key: 'entradas', label: 'Entradas', badge: entradas.length },
-    { key: 'rectificacion', label: 'Rectificación' },
-  ]
+  // ── Semáforo color ──
+  const semaforoColor = (t.semaforo as number) === 0 ? '#2D8540' : (t.semaforo as number) === 1 ? '#C23B22' : null
+
+  // ── Completeness data ──
+  const compScore = completeness?.score ?? docCompleteness
+  const compBlocking = completeness?.blocking_docs ?? missingDocs
+  const canFile = completeness?.can_file ?? false
+  const canCross = completeness?.can_cross ?? false
 
   return (
     <div className="page-container" style={{ padding: isMobile ? 16 : 24, maxWidth: 1200, margin: '0 auto' }}>
-      {/* Breadcrumb */}
+      {/* ═══ BREADCRUMB ═══ */}
       <button onClick={() => router.push('/traficos')} aria-label="Volver a Tráficos"
-        style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 20, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--n-400)', fontSize: 12 }}>
-        <ArrowLeft size={13} /> Tráficos → {fmtId(t.trafico)}
+        style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--n-400)', fontSize: 12, minHeight: 60 }}>
+        <ArrowLeft size={13} /> Tráficos
       </button>
 
       {/* ═══ HEADER ═══ */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24, gap: 20, flexWrap: 'wrap' }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <h1 style={{ fontFamily: 'var(--font-data)', fontSize: 28, fontWeight: 900, color: 'var(--n-900)', letterSpacing: '-0.02em', margin: 0 }}>
-              {fmtId(t.trafico)}
-            </h1>
-            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--n-500)', letterSpacing: '0.02em' }}>US → MX</span>
-            <span className={`badge ${isCruzado ? 'badge-green' : 'badge-amber'}`}>
-              <span className="badge-dot" /><span className="sr-only">Estado: </span>{t.estatus || 'En Proceso'}
-            </span>
-          </div>
-          <div style={{ marginTop: 8, fontSize: 13, color: 'var(--n-500)', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <span>{CLIENT_NAME}</span>
-            {t.proveedores && <><span>·</span><span>{t.proveedores.split(',')[0]?.trim()}</span></>}
-            {t.pais_procedencia && <><span>·</span><span>{countryFlag(t.pais_procedencia)} {t.pais_procedencia}</span></>}
-          </div>
-          {!isCruzado && t.fecha_llegada && (
-            <div style={{ marginTop: 4, fontSize: 12, color: 'var(--n-500)', fontFamily: 'var(--font-data)' }}>
-              En proceso desde {fmtDate(t.fecha_llegada)}
-            </div>
-          )}
-          {t.importe_total && (
-            <div style={{ marginTop: 6, fontFamily: 'var(--font-data)', fontSize: 20, fontWeight: 800, color: 'var(--gold-700)' }}>
-              {fmtUSD(Number(t.importe_total))} USD
-            </div>
-          )}
-          <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {missingDocs.length > 0 && !solicitadoOk && (
-              <button
-                onClick={() => setShowSolicitarModal(true)}
-                style={{
-                  width: '100%', padding: '12px 14px',
-                  fontSize: 14, fontWeight: 700,
-                  border: 'none', borderRadius: 'var(--r-md)',
-                  background: pctComplete === 0 ? '#C23B22' : '#B8953F',
-                  color: '#FFFFFF',
-                  cursor: 'pointer',
-                  minHeight: 48,
-                }}
-              >
-                Solicitar {missingDocs.length} documentos faltantes →
-              </button>
-            )}
-            {solicitadoOk && (
-              <div style={{
-                width: '100%', padding: '12px 14px', textAlign: 'center',
-                fontSize: 14, fontWeight: 700, borderRadius: 'var(--r-md)',
-                background: '#F0FDF4', color: '#16A34A', border: '1px solid #BBF7D0',
-                minHeight: 48, display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
-                ✓ Documentos solicitados
-              </div>
-            )}
-            <button onClick={() => {
-              const url = `${window.location.origin}/traficos/${encodeURIComponent(t.trafico)}`
-              navigator.clipboard.writeText(url)
-              setTrackingCopied(true); setTimeout(() => setTrackingCopied(false), 2000)
-            }} style={{
-              padding: '6px 14px',
-              fontSize: 12, fontWeight: 700,
-              border: 'var(--b-default)', borderRadius: 'var(--r-md)',
-              background: 'var(--bg-card)', cursor: 'pointer', color: 'var(--n-600)',
-              minHeight: 60,
+      <div style={{ marginBottom: 24 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+          {/* Tráfico number — large, gold, JetBrains Mono */}
+          <h1 style={{
+            fontFamily: 'var(--font-jetbrains-mono, var(--font-data))',
+            fontSize: isMobile ? 24 : 32,
+            fontWeight: 900,
+            color: 'var(--gold-700, #8B6914)',
+            letterSpacing: '-0.02em',
+            margin: 0,
+          }}>
+            {fmtId(String(t.trafico ?? ''))}
+          </h1>
+
+          {/* Company badge */}
+          <span style={{
+            fontSize: 11, fontWeight: 700, padding: '4px 10px',
+            borderRadius: 9999,
+            background: 'var(--gold-50, #FDFAEF)', color: 'var(--gold-700, #8B6914)',
+            border: '1px solid rgba(184,149,63,0.2)',
+            textTransform: 'uppercase', letterSpacing: '0.04em',
+          }}>
+            {String(t.company_id ?? companyId)}
+          </span>
+
+          {/* Status badge */}
+          <span className={`badge ${isCruzado ? 'badge-cruzado' : 'badge-proceso'}`}>
+            <span className="badge-dot" />
+            {String(t.estatus ?? 'En Proceso')}
+          </span>
+
+          {/* Semáforo indicator */}
+          {semaforoColor && (
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: 4,
+              fontSize: 11, fontWeight: 700, color: semaforoColor,
             }}>
-              {trackingCopied ? '✓ Copiado' : 'Compartir'}
-            </button>
-          </div>
+              <span style={{
+                width: 10, height: 10, borderRadius: '50%',
+                background: semaforoColor,
+                boxShadow: `0 0 6px ${semaforoColor}40`,
+              }} />
+              {(t.semaforo as number) === 0 ? 'Verde' : 'Rojo'}
+            </span>
+          )}
         </div>
+
+        {/* Subtitle */}
+        {t.descripcion_mercancia ? (
+          <p style={{ fontSize: 13, color: 'var(--n-500)', marginTop: 6, margin: '6px 0 0' }}>
+            {fmtDesc(String(t.descripcion_mercancia))}
+          </p>
+        ) : null}
       </div>
 
-      {/* ═══ MAIN LAYOUT — Timeline left, Tabs right ═══ */}
-      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'minmax(0, 280px) 1fr', gap: isMobile ? 16 : 24 }}>
-
-        {/* ── ENTRADA ORIGIN (if linked) ── */}
-        {entradaOrigen && (
-          <div style={{
-            background: '#FFFFFF', border: '1px solid #E8E5E0',
-            borderLeft: `4px solid ${entradaOrigen.mercancia_danada ? '#C23B22' : '#B8953F'}`, borderRadius: 8,
-            padding: '12px 16px', marginBottom: 12,
+      {/* ═══ TABS ═══ */}
+      <div style={{
+        display: 'flex', gap: 0, marginBottom: 20,
+        borderBottom: '2px solid var(--n-150, #EDECE8)',
+        overflowX: 'auto', WebkitOverflowScrolling: 'touch',
+        scrollbarWidth: 'none',
+      }}>
+        {TABS.map(tab => (
+          <button key={tab.key} onClick={() => setActiveTab(tab.key)} style={{
+            padding: isMobile ? '12px 14px' : '12px 20px',
+            background: 'none', border: 'none',
+            borderBottom: activeTab === tab.key ? `3px solid ${GOLD}` : '3px solid transparent',
+            cursor: 'pointer', fontSize: 13, fontWeight: activeTab === tab.key ? 700 : 500,
+            color: activeTab === tab.key ? 'var(--n-900)' : 'var(--n-400)',
+            whiteSpace: 'nowrap', marginBottom: -2,
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            minHeight: 60, transition: 'color 150ms, border-color 150ms',
           }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: '#B8953F', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>
-              Origen
-            </div>
-            <div style={{ fontSize: 13, fontWeight: 600, color: '#1A1A1A' }}>
-              Entrada <span style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>{entradaOrigen.cve_entrada}</span>
-              {entradaOrigen.cantidad_bultos != null && (
-                <span style={{ color: '#6B6B6B' }}> · {entradaOrigen.cantidad_bultos} bultos</span>
-              )}
-              {entradaOrigen.peso_bruto != null && Number(entradaOrigen.peso_bruto) > 0 && (
-                <span style={{ color: '#6B6B6B', fontFamily: 'var(--font-jetbrains-mono)' }}> · {fmtKg(entradaOrigen.peso_bruto)} kg</span>
-              )}
-            </div>
-            {entradaOrigen.fecha_llegada_mercancia && (
-              <div style={{ fontSize: 11, color: '#9C9890', fontFamily: 'var(--font-jetbrains-mono)', marginTop: 2 }}>
-                Recibida {fmtDate(entradaOrigen.fecha_llegada_mercancia)}
-              </div>
+            {tab.icon}
+            {tab.label}
+            {tab.badge !== undefined && tab.badge > 0 && (
+              <span style={{
+                fontSize: 10, fontWeight: 700, fontFamily: 'var(--font-jetbrains-mono, var(--font-data))',
+                background: activeTab === tab.key ? GOLD : 'var(--n-200)',
+                color: activeTab === tab.key ? '#FFFFFF' : 'var(--n-600)',
+                borderRadius: 9999, padding: '1px 7px', lineHeight: '16px',
+              }}>{tab.badge}</span>
             )}
-            {entradaOrigen.mercancia_danada && (
-              <div style={{ fontSize: 12, fontWeight: 600, color: '#C23B22', marginTop: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
-                {'\uD83D\uDD34'} Mercancía dañada{entradaOrigen.comentarios_danada ? `: ${entradaOrigen.comentarios_danada}` : ''}
+          </button>
+        ))}
+      </div>
+
+      {/* ═══════════════════════════════════════════
+          TAB 1 — RESUMEN
+         ═══════════════════════════════════════════ */}
+      {activeTab === 'resumen' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+          {/* ── Key Stats Row ── */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)',
+            gap: 12,
+          }}>
+            {([
+              { label: 'Valor', value: t.importe_total ? fmtUSD(Number(t.importe_total)) + ' USD' : '—', mono: true },
+              { label: 'Peso Bruto', value: t.peso_bruto ? fmtKg(Number(t.peso_bruto)) + ' kg' : '—', mono: true },
+              { label: 'Bultos', value: String(t.bultos ?? t.cantidad_bultos ?? '—'), mono: true },
+              { label: 'Fecha Llegada', value: t.fecha_llegada ? fmtDate(String(t.fecha_llegada)) : '—', mono: true },
+              { label: 'Aduana', value: String(t.aduana ?? (t.oficina ? t.oficina : '240 · Nuevo Laredo')), mono: false },
+              { label: 'Régimen', value: String(t.regimen ?? 'A1 · Definitivo'), mono: false },
+            ] as { label: string; value: string; mono: boolean }[]).map(stat => (
+              <div key={stat.label} className="card" style={{ padding: '14px 16px' }}>
+                <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--n-400)', marginBottom: 4 }}>
+                  {stat.label}
+                </div>
+                <div style={{
+                  fontSize: 15, fontWeight: 700, color: 'var(--n-900)',
+                  fontFamily: stat.mono ? 'var(--font-jetbrains-mono, var(--font-data))' : undefined,
+                }}>
+                  {String(stat.value)}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* ── Completeness Bar ── */}
+          <div className="card" style={{ padding: 20 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--n-900)' }}>
+                Completitud del Tráfico
+              </div>
+              <span style={{
+                fontSize: 16, fontWeight: 800,
+                fontFamily: 'var(--font-jetbrains-mono, var(--font-data))',
+                color: compScore >= 80 ? '#2D8540' : compScore >= 50 ? '#C47F17' : '#C23B22',
+              }}>
+                {compScore}%
+              </span>
+            </div>
+
+            {/* Progress bar */}
+            <div style={{ height: 8, background: 'var(--n-100)', borderRadius: 4, overflow: 'hidden', marginBottom: 16 }}>
+              <div style={{
+                width: `${Math.min(compScore, 100)}%`, height: '100%',
+                background: compScore >= 80 ? '#2D8540' : compScore >= 50 ? '#C47F17' : '#C23B22',
+                borderRadius: 4, transition: 'width 0.6s ease',
+              }} />
+            </div>
+
+            {/* Can file / Can cross indicators */}
+            <div style={{ display: 'flex', gap: 16, marginBottom: (compBlocking?.length ?? 0) > 0 ? 16 : 0, flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{
+                  width: 20, height: 20, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 11, fontWeight: 700,
+                  background: canFile ? '#ECFDF3' : '#FEF2F2',
+                  color: canFile ? '#2D8540' : '#C23B22',
+                  border: canFile ? '1px solid #BBF7D0' : '1px solid rgba(194,59,34,0.2)',
+                }}>
+                  {canFile ? '✓' : '✗'}
+                </span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--n-700)' }}>
+                  Listo para despachar
+                </span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{
+                  width: 20, height: 20, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 11, fontWeight: 700,
+                  background: canCross ? '#ECFDF3' : '#FEF2F2',
+                  color: canCross ? '#2D8540' : '#C23B22',
+                  border: canCross ? '1px solid #BBF7D0' : '1px solid rgba(194,59,34,0.2)',
+                }}>
+                  {canCross ? '✓' : '✗'}
+                </span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--n-700)' }}>
+                  Listo para cruce
+                </span>
+              </div>
+            </div>
+
+            {/* Blocking docs in red */}
+            {(compBlocking?.length ?? 0) > 0 && (
+              <div style={{ padding: '10px 14px', background: '#FEF2F2', border: '1px solid rgba(194,59,34,0.15)', borderRadius: 8 }}>
+                <div style={{ fontSize: 11, fontWeight: 800, color: '#991B1B', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>
+                  Documentos Bloqueantes ({compBlocking?.length ?? 0})
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                  {(compBlocking ?? []).map(doc => (
+                    <span key={doc} style={{
+                      fontSize: 11, fontWeight: 600, padding: '3px 10px',
+                      borderRadius: 9999, background: '#FFFFFF',
+                      color: '#991B1B', border: '1px solid rgba(194,59,34,0.2)',
+                    }}>
+                      {doc}
+                    </span>
+                  ))}
+                </div>
               </div>
             )}
           </div>
-        )}
 
-        {/* ── 12-STEP TIMELINE ── */}
-        <div className="card" style={{ padding: 20, alignSelf: 'start' }}>
-          <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--n-400)', marginBottom: 16 }}>
-            Estado del Tráfico
-          </div>
-          <ol style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-            {visibleSteps.map((step, i) => {
-              const state = getStepState(step.num)
-              const isLast = i === visibleSteps.length - 1
-              const dotColor = state === 'completed' ? GOLD : state === 'current' ? GOLD : state === 'blocked' ? '#DC2626' : 'var(--n-200)'
-              const textColor = state === 'completed' ? 'var(--n-900)' : state === 'current' ? 'var(--n-900)' : state === 'blocked' ? '#DC2626' : 'var(--n-400)'
-              const lineColor = state === 'completed' ? GOLD : 'var(--n-150)'
+          {/* ── Proveedores ── */}
+          <ProveedoresCard proveedores={String(t.proveedores ?? '')} pais={String(t.pais_procedencia ?? '')} />
 
-              // Special color for semaforo
-              const detailColor = step.num === 8 && step.detail === 'Verde' ? '#16A34A'
-                : step.num === 8 && step.detail === 'Rojo' ? '#DC2626'
-                : step.num === 10 && state === 'completed' ? '#0D9488' // teal = certainty
-                : 'var(--n-500)'
+          {/* ── 12-Step Timeline ── */}
+          <div className="card" style={{ padding: 20 }}>
+            <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--n-400)', marginBottom: 16 }}>
+              Estado del Tráfico
+            </div>
+            <ol style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+              {steps.map((step, i) => {
+                const state = getStepState(step.num)
+                const isLast = i === steps.length - 1
+                const dotColor = state === 'completed' ? GOLD : state === 'current' ? GOLD : state === 'blocked' ? '#DC2626' : 'var(--n-200)'
+                const textColor = state === 'completed' ? 'var(--n-900)' : state === 'current' ? 'var(--n-900)' : state === 'blocked' ? '#DC2626' : 'var(--n-400)'
+                const lineColor = state === 'completed' ? GOLD : 'var(--n-150)'
+                const detailColor = step.num === 8 && step.detail === 'Verde' ? '#2D8540'
+                  : step.num === 8 && step.detail === 'Rojo' ? '#C23B22'
+                  : step.num === 10 && state === 'completed' ? '#0D9488'
+                  : 'var(--n-500)'
 
-              // Duration since previous step with a date
-              let durationLabel: string | null = null
-              if (i > 0) {
-                // Find the nearest previous step that has a date
-                for (let prev = i - 1; prev >= 0; prev--) {
-                  const days = getStepDuration(prev, i)
-                  if (days !== null) {
-                    if (days === 0) durationLabel = 'mismo día'
-                    else durationLabel = `${days} día${days !== 1 ? 's' : ''}`
-                    break
-                  }
-                }
-              }
-
-              return (
-                <React.Fragment key={step.num}>
-                  {durationLabel && (
-                    <li style={{ display: 'flex', gap: 12, paddingBottom: 4 }} aria-hidden>
-                      <div style={{ width: 20, flexShrink: 0, display: 'flex', justifyContent: 'center' }}>
-                        <div style={{ width: 2, height: '100%', background: lineColor }} />
-                      </div>
-                      <div style={{ fontSize: 10, color: '#9C9890', fontFamily: 'var(--font-jetbrains-mono, var(--font-data))', lineHeight: 1.4 }}>
-                        {'\u2514\u2500'} {durationLabel} {'\u2500\u2518'}
-                      </div>
-                    </li>
-                  )}
-                  <li style={{ display: 'flex', gap: 12, position: 'relative', paddingBottom: isLast ? 0 : 16, minHeight: 60 }}>
-                    {/* Dot + line */}
+                return (
+                  <li key={step.num} style={{ display: 'flex', gap: 12, position: 'relative', paddingBottom: isLast ? 0 : 14, minHeight: 44 }}>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 20, flexShrink: 0 }}>
                       <div style={{
                         width: state === 'current' ? 14 : 10, height: state === 'current' ? 14 : 10,
                         borderRadius: '50%', flexShrink: 0,
                         background: state === 'pending' ? 'transparent' : dotColor,
-                        border: state === 'pending' ? `2px solid var(--n-200)` : 'none',
+                        border: state === 'pending' ? '2px solid var(--n-200)' : 'none',
                         animation: state === 'current' ? 'pulse-dot 2s ease-in-out infinite' : undefined,
                       }} />
                       {!isLast && <div style={{ width: 2, flex: 1, background: lineColor, marginTop: 4 }} />}
                     </div>
-                    {/* Content */}
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 13, fontWeight: 700, color: textColor, lineHeight: 1.3 }}>
                         {step.num}. {step.label}
                         {step.num === 10 && state === 'completed' && ' ✅'}
-                        {step.num === 12 && state === 'completed' && ' ✅'}
                       </div>
-                      <div style={{ fontSize: 11, color: detailColor, marginTop: 2, fontFamily: step.num === 6 ? 'var(--font-data)' : undefined }}>
+                      <div style={{
+                        fontSize: 11, color: detailColor, marginTop: 2,
+                        fontFamily: step.num === 6 || step.num === 7 || step.num === 9 ? 'var(--font-jetbrains-mono, var(--font-data))' : undefined,
+                      }}>
                         {step.detail}
                       </div>
                     </div>
                   </li>
-                </React.Fragment>
-              )
-            })}
-          </ol>
-          {/* Timeline always expanded per V6 spec */}
-        </div>
-
-        {/* ── RIGHT PANEL: Documents (always visible) + Tabs ── */}
-        <div>
-          {/* ── DOCUMENTOS — always visible above tabs ── */}
-          <div className="card" style={{ padding: 20, marginBottom: 20 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-              <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--n-900)' }}>
-                Documentos ({documentos.length}/{REQUIRED_DOC_TYPES.length})
-              </div>
-              <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--n-600)', fontFamily: 'var(--font-data)' }}>{docCompleteness}%</span>
-            </div>
-            {/* Completeness bar */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-              <div style={{ flex: 1, height: 6, background: 'var(--n-100)', borderRadius: 3, overflow: 'hidden' }}>
-                <div style={{ width: `${docCompleteness}%`, height: '100%', background: GOLD, borderRadius: 3, transition: 'width 0.6s ease' }} />
-              </div>
-            </div>
-
-            {/* Missing docs with urgency tiers */}
-            {missingDocs.length > 0 && (() => {
-              const implicitDeadline = t.fecha_llegada
-                ? new Date(new Date(t.fecha_llegada).getTime() + 14 * 86400000).toISOString()
-                : null
-              const urgency = getDocUrgency(implicitDeadline)
-              const isOverdue = implicitDeadline ? Math.ceil((new Date(implicitDeadline).getTime() - Date.now()) / 86400000) < 0 : false
-
-              return (
-                <div style={{ padding: '12px 16px', background: isOverdue ? 'rgba(194,59,34,0.04)' : 'var(--danger-bg)', border: '1px solid rgba(220,38,38,0.15)', borderRadius: 'var(--r-md)', marginBottom: 16 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                    <div style={{ fontSize: 11, fontWeight: 800, color: '#991B1B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Documentos Faltantes</div>
-                    {urgency.label && (
-                      <div style={{ fontSize: 11, fontWeight: 700, color: urgency.color, fontFamily: 'var(--font-data)' }}>{urgency.label}</div>
-                    )}
-                  </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(140px, 1fr))', gap: 6 }}>
-                    {missingDocs.map(doc => (
-                      <label key={doc} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4, padding: '10px 12px', borderRadius: 'var(--r-md)', borderLeft: `4px solid ${urgency.color}`, border: `2px dashed rgba(220,38,38,0.3)`, borderLeftWidth: 4, borderLeftStyle: 'solid', borderLeftColor: urgency.color, background: isOverdue ? 'rgba(194,59,34,0.04)' : 'white', cursor: 'pointer', fontSize: isMobile ? 14 : 12, fontWeight: 600, color: '#991B1B', minHeight: 60, width: '100%' }}>
-                        {uploadingDoc === doc ? <span style={{ color: GOLD }}>Subiendo...</span> : (
-                          <>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                              <Upload size={isMobile ? 16 : 12} />
-                              {doc}
-                            </div>
-                            <input type="file" accept=".pdf,.jpg,.jpeg,.png,.xml" style={{ display: 'none' }} onChange={e => handleUpload(e.target.files?.[0], doc)} />
-                          </>
-                        )}
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              )
-            })()}
-
-            {/* Present docs */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 8 }}>
-              {documentos.map((doc: any, i: number) => (
-                <div key={i} style={{ padding: '12px 14px', background: 'var(--bg-card)', border: '1px solid #BBF7D0', borderRadius: 'var(--r-md)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ color: '#16A34A', fontSize: 14 }}>✅</span>
-                    <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--n-800)' }}>{(doc.document_type || 'Documento').replace(/_/g, ' ')}</span>
-                  </div>
-                  {doc.file_url && <a href={doc.file_url} target="_blank" rel="noopener noreferrer" style={{ fontSize: 11, color: GOLD, fontWeight: 700, textDecoration: 'none' }}>Ver →</a>}
-                </div>
-              ))}
-            </div>
-            {documentos.length === 0 && missingDocs.length === 0 && (
-              <div style={{ padding: 32, textAlign: 'center', color: 'var(--n-400)' }}>Documentos pendientes de sincronización</div>
-            )}
+                )
+              })}
+            </ol>
           </div>
 
-          {/* ── ENTRADAS — embedded sub-section ── */}
-          {entradas.length > 0 && (
-            <div className="card" style={{ padding: 20, marginBottom: 20 }}>
-              <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--n-900)', marginBottom: 12 }}>
-                Entradas ({entradas.length})
-              </div>
-              <div style={{ border: '1px solid var(--n-150)', borderRadius: 'var(--r-md)', overflow: 'hidden' }}>
-                {entradas.map((e: any, idx: number) => {
-                  const hasIncidencia = e.incidencia || e.estatus_entrada === 'incidencia'
-                  return (
-                    <div key={e.cve_entrada}
-                      style={{
-                        padding: '10px 16px',
-                        borderBottom: idx < entradas.length - 1 ? '1px solid var(--n-150)' : 'none',
-                        borderLeft: hasIncidencia ? '3px solid #DC2626' : '3px solid transparent',
-                        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                        minHeight: 60,
+          {/* ── Financiero summary ── */}
+          {Number(t.importe_total) > 0 && (() => {
+            const val = Number(t.importe_total) || 0
+            const tc = Number(t.tipo_cambio) || 0
+            const valMXN = val * tc
+            const dta = Math.round(valMXN * rates.dta)
+            const igi = 0
+            const ivaBase = valMXN + dta + igi
+            const iva = Math.round(ivaBase * rates.iva)
+            const total = dta + igi + iva
+
+            return (
+              <div className="card" style={{ padding: 20 }}>
+                <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--n-400)', marginBottom: 12 }}>
+                  Resumen Financiero
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12 }}>
+                  {[
+                    { label: 'Valor Factura', value: fmtUSD(val) + ' USD' },
+                    { label: 'Tipo de Cambio', value: tc ? `$${tc.toFixed(4)} MXN/USD` : '—' },
+                    { label: 'DTA', value: val && tc ? fmtMXNInt(dta) + ' MXN' : '—' },
+                    { label: 'IGI', value: '$0 MXN (T-MEC)' },
+                    { label: 'IVA (16%)', value: val && tc ? fmtMXNInt(iva) + ' MXN' : '—' },
+                    { label: 'Total Contribuciones', value: val && tc ? fmtMXNInt(total) + ' MXN' : '—', highlight: true },
+                  ].map(row => (
+                    <div key={row.label} style={{
+                      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                      padding: '8px 12px', borderRadius: 6,
+                      background: row.highlight ? 'var(--gold-50, #FDFAEF)' : 'var(--n-50, #F9F9F8)',
+                    }}>
+                      <span style={{ fontSize: 12, color: 'var(--n-600)' }}>{row.label}</span>
+                      <span style={{
+                        fontSize: 13, fontWeight: 700,
+                        fontFamily: 'var(--font-jetbrains-mono, var(--font-data))',
+                        color: row.highlight ? 'var(--gold-700, #8B6914)' : 'var(--n-900)',
                       }}>
-                      <div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <span style={{ fontWeight: 700, fontSize: 14, fontFamily: 'var(--font-data)' }}>{e.cve_entrada}</span>
-                          <span style={{ fontSize: 12, color: 'var(--n-400)', fontFamily: 'var(--font-data)' }}>{fmtDate(e.fecha_llegada_mercancia)}</span>
+                        {row.value}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ marginTop: 8, fontSize: 11, color: 'var(--n-400)' }}>
+                  Estimado · Los montos oficiales se confirman tras la transmisión del pedimento
+                </div>
+              </div>
+            )
+          })()}
+
+          {/* ── Transportista ── */}
+          {(t.transportista_mexicano || t.transportista_extranjero) ? (
+            <div className="card" style={{ padding: 20 }}>
+              <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--n-400)', marginBottom: 12 }}>
+                Transporte
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12 }}>
+                <div>
+                  <div style={{ fontSize: 11, color: 'var(--n-400)', marginBottom: 2 }}>Transportista MX</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--n-900)' }}>{fmtCarrier(t.transportista_mexicano as string) || 'Por asignar'}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 11, color: 'var(--n-400)', marginBottom: 2 }}>Transportista EXT</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--n-900)' }}>{fmtCarrier(t.transportista_extranjero as string) || 'Por asignar'}</div>
+                </div>
+              </div>
+            </div>
+          ) : null}
+        </div>
+      )}
+
+      {/* ═══════════════════════════════════════════
+          TAB 2 — DOCUMENTOS
+         ═══════════════════════════════════════════ */}
+      {activeTab === 'documentos' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {/* Solicitar button */}
+          {missingDocs.length > 0 && !solicitadoOk && (
+            <button
+              onClick={() => setShowSolicitarModal(true)}
+              style={{
+                width: '100%', padding: '14px 16px',
+                fontSize: 14, fontWeight: 700,
+                border: 'none', borderRadius: 8,
+                background: docCompleteness === 0 ? '#C23B22' : '#B8953F',
+                color: '#FFFFFF', cursor: 'pointer', minHeight: 60,
+              }}
+            >
+              Solicitar {missingDocs.length} documentos faltantes →
+            </button>
+          )}
+          {solicitadoOk && (
+            <div style={{
+              width: '100%', padding: '14px 16px', textAlign: 'center',
+              fontSize: 14, fontWeight: 700, borderRadius: 8,
+              background: '#ECFDF3', color: '#2D8540', border: '1px solid #BBF7D0',
+              minHeight: 60, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              ✓ Documentos solicitados
+            </div>
+          )}
+
+          {/* Missing docs upload zone */}
+          {missingDocs.length > 0 && (
+            <div className="card" style={{ padding: 20 }}>
+              <div style={{ fontSize: 11, fontWeight: 800, color: '#991B1B', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12 }}>
+                Documentos Faltantes
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(160px, 1fr))', gap: 8 }}>
+                {missingDocs.map(doc => (
+                  <label key={doc} style={{
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                    gap: 4, padding: '12px 14px', borderRadius: 8,
+                    border: '2px dashed rgba(220,38,38,0.3)', borderLeft: '4px solid #C23B22',
+                    background: '#FEF2F2', cursor: 'pointer', fontSize: 12, fontWeight: 600,
+                    color: '#991B1B', minHeight: 60, width: '100%',
+                  }}>
+                    {uploadingDoc === doc ? <span style={{ color: GOLD }}>Subiendo...</span> : (
+                      <>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <Upload size={14} />
+                          {doc}
                         </div>
-                        <div style={{ fontSize: 12, color: 'var(--n-500)', marginTop: 2 }}>
-                          {fmtDesc(e.descripcion_mercancia || e.descripcion || '') || <span style={{ color: 'var(--n-400)', fontStyle: 'italic', fontSize: 11 }}>Descripción pendiente</span>}
-                          {e.peso_bruto && <span style={{ marginLeft: 8, fontFamily: 'var(--font-data)' }}>{fmtKg(e.peso_bruto)}</span>}
+                        <input type="file" accept=".pdf,.jpg,.jpeg,.png,.xml" style={{ display: 'none' }} onChange={e => handleUpload(e.target.files?.[0], doc)} />
+                      </>
+                    )}
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Grouped existing docs */}
+          {Object.keys(groupedDocs).length > 0 ? (
+            Object.entries(groupedDocs).map(([docType, docs]) => (
+              <div key={docType} className="card" style={{ padding: 20 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                  <span style={{ fontSize: 14, fontWeight: 800, color: 'var(--n-900)' }}>{docType}</span>
+                  <span style={{
+                    fontSize: 10, fontWeight: 700, fontFamily: 'var(--font-jetbrains-mono, var(--font-data))',
+                    background: '#ECFDF3', color: '#2D8540',
+                    borderRadius: 9999, padding: '1px 7px',
+                  }}>{docs.length}</span>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {docs.map((doc, i) => {
+                    const name = (doc.metadata as Record<string, unknown>)?.original_name as string || (doc.document_type as string) || 'Documento'
+                    const uploadDate = doc.created_at ? fmtDate(doc.created_at as string) : null
+                    return (
+                      <div key={i} style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                        padding: '10px 14px', background: 'var(--n-50, #F9F9F8)',
+                        borderRadius: 8, border: '1px solid #BBF7D0',
+                        minHeight: 48,
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+                          <span style={{ color: '#2D8540', fontSize: 14, flexShrink: 0 }}>✅</span>
+                          <div style={{ minWidth: 0 }}>
+                            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--n-800)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {name}
+                            </div>
+                            {uploadDate && (
+                              <div style={{ fontSize: 11, color: 'var(--n-400)', fontFamily: 'var(--font-jetbrains-mono, var(--font-data))' }}>
+                                {uploadDate}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        {doc.file_url ? (
+                          <a href={String(doc.file_url)} target="_blank" rel="noopener noreferrer"
+                            style={{ fontSize: 11, color: GOLD, fontWeight: 700, textDecoration: 'none', flexShrink: 0, minHeight: 44, display: 'flex', alignItems: 'center', paddingLeft: 8 }}>
+                            Ver →
+                          </a>
+                        ) : null}
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            ))
+          ) : missingDocs.length === 0 ? (
+            <EmptyState icon="📄" title="Sin documentos" description="Los documentos vinculados a este tráfico aparecerán aquí" />
+          ) : null}
+
+          {/* Active solicitudes */}
+          {solicitudes.length > 0 && (
+            <div className="card" style={{ padding: 20 }}>
+              <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--n-900)', marginBottom: 12 }}>
+                Solicitudes activas ({solicitudes.length})
+              </div>
+              <div style={{ border: '1px solid var(--n-150)', borderRadius: 8, overflow: 'hidden' }}>
+                {solicitudes.map((sol, idx) => {
+                  const isPastDeadline = sol.deadline ? new Date(sol.deadline) < new Date() : false
+                  const docCount = Array.isArray(sol.doc_types) ? sol.doc_types.length : 0
+                  return (
+                    <div key={sol.id} style={{
+                      padding: '10px 16px',
+                      borderBottom: idx < solicitudes.length - 1 ? '1px solid var(--n-150)' : 'none',
+                      borderLeft: isPastDeadline ? '3px solid #C23B22' : '3px solid #C47F17',
+                      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                      minHeight: 60, gap: 12,
+                    }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--n-900)' }}>
+                          {docCount} documento{docCount !== 1 ? 's' : ''}
+                        </div>
+                        <div style={{ fontSize: 11, color: 'var(--n-500)', fontFamily: 'var(--font-jetbrains-mono, var(--font-data))', marginTop: 2 }}>
+                          Solicitado {fmtDate(sol.solicitado_at)}
+                          {sol.deadline && <> · Plazo: {fmtDate(sol.deadline)}</>}
                         </div>
                       </div>
-                      <div>
-                        {hasIncidencia ? (
-                          <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 'var(--r-full, 9999px)', background: '#FEF2F2', color: '#991B1B', border: '1px solid rgba(220,38,38,0.2)' }}>Incidencia</span>
-                        ) : (
-                          <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 'var(--r-full, 9999px)', background: '#F0FDF4', color: '#16A34A', border: '1px solid #BBF7D0' }}>OK</span>
-                        )}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                        <span style={{
+                          fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 9999,
+                          background: isPastDeadline ? '#FEF2F2' : '#FFFBEB',
+                          color: isPastDeadline ? '#991B1B' : '#92400E',
+                          border: isPastDeadline ? '1px solid rgba(220,38,38,0.2)' : '1px solid rgba(196,127,23,0.2)',
+                        }}>
+                          {isPastDeadline ? 'Vencido' : sol.status === 'solicitado' ? 'Solicitado' : sol.status}
+                        </span>
+                        <button onClick={() => markSolicitudCompleta(sol.id)} style={{
+                          fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 8,
+                          background: '#ECFDF3', color: '#2D8540', border: '1px solid #BBF7D0',
+                          cursor: 'pointer', minHeight: 60, whiteSpace: 'nowrap',
+                        }}>
+                          Marcar recibido ✓
+                        </button>
                       </div>
                     </div>
                   )
@@ -549,275 +747,94 @@ export default function TraficoDetailPage() {
               </div>
             </div>
           )}
-
-          {/* ── TABS — secondary data below documents ── */}
-          <div style={{ display: 'flex', gap: 2, marginBottom: 12, borderBottom: '1px solid var(--n-150)', overflow: 'auto' }}>
-            {TABS.map(tab => (
-              <button key={tab.key} onClick={() => setActiveTab(tab.key)} style={{
-                padding: '8px 16px', background: 'none', border: 'none',
-                borderBottom: activeTab === tab.key ? `2px solid ${GOLD}` : '2px solid transparent',
-                cursor: 'pointer', fontSize: 13, fontWeight: activeTab === tab.key ? 700 : 500,
-                color: activeTab === tab.key ? 'var(--n-900)' : 'var(--n-400)',
-                whiteSpace: 'nowrap', marginBottom: -1,
-                display: 'inline-flex', alignItems: 'center', gap: 6,
-              }}>
-                {tab.label}
-                {tab.badge !== undefined && tab.badge > 0 && (
-                  <span style={{
-                    fontSize: 10, fontWeight: 700, fontFamily: 'var(--font-data)',
-                    background: activeTab === tab.key ? GOLD : 'var(--n-200)',
-                    color: activeTab === tab.key ? '#FFFFFF' : 'var(--n-600)',
-                    borderRadius: 9999, padding: '1px 6px', lineHeight: '16px',
-                  }}>{tab.badge}</span>
-                )}
-              </button>
-            ))}
-          </div>
-
-          {/* TAB 2 — FINANCIERO */}
-          {activeTab === 'financiero' && (
-            <div>
-              {t.pedimento && (t.semaforo === 0 || !t.semaforo) && (
-                <div style={{ padding: '10px 16px', background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: 'var(--r-md)', marginBottom: 16, fontSize: 13, fontWeight: 700, color: '#14532D' }}>
-                  T-MEC APLICADO ✅ · IGI: $0
-                </div>
-              )}
-              <div className="card" style={{ overflow: 'hidden' }}>
-                {(() => {
-                  const val = Number(t.importe_total) || 0
-                  const tc = Number(t.tipo_cambio) || 0
-                  const valMXN = val * tc
-                  const dta = Math.round(valMXN * rates.dta)
-                  const igi = 0 // T-MEC
-                  const ivaBase = valMXN + dta + igi
-                  const iva = Math.round(ivaBase * rates.iva)
-                  const total = dta + igi + iva
-
-                  const hasTmec = t.pedimento && (t.semaforo === 0 || !t.semaforo)
-                  const tmecNote = hasTmec ? ' · Estimado ahorro T-MEC: ~' + fmtMXNInt(Math.round(valMXN * 0.05)) : ''
-                  const pendingMsg = 'Disponible al transmitir pedimento'
-                  const rows = [
-                    { key: 'valor', label: 'Valor Aduana', value: val ? `${fmtUSD(val)} USD` : pendingMsg, porque: val ? `Valor declarado en factura comercial: ${fmtUSD(val)}. Convertido a MXN: ${fmtMXNInt(valMXN)} (TC ${tc.toFixed(4)}).` : null, pending: !val },
-                    { key: 'tc', label: 'Tipo de Cambio', value: tc ? `$${tc.toFixed(4)} MXN/USD` : pendingMsg, porque: tc ? `Tipo de cambio Banxico vigente al momento de pago del pedimento.` : null, pending: !tc },
-                    { key: 'dta', label: 'DTA', value: val && tc ? `${fmtMXNInt(dta)} MXN${tmecNote}` : pendingMsg, porque: val && tc ? `DTA = Valor aduana MXN × 0.8% = ${fmtMXNInt(valMXN)} × 0.008 = ${fmtMXNInt(dta)} MXN. Régimen ${t.regimen || 'A1'}.` : null, pending: !(val && tc) },
-                    { key: 'igi', label: 'IGI', value: '$0 MXN (T-MEC)', porque: `IGI exento porque: proveedor USA · certificado T-MEC vigente. Sin T-MEC: estimado ${fmtMXNInt(Math.round(valMXN * 0.05))} MXN (5%).`, pending: false },
-                    { key: 'iva', label: 'IVA (16%)', value: val && tc ? `${fmtMXNInt(iva)} MXN` : pendingMsg, porque: val && tc ? `IVA = 16% × (Valor aduana + DTA + IGI) = 16% × (${fmtMXNInt(valMXN)} + ${fmtMXNInt(dta)} + $0) = ${fmtMXNInt(iva)} MXN. Base ≠ factura.` : null, pending: !(val && tc) },
-                    { key: 'total', label: 'Total Contribuciones', value: val && tc ? `${fmtMXNInt(total)} MXN` : pendingMsg, porque: val && tc ? `DTA ${fmtMXNInt(dta)} + IGI $0 + IVA ${fmtMXNInt(iva)} = ${fmtMXNInt(total)} MXN total.` : null, pending: !(val && tc) },
-                  ]
-
-                  return (
-                    <table className="data-table" style={{ fontSize: 13 }}>
-                      <thead><tr><th scope="col">Concepto</th><th scope="col" style={{ textAlign: 'right' }}>Monto</th><th scope="col" style={{ width: 40 }}></th></tr></thead>
-                      <tbody>
-                        {rows.map(r => (
-                          <React.Fragment key={r.key}>
-                            <tr onClick={() => setPorqueOpen(porqueOpen === r.key ? null : r.key)} style={{ cursor: r.porque ? 'pointer' : undefined }}>
-                              <td style={{ color: 'var(--n-700)' }}>{r.label}</td>
-                              <td style={{ textAlign: 'right', fontFamily: r.pending ? undefined : 'var(--font-data)', fontWeight: r.pending ? 400 : 700, color: r.pending ? 'var(--n-400)' : r.key === 'total' ? GOLD : 'var(--n-900)', fontStyle: r.pending ? 'italic' : undefined, fontSize: r.pending ? 12 : undefined }}>{r.value}</td>
-                              <td style={{ textAlign: 'center' }}>
-                                {r.porque && <span style={{ fontSize: 11, color: porqueOpen === r.key ? GOLD : 'var(--n-300)', fontWeight: 700 }}>?</span>}
-                              </td>
-                            </tr>
-                            {porqueOpen === r.key && r.porque && (
-                              <tr>
-                                <td colSpan={3} style={{ background: 'var(--gold-50)', padding: '10px 14px', fontSize: 12, color: 'var(--n-700)', lineHeight: 1.6, borderLeft: `3px solid ${GOLD}` }}>
-                                  {r.porque}
-                                </td>
-                              </tr>
-                            )}
-                          </React.Fragment>
-                        ))}
-                      </tbody>
-                    </table>
-                  )
-                })()}
-              </div>
-              <div style={{ marginTop: 8, fontSize: 11, color: 'var(--n-400)' }}>
-                Estimado · Los montos oficiales se confirman tras la transmisión del pedimento
-              </div>
-            </div>
-          )}
-
-          {/* TAB 3 — TRANSPORTISTA */}
-          {activeTab === 'transportista' && (
-            <div className="card" style={{ padding: 20 }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-                <div>
-                  <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--n-400)', marginBottom: 4 }}>Transportista MX</div>
-                  <div style={{ fontSize: 15, fontWeight: fmtCarrier(t.transportista_mexicano) ? 700 : 400, color: fmtCarrier(t.transportista_mexicano) ? 'var(--n-900)' : 'var(--n-400)', fontStyle: fmtCarrier(t.transportista_mexicano) ? undefined : 'italic' }}>{fmtCarrier(t.transportista_mexicano) || 'Por asignar'}</div>
-                </div>
-                <div>
-                  <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--n-400)', marginBottom: 4 }}>Transportista EXT</div>
-                  <div style={{ fontSize: 15, fontWeight: fmtCarrier(t.transportista_extranjero) ? 700 : 400, color: fmtCarrier(t.transportista_extranjero) ? 'var(--n-900)' : 'var(--n-400)', fontStyle: fmtCarrier(t.transportista_extranjero) ? undefined : 'italic' }}>{fmtCarrier(t.transportista_extranjero) || 'Por asignar'}</div>
-                </div>
-                {t.contenedor && (
-                  <div>
-                    <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--n-400)', marginBottom: 4 }}>Contenedor</div>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--n-900)', fontFamily: 'var(--font-data)' }}>{t.contenedor}</div>
-                  </div>
-                )}
-                {t.fecha_cruce && (
-                  <div>
-                    <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--n-400)', marginBottom: 4 }}>Cruce</div>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: '#0D9488', fontFamily: 'var(--font-data)' }}>{formatAbsoluteETA(t.fecha_cruce)}</div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* TAB — ENTRADAS */}
-          {activeTab === 'entradas' && (
-            entradas.length > 0 ? (
-              <div className="card" style={{ padding: 20 }}>
-                <div style={{ border: '1px solid var(--n-150)', borderRadius: 'var(--r-md)', overflow: 'hidden' }}>
-                  {entradas.map((e: any, idx: number) => {
-                    const hasIncidencia = e.incidencia || e.estatus_entrada === 'incidencia' || e.mercancia_danada || e.tiene_faltantes
-                    return (
-                      <div key={e.cve_entrada}
-                        style={{
-                          padding: '10px 16px',
-                          borderBottom: idx < entradas.length - 1 ? '1px solid var(--n-150)' : 'none',
-                          borderLeft: hasIncidencia ? '3px solid #DC2626' : '3px solid transparent',
-                          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                          minHeight: 60,
-                        }}>
-                        <div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <span style={{ fontWeight: 700, fontSize: 14, fontFamily: 'var(--font-data)' }}>{e.cve_entrada}</span>
-                            <span style={{ fontSize: 12, color: 'var(--n-400)', fontFamily: 'var(--font-data)' }}>{fmtDate(e.fecha_llegada_mercancia)}</span>
-                          </div>
-                          <div style={{ fontSize: 12, color: 'var(--n-500)', marginTop: 2 }}>
-                            {fmtDesc(e.descripcion_mercancia || e.descripcion || '') || <span style={{ color: 'var(--n-400)', fontStyle: 'italic', fontSize: 11 }}>Descripción pendiente</span>}
-                            {e.peso_bruto && <span style={{ marginLeft: 8, fontFamily: 'var(--font-data)' }}>{fmtKg(e.peso_bruto)}</span>}
-                          </div>
-                        </div>
-                        <div>
-                          {hasIncidencia ? (
-                            <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 'var(--r-full, 9999px)', background: '#FEF2F2', color: '#991B1B', border: '1px solid rgba(220,38,38,0.2)' }}>Incidencia</span>
-                          ) : (
-                            <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 'var(--r-full, 9999px)', background: '#F0FDF4', color: '#16A34A', border: '1px solid #BBF7D0' }}>OK</span>
-                          )}
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-            ) : (
-              <div style={{ padding: 32, textAlign: 'center', color: 'var(--n-400)' }}>
-                <Package size={32} strokeWidth={1.5} style={{ color: 'var(--n-300)', margin: '0 auto 12px' }} />
-                <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--n-700)', marginBottom: 4 }}>No hay entradas registradas</div>
-                <div style={{ fontSize: 13 }}>Las entradas vinculadas a este tráfico aparecerán aquí</div>
-              </div>
-            )
-          )}
-
-          {/* TAB 5 — RECTIFICACIÓN */}
-          {activeTab === 'rectificacion' && (
-            <div style={{ padding: 32, textAlign: 'center', color: 'var(--n-400)' }}>
-              <FileText size={32} strokeWidth={1.5} style={{ color: 'var(--n-300)', margin: '0 auto 12px' }} />
-              <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--n-700)', marginBottom: 4 }}>Sin rectificaciones</div>
-              <div style={{ fontSize: 13 }}>Este pedimento no tiene correcciones registradas</div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Entradas now embedded in the right panel above tabs */}
-
-      {/* ═══ SOLICITUDES ACTIVAS — only renders when rows exist ═══ */}
-      {solicitudes.length > 0 && (
-        <div className="card" style={{ padding: 20, marginTop: 24 }}>
-          <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--n-900)', marginBottom: 12 }}>
-            Solicitudes activas ({solicitudes.length})
-          </div>
-          <div style={{ border: '1px solid var(--n-150)', borderRadius: 'var(--r-md)', overflow: 'hidden' }}>
-            {solicitudes.map((sol, idx) => {
-              const isPastDeadline = sol.deadline ? new Date(sol.deadline) < new Date() : false
-              const docCount = Array.isArray(sol.doc_types) ? sol.doc_types.length : 0
-              return (
-                <div key={sol.id} style={{
-                  padding: '10px 16px',
-                  borderBottom: idx < solicitudes.length - 1 ? '1px solid var(--n-150)' : 'none',
-                  borderLeft: isPastDeadline ? '3px solid #C23B22' : '3px solid #C47F17',
-                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                  minHeight: 60, gap: 12,
-                }}>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--n-900)' }}>
-                      {docCount} documento{docCount !== 1 ? 's' : ''}
-                    </div>
-                    <div style={{ fontSize: 11, color: 'var(--n-500)', fontFamily: 'var(--font-data)', marginTop: 2 }}>
-                      Solicitado {fmtDate(sol.solicitado_at)}
-                      {sol.deadline && <> · Plazo: {fmtDate(sol.deadline)}</>}
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-                    <span style={{
-                      fontSize: 11, fontWeight: 700, padding: '2px 8px',
-                      borderRadius: 'var(--r-full, 9999px)',
-                      background: isPastDeadline ? '#FEF2F2' : '#FFFBEB',
-                      color: isPastDeadline ? '#991B1B' : '#92400E',
-                      border: isPastDeadline ? '1px solid rgba(220,38,38,0.2)' : '1px solid rgba(196,127,23,0.2)',
-                    }}>
-                      {isPastDeadline ? 'Vencido' : sol.status === 'solicitado' ? 'Solicitado' : sol.status}
-                    </span>
-                    <button
-                      onClick={() => markSolicitudCompleta(sol.id)}
-                      style={{
-                        fontSize: 11, fontWeight: 700, padding: '4px 10px',
-                        borderRadius: 'var(--r-md)',
-                        background: '#F0FDF4', color: '#16A34A',
-                        border: '1px solid #BBF7D0',
-                        cursor: 'pointer', minHeight: 60,
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      Marcar recibido ✓
-                    </button>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
         </div>
       )}
 
-      {/* ═══ STICKY ACTION BAR ═══ */}
-      <div style={{
-        position: 'fixed', bottom: 0, left: 0, right: 0,
-        background: 'rgba(255,255,255,0.97)', backdropFilter: 'blur(8px)',
-        borderTop: '1px solid #E8E5E0', padding: '12px 24px',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        gap: 12, zIndex: 100,
-        opacity: showStickyBar ? 1 : 0,
-        pointerEvents: showStickyBar ? 'auto' : 'none',
-        transition: 'opacity 200ms ease',
-        minHeight: 60,
-      }}>
-        <span style={{ fontFamily: 'var(--font-jetbrains-mono, var(--font-data))', fontSize: 15, fontWeight: 800, color: '#1A1A1A' }}>
-          {fmtId(t.trafico)}
-        </span>
-        {missingDocs.length > 0 && !solicitadoOk && (
-          <button
-            onClick={() => setShowSolicitarModal(true)}
-            style={{
-              padding: '10px 20px', fontSize: 13, fontWeight: 700,
-              border: 'none', borderRadius: 8,
-              background: '#B8953F', color: '#FFFFFF',
-              cursor: 'pointer', minHeight: 60, whiteSpace: 'nowrap',
-            }}
-          >
-            Solicitar {missingDocs.length} docs
-          </button>
-        )}
-      </div>
+      {/* ═══════════════════════════════════════════
+          TAB 3 — ENTRADAS
+         ═══════════════════════════════════════════ */}
+      {activeTab === 'entradas' && (
+        <div>
+          {entradas.length > 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {entradas.map((e: Record<string, unknown>) => {
+                const hasDamage = e.mercancia_danada === true
+                const hasFaltantes = e.tiene_faltantes === true
+                const hasIncidencia = hasDamage || hasFaltantes
+                return (
+                  <div key={e.cve_entrada as string} className="card" style={{
+                    padding: '14px 16px',
+                    borderLeft: hasIncidencia ? '4px solid #C23B22' : '4px solid #2D8540',
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                    minHeight: 60, gap: 12,
+                  }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                        <span style={{ fontWeight: 700, fontSize: 14, fontFamily: 'var(--font-jetbrains-mono, var(--font-data))', color: 'var(--n-900)' }}>
+                          {e.cve_entrada as string}
+                        </span>
+                        <span style={{ fontSize: 12, color: 'var(--n-400)', fontFamily: 'var(--font-jetbrains-mono, var(--font-data))' }}>
+                          {e.fecha_llegada_mercancia ? fmtDate(e.fecha_llegada_mercancia as string) : '—'}
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 4, fontSize: 12, color: 'var(--n-500)' }}>
+                        {e.cantidad_bultos != null && (
+                          <span><strong>{String(e.cantidad_bultos)}</strong> bultos</span>
+                        )}
+                        {e.peso_bruto != null && Number(e.peso_bruto) > 0 && (
+                          <span style={{ fontFamily: 'var(--font-jetbrains-mono, var(--font-data))' }}>{fmtKg(Number(e.peso_bruto))} kg</span>
+                        )}
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: 6, flexShrink: 0, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                      {hasDamage && (
+                        <span className="badge badge-hold" style={{ fontSize: 11 }}>
+                          <span className="badge-dot" />Dañada
+                        </span>
+                      )}
+                      {hasFaltantes && (
+                        <span className="badge badge-hold" style={{ fontSize: 11 }}>
+                          <span className="badge-dot" />Faltantes
+                        </span>
+                      )}
+                      {!hasIncidencia && (
+                        <span className="badge badge-cruzado" style={{ fontSize: 11 }}>
+                          <span className="badge-dot" />OK
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          ) : (
+            <EmptyState icon="📦" title="No hay entradas registradas" description="Las entradas vinculadas a este tráfico aparecerán aquí" />
+          )}
+        </div>
+      )}
+
+      {/* ═══════════════════════════════════════════
+          TAB 4 — TIMELINE (placeholder)
+         ═══════════════════════════════════════════ */}
+      {activeTab === 'timeline' && (
+        <div style={{
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          background: '#252219', borderRadius: 12, padding: '56px 32px', textAlign: 'center',
+        }}>
+          <Clock size={48} strokeWidth={1.2} style={{ color: '#B8953F', marginBottom: 16 }} />
+          <h3 style={{ fontSize: 18, fontWeight: 700, color: '#F5F0E8', margin: '0 0 8px' }}>
+            Próximamente
+          </h3>
+          <p style={{ fontSize: 14, color: '#A09882', margin: 0, maxWidth: 320, lineHeight: 1.5 }}>
+            Historial de eventos — cada acción, cada cambio, cada documento registrado en orden cronológico
+          </p>
+        </div>
+      )}
 
       {/* ═══ SOLICITAR MODAL ═══ */}
       {showSolicitarModal && (
         <SolicitarModal
-          traficoId={t.trafico}
+          traficoId={t.trafico as string}
           missingDocs={missingDocs}
           onClose={() => setShowSolicitarModal(false)}
           onSuccess={() => setSolicitadoOk(true)}

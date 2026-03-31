@@ -133,31 +133,13 @@ export default function BrokerCommandCenter() {
   if (role !== 'broker' && role !== 'admin') return null
 
   return (
-    <div style={{ minHeight: '100vh', background: T.bg }}>
-      {/* Header */}
-      <header style={{
-        background: T.navBg, padding: '24px 32px', borderBottom: `1px solid rgba(255,255,255,0.06)`,
-      }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4 }}>
-            <div style={{
-              width: 36, height: 36, borderRadius: 8, background: '#CC1B2F',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <span style={{ color: '#FFF', fontWeight: 900, fontSize: 20, fontFamily: 'var(--font-geist-sans)' }}>Z</span>
-            </div>
-            <div>
-              <h1 style={{ color: T.navText, fontSize: 20, fontWeight: 700, margin: 0, lineHeight: 1.2 }}>
-                Centro de Mando
-              </h1>
-              <span style={{ color: T.navMuted, fontSize: 12 }}>Renato Zapata & Company · Patente 3596 · Aduana 240</span>
-            </div>
-          </div>
-        </div>
-      </header>
+    <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+      {/* Page title */}
+      <h1 style={{ fontSize: 20, fontWeight: 700, color: T.text, marginBottom: 24 }}>
+        Centro de Mando
+      </h1>
 
-      {/* Content */}
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 32px' }}>
+      <div>
 
         {loading ? (
           <div style={{ textAlign: 'center', padding: 60, color: T.textMuted }}>

@@ -10,18 +10,26 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const cookieRole = request.cookies.get('user_role')?.value
+  const isInternal = cookieRole === 'broker' || cookieRole === 'admin'
   const companyId = request.cookies.get('company_id')?.value ?? 'evco'
   const clientClave = request.cookies.get('company_clave')?.value ?? '9254'
   const { id: traficoId } = await params
 
+  // Broker/admin: query by trafico only, no company_id filter (they see all)
+  let trafQ = supabase.from('traficos').select('*').eq('trafico', traficoId)
+  if (!isInternal) trafQ = trafQ.eq('company_id', companyId)
+
+  let factQ = supabase.from('aduanet_facturas').select('*').eq('referencia', traficoId)
+  if (!isInternal) factQ = factQ.eq('clave_cliente', clientClave)
+
+  const entQ = supabase.from('entradas').select('*').eq('trafico', traficoId)
+    .order('fecha_llegada_mercancia', { ascending: false })
+
   const [trafRes, factRes, entRes, docsRes] = await Promise.all([
-    supabase.from('traficos').select('*')
-      .eq('trafico', traficoId).eq('company_id', companyId).single(),
-    supabase.from('aduanet_facturas').select('*')
-      .eq('referencia', traficoId).eq('clave_cliente', clientClave),
-    supabase.from('entradas').select('*')
-      .eq('trafico', traficoId).eq('company_id', companyId)
-      .order('fecha_llegada_mercancia', { ascending: false }),
+    trafQ.maybeSingle(),
+    factQ,
+    entQ,
     supabase.from('documents').select('*').eq('trafico_id', traficoId),
   ])
 

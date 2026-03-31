@@ -112,7 +112,7 @@ export default function DashboardShellClient({ children }: Props) {
     }
   }, [pathname])
 
-  if (pathname === '/login' || pathname.startsWith('/track') || pathname.startsWith('/upload') || pathname === '/war-room' || pathname === '/broker') return <>{children}</>
+  if (pathname === '/login' || pathname.startsWith('/track') || pathname.startsWith('/upload') || pathname === '/war-room') return <>{children}</>
 
   return (
     <ToastProvider>

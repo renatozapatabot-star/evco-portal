@@ -4,6 +4,7 @@ import {
   Shield, Calendar, Award,
   Settings, MessageSquare, Package,
   History, Archive, Clock, ClipboardList, Receipt, Send, Phone,
+  Warehouse,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -60,6 +61,7 @@ export const INTERNAL_GROUPS: NavGroup[] = [
     children: [
       { href: '/traficos',     label: 'Traficos',    icon: Truck },
       { href: '/entradas',     label: 'Entradas',    icon: Package },
+      { href: '/bodega',       label: 'Bodega',      icon: Warehouse },
       { href: '/pedimentos',   label: 'Pedimentos',  icon: FileText },
       { href: '/expedientes',  label: 'Expedientes', icon: FolderOpen },
     ],
@@ -89,7 +91,7 @@ export const INTERNAL_GROUPS: NavGroup[] = [
 
 export const INTERNAL_BOTTOM: NavTopLevel[] = [
   { href: '/broker', label: 'CRUZ', icon: MessageSquare, gold: true, roles: ['admin', 'broker'] },
-  { href: '/admin',  label: 'Config', icon: Settings, roles: ['broker'] },
+  { href: '/admin',  label: 'Config', icon: Settings, roles: ['admin', 'broker'] },
 ]
 
 // ---------------------------------------------------------------------------
@@ -233,6 +235,7 @@ export const CLIENT_ROUTES = [
   '/traficos',
   '/documentos',
   '/reportes',
+  '/bodega',
   '/cruz',
   '/login',
 ] as const

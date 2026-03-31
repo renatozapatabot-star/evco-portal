@@ -344,11 +344,11 @@ export default function TraficosPage() {
                               </div>
                               <div className="expansion-fact">
                                 <span className="expansion-label">Peso Bruto</span>
-                                <span className="expansion-value mono">{fmtKg(r.peso_bruto) ? `${fmtKg(r.peso_bruto)} kg` : '—'}</span>
+                                <span className="expansion-value mono">{fmtKg(r.peso_bruto) ? `${fmtKg(r.peso_bruto)} kg` : <span style={{ color: 'var(--n-400)', fontStyle: 'italic', fontFamily: 'inherit', fontWeight: 400, fontSize: 11 }}>Verificar en GlobalPC</span>}</span>
                               </div>
                               <div className="expansion-fact">
                                 <span className="expansion-label">Importe USD</span>
-                                <span className="expansion-value mono">{(r.importe_total != null && Number(r.importe_total) > 0) ? fmtUSD(r.importe_total) : '—'}</span>
+                                <span className="expansion-value mono">{(r.importe_total != null && Number(r.importe_total) > 0) ? fmtUSD(r.importe_total) : <span style={{ color: 'var(--n-400)', fontStyle: 'italic', fontFamily: 'inherit', fontWeight: 400, fontSize: 11 }}>Disponible al transmitir pedimento</span>}</span>
                               </div>
                               <div className="expansion-fact">
                                 <span className="expansion-label">Fecha Llegada</span>
@@ -356,7 +356,7 @@ export default function TraficosPage() {
                               </div>
                               <div className="expansion-fact">
                                 <span className="expansion-label">Predicción Cruce</span>
-                                <span className="expansion-value mono">{predictions[r.trafico] ? `~${predictions[r.trafico].avgDays}d` : '—'}</span>
+                                <span className="expansion-value mono">{predictions[r.trafico] ? `~${predictions[r.trafico].avgDays}d` : <span style={{ color: 'var(--n-400)', fontStyle: 'italic', fontFamily: 'inherit', fontWeight: 400, fontSize: 11 }}>Calculando</span>}</span>
                               </div>
                               <div className="expansion-fact">
                                 <span className="expansion-label">Descripción</span>
@@ -502,7 +502,7 @@ function QuickView({ traficoId, onClose }: { traficoId: string; onClose: () => v
         <div>
           <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#6B6B6B', marginBottom: 4 }}>Pedimento</div>
           <div style={{ fontSize: 13, fontFamily: 'var(--font-jetbrains-mono)', color: '#1A1A1A' }}>
-            {(data.pedimento as string) || '—'}
+            {(data.pedimento as string) || <span style={{ color: '#9C9890', fontStyle: 'italic', fontSize: 11 }}>Disponible al transmitir pedimento</span>}
           </div>
         </div>
         <div>
@@ -514,13 +514,13 @@ function QuickView({ traficoId, onClose }: { traficoId: string; onClose: () => v
         <div>
           <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#6B6B6B', marginBottom: 4 }}>Importe USD</div>
           <div style={{ fontSize: 13, fontFamily: 'var(--font-jetbrains-mono)', color: '#1A1A1A' }}>
-            {importe > 0 ? fmtUSD(importe) : '—'}
+            {importe > 0 ? fmtUSD(importe) : <span style={{ color: '#9C9890', fontStyle: 'italic', fontSize: 11 }}>Disponible al transmitir pedimento</span>}
           </div>
         </div>
         <div>
           <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#6B6B6B', marginBottom: 4 }}>Documentos</div>
           <div style={{ fontSize: 13, fontFamily: 'var(--font-jetbrains-mono)', color: '#1A1A1A' }}>
-            {totalDocs > 0 ? `${totalDocs} archivos` : '—'}
+            {totalDocs > 0 ? `${totalDocs} archivos` : <span style={{ color: '#9C9890', fontStyle: 'italic', fontSize: 11 }}>Pendiente de documentos</span>}
           </div>
         </div>
       </div>

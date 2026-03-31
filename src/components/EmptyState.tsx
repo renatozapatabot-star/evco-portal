@@ -41,8 +41,8 @@ const VARIANTS: Record<Variant, { icon: React.ReactNode; title: string; message:
   },
   generic: {
     icon: <FolderOpen size={20} style={{ color: 'var(--gold-600)' }} />,
-    title: 'Sin datos',
-    message: 'No hay información disponible.',
+    title: 'Información no disponible',
+    message: 'Los datos aparecerán cuando estén sincronizados.',
   },
 }
 

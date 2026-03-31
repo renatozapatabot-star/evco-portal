@@ -154,7 +154,7 @@ export function SoiaView() {
         <div className="card">
           <EmptyState
             icon={<Landmark size={20} style={{ color: 'var(--amber-600)' }} />}
-            title="Sin datos SOIA"
+            title="SOIA pendiente de sincronización"
             subtitle="La tabla soia_cruces está vacía. Se poblará cuando GlobalPC sincronice datos de cruces."
           />
         </div>

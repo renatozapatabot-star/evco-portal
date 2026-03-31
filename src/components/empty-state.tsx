@@ -14,14 +14,14 @@ const DEFAULTS: Record<string, { title: string; desc: string }> = {
   reportes: { title: 'Datos insuficientes para reportes', desc: 'Se necesitan al menos 2 semanas de operaciones para generar reportes analíticos.' },
   cuentas: { title: 'Sin movimientos financieros', desc: 'Los datos de eConta se sincronizarán en la próxima actualización nocturna.' },
   alertas: { title: 'Sin alertas activas', desc: 'Todo está en orden. No hay acciones urgentes por el momento.' },
-  anexo24: { title: 'Sin datos de Anexo 24', desc: 'Los datos IMMEX aparecerán cuando se sincronicen desde el sistema.' },
+  anexo24: { title: 'Anexo 24 pendiente de sincronización', desc: 'Los datos IMMEX aparecerán cuando se sincronicen desde el sistema.' },
 }
 
 interface Props { page: string; title?: string; description?: string }
 
 export function EmptyState({ page, title, description }: Props) {
   const Icon = ICONS[page] || FileText
-  const d = DEFAULTS[page] || { title: 'Sin datos', desc: 'Los datos aparecerán cuando estén disponibles.' }
+  const d = DEFAULTS[page] || { title: 'Información no disponible', desc: 'Los datos aparecerán cuando estén disponibles.' }
 
   return (
     <div style={{

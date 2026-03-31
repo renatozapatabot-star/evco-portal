@@ -42,7 +42,7 @@ function getDocUrgency(deadline: string | null | undefined): { color: string; la
 }
 
 const fmtPedimento = (p: string | null) => {
-  if (!p) return '—'
+  if (!p) return null
   const clean = p.replace(/\s/g, '')
   if (clean.length === 15) return `${clean.slice(0,2)} ${clean.slice(2,4)} ${clean.slice(4,8)} ${clean.slice(8)}`
   return p
@@ -200,17 +200,17 @@ export default function TraficoDetailPage() {
 
   const steps = [
     { num: 1, label: 'Documentos recibidos', detail: documentos.length > 0 ? `${documentos.length} documentos vinculados` : 'Pendiente de documentos', date: t.fecha_llegada || null },
-    { num: 2, label: 'CRUZ procesó', detail: documentos.length > 0 ? `${documentos.length} docs · Confianza: ${docCompleteness}%` : '—', date: null },
-    { num: 3, label: 'Revisado y autorizado', detail: t.pedimento ? 'Autorizado · Patente 3596' : '—', date: null },
-    { num: 4, label: 'COVE generado', detail: '—', date: null },
+    { num: 2, label: 'CRUZ procesó', detail: documentos.length > 0 ? `${documentos.length} docs · Confianza: ${docCompleteness}%` : 'Disponible al recibir documentos', date: null },
+    { num: 3, label: 'Revisado y autorizado', detail: t.pedimento ? 'Autorizado · Patente 3596' : 'Disponible al procesar documentos', date: null },
+    { num: 4, label: 'COVE generado', detail: t.pedimento ? 'Generado' : 'Disponible al transmitir pedimento', date: null },
     { num: 5, label: 'Previo', detail: 'No requerido por SAT', date: null },
-    { num: 6, label: 'Pedimento transmitido', detail: t.pedimento ? `No. ${fmtPedimento(t.pedimento)} · SAAI` : '—', date: t.fecha_transmision || null },
-    { num: 7, label: 'Pedimento pagado', detail: t.fecha_pago ? formatAbsoluteETA(t.fecha_pago) : '—', date: t.fecha_pago || null },
-    { num: 8, label: 'Semáforo asignado', detail: t.semaforo === 0 ? 'Verde' : t.semaforo === 1 ? 'Rojo' : '—', date: t.fecha_modulacion || null },
-    { num: 9, label: 'En cruce', detail: t.fecha_cruce ? `Ingresó: ${formatAbsoluteETA(t.fecha_cruce)}` : '—', date: t.fecha_cruce || null },
-    { num: 10, label: 'Cruzado', detail: isCruzado && t.fecha_cruce ? formatAbsoluteETA(t.fecha_cruce) : '—', date: isCruzado ? t.fecha_cruce || null : null },
-    { num: 11, label: 'En ruta', detail: fmtCarrier(t.transportista_mexicano) || '—', date: null },
-    { num: 12, label: 'Entregado', detail: '—', date: t.fecha_entrega || null },
+    { num: 6, label: 'Pedimento transmitido', detail: t.pedimento ? `No. ${fmtPedimento(t.pedimento)} · SAAI` : 'Disponible al transmitir pedimento', date: t.fecha_transmision || null },
+    { num: 7, label: 'Pedimento pagado', detail: t.fecha_pago ? formatAbsoluteETA(t.fecha_pago) : 'Disponible al transmitir pedimento', date: t.fecha_pago || null },
+    { num: 8, label: 'Semáforo asignado', detail: t.semaforo === 0 ? 'Verde' : t.semaforo === 1 ? 'Rojo' : 'Disponible al pagar pedimento', date: t.fecha_modulacion || null },
+    { num: 9, label: 'En cruce', detail: t.fecha_cruce ? `Ingresó: ${formatAbsoluteETA(t.fecha_cruce)}` : 'Disponible al asignar semáforo', date: t.fecha_cruce || null },
+    { num: 10, label: 'Cruzado', detail: isCruzado && t.fecha_cruce ? formatAbsoluteETA(t.fecha_cruce) : 'Disponible al iniciar cruce', date: isCruzado ? t.fecha_cruce || null : null },
+    { num: 11, label: 'En ruta', detail: fmtCarrier(t.transportista_mexicano) || 'Transportista por asignar', date: null },
+    { num: 12, label: 'Entregado', detail: t.fecha_entrega ? formatAbsoluteETA(t.fecha_entrega) : 'Disponible al confirmar cruce', date: t.fecha_entrega || null },
   ]
 
   // Compute duration between consecutive completed steps with dates
@@ -488,7 +488,7 @@ export default function TraficoDetailPage() {
                           <span style={{ fontSize: 12, color: 'var(--n-400)', fontFamily: 'var(--font-data)' }}>{fmtDate(e.fecha_llegada_mercancia)}</span>
                         </div>
                         <div style={{ fontSize: 12, color: 'var(--n-500)', marginTop: 2 }}>
-                          {fmtDesc(e.descripcion_mercancia || e.descripcion || '') || '—'}
+                          {fmtDesc(e.descripcion_mercancia || e.descripcion || '') || <span style={{ color: 'var(--n-400)', fontStyle: 'italic', fontSize: 11 }}>Descripción pendiente</span>}
                           {e.peso_bruto && <span style={{ marginLeft: 8, fontFamily: 'var(--font-data)' }}>{fmtKg(e.peso_bruto)}</span>}
                         </div>
                       </div>
@@ -549,13 +549,16 @@ export default function TraficoDetailPage() {
                   const iva = Math.round(ivaBase * rates.iva)
                   const total = dta + igi + iva
 
+                  const hasTmec = t.pedimento && (t.semaforo === 0 || !t.semaforo)
+                  const tmecNote = hasTmec ? ' · Estimado ahorro T-MEC: ~' + fmtMXNInt(Math.round(valMXN * 0.05)) : ''
+                  const pendingMsg = 'Disponible al transmitir pedimento'
                   const rows = [
-                    { key: 'valor', label: 'Valor Aduana', value: val ? `${fmtUSD(val)} USD` : '—', porque: val ? `Valor declarado en factura comercial: ${fmtUSD(val)}. Convertido a MXN: ${fmtMXNInt(valMXN)} (TC ${tc.toFixed(4)}).` : null },
-                    { key: 'tc', label: 'Tipo de Cambio', value: tc ? `$${tc.toFixed(4)} MXN/USD` : '—', porque: tc ? `Tipo de cambio Banxico vigente al momento de pago del pedimento.` : null },
-                    { key: 'dta', label: 'DTA', value: val && tc ? `${fmtMXNInt(dta)} MXN` : '—', porque: val && tc ? `DTA = Valor aduana MXN × 0.8% = ${fmtMXNInt(valMXN)} × 0.008 = ${fmtMXNInt(dta)} MXN. Régimen ${t.regimen || 'A1'}.` : null },
-                    { key: 'igi', label: 'IGI', value: '$0 MXN (T-MEC)', porque: `IGI exento porque: proveedor USA · certificado T-MEC vigente. Sin T-MEC: estimado ${fmtMXNInt(Math.round(valMXN * 0.05))} MXN (5%).` },
-                    { key: 'iva', label: 'IVA (16%)', value: val && tc ? `${fmtMXNInt(iva)} MXN` : '—', porque: val && tc ? `IVA = 16% × (Valor aduana + DTA + IGI) = 16% × (${fmtMXNInt(valMXN)} + ${fmtMXNInt(dta)} + $0) = ${fmtMXNInt(iva)} MXN. Base ≠ factura.` : null },
-                    { key: 'total', label: 'Total Contribuciones', value: val && tc ? `${fmtMXNInt(total)} MXN` : '—', porque: val && tc ? `DTA ${fmtMXNInt(dta)} + IGI $0 + IVA ${fmtMXNInt(iva)} = ${fmtMXNInt(total)} MXN total.` : null },
+                    { key: 'valor', label: 'Valor Aduana', value: val ? `${fmtUSD(val)} USD` : pendingMsg, porque: val ? `Valor declarado en factura comercial: ${fmtUSD(val)}. Convertido a MXN: ${fmtMXNInt(valMXN)} (TC ${tc.toFixed(4)}).` : null, pending: !val },
+                    { key: 'tc', label: 'Tipo de Cambio', value: tc ? `$${tc.toFixed(4)} MXN/USD` : pendingMsg, porque: tc ? `Tipo de cambio Banxico vigente al momento de pago del pedimento.` : null, pending: !tc },
+                    { key: 'dta', label: 'DTA', value: val && tc ? `${fmtMXNInt(dta)} MXN${tmecNote}` : pendingMsg, porque: val && tc ? `DTA = Valor aduana MXN × 0.8% = ${fmtMXNInt(valMXN)} × 0.008 = ${fmtMXNInt(dta)} MXN. Régimen ${t.regimen || 'A1'}.` : null, pending: !(val && tc) },
+                    { key: 'igi', label: 'IGI', value: '$0 MXN (T-MEC)', porque: `IGI exento porque: proveedor USA · certificado T-MEC vigente. Sin T-MEC: estimado ${fmtMXNInt(Math.round(valMXN * 0.05))} MXN (5%).`, pending: false },
+                    { key: 'iva', label: 'IVA (16%)', value: val && tc ? `${fmtMXNInt(iva)} MXN` : pendingMsg, porque: val && tc ? `IVA = 16% × (Valor aduana + DTA + IGI) = 16% × (${fmtMXNInt(valMXN)} + ${fmtMXNInt(dta)} + $0) = ${fmtMXNInt(iva)} MXN. Base ≠ factura.` : null, pending: !(val && tc) },
+                    { key: 'total', label: 'Total Contribuciones', value: val && tc ? `${fmtMXNInt(total)} MXN` : pendingMsg, porque: val && tc ? `DTA ${fmtMXNInt(dta)} + IGI $0 + IVA ${fmtMXNInt(iva)} = ${fmtMXNInt(total)} MXN total.` : null, pending: !(val && tc) },
                   ]
 
                   return (
@@ -566,7 +569,7 @@ export default function TraficoDetailPage() {
                           <React.Fragment key={r.key}>
                             <tr onClick={() => setPorqueOpen(porqueOpen === r.key ? null : r.key)} style={{ cursor: r.porque ? 'pointer' : undefined }}>
                               <td style={{ color: 'var(--n-700)' }}>{r.label}</td>
-                              <td style={{ textAlign: 'right', fontFamily: 'var(--font-data)', fontWeight: 700, color: r.key === 'total' ? GOLD : 'var(--n-900)' }}>{r.value}</td>
+                              <td style={{ textAlign: 'right', fontFamily: r.pending ? undefined : 'var(--font-data)', fontWeight: r.pending ? 400 : 700, color: r.pending ? 'var(--n-400)' : r.key === 'total' ? GOLD : 'var(--n-900)', fontStyle: r.pending ? 'italic' : undefined, fontSize: r.pending ? 12 : undefined }}>{r.value}</td>
                               <td style={{ textAlign: 'center' }}>
                                 {r.porque && <span style={{ fontSize: 11, color: porqueOpen === r.key ? GOLD : 'var(--n-300)', fontWeight: 700 }}>?</span>}
                               </td>
@@ -597,11 +600,11 @@ export default function TraficoDetailPage() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                 <div>
                   <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--n-400)', marginBottom: 4 }}>Transportista MX</div>
-                  <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--n-900)' }}>{fmtCarrier(t.transportista_mexicano) || '—'}</div>
+                  <div style={{ fontSize: 15, fontWeight: fmtCarrier(t.transportista_mexicano) ? 700 : 400, color: fmtCarrier(t.transportista_mexicano) ? 'var(--n-900)' : 'var(--n-400)', fontStyle: fmtCarrier(t.transportista_mexicano) ? undefined : 'italic' }}>{fmtCarrier(t.transportista_mexicano) || 'Por asignar'}</div>
                 </div>
                 <div>
                   <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--n-400)', marginBottom: 4 }}>Transportista EXT</div>
-                  <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--n-900)' }}>{fmtCarrier(t.transportista_extranjero) || '—'}</div>
+                  <div style={{ fontSize: 15, fontWeight: fmtCarrier(t.transportista_extranjero) ? 700 : 400, color: fmtCarrier(t.transportista_extranjero) ? 'var(--n-900)' : 'var(--n-400)', fontStyle: fmtCarrier(t.transportista_extranjero) ? undefined : 'italic' }}>{fmtCarrier(t.transportista_extranjero) || 'Por asignar'}</div>
                 </div>
                 {t.contenedor && (
                   <div>
@@ -641,7 +644,7 @@ export default function TraficoDetailPage() {
                             <span style={{ fontSize: 12, color: 'var(--n-400)', fontFamily: 'var(--font-data)' }}>{fmtDate(e.fecha_llegada_mercancia)}</span>
                           </div>
                           <div style={{ fontSize: 12, color: 'var(--n-500)', marginTop: 2 }}>
-                            {fmtDesc(e.descripcion_mercancia || e.descripcion || '') || '—'}
+                            {fmtDesc(e.descripcion_mercancia || e.descripcion || '') || <span style={{ color: 'var(--n-400)', fontStyle: 'italic', fontSize: 11 }}>Descripción pendiente</span>}
                             {e.peso_bruto && <span style={{ marginLeft: 8, fontFamily: 'var(--font-data)' }}>{fmtKg(e.peso_bruto)}</span>}
                           </div>
                         </div>

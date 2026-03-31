@@ -63,7 +63,7 @@ export function Anexo24View() {
     if (data.length === 0) return (
       <div style={{ textAlign: 'center', padding: '60px 20px' }}>
         <Table2 size={32} strokeWidth={1.5} style={{ color: 'var(--n-300)', margin: '0 auto 12px' }} />
-        <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--n-700)', marginBottom: 4 }}>Sin datos de Anexo 24</div>
+        <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--n-700)', marginBottom: 4 }}>Anexo 24 pendiente de sincronización</div>
         <div style={{ fontSize: 13, color: 'var(--n-400)' }}>Los artículos temporales aparecerán aquí</div>
       </div>
     )

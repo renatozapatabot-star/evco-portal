@@ -117,7 +117,7 @@ export function ProveedoresView() {
             </div>
           ) : products.length === 0 ? (
             <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>
-              <p style={{ fontSize: 14 }}>Sin datos de producto. Ejecuta el script product-intelligence primero.</p>
+              <p style={{ fontSize: 14 }}>Productos pendientes de sincronización. Ejecuta el script product-intelligence primero.</p>
             </div>
           ) : (
             <div style={{ overflowX: 'auto' }}>

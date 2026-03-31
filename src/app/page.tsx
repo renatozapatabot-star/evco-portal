@@ -387,46 +387,58 @@ export default function Dashboard() {
       </div>
 
       {/* ═══ 3. BRIDGE STRIP ═══ */}
-      {/* ═══ BRIDGE STRIP — always visible ═══ */}
-      <div style={{
-        display: 'flex', gap: isMobile ? 8 : 12, marginBottom: 24,
-        overflowX: 'auto', whiteSpace: 'nowrap',
-        WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none',
-      }} className="pill-scroll">
-        {(liveBridges?.bridges && liveBridges.bridges.length > 0
-          ? liveBridges.bridges
-          : [
-              { id: 1, name: 'World Trade', nameEs: 'World Trade', commercial: null, status: 'unknown', updated: null },
-              { id: 2, name: 'Colombia', nameEs: 'Colombia', commercial: null, status: 'unknown', updated: null },
-              { id: 3, name: 'Juárez-Lincoln', nameEs: 'Juárez-Lincoln', commercial: null, status: 'unknown', updated: null },
-              { id: 4, name: 'Gateway', nameEs: 'Gateway', commercial: null, status: 'unknown', updated: null },
-            ]
-        ).map(b => {
-          const w = b.commercial
-          const hasData = w !== null && w !== undefined
-          const color = !hasData ? TOKEN.gray : w <= 30 ? TOKEN.green : w <= 60 ? TOKEN.amber : TOKEN.red
-          return (
-            <div key={b.id} style={{
-              flexShrink: 0, display: 'flex', alignItems: 'center', gap: 8,
-              padding: '8px 14px', borderRadius: 9999,
-              background: TOKEN.surfaceCard,
-              borderLeft: `3px solid ${color}`,
-              border: `1px solid ${TOKEN.border}`,
-            }}>
-              <span style={{ fontSize: 13, fontWeight: 600, color: TOKEN.textSecondary }}>{b.nameEs}</span>
-              {hasData ? (
-                <span style={{ fontSize: 14, fontWeight: 800, fontFamily: 'var(--font-jetbrains-mono)', color }}>
-                  {w}min
-                </span>
-              ) : (
-                <span style={{ fontSize: 12, color: TOKEN.gray, fontStyle: 'italic' }}>
-                  Sin datos
-                </span>
-              )}
+      {/* ═══ BRIDGE STRIP — only bridges with real data ═══ */}
+      {(() => {
+        const allBridges = liveBridges?.bridges ?? []
+        const withData = allBridges.filter(b => b.commercial !== null && b.commercial !== undefined)
+        const fastest = withData.length > 0 ? withData.reduce((a, b) => (a.commercial! < b.commercial! ? a : b)) : null
+        const fetchedAt = liveBridges?.fetched
+
+        if (withData.length === 0) return (
+          <div style={{
+            marginBottom: 24, padding: '12px 20px', borderRadius: 9999,
+            background: TOKEN.surfaceCard, border: `1px solid ${TOKEN.border}`,
+            fontSize: 13, color: TOKEN.gray, fontStyle: 'italic', textAlign: 'center',
+          }}>
+            Datos de puentes actualizándose · cada 30 min
+          </div>
+        )
+
+        return (
+          <div style={{ marginBottom: 24 }}>
+            <div style={{
+              display: 'flex', gap: isMobile ? 8 : 12,
+              overflowX: 'auto', whiteSpace: 'nowrap',
+              WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none',
+            }} className="pill-scroll">
+              {withData.map(b => {
+                const w = b.commercial!
+                const isFastest = fastest && b.id === fastest.id
+                const color = w <= 30 ? TOKEN.green : w <= 60 ? TOKEN.amber : TOKEN.red
+                return (
+                  <div key={b.id} style={{
+                    flexShrink: 0, display: 'flex', alignItems: 'center', gap: 8,
+                    padding: '8px 14px', borderRadius: 9999,
+                    background: isFastest ? '#F0FDF4' : TOKEN.surfaceCard,
+                    border: isFastest ? '1px solid #BBF7D0' : `1px solid ${TOKEN.border}`,
+                  }}>
+                    {isFastest && <span style={{ fontSize: 11, fontWeight: 800, color: TOKEN.green, letterSpacing: '0.02em' }}>Más rápido</span>}
+                    <span style={{ fontSize: 13, fontWeight: 600, color: TOKEN.textSecondary }}>{b.nameEs}</span>
+                    <span style={{ fontSize: 14, fontWeight: 800, fontFamily: 'var(--font-jetbrains-mono)', color }}>
+                      {w} min
+                    </span>
+                  </div>
+                )
+              })}
             </div>
-          )
-        })}
-      </div>
+            {fetchedAt && (
+              <div style={{ fontSize: 10, color: TOKEN.gray, marginTop: 6, fontFamily: 'var(--font-jetbrains-mono)' }}>
+                Actualizado: {new Date(fetchedAt).toLocaleTimeString('es-MX', { timeZone: 'America/Chicago', hour: '2-digit', minute: '2-digit' })} CST
+              </div>
+            )}
+          </div>
+        )
+      })()}
 
       {/* ═══ MAÑANA CARD — only when there's something tomorrow ═══ */}
       {(mananaItems.solicitudes > 0 || mananaItems.mveUrgent) && (

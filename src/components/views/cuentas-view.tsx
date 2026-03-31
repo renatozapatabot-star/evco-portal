@@ -78,7 +78,7 @@ export function CuentasView() {
       <h1 className="page-title">Cuentas & Finanzas</h1>
       <div style={{ textAlign: 'center', padding: '60px 20px' }}>
         <CreditCard size={32} strokeWidth={1.5} style={{ color: 'var(--n-300)', margin: '0 auto 12px' }} />
-        <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--n-700)', marginBottom: 4 }}>Sin datos financieros</div>
+        <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--n-700)', marginBottom: 4 }}>Datos financieros pendientes</div>
         <div style={{ fontSize: 13, color: 'var(--n-400)' }}>Conecta tu cuenta para ver el resumen</div>
       </div>
     </div>

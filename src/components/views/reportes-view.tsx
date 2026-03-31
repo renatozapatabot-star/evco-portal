@@ -1,58 +1,91 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { createClient } from '@supabase/supabase-js'
-import {
-  AreaChart, Area, BarChart, Bar, XAxis, YAxis,
-  Tooltip, ResponsiveContainer, CartesianGrid, Cell
-} from 'recharts'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
-
-import { getCookieValue, CLIENT_NAME } from '@/lib/client-config'
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
+import { getCookieValue } from '@/lib/client-config'
 import { GOLD } from '@/lib/design-system'
 import { useIsMobile } from '@/hooks/use-mobile'
-import { TrendArrow } from '@/components/TrendArrow'
-const CLAVE = getCookieValue('company_clave') ?? '9254'
-const COMPANY_ID = getCookieValue('company_id') ?? 'evco'
+import { fmtDate } from '@/lib/format-utils'
 
+// ── Design tokens (v6 warm white) ──────────────────────
 const T = {
-  bg: '#FAFAF8', surface: '#FFFFFF', border: '#E8E6E0', surfaceAlt: '#F5F3EF',
-  text: '#1A1A1A', textSub: '#6B6B6B', textMuted: '#999999',
-  navy: '#BA7517', gold: '#BA7517', goldBg: '#FFF8EB',
-  green: '#16A34A', greenBg: '#EAF3DE',
-  amber: '#854D0E', amberBg: '#FEF9C3',
-  red: '#DC2626', redBg: '#FEF2F2',
+  bg: '#FAFAF8',
+  surface: '#FFFFFF',
+  border: '#E8E6E0',
+  surfaceAlt: '#F5F3EF',
+  text: '#1A1A1A',
+  textSub: '#6B6B6B',
+  textMuted: '#999999',
+  gold: '#B8953F',
+  goldBg: '#FFF8EB',
+  green: '#2D8540',
+  amber: '#C47F17',
+  red: '#C23B22',
   shadow: '0 1px 3px rgba(0,0,0,0.07)',
 }
 
-function fmtUSD(v: any) {
-  const n = Number(v || 0)
-  if (n >= 1000000) return '$' + (n / 1000000).toFixed(1) + 'M'
-  if (n >= 1000) return '$' + (n / 1000).toFixed(0) + 'K'
-  return '$' + n.toLocaleString('en-US')
+const TOOLTIP_STYLE: React.CSSProperties = {
+  background: '#1A1710',
+  border: 'none',
+  borderRadius: 10,
+  color: 'white',
+  fontSize: 12,
+  fontWeight: 600,
+  padding: '8px 12px',
+  boxShadow: '0 10px 15px -3px rgba(0,0,0,0.15)',
+  borderLeft: `3px solid ${GOLD}`,
 }
-function fmtUSDCompact(v: number | undefined | null) {
-  const n = Number(v || 0)
-  if (n >= 1000000) return '$' + (n / 1000000).toFixed(1) + 'M USD'
-  if (n >= 1000) return '$' + (n / 1000).toFixed(0) + 'K USD'
-  return '$' + n.toLocaleString('en-US') + ' USD'
-}
-function fmtNum(v: any) { return Number(v || 0).toLocaleString('es-MX') }
 
-function Card({ children, style = {} }: any) {
+interface TraficoRow {
+  trafico: string
+  estatus?: string
+  fecha_llegada?: string | null
+  proveedores?: string | null
+  importe_total?: number | null
+  regimen?: string | null
+  company_id?: string | null
+  pedimento?: string | null
+  descripcion_mercancia?: string | null
+  peso_bruto?: number | null
+}
+
+interface MonthlyBucket {
+  month: string
+  label: string
+  count: number
+}
+
+interface SupplierRow {
+  name: string
+  count: number
+  totalValue: number
+  tmecPct: number
+}
+
+// ── Helpers ─────────────────────────────────────────────
+
+function fmtUSDShort(v: number): string {
+  if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`
+  if (v >= 1_000) return `$${(v / 1_000).toFixed(0)}K`
+  return `$${v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+}
+
+function fmtNum(v: number): string {
+  return v.toLocaleString('es-MX')
+}
+
+function Card({ children, style = {} }: { children: React.ReactNode; style?: React.CSSProperties }) {
   return (
-    <div style={{ background: T.surface, border: `1px solid ${T.border}`,
-      borderRadius: 12, boxShadow: T.shadow, ...style }}>
+    <div style={{
+      background: T.surface, border: `1px solid ${T.border}`,
+      borderRadius: 12, boxShadow: T.shadow, ...style,
+    }}>
       {children}
     </div>
   )
 }
 
-function SectionTitle({ title, sub }: any) {
+function SectionTitle({ title, sub }: { title: string; sub?: string }) {
   return (
     <div style={{ marginBottom: 16 }}>
       <h3 style={{ color: T.text, fontSize: 14, fontWeight: 700, margin: 0 }}>{title}</h3>
@@ -61,921 +94,401 @@ function SectionTitle({ title, sub }: any) {
   )
 }
 
-const TOOLTIP_STYLE = {
-  background: '#1A1710',
-  border: 'none',
-  borderRadius: 10,
-  color: 'white',
-  fontSize: 12,
-  fontWeight: 600,
-  boxShadow: '0 10px 15px -3px rgba(0,0,0,0.15)',
-  borderLeft: `3px solid ${GOLD}`,
-}
-
-function CustomTooltip({ active, payload, label }: any) {
+function CustomTooltip({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number }>; label?: string }) {
   if (!active || !payload?.length) return null
   return (
-    <div style={TOOLTIP_STYLE as any}>
+    <div style={TOOLTIP_STYLE}>
       <div style={{ color: GOLD, fontSize: 10, marginBottom: 4 }}>{label}</div>
-      {payload.map((p: any, i: number) => (
-        <div key={i} style={{ color: 'white' }}>
-          {typeof p.value === 'number'
-            ? p.value >= 1e6 ? `$${(p.value/1e6).toFixed(1)}M`
-            : p.value >= 1e3 ? `$${(p.value/1e3).toFixed(0)}K`
-            : p.value.toLocaleString()
-            : p.value}
-        </div>
-      ))}
+      <div style={{ color: 'white' }}>{payload[0].value.toLocaleString('es-MX')} tráficos</div>
     </div>
   )
 }
 
-function fmtMXN(v: number) {
-  return 'MX$' + v.toLocaleString('es-MX', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
-}
+// ── CSV Export ──────────────────────────────────────────
 
-function ExecutiveHero({ summary, isMobile }: { summary: Record<string, number | string>; isMobile: boolean }) {
-  const executiveSentence = useMemo(() => {
-    if (!summary || !summary.totalTraficos) return 'Cargando resumen...'
-    const parts: string[] = []
-    if (Number(summary.totalTraficos) > 0) parts.push(`${Number(summary.totalTraficos).toLocaleString()} tráficos procesados`)
-    if (Number(summary.totalValor) > 0) parts.push(`${fmtUSDCompact(Number(summary.totalValor))} importados`)
-    if (Number(summary.tmecCount) > 0) parts.push(`${summary.tmecPct}% con T-MEC`)
-    return `${CLIENT_NAME}: ${parts.join(' · ')}.`
-  }, [summary])
-
-  const [aiSentence, setAiSentence] = useState<string | null>(() => {
-    if (typeof window === 'undefined') return null
-    try {
-      const cached = localStorage.getItem('cruz-executive-sentence')
-      if (cached) {
-        const { sentence, ts } = JSON.parse(cached)
-        if (Date.now() - ts < 3600000) return sentence as string
-      }
-    } catch {
-      // localStorage unavailable or corrupt
-    }
-    return null
-  })
-
-  useEffect(() => {
-    fetch('/api/executive-summary')
-      .then((r) => r.json())
-      .then((d: { sentence?: string }) => {
-        if (d.sentence) {
-          setAiSentence(d.sentence)
-          try {
-            localStorage.setItem(
-              'cruz-executive-sentence',
-              JSON.stringify({ sentence: d.sentence, ts: Date.now() })
-            )
-          } catch {
-            // localStorage full or unavailable
-          }
-        }
-      })
-      .catch(() => {
-        // Network error — keep template fallback
-      })
-  }, [])
-
-  const heroKPIs = useMemo(() => {
-    const totalTraficos = Number(summary?.totalTraficos || 0)
-    const docsCompletosPct = Number(summary?.docsCompletosPct || 0)
-    const tasaExito = totalTraficos > 0
-      ? Math.round((Number(summary.docsCompletos || 0) / totalTraficos) * 100)
-      : 0
-    return [
-      { label: 'Importado', value: fmtUSDCompact(Number(summary?.totalValor)), trend: null as string | null },
-      { label: 'T-MEC', value: `${summary?.tmecPct ?? 0}%`, trend: null as string | null },
-      { label: 'Multas', value: '$0', trend: null as string | null },
-      { label: 'Tasa éxito', value: `${tasaExito}%`, trend: null as string | null },
-      { label: 'Docs completos', value: `${docsCompletosPct}%`, trend: null as string | null },
-    ]
-  }, [summary])
-
-  return (
-    <div style={{
-      background: 'linear-gradient(135deg, #1E1A16 0%, #2A2520 100%)',
-      borderRadius: 16, padding: isMobile ? '20px' : '28px 32px', marginBottom: 24,
-      color: '#EAE6DC',
-    }}>
-      <div style={{ fontSize: 12, fontWeight: 700, color: '#B8973A', marginBottom: 4, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-        Resumen Ejecutivo
-      </div>
-      <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginBottom: 16, letterSpacing: '0.05em' }}>
-        {CLIENT_NAME} &middot; Patente 3596 &middot; Aduana 240, Nuevo Laredo
-      </div>
-      <div style={{ fontSize: 14, color: '#EAE6DC', marginBottom: 20, lineHeight: 1.5 }}>
-        {aiSentence ?? executiveSentence}
-      </div>
-      <div style={{ display: 'flex', gap: isMobile ? 16 : 28, flexWrap: 'wrap' }}>
-        {heroKPIs.map(kpi => (
-          <div key={kpi.label} style={{ textAlign: 'center', minWidth: 60 }}>
-            <div style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: isMobile ? 18 : 22, fontWeight: 700, color: '#FFF' }}>
-              {kpi.value}
-            </div>
-            <div style={{ fontSize: 10, color: '#7C7870', marginTop: 2 }}>{kpi.label}</div>
-            {kpi.trend && <div style={{ fontSize: 10, color: '#B8973A' }}>{kpi.trend}</div>}
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-function EstadoDeCuenta() {
-  const [data, setData] = useState<{ totalFacturado: number; porCobrar: number; promDias: number; ultimosPagos: Array<{ fecha: string; importe: number }> } | null>(null)
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    async function load() {
-      const { data: cartera } = await supabase.from('econta_cartera')
-        .select('tipo, importe, saldo, fecha')
-        .eq('cve_cliente', CLAVE)
-        .order('fecha', { ascending: false })
-        .limit(2000)
-
-      if (!cartera || cartera.length === 0) { setLoading(false); return }
-
-      const totalFacturado = cartera.filter((r: any) => r.tipo === 'C').reduce((s: number, r: any) => s + (r.importe || 0), 0)
-      const porCobrar = cartera.reduce((s: number, r: any) => s + (r.saldo || 0), 0)
-
-      // Find last 3 payments (abonos)
-      const pagos = cartera.filter((r: any) => r.tipo === 'A').slice(0, 3)
-
-      // Average days between charges and payments (rough estimate)
-      const cargos = cartera.filter((r: any) => r.tipo === 'C' && r.fecha)
-      const abonos = cartera.filter((r: any) => r.tipo === 'A' && r.fecha)
-      let promDias = 0
-      if (cargos.length > 0 && abonos.length > 0) {
-        const avgCargoDate = cargos.slice(0, 20).reduce((s: number, r: any) => s + new Date(r.fecha).getTime(), 0) / Math.min(cargos.length, 20)
-        const avgAbonoDate = abonos.slice(0, 20).reduce((s: number, r: any) => s + new Date(r.fecha).getTime(), 0) / Math.min(abonos.length, 20)
-        promDias = Math.max(0, Math.round((avgAbonoDate - avgCargoDate) / (1000 * 60 * 60 * 24)))
-      }
-
-      setData({
-        totalFacturado,
-        porCobrar: Math.abs(porCobrar),
-        promDias,
-        ultimosPagos: pagos.map((p: any) => ({ fecha: p.fecha, importe: p.importe || 0 })),
-      })
-      setLoading(false)
-    }
-    load()
-  }, [])
-
-  if (loading) return (
-    <Card style={{ padding: 20, marginTop: 20 }}>
-      <div className="skeleton" style={{ height: 120, borderRadius: 8 }} />
-    </Card>
-  )
-
-  if (!data) return null
-
-  return (
-    <Card style={{ padding: 20, marginTop: 20 }}>
-      <SectionTitle title="Estado de Cuenta" sub="Resumen financiero del cliente" />
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16, marginBottom: 16 }}>
-        <div style={{ background: T.surfaceAlt, borderRadius: 8, padding: '12px 16px' }}>
-          <div style={{ color: T.textMuted, fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total Facturado</div>
-          <div style={{ color: T.text, fontSize: 20, fontWeight: 800, fontFamily: 'var(--font-jetbrains-mono)', marginTop: 4 }}>{fmtMXN(data.totalFacturado)}</div>
-        </div>
-        <div style={{ background: T.surfaceAlt, borderRadius: 8, padding: '12px 16px' }}>
-          <div style={{ color: T.textMuted, fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Por Cobrar</div>
-          <div style={{ color: data.porCobrar > 0 ? T.amber : T.green, fontSize: 20, fontWeight: 800, fontFamily: 'var(--font-jetbrains-mono)', marginTop: 4 }}>{fmtMXN(data.porCobrar)}</div>
-        </div>
-        <div style={{ background: T.surfaceAlt, borderRadius: 8, padding: '12px 16px' }}>
-          <div style={{ color: T.textMuted, fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Promedio Días Pago</div>
-          <div style={{ color: T.text, fontSize: 20, fontWeight: 800, fontFamily: 'var(--font-jetbrains-mono)', marginTop: 4 }}>{data.promDias} días</div>
-        </div>
-      </div>
-      {data.ultimosPagos.length > 0 && (
-        <div>
-          <div style={{ color: T.textSub, fontSize: 12, fontWeight: 600, marginBottom: 8 }}>Últimos 3 Pagos</div>
-          {data.ultimosPagos.map((p, i) => (
-            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: i < data.ultimosPagos.length - 1 ? `1px solid ${T.border}` : 'none' }}>
-              <span style={{ color: T.textSub, fontSize: 12, fontFamily: 'var(--font-jetbrains-mono)' }}>
-                {p.fecha ? new Date(p.fecha).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'America/Chicago' }) : '—'}
-              </span>
-              <span style={{ color: T.green, fontSize: 12, fontWeight: 600, fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtMXN(p.importe)}</span>
-            </div>
-          ))}
-        </div>
-      )}
-      <div style={{ marginTop: 12, textAlign: 'right' }}>
-        <a href="/cuentas" style={{ color: T.navy, fontSize: 12, fontWeight: 600, textDecoration: 'none' }}>Ver estado completo →</a>
-      </div>
-    </Card>
-  )
-}
-
-function scorecardColor(value: number | null, greenThreshold: number, amberThreshold: number, invert = false): string {
-  if (value === null) return '#9C9890'
-  if (invert) {
-    if (value <= greenThreshold) return '#2D8540'
-    if (value <= amberThreshold) return '#C47F17'
-    return '#C23B22'
-  }
-  if (value >= greenThreshold) return '#2D8540'
-  if (value >= amberThreshold) return '#C47F17'
-  return '#C23B22'
-}
-
-function BrokerScorecard({ summary, isMobile }: { summary: Record<string, any>; isMobile: boolean }) {
-  const avgDays = summary.avgDaysToCross as number | null
-  const firstAttempt = summary.firstAttemptPct as number | null
-  const entradaIntegrity = summary.entradaIntegrityPct as number | null
-  const docsComplete = Number(summary.docsCompletosPct ?? 0)
-  const tmecPct = Number(summary.tmecPct ?? 0)
-  const cruzados = Number(summary.cruzadosCount ?? 0)
-  const totalTraficos = Number(summary.totalTraficos ?? 0)
-
-  const metrics = [
-    {
-      label: 'Tiempo a cruce',
-      value: avgDays !== null ? `${avgDays}` : '\u2014',
-      unit: avgDays !== null ? 'd\u00EDas' : undefined,
-      note: cruzados >= 3
-        ? `promedio de ${cruzados} cruces`
-        : 'datos insuficientes',
-      color: scorecardColor(avgDays, 5, 10, true),
-    },
-    {
-      label: 'Expedientes completos',
-      value: `${docsComplete}%`,
-      unit: undefined,
-      note: `${fmtNum(summary.docsCompletos ?? 0)} de ${fmtNum(totalTraficos)} tr\u00E1ficos`,
-      color: scorecardColor(docsComplete, 80, 50),
-    },
-    {
-      label: 'T-MEC aplicado',
-      value: `${tmecPct}%`,
-      unit: undefined,
-      note: `${fmtNum(summary.tmecCount ?? 0)} de ${fmtNum(summary.totalFacturas ?? 0)} pedimentos`,
-      color: scorecardColor(tmecPct, 50, 25),
-    },
-    {
-      label: 'Aceptaci\u00F3n primer intento',
-      value: firstAttempt !== null ? `${firstAttempt}%` : '\u2014',
-      unit: undefined,
-      note: firstAttempt !== null
-        ? `cruzados / con pedimento`
-        : 'sin datos suficientes',
-      color: scorecardColor(firstAttempt, 85, 70),
-    },
-    {
-      label: 'Integridad de entradas',
-      value: entradaIntegrity !== null ? `${entradaIntegrity}%` : '\u2014',
-      unit: undefined,
-      note: entradaIntegrity !== null
-        ? `sin faltantes ni da\u00F1os`
-        : 'sin datos de entradas',
-      color: scorecardColor(entradaIntegrity, 90, 75),
-    },
-    {
-      label: 'Cumplimiento IMMEX',
-      value: '100%',
-      unit: undefined,
-      note: '0 observaciones',
-      color: '#2D8540',
-    },
+function exportCSV(rows: TraficoRow[], clientClave: string) {
+  const meta = [
+    'CRUZ — Renato Zapata & Company',
+    `Clave: ${clientClave}`,
+    `Exportado: ${fmtDate(new Date())}`,
+    `Total registros: ${rows.length}`,
+    '',
   ]
+  const headers = ['Trafico', 'Estatus', 'Fecha', 'Descripcion', 'Peso_kg', 'Importe_USD', 'Pedimento', 'Proveedores']
+  const csvRows = rows.map(r => [
+    r.trafico,
+    r.estatus ?? '',
+    r.fecha_llegada?.split('T')[0] ?? '',
+    (r.descripcion_mercancia ?? '').replace(/,/g, ' '),
+    r.peso_bruto ?? '',
+    r.importe_total ?? '',
+    r.pedimento ?? '',
+    (r.proveedores ?? '').replace(/,/g, ';'),
+  ].join(','))
 
-  return (
-    <div style={{ marginBottom: 24 }}>
-      <h3 style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#9C9890', marginBottom: 12 }}>
-        Scorecard del Broker
-      </h3>
-      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : 'repeat(3,1fr)', gap: 12 }}>
-        {metrics.map((kpi) => (
-          <div key={kpi.label} style={{
-            background: '#FFFFFF', border: '1px solid #E8E5E0', borderRadius: 10, padding: '14px 16px',
-            borderTop: `3px solid ${kpi.color}`,
-          }}>
-            <div style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 24, fontWeight: 700, color: kpi.color }}>
-              {kpi.value}{kpi.unit ? <span style={{ fontSize: 12, fontWeight: 500, marginLeft: 2 }}>{kpi.unit}</span> : null}
-            </div>
-            <div style={{ fontSize: 12, fontWeight: 600, color: '#1A1A18', marginTop: 6 }}>{kpi.label}</div>
-            {kpi.note && <div style={{ fontSize: 11, color: '#9C9890', marginTop: 2 }}>{kpi.note}</div>}
-          </div>
-        ))}
-      </div>
-    </div>
-  )
+  const blob = new Blob([[...meta, headers.join(','), ...csvRows].join('\n')], { type: 'text/csv' })
+  const fname = `CRUZ_Traficos_${clientClave}_${new Date().toISOString().split('T')[0]}.csv`
+  const a = document.createElement('a')
+  a.href = URL.createObjectURL(blob)
+  a.download = fname
+  a.click()
 }
 
-function complianceColor(pct: number): string {
-  if (pct > 80) return '#2D8540'
-  if (pct >= 60) return '#C47F17'
-  return '#C23B22'
-}
-
-function complianceBg(pct: number): string {
-  if (pct > 80) return '#F0FAF2'
-  if (pct >= 60) return '#FFFBEB'
-  return '#FEF2F2'
-}
-
-function SupplierIntelligence({ data, isMobile }: { data: { name: string; shipments: number; compliancePct: number; avgCrossDays: number | null; tmecPct: number }[]; isMobile: boolean }) {
-  if (data.length === 0) return null
-
-  return (
-    <div style={{ marginTop: 20 }}>
-      <div style={{ background: '#FFFFFF', border: `1px solid ${T.border}`, borderRadius: 10, overflow: 'hidden' }}>
-        <div style={{ padding: '14px 16px', borderBottom: `1px solid ${T.border}` }}>
-          <h3 style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#9C9890', margin: 0 }}>
-            Inteligencia de Proveedores
-          </h3>
-          <p style={{ fontSize: 11, color: '#9C9890', margin: '4px 0 0' }}>Top 5 por volumen de embarques · Datos de tráficos</p>
-        </div>
-        {isMobile ? (
-          <div style={{ padding: 12 }}>
-            {data.map(s => {
-              const color = complianceColor(s.compliancePct)
-              const bg = complianceBg(s.compliancePct)
-              return (
-                <div key={s.name} style={{
-                  background: bg, border: `1px solid ${T.border}`, borderLeft: `4px solid ${color}`,
-                  borderRadius: 8, padding: '12px 14px', marginBottom: 8,
-                }}>
-                  <div style={{ fontWeight: 700, fontSize: 13, color: T.text, marginBottom: 8 }}>{s.name}</div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                    <div>
-                      <div style={{ fontSize: 10, color: T.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Embarques</div>
-                      <div style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 16, fontWeight: 700, color: T.text }}>{s.shipments}</div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: 10, color: T.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Cumplimiento</div>
-                      <div style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 16, fontWeight: 700, color }}>{s.compliancePct}%</div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: 10, color: T.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Días cruce</div>
-                      <div style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 16, fontWeight: 700, color: T.text }}>
-                        {s.avgCrossDays !== null ? s.avgCrossDays : '—'}
-                      </div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: 10, color: T.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em' }}>T-MEC</div>
-                      <div style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 16, fontWeight: 700, color: s.tmecPct >= 50 ? '#2D8540' : '#C47F17' }}>{s.tmecPct}%</div>
-                    </div>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-            <thead>
-              <tr style={{ borderBottom: `1px solid ${T.border}` }}>
-                <th scope="col" style={{ padding: '10px 16px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#9C9890', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Proveedor</th>
-                <th scope="col" style={{ padding: '10px 12px', textAlign: 'right', fontSize: 11, fontWeight: 700, color: '#9C9890', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Embarques</th>
-                <th scope="col" style={{ padding: '10px 12px', textAlign: 'right', fontSize: 11, fontWeight: 700, color: '#9C9890', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Cumplimiento</th>
-                <th scope="col" style={{ padding: '10px 12px', textAlign: 'right', fontSize: 11, fontWeight: 700, color: '#9C9890', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Días Cruce</th>
-                <th scope="col" style={{ padding: '10px 12px', textAlign: 'right', fontSize: 11, fontWeight: 700, color: '#9C9890', textTransform: 'uppercase', letterSpacing: '0.06em' }}>T-MEC</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.map(s => {
-                const color = complianceColor(s.compliancePct)
-                const bg = complianceBg(s.compliancePct)
-                return (
-                  <tr key={s.name} style={{ borderBottom: `1px solid ${T.border}`, background: bg }}>
-                    <td style={{ padding: '12px 16px', fontWeight: 600, borderLeft: `4px solid ${color}` }}>{s.name}</td>
-                    <td style={{ padding: '12px 12px', textAlign: 'right', fontFamily: 'var(--font-jetbrains-mono)', fontWeight: 600 }}>{s.shipments}</td>
-                    <td style={{ padding: '12px 12px', textAlign: 'right', fontFamily: 'var(--font-jetbrains-mono)', fontWeight: 700, color }}>{s.compliancePct}%</td>
-                    <td style={{ padding: '12px 12px', textAlign: 'right', fontFamily: 'var(--font-jetbrains-mono)', color: T.text }}>
-                      {s.avgCrossDays !== null ? `${s.avgCrossDays} d` : '—'}
-                    </td>
-                    <td style={{ padding: '12px 12px', textAlign: 'right', fontFamily: 'var(--font-jetbrains-mono)', fontWeight: 600, color: s.tmecPct >= 50 ? '#2D8540' : '#C47F17' }}>{s.tmecPct}%</td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        )}
-      </div>
-    </div>
-  )
-}
-
-function getDateFilter(range: '7d' | '30d' | 'year' | 'all'): string | null {
-  const now = new Date()
-  if (range === '7d') return new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString()
-  if (range === '30d') return new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString()
-  if (range === 'year') return new Date(now.getFullYear(), 0, 1).toISOString()
-  return null // 'all' = no date filter
-}
-
-const DATE_RANGE_OPTIONS: { key: '7d' | '30d' | 'year' | 'all'; label: string }[] = [
-  { key: '7d', label: 'Últimos 7 días' },
-  { key: '30d', label: 'Últimos 30 días' },
-  { key: 'year', label: 'Este año' },
-  { key: 'all', label: 'Histórico' },
-]
+// ── Main Component ─────────────────────────────────────
 
 export function ReportesView() {
-  const [weeklyData, setWeeklyData] = useState<any[]>([])
-  const [proveedores, setProveedores] = useState<any[]>([])
-  const [byDay, setByDay] = useState<any[]>([])
-  const [byMonth, setByMonth] = useState<any[]>([])
-  const [statusData, setStatusData] = useState<any[]>([])
-  const [summary, setSummary] = useState<any>({})
+  const [rows, setRows] = useState<TraficoRow[]>([])
   const [loading, setLoading] = useState(true)
-  const [monthlyReports, setMonthlyReports] = useState<any[]>([])
-  const [dateRange, setDateRange] = useState<'7d' | '30d' | 'year' | 'all'>('30d')
-  const [supplierStats, setSupplierStats] = useState<{ name: string; count: number; value: number; tmecPct: number }[]>([])
-  const [supplierIntel, setSupplierIntel] = useState<{ name: string; shipments: number; compliancePct: number; avgCrossDays: number | null; tmecPct: number }[]>([])
+  const [companyFilter, setCompanyFilter] = useState<string>('')
+  const [companies, setCompanies] = useState<{ id: string; name: string }[]>([])
   const isMobile = useIsMobile()
 
+  // Auth cookies
+  const [companyId, setCompanyId] = useState('')
+  const [clientClave, setClientClave] = useState('')
+  const [userRole, setUserRole] = useState('')
+  const [cookiesReady, setCookiesReady] = useState(false)
+
   useEffect(() => {
-    supabase.from('monthly_intelligence_reports')
-      .select('*').eq('company_id', COMPANY_ID)
-      .order('created_at', { ascending: false }).limit(10)
-      .then(({ data }) => setMonthlyReports(data || []))
+    setCompanyId(getCookieValue('company_id') ?? '')
+    setClientClave(getCookieValue('company_clave') ?? '')
+    setUserRole(getCookieValue('user_role') ?? '')
+    setCookiesReady(true)
   }, [])
 
+  const isInternal = userRole === 'broker' || userRole === 'admin'
+
+  // Fetch tráficos
   useEffect(() => {
-    async function load() {
-      const dateFilter = getDateFilter(dateRange)
+    if (!cookiesReady) return
+    if (!isInternal && !companyId) { setLoading(false); return }
+    setLoading(true)
 
-      let factQuery = supabase.from('aduanet_facturas')
-        .select('valor_usd, dta, igi, iva, fecha_pago, proveedor')
-        .eq('clave_cliente', CLAVE)
-        .order('fecha_pago', { ascending: true })
-      if (dateFilter) factQuery = factQuery.gte('fecha_pago', dateFilter)
+    const params = new URLSearchParams({
+      table: 'traficos',
+      limit: '5000',
+      order_by: 'fecha_llegada',
+      order_dir: 'desc',
+    })
+    if (!isInternal) {
+      params.set('company_id', companyId)
+      if (clientClave) params.set('trafico_prefix', `${clientClave}-`)
+    }
 
-      let trafQuery = supabase.from('traficos')
-        .select('estatus, fecha_llegada, fecha_cruce, pedimento, peso_bruto, proveedores, regimen')
-        .eq('company_id', COMPANY_ID)
-      if (dateFilter) trafQuery = trafQuery.gte('fecha_llegada', dateFilter)
+    fetch(`/api/data?${params}`)
+      .then(r => r.json())
+      .then(d => {
+        const arr = d.data ?? d
+        setRows(Array.isArray(arr) ? arr : [])
 
-      let entQuery = supabase.from('entradas')
-        .select('tiene_faltantes, mercancia_danada, peso_bruto, fecha_llegada_mercancia')
-        .eq('company_id', COMPANY_ID)
-      if (dateFilter) entQuery = entQuery.gte('fecha_llegada_mercancia', dateFilter)
-
-      const [factRes, trafRes, entRes] = await Promise.all([
-        factQuery, trafQuery, entQuery,
-      ])
-
-      const facturas = factRes.data || []
-      const traficos = trafRes.data || []
-      const entradas = entRes.data || []
-
-      // Weekly trend
-      const byWeek: Record<string, { valor: number; count: number }> = {}
-      facturas.forEach((f: any) => {
-        if (!f.fecha_pago) return
-        const d = new Date(f.fecha_pago)
-        const monday = new Date(d)
-        monday.setDate(d.getDate() - (d.getDay() === 0 ? 6 : d.getDay() - 1))
-        const key = monday.toISOString().split('T')[0]
-        if (!byWeek[key]) byWeek[key] = { valor: 0, count: 0 }
-        byWeek[key].valor += f.valor_usd || 0
-        byWeek[key].count++
+        // Extract unique companies for broker filter
+        if (isInternal) {
+          const companyMap = new Map<string, string>()
+          ;(Array.isArray(arr) ? arr : []).forEach((r: TraficoRow) => {
+            if (r.company_id && !companyMap.has(r.company_id)) {
+              // Use company_id as both id and display name
+              companyMap.set(r.company_id, r.company_id)
+            }
+          })
+          setCompanies([...companyMap.entries()].map(([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name)))
+        }
       })
-      setWeeklyData(Object.entries(byWeek)
-        .sort(([a], [b]) => a.localeCompare(b)).slice(-12)
-        .map(([week, d]) => ({
-          week, label: new Date(week).toLocaleDateString('es-MX', { month: 'short', day: 'numeric' }),
-          valor: Math.round(d.valor), ops: d.count,
-        })))
+      .catch(() => setRows([]))
+      .finally(() => setLoading(false))
+  }, [cookiesReady, companyId, clientClave, isInternal])
 
-      // Top proveedores
-      const provMap: Record<string, number> = {}
-      facturas.forEach((f: any) => { if (f.proveedor) provMap[f.proveedor] = (provMap[f.proveedor] || 0) + (f.valor_usd || 0) })
-      setProveedores(Object.entries(provMap).sort((a, b) => b[1] - a[1]).slice(0, 8)
-        .map(([name, valor]) => ({ name: name.split(' ').slice(0, 3).join(' '), fullName: name, valor: Math.round(valor as number) })))
+  // Filtered rows (broker can filter by company)
+  const filteredRows = useMemo(() => {
+    if (!companyFilter) return rows
+    return rows.filter(r => r.company_id === companyFilter)
+  }, [rows, companyFilter])
 
-      // Supplier intelligence — top 5 by value with T-MEC coverage
-      const suppMap = new Map<string, { count: number; totalValue: number; tmecCount: number }>()
-      facturas.forEach((f: any) => {
-        const name = f.proveedor || 'Desconocido'
+  // ── SECTION 1: Resumen Mensual ───────────────────────
+  const monthlyData: MonthlyBucket[] = useMemo(() => {
+    const monthMap: Record<string, number> = {}
+    filteredRows.forEach(t => {
+      if (!t.fecha_llegada) return
+      const key = t.fecha_llegada.substring(0, 7) // YYYY-MM
+      monthMap[key] = (monthMap[key] || 0) + 1
+    })
+    return Object.entries(monthMap)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .slice(-6)
+      .map(([m, count]) => ({
+        month: m,
+        label: new Date(m + '-01').toLocaleDateString('es-MX', {
+          month: 'short',
+          year: '2-digit',
+          timeZone: 'America/Chicago',
+        }),
+        count,
+      }))
+  }, [filteredRows])
+
+  const totalFiltered = filteredRows.length
+
+  // ── SECTION 2: Top Proveedores ───────────────────────
+  const supplierData: SupplierRow[] = useMemo(() => {
+    const suppMap = new Map<string, { count: number; totalValue: number; tmecCount: number }>()
+    filteredRows.forEach(t => {
+      const provStr = t.proveedores
+      if (!provStr) return
+      const suppliers = provStr.split(',').map(s => s.trim()).filter(Boolean)
+      suppliers.forEach(name => {
         const prev = suppMap.get(name) || { count: 0, totalValue: 0, tmecCount: 0 }
         prev.count++
-        prev.totalValue += Number(f.valor_usd) || 0
-        if (f.igi !== null && Number(f.igi) > 0) prev.tmecCount++ // has IGI = not T-MEC exempt
+        prev.totalValue += Number(t.importe_total) || 0
+        const reg = t.regimen
+        if (reg === 'ITE' || reg === 'ITR') prev.tmecCount++
         suppMap.set(name, prev)
       })
-      setSupplierStats([...suppMap.entries()]
-        .map(([name, stats]) => ({
-          name: name.substring(0, 30),
-          count: stats.count,
-          value: stats.totalValue,
-          tmecPct: stats.count > 0 ? Math.round(((stats.count - stats.tmecCount) / stats.count) * 100) : 0,
-        }))
-        .sort((a, b) => b.value - a.value)
-        .slice(0, 5))
+    })
+    return [...suppMap.entries()]
+      .map(([name, stats]) => ({
+        name,
+        count: stats.count,
+        totalValue: stats.totalValue,
+        tmecPct: stats.count > 0 ? Math.round((stats.tmecCount / stats.count) * 100) : 0,
+      }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10)
+  }, [filteredRows])
 
-      // Supplier Intelligence — from traficos proveedores field
-      const supplierMap = new Map<string, { total: number; cruzado: number; crossDays: number[]; tmec: number }>()
-      traficos.forEach((t: Record<string, unknown>) => {
-        const provStr = t.proveedores as string | null
-        if (!provStr) return
-        const suppliers = provStr.split(',').map((s: string) => s.trim()).filter(Boolean)
-        suppliers.forEach((name: string) => {
-          const prev = supplierMap.get(name) || { total: 0, cruzado: 0, crossDays: [], tmec: 0 }
-          prev.total++
-          if (t.estatus === 'Cruzado') prev.cruzado++
-          const reg = t.regimen as string | null
-          if (reg === 'ITE' || reg === 'ITR') prev.tmec++
-          const llegada = t.fecha_llegada as string | null
-          const cruce = t.fecha_cruce as string | null
-          if (llegada && cruce) {
-            const days = (new Date(cruce).getTime() - new Date(llegada).getTime()) / 86400000
-            if (days >= 0) prev.crossDays.push(days)
-          }
-          supplierMap.set(name, prev)
-        })
-      })
-      setSupplierIntel([...supplierMap.entries()]
-        .map(([name, s]) => ({
-          name,
-          shipments: s.total,
-          compliancePct: s.total > 0 ? Math.round((s.cruzado / s.total) * 100) : 0,
-          avgCrossDays: s.crossDays.length > 0
-            ? Math.round((s.crossDays.reduce((a, b) => a + b, 0) / s.crossDays.length) * 10) / 10
-            : null,
-          tmecPct: s.total > 0 ? Math.round((s.tmec / s.total) * 100) : 0,
-        }))
-        .sort((a, b) => b.shipments - a.shipments)
-        .slice(0, 5))
-
-      // Volume by day
-      const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
-      const dayCount = [0, 0, 0, 0, 0, 0, 0]
-      traficos.forEach((t: any) => { if (t.fecha_llegada) dayCount[new Date(t.fecha_llegada).getDay()]++ })
-      setByDay(days.map((d, i) => ({ day: d, count: dayCount[i] })))
-
-      // Volume by month
-      const monthMap: Record<string, number> = {}
-      traficos.forEach((t: any) => { if (!t.fecha_llegada) return; const key = t.fecha_llegada.substring(0, 7); monthMap[key] = (monthMap[key] || 0) + 1 })
-      setByMonth(Object.entries(monthMap).sort(([a], [b]) => a.localeCompare(b)).slice(-12)
-        .map(([m, count]) => ({ month: new Date(m + '-01').toLocaleDateString('es-MX', { month: 'short', year: '2-digit' }), count })))
-
-      // Status breakdown
-      const statusMap: Record<string, number> = {}
-      traficos.forEach((t: any) => { const s = t.estatus || 'Desconocido'; statusMap[s] = (statusMap[s] || 0) + 1 })
-      const STATUS_COLORS: Record<string, string> = { 'En Proceso': T.amber, 'Cruzado': T.green, 'Detenido': T.red }
-      setStatusData(Object.entries(statusMap).sort((a, b) => b[1] - a[1])
-        .map(([status, count]) => ({ status, count, color: STATUS_COLORS[status] || T.textMuted, pct: Math.round((count / traficos.length) * 100) })))
-
-      // Summary
-      const totalValor = facturas.reduce((s: number, f: any) => s + (f.valor_usd || 0), 0)
-      const tmecCount = facturas.filter((f: any) => (f.igi || 0) === 0).length
-      const noTmecCount = facturas.length - tmecCount
-      const noTmecValor = facturas.filter((f: any) => (f.igi || 0) > 0).reduce((s: number, f: any) => s + (f.valor_usd || 0), 0)
-      const faltantes = entradas.filter((e: any) => e.tiene_faltantes).length
-      // Estimated savings: ~5% of non-T-MEC value as potential IGI savings
-      const estimatedSavings = Math.round(noTmecValor * 0.05)
-      const docsCompletos = traficos.filter((t: any) => t.estatus === 'Cruzado' || t.estatus === 'Pedimento Pagado').length
-      const docsCompletosPct = traficos.length > 0 ? Math.round((docsCompletos / traficos.length) * 100) : 0
-      // Estimated savings from T-MEC applied: ~5% of T-MEC value as avoided IGI
-      const tmecValor = facturas.filter((f: any) => (f.igi || 0) === 0).reduce((s: number, f: any) => s + (f.valor_usd || 0), 0)
-      const tmecSavings = Math.round(tmecValor * 0.05)
-      // Broker Scorecard metrics — computed from real data
-      const cruzados = traficos.filter((t: any) =>
-        (t.estatus || '').toLowerCase().includes('cruz') && t.fecha_llegada && t.fecha_cruce
-      )
-      let avgDaysToCross: number | null = null
-      if (cruzados.length >= 3) {
-        const deltas = cruzados.map((t: any) => {
-          const arrived = new Date(t.fecha_llegada).getTime()
-          const crossed = new Date(t.fecha_cruce).getTime()
-          return Math.max(0, (crossed - arrived) / 86400000)
-        })
-        avgDaysToCross = Math.round((deltas.reduce((a: number, b: number) => a + b, 0) / deltas.length) * 10) / 10
-      }
-
-      // First-attempt acceptance: cruzados with pedimento (no rectificación flag)
-      const withPedimento = traficos.filter((t: any) => t.pedimento)
-      const firstAttemptPct = withPedimento.length > 0
-        ? Math.round((cruzados.length / withPedimento.length) * 100)
-        : null
-
-      // Faltantes rate from entradas
-      const faltantesCount = entradas.filter((e: any) => e.tiene_faltantes).length
-      const entradaIntegrityPct = entradas.length > 0
-        ? Math.round(((entradas.length - faltantesCount) / entradas.length) * 100)
-        : null
-
-      setSummary({
-        totalValor, tmecCount, totalFacturas: facturas.length,
-        tmecPct: facturas.length > 0 ? ((tmecCount / facturas.length) * 100).toFixed(0) : 0,
-        noTmecCount, noTmecValor, estimatedSavings, tmecSavings, tmecValor,
-        totalTraficos: traficos.length, totalEntradas: entradas.length,
-        docsCompletos, docsCompletosPct,
-        faltantesPct: entradas.length > 0 ? ((faltantes / entradas.length) * 100).toFixed(2) : 0,
-        avgDaysToCross, firstAttemptPct, entradaIntegrityPct,
-        cruzadosCount: cruzados.length,
-      })
-      setLoading(false)
-    }
-    load()
-  }, [dateRange])
-
-  const isHistorico = dateRange === 'all'
-
+  // ── Loading skeleton ─────────────────────────────────
   if (loading) return (
     <div style={{ padding: '24px 28px' }}>
       <div className="skeleton" style={{ width: 200, height: 24, marginBottom: 20 }} />
-      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: 12, marginBottom: 24 }}>
-        {[0,1,2,3].map(i => <div key={i} className="skeleton" style={{ height: 80, borderRadius: 12 }} />)}
-      </div>
       <div className="skeleton" style={{ height: 280, borderRadius: 12, marginBottom: 16 }} />
-      <div className="skeleton" style={{ height: 200, borderRadius: 12 }} />
+      <div className="skeleton" style={{ height: 200, borderRadius: 12, marginBottom: 16 }} />
+      <div className="skeleton" style={{ height: 60, borderRadius: 12 }} />
     </div>
   )
 
   return (
-    <div style={{ padding: '24px 28px', fontFamily: 'var(--font-geist-sans)' }}>
-      <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+    <div style={{ padding: isMobile ? '16px' : '24px 28px', fontFamily: 'var(--font-geist-sans)' }}>
+      {/* Header */}
+      <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'center', flexDirection: isMobile ? 'column' : 'row', gap: 12 }}>
         <div>
-          <h2 style={{ color: T.text, fontSize: 18, fontWeight: 700, margin: 0 }}>Reportes & Analítica</h2>
-          <p style={{ color: T.textMuted, fontSize: 12, margin: '4px 0 0' }}>{CLIENT_NAME} · Datos históricos</p>
+          <h2 style={{ color: T.text, fontSize: 18, fontWeight: 700, margin: 0 }}>Reportes</h2>
+          <p style={{ color: T.textMuted, fontSize: 12, margin: '4px 0 0' }}>
+            {totalFiltered.toLocaleString('es-MX')} tráficos · Últimos 6 meses
+          </p>
         </div>
-        {!isMobile && (
-          <button onClick={() => window.open('/api/reportes-pdf', '_blank')} style={{
-            display: 'flex', alignItems: 'center', gap: 6,
-            padding: '8px 14px', border: `1px solid ${T.border}`,
-            borderRadius: 8, background: T.surface,
-            fontSize: 12, fontWeight: 600, color: T.textSub, cursor: 'pointer',
-            minHeight: 36,
-          }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-            Exportar PDF
-          </button>
+
+        {/* Broker company filter */}
+        {isInternal && companies.length > 0 && (
+          <select
+            value={companyFilter}
+            onChange={e => setCompanyFilter(e.target.value)}
+            style={{
+              padding: '8px 12px',
+              borderRadius: 8,
+              border: `1px solid ${T.border}`,
+              background: T.surface,
+              color: T.text,
+              fontSize: 13,
+              fontWeight: 500,
+              cursor: 'pointer',
+              minHeight: 40,
+              minWidth: 180,
+            }}
+          >
+            <option value="">Todos los clientes</option>
+            {companies.map(c => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
+          </select>
         )}
       </div>
 
-      {/* Date range filter */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
-        {DATE_RANGE_OPTIONS.map(opt => (
-          <button
-            key={opt.key}
-            onClick={() => setDateRange(opt.key)}
-            style={{
-              padding: '6px 14px',
-              borderRadius: 9999,
-              border: `1px solid ${dateRange === opt.key ? T.navy : T.border}`,
-              background: dateRange === opt.key ? T.goldBg : T.surface,
-              color: dateRange === opt.key ? T.navy : T.textSub,
-              fontSize: 12,
-              fontWeight: 600,
-              cursor: 'pointer',
-              transition: 'all 150ms',
-              minHeight: 36,
-            }}
-          >
-            {opt.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Executive hero card — CFO screenshot target */}
-      <ExecutiveHero summary={summary} isMobile={isMobile} />
-
-      {/* Summary header — shows data NOT in ExecutiveHero (rectificaciones, entradas, faltantes) */}
-      <div style={{
-        background: 'rgba(45,133,64,0.06)', border: '1px solid rgba(45,133,64,0.2)',
-        borderRadius: 10, padding: '12px 16px', marginBottom: 20,
-      }}>
-        <span style={{ fontSize: 13, color: T.text }}>
-          <strong>Período actual:</strong>{' '}
-          {fmtNum(summary.totalTraficos)} tráficos · {fmtNum(summary.totalEntradas || 0)} entradas · {summary.faltantesPct || 0}% con faltantes
-        </span>
-      </div>
-
-      {/* KPI strip — client-facing: positive metrics only */}
-      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: 12, marginBottom: 24 }}>
-        {[
-          { label: 'Valor Total Importado', value: fmtUSD(summary.totalValor), sub: isHistorico ? 'USD acumulado · histórico' : 'USD acumulado', color: T.navy, trend: null as string | null },
-          { label: 'T-MEC Aplicado', value: `${summary.tmecPct}%`, sub: `${fmtNum(summary.tmecCount)} de ${fmtNum(summary.totalFacturas)} pedimentos`, color: T.green, trend: Number(summary.tmecPct) >= 50 ? '↑' : null as string | null },
-          { label: 'Tráficos Completados', value: fmtNum(summary.docsCompletos), sub: `${fmtNum(summary.docsCompletos)} de ${fmtNum(summary.totalTraficos)} tráficos`, color: T.navy, trend: null as string | null },
-          { label: 'Tasa de Éxito', value: summary.totalTraficos > 0 ? `${summary.docsCompletosPct}%` : '—', sub: 'Incluye rectificaciones y reclasificaciones', color: T.green, trend: Number(summary.docsCompletosPct) >= 90 ? '↑' : null as string | null },
-        ].map(k => (
-          <Card key={k.label} style={{ padding: '14px 16px' }}>
-            <div className="kpi-label">{k.label}</div>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-              <div className="kpi-value" style={{ fontSize: isMobile ? 28 : 36, color: k.color }}>{k.value}</div>
-              {k.trend && (
-                <span style={{ fontSize: 14, fontWeight: 700, color: T.green }}>{k.trend}</span>
-              )}
-            </div>
-            <div style={{ color: T.textMuted, fontSize: 11, marginTop: 3 }}>{k.sub}</div>
-          </Card>
-        ))}
-      </div>
-
-      {/* Scorecard del Broker — data-driven */}
-      <BrokerScorecard summary={summary} isMobile={isMobile} />
-
-      {/* Weekly trend + Day of week */}
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 20, marginBottom: 20 }}>
-        <Card style={{ padding: 20 }}>
-          <SectionTitle title="Valor Importado — Últimas 12 Semanas" sub="USD por semana" />
-          <ResponsiveContainer width="100%" height={200}>
-            <AreaChart data={weeklyData}>
-              <defs>
-                <linearGradient id="valGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={T.navy} stopOpacity={0.15} />
-                  <stop offset="95%" stopColor={T.navy} stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke={T.border} />
-              <XAxis dataKey="label" tick={{ fill: T.textMuted, fontSize: 10 }} axisLine={false} />
-              <YAxis tick={{ fill: T.textMuted, fontSize: 10 }} axisLine={false} tickFormatter={v => fmtUSD(v)} />
-              <Tooltip content={CustomTooltip} />
-              <Area type="monotone" dataKey="valor" stroke={GOLD} strokeWidth={3} fill="url(#valGrad)" activeDot={{ r: 6, stroke: 'white', strokeWidth: 2, fill: GOLD }} />
-            </AreaChart>
-          </ResponsiveContainer>
-        </Card>
-
-        <Card style={{ padding: 20 }}>
-          <SectionTitle title="Volumen por Día" sub="Tráficos históricos" />
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={byDay}>
-              <CartesianGrid strokeDasharray="3 3" stroke={T.border} />
-              <XAxis dataKey="day" tick={{ fill: T.textMuted, fontSize: 11 }} axisLine={false} />
-              <YAxis tick={{ fill: T.textMuted, fontSize: 10 }} axisLine={false} tickFormatter={v => fmtNum(v)} />
-              <Tooltip content={CustomTooltip} />
-              <Bar dataKey="count" radius={[4, 4, 0, 0]}>
-                {byDay.map((d, i) => (
-                  <Cell key={i} fill={d.count === Math.max(...byDay.map((x: any) => x.count)) ? T.navy : T.border} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </Card>
-      </div>
-
-      {/* Monthly volume + Top proveedores */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 }}>
-        <Card style={{ padding: 20 }}>
-          <SectionTitle title="Tráficos por Mes" sub="Últimos 12 meses" />
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={byMonth}>
-              <CartesianGrid strokeDasharray="3 3" stroke={T.border} />
-              <XAxis dataKey="month" tick={{ fill: T.textMuted, fontSize: 10 }} axisLine={false} />
-              <YAxis tick={{ fill: T.textMuted, fontSize: 10 }} axisLine={false} />
-              <Tooltip content={CustomTooltip} />
+      {/* ─── SECTION 1: Resumen Mensual ──────────────── */}
+      <Card style={{ padding: 20, marginBottom: 24 }}>
+        <SectionTitle title="Resumen Mensual" sub="Total de tráficos por mes — últimos 6 meses" />
+        {monthlyData.length > 0 ? (
+          <ResponsiveContainer width="100%" height={isMobile ? 220 : 280}>
+            <BarChart data={monthlyData} barCategoryGap="20%">
+              <CartesianGrid strokeDasharray="3 3" stroke={T.border} vertical={false} />
+              <XAxis
+                dataKey="label"
+                tick={{ fill: T.textMuted, fontSize: 11 }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <YAxis
+                tick={{ fill: T.textMuted, fontSize: 10 }}
+                axisLine={false}
+                tickLine={false}
+                allowDecimals={false}
+              />
+              <Tooltip content={<CustomTooltip />} />
               <Bar dataKey="count" fill={T.gold} radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
-        </Card>
-
-        <Card style={{ padding: 20 }}>
-          <SectionTitle title="Top Proveedores" sub="Por valor total importado" />
-          {proveedores.map((p, i) => {
-            const max = proveedores[0]?.valor || 1
-            return (
-              <div key={p.name} style={{ marginBottom: 10 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                  <span style={{ color: T.text, fontSize: 11, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 180, fontWeight: i === 0 ? 700 : 400 }} title={p.fullName}>{p.name}</span>
-                  <span style={{ color: T.textSub, fontSize: 11, fontWeight: 600, flexShrink: 0, marginLeft: 8, fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtUSD(p.valor)}</span>
-                </div>
-                <div style={{ height: 4, background: T.border, borderRadius: 99, overflow: 'hidden' }}>
-                  <div style={{ width: `${(p.valor / max) * 100}%`, height: '100%', background: i === 0 ? T.navy : i < 3 ? T.gold : '#CEC9BF', borderRadius: 99 }} />
-                </div>
-              </div>
-            )
-          })}
-        </Card>
-      </div>
-
-      {/* Cruces completados summary — client-friendly */}
-      <Card style={{ padding: 20 }}>
-        <SectionTitle title="Operaciones Completadas" sub="Tráficos cruzados exitosamente" />
-        <div style={{ display: 'flex', gap: 16 }}>
-          {statusData.filter(s => s.status === 'Cruzado' || s.status === 'Pedimento Pagado').map(s => (
-            <div key={s.status} style={{ flex: 1, background: T.surfaceAlt, border: `1px solid ${T.border}`, borderTop: `3px solid ${T.green}`, borderRadius: 8, padding: '14px 16px' }}>
-              <div style={{ color: T.green, fontSize: 28, fontWeight: 800, letterSpacing: '-0.02em' }}>{fmtNum(s.count)}</div>
-              <div style={{ color: T.text, fontSize: 12, fontWeight: 600, marginTop: 4 }}>{s.status}</div>
-              <div style={{ color: T.textMuted, fontSize: 11, marginTop: 2 }}>{s.pct}% del total ({fmtNum(s.count)} de {fmtNum(summary.totalTraficos)})</div>
-            </div>
-          ))}
-        </div>
+        ) : (
+          <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+            <div style={{ fontSize: 32, marginBottom: 8 }}>📊</div>
+            <div style={{ color: T.textSub, fontSize: 13, fontWeight: 600 }}>Sin datos para el período</div>
+            <div style={{ color: T.textMuted, fontSize: 12, marginTop: 4 }}>Los tráficos aparecerán aquí cuando se registren</div>
+          </div>
+        )}
       </Card>
 
-      {/* T-MEC Analysis — two-panel: applied vs opportunity */}
-      <Card style={{ padding: 20, marginTop: 20 }}>
-        <SectionTitle title="Análisis T-MEC" sub="Cobertura de tratado y oportunidades" />
-        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 16 }}>
-          {/* Left panel — T-MEC applied (green) */}
-          <div style={{ background: '#F0FAF2', border: `1px solid #BBF0C8`, borderTop: `3px solid ${T.green}`, borderRadius: 8, padding: '16px 18px' }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: T.green, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>T-MEC Aplicado</div>
-            <div style={{ fontSize: 28, fontWeight: 800, color: T.green, fontFamily: 'var(--font-jetbrains-mono)' }}>{summary.tmecPct ?? 0}%</div>
-            <div style={{ fontSize: 12, color: T.textSub, marginTop: 4 }}>{fmtNum(summary.tmecCount)} de {fmtNum(summary.totalFacturas)} pedimentos</div>
-            <div style={{ marginTop: 12, padding: '8px 12px', background: '#E0F5E5', borderRadius: 6 }}>
-              <div style={{ fontSize: 11, color: T.textMuted, marginBottom: 2 }}>Ahorro estimado por T-MEC</div>
-              <div style={{ fontSize: 16, fontWeight: 700, color: T.green, fontFamily: 'var(--font-jetbrains-mono)' }}>~{fmtUSD(summary.tmecSavings)}</div>
-            </div>
-          </div>
-          {/* Right panel — opportunity gap (amber) */}
-          <div style={{ background: '#FFFBEB', border: `1px solid #FDE68A`, borderTop: `3px solid ${T.amber}`, borderRadius: 8, padding: '16px 18px' }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: T.amber, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>Oportunidad</div>
-            <div style={{ fontSize: 28, fontWeight: 800, color: T.amber, fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtNum(summary.noTmecCount)}</div>
-            <div style={{ fontSize: 12, color: T.textSub, marginTop: 4 }}>pedimentos sin T-MEC · {fmtUSD(summary.noTmecValor)} USD</div>
-            <div style={{ marginTop: 12, padding: '8px 12px', background: '#FEF3C7', borderRadius: 6 }}>
-              <div style={{ fontSize: 11, color: T.textMuted, marginBottom: 2 }}>Ahorro potencial adicional</div>
-              <div style={{ fontSize: 16, fontWeight: 700, color: T.amber, fontFamily: 'var(--font-jetbrains-mono)' }}>~{fmtUSD(summary.estimatedSavings)}</div>
-            </div>
-          </div>
+      {/* ─── SECTION 2: Top Proveedores ──────────────── */}
+      <Card style={{ marginBottom: 24, overflow: 'hidden' }}>
+        <div style={{ padding: '16px 20px', borderBottom: `1px solid ${T.border}` }}>
+          <SectionTitle
+            title="Top 10 Proveedores"
+            sub="Por cantidad de tráficos · Incluye valor total y cobertura T-MEC"
+          />
         </div>
-        <div style={{ color: T.textMuted, fontSize: 10, marginTop: 12, fontStyle: 'italic', textAlign: 'center' }}>
-          ~ Estimaciones basadas en tasa promedio por fracción arancelaria. Verificar con su agente aduanal antes de contabilizar.
-        </div>
-      </Card>
-
-      {/* Proveedores Principales — supplier intelligence table */}
-      {supplierStats.length > 0 && (
-        <div style={{ marginTop: 20, marginBottom: 0 }}>
-          <div style={{ background: '#FFFFFF', border: `1px solid ${T.border}`, borderRadius: 10, overflow: 'hidden' }}>
-            <div style={{ padding: '14px 16px', borderBottom: `1px solid ${T.border}` }}>
-              <h3 style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#9C9890', margin: 0 }}>
-                Proveedores Principales
-              </h3>
+        {supplierData.length > 0 ? (
+          isMobile ? (
+            <div style={{ padding: 12 }}>
+              {supplierData.map((s, i) => (
+                <div key={s.name} style={{
+                  background: i === 0 ? T.goldBg : T.surfaceAlt,
+                  border: `1px solid ${T.border}`,
+                  borderLeft: `4px solid ${i === 0 ? T.gold : T.border}`,
+                  borderRadius: 8,
+                  padding: '12px 14px',
+                  marginBottom: 8,
+                }}>
+                  <div style={{ fontWeight: 700, fontSize: 13, color: T.text, marginBottom: 8 }}>
+                    {s.name}
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+                    <div>
+                      <div style={{ fontSize: 10, color: T.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Tráficos</div>
+                      <div style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 16, fontWeight: 700, color: T.text }}>{s.count}</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 10, color: T.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Valor</div>
+                      <div style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 16, fontWeight: 700, color: T.text }}>{fmtUSDShort(s.totalValue)}</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 10, color: T.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em' }}>T-MEC</div>
+                      <div style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 16, fontWeight: 700, color: s.tmecPct >= 50 ? T.green : T.amber }}>{s.tmecPct}%</div>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-              <thead>
-                <tr style={{ borderBottom: `1px solid ${T.border}` }}>
-                  <th scope="col" style={{ padding: '10px 16px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#9C9890', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Proveedor</th>
-                  <th scope="col" style={{ padding: '10px 12px', textAlign: 'right', fontSize: 11, fontWeight: 700, color: '#9C9890' }}>Pedimentos</th>
-                  <th scope="col" style={{ padding: '10px 12px', textAlign: 'right', fontSize: 11, fontWeight: 700, color: '#9C9890' }}>Valor</th>
-                  <th scope="col" style={{ padding: '10px 12px', textAlign: 'right', fontSize: 11, fontWeight: 700, color: '#9C9890' }}>T-MEC</th>
-                </tr>
-              </thead>
-              <tbody>
-                {supplierStats.map(s => (
-                  <tr key={s.name} style={{ borderBottom: '1px solid #F0ECE4' }}>
-                    <td style={{ padding: '10px 16px', fontWeight: 600 }}>{s.name}</td>
-                    <td style={{ padding: '10px 12px', textAlign: 'right', fontFamily: 'var(--font-jetbrains-mono)' }}>{s.count}</td>
-                    <td style={{ padding: '10px 12px', textAlign: 'right', fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtUSD(s.value)}</td>
-                    <td style={{ padding: '10px 12px', textAlign: 'right', fontFamily: 'var(--font-jetbrains-mono)', color: s.tmecPct >= 50 ? '#2D8540' : '#C47F17' }}>{s.tmecPct}%</td>
+          ) : (
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                <thead>
+                  <tr style={{ borderBottom: `1px solid ${T.border}` }}>
+                    <th scope="col" style={{ padding: '10px 20px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#9C9890', textTransform: 'uppercase', letterSpacing: '0.06em' }}>#</th>
+                    <th scope="col" style={{ padding: '10px 16px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#9C9890', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Proveedor</th>
+                    <th scope="col" style={{ padding: '10px 16px', textAlign: 'right', fontSize: 11, fontWeight: 700, color: '#9C9890', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Tráficos</th>
+                    <th scope="col" style={{ padding: '10px 16px', textAlign: 'right', fontSize: 11, fontWeight: 700, color: '#9C9890', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Valor Total</th>
+                    <th scope="col" style={{ padding: '10px 20px', textAlign: 'right', fontSize: 11, fontWeight: 700, color: '#9C9890', textTransform: 'uppercase', letterSpacing: '0.06em' }}>T-MEC %</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* Supplier Intelligence — from traficos data */}
-      <SupplierIntelligence data={supplierIntel} isMobile={isMobile} />
-
-      {/* Estado de Cuenta */}
-      <EstadoDeCuenta />
-
-      {/* Monthly Intelligence Reports */}
-      {monthlyReports.length > 0 && (
-        <Card style={{ marginTop: 16 }}>
-          <div style={{ padding: '16px 20px', borderBottom: `1px solid ${T.border}` }}>
-            <div style={{ fontSize: 14, fontWeight: 600, color: T.text }}>Reportes Mensuales</div>
-          </div>
-          {monthlyReports.map(r => (
-            <div key={r.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 20px', borderBottom: `1px solid ${T.border}` }}>
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: T.text }}>
-                  {r.period_label || (r.report_month ? new Date(r.report_month).toLocaleDateString('es-MX', { month: 'long', year: 'numeric' }) : 'Reporte mensual')}
-                </div>
-                <div style={{ fontSize: 11, color: T.textMuted, marginTop: 2 }}>
-                  Generado: {r.created_at ? new Date(r.created_at).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
-                </div>
-              </div>
-              {r.pdf_url ? (
-                <a href={r.pdf_url} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, fontWeight: 600, color: T.navy, textDecoration: 'none' }}>Descargar PDF →</a>
-              ) : (
-                <span style={{ fontSize: 12, color: T.textMuted, fontStyle: 'italic' }}>En proceso...</span>
-              )}
+                </thead>
+                <tbody>
+                  {supplierData.map((s, i) => (
+                    <tr
+                      key={s.name}
+                      style={{
+                        borderBottom: `1px solid ${T.border}`,
+                        background: i === 0 ? T.goldBg : 'transparent',
+                      }}
+                    >
+                      <td style={{ padding: '12px 20px', fontFamily: 'var(--font-jetbrains-mono)', fontSize: 12, color: T.textMuted }}>{i + 1}</td>
+                      <td style={{ padding: '12px 16px', fontWeight: 600, color: T.text, maxWidth: 250, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={s.name}>{s.name}</td>
+                      <td style={{ padding: '12px 16px', textAlign: 'right', fontFamily: 'var(--font-jetbrains-mono)', fontWeight: 600 }}>{fmtNum(s.count)}</td>
+                      <td style={{ padding: '12px 16px', textAlign: 'right', fontFamily: 'var(--font-jetbrains-mono)', fontWeight: 600 }}>{fmtUSDShort(s.totalValue)} USD</td>
+                      <td style={{
+                        padding: '12px 20px', textAlign: 'right',
+                        fontFamily: 'var(--font-jetbrains-mono)', fontWeight: 700,
+                        color: s.tmecPct >= 50 ? T.green : s.tmecPct > 0 ? T.amber : T.textMuted,
+                      }}>
+                        {s.tmecPct}%
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          ))}
-        </Card>
-      )}
+          )
+        ) : (
+          <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+            <div style={{ fontSize: 32, marginBottom: 8 }}>🏭</div>
+            <div style={{ color: T.textSub, fontSize: 13, fontWeight: 600 }}>Sin datos de proveedores</div>
+            <div style={{ color: T.textMuted, fontSize: 12, marginTop: 4 }}>Los proveedores aparecerán cuando se registren tráficos</div>
+          </div>
+        )}
+      </Card>
 
-      <p style={{ fontSize: 10, color: T.textMuted, marginTop: 24, fontStyle: 'italic' }}>
-        ~ Comparaciones son estimaciones directionales basadas en experiencia operativa. No representan datos certificados del sector.
+      {/* ─── SECTION 3: Exportar ─────────────────────── */}
+      <Card style={{ padding: 20 }}>
+        <SectionTitle title="Exportar" sub="Descarga los datos en el formato que necesites" />
+        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+          <button
+            onClick={() => exportCSV(filteredRows, clientClave || 'ALL')}
+            disabled={filteredRows.length === 0}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 8,
+              padding: '12px 20px',
+              border: `1px solid ${T.border}`,
+              borderRadius: 8,
+              background: T.surface,
+              fontSize: 13,
+              fontWeight: 600,
+              color: filteredRows.length === 0 ? T.textMuted : T.text,
+              cursor: filteredRows.length === 0 ? 'not-allowed' : 'pointer',
+              minHeight: 60,
+              transition: 'all 150ms',
+            }}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="16" y1="13" x2="8" y2="13" />
+              <line x1="16" y1="17" x2="8" y2="17" />
+            </svg>
+            <div style={{ textAlign: 'left' }}>
+              <div>Exportar CSV</div>
+              <div style={{ fontSize: 11, color: T.textMuted, fontWeight: 400, marginTop: 2 }}>
+                {fmtNum(filteredRows.length)} registros
+              </div>
+            </div>
+          </button>
+
+          <button
+            onClick={() => window.open('/api/reportes-pdf', '_blank')}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 8,
+              padding: '12px 20px',
+              border: `1px solid ${T.gold}`,
+              borderRadius: 8,
+              background: T.goldBg,
+              fontSize: 13,
+              fontWeight: 600,
+              color: T.gold,
+              cursor: 'pointer',
+              minHeight: 60,
+              transition: 'all 150ms',
+            }}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8" />
+              <polyline points="16 6 12 2 8 6" />
+              <line x1="12" y1="2" x2="12" y2="15" />
+            </svg>
+            <div style={{ textAlign: 'left' }}>
+              <div>Generar PDF</div>
+              <div style={{ fontSize: 11, color: T.textMuted, fontWeight: 400, marginTop: 2 }}>
+                Reporte ejecutivo completo
+              </div>
+            </div>
+          </button>
+        </div>
+      </Card>
+
+      <p style={{ fontSize: 10, color: T.textMuted, marginTop: 20, fontStyle: 'italic', textAlign: 'center' }}>
+        CRUZ — Renato Zapata & Company · Patente 3596 · Aduana 240, Nuevo Laredo
       </p>
-
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-
-      {/* Mobile FAB — PDF export */}
-      {isMobile && (
-        <button
-          onClick={() => window.open('/api/reportes-pdf', '_blank')}
-          aria-label="Exportar PDF"
-          style={{
-            position: 'fixed', bottom: 80, right: 16, zIndex: 50,
-            width: 60, height: 60, borderRadius: 9999,
-            background: T.navy, color: '#FFFFFF', border: 'none',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer',
-          }}
-        >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-        </button>
-      )}
     </div>
   )
 }

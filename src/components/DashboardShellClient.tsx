@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation'
 import { useEffect, useState, useRef } from 'react'
 import { TopNav } from './TopNav'
+import { Sidebar } from './Sidebar'
 import { StatusStrip } from './StatusStrip'
 import { CommandPalette } from './command-palette'
 import { ShortcutHelp } from './shortcut-help'
@@ -128,6 +129,7 @@ export default function DashboardShellClient({ children }: Props) {
 
       <div className="shell">
         <LoadingBar />
+        {!isMobile && <Sidebar />}
         <TopNav />
         <StatusStrip />
         <div className="shell-main">

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import { Plus, Bell, BellOff, Check, X } from 'lucide-react'
-import { COMPANY_ID, CLIENT_NAME, PATENTE, CLIENT_CLAVE } from '@/lib/client-config'
+import { getCookieValue, CLIENT_NAME, CLIENT_CLAVE, PATENTE } from '@/lib/client-config'
 import { fmtDateShort, fmtDate } from '@/lib/format-utils'
 
 const supabase = createClient(
@@ -66,6 +66,8 @@ const severityConfig: Record<string, { bg: string; text: string; dot: string }> 
 const typeIcons: Record<string, string> = { compliance: '🚨', audit: '📊', immex: '⏱', renewal: '🔄', report: '📈', custom: '📌' }
 
 export default function CalendarioPage() {
+  const companyId = getCookieValue('company_id') ?? 'evco'
+  const clientClave = getCookieValue('company_clave') ?? CLIENT_CLAVE
   const [events, setEvents] = useState<CalEvent[]>([])
   const [view, setView] = useState<'list' | 'grid'>('list')
   const [month, setMonth] = useState(() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` })
@@ -82,7 +84,7 @@ export default function CalendarioPage() {
     // Load from Supabase compliance_events table
     const { data: dbEvents } = await supabase.from('compliance_events')
       .select('*')
-      .eq('company_id', COMPANY_ID)
+      .eq('company_id', companyId)
       .order('due_date', { ascending: true })
 
     const fromDb: CalEvent[] = (dbEvents || []).map((e: any) => ({
@@ -100,7 +102,7 @@ export default function CalendarioPage() {
 
     // Fetch IMMEX temporal limits
     try {
-      const res = await fetch(`/api/data?table=traficos&company_id=${COMPANY_ID}&trafico_prefix=${CLIENT_CLAVE}-&limit=500&order_by=fecha_llegada&order_dir=desc`)
+      const res = await fetch(`/api/data?table=traficos&company_id=${companyId}&trafico_prefix=${clientClave}-&limit=500&order_by=fecha_llegada&order_dir=desc`)
       const data = await res.json()
       const traficos = data.data ?? data ?? []
       const today = new Date().toISOString().split('T')[0]
@@ -136,7 +138,7 @@ export default function CalendarioPage() {
       due_date: newEvent.due_date,
       event_type: newEvent.event_type,
       severity: newEvent.severity,
-      company_id: COMPANY_ID,
+      company_id: companyId,
       telegram_reminder: true,
       completed: false,
     })

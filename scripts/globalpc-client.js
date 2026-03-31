@@ -77,12 +77,12 @@ async function authenticate() {
   return result[0]?.token || result[0]?.Token
 }
 
-async function getTraficos(token) {
+async function getTraficos(token, claveCliente, empresa) {
   const c = await getClient()
   const result = await c.GetTraficosAsync({
     token,
-    clave_cliente: '9254',
-    empresa: 'evco'
+    clave_cliente: claveCliente,
+    empresa: empresa,
   })
   return result[0]?.traficos || result[0]?.Traficos || []
 }
@@ -124,9 +124,11 @@ async function testConnection() {
     if (!token) throw new Error('No token returned from Login')
     console.log(`✅ Authenticated — token received`)
 
-    // Test pulling one tráfico list
-    const traficos = await getTraficos(token)
-    console.log(`✅ Got ${traficos.length} traficos from GlobalPC`)
+    // Test pulling one tráfico list (uses first active client from env or defaults)
+    const testClave = process.env.GLOBALPC_TEST_CLAVE || '9254'
+    const testEmpresa = process.env.GLOBALPC_TEST_EMPRESA || 'evco'
+    const traficos = await getTraficos(token, testClave, testEmpresa)
+    console.log(`✅ Got ${traficos.length} traficos from GlobalPC (clave=${testClave})`)
 
     if (traficos.length > 0) {
       // Test pulling one document

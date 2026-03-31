@@ -42,10 +42,14 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid table' }, { status: 400 })
   }
 
-  // Enforce client isolation: client-scoped tables MUST include a client filter
-  const claveCliente = params.get('clave_cliente')
-  const cveCliente = params.get('cve_cliente')
-  const companyId = params.get('company_id')
+  // Multi-tenant: always resolve company_id from the auth cookie, never from query params.
+  // This prevents cross-client data leakage when client components pass a hardcoded value.
+  const cookieCompanyId = req.cookies.get('company_id')?.value
+  const cookieClave = req.cookies.get('company_clave')?.value
+
+  const claveCliente = params.get('clave_cliente') || cookieClave || undefined
+  const cveCliente = params.get('cve_cliente') || undefined
+  const companyId = cookieCompanyId || params.get('company_id') || undefined
   const traficoPrefix = params.get('trafico_prefix')
   const hasClientFilter = !!(claveCliente || cveCliente || companyId || traficoPrefix)
 
@@ -62,7 +66,7 @@ export async function GET(req: NextRequest) {
 
   let q = supabase.from(table).select('*').limit(limit)
 
-  // Apply filters
+  // Apply filters — company_id from cookie takes precedence
   if (claveCliente) q = q.eq('clave_cliente', claveCliente)
   if (cveCliente) q = q.eq('cve_cliente', cveCliente)
   if (companyId) q = q.eq('company_id', companyId)

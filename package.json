@@ -105,6 +105,7 @@
     "@fontsource/dm-sans": "^5.2.8",
     "@fontsource/inter": "^5.2.8",
     "@fontsource/jetbrains-mono": "^5.2.8",
+    "@react-pdf/renderer": "^4.3.2",
     "@supabase/supabase-js": "^2.100.1",
     "@types/leaflet": "^1.9.21",
     "chokidar": "^5.0.0",

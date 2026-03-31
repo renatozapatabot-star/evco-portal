@@ -1,11 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { CLIENT_CLAVE, COMPANY_ID as EVCO_ID, CLIENT_NAME } from '@/lib/client-config'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
+
+/** Set auth + company cookies on a successful login response. */
+function setAuthCookies(
+  response: NextResponse,
+  opts: { companyId: string; companyName: string; companyClave: string; role: string }
+) {
+  const maxAge = 28800 // 8 hours — forces daily re-login
+  response.cookies.set('portal_auth', 'authenticated', {
+    httpOnly: true, secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax', maxAge, path: '/',
+  })
+  response.cookies.set('company_id', opts.companyId, { path: '/', maxAge })
+  response.cookies.set('company_name', encodeURIComponent(opts.companyName), { path: '/', maxAge })
+  response.cookies.set('company_clave', opts.companyClave, { path: '/', maxAge })
+  response.cookies.set('user_role', opts.role, { path: '/', maxAge })
+}
 
 export async function POST(request: NextRequest) {
   const { password } = await request.json()
@@ -17,38 +32,35 @@ export async function POST(request: NextRequest) {
       role: 'admin',
       company: { company_id: 'admin', name: 'CRUZ Admin' }
     })
-    response.cookies.set('portal_auth', 'authenticated', {
-      httpOnly: true, secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax', maxAge: 60 * 60 * 24 * 7, path: '/',
+    setAuthCookies(response, {
+      companyId: 'admin',
+      companyName: 'CRUZ Admin',
+      companyClave: '',
+      role: 'admin',
     })
-    response.cookies.set('company_id', 'admin', { path: '/', maxAge: 86400 })
-    response.cookies.set('company_name', 'CRUZ Admin', { path: '/', maxAge: 86400 })
-    response.cookies.set('user_role', 'admin', { path: '/', maxAge: 86400 })
     return response
   }
 
-  // Check legacy single password
-  if (password === process.env.PORTAL_PASSWORD) {
+  // Check broker password — internal operator access to command center
+  if (password === process.env.BROKER_PASSWORD) {
     const response = NextResponse.json({
       success: true,
-      role: 'client',
-      company: { company_id: EVCO_ID, name: CLIENT_NAME, clave: CLIENT_CLAVE }
+      role: 'broker',
+      company: { company_id: 'internal', name: 'Renato Zapata & Company' }
     })
-    response.cookies.set('portal_auth', 'authenticated', {
-      httpOnly: true, secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax', maxAge: 60 * 60 * 24 * 7, path: '/',
+    setAuthCookies(response, {
+      companyId: 'internal',
+      companyName: 'Renato Zapata & Company',
+      companyClave: 'internal',
+      role: 'broker',
     })
-    response.cookies.set('company_id', EVCO_ID, { path: '/', maxAge: 86400 })
-    response.cookies.set('company_name', encodeURIComponent(CLIENT_NAME), { path: '/', maxAge: 86400 })
-    response.cookies.set('company_clave', CLIENT_CLAVE, { path: '/', maxAge: 86400 })
-    response.cookies.set('user_role', 'client', { path: '/', maxAge: 86400 })
     return response
   }
 
-  // Check client portal password from companies table
+  // Lookup by portal_password in companies table (covers all clients)
   const { data: company } = await supabase
     .from('companies')
-    .select('*')
+    .select('company_id, name, clave_cliente, rfc')
     .eq('portal_password', password)
     .eq('active', true)
     .single()
@@ -61,17 +73,15 @@ export async function POST(request: NextRequest) {
         company_id: company.company_id,
         name: company.name,
         clave: company.clave_cliente,
-        rfc: company.rfc
+        rfc: company.rfc,
       }
     })
-    response.cookies.set('portal_auth', 'authenticated', {
-      httpOnly: true, secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax', maxAge: 60 * 60 * 24 * 7, path: '/',
+    setAuthCookies(response, {
+      companyId: company.company_id,
+      companyName: company.name,
+      companyClave: company.clave_cliente || '',
+      role: 'client',
     })
-    response.cookies.set('company_id', company.company_id, { path: '/', maxAge: 86400 })
-    response.cookies.set('company_name', encodeURIComponent(company.name), { path: '/', maxAge: 86400 })
-    response.cookies.set('company_clave', company.clave_cliente || '', { path: '/', maxAge: 86400 })
-    response.cookies.set('user_role', 'client', { path: '/', maxAge: 86400 })
     return response
   }
 
@@ -85,5 +95,6 @@ export async function DELETE() {
   response.cookies.delete('company_name')
   response.cookies.delete('company_clave')
   response.cookies.delete('user_role')
+  response.cookies.delete('viewing_as')
   return response
 }

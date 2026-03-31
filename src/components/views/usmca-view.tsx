@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useToast } from '@/components/Toast'
 import { createClient } from '@supabase/supabase-js'
 
-import { COMPANY_ID, CLIENT_NAME, CLIENT_RFC } from '@/lib/client-config'
+import { getCookieValue, CLIENT_NAME, CLIENT_RFC } from '@/lib/client-config'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
@@ -18,6 +18,7 @@ const ORIGIN_CRITERIA = [
 ]
 
 export function USMCAView() {
+  const companyId = getCookieValue('company_id') ?? 'evco'
   const { toast } = useToast()
   const [suppliers, setSuppliers] = useState<any[]>([])
   const [generating, setGenerating] = useState(false)
@@ -34,7 +35,7 @@ export function USMCAView() {
     blanket: true,
   })
 
-  useEffect(() => { supabase.from('supplier_contacts').select('proveedor, contact_name, address').eq('company_id', COMPANY_ID).order('proveedor').then(({ data }) => setSuppliers(data || [])) }, [])
+  useEffect(() => { supabase.from('supplier_contacts').select('proveedor, contact_name, address').eq('company_id', companyId).order('proveedor').then(({ data }) => setSuppliers(data || [])) }, [])
 
   const set = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }))
 

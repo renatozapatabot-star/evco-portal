@@ -16,7 +16,28 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [session, setSession] = useState<{ role: string; name: string } | null>(null)
   const router = useRouter()
+
+  // Check if already authenticated
+  useState(() => {
+    if (typeof document === 'undefined') return
+    const authMatch = document.cookie.match(/(^| )portal_auth=([^;]+)/)
+    const roleMatch = document.cookie.match(/(^| )user_role=([^;]+)/)
+    const nameMatch = document.cookie.match(/(^| )company_name=([^;]+)/)
+    if (authMatch && authMatch[2] === 'authenticated' && roleMatch) {
+      setSession({
+        role: roleMatch[2],
+        name: nameMatch ? decodeURIComponent(nameMatch[2]) : '',
+      })
+    }
+  })
+
+  function getHomeRoute(role: string): string {
+    if (role === 'broker') return '/broker'
+    if (role === 'admin') return '/admin'
+    return '/'
+  }
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
@@ -32,11 +53,7 @@ export default function LoginPage() {
 
       if (res.ok) {
         const data = await res.json()
-        if (data.role === 'admin') {
-          router.push('/admin')
-        } else {
-          router.push('/')
-        }
+        router.push(getHomeRoute(data.role))
         router.refresh()
       } else {
         setError('Contraseña incorrecta. Contacta a Renato Zapata & Company.')
@@ -54,22 +71,65 @@ export default function LoginPage() {
       fontFamily: 'var(--font-geist-sans)' }}>
       <div style={{ width: '100%', maxWidth: 400 }}>
 
-        <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <div style={{ width: 56, height: 56, background: GOLD_GRADIENT,
-            borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            margin: '0 auto 16px', fontSize: 24, fontWeight: 900, color: '#1A1710',
-            fontFamily: 'Georgia, serif', boxShadow: '0 4px 12px rgba(201,168,76,0.3)' }}>Z</div>
-          <h1 style={{ color: T.text, fontSize: 20, fontWeight: 700, margin: '0 0 4px',
-            letterSpacing: '-0.01em' }}>CRUZ Intelligence Platform</h1>
-          <p style={{ color: T.textMuted, fontSize: 13, margin: 0 }}>
-            Renato Zapata &amp; Company &middot; Patente 3596
-          </p>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 32 }}>
+          <div style={{
+            width: 56, height: 56, background: '#CC1B2F', borderRadius: 12,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            marginBottom: 16,
+            boxShadow: '0 8px 32px rgba(204, 27, 47, 0.25)',
+          }}>
+            <span style={{
+              color: '#FFF', fontWeight: 900, fontSize: 32,
+              fontFamily: 'var(--font-geist-sans)',
+              letterSpacing: '-0.02em',
+            }}>Z</span>
+          </div>
+          <div style={{ fontSize: 22, fontWeight: 700, color: T.text, letterSpacing: '-0.01em' }}>CRUZ</div>
+          <div style={{
+            fontSize: 12, color: T.textMuted, marginTop: 4,
+            letterSpacing: '0.06em', textTransform: 'uppercase' as const,
+          }}>Renato Zapata &amp; Company &middot; Patente 3596</div>
         </div>
+
+        {/* Active session banner */}
+        {session && (
+          <div style={{
+            background: T.surface, border: `1px solid ${T.border}`,
+            borderRadius: 16, padding: '20px 28px', marginBottom: 16,
+            boxShadow: T.shadow,
+          }}>
+            <div style={{ fontSize: 13, color: T.textSub, marginBottom: 8 }}>Sesion activa</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: T.text, marginBottom: 4 }}>
+              {session.name || session.role}
+            </div>
+            <div style={{ fontSize: 12, color: T.textMuted, marginBottom: 16 }}>
+              {session.role === 'broker' ? 'Operador interno' : session.role === 'admin' ? 'Administrador' : 'Cliente'}
+            </div>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <a href={getHomeRoute(session.role)} style={{
+                flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                height: 40, borderRadius: 8, fontSize: 13, fontWeight: 600,
+                textDecoration: 'none', color: '#1A1710',
+                background: GOLD_GRADIENT,
+              }}>
+                Ir al portal
+              </a>
+              <a href="/api/auth/logout" style={{
+                flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                height: 40, borderRadius: 8, fontSize: 13, fontWeight: 600,
+                textDecoration: 'none',
+                color: T.textSub, border: `1px solid ${T.border}`,
+              }}>
+                Cambiar cuenta
+              </a>
+            </div>
+          </div>
+        )}
 
         <div style={{ background: T.surface, border: `1px solid ${T.border}`,
           borderRadius: 16, padding: '32px 28px', boxShadow: T.shadow }}>
           <h2 style={{ color: T.text, fontSize: 16, fontWeight: 700, margin: '0 0 6px' }}>
-            Acceso al Portal
+            {session ? 'Ingresar con otra cuenta' : 'Acceso al Portal'}
           </h2>
           <p style={{ color: T.textMuted, fontSize: 13, margin: '0 0 24px' }}>
             Ingresa tu contraseña para continuar
@@ -114,7 +174,7 @@ export default function LoginPage() {
           Problemas de acceso? Contacta ai@renatozapata.com
         </p>
         <p style={{ textAlign: 'center', color: T.textMuted, fontSize: 10, marginTop: 8 }}>
-          CRUZ Intelligence Platform &middot; 50 clients &middot; Aduana 240
+          CRUZ Intelligence Platform &middot; Patente 3596 &middot; Aduana 240
         </p>
       </div>
     </div>

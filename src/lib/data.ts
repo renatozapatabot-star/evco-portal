@@ -1,13 +1,12 @@
 // src/lib/data.ts
 import { createClient } from '@supabase/supabase-js'
-import { COMPANY_ID, CLIENT_CLAVE } from './client-config'
+import { getCompanyId, getClientClave } from './client-config'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
-const CLAVE = CLIENT_CLAVE
 const PAGE_SIZE = 50
 
 export type Trafico = {
@@ -91,10 +90,12 @@ export type Factura = {
 }
 
 export async function fetchDashboardKPIs() {
+  const companyId = await getCompanyId()
+  const clave = await getClientClave()
   const [trafRes, factRes, entRes] = await Promise.all([
-    supabase.from('traficos').select('estatus, peso_bruto').eq('company_id', COMPANY_ID),
-    supabase.from('aduanet_facturas').select('valor_usd, dta, igi, iva, pedimento').eq('clave_cliente', CLAVE),
-    supabase.from('entradas').select('tiene_faltantes, peso_bruto').eq('company_id', COMPANY_ID).limit(1000),
+    supabase.from('traficos').select('estatus, peso_bruto').eq('company_id', companyId),
+    supabase.from('aduanet_facturas').select('valor_usd, dta, igi, iva, pedimento').eq('clave_cliente', clave),
+    supabase.from('entradas').select('tiene_faltantes, peso_bruto').eq('company_id', companyId).limit(1000),
   ])
   const traf = trafRes.data || []
   const fact = factRes.data || []
@@ -116,8 +117,9 @@ export async function fetchDashboardKPIs() {
 }
 
 export async function fetchTraficos(page = 0, estatus?: string, search?: string) {
+  const companyId = await getCompanyId()
   let q = supabase.from('traficos').select('*', { count: 'exact' })
-    .eq('company_id', COMPANY_ID)
+    .eq('company_id', companyId)
     .order('fecha_llegada', { ascending: false })
     .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1)
   if (estatus && estatus !== 'Todos') q = q.eq('estatus', estatus)
@@ -128,8 +130,9 @@ export async function fetchTraficos(page = 0, estatus?: string, search?: string)
 }
 
 export async function fetchEntradas(page = 0, search?: string) {
+  const companyId = await getCompanyId()
   let q = supabase.from('entradas').select('*', { count: 'exact' })
-    .eq('company_id', COMPANY_ID)
+    .eq('company_id', companyId)
     .order('fecha_llegada_mercancia', { ascending: false })
     .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1)
   if (search) q = q.or(`descripcion_mercancia.ilike.%${search}%,cve_entrada.ilike.%${search}%,trafico.ilike.%${search}%`)
@@ -139,8 +142,9 @@ export async function fetchEntradas(page = 0, search?: string) {
 }
 
 export async function fetchFacturas(page = 0, search?: string) {
+  const clave = await getClientClave()
   let q = supabase.from('aduanet_facturas').select('*', { count: 'exact' })
-    .eq('clave_cliente', CLAVE)
+    .eq('clave_cliente', clave)
     .order('fecha_pago', { ascending: false })
     .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1)
   if (search) q = q.or(`pedimento.ilike.%${search}%,proveedor.ilike.%${search}%,referencia.ilike.%${search}%,num_factura.ilike.%${search}%`)
@@ -150,8 +154,9 @@ export async function fetchFacturas(page = 0, search?: string) {
 }
 
 export async function fetchTopProveedores(limit = 6) {
+  const clave = await getClientClave()
   const { data } = await supabase.from('aduanet_facturas')
-    .select('proveedor, valor_usd').eq('clave_cliente', CLAVE).not('proveedor', 'is', null)
+    .select('proveedor, valor_usd').eq('clave_cliente', clave).not('proveedor', 'is', null)
   const rows = data || []
   const byProv: Record<string, number> = {}
   rows.forEach((r: any) => { if (r.proveedor) byProv[r.proveedor] = (byProv[r.proveedor] || 0) + (r.valor_usd || 0) })
@@ -161,8 +166,9 @@ export async function fetchTopProveedores(limit = 6) {
 }
 
 export async function fetchFinancialTotals() {
+  const clave = await getClientClave()
   const { data } = await supabase.from('aduanet_facturas')
-    .select('valor_usd, dta, igi, iva').eq('clave_cliente', CLAVE)
+    .select('valor_usd, dta, igi, iva').eq('clave_cliente', clave)
   const r = data || []
   return {
     valor: r.reduce((s: number, f: any) => s + (f.valor_usd || 0), 0),

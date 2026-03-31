@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { COMPANY_ID } from '@/lib/client-config'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -14,11 +13,12 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const companyId = req.cookies.get('company_id')?.value ?? 'evco'
   const { supplier, trafico, message_type } = await req.json()
   if (!supplier) return NextResponse.json({ error: 'supplier required' }, { status: 400 })
 
   const { error } = await supabase.from('communication_events').insert({
-    company_id: COMPANY_ID,
+    company_id: companyId,
     event_type: message_type || 'usmca_request',
     channel: 'email',
     recipient: supplier,

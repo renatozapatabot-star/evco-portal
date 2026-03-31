@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { CLIENT_CLAVE, CLIENT_NAME, COMPANY_ID } from '@/lib/client-config'
-import { GOLD_GRADIENT } from '@/lib/design-system'
+import { CLIENT_CLAVE, COMPANY_ID } from '@/lib/client-config'
+import { Z_RED } from '@/lib/design-system'
 
 interface WelcomeData {
   companyName: string
@@ -46,8 +46,12 @@ export function WelcomeOverlay() {
 
       const fmtVal = totalValor >= 1_000_000 ? `$${(totalValor / 1e6).toFixed(1)}M USD` : `$${Math.round(totalValor / 1e3)}K USD`
 
+      // Read company_name from auth cookie (set at login), fallback to generic
+      const cookieMatch = document.cookie.match(/(?:^|;\s*)company_name=([^;]*)/)
+      const companyName = cookieMatch ? decodeURIComponent(cookieMatch[1]) : 'su empresa'
+
       setData({
-        companyName: CLIENT_NAME,
+        companyName,
         activeTraficos: active.length,
         valorYTD: fmtVal,
         complianceScore: compScore,
@@ -88,14 +92,14 @@ export function WelcomeOverlay() {
         <div style={{ textAlign: 'center', marginBottom: 24 }}>
           <div style={{
             width: 72, height: 72, borderRadius: 16,
-            background: GOLD_GRADIENT,
+            background: Z_RED,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             margin: '0 auto 24px',
-            boxShadow: '0 4px 12px rgba(201,168,76,0.3)',
+            boxShadow: '0 8px 32px rgba(204, 27, 47, 0.25)',
           }}>
             <span style={{
-              fontFamily: 'Georgia, serif', fontSize: 36, fontWeight: 700,
-              color: '#1A1710',
+              fontFamily: 'var(--font-geist-sans)', fontSize: 36, fontWeight: 900,
+              color: '#FFF', letterSpacing: '-0.02em',
             }}>Z</span>
           </div>
           <h2 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>

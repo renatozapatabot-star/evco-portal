@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { COMPANY_ID } from '@/lib/client-config'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -124,10 +123,11 @@ async function runPreFilingCheck(traficoId: string, companyId: string) {
 }
 
 export async function POST(request: NextRequest) {
+  const companyId = request.cookies.get('company_id')?.value ?? 'evco'
   const { trafico_id, company_id } = await request.json()
   if (!trafico_id) {
     return NextResponse.json({ error: 'trafico_id required' }, { status: 400 })
   }
-  const result = await runPreFilingCheck(trafico_id, company_id || COMPANY_ID)
+  const result = await runPreFilingCheck(trafico_id, company_id || companyId)
   return NextResponse.json(result)
 }

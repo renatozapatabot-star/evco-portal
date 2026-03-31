@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     .replace(/^-|-$/g, '')
     .substring(0, 30)
 
-  // Insert company
+  // Insert company — columns match actual companies table schema
   const { error: insertError } = await supabase
     .from('companies')
     .insert({
@@ -52,15 +52,18 @@ export async function POST(request: NextRequest) {
       rfc,
       clave_cliente,
       globalpc_clave: clave_cliente,
-      contact_name,
-      contact_email,
-      contact_phone,
+      patente: '3596',
+      aduana: '240',
+      contact_name: contact_name || '',
+      contact_email: contact_email || '',
+      contact_phone: contact_phone || null,
+      portal_password,
       immex: !!immex,
       language: language || 'bilingual',
-      portal_password,
       active: true,
       health_score: 0,
       traficos_count: 0,
+      onboarded_at: new Date().toISOString(),
       created_at: new Date().toISOString(),
     })
 

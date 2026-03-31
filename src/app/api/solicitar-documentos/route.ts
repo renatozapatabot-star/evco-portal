@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { solicitarDocumentos } from '@/lib/solicitar-documentos'
-import { CLIENT_CLAVE } from '@/lib/client-config'
 
 export async function POST(request: NextRequest) {
   try {
+    const clientClave = request.cookies.get('company_clave')?.value ?? '9254'
     const body = await request.json()
     const { traficoId, missingDocs } = body
 
@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const result = await solicitarDocumentos(traficoId, missingDocs, CLIENT_CLAVE)
+    const result = await solicitarDocumentos(traficoId, missingDocs, clientClave)
     return NextResponse.json(result)
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Internal error'

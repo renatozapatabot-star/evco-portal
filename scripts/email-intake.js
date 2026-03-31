@@ -179,11 +179,47 @@ async function storeIntel(inv, cls, inbox, meta) {
 
 // ── Process email ─────────────────────────────────────────────────────────
 
+// ── Entrada Lifecycle — detect warehouse receipt emails ──────────────────
+
+async function processEntradaEmail(subject, body, from) {
+  const match = subject.match(/Entrada[:\s#]*(\d+)/i)
+    || subject.match(/ENT[:\s#]*(\d+)/i)
+    || body.match(/Entrada[:\s#]*(\d+)/i)
+  if (!match) return
+  const entradaNumber = match[1]
+  const supplierMatch = body.match(/(?:proveedor|supplier|shipper)[:\s]+([^\n,]{3,50})/i)
+  const bultosMatch = body.match(/(\d+)\s*(?:bultos?|pkgs?|packages?)/i)
+  try {
+    await supabase.from('entrada_lifecycle').upsert({
+      entrada_number: entradaNumber,
+      company_id: process.env.NEXT_PUBLIC_COMPANY_ID || '9254',
+      supplier: supplierMatch?.[1]?.trim()?.substring(0, 100) || null,
+      bultos: bultosMatch ? parseInt(bultosMatch[1]) : null,
+      email_received_at: new Date().toISOString(),
+      email_subject: subject.substring(0, 200),
+      email_from: from.substring(0, 200),
+    }, { onConflict: 'entrada_number' })
+    await supabase.from('notifications').insert({
+      company_id: process.env.NEXT_PUBLIC_COMPANY_ID || '9254',
+      type: 'entrada_received',
+      title: 'Nueva entrada: ' + entradaNumber,
+      body: 'Mercancía en bodega · pendiente de tráfico',
+    })
+    console.log(`  📦 Entrada ${entradaNumber} → entrada_lifecycle`)
+  } catch (err) {
+    console.error(`  ⚠️ Entrada parse error: ${err.message}`)
+  }
+}
+
 async function processEmail(gmail, msgId, mode, inbox, rates) {
   const { data: msg } = await gmail.users.messages.get({ userId: 'me', id: msgId, format: 'full' })
   const headers = msg.payload?.headers || []
   const from = hdr(headers, 'From'), subject = hdr(headers, 'Subject'), date = hdr(headers, 'Date')
+  const snippet = msg.snippet || ''
   console.log(`  📧 ${from.substring(0, 50)}\n     ${subject.substring(0, 70)}`)
+
+  // Check for entrada references in subject/snippet
+  await processEntradaEmail(subject, snippet, from)
 
   const atts = []
   ;(function scan(parts) { if (!parts) return; for (const p of parts) { if (p.filename && p.body?.attachmentId) atts.push({ filename: p.filename, attachmentId: p.body.attachmentId, mimeType: p.mimeType, size: p.body.size || 0 }); if (p.parts) scan(p.parts) } })(msg.payload?.parts || [msg.payload])

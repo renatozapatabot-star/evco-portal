@@ -1,6 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
-import { COMPANY_ID } from '@/lib/client-config'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -9,6 +8,7 @@ const supabase = createClient(
 
 export async function POST(request: NextRequest) {
   try {
+    const companyId = request.cookies.get('company_id')?.value ?? 'evco'
     const formData = await request.formData()
     const file = formData.get('file') as File
     const traficoId = formData.get('trafico_id') as string
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
       file_url: fileUrl,
       uploaded_by: 'portal-upload',
       uploaded_at: new Date().toISOString(),
-      company_id: COMPANY_ID,
+      company_id: companyId,
     })
 
     if (dbError) {

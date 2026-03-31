@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import { Phone, Clock, CheckCircle, ChevronDown, ChevronRight } from 'lucide-react'
 import { GOLD } from '@/lib/design-system'
-import { COMPANY_ID } from '@/lib/client-config'
+import { getCookieValue } from '@/lib/client-config'
 import { fmtDateShort } from '@/lib/format-utils'
 
 const supabase = createClient(
@@ -34,6 +34,7 @@ function fmtDuration(s: number) {
 }
 
 export default function CallsPage() {
+  const companyId = getCookieValue('company_id') ?? 'evco'
   const [calls, setCalls] = useState<CallTranscript[]>([])
   const [loading, setLoading] = useState(true)
   const [expanded, setExpanded] = useState<string | null>(null)
@@ -42,7 +43,7 @@ export default function CallsPage() {
   useEffect(() => {
     supabase.from('call_transcripts')
       .select('*')
-      .eq('company_id', COMPANY_ID)
+      .eq('company_id', companyId)
       .order('transcribed_at', { ascending: false })
       .limit(100)
       .then(({ data }) => { setCalls(data || []); setLoading(false) })

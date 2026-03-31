@@ -10,7 +10,7 @@ import { fmtCarrier, countryFlag } from '@/lib/carrier-names'
 // cruz-score imports removed — scores are internal broker data, not shown to clients
 import { createClient } from '@supabase/supabase-js'
 // Link removed — entradas now embedded inline
-import { COMPANY_ID, CLIENT_NAME } from '@/lib/client-config'
+import { getCookieValue, CLIENT_NAME } from '@/lib/client-config'
 import { SolicitarModal } from '@/components/SolicitarModal'
 import { getMissingDocs, REQUIRED_DOC_TYPES } from '@/lib/documents'
 import { useToast } from '@/components/Toast'
@@ -49,6 +49,7 @@ const fmtPedimento = (p: string | null) => {
 }
 
 export default function TraficoDetailPage() {
+  const companyId = getCookieValue('company_id') ?? 'evco'
   const { id } = useParams()
   const router = useRouter()
   const isMobile = useIsMobile()
@@ -67,6 +68,7 @@ export default function TraficoDetailPage() {
   const [solicitadoOk, setSolicitadoOk] = useState(false)
   const [solicitudes, setSolicitudes] = useState<Solicitud[]>([])
   const [showStickyBar, setShowStickyBar] = useState(false)
+  const [entradaOrigen, setEntradaOrigen] = useState<{ cve_entrada: string; fecha_llegada_mercancia: string | null; cantidad_bultos: number | null; peso_bruto: number | null; mercancia_danada: boolean; comentarios_danada: string | null } | null>(null)
 
 
   const handleUpload = async (file: File | undefined, docType: string) => {
@@ -85,7 +87,7 @@ export default function TraficoDetailPage() {
         trafico_id: tId, document_type: docType,
         file_url: urlData?.signedUrl || path,
         metadata: { trafico: tId, uploaded_by: 'portal', original_name: file.name },
-        tenant_slug: COMPANY_ID,
+        tenant_slug: companyId,
       })
       window.location.reload()
     } catch { toast('Error al subir. Intenta de nuevo.', 'error') }
@@ -112,7 +114,7 @@ export default function TraficoDetailPage() {
         type: 'solicitud_completada',
         title: `Solicitud completada para ${tId}`,
         body: 'Documentos recibidos y marcados como completos',
-        company_id: COMPANY_ID,
+        company_id: companyId,
         metadata: { trafico_id: tId, solicitud_id: solicitudId },
       })
 
@@ -142,12 +144,22 @@ export default function TraficoDetailPage() {
       setLoading(false)
       fetch(`/api/data?table=entradas&trafico=${encodeURIComponent(tId)}&limit=20&order_by=fecha_llegada_mercancia&order_dir=desc`)
         .then(r => r.json()).then(ed => setEntradas(ed.data ?? [])).catch(() => {})
+      // Fetch entrada origin from real entradas table (GlobalPC)
+      supabase
+        .from('entradas')
+        .select('cve_entrada, fecha_llegada_mercancia, cantidad_bultos, peso_bruto, mercancia_danada, comentarios_danada')
+        .eq('trafico', tId)
+        .eq('company_id', companyId)
+        .limit(1)
+        .then(({ data: elData }) => {
+          if (elData && elData.length > 0) setEntradaOrigen(elData[0])
+        })
       // Fetch active solicitudes for this tráfico
       supabase
         .from('documento_solicitudes')
         .select('id, doc_types, status, solicitado_at, deadline, recipient_name')
         .eq('trafico_id', tId)
-        .eq('company_id', COMPANY_ID)
+        .eq('company_id', companyId)
         .not('status', 'eq', 'completa')
         .order('solicitado_at', { ascending: false })
         .limit(20)
@@ -318,6 +330,38 @@ export default function TraficoDetailPage() {
 
       {/* ═══ MAIN LAYOUT — Timeline left, Tabs right ═══ */}
       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'minmax(0, 280px) 1fr', gap: isMobile ? 16 : 24 }}>
+
+        {/* ── ENTRADA ORIGIN (if linked) ── */}
+        {entradaOrigen && (
+          <div style={{
+            background: '#FFFFFF', border: '1px solid #E8E5E0',
+            borderLeft: `4px solid ${entradaOrigen.mercancia_danada ? '#C23B22' : '#B8953F'}`, borderRadius: 8,
+            padding: '12px 16px', marginBottom: 12,
+          }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#B8953F', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>
+              Origen
+            </div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: '#1A1A1A' }}>
+              Entrada <span style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>{entradaOrigen.cve_entrada}</span>
+              {entradaOrigen.cantidad_bultos != null && (
+                <span style={{ color: '#6B6B6B' }}> · {entradaOrigen.cantidad_bultos} bultos</span>
+              )}
+              {entradaOrigen.peso_bruto != null && Number(entradaOrigen.peso_bruto) > 0 && (
+                <span style={{ color: '#6B6B6B', fontFamily: 'var(--font-jetbrains-mono)' }}> · {fmtKg(entradaOrigen.peso_bruto)} kg</span>
+              )}
+            </div>
+            {entradaOrigen.fecha_llegada_mercancia && (
+              <div style={{ fontSize: 11, color: '#9C9890', fontFamily: 'var(--font-jetbrains-mono)', marginTop: 2 }}>
+                Recibida {fmtDate(entradaOrigen.fecha_llegada_mercancia)}
+              </div>
+            )}
+            {entradaOrigen.mercancia_danada && (
+              <div style={{ fontSize: 12, fontWeight: 600, color: '#C23B22', marginTop: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
+                {'\uD83D\uDD34'} Mercancía dañada{entradaOrigen.comentarios_danada ? `: ${entradaOrigen.comentarios_danada}` : ''}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* ── 12-STEP TIMELINE ── */}
         <div className="card" style={{ padding: 20, alignSelf: 'start' }}>
@@ -762,7 +806,7 @@ export default function TraficoDetailPage() {
               padding: '10px 20px', fontSize: 13, fontWeight: 700,
               border: 'none', borderRadius: 8,
               background: '#B8953F', color: '#FFFFFF',
-              cursor: 'pointer', minHeight: 44, whiteSpace: 'nowrap',
+              cursor: 'pointer', minHeight: 60, whiteSpace: 'nowrap',
             }}
           >
             Solicitar {missingDocs.length} docs

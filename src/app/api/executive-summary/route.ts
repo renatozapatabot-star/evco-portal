@@ -1,6 +1,5 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { COMPANY_ID, CLIENT_NAME, CLIENT_CLAVE } from '@/lib/client-config'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -13,41 +12,73 @@ interface KPIData {
   totalTraficos: number
   totalValue: number
   tmecRate: number
-  penalties: number
   successRate: number
-  docsComplete: number
+  avgCrossingDays: string | null
 }
 
-function generateFallbackSentence(data: KPIData): string {
+function generateFallbackSentence(data: KPIData, clientName: string): string {
   const parts = [
     `${data.totalTraficos.toLocaleString()} tráficos procesados`,
     data.totalValue > 0
       ? `$${(data.totalValue / 1e6).toFixed(1)}M USD importados`
       : null,
-    data.penalties === 0 ? 'sin multas' : null,
+    data.successRate > 0 ? `${data.successRate}% tasa de éxito` : null,
     data.tmecRate > 0 ? `${data.tmecRate}% con T-MEC` : null,
   ].filter(Boolean)
-  return `${CLIENT_NAME}: ${parts.join(' · ')}.`
+  return `${clientName}: ${parts.join(' · ')}.`
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const companyId = request.cookies.get('company_id')?.value ?? 'evco'
+  const clientClave = request.cookies.get('company_clave')?.value ?? '9254'
+  const rawName = request.cookies.get('company_name')?.value
+  const clientName = rawName ? decodeURIComponent(rawName) : 'EVCO Plastics de México'
+
   try {
-    const [trafRes, factRes] = await Promise.all([
+    const prefix = `${clientClave}-%`
+
+    const [totals, cruzados, crossing, factRes] = await Promise.all([
       supabase
         .from('traficos')
-        .select('id, importe_total, pedimento', { count: 'exact' })
-        .eq('company_id', COMPANY_ID),
+        .select('importe_total', { count: 'exact' })
+        .ilike('trafico', prefix),
+      supabase
+        .from('traficos')
+        .select('*', { count: 'exact', head: true })
+        .ilike('trafico', prefix)
+        .eq('estatus', 'Cruzado'),
+      supabase
+        .from('traficos')
+        .select('fecha_cruce, fecha_llegada')
+        .ilike('trafico', prefix)
+        .not('fecha_cruce', 'is', null)
+        .not('fecha_llegada', 'is', null)
+        .limit(500),
       supabase
         .from('aduanet_facturas')
         .select('igi, valor_usd', { count: 'exact' })
-        .eq('clave_cliente', CLIENT_CLAVE),
+        .eq('clave_cliente', clientClave),
     ])
 
-    const totalTraficos = trafRes.count ?? 0
-    const totalValue = (trafRes.data ?? []).reduce(
+    const totalCount = totals.count ?? 0
+    const cruzadosCount = cruzados.count ?? 0
+    const successRate = totalCount > 0
+      ? Math.round((cruzadosCount / totalCount) * 100)
+      : 0
+
+    const totalValue = (totals.data ?? []).reduce(
       (s, t) => s + (Number(t.importe_total) || 0),
       0
     )
+
+    const avgCrossingDays = (crossing.data?.length ?? 0) > 0
+      ? (crossing.data!.reduce((sum, t) => {
+          const days = (new Date(t.fecha_cruce).getTime() -
+                       new Date(t.fecha_llegada).getTime()) / 86400000
+          return sum + days
+        }, 0) / crossing.data!.length).toFixed(1)
+      : null
+
     const tmecCount = (factRes.data ?? []).filter(
       (f) => f.igi !== null && Number(f.igi) > 0
     ).length
@@ -56,25 +87,25 @@ export async function GET() {
       : 0
 
     const data: KPIData = {
-      totalTraficos,
+      totalTraficos: totalCount,
       totalValue,
       tmecRate,
-      penalties: 0,
-      successRate: 96,
-      docsComplete: 87,
+      successRate,
+      avgCrossingDays,
     }
 
-    // GUARD: Only use AI when numbers are genuinely good
-    const isGoodPeriod = data.penalties === 0 && data.tmecRate >= 30
-
-    if (!isGoodPeriod || !process.env.ANTHROPIC_API_KEY) {
+    if (!process.env.ANTHROPIC_API_KEY) {
       return NextResponse.json({
-        sentence: generateFallbackSentence(data),
+        sentence: generateFallbackSentence(data, clientName),
         source: 'template',
       })
     }
 
-    // Try AI generation via Haiku
+    const prompt = `Genera un resumen ejecutivo de 2-3 oraciones en español para Renato Zapata & Company, Patente 3596.
+Datos reales: ${totalCount} tráficos activos, $${totalValue.toLocaleString()} USD en operación, ${successRate}% tasa de éxito${avgCrossingDays ? `, ${avgCrossingDays} días promedio de cruce` : ''}, ${tmecRate}% utilización T-MEC.
+Tono: profesional, directo, como un sistema de inteligencia aduanera reportando al director general.
+Máximo 50 palabras. Sin asteriscos ni markdown. Solo las oraciones.`
+
     try {
       const res = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
@@ -84,25 +115,35 @@ export async function GET() {
           'anthropic-version': '2023-06-01',
         },
         body: JSON.stringify({
-          model: 'claude-haiku-4-5-20251001',
-          max_tokens: 150,
+          model: 'claude-sonnet-4-6',
+          max_tokens: 200,
           messages: [
-            {
-              role: 'user',
-              content: `Genera UNA oración ejecutiva en español para el reporte de importaciones de ${CLIENT_NAME}.
-Datos: ${JSON.stringify(data)}
-La oración debe mencionar valor importado, tasa de éxito, y sonar como algo que el CFO diría con orgullo.
-Máximo 25 palabras. Sin asteriscos ni markdown. Solo la oración.`,
-            },
+            { role: 'user', content: prompt },
           ],
         }),
-        signal: AbortSignal.timeout(10000),
+        signal: AbortSignal.timeout(15000),
       })
 
       if (res.ok) {
         const body = await res.json()
         const sentence = body.content?.[0]?.text?.trim()
         if (sentence) {
+          // Audit log — non-fatal if table doesn't exist yet
+          const tokensUsed = (body.usage?.input_tokens ?? 0) + (body.usage?.output_tokens ?? 0)
+          try {
+            await supabase.from('ai_audit_log').insert({
+              prompt_hash: Buffer.from(prompt).toString('base64').slice(0, 32),
+              model: 'claude-sonnet-4-6',
+              tokens_used: tokensUsed,
+              response_summary: sentence.slice(0, 100),
+              user_id: 'system',
+              client_code: companyId,
+              timestamp: new Date().toISOString(),
+            })
+          } catch {
+            // Audit log non-fatal
+          }
+
           return NextResponse.json({ sentence, source: 'ai' })
         }
       }
@@ -111,13 +152,13 @@ Máximo 25 palabras. Sin asteriscos ni markdown. Solo la oración.`,
     }
 
     return NextResponse.json({
-      sentence: generateFallbackSentence(data),
+      sentence: generateFallbackSentence(data, clientName),
       source: 'fallback',
     })
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Error'
     return NextResponse.json({
-      sentence: `${CLIENT_NAME}: operaciones en curso.`,
+      sentence: `${clientName}: operaciones en curso.`,
       source: 'error',
       error: msg,
     })

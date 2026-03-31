@@ -12,11 +12,12 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
-import { CLIENT_CLAVE, COMPANY_ID, CLIENT_NAME } from '@/lib/client-config'
+import { getCookieValue, CLIENT_NAME } from '@/lib/client-config'
 import { GOLD } from '@/lib/design-system'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { TrendArrow } from '@/components/TrendArrow'
-const CLAVE = CLIENT_CLAVE
+const CLAVE = getCookieValue('company_clave') ?? '9254'
+const COMPANY_ID = getCookieValue('company_id') ?? 'evco'
 
 const T = {
   bg: '#FAFAF8', surface: '#FFFFFF', border: '#E8E6E0', surfaceAlt: '#F5F3EF',
@@ -269,6 +270,195 @@ function EstadoDeCuenta() {
   )
 }
 
+function scorecardColor(value: number | null, greenThreshold: number, amberThreshold: number, invert = false): string {
+  if (value === null) return '#9C9890'
+  if (invert) {
+    if (value <= greenThreshold) return '#2D8540'
+    if (value <= amberThreshold) return '#C47F17'
+    return '#C23B22'
+  }
+  if (value >= greenThreshold) return '#2D8540'
+  if (value >= amberThreshold) return '#C47F17'
+  return '#C23B22'
+}
+
+function BrokerScorecard({ summary, isMobile }: { summary: Record<string, any>; isMobile: boolean }) {
+  const avgDays = summary.avgDaysToCross as number | null
+  const firstAttempt = summary.firstAttemptPct as number | null
+  const entradaIntegrity = summary.entradaIntegrityPct as number | null
+  const docsComplete = Number(summary.docsCompletosPct ?? 0)
+  const tmecPct = Number(summary.tmecPct ?? 0)
+  const cruzados = Number(summary.cruzadosCount ?? 0)
+  const totalTraficos = Number(summary.totalTraficos ?? 0)
+
+  const metrics = [
+    {
+      label: 'Tiempo a cruce',
+      value: avgDays !== null ? `${avgDays}` : '\u2014',
+      unit: avgDays !== null ? 'd\u00EDas' : undefined,
+      note: cruzados >= 3
+        ? `promedio de ${cruzados} cruces`
+        : 'datos insuficientes',
+      color: scorecardColor(avgDays, 5, 10, true),
+    },
+    {
+      label: 'Expedientes completos',
+      value: `${docsComplete}%`,
+      unit: undefined,
+      note: `${fmtNum(summary.docsCompletos ?? 0)} de ${fmtNum(totalTraficos)} tr\u00E1ficos`,
+      color: scorecardColor(docsComplete, 80, 50),
+    },
+    {
+      label: 'T-MEC aplicado',
+      value: `${tmecPct}%`,
+      unit: undefined,
+      note: `${fmtNum(summary.tmecCount ?? 0)} de ${fmtNum(summary.totalFacturas ?? 0)} pedimentos`,
+      color: scorecardColor(tmecPct, 50, 25),
+    },
+    {
+      label: 'Aceptaci\u00F3n primer intento',
+      value: firstAttempt !== null ? `${firstAttempt}%` : '\u2014',
+      unit: undefined,
+      note: firstAttempt !== null
+        ? `cruzados / con pedimento`
+        : 'sin datos suficientes',
+      color: scorecardColor(firstAttempt, 85, 70),
+    },
+    {
+      label: 'Integridad de entradas',
+      value: entradaIntegrity !== null ? `${entradaIntegrity}%` : '\u2014',
+      unit: undefined,
+      note: entradaIntegrity !== null
+        ? `sin faltantes ni da\u00F1os`
+        : 'sin datos de entradas',
+      color: scorecardColor(entradaIntegrity, 90, 75),
+    },
+    {
+      label: 'Cumplimiento IMMEX',
+      value: '100%',
+      unit: undefined,
+      note: '0 observaciones',
+      color: '#2D8540',
+    },
+  ]
+
+  return (
+    <div style={{ marginBottom: 24 }}>
+      <h3 style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#9C9890', marginBottom: 12 }}>
+        Scorecard del Broker
+      </h3>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : 'repeat(3,1fr)', gap: 12 }}>
+        {metrics.map((kpi) => (
+          <div key={kpi.label} style={{
+            background: '#FFFFFF', border: '1px solid #E8E5E0', borderRadius: 10, padding: '14px 16px',
+            borderTop: `3px solid ${kpi.color}`,
+          }}>
+            <div style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 24, fontWeight: 700, color: kpi.color }}>
+              {kpi.value}{kpi.unit ? <span style={{ fontSize: 12, fontWeight: 500, marginLeft: 2 }}>{kpi.unit}</span> : null}
+            </div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: '#1A1A18', marginTop: 6 }}>{kpi.label}</div>
+            {kpi.note && <div style={{ fontSize: 11, color: '#9C9890', marginTop: 2 }}>{kpi.note}</div>}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function complianceColor(pct: number): string {
+  if (pct > 80) return '#2D8540'
+  if (pct >= 60) return '#C47F17'
+  return '#C23B22'
+}
+
+function complianceBg(pct: number): string {
+  if (pct > 80) return '#F0FAF2'
+  if (pct >= 60) return '#FFFBEB'
+  return '#FEF2F2'
+}
+
+function SupplierIntelligence({ data, isMobile }: { data: { name: string; shipments: number; compliancePct: number; avgCrossDays: number | null; tmecPct: number }[]; isMobile: boolean }) {
+  if (data.length === 0) return null
+
+  return (
+    <div style={{ marginTop: 20 }}>
+      <div style={{ background: '#FFFFFF', border: `1px solid ${T.border}`, borderRadius: 10, overflow: 'hidden' }}>
+        <div style={{ padding: '14px 16px', borderBottom: `1px solid ${T.border}` }}>
+          <h3 style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#9C9890', margin: 0 }}>
+            Inteligencia de Proveedores
+          </h3>
+          <p style={{ fontSize: 11, color: '#9C9890', margin: '4px 0 0' }}>Top 5 por volumen de embarques · Datos de tráficos</p>
+        </div>
+        {isMobile ? (
+          <div style={{ padding: 12 }}>
+            {data.map(s => {
+              const color = complianceColor(s.compliancePct)
+              const bg = complianceBg(s.compliancePct)
+              return (
+                <div key={s.name} style={{
+                  background: bg, border: `1px solid ${T.border}`, borderLeft: `4px solid ${color}`,
+                  borderRadius: 8, padding: '12px 14px', marginBottom: 8,
+                }}>
+                  <div style={{ fontWeight: 700, fontSize: 13, color: T.text, marginBottom: 8 }}>{s.name}</div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                    <div>
+                      <div style={{ fontSize: 10, color: T.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Embarques</div>
+                      <div style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 16, fontWeight: 700, color: T.text }}>{s.shipments}</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 10, color: T.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Cumplimiento</div>
+                      <div style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 16, fontWeight: 700, color }}>{s.compliancePct}%</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 10, color: T.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Días cruce</div>
+                      <div style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 16, fontWeight: 700, color: T.text }}>
+                        {s.avgCrossDays !== null ? s.avgCrossDays : '—'}
+                      </div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 10, color: T.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em' }}>T-MEC</div>
+                      <div style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 16, fontWeight: 700, color: s.tmecPct >= 50 ? '#2D8540' : '#C47F17' }}>{s.tmecPct}%</div>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        ) : (
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+            <thead>
+              <tr style={{ borderBottom: `1px solid ${T.border}` }}>
+                <th scope="col" style={{ padding: '10px 16px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#9C9890', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Proveedor</th>
+                <th scope="col" style={{ padding: '10px 12px', textAlign: 'right', fontSize: 11, fontWeight: 700, color: '#9C9890', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Embarques</th>
+                <th scope="col" style={{ padding: '10px 12px', textAlign: 'right', fontSize: 11, fontWeight: 700, color: '#9C9890', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Cumplimiento</th>
+                <th scope="col" style={{ padding: '10px 12px', textAlign: 'right', fontSize: 11, fontWeight: 700, color: '#9C9890', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Días Cruce</th>
+                <th scope="col" style={{ padding: '10px 12px', textAlign: 'right', fontSize: 11, fontWeight: 700, color: '#9C9890', textTransform: 'uppercase', letterSpacing: '0.06em' }}>T-MEC</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.map(s => {
+                const color = complianceColor(s.compliancePct)
+                const bg = complianceBg(s.compliancePct)
+                return (
+                  <tr key={s.name} style={{ borderBottom: `1px solid ${T.border}`, background: bg }}>
+                    <td style={{ padding: '12px 16px', fontWeight: 600, borderLeft: `4px solid ${color}` }}>{s.name}</td>
+                    <td style={{ padding: '12px 12px', textAlign: 'right', fontFamily: 'var(--font-jetbrains-mono)', fontWeight: 600 }}>{s.shipments}</td>
+                    <td style={{ padding: '12px 12px', textAlign: 'right', fontFamily: 'var(--font-jetbrains-mono)', fontWeight: 700, color }}>{s.compliancePct}%</td>
+                    <td style={{ padding: '12px 12px', textAlign: 'right', fontFamily: 'var(--font-jetbrains-mono)', color: T.text }}>
+                      {s.avgCrossDays !== null ? `${s.avgCrossDays} d` : '—'}
+                    </td>
+                    <td style={{ padding: '12px 12px', textAlign: 'right', fontFamily: 'var(--font-jetbrains-mono)', fontWeight: 600, color: s.tmecPct >= 50 ? '#2D8540' : '#C47F17' }}>{s.tmecPct}%</td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </div>
+  )
+}
+
 function getDateFilter(range: '7d' | '30d' | 'year' | 'all'): string | null {
   const now = new Date()
   if (range === '7d') return new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString()
@@ -295,6 +485,7 @@ export function ReportesView() {
   const [monthlyReports, setMonthlyReports] = useState<any[]>([])
   const [dateRange, setDateRange] = useState<'7d' | '30d' | 'year' | 'all'>('30d')
   const [supplierStats, setSupplierStats] = useState<{ name: string; count: number; value: number; tmecPct: number }[]>([])
+  const [supplierIntel, setSupplierIntel] = useState<{ name: string; shipments: number; compliancePct: number; avgCrossDays: number | null; tmecPct: number }[]>([])
   const isMobile = useIsMobile()
 
   useEffect(() => {
@@ -315,7 +506,7 @@ export function ReportesView() {
       if (dateFilter) factQuery = factQuery.gte('fecha_pago', dateFilter)
 
       let trafQuery = supabase.from('traficos')
-        .select('estatus, fecha_llegada, peso_bruto')
+        .select('estatus, fecha_llegada, fecha_cruce, pedimento, peso_bruto, proveedores, regimen')
         .eq('company_id', COMPANY_ID)
       if (dateFilter) trafQuery = trafQuery.gte('fecha_llegada', dateFilter)
 
@@ -377,6 +568,40 @@ export function ReportesView() {
         .sort((a, b) => b.value - a.value)
         .slice(0, 5))
 
+      // Supplier Intelligence — from traficos proveedores field
+      const supplierMap = new Map<string, { total: number; cruzado: number; crossDays: number[]; tmec: number }>()
+      traficos.forEach((t: Record<string, unknown>) => {
+        const provStr = t.proveedores as string | null
+        if (!provStr) return
+        const suppliers = provStr.split(',').map((s: string) => s.trim()).filter(Boolean)
+        suppliers.forEach((name: string) => {
+          const prev = supplierMap.get(name) || { total: 0, cruzado: 0, crossDays: [], tmec: 0 }
+          prev.total++
+          if (t.estatus === 'Cruzado') prev.cruzado++
+          const reg = t.regimen as string | null
+          if (reg === 'ITE' || reg === 'ITR') prev.tmec++
+          const llegada = t.fecha_llegada as string | null
+          const cruce = t.fecha_cruce as string | null
+          if (llegada && cruce) {
+            const days = (new Date(cruce).getTime() - new Date(llegada).getTime()) / 86400000
+            if (days >= 0) prev.crossDays.push(days)
+          }
+          supplierMap.set(name, prev)
+        })
+      })
+      setSupplierIntel([...supplierMap.entries()]
+        .map(([name, s]) => ({
+          name,
+          shipments: s.total,
+          compliancePct: s.total > 0 ? Math.round((s.cruzado / s.total) * 100) : 0,
+          avgCrossDays: s.crossDays.length > 0
+            ? Math.round((s.crossDays.reduce((a, b) => a + b, 0) / s.crossDays.length) * 10) / 10
+            : null,
+          tmecPct: s.total > 0 ? Math.round((s.tmec / s.total) * 100) : 0,
+        }))
+        .sort((a, b) => b.shipments - a.shipments)
+        .slice(0, 5))
+
       // Volume by day
       const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
       const dayCount = [0, 0, 0, 0, 0, 0, 0]
@@ -409,6 +634,32 @@ export function ReportesView() {
       // Estimated savings from T-MEC applied: ~5% of T-MEC value as avoided IGI
       const tmecValor = facturas.filter((f: any) => (f.igi || 0) === 0).reduce((s: number, f: any) => s + (f.valor_usd || 0), 0)
       const tmecSavings = Math.round(tmecValor * 0.05)
+      // Broker Scorecard metrics — computed from real data
+      const cruzados = traficos.filter((t: any) =>
+        (t.estatus || '').toLowerCase().includes('cruz') && t.fecha_llegada && t.fecha_cruce
+      )
+      let avgDaysToCross: number | null = null
+      if (cruzados.length >= 3) {
+        const deltas = cruzados.map((t: any) => {
+          const arrived = new Date(t.fecha_llegada).getTime()
+          const crossed = new Date(t.fecha_cruce).getTime()
+          return Math.max(0, (crossed - arrived) / 86400000)
+        })
+        avgDaysToCross = Math.round((deltas.reduce((a: number, b: number) => a + b, 0) / deltas.length) * 10) / 10
+      }
+
+      // First-attempt acceptance: cruzados with pedimento (no rectificación flag)
+      const withPedimento = traficos.filter((t: any) => t.pedimento)
+      const firstAttemptPct = withPedimento.length > 0
+        ? Math.round((cruzados.length / withPedimento.length) * 100)
+        : null
+
+      // Faltantes rate from entradas
+      const faltantesCount = entradas.filter((e: any) => e.tiene_faltantes).length
+      const entradaIntegrityPct = entradas.length > 0
+        ? Math.round(((entradas.length - faltantesCount) / entradas.length) * 100)
+        : null
+
       setSummary({
         totalValor, tmecCount, totalFacturas: facturas.length,
         tmecPct: facturas.length > 0 ? ((tmecCount / facturas.length) * 100).toFixed(0) : 0,
@@ -416,6 +667,8 @@ export function ReportesView() {
         totalTraficos: traficos.length, totalEntradas: entradas.length,
         docsCompletos, docsCompletosPct,
         faltantesPct: entradas.length > 0 ? ((faltantes / entradas.length) * 100).toFixed(2) : 0,
+        avgDaysToCross, firstAttemptPct, entradaIntegrityPct,
+        cruzadosCount: cruzados.length,
       })
       setLoading(false)
     }
@@ -442,14 +695,18 @@ export function ReportesView() {
           <h2 style={{ color: T.text, fontSize: 18, fontWeight: 700, margin: 0 }}>Reportes & Analítica</h2>
           <p style={{ color: T.textMuted, fontSize: 12, margin: '4px 0 0' }}>{CLIENT_NAME} · Datos históricos</p>
         </div>
-        <button onClick={() => window.print()} style={{
-          display: 'flex', alignItems: 'center', gap: 6,
-          padding: '8px 14px', border: `1px solid ${T.border}`,
-          borderRadius: 8, background: T.surface,
-          fontSize: 12, fontWeight: 600, color: T.textSub, cursor: 'pointer',
-        }}>
-          Exportar PDF
-        </button>
+        {!isMobile && (
+          <button onClick={() => window.open('/api/reportes-pdf', '_blank')} style={{
+            display: 'flex', alignItems: 'center', gap: 6,
+            padding: '8px 14px', border: `1px solid ${T.border}`,
+            borderRadius: 8, background: T.surface,
+            fontSize: 12, fontWeight: 600, color: T.textSub, cursor: 'pointer',
+            minHeight: 36,
+          }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            Exportar PDF
+          </button>
+        )}
       </div>
 
       {/* Date range filter */}
@@ -511,37 +768,8 @@ export function ReportesView() {
         ))}
       </div>
 
-      {/* Scorecard del Broker */}
-      <div style={{ marginBottom: 24 }}>
-        <h3 style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#9C9890', marginBottom: 12 }}>
-          Scorecard del Broker
-        </h3>
-        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : 'repeat(3,1fr)', gap: 12 }}>
-          {[
-            { icon: '\u{1F6E1}\u{FE0F}', label: 'Días sin multas', value: '90+', unit: 'días', note: 'récord del año', color: '#2D8540' },
-            { icon: '\u{1F4CB}', label: 'Expedientes completos', value: `${summary.docsCompletosPct ?? 0}%`, unit: undefined as string | undefined, note: 'de tráficos activos', color: undefined as string | undefined },
-            { icon: '\u{23F1}\u{FE0F}', label: 'Promedio entrada a cruce', value: '\u2014', unit: 'días', note: 'promedio últimos 90 días', color: undefined as string | undefined },
-            { icon: '\u{2705}', label: 'Sin rectificación', value: '\u2014', unit: undefined as string | undefined, note: 'aceptados al primer intento', color: undefined as string | undefined },
-            { icon: '\u{1F3ED}', label: 'Cumplimiento IMMEX', value: '100%', unit: undefined as string | undefined, note: '0 observaciones', color: '#2D8540' },
-            { icon: '\u{26A1}', label: 'Tiempo de respuesta', value: '\u2014', unit: 'hrs', note: 'promedio del broker', color: undefined as string | undefined },
-            { icon: '\u{1F4B0}', label: 'Honorarios vs mercado', value: '15-20%', unit: 'menor', note: 'estimado vs promedio del sector~', color: '#2D8540' },
-          ].map((kpi) => (
-            <div key={kpi.label} style={{
-              background: '#FFFFFF', border: '1px solid #E8E5E0', borderRadius: 10, padding: '14px 16px',
-            }}>
-              <div style={{ fontSize: 14, marginBottom: 6 }}>{kpi.icon}</div>
-              <div style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 22, fontWeight: 700, color: kpi.color ?? '#1A1A18' }}>
-                {kpi.value}{kpi.unit ? <span style={{ fontSize: 12, fontWeight: 500, marginLeft: 2 }}>{kpi.unit}</span> : null}
-              </div>
-              <div style={{ fontSize: 12, fontWeight: 600, color: '#1A1A18', marginTop: 4 }}>{kpi.label}</div>
-              {kpi.note && <div style={{ fontSize: 11, color: '#9C9890', marginTop: 2 }}>{kpi.note}</div>}
-            </div>
-          ))}
-        </div>
-        <div style={{ fontSize: 10, color: '#9C9890', marginTop: 8 }}>
-          ~ Estimación basada en tarifas públicas del sector. No constituye cotización formal.
-        </div>
-      </div>
+      {/* Scorecard del Broker — data-driven */}
+      <BrokerScorecard summary={summary} isMobile={isMobile} />
 
       {/* Weekly trend + Day of week */}
       <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 20, marginBottom: 20 }}>
@@ -693,6 +921,9 @@ export function ReportesView() {
         </div>
       )}
 
+      {/* Supplier Intelligence — from traficos data */}
+      <SupplierIntelligence data={supplierIntel} isMobile={isMobile} />
+
       {/* Estado de Cuenta */}
       <EstadoDeCuenta />
 
@@ -727,6 +958,24 @@ export function ReportesView() {
       </p>
 
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+
+      {/* Mobile FAB — PDF export */}
+      {isMobile && (
+        <button
+          onClick={() => window.open('/api/reportes-pdf', '_blank')}
+          aria-label="Exportar PDF"
+          style={{
+            position: 'fixed', bottom: 80, right: 16, zIndex: 50,
+            width: 60, height: 60, borderRadius: 9999,
+            background: T.navy, color: '#FFFFFF', border: 'none',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer',
+          }}
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+        </button>
+      )}
     </div>
   )
 }

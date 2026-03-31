@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import DataTable, { Column } from '@/components/DataTable'
-import { COMPANY_ID } from '@/lib/client-config'
+import { getCookieValue } from '@/lib/client-config'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
@@ -13,6 +13,7 @@ const flag = (c: string | null) => FLAGS[(c || '').toUpperCase()] || '🌐'
 type ViewTab = 'proveedores' | 'productos'
 
 export function ProveedoresView() {
+  const companyId = getCookieValue('company_id') ?? 'evco'
   const [suppliers, setSuppliers] = useState<any[]>([])
   const [selected, setSelected] = useState<any>(null)
   const [editing, setEditing] = useState(false)
@@ -37,7 +38,7 @@ export function ProveedoresView() {
   }, [])
 
   async function load() {
-    const { data } = await supabase.from('supplier_contacts').select('*').eq('company_id', COMPANY_ID).order('proveedor', { ascending: true })
+    const { data } = await supabase.from('supplier_contacts').select('*').eq('company_id', companyId).order('proveedor', { ascending: true })
     // Deduplicate by proveedor name (case-insensitive), keep most complete
     const seen = new Map<string, any>()
     ;(data || []).forEach(s => {
@@ -53,7 +54,7 @@ export function ProveedoresView() {
   useEffect(() => {
     if (viewTab === 'productos' && products.length === 0) {
       setProductsLoading(true)
-      fetch(`/api/data?table=product_intelligence&company_id=${COMPANY_ID}&limit=200&order_by=total_value_usd&order_dir=desc`)
+      fetch(`/api/data?table=product_intelligence&company_id=${companyId}&limit=200&order_by=total_value_usd&order_dir=desc`)
         .then(r => r.json())
         .then(d => { setProducts(d.data ?? []); setProductsLoading(false) })
         .catch(() => setProductsLoading(false))
@@ -62,7 +63,7 @@ export function ProveedoresView() {
 
   async function save() {
     setSaving(true)
-    const { error } = await supabase.from('supplier_contacts').upsert({ ...form, company_id: COMPANY_ID, updated_at: new Date().toISOString() }, { onConflict: 'id' })
+    const { error } = await supabase.from('supplier_contacts').upsert({ ...form, company_id: companyId, updated_at: new Date().toISOString() }, { onConflict: 'id' })
     if (!error) { await load(); setEditing(false); setSelected({ ...form }) }
     setSaving(false)
   }
@@ -164,7 +165,7 @@ export function ProveedoresView() {
           loading={loading}
           keyField="id"
           pageSize={50}
-          exportFilename={`${COMPANY_ID}_proveedores`}
+          exportFilename={`${companyId}_proveedores`}
           searchPlaceholder="Buscar proveedor..."
           onRowClick={(r) => { setSelected(r); setForm(r); setEditing(false) }}
         />
@@ -198,7 +199,7 @@ export function ProveedoresView() {
                 ))}
                 {!selected.contact_email && !selected.contact_phone && (
                   <div style={{ textAlign: 'center', padding: '32px 0', color: 'var(--text-muted)' }}>
-                    <div style={{ fontSize: 14, marginBottom: 8 }}>Sin información de contacto</div>
+                    <div style={{ fontSize: 14, marginBottom: 8 }}>Sin datos de contacto registrados</div>
                     <button onClick={() => setEditing(true)} style={{ background: 'var(--amber-100)', border: '1px solid var(--border-primary)', borderRadius: 8, padding: '8px 20px', color: 'var(--amber-600)', fontSize: 14, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>+ Agregar contacto</button>
                   </div>
                 )}

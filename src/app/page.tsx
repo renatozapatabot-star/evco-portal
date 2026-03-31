@@ -77,7 +77,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true)
   const [liveBridges, setLiveBridges] = useState<{ bridges: BridgeTime[]; recommended: number | null; fetched: string | null } | null>(null)
   const [mananaItems, setMananaItems] = useState<{ solicitudes: number; mveUrgent: boolean; mveDays: number }>({ solicitudes: 0, mveUrgent: false, mveDays: 0 })
-  const [pendingEntradas, setPendingEntradas] = useState<{ entrada_number: string; supplier: string | null; created_at: string }[]>([])
+  const [pendingEntradas, setPendingEntradas] = useState<{ cve_entrada: string; fecha_llegada_mercancia: string | null; cantidad_bultos: number | null; peso_bruto: number | null; tiene_faltantes: boolean; mercancia_danada: boolean }[]>([])
   // Status sentence now lives in StatusStrip (global nav)
 
   useEffect(() => {
@@ -112,12 +112,11 @@ export default function Dashboard() {
       })
       .catch(() => {})
 
-    // Pending entradas without tráfico assigned
-    fetch(`/api/data?table=entrada_lifecycle&company_id=${COMPANY_ID}&trafico_id=is.null&limit=20&order_by=created_at&order_dir=desc`)
+    // Pending entradas without tráfico assigned (real GlobalPC data)
+    fetch(`/api/data?table=entradas&company_id=${COMPANY_ID}&trafico=is.null&limit=20&order_by=fecha_llegada_mercancia&order_dir=asc&select=cve_entrada,fecha_llegada_mercancia,cantidad_bultos,peso_bruto,tiene_faltantes,mercancia_danada`)
       .then(r => r.json())
       .then(d => {
-        const rows = (d.data ?? []) as { entrada_number: string; supplier: string | null; created_at: string }[]
-        setPendingEntradas(rows)
+        setPendingEntradas((d.data ?? []) as typeof pendingEntradas)
       })
       .catch(() => {})
   }, [])
@@ -346,7 +345,9 @@ export default function Dashboard() {
           Valor en operación
         </div>
         <div style={{ fontSize: isMobile ? 40 : 56, fontWeight: 900, fontFamily: 'var(--font-jetbrains-mono)', lineHeight: 1, letterSpacing: '-0.02em' }}>
-          {loading ? <Skeleton width={200} height={isMobile ? 40 : 56} borderRadius={8} style={{ background: 'rgba(255,255,255,0.08)' }} /> : fmtUSD(valorEnProceso)}
+          {loading ? <Skeleton width={200} height={isMobile ? 40 : 56} borderRadius={8} style={{ background: 'rgba(255,255,255,0.08)' }} /> : (
+            <CountingNumber value={valorEnProceso} duration={1000} format={fmtUSD} style={{ fontFamily: 'var(--font-jetbrains-mono)' }} />
+          )}
           {!loading && <span style={{ fontSize: 16, fontWeight: 600, marginLeft: 4, color: TOKEN.gray }}>USD</span>}
         </div>
 
@@ -361,19 +362,19 @@ export default function Dashboard() {
 
         <div style={{ display: 'flex', gap: isMobile ? 16 : 32, marginTop: 20, flexWrap: 'wrap' }}>
           <Link href="/traficos?estatus=Detenido" style={{ textDecoration: 'none', color: 'inherit' }}>
-            <div style={{ fontSize: 24, fontWeight: 900, fontFamily: 'var(--font-jetbrains-mono)' }}>{urgentes.length}</div>
+            <CountingNumber value={urgentes.length} style={{ fontSize: 24, fontWeight: 900, fontFamily: 'var(--font-jetbrains-mono)', display: 'block' }} />
             <div style={{ fontSize: 11, color: TOKEN.gray, fontWeight: 600 }}>Detenidos</div>
           </Link>
           <Link href="/traficos?estatus=Demorado" style={{ textDecoration: 'none', color: 'inherit' }}>
-            <div style={{ fontSize: 24, fontWeight: 900, fontFamily: 'var(--font-jetbrains-mono)' }}>{incidencias.length}</div>
+            <CountingNumber value={incidencias.length} style={{ fontSize: 24, fontWeight: 900, fontFamily: 'var(--font-jetbrains-mono)', display: 'block' }} />
             <div style={{ fontSize: 11, color: TOKEN.gray, fontWeight: 600 }}>Demorados</div>
           </Link>
           <Link href="/traficos?estatus=En Proceso" style={{ textDecoration: 'none', color: 'inherit' }}>
-            <div style={{ fontSize: 24, fontWeight: 900, fontFamily: 'var(--font-jetbrains-mono)' }}>{enProceso.length}</div>
+            <CountingNumber value={enProceso.length} style={{ fontSize: 24, fontWeight: 900, fontFamily: 'var(--font-jetbrains-mono)', display: 'block' }} />
             <div style={{ fontSize: 11, color: TOKEN.gray, fontWeight: 600 }}>En ruta</div>
           </Link>
           <Link href="/traficos?sort=importe_total&order=desc" style={{ textDecoration: 'none', color: 'inherit' }}>
-            <div style={{ fontSize: 24, fontWeight: 900, fontFamily: 'var(--font-jetbrains-mono)', color: cruzadosHoy.length > 0 ? TOKEN.green : TOKEN.gray }}>{cruzadosHoy.length}</div>
+            <CountingNumber value={cruzadosHoy.length} style={{ fontSize: 24, fontWeight: 900, fontFamily: 'var(--font-jetbrains-mono)', color: cruzadosHoy.length > 0 ? TOKEN.green : TOKEN.gray, display: 'block' }} />
             <div style={{ fontSize: 11, color: TOKEN.gray, fontWeight: 600 }}>
               {cruzadosHoy.length > 0 ? 'Cruzados hoy' : (() => {
                 const lastCruce = traficos
@@ -625,21 +626,23 @@ export default function Dashboard() {
             {pendingEntradas.length} entrada{pendingEntradas.length !== 1 ? 's' : ''} en bodega sin tráfico
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {pendingEntradas.slice(0, 3).map(e => {
-              const daysWaiting = e.created_at ? Math.floor((Date.now() - new Date(e.created_at).getTime()) / 86400000) : 0
+            {pendingEntradas.slice(0, 5).map(e => {
+              const daysWaiting = e.fecha_llegada_mercancia ? Math.floor((Date.now() - new Date(e.fecha_llegada_mercancia).getTime()) / 86400000) : 0
               return (
-                <div key={e.entrada_number} style={{
+                <div key={e.cve_entrada} style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                   padding: '8px 12px', background: TOKEN.surfacePrimary,
                   borderRadius: 6, border: `1px solid ${TOKEN.border}`,
                 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <span style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 13, fontWeight: 700, color: TOKEN.text }}>
-                      {e.entrada_number}
+                      {e.cve_entrada}
                     </span>
-                    {e.supplier && (
-                      <span style={{ fontSize: 12, color: TOKEN.textSecondary }}>{e.supplier}</span>
+                    {e.cantidad_bultos != null && (
+                      <span style={{ fontSize: 11, color: TOKEN.textSecondary }}>{e.cantidad_bultos} bultos</span>
                     )}
+                    {e.mercancia_danada && <span title="Mercancía dañada" style={{ fontSize: 12 }}>{'\uD83D\uDD34'}</span>}
+                    {e.tiene_faltantes && !e.mercancia_danada && <span title="Faltantes reportados" style={{ fontSize: 12 }}>{'\u26A0\uFE0F'}</span>}
                   </div>
                   <span style={{
                     fontSize: 12, fontWeight: 700, fontFamily: 'var(--font-jetbrains-mono)',
@@ -651,9 +654,9 @@ export default function Dashboard() {
               )
             })}
           </div>
-          {pendingEntradas.length > 3 && (
+          {pendingEntradas.length > 5 && (
             <div style={{ fontSize: 12, color: TOKEN.textSecondary, marginTop: 8 }}>
-              +{pendingEntradas.length - 3} más
+              +{pendingEntradas.length - 5} más
             </div>
           )}
         </div>

@@ -6,10 +6,9 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-import { CLIENT_CLAVE, COMPANY_ID } from '@/lib/client-config'
-const CLAVE = CLIENT_CLAVE
-
 export async function GET(request: NextRequest) {
+  const companyId = request.cookies.get('company_id')?.value ?? 'evco'
+  const clientClave = request.cookies.get('company_clave')?.value ?? '9254'
   const q = request.nextUrl.searchParams.get('q')?.trim()
   if (!q || q.length < 2) {
     return NextResponse.json({ results: [] })
@@ -20,12 +19,12 @@ export async function GET(request: NextRequest) {
     const [pedRes, trafRes] = await Promise.all([
       supabase.from('aduanet_facturas')
         .select('referencia, pedimento, proveedor, valor_usd, dta, igi, iva, fecha_pago, cove, moneda')
-        .eq('clave_cliente', CLAVE)
+        .eq('clave_cliente', clientClave)
         .ilike('pedimento', `%${q}%`)
         .limit(1),
       supabase.from('traficos')
         .select('trafico, estatus, fecha_llegada, fecha_cruce, importe_total, pedimento, descripcion_mercancia')
-        .eq('company_id', COMPANY_ID)
+        .eq('company_id', companyId)
         .ilike('pedimento', `%${q}%`)
         .limit(1),
     ])
@@ -39,7 +38,7 @@ export async function GET(request: NextRequest) {
         supabase.from('entradas')
           .select('cve_entrada, descripcion_mercancia, peso_bruto, fecha_llegada_mercancia, tiene_faltantes, mercancia_danada')
           .eq('trafico', traficoId)
-          .eq('company_id', COMPANY_ID)
+          .eq('company_id', companyId)
           .limit(50),
         supabase.from('expediente_documentos')
           .select('doc_type, file_url, uploaded_at, nombre')
@@ -88,17 +87,17 @@ export async function GET(request: NextRequest) {
   const [trafRes, entRes, factRes] = await Promise.all([
     supabase.from('traficos')
       .select('trafico, estatus, fecha_llegada, descripcion_mercancia')
-      .eq('company_id', COMPANY_ID)
+      .eq('company_id', companyId)
       .or(`trafico.ilike.%${q}%,descripcion_mercancia.ilike.%${q}%,pedimento.ilike.%${q}%`)
       .limit(5),
     supabase.from('entradas')
       .select('cve_entrada, descripcion_mercancia, fecha_llegada_mercancia, trafico')
-      .eq('company_id', COMPANY_ID)
+      .eq('company_id', companyId)
       .or(`cve_entrada.ilike.%${q}%,descripcion_mercancia.ilike.%${q}%,trafico.ilike.%${q}%`)
       .limit(5),
     supabase.from('aduanet_facturas')
       .select('referencia, pedimento, proveedor, valor_usd, fecha_pago')
-      .eq('clave_cliente', CLAVE)
+      .eq('clave_cliente', clientClave)
       .or(`pedimento.ilike.%${q}%,proveedor.ilike.%${q}%,referencia.ilike.%${q}%,num_factura.ilike.%${q}%`)
       .limit(5),
   ])

@@ -1,6 +1,5 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { CLIENT_CLAVE } from '@/lib/client-config'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -16,14 +15,15 @@ interface CruzAlert {
   prompt: string
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const clientClave = request.cookies.get('company_clave')?.value ?? '9254'
   const alerts: CruzAlert[] = []
 
   // Missing pedimento
   const { count: missingDocs } = await supabase
     .from('traficos')
     .select('id', { count: 'exact', head: true })
-    .ilike('trafico', `${CLIENT_CLAVE}-%`)
+    .ilike('trafico', `${clientClave}-%`)
     .is('pedimento', null)
     .not('estatus', 'ilike', '%cruz%')
 
@@ -41,7 +41,7 @@ export async function GET() {
   const { count: stale } = await supabase
     .from('traficos')
     .select('id', { count: 'exact', head: true })
-    .ilike('trafico', `${CLIENT_CLAVE}-%`)
+    .ilike('trafico', `${clientClave}-%`)
     .not('estatus', 'ilike', '%cruz%')
     .lt('updated_at', fourteenDaysAgo)
 

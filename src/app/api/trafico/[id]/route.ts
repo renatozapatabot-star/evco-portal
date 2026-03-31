@@ -6,22 +6,21 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-import { CLIENT_CLAVE, COMPANY_ID } from '@/lib/client-config'
-const CLAVE = CLIENT_CLAVE
-
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const companyId = request.cookies.get('company_id')?.value ?? 'evco'
+  const clientClave = request.cookies.get('company_clave')?.value ?? '9254'
   const { id: traficoId } = await params
 
   const [trafRes, factRes, entRes, docsRes] = await Promise.all([
     supabase.from('traficos').select('*')
-      .eq('trafico', traficoId).eq('company_id', COMPANY_ID).single(),
+      .eq('trafico', traficoId).eq('company_id', companyId).single(),
     supabase.from('aduanet_facturas').select('*')
-      .eq('referencia', traficoId).eq('clave_cliente', CLAVE),
+      .eq('referencia', traficoId).eq('clave_cliente', clientClave),
     supabase.from('entradas').select('*')
-      .eq('trafico', traficoId).eq('company_id', COMPANY_ID)
+      .eq('trafico', traficoId).eq('company_id', companyId)
       .order('fecha_llegada_mercancia', { ascending: false }),
     supabase.from('documents').select('*').eq('trafico_id', traficoId),
   ])

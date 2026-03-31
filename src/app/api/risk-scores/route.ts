@@ -1,19 +1,19 @@
 import { createClient } from '@supabase/supabase-js'
-import { NextResponse } from 'next/server'
-import { COMPANY_ID } from '@/lib/client-config'
+import { NextRequest, NextResponse } from 'next/server'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const companyId = request.cookies.get('company_id')?.value ?? 'evco'
   const { data: traficos } = await supabase.from('traficos')
     .select('trafico, estatus, fecha_llegada, pedimento, descripcion_mercancia')
-    .eq('company_id', COMPANY_ID).eq('estatus', 'En Proceso').limit(500)
+    .eq('company_id', companyId).eq('estatus', 'En Proceso').limit(500)
 
   const { data: docs } = await supabase.from('documents')
     .select('trafico_id, doc_type').limit(5000)
 
   const { data: entradas } = await supabase.from('entradas')
-    .select('trafico, tiene_faltantes, mercancia_danada').eq('company_id', COMPANY_ID).limit(5000)
+    .select('trafico, tiene_faltantes, mercancia_danada').eq('company_id', companyId).limit(5000)
 
   const docMap: Record<string, Set<string>> = {}
   ;(docs || []).forEach((d: any) => { if (!docMap[d.trafico_id]) docMap[d.trafico_id] = new Set(); docMap[d.trafico_id].add(d.doc_type) })

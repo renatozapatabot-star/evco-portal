@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { FolderOpen, AlertTriangle, FileText, Send, Eye, Search } from 'lucide-react'
 import { createClient } from '@supabase/supabase-js'
-import { CLIENT_CLAVE, COMPANY_ID } from '@/lib/client-config'
+import { getCookieValue } from '@/lib/client-config'
 import { fmtId, fmtDateCompact } from '@/lib/format-utils'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { EmptyState } from '@/components/empty-state'
@@ -16,19 +16,25 @@ const supabase = createClient(
 
 const PAGE_SIZE = 25
 
-// Must match tráfico detail page — single source of expected docs per expediente
+// Must match actual doc_type values in expediente_documentos table
 const REQUIRED_DOCS = [
-  'FACTURA', 'LISTA DE EMPAQUE', 'PEDIMENTO',
-  'ACUSE DE COVE', 'CARTA', 'ACUSE DE E-DOCUMENT',
+  'factura_comercial', 'packing_list', 'pedimento_detallado',
+  'cove', 'acuse_cove', 'doda',
 ]
 
 const DOC_LABELS: Record<string, string> = {
-  FACTURA: 'Factura',
-  'LISTA DE EMPAQUE': 'Lista de Empaque',
-  PEDIMENTO: 'Pedimento',
-  'ACUSE DE COVE': 'Acuse COVE',
-  CARTA: 'Carta',
-  'ACUSE DE E-DOCUMENT': 'E-Document',
+  factura_comercial: 'Factura Comercial',
+  packing_list: 'Lista de Empaque',
+  pedimento_detallado: 'Pedimento',
+  cove: 'COVE',
+  acuse_cove: 'Acuse COVE',
+  doda: 'DODA',
+  mve: 'MVE',
+  otro: 'Otro',
+  archivos_validacion: 'Archivos Validación',
+  pedimento_simplificado: 'Pedimento Simplificado',
+  bol: 'B/L',
+  carta_porte: 'Carta Porte',
 }
 
 type FilterTab = 'incompletos' | 'completos' | 'todos'
@@ -332,6 +338,7 @@ function MobileCard({ row, onNavigate }: { row: TraficoRow; onNavigate: (id: str
 // ── Main View ───────────────────────────────────────────
 
 export function ExpedientesView() {
+  const companyId = getCookieValue('company_id') ?? 'evco'
   const router = useRouter()
   const isMobile = useIsMobile()
   const [rawTraficos, setRawTraficos] = useState<TraficoRow[]>([])
@@ -361,7 +368,7 @@ export function ExpedientesView() {
       let q = supabase
         .from('traficos')
         .select('id, trafico, estatus, fecha_llegada, importe_total, pedimento, proveedores, descripcion_mercancia', { count: 'exact' })
-        .eq('company_id', COMPANY_ID)
+        .eq('company_id', companyId)
         .not('estatus', 'ilike', '%cruz%')
         .order('fecha_llegada', { ascending: true })
         .limit(500)
@@ -374,22 +381,27 @@ export function ExpedientesView() {
       const allRows = traficos || []
       setTotal(count || 0)
 
-      // 2. Batch-load documents using trafico_id FK
+      // 2. Batch-load documents from expediente_documentos (pedimento_id = traficos.trafico)
       const traficoIds = allRows.map((t) => t.trafico)
       const docMap = new Map<string, Set<string>>()
 
       if (traficoIds.length > 0) {
-        const { data: allDocs, error: docError } = await supabase
-          .from('documents')
-          .select('trafico_id, document_type')
-          .in('trafico_id', traficoIds)
+        // Supabase .in() has a practical limit — batch in chunks of 100
+        const CHUNK = 100
+        for (let i = 0; i < traficoIds.length; i += CHUNK) {
+          const chunk = traficoIds.slice(i, i + CHUNK)
+          const { data: chunkDocs, error: docError } = await supabase
+            .from('expediente_documentos')
+            .select('pedimento_id, doc_type')
+            .in('pedimento_id', chunk)
 
-        if (docError) throw new Error(docError.message)
+          if (docError) throw new Error(docError.message)
 
-        allDocs?.forEach((d: { trafico_id: string; document_type: string | null }) => {
-          if (!docMap.has(d.trafico_id)) docMap.set(d.trafico_id, new Set())
-          if (d.document_type) docMap.get(d.trafico_id)!.add(d.document_type.toUpperCase())
-        })
+          chunkDocs?.forEach((d: { pedimento_id: string; doc_type: string | null }) => {
+            if (!docMap.has(d.pedimento_id)) docMap.set(d.pedimento_id, new Set())
+            if (d.doc_type) docMap.get(d.pedimento_id)!.add(d.doc_type)
+          })
+        }
       }
 
       // 3. Build enriched rows with completeness calculation
@@ -446,13 +458,13 @@ export function ExpedientesView() {
         {
           event: '*',
           schema: 'public',
-          table: 'documents',
+          table: 'expediente_documentos',
         },
         (payload) => {
           const record = (payload.new ?? payload.old) as
-            | { trafico_id?: string }
+            | { pedimento_id?: string }
             | null
-          const traficoId = record?.trafico_id
+          const traficoId = record?.pedimento_id
           if (!traficoId) return
 
           // Only refresh if this tráfico is in our current set
@@ -460,16 +472,14 @@ export function ExpedientesView() {
 
           // Refresh just this row's documents — not the entire list
           supabase
-            .from('documents')
-            .select('trafico_id, document_type')
-            .eq('trafico_id', traficoId)
+            .from('expediente_documentos')
+            .select('pedimento_id, doc_type')
+            .eq('pedimento_id', traficoId)
             .then(({ data: docs }) => {
               if (!docs) return
               const present = new Set(
                 docs
-                  .map((d: { document_type: string | null }) =>
-                    d.document_type?.toUpperCase()
-                  )
+                  .map((d: { doc_type: string | null }) => d.doc_type)
                   .filter(Boolean) as string[]
               )
               const docsPresent = REQUIRED_DOCS.filter((rd) => present.has(rd)).length

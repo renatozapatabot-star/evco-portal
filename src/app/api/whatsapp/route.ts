@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { COMPANY_ID } from '@/lib/client-config'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -10,6 +9,7 @@ const supabase = createClient(
 // POST: Send WhatsApp message requesting docs
 export async function POST(request: NextRequest) {
   try {
+    const companyId = request.cookies.get('company_id')?.value ?? 'evco'
     const { trafico_id, supplier_phone, missing_docs, message } = await request.json()
 
     if (!trafico_id || !supplier_phone) {
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     // Log conversation
     const { error: logError } = await supabase.from('whatsapp_conversations').insert({
       trafico_id,
-      company_id: COMPANY_ID,
+      company_id: companyId,
       supplier_phone: toNumber,
       direction: 'outbound',
       message_body: body,

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { COMPANY_ID } from '@/lib/client-config'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -9,11 +8,12 @@ const supabase = createClient(
 
 export const dynamic = 'force-dynamic'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const companyId = request.cookies.get('company_id')?.value ?? 'evco'
   const { data, error } = await supabase
     .from('notifications')
     .select('*')
-    .eq('company_id', COMPANY_ID)
+    .eq('company_id', companyId)
     .order('created_at', { ascending: false })
     .limit(50)
 

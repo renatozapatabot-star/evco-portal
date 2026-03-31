@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { X } from 'lucide-react'
 import { createClient } from '@supabase/supabase-js'
 import { useToast } from '@/components/Toast'
-import { COMPANY_ID } from '@/lib/client-config'
+import { getCookieValue } from '@/lib/client-config'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -31,6 +31,7 @@ interface Props {
 }
 
 export function SolicitarModal({ traficoId, missingDocs, onClose, onSuccess }: Props) {
+  const companyId = getCookieValue('company_id') ?? 'evco'
   const router = useRouter()
   const { toast } = useToast()
   const [selected, setSelected] = useState<string[]>(missingDocs)
@@ -62,7 +63,7 @@ export function SolicitarModal({ traficoId, missingDocs, onClose, onSuccess }: P
         .from('documento_solicitudes')
         .select('id')
         .eq('trafico_id', traficoId)
-        .eq('company_id', COMPANY_ID)
+        .eq('company_id', companyId)
         .gte('solicitado_at', twentyFourHoursAgo)
         .limit(1)
 
@@ -77,7 +78,7 @@ export function SolicitarModal({ traficoId, missingDocs, onClose, onSuccess }: P
         .from('documento_solicitudes')
         .insert({
           trafico_id: traficoId,
-          company_id: COMPANY_ID,
+          company_id: companyId,
           doc_types: selected,
           recipient_name: selectedRecipient?.name ?? 'Contacto principal',
           deadline: deadlineDate.toISOString(),
@@ -99,7 +100,7 @@ export function SolicitarModal({ traficoId, missingDocs, onClose, onSuccess }: P
           type: 'documento_solicitado',
           title: `Documentos solicitados para ${traficoId}`,
           body: `${selected.length} documento${selected.length !== 1 ? 's' : ''} solicitado${selected.length !== 1 ? 's' : ''} con plazo de ${deadlineHours}h`,
-          company_id: COMPANY_ID,
+          company_id: companyId,
           metadata: { trafico_id: traficoId, doc_types: selected },
         })
         .then(() => { /* non-fatal — ignore result */ })

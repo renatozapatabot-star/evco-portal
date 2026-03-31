@@ -10,7 +10,6 @@ import { ToastProvider } from './Toast'
 import { useKeyboardShortcuts } from '@/hooks/use-shortcuts'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { MobileBottomNav } from './mobile-bottom-nav'
-// CruzFAB removed — CRUZ is accessible from bottom nav
 import { WelcomeOverlay } from './WelcomeOverlay'
 
 interface Props { children: React.ReactNode }
@@ -28,6 +27,30 @@ function PageTransition({ children }: { children: React.ReactNode }) {
   const [visible, setVisible] = useState(true)
   useEffect(() => { setVisible(false); const t = setTimeout(() => setVisible(true), 50); return () => clearTimeout(t) }, [pathname])
   return <div style={{ opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(8px)', transition: 'opacity 200ms ease-out, transform 200ms ease-out' }}>{children}</div>
+}
+
+/** Gold banner shown when broker is impersonating a client view. */
+function ViewingAsBanner({ companyName, onExit }: { companyName: string; onExit: () => void }) {
+  return (
+    <div style={{
+      position: 'fixed', top: 0, left: 0, right: 0, zIndex: 9999,
+      background: '#B8953F', color: '#FFFFFF', height: 36,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      gap: 12, fontSize: 13, fontWeight: 600,
+    }}>
+      <span>Viendo como: {companyName}</span>
+      <button
+        onClick={onExit}
+        style={{
+          background: 'rgba(255,255,255,0.2)', border: '1px solid rgba(255,255,255,0.4)',
+          borderRadius: 4, color: '#FFFFFF', padding: '2px 10px',
+          fontSize: 12, fontWeight: 600, cursor: 'pointer',
+        }}
+      >
+        Salir
+      </button>
+    </div>
+  )
 }
 
 export default function DashboardShellClient({ children }: Props) {
@@ -77,11 +100,32 @@ export default function DashboardShellClient({ children }: Props) {
     }
   }, [])
 
-  if (pathname === '/login' || pathname.startsWith('/track') || pathname.startsWith('/upload') || pathname === '/war-room') return <>{children}</>
+  // Read viewing_as cookie for broker impersonation banner
+  const [viewingAs, setViewingAs] = useState<string | null>(null)
+  const [viewingName, setViewingName] = useState<string>('')
+  useEffect(() => {
+    const vaMatch = document.cookie.match(/(^| )viewing_as=([^;]+)/)
+    const nameMatch = document.cookie.match(/(^| )company_name=([^;]+)/)
+    if (vaMatch) {
+      setViewingAs(vaMatch[2])
+      setViewingName(nameMatch ? decodeURIComponent(nameMatch[2]) : vaMatch[2])
+    }
+  }, [pathname])
+
+  if (pathname === '/login' || pathname.startsWith('/track') || pathname.startsWith('/upload') || pathname === '/war-room' || pathname === '/broker') return <>{children}</>
 
   return (
     <ToastProvider>
       <a href="#main-content" className="skip-link">Ir al contenido</a>
+
+      {/* Broker viewing-as banner */}
+      {viewingAs && <ViewingAsBanner companyName={viewingName} onExit={() => {
+        fetch('/api/auth/view-as', { method: 'DELETE' }).then(() => {
+          setViewingAs(null)
+          window.location.href = '/broker'
+        })
+      }} />}
+
       <div className="shell">
         <LoadingBar />
         <TopNav />
@@ -94,7 +138,6 @@ export default function DashboardShellClient({ children }: Props) {
         <CommandPalette />
         {!isMobile && <ShortcutHelp />}
         {isMobile && <MobileBottomNav />}
-        {/* CruzFAB removed — CRUZ is in bottom nav */}
       </div>
 
       {/* Offline banner */}

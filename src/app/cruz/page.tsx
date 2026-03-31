@@ -8,6 +8,7 @@ import ReactMarkdown from 'react-markdown'
 import { GOLD, GOLD_GRADIENT } from '@/lib/design-system'
 import { CLIENT_CLAVE, COMPANY_ID } from '@/lib/client-config'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { getMostActionableChips, PriorityChip } from '@/lib/cruz-priority'
 
 interface Message {
   id: string
@@ -67,6 +68,7 @@ export default function CruzChatPage() {
   const traficoContext = searchParams.get('trafico')
   const isMobile = useIsMobile()
   const [suggestions, setSuggestions] = useState(DEFAULT_SUGGESTIONS)
+  const [priorityChips, setPriorityChips] = useState<PriorityChip[]>([])
   const [cruzAlerts, setCruzAlerts] = useState<{ icon: string; title: string; action: string; prompt: string }[]>([])
 
   // Briefing state
@@ -106,12 +108,27 @@ export default function CruzChatPage() {
         urgent: urgent.slice(0, 5),
         alertTitle: alertData.alerts?.[0]?.title ?? null,
       })
+      // Compute priority chips from operational state
+      const fourteenDaysAgo = new Date(Date.now() - 14 * 86400000)
+      const stale = enProceso.filter((tr: Record<string, unknown>) => {
+        const updated = tr.updated_at || tr.fecha_llegada
+        return updated && new Date(updated as string) < fourteenDaysAgo
+      })
+      const chips = getMostActionableChips({
+        urgentCount: urgent.length,
+        pendingSolicitudes: 0, // fetched separately if needed
+        staleTraficos: stale.length,
+      })
+      setPriorityChips(chips)
     }).catch(() => setBriefing('Sistema operativo. ¿En qué puedo ayudarte?'))
   }, [])
 
   const [messages, setMessages] = useState<Message[]>(() => {
     if (typeof window !== 'undefined') {
-      try { const saved = sessionStorage.getItem('cruz-chat'); if (saved) return JSON.parse(saved) } catch {}
+      try {
+        const saved = localStorage.getItem('cruz-chat-history')
+        if (saved) return (JSON.parse(saved) as Message[]).slice(-50)
+      } catch { /* ignore parse errors */ }
     }
     return []
   })
@@ -132,7 +149,11 @@ export default function CruzChatPage() {
 
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages, loading])
   useEffect(() => { inputRef.current?.focus() }, [])
-  useEffect(() => { if (messages.length > 0) sessionStorage.setItem('cruz-chat', JSON.stringify(messages)) }, [messages])
+  useEffect(() => {
+    if (messages.length > 0) {
+      localStorage.setItem('cruz-chat-history', JSON.stringify(messages.slice(-50)))
+    }
+  }, [messages])
 
   // Tráfico context injection
   useEffect(() => {
@@ -309,9 +330,18 @@ export default function CruzChatPage() {
             </div>
           </div>
         </div>
-        <button onClick={() => router.back()} style={{ background: 'none', border: 'none', cursor: 'pointer', color: D.textMuted, padding: 8 }}>
-          <X size={18} />
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          {messages.length > 0 && (
+            <span style={{ fontSize: 10, color: D.textMuted, opacity: 0.6 }}>Historial guardado</span>
+          )}
+          <button onClick={() => { setMessages([]); localStorage.removeItem('cruz-chat-history') }}
+            style={{ fontSize: 12, color: D.textMuted, background: 'none', border: 'none', cursor: 'pointer', padding: 8 }}>
+            Nueva conversación
+          </button>
+          <button onClick={() => router.back()} style={{ background: 'none', border: 'none', cursor: 'pointer', color: D.textMuted, padding: 8 }}>
+            <X size={18} />
+          </button>
+        </div>
       </div>
 
       {/* Main content: chat + optional desktop panel */}
@@ -337,22 +367,33 @@ export default function CruzChatPage() {
                   </div>
                 </div>
 
-                {/* Dynamic context chips — horizontal scroll pills */}
+                {/* Priority chips — urgency-based styling */}
                 <div style={{
                   display: 'flex', gap: 8, flexWrap: 'nowrap', overflowX: 'auto',
                   WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none',
                   padding: '8px 0',
                 }} className="pill-scroll">
-                  {suggestions.slice(0, 4).map(s => (
-                    <button key={s} onClick={() => sendMessage(s)} style={{
-                      flexShrink: 0, padding: '8px 14px', borderRadius: 9999,
-                      border: `1px solid ${D.border}`, background: D.surface,
-                      fontSize: 12, fontWeight: 600, color: D.textSub,
-                      cursor: 'pointer', whiteSpace: 'nowrap',
-                    }}>
-                      {s}
-                    </button>
-                  ))}
+                  {(priorityChips.length > 0 ? priorityChips : suggestions.slice(0, 4).map(s => ({ label: s, query: s, urgency: 'info' as const }))).map(chip => {
+                    const borderColor = chip.urgency === 'critical' ? '#C23B22'
+                      : chip.urgency === 'warning' ? '#C47F17'
+                      : D.border
+                    const bgColor = chip.urgency === 'critical' ? 'rgba(194,59,34,0.06)'
+                      : chip.urgency === 'warning' ? 'rgba(196,127,23,0.06)'
+                      : D.surface
+                    const textColor = chip.urgency === 'critical' ? '#C23B22'
+                      : chip.urgency === 'warning' ? '#C47F17'
+                      : D.textSub
+                    return (
+                      <button key={chip.label} onClick={() => sendMessage(chip.query)} style={{
+                        flexShrink: 0, padding: '8px 14px', borderRadius: 9999,
+                        border: `1px solid ${borderColor}`, background: bgColor,
+                        fontSize: 12, fontWeight: 600, color: textColor,
+                        cursor: 'pointer', whiteSpace: 'nowrap',
+                      }}>
+                        {chip.label}
+                      </button>
+                    )
+                  })}
                 </div>
               </div>
             )}

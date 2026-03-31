@@ -192,19 +192,33 @@ export default function TraficoDetailPage() {
   }
 
   const steps = [
-    { num: 1, label: 'Documentos recibidos', detail: documentos.length > 0 ? `${documentos.length} documentos vinculados` : 'Pendiente de documentos' },
-    { num: 2, label: 'CRUZ procesó', detail: documentos.length > 0 ? `${documentos.length} docs · Confianza: ${docCompleteness}%` : '—' },
-    { num: 3, label: 'Revisado y autorizado', detail: t.pedimento ? 'Autorizado · Patente 3596' : '—' },
-    { num: 4, label: 'COVE generado', detail: '—' },
-    { num: 5, label: 'Previo', detail: 'No requerido por SAT' },
-    { num: 6, label: 'Pedimento transmitido', detail: t.pedimento ? `No. ${fmtPedimento(t.pedimento)} · SAAI` : '—' },
-    { num: 7, label: 'Pedimento pagado', detail: t.fecha_pago ? formatAbsoluteETA(t.fecha_pago) : '—' },
-    { num: 8, label: 'Semáforo asignado', detail: t.semaforo === 0 ? 'Verde' : t.semaforo === 1 ? 'Rojo' : '—' },
-    { num: 9, label: 'En cruce', detail: t.fecha_cruce ? `Ingresó: ${formatAbsoluteETA(t.fecha_cruce)}` : '—' },
-    { num: 10, label: 'Cruzado', detail: isCruzado && t.fecha_cruce ? formatAbsoluteETA(t.fecha_cruce) : '—' },
-    { num: 11, label: 'En ruta', detail: fmtCarrier(t.transportista_mexicano) || '—' },
-    { num: 12, label: 'Entregado', detail: '—' },
+    { num: 1, label: 'Documentos recibidos', detail: documentos.length > 0 ? `${documentos.length} documentos vinculados` : 'Pendiente de documentos', date: t.fecha_llegada || null },
+    { num: 2, label: 'CRUZ procesó', detail: documentos.length > 0 ? `${documentos.length} docs · Confianza: ${docCompleteness}%` : '—', date: null },
+    { num: 3, label: 'Revisado y autorizado', detail: t.pedimento ? 'Autorizado · Patente 3596' : '—', date: null },
+    { num: 4, label: 'COVE generado', detail: '—', date: null },
+    { num: 5, label: 'Previo', detail: 'No requerido por SAT', date: null },
+    { num: 6, label: 'Pedimento transmitido', detail: t.pedimento ? `No. ${fmtPedimento(t.pedimento)} · SAAI` : '—', date: t.fecha_transmision || null },
+    { num: 7, label: 'Pedimento pagado', detail: t.fecha_pago ? formatAbsoluteETA(t.fecha_pago) : '—', date: t.fecha_pago || null },
+    { num: 8, label: 'Semáforo asignado', detail: t.semaforo === 0 ? 'Verde' : t.semaforo === 1 ? 'Rojo' : '—', date: t.fecha_modulacion || null },
+    { num: 9, label: 'En cruce', detail: t.fecha_cruce ? `Ingresó: ${formatAbsoluteETA(t.fecha_cruce)}` : '—', date: t.fecha_cruce || null },
+    { num: 10, label: 'Cruzado', detail: isCruzado && t.fecha_cruce ? formatAbsoluteETA(t.fecha_cruce) : '—', date: isCruzado ? t.fecha_cruce || null : null },
+    { num: 11, label: 'En ruta', detail: fmtCarrier(t.transportista_mexicano) || '—', date: null },
+    { num: 12, label: 'Entregado', detail: '—', date: t.fecha_entrega || null },
   ]
+
+  // Compute duration between consecutive completed steps with dates
+  const getStepDuration = (prevIdx: number, currIdx: number): number | null => {
+    const prevDate = steps[prevIdx]?.date
+    const currDate = steps[currIdx]?.date
+    if (!prevDate || !currDate) return null
+    const prevState = getStepState(steps[prevIdx].num)
+    const currState = getStepState(steps[currIdx].num)
+    if (prevState !== 'completed' && prevState !== 'current') return null
+    if (currState !== 'completed' && currState !== 'current') return null
+    const diffMs = new Date(currDate).getTime() - new Date(prevDate).getTime()
+    if (diffMs < 0) return null
+    return Math.round(diffMs / 86400000)
+  }
 
   const currentStepIdx = steps.findIndex(s => getStepState(s.num) === 'current')
   const visibleSteps = steps
@@ -311,37 +325,63 @@ export default function TraficoDetailPage() {
               const textColor = state === 'completed' ? 'var(--n-900)' : state === 'current' ? 'var(--n-900)' : state === 'blocked' ? '#DC2626' : 'var(--n-400)'
               const lineColor = state === 'completed' ? GOLD : 'var(--n-150)'
 
-              // Special color for semáforo
+              // Special color for semaforo
               const detailColor = step.num === 8 && step.detail === 'Verde' ? '#16A34A'
                 : step.num === 8 && step.detail === 'Rojo' ? '#DC2626'
                 : step.num === 10 && state === 'completed' ? '#0D9488' // teal = certainty
                 : 'var(--n-500)'
 
+              // Duration since previous step with a date
+              let durationLabel: string | null = null
+              if (i > 0) {
+                // Find the nearest previous step that has a date
+                for (let prev = i - 1; prev >= 0; prev--) {
+                  const days = getStepDuration(prev, i)
+                  if (days !== null) {
+                    if (days === 0) durationLabel = 'mismo día'
+                    else durationLabel = `${days} día${days !== 1 ? 's' : ''}`
+                    break
+                  }
+                }
+              }
+
               return (
-                <li key={step.num} style={{ display: 'flex', gap: 12, position: 'relative', paddingBottom: isLast ? 0 : 16, minHeight: 60 }}>
-                  {/* Dot + line */}
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 20, flexShrink: 0 }}>
-                    <div style={{
-                      width: state === 'current' ? 14 : 10, height: state === 'current' ? 14 : 10,
-                      borderRadius: '50%', flexShrink: 0,
-                      background: state === 'pending' ? 'transparent' : dotColor,
-                      border: state === 'pending' ? `2px solid var(--n-200)` : 'none',
-                      animation: state === 'current' ? 'pulse-dot 2s ease-in-out infinite' : undefined,
-                    }} />
-                    {!isLast && <div style={{ width: 2, flex: 1, background: lineColor, marginTop: 4 }} />}
-                  </div>
-                  {/* Content */}
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: textColor, lineHeight: 1.3 }}>
-                      {step.num}. {step.label}
-                      {step.num === 10 && state === 'completed' && ' ✅'}
-                      {step.num === 12 && state === 'completed' && ' ✅'}
+                <React.Fragment key={step.num}>
+                  {durationLabel && (
+                    <li style={{ display: 'flex', gap: 12, paddingBottom: 4 }} aria-hidden>
+                      <div style={{ width: 20, flexShrink: 0, display: 'flex', justifyContent: 'center' }}>
+                        <div style={{ width: 2, height: '100%', background: lineColor }} />
+                      </div>
+                      <div style={{ fontSize: 10, color: '#9C9890', fontFamily: 'var(--font-jetbrains-mono, var(--font-data))', lineHeight: 1.4 }}>
+                        {'\u2514\u2500'} {durationLabel} {'\u2500\u2518'}
+                      </div>
+                    </li>
+                  )}
+                  <li style={{ display: 'flex', gap: 12, position: 'relative', paddingBottom: isLast ? 0 : 16, minHeight: 60 }}>
+                    {/* Dot + line */}
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 20, flexShrink: 0 }}>
+                      <div style={{
+                        width: state === 'current' ? 14 : 10, height: state === 'current' ? 14 : 10,
+                        borderRadius: '50%', flexShrink: 0,
+                        background: state === 'pending' ? 'transparent' : dotColor,
+                        border: state === 'pending' ? `2px solid var(--n-200)` : 'none',
+                        animation: state === 'current' ? 'pulse-dot 2s ease-in-out infinite' : undefined,
+                      }} />
+                      {!isLast && <div style={{ width: 2, flex: 1, background: lineColor, marginTop: 4 }} />}
                     </div>
-                    <div style={{ fontSize: 11, color: detailColor, marginTop: 2, fontFamily: step.num === 6 ? 'var(--font-data)' : undefined }}>
-                      {step.detail}
+                    {/* Content */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: textColor, lineHeight: 1.3 }}>
+                        {step.num}. {step.label}
+                        {step.num === 10 && state === 'completed' && ' ✅'}
+                        {step.num === 12 && state === 'completed' && ' ✅'}
+                      </div>
+                      <div style={{ fontSize: 11, color: detailColor, marginTop: 2, fontFamily: step.num === 6 ? 'var(--font-data)' : undefined }}>
+                        {step.detail}
+                      </div>
                     </div>
-                  </div>
-                </li>
+                  </li>
+                </React.Fragment>
               )
             })}
           </ol>

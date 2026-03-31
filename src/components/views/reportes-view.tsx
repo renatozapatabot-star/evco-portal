@@ -524,6 +524,7 @@ export function ReportesView() {
             { icon: '\u{2705}', label: 'Sin rectificación', value: '\u2014', unit: undefined as string | undefined, note: 'aceptados al primer intento', color: undefined as string | undefined },
             { icon: '\u{1F3ED}', label: 'Cumplimiento IMMEX', value: '100%', unit: undefined as string | undefined, note: '0 observaciones', color: '#2D8540' },
             { icon: '\u{26A1}', label: 'Tiempo de respuesta', value: '\u2014', unit: 'hrs', note: 'promedio del broker', color: undefined as string | undefined },
+            { icon: '\u{1F4B0}', label: 'Honorarios vs mercado', value: '15-20%', unit: 'menor', note: 'estimado vs promedio del sector~', color: '#2D8540' },
           ].map((kpi) => (
             <div key={kpi.label} style={{
               background: '#FFFFFF', border: '1px solid #E8E5E0', borderRadius: 10, padding: '14px 16px',
@@ -536,6 +537,9 @@ export function ReportesView() {
               {kpi.note && <div style={{ fontSize: 11, color: '#9C9890', marginTop: 2 }}>{kpi.note}</div>}
             </div>
           ))}
+        </div>
+        <div style={{ fontSize: 10, color: '#9C9890', marginTop: 8 }}>
+          ~ Estimación basada en tarifas públicas del sector. No constituye cotización formal.
         </div>
       </div>
 

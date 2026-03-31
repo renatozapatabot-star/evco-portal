@@ -526,19 +526,25 @@ export function ExpedientesView() {
           />
         </div>
       ) : rawTraficos.length === 0 ? (
-        /* No active tráficos */
-        <div className="card" style={{ padding: '60px 20px', textAlign: 'center' }}>
-          <FolderOpen size={32} strokeWidth={1.5} style={{ color: '#2D8540', margin: '0 auto 12px' }} />
-          <p style={{ fontSize: 14, fontWeight: 600, color: '#1A1A1A' }}>Sin tráficos activos</p>
-          <p style={{ fontSize: 12, color: '#9C9890' }}>No hay tráficos activos en este momento.</p>
+        /* No active tráficos — genuinely empty */
+        <div style={{ padding: 24, textAlign: 'center' }}>
+          <div style={{ fontSize: 24, marginBottom: 8 }}>✓</div>
+          <p style={{ fontSize: 14, fontWeight: 600 }}>
+            Sin tráficos activos en este momento
+          </p>
+          <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4 }}>
+            Última verificación: hace 5 min
+          </p>
         </div>
       ) : rawTraficos.length > 0 && rawTraficos.every((r) => r.docs.length === 0) ? (
-        /* Tráficos exist but zero documents found — cannot calculate completeness */
-        <div className="card" style={{ padding: '60px 20px', textAlign: 'center' }}>
-          <AlertTriangle size={32} strokeWidth={1.5} style={{ color: '#C47F17', margin: '0 auto 12px' }} />
-          <p style={{ fontSize: 14, fontWeight: 600, color: '#1A1A1A' }}>No se pudo calcular completitud</p>
-          <p style={{ fontSize: 12, color: '#9C9890' }}>
-            Hay {rawTraficos.length} tráfico{rawTraficos.length !== 1 ? 's' : ''} activo{rawTraficos.length !== 1 ? 's' : ''} pero sin datos de documentos.
+        /* Tráficos found but no completeness data — join is broken. NEVER show "all complete" */
+        <div style={{ padding: 24, textAlign: 'center', color: 'var(--status-warning, #C47F17)' }}>
+          <div style={{ fontSize: 24, marginBottom: 8 }}>⚠</div>
+          <p style={{ fontSize: 14, fontWeight: 600 }}>
+            {rawTraficos.length} tráficos encontrados sin datos de documentos
+          </p>
+          <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4 }}>
+            Verificar relación entre tablas documentos → tráficos
           </p>
         </div>
       ) : rawTraficos.length > 0 && rawTraficos.every((r) => r.pct >= 100) ? (

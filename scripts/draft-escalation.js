@@ -227,6 +227,49 @@ async function runEscalation() {
   } else {
     console.log(`\n  \u2705 No new escalations needed`)
   }
+
+  // 48h documento solicitudes escalation
+  console.log('\n\uD83D\uDCCB Checking documento solicitudes...')
+
+  const { data: vencidas } = await supabase
+    .from('documento_solicitudes')
+    .select('*')
+    .eq('status', 'solicitado')
+    .lt('deadline', new Date().toISOString())
+
+  if (vencidas && vencidas.length > 0) {
+    console.log(`  \u26A0\uFE0F ${vencidas.length} solicitudes vencidas`)
+
+    for (const s of vencidas) {
+      // Update status to vencida
+      await supabase.from('documento_solicitudes')
+        .update({ status: 'vencida', escalated_at: new Date().toISOString() })
+        .eq('id', s.id)
+
+      // Create notification
+      await supabase.from('notifications').insert({
+        company_id: s.company_id,
+        type: 'solicitud_vencida',
+        severity: 'critical',
+        title: `Solicitud vencida \u2014 ${s.trafico_id}`,
+        description: `Sin respuesta de ${s.recipient_name} despu\u00E9s de ${Math.round((Date.now() - new Date(s.solicitado_at).getTime()) / 3600000)}h`,
+        trafico_id: s.trafico_id,
+        action_url: `/traficos/${s.trafico_id}`,
+      })
+
+      // Telegram alert
+      await sendTelegram(
+        `\uD83D\uDD34 Solicitud vencida: ${s.trafico_id}\n` +
+        `Docs: ${(s.doc_types || []).join(', ')}\n` +
+        `Enviado a: ${s.recipient_name}\n` +
+        `Acci\u00F3n requerida: re-enviar o escalar`
+      )
+
+      console.log(`  \u2192 Escalated: ${s.trafico_id} (${(s.doc_types || []).length} docs)`)
+    }
+  } else {
+    console.log('  \u2705 Sin solicitudes vencidas')
+  }
 }
 
 runEscalation().catch(async (err) => {

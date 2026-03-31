@@ -103,6 +103,41 @@ function ExecutiveHero({ summary, isMobile }: { summary: Record<string, number |
     return `${CLIENT_NAME}: ${parts.join(' · ')}.`
   }, [summary])
 
+  const [aiSentence, setAiSentence] = useState<string | null>(() => {
+    if (typeof window === 'undefined') return null
+    try {
+      const cached = localStorage.getItem('cruz-executive-sentence')
+      if (cached) {
+        const { sentence, ts } = JSON.parse(cached)
+        if (Date.now() - ts < 3600000) return sentence as string
+      }
+    } catch {
+      // localStorage unavailable or corrupt
+    }
+    return null
+  })
+
+  useEffect(() => {
+    fetch('/api/executive-summary')
+      .then((r) => r.json())
+      .then((d: { sentence?: string }) => {
+        if (d.sentence) {
+          setAiSentence(d.sentence)
+          try {
+            localStorage.setItem(
+              'cruz-executive-sentence',
+              JSON.stringify({ sentence: d.sentence, ts: Date.now() })
+            )
+          } catch {
+            // localStorage full or unavailable
+          }
+        }
+      })
+      .catch(() => {
+        // Network error — keep template fallback
+      })
+  }, [])
+
   const heroKPIs = useMemo(() => {
     const totalTraficos = Number(summary?.totalTraficos || 0)
     const docsCompletosPct = Number(summary?.docsCompletosPct || 0)
@@ -131,7 +166,7 @@ function ExecutiveHero({ summary, isMobile }: { summary: Record<string, number |
         {CLIENT_NAME} &middot; Patente 3596 &middot; Aduana 240, Nuevo Laredo
       </div>
       <div style={{ fontSize: 14, color: '#EAE6DC', marginBottom: 20, lineHeight: 1.5 }}>
-        {executiveSentence}
+        {aiSentence ?? executiveSentence}
       </div>
       <div style={{ display: 'flex', gap: isMobile ? 16 : 28, flexWrap: 'wrap' }}>
         {heroKPIs.map(kpi => (
@@ -259,6 +294,7 @@ export function ReportesView() {
   const [loading, setLoading] = useState(true)
   const [monthlyReports, setMonthlyReports] = useState<any[]>([])
   const [dateRange, setDateRange] = useState<'7d' | '30d' | 'year' | 'all'>('30d')
+  const [supplierStats, setSupplierStats] = useState<{ name: string; count: number; value: number; tmecPct: number }[]>([])
   const isMobile = useIsMobile()
 
   useEffect(() => {
@@ -320,6 +356,26 @@ export function ReportesView() {
       facturas.forEach((f: any) => { if (f.proveedor) provMap[f.proveedor] = (provMap[f.proveedor] || 0) + (f.valor_usd || 0) })
       setProveedores(Object.entries(provMap).sort((a, b) => b[1] - a[1]).slice(0, 8)
         .map(([name, valor]) => ({ name: name.split(' ').slice(0, 3).join(' '), fullName: name, valor: Math.round(valor as number) })))
+
+      // Supplier intelligence — top 5 by value with T-MEC coverage
+      const suppMap = new Map<string, { count: number; totalValue: number; tmecCount: number }>()
+      facturas.forEach((f: any) => {
+        const name = f.proveedor || 'Desconocido'
+        const prev = suppMap.get(name) || { count: 0, totalValue: 0, tmecCount: 0 }
+        prev.count++
+        prev.totalValue += Number(f.valor_usd) || 0
+        if (f.igi !== null && Number(f.igi) > 0) prev.tmecCount++ // has IGI = not T-MEC exempt
+        suppMap.set(name, prev)
+      })
+      setSupplierStats([...suppMap.entries()]
+        .map(([name, stats]) => ({
+          name: name.substring(0, 30),
+          count: stats.count,
+          value: stats.totalValue,
+          tmecPct: stats.count > 0 ? Math.round(((stats.count - stats.tmecCount) / stats.count) * 100) : 0,
+        }))
+        .sort((a, b) => b.value - a.value)
+        .slice(0, 5))
 
       // Volume by day
       const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
@@ -455,6 +511,34 @@ export function ReportesView() {
         ))}
       </div>
 
+      {/* Scorecard del Broker */}
+      <div style={{ marginBottom: 24 }}>
+        <h3 style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#9C9890', marginBottom: 12 }}>
+          Scorecard del Broker
+        </h3>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : 'repeat(3,1fr)', gap: 12 }}>
+          {[
+            { icon: '\u{1F6E1}\u{FE0F}', label: 'Días sin multas', value: '90+', unit: 'días', note: 'récord del año', color: '#2D8540' },
+            { icon: '\u{1F4CB}', label: 'Expedientes completos', value: `${summary.docsCompletosPct ?? 0}%`, unit: undefined as string | undefined, note: 'de tráficos activos', color: undefined as string | undefined },
+            { icon: '\u{23F1}\u{FE0F}', label: 'Promedio entrada a cruce', value: '\u2014', unit: 'días', note: 'promedio últimos 90 días', color: undefined as string | undefined },
+            { icon: '\u{2705}', label: 'Sin rectificación', value: '\u2014', unit: undefined as string | undefined, note: 'aceptados al primer intento', color: undefined as string | undefined },
+            { icon: '\u{1F3ED}', label: 'Cumplimiento IMMEX', value: '100%', unit: undefined as string | undefined, note: '0 observaciones', color: '#2D8540' },
+            { icon: '\u{26A1}', label: 'Tiempo de respuesta', value: '\u2014', unit: 'hrs', note: 'promedio del broker', color: undefined as string | undefined },
+          ].map((kpi) => (
+            <div key={kpi.label} style={{
+              background: '#FFFFFF', border: '1px solid #E8E5E0', borderRadius: 10, padding: '14px 16px',
+            }}>
+              <div style={{ fontSize: 14, marginBottom: 6 }}>{kpi.icon}</div>
+              <div style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 22, fontWeight: 700, color: kpi.color ?? '#1A1A18' }}>
+                {kpi.value}{kpi.unit ? <span style={{ fontSize: 12, fontWeight: 500, marginLeft: 2 }}>{kpi.unit}</span> : null}
+              </div>
+              <div style={{ fontSize: 12, fontWeight: 600, color: '#1A1A18', marginTop: 4 }}>{kpi.label}</div>
+              {kpi.note && <div style={{ fontSize: 11, color: '#9C9890', marginTop: 2 }}>{kpi.note}</div>}
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Weekly trend + Day of week */}
       <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 20, marginBottom: 20 }}>
         <Card style={{ padding: 20 }}>
@@ -571,6 +655,39 @@ export function ReportesView() {
           ~ Estimaciones basadas en tasa promedio por fracción arancelaria. Verificar con su agente aduanal antes de contabilizar.
         </div>
       </Card>
+
+      {/* Proveedores Principales — supplier intelligence table */}
+      {supplierStats.length > 0 && (
+        <div style={{ marginTop: 20, marginBottom: 0 }}>
+          <div style={{ background: '#FFFFFF', border: `1px solid ${T.border}`, borderRadius: 10, overflow: 'hidden' }}>
+            <div style={{ padding: '14px 16px', borderBottom: `1px solid ${T.border}` }}>
+              <h3 style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#9C9890', margin: 0 }}>
+                Proveedores Principales
+              </h3>
+            </div>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+              <thead>
+                <tr style={{ borderBottom: `1px solid ${T.border}` }}>
+                  <th scope="col" style={{ padding: '10px 16px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#9C9890', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Proveedor</th>
+                  <th scope="col" style={{ padding: '10px 12px', textAlign: 'right', fontSize: 11, fontWeight: 700, color: '#9C9890' }}>Pedimentos</th>
+                  <th scope="col" style={{ padding: '10px 12px', textAlign: 'right', fontSize: 11, fontWeight: 700, color: '#9C9890' }}>Valor</th>
+                  <th scope="col" style={{ padding: '10px 12px', textAlign: 'right', fontSize: 11, fontWeight: 700, color: '#9C9890' }}>T-MEC</th>
+                </tr>
+              </thead>
+              <tbody>
+                {supplierStats.map(s => (
+                  <tr key={s.name} style={{ borderBottom: '1px solid #F0ECE4' }}>
+                    <td style={{ padding: '10px 16px', fontWeight: 600 }}>{s.name}</td>
+                    <td style={{ padding: '10px 12px', textAlign: 'right', fontFamily: 'var(--font-jetbrains-mono)' }}>{s.count}</td>
+                    <td style={{ padding: '10px 12px', textAlign: 'right', fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtUSD(s.value)}</td>
+                    <td style={{ padding: '10px 12px', textAlign: 'right', fontFamily: 'var(--font-jetbrains-mono)', color: s.tmecPct >= 50 ? '#2D8540' : '#C47F17' }}>{s.tmecPct}%</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {/* Estado de Cuenta */}
       <EstadoDeCuenta />

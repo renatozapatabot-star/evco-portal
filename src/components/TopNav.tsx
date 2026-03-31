@@ -1,12 +1,13 @@
 'use client'
 import { usePathname, useRouter } from 'next/navigation'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { LayoutDashboard, Truck, MessageSquare, BarChart3, FolderOpen, Bell, Search } from 'lucide-react'
 import { CLIENT_CLAVE, COMPANY_ID } from '@/lib/client-config'
 import { daysUntilMVE, mveIsCritical } from '@/lib/compliance-dates'
 import { fmtDate } from '@/lib/format-utils'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { NotificationPanel } from '@/components/NotificationPanel'
 
 interface NavItem {
   href: string
@@ -68,6 +69,17 @@ export function TopNav() {
 
   const [syncMins, setSyncMins] = useState<number | null>(null)
   const [unreadCount, setUnreadCount] = useState(0)
+  const [notifOpen, setNotifOpen] = useState(false)
+
+  // Escape key to close notification panel
+  const handleEscapeNav = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Escape' && notifOpen) setNotifOpen(false)
+  }, [notifOpen])
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleEscapeNav)
+    return () => document.removeEventListener('keydown', handleEscapeNav)
+  }, [handleEscapeNav])
 
   // Notification badge
   useEffect(() => {
@@ -197,7 +209,7 @@ export function TopNav() {
             </button>
           )}
           <button style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: T.textOnDarkMuted, position: 'relative' }}
-            onClick={() => router.push('/alertas')} aria-label="Notificaciones">
+            onClick={() => setNotifOpen(true)} aria-label="Notificaciones">
             <Bell size={18} />
             {unreadCount > 0 && (
               <span style={{
@@ -295,7 +307,7 @@ export function TopNav() {
           <Search size={18} />
         </button>
         <button style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: T.textOnDarkMuted, position: 'relative' }}
-          onClick={() => router.push('/alertas')} aria-label="Notificaciones">
+          onClick={() => setNotifOpen(true)} aria-label="Notificaciones">
           <Bell size={18} />
           {unreadCount > 0 && (
             <span style={{
@@ -320,5 +332,10 @@ export function TopNav() {
     </nav>
   )
 
-  return isMobile ? <MobileNav /> : <DesktopNav />
+  return (
+    <>
+      {isMobile ? <MobileNav /> : <DesktopNav />}
+      <NotificationPanel isOpen={notifOpen} onClose={() => setNotifOpen(false)} />
+    </>
+  )
 }

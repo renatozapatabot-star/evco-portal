@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useToast } from '@/components/Toast'
 import { createClient } from '@supabase/supabase-js'
 
 import { COMPANY_ID, CLIENT_NAME, CLIENT_RFC } from '@/lib/client-config'
@@ -17,6 +18,7 @@ const ORIGIN_CRITERIA = [
 ]
 
 export function USMCAView() {
+  const { toast } = useToast()
   const [suppliers, setSuppliers] = useState<any[]>([])
   const [generating, setGenerating] = useState(false)
   const [cert, setCert] = useState<any>(null)
@@ -51,7 +53,7 @@ export function USMCAView() {
       const data = await res.json()
       if (data.error) throw new Error(data.error)
       setCert(data)
-    } catch (e: any) { alert('Error: ' + e.message) }
+    } catch (e: any) { toast('Error: ' + e.message, 'error') }
     setGenerating(false)
   }
 

@@ -234,55 +234,10 @@ body {
   .status-strip-skeleton { width: 200px; height: 14px; }
 }
 
-/* ══════════════════════════════
-   ICON RAIL (replaced by TopNav)
-══════════════════════════════ */
-.icon-rail {
-  display: none !important;
-}
-/* Legacy hover rules kept for reference but rail is hidden */
-.icon-rail:hover .ir-tooltip { display: none !important; }
-.ir-logo { display:flex;align-items:center;justify-content:center;padding:20px 0 16px;flex-shrink:0;text-decoration:none; }
-.ir-zmark {
-  width:46px;height:46px;border-radius:13px;
-  background:#CC1B2F;
-  box-shadow:0 1px 0 rgba(255,255,255,0.15) inset,0 4px 12px rgba(204,27,47,0.35);
-  display:flex;align-items:center;justify-content:center;
-  transition:transform 0.2s cubic-bezier(0.22,1,0.36,1),box-shadow 0.2s ease;
-  position:relative;
-}
-.ir-zmark::after {
-  content:'';position:absolute;inset:2px;border-radius:11px;
-  border:1px solid rgba(255,255,255,0.15);pointer-events:none;
-}
-.ir-logo:hover .ir-zmark {
-  transform:scale(1.08);
-  box-shadow:0 1px 0 rgba(255,255,255,0.15) inset,0 6px 20px rgba(204,27,47,0.45);
-}
-.ir-zmark span { font-family:Georgia,'Times New Roman',serif;font-size:25px;font-weight:700;color:#FFFFFF;letter-spacing:-0.04em;line-height:1; }
-.ir-nav { flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0;overflow-y:auto; }
-.ir-item { width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.35);text-decoration:none;position:relative;transition:all 0.12s ease;gap:12px; }
-.icon-rail:hover .ir-item { width:auto;padding:0 14px 0 20px;justify-content:flex-start; }
-.ir-label { opacity:0;white-space:nowrap;overflow:hidden;font-size:14px;font-weight:600;color:rgba(255,255,255,0.60);transition:opacity 150ms ease 80ms; }
-.icon-rail:hover .ir-label { opacity:1; }
-.ir-item:hover { color:rgba(255,255,255,0.80);background:rgba(255,255,255,0.06); }
-.ir-cruz-nav { width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--gold-400,#C9A84C);text-decoration:none;position:relative;transition:all 0.12s ease;gap:12px;background:rgba(200,150,46,0.06); }
-.icon-rail:hover .ir-cruz-nav { width:auto;padding:0 14px 0 20px;justify-content:flex-start; }
-.ir-cruz-nav:hover { color:var(--gold-300,#D4B85C);background:rgba(200,150,46,0.12);box-shadow:0 0 12px rgba(201,168,76,0.15); }
-.ir-cruz-nav .ir-label { color:var(--gold-400,#C9A84C); }
-.ir-active { color:var(--gold-400) !important;background:rgba(200,150,46,0.10); }
-.ir-active::before { content:'';position:absolute;left:0;top:25%;bottom:25%;width:3px;border-radius:0 2px 2px 0;background:var(--gold-500); }
-.ir-tooltip { display:none;position:absolute;left:calc(100% + 12px);top:50%;transform:translateY(-50%);background:var(--n-900);color:var(--n-0);padding:6px 12px;border-radius:6px;font-size:13px;font-weight:600;white-space:nowrap;box-shadow:var(--s-md);z-index:60;pointer-events:none;font-family:var(--font-ui); }
-.ir-tooltip::before { content:'';position:absolute;left:-4px;top:50%;transform:translateY(-50%);border:4px solid transparent;border-right-color:var(--n-900); }
-.ir-item:hover .ir-tooltip,.ir-cruz:hover .ir-tooltip { display:block; }
-.ir-cruz { width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;color:var(--gold-500);text-decoration:none;margin:12px 0 24px;position:relative;transition:all 0.15s ease;background:rgba(200,150,46,0.06);border:1px solid rgba(200,150,46,0.12); }
-.ir-cruz:hover { background:rgba(200,150,46,0.12);color:var(--gold-400);box-shadow:0 0 16px rgba(201,168,76,0.25);border-color:rgba(200,150,46,0.25); }
-.ir-cruz.ir-active { background:rgba(200,150,46,0.15);color:var(--gold-400); }
-
 /* Hide old sidebar */
 .sidebar { display:none !important; }
 
-@media (max-width:768px) { .icon-rail { display:none !important; } .shell-main { padding-left:0 !important; padding-top:104px !important; } }
+@media (max-width:768px) { .shell-main { padding-left:0 !important; padding-top:104px !important; } }
 
 /* ─── CRUZ Logo ─── */
 .sb-logo {
@@ -1109,7 +1064,7 @@ body {
 @media (pointer: coarse) {
   .data-table td { min-height: 52px; }
   .sb-link { min-height: 48px; }
-  .act-btn { min-height: 44px; }
+  .act-btn { min-height: 60px; }
   .f-chip  { min-height: 40px; }
 }
 @media (forced-colors: active) {
@@ -1527,7 +1482,7 @@ body[data-page^="/cruz"] .cruz-fab { display:none !important; }
 
 /* ── PRINT STYLESHEET ── */
 @media print {
-  .icon-rail,.m-nav,.topbar,.cruz-fab,.status-ticker,
+  .m-nav,.topbar,.cruz-fab,.status-ticker,
   .mobile-nav,.m-nav-tab,.m-header,.shell-sidebar,
   [class*="bottom-nav"],.cmd-palette,.shortcut-help,
   .skip-link,.load-bar { display:none !important; }
@@ -1626,7 +1581,7 @@ body[data-page^="/cruz"] .cruz-fab { display:none !important; }
 
 /* Print stylesheet */
 @media print {
-  .icon-rail, .topbar, .m-header, .m-bottom-nav, .cruz-fab,
+  .topbar, .m-header, .m-bottom-nav, .cruz-fab,
   .command-palette, .shortcut-help, .toast-stack, .idle-warning,
   .idle-overlay, .offline-banner { display: none !important; }
   .shell-main { margin: 0 !important; padding-left: 0 !important; }
@@ -1651,7 +1606,7 @@ body[data-page^="/cruz"] .cruz-fab { display:none !important; }
 
 /* Mobile touch targets */
 @media (max-width: 768px) {
-  button, a[role="button"], [role="button"] { min-height: 44px; }
+  button, a[role="button"], [role="button"] { min-height: 60px; }
   .btn-sm { padding: 10px 12px; }
   .text-xs, .label, .badge { font-size: 12px !important; }
   td, th { font-size: 13px !important; }
@@ -1754,8 +1709,6 @@ h1,h2,.page-title { letter-spacing:-0.025em; }
 ::-webkit-scrollbar-thumb { background:rgba(0,0,0,0.12);border-radius:3px; }
 ::-webkit-scrollbar-thumb:hover { background:rgba(0,0,0,0.2); }
 * { scrollbar-width:thin;scrollbar-color:rgba(0,0,0,0.12) transparent; }
-.icon-rail { -ms-overflow-style:none;scrollbar-width:none; }
-.icon-rail::-webkit-scrollbar { display:none; }
 
 /* ── TAP HIGHLIGHT ── */
 * { -webkit-tap-highlight-color:transparent; }
@@ -1768,8 +1721,6 @@ button:active { transform:scale(0.98); }
 .crisis-card { background:linear-gradient(135deg,#FEF2F2 0%,#FEE2E2 100%);border:none;border-left:4px solid #DC2626;border-radius:0 16px 16px 0;cursor:pointer;transition:all 0.2s ease; }
 .crisis-card:hover { transform:translateX(4px);box-shadow:0 4px 20px rgba(220,38,38,0.08); }
 
-/* ── SIDEBAR GRADIENT ── */
-.icon-rail { background:linear-gradient(180deg,#1A1710 0%,#141210 100%); }
 
 /* ── BADGE REFINEMENT ── */
 .badge-retrasado { background:#FEF2F2;color:#DC2626; }

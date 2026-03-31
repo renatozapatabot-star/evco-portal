@@ -239,7 +239,7 @@ export function SolicitarModal({ traficoId, missingDocs, onClose, onSuccess }: P
               flex: 1, padding: '12px', borderRadius: 8,
               border: '1px solid #E8E5E0', background: '#FFFFFF',
               color: '#6B6B6B', fontSize: 14, fontWeight: 700,
-              cursor: 'pointer', minHeight: 44,
+              cursor: 'pointer', minHeight: 60,
             }}
           >
             Cancelar
@@ -254,7 +254,7 @@ export function SolicitarModal({ traficoId, missingDocs, onClose, onSuccess }: P
               color: selected.length > 0 ? '#FFFFFF' : '#9C9890',
               fontSize: 14, fontWeight: 700,
               cursor: selected.length > 0 ? 'pointer' : 'default',
-              minHeight: 44,
+              minHeight: 60,
             }}
           >
             {sending

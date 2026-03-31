@@ -70,9 +70,9 @@ export default function TraficoDetailPage() {
 
   const handleUpload = async (file: File | undefined, docType: string) => {
     if (!file) return
-    if (file.size > 10 * 1024 * 1024) { alert('Máximo 10MB'); return }
+    if (file.size > 10 * 1024 * 1024) { toast('Máximo 10MB', 'error'); return }
     if (!['application/pdf', 'image/jpeg', 'image/png', 'text/xml', 'application/xml'].includes(file.type)) {
-      alert('Solo PDF, JPG, PNG, XML'); return
+      toast('Solo PDF, JPG, PNG, XML', 'error'); return
     }
     const tId = decodeURIComponent(String(id))
     setUploadingDoc(docType)
@@ -87,7 +87,7 @@ export default function TraficoDetailPage() {
         tenant_slug: COMPANY_ID,
       })
       window.location.reload()
-    } catch { alert('Error al subir. Intenta de nuevo.') }
+    } catch { toast('Error al subir. Intenta de nuevo.', 'error') }
     finally { setUploadingDoc(null) }
   }
 
@@ -301,7 +301,7 @@ export default function TraficoDetailPage() {
               fontSize: 12, fontWeight: 700,
               border: 'var(--b-default)', borderRadius: 'var(--r-md)',
               background: 'var(--bg-card)', cursor: 'pointer', color: 'var(--n-600)',
-              minHeight: 44,
+              minHeight: 60,
             }}>
               {trackingCopied ? '✓ Copiado' : 'Compartir'}
             </button>
@@ -716,7 +716,7 @@ export default function TraficoDetailPage() {
                         borderRadius: 'var(--r-md)',
                         background: '#F0FDF4', color: '#16A34A',
                         border: '1px solid #BBF7D0',
-                        cursor: 'pointer', minHeight: 44,
+                        cursor: 'pointer', minHeight: 60,
                         whiteSpace: 'nowrap',
                       }}
                     >

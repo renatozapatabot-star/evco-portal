@@ -1,7 +1,7 @@
 'use client'
 
 export function downloadCSV(data: any[], filename: string) {
-  if (!data || data.length === 0) { alert('No hay datos para exportar'); return }
+  if (!data || data.length === 0) return
   const headers = Object.keys(data[0])
   const csvRows = [
     headers.join(','),

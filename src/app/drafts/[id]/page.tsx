@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { ArrowLeft, Check, X, AlertTriangle, FileText, ChevronDown, ChevronRight } from 'lucide-react'
+import { useToast } from '@/components/Toast'
 import { createClient } from '@supabase/supabase-js'
 import { GOLD, GOLD_GRADIENT, Z_RED } from '@/lib/design-system'
 import { CLIENT_CLAVE } from '@/lib/client-config'
@@ -41,6 +42,7 @@ function mapDraftRow(row: any) {
 export default function DraftReviewPage() {
   const { id } = useParams()
   const router = useRouter()
+  const { toast } = useToast()
   const [draft, setDraft] = useState<any>(null)
   const [loadingDraft, setLoadingDraft] = useState(true)
 
@@ -398,7 +400,7 @@ export default function DraftReviewPage() {
           <button onClick={() => {
             const note = prompt('Nota de corrección (mínimo 20 caracteres):')
             if (note && note.length >= 20) { setCorrectionNote(note); setApprovalState('countdown') }
-            else if (note) alert('La nota debe tener al menos 20 caracteres.')
+            else if (note) toast('La nota debe tener al menos 20 caracteres.', 'error')
           }}
             style={{ flex: 1, padding: '14px 16px', border: 'var(--b-default)', borderRadius: 10, background: 'var(--bg-card)', cursor: 'pointer', fontSize: 13, fontWeight: 700, color: 'var(--n-700)', minHeight: 60 }}>
             Con correcciones

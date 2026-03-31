@@ -157,7 +157,7 @@ export function DocumentosView() {
               background: 'var(--status-red, #C23B22)', color: '#FFF',
               border: 'none', borderRadius: 8,
               padding: '10px 16px', fontSize: 13, fontWeight: 700,
-              cursor: 'pointer', flexShrink: 0, minHeight: 44,
+              cursor: 'pointer', flexShrink: 0, minHeight: 60,
             }}
           >
             Ver faltantes ({requiredIncomplete})

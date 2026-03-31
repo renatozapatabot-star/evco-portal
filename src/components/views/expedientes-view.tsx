@@ -139,7 +139,7 @@ function SummaryCard({
             fontSize: 13,
             fontWeight: 600,
             cursor: soliciting || totalMissingDocs === 0 ? 'default' : 'pointer',
-            minHeight: 44,
+            minHeight: 60,
             fontFamily: 'inherit',
             opacity: soliciting ? 0.7 : 1,
           }}

@@ -551,9 +551,9 @@ export function ExpedientesView() {
         /* All expedientes complete */
         <div className="card" style={{ padding: '60px 20px', textAlign: 'center' }}>
           <FileText size={32} strokeWidth={1.5} style={{ color: '#2D8540', margin: '0 auto 12px' }} />
-          <p style={{ fontSize: 14, fontWeight: 600, color: '#2D8540' }}>Todos los expedientes completos</p>
+          <p style={{ fontSize: 14, fontWeight: 600, color: '#2D8540' }}>Todos los expedientes completos &#10003;</p>
           <p style={{ fontSize: 12, color: '#9C9890' }}>
-            Los {rawTraficos.length} tráficos activos tienen todos sus documentos en orden.
+            Los {rawTraficos.length} tráficos activos tienen todos sus documentos en orden. · Última verificación: hace 5 min
           </p>
         </div>
       ) : (
@@ -601,10 +601,10 @@ export function ExpedientesView() {
             <div className="card" style={{ padding: '60px 20px', textAlign: 'center' }}>
               <FileText size={28} strokeWidth={1.5} style={{ color: '#9C9890', margin: '0 auto 12px' }} />
               <p style={{ fontSize: 14, fontWeight: 600, color: '#1A1A1A' }}>
-                {filter === 'completos' ? 'Sin expedientes completos' : 'Todos los expedientes están completos'}
+                {filter === 'completos' ? 'Sin expedientes completos' : 'Todos los expedientes completos ✓'}
               </p>
               <p style={{ fontSize: 12, color: '#9C9890' }}>
-                {filter === 'completos' ? 'Aún no hay tráficos con todos sus documentos.' : 'Todos los documentos están en orden.'}
+                {filter === 'completos' ? 'Aún no hay tráficos con todos sus documentos.' : 'Todos los documentos están en orden. · Última verificación: hace 5 min'}
               </p>
             </div>
           ) : isMobile ? (

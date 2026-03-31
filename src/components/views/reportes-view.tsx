@@ -601,6 +601,10 @@ export function ReportesView() {
         </Card>
       )}
 
+      <p style={{ fontSize: 10, color: T.textMuted, marginTop: 24, fontStyle: 'italic' }}>
+        ~ Comparaciones son estimaciones directionales basadas en experiencia operativa. No representan datos certificados del sector.
+      </p>
+
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   )

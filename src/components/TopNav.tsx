@@ -3,7 +3,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { LayoutDashboard, Truck, MessageSquare, BarChart3, FolderOpen, Bell, Search } from 'lucide-react'
-import { CLIENT_CLAVE } from '@/lib/client-config'
+import { CLIENT_CLAVE, COMPANY_ID } from '@/lib/client-config'
 import { daysUntilMVE, mveIsCritical } from '@/lib/compliance-dates'
 import { fmtDate } from '@/lib/format-utils'
 import { useIsMobile } from '@/hooks/use-mobile'
@@ -67,6 +67,18 @@ export function TopNav() {
   }
 
   const [syncMins, setSyncMins] = useState<number | null>(null)
+  const [unreadCount, setUnreadCount] = useState(0)
+
+  // Notification badge
+  useEffect(() => {
+    fetch(`/api/data?table=notifications&company_id=${COMPANY_ID}&select=id&limit=1&read=false`)
+      .then(r => r.json())
+      .then(d => {
+        const count = d.count ?? (d.data?.length ?? 0)
+        setUnreadCount(count)
+      })
+      .catch(() => {})
+  }, [])
 
   // Sync status
   useEffect(() => {
@@ -187,6 +199,17 @@ export function TopNav() {
           <button style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: T.textOnDarkMuted, position: 'relative' }}
             onClick={() => router.push('/alertas')} aria-label="Notificaciones">
             <Bell size={18} />
+            {unreadCount > 0 && (
+              <span style={{
+                position: 'absolute', top: -2, right: -4,
+                width: 16, height: 16, borderRadius: '50%',
+                background: '#DC2626', color: '#FFFFFF',
+                fontSize: 9, fontWeight: 800, lineHeight: '16px', textAlign: 'center',
+                border: '2px solid #1A1814',
+              }}>
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            )}
           </button>
           <div style={{
             width: 28, height: 28, borderRadius: 9999,
@@ -271,9 +294,20 @@ export function TopNav() {
           onClick={() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }))} aria-label="Buscar">
           <Search size={18} />
         </button>
-        <button style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: T.textOnDarkMuted }}
+        <button style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: T.textOnDarkMuted, position: 'relative' }}
           onClick={() => router.push('/alertas')} aria-label="Notificaciones">
           <Bell size={18} />
+          {unreadCount > 0 && (
+            <span style={{
+              position: 'absolute', top: -2, right: -4,
+              width: 14, height: 14, borderRadius: '50%',
+              background: '#DC2626', color: '#FFFFFF',
+              fontSize: 8, fontWeight: 800, lineHeight: '14px', textAlign: 'center',
+              border: '2px solid #1A1814',
+            }}>
+              {unreadCount > 9 ? '9+' : unreadCount}
+            </span>
+          )}
         </button>
         <div style={{
           width: 24, height: 24, borderRadius: 9999,

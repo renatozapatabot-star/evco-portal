@@ -50,6 +50,7 @@ export default function TraficosPage() {
   const [searchInput, setSearchInput] = useState(search)
   const [predictions, setPredictions] = useState<Record<string, { avgDays: number; predictedDate: string; confidence: string }>>({})
   const [riskMap, setRiskMap] = useState<Map<string, any>>(new Map())
+  const [docCountMap, setDocCountMap] = useState<Map<string, number>>(new Map())
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const { sort, toggleSort } = useSort('traficos', { column: 'fecha_llegada', direction: 'desc' })
@@ -69,6 +70,18 @@ export default function TraficosPage() {
       .then(r => r.json()).then(d => setRows(d.data ?? d ?? []))
       .catch(() => {}).finally(() => setLoading(false))
     fetch('/api/crossing-prediction').then(r => r.json()).then(d => setPredictions(d.predictions ?? {})).catch(() => {})
+    // Fetch document counts per trafico for DOCS column
+    fetch(`/api/data?table=documents&company_id=${COMPANY_ID}&select=trafico_id,document_type&limit=10000`)
+      .then(r => r.json())
+      .then(d => {
+        const docs = d.data ?? []
+        const map = new Map<string, number>()
+        docs.forEach((doc: { trafico_id?: string }) => {
+          if (doc.trafico_id) map.set(doc.trafico_id, (map.get(doc.trafico_id) || 0) + 1)
+        })
+        setDocCountMap(map)
+      })
+      .catch(() => {})
     fetch(`/api/data?table=pedimento_risk_scores&company_id=${COMPANY_ID}&limit=2000&order_by=calculated_at&order_dir=desc`)
 
       .then(r => r.json()).then(d => {
@@ -213,6 +226,7 @@ export default function TraficosPage() {
                 <th scope="col">Descripción</th>
                 <th scope="col" style={{ width: 100, textAlign: 'right', cursor: 'pointer' }} onClick={() => toggleSort('peso_bruto')} className={sort.column === 'peso_bruto' ? 'sorted' : ''} aria-sort={sort.column === 'peso_bruto' ? (sort.direction === 'asc' ? 'ascending' : 'descending') : undefined}>Peso<SortArrow col="peso_bruto" /></th>
                 <th scope="col" style={{ width: 110, textAlign: 'right', cursor: 'pointer' }} onClick={() => toggleSort('importe_total')} className={sort.column === 'importe_total' ? 'sorted' : ''} aria-sort={sort.column === 'importe_total' ? (sort.direction === 'asc' ? 'ascending' : 'descending') : undefined}>Importe<SortArrow col="importe_total" /></th>
+                <th scope="col" style={{ width: 60, textAlign: 'center' }}>DOCS</th>
               </tr>
             </thead>
             <tbody>
@@ -226,10 +240,11 @@ export default function TraficosPage() {
                   <td><div className="skel" style={{ width: 140, height: 13 }} /></td>
                   <td><div className="skel" style={{ width: 50, height: 13, marginLeft: 'auto' }} /></td>
                   <td><div className="skel" style={{ width: 60, height: 13, marginLeft: 'auto' }} /></td>
+                  <td><div className="skel" style={{ width: 30, height: 13, margin: '0 auto' }} /></td>
                 </tr>
               ))}
               {!loading && paged.length === 0 && (
-                <tr><td colSpan={8}>
+                <tr><td colSpan={9}>
                   {search.trim() ? (
                     <div style={{ textAlign: 'center', padding: '48px 0', color: 'var(--text-muted)' }}>
                       <div style={{ fontSize: 20, marginBottom: 8 }}>🔍</div>
@@ -297,11 +312,18 @@ export default function TraficosPage() {
                       <td className="c-desc" title={fmtDesc(r.descripcion_mercancia)}>{fmtDesc(r.descripcion_mercancia) || <span style={{ color: 'var(--n-400)' }}>—</span>}</td>
                       <td className="col-num">{fmtKg(r.peso_bruto) || <span style={{ color: 'var(--n-400)' }}>—</span>}</td>
                       <td className="col-num">{(r.importe_total != null && Number(r.importe_total) > 0) ? fmtUSD(r.importe_total) : <span style={{ color: 'var(--n-400)' }}>—</span>}</td>
+                      <td style={{ textAlign: 'center' }}>
+                        {(() => {
+                          const count = docCountMap.get(r.trafico) ?? 0
+                          const color = count >= 6 ? 'var(--status-green, #2D8540)' : count >= 3 ? 'var(--status-amber, #C47F17)' : count > 0 ? 'var(--status-red, #C23B22)' : 'var(--n-400, #9C9890)'
+                          return <span style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 12, color, fontWeight: 600 }}>{count}/6</span>
+                        })()}
+                      </td>
                     </tr>
 
                     {isExpanded && (
                       <tr className="expansion-row">
-                        <td colSpan={8}>
+                        <td colSpan={9}>
                           <div className="expansion-content">
                             <div className="expansion-grid">
                               <div className="expansion-fact">

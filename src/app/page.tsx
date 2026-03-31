@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import { CheckCircle } from 'lucide-react'
 import { CLIENT_CLAVE, COMPANY_ID } from '@/lib/client-config'
+import { daysUntilMVE } from '@/lib/compliance-dates'
 import { fmtId, fmtDate } from '@/lib/format-utils'
 import { calculateCruzScore, extractScoreInput } from '@/lib/cruz-score'
 import { statusDays } from '@/lib/cruz-score'
@@ -71,6 +72,7 @@ export default function Dashboard() {
   const [entradas, setEntradas] = useState<Record<string, unknown>[]>([])
   const [loading, setLoading] = useState(true)
   const [liveBridges, setLiveBridges] = useState<{ bridges: BridgeTime[]; recommended: number | null; fetched: string | null } | null>(null)
+  const [mananaItems, setMananaItems] = useState<{ solicitudes: number; mveUrgent: boolean; mveDays: number }>({ solicitudes: 0, mveUrgent: false, mveDays: 0 })
   // Status sentence now lives in StatusStrip (global nav)
 
   useEffect(() => {
@@ -88,6 +90,22 @@ export default function Dashboard() {
     }).catch(() => {})
 
     // Status sentence moved to global StatusStrip component
+
+    // Manana card: solicitudes expiring tomorrow + MVE
+    const tomorrow = new Date()
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    const tomorrowStr = tomorrow.toISOString().split('T')[0]
+    fetch(`/api/data?table=documento_solicitudes&company_id=${COMPANY_ID}&limit=100&order_by=created_at&order_dir=desc`)
+      .then(r => r.json())
+      .then(d => {
+        const rows = d.data ?? []
+        const expTomorrow = rows.filter((r: Record<string, unknown>) =>
+          typeof r.deadline === 'string' && r.deadline.startsWith(tomorrowStr) && r.status !== 'completed'
+        ).length
+        const mveDaysLeft = daysUntilMVE()
+        setMananaItems({ solicitudes: expTomorrow, mveUrgent: mveDaysLeft <= 1, mveDays: mveDaysLeft })
+      })
+      .catch(() => {})
   }, [])
 
   // ── Computed values ──
@@ -95,7 +113,7 @@ export default function Dashboard() {
   const cruzadosHoy = useMemo(() => {
     const today = new Date().toISOString().split('T')[0]
     return traficos.filter(t =>
-      (t.estatus || '').toLowerCase().includes('cruz') && (t.fecha_cruce?.startsWith(today) || t.updated_at?.startsWith(today))
+      (t.estatus || '').toLowerCase().includes('cruz') && t.fecha_cruce && t.fecha_cruce >= today
     )
   }, [traficos])
   const urgentes = useMemo(() =>
@@ -342,7 +360,14 @@ export default function Dashboard() {
           </div>
           <div>
             <div style={{ fontSize: 24, fontWeight: 900, fontFamily: 'var(--font-jetbrains-mono)', color: cruzadosHoy.length > 0 ? TOKEN.green : TOKEN.gray }}>{cruzadosHoy.length}</div>
-            <div style={{ fontSize: 11, color: TOKEN.gray, fontWeight: 600 }}>Cruzados hoy</div>
+            <div style={{ fontSize: 11, color: TOKEN.gray, fontWeight: 600 }}>
+              {cruzadosHoy.length > 0 ? 'Cruzados hoy' : (() => {
+                const lastCruce = traficos
+                  .filter(t => t.fecha_cruce)
+                  .sort((a, b) => (b.fecha_cruce ?? '').localeCompare(a.fecha_cruce ?? ''))[0]
+                return lastCruce ? `Último: ${fmtDate(lastCruce.fecha_cruce)}` : 'Cruzados hoy'
+              })()}
+            </div>
           </div>
         </div>
       </div>
@@ -388,6 +413,31 @@ export default function Dashboard() {
           )
         })}
       </div>
+
+      {/* ═══ MAÑANA CARD — only when there's something tomorrow ═══ */}
+      {(mananaItems.solicitudes > 0 || mananaItems.mveUrgent) && (
+        <div style={{
+          background: '#FFFBEB', border: '1px solid #FDE68A',
+          borderRadius: TOKEN.radiusMd, padding: '16px 20px', marginBottom: 24,
+          display: 'flex', alignItems: 'center', gap: 12,
+        }}>
+          <span style={{ fontSize: 20 }}>&#9728;</span>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: '#92400E', marginBottom: 2 }}>
+              Mañana
+            </div>
+            <div style={{ fontSize: 12, color: '#92400E' }}>
+              {mananaItems.solicitudes > 0 && (
+                <span>{mananaItems.solicitudes} solicitud{mananaItems.solicitudes !== 1 ? 'es' : ''} vence{mananaItems.solicitudes === 1 ? '' : 'n'} mañana</span>
+              )}
+              {mananaItems.solicitudes > 0 && mananaItems.mveUrgent && <span> · </span>}
+              {mananaItems.mveUrgent && (
+                <span style={{ fontWeight: 700 }}>MVE Formato E2 vence en {mananaItems.mveDays <= 0 ? 'hoy' : `${mananaItems.mveDays}d`}</span>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ═══ 4. NEXT BEST ACTION ═══ */}
       {visibleActions.length > 0 && (
@@ -455,10 +505,10 @@ export default function Dashboard() {
             }}>
               <CheckCircle size={24} style={{ color: TOKEN.green, margin: '0 auto 8px', display: 'block' }} />
               <div style={{ fontSize: 16, fontWeight: 700, color: TOKEN.text }}>
-                Todo despachado
+                Sin elementos urgentes · Todo despachando
               </div>
               <div style={{ fontSize: 13, color: TOKEN.textSecondary, marginTop: 4 }}>
-                No hay operaciones pendientes hoy. Buen trabajo.
+                Sin alertas · Monitoreando en tiempo real
               </div>
             </div>
           )}
@@ -472,10 +522,10 @@ export default function Dashboard() {
             }}>
               <CheckCircle size={24} style={{ color: TOKEN.green, margin: '0 auto 8px', display: 'block' }} />
               <div style={{ fontSize: 16, fontWeight: 700, color: TOKEN.text }}>
-                Todo despachado
+                Sin elementos urgentes · Todo despachando
               </div>
               <div style={{ fontSize: 13, color: TOKEN.textSecondary, marginTop: 4 }}>
-                No hay operaciones pendientes hoy. Buen trabajo.
+                Sin alertas · Monitoreando en tiempo real
               </div>
             </div>
           )}

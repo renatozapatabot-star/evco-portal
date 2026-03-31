@@ -54,6 +54,18 @@ async function tg(msg) {
   }).catch(() => {})
 }
 
+
+async function notify(company_id, type, severity, title, description, trafico_id) {
+  try {
+    await supabase.from('notifications').insert({
+      company_id: company_id || 'unknown',
+      type, severity, title, description,
+      trafico_id: trafico_id || null,
+      action_url: trafico_id ? `/traficos/${trafico_id}` : null,
+      read: false,
+    })
+  } catch (e) { /* non-fatal */ }
+}
 function loadCheckpoint() {
   try { return JSON.parse(fs.readFileSync(CHECKPOINT, 'utf8')) }
   catch { return { completed: [], totalDocs: 0, errors: 0 } }
@@ -190,10 +202,21 @@ async function run() {
       } else if (result.error) {
         errors++
         fs.appendFileSync(ERROR_LOG, `${new Date().toISOString()} | ${t.sCveTrafico} | ${result.error}\n`)
+        await notify(t.sCveCliente, 'doc_pull_failed', 'warning',
+          `Documento no encontrado — ${t.sCveTrafico}`,
+          `WSDL error: ${result.error}`,
+          t.sCveTrafico)
       } else if (result.docs.length > 0) {
         const ok = await insertDocs(result.docs, t)
-        if (ok) docsFound += result.docs.length
-        else errors++
+        if (ok) {
+          docsFound += result.docs.length
+          if (result.docs.length > 0) {
+            await notify(t.sCveCliente, 'doc_auto_pulled', 'success',
+              `${result.docs.length} doc(s) obtenidos — ${t.sCveTrafico}`,
+              `${result.docs.length} documentos extraídos de WSDL automáticamente`,
+              t.sCveTrafico)
+          }
+        } else errors++
       } else {
         noDocsCount++
       }

@@ -260,9 +260,15 @@ export default function ProspectosPage() {
               {selectedRFC === p.rfc && (
                 <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--border-light)' }}>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: 12 }}>
-                    <div><span style={{ color: 'var(--n-400)' }}>Primera operación:</span><br />{p.first_seen_date || '—'}</div>
-                    <div><span style={{ color: 'var(--n-400)' }}>Última operación:</span><br />{p.last_seen_date || '—'}</div>
-                    <div><span style={{ color: 'var(--n-400)' }}>Régimen:</span><br />{p.primary_regime || '—'}</div>
+                    {p.first_seen_date && (
+                      <div><span style={{ color: 'var(--n-400)' }}>Primera operación:</span><br />{p.first_seen_date}</div>
+                    )}
+                    {p.last_seen_date && (
+                      <div><span style={{ color: 'var(--n-400)' }}>Última operación:</span><br />{p.last_seen_date}</div>
+                    )}
+                    {p.primary_regime && (
+                      <div><span style={{ color: 'var(--n-400)' }}>Régimen:</span><br />{p.primary_regime}</div>
+                    )}
                     <div><span style={{ color: 'var(--n-400)' }}>Valor promedio:</span><br /><span style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtUSD(p.avg_valor_por_pedimento)}</span> USD/ped</div>
                   </div>
                   {p.top_proveedores && p.top_proveedores.length > 0 && (

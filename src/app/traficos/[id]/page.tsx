@@ -66,6 +66,7 @@ export default function TraficoDetailPage() {
   const [showSolicitarModal, setShowSolicitarModal] = useState(false)
   const [solicitadoOk, setSolicitadoOk] = useState(false)
   const [solicitudes, setSolicitudes] = useState<Solicitud[]>([])
+  const [showStickyBar, setShowStickyBar] = useState(false)
 
 
   const handleUpload = async (file: File | undefined, docType: string) => {
@@ -158,6 +159,12 @@ export default function TraficoDetailPage() {
       if (!d.error) setRates({ dta: d.dta?.rate ?? 0.008, iva: d.iva?.rate ?? 0.16, tc: d.tc?.rate ?? 17.49 })
     }).catch(() => {})
   }, [id])
+
+  useEffect(() => {
+    const onScroll = () => setShowStickyBar(window.scrollY > 200)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
 
   if (loading) return (
     <div style={{ padding: 24 }}>
@@ -729,6 +736,36 @@ export default function TraficoDetailPage() {
           </div>
         </div>
       )}
+
+      {/* ═══ STICKY ACTION BAR ═══ */}
+      <div style={{
+        position: 'fixed', bottom: 0, left: 0, right: 0,
+        background: 'rgba(255,255,255,0.97)', backdropFilter: 'blur(8px)',
+        borderTop: '1px solid #E8E5E0', padding: '12px 24px',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        gap: 12, zIndex: 100,
+        opacity: showStickyBar ? 1 : 0,
+        pointerEvents: showStickyBar ? 'auto' : 'none',
+        transition: 'opacity 200ms ease',
+        minHeight: 60,
+      }}>
+        <span style={{ fontFamily: 'var(--font-jetbrains-mono, var(--font-data))', fontSize: 15, fontWeight: 800, color: '#1A1A1A' }}>
+          {fmtId(t.trafico)}
+        </span>
+        {missingDocs.length > 0 && !solicitadoOk && (
+          <button
+            onClick={() => setShowSolicitarModal(true)}
+            style={{
+              padding: '10px 20px', fontSize: 13, fontWeight: 700,
+              border: 'none', borderRadius: 8,
+              background: '#B8953F', color: '#FFFFFF',
+              cursor: 'pointer', minHeight: 44, whiteSpace: 'nowrap',
+            }}
+          >
+            Solicitar {missingDocs.length} docs
+          </button>
+        )}
+      </div>
 
       {/* ═══ SOLICITAR MODAL ═══ */}
       {showSolicitarModal && (

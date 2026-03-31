@@ -9,7 +9,7 @@ import { fmtDateShort } from '@/lib/format-utils'
 
 interface Alert {
   id: string
-  severity: 'critica' | 'atencion' | 'info'
+  severity: 'critica' | 'atención' | 'info'
   icon: 'alert' | 'clock' | 'package' | 'shield'
   title: string
   sub: string
@@ -27,7 +27,7 @@ const ICONS = {
 
 const SEV_STYLE = {
   critica: { bg: 'var(--danger-bg)', border: 'rgba(220,38,38,0.2)', dot: '#DC2626', label: 'Críticas' },
-  atencion: { bg: 'var(--warning-bg)', border: 'rgba(217,119,6,0.2)', dot: '#D97706', label: 'Atención' },
+  atención: { bg: 'var(--warning-bg)', border: 'rgba(217,119,6,0.2)', dot: '#D97706', label: 'Atención' },
   info: { bg: 'var(--n-50)', border: 'var(--n-150)', dot: 'var(--gold-500)', label: 'Informativas' },
 }
 
@@ -79,7 +79,7 @@ export default function AlertasPage() {
         }).slice(0, 6).forEach((t: any) => {
           const days = Math.floor((Date.now() - new Date(t.fecha_llegada).getTime()) / 86400000)
           items.push({
-            id: `slow-${t.trafico}`, severity: 'atencion', icon: 'clock',
+            id: `slow-${t.trafico}`, severity: 'atención', icon: 'clock',
             title: `${days}d en proceso — ${t.trafico}`,
             sub: t.descripcion_mercancia?.slice(0, 50) || 'Sin descripción',
             href: `/traficos/${encodeURIComponent(t.trafico)}`,
@@ -91,7 +91,7 @@ export default function AlertasPage() {
         // Entradas with incidencias → warning
         ent.filter((e: any) => e.mercancia_danada || e.tiene_faltantes).slice(0, 5).forEach((e: any) => {
           items.push({
-            id: `inc-${e.cve_entrada}`, severity: 'atencion', icon: 'alert',
+            id: `inc-${e.cve_entrada}`, severity: 'atención', icon: 'alert',
             title: `Incidencia — ${e.cve_entrada}`,
             sub: e.mercancia_danada ? 'Mercancía dañada' : 'Faltantes reportados',
             href: `/entradas/${e.cve_entrada}`,

@@ -8,6 +8,8 @@ import { fmtId, fmtDate } from '@/lib/format-utils'
 import { calculateCruzScore, extractScoreInput } from '@/lib/cruz-score'
 import { statusDays } from '@/lib/cruz-score'
 import { useIsMobile } from '@/hooks/use-mobile'
+import CountingNumber from '@/components/ui/CountingNumber'
+import Skeleton from '@/components/ui/Skeleton'
 import Link from 'next/link'
 
 interface TraficoRow {
@@ -73,6 +75,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true)
   const [liveBridges, setLiveBridges] = useState<{ bridges: BridgeTime[]; recommended: number | null; fetched: string | null } | null>(null)
   const [mananaItems, setMananaItems] = useState<{ solicitudes: number; mveUrgent: boolean; mveDays: number }>({ solicitudes: 0, mveUrgent: false, mveDays: 0 })
+  const [pendingEntradas, setPendingEntradas] = useState<{ entrada_number: string; supplier: string | null; created_at: string }[]>([])
   // Status sentence now lives in StatusStrip (global nav)
 
   useEffect(() => {
@@ -104,6 +107,15 @@ export default function Dashboard() {
         ).length
         const mveDaysLeft = daysUntilMVE()
         setMananaItems({ solicitudes: expTomorrow, mveUrgent: mveDaysLeft <= 1, mveDays: mveDaysLeft })
+      })
+      .catch(() => {})
+
+    // Pending entradas without tráfico assigned
+    fetch(`/api/data?table=entrada_lifecycle&company_id=${COMPANY_ID}&trafico_id=is.null&limit=20&order_by=created_at&order_dir=desc`)
+      .then(r => r.json())
+      .then(d => {
+        const rows = (d.data ?? []) as { entrada_number: string; supplier: string | null; created_at: string }[]
+        setPendingEntradas(rows)
       })
       .catch(() => {})
   }, [])
@@ -332,8 +344,8 @@ export default function Dashboard() {
           Valor en operación
         </div>
         <div style={{ fontSize: isMobile ? 40 : 56, fontWeight: 900, fontFamily: 'var(--font-jetbrains-mono)', lineHeight: 1, letterSpacing: '-0.02em' }}>
-          {loading ? '...' : fmtUSD(valorEnProceso)}
-          <span style={{ fontSize: 16, fontWeight: 600, marginLeft: 4, color: TOKEN.gray }}>USD</span>
+          {loading ? <Skeleton width={200} height={isMobile ? 40 : 56} borderRadius={8} style={{ background: 'rgba(255,255,255,0.08)' }} /> : fmtUSD(valorEnProceso)}
+          {!loading && <span style={{ fontSize: 16, fontWeight: 600, marginLeft: 4, color: TOKEN.gray }}>USD</span>}
         </div>
 
         {(urgentes.length + incidencias.length) > 0 && (
@@ -346,19 +358,19 @@ export default function Dashboard() {
         )}
 
         <div style={{ display: 'flex', gap: isMobile ? 16 : 32, marginTop: 20, flexWrap: 'wrap' }}>
-          <div>
+          <Link href="/traficos?estatus=Detenido" style={{ textDecoration: 'none', color: 'inherit' }}>
             <div style={{ fontSize: 24, fontWeight: 900, fontFamily: 'var(--font-jetbrains-mono)' }}>{urgentes.length}</div>
             <div style={{ fontSize: 11, color: TOKEN.gray, fontWeight: 600 }}>Detenidos</div>
-          </div>
-          <div>
+          </Link>
+          <Link href="/traficos?estatus=Demorado" style={{ textDecoration: 'none', color: 'inherit' }}>
             <div style={{ fontSize: 24, fontWeight: 900, fontFamily: 'var(--font-jetbrains-mono)' }}>{incidencias.length}</div>
             <div style={{ fontSize: 11, color: TOKEN.gray, fontWeight: 600 }}>Demorados</div>
-          </div>
-          <div>
+          </Link>
+          <Link href="/traficos?estatus=En Proceso" style={{ textDecoration: 'none', color: 'inherit' }}>
             <div style={{ fontSize: 24, fontWeight: 900, fontFamily: 'var(--font-jetbrains-mono)' }}>{enProceso.length}</div>
             <div style={{ fontSize: 11, color: TOKEN.gray, fontWeight: 600 }}>En ruta</div>
-          </div>
-          <div>
+          </Link>
+          <Link href="/traficos?sort=importe_total&order=desc" style={{ textDecoration: 'none', color: 'inherit' }}>
             <div style={{ fontSize: 24, fontWeight: 900, fontFamily: 'var(--font-jetbrains-mono)', color: cruzadosHoy.length > 0 ? TOKEN.green : TOKEN.gray }}>{cruzadosHoy.length}</div>
             <div style={{ fontSize: 11, color: TOKEN.gray, fontWeight: 600 }}>
               {cruzadosHoy.length > 0 ? 'Cruzados hoy' : (() => {
@@ -368,7 +380,7 @@ export default function Dashboard() {
                 return lastCruce ? `Último: ${fmtDate(lastCruce.fecha_cruce)}` : 'Cruzados hoy'
               })()}
             </div>
-          </div>
+          </Link>
         </div>
       </div>
 
@@ -589,6 +601,50 @@ export default function Dashboard() {
         </>
       )}
 
+      {/* ═══ PENDING ENTRADAS — only when unassigned entradas exist ═══ */}
+      {pendingEntradas.length > 0 && (
+        <div style={{
+          background: TOKEN.surfaceCard, border: `1px solid ${TOKEN.border}`,
+          borderRadius: TOKEN.radiusMd, padding: '16px 20px', marginBottom: 24,
+        }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: TOKEN.amber, marginBottom: 10 }}>
+            {pendingEntradas.length} entrada{pendingEntradas.length !== 1 ? 's' : ''} en bodega sin tráfico
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {pendingEntradas.slice(0, 3).map(e => {
+              const daysWaiting = e.created_at ? Math.floor((Date.now() - new Date(e.created_at).getTime()) / 86400000) : 0
+              return (
+                <div key={e.entrada_number} style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  padding: '8px 12px', background: TOKEN.surfacePrimary,
+                  borderRadius: 6, border: `1px solid ${TOKEN.border}`,
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <span style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 13, fontWeight: 700, color: TOKEN.text }}>
+                      {e.entrada_number}
+                    </span>
+                    {e.supplier && (
+                      <span style={{ fontSize: 12, color: TOKEN.textSecondary }}>{e.supplier}</span>
+                    )}
+                  </div>
+                  <span style={{
+                    fontSize: 12, fontWeight: 700, fontFamily: 'var(--font-jetbrains-mono)',
+                    color: daysWaiting > 7 ? TOKEN.red : daysWaiting > 3 ? TOKEN.amber : TOKEN.textSecondary,
+                  }}>
+                    {daysWaiting}d
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+          {pendingEntradas.length > 3 && (
+            <div style={{ fontSize: 12, color: TOKEN.textSecondary, marginTop: 8 }}>
+              +{pendingEntradas.length - 3} más
+            </div>
+          )}
+        </div>
+      )}
+
       {/* ═══ 7. BOTTOM METRICS — 4-card grid ═══ */}
       <div style={{
         display: 'grid',
@@ -596,51 +652,51 @@ export default function Dashboard() {
         gap: 12,
         marginBottom: 32,
       }}>
-        <div style={{
+        <Link href="/traficos?estatus=En Proceso" style={{ textDecoration: 'none', color: 'inherit',
           background: TOKEN.surfaceCard, border: `1px solid ${TOKEN.border}`,
           borderRadius: TOKEN.radiusMd, padding: '16px 20px',
         }}>
           <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: TOKEN.textSecondary, marginBottom: 6 }}>
             En ruta
           </div>
-          <div style={{ fontSize: 24, fontWeight: 900, fontFamily: 'var(--font-jetbrains-mono)', color: enProceso.length > 0 ? TOKEN.text : TOKEN.gray, lineHeight: 1 }}>
-            {loading ? '...' : enProceso.length}
+          <div style={{ fontSize: 24, fontWeight: 900, color: enProceso.length > 0 ? TOKEN.text : TOKEN.gray, lineHeight: 1 }}>
+            {loading ? <Skeleton width={48} height={24} /> : <CountingNumber value={enProceso.length} style={{ fontSize: 24, fontWeight: 900 }} />}
           </div>
           {trends.enRuta !== null && (
             <div style={{ fontSize: 11, fontWeight: 600, marginTop: 4, fontFamily: 'var(--font-jetbrains-mono)', color: trends.enRuta > 0 ? TOKEN.green : trends.enRuta < 0 ? TOKEN.red : TOKEN.gray }}>
               {trends.enRuta > 0 ? `+${trends.enRuta}` : trends.enRuta < 0 ? `${trends.enRuta}` : '0'} vs ayer
             </div>
           )}
-        </div>
+        </Link>
 
-        <div style={{
+        <Link href="/traficos?estatus=Demorado" style={{ textDecoration: 'none', color: 'inherit',
           background: TOKEN.surfaceCard, border: `1px solid ${TOKEN.border}`,
           borderRadius: TOKEN.radiusMd, padding: '16px 20px',
         }}>
           <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: TOKEN.textSecondary, marginBottom: 6 }}>
             Demorados
           </div>
-          <div style={{ fontSize: 24, fontWeight: 900, fontFamily: 'var(--font-jetbrains-mono)', color: (urgentes.length + incidencias.length) > 0 ? TOKEN.red : TOKEN.gray, lineHeight: 1 }}>
-            {loading ? '...' : urgentes.length + incidencias.length}
+          <div style={{ fontSize: 24, fontWeight: 900, color: (urgentes.length + incidencias.length) > 0 ? TOKEN.red : TOKEN.gray, lineHeight: 1 }}>
+            {loading ? <Skeleton width={48} height={24} /> : <CountingNumber value={urgentes.length + incidencias.length} style={{ fontSize: 24, fontWeight: 900 }} />}
           </div>
-        </div>
+        </Link>
 
-        <div style={{
+        <Link href="/traficos?sort=importe_total&order=desc" style={{ textDecoration: 'none', color: 'inherit',
           background: TOKEN.surfaceCard, border: `1px solid ${TOKEN.border}`,
           borderRadius: TOKEN.radiusMd, padding: '16px 20px',
         }}>
           <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: TOKEN.textSecondary, marginBottom: 6 }}>
             Valor activo
           </div>
-          <div style={{ fontSize: 24, fontWeight: 900, fontFamily: 'var(--font-jetbrains-mono)', color: valorEnProceso > 0 ? TOKEN.text : TOKEN.gray, lineHeight: 1 }}>
-            {loading ? '...' : fmtUSD(valorEnProceso)}
+          <div style={{ fontSize: 24, fontWeight: 900, color: valorEnProceso > 0 ? TOKEN.text : TOKEN.gray, lineHeight: 1 }}>
+            {loading ? <Skeleton width={80} height={24} /> : <CountingNumber value={valorEnProceso} format={(n) => fmtUSD(n)} style={{ fontSize: 24, fontWeight: 900 }} />}
           </div>
           {trends.valor !== null && (
             <div style={{ fontSize: 11, fontWeight: 600, marginTop: 4, fontFamily: 'var(--font-jetbrains-mono)', color: trends.valor > 0 ? TOKEN.green : trends.valor < 0 ? TOKEN.red : TOKEN.gray }}>
               {trends.valor > 0 ? `+${trends.valor}%` : trends.valor < 0 ? `${trends.valor}%` : '0%'} vs ayer
             </div>
           )}
-        </div>
+        </Link>
 
         <div style={{
           background: TOKEN.surfaceCard, border: `1px solid ${TOKEN.border}`,
@@ -649,8 +705,8 @@ export default function Dashboard() {
           <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: TOKEN.textSecondary, marginBottom: 6 }}>
             T-MEC aplicado
           </div>
-          <div style={{ fontSize: 24, fontWeight: 900, fontFamily: 'var(--font-jetbrains-mono)', color: tmecCount > 0 ? TOKEN.green : TOKEN.gray, lineHeight: 1 }}>
-            {loading ? '...' : tmecCount > 0 ? tmecCount : '56%'}
+          <div style={{ fontSize: 24, fontWeight: 900, color: tmecCount > 0 ? TOKEN.green : TOKEN.gray, lineHeight: 1 }}>
+            {loading ? <Skeleton width={48} height={24} /> : tmecCount > 0 ? <CountingNumber value={tmecCount} style={{ fontSize: 24, fontWeight: 900 }} /> : '56%'}
           </div>
           <div style={{ fontSize: 11, color: TOKEN.gray, marginTop: 4, fontFamily: 'var(--font-jetbrains-mono)' }}>
             {tmecCount > 0

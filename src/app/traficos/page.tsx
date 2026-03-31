@@ -21,7 +21,7 @@ interface TraficoRow {
   fecha_pago?: string | null; [key: string]: unknown
 }
 
-type FilterTab = 'todos' | 'proceso' | 'atencion' | 'cruzado'
+type FilterTab = 'todos' | 'proceso' | 'atención' | 'cruzado'
 const PAGE_SIZE = 50
 
 function exportCSV(rows: TraficoRow[], activeFilter: string) {
@@ -45,6 +45,9 @@ export default function TraficosPage() {
   const [loading, setLoading] = useState(true)
   const searchParams = useSearchParams()
   const [search, setSearch] = useState(searchParams.get('q') || '')
+  const estatusParam = searchParams.get('estatus')
+  const sortParam = searchParams.get('sort')
+  const orderParam = searchParams.get('order')
   const [tab, setTab] = useState<FilterTab>((searchParams.get('filter') as FilterTab) || 'todos')
   const [page, setPage] = useState(0)
   const [searchInput, setSearchInput] = useState(search)
@@ -121,29 +124,38 @@ export default function TraficosPage() {
 
   const filtered = useMemo(() => {
     let out = rows
+    // URL estatus filter from dashboard clickable stats
+    if (estatusParam) {
+      const ep = estatusParam.toLowerCase()
+      if (ep === 'detenido') out = out.filter(r => !(r.estatus ?? '').toLowerCase().includes('cruz') && r.pedimento && calculateCruzScore(extractScoreInput(r)) < 50)
+      else if (ep === 'demorado') out = out.filter(r => isAtencion(r))
+      else if (ep === 'en proceso') out = out.filter(r => !(r.estatus ?? '').toLowerCase().includes('cruz'))
+      else out = out.filter(r => (r.estatus ?? '').toLowerCase().includes(ep))
+    }
     if (tab === 'proceso') out = out.filter(r => !(r.estatus ?? '').toLowerCase().includes('cruz'))
     if (tab === 'cruzado') out = out.filter(r => (r.estatus ?? '').toLowerCase().includes('cruz'))
-    if (tab === 'atencion') out = out.filter(r => isAtencion(r))
+    if (tab === 'atención') out = out.filter(r => isAtencion(r))
     if (search.trim()) {
       const q = search.toLowerCase()
       out = out.filter(r => fmtId(r.trafico).toLowerCase().includes(q) || (r.pedimento ?? '').toLowerCase().includes(q) || (r.descripcion_mercancia ?? '').toLowerCase().includes(q))
     }
-    // Sort
+    // Sort — URL params override interactive sort
+    const activeSort = sortParam ? { column: sortParam, direction: (orderParam ?? 'desc') as 'asc' | 'desc' } : sort
     return [...out].sort((a, b) => {
-      const aVal = a[sort.column as keyof TraficoRow]
-      const bVal = b[sort.column as keyof TraficoRow]
+      const aVal = a[activeSort.column as keyof TraficoRow]
+      const bVal = b[activeSort.column as keyof TraficoRow]
       if (aVal == null) return 1
       if (bVal == null) return -1
       const cmp = aVal < bVal ? -1 : aVal > bVal ? 1 : 0
-      return sort.direction === 'asc' ? cmp : -cmp
+      return activeSort.direction === 'asc' ? cmp : -cmp
     })
-  }, [rows, tab, search, sort, isAtencion])
+  }, [rows, tab, search, sort, isAtencion, estatusParam, sortParam, orderParam])
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE)
   const paged = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
   const enProceso = rows.filter(r => !(r.estatus ?? '').toLowerCase().includes('cruz')).length
   const cruzados = rows.filter(r => (r.estatus ?? '').toLowerCase().includes('cruz')).length
-  const atencionCount = rows.filter(r => isAtencion(r)).length
+  const atenciónCount = rows.filter(r => isAtencion(r)).length
   const totalValor = rows.reduce((s, r) => s + (Number(r.importe_total) || 0), 0)
 
   const SortArrow = ({ col }: { col: string }) => sort.column === col ? <span style={{ marginLeft: 4, fontSize: 10 }}>{sort.direction === 'asc' ? '↑' : '↓'}</span> : null
@@ -160,9 +172,9 @@ export default function TraficosPage() {
       <div className="card">
         <div className="tbl-controls">
           <div className="tbl-filters">
-            {(['todos', 'proceso', 'atencion', 'cruzado'] as FilterTab[]).map(key => {
-              const label = key === 'todos' ? 'Todos' : key === 'proceso' ? 'En Proceso' : key === 'atencion' ? 'Atención' : 'Cruzado'
-              const count = key === 'todos' ? rows.length : key === 'proceso' ? enProceso : key === 'atencion' ? atencionCount : cruzados
+            {(['todos', 'proceso', 'atención', 'cruzado'] as FilterTab[]).map(key => {
+              const label = key === 'todos' ? 'Todos' : key === 'proceso' ? 'En Proceso' : key === 'atención' ? 'Atención' : 'Cruzado'
+              const count = key === 'todos' ? rows.length : key === 'proceso' ? enProceso : key === 'atención' ? atenciónCount : cruzados
               return (
                 <button key={key} className={`f-btn${tab === key ? ' on' : ''}`}
                   onClick={() => handleTabChange(key)}>
@@ -206,7 +218,7 @@ export default function TraficosPage() {
               {!loading && paged.length === 0 && (
                 <div style={{ textAlign: 'center', padding: '48px 0', color: 'var(--text-muted)' }}>
                   <div style={{ fontSize: 20, marginBottom: 8 }}>🚚</div>
-                  <div style={{ fontSize: 14, fontWeight: 600 }}>Sin tráficos{tab === 'atencion' ? ' que requieren atención' : ''}</div>
+                  <div style={{ fontSize: 14, fontWeight: 600 }}>Sin tráficos{tab === 'atención' ? ' que requieren atención' : ''}</div>
                 </div>
               )}
             </div>
@@ -255,7 +267,7 @@ export default function TraficosPage() {
                   ) : (
                     <div style={{ textAlign: 'center', padding: '48px 0', color: 'var(--text-muted)' }}>
                       <div style={{ fontSize: 20, marginBottom: 8 }}>🚚</div>
-                      <div style={{ fontSize: 14, fontWeight: 600 }}>Sin tráficos {tab !== 'todos' ? (tab === 'proceso' ? 'en proceso' : tab === 'atencion' ? 'que requieren atención' : 'cruzados') : 'activos'}</div>
+                      <div style={{ fontSize: 14, fontWeight: 600 }}>Sin tráficos {tab !== 'todos' ? (tab === 'proceso' ? 'en proceso' : tab === 'atención' ? 'que requieren atención' : 'cruzados') : 'activos'}</div>
                       <div style={{ fontSize: 12, color: 'var(--n-400)', marginTop: 4 }}>No hay operaciones para el período seleccionado</div>
                     </div>
                   )}

@@ -39,13 +39,13 @@ export default function MvePage() {
     fetch(`/api/data?table=traficos&company_id=${COMPANY_ID}&trafico_prefix=${CLIENT_CLAVE}-&limit=5000&order_by=fecha_llegada&order_dir=desc`)
       .then(r => r.json())
       .then(data => setRows(data.data ?? []))
-      .catch(() => {})
+      .catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
       .finally(() => setLoading(false))
     // Compliance predictions for MVE
     fetch(`/api/data?table=compliance_predictions&company_id=${COMPANY_ID}&limit=50&order_by=severity&order_dir=asc`)
       .then(r => r.json())
       .then(d => setCompAlerts((d.data ?? []).filter((a: any) => !a.resolved)))
-      .catch(() => {})
+      .catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
     // Fetch MVE deadline from deadlines table (not hardcoded)
     fetch(`/api/data?table=deadlines&company_id=${COMPANY_ID}&limit=10&order_by=deadline&order_dir=desc`)
       .then(r => r.json())
@@ -54,7 +54,7 @@ export default function MvePage() {
         const mve = deadlines.find((dl: Record<string, unknown>) => dl.type === 'MVE')
         if (mve?.deadline) setMveDeadline(new Date(mve.deadline as string))
       })
-      .catch(() => {})
+      .catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
   }, [])
 
   const { pending, compliant } = useMemo(() => {

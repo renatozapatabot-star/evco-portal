@@ -72,6 +72,18 @@ async function getGmailForUser(userEmail) {
 // ── Anthropic call ────────────────────────────────────────────────────────
 
 async function callAnthropic(model, system, userContent, maxTokens = 4096) {
+  // Redirected to Ollama (local, free)
+  const prompt = system ? system + '\n\n' + (typeof userContent === 'string' ? userContent : JSON.stringify(userContent)) : (typeof userContent === 'string' ? userContent : JSON.stringify(userContent))
+  const res = await fetch('http://localhost:11434/api/generate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model: 'qwen3.5:35b', prompt, stream: false })
+  })
+  if (!res.ok) throw new Error('Ollama error: ' + res.status)
+  const data = await res.json()
+  return data.response
+}
+async function callAnthropicOLD(model, system, userContent, maxTokens = 4096) {
   const start = Date.now()
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',

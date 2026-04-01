@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
         chat_id: '-5085543275',
         text: `📄 Doc recibido — ${traficoId}\nArchivo: ${file.name}\nVía: Supplier Upload\n— CRUZ 🦀`
       })
-    }).catch(() => {})
+    }).catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
   }
 
   return NextResponse.json({ success: true, file_name: file.name })

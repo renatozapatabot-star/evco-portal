@@ -62,7 +62,7 @@ export function Anexo24View() {
     fetch(`/api/data?table=entradas&company_id=${COMPANY_ID}&limit=2000&order_by=fecha_llegada_mercancia&order_dir=desc`)
       .then(r => r.json())
       .then(d => setEntradas((d.data ?? []) as EntradaRow[]))
-      .catch(() => {})
+      .catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
       .finally(() => setLoading(false))
   }, [])
 

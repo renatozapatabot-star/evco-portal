@@ -36,7 +36,7 @@ export default function TopBar() {
           else if (mins < 1440) setLastSync(`${Math.floor(mins / 60)}h`)
           else setLastSync(`${Math.floor(mins / 1440)}d`)
         }
-      }).catch(() => {})
+      }).catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
   }, [])
 
   return (

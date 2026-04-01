@@ -85,7 +85,7 @@ export default function CruzChatPage() {
   useEffect(() => {
     fetch('/api/cruz-alerts').then(r => r.json())
       .then(data => setCruzAlerts(data.alerts ?? []))
-      .catch(() => {})
+      .catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
   }, [])
 
   // Proactive briefing fetch

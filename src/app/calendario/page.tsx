@@ -82,7 +82,7 @@ export default function CalendarioPage() {
     fetch(url)
       .then(r => r.json())
       .then(d => setTraficos(d.data ?? []))
-      .catch(() => {})
+      .catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
       .finally(() => setLoading(false))
   }, [isBroker])
 

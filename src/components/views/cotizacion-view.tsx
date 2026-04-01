@@ -40,7 +40,7 @@ export function CotizacionView() {
   useEffect(() => {
     fetch('/api/rates').then(r => r.json()).then(d => {
       if (!d.error) setRates({ dta: d.dta?.rate ?? 0.008, iva: d.iva?.rate ?? 0.16, tc: d.tc?.rate ?? 17.50 })
-    }).catch(() => {})
+    }).catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
   }, [])
 
   const calculate = useCallback(() => {

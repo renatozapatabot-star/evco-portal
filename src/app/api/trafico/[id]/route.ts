@@ -14,7 +14,7 @@ export async function GET(
   const cookieRole = request.cookies.get('user_role')?.value
   const isInternal = cookieRole === 'broker' || cookieRole === 'admin'
   const companyId = request.cookies.get('company_id')?.value ?? 'evco'
-  const clientClave = request.cookies.get('company_clave')?.value ?? '9254'
+  const clientClave = request.cookies.get('company_clave')?.value ?? 'evco'
   const { id: traficoId } = await params
 
   // Broker/admin: query by trafico only, no company_id filter (they see all)

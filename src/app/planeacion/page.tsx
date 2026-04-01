@@ -75,7 +75,7 @@ export default function PlaneacionPage() {
       setTraficos((trafData.data ?? []) as TraficoRow[])
       setPipeline((pipeData.data ?? []) as PipelineRow[])
       setBridges((bridgeData.bridges ?? []) as BridgeTime[])
-    }).catch(() => {}).finally(() => setLoading(false))
+    }).catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) }).finally(() => setLoading(false))
   }, [])
 
   const week = useMemo(() => getWeekRange(), [])

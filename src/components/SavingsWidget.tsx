@@ -79,7 +79,7 @@ export function SavingsWidget() {
             if (savings) {
               try { setData(JSON.parse(savings.description)) } catch {}
             }
-          }).catch(() => {})
+          }).catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
       }
     })
   }, [])

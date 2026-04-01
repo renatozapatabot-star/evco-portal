@@ -17,7 +17,7 @@ interface CruzAlert {
 }
 
 export async function GET(request: NextRequest) {
-  const clientClave = request.cookies.get('company_clave')?.value ?? '9254'
+  const clientClave = request.cookies.get('company_clave')?.value ?? 'evco'
   const alerts: CruzAlert[] = []
 
   // Missing pedimento

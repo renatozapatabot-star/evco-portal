@@ -63,7 +63,7 @@ function AdminView() {
       const blocking = active.filter(t => compMap[t.trafico] > 0 || t.semaforo === 'rojo')
       setBlockingCount(blocking.length)
       if (blocking.length > 0) setFirstBlocking(blocking[0].trafico)
-    }).catch(() => {}).finally(() => setLoading(false))
+    }).catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) }).finally(() => setLoading(false))
   }, [])
 
   const level = rojoCount > 0 || blockingCount >= 4 ? 'red' : blockingCount > 0 ? 'amber' : 'green'
@@ -234,7 +234,7 @@ function BrokerView() {
       const typeOrder = { urgent: 0, today: 1, new: 2, bridge: 3 }
       queue.sort((a, b) => typeOrder[a.type] - typeOrder[b.type])
       setItems(queue.slice(0, 8))
-    }).catch(() => {}).finally(() => setLoading(false))
+    }).catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) }).finally(() => setLoading(false))
   }, [])
 
   const greeting = (() => {

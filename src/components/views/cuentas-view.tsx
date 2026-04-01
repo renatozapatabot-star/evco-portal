@@ -43,7 +43,7 @@ export function CuentasView() {
     fetch(`/api/data?table=financial_intelligence&company_id=${COMPANY_ID}&limit=24&order_by=period&order_dir=desc`)
       .then(r => r.json())
       .then(d => setFinIntel((d.data ?? []).reverse()))
-      .catch(() => {})
+      .catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
   }, [])
 
   const kpis = useMemo(() => {

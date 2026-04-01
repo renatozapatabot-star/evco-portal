@@ -53,7 +53,7 @@ export function TopNav() {
     fetch(`/api/data?table=notifications&company_id=${companyId}&select=id&limit=1&read=false`)
       .then(r => r.json())
       .then(d => setUnreadCount(d.count ?? (d.data?.length ?? 0)))
-      .catch(() => {})
+      .catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
   }, [companyId])
 
   useEffect(() => {
@@ -67,7 +67,7 @@ export function TopNav() {
           setSyncMins(mins)
           setSyncLabel(mins < 5 ? 'Ahora' : mins < 60 ? `${mins}m` : `${Math.floor(mins / 60)}h`)
         }
-      }).catch(() => {})
+      }).catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
   }, [companyId])
 
   const isInternal = role === 'admin' || role === 'broker'

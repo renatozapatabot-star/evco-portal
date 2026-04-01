@@ -135,7 +135,7 @@ function Timeline({ traficoId }: { traficoId: string }) {
     fetch(`/api/data?table=globalpc_eventos&cve_trafico=${traficoId}&limit=50&order_by=fecha&order_dir=desc`)
       .then(r => r.json())
       .then(data => setEvents(data.data ?? []))
-      .catch(() => {})
+      .catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
       .finally(() => setLoading(false))
   }, [traficoId])
 

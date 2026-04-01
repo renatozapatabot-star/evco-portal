@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
-const COMPANY_ID = process.env.NEXT_PUBLIC_COMPANY_ID || '9254'
+const COMPANY_ID = process.env.NEXT_PUBLIC_COMPANY_ID || 'evco'
 const BASE = 'CRUZ · Customs Intelligence'
 
 export function useTabTitle() {

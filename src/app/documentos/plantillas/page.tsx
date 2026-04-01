@@ -70,7 +70,7 @@ export default function PlantillasPage() {
     fetch(url)
       .then(r => r.json())
       .then(d => setTemplates(d.data ?? []))
-      .catch(() => {})
+      .catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
       .finally(() => setLoading(false))
   }, [isInternal])
 

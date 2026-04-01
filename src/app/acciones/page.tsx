@@ -28,7 +28,7 @@ export default function AccionesPage() {
     ]).then(([t, e]) => {
       setTraficos(t.data ?? [])
       setEntradas(e.data ?? [])
-    }).catch(() => {}).finally(() => setLoading(false))
+    }).catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) }).finally(() => setLoading(false))
   }, [])
 
   const actions = useMemo(() => {

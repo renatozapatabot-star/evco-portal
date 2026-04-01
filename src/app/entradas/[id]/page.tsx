@@ -100,7 +100,7 @@ export default function EntradaDetailPage() {
           }
         }
       })
-      .catch(() => {})
+      .catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
       .finally(() => setLoading(false))
   }, [id])
 

@@ -9,7 +9,7 @@ import { useEffect, useState } from 'react'
 export function KPIIntelligence() {
   const router = useRouter()
   const [companyId, setCompanyId] = useState('')
-  useEffect(() => { setCompanyId(getCookieValue('company_clave') || '9254') }, [])
+  useEffect(() => { setCompanyId(getCookieValue('company_clave') || 'evco') }, [])
 
   const supabase = createClient()
 

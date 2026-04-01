@@ -25,7 +25,7 @@ export function AlertBar() {
   const qc = useQueryClient()
   const supabase = createClient()
   const [companyId, setCompanyId] = useState('')
-  useEffect(() => { setCompanyId(getCookieValue('company_clave') || '9254') }, [])
+  useEffect(() => { setCompanyId(getCookieValue('company_clave') || 'evco') }, [])
 
   const { data: alert } = useQuery({
     queryKey: ['active-alert', companyId],

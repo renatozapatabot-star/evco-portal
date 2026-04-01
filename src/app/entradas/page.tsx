@@ -62,7 +62,7 @@ export default function EntradasPage() {
     fetch(`/api/data?table=entradas&cve_cliente=${CLIENT_CLAVE}&limit=5000&order_by=fecha_llegada_mercancia&order_dir=desc`)
       .then((r) => r.json())
       .then((data) => setRows(data.data ?? data ?? []))
-      .catch(() => {})
+      .catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
       .finally(() => setLoading(false))
   }, [])
 

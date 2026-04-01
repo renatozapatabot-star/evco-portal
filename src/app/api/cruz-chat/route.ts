@@ -766,7 +766,7 @@ async function executeTool(name: string, input: any, clientCtx: { companyId: str
 export async function POST(req: NextRequest) {
   const startTime = Date.now()
   const companyId = req.cookies.get('company_id')?.value ?? 'evco'
-  const clientClave = req.cookies.get('company_clave')?.value ?? '9254'
+  const clientClave = req.cookies.get('company_clave')?.value ?? 'evco'
   const rawClientName = req.cookies.get('company_name')?.value
   const clientName = rawClientName ? decodeURIComponent(rawClientName) : 'EVCO Plastics de México'
   try {

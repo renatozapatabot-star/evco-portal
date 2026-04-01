@@ -30,7 +30,7 @@ export function SoiaView() {
   useEffect(() => {
     fetch('/api/data?table=soia_cruces&limit=200&order_by=created_at&order_dir=desc')
       .then(r => r.json()).then(d => setCruces(d.data || []))
-      .catch(() => {}).finally(() => setLoading(false))
+      .catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) }).finally(() => setLoading(false))
     // Bridge intelligence
     fetch(`/api/data?table=bridge_intelligence&company_id=${COMPANY_ID}&limit=500`)
       .then(r => r.json()).then(d => {
@@ -47,7 +47,7 @@ export function SoiaView() {
           avg: hours.reduce((a, b) => a + b, 0) / hours.length,
         })).sort((a, b) => a.avg - b.avg)
         if (bridges[0]) setBridgeRec(bridges[0])
-      }).catch(() => {})
+      }).catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
   }, [])
 
   // Derive summary stats

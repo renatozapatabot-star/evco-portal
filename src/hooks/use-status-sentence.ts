@@ -60,7 +60,7 @@ export function useStatusSentence() {
         setData(fresh)
         setCache(fresh)
       })
-      .catch(() => {})
+      .catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
       .finally(() => setLoading(false))
   }, [])
 

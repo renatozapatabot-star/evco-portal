@@ -74,7 +74,7 @@ export default function PedimentosPage() {
     fetch(`/api/data?table=aduanet_facturas&clave_cliente=${CLIENT_CLAVE}&limit=5000&order_by=fecha_pago&order_dir=desc`)
       .then((r) => r.json())
       .then((data) => setRows(data.data ?? data ?? []))
-      .catch(() => {})
+      .catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
       .finally(() => setLoading(false))
   }, [])
 

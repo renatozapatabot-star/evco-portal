@@ -115,7 +115,7 @@ function TraficosContent() {
         })
         setDocCountMap(map)
       })
-      .catch(() => {})
+      .catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
 
     // Risk scores
     const riskParams = new URLSearchParams({ table: 'pedimento_risk_scores', limit: '2000', order_by: 'calculated_at', order_dir: 'desc' })
@@ -126,7 +126,7 @@ function TraficosContent() {
         const arr = Array.isArray(d.data) ? d.data : []
         arr.forEach((r: Record<string, unknown>) => { if (r.trafico_id && !map.has(r.trafico_id as string)) map.set(r.trafico_id as string, r) })
         setRiskMap(map)
-      }).catch(() => {})
+      }).catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
   }, [cookiesReady, companyId, clientClave, userRole])
 
   // Stat bar filter state (must be before filtered useMemo)

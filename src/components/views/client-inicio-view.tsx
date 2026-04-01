@@ -91,7 +91,7 @@ export default function ClientInicioView() {
         setAlerts(alertData.alerts ?? [])
         setTraficos(traficoData.data ?? [])
       })
-      .catch(() => {})
+      .catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
       .finally(() => setLoading(false))
   }, [])
 

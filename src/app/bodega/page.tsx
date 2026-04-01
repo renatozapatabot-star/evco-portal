@@ -83,7 +83,7 @@ export default function BodegaPage() {
     fetch(url)
       .then(r => r.json())
       .then(d => setRows(d.data ?? []))
-      .catch(() => {})
+      .catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
       .finally(() => setLoading(false))
   }, [isBroker])
 

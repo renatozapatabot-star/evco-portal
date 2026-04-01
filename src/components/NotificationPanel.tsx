@@ -72,7 +72,7 @@ export function NotificationPanel({
     fetch('/api/notifications')
       .then((r) => r.json())
       .then((d) => setNotifications(d.notifications ?? []))
-      .catch(() => {})
+      .catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
       .finally(() => setLoading(false))
   }, [isOpen])
 

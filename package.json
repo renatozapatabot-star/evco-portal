@@ -128,6 +128,7 @@
     "react-leaflet": "^5.0.0",
     "react-markdown": "^10.1.0",
     "recharts": "^3.8.1",
+    "resend": "^6.10.0",
     "soap": "^1.8.0",
     "twilio": "^5.13.1",
     "xlsx": "^0.18.5"

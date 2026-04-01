@@ -15,7 +15,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 // --- Legacy sync exports (backward-compatible defaults for EVCO) ---
 export const CLIENT_NAME = 'EVCO Plastics de México'
 export const CLIENT_RFC = 'EPM001109I74'
-export const CLIENT_CLAVE = '9254'
+export const CLIENT_CLAVE = 'evco'
 export const COMPANY_ID = 'evco'
 export const PORTAL_URL = 'evco-portal.vercel.app'
 export const PATENTE = '3596'
@@ -81,7 +81,7 @@ export interface ClientConfig {
 const EVCO_DEFAULTS: ClientConfig = {
   CLIENT_NAME: 'EVCO Plastics de México',
   CLIENT_RFC: 'EPM001109I74',
-  CLIENT_CLAVE: '9254',
+  CLIENT_CLAVE: 'evco',
   COMPANY_ID: 'evco',
   PATENTE: '3596',
   ADUANA: '240',

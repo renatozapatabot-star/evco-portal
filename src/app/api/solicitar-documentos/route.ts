@@ -3,7 +3,7 @@ import { solicitarDocumentos } from '@/lib/solicitar-documentos'
 
 export async function POST(request: NextRequest) {
   try {
-    const clientClave = request.cookies.get('company_clave')?.value ?? '9254'
+    const clientClave = request.cookies.get('company_clave')?.value ?? 'evco'
     const body = await request.json()
     const { traficoId, missingDocs } = body
 

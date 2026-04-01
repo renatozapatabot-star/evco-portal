@@ -22,7 +22,7 @@ interface SupplierRow {
 
 export async function GET(request: NextRequest) {
   const companyId = request.cookies.get('company_id')?.value ?? 'evco'
-  const clientClave = request.cookies.get('company_clave')?.value ?? '9254'
+  const clientClave = request.cookies.get('company_clave')?.value ?? 'evco'
   const rawName = request.cookies.get('company_name')?.value
   const clientName = rawName ? decodeURIComponent(rawName) : 'EVCO Plastics de México'
 

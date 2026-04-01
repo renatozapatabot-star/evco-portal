@@ -5,8 +5,6 @@ import { AlertTriangle, CheckCircle, Clock, Search } from 'lucide-react'
 import { CLIENT_CLAVE, COMPANY_ID } from '@/lib/client-config'
 import { fmtDate as fmtDateUtil } from '@/lib/format-utils'
 
-const MVE_DEADLINE = new Date('2026-03-31T23:59:59')
-
 interface TraficoRow {
   trafico: string
   estatus?: string
@@ -23,8 +21,9 @@ const fmtId = (id: string) => {
 
 const fmtDate = (s: string | null | undefined) => fmtDateUtil(s)
 
-function getDaysLeft() {
-  const diff = MVE_DEADLINE.getTime() - Date.now()
+function getDaysLeft(deadline: Date | null) {
+  if (!deadline) return null
+  const diff = deadline.getTime() - Date.now()
   return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)))
 }
 
@@ -33,7 +32,8 @@ export default function MvePage() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [compAlerts, setCompAlerts] = useState<any[]>([])
-  const daysLeft = getDaysLeft()
+  const [mveDeadline, setMveDeadline] = useState<Date | null>(null)
+  const daysLeft = getDaysLeft(mveDeadline)
 
   useEffect(() => {
     fetch(`/api/data?table=traficos&company_id=${COMPANY_ID}&trafico_prefix=${CLIENT_CLAVE}-&limit=5000&order_by=fecha_llegada&order_dir=desc`)
@@ -45,6 +45,15 @@ export default function MvePage() {
     fetch(`/api/data?table=compliance_predictions&company_id=${COMPANY_ID}&limit=50&order_by=severity&order_dir=asc`)
       .then(r => r.json())
       .then(d => setCompAlerts((d.data ?? []).filter((a: any) => !a.resolved)))
+      .catch(() => {})
+    // Fetch MVE deadline from deadlines table (not hardcoded)
+    fetch(`/api/data?table=deadlines&company_id=${COMPANY_ID}&limit=10&order_by=deadline&order_dir=desc`)
+      .then(r => r.json())
+      .then(d => {
+        const deadlines = d.data ?? []
+        const mve = deadlines.find((dl: Record<string, unknown>) => dl.type === 'MVE')
+        if (mve?.deadline) setMveDeadline(new Date(mve.deadline as string))
+      })
       .catch(() => {})
   }, [])
 
@@ -59,8 +68,8 @@ export default function MvePage() {
     return { pending, compliant }
   }, [rows, search])
 
-  const isUrgent = daysLeft <= 3
-  const isToday = daysLeft === 0
+  const isUrgent = daysLeft !== null && daysLeft <= 3
+  const isToday = daysLeft !== null && daysLeft === 0
 
   return (
     <div className="p-6">
@@ -79,7 +88,7 @@ export default function MvePage() {
           />
           <div>
             <div className="text-[14px] font-semibold" style={{ color: isUrgent ? '#b91c1c' : '#92400e' }}>
-              MVE Deadline — 31 Marzo 2026
+              MVE Deadline{mveDeadline ? ` — ${fmtDate(mveDeadline.toISOString())}` : ' — Cargando...'}
             </div>
             <div className="text-[12px] mt-0.5" style={{ color: isUrgent ? '#dc2626' : '#b45309' }}>
               Todos los tráficos en proceso deben tener folio MVE (formato E2) antes de esta fecha
@@ -90,7 +99,7 @@ export default function MvePage() {
           className={`mono text-[28px] font-bold ${isUrgent ? 'mve-dot' : ''}`}
           style={{ color: isUrgent ? '#ef4444' : '#f59e0b' }}
         >
-          31 mar 2026
+          {daysLeft !== null ? `${daysLeft}d` : '...'}
         </div>
       </div>
 

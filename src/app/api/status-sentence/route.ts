@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
   try {
-    const clientClave = request.cookies.get('company_clave')?.value ?? '9254'
+    const clientClave = request.cookies.get('company_clave')?.value ?? 'evco'
     const result = await computeStatusSentence(clientClave)
     return NextResponse.json(result)
   } catch (err: unknown) {

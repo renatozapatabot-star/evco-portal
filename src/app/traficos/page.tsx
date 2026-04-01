@@ -129,6 +129,9 @@ function TraficosContent() {
       }).catch(() => {})
   }, [cookiesReady, companyId, clientClave, userRole])
 
+  // Stat bar filter state (must be before filtered useMemo)
+  const [statFilter, setStatFilter] = useState<string | null>(null)
+
   // Debounced search
   useEffect(() => {
     const timer = setTimeout(() => { setSearch(searchInput); setPage(0) }, 300)
@@ -138,7 +141,23 @@ function TraficosContent() {
 
   const filtered = useMemo(() => {
     let out = rows
-    // Text search only — no status/estatus filtering
+
+    // Stat bar filter
+    if (statFilter === 'activos') {
+      out = out.filter(r => !(r.estatus || '').toLowerCase().includes('cruz'))
+    } else if (statFilter === 'proceso') {
+      out = out.filter(r => (r.estatus || '').toLowerCase().includes('proceso'))
+    } else if (statFilter === 'docs') {
+      out = out.filter(r => (docCountMap.get(r.trafico) ?? 0) < 6 && !(r.estatus || '').toLowerCase().includes('cruz'))
+    } else if (statFilter === 'cruzado') {
+      const today = new Date().toISOString().split('T')[0]
+      out = out.filter(r => {
+        if (!(r.estatus || '').toLowerCase().includes('cruz')) return false
+        return r.fecha_pago?.startsWith(today) || r.fecha_llegada?.startsWith(today)
+      })
+    }
+
+    // Text search
     if (search.trim()) {
       const q = search.toLowerCase()
       out = out.filter(r => fmtId(r.trafico).toLowerCase().includes(q) || (r.pedimento ?? '').toLowerCase().includes(q) || (r.descripcion_mercancia ?? '').toLowerCase().includes(q))
@@ -153,14 +172,13 @@ function TraficosContent() {
       const cmp = aVal < bVal ? -1 : aVal > bVal ? 1 : 0
       return activeSort.direction === 'asc' ? cmp : -cmp
     })
-  }, [rows, search, sort, sortParam, orderParam])
+  }, [rows, search, sort, sortParam, orderParam, statFilter, docCountMap])
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE)
   const paged = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
   const totalValor = rows.reduce((s, r) => s + (Number(r.importe_total) || 0), 0)
 
   // Stat bar calculations
-  const [statFilter, setStatFilter] = useState<string | null>(null)
   const kpiActivos = rows.filter(r => !(r.estatus || '').toLowerCase().includes('cruz')).length
   const kpiEnProceso = rows.filter(r => (r.estatus || '').toLowerCase().includes('proceso')).length
   const kpiDocsFaltantes = rows.filter(r => (docCountMap.get(r.trafico) ?? 0) < 6 && !(r.estatus || '').toLowerCase().includes('cruz')).length
@@ -193,7 +211,7 @@ function TraficosContent() {
             <button
               key={stat.key}
               className={`stat-bar-item${statFilter === stat.key ? ' active' : ''}`}
-              onClick={() => setStatFilter(statFilter === stat.key ? null : stat.key)}
+              onClick={() => { setStatFilter(statFilter === stat.key ? null : stat.key); setPage(0) }}
             >
               <span className={`stat-value${stat.danger ? ' danger' : ''}`}>{stat.value}</span>
               <span className="stat-label">{stat.label}</span>

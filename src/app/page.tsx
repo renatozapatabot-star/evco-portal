@@ -144,6 +144,9 @@ function BrokerView() {
   const [activeCount, setActiveCount] = useState(0)
   const [readyToFile, setReadyToFile] = useState(0)
   const [cruzadosHoy, setCruzadosHoy] = useState(0)
+  const companyName = typeof document !== 'undefined'
+    ? decodeURIComponent(document.cookie.match(/(?:^|; )company_name=([^;]*)/)?.[1] ?? '')
+    : ''
 
   useEffect(() => {
     Promise.all([
@@ -257,7 +260,7 @@ function BrokerView() {
       {/* Greeting */}
       <div style={{ marginBottom: 32 }}>
         <div style={{ fontSize: 24, fontWeight: 800, color: T.text }}>
-          {greeting}, Renato
+          {greeting}{companyName ? `, ${companyName.split(' ')[0]}` : ''}
         </div>
         <div style={{ fontSize: 14, color: T.textSec, marginTop: 4, fontFamily: 'var(--font-jetbrains-mono)' }}>
           {fmtDate(new Date())}

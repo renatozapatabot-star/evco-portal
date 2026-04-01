@@ -51,6 +51,7 @@ export async function GET(req: NextRequest) {
 
   const cookieCompanyId = req.cookies.get('company_id')?.value
   const cookieClave = req.cookies.get('company_clave')?.value
+  const brokerId = req.cookies.get('broker_id')?.value
 
   // For broker/admin: internal company_id values ('admin','internal') are not real
   // client identifiers — they must not be applied as filters on client-scoped tables.
@@ -82,6 +83,8 @@ export async function GET(req: NextRequest) {
   if (claveCliente) q = q.eq('clave_cliente', claveCliente)
   if (cveCliente) q = q.eq('cve_cliente', cveCliente)
   if (companyId) q = q.eq('company_id', companyId)
+
+  if (brokerId) q = q.eq('broker_id', brokerId)
 
   if (traficoPrefix) q = q.like('trafico', `${traficoPrefix}%`)
 

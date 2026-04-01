@@ -4,7 +4,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import {
-  Truck, Package, Warehouse, Calendar, FolderOpen,
+  Truck, Package, Warehouse, Calendar, FolderOpen, Upload,
   BarChart3, DollarSign, Users2, FileText,
   Shield, Award,
   Settings, Sparkles, Star,
@@ -48,7 +48,8 @@ const OPERACIONES: SidebarSection = {
     { href: '/entradas',    label: 'Entradas',     icon: Package },
     { href: '/bodega',      label: 'Bodega',       icon: Warehouse },
     { href: '/calendario',  label: 'Calendario',   icon: Calendar },
-    { href: '/expedientes', label: 'Expedientes',  icon: FolderOpen },
+    { href: '/expedientes',      label: 'Expedientes',  icon: FolderOpen },
+    { href: '/documentos/subir', label: 'Subir Docs',   icon: Upload },
   ],
 }
 

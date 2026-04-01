@@ -28,6 +28,10 @@ const TELEGRAM_CHAT = '-5085543275'
 const SCRIPT_NAME = 'status-watcher'
 const SHADOW_MODE = process.env.SHADOW_MODE !== 'false'
 const POLL_INTERVAL_MS = 60_000
+
+// These 3 event types are LIVE — inserted as 'pending' regardless of SHADOW_MODE.
+// All other event types remain 'shadow' until graduated.
+const LIVE_TRIGGERS = new Set(['docs_complete', 'cleared', 'hold_placed'])
 const CHECKPOINT_PATH = path.join(__dirname, '..', '.status-watcher-checkpoint.json')
 const PORTAL_URL = 'https://portal.renatozapata.com'
 
@@ -132,17 +136,19 @@ async function poll() {
     console.log(`[${SCRIPT_NAME}] First run — seeding known statuses (no notifications)`)
     const { data, error } = await supabase
       .from('traficos')
-      .select('trafico, estatus, company_id')
+      .select('trafico, estatus, company_id, can_file')
       .limit(5000)
     if (error) {
       console.error(`[${SCRIPT_NAME}] Seed fetch error:`, error.message)
       return
     }
     const known = {}
+    const knownCanFile = {}
     for (const row of data) {
       known[row.trafico] = row.estatus
+      knownCanFile[row.trafico] = !!row.can_file
     }
-    saveCheckpoint({ last_checked: now, known_statuses: known })
+    saveCheckpoint({ last_checked: now, known_statuses: known, known_can_file: knownCanFile })
     console.log(`[${SCRIPT_NAME}] Seeded ${Object.keys(known).length} traficos`)
     return
   }

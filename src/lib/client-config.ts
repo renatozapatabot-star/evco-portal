@@ -20,6 +20,7 @@ export const COMPANY_ID = 'evco'
 export const PORTAL_URL = 'evco-portal.vercel.app'
 export const PATENTE = '3596'
 export const ADUANA = '240'
+export const BROKER_ID = 'rzco'
 export const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === 'true'
 
 // --- Client-side cookie helper (for 'use client' components) ---

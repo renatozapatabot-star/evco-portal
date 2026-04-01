@@ -4,7 +4,7 @@ import {
   Shield, Calendar, Award,
   Settings, MessageSquare, Package,
   History, Archive, Clock, ClipboardList, Receipt, Send, Phone,
-  Warehouse,
+  Warehouse, Upload,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -128,6 +128,7 @@ export const CLIENT_GROUPS: NavGroup[] = [
     children: [
       { href: '/expedientes',            label: 'Por Tráfico',  icon: FolderOpen },
       { href: '/documentos',             label: 'Repositorio',  icon: Archive },
+      { href: '/documentos/subir',        label: 'Subir Docs',   icon: Upload },
       { href: '/documentos/pendientes',  label: 'Pendientes',   icon: Clock },
       { href: '/documentos/plantillas',  label: 'Plantillas',   icon: ClipboardList },
     ],

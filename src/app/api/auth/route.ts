@@ -20,6 +20,7 @@ function setAuthCookies(
   response.cookies.set('company_name', encodeURIComponent(opts.companyName), { path: '/', maxAge })
   response.cookies.set('company_clave', opts.companyClave, { path: '/', maxAge })
   response.cookies.set('user_role', opts.role, { path: '/', maxAge })
+  response.cookies.set('broker_id', 'rzco', { path: '/', maxAge })
 }
 
 export async function POST(request: NextRequest) {
@@ -96,5 +97,6 @@ export async function DELETE() {
   response.cookies.delete('company_clave')
   response.cookies.delete('user_role')
   response.cookies.delete('viewing_as')
+  response.cookies.delete('broker_id')
   return response
 }

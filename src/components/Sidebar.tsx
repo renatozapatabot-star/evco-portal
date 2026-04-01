@@ -356,7 +356,8 @@ function SidebarGroup({
       {!collapsed && (
         <div style={{
           fontSize: 10, fontWeight: 700, letterSpacing: '0.1em',
-          color: T.sectionLabel, padding: '12px 12px 4px',
+          color: T.sectionLabel, padding: '4px 12px',
+          marginTop: 24, marginBottom: 8,
           textTransform: 'uppercase',
         }}>
           {section.label}
@@ -399,26 +400,34 @@ function NavItem({
         gap: 10, width: '100%',
         padding: collapsed ? '10px 0' : '10px 12px',
         justifyContent: collapsed ? 'center' : 'flex-start',
-        background: active ? T.hover : 'transparent',
+        background: active ? 'rgba(196,162,78,0.08)' : 'transparent',
         border: 'none',
-        borderLeft: active ? `3px solid ${T.activeBorder}` : '3px solid transparent',
-        borderRadius: 0,
+        borderLeft: 'none',
+        borderRadius: 6,
         color: active ? (gold ? T.gold : T.text) : (gold ? T.gold : T.textMuted),
         fontSize: 13, fontWeight: active ? 700 : 500,
         fontFamily: 'var(--font-geist-sans)',
         cursor: 'pointer', transition: 'all 100ms',
         textAlign: 'left', whiteSpace: 'nowrap',
+        position: 'relative',
       }}
       onMouseEnter={e => {
         if (!active) e.currentTarget.style.background = T.hover
         if (!active && !gold) e.currentTarget.style.color = T.text
       }}
       onMouseLeave={e => {
-        if (!active) e.currentTarget.style.background = 'transparent'
+        if (!active) e.currentTarget.style.background = active ? 'rgba(196,162,78,0.08)' : 'transparent'
         if (!active && !gold) e.currentTarget.style.color = T.textMuted
       }}
     >
-      <Icon size={18} strokeWidth={active ? 2.2 : 1.8} />
+      {active && !collapsed && (
+        <span style={{
+          position: 'absolute', left: 0, top: '20%', bottom: '20%',
+          width: 3, background: T.gold,
+          borderRadius: '0 2px 2px 0',
+        }} />
+      )}
+      <Icon size={18} strokeWidth={active ? 2.2 : 1.8} style={{ opacity: active ? 1 : 0.4, color: active ? T.gold : undefined }} />
       {!collapsed && label}
     </button>
   )

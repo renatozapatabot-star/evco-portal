@@ -826,15 +826,15 @@ body[data-nav-role="client"] .status-strip { top: 44px; }
 .data-table { width: 100%; border-collapse: separate; border-spacing: 0; font-family: var(--font-ui); font-size: 14px; }
 
 .data-table thead { position: sticky; top: 0; z-index: 10; }
-.data-table thead tr { background: var(--n-50); border-bottom: 1px solid var(--n-200); transition: box-shadow 0.2s ease; }
+.data-table thead tr { background: rgba(12,11,9,0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--n-200); transition: box-shadow 0.2s ease; }
 .data-table thead.scrolled tr { box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
 
 .data-table th {
-  padding: 16px 20px; text-align: left;
-  font-size: 12px; font-weight: 900; color: var(--n-500);
-  text-transform: uppercase; letter-spacing: 0.14em;
+  padding: 12px 20px; text-align: left;
+  font-size: 11px; font-weight: 600; color: var(--cruz-text-muted);
+  text-transform: uppercase; letter-spacing: 0.06em;
   white-space: nowrap; user-select: none; cursor: pointer;
-  transition: color var(--t-fast); height: 50px;
+  transition: color var(--t-fast); height: 42px;
 }
 .data-table th:hover { color: var(--n-800); }
 .data-table th.th-r { text-align: right; }
@@ -847,7 +847,7 @@ body[data-nav-role="client"] .status-strip { top: 44px; }
 }
 .data-table tbody tr:last-child { border-bottom: none; }
 .data-table tbody tr:nth-child(even) td { background: var(--n-50); }
-.data-table tbody tr:hover td { background: rgba(200,150,46,0.04) !important; }
+.data-table tbody tr:hover td { background: #1E1D17 !important; transition: background 0.1s ease; }
 .data-table tbody tr:hover .c-id { transform: translateX(3px); }
 
 .row-cruzado, .row-green    { border-left-color: var(--success); }
@@ -890,16 +890,16 @@ body[data-nav-role="client"] .status-strip { top: 44px; }
 .badge, .status {
   display: inline-flex; align-items: center; gap: 5px;
   font-size: 13px; font-weight: 800; padding: 4px 14px;
-  border-radius: var(--r-pill); border: 1px solid transparent;
+  border-radius: var(--r-pill);
   white-space: nowrap; height: 28px;
 }
-.badge-dot, .s-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.badge-dot, .s-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 
-.badge-success, .badge-green, .badge-cruzado, .s-cruzado { background: var(--success-bg); color: var(--success-t); border-color: var(--success-b); }
+.badge-success, .badge-green, .badge-cruzado, .s-cruzado { background: var(--success-bg); color: var(--success-t); border: 1px solid rgba(62,166,107,0.15); }
 .badge-success .badge-dot, .badge-green .badge-dot, .badge-cruzado .badge-dot, .s-cruzado .s-dot { background: var(--success); }
-.badge-warning, .badge-amber, .badge-proceso, .s-proceso { background: var(--warning-bg); color: var(--warning-t); border-color: var(--warning-b); }
+.badge-warning, .badge-amber, .badge-proceso, .s-proceso { background: var(--warning-bg); color: var(--warning-t); border: 1px solid rgba(212,148,58,0.15); }
 .badge-warning .badge-dot, .badge-amber .badge-dot, .badge-proceso .badge-dot, .s-proceso .s-dot { background: var(--warning); }
-.badge-danger, .badge-red, .badge-hold, .s-hold { background: var(--danger-bg); color: var(--danger-t); border-color: var(--danger-b); }
+.badge-danger, .badge-red, .badge-hold, .s-hold { background: var(--danger-bg); color: var(--danger-t); border: 1px solid rgba(224,62,74,0.15); }
 .badge-danger .badge-dot, .badge-red .badge-dot, .badge-hold .badge-dot, .s-hold .s-dot { background: var(--danger); }
 .badge-info, .badge-blue { background: var(--info-bg); color: var(--info-t); border-color: var(--info-b); }
 .badge-neutral { background: var(--n-50); color: var(--n-500); border-color: var(--n-200); }
@@ -1893,7 +1893,7 @@ body[data-page^="/cruz"] .cruz-fab { display:none !important; }
 .card { transition: box-shadow 0.2s ease, transform 0.2s ease; }
 .card:hover { box-shadow: var(--s-md); transform: translateY(-1px); }
 .kpi-card:hover { box-shadow: var(--s-gold); border-color: rgba(201,168,76,0.3); }
-.data-table tbody tr:hover td { background: linear-gradient(90deg, rgba(201,168,76,0.04) 0%, transparent 100%) !important; }
+.data-table tbody tr:hover td { background: #1E1D17 !important; transition: background 0.1s ease; }
 .modal-overlay { backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px); }
 
 /* ── TYPOGRAPHY ── */

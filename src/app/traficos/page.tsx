@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo, Suspense } from 'react'
 import { Search, Download, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { getCookieValue } from '@/lib/client-config'
-import { fmtId, fmtDesc, fmtKg, fmtUSD, fmtUSDCompact, fmtDate, calcPriority, priorityClass } from '@/lib/format-utils'
+import { fmtId, fmtDesc, fmtKg, fmtUSD, fmtUSDCompact, fmtDate, fmtDateShort, calcPriority, priorityClass } from '@/lib/format-utils'
 import { MobileTraficoCard } from '@/components/mobile-trafico-card'
 // CruzScore removed from client-facing UI — scores are internal only
 import { calculateCruzScore, extractScoreInput, statusDays } from '@/lib/cruz-score'
@@ -311,8 +311,18 @@ function TraficosContent() {
                   : days > 7 ? 'row-warning'
                   : 'row-warning'
 
+                const blockingCount = !isCruzado ? (6 - (docCountMap.get(r.trafico) ?? 0)) : 0
+                const isHighValue = (Number(r.importe_total) || 0) > 100000
+                const hasMissingDocs = blockingCount > 0 && !isCruzado
+
+                const rowBorderStyle = hasMissingDocs
+                  ? { borderLeft: '2px solid var(--cruz-red)' }
+                  : isHighValue
+                  ? { borderLeft: '2px solid var(--cruz-gold)' }
+                  : {}
+
                 return (
-                    <tr key={r.trafico} className={rowClass}
+                    <tr key={r.trafico} className={rowClass} style={rowBorderStyle}
                       onClick={() => router.push(`/traficos/${encodeURIComponent(r.trafico)}`)}>
                       <td style={{ width: 28, paddingRight: 0 }}>
                         {isCrossing ? <><span className="crossing-pulse" /><span className="sr-only">En cruce</span></> : ps > 0 ? <><span className={`priority ${priorityClass(ps)}`} /><span className="sr-only">Requiere atención</span></> : null}
@@ -335,13 +345,13 @@ function TraficosContent() {
                           })()}
                         </div>
                       </td>
-                      <td>{r.pedimento ? <span className="ped-pill">{r.pedimento}</span> : <span style={{ color: 'var(--n-400)' }}>—</span>}</td>
+                      <td>{r.pedimento ? <span className="ped-pill">{r.pedimento}</span> : <span style={{ color: '#4A4640', fontStyle: 'italic', fontSize: 12 }}>Pendiente</span>}</td>
                       <td>
                         <span className={`badge ${isCruzado ? 'badge-green' : 'badge-amber'}`}>
                           <span className="badge-dot" /><span className="sr-only">Estado: </span>{isCruzado ? 'Cruzado' : 'En Proceso'}
                         </span>
                       </td>
-                      <td style={{ fontSize: 12.5, color: 'var(--text-secondary)', fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtDate(r.fecha_llegada)}</td>
+                      <td style={{ fontSize: 12.5, color: 'var(--text-secondary)', fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtDateShort(r.fecha_llegada)}</td>
                       <td className="c-desc" title={fmtDesc(r.descripcion_mercancia)}>{fmtDesc(r.descripcion_mercancia) || <span style={{ color: 'var(--n-400)' }}>—</span>}</td>
                       <td className="col-num">{fmtKg(r.peso_bruto) || <span style={{ color: 'var(--n-400)' }}>—</span>}</td>
                       <td className="col-num">{(r.importe_total != null && Number(r.importe_total) > 0) ? fmtUSD(r.importe_total) : <span style={{ color: 'var(--n-400)' }}>—</span>}</td>

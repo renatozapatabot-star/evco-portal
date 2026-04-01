@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 import { authenticateApiKey, unauthorized } from '@/lib/api-auth'
+import { PORTAL_DATE_FROM } from '@/lib/data'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 
@@ -20,6 +21,7 @@ export async function GET(request: NextRequest) {
   let query = supabase.from('traficos')
     .select('trafico, estatus, fecha_llegada, descripcion_mercancia, peso_bruto, importe_total, pedimento, transportista_extranjero, risk_score', { count: 'exact' })
     .eq('company_id', auth.company_id)
+    .gte('fecha_llegada', PORTAL_DATE_FROM)
 
   if (status) query = query.ilike('estatus', `%${status}%`)
   if (dateFrom) query = query.gte('fecha_llegada', dateFrom)

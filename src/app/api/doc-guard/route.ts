@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { PORTAL_DATE_FROM } from '@/lib/data'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 
@@ -22,7 +23,7 @@ export async function GET(req: NextRequest) {
 
   const [docsRes, traficoRes, dupsRes] = await Promise.all([
     supabase.from('documents').select('document_type, doc_type').or(`trafico_id.eq.${trafico},metadata->>trafico.eq.${trafico}`),
-    supabase.from('traficos').select('mve_folio, pedimento').eq('trafico', trafico).single(),
+    supabase.from('traficos').select('mve_folio, pedimento').eq('trafico', trafico).gte('fecha_llegada', PORTAL_DATE_FROM).single(),
     supabase.from('duplicates_detected').select('*').or(`trafico_id_1.eq.${trafico},trafico_id_2.eq.${trafico}`).eq('status', 'pending'),
   ])
 

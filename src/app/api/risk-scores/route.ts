@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
+import { PORTAL_DATE_FROM } from '@/lib/data'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 
@@ -7,7 +8,7 @@ export async function GET(request: NextRequest) {
   const companyId = request.cookies.get('company_id')?.value ?? 'evco'
   const { data: traficos } = await supabase.from('traficos')
     .select('trafico, estatus, fecha_llegada, pedimento, descripcion_mercancia')
-    .eq('company_id', companyId).eq('estatus', 'En Proceso').limit(500)
+    .eq('company_id', companyId).eq('estatus', 'En Proceso').gte('fecha_llegada', PORTAL_DATE_FROM).limit(500)
 
   const { data: docs } = await supabase.from('documents')
     .select('trafico_id, doc_type').limit(5000)

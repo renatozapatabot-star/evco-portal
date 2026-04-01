@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { renderToBuffer } from '@react-pdf/renderer'
 import { PATENTE, ADUANA } from '@/lib/client-config'
+import { PORTAL_DATE_FROM } from '@/lib/data'
 import { ReportesPDF } from './pdf-document'
 
 const supabase = createClient(
@@ -32,18 +33,21 @@ export async function GET(request: NextRequest) {
       supabase
         .from('traficos')
         .select('importe_total', { count: 'exact' })
-        .ilike('trafico', prefix),
+        .ilike('trafico', prefix)
+        .gte('fecha_llegada', PORTAL_DATE_FROM),
       supabase
         .from('traficos')
         .select('*', { count: 'exact', head: true })
         .ilike('trafico', prefix)
-        .eq('estatus', 'Cruzado'),
+        .eq('estatus', 'Cruzado')
+        .gte('fecha_llegada', PORTAL_DATE_FROM),
       supabase
         .from('traficos')
         .select('fecha_cruce, fecha_llegada')
         .ilike('trafico', prefix)
         .not('fecha_cruce', 'is', null)
         .not('fecha_llegada', 'is', null)
+        .gte('fecha_llegada', PORTAL_DATE_FROM)
         .limit(500),
       supabase
         .from('aduanet_facturas')
@@ -53,7 +57,8 @@ export async function GET(request: NextRequest) {
         .from('traficos')
         .select('proveedores, estatus, fecha_llegada, fecha_cruce, regimen')
         .eq('company_id', companyId)
-        .not('proveedores', 'is', null),
+        .not('proveedores', 'is', null)
+        .gte('fecha_llegada', PORTAL_DATE_FROM),
     ])
 
     // KPIs

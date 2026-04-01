@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
+import { PORTAL_DATE_FROM } from '@/lib/data'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -19,6 +20,7 @@ export async function GET(
   // Broker/admin: query by trafico only, no company_id filter (they see all)
   let trafQ = supabase.from('traficos').select('*').eq('trafico', traficoId)
   if (!isInternal) trafQ = trafQ.eq('company_id', companyId)
+  trafQ = trafQ.gte('fecha_llegada', PORTAL_DATE_FROM)
 
   let factQ = supabase.from('aduanet_facturas').select('*').eq('referencia', traficoId)
   if (!isInternal) factQ = factQ.eq('clave_cliente', clientClave)

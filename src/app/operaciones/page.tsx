@@ -3,6 +3,7 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { GOLD } from '@/lib/design-system'
 import { fmtDateTime, fmtDateTimeLocal } from '@/lib/format-utils'
+import { PORTAL_DATE_FROM } from '@/lib/data'
 
 export const dynamic = 'force-dynamic'
 
@@ -55,6 +56,7 @@ export default async function OperacionesPage() {
     .from('traficos')
     .select('trafico, estatus, updated_at, company_id')
     .gte('updated_at', twoHoursAgo)
+    .gte('fecha_llegada', PORTAL_DATE_FROM)
     .order('updated_at', { ascending: false })
     .limit(20)
 

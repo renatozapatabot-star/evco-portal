@@ -4,9 +4,8 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import {
-  Truck, Package, Warehouse, Calendar, FolderOpen, Upload,
-  BarChart3, DollarSign, Users2, FileText,
-  Shield, Award,
+  Truck, Package, FolderOpen, BookOpen,
+  BarChart3, FileText,
   Settings, Sparkles, Star,
   ChevronLeft, ChevronRight, LogOut,
   Sun, Moon,
@@ -44,34 +43,16 @@ interface SidebarSection {
 const OPERACIONES: SidebarSection = {
   label: 'OPERACIONES',
   items: [
-    { href: '/traficos',    label: 'Tráficos',    icon: Truck },
     { href: '/entradas',    label: 'Entradas',     icon: Package },
-    { href: '/bodega',      label: 'Bodega',       icon: Warehouse },
-    { href: '/calendario',  label: 'Calendario',   icon: Calendar },
-    { href: '/expedientes',      label: 'Expedientes',  icon: FolderOpen },
-    { href: '/documentos/subir', label: 'Subir Docs',   icon: Upload },
-  ],
-}
-
-const INTELIGENCIA: SidebarSection = {
-  label: 'INTELIGENCIA',
-  items: [
+    { href: '/traficos',    label: 'Tráficos',     icon: Truck },
+    { href: '/pedimentos',  label: 'Pedimentos',   icon: FileText },
+    { href: '/catalogo',    label: 'Catálogo',     icon: BookOpen },
     { href: '/reportes',    label: 'Reportes',     icon: BarChart3 },
-    { href: '/cuentas',     label: 'Financiero',   icon: DollarSign },
-    { href: '/proveedores', label: 'Proveedores',  icon: Users2 },
-    { href: '/anexo24',     label: 'Anexo 24',     icon: FileText },
+    { href: '/expedientes', label: 'Expedientes',  icon: FolderOpen },
   ],
 }
 
-const CUMPLIMIENTO: SidebarSection = {
-  label: 'CUMPLIMIENTO',
-  items: [
-    { href: '/mve',   label: 'MVE',   icon: Shield },
-    { href: '/usmca', label: 'USMCA', icon: Award },
-  ],
-}
-
-const SECTIONS = [OPERACIONES, INTELIGENCIA, CUMPLIMIENTO]
+const SECTIONS = [OPERACIONES]
 
 export function Sidebar() {
   const pathname = usePathname()
@@ -200,10 +181,6 @@ export function Sidebar() {
             {!collapsed && 'CRUZ AI'}
           </Link>
         </div>
-
-        {/* INTELIGENCIA + CUMPLIMIENTO */}
-        <SidebarGroup section={INTELIGENCIA} collapsed={collapsed} pathname={pathname} isActive={isActive} router={router} />
-        <SidebarGroup section={CUMPLIMIENTO} collapsed={collapsed} pathname={pathname} isActive={isActive} router={router} />
 
         {/* BROKER ONLY */}
         {isInternal && (

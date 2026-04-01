@@ -1,12 +1,13 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
+import { PORTAL_DATE_FROM } from '@/lib/data'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 
 export async function GET(request: NextRequest) {
   const companyId = request.cookies.get('company_id')?.value ?? 'evco'
   const [trafRes, entRes] = await Promise.all([
-    supabase.from('traficos').select('trafico, estatus, transportista_extranjero, transportista_mexicano, fecha_llegada, peso_bruto').eq('company_id', companyId).not('transportista_extranjero', 'is', null).limit(5000),
+    supabase.from('traficos').select('trafico, estatus, transportista_extranjero, transportista_mexicano, fecha_llegada, peso_bruto').eq('company_id', companyId).not('transportista_extranjero', 'is', null).gte('fecha_llegada', PORTAL_DATE_FROM).limit(5000),
     supabase.from('entradas').select('trafico, tiene_faltantes, mercancia_danada').eq('company_id', companyId).limit(10000),
   ])
 

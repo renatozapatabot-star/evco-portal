@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
+import { PORTAL_DATE_FROM } from '@/lib/data'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 
@@ -14,6 +15,7 @@ export async function GET(request: NextRequest) {
     .ilike('estatus', '%cruz%')
     .not('fecha_llegada', 'is', null)
     .not('fecha_cruce', 'is', null)
+    .gte('fecha_llegada', PORTAL_DATE_FROM)
     .limit(3000)
 
   // Calculate avg hours per carrier using fecha_cruce
@@ -51,7 +53,7 @@ export async function GET(request: NextRequest) {
   const { data: active } = await supabase.from('traficos')
     .select('trafico, transportista_extranjero, fecha_llegada, estatus')
     .eq('company_id', companyId).eq('estatus', 'En Proceso')
-    .not('fecha_llegada', 'is', null).limit(500)
+    .not('fecha_llegada', 'is', null).gte('fecha_llegada', PORTAL_DATE_FROM).limit(500)
 
   const predictions: Record<string, { avgDays: number; predictedDate: string; confidence: string; carrier: string }> = {}
 

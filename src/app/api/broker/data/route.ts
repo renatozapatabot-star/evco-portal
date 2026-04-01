@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { PORTAL_DATE_FROM } from '@/lib/data'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -73,12 +74,14 @@ export async function GET(req: NextRequest) {
         supabase
           .from('traficos')
           .select('id', { count: 'exact', head: true })
-          .eq('company_id', co.company_id),
+          .eq('company_id', co.company_id)
+          .gte('fecha_llegada', PORTAL_DATE_FROM),
         supabase
           .from('traficos')
           .select('importe_total')
           .eq('company_id', co.company_id)
-          .gte('created_at', ytdStart),
+          .gte('created_at', ytdStart)
+          .gte('fecha_llegada', PORTAL_DATE_FROM),
       ])
 
       const traficoCount = traficoRes.count || 0

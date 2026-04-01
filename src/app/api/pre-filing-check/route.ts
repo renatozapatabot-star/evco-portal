@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { PORTAL_DATE_FROM } from '@/lib/data'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -34,7 +35,7 @@ async function runPreFilingCheck(traficoId: string, companyId: string) {
 
   // 2. MVE folio
   const { data: trafico } = await supabase
-    .from('traficos').select('*').eq('trafico', traficoId).single()
+    .from('traficos').select('*').eq('trafico', traficoId).gte('fecha_llegada', PORTAL_DATE_FROM).single()
   const nowLaredo = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Chicago' }))
   const mveMandatory = nowLaredo >= new Date('2026-03-31T00:00:00-05:00')
   checks.push({

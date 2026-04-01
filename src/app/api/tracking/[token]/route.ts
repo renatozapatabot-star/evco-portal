@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
+import { PORTAL_DATE_FROM } from '@/lib/data'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -39,6 +40,7 @@ export async function GET(
     .from('traficos')
     .select('trafico, estatus, descripcion_mercancia, fecha_llegada, transportista_mexicano, created_at, updated_at')
     .eq('trafico', tokenRow.trafico_id)
+    .gte('fecha_llegada', PORTAL_DATE_FROM)
     .single()
 
   if (trafError || !trafico) {

@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 import { getIVARate } from '@/lib/rates'
 import { CLIENT_RFC, CLIENT_NAME } from '@/lib/client-config'
+import { PORTAL_DATE_FROM } from '@/lib/data'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 
@@ -21,7 +22,7 @@ export async function GET(request: NextRequest) {
 
   // Parallel fetches
   const [trafRes, factRes, partRes, provRes, docRes, riskRes, scRes, tcRes] = await Promise.all([
-    supabase.from('traficos').select('*').eq('trafico', trafico).single(),
+    supabase.from('traficos').select('*').eq('trafico', trafico).gte('fecha_llegada', PORTAL_DATE_FROM).single(),
     supabase.from('globalpc_facturas').select('*').eq('cve_trafico', trafico),
     supabase.from('globalpc_partidas').select('*').eq('cve_trafico', trafico),
     supabase.from('globalpc_proveedores').select('*').limit(100),

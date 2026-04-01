@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { PORTAL_DATE_FROM } from '@/lib/data'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -12,6 +13,7 @@ export async function GET(request: NextRequest) {
     .from('traficos')
     .select('estatus, cruz_score, fecha_cruce, fecha_pago, updated_at')
     .eq('company_id', companyId)
+    .gte('fecha_llegada', PORTAL_DATE_FROM)
 
   const rows = data || []
   const today = new Date().toISOString().split('T')[0]

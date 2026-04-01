@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { PORTAL_DATE_FROM } from '@/lib/data'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -23,7 +24,8 @@ export async function computeStatusSentence(
       .select('id', { count: 'exact', head: true })
       .ilike('trafico', prefix)
       .not('estatus', 'ilike', '%cruz%')
-      .is('pedimento', null),
+      .is('pedimento', null)
+      .gte('fecha_llegada', PORTAL_DATE_FROM),
 
     supabase
       .from('expediente_documentos')
@@ -37,13 +39,15 @@ export async function computeStatusSentence(
       .select('trafico', { count: 'exact', head: true })
       .ilike('trafico', prefix)
       .eq('semaforo', 1)
-      .is('fecha_cruce', null),
+      .is('fecha_cruce', null)
+      .gte('fecha_llegada', PORTAL_DATE_FROM),
 
     supabase
       .from('traficos')
       .select('id', { count: 'exact', head: true })
       .ilike('trafico', prefix)
       .not('estatus', 'ilike', '%cruz%')
+      .gte('fecha_llegada', PORTAL_DATE_FROM)
   ])
 
   const criticalCount = criticalRes.count ?? 0

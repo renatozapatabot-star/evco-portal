@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 import { CLIENT_RFC } from '@/lib/client-config'
+import { PORTAL_DATE_FROM } from '@/lib/data'
 
 const INTENTS: Record<string, string[]> = {
   query: ['cuántos', 'cuantos', 'qué', 'que', 'cuál', 'cual', 'lista', 'muestra', 'dame', 'dime'],
@@ -22,18 +23,18 @@ function detectIntent(message: string): string {
 async function getContextData(query: string, companyId: string, clientClave: string) {
   const q = query.toLowerCase(); const ctx: string[] = []
   const [tc, ec, fc] = await Promise.all([
-    supabase.from('traficos').select('*', { count: 'exact', head: true }).eq('company_id', companyId),
+    supabase.from('traficos').select('*', { count: 'exact', head: true }).eq('company_id', companyId).gte('fecha_llegada', PORTAL_DATE_FROM),
     supabase.from('entradas').select('*', { count: 'exact', head: true }).eq('company_id', companyId),
     supabase.from('aduanet_facturas').select('*', { count: 'exact', head: true }).eq('clave_cliente', clientClave),
   ])
   ctx.push(`DB: ${tc.count} tráficos, ${ec.count} entradas, ${fc.count} facturas`)
 
   // Active tráficos count
-  const { count: activeCount } = await supabase.from('traficos').select('*', { count: 'exact', head: true }).eq('company_id', companyId).not('estatus', 'ilike', '%cruz%')
+  const { count: activeCount } = await supabase.from('traficos').select('*', { count: 'exact', head: true }).eq('company_id', companyId).not('estatus', 'ilike', '%cruz%').gte('fecha_llegada', PORTAL_DATE_FROM)
   ctx.push(`Tráficos activos (no cruzados): ${activeCount}`)
 
   if (q.includes('deteni') || q.includes('hold')) {
-    const { data } = await supabase.from('traficos').select('trafico, fecha_llegada').eq('company_id', companyId).eq('estatus', 'Detenido').limit(10)
+    const { data } = await supabase.from('traficos').select('trafico, fecha_llegada').eq('company_id', companyId).eq('estatus', 'Detenido').gte('fecha_llegada', PORTAL_DATE_FROM).limit(10)
     ctx.push(`DETENIDOS: ${JSON.stringify(data || [])}`)
   }
   if (q.includes('faltante') || q.includes('daño') || q.includes('dano')) {
@@ -52,14 +53,14 @@ async function getContextData(query: string, companyId: string, clientClave: str
     ctx.push(`Top proveedores: ${JSON.stringify(Object.entries(byP).sort((a: any, b: any) => b[1] - a[1]).slice(0, 5))}`)
   }
   if (q.includes('tráfico') || q.includes('trafico') || q.includes('recent') || q.includes('último') || q.includes('transmit') || q.includes('listo')) {
-    const { data } = await supabase.from('traficos').select('trafico, estatus, fecha_llegada, pedimento').eq('company_id', companyId).order('fecha_llegada', { ascending: false }).limit(10)
+    const { data } = await supabase.from('traficos').select('trafico, estatus, fecha_llegada, pedimento').eq('company_id', companyId).gte('fecha_llegada', PORTAL_DATE_FROM).order('fecha_llegada', { ascending: false }).limit(10)
     ctx.push(`Últimos tráficos: ${JSON.stringify(data || [])}`)
     // Ready to transmit
     const ready = (data || []).filter((t: any) => t.pedimento && !(t.estatus || '').toLowerCase().includes('cruz'))
     ctx.push(`Listos para transmitir: ${ready.length} tráficos con pedimento`)
   }
   if (q.includes('carrier') || q.includes('transportista') || q.includes('desempeño') || q.includes('performance')) {
-    const { data } = await supabase.from('traficos').select('transportista_mexicano').eq('company_id', companyId)
+    const { data } = await supabase.from('traficos').select('transportista_mexicano').eq('company_id', companyId).gte('fecha_llegada', PORTAL_DATE_FROM)
     const byCarrier: Record<string, number> = {}
     ;(data || []).forEach((t: any) => { if (t.transportista_mexicano) byCarrier[t.transportista_mexicano] = (byCarrier[t.transportista_mexicano] || 0) + 1 })
     ctx.push(`Carriers: ${JSON.stringify(Object.entries(byCarrier).sort((a, b) => b[1] - a[1]).slice(0, 5))}`)
@@ -71,7 +72,7 @@ async function getContextData(query: string, companyId: string, clientClave: str
   if (q.includes('semana') || q.includes('week') || q.includes('llegada') || q.includes('arrival')) {
     const nextWeek = new Date(); nextWeek.setDate(nextWeek.getDate() + 7)
     const { data } = await supabase.from('traficos').select('trafico, fecha_llegada, estatus').eq('company_id', companyId)
-      .gte('fecha_llegada', new Date().toISOString().split('T')[0]).lte('fecha_llegada', nextWeek.toISOString().split('T')[0])
+      .gte('fecha_llegada', new Date().toISOString().split('T')[0]).lte('fecha_llegada', nextWeek.toISOString().split('T')[0]).gte('fecha_llegada', PORTAL_DATE_FROM)
     ctx.push(`Llegadas esta semana: ${JSON.stringify(data || [])}`)
   }
   // Compliance score

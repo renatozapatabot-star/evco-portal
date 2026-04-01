@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { PORTAL_DATE_FROM } from '@/lib/data'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -14,6 +15,7 @@ export async function POST(request: NextRequest) {
     .from('traficos')
     .select('*')
     .eq('trafico', trafico_id)
+    .gte('fecha_llegada', PORTAL_DATE_FROM)
     .single()
 
   if (!trafico) return NextResponse.json({ error: 'Tráfico not found' }, { status: 404 })
@@ -29,6 +31,7 @@ export async function POST(request: NextRequest) {
     .eq('transportista_extranjero', carrier)
     .not('fecha_cruce', 'is', null)
     .not('fecha_llegada', 'is', null)
+    .gte('fecha_llegada', PORTAL_DATE_FROM)
     .limit(200)
 
   // Calculate baseline hours

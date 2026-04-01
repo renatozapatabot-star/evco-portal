@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { PORTAL_DATE_FROM } from '@/lib/data'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -26,6 +27,7 @@ export async function GET(request: NextRequest) {
     .ilike('trafico', `${clientClave}-%`)
     .is('pedimento', null)
     .not('estatus', 'ilike', '%cruz%')
+    .gte('fecha_llegada', PORTAL_DATE_FROM)
 
   if (missingDocs && missingDocs > 0) {
     alerts.push({
@@ -44,6 +46,7 @@ export async function GET(request: NextRequest) {
     .ilike('trafico', `${clientClave}-%`)
     .not('estatus', 'ilike', '%cruz%')
     .lt('updated_at', fourteenDaysAgo)
+    .gte('fecha_llegada', PORTAL_DATE_FROM)
 
   if (stale && stale > 0) {
     alerts.push({

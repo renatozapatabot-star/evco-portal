@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { PORTAL_DATE_FROM } from '@/lib/data'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -13,6 +14,7 @@ export async function GET() {
     .from('traficos')
     .select('trafico, estatus, updated_at, company_id, pedimento')
     .gte('updated_at', twoHoursAgo)
+    .gte('fecha_llegada', PORTAL_DATE_FROM)
     .order('updated_at', { ascending: false })
     .limit(50)
 

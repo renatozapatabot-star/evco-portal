@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { PORTAL_DATE_FROM } from '@/lib/data'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -41,18 +42,21 @@ export async function GET(request: NextRequest) {
       supabase
         .from('traficos')
         .select('importe_total', { count: 'exact' })
-        .ilike('trafico', prefix),
+        .ilike('trafico', prefix)
+        .gte('fecha_llegada', PORTAL_DATE_FROM),
       supabase
         .from('traficos')
         .select('*', { count: 'exact', head: true })
         .ilike('trafico', prefix)
-        .eq('estatus', 'Cruzado'),
+        .eq('estatus', 'Cruzado')
+        .gte('fecha_llegada', PORTAL_DATE_FROM),
       supabase
         .from('traficos')
         .select('fecha_cruce, fecha_llegada')
         .ilike('trafico', prefix)
         .not('fecha_cruce', 'is', null)
         .not('fecha_llegada', 'is', null)
+        .gte('fecha_llegada', PORTAL_DATE_FROM)
         .limit(500),
       supabase
         .from('aduanet_facturas')

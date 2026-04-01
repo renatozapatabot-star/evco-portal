@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 import { authenticateApiKey, unauthorized } from '@/lib/api-auth'
+import { PORTAL_DATE_FROM } from '@/lib/data'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 
@@ -9,7 +10,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   if (!auth) return unauthorized()
 
   const { trafico_id } = await params
-  const { data } = await supabase.from('traficos').select('*').eq('trafico', trafico_id).eq('company_id', auth.company_id).single()
+  const { data } = await supabase.from('traficos').select('*').eq('trafico', trafico_id).eq('company_id', auth.company_id).gte('fecha_llegada', PORTAL_DATE_FROM).single()
   if (!data) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   const [riskRes, docsRes] = await Promise.all([

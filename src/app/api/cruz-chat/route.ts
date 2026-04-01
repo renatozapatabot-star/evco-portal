@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { PORTAL_URL } from '@/lib/client-config'
+import { PORTAL_DATE_FROM } from '@/lib/data'
 import { getIVARate } from '@/lib/rates'
 
 // In-memory rate limiting — 20 queries per session per hour
@@ -384,7 +385,7 @@ async function executeTool(name: string, input: any, clientCtx: { companyId: str
         if (input.search) query = query.or(`descripcion_mercancia.ilike.%${input.search}%,trafico.ilike.%${input.search}%,pedimento.ilike.%${input.search}%`)
         if (input.date_from) query = query.gte('fecha_llegada', input.date_from)
         if (input.date_to) query = query.lte('fecha_llegada', input.date_to)
-        query = query.order('fecha_llegada', { ascending: false }).limit(input.limit || 10)
+        query = query.gte('fecha_llegada', PORTAL_DATE_FROM).order('fecha_llegada', { ascending: false }).limit(input.limit || 10)
         const { data, error } = await query
         if (error) return JSON.stringify({ error: error.message })
         return JSON.stringify({ count: data?.length, results: data })
@@ -436,7 +437,7 @@ async function executeTool(name: string, input: any, clientCtx: { companyId: str
       }
       case 'check_mve_compliance': {
         const { data } = await supabase.from('traficos').select('trafico, estatus, fecha_llegada, descripcion_mercancia')
-          .ilike('trafico', `${clientClave}-%`).neq('estatus', 'Cruzado').order('fecha_llegada', { ascending: false }).limit(50)
+          .ilike('trafico', `${clientClave}-%`).neq('estatus', 'Cruzado').gte('fecha_llegada', PORTAL_DATE_FROM).order('fecha_llegada', { ascending: false }).limit(50)
         const deadline = new Date('2026-03-31')
         const daysLeft = Math.max(0, Math.ceil((deadline.getTime() - Date.now()) / 86400000))
         return JSON.stringify({ daysUntilDeadline: daysLeft, enProcesoCount: data?.length || 0, sample: data?.slice(0, 10) })
@@ -475,7 +476,7 @@ async function executeTool(name: string, input: any, clientCtx: { companyId: str
         return JSON.stringify({ action: 'navigate', path: input.path, label: input.label })
       case 'get_summary': {
         const [traf, ent] = await Promise.all([
-          supabase.from('traficos').select('estatus, importe_total').ilike('trafico', `${clientClave}-%`).limit(5000),
+          supabase.from('traficos').select('estatus, importe_total').ilike('trafico', `${clientClave}-%`).gte('fecha_llegada', PORTAL_DATE_FROM).limit(5000),
           supabase.from('entradas').select('*', { count: 'exact', head: true }),
         ])
         const traficos = traf.data || []
@@ -543,7 +544,7 @@ async function executeTool(name: string, input: any, clientCtx: { companyId: str
         if (briefs?.length) {
           return JSON.stringify({ briefs: briefs.map(b => b.brief_data), date: today })
         }
-        const { data: active } = await supabase.from('traficos').select('trafico', { count: 'exact', head: true }).neq('estatus', 'Cruzado')
+        const { data: active } = await supabase.from('traficos').select('trafico', { count: 'exact', head: true }).neq('estatus', 'Cruzado').gte('fecha_llegada', PORTAL_DATE_FROM)
         const { data: alerts } = await supabase.from('compliance_predictions').select('severity').eq('resolved', false)
         return JSON.stringify({ date: today, active_traficos: active, critical: alerts?.filter((a: any) => a.severity === 'critical').length, warnings: alerts?.filter((a: any) => a.severity === 'warning').length })
       }
@@ -587,7 +588,7 @@ async function executeTool(name: string, input: any, clientCtx: { companyId: str
         return JSON.stringify({ optimization: bestPerDay, recommendation: 'Cross early morning (6-8 AM) at World Trade Bridge for shortest wait' })
       }
       case 'check_carrier': {
-        const { data: traficos } = await supabase.from('traficos').select('trafico, estatus, fecha_llegada, fecha_cruce').ilike('transportista_extranjero', `%${input.carrier_name}%`).limit(100)
+        const { data: traficos } = await supabase.from('traficos').select('trafico, estatus, fecha_llegada, fecha_cruce').ilike('transportista_extranjero', `%${input.carrier_name}%`).gte('fecha_llegada', PORTAL_DATE_FROM).limit(100)
         const total = traficos?.length || 0
         const cruzados = traficos?.filter((t: any) => t.estatus === 'Cruzado').length || 0
         const avgDays = traficos?.filter((t: any) => t.fecha_llegada && t.fecha_cruce).map((t: any) => (new Date(t.fecha_cruce).getTime() - new Date(t.fecha_llegada).getTime()) / 86400000).reduce((a: number, b: number, _: number, arr: number[]) => a + b / arr.length, 0) || 0
@@ -613,7 +614,7 @@ async function executeTool(name: string, input: any, clientCtx: { companyId: str
       case 'simulate_audit': {
         const cid4 = input.company_id || companyId
         const year = input.year || new Date().getFullYear()
-        const { data: traf } = await supabase.from('traficos').select('trafico, pedimento, estatus').eq('company_id', cid4).limit(1000)
+        const { data: traf } = await supabase.from('traficos').select('trafico, pedimento, estatus').eq('company_id', cid4).gte('fecha_llegada', PORTAL_DATE_FROM).limit(1000)
         const noPedimento = (traf || []).filter(t => !t.pedimento).length
         const { data: prods } = await supabase.from('globalpc_productos').select('fraccion').eq('company_id', cid4).is('fraccion', null).limit(5000)
         const noFraccion = prods?.length || 0
@@ -714,7 +715,7 @@ async function executeTool(name: string, input: any, clientCtx: { companyId: str
         const daysAhead = input.days_ahead || 90
         const futureDate = new Date(Date.now() + daysAhead * 86400000).toISOString()
         const { data: predictions } = await supabase.from('compliance_predictions').select('*').eq('company_id', companyId).eq('resolved', false).lte('due_date', futureDate).order('due_date', { ascending: true }).limit(30)
-        const { data: mveIssues } = await supabase.from('traficos').select('trafico, estatus').is('mve_folio', null).limit(20)
+        const { data: mveIssues } = await supabase.from('traficos').select('trafico, estatus').is('mve_folio', null).gte('fecha_llegada', PORTAL_DATE_FROM).limit(20)
         const deadlines = [
           ...(predictions || []).map((p: any) => ({ type: p.prediction_type, description: p.description, due_date: p.due_date, severity: p.severity })),
           ...(mveIssues?.length ? [{ type: 'MVE', description: `${mveIssues.length} tráficos sin folio MVE`, due_date: '2026-03-31', severity: 'critical' }] : []),

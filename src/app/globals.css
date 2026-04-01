@@ -2365,3 +2365,32 @@ input[type="text"]:focus, input[type="search"]:focus {
   --dark-text-secondary: var(--cruz-text-secondary);
   --dark-text-muted: var(--cruz-text-muted);
 }
+
+/* ══════════════════════════════════════════════════════
+   MOBILE FOUNDATION — Session 1F
+══════════════════════════════════════════════════════ */
+
+/* iOS input zoom prevention */
+@media (max-width: 768px) {
+  input, select, textarea { font-size: 16px !important; }
+}
+
+/* Table horizontal scroll on mobile */
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 10px;
+}
+.table-responsive table { min-width: 640px; }
+
+/* Safe area insets */
+.mobile-nav { padding-bottom: max(16px, env(safe-area-inset-bottom)); }
+.page-inner {
+  padding-bottom: calc(64px + max(16px, env(safe-area-inset-bottom)) + 16px);
+}
+.page-content { padding-top: var(--topbar-height, 64px); }
+
+/* Smooth scrolling (respects reduced motion) */
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+}

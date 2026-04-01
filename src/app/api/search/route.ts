@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
+import { PORTAL_DATE_FROM } from '@/lib/data'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -26,6 +27,7 @@ export async function GET(request: NextRequest) {
         .select('trafico, estatus, fecha_llegada, fecha_cruce, importe_total, pedimento, descripcion_mercancia')
         .eq('company_id', companyId)
         .ilike('pedimento', `%${q}%`)
+        .gte('fecha_llegada', PORTAL_DATE_FROM)
         .limit(1),
     ])
 
@@ -89,6 +91,7 @@ export async function GET(request: NextRequest) {
       .select('trafico, estatus, fecha_llegada, descripcion_mercancia')
       .eq('company_id', companyId)
       .or(`trafico.ilike.%${q}%,descripcion_mercancia.ilike.%${q}%,pedimento.ilike.%${q}%`)
+      .gte('fecha_llegada', PORTAL_DATE_FROM)
       .limit(5),
     supabase.from('entradas')
       .select('cve_entrada, descripcion_mercancia, fecha_llegada_mercancia, trafico')

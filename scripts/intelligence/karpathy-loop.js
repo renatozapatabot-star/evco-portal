@@ -13,6 +13,13 @@
 // CRUZ gets smarter by measuring its own accuracy against real outcomes.
 // ============================================================================
 
+// INTELLIGENCE MODE — reads all historical data via trafico_intelligence view
+// Portal date filter does NOT apply here. Full 2011-2026 dataset available.
+const INTELLIGENCE_MODE = true
+const INTELLIGENCE_DATE_FROM = '2011-01-01'
+// View: trafico_intelligence (traficos + completeness + temporal features)
+// Use this for any training/prediction query instead of raw traficos table.
+
 const path = require('path')
 require('dotenv').config({ path: path.join(__dirname, '..', '..', '.env.local') })
 
@@ -162,10 +169,11 @@ async function run() {
       const products = draftData.products || []
 
       // Try to find matching pedimento by supplier or invoice
+      // INTELLIGENCE_MODE: query trafico_intelligence for enriched data
+      const pedimentoSource = INTELLIGENCE_MODE ? 'trafico_intelligence' : 'pedimentos'
       const { data: matchingPedimentos } = await supabase
-        .from('pedimentos')
+        .from(pedimentoSource)
         .select('*')
-        .ilike('trafico', '9254-%')
         .order('created_at', { ascending: false })
         .limit(5)
 

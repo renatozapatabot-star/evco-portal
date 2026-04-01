@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
+import { PORTAL_DATE_FROM } from '@/lib/data'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -24,6 +25,7 @@ export async function POST(request: NextRequest) {
       .from('traficos')
       .select('trafico')
       .eq('trafico', trafico_id)
+      .gte('fecha_llegada', PORTAL_DATE_FROM)
       .single()
 
     if (trafError || !trafico) {

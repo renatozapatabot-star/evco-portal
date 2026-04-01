@@ -9,6 +9,9 @@ const supabase = createClient(
 
 const PAGE_SIZE = 50
 
+/** Hide tráficos with fecha_llegada before this date from the portal */
+export const PORTAL_DATE_FROM = '2024-01-01'
+
 export type Trafico = {
   id: number
   trafico: string
@@ -93,7 +96,7 @@ export async function fetchDashboardKPIs() {
   const companyId = await getCompanyId()
   const clave = await getClientClave()
   const [trafRes, factRes, entRes] = await Promise.all([
-    supabase.from('traficos').select('estatus, peso_bruto').eq('company_id', companyId),
+    supabase.from('traficos').select('estatus, peso_bruto').eq('company_id', companyId).gte('fecha_llegada', PORTAL_DATE_FROM),
     supabase.from('aduanet_facturas').select('valor_usd, dta, igi, iva, pedimento').eq('clave_cliente', clave),
     supabase.from('entradas').select('tiene_faltantes, peso_bruto').eq('company_id', companyId).limit(1000),
   ])
@@ -120,6 +123,7 @@ export async function fetchTraficos(page = 0, estatus?: string, search?: string)
   const companyId = await getCompanyId()
   let q = supabase.from('traficos').select('*', { count: 'exact' })
     .eq('company_id', companyId)
+    .gte('fecha_llegada', PORTAL_DATE_FROM)
     .order('fecha_llegada', { ascending: false })
     .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1)
   if (estatus && estatus !== 'Todos') q = q.eq('estatus', estatus)

@@ -8,6 +8,7 @@ import { getCookieValue } from '@/lib/client-config'
 import { fmtId, fmtDateCompact } from '@/lib/format-utils'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { PORTAL_DATE_FROM } from '@/lib/data'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -370,6 +371,7 @@ export function ExpedientesView() {
         .select('id, trafico, estatus, fecha_llegada, importe_total, pedimento, proveedores, descripcion_mercancia', { count: 'exact' })
         .eq('company_id', companyId)
         .not('estatus', 'ilike', '%cruz%')
+        .gte('fecha_llegada', PORTAL_DATE_FROM)
         .order('fecha_llegada', { ascending: true })
         .limit(500)
 

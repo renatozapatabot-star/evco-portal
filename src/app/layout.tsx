@@ -1,8 +1,9 @@
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { GeistSans } from 'geist/font/sans'
 import { GeistMono } from 'geist/font/mono'
 import { JetBrains_Mono } from 'next/font/google'
 import DashboardShellClient from "@/components/DashboardShellClient"
+import { QueryProvider } from "@/components/QueryProvider"
 import "./globals.css"
 
 const jetbrainsMono = JetBrains_Mono({
@@ -12,14 +13,24 @@ const jetbrainsMono = JetBrains_Mono({
   display: 'swap',
 })
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+}
+
 export const metadata: Metadata = {
-  title: "CRUZ · Renato Zapata & Company",
+  title: "CRUZ · Customs Intelligence",
   description: "Cross-border intelligence platform · Patente 3596 · Aduana 240",
   icons: { icon: '/favicon.svg' },
   openGraph: {
     title: 'CRUZ — Cross-Border Intelligence',
     description: 'Renato Zapata & Company · Patente 3596 · Est. 1941',
     siteName: 'CRUZ',
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
   },
 }
 
@@ -31,7 +42,6 @@ export default function RootLayout({
   return (
     <html lang="es" className={`${GeistSans.variable} ${GeistMono.variable} ${jetbrainsMono.variable}`}>
       <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#B8953F" />
         <meta name="mobile-web-app-capable" content="yes" />
@@ -59,9 +69,11 @@ export default function RootLayout({
         `}} />
       </head>
       <body style={{ margin: 0 }}>
-        <DashboardShellClient>
-          {children}
-        </DashboardShellClient>
+        <QueryProvider>
+          <DashboardShellClient>
+            {children}
+          </DashboardShellClient>
+        </QueryProvider>
       </body>
     </html>
   )

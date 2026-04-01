@@ -2158,6 +2158,45 @@ body { overflow-x: hidden; }
 }
 
 /* ══════════════════════════════
+   CRUZ DS v2.0 — SPRINT 3 MICRO-INTERACTIONS
+══════════════════════════════ */
+
+/* KPI cards stagger */
+.kpi-card:nth-child(1) { animation: fadeInUp 0.4s ease 0.05s both; }
+.kpi-card:nth-child(2) { animation: fadeInUp 0.4s ease 0.10s both; }
+.kpi-card:nth-child(3) { animation: fadeInUp 0.4s ease 0.15s both; }
+.kpi-card:nth-child(4) { animation: fadeInUp 0.4s ease 0.20s both; }
+
+/* Pedimento badge hover */
+.ped-pill:hover, .pedimento-badge:hover {
+  box-shadow: 0 0 0 3px rgba(196,162,78,0.06);
+  border-color: rgba(196,162,78,0.3);
+}
+
+/* Search focus ring */
+input[type="text"]:focus, input[type="search"]:focus {
+  border-color: rgba(196,162,78,0.4) !important;
+  box-shadow: 0 0 0 3px rgba(196,162,78,0.08) !important;
+  outline: none !important;
+}
+
+/* CSV button dim */
+.csv-button, button[data-csv], .act-btn { opacity: 0.5; }
+.csv-button:hover, button[data-csv]:hover, .act-btn:hover { opacity: 1; transition: opacity 0.15s; }
+
+/* Content padding */
+.shell-main main, .page-wrap { padding: 24px 32px; }
+
+/* MVE badge pulse if urgent */
+.mve-badge-urgent { animation: pulse-dot 2s ease-in-out infinite; }
+
+/* Tráfico IDs — Geist Mono enforcement */
+.c-id, [data-trafico-id] {
+  font-family: var(--font-geist-mono, var(--font-mono)), monospace;
+  font-weight: 500;
+}
+
+/* ══════════════════════════════
    LEGACY DARK SURFACE COMPAT
 ══════════════════════════════ */
 :root {

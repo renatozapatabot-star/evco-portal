@@ -67,12 +67,13 @@ export async function GET(request: NextRequest) {
       (s: number, t: Record<string, unknown>) => s + (Number(t.importe_total) || 0), 0
     )
 
-    const avgCrossingDays = (crossing.data?.length ?? 0) > 0
-      ? (crossing.data!.reduce((sum: number, t: Record<string, unknown>) => {
+    const crossingRows = crossing.data ?? []
+    const avgCrossingDays = crossingRows.length > 0
+      ? (crossingRows.reduce((sum: number, t: Record<string, unknown>) => {
           const days = (new Date(t.fecha_cruce as string).getTime() -
                        new Date(t.fecha_llegada as string).getTime()) / 86400000
           return sum + days
-        }, 0) / crossing.data!.length).toFixed(1)
+        }, 0) / crossingRows.length).toFixed(1)
       : null
 
     const tmecWithIGI = (factRes.data ?? []).filter(

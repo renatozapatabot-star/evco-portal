@@ -6,14 +6,20 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const companyId = req.cookies.get('company_id')?.value
+  const userRole = req.cookies.get('user_role')?.value
+  if (!userRole) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   const { data } = await supabase.from('communication_events')
-    .select('*').order('created_at', { ascending: false }).limit(50)
+    .select('*').eq('company_id', companyId).order('created_at', { ascending: false }).limit(50)
   return NextResponse.json({ communications: data || [] })
 }
 
 export async function POST(req: NextRequest) {
-  const companyId = req.cookies.get('company_id')?.value ?? 'evco'
+  const companyId = req.cookies.get('company_id')?.value
+  const userRole = req.cookies.get('user_role')?.value
+  if (!userRole) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const { supplier, trafico, message_type } = await req.json()
   if (!supplier) return NextResponse.json({ error: 'supplier required' }, { status: 400 })
 

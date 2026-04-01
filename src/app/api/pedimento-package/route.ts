@@ -13,6 +13,9 @@ const DOC_LABELS: Record<string, string> = {
 }
 
 export async function GET(request: NextRequest) {
+  const userRole = request.cookies.get('user_role')?.value
+  if (!userRole) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   const trafico = request.nextUrl.searchParams.get('trafico')
   if (!trafico) return NextResponse.json({ error: 'trafico param required' }, { status: 400 })
 

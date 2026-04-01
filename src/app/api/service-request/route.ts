@@ -14,25 +14,30 @@ async function sendTG(msg: string) {
 }
 
 export async function POST(request: NextRequest) {
-  const companyId = request.cookies.get('company_id')?.value ?? 'evco'
-  const { request_type, description, company_id = companyId } = await request.json()
+  const companyId = request.cookies.get('company_id')?.value
+  const userRole = request.cookies.get('user_role')?.value
+  if (!userRole) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const { request_type, description } = await request.json()
   if (!request_type) return NextResponse.json({ error: 'request_type required' }, { status: 400 })
 
   const { data, error } = await supabase.from('service_requests').insert({
-    company_id, request_type, description: description || '', status: 'recibido',
+    company_id: companyId, request_type, description: description || '', status: 'recibido',
   }).select().single()
 
   if (!error) {
-    await sendTG(`🔔 <b>NUEVA SOLICITUD</b>\nTipo: ${request_type}\n${description ? `Detalle: ${description.substring(0, 200)}` : ''}\nCliente: ${company_id}\n— Portal CRUZ`)
+    await sendTG(`🔔 <b>NUEVA SOLICITUD</b>\nTipo: ${request_type}\n${description ? `Detalle: ${description.substring(0, 200)}` : ''}\nCliente: ${companyId}\n— Portal CRUZ`)
   }
 
   return NextResponse.json({ success: !error, id: data?.id })
 }
 
 export async function GET(request: NextRequest) {
-  const companyId = request.cookies.get('company_id')?.value ?? 'evco'
-  const company_id = request.nextUrl.searchParams.get('company_id') || companyId
+  const companyId = request.cookies.get('company_id')?.value
+  const userRole = request.cookies.get('user_role')?.value
+  if (!userRole) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   const { data } = await supabase.from('service_requests')
-    .select('*').eq('company_id', company_id).order('created_at', { ascending: false }).limit(50)
+    .select('*').eq('company_id', companyId).order('created_at', { ascending: false }).limit(50)
   return NextResponse.json({ requests: data || [] })
 }

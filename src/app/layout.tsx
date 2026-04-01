@@ -42,6 +42,12 @@ export default function RootLayout({
         <link rel="preconnect" href="https://jkhpafacchjxawnscplf.supabase.co" />
         <link rel="dns-prefetch" href="https://jkhpafacchjxawnscplf.supabase.co" />
         <link rel="preconnect" href="https://api.anthropic.com" />
+        <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400&display=swap" rel="stylesheet" />
+        <script dangerouslySetInnerHTML={{__html: `
+          var t = localStorage.getItem('cruz-theme') ||
+            (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+          document.documentElement.setAttribute('data-theme', t);
+        `}} />
       </head>
       <body style={{ margin: 0 }}>
         <DashboardShellClient>

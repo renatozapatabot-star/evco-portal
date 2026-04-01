@@ -9,21 +9,22 @@ import {
   Shield, Award,
   Settings, Sparkles, Star,
   ChevronLeft, ChevronRight, LogOut,
+  Sun, Moon,
 } from 'lucide-react'
 import { getCookieValue } from '@/lib/client-config'
 import type { UserRole } from '@/components/nav/nav-config'
 
 const T = {
-  bg: '#1A1814',
-  border: '#2A2824',
-  text: '#EAE6DC',
-  textMuted: '#7C7870',
-  gold: '#B8953F',
-  goldSubtle: 'rgba(184,149,63,0.12)',
-  goldBorder: 'rgba(184,149,63,0.25)',
-  hover: '#252219',
-  activeBorder: '#B8953F',
-  sectionLabel: '#5C5850',
+  bg: 'var(--cruz-surface)',
+  border: 'var(--cruz-border)',
+  text: 'var(--cruz-text)',
+  textMuted: 'var(--cruz-text-muted)',
+  gold: 'var(--cruz-gold)',
+  goldSubtle: 'var(--cruz-gold-dim)',
+  goldBorder: 'var(--cruz-border-gold)',
+  hover: 'var(--cruz-elevated)',
+  activeBorder: 'var(--cruz-gold)',
+  sectionLabel: 'var(--cruz-text-ghost)',
 } as const
 
 const EXPANDED_W = 240
@@ -78,6 +79,7 @@ export function Sidebar() {
   const [role, setRole] = useState<UserRole>('client')
   const [companyName, setCompanyName] = useState('')
   const [clientClave, setClientClave] = useState('')
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark')
 
   useEffect(() => {
     const r = getCookieValue('user_role')
@@ -99,6 +101,24 @@ export function Sidebar() {
     if (collapsed) document.body.classList.add('sidebar-collapsed')
     else document.body.classList.remove('sidebar-collapsed')
   }, [collapsed])
+
+  // Theme initialization
+  useEffect(() => {
+    const saved = localStorage.getItem('cruz-theme')
+    if (saved === 'light' || saved === 'dark') {
+      setTheme(saved)
+    } else {
+      const preferLight = window.matchMedia('(prefers-color-scheme: light)').matches
+      setTheme(preferLight ? 'light' : 'dark')
+    }
+  }, [])
+
+  const toggleTheme = () => {
+    const next = theme === 'dark' ? 'light' : 'dark'
+    setTheme(next)
+    document.documentElement.setAttribute('data-theme', next)
+    localStorage.setItem('cruz-theme', next)
+  }
 
   const toggleCollapsed = () => {
     const next = !collapsed
@@ -234,35 +254,70 @@ export function Sidebar() {
             }}>
               {roleLabel}
             </div>
-            <a
-              href="/api/auth/logout"
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10 }}>
+              <a
+                href="/api/auth/logout"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  fontSize: 12, color: T.textMuted,
+                  textDecoration: 'none', transition: 'color 150ms',
+                }}
+                onMouseEnter={e => (e.currentTarget.style.color = T.text)}
+                onMouseLeave={e => (e.currentTarget.style.color = T.textMuted)}
+              >
+                <LogOut size={14} />
+                Cerrar sesión
+              </a>
+              <button
+                onClick={toggleTheme}
+                title={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}
+                style={{
+                  marginLeft: 'auto',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  width: 28, height: 28, borderRadius: 6,
+                  background: 'transparent', border: 'none',
+                  color: T.textMuted, cursor: 'pointer',
+                  transition: 'color 150ms',
+                }}
+                onMouseEnter={e => (e.currentTarget.style.color = T.text)}
+                onMouseLeave={e => (e.currentTarget.style.color = T.textMuted)}
+              >
+                {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
+              </button>
+            </div>
+          </div>
+        )}
+        {collapsed && (
+          <>
+            <button
+              onClick={toggleTheme}
+              title={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}
               style={{
-                display: 'flex', alignItems: 'center', gap: 6,
-                marginTop: 10, fontSize: 12, color: T.textMuted,
-                textDecoration: 'none', transition: 'color 150ms',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                width: '100%', padding: '8px 0',
+                background: 'transparent', border: 'none',
+                color: T.textMuted, cursor: 'pointer',
+                transition: 'color 150ms',
               }}
               onMouseEnter={e => (e.currentTarget.style.color = T.text)}
               onMouseLeave={e => (e.currentTarget.style.color = T.textMuted)}
             >
-              <LogOut size={14} />
-              Cerrar sesión
+              {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
+            <a
+              href="/api/auth/logout"
+              title="Cerrar sesión"
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                padding: '8px 0', color: T.textMuted, textDecoration: 'none',
+                transition: 'color 150ms',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.color = T.text)}
+              onMouseLeave={e => (e.currentTarget.style.color = T.textMuted)}
+            >
+              <LogOut size={18} />
             </a>
-          </div>
-        )}
-        {collapsed && (
-          <a
-            href="/api/auth/logout"
-            title="Cerrar sesión"
-            style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              padding: '8px 0', color: T.textMuted, textDecoration: 'none',
-              transition: 'color 150ms',
-            }}
-            onMouseEnter={e => (e.currentTarget.style.color = T.text)}
-            onMouseLeave={e => (e.currentTarget.style.color = T.textMuted)}
-          >
-            <LogOut size={18} />
-          </a>
+          </>
         )}
 
         {/* Toggle */}

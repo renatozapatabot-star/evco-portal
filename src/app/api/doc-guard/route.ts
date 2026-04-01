@@ -14,6 +14,9 @@ const REQUIRED_DOCS = [
 ]
 
 export async function GET(req: NextRequest) {
+  const userRole = req.cookies.get('user_role')?.value
+  if (!userRole) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   const trafico = req.nextUrl.searchParams.get('trafico')
   if (!trafico) return NextResponse.json({ error: 'Missing trafico param' }, { status: 400 })
 

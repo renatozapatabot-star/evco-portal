@@ -9,7 +9,10 @@ const supabase = createClient(
 export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
-  const companyId = request.cookies.get('company_id')?.value ?? 'evco'
+  const companyId = request.cookies.get('company_id')?.value
+  const userRole = request.cookies.get('user_role')?.value
+  if (!userRole) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   const { data, error } = await supabase
     .from('notifications')
     .select('*')
@@ -28,6 +31,10 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
+  const companyId = request.cookies.get('company_id')?.value
+  const userRole = request.cookies.get('user_role')?.value
+  if (!userRole) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   const { id } = await request.json()
 
   if (!id) {
@@ -38,6 +45,7 @@ export async function PATCH(request: NextRequest) {
     .from('notifications')
     .update({ read: true })
     .eq('id', id)
+    .eq('company_id', companyId)
 
   return NextResponse.json({ ok: true })
 }

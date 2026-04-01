@@ -76,7 +76,7 @@ async function run() {
     const { data, error } = await supabase
       .from('entradas')
       .select('id, cve_entrada')
-      .eq('company_id', 'evco')
+      
       .is('trafico', null)
       .range(ePage * PAGE, (ePage + 1) * PAGE - 1)
     if (error) {
@@ -185,7 +185,7 @@ async function run() {
       const { data, error } = await supabase
         .from('entradas')
         .select('id, cve_entrada')
-        .eq('company_id', 'evco')
+        
         .is('trafico', null)
         .range(p2Page * PAGE, (p2Page + 1) * PAGE - 1)
       if (error) break

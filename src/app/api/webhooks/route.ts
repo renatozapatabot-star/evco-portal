@@ -8,24 +8,30 @@ const supabase = createClient(
 )
 
 // GET — list subscriptions
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const companyId = req.cookies.get('company_id')?.value
+  const userRole = req.cookies.get('user_role')?.value
+  if (!userRole) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   const { data } = await supabase.from('webhook_subscriptions')
     .select('id, company_id, url, events, active, created_at')
-    .eq('active', true).order('created_at', { ascending: false })
+    .eq('active', true).eq('company_id', companyId).order('created_at', { ascending: false })
   return NextResponse.json({ subscriptions: data || [] })
 }
 
 // POST — subscribe or deliver
 export async function POST(req: NextRequest) {
-  const companyId = req.cookies.get('company_id')?.value ?? 'evco'
+  const companyId = req.cookies.get('company_id')?.value
+  const userRole = req.cookies.get('user_role')?.value
+  if (!userRole) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const body = await req.json()
 
   // Subscribe
   if (body.action === 'subscribe') {
-    const { url, events, secret, company_id } = body
+    const { url, events, secret } = body
     if (!url || !events?.length) return NextResponse.json({ error: 'url and events required' }, { status: 400 })
     const { data, error } = await supabase.from('webhook_subscriptions')
-      .insert({ company_id: company_id || companyId, url, events, secret: secret || crypto.randomUUID() })
+      .insert({ company_id: companyId, url, events, secret: secret || crypto.randomUUID() })
       .select().single()
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     return NextResponse.json({ subscription: data })
@@ -70,8 +76,12 @@ export async function POST(req: NextRequest) {
 
 // DELETE — unsubscribe
 export async function DELETE(req: NextRequest) {
+  const companyId = req.cookies.get('company_id')?.value
+  const userRole = req.cookies.get('user_role')?.value
+  if (!userRole) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   const id = req.nextUrl.searchParams.get('id')
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 })
-  await supabase.from('webhook_subscriptions').update({ active: false }).eq('id', id)
+  await supabase.from('webhook_subscriptions').update({ active: false }).eq('id', id).eq('company_id', companyId)
   return NextResponse.json({ ok: true })
 }

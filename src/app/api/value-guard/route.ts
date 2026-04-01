@@ -4,6 +4,9 @@ import { createClient } from '@supabase/supabase-js'
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 
 export async function GET(req: NextRequest) {
+  const userRole = req.cookies.get('user_role')?.value
+  if (!userRole) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   const trafico = req.nextUrl.searchParams.get('trafico')
   if (!trafico) return NextResponse.json({ error: 'Missing trafico param' }, { status: 400 })
 

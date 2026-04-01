@@ -32,3 +32,19 @@ export function getMissingDocs(
     )
   })
 }
+
+/**
+ * Get missing docs accounting for client template docs (permanent docs on file).
+ * Template docs count as "present" — they reduce the missing count.
+ */
+export function getMissingDocsWithTemplates(
+  existingDocs: Array<{ tipo?: string | null; document_type?: string | null }>,
+  templateDocTypes: string[]
+): string[] {
+  const templateNormalized = templateDocTypes.map(t => t.toUpperCase().trim())
+  const combined = [
+    ...existingDocs,
+    ...templateNormalized.map(t => ({ document_type: t })),
+  ]
+  return getMissingDocs(combined)
+}

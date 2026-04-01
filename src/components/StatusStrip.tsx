@@ -22,8 +22,8 @@ export function StatusStrip() {
   return (
     <div className="status-strip" style={{
       position: 'fixed', left: 0, right: 0, zIndex: 898,
-      background: '#F7F6F3', borderBottom: '1px solid #F0ECE4',
-      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+      background: 'transparent',
+      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
     }}>
       {status ? (
         <>

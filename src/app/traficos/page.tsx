@@ -159,6 +159,16 @@ function TraficosContent() {
   const paged = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
   const totalValor = rows.reduce((s, r) => s + (Number(r.importe_total) || 0), 0)
 
+  // KPI calculations
+  const kpiActivos = rows.filter(r => !(r.estatus || '').toLowerCase().includes('cruz')).length
+  const kpiEnProceso = rows.filter(r => (r.estatus || '').toLowerCase().includes('proceso')).length
+  const kpiDocsFaltantes = rows.filter(r => (docCountMap.get(r.trafico) ?? 0) < 6 && !(r.estatus || '').toLowerCase().includes('cruz')).length
+  const kpiCruzadoHoy = rows.filter(r => {
+    if (!(r.estatus || '').toLowerCase().includes('cruz')) return false
+    const today = new Date().toISOString().split('T')[0]
+    return r.fecha_pago?.startsWith(today) || r.fecha_llegada?.startsWith(today)
+  }).length
+
   const SortArrow = ({ col }: { col: string }) => sort.column === col ? <span style={{ marginLeft: 4, fontSize: 10 }}>{sort.direction === 'asc' ? '↑' : '↓'}</span> : null
 
   return (
@@ -169,6 +179,35 @@ function TraficosContent() {
           <p className="pg-meta">{rows.length.toLocaleString('es-MX')} embarques{companyName ? ` · ${companyName}` : ''}</p>
         </div>
       </div>
+
+      {/* KPI Strip */}
+      {!loading && rows.length > 0 && (
+        <div className="kpi-grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 20 }}>
+          {[
+            { label: 'Activos', value: kpiActivos },
+            { label: 'En Proceso', value: kpiEnProceso },
+            { label: 'Docs Faltantes', value: kpiDocsFaltantes },
+            { label: 'Cruzado Hoy', value: kpiCruzadoHoy },
+          ].map((kpi, i) => (
+            <div key={kpi.label} className="kpi-card" style={{
+              background: 'var(--cruz-surface)',
+              border: '1px solid var(--cruz-border)',
+              borderRadius: 12,
+              padding: '20px 24px',
+            }}>
+              <div className="hero-number" style={{ color: 'var(--n-900)', marginBottom: 4 }}>
+                {kpi.value}
+              </div>
+              <div style={{
+                fontSize: 10, fontWeight: 600, textTransform: 'uppercase' as const,
+                letterSpacing: '0.08em', color: 'var(--cruz-text-muted)',
+              }}>
+                {kpi.label}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="card">
         <div className="tbl-controls">
@@ -300,9 +339,6 @@ function TraficosContent() {
                       <td>
                         <span className={`badge ${isCruzado ? 'badge-green' : 'badge-amber'}`}>
                           <span className="badge-dot" /><span className="sr-only">Estado: </span>{isCruzado ? 'Cruzado' : 'En Proceso'}
-                          {!isCruzado && r.fecha_llegada && (
-                            <span style={{ marginLeft: 4, fontSize: 11, color: 'var(--n-400)' }}>· {fmtDate(r.fecha_llegada)}</span>
-                          )}
                         </span>
                       </td>
                       <td style={{ fontSize: 12.5, color: 'var(--text-secondary)', fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtDate(r.fecha_llegada)}</td>

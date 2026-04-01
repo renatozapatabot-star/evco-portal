@@ -1,0 +1,20 @@
+{
+  "page_title": "Shipments",
+  "stat_activos": "Active",
+  "stat_en_proceso": "In Process",
+  "stat_docs_faltantes": "Missing Docs",
+  "stat_cruzado_hoy": "Cleared Today",
+  "status_pendiente": "Pending",
+  "status_en_proceso": "In Process",
+  "status_cruzado": "Cleared",
+  "status_detenido": "Held",
+  "col_trafico": "Shipment",
+  "col_pedimento": "Pedimento",
+  "col_descripcion": "Description",
+  "col_estado": "Status",
+  "col_fecha": "Date",
+  "col_importe": "Value",
+  "col_docs": "Docs",
+  "empty_state": "No shipments match your filters.",
+  "search_placeholder": "Search shipments, pedimentos..."
+}

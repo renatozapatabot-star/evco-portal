@@ -43,10 +43,19 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://jkhpafacchjxawnscplf.supabase.co" />
         <link rel="preconnect" href="https://api.anthropic.com" />
         <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
         <script dangerouslySetInnerHTML={{__html: `
-          var t = localStorage.getItem('cruz-theme') ||
-            (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
-          document.documentElement.setAttribute('data-theme', t);
+          (function() {
+            try {
+              var stored = localStorage.getItem('cruz-theme');
+              var theme = stored || 'light';
+              if (theme === 'system') {
+                theme = window.matchMedia('(prefers-color-scheme: dark)').matches
+                  ? 'dark' : 'light';
+              }
+              document.documentElement.setAttribute('data-theme', theme);
+            } catch(e) {}
+          })();
         `}} />
       </head>
       <body style={{ margin: 0 }}>

@@ -138,6 +138,7 @@ export function Sidebar() {
   return (
     <nav
       className="shell-sidebar"
+      data-sidebar=""
       style={{
         position: 'fixed', top: 0, left: 0, bottom: 0,
         width: w, background: T.bg,

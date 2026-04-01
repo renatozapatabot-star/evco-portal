@@ -159,7 +159,8 @@ function TraficosContent() {
   const paged = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
   const totalValor = rows.reduce((s, r) => s + (Number(r.importe_total) || 0), 0)
 
-  // KPI calculations
+  // Stat bar calculations
+  const [statFilter, setStatFilter] = useState<string | null>(null)
   const kpiActivos = rows.filter(r => !(r.estatus || '').toLowerCase().includes('cruz')).length
   const kpiEnProceso = rows.filter(r => (r.estatus || '').toLowerCase().includes('proceso')).length
   const kpiDocsFaltantes = rows.filter(r => (docCountMap.get(r.trafico) ?? 0) < 6 && !(r.estatus || '').toLowerCase().includes('cruz')).length
@@ -180,31 +181,23 @@ function TraficosContent() {
         </div>
       </div>
 
-      {/* KPI Strip */}
+      {/* Stat Bar */}
       {!loading && rows.length > 0 && (
-        <div className="kpi-grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 20 }}>
+        <div className="stat-bar" style={{ background: 'var(--bg-surface)', borderRadius: 'var(--radius-lg) var(--radius-lg) 0 0', overflow: 'hidden' }}>
           {[
-            { label: 'Activos', value: kpiActivos },
-            { label: 'En Proceso', value: kpiEnProceso },
-            { label: 'Docs Faltantes', value: kpiDocsFaltantes },
-            { label: 'Cruzado Hoy', value: kpiCruzadoHoy },
-          ].map((kpi, i) => (
-            <div key={kpi.label} className="kpi-card" style={{
-              background: 'var(--cruz-surface)',
-              border: '1px solid var(--cruz-border)',
-              borderRadius: 12,
-              padding: '20px 24px',
-            }}>
-              <div className="hero-number" style={{ color: 'var(--n-900)', marginBottom: 4 }}>
-                {kpi.value}
-              </div>
-              <div style={{
-                fontSize: 10, fontWeight: 600, textTransform: 'uppercase' as const,
-                letterSpacing: '0.08em', color: 'var(--cruz-text-muted)',
-              }}>
-                {kpi.label}
-              </div>
-            </div>
+            { key: 'activos', label: 'Activos', value: kpiActivos, danger: false },
+            { key: 'proceso', label: 'En Proceso', value: kpiEnProceso, danger: false },
+            { key: 'docs', label: 'Docs Faltantes', value: kpiDocsFaltantes, danger: kpiDocsFaltantes > 0 },
+            { key: 'cruzado', label: 'Cruzado Hoy', value: kpiCruzadoHoy, danger: false },
+          ].map(stat => (
+            <button
+              key={stat.key}
+              className={`stat-bar-item${statFilter === stat.key ? ' active' : ''}`}
+              onClick={() => setStatFilter(statFilter === stat.key ? null : stat.key)}
+            >
+              <span className={`stat-value${stat.danger ? ' danger' : ''}`}>{stat.value}</span>
+              <span className="stat-label">{stat.label}</span>
+            </button>
           ))}
         </div>
       )}
@@ -305,24 +298,18 @@ function TraficosContent() {
                 const isCruzado = (r.estatus || '').toLowerCase().includes('cruz')
                 const isCrossing = (r.estatus || '').toLowerCase().includes('cruc') && !isCruzado
                 const days = statusDays(r.fecha_llegada ?? null)
-                const rowClass = isCrossing ? 'row-crossing'
-                  : isCruzado ? 'row-healthy'
-                  : cruzScore < 50 ? 'row-critical'
-                  : days > 7 ? 'row-warning'
-                  : 'row-warning'
+                const isDetenido = (r.estatus || '').toLowerCase().includes('deten')
+                const isHighValue = (Number(r.importe_total) || 0) > 100000 && !isCruzado
 
-                const blockingCount = !isCruzado ? (6 - (docCountMap.get(r.trafico) ?? 0)) : 0
-                const isHighValue = (Number(r.importe_total) || 0) > 100000
-                const hasMissingDocs = blockingCount > 0 && !isCruzado
+                const urgencyClass = isDetenido ? 'urgency-critical'
+                  : isCruzado ? 'urgency-complete'
+                  : isCrossing ? 'row-crossing'
+                  : 'urgency-urgent'
 
-                const rowBorderStyle = hasMissingDocs
-                  ? { borderLeft: '2px solid var(--cruz-red)' }
-                  : isHighValue
-                  ? { borderLeft: '2px solid var(--cruz-gold)' }
-                  : {}
+                const goldBorder = isHighValue && !isDetenido ? { borderLeft: '3px solid var(--accent-primary)' } : {}
 
                 return (
-                    <tr key={r.trafico} className={rowClass} style={rowBorderStyle}
+                    <tr key={r.trafico} className={urgencyClass} style={goldBorder}
                       onClick={() => router.push(`/traficos/${encodeURIComponent(r.trafico)}`)}>
                       <td style={{ width: 28, paddingRight: 0 }}>
                         {isCrossing ? <><span className="crossing-pulse" /><span className="sr-only">En cruce</span></> : ps > 0 ? <><span className={`priority ${priorityClass(ps)}`} /><span className="sr-only">Requiere atención</span></> : null}
@@ -345,10 +332,10 @@ function TraficosContent() {
                           })()}
                         </div>
                       </td>
-                      <td>{r.pedimento ? <span className="ped-pill">{r.pedimento}</span> : <span style={{ color: '#4A4640', fontStyle: 'italic', fontSize: 12 }}>Pendiente</span>}</td>
+                      <td>{r.pedimento ? <span className="pedimento-badge">{r.pedimento}</span> : <span style={{ color: 'var(--text-disabled)', fontStyle: 'italic', fontSize: 'var(--text-micro)' }}>Pendiente</span>}</td>
                       <td>
-                        <span className={`badge ${isCruzado ? 'badge-green' : 'badge-amber'}`}>
-                          <span className="badge-dot" /><span className="sr-only">Estado: </span>{isCruzado ? 'Cruzado' : 'En Proceso'}
+                        <span className={`status-badge ${isDetenido ? 'detenido' : isCruzado ? 'cruzado' : isCrossing ? 'en-proceso' : 'en-proceso'}`}>
+                          {isDetenido ? 'Detenido' : isCruzado ? 'Cruzado' : 'En Proceso'}
                         </span>
                       </td>
                       <td style={{ fontSize: 12.5, color: 'var(--text-secondary)', fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtDateShort(r.fecha_llegada)}</td>
@@ -358,8 +345,14 @@ function TraficosContent() {
                       <td style={{ textAlign: 'center' }}>
                         {(() => {
                           const count = docCountMap.get(r.trafico) ?? 0
-                          const color = count >= 6 ? 'var(--status-green, #2D8540)' : count >= 3 ? 'var(--status-amber, #C47F17)' : count > 0 ? 'var(--status-red, #C23B22)' : 'var(--n-400, #9C9890)'
-                          return <span style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 12, color, fontWeight: 600 }}>{count}/6</span>
+                          const colorClass = count >= 5 ? 'success' : count >= 3 ? 'warning' : 'danger'
+                          return (
+                            <div className="doc-completion" style={{ justifyContent: 'center' }}>
+                              {Array.from({ length: 6 }).map((_, i) => (
+                                <div key={i} className={`doc-completion-segment${i < count ? ` filled ${colorClass}` : ''}`} />
+                              ))}
+                            </div>
+                          )
                         })()}
                       </td>
                     </tr>

@@ -37,7 +37,7 @@ async function getLastSyncTime() {
     .limit(1)
 
   if (!data?.[0]?.completed_at) {
-    return new Date(Date.now() - 30 * 60 * 1000)
+    return new Date(Date.now() - 90 * 24 * 60 * 60 * 1000)
   }
   return new Date(data[0].completed_at)
 }

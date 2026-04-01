@@ -261,7 +261,13 @@ async function main() {
     process.exit(1)
   }
 
-  // Fetch pending events
+  // Count shadow rows (skipped) for visibility
+  const { count: shadowCount } = await supabase
+    .from('notification_events')
+    .select('*', { count: 'exact', head: true })
+    .eq('status', 'shadow')
+
+  // Fetch pending events (live triggers only)
   const { data: events, error: fetchError } = await supabase
     .from('notification_events')
     .select('*')
@@ -275,6 +281,9 @@ async function main() {
     await logToSupabase('failed', 0, 0, fetchError.message)
     process.exit(1)
   }
+
+  const pendingCount = events ? events.length : 0
+  console.log(`[${SCRIPT_NAME}] ${pendingCount} pending (live) | ${shadowCount || 0} shadow (skipped)`)
 
   if (!events || events.length === 0) {
     console.log(`[${SCRIPT_NAME}] No pending notifications. Done.`)

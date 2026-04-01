@@ -62,6 +62,27 @@ async function run() {
     .order('blocking_count', { ascending: false })
     .limit(5)
 
+  // Active tráficos by client (En Proceso)
+  const { data: enProceso } = await sb
+    .from('traficos')
+    .select('company_id')
+    .eq('estatus', 'En Proceso')
+
+  const enProcesoByClient = {}
+  for (const t of (enProceso || [])) {
+    const cid = t.company_id || 'SIN CLAVE'
+    enProcesoByClient[cid] = (enProcesoByClient[cid] || 0) + 1
+  }
+  const topEnProceso = Object.entries(enProcesoByClient)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+
+  // Detenidos
+  const { data: detenidos } = await sb
+    .from('traficos')
+    .select('trafico, company_id')
+    .eq('estatus', 'Detenido')
+
   // Semáforo rojos
   const { data: rojos } = await sb
     .from('traficos')
@@ -85,11 +106,30 @@ async function run() {
     .map(r => `   → ${r.trafico} (${r.company_id})`)
     .join('\n')
 
+  // Build detenidos alert (top of message if any)
+  const detenidosList = (detenidos || [])
+  const detenidoAlert = detenidosList.length > 0
+    ? `🚨 <b>DETENIDOS: ${detenidosList.length} tráficos requieren atención inmediata</b>\n` +
+      detenidosList.map(d => `   → ${d.trafico} (${d.company_id})`).join('\n') +
+      '\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n'
+    : ''
+
+  // Build active tráficos breakdown
+  const enProcesoTotal = (enProceso || []).length
+  const activosBreakdown = topEnProceso
+    .map(([cid, count]) => {
+      const det = detenidosList.filter(d => d.company_id === cid).length
+      return det > 0
+        ? `   → ${cid}: ${count} en proceso, ${det} detenidos`
+        : `   → ${cid}: ${count} en proceso`
+    })
+    .join('\n')
+
   const message = `☀️ <b>BRIEFING MATUTINO | ${today}</b>
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Renato Zapata &amp; Company
 
-📊 <b>PIPELINE</b>
+${detenidoAlert}📊 <b>PIPELINE</b>
    Necesitan docs:     ${stages.needs_docs}
    En progreso:        ${stages.in_progress}
    Listos p/despacho:  ${stages.ready_to_file}
@@ -98,6 +138,9 @@ Renato Zapata &amp; Company
 
 📦 <b>POR CLIENTE</b>
 ${topClients.map(([cid, s]) => `   → ${cid}: ${s.activos} activos, ${s.listos} listos p/cruce`).join('\n')}
+
+📋 <b>TRÁFICOS EN PROCESO (${enProcesoTotal})</b>
+${activosBreakdown || '   Sin tráficos en proceso'}
 
 ${blockingLines ? `🚫 <b>DOCS BLOQUEANTES (top 5)</b>\n${blockingLines}\n` : '✅ Sin documentos bloqueantes\n'}
 ${rojoLines ? `🔴 <b>SEMÁFORO ROJO</b>\n${rojoLines}\n` : ''}

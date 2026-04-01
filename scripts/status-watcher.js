@@ -136,19 +136,28 @@ async function poll() {
     console.log(`[${SCRIPT_NAME}] First run — seeding known statuses (no notifications)`)
     const { data, error } = await supabase
       .from('traficos')
-      .select('trafico, estatus, company_id, can_file')
+      .select('trafico, estatus, company_id')
       .limit(5000)
     if (error) {
       console.error(`[${SCRIPT_NAME}] Seed fetch error:`, error.message)
       return
     }
     const known = {}
-    const knownCanFile = {}
     for (const row of data) {
       known[row.trafico] = row.estatus
-      knownCanFile[row.trafico] = !!row.can_file
     }
-    saveCheckpoint({ last_checked: now, known_statuses: known, known_can_file: knownCanFile })
+    // Seed completeness from trafico_completeness view
+    const knownComplete = {}
+    const { data: tcData } = await supabase
+      .from('trafico_completeness')
+      .select('trafico_id, can_file')
+      .limit(5000)
+    if (tcData) {
+      for (const row of tcData) {
+        knownComplete[row.trafico_id] = !!row.can_file
+      }
+    }
+    saveCheckpoint({ last_checked: now, known_statuses: known, known_complete: knownComplete })
     console.log(`[${SCRIPT_NAME}] Seeded ${Object.keys(known).length} traficos`)
     return
   }
@@ -173,6 +182,7 @@ async function poll() {
   }
 
   const prefs = await getPrefs()
+  if (!cp.known_complete) cp.known_complete = {}
   let inserted = 0
   let skippedNoMap = 0
   let skippedNoPrefs = 0
@@ -182,9 +192,55 @@ async function poll() {
   for (const row of updated) {
     const prevStatus = cp.known_statuses[row.trafico]
     const curStatus = row.estatus
+    const prevComplete = cp.known_complete[row.trafico] || false
 
-    // Update known status regardless
+    // Check current completeness from trafico_completeness view
+    const { data: tcRow } = await supabase
+      .from('trafico_completeness')
+      .select('can_file')
+      .eq('trafico_id', row.trafico)
+      .single()
+    const curComplete = !!(tcRow && tcRow.can_file)
+
+    // Update known state regardless
     cp.known_statuses[row.trafico] = curStatus
+    cp.known_complete[row.trafico] = curComplete
+
+    // ── Detect docs_complete: can_file flipped false→true (score=100%) ──
+    if (curComplete && !prevComplete) {
+      const pref = prefs[row.company_id]
+      if (pref && pref.primary_email) {
+        const eventType = 'docs_complete'
+        const insertStatus = LIVE_TRIGGERS.has(eventType) ? 'pending' : 'shadow'
+        const { error: dcErr } = await supabase
+          .from('notification_events')
+          .insert({
+            trafico_id: row.trafico,
+            event_type: eventType,
+            recipient_email: pref.primary_email,
+            subject: `Documentación Completa — ${row.trafico}`,
+            template_key: 'docs_complete',
+            template_vars: {
+              trafico_number: row.trafico,
+              company_id: row.company_id,
+              estatus: curStatus,
+              descripcion_mercancia: row.descripcion_mercancia || null,
+              pedimento_number: row.pedimento || null,
+              portal_url: PORTAL_URL,
+            },
+            status: insertStatus,
+          })
+        if (!dcErr) {
+          const modeTag = insertStatus === 'pending' ? 'LIVE' : 'SHADOW'
+          console.log(`  [${modeTag}] ${row.trafico}: can_file=true → docs_complete → ${pref.primary_email}`)
+          inserted++
+        } else {
+          console.error(`  [ERR] ${row.trafico}: docs_complete insert failed — ${dcErr.message}`)
+        }
+      }
+    }
+
+    // ── Detect estatus change ──
 
     // Skip if status hasn't actually changed
     if (prevStatus === curStatus) {
@@ -215,7 +271,8 @@ async function poll() {
       continue
     }
 
-    const insertStatus = SHADOW_MODE ? 'shadow' : 'pending'
+    // 3 graduated triggers get 'pending'; everything else stays 'shadow'
+    const insertStatus = LIVE_TRIGGERS.has(mapping.event_type) ? 'pending' : 'shadow'
 
     const { error: insertErr } = await supabase
       .from('notification_events')
@@ -241,7 +298,7 @@ async function poll() {
       continue
     }
 
-    const modeTag = SHADOW_MODE ? 'SHADOW' : 'QUEUED'
+    const modeTag = insertStatus === 'pending' ? 'LIVE' : 'SHADOW'
     console.log(`  [${modeTag}] ${row.trafico}: ${prevStatus || '(new)'} → ${curStatus} → ${mapping.template_key} → ${pref.primary_email}`)
     inserted++
   }
@@ -258,7 +315,7 @@ async function poll() {
 // ── Main loop ──
 
 async function main() {
-  console.log(`[${SCRIPT_NAME}] Starting — SHADOW_MODE=${SHADOW_MODE} — polling every ${POLL_INTERVAL_MS / 1000}s`)
+  console.log(`[${SCRIPT_NAME}] Starting — SHADOW_MODE=${SHADOW_MODE} — LIVE triggers: ${[...LIVE_TRIGGERS].join(', ')} — polling every ${POLL_INTERVAL_MS / 1000}s`)
 
   // Initial poll
   try {

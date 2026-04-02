@@ -204,7 +204,7 @@ export default function SubirDocumentosPage() {
           value={selectedTrafico}
           onChange={e => setSelectedTrafico(e.target.value)}
           style={{
-            width: '100%', minHeight: 56,
+            width: '100%', minHeight: 60,
             padding: '12px 16px', fontSize: 15,
             background: 'var(--cruz-surface)',
             border: '1px solid var(--cruz-border)',
@@ -358,7 +358,7 @@ export default function SubirDocumentosPage() {
                 color: 'var(--cruz-gold)',
                 textDecoration: 'none',
                 transition: 'background 0.1s ease',
-                minHeight: 56,
+                minHeight: 60,
               }}
               onMouseEnter={e => (e.currentTarget.style.background = 'rgba(196,162,78,0.06)')}
               onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
@@ -407,7 +407,7 @@ export default function SubirDocumentosPage() {
                   onClick={() => fileInputRef.current?.click()}
                   style={{
                     display: 'inline-flex', alignItems: 'center', gap: 6,
-                    padding: '8px 16px', minHeight: 40,
+                    padding: '8px 16px', minHeight: 60,
                     fontSize: 12, fontWeight: 600,
                     background: 'rgba(196,162,78,0.10)',
                     color: 'var(--cruz-gold)',

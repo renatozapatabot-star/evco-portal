@@ -747,7 +747,7 @@ export default function TraficoDetailPage() {
                       border: '1px solid rgba(194,59,34,0.2)',
                       cursor: uploadingDoc === doc ? 'wait' : 'pointer',
                       display: 'inline-flex', alignItems: 'center', gap: 4,
-                      minHeight: 32, transition: 'background 150ms',
+                      minHeight: 60, transition: 'background 150ms',
                     }}>
                       {uploadingDoc === doc ? (
                         'Subiendo…'
@@ -791,7 +791,7 @@ export default function TraficoDetailPage() {
                   : 'var(--slate-500)'
 
                 return (
-                  <li key={step.num} style={{ display: 'flex', gap: 12, position: 'relative', paddingBottom: isLast ? 0 : 14, minHeight: 44 }}>
+                  <li key={step.num} style={{ display: 'flex', gap: 12, position: 'relative', paddingBottom: isLast ? 0 : 14, minHeight: 60 }}>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 20, flexShrink: 0 }}>
                       <div style={{
                         width: state === 'current' ? 14 : 10, height: state === 'current' ? 14 : 10,
@@ -979,7 +979,7 @@ export default function TraficoDetailPage() {
                         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                         padding: '10px 14px', background: 'var(--slate-50)',
                         borderRadius: 8, border: '1px solid #BBF7D0',
-                        minHeight: 48,
+                        minHeight: 60,
                       }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
                           <span style={{ color: '#2D8540', fontSize: 14, flexShrink: 0 }}>✅</span>
@@ -996,7 +996,7 @@ export default function TraficoDetailPage() {
                         </div>
                         {doc.file_url ? (
                           <a href={String(doc.file_url)} target="_blank" rel="noopener noreferrer"
-                            style={{ fontSize: 11, color: GOLD, fontWeight: 700, textDecoration: 'none', flexShrink: 0, minHeight: 44, display: 'flex', alignItems: 'center', paddingLeft: 8 }}>
+                            style={{ fontSize: 11, color: GOLD, fontWeight: 700, textDecoration: 'none', flexShrink: 0, minHeight: 60, display: 'flex', alignItems: 'center', paddingLeft: 8 }}>
                             Ver →
                           </a>
                         ) : null}

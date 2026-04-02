@@ -168,7 +168,7 @@ export default function MvePage() {
       {/* Table */}
       <div className="rounded-[10px] overflow-hidden" style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.06)' }}>
         <div className="overflow-x-auto">
-          <table className="data-table">
+          <table className="cruz-table">
             <thead>
               <tr>
                 <th style={{ width: 160 }}>Tráfico</th>
@@ -234,7 +234,7 @@ export default function MvePage() {
           </div>
           <div className="rounded-[10px] overflow-hidden" style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.06)' }}>
             <div className="overflow-x-auto" style={{ maxHeight: 300 }}>
-              <table className="data-table">
+              <table className="cruz-table">
                 <thead>
                   <tr>
                     <th>Tráfico</th>

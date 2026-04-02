@@ -215,7 +215,8 @@ export default function ComunicacionesPage() {
             ) : filtered.length === 0 ? (
               <div style={{ padding: 48, textAlign: 'center', color: 'var(--slate-400)', fontSize: 13 }}>Sin comunicaciones en esta vista.</div>
             ) : (
-              <table className="data-table">
+              <div style={{ overflowX: 'auto' }}>
+              <table className="cruz-table">
                 <thead>
                   <tr>
                     <th style={{ width: 30 }}></th>
@@ -246,6 +247,7 @@ export default function ComunicacionesPage() {
                   ))}
                 </tbody>
               </table>
+              </div>
             )}
           </div>
         </>

@@ -286,7 +286,7 @@ function MobileCard({ row, onNavigate }: { row: TraficoRow; onNavigate: (id: str
               display: 'flex', alignItems: 'center', gap: 4,
               padding: '8px 14px', background: '#B8953F', color: '#FFFFFF',
               border: 'none', borderRadius: 6, fontSize: 12, fontWeight: 600,
-              cursor: 'pointer', minHeight: 40, fontFamily: 'inherit',
+              cursor: 'pointer', minHeight: 60, fontFamily: 'inherit',
             }}
           >
             <Send size={12} /> Solicitar
@@ -299,7 +299,7 @@ function MobileCard({ row, onNavigate }: { row: TraficoRow; onNavigate: (id: str
             padding: '8px 14px', background: 'var(--card-bg)',
             border: '1px solid #E8E5E0', color: '#1A1A1A',
             borderRadius: 6, fontSize: 12, fontWeight: 600,
-            cursor: 'pointer', minHeight: 40, fontFamily: 'inherit',
+            cursor: 'pointer', minHeight: 60, fontFamily: 'inherit',
           }}
         >
           <Eye size={12} /> Ver
@@ -675,7 +675,7 @@ export function ExpedientesView() {
                   fontFamily: 'inherit',
                   cursor: 'pointer',
                   outline: 'none',
-                  minHeight: 36,
+                  minHeight: 60,
                 }}
               >
                 <option value="menos_completo">Menos completo</option>

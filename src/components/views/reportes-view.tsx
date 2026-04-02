@@ -314,7 +314,7 @@ export function ReportesView() {
               fontSize: 13,
               fontWeight: 500,
               cursor: 'pointer',
-              minHeight: 40,
+              minHeight: 60,
               minWidth: 180,
             }}
           >

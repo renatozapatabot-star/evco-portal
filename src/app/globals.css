@@ -1103,10 +1103,10 @@ body {
   margin-top: -8px;
 }
 
-/* Touch target minimums */
+/* Touch target minimums — 60px CRUZ standard (not 44px WCAG) */
 @media screen and (max-width: 768px) {
   .mn-tab, .btn, button, a[href] {
-    min-height: 44px;
+    min-height: 60px;
   }
 }
 
@@ -1639,8 +1639,8 @@ tr.row-odd  { background: rgba(248,250,252,0.5); }
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  min-width: 32px;
+  min-height: 32px;
   border: 1px solid var(--border-card);
   border-radius: var(--radius-sm);
   background: var(--bg-card);
@@ -1838,7 +1838,7 @@ tr.row-odd  { background: rgba(248,250,252,0.5); }
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  min-height: 48px;
+  min-height: 60px;
   transition: color 150ms, border-color 150ms;
 }
 

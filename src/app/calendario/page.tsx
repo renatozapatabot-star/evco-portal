@@ -193,7 +193,7 @@ export default function CalendarioPage() {
                   display: 'flex', alignItems: 'center', gap: 12,
                   padding: '10px 20px', textDecoration: 'none',
                   borderBottom: `1px solid rgba(48,44,35,0.4)`,
-                  minHeight: 48,
+                  minHeight: 60,
                 }}
               >
                 <span style={{
@@ -411,7 +411,7 @@ export default function CalendarioPage() {
                   display: 'flex', alignItems: 'center', gap: 12,
                   padding: '10px 20px', textDecoration: 'none',
                   borderBottom: `1px solid rgba(48,44,35,0.4)`,
-                  minHeight: 48,
+                  minHeight: 60,
                 }}
               >
                 <span style={{

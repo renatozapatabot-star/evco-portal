@@ -532,7 +532,7 @@ async function processEmail(gmail, messageId, companyId) {
       draft_data: draftData,
       status: confidence.tier === 1 ? 'pending' : 'draft',
       created_by: 'CRUZ',
-      company_id: companyId,
+      // company_id removed — column does not exist in pedimento_drafts
     })
     .select('id')
     .single()
@@ -645,7 +645,7 @@ async function runDryRun(companyId) {
       draft_data: draftData,
       status: 'draft',
       created_by: 'CRUZ',
-      company_id: companyId,
+      // company_id removed — column does not exist in pedimento_drafts
     })
     .select('id')
     .single()

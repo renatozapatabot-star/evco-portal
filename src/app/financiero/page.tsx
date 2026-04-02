@@ -230,7 +230,7 @@ export default function FinancieroPage() {
                 padding: '8px 12px',
                 fontSize: 14,
                 fontFamily: D.sans,
-                minHeight: 40,
+                minHeight: 60,
               }}
             >
               <option value="">Todos los clientes</option>
@@ -304,9 +304,9 @@ export default function FinancieroPage() {
                   color: D.text,
                   padding: '8px 12px 8px 34px',
                   fontSize: 14,
-                  width: 300,
+                  width: '100%', maxWidth: 300,
                   fontFamily: D.sans,
-                  minHeight: 40,
+                  minHeight: 60,
                 }}
               />
             </div>
@@ -404,7 +404,7 @@ export default function FinancieroPage() {
                         padding: '6px 12px',
                         cursor: page === 0 ? 'not-allowed' : 'pointer',
                         display: 'flex', alignItems: 'center', gap: 4,
-                        minHeight: 36, minWidth: 36,
+                        minHeight: 60, minWidth: 60,
                       }}
                     >
                       <ChevronLeft size={16} /> Anterior
@@ -420,7 +420,7 @@ export default function FinancieroPage() {
                         padding: '6px 12px',
                         cursor: page >= totalPages - 1 ? 'not-allowed' : 'pointer',
                         display: 'flex', alignItems: 'center', gap: 4,
-                        minHeight: 36, minWidth: 36,
+                        minHeight: 60, minWidth: 60,
                       }}
                     >
                       Siguiente <ChevronRight size={16} />

@@ -1,7 +1,10 @@
+'use client'
+
 import { GOLD } from '@/lib/design-system'
-import { CLIENT_NAME } from '@/lib/client-config'
+import { getClientNameCookie } from '@/lib/client-config'
 
 export default function DemoPage() {
+  const clientName = getClientNameCookie()
   return (
     <div style={{ minHeight: '100vh', background: '#09090C', color: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-geist-sans)', padding: 40 }}>
       <div style={{ width: 56, height: 56, borderRadius: 12, background: 'rgba(201,168,76,0.1)', border: '1.5px solid rgba(201,168,76,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24 }}>
@@ -32,7 +35,7 @@ export default function DemoPage() {
 
       <div style={{ display: 'flex', gap: 16, marginBottom: 40 }}>
         {[
-          { label: `Portal ${CLIENT_NAME.split(' ')[0]}`, href: '/', desc: 'Client-facing portal' },
+          { label: `Portal ${clientName.split(' ')[0]}`, href: '/', desc: 'Client-facing portal' },
           { label: 'CRUZ Dashboard', href: '/cruz', desc: 'Internal ops view' },
           { label: 'System Status', href: '/status', desc: 'Health monitoring' },
         ].map(l => (

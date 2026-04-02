@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { CLIENT_CLAVE, COMPANY_ID } from '@/lib/client-config'
+import { getClientClaveCookie, getCompanyIdCookie } from '@/lib/client-config'
 import { GOLD } from '@/lib/design-system'
 import { fmtDateTimeLocal } from '@/lib/format-utils'
 import { useStatusSentence } from '@/hooks/use-status-sentence'
@@ -14,8 +14,9 @@ export default function WarRoom() {
 
   useEffect(() => {
     const load = async () => {
+      const companyId = getCompanyIdCookie()
       const [trafRes, bridgeRes, compRes, riskRes] = await Promise.all([
-        fetch(`/api/data?table=traficos&company_id=${COMPANY_ID}&limit=2000`).then(r => r.json()).catch(() => ({ data: [] })),
+        fetch(`/api/data?table=traficos&company_id=${companyId}&limit=2000`).then(r => r.json()).catch(() => ({ data: [] })),
         fetch('/api/data?table=bridge_intelligence&limit=50&order_by=updated_at&order_dir=desc').then(r => r.json()).catch(() => ({ data: [] })),
         fetch('/api/data?table=compliance_predictions&limit=50').then(r => r.json()).catch(() => ({ data: [] })),
         fetch('/api/data?table=pedimento_risk_scores&limit=50&order_by=overall_score&order_dir=desc').then(r => r.json()).catch(() => ({ data: [] })),
@@ -49,7 +50,7 @@ export default function WarRoom() {
       {/* Header */}
       <div style={{ padding: '12px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1A1A1A' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{ width: 10, height: 10, borderRadius: '50%', background: urgentes > 5 ? '#DC2626' : '#16A34A', animation: 'pulse 2s infinite' }} />
+          <div style={{ width: 10, height: 10, borderRadius: '50%', background: urgentes > 5 ? 'var(--danger-500)' : '#16A34A', animation: 'pulse 2s infinite' }} />
           <span style={{ fontSize: 16, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase' }}>WAR ROOM — CRUZ</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
@@ -68,7 +69,7 @@ export default function WarRoom() {
           </div>
           {data?.enProceso?.slice(0, 15).map((t: any) => {
             const days = t.fecha_llegada ? Math.floor((Date.now() - new Date(t.fecha_llegada).getTime()) / 86400000) : 0
-            const color = days > 14 ? '#DC2626' : days > 7 ? '#D97706' : '#16A34A'
+            const color = days > 14 ? 'var(--danger-500)' : days > 7 ? '#D97706' : '#16A34A'
             return (
               <div key={t.trafico} style={{ padding: '6px 0', borderBottom: '1px solid #1A1A1A', display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
                 <span style={{ fontFamily: 'var(--font-jetbrains-mono)', fontWeight: 600 }}>{t.trafico}</span>
@@ -92,7 +93,7 @@ export default function WarRoom() {
                   <span style={{ fontFamily: 'var(--font-jetbrains-mono)', color: GOLD }}>{Math.round(b.avg * 60)}min</span>
                 </div>
                 <div style={{ height: 6, background: '#1A1A1A', borderRadius: 3, overflow: 'hidden' }}>
-                  <div style={{ width: `${pct}%`, height: '100%', borderRadius: 3, background: pct > 66 ? '#DC2626' : pct > 33 ? '#D97706' : '#16A34A' }} />
+                  <div style={{ width: `${pct}%`, height: '100%', borderRadius: 3, background: pct > 66 ? 'var(--danger-500)' : pct > 33 ? '#D97706' : '#16A34A' }} />
                 </div>
               </div>
             )
@@ -106,9 +107,9 @@ export default function WarRoom() {
             Acción Inmediata
           </div>
           {[
-            { icon: '🚨', label: 'MVE pendientes', value: data?.mveCount || 0, color: '#DC2626' },
+            { icon: '🚨', label: 'MVE pendientes', value: data?.mveCount || 0, color: 'var(--danger-500)' },
             { icon: '📄', label: 'Sin pedimento', value: data?.noPedimento || 0, color: '#D97706' },
-            { icon: '⚠️', label: 'Alertas críticas', value: data?.critical || 0, color: '#DC2626' },
+            { icon: '⚠️', label: 'Alertas críticas', value: data?.critical || 0, color: 'var(--danger-500)' },
             { icon: '🔴', label: 'Riesgo alto', value: data?.risks?.length || 0, color: '#D97706' },
           ].map(item => (
             <div key={item.label} style={{ padding: '10px 0', borderBottom: '1px solid #1A1A1A', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

@@ -67,7 +67,7 @@ export default async function OperacionesPage() {
     if (!status) return '#666'
     if (status === 'success') return '#16A34A'
     if (status === 'running') return '#D97706'
-    return '#DC2626'
+    return 'var(--danger-500)'
   }
 
   return (
@@ -76,7 +76,7 @@ export default async function OperacionesPage() {
         <h1 style={{ fontSize: 22, fontWeight: 800, margin: 0 }}>Operaciones Autónomas</h1>
         <p style={{ color: '#666', fontSize: 13, margin: '4px 0 0' }}>
           CRUZ se observa solo &middot; {now} CST &middot;
-          <span style={{ color: allHealthy ? '#16A34A' : '#DC2626', fontWeight: 700, marginLeft: 6 }}>
+          <span style={{ color: allHealthy ? '#16A34A' : 'var(--danger-500)', fontWeight: 700, marginLeft: 6 }}>
             {allHealthy ? 'Todos los flujos activos' : 'Requiere atención'}
           </span>
         </p>
@@ -86,7 +86,7 @@ export default async function OperacionesPage() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 24 }}>
         {sourceData.map(src => (
           <div key={src.key} style={{
-            background: '#161616', border: '1px solid #2A2A2A', borderRadius: 12,
+            background: 'var(--navy-900)', border: '1px solid #2A2A2A', borderRadius: 12,
             padding: 16, borderTop: `3px solid ${statusColor(src.last?.status)}`
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
@@ -114,7 +114,7 @@ export default async function OperacionesPage() {
             </div>
 
             {src.last?.error_message && (
-              <div style={{ fontSize: 11, color: '#DC2626', marginTop: 4, lineHeight: 1.3 }}>
+              <div style={{ fontSize: 11, color: 'var(--danger-500)', marginTop: 4, lineHeight: 1.3 }}>
                 {src.last.error_message.substring(0, 60)}
               </div>
             )}
@@ -124,7 +124,7 @@ export default async function OperacionesPage() {
 
       {/* Recent Activity Feed */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-        <div style={{ background: '#161616', border: '1px solid #2A2A2A', borderRadius: 12, overflow: 'hidden' }}>
+        <div style={{ background: 'var(--navy-900)', border: '1px solid #2A2A2A', borderRadius: 12, overflow: 'hidden' }}>
           <div style={{ padding: '14px 16px', borderBottom: '1px solid #2A2A2A' }}>
             <h2 style={{ fontSize: 14, fontWeight: 700, margin: 0, color: '#9C9690', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               Últimas Ejecuciones
@@ -154,7 +154,7 @@ export default async function OperacionesPage() {
           </div>
         </div>
 
-        <div style={{ background: '#161616', border: '1px solid #2A2A2A', borderRadius: 12, overflow: 'hidden' }}>
+        <div style={{ background: 'var(--navy-900)', border: '1px solid #2A2A2A', borderRadius: 12, overflow: 'hidden' }}>
           <div style={{ padding: '14px 16px', borderBottom: '1px solid #2A2A2A' }}>
             <h2 style={{ fontSize: 14, fontWeight: 700, margin: 0, color: '#9C9690', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               Cambios de Estado (2h)
@@ -171,7 +171,7 @@ export default async function OperacionesPage() {
                 <div>
                   <span style={{ fontSize: 13, fontWeight: 600, fontFamily: 'var(--font-jetbrains-mono)' }}>{c.trafico}</span>
                   <span style={{ fontSize: 12, marginLeft: 8,
-                    color: c.estatus === 'Cruzado' ? '#16A34A' : c.estatus === 'Detenido' ? '#DC2626' : '#D97706'
+                    color: c.estatus === 'Cruzado' ? '#16A34A' : c.estatus === 'Detenido' ? 'var(--danger-500)' : '#D97706'
                   }}>{c.estatus}</span>
                 </div>
                 <span style={{ fontSize: 11, color: '#666', fontFamily: 'var(--font-jetbrains-mono)' }}>

@@ -1,193 +1,142 @@
-const { createClient } = require('@supabase/supabase-js')
-const { extractWithQwen, isOllamaRunning } = require('./qwen-extract')
 require('dotenv').config({ path: '.env.local' })
+const { createClient } = require('@supabase/supabase-js')
+
+const SCRIPT_NAME = 'supplier-intelligence'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 )
 
-const CLIENT_CLAVE = '9254'
-const MODEL = 'qwen3:8b'
+async function sendTelegram(msg) {
+  if (!process.env.TELEGRAM_TOKEN || process.env.TELEGRAM_SILENT === 'true') return
+  try {
+    await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: process.env.TELEGRAM_CHAT_ID,
+        text: msg,
+        parse_mode: 'Markdown'
+      })
+    })
+  } catch (err) {
+    console.error('Telegram send failed:', err.message)
+  }
+}
 
 async function run() {
-  console.log('🏭 Supplier Intelligence — risk scoring & pattern analysis')
+  console.log('🏭 Supplier Intelligence — pure analytics, no AI')
 
-  const ollamaUp = await isOllamaRunning()
-  if (!ollamaUp) { console.log('⚠️ Ollama not running'); return }
-
-  // Get all traficos with supplier info
-  const { data: traficos } = await supabase
+  // 1. Query traficos for EVCO
+  // EVCO-specific — not a multi-client pattern
+  const { data: traficos, error: fetchError } = await supabase
     .from('traficos')
-    .select(`
-      id,
-      trafico_number,
-      created_at,
-      fecha_llegada,
-      fecha_salida,
-      clave_cliente,
-      proveedor,
-      proveedor_nombre,
-      documentos,
-      status,
-      importe_usd,
-      tmec_applied
-    `)
-    .eq('clave_cliente', CLIENT_CLAVE)
-    .order('created_at', { ascending: false })
+    .select('trafico, descripcion_mercancia, proveedores, fecha_llegada, importe_total, estatus, fecha_cruce, company_id')
+    .eq('company_id', 'evco')
+    .order('fecha_llegada', { ascending: false })
+
+  if (fetchError) throw new Error(`Failed to fetch traficos: ${fetchError.message}`)
 
   if (!traficos?.length) {
-    console.log('⚠️ No traficos found for analysis')
+    console.log('⚠️ No traficos found for company_id=evco')
     return
   }
 
-  // Group by supplier
+  console.log(`📦 ${traficos.length} traficos loaded`)
+
+  // 2. Group by proveedores field
   const supplierMap = {}
   for (const t of traficos) {
-    const supplierName = t.proveedor || t.proveedor_nombre || 'Unknown'
-    if (!supplierMap[supplierName]) {
-      supplierMap[supplierName] = {
+    const supplier = t.proveedores || 'Desconocido'
+    if (!supplierMap[supplier]) {
+      supplierMap[supplier] = {
         ops: 0,
         totalValue: 0,
-        tmecOps: 0,
-        docTurnaround: [],
-        missingDocs: {},
+        crossingTimes: [],
         statuses: {}
       }
     }
-    const s = supplierMap[supplierName]
+    const s = supplierMap[supplier]
     s.ops++
-    s.totalValue += t.importe_usd || 0
-    if (t.tmec_applied) s.tmecOps++
+    s.totalValue += t.importe_total || 0
 
-    // Calculate document turnaround time
-    if (t.created_at && t.fecha_llegada) {
-      const turnaround = (new Date(t.fecha_llegada) - new Date(t.created_at)) / (1000 * 60 * 60) // hours
-      s.docTurnaround.push(turnaround)
+    // 4. Crossing time: fecha_cruce - fecha_llegada (in hours)
+    if (t.fecha_cruce && t.fecha_llegada) {
+      const hours = (new Date(t.fecha_cruce) - new Date(t.fecha_llegada)) / (1000 * 60 * 60)
+      if (hours > 0) s.crossingTimes.push(hours)
     }
 
-    // Track missing documents
-    if (t.documentos) {
-      const docs = Array.isArray(t.documentos) ? t.documentos : []
-      const expectedDocs = ['factura', 'packing_list', 'bill_of_lading', 'certificado_origen']
-      for (const doc of expectedDocs) {
-        if (!docs.some(d => d.toLowerCase().includes(doc))) {
-          s.missingDocs[doc] = (s.missingDocs[doc] || 0) + 1
-        }
-      }
-    }
-
-    // Track status patterns
-    s.statuses[t.status] = (s.statuses[t.status] || 0) + 1
+    // Track status distribution
+    const status = t.estatus || 'sin_estatus'
+    s.statuses[status] = (s.statuses[status] || 0) + 1
   }
 
-  // Calculate metrics for each supplier
-  const supplierMetrics = []
+  // 3 & 4. Calculate metrics per supplier
+  const metrics = []
   for (const [name, data] of Object.entries(supplierMap)) {
-    const avgTurnaround = data.docTurnaround.length > 0
-      ? data.docTurnaround.reduce((a, b) => a + b, 0) / data.docTurnaround.length
+    const avgValue = data.ops > 0 ? data.totalValue / data.ops : 0
+    const avgCrossingHours = data.crossingTimes.length > 0
+      ? data.crossingTimes.reduce((a, b) => a + b, 0) / data.crossingTimes.length
       : null
 
-    const mostCommonMissing = Object.entries(data.missingDocs)
-      .sort((a, b) => b[1] - a[1])[0]
-      ? { doc: Object.entries(data.missingDocs).sort((a, b) => b[1] - a[1])[0][0], count: Object.entries(data.missingDocs).sort((a, b) => b[1] - a[1])[0][1] }
-      : null
-
-    const tmecRate = data.ops > 0 ? (data.tmecOps / data.ops * 100).toFixed(1) : 0
-
-    supplierMetrics.push({
-      name,
-      ops: data.ops,
-      avgTurnaround,
-      mostCommonMissing,
-      avgValue: data.totalValue / data.ops,
-      tmecRate,
-      statusDistribution: data.statuses
+    metrics.push({
+      supplier_name: name,
+      total_ops: data.ops,
+      avg_shipment_value: Math.round(avgValue * 100) / 100,
+      avg_crossing_hours: avgCrossingHours ? Math.round(avgCrossingHours * 10) / 10 : null,
+      status_distribution: data.statuses,
+      last_analyzed: new Date().toISOString()
     })
   }
 
-  // Analyze patterns with Qwen
-  const ANALYSIS_PROMPT = `You are a customs compliance expert analyzing supplier performance patterns.
-Given this supplier data, return a JSON analysis:
-{
-  "performance_trend": "improving" | "stable" | "degrading",
-  "key_issues": ["list of top 3 issues"],
-  "pre_request_docs": ["list of documents to pre-request"],
-  "risk_level": "low" | "medium" | "high",
-  "action_items": ["list of recommended actions"]
-}
-Return JSON only.`
+  // Sort by ops descending
+  metrics.sort((a, b) => b.total_ops - a.total_ops)
 
-  const insights = []
-  for (const metric of supplierMetrics) {
-    const profile = `
-Supplier: ${metric.name}
-Operations: ${metric.ops}
-Avg document turnaround: ${metric.avgTurnaround ? metric.avgTurnaround.toFixed(1) + ' hours' : 'N/A'}
-Avg shipment value: $${Math.round(metric.avgValue).toLocaleString()} USD
-T-MEC usage: ${metric.tmecRate}%
-Most common missing docs: ${metric.mostCommonMissing ? `${metric.mostCommonMissing.doc} (${metric.mostCommonMissing.count} times)` : 'None'}
-Status distribution: ${JSON.stringify(metric.statusDistribution)}
-`
-    const analysis = await extractWithQwen(profile, ANALYSIS_PROMPT)
-    if (analysis) {
-      insights.push({ ...metric, analysis })
-    }
+  // Print results
+  console.log(`\n📊 ${metrics.length} suppliers found:\n`)
+  for (const m of metrics) {
+    const crossing = m.avg_crossing_hours ? `${m.avg_crossing_hours}h avg crossing` : 'no crossing data'
+    console.log(`  ${m.supplier_name}: ${m.total_ops} ops · $${m.avg_shipment_value.toLocaleString()} avg · ${crossing}`)
   }
 
-  // Write to supplier_intelligence table
-  const insertData = insights.map(i => ({
-    supplier_name: i.name,
-    total_ops: i.ops,
-    avg_turnaround_hours: i.avgTurnaround,
-    avg_shipment_value: i.avgValue,
-    tmec_usage_rate: parseFloat(i.tmecRate),
-    most_common_missing_doc: i.mostCommonMissing?.doc || null,
-    missing_doc_count: i.mostCommonMissing?.count || 0,
-    performance_trend: i.analysis?.performance_trend || 'stable',
-    key_issues: i.analysis?.key_issues || [],
-    pre_request_docs: i.analysis?.pre_request_docs || [],
-    risk_level: i.analysis?.risk_level || 'low',
-    action_items: i.analysis?.action_items || [],
-    last_analyzed: new Date().toISOString()
-  }))
-
-  const { error: insertError } = await supabase
+  // 5. Upsert to supplier_intelligence table
+  const { error: upsertError } = await supabase
     .from('supplier_intelligence')
-    .upsert(insertData, { onConflict: 'supplier_name' })
+    .upsert(metrics, { onConflict: 'supplier_name' })
 
-  if (insertError) {
-    console.error('❌ Error writing to supplier_intelligence:', insertError)
-  } else {
-    console.log(`✅ Supplier intelligence: ${insights.length} suppliers analyzed`)
+  if (upsertError) {
+    console.error('❌ Upsert error:', upsertError.message)
+    throw new Error(`Upsert failed: ${upsertError.message}`)
   }
 
-  // Flag suppliers with degrading performance
-  const degradingSuppliers = insights.filter(i => i.analysis?.performance_trend === 'degrading')
-  if (degradingSuppliers.length > 0) {
-    const notificationMsg = `⚠️ ${degradingSuppliers.length} supplier(s) showing degrading performance:\n\n` +
-      degradingSuppliers.map(s => `• ${s.name}: ${s.analysis?.key_issues?.join(', ')}`).join('\n')
+  console.log(`\n✅ ${metrics.length} suppliers upserted to supplier_intelligence`)
 
-    console.log(notificationMsg)
-    // Send notification via Telegram if configured
-    if (process.env.TELEGRAM_TOKEN) {
-      try {
-        await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN}/sendMessage`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            chat_id: process.env.TELEGRAM_CHAT_ID,
-            text: notificationMsg,
-            parse_mode: 'Markdown'
-          })
-        })
-        console.log('📱 Notification sent to Telegram')
-      } catch (err) {
-        console.error('❌ Failed to send notification:', err.message)
-      }
-    }
-  }
+  await supabase.from('heartbeat_log').insert({
+    script: SCRIPT_NAME,
+    status: 'success',
+    details: `${metrics.length} suppliers analyzed from ${traficos.length} traficos`,
+    created_at: new Date().toISOString()
+  })
 }
 
 module.exports = { run }
-run().catch(console.error)
+
+run()
+  .then(() => {
+    console.log('🏁 Done')
+    process.exit(0)
+  })
+  .catch(async (err) => {
+    console.error(`🔴 ${SCRIPT_NAME} failed:`, err.message)
+    try {
+      await supabase.from('heartbeat_log').insert({
+        script: SCRIPT_NAME,
+        status: 'failed',
+        details: err.message,
+        created_at: new Date().toISOString()
+      })
+    } catch (_) { /* best effort */ }
+    await sendTelegram(`🔴 ${SCRIPT_NAME} failed: ${err.message}`)
+    process.exit(1)
+  })

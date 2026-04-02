@@ -44,7 +44,7 @@ export async function getExchangeRate(): Promise<{ rate: number; date: string; s
     .single()
 
   if (!data?.value?.rate) {
-    return { rate: 17.49, date: new Date().toISOString().split('T')[0], source: 'fallback' }
+    throw new Error('Exchange rate not found in system_config — update banxico_exchange_rate')
   }
 
   return {

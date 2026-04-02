@@ -55,7 +55,12 @@ export function SearchBar() {
   }
 
   function handleSelect(result: SearchResult) {
-    router.push(`/${result.view}`)
+    const href = result.type === 'trafico'
+      ? `/traficos/${encodeURIComponent(result.id)}`
+      : result.type === 'entrada'
+        ? `/entradas/${encodeURIComponent(result.id)}`
+        : `/${result.view}`
+    router.push(href)
     setQuery('')
     setOpen(false)
     setSelected(-1)
@@ -75,7 +80,7 @@ export function SearchBar() {
           onKeyDown={handleKey}
           onFocus={() => results.length > 0 && setOpen(true)}
           onBlur={() => setTimeout(() => setOpen(false), 150)}
-          placeholder="Buscar tráfico, pedimento, proveedor..."
+          placeholder="Buscar tráfico... (⌘K)"
           style={{ paddingLeft: 32, paddingRight: loading ? 32 : 12, height: 32,
             border: `1px solid ${T.border}`, borderRadius: 7, background: T.surface,
             color: T.text, fontSize: 12, outline: 'none', width: 280, fontFamily: 'inherit',

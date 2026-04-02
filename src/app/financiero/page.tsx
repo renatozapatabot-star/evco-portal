@@ -99,10 +99,11 @@ export default function FinancieroPage() {
 
     const isInternal = role === 'broker' || role === 'admin'
     const claveParam = isInternal ? '' : `&clave_cliente=${companyClave}`
+    const companyParam = isInternal ? '' : `&company_id=${companyId}`
 
     // Fetch traficos, facturas, tipo de cambio in parallel
     Promise.all([
-      fetch(`/api/data?table=traficos${claveParam}&limit=5000&order_by=importe_total&order_dir=desc`)
+      fetch(`/api/data?table=traficos${companyParam}&limit=5000&order_by=importe_total&order_dir=desc`)
         .then(r => r.json()).catch(() => ({ data: [] })),
       fetch(`/api/data?table=aduanet_facturas${claveParam}&limit=5000&order_by=fecha_pago&order_dir=desc`)
         .then(r => r.json()).catch(() => ({ data: [] })),

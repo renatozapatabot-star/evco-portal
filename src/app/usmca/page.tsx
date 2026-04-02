@@ -55,6 +55,7 @@ const PAGE_SIZE = 50
 export default function USMCAPage() {
   const [role, setRole] = useState('')
   const [companyClave, setCompanyClave] = useState('')
+  const [companyId, setCompanyId] = useState('')
 
   const [traficos, setTraficos] = useState<TraficoRow[]>([])
   const [loading, setLoading] = useState(true)
@@ -70,20 +71,22 @@ export default function USMCAPage() {
   useEffect(() => {
     const r = getCookieValue('user_role') || 'client'
     const clave = getCookieValue('company_clave') || ''
+    const cid = getCookieValue('company_id') || ''
     setRole(r)
     setCompanyClave(clave)
+    setCompanyId(cid)
   }, [])
 
   useEffect(() => {
     if (!role) return
     const isInternal = role === 'broker' || role === 'admin'
-    const claveParam = isInternal ? '' : `&clave_cliente=${companyClave}`
+    const companyParam = isInternal ? '' : `&company_id=${companyId}`
 
-    fetch(`/api/data?table=traficos${claveParam}&limit=5000&order_by=importe_total&order_dir=desc`)
+    fetch(`/api/data?table=traficos${companyParam}&limit=5000&order_by=importe_total&order_dir=desc`)
       .then(r => r.json())
       .then(d => { setTraficos(d.data ?? []); setLoading(false) })
       .catch(() => { setTraficos([]); setLoading(false) })
-  }, [role, companyClave])
+  }, [role, companyId])
 
   const isInternal = role === 'broker' || role === 'admin'
 

@@ -7,7 +7,7 @@ const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env
 const MAX_HOURS = 72 // Outlier filter: crossings > 72h are data anomalies
 
 export async function GET(request: NextRequest) {
-  const companyId = request.cookies.get('company_id')?.value ?? 'evco'
+  const companyId = request.cookies.get('company_id')?.value ?? ''
   // Get historical crossing times using REAL fecha_cruce column
   const { data: cruzados } = await supabase.from('traficos')
     .select('trafico, transportista_extranjero, fecha_llegada, fecha_cruce, estatus')

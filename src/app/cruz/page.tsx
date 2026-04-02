@@ -5,8 +5,9 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Send, ArrowRight, Mic, Volume2, ThumbsUp, ThumbsDown, ChevronRight, Square, X, AlertTriangle, Clock, FileText } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
+import DOMPurify from 'dompurify'
 import { GOLD, GOLD_GRADIENT } from '@/lib/design-system'
-import { CLIENT_CLAVE, COMPANY_ID } from '@/lib/client-config'
+import { getClientClaveCookie, getCompanyIdCookie } from '@/lib/client-config'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useStatusSentence } from '@/hooks/use-status-sentence'
 import { getMostActionableChips, PriorityChip } from '@/lib/cruz-priority'
@@ -45,7 +46,7 @@ function buildDynamicPrompts(statusData: any): string[] {
 // Warm cream theme — AI bubbles dark, everything else light
 const D = {
   bg: '#F7F6F3',
-  surface: '#FFFFFF',
+  surface: 'var(--card-bg)',
   border: '#E8E5E0',
   text: '#1A1A18',
   textMuted: '#9C9890',
@@ -90,8 +91,10 @@ export default function CruzChatPage() {
 
   // Proactive briefing fetch
   useEffect(() => {
+    const companyId = getCompanyIdCookie()
+    const clientClave = getClientClaveCookie()
     Promise.all([
-      fetch(`/api/data?table=traficos&company_id=${COMPANY_ID}&trafico_prefix=${CLIENT_CLAVE}-&limit=1000`).then(r => r.json()),
+      fetch(`/api/data?table=traficos&company_id=${companyId}&limit=1000`).then(r => r.json()),
       fetch('/api/cruz-alerts').then(r => r.json()).catch(() => ({ alerts: [] })),
     ]).then(([trafData, alertData]) => {
       const traficos = trafData.data ?? []
@@ -271,8 +274,9 @@ export default function CruzChatPage() {
   }
 
   const linkifyEntities = (text: string): React.ReactNode[] => {
-    const traficoPattern = new RegExp(`(${CLIENT_CLAVE}-[A-Z]\\d{4}|[67]\\d{6})`, 'g')
-    const traficoTest = new RegExp(`^${CLIENT_CLAVE}-[A-Z]\\d{4}$`)
+    const clave = getClientClaveCookie()
+    const traficoPattern = new RegExp(`(${clave}-[A-Z]\\d{4}|[67]\\d{6})`, 'g')
+    const traficoTest = new RegExp(`^${clave}-[A-Z]\\d{4}$`)
     const parts = text.split(traficoPattern)
     return parts.map((part, i) => {
       if (traficoTest.test(part))
@@ -421,7 +425,7 @@ export default function CruzChatPage() {
                           code: ({ children }) => <code style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85em', background: 'rgba(255,255,255,0.1)', padding: '2px 5px', borderRadius: 4 }}>{children}</code>,
                         }}
                       >
-                        {msg.content}
+                        {typeof window !== 'undefined' ? DOMPurify.sanitize(msg.content) : msg.content}
                       </ReactMarkdown>
                     </div>
                   )}
@@ -438,7 +442,7 @@ export default function CruzChatPage() {
                     <div style={{ display: 'flex', gap: 4, marginTop: 8, opacity: 0.4 }}>
                       <button onClick={() => speak(msg.content)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: D.aiText, padding: 4 }}><Volume2 size={13} /></button>
                       <button onClick={() => saveFeedback(msg.id, true)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: msg.feedback === true ? '#16A34A' : D.aiText, padding: 4 }}><ThumbsUp size={13} /></button>
-                      <button onClick={() => saveFeedback(msg.id, false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: msg.feedback === false ? '#DC2626' : D.aiText, padding: 4 }}><ThumbsDown size={13} /></button>
+                      <button onClick={() => saveFeedback(msg.id, false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: msg.feedback === false ? 'var(--danger-500)' : D.aiText, padding: 4 }}><ThumbsDown size={13} /></button>
                     </div>
                   )}
                 </div>

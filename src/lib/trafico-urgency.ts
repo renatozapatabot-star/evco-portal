@@ -40,7 +40,7 @@ export function getTraficoUrgency(t: {
   }
 
   if (days > 7) {
-    return { class: 'overdue', label: 'Retrasado', color: '#DC2626', bgColor: '#FEF2F2',
+    return { class: 'overdue', label: 'Retrasado', color: 'var(--danger-500)', bgColor: '#FEF2F2',
       action: 'Seguimiento necesario', days }
   }
 

@@ -7,6 +7,11 @@ interface EmptyStateProps {
   cta?: { label: string; href: string }
 }
 
+/**
+ * v2 EmptyState — light theme, centered, with optional CTA.
+ * Icon at 48px in slate-300, title in text-title slate-600,
+ * description in text-body slate-400.
+ */
 export function EmptyState({ icon, title, description, cta }: EmptyStateProps) {
   return (
     <div style={{
@@ -14,25 +19,31 @@ export function EmptyState({ icon, title, description, cta }: EmptyStateProps) {
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
-      background: '#252219',
-      borderRadius: 12,
       padding: '48px 32px',
       textAlign: 'center',
     }}>
-      <div style={{ fontSize: 48, lineHeight: 1, marginBottom: 16 }}>{icon}</div>
+      <div style={{
+        width: 48, height: 48, borderRadius: '50%',
+        background: 'var(--slate-100)', display: 'flex',
+        alignItems: 'center', justifyContent: 'center',
+        fontSize: 24, marginBottom: 16, color: 'var(--slate-400)',
+      }}>
+        {icon}
+      </div>
       <h3 style={{
-        fontSize: 16,
-        fontWeight: 700,
-        color: '#F5F0E8',
+        fontSize: 'var(--text-title)',
+        fontWeight: 600,
+        color: 'var(--slate-600)',
         margin: '0 0 8px',
+        lineHeight: 1.3,
       }}>
         {title}
       </h3>
       <p style={{
-        fontSize: 14,
-        color: '#A09882',
+        fontSize: 'var(--text-body)',
+        color: 'var(--slate-400)',
         margin: 0,
-        maxWidth: 320,
+        maxWidth: 360,
         lineHeight: 1.5,
       }}>
         {description}
@@ -43,9 +54,9 @@ export function EmptyState({ icon, title, description, cta }: EmptyStateProps) {
           style={{
             marginTop: 20,
             display: 'inline-block',
-            background: '#B8953F',
-            color: '#FFFFFF',
-            borderRadius: 6,
+            background: 'var(--gold-400)',
+            color: 'var(--navy-900)',
+            borderRadius: 'var(--radius-md)',
             padding: '10px 20px',
             fontSize: 14,
             fontWeight: 600,

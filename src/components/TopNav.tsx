@@ -123,7 +123,7 @@ export function TopNav() {
                 <span style={{
                   position: 'absolute', top: -2, right: -4,
                   width: 14, height: 14, borderRadius: '50%',
-                  background: '#DC2626', color: '#FFFFFF',
+                  background: 'var(--danger-500)', color: '#FFFFFF',
                   fontSize: 8, fontWeight: 800, lineHeight: '14px', textAlign: 'center',
                   border: '2px solid #1A1814',
                 }}>

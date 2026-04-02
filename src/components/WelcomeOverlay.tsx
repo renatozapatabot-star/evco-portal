@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { CLIENT_CLAVE, COMPANY_ID } from '@/lib/client-config'
+import { getClientClaveCookie, getCompanyIdCookie } from '@/lib/client-config'
 import { Z_RED } from '@/lib/design-system'
 
 interface WelcomeData {
@@ -27,9 +27,11 @@ export function WelcomeOverlay() {
     const firstLogin = !localStorage.getItem('cruz_first_visit')
     if (!firstLogin) return
 
+    const clientClave = getClientClaveCookie()
+    const companyId = getCompanyIdCookie()
     // Load summary data
     Promise.all([
-      fetch(`/api/data?table=traficos&company_id=${COMPANY_ID}&trafico_prefix=${CLIENT_CLAVE}-&limit=1000&order_by=fecha_llegada&order_dir=desc`).then(r => r.json()).catch(() => ({ data: [] })),
+      fetch(`/api/data?table=traficos&company_id=${companyId}&limit=1000&order_by=fecha_llegada&order_dir=desc`).then(r => r.json()).catch(() => ({ data: [] })),
       fetch('/api/data?table=client_benchmarks&limit=10').then(r => r.json()).catch(() => ({ data: [] })),
       fetch('/api/data?table=compliance_predictions&limit=50').then(r => r.json()).catch(() => ({ data: [] })),
     ]).then(([trafRes, benchRes, compRes]) => {

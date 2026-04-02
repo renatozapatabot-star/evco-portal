@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { PORTAL_URL } from '@/lib/client-config'
 import { PORTAL_DATE_FROM } from '@/lib/data'
-import { getIVARate } from '@/lib/rates'
+import { getDTARates, getIVARate } from '@/lib/rates'
 
 // In-memory rate limiting — 20 queries per session per hour
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>()
@@ -453,7 +453,11 @@ async function executeTool(name: string, input: any, clientCtx: { companyId: str
         const value = input.value_usd || 0
         const tc = input.exchange_rate || 17.50
         const valueMXN = value * tc
-        const dta = valueMXN * 0.008
+        let dtaRates
+        try { dtaRates = await getDTARates() } catch {
+          return JSON.stringify({ error: 'No se pudo calcular — tasas DTA no disponibles en system_config' })
+        }
+        const dta = valueMXN * dtaRates.A1.rate
         const igi = input.tmec ? 0 : valueMXN * 0.05
         const ivaRate = await getIVARate()
         const iva = (valueMXN + dta + igi) * ivaRate
@@ -765,10 +769,10 @@ async function executeTool(name: string, input: any, clientCtx: { companyId: str
 
 export async function POST(req: NextRequest) {
   const startTime = Date.now()
-  const companyId = req.cookies.get('company_id')?.value ?? 'evco'
-  const clientClave = req.cookies.get('company_clave')?.value ?? 'evco'
+  const companyId = req.cookies.get('company_id')?.value ?? ''
+  const clientClave = req.cookies.get('company_clave')?.value ?? ''
   const rawClientName = req.cookies.get('company_name')?.value
-  const clientName = rawClientName ? decodeURIComponent(rawClientName) : 'EVCO Plastics de México'
+  const clientName = rawClientName ? decodeURIComponent(rawClientName) : ''
   try {
     const body = await req.json()
     const { messages, context, sessionId } = body

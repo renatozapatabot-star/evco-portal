@@ -34,7 +34,7 @@ const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN
 const TELEGRAM_CHAT = '-5085543275'
 const MAX_PER_RUN = 50
-const MODEL = 'claude-haiku-4-5-20251001'
+const MODEL = 'qwen3:8b'
 
 async function sendTG(msg) {
   if (process.env.TELEGRAM_SILENT === 'true') return
@@ -48,7 +48,7 @@ async function sendTG(msg) {
 
 async function callHaiku(systemPrompt, userPrompt) {
   const t0 = Date.now()
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
+  const res = await fetch('http://localhost:11434/api/generate', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

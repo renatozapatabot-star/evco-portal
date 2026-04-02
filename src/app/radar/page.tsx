@@ -68,7 +68,7 @@ export default async function RadarPage() {
 
       {/* Bridge Summary */}
       {bridgeData && bridgeData.length > 0 && (
-        <div style={{ background: '#161616', border: '1px solid #2A2A2A', borderRadius: 12, padding: 20, marginTop: 24 }}>
+        <div style={{ background: 'var(--navy-900)', border: '1px solid #2A2A2A', borderRadius: 12, padding: 20, marginTop: 24 }}>
           <h2 style={{ fontSize: 14, fontWeight: 700, color: '#9C9690', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 16px' }}>Estado de Puentes</h2>
           {(() => {
             const bridgeMap: Record<string, number[]> = {}
@@ -78,7 +78,7 @@ export default async function RadarPage() {
               return (
                 <div key={name} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #2A2A2A' }}>
                   <span style={{ fontSize: 14 }}>{name}</span>
-                  <span style={{ fontFamily: 'var(--font-jetbrains-mono)', color: avg > 2 ? '#DC2626' : avg > 1 ? '#D97706' : '#16A34A', fontWeight: 700 }}>{Math.round(avg * 60)}min</span>
+                  <span style={{ fontFamily: 'var(--font-jetbrains-mono)', color: avg > 2 ? 'var(--danger-500)' : avg > 1 ? '#D97706' : '#16A34A', fontWeight: 700 }}>{Math.round(avg * 60)}min</span>
                 </div>
               )
             })

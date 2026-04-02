@@ -9,7 +9,7 @@ import { useEffect, useState } from 'react'
 export function KPIIntelligence() {
   const router = useRouter()
   const [companyId, setCompanyId] = useState('')
-  useEffect(() => { setCompanyId(getCookieValue('company_clave') || 'evco') }, [])
+  useEffect(() => { setCompanyId(getCookieValue('company_clave') || '') }, [])
 
   const supabase = createClient()
 
@@ -26,6 +26,19 @@ export function KPIIntelligence() {
     retry: 2,
     refetchInterval: 60000,
   })
+
+  if (!companyId) {
+    return (
+      <div style={{
+        background: 'var(--bg-surface)', border: '1px solid var(--color-danger)',
+        borderRadius: 10, padding: '12px 16px',
+        marginBottom: 24, fontSize: 13,
+        color: 'var(--color-danger)', textAlign: 'center',
+      }}>
+        Sesión no válida — vuelve a iniciar sesión
+      </div>
+    )
+  }
 
   if (isError) {
     return (

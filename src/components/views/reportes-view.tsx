@@ -6,11 +6,12 @@ import { getCookieValue } from '@/lib/client-config'
 import { GOLD } from '@/lib/design-system'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { fmtDate } from '@/lib/format-utils'
+import { ErrorCard } from '@/components/ui/ErrorCard'
 
 // ── Design tokens (v6 warm white) ──────────────────────
 const T = {
   bg: '#FAFAF8',
-  surface: '#FFFFFF',
+  surface: 'var(--card-bg)',
   border: '#E8E6E0',
   surfaceAlt: '#F5F3EF',
   text: '#1A1A1A',
@@ -139,6 +140,8 @@ function exportCSV(rows: TraficoRow[], clientClave: string) {
 export function ReportesView() {
   const [rows, setRows] = useState<TraficoRow[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [retryKey, setRetryKey] = useState(0)
   const [companyFilter, setCompanyFilter] = useState<string>('')
   const [companies, setCompanies] = useState<{ id: string; name: string }[]>([])
   const isMobile = useIsMobile()
@@ -148,6 +151,7 @@ export function ReportesView() {
   const [clientClave, setClientClave] = useState('')
   const [userRole, setUserRole] = useState('')
   const [cookiesReady, setCookiesReady] = useState(false)
+  const [supplierLookup, setSupplierLookup] = useState<Map<string, string>>(new Map())
 
   useEffect(() => {
     setCompanyId(getCookieValue('company_id') ?? '')
@@ -163,6 +167,7 @@ export function ReportesView() {
     if (!cookiesReady) return
     if (!isInternal && !companyId) { setLoading(false); return }
     setLoading(true)
+    setError(null)
 
     const params = new URLSearchParams({
       table: 'traficos',
@@ -172,8 +177,21 @@ export function ReportesView() {
     })
     if (!isInternal) {
       params.set('company_id', companyId)
-      if (clientClave) params.set('trafico_prefix', `${clientClave}-`)
+
     }
+
+    // Fetch supplier name lookup for PRV_ code resolution
+    fetch('/api/data?table=globalpc_proveedores&limit=5000')
+      .then(r => r.json())
+      .then(d => {
+        const provs = (d.data ?? []) as { cve_proveedor?: string; nombre?: string }[]
+        const lookup = new Map<string, string>()
+        provs.forEach(p => {
+          if (p.cve_proveedor && p.nombre) lookup.set(p.cve_proveedor, p.nombre)
+        })
+        setSupplierLookup(lookup)
+      })
+      .catch(() => { /* supplier lookup is best-effort */ })
 
     fetch(`/api/data?${params}`)
       .then(r => r.json())
@@ -193,9 +211,9 @@ export function ReportesView() {
           setCompanies([...companyMap.entries()].map(([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name)))
         }
       })
-      .catch(() => setRows([]))
+      .catch(() => setError('No se pudieron cargar los reportes.'))
       .finally(() => setLoading(false))
-  }, [cookiesReady, companyId, clientClave, isInternal])
+  }, [cookiesReady, companyId, clientClave, isInternal, retryKey])
 
   // Filtered rows (broker can filter by company)
   const filteredRows = useMemo(() => {
@@ -234,12 +252,14 @@ export function ReportesView() {
       const provStr = t.proveedores
       if (!provStr) return
       const suppliers = provStr.split(',').map(s => s.trim()).filter(Boolean)
-      suppliers.forEach(name => {
+      suppliers.forEach(rawName => {
+        // Resolve PRV_ codes to real supplier names
+        const name = supplierLookup.get(rawName) || rawName
         const prev = suppMap.get(name) || { count: 0, totalValue: 0, tmecCount: 0 }
         prev.count++
         prev.totalValue += Number(t.importe_total) || 0
         const reg = t.regimen
-        if (reg === 'ITE' || reg === 'ITR') prev.tmecCount++
+        if (reg === 'ITE' || reg === 'ITR' || reg === 'IMD') prev.tmecCount++
         suppMap.set(name, prev)
       })
     })
@@ -252,7 +272,14 @@ export function ReportesView() {
       }))
       .sort((a, b) => b.count - a.count)
       .slice(0, 10)
-  }, [filteredRows])
+  }, [filteredRows, supplierLookup])
+
+  // ── Error ─────────────────────────────────
+  if (error) return (
+    <div style={{ padding: '24px 28px' }}>
+      <ErrorCard message={error} onRetry={() => setRetryKey(k => k + 1)} />
+    </div>
+  )
 
   // ── Loading skeleton ─────────────────────────────────
   if (loading) return (
@@ -353,8 +380,15 @@ export function ReportesView() {
                   padding: '12px 14px',
                   marginBottom: 8,
                 }}>
-                  <div style={{ fontWeight: 700, fontSize: 13, color: T.text, marginBottom: 8 }}>
-                    {s.name}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                    <div style={{
+                      width: 28, height: 28, borderRadius: '50%',
+                      background: '#FEF3C7', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 10, fontWeight: 700, color: '#92400E', flexShrink: 0,
+                    }}>
+                      {s.name.split(' ').slice(0, 2).map(w => w[0] || '').join('').toUpperCase().slice(0, 2)}
+                    </div>
+                    <span style={{ fontWeight: 700, fontSize: 13, color: T.text }}>{s.name}</span>
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
                     <div>
@@ -395,7 +429,20 @@ export function ReportesView() {
                       }}
                     >
                       <td style={{ padding: '12px 20px', fontFamily: 'var(--font-jetbrains-mono)', fontSize: 12, color: T.textMuted }}>{i + 1}</td>
-                      <td style={{ padding: '12px 16px', fontWeight: 600, color: T.text, maxWidth: 250, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={s.name}>{s.name}</td>
+                      <td style={{ padding: '12px 16px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <div style={{
+                            width: 28, height: 28, borderRadius: '50%',
+                            background: '#FEF3C7', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontSize: 10, fontWeight: 700, color: '#92400E', flexShrink: 0,
+                          }}>
+                            {s.name.split(' ').slice(0, 2).map(w => w[0] || '').join('').toUpperCase().slice(0, 2)}
+                          </div>
+                          <span style={{ fontWeight: 600, color: T.text, maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={s.name}>
+                            {s.name}
+                          </span>
+                        </div>
+                      </td>
                       <td style={{ padding: '12px 16px', textAlign: 'right', fontFamily: 'var(--font-jetbrains-mono)', fontWeight: 600 }}>{fmtNum(s.count)}</td>
                       <td style={{ padding: '12px 16px', textAlign: 'right', fontFamily: 'var(--font-jetbrains-mono)', fontWeight: 600 }}>{fmtUSDShort(s.totalValue)} USD</td>
                       <td style={{

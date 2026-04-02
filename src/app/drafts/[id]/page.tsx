@@ -6,7 +6,7 @@ import { ArrowLeft, Check, X, AlertTriangle, FileText, ChevronDown, ChevronRight
 import { useToast } from '@/components/Toast'
 import { createClient } from '@supabase/supabase-js'
 import { GOLD, GOLD_GRADIENT, Z_RED } from '@/lib/design-system'
-import { CLIENT_CLAVE } from '@/lib/client-config'
+import { getClientClaveCookie } from '@/lib/client-config'
 import { formatAbsoluteETA, fmtUSD, fmtMXNInt, fmtCurrency } from '@/lib/format-utils'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
@@ -14,7 +14,7 @@ const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env
 const TIER_CONFIG = {
   1: { label: 'Alta confianza', time: '~2 min', color: '#16A34A', bg: '#F0FDF4' },
   2: { label: 'Confianza media', time: '~5 min', color: '#D97706', bg: '#FFFBEB' },
-  3: { label: 'Revisión completa', time: 'Sin límite · precisión sobre velocidad', color: '#DC2626', bg: '#FEF2F2' },
+  3: { label: 'Revisión completa', time: 'Sin límite · precisión sobre velocidad', color: 'var(--danger-500)', bg: '#FEF2F2' },
 }
 
 function mapDraftRow(row: any) {
@@ -47,10 +47,11 @@ export default function DraftReviewPage() {
   const [loadingDraft, setLoadingDraft] = useState(true)
 
   useEffect(() => {
+    const clientClave = getClientClaveCookie()
     supabase.from('pedimento_drafts')
       .select('*')
       .eq('id', id)
-      .eq('company_id', CLIENT_CLAVE)
+      .eq('company_id', clientClave)
       .single()
       .then(({ data }) => {
         if (data) setDraft(mapDraftRow(data))
@@ -58,18 +59,20 @@ export default function DraftReviewPage() {
       })
   }, [id])
 
-  const [rates, setRates] = useState({ dta: 0.008, iva: 0.16, tc: 17.49 })
+  const [rates, setRates] = useState<{ dta: number; iva: number; tc: number } | null>(null)
   useEffect(() => {
     Promise.all([
       supabase.from('system_config').select('value').eq('key', 'dta_rates').single(),
       supabase.from('system_config').select('value').eq('key', 'iva_rate').single(),
       supabase.from('system_config').select('value').eq('key', 'banxico_exchange_rate').single(),
     ]).then(([d, i, t]) => {
-      setRates({
-        dta: d.data?.value?.A1?.rate ?? 0.008,
-        iva: i.data?.value?.rate ?? 0.16,
-        tc: t.data?.value?.rate ?? 17.49,
-      })
+      if (d.data?.value?.A1?.rate && i.data?.value?.rate && t.data?.value?.rate) {
+        setRates({
+          dta: d.data.value.A1.rate,
+          iva: i.data.value.rate,
+          tc: t.data.value.rate,
+        })
+      }
     })
   }, [])
 
@@ -148,12 +151,12 @@ export default function DraftReviewPage() {
   )
 
   const tier = TIER_CONFIG[draft.tier as 1 | 2 | 3]
-  const tc = rates.tc || draft.tipo_cambio
+  const tc = rates?.tc || draft.tipo_cambio
   const valMXN = draft.valor_total_usd * tc
-  const dta = Math.round(valMXN * rates.dta)
+  const dta = rates ? Math.round(valMXN * rates.dta) : 0
   const igi = 0 // T-MEC
   const ivaBase = valMXN + dta + igi // Cascading base — NOT flat
-  const iva = Math.round(ivaBase * rates.iva)
+  const iva = rates ? Math.round(ivaBase * rates.iva) : 0
   const totalContrib = dta + igi + iva
 
   const AUTOMATION_STEPS = [
@@ -180,7 +183,7 @@ export default function DraftReviewPage() {
         </div>
       </div>
       <button onClick={() => { clearInterval(countdownRef.current); setApprovalState('idle') }}
-        style={{ padding: '16px 40px', borderRadius: 12, border: '2px solid #DC2626', background: 'transparent', color: '#DC2626', fontSize: 16, fontWeight: 800, cursor: 'pointer', minHeight: 60 }}>
+        style={{ padding: '16px 40px', borderRadius: 12, border: '2px solid var(--danger-500)', background: 'transparent', color: 'var(--danger-500)', fontSize: 16, fontWeight: 800, cursor: 'pointer', minHeight: 60 }}>
         CANCELAR — esto no enviará nada
       </button>
       <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', marginTop: 12 }}>
@@ -262,7 +265,7 @@ export default function DraftReviewPage() {
   // ═══ REJECTED ═══
   if (approvalState === 'rejected') return (
     <div style={{ padding: 32, maxWidth: 500, margin: '80px auto', textAlign: 'center' }}>
-      <X size={48} style={{ color: '#DC2626', margin: '0 auto 16px' }} />
+      <X size={48} style={{ color: 'var(--danger-500)', margin: '0 auto 16px' }} />
       <h2 style={{ fontSize: 22, fontWeight: 900, color: 'var(--n-900)', marginBottom: 8 }}>Borrador rechazado</h2>
       <p style={{ fontSize: 14, color: 'var(--n-500)', marginBottom: 24 }}>Motivo: {rejectReason || 'Sin motivo especificado'}</p>
       <button onClick={() => router.push('/drafts')} style={{ padding: '12px 24px', border: 'var(--b-default)', borderRadius: 8, background: 'var(--bg-card)', cursor: 'pointer', fontSize: 14, fontWeight: 600 }}>
@@ -327,7 +330,7 @@ export default function DraftReviewPage() {
                   { label: 'Valor Aduana', value: `${fmtUSD(draft.valor_total_usd)} USD` },
                   { label: 'Tipo de Cambio', value: `$${tc.toFixed(4)} MXN/USD` },
                   { label: 'Valor MXN', value: `${fmtMXNInt(valMXN)} MXN` },
-                  { label: `DTA (${(rates.dta * 100).toFixed(1)}%)`, value: `${fmtMXNInt(dta)} MXN` },
+                  { label: `DTA (${rates ? (rates.dta * 100).toFixed(1) : '—'}%)`, value: `${fmtMXNInt(dta)} MXN` },
                   { label: 'IGI', value: '$0 MXN (T-MEC ✅)' },
                   { label: 'Base IVA', value: `${fmtMXNInt(ivaBase)} MXN`, note: 'Valor + DTA + IGI' },
                   { label: 'IVA (16%)', value: `${fmtMXNInt(iva)} MXN` },
@@ -354,7 +357,7 @@ export default function DraftReviewPage() {
       {activeTab === 'products' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {draft.products.map((p: any, i: number) => {
-            const borderColor = p.confidence >= 90 ? '#16A34A' : p.confidence >= 75 ? '#D97706' : '#DC2626'
+            const borderColor = p.confidence >= 90 ? '#16A34A' : p.confidence >= 75 ? '#D97706' : 'var(--danger-500)'
             return (
               <div key={i} style={{ padding: '16px 20px', background: 'var(--bg-card)', border: `1px solid var(--n-150)`, borderLeft: `4px solid ${borderColor}`, borderRadius: 'var(--r-md)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
@@ -379,7 +382,7 @@ export default function DraftReviewPage() {
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: 'var(--bg-card)', border: 'var(--b-default)', borderRadius: 'var(--r-md)', minHeight: 48 }}>
               {c.status === 'ok' && <Check size={16} style={{ color: '#16A34A', flexShrink: 0 }} />}
               {c.status === 'warning' && <AlertTriangle size={16} style={{ color: '#D97706', flexShrink: 0 }} />}
-              {c.status === 'error' && <X size={16} style={{ color: '#DC2626', flexShrink: 0 }} />}
+              {c.status === 'error' && <X size={16} style={{ color: 'var(--danger-500)', flexShrink: 0 }} />}
               <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--n-800)', flex: 1 }}>{c.label}</span>
               {c.detail && <span style={{ fontSize: 12, color: c.status === 'ok' ? 'var(--n-400)' : c.status === 'warning' ? '#92400E' : '#991B1B' }}>{c.detail}</span>}
             </div>
@@ -424,7 +427,7 @@ export default function DraftReviewPage() {
               setApprovalState('rejected')
             }
           }}
-            style={{ padding: '14px 16px', border: '1px solid rgba(220,38,38,0.3)', borderRadius: 10, background: 'rgba(220,38,38,0.05)', cursor: 'pointer', fontSize: 13, fontWeight: 700, color: '#DC2626', minHeight: 60 }}>
+            style={{ padding: '14px 16px', border: '1px solid rgba(220,38,38,0.3)', borderRadius: 10, background: 'rgba(220,38,38,0.05)', cursor: 'pointer', fontSize: 13, fontWeight: 700, color: 'var(--danger-500)', minHeight: 60 }}>
             Rechazar
           </button>
         </div>

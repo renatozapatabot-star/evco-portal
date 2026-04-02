@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
 
   const { data: company } = await supabase
     .from('companies')
-    .select('company_id, name, clave_cliente')
+    .select('company_id, name, clave_cliente, rfc')
     .eq('company_id', company_id)
     .eq('active', true)
     .single()
@@ -38,6 +38,7 @@ export async function POST(request: NextRequest) {
   response.cookies.set('company_id', company.company_id, { path: '/', maxAge: 86400 })
   response.cookies.set('company_name', encodeURIComponent(company.name), { path: '/', maxAge: 86400 })
   response.cookies.set('company_clave', company.clave_cliente || '', { path: '/', maxAge: 86400 })
+  response.cookies.set('company_rfc', company.rfc || '', { path: '/', maxAge: 86400 })
 
   return response
 }

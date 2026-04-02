@@ -27,7 +27,7 @@ export function FeedbackButton({ context }: { context: string }) {
       context,
       answer,
       url: typeof window !== 'undefined' ? window.location.pathname : null,
-      company_id: getCookieValue('company_id') ?? 'evco',
+      company_id: getCookieValue('company_id') ?? '',
     }).then(() => {})
     setTimeout(() => { setOpen(false); setSent(false) }, 1500)
   }
@@ -64,7 +64,7 @@ export function FeedbackButton({ context }: { context: string }) {
           style={{
             padding: '6px 12px', fontSize: 11, fontWeight: 600,
             border: '1px solid #E8E5E0', borderRadius: 6,
-            background: '#FFFFFF', color: '#6B6B6B',
+            background: 'var(--card-bg)', color: '#6B6B6B',
             cursor: 'pointer', minHeight: 32,
           }}
         >

@@ -6,58 +6,108 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
+const ALLOWED_TYPES = new Set([
+  'application/pdf',
+  'image/jpeg',
+  'image/png',
+  'text/xml',
+  'application/xml',
+])
+
+const MAX_SIZE = 10 * 1024 * 1024 // 10MB
+
 export async function POST(request: NextRequest) {
   try {
-    const companyId = request.cookies.get('company_id')?.value ?? 'evco'
+    const companyId = request.cookies.get('company_id')?.value
+    if (!companyId) {
+      return NextResponse.json(
+        { data: null, error: { code: 'UNAUTHORIZED', message: 'No company_id cookie' } },
+        { status: 401 }
+      )
+    }
+
     const formData = await request.formData()
-    const file = formData.get('file') as File
-    const traficoId = formData.get('trafico_id') as string
-    const docType = formData.get('doc_type') as string
+    const file = formData.get('file') as File | null
+    const traficoId = formData.get('trafico_id') as string | null
+    const docType = formData.get('doc_type') as string | null
 
     if (!file || !traficoId || !docType) {
-      return NextResponse.json({ error: 'Missing file, trafico_id, or doc_type' }, { status: 400 })
+      return NextResponse.json(
+        { data: null, error: { code: 'VALIDATION_ERROR', message: 'Missing file, trafico_id, or doc_type' } },
+        { status: 400 }
+      )
     }
 
-    // Upload to Supabase Storage
+    if (file.size > MAX_SIZE) {
+      return NextResponse.json(
+        { data: null, error: { code: 'VALIDATION_ERROR', message: 'Archivo excede 10MB' } },
+        { status: 400 }
+      )
+    }
+
+    if (!ALLOWED_TYPES.has(file.type)) {
+      return NextResponse.json(
+        { data: null, error: { code: 'VALIDATION_ERROR', message: 'Solo PDF, JPG, PNG, XML' } },
+        { status: 400 }
+      )
+    }
+
+    // Build storage path: {company_id}/{trafico_id}/{doc_type}_{timestamp}.{ext}
+    const ext = file.name.split('.').pop() ?? 'bin'
+    const safeDocType = docType.replace(/\s+/g, '_')
+    const storagePath = `${companyId}/${traficoId}/${safeDocType}_${Date.now()}.${ext}`
+
     const buffer = await file.arrayBuffer()
     const bytes = new Uint8Array(buffer)
-    const fileName = `${traficoId}/${docType}/${Date.now()}_${file.name}`
 
-    const { data: uploadData, error: uploadError } = await supabase.storage
+    const { error: uploadError } = await supabase.storage
       .from('expedientes')
-      .upload(fileName, bytes, { contentType: file.type, upsert: true })
+      .upload(storagePath, bytes, { contentType: file.type, upsert: false })
 
     if (uploadError) {
-      console.error('Storage error:', uploadError.message)
+      return NextResponse.json(
+        { data: null, error: { code: 'INTERNAL_ERROR', message: `Storage: ${uploadError.message}` } },
+        { status: 500 }
+      )
     }
 
-    const fileUrl = uploadData
-      ? supabase.storage.from('expedientes').getPublicUrl(fileName).data.publicUrl
-      : null
+    const fileUrl = supabase.storage.from('expedientes').getPublicUrl(storagePath).data.publicUrl
 
-    // Save to expediente_documentos (correct schema)
-    const { error: dbError } = await supabase.from('expediente_documentos').insert({
-      pedimento_id: traficoId,
-      doc_type: docType,
-      file_name: file.name,
-      file_url: fileUrl,
-      uploaded_by: 'portal-upload',
-      uploaded_at: new Date().toISOString(),
-      company_id: companyId,
-    })
+    // Insert record into expediente_documentos
+    const { data: docRecord, error: dbError } = await supabase
+      .from('expediente_documentos')
+      .insert({
+        pedimento_id: traficoId,
+        doc_type: docType,
+        file_name: file.name,
+        file_url: fileUrl,
+        uploaded_by: 'client_portal',
+        uploaded_at: new Date().toISOString(),
+        company_id: companyId,
+      })
+      .select('id')
+      .single()
 
     if (dbError) {
-      return NextResponse.json({ error: dbError.message }, { status: 500 })
+      return NextResponse.json(
+        { data: null, error: { code: 'INTERNAL_ERROR', message: dbError.message } },
+        { status: 500 }
+      )
     }
 
     return NextResponse.json({
-      success: true,
-      trafico_id: traficoId,
-      doc_type: docType,
-      file_name: file.name,
-      file_url: fileUrl,
+      data: {
+        success: true,
+        file_url: fileUrl,
+        doc_id: docRecord?.id ?? null,
+      },
+      error: null,
     })
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 })
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Unknown error'
+    return NextResponse.json(
+      { data: null, error: { code: 'INTERNAL_ERROR', message } },
+      { status: 500 }
+    )
   }
 }

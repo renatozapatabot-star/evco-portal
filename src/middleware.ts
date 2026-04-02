@@ -5,7 +5,7 @@ import { ADMIN_ONLY_ROUTES } from '@/components/nav/nav-config'
 const PUBLIC_PATHS = ['/login']
 
 /** Token-gated paths — accessible without login via URL token */
-const TOKEN_PATHS = ['/track/', '/upload/']
+const TOKEN_PATHS = ['/track/', '/upload/', '/share/']
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl

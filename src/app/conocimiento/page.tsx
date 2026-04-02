@@ -29,7 +29,7 @@ export default async function ConocimientoPage() {
     compliance: RED,
     carrier: GREEN,
     supplier: AMBER,
-    regulatory: '#3B82F6',
+    regulatory: 'var(--info-500)',
     operational: '#9C9690',
   }
 
@@ -43,7 +43,7 @@ export default async function ConocimientoPage() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {(knowledge || []).map((k: any) => (
           <div key={k.id} style={{
-            background: '#161616', border: '1px solid #2A2A2A', borderRadius: 12,
+            background: 'var(--navy-900)', border: '1px solid #2A2A2A', borderRadius: 12,
             padding: '16px 20px', borderLeft: `4px solid ${typeColors[k.knowledge_type] || '#666'}`
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>

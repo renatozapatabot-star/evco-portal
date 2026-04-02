@@ -1,319 +1,778 @@
 #!/usr/bin/env node
 // scripts/email-intake.js
 // ============================================================================
-// CRUZ Email Intake Pipeline — Multi-Inbox
+// CRUZ Email Intake Pipeline — 14-step customs document processor
 //
-// ai@renatozapata.com          → FULL (extract, classify, draft, notify)
-// eloisarangel@renatozapata.com → STUDY (extract → email_intelligence)
-// claudia@renatozapata.com      → STUDY (extract → email_intelligence)
+// Modes:
+//   --dry-run  → mock extraction data, test full pipeline without AI/Gmail
+//   --ollama   → pdf-parse text + Ollama qwen3.5:35b for extraction & classification
+//   (default)  → Anthropic Sonnet for extraction, Haiku for classification
 //
-// Auth: Google Workspace domain-wide delegation via service account.
-// Fallback: OAuth2 refresh token for ai@ (legacy).
+// Pipeline:
+//   1.  Fetch unread Gmail with attachments
+//   2.  Filter: shipment doc? (invoice, packing list, BL)
+//   3.  Check processed_emails — skip if seen
+//   4.  Download attachment
+//   5.  Extract text from PDF (pdf-parse)
+//   6.  AI extraction: invoice_number, supplier, value, products, incoterm, currency
+//   7.  Classify fracción per product against tráfico history
+//   8.  Fetch rates from lib/rates.js
+//   9.  Calculate contributions (DTA + IGI + IVA cascading)
+//   10. Calculate confidence score + tier
+//   11. INSERT into pedimento_drafts
+//   12. Telegram notification
+//   13. Log to processed_emails
+//   14. Log to audit_log + mark email as read
 // ============================================================================
 
 const path = require('path')
 const fs = require('fs')
-require('dotenv').config({ path: path.join(__dirname, '..', '.env.local') })
+
+const SCRIPT_NAME = 'email-intake'
+const PDF_DIR = '/tmp/cruz-pdfs'
+const TELEGRAM_CHAT = '-5085543275'
+
+// ── Mode detection ──────────────────────────────────────────────────────────
+
+const MODE = process.argv.includes('--dry-run') ? 'dry-run'
+  : process.argv.includes('--ollama') ? 'ollama'
+  : 'anthropic'
+
+// ── Env config (Ollama mode uses Throne .env, default uses .env.local) ──────
+
+const envPath = MODE === 'ollama'
+  ? path.join(process.env.HOME, '.openclaw/workspace/scripts/evco-ops/.env')
+  : path.join(__dirname, '..', '.env.local')
+
+require('dotenv').config({ path: envPath })
+
+// ── Dependencies ────────────────────────────────────────────────────────────
 
 const { google } = require('googleapis')
 const { createClient } = require('@supabase/supabase-js')
+const pdfParse = require('pdf-parse')
 const { getAllRates } = require('./lib/rates')
 
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
-const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+)
+
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN
-const TELEGRAM_CHAT = '-5085543275'
-const TWILIO_SID = process.env.TWILIO_ACCOUNT_SID
-const TWILIO_TOKEN = process.env.TWILIO_AUTH_TOKEN
-const TWILIO_FROM = process.env.TWILIO_FROM_NUMBER
-const TITO_PHONE = process.env.TITO_PHONE
+const OLLAMA_URL = 'http://localhost:11434/api/generate'
+const OLLAMA_MODEL = 'qwen3.5:35b'
 
-const INTAKE_INBOX = process.env.INTAKE_INBOX || 'ai@renatozapata.com'
-const STUDY_INBOXES = (process.env.STUDY_INBOXES || '').split(',').map(s => s.trim()).filter(Boolean)
-const ALL_INBOXES = [{ email: INTAKE_INBOX, mode: 'full' }, ...STUDY_INBOXES.map(email => ({ email, mode: 'study' }))]
+// ── Anthropic client (lazy — only loaded in default mode) ───────────────────
 
-// ── Auth ──────────────────────────────────────────────────────────────────
-
-function getServiceAccountAuth(impersonateEmail) {
-  const keyPath = path.join(__dirname, '..', process.env.GOOGLE_SERVICE_ACCOUNT_KEY_PATH || 'credentials/cruz-email-reader.json')
-  if (!fs.existsSync(keyPath)) return null
-  const key = JSON.parse(fs.readFileSync(keyPath, 'utf-8'))
-  return new google.auth.JWT({ email: key.client_email, key: key.private_key, scopes: ['https://www.googleapis.com/auth/gmail.readonly'], subject: impersonateEmail })
+let anthropic = null
+function getAnthropic() {
+  if (!anthropic) {
+    const Anthropic = require('@anthropic-ai/sdk')
+    anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+  }
+  return anthropic
 }
 
-function getOAuthAuth() {
-  if (!process.env.GMAIL_CLIENT_ID || !process.env.GMAIL_REFRESH_TOKEN) return null
-  const o = new google.auth.OAuth2(process.env.GMAIL_CLIENT_ID, process.env.GMAIL_CLIENT_SECRET, 'https://developers.google.com/oauthplayground')
-  o.setCredentials({ refresh_token: process.env.GMAIL_REFRESH_TOKEN })
-  return o
-}
+// ── Telegram ────────────────────────────────────────────────────────────────
 
-function getGmailForInbox(email) {
-  const sa = getServiceAccountAuth(email)
-  if (sa) return google.gmail({ version: 'v1', auth: sa })
-  if (email === INTAKE_INBOX) { const o = getOAuthAuth(); if (o) return google.gmail({ version: 'v1', auth: o }) }
-  return null
-}
-
-function hdr(headers, name) { return (headers?.find(h => h.name?.toLowerCase() === name.toLowerCase()))?.value || '' }
-
-// ── Notifications ─────────────────────────────────────────────────────────
-
-async function sendTG(msg, inlineKeyboard) {
+async function sendTelegram(msg) {
   if (process.env.TELEGRAM_SILENT === 'true') return
-  if (!TELEGRAM_TOKEN) return
-  const payload = { chat_id: TELEGRAM_CHAT, text: msg, parse_mode: 'HTML' }
-  if (inlineKeyboard) payload.reply_markup = JSON.stringify({ inline_keyboard: inlineKeyboard })
-  await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  }).catch(() => {})
-}
-
-async function sendWA(to, body) {
-  if (!TWILIO_SID || !to) return
-  await fetch(`https://api.twilio.com/2010-04-01/Accounts/${TWILIO_SID}/Messages.json`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Authorization': 'Basic ' + Buffer.from(`${TWILIO_SID}:${TWILIO_TOKEN}`).toString('base64') },
-    body: new URLSearchParams({ From: `whatsapp:${TWILIO_FROM}`, To: `whatsapp:${to}`, Body: body }).toString(),
-  }).catch(() => {})
-}
-
-// ── Anthropic ─────────────────────────────────────────────────────────────
-
-async function callAI(model, system, content, maxTokens) {
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-api-key': ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'anthropic-beta': 'pdfs-2024-09-25' },
-    body: JSON.stringify({ model, max_tokens: maxTokens || 4096, system, messages: [{ role: 'user', content }] }),
-  })
-  const d = await res.json()
-  if (d.error) throw new Error(`${model}: ${d.error.message}`)
-  return d.content?.filter(b => b.type === 'text').map(b => b.text).join('\n') || ''
-}
-
-function parseJSON(text) {
-  try { return JSON.parse(text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()) }
-  catch { const m = text.match(/\{[\s\S]*\}/); if (m) try { return JSON.parse(m[0]) } catch {} }
-  return null
-}
-
-async function extractInvoice(b64, mime, filename, subject) {
-  const sys = 'Extract invoice data. Return ONLY valid JSON: {supplier, country(2-letter), invoice_number, invoice_date(YYYY-MM-DD), currency(USD|MXN), products:[{description, description_en, qty, unit(KG|PZA|LT|M2|PAR), unit_price, valor_usd, hs_code_hint}], valor_total_usd, incoterm, notes}'
-  const text = await callAI('claude-sonnet-4-20250514', sys, [
-    { type: 'document', source: { type: 'base64', media_type: mime || 'application/pdf', data: b64 } },
-    { type: 'text', text: `File: ${filename}\nSubject: ${subject}\nExtract all data. ONLY JSON.` },
-  ])
-  return parseJSON(text)
-}
-
-async function lookupSupplierPattern(supplier) {
-  if (!supplier) return null
+  if (!TELEGRAM_TOKEN) { console.log('[TG skip]', msg.replace(/<[^>]+>/g, '')); return }
   try {
-    const { data } = await supabase.from('email_intelligence')
-      .select('fraccion').ilike('supplier', `%${supplier}%`).not('fraccion', 'is', null)
-    if (!data?.length) return null
-    const counts = {}
-    for (const row of data) counts[row.fraccion] = (counts[row.fraccion] || 0) + 1
-    const top = Object.entries(counts).sort((a, b) => b[1] - a[1])[0]
-    return top ? { fraccion: top[0], uses: top[1] } : null
-  } catch { return null }
-}
-
-async function classifyProducts(products, supplierName) {
-  if (!products?.length) return []
-  const text = await callAI('claude-haiku-4-5-20251001',
-    'Mexican customs tariff classifier. Return ONLY JSON array: [{description,fraccion(XXXX.XX.XX),confidence(0-100)}]. Common: Polipropileno 3902.10.01, Polietileno 3901.20.01, Masterbatch 3206.49.99, Moldes 8480.71.01, Etiquetas 4821.10.01',
-    JSON.stringify(products.map(p => ({ description: p.description || p.description_en, qty: p.qty, unit: p.unit }))), 2048)
-  let cls = []
-  try { cls = JSON.parse(text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()) } catch { return [] }
-
-  // Fallback: when Haiku returns 0% confidence, check email_intelligence
-  for (let i = 0; i < cls.length; i++) {
-    if (cls[i].confidence === 0 || !cls[i].fraccion) {
-      const pattern = await lookupSupplierPattern(supplierName)
-      if (pattern) {
-        console.log(`        📚 email_intelligence: ${pattern.fraccion} (${pattern.uses}x) for "${supplierName}"`)
-        cls[i].fraccion = pattern.fraccion
-        cls[i].confidence = 70
-        cls[i].source = 'email_intelligence'
-      }
-    }
-  }
-  return cls
-}
-
-// ── Draft (FULL mode) ─────────────────────────────────────────────────────
-
-async function createDraft(inv, cls, rates, meta) {
-  const products = (inv.products || []).map((p, i) => ({ description: p.description, fraccion: cls[i]?.fraccion || p.hs_code_hint || '', qty: p.qty, unit: p.unit || 'KG', valor_usd: p.valor_usd || (p.qty * p.unit_price) || 0, confidence: cls[i]?.confidence || 0 }))
-  const valorUSD = inv.valor_total_usd || products.reduce((s, p) => s + p.valor_usd, 0)
-  const tc = rates.exchangeRate, vmxn = valorUSD * tc
-  const dta = Math.round(vmxn * (rates.dtaRates?.IMD?.rate ?? rates.dtaRates?.A1?.rate ?? 0.008))
-  const iva = Math.round((vmxn + dta) * rates.ivaRate)
-  const conf = products.length ? Math.round(products.reduce((s, p) => s + p.confidence, 0) / products.length) : 0
-
-  const { data, error } = await supabase.from('pedimento_drafts').insert({
-    trafico_id: `pending-${Date.now()}`, status: 'draft', created_by: 'CRUZ-email-intake', company_id: '9254',
-    draft_data: { supplier: inv.supplier, country: inv.country, invoice_number: inv.invoice_number, invoice_date: inv.invoice_date, incoterm: inv.incoterm, currency: inv.currency || 'USD', products, valor_total_usd: valorUSD, tipo_cambio: tc, regimen: 'IMD', confidence: conf, contributions: { dta, igi: 0, iva, total: dta + iva, valor_mxn: vmxn }, checklist: [{ label: 'Factura comercial', status: 'ok', detail: inv.invoice_number }, { label: 'Lista de empaque', status: products.length ? 'ok' : 'warning' }, { label: 'Certificado T-MEC', status: (inv.country === 'US' || inv.country === 'CA') ? 'ok' : 'warning' }, { label: 'COVE preparado', status: 'pending' }, { label: 'Pedimento generado', status: 'pending' }, { label: 'Valor dentro de rango', status: 'pending' }], email_from: meta.from, email_subject: meta.subject, email_date: meta.date },
-  }).select('id').single()
-  if (error) throw new Error(`Draft: ${error.message}`)
-  return { id: data.id, overallConfidence: conf, valorUSD, supplier: inv.supplier, products }
-}
-
-// ── Intel (STUDY mode) ────────────────────────────────────────────────────
-
-async function storeIntel(inv, cls, inbox, meta) {
-  const rows = (inv.products || []).map((p, i) => ({
-    supplier: inv.supplier || '', country: inv.country || '', invoice_number: inv.invoice_number || '',
-    fraccion: cls[i]?.fraccion || p.hs_code_hint || '', description: p.description || p.description_en || '',
-    qty: p.qty || 0, unit: p.unit || '', valor_usd: p.valor_usd || (p.qty * p.unit_price) || 0,
-    currency: inv.currency || 'USD', confidence: cls[i]?.confidence || 0,
-    email_date: meta.date || new Date().toISOString(), email_subject: (meta.subject || '').substring(0, 500), source_inbox: inbox,
-  }))
-  if (!rows.length) return 0
-  const { error } = await supabase.from('email_intelligence').insert(rows)
-  if (error) { console.error('  ⚠️  intel:', error.message); return 0 }
-  return rows.length
-}
-
-// ── Process email ─────────────────────────────────────────────────────────
-
-// ── Entrada Lifecycle — detect warehouse receipt emails ──────────────────
-
-async function processEntradaEmail(subject, body, from) {
-  const match = subject.match(/Entrada[:\s#]*(\d+)/i)
-    || subject.match(/ENT[:\s#]*(\d+)/i)
-    || body.match(/Entrada[:\s#]*(\d+)/i)
-  if (!match) return
-  const entradaNumber = match[1]
-  const supplierMatch = body.match(/(?:proveedor|supplier|shipper)[:\s]+([^\n,]{3,50})/i)
-  const bultosMatch = body.match(/(\d+)\s*(?:bultos?|pkgs?|packages?)/i)
-  try {
-    await supabase.from('entrada_lifecycle').upsert({
-      entrada_number: entradaNumber,
-      company_id: process.env.NEXT_PUBLIC_COMPANY_ID || '9254',
-      supplier: supplierMatch?.[1]?.trim()?.substring(0, 100) || null,
-      bultos: bultosMatch ? parseInt(bultosMatch[1]) : null,
-      email_received_at: new Date().toISOString(),
-      email_subject: subject.substring(0, 200),
-      email_from: from.substring(0, 200),
-    }, { onConflict: 'entrada_number' })
-    await supabase.from('notifications').insert({
-      company_id: process.env.NEXT_PUBLIC_COMPANY_ID || '9254',
-      type: 'entrada_received',
-      title: 'Nueva entrada: ' + entradaNumber,
-      body: 'Mercancía en bodega · pendiente de tráfico',
+    await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: TELEGRAM_CHAT, text: msg, parse_mode: 'HTML' }),
     })
-    console.log(`  📦 Entrada ${entradaNumber} → entrada_lifecycle`)
-  } catch (err) {
-    console.error(`  ⚠️ Entrada parse error: ${err.message}`)
+  } catch (e) { console.error('Telegram error:', e.message) }
+}
+
+// ── Gmail ───────────────────────────────────────────────────────────────────
+
+async function getGmail() {
+  const refreshToken = process.env.GMAIL_REFRESH_TOKEN_AI
+  if (!refreshToken) throw new Error('No GMAIL_REFRESH_TOKEN_AI configured')
+  const auth = new google.auth.OAuth2(
+    process.env.GMAIL_CLIENT_ID,
+    process.env.GMAIL_CLIENT_SECRET,
+    'http://localhost:3333/oauth2callback'
+  )
+  auth.setCredentials({ refresh_token: refreshToken })
+  return google.gmail({ version: 'v1', auth })
+}
+
+function extractHeader(headers, name) {
+  return (headers?.find(h => h.name?.toLowerCase() === name.toLowerCase()))?.value || ''
+}
+
+function ensureDir(dir) {
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
+}
+
+// ── Step 4: Download PDF attachment ─────────────────────────────────────────
+
+async function downloadPdf(gmail, messageId, attachmentId, destPath) {
+  const { data } = await gmail.users.messages.attachments.get({
+    userId: 'me', messageId, id: attachmentId,
+  })
+  const base64 = data.data.replace(/-/g, '+').replace(/_/g, '/')
+  fs.writeFileSync(destPath, Buffer.from(base64, 'base64'))
+}
+
+// ── Step 5: Extract text from PDF ───────────────────────────────────────────
+
+async function extractPdfText(filePath) {
+  const buf = fs.readFileSync(filePath)
+  const result = await pdfParse(buf)
+  const text = (result.text || '').trim()
+  if (text.length < 20) {
+    return { text: '', needsVision: true }
+  }
+  return { text, needsVision: false }
+}
+
+// ── Step 6: AI Extraction ───────────────────────────────────────────────────
+
+const EXTRACTION_PROMPT = `You are a customs invoice data extractor. Extract the following fields from this document text as JSON:
+{ "invoice_number", "supplier_name", "supplier_country", "total_value", "currency", "incoterm", "products": [{ "description", "quantity", "unit", "unit_value", "total_value", "country_of_origin" }] }
+Return ONLY valid JSON, no explanation.`
+
+async function extractWithOllama(text) {
+  const res = await fetch(OLLAMA_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: OLLAMA_MODEL,
+      prompt: EXTRACTION_PROMPT + '\n\nDocument text:\n' + text.substring(0, 8000),
+      stream: false,
+    }),
+  })
+  if (!res.ok) throw new Error(`Ollama extraction error: ${res.status}`)
+  const data = await res.json()
+  return parseJsonResponse(data.response)
+}
+
+async function extractWithAnthropic(text) {
+  const client = getAnthropic()
+  const start = Date.now()
+  const response = await client.messages.create({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 2000,
+    system: EXTRACTION_PROMPT,
+    messages: [{ role: 'user', content: text.substring(0, 12000) }],
+  })
+  // Cost tracking
+  await supabase.from('api_cost_log').insert({
+    model: 'claude-sonnet-4-20250514',
+    input_tokens: response.usage.input_tokens,
+    output_tokens: response.usage.output_tokens,
+    action: 'email_intake_extraction',
+    latency_ms: Date.now() - start,
+  }).then(() => {}, () => {})
+  const content = response.content[0]?.text || ''
+  return parseJsonResponse(content)
+}
+
+function getMockExtraction() {
+  return {
+    invoice_number: 'INV-DRY-001',
+    supplier_name: 'DRY RUN SUPPLIER INC',
+    supplier_country: 'US',
+    total_value: 15420.00,
+    currency: 'USD',
+    incoterm: 'DDP',
+    products: [{
+      description: 'POLIETILENO DE ALTA DENSIDAD EN PELLETS',
+      quantity: 25000,
+      unit: 'KG',
+      unit_value: 0.6168,
+      total_value: 15420.00,
+      country_of_origin: 'US',
+    }],
   }
 }
 
-async function processEmail(gmail, msgId, mode, inbox, rates) {
-  const { data: msg } = await gmail.users.messages.get({ userId: 'me', id: msgId, format: 'full' })
+function parseJsonResponse(text) {
+  // Strip markdown code fences and find JSON
+  const cleaned = text.replace(/```json?\n?/g, '').replace(/```/g, '').trim()
+  const jsonMatch = cleaned.match(/\{[\s\S]*\}/)
+  if (!jsonMatch) throw new Error('No JSON found in AI response')
+  return JSON.parse(jsonMatch[0])
+}
+
+// ── Step 7: Classify fracción per product ───────────────────────────────────
+
+const CLASSIFICATION_PROMPT = `Given this product description and the following historical fracción matches from the same supplier, classify the product under the Mexican TIGIE tariff schedule.
+Return JSON: { "fraccion": "XXXX.XX.XX", "confidence": 0.0-1.0, "reasoning": "..." }`
+
+async function classifyProduct(product, companyId) {
+  // Fetch historical matches from traficos
+  const { data: history } = await supabase
+    .from('traficos')
+    .select('fraccion_arancelaria, descripcion_mercancia, regimen')
+    .eq('company_id', companyId)
+    .not('fraccion_arancelaria', 'is', null)
+    .ilike('descripcion_mercancia', `%${(product.description || '').substring(0, 30)}%`)
+    .limit(5)
+
+  const historyStr = (history || [])
+    .map(h => `${h.fraccion_arancelaria} — ${h.descripcion_mercancia} (${h.regimen})`)
+    .join('\n')
+
+  const prompt = `${CLASSIFICATION_PROMPT}
+
+Product: ${product.description}
+Quantity: ${product.quantity} ${product.unit}
+Country of origin: ${product.country_of_origin || 'Unknown'}
+
+Historical matches:
+${historyStr || '(no history)'}
+`
+
+  if (MODE === 'dry-run') {
+    return { fraccion: '3901.20.01', confidence: 0.92, reasoning: 'Dry run — PE pellets' }
+  }
+
+  if (MODE === 'ollama') {
+    const res = await fetch(OLLAMA_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: OLLAMA_MODEL, prompt, stream: false }),
+    })
+    if (!res.ok) throw new Error(`Ollama classify error: ${res.status}`)
+    const data = await res.json()
+    return parseJsonResponse(data.response)
+  }
+
+  // Anthropic Haiku for classification (cheap + fast)
+  const client = getAnthropic()
+  const start = Date.now()
+  const response = await client.messages.create({
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens: 500,
+    messages: [{ role: 'user', content: prompt }],
+  })
+  await supabase.from('api_cost_log').insert({
+    model: 'claude-haiku-4-5-20251001',
+    input_tokens: response.usage.input_tokens,
+    output_tokens: response.usage.output_tokens,
+    action: 'email_intake_classification',
+    latency_ms: Date.now() - start,
+  }).then(() => {}, () => {})
+  return parseJsonResponse(response.content[0]?.text || '')
+}
+
+// ── Step 9: Calculate contributions ─────────────────────────────────────────
+
+function calculateContributions(valorAduanaUSD, regimen, fraccionData, rates) {
+  const { exchangeRate, dtaRates, ivaRate } = rates
+  const valorAduanaMXN = Math.round(valorAduanaUSD * exchangeRate * 100) / 100
+
+  // DTA — regime-based
+  const dtaConfig = dtaRates[regimen] || dtaRates['A1'] || { rate: 0.008 }
+  const dtaAmount = Math.round(valorAduanaMXN * dtaConfig.rate * 100) / 100
+
+  // IGI — check T-MEC (ITE/ITR/IMD = 0% IGI)
+  const isTMEC = ['ITE', 'ITR', 'IMD'].includes((regimen || '').toUpperCase())
+  const igiRate = isTMEC ? 0 : (fraccionData?.igi_rate || 0)
+  const igiAmount = Math.round(valorAduanaMXN * igiRate * 100) / 100
+
+  // IVA — base = valor_aduana + DTA + IGI (cascading, NEVER flat)
+  const ivaBase = valorAduanaMXN + dtaAmount + igiAmount
+  const ivaAmount = Math.round(ivaBase * ivaRate * 100) / 100
+
+  return {
+    valor_aduana_usd: valorAduanaUSD,
+    valor_aduana_mxn: valorAduanaMXN,
+    tipo_cambio: exchangeRate,
+    dta: { rate: dtaConfig.rate, amount_mxn: dtaAmount },
+    igi: { rate: igiRate, amount_mxn: igiAmount, tmec: isTMEC },
+    iva: { rate: ivaRate, base_mxn: ivaBase, amount_mxn: ivaAmount },
+    total_contribuciones_mxn: dtaAmount + igiAmount + ivaAmount,
+    currency_labels: { valor: 'USD', contribuciones: 'MXN' },
+  }
+}
+
+// ── Step 10: Confidence scoring ─────────────────────────────────────────────
+
+function scoreConfidence(extraction, classifications) {
+  const fields = [
+    { name: 'invoice_number', value: extraction.invoice_number, weight: 10 },
+    { name: 'supplier_name', value: extraction.supplier_name, weight: 15 },
+    { name: 'total_value', value: extraction.total_value, weight: 20 },
+    { name: 'currency', value: extraction.currency, weight: 10 },
+    { name: 'incoterm', value: extraction.incoterm, weight: 5 },
+    { name: 'products', value: extraction.products?.length > 0, weight: 20 },
+  ]
+
+  let score = 0
+  let maxScore = 0
+  const fieldScores = {}
+
+  for (const f of fields) {
+    maxScore += f.weight
+    const present = f.value && f.value !== '' && f.value !== 0
+    const fieldConf = present ? f.weight : 0
+    score += fieldConf
+    fieldScores[f.name] = present ? 100 : 0
+  }
+
+  // Classification confidence (average across products)
+  if (classifications.length > 0) {
+    const classWeight = 20
+    maxScore += classWeight
+    const avgConf = classifications.reduce((s, c) => s + (c.confidence || 0), 0) / classifications.length
+    score += Math.round(avgConf * classWeight)
+    fieldScores['classification'] = Math.round(avgConf * 100)
+  }
+
+  const pct = maxScore > 0 ? Math.round((score / maxScore) * 100) : 0
+  const tier = pct >= 95 ? 1 : pct >= 80 ? 2 : 3
+
+  return { score: pct, tier, fieldScores }
+}
+
+// ── Step 2: Filter — is this a shipment document? ───────────────────────────
+
+function isShipmentEmail(subject, sender) {
+  const keywords = [
+    'invoice', 'factura', 'packing', 'list', 'bill of lading', 'BL',
+    'commercial', 'proforma', 'shipment', 'embarque', 'conocimiento',
+    'customs', 'aduana', 'pedimento', 'PO', 'purchase order', 'orden',
+  ]
+  const text = `${subject} ${sender}`.toLowerCase()
+  return keywords.some(k => text.includes(k.toLowerCase()))
+}
+
+// ── Process a single email (steps 1-14) ─────────────────────────────────────
+
+async function processEmail(gmail, messageId, companyId) {
+  // Step 1: Already fetched by caller
+
+  const { data: msg } = await gmail.users.messages.get({
+    userId: 'me', id: messageId, format: 'full',
+  })
+
   const headers = msg.payload?.headers || []
-  const from = hdr(headers, 'From'), subject = hdr(headers, 'Subject'), date = hdr(headers, 'Date')
-  const snippet = msg.snippet || ''
-  console.log(`  📧 ${from.substring(0, 50)}\n     ${subject.substring(0, 70)}`)
+  const sender = extractHeader(headers, 'From')
+  const subject = extractHeader(headers, 'Subject')
+  const dateStr = extractHeader(headers, 'Date')
+  const receivedAt = dateStr ? new Date(dateStr).toISOString() : new Date().toISOString()
 
-  // Check for entrada references in subject/snippet
-  await processEntradaEmail(subject, snippet, from)
+  console.log(`  From:    ${sender.substring(0, 60)}`)
+  console.log(`  Subject: ${subject.substring(0, 70)}`)
 
-  const atts = []
-  ;(function scan(parts) { if (!parts) return; for (const p of parts) { if (p.filename && p.body?.attachmentId) atts.push({ filename: p.filename, attachmentId: p.body.attachmentId, mimeType: p.mimeType, size: p.body.size || 0 }); if (p.parts) scan(p.parts) } })(msg.payload?.parts || [msg.payload])
+  // Step 2: Filter — shipment document?
+  if (!isShipmentEmail(subject, sender)) {
+    console.log('  Not a shipment doc — skip')
+    return null
+  }
 
-  const pdfs = atts.filter(a => (a.filename||'').toLowerCase().endsWith('.pdf'))
-  pdfs.sort((a, b) => { const inv = /invoice|factura|oem|so_/i; return (inv.test(a.filename)?0:1)-(inv.test(b.filename)?0:1) || b.size-a.size })
-  if (!pdfs.length) { console.log('     No PDFs'); return null }
+  // Step 3: Check processed_emails — skip if seen
+  const { data: existing } = await supabase
+    .from('email_queue')
+    .select('id')
+    .eq('metadata->>gmail_message_id', messageId)
+    .maybeSingle()
 
-  const batch = pdfs.slice(0, mode === 'study' ? 3 : 5)
-  console.log(`     📎 ${pdfs.length} PDF(s) → ${batch.length} [${mode.toUpperCase()}]`)
+  if (existing) {
+    console.log('  Already processed — skip')
+    return null
+  }
 
-  const results = []
-  for (let i = 0; i < batch.length; i++) {
-    const att = batch[i]
-    console.log(`     [${i+1}/${batch.length}] ${att.filename} (${Math.round(att.size/1024)}KB)`)
-    const { data: ad } = await gmail.users.messages.attachments.get({ userId: 'me', messageId: msgId, id: att.attachmentId })
-    const b64 = ad.data.replace(/-/g, '+').replace(/_/g, '/')
-
-    console.log('        🧠 Sonnet...')
-    const inv = await extractInvoice(b64, att.mimeType, att.filename, subject)
-    if (!inv) { console.log('        ❌ skip'); continue }
-    console.log(`        ✅ ${inv.supplier} · $${inv.valor_total_usd} ${inv.currency}`)
-
-    console.log('        🏷️  Haiku...')
-    const cls = await classifyProducts(inv.products, inv.supplier)
-    console.log(`        ✅ ${cls.map(c => c.fraccion+'('+c.confidence+'%)').join(', ') || '—'}`)
-
-    if (mode === 'full') {
-      const draft = await createDraft(inv, cls, rates, { from, subject, date })
-      console.log(`        📝 Draft: ${draft.id} · ${draft.overallConfidence}%`)
-      results.push(draft)
-    } else {
-      const n = await storeIntel(inv, cls, inbox, { subject, date, from })
-      console.log(`        📊 ${n} → email_intelligence`)
-      results.push({ supplier: inv.supplier, products: n, mode: 'study' })
+  // Find PDF attachments
+  const pdfs = []
+  function findPdfs(parts) {
+    if (!parts) return
+    for (const part of parts) {
+      if (part.filename && part.body?.attachmentId) {
+        const name = part.filename || ''
+        if (name.toLowerCase().endsWith('.pdf') && !name.startsWith('._')) {
+          pdfs.push({
+            filename: name,
+            attachmentId: part.body.attachmentId,
+            size: part.body.size || 0,
+          })
+        }
+      }
+      if (part.parts) findPdfs(part.parts)
     }
   }
-  return results.length ? results : null
+  findPdfs(msg.payload?.parts || [msg.payload])
+
+  if (pdfs.length === 0) {
+    console.log('  No PDFs — skip')
+    return null
+  }
+
+  console.log(`  PDFs: ${pdfs.length}`)
+
+  // Step 4: Download attachment(s)
+  const emailDir = path.join(PDF_DIR, messageId)
+  ensureDir(emailDir)
+
+  let pdfText = ''
+  for (const pdf of pdfs) {
+    const destPath = path.join(emailDir, pdf.filename)
+    await downloadPdf(gmail, messageId, pdf.attachmentId, destPath)
+    console.log(`    Downloaded: ${pdf.filename} (${Math.round(pdf.size / 1024)}KB)`)
+
+    // Step 5: Extract text from PDF
+    const { text, needsVision } = await extractPdfText(destPath)
+    if (needsVision) {
+      console.log(`    ⚠ Scanned PDF — needs vision (flagged for later)`)
+    } else {
+      pdfText += text + '\n\n'
+      console.log(`    Extracted ${text.length} chars`)
+    }
+  }
+
+  if (!pdfText && MODE !== 'dry-run') {
+    console.log('  No extractable text — flagging for vision pipeline')
+    // Log to email_queue as needs_vision
+    await supabase.from('email_queue').insert({
+      to_address: 'ai@renatozapata.com',
+      subject: subject.substring(0, 500),
+      body_text: `From: ${sender}`,
+      status: 'needs_vision',
+      tenant_slug: companyId,
+      metadata: {
+        direction: 'inbound', sender, received_at: receivedAt,
+        gmail_message_id: messageId, attachment_count: pdfs.length,
+      },
+    })
+    return null
+  }
+
+  // Step 6: AI extraction
+  console.log(`  Extracting with ${MODE}...`)
+  let extraction
+  if (MODE === 'dry-run') {
+    extraction = getMockExtraction()
+  } else if (MODE === 'ollama') {
+    extraction = await extractWithOllama(pdfText)
+  } else {
+    extraction = await extractWithAnthropic(pdfText)
+  }
+  console.log(`  Invoice: ${extraction.invoice_number} · ${extraction.supplier_name} · ${extraction.total_value} ${extraction.currency}`)
+
+  // Step 7: Classify fracción per product
+  const classifications = []
+  for (const product of (extraction.products || [])) {
+    try {
+      const result = await classifyProduct(product, companyId)
+      classifications.push({
+        description: product.description,
+        fraccion: result.fraccion,
+        confidence: result.confidence,
+        reasoning: result.reasoning,
+      })
+      console.log(`    ${result.fraccion} (${Math.round(result.confidence * 100)}%) — ${(product.description || '').substring(0, 40)}`)
+    } catch (err) {
+      console.error(`    Classification failed: ${err.message}`)
+      classifications.push({
+        description: product.description,
+        fraccion: null,
+        confidence: 0,
+        reasoning: `Error: ${err.message}`,
+      })
+    }
+  }
+
+  // Step 8: Fetch rates
+  console.log('  Fetching rates...')
+  const rates = await getAllRates()
+  console.log(`  TC: ${rates.exchangeRate} · IVA: ${rates.ivaRate}`)
+
+  // Determine regime from classification history
+  const primaryFraccion = classifications.find(c => c.fraccion)?.fraccion || null
+  let detectedRegimen = 'A1' // default
+  if (primaryFraccion) {
+    const { data: histRegimen } = await supabase
+      .from('traficos')
+      .select('regimen')
+      .eq('company_id', companyId)
+      .eq('fraccion_arancelaria', primaryFraccion)
+      .not('regimen', 'is', null)
+      .limit(1)
+      .single()
+    if (histRegimen?.regimen) detectedRegimen = histRegimen.regimen
+  }
+
+  // Step 9: Calculate contributions
+  const contributions = calculateContributions(
+    extraction.total_value || 0,
+    detectedRegimen,
+    { igi_rate: 0 }, // T-MEC exempt by default — will be overridden by regime check
+    rates
+  )
+  console.log(`  DTA: ${contributions.dta.amount_mxn} MXN · IGI: ${contributions.igi.amount_mxn} MXN · IVA: ${contributions.iva.amount_mxn} MXN`)
+  console.log(`  T-MEC: ${contributions.igi.tmec ? 'Yes' : 'No'} · Total: ${contributions.total_contribuciones_mxn} MXN`)
+
+  // Step 10: Confidence score
+  const confidence = scoreConfidence(extraction, classifications)
+  console.log(`  Confidence: ${confidence.score}% · Tier ${confidence.tier}`)
+
+  // Step 11: INSERT into pedimento_drafts
+  const draftData = {
+    extraction,
+    classifications,
+    contributions,
+    confidence,
+    mode: MODE,
+    source: 'email_intake',
+    email: { sender, subject, received_at: receivedAt, gmail_message_id: messageId },
+    regimen: detectedRegimen,
+  }
+
+  const { data: draft, error: draftErr } = await supabase
+    .from('pedimento_drafts')
+    .insert({
+      trafico_id: null, // Will be linked when tráfico is created
+      draft_data: draftData,
+      status: confidence.tier === 1 ? 'pending' : 'draft',
+      created_by: 'CRUZ',
+      company_id: companyId,
+    })
+    .select('id')
+    .single()
+
+  if (draftErr) throw new Error(`Draft insert failed: ${draftErr.message}`)
+  const draftId = draft.id
+  console.log(`  Draft created: ${draftId}`)
+
+  // Step 12: Telegram notification
+  const tmecLabel = contributions.igi.tmec ? '✅' : '❌'
+  const tgMsg = [
+    `📥 <b>Borrador listo</b> · ${extraction.invoice_number || 'Sin factura'}`,
+    `${extraction.supplier_name || 'Proveedor desconocido'} · $${(extraction.total_value || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })} ${extraction.currency || 'USD'}`,
+    `Confianza: ${confidence.score}% · T-MEC ${tmecLabel}`,
+    `— CRUZ 🦀`,
+  ].join('\n')
+  await sendTelegram(tgMsg)
+
+  // Step 13: Log to processed_emails (email_queue)
+  await supabase.from('email_queue').insert({
+    to_address: 'ai@renatozapata.com',
+    subject: subject.substring(0, 500),
+    body_text: `From: ${sender}\nDraft: ${draftId}`,
+    status: 'processed',
+    tenant_slug: companyId,
+    metadata: {
+      direction: 'inbound', sender, received_at: receivedAt,
+      gmail_message_id: messageId, attachment_count: pdfs.length,
+      draft_id: draftId, confidence_score: confidence.score,
+      confidence_tier: confidence.tier,
+    },
+  })
+
+  // Step 14a: Log to audit_log (immutable)
+  await supabase.from('audit_log').insert({
+    action: 'email_intake_draft_created',
+    entity_type: 'pedimento_draft',
+    entity_id: draftId,
+    details: {
+      invoice: extraction.invoice_number,
+      supplier: extraction.supplier_name,
+      value_usd: extraction.total_value,
+      currency: extraction.currency,
+      confidence: confidence.score,
+      tier: confidence.tier,
+      mode: MODE,
+      classifications: classifications.map(c => ({ fraccion: c.fraccion, confidence: c.confidence })),
+    },
+    company_id: companyId,
+  }).then(() => {}, (err) => console.error('audit_log error:', err.message))
+
+  // Step 14b: Mark email as read in Gmail
+  try {
+    await gmail.users.messages.modify({
+      userId: 'me', id: messageId,
+      requestBody: { removeLabelIds: ['UNREAD'] },
+    })
+    console.log('  Marked as read')
+  } catch (e) {
+    console.error(`  Failed to mark read: ${e.message}`)
+  }
+
+  return {
+    draftId, sender, subject,
+    pdfCount: pdfs.length,
+    confidence: confidence.score,
+    tier: confidence.tier,
+    tmec: contributions.igi.tmec,
+    value: extraction.total_value,
+    currency: extraction.currency,
+  }
 }
 
-// ── Main ──────────────────────────────────────────────────────────────────
+// ── Dry-run mode: skip Gmail, process mock data ─────────────────────────────
+
+async function runDryRun(companyId) {
+  console.log('DRY RUN — using mock data\n')
+
+  const extraction = getMockExtraction()
+  console.log(`Invoice: ${extraction.invoice_number} · ${extraction.supplier_name}`)
+
+  const classifications = []
+  for (const product of extraction.products) {
+    const result = { fraccion: '3901.20.01', confidence: 0.92, reasoning: 'Dry run mock' }
+    classifications.push({ description: product.description, ...result })
+    console.log(`  ${result.fraccion} (${Math.round(result.confidence * 100)}%)`)
+  }
+
+  console.log('Fetching rates...')
+  const rates = await getAllRates()
+  console.log(`  TC: ${rates.exchangeRate} · IVA: ${rates.ivaRate}`)
+
+  const contributions = calculateContributions(extraction.total_value, 'ITE', { igi_rate: 0 }, rates)
+  console.log(`  DTA: ${contributions.dta.amount_mxn} MXN · IGI: ${contributions.igi.amount_mxn} MXN · IVA: ${contributions.iva.amount_mxn} MXN`)
+
+  const confidence = scoreConfidence(extraction, classifications)
+  console.log(`  Confidence: ${confidence.score}% · Tier ${confidence.tier}`)
+
+  const draftData = {
+    extraction, classifications, contributions, confidence,
+    mode: 'dry-run', source: 'email_intake',
+    email: { sender: 'dry-run@test.com', subject: 'DRY RUN', gmail_message_id: 'dry-run-001' },
+    regimen: 'ITE',
+  }
+
+  const { data: draft, error: draftErr } = await supabase
+    .from('pedimento_drafts')
+    .insert({
+      trafico_id: null,
+      draft_data: draftData,
+      status: 'draft',
+      created_by: 'CRUZ',
+      company_id: companyId,
+    })
+    .select('id')
+    .single()
+
+  if (draftErr) {
+    console.error(`Draft insert failed: ${draftErr.message}`)
+    return
+  }
+
+  console.log(`\nDraft created: ${draft.id}`)
+
+  const tmecLabel = contributions.igi.tmec ? '✅' : '❌'
+  await sendTelegram([
+    `🧪 <b>DRY RUN — Borrador listo</b> · ${extraction.invoice_number}`,
+    `${extraction.supplier_name} · $${extraction.total_value.toLocaleString('en-US', { minimumFractionDigits: 2 })} ${extraction.currency}`,
+    `Confianza: ${confidence.score}% · T-MEC ${tmecLabel}`,
+    `— CRUZ 🦀`,
+  ].join('\n'))
+
+  await supabase.from('audit_log').insert({
+    action: 'email_intake_dry_run',
+    entity_type: 'pedimento_draft',
+    entity_id: draft.id,
+    details: { mode: 'dry-run', confidence: confidence.score },
+    company_id: companyId,
+  }).then(() => {}, () => {})
+
+  console.log('DRY RUN complete ✅')
+}
+
+// ── Main ────────────────────────────────────────────────────────────────────
 
 async function run() {
-  const t0 = Date.now()
-  console.log(`\n📬 CRUZ Email Intake — Multi-Inbox`)
-  console.log(`   ${new Date().toLocaleString('es-MX', { timeZone: 'America/Chicago' })}`)
-  console.log(`   ${ALL_INBOXES.map(i => i.email+' ['+i.mode+']').join(' · ')}\n`)
+  const startTime = Date.now()
+  console.log(`\nCRUZ Email Intake Pipeline`)
+  console.log(`  Mode: ${MODE}`)
+  console.log(`  ${new Date().toLocaleString('es-MX', { timeZone: 'America/Chicago' })}`)
+  console.log(`  ai@renatozapata.com\n`)
 
-  const rates = await getAllRates()
-  let drafts = 0, intel = 0, errs = 0
+  // company_id is a variable — never hardcoded
+  const companyId = process.env.DEFAULT_COMPANY_ID || 'evco'
 
-  for (const inbox of ALL_INBOXES) {
-    console.log(`\n━━ ${inbox.email} [${inbox.mode.toUpperCase()}] ━━`)
-    const gmail = getGmailForInbox(inbox.email)
-    if (!gmail) { console.log('   ⚠️  No auth — skip'); continue }
+  if (MODE === 'dry-run') {
+    await runDryRun(companyId)
+    return
+  }
 
+  const gmail = await getGmail()
+
+  // Verify connection
+  const { data: profile } = await gmail.users.getProfile({ userId: 'me' })
+  console.log(`Connected: ${profile.emailAddress} (${profile.messagesTotal} msgs)\n`)
+
+  // Step 1: Fetch unread emails with attachments
+  const after48h = Math.floor((Date.now() - 48 * 60 * 60 * 1000) / 1000)
+  const query = `after:${after48h} is:unread has:attachment filename:pdf`
+  const { data: listData } = await gmail.users.messages.list({
+    userId: 'me', q: query, maxResults: 20,
+  })
+
+  const messages = listData.messages || []
+  console.log(`Found ${messages.length} unread email(s) with PDFs\n`)
+
+  let emailsProcessed = 0
+  let draftsCreated = 0
+  let errors = 0
+
+  for (const m of messages) {
+    console.log(`--- Email ${m.id} ---`)
     try {
-      const { data: p } = await gmail.users.getProfile({ userId: 'me' })
-      console.log(`   ✓ ${p.emailAddress} (${p.messagesTotal} msgs)`)
-    } catch (e) { console.log(`   ❌ ${e.message}`); continue }
-
-    const after = Math.floor((Date.now() - 2*3600000) / 1000)
-    const q = inbox.mode === 'study'
-      ? `after:${after} has:attachment (filename:pdf OR filename:xlsx)`
-      : `after:${after} has:attachment is:unread (filename:pdf OR filename:xlsx OR filename:csv)`
-    const { data: list } = await gmail.users.messages.list({ userId: 'me', q, maxResults: inbox.mode === 'study' ? 5 : 10 })
-    const msgs = list.messages || []
-    console.log(`   ${msgs.length} email(s)\n`)
-
-    for (const m of msgs) {
-      try {
-        const res = await processEmail(gmail, m.id, inbox.mode, inbox.email, rates)
-        if (!res) continue
-        for (const r of [].concat(res)) {
-          if (r.mode === 'study') { intel += r.products }
-          else if (r.id) {
-            drafts++
-            const tier = r.overallConfidence >= 90 ? 'T1' : r.overallConfidence >= 70 ? 'T2' : 'T3'
-            await sendTG(`📋 <b>Borrador CRUZ</b>\n${r.supplier}\n$${r.valorUSD.toLocaleString('en-US',{minimumFractionDigits:2})} USD · ${r.products.length} prod · ${tier}\n<a href="https://evco-portal.vercel.app/drafts/${r.id}">Revisar →</a>`, [[
-              { text: '✅ Aprobar', callback_data: `aprobar_${r.id}` },
-              { text: '❌ Rechazar', callback_data: `rechazar_${r.id}` },
-              { text: '✏️ Corregir', callback_data: `corregir_${r.id}` },
-            ]])
-            if (TITO_PHONE) await sendWA(TITO_PHONE, `📋 CRUZ\n${r.supplier} · $${r.valorUSD.toLocaleString('en-US',{minimumFractionDigits:2})} USD · ${tier}\nevco-portal.vercel.app/drafts/${r.id}`)
-          }
-        }
-      } catch (err) { errs++; console.error(`  ❌ ${err.message}`) }
-      console.log('')
+      const result = await processEmail(gmail, m.id, companyId)
+      if (result) {
+        emailsProcessed++
+        draftsCreated++
+        console.log(`  ✅ Draft ${result.draftId} · ${result.confidence}% · Tier ${result.tier}\n`)
+      } else {
+        console.log('')
+      }
+    } catch (err) {
+      errors++
+      console.error(`  ❌ Error: ${err.message}\n`)
+      await sendTelegram(`🔴 <b>Email Intake</b> error on ${m.id}:\n${err.message.substring(0, 200)}`)
     }
   }
 
-  const sec = ((Date.now()-t0)/1000).toFixed(1)
-  console.log(`\n══ Done · ${sec}s · Drafts: ${drafts} · Intel: ${intel} · Errors: ${errs} ══\n`)
-  if (errs > 0) await sendTG(`🔴 <b>Email Intake</b> · ${errs} error(es) · ${sec}s`)
+  const elapsed = ((Date.now() - startTime) / 1000).toFixed(1)
+
+  // Log to pipeline_log
+  await supabase.from('pipeline_log').insert({
+    step: 'email_intake',
+    status: errors > 0 ? 'partial' : 'completed',
+    input_summary: `${messages.length} emails found`,
+    output_summary: `${emailsProcessed} processed, ${draftsCreated} drafts created`,
+    details: {
+      mode: MODE, emails_found: messages.length,
+      emails_processed: emailsProcessed, drafts_created: draftsCreated,
+      errors, elapsed_s: parseFloat(elapsed),
+    },
+  }).then(() => {}, (err) => console.error('pipeline_log error:', err.message))
+
+  // Log to heartbeat_log (operational resilience)
+  await supabase.from('heartbeat_log').insert({
+    script: SCRIPT_NAME,
+    status: errors > 0 ? 'partial' : 'success',
+    details: { mode: MODE, emails: emailsProcessed, drafts: draftsCreated, errors, elapsed_s: parseFloat(elapsed) },
+  }).then(() => {}, () => {})
+
+  // Summary
+  const summary = `${emailsProcessed} emails → ${draftsCreated} drafts · ${errors} error(s) · ${elapsed}s · ${MODE}`
+  console.log(`\n${summary}`)
+
+  // Telegram — always notify, success AND failure
+  if (errors > 0) {
+    await sendTelegram(`🟡 <b>Email Intake</b> · ${summary}`)
+  } else if (draftsCreated > 0) {
+    await sendTelegram(`✅ <b>Email Intake</b> · ${summary}`)
+  } else {
+    // No new emails — silent (no spam)
+  }
 }
 
-run().catch(async err => { console.error('❌', err.message); await sendTG(`🔴 <b>Intake FAILED</b>\n${err.message}`); process.exit(1) })
+run().catch(async err => {
+  console.error('Fatal:', err.message)
+  await sendTelegram(`🔴 <b>${SCRIPT_NAME} FAILED</b>\n${err.message}`)
+  await supabase.from('heartbeat_log').insert({
+    script: SCRIPT_NAME, status: 'failed',
+    details: { error: err.message },
+  }).then(() => {}, () => {})
+  process.exit(1)
+})

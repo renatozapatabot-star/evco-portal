@@ -20,6 +20,7 @@ const ALLOWED_TABLES = [
   'trade_prospects', 'prospect_sightings', 'competitor_sightings',
   'pipeline_overview',
   'trafico_completeness',
+  'expediente_documentos',
 ]
 
 // Tables that contain client-specific data and MUST be filtered by a client identifier.
@@ -51,14 +52,15 @@ export async function GET(req: NextRequest) {
 
   const cookieCompanyId = req.cookies.get('company_id')?.value
   const cookieClave = req.cookies.get('company_clave')?.value
-  const brokerId = req.cookies.get('broker_id')?.value
 
   // For broker/admin: internal company_id values ('admin','internal') are not real
   // client identifiers — they must not be applied as filters on client-scoped tables.
   const effectiveCookieCompanyId = isInternal ? undefined : cookieCompanyId
   const effectiveCookieClave = isInternal ? undefined : cookieClave
 
-  const claveCliente = params.get('clave_cliente') || effectiveCookieClave || undefined
+  // Only apply clave_cliente when explicitly passed — not every table has this column.
+  // Client isolation for tables without clave_cliente is handled by company_id filter.
+  const claveCliente = params.get('clave_cliente') || undefined
   const cveCliente = params.get('cve_cliente') || undefined
   const companyId = effectiveCookieCompanyId || params.get('company_id') || undefined
   const traficoPrefix = params.get('trafico_prefix')
@@ -84,12 +86,22 @@ export async function GET(req: NextRequest) {
   if (cveCliente) q = q.eq('cve_cliente', cveCliente)
   if (companyId) q = q.eq('company_id', companyId)
 
-  if (brokerId) q = q.eq('broker_id', brokerId)
+  // broker_id filter removed — not all tables have this column,
+  // and this is a single-broker system (Patente 3596).
 
   if (traficoPrefix) q = q.like('trafico', `${traficoPrefix}%`)
 
   const cveTrafico = params.get('cve_trafico')
   if (cveTrafico) q = q.eq('cve_trafico', cveTrafico)
+
+  // Generic gte filter — e.g. gte_field=fecha_llegada&gte_value=2024-01-01
+  const gteField = params.get('gte_field')
+  const gteValue = params.get('gte_value')
+  if (gteField && gteValue) q = q.gte(gteField, gteValue)
+
+  // Not-null filter — e.g. not_null=pedimento filters to rows where column is not null
+  const notNullField = params.get('not_null')
+  if (notNullField) q = q.not(notNullField, 'is', null)
 
   if (orderBy) q = q.order(orderBy, { ascending: orderDir })
 

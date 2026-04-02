@@ -11,7 +11,9 @@ import { calculateCruzScore, extractScoreInput, statusDays } from '@/lib/cruz-sc
 import { useSort } from '@/hooks/use-sort'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { ErrorBoundary } from '@/components/error-boundary'
+import { useSessionCache } from '@/hooks/use-session-cache'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { ErrorCard } from '@/components/ui/ErrorCard'
 
 interface TraficoRow {
   trafico: string; estatus?: string; fecha_llegada?: string | null
@@ -52,6 +54,7 @@ export default function TraficosPage() {
 function TraficosContent() {
   const [rows, setRows] = useState<TraficoRow[]>([])
   const [loading, setLoading] = useState(true)
+  const [fetchError, setFetchError] = useState<string | null>(null)
   const searchParams = useSearchParams()
   const [search, setSearch] = useState(searchParams.get('q') || '')
   const sortParam = searchParams.get('sort')
@@ -63,6 +66,7 @@ function TraficosContent() {
   const { sort, toggleSort } = useSort('traficos', { column: 'fecha_llegada', direction: 'desc' })
   const router = useRouter()
   const isMobile = useIsMobile()
+  const { getCached, setCache } = useSessionCache()
 
   // Cookie values in state to avoid SSR/client hydration mismatch.
   // getCookieValue returns undefined during SSR (no document), so we
@@ -78,7 +82,7 @@ function TraficosContent() {
     setClientClave(getCookieValue('company_clave') ?? '')
     setUserRole(getCookieValue('user_role') ?? '')
     const cn = getCookieValue('company_name')
-    setCompanyName(cn ? decodeURIComponent(cn) : '')
+    setCompanyName(cn ?? '')
     setCookiesReady(true)
   }, [])
 
@@ -94,12 +98,15 @@ function TraficosContent() {
     const traficosParams = new URLSearchParams({ table: 'traficos', limit: '5000', order_by: 'fecha_llegada', order_dir: 'desc' })
     if (!isInternal) {
       traficosParams.set('company_id', companyId)
-      if (clientClave) traficosParams.set('trafico_prefix', `${clientClave}-`)
+
     }
+    setFetchError(null)
+    const cached = getCached<TraficoRow[]>('traficos')
+    if (cached) setRows(cached)
     fetch(`/api/data?${traficosParams}`)
       .then(r => r.json())
-      .then(d => { const arr = d.data ?? d; setRows(Array.isArray(arr) ? arr : []) })
-      .catch(() => setRows([]))
+      .then(d => { const arr = d.data ?? d; const rows = Array.isArray(arr) ? arr : []; setRows(rows); setCache('traficos', rows) })
+      .catch(() => setFetchError('Error cargando tráficos. Reintentar →'))
       .finally(() => setLoading(false))
 
     // Document counts
@@ -199,8 +206,15 @@ function TraficosContent() {
         </div>
       </div>
 
+      {/* Error state */}
+      {fetchError && (
+        <div style={{ marginBottom: 16 }}>
+          <ErrorCard message={fetchError} onRetry={() => { setFetchError(null); setLoading(true); window.location.reload() }} />
+        </div>
+      )}
+
       {/* Stat Bar */}
-      {!loading && rows.length > 0 && (
+      {!loading && !fetchError && rows.length > 0 && (
         <div className="stat-bar" style={{ background: 'var(--bg-surface)', borderRadius: 'var(--radius-lg) var(--radius-lg) 0 0', overflow: 'hidden' }}>
           {[
             { key: 'activos', label: 'Activos', value: kpiActivos, danger: false },
@@ -263,7 +277,7 @@ function TraficosContent() {
 
         {/* Table — desktop only */}
         {!isMobile && <div className="traficos-table-wrap table-wrap" style={{ maxHeight: 'calc(100vh - 280px)', overflowY: 'auto' }}>
-          <table className="data-table">
+          <table className="data-table" aria-label="Lista de tráficos">
             <thead>
               <tr>
                 <th scope="col" style={{ width: 28 }}></th>

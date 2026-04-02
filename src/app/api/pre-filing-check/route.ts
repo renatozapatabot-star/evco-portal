@@ -124,7 +124,7 @@ async function runPreFilingCheck(traficoId: string, companyId: string) {
 }
 
 export async function POST(request: NextRequest) {
-  const companyId = request.cookies.get('company_id')?.value ?? 'evco'
+  const companyId = request.cookies.get('company_id')?.value ?? ''
   const { trafico_id, company_id } = await request.json()
   if (!trafico_id) {
     return NextResponse.json({ error: 'trafico_id required' }, { status: 400 })

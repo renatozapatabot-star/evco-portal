@@ -74,7 +74,7 @@ async function getGmailForUser(userEmail) {
 async function callAnthropic(model, system, userContent, maxTokens = 4096) {
   // Redirected to Ollama (local, free)
   const prompt = system ? system + '\n\n' + (typeof userContent === 'string' ? userContent : JSON.stringify(userContent)) : (typeof userContent === 'string' ? userContent : JSON.stringify(userContent))
-  const res = await fetch('http://localhost:11434/api/generate', {
+  const res = await fetch('http://127.0.0.1:11434/api/generate', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ model: 'qwen3.5:35b', prompt, stream: false })
@@ -84,33 +84,28 @@ async function callAnthropic(model, system, userContent, maxTokens = 4096) {
   return data.response
 }
 async function callAnthropicOLD(model, system, userContent, maxTokens = 4096) {
-  const start = Date.now()
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
+  // Redirected to Ollama (local, free)
+  const prompt = system ? system + '\n\n' + (typeof userContent === 'string' ? userContent : JSON.stringify(userContent)) : (typeof userContent === 'string' ? userContent : JSON.stringify(userContent))
+  const res = await fetch('http://127.0.0.1:11434/api/generate', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': ANTHROPIC_API_KEY,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({ model, max_tokens: maxTokens, system, messages: [{ role: 'user', content: userContent }] }),
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model: 'qwen3:8b', prompt, stream: false })
   })
+  if (!res.ok) throw new Error('Ollama error: ' + res.status)
   const data = await res.json()
-  const latency = Date.now() - start
-
-  if (data.error) throw new Error(`Anthropic ${model}: ${data.error.message}`)
-
-  // Cost tracking (Operational Resilience Rule #4)
-  const usage = data.usage || {}
-  await supabase.from('api_cost_log').insert({
-    model,
-    input_tokens: usage.input_tokens || 0,
-    output_tokens: usage.output_tokens || 0,
-    action: SCRIPT_NAME,
-    client_code: 'system',
-    latency_ms: latency,
-  }).then(() => {}, () => {})
-
-  return data.content?.filter(b => b.type === 'text').map(b => b.text).join('\n') || ''
+  return data.response
+}
+async function callAnthropicOLD(model, system, userContent, maxTokens = 4096) {
+  // Redirected to Ollama (local, free)
+  const prompt = system ? system + '\n\n' + (typeof userContent === 'string' ? userContent : JSON.stringify(userContent)) : (typeof userContent === 'string' ? userContent : JSON.stringify(userContent))
+  const res = await fetch('http://127.0.0.1:11434/api/generate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model: 'qwen3:8b', prompt, stream: false })
+  })
+  if (!res.ok) throw new Error('Ollama error: ' + res.status)
+  const data = await res.json()
+  return data.response
 }
 
 // ── Extract invoice intelligence from PDF ─────────────────────────────────

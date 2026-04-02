@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from 'react'
 import { Package, AlertTriangle, Clock, Search, Info } from 'lucide-react'
-import { COMPANY_ID, CLIENT_CLAVE } from '@/lib/client-config'
+import { getCompanyIdCookie, getClientClaveCookie } from '@/lib/client-config'
 import { fmtDate } from '@/lib/format-utils'
 
 // ── Dark theme tokens ──
@@ -59,7 +59,8 @@ export function Anexo24View() {
   const [companyFilter, setCompanyFilter] = useState('')
 
   useEffect(() => {
-    fetch(`/api/data?table=entradas&company_id=${COMPANY_ID}&limit=2000&order_by=fecha_llegada_mercancia&order_dir=desc`)
+    const companyId = getCompanyIdCookie()
+    fetch(`/api/data?table=entradas&company_id=${companyId}&limit=2000&order_by=fecha_llegada_mercancia&order_dir=desc`)
       .then(r => r.json())
       .then(d => setEntradas((d.data ?? []) as EntradaRow[]))
       .catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })

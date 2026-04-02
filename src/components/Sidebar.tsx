@@ -69,7 +69,7 @@ export function Sidebar() {
     else setRole('client')
     setClientClave(getCookieValue('company_clave') ?? '')
     const cn = getCookieValue('company_name')
-    setCompanyName(cn ? decodeURIComponent(cn) : '')
+    setCompanyName(cn ?? '')
   }, [])
 
   // Persist collapsed state
@@ -214,6 +214,18 @@ export function Sidebar() {
           </div>
         )}
       </div>
+
+      {/* ── Heritage footer ── */}
+      {!collapsed && (
+        <div style={{ padding: '12px 20px', borderTop: `1px solid rgba(255,255,255,0.10)` }}>
+          <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--slate-300)', margin: 0 }}>
+            Renato Zapata & Company
+          </p>
+          <p style={{ fontSize: 11, color: 'var(--slate-500)', margin: '2px 0 0' }}>
+            Patente 3596 &middot; Aduana 240 &middot; <span style={{ color: 'rgba(196,150,60,0.7)' }}>Est. 1941</span>
+          </p>
+        </div>
+      )}
 
       {/* ── Bottom: User info + Toggle ── */}
       <div style={{ flexShrink: 0, borderTop: `1px solid ${T.border}`, padding: collapsed ? '12px 8px' : '12px' }}>
@@ -379,13 +391,13 @@ function NavItem({
         gap: 10, width: '100%',
         padding: collapsed ? '10px 0' : '10px 12px',
         justifyContent: collapsed ? 'center' : 'flex-start',
-        background: active ? 'rgba(196,162,78,0.08)' : 'transparent',
+        background: active ? 'var(--gold-bg, rgba(196,150,60,0.08))' : 'transparent',
         border: 'none',
         borderLeft: 'none',
         borderRadius: 6,
         color: active ? (gold ? T.gold : T.text) : (gold ? T.gold : T.textMuted),
         fontSize: 13, fontWeight: active ? 700 : 500,
-        fontFamily: 'var(--font-geist-sans)',
+        fontFamily: 'var(--font-ui)',
         cursor: 'pointer', transition: 'all 100ms',
         textAlign: 'left', whiteSpace: 'nowrap',
         position: 'relative',
@@ -395,7 +407,7 @@ function NavItem({
         if (!active && !gold) e.currentTarget.style.color = T.text
       }}
       onMouseLeave={e => {
-        if (!active) e.currentTarget.style.background = active ? 'rgba(196,162,78,0.08)' : 'transparent'
+        if (!active) e.currentTarget.style.background = 'transparent'
         if (!active && !gold) e.currentTarget.style.color = T.textMuted
       }}
     >

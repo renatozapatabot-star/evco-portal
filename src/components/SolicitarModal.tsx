@@ -31,7 +31,7 @@ interface Props {
 }
 
 export function SolicitarModal({ traficoId, missingDocs, onClose, onSuccess }: Props) {
-  const companyId = getCookieValue('company_id') ?? 'evco'
+  const companyId = getCookieValue('company_id') ?? ''
   const router = useRouter()
   const { toast } = useToast()
   const [selected, setSelected] = useState<string[]>(missingDocs)
@@ -141,7 +141,7 @@ export function SolicitarModal({ traficoId, missingDocs, onClose, onSuccess }: P
         transform: 'translate(-50%,-50%)',
         width: 440, maxWidth: '90vw', maxHeight: '80vh',
         overflow: 'auto',
-        background: '#FFFFFF', borderRadius: 12, padding: 24,
+        background: 'var(--card-bg)', borderRadius: 12, padding: 24,
         zIndex: 999,
         boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
       }}>
@@ -257,7 +257,7 @@ export function SolicitarModal({ traficoId, missingDocs, onClose, onSuccess }: P
             onClick={onClose}
             style={{
               flex: 1, padding: '12px', borderRadius: 8,
-              border: '1px solid #E8E5E0', background: '#FFFFFF',
+              border: '1px solid #E8E5E0', background: 'var(--card-bg)',
               color: '#6B6B6B', fontSize: 14, fontWeight: 700,
               cursor: 'pointer', minHeight: 60,
             }}

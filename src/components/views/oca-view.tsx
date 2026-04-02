@@ -1,9 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { CLIENT_NAME, CLIENT_RFC } from '@/lib/client-config'
+import { getClientNameCookie, getClientRfcCookie } from '@/lib/client-config'
 
-const T = { bg: '#FAFAF8', surface: '#FFFFFF', border: '#E8E6E0', surfaceAlt: '#F5F3EF', text: '#1A1A1A', textSub: '#6B6B6B', textMuted: '#999999', navy: '#BA7517', gold: '#BA7517', goldBg: '#FFF8EB', goldBorder: '#E8C84A', green: '#16A34A', greenBg: '#EAF3DE', shadow: '0 1px 3px rgba(0,0,0,0.07)' }
+const T = { bg: '#FAFAF8', surface: 'var(--card-bg)', border: '#E8E6E0', surfaceAlt: '#F5F3EF', text: '#1A1A1A', textSub: '#6B6B6B', textMuted: '#999999', navy: '#BA7517', gold: '#BA7517', goldBg: '#FFF8EB', goldBorder: '#E8C84A', green: '#16A34A', greenBg: '#EAF3DE', shadow: '0 1px 3px rgba(0,0,0,0.07)' }
 
 const EXAMPLES = [
   'Pellets de polipropileno virgen, densidad 0.905 g/cm³, grado inyección, color natural',
@@ -35,7 +35,7 @@ export function OCAView() {
 
   function downloadOpinion() {
     if (!result) return
-    const content = [`OPINIÓN DE CLASIFICACIÓN ARANCELARIA`, `No. ${opinionNum}`, ``, `Fecha: ${new Date().toLocaleDateString('es-MX', { day: '2-digit', month: 'long', year: 'numeric' })}`, `Cliente: ${CLIENT_NAME}`, `RFC: ${CLIENT_RFC}`, ``, `I. PRODUCTO`, product, material ? `Material: ${material}` : '', uso ? `Uso: ${uso}` : '', ``, `II. CLASIFICACIÓN`, `Fracción Arancelaria: ${result.fraccion}`, `Descripción TIGIE: ${result.descripcion}`, `Arancel General: ${result.arancel}`, `T-MEC/USMCA: ${result.tmec}`, ``, `III. ANÁLISIS`, result.analisis, ``, `IV. FUNDAMENTO LEGAL`, result.fundamento, ``, `─`.repeat(60), `Renato Zapata III — Director General`, `Renato Zapata & Company · Patente 3596`].filter(Boolean).join('\n')
+    const content = [`OPINIÓN DE CLASIFICACIÓN ARANCELARIA`, `No. ${opinionNum}`, ``, `Fecha: ${new Date().toLocaleDateString('es-MX', { day: '2-digit', month: 'long', year: 'numeric' })}`, `Cliente: ${getClientNameCookie()}`, `RFC: ${getClientRfcCookie()}`, ``, `I. PRODUCTO`, product, material ? `Material: ${material}` : '', uso ? `Uso: ${uso}` : '', ``, `II. CLASIFICACIÓN`, `Fracción Arancelaria: ${result.fraccion}`, `Descripción TIGIE: ${result.descripcion}`, `Arancel General: ${result.arancel}`, `T-MEC/USMCA: ${result.tmec}`, ``, `III. ANÁLISIS`, result.analisis, ``, `IV. FUNDAMENTO LEGAL`, result.fundamento, ``, `─`.repeat(60), `Renato Zapata III — Director General`, `Renato Zapata & Company · Patente 3596`].filter(Boolean).join('\n')
     const blob = new Blob([content], { type: 'text/plain;charset=utf-8' })
     const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `${opinionNum}.txt`; a.click(); URL.revokeObjectURL(url)
   }

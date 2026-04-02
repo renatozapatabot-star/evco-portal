@@ -1,5 +1,4 @@
 import { createClient } from '@supabase/supabase-js'
-import { PORTAL_DATE_FROM } from '@/lib/data'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -13,79 +12,79 @@ export interface StatusResult {
 }
 
 export async function computeStatusSentence(
-  clientClave: string
+  clientClave: string,
+  companyId?: string
 ): Promise<StatusResult> {
+  const useCompanyId = companyId && companyId !== 'internal' && companyId !== 'admin'
 
-  // Use ilike trafico prefix (same filter as dashboard) for consistent counts
-  const prefix = `${clientClave}-%`
-  const [criticalRes, overdueRes, semaforoRes, enRutaRes] = await Promise.all([
-    supabase
-      .from('traficos')
-      .select('id', { count: 'exact', head: true })
-      .ilike('trafico', prefix)
-      .not('estatus', 'ilike', '%cruz%')
-      .is('pedimento', null)
-      .gte('fecha_llegada', PORTAL_DATE_FROM),
+  // Semáforo rojo count
+  let semaforoQ = supabase
+    .from('traficos')
+    .select('trafico', { count: 'exact', head: true })
+    .eq('semaforo', 1)
+    .is('fecha_cruce', null)
+  if (useCompanyId) semaforoQ = semaforoQ.eq('company_id', companyId!)
 
-    supabase
-      .from('expediente_documentos')
-      .select('id', { count: 'exact', head: true })
-      .eq('clave_cliente', clientClave)
-      .lt('completitud_pct', 100)
-      .lt('fecha_limite', new Date().toISOString()),
+  // Active tráficos count
+  let activeQ = supabase
+    .from('traficos')
+    .select('id', { count: 'exact', head: true })
+    .not('estatus', 'ilike', '%cruz%')
+    .gte('fecha_llegada', '2024-01-01')
+  if (useCompanyId) activeQ = activeQ.eq('company_id', companyId!)
 
-    supabase
-      .from('traficos')
-      .select('trafico', { count: 'exact', head: true })
-      .ilike('trafico', prefix)
-      .eq('semaforo', 1)
-      .is('fecha_cruce', null)
-      .gte('fecha_llegada', PORTAL_DATE_FROM),
+  // Pending entradas (no trafico linked)
+  let entradasQ = supabase
+    .from('entradas')
+    .select('fecha_llegada_mercancia', { count: 'exact' })
+    .is('trafico', null)
+    .order('fecha_llegada_mercancia', { ascending: true })
+    .limit(1)
+  if (useCompanyId) entradasQ = entradasQ.eq('company_id', companyId!)
 
-    supabase
-      .from('traficos')
-      .select('id', { count: 'exact', head: true })
-      .ilike('trafico', prefix)
-      .not('estatus', 'ilike', '%cruz%')
-      .gte('fecha_llegada', PORTAL_DATE_FROM)
+  const [semaforoRes, activeRes, entradasRes] = await Promise.all([
+    semaforoQ, activeQ, entradasQ,
   ])
 
-  const criticalCount = criticalRes.count ?? 0
-  const overdueCount = overdueRes.count ?? 0
   const semaforoRojo = semaforoRes.count ?? 0
-  const enRuta = enRutaRes.count ?? 0
-  const total = criticalCount + overdueCount
+  const activeTraficos = activeRes.count ?? 0
+  const pendingEntradas = entradasRes.count ?? 0
+  const oldestEntrada = entradasRes.data?.[0]?.fecha_llegada_mercancia
+  const oldestDays = oldestEntrada
+    ? Math.floor((Date.now() - new Date(oldestEntrada as string).getTime()) / 86400000)
+    : 0
 
+  // Red: semáforo rojo
   if (semaforoRojo > 0) {
     return {
       level: 'red',
-      sentence: `Acción urgente — ${semaforoRojo} semaforo${semaforoRojo > 1 ? 's' : ''} rojo${semaforoRojo > 1 ? 's' : ''} pendiente${semaforoRojo > 1 ? 's' : ''}`,
-      count: total
+      sentence: `⚠ ${semaforoRojo} semáforo${semaforoRojo > 1 ? 's' : ''} rojo · Requiere atención`,
+      count: semaforoRojo,
     }
   }
 
-  if (total > 5) {
-    return {
-      level: 'red',
-      sentence: `${total} operaciones requieren atención inmediata`,
-      count: total
-    }
-  }
-
-  if (total > 0) {
-    const parts: string[] = []
-    if (overdueCount > 0) parts.push(`${overdueCount} documento${overdueCount > 1 ? 's' : ''} vencido${overdueCount > 1 ? 's' : ''}`)
-    if (criticalCount > 0) parts.push(`${criticalCount} tráfico${criticalCount > 1 ? 's' : ''} crítico${criticalCount > 1 ? 's' : ''}`)
+  // Amber: old entradas
+  if (oldestDays > 30) {
     return {
       level: 'amber',
-      sentence: `${total} acciones pendientes — ${parts.join(', ')}`,
-      count: total
+      sentence: `${pendingEntradas} entrada${pendingEntradas !== 1 ? 's' : ''} pendiente${pendingEntradas !== 1 ? 's' : ''} · La más antigua: ${oldestDays} días`,
+      count: pendingEntradas,
     }
   }
 
+  // Amber: many pending entradas
+  if (pendingEntradas > 10) {
+    return {
+      level: 'amber',
+      sentence: `${pendingEntradas} entradas sin tráfico asignado`,
+      count: pendingEntradas,
+    }
+  }
+
+  // Green
   return {
     level: 'green',
-    sentence: `Todo en orden — ${enRuta} en ruta, sin acciones urgentes`,
-    count: 0
+    sentence: `Todo en orden — ${activeTraficos} en ruta, sin acciones urgentes`,
+    count: 0,
   }
 }

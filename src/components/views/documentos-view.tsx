@@ -3,8 +3,9 @@
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import { Upload, CheckCircle, AlertTriangle } from 'lucide-react'
-import { CLIENT_NAME } from '@/lib/client-config'
+import { getClientNameCookie } from '@/lib/client-config'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { ErrorCard } from '@/components/ui/ErrorCard'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
@@ -103,14 +104,25 @@ function UploadZone({ docId, onUploaded }: { docId: string; onUploaded: (name: s
 export function DocumentosView() {
   const [companyDocs, setCompanyDocs] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [docError, setDocError] = useState<string | null>(null)
   const [filter, setFilter] = useState('Todos')
   const [uploaded, setUploaded] = useState<Record<string, { name: string; time: string }>>({})
 
-  useEffect(() => {
+  function loadDocs() {
+    setLoading(true)
+    setDocError(null)
     supabase.from('company_documents').select('*').limit(100)
-      .then(({ data }) => { setCompanyDocs(data || []); setLoading(false) })
-      .then(undefined, () => setLoading(false))
-  }, [])
+      .then(({ data, error }) => {
+        if (error) { setDocError('No se pudieron cargar los documentos.') }
+        else { setCompanyDocs(data || []) }
+        setLoading(false)
+      }, () => {
+        setDocError('No se pudieron cargar los documentos.')
+        setLoading(false)
+      })
+  }
+
+  useEffect(() => { loadDocs() }, [])
 
   const filtered = filter === 'Todos' ? LEGAL_DOCS : LEGAL_DOCS.filter(d => d.category === filter)
   const requiredDocs = LEGAL_DOCS.filter(d => d.required)
@@ -128,12 +140,20 @@ export function DocumentosView() {
     }
   }
 
+  if (docError) {
+    return (
+      <div style={{ padding: 32 }}>
+        <ErrorCard message={docError} onRetry={loadDocs} />
+      </div>
+    )
+  }
+
   if (!loading && companyDocs.length === 0 && Object.keys(uploaded).length === 0) {
     return (
       <div style={{ padding: 32 }}>
         <div style={{ marginBottom: 24 }}>
           <h1 className="pg-title">Documentos Legales</h1>
-          <p className="pg-meta">{CLIENT_NAME} &middot; Documentos corporativos y de cumplimiento</p>
+          <p className="pg-meta">{getClientNameCookie()} &middot; Documentos corporativos y de cumplimiento</p>
         </div>
         <EmptyState
           icon="📄"
@@ -149,7 +169,7 @@ export function DocumentosView() {
     <div style={{ padding: 32 }}>
       <div style={{ marginBottom: 24 }}>
         <h1 className="pg-title">Documentos Legales</h1>
-        <p className="pg-meta">{CLIENT_NAME} &middot; Documentos corporativos y de cumplimiento</p>
+        <p className="pg-meta">{getClientNameCookie()} &middot; Documentos corporativos y de cumplimiento</p>
       </div>
 
       {/* Urgency banner for missing required documents */}

@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Bell } from 'lucide-react'
 import { GOLD } from '@/lib/design-system'
-import { CLIENT_CLAVE, COMPANY_ID } from '@/lib/client-config'
+import { getClientClaveCookie, getCompanyIdCookie } from '@/lib/client-config'
 
 type Notif = { id: string; type: string; title: string; sub: string; time: string; read: boolean; color: string }
 
@@ -20,10 +20,12 @@ export function NotificationsDropdown() {
   useEffect(() => {
     async function load() {
       try {
+        const clientClave = getClientClaveCookie()
+        const companyId = getCompanyIdCookie()
         const [trafRes, entRes, factRes] = await Promise.all([
-          fetch(`/api/data?table=traficos&company_id=${COMPANY_ID}&trafico_prefix=${CLIENT_CLAVE}-&limit=200&order_by=fecha_llegada&order_dir=desc`).then(r => r.json()),
-          fetch(`/api/data?table=entradas&cve_cliente=${CLIENT_CLAVE}&limit=100&order_by=fecha_llegada_mercancia&order_dir=desc`).then(r => r.json()),
-          fetch(`/api/data?table=aduanet_facturas&clave_cliente=${CLIENT_CLAVE}&limit=50&order_by=fecha_pago&order_dir=desc`).then(r => r.json()),
+          fetch(`/api/data?table=traficos&company_id=${companyId}&limit=200&order_by=fecha_llegada&order_dir=desc`).then(r => r.json()),
+          fetch(`/api/data?table=entradas&cve_cliente=${clientClave}&limit=100&order_by=fecha_llegada_mercancia&order_dir=desc`).then(r => r.json()),
+          fetch(`/api/data?table=aduanet_facturas&clave_cliente=${clientClave}&limit=50&order_by=fecha_pago&order_dir=desc`).then(r => r.json()),
         ])
         const traf = trafRes.data ?? trafRes ?? []
         const ent = entRes.data ?? entRes ?? []
@@ -40,7 +42,7 @@ export function NotificationsDropdown() {
         // Faltantes
         ent.filter((e: any) => e.tiene_faltantes).slice(0, 3).forEach((e: any) => notifs.push({
           id: `falt-${e.cve_entrada}`, type: 'warning', title: `Faltante: ${e.cve_entrada}`,
-          sub: e.descripcion_mercancia?.substring(0, 40) || 'Entrada con faltantes', time: e.fecha_llegada_mercancia || '', read: false, color: '#F59E0B',
+          sub: e.descripcion_mercancia?.substring(0, 40) || 'Entrada con faltantes', time: e.fecha_llegada_mercancia || '', read: false, color: 'var(--warning-500)',
         }))
 
         // Damaged
@@ -61,7 +63,7 @@ export function NotificationsDropdown() {
         traf.filter((t: any) => t.estatus === 'En Proceso' && t.fecha_llegada && t.fecha_llegada < sevenDaysAgo)
           .slice(0, 3).forEach((t: any) => notifs.push({
             id: `slow-${t.trafico}`, type: 'warning', title: `Lento: ${t.trafico}`,
-            sub: `En Proceso > 7 días — llegó ${t.fecha_llegada}`, time: t.fecha_llegada, read: false, color: '#F59E0B',
+            sub: `En Proceso > 7 días — llegó ${t.fecha_llegada}`, time: t.fecha_llegada, read: false, color: 'var(--warning-500)',
           }))
 
         setItems(notifs.map(n => ({ ...n, read: readIds.has(n.id) })))

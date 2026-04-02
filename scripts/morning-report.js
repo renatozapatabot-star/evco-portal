@@ -285,7 +285,7 @@ FINANCIERO:
 📄 Pedimentos: ${fmtNum(r.pedimentos)}
 📞 Llamadas ayer: ${r.callCount}`
 
-    allRisks.push(...r.topRisks.map(t => ({ ...t, client: client.name })
+    allRisks.push(...r.topRisks.map(t => ({ ...t, client: client.name })))
   }
 
   // AI Analysis

@@ -145,7 +145,7 @@ export function NotificationPanel({
           bottom: 0,
           width: 400,
           maxWidth: '90vw',
-          background: 'var(--surface-card, #FFFFFF)',
+          background: 'var(--card-bg)',
           borderLeft: '1px solid var(--border-default, #E8E5E0)',
           boxShadow: '-8px 0 32px rgba(0,0,0,0.12)',
           zIndex: 999,

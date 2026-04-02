@@ -1,11 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { CLIENT_NAME, CLIENT_RFC } from '@/lib/client-config'
+import { createClient } from '@supabase/supabase-js'
 
 const OLLAMA_BASE_URL = process.env.OLLAMA_BASE_URL || 'http://localhost:11434'
+const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 
 export async function POST(request: NextRequest) {
   const { product, material, uso, opinionNum } = await request.json()
   if (!product?.trim()) return NextResponse.json({ error: 'Descripción del producto requerida' }, { status: 400 })
+
+  // Resolve client identity from cookie → companies table
+  const companyId = request.cookies.get('company_id')?.value ?? ''
+  const { data: company } = await supabase
+    .from('companies')
+    .select('name, rfc')
+    .eq('company_id', companyId)
+    .single()
+  const clientName = company?.name ?? ''
+  const clientRfc = company?.rfc ?? ''
 
   const prompt = `Eres un experto en clasificación arancelaria de México con 20 años de experiencia.
 Clasifica el siguiente producto bajo la TIGIE (Tarifa de los Impuestos Generales de Importación y Exportación de México).
@@ -14,8 +25,8 @@ PRODUCTO: ${product}
 ${material ? `MATERIAL/COMPOSICIÓN: ${material}` : ''}
 ${uso ? `USO/APLICACIÓN: ${uso}` : ''}
 
-CONTEXTO: Este producto será importado a México por ${CLIENT_NAME}
-(RFC ${CLIENT_RFC}) desde Estados Unidos de América.
+CONTEXTO: Este producto será importado a México por ${clientName}
+(RFC ${clientRfc}) desde Estados Unidos de América.
 
 Responde ÚNICAMENTE con un JSON válido con esta estructura exacta:
 {

@@ -77,7 +77,7 @@ export default function ProveedoresPage() {
     })
     if (!isInternal && companyId) {
       params.set('company_id', companyId)
-      if (clientClave) params.set('trafico_prefix', `${clientClave}-`)
+
     }
 
     fetch(`/api/data?${params}`)

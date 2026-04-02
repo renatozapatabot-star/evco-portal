@@ -43,7 +43,7 @@ export default async function RevenuePage() {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 24 }}>
         {cards.map(c => (
-          <div key={c.label} style={{ background: '#161616', border: '1px solid #2A2A2A', borderRadius: 12, padding: 20 }}>
+          <div key={c.label} style={{ background: 'var(--navy-900)', border: '1px solid #2A2A2A', borderRadius: 12, padding: 20 }}>
             <div style={{ fontSize: 11, fontWeight: 600, color: '#666', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>{c.label}</div>
             <div style={{ fontSize: 32, fontWeight: 800, color: c.color }}>{c.value}</div>
             <div style={{ fontSize: 12, color: '#9C9690', marginTop: 4 }}>{c.sub}</div>

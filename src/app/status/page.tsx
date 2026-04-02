@@ -46,8 +46,8 @@ export default async function StatusPage() {
     healthy: { color: '#166534', bg: '#DCFCE7', label: 'Operacional', dot: '#16A34A' },
     operational: { color: '#166534', bg: '#DCFCE7', label: 'Operacional', dot: '#16A34A' },
     degraded: { color: '#92400E', bg: '#FEF3C7', label: 'Degradado', dot: '#D97706' },
-    pending: { color: '#1E40AF', bg: '#EFF6FF', label: 'Pendiente', dot: '#3B82F6' },
-    down: { color: '#991B1B', bg: '#FEE2E2', label: 'Caído', dot: '#DC2626' },
+    pending: { color: '#1E40AF', bg: '#EFF6FF', label: 'Pendiente', dot: 'var(--info-500)' },
+    down: { color: '#991B1B', bg: '#FEE2E2', label: 'Caído', dot: 'var(--danger-500)' },
   }
 
   const allOp = systems.every(s => s.status === 'operational' || s.status === 'healthy')
@@ -63,7 +63,7 @@ export default async function StatusPage() {
           </div>
         </div>
 
-        <div style={{ background: '#161616', border: '1px solid #2A2A2A', borderRadius: 12, padding: 20, marginBottom: 12, borderTop: `4px solid ${allOp ? '#16A34A' : '#D97706'}` }}>
+        <div style={{ background: 'var(--navy-900)', border: '1px solid #2A2A2A', borderRadius: 12, padding: 20, marginBottom: 12, borderTop: `4px solid ${allOp ? '#16A34A' : '#D97706'}` }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <span style={{ width: 12, height: 12, borderRadius: '50%', background: allOp ? '#16A34A' : '#D97706', display: 'inline-block' }} />
             <div>
@@ -73,7 +73,7 @@ export default async function StatusPage() {
           </div>
         </div>
 
-        <div style={{ background: '#161616', border: '1px solid #2A2A2A', borderRadius: 12, padding: 20 }}>
+        <div style={{ background: 'var(--navy-900)', border: '1px solid #2A2A2A', borderRadius: 12, padding: 20 }}>
           <h2 style={{ fontSize: 13, fontWeight: 700, color: '#666', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 16 }}>Integraciones</h2>
           {systems.map((sys, i) => {
             const c = cfg[sys.status] || cfg.degraded

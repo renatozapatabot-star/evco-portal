@@ -1,5 +1,3 @@
-import { daysUntilMVE } from '@/lib/compliance-dates'
-
 export interface PriorityChip {
   label: string
   query: string
@@ -14,11 +12,7 @@ export function getMostActionableChips(state: {
   congestedMinutes?: number
 }): PriorityChip[] {
   const chips: PriorityChip[] = []
-  const mveDays = daysUntilMVE()
 
-  if (mveDays <= 1) {
-    chips.push({ label: `MVE vence ${mveDays <= 0 ? 'HOY' : 'mañana'}`, query: '¿Qué necesito para cumplir con MVE antes del cierre?', urgency: 'critical' })
-  }
   if (state.urgentCount > 0) {
     chips.push({ label: `${state.urgentCount} tráficos urgentes`, query: `Tengo ${state.urgentCount} tráficos urgentes. ¿Cuál es el más crítico y qué debo hacer primero?`, urgency: 'critical' })
   }

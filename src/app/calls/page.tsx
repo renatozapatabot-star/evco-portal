@@ -34,7 +34,7 @@ function fmtDuration(s: number) {
 }
 
 export default function CallsPage() {
-  const companyId = getCookieValue('company_id') ?? 'evco'
+  const companyId = getCookieValue('company_id') ?? ''
   const [calls, setCalls] = useState<CallTranscript[]>([])
   const [loading, setLoading] = useState(true)
   const [expanded, setExpanded] = useState<string | null>(null)

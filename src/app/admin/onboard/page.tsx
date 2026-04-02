@@ -6,7 +6,7 @@ import { GOLD, GREEN, RED } from '@/lib/design-system'
 import { getCookieValue, PORTAL_URL } from '@/lib/client-config'
 
 const T = {
-  bg: 'var(--bg-dark)', surface: '#161616', border: '#2A2A2A',
+  bg: 'var(--bg-dark)', surface: 'var(--navy-900)', border: '#2A2A2A',
   text: '#E8E6E0', sub: '#9C9690', muted: '#666',
   gold: GOLD, green: GREEN, red: RED,
 }
@@ -378,7 +378,7 @@ function StatusChip({ ok, label, error: errorMsg }: { ok: boolean; label: string
         display: 'inline-flex', alignItems: 'center', gap: 6,
         padding: '4px 12px', borderRadius: 9999, fontSize: 12, fontWeight: 600,
         background: ok ? 'rgba(22,163,74,0.12)' : 'rgba(220,38,38,0.12)',
-        color: ok ? '#16A34A' : '#DC2626',
+        color: ok ? '#16A34A' : 'var(--danger-500)',
         border: `1px solid ${ok ? 'rgba(22,163,74,0.25)' : 'rgba(220,38,38,0.25)'}`,
       }}
     >

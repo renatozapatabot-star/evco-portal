@@ -27,11 +27,22 @@ export function BridgeTimes() {
   const withData = allBridges.filter(b => b.commercial !== null)
   const fastest = withData.length > 0 ? withData.reduce((a, b) => (a.commercial! < b.commercial! ? a : b)) : null
 
-  function statusColor(s: string) { return s === 'green' ? '#16A34A' : s === 'amber' ? '#D97706' : s === 'red' ? '#DC2626' : '#6B7280' }
+  function statusColor(s: string) { return s === 'green' ? '#16A34A' : s === 'amber' ? '#D97706' : s === 'red' ? 'var(--danger-500)' : '#6B7280' }
 
   if (withData.length === 0) return (
-    <div style={{ padding: 20, textAlign: 'center', color: '#9C9890', fontSize: 13, fontStyle: 'italic' }}>
-      Datos de puentes actualizándose · cada 30 min
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 0' }}>
+      <div>
+        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary, #1A1A1A)' }}>World Trade Bridge</div>
+        <div style={{ fontSize: 12, color: '#9C9890', marginTop: 2 }}>Tiempos no disponibles en este momento</div>
+      </div>
+      <a
+        href="https://bwt.cbp.gov/"
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{ fontSize: 12, fontWeight: 600, color: 'var(--info-500, #3B82F6)', textDecoration: 'none', whiteSpace: 'nowrap' }}
+      >
+        Ver en CBP.gov →
+      </a>
     </div>
   )
 

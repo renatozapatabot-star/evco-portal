@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { ChevronLeft, Check, AlertTriangle, X } from 'lucide-react'
-import { CLIENT_CLAVE, CLIENT_NAME, PATENTE } from '@/lib/client-config'
+import { getClientClaveCookie, getClientNameCookie, PATENTE } from '@/lib/client-config'
 import { fmtDate, fmtDesc } from '@/lib/format-utils'
 import { fmtCarrier } from '@/lib/carrier-names'
 import { createClient } from '@supabase/supabase-js'
@@ -43,9 +43,21 @@ interface Entrada {
 const fmtKg = (n: number | null | undefined) =>
   n ? `${Number(n).toLocaleString('es-MX')} kg` : ''
 
+/** Never render bare "." or empty — show contextual placeholder */
+const FieldVal = ({ value, type = 'expected' }: { value: string | number | null | undefined; type?: 'expected' | 'optional' }) => {
+  const v = value === null || value === undefined ? '' : String(value).trim()
+  if (!v || v === '.' || v === '—') {
+    return type === 'expected'
+      ? <span style={{ color: 'var(--slate-400)', fontStyle: 'italic', fontSize: 12 }}>Pendiente</span>
+      : <span style={{ color: 'var(--slate-300)', fontSize: 12 }}>N/A</span>
+  }
+  return <>{v}</>
+}
+
 const fmtTrafico = (id: string) => {
+  const clave = getClientClaveCookie()
   const clean = id.replace(/[\u2013\u2014]/g, '-')
-  return clean.startsWith(`${CLIENT_CLAVE}-`) ? clean : `${CLIENT_CLAVE}-${clean}`
+  return clean.startsWith(`${clave}-`) ? clean : `${clave}-${clean}`
 }
 
 const BoolBadge = ({ value, labelTrue, labelFalse }: { value: boolean | null | undefined; labelTrue: string; labelFalse: string }) => {
@@ -130,7 +142,7 @@ export default function EntradaDetailPage() {
 
       <div className="page-header">
         <h1 className="page-title">Entrada {entrada.cve_entrada}</h1>
-        <p className="page-sub">{CLIENT_NAME} &middot; Patente {PATENTE}</p>
+        <p className="page-sub">{getClientNameCookie()} &middot; Patente {PATENTE}</p>
       </div>
 
       {entrada.trafico && (
@@ -168,12 +180,12 @@ export default function EntradaDetailPage() {
                   <Link href="/traficos" style={{ color: '#1A6BFF', textDecoration: 'none', fontWeight: 600 }}>
                     {fmtTrafico(entrada.trafico)}
                   </Link>
-                ) : <span className="c-empty">&middot;</span>}
+                ) : <span style={{ color: 'var(--slate-400)', fontStyle: 'italic', fontSize: 12 }}>Sin dato</span>}
               </div>
             </div>
             <div className="d-cell">
               <div className="d-label">Proveedor</div>
-              <div className="d-val">{proveedorName ? titleCase(proveedorName) : <span className="c-empty">&middot;</span>}</div>
+              <div className="d-val">{proveedorName ? titleCase(proveedorName) : <span style={{ color: 'var(--slate-400)', fontStyle: 'italic', fontSize: 12 }}>Sin dato</span>}</div>
             </div>
             <div className="d-cell">
               <div className="d-label">Fecha Llegada</div>
@@ -181,19 +193,19 @@ export default function EntradaDetailPage() {
             </div>
             <div className="d-cell">
               <div className="d-label">Bultos Recibidos</div>
-              <div className="d-val mono">{entrada.cantidad_bultos?.toLocaleString('es-MX') || ''}</div>
+              <div className="d-val mono"><FieldVal value={entrada.cantidad_bultos?.toLocaleString('es-MX')} /></div>
             </div>
             <div className="d-cell">
               <div className="d-label">Num. Pedido</div>
-              <div className="d-val mono">{entrada.num_pedido || <span className="c-empty">&middot;</span>}</div>
+              <div className="d-val mono"><FieldVal value={entrada.num_pedido} type="optional" /></div>
             </div>
             <div className="d-cell">
               <div className="d-label">Peso Bruto</div>
-              <div className="d-val mono">{fmtKg(entrada.peso_bruto)}</div>
+              <div className="d-val mono"><FieldVal value={fmtKg(entrada.peso_bruto)} /></div>
             </div>
             <div className="d-cell">
               <div className="d-label">Peso Neto</div>
-              <div className="d-val mono">{entrada.peso_neto ? fmtKg(entrada.peso_neto) : <span className="c-empty">&middot;</span>}</div>
+              <div className="d-val mono"><FieldVal value={fmtKg(entrada.peso_neto)} /></div>
             </div>
           </div>
         </div>
@@ -219,11 +231,11 @@ export default function EntradaDetailPage() {
             <div className="d-grid">
               <div className="d-cell">
                 <div className="d-label">Transp. Americano</div>
-                <div className="d-val">{fmtCarrier(entrada.transportista_americano)}</div>
+                <div className="d-val"><FieldVal value={fmtCarrier(entrada.transportista_americano)} /></div>
               </div>
               <div className="d-cell">
                 <div className="d-label">Transp. Mexicano</div>
-                <div className="d-val">{fmtCarrier(entrada.transportista_mexicano)}</div>
+                <div className="d-val"><FieldVal value={fmtCarrier(entrada.transportista_mexicano)} /></div>
               </div>
             </div>
           </div>

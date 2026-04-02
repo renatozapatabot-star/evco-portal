@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from 'react'
 import { DollarSign, TrendingUp, TrendingDown, CreditCard, Search, BarChart3, AlertTriangle } from 'lucide-react'
-import { CLIENT_CLAVE, COMPANY_ID } from '@/lib/client-config'
+import { getClientClaveCookie, getCompanyIdCookie } from '@/lib/client-config'
 import { fmtMXN, fmtDate } from '@/lib/format-utils'
 import { GOLD } from '@/lib/design-system'
 
@@ -26,11 +26,13 @@ export function CuentasView() {
   const [finIntel, setFinIntel] = useState<FinancialIntel[]>([])
 
   useEffect(() => {
+    const clientClave = getClientClaveCookie()
+    const companyId = getCompanyIdCookie()
     Promise.all([
-      fetch(`/api/data?table=econta_cartera&cve_cliente=${CLIENT_CLAVE}&limit=5000&order_by=fecha&order_dir=desc`).then(r => r.json()),
-      fetch(`/api/data?table=econta_ingresos&cve_cliente=${CLIENT_CLAVE}&limit=5000&order_by=fecha&order_dir=desc`).then(r => r.json()),
-      fetch(`/api/data?table=econta_egresos&cve_cliente=${CLIENT_CLAVE}&limit=5000&order_by=fecha&order_dir=desc`).then(r => r.json()),
-      fetch(`/api/data?table=econta_facturas&cve_cliente=${CLIENT_CLAVE}&limit=5000&order_by=fecha&order_dir=desc`).then(r => r.json()),
+      fetch(`/api/data?table=econta_cartera&cve_cliente=${clientClave}&limit=5000&order_by=fecha&order_dir=desc`).then(r => r.json()),
+      fetch(`/api/data?table=econta_ingresos&cve_cliente=${clientClave}&limit=5000&order_by=fecha&order_dir=desc`).then(r => r.json()),
+      fetch(`/api/data?table=econta_egresos&cve_cliente=${clientClave}&limit=5000&order_by=fecha&order_dir=desc`).then(r => r.json()),
+      fetch(`/api/data?table=econta_facturas&cve_cliente=${clientClave}&limit=5000&order_by=fecha&order_dir=desc`).then(r => r.json()),
     ]).then(([c, i, e, f]) => {
       setCartera(c.data ?? [])
       setIngresos(i.data ?? [])
@@ -40,7 +42,7 @@ export function CuentasView() {
     }).catch(() => setLoading(false))
 
     // Load financial intelligence (non-blocking)
-    fetch(`/api/data?table=financial_intelligence&company_id=${COMPANY_ID}&limit=24&order_by=period&order_dir=desc`)
+    fetch(`/api/data?table=financial_intelligence&company_id=${companyId}&limit=24&order_by=period&order_dir=desc`)
       .then(r => r.json())
       .then(d => setFinIntel((d.data ?? []).reverse()))
       .catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
@@ -90,7 +92,7 @@ export function CuentasView() {
         <div>
           <h1 className="page-title">Cuentas & Finanzas</h1>
           <p className="text-[12.5px] mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
-            eConta · {cartera.length.toLocaleString()} movimientos cartera · Clave {CLIENT_CLAVE}
+            eConta · {cartera.length.toLocaleString()} movimientos cartera · Clave {getClientClaveCookie()}
           </p>
         </div>
       </div>
@@ -183,14 +185,14 @@ export function CuentasView() {
                 {aging.current > 0 && <div style={{ flex: aging.current, background: '#16A34A' }} />}
                 {aging.d30 > 0 && <div style={{ flex: aging.d30, background: '#D4952A' }} />}
                 {aging.d60 > 0 && <div style={{ flex: aging.d60, background: '#EA580C' }} />}
-                {aging.d90plus > 0 && <div style={{ flex: aging.d90plus, background: '#DC2626' }} />}
+                {aging.d90plus > 0 && <div style={{ flex: aging.d90plus, background: 'var(--danger-500)' }} />}
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 12 }}>
                 {[
                   { label: '0-30 días', value: aging.current, color: '#16A34A' },
                   { label: '30-60 días', value: aging.d30, color: '#D4952A' },
                   { label: '60-90 días', value: aging.d60, color: '#EA580C' },
-                  { label: '90+ días', value: aging.d90plus, color: '#DC2626' },
+                  { label: '90+ días', value: aging.d90plus, color: 'var(--danger-500)' },
                 ].map(b => (
                   <div key={b.label}>
                     <div style={{ fontSize: 11, fontWeight: 800, color: b.color, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{b.label}</div>

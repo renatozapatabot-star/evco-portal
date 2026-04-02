@@ -1,10 +1,17 @@
 import type { Metadata, Viewport } from "next"
 import { GeistSans } from 'geist/font/sans'
 import { GeistMono } from 'geist/font/mono'
-import { JetBrains_Mono } from 'next/font/google'
+import { DM_Sans, JetBrains_Mono } from 'next/font/google'
 import DashboardShellClient from "@/components/DashboardShellClient"
 import { QueryProvider } from "@/components/QueryProvider"
 import "./globals.css"
+
+const dmSans = DM_Sans({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-sans',
+  display: 'swap',
+})
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ['latin'],
@@ -40,7 +47,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="es" className={`${GeistSans.variable} ${GeistMono.variable} ${jetbrainsMono.variable}`}>
+    <html lang="es" className={`${GeistSans.variable} ${GeistMono.variable} ${dmSans.variable} ${jetbrainsMono.variable}`}>
       <head>
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#B8953F" />
@@ -52,18 +59,12 @@ export default function RootLayout({
         <link rel="preconnect" href="https://jkhpafacchjxawnscplf.supabase.co" />
         <link rel="dns-prefetch" href="https://jkhpafacchjxawnscplf.supabase.co" />
         <link rel="preconnect" href="https://api.anthropic.com" />
-        <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
         <script dangerouslySetInnerHTML={{__html: `
           (function() {
             try {
-              var stored = localStorage.getItem('cruz-theme');
-              var theme = stored || 'light';
-              if (theme === 'system') {
-                theme = window.matchMedia('(prefers-color-scheme: dark)').matches
-                  ? 'dark' : 'light';
-              }
-              document.documentElement.setAttribute('data-theme', theme);
+              document.documentElement.setAttribute('data-theme', 'light');
             } catch(e) {}
           })();
         `}} />

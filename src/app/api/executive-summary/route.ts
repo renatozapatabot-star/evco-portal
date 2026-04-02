@@ -30,10 +30,10 @@ function generateFallbackSentence(data: KPIData, clientName: string): string {
 }
 
 export async function GET(request: NextRequest) {
-  const companyId = request.cookies.get('company_id')?.value ?? 'evco'
-  const clientClave = request.cookies.get('company_clave')?.value ?? 'evco'
+  const companyId = request.cookies.get('company_id')?.value ?? ''
+  const clientClave = request.cookies.get('company_clave')?.value ?? ''
   const rawName = request.cookies.get('company_name')?.value
-  const clientName = rawName ? decodeURIComponent(rawName) : 'EVCO Plastics de México'
+  const clientName = rawName ? decodeURIComponent(rawName) : ''
 
   try {
     const prefix = `${clientClave}-%`

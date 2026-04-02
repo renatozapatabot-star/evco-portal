@@ -46,7 +46,7 @@ interface IntelligenceStats {
 
 const T = {
   bg: '#FAFAF8',
-  card: '#FFFFFF',
+  card: 'var(--card-bg)',
   border: '#E8E5E0',
   gold: '#B8953F',
   goldSubtle: '#F5F0E4',
@@ -403,7 +403,7 @@ function HealthCheck({ icon: Icon, label, ok, detail }: {
 function EmptyCard({ icon: Icon, message }: { icon: typeof Building2; message: string }) {
   return (
     <div style={{
-      background: '#FFFFFF', border: '1px solid #E8E5E0', borderRadius: 8,
+      background: 'var(--card-bg)', border: '1px solid #E8E5E0', borderRadius: 8,
       padding: 32, textAlign: 'center', gridColumn: '1 / -1',
     }}>
       <Icon size={24} style={{ color: '#9B9B9B', marginBottom: 8 }} />

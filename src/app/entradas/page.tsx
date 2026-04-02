@@ -3,11 +3,13 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Search, ChevronLeft, ChevronRight } from 'lucide-react'
-import { CLIENT_NAME, CLIENT_CLAVE } from '@/lib/client-config'
+import { getClientNameCookie, getClientClaveCookie, getCompanyIdCookie, getCookieValue } from '@/lib/client-config'
 import { fmtDesc, fmtDate } from '@/lib/format-utils'
 import { useIsMobile } from '@/hooks/use-mobile'
 import Link from 'next/link'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { ErrorCard } from '@/components/ui/ErrorCard'
+import { useSessionCache } from '@/hooks/use-session-cache'
 
 interface EntradaRow {
   id: number
@@ -42,8 +44,9 @@ interface EntradaRow {
 const PAGE_SIZE = 50
 
 const fmtTrafico = (id: string) => {
+  const clave = getClientClaveCookie()
   const clean = id.replace(/[\u2013\u2014]/g, '-')
-  return clean.startsWith(`${CLIENT_CLAVE}-`) ? clean : `${CLIENT_CLAVE}-${clean}`
+  return clean.startsWith(`${clave}-`) ? clean : `${clave}-${clean}`
 }
 
 export default function EntradasPage() {
@@ -51,20 +54,33 @@ export default function EntradasPage() {
   const isMobile = useIsMobile()
   const [rows, setRows] = useState<EntradaRow[]>([])
   const [loading, setLoading] = useState(true)
+  const [fetchError, setFetchError] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(0)
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
   const [faltantesOnly, setFaltantesOnly] = useState(false)
+  const [showHistorico, setShowHistorico] = useState(false)
+  const { getCached, setCache } = useSessionCache()
 
   useEffect(() => {
+    const userRole = getCookieValue('user_role') ?? ''
+    const isInternal = userRole === 'broker' || userRole === 'admin'
+    const companyId = getCompanyIdCookie()
+    if (!isInternal && !companyId) { setLoading(false); return }
     setLoading(true)
-    fetch(`/api/data?table=entradas&cve_cliente=${CLIENT_CLAVE}&limit=5000&order_by=fecha_llegada_mercancia&order_dir=desc`)
+    setFetchError(null)
+    const cached = getCached<EntradaRow[]>('entradas')
+    if (cached) setRows(cached)
+    const params = new URLSearchParams({ table: 'entradas', limit: '5000', order_by: 'fecha_llegada_mercancia', order_dir: 'desc' })
+    if (!showHistorico) { params.set('gte_field', 'fecha_llegada_mercancia'); params.set('gte_value', '2024-01-01') }
+    if (!isInternal && companyId) params.set('company_id', companyId)
+    fetch(`/api/data?${params}`)
       .then((r) => r.json())
-      .then((data) => setRows(data.data ?? data ?? []))
-      .catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
+      .then((data) => { const arr = data.data ?? data ?? []; setRows(arr); setCache('entradas', arr) })
+      .catch(() => setFetchError('Error cargando entradas. Reintentar →'))
       .finally(() => setLoading(false))
-  }, [])
+  }, [showHistorico])
 
   const filtered = (() => {
     let out = rows
@@ -91,7 +107,7 @@ export default function EntradasPage() {
         <div>
           <h1 className="page-title">Entradas</h1>
           <p className="text-[12.5px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
-            {rows.length.toLocaleString()} remesas &middot; {CLIENT_NAME} {CLIENT_CLAVE}
+            {rows.length.toLocaleString()} remesas &middot; {getClientNameCookie()}
           </p>
         </div>
         <div className="flex items-center gap-2.5" style={{ flexWrap: 'wrap' }}>
@@ -113,6 +129,10 @@ export default function EntradasPage() {
             <input type="checkbox" checked={faltantesOnly} onChange={e => { setFaltantesOnly(e.target.checked); setPage(0) }} style={{ width: 13, height: 13 }} />
             Faltantes
           </label>
+          <label className="flex items-center gap-1.5 text-[11.5px] cursor-pointer" style={{ color: showHistorico ? '#2563EB' : '#6b7280' }}>
+            <input type="checkbox" checked={showHistorico} onChange={e => { setShowHistorico(e.target.checked); setPage(0) }} style={{ width: 13, height: 13 }} />
+            Ver historial completo
+          </label>
           <div
             className="flex items-center gap-2 rounded-[3px] px-3 py-1.5"
             style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', width: isMobile ? '100%' : 220 }}
@@ -130,6 +150,13 @@ export default function EntradasPage() {
         </div>
       </div>
 
+      {/* Error state */}
+      {fetchError && (
+        <div style={{ marginBottom: 16 }}>
+          <ErrorCard message={fetchError} onRetry={() => window.location.reload()} />
+        </div>
+      )}
+
       {/* Loading skeleton */}
       {loading && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -142,10 +169,9 @@ export default function EntradasPage() {
       {/* Empty state */}
       {!loading && paged.length === 0 && (
         <EmptyState
-          icon="📦"
+          icon="🏭"
           title="No hay entradas registradas"
-          description="Las solicitudes de embarque aparecerán aquí"
-          cta={{ label: "Nueva entrada", href: "/entradas/nueva" }}
+          description="Los documentos aparecerán aquí cuando lleguen al correo ai@renatozapata.com o se registren manualmente."
         />
       )}
 
@@ -154,7 +180,7 @@ export default function EntradasPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {paged.map((r) => {
             const hasIncidencia = r.mercancia_danada || r.tiene_faltantes
-            const statusColor = hasIncidencia ? '#DC2626' : '#16A34A'
+            const statusColor = hasIncidencia ? 'var(--danger-500)' : '#16A34A'
             return (
               <div
                 key={r.cve_entrada}
@@ -212,8 +238,8 @@ export default function EntradasPage() {
                 </tr>
               </thead>
               <tbody>
-                {paged.map((r) => (
-                  <tr key={r.cve_entrada} className={r.mercancia_danada || r.tiene_faltantes ? 'row-critical' : 'row-healthy'}
+                {paged.map((r, i) => (
+                  <tr key={r.cve_entrada} className={`clickable-row ${i % 2 === 0 ? 'row-even' : 'row-odd'}`}
                     onClick={() => router.push(`/entradas/${r.cve_entrada}`)} style={{ cursor: 'pointer' }}>
                     <td>
                       <span className="mono text-[12.5px] font-medium" style={{ color: 'var(--text-primary)' }}>
@@ -247,11 +273,17 @@ export default function EntradasPage() {
                       {r.peso_bruto ? Number(r.peso_bruto).toLocaleString('es-MX') : '-'}
                     </td>
                     <td>
-                      {r.mercancia_danada || r.tiene_faltantes ? (
-                        <span className="badge badge-hold"><span className="badge-dot" />Incidencia</span>
-                      ) : (
-                        <span className="badge badge-cruzado"><span className="badge-dot" />OK</span>
-                      )}
+                      {r.trafico ? (
+                        <span className="badge badge-vinculado"><span className="badge-dot" />Vinculado</span>
+                      ) : (() => {
+                        const age = r.fecha_llegada_mercancia
+                          ? Math.floor((Date.now() - new Date(r.fecha_llegada_mercancia).getTime()) / 86400000)
+                          : 0
+                        if (age > 90) return <span className="badge badge-urgente"><span className="badge-dot" />Urgente</span>
+                        if (age > 30) return <span className="badge badge-hold"><span className="badge-dot" />Pendiente</span>
+                        if (age > 7) return <span className="badge badge-proceso"><span className="badge-dot" />Nuevo</span>
+                        return <span className="badge badge-sin-trafico"><span className="badge-dot" />Reciente</span>
+                      })()}
                     </td>
                   </tr>
                 ))}
@@ -271,7 +303,7 @@ export default function EntradasPage() {
               disabled={page === 0}
               onClick={() => setPage(p => p - 1)}
               className="flex items-center gap-1 px-2.5 py-1 rounded-[5px] text-[11.5px] font-medium"
-              style={{ background: page === 0 ? '#f7f8fa' : '#ffffff', border: '1px solid var(--border)', color: page === 0 ? '#d1d5db' : '#374151', cursor: page === 0 ? 'default' : 'pointer' }}
+              style={{ background: page === 0 ? '#f7f8fa' : 'var(--card-bg)', border: '1px solid var(--border)', color: page === 0 ? '#d1d5db' : '#374151', cursor: page === 0 ? 'default' : 'pointer' }}
             >
               <ChevronLeft size={12} /> Anterior
             </button>
@@ -280,7 +312,7 @@ export default function EntradasPage() {
               disabled={page >= totalPages - 1}
               onClick={() => setPage(p => p + 1)}
               className="flex items-center gap-1 px-2.5 py-1 rounded-[5px] text-[11.5px] font-medium"
-              style={{ background: page >= totalPages - 1 ? '#f7f8fa' : '#ffffff', border: '1px solid var(--border)', color: page >= totalPages - 1 ? '#d1d5db' : '#374151', cursor: page >= totalPages - 1 ? 'default' : 'pointer' }}
+              style={{ background: page >= totalPages - 1 ? '#f7f8fa' : 'var(--card-bg)', border: '1px solid var(--border)', color: page >= totalPages - 1 ? '#d1d5db' : '#374151', cursor: page >= totalPages - 1 ? 'default' : 'pointer' }}
             >
               Siguiente <ChevronRight size={12} />
             </button>

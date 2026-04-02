@@ -65,14 +65,15 @@ function StatusBadge({ status, days }: { status: LegalDoc['status']; days: numbe
 
 // ── Hardcoded initial data (will be dynamic from DB) ──
 function getInitialDocs(): LegalDoc[] {
-  const clientName = getCookieValue('company_name') ? decodeURIComponent(getCookieValue('company_name')!) : 'EVCO Plastics de México'
-  const companyId = getCookieValue('company_id') ?? 'evco'
+  const clientName = getCookieValue('company_name') || 'Su Empresa'
+  const companyId = getCookieValue('company_id') ?? ''
+  const contactName = getCookieValue('user_name') ?? 'Contacto'
   return [
-  { id: '1', document_type: 'poder_notarial', client_name: clientName, company_id: companyId, issued_date: '2024-01-15', expiry_date: '2027-01-15', status: 'valid', notes: 'Poder amplio para despacho', responsible: 'Tito' },
-  { id: '2', document_type: 'encargo_conferido', client_name: clientName, company_id: companyId, issued_date: '2025-06-01', expiry_date: '2026-06-01', status: 'expiring_90', notes: 'Renovar antes de jun 2026', responsible: 'Ursula' },
-  { id: '3', document_type: 'padron_importadores', client_name: clientName, company_id: companyId, issued_date: null, expiry_date: null, status: 'verify', notes: 'Verificar vigencia en SAT', responsible: 'Juan José' },
-  { id: '4', document_type: 'efirma', client_name: clientName, company_id: companyId, issued_date: '2023-03-10', expiry_date: '2027-03-10', status: 'valid', notes: null, responsible: 'Ursula' },
-  { id: '5', document_type: 'immex', client_name: clientName, company_id: companyId, issued_date: '2024-08-01', expiry_date: '2027-08-01', status: 'valid', notes: 'Programa activo', responsible: 'Tito' },
+  { id: '1', document_type: 'poder_notarial', client_name: clientName, company_id: companyId, issued_date: '2024-01-15', expiry_date: '2027-01-15', status: 'valid', notes: 'Poder amplio para despacho', responsible: contactName },
+  { id: '2', document_type: 'encargo_conferido', client_name: clientName, company_id: companyId, issued_date: '2025-06-01', expiry_date: '2026-06-01', status: 'expiring_90', notes: 'Renovar antes de jun 2026', responsible: contactName },
+  { id: '3', document_type: 'padron_importadores', client_name: clientName, company_id: companyId, issued_date: null, expiry_date: null, status: 'verify', notes: 'Verificar vigencia en SAT', responsible: contactName },
+  { id: '4', document_type: 'efirma', client_name: clientName, company_id: companyId, issued_date: '2023-03-10', expiry_date: '2027-03-10', status: 'valid', notes: null, responsible: contactName },
+  { id: '5', document_type: 'immex', client_name: clientName, company_id: companyId, issued_date: '2024-08-01', expiry_date: '2027-08-01', status: 'valid', notes: 'Programa activo', responsible: contactName },
   ]
 }
 

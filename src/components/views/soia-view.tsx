@@ -2,9 +2,9 @@
 
 import { useEffect, useState, useMemo } from 'react'
 import DataTable, { Column } from '@/components/DataTable'
-import EmptyState from '@/components/EmptyState'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { Landmark } from 'lucide-react'
-import { COMPANY_ID } from '@/lib/client-config'
+import { getCompanyIdCookie } from '@/lib/client-config'
 
 const BRIDGES = [
   { name: 'Puente Internacional I', sub: 'Gateway to Americas', type: 'Pasajero', status: 'green', wait: '-' },
@@ -28,11 +28,12 @@ export function SoiaView() {
   const [bridgeRec, setBridgeRec] = useState<{ name: string; avg: number } | null>(null)
 
   useEffect(() => {
+    const companyId = getCompanyIdCookie()
     fetch('/api/data?table=soia_cruces&limit=200&order_by=created_at&order_dir=desc')
       .then(r => r.json()).then(d => setCruces(d.data || []))
       .catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) }).finally(() => setLoading(false))
     // Bridge intelligence
-    fetch(`/api/data?table=bridge_intelligence&company_id=${COMPANY_ID}&limit=500`)
+    fetch(`/api/data?table=bridge_intelligence&company_id=${companyId}&limit=500`)
       .then(r => r.json()).then(d => {
         const today = new Date().getDay()
         const records = (d.data || []).filter((b: any) => b.day_of_week === today)
@@ -153,9 +154,9 @@ export function SoiaView() {
       ) : cruces.length === 0 ? (
         <div className="card">
           <EmptyState
-            icon={<Landmark size={20} style={{ color: 'var(--amber-600)' }} />}
+            icon="landmark"
             title="SOIA pendiente de sincronización"
-            subtitle="La tabla soia_cruces está vacía. Se poblará cuando GlobalPC sincronice datos de cruces."
+            description="La tabla soia_cruces está vacía. Se poblará cuando GlobalPC sincronice datos de cruces."
           />
         </div>
       ) : (
@@ -165,7 +166,7 @@ export function SoiaView() {
           loading={false}
           keyField="id"
           pageSize={50}
-          exportFilename={`${COMPANY_ID}_soia`}
+          exportFilename={`${getCompanyIdCookie()}_soia`}
           searchPlaceholder="Buscar cruce..."
           emptyMessage="Sin cruces recientes"
         />

@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { CLIENT_CLAVE, COMPANY_ID } from '@/lib/client-config'
+import { getClientClaveCookie, getCompanyIdCookie } from '@/lib/client-config'
 
 interface SavingsData {
   total_mxn: number
@@ -23,10 +23,12 @@ export function SavingsWidget() {
   const [data, setData] = useState<SavingsData | null>(null)
 
   useEffect(() => {
+    const clientClave = getClientClaveCookie()
+    const companyId = getCompanyIdCookie()
     // Try pre-calculated first, then calculate from raw data
     Promise.all([
-      fetch(`/api/data?table=aduanet_facturas&clave_cliente=${CLIENT_CLAVE}&limit=500&order_by=fecha_pago&order_dir=desc`).then(r => r.json()).catch(() => ({ data: [] })),
-      fetch(`/api/data?table=traficos&company_id=${COMPANY_ID}&limit=500&order_by=fecha_cruce&order_dir=desc`).then(r => r.json()).catch(() => ({ data: [] })),
+      fetch(`/api/data?table=aduanet_facturas&clave_cliente=${clientClave}&limit=500&order_by=fecha_pago&order_dir=desc`).then(r => r.json()).catch(() => ({ data: [] })),
+      fetch(`/api/data?table=traficos&company_id=${companyId}&limit=500&order_by=fecha_cruce&order_dir=desc`).then(r => r.json()).catch(() => ({ data: [] })),
     ]).then(([factRes, trafRes]) => {
       const facturas = factRes.data || []
       const traficos = trafRes.data || []
@@ -71,7 +73,7 @@ export function SavingsWidget() {
         })
       } else {
         // Fallback to pre-calculated
-        fetch(`/api/data?table=compliance_predictions&company_id=${COMPANY_ID}&limit=1&order_by=created_at&order_dir=desc`)
+        fetch(`/api/data?table=compliance_predictions&company_id=${companyId}&limit=1&order_by=created_at&order_dir=desc`)
           .then(r => r.json())
           .then(res => {
             const items = res.data || []

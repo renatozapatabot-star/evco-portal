@@ -1,10 +1,11 @@
-import { CLIENT_CLAVE } from './client-config'
+import { getCookieValue } from './client-config'
 
-/** Ensure CLIENT_CLAVE- prefix on all tráfico IDs */
+/** Ensure client clave prefix on all trafico IDs */
 export const fmtTraficoId = (id: string | null | undefined): string => {
   if (!id) return '-'
+  const clientClave = getCookieValue('company_clave') ?? ''
   const clean = id.replace(/[\u2013\u2014]/g, '-')
-  return clean.startsWith(`${CLIENT_CLAVE}-`) ? clean : `${CLIENT_CLAVE}-${clean}`
+  return clean.startsWith(`${clientClave}-`) ? clean : `${clientClave}-${clean}`
 }
 
 /** Format USD compact: $1.2M or $450K */

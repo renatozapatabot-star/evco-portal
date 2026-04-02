@@ -29,9 +29,9 @@ const MUTED = '#6B6B5E'
 const WHITE = '#F5F5F0'
 
 const STATUS_COLORS: Record<string, string> = {
-  IN_TRANSIT: '#3B82F6',
-  CUSTOMS_CLEARANCE: '#F59E0B',
-  AT_BORDER: '#F59E0B',
+  IN_TRANSIT: 'var(--info-500)',
+  CUSTOMS_CLEARANCE: 'var(--warning-500)',
+  AT_BORDER: 'var(--warning-500)',
   CLEARED: '#10B981',
   DELIVERED: '#10B981',
 }

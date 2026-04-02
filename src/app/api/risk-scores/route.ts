@@ -5,7 +5,7 @@ import { PORTAL_DATE_FROM } from '@/lib/data'
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 
 export async function GET(request: NextRequest) {
-  const companyId = request.cookies.get('company_id')?.value ?? 'evco'
+  const companyId = request.cookies.get('company_id')?.value ?? ''
   const { data: traficos } = await supabase.from('traficos')
     .select('trafico, estatus, fecha_llegada, pedimento, descripcion_mercancia')
     .eq('company_id', companyId).eq('estatus', 'En Proceso').gte('fecha_llegada', PORTAL_DATE_FROM).limit(500)

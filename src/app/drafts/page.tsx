@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { CheckCircle } from 'lucide-react'
 import { GOLD } from '@/lib/design-system'
 import { formatAbsoluteETA, fmtUSD } from '@/lib/format-utils'
-import { CLIENT_CLAVE } from '@/lib/client-config'
+import { getClientClaveCookie } from '@/lib/client-config'
 import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(
@@ -16,7 +16,7 @@ const supabase = createClient(
 const TIER_CONFIG: Record<number, { label: string; time: string; color: string; bg: string; border: string }> = {
   1: { label: 'Alta confianza', time: '~2 min', color: '#16A34A', bg: '#F0FDF4', border: '#BBF7D0' },
   2: { label: 'Confianza media', time: '~5 min', color: '#D97706', bg: '#FFFBEB', border: '#FDE68A' },
-  3: { label: 'Revisión completa', time: 'Sin límite', color: '#DC2626', bg: '#FEF2F2', border: '#FECACA' },
+  3: { label: 'Revisión completa', time: 'Sin límite', color: 'var(--danger-500)', bg: '#FEF2F2', border: '#FECACA' },
 }
 
 // Resolve approved_pending → approved after 5-second cancellation window
@@ -47,9 +47,10 @@ export default function DraftsPage() {
 
   // Load drafts function (reusable for polling)
   const loadDrafts = async () => {
+    const clientClave = getClientClaveCookie()
     let q = supabase.from('pedimento_drafts')
       .select('*')
-      .eq('company_id', CLIENT_CLAVE)
+      .eq('company_id', clientClave)
       .order('created_at', { ascending: false })
       .limit(50)
 

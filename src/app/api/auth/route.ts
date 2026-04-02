@@ -9,7 +9,7 @@ const supabase = createClient(
 /** Set auth + company cookies on a successful login response. */
 function setAuthCookies(
   response: NextResponse,
-  opts: { companyId: string; companyName: string; companyClave: string; role: string }
+  opts: { companyId: string; companyName: string; companyClave: string; companyRfc?: string; role: string }
 ) {
   const maxAge = 28800 // 8 hours — forces daily re-login
   response.cookies.set('portal_auth', 'authenticated', {
@@ -17,8 +17,9 @@ function setAuthCookies(
     sameSite: 'lax', maxAge, path: '/',
   })
   response.cookies.set('company_id', opts.companyId, { path: '/', maxAge })
-  response.cookies.set('company_name', encodeURIComponent(opts.companyName), { path: '/', maxAge })
+  response.cookies.set('company_name', opts.companyName, { path: '/', maxAge })
   response.cookies.set('company_clave', opts.companyClave, { path: '/', maxAge })
+  response.cookies.set('company_rfc', opts.companyRfc ?? '', { path: '/', maxAge })
   response.cookies.set('user_role', opts.role, { path: '/', maxAge })
   response.cookies.set('broker_id', 'rzco', { path: '/', maxAge })
 }
@@ -81,6 +82,7 @@ export async function POST(request: NextRequest) {
       companyId: company.company_id,
       companyName: company.name,
       companyClave: company.clave_cliente || '',
+      companyRfc: company.rfc || '',
       role: 'client',
     })
     return response

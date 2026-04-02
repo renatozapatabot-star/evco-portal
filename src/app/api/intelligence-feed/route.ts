@@ -4,7 +4,7 @@ import { createClient } from '@supabase/supabase-js'
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 
 export async function GET(req: NextRequest) {
-  const companyId = req.cookies.get('company_id')?.value ?? 'evco'
+  const companyId = req.cookies.get('company_id')?.value ?? ''
   const limit = Math.min(Number(req.nextUrl.searchParams.get('limit') || '20'), 50)
 
   const [compRes, anomRes, crossRes] = await Promise.all([

@@ -2,9 +2,7 @@
 
 import { usePathname } from 'next/navigation'
 import { useEffect, useState, useRef } from 'react'
-import { TopNav } from './TopNav'
-import { Sidebar } from './Sidebar'
-import { StatusStrip } from './StatusStrip'
+import CruzLayout from './cruz/CruzLayout'
 import { CommandPalette } from './command-palette'
 import { ShortcutHelp } from './shortcut-help'
 import { ToastProvider } from './Toast'
@@ -12,6 +10,8 @@ import { useKeyboardShortcuts } from '@/hooks/use-shortcuts'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { MobileBottomNav } from './mobile-bottom-nav'
 import { WelcomeOverlay } from './WelcomeOverlay'
+import { getCookieValue } from '@/lib/client-config'
+import { useAutoDim } from '@/hooks/use-auto-dim'
 
 interface Props { children: React.ReactNode }
 
@@ -64,7 +64,28 @@ export default function DashboardShellClient({ children }: Props) {
   const idleTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
   const warnTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
 
+  // Resolve portal identity from cookies
+  const [portalType, setPortalType] = useState<'operator' | 'client'>('client')
+  const [clientName, setClientName] = useState<string | undefined>(undefined)
+  const [clientInitials, setClientInitials] = useState<string | undefined>(undefined)
+
+  useEffect(() => {
+    const role = getCookieValue('user_role')
+    if (role === 'broker' || role === 'admin') {
+      setPortalType('operator')
+    } else {
+      setPortalType('client')
+      const name = getCookieValue('company_name')
+      if (name) {
+        setClientName(name)
+        const words = name.split(/\s+/).filter(Boolean)
+        setClientInitials(words.length >= 2 ? `${words[0][0]}${words[1][0]}`.toUpperCase() : name.slice(0, 2).toUpperCase())
+      }
+    }
+  }, [])
+
   useKeyboardShortcuts()
+  useAutoDim()
 
   useEffect(() => {
     document.body.setAttribute('data-page', pathname)
@@ -123,28 +144,38 @@ export default function DashboardShellClient({ children }: Props) {
       {viewingAs && <ViewingAsBanner companyName={viewingName} onExit={() => {
         fetch('/api/auth/view-as', { method: 'DELETE' }).then(() => {
           setViewingAs(null)
-          window.location.href = '/broker'
+          window.location.href = '/'
         })
       }} />}
 
-      <div className="shell">
+      <CruzLayout
+        portalType={portalType}
+        clientName={clientName}
+        clientInitials={clientInitials}
+        onLogout={() => { window.location.href = '/api/auth/logout' }}
+      >
         <LoadingBar />
-        {!isMobile && <Sidebar />}
-        <TopNav />
-        <StatusStrip />
-        <div className="shell-main">
-          <main id="main-content" ref={scrollRef} className="page-wrap">
-            <PageTransition>{children}</PageTransition>
-          </main>
+        <div id="main-content" ref={scrollRef}>
+          <PageTransition>{children}</PageTransition>
         </div>
-        <CommandPalette />
-        {!isMobile && <ShortcutHelp />}
-        {isMobile && <MobileBottomNav />}
-      </div>
+      </CruzLayout>
+
+      <CommandPalette />
+      {!isMobile && <ShortcutHelp />}
+      {isMobile && <MobileBottomNav />}
 
       {/* Offline banner */}
       {isOffline && (
-        <div className="offline-banner">Sin conexion -- mostrando datos en cache</div>
+        <div style={{
+          position: 'fixed', bottom: 80, left: '50%', transform: 'translateX(-50%)',
+          zIndex: 9998, background: 'var(--navy-900)', color: '#FFFFFF',
+          padding: '10px 24px', borderRadius: 'var(--radius-lg)',
+          fontSize: 13, fontWeight: 600, boxShadow: '0 4px 24px rgba(0,0,0,0.3)',
+          display: 'flex', alignItems: 'center', gap: 8,
+        }}>
+          <span style={{ fontSize: 16 }}>📡</span>
+          Sin conexión — mostrando datos previos
+        </div>
       )}
 
       {/* Welcome overlay for first-time users */}

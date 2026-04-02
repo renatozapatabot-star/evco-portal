@@ -13,7 +13,7 @@ const flag = (c: string | null) => FLAGS[(c || '').toUpperCase()] || '🌐'
 type ViewTab = 'proveedores' | 'productos'
 
 export function ProveedoresView() {
-  const companyId = getCookieValue('company_id') ?? 'evco'
+  const companyId = getCookieValue('company_id') ?? ''
   const [suppliers, setSuppliers] = useState<any[]>([])
   const [selected, setSelected] = useState<any>(null)
   const [editing, setEditing] = useState(false)

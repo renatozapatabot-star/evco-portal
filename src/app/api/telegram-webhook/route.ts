@@ -330,6 +330,36 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: true })
     }
 
+    // Handle /status command — quick tráfico summary
+    if (text === '/status') {
+      const supabase = createServerClient()
+      const today = new Date().toISOString().slice(0, 10)
+
+      const [activeRes, cruzadosRes, urgentRes] = await Promise.all([
+        supabase.from('traficos').select('trafico', { count: 'exact', head: true })
+          .not('estatus', 'ilike', '%cruz%')
+          .gte('fecha_llegada', '2024-01-01'),
+        supabase.from('traficos').select('trafico', { count: 'exact', head: true })
+          .ilike('estatus', '%cruz%')
+          .gte('fecha_cruce', today),
+        supabase.from('traficos').select('trafico', { count: 'exact', head: true })
+          .eq('semaforo', 1)
+          .not('estatus', 'ilike', '%cruz%')
+          .gte('fecha_llegada', '2024-01-01'),
+      ])
+
+      const activos = activeRes.count ?? 0
+      const cruzaron = cruzadosRes.count ?? 0
+      const urgentes = urgentRes.count ?? 0
+
+      await sendTelegramReply(
+        chatId,
+        `📊 <b>Estado CRUZ</b>\n\n${activos} tráficos activos · ${cruzaron} cruzaron hoy · ${urgentes} urgentes`,
+        msg.message_id,
+      )
+      return NextResponse.json({ ok: true })
+    }
+
     // Handle slash commands: /aprobar_UUID, /rechazar_UUID, /corregir_UUID
     const commandMatch = text.match(/^\/(aprobar|rechazar|corregir)_(.+)$/)
     if (commandMatch) {

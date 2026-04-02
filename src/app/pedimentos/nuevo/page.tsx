@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import { Search, FileText, Download, Save, Check, AlertTriangle } from 'lucide-react'
-import { CLIENT_RFC, CLIENT_CLAVE, CLIENT_NAME } from '@/lib/client-config'
+import { getClientClaveCookie, getClientNameCookie, getClientRfcCookie } from '@/lib/client-config'
 import { fmtUSD as fmtUSDLib, fmtMXN as fmtMXNLib } from '@/lib/format-utils'
 
 const supabase = createClient(
@@ -24,10 +24,10 @@ interface PedimentoDraft {
   tipo_cambio: number
   regimen: string
   tmec_eligible: boolean
-  dta_estimado: number
-  igi_estimado: number
-  iva_estimado: number
-  total_contribuciones: number
+  dta_estimado: number | null
+  igi_estimado: number | null
+  iva_estimado: number | null
+  total_contribuciones: number | null
   documentos_requeridos: string[]
   partidas: Array<{ fraccion: string; descripcion: string; cantidad: number; valor: number }>
 }
@@ -52,15 +52,15 @@ export default function NuevoPedimentoPage() {
   const [tipoCambio, setTipoCambio] = useState(0)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
-  const [sysRates, setSysRates] = useState({ dta: 0.008, iva: 0.16, tc: 17.49 })
+  const [sysRates, setSysRates] = useState<{ dta: number; iva: number; tc: number } | null>(null)
   const [error, setError] = useState('')
 
   // Fetch live rates on mount
   useEffect(() => {
     fetch('/api/rates').then(r => r.json()).then(d => {
-      if (!d.error) {
-        setSysRates({ dta: d.dta?.rate ?? 0.008, iva: d.iva?.rate ?? 0.16, tc: d.tc?.rate ?? 17.49 })
-        if (d.tc?.rate) setTipoCambio(d.tc.rate)
+      if (!d.error && d.dta?.rate && d.iva?.rate && d.tc?.rate) {
+        setSysRates({ dta: d.dta.rate, iva: d.iva.rate, tc: d.tc.rate })
+        setTipoCambio(d.tc.rate)
       }
     }).catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
     fetch('/api/tipo-cambio')
@@ -76,7 +76,8 @@ export default function NuevoPedimentoPage() {
     setDraft(null)
     setSaved(false)
 
-    const trafico = traficoInput.includes('-') ? traficoInput : `${CLIENT_CLAVE}-${traficoInput}`
+    const clientClave = getClientClaveCookie()
+    const trafico = traficoInput.includes('-') ? traficoInput : `${clientClave}-${traficoInput}`
 
     try {
       // 1. Fetch facturas
@@ -113,7 +114,7 @@ export default function NuevoPedimentoPage() {
       const firstFraccion = partidas?.[0]?.fraccion_arancelaria || ''
       const { data: historical } = firstFraccion ? await supabase.from('aduanet_facturas')
         .select('igi, dta, iva, valor_usd')
-        .eq('clave_cliente', CLIENT_CLAVE)
+        .eq('clave_cliente', clientClave)
         .limit(10) : { data: [] }
 
       // Calculate estimates
@@ -124,12 +125,13 @@ export default function NuevoPedimentoPage() {
 
       // Estimate contributions
       const igiRate = tmecEligible ? 0 : 0.05 // 5% default, 0% T-MEC
-      const dtaRate = 0.008 // 8 al millar
-      const ivaRate = sysRates.iva
+      const dtaRate = sysRates?.dta ?? null
+      const ivaRate = sysRates?.iva ?? null
 
-      const dta = valorMXN * dtaRate
-      const igi = valorMXN * igiRate
-      const iva = (valorMXN + igi + dta) * ivaRate
+      const ratesAvailable = dtaRate !== null && ivaRate !== null
+      const dta = ratesAvailable ? valorMXN * dtaRate : null
+      const igi = ratesAvailable ? valorMXN * igiRate : null
+      const iva = ratesAvailable && dta !== null && igi !== null ? (valorMXN + igi + dta) * ivaRate : null
 
       const prov = proveedores?.[0]
       const partidasList = (partidas || []).map((p: any) => ({
@@ -143,8 +145,8 @@ export default function NuevoPedimentoPage() {
       const regimen = 'A1 — Importación Definitiva' // most common
 
       setDraft({
-        importador_rfc: CLIENT_RFC,
-        importador_nombre: CLIENT_NAME.toUpperCase(),
+        importador_rfc: getClientRfcCookie(),
+        importador_nombre: getClientNameCookie().toUpperCase(),
         proveedor: prov?.nombre || factura.cve_proveedor || '',
         proveedor_pais: prov?.pais || 'US',
         valor_comercial: valorUSD,
@@ -155,10 +157,10 @@ export default function NuevoPedimentoPage() {
         tipo_cambio: tc,
         regimen,
         tmec_eligible: tmecEligible,
-        dta_estimado: Math.round(dta * 100) / 100,
-        igi_estimado: Math.round(igi * 100) / 100,
-        iva_estimado: Math.round(iva * 100) / 100,
-        total_contribuciones: Math.round((dta + igi + iva) * 100) / 100,
+        dta_estimado: dta !== null ? Math.round(dta * 100) / 100 : null,
+        igi_estimado: igi !== null ? Math.round(igi * 100) / 100 : null,
+        iva_estimado: iva !== null ? Math.round(iva * 100) / 100 : null,
+        total_contribuciones: dta !== null && igi !== null && iva !== null ? Math.round((dta + igi + iva) * 100) / 100 : null,
         documentos_requeridos: REQUIRED_DOCS,
         partidas: partidasList,
       })
@@ -172,7 +174,7 @@ export default function NuevoPedimentoPage() {
     if (!draft) return
     setSaving(true)
     const { error } = await supabase.from('pedimento_drafts').insert({
-      trafico_id: traficoInput.includes('-') ? traficoInput : `${CLIENT_CLAVE}-${traficoInput}`,
+      trafico_id: traficoInput.includes('-') ? traficoInput : `${getClientClaveCookie()}-${traficoInput}`,
       draft_data: draft,
       status: 'draft',
       created_by: 'CRUZ',
@@ -292,21 +294,21 @@ export default function NuevoPedimentoPage() {
               <div className="space-y-2 mb-4" style={{ padding: 12, background: 'var(--bg-elevated)', borderRadius: 8, border: '1px solid var(--border-light)' }}>
                 <div className="flex justify-between">
                   <span className="text-[12px]" style={{ color: 'var(--text-muted)' }}>DTA (8 al millar)</span>
-                  <span className="mono text-[12.5px]" style={{ color: 'var(--text-secondary)' }}>{fmtMXN(draft.dta_estimado)} MXN</span>
+                  <span className="mono text-[12.5px]" style={{ color: 'var(--text-secondary)' }}>{draft.dta_estimado !== null ? `${fmtMXN(draft.dta_estimado)} MXN` : '—'}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-[12px]" style={{ color: 'var(--text-muted)' }}>IGI {draft.tmec_eligible ? '(T-MEC 0%)' : '(5%)'}</span>
                   <span className="mono text-[12.5px]" style={{ color: draft.tmec_eligible ? 'var(--green)' : 'var(--text-secondary)' }}>
-                    {draft.tmec_eligible ? '$0.00' : fmtMXN(draft.igi_estimado)} MXN
+                    {draft.igi_estimado !== null ? (draft.tmec_eligible ? '$0.00 MXN' : `${fmtMXN(draft.igi_estimado)} MXN`) : '—'}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-[12px]" style={{ color: 'var(--text-muted)' }}>IVA (16%)</span>
-                  <span className="mono text-[12.5px]" style={{ color: 'var(--text-secondary)' }}>{fmtMXN(draft.iva_estimado)} MXN</span>
+                  <span className="mono text-[12.5px]" style={{ color: 'var(--text-secondary)' }}>{draft.iva_estimado !== null ? `${fmtMXN(draft.iva_estimado)} MXN` : '—'}</span>
                 </div>
                 <div style={{ borderTop: '1px solid var(--border)', paddingTop: 8, marginTop: 4 }} className="flex justify-between">
                   <span className="text-[13px] font-semibold" style={{ color: 'var(--text-primary)' }}>Total</span>
-                  <span className="mono text-[15px] font-bold" style={{ color: 'var(--amber-600)' }}>{fmtMXN(draft.total_contribuciones)} MXN</span>
+                  <span className="mono text-[15px] font-bold" style={{ color: 'var(--amber-600)' }}>{draft.total_contribuciones !== null ? `${fmtMXN(draft.total_contribuciones)} MXN` : '—'}</span>
                 </div>
               </div>
 

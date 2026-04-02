@@ -1,121 +1,200 @@
 #!/usr/bin/env node
-// scripts/feedback-loop.js — Prediction accuracy tracker
-// Compares crossing predictions and risk scores against actual outcomes
-// Cron: 0 6 * * * (daily at 6 AM after crossings settle)
+/**
+ * CRUZ Feedback Loop — Notification Engagement Analysis
+ * Runs nightly at 4 AM.
+ *
+ * Analyzes notification engagement over the last 7 days:
+ *   - Action rate (read / total) per notification type
+ *   - Identifies noise (< 20% action rate) and signal (> 80%)
+ *
+ * Inserts patterns into pipeline_postmortems.
+ * Sends Telegram summary.
+ * Logs to pipeline_log.
+ *
+ * Usage: node scripts/feedback-loop.js
+ */
 
-const { createClient } = require('@supabase/supabase-js')
 const path = require('path')
 require('dotenv').config({ path: path.join(__dirname, '..', '.env.local') })
+const { createClient } = require('@supabase/supabase-js')
+
+const SCRIPT_NAME = 'feedback-loop'
+const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN
+const TELEGRAM_CHAT = process.env.TELEGRAM_CHAT_ID || '-5085543275'
 
 const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://jkhpafacchjxawnscplf.supabase.co',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
 )
-const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN
-const TELEGRAM_CHAT = '-5085543275'
-const COMPANY_ID = 'evco'
 
-async function sendTG(msg) {
+// ─── Helpers ────────────────────────────────────────────────
+
+async function tg(msg) {
   if (process.env.TELEGRAM_SILENT === 'true') return
-  if (!TELEGRAM_TOKEN) { console.log(msg); return }
+  if (!TELEGRAM_TOKEN) { console.log('[TG]', msg.replace(/<[^>]+>/g, '')); return }
   await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ chat_id: TELEGRAM_CHAT, text: msg, parse_mode: 'HTML' })
+  }).catch(() => {})
+}
+
+async function logPipeline(step, status, details, durationMs) {
+  const entry = {
+    step: `${SCRIPT_NAME}:${step}`,
+    status,
+    input_summary: typeof details === 'string' ? details : JSON.stringify(details),
+    timestamp: new Date().toISOString(),
+    ...(durationMs != null && { duration_ms: durationMs }),
+    ...(status === 'error' && {
+      error_message: typeof details === 'object' ? (details.error || JSON.stringify(details)) : details
+    })
+  }
+  await supabase.from('pipeline_log').insert(entry).then(({ error }) => {
+    if (error) console.error('pipeline_log insert error:', error.message)
   })
 }
 
-async function main() {
-  console.log('📊 Feedback Loop — Prediction Accuracy Tracker')
-  const start = Date.now()
+// ─── Main ───────────────────────────────────────────────────
 
-  // 1. Crossing predictions: find predicted tráficos that have now crossed
-  const { data: preds } = await supabase.from('crossing_predictions')
-    .select('trafico_id, predicted_hours, calculated_at')
-    .eq('company_id', COMPANY_ID).is('actual_hours', null)
+async function run() {
+  const startTime = Date.now()
+  const now = new Date()
+  const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString()
+  const dateStr = now.toLocaleDateString('es-MX', { timeZone: 'America/Chicago' })
 
-  const predMap = {}
-  ;(preds || []).forEach(p => { predMap[p.trafico_id] = p })
-  const predIds = Object.keys(predMap)
+  console.log('\n🔁 CRUZ Feedback Loop — Notification Engagement')
+  console.log(`   Period: last 7 days (since ${sevenDaysAgo})`)
+  console.log('═'.repeat(50))
 
-  let crossVerified = 0, crossErrors = [], crossWithin4h = 0
+  // 1. Query notifications from last 7 days
+  const { data: notifications, error } = await supabase
+    .from('notifications')
+    .select('type, title, read, created_at')
+    .eq('company_id', 'evco')
+    .gte('created_at', sevenDaysAgo)
 
-  if (predIds.length > 0) {
-    const { data: crossed } = await supabase.from('traficos')
-      .select('trafico, fecha_llegada, fecha_cruce')
-      .eq('company_id', COMPANY_ID).ilike('estatus', '%cruz%')
-      .in('trafico', predIds)
-      .not('fecha_llegada', 'is', null).not('fecha_cruce', 'is', null)
+  if (error) {
+    console.error('❌ Query error:', error.message)
+    await logPipeline('query', 'error', { error: error.message })
+    await tg(`🔴 <b>${SCRIPT_NAME} FAILED</b>\nQuery error: ${error.message}\n— CRUZ 🦀`)
+    process.exit(1)
+  }
 
-    for (const t of (crossed || [])) {
-      const actual = (new Date(t.fecha_cruce) - new Date(t.fecha_llegada)) / 3600000
-      if (actual <= 0 || actual > 72) continue
-      const pred = predMap[t.trafico]
-      const error = Math.abs(pred.predicted_hours - actual)
-      crossErrors.push(error)
-      if (error <= 4) crossWithin4h++
-      crossVerified++
-      await supabase.from('crossing_predictions').update({
-        actual_hours: Math.round(actual * 10) / 10,
-        accuracy: Math.round((1 - error / actual) * 100) / 100
-      }).eq('trafico_id', t.trafico).eq('company_id', COMPANY_ID)
+  if (!notifications || notifications.length === 0) {
+    console.log('   No notifications in last 7 days')
+    await logPipeline('complete', 'success', { notifications: 0 })
+    await tg([
+      `🔁 <b>Feedback Loop — ${dateStr}</b>`,
+      `Sin notificaciones en los últimos 7 días`,
+      `— CRUZ 🦀`
+    ].join('\n'))
+    return
+  }
+
+  console.log(`   Total notifications: ${notifications.length}`)
+
+  // 2. Calculate action rate per notification type
+  const byType = {}
+  for (const n of notifications) {
+    const type = n.type || 'unknown'
+    if (!byType[type]) byType[type] = { total: 0, read: 0 }
+    byType[type].total++
+    if (n.read) byType[type].read++
+  }
+
+  const actionRates = {}
+  for (const [type, counts] of Object.entries(byType)) {
+    actionRates[type] = {
+      total: counts.total,
+      read: counts.read,
+      rate: parseFloat((counts.read / counts.total * 100).toFixed(1))
     }
   }
 
-  const crossAccuracy = crossVerified > 0 ? Math.round((crossWithin4h / crossVerified) * 100) : 0
-  const avgError = crossErrors.length > 0 ? (crossErrors.reduce((a, b) => a + b, 0) / crossErrors.length).toFixed(1) : 'N/A'
+  // 3. Noise: types with action_rate < 20%
+  const noiseTypes = Object.entries(actionRates)
+    .filter(([, d]) => d.rate < 20)
+    .map(([type]) => type)
 
-  // 2. Risk scores: check scored tráficos that have since crossed for issues
-  const { data: riskScores } = await supabase.from('pedimento_risk_scores')
-    .select('trafico_id, score')
-    .eq('company_id', COMPANY_ID).is('actual_outcome', null)
+  // 4. Signal: types with action_rate > 80%
+  const signalTypes = Object.entries(actionRates)
+    .filter(([, d]) => d.rate > 80)
+    .map(([type]) => type)
 
-  const riskMap = {}
-  ;(riskScores || []).forEach(r => { riskMap[r.trafico_id] = r })
-  const riskIds = Object.keys(riskMap)
+  // Best type by action rate
+  const bestEntry = Object.entries(actionRates)
+    .sort((a, b) => b[1].rate - a[1].rate)[0]
+  const bestType = bestEntry ? bestEntry[0] : 'N/A'
+  const bestRate = bestEntry ? bestEntry[1].rate : 0
 
-  let riskVerified = 0, riskCorrect = 0
+  console.log(`\n   Action rates per type:`)
+  for (const [type, data] of Object.entries(actionRates)) {
+    const icon = data.rate > 80 ? '🟢' : data.rate < 20 ? '🔴' : '🟡'
+    console.log(`   ${icon} ${type}: ${data.rate}% (${data.read}/${data.total})`)
+  }
+  console.log(`\n   Signal (>80%): ${signalTypes.length > 0 ? signalTypes.join(', ') : 'ninguno'}`)
+  console.log(`   Noise (<20%):  ${noiseTypes.length > 0 ? noiseTypes.join(', ') : 'ninguno'}`)
 
-  if (riskIds.length > 0) {
-    const { data: crossedRisk } = await supabase.from('traficos')
-      .select('trafico').eq('company_id', COMPANY_ID).ilike('estatus', '%cruz%')
-      .in('trafico', riskIds)
-
-    const crossedSet = new Set((crossedRisk || []).map(t => t.trafico))
-    if (crossedSet.size > 0) {
-      const { data: entradas } = await supabase.from('entradas')
-        .select('trafico, mercancia_danada, tiene_faltantes')
-        .eq('company_id', COMPANY_ID).in('trafico', [...crossedSet])
-
-      const issueSet = new Set()
-      ;(entradas || []).forEach(e => { if (e.mercancia_danada || e.tiene_faltantes) issueSet.add(e.trafico) })
-
-      for (const tid of crossedSet) {
-        const hadIssue = issueSet.has(tid)
-        const wasHighRisk = riskMap[tid].score > 50
-        const outcome = hadIssue ? 'issue' : 'clean'
-        if ((wasHighRisk && hadIssue) || (!wasHighRisk && !hadIssue)) riskCorrect++
-        riskVerified++
-        await supabase.from('pedimento_risk_scores').update({ actual_outcome: outcome })
-          .eq('trafico_id', tid).eq('company_id', COMPANY_ID)
-      }
+  // 5. Insert into pipeline_postmortems
+  const postmortem = {
+    date: now.toISOString().split('T')[0],
+    total_runs: notifications.length,
+    first_pass_rate: bestRate,
+    patterns_detected: {
+      source: 'feedback-loop',
+      noise_types: noiseTypes,
+      signal_types: signalTypes,
+      action_rates: actionRates,
+      total_notifications: notifications.length
     }
   }
 
-  const riskAccuracy = riskVerified > 0 ? Math.round((riskCorrect / riskVerified) * 100) : 0
+  const { error: insertErr } = await supabase
+    .from('pipeline_postmortems')
+    .insert(postmortem)
 
-  // 3. Summary
-  const elapsed = ((Date.now() - start) / 1000).toFixed(1)
-  console.log(`${crossVerified} crossing predictions verified, accuracy ${crossAccuracy}% (within 4h), avg error ${avgError}h`)
-  console.log(`${riskVerified} risk scores verified, accuracy ${riskAccuracy}%`)
-
-  if (crossVerified > 0 || riskVerified > 0) {
-    await sendTG(
-      `📊 <b>Feedback Loop</b>\n\n` +
-      `🔮 Crossing: ${crossVerified} verified, ${crossAccuracy}% within 4h, avg error ${avgError}h\n` +
-      `🔍 Risk: ${riskVerified} verified, ${riskAccuracy}% correct\n\n` +
-      `— CRUZ 🦀 · ${elapsed}s`
-    )
+  if (insertErr) {
+    console.error(`\n   ⚠️  Postmortem insert error: ${insertErr.message}`)
+    await logPipeline('db_insert', 'error', { error: insertErr.message })
+  } else {
+    console.log('\n   ✅ Patterns saved to pipeline_postmortems')
   }
+
+  // 6. Telegram report
+  const elapsed = ((Date.now() - startTime) / 1000).toFixed(1)
+
+  await tg([
+    `🔁 <b>Feedback Loop — ${dateStr}</b>`,
+    `Notificaciones: ${notifications.length}`,
+    `Alta señal: ${signalTypes.length > 0 ? signalTypes.join(', ') : 'ninguno'}`,
+    `Ruido detectado: ${noiseTypes.length > 0 ? noiseTypes.join(', ') : 'ninguno'}`,
+    `Mejor tipo: ${bestType} (${bestRate}% acción)`,
+    `━━━━━━━━━━━━━━━━━━━━`,
+    ...Object.entries(actionRates).map(([t, d]) =>
+      `${d.rate > 80 ? '🟢' : d.rate < 20 ? '🔴' : '🟡'} ${t}: ${d.rate}% (${d.read}/${d.total})`
+    ),
+    `━━━━━━━━━━━━━━━━━━━━`,
+    `Generated in ${elapsed}s`,
+    `— CRUZ 🦀`
+  ].join('\n'))
+
+  // 7. Log to pipeline_log
+  await logPipeline('complete', 'success', {
+    notifications: notifications.length,
+    signal_types: signalTypes,
+    noise_types: noiseTypes,
+    best_type: bestType,
+    best_rate: bestRate,
+    duration_s: parseFloat(elapsed)
+  }, Date.now() - startTime)
+
+  console.log(`\n✅ Feedback loop complete (${elapsed}s)`)
 }
 
-main().catch(e => { console.error('❌', e.message); process.exit(1) })
+run().catch(async (err) => {
+  console.error('Fatal error:', err)
+  await logPipeline('fatal', 'error', { error: err.message })
+  await tg(`🔴 <b>${SCRIPT_NAME} FAILED</b>\n${err.message}\n— CRUZ 🦀`)
+  process.exit(1)
+})

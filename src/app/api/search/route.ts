@@ -8,8 +8,8 @@ const supabase = createClient(
 )
 
 export async function GET(request: NextRequest) {
-  const companyId = request.cookies.get('company_id')?.value ?? 'evco'
-  const clientClave = request.cookies.get('company_clave')?.value ?? 'evco'
+  const companyId = request.cookies.get('company_id')?.value ?? ''
+  const clientClave = request.cookies.get('company_clave')?.value ?? ''
   const q = request.nextUrl.searchParams.get('q')?.trim()
   if (!q || q.length < 2) {
     return NextResponse.json({ results: [] })

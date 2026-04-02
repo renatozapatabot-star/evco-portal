@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useMemo } from 'react'
-import { getCookieValue, COMPANY_ID, CLIENT_CLAVE } from '@/lib/client-config'
+import { getCookieValue, getCompanyIdCookie, getClientClaveCookie } from '@/lib/client-config'
 import { fmtDate, fmtDateShort } from '@/lib/format-utils'
 import { useIsMobile } from '@/hooks/use-mobile'
 import Link from 'next/link'
@@ -27,7 +27,7 @@ const T = {
   textPrimary: '#F5F0E8',
   textSecondary: '#A09882',
   textMuted: '#6B6355',
-  blue: '#3B82F6',
+  blue: 'var(--info-500)',
   blueBg: '#1A2030',
   green: '#2D8F4E',
   greenDot: '#34D399',
@@ -76,9 +76,11 @@ export default function CalendarioPage() {
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
 
   useEffect(() => {
+    const companyId = getCompanyIdCookie()
+    const clientClave = getClientClaveCookie()
     const url = isBroker
-      ? `/api/data?table=traficos&company_id=${COMPANY_ID}&limit=2000&order_by=fecha_llegada&order_dir=desc`
-      : `/api/data?table=traficos&company_id=${COMPANY_ID}&trafico_prefix=${CLIENT_CLAVE}-&limit=1000&order_by=fecha_llegada&order_dir=desc`
+      ? `/api/data?table=traficos&company_id=${companyId}&limit=2000&order_by=fecha_llegada&order_dir=desc`
+      : `/api/data?table=traficos&company_id=${companyId}&limit=1000&order_by=fecha_llegada&order_dir=desc`
     fetch(url)
       .then(r => r.json())
       .then(d => setTraficos(d.data ?? []))

@@ -1,149 +1,176 @@
 'use client'
 
 import { useEffect, useState, useMemo } from 'react'
-import { Search, Download, ChevronDown, ChevronRight, ChevronLeft, FileText } from 'lucide-react'
-import { CLIENT_CLAVE } from '@/lib/client-config'
-import { fmtUSDFull as fmtUSD, fmtMXN, fmtDate } from '@/lib/format-utils'
-import { getTariffRate } from '@/lib/cruz-score'
-import { GOLD } from '@/lib/design-system'
+import { Search, Download, ChevronLeft, ChevronRight } from 'lucide-react'
+import { getCompanyIdCookie, getClientClaveCookie, getCookieValue } from '@/lib/client-config'
+import { fmtUSDFull as fmtUSD, fmtDate } from '@/lib/format-utils'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { EmptyState } from '@/components/ui/EmptyState'
+import Link from 'next/link'
 
 const titleCase = (s: string) => {
   if (!s) return ''
   return s.toLowerCase().replace(/(?:^|\s|[-/])\w/g, c => c.toUpperCase())
 }
 
-interface FacturaRow {
-  referencia: string
+interface TraficoRow {
+  trafico: string
   pedimento: string | null
   fecha_pago: string | null
-  proveedor: string | null
-  tc: number | null
-  valor_usd: number | null
-  dta: number | null
-  igi: number | null
-  iva: number | null
+  fecha_llegada: string | null
+  importe_total: number | null
+  estatus: string | null
+  aduana: string | null
+  regimen: string | null
+  tipo_cambio: number | null
+  proveedores: string | null
+  descripcion_mercancia: string | null
+  company_id: string | null
   [key: string]: unknown
 }
 
 interface PedGroup {
   pedimento: string
-  rows: FacturaRow[]
-  totalValor: number
-  totalDta: number
-  totalIgi: number
-  totalIva: number
+  trafico: string
   fecha: string | null
-  referencia: string
-  tc: number | null
+  importe: number
+  estatus: string
+  aduana: string
+  regimen: string
   proveedores: string[]
   tmec: boolean
+  descripcion: string
 }
 
 const PAGE_SIZE = 30
 
-// Use shared formatters — imported at top
-
-function exportCSV(rows: FacturaRow[]) {
-  const headers = ['Referencia', 'Pedimento', 'Fecha Pago', 'Proveedor', 'TC', 'Valor USD', 'DTA', 'IGI', 'IVA']
-  const csvRows = rows.map(r => [
-    r.referencia, r.pedimento ?? '', r.fecha_pago ?? '', (r.proveedor ?? '').replace(/,/g, ' '),
-    r.tc ?? '', r.valor_usd ?? '', r.dta ?? '', r.igi ?? '', r.iva ?? '',
+function exportCSV(groups: PedGroup[], clave: string) {
+  const headers = ['Pedimento', 'Tráfico', 'Fecha Pago', 'Importe USD', 'Estatus', 'Mercancía', 'Aduana', 'Régimen', 'Proveedores']
+  const csvRows = groups.map(g => [
+    g.pedimento, g.trafico, g.fecha ?? '',
+    g.importe, g.estatus, `"${g.descripcion.replace(/"/g, '""')}"`, g.aduana, g.regimen,
+    g.proveedores.join('; '),
   ].join(','))
   const csv = [headers.join(','), ...csvRows].join('\n')
   const blob = new Blob([csv], { type: 'text/csv' })
   const a = document.createElement('a')
   a.href = URL.createObjectURL(blob)
-  a.download = `pedimentos-${CLIENT_CLAVE}-${new Date().toISOString().split('T')[0]}.csv`
+  a.download = `pedimentos-${clave}-${new Date().toISOString().split('T')[0]}.csv`
   a.click()
 }
 
 export default function PedimentosPage() {
   const isMobile = useIsMobile()
-  const [rows, setRows] = useState<FacturaRow[]>([])
+  const [rows, setRows] = useState<TraficoRow[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
-  const [expanded, setExpanded] = useState<Set<string>>(new Set())
   const [page, setPage] = useState(0)
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
   const [tmecOnly, setTmecOnly] = useState(false)
+  const [supplierLookup, setSupplierLookup] = useState<Map<string, string>>(new Map())
 
   useEffect(() => {
     setLoading(true)
-    fetch(`/api/data?table=aduanet_facturas&clave_cliente=${CLIENT_CLAVE}&limit=5000&order_by=fecha_pago&order_dir=desc`)
+    const userRole = getCookieValue('user_role') ?? ''
+    const isInternal = userRole === 'broker' || userRole === 'admin'
+    const companyId = getCompanyIdCookie()
+
+    const params = new URLSearchParams({
+      table: 'traficos',
+      limit: '5000',
+      order_by: 'fecha_pago',
+      order_dir: 'desc',
+      not_null: 'pedimento',
+    })
+    if (!isInternal && companyId) params.set('company_id', companyId)
+
+    // Fetch supplier name lookup for PRV_ code resolution
+    fetch('/api/data?table=globalpc_proveedores&limit=5000')
+      .then(r => r.json())
+      .then(d => {
+        const provs = (d.data ?? []) as { cve_proveedor?: string; nombre?: string }[]
+        const lookup = new Map<string, string>()
+        provs.forEach(p => {
+          if (p.cve_proveedor && p.nombre) lookup.set(p.cve_proveedor, p.nombre)
+        })
+        setSupplierLookup(lookup)
+      })
+      .catch(() => { /* best-effort */ })
+
+    fetch(`/api/data?${params}`)
       .then((r) => r.json())
-      .then((data) => setRows(data.data ?? data ?? []))
+      .then((data) => {
+        const all = (data.data ?? data ?? []) as TraficoRow[]
+        setRows(all)
+      })
       .catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
       .finally(() => setLoading(false))
   }, [])
 
   const groups: PedGroup[] = useMemo(() => {
-    const map = new Map<string, FacturaRow[]>()
-    let filteredRows = rows
+    let filtered = rows
+
     if (search.trim()) {
       const q = search.toLowerCase()
-      filteredRows = filteredRows.filter(r =>
-        (r.referencia ?? '').toLowerCase().includes(q) ||
+      filtered = filtered.filter(r =>
         (r.pedimento ?? '').toLowerCase().includes(q) ||
-        (r.proveedor ?? '').toLowerCase().includes(q))
+        (r.trafico ?? '').toLowerCase().includes(q) ||
+        (r.proveedores ?? '').toLowerCase().includes(q) ||
+        (r.descripcion_mercancia ?? '').toLowerCase().includes(q))
     }
-    if (dateFrom) filteredRows = filteredRows.filter(r => (r.fecha_pago || '') >= dateFrom)
-    if (dateTo) filteredRows = filteredRows.filter(r => (r.fecha_pago || '') <= dateTo)
-    if (tmecOnly) filteredRows = filteredRows.filter(r => (r.igi || 0) === 0)
+    if (dateFrom) filtered = filtered.filter(r => (r.fecha_pago || r.fecha_llegada || '') >= dateFrom)
+    if (dateTo) filtered = filtered.filter(r => (r.fecha_pago || r.fecha_llegada || '') <= dateTo)
 
-    filteredRows.forEach(r => {
-      const key = r.pedimento || r.referencia || 'Sin pedimento'
+    // Group by pedimento
+    const map = new Map<string, TraficoRow[]>()
+    filtered.forEach(r => {
+      const key = r.pedimento!
       if (!map.has(key)) map.set(key, [])
       map.get(key)!.push(r)
     })
 
-    return Array.from(map.entries()).map(([pedimento, rows]) => {
-      // Financial values are pedimento-level totals duplicated on every row.
-      // Use the first row's values — they're the same across all rows.
-      const first = rows[0]
+    let result = Array.from(map.entries()).map(([pedimento, pedRows]) => {
+      const first = pedRows[0]
+      const rawProvs = [...new Set(pedRows.flatMap(r => (r.proveedores ?? '').split(',').map(s => s.trim()).filter(Boolean)))]
+      const proveedores = rawProvs.map(code => supplierLookup.get(code) || code)
+      const reg = (first.regimen ?? '').toUpperCase()
+      const tmec = reg === 'ITE' || reg === 'ITR' || reg === 'IMD'
       return {
         pedimento,
-        rows,
-        totalValor: Number(first.valor_usd) || 0,
-        totalDta: Number(first.dta) || 0,
-        totalIgi: Number(first.igi) || 0,
-        totalIva: Number(first.iva) || 0,
-        fecha: first.fecha_pago,
-        referencia: first.referencia,
-        tc: first.tc,
-        proveedores: [...new Set(rows.map(r => r.proveedor).filter(Boolean))] as string[],
-        tmec: (Number(first.igi) || 0) === 0,
+        trafico: first.trafico,
+        fecha: first.fecha_pago || first.fecha_llegada,
+        importe: Number(first.importe_total) || 0,
+        estatus: first.estatus ?? '',
+        aduana: first.aduana ?? '',
+        regimen: first.regimen ?? '',
+        proveedores,
+        tmec,
+        descripcion: first.descripcion_mercancia ?? '',
       }
     })
-  }, [rows, search, dateFrom, dateTo, tmecOnly])
+
+    if (tmecOnly) result = result.filter(g => g.tmec)
+
+    return result
+  }, [rows, search, dateFrom, dateTo, tmecOnly, supplierLookup])
 
   const totalPages = Math.ceil(groups.length / PAGE_SIZE)
   const pagedGroups = groups.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
 
-  const totals = useMemo(() => groups.reduce(
-    (acc, g) => ({
-      valor: acc.valor + g.totalValor,
-      dta: acc.dta + g.totalDta,
-      igi: acc.igi + g.totalIgi,
-      iva: acc.iva + g.totalIva,
-    }),
-    { valor: 0, dta: 0, igi: 0, iva: 0 }
-  ), [groups])
+  const totals = useMemo(() => {
+    const totalValor = groups.reduce((s, g) => s + g.importe, 0)
+    const tmecCount = groups.filter(g => g.tmec).length
+    return { totalValor, tmecCount, total: groups.length }
+  }, [groups])
 
-  const toggle = (ped: string) => {
-    setExpanded(prev => {
-      const next = new Set(prev)
-      next.has(ped) ? next.delete(ped) : next.add(ped)
-      return next
-    })
-  }
+  const clave = getClientClaveCookie()
 
   const summaryCards = [
-    { label: 'Valor Total USD', value: fmtUSD(totals.valor), accent: false },
-    { label: 'DTA Total', value: fmtMXN(totals.dta), accent: false },
-    { label: 'IGI Total', value: fmtMXN(totals.igi), accent: false },
-    { label: 'IVA Total', value: fmtMXN(totals.iva), accent: false },
+    { label: 'Pedimentos', value: totals.total.toLocaleString('es-MX') },
+    { label: 'Valor Total USD', value: fmtUSD(totals.totalValor) },
+    { label: 'T-MEC', value: `${totals.tmecCount} (${totals.total > 0 ? Math.round(totals.tmecCount / totals.total * 100) : 0}%)` },
+    { label: 'Sin T-MEC', value: `${totals.total - totals.tmecCount}` },
   ]
 
   return (
@@ -152,12 +179,12 @@ export default function PedimentosPage() {
         <div>
           <h1 className="page-title">Pedimentos</h1>
           <p className="text-[12.5px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
-            {groups.length.toLocaleString()} pedimentos &middot; {rows.length.toLocaleString()} lineas &middot; Clave {CLIENT_CLAVE}
+            {groups.length.toLocaleString()} pedimentos &middot; {rows.length.toLocaleString()} tráficos
           </p>
         </div>
         <div className="flex items-center gap-2.5 flex-wrap">
           <button
-            onClick={() => exportCSV(rows)}
+            onClick={() => exportCSV(groups, clave)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-[3px] text-[12px] font-medium"
             style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
           >
@@ -188,7 +215,7 @@ export default function PedimentosPage() {
             <Search size={13} strokeWidth={2} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
             <input
               type="text"
-              placeholder="Pedimento, proveedor, factura..."
+              placeholder="Pedimento, tráfico, proveedor..."
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(0) }}
               className="flex-1 bg-transparent outline-none text-[12.5px]"
@@ -198,58 +225,7 @@ export default function PedimentosPage() {
         </div>
       </div>
 
-      {/* T-MEC Savings Banner */}
-      {groups.length > 0 && (() => {
-        const tmecCount = groups.filter(g => g.tmec).length
-        const nonTmecCount = groups.filter(g => !g.tmec).length
-        const nonTmecGroups = groups.filter(g => !g.tmec).sort((a, b) => b.totalValor - a.totalValor)
-        const nonTmecValue = nonTmecGroups.reduce((s, g) => s + g.totalValor, 0)
-        const estimatedSavings = nonTmecGroups.reduce((s, g) => s + g.totalValor * getTariffRate(g.proveedores?.[0] || ''), 0)
-        return (
-          <div style={{
-            background: 'var(--gold-50)', border: '1px solid var(--gold-200)',
-            borderRadius: 'var(--r-lg)', padding: '16px 20px',
-            marginBottom: 20,
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--n-900)' }}>
-                  T-MEC: {tmecCount} de {groups.length} pedimentos ({groups.length > 0 ? Math.round(tmecCount / groups.length * 100) : 0}%)
-                </div>
-                <div style={{ fontSize: 12, color: 'var(--n-500)', marginTop: 2 }}>
-                  {nonTmecCount} pedimentos sin T-MEC · Valor: <span style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtUSD(nonTmecValue)}</span>
-                </div>
-              </div>
-              {estimatedSavings > 0 && (
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--gold-600)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Ahorro potencial*</div>
-                  <div style={{ fontSize: 24, fontWeight: 900, color: 'var(--gold-700)', fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtUSD(estimatedSavings)}</div>
-                </div>
-              )}
-            </div>
-            {nonTmecGroups.length > 0 && (
-              <div style={{ marginTop: 10 }}>
-                {nonTmecGroups.slice(0, 3).map(g => (
-                  <div key={g.pedimento} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, padding: '3px 0' }}>
-                    <span style={{ fontWeight: 700 }}>{g.pedimento} — {titleCase(g.proveedores?.[0] || '')}</span>
-                    <span style={{ fontWeight: 800, color: 'var(--gold-700)', fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtUSD(g.totalValor * getTariffRate(g.proveedores?.[0] || ''))}</span>
-                  </div>
-                ))}
-                <div style={{ fontSize: 10, color: 'var(--n-400)', marginTop: 6 }}>* Estimado por fracción arancelaria. Verificar para cálculo exacto.</div>
-              </div>
-            )}
-          </div>
-        )
-      })()}
-
-      <div className="kpi-grid" style={{ marginBottom: 24 }}>
-        {summaryCards.map((c) => (
-          <div key={c.label} className="kpi-card">
-            <div className="kpi-label">{c.label}</div>
-            <div className="kpi-value" style={{ fontSize: 28, color: 'var(--n-900)' }}>{c.value}</div>
-          </div>
-        ))}
-      </div>
+      {/* Summary stats removed — misleading for new clients */}
 
       {/* Loading */}
       {loading && (
@@ -262,27 +238,28 @@ export default function PedimentosPage() {
 
       {/* Empty state */}
       {!loading && pagedGroups.length === 0 && (
-        <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-          <FileText size={32} strokeWidth={1.5} style={{ color: 'var(--n-300)', margin: '0 auto 12px', display: 'block' }} />
-          <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--n-700)', marginBottom: 4 }}>Sin pedimentos registrados</div>
-          <div style={{ fontSize: 13, color: 'var(--n-400)' }}>Los pedimentos aparecerán aquí</div>
-        </div>
+        <EmptyState
+          icon="📋"
+          title="Sin pedimentos registrados"
+          description="Los pedimentos aparecerán aquí cuando se asignen a los tráficos."
+        />
       )}
 
       {/* Mobile card layout */}
       {!loading && pagedGroups.length > 0 && isMobile && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {pagedGroups.map((g) => (
-            <div
+            <Link
               key={g.pedimento}
-              onClick={() => toggle(g.pedimento)}
+              href={`/traficos/${encodeURIComponent(g.trafico)}`}
               style={{
+                textDecoration: 'none', color: 'inherit',
                 background: 'var(--bg-surface)',
                 border: '1px solid var(--border)',
-                borderLeft: `4px solid ${g.tmec ? '#16A34A' : GOLD}`,
+                borderLeft: `4px solid ${g.tmec ? '#16A34A' : 'var(--gold, #D4A843)'}`,
                 borderRadius: 'var(--r-md, 8px)',
                 padding: '12px 14px',
-                cursor: 'pointer',
+                display: 'block',
                 minHeight: 60,
               }}
             >
@@ -292,15 +269,12 @@ export default function PedimentosPage() {
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'var(--font-jetbrains-mono)' }}>{g.fecha ? fmtDate(g.fecha) : ''}</span>
-                <span style={{ fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-jetbrains-mono)', color: 'var(--n-900)' }}>{fmtUSD(g.totalValor)}</span>
+                <span style={{ fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-jetbrains-mono)', color: 'var(--n-900)' }}>{fmtUSD(g.importe)}</span>
               </div>
-              {g.proveedores.length > 0 && (
-                <div style={{ fontSize: 12, color: 'var(--n-500)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {titleCase(g.proveedores[0])}
-                  {g.proveedores.length > 1 && ` +${g.proveedores.length - 1}`}
-                </div>
-              )}
-            </div>
+              <div style={{ fontSize: 12, color: 'var(--n-500)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {g.proveedores.length > 0 ? titleCase(g.proveedores[0]) : g.descripcion || '—'}
+              </div>
+            </Link>
           ))}
         </div>
       )}
@@ -312,48 +286,53 @@ export default function PedimentosPage() {
             <table className="data-table">
               <thead>
                 <tr>
-                  <th scope="col" style={{ width: 28 }}></th>
                   <th scope="col">Pedimento</th>
                   <th scope="col">Tráfico</th>
-                  <th scope="col">Proveedores</th>
+                  <th scope="col">Estatus</th>
+                  <th scope="col">Mercancía</th>
                   <th scope="col">Fecha</th>
-                  <th scope="col">T-MEC</th>
+                  <th scope="col">Aduana</th>
+                  <th scope="col">Régimen</th>
                   <th scope="col" style={{ textAlign: 'right' }}>Valor USD</th>
+                  <th scope="col" style={{ width: 28 }}></th>
                 </tr>
               </thead>
               <tbody>
-                {pagedGroups.map((g) => (
-                  <tr key={g.pedimento} onClick={() => toggle(g.pedimento)} style={{ cursor: 'pointer' }}>
-                    <td style={{ padding: '0 4px 0 12px' }}>
-                      {expanded.has(g.pedimento) ? <ChevronDown size={14} style={{ color: GOLD }} /> : <ChevronRight size={14} style={{ color: 'var(--text-muted)' }} />}
-                    </td>
-                    <td><span className="c-id">{g.pedimento}</span></td>
-                    <td><span className="c-id">{g.referencia}</span></td>
-                    <td>
-                      {g.proveedores.length > 0 ? (
-                        <>
-                          <span style={{ fontSize: 13, color: 'var(--n-700)' }}>
-                            {titleCase(g.proveedores[0])}
-                          </span>
-                          {g.proveedores.length > 1 && (
-                            <span className="ml-1.5 text-[10px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: 'var(--n-100)', color: 'var(--n-500)' }}>
-                              +{g.proveedores.length - 1}
-                            </span>
-                          )}
-                        </>
-                      ) : (
-                        <span className="c-empty">&middot;</span>
-                      )}
-                    </td>
-                    <td className="text-[12px]" style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-jetbrains-mono)' }}>{g.fecha ? fmtDate(g.fecha) : ''}</td>
-                    <td>
-                      {g.tmec && (
-                        <span className="badge-tmec">T-MEC</span>
-                      )}
-                    </td>
-                    <td className="c-num">{fmtUSD(g.totalValor)}</td>
-                  </tr>
-                ))}
+                {pagedGroups.map((g, i) => {
+                  const isCruzado = g.estatus.toLowerCase().includes('cruz')
+                  const hasTrafico = !!g.trafico
+                  return (
+                    <tr key={g.pedimento} className={`${hasTrafico ? 'clickable-row' : ''} ${i % 2 === 0 ? 'row-even' : 'row-odd'}`}
+                      onClick={() => hasTrafico && (window.location.href = `/traficos/${encodeURIComponent(g.trafico)}`)}
+                      style={{ cursor: hasTrafico ? 'pointer' : 'default' }}>
+                      <td><span className="c-id">{g.pedimento}</span></td>
+                      <td><span className="c-id">{g.trafico}</span></td>
+                      <td>
+                        <span className={`badge ${isCruzado ? 'badge-cruzado' : 'badge-proceso'}`}>
+                          <span className="badge-dot" />
+                          {isCruzado ? 'Cruzado' : g.estatus || 'En Proceso'}
+                        </span>
+                      </td>
+                      <td>
+                        <span style={{ fontSize: 12, color: 'var(--n-600)', maxWidth: 200, display: 'inline-block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {g.descripcion ? titleCase(g.descripcion) : '—'}
+                        </span>
+                      </td>
+                      <td className="text-[12px]" style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-jetbrains-mono)' }}>{g.fecha ? fmtDate(g.fecha) : ''}</td>
+                      <td className="text-[12px]" style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-jetbrains-mono)' }}>{g.aduana || '—'}</td>
+                      <td>
+                        <span style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-jetbrains-mono)' }}>
+                          {g.regimen || '—'}
+                        </span>
+                        {g.tmec && (
+                          <span style={{ marginLeft: 6, fontSize: 11, color: '#16A34A', fontWeight: 600 }}>T-MEC</span>
+                        )}
+                      </td>
+                      <td className="c-num">{fmtUSD(g.importe)}</td>
+                      <td style={{ width: 28, textAlign: 'center' }}><ChevronRight size={14} style={{ color: 'var(--slate-300)' }} /></td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
@@ -368,13 +347,13 @@ export default function PedimentosPage() {
           <div className="flex items-center gap-1.5">
             <button disabled={page === 0} onClick={() => setPage(p => p - 1)}
               className="flex items-center gap-1 px-2.5 py-1 rounded-[5px] text-[11.5px] font-medium"
-              style={{ background: page === 0 ? '#f7f8fa' : '#ffffff', border: '1px solid var(--border)', color: page === 0 ? '#d1d5db' : '#374151', cursor: page === 0 ? 'default' : 'pointer' }}>
+              style={{ background: page === 0 ? '#f7f8fa' : 'var(--card-bg)', border: '1px solid var(--border)', color: page === 0 ? '#d1d5db' : '#374151', cursor: page === 0 ? 'default' : 'pointer' }}>
               <ChevronLeft size={12} /> Anterior
             </button>
             <span className="mono text-[11px] px-2" style={{ color: 'var(--text-muted)' }}>{page + 1}/{totalPages}</span>
             <button disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)}
               className="flex items-center gap-1 px-2.5 py-1 rounded-[5px] text-[11.5px] font-medium"
-              style={{ background: page >= totalPages - 1 ? '#f7f8fa' : '#ffffff', border: '1px solid var(--border)', color: page >= totalPages - 1 ? '#d1d5db' : '#374151', cursor: page >= totalPages - 1 ? 'default' : 'pointer' }}>
+              style={{ background: page >= totalPages - 1 ? '#f7f8fa' : 'var(--card-bg)', border: '1px solid var(--border)', color: page >= totalPages - 1 ? '#d1d5db' : '#374151', cursor: page >= totalPages - 1 ? 'default' : 'pointer' }}>
               Siguiente <ChevronRight size={12} />
             </button>
           </div>

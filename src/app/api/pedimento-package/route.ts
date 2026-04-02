@@ -1,7 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
-import { getIVARate } from '@/lib/rates'
-import { CLIENT_RFC, CLIENT_NAME } from '@/lib/client-config'
+import { getIVARate, getDTARates } from '@/lib/rates'
 import { PORTAL_DATE_FROM } from '@/lib/data'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
@@ -35,6 +34,16 @@ export async function GET(request: NextRequest) {
   const traf = trafRes.data
   if (!traf) return NextResponse.json({ error: 'Trafico not found' }, { status: 404 })
 
+  // Resolve client identity from cookie → companies table
+  const companyId = request.cookies.get('company_id')?.value ?? ''
+  const { data: company } = await supabase
+    .from('companies')
+    .select('name, rfc')
+    .eq('company_id', companyId)
+    .single()
+  const clientName = company?.name ?? ''
+  const clientRfc = company?.rfc ?? ''
+
   const facturas = factRes.data || []
   const partidas = partRes.data || []
   const docs = docRes.data || []
@@ -59,7 +68,8 @@ export async function GET(request: NextRequest) {
   const usmcaCertOnFile = docs.some((d: any) => d.doc_type?.includes('usmca') || d.doc_type?.includes('tmec'))
 
   const igiRate = tmecApplicable && usmcaCertOnFile ? 0 : 0.05
-  const dta = valorMXN * 0.008
+  const dtaRates = await getDTARates()
+  const dta = valorMXN * dtaRates.A1.rate
   const igi = valorMXN * igiRate
   const ivaRate = await getIVARate()
   const iva = (valorMXN + dta + igi) * ivaRate
@@ -86,7 +96,7 @@ export async function GET(request: NextRequest) {
 
   return NextResponse.json({
     trafico,
-    importador: { rfc: CLIENT_RFC, nombre: CLIENT_NAME },
+    importador: { rfc: clientRfc, nombre: clientName },
     proveedores,
     valor_aduana_usd: Math.round(valorUSD * 100) / 100,
     valor_aduana_mxn: Math.round(valorMXN * 100) / 100,

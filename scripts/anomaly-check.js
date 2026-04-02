@@ -156,16 +156,26 @@ function parseAnomalies(qwenResponse) {
   return anomalies
 }
 
-// ─── 5. Write notifications ────────────────────────────────────
+// ─── 5. Write notifications (CRITICAL only) ──────────────────
+// Noise reduction: only create notifications for critical anomalies.
+// Before: every Qwen anomaly → notification → 0% read rate.
+// Now: only anomalies mentioning financial impact, missing docs, or stuck shipments.
+const CRITICAL_PATTERNS = /urgent|crítico|critical|perdid|missing|faltante|parad|stuck|bloqu|retras.*\d+\s*días|valor.*alto|\$\d{4,}|importe/i
+
 async function writeNotifications(anomalies) {
   let written = 0
+  let skipped = 0
   for (const anomaly of anomalies) {
+    if (!CRITICAL_PATTERNS.test(anomaly)) {
+      skipped++
+      continue
+    }
     const description = anomaly.length > 500 ? anomaly.substring(0, 497) + '...' : anomaly
     const { error } = await supabase.from('notifications').insert({
       company_id: COMPANY_ID,
       type: 'anomaly_detected',
-      severity: 'warning',
-      title: 'Anomalía detectada — revisión requerida',
+      severity: 'critical',
+      title: 'Anomalía crítica detectada',
       description,
     })
     if (error) {
@@ -174,6 +184,7 @@ async function writeNotifications(anomalies) {
       written++
     }
   }
+  if (skipped > 0) console.log(`  Skipped ${skipped} non-critical anomalies (no notification)`)
   return written
 }
 

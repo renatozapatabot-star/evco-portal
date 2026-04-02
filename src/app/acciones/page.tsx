@@ -2,7 +2,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { AlertTriangle, Clock, FileText, CheckCircle2, ChevronRight, Truck, Package } from 'lucide-react'
-import { CLIENT_CLAVE, COMPANY_ID } from '@/lib/client-config'
+import { getClientClaveCookie, getCompanyIdCookie } from '@/lib/client-config'
 import { fmtId, fmtDate, formatAbsoluteETA } from '@/lib/format-utils'
 import { daysUntilMVE } from '@/lib/compliance-dates'
 import { useToast } from '@/components/Toast'
@@ -22,9 +22,11 @@ export default function AccionesPage() {
   const mveDays = daysUntilMVE()
 
   useEffect(() => {
+    const companyId = getCompanyIdCookie()
+    const clientClave = getClientClaveCookie()
     Promise.all([
-      fetch(`/api/data?table=traficos&company_id=${COMPANY_ID}&trafico_prefix=${CLIENT_CLAVE}-&limit=2000&order_by=fecha_llegada&order_dir=desc`).then(r => r.json()),
-      fetch(`/api/data?table=entradas&cve_cliente=${CLIENT_CLAVE}&limit=500&order_by=fecha_llegada_mercancia&order_dir=desc`).then(r => r.json()),
+      fetch(`/api/data?table=traficos&company_id=${companyId}&limit=2000&order_by=fecha_llegada&order_dir=desc`).then(r => r.json()),
+      fetch(`/api/data?table=entradas&cve_cliente=${clientClave}&limit=500&order_by=fecha_llegada_mercancia&order_dir=desc`).then(r => r.json()),
     ]).then(([t, e]) => {
       setTraficos(t.data ?? [])
       setEntradas(e.data ?? [])

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from 'react'
 import { AlertTriangle, CheckCircle, Clock, Search } from 'lucide-react'
-import { CLIENT_CLAVE, COMPANY_ID } from '@/lib/client-config'
+import { getClientClaveCookie, getCompanyIdCookie } from '@/lib/client-config'
 import { fmtDate as fmtDateUtil } from '@/lib/format-utils'
 
 interface TraficoRow {
@@ -15,8 +15,9 @@ interface TraficoRow {
 }
 
 const fmtId = (id: string) => {
+  const clave = getClientClaveCookie()
   const clean = (id ?? '').replace(/[\u2013\u2014]/g, '-')
-  return clean.startsWith(`${CLIENT_CLAVE}-`) ? clean : `${CLIENT_CLAVE}-${clean}`
+  return clean.startsWith(`${clave}-`) ? clean : `${clave}-${clean}`
 }
 
 const fmtDate = (s: string | null | undefined) => fmtDateUtil(s)
@@ -36,18 +37,20 @@ export default function MvePage() {
   const daysLeft = getDaysLeft(mveDeadline)
 
   useEffect(() => {
-    fetch(`/api/data?table=traficos&company_id=${COMPANY_ID}&trafico_prefix=${CLIENT_CLAVE}-&limit=5000&order_by=fecha_llegada&order_dir=desc`)
+    const companyId = getCompanyIdCookie()
+    const clientClave = getClientClaveCookie()
+    fetch(`/api/data?table=traficos&company_id=${companyId}&limit=5000&order_by=fecha_llegada&order_dir=desc`)
       .then(r => r.json())
       .then(data => setRows(data.data ?? []))
       .catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
       .finally(() => setLoading(false))
     // Compliance predictions for MVE
-    fetch(`/api/data?table=compliance_predictions&company_id=${COMPANY_ID}&limit=50&order_by=severity&order_dir=asc`)
+    fetch(`/api/data?table=compliance_predictions&company_id=${companyId}&limit=50&order_by=severity&order_dir=asc`)
       .then(r => r.json())
       .then(d => setCompAlerts((d.data ?? []).filter((a: any) => !a.resolved)))
       .catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
     // Fetch MVE deadline from deadlines table (not hardcoded)
-    fetch(`/api/data?table=deadlines&company_id=${COMPANY_ID}&limit=10&order_by=deadline&order_dir=desc`)
+    fetch(`/api/data?table=deadlines&company_id=${companyId}&limit=10&order_by=deadline&order_dir=desc`)
       .then(r => r.json())
       .then(d => {
         const deadlines = d.data ?? []

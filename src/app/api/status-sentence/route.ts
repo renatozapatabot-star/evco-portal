@@ -5,8 +5,9 @@ export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
   try {
-    const clientClave = request.cookies.get('company_clave')?.value ?? 'evco'
-    const result = await computeStatusSentence(clientClave)
+    const clientClave = request.cookies.get('company_clave')?.value ?? ''
+    const companyId = request.cookies.get('company_id')?.value ?? ''
+    const result = await computeStatusSentence(clientClave, companyId)
     return NextResponse.json(result)
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Failed to compute status'

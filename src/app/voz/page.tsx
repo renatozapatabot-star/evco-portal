@@ -31,7 +31,7 @@ const COLORS = {
   grayLight: '#AAAAAA',
   grayDark: '#333333',
   red: '#FF4444',
-  green: '#22C55E',
+  green: 'var(--success-500)',
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────

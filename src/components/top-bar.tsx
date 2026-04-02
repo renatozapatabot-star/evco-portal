@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { Bell } from 'lucide-react'
 import Link from 'next/link'
-import { CLIENT_NAME, CLIENT_CLAVE, COMPANY_ID } from '@/lib/client-config'
+import { getClientNameCookie, getClientClaveCookie, getCompanyIdCookie } from '@/lib/client-config'
 import { SearchBar } from '@/components/layout/search-bar'
 import { daysUntilMVE, mveIsUrgent } from '@/lib/compliance-dates'
 import { fmtDate } from '@/lib/format-utils'
@@ -26,7 +26,8 @@ export default function TopBar() {
   const [lastSync, setLastSync] = useState('')
 
   useEffect(() => {
-    fetch(`/api/data?table=traficos&company_id=${COMPANY_ID}&select=updated_at&limit=1&order_by=updated_at&order_dir=desc`)
+    const companyId = getCompanyIdCookie()
+    fetch(`/api/data?table=traficos&company_id=${companyId}&select=updated_at&limit=1&order_by=updated_at&order_dir=desc`)
       .then(r => r.json())
       .then(d => {
         const ts = d.data?.[0]?.updated_at
@@ -42,9 +43,9 @@ export default function TopBar() {
   return (
     <>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-        <span className="tb-company">{CLIENT_NAME}</span>
+        <span className="tb-company">{getClientNameCookie()}</span>
         <span className="tb-pipe" />
-        <span className="tb-meta">{CLIENT_CLAVE}</span>
+        <span className="tb-meta">{getClientClaveCookie()}</span>
       </div>
 
       <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>

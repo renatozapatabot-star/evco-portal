@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { COMPANY_ID } from '@/lib/client-config'
+import { getCompanyIdCookie } from '@/lib/client-config'
 
 const fmtUSD = (n: number) => '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 const fmtMXN = (n: number) => '$' + n.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
@@ -34,12 +34,14 @@ function Row({ label, value, bold, highlight }: { label: string; value: string; 
 export function CotizacionView() {
   const [form, setForm] = useState({ valor_usd: '50000', tipo_cambio: '17.50', incoterm: 'EXW', flete_usd: '0', seguro_usd: '0', igi_rate: '5', regimen: 'A1', tmec: true })
   const [result, setResult] = useState<any>(null)
-  const [rates, setRates] = useState({ dta: 0.008, iva: 0.16, tc: 17.50 })
+  const [rates, setRates] = useState<{ dta: number; iva: number; tc: number } | null>(null)
   const set = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }))
 
   useEffect(() => {
     fetch('/api/rates').then(r => r.json()).then(d => {
-      if (!d.error) setRates({ dta: d.dta?.rate ?? 0.008, iva: d.iva?.rate ?? 0.16, tc: d.tc?.rate ?? 17.50 })
+      if (!d.error && d.dta?.rate && d.iva?.rate && d.tc?.rate) {
+        setRates({ dta: d.dta.rate, iva: d.iva.rate, tc: d.tc.rate })
+      }
     }).catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
   }, [])
 
@@ -53,10 +55,13 @@ export function CotizacionView() {
     if (['EXW', 'FOB', 'FCA'].includes(form.incoterm)) valorAduanaUSD = valorUSD + fleteUSD + seguroUSD
     else if (['CFR', 'CPT'].includes(form.incoterm)) valorAduanaUSD = valorUSD + seguroUSD
     const valorAduanaMXN = valorAduanaUSD * tc
-    const dta = form.regimen === 'IN' ? 347.09 : valorAduanaMXN * 0.008
+    const dtaRate = rates?.dta ?? null
+    const ivaRate = rates?.iva ?? null
+    if (dtaRate === null || ivaRate === null) { setResult(null); return }
+    const dta = form.regimen === 'IN' ? 347.09 : valorAduanaMXN * dtaRate
     const igiRate = form.tmec ? 0 : (parseFloat(form.igi_rate) || 0) / 100
     const igi = valorAduanaMXN * igiRate
-    const iva = (valorAduanaMXN + igi + dta) * rates.iva
+    const iva = (valorAduanaMXN + igi + dta) * ivaRate
     const prev = 347.09
     const total = dta + igi + iva + prev
     setResult({ valorUSD, tc, valorAduanaMXN, dta, igi, iva, prev, total, igiRate: igiRate * 100, tmecSavings: form.tmec ? valorAduanaMXN * ((parseFloat(form.igi_rate) || 0) / 100) : 0 })
@@ -130,7 +135,7 @@ export function CotizacionView() {
 
           {!result ? (
             <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
-              <div style={{ fontSize: 14 }}>Ingresa el valor de la mercancia para ver las contribuciones</div>
+              <div style={{ fontSize: 14 }}>{!rates ? 'Tasas no disponibles — no se puede calcular' : 'Ingresa el valor de la mercancia para ver las contribuciones'}</div>
             </div>
           ) : (
             <>
@@ -158,7 +163,7 @@ export function CotizacionView() {
 
               <button onClick={() => {
                 const text = `COTIZACIÓN ADUANAL\nValor: ${fmtUSD(result.valorUSD)} USD\nValor Aduana: ${fmtMXN(result.valorAduanaMXN)} MXN\nDTA: ${fmtMXN(result.dta)}\nIGI: ${result.igi === 0 ? 'T-MEC $0' : fmtMXN(result.igi)}\nIVA: ${fmtMXN(result.iva)}\nTOTAL: ${fmtMXN(result.total)}\n\nRenato Zapata III — Patente 3596`
-                const blob = new Blob([text], { type: 'text/plain' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${COMPANY_ID}_cotizacion_${new Date().toISOString().split('T')[0]}.txt`; a.click()
+                const blob = new Blob([text], { type: 'text/plain' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${getCompanyIdCookie()}_cotizacion_${new Date().toISOString().split('T')[0]}.txt`; a.click()
               }} style={{ width: '100%', height: 48, marginTop: 24, background: 'var(--amber-600)', border: 'none', borderRadius: 8, color: '#000', fontSize: 16, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
                 Generar Cotización
               </button>

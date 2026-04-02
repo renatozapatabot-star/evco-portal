@@ -1,4 +1,4 @@
-import { CLIENT_CLAVE } from '@/lib/client-config'
+import { getCookieValue } from '@/lib/client-config'
 
 // Master currency formatter — use this EVERYWHERE
 export const fmtCurrency = (
@@ -127,9 +127,7 @@ export const fmtDateCompact = (date: string | Date | null | undefined): string =
 // ID formatter — no em-dashes, client-prefix aware
 export const fmtId = (id: string | null | undefined): string => {
   if (!id) return ''
-  const prefix = `${CLIENT_CLAVE}-`
-  const clean = String(id).replace(/[\u2013\u2014\u2212\u2010\u2015\u2212]/g, '-').replace(new RegExp(`^${CLIENT_CLAVE}[-]?`), '')
-  return `${prefix}${clean}`
+  return String(id).replace(/[\u2013\u2014\u2212\u2010\u2015]/g, '-')
 }
 
 // Title case descriptions

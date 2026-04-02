@@ -43,7 +43,7 @@ export default async function AdminPage() {
   alerts.forEach(a => { alertMap[a.company_id] = (alertMap[a.company_id] || 0) + 1 })
 
   const T = {
-    bg: 'var(--bg-dark)', surface: '#161616', border: '#2A2A2A',
+    bg: 'var(--bg-dark)', surface: 'var(--navy-900)', border: '#2A2A2A',
     text: '#E8E6E0', sub: '#9C9690', muted: '#666',
     gold: GOLD, green: GREEN, amber: AMBER, red: RED,
   }
@@ -51,7 +51,7 @@ export default async function AdminPage() {
   function healthBadge(score: number) {
     if (score >= 80) return { bg: 'rgba(22,163,74,0.15)', color: '#16A34A', border: 'rgba(22,163,74,0.3)' }
     if (score >= 60) return { bg: 'rgba(217,119,6,0.15)', color: '#D97706', border: 'rgba(217,119,6,0.3)' }
-    return { bg: 'rgba(220,38,38,0.15)', color: '#DC2626', border: 'rgba(220,38,38,0.3)' }
+    return { bg: 'rgba(220,38,38,0.15)', color: 'var(--danger-500)', border: 'rgba(220,38,38,0.3)' }
   }
 
   return (

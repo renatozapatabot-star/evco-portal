@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useCallback } from 'react'
 import { ChevronUp, ChevronDown, Download, Search } from 'lucide-react'
-import { COMPANY_ID } from '@/lib/client-config'
+import { getCompanyIdCookie } from '@/lib/client-config'
 
 export interface Column<T = any> {
   key: string
@@ -90,7 +90,7 @@ export default function DataTable<T extends Record<string, any>>({
     const blob = new Blob([csv], { type: 'text/csv' })
     const a = document.createElement('a')
     a.href = URL.createObjectURL(blob)
-    a.download = exportFilename || `${COMPANY_ID}_export_${new Date().toISOString().split('T')[0]}.csv`
+    a.download = exportFilename || `${getCompanyIdCookie()}_export_${new Date().toISOString().split('T')[0]}.csv`
     a.click()
   }, [filtered, columns, exportFilename])
 

@@ -2,10 +2,11 @@
 
 import { useEffect, useState, useMemo } from 'react'
 import { Download } from 'lucide-react'
-import { getCookieValue, COMPANY_ID, CLIENT_CLAVE } from '@/lib/client-config'
+import { getCookieValue, getCompanyIdCookie, getClientClaveCookie } from '@/lib/client-config'
 import { fmtDate, fmtKg } from '@/lib/format-utils'
 import { useIsMobile } from '@/hooks/use-mobile'
 import Link from 'next/link'
+import { ErrorCard } from '@/components/ui/ErrorCard'
 
 /* ── Types ── */
 
@@ -74,18 +75,25 @@ export default function BodegaPage() {
 
   const [rows, setRows] = useState<Entrada[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [tab, setTab] = useState<TabKey>('llegadas')
 
-  useEffect(() => {
+  function loadData() {
+    const companyId = getCompanyIdCookie()
+    const clientClave = getClientClaveCookie()
     const url = isBroker
-      ? `/api/data?table=entradas&company_id=${COMPANY_ID}&limit=2000&order_by=fecha_llegada_mercancia&order_dir=desc`
-      : `/api/data?table=entradas&cve_cliente=${CLIENT_CLAVE}&limit=2000&order_by=fecha_llegada_mercancia&order_dir=desc`
+      ? `/api/data?table=entradas&company_id=${companyId}&limit=2000&order_by=fecha_llegada_mercancia&order_dir=desc`
+      : `/api/data?table=entradas&cve_cliente=${clientClave}&limit=2000&order_by=fecha_llegada_mercancia&order_dir=desc`
+    setLoading(true)
+    setError(null)
     fetch(url)
       .then(r => r.json())
       .then(d => setRows(d.data ?? []))
-      .catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
+      .catch(() => setError('No se pudo cargar la bodega.'))
       .finally(() => setLoading(false))
-  }, [isBroker])
+  }
+
+  useEffect(() => { loadData() }, [isBroker])
 
   /* ── Derived data ── */
 
@@ -136,6 +144,16 @@ export default function BodegaPage() {
   ]
 
   const visibleTabs = tabs.filter(t => !t.brokerOnly || isBroker)
+
+  /* ── Error ── */
+
+  if (error) {
+    return (
+      <div style={{ padding: isMobile ? 16 : 32, maxWidth: 1200, margin: '0 auto' }}>
+        <ErrorCard message={error} onRetry={loadData} />
+      </div>
+    )
+  }
 
   /* ── Loading ── */
 

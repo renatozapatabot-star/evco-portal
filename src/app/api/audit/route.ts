@@ -5,7 +5,7 @@ const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env
 
 export async function POST(request: NextRequest) {
   try {
-    const companyId = request.cookies.get('company_id')?.value ?? 'evco'
+    const companyId = request.cookies.get('company_id')?.value ?? ''
     const body = await request.json()
     const ip = request.headers.get('x-forwarded-for')?.split(',')[0] || 'unknown'
     const ua = request.headers.get('user-agent') || ''

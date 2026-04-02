@@ -99,12 +99,12 @@ function SummaryCard({
       position: 'sticky',
       top: 0,
       zIndex: 10,
-      background: '#FFFFFF',
+      background: 'var(--card-bg)',
       borderBottom: '1px solid #E8E5E0',
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
         <div style={{ flex: 1, minWidth: 200 }}>
-          <p style={{ fontSize: 14, fontWeight: 600, color: '#1A1A1A', margin: 0 }}>
+          <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--body-text)', margin: 0 }}>
             {incompletos} expediente{incompletos !== 1 ? 's' : ''} incompleto{incompletos !== 1 ? 's' : ''}
           </p>
           {/* Progress bar */}
@@ -198,7 +198,7 @@ function FilterTabs({
               flexShrink: 0,
               padding: '8px 16px',
               border: `1px solid ${isActive ? '#B8953F' : '#E8E5E0'}`,
-              background: isActive ? '#F5F0E4' : '#FFFFFF',
+              background: isActive ? '#F5F0E4' : 'var(--card-bg)',
               color: isActive ? '#B8953F' : '#6B6B6B',
               borderRadius: 9999,
               fontSize: 13,
@@ -248,7 +248,7 @@ function MobileCard({ row, onNavigate }: { row: TraficoRow; onNavigate: (id: str
   return (
     <div
       style={{
-        background: isOverdue && row.missing.length > 0 ? 'rgba(194,59,34,0.04)' : '#FFFFFF',
+        background: isOverdue && row.missing.length > 0 ? 'rgba(194,59,34,0.04)' : 'var(--card-bg)',
         border: '1px solid #E8E5E0',
         borderLeft: row.missing.length > 0 ? `4px solid ${urgency.color}` : noPedimento ? '4px solid #C23B22' : '1px solid #E8E5E0',
         borderRadius: 8,
@@ -323,7 +323,7 @@ function MobileCard({ row, onNavigate }: { row: TraficoRow; onNavigate: (id: str
           onClick={() => onNavigate(row.trafico)}
           style={{
             display: 'flex', alignItems: 'center', gap: 4,
-            padding: '8px 14px', background: '#FFFFFF',
+            padding: '8px 14px', background: 'var(--card-bg)',
             border: '1px solid #E8E5E0', color: '#1A1A1A',
             borderRadius: 6, fontSize: 12, fontWeight: 600,
             cursor: 'pointer', minHeight: 40, fontFamily: 'inherit',
@@ -339,7 +339,7 @@ function MobileCard({ row, onNavigate }: { row: TraficoRow; onNavigate: (id: str
 // ── Main View ───────────────────────────────────────────
 
 export function ExpedientesView() {
-  const companyId = getCookieValue('company_id') ?? 'evco'
+  const companyId = getCookieValue('company_id') ?? ''
   const router = useRouter()
   const isMobile = useIsMobile()
   const [rawTraficos, setRawTraficos] = useState<TraficoRow[]>([])
@@ -603,7 +603,7 @@ export function ExpedientesView() {
             style={{
               paddingLeft: 32, paddingRight: 12, height: 36,
               border: '1px solid #E8E5E0', borderRadius: 8,
-              background: '#FFFFFF', color: '#1A1A1A', fontSize: 13,
+              background: 'var(--card-bg)', color: '#1A1A1A', fontSize: 13,
               outline: 'none', width: 200, fontFamily: 'inherit',
             }}
           />
@@ -613,7 +613,7 @@ export function ExpedientesView() {
       {loadError ? (
         <div style={{
           padding: 48, textAlign: 'center',
-          background: '#FFFFFF', border: '1px solid #E8E5E0',
+          background: 'var(--card-bg)', border: '1px solid #E8E5E0',
           borderRadius: 8, marginTop: 16,
         }}>
           <AlertTriangle size={32} style={{ color: '#C23B22', margin: '0 auto 12px', display: 'block' }} />
@@ -698,7 +698,7 @@ export function ExpedientesView() {
                   padding: '6px 12px',
                   border: '1px solid #E8E5E0',
                   borderRadius: 8,
-                  background: '#FFFFFF',
+                  background: 'var(--card-bg)',
                   color: '#1A1A1A',
                   fontSize: 13,
                   fontFamily: 'inherit',
@@ -870,7 +870,7 @@ export function ExpedientesView() {
                               }}
                               style={{
                                 display: 'inline-flex', alignItems: 'center', gap: 4,
-                                padding: '6px 14px', background: '#FFFFFF',
+                                padding: '6px 14px', background: 'var(--card-bg)',
                                 border: '1px solid #E8E5E0', color: '#1A1A1A',
                                 borderRadius: 6, fontSize: 12, fontWeight: 600,
                                 cursor: 'pointer', fontFamily: 'inherit',
@@ -903,7 +903,7 @@ export function ExpedientesView() {
                   disabled={page === 0}
                   style={{
                     border: '1px solid #E8E5E0',
-                    background: page === 0 ? '#F5F4F0' : '#FFFFFF',
+                    background: page === 0 ? '#F5F4F0' : 'var(--card-bg)',
                     borderRadius: 6, padding: '5px 12px',
                     cursor: page === 0 ? 'default' : 'pointer',
                     color: page === 0 ? '#9C9890' : '#1A1A1A',
@@ -917,7 +917,7 @@ export function ExpedientesView() {
                   disabled={page >= totalPages - 1}
                   style={{
                     border: '1px solid #E8E5E0',
-                    background: page >= totalPages - 1 ? '#F5F4F0' : '#FFFFFF',
+                    background: page >= totalPages - 1 ? '#F5F4F0' : 'var(--card-bg)',
                     borderRadius: 6, padding: '5px 12px',
                     cursor: page >= totalPages - 1 ? 'default' : 'pointer',
                     color: page >= totalPages - 1 ? '#9C9890' : '#1A1A1A',

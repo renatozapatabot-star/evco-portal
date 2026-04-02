@@ -2,8 +2,8 @@
 
 import React, { useEffect, useState, useMemo } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { ArrowLeft, Upload, Clock, FileText, Truck, BarChart3 } from 'lucide-react'
-import { fmtId, fmtDate, fmtUSD, fmtKg, fmtDesc, fmtMXNInt, formatAbsoluteETA } from '@/lib/format-utils'
+import { ArrowLeft, Upload, Clock, FileText, Truck, BarChart3, Share2 } from 'lucide-react'
+import { fmtId, fmtDate, fmtDateTime, fmtUSD, fmtKg, fmtDesc, fmtMXNInt, formatAbsoluteETA } from '@/lib/format-utils'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { GOLD } from '@/lib/design-system'
 import { fmtCarrier, countryFlag } from '@/lib/carrier-names'
@@ -13,6 +13,8 @@ import { SolicitarModal } from '@/components/SolicitarModal'
 import { getMissingDocs, REQUIRED_DOC_TYPES } from '@/lib/documents'
 import { useToast } from '@/components/Toast'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { ErrorCard } from '@/components/ui/ErrorCard'
+import { StickyActionBar } from '@/components/trafico/StickyActionBar'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
@@ -86,17 +88,7 @@ const EVENT_ICONS: Record<string, string> = {
   note: '\uD83D\uDCAC',
 }
 
-function fmtRelative(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime()
-  const mins = Math.floor(diff / 60000)
-  if (mins < 1) return 'ahora'
-  if (mins < 60) return `hace ${mins}m`
-  const hrs = Math.floor(mins / 60)
-  if (hrs < 24) return `hace ${hrs}h`
-  const days = Math.floor(hrs / 24)
-  if (days < 30) return `hace ${days}d`
-  return `hace ${Math.floor(days / 30)}mo`
-}
+// fmtRelative removed — relative dates banned by spec. Use fmtDateTime instead.
 
 function sourceBadge(source: string | null) {
   if (!source) return null
@@ -207,7 +199,7 @@ function TimelineTab({ traficoId }: { traficoId: string }) {
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
                 <span style={{ fontSize: 11, color: '#7C7870', fontFamily: 'var(--font-jetbrains-mono)' }}>
-                  {fmtRelative(ev.created_at)}
+                  {fmtDateTime(ev.created_at)}
                 </span>
                 {sourceBadge(ev.source)}
               </div>
@@ -223,7 +215,9 @@ function TimelineTab({ traficoId }: { traficoId: string }) {
    TRÁFICO HUB — 4-tab detail page
    ═══════════════════════════════════════════════════════ */
 export default function TraficoDetailPage() {
-  const companyId = getCookieValue('company_id') ?? 'evco'
+  const companyId = getCookieValue('company_id') ?? ''
+  const userRole = getCookieValue('user_role') ?? ''
+  const isBroker = userRole === 'broker' || userRole === 'admin'
   const { id } = useParams()
   const router = useRouter()
   const isMobile = useIsMobile()
@@ -235,15 +229,18 @@ export default function TraficoDetailPage() {
   const [entradas, setEntradas] = useState<Record<string, unknown>[]>([])
   const [completeness, setCompleteness] = useState<Completeness | null>(null)
   const [loading, setLoading] = useState(true)
+  const [fetchError, setFetchError] = useState<string | null>(null)
+  const [retryKey, setRetryKey] = useState(0)
   const [activeTab, setActiveTab] = useState<Tab>('resumen')
   const [missingDocs, setMissingDocs] = useState<string[]>([])
   const [uploadingDoc, setUploadingDoc] = useState<string | null>(null)
   const [showSolicitarModal, setShowSolicitarModal] = useState(false)
   const [solicitadoOk, setSolicitadoOk] = useState(false)
   const [solicitudes, setSolicitudes] = useState<Solicitud[]>([])
-  const [rates, setRates] = useState({ dta: 0.008, iva: 0.16, tc: 17.49 })
+  const [rates, setRates] = useState<{ dta: number; iva: number; tc: number } | null>(null)
+  const [notifying, setNotifying] = useState(false)
 
-  // ── Upload handler ──
+  // ── Upload handler (via /api/upload) ──
   const handleUpload = async (file: File | undefined, docType: string) => {
     if (!file) return
     if (file.size > 10 * 1024 * 1024) { toast('Máximo 10MB', 'error'); return }
@@ -253,16 +250,26 @@ export default function TraficoDetailPage() {
     const tId = decodeURIComponent(String(id))
     setUploadingDoc(docType)
     try {
-      const path = `${tId}/${docType.replace(/ /g, '_')}_${Date.now()}_${file.name}`
-      await supabase.storage.from('expedientes').upload(path, file)
-      const { data: urlData } = await supabase.storage.from('expedientes').createSignedUrl(path, 3600)
-      await supabase.from('documents').insert({
-        trafico_id: tId, document_type: docType,
-        file_url: urlData?.signedUrl || path,
-        metadata: { trafico: tId, uploaded_by: 'portal', original_name: file.name },
-        tenant_slug: companyId,
-      })
-      window.location.reload()
+      const form = new FormData()
+      form.append('file', file)
+      form.append('trafico_id', tId)
+      form.append('doc_type', docType)
+      const res = await fetch('/api/upload', { method: 'POST', body: form })
+      const json = await res.json()
+      if (json.error) {
+        toast(json.error.message ?? 'Error al subir', 'error')
+        return
+      }
+      // Remove doc from blocking list + missing list
+      setCompleteness(prev => prev ? {
+        ...prev,
+        blocking_docs: (prev.blocking_docs ?? []).filter(d => d !== docType),
+        blocking_count: Math.max(0, prev.blocking_count - 1),
+      } : prev)
+      setMissingDocs(prev => prev.filter(d => d !== docType))
+      toast('Documento subido correctamente', 'success')
+      // Refresh data
+      setRetryKey(k => k + 1)
     } catch { toast('Error al subir. Intenta de nuevo.', 'error') }
     finally { setUploadingDoc(null) }
   }
@@ -289,6 +296,39 @@ export default function TraficoDetailPage() {
     router.refresh()
   }
 
+  // ── Notify client (broker only) ──
+  const handleNotifyRojo = async () => {
+    const tId = decodeURIComponent(String(id))
+    setNotifying(true)
+    try {
+      const res = await fetch('/api/notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: `Tráfico ${tId} recibió semáforo rojo — revisión en aduana requerida.`,
+          trafico_id: tId,
+          type: 'semaforo_rojo',
+        }),
+      })
+      const json = await res.json()
+      if (json.error) { toast(json.error.message, 'error') }
+      else { toast('Notificación enviada por Telegram', 'success') }
+    } catch { toast('Error al enviar notificación', 'error') }
+    finally { setNotifying(false) }
+  }
+
+  // ── Share deep link ──
+  const handleShare = async () => {
+    const tId = decodeURIComponent(String(id))
+    const url = `https://evco-portal.vercel.app/share/${encodeURIComponent(tId)}`
+    try {
+      await navigator.clipboard.writeText(url)
+      toast('Enlace copiado · Funciona aunque el destinatario no haya iniciado sesión', 'success')
+    } catch {
+      toast('No se pudo copiar el enlace', 'error')
+    }
+  }
+
   // ── Data fetch ──
   useEffect(() => {
     if (!id) return
@@ -306,7 +346,9 @@ export default function TraficoDetailPage() {
       setDocumentos(docs)
       setMissingDocs(getMissingDocs(docs))
       setEntradas(ent)
-      if (!ratesRes.error) setRates({ dta: ratesRes.dta?.rate ?? 0.008, iva: ratesRes.iva?.rate ?? 0.16, tc: ratesRes.tc?.rate ?? 17.49 })
+      if (!ratesRes.error && ratesRes.dta?.rate && ratesRes.iva?.rate && ratesRes.tc?.rate) {
+        setRates({ dta: ratesRes.dta.rate, iva: ratesRes.iva.rate, tc: ratesRes.tc.rate })
+      }
 
       // Match completeness row for this trafico
       const allComp = (compRes.data ?? []) as Completeness[]
@@ -314,7 +356,7 @@ export default function TraficoDetailPage() {
       setCompleteness(match)
 
       setLoading(false)
-    }).catch(() => setLoading(false))
+    }).catch(() => { setFetchError('No se pudo cargar el tráfico.'); setLoading(false) })
 
     // Fetch solicitudes
     supabase
@@ -328,7 +370,7 @@ export default function TraficoDetailPage() {
       .then(({ data: solData }) => {
         if (solData && solData.length > 0) setSolicitudes(solData as Solicitud[])
       })
-  }, [id, companyId])
+  }, [id, companyId, retryKey])
 
   // ── Derived ──
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -336,6 +378,8 @@ export default function TraficoDetailPage() {
   const isCruzado = t ? ((t.estatus as string) || '').toLowerCase().includes('cruz') : false
   const isPagado = t ? ((t.estatus as string) || '').toLowerCase().includes('pagado') : false
   const docCompleteness = Math.round((documentos.length / REQUIRED_DOC_TYPES.length) * 100)
+  const regimen = t ? ((t.regimen as string) || '').toUpperCase() : ''
+  const isTMEC = regimen === 'ITE' || regimen === 'ITR' || regimen === 'IMD'
 
   // ── Grouped docs ──
   const groupedDocs = useMemo(() => {
@@ -382,6 +426,13 @@ export default function TraficoDetailPage() {
     { num: 12, label: 'Entregado', detail: t.fecha_entrega ? formatAbsoluteETA(t.fecha_entrega as string) : 'Pendiente', date: (t.fecha_entrega as string | null) || null },
   ] : []
 
+  // ── Error ──
+  if (fetchError) return (
+    <div style={{ padding: 24, maxWidth: 1200, margin: '0 auto' }}>
+      <ErrorCard message={fetchError} onRetry={() => { setFetchError(null); setRetryKey(k => k + 1) }} />
+    </div>
+  )
+
   // ── Loading ──
   if (loading) return (
     <div style={{ padding: 24, maxWidth: 1200, margin: '0 auto' }}>
@@ -418,6 +469,55 @@ export default function TraficoDetailPage() {
         <ArrowLeft size={13} /> Tráficos
       </button>
 
+      {/* ═══ STICKY ACTION BAR (v2) ═══ */}
+      <StickyActionBar
+        traficoNumber={fmtId(String(t.trafico ?? ''))}
+        status={String(t.estatus ?? 'En Proceso')}
+        valueUSD={t.importe_total ? fmtUSD(Number(t.importe_total)) + ' USD' : null}
+        hasMissingDocs={missingDocs.length > 0}
+        onSolicitar={missingDocs.length > 0 ? () => setShowSolicitarModal(true) : undefined}
+      />
+
+      {/* ═══ SEMÁFORO ROJO ALERT (v2) ═══ */}
+      {(t.semaforo as number) === 1 && (
+        <div style={{
+          background: 'rgba(214, 69, 69, 0.1)',
+          borderLeft: '4px solid var(--danger-500)',
+          borderRadius: 'var(--radius-lg)',
+          padding: '16px 20px',
+          marginBottom: 20,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12,
+        }}>
+          <span style={{ fontSize: 20 }}>🔴</span>
+          <span style={{ flex: 1, fontSize: 'var(--text-body)', color: 'var(--danger-500)', fontWeight: 600 }}>
+            Semáforo rojo asignado — revisión en aduana
+          </span>
+          {isBroker && (
+            <button
+              onClick={handleNotifyRojo}
+              disabled={notifying}
+              style={{
+                padding: '10px 20px',
+                minHeight: 60,
+                borderRadius: 8,
+                background: notifying ? 'var(--n-200)' : 'var(--danger-500, #DC2626)',
+                color: '#FFFFFF',
+                border: 'none',
+                cursor: notifying ? 'not-allowed' : 'pointer',
+                fontSize: 13,
+                fontWeight: 700,
+                whiteSpace: 'nowrap',
+                transition: 'background 150ms',
+              }}
+            >
+              {notifying ? 'Enviando…' : 'Notificar a cliente'}
+            </button>
+          )}
+        </div>
+      )}
+
       {/* ═══ HEADER ═══ */}
       <div style={{ marginBottom: 24 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
@@ -444,6 +544,34 @@ export default function TraficoDetailPage() {
             {String(t.company_id ?? companyId)}
           </span>
 
+          {/* Pedimento badge */}
+          {t.pedimento ? (
+            <span style={{
+              fontSize: 12, fontWeight: 600, padding: '4px 10px',
+              borderRadius: 8, background: 'var(--slate-100)', color: 'var(--slate-600)',
+              fontFamily: 'var(--font-jetbrains-mono, var(--font-data))',
+            }}>
+              Ped. {String(t.pedimento)}
+            </span>
+          ) : (
+            <span style={{ fontSize: 12, color: 'var(--slate-400)', fontStyle: 'italic' }}>
+              Pedimento en trámite
+            </span>
+          )}
+
+          {/* T-MEC badge */}
+          {isTMEC && (
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: 4,
+              padding: '4px 12px', borderRadius: 9999,
+              background: 'var(--green-50, #F0FDF4)',
+              color: '#16A34A', fontSize: 12, fontWeight: 600,
+              border: '1px solid var(--green-100, #DCFCE7)',
+            }}>
+              T-MEC
+            </span>
+          )}
+
           {/* Status badge */}
           <span className={`badge ${isCruzado ? 'badge-cruzado' : 'badge-proceso'}`}>
             <span className="badge-dot" />
@@ -464,6 +592,24 @@ export default function TraficoDetailPage() {
               {(t.semaforo as number) === 0 ? 'Verde' : 'Rojo'}
             </span>
           )}
+
+          {/* Share deep link */}
+          <button
+            onClick={handleShare}
+            aria-label="Compartir enlace al tráfico"
+            style={{
+              display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+              gap: 6, padding: '8px 14px', minHeight: 60,
+              borderRadius: 8, border: '1px solid var(--n-200, #E5E5E0)',
+              background: 'transparent', cursor: 'pointer',
+              fontSize: 12, fontWeight: 600, color: 'var(--n-500)',
+              transition: 'background 150ms',
+              marginLeft: 'auto',
+            }}
+          >
+            <Share2 size={14} />
+            Compartir
+          </button>
         </div>
 
         {/* Subtitle */}
@@ -519,10 +665,10 @@ export default function TraficoDetailPage() {
             gap: 12,
           }}>
             {([
-              { label: 'Valor', value: t.importe_total ? fmtUSD(Number(t.importe_total)) + ' USD' : '—', mono: true },
-              { label: 'Peso Bruto', value: t.peso_bruto ? fmtKg(Number(t.peso_bruto)) + ' kg' : '—', mono: true },
-              { label: 'Bultos', value: String(t.bultos ?? t.cantidad_bultos ?? '—'), mono: true },
-              { label: 'Fecha Llegada', value: t.fecha_llegada ? fmtDate(String(t.fecha_llegada)) : '—', mono: true },
+              { label: 'Valor', value: t.importe_total ? fmtUSD(Number(t.importe_total)) + ' USD' : 'Pendiente', mono: true },
+              { label: 'Peso Bruto', value: t.peso_bruto ? fmtKg(Number(t.peso_bruto)) + ' kg' : 'Pendiente', mono: true },
+              { label: 'Bultos', value: String(t.bultos ?? t.cantidad_bultos ?? 'Pendiente'), mono: true },
+              { label: 'Fecha Llegada', value: t.fecha_llegada ? fmtDate(String(t.fecha_llegada)) : 'Pendiente', mono: true },
               { label: 'Aduana', value: String(t.aduana ?? (t.oficina ? t.oficina : '240 · Nuevo Laredo')), mono: false },
               { label: 'Régimen', value: String(t.regimen ?? 'A1 · Definitivo'), mono: false },
             ] as { label: string; value: string; mono: boolean }[]).map(stat => (
@@ -531,8 +677,11 @@ export default function TraficoDetailPage() {
                   {stat.label}
                 </div>
                 <div style={{
-                  fontSize: 15, fontWeight: 700, color: 'var(--n-900)',
-                  fontFamily: stat.mono ? 'var(--font-jetbrains-mono, var(--font-data))' : undefined,
+                  fontSize: stat.value === 'Pendiente' ? 13 : 15,
+                  fontWeight: stat.value === 'Pendiente' ? 500 : 700,
+                  color: stat.value === 'Pendiente' ? 'var(--slate-400)' : 'var(--n-900)',
+                  fontStyle: stat.value === 'Pendiente' ? 'italic' : undefined,
+                  fontFamily: stat.mono && stat.value !== 'Pendiente' ? 'var(--font-jetbrains-mono, var(--font-data))' : undefined,
                 }}>
                   {String(stat.value)}
                 </div>
@@ -540,28 +689,38 @@ export default function TraficoDetailPage() {
             ))}
           </div>
 
-          {/* ── Completeness Bar ── */}
+          {/* ── Completeness Ring ── */}
           <div className="card" style={{ padding: 20 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-              <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--n-900)' }}>
-                Completitud del Tráfico
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
+              {/* Circular progress ring */}
+              <div style={{ position: 'relative', width: 64, height: 64, flexShrink: 0 }}>
+                <svg width="64" height="64" style={{ transform: 'rotate(-90deg)' }}>
+                  <circle cx="32" cy="32" r="28" stroke="#E5E7EB" strokeWidth="4" fill="none" />
+                  <circle cx="32" cy="32" r="28"
+                    stroke={compScore === 100 ? '#16A34A' : compScore > 50 ? '#C4963C' : '#DC2626'}
+                    strokeWidth="4" fill="none"
+                    strokeDasharray={`${compScore * 1.759} 175.9`}
+                    strokeLinecap="round"
+                    style={{ transition: 'stroke-dasharray 0.6s ease' }}
+                  />
+                </svg>
+                <span style={{
+                  position: 'absolute', inset: 0,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 13, fontWeight: 800, color: 'var(--text-primary, #111)',
+                  fontFamily: 'var(--font-jetbrains-mono, var(--font-data))',
+                }}>
+                  {compScore}%
+                </span>
               </div>
-              <span style={{
-                fontSize: 16, fontWeight: 800,
-                fontFamily: 'var(--font-jetbrains-mono, var(--font-data))',
-                color: compScore >= 80 ? '#2D8540' : compScore >= 50 ? '#C47F17' : '#C23B22',
-              }}>
-                {compScore}%
-              </span>
-            </div>
-
-            {/* Progress bar */}
-            <div style={{ height: 8, background: 'var(--n-100)', borderRadius: 4, overflow: 'hidden', marginBottom: 16 }}>
-              <div style={{
-                width: `${Math.min(compScore, 100)}%`, height: '100%',
-                background: compScore >= 80 ? '#2D8540' : compScore >= 50 ? '#C47F17' : '#C23B22',
-                borderRadius: 4, transition: 'width 0.6s ease',
-              }} />
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--n-900)' }}>
+                  Completitud Documental
+                </div>
+                <div style={{ fontSize: 12, color: 'var(--slate-500)', marginTop: 2 }}>
+                  {documentos.length} de {REQUIRED_DOC_TYPES.length} documentos
+                </div>
+              </div>
             </div>
 
             {/* Can file / Can cross indicators */}
@@ -596,21 +755,38 @@ export default function TraficoDetailPage() {
               </div>
             </div>
 
-            {/* Blocking docs in red */}
+            {/* Blocking docs — tap to upload */}
             {(compBlocking?.length ?? 0) > 0 && (
               <div style={{ padding: '10px 14px', background: '#FEF2F2', border: '1px solid rgba(194,59,34,0.15)', borderRadius: 8 }}>
                 <div style={{ fontSize: 11, fontWeight: 800, color: '#991B1B', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>
-                  Documentos Bloqueantes ({compBlocking?.length ?? 0})
+                  Documentos Bloqueantes ({compBlocking?.length ?? 0}) · Toca para subir
                 </div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                   {(compBlocking ?? []).map(doc => (
-                    <span key={doc} style={{
-                      fontSize: 11, fontWeight: 600, padding: '3px 10px',
+                    <label key={doc} style={{
+                      fontSize: 11, fontWeight: 600, padding: '6px 14px',
                       borderRadius: 9999, background: '#FFFFFF',
-                      color: '#991B1B', border: '1px solid rgba(194,59,34,0.2)',
+                      color: uploadingDoc === doc ? '#B8953F' : '#991B1B',
+                      border: '1px solid rgba(194,59,34,0.2)',
+                      cursor: uploadingDoc === doc ? 'wait' : 'pointer',
+                      display: 'inline-flex', alignItems: 'center', gap: 4,
+                      minHeight: 32, transition: 'background 150ms',
                     }}>
-                      {doc}
-                    </span>
+                      {uploadingDoc === doc ? (
+                        'Subiendo…'
+                      ) : (
+                        <>
+                          <Upload size={12} />
+                          {doc}
+                          <input
+                            type="file"
+                            accept=".pdf,.jpg,.jpeg,.png,.xml"
+                            style={{ display: 'none' }}
+                            onChange={e => handleUpload(e.target.files?.[0], doc)}
+                          />
+                        </>
+                      )}
+                    </label>
                   ))}
                 </div>
               </div>
@@ -629,9 +805,9 @@ export default function TraficoDetailPage() {
               {steps.map((step, i) => {
                 const state = getStepState(step.num)
                 const isLast = i === steps.length - 1
-                const dotColor = state === 'completed' ? GOLD : state === 'current' ? GOLD : state === 'blocked' ? '#DC2626' : 'var(--n-200)'
-                const textColor = state === 'completed' ? 'var(--n-900)' : state === 'current' ? 'var(--n-900)' : state === 'blocked' ? '#DC2626' : 'var(--n-400)'
-                const lineColor = state === 'completed' ? GOLD : 'var(--n-150)'
+                const dotColor = state === 'completed' ? 'var(--success-500)' : state === 'current' ? 'var(--sand-400, #C4A96A)' : state === 'blocked' ? 'var(--danger-500)' : 'var(--slate-200)'
+                const textColor = state === 'completed' ? 'var(--slate-600)' : state === 'current' ? 'var(--navy-900)' : state === 'blocked' ? 'var(--danger-500)' : 'var(--slate-400)'
+                const lineColor = state === 'completed' ? 'var(--success-500)' : 'var(--slate-200)'
                 const detailColor = step.num === 8 && step.detail === 'Verde' ? '#2D8540'
                   : step.num === 8 && step.detail === 'Rojo' ? '#C23B22'
                   : step.num === 10 && state === 'completed' ? '#0D9488'
@@ -645,7 +821,7 @@ export default function TraficoDetailPage() {
                         borderRadius: '50%', flexShrink: 0,
                         background: state === 'pending' ? 'transparent' : dotColor,
                         border: state === 'pending' ? '2px solid var(--n-200)' : 'none',
-                        animation: state === 'current' ? 'pulse-dot 2s ease-in-out infinite' : undefined,
+                        animation: state === 'current' ? 'cruzActivePulse 2s ease-in-out infinite' : undefined,
                       }} />
                       {!isLast && <div style={{ width: 2, flex: 1, background: lineColor, marginTop: 4 }} />}
                     </div>
@@ -672,10 +848,10 @@ export default function TraficoDetailPage() {
             const val = Number(t.importe_total) || 0
             const tc = Number(t.tipo_cambio) || 0
             const valMXN = val * tc
-            const dta = Math.round(valMXN * rates.dta)
+            const dta = rates ? Math.round(valMXN * rates.dta) : 0
             const igi = 0
             const ivaBase = valMXN + dta + igi
-            const iva = Math.round(ivaBase * rates.iva)
+            const iva = rates ? Math.round(ivaBase * rates.iva) : 0
             const total = dta + igi + iva
 
             return (
@@ -686,11 +862,11 @@ export default function TraficoDetailPage() {
                 <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12 }}>
                   {[
                     { label: 'Valor Factura', value: fmtUSD(val) + ' USD' },
-                    { label: 'Tipo de Cambio', value: tc ? `$${tc.toFixed(4)} MXN/USD` : '—' },
-                    { label: 'DTA', value: val && tc ? fmtMXNInt(dta) + ' MXN' : '—' },
-                    { label: 'IGI', value: '$0 MXN (T-MEC)' },
-                    { label: 'IVA (16%)', value: val && tc ? fmtMXNInt(iva) + ' MXN' : '—' },
-                    { label: 'Total Contribuciones', value: val && tc ? fmtMXNInt(total) + ' MXN' : '—', highlight: true },
+                    { label: 'Tipo de Cambio', value: tc ? `$${tc.toFixed(4)} MXN/USD` : 'Pendiente' },
+                    { label: 'DTA', value: val && tc ? fmtMXNInt(dta) + ' MXN' : 'Pendiente' },
+                    { label: 'IGI', value: '$0 MXN', tmec: true },
+                    { label: 'IVA (16%)', value: val && tc ? fmtMXNInt(iva) + ' MXN' : 'Pendiente' },
+                    { label: 'Total Contribuciones', value: val && tc ? fmtMXNInt(total) + ' MXN' : 'Pendiente', highlight: true },
                   ].map(row => (
                     <div key={row.label} style={{
                       display: 'flex', justifyContent: 'space-between', alignItems: 'center',
@@ -702,8 +878,16 @@ export default function TraficoDetailPage() {
                         fontSize: 13, fontWeight: 700,
                         fontFamily: 'var(--font-jetbrains-mono, var(--font-data))',
                         color: row.highlight ? 'var(--gold-700, #8B6914)' : 'var(--n-900)',
+                        display: 'flex', alignItems: 'center', gap: 6,
                       }}>
                         {row.value}
+                        {'tmec' in row && (row as { tmec?: boolean }).tmec && (
+                          <span title="Exento por T-MEC" style={{
+                            fontSize: 10, fontWeight: 700, padding: '1px 6px',
+                            background: 'var(--green-50, #F0FDF4)', color: 'var(--green-600, #16A34A)',
+                            borderRadius: 4, fontFamily: 'var(--font-sans)',
+                          }}>✓ T-MEC</span>
+                        )}
                       </span>
                     </div>
                   ))}

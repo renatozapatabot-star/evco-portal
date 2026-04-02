@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { AlertTriangle, CheckCircle, Clock, Package, ShieldAlert } from 'lucide-react'
 import { calculateCruzScore, extractScoreInput } from '@/lib/cruz-score'
-import { CLIENT_CLAVE, COMPANY_ID } from '@/lib/client-config'
+import { getClientClaveCookie, getCompanyIdCookie } from '@/lib/client-config'
 import { fmtDateShort } from '@/lib/format-utils'
 
 interface Alert {
@@ -26,7 +26,7 @@ const ICONS = {
 }
 
 const SEV_STYLE = {
-  critica: { bg: 'var(--danger-bg)', border: 'rgba(220,38,38,0.2)', dot: '#DC2626', label: 'Críticas' },
+  critica: { bg: 'var(--danger-bg)', border: 'rgba(220,38,38,0.2)', dot: 'var(--danger-500)', label: 'Críticas' },
   atención: { bg: 'var(--warning-bg)', border: 'rgba(217,119,6,0.2)', dot: '#D97706', label: 'Atención' },
   info: { bg: 'var(--n-50)', border: 'var(--n-150)', dot: 'var(--gold-500)', label: 'Informativas' },
 }
@@ -43,9 +43,11 @@ export default function AlertasPage() {
         // 15-day window
         const fifteenDaysAgo = new Date(Date.now() - 15 * 86400000).toISOString().split('T')[0]
 
+        const companyId = getCompanyIdCookie()
+        const clientClave = getClientClaveCookie()
         const [trafRes, entRes] = await Promise.all([
-          fetch(`/api/data?table=traficos&company_id=${COMPANY_ID}&trafico_prefix=${CLIENT_CLAVE}-&limit=500&order_by=fecha_llegada&order_dir=desc`).then(r => r.json()),
-          fetch(`/api/data?table=entradas&cve_cliente=${CLIENT_CLAVE}&limit=200&order_by=fecha_llegada_mercancia&order_dir=desc`).then(r => r.json()),
+          fetch(`/api/data?table=traficos&company_id=${companyId}&limit=500&order_by=fecha_llegada&order_dir=desc`).then(r => r.json()),
+          fetch(`/api/data?table=entradas&cve_cliente=${clientClave}&limit=200&order_by=fecha_llegada_mercancia&order_dir=desc`).then(r => r.json()),
         ])
         const traf = (trafRes.data ?? []).filter((t: any) =>
           t.fecha_llegada && t.fecha_llegada >= fifteenDaysAgo

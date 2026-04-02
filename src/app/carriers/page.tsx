@@ -213,7 +213,7 @@ export default function CarriersPage() {
               <div className="space-y-1.5 mb-4">
                 {[
                   { label: 'Faltantes', rate: selected.faltantes_rate, color: '#EF4444' },
-                  { label: 'Danos', rate: selected.danos_rate, color: '#F59E0B' },
+                  { label: 'Danos', rate: selected.danos_rate, color: 'var(--warning-500)' },
                 ].map(item => (
                   <div key={item.label}>
                     <div className="flex justify-between text-[11px] mb-0.5">

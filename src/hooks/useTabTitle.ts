@@ -1,18 +1,19 @@
 import { useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { getCompanyIdCookie } from '@/lib/client-config'
 
-const COMPANY_ID = process.env.NEXT_PUBLIC_COMPANY_ID || 'evco'
 const BASE = 'CRUZ · Customs Intelligence'
 
 export function useTabTitle() {
   useEffect(() => {
     const supabase = createClient()
+    const companyId = getCompanyIdCookie()
     async function update() {
       try {
         const { count } = await supabase
           .from('trafico_actions')
           .select('*', { count: 'exact', head: true })
-          .eq('company_id', COMPANY_ID)
+          .eq('company_id', companyId)
           .in('primary_action', ['SEMAFORO_ROJO', 'SIN_DOCUMENTOS'])
         document.title = count && count > 0 ? `(${count}) ${BASE}` : BASE
       } catch {

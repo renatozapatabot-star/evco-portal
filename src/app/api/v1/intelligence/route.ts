@@ -13,7 +13,7 @@ const envelope = (data: any) => ({
 })
 
 export async function GET(req: NextRequest) {
-  const companyId = req.cookies.get('company_id')?.value ?? 'evco'
+  const companyId = req.cookies.get('company_id')?.value ?? ''
   const type = req.nextUrl.searchParams.get('type')
   const id = req.nextUrl.searchParams.get('id')
 

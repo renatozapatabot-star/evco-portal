@@ -1,23 +1,38 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { CLIENT_CLAVE } from '@/lib/client-config'
+import { getClientClaveCookie } from '@/lib/client-config'
 
-export function StatusStrip() {
+interface StatusOverride {
+  level: 'ok' | 'warning' | 'danger'
+  text: string
+}
+
+export function StatusStrip({ override }: { override?: StatusOverride | null }) {
   const [status, setStatus] = useState<{ level: string; sentence: string } | null>(() => {
     if (typeof window === 'undefined') return null
-    const cached = localStorage.getItem(`cruz_status_${CLIENT_CLAVE}`)
+    const clave = getClientClaveCookie()
+    const cached = localStorage.getItem(`cruz_status_${clave}`)
     if (!cached) return null
     try { return JSON.parse(cached) } catch { return null }
   })
 
   useEffect(() => {
+    const clave = getClientClaveCookie()
     fetch('/api/status-sentence').then(r => r.json()).then(fresh => {
       setStatus(fresh)
-      localStorage.setItem(`cruz_status_${CLIENT_CLAVE}`, JSON.stringify({ ...fresh, cached_at: Date.now() }))
+      localStorage.setItem(`cruz_status_${clave}`, JSON.stringify({ ...fresh, cached_at: Date.now() }))
     }).catch(() => { /* silent */ })
   }, [])
 
-  const dotColor = status?.level === 'red' ? '#C03030' : status?.level === 'amber' ? '#C07A18' : '#1A7A34'
+  // Use override if provided (from dashboard data), otherwise use API status
+  const displayLevel = override?.level ?? (status?.level === 'red' ? 'danger' : status?.level === 'amber' ? 'warning' : 'ok')
+  const displayText = override?.text ?? status?.sentence
+
+  const dotColor = displayLevel === 'danger' ? '#C03030'
+    : displayLevel === 'warning' ? '#C07A18'
+    : '#1A7A34'
+
+  const dotClass = displayLevel === 'ok' ? 'dot-live' : ''
 
   return (
     <div className="status-strip" style={{
@@ -25,10 +40,10 @@ export function StatusStrip() {
       background: 'transparent',
       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
     }}>
-      {status ? (
+      {displayText ? (
         <>
-          <span className="status-strip-dot" style={{ borderRadius: '50%', background: dotColor, flexShrink: 0 }} />
-          <span className="status-strip-text" style={{ fontWeight: 600, color: '#1A1A18' }}>{status.sentence}</span>
+          <span className={`status-strip-dot ${dotClass}`} style={{ borderRadius: '50%', background: dotColor, flexShrink: 0 }} />
+          <span className="status-strip-text" style={{ fontWeight: 600, color: '#1A1A18' }}>{displayText}</span>
         </>
       ) : (
         <div className="skeleton status-strip-skeleton" style={{ borderRadius: 4 }} />

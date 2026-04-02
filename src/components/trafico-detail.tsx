@@ -3,12 +3,12 @@
 import { useEffect, useState } from 'react'
 
 const T = {
-  surface: '#FFFFFF', surfaceAlt: '#FAFAF8', border: '#E8E6E0',
+  surface: 'var(--card-bg)', surfaceAlt: '#FAFAF8', border: '#E8E6E0',
   text: '#1A1A1A', textSub: '#6B6B6B', textMuted: '#999999',
   navy: '#FFF8EB', gold: '#BA7517', goldBg: '#FFF8EB',
   green: '#16A34A', greenBg: '#EAF3DE',
   amber: '#854D0E', amberBg: '#FEF9C3',
-  red: '#DC2626', redBg: '#FEF2F2',
+  red: 'var(--danger-500)', redBg: '#FEF2F2',
   blue: '#2563EB', blueBg: '#EFF6FF',
   shadow: '0 4px 16px rgba(0,0,0,0.08)',
 }

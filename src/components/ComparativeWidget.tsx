@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { GOLD } from '@/lib/design-system'
-import { COMPANY_ID, CLIENT_NAME } from '@/lib/client-config'
+import { getCompanyIdCookie, getClientNameCookie } from '@/lib/client-config'
 
 /* ── Types ── */
 interface BenchmarkRow {
@@ -174,8 +174,9 @@ export default function ComparativeWidget() {
   useEffect(() => {
     async function load() {
       try {
+        const companyId = getCompanyIdCookie()
         const [clientRes, fleetRes] = await Promise.all([
-          fetch(`/api/data?table=client_benchmarks&company_id=${COMPANY_ID}`),
+          fetch(`/api/data?table=client_benchmarks&company_id=${companyId}`),
           fetch('/api/data?table=client_benchmarks&company_id=fleet'),
         ])
         const client  = await clientRes.json()
@@ -214,7 +215,7 @@ export default function ComparativeWidget() {
           <h3 style={{ margin: 0, color: GOLD, fontSize: 15, fontWeight: 700, letterSpacing: 0.5 }}>
             ¿CÓMO TE COMPARAS?
           </h3>
-          <span style={{ fontSize: 11, color: MUTED }}>{CLIENT_NAME.split(' ')[0]} vs. Portafolio Completo</span>
+          <span style={{ fontSize: 11, color: MUTED }}>{getClientNameCookie().split(' ')[0]} vs. Portafolio Completo</span>
         </div>
       </div>
 
@@ -265,7 +266,7 @@ export default function ComparativeWidget() {
         display: 'flex', gap: 16, marginTop: 14,
         fontSize: 10, color: MUTED,
       }}>
-        <span><span style={{ display: 'inline-block', width: 10, height: 10, background: GOLD, borderRadius: 2, marginRight: 4, verticalAlign: 'middle' }} />{CLIENT_NAME.split(' ')[0]}</span>
+        <span><span style={{ display: 'inline-block', width: 10, height: 10, background: GOLD, borderRadius: 2, marginRight: 4, verticalAlign: 'middle' }} />{getClientNameCookie().split(' ')[0]}</span>
         <span><span style={{ display: 'inline-block', width: 10, height: 10, background: GRAY, borderRadius: 2, marginRight: 4, verticalAlign: 'middle' }} />Flota</span>
         <span><span style={{ display: 'inline-block', width: 10, height: 0, borderTop: `2px dashed ${MUTED}`, marginRight: 4, verticalAlign: 'middle' }} />Top 25%</span>
       </div>

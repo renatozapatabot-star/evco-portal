@@ -16,7 +16,7 @@ function twiml(message?: string): NextResponse {
 // POST: Twilio webhook for incoming WhatsApp messages
 export async function POST(request: NextRequest) {
   try {
-    const companyId = request.cookies.get('company_id')?.value ?? 'evco'
+    const companyId = request.cookies.get('company_id')?.value ?? ''
     const formData = await request.formData()
     const from = formData.get('From') as string || ''
     const body = formData.get('Body') as string || ''

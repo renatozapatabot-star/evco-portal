@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 
 interface CountingNumberProps {
   value: number
-  /** Duration in ms (default 800) */
+  /** Duration in ms (default 1200 — v2 counting token) */
   duration?: number
   /** Format function applied to the animated number */
   format?: (n: number) => string
@@ -12,57 +12,76 @@ interface CountingNumberProps {
   className?: string
   /** Inline style */
   style?: React.CSSProperties
+  /** Session key — animation fires once per session per key */
+  sessionKey?: string
 }
 
-/** Ease-out cubic: decelerates toward the end */
 function easeOutCubic(t: number): number {
   return 1 - Math.pow(1 - t, 3)
 }
 
 /**
- * Animated counting number using IntersectionObserver.
- * Fires once when the element scrolls into view.
- * Uses var(--font-mono) for tabular-nums alignment.
+ * v2 CountingNumber: fires ONCE per session (sessionStorage flag).
+ * Uses var(--font-mono) + tabular-nums for alignment.
+ * Respects prefers-reduced-motion.
  */
 export default function CountingNumber({
   value,
-  duration = 800,
+  duration = 1200,
   format = (n) => String(Math.round(n)),
   className = '',
   style,
+  sessionKey,
 }: CountingNumberProps) {
   const ref = useRef<HTMLSpanElement>(null)
-  const [display, setDisplay] = useState<string>(format(0))
+  const [display, setDisplay] = useState<string>(format(value))
   const hasAnimated = useRef(false)
+
+  // Check if already animated this session
+  const storageKey = sessionKey ? `cruz_counted_${sessionKey}` : null
 
   const animate = useCallback(() => {
     if (hasAnimated.current) return
     hasAnimated.current = true
 
+    // Check reduced motion
+    if (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setDisplay(format(value))
+      if (storageKey) sessionStorage.setItem(storageKey, '1')
+      return
+    }
+
+    // Check sessionStorage
+    if (storageKey && typeof sessionStorage !== 'undefined') {
+      if (sessionStorage.getItem(storageKey)) {
+        setDisplay(format(value))
+        return
+      }
+    }
+
     const start = performance.now()
-    const from = 0
-    const to = value
 
     function tick(now: number) {
       const elapsed = now - start
       const progress = Math.min(elapsed / duration, 1)
       const eased = easeOutCubic(progress)
-      const current = from + (to - from) * eased
+      const current = value * eased
       setDisplay(format(current))
 
       if (progress < 1) {
         requestAnimationFrame(tick)
+      } else if (storageKey) {
+        sessionStorage.setItem(storageKey, '1')
       }
     }
 
     requestAnimationFrame(tick)
-  }, [value, duration, format])
+  }, [value, duration, format, storageKey])
 
   useEffect(() => {
     const el = ref.current
     if (!el) return
 
-    // If value is 0 just show it immediately
     if (value === 0) {
       setDisplay(format(0))
       hasAnimated.current = true

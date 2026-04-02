@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useMemo } from 'react'
-import { CLIENT_NAME, CLIENT_CLAVE, COMPANY_ID } from '@/lib/client-config'
+import { getClientNameCookie, getClientClaveCookie, getCompanyIdCookie } from '@/lib/client-config'
 import { fmtDate } from '@/lib/format-utils'
 
 type ImmexRow = { trafico: string; fecha_llegada: string; estatus: string; descripcion_mercancia: string; peso_bruto: number; importe_total: number; pedimento: string }
@@ -11,7 +11,9 @@ export default function ImmexPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch(`/api/data?table=traficos&company_id=${COMPANY_ID}&trafico_prefix=${CLIENT_CLAVE}-&limit=5000&order_by=fecha_llegada&order_dir=desc`)
+    const companyId = getCompanyIdCookie()
+    const clientClave = getClientClaveCookie()
+    fetch(`/api/data?table=traficos&company_id=${companyId}&limit=5000&order_by=fecha_llegada&order_dir=desc`)
       .then(r => r.json()).then(d => { setRows(d.data ?? d ?? []); setLoading(false) }).catch(() => setLoading(false))
   }, [])
 
@@ -33,13 +35,13 @@ export default function ImmexPage() {
   const ok = immexData.filter(d => d.daysRemaining > 180)
   const totalValor = immexData.reduce((s, d) => s + (d.importe_total || 0), 0)
 
-  function barColor(days: number) { return days <= 60 ? '#EF4444' : days <= 180 ? '#F59E0B' : '#10B981' }
+  function barColor(days: number) { return days <= 60 ? '#EF4444' : days <= 180 ? 'var(--warning-500)' : '#10B981' }
 
   return (
     <div style={{ padding: 32 }}>
       <div style={{ marginBottom: 24 }}>
         <h1 className="pg-title">IMMEX — Importación Temporal</h1>
-        <p className="pg-meta">{immexData.length} tráficos temporales activos · Límite 18 meses · {CLIENT_NAME.split(' ')[0]} Plastics</p>
+        <p className="pg-meta">{immexData.length} tráficos temporales activos · Límite 18 meses · {getClientNameCookie().split(' ')[0]} Plastics</p>
       </div>
 
       {/* KPI strip */}
@@ -47,7 +49,7 @@ export default function ImmexPage() {
         {[
           { label: 'Temporales Activos', value: immexData.length.toLocaleString(), color: 'var(--text-primary)' },
           { label: 'Críticos (<60d)', value: critical.length.toLocaleString(), color: critical.length > 0 ? '#EF4444' : 'var(--status-green)' },
-          { label: 'Atención (<180d)', value: warning.length.toLocaleString(), color: warning.length > 0 ? '#F59E0B' : 'var(--text-primary)' },
+          { label: 'Atención (<180d)', value: warning.length.toLocaleString(), color: warning.length > 0 ? 'var(--warning-500)' : 'var(--text-primary)' },
           { label: 'Valor Temporal', value: `$${(totalValor / 1000).toFixed(0)}K`, color: 'var(--amber-600)' },
         ].map(k => (
           <div key={k.label} className="card" style={{ padding: '14px 18px' }}>

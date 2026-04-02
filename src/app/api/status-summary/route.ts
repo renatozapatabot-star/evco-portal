@@ -8,7 +8,7 @@ const supabase = createClient(
 )
 
 export async function GET(request: NextRequest) {
-  const companyId = request.cookies.get('company_id')?.value ?? 'evco'
+  const companyId = request.cookies.get('company_id')?.value ?? ''
   const { data } = await supabase
     .from('traficos')
     .select('estatus, cruz_score, fecha_cruce, fecha_pago, updated_at')

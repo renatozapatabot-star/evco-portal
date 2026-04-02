@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 const COOKIES_TO_CLEAR = [
   'portal_auth', 'user_role', 'company_id',
-  'company_clave', 'company_name', 'viewing_as',
+  'company_clave', 'company_name', 'company_rfc', 'viewing_as',
 ]
 
 export async function GET(request: NextRequest) {

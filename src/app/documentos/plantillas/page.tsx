@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from 'react'
 import { FileText, Plus, X, ExternalLink } from 'lucide-react'
-import { getCookieValue, COMPANY_ID } from '@/lib/client-config'
+import { getCookieValue, getCompanyIdCookie } from '@/lib/client-config'
 import { REQUIRED_DOC_TYPES } from '@/lib/documents'
 import { fmtDate } from '@/lib/format-utils'
 
@@ -64,9 +64,10 @@ export default function PlantillasPage() {
   const [formExpiry, setFormExpiry] = useState('')
 
   useEffect(() => {
+    const companyId = getCompanyIdCookie()
     const url = isInternal
       ? '/api/client-templates'
-      : `/api/client-templates?company_id=${COMPANY_ID}`
+      : `/api/client-templates?company_id=${companyId}`
     fetch(url)
       .then(r => r.json())
       .then(d => setTemplates(d.data ?? []))
@@ -275,7 +276,7 @@ export default function PlantillasPage() {
                 <input
                   value={formCompanyId}
                   onChange={e => setFormCompanyId(e.target.value)}
-                  placeholder="evco"
+                  placeholder={getCookieValue('company_id') || 'empresa'}
                   required
                   style={inputStyle}
                 />
@@ -306,7 +307,7 @@ export default function PlantillasPage() {
                 <input
                   value={formDocName}
                   onChange={e => setFormDocName(e.target.value)}
-                  placeholder="Encargo conferido EVCO 2026"
+                  placeholder={`Encargo conferido ${getCookieValue('company_name') || 'empresa'} 2026`}
                   required
                   style={inputStyle}
                 />

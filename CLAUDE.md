@@ -145,46 +145,12 @@ Business logic in `lib/`. Never in route handlers or components.
 
 ---
 
-## DESIGN SYSTEM v6.0 — LOCKED
+## DESIGN SYSTEM: CRUZ Navy (operator override April 1 2026)
 
-Do not deviate. Do not reinterpret. V6 upgrades gold to #B8953F (WCAG AA).
-
-**Canvas:**
-```css
---surface-primary: #FAFAF8;  /* warm white — ALL portal pages */
---surface-card:    #FFFFFF;
---surface-dark:    #0D0D0C;  /* login + CRUZ AI ONLY — nowhere else */
---surface-subtle:  #F5F4F0;  /* hover states */
-```
-
-**Gold:**
-```css
---gold:        #B8953F;  /* WCAG AA 4.6:1 on white ✅ — buttons, accents, active nav */
---gold-hover:  #A6832F;
---gold-subtle: #F5F0E4;  /* gold ~10% for card backgrounds */
---z-red:       #CC1B2F;  /* Z mark ONLY */
-```
-
-**Status:**
-```css
---status-green: #2D8540;  /* Cruzado, Completo */
---status-amber: #C47F17;  /* En Proceso, Atención */
---status-red:   #C23B22;  /* Urgente, Crítico */
---status-gray:  #9C9890;  /* Zero, Sin datos — NEVER green for zero */
---status-teal:  #0D9488;  /* CERTAINTY — confirmed ETAs */
---status-plum:  #7E22CE;  /* REGULATORY — upcoming deadline */
-```
-
-**Typography:**
-```
-Body:    Geist via next/font — var(--font-geist-sans)
-Numeric: JetBrains Mono via next/font — var(--font-jetbrains-mono)
-         ALL financial figures. ALL timestamps. ALL tráfico IDs. No exceptions.
-         Never CDN @import — next/font only.
-```
-
-**Spacing:** 8px base grid. Tokens from --space-1 (4px) to --space-12 (48px). No arbitrary values.
-**Radius:** --radius-sm: 4px | --radius-md: 8px (max for cards) | --radius-full: 9999px (pills only)
+Navy #0B1623 sidebar, slate-100 page bg, white cards.
+DM Sans font, JetBrains Mono for data.
+Gold #D4A843 accent only.
+DO NOT revert to v6.0.
 
 **Status badges (global — NEVER per-page custom):**
 ```
@@ -356,12 +322,45 @@ Ship at 9.5+. Never at 8.5 when one more pass reaches 9.5.
 
 ```
 Go to evco-portal.vercel.app, log in with evco2026, audit every page.
-Check: warm white background, 5 nav items only, JetBrains Mono on all numbers,
-no relative times anywhere, no English dates, gold is #B8953F,
+Check: slate-100 background, navy sidebar, 5 nav items only, JetBrains Mono on all numbers,
+no relative times anywhere, no English dates, gold is #D4A843,
 status badges consistent, no dark mode outside /cruz and login,
 empty states not blank, no firm-wide data, no compliance scores or
 penalty amounts visible to client. Report everything that fails.
 ```
+
+---
+
+## COMPANY IDs (slug-based, not numeric)
+
+- EVCO: `company_id = 'evco'`
+- MAFESA: `company_id = 'mafesa'`
+- Never use `'9254'` or `'4598'` as company_id
+- All queries use cookie `company_clave` value
+
+---
+
+## OLLAMA ROUTING (Throne Mac Studio)
+
+- `email-study.js` → qwen3:8b via localhost:11434
+- `karpathy-loop.js` → qwen3:8b via localhost:11434
+- `anomaly-check.js` → Ollama (already configured)
+- Anthropic API → CRUZ AI chat only
+
+---
+
+## PORTAL DATE FILTER
+
+- All client-facing queries use `PORTAL_DATE_FROM = '2024-01-01'`
+- Scripts/backend pipelines use full historical data
+
+---
+
+## CREDENTIALS
+
+- EVCO: demo@evcoplastics.com / evco2026
+- MAFESA: demo@mafesa.com / mafesa2026
+- Portal: https://evco-portal.vercel.app
 
 ---
 
@@ -395,7 +394,7 @@ ALL must pass before any task is done:
 - Commit to main directly
 - Modify `.env` / `.env.local`
 - Run destructive DB commands without confirmation
-- Hardcode colors (including old gold #C9A84C — use #B8953F)
+- Hardcode colors (gold is #D4A843 — CRUZ Navy system)
 - Hardcode rates or IVA — always from `system_config`
 - Skip RLS on any table
 - Render unsanitized AI output

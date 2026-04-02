@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Calendar, FileText, Phone, Shield, AlertTriangle, FileCheck } from 'lucide-react'
-import { CLIENT_CLAVE, COMPANY_ID, getCookieValue } from '@/lib/client-config'
+import { getClientClaveCookie, getCompanyIdCookie, getCookieValue } from '@/lib/client-config'
 import { daysUntilMVE } from '@/lib/compliance-dates'
 import { fmtDate } from '@/lib/format-utils'
 
@@ -40,9 +40,10 @@ function BrokerCumplimientoView() {
   const mveUrgent = mveDays <= 7
 
   useEffect(() => {
+    const companyId = getCompanyIdCookie()
     Promise.all([
       // Semáforo rojo: across all clients (broker sees everything)
-      fetch(`/api/data?table=traficos&company_id=${COMPANY_ID}&limit=500&order_by=updated_at&order_dir=desc`)
+      fetch(`/api/data?table=traficos&company_id=${companyId}&limit=500&order_by=updated_at&order_dir=desc`)
         .then(r => r.json()),
     ])
       .then(([traficoRes]) => {
@@ -283,7 +284,8 @@ function ClientCumplimientoView() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch(`/api/data?table=traficos&company_id=${COMPANY_ID}&limit=500&order_by=fecha_llegada&order_dir=desc`)
+    const companyId = getCompanyIdCookie()
+    fetch(`/api/data?table=traficos&company_id=${companyId}&limit=500&order_by=fecha_llegada&order_dir=desc`)
       .then(r => r.json())
       .then(res => {
         const traficos = res.data || []
@@ -327,7 +329,7 @@ function ClientCumplimientoView() {
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
           <div style={{
-            background: '#FFFFFF', border: '1px solid #E8E5E0', borderRadius: 8,
+            background: 'var(--card-bg)', border: '1px solid #E8E5E0', borderRadius: 8,
             padding: 24, borderTop: '4px solid var(--gold, #B8953F)',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
@@ -347,7 +349,7 @@ function ClientCumplimientoView() {
           </div>
 
           <div style={{
-            background: '#FFFFFF', border: '1px solid #E8E5E0', borderRadius: 8,
+            background: 'var(--card-bg)', border: '1px solid #E8E5E0', borderRadius: 8,
             padding: 24, borderTop: '4px solid var(--gold, #B8953F)',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
@@ -367,7 +369,7 @@ function ClientCumplimientoView() {
           </div>
 
           <div style={{
-            background: '#FFFFFF', border: '1px solid #E8E5E0', borderRadius: 8,
+            background: 'var(--card-bg)', border: '1px solid #E8E5E0', borderRadius: 8,
             padding: 24, borderTop: '4px solid var(--gold, #B8953F)',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>

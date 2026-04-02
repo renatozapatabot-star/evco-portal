@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { X, AlertTriangle, Clock } from 'lucide-react'
-import { CLIENT_CLAVE } from '@/lib/client-config'
+import { getCookieValue } from '@/lib/client-config'
 import { fmtCarrier } from '@/lib/carrier-names'
 import { GOLD } from '@/lib/design-system'
 
@@ -27,8 +27,9 @@ interface Props {
 }
 
 const fmtId = (id: string) => {
+  const clientClave = getCookieValue('company_clave') ?? ''
   const clean = (id ?? '').replace(/[\u2013\u2014]/g, '-')
-  return clean.startsWith(`${CLIENT_CLAVE}-`) ? clean : `${CLIENT_CLAVE}-${clean}`
+  return clean.startsWith(`${clientClave}-`) ? clean : `${clientClave}-${clean}`
 }
 
 const fmtPeso = (n: number | null | undefined) =>

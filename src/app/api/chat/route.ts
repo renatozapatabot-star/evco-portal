@@ -2,7 +2,6 @@ import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
-import { CLIENT_RFC } from '@/lib/client-config'
 import { PORTAL_DATE_FROM } from '@/lib/data'
 
 const INTENTS: Record<string, string[]> = {
@@ -87,10 +86,14 @@ async function getContextData(query: string, companyId: string, clientClave: str
 }
 
 export async function POST(request: NextRequest) {
-  const companyId = request.cookies.get('company_id')?.value ?? 'evco'
-  const clientClave = request.cookies.get('company_clave')?.value ?? 'evco'
+  const companyId = request.cookies.get('company_id')?.value ?? ''
+  const clientClave = request.cookies.get('company_clave')?.value ?? ''
   const rawName = request.cookies.get('company_name')?.value
-  const clientName = rawName ? decodeURIComponent(rawName) : 'EVCO Plastics de México'
+  const clientName = rawName ? decodeURIComponent(rawName) : ''
+
+  // Resolve RFC from companies table
+  const { data: companyRow } = await supabase.from('companies').select('rfc').eq('company_id', companyId).single()
+  const clientRfc = companyRow?.rfc ?? ''
 
   const { messages } = await request.json()
   const lastMsg = messages[messages.length - 1]?.content || ''
@@ -115,7 +118,7 @@ CAPACIDADES:
 - T-MEC certificate tracking
 
 HECHOS clientClave:
-- Cliente: ${clientName} (RFC: ${CLIENT_RFC})
+- Cliente: ${clientName} (RFC: ${clientRfc})
 - Patente: 3596 · Aduana: 240 Nuevo Laredo
 - MVE deadline: 31 marzo 2026
 - Jueves es el día más rápido de cruce

@@ -9,7 +9,7 @@ const supabase = createClient(
 // POST: Send WhatsApp message requesting docs
 export async function POST(request: NextRequest) {
   try {
-    const companyId = request.cookies.get('company_id')?.value ?? 'evco'
+    const companyId = request.cookies.get('company_id')?.value ?? ''
     const { trafico_id, supplier_phone, missing_docs, message } = await request.json()
 
     if (!trafico_id || !supplier_phone) {

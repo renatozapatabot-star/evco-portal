@@ -2,22 +2,22 @@
 
 import { useEffect, useState, useMemo } from 'react'
 import { CheckCircle } from 'lucide-react'
-import { CLIENT_CLAVE, COMPANY_ID, getCookieValue } from '@/lib/client-config'
+import { getCookieValue } from '@/lib/client-config'
 import ClientInicioView from '@/components/views/client-inicio-view'
 import { fmtId, fmtDate } from '@/lib/format-utils'
 import Link from 'next/link'
 
-// ── Design tokens ──
+// ── Design tokens (CRUZ Navy light) ──
 const T = {
-  card: '#FFFFFF',
-  border: '#E8E5E0',
-  green: '#2D8540',
-  amber: '#C47F17',
-  red: '#C23B22',
-  gray: '#9C9890',
-  gold: '#B8953F',
-  text: '#1A1A1A',
-  textSec: '#6B6B6B',
+  card: 'var(--card-bg)',
+  border: '#E3E7EE',
+  green: 'var(--success-500)',
+  amber: '#D97706',
+  red: 'var(--danger-500)',
+  gray: '#94A3B8',
+  gold: '#D4A843',
+  text: 'var(--body-text)',
+  textSec: '#7A8599',
   r: 8,
 } as const
 
@@ -44,8 +44,13 @@ function AdminView() {
   const [firstBlocking, setFirstBlocking] = useState<string | null>(null)
 
   useEffect(() => {
+    // Broker/admin: no company_id filter — see all tráficos (matches /traficos page logic)
+    const trafParams = new URLSearchParams({
+      table: 'traficos', limit: '5000',
+      gte_field: 'fecha_llegada', gte_value: '2024-01-01',
+    })
     Promise.all([
-      fetch(`/api/data?table=traficos&company_id=${COMPANY_ID}&trafico_prefix=${CLIENT_CLAVE}-&limit=5000`).then(r => r.json()),
+      fetch(`/api/data?${trafParams}`).then(r => r.json()),
       fetch('/api/data?table=trafico_completeness&limit=5000').then(r => r.json()),
     ]).then(([trafData, compData]) => {
       const allTraficos: TraficoRow[] = trafData.data ?? []
@@ -92,7 +97,7 @@ function AdminView() {
             width: 12, height: 12, borderRadius: '50%', background: dotColor, flexShrink: 0,
             animation: level !== 'green' ? 'cruzPulse 2s infinite' : undefined,
           }} />
-          <span style={{ fontSize: 24, fontWeight: 800, color: T.text }}>{headline}</span>
+          <span style={{ fontSize: 22, fontWeight: 600, color: 'var(--body-text)', fontFamily: "'DM Sans', system-ui, sans-serif" }}>{headline}</span>
         </div>
 
         {/* Counts */}
@@ -145,16 +150,28 @@ function BrokerView() {
   const [readyToFile, setReadyToFile] = useState(0)
   const [cruzadosHoy, setCruzadosHoy] = useState(0)
   const companyName = typeof document !== 'undefined'
-    ? decodeURIComponent(document.cookie.match(/(?:^|; )company_name=([^;]*)/)?.[1] ?? '')
+    ? (getCookieValue('company_name') ?? '')
     : ''
 
   useEffect(() => {
+    // Broker/admin: no company_id or trafico_prefix filters — see all tráficos
+    const trafParams = new URLSearchParams({
+      table: 'traficos', limit: '5000',
+      gte_field: 'fecha_llegada', gte_value: '2024-01-01',
+    })
+    const entParams = new URLSearchParams({
+      table: 'entradas', limit: '100',
+      order_by: 'fecha_llegada_mercancia', order_dir: 'desc',
+    })
+    const pipeParams = new URLSearchParams({
+      table: 'pipeline_overview', limit: '500',
+    })
     Promise.all([
-      fetch(`/api/data?table=traficos&company_id=${COMPANY_ID}&trafico_prefix=${CLIENT_CLAVE}-&limit=5000`).then(r => r.json()),
+      fetch(`/api/data?${trafParams}`).then(r => r.json()),
       fetch('/api/data?table=trafico_completeness&limit=5000').then(r => r.json()),
-      fetch(`/api/data?table=entradas&cve_cliente=${CLIENT_CLAVE}&limit=100&order_by=fecha_llegada_mercancia&order_dir=desc`).then(r => r.json()),
+      fetch(`/api/data?${entParams}`).then(r => r.json()),
       fetch('/api/bridge-times').then(r => r.json()),
-      fetch(`/api/data?table=pipeline_overview&company_id=${COMPANY_ID}&limit=500`).then(r => r.json()),
+      fetch(`/api/data?${pipeParams}`).then(r => r.json()),
     ]).then(([trafData, compData, entData, bridgeData, pipeData]) => {
       const allTraficos: TraficoRow[] = trafData.data ?? []
       const active = allTraficos.filter(t => !(t.estatus || '').toLowerCase().includes('cruz'))
@@ -259,7 +276,7 @@ function BrokerView() {
     <div style={{ padding: 32, maxWidth: 720, margin: '0 auto' }}>
       {/* Greeting */}
       <div style={{ marginBottom: 32 }}>
-        <div style={{ fontSize: 24, fontWeight: 800, color: T.text }}>
+        <div style={{ fontSize: 22, fontWeight: 600, color: 'var(--body-text)', fontFamily: "'DM Sans', system-ui, sans-serif" }}>
           {greeting}{companyName ? `, ${companyName.split(' ')[0]}` : ''}
         </div>
         <div style={{ fontSize: 14, color: T.textSec, marginTop: 4, fontFamily: 'var(--font-jetbrains-mono)' }}>
@@ -269,16 +286,29 @@ function BrokerView() {
 
       {/* Action queue */}
       {items.length === 0 ? (
-        <div style={{
-          background: '#F0FDF4', border: '1px solid #BBF7D0',
-          borderRadius: T.r, padding: '32px 24px',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12,
-        }}>
-          <CheckCircle size={24} style={{ color: T.green }} />
-          <span style={{ fontSize: 18, fontWeight: 700, color: T.green }}>
-            Sin pendientes · Buen día
-          </span>
-        </div>
+        activeCount === 0 ? (
+          <div style={{
+            background: '#F0FDF4', border: '1px solid #BBF7D0',
+            borderRadius: T.r, padding: '32px 24px',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12,
+          }}>
+            <CheckCircle size={24} style={{ color: T.green }} />
+            <span style={{ fontSize: 18, fontWeight: 700, color: T.green }}>
+              Sin pendientes · Buen día
+            </span>
+          </div>
+        ) : (
+          <div style={{
+            background: T.card, border: `1px solid ${T.border}`,
+            borderRadius: T.r, padding: '32px 24px',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12,
+          }}>
+            <CheckCircle size={24} style={{ color: T.green }} />
+            <span style={{ fontSize: 18, fontWeight: 700, color: T.green }}>
+              Todo en orden · {activeCount} tráficos en curso
+            </span>
+          </div>
+        )
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {items.map(item => {
@@ -310,24 +340,40 @@ function BrokerView() {
         </div>
       )}
 
-      {/* Compact stats strip */}
+      {/* Stat cards */}
       <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 24,
-        marginTop: 32, padding: '14px 20px',
-        background: T.card, border: `1px solid ${T.border}`,
-        borderRadius: T.r,
-        fontSize: 14, color: T.textSec,
+        display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16,
+        marginTop: 32,
       }}>
-        <Link href="/traficos?estatus=En Proceso" style={{ textDecoration: 'none', color: 'inherit' }}>
-          <span style={{ fontWeight: 800, color: T.text, fontFamily: 'var(--font-jetbrains-mono)' }}>{activeCount}</span> activos
+        <Link href="/traficos?estatus=En Proceso" style={{
+          textDecoration: 'none', color: 'inherit',
+          background: 'var(--card-bg)', border: '1px solid #E3E7EE',
+          borderTop: '3px solid var(--info-500)',
+          borderRadius: T.r, padding: '20px 16px',
+          display: 'flex', flexDirection: 'column', alignItems: 'center',
+        }}>
+          <span style={{ fontSize: 28, fontWeight: 700, fontFamily: 'var(--font-jetbrains-mono)', color: T.text }}>{activeCount}</span>
+          <span style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#7A8599', marginTop: 4, fontFamily: "'DM Sans', system-ui, sans-serif" }}>En proceso</span>
         </Link>
-        <span style={{ color: T.border }}>·</span>
-        <Link href="/traficos?pipeline_status=ready_to_file" style={{ textDecoration: 'none', color: 'inherit' }}>
-          <span style={{ fontWeight: 800, color: T.text, fontFamily: 'var(--font-jetbrains-mono)' }}>{readyToFile}</span> listos para despacho
+        <Link href="/traficos?estatus=Cruzado" style={{
+          textDecoration: 'none', color: 'inherit',
+          background: 'var(--card-bg)', border: '1px solid #E3E7EE',
+          borderTop: '3px solid var(--success-500)',
+          borderRadius: T.r, padding: '20px 16px',
+          display: 'flex', flexDirection: 'column', alignItems: 'center',
+        }}>
+          <span style={{ fontSize: 28, fontWeight: 700, fontFamily: 'var(--font-jetbrains-mono)', color: cruzadosHoy > 0 ? T.text : T.gray }}>{cruzadosHoy}</span>
+          <span style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#7A8599', marginTop: 4, fontFamily: "'DM Sans', system-ui, sans-serif" }}>Cruzados hoy</span>
         </Link>
-        <span style={{ color: T.border }}>·</span>
-        <Link href="/traficos?estatus=Cruzado" style={{ textDecoration: 'none', color: 'inherit' }}>
-          <span style={{ fontWeight: 800, color: cruzadosHoy > 0 ? T.green : T.gray, fontFamily: 'var(--font-jetbrains-mono)' }}>{cruzadosHoy}</span> cruzados hoy
+        <Link href="/traficos?pipeline_status=ready_to_file" style={{
+          textDecoration: 'none', color: 'inherit',
+          background: 'var(--card-bg)', border: '1px solid #E3E7EE',
+          borderTop: '3px solid var(--purple-500)',
+          borderRadius: T.r, padding: '20px 16px',
+          display: 'flex', flexDirection: 'column', alignItems: 'center',
+        }}>
+          <span style={{ fontSize: 28, fontWeight: 700, fontFamily: 'var(--font-jetbrains-mono)', color: T.text }}>{readyToFile}</span>
+          <span style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#7A8599', marginTop: 4, fontFamily: "'DM Sans', system-ui, sans-serif" }}>Listos despacho</span>
         </Link>
       </div>
     </div>
@@ -338,13 +384,12 @@ function BrokerView() {
    ROUTER — pick view by role
    ═══════════════════════════════════════════════════════════ */
 export default function Dashboard() {
-  const [role, setRole] = useState<string | null>(null)
+  const [role, setRole] = useState<string>('client')
 
   useEffect(() => {
     setRole(getCookieValue('user_role') ?? 'client')
   }, [])
 
-  if (!role) return null
 
   if (role === 'admin') return <AdminView />
   if (role === 'broker') return <BrokerView />

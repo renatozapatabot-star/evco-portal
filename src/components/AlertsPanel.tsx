@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { AlertTriangle, Clock, RefreshCw, Shield, CheckCircle, ChevronDown, ChevronUp } from 'lucide-react'
 import Link from 'next/link'
-import { CLIENT_CLAVE, COMPANY_ID } from '@/lib/client-config'
+import { getClientClaveCookie, getCompanyIdCookie } from '@/lib/client-config'
 import { daysUntilMVE } from '@/lib/compliance-dates'
 
 interface Alert { id: string; severity: 'red' | 'yellow' | 'blue' | 'green'; label: string; count: number; href: string }
@@ -22,9 +22,11 @@ export function AlertsPanel() {
   useEffect(() => {
     async function load() {
       try {
+        const companyId = getCompanyIdCookie()
+        const clientClave = getClientClaveCookie()
         const [trafRes, entRes] = await Promise.all([
-          fetch(`/api/data?table=traficos&company_id=${COMPANY_ID}&limit=5000&order_by=fecha_llegada&order_dir=desc`).then(r => r.json()),
-          fetch(`/api/data?table=entradas&cve_cliente=${CLIENT_CLAVE}&limit=5000&order_by=fecha_llegada_mercancia&order_dir=desc`).then(r => r.json()),
+          fetch(`/api/data?table=traficos&company_id=${companyId}&limit=5000&order_by=fecha_llegada&order_dir=desc`).then(r => r.json()),
+          fetch(`/api/data?table=entradas&cve_cliente=${clientClave}&limit=5000&order_by=fecha_llegada_mercancia&order_dir=desc`).then(r => r.json()),
         ])
         const traf = trafRes.data || []; const ent = entRes.data || []; const now = Date.now()
         const mveDays = daysUntilMVE()

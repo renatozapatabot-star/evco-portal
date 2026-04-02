@@ -1,6 +1,7 @@
 'use client';
 
-import { Search, Bell } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Search, Bell, Menu } from 'lucide-react';
 import { useNotificationBadge } from '@/hooks/use-notifications';
 
 type StatusLevel = 'ok' | 'warning' | 'alert';
@@ -20,6 +21,8 @@ interface TopBarProps {
   onSearch?: (query: string) => void;
   /** Show notification bell (operator only) */
   showNotifications?: boolean;
+  /** Mobile hamburger toggle */
+  onMenuToggle?: () => void;
 }
 
 function formatDate(): string {
@@ -40,13 +43,20 @@ export default function TopBar({
   searchPlaceholder = 'Buscar tráfico, pedimento...',
   onSearch,
   showNotifications = false,
+  onMenuToggle,
 }: TopBarProps) {
-  const displayDate = dateString || formatDate();
+  const [displayDate, setDisplayDate] = useState('');
+  useEffect(() => { setDisplayDate(dateString || formatDate()); }, [dateString]);
   const { unreadCount } = useNotificationBadge();
   const badgeText = unreadCount === 0 ? null : unreadCount > 9 ? '9+' : String(unreadCount);
 
   return (
     <header className="cruz-topbar">
+      {onMenuToggle && (
+        <button className="topbar-hamburger" onClick={onMenuToggle} aria-label="Abrir menú">
+          <Menu size={20} />
+        </button>
+      )}
       <div className="topbar-search topbar-search-trigger" onClick={() => {
         // Trigger command palette via Cmd+K keyboard event
         document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true }))

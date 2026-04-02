@@ -78,6 +78,8 @@ interface SidebarProps {
   companyName?: string;
   patente?: string;
   onLogout?: () => void;
+  mobileOpen?: boolean;
+  onMobileClose?: () => void;
 }
 
 export default function Sidebar({
@@ -88,6 +90,8 @@ export default function Sidebar({
   companyName = 'Renato Zapata & Co.',
   patente = '3596',
   onLogout,
+  mobileOpen = false,
+  onMobileClose,
 }: SidebarProps) {
   const pathname = usePathname();
   const navSections = portalType === 'operator' ? operatorNav : clientNav;
@@ -106,7 +110,7 @@ export default function Sidebar({
   }
 
   return (
-    <aside className={`cruz-sidebar ${collapsed ? 'collapsed' : ''}`}>
+    <aside className={`cruz-sidebar ${collapsed ? 'collapsed' : ''}${mobileOpen ? ' mobile-open' : ''}`}>
       {/* Logo */}
       <div className="sidebar-logo">
         <div className="sidebar-logo-inner">
@@ -147,6 +151,7 @@ export default function Sidebar({
                   href={item.href}
                   className={`sidebar-nav-item ${isActive ? 'active' : ''}`}
                   title={collapsed ? item.label : undefined}
+                  onClick={onMobileClose}
                 >
                   <span className="nav-icon">{item.icon}</span>
                   {!collapsed && item.label}

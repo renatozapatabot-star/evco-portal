@@ -68,6 +68,7 @@ export default function DashboardShellClient({ children }: Props) {
   const [portalType, setPortalType] = useState<'operator' | 'client'>('client')
   const [clientName, setClientName] = useState<string | undefined>(undefined)
   const [clientInitials, setClientInitials] = useState<string | undefined>(undefined)
+  const [mobileOpen, setMobileOpen] = useState(false)
 
   useEffect(() => {
     const role = getCookieValue('user_role')
@@ -86,6 +87,9 @@ export default function DashboardShellClient({ children }: Props) {
 
   useKeyboardShortcuts()
   useAutoDim()
+
+  // Close mobile sidebar on route change
+  useEffect(() => { setMobileOpen(false) }, [pathname])
 
   useEffect(() => {
     document.body.setAttribute('data-page', pathname)
@@ -153,6 +157,8 @@ export default function DashboardShellClient({ children }: Props) {
         clientName={clientName}
         clientInitials={clientInitials}
         onLogout={() => { window.location.href = '/api/auth/logout' }}
+        mobileOpen={mobileOpen}
+        onMobileToggle={() => setMobileOpen(v => !v)}
       >
         <LoadingBar />
         <div id="main-content" ref={scrollRef}>

@@ -16,6 +16,9 @@ interface CruzLayoutProps {
   mveDays?: number | null;
   onLogout?: () => void;
   onSearch?: (query: string) => void;
+  /** Mobile sidebar state */
+  mobileOpen?: boolean;
+  onMobileToggle?: () => void;
 }
 
 export default function CruzLayout({
@@ -28,14 +31,24 @@ export default function CruzLayout({
   mveDays = null,
   onLogout,
   onSearch,
+  mobileOpen = false,
+  onMobileToggle,
 }: CruzLayoutProps) {
   return (
     <div className="cruz-layout">
+      {/* Mobile backdrop */}
+      <div
+        className={`sidebar-backdrop ${mobileOpen ? 'visible' : ''}`}
+        onClick={onMobileToggle}
+        aria-hidden="true"
+      />
       <Sidebar
         portalType={portalType}
         clientName={clientName}
         clientInitials={clientInitials}
         onLogout={onLogout}
+        mobileOpen={mobileOpen}
+        onMobileClose={onMobileToggle}
       />
       <main className="cruz-main">
         <TopBar
@@ -44,6 +57,7 @@ export default function CruzLayout({
           mveDays={portalType === 'operator' ? mveDays : null}
           showNotifications
           onSearch={onSearch}
+          onMenuToggle={onMobileToggle}
         />
         {children}
       </main>

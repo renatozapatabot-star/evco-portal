@@ -245,12 +245,11 @@ function BrokerView() {
     }).catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) }).finally(() => setLoading(false))
   }, [])
 
-  const greeting = (() => {
+  const [greeting, setGreeting] = useState('')
+  useEffect(() => {
     const h = new Date().getHours()
-    if (h < 12) return 'Buenos días'
-    if (h < 18) return 'Buenas tardes'
-    return 'Buenas noches'
-  })()
+    setGreeting(h < 12 ? 'Buenos días' : h < 18 ? 'Buenas tardes' : 'Buenas noches')
+  }, [])
 
   if (loading) {
     return (
@@ -268,7 +267,7 @@ function BrokerView() {
       {/* Greeting */}
       <div style={{ marginBottom: 32 }}>
         <div className="text-display">{greeting}{companyName ? `, ${companyName.split(' ')[0]}` : ''}</div>
-        <div className="font-mono" style={{ fontSize: 14, color: 'var(--slate-400)', marginTop: 4 }}>
+        <div className="font-mono" style={{ fontSize: 14, color: 'var(--slate-400)', marginTop: 4 }} suppressHydrationWarning>
           {fmtDate(new Date())}
         </div>
       </div>

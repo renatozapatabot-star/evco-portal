@@ -340,7 +340,7 @@ export function ReportesView() {
                 tickLine={false}
               />
               <YAxis
-                tick={{ fill: T.textMuted, fontSize: 10 }}
+                tick={{ fill: T.textMuted, fontSize: 10, fontFamily: 'var(--font-mono)' }}
                 axisLine={false}
                 tickLine={false}
                 allowDecimals={false}

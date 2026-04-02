@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { getCookieValue } from '@/lib/client-config'
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -94,10 +93,8 @@ export default function LoginPage() {
           {/* Brand */}
           <div className="login-brand">
             <div className="login-z-mark">Z</div>
-            <div className="login-brand-label">
-              <span>CRUZ</span>
-              <span className="login-brand-dot" />
-            </div>
+            <div className="login-brand-company">RENATO ZAPATA &amp; CO.</div>
+            <div className="login-brand-subtitle">CRUZ · Portal de Clientes</div>
           </div>
 
           <div className="login-divider" />
@@ -119,36 +116,21 @@ export default function LoginPage() {
             </div>
           )}
 
-          <form onSubmit={handleLogin} className="login-form">
+          <form onSubmit={handleLogin} className="login-form" noValidate>
             <div className="login-field">
-              <label htmlFor="login-email" className="login-label">
-                Correo electrónico
+              <label htmlFor="login-code" className="login-label">
+                CÓDIGO DE ACCESO
               </label>
               <input
-                id="login-email"
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                placeholder="usuario@empresa.com"
-                className="login-input"
-                autoComplete="email"
-              />
-            </div>
-
-            <div className="login-field">
-              <label htmlFor="login-password" className="login-label">
-                Contraseña
-              </label>
-              <input
-                id="login-password"
-                type="password"
+                id="login-code"
+                type="text"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
-                placeholder="············"
+                placeholder="Ingresa tu código"
                 required
                 autoFocus
                 className="login-input"
-                autoComplete="current-password"
+                autoComplete="off"
               />
             </div>
 
@@ -295,32 +277,30 @@ export default function LoginPage() {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          width: 56px;
-          height: 56px;
-          border-radius: 14px;
+          width: 72px;
+          height: 72px;
+          border-radius: 18px;
           background: var(--navy-900);
-          font-size: 28px;
+          font-size: 36px;
           font-weight: 800;
           color: var(--gold-400);
           font-family: var(--font-mono);
-          box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+          box-shadow: 0 4px 16px rgba(0,0,0,0.2), 0 0 0 1px rgba(212,168,67,0.1);
         }
-        .login-brand-label {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 6px;
-          margin-top: 12px;
-          font-size: 12px;
+        .login-brand-company {
+          margin-top: 16px;
+          font-size: 14px;
           font-weight: 600;
-          letter-spacing: 0.25em;
-          text-transform: uppercase;
-          color: #9B9B9B;
+          letter-spacing: 0.15em;
+          color: #1A1A1A;
+          font-family: var(--font-sans);
         }
-        .login-brand-dot {
-          width: 4px; height: 4px; border-radius: 50%;
-          background: var(--gold-400);
-          opacity: 0.6;
+        .login-brand-subtitle {
+          margin-top: 6px;
+          font-size: 11px;
+          font-weight: 500;
+          letter-spacing: 0.08em;
+          color: #9B9B9B;
         }
 
         .login-divider {
@@ -467,7 +447,7 @@ export default function LoginPage() {
         /* ── Mobile ── */
         @media (max-width: 480px) {
           .login-card { padding: 32px 24px; border-radius: 16px; }
-          .login-z-mark { width: 48px; height: 48px; font-size: 24px; border-radius: 12px; }
+          .login-z-mark { width: 60px; height: 60px; font-size: 30px; border-radius: 15px; }
         }
       `}</style>
     </div>

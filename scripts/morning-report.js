@@ -40,6 +40,10 @@ const CLIENTS = [
 // Allow override via env var
 const CLIENT_FILTER = process.env.CLIENT_ID
 
+// ── AI ANALYSIS CONFIG ──
+const OLLAMA_URL = 'http://127.0.0.1:11434'
+const AI_MODEL = 'qwen3:8b'
+
 async function sendTelegram(chatId, text) {
   if (process.env.TELEGRAM_SILENT === 'true') return
   const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`
@@ -53,13 +57,40 @@ async function sendTelegram(chatId, text) {
   return json
 }
 
+async function callAIAnalysis(prompt) {
+  try {
+    const response = await fetch(`${OLLAMA_URL}/api/generate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: AI_MODEL,
+        prompt: prompt,
+        stream: false,
+        options: { temperature: 0.3, num_predict: 500 }
+      })
+    })
+    
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.warn(`AI endpoint error: ${response.status} - ${errorText}`)
+      return null
+    }
+    
+    const result = await response.json()
+    return result.response || null
+  } catch (err) {
+    console.warn(`AI analysis failed: ${err.message}`)
+    return null
+  }
+}
+
 function fmtNum(n) { return Number(n || 0).toLocaleString('en-US') }
 function fmtUSD(n) { return '$' + Number(n || 0).toLocaleString('en-US', { maximumFractionDigits: 0 }) }
 
 async function getClientReport(client) {
   // 1. Traficos
   const { data: traficos } = await supabase
-    .from('traficos').select('estatus, peso_bruto, risk_score')
+    .from('traficos').select('estatus, peso_bruto, risk_score, deadline')
     .eq('company_id', client.company_id)
   const traf = traficos || []
   const totalTraficos = traf.length
@@ -77,7 +108,68 @@ async function getClientReport(client) {
   const conFaltantes = ent.filter(e => e.tiene_faltantes).length
   const conDanos = ent.filter(e => e.mercancia_danada).length
 
-  // 3. Facturas / Financial
+  // 3. Entradas overnight (from entrada_lifecycle)
+  const yesterday = new Date()
+  yesterday.setDate(yesterday.getDate() - 1)
+  const yesterdayStart = yesterday.toISOString().split('T')[0]
+  const tomorrow = new Date(yesterday)
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  const tomorrowStart = tomorrow.toISOString().split('T')[0]
+  
+  const { data: overnightEntradas } = await supabase
+    .from('entrada_lifecycle')
+    .select('id, created_at, status')
+    .eq('company_id', client.company_id)
+    .gte('created_at', yesterdayStart)
+    .lt('created_at', tomorrowStart)
+  const overnightCount = overnightEntradas?.length || 0
+
+  // 4. Documents processed by email-intelligence
+  const { data: emailDocs } = await supabase
+    .from('email_intelligence')
+    .select('id, processed_at, status')
+    .eq('company_id', client.company_id)
+    .gte('processed_at', yesterdayStart)
+    .lt('processed_at', tomorrowStart)
+  const emailDocsProcessed = emailDocs?.length || 0
+
+  // 5. Anomalies detected by anomaly-check
+  const { data: anomalies } = await supabase
+    .from('anomaly_check')
+    .select('id, detected_at, severity, description')
+    .eq('company_id', client.company_id)
+    .gte('detected_at', yesterdayStart)
+    .lt('processed_at', tomorrowStart)
+  const anomalyCount = anomalies?.length || 0
+  const highSeverityAnomalies = anomalies?.filter(a => a.severity === 'high')?.length || 0
+
+  // 6. Bridge average wait times
+  const { data: bridgeData } = await supabase
+    .from('bridge_wait_times')
+    .select('wait_minutes')
+    .eq('company_id', client.company_id)
+    .gte('recorded_at', yesterdayStart)
+    .lt('recorded_at', tomorrowStart)
+  const bridgeWaitTimes = bridgeData?.map(d => d.wait_minutes) || []
+  const avgWaitTime = bridgeWaitTimes.length > 0 
+    ? Math.round(bridgeWaitTimes.reduce((a, b) => a + b, 0) / bridgeWaitTimes.length)
+    : 0
+
+  // 7. Deadlines within 7 days
+  const sevenDaysFromNow = new Date()
+  sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7)
+  const sevenDaysStr = sevenDaysFromNow.toISOString().split('T')[0]
+  
+  const { data: upcomingDeadlines } = await supabase
+    .from('traficos')
+    .select('trafico_id, deadline, description')
+    .eq('company_id', client.company_id)
+    .gte('deadline', yesterdayStart)
+    .lte('deadline', sevenDaysStr)
+    .eq('estatus', 'En Proceso')
+  const upcomingDeadlinesCount = upcomingDeadlines?.length || 0
+
+  // 8. Facturas / Financial
   const { data: facturas } = await supabase
     .from('aduanet_facturas').select('valor_usd, pedimento')
     .eq('clave_cliente', client.clave)
@@ -85,22 +177,20 @@ async function getClientReport(client) {
   const valorUSD = fact.reduce((s, f) => s + (f.valor_usd || 0), 0)
   const pedimentos = new Set(fact.map(f => f.pedimento).filter(Boolean)).size
 
-  // 4. Document sync status
+  // 9. Document sync status
   const { count: docCount } = await supabase
     .from('documents').select('*', { count: 'exact', head: true })
   const { count: expDocCount } = await supabase
     .from('expediente_documentos').select('*', { count: 'exact', head: true })
     .eq('company_id', client.company_id)
 
-  // 5. Call transcripts from yesterday
-  const yesterday = new Date()
-  yesterday.setDate(yesterday.getDate() - 1)
+  // 10. Call transcripts from yesterday
   const { count: callCount } = await supabase
     .from('call_transcripts').select('*', { count: 'exact', head: true })
     .eq('company_id', client.company_id)
     .gte('transcribed_at', yesterday.toISOString().split('T')[0])
 
-  // 6. Top 3 risks
+  // 11. Top 3 risks
   const topRisks = traf
     .filter(t => (t.risk_score || 0) > 0)
     .sort((a, b) => (b.risk_score || 0) - (a.risk_score || 0))
@@ -109,11 +199,37 @@ async function getClientReport(client) {
   return {
     totalTraficos, enProceso, cruzados, pesoTotal, highRisk,
     totalEntradas, conFaltantes, conDanos,
+    overnightEntradas: overnightCount,
+    emailDocsProcessed,
+    anomalyCount, highSeverityAnomalies,
+    avgWaitTime,
+    upcomingDeadlinesCount,
     valorUSD, pedimentos,
     docCount: docCount || 0, expDocCount: expDocCount || 0,
     callCount: callCount || 0,
     topRisks,
   }
+}
+
+async function generateAIInsights(reportData) {
+  const prompt = `Analiza estos datos operativos del día y proporciona insights accionables en formato conciso:
+
+TRAFFICOS: ${reportData.totalTraficos} activos, ${reportData.enProceso} en proceso, ${reportData.cruzados} cruzados
+ENTRADAS: ${reportData.totalEntradas} total, ${reportData.conFaltantes} con faltantes, ${reportData.conDanos} con daños
+OVERNIGHT: ${reportData.overnightEntradas} entradas recibidas
+DOCUMENTOS: ${reportData.emailDocsProcessed} procesados por email-intelligence
+ANOMALIAS: ${reportData.anomalyCount} detectadas (${reportData.highSeverityAnomalies} alta prioridad)
+PUENTE: ${reportData.avgWaitTime} min promedio de espera
+PLAZOS: ${reportData.upcomingDeadlinesCount} vencen en 7 días
+RIESGOS: ${reportData.highRisk} alto riesgo
+
+Proporciona:
+1. Prioridades del día
+2. Alertas críticas
+3. Recomendaciones`
+
+  const analysis = await callAIAnalysis(prompt)
+  return analysis || 'Análisis no disponible'
 }
 
 async function main() {
@@ -154,17 +270,36 @@ ${r.highRisk > 0 ? `🔴 Alto riesgo: ${r.highRisk}` : ''}
 ENTRADAS: ${fmtNum(r.totalEntradas)} total
 ⚠️ Con faltantes: ${fmtNum(r.conFaltantes)}
 🔴 Con danos: ${fmtNum(r.conDanos)}
-
-FINANCIERO:
-💰 Valor acumulado: ${fmtUSD(r.valorUSD)} USD
-📄 Pedimentos: ${fmtNum(r.pedimentos)}
+🌙 Overnight: ${fmtNum(r.overnightEntradas)}
 
 SYNC STATUS:
 📁 Documentos: ${fmtNum(r.docCount)} en storage
 📋 Expedientes: ${fmtNum(r.expDocCount)} indexados
-${r.callCount > 0 ? `📞 Llamadas ayer: ${r.callCount}` : ''}`
+📧 Email-intelligence: ${fmtNum(r.emailDocsProcessed)} procesados
+🔍 Anomalías: ${fmtNum(r.anomalyCount)} (${r.highSeverityAnomalies} alta)
+⏱️ Puente: ${r.avgWaitTime} min promedio
+📅 Vencen 7 días: ${fmtNum(r.upcomingDeadlinesCount)}
 
-    allRisks.push(...r.topRisks.map(t => ({ ...t, client: client.name })))
+FINANCIERO:
+💰 Valor acumulado: ${fmtUSD(r.valorUSD)} USD
+📄 Pedimentos: ${fmtNum(r.pedimentos)}
+📞 Llamadas ayer: ${r.callCount}`
+
+    allRisks.push(...r.topRisks.map(t => ({ ...t, client: client.name })
+  }
+
+  // AI Analysis
+  const aiInsights = await generateAIInsights({
+    totalTraficos: 0, enProceso: 0, cruzados: 0,
+    conFaltantes: 0, conDanos: 0,
+    overnightEntradas: 0, emailDocsProcessed: 0,
+    anomalyCount: 0, highSeverityAnomalies: 0,
+    avgWaitTime: 0, upcomingDeadlinesCount: 0,
+    highRisk: 0
+  })
+  
+  if (aiInsights) {
+    fullReport += `\n\n🤖 ANÁLISIS CRUZ:\n${aiInsights}`
   }
 
   // Top 3 risks across all clients

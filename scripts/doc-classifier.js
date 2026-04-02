@@ -251,8 +251,9 @@ async function insertClassification(result) {
     supplier: result.supplier,
     invoice_number: result.invoice_number,
     value_usd: result.value_usd,
-    confidence: result.confidence
-  })
+    confidence: result.confidence,
+    source: 'email'
+  }, { onConflict: 'filename,source' })
   if (error) {
     console.error(`   ⚠️  DB insert error: ${error.message}`)
     await logPipeline('db_insert', 'error', { file: result.filename, error: error.message })

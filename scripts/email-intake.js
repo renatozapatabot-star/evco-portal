@@ -337,10 +337,16 @@ function scoreConfidence(extraction, classifications) {
 // ── Step 2: Filter — is this a shipment document? ───────────────────────────
 
 function isShipmentEmail(subject, sender) {
+  const subjectLower = (subject || '').toLowerCase()
+  // Skip non-invoice documents (warehouse receipts, status notifications)
+  const excludePatterns = ['entrada de bodega', 'reporte anexo', 'envío automático']
+  if (excludePatterns.some(p => subjectLower.includes(p))) return false
+
   const keywords = [
-    'invoice', 'factura', 'packing', 'list', 'bill of lading', 'BL',
+    'invoice', 'factura', 'packing', 'list', 'bill of lading',
     'commercial', 'proforma', 'shipment', 'embarque', 'conocimiento',
-    'customs', 'aduana', 'pedimento', 'PO', 'purchase order', 'orden',
+    'customs', 'aduana', 'pedimento', 'purchase order', 'orden',
+    'importacion', 'importación',
   ]
   const text = `${subject} ${sender}`.toLowerCase()
   return keywords.some(k => text.includes(k.toLowerCase()))
@@ -594,7 +600,7 @@ async function processEmail(gmail, messageId, companyId) {
     })
     console.log('  Marked as read')
   } catch (e) {
-    console.error(`  Failed to mark read: ${e.message}`)
+    // Gmail token lacks gmail.modify scope — not critical, processed_emails table prevents re-processing
   }
 
   return {

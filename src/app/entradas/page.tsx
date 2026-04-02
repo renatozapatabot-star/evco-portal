@@ -102,7 +102,7 @@ export default function EntradasPage() {
   const paged = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
 
   return (
-    <div className="page-container" style={{ padding: isMobile ? 16 : 24 }}>
+    <div className="page-shell">
       <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'stretch' : 'flex-start', justifyContent: 'space-between', marginBottom: 16, gap: isMobile ? 12 : 0 }}>
         <div>
           <h1 className="page-title">Entradas</h1>
@@ -114,11 +114,11 @@ export default function EntradasPage() {
           <div className="flex items-center gap-1.5">
             <input type="date" value={dateFrom} onChange={e => { setDateFrom(e.target.value); setPage(0) }}
               className="rounded-[6px] px-2 py-1 text-[11px] outline-none"
-              style={{ border: '1px solid var(--border)', color: 'var(--text-secondary)', background: 'var(--bg-elevated)', height: 30 }} />
+              style={{ border: '1px solid var(--border)', color: 'var(--slate-500)', background: 'var(--slate-50)', height: 30 }} />
             <span style={{ color: 'var(--text-disabled)', fontSize: 11 }}>—</span>
             <input type="date" value={dateTo} onChange={e => { setDateTo(e.target.value); setPage(0) }}
               className="rounded-[6px] px-2 py-1 text-[11px] outline-none"
-              style={{ border: '1px solid var(--border)', color: 'var(--text-secondary)', background: 'var(--bg-elevated)', height: 30 }} />
+              style={{ border: '1px solid var(--border)', color: 'var(--slate-500)', background: 'var(--slate-50)', height: 30 }} />
             {(dateFrom || dateTo) && (
               <button onClick={() => { setDateFrom(''); setDateTo(''); setPage(0) }}
                 className="text-[10px] font-medium px-1.5 py-0.5 rounded"
@@ -144,7 +144,7 @@ export default function EntradasPage() {
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(0) }}
               className="flex-1 bg-transparent outline-none text-[12.5px]"
-              style={{ color: 'var(--text-secondary)' }}
+              style={{ color: 'var(--slate-500)' }}
             />
           </div>
         </div>
@@ -204,9 +204,9 @@ export default function EntradasPage() {
                   )}
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtDate(r.fecha_llegada_mercancia)}</span>
+                  <span style={{ fontSize: 12, color: 'var(--slate-500)', fontFamily: 'var(--font-mono)' }}>{fmtDate(r.fecha_llegada_mercancia)}</span>
                   {r.peso_bruto && (
-                    <span className="mono" style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{Number(r.peso_bruto).toLocaleString('es-MX')} kg</span>
+                    <span className="mono" style={{ fontSize: 12, color: 'var(--slate-500)' }}>{Number(r.peso_bruto).toLocaleString('es-MX')} kg</span>
                   )}
                 </div>
                 <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -257,19 +257,19 @@ export default function EntradasPage() {
                         <span style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic' }}>No vinculado</span>
                       )}
                     </td>
-                    <td className="text-[12px]" style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-jetbrains-mono)' }}>
+                    <td className="text-[12px]" style={{ color: 'var(--slate-500)', fontFamily: 'var(--font-mono)' }}>
                       {fmtDate(r.fecha_llegada_mercancia)}
                     </td>
                     <td
                       className="text-[12px] max-w-[200px] truncate"
-                      style={{ color: r.descripcion_mercancia ? 'var(--text-secondary)' : 'var(--text-muted)' }}
+                      style={{ color: r.descripcion_mercancia ? 'var(--slate-500)' : 'var(--text-muted)' }}
                     >
                       {fmtDesc(r.descripcion_mercancia)}
                     </td>
-                    <td className="text-right mono text-[12px]" style={{ color: 'var(--text-secondary)' }}>
+                    <td className="text-right mono text-[12px]" style={{ color: 'var(--slate-500)' }}>
                       {r.cantidad_bultos ?? '-'}
                     </td>
-                    <td className="text-right mono text-[12px]" style={{ color: 'var(--text-secondary)' }}>
+                    <td className="text-right mono text-[12px]" style={{ color: 'var(--slate-500)' }}>
                       {r.peso_bruto ? Number(r.peso_bruto).toLocaleString('es-MX') : '-'}
                     </td>
                     <td>

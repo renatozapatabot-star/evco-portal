@@ -126,7 +126,7 @@ export default function PlantillasPage() {
     width: '100%', padding: '10px 12px', fontSize: 14,
     background: T.card, border: `1px solid ${T.border}`,
     borderRadius: T.r, color: T.text,
-    fontFamily: 'var(--font-geist-sans)',
+    fontFamily: 'var(--font-sans)',
     outline: 'none',
   }
 
@@ -227,7 +227,7 @@ export default function PlantillasPage() {
                           {status.label}
                         </span>
                       </td>
-                      <td style={{ padding: '12px 16px', fontFamily: 'var(--font-jetbrains-mono)', color: T.textSec, fontSize: 13 }}>
+                      <td style={{ padding: '12px 16px', fontFamily: 'var(--font-mono)', color: T.textSec, fontSize: 13 }}>
                         {t.expiry_date ? fmtDate(t.expiry_date) : '\u2014'}
                       </td>
                       <td style={{ padding: '12px 16px' }}>

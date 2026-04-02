@@ -198,7 +198,7 @@ export default function CalendarioPage() {
               >
                 <span style={{
                   fontSize: 13, fontWeight: 700, color: T.gold,
-                  fontFamily: 'var(--font-jetbrains-mono)', flexShrink: 0,
+                  fontFamily: 'var(--font-mono)', flexShrink: 0,
                 }}>
                   {t.trafico}
                 </span>
@@ -360,7 +360,7 @@ export default function CalendarioPage() {
                   {cell && (
                     <>
                       <div style={{
-                        fontSize: 11, fontFamily: 'var(--font-jetbrains-mono)',
+                        fontSize: 11, fontFamily: 'var(--font-mono)',
                         color: isToday ? T.gold : T.textSecondary,
                         fontWeight: isToday ? 700 : 400,
                       }}>
@@ -379,7 +379,7 @@ export default function CalendarioPage() {
                         )}
                       </div>
                       {(cell.arrivals + cell.crossings) > 1 && (
-                        <div style={{ fontSize: 9, color: T.textMuted, fontFamily: 'var(--font-jetbrains-mono)' }}>
+                        <div style={{ fontSize: 9, color: T.textMuted, fontFamily: 'var(--font-mono)' }}>
                           {cell.arrivals + cell.crossings}
                         </div>
                       )}
@@ -420,7 +420,7 @@ export default function CalendarioPage() {
                 }} />
                 <span style={{
                   fontSize: 13, fontWeight: 700, color: T.gold,
-                  fontFamily: 'var(--font-jetbrains-mono)', flexShrink: 0,
+                  fontFamily: 'var(--font-mono)', flexShrink: 0,
                 }}>
                   {t.trafico}
                 </span>

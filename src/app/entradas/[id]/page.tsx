@@ -125,7 +125,7 @@ export default function EntradaDetailPage() {
 
   if (!entrada) return (
     <div className="p-6">
-      <Link href="/entradas" className="flex items-center gap-1.5 text-[13px] mb-4" style={{ color: 'var(--n-400)', textDecoration: 'none' }}>
+      <Link href="/entradas" className="flex items-center gap-1.5 text-[13px] mb-4" style={{ color: 'var(--slate-400)', textDecoration: 'none' }}>
         <ChevronLeft size={14} /> Entradas
       </Link>
       <h1 className="page-title">Entrada no encontrada</h1>
@@ -136,7 +136,7 @@ export default function EntradaDetailPage() {
 
   return (
     <div className="p-6" style={{ maxWidth: 900 }}>
-      <Link href="/entradas" className="flex items-center gap-1.5 text-[13px] mb-4" style={{ color: 'var(--n-400)', textDecoration: 'none' }}>
+      <Link href="/entradas" className="flex items-center gap-1.5 text-[13px] mb-4" style={{ color: 'var(--slate-400)', textDecoration: 'none' }}>
         <ChevronLeft size={14} /> Entradas
       </Link>
 
@@ -159,7 +159,7 @@ export default function EntradaDetailPage() {
           <span className="badge badge-cruzado"><span className="badge-dot" />OK</span>
         )}
         {entrada.peso_bruto && (
-          <span style={{ fontSize: 14, color: 'var(--n-500)', fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtKg(entrada.peso_bruto)}</span>
+          <span style={{ fontSize: 14, color: 'var(--slate-500)', fontFamily: 'var(--font-mono)' }}>{fmtKg(entrada.peso_bruto)}</span>
         )}
       </div>
 
@@ -216,7 +216,7 @@ export default function EntradaDetailPage() {
           <div className="card-header">
             <span className="card-title">Mercancía</span>
           </div>
-          <div style={{ padding: 20, fontSize: 15, fontWeight: 600, color: 'var(--n-900)' }}>
+          <div style={{ padding: 20, fontSize: 15, fontWeight: 600, color: 'var(--navy-900)' }}>
             {fmtDesc(entrada.descripcion_mercancia)}
           </div>
         </div>
@@ -273,7 +273,7 @@ export default function EntradaDetailPage() {
           <div className="card-header">
             <span className="card-title">Recibido Por</span>
           </div>
-          <div style={{ padding: 20, fontSize: 14, fontWeight: 500, color: 'var(--n-800)' }}>{entrada.recibido_por}</div>
+          <div style={{ padding: 20, fontSize: 14, fontWeight: 500, color: 'var(--navy-800)' }}>{entrada.recibido_por}</div>
         </div>
       )}
 
@@ -284,17 +284,17 @@ export default function EntradaDetailPage() {
           </div>
           <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
             {entrada.comentarios_faltantes && (
-              <div style={{ background: 'var(--danger-bg)', color: 'var(--danger-t)', borderRadius: 'var(--r-md)', padding: 12, fontSize: 13, fontWeight: 600 }}>
+              <div style={{ background: 'var(--danger-bg)', color: 'var(--danger-t)', borderRadius: 'var(--radius-md)', padding: 12, fontSize: 13, fontWeight: 600 }}>
                 Faltantes: {entrada.comentarios_faltantes}
               </div>
             )}
             {entrada.comentarios_danada && (
-              <div style={{ background: 'var(--danger-bg)', color: 'var(--danger-t)', borderRadius: 'var(--r-md)', padding: 12, fontSize: 13, fontWeight: 600 }}>
+              <div style={{ background: 'var(--danger-bg)', color: 'var(--danger-t)', borderRadius: 'var(--radius-md)', padding: 12, fontSize: 13, fontWeight: 600 }}>
                 Daño: {entrada.comentarios_danada}
               </div>
             )}
             {entrada.comentarios_generales && (
-              <div style={{ background: 'var(--n-50)', color: 'var(--n-700)', borderRadius: 'var(--r-md)', padding: 12, fontSize: 13 }}>
+              <div style={{ background: 'var(--slate-50)', color: 'var(--slate-700)', borderRadius: 'var(--radius-md)', padding: 12, fontSize: 13 }}>
                 {entrada.comentarios_generales}
               </div>
             )}

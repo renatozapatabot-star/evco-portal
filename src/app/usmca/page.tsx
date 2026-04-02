@@ -23,8 +23,8 @@ const D = {
   green: '#2D8540',
   greenSubtle: 'rgba(45,133,64,0.12)',
   amber: '#C47F17',
-  mono: 'var(--font-jetbrains-mono), ui-monospace, monospace',
-  sans: 'var(--font-geist-sans), system-ui, sans-serif',
+  mono: 'var(--font-mono)',
+  sans: 'var(--font-sans)',
   r: 8,
 } as const
 

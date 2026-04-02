@@ -103,8 +103,8 @@ export default function ComunicacionesPage() {
   return (
     <div style={{ padding: 32 }}>
       <div style={{ marginBottom: 24 }}>
-        <h1 className="pg-title">Centro de Comunicaciones</h1>
-        <p className="pg-meta">{events.length} eventos · {urgentCount} urgentes · Email Intelligence</p>
+        <h1 className="page-title">Centro de Comunicaciones</h1>
+        <p className="page-subtitle">{events.length} eventos · {urgentCount} urgentes · Email Intelligence</p>
       </div>
 
       {/* Tab bar */}
@@ -123,7 +123,7 @@ export default function ComunicacionesPage() {
         <div className="card" style={{ padding: 24 }}>
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div>
-              <label className="text-[10.5px] font-semibold uppercase tracking-[0.07em] mb-1 block" style={{ color: 'var(--text-muted)' }}>Destinatario</label>
+              <label className="text-[10.5px] font-semibold uppercase tracking-[0.07em] mb-1 block" style={{ color: 'var(--slate-400)' }}>Destinatario</label>
               <select value={recipient} onChange={e => setRecipient(e.target.value)}
                 className="w-full rounded-[6px] px-3 py-2 text-[13px] outline-none"
                 style={{ border: '1px solid var(--border)', color: 'var(--text-primary)', background: 'var(--bg-input)' }}>
@@ -132,7 +132,7 @@ export default function ComunicacionesPage() {
               </select>
             </div>
             <div>
-              <label className="text-[10.5px] font-semibold uppercase tracking-[0.07em] mb-1 block" style={{ color: 'var(--text-muted)' }}>Plantilla</label>
+              <label className="text-[10.5px] font-semibold uppercase tracking-[0.07em] mb-1 block" style={{ color: 'var(--slate-400)' }}>Plantilla</label>
               <select value={template} onChange={e => selectTemplate(e.target.value)}
                 className="w-full rounded-[6px] px-3 py-2 text-[13px] outline-none"
                 style={{ border: '1px solid var(--border)', color: 'var(--text-primary)', background: 'var(--bg-input)' }}>
@@ -143,7 +143,7 @@ export default function ComunicacionesPage() {
           </div>
 
           <div className="mb-4">
-            <label className="text-[10.5px] font-semibold uppercase tracking-[0.07em] mb-1 block" style={{ color: 'var(--text-muted)' }}>Asunto</label>
+            <label className="text-[10.5px] font-semibold uppercase tracking-[0.07em] mb-1 block" style={{ color: 'var(--slate-400)' }}>Asunto</label>
             <input value={subject} onChange={e => setSubject(e.target.value)} placeholder="Asunto del mensaje"
               className="w-full rounded-[6px] px-3 py-2 text-[13px] outline-none"
               style={{ border: '1px solid var(--border)', color: 'var(--text-primary)', background: 'var(--bg-input)' }} />
@@ -151,7 +151,7 @@ export default function ComunicacionesPage() {
 
           <div className="mb-4">
             <div className="flex justify-between items-center mb-1">
-              <label className="text-[10.5px] font-semibold uppercase tracking-[0.07em]" style={{ color: 'var(--text-muted)' }}>Mensaje</label>
+              <label className="text-[10.5px] font-semibold uppercase tracking-[0.07em]" style={{ color: 'var(--slate-400)' }}>Mensaje</label>
               <button onClick={draftWithCRUZ} disabled={drafting}
                 className="flex items-center gap-1.5 px-3 py-1 rounded-[4px] text-[11px] font-semibold"
                 style={{ background: 'var(--amber-100)', color: 'var(--amber-600)', border: '1px solid var(--amber-200)', cursor: 'pointer' }}>
@@ -170,7 +170,7 @@ export default function ComunicacionesPage() {
               <Send size={14} /> Aprobar y Enviar
             </button>
             <button className="px-4 py-2.5 rounded-[6px] text-[13px] font-medium"
-              style={{ background: 'var(--bg-elevated)', color: 'var(--text-secondary)', border: '1px solid var(--border)', cursor: 'pointer' }}>
+              style={{ background: 'var(--slate-50)', color: 'var(--slate-500)', border: '1px solid var(--border)', cursor: 'pointer' }}>
               Guardar Borrador
             </button>
             {sendStatus && <span className="text-[12px] font-medium" style={{ color: 'var(--green)' }}>{sendStatus}</span>}
@@ -191,7 +191,7 @@ export default function ComunicacionesPage() {
                   Usar
                 </button>
               </div>
-              <pre className="text-[12px] leading-relaxed" style={{ color: 'var(--text-muted)', whiteSpace: 'pre-wrap', fontFamily: 'inherit' }}>
+              <pre className="text-[12px] leading-relaxed" style={{ color: 'var(--slate-400)', whiteSpace: 'pre-wrap', fontFamily: 'inherit' }}>
                 {t.body.substring(0, 200)}...
               </pre>
             </div>
@@ -211,9 +211,9 @@ export default function ComunicacionesPage() {
           )}
           <div className="card" style={{ overflow: 'hidden' }}>
             {loading ? (
-              <div style={{ padding: 48, textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>Cargando...</div>
+              <div style={{ padding: 48, textAlign: 'center', color: 'var(--slate-400)', fontSize: 13 }}>Cargando...</div>
             ) : filtered.length === 0 ? (
-              <div style={{ padding: 48, textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>Sin comunicaciones en esta vista.</div>
+              <div style={{ padding: 48, textAlign: 'center', color: 'var(--slate-400)', fontSize: 13 }}>Sin comunicaciones en esta vista.</div>
             ) : (
               <table className="data-table">
                 <thead>
@@ -236,7 +236,7 @@ export default function ComunicacionesPage() {
                         <span style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{(e.from_address || '').substring(0, 35)}</span>
                       </td>
                       <td style={{ maxWidth: 280, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.subject || ''}</td>
-                      <td style={{ color: 'var(--text-muted)', fontSize: 12, whiteSpace: 'nowrap', fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtDate(e.scanned_at || e.date)}</td>
+                      <td style={{ color: 'var(--slate-400)', fontSize: 12, whiteSpace: 'nowrap', fontFamily: 'var(--font-mono)' }}>{fmtDate(e.scanned_at || e.date)}</td>
                       <td>
                         {(e.urgent_keywords || []).map((k: string, j: number) => (
                           <span key={j} style={{ background: 'var(--amber-100)', color: 'var(--amber-800)', borderRadius: 4, padding: '1px 6px', fontSize: 10, fontWeight: 600, marginRight: 4 }}>{k}</span>
@@ -251,8 +251,8 @@ export default function ComunicacionesPage() {
         </>
       )}
 
-      <div style={{ marginTop: 16, padding: '12px 16px', background: 'var(--bg-elevated)', border: '1px solid var(--border-default)', borderRadius: 8 }}>
-        <p style={{ color: 'var(--text-muted)', fontSize: 12, margin: 0 }}>
+      <div style={{ marginTop: 16, padding: '12px 16px', background: 'var(--slate-50)', border: '1px solid var(--border-card)', borderRadius: 8 }}>
+        <p style={{ color: 'var(--slate-400)', fontSize: 12, margin: 0 }}>
           Gmail scanner: cada 30 min en dias habiles · Envios requieren aprobacion via Telegram
         </p>
       </div>

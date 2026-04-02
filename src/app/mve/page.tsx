@@ -138,8 +138,8 @@ export default function MvePage() {
                   {alert.title || alert.description}
                 </div>
                 {alert.due_date && (
-                  <div style={{ fontSize: 12, color: 'var(--n-400)', marginTop: 4 }}>
-                    Fecha límite: <span style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtDate(alert.due_date)}</span> · {alert.days_until != null ? <span style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>{alert.days_until} días</span> : ''}
+                  <div style={{ fontSize: 12, color: 'var(--slate-400)', marginTop: 4 }}>
+                    Fecha límite: <span style={{ fontFamily: 'var(--font-mono)' }}>{fmtDate(alert.due_date)}</span> · {alert.days_until != null ? <span style={{ fontFamily: 'var(--font-mono)' }}>{alert.days_until} días</span> : ''}
                   </div>
                 )}
               </div>
@@ -201,7 +201,7 @@ export default function MvePage() {
                   <td>
                     <span className="badge badge-proceso"><span className="badge-dot" />En Proceso</span>
                   </td>
-                  <td className="text-[12px]" style={{ color: '#374151', fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtDate(r.fecha_llegada)}</td>
+                  <td className="text-[12px]" style={{ color: '#374151', fontFamily: 'var(--font-mono)' }}>{fmtDate(r.fecha_llegada)}</td>
                   <td className="text-[12px] max-w-[220px] truncate" style={{ color: '#374151' }} title={r.descripcion_mercancia ?? undefined}>
                     {r.descripcion_mercancia ?? ''}
                   </td>
@@ -247,7 +247,7 @@ export default function MvePage() {
                   {compliant.slice(0, 50).map(r => (
                     <tr key={r.trafico}>
                       <td><span className="mono text-[12px]" style={{ color: '#374151' }}>{fmtId(r.trafico)}</span></td>
-                      <td className="text-[12px]" style={{ color: '#6b7280', fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtDate(r.fecha_llegada)}</td>
+                      <td className="text-[12px]" style={{ color: '#6b7280', fontFamily: 'var(--font-mono)' }}>{fmtDate(r.fecha_llegada)}</td>
                       <td>{r.pedimento ? <span className="ped-pill">{r.pedimento}</span> : ''}</td>
                       <td className="text-center">
                         <span className="text-[10.5px] font-semibold px-2 py-0.5 rounded-[4px]"

@@ -136,7 +136,7 @@ function BrokerCumplimientoView() {
             </div>
             <div style={{
               fontSize: 48, fontWeight: 900, lineHeight: 1,
-              fontFamily: 'var(--font-jetbrains-mono)',
+              fontFamily: 'var(--font-mono)',
               color: mveUrgent ? T.red : T.textPrimary,
             }}>
               {mveDays}
@@ -165,7 +165,7 @@ function BrokerCumplimientoView() {
             </div>
             <div style={{
               fontSize: 48, fontWeight: 900, lineHeight: 1,
-              fontFamily: 'var(--font-jetbrains-mono)',
+              fontFamily: 'var(--font-mono)',
               color: semaforoRojo > 0 ? T.red : T.textMuted,
             }}>
               {semaforoRojo}
@@ -194,7 +194,7 @@ function BrokerCumplimientoView() {
             </div>
             <div style={{
               fontSize: 48, fontWeight: 900, lineHeight: 1,
-              fontFamily: 'var(--font-jetbrains-mono)',
+              fontFamily: 'var(--font-mono)',
               color: blockingDocs > 0 ? T.amber : T.textMuted,
             }}>
               {blockingDocs}
@@ -225,7 +225,7 @@ function BrokerCumplimientoView() {
               <>
                 <div style={{
                   fontSize: 48, fontWeight: 900, lineHeight: 1,
-                  fontFamily: 'var(--font-jetbrains-mono)', color: T.textMuted,
+                  fontFamily: 'var(--font-mono)', color: T.textMuted,
                 }}>
                   0
                 </div>
@@ -237,7 +237,7 @@ function BrokerCumplimientoView() {
               <>
                 <div style={{
                   fontSize: 48, fontWeight: 900, lineHeight: 1,
-                  fontFamily: 'var(--font-jetbrains-mono)', color: T.amber,
+                  fontFamily: 'var(--font-mono)', color: T.amber,
                 }}>
                   {usmcaExpiring.length}
                 </div>
@@ -252,13 +252,13 @@ function BrokerCumplimientoView() {
                     }}>
                       <span style={{
                         fontSize: 13, fontWeight: 700, color: T.gold,
-                        fontFamily: 'var(--font-jetbrains-mono)',
+                        fontFamily: 'var(--font-mono)',
                       }}>
                         {item.trafico}
                       </span>
                       <span style={{
                         fontSize: 12, color: T.textSecondary,
-                        fontFamily: 'var(--font-jetbrains-mono)',
+                        fontFamily: 'var(--font-mono)',
                       }}>
                         {fmtDate(item.fecha)}
                       </span>

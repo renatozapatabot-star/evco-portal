@@ -179,7 +179,7 @@ export default function SubirDocumentosPage() {
   }, [handleFiles])
 
   return (
-    <div className="page-container" style={{ padding: '20px 24px', maxWidth: 720, margin: '0 auto' }}>
+    <div className="page-shell" style={{ maxWidth: 720 }}>
 
       {/* ── HEADER ── */}
       <div style={{ marginBottom: 24 }}>
@@ -209,7 +209,7 @@ export default function SubirDocumentosPage() {
             background: 'var(--cruz-surface)',
             border: '1px solid var(--cruz-border)',
             borderRadius: 10, color: 'var(--cruz-text)',
-            fontFamily: 'var(--font-geist-sans)',
+            fontFamily: 'var(--font-sans)',
             appearance: 'none',
             backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236B6560' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
             backgroundRepeat: 'no-repeat',

@@ -51,7 +51,7 @@ export const COMPANY_ID = ''
 export const CLIENT_RFC = ''
 
 // --- Firm-level constants (not client-specific) ---
-export const PORTAL_URL = 'evco-portal.vercel.app'
+export const PORTAL_URL = typeof window !== 'undefined' ? window.location.origin : (process.env.NEXT_PUBLIC_PORTAL_URL ?? 'https://evco-portal.vercel.app')
 export const PATENTE = '3596'
 export const ADUANA = '240'
 export const BROKER_ID = 'rzco'

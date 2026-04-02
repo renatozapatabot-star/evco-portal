@@ -4,8 +4,8 @@ import { useState } from 'react'
 import { PORTAL_URL } from '@/lib/client-config'
 
 const ENDPOINTS = [
-  { method: 'GET', path: '/api/v1/intelligence?type=risk&id={trafico_id}', desc: 'Risk score for a tráfico', example: '?type=risk&id=9254-Y4396' },
-  { method: 'GET', path: '/api/v1/intelligence?type=crossing&id={trafico_id}', desc: 'Crossing time prediction', example: '?type=crossing&id=9254-Y4396' },
+  { method: 'GET', path: '/api/v1/intelligence?type=risk&id={trafico_id}', desc: 'Risk score for a tráfico', example: '?type=risk&id={trafico_id}' },
+  { method: 'GET', path: '/api/v1/intelligence?type=crossing&id={trafico_id}', desc: 'Crossing time prediction', example: '?type=crossing&id={trafico_id}' },
   { method: 'GET', path: '/api/v1/intelligence?type=supplier&id={name}', desc: 'Supplier intelligence profile', example: '?type=supplier&id=COVESTRO' },
   { method: 'GET', path: '/api/v1/intelligence?type=benchmark', desc: 'Client benchmarks vs industry', example: '?type=benchmark' },
   { method: 'GET', path: '/api/v1/intelligence?type=compliance', desc: 'Compliance score and predictions', example: '?type=compliance' },
@@ -14,7 +14,7 @@ const ENDPOINTS = [
   { method: 'GET', path: '/api/v1/intelligence', desc: 'Full intelligence summary', example: '' },
   { method: 'GET', path: '/api/data?table={name}', desc: 'Raw data query (28 tables)', example: '?table=traficos&limit=10' },
   { method: 'POST', path: '/api/webhooks', desc: 'Subscribe to events', example: '{"action":"subscribe","url":"...","events":["shipment.crossed"]}' },
-  { method: 'POST', path: '/api/supplier-comms', desc: 'Queue supplier communication', example: '{"supplier":"COVESTRO","trafico":"9254-Y4396"}' },
+  { method: 'POST', path: '/api/supplier-comms', desc: 'Queue supplier communication', example: '{"supplier":"COVESTRO","trafico":"{trafico_id}"}' },
   { method: 'POST', path: '/api/chat', desc: 'CRUZ AI chat query', example: '{"messages":[{"role":"user","content":"..."}]}' },
 ]
 

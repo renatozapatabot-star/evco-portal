@@ -45,7 +45,7 @@ const TOOLS = [
     input_schema: {
       type: 'object' as const,
       properties: {
-        trafico_id: { type: 'string', description: 'Specific trafico ID like 9254-Y4466' },
+        trafico_id: { type: 'string', description: 'Specific trafico ID like {clave}-Y0000' },
         estatus: { type: 'string', description: 'Filter by status: En Proceso, Cruzado, etc.' },
         search: { type: 'string', description: 'Free text search across description, pedimento, proveedor' },
         limit: { type: 'number', description: 'Max results (default 10)' },

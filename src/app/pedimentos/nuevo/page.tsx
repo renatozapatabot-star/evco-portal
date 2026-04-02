@@ -202,7 +202,7 @@ export default function NuevoPedimentoPage() {
           value={traficoInput}
           onChange={e => setTraficoInput(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && loadTrafico()}
-          placeholder="Numero de trafico (ej: Y4457 o 9254-Y4457)"
+          placeholder="Numero de trafico (ej: Y4457 o {clave}-Y0000)"
           className="flex-1 bg-transparent outline-none text-[14px]"
           style={{ color: 'var(--text-primary)' }}
         />

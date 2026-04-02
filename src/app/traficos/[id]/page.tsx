@@ -320,7 +320,7 @@ export default function TraficoDetailPage() {
   // ── Share deep link ──
   const handleShare = async () => {
     const tId = decodeURIComponent(String(id))
-    const url = `https://evco-portal.vercel.app/share/${encodeURIComponent(tId)}`
+    const url = `${window.location.origin}/share/${encodeURIComponent(tId)}`
     try {
       await navigator.clipboard.writeText(url)
       toast('Enlace copiado · Funciona aunque el destinatario no haya iniciado sesión', 'success')

@@ -156,7 +156,7 @@ async function run() {
   let historyInserted = 0
   for (let i = 0; i < historyBatch.length; i += 500) {
     const chunk = historyBatch.slice(i, i + 500)
-    const { error: insErr } = await supabase.from('risk_history').insert(chunk)
+    const { error: insErr } = await supabase.from('risk_history').upsert(chunk, { onConflict: 'company_id,trafico' })
     if (insErr) {
       console.error(`   ⚠️  risk_history insert error: ${insErr.message}`)
     } else {

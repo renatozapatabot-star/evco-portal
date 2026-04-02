@@ -15,6 +15,7 @@ const FALLBACK_TENANT_ID = '52762e3c-bd8a-49b8-9a32-296e526b7238'
 const BATCH = 500
 const OLLAMA_URL = process.env.OLLAMA_BASE_URL || 'http://localhost:11434'
 const OLLAMA_MODEL = 'qwen3:8b'
+const timeoutTracker = {} // track retries per product
 const OLLAMA_BATCH = 50
 const CHECKPOINT_DIR = path.join(__dirname, '.sync-checkpoints')
 
@@ -828,13 +829,20 @@ async function run() {
             const fraccion = `${match[1]}.${match[2]}.${match[3]}`
             const { error: upErr } = await supabase
               .from('globalpc_productos')
-              .update({ fraccion, fraccion_source: 'ollama_qwen3_32b', fraccion_classified_at: new Date().toISOString() })
+              .update({ fraccion, fraccion_source: 'ollama_qwen3_8b', fraccion_classified_at: new Date().toISOString() })
               .eq('id', prod.id)
             if (upErr) console.error(`   ❌ Update error for ${prod.cve_producto}: ${upErr.message}`)
             else totalClassified++
           }
         } catch (e) {
-          console.error(`   Ollama timeout/error for ${prod.cve_producto}: ${e.message}`)
+          const key = prod.cve_producto
+          timeoutTracker[key] = (timeoutTracker[key] || 0) + 1
+          if (timeoutTracker[key] >= 3) {
+            console.error(`   ⛔ Skipping ${key} after 3 failures`)
+            await supabase.from('globalpc_productos').update({ fraccion_source: 'skip_timeout' }).eq('id', prod.id)
+          } else {
+            console.error(`   Ollama timeout/error for ${key}: ${e.message} (attempt ${timeoutTracker[key]}/3)`)
+          }
         }
         lastId = prod.id
       }

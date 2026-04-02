@@ -14,7 +14,7 @@ const supabase = createClient(
 const FALLBACK_TENANT_ID = '52762e3c-bd8a-49b8-9a32-296e526b7238'
 const BATCH = 500
 const OLLAMA_URL = process.env.OLLAMA_BASE_URL || 'http://localhost:11434'
-const OLLAMA_MODEL = 'qwen3:32b'
+const OLLAMA_MODEL = 'qwen3:8b'
 const OLLAMA_BATCH = 50
 const CHECKPOINT_DIR = path.join(__dirname, '.sync-checkpoints')
 

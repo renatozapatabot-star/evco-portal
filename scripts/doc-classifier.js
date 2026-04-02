@@ -34,7 +34,8 @@ const supabase = createClient(
 const VALID_TYPES = [
   'FACTURA_COMERCIAL', 'LISTA_EMPAQUE', 'CONOCIMIENTO_EMBARQUE',
   'CERTIFICADO_ORIGEN', 'CARTA_PORTE', 'MANIFESTACION_VALOR',
-  'PEDIMENTO', 'NOM', 'COA', 'OTRO'
+  'PEDIMENTO', 'NOM', 'COA', 'ORDEN_COMPRA', 'ENTRADA_BODEGA',
+  'GUIA_EMBARQUE', 'PERMISO', 'PROFORMA', 'DODA_PREVIO', 'OTRO'
 ]
 
 // ─── Helpers ────────────────────────────────────────────────
@@ -69,9 +70,9 @@ async function logPipeline(step, status, details, durationMs) {
 
 async function extractPdfText(filePath) {
   const buffer = fs.readFileSync(filePath)
-  const uint8 = new Uint8Array(buffer)
-  const parser = new PDFParse(uint8)
-  const result = await parser.getText()
+  
+  const result = await pdfParse(buffer)
+  
   return result.text || ''
 }
 
@@ -79,12 +80,30 @@ async function extractPdfText(filePath) {
 
 async function classifyWithOllama(text, filename) {
   // Truncate to first 500 chars — keeps prompt small enough for qwen3:8b
-  const preview = text.substring(0, 500)
+  const preview = text.substring(0, 800)
 
-  const prompt = `Classify this customs document. Reply with ONLY a JSON object, nothing else:
-{"type": "FACTURA_COMERCIAL", "supplier": "company name or null", "confidence": 0.9}
+  const prompt = `Classify this Mexican customs/trade document. Reply with ONLY a JSON object, nothing else.
 
-Valid types: FACTURA_COMERCIAL, LISTA_EMPAQUE, CONOCIMIENTO_EMBARQUE, CERTIFICADO_ORIGEN, CARTA_PORTE, MANIFESTACION_VALOR, PEDIMENTO, NOM, COA, OTRO
+Types and what they are:
+- FACTURA_COMERCIAL: commercial invoice (any invoice, proforma invoice with values, "INV", "invoice", "factura")
+- LISTA_EMPAQUE: packing list (weights, pieces, boxes, "packing list", "lista de empaque")
+- CONOCIMIENTO_EMBARQUE: bill of lading, airway bill, tracking doc ("BL", "AWB", "BOL", "guia de embarque")
+- CERTIFICADO_ORIGEN: certificate of origin, USMCA, T-MEC ("certificate of origin", "certificado")
+- CARTA_PORTE: Mexican transport document ("carta porte", "CFDI traslado")
+- MANIFESTACION_VALOR: customs value declaration ("manifestacion de valor", "MV_", "MVE")
+- PEDIMENTO: Mexican customs filing ("pedimento", 15-digit number with spaces)
+- NOM: Mexican standards compliance ("NOM-", "norma oficial")
+- COA: certificate of analysis (lab results, chemical composition, "certificate of analysis")
+- ORDEN_COMPRA: purchase order ("PO", "purchase order", "orden de compra", "PO #")
+- ENTRADA_BODEGA: warehouse receipt, receiving doc ("entrada de bodega", "warehouse receipt", "recibo de almacen")
+- GUIA_EMBARQUE: shipping guide, carrier tracking ("guia", "tracking", "carrier receipt")
+- PERMISO: import/export permit, health permit ("permiso", "COFEPRIS", "permiso de salud")
+- PROFORMA: proforma invoice without final values ("proforma", "pro forma", "PI-")
+- DODA_PREVIO: pre-clearance document ("DODA", "despacho previo")
+- OTRO: use ONLY if the document truly does not match any type above
+
+Reply format:
+{"type": "TYPE_HERE", "supplier": "company name or null", "confidence": 0.0}
 
 Document text:
 ${preview}`

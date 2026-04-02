@@ -149,6 +149,47 @@ export default function ClientInicioView() {
   const kpiChanges = [enProceso, cruzado, pedimentoPagado, entradasHoy]
   const maxIdx = kpiChanges.indexOf(Math.max(...kpiChanges))
 
+  // ── Impressive KPIs (5C) ──
+  const valorYTD = useMemo(() => {
+    const yearStart = `${new Date().getFullYear()}-01-01`
+    return traficos
+      .filter(t => (t.fecha_llegada || '') >= yearStart)
+      .reduce((s, t) => s + (Number(t.importe_total) || 0), 0)
+  }, [traficos])
+
+  const sinIncidencia = useMemo(() => {
+    if (traficos.length === 0) return 0
+    const cruzados = traficos.filter(t => (t.estatus || '').toLowerCase().includes('cruz'))
+    return cruzados.length > 0 ? Math.round((cruzados.length / traficos.length) * 100) : 0
+  }, [traficos])
+
+  const tiempoDespacho = useMemo(() => {
+    const withBoth = traficos.filter(t => t.fecha_llegada && t.fecha_cruce)
+    if (withBoth.length === 0) return 0
+    const totalDays = withBoth.reduce((s, t) => {
+      const d = (new Date(t.fecha_cruce as string).getTime() - new Date(t.fecha_llegada as string).getTime()) / 86400000
+      return s + Math.max(0, d)
+    }, 0)
+    return Math.round((totalDays / withBoth.length) * 10) / 10
+  }, [traficos])
+
+  const tmecOps = useMemo(() => {
+    return traficos.filter(t => {
+      const r = ((t as Record<string, unknown>).regimen as string || '').toUpperCase()
+      return r === 'ITE' || r === 'ITR' || r === 'IMD'
+    }).length
+  }, [traficos])
+
+  const provActivos = useMemo(() => {
+    const yearStart = `${new Date().getFullYear()}-01-01`
+    const set = new Set<string>()
+    traficos.filter(t => (t.fecha_llegada || '') >= yearStart).forEach(t => {
+      const p = (t as Record<string, unknown>).proveedores as string
+      if (p) p.split(',').map(s => s.trim()).filter(Boolean).forEach(v => set.add(v))
+    })
+    return set.size
+  }, [traficos])
+
   // Greeting
   const greeting = (() => {
     const h = new Date().getHours()
@@ -288,6 +329,57 @@ export default function ClientInicioView() {
           )
         })}
       </div>
+
+      {/* ── Impressive KPI Strip (5C) ── */}
+      {traficos.length > 0 && (
+        <div style={{
+          display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)',
+          gap: 12, marginBottom: 24, opacity: dataFade, transition: 'opacity 200ms ease',
+        }}>
+          <div className="kpi-card" style={{ padding: '14px 16px' }}>
+            <div className="kpi-card-label">Valor Importado YTD</div>
+            <div className="font-mono" style={{ fontSize: 22, fontWeight: 800, color: 'var(--navy-900)', marginTop: 4 }}>
+              {fmtUSDCompact(valorYTD)}
+            </div>
+            <div style={{ fontSize: 10, color: 'var(--slate-400)', marginTop: 2 }}>{new Date().getFullYear()} — acumulado</div>
+          </div>
+          <div className="kpi-card" style={{ padding: '14px 16px' }}>
+            <div className="kpi-card-label">Operaciones Exitosas</div>
+            <div className="font-mono" style={{ fontSize: 22, fontWeight: 800, color: sinIncidencia >= 90 ? '#16A34A' : 'var(--navy-900)', marginTop: 4 }}>
+              {sinIncidencia}%
+            </div>
+            <div style={{ fontSize: 10, color: 'var(--slate-400)', marginTop: 2 }}>Cruzados del total</div>
+          </div>
+          <div className="kpi-card" style={{ padding: '14px 16px' }}>
+            <div className="kpi-card-label">Tiempo Promedio Despacho</div>
+            <div className="font-mono" style={{ fontSize: 22, fontWeight: 800, color: tiempoDespacho <= 5 ? '#16A34A' : tiempoDespacho <= 10 ? '#D97706' : '#DC2626', marginTop: 4 }}>
+              {tiempoDespacho > 0 ? `${tiempoDespacho} días` : '—'}
+            </div>
+            <div style={{ fontSize: 10, color: 'var(--slate-400)', marginTop: 2 }}>Llegada a cruce</div>
+          </div>
+          <div className="kpi-card" style={{ padding: '14px 16px' }}>
+            <div className="kpi-card-label">Operaciones T-MEC</div>
+            <div className="font-mono" style={{ fontSize: 22, fontWeight: 800, color: '#16A34A', marginTop: 4 }}>
+              {tmecOps}
+            </div>
+            <div style={{ fontSize: 10, color: 'var(--slate-400)', marginTop: 2 }}>Tasa preferencial aplicada</div>
+          </div>
+          <div className="kpi-card" style={{ padding: '14px 16px' }}>
+            <div className="kpi-card-label">Proveedores Activos</div>
+            <div className="font-mono" style={{ fontSize: 22, fontWeight: 800, color: 'var(--navy-900)', marginTop: 4 }}>
+              {provActivos}
+            </div>
+            <div style={{ fontSize: 10, color: 'var(--slate-400)', marginTop: 2 }}>{new Date().getFullYear()} — distintos</div>
+          </div>
+          <div className="kpi-card" style={{ padding: '14px 16px' }}>
+            <div className="kpi-card-label">Pedimentos Pagados</div>
+            <div className="font-mono" style={{ fontSize: 22, fontWeight: 800, color: 'var(--navy-900)', marginTop: 4 }}>
+              {traficos.filter(t => !!t.pedimento).length}
+            </div>
+            <div style={{ fontSize: 10, color: 'var(--slate-400)', marginTop: 2 }}>Con pedimento transmitido</div>
+          </div>
+        </div>
+      )}
 
       {/* Sparkline row */}
       {sparkData.length > 0 && (

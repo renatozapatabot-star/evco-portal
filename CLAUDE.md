@@ -145,37 +145,15 @@ Business logic in `lib/`. Never in route handlers or components.
 
 ---
 
-## DESIGN SYSTEM: CRUZ Navy (operator override April 1 2026)
+## DESIGN SYSTEM — see DESIGN_SYSTEM.md (single source of truth)
 
-Navy #0B1623 sidebar, slate-100 page bg, white cards.
-DM Sans font, JetBrains Mono for data.
-Gold #D4A843 accent only.
-DO NOT revert to v6.0.
-
-**Status badges (global — NEVER per-page custom):**
-```
-En proceso  → bg-amber-50  text-amber-700  border-amber-200
-Cruzado     → bg-green-50  text-green-700  border-green-200
-Warning     → bg-orange-50 text-orange-700 border-orange-200
-Error       → bg-red-50    text-red-700    border-red-200
-Pending     → bg-gray-50   text-gray-600   border-gray-200
-T-MEC       → gold pill ONLY
-```
-
-Empty states: `<EmptyState icon title subtitle action />` — never blank white space.
-
-**Zero in any KPI card is NEVER green.** Zero = `--status-gray`. Always.
-
-**Navigation:** 5 items only: Inicio · Tráficos · CRUZ · Reportes · Documentos.
-Broker pages are never in client nav.
-
----
-
+Do not use any color, font, or component pattern not defined in DESIGN_SYSTEM.md.
+Read it before any frontend work. No exceptions.
 ## DATE AND TIME — NON-NEGOTIABLE
 
 All dates are absolute. Relative time is banned from the portal.
 
-```typescript
+
 // ONLY use these from src/lib/format-utils.ts:
 fmtDate(date)        // → "20 mar 2026"         NEVER "March 20, 2026"
 fmtDateTime(date)    // → "20 mar 2026, 14:32"   NEVER "hace 2 días"

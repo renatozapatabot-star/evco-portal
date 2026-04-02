@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo, Suspense } from 'react'
 import { Search, Download, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { getCookieValue } from '@/lib/client-config'
-import { fmtId, fmtDesc, fmtKg, fmtUSD, fmtUSDCompact, fmtDate, fmtDateShort, calcPriority, priorityClass } from '@/lib/format-utils'
+import { fmtId, fmtDesc, fmtKg, fmtUSD, fmtUSDCompact, fmtDate, fmtDateShort, fmtPedimentoShort, calcPriority, priorityClass } from '@/lib/format-utils'
 import { MobileTraficoCard } from '@/components/mobile-trafico-card'
 // CruzScore removed from client-facing UI — scores are internal only
 import { useSort } from '@/hooks/use-sort'
@@ -354,7 +354,7 @@ function TraficosContent() {
                           })()}
                         </div>
                       </td>
-                      <td>{r.pedimento ? <span className="pedimento-num">{r.pedimento}</span> : <span className="pedimento-pending">Pendiente</span>}</td>
+                      <td>{r.pedimento ? <span className="pedimento-num">{fmtPedimentoShort(r.pedimento)}</span> : <span className="pedimento-pending">Pendiente</span>}</td>
                       <td>
                         <span className={`badge ${isDetenido ? 'badge-detenido' : isCruzado ? 'badge-cruzado' : 'badge-proceso'}`}>
                           <span className="badge-dot" />{isDetenido ? 'Detenido' : isCruzado ? 'Cruzado' : 'En Proceso'}

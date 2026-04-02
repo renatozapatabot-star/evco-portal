@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useMemo } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { ArrowLeft, Upload, Clock, FileText, Truck, BarChart3, Share2 } from 'lucide-react'
 import { fmtId, fmtDate, fmtDateTime, fmtUSD, fmtKg, fmtDesc, fmtMXNInt, formatAbsoluteETA } from '@/lib/format-utils'
 import { useIsMobile } from '@/hooks/use-mobile'
@@ -45,7 +46,7 @@ const fmtPedimento = (p: string | null) => {
   return p
 }
 
-function ProveedoresCard({ proveedores, pais }: { proveedores: string; pais: string }) {
+function ProveedoresCard({ proveedores, pais, supplierLookup }: { proveedores: string; pais: string; supplierLookup: Map<string, string> }) {
   const list = proveedores.split(',').map(p => p.trim()).filter(Boolean)
   if (list.length === 0) return null
   return (
@@ -54,16 +55,20 @@ function ProveedoresCard({ proveedores, pais }: { proveedores: string; pais: str
         Proveedores
       </div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-        {list.map(prov => (
-          <span key={prov} style={{
-            fontSize: 13, fontWeight: 600, padding: '6px 14px',
-            borderRadius: 8, background: 'var(--slate-50)',
-            color: 'var(--navy-800)', border: '1px solid var(--border-card)',
-          }}>
-            {prov}
-            {pais ? <span style={{ marginLeft: 6, fontSize: 12 }}>{countryFlag(pais)}</span> : null}
-          </span>
-        ))}
+        {list.map(prov => {
+          const name = supplierLookup.get(prov) || prov
+          return (
+            <Link key={prov} href={`/proveedores?search=${encodeURIComponent(name)}`} style={{
+              fontSize: 13, fontWeight: 600, padding: '6px 14px',
+              borderRadius: 8, background: 'var(--slate-50)',
+              color: 'var(--navy-800)', border: '1px solid var(--border-card)',
+              textDecoration: 'none', transition: 'background 150ms',
+            }}>
+              {name}
+              {pais ? <span style={{ marginLeft: 6, fontSize: 12 }}>{countryFlag(pais)}</span> : null}
+            </Link>
+          )
+        })}
       </div>
     </div>
   )
@@ -239,6 +244,7 @@ export default function TraficoDetailPage() {
   const [solicitudes, setSolicitudes] = useState<Solicitud[]>([])
   const [rates, setRates] = useState<{ dta: number; iva: number; tc: number } | null>(null)
   const [notifying, setNotifying] = useState(false)
+  const [supplierLookup, setSupplierLookup] = useState<Map<string, string>>(new Map())
 
   // ── Upload handler (via /api/upload) ──
   const handleUpload = async (file: File | undefined, docType: string) => {
@@ -357,6 +363,17 @@ export default function TraficoDetailPage() {
 
       setLoading(false)
     }).catch(() => { setFetchError('No se pudo cargar el tráfico.'); setLoading(false) })
+
+    // Fetch supplier name lookup for PRV_ code resolution
+    fetch('/api/data?table=globalpc_proveedores&limit=5000')
+      .then(r => r.json())
+      .then(d => {
+        const provs = (d.data ?? []) as { cve_proveedor?: string; nombre?: string }[]
+        const lookup = new Map<string, string>()
+        provs.forEach(p => { if (p.cve_proveedor && p.nombre) lookup.set(p.cve_proveedor, p.nombre) })
+        setSupplierLookup(lookup)
+      })
+      .catch(() => { /* best-effort */ })
 
     // Fetch solicitudes
     supabase
@@ -642,14 +659,22 @@ export default function TraficoDetailPage() {
 
           {/* ── Key Stats Row ── */}
           <div className="kpi-grid" style={{ gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)', gap: 12 }}>
-            {([
-              { label: 'Valor', value: t.importe_total ? fmtUSD(Number(t.importe_total)) + ' USD' : 'Pendiente', mono: true },
-              { label: 'Peso Bruto', value: t.peso_bruto ? fmtKg(Number(t.peso_bruto)) + ' kg' : 'Pendiente', mono: true },
-              { label: 'Bultos', value: String(t.bultos ?? t.cantidad_bultos ?? 'Pendiente'), mono: true },
-              { label: 'Fecha Llegada', value: t.fecha_llegada ? fmtDate(String(t.fecha_llegada)) : 'Pendiente', mono: true },
-              { label: 'Aduana', value: String(t.aduana ?? (t.oficina ? t.oficina : '240 · Nuevo Laredo')), mono: false },
-              { label: 'Régimen', value: String(t.regimen ?? 'A1 · Definitivo'), mono: false },
-            ] as { label: string; value: string; mono: boolean }[]).map(stat => (
+            {((): { label: string; value: string; mono: boolean }[] => {
+              // Fall back to linked entradas for bultos/peso if tráfico fields are empty
+              const entradaBultos = entradas.reduce((sum, e) => sum + (Number((e as Record<string, unknown>).cantidad_bultos) || 0), 0)
+              const entradaPeso = entradas.reduce((sum, e) => sum + (Number((e as Record<string, unknown>).peso_bruto) || 0), 0)
+              const valor = t.importe_total ? fmtUSD(Number(t.importe_total)) + ' USD' : 'Pendiente'
+              const peso = t.peso_bruto ? fmtKg(Number(t.peso_bruto)) + ' kg' : entradaPeso > 0 ? fmtKg(entradaPeso) + ' kg' : 'Pendiente'
+              const bultos = t.bultos ?? t.cantidad_bultos ?? (entradaBultos > 0 ? entradaBultos : null)
+              return [
+                { label: 'Valor', value: valor, mono: true },
+                { label: 'Peso Bruto', value: peso, mono: true },
+                { label: 'Bultos', value: String(bultos ?? 'Pendiente'), mono: true },
+                { label: 'Fecha Llegada', value: t.fecha_llegada ? fmtDate(String(t.fecha_llegada)) : 'Pendiente', mono: true },
+                { label: 'Aduana', value: String(t.aduana ?? (t.oficina ? t.oficina : '240 · Nuevo Laredo')), mono: false },
+                { label: 'Régimen', value: String(t.regimen ?? 'A1 · Definitivo'), mono: false },
+              ]
+            })().map(stat => (
               <div key={stat.label} className="kpi-card" style={{ padding: '14px 16px' }}>
                 <div className="kpi-card-label">{stat.label}</div>
                 <div style={{
@@ -771,7 +796,7 @@ export default function TraficoDetailPage() {
           </div>
 
           {/* ── Proveedores ── */}
-          <ProveedoresCard proveedores={String(t.proveedores ?? '')} pais={String(t.pais_procedencia ?? '')} />
+          <ProveedoresCard proveedores={String(t.proveedores ?? '')} pais={String(t.pais_procedencia ?? '')} supplierLookup={supplierLookup} />
 
           {/* ── 12-Step Timeline ── */}
           <div className="card" style={{ padding: 20 }}>
@@ -813,6 +838,11 @@ export default function TraficoDetailPage() {
                       }}>
                         {step.detail}
                       </div>
+                      {step.date && state === 'completed' && (
+                        <div style={{ fontSize: 10, color: 'var(--slate-400)', fontFamily: 'var(--font-mono)', marginTop: 2 }}>
+                          {fmtDateTime(step.date)}
+                        </div>
+                      )}
                     </div>
                   </li>
                 )

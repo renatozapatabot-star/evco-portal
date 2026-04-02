@@ -130,6 +130,18 @@ export const fmtId = (id: string | null | undefined): string => {
   return String(id).replace(/[\u2013\u2014\u2212\u2010\u2015]/g, '-')
 }
 
+// Pedimento short — show only the 7-digit sequential number for client-facing display
+// Input: "26 24 3596 5500017" → Output: "5500017"
+export const fmtPedimentoShort = (ped: string | null | undefined): string => {
+  if (!ped) return ''
+  const s = String(ped).trim()
+  // If it matches the full format "DD AD PPPP SSSSSSS", extract the last segment
+  const match = s.match(/^\d{2}\s\d{2}\s\d{4}\s(\d{7})$/)
+  if (match) return match[1]
+  // If it's already short (7 digits) or unrecognized, return as-is
+  return s
+}
+
 // Title case descriptions
 export const fmtDesc = (s: string | null | undefined): string => {
   if (!s) return ''

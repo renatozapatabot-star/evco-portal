@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Search, ChevronLeft, ChevronRight } from 'lucide-react'
 import { getClientNameCookie, getClientClaveCookie, getCompanyIdCookie, getCookieValue } from '@/lib/client-config'
 import { fmtDesc, fmtDate } from '@/lib/format-utils'
+import { fmtCarrier } from '@/lib/carrier-names'
 import { useIsMobile } from '@/hooks/use-mobile'
 import Link from 'next/link'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -234,6 +235,7 @@ export default function EntradasPage() {
                   <th>Descripción</th>
                   <th style={{ textAlign: 'right' }}>Bultos</th>
                   <th style={{ textAlign: 'right' }}>Peso (kg)</th>
+                  <th>Transportista</th>
                   <th>Estado</th>
                 </tr>
               </thead>
@@ -271,6 +273,9 @@ export default function EntradasPage() {
                     </td>
                     <td className="text-right mono text-[12px]" style={{ color: 'var(--slate-500)' }}>
                       {r.peso_bruto ? Number(r.peso_bruto).toLocaleString('es-MX') : '-'}
+                    </td>
+                    <td className="text-[12px]" style={{ color: 'var(--slate-500)' }}>
+                      {fmtCarrier(r.transportista_mexicano) || fmtCarrier(r.transportista_americano) || '—'}
                     </td>
                     <td>
                       {r.trafico ? (

@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import { Search, FileText, ExternalLink, CheckCircle, XCircle, ChevronDown, ChevronRight, FolderOpen } from 'lucide-react'
 import { getCookieValue } from '@/lib/client-config'
-import { fmtId, fmtDateCompact } from '@/lib/format-utils'
+import { fmtId, fmtDateCompact, fmtPedimentoShort } from '@/lib/format-utils'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { ErrorCard } from '@/components/ui/ErrorCard'
@@ -158,7 +158,7 @@ export default function ExpedientesPage() {
     <div className="page-container" style={{ padding: isMobile ? 16 : 24 }}>
       <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'stretch' : 'center', gap: 12, marginBottom: 16 }}>
         <div>
-          <h1 className="pg-title">Expedientes</h1>
+          <h1 className="pg-title">Expediente Digital</h1>
           <p className="pg-meta">{docs.length.toLocaleString('es-MX')} documentos · {grouped.length} tráficos</p>
         </div>
         <div
@@ -258,12 +258,12 @@ export default function ExpedientesPage() {
                       </Link>
                     ) : (
                       <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--gold, #C4963C)', fontFamily: 'var(--font-jetbrains-mono)' }}>
-                        {fmtId(pedimentoId)}
+                        {fmtPedimentoShort(pedimentoId)}
                       </span>
                     )}
                     {trafico && pedimentoId !== trafico && (
                       <span style={{ fontSize: 11, color: 'var(--text-tertiary)', fontFamily: 'var(--font-jetbrains-mono)' }}>
-                        Ped: {pedimentoId}
+                        Ped: {fmtPedimentoShort(pedimentoId)}
                       </span>
                     )}
                   </div>

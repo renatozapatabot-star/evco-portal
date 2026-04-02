@@ -41,7 +41,7 @@ const operatorNav: NavSection[] = [
       { label: 'Pedimentos',   href: '/pedimentos',   icon: <FileText size={ICON_SIZE} /> },
       { label: 'Catálogo',     href: '/catalogo',     icon: <BookOpen size={ICON_SIZE} /> },
       { label: 'Reportes',     href: '/reportes',     icon: <BarChart3 size={ICON_SIZE} /> },
-      { label: 'Expedientes',  href: '/expedientes',  icon: <FolderOpen size={ICON_SIZE} /> },
+      { label: 'Expediente Digital',  href: '/expedientes',  icon: <FolderOpen size={ICON_SIZE} /> },
     ],
   },
   {

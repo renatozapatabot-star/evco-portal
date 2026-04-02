@@ -174,6 +174,8 @@ export function ReportesView() {
       limit: '5000',
       order_by: 'fecha_llegada',
       order_dir: 'desc',
+      gte_field: 'fecha_llegada',
+      gte_value: '2024-01-01',
     })
     if (!isInternal) {
       params.set('company_id', companyId)

@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import { Search, Download, ChevronLeft, ChevronRight } from 'lucide-react'
 import { getCompanyIdCookie, getClientClaveCookie, getCookieValue } from '@/lib/client-config'
-import { fmtUSDFull as fmtUSD, fmtDate } from '@/lib/format-utils'
+import { fmtUSDFull as fmtUSD, fmtDate, fmtPedimentoShort } from '@/lib/format-utils'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { EmptyState } from '@/components/ui/EmptyState'
 import Link from 'next/link'
@@ -82,6 +82,8 @@ export default function PedimentosPage() {
       order_by: 'fecha_pago',
       order_dir: 'desc',
       not_null: 'pedimento',
+      gte_field: 'fecha_llegada',
+      gte_value: '2024-01-01',
     })
     if (!isInternal && companyId) params.set('company_id', companyId)
 
@@ -264,7 +266,7 @@ export default function PedimentosPage() {
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                <span style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-jetbrains-mono)', color: 'var(--text-primary)' }}>{g.pedimento}</span>
+                <span style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-jetbrains-mono)', color: 'var(--text-primary)' }}>{fmtPedimentoShort(g.pedimento)}</span>
                 {g.tmec && <span className="badge-tmec">T-MEC</span>}
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -305,7 +307,7 @@ export default function PedimentosPage() {
                     <tr key={g.pedimento} className={`${hasTrafico ? 'clickable-row' : ''} ${i % 2 === 0 ? 'row-even' : 'row-odd'}`}
                       onClick={() => hasTrafico && (window.location.href = `/traficos/${encodeURIComponent(g.trafico)}`)}
                       style={{ cursor: hasTrafico ? 'pointer' : 'default' }}>
-                      <td><span className="c-id">{g.pedimento}</span></td>
+                      <td><span className="c-id">{fmtPedimentoShort(g.pedimento)}</span></td>
                       <td><span className="c-id">{g.trafico}</span></td>
                       <td>
                         <span className={`badge ${isCruzado ? 'badge-cruzado' : 'badge-proceso'}`}>

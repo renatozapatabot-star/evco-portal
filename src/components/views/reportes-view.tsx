@@ -1,12 +1,32 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
+import { useRouter } from 'next/navigation'
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } from 'recharts'
 import { getCookieValue } from '@/lib/client-config'
 import { GOLD } from '@/lib/design-system'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { fmtDate } from '@/lib/format-utils'
 import { ErrorCard } from '@/components/ui/ErrorCard'
+
+// Generate distinct color from name hash for provider avatars
+function avatarColor(name: string): { bg: string; text: string } {
+  const PALETTE = [
+    { bg: '#FEF3C7', text: '#92400E' }, // amber
+    { bg: '#DBEAFE', text: '#1E40AF' }, // blue
+    { bg: '#DCFCE7', text: '#166534' }, // green
+    { bg: '#F3E8FF', text: '#6B21A8' }, // purple
+    { bg: '#FFE4E6', text: '#9F1239' }, // rose
+    { bg: '#E0F2FE', text: '#075985' }, // sky
+    { bg: '#FEF9C3', text: '#854D0E' }, // yellow
+    { bg: '#F0FDF4', text: '#14532D' }, // emerald
+    { bg: '#FCE7F3', text: '#9D174D' }, // pink
+    { bg: '#ECFDF5', text: '#065F46' }, // teal
+  ]
+  let hash = 0
+  for (let i = 0; i < name.length; i++) hash = ((hash << 5) - hash + name.charCodeAt(i)) | 0
+  return PALETTE[Math.abs(hash) % PALETTE.length]
+}
 
 // ── Design tokens (v6 warm white) ──────────────────────
 const T = {
@@ -138,6 +158,7 @@ function exportCSV(rows: TraficoRow[], clientClave: string) {
 // ── Main Component ─────────────────────────────────────
 
 export function ReportesView() {
+  const router = useRouter()
   const [rows, setRows] = useState<TraficoRow[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -145,6 +166,8 @@ export function ReportesView() {
   const [companyFilter, setCompanyFilter] = useState<string>('')
   const [companies, setCompanies] = useState<{ id: string; name: string }[]>([])
   const isMobile = useIsMobile()
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
 
   // Auth cookies
   const [companyId, setCompanyId] = useState('')
@@ -217,11 +240,14 @@ export function ReportesView() {
       .finally(() => setLoading(false))
   }, [cookiesReady, companyId, clientClave, isInternal, retryKey])
 
-  // Filtered rows (broker can filter by company)
+  // Filtered rows (broker can filter by company + date range)
   const filteredRows = useMemo(() => {
-    if (!companyFilter) return rows
-    return rows.filter(r => r.company_id === companyFilter)
-  }, [rows, companyFilter])
+    let out = rows
+    if (companyFilter) out = out.filter(r => r.company_id === companyFilter)
+    if (dateFrom) out = out.filter(r => (r.fecha_llegada || '') >= dateFrom)
+    if (dateTo) out = out.filter(r => (r.fecha_llegada || '') <= dateTo)
+    return out
+  }, [rows, companyFilter, dateFrom, dateTo])
 
   // ── SECTION 1: Resumen Mensual ───────────────────────
   const monthlyData: MonthlyBucket[] = useMemo(() => {
@@ -299,7 +325,18 @@ export function ReportesView() {
       <div className="section-header" style={{ marginBottom: 24 }}>
         <div>
           <h2 className="page-title">Reportes</h2>
-          <p className="page-subtitle">{totalFiltered.toLocaleString('es-MX')} tráficos · Últimos 6 meses</p>
+          <p className="page-subtitle">{totalFiltered.toLocaleString('es-MX')} tráficos</p>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)}
+            style={{ height: 32, border: `1px solid ${T.border}`, borderRadius: 6, padding: '0 8px', fontSize: 11, color: T.textSub, background: T.surfaceAlt }} />
+          <span style={{ color: T.textMuted, fontSize: 11 }}>—</span>
+          <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)}
+            style={{ height: 32, border: `1px solid ${T.border}`, borderRadius: 6, padding: '0 8px', fontSize: 11, color: T.textSub, background: T.surfaceAlt }} />
+          {(dateFrom || dateTo) && (
+            <button onClick={() => { setDateFrom(''); setDateTo('') }}
+              style={{ fontSize: 10, fontWeight: 600, color: T.red, border: `1px solid ${T.red}33`, background: '#FEF2F2', borderRadius: 4, padding: '2px 6px', cursor: 'pointer' }}>✕</button>
+          )}
         </div>
 
         {/* Broker company filter */}
@@ -348,7 +385,15 @@ export function ReportesView() {
                 allowDecimals={false}
               />
               <Tooltip content={<CustomTooltip />} />
-              <Bar dataKey="count" fill={T.gold} radius={[4, 4, 0, 0]} />
+              <Bar dataKey="count" fill={T.gold} radius={[4, 4, 0, 0]} cursor="pointer"
+                onClick={(_data: unknown, idx: number) => {
+                  const bucket = monthlyData[idx]
+                  if (bucket?.month) {
+                    const [y, m] = bucket.month.split('-')
+                    router.push(`/traficos?from=${y}-${m}-01&to=${y}-${m}-31`)
+                  }
+                }}
+              />
             </BarChart>
           </ResponsiveContainer>
         ) : (
@@ -383,8 +428,8 @@ export function ReportesView() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                     <div style={{
                       width: 28, height: 28, borderRadius: '50%',
-                      background: '#FEF3C7', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: 10, fontWeight: 700, color: '#92400E', flexShrink: 0,
+                      background: avatarColor(s.name).bg, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 10, fontWeight: 700, color: avatarColor(s.name).text, flexShrink: 0,
                     }}>
                       {s.name.split(' ').slice(0, 2).map(w => w[0] || '').join('').toUpperCase().slice(0, 2)}
                     </div>
@@ -425,7 +470,7 @@ export function ReportesView() {
                       key={s.name}
                       style={{
                         borderBottom: `1px solid ${T.border}`,
-                        background: i === 0 ? T.goldBg : 'transparent',
+                        background: i === 0 ? T.goldBg : s.tmecPct === 0 ? '#FFFBEB' : 'transparent',
                       }}
                     >
                       <td style={{ padding: '12px 20px', fontFamily: 'var(--font-mono)', fontSize: 12, color: T.textMuted }}>{i + 1}</td>
@@ -433,8 +478,8 @@ export function ReportesView() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                           <div style={{
                             width: 28, height: 28, borderRadius: '50%',
-                            background: '#FEF3C7', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontSize: 10, fontWeight: 700, color: '#92400E', flexShrink: 0,
+                            background: avatarColor(s.name).bg, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontSize: 10, fontWeight: 700, color: avatarColor(s.name).text, flexShrink: 0,
                           }}>
                             {s.name.split(' ').slice(0, 2).map(w => w[0] || '').join('').toUpperCase().slice(0, 2)}
                           </div>

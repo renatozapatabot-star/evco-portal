@@ -55,7 +55,7 @@ export default function CruzLayout({
           statusMessage={statusMessage}
           statusLevel={statusLevel}
           mveDays={portalType === 'operator' ? mveDays : null}
-          showNotifications
+          showNotifications={false}
           onSearch={onSearch}
           onMenuToggle={onMobileToggle}
         />

@@ -330,7 +330,7 @@ export default function PedimentosPage() {
                           <span style={{ marginLeft: 6, fontSize: 11, color: '#16A34A', fontWeight: 600 }}>T-MEC</span>
                         )}
                       </td>
-                      <td className="c-num">{fmtUSD(g.importe)}</td>
+                      <td className="c-num">{fmtUSD(g.importe)} USD</td>
                       <td style={{ width: 28, textAlign: 'center' }}><ChevronRight size={14} style={{ color: 'var(--slate-300)' }} /></td>
                     </tr>
                   )

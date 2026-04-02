@@ -30,10 +30,10 @@ export function BridgeTimes() {
   function statusColor(s: string) { return s === 'green' ? '#16A34A' : s === 'amber' ? '#D97706' : s === 'red' ? 'var(--danger-500)' : '#6B7280' }
 
   if (withData.length === 0) return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 0' }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 0', opacity: 0.6 }}>
       <div>
-        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary, #1A1A1A)' }}>World Trade Bridge</div>
-        <div style={{ fontSize: 12, color: '#9C9890', marginTop: 2 }}>Tiempos no disponibles en este momento</div>
+        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--slate-400)' }}>World Trade Bridge</div>
+        <div style={{ fontSize: 12, color: 'var(--slate-400)', marginTop: 2 }}>Servicio no disponible</div>
       </div>
       <a
         href="https://bwt.cbp.gov/"

@@ -103,6 +103,7 @@ export default function ExpedientesPage() {
   const [userRole, setUserRole] = useState('')
   const [cookiesReady, setCookiesReady] = useState(false)
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
+  const [sortAsc, setSortAsc] = useState(true) // true = least complete first
 
   useEffect(() => {
     setUserRole(getCookieValue('user_role') ?? '')
@@ -144,22 +145,29 @@ export default function ExpedientesPage() {
       if (arr) arr.push(d)
       else map.set(key, [d])
     }
-    // Sort by completeness ASC (least complete first = most urgent at top)
     return [...map.entries()].sort((a, b) => {
       const aTypes = new Set(a[1].map(d => d.doc_type ? normalizeDocType(d.doc_type) : '').filter(Boolean))
       const bTypes = new Set(b[1].map(d => d.doc_type ? normalizeDocType(d.doc_type) : '').filter(Boolean))
       const aCount = REQUIRED_DOC_TYPES.filter(t => aTypes.has(t)).length
       const bCount = REQUIRED_DOC_TYPES.filter(t => bTypes.has(t)).length
-      return aCount - bCount // least complete first
+      return sortAsc ? aCount - bCount : bCount - aCount
     })
-  }, [filtered])
+  }, [filtered, sortAsc])
 
   return (
     <div className="page-container" style={{ padding: isMobile ? 16 : 24 }}>
       <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'stretch' : 'center', gap: 12, marginBottom: 16 }}>
         <div>
           <h1 className="pg-title">Expediente Digital</h1>
-          <p className="pg-meta">{docs.length.toLocaleString('es-MX')} documentos · {grouped.length} tráficos</p>
+          <p className="pg-meta">
+            {docs.length.toLocaleString('es-MX')} documentos · {grouped.length} tráficos
+            <button
+              onClick={() => setSortAsc(v => !v)}
+              style={{ marginLeft: 12, fontSize: 11, fontWeight: 600, color: 'var(--slate-500)', background: 'var(--slate-50)', border: '1px solid var(--border-card)', borderRadius: 6, padding: '2px 10px', cursor: 'pointer' }}
+            >
+              {sortAsc ? '↑ Menos completos' : '↓ Más completos'}
+            </button>
+          </p>
         </div>
         <div
           className="flex items-center gap-2 rounded-[3px] px-3 py-1.5"
@@ -270,8 +278,8 @@ export default function ExpedientesPage() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     {/* Completeness bar */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <div style={{ width: 60, height: 6, background: 'var(--slate-200)', borderRadius: 3, overflow: 'hidden' }}>
-                        <div style={{ width: `${pct}%`, height: '100%', background: barColor, borderRadius: 3, transition: 'width 0.3s' }} />
+                      <div style={{ width: 60, height: 8, background: 'var(--slate-200)', borderRadius: 4, overflow: 'hidden' }}>
+                        <div style={{ width: `${pct}%`, height: '100%', background: barColor, borderRadius: 4, transition: 'width 0.3s' }} />
                       </div>
                       <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--slate-500)', fontFamily: 'var(--font-mono)' }}>
                         {foundCount}/{totalRequired}

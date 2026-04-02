@@ -783,6 +783,7 @@ body {
   font-size: 13px;
   color: var(--navy-900);
   font-family: var(--font-mono);
+  white-space: nowrap;
 }
 
 /* ── Description text ── */

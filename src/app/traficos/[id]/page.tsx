@@ -613,6 +613,7 @@ export default function TraficoDetailPage() {
           {/* Share deep link */}
           <button
             onClick={handleShare}
+            title="Copiar enlace para compartir"
             aria-label="Compartir enlace al tráfico"
             style={{
               display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
@@ -993,7 +994,7 @@ export default function TraficoDetailPage() {
             Object.entries(groupedDocs).map(([docType, docs]) => (
               <div key={docType} className="card" style={{ padding: 20 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                  <span style={{ fontSize: 14, fontWeight: 800, color: 'var(--navy-900)' }}>{docType}</span>
+                  <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--navy-900)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0, flex: 1 }}>{docType}</span>
                   <span style={{
                     fontSize: 10, fontWeight: 700, fontFamily: 'var(--font-mono)',
                     background: '#ECFDF3', color: '#2D8540',

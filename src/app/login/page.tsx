@@ -126,7 +126,7 @@ export default function LoginPage() {
                 type="text"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
-                placeholder="Ingresa tu código"
+                placeholder="Ej: evco2026"
                 required
                 autoFocus
                 className="login-input"

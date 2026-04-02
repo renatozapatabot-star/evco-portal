@@ -280,6 +280,9 @@ export default function ClientInicioView() {
                 <div className="kpi-card-value" style={{ color: isZero ? 'var(--slate-300)' : undefined }}>
                   <CountingNumber value={kpi.value} sessionKey={`dash-${kpi.key}`} />
                 </div>
+                {isZero && kpi.key === 'entradas' && (
+                  <div style={{ fontSize: 11, color: 'var(--slate-400)', marginTop: 2 }}>Ninguna hoy</div>
+                )}
               </div>
             </Link>
           )
@@ -402,7 +405,7 @@ export default function ClientInicioView() {
                       <td><span className={`badge ${badgeClass}`}><span className="badge-dot" />{badgeLabel}</span></td>
                       <td className="timestamp">{fmtDateShort(t.fecha_llegada)}</td>
                       <td className="desc-text">{fmtDesc(t.descripcion_mercancia) || '—'}</td>
-                      {!isMobile && <td className="importe currency text-right">{t.importe_total ? `${fmtUSD(t.importe_total)} USD` : '—'}</td>}
+                      {!isMobile && <td className="importe currency text-right" title={t.importe_total ? undefined : 'Valor no disponible'}>{t.importe_total ? `${fmtUSD(t.importe_total)} USD` : '—'}</td>}
                       <td style={{ width: 28, textAlign: 'center' }}><ChevronRight size={14} style={{ color: 'var(--slate-300)' }} /></td>
                     </tr>
                   )

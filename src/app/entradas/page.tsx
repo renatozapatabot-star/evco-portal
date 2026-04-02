@@ -132,7 +132,7 @@ export default function EntradasPage() {
           </label>
           <label className="flex items-center gap-1.5 text-[11.5px] cursor-pointer" style={{ color: showHistorico ? '#2563EB' : '#6b7280' }}>
             <input type="checkbox" checked={showHistorico} onChange={e => { setShowHistorico(e.target.checked); setPage(0) }} style={{ width: 13, height: 13 }} />
-            Ver historial completo
+            Incluir anteriores a 2024
           </label>
           <div
             className="flex items-center gap-2 rounded-[3px] px-3 py-1.5"

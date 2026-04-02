@@ -336,7 +336,7 @@ function TraficosContent() {
                       title={fmtCarrier(r.transportista_mexicano as string) || undefined}
                       onClick={() => router.push(`/traficos/${encodeURIComponent(r.trafico)}`)}>
                       <td style={{ width: 28, paddingRight: 0 }}>
-                        {isCrossing ? <><span className="crossing-pulse" /><span className="sr-only">En cruce</span></> : ps > 0 ? <><span className={`priority-dot ${priorityClass(ps)}`} /><span className="sr-only">Requiere atención</span></> : null}
+                        {isCrossing ? <><span className="crossing-pulse" /><span className="sr-only">En cruce</span></> : ps > 0 ? <><span className={`priority-dot ${priorityClass(ps)}`} /><span className="sr-only">Requiere atención</span></> : <span style={{ width: 7, height: 7, borderRadius: '50%', display: 'inline-block', background: isCruzado ? 'var(--success-500)' : isDetenido ? 'var(--danger-500)' : 'var(--amber-500)', opacity: 0.7 }} />}
                       </td>
                       <td>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>

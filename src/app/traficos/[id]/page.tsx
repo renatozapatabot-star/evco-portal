@@ -707,7 +707,7 @@ export default function TraficoDetailPage() {
                     strokeWidth="4" fill="none"
                     strokeDasharray={`${compScore * 1.759} 175.9`}
                     strokeLinecap="round"
-                    style={{ transition: 'stroke-dasharray 0.6s ease' }}
+                    style={{ animation: 'ringFill 800ms ease-out forwards' }}
                   />
                 </svg>
                 <span style={{
@@ -906,6 +906,16 @@ export default function TraficoDetailPage() {
                 <div style={{ marginTop: 8, fontSize: 11, color: 'var(--slate-400)' }}>
                   Estimado · Los montos oficiales se confirman tras la transmisión del pedimento
                 </div>
+                {t.pedimento && documentos.some(d => (d.document_type as string)?.includes('pedimento')) && (
+                  <button onClick={() => {
+                    const pedDoc = documentos.find(d => (d.document_type as string)?.includes('pedimento') && d.file_url)
+                    if (pedDoc?.file_url) window.open(pedDoc.file_url as string, '_blank')
+                    else toast('Pedimento PDF no disponible aún', 'error')
+                  }}
+                    style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, color: 'var(--gold-dark, #8B6914)', background: 'rgba(196,150,60,0.08)', border: '1px solid rgba(196,150,60,0.2)', borderRadius: 8, padding: '8px 14px', cursor: 'pointer', minHeight: 44 }}>
+                    <FileText size={14} /> Descargar Pedimento
+                  </button>
+                )}
               </div>
             )
           })()}

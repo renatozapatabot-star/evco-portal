@@ -1250,6 +1250,10 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes ringFill {
+  from { stroke-dasharray: 0 175.9; }
+}
+
 .page-content {
   animation: fadeInUp 150ms ease-out;
 }
@@ -1441,6 +1445,7 @@ tr.row-odd  { background: rgba(248,250,252,0.5); }
 .stagger-3 { animation-delay: 100ms; }
 .stagger-4 { animation-delay: 150ms; }
 .stagger-5 { animation-delay: 200ms; }
+.stagger-6 { animation-delay: 250ms; }
 
 /* ── Currency display ── */
 .currency {

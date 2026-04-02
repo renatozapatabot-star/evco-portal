@@ -61,6 +61,7 @@ export default function DashboardShellClient({ children }: Props) {
   const [idle, setIdle] = useState(false)
   const [showWarning, setShowWarning] = useState(false)
   const [isOffline, setIsOffline] = useState(false)
+  const [showScrollTop, setShowScrollTop] = useState(false)
   const idleTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
   const warnTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
 
@@ -104,6 +105,13 @@ export default function DashboardShellClient({ children }: Props) {
     window.addEventListener('online', goOnline)
     setIsOffline(!navigator.onLine)
     return () => { window.removeEventListener('offline', goOffline); window.removeEventListener('online', goOnline) }
+  }, [])
+
+  // Scroll-to-top visibility
+  useEffect(() => {
+    const onScroll = () => setShowScrollTop(window.scrollY > 500)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
   // Session idle detection
@@ -186,6 +194,25 @@ export default function DashboardShellClient({ children }: Props) {
 
       {/* Welcome overlay for first-time users */}
       <WelcomeOverlay />
+
+      {/* Scroll to top */}
+      {showScrollTop && (
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          aria-label="Volver arriba"
+          style={{
+            position: 'fixed', bottom: 90, right: 20, zIndex: 40,
+            width: 40, height: 40, borderRadius: '50%',
+            background: 'var(--navy-900)', color: '#FFFFFF',
+            border: 'none', cursor: 'pointer', fontSize: 16,
+            boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            transition: 'opacity 200ms',
+          }}
+        >
+          ↑
+        </button>
+      )}
 
       {/* Session idle warning */}
       {showWarning && !idle && (

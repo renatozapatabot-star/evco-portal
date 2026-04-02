@@ -363,7 +363,7 @@ function TraficosContent() {
                       <td className="timestamp">{fmtDateShort(r.fecha_llegada)}</td>
                       <td className="desc-text" title={fmtDesc(r.descripcion_mercancia)}>{fmtDesc(r.descripcion_mercancia) || '—'}</td>
                       <td className="currency text-right">{r.peso_bruto ? `${fmtKg(r.peso_bruto)} kg` : '—'}</td>
-                      <td className="currency text-right">{(r.importe_total != null && Number(r.importe_total) > 0) ? `${fmtUSD(r.importe_total)} USD` : '—'}</td>
+                      <td className="currency text-right" title={!(r.importe_total != null && Number(r.importe_total) > 0) ? 'Valor aún no disponible para esta operación' : undefined}>{(r.importe_total != null && Number(r.importe_total) > 0) ? `${fmtUSD(r.importe_total)} USD` : '—'}</td>
                       <td>
                         {(() => {
                           const count = docCountMap.get(r.trafico) ?? 0
@@ -397,6 +397,12 @@ function TraficosContent() {
         )}
       </div>
 
+      {/* Sync timestamp */}
+      {!loading && rows.length > 0 && (
+        <div className="timestamp" style={{ textAlign: 'right', padding: '8px 0', fontSize: 10, color: 'var(--slate-400)' }} suppressHydrationWarning>
+          Sincronizado: {fmtDate(new Date())}
+        </div>
+      )}
     </div>
   )
 }

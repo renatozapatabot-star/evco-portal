@@ -251,11 +251,19 @@ export default function PedimentosPage() {
 
       {/* Empty state */}
       {!loading && pagedGroups.length === 0 && (
-        <EmptyState
-          icon="📋"
-          title="Sin pedimentos registrados"
-          description="Los pedimentos aparecerán aquí cuando se asignen a los tráficos."
-        />
+        search.trim() ? (
+          <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+            <div style={{ fontSize: 32, marginBottom: 8 }}>🔍</div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--slate-600)' }}>Sin resultados para &ldquo;{search}&rdquo;</div>
+            <button className="btn btn-outline btn-sm" style={{ marginTop: 12 }} onClick={() => { setSearch(''); setPage(0) }}>Limpiar búsqueda</button>
+          </div>
+        ) : (
+          <EmptyState
+            icon="📋"
+            title="Sin pedimentos registrados"
+            description="Los pedimentos aparecerán aquí cuando se asignen a los tráficos."
+          />
+        )
       )}
 
       {/* Mobile card layout */}

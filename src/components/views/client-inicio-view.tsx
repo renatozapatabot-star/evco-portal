@@ -315,11 +315,14 @@ export default function ClientInicioView() {
                 }}
               >
                 <div className="kpi-card-label">{kpi.label}</div>
-                <div className="kpi-card-value" style={{ color: isZero ? 'var(--slate-300)' : undefined }}>
-                  <CountingNumber value={kpi.value} sessionKey={`dash-${kpi.key}`} />
-                </div>
-                {isZero && kpi.key === 'entradas' && (
-                  <div style={{ fontSize: 11, color: 'var(--slate-400)', marginTop: 2 }}>Ninguna hoy</div>
+                {isZero && kpi.key === 'entradas' ? (
+                  <div className="kpi-card-value" style={{ color: 'var(--slate-300)', fontSize: 13, fontStyle: 'italic' }}>
+                    Ninguna hoy
+                  </div>
+                ) : (
+                  <div className="kpi-card-value" style={{ color: isZero ? 'var(--slate-300)' : undefined }}>
+                    <CountingNumber value={kpi.value} sessionKey={`dash-${kpi.key}`} />
+                  </div>
                 )}
               </div>
             </Link>
@@ -333,42 +336,42 @@ export default function ClientInicioView() {
           display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)',
           gap: 12, marginBottom: 24, opacity: dataFade, transition: 'opacity 200ms ease',
         }}>
-          <div className="kpi-card" style={{ padding: '14px 16px' }}>
+          <div className="kpi-card" style={{ padding: '14px 16px', borderTop: '4px solid var(--gold)' }}>
             <div className="kpi-card-label">Valor Importado YTD</div>
             <div className="font-mono" style={{ fontSize: 22, fontWeight: 800, color: 'var(--navy-900)', marginTop: 4 }}>
               {fmtUSDCompact(valorYTD)}
             </div>
             <div style={{ fontSize: 10, color: 'var(--slate-400)', marginTop: 2 }}>{new Date().getFullYear()} — acumulado</div>
           </div>
-          <div className="kpi-card" style={{ padding: '14px 16px' }}>
+          <div className="kpi-card" style={{ padding: '14px 16px', borderTop: '4px solid var(--success-500)' }}>
             <div className="kpi-card-label">Operaciones Exitosas</div>
             <div className="font-mono" style={{ fontSize: 22, fontWeight: 800, color: sinIncidencia >= 90 ? '#16A34A' : 'var(--navy-900)', marginTop: 4 }}>
               {sinIncidencia}%
             </div>
             <div style={{ fontSize: 10, color: 'var(--slate-400)', marginTop: 2 }}>Cruzados del total</div>
           </div>
-          <div className="kpi-card" style={{ padding: '14px 16px' }}>
+          <div className="kpi-card" style={{ padding: '14px 16px', borderTop: '4px solid var(--info-500)' }}>
             <div className="kpi-card-label">Tiempo Promedio Despacho</div>
             <div className="font-mono" style={{ fontSize: 22, fontWeight: 800, color: tiempoDespacho <= 5 ? '#16A34A' : tiempoDespacho <= 10 ? '#D97706' : '#DC2626', marginTop: 4 }}>
               {tiempoDespacho > 0 ? `${tiempoDespacho} días` : '—'}
             </div>
             <div style={{ fontSize: 10, color: 'var(--slate-400)', marginTop: 2 }}>Llegada a cruce</div>
           </div>
-          <div className="kpi-card" style={{ padding: '14px 16px' }}>
+          <div className="kpi-card" style={{ padding: '14px 16px', borderTop: '4px solid #16A34A' }}>
             <div className="kpi-card-label">Operaciones T-MEC</div>
             <div className="font-mono" style={{ fontSize: 22, fontWeight: 800, color: '#16A34A', marginTop: 4 }}>
               {tmecOps}
             </div>
             <div style={{ fontSize: 10, color: 'var(--slate-400)', marginTop: 2 }}>Tasa preferencial aplicada</div>
           </div>
-          <div className="kpi-card" style={{ padding: '14px 16px' }}>
+          <div className="kpi-card" style={{ padding: '14px 16px', borderTop: '4px solid var(--sand-400)' }}>
             <div className="kpi-card-label">Proveedores Activos</div>
             <div className="font-mono" style={{ fontSize: 22, fontWeight: 800, color: 'var(--navy-900)', marginTop: 4 }}>
               {provActivos}
             </div>
             <div style={{ fontSize: 10, color: 'var(--slate-400)', marginTop: 2 }}>{new Date().getFullYear()} — distintos</div>
           </div>
-          <div className="kpi-card" style={{ padding: '14px 16px' }}>
+          <div className="kpi-card" style={{ padding: '14px 16px', borderTop: '4px solid var(--purple-500)' }}>
             <div className="kpi-card-label">Pedimentos Pagados</div>
             <div className="font-mono" style={{ fontSize: 22, fontWeight: 800, color: 'var(--navy-900)', marginTop: 4 }}>
               {traficos.filter(t => !!t.pedimento).length}

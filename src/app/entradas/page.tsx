@@ -168,6 +168,16 @@ export default function EntradasPage() {
         </div>
       )}
 
+      {/* Active filter chips */}
+      {(search || dateFrom || dateTo || faltantesOnly || showHistorico) && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
+          {search && <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 9999, background: 'var(--slate-100)', color: 'var(--slate-600)', display: 'flex', alignItems: 'center', gap: 4 }}>Búsqueda: {search} <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--slate-400)', fontSize: 12, lineHeight: 1 }}>✕</button></span>}
+          {dateFrom && <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 9999, background: 'var(--slate-100)', color: 'var(--slate-600)', display: 'flex', alignItems: 'center', gap: 4 }}>Desde: {dateFrom} <button onClick={() => setDateFrom('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--slate-400)', fontSize: 12, lineHeight: 1 }}>✕</button></span>}
+          {dateTo && <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 9999, background: 'var(--slate-100)', color: 'var(--slate-600)', display: 'flex', alignItems: 'center', gap: 4 }}>Hasta: {dateTo} <button onClick={() => setDateTo('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--slate-400)', fontSize: 12, lineHeight: 1 }}>✕</button></span>}
+          {faltantesOnly && <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 9999, background: '#FEF3C7', color: '#92400E', display: 'flex', alignItems: 'center', gap: 4 }}>Faltantes <button onClick={() => setFaltantesOnly(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#92400E', fontSize: 12, lineHeight: 1 }}>✕</button></span>}
+        </div>
+      )}
+
       {/* Loading skeleton */}
       {loading && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -179,11 +189,19 @@ export default function EntradasPage() {
 
       {/* Empty state */}
       {!loading && paged.length === 0 && (
-        <EmptyState
-          icon="🏭"
-          title="No hay entradas registradas"
-          description="Los documentos aparecerán aquí cuando lleguen al correo ai@renatozapata.com o se registren manualmente."
-        />
+        search.trim() ? (
+          <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+            <div style={{ fontSize: 32, marginBottom: 8 }}>🔍</div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--slate-600)' }}>Sin resultados para &ldquo;{search}&rdquo;</div>
+            <button className="btn btn-outline btn-sm" style={{ marginTop: 12 }} onClick={() => { setSearch(''); setPage(0) }}>Limpiar búsqueda</button>
+          </div>
+        ) : (
+          <EmptyState
+            icon="🏭"
+            title="No hay entradas registradas"
+            description="Las entradas aparecerán aquí cuando se registren."
+          />
+        )
       )}
 
       {/* Mobile card layout */}

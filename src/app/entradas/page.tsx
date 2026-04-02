@@ -335,7 +335,7 @@ export default function EntradasPage() {
                       )}
                     </td>
                     <td className="text-[12px]" style={{ color: 'var(--slate-500)', fontFamily: 'var(--font-mono)' }}>
-                      {fmtDate(r.fecha_llegada_mercancia)}
+                      {r.fecha_llegada_mercancia ? <time dateTime={r.fecha_llegada_mercancia.split('T')[0]}>{fmtDate(r.fecha_llegada_mercancia)}</time> : '—'}
                     </td>
                     <td
                       className="text-[12px] max-w-[200px] truncate"

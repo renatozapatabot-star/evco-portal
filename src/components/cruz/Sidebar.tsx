@@ -152,6 +152,7 @@ export default function Sidebar({
                   className={`sidebar-nav-item ${isActive ? 'active' : ''}`}
                   title={collapsed ? item.label : undefined}
                   onClick={onMobileClose}
+                  aria-current={isActive ? 'page' : undefined}
                 >
                   <span className="nav-icon">{item.icon}</span>
                   {!collapsed && item.label}

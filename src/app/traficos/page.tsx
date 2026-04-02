@@ -358,11 +358,11 @@ function TraficosContent() {
                       </td>
                       <td>{r.pedimento ? <span className="pedimento-num" onClick={e => { e.stopPropagation(); router.push(`/traficos/${encodeURIComponent(r.trafico)}?tab=financiero`) }} style={{ cursor: 'pointer' }}>{fmtPedimentoShort(r.pedimento)}</span> : <span className="pedimento-pending">Pendiente</span>}</td>
                       <td>
-                        <span className={`badge ${isDetenido ? 'badge-detenido' : isCruzado ? 'badge-cruzado' : 'badge-proceso'}`}>
-                          <span className="badge-dot" />{isDetenido ? 'Detenido' : isCruzado ? 'Cruzado' : 'En Proceso'}
+                        <span className={`badge ${isDetenido ? 'badge-detenido' : isCruzado ? 'badge-cruzado' : 'badge-proceso'}`} aria-label={`Estado: ${isDetenido ? 'Detenido' : isCruzado ? 'Cruzado' : 'En Proceso'}`}>
+                          <span className="badge-dot" aria-hidden="true" />{isDetenido ? 'Detenido' : isCruzado ? 'Cruzado' : 'En Proceso'}
                         </span>
                       </td>
-                      <td className="timestamp">{fmtDateShort(r.fecha_llegada)}</td>
+                      <td className="timestamp">{r.fecha_llegada ? <time dateTime={r.fecha_llegada.split('T')[0]}>{fmtDateShort(r.fecha_llegada)}</time> : '—'}</td>
                       <td className="desc-text" title={fmtDesc(r.descripcion_mercancia)}>{fmtDesc(r.descripcion_mercancia) || '—'}</td>
                       <td className="currency text-right">{r.peso_bruto ? `${fmtKg(r.peso_bruto)} kg` : '—'}</td>
                       <td className="currency text-right" title={!(r.importe_total != null && Number(r.importe_total) > 0) ? 'Valor aún no disponible para esta operación' : undefined}>{(r.importe_total != null && Number(r.importe_total) > 0) ? `${fmtUSD(r.importe_total)} USD` : '—'}</td>
@@ -371,7 +371,7 @@ function TraficosContent() {
                           const count = docCountMap.get(r.trafico) ?? 0
                           const colorClass = count >= 5 ? 'success' : count >= 3 ? 'warning' : 'danger'
                           return (
-                            <div className="doc-segments" title={`${count}/6 documentos`}>
+                            <div className="doc-segments" title={`${count}/6 documentos`} role="progressbar" aria-valuenow={count} aria-valuemin={0} aria-valuemax={6} aria-label={`${count} de 6 documentos completos`}>
                               {Array.from({ length: 6 }).map((_, i) => (
                                 <div key={i} className={`doc-seg${i < count ? ` filled ${colorClass}` : ''}`} />
                               ))}

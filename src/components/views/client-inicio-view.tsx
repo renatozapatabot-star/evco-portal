@@ -209,7 +209,7 @@ export default function ClientInicioView() {
 
   if (error) {
     return (
-      <div style={{ padding: 32, maxWidth: 960, margin: '0 auto' }}>
+      <div className="page-shell" style={{ maxWidth: 960 }}>
         <ErrorCard message={error} onRetry={loadData} />
       </div>
     )
@@ -220,7 +220,7 @@ export default function ClientInicioView() {
   }
 
   return (
-    <div style={{ padding: isMobile ? 16 : 32, maxWidth: 960, margin: '0 auto' }}>
+    <div className="page-shell" style={{ maxWidth: 960 }}>
       {/* Status Strip — first thing Ursula sees */}
       <div style={{ marginBottom: 16 }}>
         <StatusStrip override={statusOverride} />
@@ -244,13 +244,9 @@ export default function ClientInicioView() {
           {greeting}, {companyName || 'cliente'}
         </h1>
         <p className="text-caption" style={{ color: 'var(--slate-400)', margin: '4px 0 0', display: 'flex', alignItems: 'center', gap: 8 }}>
-          Resumen de su operación — {dateStr}
+          Resumen de su operación — <span className="font-mono">{dateStr}</span>
           {refreshing && (
-            <span style={{
-              fontSize: 11, fontWeight: 600, color: 'var(--slate-400)',
-              background: 'var(--slate-100, #F1F5F9)', padding: '2px 8px',
-              borderRadius: 4, animation: 'pulse 1.5s infinite',
-            }}>
+            <span className="badge badge-pendiente" style={{ fontSize: 11, animation: 'cruzPulse 1.5s infinite' }}>
               Actualizando...
             </span>
           )}
@@ -258,30 +254,30 @@ export default function ClientInicioView() {
       </div>
 
       {/* KPI Grid */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)',
-        gap: 16, marginBottom: 24,
-        opacity: dataFade,
-        transition: 'opacity 200ms ease',
-      }}>
+      <div className="kpi-grid" style={{ opacity: dataFade, transition: 'opacity 200ms ease' }}>
         {[
-          { label: 'En Proceso', value: enProceso, color: 'var(--info-500)', href: '/traficos?estatus=En Proceso', key: 'en-proceso' },
-          { label: 'Cruzado', value: cruzado, color: 'var(--success-500)', href: '/traficos?estatus=Cruzado', key: 'cruzado' },
-          { label: 'Pedimento Pagado', value: pedimentoPagado, color: 'var(--purple-500)', href: '/traficos?estatus=Pedimento Pagado', key: 'pagado' },
-          { label: 'Entradas hoy', value: entradasHoy, color: 'var(--sand-400)', href: '/entradas', key: 'entradas' },
+          { label: 'En Proceso', value: enProceso, color: 'var(--info-500)', href: '/traficos?estatus=En Proceso', key: 'en-proceso', stagger: 1 },
+          { label: 'Cruzado', value: cruzado, color: 'var(--success-500)', href: '/traficos?estatus=Cruzado', key: 'cruzado', stagger: 2 },
+          { label: 'Pedimento Pagado', value: pedimentoPagado, color: 'var(--purple-500)', href: '/traficos?estatus=Pedimento Pagado', key: 'pagado', stagger: 3 },
+          { label: 'Entradas hoy', value: entradasHoy, color: 'var(--sand-400)', href: '/entradas', key: 'entradas', stagger: 4 },
         ].map((kpi) => {
           const isZero = kpi.value === 0
           return (
             <Link key={kpi.key} href={kpi.href} style={{ textDecoration: 'none', color: 'inherit' }}>
-              <div className="stat-card" role="status" aria-live="polite" style={{
-                borderTop: `4px solid ${isZero ? 'var(--slate-200)' : kpi.color}`,
-                borderStyle: isZero ? 'dashed' : undefined,
-                opacity: isZero ? 0.6 : 1,
-                minHeight: 148,
-              }}>
-                <div className="stat-label">{kpi.label}</div>
-                <div className="stat-value" style={{ color: isZero ? 'var(--slate-300)' : undefined }}>
+              <div
+                className={`kpi-card stagger-${kpi.stagger}`}
+                role="status"
+                aria-live="polite"
+                style={{
+                  borderTop: `4px solid ${isZero ? 'var(--slate-200)' : kpi.color}`,
+                  borderTopStyle: isZero ? 'dashed' : undefined,
+                  opacity: isZero ? 0.6 : 1,
+                  minHeight: 148,
+                  animation: 'fadeInUp 200ms var(--ease-enter) backwards',
+                }}
+              >
+                <div className="kpi-card-label">{kpi.label}</div>
+                <div className="kpi-card-value" style={{ color: isZero ? 'var(--slate-300)' : undefined }}>
                   <CountingNumber value={kpi.value} sessionKey={`dash-${kpi.key}`} />
                 </div>
               </div>
@@ -299,10 +295,10 @@ export default function ClientInicioView() {
             </span>
             {sparkDelta && (
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginTop: 4 }}>
-                <span style={{ fontSize: 24, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--navy-900)' }}>
+                <span className="font-mono" style={{ fontSize: 24, fontWeight: 700, color: 'var(--navy-900)' }}>
                   {sparkDelta.current}
                 </span>
-                <span style={{
+                <span className="font-mono" style={{
                   fontSize: 13, fontWeight: 600,
                   color: sparkDelta.pct >= 0 ? 'var(--green-600)' : 'var(--red-600)',
                 }}>
@@ -361,11 +357,8 @@ export default function ClientInicioView() {
       })()}
 
       {/* Tráficos Table */}
-      <div className="card-flush" style={{ marginBottom: 24 }}>
-        <div style={{
-          padding: '16px 20px', borderBottom: '1px solid var(--slate-200)',
-          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        }}>
+      <div className="table-shell" style={{ marginBottom: 24 }}>
+        <div className="table-toolbar">
           <span className="text-title" style={{ color: 'var(--navy-900)' }}>Tráficos recientes</span>
           <Link href="/traficos" style={{
             fontSize: 13, fontWeight: 600, color: 'var(--gold-400)',
@@ -395,17 +388,21 @@ export default function ClientInicioView() {
                 </tr>
               </thead>
               <tbody>
-                {traficos.slice(0, 50).map(t => {
+                {traficos.slice(0, 50).map((t, idx) => {
                   const isCruzado = (t.estatus || '').toLowerCase().includes('cruz')
                   const badgeClass = isCruzado ? 'badge-cruzado' : 'badge-proceso'
                   const badgeLabel = isCruzado ? 'Cruzado' : 'En Proceso'
                   return (
-                    <tr key={t.trafico} onClick={() => router.push(`/traficos/${encodeURIComponent(t.trafico)}`)} style={{ cursor: 'pointer' }}>
+                    <tr
+                      key={t.trafico}
+                      className={`clickable-row ${idx % 2 === 0 ? 'row-even' : 'row-odd'}`}
+                      onClick={() => router.push(`/traficos/${encodeURIComponent(t.trafico)}`)}
+                    >
                       <td><span className="trafico-id">{t.trafico}</span></td>
                       <td><span className={`badge ${badgeClass}`}><span className="badge-dot" />{badgeLabel}</span></td>
-                      <td style={{ fontSize: 12.5, color: 'var(--slate-500)', fontFamily: 'var(--font-mono)' }}>{fmtDateShort(t.fecha_llegada)}</td>
+                      <td className="timestamp">{fmtDateShort(t.fecha_llegada)}</td>
                       <td className="desc-text">{fmtDesc(t.descripcion_mercancia) || '—'}</td>
-                      {!isMobile && <td className="importe" style={{ textAlign: 'right', fontFamily: 'var(--font-mono)' }}>{t.importe_total ? fmtUSD(t.importe_total) : '—'}</td>}
+                      {!isMobile && <td className="importe currency text-right">{t.importe_total ? `${fmtUSD(t.importe_total)} USD` : '—'}</td>}
                       <td style={{ width: 28, textAlign: 'center' }}><ChevronRight size={14} style={{ color: 'var(--slate-300)' }} /></td>
                     </tr>
                   )

@@ -78,36 +78,32 @@ function AdminView() {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
-        <div style={{ width: 12, height: 12, borderRadius: '50%', background: T.gray, animation: 'cruzPulse 1.5s infinite' }} />
+      <div className="admin-loading">
+        <div className="admin-loading-dot" />
       </div>
     )
   }
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', padding: 32 }}>
-      <div style={{
-        background: T.card, border: `1px solid ${T.border}`,
-        borderRadius: 12, padding: '48px 56px',
-        textAlign: 'center', maxWidth: 440, width: '100%',
-      }}>
+    <div className="admin-center">
+      <div className="card admin-status-card">
         {/* Status dot + headline */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 24 }}>
-          <span style={{
-            width: 12, height: 12, borderRadius: '50%', background: dotColor, flexShrink: 0,
-            animation: level !== 'green' ? 'cruzPulse 2s infinite' : undefined,
-          }} />
-          <span style={{ fontSize: 22, fontWeight: 600, color: 'var(--body-text)', fontFamily: "'DM Sans', system-ui, sans-serif" }}>{headline}</span>
+        <div className="admin-headline">
+          <span
+            className={`admin-dot ${level !== 'green' ? 'dot-live' : ''}`}
+            style={{ background: dotColor }}
+          />
+          <span className="text-display">{headline}</span>
         </div>
 
         {/* Counts */}
-        <div style={{ fontSize: 16, color: T.text, marginBottom: 4 }}>
-          <span style={{ fontWeight: 700, fontFamily: 'var(--font-jetbrains-mono)' }}>{activeCount}</span> tráficos activos
+        <div className="admin-count-primary">
+          <span className="font-mono" style={{ fontWeight: 700 }}>{activeCount}</span> tráficos activos
         </div>
-        <div style={{ fontSize: 14, color: T.textSec }}>
-          <span style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>{enCurso}</span> en curso
+        <div className="admin-count-secondary">
+          <span className="font-mono">{enCurso}</span> en curso
           {blockingCount > 0 && (
-            <> · <span style={{ color: dotColor, fontWeight: 700, fontFamily: 'var(--font-jetbrains-mono)' }}>{blockingCount}</span> atención</>
+            <> · <span className="font-mono" style={{ color: dotColor, fontWeight: 700 }}>{blockingCount}</span> atención</>
           )}
         </div>
 
@@ -115,13 +111,8 @@ function AdminView() {
         {firstBlocking && blockingCount > 0 && (
           <Link
             href={blockingCount === 1 ? `/traficos/${encodeURIComponent(firstBlocking)}` : '/traficos?filter=blocking'}
-            style={{
-              display: 'inline-flex', alignItems: 'center',
-              marginTop: 24, padding: '12px 24px',
-              background: T.gold, color: '#FFFFFF',
-              borderRadius: T.r, fontSize: 14, fontWeight: 700,
-              textDecoration: 'none',
-            }}
+            className="btn btn-primary"
+            style={{ marginTop: 24 }}
           >
             {blockingCount === 1 ? 'Ver el único pendiente →' : `Ver ${blockingCount} pendientes →`}
           </Link>
@@ -263,77 +254,49 @@ function BrokerView() {
 
   if (loading) {
     return (
-      <div style={{ padding: 32, maxWidth: 720, margin: '0 auto' }}>
-        <div style={{ height: 28, width: 280, borderRadius: 4, background: '#F0EDE8', marginBottom: 32 }} className="skeleton" />
+      <div className="page-shell" style={{ maxWidth: 720 }}>
+        <div className="skeleton-shimmer" style={{ height: 28, width: 280, marginBottom: 32 }} />
         {[0, 1, 2].map(i => (
-          <div key={i} style={{ height: 72, borderRadius: 8, background: '#F0EDE8', marginBottom: 12 }} className="skeleton" />
+          <div key={i} className="skeleton-shimmer" style={{ height: 72, marginBottom: 12 }} />
         ))}
       </div>
     )
   }
 
   return (
-    <div style={{ padding: 32, maxWidth: 720, margin: '0 auto' }}>
+    <div className="page-shell" style={{ maxWidth: 720 }}>
       {/* Greeting */}
       <div style={{ marginBottom: 32 }}>
-        <div style={{ fontSize: 22, fontWeight: 600, color: 'var(--body-text)', fontFamily: "'DM Sans', system-ui, sans-serif" }}>
-          {greeting}{companyName ? `, ${companyName.split(' ')[0]}` : ''}
-        </div>
-        <div style={{ fontSize: 14, color: T.textSec, marginTop: 4, fontFamily: 'var(--font-jetbrains-mono)' }}>
+        <div className="text-display">{greeting}{companyName ? `, ${companyName.split(' ')[0]}` : ''}</div>
+        <div className="font-mono" style={{ fontSize: 14, color: 'var(--slate-400)', marginTop: 4 }}>
           {fmtDate(new Date())}
         </div>
       </div>
 
       {/* Action queue */}
       {items.length === 0 ? (
-        activeCount === 0 ? (
-          <div style={{
-            background: '#F0FDF4', border: '1px solid #BBF7D0',
-            borderRadius: T.r, padding: '32px 24px',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12,
-          }}>
-            <CheckCircle size={24} style={{ color: T.green }} />
-            <span style={{ fontSize: 18, fontWeight: 700, color: T.green }}>
-              Sin pendientes · Buen día
-            </span>
+        <div className={`status-banner ${activeCount === 0 ? 'ok' : 'ok'}`}>
+          <div className="status-banner-icon">
+            <CheckCircle size={24} />
           </div>
-        ) : (
-          <div style={{
-            background: T.card, border: `1px solid ${T.border}`,
-            borderRadius: T.r, padding: '32px 24px',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12,
-          }}>
-            <CheckCircle size={24} style={{ color: T.green }} />
-            <span style={{ fontSize: 18, fontWeight: 700, color: T.green }}>
-              Todo en orden · {activeCount} tráficos en curso
-            </span>
+          <div>
+            <div className="status-banner-text">
+              {activeCount === 0 ? 'Sin pendientes · Buen día' : `Todo en orden · ${activeCount} tráficos en curso`}
+            </div>
           </div>
-        )
+        </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div className="broker-queue">
           {items.map(item => {
-            const borderLeft = item.type === 'urgent' ? T.red : item.type === 'today' ? T.amber : item.type === 'new' ? T.gold : T.textSec
+            const borderColor = item.type === 'urgent' ? 'var(--danger-500)' : item.type === 'today' ? 'var(--warning)' : item.type === 'new' ? 'var(--gold)' : 'var(--slate-400)'
             return (
-              <Link
-                key={item.id}
-                href={item.href}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 14,
-                  padding: '14px 20px',
-                  background: T.card,
-                  border: `1px solid ${T.border}`,
-                  borderLeft: `4px solid ${borderLeft}`,
-                  borderRadius: T.r,
-                  textDecoration: 'none', color: 'inherit',
-                  minHeight: 60,
-                }}
-              >
-                <span style={{ fontSize: 18, flexShrink: 0 }}>{item.icon}</span>
+              <Link key={item.id} href={item.href} className="broker-action-item" style={{ borderLeftColor: borderColor }}>
+                <span className="broker-action-icon">{item.icon}</span>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: T.text }}>{item.label}</div>
-                  <div style={{ fontSize: 12, color: T.textSec, marginTop: 2 }}>{item.detail}</div>
+                  <div className="broker-action-label">{item.label}</div>
+                  <div className="broker-action-detail">{item.detail}</div>
                 </div>
-                <span style={{ fontSize: 14, color: T.gold, fontWeight: 600, flexShrink: 0 }}>→</span>
+                <span className="broker-action-arrow">→</span>
               </Link>
             )
           })}
@@ -341,40 +304,19 @@ function BrokerView() {
       )}
 
       {/* Stat cards */}
-      <div style={{
-        display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16,
-        marginTop: 32,
-      }}>
-        <Link href="/traficos?estatus=En Proceso" style={{
-          textDecoration: 'none', color: 'inherit',
-          background: 'var(--card-bg)', border: '1px solid #E3E7EE',
-          borderTop: '3px solid var(--info-500)',
-          borderRadius: T.r, padding: '20px 16px',
-          display: 'flex', flexDirection: 'column', alignItems: 'center',
-        }}>
-          <span style={{ fontSize: 28, fontWeight: 700, fontFamily: 'var(--font-jetbrains-mono)', color: T.text }}>{activeCount}</span>
-          <span style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#7A8599', marginTop: 4, fontFamily: "'DM Sans', system-ui, sans-serif" }}>En proceso</span>
-        </Link>
-        <Link href="/traficos?estatus=Cruzado" style={{
-          textDecoration: 'none', color: 'inherit',
-          background: 'var(--card-bg)', border: '1px solid #E3E7EE',
-          borderTop: '3px solid var(--success-500)',
-          borderRadius: T.r, padding: '20px 16px',
-          display: 'flex', flexDirection: 'column', alignItems: 'center',
-        }}>
-          <span style={{ fontSize: 28, fontWeight: 700, fontFamily: 'var(--font-jetbrains-mono)', color: cruzadosHoy > 0 ? T.text : T.gray }}>{cruzadosHoy}</span>
-          <span style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#7A8599', marginTop: 4, fontFamily: "'DM Sans', system-ui, sans-serif" }}>Cruzados hoy</span>
-        </Link>
-        <Link href="/traficos?pipeline_status=ready_to_file" style={{
-          textDecoration: 'none', color: 'inherit',
-          background: 'var(--card-bg)', border: '1px solid #E3E7EE',
-          borderTop: '3px solid var(--purple-500)',
-          borderRadius: T.r, padding: '20px 16px',
-          display: 'flex', flexDirection: 'column', alignItems: 'center',
-        }}>
-          <span style={{ fontSize: 28, fontWeight: 700, fontFamily: 'var(--font-jetbrains-mono)', color: T.text }}>{readyToFile}</span>
-          <span style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#7A8599', marginTop: 4, fontFamily: "'DM Sans', system-ui, sans-serif" }}>Listos despacho</span>
-        </Link>
+      <div className="kpi-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)', marginTop: 32 }}>
+        {[
+          { href: '/traficos?estatus=En Proceso', value: activeCount, label: 'En proceso', color: 'var(--info-500)', dim: false },
+          { href: '/traficos?estatus=Cruzado', value: cruzadosHoy, label: 'Cruzados hoy', color: 'var(--success-500)', dim: cruzadosHoy === 0 },
+          { href: '/traficos?pipeline_status=ready_to_file', value: readyToFile, label: 'Listos despacho', color: 'var(--purple-500)', dim: false },
+        ].map(kpi => (
+          <Link key={kpi.label} href={kpi.href} style={{ textDecoration: 'none', color: 'inherit' }}>
+            <div className="kpi-card" style={{ borderTop: `3px solid ${kpi.color}`, textAlign: 'center' }}>
+              <div className="kpi-card-value" style={{ color: kpi.dim ? 'var(--slate-300)' : undefined }}>{kpi.value}</div>
+              <div className="kpi-card-label">{kpi.label}</div>
+            </div>
+          </Link>
+        ))}
       </div>
     </div>
   )

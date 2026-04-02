@@ -24,13 +24,12 @@ interface TopBarProps {
 
 function formatDate(): string {
   const d = new Date();
-  const day = String(d.getDate()).padStart(2, '0');
+  const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
   const months = [
-    'ene', 'feb', 'mar', 'abr', 'may', 'jun',
-    'jul', 'ago', 'sep', 'oct', 'nov', 'dic',
+    'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
+    'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic',
   ];
-  const month = months[d.getMonth()];
-  return `${day} ${month} ${d.getFullYear()}`;
+  return `${dayNames[d.getDay()]} ${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
 }
 
 export default function TopBar({
@@ -48,16 +47,16 @@ export default function TopBar({
 
   return (
     <header className="cruz-topbar">
-      <div className="topbar-search" onClick={() => {
+      <div className="topbar-search topbar-search-trigger" onClick={() => {
         // Trigger command palette via Cmd+K keyboard event
         document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true }))
-      }} style={{ cursor: 'pointer' }}>
+      }}>
         <Search size={14} className="topbar-search-icon" />
         <input
           type="text"
           placeholder="Buscar tráfico... (⌘K)"
           readOnly
-          style={{ cursor: 'pointer' }}
+          className="topbar-search-trigger"
         />
       </div>
 
@@ -76,26 +75,17 @@ export default function TopBar({
         )}
 
         {/* Date */}
-        <span className="topbar-date">{displayDate}</span>
+        <span className="topbar-date font-mono">{displayDate}</span>
 
         {/* Notification bell with badge */}
         {showNotifications && (
           <button
-            className="btn-outline btn-sm"
-            style={{ padding: '6px 8px', border: 'none', position: 'relative' }}
+            className="topbar-bell-btn"
             aria-label={`${unreadCount} notificaciones sin leer`}
           >
             <Bell size={16} />
             {badgeText && (
-              <span className="badge-bounce" style={{
-                position: 'absolute', top: -4, right: -4,
-                background: 'var(--danger-500)', color: '#FFFFFF',
-                fontSize: 10, fontWeight: 700,
-                borderRadius: 9999, minWidth: 18, height: 18,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                padding: '0 4px',
-                fontFamily: 'var(--font-mono)',
-              }}>
+              <span className="topbar-bell-badge badge-bounce">
                 {badgeText}
               </span>
             )}

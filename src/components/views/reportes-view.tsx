@@ -276,30 +276,28 @@ export function ReportesView() {
 
   // ── Error ─────────────────────────────────
   if (error) return (
-    <div style={{ padding: '24px 28px' }}>
+    <div className="page-shell">
       <ErrorCard message={error} onRetry={() => setRetryKey(k => k + 1)} />
     </div>
   )
 
   // ── Loading skeleton ─────────────────────────────────
   if (loading) return (
-    <div style={{ padding: '24px 28px' }}>
-      <div className="skeleton" style={{ width: 200, height: 24, marginBottom: 20 }} />
-      <div className="skeleton" style={{ height: 280, borderRadius: 12, marginBottom: 16 }} />
-      <div className="skeleton" style={{ height: 200, borderRadius: 12, marginBottom: 16 }} />
-      <div className="skeleton" style={{ height: 60, borderRadius: 12 }} />
+    <div className="page-shell">
+      <div className="skeleton-shimmer" style={{ width: 200, height: 24, marginBottom: 20 }} />
+      <div className="skeleton-shimmer" style={{ height: 280, marginBottom: 16 }} />
+      <div className="skeleton-shimmer" style={{ height: 200, marginBottom: 16 }} />
+      <div className="skeleton-shimmer" style={{ height: 60 }} />
     </div>
   )
 
   return (
-    <div style={{ padding: isMobile ? '16px' : '24px 28px', fontFamily: 'var(--font-geist-sans)' }}>
+    <div className="page-shell">
       {/* Header */}
-      <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'center', flexDirection: isMobile ? 'column' : 'row', gap: 12 }}>
+      <div className="section-header" style={{ marginBottom: 24 }}>
         <div>
-          <h2 style={{ color: T.text, fontSize: 18, fontWeight: 700, margin: 0 }}>Reportes</h2>
-          <p style={{ color: T.textMuted, fontSize: 12, margin: '4px 0 0' }}>
-            {totalFiltered.toLocaleString('es-MX')} tráficos · Últimos 6 meses
-          </p>
+          <h2 className="page-title">Reportes</h2>
+          <p className="page-subtitle">{totalFiltered.toLocaleString('es-MX')} tráficos · Últimos 6 meses</p>
         </div>
 
         {/* Broker company filter */}
@@ -393,15 +391,15 @@ export function ReportesView() {
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
                     <div>
                       <div style={{ fontSize: 10, color: T.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Tráficos</div>
-                      <div style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 16, fontWeight: 700, color: T.text }}>{s.count}</div>
+                      <div style={{ fontFamily: 'var(--font-mono)', fontSize: 16, fontWeight: 700, color: T.text }}>{s.count}</div>
                     </div>
                     <div>
                       <div style={{ fontSize: 10, color: T.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Valor</div>
-                      <div style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 16, fontWeight: 700, color: T.text }}>{fmtUSDShort(s.totalValue)}</div>
+                      <div style={{ fontFamily: 'var(--font-mono)', fontSize: 16, fontWeight: 700, color: T.text }}>{fmtUSDShort(s.totalValue)}</div>
                     </div>
                     <div>
                       <div style={{ fontSize: 10, color: T.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em' }}>T-MEC</div>
-                      <div style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 16, fontWeight: 700, color: s.tmecPct >= 50 ? T.green : T.amber }}>{s.tmecPct}%</div>
+                      <div style={{ fontFamily: 'var(--font-mono)', fontSize: 16, fontWeight: 700, color: s.tmecPct >= 50 ? T.green : T.amber }}>{s.tmecPct}%</div>
                     </div>
                   </div>
                 </div>
@@ -428,7 +426,7 @@ export function ReportesView() {
                         background: i === 0 ? T.goldBg : 'transparent',
                       }}
                     >
-                      <td style={{ padding: '12px 20px', fontFamily: 'var(--font-jetbrains-mono)', fontSize: 12, color: T.textMuted }}>{i + 1}</td>
+                      <td style={{ padding: '12px 20px', fontFamily: 'var(--font-mono)', fontSize: 12, color: T.textMuted }}>{i + 1}</td>
                       <td style={{ padding: '12px 16px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                           <div style={{
@@ -443,11 +441,11 @@ export function ReportesView() {
                           </span>
                         </div>
                       </td>
-                      <td style={{ padding: '12px 16px', textAlign: 'right', fontFamily: 'var(--font-jetbrains-mono)', fontWeight: 600 }}>{fmtNum(s.count)}</td>
-                      <td style={{ padding: '12px 16px', textAlign: 'right', fontFamily: 'var(--font-jetbrains-mono)', fontWeight: 600 }}>{fmtUSDShort(s.totalValue)} USD</td>
+                      <td style={{ padding: '12px 16px', textAlign: 'right', fontFamily: 'var(--font-mono)', fontWeight: 600 }}>{fmtNum(s.count)}</td>
+                      <td style={{ padding: '12px 16px', textAlign: 'right', fontFamily: 'var(--font-mono)', fontWeight: 600 }}>{fmtUSDShort(s.totalValue)} USD</td>
                       <td style={{
                         padding: '12px 20px', textAlign: 'right',
-                        fontFamily: 'var(--font-jetbrains-mono)', fontWeight: 700,
+                        fontFamily: 'var(--font-mono)', fontWeight: 700,
                         color: s.tmecPct >= 50 ? T.green : s.tmecPct > 0 ? T.amber : T.textMuted,
                       }}>
                         {s.tmecPct}%

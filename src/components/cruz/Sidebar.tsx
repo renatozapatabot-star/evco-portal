@@ -106,8 +106,7 @@ export default function Sidebar({
   }
 
   return (
-    <aside className={`cruz-sidebar ${collapsed ? 'collapsed' : ''}`}
-      style={{ width: collapsed ? 64 : undefined, transition: 'width 200ms ease' }}>
+    <aside className={`cruz-sidebar ${collapsed ? 'collapsed' : ''}`}>
       {/* Logo */}
       <div className="sidebar-logo">
         <div className="sidebar-logo-inner">
@@ -128,7 +127,7 @@ export default function Sidebar({
           </div>
         )}
         {portalType === 'client' && collapsed && (
-          <div style={{ display: 'flex', justifyContent: 'center', marginTop: 12 }}>
+          <div className="sidebar-avatar-center">
             <div className="sidebar-avatar">{clientInitials}</div>
           </div>
         )}
@@ -148,7 +147,6 @@ export default function Sidebar({
                   href={item.href}
                   className={`sidebar-nav-item ${isActive ? 'active' : ''}`}
                   title={collapsed ? item.label : undefined}
-                  style={collapsed ? { justifyContent: 'center', padding: '10px 0' } : undefined}
                 >
                   <span className="nav-icon">{item.icon}</span>
                   {!collapsed && item.label}
@@ -163,14 +161,6 @@ export default function Sidebar({
       <button
         onClick={toggleCollapse}
         aria-label={collapsed ? 'Expandir menú' : 'Colapsar menú'}
-        style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          gap: 6, padding: '8px 12px', margin: '4px 8px',
-          background: 'transparent', border: 'none',
-          color: 'var(--slate-500)', cursor: 'pointer',
-          fontSize: 11, borderRadius: 6,
-          transition: 'color 150ms',
-        }}
         className="sidebar-collapse-btn"
       >
         {collapsed ? <ChevronsRight size={14} /> : <ChevronsLeft size={14} />}
@@ -183,7 +173,7 @@ export default function Sidebar({
           <div>
             {!collapsed && (
               <>
-                <div className="sidebar-client-name" style={{ fontSize: 13 }}>
+                <div className="sidebar-footer-firm">
                   {decodeURIComponent(companyName)}
                 </div>
                 <div className="sidebar-client-role">
@@ -196,10 +186,10 @@ export default function Sidebar({
           <>
             {!collapsed && (
               <div>
-                <div className="sidebar-footer-text" style={{ marginBottom: 2 }}>
+                <div className="sidebar-footer-text">
                   Renato Zapata &amp; Company
                 </div>
-                <div className="sidebar-footer-text" style={{ opacity: 0.5, fontSize: 10 }}>
+                <div className="sidebar-footer-patente-line">
                   Patente {patente} · Aduana 240 · Est. 1941
                 </div>
               </div>
@@ -208,7 +198,6 @@ export default function Sidebar({
               className="sidebar-footer-link"
               onClick={onLogout}
               title={collapsed ? 'Salir' : undefined}
-              style={collapsed ? { justifyContent: 'center' } : undefined}
             >
               <LogOut size={12} />
               {!collapsed && 'Salir'}

@@ -50,15 +50,15 @@ function ProveedoresCard({ proveedores, pais }: { proveedores: string; pais: str
   if (list.length === 0) return null
   return (
     <div className="card" style={{ padding: 20 }}>
-      <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--n-400)', marginBottom: 10 }}>
+      <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--slate-400)', marginBottom: 10 }}>
         Proveedores
       </div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
         {list.map(prov => (
           <span key={prov} style={{
             fontSize: 13, fontWeight: 600, padding: '6px 14px',
-            borderRadius: 8, background: 'var(--n-50, #F9F9F8)',
-            color: 'var(--n-800)', border: '1px solid var(--n-150, #EDECE8)',
+            borderRadius: 8, background: 'var(--slate-50)',
+            color: 'var(--navy-800)', border: '1px solid var(--border-card)',
           }}>
             {prov}
             {pais ? <span style={{ marginLeft: 6, fontSize: 12 }}>{countryFlag(pais)}</span> : null}
@@ -198,7 +198,7 @@ function TimelineTab({ traficoId }: { traficoId: string }) {
                 {ev.content_es || ev.event_type.replace(/_/g, ' ')}
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
-                <span style={{ fontSize: 11, color: '#7C7870', fontFamily: 'var(--font-jetbrains-mono)' }}>
+                <span style={{ fontSize: 11, color: '#7C7870', fontFamily: 'var(--font-mono)' }}>
                   {fmtDateTime(ev.created_at)}
                 </span>
                 {sourceBadge(ev.source)}
@@ -428,17 +428,17 @@ export default function TraficoDetailPage() {
 
   // ── Error ──
   if (fetchError) return (
-    <div style={{ padding: 24, maxWidth: 1200, margin: '0 auto' }}>
+    <div className="page-shell" style={{ maxWidth: 1200 }}>
       <ErrorCard message={fetchError} onRetry={() => { setFetchError(null); setRetryKey(k => k + 1) }} />
     </div>
   )
 
   // ── Loading ──
   if (loading) return (
-    <div style={{ padding: 24, maxWidth: 1200, margin: '0 auto' }}>
-      <div className="skeleton" style={{ height: 32, width: 200, marginBottom: 24 }} />
-      <div className="skeleton" style={{ height: 120, borderRadius: 12, marginBottom: 16 }} />
-      <div className="skeleton" style={{ height: 300, borderRadius: 12 }} />
+    <div className="page-shell" style={{ maxWidth: 1200 }}>
+      <div className="skeleton-shimmer" style={{ height: 32, width: 200, marginBottom: 24 }} />
+      <div className="skeleton-shimmer" style={{ height: 120, marginBottom: 16 }} />
+      <div className="skeleton-shimmer" style={{ height: 300 }} />
     </div>
   )
 
@@ -462,10 +462,10 @@ export default function TraficoDetailPage() {
   const canCross = completeness?.can_cross ?? false
 
   return (
-    <div className="page-container" style={{ padding: isMobile ? 16 : 24, maxWidth: 1200, margin: '0 auto' }}>
+    <div className="page-shell" style={{ maxWidth: 1200 }}>
       {/* ═══ BREADCRUMB ═══ */}
       <button onClick={() => router.push('/traficos')} aria-label="Volver a Tráficos"
-        style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--n-400)', fontSize: 12, minHeight: 60 }}>
+        style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--slate-400)', fontSize: 12, minHeight: 60 }}>
         <ArrowLeft size={13} /> Tráficos
       </button>
 
@@ -502,7 +502,7 @@ export default function TraficoDetailPage() {
                 padding: '10px 20px',
                 minHeight: 60,
                 borderRadius: 8,
-                background: notifying ? 'var(--n-200)' : 'var(--danger-500, #DC2626)',
+                background: notifying ? 'var(--slate-200)' : 'var(--danger-500, #DC2626)',
                 color: '#FFFFFF',
                 border: 'none',
                 cursor: notifying ? 'not-allowed' : 'pointer',
@@ -523,7 +523,7 @@ export default function TraficoDetailPage() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
           {/* Tráfico number — large, gold, JetBrains Mono */}
           <h1 style={{
-            fontFamily: 'var(--font-jetbrains-mono, var(--font-data))',
+            fontFamily: 'var(--font-mono)',
             fontSize: isMobile ? 24 : 32,
             fontWeight: 900,
             color: 'var(--gold-700, #8B6914)',
@@ -549,7 +549,7 @@ export default function TraficoDetailPage() {
             <span style={{
               fontSize: 12, fontWeight: 600, padding: '4px 10px',
               borderRadius: 8, background: 'var(--slate-100)', color: 'var(--slate-600)',
-              fontFamily: 'var(--font-jetbrains-mono, var(--font-data))',
+              fontFamily: 'var(--font-mono)',
             }}>
               Ped. {String(t.pedimento)}
             </span>
@@ -600,9 +600,9 @@ export default function TraficoDetailPage() {
             style={{
               display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
               gap: 6, padding: '8px 14px', minHeight: 60,
-              borderRadius: 8, border: '1px solid var(--n-200, #E5E5E0)',
+              borderRadius: 8, border: '1px solid var(--border-card)',
               background: 'transparent', cursor: 'pointer',
-              fontSize: 12, fontWeight: 600, color: 'var(--n-500)',
+              fontSize: 12, fontWeight: 600, color: 'var(--slate-500)',
               transition: 'background 150ms',
               marginLeft: 'auto',
             }}
@@ -614,39 +614,21 @@ export default function TraficoDetailPage() {
 
         {/* Subtitle */}
         {t.descripcion_mercancia ? (
-          <p style={{ fontSize: 13, color: 'var(--n-500)', marginTop: 6, margin: '6px 0 0' }}>
+          <p style={{ fontSize: 13, color: 'var(--slate-500)', marginTop: 6, margin: '6px 0 0' }}>
             {fmtDesc(String(t.descripcion_mercancia))}
           </p>
         ) : null}
       </div>
 
       {/* ═══ TABS ═══ */}
-      <div style={{
-        display: 'flex', gap: 0, marginBottom: 20,
-        borderBottom: '2px solid var(--n-150, #EDECE8)',
-        overflowX: 'auto', WebkitOverflowScrolling: 'touch',
-        scrollbarWidth: 'none',
-      }}>
+      <div className="tab-bar">
         {TABS.map(tab => (
-          <button key={tab.key} onClick={() => setActiveTab(tab.key)} style={{
-            padding: isMobile ? '12px 14px' : '12px 20px',
-            background: 'none', border: 'none',
-            borderBottom: activeTab === tab.key ? `3px solid ${GOLD}` : '3px solid transparent',
-            cursor: 'pointer', fontSize: 13, fontWeight: activeTab === tab.key ? 700 : 500,
-            color: activeTab === tab.key ? 'var(--n-900)' : 'var(--n-400)',
-            whiteSpace: 'nowrap', marginBottom: -2,
-            display: 'inline-flex', alignItems: 'center', gap: 6,
-            minHeight: 60, transition: 'color 150ms, border-color 150ms',
-          }}>
+          <button key={tab.key} onClick={() => setActiveTab(tab.key)}
+            className={`tab-btn ${activeTab === tab.key ? 'active' : ''}`}>
             {tab.icon}
             {tab.label}
             {tab.badge !== undefined && tab.badge > 0 && (
-              <span style={{
-                fontSize: 10, fontWeight: 700, fontFamily: 'var(--font-jetbrains-mono, var(--font-data))',
-                background: activeTab === tab.key ? GOLD : 'var(--n-200)',
-                color: activeTab === tab.key ? '#FFFFFF' : 'var(--n-600)',
-                borderRadius: 9999, padding: '1px 7px', lineHeight: '16px',
-              }}>{tab.badge}</span>
+              <span className={`tab-badge ${activeTab === tab.key ? 'active' : ''}`}>{tab.badge}</span>
             )}
           </button>
         ))}
@@ -659,11 +641,7 @@ export default function TraficoDetailPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
           {/* ── Key Stats Row ── */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)',
-            gap: 12,
-          }}>
+          <div className="kpi-grid" style={{ gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)', gap: 12 }}>
             {([
               { label: 'Valor', value: t.importe_total ? fmtUSD(Number(t.importe_total)) + ' USD' : 'Pendiente', mono: true },
               { label: 'Peso Bruto', value: t.peso_bruto ? fmtKg(Number(t.peso_bruto)) + ' kg' : 'Pendiente', mono: true },
@@ -672,16 +650,15 @@ export default function TraficoDetailPage() {
               { label: 'Aduana', value: String(t.aduana ?? (t.oficina ? t.oficina : '240 · Nuevo Laredo')), mono: false },
               { label: 'Régimen', value: String(t.regimen ?? 'A1 · Definitivo'), mono: false },
             ] as { label: string; value: string; mono: boolean }[]).map(stat => (
-              <div key={stat.label} className="card" style={{ padding: '14px 16px' }}>
-                <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--n-400)', marginBottom: 4 }}>
-                  {stat.label}
-                </div>
+              <div key={stat.label} className="kpi-card" style={{ padding: '14px 16px' }}>
+                <div className="kpi-card-label">{stat.label}</div>
                 <div style={{
                   fontSize: stat.value === 'Pendiente' ? 13 : 15,
                   fontWeight: stat.value === 'Pendiente' ? 500 : 700,
-                  color: stat.value === 'Pendiente' ? 'var(--slate-400)' : 'var(--n-900)',
+                  color: stat.value === 'Pendiente' ? 'var(--slate-400)' : 'var(--navy-900)',
                   fontStyle: stat.value === 'Pendiente' ? 'italic' : undefined,
-                  fontFamily: stat.mono && stat.value !== 'Pendiente' ? 'var(--font-jetbrains-mono, var(--font-data))' : undefined,
+                  fontFamily: stat.mono && stat.value !== 'Pendiente' ? 'var(--font-mono)' : undefined,
+                  marginTop: 4,
                 }}>
                   {String(stat.value)}
                 </div>
@@ -708,13 +685,13 @@ export default function TraficoDetailPage() {
                   position: 'absolute', inset: 0,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: 13, fontWeight: 800, color: 'var(--text-primary, #111)',
-                  fontFamily: 'var(--font-jetbrains-mono, var(--font-data))',
+                  fontFamily: 'var(--font-mono)',
                 }}>
                   {compScore}%
                 </span>
               </div>
               <div>
-                <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--n-900)' }}>
+                <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--navy-900)' }}>
                   Completitud Documental
                 </div>
                 <div style={{ fontSize: 12, color: 'var(--slate-500)', marginTop: 2 }}>
@@ -735,7 +712,7 @@ export default function TraficoDetailPage() {
                 }}>
                   {canFile ? '✓' : '✗'}
                 </span>
-                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--n-700)' }}>
+                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--slate-700)' }}>
                   Listo para despachar
                 </span>
               </div>
@@ -749,7 +726,7 @@ export default function TraficoDetailPage() {
                 }}>
                   {canCross ? '✓' : '✗'}
                 </span>
-                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--n-700)' }}>
+                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--slate-700)' }}>
                   Listo para cruce
                 </span>
               </div>
@@ -798,7 +775,7 @@ export default function TraficoDetailPage() {
 
           {/* ── 12-Step Timeline ── */}
           <div className="card" style={{ padding: 20 }}>
-            <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--n-400)', marginBottom: 16 }}>
+            <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--slate-400)', marginBottom: 16 }}>
               Estado del Tráfico
             </div>
             <ol style={{ listStyle: 'none', padding: 0, margin: 0 }}>
@@ -811,7 +788,7 @@ export default function TraficoDetailPage() {
                 const detailColor = step.num === 8 && step.detail === 'Verde' ? '#2D8540'
                   : step.num === 8 && step.detail === 'Rojo' ? '#C23B22'
                   : step.num === 10 && state === 'completed' ? '#0D9488'
-                  : 'var(--n-500)'
+                  : 'var(--slate-500)'
 
                 return (
                   <li key={step.num} style={{ display: 'flex', gap: 12, position: 'relative', paddingBottom: isLast ? 0 : 14, minHeight: 44 }}>
@@ -820,7 +797,7 @@ export default function TraficoDetailPage() {
                         width: state === 'current' ? 14 : 10, height: state === 'current' ? 14 : 10,
                         borderRadius: '50%', flexShrink: 0,
                         background: state === 'pending' ? 'transparent' : dotColor,
-                        border: state === 'pending' ? '2px solid var(--n-200)' : 'none',
+                        border: state === 'pending' ? '2px solid var(--slate-200)' : 'none',
                         animation: state === 'current' ? 'cruzActivePulse 2s ease-in-out infinite' : undefined,
                       }} />
                       {!isLast && <div style={{ width: 2, flex: 1, background: lineColor, marginTop: 4 }} />}
@@ -832,7 +809,7 @@ export default function TraficoDetailPage() {
                       </div>
                       <div style={{
                         fontSize: 11, color: detailColor, marginTop: 2,
-                        fontFamily: step.num === 6 || step.num === 7 || step.num === 9 ? 'var(--font-jetbrains-mono, var(--font-data))' : undefined,
+                        fontFamily: step.num === 6 || step.num === 7 || step.num === 9 ? 'var(--font-mono)' : undefined,
                       }}>
                         {step.detail}
                       </div>
@@ -856,7 +833,7 @@ export default function TraficoDetailPage() {
 
             return (
               <div className="card" style={{ padding: 20 }}>
-                <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--n-400)', marginBottom: 12 }}>
+                <div className="detail-label">
                   Resumen Financiero
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12 }}>
@@ -871,13 +848,13 @@ export default function TraficoDetailPage() {
                     <div key={row.label} style={{
                       display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                       padding: '8px 12px', borderRadius: 6,
-                      background: row.highlight ? 'var(--gold-50, #FDFAEF)' : 'var(--n-50, #F9F9F8)',
+                      background: row.highlight ? 'var(--gold-50, #FDFAEF)' : 'var(--slate-50)',
                     }}>
-                      <span style={{ fontSize: 12, color: 'var(--n-600)' }}>{row.label}</span>
+                      <span style={{ fontSize: 12, color: 'var(--slate-600)' }}>{row.label}</span>
                       <span style={{
                         fontSize: 13, fontWeight: 700,
-                        fontFamily: 'var(--font-jetbrains-mono, var(--font-data))',
-                        color: row.highlight ? 'var(--gold-700, #8B6914)' : 'var(--n-900)',
+                        fontFamily: 'var(--font-mono)',
+                        color: row.highlight ? 'var(--gold-700, #8B6914)' : 'var(--navy-900)',
                         display: 'flex', alignItems: 'center', gap: 6,
                       }}>
                         {row.value}
@@ -892,7 +869,7 @@ export default function TraficoDetailPage() {
                     </div>
                   ))}
                 </div>
-                <div style={{ marginTop: 8, fontSize: 11, color: 'var(--n-400)' }}>
+                <div style={{ marginTop: 8, fontSize: 11, color: 'var(--slate-400)' }}>
                   Estimado · Los montos oficiales se confirman tras la transmisión del pedimento
                 </div>
               </div>
@@ -902,17 +879,17 @@ export default function TraficoDetailPage() {
           {/* ── Transportista ── */}
           {(t.transportista_mexicano || t.transportista_extranjero) ? (
             <div className="card" style={{ padding: 20 }}>
-              <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--n-400)', marginBottom: 12 }}>
+              <div className="detail-label">
                 Transporte
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12 }}>
                 <div>
-                  <div style={{ fontSize: 11, color: 'var(--n-400)', marginBottom: 2 }}>Transportista MX</div>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--n-900)' }}>{fmtCarrier(t.transportista_mexicano as string) || 'Por asignar'}</div>
+                  <div style={{ fontSize: 11, color: 'var(--slate-400)', marginBottom: 2 }}>Transportista MX</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--navy-900)' }}>{fmtCarrier(t.transportista_mexicano as string) || 'Por asignar'}</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: 11, color: 'var(--n-400)', marginBottom: 2 }}>Transportista EXT</div>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--n-900)' }}>{fmtCarrier(t.transportista_extranjero as string) || 'Por asignar'}</div>
+                  <div style={{ fontSize: 11, color: 'var(--slate-400)', marginBottom: 2 }}>Transportista EXT</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--navy-900)' }}>{fmtCarrier(t.transportista_extranjero as string) || 'Por asignar'}</div>
                 </div>
               </div>
             </div>
@@ -986,9 +963,9 @@ export default function TraficoDetailPage() {
             Object.entries(groupedDocs).map(([docType, docs]) => (
               <div key={docType} className="card" style={{ padding: 20 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                  <span style={{ fontSize: 14, fontWeight: 800, color: 'var(--n-900)' }}>{docType}</span>
+                  <span style={{ fontSize: 14, fontWeight: 800, color: 'var(--navy-900)' }}>{docType}</span>
                   <span style={{
-                    fontSize: 10, fontWeight: 700, fontFamily: 'var(--font-jetbrains-mono, var(--font-data))',
+                    fontSize: 10, fontWeight: 700, fontFamily: 'var(--font-mono)',
                     background: '#ECFDF3', color: '#2D8540',
                     borderRadius: 9999, padding: '1px 7px',
                   }}>{docs.length}</span>
@@ -1000,18 +977,18 @@ export default function TraficoDetailPage() {
                     return (
                       <div key={i} style={{
                         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                        padding: '10px 14px', background: 'var(--n-50, #F9F9F8)',
+                        padding: '10px 14px', background: 'var(--slate-50)',
                         borderRadius: 8, border: '1px solid #BBF7D0',
                         minHeight: 48,
                       }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
                           <span style={{ color: '#2D8540', fontSize: 14, flexShrink: 0 }}>✅</span>
                           <div style={{ minWidth: 0 }}>
-                            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--n-800)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--navy-800)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                               {name}
                             </div>
                             {uploadDate && (
-                              <div style={{ fontSize: 11, color: 'var(--n-400)', fontFamily: 'var(--font-jetbrains-mono, var(--font-data))' }}>
+                              <div style={{ fontSize: 11, color: 'var(--slate-400)', fontFamily: 'var(--font-mono)' }}>
                                 {uploadDate}
                               </div>
                             )}
@@ -1036,26 +1013,26 @@ export default function TraficoDetailPage() {
           {/* Active solicitudes */}
           {solicitudes.length > 0 && (
             <div className="card" style={{ padding: 20 }}>
-              <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--n-900)', marginBottom: 12 }}>
+              <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--navy-900)', marginBottom: 12 }}>
                 Solicitudes activas ({solicitudes.length})
               </div>
-              <div style={{ border: '1px solid var(--n-150)', borderRadius: 8, overflow: 'hidden' }}>
+              <div style={{ border: '1px solid var(--border-card)', borderRadius: 8, overflow: 'hidden' }}>
                 {solicitudes.map((sol, idx) => {
                   const isPastDeadline = sol.deadline ? new Date(sol.deadline) < new Date() : false
                   const docCount = Array.isArray(sol.doc_types) ? sol.doc_types.length : 0
                   return (
                     <div key={sol.id} style={{
                       padding: '10px 16px',
-                      borderBottom: idx < solicitudes.length - 1 ? '1px solid var(--n-150)' : 'none',
+                      borderBottom: idx < solicitudes.length - 1 ? '1px solid var(--border-card)' : 'none',
                       borderLeft: isPastDeadline ? '3px solid #C23B22' : '3px solid #C47F17',
                       display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                       minHeight: 60, gap: 12,
                     }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--n-900)' }}>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--navy-900)' }}>
                           {docCount} documento{docCount !== 1 ? 's' : ''}
                         </div>
-                        <div style={{ fontSize: 11, color: 'var(--n-500)', fontFamily: 'var(--font-jetbrains-mono, var(--font-data))', marginTop: 2 }}>
+                        <div style={{ fontSize: 11, color: 'var(--slate-500)', fontFamily: 'var(--font-mono)', marginTop: 2 }}>
                           Solicitado {fmtDate(sol.solicitado_at)}
                           {sol.deadline && <> · Plazo: {fmtDate(sol.deadline)}</>}
                         </div>
@@ -1106,19 +1083,19 @@ export default function TraficoDetailPage() {
                   }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                        <span style={{ fontWeight: 700, fontSize: 14, fontFamily: 'var(--font-jetbrains-mono, var(--font-data))', color: 'var(--n-900)' }}>
+                        <span style={{ fontWeight: 700, fontSize: 14, fontFamily: 'var(--font-mono)', color: 'var(--navy-900)' }}>
                           {e.cve_entrada as string}
                         </span>
-                        <span style={{ fontSize: 12, color: 'var(--n-400)', fontFamily: 'var(--font-jetbrains-mono, var(--font-data))' }}>
+                        <span style={{ fontSize: 12, color: 'var(--slate-400)', fontFamily: 'var(--font-mono)' }}>
                           {e.fecha_llegada_mercancia ? fmtDate(e.fecha_llegada_mercancia as string) : '—'}
                         </span>
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 4, fontSize: 12, color: 'var(--n-500)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 4, fontSize: 12, color: 'var(--slate-500)' }}>
                         {e.cantidad_bultos != null && (
                           <span><strong>{String(e.cantidad_bultos)}</strong> bultos</span>
                         )}
                         {e.peso_bruto != null && Number(e.peso_bruto) > 0 && (
-                          <span style={{ fontFamily: 'var(--font-jetbrains-mono, var(--font-data))' }}>{fmtKg(Number(e.peso_bruto))} kg</span>
+                          <span style={{ fontFamily: 'var(--font-mono)' }}>{fmtKg(Number(e.peso_bruto))} kg</span>
                         )}
                       </div>
                     </div>

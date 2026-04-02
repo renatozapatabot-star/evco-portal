@@ -121,7 +121,7 @@ function SummaryCard({
               />
             </div>
             <span
-              className="c-num"
+              className="font-mono"
               style={{ fontSize: 13, fontWeight: 700, color: '#1A1A1A', minWidth: 48, textAlign: 'right' }}
             >
               {globalPct}%
@@ -178,44 +178,17 @@ function FilterTabs({
     { key: 'todos', label: 'Todos', count: counts.todos },
   ]
   return (
-    <div className="pill-scroll" style={{
-      display: 'flex',
-      gap: 4,
-      overflowX: 'auto',
-      whiteSpace: 'nowrap',
-      WebkitOverflowScrolling: 'touch',
-      paddingBottom: 4,
-      scrollbarWidth: 'none',
-      msOverflowStyle: 'none',
-    }}>
+    <div className="filter-bar">
       {tabs.map((tab) => {
         const isActive = active === tab.key
         return (
           <button
             key={tab.key}
             onClick={() => onChange(tab.key)}
-            style={{
-              flexShrink: 0,
-              padding: '8px 16px',
-              border: `1px solid ${isActive ? '#B8953F' : '#E8E5E0'}`,
-              background: isActive ? '#F5F0E4' : 'var(--card-bg)',
-              color: isActive ? '#B8953F' : '#6B6B6B',
-              borderRadius: 9999,
-              fontSize: 13,
-              fontWeight: isActive ? 700 : 500,
-              cursor: 'pointer',
-              fontFamily: 'inherit',
-              minHeight: 40,
-              whiteSpace: 'nowrap',
-            }}
+            className={`filter-chip${isActive ? ' active' : ''}`}
           >
             {tab.label}{' '}
-            <span
-              className="c-num"
-              style={{ fontSize: 12, fontWeight: 700 }}
-            >
-              {tab.count}
-            </span>
+            <span className="font-mono" style={{ fontWeight: 700 }}>{tab.count}</span>
           </button>
         )
       })}
@@ -232,7 +205,7 @@ function ProgressBar({ pct: p }: { pct: number }) {
       <div style={{ flex: 1, height: 5, background: '#E8E5E0', borderRadius: 9999, overflow: 'hidden' }}>
         <div style={{ width: `${p}%`, height: '100%', background: color, borderRadius: 9999 }} />
       </div>
-      <span className="c-num" style={{ color, fontSize: 11, fontWeight: 700, minWidth: 32 }}>{p}%</span>
+      <span className="font-mono" style={{ color, fontSize: 11, fontWeight: 700, minWidth: 32 }}>{p}%</span>
     </div>
   )
 }
@@ -258,7 +231,7 @@ function MobileCard({ row, onNavigate }: { row: TraficoRow; onNavigate: (id: str
     >
       {/* Header line */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-        <span className="c-id" style={{ fontSize: 14, fontWeight: 700 }}>{fmtId(row.trafico)}</span>
+        <span className="trafico-id" style={{ fontSize: 14, fontWeight: 700 }}>{fmtId(row.trafico)}</span>
         <span
           className={`badge ${row.estatus === 'Cruzado' ? 'badge-cruzado' : row.estatus === 'Detenido' ? 'badge-hold' : 'badge-proceso'}`}
         >
@@ -281,14 +254,14 @@ function MobileCard({ row, onNavigate }: { row: TraficoRow; onNavigate: (id: str
 
       {/* Urgency label */}
       {urgency.label && row.missing.length > 0 && (
-        <div style={{ fontSize: 11, fontWeight: 600, color: urgency.color, marginBottom: 6, fontFamily: 'var(--font-jetbrains-mono)' }}>
+        <div style={{ fontSize: 11, fontWeight: 600, color: urgency.color, marginBottom: 6, fontFamily: 'var(--font-mono)' }}>
           {urgency.label}
         </div>
       )}
 
       {/* Docs + progress */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-        <span className="c-num" style={{ fontSize: 13 }}>
+        <span className="font-mono" style={{ fontSize: 13 }}>
           {row.docCount}/{REQUIRED_DOCS.length} docs
         </span>
         <div style={{ flex: 1 }}>
@@ -585,14 +558,12 @@ export function ExpedientesView() {
   }
 
   return (
-    <div style={{ padding: isMobile ? '16px' : '24px 28px', fontFamily: 'var(--font-geist-sans)' }}>
+    <div className="page-shell">
       {/* Page header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
+      <div className="section-header" style={{ marginBottom: 16 }}>
         <div>
           <h2 className="page-title" style={{ margin: 0 }}>Expedientes Digitales</h2>
-          <p style={{ color: '#9C9890', fontSize: 12, margin: '4px 0 0' }}>
-            Control de documentos por tráfico
-          </p>
+          <p className="page-subtitle">Control de documentos por tráfico</p>
         </div>
         <div style={{ position: 'relative' }}>
           <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#9C9890' }} />
@@ -734,8 +705,8 @@ export function ExpedientesView() {
             </div>
           ) : (
             /* ── Desktop table ── */
-            <div className="card" style={{ overflow: 'hidden' }}>
-              <table className="data-table" style={{ width: '100%' }}>
+            <div className="table-shell">
+              <table className="cruz-table">
                 <thead>
                   <tr>
                     <th scope="col">Tráfico</th>
@@ -766,7 +737,7 @@ export function ExpedientesView() {
                       >
                         {/* TRAFICO */}
                         <td>
-                          <span className="c-id">{fmtId(row.trafico)}</span>
+                          <span className="trafico-id">{fmtId(row.trafico)}</span>
                           {row.fecha_llegada && (
                             <div style={{ color: '#9C9890', fontSize: 11, marginTop: 2 }}>
                               {fmtDateCompact(row.fecha_llegada)}
@@ -800,7 +771,7 @@ export function ExpedientesView() {
 
                         {/* DOCS count */}
                         <td>
-                          <span className="c-num" style={{ fontSize: 13 }}>
+                          <span className="font-mono" style={{ fontSize: 13 }}>
                             {row.docCount}
                             <span style={{ color: '#9C9890', fontWeight: 400 }}>/{REQUIRED_DOCS.length}</span>
                           </span>
@@ -890,42 +861,13 @@ export function ExpedientesView() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div style={{
-              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              padding: '12px 0', marginTop: 8,
-            }}>
-              <span style={{ color: '#9C9890', fontSize: 12, fontFamily: 'var(--font-jetbrains-mono)' }}>
+            <div className="pagination" style={{ marginTop: 8, border: 'none', padding: '12px 0' }}>
+              <span className="pagination-info">
                 {(page * PAGE_SIZE + 1).toLocaleString()}–{Math.min((page + 1) * PAGE_SIZE, filtered.length).toLocaleString()} de {filtered.length.toLocaleString()}
               </span>
-              <div style={{ display: 'flex', gap: 6 }}>
-                <button
-                  onClick={() => setPage((p) => Math.max(0, p - 1))}
-                  disabled={page === 0}
-                  style={{
-                    border: '1px solid #E8E5E0',
-                    background: page === 0 ? '#F5F4F0' : 'var(--card-bg)',
-                    borderRadius: 6, padding: '5px 12px',
-                    cursor: page === 0 ? 'default' : 'pointer',
-                    color: page === 0 ? '#9C9890' : '#1A1A1A',
-                    fontSize: 12, fontFamily: 'inherit',
-                  }}
-                >
-                  ← Ant.
-                </button>
-                <button
-                  onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
-                  disabled={page >= totalPages - 1}
-                  style={{
-                    border: '1px solid #E8E5E0',
-                    background: page >= totalPages - 1 ? '#F5F4F0' : 'var(--card-bg)',
-                    borderRadius: 6, padding: '5px 12px',
-                    cursor: page >= totalPages - 1 ? 'default' : 'pointer',
-                    color: page >= totalPages - 1 ? '#9C9890' : '#1A1A1A',
-                    fontSize: 12, fontFamily: 'inherit',
-                  }}
-                >
-                  Sig. →
-                </button>
+              <div className="pagination-btns">
+                <button className="pagination-btn" disabled={page === 0} onClick={() => setPage((p) => Math.max(0, p - 1))}>← Ant.</button>
+                <button className="pagination-btn" disabled={page >= totalPages - 1} onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}>Sig. →</button>
               </div>
             </div>
           )}

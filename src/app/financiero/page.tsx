@@ -21,8 +21,8 @@ const D = {
   textMuted: '#6B6B6B',
   green: '#2D8540',
   amber: '#C47F17',
-  mono: 'var(--font-jetbrains-mono), ui-monospace, monospace',
-  sans: 'var(--font-geist-sans), system-ui, sans-serif',
+  mono: 'var(--font-mono)',
+  sans: 'var(--font-sans)',
   r: 8,
 } as const
 
@@ -246,25 +246,25 @@ export default function FinancieroPage() {
           <KPICard
             icon={<DollarSign size={20} />}
             label="Valor total en operación"
-            value={loading ? '...' : fmtUSDCompact(kpis.valorTotal)}
+            value={loading ? '...' : `${fmtUSDCompact(kpis.valorTotal)} USD`}
             sub={`${kpis.activeCount} tráficos activos`}
           />
           <KPICard
             icon={<TrendingUp size={20} />}
             label="Valor cruzado este mes"
-            value={loading ? '...' : fmtUSDCompact(kpis.valorCruzado)}
+            value={loading ? '...' : `${fmtUSDCompact(kpis.valorCruzado)} USD`}
             sub={fmtDate(new Date()) + ' — mes actual'}
           />
           <KPICard
             icon={<ShieldCheck size={20} />}
             label="Ahorros T-MEC estimados"
-            value={loading ? '...' : fmtUSDCompact(kpis.ahorrosTmec)}
+            value={loading ? '...' : `${fmtUSDCompact(kpis.ahorrosTmec)} USD`}
             sub="Régimen IMD · 8% estimado"
           />
           <KPICard
             icon={<BarChart3 size={20} />}
             label="Promedio por tráfico"
-            value={loading ? '...' : fmtUSD(kpis.promedio)}
+            value={loading ? '...' : `${fmtUSD(kpis.promedio)} USD`}
             sub="Valor promedio activos"
           />
         </div>
@@ -364,7 +364,7 @@ export default function FinancieroPage() {
                           {f.proveedor || '—'}
                         </td>
                         <td style={{ padding: '10px 20px', textAlign: 'right', fontFamily: D.mono, fontSize: 13 }}>
-                          {f.valor_usd != null ? fmtUSD(Number(f.valor_usd)) : '—'}
+                          {f.valor_usd != null ? `${fmtUSD(Number(f.valor_usd))} USD` : '—'}
                         </td>
                         <td style={{ padding: '10px 12px', fontFamily: D.mono, fontSize: 13, color: D.textSec }}>
                           {f.fecha_pago ? fmtDate(f.fecha_pago) : '—'}

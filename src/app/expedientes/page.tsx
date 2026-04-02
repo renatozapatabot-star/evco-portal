@@ -104,6 +104,7 @@ export default function ExpedientesPage() {
   const [cookiesReady, setCookiesReady] = useState(false)
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
   const [sortAsc, setSortAsc] = useState(true) // true = least complete first
+  const [docTypeFilter, setDocTypeFilter] = useState('')
 
   useEffect(() => {
     setUserRole(getCookieValue('user_role') ?? '')
@@ -128,14 +129,20 @@ export default function ExpedientesPage() {
   }, [cookiesReady, userRole])
 
   const filtered = useMemo(() => {
-    if (!search.trim()) return docs
-    const q = search.toLowerCase()
-    return docs.filter(d =>
-      (d.pedimento_id || '').toLowerCase().includes(q) ||
-      docLabel(d.doc_type).toLowerCase().includes(q) ||
-      (d.file_name || '').toLowerCase().includes(q)
-    )
-  }, [docs, search])
+    let out = docs
+    if (search.trim()) {
+      const q = search.toLowerCase()
+      out = out.filter(d =>
+        (d.pedimento_id || '').toLowerCase().includes(q) ||
+        docLabel(d.doc_type).toLowerCase().includes(q) ||
+        (d.file_name || '').toLowerCase().includes(q)
+      )
+    }
+    if (docTypeFilter) {
+      out = out.filter(d => normalizeDocType(d.doc_type || '') === docTypeFilter)
+    }
+    return out
+  }, [docs, search, docTypeFilter])
 
   const grouped = useMemo(() => {
     const map = new Map<string, DocRow[]>()
@@ -183,6 +190,21 @@ export default function ExpedientesPage() {
             style={{ color: 'var(--text-secondary)' }}
           />
         </div>
+      </div>
+
+      {/* Document type filter chips */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
+        {['', 'factura_comercial', 'pedimento_detallado', 'cove', 'doda', 'carta_porte'].map(dt => (
+          <button key={dt} onClick={() => setDocTypeFilter(dt)}
+            style={{
+              fontSize: 10, fontWeight: 600, padding: '3px 10px', borderRadius: 9999, cursor: 'pointer',
+              border: `1px solid ${docTypeFilter === dt ? 'var(--gold)' : 'var(--border-card)'}`,
+              background: docTypeFilter === dt ? 'rgba(196,150,60,0.08)' : 'transparent',
+              color: docTypeFilter === dt ? 'var(--gold-dark, #8B6914)' : 'var(--slate-500)',
+            }}>
+            {dt === '' ? 'Todos' : DOC_LABELS[dt] || dt}
+          </button>
+        ))}
       </div>
 
       {/* Error state */}

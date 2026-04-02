@@ -5,6 +5,7 @@ import { Search, Download, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { getCookieValue } from '@/lib/client-config'
 import { fmtId, fmtDesc, fmtKg, fmtUSD, fmtUSDCompact, fmtDate, fmtDateShort, fmtPedimentoShort, calcPriority, priorityClass } from '@/lib/format-utils'
+import { fmtCarrier } from '@/lib/carrier-names'
 import { MobileTraficoCard } from '@/components/mobile-trafico-card'
 // CruzScore removed from client-facing UI — scores are internal only
 import { useSort } from '@/hooks/use-sort'
@@ -332,6 +333,7 @@ function TraficosContent() {
                     <tr key={r.trafico}
                       className={`clickable-row ${idx % 2 === 0 ? 'row-even' : 'row-odd'}${isCrossing ? ' row-crossing' : ''}`}
                       style={isHighValue && !isDetenido ? { borderLeft: '3px solid var(--gold)' } : undefined}
+                      title={fmtCarrier(r.transportista_mexicano as string) || undefined}
                       onClick={() => router.push(`/traficos/${encodeURIComponent(r.trafico)}`)}>
                       <td style={{ width: 28, paddingRight: 0 }}>
                         {isCrossing ? <><span className="crossing-pulse" /><span className="sr-only">En cruce</span></> : ps > 0 ? <><span className={`priority-dot ${priorityClass(ps)}`} /><span className="sr-only">Requiere atención</span></> : null}

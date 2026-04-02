@@ -29,25 +29,10 @@ export function BridgeTimes() {
 
   function statusColor(s: string) { return s === 'green' ? '#16A34A' : s === 'amber' ? '#D97706' : s === 'red' ? 'var(--danger-500)' : '#6B7280' }
 
-  if (withData.length === 0) return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 0', opacity: 0.6 }}>
-      <div>
-        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--slate-400)' }}>World Trade Bridge</div>
-        <div style={{ fontSize: 12, color: 'var(--slate-400)', marginTop: 2 }}>Servicio no disponible</div>
-      </div>
-      <a
-        href="https://bwt.cbp.gov/"
-        target="_blank"
-        rel="noopener noreferrer"
-        style={{ fontSize: 12, fontWeight: 600, color: 'var(--info-500, #3B82F6)', textDecoration: 'none', whiteSpace: 'nowrap' }}
-      >
-        Ver en CBP.gov →
-      </a>
-    </div>
-  )
+  if (withData.length === 0) return null
 
   return (
-    <div>
+    <div className="card" style={{ marginBottom: 24, padding: '16px 20px' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
         <div style={{ color: 'var(--text-muted)', fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
           Tiempos de Puentes — Laredo

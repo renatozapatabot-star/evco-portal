@@ -82,40 +82,20 @@ function getAttachmentNames(payload) {
 
 // ── Classify with Ollama ────────────────────────
 async function classifyEmail(sender, subject, snippet, attachments) {
-  const prompt = `/no_think
-You are a customs brokerage email classifier for a Mexican customs broker (Renato Zapata & Company, Nuevo Laredo).
+  const prompt = `Classify this customs brokerage email as JSON only. No explanation.
 
-Classify this email into ONE workflow stage and ONE action type.
+HINT: "Manifestacion de Valor" or "MVE" = pre_filing. "Pedimento" or "PED." = filing. "Entrada de Bodega" = intake. "Rectificación" = filing. "COVE" = pre_filing. "Importación" or "IMPO" = intake. "Anexo 24" = compliance. "Factura" = document_received. Empty/spam subjects = other.
 
-WORKFLOW STAGES:
-- intake: New shipment notification, arrival notice, booking confirmation
-- document_request: Requesting missing documents (invoice, BL, packing list, permits)
-- document_received: Documents being sent/attached
-- classification: Fracción arancelaria discussion, product description, tariff codes
-- pre_filing: Pedimento preparation, COVE generation, value declaration
-- filing: Pedimento filed, SAT submission, payment confirmation
-- crossing: At the bridge, semáforo, inspection, despacho
-- delivery: Post-crossing delivery, carrier pickup, warehouse receipt
-- billing: Invoice from broker, payment request, account statement
-- status_update: General status inquiry or response
-- other: Unrelated to customs operations
-
-ACTION TYPES:
-- request: Asking for something
-- response: Answering a request
-- notification: Informing about a status change
-- confirmation: Confirming receipt or action
-- escalation: Urgent or overdue issue
-- internal: Internal team communication
-
-EMAIL:
 From: ${sender}
 Subject: ${subject}
 Snippet: ${snippet}
 Attachments: ${attachments.join(', ') || 'none'}
 
-Respond ONLY in this exact JSON format, no other text:
-{"stage":"...","action":"...","trafico":"...or null","confidence":0.0-1.0}`
+Respond with ONLY this JSON format:
+{"stage":"...","action":"...","trafico":"...or null","confidence":0.0-1.0}
+
+Valid stages: intake, document_request, document_received, classification, pre_filing, filing, crossing, delivery, billing, status_update, other
+Valid actions: request, response, notification, confirmation, escalation, internal`
 
   try {
     const resp = await fetch(`${OLLAMA_URL}/api/generate`, {
@@ -125,7 +105,8 @@ Respond ONLY in this exact JSON format, no other text:
         model: OLLAMA_MODEL,
         prompt,
         stream: false,
-        options: { temperature: 0.1, num_predict: 150 },
+        think: false,
+        options: { temperature: 0.1, num_predict: 300 },
       }),
     })
 
@@ -134,7 +115,9 @@ Respond ONLY in this exact JSON format, no other text:
     const { response } = await resp.json()
 
     // Extract JSON from response
-    const jsonMatch = response.match(/\{[^}]+\}/)
+    // Strip qwen3 think tags before parsing
+            const cleaned = response.replace(/<think>[\s\S]*?<\/think>/g, '').trim()
+    const jsonMatch = cleaned.match(/\{[\s\S]*?\}/)
     if (!jsonMatch) return { stage: 'other', action: 'other', trafico: null, confidence: 0 }
 
     const parsed = JSON.parse(jsonMatch[0])

@@ -409,10 +409,8 @@ export default function ClientInicioView() {
         </div>
       )}
 
-      {/* Bridge Times */}
-      <div className="card" style={{ marginBottom: 24, padding: '16px 20px' }}>
-        <BridgeTimes />
-      </div>
+      {/* Bridge Times — hides entirely when no data (returns null) */}
+      <BridgeTimes />
 
       {/* Pending Entradas Card — severity tiers */}
       {pendingEntradas.length > 0 && (() => {
@@ -444,11 +442,11 @@ export default function ClientInicioView() {
             <div className="text-caption" style={{ color: 'var(--slate-400)', marginBottom: 12 }}>
               La más antigua: {oldestDays} día{oldestDays !== 1 ? 's' : ''}
             </div>
-            <Link href="/entradas" style={{
+            <Link href="/entradas?faltantes=sin-trafico" style={{
               fontSize: 14, fontWeight: 600, color: 'var(--gold-400)',
               textDecoration: 'none',
             }}>
-              Ver entradas →
+              Ver entradas sin tráfico →
             </Link>
           </div>
         )

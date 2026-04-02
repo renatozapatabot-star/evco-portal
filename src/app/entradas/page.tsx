@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Search, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Search, ChevronLeft, ChevronRight, Download } from 'lucide-react'
 import { getClientNameCookie, getClientClaveCookie, getCompanyIdCookie, getCookieValue } from '@/lib/client-config'
 import { fmtDesc, fmtDate } from '@/lib/format-utils'
 import { fmtCarrier } from '@/lib/carrier-names'
@@ -51,6 +51,13 @@ const fmtTrafico = (id: string) => {
   return clean.startsWith(`${clave}-`) ? clean : `${clave}-${clean}`
 }
 
+function exportCSV(rows: EntradaRow[], clave: string) {
+  const h = ['Entrada', 'Trafico', 'Fecha', 'Descripcion', 'Bultos', 'Peso_kg', 'Transportista']
+  const c = rows.map(r => [r.cve_entrada, r.trafico ?? '', r.fecha_llegada_mercancia ?? '', (r.descripcion_mercancia ?? '').replace(/,/g, ' '), r.cantidad_bultos ?? '', r.peso_bruto ?? '', r.transportista_mexicano ?? ''].join(','))
+  const blob = new Blob([['CRUZ — Entradas', `Clave: ${clave}`, `Exportado: ${fmtDate(new Date())}`, '', h.join(','), ...c].join('\n')], { type: 'text/csv' })
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `Entradas_${clave}_${new Date().toISOString().split('T')[0]}.csv`; a.click()
+}
+
 export default function EntradasPage() {
   const router = useRouter()
   const isMobile = useIsMobile()
@@ -64,6 +71,7 @@ export default function EntradasPage() {
   const [dateTo, setDateTo] = useState('')
   const [faltantesOnly, setFaltantesOnly] = useState(false)
   const [showHistorico, setShowHistorico] = useState(false)
+  const [statusFilter, setStatusFilter] = useState<'all' | 'vinculado' | 'sin-trafico'>('all')
   const { getCached, setCache } = useSessionCache()
 
   useEffect(() => {
@@ -98,6 +106,8 @@ export default function EntradasPage() {
     if (dateFrom) out = out.filter(r => (r.fecha_llegada_mercancia || '') >= dateFrom)
     if (dateTo) out = out.filter(r => (r.fecha_llegada_mercancia || '') <= dateTo)
     if (faltantesOnly) out = out.filter(r => r.tiene_faltantes)
+    if (statusFilter === 'vinculado') out = out.filter(r => !!r.trafico)
+    if (statusFilter === 'sin-trafico') out = out.filter(r => !r.trafico)
     // Apply sort
     out = [...out].sort((a, b) => {
       const col = sort.column as keyof EntradaRow
@@ -122,6 +132,11 @@ export default function EntradasPage() {
           </p>
         </div>
         <div className="flex items-center gap-2.5" style={{ flexWrap: 'wrap' }}>
+          <button onClick={() => exportCSV(filtered, getClientClaveCookie())}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-[3px] text-[12px] font-medium"
+            style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
+            <Download size={12} strokeWidth={2} /> CSV
+          </button>
           <div className="flex items-center gap-1.5">
             <input type="date" value={dateFrom} onChange={e => { setDateFrom(e.target.value); setPage(0) }}
               className="rounded-[6px] px-2 py-1 text-[11px] outline-none"
@@ -135,6 +150,17 @@ export default function EntradasPage() {
                 className="text-[10px] font-medium px-1.5 py-0.5 rounded"
                 style={{ color: 'var(--red-text)', border: '1px solid var(--red-border)', background: 'var(--red-bg)' }}>✕</button>
             )}
+          </div>
+          <div className="flex items-center gap-1">
+            {[
+              { label: 'Semana', fn: () => { const d = new Date(); d.setDate(d.getDate() - 7); setDateFrom(d.toISOString().split('T')[0]); setDateTo(''); setPage(0) } },
+              { label: 'Mes', fn: () => { const d = new Date(); setDateFrom(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-01`); setDateTo(''); setPage(0) } },
+              { label: 'Año', fn: () => { setDateFrom(`${new Date().getFullYear()}-01-01`); setDateTo(''); setPage(0) } },
+            ].map(p => (
+              <button key={p.label} onClick={p.fn}
+                className="text-[10px] font-medium px-2 py-0.5 rounded"
+                style={{ border: '1px solid var(--border)', color: 'var(--slate-500)', background: 'var(--slate-50)', cursor: 'pointer' }}>{p.label}</button>
+            ))}
           </div>
           <label className="flex items-center gap-1.5 text-[11.5px] cursor-pointer" style={{ color: faltantesOnly ? '#b91c1c' : '#6b7280' }}>
             <input type="checkbox" checked={faltantesOnly} onChange={e => { setFaltantesOnly(e.target.checked); setPage(0) }} style={{ width: 13, height: 13 }} />
@@ -165,6 +191,27 @@ export default function EntradasPage() {
       {fetchError && (
         <div style={{ marginBottom: 16 }}>
           <ErrorCard message={fetchError} onRetry={() => window.location.reload()} />
+        </div>
+      )}
+
+      {/* Status count chips */}
+      {!loading && rows.length > 0 && (
+        <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+          {([
+            { key: 'all' as const, label: 'Todas', count: rows.length },
+            { key: 'vinculado' as const, label: 'Vinculadas', count: rows.filter(r => !!r.trafico).length },
+            { key: 'sin-trafico' as const, label: 'Sin tráfico', count: rows.filter(r => !r.trafico).length },
+          ]).map(s => (
+            <button key={s.key} onClick={() => { setStatusFilter(s.key); setPage(0) }}
+              style={{
+                fontSize: 11, fontWeight: 600, padding: '4px 12px', borderRadius: 9999, cursor: 'pointer',
+                border: `1px solid ${statusFilter === s.key ? 'var(--gold)' : 'var(--border-card)'}`,
+                background: statusFilter === s.key ? 'rgba(196,150,60,0.08)' : 'transparent',
+                color: statusFilter === s.key ? 'var(--gold-dark, #8B6914)' : 'var(--slate-500)',
+              }}>
+              {s.label} <span className="font-mono" style={{ marginLeft: 4 }}>({s.count})</span>
+            </button>
+          ))}
         </div>
       )}
 

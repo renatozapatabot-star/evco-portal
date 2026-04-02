@@ -192,7 +192,7 @@ export default function PedimentosPage() {
         <div>
           <h1 className="page-title">Pedimentos</h1>
           <p className="text-[12.5px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
-            {groups.length.toLocaleString()} pedimentos &middot; {rows.length.toLocaleString()} tráficos
+            {groups.length.toLocaleString()} pedimentos &middot; <span className="font-mono">{fmtUSD(totals.totalValor)}</span> USD valor total
           </p>
         </div>
         <div className="flex items-center gap-2.5 flex-wrap">

@@ -190,21 +190,18 @@ export default function ClientInicioView() {
     return set.size
   }, [traficos])
 
-  // Greeting
-  const greeting = (() => {
+  // Greeting + date — hydration-safe (empty on SSR, populated on client)
+  const [greeting, setGreeting] = useState('')
+  const [dateStr, setDateStr] = useState('')
+  useEffect(() => {
     const h = new Date().getHours()
-    if (h < 12) return 'Buenos días'
-    if (h < 18) return 'Buenas tardes'
-    return 'Buenas noches'
-  })()
-
-  const dateStr = (() => {
+    setGreeting(h < 12 ? 'Buenos días' : h < 18 ? 'Buenas tardes' : 'Buenas noches')
     const d = new Date()
     const days = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado']
     const months = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
       'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
-    return `${days[d.getDay()]} ${d.getDate()} de ${months[d.getMonth()]}, ${d.getFullYear()}`
-  })()
+    setDateStr(`${days[d.getDay()]} ${d.getDate()} de ${months[d.getMonth()]}, ${d.getFullYear()}`)
+  }, [])
 
   // Oldest pending entrada age (capped at 2 years to exclude legacy)
   const oldestDays = useMemo(() => {

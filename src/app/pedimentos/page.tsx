@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from 'react'
 import { Search, Download, ChevronLeft, ChevronRight } from 'lucide-react'
 import { getCompanyIdCookie, getClientClaveCookie, getCookieValue } from '@/lib/client-config'
 import { fmtUSDFull as fmtUSD, fmtDate, fmtPedimentoShort } from '@/lib/format-utils'
+import { useSort } from '@/hooks/use-sort'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { EmptyState } from '@/components/ui/EmptyState'
 import Link from 'next/link'
@@ -67,6 +68,7 @@ export default function PedimentosPage() {
   const [page, setPage] = useState(0)
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
+  const { sort, toggleSort } = useSort('pedimentos', { column: 'fecha', direction: 'desc' })
   const [tmecOnly, setTmecOnly] = useState(false)
   const [supplierLookup, setSupplierLookup] = useState<Map<string, string>>(new Map())
 
@@ -154,8 +156,17 @@ export default function PedimentosPage() {
 
     if (tmecOnly) result = result.filter(g => g.tmec)
 
+    // Apply sort
+    result.sort((a, b) => {
+      const col = sort.column as keyof PedGroup
+      const av = a[col] ?? ''
+      const bv = b[col] ?? ''
+      const cmp = typeof av === 'number' && typeof bv === 'number' ? av - bv : String(av).localeCompare(String(bv), 'es', { numeric: true })
+      return sort.direction === 'asc' ? cmp : -cmp
+    })
+
     return result
-  }, [rows, search, dateFrom, dateTo, tmecOnly, supplierLookup])
+  }, [rows, search, dateFrom, dateTo, tmecOnly, supplierLookup, sort])
 
   const totalPages = Math.ceil(groups.length / PAGE_SIZE)
   const pagedGroups = groups.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
@@ -288,14 +299,14 @@ export default function PedimentosPage() {
             <table className="data-table">
               <thead>
                 <tr>
-                  <th scope="col">Pedimento</th>
+                  <th scope="col" style={{ cursor: 'pointer' }} onClick={() => toggleSort('pedimento')}>Pedimento{sort.column === 'pedimento' ? (sort.direction === 'asc' ? ' ↑' : ' ↓') : ''}</th>
                   <th scope="col">Tráfico</th>
-                  <th scope="col">Estatus</th>
+                  <th scope="col" style={{ cursor: 'pointer' }} onClick={() => toggleSort('estatus')}>Estatus{sort.column === 'estatus' ? (sort.direction === 'asc' ? ' ↑' : ' ↓') : ''}</th>
                   <th scope="col">Mercancía</th>
-                  <th scope="col">Fecha</th>
+                  <th scope="col" style={{ cursor: 'pointer' }} onClick={() => toggleSort('fecha')}>Fecha{sort.column === 'fecha' ? (sort.direction === 'asc' ? ' ↑' : ' ↓') : ''}</th>
                   <th scope="col">Aduana</th>
                   <th scope="col">Régimen</th>
-                  <th scope="col" style={{ textAlign: 'right' }}>Valor USD</th>
+                  <th scope="col" style={{ textAlign: 'right', cursor: 'pointer' }} onClick={() => toggleSort('importe')}>Valor USD{sort.column === 'importe' ? (sort.direction === 'asc' ? ' ↑' : ' ↓') : ''}</th>
                   <th scope="col" style={{ width: 28 }}></th>
                 </tr>
               </thead>

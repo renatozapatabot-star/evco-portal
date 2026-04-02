@@ -22,9 +22,18 @@ const CARRIER_MAP: Record<string, string> = {
 
 export const fmtCarrier = (code: string | null | undefined): string => {
   if (!code) return ''
-  if (CARRIER_MAP[code]) return CARRIER_MAP[code]
+  const s = String(code).trim()
+  if (CARRIER_MAP[s]) return CARRIER_MAP[s]
+  // Try numeric ID → mapped key (e.g. "81" → "TRANS_MEX_81")
+  if (/^\d+$/.test(s)) {
+    const mxKey = `TRANS_MEX_${s}`
+    const extKey = `TRANS_EXT_${s}`
+    if (CARRIER_MAP[mxKey]) return CARRIER_MAP[mxKey]
+    if (CARRIER_MAP[extKey]) return CARRIER_MAP[extKey]
+    return `Transportista ${s}`
+  }
   // Clean up raw codes
-  return code
+  return s
     .replace(/^TRANS_MEX_/, 'Transp. MX ')
     .replace(/^TRANS_EXT_/, 'Carrier US ')
     .replace(/_/g, ' ')

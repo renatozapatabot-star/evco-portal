@@ -84,8 +84,8 @@ interface SidebarProps {
 
 export default function Sidebar({
   portalType,
-  clientName = 'MAFESA',
-  clientInitials = 'MF',
+  clientName = '',
+  clientInitials = '',
   clientRole = 'Portal de cliente',
   companyName = 'Renato Zapata & Co.',
   patente = '3596',

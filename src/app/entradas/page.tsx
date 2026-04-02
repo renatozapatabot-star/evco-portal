@@ -6,6 +6,7 @@ import { Search, ChevronLeft, ChevronRight } from 'lucide-react'
 import { getClientNameCookie, getClientClaveCookie, getCompanyIdCookie, getCookieValue } from '@/lib/client-config'
 import { fmtDesc, fmtDate } from '@/lib/format-utils'
 import { fmtCarrier } from '@/lib/carrier-names'
+import { useSort } from '@/hooks/use-sort'
 import { useIsMobile } from '@/hooks/use-mobile'
 import Link from 'next/link'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -57,6 +58,7 @@ export default function EntradasPage() {
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState<string | null>(null)
   const [search, setSearch] = useState('')
+  const { sort, toggleSort } = useSort('entradas', { column: 'fecha_llegada_mercancia', direction: 'desc' })
   const [page, setPage] = useState(0)
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
@@ -96,6 +98,14 @@ export default function EntradasPage() {
     if (dateFrom) out = out.filter(r => (r.fecha_llegada_mercancia || '') >= dateFrom)
     if (dateTo) out = out.filter(r => (r.fecha_llegada_mercancia || '') <= dateTo)
     if (faltantesOnly) out = out.filter(r => r.tiene_faltantes)
+    // Apply sort
+    out = [...out].sort((a, b) => {
+      const col = sort.column as keyof EntradaRow
+      const av = a[col] ?? ''
+      const bv = b[col] ?? ''
+      const cmp = String(av).localeCompare(String(bv), 'es', { numeric: true })
+      return sort.direction === 'asc' ? cmp : -cmp
+    })
     return out
   })()
 
@@ -229,12 +239,12 @@ export default function EntradasPage() {
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>Entrada</th>
+                  <th style={{ cursor: 'pointer' }} onClick={() => toggleSort('cve_entrada')}>Entrada{sort.column === 'cve_entrada' ? (sort.direction === 'asc' ? ' ↑' : ' ↓') : ''}</th>
                   <th>Tráfico</th>
-                  <th>Fecha Llegada</th>
+                  <th style={{ cursor: 'pointer' }} onClick={() => toggleSort('fecha_llegada_mercancia')}>Fecha Llegada{sort.column === 'fecha_llegada_mercancia' ? (sort.direction === 'asc' ? ' ↑' : ' ↓') : ''}</th>
                   <th>Descripción</th>
-                  <th style={{ textAlign: 'right' }}>Bultos</th>
-                  <th style={{ textAlign: 'right' }}>Peso (kg)</th>
+                  <th style={{ textAlign: 'right', cursor: 'pointer' }} onClick={() => toggleSort('cantidad_bultos')}>Bultos{sort.column === 'cantidad_bultos' ? (sort.direction === 'asc' ? ' ↑' : ' ↓') : ''}</th>
+                  <th style={{ textAlign: 'right', cursor: 'pointer' }} onClick={() => toggleSort('peso_bruto')}>Peso (kg){sort.column === 'peso_bruto' ? (sort.direction === 'asc' ? ' ↑' : ' ↓') : ''}</th>
                   <th>Transportista</th>
                   <th>Estado</th>
                 </tr>

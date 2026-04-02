@@ -4,7 +4,7 @@ import React, { useEffect, useState, useMemo } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Upload, Clock, FileText, Truck, BarChart3, Share2 } from 'lucide-react'
-import { fmtId, fmtDate, fmtDateTime, fmtUSD, fmtKg, fmtDesc, fmtMXNInt, formatAbsoluteETA } from '@/lib/format-utils'
+import { fmtId, fmtDate, fmtDateTime, fmtUSD, fmtKg, fmtDesc, fmtMXNInt, fmtPedimentoShort, formatAbsoluteETA } from '@/lib/format-utils'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { GOLD } from '@/lib/design-system'
 import { fmtCarrier, countryFlag } from '@/lib/carrier-names'
@@ -434,7 +434,7 @@ export default function TraficoDetailPage() {
     { num: 3, label: 'Revisado y autorizado', detail: t.pedimento ? 'Patente 3596' : 'Pendiente', date: null },
     { num: 4, label: 'COVE generado', detail: t.pedimento ? 'Generado' : 'Pendiente', date: null },
     { num: 5, label: 'Previo', detail: 'No requerido', date: null },
-    { num: 6, label: 'Pedimento transmitido', detail: t.pedimento ? `${fmtPedimento(t.pedimento as string)}` : 'Pendiente', date: (t.fecha_transmision as string | null) || null },
+    { num: 6, label: 'Pedimento transmitido', detail: t.pedimento ? fmtPedimentoShort(t.pedimento as string) : 'Pendiente', date: (t.fecha_transmision as string | null) || null },
     { num: 7, label: 'Pedimento pagado', detail: t.fecha_pago ? formatAbsoluteETA(t.fecha_pago as string) : 'Pendiente', date: (t.fecha_pago as string | null) || null },
     { num: 8, label: 'Semáforo asignado', detail: (t.semaforo as number) === 0 ? 'Verde' : (t.semaforo as number) === 1 ? 'Rojo' : 'Pendiente', date: (t.fecha_modulacion as string | null) || null },
     { num: 9, label: 'En cruce', detail: t.fecha_cruce ? formatAbsoluteETA(t.fecha_cruce as string) : 'Pendiente', date: (t.fecha_cruce as string | null) || null },
@@ -568,7 +568,7 @@ export default function TraficoDetailPage() {
               borderRadius: 8, background: 'var(--slate-100)', color: 'var(--slate-600)',
               fontFamily: 'var(--font-mono)',
             }}>
-              Ped. {String(t.pedimento)}
+              Ped. {fmtPedimentoShort(t.pedimento as string)}
             </span>
           ) : (
             <span style={{ fontSize: 12, color: 'var(--slate-400)', fontStyle: 'italic' }}>

@@ -195,7 +195,7 @@ export default function ClientInicioView() {
   const [dateStr, setDateStr] = useState('')
   useEffect(() => {
     const h = new Date().getHours()
-    setGreeting(h < 12 ? 'Buenos días' : h < 18 ? 'Buenas tardes' : 'Buenas noches')
+    setGreeting(h < 12 ? 'Buenos días' : h < 20 ? 'Buenas tardes' : 'Buenas noches')
     const d = new Date()
     const days = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado']
     const months = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
@@ -329,6 +329,11 @@ export default function ClientInicioView() {
           )
         })}
       </div>
+
+      {/* Divider between KPI rows */}
+      {traficos.length > 0 && (
+        <div style={{ borderBottom: '1px solid var(--border-card, #E5E7EB)', marginBottom: 16 }} />
+      )}
 
       {/* ── Impressive KPI Strip (5C) ── */}
       {traficos.length > 0 && (

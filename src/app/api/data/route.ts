@@ -82,7 +82,11 @@ export async function GET(req: NextRequest) {
   let q = supabase.from(table).select('*').limit(limit)
 
   // Apply filters — only real client identifiers, not internal placeholders
-  if (claveCliente) q = q.eq('clave_cliente', claveCliente)
+  // clave_cliente only exists on: aduanet_facturas, companies
+  const CLAVE_TABLES = ['aduanet_facturas', 'companies']
+  if (claveCliente && CLAVE_TABLES.includes(table)) q = q.eq('clave_cliente', claveCliente)
+  // For other tables, use cve_cliente or company_id instead
+  if (claveCliente && table === 'globalpc_facturas') q = q.eq('cve_cliente', claveCliente)
   if (cveCliente) q = q.eq('cve_cliente', cveCliente)
   if (companyId) q = q.eq('company_id', companyId)
 

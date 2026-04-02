@@ -245,7 +245,7 @@ async function processFile(filePath) {
 }
 
 async function insertClassification(result) {
-  const { error } = await supabase.from('document_classifications').insert({
+  const { error } = await supabase.from('document_classifications').upsert({
     filename: result.filename,
     doc_type: result.type,
     supplier: result.supplier,

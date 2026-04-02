@@ -229,17 +229,19 @@ body {
 }
 
 .sidebar-logo-mark {
-  width: 30px;
-  height: 30px;
+  width: 36px;
+  height: 36px;
   background: var(--gold-400);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
-  font-size: 14px;
+  font-weight: 800;
+  font-size: 17px;
   color: var(--navy-900);
   flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(212,168,67,0.25);
+  font-family: var(--font-mono);
 }
 
 .sidebar-logo-text {
@@ -327,8 +329,9 @@ body {
 
 .sidebar-nav-item.active {
   background: var(--gold-bg);
-  border-left: 4px solid var(--gold, #C4963C);
-  color: var(--gold, #C4963C);
+  border-left: 4px solid var(--gold-400, #D4A843);
+  color: var(--gold-300, #E8C468);
+  font-weight: 700;
 }
 
 .sidebar-nav-item .nav-icon {

@@ -527,7 +527,7 @@ async function executeTool(name: string, input: any, clientCtx: { companyId: str
         return JSON.stringify({ predictions: summary, recommendation: `Best bridge: ${summary[0]?.name || 'World Trade Bridge'}` })
       }
       case 'get_savings': {
-        const { data: facturas } = await supabase.from('globalpc_facturas').select('valor_usd, igi').eq('clave_cliente', clientClave).limit(5000)
+        const { data: facturas } = await supabase.from('globalpc_facturas').select('valor_usd, igi').eq('cve_cliente', clientClave).limit(5000)
         const tmecOps = (facturas || []).filter((f: any) => (f.igi || 0) === 0)
         const tmecSavings = tmecOps.reduce((s: number, f: any) => s + (Number(f.valor_usd) || 0) * 0.05, 0)
         return JSON.stringify({

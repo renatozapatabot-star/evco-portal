@@ -248,7 +248,7 @@ function BrokerView() {
   const [greeting, setGreeting] = useState('')
   useEffect(() => {
     const h = new Date().getHours()
-    setGreeting(h < 12 ? 'Buenos días' : h < 18 ? 'Buenas tardes' : 'Buenas noches')
+    setGreeting(h < 12 ? 'Buenos días' : h < 20 ? 'Buenas tardes' : 'Buenas noches')
   }, [])
 
   if (loading) {

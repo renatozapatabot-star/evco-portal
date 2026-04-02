@@ -481,10 +481,10 @@ export default function TraficoDetailPage() {
   return (
     <div className="page-shell" style={{ maxWidth: 1200 }}>
       {/* ═══ BREADCRUMB ═══ */}
-      <nav aria-label="Navegación" style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16, fontSize: 12, minHeight: 44 }}>
-        <Link href="/" style={{ color: 'var(--slate-400)', textDecoration: 'none' }}>Inicio</Link>
+      <nav aria-label="Navegación" style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16, fontSize: 12 }}>
+        <Link href="/" style={{ color: 'var(--slate-400)', textDecoration: 'none', padding: '8px 4px' }}>Inicio</Link>
         <span style={{ color: 'var(--slate-300)' }}>›</span>
-        <Link href="/traficos" style={{ color: 'var(--slate-400)', textDecoration: 'none' }}>Tráficos</Link>
+        <Link href="/traficos" style={{ color: 'var(--slate-400)', textDecoration: 'none', padding: '8px 4px' }}>Tráficos</Link>
         <span style={{ color: 'var(--slate-300)' }}>›</span>
         <span className="font-mono" style={{ color: 'var(--navy-900)', fontWeight: 600 }}>{fmtId(String(t?.trafico ?? decodeURIComponent(String(id))))}</span>
       </nav>

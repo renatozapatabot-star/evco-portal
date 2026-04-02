@@ -206,7 +206,7 @@ export default function ExpedientesPage() {
         <div className="flex flex-col items-center py-20 text-center">
           <FolderOpen className="w-12 h-12 text-slate-300 mb-4" />
           <h2 className="text-lg font-semibold text-slate-900 mb-2">
-            Expedientes Digitales
+            Sin expedientes digitales
           </h2>
           <p className="text-slate-500 max-w-sm text-sm">
             Los documentos de cada tráfico aparecerán aquí organizados por tipo.

@@ -354,7 +354,7 @@ function TraficosContent() {
                           })()}
                         </div>
                       </td>
-                      <td>{r.pedimento ? <span className="pedimento-num">{fmtPedimentoShort(r.pedimento)}</span> : <span className="pedimento-pending">Pendiente</span>}</td>
+                      <td>{r.pedimento ? <span className="pedimento-num" onClick={e => { e.stopPropagation(); router.push(`/traficos/${encodeURIComponent(r.trafico)}?tab=financiero`) }} style={{ cursor: 'pointer' }}>{fmtPedimentoShort(r.pedimento)}</span> : <span className="pedimento-pending">Pendiente</span>}</td>
                       <td>
                         <span className={`badge ${isDetenido ? 'badge-detenido' : isCruzado ? 'badge-cruzado' : 'badge-proceso'}`}>
                           <span className="badge-dot" />{isDetenido ? 'Detenido' : isCruzado ? 'Cruzado' : 'En Proceso'}
@@ -362,14 +362,14 @@ function TraficosContent() {
                       </td>
                       <td className="timestamp">{fmtDateShort(r.fecha_llegada)}</td>
                       <td className="desc-text" title={fmtDesc(r.descripcion_mercancia)}>{fmtDesc(r.descripcion_mercancia) || '—'}</td>
-                      <td className="currency text-right">{fmtKg(r.peso_bruto) || '—'}</td>
+                      <td className="currency text-right">{r.peso_bruto ? `${fmtKg(r.peso_bruto)} kg` : '—'}</td>
                       <td className="currency text-right">{(r.importe_total != null && Number(r.importe_total) > 0) ? `${fmtUSD(r.importe_total)} USD` : '—'}</td>
                       <td>
                         {(() => {
                           const count = docCountMap.get(r.trafico) ?? 0
                           const colorClass = count >= 5 ? 'success' : count >= 3 ? 'warning' : 'danger'
                           return (
-                            <div className="doc-segments">
+                            <div className="doc-segments" title={`${count}/6 documentos`}>
                               {Array.from({ length: 6 }).map((_, i) => (
                                 <div key={i} className={`doc-seg${i < count ? ` filled ${colorClass}` : ''}`} />
                               ))}

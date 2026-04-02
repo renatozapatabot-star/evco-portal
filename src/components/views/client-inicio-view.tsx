@@ -242,7 +242,7 @@ export default function ClientInicioView() {
     const past = sparkData[0]
     if (past === 0) return null
     const pct = Math.round(((current - past) / past) * 100)
-    return { current, pct }
+    return { current, past, pct }
   }, [sparkData])
 
   if (error) {
@@ -395,6 +395,9 @@ export default function ClientInicioView() {
                   color: sparkDelta.pct >= 0 ? 'var(--green-600)' : 'var(--red-600)',
                 }}>
                   {sparkDelta.pct >= 0 ? '↑' : '↓'}{Math.abs(sparkDelta.pct)}%
+                </span>
+                <span style={{ fontSize: 11, color: 'var(--slate-400)' }}>
+                  vs {sparkDelta.past} hace 30d
                 </span>
               </div>
             )}

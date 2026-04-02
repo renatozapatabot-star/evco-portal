@@ -481,10 +481,13 @@ export default function TraficoDetailPage() {
   return (
     <div className="page-shell" style={{ maxWidth: 1200 }}>
       {/* ═══ BREADCRUMB ═══ */}
-      <button onClick={() => router.push('/traficos')} aria-label="Volver a Tráficos"
-        style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--slate-400)', fontSize: 12, minHeight: 60 }}>
-        <ArrowLeft size={13} /> Tráficos
-      </button>
+      <nav aria-label="Navegación" style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16, fontSize: 12, minHeight: 44 }}>
+        <Link href="/" style={{ color: 'var(--slate-400)', textDecoration: 'none' }}>Inicio</Link>
+        <span style={{ color: 'var(--slate-300)' }}>›</span>
+        <Link href="/traficos" style={{ color: 'var(--slate-400)', textDecoration: 'none' }}>Tráficos</Link>
+        <span style={{ color: 'var(--slate-300)' }}>›</span>
+        <span className="font-mono" style={{ color: 'var(--navy-900)', fontWeight: 600 }}>{fmtId(String(t?.trafico ?? decodeURIComponent(String(id))))}</span>
+      </nav>
 
       {/* ═══ STICKY ACTION BAR (v2) ═══ */}
       <StickyActionBar

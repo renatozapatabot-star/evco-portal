@@ -252,7 +252,7 @@ export default function EntradasPage() {
               <tbody>
                 {paged.map((r, i) => (
                   <tr key={r.cve_entrada} className={`clickable-row ${i % 2 === 0 ? 'row-even' : 'row-odd'}`}
-                    onClick={() => router.push(`/entradas/${r.cve_entrada}`)} style={{ cursor: 'pointer' }}>
+                    onClick={() => router.push(r.trafico ? `/traficos/${encodeURIComponent(fmtTrafico(r.trafico))}` : `/entradas/${r.cve_entrada}`)} style={{ cursor: 'pointer' }}>
                     <td>
                       <span className="mono text-[12.5px] font-medium" style={{ color: 'var(--text-primary)' }}>
                         {r.cve_entrada}
@@ -282,7 +282,7 @@ export default function EntradasPage() {
                       {r.cantidad_bultos ?? '-'}
                     </td>
                     <td className="text-right mono text-[12px]" style={{ color: 'var(--slate-500)' }}>
-                      {r.peso_bruto ? Number(r.peso_bruto).toLocaleString('es-MX') : '-'}
+                      {r.peso_bruto ? `${Number(r.peso_bruto).toLocaleString('es-MX')} kg` : '-'}
                     </td>
                     <td className="text-[12px]" style={{ color: 'var(--slate-500)' }}>
                       {fmtCarrier(r.transportista_mexicano) || fmtCarrier(r.transportista_americano) || '—'}

@@ -72,6 +72,7 @@ export default function EntradasPage() {
   const [faltantesOnly, setFaltantesOnly] = useState(false)
   const [showHistorico, setShowHistorico] = useState(false)
   const [statusFilter, setStatusFilter] = useState<'all' | 'vinculado' | 'sin-trafico'>('all')
+  const [groupByProv, setGroupByProv] = useState(false)
   const { getCached, setCache } = useSessionCache()
 
   useEffect(() => {
@@ -108,8 +109,12 @@ export default function EntradasPage() {
     if (faltantesOnly) out = out.filter(r => r.tiene_faltantes)
     if (statusFilter === 'vinculado') out = out.filter(r => !!r.trafico)
     if (statusFilter === 'sin-trafico') out = out.filter(r => !r.trafico)
-    // Apply sort
-    out = [...out].sort((a, b) => {
+    // Group by proveedor if toggled
+    if (groupByProv) {
+      out = [...out].sort((a, b) => (a.cve_proveedor ?? '').localeCompare(b.cve_proveedor ?? ''))
+    }
+    // Apply sort (secondary when grouping)
+    if (!groupByProv) out = [...out].sort((a, b) => {
       const col = sort.column as keyof EntradaRow
       const av = a[col] ?? ''
       const bv = b[col] ?? ''
@@ -169,6 +174,10 @@ export default function EntradasPage() {
           <label className="flex items-center gap-1.5 text-[11.5px] cursor-pointer" style={{ color: showHistorico ? '#2563EB' : '#6b7280' }}>
             <input type="checkbox" checked={showHistorico} onChange={e => { setShowHistorico(e.target.checked); setPage(0) }} style={{ width: 13, height: 13 }} />
             Incluir anteriores a 2024
+          </label>
+          <label className="flex items-center gap-1.5 text-[11.5px] cursor-pointer" style={{ color: groupByProv ? '#2563EB' : '#6b7280' }}>
+            <input type="checkbox" checked={groupByProv} onChange={e => { setGroupByProv(e.target.checked); setPage(0) }} style={{ width: 13, height: 13 }} />
+            Agrupar por proveedor
           </label>
           <div
             className="flex items-center gap-2 rounded-[3px] px-3 py-1.5"

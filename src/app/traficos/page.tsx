@@ -360,6 +360,7 @@ function TraficosContent() {
                       <td>
                         <span className={`badge ${isDetenido ? 'badge-detenido' : isCruzado ? 'badge-cruzado' : 'badge-proceso'}`} aria-label={`Estado: ${isDetenido ? 'Detenido' : isCruzado ? 'Cruzado' : 'En Proceso'}`}>
                           <span className="badge-dot" aria-hidden="true" />{isDetenido ? 'Detenido' : isCruzado ? 'Cruzado' : 'En Proceso'}
+                          {(() => { const d = r.fecha_llegada ? Math.floor((Date.now() - new Date(r.fecha_llegada).getTime()) / 86400000) : 0; return d > 1 && !isCruzado ? <span style={{ marginLeft: 4, fontSize: 10, opacity: 0.7 }}>· {d}d</span> : null })()}
                         </span>
                       </td>
                       <td className="timestamp">{r.fecha_llegada ? <time dateTime={r.fecha_llegada.split('T')[0]}>{fmtDateShort(r.fecha_llegada)}</time> : '—'}</td>

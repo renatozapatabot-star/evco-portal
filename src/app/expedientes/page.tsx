@@ -337,16 +337,19 @@ export default function ExpedientesPage() {
                           <span style={{ fontSize: 13, color: found ? 'var(--text-primary, #111)' : 'var(--slate-500)', flex: 1 }}>
                             {docLabel(reqKey)}
                           </span>
-                          {found && found.file_url && (
-                            <a
-                              href={found.file_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              onClick={e => e.stopPropagation()}
-                              style={{ fontSize: 12, color: '#2563EB', textDecoration: 'none', marginLeft: 'auto' }}
-                            >
-                              Ver
-                            </a>
+                          {found && (
+                            <span style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6 }}>
+                              {found.uploaded_at && (
+                                <span style={{ fontSize: 10, color: 'var(--slate-400)', fontFamily: 'var(--font-mono)' }}>
+                                  {fmtDateCompact(found.uploaded_at)}
+                                </span>
+                              )}
+                              {found.file_url && (
+                                <a href={found.file_url} target="_blank" rel="noopener noreferrer"
+                                  onClick={e => e.stopPropagation()}
+                                  style={{ fontSize: 12, color: '#2563EB', textDecoration: 'none' }}>Ver</a>
+                              )}
+                            </span>
                           )}
                           {!found && (
                             <span style={{ fontSize: 11, color: '#D97706', marginLeft: 'auto' }}>

@@ -1,5 +1,11 @@
 import { getCookieValue } from '@/lib/client-config'
 
+// ── Number Formatting Rules ──
+// KPI cards / summaries: use compact format → fmtUSDCompact ("$2.6M USD")
+// Table cells / detail: use full precision → fmtUSD ("$276,603.31")
+// MXN duties/taxes: use integer → fmtMXNInt ("$48,000 MXN")
+// All monetary values MUST carry a currency suffix (USD or MXN)
+
 // Master currency formatter — use this EVERYWHERE
 export const fmtCurrency = (
   n: number | null | undefined,

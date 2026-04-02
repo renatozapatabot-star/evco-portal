@@ -498,6 +498,21 @@ export default function TraficoDetailPage() {
         onSolicitar={missingDocs.length > 0 ? () => setShowSolicitarModal(true) : undefined}
       />
 
+      {/* ═══ CROSSING ESTIMATE ═══ */}
+      {t && ((t.estatus as string) || '').toLowerCase().includes('cruc') && !((t.estatus as string) || '').toLowerCase().includes('cruzado') && (
+        <div style={{
+          background: 'var(--blue-50, #EFF6FF)', borderLeft: '4px solid var(--info-500)',
+          borderRadius: 'var(--radius-lg)', padding: '12px 16px', marginBottom: 16,
+          display: 'flex', alignItems: 'center', gap: 10, fontSize: 13,
+        }}>
+          <span style={{ fontSize: 18 }}>🌉</span>
+          <div>
+            <span style={{ fontWeight: 700, color: 'var(--navy-900)' }}>En proceso de cruce</span>
+            <span style={{ color: 'var(--slate-500)', marginLeft: 8 }}>Tiempo estimado: consultar tiempos de puente en Inicio</span>
+          </div>
+        </div>
+      )}
+
       {/* ═══ SEMÁFORO ROJO ALERT (v2) ═══ */}
       {(t.semaforo as number) === 1 && (
         <div style={{
@@ -662,12 +677,17 @@ export default function TraficoDetailPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
           {/* ── Key Stats Row ── */}
+          {(() => {
+            const valorUSD = Number(t.importe_total) || 0
+            const tcVal = Number(t.tipo_cambio) || 0
+            const valorMXNStr = valorUSD > 0 && tcVal > 0 ? `(≈${fmtMXNInt(Math.round(valorUSD * tcVal))} MXN)` : ''
+            return (
           <div className="kpi-grid" style={{ gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)', gap: 12 }}>
             {((): { label: string; value: string; mono: boolean }[] => {
               // Fall back to linked entradas for bultos/peso if tráfico fields are empty
               const entradaBultos = entradas.reduce((sum, e) => sum + (Number((e as Record<string, unknown>).cantidad_bultos) || 0), 0)
               const entradaPeso = entradas.reduce((sum, e) => sum + (Number((e as Record<string, unknown>).peso_bruto) || 0), 0)
-              const valor = t.importe_total ? fmtUSD(Number(t.importe_total)) + ' USD' : 'Pendiente'
+              const valor = valorUSD > 0 ? fmtUSD(valorUSD) + ' USD' : 'Pendiente'
               const peso = t.peso_bruto ? fmtKg(Number(t.peso_bruto)) + ' kg' : entradaPeso > 0 ? fmtKg(entradaPeso) + ' kg' : 'Pendiente'
               const bultos = t.bultos ?? t.cantidad_bultos ?? (entradaBultos > 0 ? entradaBultos : null)
               return [
@@ -677,6 +697,7 @@ export default function TraficoDetailPage() {
                 { label: 'Fecha Llegada', value: t.fecha_llegada ? fmtDate(String(t.fecha_llegada)) : 'Pendiente', mono: true },
                 { label: 'Aduana', value: String(t.aduana ?? (t.oficina ? t.oficina : '240 · Nuevo Laredo')), mono: false },
                 { label: 'Régimen', value: String(t.regimen ?? 'A1 · Definitivo'), mono: false },
+                ...(t.fraccion_arancelaria ? [{ label: 'Fracción', value: String(t.fraccion_arancelaria), mono: true }] : []),
               ]
             })().map(stat => (
               <div key={stat.label} className="kpi-card" style={{ padding: '14px 16px' }}>
@@ -691,9 +712,17 @@ export default function TraficoDetailPage() {
                 }}>
                   {String(stat.value)}
                 </div>
+                {stat.label === 'Valor' && valorMXNStr && (
+                  <div style={{ fontSize: 11, color: 'var(--slate-400)', fontFamily: 'var(--font-mono)', marginTop: 2 }}>{valorMXNStr}</div>
+                )}
+                {stat.label === 'Fracción' && stat.value !== 'Pendiente' && (
+                  <Link href={`/catalogo?search=${encodeURIComponent(stat.value)}`} style={{ fontSize: 10, color: 'var(--info, #2563EB)', textDecoration: 'none', marginTop: 2, display: 'block' }}>Ver en catálogo →</Link>
+                )}
               </div>
             ))}
           </div>
+            )
+          })()}
 
           {/* ── Completeness Ring ── */}
           <div className="card" style={{ padding: 20 }}>

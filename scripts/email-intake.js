@@ -50,7 +50,7 @@ require('dotenv').config({ path: envPath })
 
 const { google } = require('googleapis')
 const { createClient } = require('@supabase/supabase-js')
-const pdfParse = require('pdf-parse')
+const { PDFParse } = require('pdf-parse')
 const { getAllRates } = require('./lib/rates')
 
 const supabase = createClient(
@@ -123,7 +123,9 @@ async function downloadPdf(gmail, messageId, attachmentId, destPath) {
 
 async function extractPdfText(filePath) {
   const buf = fs.readFileSync(filePath)
-  const result = await pdfParse(buf)
+  const uint8 = new Uint8Array(buf)
+  const parser = new PDFParse(uint8)
+  const result = await parser.getText()
   const text = (result.text || '').trim()
   if (text.length < 20) {
     return { text: '', needsVision: true }

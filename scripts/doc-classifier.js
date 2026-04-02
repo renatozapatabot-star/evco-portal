@@ -70,9 +70,9 @@ async function logPipeline(step, status, details, durationMs) {
 
 async function extractPdfText(filePath) {
   const buffer = fs.readFileSync(filePath)
-  
-  const result = await pdfParse(buffer)
-  
+  const uint8 = new Uint8Array(buffer)
+  const parser = new PDFParse(uint8)
+  const result = await parser.getText()
   return result.text || ''
 }
 

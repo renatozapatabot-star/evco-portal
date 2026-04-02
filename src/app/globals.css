@@ -767,6 +767,9 @@ body {
   letter-spacing: 0.5px;
   background: var(--slate-100);
   border-bottom: 1px solid var(--slate-200);
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .cruz-table td {

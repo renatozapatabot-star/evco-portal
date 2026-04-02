@@ -89,7 +89,7 @@ export default function LoginPage() {
         )}
 
         {/* Login card */}
-        <div className="login-card">
+        <div className="login-card" style={session ? { borderRadius: '0 0 20px 20px' } : undefined}>
           {/* Brand */}
           <div className="login-brand">
             <div className="login-z-mark">Z</div>
@@ -225,10 +225,12 @@ export default function LoginPage() {
         .login-session-card {
           background: #FFFFFF;
           border: 1px solid #E8E5E0;
-          border-radius: 16px;
+          border-radius: 20px 20px 0 0;
           padding: 20px 24px;
-          margin-bottom: 16px;
+          margin-bottom: -1px;
           box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+          position: relative;
+          z-index: 1;
         }
         .login-session-label {
           font-size: 12px; color: #6B6B6B; margin-bottom: 6px; font-weight: 500;

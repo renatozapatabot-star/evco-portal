@@ -135,18 +135,18 @@ export default function DraftReviewPage() {
 
   if (loadingDraft) return (
     <div style={{ padding: 24, maxWidth: 1000, margin: '0 auto' }}>
-      <div className="skeleton" style={{ width: 120, height: 16, marginBottom: 20 }} />
-      <div className="skeleton" style={{ width: 300, height: 32, marginBottom: 12 }} />
-      <div className="skeleton" style={{ height: 200, borderRadius: 'var(--r-md)' }} />
+      <div className="skeleton-shimmer" style={{ width: 120, height: 16, marginBottom: 20 }} />
+      <div className="skeleton-shimmer" style={{ width: 300, height: 32, marginBottom: 12 }} />
+      <div className="skeleton-shimmer" style={{ height: 200, borderRadius: 'var(--radius-md)' }} />
     </div>
   )
 
   if (!draft) return (
     <div style={{ padding: 24 }}>
-      <button onClick={() => router.push('/drafts')} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--n-400)', fontSize: 13, marginBottom: 20 }}>
+      <button onClick={() => router.push('/drafts')} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--slate-400)', fontSize: 13, marginBottom: 20 }}>
         <ArrowLeft size={14} /> Borradores
       </button>
-      <p style={{ color: 'var(--n-400)' }}>Borrador no encontrado.</p>
+      <p style={{ color: 'var(--slate-400)' }}>Borrador no encontrado.</p>
     </div>
   )
 
@@ -178,7 +178,7 @@ export default function DraftReviewPage() {
             strokeDasharray={339.29} strokeDashoffset={339.29 * (countdown / 5)}
             transform="rotate(-90 60 60)" style={{ transition: 'stroke-dashoffset 1s linear' }} />
         </svg>
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 48, fontWeight: 900, fontFamily: 'var(--font-data)' }}>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 48, fontWeight: 900, fontFamily: 'var(--font-mono)' }}>
           {countdown}
         </div>
       </div>
@@ -224,21 +224,21 @@ export default function DraftReviewPage() {
   // ═══ AUTOMATION PROGRESS ═══
   if (approvalState === 'automating') return (
     <div style={{ padding: 32, maxWidth: 600, margin: '60px auto' }}>
-      <h2 style={{ fontSize: 20, fontWeight: 800, color: 'var(--n-900)', marginBottom: 24 }}>Automatización en curso</h2>
+      <h2 style={{ fontSize: 20, fontWeight: 800, color: 'var(--navy-900)', marginBottom: 24 }}>Automatización en curso</h2>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {AUTOMATION_STEPS.map((step, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: 'var(--bg-card)', border: 'var(--b-default)', borderRadius: 'var(--r-md)' }}>
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: 'var(--bg-card)', border: '1px solid var(--border-card)', borderRadius: 'var(--radius-md)' }}>
             <div style={{ width: 24, height: 24, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-              background: i < automationStep ? '#16A34A' : i === automationStep ? GOLD : 'var(--n-100)',
-              color: i <= automationStep ? 'white' : 'var(--n-400)',
+              background: i < automationStep ? '#16A34A' : i === automationStep ? GOLD : 'var(--slate-100)',
+              color: i <= automationStep ? 'white' : 'var(--slate-400)',
             }}>
               {i < automationStep ? <Check size={14} /> : <span style={{ fontSize: 11, fontWeight: 700 }}>{i + 1}</span>}
             </div>
-            <span style={{ fontSize: 14, fontWeight: i === automationStep ? 700 : 500, color: i <= automationStep ? 'var(--n-900)' : 'var(--n-400)' }}>
+            <span style={{ fontSize: 14, fontWeight: i === automationStep ? 700 : 500, color: i <= automationStep ? 'var(--navy-900)' : 'var(--slate-400)' }}>
               {step}
             </span>
             {i === automationStep && <span style={{ marginLeft: 'auto', fontSize: 11, color: GOLD, fontWeight: 700 }}>En proceso...</span>}
-            {i < automationStep && <span style={{ marginLeft: 'auto', fontSize: 11, color: '#16A34A', fontFamily: 'var(--font-data)' }}>✓</span>}
+            {i < automationStep && <span style={{ marginLeft: 'auto', fontSize: 11, color: '#16A34A', fontFamily: 'var(--font-mono)' }}>✓</span>}
           </div>
         ))}
       </div>
@@ -249,13 +249,13 @@ export default function DraftReviewPage() {
   if (approvalState === 'done') return (
     <div style={{ padding: 32, maxWidth: 500, margin: '80px auto', textAlign: 'center' }}>
       <Check size={48} style={{ color: '#16A34A', margin: '0 auto 16px' }} />
-      <h2 style={{ fontSize: 22, fontWeight: 900, color: 'var(--n-900)', marginBottom: 8 }}>Pedimento transmitido</h2>
-      <p style={{ fontSize: 14, color: 'var(--n-500)', marginBottom: 24 }}>Tráfico {draft.trafico} procesado exitosamente</p>
+      <h2 style={{ fontSize: 22, fontWeight: 900, color: 'var(--navy-900)', marginBottom: 8 }}>Pedimento transmitido</h2>
+      <p style={{ fontSize: 14, color: 'var(--slate-500)', marginBottom: 24 }}>Tráfico {draft.trafico} procesado exitosamente</p>
       <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
         <button onClick={() => router.push(`/traficos/${draft.trafico}`)} className="btn-gold" style={{ padding: '12px 24px', fontSize: 14, borderRadius: 8 }}>
           Ver tráfico →
         </button>
-        <button onClick={() => router.push('/drafts')} style={{ padding: '12px 24px', border: 'var(--b-default)', borderRadius: 8, background: 'var(--bg-card)', cursor: 'pointer', fontSize: 14, fontWeight: 600 }}>
+        <button onClick={() => router.push('/drafts')} style={{ padding: '12px 24px', border: '1px solid var(--border-card)', borderRadius: 8, background: 'var(--bg-card)', cursor: 'pointer', fontSize: 14, fontWeight: 600 }}>
           Siguiente borrador
         </button>
       </div>
@@ -266,9 +266,9 @@ export default function DraftReviewPage() {
   if (approvalState === 'rejected') return (
     <div style={{ padding: 32, maxWidth: 500, margin: '80px auto', textAlign: 'center' }}>
       <X size={48} style={{ color: 'var(--danger-500)', margin: '0 auto 16px' }} />
-      <h2 style={{ fontSize: 22, fontWeight: 900, color: 'var(--n-900)', marginBottom: 8 }}>Borrador rechazado</h2>
-      <p style={{ fontSize: 14, color: 'var(--n-500)', marginBottom: 24 }}>Motivo: {rejectReason || 'Sin motivo especificado'}</p>
-      <button onClick={() => router.push('/drafts')} style={{ padding: '12px 24px', border: 'var(--b-default)', borderRadius: 8, background: 'var(--bg-card)', cursor: 'pointer', fontSize: 14, fontWeight: 600 }}>
+      <h2 style={{ fontSize: 22, fontWeight: 900, color: 'var(--navy-900)', marginBottom: 8 }}>Borrador rechazado</h2>
+      <p style={{ fontSize: 14, color: 'var(--slate-500)', marginBottom: 24 }}>Motivo: {rejectReason || 'Sin motivo especificado'}</p>
+      <button onClick={() => router.push('/drafts')} style={{ padding: '12px 24px', border: '1px solid var(--border-card)', borderRadius: 8, background: 'var(--bg-card)', cursor: 'pointer', fontSize: 14, fontWeight: 600 }}>
         Volver a borradores
       </button>
     </div>
@@ -277,7 +277,7 @@ export default function DraftReviewPage() {
   // ═══ MAIN REVIEW INTERFACE ═══
   return (
     <div style={{ padding: 24, maxWidth: 1000, margin: '0 auto' }}>
-      <button onClick={() => router.push('/drafts')} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--n-400)', fontSize: 12, marginBottom: 20 }}>
+      <button onClick={() => router.push('/drafts')} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--slate-400)', fontSize: 12, marginBottom: 20 }}>
         <ArrowLeft size={13} /> Borradores → {draft.id}
       </button>
 
@@ -288,21 +288,21 @@ export default function DraftReviewPage() {
             <span style={{ fontSize: 11, fontWeight: 800, padding: '3px 10px', borderRadius: 4, background: tier.bg, color: tier.color, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
               Revisión Requerida · Tier {draft.tier}
             </span>
-            <span style={{ fontSize: 12, color: 'var(--n-400)' }}>{tier.time}</span>
+            <span style={{ fontSize: 12, color: 'var(--slate-400)' }}>{tier.time}</span>
           </div>
-          <h1 style={{ fontFamily: 'var(--font-data)', fontSize: 24, fontWeight: 900, color: 'var(--n-900)', margin: 0 }}>{draft.trafico}</h1>
-          <div style={{ fontSize: 13, color: 'var(--n-500)', marginTop: 4 }}>
+          <h1 style={{ fontFamily: 'var(--font-mono)', fontSize: 24, fontWeight: 900, color: 'var(--navy-900)', margin: 0 }}>{draft.trafico}</h1>
+          <div style={{ fontSize: 13, color: 'var(--slate-500)', marginTop: 4 }}>
             {draft.supplier} · {draft.country} · Recibido {formatAbsoluteETA(draft.created_at)}
           </div>
         </div>
         <div style={{ textAlign: 'right' }}>
-          <div style={{ fontSize: 36, fontWeight: 900, fontFamily: 'var(--font-data)', color: tier.color }}>{draft.confidence}%</div>
-          <div style={{ fontSize: 11, color: 'var(--n-400)' }}>confianza CRUZ</div>
+          <div style={{ fontSize: 36, fontWeight: 900, fontFamily: 'var(--font-mono)', color: tier.color }}>{draft.confidence}%</div>
+          <div style={{ fontSize: 11, color: 'var(--slate-400)' }}>confianza CRUZ</div>
         </div>
       </div>
 
       {/* Tabs */}
-      <div style={{ display: 'flex', gap: 2, marginBottom: 20, borderBottom: '1px solid var(--n-150)' }}>
+      <div style={{ display: 'flex', gap: 2, marginBottom: 20, borderBottom: '1px solid var(--border-card)' }}>
         {([
           { key: 'review' as const, label: 'Datos Generales' },
           { key: 'products' as const, label: `Productos (${draft.products.length})` },
@@ -312,7 +312,7 @@ export default function DraftReviewPage() {
             padding: '8px 16px', background: 'none', border: 'none',
             borderBottom: activeTab === tab.key ? `2px solid ${GOLD}` : '2px solid transparent',
             cursor: 'pointer', fontSize: 13, fontWeight: activeTab === tab.key ? 700 : 500,
-            color: activeTab === tab.key ? 'var(--n-900)' : 'var(--n-400)', marginBottom: -1,
+            color: activeTab === tab.key ? 'var(--navy-900)' : 'var(--slate-400)', marginBottom: -1,
           }}>
             {tab.label}
           </button>
@@ -337,17 +337,17 @@ export default function DraftReviewPage() {
                   { label: 'Total Contribuciones', value: `${fmtMXNInt(totalContrib)} MXN`, bold: true },
                 ].map(r => (
                   <tr key={r.label}>
-                    <td style={{ color: 'var(--n-700)' }}>
+                    <td style={{ color: 'var(--slate-700)' }}>
                       {r.label}
-                      {(r as any).note && <span style={{ fontSize: 10, color: 'var(--n-400)', marginLeft: 6 }}>({(r as any).note})</span>}
+                      {(r as any).note && <span style={{ fontSize: 10, color: 'var(--slate-400)', marginLeft: 6 }}>({(r as any).note})</span>}
                     </td>
-                    <td style={{ textAlign: 'right', fontFamily: 'var(--font-data)', fontWeight: (r as any).bold ? 800 : 600, color: (r as any).bold ? GOLD : 'var(--n-900)' }}>{r.value}</td>
+                    <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontWeight: (r as any).bold ? 800 : 600, color: (r as any).bold ? GOLD : 'var(--navy-900)' }}>{r.value}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-          <div style={{ fontSize: 11, color: 'var(--n-400)', marginBottom: 16 }}>
+          <div style={{ fontSize: 11, color: 'var(--slate-400)', marginBottom: 16 }}>
             Base IVA = Valor aduana + DTA + IGI (cálculo cascada, no 16% flat sobre factura)
           </div>
         </div>
@@ -359,15 +359,15 @@ export default function DraftReviewPage() {
           {draft.products.map((p: any, i: number) => {
             const borderColor = p.confidence >= 90 ? '#16A34A' : p.confidence >= 75 ? '#D97706' : 'var(--danger-500)'
             return (
-              <div key={i} style={{ padding: '16px 20px', background: 'var(--bg-card)', border: `1px solid var(--n-150)`, borderLeft: `4px solid ${borderColor}`, borderRadius: 'var(--r-md)' }}>
+              <div key={i} style={{ padding: '16px 20px', background: 'var(--bg-card)', border: `1px solid var(--border-card)`, borderLeft: `4px solid ${borderColor}`, borderRadius: 'var(--radius-md)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                  <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--n-900)' }}>{p.description}</span>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: borderColor, fontFamily: 'var(--font-data)' }}>{p.confidence}%</span>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--navy-900)' }}>{p.description}</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: borderColor, fontFamily: 'var(--font-mono)' }}>{p.confidence}%</span>
                 </div>
-                <div style={{ display: 'flex', gap: 16, fontSize: 12, color: 'var(--n-500)' }}>
-                  <span style={{ fontFamily: 'var(--font-data)', fontWeight: 600 }}>{p.fraccion}</span>
-                  <span style={{ fontFamily: 'var(--font-data)' }}>{p.qty.toLocaleString()} {p.unit}</span>
-                  <span style={{ fontFamily: 'var(--font-data)', fontWeight: 600 }}>{fmtUSD(p.valor_usd)} USD</span>
+                <div style={{ display: 'flex', gap: 16, fontSize: 12, color: 'var(--slate-500)' }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600 }}>{p.fraccion}</span>
+                  <span style={{ fontFamily: 'var(--font-mono)' }}>{p.qty.toLocaleString()} {p.unit}</span>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600 }}>{fmtUSD(p.valor_usd)} USD</span>
                 </div>
               </div>
             )
@@ -379,19 +379,19 @@ export default function DraftReviewPage() {
       {activeTab === 'checklist' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {draft.checklist.map((c: any, i: number) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: 'var(--bg-card)', border: 'var(--b-default)', borderRadius: 'var(--r-md)', minHeight: 48 }}>
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: 'var(--bg-card)', border: '1px solid var(--border-card)', borderRadius: 'var(--radius-md)', minHeight: 48 }}>
               {c.status === 'ok' && <Check size={16} style={{ color: '#16A34A', flexShrink: 0 }} />}
               {c.status === 'warning' && <AlertTriangle size={16} style={{ color: '#D97706', flexShrink: 0 }} />}
               {c.status === 'error' && <X size={16} style={{ color: 'var(--danger-500)', flexShrink: 0 }} />}
-              <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--n-800)', flex: 1 }}>{c.label}</span>
-              {c.detail && <span style={{ fontSize: 12, color: c.status === 'ok' ? 'var(--n-400)' : c.status === 'warning' ? '#92400E' : '#991B1B' }}>{c.detail}</span>}
+              <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--navy-800)', flex: 1 }}>{c.label}</span>
+              {c.detail && <span style={{ fontSize: 12, color: c.status === 'ok' ? 'var(--slate-400)' : c.status === 'warning' ? '#92400E' : '#991B1B' }}>{c.detail}</span>}
             </div>
           ))}
         </div>
       )}
 
       {/* ═══ APPROVAL BUTTONS (sticky bottom) ═══ */}
-      <div style={{ position: 'sticky', bottom: 0, left: 0, right: 0, padding: '16px 0', background: 'var(--bg-primary)', borderTop: '1px solid var(--n-150)', marginTop: 24 }}>
+      <div style={{ position: 'sticky', bottom: 0, left: 0, right: 0, padding: '16px 0', background: 'var(--bg-main)', borderTop: '1px solid var(--border-card)', marginTop: 24 }}>
         <div style={{ display: 'flex', gap: 10, maxWidth: 1000, margin: '0 auto' }}>
           {/* Aprobar */}
           <button onClick={() => setApprovalState('countdown')} className="btn-gold"
@@ -405,7 +405,7 @@ export default function DraftReviewPage() {
             if (note && note.length >= 20) { setCorrectionNote(note); setApprovalState('countdown') }
             else if (note) toast('La nota debe tener al menos 20 caracteres.', 'error')
           }}
-            style={{ flex: 1, padding: '14px 16px', border: 'var(--b-default)', borderRadius: 10, background: 'var(--bg-card)', cursor: 'pointer', fontSize: 13, fontWeight: 700, color: 'var(--n-700)', minHeight: 60 }}>
+            style={{ flex: 1, padding: '14px 16px', border: '1px solid var(--border-card)', borderRadius: 10, background: 'var(--bg-card)', cursor: 'pointer', fontSize: 13, fontWeight: 700, color: 'var(--slate-700)', minHeight: 60 }}>
             Con correcciones
           </button>
 

@@ -91,16 +91,16 @@ export default function DraftsPage() {
     <div style={{ padding: 24, maxWidth: 900, margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
         <div>
-          <h1 style={{ fontSize: 28, fontWeight: 900, color: 'var(--n-900)', letterSpacing: '-0.02em', margin: 0 }}>Borradores</h1>
-          <p style={{ fontSize: 13, color: 'var(--n-400)', marginTop: 4 }}>{drafts.length} borrador{drafts.length !== 1 ? 'es' : ''} {filter === 'pending' ? 'pendientes' : filter === 'approved' ? 'aprobados' : 'totales'}</p>
+          <h1 style={{ fontSize: 28, fontWeight: 900, color: 'var(--navy-900)', letterSpacing: '-0.02em', margin: 0 }}>Borradores</h1>
+          <p style={{ fontSize: 13, color: 'var(--slate-400)', marginTop: 4 }}>{drafts.length} borrador{drafts.length !== 1 ? 'es' : ''} {filter === 'pending' ? 'pendientes' : filter === 'approved' ? 'aprobados' : 'totales'}</p>
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: 4, marginBottom: 20, background: 'var(--n-50)', borderRadius: 8, padding: 3, width: 'fit-content' }}>
+      <div style={{ display: 'flex', gap: 4, marginBottom: 20, background: 'var(--slate-50)', borderRadius: 8, padding: 3, width: 'fit-content' }}>
         {(['pending', 'approved', 'all'] as const).map(f => (
           <button key={f} onClick={() => setFilter(f)} style={{
             padding: '6px 16px', borderRadius: 6, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer',
-            background: filter === f ? 'white' : 'transparent', color: filter === f ? 'var(--n-900)' : 'var(--n-400)',
+            background: filter === f ? 'white' : 'transparent', color: filter === f ? 'var(--navy-900)' : 'var(--slate-400)',
             boxShadow: filter === f ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
           }}>
             {f === 'pending' ? 'Pendientes' : f === 'approved' ? 'Aprobados' : 'Todos'}
@@ -110,13 +110,13 @@ export default function DraftsPage() {
 
       {loading ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {[0, 1, 2].map(i => <div key={i} className="skeleton" style={{ height: 80, borderRadius: 'var(--r-md)' }} />)}
+          {[0, 1, 2].map(i => <div key={i} className="skeleton-shimmer" style={{ height: 80, borderRadius: 'var(--radius-md)' }} />)}
         </div>
       ) : drafts.length === 0 ? (
         <div style={{ padding: 60, textAlign: 'center' }}>
           <CheckCircle size={32} style={{ color: '#16A34A', margin: '0 auto 12px' }} />
-          <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--n-700)' }}>Sin borradores pendientes</div>
-          <div style={{ fontSize: 13, color: 'var(--n-400)', marginTop: 4 }}>Todos los borradores han sido revisados</div>
+          <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--slate-700)' }}>Sin borradores pendientes</div>
+          <div style={{ fontSize: 13, color: 'var(--slate-400)', marginTop: 4 }}>Todos los borradores han sido revisados</div>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -132,24 +132,24 @@ export default function DraftsPage() {
               <div key={d.id} onClick={() => router.push(`/drafts/${d.id}`)}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 16, padding: '16px 20px',
-                  background: 'var(--bg-card)', border: 'var(--b-default)', borderRadius: 'var(--r-md)',
+                  background: 'var(--bg-card)', border: 'var(--b-default)', borderRadius: 'var(--radius-md)',
                   cursor: 'pointer', borderLeft: `4px solid ${tier.color}`, minHeight: 60,
                 }}>
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                    <span style={{ fontFamily: 'var(--font-data)', fontWeight: 800, fontSize: 15, color: 'var(--n-900)' }}>{trafico}</span>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 800, fontSize: 15, color: 'var(--navy-900)' }}>{trafico}</span>
                     <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 4, background: tier.bg, color: tier.color, border: `1px solid ${tier.border}` }}>
                       Tier {d.review_tier || '?'} · {tier.label}
                     </span>
                   </div>
-                  <div style={{ fontSize: 13, color: 'var(--n-600)' }}>{supplier} · {product}</div>
-                  <div style={{ fontSize: 12, color: 'var(--n-400)', marginTop: 2, fontFamily: 'var(--font-data)' }}>
+                  <div style={{ fontSize: 13, color: 'var(--slate-600)' }}>{supplier} · {product}</div>
+                  <div style={{ fontSize: 12, color: 'var(--slate-400)', marginTop: 2, fontFamily: 'var(--font-mono)' }}>
                     {formatAbsoluteETA(d.created_at)} {valorUSD > 0 && `· ${fmtUSD(Number(valorUSD))} USD`}
                   </div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: 24, fontWeight: 900, fontFamily: 'var(--font-data)', color: tier.color }}>{confidence}%</div>
-                  <div style={{ fontSize: 11, color: 'var(--n-400)' }}>confianza</div>
+                  <div style={{ fontSize: 24, fontWeight: 900, fontFamily: 'var(--font-mono)', color: tier.color }}>{confidence}%</div>
+                  <div style={{ fontSize: 11, color: 'var(--slate-400)' }}>confianza</div>
                 </div>
               </div>
             )

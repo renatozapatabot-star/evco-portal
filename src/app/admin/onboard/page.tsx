@@ -135,7 +135,7 @@ export default function OnboardPage() {
   if (!authorized) return null
 
   return (
-    <div style={{ padding: '24px 28px', fontFamily: 'var(--font-geist-sans)', color: T.text, maxWidth: 640 }}>
+    <div style={{ padding: '24px 28px', fontFamily: 'var(--font-sans)', color: T.text, maxWidth: 640 }}>
       <h1 style={{ fontSize: 20, fontWeight: 800, margin: '0 0 4px' }}>Nuevo Cliente</h1>
       <p style={{ color: T.muted, fontSize: 13, margin: '0 0 24px' }}>
         Paso {step} de 3 &middot; Onboarding
@@ -177,7 +177,7 @@ export default function OnboardPage() {
 
               <div>
                 <label style={labelStyle}>Company ID (auto)</label>
-                <input style={{ ...inputStyle, color: T.muted, fontFamily: 'var(--font-jetbrains-mono)', fontSize: 13 }}
+                <input style={{ ...inputStyle, color: T.muted, fontFamily: 'var(--font-mono)', fontSize: 13 }}
                   value={form.company_id}
                   onChange={e => setForm(prev => ({ ...prev, company_id: e.target.value }))}
                   placeholder="auto-generated-from-name" />
@@ -208,7 +208,7 @@ export default function OnboardPage() {
               <div>
                 <label style={labelStyle}>Contraseña del Portal</label>
                 <div style={{ display: 'flex', gap: 8 }}>
-                  <input style={{ ...inputStyle, fontFamily: 'var(--font-jetbrains-mono)', letterSpacing: '0.05em' }}
+                  <input style={{ ...inputStyle, fontFamily: 'var(--font-mono)', letterSpacing: '0.05em' }}
                     value={form.portal_password}
                     onChange={e => set('portal_password', e.target.value)} />
                   <button onClick={() => set('portal_password', generatePassword())}
@@ -253,11 +253,11 @@ export default function OnboardPage() {
 
             <div style={{ background: '#0D0D0C', borderRadius: 8, padding: 16, fontSize: 13, lineHeight: 2.2 }}>
               <div><span style={{ color: T.muted }}>Empresa:</span> <strong>{form.company_name}</strong></div>
-              <div><span style={{ color: T.muted }}>Company ID:</span> <code style={{ background: T.border, padding: '2px 8px', borderRadius: 4, fontFamily: 'var(--font-jetbrains-mono)', fontSize: 12 }}>{form.company_id}</code></div>
-              <div><span style={{ color: T.muted }}>Clave:</span> <span style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>{form.clave_cliente}</span></div>
-              <div><span style={{ color: T.muted }}>RFC:</span> <span style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>{form.rfc}</span></div>
+              <div><span style={{ color: T.muted }}>Company ID:</span> <code style={{ background: T.border, padding: '2px 8px', borderRadius: 4, fontFamily: 'var(--font-mono)', fontSize: 12 }}>{form.company_id}</code></div>
+              <div><span style={{ color: T.muted }}>Clave:</span> <span style={{ fontFamily: 'var(--font-mono)' }}>{form.clave_cliente}</span></div>
+              <div><span style={{ color: T.muted }}>RFC:</span> <span style={{ fontFamily: 'var(--font-mono)' }}>{form.rfc}</span></div>
               <div><span style={{ color: T.muted }}>Email:</span> {form.primary_email}</div>
-              <div><span style={{ color: T.muted }}>Password:</span> <code style={{ background: T.border, padding: '2px 8px', borderRadius: 4, fontFamily: 'var(--font-jetbrains-mono)', fontSize: 12 }}>{form.portal_password}</code></div>
+              <div><span style={{ color: T.muted }}>Password:</span> <code style={{ background: T.border, padding: '2px 8px', borderRadius: 4, fontFamily: 'var(--font-mono)', fontSize: 12 }}>{form.portal_password}</code></div>
             </div>
 
             <div style={{
@@ -396,7 +396,7 @@ function CopyRow({ label, value, copied, onCopy, mono }: {
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '2px 0' }}>
       <div>
         <span style={{ color: '#666' }}>{label}:</span>{' '}
-        <span style={mono ? { fontFamily: 'var(--font-jetbrains-mono)', letterSpacing: '0.05em' } : undefined}>
+        <span style={mono ? { fontFamily: 'var(--font-mono)', letterSpacing: '0.05em' } : undefined}>
           {value}
         </span>
       </div>

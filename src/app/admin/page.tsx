@@ -55,7 +55,7 @@ export default async function AdminPage() {
   }
 
   return (
-    <div style={{ padding: '24px 28px', fontFamily: 'var(--font-geist-sans)', color: T.text, minHeight: '100vh' }}>
+    <div style={{ padding: '24px 28px', fontFamily: 'var(--font-sans)', color: T.text, minHeight: '100vh' }}>
       {/* Header */}
       <div style={{ marginBottom: 28 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4 }}>
@@ -67,7 +67,7 @@ export default async function AdminPage() {
           </h1>
         </div>
         <p style={{ color: T.muted, fontSize: 13, margin: '4px 0 0 48px' }}>
-          {totalClients} clients &middot; Aduana 240 Nuevo Laredo &middot; <span style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtDate(new Date())}</span>
+          {totalClients} clients &middot; Aduana 240 Nuevo Laredo &middot; <span style={{ fontFamily: 'var(--font-mono)' }}>{fmtDate(new Date())}</span>
         </p>
       </div>
 
@@ -135,7 +135,7 @@ export default async function AdminPage() {
               return (
                 <tr key={c.company_id} style={{ borderBottom: `1px solid ${T.border}` }}>
                   <td style={{ padding: '10px 14px', fontSize: 13, fontWeight: 600 }}>{c.name}</td>
-                  <td style={{ padding: '10px 14px', fontSize: 12, color: T.sub, fontFamily: 'var(--font-jetbrains-mono)' }}>{c.clave_cliente || '—'}</td>
+                  <td style={{ padding: '10px 14px', fontSize: 12, color: T.sub, fontFamily: 'var(--font-mono)' }}>{c.clave_cliente || '—'}</td>
                   <td style={{ padding: '10px 14px', fontSize: 13, fontWeight: 600 }}>{(c.traficos_count || 0).toLocaleString()}</td>
                   <td style={{ padding: '10px 14px' }}>
                     <span style={{ background: badge.bg, color: badge.color, border: `1px solid ${badge.border}`,
@@ -143,7 +143,7 @@ export default async function AdminPage() {
                       {score}%
                     </span>
                   </td>
-                  <td style={{ padding: '10px 14px', fontSize: 11, color: T.muted, fontFamily: 'var(--font-jetbrains-mono)' }}>
+                  <td style={{ padding: '10px 14px', fontSize: 11, color: T.muted, fontFamily: 'var(--font-mono)' }}>
                     {c.last_sync ? fmtDateTime(c.last_sync) : '—'}
                   </td>
                   <td style={{ padding: '10px 14px' }}>

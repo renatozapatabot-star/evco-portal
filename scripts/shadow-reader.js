@@ -124,7 +124,10 @@ Valid actions: request, response, notification, confirmation, escalation, intern
     return {
       stage: parsed.stage || 'other',
       action: parsed.action || 'other',
-      trafico: parsed.trafico || null,
+      // Validate trafico ref — must contain digits, reject generic words
+      let ref = parsed.trafico || null;
+      if (ref && !/\d{4,}/.test(ref)) ref = null;
+      trafico: ref,
       confidence: Math.min(1, Math.max(0, parsed.confidence || 0)),
       raw: response,
     }

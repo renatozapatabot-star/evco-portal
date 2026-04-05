@@ -272,7 +272,7 @@ export default function ExpedientesPage() {
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                     padding: '14px 16px',
                     cursor: 'pointer', minHeight: 60,
-                    background: 'var(--bg-main, #FAFBFC)',
+                    background: 'var(--bg-main, #FAFAF8)',
                     borderBottom: isExpanded ? '1px solid var(--border-card, #E5E7EB)' : 'none',
                   }}
                 >
@@ -324,7 +324,7 @@ export default function ExpedientesPage() {
                     gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
                     gap: 8,
                     padding: 16,
-                    background: 'var(--bg-main, #FAFBFC)',
+                    background: 'var(--bg-main, #FAFAF8)',
                   }}>
                     {REQUIRED_DOC_TYPES.map(reqKey => {
                       const found = groupDocs.find(d => d.doc_type && normalizeDocType(d.doc_type) === reqKey)

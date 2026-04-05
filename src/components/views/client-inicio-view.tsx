@@ -26,6 +26,8 @@ import { MorningSummary } from '@/components/morning-summary'
 import { SmartAlerts } from '@/components/smart-alerts'
 import { StreakBadge } from '@/components/streak-badge'
 import { Celebrate } from '@/components/celebrate'
+import { ComplianceCalendar } from '@/components/compliance-calendar'
+import { CostInsights } from '@/components/cost-insights'
 import { useRouter } from 'next/navigation'
 import { ChevronRight } from 'lucide-react'
 import { useSessionCache } from '@/hooks/use-session-cache'
@@ -784,6 +786,12 @@ export default function ClientInicioView() {
 
       {/* Confetti on realtime Cruzado event */}
       <Celebrate trigger={!!lastUpdate && (lastUpdate.estatus || '').toLowerCase().includes('cruz')} />
+
+      {/* Compliance calendar — upcoming deadlines */}
+      <ComplianceCalendar />
+
+      {/* Cost insights — T-MEC savings, anomalies */}
+      <CostInsights />
 
       {/* Smart alerts — traficos taking longer than average */}
       <SmartAlerts />

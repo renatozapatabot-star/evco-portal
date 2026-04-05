@@ -8,7 +8,7 @@ import {
 } from 'lucide-react'
 import { getCookieValue } from '@/lib/client-config'
 import { EmptyState } from '@/components/ui/EmptyState'
-import { fmtUSD, fmtUSDCompact, fmtDate } from '@/lib/format-utils'
+import { fmtUSD, fmtUSDCompact, fmtDate, fmtPedimento } from '@/lib/format-utils'
 
 /* ── Light tokens (DESIGN_SYSTEM.md v6) ── */
 const D = {
@@ -348,7 +348,7 @@ export default function FinancieroPage() {
                         onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                       >
                         <td style={{ padding: '10px 20px', fontFamily: D.mono, fontSize: 13 }}>
-                          {f.factura || f.pedimento || '—'}
+                          {f.factura || fmtPedimento(f.pedimento) || '—'}
                         </td>
                         <td style={{ padding: '10px 12px', maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {f.proveedor || '—'}

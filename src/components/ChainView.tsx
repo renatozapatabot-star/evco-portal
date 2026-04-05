@@ -1,6 +1,6 @@
 'use client'
 
-import { fmtDate, fmtUSD, fmtMXN, fmtKg } from '@/lib/format-utils'
+import { fmtDate, fmtUSD, fmtMXN, fmtKg, fmtPedimento } from '@/lib/format-utils'
 
 // ---------- Types ----------
 
@@ -93,7 +93,7 @@ export default function ChainView({ data }: { data: ChainData }) {
       {/* Pedimento header */}
       <div className="flex items-baseline gap-2 font-semibold text-base">
         <span>Pedimento</span>
-        <span className={monoClass}>{pedimento?.num ?? data.query}</span>
+        <span className={monoClass}>{fmtPedimento(pedimento?.num) || data.query}</span>
         {pedimento?.fecha_pago && (
           <span className={`${monoClass} text-[#6B6B6B] text-xs`}>
             {fmtDate(pedimento.fecha_pago)}

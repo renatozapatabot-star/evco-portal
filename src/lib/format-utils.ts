@@ -1,4 +1,5 @@
 import { getCookieValue } from '@/lib/client-config'
+import type { DateInput } from '@/types/database'
 
 // ── Number Formatting Rules ──
 // KPI cards / summaries: use compact format → fmtUSDCompact ("$2.6M USD")
@@ -136,17 +137,30 @@ export const fmtId = (id: string | null | undefined): string => {
   return String(id).replace(/[\u2013\u2014\u2212\u2010\u2015]/g, '-')
 }
 
-// Pedimento short — show only the 7-digit sequential number for client-facing display
-// Input: "26 24 3596 5500017" → Output: "5500017"
-export const fmtPedimentoShort = (ped: string | null | undefined): string => {
+// Pedimento full format — always display with spaces: "XX XX XXXX XXXXXXX"
+// Input: "26 24 3596 5500017" → Output: "26 24 3596 5500017" (preserved)
+// Input: "6500247" → Output: "6500247" (can't reconstruct AD/patente from 7 digits alone)
+// Input: "26243596 6500247" or "2624 3596 6500247" → normalized to "26 24 3596 6500247"
+// Pedimento numbers are ALWAYS stored and displayed WITH spaces. Never strip.
+export const fmtPedimento = (ped: string | null | undefined): string => {
   if (!ped) return ''
   const s = String(ped).trim()
-  // If it matches the full format "DD AD PPPP SSSSSSS", extract the last segment
-  const match = s.match(/^\d{2}\s\d{2}\s\d{4}\s(\d{7})$/)
-  if (match) return match[1]
-  // If it's already short (7 digits) or unrecognized, return as-is
+
+  // Already in correct format "DD AD PPPP SSSSSSS"
+  if (/^\d{2}\s\d{2}\s\d{4}\s\d{7}$/.test(s)) return s
+
+  // Compact 16-digit format without spaces → insert spaces
+  const digits = s.replace(/\s/g, '')
+  if (/^\d{16}$/.test(digits)) {
+    return `${digits.slice(0, 2)} ${digits.slice(2, 4)} ${digits.slice(4, 8)} ${digits.slice(8)}`
+  }
+
+  // 7-digit sequential only — return as-is (cannot reconstruct full format)
   return s
 }
+
+// Backwards compat alias — fmtPedimentoShort now returns full format
+export const fmtPedimentoShort = fmtPedimento
 
 // Title case descriptions
 export const fmtDesc = (s: string | null | undefined): string => {
@@ -158,7 +172,7 @@ export const fmtDesc = (s: string | null | undefined): string => {
 }
 
 // Priority scoring
-export const calcPriority = (row: any): number => {
+export const calcPriority = (row: { pedimento?: string | null; estatus?: string | null; fecha_llegada?: string | null; importe_total?: number | string | null }): number => {
   let score = 0
   if (!row.pedimento) score += 35
   if (row.estatus !== 'Cruzado' && row.fecha_llegada) {
@@ -184,7 +198,7 @@ export const priorityClass = (score: number): string => {
 
 const LAREDO_TZ = 'America/Chicago'
 
-export const fmtDateLocal = (s: any): string => {
+export const fmtDateLocal = (s: DateInput): string => {
   if (!s) return '—'
   try {
     return new Date(s).toLocaleDateString('es-MX', {
@@ -193,7 +207,7 @@ export const fmtDateLocal = (s: any): string => {
   } catch { return String(s) }
 }
 
-export const fmtDateTimeLocal = (s: any): string => {
+export const fmtDateTimeLocal = (s: DateInput): string => {
   if (!s) return '—'
   try {
     const d = new Date(s)
@@ -207,7 +221,7 @@ export const pluralize = (count: number, singular: string, plural: string): stri
   count === 1 ? singular : plural
 
 // v6.0 — Absolute ETA format. Never relative. es-MX locale with CST suffix.
-export const formatAbsoluteETA = (s: any): string => {
+export const formatAbsoluteETA = (s: DateInput): string => {
   if (!s) return '—'
   try {
     return new Date(s).toLocaleString('es-MX', {
@@ -219,7 +233,7 @@ export const formatAbsoluteETA = (s: any): string => {
 }
 
 // v6.0 — Absolute date only (no time). es-MX locale.
-export const formatAbsoluteDate = (s: any): string => {
+export const formatAbsoluteDate = (s: DateInput): string => {
   if (!s) return '—'
   try {
     return new Date(s).toLocaleDateString('es-MX', {

@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import { AlertTriangle, CheckCircle, Clock, Search } from 'lucide-react'
 import { getClientClaveCookie, getCompanyIdCookie } from '@/lib/client-config'
-import { fmtDate as fmtDateUtil } from '@/lib/format-utils'
+import { fmtDate as fmtDateUtil, fmtPedimento } from '@/lib/format-utils'
 import { EmptyState } from '@/components/ui/EmptyState'
 
 interface TraficoRow {
@@ -208,7 +208,7 @@ export default function MvePage() {
                   </td>
                   <td>
                     {r.pedimento
-                      ? <span className="ped-pill">{r.pedimento}</span>
+                      ? <span className="ped-pill">{fmtPedimento(r.pedimento)}</span>
                       : <span style={{ color: 'var(--border)' }}>—</span>}
                   </td>
                   <td className="text-center">
@@ -249,7 +249,7 @@ export default function MvePage() {
                     <tr key={r.trafico}>
                       <td><span className="mono text-[12px]" style={{ color: 'var(--text-primary)' }}>{fmtId(r.trafico)}</span></td>
                       <td className="text-[12px]" style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>{fmtDate(r.fecha_llegada)}</td>
-                      <td>{r.pedimento ? <span className="ped-pill">{r.pedimento}</span> : ''}</td>
+                      <td>{r.pedimento ? <span className="ped-pill">{fmtPedimento(r.pedimento)}</span> : ''}</td>
                       <td className="text-center">
                         <span className="text-[10.5px] font-semibold px-2 py-0.5 rounded-[4px]"
                           style={{ background: 'var(--success-bg)', color: 'var(--success)' }}>OK</span>

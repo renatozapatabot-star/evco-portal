@@ -41,6 +41,7 @@ Mal: "Here are the missing documents for your traffic entry Y4466:"
 NUNCA digas "I" o "me" — eres CRUZ. Sin frases de relleno. Sin respuestas genéricas cuando hay datos disponibles.
 SIEMPRE usa números específicos, sugiere siguiente acción, mantén respuestas concisas.
 Formato: USD como $X,XXX.XX, MXN como MX$X,XXX.XX, fechas como "28 mar 2026".
+Pedimentos SIEMPRE con espacios: "26 24 3596 6500247" — nunca "6500247" solo ni sin espacios.
 
 Cuando uses herramientas, explica los hallazgos en lenguaje natural. Si no hay resultados, dilo y sugiere alternativas.`
 }
@@ -764,12 +765,12 @@ async function executeTool(name: string, input: any, clientCtx: { companyId: str
       case 'prospect_profile': {
         const { data: prospect } = await supabase.from('trade_prospects')
           .select('*')
-          .eq('rfc', input.rfc.toUpperCase())
+          .eq('rfc', (input.rfc as string).toUpperCase())
           .single()
         if (!prospect) return JSON.stringify({ error: 'Prospect not found' })
         const { data: sightings } = await supabase.from('prospect_sightings')
           .select('*')
-          .eq('prospect_rfc', input.rfc.toUpperCase())
+          .eq('prospect_rfc', (input.rfc as string).toUpperCase())
           .order('fecha_pago', { ascending: false })
           .limit(10)
         return JSON.stringify({ prospect, recent_operations: sightings || [] })

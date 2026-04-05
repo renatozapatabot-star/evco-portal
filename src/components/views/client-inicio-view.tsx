@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import Link from 'next/link'
 import { getCompanyIdCookie, getClientNameCookie } from '@/lib/client-config'
+import { useRealtimeTrafico } from '@/hooks/use-realtime-trafico'
 import { fmtDate, fmtDateShort, fmtUSD, fmtUSDCompact, fmtKg, fmtDesc } from '@/lib/format-utils'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { calculateTmecSavings } from '@/lib/tmec-savings'
@@ -42,6 +43,20 @@ export default function ClientInicioView() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [companyName, setCompanyName] = useState('')
+  const { lastUpdate, updatedAt: realtimeAt } = useRealtimeTrafico()
+  const [realtimeToast, setRealtimeToast] = useState<string | null>(null)
+
+  // Show toast on realtime status change
+  useEffect(() => {
+    if (lastUpdate) {
+      const isCrossed = lastUpdate.estatus.toLowerCase().includes('cruz')
+      setRealtimeToast(isCrossed
+        ? `✅ ${lastUpdate.trafico} acaba de cruzar`
+        : `🔄 ${lastUpdate.trafico}: ${lastUpdate.estatus}`)
+      const t = setTimeout(() => setRealtimeToast(null), 5000)
+      return () => clearTimeout(t)
+    }
+  }, [lastUpdate])
   const [fetchedAt, setFetchedAt] = useState<Date | null>(null)
   const { getCached, setCache, refreshing, startRefresh, endRefresh } = useSessionCache()
   const [dataFade, setDataFade] = useState(1)
@@ -312,6 +327,16 @@ export default function ClientInicioView() {
       {/* Status Strip — first thing Ursula sees */}
       <div style={{ marginBottom: 16 }}>
         <StatusStrip override={statusOverride} />
+        {/* Realtime toast */}
+        {realtimeToast && (
+          <div style={{
+            marginTop: 8, padding: '8px 16px', borderRadius: 8,
+            background: '#0D9488', color: '#FFFFFF', fontSize: 13, fontWeight: 600,
+            animation: 'fadeInUp 200ms ease',
+          }}>
+            {realtimeToast}
+          </div>
+        )}
         {fetchedAt && (() => {
           const isLive = Date.now() - fetchedAt.getTime() < 5 * 60 * 1000
           return (

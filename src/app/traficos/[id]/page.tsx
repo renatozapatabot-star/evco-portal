@@ -14,6 +14,7 @@ import { SolicitarModal } from '@/components/SolicitarModal'
 import { getMissingDocs, REQUIRED_DOC_TYPES } from '@/lib/documents'
 import { useToast } from '@/components/Toast'
 import { ETAPrediction } from '@/components/eta-prediction'
+import { PhotoUpload } from '@/components/photo-upload'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { DocumentViewer } from '@/components/ui/DocumentViewer'
 import { ErrorCard } from '@/components/ui/ErrorCard'
@@ -730,6 +731,9 @@ export default function TraficoDetailPage() {
 
         {/* ── ETA Prediction ── */}
         <ETAPrediction traficoId={String(t.trafico || '')} isCruzado={isCruzado} />
+
+        {/* ── Quick Document Upload ── */}
+        <PhotoUpload traficoId={String(t.trafico || "")} />
 
         {/* ── Ready to Cross Action ── */}
         <div className="card" style={{ padding: 20, textAlign: 'center' }}>

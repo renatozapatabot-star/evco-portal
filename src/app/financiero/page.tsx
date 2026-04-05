@@ -1,5 +1,8 @@
 'use client'
 
+import { OperationsTrend } from '@/components/charts/operations-trend'
+import { FinancialBreakdown } from '@/components/charts/financial-breakdown'
+
 import { useEffect, useState, useMemo } from 'react'
 import {
   DollarSign, TrendingUp, ShieldCheck, BarChart3,

@@ -1,153 +1,165 @@
 #!/usr/bin/env node
-// scripts/compliance-predictor.js — FEATURE 14
-// Proactive compliance alerts engine
-// Cron: 0 7 * * * (daily 7 AM)
 
-const { createClient } = require('@supabase/supabase-js')
+// ============================================================
+// CRUZ Compliance Predictor — predict issues BEFORE they happen
+// Scores each active tráfico 0-100 on compliance risk using
+// historical patterns across all 47+ clients.
+// Cron: 0 6 * * 1-6 (weekdays 6 AM)
+// ============================================================
+
 const path = require('path')
 require('dotenv').config({ path: path.join(__dirname, '..', '.env.local') })
+const { createClient } = require('@supabase/supabase-js')
 
 const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://jkhpafacchjxawnscplf.supabase.co',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
 )
-const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN
-const TELEGRAM_CHAT = '-5085543275'
-const COMPANY_ID = 'evco'
 
-async function sendTG(msg) {
-  if (process.env.TELEGRAM_SILENT === 'true') return
-  if (!TELEGRAM_TOKEN) { console.log(msg); return }
-  await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chat_id: TELEGRAM_CHAT, text: msg, parse_mode: 'HTML' })
-  })
+const DRY_RUN = process.argv.includes('--dry-run')
+const TELEGRAM_CHAT = '-5085543275'
+
+async function sendTelegram(msg) {
+  const token = process.env.TELEGRAM_BOT_TOKEN
+  if (DRY_RUN || !token || process.env.TELEGRAM_SILENT === 'true') {
+    console.log('[TG]', msg.replace(/<[^>]+>/g, ''))
+    return
+  }
+  await fetch(`https://api.telegram.org/bot${TELEGRAM_CHAT}/sendMessage`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ chat_id: TELEGRAM_CHAT, text: msg, parse_mode: 'HTML' }),
+  }).catch(() => {})
+}
+
+async function buildBaselines() {
+  // Fleet semáforo rojo rate
+  const { data: semaforoData } = await supabase
+    .from('traficos')
+    .select('semaforo')
+    .gte('fecha_llegada', '2024-01-01')
+    .not('semaforo', 'is', null)
+    .limit(10000)
+  const total = (semaforoData || []).length
+  const rojos = (semaforoData || []).filter(t => t.semaforo === 1).length
+  const rojoRate = total > 0 ? rojos / total : 0.08
+
+  // Average value
+  const { data: valData } = await supabase
+    .from('traficos')
+    .select('importe_total')
+    .gte('fecha_llegada', '2024-01-01')
+    .not('importe_total', 'is', null)
+    .limit(10000)
+  const vals = (valData || []).map(t => Number(t.importe_total)).filter(v => v > 0)
+  const avgValue = vals.length > 0 ? vals.reduce((s, v) => s + v, 0) / vals.length : 10000
+
+  return { rojoRate, avgValue }
+}
+
+function scoreTrafico(t, baselines) {
+  const factors = []
+  let score = 0
+
+  // 1. Reconocimiento probability (30 pts)
+  if (t.semaforo === 1) {
+    score += 30; factors.push({ f: 'Semáforo rojo asignado', v: 30 })
+  } else if (t.semaforo === 0) {
+    factors.push({ f: 'Semáforo verde', v: 0 })
+  } else {
+    const base = Math.round(baselines.rojoRate * 30)
+    score += base; factors.push({ f: `Probabilidad reconocimiento (${Math.round(baselines.rojoRate * 100)}%)`, v: base })
+  }
+
+  // 2. Document completeness (25 pts)
+  const hasPed = !!t.pedimento
+  if (!hasPed) {
+    const days = t.fecha_llegada ? Math.max(0, (Date.now() - new Date(t.fecha_llegada).getTime()) / 86400000) : 0
+    const v = Math.min(25, Math.round(days * 2))
+    score += v; factors.push({ f: `Sin pedimento (${Math.round(days)}d)`, v })
+  } else {
+    factors.push({ f: 'Pedimento asignado', v: 0 })
+  }
+
+  // 3. Value outlier (20 pts)
+  const val = Number(t.importe_total) || 0
+  const ratio = baselines.avgValue > 0 ? val / baselines.avgValue : 1
+  if (ratio > 3) { score += 20; factors.push({ f: `Valor ${ratio.toFixed(1)}x promedio`, v: 20 }) }
+  else if (ratio > 2) { score += 10; factors.push({ f: `Valor ${ratio.toFixed(1)}x promedio`, v: 10 }) }
+  else { factors.push({ f: 'Valor normal', v: 0 }) }
+
+  // 4. Supplier (15 pts)
+  const prov = (t.proveedores || '')
+  const newSupplier = !prov || prov.includes('PRV_')
+  if (newSupplier) { score += 15; factors.push({ f: 'Proveedor sin historial', v: 15 }) }
+  else { factors.push({ f: 'Proveedor conocido', v: 0 }) }
+
+  // 5. Country risk (10 pts)
+  const pais = (t.pais_procedencia || '').toUpperCase()
+  const highRisk = ['CN', 'HK', 'TW', 'KR', 'IN', 'VN', 'TH'].includes(pais)
+  if (highRisk) { score += 10; factors.push({ f: `País escrutinio alto (${pais})`, v: 10 }) }
+  else { factors.push({ f: `País: ${pais || '—'}`, v: 0 }) }
+
+  const level = score >= 60 ? 'high' : score >= 30 ? 'medium' : 'low'
+  const mitigations = []
+  if (score >= 60) {
+    if (!hasPed) mitigations.push('Asignar pedimento urgente')
+    mitigations.push('Preparar certificado NOM, carta técnica, fotos')
+    mitigations.push('Verificar factura con desglose detallado')
+    if (newSupplier) mitigations.push('Validar documentación del proveedor')
+  }
+
+  return { score, level, factors, mitigations }
 }
 
 async function main() {
-  console.log('🔮 Compliance Predictor — CRUZ')
-  const start = Date.now()
-  const now = new Date()
-  const predictions = []
+  console.log(`🛡️ Compliance Predictor — ${DRY_RUN ? 'DRY RUN' : 'LIVE'}`)
 
-  // 1. Regulatory calendar — known deadlines
-  const regulatoryEvents = [
-    { title: 'Declaracion mensual SAT', due_date: getNextDate(17), severity: 'medium', type: 'regulatory' },
-    { title: 'Pago provisional ISR', due_date: getNextDate(17), severity: 'medium', type: 'regulatory' },
-    { title: 'IMMEX Reporte Anual', due_date: `${now.getFullYear()}-03-31`, severity: 'high', type: 'compliance' },
-    { title: 'Declaracion Anual Personas Morales', due_date: `${now.getFullYear()}-03-31`, severity: 'high', type: 'regulatory' },
-    { title: 'e.firma SAT — verificar vigencia', due_date: getDatePlusDays(90), severity: 'high', type: 'document_expiration' },
-    { title: 'Padron de Importadores — verificar', due_date: getDatePlusDays(180), severity: 'medium', type: 'compliance' },
-    { title: 'Autorizacion IMMEX — verificar renovacion', due_date: getDatePlusDays(60), severity: 'high', type: 'compliance' },
-  ]
+  const baselines = await buildBaselines()
+  console.log(`  Rojo rate: ${Math.round(baselines.rojoRate * 100)}% · Avg value: $${Math.round(baselines.avgValue).toLocaleString()}`)
 
-  regulatoryEvents.forEach(evt => {
-    const dueDate = new Date(evt.due_date + 'T12:00:00')
-    const daysUntil = Math.floor((dueDate.getTime() - now.getTime()) / 86400000)
-    if (daysUntil > 0 && daysUntil <= 90) {
-      predictions.push({
-        company_id: COMPANY_ID,
-        prediction_type: evt.type,
-        title: evt.title,
-        description: `Vence en ${daysUntil} dias (${evt.due_date})`,
-        due_date: evt.due_date,
-        severity: daysUntil <= 7 ? 'critical' : daysUntil <= 30 ? 'warning' : 'info',
-        days_until: daysUntil,
-        resolved: false,
-        calculated_at: new Date().toISOString(),
-      })
+  const { data: active } = await supabase
+    .from('traficos')
+    .select('id, trafico, company_id, estatus, fecha_llegada, importe_total, pedimento, proveedores, semaforo, pais_procedencia')
+    .neq('estatus', 'Cruzado')
+    .gte('fecha_llegada', '2024-01-01')
+    .limit(500)
+
+  let highCount = 0
+  const alerts = []
+
+  for (const t of (active || [])) {
+    const result = scoreTrafico(t, baselines)
+    if (result.level === 'high') {
+      highCount++
+      alerts.push({ trafico: t.trafico, company: t.company_id, score: result.score, factors: result.factors.filter(f => f.v > 0) })
     }
-  })
 
-  // 2. IMMEX temporal limits (18 months from fecha_llegada)
-  const { data: traficos } = await supabase.from('traficos')
-    .select('trafico, fecha_llegada, estatus')
-    .eq('company_id', COMPANY_ID).eq('estatus', 'En Proceso')
-    .not('fecha_llegada', 'is', null)
-
-  ;(traficos || []).forEach(t => {
-    const llegada = new Date(t.fecha_llegada)
-    const limit = new Date(llegada)
-    limit.setMonth(limit.getMonth() + 18)
-    const daysUntil = Math.floor((limit.getTime() - now.getTime()) / 86400000)
-
-    if (daysUntil > 0 && daysUntil <= 90) {
-      predictions.push({
-        company_id: COMPANY_ID,
-        prediction_type: 'immex_temporal',
-        title: `IMMEX limite temporal — ${t.trafico}`,
-        description: `Vence en ${daysUntil} dias. Mercancia debe retornar o regularizarse.`,
-        due_date: limit.toISOString().split('T')[0],
-        severity: daysUntil <= 7 ? 'critical' : daysUntil <= 30 ? 'warning' : 'info',
-        days_until: daysUntil,
-        trafico_id: t.trafico,
-        resolved: false,
-        calculated_at: new Date().toISOString(),
-      })
-    }
-  })
-
-  // 3. Missing MVE for post-deadline tráficos
-  const postDeadline = (traficos || []).filter(t => !t.mve_folio)
-  if (postDeadline.length > 0) {
-    predictions.push({
-      company_id: COMPANY_ID,
-      prediction_type: 'mve_missing',
-      title: `${postDeadline.length} traficos sin folio MVE`,
-      description: `Desde el 31/03/2026, MVE es obligatorio para todas las importaciones.`,
-      due_date: new Date().toISOString().split('T')[0],
-      severity: 'critical',
-      days_until: 0,
-      resolved: false,
-      calculated_at: new Date().toISOString(),
-    })
-  }
-
-  console.log(`${predictions.length} compliance predictions generated`)
-
-  // 4. Save to compliance_predictions
-  await supabase.from('compliance_predictions').delete().eq('company_id', COMPANY_ID).eq('resolved', false)
-  if (predictions.length > 0) {
-    for (const batch of chunk(predictions, 50)) {
-      await supabase.from('compliance_predictions').insert(batch)
+    if (!DRY_RUN) {
+      await supabase.from('traficos').update({
+        score_reasons: JSON.stringify({
+          score: result.score, level: result.level,
+          reasons: result.factors.filter(f => f.v > 0).map(f => `+${f.v} — ${f.f}`),
+          mitigations: result.mitigations,
+          scored_at: new Date().toISOString(),
+        }),
+      }).eq('id', t.id).then(() => {}, () => {})
     }
   }
 
-  // 5. Calculate compliance score
-  const criticalCount = predictions.filter(p => p.severity === 'critical').length
-  const warningCount = predictions.filter(p => p.severity === 'warning').length
-  const complianceScore = Math.max(0, 100 - criticalCount * 15 - warningCount * 5)
-
-  // 6. Telegram alerts for critical items
-  const criticals = predictions.filter(p => p.severity === 'critical')
-  if (criticals.length > 0) {
-    const lines = criticals.slice(0, 8).map(p => `  🔴 ${p.title}\n     ${p.description}`).join('\n')
-    await sendTG(`🚨 <b>COMPLIANCE ALERT</b>\nScore: ${complianceScore}/100\n\n${criticals.length} alertas criticas:\n${lines}\n\n— CRUZ 🦀`)
+  if (alerts.length > 0) {
+    await sendTelegram([
+      `🛡️ <b>Compliance — ${highCount} alto riesgo</b>`,
+      ``,
+      ...alerts.slice(0, 5).map(a => `🔴 <b>${a.trafico}</b> (${a.company}): ${a.score}/100`),
+      ``,
+      `${(active || []).length} tráficos analizados`,
+      `— CRUZ 🦀`,
+    ].join('\n'))
   }
 
-  const elapsed = ((Date.now() - start) / 1000).toFixed(1)
-  console.log(`✅ Compliance score: ${complianceScore}/100`)
-  console.log(`   ${criticalCount} critical · ${warningCount} warning · ${predictions.length - criticalCount - warningCount} info`)
-  console.log(`   ${elapsed}s`)
+  console.log(`\n✅ ${(active || []).length} scored · ${highCount} high risk`)
+  process.exit(0)
 }
 
-function getNextDate(day) {
-  const now = new Date()
-  const target = new Date(now.getFullYear(), now.getMonth(), day)
-  if (target <= now) target.setMonth(target.getMonth() + 1)
-  return target.toISOString().split('T')[0]
-}
-
-function getDatePlusDays(days) {
-  const d = new Date()
-  d.setDate(d.getDate() + days)
-  return d.toISOString().split('T')[0]
-}
-
-function chunk(arr, size) {
-  const out = []
-  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size))
-  return out
-}
-
-main().catch(e => { console.error('❌', e.message); process.exit(1) })
+main().catch(err => { console.error('Fatal:', err.message); process.exit(1) })

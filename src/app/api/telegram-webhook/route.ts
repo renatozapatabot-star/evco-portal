@@ -160,7 +160,10 @@ async function handleApproval(draftId: string, chatId: number, userId: number, u
   const supplier = draft.draft_data?.supplier || 'Desconocido'
 
   // Send approval message with 5-second cancel button
-  await sendTelegramMessage(chatId, `✅ Aprobado: <b>${supplier}</b>\n\nTienes 5 segundos para cancelar.`, {
+  // After 5 seconds, filing-processor.js picks up approved_pending drafts and:
+  // 1. Finalizes to 'approved' → 2. Prepares filing data → 3. Sets 'transmitido'
+  // 4. Sends "Patente 3596 honrada. Gracias, Tito." confirmation
+  await sendTelegramMessage(chatId, `✅ Aprobado: <b>${supplier}</b>\n\n⏱️ 5 segundos para cancelar. Después: transmisión automática.`, {
     inline_keyboard: [[
       { text: '❌ Cancelar aprobación', callback_data: `cancelar_${draftId}` },
     ]],

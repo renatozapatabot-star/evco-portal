@@ -30,9 +30,9 @@
   --gold-800: #7A5C1E;
 
   /* ── Content ── */
-  --bg-main: #FAFBFC;
+  --bg-main: #FAFAF8;
   --bg-card: #FFFFFF;
-  --border-card: #E5E7EB;
+  --border-card: #E8E5E0;
 
   /* ── Slate ── */
   --slate-50:  #F8FAFC;
@@ -1180,8 +1180,8 @@ body {
 
 /* Mobile bottom nav center Z button */
 .mn-z {
-  width: 56px;
-  height: 56px;
+  width: 60px;
+  height: 60px;
   background: var(--navy-900);
   border: 2px solid var(--sand-400);
   border-radius: 50%;
@@ -1198,7 +1198,7 @@ body {
 /* Touch target minimums — 60px CRUZ standard (not 44px WCAG) */
 @media screen and (max-width: 768px) {
   .mn-tab, .btn, button:not(.pagination-btn), a[href] {
-    min-height: 44px;
+    min-height: 60px;
   }
   .stat-filter-item, .sidebar-nav-item, .mn-tab {
     min-height: 60px;

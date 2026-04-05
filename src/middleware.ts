@@ -26,16 +26,13 @@ export async function middleware(request: NextRequest) {
   const session = await verifySession(sessionToken)
 
   if (!session) {
-    // Fallback: check legacy portal_auth cookie for backward compatibility
-    // (existing sessions before this deploy — will expire within 8h)
-    const legacyAuth = request.cookies.get('portal_auth')?.value === 'authenticated'
-    if (!legacyAuth) {
-      return NextResponse.redirect(new URL('/login', request.url))
-    }
+    // No valid HMAC session — redirect to login.
+    // Legacy portal_auth cookie is no longer accepted (security: prevents cookie escalation).
+    return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  // Determine role: prefer signed session, fall back to cookie
-  const role = session?.role || request.cookies.get('user_role')?.value
+  // Role is derived exclusively from the signed session — never from the manipulable user_role cookie
+  const role = session.role
 
   // Broker command center — only broker or admin
   if (pathname.startsWith('/broker')) {

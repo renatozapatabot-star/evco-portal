@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { rateLimit } from '@/lib/rate-limit'
+import { verifySession } from '@/lib/session'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -57,11 +58,16 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid table' }, { status: 400 })
   }
 
-  // Multi-tenant: resolve identity from auth cookies.
-  const cookieRole = req.cookies.get('user_role')?.value
+  // Multi-tenant: resolve identity from signed HMAC session — never trust raw cookies for role.
+  const sessionToken = req.cookies.get('portal_session')?.value || ''
+  const session = await verifySession(sessionToken)
+  if (!session) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  const cookieRole = session.role
   const isInternal = cookieRole === 'broker' || cookieRole === 'admin'
 
-  const cookieCompanyId = req.cookies.get('company_id')?.value
+  const cookieCompanyId = isInternal ? session.companyId : req.cookies.get('company_id')?.value
   const cookieClave = req.cookies.get('company_clave')?.value
 
   // For broker/admin: internal company_id values ('admin','internal') are not real

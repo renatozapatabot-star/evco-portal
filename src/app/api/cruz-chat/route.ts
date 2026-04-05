@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 import { PORTAL_URL } from '@/lib/client-config'
 import { PORTAL_DATE_FROM } from '@/lib/data'
 import { getDTARates, getIVARate } from '@/lib/rates'
+import { verifySession } from '@/lib/session'
 
 import { rateLimitDB } from '@/lib/rate-limit-db'
 
@@ -783,6 +784,14 @@ async function executeTool(name: string, input: any, clientCtx: { companyId: str
 
 export async function POST(req: NextRequest) {
   const startTime = Date.now()
+
+  // Validate signed session — never trust raw cookies for auth
+  const sessionToken = req.cookies.get('portal_session')?.value || ''
+  const session = await verifySession(sessionToken)
+  if (!session) {
+    return NextResponse.json({ message: 'Sesión expirada. Inicia sesión de nuevo.' }, { status: 401 })
+  }
+
   const companyId = req.cookies.get('company_id')?.value ?? ''
   const clientClave = req.cookies.get('company_clave')?.value ?? ''
   const rawClientName = req.cookies.get('company_name')?.value
@@ -820,7 +829,7 @@ export async function POST(req: NextRequest) {
     const voiceLine = context?.voice_mode ? `\n\nVOICE MODE ACTIVE: Respond in 1-3 sentences maximum. Use spoken language, not written. No markdown, no bullet points, no formatting. Speak naturally in Spanish as if talking to a colleague.` : ''
 
     // Filter tools by role — admin-only tools hidden from clients
-    const userRole = req.cookies.get('user_role')?.value ?? 'client'
+    const userRole = session.role
     const isInternal = userRole === 'broker' || userRole === 'admin'
     const ADMIN_TOOLS = new Set(['admin_fleet_summary', 'find_prospects', 'simulate_audit', 'integration_status', 'client_health', 'get_memory', 'check_risk_radar', 'search_knowledge'])
     const filteredTools = isInternal ? TOOLS : TOOLS.filter(t => !ADMIN_TOOLS.has(t.name))
@@ -845,8 +854,17 @@ export async function POST(req: NextRequest) {
 
     // Check for API errors
     if (data.error || data.type === 'error') {
+      const apiMsg = data.error?.message || ''
       console.error('Anthropic API error:', JSON.stringify(data))
-      return NextResponse.json({ message: `Error de API: ${data.error?.message || JSON.stringify(data)}`, navigate: null }, { status: 500 })
+
+      // Surface a clear message for common API issues
+      if (apiMsg.includes('credit balance') || apiMsg.includes('billing')) {
+        return NextResponse.json({ message: 'CRUZ AI no está disponible en este momento — créditos de API agotados. Contacta a soporte.', navigate: null }, { status: 503 })
+      }
+      if (apiMsg.includes('rate_limit') || apiMsg.includes('overloaded')) {
+        return NextResponse.json({ message: 'CRUZ AI está ocupado. Intenta de nuevo en unos segundos.', navigate: null }, { status: 503 })
+      }
+      return NextResponse.json({ message: `Error de API: ${apiMsg || 'Error desconocido'}`, navigate: null }, { status: 500 })
     }
 
     // Handle tool use loop

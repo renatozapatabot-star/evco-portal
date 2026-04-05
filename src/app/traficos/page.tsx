@@ -250,7 +250,7 @@ function TraficosContent() {
           <div className="summary-bar">
             <div className="summary-stat"><span className="summary-value">{rows.length.toLocaleString('es-MX')}</span><span className="summary-label"> total</span></div>
             <div className="summary-sep" />
-            <div className="summary-stat"><span className="summary-value" style={{ color: totalValor > 0 ? undefined : 'var(--slate-300)' }}>{totalValor > 0 ? fmtUSDCompact(totalValor) : '—'}</span><span className="summary-label"> valor importado</span></div>
+            <div className="summary-stat"><span className="summary-value" style={{ color: totalValor > 0 ? undefined : 'var(--slate-300)' }}>{totalValor > 0 ? fmtUSDCompact(totalValor) : '—'}</span><span className="summary-label"> valor total importado</span></div>
           </div>
         )}
 

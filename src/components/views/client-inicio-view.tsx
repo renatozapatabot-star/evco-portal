@@ -278,10 +278,10 @@ export default function ClientInicioView() {
 
       {/* Greeting */}
       <div style={{ marginBottom: 24 }}>
-        <h1 className="text-display" style={{ color: 'var(--navy-900)', margin: 0 }}>
+        <h1 className="text-display" style={{ color: 'var(--navy-900)', margin: 0, wordBreak: 'break-word' }}>
           {greeting}, {companyName || 'cliente'}
         </h1>
-        <p className="text-caption" style={{ color: 'var(--slate-400)', margin: '4px 0 0', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <p className="text-caption" style={{ color: 'var(--slate-400)', margin: '4px 0 0', display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           Resumen de su operación — <span className="font-mono">{dateStr}</span>
           {refreshing && (
             <span className="badge badge-pendiente" style={{ fontSize: 11, animation: 'cruzPulse 1.5s infinite' }}>

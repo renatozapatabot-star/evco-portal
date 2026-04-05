@@ -63,7 +63,7 @@ const REQUIRED_DOC_TYPES = [
 const monoClass = 'font-mono' // maps to var(--font-jetbrains-mono) via Tailwind config
 
 function statusColor(estatus: string | null): string {
-  if (!estatus) return 'text-gray-500'
+  if (!estatus) return 'text-[#6B6B6B]'
   const s = estatus.toLowerCase()
   if (s.includes('cruzado') || s.includes('completo') || s.includes('pagado'))
     return 'text-green-700'
@@ -95,7 +95,7 @@ export default function ChainView({ data }: { data: ChainData }) {
         <span>Pedimento</span>
         <span className={monoClass}>{pedimento?.num ?? data.query}</span>
         {pedimento?.fecha_pago && (
-          <span className={`${monoClass} text-gray-500 text-xs`}>
+          <span className={`${monoClass} text-[#6B6B6B] text-xs`}>
             {fmtDate(pedimento.fecha_pago)}
           </span>
         )}
@@ -110,7 +110,7 @@ export default function ChainView({ data }: { data: ChainData }) {
             <TreeBranch />
             <div className="pl-4">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-gray-500">Trafico:</span>
+                <span className="text-[#6B6B6B]">Trafico:</span>
                 <span className={monoClass}>{trafico.trafico_id}</span>
                 <span className={`font-medium ${statusColor(trafico.estatus)}`}>
                   {trafico.estatus}
@@ -141,7 +141,7 @@ export default function ChainView({ data }: { data: ChainData }) {
         <div className="relative">
           <TreeBranch />
           <div className="pl-4">
-            <div className="text-gray-500">
+            <div className="text-[#6B6B6B]">
               Entradas ({entradas.length})
             </div>
             {entradas.length > 0 ? (
@@ -172,7 +172,7 @@ export default function ChainView({ data }: { data: ChainData }) {
         <div className="relative">
           <TreeBranch />
           <div className="pl-4">
-            <div className="text-gray-500">
+            <div className="text-[#6B6B6B]">
               Documentos ({documentos.length}/{REQUIRED_DOC_TYPES.length})
             </div>
             <div className="pl-4 border-l border-gray-100 mt-1 space-y-0.5 text-xs">
@@ -212,7 +212,7 @@ export default function ChainView({ data }: { data: ChainData }) {
           <div className="relative">
             <TreeBranch last />
             <div className="pl-4">
-              <div className="text-gray-500">Pagos</div>
+              <div className="text-[#6B6B6B]">Pagos</div>
               <div className="pl-4 border-l border-gray-100 mt-1 space-y-0.5 text-xs">
                 {pedimento.dta != null && (
                   <div>

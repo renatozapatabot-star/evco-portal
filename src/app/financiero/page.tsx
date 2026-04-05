@@ -246,19 +246,19 @@ export default function FinancieroPage() {
           <KPICard
             icon={<DollarSign size={20} />}
             label="Valor total en operación"
-            value={loading ? '...' : `${fmtUSDCompact(kpis.valorTotal)} USD`}
-            sub={`${kpis.activeCount} tráficos activos`}
+            value={loading ? '...' : fmtUSDCompact(kpis.valorTotal)}
+            sub={`${kpis.activeCount} tráficos activos · ene 2024–presente`}
           />
           <KPICard
             icon={<TrendingUp size={20} />}
             label="Valor cruzado este mes"
-            value={loading ? '...' : `${fmtUSDCompact(kpis.valorCruzado)} USD`}
+            value={loading ? '...' : fmtUSDCompact(kpis.valorCruzado)}
             sub={fmtDate(new Date()) + ' — mes actual'}
           />
           <KPICard
             icon={<ShieldCheck size={20} />}
             label="Ahorros T-MEC estimados"
-            value={loading ? '...' : `${fmtUSDCompact(kpis.ahorrosTmec)} USD`}
+            value={loading ? '...' : fmtUSDCompact(kpis.ahorrosTmec)}
             sub="Régimen IMD · 8% estimado"
           />
           <KPICard

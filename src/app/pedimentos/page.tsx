@@ -192,7 +192,7 @@ export default function PedimentosPage() {
         <div>
           <h1 className="page-title">Pedimentos</h1>
           <p className="text-[12.5px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
-            {groups.length.toLocaleString()} pedimentos &middot; <span className="font-mono">{fmtUSD(totals.totalValor)}</span> USD valor total
+            {groups.length.toLocaleString()} pedimentos &middot; <span className="font-mono">{fmtUSD(totals.totalValor)}</span> USD valor declarado · ene 2024–presente
           </p>
         </div>
         <div className="flex items-center gap-2.5 flex-wrap">
@@ -290,7 +290,7 @@ export default function PedimentosPage() {
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'var(--font-jetbrains-mono)' }}>{g.fecha ? fmtDate(g.fecha) : ''}</span>
-                <span style={{ fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-jetbrains-mono)', color: 'var(--n-900)' }}>{fmtUSD(g.importe)}</span>
+                <span style={{ fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-jetbrains-mono)', color: g.importe > 0 ? 'var(--n-900)' : 'var(--text-muted)' }}>{g.importe > 0 ? fmtUSD(g.importe) : 'Pendiente'}</span>
               </div>
               <div style={{ fontSize: 12, color: 'var(--n-500)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {g.proveedores.length > 0 ? titleCase(g.proveedores[0]) : g.descripcion || '—'}
@@ -349,7 +349,7 @@ export default function PedimentosPage() {
                           <span style={{ marginLeft: 6, fontSize: 11, color: 'var(--success)', fontWeight: 600 }}>T-MEC</span>
                         )}
                       </td>
-                      <td className="c-num">{fmtUSD(g.importe)} USD</td>
+                      <td className="c-num">{g.importe > 0 ? `${fmtUSD(g.importe)} USD` : <span style={{ color: 'var(--text-muted)' }}>Pendiente</span>}</td>
                       <td style={{ width: 28, textAlign: 'center' }}><ChevronRight size={14} style={{ color: 'var(--slate-300)' }} /></td>
                     </tr>
                   )

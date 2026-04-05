@@ -57,6 +57,7 @@ export default function ProveedoresPage() {
   const [userRole, setUserRole] = useState('')
   const [companyId, setCompanyId] = useState('')
   const [clientClave, setClientClave] = useState('')
+  const [supplierLookup, setSupplierLookup] = useState<Map<string, string>>(new Map())
 
   useEffect(() => {
     setUserRole(getCookieValue('user_role') ?? '')
@@ -65,6 +66,21 @@ export default function ProveedoresPage() {
   }, [])
 
   const isInternal = userRole === 'broker' || userRole === 'admin'
+
+  // Fetch supplier name lookup from globalpc_proveedores (resolves PRV_XXXX codes)
+  useEffect(() => {
+    fetch('/api/data?table=globalpc_proveedores&limit=5000')
+      .then(r => r.json())
+      .then(d => {
+        const provs = (d.data ?? []) as { cve_proveedor?: string; nombre?: string }[]
+        const lookup = new Map<string, string>()
+        provs.forEach(p => {
+          if (p.cve_proveedor && p.nombre) lookup.set(p.cve_proveedor, p.nombre.trim())
+        })
+        setSupplierLookup(lookup)
+      })
+      .catch(() => { /* best-effort */ })
+  }, [])
 
   // Fetch traficos with proveedores field
   useEffect(() => {
@@ -77,7 +93,6 @@ export default function ProveedoresPage() {
     })
     if (!isInternal && companyId) {
       params.set('company_id', companyId)
-
     }
 
     fetch(`/api/data?${params}`)
@@ -121,7 +136,9 @@ export default function ProveedoresPage() {
       }
 
       for (const raw of names) {
-        const name = raw.trim()
+        // Resolve PRV_XXXX codes to actual supplier names
+        const resolved = supplierLookup.get(raw.trim()) || raw.trim()
+        const name = resolved
         if (!name) continue
         const key = name.toLowerCase()
         const existing = map.get(key)
@@ -156,7 +173,7 @@ export default function ProveedoresPage() {
     arr.forEach(s => { s.avgValue = s.traficoCount > 0 ? s.totalValue / s.traficoCount : 0 })
     arr.sort((a, b) => b.traficoCount - a.traficoCount)
     return arr
-  }, [rows, clientFilter])
+  }, [rows, clientFilter, supplierLookup])
 
   // Filter by search
   const filtered = useMemo(() => {

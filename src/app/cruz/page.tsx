@@ -89,12 +89,12 @@ export default function CruzChatPage() {
       .catch((err: unknown) => { void 0 })
   }, [])
 
-  // Proactive briefing fetch
+  // Proactive briefing fetch — uses same date filter as dashboard for consistency
   useEffect(() => {
     const companyId = getCompanyIdCookie()
     const clientClave = getClientClaveCookie()
     Promise.all([
-      fetch(`/api/data?table=traficos&company_id=${companyId}&limit=1000`).then(r => r.json()),
+      fetch(`/api/data?table=traficos&company_id=${companyId}&limit=5000&gte_field=fecha_llegada&gte_value=2024-01-01`).then(r => r.json()),
       fetch('/api/cruz-alerts').then(r => r.json()).catch(() => ({ alerts: [] })),
     ]).then(([trafData, alertData]) => {
       const traficos = trafData.data ?? []
@@ -131,6 +131,15 @@ export default function CruzChatPage() {
   const [messages, setMessages] = useState<Message[]>(() => {
     if (typeof window !== 'undefined') {
       try {
+        const currentCompany = getCompanyIdCookie()
+        const savedCompany = localStorage.getItem('cruz-chat-company')
+        // Tenant isolation: clear history if different company logged in
+        if (savedCompany && savedCompany !== currentCompany) {
+          localStorage.removeItem('cruz-chat-history')
+          localStorage.setItem('cruz-chat-company', currentCompany)
+          return []
+        }
+        localStorage.setItem('cruz-chat-company', currentCompany)
         const saved = localStorage.getItem('cruz-chat-history')
         if (saved) return (JSON.parse(saved) as Message[]).slice(-50)
       } catch { /* ignore parse errors */ }
@@ -200,8 +209,14 @@ export default function CruzChatPage() {
       })
 
       if (!res.ok) {
-        const errData = await res.json().catch(() => ({}))
-        throw new Error(errData.message || 'Error del servidor')
+        const errData = await res.json().catch(() => ({ message: 'Error del servidor' }))
+        // Show the server's error message directly instead of generic fallback
+        const serverMsg = errData.message || 'Error del servidor'
+        setMessages(prev => prev.map(m =>
+          m.id === aiMsgId ? { ...m, content: serverMsg } : m
+        ))
+        setLoading(false)
+        return
       }
 
       const navigate = res.headers.get('X-Navigate') || undefined

@@ -230,7 +230,7 @@ export default function ExpedientesPage() {
           <h2 className="text-lg font-semibold text-slate-900 mb-2">
             Sin expedientes digitales
           </h2>
-          <p className="text-slate-500 max-w-sm text-sm">
+          <p className="text-[#6B6B6B] max-w-sm text-sm">
             Los documentos de cada tráfico aparecerán aquí organizados por tipo.
             Puede subir documentos desde el detalle de cualquier tráfico.
           </p>

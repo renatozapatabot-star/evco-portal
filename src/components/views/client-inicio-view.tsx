@@ -497,6 +497,9 @@ export default function ClientInicioView() {
         </div>
       )}
 
+      {/* Forecast widget — subtle info card */}
+      <ForecastWidget />
+
       {/* Bridge Times — hides entirely when no data (returns null) */}
       <BridgeTimes />
 
@@ -606,6 +609,47 @@ export default function ClientInicioView() {
             Sincronizado con GlobalPC · {fmtDate(new Date())}
           </div>
         )}
+      </div>
+    </div>
+  )
+}
+
+/** Forecast widget — shows predicted next-30-day volume */
+function ForecastWidget() {
+  const [forecast, setForecast] = useState<{ expected_traficos: number; expected_value_usd: number; confidence_low: number; confidence_high: number; trend_direction: string } | null>(null)
+
+  useEffect(() => {
+    fetch('/api/forecast').then(r => r.json())
+      .then(d => { if (d.forecast) setForecast(d.forecast) })
+      .catch(() => {})
+  }, [])
+
+  if (!forecast || forecast.expected_traficos === 0) return null
+
+  const arrow = forecast.trend_direction === 'up' ? '↑' : forecast.trend_direction === 'down' ? '↓' : '→'
+  const arrowColor = forecast.trend_direction === 'up' ? '#16A34A' : forecast.trend_direction === 'down' ? '#DC2626' : '#6B6B6B'
+
+  return (
+    <div className="card" style={{ marginBottom: 24, padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(196,150,60,0.04)', border: '1px solid rgba(196,150,60,0.15)' }}>
+      <div>
+        <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#9B9B9B', marginBottom: 4 }}>
+          Pronóstico · próximos 30 días
+        </div>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 18, fontWeight: 800, color: '#1A1A1A' }}>
+            ~{forecast.expected_traficos} tráficos
+          </span>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: '#6B6B6B' }}>
+            ({forecast.confidence_low}–{forecast.confidence_high})
+          </span>
+          <span style={{ fontSize: 13, fontWeight: 700, color: arrowColor }}>{arrow}</span>
+        </div>
+      </div>
+      <div style={{ textAlign: 'right' }}>
+        <div style={{ fontFamily: 'var(--font-mono)', fontSize: 15, fontWeight: 700, color: '#C4963C' }}>
+          ~{fmtUSDCompact(forecast.expected_value_usd)}
+        </div>
+        <div style={{ fontSize: 10, color: '#9B9B9B' }}>valor estimado</div>
       </div>
     </div>
   )

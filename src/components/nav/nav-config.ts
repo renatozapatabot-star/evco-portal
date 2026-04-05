@@ -211,6 +211,7 @@ export const ADMIN_ONLY_ROUTES = [
   '/api-docs',
   '/documentos-legales',
   '/cruces',
+  '/alertas-internas',
 ] as const
 
 /** Routes accessible by client role */

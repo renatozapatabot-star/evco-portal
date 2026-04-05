@@ -36,6 +36,7 @@ const DRY_RUN = process.argv.includes('--dry-run')
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN
 const TELEGRAM_CHAT = process.env.TELEGRAM_CHAT_ID || '-5085543275'
 const DELTA_THRESHOLD = 5.0 // Alert if any metric moves > 5% wrong direction
+const PORTAL_DATE_FROM = '2024-01-01'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -443,6 +444,76 @@ async function run() {
       } else if (r.severity === 'warning') {
         clientAlerts.push(`⚠️ <b>tráficos estancados</b>: ${r.count} sin pedimento > 7 días`)
       }
+    }
+
+    // ── Check 6: Zombie tráficos (En Proceso > 30 days) ──
+    console.log('   Check 6: zombie_traficos...')
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString()
+    const { data: zombies } = await supabase
+      .from('traficos')
+      .select('trafico, fecha_llegada')
+      .eq('company_id', client)
+      .neq('estatus', 'Cruzado')
+      .lt('fecha_llegada', thirtyDaysAgo)
+      .gte('fecha_llegada', PORTAL_DATE_FROM)
+      .limit(100)
+    const zombieCount = zombies?.length || 0
+    if (zombieCount > 0) {
+      clientAlerts.push(`🟡 <b>zombies</b>: ${zombieCount} tráficos "En Proceso" > 30 días`)
+      await logMetric(client, 'zombie_traficos', zombieCount, null, zombieCount > 10 ? 'warning' : 'info', { sample: zombies?.slice(0, 5) })
+      console.log(`   ⚠️ zombie_traficos: ${zombieCount}`)
+    } else {
+      console.log(`   ✅ zombie_traficos: none`)
+    }
+
+    // ── Check 7: Missing T-MEC (from US/CA without T-MEC flag) ──
+    console.log('   Check 7: missing_tmec...')
+    const { data: usTrafs } = await supabase
+      .from('traficos')
+      .select('trafico, regimen, pais_procedencia')
+      .eq('company_id', client)
+      .gte('fecha_llegada', PORTAL_DATE_FROM)
+      .in('pais_procedencia', ['US', 'USA', 'ESTADOS UNIDOS', 'CA', 'CAN', 'CANADA'])
+      .limit(5000)
+    const missingTmec = (usTrafs || []).filter(t => {
+      const r = (t.regimen || '').toUpperCase()
+      return r !== 'ITE' && r !== 'ITR' && r !== 'IMD'
+    })
+    if (missingTmec.length > 0) {
+      clientAlerts.push(`💰 <b>T-MEC faltante</b>: ${missingTmec.length} de US/CA sin régimen preferencial`)
+      await logMetric(client, 'missing_tmec', missingTmec.length, null, 'warning', { sample: missingTmec.slice(0, 5).map(t => t.trafico) })
+      console.log(`   ⚠️ missing_tmec: ${missingTmec.length}`)
+    } else {
+      console.log(`   ✅ missing_tmec: none`)
+    }
+
+    // ── Check 8: Duplicate descriptions on same day (double entry) ──
+    console.log('   Check 8: duplicate_descriptions...')
+    const { data: recentTrafs } = await supabase
+      .from('traficos')
+      .select('trafico, descripcion_mercancia, fecha_llegada')
+      .eq('company_id', client)
+      .gte('fecha_llegada', new Date(Date.now() - 30 * 86400000).toISOString())
+      .limit(5000)
+    const dayDescMap = new Map()
+    const dupDescs = []
+    for (const t of (recentTrafs || [])) {
+      const day = (t.fecha_llegada || '').split('T')[0]
+      const desc = (t.descripcion_mercancia || '').toLowerCase().trim()
+      if (!day || !desc) continue
+      const key = `${day}:${desc}`
+      if (dayDescMap.has(key)) {
+        dupDescs.push({ trafico: t.trafico, dup_of: dayDescMap.get(key), day, desc: desc.substring(0, 40) })
+      } else {
+        dayDescMap.set(key, t.trafico)
+      }
+    }
+    if (dupDescs.length > 0) {
+      clientAlerts.push(`⚠️ <b>posible doble entrada</b>: ${dupDescs.length} con misma descripción en mismo día`)
+      await logMetric(client, 'duplicate_descriptions', dupDescs.length, null, 'info', { sample: dupDescs.slice(0, 5) })
+      console.log(`   ⚠️ duplicate_descriptions: ${dupDescs.length}`)
+    } else {
+      console.log(`   ✅ duplicate_descriptions: none`)
     }
 
     if (clientAlerts.length > 0) {

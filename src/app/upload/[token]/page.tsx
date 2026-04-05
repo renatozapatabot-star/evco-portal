@@ -147,8 +147,19 @@ export default function UploadPage() {
           <div style={{ fontSize: 20, fontWeight: 700, color: '#CBD5E1', marginBottom: 8 }}>
             Expediente completo
           </div>
-          <div style={{ color: '#64748B', fontSize: 14 }}>
+          <div style={{ color: '#64748B', fontSize: 14, marginBottom: 24 }}>
             Todos los documentos solicitados han sido recibidos. Gracias.
+          </div>
+
+          {/* Referral prompt */}
+          <div style={{ padding: '16px 20px', background: 'rgba(196,150,60,0.08)', border: '1px solid rgba(196,150,60,0.2)', borderRadius: 12, textAlign: 'left' }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: '#C4963C', marginBottom: 8 }}>
+              ¿Trabaja con otros importadores en México?
+            </div>
+            <div style={{ fontSize: 12, color: '#94A3B8', marginBottom: 12 }}>
+              CRUZ puede simplificar su proceso con todos ellos.
+            </div>
+            <ReferralForm />
           </div>
         </div>
       </div>
@@ -260,6 +271,37 @@ export default function UploadPage() {
           Link válido por 48 horas · Renato Zapata &amp; Company
         </div>
       </div>
+    </div>
+  )
+}
+
+function ReferralForm() {
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [sent, setSent] = useState(false)
+
+  async function submit() {
+    if (!name.trim()) return
+    await fetch('/api/webhook', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'supplier_referral', name, email, source: 'upload_portal' }),
+    }).catch(() => {})
+    setSent(true)
+  }
+
+  if (sent) return <div style={{ fontSize: 12, color: '#16A34A', fontWeight: 600 }}>✅ Gracias por la recomendación</div>
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <input value={name} onChange={e => setName(e.target.value)} placeholder="Nombre de la empresa"
+        style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid rgba(196,150,60,0.3)', background: 'rgba(255,255,255,0.05)', color: '#E2E8F0', fontSize: 13, outline: 'none' }} />
+      <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Email de contacto (opcional)"
+        style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid rgba(196,150,60,0.3)', background: 'rgba(255,255,255,0.05)', color: '#E2E8F0', fontSize: 13, outline: 'none' }} />
+      <button onClick={submit} disabled={!name.trim()}
+        style={{ padding: '8px 16px', borderRadius: 8, border: 'none', background: name.trim() ? '#C4963C' : '#374151', color: name.trim() ? '#1A1710' : '#6B7280', fontSize: 13, fontWeight: 700, cursor: name.trim() ? 'pointer' : 'default' }}>
+        Recomendar
+      </button>
     </div>
   )
 }

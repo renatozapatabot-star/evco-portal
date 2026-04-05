@@ -5,6 +5,7 @@ import { DollarSign, TrendingUp, TrendingDown, CreditCard, Search, BarChart3, Al
 import { getClientClaveCookie, getCompanyIdCookie } from '@/lib/client-config'
 import { fmtMXN, fmtDate } from '@/lib/format-utils'
 import { GOLD } from '@/lib/design-system'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 interface CarteraRow { consecutivo: number; cve_cliente: string; tipo: string; referencia: string; fecha: string; importe: number; saldo: number; moneda: string; observaciones: string }
 interface IngresoRow { consecutivo: number; cve_cliente: string; forma_ingreso: string; referencia: string; fecha: string; importe: number; moneda: string; concepto: string }
@@ -78,11 +79,7 @@ export function CuentasView() {
   if (!loading && cartera.length === 0 && ingresos.length === 0 && egresos.length === 0 && facturas.length === 0) return (
     <div className="p-6">
       <h1 className="page-title">Cuentas & Finanzas</h1>
-      <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-        <CreditCard size={32} strokeWidth={1.5} style={{ color: 'var(--n-300)', margin: '0 auto 12px' }} />
-        <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--n-700)', marginBottom: 4 }}>Datos financieros pendientes</div>
-        <div style={{ fontSize: 13, color: 'var(--n-400)' }}>Conecta tu cuenta para ver el resumen</div>
-      </div>
+      <EmptyState icon="💰" title="No hay datos financieros disponibles" description="Los datos de cartera, ingresos y egresos aparecerán después de la sincronización" />
     </div>
   )
 

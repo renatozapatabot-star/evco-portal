@@ -5,6 +5,7 @@ import { createClient } from '@supabase/supabase-js'
 import { Phone, Clock, CheckCircle, ChevronDown, ChevronRight } from 'lucide-react'
 import { GOLD } from '@/lib/design-system'
 import { getCookieValue } from '@/lib/client-config'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { fmtDateShort } from '@/lib/format-utils'
 
 const supabase = createClient(
@@ -101,13 +102,7 @@ export default function CallsPage() {
         {loading ? (
           <div className="text-center py-12 text-[13px]" style={{ color: 'var(--text-muted)' }}>Cargando llamadas...</div>
         ) : calls.length === 0 ? (
-          <div className="text-center py-16">
-            <Phone size={32} style={{ color: 'var(--text-disabled)', margin: '0 auto 12px' }} />
-            <div className="text-[14px] font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Sin llamadas procesadas</div>
-            <div className="text-[12px]" style={{ color: 'var(--text-muted)' }}>
-              Arrastra archivos de audio a ~/Desktop/CALLS/ para transcribir
-            </div>
-          </div>
+          <EmptyState icon="📞" title="Sin llamadas procesadas" description="Las transcripciones de llamadas aparecerán aquí automáticamente" />
         ) : (
           calls.map(call => {
             const isExpanded = expanded === call.id

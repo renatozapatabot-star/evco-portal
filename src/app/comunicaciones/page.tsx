@@ -5,6 +5,7 @@ import { createClient } from '@supabase/supabase-js'
 import { Send, Inbox, FileText, PenLine, X } from 'lucide-react'
 import { getCompanyIdCookie } from '@/lib/client-config'
 import { fmtDateTime } from '@/lib/format-utils'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
@@ -213,7 +214,7 @@ export default function ComunicacionesPage() {
             {loading ? (
               <div style={{ padding: 48, textAlign: 'center', color: 'var(--slate-400)', fontSize: 13 }}>Cargando...</div>
             ) : filtered.length === 0 ? (
-              <div style={{ padding: 48, textAlign: 'center', color: 'var(--slate-400)', fontSize: 13 }}>Sin comunicaciones en esta vista.</div>
+              <EmptyState icon="📨" title="Sin comunicaciones" description="Los correos y solicitudes enviados aparecerán aquí" />
             ) : (
               <div style={{ overflowX: 'auto' }}>
               <table className="cruz-table">

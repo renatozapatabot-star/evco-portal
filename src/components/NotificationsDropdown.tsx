@@ -70,6 +70,10 @@ export function NotificationsDropdown() {
       } catch {}
     }
     load()
+
+    // Refresh notifications every 90 seconds
+    const interval = setInterval(load, 90_000)
+    return () => clearInterval(interval)
   }, [readIds])
 
   useEffect(() => {

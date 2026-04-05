@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
-import { getIVARate, getDTARates } from '@/lib/rates'
+import { getIVARate, getDTARates, getExchangeRate } from '@/lib/rates'
 import { PORTAL_DATE_FROM } from '@/lib/data'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
@@ -51,12 +51,8 @@ export async function GET(request: NextRequest) {
   const riskFactors = riskRes.data?.risk_factors || []
   const tmecSuppliers = new Set((scRes.data || []).filter((s: any) => s.usmca_eligible).map((s: any) => s.supplier_name?.toUpperCase()))
 
-  // Get tipo de cambio from API
-  let tipoCambio = 20.50
-  try {
-    const tcData = await fetch(`${request.nextUrl.origin}/api/tipo-cambio`).then(r => r.json())
-    if (tcData?.rate) tipoCambio = Number(tcData.rate)
-  } catch {}
+  // Get tipo de cambio from system_config (single source of truth)
+  const { rate: tipoCambio } = await getExchangeRate()
 
   // Calculate financials
   const valorUSD = facturas.reduce((s: number, f: any) => s + (Number(f.valor_comercial) || 0), 0)
@@ -67,7 +63,9 @@ export async function GET(request: NextRequest) {
   const tmecApplicable = tmecSuppliers.has(supplierName.toUpperCase())
   const usmcaCertOnFile = docs.some((d: any) => d.doc_type?.includes('usmca') || d.doc_type?.includes('tmec'))
 
-  const igiRate = tmecApplicable && usmcaCertOnFile ? 0 : 0.05
+  // IGI: use 0 when T-MEC applies, otherwise flag as pending (no hardcoded rate)
+  const igiPending = !(tmecApplicable && usmcaCertOnFile)
+  const igiRate = 0
   const dtaRates = await getDTARates()
   const dta = valorMXN * dtaRates.A1.rate
   const igi = valorMXN * igiRate
@@ -82,6 +80,7 @@ export async function GET(request: NextRequest) {
   if (missingDocs.length > 0) blockers.push(`Faltan ${missingDocs.length} documentos: ${missingDocs.map(d => DOC_LABELS[d] || d).join(', ')}`)
   if (!traf.pedimento) blockers.push('Sin numero de pedimento')
   if (riskScore > 70) blockers.push(`Risk score alto: ${riskScore}/100`)
+  if (igiPending) blockers.push('Tasa IGI pendiente — requiere clasificación arancelaria')
 
   // Build fracciones list
   const fracciones = partidas.map((p: any) => ({
@@ -108,6 +107,7 @@ export async function GET(request: NextRequest) {
     fracciones,
     tmec_applicable: tmecApplicable,
     usmca_cert_on_file: usmcaCertOnFile,
+    igi_pending: igiPending,
     risk_score: riskScore,
     risk_factors: riskFactors,
     documents: {

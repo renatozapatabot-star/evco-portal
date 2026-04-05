@@ -424,4 +424,146 @@ Not a demo. A real pedimento. A real broker. A real clearance.
 
 *CRUZ — Cross-Border Intelligence*
 *Two people. Both licenses. One platform. Zero noise.*
-*Patente 3596 · Aduana 240 · Laredo, Texas · Est. 1941*
+*Patente 3596 · Aduana 240 · Laredo, Texas · Est. 1941*# CLAUDE.md ADDITIONS — Merged From All Tabs
+## Append this entire block to the end of your CLAUDE.md on Throne
+## Then: git add CLAUDE.md && git commit -m "CLAUDE.md: merged learnings from all 8 tabs"
+
+---
+
+## PIPELINE — CURRENT STATE (updated 2026-04-02)
+
+### Crontab: 17 jobs on Throne
+All use `/opt/homebrew/bin/node`. Logs to `/tmp/<script>.log`.
+- email-intake.js --ollama (*/5 6-22 M-S) — creates pedimento drafts from Gmail
+- shadow-reader.js (*/2h 6-22 M-S) — classifies Claudia+Eloisa inboxes via qwen3:8b
+- doc-classifier.js (2:30 AM daily) — auto-classifies new GlobalPC documents
+- heartbeat.js (*/15min) — pipeline health → Telegram
+- banxico-rate.js (6 AM daily) — exchange rate update → system_config
+- See full list in TAB_4_LOOM.md
+
+### Ollama patterns
+- qwen3:8b: use `think: false` in request body. Never use `/no_think` prefix.
+- Strip `<think>` tags before JSON parsing: `response.replace(/<think>[\s\S]*?<\/think>/g, '').trim()`
+- Classification prompts: "Classify as JSON only. No explanation." + domain hints
+
+### pdf-parse v2 (BREAKING CHANGE — non-standard package)
+```javascript
+const { PDFParse } = require('pdf-parse')
+const parser = new PDFParse(new Uint8Array(buffer))
+const result = await parser.getText()
+// NEVER: require('pdf-parse')(buffer) — that's a different package
+```
+
+### Column isolation (silent failure prevention)
+- `clave_cliente`: ONLY on `companies`, `aduanet_facturas`
+- `cve_cliente`: ONLY on `globalpc_facturas`
+- `company_id`: ONLY on `traficos`, `companies`, `globalpc_facturas`
+- Never assume a column exists. Query will silently return empty, not error.
+
+### Shadow Mode
+- Table: `shadow_emails` — 100 emails classified, 76% customs accuracy
+- Claudia = intake (77%), Eloisa = filing/pre_filing (100%)
+- Confirmed transition: pre_filing → filing (MVE → pedimento handoff)
+- Tráfico ref validation: must match `/\d{4,}/` or null
+
+---
+
+## Email Intake Pipeline
+
+- Location: `~/scripts/email-intake.js` (CANONICAL — ignore copies in evco-portal/)
+- Shared rates: `~/scripts/lib/rates.js` (CANONICAL — three copies exist, only edit this one)
+- Modes: `--dry-run` | `--ollama` (qwen3.5:35b localhost:11434) | default (Anthropic)
+- Tables: `drafts`, `processed_emails`, `audit_log` (all in Supabase)
+- PM2: delete before re-registering (`pm2 stop` does NOT kill cron restarts)
+- IVA stored as `{"rate": 0.16}` in system_config — `getIVARate()` unwraps it; `getDTARates()` and `getExchangeRate()` return raw objects
+- `sendTelegram()` reads TELEGRAM_BOT_TOKEN at call time, not module load time (dotenv timing rule)
+- Pre-Friday checklist: fix pdfParse import, verify Banxico cron, check Gmail inbox for read-marked emails from 19 erroneous runs
+
+---
+
+## Furnace / Intelligence Pipeline State (updated 2026-04-02)
+
+- **Classifier:** doc-classifier.js — 16 types, qwen3:8b, PDFParse with Uint8Array, upsert on (filename,source)
+- **Email intake:** crontab --ollama mode (Anthropic credits $0), qwen3.5:35b extraction
+- **PM2 daemons:** cruz-bot, email-intelligence, globalpc-sync. All scheduled jobs run via crontab.
+- **OTRO rate:** 18.9% (target <20%). 39 unique docs after dedup of 7,876 duplicates.
+- **SOLICIT pipeline:** built at `scripts/solicitud-email.js`, crontab at 6:15 AM, NOT activated — needs Tito approval. `upload_tokens` table created. 1,720 solicitudes queued.
+- **GlobalPC sync:** qwen3:8b, skip-after-3-timeouts, source label `ollama_qwen3_8b`.
+- **Supabase constraints:** unique_filename_source on document_classifications. Nano tier (0.5GB).
+- **Classification types (16):** FACTURA_COMERCIAL, LISTA_EMPAQUE, CONOCIMIENTO_EMBARQUE, CERTIFICADO_ORIGEN, CARTA_PORTE, MANIFESTACION_VALOR, PEDIMENTO, NOM, COA, ORDEN_COMPRA, ENTRADA_BODEGA, GUIA_EMBARQUE, PERMISO, PROFORMA, DODA_PREVIO, OTRO
+
+---
+
+## Rates Module — MANDATORY
+
+- Path: `~/scripts/lib/rates.js`
+- Exports: `getDTARates()`, `getExchangeRate()`, `getIVARate()`, `sendTelegram()`
+- Source of truth: Supabase `system_config` table
+- Behavior: refuses to calculate if rates expired (valid_to < now), sends Telegram alert
+- Rule: ANY script touching money imports from `./lib/rates` — zero hardcoded DTA/IVA/FX values
+- **The sed trap:** Never run broad sed replacements across rates.js — the three getter functions return different shapes
+
+---
+
+## .env Consolidation
+
+- Canonical location: `~/.openclaw/workspace/scripts/evco-ops/.env` (70 lines, all services)
+- Portal env: `~/evco-portal/.env.local` (Vercel uses its own copy)
+- CRITICAL: passwords with special chars ($, *, (, @) MUST be quoted — unquoted values cause silent source failures
+- Gmail pattern: per-inbox tokens (GMAIL_REFRESH_TOKEN_AI, _ELOISA, _CLAUDIA)
+- GMAIL_REDIRECT_URI=urn:ietf:wg:oauth:2.0:oob (desktop OAuth flow)
+
+---
+
+## CAZA — Market Intelligence Module
+
+### GlobalPC MySQL Schema (confirmed April 2, 2026)
+- `cb_trafico`: sCveTrafico, sCveCliente, sNumPatente, sCveAduana, dFechaPago, dFechaCruce, sNumPedimento
+- `cu_cliente`: sCveCliente, sRFC, sRazonSocial, sNombreContacto, sCuentaCorreoContacto
+- `cb_factura`: sCveTrafico (FK), iValorComercial (USD), sCveProveedor, sCveMoneda
+- JOIN: cb_trafico.sCveTrafico = cb_factura.sCveTrafico; cb_trafico.sCveCliente = cu_cliente.sCveCliente
+- **NOTE: bd_demo_38 contains ONLY Patente 3596 data.** Other patentes (3796, 3712, 3902) are historical RZ operations, NOT competitor data.
+
+### CAZA Supabase Tables (live)
+- `caza_pipeline` — 46 clients, scored 0-100, unique on RFC
+- `caza_contact_log` — immutable outreach audit trail (cannot UPDATE or DELETE)
+- `caza_market_intel` — empty, awaiting data source (ImportGenius or GlobalPC broader view)
+- Views: `caza_ghost_clients`, `caza_market_share`, `caza_pipeline_summary`
+
+### Competitive Intelligence Sources
+- FREE: SOIA (one-at-a-time via Tito's e.firma), VUCEM open data (aggregates only)
+- PAID: ImportGenius Mexico dataset (email sales, verify patente field exists before subscribing)
+- ASK: Mario Ramos at GlobalPC for broader Aduana 240 aggregate data
+
+---
+
+## PORTAL 10/10 BUILD STATUS (April 2, 2026)
+
+- Phases 0-3 (visual polish) + Phase 6 A-I (audit fixes) COMPLETE and deployed
+- North Star roadmap: `~/evco-portal/CRUZ_NORTH_STAR.md`
+- Component inventory: `~/evco-portal/TAB_2_FORGE.md` (284 files, canonical imports)
+- KNOWN BUG: Client nav (nav-config.ts) missing Catálogo and Anexo 24
+- PENDING: Tito's entradas redesign (Fecha/Entrada/Proveedor/Transporte/Bultos/Peso/Guía/Daño)
+- PENDING: "Transportista" → "Transporte" label rename portal-wide
+- PENDING: Carrier name resolution for numeric IDs
+- Deploy with: `vercel --prod --force` (always force to avoid cache issues)
+- Two nav systems: nav-config.ts (clients) vs Sidebar.tsx (operators) — always verify changes appear in BOTH
+
+---
+
+## CONFLICT RESOLUTIONS (April 2, 2026)
+
+### Script Location
+- `~/evco-portal/scripts/` is canonical for ALL portal scripts (email-intake, classifiers, etc.)
+- `~/scripts/` is canonical for standalone pipeline scripts (rates.js, email-intake original)
+- When in doubt: check which one crontab points to (`crontab -l | grep scriptname`)
+
+### PM2 vs Crontab
+- PM2 for always-on daemons: cruz-bot, globalpc-sync, email-intelligence
+- Crontab for scheduled jobs: everything else
+- Reason: pm2 can silently die; crontab is more reliable for monitoring pm2 itself
+
+### GlobalPC Data Scope
+- bd_demo_38 = ONLY Patente 3596 data (our clients only)
+- CAZA RADAR (competitor intelligence) CANNOT be built from this source alone
+- CAZA FANTASMAS (ghost clients) and PIPELINE work fine with this data

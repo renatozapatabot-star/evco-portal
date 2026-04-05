@@ -185,9 +185,9 @@ const s = StyleSheet.create({
 })
 
 function fmtUSD(v: number): string {
-  if (v >= 1e6) return `$${(v / 1e6).toFixed(1)}M`
-  if (v >= 1e3) return `$${(v / 1e3).toFixed(0)}K`
-  return `$${v.toLocaleString('en-US')}`
+  if (v >= 1e6) return `$${(v / 1e6).toFixed(1)}M USD`
+  if (v >= 1e3) return `$${(v / 1e3).toFixed(0)}K USD`
+  return `$${v.toLocaleString('en-US')} USD`
 }
 
 function complianceColor(pct: number): string {

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getErrorMessage } from '@/lib/errors'
 import { createClient } from '@supabase/supabase-js'
 
 const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY!

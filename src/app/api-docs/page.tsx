@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { getErrorMessage } from '@/lib/errors'
 import { PORTAL_URL } from '@/lib/client-config'
 
 const ENDPOINTS = [

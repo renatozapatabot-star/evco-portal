@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getErrorMessage } from '@/lib/errors'
 import { exec } from 'child_process'
 import { promisify } from 'util'
 
@@ -26,6 +27,6 @@ export async function POST(request: NextRequest) {
       message: company ? `Sync started for ${company}` : 'Full sync started'
     })
   } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 })
+    return NextResponse.json({ error: getErrorMessage(e) }, { status: 500 })
   }
 }

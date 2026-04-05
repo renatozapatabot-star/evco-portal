@@ -892,6 +892,9 @@ export default function TraficoDetailPage() {
             )
           })()}
 
+          {/* ── Crossing Prediction ── */}
+          <CrossingPrediction />
+
           {/* ── Estimated Completion + Share ── */}
           {!(t.estatus || '').toLowerCase().includes('cruz') && t.fecha_llegada && (
             <div className="card" style={{ padding: '16px 20px', marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
@@ -1334,6 +1337,52 @@ export default function TraficoDetailPage() {
       )}
 
       <style>{`@keyframes pulse-dot { 0%,100% { transform:scale(1); } 50% { transform:scale(1.15); } }`}</style>
+    </div>
+  )
+}
+
+/** Crossing prediction card — fetched from crossing_predictions */
+function CrossingPrediction() {
+  const [prediction, setPrediction] = useState<{ bridge_name: string; optimal_hour: number; avg_hours: number; std_hours: number; samples: number } | null>(null)
+
+  useEffect(() => {
+    const tomorrow = new Date()
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    const day = tomorrow.getDay()
+    supabase.from('crossing_predictions')
+      .select('bridge_name, optimal_hour, avg_hours, std_hours, samples')
+      .eq('day_of_week', day)
+      .order('computed_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => { if (data) setPrediction(data) })
+  }, [])
+
+  if (!prediction) return null
+
+  const tomorrow = new Date()
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  const dayNames = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado']
+  const dayName = dayNames[tomorrow.getDay()]
+
+  return (
+    <div className="card" style={{
+      padding: '16px 20px', marginBottom: 16,
+      borderLeft: '4px solid #0D9488',
+      background: 'rgba(13,148,136,0.04)',
+    }}>
+      <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#0D9488', marginBottom: 8 }}>
+        Cruce recomendado — {dayName}
+      </div>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 }}>
+        <span style={{ fontSize: 16, fontWeight: 800, color: '#1A1A1A' }}>{prediction.bridge_name}</span>
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 14, fontWeight: 700, color: '#0D9488' }}>
+          {prediction.optimal_hour}:00–{prediction.optimal_hour + 2}:00
+        </span>
+      </div>
+      <div style={{ fontSize: 12, color: '#6B6B6B' }}>
+        Tiempo estimado: {prediction.avg_hours}h (±{prediction.std_hours}h) · {prediction.samples} registros
+      </div>
     </div>
   )
 }

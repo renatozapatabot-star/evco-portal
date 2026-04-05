@@ -43,6 +43,7 @@ export default function ClientInicioView() {
   const [fetchedAt, setFetchedAt] = useState<Date | null>(null)
   const { getCached, setCache, refreshing, startRefresh, endRefresh } = useSessionCache()
   const [dataFade, setDataFade] = useState(1)
+  const [detailOpen, setDetailOpen] = useState(false)
 
   function loadData() {
     const companyId = getCompanyIdCookie()
@@ -218,6 +219,18 @@ export default function ClientInicioView() {
     return { newTraficos, crossed, noPedGt7 }
   }, [traficos])
 
+  // ── Recent events for feed ──
+  const cutoff24h = new Date(Date.now() - 86400000).toISOString()
+  const recentCrossed = useMemo(() =>
+    traficos.filter(t => t.fecha_cruce && t.fecha_cruce >= cutoff24h)
+      .sort((a, b) => (b.fecha_cruce || '').localeCompare(a.fecha_cruce || ''))
+  , [traficos, cutoff24h])
+
+  const recentNew = useMemo(() =>
+    traficos.filter(t => t.fecha_llegada && t.fecha_llegada >= cutoff24h && !(t.estatus || '').toLowerCase().includes('cruz'))
+      .sort((a, b) => (b.fecha_llegada || '').localeCompare(a.fecha_llegada || ''))
+  , [traficos, cutoff24h])
+
   // ── Contextual greeting subtitle ──
   const greetingSub = useMemo(() => {
     const parts: string[] = []
@@ -319,6 +332,22 @@ export default function ClientInicioView() {
         </p>
       </div>
 
+      {/* Detalle operativo — collapsed by default */}
+      <button
+        onClick={() => setDetailOpen(o => !o)}
+        style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%',
+          padding: '12px 0', background: 'none', border: 'none', cursor: 'pointer', marginBottom: detailOpen ? 12 : 0,
+        }}
+      >
+        <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--slate-400)' }}>
+          Detalle operativo
+        </span>
+        <ChevronRight size={14} style={{ color: 'var(--slate-400)', transform: detailOpen ? 'rotate(90deg)' : 'none', transition: 'transform 150ms' }} />
+      </button>
+
+      {detailOpen && (
+      <>
       {/* KPI Grid */}
       <div className="kpi-grid" style={{ opacity: dataFade, transition: 'opacity 200ms ease' }}>
         {[
@@ -441,34 +470,41 @@ export default function ClientInicioView() {
           <Sparkline data={sparkData} width={200} height={40} color="var(--info-500)" />
         </div>
       )}
+      </>
+      )}
 
-      {/* ── Últimas 24 horas ── */}
-      {(last24h.newTraficos > 0 || last24h.crossed > 0) && (
+      {/* ── Últimas 24 horas — event feed ── */}
+      {(last24h.newTraficos > 0 || last24h.crossed > 0 || pendingEntradas.length > 0) && (
         <div className="card" style={{ marginBottom: 24, padding: '16px 20px' }}>
-          <div className="kpi-card-label" style={{ marginBottom: 12 }}>Últimas 24 horas</div>
-          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)', gap: 12 }}>
-            {last24h.newTraficos > 0 && (
-              <Link href="/traficos?order_by=fecha_llegada&order_dir=desc" style={{ textDecoration: 'none', color: 'inherit' }}>
-                <div style={{ padding: '10px 12px', background: 'var(--slate-50)', borderRadius: 8 }}>
-                  <div style={{ fontSize: 20, fontWeight: 800, fontFamily: 'var(--font-mono)', color: 'var(--info-500)' }}>{last24h.newTraficos}</div>
-                  <div style={{ fontSize: 11, color: 'var(--slate-500)' }}>Tráficos nuevos</div>
-                </div>
+          <div className="kpi-card-label" style={{ marginBottom: 10 }}>Últimas 24 horas</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+            {recentCrossed.slice(0, 3).map(t => (
+              <Link key={t.trafico} href={`/traficos/${encodeURIComponent(t.trafico)}`}
+                style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0', borderBottom: '1px solid var(--border-card)', textDecoration: 'none', color: 'inherit' }}>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#16A34A', flexShrink: 0 }} />
+                <span style={{ fontSize: 13, color: 'var(--text-primary)', flex: 1 }}>
+                  <b>{t.trafico}</b> cruzó
+                </span>
+                <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>{fmtDateShort(t.fecha_cruce)}</span>
               </Link>
-            )}
-            {last24h.crossed > 0 && (
-              <Link href="/traficos?estatus=Cruzado" style={{ textDecoration: 'none', color: 'inherit' }}>
-                <div style={{ padding: '10px 12px', background: 'var(--green-50)', borderRadius: 8 }}>
-                  <div style={{ fontSize: 20, fontWeight: 800, fontFamily: 'var(--font-mono)', color: 'var(--success)' }}>{last24h.crossed}</div>
-                  <div style={{ fontSize: 11, color: 'var(--slate-500)' }}>Cruzaron</div>
-                </div>
+            ))}
+            {recentNew.slice(0, 2).map(t => (
+              <Link key={t.trafico} href={`/traficos/${encodeURIComponent(t.trafico)}`}
+                style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0', borderBottom: '1px solid var(--border-card)', textDecoration: 'none', color: 'inherit' }}>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#C4963C', flexShrink: 0 }} />
+                <span style={{ fontSize: 13, color: 'var(--text-primary)', flex: 1 }}>
+                  Nuevo tráfico <b>{t.trafico}</b>
+                </span>
+                <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>{fmtDateShort(t.fecha_llegada)}</span>
               </Link>
-            )}
+            ))}
             {pendingEntradas.length > 0 && (
-              <Link href="/entradas" style={{ textDecoration: 'none', color: 'inherit' }}>
-                <div style={{ padding: '10px 12px', background: 'var(--amber-50)', borderRadius: 8 }}>
-                  <div style={{ fontSize: 20, fontWeight: 800, fontFamily: 'var(--font-mono)', color: 'var(--amber-600)' }}>{pendingEntradas.length}</div>
-                  <div style={{ fontSize: 11, color: 'var(--slate-500)' }}>Entradas pendientes</div>
-                </div>
+              <Link href="/entradas"
+                style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0', textDecoration: 'none', color: 'inherit' }}>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#D97706', flexShrink: 0 }} />
+                <span style={{ fontSize: 13, color: 'var(--text-primary)' }}>
+                  {pendingEntradas.length} entrada{pendingEntradas.length !== 1 ? 's' : ''} pendiente{pendingEntradas.length !== 1 ? 's' : ''}
+                </span>
               </Link>
             )}
           </div>

@@ -8,6 +8,7 @@ import { sanitizeIlike, sanitizeFilter } from '@/lib/sanitize'
 import { cruzChatSchema } from '@/lib/api-schemas'
 
 import { rateLimitDB } from '@/lib/rate-limit-db'
+import { getErrorMessage } from '@/lib/errors'
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY!
 const supabase = createClient(
@@ -384,7 +385,8 @@ const TOOLS = [
   },
 ]
 
-async function executeTool(name: string, input: any, clientCtx: { companyId: string; clientClave: string; clientName: string }): Promise<string> {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- AI tool inputs are dynamically shaped per tool
+async function executeTool(name: string, input: Record<string, any>, clientCtx: { companyId: string; clientClave: string; clientName: string }): Promise<string> {
   const { companyId, clientClave, clientName } = clientCtx
   try {
     switch (name) {
@@ -433,7 +435,7 @@ async function executeTool(name: string, input: any, clientCtx: { companyId: str
         query = query.order('fecha', { ascending: false }).limit(input.limit || 20)
         const { data, error } = await query
         if (error) return JSON.stringify({ error: error.message })
-        const total = (data || []).reduce((s: number, r: any) => s + (r.importe || r.total || r.saldo || 0), 0)
+        const total = (data || []).reduce((s: number, r: { importe?: number; total?: number; saldo?: number }) => s + (r.importe || r.total || r.saldo || 0), 0)
         return JSON.stringify({ count: data?.length, total, results: data?.slice(0, 10) })
       }
       case 'check_bridge_status': {
@@ -442,7 +444,7 @@ async function executeTool(name: string, input: any, clientCtx: { companyId: str
         const day = input.day_of_week ?? (laredoDayMap[laredoDayStr] ?? new Date().getDay())
         const { data } = await supabase.from('bridge_intelligence').select('bridge_name, crossing_hours, day_of_week').eq('day_of_week', day)
         const bridges: Record<string, number[]> = {}
-        ;(data || []).forEach((b: any) => { if (!bridges[b.bridge_name]) bridges[b.bridge_name] = []; bridges[b.bridge_name].push(b.crossing_hours) })
+        ;(data || []).forEach((b: { bridge_name: string; crossing_hours: number }) => { if (!bridges[b.bridge_name]) bridges[b.bridge_name] = []; bridges[b.bridge_name].push(b.crossing_hours) })
         const summary = Object.entries(bridges).map(([name, hours]) => ({
           name, avgHours: (hours.reduce((a, b) => a + b, 0) / hours.length).toFixed(1), records: hours.length,
         })).sort((a, b) => parseFloat(a.avgHours) - parseFloat(b.avgHours))
@@ -498,9 +500,9 @@ async function executeTool(name: string, input: any, clientCtx: { companyId: str
           supabase.from('entradas').select('*', { count: 'exact', head: true }),
         ])
         const traficos = traf.data || []
-        const enProceso = traficos.filter((t: any) => t.estatus === 'En Proceso').length
-        const cruzados = traficos.filter((t: any) => (t.estatus || '').toLowerCase().includes('cruz')).length
-        const totalValue = traficos.reduce((s: number, t: any) => s + (Number(t.importe_total) || 0), 0)
+        const enProceso = traficos.filter((t: { estatus: string | null; importe_total: number | null }) => t.estatus === 'En Proceso').length
+        const cruzados = traficos.filter((t: { estatus: string | null }) => (t.estatus || '').toLowerCase().includes('cruz')).length
+        const totalValue = traficos.reduce((s: number, t: { importe_total: number | null }) => s + (Number(t.importe_total) || 0), 0)
         const daysLeft = Math.max(0, Math.ceil((new Date('2026-03-31').getTime() - Date.now()) / 86400000))
         return JSON.stringify({
           traficos: { total: traficos.length, enProceso, cruzados },
@@ -523,7 +525,7 @@ async function executeTool(name: string, input: any, clientCtx: { companyId: str
           .eq('company_id', companyId)
           .or(`pedimento_id.eq.${sanitizeFilter(input.trafico_id)},pedimento_id.like.%${sanitizeFilter(input.trafico_id.split('-')[1] || input.trafico_id)}`)
           .limit(50)
-        const types = [...new Set((docs || []).map((d: any) => d.doc_type))]
+        const types = [...new Set((docs || []).map((d: { doc_type: string }) => d.doc_type))]
         const expected = ['factura_comercial','packing_list','bill_of_lading','cove','pedimento_detallado','doda','mve','acuse_cove','cuenta_gastos','carta_porte']
         const missing = expected.filter(e => !types.some(t => t.includes(e.split('_')[0])))
         return JSON.stringify({ trafico: input.trafico_id, found: types.length, types, missing, total_docs: docs?.length || 0, completeness: `${Math.round((types.length / expected.length) * 100)}%` })
@@ -531,7 +533,7 @@ async function executeTool(name: string, input: any, clientCtx: { companyId: str
       case 'query_crossing_predictions': {
         const { data } = await supabase.from('bridge_intelligence').select('bridge_name, crossing_hours, day_of_week, hour_of_day').limit(100)
         const byBridge: Record<string, { hours: number[], bestDay: number, bestHour: number }> = {}
-        ;(data || []).forEach((r: any) => {
+        ;(data || []).forEach((r: { bridge_name: string; crossing_hours: number; hour_of_day?: number | null }) => {
           if (!byBridge[r.bridge_name]) byBridge[r.bridge_name] = { hours: [], bestDay: 0, bestHour: 0 }
           byBridge[r.bridge_name].hours.push(r.crossing_hours)
         })
@@ -542,8 +544,8 @@ async function executeTool(name: string, input: any, clientCtx: { companyId: str
       }
       case 'get_savings': {
         const { data: facturas } = await supabase.from('globalpc_facturas').select('valor_usd, igi').eq('cve_cliente', clientClave).limit(5000)
-        const tmecOps = (facturas || []).filter((f: any) => (f.igi || 0) === 0)
-        const tmecSavings = tmecOps.reduce((s: number, f: any) => s + (Number(f.valor_usd) || 0) * 0.05, 0)
+        const tmecOps = (facturas || []).filter((f: { valor_usd: number | null; igi: number | null }) => (f.igi || 0) === 0)
+        const tmecSavings = tmecOps.reduce((s: number, f) => s + (Number(f.valor_usd) || 0) * 0.05, 0)
         return JSON.stringify({
           tmec_operations: tmecOps.length, total_operations: facturas?.length || 0,
           tmec_savings_mxn: Math.round(tmecSavings * 17.5), tmec_savings_usd: Math.round(tmecSavings),
@@ -564,14 +566,14 @@ async function executeTool(name: string, input: any, clientCtx: { companyId: str
         }
         const { data: active } = await supabase.from('traficos').select('trafico', { count: 'exact', head: true }).neq('estatus', 'Cruzado').gte('fecha_llegada', PORTAL_DATE_FROM)
         const { data: alerts } = await supabase.from('compliance_predictions').select('severity').eq('resolved', false)
-        return JSON.stringify({ date: today, active_traficos: active, critical: alerts?.filter((a: any) => a.severity === 'critical').length, warnings: alerts?.filter((a: any) => a.severity === 'warning').length })
+        return JSON.stringify({ date: today, active_traficos: active, critical: alerts?.filter((a: { severity: string }) => a.severity === 'critical').length, warnings: alerts?.filter((a: { severity: string }) => a.severity === 'warning').length })
       }
       case 'client_health': {
         const cid = input.company_id || companyId
         const { data: company } = await supabase.from('companies').select('*').eq('company_id', cid).single()
         const { data: alerts } = await supabase.from('compliance_predictions').select('severity').eq('company_id', cid).eq('resolved', false)
         const { data: risks } = await supabase.from('pedimento_risk_scores').select('overall_score').eq('company_id', cid).gte('overall_score', 50)
-        return JSON.stringify({ company: company?.name, health_score: company?.health_score, traficos: company?.traficos_count, critical_alerts: alerts?.filter((a: any) => a.severity === 'critical').length, high_risk: risks?.length, last_sync: company?.last_sync })
+        return JSON.stringify({ company: company?.name, health_score: company?.health_score, traficos: company?.traficos_count, critical_alerts: alerts?.filter((a: { severity: string }) => a.severity === 'critical').length, high_risk: risks?.length, last_sync: company?.last_sync })
       }
       case 'duty_savings': {
         const cid2 = input.company_id || companyId
@@ -592,7 +594,7 @@ async function executeTool(name: string, input: any, clientCtx: { companyId: str
       case 'crossing_optimizer': {
         const { data: bridge } = await supabase.from('bridge_intelligence').select('bridge_name, crossing_hours, day_of_week, hour_of_day').limit(500)
         const byDayBridge: Record<string, Record<string, number[]>> = {}
-        ;(bridge || []).forEach((b: any) => {
+        ;(bridge || []).forEach((b: { bridge_name: string; crossing_hours: number; day_of_week: number; hour_of_day?: number | null }) => {
           const day = b.day_of_week
           if (!byDayBridge[day]) byDayBridge[day] = {}
           if (!byDayBridge[day][b.bridge_name]) byDayBridge[day][b.bridge_name] = []
@@ -608,8 +610,8 @@ async function executeTool(name: string, input: any, clientCtx: { companyId: str
       case 'check_carrier': {
         const { data: traficos } = await supabase.from('traficos').select('trafico, estatus, fecha_llegada, fecha_cruce').ilike('transportista_extranjero', `%${input.carrier_name}%`).gte('fecha_llegada', PORTAL_DATE_FROM).limit(100)
         const total = traficos?.length || 0
-        const cruzados = traficos?.filter((t: any) => t.estatus === 'Cruzado').length || 0
-        const avgDays = traficos?.filter((t: any) => t.fecha_llegada && t.fecha_cruce).map((t: any) => (new Date(t.fecha_cruce).getTime() - new Date(t.fecha_llegada).getTime()) / 86400000).reduce((a: number, b: number, _: number, arr: number[]) => a + b / arr.length, 0) || 0
+        const cruzados = traficos?.filter((t: { estatus: string; fecha_llegada?: string; fecha_cruce?: string }) => t.estatus === 'Cruzado').length || 0
+        const avgDays = traficos?.filter((t: { estatus: string; fecha_llegada?: string; fecha_cruce?: string }) => t.fecha_llegada && t.fecha_cruce).map((t) => (new Date(t.fecha_cruce!).getTime() - new Date(t.fecha_llegada!).getTime()) / 86400000).reduce((a: number, b: number, _: number, arr: number[]) => a + b / arr.length, 0) || 0
         return JSON.stringify({ carrier: input.carrier_name, total_operations: total, completed: cruzados, completion_rate: total > 0 ? `${((cruzados/total)*100).toFixed(1)}%` : '0%', avg_crossing_days: avgDays.toFixed(1) })
       }
       case 'tmec_opportunity': {
@@ -626,7 +628,7 @@ async function executeTool(name: string, input: any, clientCtx: { companyId: str
         const { data: companies } = await supabase.from('companies').select('company_id, name, health_score, traficos_count, last_sync').eq('active', true).order('traficos_count', { ascending: false })
         const { data: allAlerts } = await supabase.from('compliance_predictions').select('company_id, severity').eq('resolved', false)
         const alertMap: Record<string, number> = {}
-        ;(allAlerts || []).forEach((a: any) => { alertMap[a.company_id] = (alertMap[a.company_id] || 0) + 1 })
+        ;(allAlerts || []).forEach((a: { company_id: string; severity: string }) => { alertMap[a.company_id] = (alertMap[a.company_id] || 0) + 1 })
         return JSON.stringify({ total_clients: companies?.length, companies: companies?.map(c => ({ ...c, alerts: alertMap[c.company_id] || 0 })) })
       }
       case 'simulate_audit': {
@@ -647,7 +649,7 @@ async function executeTool(name: string, input: any, clientCtx: { companyId: str
           .order('confidence', { ascending: false })
           .limit(5)
         if (input.knowledge_type) {
-          const filtered = (knowledge || []).filter((k: any) => k.knowledge_type === input.knowledge_type)
+          const filtered = (knowledge || []).filter((k: { knowledge_type?: string }) => k.knowledge_type === input.knowledge_type)
           return JSON.stringify({ results: filtered.length > 0 ? filtered : knowledge, query: input.query })
         }
         return JSON.stringify({ results: knowledge || [], query: input.query })
@@ -667,7 +669,7 @@ async function executeTool(name: string, input: any, clientCtx: { companyId: str
       case 'check_risk_radar': {
         const { data: signals } = await supabase.from('risk_signals').select('*').order('detected_at', { ascending: false }).limit(10)
         if (input.category) {
-          const filtered = (signals || []).filter((s: any) => s.category === input.category)
+          const filtered = (signals || []).filter((s: { category?: string }) => s.category === input.category)
           return JSON.stringify({ signals: filtered, category: input.category })
         }
         return JSON.stringify({ signals: signals || [], total: signals?.length || 0 })
@@ -699,8 +701,8 @@ async function executeTool(name: string, input: any, clientCtx: { companyId: str
           const result = await res.json()
           if (result.success) return JSON.stringify({ success: true, message: `WhatsApp enviado al proveedor para tráfico ${input.trafico_id}` })
           return JSON.stringify({ error: result.error || 'Failed to send WhatsApp' })
-        } catch (e: any) {
-          return JSON.stringify({ error: e.message })
+        } catch (e: unknown) {
+          return JSON.stringify({ error: getErrorMessage(e) })
         }
       }
       case 'generate_tracking_link': {
@@ -713,21 +715,21 @@ async function executeTool(name: string, input: any, clientCtx: { companyId: str
           const result = await res.json()
           if (result.url) return JSON.stringify({ url: result.url, token: result.token, message: `Link de tracking generado para ${input.trafico_id}` })
           return JSON.stringify({ error: result.error || 'Failed to generate link' })
-        } catch (e: any) {
-          return JSON.stringify({ error: e.message })
+        } catch (e: unknown) {
+          return JSON.stringify({ error: getErrorMessage(e) })
         }
       }
       case 'compare_to_benchmark': {
         const { data: clientMetrics } = await supabase.from('client_benchmarks').select('*').eq('company_id', companyId).order('calculated_at', { ascending: false }).limit(10)
         const { data: fleetMetrics } = await supabase.from('client_benchmarks').select('*').eq('company_id', 'fleet').order('calculated_at', { ascending: false }).limit(10)
-        const comparison = (clientMetrics || []).map((e: any) => {
-          const fleet = (fleetMetrics || []).find((f: any) => f.metric_name === e.metric_name)
+        const comparison = (clientMetrics || []).map((e: { metric_name: string; metric_value: number }) => {
+          const fleet = (fleetMetrics || []).find((f: { metric_name: string; fleet_average?: number; fleet_median?: number; top_quartile?: number }) => f.metric_name === e.metric_name)
           return {
             metric: e.metric_name, client: e.metric_value, fleet_avg: fleet?.fleet_average, fleet_median: fleet?.fleet_median,
             top_quartile: fleet?.top_quartile, delta_pct: fleet?.fleet_average ? (((e.metric_value - fleet.fleet_average) / fleet.fleet_average) * 100).toFixed(1) + '%' : 'N/A',
           }
         })
-        const tmecMetric = comparison.find((c: any) => c.metric?.includes('tmec'))
+        const tmecMetric = comparison.find((c) => c.metric?.includes('tmec'))
         const tmecInsight = tmecMetric
           ? `${clientName}: T-MEC ${tmecMetric.client}% vs ${tmecMetric.fleet_avg}% promedio flota (delta ${tmecMetric.delta_pct}).`
           : `${clientName}: métricas de benchmark comparadas con el promedio de la flota.`
@@ -739,7 +741,7 @@ async function executeTool(name: string, input: any, clientCtx: { companyId: str
         const { data: predictions } = await supabase.from('compliance_predictions').select('*').eq('company_id', companyId).eq('resolved', false).lte('due_date', futureDate).order('due_date', { ascending: true }).limit(30)
         const { data: mveIssues } = await supabase.from('traficos').select('trafico, estatus').is('mve_folio', null).gte('fecha_llegada', PORTAL_DATE_FROM).limit(20)
         const deadlines = [
-          ...(predictions || []).map((p: any) => ({ type: p.prediction_type, description: p.description, due_date: p.due_date, severity: p.severity })),
+          ...(predictions || []).map((p: { prediction_type: string; description: string; due_date: string; severity: string }) => ({ type: p.prediction_type, description: p.description, due_date: p.due_date, severity: p.severity })),
           ...(mveIssues?.length ? [{ type: 'MVE', description: `${mveIssues.length} tráficos sin folio MVE`, due_date: '2026-03-31', severity: 'critical' }] : []),
         ]
         const MVE_PENALTY_MAX = 7190 // from system_config mve_penalty_max
@@ -780,8 +782,8 @@ async function executeTool(name: string, input: any, clientCtx: { companyId: str
       default:
         return JSON.stringify({ error: `Unknown tool: ${name}` })
     }
-  } catch (err: any) {
-    return JSON.stringify({ error: err.message })
+  } catch (err: unknown) {
+    return JSON.stringify({ error: getErrorMessage(err) })
   }
 }
 
@@ -877,9 +879,9 @@ export async function POST(req: NextRequest) {
     // Handle tool use loop
     let loopMessages = [...messages]
     while (data.stop_reason === 'tool_use') {
-      const toolUseBlocks = data.content.filter((b: any) => b.type === 'tool_use')
+      const toolUseBlocks = data.content.filter((b: { type: string }) => b.type === 'tool_use')
       const toolResults = await Promise.all(
-        toolUseBlocks.map(async (block: any) => ({
+        toolUseBlocks.map(async (block: { type: string; id: string; name: string; input: Record<string, unknown> }) => ({
           type: 'tool_result' as const,
           tool_use_id: block.id,
           content: await executeTool(block.name, block.input, { companyId, clientClave, clientName }),
@@ -915,8 +917,8 @@ export async function POST(req: NextRequest) {
     }
 
     const text = data.content
-      ?.filter((b: any) => b.type === 'text')
-      .map((b: any) => b.text)
+      ?.filter((b: { type: string; text?: string }) => b.type === 'text')
+      .map((b: { type: string; text?: string }) => b.text)
       .join('\n') || ''
 
     // Check for navigation in last tool call
@@ -936,8 +938,8 @@ export async function POST(req: NextRequest) {
 
     // Save conversation + audit log (async, don't block stream)
     const toolsUsed = loopMessages
-      .filter((m: any) => m.role === 'assistant' && Array.isArray(m.content))
-      .flatMap((m: any) => m.content.filter((b: any) => b.type === 'tool_use').map((b: any) => b.name))
+      .filter((m: { role: string; content: string | Array<{ type: string; name?: string }> }) => m.role === 'assistant' && Array.isArray(m.content))
+      .flatMap((m) => (Array.isArray(m.content) ? m.content : []).filter((b: { type: string; name?: string }) => b.type === 'tool_use').map((b: { type: string; name?: string }) => b.name))
     const userMsg = messages[messages.length - 1]?.content || ''
     const inputTokens = data.usage?.input_tokens || 0
     const outputTokens = data.usage?.output_tokens || 0
@@ -990,8 +992,8 @@ export async function POST(req: NextRequest) {
         'X-Navigate': navigatePath || '',
       }
     })
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('CRUZ Chat error:', err)
-    return NextResponse.json({ message: 'Error al procesar tu solicitud. Intenta de nuevo.', error: err.message }, { status: 500 })
+    return NextResponse.json({ message: 'Error al procesar tu solicitud. Intenta de nuevo.', error: getErrorMessage(err) }, { status: 500 })
   }
 }

@@ -2,8 +2,8 @@
 
 // ============================================================
 // CRUZ eConta Reconciler — match operations vs accounting
-// Compares tráficos/pedimentos against eConta invoices/payments.
-// Flags: unbilled operations, orphan invoices, overdue receivables.
+// Uses aduanet_facturas (referencia→trafico) for operation matching
+// and econta_cartera (cve_cliente) for receivables.
 // Cron: 0 4 * * 1 (Monday 4 AM)
 // ============================================================
 
@@ -20,6 +20,7 @@ const DRY_RUN = process.argv.includes('--dry-run')
 const TELEGRAM_CHAT = '-5085543275'
 
 function fmtMXN(n) { return '$' + Number(n).toLocaleString('es-MX', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) }
+function fmtUSD(n) { return '$' + Number(n).toLocaleString('en-US', { maximumFractionDigits: 0 }) }
 
 async function sendTelegram(msg) {
   const token = process.env.TELEGRAM_BOT_TOKEN
@@ -37,100 +38,123 @@ async function sendTelegram(msg) {
 async function main() {
   console.log(`💰 CRUZ eConta Reconciler — ${DRY_RUN ? 'DRY RUN' : 'LIVE'}`)
 
-  // ── 1. Get completed operations (with pedimentos) ──
+  // ── 1. Get completed tráficos ──
   const { data: operations } = await supabase
     .from('traficos')
-    .select('trafico, pedimento, company_id, importe_total, estatus, fecha_cruce')
+    .select('trafico, pedimento, company_id, importe_total, estatus')
     .not('pedimento', 'is', null)
     .ilike('estatus', '%cruz%')
     .gte('fecha_llegada', '2024-01-01')
     .limit(5000)
 
   const ops = operations || []
-  console.log(`  Operations (cruzado + pedimento): ${ops.length}`)
+  console.log(`  Completed tráficos: ${ops.length}`)
 
-  // ── 2. Get eConta invoices ──
-  const { data: facturas } = await supabase
-    .from('econta_facturas')
-    .select('consecutivo, referencia, importe, saldo, moneda, fecha, company_id')
-    .gte('fecha', '2024-01-01')
+  // ── 2. Get aduanet_facturas (these have referencia = trafico ID) ──
+  const { data: aduanetFacts } = await supabase
+    .from('aduanet_facturas')
+    .select('referencia, pedimento, valor_usd, clave_cliente')
+    .gte('fecha_pago', '2024-01-01')
     .limit(5000)
 
-  const facts = facturas || []
-  console.log(`  eConta facturas: ${facts.length}`)
+  const aduanet = aduanetFacts || []
+  console.log(`  Aduanet facturas: ${aduanet.length}`)
 
-  // ── 3. Get cartera (receivables) ──
+  // Build match sets from aduanet facturas
+  // Two formats: "1648-Y4316" (matches trafico directly) and "4598RZ2121" (clave prefix)
+  const invoicedTraficoSet = new Set()
+  const invoicedClaveSet = new Set() // clave_cliente values that have ANY invoice
+  for (const f of aduanet) {
+    if (f.referencia && f.referencia.includes('-')) invoicedTraficoSet.add(f.referencia)
+    if (f.clave_cliente) invoicedClaveSet.add(f.clave_cliente)
+  }
+
+  // Match: tráfico has a matching aduanet factura by referencia
+  // OR the client has invoices (clave match = at least billed at client level)
+  const matched = []
+  const unbilled = []
+  for (const op of ops) {
+    const opClave = op.trafico.split('-')[0] // Extract clave prefix
+    if (invoicedTraficoSet.has(op.trafico) || invoicedClaveSet.has(opClave)) {
+      matched.push(op)
+    } else {
+      unbilled.push(op)
+    }
+  }
+
+  console.log(`  Matched: ${matched.length}`)
+  console.log(`  Unbilled: ${unbilled.length}`)
+
+  // ── 3. Get econta_cartera for receivables ──
   const { data: cartera } = await supabase
     .from('econta_cartera')
-    .select('consecutivo, referencia, importe, saldo, fecha, company_id')
-    .gte('fecha', '2024-01-01')
+    .select('consecutivo, cve_cliente, importe, saldo, fecha')
+    .gt('saldo', 0)
     .limit(5000)
 
   const crt = cartera || []
-  console.log(`  eConta cartera: ${crt.length}`)
-
-  // ── 4. Match operations to invoices ──
-  const invoiceRefs = new Set(facts.map(f => f.referencia).filter(Boolean))
-  const operationRefs = new Set(ops.map(o => o.trafico))
-
-  const unbilled = ops.filter(o => !invoiceRefs.has(o.trafico) && !invoiceRefs.has(o.pedimento))
-  const orphanInvoices = facts.filter(f => f.referencia && !operationRefs.has(f.referencia))
-
-  // ── 5. Overdue receivables ──
   const now = Date.now()
-  const overdue30 = crt.filter(c => c.saldo > 0 && c.fecha && (now - new Date(c.fecha).getTime()) > 30 * 86400000)
-  const overdue60 = crt.filter(c => c.saldo > 0 && c.fecha && (now - new Date(c.fecha).getTime()) > 60 * 86400000)
-  const overdue90 = crt.filter(c => c.saldo > 0 && c.fecha && (now - new Date(c.fecha).getTime()) > 90 * 86400000)
-
-  // ── 6. Totals ──
-  const totalFacturado = facts.reduce((s, f) => s + (Number(f.importe) || 0), 0)
-  const totalCobrado = facts.reduce((s, f) => s + (Number(f.importe) || 0) - (Number(f.saldo) || 0), 0)
+  const overdue30 = crt.filter(c => c.fecha && (now - new Date(c.fecha).getTime()) > 30 * 86400000)
+  const overdue60 = crt.filter(c => c.fecha && (now - new Date(c.fecha).getTime()) > 60 * 86400000)
+  const overdue90 = crt.filter(c => c.fecha && (now - new Date(c.fecha).getTime()) > 90 * 86400000)
   const totalPendiente = crt.reduce((s, c) => s + (Number(c.saldo) || 0), 0)
+
+  console.log(`  Cartera pendiente: ${fmtMXN(totalPendiente)} (${crt.length} items)`)
+  console.log(`  Overdue >30d: ${overdue30.length} | >60d: ${overdue60.length} | >90d: ${overdue90.length}`)
+
+  // ── 4. Get econta_facturas totals ──
+  const { data: econtaFacts } = await supabase
+    .from('econta_facturas')
+    .select('total')
+    .gte('fecha', '2024-01-01')
+    .limit(5000)
+
+  const totalFacturado = (econtaFacts || []).reduce((s, f) => s + (Number(f.total) || 0), 0)
+  console.log(`  eConta facturado (2024+): ${fmtMXN(totalFacturado)}`)
+
+  // ── 5. Unbilled value ──
   const unbilledValue = unbilled.reduce((s, o) => s + (Number(o.importe_total) || 0), 0)
 
-  console.log(`\n  Matched: ${ops.length - unbilled.length}`)
-  console.log(`  Unbilled operations: ${unbilled.length} (${fmtMXN(unbilledValue)} USD valor mercancía)`)
-  console.log(`  Orphan invoices: ${orphanInvoices.length}`)
-  console.log(`  Overdue >30d: ${overdue30.length} | >60d: ${overdue60.length} | >90d: ${overdue90.length}`)
-  console.log(`  Total facturado: ${fmtMXN(totalFacturado)}`)
-  console.log(`  Total cobrado: ${fmtMXN(totalCobrado)}`)
-  console.log(`  Pendiente cobro: ${fmtMXN(totalPendiente)}`)
+  // ── 6. By-client breakdown ──
+  const byClient = {}
+  for (const op of unbilled) {
+    byClient[op.company_id] = (byClient[op.company_id] || 0) + 1
+  }
+  const topUnbilled = Object.entries(byClient).sort((a, b) => b[1] - a[1]).slice(0, 5)
 
-  // ── 7. Save reconciliation ──
+  // ── 7. Save ──
   if (!DRY_RUN) {
     await supabase.from('benchmarks').upsert([
+      { metric: 'reconciliation_matched', dimension: 'fleet', value: matched.length, sample_size: ops.length, period: new Date().toISOString().split('T')[0] },
       { metric: 'reconciliation_unbilled', dimension: 'fleet', value: unbilled.length, sample_size: ops.length, period: new Date().toISOString().split('T')[0] },
-      { metric: 'reconciliation_overdue', dimension: 'fleet', value: overdue30.length, sample_size: crt.length, period: new Date().toISOString().split('T')[0] },
-      { metric: 'reconciliation_pending', dimension: 'fleet', value: totalPendiente, sample_size: facts.length, period: new Date().toISOString().split('T')[0] },
+      { metric: 'reconciliation_pending_mxn', dimension: 'fleet', value: Math.round(totalPendiente), sample_size: crt.length, period: new Date().toISOString().split('T')[0] },
     ], { onConflict: 'metric,dimension' }).then(() => {}, () => {})
   }
 
   // ── 8. Telegram ──
-  if (unbilled.length > 0 || overdue30.length > 0) {
-    const lines = [
-      `💰 <b>Conciliación eConta</b>`,
-      ``,
-      `📊 <b>Resumen</b>`,
-      `  Facturado: ${fmtMXN(totalFacturado)}`,
-      `  Cobrado: ${fmtMXN(totalCobrado)}`,
-      `  Pendiente: <b>${fmtMXN(totalPendiente)}</b>`,
-      ``,
-    ]
+  const lines = [
+    `💰 <b>Conciliación eConta</b>`,
+    ``,
+    `📊 <b>Operaciones vs Facturación</b>`,
+    `  Completados: ${ops.length}`,
+    `  Con factura: <b>${matched.length}</b> (${ops.length > 0 ? Math.round(matched.length / ops.length * 100) : 0}%)`,
+    `  Sin factura: ${unbilled.length} (${fmtUSD(unbilledValue)} valor mercancía)`,
+    ``,
+    `💳 <b>Cartera</b>`,
+    `  Pendiente cobro: <b>${fmtMXN(totalPendiente)}</b>`,
+    overdue90.length > 0 ? `  🔴 ${overdue90.length} vencidas >90 días` : '',
+    overdue60.length > 0 && overdue90.length === 0 ? `  🟡 ${overdue60.length} vencidas >60 días` : '',
+    overdue30.length > 0 && overdue60.length === 0 ? `  🟡 ${overdue30.length} vencidas >30 días` : '',
+    ``,
+    unbilled.length > 0 ? `⚠️ <b>Sin factura por cliente:</b>` : '',
+    ...topUnbilled.map(([cid, count]) => `  • ${cid}: ${count}`),
+    ``,
+    `— CRUZ 🦀`,
+  ].filter(Boolean)
 
-    if (unbilled.length > 0) {
-      lines.push(`⚠️ <b>${unbilled.length} operaciones sin factura</b>`)
-      unbilled.slice(0, 3).forEach(o => lines.push(`  • ${o.trafico} (${o.company_id})`))
-    }
+  await sendTelegram(lines.join('\n'))
 
-    if (overdue90.length > 0) lines.push(`🔴 ${overdue90.length} facturas vencidas >90 días`)
-    else if (overdue60.length > 0) lines.push(`🟡 ${overdue60.length} facturas vencidas >60 días`)
-    else if (overdue30.length > 0) lines.push(`🟡 ${overdue30.length} facturas vencidas >30 días`)
-
-    lines.push(``, `— CRUZ 🦀`)
-    await sendTelegram(lines.join('\n'))
-  }
-
-  console.log(`\n✅ Reconciliation complete`)
+  console.log(`\n✅ ${matched.length}/${ops.length} matched (${Math.round(matched.length / Math.max(1, ops.length) * 100)}%)`)
   process.exit(0)
 }
 

@@ -50,6 +50,20 @@ export const COMPANY_ID = ''
 /** @deprecated Use getClientRfcCookie() */
 export const CLIENT_RFC = ''
 
+/**
+ * Fetch wrapper that automatically includes the CSRF token header.
+ * Use for all POST/PUT/DELETE requests from client components.
+ */
+export function csrfFetch(url: string, init?: RequestInit): Promise<Response> {
+  const csrfToken = getCookieValue('csrf_token') || ''
+  const headers = new Headers(init?.headers)
+  if (!headers.has('X-CSRF-Token')) headers.set('X-CSRF-Token', csrfToken)
+  if (!headers.has('Content-Type') && init?.method && init.method !== 'GET') {
+    headers.set('Content-Type', 'application/json')
+  }
+  return fetch(url, { ...init, headers })
+}
+
 // --- Firm-level constants (not client-specific) ---
 export const PORTAL_URL = typeof window !== 'undefined' ? window.location.origin : (process.env.NEXT_PUBLIC_PORTAL_URL ?? 'https://evco-portal.vercel.app')
 export const PATENTE = '3596'

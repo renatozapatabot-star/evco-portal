@@ -5,6 +5,7 @@ import { PORTAL_DATE_FROM } from '@/lib/data'
 import { getDTARates, getIVARate } from '@/lib/rates'
 import { verifySession } from '@/lib/session'
 import { sanitizeIlike, sanitizeFilter } from '@/lib/sanitize'
+import { cruzChatSchema } from '@/lib/api-schemas'
 
 import { rateLimitDB } from '@/lib/rate-limit-db'
 
@@ -812,7 +813,11 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json()
-    const { messages, context, sessionId } = body
+    const parsed = cruzChatSchema.safeParse(body)
+    if (!parsed.success) {
+      return NextResponse.json({ message: 'Solicitud inválida.' }, { status: 400 })
+    }
+    const { messages, context, sessionId } = parsed.data
 
     // Rate limiting: 20 queries per company per hour (persisted in Supabase)
     const rlKey = `cruz_chat:${companyId || sessionId || 'anonymous'}`

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { signSession } from '@/lib/session'
+import { generateCsrfToken } from '@/lib/csrf'
+import { authSchema } from '@/lib/api-schemas'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -28,10 +30,20 @@ async function setAuthCookies(
   response.cookies.set('company_rfc', opts.companyRfc ?? '', { path: '/', maxAge })
   response.cookies.set('user_role', opts.role, { path: '/', maxAge })
   response.cookies.set('broker_id', 'rzco', { path: '/', maxAge })
+  // CSRF token — readable by JS for X-CSRF-Token header
+  response.cookies.set('csrf_token', generateCsrfToken(), {
+    path: '/', maxAge, sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+  })
 }
 
 export async function POST(request: NextRequest) {
-  const { password } = await request.json()
+  const body = await request.json()
+  const parsed = authSchema.safeParse(body)
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Contraseña requerida' }, { status: 400 })
+  }
+  const { password } = parsed.data
 
   // Check admin password first
   if (password === process.env.ADMIN_PASSWORD) {
@@ -107,5 +119,6 @@ export async function DELETE() {
   response.cookies.delete('user_role')
   response.cookies.delete('viewing_as')
   response.cookies.delete('broker_id')
+  response.cookies.delete('csrf_token')
   return response
 }

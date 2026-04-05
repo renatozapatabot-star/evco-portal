@@ -18,7 +18,6 @@ const TIER_CONFIG = {
   3: { label: 'Revisión completa', time: 'Sin límite · precisión sobre velocidad', color: 'var(--danger-500)', bg: '#FEF2F2' },
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapDraftRow(row: any) {
   const d = row.draft_data || {}
   const ext = d.extraction || {}

@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 import { rateLimit } from '@/lib/rate-limit'
 import { verifySession } from '@/lib/session'
 import { sanitizeFilter } from '@/lib/sanitize'
+import { dataQuerySchema } from '@/lib/api-schemas'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -53,11 +54,11 @@ export async function GET(req: NextRequest) {
   }
 
   const params = req.nextUrl.searchParams
-  const table = params.get('table')
-
-  if (!table || !ALLOWED_TABLES.includes(table)) {
-    return NextResponse.json({ error: 'Invalid table' }, { status: 400 })
+  const parsed = dataQuerySchema.safeParse(Object.fromEntries(params))
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Parámetros inválidos', details: parsed.error.issues.map(i => i.message) }, { status: 400 })
   }
+  const table = parsed.data.table
 
   // Multi-tenant: resolve identity from signed HMAC session — never trust raw cookies for role.
   const sessionToken = req.cookies.get('portal_session')?.value || ''
@@ -99,9 +100,9 @@ export async function GET(req: NextRequest) {
     )
   }
 
-  const limit = Math.min(Number(params.get('limit') || '50'), 5000)
-  const orderBy = params.get('order_by') || undefined
-  const orderDir = params.get('order_dir') === 'asc'
+  const limit = parsed.data.limit
+  const orderBy = parsed.data.order_by || undefined
+  const orderDir = parsed.data.order_dir === 'asc'
 
   let q = supabase.from(table).select('*').limit(limit)
 

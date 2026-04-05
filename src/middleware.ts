@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { ADMIN_ONLY_ROUTES } from '@/components/nav/nav-config'
 import { verifySession } from '@/lib/session'
+import { validateCsrf } from '@/lib/csrf'
 
 /** Public paths that bypass auth */
 const PUBLIC_PATHS = ['/login']
@@ -12,8 +13,12 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   const isApiRoute = pathname.startsWith('/api')
 
-  // Always allow API routes (they have their own auth)
-  if (isApiRoute) return NextResponse.next()
+  // CSRF validation for mutating API requests (POST/PUT/DELETE)
+  if (isApiRoute) {
+    const csrfError = validateCsrf(request)
+    if (csrfError) return csrfError
+    return NextResponse.next()
+  }
 
   // Allow token-gated paths (track/upload) without auth
   if (TOKEN_PATHS.some(p => pathname.startsWith(p))) return NextResponse.next()

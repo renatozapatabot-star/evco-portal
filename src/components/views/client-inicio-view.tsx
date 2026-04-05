@@ -24,6 +24,8 @@ import SkeletonBase, { SkeletonKPI } from '@/components/ui/Skeleton'
 import { DashboardSkeleton } from '@/components/skeletons/DashboardSkeleton'
 import { MorningSummary } from '@/components/morning-summary'
 import { SmartAlerts } from '@/components/smart-alerts'
+import { StreakBadge } from '@/components/streak-badge'
+import { Celebrate } from '@/components/celebrate'
 import { useRouter } from 'next/navigation'
 import { ChevronRight } from 'lucide-react'
 import { useSessionCache } from '@/hooks/use-session-cache'
@@ -776,6 +778,12 @@ export default function ClientInicioView() {
       {/* Forecast widget — subtle info card */}
       {/* Morning summary — proactive intelligence */}
       <MorningSummary />
+
+      {/* Streak badges — achievements + streaks */}
+      <StreakBadge />
+
+      {/* Confetti on realtime Cruzado event */}
+      <Celebrate trigger={!!lastUpdate && (lastUpdate.estatus || '').toLowerCase().includes('cruz')} />
 
       {/* Smart alerts — traficos taking longer than average */}
       <SmartAlerts />

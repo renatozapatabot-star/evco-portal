@@ -88,17 +88,31 @@ interface TimelineEvent {
 }
 
 // Event type → color mapping (design system emotional colors)
+// Includes original 10 event types + 12 border events for granular tracking
 const EVENT_CONFIG: Record<string, { icon: string; color: string; bg: string }> = {
-  status_changed: { icon: '🔄', color: 'var(--gold)', bg: 'var(--gold-bg)' },
-  doc_uploaded:   { icon: '📎', color: '#0D9488', bg: 'rgba(13,148,136,0.12)' },
-  doc_received:   { icon: '📥', color: '#0D9488', bg: 'rgba(13,148,136,0.12)' },
-  crossed:        { icon: '🟢', color: '#16A34A', bg: 'rgba(22,163,74,0.12)' },
-  semaforo:       { icon: '🚦', color: '#7E22CE', bg: 'rgba(126,34,206,0.12)' },
-  mve_filed:      { icon: '📋', color: '#7E22CE', bg: 'rgba(126,34,206,0.12)' },
-  pedimento:      { icon: '📄', color: '#7E22CE', bg: 'rgba(126,34,206,0.12)' },
-  cruz_ai:        { icon: '🦀', color: 'var(--gold)', bg: 'var(--gold-bg)' },
-  note:           { icon: '💬', color: '#475569', bg: 'rgba(71,85,105,0.12)' },
-  created:        { icon: '📦', color: 'var(--gold)', bg: 'var(--gold-bg)' },
+  // Original events
+  status_changed:      { icon: '🔄', color: 'var(--gold)', bg: 'var(--gold-bg)' },
+  doc_uploaded:        { icon: '📎', color: '#0D9488', bg: 'rgba(13,148,136,0.12)' },
+  doc_received:        { icon: '📥', color: '#0D9488', bg: 'rgba(13,148,136,0.12)' },
+  crossed:             { icon: '🟢', color: '#16A34A', bg: 'rgba(22,163,74,0.12)' },
+  semaforo:            { icon: '🚦', color: '#7E22CE', bg: 'rgba(126,34,206,0.12)' },
+  mve_filed:           { icon: '📋', color: '#7E22CE', bg: 'rgba(126,34,206,0.12)' },
+  pedimento:           { icon: '📄', color: '#7E22CE', bg: 'rgba(126,34,206,0.12)' },
+  cruz_ai:             { icon: '🦀', color: 'var(--gold)', bg: 'var(--gold-bg)' },
+  note:                { icon: '💬', color: '#475569', bg: 'rgba(71,85,105,0.12)' },
+  created:             { icon: '📦', color: 'var(--gold)', bg: 'var(--gold-bg)' },
+  // 12 border events (granular crossing tracking)
+  customs_filed:       { icon: '📄', color: '#7E22CE', bg: 'rgba(126,34,206,0.12)' },
+  customs_paid:        { icon: '💳', color: '#7E22CE', bg: 'rgba(126,34,206,0.12)' },
+  customs_cleared:     { icon: '✅', color: '#16A34A', bg: 'rgba(22,163,74,0.12)' },
+  exam_flagged:        { icon: '🔴', color: '#DC2626', bg: 'rgba(220,38,38,0.12)' },
+  exam_cleared:        { icon: '🟢', color: '#16A34A', bg: 'rgba(22,163,74,0.12)' },
+  bridge_assigned:     { icon: '🌉', color: '#2563EB', bg: 'rgba(37,99,235,0.12)' },
+  crossing_start:      { icon: '🚛', color: '#D97706', bg: 'rgba(217,119,6,0.12)' },
+  crossing_complete:   { icon: '🏁', color: '#16A34A', bg: 'rgba(22,163,74,0.12)' },
+  delivery_dispatched: { icon: '🚚', color: '#2563EB', bg: 'rgba(37,99,235,0.12)' },
+  delivery_confirmed:  { icon: '📦', color: '#16A34A', bg: 'rgba(22,163,74,0.12)' },
+  invoice_generated:   { icon: '🧾', color: '#8B6914', bg: 'rgba(196,150,60,0.12)' },
 }
 
 function getEventStyle(eventType: string) {

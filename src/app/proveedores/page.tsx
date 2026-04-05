@@ -233,7 +233,7 @@ export default function ProveedoresPage() {
             onChange={e => setClientFilter(e.target.value)}
             style={{
               background: T.surface, border: `1px solid ${T.border}`, borderRadius: 8,
-              padding: '0 12px', height: 36, color: T.text, fontSize: 13,
+              padding: '0 12px', height: 60, color: T.text, fontSize: 13,
               fontFamily: 'var(--font-geist-sans)', cursor: 'pointer', outline: 'none',
             }}
           >

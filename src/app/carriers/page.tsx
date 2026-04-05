@@ -129,7 +129,7 @@ export default function CarriersPage() {
               <tbody>
                 {carriers.map((c, i) => (
                   <tr key={c.name}
-                    style={{ cursor: 'pointer', background: selected?.name === c.name ? 'rgba(201,168,76,0.04)' : undefined }}
+                    style={{ cursor: 'pointer', minHeight: 60, background: selected?.name === c.name ? 'rgba(201,168,76,0.04)' : undefined }}
                     onClick={() => setSelected(selected?.name === c.name ? null : c)}>
                     <td className="mono text-[11px]" style={{ color: 'var(--text-muted)' }}>{i + 1}</td>
                     <td>

@@ -14,6 +14,8 @@ import { ErrorBoundary } from '@/components/error-boundary'
 import { useSessionCache } from '@/hooks/use-session-cache'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { ErrorCard } from '@/components/ui/ErrorCard'
+import { InsightWhisper } from '@/components/ui/InsightWhisper'
+import { useWhisper } from '@/hooks/use-whisper'
 
 interface TraficoRow {
   trafico: string; estatus?: string; fecha_llegada?: string | null
@@ -199,6 +201,7 @@ function TraficosContent() {
 
   return (
     <div className="page-shell">
+      <InsightWhisper text={useWhisper("traficos")} />
       <div className="section-header" style={{ marginBottom: 14 }}>
         <div>
           <h1 className="page-title">Tráficos</h1>

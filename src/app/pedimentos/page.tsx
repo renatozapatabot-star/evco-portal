@@ -7,6 +7,8 @@ import { fmtUSDFull as fmtUSD, fmtDate, fmtPedimentoShort } from '@/lib/format-u
 import { useSort } from '@/hooks/use-sort'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { InsightWhisper } from '@/components/ui/InsightWhisper'
+import { useWhisper } from '@/hooks/use-whisper'
 import Link from 'next/link'
 
 const titleCase = (s: string) => {

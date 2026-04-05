@@ -7,6 +7,7 @@ import { fmtId, fmtDateCompact, fmtPedimentoShort } from '@/lib/format-utils'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { ErrorCard } from '@/components/ui/ErrorCard'
+import { DocumentViewer } from '@/components/ui/DocumentViewer'
 import Link from 'next/link'
 
 interface DocRow {
@@ -105,6 +106,9 @@ export default function ExpedientesPage() {
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
   const [sortAsc, setSortAsc] = useState(true) // true = least complete first
   const [docTypeFilter, setDocTypeFilter] = useState('')
+  const [viewerDocs, setViewerDocs] = useState<DocRow[]>([])
+  const [viewerIndex, setViewerIndex] = useState(-1)
+  const [viewerTrafico, setViewerTrafico] = useState('')
 
   useEffect(() => {
     setUserRole(getCookieValue('user_role') ?? '')
@@ -341,9 +345,9 @@ export default function ExpedientesPage() {
                                 </span>
                               )}
                               {found.file_url && (
-                                <a href={found.file_url} target="_blank" rel="noopener noreferrer"
-                                  onClick={e => e.stopPropagation()}
-                                  style={{ fontSize: 12, color: '#2563EB', textDecoration: 'none' }}>Ver</a>
+                                <button
+                                  onClick={e => { e.stopPropagation(); setViewerDocs(groupDocs); setViewerIndex(groupDocs.indexOf(found)); setViewerTrafico(pedimentoId) }}
+                                  style={{ fontSize: 12, color: '#C4963C', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Ver</button>
                               )}
                             </span>
                           )}
@@ -361,6 +365,16 @@ export default function ExpedientesPage() {
             )
           })}
         </div>
+      )}
+
+      {/* Document Viewer Modal */}
+      {viewerIndex >= 0 && viewerDocs.length > 0 && (
+        <DocumentViewer
+          documents={viewerDocs}
+          initialIndex={viewerIndex}
+          onClose={() => setViewerIndex(-1)}
+          traficoId={viewerTrafico}
+        />
       )}
     </div>
   )

@@ -14,6 +14,7 @@ import { SolicitarModal } from '@/components/SolicitarModal'
 import { getMissingDocs, REQUIRED_DOC_TYPES } from '@/lib/documents'
 import { useToast } from '@/components/Toast'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { DocumentViewer } from '@/components/ui/DocumentViewer'
 import { ErrorCard } from '@/components/ui/ErrorCard'
 import { StickyActionBar } from '@/components/trafico/StickyActionBar'
 
@@ -240,6 +241,7 @@ export default function TraficoDetailPage() {
   const [missingDocs, setMissingDocs] = useState<string[]>([])
   const [uploadingDoc, setUploadingDoc] = useState<string | null>(null)
   const [showSolicitarModal, setShowSolicitarModal] = useState(false)
+  const [viewerIndex, setViewerIndex] = useState(-1)
   const [solicitadoOk, setSolicitadoOk] = useState(false)
   const [solicitudes, setSolicitudes] = useState<Solicitud[]>([])
   const [rates, setRates] = useState<{ dta: number; iva: number; tc: number } | null>(null)
@@ -1068,10 +1070,15 @@ export default function TraficoDetailPage() {
                           </div>
                         </div>
                         {doc.file_url ? (
-                          <a href={String(doc.file_url)} target="_blank" rel="noopener noreferrer"
-                            style={{ fontSize: 11, color: GOLD, fontWeight: 700, textDecoration: 'none', flexShrink: 0, minHeight: 60, display: 'flex', alignItems: 'center', paddingLeft: 8 }}>
+                          <button
+                            onClick={() => {
+                              const allDocs = Object.values(groupedDocs).flat()
+                              const idx = allDocs.indexOf(doc)
+                              setViewerIndex(idx >= 0 ? idx : 0)
+                            }}
+                            style={{ fontSize: 11, color: GOLD, fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0, minHeight: 60, display: 'flex', alignItems: 'center', paddingLeft: 8 }}>
                             Ver →
-                          </a>
+                          </button>
                         ) : null}
                       </div>
                     )
@@ -1082,6 +1089,24 @@ export default function TraficoDetailPage() {
           ) : missingDocs.length === 0 ? (
             <EmptyState icon="📄" title="Sin documentos" description="Los documentos vinculados a este tráfico aparecerán aquí" />
           ) : null}
+
+          {/* Document Viewer Modal */}
+          {viewerIndex >= 0 && (() => {
+            const allDocs = Object.values(groupedDocs).flat().map(d => ({
+              doc_type: String(d.document_type || d.doc_type || ''),
+              file_url: d.file_url ? String(d.file_url) : null,
+              nombre: (d.metadata as Record<string, unknown>)?.original_name as string || null,
+              source: d.source ? String(d.source) : null,
+            }))
+            return allDocs.length > 0 ? (
+              <DocumentViewer
+                documents={allDocs}
+                initialIndex={viewerIndex}
+                onClose={() => setViewerIndex(-1)}
+                traficoId={t.trafico}
+              />
+            ) : null
+          })()}
 
           {/* Active solicitudes */}
           {solicitudes.length > 0 && (

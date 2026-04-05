@@ -13,6 +13,7 @@ import { getCookieValue } from '@/lib/client-config'
 import { SolicitarModal } from '@/components/SolicitarModal'
 import { getMissingDocs, REQUIRED_DOC_TYPES } from '@/lib/documents'
 import { useToast } from '@/components/Toast'
+import { ETAPrediction } from '@/components/eta-prediction'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { DocumentViewer } from '@/components/ui/DocumentViewer'
 import { ErrorCard } from '@/components/ui/ErrorCard'
@@ -712,6 +713,9 @@ export default function TraficoDetailPage() {
         </div>
           )
         })()}
+
+        {/* ── ETA Prediction ── */}
+        <ETAPrediction traficoId={String(t.trafico || '')} isCruzado={isCruzado} />
 
         {/* ── Ready to Cross Action ── */}
         <div className="card" style={{ padding: 20, textAlign: 'center' }}>

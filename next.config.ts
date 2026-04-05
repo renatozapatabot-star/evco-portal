@@ -3,11 +3,12 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   async redirects() {
     return [
-      {
-        source: '/cruz-ai',
-        destination: '/cruz',
-        permanent: true,
-      },
+      { source: '/cruz-ai', destination: '/cruz', permanent: true },
+      { source: '/docs', destination: '/documentos', permanent: true },
+      { source: '/finance', destination: '/financiero', permanent: true },
+      { source: '/tracking', destination: '/traficos', permanent: true },
+      { source: '/inicio', destination: '/', permanent: true },
+      { source: '/suppliers', destination: '/proveedores', permanent: true },
     ]
   },
   async headers() {

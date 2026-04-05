@@ -9,6 +9,7 @@ import { useIsMobile } from '@/hooks/use-mobile'
 import { calculateTmecSavings } from '@/lib/tmec-savings'
 import { getSmartGreeting } from '@/lib/greeting'
 import { computeStreak } from '@/lib/achievements'
+import { anticipate, isDismissed, dismissSuggestion, type Suggestion } from '@/lib/anticipate'
 import CountingNumber from '@/components/ui/CountingNumber'
 import { Sparkline } from '@/components/sparkline'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -45,6 +46,8 @@ export default function ClientInicioView() {
   const [pendingEntradas, setPendingEntradas] = useState<EntradaPending[]>([])
   const [sparkData, setSparkData] = useState<number[]>([])
   const [streakDays, setStreakDays] = useState(0)
+  const [lastVisit, setLastVisit] = useState<string | null>(null)
+  const [dismissed, setDismissed] = useState(0) // counter to force re-render on dismiss
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [companyName, setCompanyName] = useState('')
@@ -71,6 +74,10 @@ export default function ClientInicioView() {
     const companyId = getCompanyIdCookie()
     const name = getClientNameCookie()
     setCompanyName(name || '')
+
+    // Track visit for anticipatory suggestions
+    const prevVisit = typeof window !== 'undefined' ? localStorage.getItem('cruz-last-visit') : null
+    setLastVisit(prevVisit)
 
     // Streak fetch (fire-and-forget, lightweight)
     if (companyId) {
@@ -154,7 +161,10 @@ export default function ClientInicioView() {
         setSparkData(days)
       })
       .catch(() => setError('No se pudo cargar el dashboard. Reintentar →'))
-      .finally(() => { setLoading(false); endRefresh(); setFetchedAt(new Date()) })
+      .finally(() => {
+        setLoading(false); endRefresh(); setFetchedAt(new Date())
+        if (typeof window !== 'undefined') localStorage.setItem('cruz-last-visit', new Date().toISOString())
+      })
   }
 
   useEffect(() => { loadData() }, [])
@@ -287,6 +297,25 @@ export default function ClientInicioView() {
       streakDays,
     }).subtitle
   }, [companyName, last24h, enProceso, pendingEntradas, tmecSavings, avgConf, streakDays])
+
+  // Anticipatory suggestion
+  const suggestion = useMemo(() => {
+    if (loading) return null
+    const now = new Date()
+    return anticipate({
+      traficos,
+      tmecSavings: tmecSavings.totalSavings,
+      dayOfWeek: now.getDay(),
+      hour: now.getHours(),
+      lastVisit,
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [traficos, tmecSavings, lastVisit, loading, dismissed])
+
+  function handleDismiss(id: string) {
+    dismissSuggestion(id)
+    setDismissed(d => d + 1)
+  }
 
   // Oldest pending entrada age (capped at 2 years to exclude legacy)
   const oldestDays = useMemo(() => {
@@ -423,6 +452,32 @@ export default function ClientInicioView() {
           )}
         </p>
       </div>
+
+      {/* Anticipatory suggestion bar */}
+      {suggestion && !isDismissed(suggestion.id) && (
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 12,
+          padding: '10px 16px', borderRadius: 10,
+          background: 'rgba(196,150,60,0.04)',
+          border: '1px solid rgba(196,150,60,0.15)',
+          marginBottom: 16, animation: 'fadeInUp 200ms ease',
+        }}>
+          <span style={{ fontSize: 16, flexShrink: 0 }}>{suggestion.icon}</span>
+          <span style={{ flex: 1, fontSize: 13, color: '#1A1A1A' }}>{suggestion.text}</span>
+          {suggestion.action && (
+            <Link href={suggestion.action.href} style={{
+              fontSize: 12, fontWeight: 600, color: '#C4963C',
+              textDecoration: 'none', whiteSpace: 'nowrap',
+            }}>
+              {suggestion.action.label}
+            </Link>
+          )}
+          <button onClick={() => handleDismiss(suggestion.id)} style={{
+            background: 'none', border: 'none', cursor: 'pointer',
+            color: '#9B9B9B', fontSize: 16, padding: 4, lineHeight: 1,
+          }} aria-label="Cerrar sugerencia">×</button>
+        </div>
+      )}
 
       {/* Detalle operativo — collapsed by default */}
       <button

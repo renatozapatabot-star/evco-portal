@@ -104,9 +104,18 @@ export default function CruzChatPage() {
       const greeting = hour < 12 ? 'Buenos días' : hour < 18 ? 'Buenas tardes' : 'Buenas noches'
       const lines = [`${greeting}.`]
       if (enProceso.length > 0) lines.push(`${enProceso.length} tráficos en proceso.`)
-      if (urgent.length > 0) lines.push(`${urgent.length} requieren documentos.`)
+      // Anticipatory: mention the most likely next crossing
+      const nextCrossing = enProceso
+        .filter((t: { pedimento?: string | null; fecha_llegada?: string | null }) => t.pedimento && t.fecha_llegada)
+        .sort((a: { fecha_llegada?: string | null }, b: { fecha_llegada?: string | null }) => (a.fecha_llegada || '').localeCompare(b.fecha_llegada || ''))
+      if (nextCrossing.length > 0) {
+        const next = nextCrossing[0] as { trafico?: string }
+        lines.push(`${next.trafico || 'Un tráfico'} debería cruzar pronto — le avisamos cuando suceda.`)
+      } else if (urgent.length > 0) {
+        lines.push(`${urgent.length} requieren documentos.`)
+      }
       if (alertData.alerts?.length > 0) lines.push(alertData.alerts[0].title + '.')
-      lines.push('\n¿En qué puedo ayudarte?')
+      lines.push('\n¿Necesita algo más?')
       setBriefing(lines.join(' '))
       setPanelData({
         enProceso: enProceso.slice(0, 5),

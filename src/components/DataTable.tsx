@@ -28,7 +28,7 @@ interface Props<T = any> {
   filters?: React.ReactNode
 }
 
-function fmtExportVal(v: any): string {
+function fmtExportVal(v: unknown): string {
   if (v == null) return ''
   return String(v).replace(/,/g, ' ')
 }

@@ -2257,3 +2257,48 @@ tr.row-selected {
 .badge-bounce {
   animation: badgeBounce 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
+
+
+/* ── M3.4: Accessibility Polish ── */
+
+/* High contrast mode support */
+@media (forced-colors: active) {
+  .card, .kpi-card {
+    border: 2px solid CanvasText;
+  }
+  .badge-dot {
+    forced-color-adjust: none;
+  }
+}
+
+/* Focus trap for modals */
+.focus-trap:focus-within {
+  outline: none;
+}
+
+/* Screen reader only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Smooth number transitions */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Performance: contain layout for heavy components */
+.contain-layout {
+  contain: layout style;
+}
+
+.contain-strict {
+  contain: strict;
+}

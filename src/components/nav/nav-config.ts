@@ -4,7 +4,7 @@ import {
   Shield, Calendar, Award,
   Settings, MessageSquare, Package,
   History, Archive, Clock, ClipboardList, Receipt, Send, Phone,
-  Warehouse, Upload,
+  Warehouse, Upload, Activity,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -111,6 +111,7 @@ export const CLIENT_NAV: NavTopLevel[] = [
   { href: '/anexo24',      label: 'Anexo 24',     icon: BookOpen },
   { href: '/financiero',   label: 'Financiero',   icon: DollarSign },
   { href: '/proveedores',  label: 'Proveedores',  icon: Users2 },
+  { href: '/actividad',    label: 'Actividad',     icon: Activity },
   { href: '/cruz',         label: 'CRUZ AI',       icon: MessageSquare, gold: true },
 ]
 
@@ -238,6 +239,7 @@ export const CLIENT_ROUTES = [
   '/noticias',
   '/analytics',
   '/mensajes',
+  '/actividad',
   '/login',
 ] as const
 

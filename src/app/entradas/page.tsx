@@ -133,7 +133,11 @@ export default function EntradasPage() {
         <div>
           <h1 className="page-title">Entradas</h1>
           <p className="text-[12.5px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
-            {rows.length.toLocaleString()} remesas &middot; {getClientNameCookie()}
+            {rows.length.toLocaleString()} remesas &middot;
+            {rows.filter((r: any) => r.tiene_faltantes).length > 0
+              ? ` ${rows.filter((r: any) => r.tiene_faltantes).length} con faltantes`
+              : ' Sin incidencias esta semana'
+            }
           </p>
         </div>
         <div className="flex items-center gap-2.5" style={{ flexWrap: 'wrap' }}>

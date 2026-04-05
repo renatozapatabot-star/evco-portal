@@ -221,7 +221,7 @@ export default function ProveedoresPage() {
       else if (s.avgDeliveryDays > 10) s.riskLevel = 'medium'
       else s.riskLevel = 'low'
     })
-    arr.sort((a, b) => b.traficoCount - a.traficoCount)
+    arr.sort((a, b) => b.totalValue - a.totalValue)
     return arr
   }, [rows, clientFilter, supplierLookup])
 

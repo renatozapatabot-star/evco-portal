@@ -315,9 +315,10 @@ export default function FinancieroPage() {
 
           {/* Table */}
           {facturasLoading ? (
-            <div style={{ padding: 40, textAlign: 'center', color: D.textSec }}>
-              <RefreshCw size={24} style={{ animation: 'spin 1s linear infinite', margin: '0 auto 12px' }} />
-              <p>Cargando facturas...</p>
+            <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="skeleton-shimmer" style={{ height: 48, borderRadius: 4 }} />
+              ))}
             </div>
           ) : filteredFacturas.length === 0 && facturas.length === 0 ? (
             <EmptyState icon="📄" title="Facturas disponibles después de sincronización" description="Los datos de facturas se cargarán automáticamente con la próxima sincronización del pipeline" />

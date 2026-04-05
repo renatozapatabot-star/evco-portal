@@ -275,9 +275,10 @@ export default function USMCAPage() {
 
           {/* Table body */}
           {loading ? (
-            <div style={{ padding: 40, textAlign: 'center', color: D.textSec }}>
-              <RefreshCw size={24} style={{ animation: 'spin 1s linear infinite', margin: '0 auto 12px' }} />
-              <p>Cargando tráficos T-MEC...</p>
+            <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="skeleton-shimmer" style={{ height: 48, borderRadius: 4 }} />
+              ))}
             </div>
           ) : filteredRows.length === 0 && imdTraficos.length === 0 ? (
             <EmptyState icon="🛡️" title="Sin tráficos T-MEC registrados" description="Los tráficos con régimen IMD aparecerán aquí automáticamente" cta={{ label: 'Ver tráficos', href: '/traficos' }} />

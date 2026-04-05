@@ -142,9 +142,11 @@ export default function BrokerCommandCenter() {
       <div>
 
         {loading ? (
-          <div style={{ textAlign: 'center', padding: 60, color: T.textMuted }}>
-            <RefreshCw size={24} style={{ animation: 'spin 1s linear infinite' }} />
-            <p style={{ marginTop: 12, fontSize: 14 }}>Cargando datos...</p>
+          <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+              {[0, 1, 2].map(i => <div key={i} className="skeleton-shimmer" style={{ height: 80, borderRadius: 8 }} />)}
+            </div>
+            {[0, 1, 2, 3].map(i => <div key={i} className="skeleton-shimmer" style={{ height: 48, borderRadius: 4 }} />)}
           </div>
         ) : (
           <>

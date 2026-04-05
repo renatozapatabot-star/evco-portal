@@ -1052,7 +1052,7 @@ body {
 }
 
 .skeleton-shimmer {
-  background: linear-gradient(90deg, var(--slate-100) 25%, var(--slate-200) 50%, var(--slate-100) 75%);
+  background: linear-gradient(90deg, #F5F4F0 25%, #E8E5E0 50%, #F5F4F0 75%);
   background-size: 200% 100%;
   animation: cruzShimmer var(--dur-shimmer) linear infinite;
   border-radius: var(--radius-md);

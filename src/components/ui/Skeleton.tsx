@@ -60,7 +60,7 @@ export function SkeletonRow({ cols = 5 }: { cols?: number }) {
 /* ── Variant-based skeleton for loading.tsx screens ── */
 
 const SHIMMER: CSSProperties = {
-  background: 'linear-gradient(90deg, var(--slate-100) 25%, var(--slate-200) 50%, var(--slate-100) 75%)',
+  background: 'linear-gradient(90deg, #F5F4F0 25%, #E8E5E0 50%, #F5F4F0 75%)',
   backgroundSize: '200% 100%',
   animation: 'cruzShimmer 1.5s linear infinite',
 }

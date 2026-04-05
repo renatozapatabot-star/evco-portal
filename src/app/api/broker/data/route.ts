@@ -55,6 +55,92 @@ export async function GET(req: NextRequest) {
     })
   }
 
+  // Section: ops-center — metrics for all three staff roles
+  if (section === 'ops-center') {
+    const now = new Date()
+    const todayStart = new Date(now); todayStart.setHours(0, 0, 0, 0)
+    const weekAgo = new Date(now.getTime() - 7 * 86400000)
+
+    const [draftsRes, autoDraftsRes, classRes, correctionsRes, emailsRes, escalationsRes, companiesRes, activeTrafRes] = await Promise.all([
+      // Exceptions: pending drafts
+      supabase.from('pedimento_drafts')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'pending'),
+      // Auto-processed today
+      supabase.from('pedimento_drafts')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'approved')
+        .gte('updated_at', todayStart.toISOString()),
+      // Pending classifications (low confidence)
+      supabase.from('shadow_classifications')
+        .select('id', { count: 'exact', head: true })
+        .lt('confidence', 0.8)
+        .gte('created_at', weekAgo.toISOString()),
+      // Corrections this week
+      supabase.from('staff_corrections')
+        .select('original_value, corrected_value, created_at')
+        .gte('created_at', weekAgo.toISOString())
+        .order('created_at', { ascending: false })
+        .limit(10),
+      // Emails processed today
+      supabase.from('email_intelligence')
+        .select('id', { count: 'exact', head: true })
+        .gte('created_at', todayStart.toISOString()),
+      // Pending escalations
+      supabase.from('documento_solicitudes')
+        .select('id', { count: 'exact', head: true })
+        .lt('deadline', now.toISOString())
+        .neq('status', 'completed'),
+      // All companies
+      supabase.from('companies')
+        .select('company_id, name')
+        .eq('active', true)
+        .not('portal_password', 'is', null),
+      // Companies with recent tráficos (active in 7d)
+      supabase.from('traficos')
+        .select('company_id')
+        .gte('updated_at', weekAgo.toISOString()),
+    ])
+
+    // Compute active vs inactive clients
+    const activeCompanyIds = new Set((activeTrafRes.data || []).map(t => t.company_id))
+    const allCompanies = companiesRes.data || []
+    const inactiveClients = allCompanies
+      .filter(c => !activeCompanyIds.has(c.company_id))
+      .map(c => ({ company_id: c.company_id, name: c.name, daysSinceActivity: 7 }))
+
+    // Accuracy: average from recent shadow classifications
+    const { data: recentShadow } = await supabase.from('shadow_classifications')
+      .select('accuracy')
+      .not('accuracy', 'is', null)
+      .order('created_at', { ascending: false })
+      .limit(30)
+    const accValues = (recentShadow || []).map(s => Number(s.accuracy)).filter(v => v > 0)
+    const accuracyCurrent = accValues.length > 0 ? accValues.reduce((a, b) => a + b, 0) / accValues.length : 0
+
+    const corrections = (correctionsRes.data || []).map(c => ({
+      original: c.original_value || '',
+      corrected: c.corrected_value || '',
+      date: c.created_at || '',
+    }))
+
+    return NextResponse.json({
+      exceptionsToday: draftsRes.count || 0,
+      autoProcessedToday: autoDraftsRes.count || 0,
+      clientsAtRisk: inactiveClients.slice(0, 10),
+      dailySavings: 0, // T-MEC savings would require traficos query — skip for now
+      pendingClassifications: classRes.count || 0,
+      accuracyCurrent: Math.round(accuracyCurrent * 100) / 100,
+      correctionsThisWeek: corrections.length,
+      recentLearnings: corrections.slice(0, 5),
+      pendingEscalations: escalationsRes.count || 0,
+      activeClients7d: activeCompanyIds.size,
+      totalClients: allCompanies.length,
+      emailsProcessedToday: emailsRes.count || 0,
+      inactiveClients: inactiveClients.slice(0, 10),
+    })
+  }
+
   // Default: companies + pendientes (main dashboard data)
   const { data: companiesRaw } = await supabase
     .from('companies')

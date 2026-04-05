@@ -7,7 +7,9 @@ import {
   Activity, Mail, ArrowRight, Clock, CheckCircle2,
   XCircle, Server, Database, Globe, RefreshCw,
 } from 'lucide-react'
-import { fmtDateTime } from '@/lib/format-utils'
+import { fmtDateTime, fmtDateCompact } from '@/lib/format-utils'
+import { useSearchParams } from 'next/navigation'
+import { STAFF, getStaffConfig, buildSummary, buildSubtitle, type OpsMetrics } from '@/lib/ops-roles'
 
 /* ── Types ─────────────────────────────────────────────────── */
 
@@ -72,11 +74,16 @@ const T = {
 
 export default function BrokerCommandCenter() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const staffParam = searchParams.get('staff')
+  const [activeStaff, setActiveStaff] = useState(staffParam || 'tito')
+  const staffConfig = getStaffConfig(activeStaff)
   const [role, setRole] = useState<string | null>(null)
   const [companies, setCompanies] = useState<Company[]>([])
   const [pendientes, setPendientes] = useState<Pendiente[]>([])
   const [heartbeat, setHeartbeat] = useState<HeartbeatEntry | null>(null)
   const [intelligence, setIntelligence] = useState<IntelligenceStats | null>(null)
+  const [opsMetrics, setOpsMetrics] = useState<OpsMetrics | null>(null)
   const [loading, setLoading] = useState(true)
 
   // Auth check
@@ -98,20 +105,23 @@ export default function BrokerCommandCenter() {
   async function loadData() {
     setLoading(true)
     try {
-      const [companiesRes, heartbeatRes, intelligenceRes] = await Promise.all([
+      const [companiesRes, heartbeatRes, intelligenceRes, opsRes] = await Promise.all([
         fetch('/api/broker/data'),
         fetch('/api/broker/data?section=heartbeat'),
         fetch('/api/broker/data?section=intelligence'),
+        fetch('/api/broker/data?section=ops-center'),
       ])
 
       const companiesData = await companiesRes.json()
       const heartbeatData = await heartbeatRes.json()
       const intelligenceData = await intelligenceRes.json()
+      const opsData = await opsRes.json()
 
       if (companiesData.companies) setCompanies(companiesData.companies)
       if (companiesData.pendientes) setPendientes(companiesData.pendientes)
       if (heartbeatData.heartbeat) setHeartbeat(heartbeatData.heartbeat)
       if (intelligenceData.intelligence) setIntelligence(intelligenceData.intelligence)
+      if (opsData.exceptionsToday !== undefined) setOpsMetrics(opsData as OpsMetrics)
     } catch {
       // Silent — data will show empty states
     } finally {
@@ -134,10 +144,115 @@ export default function BrokerCommandCenter() {
 
   return (
     <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-      {/* Page title */}
-      <h1 style={{ fontSize: 20, fontWeight: 700, color: T.text, marginBottom: 24 }}>
-        Centro de Mando
-      </h1>
+      {/* ── Operations Center Header ── */}
+      <div style={{ marginBottom: 32 }}>
+        {/* Role pills */}
+        <div style={{ display: 'flex', gap: 6, marginBottom: 16 }}>
+          {Object.values(STAFF).map(s => (
+            <button
+              key={s.id}
+              onClick={() => setActiveStaff(s.id)}
+              style={{
+                padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: activeStaff === s.id ? 700 : 500,
+                background: activeStaff === s.id ? 'rgba(196,150,60,0.1)' : '#FFFFFF',
+                border: `1px solid ${activeStaff === s.id ? T.gold : T.border}`,
+                color: activeStaff === s.id ? T.gold : T.textSec,
+                cursor: 'pointer',
+              }}
+            >
+              {s.name} · {s.title}
+            </button>
+          ))}
+        </div>
+
+        {/* Summary */}
+        <h1 style={{ fontSize: 20, fontWeight: 700, color: T.text, margin: '0 0 4px' }}>
+          {opsMetrics ? buildSummary(staffConfig, opsMetrics) : 'Centro de Operaciones'}
+        </h1>
+        {opsMetrics && (
+          <p style={{ fontSize: 13, color: T.textSec, margin: 0 }}>
+            {buildSubtitle(staffConfig, opsMetrics)}
+          </p>
+        )}
+      </div>
+
+      {/* ── Role-specific cards ── */}
+      {opsMetrics && !loading && (
+        <div style={{
+          display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+          gap: 16, marginBottom: 32,
+        }}>
+          {staffConfig.role === 'director' && (
+            <>
+              <OpsCard title="Excepciones" value={String(opsMetrics.exceptionsToday)} sub="Requieren revisión" accent={opsMetrics.exceptionsToday > 0 ? T.amber : T.green} />
+              <OpsCard title="Auto-procesadas" value={String(opsMetrics.autoProcessedToday)} sub="Hoy sin intervención" accent={T.green} />
+              <OpsCard title="Clientes en riesgo" value={String(opsMetrics.clientsAtRisk.length)} sub="7+ días sin actividad" accent={opsMetrics.clientsAtRisk.length > 0 ? T.red : T.green} />
+            </>
+          )}
+          {staffConfig.role === 'classifier' && (
+            <>
+              <OpsCard title="Pendientes" value={String(opsMetrics.pendingClassifications)} sub="Clasificaciones por revisar" accent={opsMetrics.pendingClassifications > 0 ? T.amber : T.green} />
+              <OpsCard title="Precisión" value={`${Math.round(opsMetrics.accuracyCurrent * 100)}%`} sub="Últimas 30 clasificaciones" accent={opsMetrics.accuracyCurrent >= 0.9 ? T.green : T.amber} />
+              <OpsCard title="Correcciones" value={String(opsMetrics.correctionsThisWeek)} sub="Esta semana" accent={T.gold} />
+            </>
+          )}
+          {staffConfig.role === 'coordinator' && (
+            <>
+              <OpsCard title="Escalaciones" value={String(opsMetrics.pendingEscalations)} sub="Documentos vencidos" accent={opsMetrics.pendingEscalations > 0 ? T.red : T.green} />
+              <OpsCard title="Clientes activos" value={`${opsMetrics.activeClients7d}/${opsMetrics.totalClients}`} sub="Últimos 7 días" accent={T.green} />
+              <OpsCard title="Correos hoy" value={String(opsMetrics.emailsProcessedToday)} sub="Procesados automáticamente" accent={T.gold} />
+            </>
+          )}
+        </div>
+      )}
+
+      {/* ── Learnings (classifier only) ── */}
+      {staffConfig.role === 'classifier' && opsMetrics && opsMetrics.recentLearnings.length > 0 && (
+        <div style={{
+          background: T.card, border: `1px solid ${T.border}`, borderRadius: 8,
+          padding: 20, marginBottom: 32,
+        }}>
+          <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: T.textMuted, marginBottom: 12 }}>
+            Lo que CRUZ aprendió esta semana
+          </div>
+          {opsMetrics.recentLearnings.map((l, i) => (
+            <div key={i} style={{
+              padding: '8px 0', borderBottom: i < opsMetrics.recentLearnings.length - 1 ? `1px solid ${T.border}` : 'none',
+              fontSize: 13, color: T.text,
+            }}>
+              <span style={{ color: T.red, textDecoration: 'line-through' }}>{l.original}</span>
+              {' → '}
+              <span style={{ color: T.green, fontWeight: 600 }}>{l.corrected}</span>
+              <span style={{ fontSize: 11, color: T.textMuted, marginLeft: 8, fontFamily: 'var(--font-jetbrains-mono)' }}>
+                {fmtDateCompact(l.date)}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* ── Inactive clients (coordinator only) ── */}
+      {staffConfig.role === 'coordinator' && opsMetrics && opsMetrics.inactiveClients.length > 0 && (
+        <div style={{
+          background: T.card, border: `1px solid ${T.border}`, borderRadius: 8,
+          padding: 20, marginBottom: 32,
+        }}>
+          <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: T.textMuted, marginBottom: 12 }}>
+            Clientes sin actividad (7+ días)
+          </div>
+          {opsMetrics.inactiveClients.map(c => (
+            <div key={c.company_id} style={{
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              padding: '8px 0', borderBottom: `1px solid ${T.border}`,
+            }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: T.text }}>{c.name}</span>
+              <span style={{ fontSize: 11, color: T.amber, fontFamily: 'var(--font-jetbrains-mono)' }}>
+                {c.daysSinceActivity}+ días
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
 
       <div>
 
@@ -421,6 +536,23 @@ function EmptyInline({ icon: Icon, message, color }: {
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0' }}>
       <Icon size={16} style={{ color }} />
       <span style={{ fontSize: 13, color }}>{message}</span>
+    </div>
+  )
+}
+
+function OpsCard({ title, value, sub, accent }: { title: string; value: string; sub: string; accent: string }) {
+  return (
+    <div style={{
+      background: T.card, border: `1px solid ${T.border}`, borderRadius: 8,
+      borderTop: `3px solid ${accent}`, padding: 16,
+    }}>
+      <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: T.textMuted, marginBottom: 4 }}>
+        {title}
+      </div>
+      <div style={{ fontSize: 28, fontWeight: 800, color: T.text, fontFamily: 'var(--font-jetbrains-mono)' }}>
+        {value}
+      </div>
+      <div style={{ fontSize: 11, color: T.textSec, marginTop: 2 }}>{sub}</div>
     </div>
   )
 }

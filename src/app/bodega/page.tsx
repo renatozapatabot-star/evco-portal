@@ -234,8 +234,10 @@ export default function BodegaPage() {
             <tbody>
               {rows.length === 0 ? (
                 <tr>
-                  <td colSpan={6} style={{ padding: 32, textAlign: 'center', color: T.textSecondary }}>
-                    Sin entradas registradas.
+                  <td colSpan={6} style={{ padding: 48, textAlign: 'center' }}>
+                    <div style={{ fontSize: 32, marginBottom: 8 }}>📦</div>
+                    <div style={{ fontSize: 15, fontWeight: 600, color: T.textPrimary, marginBottom: 4 }}>Sin entradas registradas</div>
+                    <div style={{ fontSize: 13, color: T.textSecondary }}>Las llegadas de mercancía aparecerán aquí</div>
                   </td>
                 </tr>
               ) : rows.map(e => {
@@ -289,11 +291,11 @@ export default function BodegaPage() {
         enBodega.length === 0 ? (
           <div style={{
             background: T.card, border: `1px solid ${T.border}`,
-            borderRadius: T.radius, padding: 32, textAlign: 'center',
+            borderRadius: T.radius, padding: 48, textAlign: 'center',
           }}>
-            <div style={{ fontSize: 14, color: T.textSecondary }}>
-              Sin entradas en bodega con tráfico asignado.
-            </div>
+            <div style={{ fontSize: 32, marginBottom: 8 }}>🏭</div>
+            <div style={{ fontSize: 15, fontWeight: 600, color: T.textPrimary, marginBottom: 4 }}>Sin mercancía en bodega</div>
+            <div style={{ fontSize: 13, color: T.textSecondary }}>Las entradas con tráfico asignado aparecerán aquí</div>
           </div>
         ) : (
           <div style={{
@@ -384,8 +386,10 @@ export default function BodegaPage() {
               <tbody>
                 {danos.length === 0 ? (
                   <tr>
-                    <td colSpan={isBroker ? 4 : 3} style={{ padding: 32, textAlign: 'center', color: T.textSecondary }}>
-                      Sin incidencias registradas.
+                    <td colSpan={isBroker ? 4 : 3} style={{ padding: 48, textAlign: 'center' }}>
+                      <div style={{ fontSize: 32, marginBottom: 8 }}>✅</div>
+                      <div style={{ fontSize: 15, fontWeight: 600, color: T.textPrimary, marginBottom: 4 }}>Sin incidencias</div>
+                      <div style={{ fontSize: 13, color: T.textSecondary }}>No se han reportado faltantes ni daños</div>
                     </td>
                   </tr>
                 ) : danos.map(e => {

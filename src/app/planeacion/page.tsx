@@ -175,8 +175,10 @@ export default function PlaneacionPage() {
             Plan de la semana
           </h2>
           {checklist.length === 0 ? (
-            <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.r, padding: '24px 20px', textAlign: 'center', color: T.textSec, fontSize: 14 }}>
-              Sin actividades programadas esta semana
+            <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.r, padding: 48, textAlign: 'center' }}>
+              <div style={{ fontSize: 32, marginBottom: 8 }}>📋</div>
+              <div style={{ fontSize: 15, fontWeight: 600, color: T.text, marginBottom: 4 }}>Sin actividades esta semana</div>
+              <div style={{ fontSize: 13, color: T.textSec }}>Las llegadas y cruces programados aparecerán aquí</div>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>

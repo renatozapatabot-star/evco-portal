@@ -98,7 +98,7 @@ export default function WarRoom() {
               </div>
             )
           })}
-          {(data?.bridgeSummary || []).length === 0 && <div style={{ color: 'var(--text-secondary)', fontSize: 13 }}>Sin datos de puentes</div>}
+          {(data?.bridgeSummary || []).length === 0 && <div style={{ padding: 24, textAlign: 'center' }}><div style={{ fontSize: 24, marginBottom: 4 }}>🌉</div><div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Sin datos de puentes disponibles</div></div>}
         </div>
 
         {/* Q3: Action Items */}

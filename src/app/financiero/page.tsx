@@ -330,8 +330,10 @@ export default function FinancieroPage() {
               </p>
             </div>
           ) : filteredFacturas.length === 0 ? (
-            <div style={{ padding: 40, textAlign: 'center', color: D.textSec }}>
-              Sin resultados para &quot;{search}&quot;
+            <div style={{ padding: 48, textAlign: 'center' }}>
+              <div style={{ fontSize: 32, marginBottom: 8 }}>🔍</div>
+              <div style={{ fontSize: 15, fontWeight: 600, color: D.text, marginBottom: 4 }}>Sin resultados para &quot;{search}&quot;</div>
+              <div style={{ fontSize: 13, color: D.textSec }}>Intenta con otro término de búsqueda</div>
             </div>
           ) : (
             <>

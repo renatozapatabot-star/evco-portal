@@ -70,7 +70,7 @@ export function StickyActionBar({
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <span style={{
-              fontSize: 15, fontWeight: 600, color: '#FFFFFF',
+              fontSize: 15, fontWeight: 600, color: 'var(--bg-card)',
               fontFamily: 'var(--font-mono)',
             }}>
               {traficoNumber}
@@ -80,7 +80,7 @@ export function StickyActionBar({
             </span>
             {valueUSD && (
               <span style={{
-                fontSize: 14, color: '#FFFFFF',
+                fontSize: 14, color: 'var(--bg-card)',
                 fontFamily: 'var(--font-mono)',
                 fontVariantNumeric: 'tabular-nums',
               }}>

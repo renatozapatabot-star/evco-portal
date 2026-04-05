@@ -7,7 +7,7 @@ import { getCookieValue, PORTAL_URL } from '@/lib/client-config'
 
 const T = {
   bg: 'var(--bg-dark)', surface: 'var(--navy-900)', border: '#2A2A2A',
-  text: '#E8E6E0', sub: '#9C9690', muted: '#666',
+  text: 'var(--border)', sub: '#9C9690', muted: '#666',
   gold: GOLD, green: GREEN, red: RED,
 }
 
@@ -233,7 +233,7 @@ export default function OnboardPage() {
                 marginTop: 24, padding: '12px 28px',
                 background: isStep1Valid ? T.gold : '#333',
                 border: 'none', borderRadius: 8,
-                color: isStep1Valid ? '#1A1710' : '#666',
+                color: isStep1Valid ? 'var(--text-primary)' : '#666',
                 fontWeight: 700, fontSize: 14,
                 cursor: isStep1Valid ? 'pointer' : 'not-allowed',
                 minHeight: 48,
@@ -357,7 +357,7 @@ export default function OnboardPage() {
               <button onClick={() => router.push('/admin')}
                 style={{
                   padding: '12px 24px', background: T.gold, border: 'none',
-                  borderRadius: 8, color: '#1A1710', fontWeight: 700, fontSize: 14,
+                  borderRadius: 8, color: 'var(--text-primary)', fontWeight: 700, fontSize: 14,
                   cursor: 'pointer', minHeight: 48,
                 }}>
                 Volver al Admin
@@ -378,7 +378,7 @@ function StatusChip({ ok, label, error: errorMsg }: { ok: boolean; label: string
         display: 'inline-flex', alignItems: 'center', gap: 6,
         padding: '4px 12px', borderRadius: 9999, fontSize: 12, fontWeight: 600,
         background: ok ? 'rgba(22,163,74,0.12)' : 'rgba(220,38,38,0.12)',
-        color: ok ? '#16A34A' : 'var(--danger-500)',
+        color: ok ? 'var(--success)' : 'var(--danger-500)',
         border: `1px solid ${ok ? 'rgba(22,163,74,0.25)' : 'rgba(220,38,38,0.25)'}`,
       }}
     >
@@ -403,7 +403,7 @@ function CopyRow({ label, value, copied, onCopy, mono }: {
       <button
         onClick={() => onCopy(value, label)}
         style={{
-          background: 'none', border: 'none', color: copied === label ? '#16A34A' : '#666',
+          background: 'none', border: 'none', color: copied === label ? 'var(--success)' : '#666',
           cursor: 'pointer', fontSize: 12, padding: '4px 8px', minWidth: 60, minHeight: 32,
         }}
       >

@@ -13,13 +13,13 @@ import { ErrorCard } from '@/components/ui/ErrorCard'
 // Generate distinct color from name hash for provider avatars
 function avatarColor(name: string): { bg: string; text: string } {
   const PALETTE = [
-    { bg: '#FEF3C7', text: '#92400E' }, // amber
+    { bg: '#FEF3C7', text: 'var(--amber-text, #92400E)' }, // amber
     { bg: '#DBEAFE', text: '#1E40AF' }, // blue
-    { bg: '#DCFCE7', text: '#166534' }, // green
+    { bg: '#DCFCE7', text: 'var(--success-dark, #166534)' }, // green
     { bg: '#F3E8FF', text: '#6B21A8' }, // purple
     { bg: '#FFE4E6', text: '#9F1239' }, // rose
     { bg: '#E0F2FE', text: '#075985' }, // sky
-    { bg: '#FEF9C3', text: '#854D0E' }, // yellow
+    { bg: '#FEF9C3', text: 'var(--gold-dark)' }, // yellow
     { bg: '#F0FDF4', text: '#14532D' }, // emerald
     { bg: '#FCE7F3', text: '#9D174D' }, // pink
     { bg: '#ECFDF5', text: '#065F46' }, // teal
@@ -31,14 +31,14 @@ function avatarColor(name: string): { bg: string; text: string } {
 
 // ── Design tokens (v6 warm white) ──────────────────────
 const T = {
-  bg: '#FAFAF8',
+  bg: 'var(--bg-main)',
   surface: 'var(--card-bg)',
-  border: '#E8E6E0',
+  border: 'var(--border)',
   surfaceAlt: '#F5F3EF',
-  text: '#1A1A1A',
-  textSub: '#6B6B6B',
+  text: 'var(--text-primary)',
+  textSub: 'var(--text-secondary)',
   textMuted: '#999999',
-  gold: '#C4963C',
+  gold: 'var(--gold)',
   goldBg: '#FFF8EB',
   green: '#2D8540',
   amber: '#C47F17',
@@ -47,7 +47,7 @@ const T = {
 }
 
 const TOOLTIP_STYLE: React.CSSProperties = {
-  background: '#1A1710',
+  background: 'var(--text-primary)',
   border: 'none',
   borderRadius: 10,
   color: 'white',

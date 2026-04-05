@@ -47,15 +47,15 @@ interface IntelligenceStats {
 /* ── Design tokens (matching TopNav v6) ────────────────────── */
 
 const T = {
-  bg: '#FAFAF8',
+  bg: 'var(--bg-main)',
   card: 'var(--card-bg)',
-  border: '#E8E5E0',
-  gold: '#C4963C',
+  border: 'var(--border)',
+  gold: 'var(--gold)',
   goldSubtle: '#F5F0E4',
   goldBorder: 'rgba(184,149,63,0.25)',
-  text: '#1A1A1A',
-  textSec: '#6B6B6B',
-  textMuted: '#9B9B9B',
+  text: 'var(--text-primary)',
+  textSec: 'var(--text-secondary)',
+  textMuted: 'var(--text-muted)',
   green: '#2D8540',
   greenBg: '#F0FDF4',
   greenBorder: '#BBF7D0',
@@ -154,7 +154,7 @@ export default function BrokerCommandCenter() {
               onClick={() => setActiveStaff(s.id)}
               style={{
                 padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: activeStaff === s.id ? 700 : 500,
-                background: activeStaff === s.id ? 'rgba(196,150,60,0.1)' : '#FFFFFF',
+                background: activeStaff === s.id ? 'rgba(196,150,60,0.1)' : 'var(--bg-card)',
                 border: `1px solid ${activeStaff === s.id ? T.gold : T.border}`,
                 color: activeStaff === s.id ? T.gold : T.textSec,
                 cursor: 'pointer',

@@ -27,7 +27,7 @@ export function OnboardingHint({ text, onDismiss }: OnboardingHintProps) {
       <div style={{ flex: 1 }}>
         <p style={{
           fontSize: 13,
-          color: '#1A1A1A',
+          color: 'var(--text-primary)',
           lineHeight: 1.5,
           margin: '0 0 8px',
         }}>
@@ -41,7 +41,7 @@ export function OnboardingHint({ text, onDismiss }: OnboardingHintProps) {
             cursor: 'pointer',
             fontSize: 12,
             fontWeight: 700,
-            color: '#C4963C',
+            color: 'var(--gold)',
             padding: 0,
           }}
         >

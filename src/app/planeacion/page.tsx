@@ -26,16 +26,16 @@ interface BridgeTime {
 }
 
 const T = {
-  bg: '#FAFAF8',
-  card: '#FFFFFF',
-  border: '#E8E5E0',
-  text: '#1A1A1A',
-  textSec: '#6B6B6B',
-  gray: '#9B9B9B',
-  gold: '#C4963C',
-  green: '#16A34A',
-  amber: '#D97706',
-  red: '#DC2626',
+  bg: 'var(--bg-main)',
+  card: 'var(--bg-card)',
+  border: 'var(--border)',
+  text: 'var(--text-primary)',
+  textSec: 'var(--text-secondary)',
+  gray: 'var(--text-muted)',
+  gold: 'var(--gold)',
+  green: 'var(--success)',
+  amber: 'var(--warning-500, #D97706)',
+  red: 'var(--danger-500)',
   r: 8,
 } as const
 

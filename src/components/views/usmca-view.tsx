@@ -8,7 +8,7 @@ import { getCookieValue, getClientNameCookie, getClientRfcCookie } from '@/lib/c
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
-const T = { bg: '#FAFAF8', surface: 'var(--card-bg)', border: '#E8E6E0', surfaceAlt: '#F5F3EF', text: '#1A1A1A', textSub: '#6B6B6B', textMuted: '#999999', navy: '#BA7517', gold: '#BA7517', goldBg: '#FFF8EB', goldBorder: '#E8C84A', green: '#16A34A', greenBg: '#EAF3DE', shadow: '0 1px 3px rgba(0,0,0,0.07)' }
+const T = { bg: 'var(--bg-main)', surface: 'var(--card-bg)', border: 'var(--border)', surfaceAlt: '#F5F3EF', text: 'var(--text-primary)', textSub: 'var(--text-secondary)', textMuted: '#999999', navy: 'var(--gold-dark)', gold: 'var(--gold-dark)', goldBg: '#FFF8EB', goldBorder: '#E8C84A', green: 'var(--success)', greenBg: '#EAF3DE', shadow: '0 1px 3px rgba(0,0,0,0.07)' }
 
 const ORIGIN_CRITERIA = [
   { code: 'A', label: 'A — Wholly obtained or produced entirely in USMCA territory' },
@@ -125,7 +125,7 @@ export function USMCAView() {
             </div>
             <div style={{ background: cert.qualifies ? T.greenBg : '#FEE2E2', border: `1px solid ${cert.qualifies ? T.green : '#FCA5A5'}30`, borderRadius: 8, padding: '10px 14px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10 }}>
               <span style={{ fontSize: 18 }}>{cert.qualifies ? '✅' : '⚠️'}</span>
-              <div><div style={{ color: cert.qualifies ? T.green : '#991B1B', fontSize: 13, fontWeight: 700 }}>{cert.qualifies ? 'QUALIFIES FOR USMCA' : 'REVIEW REQUIRED'}</div><div style={{ color: cert.qualifies ? T.green : '#991B1B', fontSize: 11, marginTop: 2 }}>{cert.assessment}</div></div>
+              <div><div style={{ color: cert.qualifies ? T.green : 'var(--danger-text, #991B1B)', fontSize: 13, fontWeight: 700 }}>{cert.qualifies ? 'QUALIFIES FOR USMCA' : 'REVIEW REQUIRED'}</div><div style={{ color: cert.qualifies ? T.green : 'var(--danger-text, #991B1B)', fontSize: 11, marginTop: 2 }}>{cert.assessment}</div></div>
             </div>
             {[{ label: 'Exporter', value: form.exporter_name || '' }, { label: 'Importer', value: form.importer_name }, { label: 'HS Code', value: form.hs_code }, { label: 'Criterion', value: form.origin_criterion }, { label: 'Coverage', value: `${form.blanket_from} to ${form.blanket_to}` }].map(f => (
               <div key={f.label} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: `1px solid ${T.border}` }}>

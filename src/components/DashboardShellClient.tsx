@@ -56,7 +56,7 @@ function ViewingAsBanner({ companyName, onExit }: { companyName: string; onExit:
   return (
     <div style={{
       position: 'fixed', top: 0, left: 0, right: 0, zIndex: 9999,
-      background: '#C4963C', color: '#FFFFFF', height: 36,
+      background: 'var(--gold)', color: 'var(--bg-card)', height: 36,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       gap: 12, fontSize: 13, fontWeight: 600,
     }}>
@@ -65,7 +65,7 @@ function ViewingAsBanner({ companyName, onExit }: { companyName: string; onExit:
         onClick={onExit}
         style={{
           background: 'rgba(255,255,255,0.2)', border: '1px solid rgba(255,255,255,0.4)',
-          borderRadius: 4, color: '#FFFFFF', padding: '2px 10px',
+          borderRadius: 4, color: 'var(--bg-card)', padding: '2px 10px',
           fontSize: 12, fontWeight: 600, cursor: 'pointer',
         }}
       >
@@ -240,7 +240,7 @@ export default function DashboardShellClient({ children }: Props) {
       {isOffline && (
         <div style={{
           position: 'fixed', bottom: 80, left: '50%', transform: 'translateX(-50%)',
-          zIndex: 9998, background: 'var(--navy-900)', color: '#FFFFFF',
+          zIndex: 9998, background: 'var(--navy-900)', color: 'var(--bg-card)',
           padding: '10px 24px', borderRadius: 'var(--radius-lg)',
           fontSize: 13, fontWeight: 600, boxShadow: '0 4px 24px rgba(0,0,0,0.3)',
           display: 'flex', alignItems: 'center', gap: 8,
@@ -264,7 +264,7 @@ export default function DashboardShellClient({ children }: Props) {
           style={{
             position: 'fixed', bottom: 90, right: 20, zIndex: 40,
             width: 40, height: 40, borderRadius: '50%',
-            background: 'var(--navy-900)', color: '#FFFFFF',
+            background: 'var(--navy-900)', color: 'var(--bg-card)',
             border: 'none', cursor: 'pointer', fontSize: 16,
             boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',

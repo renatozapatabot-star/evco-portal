@@ -22,10 +22,10 @@ interface AnomalyRow {
 }
 
 const SEVERITY_CONFIG: Record<string, { icon: string; color: string; bg: string; label: string }> = {
-  critical: { icon: '🔴', color: '#DC2626', bg: '#FEF2F2', label: 'Crítico' },
-  warning:  { icon: '🟡', color: '#D97706', bg: '#FFFBEB', label: 'Advertencia' },
-  info:     { icon: '🔵', color: '#2563EB', bg: '#EFF6FF', label: 'Información' },
-  ok:       { icon: '✅', color: '#16A34A', bg: '#F0FDF4', label: 'OK' },
+  critical: { icon: '🔴', color: 'var(--danger-500)', bg: '#FEF2F2', label: 'Crítico' },
+  warning:  { icon: '🟡', color: 'var(--warning-500, #D97706)', bg: '#FFFBEB', label: 'Advertencia' },
+  info:     { icon: '🔵', color: 'var(--info)', bg: '#EFF6FF', label: 'Información' },
+  ok:       { icon: '✅', color: 'var(--success)', bg: '#F0FDF4', label: 'OK' },
 }
 
 const METRIC_LABELS: Record<string, string> = {
@@ -95,20 +95,20 @@ export default function AlertasInternasPage() {
   return (
     <div style={{ padding: '24px 16px', maxWidth: 1000, margin: '0 auto' }}>
       <h1 style={{ fontSize: 24, fontWeight: 700, margin: '0 0 4px' }}>Alertas Internas</h1>
-      <p style={{ fontSize: 13, color: '#6B6B6B', margin: '0 0 24px' }}>
+      <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '0 0 24px' }}>
         Anomalías detectadas por el pipeline nocturno · {anomalies.length} registros
       </p>
 
       {/* Summary strip */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 24 }}>
         {[
-          { label: 'Críticas', count: counts.critical, color: '#DC2626' },
-          { label: 'Advertencias', count: counts.warning, color: '#D97706' },
-          { label: 'Info', count: counts.info, color: '#2563EB' },
-          { label: 'Resueltas', count: counts.resolved, color: '#16A34A' },
+          { label: 'Críticas', count: counts.critical, color: 'var(--danger-500)' },
+          { label: 'Advertencias', count: counts.warning, color: 'var(--warning-500, #D97706)' },
+          { label: 'Info', count: counts.info, color: 'var(--info)' },
+          { label: 'Resueltas', count: counts.resolved, color: 'var(--success)' },
         ].map(k => (
-          <div key={k.label} style={{ padding: '12px 16px', borderRadius: 8, background: '#FFFFFF', border: '1px solid #E8E5E0' }}>
-            <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#9B9B9B', marginBottom: 4 }}>{k.label}</div>
+          <div key={k.label} style={{ padding: '12px 16px', borderRadius: 8, background: 'var(--bg-card)', border: '1px solid #E8E5E0' }}>
+            <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 4 }}>{k.label}</div>
             <div style={{ fontSize: 22, fontWeight: 800, fontFamily: 'var(--font-mono)', color: k.color }}>{k.count}</div>
           </div>
         ))}
@@ -120,7 +120,7 @@ export default function AlertasInternasPage() {
           <button key={f} onClick={() => setFilter(f)} style={{
             padding: '8px 16px', background: 'none', border: 'none', cursor: 'pointer',
             fontSize: 13, fontWeight: filter === f ? 700 : 500,
-            color: filter === f ? '#C4963C' : '#6B6B6B',
+            color: filter === f ? 'var(--gold)' : 'var(--text-secondary)',
             borderBottom: filter === f ? '2px solid #C4963C' : '2px solid transparent',
             marginBottom: -1,
           }}>
@@ -145,21 +145,21 @@ export default function AlertasInternasPage() {
               <div key={a.id} style={{
                 padding: '12px 16px', borderRadius: 8,
                 background: isResolved ? '#F5F4F0' : sev.bg,
-                border: `1px solid ${isResolved ? '#E8E5E0' : sev.color}20`,
-                borderLeft: `4px solid ${isResolved ? '#9B9B9B' : sev.color}`,
+                border: `1px solid ${isResolved ? 'var(--border)' : sev.color}20`,
+                borderLeft: `4px solid ${isResolved ? 'var(--text-muted)' : sev.color}`,
                 opacity: isResolved ? 0.6 : 1,
                 display: 'flex', alignItems: 'center', gap: 12,
               }}>
                 <span style={{ fontSize: 16, flexShrink: 0 }}>{isResolved ? '✓' : sev.icon}</span>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: '#1A1A1A' }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
                     {METRIC_LABELS[a.metric] || a.metric}
-                    <span style={{ fontSize: 11, color: '#6B6B6B', marginLeft: 8 }}>{a.company_id}</span>
+                    <span style={{ fontSize: 11, color: 'var(--text-secondary)', marginLeft: 8 }}>{a.company_id}</span>
                   </div>
-                  <div style={{ fontSize: 11, color: '#6B6B6B', display: 'flex', gap: 12, marginTop: 2 }}>
+                  <div style={{ fontSize: 11, color: 'var(--text-secondary)', display: 'flex', gap: 12, marginTop: 2 }}>
                     <span style={{ fontFamily: 'var(--font-mono)' }}>{fmtDateTime(a.created_at)}</span>
                     {a.current_value != null && <span>Valor: <b>{a.current_value}</b></span>}
-                    {isResolved && <span style={{ color: '#16A34A' }}>Resuelto</span>}
+                    {isResolved && <span style={{ color: 'var(--success)' }}>Resuelto</span>}
                   </div>
                 </div>
                 {!isResolved && (
@@ -168,8 +168,8 @@ export default function AlertasInternasPage() {
                     disabled={resolving === a.id}
                     style={{
                       padding: '6px 14px', borderRadius: 6, fontSize: 12, fontWeight: 700,
-                      background: '#FFFFFF', border: '1px solid #E8E5E0',
-                      cursor: 'pointer', color: '#1A1A1A', flexShrink: 0,
+                      background: 'var(--bg-card)', border: '1px solid #E8E5E0',
+                      cursor: 'pointer', color: 'var(--text-primary)', flexShrink: 0,
                       minHeight: 36,
                     }}
                   >

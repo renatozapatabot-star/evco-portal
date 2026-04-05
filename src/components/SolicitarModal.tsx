@@ -151,7 +151,7 @@ export function SolicitarModal({ traficoId, missingDocs, onClose, onSuccess }: P
             <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>
               Solicitar documentos
             </h3>
-            <p style={{ margin: '4px 0 0', fontSize: 13, color: '#6B6B6B' }}>
+            <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--text-secondary)' }}>
               Tráfico {traficoId} · {selected.length} documentos
             </p>
           </div>
@@ -190,7 +190,7 @@ export function SolicitarModal({ traficoId, missingDocs, onClose, onSuccess }: P
         {/* Recipient */}
         <div style={{ marginBottom: 16 }}>
           <label style={{
-            fontSize: 12, fontWeight: 600, color: '#6B6B6B',
+            fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)',
             display: 'block', marginBottom: 4,
           }}>
             Enviar a:
@@ -212,7 +212,7 @@ export function SolicitarModal({ traficoId, missingDocs, onClose, onSuccess }: P
         {/* Deadline */}
         <div style={{ marginBottom: 20 }}>
           <label style={{
-            fontSize: 12, fontWeight: 600, color: '#6B6B6B',
+            fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)',
             display: 'block', marginBottom: 4,
           }}>
             Plazo:
@@ -235,10 +235,10 @@ export function SolicitarModal({ traficoId, missingDocs, onClose, onSuccess }: P
         {selected.length > 0 && (
           <div style={{
             marginBottom: 20, padding: '12px 16px',
-            background: '#FAFAF8', border: '1px solid #E8E5E0',
-            borderRadius: 8, fontSize: 12, color: '#6B6B6B', lineHeight: 1.6,
+            background: 'var(--bg-main)', border: '1px solid #E8E5E0',
+            borderRadius: 8, fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6,
           }}>
-            <div style={{ fontWeight: 700, color: '#1A1A1A', marginBottom: 4 }}>
+            <div style={{ fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>
               Vista previa
             </div>
             Se solicitarán <strong>{selected.length}</strong>{' '}
@@ -258,7 +258,7 @@ export function SolicitarModal({ traficoId, missingDocs, onClose, onSuccess }: P
             style={{
               flex: 1, padding: '12px', borderRadius: 8,
               border: '1px solid #E8E5E0', background: 'var(--card-bg)',
-              color: '#6B6B6B', fontSize: 14, fontWeight: 700,
+              color: 'var(--text-secondary)', fontSize: 14, fontWeight: 700,
               cursor: 'pointer', minHeight: 60,
             }}
           >
@@ -271,9 +271,9 @@ export function SolicitarModal({ traficoId, missingDocs, onClose, onSuccess }: P
               flex: 2, padding: '12px', borderRadius: 8,
               border: 'none',
               background: sendState === 'sent' ? '#2D8540'
-                : selected.length > 0 && sendState === 'idle' ? '#C4963C'
-                : '#E8E5E0',
-              color: sendState === 'sent' || (selected.length > 0 && sendState === 'idle') ? '#FFFFFF' : '#9C9890',
+                : selected.length > 0 && sendState === 'idle' ? 'var(--gold)'
+                : 'var(--border)',
+              color: sendState === 'sent' || (selected.length > 0 && sendState === 'idle') ? 'var(--bg-card)' : '#9C9890',
               fontSize: 14, fontWeight: 700,
               cursor: sendState === 'idle' && selected.length > 0 ? 'pointer' : 'default',
               minHeight: 60,

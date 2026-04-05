@@ -22,17 +22,17 @@ export function CruzFAB() {
     },
     {
       icon: Search, label: 'Buscar',
-      color: '#2563EB',
+      color: 'var(--info)',
       action: () => { document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true })) },
     },
     {
       icon: MessageSquare, label: 'CRUZ AI',
-      color: '#C4963C',
+      color: 'var(--gold)',
       action: () => router.push('/cruz'),
     },
     {
       icon: Phone, label: 'Llamar',
-      color: '#16A34A',
+      color: 'var(--success)',
       action: () => { window.location.href = 'tel:+19568277000' },
     },
   ]
@@ -57,15 +57,15 @@ export function CruzFAB() {
               style={{
                 display: 'flex', alignItems: 'center', gap: 8,
                 padding: '10px 16px', borderRadius: 24,
-                background: '#FFFFFF', border: 'none',
+                background: 'var(--bg-card)', border: 'none',
                 boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
                 cursor: 'pointer', minHeight: 60,
                 animation: `fabSlideUp 150ms ease ${i * 50}ms both`,
               }}
             >
-              <span style={{ fontSize: 13, fontWeight: 600, color: '#1A1A1A' }}>{a.label}</span>
+              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{a.label}</span>
               <div style={{ width: 36, height: 36, borderRadius: '50%', background: a.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <a.icon size={18} style={{ color: '#FFFFFF' }} />
+                <a.icon size={18} style={{ color: 'var(--bg-card)' }} />
               </div>
             </button>
           ))}
@@ -80,9 +80,9 @@ export function CruzFAB() {
         style={{ transform: open ? 'rotate(45deg)' : undefined, transition: 'transform 200ms ease' }}
       >
         {open ? (
-          <X size={22} style={{ color: '#1A1710' }} />
+          <X size={22} style={{ color: 'var(--text-primary)' }} />
         ) : (
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 800, color: '#1A1710', letterSpacing: '0.08em' }}>CRUZ</span>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '0.08em' }}>CRUZ</span>
         )}
       </button>
 

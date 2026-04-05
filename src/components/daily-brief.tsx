@@ -41,7 +41,7 @@ export function DailyBrief({
 
   return (
     <div style={{
-      background: '#FFFFFF',
+      background: 'var(--bg-card)',
       border: '1px solid #E8E5E0',
       borderLeft: '3px solid #C4963C',
       borderRadius: 12,
@@ -52,12 +52,12 @@ export function DailyBrief({
     }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-        <div style={{ fontSize: 16, fontWeight: 700, color: '#1A1A1A' }}>
+        <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>
           🦀 {greeting}, {companyName}
         </div>
         <button onClick={onDismiss} style={{
           background: 'none', border: 'none', cursor: 'pointer',
-          color: '#9B9B9B', fontSize: 18, padding: 4, lineHeight: 1,
+          color: 'var(--text-muted)', fontSize: 18, padding: 4, lineHeight: 1,
         }} aria-label="Cerrar resumen">×</button>
       </div>
 
@@ -68,10 +68,10 @@ export function DailyBrief({
             {/* Morning/afternoon: yesterday + today */}
             {(crossedYesterday > 0 || valueYesterday > 0) && (
               <div>
-                <div style={{ fontSize: 11, fontWeight: 700, color: '#9B9B9B', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>
                   Ayer
                 </div>
-                <div style={{ fontSize: 13, color: '#1A1A1A', lineHeight: 1.5 }}>
+                <div style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.5 }}>
                   {crossedYesterday > 0
                     ? `${crossedYesterday} tráfico${crossedYesterday !== 1 ? 's' : ''} cruzaron (${fmtUSDCompact(valueYesterday)} valor)`
                     : 'Sin cruces'}
@@ -80,10 +80,10 @@ export function DailyBrief({
             )}
 
             <div>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#9B9B9B', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>
                 Hoy
               </div>
-              <div style={{ fontSize: 13, color: '#1A1A1A', lineHeight: 1.5 }}>
+              <div style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.5 }}>
                 {enProceso > 0
                   ? `${enProceso} en proceso · ${newTraficos24h > 0 ? `${newTraficos24h} nuevos` : '0 pendientes'}`
                   : 'Sin operaciones activas'}
@@ -94,15 +94,15 @@ export function DailyBrief({
           <>
             {/* Evening: day summary */}
             <div>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#9B9B9B', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>
                 Resumen del día
               </div>
-              <div style={{ fontSize: 13, color: '#1A1A1A', lineHeight: 1.5 }}>
+              <div style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.5 }}>
                 {crossedYesterday > 0
                   ? `${crossedYesterday} cruzados, ${newTraficos24h} nuevos, ${fmtUSDCompact(valueYesterday)} importado`
                   : `${newTraficos24h > 0 ? `${newTraficos24h} nuevos` : 'Sin movimiento hoy'}`}
               </div>
-              <div style={{ fontSize: 13, color: '#6B6B6B', fontStyle: 'italic', marginTop: 6 }}>
+              <div style={{ fontSize: 13, color: 'var(--text-secondary)', fontStyle: 'italic', marginTop: 6 }}>
                 Todo en orden. Que descanse. 🦀
               </div>
             </div>
@@ -117,7 +117,7 @@ export function DailyBrief({
             background: 'rgba(196,150,60,0.04)',
           }}>
             <span style={{ fontSize: 14 }}>💰</span>
-            <span style={{ fontSize: 12, fontFamily: 'var(--font-mono)', fontWeight: 700, color: '#8B6914' }}>
+            <span style={{ fontSize: 12, fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--gold-dark)' }}>
               Ahorro T-MEC: {fmtUSDCompact(tmecSavings)}
             </span>
           </div>
@@ -125,14 +125,14 @@ export function DailyBrief({
 
         {/* Streak */}
         {streakDays >= 5 && (
-          <div style={{ fontSize: 13, color: '#1A1A1A' }}>
+          <div style={{ fontSize: 13, color: 'var(--text-primary)' }}>
             🔥 Racha: {streakDays} días sin incidencias
           </div>
         )}
 
         {/* Monday: week context */}
         {isMonday && valorYTD > 0 && (
-          <div style={{ fontSize: 12, color: '#6B6B6B', fontStyle: 'italic' }}>
+          <div style={{ fontSize: 12, color: 'var(--text-secondary)', fontStyle: 'italic' }}>
             Inicio de semana · {fmtUSDCompact(valorYTD)} importado en el año
           </div>
         )}
@@ -142,7 +142,7 @@ export function DailyBrief({
       {!isEvening && (
         <div style={{ marginTop: 16, display: 'flex', gap: 12 }}>
           <button onClick={onDismiss} style={{
-            fontSize: 12, fontWeight: 700, color: '#C4963C',
+            fontSize: 12, fontWeight: 700, color: 'var(--gold)',
             background: 'none', border: 'none', cursor: 'pointer', padding: 0,
           }}>
             Ver detalle →

@@ -11,7 +11,7 @@ export default function NotFound() {
       <div style={{
         width: 64, height: 64, borderRadius: 16, display: 'flex',
         alignItems: 'center', justifyContent: 'center',
-        fontSize: 28, fontWeight: 700, fontFamily: 'Georgia, serif', color: '#1A1710',
+        fontSize: 28, fontWeight: 700, fontFamily: 'Georgia, serif', color: 'var(--text-primary)',
       }} className="z-mark-coin">Z</div>
       <h1 style={{ color: GOLD, fontFamily: 'var(--font-mono, monospace)', fontSize: 48, fontWeight: 800, margin: 0 }}>
         404

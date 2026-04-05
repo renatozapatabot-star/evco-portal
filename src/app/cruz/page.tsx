@@ -48,10 +48,10 @@ function buildDynamicPrompts(statusData: { urgentes: number; enProceso: number; 
 const D = {
   bg: '#F7F6F3',
   surface: 'var(--card-bg)',
-  border: '#E8E5E0',
+  border: 'var(--border)',
   text: '#1A1A18',
   textMuted: '#9C9890',
-  textSub: '#6B6B6B',
+  textSub: 'var(--text-secondary)',
   userBubble: 'rgba(184,149,63,0.08)',
   userBorder: 'rgba(184,149,63,0.20)',
   aiBubble: '#1A1A18',
@@ -353,7 +353,7 @@ export default function CruzChatPage() {
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             boxShadow: '0 2px 8px rgba(201,168,76,0.35)',
           }}>
-            <span style={{ fontFamily: 'Georgia, serif', fontSize: 20, fontWeight: 700, color: '#1A1710' }}>Z</span>
+            <span style={{ fontFamily: 'Georgia, serif', fontSize: 20, fontWeight: 700, color: 'var(--text-primary)' }}>Z</span>
           </div>
           <div>
             <h1 style={{ fontSize: 18, fontWeight: 800, color: D.text, letterSpacing: '-0.02em', margin: 0 }}>CRUZ</h1>
@@ -390,7 +390,7 @@ export default function CruzChatPage() {
                   borderRadius: 8, padding: '14px 16px', marginBottom: 16,
                   maxWidth: 500,
                 }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: '#C4963C', marginBottom: 6,
+                  <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--gold)', marginBottom: 6,
                                 letterSpacing: '0.06em', textTransform: 'uppercase' as const }}>
                     CRUZ Briefing
                   </div>
@@ -471,7 +471,7 @@ export default function CruzChatPage() {
                         onClick={() => sendMessage('Sí, procede')}
                         style={{
                           padding: '8px 16px', borderRadius: 8, fontSize: 13, fontWeight: 700,
-                          background: GOLD, color: '#FFFFFF', border: 'none', cursor: 'pointer',
+                          background: GOLD, color: 'var(--bg-card)', border: 'none', cursor: 'pointer',
                           minHeight: 36,
                         }}
                       >
@@ -493,7 +493,7 @@ export default function CruzChatPage() {
                   {msg.role === 'assistant' && (
                     <div style={{ display: 'flex', gap: 4, marginTop: 8, opacity: 0.4 }}>
                       <button onClick={() => speak(msg.content)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: D.aiText, padding: 4 }}><Volume2 size={13} /></button>
-                      <button onClick={() => saveFeedback(msg.id, true)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: msg.feedback === true ? '#16A34A' : D.aiText, padding: 4 }}><ThumbsUp size={13} /></button>
+                      <button onClick={() => saveFeedback(msg.id, true)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: msg.feedback === true ? 'var(--success)' : D.aiText, padding: 4 }}><ThumbsUp size={13} /></button>
                       <button onClick={() => saveFeedback(msg.id, false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: msg.feedback === false ? 'var(--danger-500)' : D.aiText, padding: 4 }}><ThumbsDown size={13} /></button>
                     </div>
                   )}
@@ -543,7 +543,7 @@ export default function CruzChatPage() {
                 style={{
                   width: 60, height: 60, borderRadius: 14, border: 'none', cursor: 'pointer',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                  background: listening ? GOLD : D.bg, color: listening ? '#1A1710' : D.textMuted,
+                  background: listening ? GOLD : D.bg, color: listening ? 'var(--text-primary)' : D.textMuted,
                   transition: 'all 0.15s',
                 }}
               >
@@ -555,7 +555,7 @@ export default function CruzChatPage() {
                 style={{
                   width: 60, height: 60, borderRadius: 14, border: 'none', cursor: 'pointer',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                  background: GOLD_GRADIENT, color: '#1A1710',
+                  background: GOLD_GRADIENT, color: 'var(--text-primary)',
                   opacity: loading || !input.trim() ? 0.4 : 1,
                   transition: 'opacity 0.15s',
                 }}
@@ -575,7 +575,7 @@ export default function CruzChatPage() {
           }}>
             {/* Críticos ahora */}
             <div>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#C4963C', marginBottom: 10,
+              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--gold)', marginBottom: 10,
                             letterSpacing: '0.06em', textTransform: 'uppercase' as const }}>
                 Críticos ahora
               </div>
@@ -606,7 +606,7 @@ export default function CruzChatPage() {
 
             {/* En proceso */}
             <div>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#C4963C', marginBottom: 10,
+              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--gold)', marginBottom: 10,
                             letterSpacing: '0.06em', textTransform: 'uppercase' as const }}>
                 En proceso ({panelData.enProceso.length})
               </div>
@@ -638,7 +638,7 @@ export default function CruzChatPage() {
             {/* Alertas */}
             {panelData.alertTitle && (
               <div>
-                <div style={{ fontSize: 11, fontWeight: 700, color: '#C4963C', marginBottom: 10,
+                <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--gold)', marginBottom: 10,
                               letterSpacing: '0.06em', textTransform: 'uppercase' as const }}>
                   Alerta activa
                 </div>

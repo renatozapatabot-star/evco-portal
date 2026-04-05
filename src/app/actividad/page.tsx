@@ -139,8 +139,8 @@ export default function ActividadPage() {
 
   return (
     <div style={{ padding: '24px 16px', maxWidth: 600, margin: '0 auto' }}>
-      <h1 style={{ fontSize: 24, fontWeight: 700, color: '#1A1A1A', margin: '0 0 4px' }}>Actividad</h1>
-      <p style={{ fontSize: 13, color: '#6B6B6B', margin: '0 0 24px' }}>
+      <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 4px' }}>Actividad</h1>
+      <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '0 0 24px' }}>
         {newCount > 0 ? `${newCount} nuevo${newCount !== 1 ? 's' : ''}` : 'Todo al día'}
       </p>
 
@@ -167,18 +167,18 @@ export default function ActividadPage() {
             >
               {/* New indicator */}
               <div style={{ width: 6, flexShrink: 0 }}>
-                {item.isNew && <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#C4963C' }} />}
+                {item.isNew && <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--gold)' }} />}
               </div>
               {/* Icon */}
               <span style={{ fontSize: 18, flexShrink: 0 }}>{item.icon}</span>
               {/* Content */}
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 13, color: '#1A1A1A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div style={{ fontSize: 13, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {item.text}
                 </div>
               </div>
               {/* Time */}
-              <span style={{ fontSize: 11, color: '#9B9B9B', flexShrink: 0, fontFamily: 'var(--font-mono)' }}>
+              <span style={{ fontSize: 11, color: 'var(--text-muted)', flexShrink: 0, fontFamily: 'var(--font-mono)' }}>
                 {fmtDateCompact(item.timestamp)}
               </span>
             </Link>

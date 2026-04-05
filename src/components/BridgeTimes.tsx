@@ -27,7 +27,7 @@ export function BridgeTimes() {
   const withData = allBridges.filter(b => b.commercial !== null)
   const fastest = withData.length > 0 ? withData.reduce((a, b) => (a.commercial! < b.commercial! ? a : b)) : null
 
-  function statusColor(s: string) { return s === 'green' ? '#16A34A' : s === 'amber' ? '#D97706' : s === 'red' ? 'var(--danger-500)' : '#6B7280' }
+  function statusColor(s: string) { return s === 'green' ? 'var(--success)' : s === 'amber' ? 'var(--warning-500, #D97706)' : s === 'red' ? 'var(--danger-500)' : '#6B7280' }
 
   if (withData.length === 0) return null
 
@@ -55,7 +55,7 @@ export function BridgeTimes() {
               borderRadius: 8, padding: '12px 14px', position: 'relative',
             }}>
               {isFastest && (
-                <span style={{ position: 'absolute', top: 8, right: 8, background: '#DCFCE7', color: '#166534',
+                <span style={{ position: 'absolute', top: 8, right: 8, background: '#DCFCE7', color: 'var(--success-dark, #166534)',
                   borderRadius: 4, padding: '1px 6px', fontSize: 9, fontWeight: 700 }}>MÁS RÁPIDO</span>
               )}
               <div style={{ color: 'var(--text-primary)', fontSize: 12, fontWeight: 700, marginBottom: 2 }}>{b.nameEs}</div>

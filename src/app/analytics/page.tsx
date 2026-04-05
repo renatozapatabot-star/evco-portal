@@ -7,9 +7,9 @@ import { fmtUSDCompact } from '@/lib/format-utils'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { useIsMobile } from '@/hooks/use-mobile'
 
-const GOLD = '#C4963C'
+const GOLD = 'var(--gold)'
 const TEAL = '#0D9488'
-const COLORS = [GOLD, TEAL, '#7E22CE', '#DC2626', '#2563EB', '#16A34A', '#D97706', '#6B7280']
+const COLORS = [GOLD, TEAL, '#7E22CE', 'var(--danger-500)', 'var(--info)', 'var(--success)', 'var(--warning-500, #D97706)', '#6B7280']
 
 interface TraficoRow {
   trafico: string; estatus?: string | null; fecha_llegada?: string | null
@@ -100,7 +100,7 @@ export default function AnalyticsPage() {
   return (
     <div style={{ padding: '24px 16px', maxWidth: 900, margin: '0 auto' }}>
       <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 4px' }}>Analytics</h1>
-      <p style={{ fontSize: 13, color: '#6B6B6B', margin: '0 0 24px' }}>
+      <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '0 0 24px' }}>
         {rows.length.toLocaleString()} tráficos · ene 2024–presente
       </p>
 
@@ -109,9 +109,9 @@ export default function AnalyticsPage() {
         {reports.map(r => (
           <button key={r.key} onClick={() => setActiveReport(r.key)} style={{
             padding: '8px 16px', borderRadius: 8, fontSize: 13, fontWeight: activeReport === r.key ? 700 : 500,
-            background: activeReport === r.key ? 'rgba(196,150,60,0.1)' : '#FFFFFF',
-            border: `1px solid ${activeReport === r.key ? GOLD : '#E8E5E0'}`,
-            color: activeReport === r.key ? GOLD : '#6B6B6B', cursor: 'pointer', whiteSpace: 'nowrap',
+            background: activeReport === r.key ? 'rgba(196,150,60,0.1)' : 'var(--bg-card)',
+            border: `1px solid ${activeReport === r.key ? GOLD : 'var(--border)'}`,
+            color: activeReport === r.key ? GOLD : 'var(--text-secondary)', cursor: 'pointer', whiteSpace: 'nowrap',
           }}>
             {r.label}
           </button>

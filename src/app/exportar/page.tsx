@@ -47,34 +47,34 @@ export default function ExportarPage() {
 
   return (
     <div style={{ padding: '24px 16px', maxWidth: 800, margin: '0 auto' }}>
-      <h1 style={{ fontSize: 24, fontWeight: 700, color: '#1A1A1A', margin: '0 0 4px' }}>Exportar Datos</h1>
-      <p style={{ fontSize: 13, color: '#6B6B6B', margin: '0 0 24px' }}>
+      <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 4px' }}>Exportar Datos</h1>
+      <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '0 0 24px' }}>
         Descarga tus datos en formato CSV · Patente 3596
       </p>
 
       {/* Date range filter */}
       <div className="card" style={{ padding: '16px 20px', marginBottom: 24 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#9B9B9B', marginBottom: 12 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 12 }}>
           Rango de fechas (opcional)
         </div>
         <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
           <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} style={{
-            padding: '8px 12px', borderRadius: 8, border: '1px solid #E8E5E0', fontSize: 13, color: '#1A1A1A', fontFamily: 'var(--font-mono)',
+            padding: '8px 12px', borderRadius: 8, border: '1px solid #E8E5E0', fontSize: 13, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)',
           }} />
-          <span style={{ fontSize: 12, color: '#9B9B9B' }}>a</span>
+          <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>a</span>
           <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} style={{
-            padding: '8px 12px', borderRadius: 8, border: '1px solid #E8E5E0', fontSize: 13, color: '#1A1A1A', fontFamily: 'var(--font-mono)',
+            padding: '8px 12px', borderRadius: 8, border: '1px solid #E8E5E0', fontSize: 13, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)',
           }} />
           {(dateFrom || dateTo) && (
             <button onClick={() => { setDateFrom(''); setDateTo('') }} style={{
-              fontSize: 11, color: '#6B6B6B', background: 'none', border: 'none', cursor: 'pointer',
+              fontSize: 11, color: 'var(--text-secondary)', background: 'none', border: 'none', cursor: 'pointer',
             }}>Limpiar</button>
           )}
         </div>
       </div>
 
       {error && (
-        <div style={{ marginBottom: 16, padding: '10px 16px', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 8, color: '#991B1B', fontSize: 13 }}>
+        <div style={{ marginBottom: 16, padding: '10px 16px', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 8, color: 'var(--danger-text, #991B1B)', fontSize: 13 }}>
           {error}
         </div>
       )}
@@ -93,11 +93,11 @@ export default function ExportarPage() {
                   width: 40, height: 40, borderRadius: 8,
                   background: 'rgba(196,150,60,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
                 }}>
-                  <Icon size={20} style={{ color: '#C4963C' }} />
+                  <Icon size={20} style={{ color: 'var(--gold)' }} />
                 </div>
                 <div>
-                  <div style={{ fontSize: 15, fontWeight: 700, color: '#1A1A1A' }}>{exp.label}</div>
-                  <div style={{ fontSize: 12, color: '#6B6B6B', marginTop: 2 }}>{exp.desc}</div>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>{exp.label}</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>{exp.desc}</div>
                 </div>
               </div>
               <button
@@ -106,8 +106,8 @@ export default function ExportarPage() {
                 style={{
                   display: 'flex', alignItems: 'center', gap: 6,
                   padding: '10px 20px', borderRadius: 8, fontSize: 13, fontWeight: 700,
-                  background: isDownloading ? '#E8E5E0' : '#C4963C', border: 'none',
-                  color: isDownloading ? '#9B9B9B' : '#FFFFFF', cursor: isDownloading ? 'default' : 'pointer',
+                  background: isDownloading ? 'var(--border)' : 'var(--gold)', border: 'none',
+                  color: isDownloading ? 'var(--text-muted)' : 'var(--bg-card)', cursor: isDownloading ? 'default' : 'pointer',
                   minHeight: 44, flexShrink: 0,
                 }}
               >
@@ -118,7 +118,7 @@ export default function ExportarPage() {
         })}
       </div>
 
-      <div style={{ marginTop: 24, textAlign: 'center', fontSize: 11, color: '#9B9B9B' }}>
+      <div style={{ marginTop: 24, textAlign: 'center', fontSize: 11, color: 'var(--text-muted)' }}>
         Los datos exportados están limitados a su empresa · Patente 3596 · Aduana 240
       </div>
     </div>

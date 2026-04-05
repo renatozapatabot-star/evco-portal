@@ -22,15 +22,15 @@ const STATUS_LABELS: Record<VoiceState, string> = {
 }
 
 const COLORS = {
-  bg: '#FAFAF8',
+  bg: 'var(--bg-main)',
   gold: GOLD,
   goldDark: GOLD_HOVER,
   goldFaint: 'rgba(196,150,60,0.08)',
-  white: '#FFFFFF',
-  gray: '#6B6B6B',
-  grayLight: '#9B9B9B',
-  grayDark: '#1A1A1A',
-  red: '#DC2626',
+  white: 'var(--bg-card)',
+  gray: 'var(--text-secondary)',
+  grayLight: 'var(--text-muted)',
+  grayDark: 'var(--text-primary)',
+  red: 'var(--danger-500)',
   green: 'var(--success-500)',
 }
 

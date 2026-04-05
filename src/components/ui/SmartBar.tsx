@@ -99,7 +99,7 @@ export function SmartBar() {
         const content = (
           <>
             <span style={{ fontSize: 14 }}>{action.icon}</span>
-            <span style={{ fontSize: 12, fontWeight: 600, color: '#1A1A1A' }}>{action.label}</span>
+            <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{action.label}</span>
           </>
         )
 
@@ -128,11 +128,11 @@ export function SmartBar() {
               href={action.href}
               style={pillStyle}
               onMouseEnter={e => {
-                e.currentTarget.style.borderColor = '#C4963C'
+                e.currentTarget.style.borderColor = 'var(--gold)'
                 e.currentTarget.style.boxShadow = '0 2px 12px rgba(196,150,60,0.15)'
               }}
               onMouseLeave={e => {
-                e.currentTarget.style.borderColor = '#E8E5E0'
+                e.currentTarget.style.borderColor = 'var(--border)'
                 e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)'
               }}
             >
@@ -147,11 +147,11 @@ export function SmartBar() {
             onClick={action.onClick}
             style={{ ...pillStyle, fontFamily: 'inherit' }}
             onMouseEnter={e => {
-              e.currentTarget.style.borderColor = '#C4963C'
+              e.currentTarget.style.borderColor = 'var(--gold)'
               e.currentTarget.style.boxShadow = '0 2px 12px rgba(196,150,60,0.15)'
             }}
             onMouseLeave={e => {
-              e.currentTarget.style.borderColor = '#E8E5E0'
+              e.currentTarget.style.borderColor = 'var(--border)'
               e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)'
             }}
           >

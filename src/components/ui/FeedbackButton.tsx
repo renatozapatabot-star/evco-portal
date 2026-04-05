@@ -64,7 +64,7 @@ export function FeedbackButton({ context }: { context: string }) {
           style={{
             padding: '6px 12px', fontSize: 11, fontWeight: 600,
             border: '1px solid #E8E5E0', borderRadius: 6,
-            background: 'var(--card-bg)', color: '#6B6B6B',
+            background: 'var(--card-bg)', color: 'var(--text-secondary)',
             cursor: 'pointer', minHeight: 32,
           }}
         >

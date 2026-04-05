@@ -153,7 +153,7 @@ export default function UploadPage() {
 
           {/* Referral prompt */}
           <div style={{ padding: '16px 20px', background: 'rgba(196,150,60,0.08)', border: '1px solid rgba(196,150,60,0.2)', borderRadius: 12, textAlign: 'left' }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: '#C4963C', marginBottom: 8 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--gold)', marginBottom: 8 }}>
               ¿Trabaja con otros importadores en México?
             </div>
             <div style={{ fontSize: 12, color: '#94A3B8', marginBottom: 12 }}>
@@ -209,7 +209,7 @@ export default function UploadPage() {
                 return (
                   <div key={doc} style={{
                     padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 10,
-                    fontSize: 14, color: isDone ? '#16A34A' : '#475569',
+                    fontSize: 14, color: isDone ? 'var(--success)' : '#475569',
                     borderBottom: '1px solid #E2E8F0',
                   }}>
                     <span style={{ fontSize: 16 }}>{isDone ? '✅' : '☐'}</span>
@@ -246,7 +246,7 @@ export default function UploadPage() {
           {/* Upload button */}
           <label style={{
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-            padding: '14px 20px', background: uploading ? '#E2E8F0' : '#C4963C',
+            padding: '14px 20px', background: uploading ? '#E2E8F0' : 'var(--gold)',
             borderRadius: 10, cursor: uploading ? 'wait' : 'pointer',
             fontSize: 15, fontWeight: 700, color: uploading ? '#94A3B8' : 'var(--navy-900)',
             transition: 'background 150ms',
@@ -290,7 +290,7 @@ function ReferralForm() {
     setSent(true)
   }
 
-  if (sent) return <div style={{ fontSize: 12, color: '#16A34A', fontWeight: 600 }}>✅ Gracias por la recomendación</div>
+  if (sent) return <div style={{ fontSize: 12, color: 'var(--success)', fontWeight: 600 }}>✅ Gracias por la recomendación</div>
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -299,7 +299,7 @@ function ReferralForm() {
       <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Email de contacto (opcional)"
         style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid rgba(196,150,60,0.3)', background: 'rgba(255,255,255,0.05)', color: '#E2E8F0', fontSize: 13, outline: 'none' }} />
       <button onClick={submit} disabled={!name.trim()}
-        style={{ padding: '8px 16px', borderRadius: 8, border: 'none', background: name.trim() ? '#C4963C' : '#374151', color: name.trim() ? '#1A1710' : '#6B7280', fontSize: 13, fontWeight: 700, cursor: name.trim() ? 'pointer' : 'default' }}>
+        style={{ padding: '8px 16px', borderRadius: 8, border: 'none', background: name.trim() ? 'var(--gold)' : 'var(--text-primary)', color: name.trim() ? 'var(--text-primary)' : '#6B7280', fontSize: 13, fontWeight: 700, cursor: name.trim() ? 'pointer' : 'default' }}>
         Recomendar
       </button>
     </div>

@@ -53,7 +53,7 @@ function mapDraftRow(row: any) {
 /** Verification badge — shows if a field was AI-extracted and needs human review */
 function VerifyBadge({ present, label }: { present: boolean; label?: string }) {
   if (present) return <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--success)', marginLeft: 6 }}>✓ AI</span>
-  return <span style={{ fontSize: 10, fontWeight: 700, color: '#DC2626', background: '#FEF2F2', padding: '1px 6px', borderRadius: 4, marginLeft: 6 }}>{label || '⚠ Verificar'}</span>
+  return <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--danger-500)', background: '#FEF2F2', padding: '1px 6px', borderRadius: 4, marginLeft: 6 }}>{label || '⚠ Verificar'}</span>
 }
 
 export default function DraftReviewPage() {
@@ -220,7 +220,7 @@ export default function DraftReviewPage() {
         animation: 'blessing-pulse 0.8s ease-in-out',
         marginBottom: 24,
       }}>
-        <span style={{ fontFamily: 'Georgia, serif', fontSize: 40, fontWeight: 700, color: '#1A1710' }}>Z</span>
+        <span style={{ fontFamily: 'Georgia, serif', fontSize: 40, fontWeight: 700, color: 'var(--text-primary)' }}>Z</span>
       </div>
       <div style={{ fontSize: 20, fontWeight: 800, color: '#F5F3EE', letterSpacing: '-0.02em', marginBottom: 8 }}>
         Patente 3596 honrada.
@@ -246,7 +246,7 @@ export default function DraftReviewPage() {
         {AUTOMATION_STEPS.map((step, i) => (
           <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: 'var(--bg-card)', border: '1px solid var(--border-card)', borderRadius: 'var(--radius-md)' }}>
             <div style={{ width: 24, height: 24, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-              background: i < automationStep ? '#16A34A' : i === automationStep ? GOLD : 'var(--slate-100)',
+              background: i < automationStep ? 'var(--success)' : i === automationStep ? GOLD : 'var(--slate-100)',
               color: i <= automationStep ? 'white' : 'var(--slate-400)',
             }}>
               {i < automationStep ? <Check size={14} /> : <span style={{ fontSize: 11, fontWeight: 700 }}>{i + 1}</span>}
@@ -422,7 +422,7 @@ export default function DraftReviewPage() {
           )}
           {draft.products.map((p: any, i: number) => {
             const conf = p.confidence || 0
-            const borderColor = conf >= 90 ? '#16A34A' : conf >= 75 ? '#D97706' : 'var(--danger-500)'
+            const borderColor = conf >= 90 ? 'var(--success)' : conf >= 75 ? 'var(--warning-500, #D97706)' : 'var(--danger-500)'
             const fraccion = p.fraccion || p.fraccion_arancelaria || ''
             const desc = p.description || p.descripcion || ''
             const qty = p.qty || p.quantity || 0
@@ -469,7 +469,7 @@ export default function DraftReviewPage() {
               {c.status === 'warning' && <AlertTriangle size={16} style={{ color: 'var(--warning)', flexShrink: 0 }} />}
               {c.status === 'error' && <X size={16} style={{ color: 'var(--danger-500)', flexShrink: 0 }} />}
               <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--navy-800)', flex: 1 }}>{c.label}</span>
-              {c.detail && <span style={{ fontSize: 12, color: c.status === 'ok' ? 'var(--slate-400)' : c.status === 'warning' ? '#92400E' : '#991B1B' }}>{c.detail}</span>}
+              {c.detail && <span style={{ fontSize: 12, color: c.status === 'ok' ? 'var(--slate-400)' : c.status === 'warning' ? 'var(--amber-text, #92400E)' : 'var(--danger-text, #991B1B)' }}>{c.detail}</span>}
             </div>
           ))}
         </div>

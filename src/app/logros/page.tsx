@@ -59,8 +59,8 @@ export default function LogrosPage() {
 
   return (
     <div className="page-shell" style={{ maxWidth: 800 }}>
-      <h1 style={{ fontSize: 24, fontWeight: 700, color: '#1A1A1A', margin: '0 0 4px' }}>Logros</h1>
-      <p style={{ fontSize: 13, color: '#6B6B6B', margin: '0 0 24px' }}>
+      <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 4px' }}>Logros</h1>
+      <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '0 0 24px' }}>
         {loading ? 'Calculando...' : `${earned.length} de ${achievements.length} obtenidos`}
       </p>
 
@@ -77,7 +77,7 @@ export default function LogrosPage() {
           {/* Earned */}
           {earned.length > 0 && (
             <>
-              <div style={{ fontSize: 13, fontWeight: 600, color: '#8B6914', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--gold-dark)', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 Obtenidos
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : '1fr 1fr 1fr', gap: 12, marginBottom: 32 }}>
@@ -91,7 +91,7 @@ export default function LogrosPage() {
           {/* Locked */}
           {locked.length > 0 && (
             <>
-              <div style={{ fontSize: 13, fontWeight: 600, color: '#9B9B9B', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 Por desbloquear
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : '1fr 1fr 1fr', gap: 12 }}>
@@ -116,8 +116,8 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
       style={{
         padding: 16,
         borderRadius: 12,
-        border: `1.5px solid ${earned ? '#C4963C' : '#E8E5E0'}`,
-        background: earned ? 'rgba(196,150,60,0.04)' : '#FFFFFF',
+        border: `1.5px solid ${earned ? 'var(--gold)' : 'var(--border)'}`,
+        background: earned ? 'rgba(196,150,60,0.04)' : 'var(--bg-card)',
         display: 'flex',
         flexDirection: 'column',
         gap: 8,
@@ -137,7 +137,7 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
       <div style={{
         fontSize: 14,
         fontWeight: 700,
-        color: earned ? '#1A1A1A' : '#9B9B9B',
+        color: earned ? 'var(--text-primary)' : 'var(--text-muted)',
         lineHeight: 1.3,
       }}>
         {title}
@@ -146,7 +146,7 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
       {/* Description */}
       <div style={{
         fontSize: 12,
-        color: earned ? '#6B6B6B' : '#C4C4C4',
+        color: earned ? 'var(--text-secondary)' : '#C4C4C4',
         lineHeight: 1.4,
       }}>
         {description}
@@ -157,7 +157,7 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
         <div style={{
           fontSize: 11,
           fontFamily: 'var(--font-mono)',
-          color: '#8B6914',
+          color: 'var(--gold-dark)',
           marginTop: 'auto',
         }}>
           {value}
@@ -168,7 +168,7 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
         <div style={{
           fontSize: 10,
           fontFamily: 'var(--font-mono)',
-          color: '#9B9B9B',
+          color: 'var(--text-muted)',
         }}>
           {fmtDateCompact(earnedDate)}
         </div>
@@ -187,13 +187,13 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
             <div style={{
               height: '100%',
               width: `${Math.round(progress * 100)}%`,
-              background: '#C4963C',
+              background: 'var(--gold)',
               borderRadius: 2,
               transition: 'width 500ms ease',
             }} />
           </div>
           {progressLabel && (
-            <div style={{ fontSize: 10, color: '#9B9B9B', fontFamily: 'var(--font-mono)' }}>
+            <div style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
               {progressLabel}
             </div>
           )}

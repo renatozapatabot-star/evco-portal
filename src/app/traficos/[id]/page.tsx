@@ -94,7 +94,7 @@ const EVENT_CONFIG: Record<string, { icon: string; color: string; bg: string }> 
   status_changed:      { icon: '🔄', color: 'var(--gold)', bg: 'var(--gold-bg)' },
   doc_uploaded:        { icon: '📎', color: '#0D9488', bg: 'rgba(13,148,136,0.12)' },
   doc_received:        { icon: '📥', color: '#0D9488', bg: 'rgba(13,148,136,0.12)' },
-  crossed:             { icon: '🟢', color: '#16A34A', bg: 'rgba(22,163,74,0.12)' },
+  crossed:             { icon: '🟢', color: 'var(--success)', bg: 'rgba(22,163,74,0.12)' },
   semaforo:            { icon: '🚦', color: '#7E22CE', bg: 'rgba(126,34,206,0.12)' },
   mve_filed:           { icon: '📋', color: '#7E22CE', bg: 'rgba(126,34,206,0.12)' },
   pedimento:           { icon: '📄', color: '#7E22CE', bg: 'rgba(126,34,206,0.12)' },
@@ -104,15 +104,15 @@ const EVENT_CONFIG: Record<string, { icon: string; color: string; bg: string }> 
   // 12 border events (granular crossing tracking)
   customs_filed:       { icon: '📄', color: '#7E22CE', bg: 'rgba(126,34,206,0.12)' },
   customs_paid:        { icon: '💳', color: '#7E22CE', bg: 'rgba(126,34,206,0.12)' },
-  customs_cleared:     { icon: '✅', color: '#16A34A', bg: 'rgba(22,163,74,0.12)' },
-  exam_flagged:        { icon: '🔴', color: '#DC2626', bg: 'rgba(220,38,38,0.12)' },
-  exam_cleared:        { icon: '🟢', color: '#16A34A', bg: 'rgba(22,163,74,0.12)' },
-  bridge_assigned:     { icon: '🌉', color: '#2563EB', bg: 'rgba(37,99,235,0.12)' },
-  crossing_start:      { icon: '🚛', color: '#D97706', bg: 'rgba(217,119,6,0.12)' },
-  crossing_complete:   { icon: '🏁', color: '#16A34A', bg: 'rgba(22,163,74,0.12)' },
-  delivery_dispatched: { icon: '🚚', color: '#2563EB', bg: 'rgba(37,99,235,0.12)' },
-  delivery_confirmed:  { icon: '📦', color: '#16A34A', bg: 'rgba(22,163,74,0.12)' },
-  invoice_generated:   { icon: '🧾', color: '#8B6914', bg: 'rgba(196,150,60,0.12)' },
+  customs_cleared:     { icon: '✅', color: 'var(--success)', bg: 'rgba(22,163,74,0.12)' },
+  exam_flagged:        { icon: '🔴', color: 'var(--danger-500)', bg: 'rgba(220,38,38,0.12)' },
+  exam_cleared:        { icon: '🟢', color: 'var(--success)', bg: 'rgba(22,163,74,0.12)' },
+  bridge_assigned:     { icon: '🌉', color: 'var(--info)', bg: 'rgba(37,99,235,0.12)' },
+  crossing_start:      { icon: '🚛', color: 'var(--warning-500, #D97706)', bg: 'rgba(217,119,6,0.12)' },
+  crossing_complete:   { icon: '🏁', color: 'var(--success)', bg: 'rgba(22,163,74,0.12)' },
+  delivery_dispatched: { icon: '🚚', color: 'var(--info)', bg: 'rgba(37,99,235,0.12)' },
+  delivery_confirmed:  { icon: '📦', color: 'var(--success)', bg: 'rgba(22,163,74,0.12)' },
+  invoice_generated:   { icon: '🧾', color: 'var(--gold-dark)', bg: 'rgba(196,150,60,0.12)' },
 }
 
 function getEventStyle(eventType: string) {
@@ -124,9 +124,9 @@ function sourceBadge(source: string | null) {
   const colors: Record<string, { bg: string; text: string }> = {
     system: { bg: 'rgba(156,152,144,0.15)', text: 'var(--text-muted)' },
     mobile: { bg: 'rgba(13,148,136,0.15)', text: '#0D9488' },
-    portal: { bg: 'rgba(184,149,63,0.15)', text: '#C4963C' },
-    cruz_ai: { bg: 'var(--gold-bg)', text: '#C4963C' },
-    telegram: { bg: 'rgba(37,99,235,0.15)', text: '#2563EB' },
+    portal: { bg: 'rgba(184,149,63,0.15)', text: 'var(--gold)' },
+    cruz_ai: { bg: 'var(--gold-bg)', text: 'var(--gold)' },
+    telegram: { bg: 'rgba(37,99,235,0.15)', text: 'var(--info)' },
   }
   const c = colors[source] ?? colors.system
   return (
@@ -220,7 +220,7 @@ function TimelineTab({ traficoId }: { traficoId: string }) {
                 {style.icon}
               </div>
               {!isLast && (
-                <div style={{ width: 2, flex: 1, background: '#E8E5E0', minHeight: 16 }} />
+                <div style={{ width: 2, flex: 1, background: 'var(--border)', minHeight: 16 }} />
               )}
             </div>
             {/* Content */}

@@ -18,9 +18,9 @@ export function ActivityPulse({ status = 'healthy' }: { status?: 'healthy' | 'at
   }, [])
 
   const colors = {
-    healthy: '#16A34A',
+    healthy: 'var(--success)',
     attention: '#D4952A',
-    issue: '#DC2626',
+    issue: 'var(--danger-500)',
   }
 
   const color = colors[status]

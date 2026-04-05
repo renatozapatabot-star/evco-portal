@@ -81,7 +81,7 @@ export function DocumentViewer({ documents, initialIndex, onClose, traficoId }: 
     >
       <div
         style={{
-          background: '#FFFFFF', borderRadius: 12, width: '100%', maxWidth: 900,
+          background: 'var(--bg-card)', borderRadius: 12, width: '100%', maxWidth: 900,
           maxHeight: '90vh', display: 'flex', flexDirection: 'column',
           boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
         }}
@@ -93,8 +93,8 @@ export function DocumentViewer({ documents, initialIndex, onClose, traficoId }: 
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         }}>
           <div>
-            <div style={{ fontSize: 16, fontWeight: 700, color: '#1A1A1A' }}>{label}</div>
-            <div style={{ fontSize: 12, color: '#6B6B6B', marginTop: 2 }}>
+            <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>{label}</div>
+            <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>
               {name}
               {traficoId && <> · <span style={{ fontFamily: 'var(--font-mono)' }}>{traficoId}</span></>}
               {doc.source && <> · {doc.source}</>}
@@ -109,7 +109,7 @@ export function DocumentViewer({ documents, initialIndex, onClose, traficoId }: 
                 style={{
                   display: 'flex', alignItems: 'center', gap: 4,
                   padding: '6px 12px', borderRadius: 6,
-                  background: '#C4963C', color: '#FFFFFF',
+                  background: 'var(--gold)', color: 'var(--bg-card)',
                   fontSize: 12, fontWeight: 600, textDecoration: 'none',
                 }}
               >
@@ -120,7 +120,7 @@ export function DocumentViewer({ documents, initialIndex, onClose, traficoId }: 
               onClick={onClose}
               style={{
                 background: 'none', border: 'none', cursor: 'pointer',
-                padding: 8, borderRadius: 6, color: '#6B6B6B',
+                padding: 8, borderRadius: 6, color: 'var(--text-secondary)',
               }}
             >
               <X size={20} />
@@ -138,16 +138,16 @@ export function DocumentViewer({ documents, initialIndex, onClose, traficoId }: 
             />
           ) : viewable && xml ? (
             <div style={{ padding: 24 }}>
-              <div style={{ padding: 20, background: '#FAFAF8', borderRadius: 8, border: '1px solid #E8E5E0' }}>
+              <div style={{ padding: 20, background: 'var(--bg-main)', borderRadius: 8, border: '1px solid #E8E5E0' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                  <FileText size={20} style={{ color: '#C4963C' }} />
+                  <FileText size={20} style={{ color: 'var(--gold)' }} />
                   <span style={{ fontSize: 14, fontWeight: 600 }}>Documento XML</span>
                 </div>
                 <a
                   href={doc.file_url!}
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ fontSize: 13, color: '#C4963C', display: 'flex', alignItems: 'center', gap: 4 }}
+                  style={{ fontSize: 13, color: 'var(--gold)', display: 'flex', alignItems: 'center', gap: 4 }}
                 >
                   Abrir en nueva pestaña <ExternalLink size={12} />
                 </a>
@@ -155,11 +155,11 @@ export function DocumentViewer({ documents, initialIndex, onClose, traficoId }: 
             </div>
           ) : (
             <div style={{ padding: 48, textAlign: 'center' }}>
-              <FileText size={48} style={{ color: '#9B9B9B', margin: '0 auto 16px' }} />
-              <div style={{ fontSize: 15, fontWeight: 600, color: '#1A1A1A', marginBottom: 4 }}>
+              <FileText size={48} style={{ color: 'var(--text-muted)', margin: '0 auto 16px' }} />
+              <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>
                 Documento no disponible para vista previa
               </div>
-              <div style={{ fontSize: 13, color: '#6B6B6B' }}>
+              <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
                 {doc.file_url?.startsWith('globalpc://')
                   ? 'Este documento está almacenado en GlobalPC y no tiene vista previa directa'
                   : 'El archivo no está disponible en este momento'}
@@ -180,15 +180,15 @@ export function DocumentViewer({ documents, initialIndex, onClose, traficoId }: 
               style={{
                 display: 'flex', alignItems: 'center', gap: 4,
                 padding: '8px 16px', borderRadius: 6, fontSize: 13, fontWeight: 600,
-                background: index === 0 ? '#F5F4F0' : '#FFFFFF',
+                background: index === 0 ? 'var(--bg-hover, #F5F4F0)' : 'var(--bg-card)',
                 border: '1px solid #E8E5E0', cursor: index === 0 ? 'default' : 'pointer',
-                color: index === 0 ? '#9B9B9B' : '#1A1A1A',
+                color: index === 0 ? 'var(--text-muted)' : 'var(--text-primary)',
                 minHeight: 40,
               }}
             >
               <ChevronLeft size={14} /> Anterior
             </button>
-            <span style={{ fontSize: 12, color: '#6B6B6B', fontFamily: 'var(--font-mono)' }}>
+            <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>
               {index + 1} / {documents.length}
             </span>
             <button
@@ -197,9 +197,9 @@ export function DocumentViewer({ documents, initialIndex, onClose, traficoId }: 
               style={{
                 display: 'flex', alignItems: 'center', gap: 4,
                 padding: '8px 16px', borderRadius: 6, fontSize: 13, fontWeight: 600,
-                background: index === documents.length - 1 ? '#F5F4F0' : '#FFFFFF',
+                background: index === documents.length - 1 ? 'var(--bg-hover, #F5F4F0)' : 'var(--bg-card)',
                 border: '1px solid #E8E5E0', cursor: index === documents.length - 1 ? 'default' : 'pointer',
-                color: index === documents.length - 1 ? '#9B9B9B' : '#1A1A1A',
+                color: index === documents.length - 1 ? 'var(--text-muted)' : 'var(--text-primary)',
                 minHeight: 40,
               }}
             >

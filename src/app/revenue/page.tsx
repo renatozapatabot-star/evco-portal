@@ -26,18 +26,18 @@ export default async function RevenuePage() {
 
   const cards = [
     { label: 'Clientes Activos', value: m.active_clients || 50, sub: 'Portal aduanal', color: GOLD },
-    { label: 'Pedimentos', value: (m.pedimentos_processed || 0).toLocaleString(), sub: 'Procesados', color: '#E8E6E0' },
+    { label: 'Pedimentos', value: (m.pedimentos_processed || 0).toLocaleString(), sub: 'Procesados', color: 'var(--border)' },
     { label: 'Ahorro T-MEC', value: `$${((m.tmec_savings_usd || 0) / 1000).toFixed(0)}K`, sub: 'USD ahorrado', color: 'var(--success)' },
-    { label: 'Documentos', value: (m.documents_processed || 0).toLocaleString(), sub: 'Auto-procesados', color: '#E8E6E0' },
+    { label: 'Documentos', value: (m.documents_processed || 0).toLocaleString(), sub: 'Auto-procesados', color: 'var(--border)' },
     { label: 'Horas Ahorradas', value: m.estimated_hours_saved || 0, sub: 'Automatización', color: GOLD },
-    { label: 'Conversaciones AI', value: m.ai_conversations || 0, sub: 'CRUZ AI queries', color: '#E8E6E0' },
+    { label: 'Conversaciones AI', value: m.ai_conversations || 0, sub: 'CRUZ AI queries', color: 'var(--border)' },
   ]
 
   const saasMonthly = (m.saas_value_monthly_mxn || 175000).toLocaleString()
   const saasAnnual = (m.saas_value_annual_mxn || 2100000).toLocaleString()
 
   return (
-    <div style={{ padding: '24px 28px', fontFamily: 'var(--font-geist-sans)', color: '#E8E6E0' }}>
+    <div style={{ padding: '24px 28px', fontFamily: 'var(--font-geist-sans)', color: 'var(--border)' }}>
       <h1 style={{ fontSize: 22, fontWeight: 800, margin: '0 0 4px' }}>Motor de Ingresos</h1>
       <p style={{ color: '#666', fontSize: 13, margin: '0 0 24px' }}>Visión ejecutiva del valor generado por CRUZ</p>
 

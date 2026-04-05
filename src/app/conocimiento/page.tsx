@@ -34,7 +34,7 @@ export default async function ConocimientoPage() {
   }
 
   return (
-    <div style={{ padding: '24px 28px', fontFamily: 'var(--font-geist-sans)', color: '#E8E6E0' }}>
+    <div style={{ padding: '24px 28px', fontFamily: 'var(--font-geist-sans)', color: 'var(--border)' }}>
       <h1 style={{ fontSize: 22, fontWeight: 800, margin: '0 0 4px' }}>Base de Conocimiento</h1>
       <p style={{ color: '#666', fontSize: 13, margin: '0 0 24px' }}>
         Memoria institucional de CRUZ &middot; {(knowledge || []).length} precedentes
@@ -60,7 +60,7 @@ export default async function ConocimientoPage() {
             {k.tags && (
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 10 }}>
                 {k.tags.map((tag: string) => (
-                  <span key={tag} style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, background: '#1A1A1A', border: '1px solid #2A2A2A', color: 'var(--text-muted)' }}>{tag}</span>
+                  <span key={tag} style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, background: 'var(--text-primary)', border: '1px solid #2A2A2A', color: 'var(--text-muted)' }}>{tag}</span>
                 ))}
               </div>
             )}

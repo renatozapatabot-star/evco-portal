@@ -167,7 +167,7 @@ export default function DraftsPage() {
             background: 'linear-gradient(135deg, #C4963C 0%, #D4B05C 50%, #8B6914 100%)',
             borderRadius: 28,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 64, fontWeight: 900, color: '#1A1710',
+            fontSize: 64, fontWeight: 900, color: 'var(--text-primary)',
             fontFamily: 'Georgia, serif',
             animation: 'scaleIn 0.6s cubic-bezier(0.2, 0.9, 0.4, 1.1)',
           }}>Z</div>

@@ -74,8 +74,8 @@ export default function MensajesPage() {
 
   return (
     <div style={{ padding: '24px 16px', maxWidth: 700, margin: '0 auto' }}>
-      <h1 style={{ fontSize: 24, fontWeight: 700, color: '#1A1A1A', margin: '0 0 4px' }}>Mensajes</h1>
-      <p style={{ fontSize: 13, color: '#6B6B6B', margin: '0 0 24px' }}>
+      <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 4px' }}>Mensajes</h1>
+      <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '0 0 24px' }}>
         Comunicación con Renato Zapata &amp; Company
       </p>
 
@@ -87,12 +87,12 @@ export default function MensajesPage() {
           placeholder="Escriba un mensaje..."
           style={{
             width: '100%', minHeight: 80, border: '1px solid #E8E5E0', borderRadius: 8,
-            padding: '10px 12px', fontSize: 13, color: '#1A1A1A', fontFamily: 'inherit',
+            padding: '10px 12px', fontSize: 13, color: 'var(--text-primary)', fontFamily: 'inherit',
             resize: 'vertical', outline: 'none', background: 'var(--bg-main)', boxSizing: 'border-box',
           }}
         />
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
-          <span style={{ fontSize: 11, color: '#9B9B9B' }}>
+          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
             {replySent ? '✅ Mensaje enviado — pendiente de revisión' : 'Los mensajes son revisados antes de envío'}
           </span>
           <button
@@ -102,7 +102,7 @@ export default function MensajesPage() {
               display: 'flex', alignItems: 'center', gap: 6,
               padding: '8px 20px', borderRadius: 8, fontSize: 13, fontWeight: 700,
               background: replyText.trim() ? 'var(--gold)' : 'var(--border)',
-              border: 'none', color: replyText.trim() ? '#FFFFFF' : '#9B9B9B',
+              border: 'none', color: replyText.trim() ? 'var(--bg-card)' : 'var(--text-muted)',
               cursor: replyText.trim() ? 'pointer' : 'default', minHeight: 40,
             }}
           >
@@ -125,23 +125,23 @@ export default function MensajesPage() {
             return (
               <div key={msg.id} style={{
                 padding: '14px 20px', borderRadius: 12,
-                background: isOutbound ? 'rgba(196,150,60,0.06)' : '#FFFFFF',
+                background: isOutbound ? 'rgba(196,150,60,0.06)' : 'var(--bg-card)',
                 border: `1px solid ${isOutbound ? 'rgba(196,150,60,0.2)' : 'var(--border)'}`,
                 marginLeft: isOutbound ? 40 : 0,
                 marginRight: isOutbound ? 0 : 40,
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: isOutbound ? 'var(--gold)' : '#1A1A1A' }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: isOutbound ? 'var(--gold)' : 'var(--text-primary)' }}>
                     {isOutbound ? 'RZ & Company' : msg.from_name || companyName}
                   </span>
-                  <span style={{ fontSize: 10, color: '#9B9B9B', fontFamily: 'var(--font-mono)' }}>{fmtDateTime(msg.created_at)}</span>
+                  <span style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>{fmtDateTime(msg.created_at)}</span>
                 </div>
-                {msg.subject && <div style={{ fontSize: 13, fontWeight: 600, color: '#1A1A1A', marginBottom: 4 }}>{msg.subject}</div>}
-                {msg.body && <div style={{ fontSize: 13, color: '#6B6B6B', lineHeight: 1.5 }}>{msg.body}</div>}
+                {msg.subject && <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>{msg.subject}</div>}
+                {msg.body && <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>{msg.body}</div>}
                 {msg.channel && (
                   <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <FileText size={10} style={{ color: '#9B9B9B' }} />
-                    <span style={{ fontSize: 10, color: '#9B9B9B' }}>{msg.channel}</span>
+                    <FileText size={10} style={{ color: 'var(--text-muted)' }} />
+                    <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>{msg.channel}</span>
                   </div>
                 )}
               </div>

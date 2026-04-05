@@ -169,7 +169,7 @@ export function NotificationPanel({
             {badgeText && (
               <span style={{
                 fontSize: 10, fontWeight: 700, fontFamily: 'var(--font-jetbrains-mono)',
-                background: '#C23B22', color: '#FFFFFF',
+                background: '#C23B22', color: 'var(--bg-card)',
                 borderRadius: 9999, padding: '1px 6px', lineHeight: '16px', minWidth: 20, textAlign: 'center',
               }}>{badgeText}</span>
             )}
@@ -243,7 +243,7 @@ export function NotificationPanel({
                         {unreadInGroup > 0 && (
                           <span style={{
                             fontSize: 10, fontWeight: 700, fontFamily: 'var(--font-jetbrains-mono)',
-                            background: '#C47F17', color: '#FFFFFF',
+                            background: '#C47F17', color: 'var(--bg-card)',
                             borderRadius: 9999, padding: '1px 6px', lineHeight: '16px', minWidth: 18, textAlign: 'center',
                           }}>{unreadInGroup >= 10 ? '9+' : unreadInGroup}</span>
                         )}
@@ -252,13 +252,13 @@ export function NotificationPanel({
                     </div>
 
                     {isExpanded && (
-                      <div style={{ background: '#FAFAF8' }}>
+                      <div style={{ background: 'var(--bg-main)' }}>
                         {unreadInGroup > 0 && (
                           <button
                             onClick={(e) => { e.stopPropagation(); markGroupRead(type) }}
                             style={{
                               display: 'block', width: '100%', padding: '6px 20px',
-                              fontSize: 11, fontWeight: 600, color: '#C4963C',
+                              fontSize: 11, fontWeight: 600, color: 'var(--gold)',
                               background: 'none', border: 'none', borderBottom: '1px solid #F0ECE4',
                               cursor: 'pointer', textAlign: 'left',
                             }}
@@ -332,7 +332,7 @@ export function NotificationPanel({
                           <div
                             style={{
                               fontSize: 12,
-                              color: '#6B6B6B',
+                              color: 'var(--text-secondary)',
                               marginTop: 2,
                             }}
                           >
@@ -357,7 +357,7 @@ export function NotificationPanel({
                         onClick={onClose}
                         style={{
                           fontSize: 12,
-                          color: '#C4963C',
+                          color: 'var(--gold)',
                           fontWeight: 600,
                           textDecoration: 'none',
                           marginTop: 6,

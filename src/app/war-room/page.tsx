@@ -46,11 +46,11 @@ export default function WarRoom() {
   const ambient = urgentes > 5 ? 'rgba(220,38,38,0.05)' : 'rgba(22,163,74,0.03)'
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: `${ambient}`, backgroundColor: '#FAFAF8', fontFamily: 'var(--font-geist-sans)', color: 'var(--text-primary)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: `${ambient}`, backgroundColor: 'var(--bg-main)', fontFamily: 'var(--font-geist-sans)', color: 'var(--text-primary)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
       {/* Header */}
       <div style={{ padding: '12px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{ width: 10, height: 10, borderRadius: '50%', background: urgentes > 5 ? 'var(--danger-500)' : '#16A34A', animation: 'pulse 2s infinite' }} />
+          <div style={{ width: 10, height: 10, borderRadius: '50%', background: urgentes > 5 ? 'var(--danger-500)' : 'var(--success)', animation: 'pulse 2s infinite' }} />
           <span style={{ fontSize: 16, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase' }}>WAR ROOM — CRUZ</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
@@ -69,7 +69,7 @@ export default function WarRoom() {
           </div>
           {data?.enProceso?.slice(0, 15).map((t: { trafico: string; fecha_llegada?: string | null }) => {
             const days = t.fecha_llegada ? Math.floor((Date.now() - new Date(t.fecha_llegada).getTime()) / 86400000) : 0
-            const color = days > 14 ? 'var(--danger-500)' : days > 7 ? '#D97706' : '#16A34A'
+            const color = days > 14 ? 'var(--danger-500)' : days > 7 ? 'var(--warning-500, #D97706)' : 'var(--success)'
             return (
               <div key={t.trafico} style={{ padding: '6px 0', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
                 <span style={{ fontFamily: 'var(--font-jetbrains-mono)', fontWeight: 600 }}>{t.trafico}</span>
@@ -93,7 +93,7 @@ export default function WarRoom() {
                   <span style={{ fontFamily: 'var(--font-jetbrains-mono)', color: GOLD }}>{Math.round(b.avg * 60)}min</span>
                 </div>
                 <div style={{ height: 6, background: 'var(--border)', borderRadius: 3, overflow: 'hidden' }}>
-                  <div style={{ width: `${pct}%`, height: '100%', borderRadius: 3, background: pct > 66 ? 'var(--danger-500)' : pct > 33 ? '#D97706' : '#16A34A' }} />
+                  <div style={{ width: `${pct}%`, height: '100%', borderRadius: 3, background: pct > 66 ? 'var(--danger-500)' : pct > 33 ? 'var(--warning-500, #D97706)' : 'var(--success)' }} />
                 </div>
               </div>
             )
@@ -114,7 +114,7 @@ export default function WarRoom() {
           ].map(item => (
             <div key={item.label} style={{ padding: '10px 0', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ fontSize: 14 }}>{item.icon} {item.label}</span>
-              <span style={{ fontSize: 22, fontWeight: 800, color: item.value > 0 ? item.color : '#16A34A', fontFamily: 'var(--font-jetbrains-mono)' }}>{item.value}</span>
+              <span style={{ fontSize: 22, fontWeight: 800, color: item.value > 0 ? item.color : 'var(--success)', fontFamily: 'var(--font-jetbrains-mono)' }}>{item.value}</span>
             </div>
           ))}
         </div>

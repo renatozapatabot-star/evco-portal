@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { getClientNameCookie, getClientRfcCookie } from '@/lib/client-config'
 
-const T = { bg: '#FAFAF8', surface: 'var(--card-bg)', border: '#E8E6E0', surfaceAlt: '#F5F3EF', text: '#1A1A1A', textSub: '#6B6B6B', textMuted: '#999999', navy: '#BA7517', gold: '#BA7517', goldBg: '#FFF8EB', goldBorder: '#E8C84A', green: '#16A34A', greenBg: '#EAF3DE', shadow: '0 1px 3px rgba(0,0,0,0.07)' }
+const T = { bg: 'var(--bg-main)', surface: 'var(--card-bg)', border: 'var(--border)', surfaceAlt: '#F5F3EF', text: 'var(--text-primary)', textSub: 'var(--text-secondary)', textMuted: '#999999', navy: 'var(--gold-dark)', gold: 'var(--gold-dark)', goldBg: '#FFF8EB', goldBorder: '#E8C84A', green: 'var(--success)', greenBg: '#EAF3DE', shadow: '0 1px 3px rgba(0,0,0,0.07)' }
 
 const EXAMPLES = [
   'Pellets de polipropileno virgen, densidad 0.905 g/cm³, grado inyección, color natural',

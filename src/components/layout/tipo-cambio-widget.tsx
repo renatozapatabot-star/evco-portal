@@ -10,7 +10,7 @@ export function TipoCambioWidget() {
       <span style={{ color: '#9C9690', fontSize: 10 }}>TC FIX</span>
       <span style={{ color: '#18160F', fontWeight: 700 }}>${Number(tc.tc).toFixed(4)}</span>
       <span style={{ color: '#9C9690', fontSize: 10 }}>MXN/USD</span>
-      {tc.source === 'Banxico FIX' && <span style={{ color: '#166534', fontSize: 9, fontWeight: 700 }}>● LIVE</span>}
+      {tc.source === 'Banxico FIX' && <span style={{ color: 'var(--success-dark, #166534)', fontSize: 9, fontWeight: 700 }}>● LIVE</span>}
     </div>
   )
 }

@@ -11,19 +11,19 @@ import Link from 'next/link'
 
 /* ── Light tokens (DESIGN_SYSTEM.md v6) ── */
 const T = {
-  bg: '#FAFAF8',
-  surface: '#FFFFFF',
+  bg: 'var(--bg-main)',
+  surface: 'var(--bg-card)',
   surfaceHover: '#F5F4F0',
   surfaceActive: '#EEEDE8',
-  border: '#E8E5E0',
-  text: '#1A1A1A',
-  textSecondary: '#6B6B6B',
-  textMuted: '#9B9B9B',
-  gold: '#C4963C',
+  border: 'var(--border)',
+  text: 'var(--text-primary)',
+  textSecondary: 'var(--text-secondary)',
+  textMuted: 'var(--text-muted)',
+  gold: 'var(--gold)',
   goldSubtle: 'rgba(196,150,60,0.08)',
   goldBorder: 'rgba(196,150,60,0.25)',
-  green: '#16A34A',
-  red: '#DC2626',
+  green: 'var(--success)',
+  red: 'var(--danger-500)',
   mono: 'var(--font-jetbrains-mono)',
 } as const
 
@@ -402,7 +402,7 @@ export default function ProveedoresPage() {
                   <span style={{ textAlign: 'right', fontFamily: T.mono, fontSize: 12, fontWeight: 600, color: T.green }}>
                     {s.totalValue > 0 ? fmtUSDCompact(s.totalValue) : <span style={{ color: T.textMuted }}>—</span>}
                   </span>
-                  <span style={{ textAlign: 'right', fontFamily: T.mono, fontSize: 12, fontWeight: 600, color: s.docCompliance >= 90 ? T.green : s.docCompliance >= 70 ? '#D97706' : T.red }}>
+                  <span style={{ textAlign: 'right', fontFamily: T.mono, fontSize: 12, fontWeight: 600, color: s.docCompliance >= 90 ? T.green : s.docCompliance >= 70 ? 'var(--warning-500, #D97706)' : T.red }}>
                     {s.docCompliance}%
                   </span>
                   <span style={{ textAlign: 'right', fontFamily: T.mono, fontSize: 12, color: s.tmecRate > 0 ? T.green : T.textMuted }}>
@@ -412,7 +412,7 @@ export default function ProveedoresPage() {
                     <span style={{
                       fontSize: 9, fontWeight: 800, padding: '2px 6px', borderRadius: 9999,
                       background: s.riskLevel === 'high' ? 'rgba(220,38,38,0.1)' : s.riskLevel === 'medium' ? 'rgba(217,119,6,0.1)' : s.riskLevel === 'watch' ? 'rgba(37,99,235,0.1)' : 'rgba(22,163,74,0.1)',
-                      color: s.riskLevel === 'high' ? '#DC2626' : s.riskLevel === 'medium' ? '#D97706' : s.riskLevel === 'watch' ? '#2563EB' : '#16A34A',
+                      color: s.riskLevel === 'high' ? 'var(--danger-500)' : s.riskLevel === 'medium' ? 'var(--warning-500, #D97706)' : s.riskLevel === 'watch' ? 'var(--info)' : 'var(--success)',
                     }}>
                       {s.riskLevel === 'high' ? 'ALTO' : s.riskLevel === 'medium' ? 'MED' : s.riskLevel === 'watch' ? 'NUEVO' : 'OK'}
                     </span>
@@ -479,7 +479,7 @@ function SupplierDetail({ supplier: s }: { supplier: SupplierAgg }) {
 
       {/* Supplier narrative */}
       <p style={{
-        fontSize: 13, color: '#6B6B6B', lineHeight: 1.6,
+        fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6,
         fontStyle: 'italic', maxWidth: 600, margin: '0 0 16px',
       }}>
         {supplierStory({

@@ -17,7 +17,7 @@ interface Carrier {
   crossing_avg_days?: number
 }
 
-function scoreColor(s: number) { return s >= 90 ? '#166534' : s >= 70 ? '#92400E' : '#991B1B' }
+function scoreColor(s: number) { return s >= 90 ? '#166534' : s >= 70 ? 'var(--amber-text, #92400E)' : 'var(--danger-text, #991B1B)' }
 function scoreBg(s: number) { return s >= 90 ? '#DCFCE7' : s >= 70 ? '#FEF3C7' : '#FEE2E2' }
 
 export default function CarriersPage() {
@@ -189,7 +189,7 @@ export default function CarriersPage() {
                     <span className="text-[11px] font-semibold px-3 py-1 rounded-full"
                       style={{
                         background: selected.score >= 90 ? '#DCFCE7' : selected.score >= 70 ? '#FEF3C7' : '#FEE2E2',
-                        color: selected.score >= 90 ? '#166534' : selected.score >= 70 ? '#92400E' : '#991B1B',
+                        color: selected.score >= 90 ? '#166534' : selected.score >= 70 ? 'var(--amber-text, #92400E)' : 'var(--danger-text, #991B1B)',
                       }}>
                       {selected.score >= 90 ? 'Excelente' : selected.score >= 70 ? 'Aceptable' : 'Requiere Atención'}
                     </span>

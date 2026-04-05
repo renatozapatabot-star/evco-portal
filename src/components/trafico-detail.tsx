@@ -3,13 +3,13 @@
 import { useEffect, useState } from 'react'
 
 const T = {
-  surface: 'var(--card-bg)', surfaceAlt: '#FAFAF8', border: '#E8E6E0',
-  text: '#1A1A1A', textSub: '#6B6B6B', textMuted: '#999999',
-  navy: '#FFF8EB', gold: '#BA7517', goldBg: '#FFF8EB',
-  green: '#16A34A', greenBg: '#EAF3DE',
-  amber: '#854D0E', amberBg: '#FEF9C3',
+  surface: 'var(--card-bg)', surfaceAlt: 'var(--bg-main)', border: 'var(--border)',
+  text: 'var(--text-primary)', textSub: 'var(--text-secondary)', textMuted: '#999999',
+  navy: '#FFF8EB', gold: 'var(--gold-dark)', goldBg: '#FFF8EB',
+  green: 'var(--success)', greenBg: '#EAF3DE',
+  amber: 'var(--gold-dark)', amberBg: '#FEF9C3',
   red: 'var(--danger-500)', redBg: '#FEF2F2',
-  blue: '#2563EB', blueBg: '#EFF6FF',
+  blue: 'var(--info)', blueBg: '#EFF6FF',
   shadow: '0 4px 16px rgba(0,0,0,0.08)',
 }
 
@@ -21,9 +21,9 @@ function fmtDate(v: any) {
 }
 
 const STATUS_CFG: Record<string, any> = {
-  'En Proceso': { color: '#92400E', bg: '#FEF3C7' },
-  'Cruzado':    { color: '#166534', bg: '#DCFCE7' },
-  'Detenido':   { color: '#991B1B', bg: '#FEE2E2' },
+  'En Proceso': { color: 'var(--amber-text, #92400E)', bg: '#FEF3C7' },
+  'Cruzado':    { color: 'var(--success-dark, #166534)', bg: '#DCFCE7' },
+  'Detenido':   { color: 'var(--danger-text, #991B1B)', bg: '#FEE2E2' },
 }
 
 export function TraficoDetail({ traficoId, onClose }: { traficoId: string; onClose: () => void }) {
@@ -67,11 +67,11 @@ export function TraficoDetail({ traficoId, onClose }: { traficoId: string; onClo
           background: T.navy, flexShrink: 0 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div>
-              <div style={{ color: '#1A1A1A', fontSize: 18, fontWeight: 700 }}>
+              <div style={{ color: 'var(--text-primary)', fontSize: 18, fontWeight: 700 }}>
                 {traficoId}
               </div>
               {t && (
-                <div style={{ color: '#6B6B6B', fontSize: 12, marginTop: 3 }}>
+                <div style={{ color: 'var(--text-secondary)', fontSize: 12, marginTop: 3 }}>
                   {t.descripcion_mercancia?.substring(0, 50) || ''}
                 </div>
               )}
@@ -85,7 +85,7 @@ export function TraficoDetail({ traficoId, onClose }: { traficoId: string; onClo
               )}
               <button onClick={onClose}
                 style={{ background: '#F5F3EF', border: 'none',
-                  borderRadius: 6, width: 28, height: 28, color: '#1A1A1A',
+                  borderRadius: 6, width: 28, height: 28, color: 'var(--text-primary)',
                   fontSize: 16, cursor: 'pointer', display: 'flex',
                   alignItems: 'center', justifyContent: 'center' }}>x</button>
             </div>
@@ -99,20 +99,20 @@ export function TraficoDetail({ traficoId, onClose }: { traficoId: string; onClo
             <button key={tab} onClick={() => setActiveTab(tab)}
               style={{ flex: 1, padding: '10px 0', background: 'none',
                 border: 'none', borderBottom: activeTab === tab ? '2px solid #BA7517' : '2px solid transparent',
-                color: activeTab === tab ? '#854F0B' : T.textMuted,
+                color: activeTab === tab ? 'var(--gold-dark)' : T.textMuted,
                 fontSize: 12, fontWeight: activeTab === tab ? 700 : 400,
                 cursor: 'pointer', fontFamily: 'inherit', textTransform: 'capitalize',
                 transition: 'all 0.15s' }}>
               {tab}
               {tab === 'facturas' && facturas.length > 0 &&
-                <span style={{ marginLeft: 5, background: '#FAEEDA', color: '#854F0B',
+                <span style={{ marginLeft: 5, background: '#FAEEDA', color: 'var(--gold-dark)',
                   borderRadius: 99, padding: '1px 5px', fontSize: 9 }}>{facturas.length}</span>}
               {tab === 'entradas' && entradas.length > 0 &&
-                <span style={{ marginLeft: 5, background: T.gold, color: '#1A1A1A',
+                <span style={{ marginLeft: 5, background: T.gold, color: 'var(--text-primary)',
                   borderRadius: 99, padding: '1px 5px', fontSize: 9 }}>{entradas.length}</span>}
               {tab === 'documentos' &&
                 <span style={{ marginLeft: 5, background: documents.length > 0 ? T.green : T.red,
-                  color: '#1A1A1A', borderRadius: 99, padding: '1px 5px', fontSize: 9 }}>{documents.length}</span>}
+                  color: 'var(--text-primary)', borderRadius: 99, padding: '1px 5px', fontSize: 9 }}>{documents.length}</span>}
             </button>
           ))}
         </div>

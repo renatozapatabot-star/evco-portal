@@ -13,7 +13,7 @@ export function DataStory({ text }: DataStoryProps) {
   return (
     <p style={{
       fontSize: 13,
-      color: '#6B6B6B',
+      color: 'var(--text-secondary)',
       lineHeight: 1.6,
       fontStyle: 'italic',
       maxWidth: 600,

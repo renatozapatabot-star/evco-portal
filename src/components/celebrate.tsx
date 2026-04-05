@@ -11,8 +11,8 @@ export function useConfetti() {
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic import, no types available
       const confetti = (await import('canvas-confetti' as any)).default
-      const gold = '#C4963C'
-      const white = '#FAFAF8'
+      const gold = 'var(--gold)'
+      const white = 'var(--bg-main)'
 
       // Left burst
       confetti({
@@ -20,7 +20,7 @@ export function useConfetti() {
         angle: 60,
         spread: 55,
         origin: { x: 0, y: 0.65 },
-        colors: [gold, white, '#16A34A'],
+        colors: [gold, white, 'var(--success)'],
         gravity: 1.2,
         scalar: 0.9,
       })
@@ -31,7 +31,7 @@ export function useConfetti() {
         angle: 120,
         spread: 55,
         origin: { x: 1, y: 0.65 },
-        colors: [gold, white, '#16A34A'],
+        colors: [gold, white, 'var(--success)'],
         gravity: 1.2,
         scalar: 0.9,
       })

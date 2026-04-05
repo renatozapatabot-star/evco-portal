@@ -22,10 +22,10 @@ function AnimatedCounter({ target, label, delay }: { target: number; label: stri
 
   return (
     <div style={{ textAlign: 'center', padding: '16px 0' }}>
-      <div style={{ fontFamily: 'var(--font-mono)', fontSize: 36, fontWeight: 800, color: '#C4963C' }}>
+      <div style={{ fontFamily: 'var(--font-mono)', fontSize: 36, fontWeight: 800, color: 'var(--gold)' }}>
         {label.includes('$') ? `$${value.toLocaleString('en-US')}` : value.toLocaleString('es-MX')}
       </div>
-      <div style={{ fontSize: 13, color: '#6B6B6B', marginTop: 4 }}>{label}</div>
+      <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4 }}>{label}</div>
     </div>
   )
 }
@@ -90,13 +90,13 @@ export default function BienvenidaPage() {
         boxShadow: '0 0 40px rgba(196,150,60,0.3)',
         marginBottom: 32,
       }}>
-        <span style={{ fontFamily: 'Georgia, serif', fontSize: 32, fontWeight: 700, color: '#1A1710' }}>Z</span>
+        <span style={{ fontFamily: 'Georgia, serif', fontSize: 32, fontWeight: 700, color: 'var(--text-primary)' }}>Z</span>
       </div>
 
       <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.02em', margin: '0 0 8px', textAlign: 'center' }}>
         Bienvenido a CRUZ
       </h1>
-      <p style={{ fontSize: 18, color: '#C4963C', fontWeight: 600, margin: '0 0 40px' }}>
+      <p style={{ fontSize: 18, color: 'var(--gold)', fontWeight: 600, margin: '0 0 40px' }}>
         {companyName}
       </p>
 
@@ -121,7 +121,7 @@ export default function BienvenidaPage() {
         style={{
           padding: '16px 48px', borderRadius: 12, border: 'none',
           background: 'linear-gradient(135deg, #C4963C, #8B6914)',
-          color: '#1A1710', fontSize: 16, fontWeight: 800,
+          color: 'var(--text-primary)', fontSize: 16, fontWeight: 800,
           cursor: 'pointer', minHeight: 60,
           boxShadow: '0 4px 24px rgba(196,150,60,0.3)',
         }}

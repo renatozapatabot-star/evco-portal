@@ -246,7 +246,7 @@ export default function ExpedientesPage() {
             const foundCount = REQUIRED_DOC_TYPES.filter(t => normalizedTypes.has(t)).length
             const totalRequired = REQUIRED_DOC_TYPES.length
             const pct = Math.round((foundCount / totalRequired) * 100)
-            const barColor = pct >= 100 ? '#16A34A' : pct >= 67 ? '#2563EB' : pct >= 34 ? '#D97706' : '#DC2626'
+            const barColor = pct >= 100 ? 'var(--success)' : pct >= 67 ? 'var(--info)' : pct >= 34 ? 'var(--warning-500, #D97706)' : 'var(--danger-500)'
             const isExpanded = expanded.has(pedimentoId)
 
             return (
@@ -347,7 +347,7 @@ export default function ExpedientesPage() {
                               {found.file_url && (
                                 <button
                                   onClick={e => { e.stopPropagation(); setViewerDocs(groupDocs); setViewerIndex(groupDocs.indexOf(found)); setViewerTrafico(pedimentoId) }}
-                                  style={{ fontSize: 12, color: '#C4963C', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Ver</button>
+                                  style={{ fontSize: 12, color: 'var(--gold)', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Ver</button>
                               )}
                             </span>
                           )}

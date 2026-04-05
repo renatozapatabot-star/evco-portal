@@ -65,18 +65,18 @@ export default async function OperacionesPage() {
 
   const statusColor = (status: string | undefined) => {
     if (!status) return '#666'
-    if (status === 'success') return '#16A34A'
-    if (status === 'running') return '#D97706'
+    if (status === 'success') return 'var(--success)'
+    if (status === 'running') return 'var(--warning-500, #D97706)'
     return 'var(--danger-500)'
   }
 
   return (
-    <div style={{ padding: '24px 28px', fontFamily: 'var(--font-geist-sans)', color: '#E8E6E0' }}>
+    <div style={{ padding: '24px 28px', fontFamily: 'var(--font-geist-sans)', color: 'var(--border)' }}>
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: 22, fontWeight: 800, margin: 0 }}>Operaciones Autónomas</h1>
         <p style={{ color: '#666', fontSize: 13, margin: '4px 0 0' }}>
           CRUZ se observa solo &middot; {now} CST &middot;
-          <span style={{ color: allHealthy ? '#16A34A' : 'var(--danger-500)', fontWeight: 700, marginLeft: 6 }}>
+          <span style={{ color: allHealthy ? 'var(--success)' : 'var(--danger-500)', fontWeight: 700, marginLeft: 6 }}>
             {allHealthy ? 'Todos los flujos activos' : 'Requiere atención'}
           </span>
         </p>
@@ -171,7 +171,7 @@ export default async function OperacionesPage() {
                 <div>
                   <span style={{ fontSize: 13, fontWeight: 600, fontFamily: 'var(--font-jetbrains-mono)' }}>{c.trafico}</span>
                   <span style={{ fontSize: 12, marginLeft: 8,
-                    color: c.estatus === 'Cruzado' ? '#16A34A' : c.estatus === 'Detenido' ? 'var(--danger-500)' : '#D97706'
+                    color: c.estatus === 'Cruzado' ? 'var(--success)' : c.estatus === 'Detenido' ? 'var(--danger-500)' : 'var(--warning-500, #D97706)'
                   }}>{c.estatus}</span>
                 </div>
                 <span style={{ fontSize: 11, color: '#666', fontFamily: 'var(--font-jetbrains-mono)' }}>

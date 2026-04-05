@@ -8,20 +8,22 @@ import {
 } from 'lucide-react'
 import { getCookieValue } from '@/lib/client-config'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { InsightWhisper } from '@/components/ui/InsightWhisper'
+import { useWhisper } from '@/hooks/use-whisper'
 import { fmtUSD, fmtUSDCompact, fmtDate, fmtPedimento } from '@/lib/format-utils'
 
 /* ── Light tokens (DESIGN_SYSTEM.md v6) ── */
 const D = {
-  bg: '#FAFAF8',
-  card: '#FFFFFF',
-  cardBorder: '#E8E5E0',
-  gold: '#C4963C',
+  bg: 'var(--bg-main)',
+  card: 'var(--bg-card)',
+  cardBorder: 'var(--border)',
+  gold: 'var(--gold)',
   goldSubtle: 'rgba(196,150,60,0.08)',
-  text: '#1A1A1A',
-  textSec: '#6B6B6B',
-  textMuted: '#9B9B9B',
-  green: '#16A34A',
-  amber: '#D97706',
+  text: 'var(--text-primary)',
+  textSec: 'var(--text-secondary)',
+  textMuted: 'var(--text-muted)',
+  green: 'var(--success)',
+  amber: 'var(--warning-500, #D97706)',
   mono: 'var(--font-mono)',
   sans: 'var(--font-sans)',
   r: 8,
@@ -245,7 +247,7 @@ export default function FinancieroPage() {
         {/* Data story — financial narrative */}
         {!loading && kpis.valorTotal > 0 && (
           <p style={{
-            fontSize: 13, color: '#6B6B6B', lineHeight: 1.6,
+            fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6,
             fontStyle: 'italic', maxWidth: 600, margin: '0 0 20px',
           }}>
             {(() => {

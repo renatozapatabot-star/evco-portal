@@ -39,14 +39,14 @@ const ACTION_LABELS: Record<string, string> = {
 }
 
 const ACTION_COLORS: Record<string, string> = {
-  draft_approved: '#16A34A',
-  draft_approved_telegram: '#16A34A',
+  draft_approved: 'var(--success)',
+  draft_approved_telegram: 'var(--success)',
   draft_filed: '#0D9488',
-  draft_rejected_telegram: '#DC2626',
-  draft_corrected_telegram: '#D97706',
+  draft_rejected_telegram: 'var(--danger-500)',
+  draft_corrected_telegram: 'var(--warning-500, #D97706)',
   oca_generated: '#7E22CE',
-  client_onboarded: '#C4963C',
-  anomaly_resolved: '#2563EB',
+  client_onboarded: 'var(--gold)',
+  anomaly_resolved: 'var(--info)',
 }
 
 export default function AuditoriaPage() {
@@ -120,8 +120,8 @@ export default function AuditoriaPage() {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <h1 style={{ fontSize: 24, fontWeight: 700, color: '#1A1A1A', margin: 0 }}>Auditoría</h1>
-          <p style={{ fontSize: 13, color: '#6B6B6B', margin: '4px 0 0' }}>
+          <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>Auditoría</h1>
+          <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '4px 0 0' }}>
             {filtered.length} registros · Registro inmutable
           </p>
         </div>
@@ -136,7 +136,7 @@ export default function AuditoriaPage() {
           <button onClick={exportCSV} style={{
             display: 'flex', alignItems: 'center', gap: 4, padding: '8px 16px',
             borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer',
-            background: '#C4963C', border: 'none', color: '#FFFFFF', minHeight: 36,
+            background: 'var(--gold)', border: 'none', color: 'var(--bg-card)', minHeight: 36,
           }}>
             <Download size={14} /> Exportar CSV
           </button>
@@ -147,20 +147,20 @@ export default function AuditoriaPage() {
       <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
         <div style={{
           display: 'flex', alignItems: 'center', gap: 6, padding: '0 12px', height: 40,
-          background: '#FFFFFF', border: '1px solid #E8E5E0', borderRadius: 8, flex: 1, maxWidth: 300,
+          background: 'var(--bg-card)', border: '1px solid #E8E5E0', borderRadius: 8, flex: 1, maxWidth: 300,
         }}>
-          <Search size={14} style={{ color: '#9B9B9B' }} />
+          <Search size={14} style={{ color: 'var(--text-muted)' }} />
           <input
             placeholder="Buscar en auditoría..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: 13, color: '#1A1A1A' }}
+            style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: 13, color: 'var(--text-primary)' }}
           />
         </div>
         <select
           value={actionFilter}
           onChange={e => setActionFilter(e.target.value)}
-          style={{ height: 40, padding: '0 12px', borderRadius: 8, border: '1px solid #E8E5E0', fontSize: 12, color: '#1A1A1A', cursor: 'pointer', background: '#FFFFFF' }}
+          style={{ height: 40, padding: '0 12px', borderRadius: 8, border: '1px solid #E8E5E0', fontSize: 12, color: 'var(--text-primary)', cursor: 'pointer', background: 'var(--bg-card)' }}
         >
           <option value="">Todas las acciones</option>
           {actions.map(a => <option key={a} value={a}>{ACTION_LABELS[a] || a}</option>)}
@@ -168,7 +168,7 @@ export default function AuditoriaPage() {
         <select
           value={actorFilter}
           onChange={e => setActorFilter(e.target.value)}
-          style={{ height: 40, padding: '0 12px', borderRadius: 8, border: '1px solid #E8E5E0', fontSize: 12, color: '#1A1A1A', cursor: 'pointer', background: '#FFFFFF' }}
+          style={{ height: 40, padding: '0 12px', borderRadius: 8, border: '1px solid #E8E5E0', fontSize: 12, color: 'var(--text-primary)', cursor: 'pointer', background: 'var(--bg-card)' }}
         >
           <option value="">Todos los actores</option>
           {actors.map(a => <option key={a} value={a}>{a}</option>)}
@@ -183,16 +183,16 @@ export default function AuditoriaPage() {
       ) : filtered.length === 0 ? (
         <EmptyState icon="📋" title="Sin registros" description="No hay entradas en el log de auditoría para los filtros seleccionados" />
       ) : (
-        <div style={{ background: '#FFFFFF', border: '1px solid #E8E5E0', borderRadius: 8, overflow: 'hidden' }}>
+        <div style={{ background: 'var(--bg-card)', border: '1px solid #E8E5E0', borderRadius: 8, overflow: 'hidden' }}>
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid #E8E5E0' }}>
-                  <th style={{ padding: '10px 16px', textAlign: 'left', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#9B9B9B' }}>Fecha</th>
-                  <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#9B9B9B' }}>Acción</th>
-                  <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#9B9B9B' }}>Actor</th>
-                  <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#9B9B9B' }}>Recurso</th>
-                  <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#9B9B9B' }}>Detalles</th>
+                  <th style={{ padding: '10px 16px', textAlign: 'left', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)' }}>Fecha</th>
+                  <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)' }}>Acción</th>
+                  <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)' }}>Actor</th>
+                  <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)' }}>Recurso</th>
+                  <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)' }}>Detalles</th>
                 </tr>
               </thead>
               <tbody>
@@ -203,7 +203,7 @@ export default function AuditoriaPage() {
                   const detailStr = details ? Object.entries(details).filter(([, v]) => v != null).map(([k, v]) => `${k}: ${typeof v === 'object' ? JSON.stringify(v) : v}`).slice(0, 3).join(' · ') : ''
                   return (
                     <tr key={r.id} style={{ borderBottom: '1px solid #E8E5E0' }}>
-                      <td style={{ padding: '10px 16px', fontFamily: 'var(--font-mono)', fontSize: 11, color: '#6B6B6B', whiteSpace: 'nowrap' }}>
+                      <td style={{ padding: '10px 16px', fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
                         {fmtDateTime(r.timestamp || r.created_at)}
                       </td>
                       <td style={{ padding: '10px 12px' }}>
@@ -214,13 +214,13 @@ export default function AuditoriaPage() {
                           {ACTION_LABELS[r.action] || r.action}
                         </span>
                       </td>
-                      <td style={{ padding: '10px 12px', fontSize: 12, color: '#1A1A1A', fontWeight: 500 }}>
+                      <td style={{ padding: '10px 12px', fontSize: 12, color: 'var(--text-primary)', fontWeight: 500 }}>
                         {actor}
                       </td>
-                      <td style={{ padding: '10px 12px', fontSize: 12, fontFamily: 'var(--font-mono)', color: '#6B6B6B' }}>
+                      <td style={{ padding: '10px 12px', fontSize: 12, fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>
                         {r.resource_id ? `${r.resource || ''} ${String(r.resource_id).substring(0, 12)}` : '—'}
                       </td>
-                      <td style={{ padding: '10px 12px', fontSize: 11, color: '#9B9B9B', maxWidth: 300, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <td style={{ padding: '10px 12px', fontSize: 11, color: 'var(--text-muted)', maxWidth: 300, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {detailStr || '—'}
                       </td>
                     </tr>
@@ -230,7 +230,7 @@ export default function AuditoriaPage() {
             </table>
           </div>
           {filtered.length > 100 && (
-            <div style={{ padding: '12px 16px', borderTop: '1px solid #E8E5E0', fontSize: 12, color: '#9B9B9B', textAlign: 'center' }}>
+            <div style={{ padding: '12px 16px', borderTop: '1px solid #E8E5E0', fontSize: 12, color: 'var(--text-muted)', textAlign: 'center' }}>
               Mostrando 100 de {filtered.length} · Exporta CSV para ver todos
             </div>
           )}
@@ -238,7 +238,7 @@ export default function AuditoriaPage() {
       )}
 
       {/* Footer */}
-      <div style={{ marginTop: 24, textAlign: 'center', fontSize: 11, color: '#9B9B9B' }}>
+      <div style={{ marginTop: 24, textAlign: 'center', fontSize: 11, color: 'var(--text-muted)' }}>
         Registro inmutable · Append-only · Sin edición ni eliminación
         <br />Patente 3596 · Aduana 240 · Renato Zapata &amp; Company
       </div>

@@ -197,21 +197,21 @@ export default function ClientInicioView() {
         key: 'cruzados',
         value: String(cruzadoRecent),
         label: 'cruzaron (7d)',
-        color: '#16A34A',
+        color: 'var(--success)',
         href: '/traficos?estatus=Cruzado',
       },
       {
         key: 'importado',
         value: fmtUSDCompact(valorTotal),
         label: 'importado YTD',
-        color: '#8B6914',
+        color: 'var(--gold-dark)',
         href: '/reportes',
       },
       {
         key: 'incidencias',
         value: String(incidencias),
         label: 'incidencias',
-        color: incidencias === 0 ? '#16A34A' : '#DC2626',
+        color: incidencias === 0 ? 'var(--success)' : 'var(--danger-500)',
         href: '/traficos',
       },
     ]
@@ -220,7 +220,7 @@ export default function ClientInicioView() {
         key: 'streak',
         value: `${streakDays}d`,
         label: 'racha sin incidencia',
-        color: '#8B6914',
+        color: 'var(--gold-dark)',
         href: '/traficos',
       })
     }
@@ -247,7 +247,7 @@ export default function ClientInicioView() {
       {realtimeToast && (
         <div style={{
           padding: '10px 16px', borderRadius: 10,
-          background: '#0D9488', color: '#FFFFFF', fontSize: 13, fontWeight: 600,
+          background: '#0D9488', color: 'var(--bg-card)', fontSize: 13, fontWeight: 600,
           marginBottom: 16, animation: 'fadeInUp 200ms ease',
         }}>
           {realtimeToast}
@@ -260,7 +260,7 @@ export default function ClientInicioView() {
           <div style={{
             fontSize: isMobile ? 28 : 36,
             fontWeight: 800,
-            color: '#16A34A',
+            color: 'var(--success)',
             lineHeight: 1.2,
           }}>
             Todo en orden. 0 pendientes.
@@ -270,14 +270,14 @@ export default function ClientInicioView() {
             <div style={{
               fontSize: isMobile ? 28 : 36,
               fontWeight: 800,
-              color: '#8B6914',
+              color: 'var(--gold-dark)',
               lineHeight: 1.2,
             }}>
               {enProceso} asunto{enProceso !== 1 ? 's' : ''} necesita{enProceso === 1 ? '' : 'n'} atenci&oacute;n.
             </div>
           </Link>
         )}
-        <div style={{ fontSize: 13, color: '#9B9B9B', marginTop: 8, fontFamily: 'var(--font-mono)' }}>
+        <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 8, fontFamily: 'var(--font-mono)' }}>
           {dateStr} &middot; {companyName || 'cliente'}
         </div>
       </div>
@@ -291,7 +291,7 @@ export default function ClientInicioView() {
           <Link href={card.href} key={card.key} style={{ textDecoration: 'none' }}>
             <div style={{
               minWidth: 140, padding: '16px 18px', borderRadius: 14,
-              background: '#FFFFFF', border: '1px solid #E8E5E0',
+              background: 'var(--bg-card)', border: '1px solid #E8E5E0',
               scrollSnapAlign: 'start',
             }}>
               <div style={{
@@ -300,7 +300,7 @@ export default function ClientInicioView() {
               }}>
                 {card.value}
               </div>
-              <div style={{ fontSize: 12, color: '#9B9B9B', marginTop: 4 }}>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
                 {card.label}
               </div>
             </div>
@@ -315,8 +315,8 @@ export default function ClientInicioView() {
             <Link href={pred.href} key={pred.key} style={{ textDecoration: 'none' }}>
               <div style={{
                 padding: '14px 18px', borderRadius: 12,
-                background: '#FFFFFF', border: '1px solid #E8E5E0',
-                fontSize: 14, color: '#1A1A1A', lineHeight: 1.5,
+                background: 'var(--bg-card)', border: '1px solid #E8E5E0',
+                fontSize: 14, color: 'var(--text-primary)', lineHeight: 1.5,
               }}>
                 {pred.text}
               </div>
@@ -334,7 +334,7 @@ export default function ClientInicioView() {
         }}>
           <div style={{
             fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
-            letterSpacing: '0.06em', color: '#8B6914', marginBottom: 12,
+            letterSpacing: '0.06em', color: 'var(--gold-dark)', marginBottom: 12,
           }}>
             Su valor este trimestre
           </div>
@@ -342,20 +342,20 @@ export default function ClientInicioView() {
             <div>
               <div style={{
                 fontSize: 24, fontWeight: 800,
-                fontFamily: 'var(--font-mono)', color: '#8B6914',
+                fontFamily: 'var(--font-mono)', color: 'var(--gold-dark)',
               }}>
                 {fmtUSDCompact(tmecSavings.totalSavings)} USD
               </div>
-              <div style={{ fontSize: 12, color: '#9B9B9B' }}>Ahorro T-MEC</div>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Ahorro T-MEC</div>
             </div>
             <div style={{ textAlign: 'right' }}>
               <div style={{
                 fontSize: 18, fontWeight: 700,
-                fontFamily: 'var(--font-mono)', color: '#1A1A1A',
+                fontFamily: 'var(--font-mono)', color: 'var(--text-primary)',
               }}>
                 {sinIncidencia}%
               </div>
-              <div style={{ fontSize: 12, color: '#9B9B9B' }}>Operaciones exitosas</div>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Operaciones exitosas</div>
             </div>
           </div>
         </div>
@@ -367,7 +367,7 @@ export default function ClientInicioView() {
           margin: '0 20px 16px', padding: '10px 16px', borderRadius: 10,
           background: 'rgba(13,148,136,0.04)', border: '1px solid rgba(13,148,136,0.15)',
           display: 'flex', alignItems: 'center', gap: 8,
-          fontSize: 12, color: '#6B6B6B',
+          fontSize: 12, color: 'var(--text-secondary)',
         }}>
           <span style={{ fontSize: 14 }}>🌐</span>
           <span>Red CRUZ: 47 participantes contribuyen datos para mejorar sus predicciones</span>
@@ -377,7 +377,7 @@ export default function ClientInicioView() {
       {/* Ver todo link */}
       <div style={{ textAlign: 'center', padding: '8px 20px 40px' }}>
         <Link href="/traficos" style={{
-          fontSize: 14, fontWeight: 600, color: '#8B6914', textDecoration: 'none',
+          fontSize: 14, fontWeight: 600, color: 'var(--gold-dark)', textDecoration: 'none',
         }}>
           Ver todos los traficos &rarr;
         </Link>

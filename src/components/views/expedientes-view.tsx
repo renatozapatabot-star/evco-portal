@@ -139,7 +139,7 @@ function SummaryCard({
             alignItems: 'center',
             gap: 6,
             padding: '10px 20px',
-            background: soliciting || totalMissingDocs === 0 ? '#D4C9A8' : '#C4963C',
+            background: soliciting || totalMissingDocs === 0 ? '#D4C9A8' : 'var(--gold)',
             color: 'var(--bg-card)',
             border: 'none',
             borderRadius: 8,
@@ -613,7 +613,7 @@ export function ExpedientesView() {
           <div
             style={{
               width: 28, height: 28, border: '3px solid #E8E5E0',
-              borderTopColor: '#C4963C', borderRadius: '50%',
+              borderTopColor: 'var(--gold)', borderRadius: '50%',
               animation: 'spin 0.7s linear infinite',
             }}
           />

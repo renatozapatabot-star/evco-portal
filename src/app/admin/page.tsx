@@ -44,13 +44,13 @@ export default async function AdminPage() {
 
   const T = {
     bg: 'var(--bg-dark)', surface: 'var(--navy-900)', border: '#2A2A2A',
-    text: '#E8E6E0', sub: '#9C9690', muted: '#666',
+    text: 'var(--border)', sub: '#9C9690', muted: '#666',
     gold: GOLD, green: GREEN, amber: AMBER, red: RED,
   }
 
   function healthBadge(score: number) {
-    if (score >= 80) return { bg: 'rgba(22,163,74,0.15)', color: '#16A34A', border: 'rgba(22,163,74,0.3)' }
-    if (score >= 60) return { bg: 'rgba(217,119,6,0.15)', color: '#D97706', border: 'rgba(217,119,6,0.3)' }
+    if (score >= 80) return { bg: 'rgba(22,163,74,0.15)', color: 'var(--success)', border: 'rgba(22,163,74,0.3)' }
+    if (score >= 60) return { bg: 'rgba(217,119,6,0.15)', color: 'var(--warning-500, #D97706)', border: 'rgba(217,119,6,0.3)' }
     return { bg: 'rgba(220,38,38,0.15)', color: 'var(--danger-500)', border: 'rgba(220,38,38,0.3)' }
   }
 
@@ -61,7 +61,7 @@ export default async function AdminPage() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4 }}>
           <div style={{ width: 36, height: 36, background: GOLD_GRADIENT,
             borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 16, fontWeight: 900, color: '#1A1710', fontFamily: 'Georgia, serif' }}>Z</div>
+            fontSize: 16, fontWeight: 900, color: 'var(--text-primary)', fontFamily: 'Georgia, serif' }}>Z</div>
           <h1 style={{ fontSize: 22, fontWeight: 800, margin: 0, letterSpacing: '-0.02em' }}>
             CRUZ ADMIN — Fleet Intelligence
           </h1>
@@ -104,7 +104,7 @@ export default async function AdminPage() {
             style={{ background: btn.label.includes('Nuevo') ? GOLD_GRADIENT : T.surface,
               border: `1px solid ${btn.label.includes('Nuevo') ? 'transparent' : T.border}`,
               borderRadius: 8, padding: '8px 16px', fontSize: 13, fontWeight: 600,
-              color: btn.label.includes('Nuevo') ? '#1A1710' : T.text,
+              color: btn.label.includes('Nuevo') ? 'var(--text-primary)' : T.text,
               textDecoration: 'none', cursor: 'pointer' }}>
             {btn.label}
           </Link>

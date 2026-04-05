@@ -107,7 +107,7 @@ const DocRow = ({
       className="flex items-center justify-between px-3 py-2 rounded-[6px]"
       style={{ background: '#f7f8fa' }}
     >
-      <span className="text-[12px]" style={{ color: '#374151' }}>
+      <span className="text-[12px]" style={{ color: 'var(--text-primary)' }}>
         {name}
       </span>
       <span
@@ -366,7 +366,7 @@ export default function TraficoDrawer({ trafico, onClose }: Props) {
               </div>
               <div
                 className="rounded-[7px] p-3 text-[13px]"
-                style={{ background: '#f7f8fa', color: '#374151' }}
+                style={{ background: '#f7f8fa', color: 'var(--text-primary)' }}
               >
                 {trafico.descripcion_mercancia}
               </div>

@@ -27,7 +27,7 @@ const ICONS = {
 
 const SEV_STYLE = {
   critica: { bg: 'var(--danger-bg)', border: 'rgba(220,38,38,0.2)', dot: 'var(--danger-500)', label: 'Críticas' },
-  atención: { bg: 'var(--warning-bg)', border: 'rgba(217,119,6,0.2)', dot: '#D97706', label: 'Atención' },
+  atención: { bg: 'var(--warning-bg)', border: 'rgba(217,119,6,0.2)', dot: 'var(--warning-500, #D97706)', label: 'Atención' },
   info: { bg: 'var(--n-50)', border: 'var(--n-150)', dot: 'var(--gold-500)', label: 'Informativas' },
 }
 

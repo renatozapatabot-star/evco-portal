@@ -87,7 +87,7 @@ export default function ChainView({ data }: { data: ChainData }) {
       className="rounded-lg border p-4 space-y-1 text-sm"
       style={{
         background: 'var(--surface-primary, #FAFAF8)',
-        borderColor: '#E8E5E0',
+        borderColor: 'var(--border)',
       }}
     >
       {/* Pedimento header */}

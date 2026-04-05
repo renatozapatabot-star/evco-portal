@@ -10,7 +10,7 @@ const T = {
   bg: '#0D0D0C',
   card: '#1A1814',
   border: '#302C23',
-  gold: '#C4963C',
+  gold: 'var(--gold)',
   goldSubtle: 'rgba(184,149,63,0.12)',
   text: '#F5F0E8',
   textSec: '#A09882',

@@ -43,9 +43,9 @@ export default async function StatusPage() {
       ]
 
   const cfg: Record<string, { color: string; bg: string; label: string; dot: string }> = {
-    healthy: { color: '#166534', bg: '#DCFCE7', label: 'Operacional', dot: '#16A34A' },
-    operational: { color: '#166534', bg: '#DCFCE7', label: 'Operacional', dot: '#16A34A' },
-    degraded: { color: '#92400E', bg: '#FEF3C7', label: 'Degradado', dot: '#D97706' },
+    healthy: { color: '#166534', bg: '#DCFCE7', label: 'Operacional', dot: 'var(--success)' },
+    operational: { color: '#166534', bg: '#DCFCE7', label: 'Operacional', dot: 'var(--success)' },
+    degraded: { color: 'var(--amber-text, #92400E)', bg: '#FEF3C7', label: 'Degradado', dot: 'var(--warning-500, #D97706)' },
     pending: { color: '#1E40AF', bg: '#EFF6FF', label: 'Pendiente', dot: 'var(--info-500)' },
     down: { color: 'var(--danger-text)', bg: '#FEE2E2', label: 'Caído', dot: 'var(--danger-500)' },
   }
@@ -53,19 +53,19 @@ export default async function StatusPage() {
   const allOp = systems.every(s => s.status === 'operational' || s.status === 'healthy')
 
   return (
-    <div style={{ fontFamily: 'var(--font-geist-sans)', background: 'var(--bg-dark)', color: '#E8E6E0', padding: '40px 20px', minHeight: '100vh' }}>
+    <div style={{ fontFamily: 'var(--font-geist-sans)', background: 'var(--bg-dark)', color: 'var(--border)', padding: '40px 20px', minHeight: '100vh' }}>
       <div style={{ maxWidth: 640, margin: '0 auto' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 32 }}>
-          <div style={{ width: 40, height: 40, background: GOLD_GRADIENT, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1A1710', fontWeight: 900, fontSize: 18, fontFamily: 'Georgia, serif' }}>Z</div>
+          <div style={{ width: 40, height: 40, background: GOLD_GRADIENT, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-primary)', fontWeight: 900, fontSize: 18, fontFamily: 'Georgia, serif' }}>Z</div>
           <div>
             <h1 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>Estado del Sistema</h1>
             <p style={{ color: '#666', fontSize: 12, margin: 0 }}>CRUZ Intelligence Platform</p>
           </div>
         </div>
 
-        <div style={{ background: 'var(--navy-900)', border: '1px solid #2A2A2A', borderRadius: 12, padding: 20, marginBottom: 12, borderTop: `4px solid ${allOp ? '#16A34A' : '#D97706'}` }}>
+        <div style={{ background: 'var(--navy-900)', border: '1px solid #2A2A2A', borderRadius: 12, padding: 20, marginBottom: 12, borderTop: `4px solid ${allOp ? 'var(--success)' : 'var(--warning-500, #D97706)'}` }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ width: 12, height: 12, borderRadius: '50%', background: allOp ? '#16A34A' : '#D97706', display: 'inline-block' }} />
+            <span style={{ width: 12, height: 12, borderRadius: '50%', background: allOp ? 'var(--success)' : 'var(--warning-500, #D97706)', display: 'inline-block' }} />
             <div>
               <div style={{ fontWeight: 700, fontSize: 16 }}>{allOp ? 'Todos los sistemas operacionales' : 'Algunos sistemas requieren atención'}</div>
               <div style={{ color: '#666', fontSize: 12, marginTop: 2 }}>Actualizado: <span style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>{now}</span> CST</div>

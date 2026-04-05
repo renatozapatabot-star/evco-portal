@@ -2,13 +2,13 @@ import React from 'react'
 import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
 
 const COLORS = {
-  bg: '#FAFAF8',
-  surface: '#FFFFFF',
-  border: '#E8E5E0',
-  text: '#1A1A1A',
-  textSub: '#6B6B6B',
+  bg: 'var(--bg-main)',
+  surface: 'var(--bg-card)',
+  border: 'var(--border)',
+  text: 'var(--text-primary)',
+  textSub: 'var(--text-secondary)',
   textMuted: '#9C9890',
-  gold: '#C4963C',
+  gold: 'var(--gold)',
   green: '#2D8540',
   amber: '#C47F17',
   red: '#C23B22',

@@ -10,6 +10,8 @@ import { useSort } from '@/hooks/use-sort'
 import { useIsMobile } from '@/hooks/use-mobile'
 import Link from 'next/link'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { InsightWhisper } from '@/components/ui/InsightWhisper'
+import { useWhisper } from '@/hooks/use-whisper'
 import { ErrorCard } from '@/components/ui/ErrorCard'
 import { useSessionCache } from '@/hooks/use-session-cache'
 
@@ -129,6 +131,7 @@ export default function EntradasPage() {
 
   return (
     <div className="page-shell">
+      <InsightWhisper text={useWhisper("entradas")} />
       <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'stretch' : 'flex-start', justifyContent: 'space-between', marginBottom: 16, gap: isMobile ? 12 : 0 }}>
         <div>
           <h1 className="page-title">Entradas</h1>
@@ -269,7 +272,7 @@ export default function EntradasPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {paged.map((r) => {
             const hasIncidencia = r.mercancia_danada || r.tiene_faltantes
-            const statusColor = hasIncidencia ? 'var(--danger-500)' : '#16A34A'
+            const statusColor = hasIncidencia ? 'var(--danger-500)' : 'var(--success)'
             return (
               <div
                 key={r.cve_entrada}
@@ -396,7 +399,7 @@ export default function EntradasPage() {
               disabled={page === 0}
               onClick={() => setPage(p => p - 1)}
               className="flex items-center gap-1 px-2.5 py-1 rounded-[5px] text-[11.5px] font-medium"
-              style={{ background: page === 0 ? '#f7f8fa' : 'var(--card-bg)', border: '1px solid var(--border)', color: page === 0 ? '#d1d5db' : '#374151', cursor: page === 0 ? 'default' : 'pointer' }}
+              style={{ background: page === 0 ? '#f7f8fa' : 'var(--card-bg)', border: '1px solid var(--border)', color: page === 0 ? '#d1d5db' : 'var(--text-primary)', cursor: page === 0 ? 'default' : 'pointer' }}
             >
               <ChevronLeft size={12} /> Anterior
             </button>
@@ -405,7 +408,7 @@ export default function EntradasPage() {
               disabled={page >= totalPages - 1}
               onClick={() => setPage(p => p + 1)}
               className="flex items-center gap-1 px-2.5 py-1 rounded-[5px] text-[11.5px] font-medium"
-              style={{ background: page >= totalPages - 1 ? '#f7f8fa' : 'var(--card-bg)', border: '1px solid var(--border)', color: page >= totalPages - 1 ? '#d1d5db' : '#374151', cursor: page >= totalPages - 1 ? 'default' : 'pointer' }}
+              style={{ background: page >= totalPages - 1 ? '#f7f8fa' : 'var(--card-bg)', border: '1px solid var(--border)', color: page >= totalPages - 1 ? '#d1d5db' : 'var(--text-primary)', cursor: page >= totalPages - 1 ? 'default' : 'pointer' }}
             >
               Siguiente <ChevronRight size={12} />
             </button>

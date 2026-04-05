@@ -56,7 +56,7 @@ export default function ApiDocsPage() {
             <span style={{
               fontSize: 11, fontWeight: 700, padding: '3px 8px', borderRadius: 4, fontFamily: 'var(--font-mono)',
               background: ep.method === 'GET' ? 'rgba(22,163,74,0.1)' : 'rgba(37,99,235,0.1)',
-              color: ep.method === 'GET' ? '#16A34A' : '#2563EB',
+              color: ep.method === 'GET' ? 'var(--success)' : 'var(--info)',
             }}>{ep.method}</span>
             <code style={{ fontSize: 13, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)', flex: 1 }}>{ep.path}</code>
             {ep.method === 'GET' && (

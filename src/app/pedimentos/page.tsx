@@ -370,13 +370,13 @@ export default function PedimentosPage() {
           <div className="flex items-center gap-1.5">
             <button disabled={page === 0} onClick={() => setPage(p => p - 1)}
               className="flex items-center gap-1 px-2.5 py-1 rounded-[5px] text-[11.5px] font-medium"
-              style={{ background: page === 0 ? '#f7f8fa' : 'var(--card-bg)', border: '1px solid var(--border)', color: page === 0 ? '#d1d5db' : '#374151', cursor: page === 0 ? 'default' : 'pointer' }}>
+              style={{ background: page === 0 ? '#f7f8fa' : 'var(--card-bg)', border: '1px solid var(--border)', color: page === 0 ? '#d1d5db' : 'var(--text-primary)', cursor: page === 0 ? 'default' : 'pointer' }}>
               <ChevronLeft size={12} /> Anterior
             </button>
             <span className="mono text-[11px] px-2" style={{ color: 'var(--text-muted)' }}>{page + 1}/{totalPages}</span>
             <button disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)}
               className="flex items-center gap-1 px-2.5 py-1 rounded-[5px] text-[11.5px] font-medium"
-              style={{ background: page >= totalPages - 1 ? '#f7f8fa' : 'var(--card-bg)', border: '1px solid var(--border)', color: page >= totalPages - 1 ? '#d1d5db' : '#374151', cursor: page >= totalPages - 1 ? 'default' : 'pointer' }}>
+              style={{ background: page >= totalPages - 1 ? '#f7f8fa' : 'var(--card-bg)', border: '1px solid var(--border)', color: page >= totalPages - 1 ? '#d1d5db' : 'var(--text-primary)', cursor: page >= totalPages - 1 ? 'default' : 'pointer' }}>
               Siguiente <ChevronRight size={12} />
             </button>
           </div>

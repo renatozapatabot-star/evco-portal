@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { getClientNameCookie, PATENTE } from '@/lib/client-config'
 
-const T = { surface: 'var(--card-bg)', surfaceAlt: '#F5F3EF', border: '#E8E6E0', text: '#1A1A1A', textSub: '#6B6B6B', textMuted: '#999999', navy: '#1A1A1A', gold: '#BA7517', shadow: '0 8px 32px rgba(0,0,0,0.12)' }
+const T = { surface: 'var(--card-bg)', surfaceAlt: '#F5F3EF', border: 'var(--border)', text: 'var(--text-primary)', textSub: 'var(--text-secondary)', textMuted: '#999999', navy: 'var(--text-primary)', gold: 'var(--gold-dark)', shadow: '0 8px 32px rgba(0,0,0,0.12)' }
 type Message = { role: 'user' | 'assistant'; content: string; ts: string }
 const SUGGESTIONS = ['Mostrar tráficos con faltantes o daños', '¿Cuál es el valor total importado este mes?', '¿Qué tráficos están vencidos más de 7 días?', '¿Hay oportunidades T-MEC sin certificado?', 'Resumen de incidencias últimas 4 semanas']
 

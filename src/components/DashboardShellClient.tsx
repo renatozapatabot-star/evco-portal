@@ -12,6 +12,7 @@ import { usePullToRefresh } from '@/hooks/use-pull-refresh'
 import { MobileBottomNav } from './mobile-bottom-nav'
 import { WelcomeOverlay } from './WelcomeOverlay'
 import { CruzFAB } from './cruz-fab'
+import { SmartBar } from './ui/SmartBar'
 import { getCookieValue } from '@/lib/client-config'
 
 interface Props { children: React.ReactNode }
@@ -200,6 +201,7 @@ export default function DashboardShellClient({ children }: Props) {
 
       <CommandPalette />
       {!isMobile && <ShortcutHelp />}
+      <SmartBar />
       {isMobile && <MobileBottomNav />}
 
       {/* Offline banner */}

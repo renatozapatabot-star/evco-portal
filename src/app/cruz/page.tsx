@@ -464,6 +464,32 @@ export default function CruzChatPage() {
                       <ArrowRight size={14} /> Ir a {msg.navigate}
                     </div>
                   )}
+                  {/* Action confirmation buttons */}
+                  {msg.role === 'assistant' && !loading && (msg.content.includes('¿Procedo?') || msg.content.includes('¿Procedemos?') || msg.content.includes('¿Confirma?')) && (
+                    <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+                      <button
+                        onClick={() => sendMessage('Sí, procede')}
+                        style={{
+                          padding: '8px 16px', borderRadius: 8, fontSize: 13, fontWeight: 700,
+                          background: GOLD, color: '#FFFFFF', border: 'none', cursor: 'pointer',
+                          minHeight: 36,
+                        }}
+                      >
+                        Proceder
+                      </button>
+                      <button
+                        onClick={() => sendMessage('No, cancelar')}
+                        style={{
+                          padding: '8px 16px', borderRadius: 8, fontSize: 13, fontWeight: 600,
+                          background: 'transparent', color: D.textMuted,
+                          border: `1px solid ${D.border}`, cursor: 'pointer',
+                          minHeight: 36,
+                        }}
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  )}
                   {msg.role === 'assistant' && (
                     <div style={{ display: 'flex', gap: 4, marginTop: 8, opacity: 0.4 }}>
                       <button onClick={() => speak(msg.content)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: D.aiText, padding: 4 }}><Volume2 size={13} /></button>

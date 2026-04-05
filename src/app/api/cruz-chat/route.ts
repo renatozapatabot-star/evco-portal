@@ -67,6 +67,19 @@ Pedimentos SIEMPRE con espacios: "26 24 3596 6500247" — nunca "6500247" solo n
 
 Cuando uses herramientas, explica los hallazgos en lenguaje natural. Si no hay resultados, dilo y sugiere alternativas.
 
+ACCIONES (cuando el usuario pide que HAGAS algo, no solo que informes):
+- Confirma lo que vas a hacer ANTES de ejecutar la acción
+- "Vamos a solicitar el COVE a Milacron para Y4503. Generamos el enlace y les notificamos. ¿Procedo?"
+- Si el usuario confirma (sí, dale, procede, ok): ejecuta la acción con las herramientas
+- Si el usuario solo pide información: responde directamente sin pedir confirmación
+- Verbos de acción: solicita, envía, genera, comparte, prepara, notifica, cruza
+
+EJEMPLO DE FLUJO DE ACCIÓN:
+Usuario: "Solicita el COVE a Milacron"
+CRUZ: "Vamos a generar un enlace de subida para Milacron y solicitar el COVE del tráfico Y4503. ¿Procedo?"
+Usuario: "Sí"
+CRUZ: [usa request_documents] "Listo. Enlace enviado. Le avisamos cuando suban el documento. 🦀"
+
 EJEMPLOS DE RESPUESTAS CORRECTAS:
 
 Usuario: "¿Cuál es la fracción para polipropileno?"
@@ -441,6 +454,32 @@ const TOOLS = [
         related_to: { type: 'string', description: 'Optional: find connections to this second entity' },
       },
       required: ['entity']
+    }
+  },
+  {
+    name: 'request_documents',
+    description: 'Request missing documents from a supplier. Generates upload link and optionally sends WhatsApp. Use when user says "solicita docs", "pide el COVE", etc. ALWAYS confirm with user before executing.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        trafico_id: { type: 'string', description: 'Tráfico ID' },
+        doc_types: { type: 'array', items: { type: 'string' }, description: 'Document types to request (COVE, FACTURA, etc.)' },
+        notify_whatsapp: { type: 'boolean', description: 'Also send WhatsApp notification to supplier' },
+      },
+      required: ['trafico_id']
+    }
+  },
+  {
+    name: 'create_crossing_plan',
+    description: 'Create a crossing plan selecting optimal bridge and time. Use when user says "cruza por...", "programa el cruce", etc. Returns plan for confirmation.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        trafico_id: { type: 'string', description: 'Tráfico ID' },
+        preferred_bridge: { type: 'string', description: 'Preferred bridge (Colombia, World Trade, etc.)' },
+        preferred_time: { type: 'string', description: 'Preferred time window (6-8 AM, etc.)' },
+      },
+      required: ['trafico_id']
     }
   },
   {
@@ -846,6 +885,89 @@ async function executeTool(name: string, input: Record<string, any>, clientCtx: 
         ]
         const MVE_PENALTY_MAX = 7190 // from system_config mve_penalty_max
         return JSON.stringify({ deadlines, total_exposure: deadlines.filter(d => d.severity === 'critical').length * MVE_PENALTY_MAX + ' MXN max', action: 'navigate', path: '/cumplimiento' })
+      }
+      case 'request_documents': {
+        // Chain: generate upload link + optionally notify via WhatsApp
+        const docTypes = input.doc_types || ['FACTURA', 'COVE']
+        const token = Array.from({ length: 32 }, () => Math.floor(Math.random() * 16).toString(16)).join('')
+        const uploadUrl = `https://evco-portal.vercel.app/upload/${token}`
+
+        await supabase.from('upload_tokens').insert({
+          token,
+          trafico_id: input.trafico_id,
+          company_id: companyId,
+          required_docs: docTypes,
+          docs_received: [],
+          expires_at: new Date(Date.now() + 72 * 3600000).toISOString(),
+        })
+
+        const result: Record<string, unknown> = {
+          success: true,
+          upload_url: uploadUrl,
+          trafico_id: input.trafico_id,
+          requested_docs: docTypes,
+          expires: '72 horas',
+        }
+
+        if (input.notify_whatsapp) {
+          try {
+            const whatsappRes = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'https://evco-portal.vercel.app'}/api/whatsapp`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ trafico_id: input.trafico_id, missing_docs: docTypes }),
+            })
+            const whatsappData = await whatsappRes.json()
+            result.whatsapp_sent = whatsappData.success || false
+          } catch {
+            result.whatsapp_sent = false
+          }
+        }
+
+        return JSON.stringify(result)
+      }
+      case 'create_crossing_plan': {
+        // Query bridge conditions + historical patterns
+        const [bridgeRes, traficoRes] = await Promise.all([
+          supabase.from('bridge_intelligence')
+            .select('bridge_name, commercial_wait_minutes, status')
+            .order('fetched_at', { ascending: false })
+            .limit(4),
+          supabase.from('traficos')
+            .select('trafico, descripcion_mercancia, transportista_mexicano, importe_total')
+            .eq('trafico', input.trafico_id || '')
+            .eq('company_id', companyId)
+            .single(),
+        ])
+
+        const bridges = bridgeRes.data || []
+        const trafico = traficoRes.data as Record<string, unknown> | null
+        const preferred = input.preferred_bridge || 'World Trade'
+        const preferredTime = input.preferred_time || '06:00-08:00'
+
+        // Find best bridge
+        const sorted = bridges.sort((a, b) => (a.commercial_wait_minutes || 999) - (b.commercial_wait_minutes || 999))
+        const recommended = sorted[0] || { bridge_name: preferred, commercial_wait_minutes: null, status: 'unknown' }
+
+        return JSON.stringify({
+          trafico_id: input.trafico_id,
+          plan: {
+            bridge: input.preferred_bridge || recommended.bridge_name,
+            time_window: preferredTime,
+            current_wait: recommended.commercial_wait_minutes ? `${recommended.commercial_wait_minutes} min` : 'sin datos',
+            bridge_status: recommended.status,
+            cargo: trafico?.descripcion_mercancia || 'sin descripción',
+            carrier: trafico?.transportista_mexicano || 'sin asignar',
+            value: trafico?.importe_total ? `$${Number(trafico.importe_total).toLocaleString()} USD` : '—',
+          },
+          recommendation: recommended.bridge_name !== preferred
+            ? `${recommended.bridge_name} tiene menor espera (${recommended.commercial_wait_minutes} min) que ${preferred}`
+            : `${preferred} disponible`,
+          alternatives: sorted.slice(0, 3).map(b => ({
+            bridge: b.bridge_name,
+            wait: b.commercial_wait_minutes ? `${b.commercial_wait_minutes} min` : '—',
+            status: b.status,
+          })),
+        })
       }
       case 'calculate_economics': {
         if (input.aggregate) {

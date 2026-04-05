@@ -100,3 +100,12 @@
 - D3: Pipeline column — pipeline_status → pipeline_stage
 - D9: Cruzado Hoy — fecha_pago → fecha_cruce
 - PM2 resurrected after force quit (cruz-bot, globalpc-sync, banxico-rate)
+
+### Data Pipeline Fixes (2026-04-04 night continued)
+- MAFESA clave_cliente: "mafesa" → "4598" (was searching wrong prefix)
+- EVCO clave_cliente: "evco" → "9254" (same issue)
+- Fake MAFESA seed data deleted (4598-M0001 through M0010)
+- Targeted sync: EVCO 6,917 traficos (97.8% with pedimento), MAFESA 775 (100%)
+- Expediente backfill: 0% → 63% EVCO coverage (3,523 rows normalized)
+- Dedup migration run: unique constraint on (referencia, clave_cliente) live
+- 47 companies confirmed in Supabase with correct claves

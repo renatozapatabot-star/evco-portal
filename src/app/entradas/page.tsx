@@ -149,11 +149,11 @@ export default function EntradasPage() {
           <div className="flex items-center gap-1.5">
             <input type="date" value={dateFrom} onChange={e => { setDateFrom(e.target.value); setPage(0) }}
               className="rounded-[6px] px-2 py-1 text-[11px] outline-none"
-              style={{ border: '1px solid var(--border)', color: 'var(--slate-500)', background: 'var(--slate-50)', height: 30 }} />
+              style={{ border: '1px solid var(--border)', color: 'var(--slate-500)', background: 'var(--slate-50)', height: 44, minHeight: 44 }} />
             <span style={{ color: 'var(--text-disabled)', fontSize: 11 }}>—</span>
             <input type="date" value={dateTo} onChange={e => { setDateTo(e.target.value); setPage(0) }}
               className="rounded-[6px] px-2 py-1 text-[11px] outline-none"
-              style={{ border: '1px solid var(--border)', color: 'var(--slate-500)', background: 'var(--slate-50)', height: 30 }} />
+              style={{ border: '1px solid var(--border)', color: 'var(--slate-500)', background: 'var(--slate-50)', height: 44, minHeight: 44 }} />
             {(dateFrom || dateTo) && (
               <button onClick={() => { setDateFrom(''); setDateTo(''); setPage(0) }}
                 className="text-[10px] font-medium px-1.5 py-0.5 rounded"

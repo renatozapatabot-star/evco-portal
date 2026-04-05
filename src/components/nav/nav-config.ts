@@ -103,17 +103,11 @@ export const INTERNAL_BOTTOM: NavTopLevel[] = [
 
 export const CLIENT_NAV: NavTopLevel[] = [
   { href: '/',             label: 'Inicio',       icon: LayoutDashboard },
-  { href: '/traficos',     label: 'Tráficos',     icon: Truck },
-  { href: '/entradas',     label: 'Entradas',     icon: Package },
-  { href: '/pedimentos',   label: 'Pedimentos',   icon: FileText },
+  { href: '/traficos',     label: 'Operaciones',  icon: Truck },
   { href: '/documentos',   label: 'Documentos',   icon: FolderOpen },
-  { href: '/catalogo',     label: 'Catálogo',     icon: ClipboardList },
-  { href: '/anexo24',      label: 'Anexo 24',     icon: BookOpen },
   { href: '/financiero',   label: 'Financiero',   icon: DollarSign },
-  { href: '/proveedores',  label: 'Proveedores',  icon: Users2 },
-  { href: '/logros',       label: 'Logros',         icon: Award },
-  { href: '/actividad',    label: 'Actividad',     icon: Activity },
-  { href: '/cruz',         label: 'CRUZ AI',       icon: MessageSquare, gold: true },
+  { href: '/actividad',    label: 'Actividad',    icon: Activity },
+  { href: '/cruz',         label: 'CRUZ AI',      icon: MessageSquare, gold: true },
 ]
 
 // ---------------------------------------------------------------------------
@@ -138,16 +132,18 @@ export const CLIENT_GROUPS: NavGroup[] = [
     children: [
       { href: '/documentos',    label: 'Documentos',   icon: FolderOpen },
       { href: '/expedientes',   label: 'Expedientes',  icon: FolderOpen },
+      { href: '/catalogo',      label: 'Catálogo',     icon: ClipboardList },
+      { href: '/anexo24',       label: 'Anexo 24',     icon: BookOpen },
     ],
   },
   {
     key: 'costos',
-    label: 'Costos',
+    label: 'Finanzas',
     icon: DollarSign,
     children: [
-      { href: '/financiero',    label: 'Financiero',    icon: DollarSign },
-      { href: '/proveedores',   label: 'Proveedores',   icon: Users2 },
-      { href: '/facturacion',   label: 'Facturas',      icon: Receipt },
+      { href: '/financiero',    label: 'Resumen',      icon: DollarSign },
+      { href: '/facturacion',   label: 'Facturas',     icon: Receipt },
+      { href: '/proveedores',   label: 'Proveedores',  icon: Users2 },
     ],
   },
 ]

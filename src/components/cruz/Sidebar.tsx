@@ -9,7 +9,7 @@ import {
   ChevronsRight,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { INTERNAL_GROUPS, INTERNAL_BOTTOM, CLIENT_NAV } from '@/components/nav/nav-config';
+import { INTERNAL_GROUPS, INTERNAL_BOTTOM, CLIENT_NAV, CLIENT_GROUPS } from '@/components/nav/nav-config';
 
 // ── Nav types ──
 
@@ -37,15 +37,27 @@ const operatorNav: NavSection[] = INTERNAL_GROUPS.map(g => ({
   })),
 }));
 
+const clientTopNav: NavSection = {
+  title: '',
+  items: CLIENT_NAV.map(c => ({
+    label: c.label,
+    href: c.href,
+    icon: <c.icon size={ICON_SIZE} />,
+  })),
+};
+
+const clientGroupNav: NavSection[] = CLIENT_GROUPS.map(g => ({
+  title: g.label,
+  items: g.children.map(c => ({
+    label: c.label,
+    href: c.href,
+    icon: <c.icon size={ICON_SIZE} />,
+  })),
+}));
+
 const clientNav: NavSection[] = [
-  {
-    title: 'Portal',
-    items: CLIENT_NAV.map(c => ({
-      label: c.label,
-      href: c.href,
-      icon: <c.icon size={ICON_SIZE} />,
-    })),
-  },
+  clientTopNav,
+  ...clientGroupNav,
 ];
 
 interface SidebarProps {

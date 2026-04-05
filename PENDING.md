@@ -88,3 +88,11 @@
 - [ ] Traficos/Entradas cache TTL (H3 — 30 second max)
 - [ ] CRUZ AI prompt parameterization (M4 — multi-tenant violation)
 - [ ] Fake prediction probabilities (M1 — remove or label as estimates)
+
+## Data Verification Findings (2026-04-04)
+- [ ] MAFESA: 10 traficos but 0 pedimentos, 0 entradas, 0 docs — NOT ready for credentials
+- [ ] EVCO: expediente_documentos join key mismatch — 0% coverage despite docs existing
+- [ ] EVCO: 51% unresolved PRV_ supplier codes
+- [ ] Run dedup_facturas.sql migration (285 EVCO + 49 MAFESA duplicates)
+- [ ] Investigate "castores" company_id in traficos (unregistered client)
+- [ ] MAFESA pedimento linkage — GlobalPC sync may not be pulling their pedimento numbers

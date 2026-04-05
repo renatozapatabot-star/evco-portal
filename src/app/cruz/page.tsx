@@ -11,6 +11,7 @@ import { getClientClaveCookie, getCompanyIdCookie } from '@/lib/client-config'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useStatusSentence } from '@/hooks/use-status-sentence'
 import { getMostActionableChips, PriorityChip } from '@/lib/cruz-priority'
+import { playSound } from '@/lib/sounds'
 
 interface Message {
   id: string
@@ -248,6 +249,7 @@ export default function CruzChatPage() {
       setMessages(prev => prev.map(m =>
         m.id === aiMsgId ? { ...m, content: aiText, navigate: navigate || undefined } : m
       ))
+      playSound('send')
     } catch (err: unknown) {
       if (err instanceof Error && err.name !== 'AbortError') {
         let suggestion = 'Intenta reformular tu pregunta.'

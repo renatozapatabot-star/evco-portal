@@ -8,6 +8,7 @@ import { calculateTmecSavings } from '@/lib/tmec-savings'
 import { fmtDateCompact } from '@/lib/format-utils'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { playSound } from '@/lib/sounds'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
@@ -36,7 +37,19 @@ export default function LogrosPage() {
       const traficos = trafRes.data || []
       const entradas = entRes.data || []
       const tmecSavings = calculateTmecSavings(traficos)
-      setAchievements(computeAchievements(traficos, entradas, tmecSavings))
+      const computed = computeAchievements(traficos, entradas, tmecSavings)
+      setAchievements(computed)
+
+      // Play sound if new achievement earned since last visit
+      const earnedIds = computed.filter(a => a.earned).map(a => a.id)
+      const seenRaw = localStorage.getItem('cruz-seen-achievements')
+      const seen: string[] = seenRaw ? JSON.parse(seenRaw) : []
+      const newlyEarned = earnedIds.filter(id => !seen.includes(id))
+      if (newlyEarned.length > 0) {
+        playSound('achievement')
+        localStorage.setItem('cruz-seen-achievements', JSON.stringify(earnedIds))
+      }
+
       setLoading(false)
     }).catch(() => setLoading(false))
   }, [])

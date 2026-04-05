@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useCallback } from 'react'
 import { CheckCircle, AlertTriangle, Info, X } from 'lucide-react'
+import { playSound } from '@/lib/sounds'
 
 type ToastType = 'success' | 'error' | 'info'
 interface Toast { id: number; message: string; type: ToastType }
@@ -19,6 +20,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     setToasts(prev => [...prev, { id, message, type }])
     setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 4000)
     if (typeof navigator !== 'undefined' && 'vibrate' in navigator) navigator.vibrate(type === 'error' ? [10, 30, 10] : 10)
+    playSound(type === 'error' ? 'alert' : 'success')
   }, [])
 
   const dismiss = useCallback((id: number) => {

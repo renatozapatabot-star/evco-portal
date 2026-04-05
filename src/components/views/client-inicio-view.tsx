@@ -15,6 +15,7 @@ import { dashboardStory } from '@/lib/data-stories'
 import { DataStory } from '@/components/ui/DataStory'
 import { useOnboarding } from '@/hooks/use-onboarding'
 import { OnboardingHint } from '@/components/ui/OnboardingHint'
+import { DailyBrief } from '@/components/daily-brief'
 import CountingNumber from '@/components/ui/CountingNumber'
 import { Sparkline } from '@/components/sparkline'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -54,6 +55,11 @@ export default function ClientInicioView() {
   const [streakDays, setStreakDays] = useState(0)
   const [lastVisit, setLastVisit] = useState<string | null>(null)
   const [dismissed, setDismissed] = useState(0) // counter to force re-render on dismiss
+  const [briefDismissed, setBriefDismissed] = useState(() => {
+    if (typeof window === 'undefined') return true
+    const today = new Date().toLocaleDateString('es-MX', { timeZone: 'America/Chicago' })
+    return localStorage.getItem('cruz-brief-date') === today
+  })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [companyName, setCompanyName] = useState('')
@@ -269,6 +275,19 @@ export default function ClientInicioView() {
     return { newTraficos, crossed, noPedGt7 }
   }, [traficos])
 
+  // ── Yesterday stats for daily brief ──
+  const yesterday = useMemo(() => {
+    const end = new Date(); end.setHours(0, 0, 0, 0)
+    const start = new Date(end); start.setDate(start.getDate() - 1)
+    const startStr = start.toISOString()
+    const endStr = end.toISOString()
+    const crossed = traficos.filter(t => t.fecha_cruce && t.fecha_cruce >= startStr && t.fecha_cruce < endStr)
+    return {
+      crossed: crossed.length,
+      value: crossed.reduce((s, t) => s + (Number(t.importe_total) || 0), 0),
+    }
+  }, [traficos])
+
   // ── Recent events for feed ──
   const cutoff24h = new Date(Date.now() - 86400000).toISOString()
   const recentCrossed = useMemo(() =>
@@ -384,8 +403,30 @@ export default function ClientInicioView() {
 
   return (
     <div className="page-shell" style={{ maxWidth: 960 }}>
-      {/* Zen state: "Todo en orden" — the 11 PM Executive standard */}
-      {zenMode && (
+      {/* Zen state: Daily Brief on first visit, then "Todo en orden" */}
+      {zenMode && !briefDismissed && (
+        <div style={{ padding: isMobile ? '40px 16px' : '60px 20px', display: 'flex', justifyContent: 'center' }}>
+          <DailyBrief
+            companyName={companyName || 'cliente'}
+            crossedYesterday={yesterday.crossed}
+            valueYesterday={yesterday.value}
+            newTraficos24h={last24h.newTraficos}
+            enProceso={enProceso}
+            tmecSavings={tmecSavings.totalSavings}
+            streakDays={streakDays}
+            valorYTD={valorYTD}
+            hour={new Date().getHours()}
+            dayOfWeek={new Date().getDay()}
+            onDismiss={() => {
+              const today = new Date().toLocaleDateString('es-MX', { timeZone: 'America/Chicago' })
+              localStorage.setItem('cruz-brief-date', today)
+              setBriefDismissed(true)
+              setDetailOpen(true)
+            }}
+          />
+        </div>
+      )}
+      {zenMode && briefDismissed && (
         <div style={{ textAlign: 'center', padding: isMobile ? '60px 20px' : '100px 20px' }}>
           <div style={{ fontSize: isMobile ? 28 : 36, fontWeight: 800, color: '#1A1A1A', letterSpacing: '-0.02em' }}>
             Todo en orden.

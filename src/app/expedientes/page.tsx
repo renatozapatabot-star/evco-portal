@@ -225,16 +225,12 @@ export default function ExpedientesPage() {
 
       {/* Empty state */}
       {!loading && !fetchError && grouped.length === 0 && (
-        <div className="flex flex-col items-center py-20 text-center">
-          <FolderOpen className="w-12 h-12 text-slate-300 mb-4" />
-          <h2 className="text-lg font-semibold text-slate-900 mb-2">
-            Sin expedientes digitales
-          </h2>
-          <p className="text-[#6B6B6B] max-w-sm text-sm">
-            Los documentos de cada tráfico aparecerán aquí organizados por tipo.
-            Puede subir documentos desde el detalle de cualquier tráfico.
-          </p>
-        </div>
+        <EmptyState
+          icon="📂"
+          title="Sin expedientes digitales"
+          description="Los documentos de cada tráfico aparecerán aquí organizados por tipo"
+          cta={{ label: 'Ver tráficos', href: '/traficos' }}
+        />
       )}
 
       {/* Grouped documents */}

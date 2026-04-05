@@ -5,6 +5,7 @@ import { getCookieValue, getCompanyIdCookie, getClientClaveCookie } from '@/lib/
 import { fmtDate, fmtDateShort } from '@/lib/format-utils'
 import { useIsMobile } from '@/hooks/use-mobile'
 import Link from 'next/link'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 /* ── Types ── */
 
@@ -153,11 +154,8 @@ export default function CalendarioPage() {
   function renderGroupedList(groups: Map<string, TraficoRow[]>, emptyMsg: string) {
     if (groups.size === 0) {
       return (
-        <div style={{
-          background: T.card, border: `1px solid ${T.border}`,
-          borderRadius: T.radius, padding: 32, textAlign: 'center',
-        }}>
-          <div style={{ fontSize: 14, color: T.textSecondary }}>{emptyMsg}</div>
+        <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.radius }}>
+          <EmptyState icon="📅" title={emptyMsg} description="Los eventos programados aparecerán aquí" />
         </div>
       )
     }

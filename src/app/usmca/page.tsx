@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import { getCookieValue } from '@/lib/client-config'
 import { fmtUSD, fmtUSDCompact, fmtDate } from '@/lib/format-utils'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 /* ── Light tokens (DESIGN_SYSTEM.md v6) ── */
 const D = {
@@ -279,19 +280,9 @@ export default function USMCAPage() {
               <p>Cargando tráficos T-MEC...</p>
             </div>
           ) : filteredRows.length === 0 && imdTraficos.length === 0 ? (
-            <div style={{ padding: 60, textAlign: 'center' }}>
-              <ShieldCheck size={48} style={{ color: D.textMuted, margin: '0 auto 16px' }} />
-              <p style={{ fontSize: 16, fontWeight: 500, margin: '0 0 8px' }}>
-                Sin tráficos T-MEC registrados
-              </p>
-              <p style={{ color: D.textSec, fontSize: 14, margin: 0 }}>
-                Los tráficos con régimen IMD aparecerán aquí automáticamente.
-              </p>
-            </div>
+            <EmptyState icon="🛡️" title="Sin tráficos T-MEC registrados" description="Los tráficos con régimen IMD aparecerán aquí automáticamente" cta={{ label: 'Ver tráficos', href: '/traficos' }} />
           ) : filteredRows.length === 0 ? (
-            <div style={{ padding: 40, textAlign: 'center', color: D.textSec }}>
-              Sin resultados para &quot;{search}&quot;
-            </div>
+            <EmptyState icon="🔍" title={`Sin resultados para "${search}"`} description="Intenta con otro término de búsqueda" />
           ) : (
             <>
               <div style={{ overflowX: 'auto' }}>

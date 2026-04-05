@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Truck, Clock, TrendingUp, AlertTriangle, ChevronRight, X } from 'lucide-react'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 interface Carrier {
   name: string
@@ -127,6 +128,11 @@ export default function CarriersPage() {
                 </tr>
               </thead>
               <tbody>
+                {!loading && carriers.length === 0 && (
+                  <tr><td colSpan={9}>
+                    <EmptyState icon="🚛" title="Sin transportistas registrados" description="Los datos de carriers aparecerán después de la sincronización" />
+                  </td></tr>
+                )}
                 {carriers.map((c, i) => (
                   <tr key={c.name}
                     style={{ cursor: 'pointer', minHeight: 60, background: selected?.name === c.name ? 'rgba(201,168,76,0.04)' : undefined }}

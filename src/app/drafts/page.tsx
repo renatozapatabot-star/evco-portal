@@ -7,6 +7,7 @@ import { GOLD } from '@/lib/design-system'
 import { formatAbsoluteETA, fmtUSD } from '@/lib/format-utils'
 import { getCompanyIdCookie } from '@/lib/client-config'
 import { createClient } from '@supabase/supabase-js'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -113,11 +114,7 @@ export default function DraftsPage() {
           {[0, 1, 2].map(i => <div key={i} className="skeleton-shimmer" style={{ height: 80, borderRadius: 'var(--radius-md)' }} />)}
         </div>
       ) : drafts.length === 0 ? (
-        <div style={{ padding: 60, textAlign: 'center' }}>
-          <CheckCircle size={32} style={{ color: 'var(--success)', margin: '0 auto 12px' }} />
-          <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--slate-700)' }}>Sin borradores pendientes</div>
-          <div style={{ fontSize: 13, color: 'var(--slate-400)', marginTop: 4 }}>Todos los borradores han sido revisados</div>
-        </div>
+        <EmptyState icon="✅" title="Sin borradores pendientes" description="Todos los borradores han sido revisados" />
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {drafts.map(d => {

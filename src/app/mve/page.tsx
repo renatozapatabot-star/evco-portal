@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from 'react'
 import { AlertTriangle, CheckCircle, Clock, Search } from 'lucide-react'
 import { getClientClaveCookie, getCompanyIdCookie } from '@/lib/client-config'
 import { fmtDate as fmtDateUtil } from '@/lib/format-utils'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 interface TraficoRow {
   trafico: string
@@ -191,8 +192,8 @@ export default function MvePage() {
                 </tr>
               ))}
               {!loading && pending.length === 0 && (
-                <tr><td colSpan={6} className="text-center py-12 text-[13px]" style={{ color: 'var(--success)' }}>
-                  Todos los tráficos cumplen con MVE
+                <tr><td colSpan={6}>
+                  <EmptyState icon="✅" title="Cumplimiento completo" description="Todos los tráficos cumplen con MVE" />
                 </td></tr>
               )}
               {pending.map(r => (

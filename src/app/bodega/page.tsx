@@ -7,6 +7,7 @@ import { fmtDate, fmtKg } from '@/lib/format-utils'
 import { useIsMobile } from '@/hooks/use-mobile'
 import Link from 'next/link'
 import { ErrorCard } from '@/components/ui/ErrorCard'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 /* ── Types ── */
 
@@ -234,10 +235,8 @@ export default function BodegaPage() {
             <tbody>
               {rows.length === 0 ? (
                 <tr>
-                  <td colSpan={6} style={{ padding: 48, textAlign: 'center' }}>
-                    <div style={{ fontSize: 32, marginBottom: 8 }}>📦</div>
-                    <div style={{ fontSize: 15, fontWeight: 600, color: T.textPrimary, marginBottom: 4 }}>Sin entradas registradas</div>
-                    <div style={{ fontSize: 13, color: T.textSecondary }}>Las llegadas de mercancía aparecerán aquí</div>
+                  <td colSpan={6}>
+                    <EmptyState icon="📦" title="Sin entradas registradas" description="Las llegadas de mercancía aparecerán aquí" cta={{ label: 'Ver entradas', href: '/entradas' }} />
                   </td>
                 </tr>
               ) : rows.map(e => {
@@ -289,13 +288,8 @@ export default function BodegaPage() {
       {/* ═══ TAB 2 — En Bodega ═══ */}
       {tab === 'bodega' && (
         enBodega.length === 0 ? (
-          <div style={{
-            background: T.card, border: `1px solid ${T.border}`,
-            borderRadius: T.radius, padding: 48, textAlign: 'center',
-          }}>
-            <div style={{ fontSize: 32, marginBottom: 8 }}>🏭</div>
-            <div style={{ fontSize: 15, fontWeight: 600, color: T.textPrimary, marginBottom: 4 }}>Sin mercancía en bodega</div>
-            <div style={{ fontSize: 13, color: T.textSecondary }}>Las entradas con tráfico asignado aparecerán aquí</div>
+          <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.radius }}>
+            <EmptyState icon="🏭" title="Sin mercancía en bodega" description="Las entradas con tráfico asignado aparecerán aquí" />
           </div>
         ) : (
           <div style={{
@@ -386,10 +380,8 @@ export default function BodegaPage() {
               <tbody>
                 {danos.length === 0 ? (
                   <tr>
-                    <td colSpan={isBroker ? 4 : 3} style={{ padding: 48, textAlign: 'center' }}>
-                      <div style={{ fontSize: 32, marginBottom: 8 }}>✅</div>
-                      <div style={{ fontSize: 15, fontWeight: 600, color: T.textPrimary, marginBottom: 4 }}>Sin incidencias</div>
-                      <div style={{ fontSize: 13, color: T.textSecondary }}>No se han reportado faltantes ni daños</div>
+                    <td colSpan={isBroker ? 4 : 3}>
+                      <EmptyState icon="✅" title="Sin incidencias" description="No se han reportado faltantes ni daños" />
                     </td>
                   </tr>
                 ) : danos.map(e => {

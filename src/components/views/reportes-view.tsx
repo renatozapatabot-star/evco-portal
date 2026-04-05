@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } from 'recharts'
 import { getCookieValue } from '@/lib/client-config'
 import { GOLD } from '@/lib/design-system'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { fmtDate } from '@/lib/format-utils'
 import { ErrorCard } from '@/components/ui/ErrorCard'
@@ -397,11 +398,7 @@ export function ReportesView() {
             </BarChart>
           </ResponsiveContainer>
         ) : (
-          <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-            <div style={{ fontSize: 32, marginBottom: 8 }}>📊</div>
-            <div style={{ color: T.textSub, fontSize: 13, fontWeight: 600 }}>Sin datos para el período</div>
-            <div style={{ color: T.textMuted, fontSize: 12, marginTop: 4 }}>Los tráficos aparecerán aquí cuando se registren</div>
-          </div>
+          <EmptyState icon="📊" title="Sin datos para el período" description="Los tráficos aparecerán aquí cuando se registren" />
         )}
       </Card>
 
@@ -504,11 +501,7 @@ export function ReportesView() {
             </div>
           )
         ) : (
-          <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-            <div style={{ fontSize: 32, marginBottom: 8 }}>🏭</div>
-            <div style={{ color: T.textSub, fontSize: 13, fontWeight: 600 }}>Sin datos de proveedores</div>
-            <div style={{ color: T.textMuted, fontSize: 12, marginTop: 4 }}>Los proveedores aparecerán cuando se registren tráficos</div>
-          </div>
+          <EmptyState icon="🏭" title="Sin datos de proveedores" description="Los proveedores aparecerán cuando se registren tráficos" />
         )}
       </Card>
 

@@ -7,6 +7,7 @@ import {
   RefreshCw, FileText,
 } from 'lucide-react'
 import { getCookieValue } from '@/lib/client-config'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { fmtUSD, fmtUSDCompact, fmtDate } from '@/lib/format-utils'
 
 /* ── Light tokens (DESIGN_SYSTEM.md v6) ── */
@@ -319,22 +320,9 @@ export default function FinancieroPage() {
               <p>Cargando facturas...</p>
             </div>
           ) : filteredFacturas.length === 0 && facturas.length === 0 ? (
-            /* Empty state — table doesn't exist or no data synced yet */
-            <div style={{ padding: 60, textAlign: 'center' }}>
-              <FileText size={48} style={{ color: D.textMuted, margin: '0 auto 16px' }} />
-              <p style={{ fontSize: 16, fontWeight: 500, margin: '0 0 8px' }}>
-                Facturas disponibles después de sincronización
-              </p>
-              <p style={{ color: D.textSec, fontSize: 14, margin: 0 }}>
-                Los datos de facturas se cargarán automáticamente con la próxima sincronización del pipeline.
-              </p>
-            </div>
+            <EmptyState icon="📄" title="Facturas disponibles después de sincronización" description="Los datos de facturas se cargarán automáticamente con la próxima sincronización del pipeline" />
           ) : filteredFacturas.length === 0 ? (
-            <div style={{ padding: 48, textAlign: 'center' }}>
-              <div style={{ fontSize: 32, marginBottom: 8 }}>🔍</div>
-              <div style={{ fontSize: 15, fontWeight: 600, color: D.text, marginBottom: 4 }}>Sin resultados para &quot;{search}&quot;</div>
-              <div style={{ fontSize: 13, color: D.textSec }}>Intenta con otro término de búsqueda</div>
-            </div>
+            <EmptyState icon="🔍" title={`Sin resultados para "${search}"`} description="Intenta con otro término de búsqueda" />
           ) : (
             <>
               <div style={{ overflowX: 'auto' }}>

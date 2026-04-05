@@ -98,14 +98,14 @@ export function scoreLabel(score: number): string {
   return 'Urgente'
 }
 
-export function scoreReason(t: any): string {
+export function scoreReason(t: Trafico & { score_reasons?: string; _docCount?: number }): string {
   if (t.score_reasons) return t.score_reasons
   const input = extractScoreInput(t)
   const { reasons } = calculateCruzScoreDetailed(input)
   return reasons.join(' · ') || ''
 }
 
-export function extractScoreInput(trafico: any): ScoreInput {
+export function extractScoreInput(trafico: Trafico & { fecha_pago?: string | null; _docCount?: number }): ScoreInput {
   const now = Date.now()
   const llegada = trafico.fecha_llegada ? new Date(trafico.fecha_llegada).getTime() : now
   const daysInProcess = Math.max(0, Math.floor((now - llegada) / 86400000))

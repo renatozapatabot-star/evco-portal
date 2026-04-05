@@ -41,8 +41,8 @@ EMPRESA PROSPECTO:
 - Usa IMMEX: ${prospect.uses_immex ? 'Sí' : 'No'}
 - T-MEC elegible: ${prospect.likely_tmec_eligible ? 'Sí' : 'No'}
 - Ahorro T-MEC estimado: $${Math.round(prospect.tmec_savings_opportunity_mxn || 0).toLocaleString()} MXN/año
-- Proveedores principales: ${prospect.top_proveedores?.map((p: any) => p.name).join(', ') || 'N/A'}
-- Operaciones recientes: ${sightings?.slice(0, 5).map((s: any) => `${s.pedimento} ($${Math.round(s.valor_usd || 0).toLocaleString()} USD, ${s.proveedor})`).join('; ') || 'N/A'}
+- Proveedores principales: ${prospect.top_proveedores?.map((p: { name?: string }) => p.name).join(', ') || 'N/A'}
+- Operaciones recientes: ${sightings?.slice(0, 5).map((s: { pedimento?: string; valor_usd?: number; proveedor?: string }) => `${s.pedimento} ($${Math.round(s.valor_usd || 0).toLocaleString()} USD, ${s.proveedor})`).join('; ') || 'N/A'}
 
 NUESTRA EMPRESA:
 - Renato Zapata & Company
@@ -99,7 +99,7 @@ Máximo 400 palabras. Directo al punto.`
         estimated_annual_fees_mxn: prospect.estimated_annual_fees_mxn,
       },
     })
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 })
+  } catch (err: unknown) {
+    return NextResponse.json({ error: getErrorMessage(err) }, { status: 500 })
   }
 }

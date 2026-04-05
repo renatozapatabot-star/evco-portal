@@ -52,7 +52,7 @@ No incluyas texto fuera del JSON.`
     const jsonMatch = text.match(/\{[\s\S]*\}/)
     if (!jsonMatch) throw new Error('No se pudo parsear la respuesta del modelo')
     return NextResponse.json(JSON.parse(jsonMatch[0]))
-  } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 })
+  } catch (e: unknown) {
+    return NextResponse.json({ error: getErrorMessage(e) }, { status: 500 })
   }
 }

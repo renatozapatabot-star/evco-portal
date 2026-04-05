@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
     }
   })
 
-  const anomalies: any[] = []
+  const anomalies: Array<{ product: string; fraccion: string; declared_price: number; historical_avg: number; deviation_pct: number; z_score: number; severity: string }> = []
   items.forEach(item => {
     if (!item.precio_unitario || !item.fraccion) return
     const price = Number(item.precio_unitario)

@@ -37,7 +37,7 @@ export default function CarriersPage() {
 
       // Merge crossing times into carrier data
       const crossingByCarrier: Record<string, { avgHours: number; avgDays: number }> = {}
-      ;(crossing?.averages?.by_carrier || []).forEach((c: any) => {
+      ;(crossing?.averages?.by_carrier || []).forEach((c: { name: string; avgHours: number; avgDays: number }) => {
         crossingByCarrier[c.name] = { avgHours: c.avgHours, avgDays: c.avgDays }
       })
 

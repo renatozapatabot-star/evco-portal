@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
   const entradas = entRes.data || []
 
   const entMap: Record<string, { f: number; d: number; t: number }> = {}
-  entradas.forEach((e: any) => {
+  entradas.forEach((e: { trafico: string; tiene_faltantes?: boolean | null; mercancia_danada?: boolean | null }) => {
     if (!entMap[e.trafico]) entMap[e.trafico] = { f: 0, d: 0, t: 0 }
     entMap[e.trafico].t++
     if (e.tiene_faltantes) entMap[e.trafico].f++
@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
   })
 
   const carriers: Record<string, { shipments: number; peso: number; faltantes: number; danos: number; entradas: number; cruzados: number }> = {}
-  traficos.forEach((t: any) => {
+  traficos.forEach((t: { transportista_extranjero?: string | null; trafico: string; peso_bruto?: number | null; estatus?: string | null }) => {
     const c = t.transportista_extranjero
     if (!c) return
     if (!carriers[c]) carriers[c] = { shipments: 0, peso: 0, faltantes: 0, danos: 0, entradas: 0, cruzados: 0 }

@@ -47,14 +47,14 @@ export default async function RadarPage() {
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {signals.map((s: any, i: number) => (
+          {signals.map((s: { severity?: string; category?: string; source?: string; title?: string; description?: string }, i: number) => (
             <div key={i} style={{
-              background: sevBg[s.severity] || sevBg.low,
-              border: `1px solid ${sevColor[s.severity] || sevColor.low}30`,
-              borderRadius: 12, padding: '16px 20px', borderLeft: `4px solid ${sevColor[s.severity] || sevColor.low}`
+              background: sevBg[s.severity || ''] || sevBg.low,
+              border: `1px solid ${sevColor[s.severity || ''] || sevColor.low}30`,
+              borderRadius: 12, padding: '16px 20px', borderLeft: `4px solid ${sevColor[s.severity || ''] || sevColor.low}`
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: sevColor[s.severity] || '#666' }}>
+                <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: sevColor[s.severity || ''] || '#666' }}>
                   {s.severity === 'critical' ? '🔴' : s.severity === 'high' ? '🟡' : '🟢'} {s.category}
                 </span>
                 <span style={{ fontSize: 11, color: '#666' }}>{s.source}</span>
@@ -72,7 +72,7 @@ export default async function RadarPage() {
           <h2 style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 16px' }}>Estado de Puentes</h2>
           {(() => {
             const bridgeMap: Record<string, number[]> = {}
-            bridgeData.forEach((b: any) => { if (!bridgeMap[b.bridge_name]) bridgeMap[b.bridge_name] = []; bridgeMap[b.bridge_name].push(b.crossing_hours) })
+            bridgeData.forEach((b: { bridge_name: string; crossing_hours: number }) => { if (!bridgeMap[b.bridge_name]) bridgeMap[b.bridge_name] = []; bridgeMap[b.bridge_name].push(b.crossing_hours) })
             return Object.entries(bridgeMap).map(([name, hours]) => {
               const avg = hours.reduce((a, b) => a + b, 0) / hours.length
               return (

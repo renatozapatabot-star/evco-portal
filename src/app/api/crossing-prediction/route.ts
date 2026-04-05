@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
   const dayAvg: Record<number, { total: number; count: number }> = {}
   let globalTotal = 0, globalCount = 0
 
-  ;(cruzados || []).forEach((t: any) => {
+  ;(cruzados || []).forEach((t: { fecha_cruce: string; fecha_llegada: string; transportista_extranjero?: string | null; trafico: string }) => {
     const hours = (new Date(t.fecha_cruce).getTime() - new Date(t.fecha_llegada).getTime()) / 3600000
     if (hours <= 0 || hours > MAX_HOURS) return // Filter outliers
 
@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
 
   const predictions: Record<string, { avgDays: number; predictedDate: string; confidence: string; carrier: string }> = {}
 
-  ;(active || []).forEach((t: any) => {
+  ;(active || []).forEach((t: { fecha_llegada: string; transportista_extranjero?: string | null; trafico: string }) => {
     const carrier = t.transportista_extranjero || 'UNKNOWN'
     const cData = carrierAvg[carrier]
     const avgHours = cData && cData.count >= 3 ? Math.round(cData.total / cData.count * 10) / 10 : globalAvgHours

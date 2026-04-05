@@ -41,15 +41,15 @@ export default async function ConocimientoPage() {
       </p>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {(knowledge || []).map((k: any) => (
+        {(knowledge || []).map((k: { id: string; knowledge_type?: string; confidence?: number; title?: string; content?: string; tags?: string[] }) => (
           <div key={k.id} style={{
             background: 'var(--navy-900)', border: '1px solid #2A2A2A', borderRadius: 12,
-            padding: '16px 20px', borderLeft: `4px solid ${typeColors[k.knowledge_type] || '#666'}`
+            padding: '16px 20px', borderLeft: `4px solid ${typeColors[k.knowledge_type || ''] || '#666'}`
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span>{typeIcons[k.knowledge_type] || '📄'}</span>
-                <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: typeColors[k.knowledge_type] || '#666' }}>
+                <span>{typeIcons[k.knowledge_type || ''] || '📄'}</span>
+                <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: typeColors[k.knowledge_type || ''] || '#666' }}>
                   {k.knowledge_type}
                 </span>
               </div>

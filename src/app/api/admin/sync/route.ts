@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
       success: true,
       message: company ? `Sync started for ${company}` : 'Full sync started'
     })
-  } catch (e: any) {
+  } catch (e: unknown) {
     return NextResponse.json({ error: getErrorMessage(e) }, { status: 500 })
   }
 }

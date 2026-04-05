@@ -6,7 +6,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
-const envelope = (data: any) => ({
+const envelope = (data: unknown) => ({
   success: true,
   data,
   meta: { generated_at: new Date().toISOString(), version: '1.0' },

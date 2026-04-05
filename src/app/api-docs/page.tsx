@@ -31,8 +31,8 @@ export default function ApiDocsPage() {
       const res = await fetch(url)
       const data = await res.json()
       setTryResult(JSON.stringify(data, null, 2))
-    } catch (e: any) {
-      setTryResult(`Error: ${e.message}`)
+    } catch (e: unknown) {
+      setTryResult(`Error: ${getErrorMessage(e)}`)
     }
     setTrying(null)
   }

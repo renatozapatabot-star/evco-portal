@@ -87,9 +87,9 @@ export default function DocumentosLegalesPage() {
       .then(r => r.json())
       .then(res => {
         if (res.data?.length > 0) {
-          setDocs(res.data.map((d: any) => ({
+          setDocs(res.data.map((d: { expiry_date?: string | null; [key: string]: unknown }) => ({
             ...d,
-            status: getStatus(d.expiry_date),
+            status: getStatus(d.expiry_date ?? null),
           })))
         } else {
           // Use initial hardcoded data

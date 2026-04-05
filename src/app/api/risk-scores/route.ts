@@ -17,10 +17,11 @@ export async function GET(request: NextRequest) {
     .select('trafico, tiene_faltantes, mercancia_danada').eq('company_id', companyId).limit(5000)
 
   const docMap: Record<string, Set<string>> = {}
-  ;(docs || []).forEach((d: any) => { if (!docMap[d.trafico_id]) docMap[d.trafico_id] = new Set(); docMap[d.trafico_id].add(d.doc_type) })
+  ;(docs || []).forEach((d: { trafico_id?: string; doc_type?: string }) => { if (d.trafico_id && d.doc_type) { if (!docMap[d.trafico_id]) docMap[d.trafico_id] = new Set(); docMap[d.trafico_id].add(d.doc_type) } })
 
   const entMap: Record<string, { faltantes: boolean; danada: boolean }> = {}
-  ;(entradas || []).forEach((e: any) => {
+  ;(entradas || []).forEach((e: { trafico?: string | null; tiene_faltantes?: boolean | null; mercancia_danada?: boolean | null }) => {
+    if (!e.trafico) return
     if (!entMap[e.trafico]) entMap[e.trafico] = { faltantes: false, danada: false }
     if (e.tiene_faltantes) entMap[e.trafico].faltantes = true
     if (e.mercancia_danada) entMap[e.trafico].danada = true
@@ -29,7 +30,7 @@ export async function GET(request: NextRequest) {
   const now = Date.now()
   const scores: Record<string, { score: number; factors: string[] }> = {}
 
-  ;(traficos || []).forEach((t: any) => {
+  ;(traficos || []).forEach((t: { trafico: string; estatus?: string | null; fecha_llegada?: string | null; pedimento?: string | null }) => {
     let score = 0
     const factors: string[] = []
 

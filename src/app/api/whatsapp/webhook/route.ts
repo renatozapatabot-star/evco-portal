@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { getErrorMessage } from '@/lib/errors'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -109,8 +110,8 @@ export async function POST(request: NextRequest) {
           if (docError) console.error(`[WhatsApp Webhook] DB insert error: ${docError.message}`)
 
           mediaResults.push(fileName)
-        } catch (mediaErr: any) {
-          console.error(`[WhatsApp Webhook] Media processing error: ${mediaErr.message}`)
+        } catch (mediaErr: unknown) {
+          console.error(`[WhatsApp Webhook] Media processing error: ${getErrorMessage(mediaErr)}`)
         }
       }
 
@@ -143,8 +144,8 @@ export async function POST(request: NextRequest) {
     if (textLogError) console.error('[WhatsApp Webhook] Text log error:', textLogError.message)
 
     return twiml('Recibimos tu mensaje. Si necesitas enviar documentos, adjuntalos como archivo o foto.')
-  } catch (error: any) {
-    console.error('[WhatsApp Webhook] Error:', error.message)
+  } catch (error: unknown) {
+    console.error('[WhatsApp Webhook] Error:', getErrorMessage(error))
     return twiml()
   }
 }

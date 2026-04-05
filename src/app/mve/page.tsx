@@ -48,7 +48,7 @@ export default function MvePage() {
     // Compliance predictions for MVE
     fetch(`/api/data?table=compliance_predictions&company_id=${companyId}&limit=50&order_by=severity&order_dir=asc`)
       .then(r => r.json())
-      .then(d => setCompAlerts((d.data ?? []).filter((a: any) => !a.resolved)))
+      .then(d => setCompAlerts((d.data ?? []).filter((a: Record<string, unknown>) => !a.resolved)))
       .catch((err: unknown) => { void 0 })
     // Fetch MVE deadline from deadlines table (not hardcoded)
     fetch(`/api/data?table=deadlines&company_id=${companyId}&limit=10&order_by=deadline&order_dir=desc`)

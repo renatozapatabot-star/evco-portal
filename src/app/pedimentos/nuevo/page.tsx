@@ -134,7 +134,7 @@ export default function NuevoPedimentoPage() {
       const iva = ratesAvailable && dta !== null && igi !== null ? (valorMXN + igi + dta) * ivaRate : null
 
       const prov = proveedores?.[0]
-      const partidasList = (partidas || []).map((p: any) => ({
+      const partidasList = (partidas || []).map((p: { fraccion_arancelaria?: string; fraccion?: string; descripcion?: string; descripcion_mercancia?: string; cantidad?: number; valor_comercial?: number; precio_unitario?: number }) => ({
         fraccion: p.fraccion_arancelaria || p.fraccion || '',
         descripcion: p.descripcion || p.descripcion_mercancia || '',
         cantidad: Number(p.cantidad) || 0,
@@ -164,8 +164,8 @@ export default function NuevoPedimentoPage() {
         documentos_requeridos: REQUIRED_DOCS,
         partidas: partidasList,
       })
-    } catch (e: any) {
-      setError(`Error: ${e.message}`)
+    } catch (e: unknown) {
+      setError(`Error: ${e instanceof Error ? e.message : String(e)}`)
     }
     setLoading(false)
   }

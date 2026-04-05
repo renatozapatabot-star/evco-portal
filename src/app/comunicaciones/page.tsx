@@ -25,7 +25,7 @@ const TEMPLATES = [
 type Tab = 'inbox' | 'compose' | 'sent' | 'templates'
 
 export default function ComunicacionesPage() {
-  const [events, setEvents] = useState<any[]>([])
+  const [events, setEvents] = useState<{ id?: string; from_address?: string; subject?: string; is_urgent?: boolean; urgent_keywords?: string[]; scanned_at?: string; date?: string; body_preview?: string }[]>([])
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState<Tab>('inbox')
   const [filter, setFilter] = useState('')
@@ -92,9 +92,9 @@ export default function ComunicacionesPage() {
     setTimeout(() => setSendStatus(''), 5000)
   }
 
-  const fmtDate = (d: string) => fmtDateTime(d)
+  const fmtDate = (d: string | undefined) => fmtDateTime(d)
 
-  const tabs: { key: Tab; label: string; icon: any }[] = [
+  const tabs: { key: Tab; label: string; icon: React.ElementType }[] = [
     { key: 'inbox', label: `Bandeja (${events.length})`, icon: Inbox },
     { key: 'compose', label: 'Redactar', icon: PenLine },
     { key: 'sent', label: 'Enviados', icon: Send },
@@ -228,7 +228,7 @@ export default function ComunicacionesPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map((e: any, i: number) => (
+                  {filtered.map((e: { id?: string; from_address?: string; subject?: string; is_urgent?: boolean; urgent_keywords?: string[]; scanned_at?: string; date?: string }, i: number) => (
                     <tr key={e.id || i}>
                       <td>
                         <span style={{ width: 8, height: 8, borderRadius: '50%', display: 'inline-block',

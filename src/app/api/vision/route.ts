@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getErrorMessage } from '@/lib/errors'
 
 const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY
 
@@ -53,7 +54,7 @@ export async function POST(request: NextRequest) {
       extracted: extracted || { raw_text: text },
       confidence: extracted ? 'high' : 'low',
     })
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+  } catch (error: unknown) {
+    return NextResponse.json({ error: getErrorMessage(error) }, { status: 500 })
   }
 }

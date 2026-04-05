@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
       .limit(5),
   ])
 
-  const items: any[] = []
+  const items: Array<{ id: string; type: string; title: string; body: string; severity: string; action_url: string; created_at?: string; source: string }> = []
 
   // Compliance predictions
   ;(compRes.data || []).forEach(p => {

@@ -15,12 +15,9 @@
   --gold-bg: rgba(196,150,60,0.08);
 
   /* ── Navy / Sidebar ── */
-  --navy-deepest: #0A1628;
   --navy-900: #0B1623;
   --navy-800: #1A2535;
   --navy-700: #18293F;
-  --navy-600: #1F3550;
-  --navy-500: #2A4365;
 
   /* ── Gold palette ── */
   --gold-400: #C4963C;
@@ -106,7 +103,6 @@
 
   /* ── Extended Palette (v2) ── */
   --sand-400: #C4A96A;
-  --copper-300: #B8956A;
   --success-500: #22C55E;
   --warning-500: #F59E0B;
   --danger-500: #D64545;
@@ -127,10 +123,6 @@
   --shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
   --shadow-elevated: 0 4px 12px rgba(0,0,0,0.08);
   --shadow-modal: 0 8px 24px rgba(0,0,0,0.12);
-
-  /* ── Brand helpers ── */
-  --gold-bg: rgba(196,150,60,0.08);
-  --gold-dark: #8B6914;
 
   /* ── Motion Tokens (v2) ── */
   --ease-enter: cubic-bezier(.2, 0, 0, 1);
@@ -1149,17 +1141,6 @@ body {
   transform: translateX(-50%);
 }
 
-/* Focus ring — gold outline on all focusable elements */
-:focus-visible {
-  outline: 2px solid var(--gold-400);
-  outline-offset: 2px;
-}
-
-/* Remove default outline for mouse users */
-:focus:not(:focus-visible) {
-  outline: none;
-}
-
 /* ═══ v2 Mobile Polish ═══ */
 
 /* iOS input zoom prevention — 16px minimum */
@@ -1429,6 +1410,22 @@ tr.clickable-row:hover td:first-child {
 /* Zebra striping */
 tr.row-even { background: white; }
 tr.row-odd  { background: rgba(248,250,252,0.5); }
+
+/* ── Hover & Interactive States ─────────────────── */
+
+/* Data tables: warm hover on all rows */
+.data-table tbody tr {
+  transition: background 120ms ease;
+}
+.data-table tbody tr:hover {
+  background: #F5F4F0;
+}
+
+/* Card hover lift */
+.card:hover, .kpi-card:hover {
+  box-shadow: var(--shadow-elevated);
+  transform: translateY(-1px);
+}
 
 /* ── Accessibility ───────────────────────────────── */
 

@@ -1,12 +1,13 @@
 {
-  "name": "CRUZ — Portal Aduanal",
+  "name": "CRUZ — Inteligencia Aduanal",
   "short_name": "CRUZ",
-  "description": "Inteligencia aduanal · Renato Zapata & Company · Patente 3596",
+  "description": "Portal de inteligencia aduanal · Renato Zapata & Company · Patente 3596 · Aduana 240",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0D0D0C",
-  "theme_color": "#B8953F",
+  "background_color": "#FAFAF8",
+  "theme_color": "#C4963C",
   "orientation": "portrait",
+  "categories": ["business", "productivity"],
   "icons": [
     { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
     { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }

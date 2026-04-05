@@ -65,6 +65,9 @@ export default function RootLayout({
             try {
               document.documentElement.setAttribute('data-theme', 'light');
             } catch(e) {}
+            if ('serviceWorker' in navigator) {
+              navigator.serviceWorker.register('/sw.js').catch(function() {});
+            }
           })();
         `}} />
       </head>

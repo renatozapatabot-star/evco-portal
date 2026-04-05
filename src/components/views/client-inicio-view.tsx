@@ -16,6 +16,7 @@ import { ChevronRight } from 'lucide-react'
 import { useSessionCache } from '@/hooks/use-session-cache'
 import { StatusStrip } from '@/components/StatusStrip'
 import { BridgeTimes } from '@/components/BridgeTimes'
+import { averageConfidence } from '@/lib/confidence'
 
 interface TraficoRow {
   trafico: string; estatus: string; fecha_llegada: string | null
@@ -232,14 +233,21 @@ export default function ClientInicioView() {
   , [traficos, cutoff24h])
 
   // ── Contextual greeting subtitle ──
+  // Average confidence across active traficos
+  const avgConf = useMemo(() => {
+    const active = traficos.filter(t => !(t.estatus || '').toLowerCase().includes('cruz'))
+    return active.length > 0 ? averageConfidence(active) : 0
+  }, [traficos])
+
   const greetingSub = useMemo(() => {
     const parts: string[] = []
+    if (avgConf > 0) parts.push(`${avgConf}% certeza`)
     if (last24h.crossed > 0) parts.push(`${last24h.crossed} cruzaron ayer`)
     if (last24h.newTraficos > 0) parts.push(`${last24h.newTraficos} nuevos`)
     if (last24h.noPedGt7 > 0) parts.push(`${last24h.noPedGt7} sin pedimento >7 días`)
     if (pendingEntradas.length > 0) parts.push(`${pendingEntradas.length} entradas pendientes`)
     return parts.length > 0 ? parts.join(' · ') : 'Sin novedades'
-  }, [last24h, pendingEntradas])
+  }, [last24h, pendingEntradas, avgConf])
 
   // Oldest pending entrada age (capped at 2 years to exclude legacy)
   const oldestDays = useMemo(() => {

@@ -14,6 +14,7 @@ import { SolicitarModal } from '@/components/SolicitarModal'
 import { getMissingDocs, REQUIRED_DOC_TYPES } from '@/lib/documents'
 import { useToast } from '@/components/Toast'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { calculateConfidence } from '@/lib/confidence'
 import { DocumentViewer } from '@/components/ui/DocumentViewer'
 import { ErrorCard } from '@/components/ui/ErrorCard'
 import { StickyActionBar } from '@/components/trafico/StickyActionBar'
@@ -853,6 +854,43 @@ export default function TraficoDetailPage() {
 
           {/* ── Proveedores ── */}
           <ProveedoresCard proveedores={String(t.proveedores ?? '')} pais={String(t.pais_procedencia ?? '')} supplierLookup={supplierLookup} />
+
+          {/* ── Confidence Score ── */}
+          {t && (() => {
+            const conf = calculateConfidence(t as Record<string, unknown>)
+            return (
+              <div className="card" style={{ padding: '16px 20px', marginBottom: 16 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                  <div>
+                    <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#9B9B9B' }}>
+                      Certeza del embarque
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginTop: 4 }}>
+                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 28, fontWeight: 800, color: conf.color }}>
+                        {conf.score}%
+                      </span>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: conf.color }}>{conf.label}</span>
+                    </div>
+                  </div>
+                  <div style={{ width: 48, height: 48, borderRadius: '50%', border: `3px solid ${conf.color}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 14, fontWeight: 800, color: conf.color }}>{conf.score}</span>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  {conf.factors.map(f => (
+                    <div key={f.label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 12 }}>
+                      <span style={{ color: f.met ? '#1A1A1A' : '#9B9B9B' }}>
+                        {f.met ? '✓' : '✗'} {f.label}
+                      </span>
+                      <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: f.met ? '#16A34A' : '#DC2626' }}>
+                        {f.met ? `+${f.points}` : `-${f.points}`}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )
+          })()}
 
           {/* ── Estimated Completion + Share ── */}
           {!(t.estatus || '').toLowerCase().includes('cruz') && t.fecha_llegada && (

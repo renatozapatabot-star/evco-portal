@@ -16,16 +16,17 @@ export function OCAView() {
   const [product, setProduct] = useState('')
   const [material, setMaterial] = useState('')
   const [uso, setUso] = useState('')
+  const [paisOrigen, setPaisOrigen] = useState('US')
   const [loading, setLoading] = useState(false)
-  const [result, setResult] = useState<{ fraccion: string; descripcion: string; arancel: string; tmec: string; analisis: string; fundamento: string } | null>(null)
+  const [result, setResult] = useState<Record<string, unknown> | null>(null)
   const [error, setError] = useState('')
-  const [opinionNum] = useState(() => `OCA-2026-${String(Math.floor(Math.random() * 900) + 100).padStart(3, '0')}`)
 
   async function generateOCA() {
     if (!product.trim()) return
     setLoading(true); setError(''); setResult(null)
     try {
-      const res = await fetch('/api/oca', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ product, material, uso, opinionNum }) })
+      const csrfToken = document.cookie.match(/csrf_token=([^;]+)/)?.[1] || ''
+      const res = await fetch('/api/oca', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken }, body: JSON.stringify({ product, material, uso, pais_origen: paisOrigen }) })
       const data = await res.json()
       if (data.error) throw new Error(data.error)
       setResult(data)
@@ -35,9 +36,45 @@ export function OCAView() {
 
   function downloadOpinion() {
     if (!result) return
-    const content = [`OPINIÓN DE CLASIFICACIÓN ARANCELARIA`, `No. ${opinionNum}`, ``, `Fecha: ${new Date().toLocaleDateString('es-MX', { day: '2-digit', month: 'long', year: 'numeric' })}`, `Cliente: ${getClientNameCookie()}`, `RFC: ${getClientRfcCookie()}`, ``, `I. PRODUCTO`, product, material ? `Material: ${material}` : '', uso ? `Uso: ${uso}` : '', ``, `II. CLASIFICACIÓN`, `Fracción Arancelaria: ${result.fraccion}`, `Descripción TIGIE: ${result.descripcion}`, `Arancel General: ${result.arancel}`, `T-MEC/USMCA: ${result.tmec}`, ``, `III. ANÁLISIS`, result.analisis, ``, `IV. FUNDAMENTO LEGAL`, result.fundamento, ``, `─`.repeat(60), `Renato Zapata III — Director General`, `Renato Zapata & Company · Patente 3596`].filter(Boolean).join('\n')
+    const num = String(result.opinion_number || 'OCA')
+    const content = [
+      `OPINIÓN DE CLASIFICACIÓN ARANCELARIA`,
+      `No. ${num}`,
+      ``,
+      `Fecha: ${new Date().toLocaleDateString('es-MX', { day: '2-digit', month: 'long', year: 'numeric' })}`,
+      `Cliente: ${getClientNameCookie()}`,
+      `RFC: ${getClientRfcCookie()}`,
+      ``,
+      `I. PRODUCTO`,
+      product,
+      material ? `Material: ${material}` : '',
+      uso ? `Uso: ${uso}` : '',
+      `País de origen: ${paisOrigen}`,
+      ``,
+      `II. CLASIFICACIÓN`,
+      `Fracción Arancelaria: ${result.fraccion}`,
+      `Descripción TIGIE: ${result.descripcion_tigie || result.descripcion || ''}`,
+      `Arancel General: ${result.arancel_general || result.arancel || ''}`,
+      `T-MEC/USMCA: ${result.arancel_tmec || result.tmec || ''}`,
+      `Confianza: ${typeof result.confianza === 'number' ? Math.round(Number(result.confianza) * 100) + '%' : '—'}`,
+      ``,
+      `III. ANÁLISIS`,
+      String(result.analisis || ''),
+      ``,
+      `IV. FUNDAMENTO LEGAL`,
+      String(result.fundamento_legal || result.fundamento || ''),
+      Array.isArray(result.reglas_interpretacion) ? `\nReglas: ${(result.reglas_interpretacion as string[]).join('; ')}` : '',
+      result.tmec_regla_origen ? `\nRegla de origen T-MEC: ${result.tmec_regla_origen}` : '',
+      ``,
+      `─`.repeat(60),
+      `Renato Zapata III — Director General`,
+      `Renato Zapata & Company · Patente 3596 · Aduana 240`,
+      ``,
+      `AVISO: Esta opinión es un análisis preliminar y no constituye`,
+      `una resolución definitiva del Servicio de Administración Tributaria.`,
+    ].filter(Boolean).join('\n')
     const blob = new Blob([content], { type: 'text/plain;charset=utf-8' })
-    const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `${opinionNum}.txt`; a.click(); URL.revokeObjectURL(url)
+    const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `${num}.txt`; a.click(); URL.revokeObjectURL(url)
   }
 
   return (
@@ -58,9 +95,21 @@ export function OCAView() {
               <label style={{ display: 'block', color: T.textSub, fontSize: 12, fontWeight: 600, marginBottom: 5 }}>Material / Composición</label>
               <input value={material} onChange={e => setMaterial(e.target.value)} placeholder="Ej: Polipropileno 100%, ABS..." style={{ width: '100%', height: 38, border: `1px solid ${T.border}`, borderRadius: 8, padding: '0 12px', fontSize: 13, color: T.text, outline: 'none', fontFamily: 'inherit', background: T.bg, boxSizing: 'border-box' }} />
             </div>
-            <div style={{ marginBottom: 20 }}>
+            <div style={{ marginBottom: 14 }}>
               <label style={{ display: 'block', color: T.textSub, fontSize: 12, fontWeight: 600, marginBottom: 5 }}>Uso / Aplicación</label>
               <input value={uso} onChange={e => setUso(e.target.value)} placeholder="Ej: Industrial, automotriz, empaque..." style={{ width: '100%', height: 38, border: `1px solid ${T.border}`, borderRadius: 8, padding: '0 12px', fontSize: 13, color: T.text, outline: 'none', fontFamily: 'inherit', background: T.bg, boxSizing: 'border-box' }} />
+            </div>
+            <div style={{ marginBottom: 20 }}>
+              <label style={{ display: 'block', color: T.textSub, fontSize: 12, fontWeight: 600, marginBottom: 5 }}>País de Origen</label>
+              <select value={paisOrigen} onChange={e => setPaisOrigen(e.target.value)} style={{ width: '100%', height: 38, border: `1px solid ${T.border}`, borderRadius: 8, padding: '0 12px', fontSize: 13, color: T.text, outline: 'none', fontFamily: 'inherit', background: T.bg, boxSizing: 'border-box', cursor: 'pointer' }}>
+                <option value="US">🇺🇸 Estados Unidos</option>
+                <option value="CA">🇨🇦 Canadá</option>
+                <option value="CN">🇨🇳 China</option>
+                <option value="DE">🇩🇪 Alemania</option>
+                <option value="JP">🇯🇵 Japón</option>
+                <option value="KR">🇰🇷 Corea del Sur</option>
+                <option value="XX">Otro</option>
+              </select>
             </div>
             <button onClick={generateOCA} disabled={loading || !product.trim()} style={{ width: '100%', height: 42, background: loading || !product.trim() ? '#CBD5E1' : T.navy, border: 'none', borderRadius: 8, color: '#fff', fontSize: 14, fontWeight: 700, cursor: loading || !product.trim() ? 'default' : 'pointer', fontFamily: 'inherit' }}>{loading ? '⏳ Analizando TIGIE...' : '⚖️ Generar Opinión OCA'}</button>
             {error && <div style={{ marginTop: 12, background: '#FEE2E2', border: '1px solid #FECACA', borderRadius: 8, padding: '10px 12px', color: 'var(--danger-text)', fontSize: 12 }}>{error}</div>}
@@ -78,29 +127,50 @@ export function OCAView() {
         {result && (
           <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 12, boxShadow: T.shadow, padding: 20, borderTop: `3px solid ${T.gold}` }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-              <div><div style={{ color: T.gold, fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{opinionNum}</div><div style={{ color: T.text, fontSize: 15, fontWeight: 700, marginTop: 2 }}>Opinión de Clasificación</div></div>
+              <div><div style={{ color: T.gold, fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{String(result.opinion_number || '')}</div><div style={{ color: T.text, fontSize: 15, fontWeight: 700, marginTop: 2 }}>Opinión de Clasificación</div></div>
               <button onClick={downloadOpinion} style={{ background: T.navy, border: 'none', borderRadius: 7, padding: '7px 14px', color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>⬇️ Descargar</button>
             </div>
             <div style={{ background: T.goldBg, border: `1px solid ${T.goldBorder}`, borderRadius: 10, padding: '14px 16px', marginBottom: 16, textAlign: 'center' }}>
               <div style={{ color: T.textMuted, fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>Fracción Arancelaria</div>
-              <div style={{ color: T.gold, fontSize: 28, fontWeight: 800, letterSpacing: '0.05em', fontFamily: 'var(--font-jetbrains-mono)' }}>{result.fraccion}</div>
-              <div style={{ color: T.textSub, fontSize: 12, marginTop: 4 }}>{result.descripcion}</div>
+              <div style={{ color: T.gold, fontSize: 28, fontWeight: 800, letterSpacing: '0.05em', fontFamily: 'var(--font-jetbrains-mono)' }}>{String(result.fraccion || '')}</div>
+              <div style={{ color: T.textSub, fontSize: 12, marginTop: 4 }}>{String(result.descripcion_tigie || result.descripcion || '')}</div>
+              {typeof result.confianza === 'number' && (
+                <div style={{ fontSize: 11, color: Number(result.confianza) >= 0.8 ? T.green : T.textMuted, marginTop: 4, fontWeight: 600 }}>
+                  Confianza: {Math.round(Number(result.confianza) * 100)}%
+                </div>
+              )}
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
-              {[{ label: 'Arancel General', value: result.arancel }, { label: 'T-MEC / USMCA', value: result.tmec, green: true }].map(r => (
+              {[
+                { label: 'Arancel General', value: String(result.arancel_general || result.arancel || '—') },
+                { label: 'T-MEC / USMCA', value: String(result.arancel_tmec || result.tmec || '—'), green: true },
+              ].map(r => (
                 <div key={r.label} style={{ background: T.surfaceAlt, border: `1px solid ${T.border}`, borderRadius: 8, padding: '12px 14px' }}>
                   <div style={{ color: T.textMuted, fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 4 }}>{r.label}</div>
                   <div style={{ color: r.green ? T.green : T.text, fontSize: 15, fontWeight: 700 }}>{r.value}</div>
                 </div>
               ))}
             </div>
+            {typeof result.tmec_regla_origen === 'string' && result.tmec_regla_origen && (
+              <div style={{ marginBottom: 12, padding: '10px 12px', background: T.greenBg, borderRadius: 8, fontSize: 11, color: T.green }}>
+                <b>Regla de origen T-MEC:</b> {String(result.tmec_regla_origen)}
+              </div>
+            )}
             <div style={{ marginBottom: 12 }}>
               <div style={{ color: T.textMuted, fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 8 }}>Análisis</div>
-              <div style={{ color: T.textSub, fontSize: 12, lineHeight: 1.7, background: T.surfaceAlt, borderRadius: 8, padding: 12 }}>{result.analisis}</div>
+              <div style={{ color: T.textSub, fontSize: 12, lineHeight: 1.7, background: T.surfaceAlt, borderRadius: 8, padding: 12 }}>{String(result.analisis || '')}</div>
             </div>
+            {Array.isArray(result.reglas_interpretacion) && result.reglas_interpretacion.length > 0 && (
+              <div style={{ marginBottom: 12 }}>
+                <div style={{ color: T.textMuted, fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>Reglas de Interpretación</div>
+                {(result.reglas_interpretacion as string[]).map((r, i) => (
+                  <div key={i} style={{ fontSize: 11, color: T.textSub, marginBottom: 3 }}>• {r}</div>
+                ))}
+              </div>
+            )}
             <div style={{ paddingTop: 12, borderTop: `1px solid ${T.border}` }}>
               <div style={{ color: T.textMuted, fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>Fundamento Legal</div>
-              <div style={{ color: T.textSub, fontSize: 11, lineHeight: 1.6 }}>{result.fundamento}</div>
+              <div style={{ color: T.textSub, fontSize: 11, lineHeight: 1.6 }}>{String(result.fundamento_legal || result.fundamento || '')}</div>
             </div>
             <div style={{ marginTop: 16, paddingTop: 12, borderTop: `1px solid ${T.border}`, textAlign: 'right' }}>
               <div style={{ color: T.text, fontSize: 12, fontWeight: 700 }}>Renato Zapata III</div>

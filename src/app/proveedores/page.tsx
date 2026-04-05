@@ -185,7 +185,7 @@ export default function ProveedoresPage() {
     )
   }, [suppliers, search])
 
-  const totalValue = suppliers.reduce((s, r) => s + r.totalValue, 0)
+  const totalValue = useMemo(() => suppliers.reduce((s, r) => s + r.totalValue, 0), [suppliers])
 
   return (
     <div style={{ minHeight: '100vh', background: T.bg, margin: -36, padding: 36 }}>

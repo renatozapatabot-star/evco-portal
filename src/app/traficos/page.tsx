@@ -183,7 +183,7 @@ function TraficosContent() {
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE)
   const paged = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
-  const totalValor = rows.reduce((s, r) => s + (Number(r.importe_total) || 0), 0)
+  const totalValor = useMemo(() => rows.reduce((s, r) => s + (Number(r.importe_total) || 0), 0), [rows])
 
   // Stat bar calculations
   const kpiActivos = rows.filter(r => !(r.estatus || '').toLowerCase().includes('cruz')).length

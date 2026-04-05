@@ -1,9 +1,10 @@
 'use client'
+import { memo } from 'react'
 import { fmtId, fmtDesc, fmtKg, fmtUSD, fmtDate } from '@/lib/format-utils'
 
 interface Props { trafico: any; onClick: () => void }
 
-export function MobileTraficoCard({ trafico: r, onClick }: Props) {
+export const MobileTraficoCard = memo(function MobileTraficoCard({ trafico: r, onClick }: Props) {
   const isCruzado = (r.estatus ?? '').toLowerCase().includes('cruz')
   const isHold = (r.estatus ?? '').toLowerCase().includes('hold') || (r.estatus ?? '').toLowerCase().includes('deten')
   const dotClass = isCruzado ? 'm-card-dot--success' : isHold ? 'm-card-dot--danger' : 'm-card-dot--warning'
@@ -30,4 +31,4 @@ export function MobileTraficoCard({ trafico: r, onClick }: Props) {
       </div>
     </button>
   )
-}
+})

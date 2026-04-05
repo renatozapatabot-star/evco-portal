@@ -6,6 +6,7 @@ import { getDTARates, getIVARate } from '@/lib/rates'
 import { verifySession } from '@/lib/session'
 import { sanitizeIlike, sanitizeFilter } from '@/lib/sanitize'
 import { cruzChatSchema } from '@/lib/api-schemas'
+import { lookupKnowledge } from '@/lib/cruz-knowledge'
 
 import { rateLimitDB } from '@/lib/rate-limit-db'
 import { getErrorMessage } from '@/lib/errors'
@@ -46,10 +47,49 @@ SIEMPRE usa números específicos, sugiere siguiente acción, mantén respuestas
 Formato: USD como $X,XXX.XX, MXN como MX$X,XXX.XX, fechas como "28 mar 2026".
 Pedimentos SIEMPRE con espacios: "26 24 3596 6500247" — nunca "6500247" solo ni sin espacios.
 
-Cuando uses herramientas, explica los hallazgos en lenguaje natural. Si no hay resultados, dilo y sugiere alternativas.`
+Cuando uses herramientas, explica los hallazgos en lenguaje natural. Si no hay resultados, dilo y sugiere alternativas.
+
+EJEMPLOS DE RESPUESTAS CORRECTAS:
+
+Usuario: "¿Cuál es la fracción para polipropileno?"
+CRUZ: "Polipropileno en forma primaria se clasifica en 3902.10.01 (Cap. 39 — Plásticos). Si es en láminas: 3920.20.01. Confirmo con la herramienta de consulta."
+
+Usuario: "¿Necesito COVE para esta importación?"
+CRUZ: "Sí. El COVE (Comprobante de Valor Electrónico) es obligatorio para toda importación. Se genera en VUCEM con datos de la factura comercial, valor, y descripción de mercancía."
+
+Usuario: "¿Cuánto IGI pago por fracción 3901.20.01?"
+CRUZ: "Si tu operación es régimen IMD con T-MEC y certificado de origen vigente: IGI = $0 (exento). Sin T-MEC: aplica la tasa general de la fracción según la TIGIE."
+
+Usuario: "¿Aplica T-MEC para polipropileno de USA?"
+CRUZ: "Cap. 39 (plásticos): aplica T-MEC si hay cambio de capítulo (CC) o VCR ≥ 60% método de transacción. El proveedor en USA debe proporcionar certificado de origen T-MEC."
+
+Usuario: "¿Qué puente me recomiendas?"
+CRUZ: "World Trade Bridge es el más rápido para carga comercial. Cruces óptimos: 6-8 AM entre semana. Evita viernes 2-6 PM."
+
+Usuario: "¿Qué es el MVE?"
+CRUZ: "La Manifestación de Valor en Aduana (formato E2) es obligatoria desde el 31 de marzo 2026. Incluye valor declarado, fracción, proveedor, incoterm. Multa por omisión: $1,610 a $7,190 MXN."
+
+Usuario: "¿Cómo se calcula el IVA de importación?"
+CRUZ: "IVA = (valor_aduana + DTA + IGI) × 16%. La base es cascada — NUNCA es valor_factura × 16%."
+
+Usuario: "¿Cuánto es el DTA?"
+CRUZ: "DTA régimen A1 (importación definitiva): 8 al millar sobre valor aduana MXN. IMMEX: cuota fija $408 MXN. Régimen temporal (ITE/ITR): exento."
+
+`
 }
 
 const TOOLS = [
+  {
+    name: 'knowledge_lookup',
+    description: 'Search CRUZ customs knowledge base for tariff classification, T-MEC rules of origin, DTA/IVA calculations, MVE requirements, bridge info, and NOMs. Use this FIRST before querying the database when user asks about regulations, classification, or compliance.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        query: { type: 'string', description: 'Search query — fracción, chapter number, T-MEC, DTA, IVA, MVE, puente, NOM, etc.' },
+      },
+      required: ['query'],
+    }
+  },
   {
     name: 'query_traficos',
     description: 'Search traficos by any criteria. Returns matching traficos with all fields.',
@@ -390,6 +430,11 @@ async function executeTool(name: string, input: Record<string, any>, clientCtx: 
   const { companyId, clientClave, clientName } = clientCtx
   try {
     switch (name) {
+      case 'knowledge_lookup': {
+        const result = lookupKnowledge(input.query || '')
+        if (result) return JSON.stringify({ source: 'cruz_knowledge_base', knowledge: result })
+        return JSON.stringify({ source: 'cruz_knowledge_base', knowledge: 'No se encontró información específica. Consulta la base de datos para datos del cliente.' })
+      }
       case 'query_traficos': {
         let query = supabase.from('traficos').select('trafico, estatus, fecha_llegada, pedimento, descripcion_mercancia, importe_total, peso_bruto, proveedores, transportista_mexicano')
           .eq('company_id', companyId)

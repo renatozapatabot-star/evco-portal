@@ -157,14 +157,15 @@ async function verifyExpedientes(client) {
   const traficoIds = (clientTraficos || []).map(t => t.trafico)
   if (traficoIds.length === 0) return { total: 0, typeDist: {}, uniqueTraficosWithDocs: 0 }
 
-  // Batch query in chunks of 100 (same as portal)
+  // Batch query in chunks of 50 with high limit to avoid truncation
   const allDocs = []
-  for (let i = 0; i < traficoIds.length; i += 100) {
-    const chunk = traficoIds.slice(i, i + 100)
+  for (let i = 0; i < traficoIds.length; i += 50) {
+    const chunk = traficoIds.slice(i, i + 50)
     const { data: docs, error } = await supabase
       .from('expediente_documentos')
       .select('doc_type, pedimento_id')
       .in('pedimento_id', chunk)
+      .limit(5000)
     if (error) return { error: error.message }
     allDocs.push(...(docs || []))
   }

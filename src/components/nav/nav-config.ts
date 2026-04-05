@@ -74,6 +74,7 @@ export const INTERNAL_GROUPS: NavGroup[] = [
       { href: '/reportes',     label: 'Reportes',    icon: BarChart3 },
       { href: '/cuentas',      label: 'Financiero',  icon: DollarSign },
       { href: '/proveedores',  label: 'Proveedores', icon: Users2 },
+      { href: '/catalogo',     label: 'Catálogo',    icon: ClipboardList },
       { href: '/anexo24',      label: 'Anexo 24',    icon: BookOpen },
     ],
   },
@@ -207,6 +208,7 @@ export const ADMIN_ONLY_ROUTES = [
   '/voz',
   '/calls',
   '/api-docs',
+  '/documentos-legales',
 ] as const
 
 /** Routes accessible by client role */
@@ -222,6 +224,7 @@ export const CLIENT_ROUTES = [
   '/expedientes',
   '/bodega',
   '/cruz',
+  '/catalogo',
   '/login',
 ] as const
 

@@ -235,5 +235,87 @@ export function lookupKnowledge(query: string): string {
     }
   }
 
+  // Legal articles — Ley Aduanera, RGCE, IMMEX
+  if (q.includes('artículo') || q.includes('ley aduanera') || q.includes('rgce') || q.includes('decreto') || q.includes('immex') || q.includes('legal') || q.includes('fundamento')) {
+    const articles = lookupLegalArticle(q)
+    if (articles) results.push(articles)
+  }
+
+  // NOM exemptions
+  if (q.includes('exen') || q.includes('exim') || q.includes('sin nom') || q.includes('requiere nom')) {
+    results.push(lookupNomExemption(q))
+  }
+
   return results.length > 0 ? results.join('\n') : ''
+}
+
+// ── Legal Articles Database ──
+export const LEGAL_ARTICLES: Record<string, { law: string; article: string; summary: string; applies_to: string }> = {
+  // Ley Aduanera — key articles for customs operations
+  'LA_36': { law: 'Ley Aduanera', article: 'Art. 36', summary: 'Quienes importen o exporten mercancías están obligados a presentar ante la aduana un pedimento con información sobre las mercancías.', applies_to: 'pedimento obligatorio' },
+  'LA_36A': { law: 'Ley Aduanera', article: 'Art. 36-A', summary: 'El pedimento debe contener: datos del importador/exportador, descripción de mercancías, fracción arancelaria, valor en aduana, origen.', applies_to: 'contenido pedimento' },
+  'LA_43': { law: 'Ley Aduanera', article: 'Art. 43', summary: 'Reconocimiento aduanero: mecanismo de selección automatizado (semáforo). Verde = libre, Rojo = reconocimiento físico.', applies_to: 'semáforo reconocimiento' },
+  'LA_47': { law: 'Ley Aduanera', article: 'Art. 47', summary: 'Los agentes aduanales son responsables de la veracidad de los datos en el pedimento y de la clasificación arancelaria.', applies_to: 'responsabilidad agente' },
+  'LA_54': { law: 'Ley Aduanera', article: 'Art. 54', summary: 'Régimen de importación temporal: mercancías que permanecen en territorio nacional por tiempo limitado y con fin específico.', applies_to: 'importación temporal IMMEX' },
+  'LA_56': { law: 'Ley Aduanera', article: 'Art. 56', summary: 'El valor en aduana se determina conforme a los métodos de valoración del GATT (valor de transacción como método principal).', applies_to: 'valoración aduanera' },
+  'LA_59': { law: 'Ley Aduanera', article: 'Art. 59', summary: 'Obligaciones del importador: inscribirse en padrón, llevar registros, entregar información al agente aduanal.', applies_to: 'obligaciones importador' },
+  'LA_64': { law: 'Ley Aduanera', article: 'Art. 64', summary: 'Método principal de valoración: valor de transacción = precio pagado o por pagar, más ajustes (flete, seguro, comisiones).', applies_to: 'valor de transacción' },
+  'LA_104': { law: 'Ley Aduanera', article: 'Art. 104', summary: 'Temporalidad de mercancías en régimen temporal: 18 meses para materias primas, insumos y partes bajo programa IMMEX.', applies_to: 'plazo IMMEX 18 meses' },
+  'LA_108': { law: 'Ley Aduanera', article: 'Art. 108', summary: 'Las empresas IMMEX pueden importar temporalmente: materias primas, partes, componentes, maquinaria, equipo, herramientas.', applies_to: 'mercancías IMMEX' },
+  'LA_185': { law: 'Ley Aduanera', article: 'Art. 185', summary: 'Multa de $1,610 a $7,190 por cada dato inexacto en el pedimento o documentos que se presenten.', applies_to: 'multa datos inexactos' },
+
+  // RGCE — Reglas Generales de Comercio Exterior
+  'RGCE_1_2_2': { law: 'RGCE', article: 'Regla 1.2.2', summary: 'Plazo para transmitir el pedimento de importación: 15 días antes del arribo de la mercancía o dentro del plazo de almacenamiento.', applies_to: 'plazo transmisión pedimento' },
+  'RGCE_1_5_1': { law: 'RGCE', article: 'Regla 1.5.1', summary: 'Manifestación de Valor (MVE): obligatoria para todas las importaciones. Formato E2 con datos del proveedor, valor, y condiciones de venta.', applies_to: 'MVE obligatoria' },
+  'RGCE_3_1_4': { law: 'RGCE', article: 'Regla 3.1.4', summary: 'Certificado de origen T-MEC: puede ser llenado por el exportador, productor o importador. Vigencia: 4 años.', applies_to: 'certificado T-MEC' },
+  'RGCE_3_7_1': { law: 'RGCE', article: 'Regla 3.7.1', summary: 'NOMs aplicables en punto de entrada: el cumplimiento se verifica al momento del despacho aduanero.', applies_to: 'NOM en despacho' },
+  'RGCE_4_3_1': { law: 'RGCE', article: 'Regla 4.3.1', summary: 'Las empresas IMMEX deben llevar un sistema automatizado de control de inventarios (Anexo 24) que registre todas las operaciones.', applies_to: 'Anexo 24 IMMEX' },
+
+  // Decreto IMMEX
+  'IMMEX_4': { law: 'Decreto IMMEX', article: 'Art. 4', summary: 'Las empresas IMMEX están exentas del cumplimiento de NOMs al momento de la importación temporal, siempre que las mercancías se destinen al proceso productivo.', applies_to: 'exención NOM IMMEX' },
+  'IMMEX_11': { law: 'Decreto IMMEX', article: 'Art. 11', summary: 'Los plazos de permanencia de mercancías importadas temporalmente son de 18 meses para materias primas y 36 meses para activo fijo.', applies_to: 'plazos temporalidad IMMEX' },
+
+  // T-MEC
+  'TMEC_4_2': { law: 'T-MEC', article: 'Cap. 4 Art. 4.2', summary: 'Una mercancía es originaria si cumple con el cambio de clasificación arancelaria, valor de contenido regional, o es totalmente obtenida en territorio T-MEC.', applies_to: 'regla de origen general' },
+  'TMEC_4_11': { law: 'T-MEC', article: 'Cap. 4 Art. 4.11', summary: 'De minimis: una mercancía que no cumple cambio de clasificación puede ser originaria si los materiales no originarios representan < 10% del valor.', applies_to: 'de minimis T-MEC' },
+}
+
+function lookupLegalArticle(query: string): string {
+  const q = query.toLowerCase()
+  const matches: string[] = []
+
+  for (const [, art] of Object.entries(LEGAL_ARTICLES)) {
+    if (q.includes(art.applies_to.split(' ')[0].toLowerCase()) ||
+        q.includes(art.article.toLowerCase()) ||
+        art.applies_to.toLowerCase().split(' ').some(w => w.length > 4 && q.includes(w))) {
+      matches.push(`${art.law} ${art.article}: ${art.summary}`)
+    }
+  }
+
+  // General law references
+  if (q.includes('ley aduanera') && matches.length === 0) {
+    matches.push('Ley Aduanera: marco legal para operaciones de comercio exterior en México. Arts. clave: 36 (pedimento), 43 (semáforo), 47 (responsabilidad), 54-108 (régimen temporal/IMMEX), 185 (multas).')
+  }
+  if (q.includes('rgce') && matches.length === 0) {
+    matches.push('RGCE: Reglas Generales de Comercio Exterior — resolución miscelánea que complementa la Ley Aduanera. Publicada anualmente en el DOF.')
+  }
+
+  return matches.length > 0 ? matches.join('\n') : ''
+}
+
+function lookupNomExemption(query: string): string {
+  const q = query.toLowerCase()
+  const results: string[] = []
+
+  if (q.includes('immex') || q.includes('temporal') || q.includes('exen')) {
+    results.push('Decreto IMMEX Art. 4: Empresas IMMEX están EXENTAS de NOMs en importación temporal, siempre que las mercancías se destinen al proceso productivo y se retornen.')
+    results.push('Verificar: programa IMMEX vigente + régimen IN o ITE en pedimento.')
+  }
+
+  if (q.includes('requiere') || q.includes('necesit') || q.includes('obligat')) {
+    results.push('RGCE 3.7.1: Las NOMs se verifican al momento del despacho aduanero para importaciones definitivas (régimen A1).')
+    results.push('Consulte la lista de NOMs por fracción arancelaria en la TIGIE.')
+  }
+
+  return results.join('\n')
 }

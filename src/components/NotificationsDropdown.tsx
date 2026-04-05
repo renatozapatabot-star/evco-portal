@@ -33,37 +33,37 @@ export function NotificationsDropdown() {
         const notifs: Notif[] = []
 
         // Detenidos
-        traf.filter((t: any) => (t.estatus || '').toLowerCase().includes('hold') || (t.estatus || '').toLowerCase().includes('deten'))
-          .slice(0, 5).forEach((t: any) => notifs.push({
+        traf.filter((t: { trafico: string; estatus?: string | null; descripcion_mercancia?: string | null; fecha_llegada?: string | null }) => (t.estatus || '').toLowerCase().includes('hold') || (t.estatus || '').toLowerCase().includes('deten'))
+          .slice(0, 5).forEach((t: { trafico: string; estatus?: string | null; descripcion_mercancia?: string | null; fecha_llegada?: string | null }) => notifs.push({
             id: `det-${t.trafico}`, type: 'alert', title: `Detenido: ${t.trafico}`,
             sub: t.descripcion_mercancia?.substring(0, 40) || 'Tráfico detenido', time: t.fecha_llegada || '', read: false, color: '#EF4444',
           }))
 
         // Faltantes
-        ent.filter((e: any) => e.tiene_faltantes).slice(0, 3).forEach((e: any) => notifs.push({
+        ent.filter((e: { cve_entrada?: string; tiene_faltantes?: boolean | null; mercancia_danada?: boolean | null; descripcion_mercancia?: string | null; fecha_llegada_mercancia?: string | null }) => e.tiene_faltantes).slice(0, 3).forEach((e: { cve_entrada?: string; tiene_faltantes?: boolean | null; mercancia_danada?: boolean | null; descripcion_mercancia?: string | null; fecha_llegada_mercancia?: string | null }) => notifs.push({
           id: `falt-${e.cve_entrada}`, type: 'warning', title: `Faltante: ${e.cve_entrada}`,
           sub: e.descripcion_mercancia?.substring(0, 40) || 'Entrada con faltantes', time: e.fecha_llegada_mercancia || '', read: false, color: 'var(--warning-500)',
         }))
 
         // Damaged
-        ent.filter((e: any) => e.mercancia_danada).slice(0, 3).forEach((e: any) => notifs.push({
+        ent.filter((e: { cve_entrada?: string; tiene_faltantes?: boolean | null; mercancia_danada?: boolean | null; descripcion_mercancia?: string | null; fecha_llegada_mercancia?: string | null }) => e.mercancia_danada).slice(0, 3).forEach((e: { cve_entrada?: string; tiene_faltantes?: boolean | null; mercancia_danada?: boolean | null; descripcion_mercancia?: string | null; fecha_llegada_mercancia?: string | null }) => notifs.push({
           id: `dmg-${e.cve_entrada}`, type: 'alert', title: `Daño: ${e.cve_entrada}`,
           sub: 'Mercancía dañada reportada', time: e.fecha_llegada_mercancia || '', read: false, color: '#EF4444',
         }))
 
         // IGI where T-MEC could apply
-        const igiAlerts = fact.filter((f: any) => (f.igi || 0) > 0).slice(0, 3)
-        igiAlerts.forEach((f: any) => notifs.push({
+        const igiAlerts = fact.filter((f: { referencia?: string; igi?: number | null; fecha_pago?: string | null }) => (f.igi || 0) > 0).slice(0, 3)
+        igiAlerts.forEach((f: { referencia?: string; igi?: number | null; fecha_pago?: string | null }) => notifs.push({
           id: `igi-${f.referencia}`, type: 'info', title: `IGI pagado: ${f.referencia}`,
           sub: `$${Number(f.igi || 0).toLocaleString('es-MX')} MXN — verificar T-MEC`, time: f.fecha_pago || '', read: false, color: GOLD,
         }))
 
         // En Proceso > 7 days
         const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString().split('T')[0]
-        traf.filter((t: any) => t.estatus === 'En Proceso' && t.fecha_llegada && t.fecha_llegada < sevenDaysAgo)
-          .slice(0, 3).forEach((t: any) => notifs.push({
+        traf.filter((t: { trafico: string; estatus?: string | null; descripcion_mercancia?: string | null; fecha_llegada?: string | null }) => t.estatus === 'En Proceso' && t.fecha_llegada && t.fecha_llegada < sevenDaysAgo)
+          .slice(0, 3).forEach((t: { trafico: string; estatus?: string | null; descripcion_mercancia?: string | null; fecha_llegada?: string | null }) => notifs.push({
             id: `slow-${t.trafico}`, type: 'warning', title: `Lento: ${t.trafico}`,
-            sub: `En Proceso > 7 días — llegó ${t.fecha_llegada}`, time: t.fecha_llegada, read: false, color: 'var(--warning-500)',
+            sub: `En Proceso > 7 días — llegó ${t.fecha_llegada}`, time: t.fecha_llegada || '', read: false, color: 'var(--warning-500)',
           }))
 
         setItems(notifs.map(n => ({ ...n, read: readIds.has(n.id) })))

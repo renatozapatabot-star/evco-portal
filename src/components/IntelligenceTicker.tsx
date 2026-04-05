@@ -20,19 +20,19 @@ export function IntelligenceTicker() {
 
         const traficos = statusRes.data || []
         const bridges = bridgeRes.data || []
-        const enProceso = traficos.filter((t: any) => !(t.estatus || '').toLowerCase().includes('cruz')).length
-        const cruzadosHoy = traficos.filter((t: any) => {
+        const enProceso = traficos.filter((t: { estatus?: string | null }) => !(t.estatus || '').toLowerCase().includes('cruz')).length
+        const cruzadosHoy = traficos.filter((t: { estatus?: string | null; fecha_cruce?: string | null }) => {
           if (!(t.estatus || '').toLowerCase().includes('cruz')) return false
           if (!t.fecha_cruce) return false
           return new Date(t.fecha_cruce).toDateString() === new Date().toDateString()
         }).length
-        const valor = traficos.reduce((s: number, t: any) => s + (Number(t.importe_total) || 0), 0)
+        const valor = traficos.reduce((s: number, t: { importe_total?: number | string | null }) => s + (Number(t.importe_total) || 0), 0)
         const daysToMVE = Math.ceil((new Date('2026-03-31').getTime() - Date.now()) / 86400000)
-        const mveCount = traficos.filter((t: any) => !(t.estatus || '').toLowerCase().includes('cruz') && !t.mve_folio).length
+        const mveCount = traficos.filter((t: { estatus?: string | null; mve_folio?: string | null }) => !(t.estatus || '').toLowerCase().includes('cruz') && !t.mve_folio).length
 
         // Best bridge
         const bridgeMap: Record<string, number[]> = {}
-        bridges.forEach((b: any) => {
+        bridges.forEach((b: { bridge_name: string; crossing_hours: number }) => {
           if (!bridgeMap[b.bridge_name]) bridgeMap[b.bridge_name] = []
           bridgeMap[b.bridge_name].push(b.crossing_hours)
         })

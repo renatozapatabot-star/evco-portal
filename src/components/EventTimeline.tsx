@@ -40,7 +40,7 @@ export function EventTimeline({ traficoId }: { traficoId: string }) {
       .then(r => r.json())
       .then(data => {
         const raw = data.data || data || []
-        const mapped: TimelineEvent[] = raw.map((e: any, i: number) => ({
+        const mapped: TimelineEvent[] = raw.map((e: { id?: string; consecutivo?: number; comentarios?: string | null; evento?: string | null; descripcion?: string | null; fecha: string; hora?: string; registrado_por?: string | null; usuario?: string | null }, i: number) => ({
           id: e.id || e.consecutivo || String(i),
           evento: e.comentarios || e.evento || e.descripcion || 'Evento registrado',
           fecha: e.fecha,

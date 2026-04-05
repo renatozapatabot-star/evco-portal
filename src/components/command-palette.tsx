@@ -5,7 +5,7 @@ import { Search, LayoutDashboard, Truck, Package, FileText,
          FolderOpen, BarChart3, MessageSquare, Mic, Shield, Link2,
          Building2, CreditCard, Table2, ArrowRight, Loader2 } from 'lucide-react'
 
-interface NavItem { id: string; label: string; sublabel: string; icon: any; href: string; category: string }
+interface NavItem { id: string; label: string; sublabel: string; icon: React.ComponentType<{ size?: number; style?: React.CSSProperties }>; href: string; category: string }
 
 const NAV_ITEMS: NavItem[] = [
   { id: 'dashboard',   label: 'Dashboard',     sublabel: 'Inicio',        icon: LayoutDashboard, href: '/',            category: 'Navegación' },

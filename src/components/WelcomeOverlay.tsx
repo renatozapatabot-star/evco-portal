@@ -36,14 +36,14 @@ export function WelcomeOverlay() {
       fetch('/api/data?table=compliance_predictions&limit=50').then(r => r.json()).catch(() => ({ data: [] })),
     ]).then(([trafRes, benchRes, compRes]) => {
       const traficos = trafRes.data || []
-      const active = traficos.filter((t: any) => !(t.estatus || '').toLowerCase().includes('cruz'))
-      const totalValor = traficos.reduce((s: number, t: any) => s + (Number(t.importe_total) || 0), 0)
+      const active = traficos.filter((t: { estatus?: string | null }) => !(t.estatus || '').toLowerCase().includes('cruz'))
+      const totalValor = traficos.reduce((s: number, t: { importe_total?: number | string | null }) => s + (Number(t.importe_total) || 0), 0)
 
-      const benchRow = (benchRes.data || []).find((b: any) => b.metrics)
+      const benchRow = (benchRes.data || []).find((b: { metrics?: { tmec_utilization_rate?: { value?: number } } }) => b.metrics)
       const tmecRate = benchRow?.metrics?.tmec_utilization_rate?.value
 
-      const comp = (compRes.data || []).filter((p: any) => !p.resolved)
-      const critical = comp.filter((p: any) => p.severity === 'critical').length
+      const comp = (compRes.data || []).filter((p: { resolved?: boolean; severity?: string }) => !p.resolved)
+      const critical = comp.filter((p: { severity?: string }) => p.severity === 'critical').length
       const compScore = Math.max(0, 100 - (critical * 15))
 
       const fmtVal = totalValor >= 1_000_000 ? `$${(totalValor / 1e6).toFixed(1)}M USD` : `$${Math.round(totalValor / 1e3)}K USD`

@@ -24,7 +24,7 @@ export default function CarriersPage() {
   const [carriers, setCarriers] = useState<Carrier[]>([])
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
-  const [crossingData, setCrossingData] = useState<any>(null)
+  const [crossingData, setCrossingData] = useState<{ averages?: { overall?: { days?: number }; by_carrier?: { name: string; avgHours: number; avgDays: number }[] }; fastest_day?: string; slowest_day?: string; recommended_arrival_day?: string } | null>(null)
   const [selected, setSelected] = useState<Carrier | null>(null)
 
   useEffect(() => {

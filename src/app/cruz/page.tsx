@@ -29,7 +29,7 @@ const DEFAULT_SUGGESTIONS = [
   '¿Cuánto ahorramos en T-MEC?',
 ]
 
-function buildDynamicPrompts(statusData: any): string[] {
+function buildDynamicPrompts(statusData: { urgentes: number; enProceso: number; loading: boolean }): string[] {
   const prompts: string[] = []
   if (statusData?.urgentes > 0) prompts.push(`${statusData.urgentes} urgentes — ¿qué hago primero?`)
   const hour = new Date().getHours()
@@ -75,7 +75,7 @@ export default function CruzChatPage() {
 
   // Briefing state
   const [briefing, setBriefing] = useState<string>('Cargando resumen operativo...')
-  const [panelData, setPanelData] = useState<{ enProceso: any[]; urgent: any[]; alertTitle: string | null }>({
+  const [panelData, setPanelData] = useState<{ enProceso: { trafico_number?: string; id?: string; estatus?: string }[]; urgent: { trafico_number?: string; id?: string }[]; alertTitle: string | null }>({
     enProceso: [], urgent: [], alertTitle: null,
   })
 
@@ -98,8 +98,8 @@ export default function CruzChatPage() {
       fetch('/api/cruz-alerts').then(r => r.json()).catch(() => ({ alerts: [] })),
     ]).then(([trafData, alertData]) => {
       const traficos = trafData.data ?? []
-      const enProceso = traficos.filter((t: any) => !(t.estatus || '').toLowerCase().includes('cruz'))
-      const urgent = enProceso.filter((t: any) => !t.pedimento)
+      const enProceso = traficos.filter((t: { estatus?: string | null }) => !(t.estatus || '').toLowerCase().includes('cruz'))
+      const urgent = enProceso.filter((t: { pedimento?: string | null }) => !t.pedimento)
       const hour = new Date().getHours()
       const greeting = hour < 12 ? 'Buenos días' : hour < 18 ? 'Buenas tardes' : 'Buenas noches'
       const lines = [`${greeting}.`]
@@ -151,7 +151,7 @@ export default function CruzChatPage() {
   const [listening, setListening] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
-  const recognitionRef = useRef<any>(null)
+  const recognitionRef = useRef<InstanceType<NonNullable<typeof window.SpeechRecognition>> | null>(null)
   const abortRef = useRef<AbortController | null>(null)
 
   const [sessionId] = useState(() => {
@@ -239,8 +239,8 @@ export default function CruzChatPage() {
       setMessages(prev => prev.map(m =>
         m.id === aiMsgId ? { ...m, content: aiText, navigate: navigate || undefined } : m
       ))
-    } catch (err: any) {
-      if (err.name !== 'AbortError') {
+    } catch (err: unknown) {
+      if (err instanceof Error && err.name !== 'AbortError') {
         let suggestion = 'Intenta reformular tu pregunta.'
         if (text.includes('Y') || /^\d{4}/.test(text)) suggestion = 'Verifica el número completo del tráfico.'
         else if (text.length < 5) suggestion = 'Intenta con una pregunta más específica.'
@@ -257,7 +257,7 @@ export default function CruzChatPage() {
 
   // Voice
   const startVoice = () => {
-    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition
     if (!SR) return
     const recognition = new SR()
     recognition.lang = 'es-MX'; recognition.interimResults = true; recognition.continuous = false
@@ -544,7 +544,7 @@ export default function CruzChatPage() {
               </div>
               {panelData.urgent.length > 0 ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  {panelData.urgent.map((t: any, i: number) => (
+                  {panelData.urgent.map((t: { trafico_number?: string; id?: string; estatus?: string }, i: number) => (
                     <div key={i} style={{
                       background: D.surface, border: `1px solid ${D.border}`,
                       borderRadius: 8, padding: '10px 12px',
@@ -575,7 +575,7 @@ export default function CruzChatPage() {
               </div>
               {panelData.enProceso.length > 0 ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  {panelData.enProceso.map((t: any, i: number) => (
+                  {panelData.enProceso.map((t: { trafico_number?: string; id?: string; estatus?: string }, i: number) => (
                     <div key={i} style={{
                       background: D.surface, border: `1px solid ${D.border}`,
                       borderRadius: 8, padding: '10px 12px',

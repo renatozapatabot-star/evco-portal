@@ -20,9 +20,9 @@ const ORIGIN_CRITERIA = [
 export function USMCAView() {
   const companyId = getCookieValue('company_id') ?? ''
   const { toast } = useToast()
-  const [suppliers, setSuppliers] = useState<any[]>([])
+  const [suppliers, setSuppliers] = useState<{ proveedor: string; contact_name?: string | null; address?: string | null }[]>([])
   const [generating, setGenerating] = useState(false)
-  const [cert, setCert] = useState<any>(null)
+  const [cert, setCert] = useState<{ qualifies?: boolean; assessment?: string; analysis?: string } | null>(null)
   const [certNum] = useState(() => `TMEC-2026-${String(Math.floor(Math.random() * 9000) + 1000)}`)
   const [form, setForm] = useState({
     certifier_name: 'Renato Zapata III', certifier_title: 'Director General', certifier_company: 'Renato Zapata & Company',
@@ -44,7 +44,7 @@ export function USMCAView() {
     supabase.from('supplier_contacts').select('proveedor, contact_name, address').eq('company_id', companyId).order('proveedor').then(({ data }) => setSuppliers(data || []))
   }, [])
 
-  const set = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }))
+  const set = (k: string, v: string | boolean) => setForm(f => ({ ...f, [k]: v }))
 
   function handleSupplierSelect(e: React.ChangeEvent<HTMLSelectElement>) {
     const s = suppliers.find(s => s.proveedor === e.target.value)
@@ -61,7 +61,7 @@ export function USMCAView() {
       const data = await res.json()
       if (data.error) throw new Error(data.error)
       setCert(data)
-    } catch (e: any) { toast('Error: ' + e.message, 'error') }
+    } catch (e: unknown) { toast('Error: ' + (e instanceof Error ? e.message : String(e)), 'error') }
     setGenerating(false)
   }
 
@@ -89,7 +89,7 @@ export function USMCAView() {
             {[{ label: 'Exporter Name', key: 'exporter_name' }, { label: 'Exporter Address', key: 'exporter_address' }].map(f => (
               <div key={f.key} style={{ marginBottom: 8 }}>
                 <label style={{ display: 'block', color: T.textSub, fontSize: 11, fontWeight: 600, marginBottom: 4 }}>{f.label}</label>
-                <input value={(form as any)[f.key]} onChange={e => set(f.key, e.target.value)} style={{ width: '100%', height: 36, border: `1px solid ${T.border}`, borderRadius: 7, padding: '0 10px', fontSize: 12, color: T.text, background: T.bg, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }} />
+                <input value={String((form as Record<string, string | boolean>)[f.key] || "")} onChange={e => set(f.key, e.target.value)} style={{ width: '100%', height: 36, border: `1px solid ${T.border}`, borderRadius: 7, padding: '0 10px', fontSize: 12, color: T.text, background: T.bg, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }} />
               </div>
             ))}
           </div>

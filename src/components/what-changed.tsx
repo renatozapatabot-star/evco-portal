@@ -30,7 +30,7 @@ export function WhatChanged({ newCrossings, newEntradas, statusChanges, newIncid
         <button className="wc-close" onClick={() => { setVisible(false); updateLastVisit() }} aria-label="Cerrar"><X size={14} /></button>
       </div>
       <div className="wc-items">
-        {changes.map((c: any, i: number) => (
+        {changes.map((c: { icon: typeof TrendingUp; iconColor: string; main: string; detail: string }, i: number) => (
           <div key={i} className="wc-item">
             <c.icon size={14} style={{ color: c.iconColor, flexShrink: 0 }} />
             <div className="wc-item-text">

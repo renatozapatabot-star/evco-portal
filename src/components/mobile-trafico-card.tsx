@@ -2,7 +2,7 @@
 import { memo } from 'react'
 import { fmtId, fmtDesc, fmtKg, fmtUSD, fmtDate } from '@/lib/format-utils'
 
-interface Props { trafico: any; onClick: () => void }
+interface Props { trafico: { trafico: string; estatus?: string | null; descripcion_mercancia?: string | null; pedimento?: string | null; fecha_llegada?: string | null; peso_bruto?: number | null; importe_total?: number | null; [key: string]: unknown }; onClick: () => void }
 
 export const MobileTraficoCard = memo(function MobileTraficoCard({ trafico: r, onClick }: Props) {
   const isCruzado = (r.estatus ?? '').toLowerCase().includes('cruz')

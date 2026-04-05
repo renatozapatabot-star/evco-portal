@@ -16,7 +16,7 @@ export function KPIIntelligence() {
   const { data, isLoading, isError } = useQuery({
     queryKey: ['kpi-intelligence', companyId],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await (supabase as unknown as { rpc: (name: string, params: Record<string, unknown>) => Promise<{ data: Record<string, { count: number; critical?: number }> | null; error: Error | null }> })
         .rpc('get_kpi_intelligence', { p_company_id: companyId })
       if (error) throw error
       return data as Record<string, { count: number; critical?: number }>

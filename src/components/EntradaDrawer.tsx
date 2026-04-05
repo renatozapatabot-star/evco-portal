@@ -112,14 +112,14 @@ function EntradaDocuments({ traficoId }: { traficoId: string }) {
       try {
         const res = await fetch(`/api/data?table=documents&limit=200`)
         const d = await res.json()
-        ;(d.data ?? []).forEach((doc: any) => {
+        ;(d.data ?? []).forEach((doc: { document_type?: string; file_url?: string; metadata?: { trafico?: string; nombre?: string } }) => {
           const metaTrafico = doc.metadata?.trafico
           const urlMatch = doc.file_url?.includes(traficoId)
           if (metaTrafico === traficoId || urlMatch) {
             all.push({
               type: doc.document_type || 'unknown',
               name: doc.metadata?.nombre || doc.file_url?.split('/').pop() || doc.document_type || '',
-              url: doc.file_url
+              url: doc.file_url ?? null
             })
           }
         })

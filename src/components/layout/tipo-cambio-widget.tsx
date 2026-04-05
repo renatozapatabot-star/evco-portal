@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 
 export function TipoCambioWidget() {
-  const [tc, setTc] = useState<any>(null)
+  const [tc, setTc] = useState<{ tc: number; source?: string } | null>(null)
   useEffect(() => { fetch('/api/tipo-cambio').then(r => r.json()).then(setTc).catch(() => setTc({ tc: 17.50, source: 'fallback' })) }, [])
   if (!tc) return null
   return (

@@ -23,7 +23,7 @@ function StatusBadge({ value }: { value: string }) {
 }
 
 export function SoiaView() {
-  const [cruces, setCruces] = useState<any[]>([])
+  const [cruces, setCruces] = useState<Record<string, unknown>[]>([])
   const [loading, setLoading] = useState(true)
   const [bridgeRec, setBridgeRec] = useState<{ name: string; avg: number } | null>(null)
 
@@ -36,9 +36,9 @@ export function SoiaView() {
     fetch(`/api/data?table=bridge_intelligence&company_id=${companyId}&limit=500`)
       .then(r => r.json()).then(d => {
         const today = new Date().getDay()
-        const records = (d.data || []).filter((b: any) => b.day_of_week === today)
+        const records = (d.data || []).filter((b: { bridge_id?: string; bridge_name?: string; day_of_week?: number; crossing_hours: number }) => b.day_of_week === today)
         const avgByBridge: Record<string, number[]> = {}
-        records.forEach((b: any) => {
+        records.forEach((b: { bridge_id?: string; bridge_name?: string; crossing_hours: number }) => {
           const name = b.bridge_id || b.bridge_name || 'unknown'
           if (!avgByBridge[name]) avgByBridge[name] = []
           avgByBridge[name].push(b.crossing_hours)
@@ -70,7 +70,7 @@ export function SoiaView() {
       return {
         key,
         label: key.replace(/_/g, ' '),
-        render: isStatus ? (row: any) => <StatusBadge value={row[key]} /> : undefined,
+        render: isStatus ? (row: Record<string, unknown>) => <StatusBadge value={String(row[key] || "")} /> : undefined,
         mono: key.includes('trafico') || key.includes('pedimento') || key.includes('num') || key.includes('secuencia'),
       }
     })

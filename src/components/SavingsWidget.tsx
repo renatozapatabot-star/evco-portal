@@ -35,18 +35,18 @@ export function SavingsWidget() {
 
       // Filter to current year
       const yearStart = new Date(new Date().getFullYear(), 0, 1).toISOString()
-      const ytd = facturas.filter((f: any) => f.fecha_pago && f.fecha_pago >= yearStart)
+      const ytd = facturas.filter((f: { fecha_pago?: string | null; igi?: number | null; valor_usd?: number | null }) => f.fecha_pago && f.fecha_pago >= yearStart)
 
       // 1. T-MEC savings (IGI avoided on T-MEC operations)
       const tipoCambio = 20 // approximate
-      const tmecOps = ytd.filter((f: any) => Number(f.igi || 0) === 0)
+      const tmecOps = ytd.filter((f: { igi?: number | null }) => Number(f.igi || 0) === 0)
       // Estimate: avg MFN rate ~5% for plastics
-      const tmecSavingsMXN = tmecOps.reduce((s: number, f: any) =>
+      const tmecSavingsMXN = tmecOps.reduce((s: number, f: { valor_usd?: number | null }) =>
         s + (Number(f.valor_usd || 0) * tipoCambio * 0.05), 0
       )
 
       // 2. Penalties avoided (MVE-compliant operations after deadline)
-      const mveCompliant = traficos.filter((t: any) =>
+      const mveCompliant = traficos.filter((t: { mve_folio?: string | null; fecha_cruce?: string | null }) =>
         t.mve_folio && t.fecha_cruce && t.fecha_cruce >= '2026-03-31'
       )
       // MVE penalty range from system_config: 4790-7190 MXN, use midpoint
@@ -77,7 +77,7 @@ export function SavingsWidget() {
           .then(r => r.json())
           .then(res => {
             const items = res.data || []
-            const savings = items.find((p: any) => p.prediction_type === 'monthly_savings')
+            const savings = items.find((p: { prediction_type?: string; description?: string }) => p.prediction_type === 'monthly_savings')
             if (savings) {
               try { setData(JSON.parse(savings.description)) } catch {}
             }

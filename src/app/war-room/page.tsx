@@ -10,7 +10,7 @@ import { useStatusSentence } from '@/hooks/use-status-sentence'
 export default function WarRoom() {
   const router = useRouter()
   const statusSentence = useStatusSentence()
-  const [data, setData] = useState<any>(null)
+  const [data, setData] = useState<{ enProceso: { trafico: string; fecha_llegada?: string | null }[]; cruzadosHoy: number; bridgeSummary: { name: string; avg: number }[]; critical: number; risks: { overall_score?: number }[]; noPedimento: number; mveCount: number; total: number } | null>(null)
 
   useEffect(() => {
     const load = async () => {
@@ -22,17 +22,17 @@ export default function WarRoom() {
         fetch('/api/data?table=pedimento_risk_scores&limit=50&order_by=overall_score&order_dir=desc').then(r => r.json()).catch(() => ({ data: [] })),
       ])
       const traficos = trafRes.data || []
-      const enProceso = traficos.filter((t: any) => !(t.estatus || '').toLowerCase().includes('cruz'))
-      const cruzadosHoy = traficos.filter((t: any) => (t.estatus || '').toLowerCase().includes('cruz') && t.fecha_cruce && new Date(t.fecha_cruce).toDateString() === new Date().toDateString()).length
+      const enProceso = traficos.filter((t: { estatus?: string | null }) => !(t.estatus || '').toLowerCase().includes('cruz'))
+      const cruzadosHoy = traficos.filter((t: { estatus?: string | null; fecha_cruce?: string | null }) => (t.estatus || '').toLowerCase().includes('cruz') && t.fecha_cruce && new Date(t.fecha_cruce).toDateString() === new Date().toDateString()).length
       const bridges = bridgeRes.data || []
       const bridgeMap: Record<string, number[]> = {}
-      bridges.forEach((b: any) => { if (!bridgeMap[b.bridge_name]) bridgeMap[b.bridge_name] = []; bridgeMap[b.bridge_name].push(b.crossing_hours) })
+      bridges.forEach((b: { bridge_name: string; crossing_hours: number }) => { if (!bridgeMap[b.bridge_name]) bridgeMap[b.bridge_name] = []; bridgeMap[b.bridge_name].push(b.crossing_hours) })
       const bridgeSummary = Object.entries(bridgeMap).map(([n, h]) => ({ name: n, avg: h.reduce((a, b) => a + b, 0) / h.length })).sort((a, b) => a.avg - b.avg)
-      const comp = (compRes.data || []).filter((c: any) => !c.resolved)
-      const critical = comp.filter((c: any) => c.severity === 'critical').length
-      const risks = (riskRes.data || []).filter((r: any) => (r.overall_score || 0) >= 50)
-      const noPedimento = enProceso.filter((t: any) => !t.pedimento).length
-      const mveCount = enProceso.filter((t: any) => !t.mve_folio).length
+      const comp = (compRes.data || []).filter((c: { resolved?: boolean }) => !c.resolved)
+      const critical = comp.filter((c: { severity?: string }) => c.severity === 'critical').length
+      const risks = (riskRes.data || []).filter((r: { overall_score?: number }) => (r.overall_score || 0) >= 50)
+      const noPedimento = enProceso.filter((t: { pedimento?: string | null }) => !t.pedimento).length
+      const mveCount = enProceso.filter((t: { mve_folio?: string | null }) => !t.mve_folio).length
       setData({ enProceso, cruzadosHoy, bridgeSummary, critical, risks, noPedimento, mveCount, total: traficos.length })
     }
     load()
@@ -67,7 +67,7 @@ export default function WarRoom() {
             Tráficos Activos
             <span style={{ float: 'right', color: GOLD }}>{data?.enProceso?.length || 0}</span>
           </div>
-          {data?.enProceso?.slice(0, 15).map((t: any) => {
+          {data?.enProceso?.slice(0, 15).map((t: { trafico: string; fecha_llegada?: string | null }) => {
             const days = t.fecha_llegada ? Math.floor((Date.now() - new Date(t.fecha_llegada).getTime()) / 86400000) : 0
             const color = days > 14 ? 'var(--danger-500)' : days > 7 ? '#D97706' : '#16A34A'
             return (
@@ -84,7 +84,7 @@ export default function WarRoom() {
           <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>
             Puentes en Vivo
           </div>
-          {(data?.bridgeSummary || []).map((b: any, i: number) => {
+          {(data?.bridgeSummary || []).map((b: { name: string; avg: number }, i: number) => {
             const pct = Math.min(100, (b.avg / 3) * 100)
             return (
               <div key={b.name} style={{ marginBottom: 16 }}>

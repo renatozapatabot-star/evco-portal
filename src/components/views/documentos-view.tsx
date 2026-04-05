@@ -102,7 +102,7 @@ function UploadZone({ docId, onUploaded }: { docId: string; onUploaded: (name: s
 }
 
 export function DocumentosView() {
-  const [companyDocs, setCompanyDocs] = useState<any[]>([])
+  const [companyDocs, setCompanyDocs] = useState<{ tipo_documento?: string; [key: string]: unknown }[]>([])
   const [loading, setLoading] = useState(true)
   const [docError, setDocError] = useState<string | null>(null)
   const [filter, setFilter] = useState('Todos')
@@ -256,7 +256,7 @@ export function DocumentosView() {
       {/* Document cards grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
         {filtered.map(doc => {
-          const expiryStatus = getExpiryStatus((doc as any).expiry)
+          const expiryStatus = getExpiryStatus((doc as { expiry?: string }).expiry)
           const inSystem = companyDocs.some(d => d.tipo_documento?.toLowerCase().includes(doc.id.toLowerCase()))
           const up = uploaded[doc.id]
           const isComplete = inSystem || !!up

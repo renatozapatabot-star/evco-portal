@@ -30,7 +30,7 @@ export function OCAView() {
       const data = await res.json()
       if (data.error) throw new Error(data.error)
       setResult(data)
-    } catch (e: any) { setError(e.message || 'Error al generar la opinión') }
+    } catch (e: unknown) { setError(((e instanceof Error) ? e.message : String(e)) || 'Error al generar la opinión') }
     setLoading(false)
   }
 

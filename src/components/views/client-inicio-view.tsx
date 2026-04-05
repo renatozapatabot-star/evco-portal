@@ -13,6 +13,8 @@ import { anticipate, isDismissed, dismissSuggestion, type Suggestion } from '@/l
 import { playSound } from '@/lib/sounds'
 import { dashboardStory } from '@/lib/data-stories'
 import { DataStory } from '@/components/ui/DataStory'
+import { useOnboarding } from '@/hooks/use-onboarding'
+import { OnboardingHint } from '@/components/ui/OnboardingHint'
 import CountingNumber from '@/components/ui/CountingNumber'
 import { Sparkline } from '@/components/sparkline'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -45,6 +47,7 @@ interface EntradaPending {
 export default function ClientInicioView() {
   const isMobile = useIsMobile()
   const router = useRouter()
+  const { hint, dismiss: dismissHint } = useOnboarding()
   const [traficos, setTraficos] = useState<TraficoRow[]>([])
   const [pendingEntradas, setPendingEntradas] = useState<EntradaPending[]>([])
   const [sparkData, setSparkData] = useState<number[]>([])
@@ -480,6 +483,13 @@ export default function ClientInicioView() {
             background: 'none', border: 'none', cursor: 'pointer',
             color: '#9B9B9B', fontSize: 16, padding: 4, lineHeight: 1,
           }} aria-label="Cerrar sugerencia">×</button>
+        </div>
+      )}
+
+      {/* Contextual onboarding hint */}
+      {hint && hint.target === 'trafico_card' && (
+        <div style={{ marginBottom: 16 }}>
+          <OnboardingHint text={hint.text} onDismiss={() => dismissHint(hint.id)} />
         </div>
       )}
 

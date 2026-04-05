@@ -13,6 +13,8 @@ import { MobileBottomNav } from './mobile-bottom-nav'
 import { WelcomeOverlay } from './WelcomeOverlay'
 import { CruzFAB } from './cruz-fab'
 import { SmartBar } from './ui/SmartBar'
+import { useOnboarding } from '@/hooks/use-onboarding'
+import { OnboardingHint } from './ui/OnboardingHint'
 import { getCookieValue } from '@/lib/client-config'
 
 interface Props { children: React.ReactNode }
@@ -72,6 +74,7 @@ export default function DashboardShellClient({ children }: Props) {
   const [clientName, setClientName] = useState<string | undefined>(undefined)
   const [clientInitials, setClientInitials] = useState<string | undefined>(undefined)
   const [mobileOpen, setMobileOpen] = useState(false)
+  const { hint: globalHint, dismiss: dismissGlobalHint } = useOnboarding()
 
   useEffect(() => {
     const role = getCookieValue('user_role')
@@ -202,6 +205,18 @@ export default function DashboardShellClient({ children }: Props) {
       <CommandPalette />
       {!isMobile && <ShortcutHelp />}
       <SmartBar />
+      {/* Global onboarding hint (nav-targeted hints) */}
+      {globalHint && globalHint.target.startsWith('nav_') && (
+        <div style={{
+          position: 'fixed',
+          bottom: isMobile ? 140 : 80,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 48,
+        }}>
+          <OnboardingHint text={globalHint.text} onDismiss={() => dismissGlobalHint(globalHint.id)} />
+        </div>
+      )}
       {isMobile && <MobileBottomNav />}
 
       {/* Offline banner */}

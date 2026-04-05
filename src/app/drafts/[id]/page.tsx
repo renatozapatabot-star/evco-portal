@@ -12,8 +12,8 @@ import { formatAbsoluteETA, fmtUSD, fmtMXNInt, fmtCurrency } from '@/lib/format-
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
 const TIER_CONFIG = {
-  1: { label: 'Alta confianza', time: '~2 min', color: '#16A34A', bg: '#F0FDF4' },
-  2: { label: 'Confianza media', time: '~5 min', color: '#D97706', bg: '#FFFBEB' },
+  1: { label: 'Alta confianza', time: '~2 min', color: 'var(--success)', bg: '#F0FDF4' },
+  2: { label: 'Confianza media', time: '~5 min', color: 'var(--warning)', bg: '#FFFBEB' },
   3: { label: 'Revisión completa', time: 'Sin límite · precisión sobre velocidad', color: 'var(--danger-500)', bg: '#FEF2F2' },
 }
 
@@ -238,7 +238,7 @@ export default function DraftReviewPage() {
               {step}
             </span>
             {i === automationStep && <span style={{ marginLeft: 'auto', fontSize: 11, color: GOLD, fontWeight: 700 }}>En proceso...</span>}
-            {i < automationStep && <span style={{ marginLeft: 'auto', fontSize: 11, color: '#16A34A', fontFamily: 'var(--font-mono)' }}>✓</span>}
+            {i < automationStep && <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--success)', fontFamily: 'var(--font-mono)' }}>✓</span>}
           </div>
         ))}
       </div>
@@ -248,7 +248,7 @@ export default function DraftReviewPage() {
   // ═══ DONE ═══
   if (approvalState === 'done') return (
     <div style={{ padding: 32, maxWidth: 500, margin: '80px auto', textAlign: 'center' }}>
-      <Check size={48} style={{ color: '#16A34A', margin: '0 auto 16px' }} />
+      <Check size={48} style={{ color: 'var(--success)', margin: '0 auto 16px' }} />
       <h2 style={{ fontSize: 22, fontWeight: 900, color: 'var(--navy-900)', marginBottom: 8 }}>Pedimento transmitido</h2>
       <p style={{ fontSize: 14, color: 'var(--slate-500)', marginBottom: 24 }}>Tráfico {draft.trafico} procesado exitosamente</p>
       <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
@@ -380,8 +380,8 @@ export default function DraftReviewPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {draft.checklist.map((c: any, i: number) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: 'var(--bg-card)', border: '1px solid var(--border-card)', borderRadius: 'var(--radius-md)', minHeight: 48 }}>
-              {c.status === 'ok' && <Check size={16} style={{ color: '#16A34A', flexShrink: 0 }} />}
-              {c.status === 'warning' && <AlertTriangle size={16} style={{ color: '#D97706', flexShrink: 0 }} />}
+              {c.status === 'ok' && <Check size={16} style={{ color: 'var(--success)', flexShrink: 0 }} />}
+              {c.status === 'warning' && <AlertTriangle size={16} style={{ color: 'var(--warning)', flexShrink: 0 }} />}
               {c.status === 'error' && <X size={16} style={{ color: 'var(--danger-500)', flexShrink: 0 }} />}
               <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--navy-800)', flex: 1 }}>{c.label}</span>
               {c.detail && <span style={{ fontSize: 12, color: c.status === 'ok' ? 'var(--slate-400)' : c.status === 'warning' ? '#92400E' : '#991B1B' }}>{c.detail}</span>}

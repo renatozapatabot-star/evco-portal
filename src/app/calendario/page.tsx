@@ -18,20 +18,20 @@ interface TraficoRow {
   [k: string]: unknown
 }
 
-/* ── Dark tokens ── */
+/* ── Light tokens (DESIGN_SYSTEM.md v6) ── */
 
 const T = {
-  card: '#1A1814',
-  border: '#302C23',
-  gold: '#C4963C',
-  textPrimary: '#F5F0E8',
-  textSecondary: '#A09882',
-  textMuted: '#6B6355',
-  blue: 'var(--info-500)',
-  blueBg: '#1A2030',
-  green: '#2D8F4E',
-  greenDot: '#34D399',
-  amber: '#D4A017',
+  card: 'var(--bg-card)',
+  border: 'var(--border)',
+  gold: 'var(--gold)',
+  textPrimary: 'var(--text-primary)',
+  textSecondary: 'var(--text-secondary)',
+  textMuted: 'var(--text-muted)',
+  blue: 'var(--info)',
+  blueBg: '#EFF6FF',
+  green: 'var(--success)',
+  greenDot: 'var(--success)',
+  amber: 'var(--warning)',
   radius: 8,
 } as const
 
@@ -84,7 +84,7 @@ export default function CalendarioPage() {
     fetch(url)
       .then(r => r.json())
       .then(d => setTraficos(d.data ?? []))
-      .catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
+      .catch((err: unknown) => { void 0 })
       .finally(() => setLoading(false))
   }, [isBroker])
 
@@ -337,7 +337,7 @@ export default function CalendarioPage() {
                   onClick={() => cell && hasEvents && setSelectedDate(isSelected ? null : cell.dateStr)}
                   disabled={!cell || !hasEvents}
                   style={{
-                    minHeight: isMobile ? 48 : 60,
+                    minHeight: 60,
                     padding: 4,
                     borderRadius: 4,
                     border: isSelected

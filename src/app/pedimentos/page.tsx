@@ -108,7 +108,7 @@ export default function PedimentosPage() {
         const all = (data.data ?? data ?? []) as TraficoRow[]
         setRows(all)
       })
-      .catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
+      .catch((err: unknown) => { void 0 })
       .finally(() => setLoading(false))
   }, [])
 
@@ -217,7 +217,7 @@ export default function PedimentosPage() {
                 style={{ color: 'var(--red-text)', border: '1px solid var(--red-border)', background: 'var(--red-bg)' }}>✕</button>
             )}
           </div>
-          <label className="flex items-center gap-1.5 text-[11.5px] cursor-pointer" style={{ color: tmecOnly ? '#166534' : '#6b7280' }}>
+          <label className="flex items-center gap-1.5 text-[11.5px] cursor-pointer" style={{ color: tmecOnly ? 'var(--success)' : 'var(--text-secondary)' }}>
             <input type="checkbox" checked={tmecOnly} onChange={e => { setTmecOnly(e.target.checked); setPage(0) }} style={{ width: 13, height: 13 }} />
             Solo T-MEC
           </label>
@@ -277,7 +277,7 @@ export default function PedimentosPage() {
                 textDecoration: 'none', color: 'inherit',
                 background: 'var(--bg-surface)',
                 border: '1px solid var(--border)',
-                borderLeft: `4px solid ${g.tmec ? '#16A34A' : 'var(--gold, #C4963C)'}`,
+                borderLeft: `4px solid ${g.tmec ? 'var(--success)' : 'var(--gold, #C4963C)'}`,
                 borderRadius: 'var(--r-md, 8px)',
                 padding: '12px 14px',
                 display: 'block',
@@ -346,7 +346,7 @@ export default function PedimentosPage() {
                           {g.regimen || '—'}
                         </span>
                         {g.tmec && (
-                          <span style={{ marginLeft: 6, fontSize: 11, color: '#16A34A', fontWeight: 600 }}>T-MEC</span>
+                          <span style={{ marginLeft: 6, fontSize: 11, color: 'var(--success)', fontWeight: 600 }}>T-MEC</span>
                         )}
                       </td>
                       <td className="c-num">{fmtUSD(g.importe)} USD</td>

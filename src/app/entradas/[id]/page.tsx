@@ -112,7 +112,7 @@ export default function EntradaDetailPage() {
           }
         }
       })
-      .catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
+      .catch((err: unknown) => { void 0 })
       .finally(() => setLoading(false))
   }, [id])
 
@@ -177,7 +177,7 @@ export default function EntradaDetailPage() {
               <div className="d-label">Trafico</div>
               <div className="d-val mono">
                 {entrada.trafico ? (
-                  <Link href="/traficos" style={{ color: '#1A6BFF', textDecoration: 'none', fontWeight: 600 }}>
+                  <Link href="/traficos" style={{ color: 'var(--info)', textDecoration: 'none', fontWeight: 600 }}>
                     {fmtTrafico(entrada.trafico)}
                   </Link>
                 ) : <span style={{ color: 'var(--slate-400)', fontStyle: 'italic', fontSize: 12 }}>Sin dato</span>}

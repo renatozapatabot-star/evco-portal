@@ -98,7 +98,7 @@ export default function CarriersPage() {
               <AlertTriangle size={13} style={{ color: 'var(--text-muted)' }} />
               <span className="text-[10.5px] font-semibold uppercase tracking-[0.07em]" style={{ color: 'var(--text-muted)' }}>Mayor Incidencia</span>
             </div>
-            <div className="text-[13px] font-semibold truncate" style={{ color: '#991B1B' }}>
+            <div className="text-[13px] font-semibold truncate" style={{ color: 'var(--danger-text)' }}>
               {worstIncident?.name?.substring(0, 22) || ''}
             </div>
             <div className="mono text-[11px]" style={{ color: 'var(--text-muted)' }}>{((worstIncident?.faltantes_rate || 0) + (worstIncident?.danos_rate || 0)).toFixed(1)}% incidentes</div>

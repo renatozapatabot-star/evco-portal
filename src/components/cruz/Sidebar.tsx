@@ -4,20 +4,14 @@ import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
-  Inbox,
-  Truck,
-  FileText,
-  BookOpen,
-  BarChart3,
-  FolderOpen,
-  Zap,
   LogOut,
   ChevronsLeft,
   ChevronsRight,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { INTERNAL_GROUPS, INTERNAL_BOTTOM, CLIENT_NAV } from '@/components/nav/nav-config';
 
-// ── Nav configuration per portal type ──
+// ── Nav types ──
 
 interface NavItem {
   label: string;
@@ -32,41 +26,24 @@ interface NavSection {
 
 const ICON_SIZE = 16;
 
-const operatorNav: NavSection[] = [
-  {
-    title: 'Operaciones',
-    items: [
-      { label: 'Entradas',     href: '/entradas',     icon: <Inbox size={ICON_SIZE} /> },
-      { label: 'Tráficos',     href: '/traficos',     icon: <Truck size={ICON_SIZE} /> },
-      { label: 'Pedimentos',   href: '/pedimentos',   icon: <FileText size={ICON_SIZE} /> },
-      { label: 'Catálogo',     href: '/catalogo',     icon: <BookOpen size={ICON_SIZE} /> },
-      { label: 'Reportes',     href: '/reportes',     icon: <BarChart3 size={ICON_SIZE} /> },
-      { label: 'Expediente Digital',  href: '/expedientes',  icon: <FolderOpen size={ICON_SIZE} /> },
-    ],
-  },
-  {
-    title: 'Inteligencia',
-    items: [
-      { label: 'CRUZ AI', href: '/cruz', icon: <Zap size={ICON_SIZE} /> },
-    ],
-  },
-];
+// Build sidebar sections from nav-config.ts (single source of truth)
+const operatorNav: NavSection[] = INTERNAL_GROUPS.map(g => ({
+  title: g.label,
+  items: g.children.map(c => ({
+    label: c.label,
+    href: c.href,
+    icon: <c.icon size={ICON_SIZE} />,
+  })),
+}));
 
 const clientNav: NavSection[] = [
   {
-    title: 'Embarques',
-    items: [
-      { label: 'Entradas',   href: '/entradas',   icon: <Inbox size={ICON_SIZE} /> },
-      { label: 'Tráficos',   href: '/traficos',   icon: <Truck size={ICON_SIZE} /> },
-      { label: 'Pedimentos', href: '/pedimentos', icon: <FileText size={ICON_SIZE} /> },
-    ],
-  },
-  {
-    title: 'Documentos',
-    items: [
-      { label: 'Expedientes', href: '/expedientes', icon: <FolderOpen size={ICON_SIZE} /> },
-      { label: 'Reportes',    href: '/reportes',    icon: <BarChart3 size={ICON_SIZE} /> },
-    ],
+    title: 'Portal',
+    items: CLIENT_NAV.map(c => ({
+      label: c.label,
+      href: c.href,
+      icon: <c.icon size={ICON_SIZE} />,
+    })),
   },
 ];
 

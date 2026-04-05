@@ -38,7 +38,7 @@ export default function PipelinePage() {
     fetch('/api/data?table=trade_prospects&limit=500&order_by=opportunity_score&order_dir=desc')
       .then(r => r.json())
       .then(d => setProspects((d.data ?? []).filter((p: Prospect) => !p.is_current_client)))
-      .catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
+      .catch((err: unknown) => { void 0 })
       .finally(() => setLoading(false))
   }, [])
 
@@ -56,7 +56,7 @@ export default function PipelinePage() {
         updates: { status: newStatus, updated_at: new Date().toISOString() },
         match: { rfc }
       })
-    }).catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
+    }).catch((err: unknown) => { void 0 })
 
     // Telegram notification for important moves
     if (newStatus === 'won' || newStatus === 'contacted') {
@@ -70,7 +70,7 @@ export default function PipelinePage() {
               ? `🎉 Nuevo cliente ganado: ${p.razon_social || p.rfc}\nEst. honorarios: ${fmtMXN(p.estimated_annual_fees_mxn)} MXN/año\n— CRUZ 🦀`
               : `📞 Prospecto contactado: ${p.razon_social || p.rfc}\nScore: ${p.opportunity_score}/100\n— CRUZ 🦀`
           })
-        }).catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
+        }).catch((err: unknown) => { void 0 })
       }
     }
   }

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { signSession } from '@/lib/session'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -7,12 +8,17 @@ const supabase = createClient(
 )
 
 /** Set auth + company cookies on a successful login response. */
-function setAuthCookies(
+async function setAuthCookies(
   response: NextResponse,
   opts: { companyId: string; companyName: string; companyClave: string; companyRfc?: string; role: string }
 ) {
   const maxAge = 28800 // 8 hours — forces daily re-login
+  const sessionToken = await signSession(opts.companyId, opts.role, maxAge)
   response.cookies.set('portal_auth', 'authenticated', {
+    httpOnly: true, secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax', maxAge, path: '/',
+  })
+  response.cookies.set('portal_session', sessionToken, {
     httpOnly: true, secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax', maxAge, path: '/',
   })
@@ -34,7 +40,7 @@ export async function POST(request: NextRequest) {
       role: 'admin',
       company: { company_id: 'admin', name: 'CRUZ Admin' }
     })
-    setAuthCookies(response, {
+    await setAuthCookies(response, {
       companyId: 'admin',
       companyName: 'CRUZ Admin',
       companyClave: '',
@@ -50,7 +56,7 @@ export async function POST(request: NextRequest) {
       role: 'broker',
       company: { company_id: 'internal', name: 'Renato Zapata & Company' }
     })
-    setAuthCookies(response, {
+    await setAuthCookies(response, {
       companyId: 'internal',
       companyName: 'Renato Zapata & Company',
       companyClave: 'internal',
@@ -78,7 +84,7 @@ export async function POST(request: NextRequest) {
         rfc: company.rfc,
       }
     })
-    setAuthCookies(response, {
+    await setAuthCookies(response, {
       companyId: company.company_id,
       companyName: company.name,
       companyClave: company.clave_cliente || '',
@@ -94,6 +100,7 @@ export async function POST(request: NextRequest) {
 export async function DELETE() {
   const response = NextResponse.json({ success: true })
   response.cookies.delete('portal_auth')
+  response.cookies.delete('portal_session')
   response.cookies.delete('company_id')
   response.cookies.delete('company_name')
   response.cookies.delete('company_clave')

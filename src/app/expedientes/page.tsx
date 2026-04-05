@@ -170,7 +170,7 @@ export default function ExpedientesPage() {
             {docs.length.toLocaleString('es-MX')} documentos · {grouped.length} tráficos
             <button
               onClick={() => setSortAsc(v => !v)}
-              style={{ marginLeft: 12, fontSize: 11, fontWeight: 600, color: 'var(--slate-500)', background: 'var(--slate-50)', border: '1px solid var(--border-card)', borderRadius: 6, padding: '2px 10px', cursor: 'pointer' }}
+              style={{ marginLeft: 12, fontSize: 11, fontWeight: 600, color: 'var(--slate-500)', background: 'var(--slate-50)', border: '1px solid var(--border-card)', borderRadius: 6, padding: '8px 14px', cursor: 'pointer', minHeight: 60 }}
             >
               {sortAsc ? '↑ Menos completos' : '↓ Más completos'}
             </button>
@@ -197,7 +197,7 @@ export default function ExpedientesPage() {
         {['', 'factura_comercial', 'pedimento_detallado', 'cove', 'doda', 'carta_porte'].map(dt => (
           <button key={dt} onClick={() => setDocTypeFilter(dt)}
             style={{
-              fontSize: 10, fontWeight: 600, padding: '3px 10px', borderRadius: 9999, cursor: 'pointer',
+              fontSize: 10, fontWeight: 600, padding: '8px 14px', borderRadius: 9999, cursor: 'pointer', minHeight: 60,
               border: `1px solid ${docTypeFilter === dt ? 'var(--gold)' : 'var(--border-card)'}`,
               background: docTypeFilter === dt ? 'rgba(196,150,60,0.08)' : 'transparent',
               color: docTypeFilter === dt ? 'var(--gold-dark, #8B6914)' : 'var(--slate-500)',
@@ -271,7 +271,7 @@ export default function ExpedientesPage() {
                   style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                     padding: '14px 16px',
-                    cursor: 'pointer',
+                    cursor: 'pointer', minHeight: 60,
                     background: 'var(--bg-main, #FAFBFC)',
                     borderBottom: isExpanded ? '1px solid var(--border-card, #E5E7EB)' : 'none',
                   }}
@@ -331,8 +331,8 @@ export default function ExpedientesPage() {
                       return (
                         <div key={reqKey} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                           {found
-                            ? <CheckCircle size={16} style={{ color: '#16A34A', flexShrink: 0 }} />
-                            : <XCircle size={16} style={{ color: '#DC2626', opacity: 0.5, flexShrink: 0 }} />
+                            ? <CheckCircle size={16} style={{ color: 'var(--success)', flexShrink: 0 }} />
+                            : <XCircle size={16} style={{ color: 'var(--danger)', opacity: 0.5, flexShrink: 0 }} />
                           }
                           <span style={{ fontSize: 13, color: found ? 'var(--text-primary, #111)' : 'var(--slate-500)', flex: 1 }}>
                             {docLabel(reqKey)}
@@ -352,7 +352,7 @@ export default function ExpedientesPage() {
                             </span>
                           )}
                           {!found && (
-                            <span style={{ fontSize: 11, color: '#D97706', marginLeft: 'auto' }}>
+                            <span style={{ fontSize: 11, color: 'var(--warning)', marginLeft: 'auto' }}>
                               Faltante
                             </span>
                           )}

@@ -26,16 +26,16 @@ interface BridgeTime {
 }
 
 const T = {
-  bg: '#0D0D0C',
-  card: '#1A1814',
-  border: '#2A2824',
-  text: '#F5F0E8',
-  textSec: '#A09882',
-  gray: '#7C7870',
+  bg: '#FAFAF8',
+  card: '#FFFFFF',
+  border: '#E8E5E0',
+  text: '#1A1A1A',
+  textSec: '#6B6B6B',
+  gray: '#9B9B9B',
   gold: '#C4963C',
-  green: '#2D8540',
-  amber: '#C47F17',
-  red: '#C23B22',
+  green: '#16A34A',
+  amber: '#D97706',
+  red: '#DC2626',
   r: 8,
 } as const
 
@@ -75,7 +75,7 @@ export default function PlaneacionPage() {
       setTraficos((trafData.data ?? []) as TraficoRow[])
       setPipeline((pipeData.data ?? []) as PipelineRow[])
       setBridges((bridgeData.bridges ?? []) as BridgeTime[])
-    }).catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) }).finally(() => setLoading(false))
+    }).catch((err: unknown) => { void 0 }).finally(() => setLoading(false))
   }, [])
 
   const week = useMemo(() => getWeekRange(), [])

@@ -62,7 +62,7 @@ export default function NuevoPedimentoPage() {
         setSysRates({ dta: d.dta.rate, iva: d.iva.rate, tc: d.tc.rate })
         setTipoCambio(d.tc.rate)
       }
-    }).catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
+    }).catch((err: unknown) => { void 0 })
     fetch('/api/tipo-cambio')
       .then(r => r.json())
       .then(d => { if (d.rate) setTipoCambio(Number(d.rate)) })

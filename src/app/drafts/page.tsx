@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { CheckCircle } from 'lucide-react'
 import { GOLD } from '@/lib/design-system'
 import { formatAbsoluteETA, fmtUSD } from '@/lib/format-utils'
-import { getClientClaveCookie } from '@/lib/client-config'
+import { getCompanyIdCookie } from '@/lib/client-config'
 import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(
@@ -14,8 +14,8 @@ const supabase = createClient(
 )
 
 const TIER_CONFIG: Record<number, { label: string; time: string; color: string; bg: string; border: string }> = {
-  1: { label: 'Alta confianza', time: '~2 min', color: '#16A34A', bg: '#F0FDF4', border: '#BBF7D0' },
-  2: { label: 'Confianza media', time: '~5 min', color: '#D97706', bg: '#FFFBEB', border: '#FDE68A' },
+  1: { label: 'Alta confianza', time: '~2 min', color: 'var(--success)', bg: '#F0FDF4', border: '#BBF7D0' },
+  2: { label: 'Confianza media', time: '~5 min', color: 'var(--warning)', bg: '#FFFBEB', border: '#FDE68A' },
   3: { label: 'Revisión completa', time: 'Sin límite', color: 'var(--danger-500)', bg: '#FEF2F2', border: '#FECACA' },
 }
 
@@ -47,10 +47,10 @@ export default function DraftsPage() {
 
   // Load drafts function (reusable for polling)
   const loadDrafts = async () => {
-    const clientClave = getClientClaveCookie()
+    const companyId = getCompanyIdCookie()
     let q = supabase.from('pedimento_drafts')
       .select('*')
-      .eq('company_id', clientClave)
+      .eq('company_id', companyId)
       .order('created_at', { ascending: false })
       .limit(50)
 
@@ -99,7 +99,7 @@ export default function DraftsPage() {
       <div style={{ display: 'flex', gap: 4, marginBottom: 20, background: 'var(--slate-50)', borderRadius: 8, padding: 3, width: 'fit-content' }}>
         {(['pending', 'approved', 'all'] as const).map(f => (
           <button key={f} onClick={() => setFilter(f)} style={{
-            padding: '6px 16px', borderRadius: 6, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer',
+            padding: '10px 16px', borderRadius: 6, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer', minHeight: 60,
             background: filter === f ? 'white' : 'transparent', color: filter === f ? 'var(--navy-900)' : 'var(--slate-400)',
             boxShadow: filter === f ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
           }}>
@@ -114,7 +114,7 @@ export default function DraftsPage() {
         </div>
       ) : drafts.length === 0 ? (
         <div style={{ padding: 60, textAlign: 'center' }}>
-          <CheckCircle size={32} style={{ color: '#16A34A', margin: '0 auto 12px' }} />
+          <CheckCircle size={32} style={{ color: 'var(--success)', margin: '0 auto 12px' }} />
           <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--slate-700)' }}>Sin borradores pendientes</div>
           <div style={{ fontSize: 13, color: 'var(--slate-400)', marginTop: 4 }}>Todos los borradores han sido revisados</div>
         </div>
@@ -177,7 +177,7 @@ export default function DraftsPage() {
           <div style={{ color: '#E8E5DF', fontSize: 24, fontWeight: 800, marginTop: 24, letterSpacing: '-0.02em' }}>
             Patente 3596 honrada
           </div>
-          <div style={{ color: '#9C9890', fontSize: 16, marginTop: 8 }}>
+          <div style={{ color: 'var(--text-muted)', fontSize: 16, marginTop: 8 }}>
             Gracias, Tito.
           </div>
           <div style={{ fontSize: 32, marginTop: 16 }}>🦀</div>

@@ -11,27 +11,27 @@ import { fmtDateTime } from '@/lib/format-utils'
 import { INTELLIGENCE_TIERS, MODEL_TYPE_LABELS } from '@/lib/intelligence'
 import type { ModelType } from '@/lib/intelligence'
 
-/* ── Design tokens — dark intelligence theme ──────────────── */
+/* ── Light tokens (DESIGN_SYSTEM.md v6) ──────────────── */
 
 const D = {
-  bg: '#0D0D0C',
-  surface: '#1A1A18',
-  surfaceHover: '#242422',
-  border: '#2A2A28',
+  bg: '#FAFAF8',
+  surface: '#FFFFFF',
+  surfaceHover: '#F5F4F0',
+  border: '#E8E5E0',
   gold: '#C4963C',
-  goldSubtle: 'rgba(184,149,63,0.12)',
-  goldBorder: 'rgba(184,149,63,0.25)',
-  text: '#E8E5DF',
-  textSec: '#9C9890',
-  textMuted: '#6B6860',
-  green: '#2D8540',
-  greenBg: 'rgba(45,133,64,0.12)',
-  amber: '#C47F17',
-  amberBg: 'rgba(196,127,23,0.12)',
-  red: '#C23B22',
-  redBg: 'rgba(194,59,34,0.12)',
+  goldSubtle: 'rgba(196,150,60,0.08)',
+  goldBorder: 'rgba(196,150,60,0.25)',
+  text: '#1A1A1A',
+  textSec: '#6B6B6B',
+  textMuted: '#9B9B9B',
+  green: '#16A34A',
+  greenBg: '#F0FDF4',
+  amber: '#D97706',
+  amberBg: '#FFFBEB',
+  red: '#DC2626',
+  redBg: '#FEF2F2',
   teal: '#0D9488',
-  tealBg: 'rgba(13,148,136,0.12)',
+  tealBg: 'rgba(13,148,136,0.08)',
 } as const
 
 /* ── Types ────────────────────────────────────────────────── */

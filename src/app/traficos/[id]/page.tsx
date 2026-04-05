@@ -98,9 +98,9 @@ const EVENT_ICONS: Record<string, string> = {
 function sourceBadge(source: string | null) {
   if (!source) return null
   const colors: Record<string, { bg: string; text: string }> = {
-    system: { bg: 'rgba(156,152,144,0.15)', text: '#9C9890' },
-    mobile: { bg: 'rgba(13,148,136,0.15)', text: '#0D9488' },
-    portal: { bg: 'rgba(184,149,63,0.15)', text: '#C4963C' },
+    system: { bg: 'rgba(156,152,144,0.15)', text: 'var(--text-muted)' },
+    mobile: { bg: 'rgba(13,148,136,0.15)', text: 'var(--teal)' },
+    portal: { bg: 'rgba(184,149,63,0.15)', text: 'var(--gold)' },
   }
   const c = colors[source] ?? colors.system
   return (
@@ -163,13 +163,13 @@ function TimelineTab({ traficoId }: { traficoId: string }) {
     return (
       <div style={{
         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-        background: '#252219', borderRadius: 12, padding: '48px 32px', textAlign: 'center',
+        background: 'var(--bg-card)', border: '1px solid #E8E5E0', borderRadius: 12, padding: '48px 32px', textAlign: 'center',
       }}>
         <div style={{ fontSize: 48, lineHeight: 1, marginBottom: 16 }}>{'\uD83D\uDCC5'}</div>
-        <h3 style={{ fontSize: 16, fontWeight: 700, color: '#F5F0E8', margin: '0 0 8px' }}>
+        <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 8px' }}>
           Sin eventos registrados aún
         </h3>
-        <p style={{ fontSize: 14, color: '#A09882', margin: 0, maxWidth: 320, lineHeight: 1.5 }}>
+        <p style={{ fontSize: 14, color: 'var(--text-secondary)', margin: 0, maxWidth: 320, lineHeight: 1.5 }}>
           Los eventos aparecerán aquí conforme el tráfico avanza
         </p>
       </div>
@@ -187,23 +187,23 @@ function TimelineTab({ traficoId }: { traficoId: string }) {
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 32, flexShrink: 0 }}>
               <div style={{
                 width: 28, height: 28, borderRadius: '50%',
-                background: '#252219', border: '1px solid #3A3830',
+                background: 'var(--bg-hover)', border: '1px solid #E8E5E0',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: 14, lineHeight: 1, flexShrink: 0,
               }}>
                 {icon}
               </div>
               {!isLast && (
-                <div style={{ width: 1, flex: 1, background: '#3A3830', minHeight: 16 }} />
+                <div style={{ width: 1, flex: 1, background: 'var(--border)', minHeight: 16 }} />
               )}
             </div>
             {/* Content */}
             <div style={{ flex: 1, paddingBottom: isLast ? 0 : 16 }}>
-              <div style={{ fontSize: 13, fontWeight: 500, color: '#F5F0E8', lineHeight: 1.5 }}>
+              <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', lineHeight: 1.5 }}>
                 {ev.content_es || ev.event_type.replace(/_/g, ' ')}
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
-                <span style={{ fontSize: 11, color: '#7C7870', fontFamily: 'var(--font-mono)' }}>
+                <span style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
                   {fmtDateTime(ev.created_at)}
                 </span>
                 {sourceBadge(ev.source)}
@@ -470,7 +470,7 @@ export default function TraficoDetailPage() {
   )
 
   // ── Semáforo color ──
-  const semaforoColor = (t.semaforo as number) === 0 ? '#2D8540' : (t.semaforo as number) === 1 ? '#C23B22' : null
+  const semaforoColor = (t.semaforo as number) === 0 ? 'var(--success)' : (t.semaforo as number) === 1 ? 'var(--danger)' : null
 
   // ── Completeness data ──
   const compScore = completeness?.score ?? docCompleteness
@@ -538,7 +538,7 @@ export default function TraficoDetailPage() {
                 minHeight: 60,
                 borderRadius: 8,
                 background: notifying ? 'var(--slate-200)' : 'var(--danger-500, #DC2626)',
-                color: '#FFFFFF',
+                color: 'var(--bg-card)',
                 border: 'none',
                 cursor: notifying ? 'not-allowed' : 'pointer',
                 fontSize: 13,
@@ -600,7 +600,7 @@ export default function TraficoDetailPage() {
               display: 'inline-flex', alignItems: 'center', gap: 4,
               padding: '4px 12px', borderRadius: 9999,
               background: 'var(--green-50, #F0FDF4)',
-              color: '#16A34A', fontSize: 12, fontWeight: 600,
+              color: 'var(--success)', fontSize: 12, fontWeight: 600,
               border: '1px solid var(--green-100, #DCFCE7)',
             }}>
               T-MEC
@@ -732,7 +732,7 @@ export default function TraficoDetailPage() {
                 <svg width="64" height="64" style={{ transform: 'rotate(-90deg)' }}>
                   <circle cx="32" cy="32" r="28" stroke="#E5E7EB" strokeWidth="4" fill="none" />
                   <circle cx="32" cy="32" r="28"
-                    stroke={compScore === 100 ? '#16A34A' : compScore > 50 ? '#C4963C' : '#DC2626'}
+                    stroke={compScore === 100 ? 'var(--success)' : compScore > 50 ? 'var(--gold)' : 'var(--danger)'}
                     strokeWidth="4" fill="none"
                     strokeDasharray={`${compScore * 1.759} 175.9`}
                     strokeLinecap="round"
@@ -764,8 +764,8 @@ export default function TraficoDetailPage() {
                 <span style={{
                   width: 20, height: 20, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: 11, fontWeight: 700,
-                  background: canFile ? '#ECFDF3' : '#FEF2F2',
-                  color: canFile ? '#2D8540' : '#C23B22',
+                  background: canFile ? 'var(--success-bg)' : 'var(--danger-bg)',
+                  color: canFile ? 'var(--success)' : 'var(--danger)',
                   border: canFile ? '1px solid #BBF7D0' : '1px solid rgba(194,59,34,0.2)',
                 }}>
                   {canFile ? '✓' : '✗'}
@@ -778,8 +778,8 @@ export default function TraficoDetailPage() {
                 <span style={{
                   width: 20, height: 20, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: 11, fontWeight: 700,
-                  background: canCross ? '#ECFDF3' : '#FEF2F2',
-                  color: canCross ? '#2D8540' : '#C23B22',
+                  background: canCross ? 'var(--success-bg)' : 'var(--danger-bg)',
+                  color: canCross ? 'var(--success)' : 'var(--danger)',
                   border: canCross ? '1px solid #BBF7D0' : '1px solid rgba(194,59,34,0.2)',
                 }}>
                   {canCross ? '✓' : '✗'}
@@ -792,16 +792,16 @@ export default function TraficoDetailPage() {
 
             {/* Blocking docs — tap to upload */}
             {(compBlocking?.length ?? 0) > 0 && (
-              <div style={{ padding: '10px 14px', background: '#FEF2F2', border: '1px solid rgba(194,59,34,0.15)', borderRadius: 8 }}>
-                <div style={{ fontSize: 11, fontWeight: 800, color: '#991B1B', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>
+              <div style={{ padding: '10px 14px', background: 'var(--danger-bg)', border: '1px solid rgba(194,59,34,0.15)', borderRadius: 8 }}>
+                <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--danger-text)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>
                   Documentos Bloqueantes ({compBlocking?.length ?? 0}) · Toca para subir
                 </div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                   {(compBlocking ?? []).map(doc => (
                     <label key={doc} style={{
                       fontSize: 11, fontWeight: 600, padding: '6px 14px',
-                      borderRadius: 9999, background: '#FFFFFF',
-                      color: uploadingDoc === doc ? '#C4963C' : '#991B1B',
+                      borderRadius: 9999, background: 'var(--bg-card)',
+                      color: uploadingDoc === doc ? 'var(--gold)' : 'var(--danger-text)',
                       border: '1px solid rgba(194,59,34,0.2)',
                       cursor: uploadingDoc === doc ? 'wait' : 'pointer',
                       display: 'inline-flex', alignItems: 'center', gap: 4,
@@ -843,9 +843,9 @@ export default function TraficoDetailPage() {
                 const dotColor = state === 'completed' ? 'var(--success-500)' : state === 'current' ? 'var(--sand-400, #C4A96A)' : state === 'blocked' ? 'var(--danger-500)' : 'var(--slate-200)'
                 const textColor = state === 'completed' ? 'var(--slate-600)' : state === 'current' ? 'var(--navy-900)' : state === 'blocked' ? 'var(--danger-500)' : 'var(--slate-400)'
                 const lineColor = state === 'completed' ? 'var(--success-500)' : 'var(--slate-200)'
-                const detailColor = step.num === 8 && step.detail === 'Verde' ? '#2D8540'
-                  : step.num === 8 && step.detail === 'Rojo' ? '#C23B22'
-                  : step.num === 10 && state === 'completed' ? '#0D9488'
+                const detailColor = step.num === 8 && step.detail === 'Verde' ? 'var(--success)'
+                  : step.num === 8 && step.detail === 'Rojo' ? 'var(--danger)'
+                  : step.num === 10 && state === 'completed' ? 'var(--teal)'
                   : 'var(--slate-500)'
 
                 return (
@@ -941,7 +941,7 @@ export default function TraficoDetailPage() {
                     if (pedDoc?.file_url) window.open(pedDoc.file_url as string, '_blank')
                     else toast('Pedimento PDF no disponible aún', 'error')
                   }}
-                    style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, color: 'var(--gold-dark, #8B6914)', background: 'rgba(196,150,60,0.08)', border: '1px solid rgba(196,150,60,0.2)', borderRadius: 8, padding: '8px 14px', cursor: 'pointer', minHeight: 44 }}>
+                    style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, color: 'var(--gold-dark, #8B6914)', background: 'rgba(196,150,60,0.08)', border: '1px solid rgba(196,150,60,0.2)', borderRadius: 8, padding: '8px 14px', cursor: 'pointer', minHeight: 60 }}>
                     <FileText size={14} /> Descargar Pedimento
                   </button>
                 )}
@@ -983,8 +983,8 @@ export default function TraficoDetailPage() {
                 width: '100%', padding: '14px 16px',
                 fontSize: 14, fontWeight: 700,
                 border: 'none', borderRadius: 8,
-                background: docCompleteness === 0 ? '#C23B22' : '#C4963C',
-                color: '#FFFFFF', cursor: 'pointer', minHeight: 60,
+                background: docCompleteness === 0 ? 'var(--danger)' : 'var(--gold)',
+                color: 'var(--bg-card)', cursor: 'pointer', minHeight: 60,
               }}
             >
               Solicitar {missingDocs.length} documentos faltantes →
@@ -994,7 +994,7 @@ export default function TraficoDetailPage() {
             <div style={{
               width: '100%', padding: '14px 16px', textAlign: 'center',
               fontSize: 14, fontWeight: 700, borderRadius: 8,
-              background: '#ECFDF3', color: '#2D8540', border: '1px solid #BBF7D0',
+              background: 'var(--success-bg)', color: 'var(--success)', border: '1px solid #BBF7D0',
               minHeight: 60, display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
               ✓ Documentos solicitados
@@ -1004,7 +1004,7 @@ export default function TraficoDetailPage() {
           {/* Missing docs upload zone */}
           {missingDocs.length > 0 && (
             <div className="card" style={{ padding: 20 }}>
-              <div style={{ fontSize: 11, fontWeight: 800, color: '#991B1B', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12 }}>
+              <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--danger-text)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12 }}>
                 Documentos Faltantes
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(160px, 1fr))', gap: 8 }}>
@@ -1013,8 +1013,8 @@ export default function TraficoDetailPage() {
                     display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                     gap: 4, padding: '12px 14px', borderRadius: 8,
                     border: '2px dashed rgba(220,38,38,0.3)', borderLeft: '4px solid #C23B22',
-                    background: '#FEF2F2', cursor: 'pointer', fontSize: 12, fontWeight: 600,
-                    color: '#991B1B', minHeight: 60, width: '100%',
+                    background: 'var(--danger-bg)', cursor: 'pointer', fontSize: 12, fontWeight: 600,
+                    color: 'var(--danger-text)', minHeight: 60, width: '100%',
                   }}>
                     {uploadingDoc === doc ? <span style={{ color: GOLD }}>Subiendo...</span> : (
                       <>
@@ -1039,7 +1039,7 @@ export default function TraficoDetailPage() {
                   <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--navy-900)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0, flex: 1 }}>{docType}</span>
                   <span style={{
                     fontSize: 10, fontWeight: 700, fontFamily: 'var(--font-mono)',
-                    background: '#ECFDF3', color: '#2D8540',
+                    background: 'var(--success-bg)', color: 'var(--success)',
                     borderRadius: 9999, padding: '1px 7px',
                   }}>{docs.length}</span>
                 </div>
@@ -1055,7 +1055,7 @@ export default function TraficoDetailPage() {
                         minHeight: 60,
                       }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
-                          <span style={{ color: '#2D8540', fontSize: 14, flexShrink: 0 }}>✅</span>
+                          <span style={{ color: 'var(--success)', fontSize: 14, flexShrink: 0 }}>✅</span>
                           <div style={{ minWidth: 0 }}>
                             <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--navy-800)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                               {name}
@@ -1113,15 +1113,15 @@ export default function TraficoDetailPage() {
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
                         <span style={{
                           fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 9999,
-                          background: isPastDeadline ? '#FEF2F2' : '#FFFBEB',
-                          color: isPastDeadline ? '#991B1B' : '#92400E',
+                          background: isPastDeadline ? 'var(--danger-bg)' : 'var(--warning-bg)',
+                          color: isPastDeadline ? 'var(--danger-text)' : 'var(--warning-text)',
                           border: isPastDeadline ? '1px solid rgba(220,38,38,0.2)' : '1px solid rgba(196,127,23,0.2)',
                         }}>
                           {isPastDeadline ? 'Vencido' : sol.status === 'solicitado' ? 'Solicitado' : sol.status}
                         </span>
                         <button onClick={() => markSolicitudCompleta(sol.id)} style={{
                           fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 8,
-                          background: '#ECFDF3', color: '#2D8540', border: '1px solid #BBF7D0',
+                          background: 'var(--success-bg)', color: 'var(--success)', border: '1px solid #BBF7D0',
                           cursor: 'pointer', minHeight: 60, whiteSpace: 'nowrap',
                         }}>
                           Marcar recibido ✓

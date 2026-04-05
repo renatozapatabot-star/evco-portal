@@ -95,18 +95,22 @@ export const INTERNAL_BOTTOM: NavTopLevel[] = [
 ]
 
 // ---------------------------------------------------------------------------
-// CLIENT NAV — client role (4 items, no accordions)
+// CLIENT NAV — client role (8 items visible to clients)
 // ---------------------------------------------------------------------------
 
 export const CLIENT_NAV: NavTopLevel[] = [
-  { href: '/',           label: 'Inicio',        icon: LayoutDashboard },
-  { href: '/traficos',   label: 'Mis Embarques', icon: Truck },
-  { href: '/documentos', label: 'Documentos',    icon: FolderOpen },
-  { href: '/reportes',   label: 'Reportes',      icon: BarChart3 },
+  { href: '/',             label: 'Inicio',       icon: LayoutDashboard },
+  { href: '/traficos',     label: 'Tráficos',     icon: Truck },
+  { href: '/entradas',     label: 'Entradas',     icon: Package },
+  { href: '/pedimentos',   label: 'Pedimentos',   icon: FileText },
+  { href: '/documentos',   label: 'Documentos',   icon: FolderOpen },
+  { href: '/financiero',   label: 'Financiero',   icon: DollarSign },
+  { href: '/proveedores',  label: 'Proveedores',  icon: Users2 },
+  { href: '/cruz',         label: 'CRUZ AI',       icon: MessageSquare },
 ]
 
 // ---------------------------------------------------------------------------
-// CLIENT NAV GROUPS — client role (dropdown menus, same as admin structure)
+// CLIENT NAV GROUPS — client role (dropdown menus for sidebar)
 // ---------------------------------------------------------------------------
 
 export const CLIENT_GROUPS: NavGroup[] = [
@@ -115,10 +119,9 @@ export const CLIENT_GROUPS: NavGroup[] = [
     label: 'Operaciones',
     icon: Truck,
     children: [
-      { href: '/traficos',    label: 'Tráficos Activos', icon: Truck },
-      { href: '/historial',   label: 'Historial',        icon: History },
-      { href: '/entradas',    label: 'Entradas',         icon: Package },
-      { href: '/calendario',  label: 'Calendario',       icon: Calendar },
+      { href: '/traficos',    label: 'Tráficos',    icon: Truck },
+      { href: '/entradas',    label: 'Entradas',    icon: Package },
+      { href: '/pedimentos',  label: 'Pedimentos',  icon: FileText },
     ],
   },
   {
@@ -126,11 +129,8 @@ export const CLIENT_GROUPS: NavGroup[] = [
     label: 'Documentos',
     icon: FolderOpen,
     children: [
-      { href: '/expedientes',            label: 'Por Tráfico',  icon: FolderOpen },
-      { href: '/documentos',             label: 'Repositorio',  icon: Archive },
-      { href: '/documentos/subir',        label: 'Subir Docs',   icon: Upload },
-      { href: '/documentos/pendientes',  label: 'Pendientes',   icon: Clock },
-      { href: '/documentos/plantillas',  label: 'Plantillas',   icon: ClipboardList },
+      { href: '/documentos',    label: 'Documentos',   icon: FolderOpen },
+      { href: '/expedientes',   label: 'Expedientes',  icon: FolderOpen },
     ],
   },
   {
@@ -138,28 +138,8 @@ export const CLIENT_GROUPS: NavGroup[] = [
     label: 'Costos',
     icon: DollarSign,
     children: [
-      { href: '/financiero',      label: 'Resumen de Cuenta', icon: DollarSign },
-      { href: '/pedimentos',      label: 'Por Pedimento',     icon: FileText },
-      { href: '/reportes/usmca',  label: 'Ahorros USMCA',    icon: Award },
-      { href: '/facturas',        label: 'Facturas',          icon: Receipt },
-    ],
-  },
-  {
-    key: 'cumplimiento',
-    label: 'Cumplimiento',
-    icon: Shield,
-    children: [
-      { href: '/cumplimiento', label: 'Cumplimiento', icon: Shield },
-    ],
-  },
-  {
-    key: 'soporte',
-    label: 'Soporte',
-    icon: MessageSquare,
-    children: [
-      { href: '/comunicaciones', label: 'Mensajes',     icon: MessageSquare },
-      { href: '/solicitudes',    label: 'Solicitudes',  icon: Send },
-      { href: '/contacto',       label: 'Contacto',     icon: Phone },
+      { href: '/financiero',    label: 'Financiero',    icon: DollarSign },
+      { href: '/proveedores',   label: 'Proveedores',   icon: Users2 },
     ],
   },
 ]
@@ -186,17 +166,17 @@ export const MOBILE_INTERNAL_TABS: MobileTab[] = [
 
 export const MOBILE_CLIENT_TABS: MobileTab[] = [
   { href: '/',           label: 'Inicio',        icon: LayoutDashboard },
-  { href: '/traficos',   label: 'Embarques',     icon: Truck },
+  { href: '/traficos',   label: 'Tráficos',      icon: Truck },
   { href: '/cruz',       label: 'CRUZ',          icon: null, center: true },
   { href: '/documentos', label: 'Documentos',    icon: FolderOpen },
-  { href: '/reportes',   label: 'Reportes',      icon: BarChart3 },
+  { href: '/financiero', label: 'Financiero',    icon: DollarSign },
 ]
 
 // ---------------------------------------------------------------------------
 // Route protection — used by middleware.ts
 // ---------------------------------------------------------------------------
 
-/** Routes that only admin can access. Client hitting these → redirect to / */
+/** Routes that only admin/broker can access. Client hitting these → redirect to / */
 export const ADMIN_ONLY_ROUTES = [
   '/admin',
   '/war-room',
@@ -204,7 +184,8 @@ export const ADMIN_ONLY_ROUTES = [
   '/radar',
   '/conocimiento',
   '/revenue',
-  '/proveedores',
+  '/intelligence',
+  '/demo',
   '/anexo24',
   '/mve',
   '/calendario',
@@ -222,6 +203,7 @@ export const ADMIN_ONLY_ROUTES = [
   '/alertas',
   '/immex',
   '/soia',
+  '/status',
   '/voz',
   '/calls',
   '/api-docs',
@@ -231,8 +213,13 @@ export const ADMIN_ONLY_ROUTES = [
 export const CLIENT_ROUTES = [
   '/',
   '/traficos',
+  '/entradas',
+  '/pedimentos',
   '/documentos',
+  '/financiero',
+  '/proveedores',
   '/reportes',
+  '/expedientes',
   '/bodega',
   '/cruz',
   '/login',

@@ -98,7 +98,7 @@ export default function ProspectosPage() {
     fetch('/api/data?table=trade_prospects&limit=500&order_by=opportunity_score&order_dir=desc')
       .then(r => r.json())
       .then(d => setProspects(d.data ?? []))
-      .catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
+      .catch((err: unknown) => { void 0 })
       .finally(() => setLoading(false))
   }, [])
 
@@ -129,7 +129,7 @@ export default function ProspectosPage() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ table: 'trade_prospects', updates: { status: newStatus, updated_at: new Date().toISOString() }, match: { rfc } })
-    }).catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
+    }).catch((err: unknown) => { void 0 })
   }
 
   return (

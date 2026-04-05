@@ -42,7 +42,7 @@ export default async function RadarPage() {
       {(!signals || signals.length === 0) ? (
         <div style={{ background: 'rgba(22,163,74,0.1)', border: '1px solid rgba(22,163,74,0.3)', borderRadius: 12, padding: 24, textAlign: 'center' }}>
           <div style={{ fontSize: 32, marginBottom: 8 }}>🟢</div>
-          <div style={{ fontSize: 16, fontWeight: 700, color: '#16A34A' }}>Sin riesgos activos</div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--success)' }}>Sin riesgos activos</div>
           <div style={{ fontSize: 13, color: '#666', marginTop: 4 }}>Condiciones normales en todos los puentes y rutas</div>
         </div>
       ) : (
@@ -60,7 +60,7 @@ export default async function RadarPage() {
                 <span style={{ fontSize: 11, color: '#666' }}>{s.source}</span>
               </div>
               <div style={{ fontSize: 15, fontWeight: 700 }}>{s.title}</div>
-              {s.description && <div style={{ fontSize: 13, color: '#9C9690', marginTop: 4, lineHeight: 1.4 }}>{s.description}</div>}
+              {s.description && <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4, lineHeight: 1.4 }}>{s.description}</div>}
             </div>
           ))}
         </div>
@@ -69,7 +69,7 @@ export default async function RadarPage() {
       {/* Bridge Summary */}
       {bridgeData && bridgeData.length > 0 && (
         <div style={{ background: 'var(--navy-900)', border: '1px solid #2A2A2A', borderRadius: 12, padding: 20, marginTop: 24 }}>
-          <h2 style={{ fontSize: 14, fontWeight: 700, color: '#9C9690', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 16px' }}>Estado de Puentes</h2>
+          <h2 style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 16px' }}>Estado de Puentes</h2>
           {(() => {
             const bridgeMap: Record<string, number[]> = {}
             bridgeData.forEach((b: any) => { if (!bridgeMap[b.bridge_name]) bridgeMap[b.bridge_name] = []; bridgeMap[b.bridge_name].push(b.crossing_hours) })

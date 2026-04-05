@@ -179,7 +179,7 @@ export default function BrokerCommandCenter() {
                     style={{
                       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                       padding: '10px 16px', borderRadius: 6, border: 'none',
-                      background: T.gold, color: '#FFFFFF', fontSize: 13, fontWeight: 600,
+                      background: T.gold, color: 'var(--bg-card)', fontSize: 13, fontWeight: 600,
                       cursor: 'pointer', minHeight: 44,
                     }}
                   >
@@ -345,11 +345,11 @@ export default function BrokerCommandCenter() {
 function SectionHeader({ icon: Icon, title, count }: { icon: typeof Building2; title: string; count?: number }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-      <Icon size={18} style={{ color: '#C4963C' }} />
-      <h2 style={{ fontSize: 16, fontWeight: 700, color: '#1A1A1A', margin: 0 }}>{title}</h2>
+      <Icon size={18} style={{ color: 'var(--gold)' }} />
+      <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>{title}</h2>
       {count !== undefined && (
         <span style={{
-          fontSize: 11, fontWeight: 600, color: '#C4963C',
+          fontSize: 11, fontWeight: 600, color: 'var(--gold)',
           background: '#F5F0E4', padding: '2px 8px', borderRadius: 9999,
         }}>
           {count}
@@ -362,9 +362,9 @@ function SectionHeader({ icon: Icon, title, count }: { icon: typeof Building2; t
 function Stat({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
   return (
     <div>
-      <div style={{ fontSize: 11, color: '#9B9B9B', marginBottom: 2 }}>{label}</div>
+      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 2 }}>{label}</div>
       <div style={{
-        fontSize: 18, fontWeight: 700, color: '#1A1A1A',
+        fontSize: 18, fontWeight: 700, color: 'var(--text-primary)',
         fontFamily: mono ? 'var(--font-jetbrains-mono)' : undefined,
       }}>
         {value}
@@ -385,17 +385,17 @@ function HealthCheck({ icon: Icon, label, ok, detail }: {
     }}>
       <Icon size={16} style={{ color: ok ? '#2D8540' : '#C23B22', flexShrink: 0 }} />
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: '#1A1A1A' }}>{label}</div>
+        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{label}</div>
         {detail && (
           <div style={{
-            fontSize: 11, color: '#6B6B6B', overflow: 'hidden',
+            fontSize: 11, color: 'var(--text-secondary)', overflow: 'hidden',
             textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           }}>
             {detail}
           </div>
         )}
       </div>
-      {ok ? <CheckCircle2 size={16} style={{ color: '#2D8540' }} /> : <XCircle size={16} style={{ color: '#C23B22' }} />}
+      {ok ? <CheckCircle2 size={16} style={{ color: 'var(--success)' }} /> : <XCircle size={16} style={{ color: 'var(--danger)' }} />}
     </div>
   )
 }
@@ -403,11 +403,11 @@ function HealthCheck({ icon: Icon, label, ok, detail }: {
 function EmptyCard({ icon: Icon, message }: { icon: typeof Building2; message: string }) {
   return (
     <div style={{
-      background: 'var(--card-bg)', border: '1px solid #E8E5E0', borderRadius: 8,
+      background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: 8,
       padding: 32, textAlign: 'center', gridColumn: '1 / -1',
     }}>
-      <Icon size={24} style={{ color: '#9B9B9B', marginBottom: 8 }} />
-      <p style={{ color: '#9B9B9B', fontSize: 13, margin: 0 }}>{message}</p>
+      <Icon size={24} style={{ color: 'var(--text-muted)', marginBottom: 8 }} />
+      <p style={{ color: 'var(--text-muted)', fontSize: 13, margin: 0 }}>{message}</p>
     </div>
   )
 }

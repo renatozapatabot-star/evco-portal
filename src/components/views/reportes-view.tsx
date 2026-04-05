@@ -329,13 +329,13 @@ export function ReportesView() {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)}
-            style={{ height: 32, border: `1px solid ${T.border}`, borderRadius: 6, padding: '0 8px', fontSize: 11, color: T.textSub, background: T.surfaceAlt }} />
+            style={{ height: 60, border: `1px solid ${T.border}`, borderRadius: 6, padding: '0 12px', fontSize: 13, color: T.textSub, background: T.surfaceAlt }} />
           <span style={{ color: T.textMuted, fontSize: 11 }}>—</span>
           <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)}
-            style={{ height: 32, border: `1px solid ${T.border}`, borderRadius: 6, padding: '0 8px', fontSize: 11, color: T.textSub, background: T.surfaceAlt }} />
+            style={{ height: 60, border: `1px solid ${T.border}`, borderRadius: 6, padding: '0 12px', fontSize: 13, color: T.textSub, background: T.surfaceAlt }} />
           {(dateFrom || dateTo) && (
             <button onClick={() => { setDateFrom(''); setDateTo('') }}
-              style={{ fontSize: 10, fontWeight: 600, color: T.red, border: `1px solid ${T.red}33`, background: '#FEF2F2', borderRadius: 4, padding: '2px 6px', cursor: 'pointer' }}>✕</button>
+              style={{ fontSize: 10, fontWeight: 600, color: T.red, border: `1px solid ${T.red}33`, background: 'var(--danger-bg)', borderRadius: 4, padding: '2px 6px', cursor: 'pointer' }}>✕</button>
           )}
         </div>
 
@@ -457,11 +457,11 @@ export function ReportesView() {
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                 <thead>
                   <tr style={{ borderBottom: `1px solid ${T.border}` }}>
-                    <th scope="col" style={{ padding: '10px 20px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#9C9890', textTransform: 'uppercase', letterSpacing: '0.06em' }}>#</th>
-                    <th scope="col" style={{ padding: '10px 16px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#9C9890', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Proveedor</th>
-                    <th scope="col" style={{ padding: '10px 16px', textAlign: 'right', fontSize: 11, fontWeight: 700, color: '#9C9890', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Tráficos</th>
-                    <th scope="col" style={{ padding: '10px 16px', textAlign: 'right', fontSize: 11, fontWeight: 700, color: '#9C9890', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Valor Total</th>
-                    <th scope="col" style={{ padding: '10px 20px', textAlign: 'right', fontSize: 11, fontWeight: 700, color: '#9C9890', textTransform: 'uppercase', letterSpacing: '0.06em' }}>T-MEC %</th>
+                    <th scope="col" style={{ padding: '10px 20px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>#</th>
+                    <th scope="col" style={{ padding: '10px 16px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Proveedor</th>
+                    <th scope="col" style={{ padding: '10px 16px', textAlign: 'right', fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Tráficos</th>
+                    <th scope="col" style={{ padding: '10px 16px', textAlign: 'right', fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Valor Total</th>
+                    <th scope="col" style={{ padding: '10px 20px', textAlign: 'right', fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>T-MEC %</th>
                   </tr>
                 </thead>
                 <tbody>

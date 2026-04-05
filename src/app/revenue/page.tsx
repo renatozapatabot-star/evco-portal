@@ -27,7 +27,7 @@ export default async function RevenuePage() {
   const cards = [
     { label: 'Clientes Activos', value: m.active_clients || 50, sub: 'Portal aduanal', color: GOLD },
     { label: 'Pedimentos', value: (m.pedimentos_processed || 0).toLocaleString(), sub: 'Procesados', color: '#E8E6E0' },
-    { label: 'Ahorro T-MEC', value: `$${((m.tmec_savings_usd || 0) / 1000).toFixed(0)}K`, sub: 'USD ahorrado', color: '#16A34A' },
+    { label: 'Ahorro T-MEC', value: `$${((m.tmec_savings_usd || 0) / 1000).toFixed(0)}K`, sub: 'USD ahorrado', color: 'var(--success)' },
     { label: 'Documentos', value: (m.documents_processed || 0).toLocaleString(), sub: 'Auto-procesados', color: '#E8E6E0' },
     { label: 'Horas Ahorradas', value: m.estimated_hours_saved || 0, sub: 'Automatización', color: GOLD },
     { label: 'Conversaciones AI', value: m.ai_conversations || 0, sub: 'CRUZ AI queries', color: '#E8E6E0' },
@@ -46,7 +46,7 @@ export default async function RevenuePage() {
           <div key={c.label} style={{ background: 'var(--navy-900)', border: '1px solid #2A2A2A', borderRadius: 12, padding: 20 }}>
             <div style={{ fontSize: 11, fontWeight: 600, color: '#666', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>{c.label}</div>
             <div style={{ fontSize: 32, fontWeight: 800, color: c.color }}>{c.value}</div>
-            <div style={{ fontSize: 12, color: '#9C9690', marginTop: 4 }}>{c.sub}</div>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>{c.sub}</div>
           </div>
         ))}
       </div>
@@ -55,11 +55,11 @@ export default async function RevenuePage() {
         <div style={{ fontSize: 11, fontWeight: 700, color: GOLD, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>Valor Plataforma (modelo SaaS)</div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
           <div>
-            <div style={{ fontSize: 13, color: '#9C9690', marginBottom: 4 }}>50 clientes x $3,500 MXN/mes</div>
+            <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 4 }}>50 clientes x $3,500 MXN/mes</div>
             <div style={{ fontSize: 28, fontWeight: 800, color: GOLD }}>MX${saasMonthly}<span style={{ fontSize: 14, fontWeight: 400, color: '#666' }}>/mes</span></div>
           </div>
           <div>
-            <div style={{ fontSize: 13, color: '#9C9690', marginBottom: 4 }}>Valor anualizado</div>
+            <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 4 }}>Valor anualizado</div>
             <div style={{ fontSize: 28, fontWeight: 800, color: GOLD }}>MX${saasAnnual}<span style={{ fontSize: 14, fontWeight: 400, color: '#666' }}>/año</span></div>
           </div>
         </div>

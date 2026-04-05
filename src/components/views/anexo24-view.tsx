@@ -136,7 +136,7 @@ export function Anexo24View() {
           <h1 className="page-title">Anexo 24</h1>
           <p style={{ fontSize: 13, color: 'var(--slate-500)', marginTop: 4 }}>
             {filtered.length.toLocaleString('es-MX')} registros
-            {tmecCount > 0 && <> · <span style={{ color: '#16A34A', fontWeight: 600 }}>{tmecCount} T-MEC</span></>}
+            {tmecCount > 0 && <> · <span style={{ color: 'var(--success)', fontWeight: 600 }}>{tmecCount} T-MEC</span></>}
           </p>
         </div>
         <button onClick={() => exportCSV(filtered, clientClave)}
@@ -171,7 +171,7 @@ export function Anexo24View() {
           style={{ height: 32, border: '1px solid var(--border-card)', borderRadius: 6, padding: '0 8px', fontSize: 11, color: 'var(--slate-500)', background: 'var(--slate-50)' }} />
         {(dateFrom || dateTo) && (
           <button onClick={() => { setDateFrom(''); setDateTo(''); setPage(0) }}
-            style={{ fontSize: 10, color: '#DC2626', border: '1px solid #FCA5A5', background: '#FEF2F2', borderRadius: 4, padding: '2px 6px', cursor: 'pointer' }}>✕</button>
+            style={{ fontSize: 10, color: 'var(--danger)', border: '1px solid #FCA5A5', background: 'var(--danger-bg)', borderRadius: 4, padding: '2px 6px', cursor: 'pointer' }}>✕</button>
         )}
       </div>
 
@@ -221,7 +221,7 @@ export function Anexo24View() {
                     </td>
                     <td>
                       {isT(r.regimen) ? (
-                        <span style={{ fontSize: 10, fontWeight: 700, color: '#16A34A', background: '#F0FDF4', padding: '2px 8px', borderRadius: 9999 }}>SI</span>
+                        <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--success)', background: 'var(--success-bg)', padding: '2px 8px', borderRadius: 9999 }}>SI</span>
                       ) : (
                         <span style={{ fontSize: 10, color: 'var(--slate-400)' }}>NO</span>
                       )}

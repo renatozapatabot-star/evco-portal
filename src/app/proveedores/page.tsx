@@ -8,21 +8,21 @@ import { countryFlag } from '@/lib/carrier-names'
 import { EmptyState } from '@/components/ui/EmptyState'
 import Link from 'next/link'
 
-/* ── Design tokens (dark page) ── */
+/* ── Light tokens (DESIGN_SYSTEM.md v6) ── */
 const T = {
-  bg: '#0D0D0C',
-  surface: '#161614',
-  surfaceHover: '#1E1E1B',
-  surfaceActive: '#252219',
-  border: '#2A2824',
-  text: '#EAE6DC',
-  textSecondary: '#9C9890',
-  textMuted: '#6B6560',
+  bg: '#FAFAF8',
+  surface: '#FFFFFF',
+  surfaceHover: '#F5F4F0',
+  surfaceActive: '#EEEDE8',
+  border: '#E8E5E0',
+  text: '#1A1A1A',
+  textSecondary: '#6B6B6B',
+  textMuted: '#9B9B9B',
   gold: '#C4963C',
-  goldSubtle: 'rgba(184,149,63,0.12)',
-  goldBorder: 'rgba(184,149,63,0.25)',
-  green: '#2D8540',
-  red: '#C23B22',
+  goldSubtle: 'rgba(196,150,60,0.08)',
+  goldBorder: 'rgba(196,150,60,0.25)',
+  green: '#16A34A',
+  red: '#DC2626',
   mono: 'var(--font-jetbrains-mono)',
 } as const
 
@@ -213,7 +213,7 @@ export default function ProveedoresPage() {
         <div style={{
           display: 'flex', alignItems: 'center', gap: 8,
           background: T.surface, border: `1px solid ${T.border}`, borderRadius: 8,
-          padding: '0 12px', height: 36, flex: 1, maxWidth: 360,
+          padding: '0 12px', height: 60, flex: 1, maxWidth: 360,
         }}>
           <Search size={14} style={{ color: T.textMuted }} />
           <input

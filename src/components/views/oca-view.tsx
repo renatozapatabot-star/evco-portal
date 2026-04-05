@@ -63,7 +63,7 @@ export function OCAView() {
               <input value={uso} onChange={e => setUso(e.target.value)} placeholder="Ej: Industrial, automotriz, empaque..." style={{ width: '100%', height: 38, border: `1px solid ${T.border}`, borderRadius: 8, padding: '0 12px', fontSize: 13, color: T.text, outline: 'none', fontFamily: 'inherit', background: T.bg, boxSizing: 'border-box' }} />
             </div>
             <button onClick={generateOCA} disabled={loading || !product.trim()} style={{ width: '100%', height: 42, background: loading || !product.trim() ? '#CBD5E1' : T.navy, border: 'none', borderRadius: 8, color: '#fff', fontSize: 14, fontWeight: 700, cursor: loading || !product.trim() ? 'default' : 'pointer', fontFamily: 'inherit' }}>{loading ? '⏳ Analizando TIGIE...' : '⚖️ Generar Opinión OCA'}</button>
-            {error && <div style={{ marginTop: 12, background: '#FEE2E2', border: '1px solid #FECACA', borderRadius: 8, padding: '10px 12px', color: '#991B1B', fontSize: 12 }}>{error}</div>}
+            {error && <div style={{ marginTop: 12, background: '#FEE2E2', border: '1px solid #FECACA', borderRadius: 8, padding: '10px 12px', color: 'var(--danger-text)', fontSize: 12 }}>{error}</div>}
           </div>
           <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 12, boxShadow: T.shadow, padding: 16 }}>
             <div style={{ color: T.textMuted, fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 10 }}>Ejemplos rápidos</div>

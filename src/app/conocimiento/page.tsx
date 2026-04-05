@@ -56,11 +56,11 @@ export default async function ConocimientoPage() {
               <span style={{ fontSize: 11, color: '#666', fontFamily: 'var(--font-jetbrains-mono)' }}>{k.confidence}% confianza</span>
             </div>
             <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 6 }}>{k.title}</div>
-            <div style={{ fontSize: 13, color: '#9C9690', lineHeight: 1.5 }}>{k.content}</div>
+            <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5 }}>{k.content}</div>
             {k.tags && (
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 10 }}>
                 {k.tags.map((tag: string) => (
-                  <span key={tag} style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, background: '#1A1A1A', border: '1px solid #2A2A2A', color: '#9C9690' }}>{tag}</span>
+                  <span key={tag} style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, background: '#1A1A1A', border: '1px solid #2A2A2A', color: 'var(--text-muted)' }}>{tag}</span>
                 ))}
               </div>
             )}

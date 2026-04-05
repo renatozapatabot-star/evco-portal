@@ -104,7 +104,7 @@ export default async function OperacionesPage() {
               <span style={{ fontSize: 11, fontWeight: 400, color: '#666', marginLeft: 4 }}>nuevos 24h</span>
             </div>
 
-            <div style={{ fontSize: 11, color: '#9C9690', marginTop: 8 }}>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 8 }}>
               {src.minutesAgo !== null ? (
                 src.minutesAgo < 60
                   ? `Hace ${src.minutesAgo}m`
@@ -126,7 +126,7 @@ export default async function OperacionesPage() {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
         <div style={{ background: 'var(--navy-900)', border: '1px solid #2A2A2A', borderRadius: 12, overflow: 'hidden' }}>
           <div style={{ padding: '14px 16px', borderBottom: '1px solid #2A2A2A' }}>
-            <h2 style={{ fontSize: 14, fontWeight: 700, margin: 0, color: '#9C9690', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            <h2 style={{ fontSize: 14, fontWeight: 700, margin: 0, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               Últimas Ejecuciones
             </h2>
           </div>
@@ -156,7 +156,7 @@ export default async function OperacionesPage() {
 
         <div style={{ background: 'var(--navy-900)', border: '1px solid #2A2A2A', borderRadius: 12, overflow: 'hidden' }}>
           <div style={{ padding: '14px 16px', borderBottom: '1px solid #2A2A2A' }}>
-            <h2 style={{ fontSize: 14, fontWeight: 700, margin: 0, color: '#9C9690', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            <h2 style={{ fontSize: 14, fontWeight: 700, margin: 0, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               Cambios de Estado (2h)
             </h2>
           </div>

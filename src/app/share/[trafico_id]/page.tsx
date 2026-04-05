@@ -120,7 +120,7 @@ export default async function SharePage(
             fontSize: 14,
             fontWeight: 700,
             letterSpacing: '0.15em',
-            color: '#C4963C',
+            color: 'var(--gold)',
             textTransform: 'uppercase',
             marginBottom: 4,
           }}>
@@ -137,9 +137,9 @@ export default async function SharePage(
 
         {/* Preview Card */}
         <div style={{
-          background: '#FFFFFF',
+          background: 'var(--bg-card)',
           borderRadius: 12,
-          border: '1px solid #E8E5E0',
+          border: '1px solid var(--border)',
           padding: 28,
           display: 'flex',
           flexDirection: 'column',
@@ -153,7 +153,7 @@ export default async function SharePage(
                   fontWeight: 700,
                   textTransform: 'uppercase',
                   letterSpacing: '0.08em',
-                  color: '#9B9B9B',
+                  color: 'var(--text-muted)',
                   marginBottom: 6,
                 }}>
                   Tráfico compartido
@@ -161,7 +161,7 @@ export default async function SharePage(
                 <div style={{
                   fontSize: 20,
                   fontWeight: 700,
-                  color: '#1A1A1A',
+                  color: 'var(--text-primary)',
                   fontFamily: 'var(--font-mono, "JetBrains Mono", monospace)',
                 }}>
                   {id}
@@ -176,7 +176,7 @@ export default async function SharePage(
                 <div>
                   <div style={{
                     fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
-                    letterSpacing: '0.08em', color: '#9B9B9B', marginBottom: 4,
+                    letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: 4,
                   }}>
                     Estatus
                   </div>
@@ -196,14 +196,14 @@ export default async function SharePage(
                 <div>
                   <div style={{
                     fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
-                    letterSpacing: '0.08em', color: '#9B9B9B', marginBottom: 4,
+                    letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: 4,
                   }}>
                     Valor
                   </div>
                   <div style={{
                     fontSize: 16,
                     fontWeight: 700,
-                    color: '#1A1A1A',
+                    color: 'var(--text-primary)',
                     fontFamily: 'var(--font-mono, "JetBrains Mono", monospace)',
                   }}>
                     {fmtAmount(t.importe_total, t.moneda)}
@@ -212,13 +212,13 @@ export default async function SharePage(
                 <div>
                   <div style={{
                     fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
-                    letterSpacing: '0.08em', color: '#9B9B9B', marginBottom: 4,
+                    letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: 4,
                   }}>
                     Mercancía
                   </div>
                   <div style={{
                     fontSize: 13,
-                    color: '#6B6B6B',
+                    color: 'var(--text-secondary)',
                     lineHeight: 1.5,
                   }}>
                     {truncate(t.descripcion_mercancia, 60)}
@@ -227,14 +227,14 @@ export default async function SharePage(
                 <div>
                   <div style={{
                     fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
-                    letterSpacing: '0.08em', color: '#9B9B9B', marginBottom: 4,
+                    letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: 4,
                   }}>
                     Empresa
                   </div>
                   <div style={{
                     fontSize: 13,
                     fontWeight: 600,
-                    color: '#1A1A1A',
+                    color: 'var(--text-primary)',
                     textTransform: 'uppercase',
                   }}>
                     {t.company_id ?? '—'}
@@ -245,10 +245,10 @@ export default async function SharePage(
           ) : (
             <div style={{ textAlign: 'center', padding: '20px 0' }}>
               <div style={{ fontSize: 40, marginBottom: 12 }}>🔍</div>
-              <div style={{ fontSize: 14, fontWeight: 600, color: '#1A1A1A', marginBottom: 4 }}>
+              <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>
                 Tráfico no encontrado
               </div>
-              <div style={{ fontSize: 13, color: '#6B6B6B' }}>
+              <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
                 El tráfico solicitado no existe o está fuera de rango.
               </div>
             </div>
@@ -265,8 +265,8 @@ export default async function SharePage(
               padding: '14px 24px',
               minHeight: 60,
               borderRadius: 8,
-              background: '#C4963C',
-              color: '#FFFFFF',
+              background: 'var(--gold)',
+              color: 'var(--bg-card)',
               fontSize: 14,
               fontWeight: 700,
               textDecoration: 'none',

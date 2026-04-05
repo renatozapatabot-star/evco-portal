@@ -4,8 +4,7 @@ import { PORTAL_URL } from '@/lib/client-config'
 import { PORTAL_DATE_FROM } from '@/lib/data'
 import { getDTARates, getIVARate } from '@/lib/rates'
 
-// In-memory rate limiting — 20 queries per session per hour
-const rateLimitMap = new Map<string, { count: number; resetAt: number }>()
+import { rateLimitDB } from '@/lib/rate-limit-db'
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY!
 const supabase = createClient(
@@ -13,23 +12,29 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-const SYSTEM_PROMPT = `Eres CRUZ, el sistema de inteligencia aduanal de Renato Zapata & Company, Laredo, Texas.
+function buildSystemPrompt(ctx: { clientName: string; companyId: string; clientClave: string; patente: string; aduana: string }): string {
+  return `Eres CRUZ, el sistema de inteligencia aduanal de Renato Zapata & Company, Laredo, Texas.
 
 IDENTIDAD:
-- Hablas como un agente aduanal senior con 20 años de experiencia en Aduana 240 Nuevo Laredo
+- Hablas como un agente aduanal senior con 20 años de experiencia en Aduana ${ctx.aduana} Nuevo Laredo
 - Eres directo, específico, orientado a la acción
 - Usas español como idioma principal (respondes en inglés solo si el usuario escribe en inglés)
 - Términos técnicos en español: pedimento, fracción, tráfico, COVE, MVE, IGI, DTA
 - Siglas inglés aceptables: T-MEC, IMMEX, USMCA
 
+CLIENTE ACTUAL: ${ctx.clientName} (clave ${ctx.clientClave})
+- Solo consultas y muestras datos de este cliente
+- Nunca menciones datos de otros clientes
+- Cuando busques tráficos, filtra por este cliente automáticamente
+
 DATOS DEL SISTEMA:
-- Historial completo de tráficos disponible para consulta
+- Historial completo de tráficos de ${ctx.clientName} disponible para consulta
 - MVE formato E2 obligatorio desde 31 marzo 2026
-- Patente 3596, Aduana 240 Nuevo Laredo
+- Patente ${ctx.patente}, Aduana ${ctx.aduana} Nuevo Laredo
 - Puentes comerciales: World Trade, Colombia, Juárez-Lincoln, Gateway
 
 VOZ:
-Bien: "Tráfico Y4466 tiene 3 documentos faltantes. Recomiendo solicitar el COVE al proveedor antes de las 2 PM."
+Bien: "Tráfico ${ctx.clientClave}-Y4466 tiene 3 documentos faltantes. Recomiendo solicitar el COVE al proveedor antes de las 2 PM."
 Mal: "Here are the missing documents for your traffic entry Y4466:"
 
 NUNCA digas "I" o "me" — eres CRUZ. Sin frases de relleno. Sin respuestas genéricas cuando hay datos disponibles.
@@ -37,6 +42,7 @@ SIEMPRE usa números específicos, sugiere siguiente acción, mantén respuestas
 Formato: USD como $X,XXX.XX, MXN como MX$X,XXX.XX, fechas como "28 mar 2026".
 
 Cuando uses herramientas, explica los hallazgos en lenguaje natural. Si no hay resultados, dilo y sugiere alternativas.`
+}
 
 const TOOLS = [
   {
@@ -380,6 +386,7 @@ async function executeTool(name: string, input: any, clientCtx: { companyId: str
     switch (name) {
       case 'query_traficos': {
         let query = supabase.from('traficos').select('trafico, estatus, fecha_llegada, pedimento, descripcion_mercancia, importe_total, peso_bruto, proveedores, transportista_mexicano')
+          .eq('company_id', companyId)
         if (input.trafico_id) query = query.eq('trafico', input.trafico_id)
         if (input.estatus) query = query.ilike('estatus', `%${input.estatus}%`)
         if (input.search) query = query.or(`descripcion_mercancia.ilike.%${input.search}%,trafico.ilike.%${input.search}%,pedimento.ilike.%${input.search}%`)
@@ -392,6 +399,7 @@ async function executeTool(name: string, input: any, clientCtx: { companyId: str
       }
       case 'query_pedimentos': {
         let query = supabase.from('globalpc_facturas').select('pedimento, referencia, proveedor, fecha_pago, valor_usd, dta, igi, iva, moneda')
+          .eq('cve_cliente', clientClave)
         if (input.pedimento_id) query = query.eq('pedimento', input.pedimento_id)
         if (input.trafico) query = query.eq('referencia', input.trafico)
         if (input.tmec_only) query = query.eq('igi', 0)
@@ -403,6 +411,7 @@ async function executeTool(name: string, input: any, clientCtx: { companyId: str
       }
       case 'query_entradas': {
         let query = supabase.from('entradas').select('cve_entrada, trafico, descripcion_mercancia, fecha_llegada_mercancia, cantidad_bultos, peso_bruto, tiene_faltantes, mercancia_danada, recibido_por')
+          .eq('company_id', companyId)
         if (input.entrada_id) query = query.eq('cve_entrada', input.entrada_id)
         if (input.search) query = query.ilike('descripcion_mercancia', `%${input.search}%`)
         if (input.has_incidencia) query = query.or('tiene_faltantes.eq.true,mercancia_danada.eq.true')
@@ -414,6 +423,7 @@ async function executeTool(name: string, input: any, clientCtx: { companyId: str
       case 'query_financials': {
         const table = input.table || 'econta_cartera'
         let query = supabase.from(table).select('consecutivo, fecha, referencia, importe, saldo, moneda, tipo, concepto, observaciones')
+          .eq('company_id', companyId)
         if (input.date_from) query = query.gte('fecha', input.date_from)
         if (input.date_to) query = query.lte('fecha', input.date_to)
         query = query.order('fecha', { ascending: false }).limit(input.limit || 20)
@@ -713,7 +723,11 @@ async function executeTool(name: string, input: any, clientCtx: { companyId: str
             top_quartile: fleet?.top_quartile, delta_pct: fleet?.fleet_average ? (((e.metric_value - fleet.fleet_average) / fleet.fleet_average) * 100).toFixed(1) + '%' : 'N/A',
           }
         })
-        return JSON.stringify({ comparison, insight: `${clientName} T-MEC utilization at 56.4% vs 68.3% fleet average. Closing this gap is worth approximately $380K MXN/year.` })
+        const tmecMetric = comparison.find((c: any) => c.metric?.includes('tmec'))
+        const tmecInsight = tmecMetric
+          ? `${clientName}: T-MEC ${tmecMetric.client}% vs ${tmecMetric.fleet_avg}% promedio flota (delta ${tmecMetric.delta_pct}).`
+          : `${clientName}: métricas de benchmark comparadas con el promedio de la flota.`
+        return JSON.stringify({ comparison, insight: tmecInsight })
       }
       case 'show_compliance_calendar': {
         const daysAhead = input.days_ahead || 90
@@ -773,26 +787,43 @@ export async function POST(req: NextRequest) {
   const clientClave = req.cookies.get('company_clave')?.value ?? ''
   const rawClientName = req.cookies.get('company_name')?.value
   const clientName = rawClientName ? decodeURIComponent(rawClientName) : ''
+
+  // Load company details for dynamic system prompt
+  const { data: companyRow } = await supabase
+    .from('companies')
+    .select('patente, aduana, name')
+    .eq('company_id', companyId)
+    .maybeSingle()
+
+  const patente = companyRow?.patente || '3596'
+  const aduana = companyRow?.aduana || '240'
+  const resolvedName = companyRow?.name || clientName || companyId
+
   try {
     const body = await req.json()
     const { messages, context, sessionId } = body
 
-    // Rate limiting: 20 queries per session per hour
-    const sid = sessionId || 'anonymous'
-    const now = Date.now()
-    const entry = rateLimitMap.get(sid) || { count: 0, resetAt: now + 3600000 }
-    if (now > entry.resetAt) { entry.count = 0; entry.resetAt = now + 3600000 }
-    entry.count++
-    rateLimitMap.set(sid, entry)
-    if (entry.count > 20) {
+    // Rate limiting: 20 queries per company per hour (persisted in Supabase)
+    const rlKey = `cruz_chat:${companyId || sessionId || 'anonymous'}`
+    const rl = await rateLimitDB(rlKey, 20, 3600000)
+    if (!rl.success) {
       return NextResponse.json({
         message: 'Has hecho muchas preguntas en poco tiempo. CRUZ necesita un momento — intenta de nuevo en unos minutos.',
         navigate: null,
+      }, {
+        status: 429,
+        headers: { 'Retry-After': String(Math.ceil(rl.resetIn / 1000)) },
       })
     }
 
     const contextLine = context?.page ? `\n\nCURRENT CONTEXT: ${context.page}. Timestamp: ${context.timestamp || new Date().toISOString()}` : ''
     const voiceLine = context?.voice_mode ? `\n\nVOICE MODE ACTIVE: Respond in 1-3 sentences maximum. Use spoken language, not written. No markdown, no bullet points, no formatting. Speak naturally in Spanish as if talking to a colleague.` : ''
+
+    // Filter tools by role — admin-only tools hidden from clients
+    const userRole = req.cookies.get('user_role')?.value ?? 'client'
+    const isInternal = userRole === 'broker' || userRole === 'admin'
+    const ADMIN_TOOLS = new Set(['admin_fleet_summary', 'find_prospects', 'simulate_audit', 'integration_status', 'client_health', 'get_memory', 'check_risk_radar', 'search_knowledge'])
+    const filteredTools = isInternal ? TOOLS : TOOLS.filter(t => !ADMIN_TOOLS.has(t.name))
 
     let response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -804,8 +835,8 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: context?.voice_mode ? 512 : 4096,
-        system: SYSTEM_PROMPT + contextLine + voiceLine,
-        tools: TOOLS,
+        system: buildSystemPrompt({ clientName: resolvedName, companyId, clientClave, patente, aduana }) + contextLine + voiceLine,
+        tools: filteredTools,
         messages,
       }),
     })
@@ -846,8 +877,8 @@ export async function POST(req: NextRequest) {
         body: JSON.stringify({
           model: 'claude-sonnet-4-20250514',
           max_tokens: 4096,
-          system: SYSTEM_PROMPT + contextLine,
-          tools: TOOLS,
+          system: buildSystemPrompt({ clientName: resolvedName, companyId, clientClave, patente, aduana }) + contextLine,
+          tools: filteredTools,
           messages: loopMessages,
         }),
       })
@@ -878,11 +909,15 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Save conversation to database (async, don't block stream)
+    // Save conversation + audit log (async, don't block stream)
     const toolsUsed = loopMessages
       .filter((m: any) => m.role === 'assistant' && Array.isArray(m.content))
       .flatMap((m: any) => m.content.filter((b: any) => b.type === 'tool_use').map((b: any) => b.name))
     const userMsg = messages[messages.length - 1]?.content || ''
+    const inputTokens = data.usage?.input_tokens || 0
+    const outputTokens = data.usage?.output_tokens || 0
+
+    // Conversation log
     supabase.from('cruz_conversations').insert({
       session_id: sessionId || 'anonymous',
       company_id: companyId,
@@ -891,7 +926,18 @@ export async function POST(req: NextRequest) {
       tools_used: toolsUsed.length > 0 ? toolsUsed : null,
       page_context: context?.page || '',
       response_time_ms: Date.now() - startTime,
-    }).then(() => {}, (e: unknown) => console.error('Failed to save conversation:', e))
+    }).then(() => {}, () => {})
+
+    // AI audit log (CLAUDE.md: prompt_hash, model, tokens, user_id, client_code, timestamp)
+    supabase.from('api_cost_log').insert({
+      model: 'claude-sonnet-4-20250514',
+      input_tokens: inputTokens,
+      output_tokens: outputTokens,
+      cost_usd: (inputTokens * 0.003 + outputTokens * 0.015) / 1000,
+      action: 'cruz_chat',
+      client_code: clientClave || companyId,
+      latency_ms: Date.now() - startTime,
+    }).then(() => {}, () => {})
 
     // Stream response to client
     const encoder = new TextEncoder()

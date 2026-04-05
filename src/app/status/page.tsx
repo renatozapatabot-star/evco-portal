@@ -47,7 +47,7 @@ export default async function StatusPage() {
     operational: { color: '#166534', bg: '#DCFCE7', label: 'Operacional', dot: '#16A34A' },
     degraded: { color: '#92400E', bg: '#FEF3C7', label: 'Degradado', dot: '#D97706' },
     pending: { color: '#1E40AF', bg: '#EFF6FF', label: 'Pendiente', dot: 'var(--info-500)' },
-    down: { color: '#991B1B', bg: '#FEE2E2', label: 'Caído', dot: 'var(--danger-500)' },
+    down: { color: 'var(--danger-text)', bg: '#FEE2E2', label: 'Caído', dot: 'var(--danger-500)' },
   }
 
   const allOp = systems.every(s => s.status === 'operational' || s.status === 'healthy')

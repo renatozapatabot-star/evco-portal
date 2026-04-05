@@ -268,7 +268,7 @@ export default function ClientInicioView() {
             <p style={{ fontSize: 11, color: 'var(--slate-400)', marginTop: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
               <span style={{
                 width: 6, height: 6, borderRadius: '50%',
-                background: isLive ? '#16A34A' : '#94A3B8',
+                background: isLive ? 'var(--success)' : 'var(--text-muted)',
               }} className={isLive ? 'dot-live' : ''} />
               Actualizado: {fetchedAt.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Chicago' })}
             </p>
@@ -357,14 +357,14 @@ export default function ClientInicioView() {
           </div>
           <div className="kpi-card stagger-3" style={{ padding: '14px 16px', borderTop: '4px solid var(--info-500)', animation: 'fadeInUp 200ms var(--ease-enter) backwards' }}>
             <div className="kpi-card-label">Tiempo Promedio Despacho</div>
-            <div className="font-mono" style={{ fontSize: 22, fontWeight: 800, color: tiempoDespacho <= 5 ? '#16A34A' : tiempoDespacho <= 10 ? '#D97706' : '#DC2626', marginTop: 4 }}>
+            <div className="font-mono" style={{ fontSize: 22, fontWeight: 800, color: tiempoDespacho <= 5 ? 'var(--success)' : tiempoDespacho <= 10 ? 'var(--warning)' : 'var(--danger)', marginTop: 4 }}>
               {tiempoDespacho > 0 ? `${tiempoDespacho} días` : '—'}
             </div>
             <div style={{ fontSize: 10, color: 'var(--slate-400)', marginTop: 2 }}>Llegada a cruce</div>
           </div>
           <div className="kpi-card stagger-4" style={{ padding: '14px 16px', borderTop: '4px solid #16A34A', animation: 'fadeInUp 200ms var(--ease-enter) backwards' }}>
             <div className="kpi-card-label">Operaciones T-MEC</div>
-            <div className="font-mono" style={{ fontSize: 22, fontWeight: 800, color: '#16A34A', marginTop: 4 }}>
+            <div className="font-mono" style={{ fontSize: 22, fontWeight: 800, color: 'var(--success)', marginTop: 4 }}>
               {tmecOps}
             </div>
             <div style={{ fontSize: 10, color: 'var(--slate-400)', marginTop: 2 }}>Tasa preferencial aplicada</div>

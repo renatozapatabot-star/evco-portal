@@ -194,7 +194,7 @@ export default function CatalogoPage() {
                     </td>
                     <td>
                       {g.tmec ? (
-                        <span style={{ fontSize: 11, color: '#16A34A', fontWeight: 600, background: '#F0FDF4', padding: '2px 8px', borderRadius: 9999 }}>T-MEC</span>
+                        <span style={{ fontSize: 11, color: 'var(--success)', fontWeight: 600, background: 'var(--success-bg)', padding: '2px 8px', borderRadius: 9999 }}>T-MEC</span>
                       ) : (
                         <span style={{ fontSize: 11, color: 'var(--slate-400)' }}>—</span>
                       )}

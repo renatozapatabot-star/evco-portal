@@ -22,15 +22,15 @@ const STATUS_LABELS: Record<VoiceState, string> = {
 }
 
 const COLORS = {
-  bg: '#0A0A08',
+  bg: '#FAFAF8',
   gold: GOLD,
   goldDark: GOLD_HOVER,
-  goldFaint: 'rgba(201,168,76,0.15)',
+  goldFaint: 'rgba(196,150,60,0.08)',
   white: '#FFFFFF',
-  gray: '#888888',
-  grayLight: '#AAAAAA',
-  grayDark: '#333333',
-  red: '#FF4444',
+  gray: '#6B6B6B',
+  grayLight: '#9B9B9B',
+  grayDark: '#1A1A1A',
+  red: '#DC2626',
   green: 'var(--success-500)',
 }
 
@@ -713,7 +713,7 @@ export default function VozPage() {
             onClick={() => router.push('/')}
             style={{
               marginTop: 8,
-              padding: '10px 20px',
+              padding: '14px 24px', minHeight: 60,
               backgroundColor: 'transparent',
               color: COLORS.grayLight,
               border: `1px solid ${COLORS.grayDark}`,

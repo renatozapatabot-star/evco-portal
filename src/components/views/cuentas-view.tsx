@@ -120,10 +120,10 @@ export function CuentasView() {
             return (
               <div className="kpi-grid" style={{ marginBottom: 20 }}>
                 {[
-                  { label: 'Cuentas por Cobrar', value: fmtMXN(latest.outstanding_receivables), color: latest.outstanding_receivables > 100000 ? '#b91c1c' : 'var(--n-900)', show: latest.outstanding_receivables > 0 },
-                  { label: 'Promedio Dias Pago', value: `${Math.round(latest.avg_days_to_payment)} dias`, color: latest.avg_days_to_payment > 30 ? '#b91c1c' : '#065f46', show: latest.avg_days_to_payment > 0 },
+                  { label: 'Cuentas por Cobrar', value: fmtMXN(latest.outstanding_receivables), color: latest.outstanding_receivables > 100000 ? 'var(--danger-text)' : 'var(--n-900)', show: latest.outstanding_receivables > 0 },
+                  { label: 'Promedio Dias Pago', value: `${Math.round(latest.avg_days_to_payment)} dias`, color: latest.avg_days_to_payment > 30 ? 'var(--danger-text)' : 'var(--success)', show: latest.avg_days_to_payment > 0 },
                   { label: 'Proyeccion Prox. Mes', value: fmtMXN(latest.projected_next_month), color: 'var(--n-900)', show: latest.projected_next_month > 0 },
-                  { label: 'Tendencia', value: `${latest.revenue_trend === 'up' ? '↑' : latest.revenue_trend === 'down' ? '↓' : '→'} ${changePercent ? `${changePercent}%` : ''}`, color: latest.revenue_trend === 'up' ? '#065f46' : latest.revenue_trend === 'down' ? '#b91c1c' : '#6b7280', show: true },
+                  { label: 'Tendencia', value: `${latest.revenue_trend === 'up' ? '↑' : latest.revenue_trend === 'down' ? '↓' : '→'} ${changePercent ? `${changePercent}%` : ''}`, color: latest.revenue_trend === 'up' ? 'var(--success)' : latest.revenue_trend === 'down' ? 'var(--danger-text)' : 'var(--text-secondary)', show: true },
                 ].filter(k => k.show).map(k => (
                   <div key={k.label} className="kpi-card">
                     <div className="kpi-label">{k.label}</div>
@@ -137,14 +137,14 @@ export function CuentasView() {
       {/* Monthly Revenue Chart (simple bar) */}
       {finIntel.length > 1 && (
             <div className="rounded-[10px] p-5 mb-5" style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.06)' }}>
-              <div className="text-[13px] font-semibold mb-4" style={{ color: '#111827' }}>Ingreso Mensual — Últimos 12 Meses</div>
+              <div className="text-[13px] font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>Ingreso Mensual — Últimos 12 Meses</div>
               <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 120 }}>
                 {finIntel.slice(-12).map((m, i) => {
                   const maxRev = Math.max(...finIntel.slice(-12).map(f => f.total_revenue || 1))
                   const pct = (m.total_revenue / maxRev) * 100
                   return (
                     <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-                      <div style={{ fontSize: 9, color: '#6b7280', fontFamily: 'var(--font-data)' }}>
+                      <div style={{ fontSize: 9, color: 'var(--text-secondary)', fontFamily: 'var(--font-data)' }}>
                         {m.total_revenue > 1000 ? `${(m.total_revenue / 1000).toFixed(0)}K` : ''}
                       </div>
                       <div style={{
@@ -182,16 +182,16 @@ export function CuentasView() {
             <div className="card-header"><span className="card-title">Antigüedad de Cartera</span></div>
             <div style={{ padding: 16 }}>
               <div style={{ display: 'flex', height: 8, borderRadius: 4, overflow: 'hidden', marginBottom: 16 }}>
-                {aging.current > 0 && <div style={{ flex: aging.current, background: '#16A34A' }} />}
-                {aging.d30 > 0 && <div style={{ flex: aging.d30, background: '#D4952A' }} />}
-                {aging.d60 > 0 && <div style={{ flex: aging.d60, background: '#EA580C' }} />}
+                {aging.current > 0 && <div style={{ flex: aging.current, background: 'var(--success)' }} />}
+                {aging.d30 > 0 && <div style={{ flex: aging.d30, background: 'var(--warning)' }} />}
+                {aging.d60 > 0 && <div style={{ flex: aging.d60, background: 'var(--warning)' }} />}
                 {aging.d90plus > 0 && <div style={{ flex: aging.d90plus, background: 'var(--danger-500)' }} />}
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 12 }}>
                 {[
-                  { label: '0-30 días', value: aging.current, color: '#16A34A' },
-                  { label: '30-60 días', value: aging.d30, color: '#D4952A' },
-                  { label: '60-90 días', value: aging.d60, color: '#EA580C' },
+                  { label: '0-30 días', value: aging.current, color: 'var(--success)' },
+                  { label: '30-60 días', value: aging.d30, color: 'var(--warning)' },
+                  { label: '60-90 días', value: aging.d60, color: 'var(--warning)' },
                   { label: '90+ días', value: aging.d90plus, color: 'var(--danger-500)' },
                 ].map(b => (
                   <div key={b.label}>
@@ -209,16 +209,16 @@ export function CuentasView() {
       <div className={`grid gap-4 ${egresos.length > 0 ? 'grid-cols-2' : 'grid-cols-1'}`}>
             <div className="rounded-[10px] overflow-hidden" style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.06)' }}>
               <div className="px-5 py-3" style={{ borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
-                <div className="text-[13px] font-semibold" style={{ color: '#111827' }}>Últimos Ingresos</div>
+                <div className="text-[13px] font-semibold" style={{ color: 'var(--text-primary)' }}>Últimos Ingresos</div>
               </div>
               <table className="data-table">
                 <thead><tr><th scope="col">Fecha</th><th scope="col">Referencia</th><th scope="col" style={{ textAlign: 'right' }}>Importe</th></tr></thead>
                 <tbody>
                   {ingresos.slice(0, 8).map(r => (
                     <tr key={r.consecutivo}>
-                      <td className="text-[12px]" style={{ color: '#374151' }}>{fmtDate(r.fecha)}</td>
-                      <td className="text-[12px]" style={{ color: '#374151' }}>{r.referencia || r.concepto?.slice(0, 30) || ''}</td>
-                      <td className="text-right mono text-[12px] font-medium" style={{ color: '#065f46' }}>{fmtMXN(r.importe)}</td>
+                      <td className="text-[12px]" style={{ color: 'var(--text-primary)' }}>{fmtDate(r.fecha)}</td>
+                      <td className="text-[12px]" style={{ color: 'var(--text-primary)' }}>{r.referencia || r.concepto?.slice(0, 30) || ''}</td>
+                      <td className="text-right mono text-[12px] font-medium" style={{ color: 'var(--success)' }}>{fmtMXN(r.importe)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -227,7 +227,7 @@ export function CuentasView() {
             {egresos.length > 0 && (
               <div className="rounded-[10px] overflow-hidden" style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.06)' }}>
                 <div className="px-5 py-3" style={{ borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
-                  <div className="text-[13px] font-semibold" style={{ color: '#111827' }}>Ultimos Egresos</div>
+                  <div className="text-[13px] font-semibold" style={{ color: 'var(--text-primary)' }}>Ultimos Egresos</div>
                 </div>
                 <table className="data-table">
                   <thead><tr><th scope="col">Fecha</th><th scope="col">Beneficiario</th><th scope="col" style={{ textAlign: 'right' }}>Importe</th></tr></thead>
@@ -236,7 +236,7 @@ export function CuentasView() {
                       <tr key={r.consecutivo}>
                         <td>{fmtDate(r.fecha)}</td>
                         <td className="max-w-[180px] truncate">{r.beneficiario || r.concepto?.slice(0, 30) || ''}</td>
-                        <td className="c-num" style={{ color: '#b91c1c' }}>{fmtMXN(r.importe)}</td>
+                        <td className="c-num" style={{ color: 'var(--danger-text)' }}>{fmtMXN(r.importe)}</td>
                       </tr>
                     ))}
                   </tbody>

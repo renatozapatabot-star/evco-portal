@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from 'react'
 import { Download } from 'lucide-react'
-import { getCookieValue, getCompanyIdCookie, getClientClaveCookie } from '@/lib/client-config'
+import { getCookieValue, getCompanyIdCookie } from '@/lib/client-config'
 import { fmtDate, fmtKg } from '@/lib/format-utils'
 import { useIsMobile } from '@/hooks/use-mobile'
 import Link from 'next/link'
@@ -23,25 +23,25 @@ interface Entrada {
   company_id: string | null
 }
 
-/* ── Dark tokens ── */
+/* ── Light tokens (DESIGN_SYSTEM.md v6) ── */
 
 const T = {
-  bg: '#0F0E0C',
-  card: '#1A1814',
-  border: '#302C23',
+  bg: '#FAFAF8',
+  card: '#FFFFFF',
+  border: '#E8E5E0',
   gold: '#C4963C',
-  textPrimary: '#F5F0E8',
-  textSecondary: '#A09882',
-  textMuted: '#6B6355',
-  red: '#C23B22',
-  redBg: '#2A1215',
-  redBorder: '#5C2226',
-  green: '#2D8F4E',
-  greenBg: '#1A3A2A',
-  greenBorder: '#2D8F4E',
-  amber: '#D4A017',
-  amberBg: '#2A2415',
-  amberBorder: '#5C4D22',
+  textPrimary: '#1A1A1A',
+  textSecondary: '#6B6B6B',
+  textMuted: '#9B9B9B',
+  red: '#DC2626',
+  redBg: '#FEF2F2',
+  redBorder: '#FECACA',
+  green: '#16A34A',
+  greenBg: '#F0FDF4',
+  greenBorder: '#BBF7D0',
+  amber: '#D97706',
+  amberBg: '#FFFBEB',
+  amberBorder: '#FDE68A',
   radius: 8,
 } as const
 
@@ -80,10 +80,7 @@ export default function BodegaPage() {
 
   function loadData() {
     const companyId = getCompanyIdCookie()
-    const clientClave = getClientClaveCookie()
-    const url = isBroker
-      ? `/api/data?table=entradas&company_id=${companyId}&limit=2000&order_by=fecha_llegada_mercancia&order_dir=desc`
-      : `/api/data?table=entradas&cve_cliente=${clientClave}&limit=2000&order_by=fecha_llegada_mercancia&order_dir=desc`
+    const url = `/api/data?table=entradas&company_id=${companyId}&limit=2000&order_by=fecha_llegada_mercancia&order_dir=desc`
     setLoading(true)
     setError(null)
     fetch(url)

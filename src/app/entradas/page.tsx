@@ -167,15 +167,15 @@ export default function EntradasPage() {
                 style={{ border: '1px solid var(--border)', color: 'var(--slate-500)', background: 'var(--slate-50)', cursor: 'pointer' }}>{p.label}</button>
             ))}
           </div>
-          <label className="flex items-center gap-1.5 text-[11.5px] cursor-pointer" style={{ color: faltantesOnly ? '#b91c1c' : '#6b7280' }}>
+          <label className="flex items-center gap-1.5 text-[11.5px] cursor-pointer" style={{ color: faltantesOnly ? 'var(--danger-text)' : 'var(--text-secondary)' }}>
             <input type="checkbox" checked={faltantesOnly} onChange={e => { setFaltantesOnly(e.target.checked); setPage(0) }} style={{ width: 13, height: 13 }} />
             Faltantes
           </label>
-          <label className="flex items-center gap-1.5 text-[11.5px] cursor-pointer" style={{ color: showHistorico ? '#2563EB' : '#6b7280' }}>
+          <label className="flex items-center gap-1.5 text-[11.5px] cursor-pointer" style={{ color: showHistorico ? 'var(--info)' : 'var(--text-secondary)' }}>
             <input type="checkbox" checked={showHistorico} onChange={e => { setShowHistorico(e.target.checked); setPage(0) }} style={{ width: 13, height: 13 }} />
             Incluir anteriores a 2024
           </label>
-          <label className="flex items-center gap-1.5 text-[11.5px] cursor-pointer" style={{ color: groupByProv ? '#2563EB' : '#6b7280' }}>
+          <label className="flex items-center gap-1.5 text-[11.5px] cursor-pointer" style={{ color: groupByProv ? 'var(--info)' : 'var(--text-secondary)' }}>
             <input type="checkbox" checked={groupByProv} onChange={e => { setGroupByProv(e.target.checked); setPage(0) }} style={{ width: 13, height: 13 }} />
             Agrupar por proveedor
           </label>
@@ -230,7 +230,7 @@ export default function EntradasPage() {
           {search && <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 9999, background: 'var(--slate-100)', color: 'var(--slate-600)', display: 'flex', alignItems: 'center', gap: 4 }}>Búsqueda: {search} <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--slate-400)', fontSize: 12, lineHeight: 1 }}>✕</button></span>}
           {dateFrom && <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 9999, background: 'var(--slate-100)', color: 'var(--slate-600)', display: 'flex', alignItems: 'center', gap: 4 }}>Desde: {dateFrom} <button onClick={() => setDateFrom('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--slate-400)', fontSize: 12, lineHeight: 1 }}>✕</button></span>}
           {dateTo && <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 9999, background: 'var(--slate-100)', color: 'var(--slate-600)', display: 'flex', alignItems: 'center', gap: 4 }}>Hasta: {dateTo} <button onClick={() => setDateTo('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--slate-400)', fontSize: 12, lineHeight: 1 }}>✕</button></span>}
-          {faltantesOnly && <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 9999, background: '#FEF3C7', color: '#92400E', display: 'flex', alignItems: 'center', gap: 4 }}>Faltantes <button onClick={() => setFaltantesOnly(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#92400E', fontSize: 12, lineHeight: 1 }}>✕</button></span>}
+          {faltantesOnly && <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 9999, background: 'var(--warning-bg)', color: 'var(--warning-text)', display: 'flex', alignItems: 'center', gap: 4 }}>Faltantes <button onClick={() => setFaltantesOnly(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--warning-text)', fontSize: 12, lineHeight: 1 }}>✕</button></span>}
         </div>
       )}
 
@@ -335,7 +335,7 @@ export default function EntradasPage() {
                     <td>
                       {r.trafico ? (
                         <Link href={`/traficos/${encodeURIComponent(fmtTrafico(r.trafico))}`} className="mono text-[12.5px] font-semibold"
-                          style={{ color: '#1A6BFF', textDecoration: 'none' }}
+                          style={{ color: 'var(--info)', textDecoration: 'none' }}
                           onClick={e => e.stopPropagation()}>
                           {fmtTrafico(r.trafico)}
                         </Link>

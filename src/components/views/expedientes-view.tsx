@@ -58,16 +58,16 @@ function getDocLabel(t: string): string {
 }
 
 function getDocUrgency(deadline: string | null | undefined): { color: string; label: string } {
-  if (!deadline) return { color: '#9C9890', label: '' }
+  if (!deadline) return { color: 'var(--text-muted)', label: '' }
   const now = new Date()
   const due = new Date(deadline)
   const daysUntil = Math.ceil((due.getTime() - now.getTime()) / 86400000)
 
-  if (daysUntil < 0) return { color: '#C23B22', label: `Venció hace ${Math.abs(daysUntil)} días` }
-  if (daysUntil <= 7) return { color: '#C23B22', label: `Vence en ${daysUntil} día${daysUntil !== 1 ? 's' : ''}` }
+  if (daysUntil < 0) return { color: 'var(--danger)', label: `Venció hace ${Math.abs(daysUntil)} días` }
+  if (daysUntil <= 7) return { color: 'var(--danger)', label: `Vence en ${daysUntil} día${daysUntil !== 1 ? 's' : ''}` }
   if (daysUntil <= 30) return { color: '#C47F17', label: `Vence en ${daysUntil} días` }
   if (daysUntil <= 90) return { color: '#D4952A', label: `Vence en ${daysUntil} días` }
-  return { color: '#9C9890', label: '' }
+  return { color: 'var(--text-muted)', label: '' }
 }
 
 function getImplicitDeadline(fechaLlegada: string | null): string | null {
@@ -100,7 +100,7 @@ function SummaryCard({
       top: 0,
       zIndex: 10,
       background: 'var(--card-bg)',
-      borderBottom: '1px solid #E8E5E0',
+      borderBottom: '1px solid var(--border)',
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
         <div style={{ flex: 1, minWidth: 200 }}>
@@ -109,7 +109,7 @@ function SummaryCard({
           </p>
           {/* Progress bar */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 8 }}>
-            <div style={{ flex: 1, height: 8, background: '#E8E5E0', borderRadius: 9999, overflow: 'hidden' }}>
+            <div style={{ flex: 1, height: 8, background: 'var(--border)', borderRadius: 9999, overflow: 'hidden' }}>
               <div
                 style={{
                   width: `${globalPct}%`,
@@ -122,12 +122,12 @@ function SummaryCard({
             </div>
             <span
               className="font-mono"
-              style={{ fontSize: 13, fontWeight: 700, color: '#1A1A1A', minWidth: 48, textAlign: 'right' }}
+              style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', minWidth: 48, textAlign: 'right' }}
             >
               {globalPct}%
             </span>
           </div>
-          <p style={{ fontSize: 11, color: '#9C9890', margin: '6px 0 0' }}>
+          <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: '6px 0 0' }}>
             Completitud global de documentos
           </p>
         </div>
@@ -140,7 +140,7 @@ function SummaryCard({
             gap: 6,
             padding: '10px 20px',
             background: soliciting || totalMissingDocs === 0 ? '#D4C9A8' : '#C4963C',
-            color: '#FFFFFF',
+            color: 'var(--bg-card)',
             border: 'none',
             borderRadius: 8,
             fontSize: 13,
@@ -202,7 +202,7 @@ function ProgressBar({ pct: p }: { pct: number }) {
   const color = p >= 100 ? '#2D8540' : p >= 50 ? '#C47F17' : '#C23B22'
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 120 }}>
-      <div style={{ flex: 1, height: 5, background: '#E8E5E0', borderRadius: 9999, overflow: 'hidden' }}>
+      <div style={{ flex: 1, height: 5, background: 'var(--border)', borderRadius: 9999, overflow: 'hidden' }}>
         <div style={{ width: `${p}%`, height: '100%', background: color, borderRadius: 9999 }} />
       </div>
       <span className="font-mono" style={{ color, fontSize: 11, fontWeight: 700, minWidth: 32 }}>{p}%</span>
@@ -215,14 +215,14 @@ function ProgressBar({ pct: p }: { pct: number }) {
 function MobileCard({ row, onNavigate }: { row: TraficoRow; onNavigate: (id: string) => void }) {
   const noPedimento = !row.pedimento_num
   const deadline = getImplicitDeadline(row.fecha_llegada)
-  const urgency = row.missing.length > 0 ? getDocUrgency(deadline) : { color: '#9C9890', label: '' }
+  const urgency = row.missing.length > 0 ? getDocUrgency(deadline) : { color: 'var(--text-muted)', label: '' }
   const isOverdue = deadline ? Math.ceil((new Date(deadline).getTime() - Date.now()) / 86400000) < 0 : false
 
   return (
     <div
       style={{
         background: isOverdue && row.missing.length > 0 ? 'rgba(194,59,34,0.04)' : 'var(--card-bg)',
-        border: '1px solid #E8E5E0',
+        border: '1px solid var(--border)',
         borderLeft: row.missing.length > 0 ? `4px solid ${urgency.color}` : noPedimento ? '4px solid #C23B22' : '1px solid #E8E5E0',
         borderRadius: 8,
         padding: 16,
@@ -244,11 +244,11 @@ function MobileCard({ row, onNavigate }: { row: TraficoRow; onNavigate: (id: str
       {noPedimento && (
         <div style={{
           display: 'flex', alignItems: 'center', gap: 6,
-          background: '#FEF2F2', border: '1px solid #FECACA',
+          background: 'var(--danger-bg)', border: '1px solid #FECACA',
           borderRadius: 6, padding: '4px 10px', marginBottom: 8, width: 'fit-content',
         }}>
-          <AlertTriangle size={12} style={{ color: '#C23B22' }} />
-          <span style={{ fontSize: 11, fontWeight: 700, color: '#991B1B' }}>Sin pedimento</span>
+          <AlertTriangle size={12} style={{ color: 'var(--danger)' }} />
+          <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--danger-text)' }}>Sin pedimento</span>
         </div>
       )}
 
@@ -271,7 +271,7 @@ function MobileCard({ row, onNavigate }: { row: TraficoRow; onNavigate: (id: str
 
       {/* Missing docs */}
       {row.missing.length > 0 && (
-        <p style={{ fontSize: 12, color: '#6B6B6B', margin: '0 0 10px' }}>
+        <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: '0 0 10px' }}>
           Faltan:{' '}
           {row.missing.slice(0, 3).map(getDocLabel).join(', ')}
           {row.missing.length > 3 && `, +${row.missing.length - 3}`}
@@ -284,7 +284,7 @@ function MobileCard({ row, onNavigate }: { row: TraficoRow; onNavigate: (id: str
           <button
             style={{
               display: 'flex', alignItems: 'center', gap: 4,
-              padding: '8px 14px', background: '#C4963C', color: '#FFFFFF',
+              padding: '8px 14px', background: 'var(--gold)', color: 'var(--bg-card)',
               border: 'none', borderRadius: 6, fontSize: 12, fontWeight: 600,
               cursor: 'pointer', minHeight: 60, fontFamily: 'inherit',
             }}
@@ -297,7 +297,7 @@ function MobileCard({ row, onNavigate }: { row: TraficoRow; onNavigate: (id: str
           style={{
             display: 'flex', alignItems: 'center', gap: 4,
             padding: '8px 14px', background: 'var(--card-bg)',
-            border: '1px solid #E8E5E0', color: '#1A1A1A',
+            border: '1px solid var(--border)', color: 'var(--text-primary)',
             borderRadius: 6, fontSize: 12, fontWeight: 600,
             cursor: 'pointer', minHeight: 60, fontFamily: 'inherit',
           }}
@@ -566,15 +566,15 @@ export function ExpedientesView() {
           <p className="page-subtitle">Control de documentos por tráfico</p>
         </div>
         <div style={{ position: 'relative' }}>
-          <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#9C9890' }} />
+          <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar tráfico..."
             style={{
               paddingLeft: 32, paddingRight: 12, height: 36,
-              border: '1px solid #E8E5E0', borderRadius: 8,
-              background: 'var(--card-bg)', color: '#1A1A1A', fontSize: 13,
+              border: '1px solid var(--border)', borderRadius: 8,
+              background: 'var(--card-bg)', color: 'var(--text-primary)', fontSize: 13,
               outline: 'none', width: 200, fontFamily: 'inherit',
             }}
           />
@@ -584,14 +584,14 @@ export function ExpedientesView() {
       {loadError ? (
         <div style={{
           padding: 48, textAlign: 'center',
-          background: 'var(--card-bg)', border: '1px solid #E8E5E0',
+          background: 'var(--card-bg)', border: '1px solid var(--border)',
           borderRadius: 8, marginTop: 16,
         }}>
-          <AlertTriangle size={32} style={{ color: '#C23B22', margin: '0 auto 12px', display: 'block' }} />
-          <div style={{ fontSize: 16, fontWeight: 700, color: '#1A1A1A', marginBottom: 6 }}>
+          <AlertTriangle size={32} style={{ color: 'var(--danger)', margin: '0 auto 12px', display: 'block' }} />
+          <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 6 }}>
             No se pudieron cargar los expedientes
           </div>
-          <div style={{ fontSize: 13, color: '#9C9890', marginBottom: 16 }}>
+          <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>
             Error temporal · reintentando automáticamente
           </div>
           <button
@@ -599,7 +599,7 @@ export function ExpedientesView() {
             disabled={retrying}
             style={{
               padding: '10px 24px', borderRadius: 8,
-              border: 'none', background: '#C4963C', color: '#FFFFFF',
+              border: 'none', background: 'var(--gold)', color: 'var(--bg-card)',
               fontSize: 14, fontWeight: 700, cursor: retrying ? 'default' : 'pointer',
               minHeight: 60, fontFamily: 'inherit',
               opacity: retrying ? 0.7 : 1,
@@ -639,9 +639,9 @@ export function ExpedientesView() {
       ) : rawTraficos.length > 0 && rawTraficos.every((r) => r.pct >= 100) ? (
         /* All expedientes complete */
         <div className="card" style={{ padding: '60px 20px', textAlign: 'center' }}>
-          <FileText size={32} strokeWidth={1.5} style={{ color: '#2D8540', margin: '0 auto 12px' }} />
-          <p style={{ fontSize: 14, fontWeight: 600, color: '#2D8540' }}>Todos los expedientes completos &#10003;</p>
-          <p style={{ fontSize: 12, color: '#9C9890' }}>
+          <FileText size={32} strokeWidth={1.5} style={{ color: 'var(--success)', margin: '0 auto 12px' }} />
+          <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--success)' }}>Todos los expedientes completos &#10003;</p>
+          <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>
             Los {rawTraficos.length} tráficos activos tienen todos sus documentos en orden. · Última verificación: hace 5 min
           </p>
         </div>
@@ -661,16 +661,16 @@ export function ExpedientesView() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
             <FilterTabs active={filter} counts={counts} onChange={setFilter} />
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 12, color: '#9C9890', whiteSpace: 'nowrap' }}>Ordenar:</span>
+              <span style={{ fontSize: 12, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>Ordenar:</span>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as SortOption)}
                 style={{
                   padding: '6px 12px',
-                  border: '1px solid #E8E5E0',
+                  border: '1px solid var(--border)',
                   borderRadius: 8,
                   background: 'var(--card-bg)',
-                  color: '#1A1A1A',
+                  color: 'var(--text-primary)',
                   fontSize: 13,
                   fontFamily: 'inherit',
                   cursor: 'pointer',
@@ -688,11 +688,11 @@ export function ExpedientesView() {
           {/* Content */}
           {pageRows.length === 0 ? (
             <div className="card" style={{ padding: '60px 20px', textAlign: 'center' }}>
-              <FileText size={28} strokeWidth={1.5} style={{ color: '#9C9890', margin: '0 auto 12px' }} />
-              <p style={{ fontSize: 14, fontWeight: 600, color: '#1A1A1A' }}>
+              <FileText size={28} strokeWidth={1.5} style={{ color: 'var(--text-muted)', margin: '0 auto 12px' }} />
+              <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>
                 {filter === 'completos' ? 'Sin expedientes completos' : 'Todos los expedientes completos ✓'}
               </p>
-              <p style={{ fontSize: 12, color: '#9C9890' }}>
+              <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>
                 {filter === 'completos' ? 'Aún no hay tráficos con todos sus documentos.' : 'Todos los documentos están en orden. · Última verificación: hace 5 min'}
               </p>
             </div>
@@ -721,7 +721,7 @@ export function ExpedientesView() {
                   {pageRows.map((row) => {
                     const noPedimento = !row.pedimento_num
                     const rowDeadline = getImplicitDeadline(row.fecha_llegada)
-                    const rowUrgency = row.missing.length > 0 ? getDocUrgency(rowDeadline) : { color: '#9C9890', label: '' }
+                    const rowUrgency = row.missing.length > 0 ? getDocUrgency(rowDeadline) : { color: 'var(--text-muted)', label: '' }
                     const rowOverdue = rowDeadline ? Math.ceil((new Date(rowDeadline).getTime() - Date.now()) / 86400000) < 0 : false
 
                     return (
@@ -739,7 +739,7 @@ export function ExpedientesView() {
                         <td>
                           <span className="trafico-id">{fmtId(row.trafico)}</span>
                           {row.fecha_llegada && (
-                            <div style={{ color: '#9C9890', fontSize: 11, marginTop: 2 }}>
+                            <div style={{ color: 'var(--text-muted)', fontSize: 11, marginTop: 2 }}>
                               {fmtDateCompact(row.fecha_llegada)}
                             </div>
                           )}
@@ -757,9 +757,9 @@ export function ExpedientesView() {
                             {noPedimento && (
                               <span style={{
                                 display: 'inline-flex', alignItems: 'center', gap: 4,
-                                background: '#FEF2F2', border: '1px solid #FECACA',
+                                background: 'var(--danger-bg)', border: '1px solid #FECACA',
                                 borderRadius: 9999, padding: '2px 10px',
-                                fontSize: 10, fontWeight: 700, color: '#991B1B',
+                                fontSize: 10, fontWeight: 700, color: 'var(--danger-text)',
                                 width: 'fit-content',
                               }}>
                                 <AlertTriangle size={10} />
@@ -773,7 +773,7 @@ export function ExpedientesView() {
                         <td>
                           <span className="font-mono" style={{ fontSize: 13 }}>
                             {row.docCount}
-                            <span style={{ color: '#9C9890', fontWeight: 400 }}>/{REQUIRED_DOCS.length}</span>
+                            <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>/{REQUIRED_DOCS.length}</span>
                           </span>
                         </td>
 
@@ -793,15 +793,15 @@ export function ExpedientesView() {
                                     style={{
                                       fontSize: 10, fontWeight: 600,
                                       padding: '2px 8px', borderRadius: 4,
-                                      background: '#FEF2F2', border: '1px solid #FECACA',
-                                      color: '#991B1B', whiteSpace: 'nowrap',
+                                      background: 'var(--danger-bg)', border: '1px solid #FECACA',
+                                      color: 'var(--danger-text)', whiteSpace: 'nowrap',
                                     }}
                                   >
                                     {getDocLabel(m)}
                                   </span>
                                 ))}
                                 {row.missing.length > 3 && (
-                                  <span style={{ fontSize: 10, color: '#9C9890', padding: '2px 4px', fontWeight: 600 }}>
+                                  <span style={{ fontSize: 10, color: 'var(--text-muted)', padding: '2px 4px', fontWeight: 600 }}>
                                     +{row.missing.length - 3}
                                   </span>
                                 )}
@@ -811,7 +811,7 @@ export function ExpedientesView() {
                               )}
                             </div>
                           ) : (
-                            <span style={{ fontSize: 11, color: '#2D8540', fontWeight: 600 }}>Completo</span>
+                            <span style={{ fontSize: 11, color: 'var(--success)', fontWeight: 600 }}>Completo</span>
                           )}
                         </td>
 
@@ -826,7 +826,7 @@ export function ExpedientesView() {
                               }}
                               style={{
                                 display: 'inline-flex', alignItems: 'center', gap: 4,
-                                padding: '6px 14px', background: '#C4963C', color: '#FFFFFF',
+                                padding: '6px 14px', background: 'var(--gold)', color: 'var(--bg-card)',
                                 border: 'none', borderRadius: 6, fontSize: 12,
                                 fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
                               }}
@@ -842,7 +842,7 @@ export function ExpedientesView() {
                               style={{
                                 display: 'inline-flex', alignItems: 'center', gap: 4,
                                 padding: '6px 14px', background: 'var(--card-bg)',
-                                border: '1px solid #E8E5E0', color: '#1A1A1A',
+                                border: '1px solid var(--border)', color: 'var(--text-primary)',
                                 borderRadius: 6, fontSize: 12, fontWeight: 600,
                                 cursor: 'pointer', fontFamily: 'inherit',
                               }}

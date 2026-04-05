@@ -49,11 +49,25 @@
   --warning: #D97706;
   --danger: #DC2626;
   --info: #2563EB;
+  --teal: #0D9488;
+
+  /* ── Status surfaces ── */
+  --success-bg: #ECFDF3;
+  --success-border: #BBF7D0;
+  --danger-bg: #FEF2F2;
+  --danger-text: #991B1B;
+  --warning-bg: #FFFBEB;
+  --warning-text: #92400E;
 
   /* ── Text ── */
-  --text-primary: #111111;
-  --text-secondary: #666666;
+  --text-primary: #1A1A1A;
+  --text-secondary: #6B6B6B;
+  --text-muted: #9B9B9B;
   --text-tertiary: #999999;
+
+  /* ── Borders & surfaces ── */
+  --border: #E8E5E0;
+  --bg-hover: #F5F4F0;
 
   /* ── Semantic ── */
   --green-50:  #F0FDF4;

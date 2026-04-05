@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { rateLimit } from '@/lib/rate-limit'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -39,6 +40,16 @@ const CLIENT_SCOPED_TABLES = new Set([
 ])
 
 export async function GET(req: NextRequest) {
+  // Rate limit: 100 requests per minute per IP
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
+  const rl = rateLimit(`data:${ip}`, 100, 60000)
+  if (!rl.success) {
+    return NextResponse.json({ error: 'Demasiadas solicitudes. Intenta de nuevo.' }, {
+      status: 429,
+      headers: { 'Retry-After': String(Math.ceil(rl.resetIn / 1000)) },
+    })
+  }
+
   const params = req.nextUrl.searchParams
   const table = params.get('table')
 

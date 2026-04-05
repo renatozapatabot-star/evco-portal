@@ -219,7 +219,7 @@ export function DocumentosView() {
           <button key={cat} onClick={() => setFilter(cat)} style={{
             flexShrink: 0,
             background: filter === cat ? 'var(--amber-600)' : 'var(--bg-elevated)',
-            border: 'none', borderRadius: 9999, padding: '6px 16px', cursor: 'pointer',
+            border: 'none', borderRadius: 9999, padding: '10px 16px', cursor: 'pointer', minHeight: 60,
             color: filter === cat ? '#000' : 'var(--amber-700)',
             fontSize: 14, fontWeight: filter === cat ? 600 : 400, fontFamily: 'var(--font-sans)',
             whiteSpace: 'nowrap',

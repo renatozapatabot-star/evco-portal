@@ -71,7 +71,7 @@ export default function PlantillasPage() {
     fetch(url)
       .then(r => r.json())
       .then(d => setTemplates(d.data ?? []))
-      .catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
+      .catch((err: unknown) => { void 0 })
       .finally(() => setLoading(false))
   }, [isInternal])
 

@@ -86,7 +86,7 @@ export default function CruzChatPage() {
   useEffect(() => {
     fetch('/api/cruz-alerts').then(r => r.json())
       .then(data => setCruzAlerts(data.alerts ?? []))
-      .catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
+      .catch((err: unknown) => { void 0 })
   }, [])
 
   // Proactive briefing fetch
@@ -489,7 +489,7 @@ export default function CruzChatPage() {
               <button
                 onClick={listening ? stopVoice : startVoice}
                 style={{
-                  width: 48, height: 48, borderRadius: 14, border: 'none', cursor: 'pointer',
+                  width: 60, height: 60, borderRadius: 14, border: 'none', cursor: 'pointer',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
                   background: listening ? GOLD : D.bg, color: listening ? '#1A1710' : D.textMuted,
                   transition: 'all 0.15s',
@@ -501,7 +501,7 @@ export default function CruzChatPage() {
                 onClick={() => sendMessage(input)}
                 disabled={loading || !input.trim()}
                 style={{
-                  width: 48, height: 48, borderRadius: 14, border: 'none', cursor: 'pointer',
+                  width: 60, height: 60, borderRadius: 14, border: 'none', cursor: 'pointer',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
                   background: GOLD_GRADIENT, color: '#1A1710',
                   opacity: loading || !input.trim() ? 0.4 : 1,

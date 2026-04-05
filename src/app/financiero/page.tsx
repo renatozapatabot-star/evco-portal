@@ -9,18 +9,18 @@ import {
 import { getCookieValue } from '@/lib/client-config'
 import { fmtUSD, fmtUSDCompact, fmtDate } from '@/lib/format-utils'
 
-/* ── Design tokens (dark theme) ── */
+/* ── Light tokens (DESIGN_SYSTEM.md v6) ── */
 const D = {
-  bg: '#0D0D0C',
-  card: '#161615',
-  cardBorder: '#2A2A28',
+  bg: '#FAFAF8',
+  card: '#FFFFFF',
+  cardBorder: '#E8E5E0',
   gold: '#C4963C',
-  goldSubtle: 'rgba(184,149,63,0.12)',
-  text: '#F5F4F0',
-  textSec: '#9C9890',
-  textMuted: '#6B6B6B',
-  green: '#2D8540',
-  amber: '#C47F17',
+  goldSubtle: 'rgba(196,150,60,0.08)',
+  text: '#1A1A1A',
+  textSec: '#6B6B6B',
+  textMuted: '#9B9B9B',
+  green: '#16A34A',
+  amber: '#D97706',
   mono: 'var(--font-mono)',
   sans: 'var(--font-sans)',
   r: 8,

@@ -6,23 +6,23 @@ import { getClientClaveCookie, getCompanyIdCookie, getCookieValue } from '@/lib/
 import { daysUntilMVE } from '@/lib/compliance-dates'
 import { fmtDate } from '@/lib/format-utils'
 
-/* ── Dark theme tokens (broker view) ── */
+/* ── Light tokens (DESIGN_SYSTEM.md v6) ── */
 const T = {
-  card: '#1A1814',
-  border: '#302C23',
+  card: '#FFFFFF',
+  border: '#E8E5E0',
   gold: '#C4963C',
-  textPrimary: '#F5F0E8',
-  textSecondary: '#A09882',
-  textMuted: '#6B6355',
-  red: '#C23B22',
-  redBg: '#2A1215',
-  redBorder: '#5C2226',
-  green: '#2D8F4E',
-  greenBg: '#1A3A2A',
-  greenBorder: '#2D8F4E',
-  amber: '#D4A017',
-  amberBg: '#2A2415',
-  amberBorder: '#5C4D22',
+  textPrimary: '#1A1A1A',
+  textSecondary: '#6B6B6B',
+  textMuted: '#9B9B9B',
+  red: '#DC2626',
+  redBg: '#FEF2F2',
+  redBorder: '#FECACA',
+  green: '#16A34A',
+  greenBg: '#F0FDF4',
+  greenBorder: '#BBF7D0',
+  amber: '#D97706',
+  amberBg: '#FFFBEB',
+  amberBorder: '#FDE68A',
   radius: 8,
 } as const
 
@@ -42,7 +42,7 @@ function BrokerCumplimientoView() {
   useEffect(() => {
     const companyId = getCompanyIdCookie()
     Promise.all([
-      // Semáforo rojo: across all clients (broker sees everything)
+      // Semáforo rojo: filtered by company_id from cookie
       fetch(`/api/data?table=traficos&company_id=${companyId}&limit=500&order_by=updated_at&order_dir=desc`)
         .then(r => r.json()),
     ])
@@ -82,7 +82,7 @@ function BrokerCumplimientoView() {
           }))
         setUsmcaExpiring(expiring)
       })
-      .catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
+      .catch((err: unknown) => { void 0 })
       .finally(() => setLoading(false))
   }, [])
 
@@ -314,34 +314,34 @@ function ClientCumplimientoView() {
   }, [])
 
   return (
-    <div style={{ padding: 32, background: '#FAFAF8', minHeight: '100vh' }}>
+    <div style={{ padding: 32, background: 'var(--bg-main)', minHeight: '100vh' }}>
       <div style={{ marginBottom: 32 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 600, color: '#1A1A1A', marginBottom: 4 }}>
+        <h1 style={{ fontSize: 24, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>
           Cumplimiento
         </h1>
-        <p style={{ fontSize: 14, color: '#6B6B6B' }}>
+        <p style={{ fontSize: 14, color: 'var(--text-secondary)' }}>
           Resumen de obligaciones y documentos pendientes
         </p>
       </div>
 
       {loading ? (
-        <div style={{ textAlign: 'center', padding: 64, color: '#9B9B9B' }}>Cargando...</div>
+        <div style={{ textAlign: 'center', padding: 64, color: 'var(--text-muted)' }}>Cargando...</div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
           <div style={{
-            background: 'var(--card-bg)', border: '1px solid #E8E5E0', borderRadius: 8,
+            background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: 8,
             padding: 24, borderTop: '4px solid var(--gold, #C4963C)',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-              <Calendar size={20} style={{ color: '#8B6914' }} />
-              <span style={{ fontSize: 13, fontWeight: 600, color: '#8B6914', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+              <Calendar size={20} style={{ color: 'var(--gold-dark)' }} />
+              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--gold-dark)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                 Vencimientos esta semana
               </span>
             </div>
-            <div className="mono" style={{ fontSize: 40, fontWeight: 700, color: '#1A1A1A', lineHeight: 1 }}>
+            <div className="mono" style={{ fontSize: 40, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1 }}>
               {deadlineCount}
             </div>
-            <p style={{ fontSize: 13, color: '#6B6B6B', marginTop: 8 }}>
+            <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 8 }}>
               {deadlineCount === 0
                 ? 'Sin vencimientos programados esta semana.'
                 : `${deadlineCount} vencimiento${deadlineCount > 1 ? 's' : ''} próximo${deadlineCount > 1 ? 's' : ''} esta semana.`}
@@ -349,19 +349,19 @@ function ClientCumplimientoView() {
           </div>
 
           <div style={{
-            background: 'var(--card-bg)', border: '1px solid #E8E5E0', borderRadius: 8,
+            background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: 8,
             padding: 24, borderTop: '4px solid var(--gold, #C4963C)',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-              <FileText size={20} style={{ color: '#8B6914' }} />
-              <span style={{ fontSize: 13, fontWeight: 600, color: '#8B6914', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+              <FileText size={20} style={{ color: 'var(--gold-dark)' }} />
+              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--gold-dark)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                 Documentos pendientes
               </span>
             </div>
-            <div className="mono" style={{ fontSize: 40, fontWeight: 700, color: '#1A1A1A', lineHeight: 1 }}>
+            <div className="mono" style={{ fontSize: 40, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1 }}>
               {pendingDocsCount}
             </div>
-            <p style={{ fontSize: 13, color: '#6B6B6B', marginTop: 8 }}>
+            <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 8 }}>
               {pendingDocsCount === 0
                 ? 'Todos los documentos al corriente.'
                 : `${pendingDocsCount} operación${pendingDocsCount > 1 ? 'es' : ''} con documentación pendiente.`}
@@ -369,19 +369,19 @@ function ClientCumplimientoView() {
           </div>
 
           <div style={{
-            background: 'var(--card-bg)', border: '1px solid #E8E5E0', borderRadius: 8,
+            background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: 8,
             padding: 24, borderTop: '4px solid var(--gold, #C4963C)',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-              <Phone size={20} style={{ color: '#8B6914' }} />
-              <span style={{ fontSize: 13, fontWeight: 600, color: '#8B6914', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+              <Phone size={20} style={{ color: 'var(--gold-dark)' }} />
+              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--gold-dark)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                 Acción requerida
               </span>
             </div>
-            <p style={{ fontSize: 15, fontWeight: 600, color: '#1A1A1A', lineHeight: 1.5 }}>
+            <p style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.5 }}>
               Contacte a su agente aduanal
             </p>
-            <p style={{ fontSize: 13, color: '#6B6B6B', marginTop: 8 }}>
+            <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 8 }}>
               Para cualquier duda sobre sus obligaciones de cumplimiento, comuníquese directamente con su agente.
             </p>
           </div>

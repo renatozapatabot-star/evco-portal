@@ -101,7 +101,7 @@ export default function UploadPage() {
       }}>
         <div style={{ textAlign: 'center', maxWidth: 400 }}>
           <span style={{
-            fontSize: 44, fontWeight: 800, color: '#C4963C',
+            fontSize: 44, fontWeight: 800, color: 'var(--gold)',
             fontFamily: 'var(--font-mono, "JetBrains Mono", monospace)',
           }}>Z</span>
           <div style={{ fontSize: 11, color: '#64748B', letterSpacing: '0.2em', marginTop: 4 }}>CRUZ</div>
@@ -166,7 +166,7 @@ export default function UploadPage() {
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: 24 }}>
           <span style={{
-            fontSize: 44, fontWeight: 800, color: '#C4963C',
+            fontSize: 44, fontWeight: 800, color: 'var(--gold)',
             fontFamily: 'var(--font-mono, "JetBrains Mono", monospace)',
           }}>Z</span>
           <div style={{ fontSize: 11, color: '#64748B', letterSpacing: '0.2em', marginTop: 4 }}>CRUZ</div>
@@ -215,7 +215,7 @@ export default function UploadPage() {
             <div className="shake-error" style={{
               background: 'rgba(214, 69, 69, 0.08)', border: '1px solid rgba(214, 69, 69, 0.2)',
               borderRadius: 8, padding: '10px 14px', marginBottom: 16,
-              fontSize: 13, color: '#991B1B',
+              fontSize: 13, color: 'var(--danger-text)',
             }}>
               {error}
             </div>
@@ -226,7 +226,7 @@ export default function UploadPage() {
             <div style={{
               background: 'rgba(34, 197, 94, 0.08)', border: '1px solid rgba(34, 197, 94, 0.2)',
               borderRadius: 8, padding: '10px 14px', marginBottom: 16,
-              fontSize: 13, color: '#16A34A', fontWeight: 600,
+              fontSize: 13, color: 'var(--success)', fontWeight: 600,
             }}>
               ✅ {uploaded.length} documento{uploaded.length !== 1 ? 's' : ''} recibido{uploaded.length !== 1 ? 's' : ''}
             </div>

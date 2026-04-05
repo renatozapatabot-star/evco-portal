@@ -8,6 +8,7 @@ import { ShortcutHelp } from './shortcut-help'
 import { ToastProvider } from './Toast'
 import { useKeyboardShortcuts } from '@/hooks/use-shortcuts'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { usePullToRefresh } from '@/hooks/use-pull-refresh'
 import { MobileBottomNav } from './mobile-bottom-nav'
 import { WelcomeOverlay } from './WelcomeOverlay'
 import { getCookieValue } from '@/lib/client-config'
@@ -86,6 +87,7 @@ export default function DashboardShellClient({ children }: Props) {
   }, [])
 
   useKeyboardShortcuts()
+  const { pulling, distance } = usePullToRefresh()
 
   // Close mobile sidebar on route change
   useEffect(() => { setMobileOpen(false) }, [pathname])
@@ -157,6 +159,29 @@ export default function DashboardShellClient({ children }: Props) {
           window.location.href = '/'
         })
       }} />}
+
+      {/* Pull-to-refresh indicator (mobile only) */}
+      {isMobile && distance > 0 && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, zIndex: 9998,
+          display: 'flex', justifyContent: 'center', paddingTop: Math.min(distance, 100),
+          transition: pulling ? 'none' : 'padding-top 200ms ease',
+          pointerEvents: 'none',
+        }}>
+          <div style={{
+            width: 36, height: 36, borderRadius: '50%',
+            background: 'var(--bg-card, #FFFFFF)',
+            border: '1px solid var(--border, #E8E5E0)',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            transform: `rotate(${pulling ? 180 : (distance / 80) * 180}deg)`,
+            transition: pulling ? 'none' : 'transform 200ms ease',
+            fontSize: 16,
+          }}>
+            ↓
+          </div>
+        </div>
+      )}
 
       <CruzLayout
         portalType={portalType}

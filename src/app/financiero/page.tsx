@@ -505,9 +505,7 @@ function KPICard({ icon, label, value, sub }: {
         </div>
         <span style={{ fontSize: 13, color: D.textSec }}>{label}</span>
       </div>
-      <p style={{
-        fontSize: 28,
-        fontWeight: 700,
+      <p className="kpi-card-value" style={{
         fontFamily: D.mono,
         margin: '0 0 4px',
         letterSpacing: '-0.02em',

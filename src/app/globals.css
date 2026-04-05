@@ -1170,7 +1170,7 @@ body {
 }
 
 /* Safe area insets for fixed elements */
-.mn-nav, .cruz-topbar-mobile {
+.cruz-topbar-mobile {
   padding-bottom: env(safe-area-inset-bottom);
 }
 
@@ -1178,7 +1178,74 @@ body {
   padding-top: env(safe-area-inset-top);
 }
 
-/* Mobile bottom nav center Z button */
+/* ── Mobile Bottom Nav ────────────────────────────── */
+.mn-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+  background: var(--bg-main, #FAFAF8);
+  border-top: 1px solid var(--border, #E8E5E0);
+  padding: 4px 0;
+  padding-bottom: calc(4px + env(safe-area-inset-bottom));
+}
+
+.mn-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 60px;
+  min-width: 60px;
+  padding: 6px 4px 2px;
+  text-decoration: none;
+  color: var(--text-muted, #9B9B9B);
+  position: relative;
+  -webkit-tap-highlight-color: transparent;
+  flex: 1;
+}
+
+.mn-tab.mn-active {
+  color: var(--gold, #C4963C);
+}
+
+.mn-tab.mn-center {
+  flex: 0 0 auto;
+  padding: 0;
+  min-width: 68px;
+}
+
+.mn-icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+}
+
+.mn-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.mn-dot {
+  position: absolute;
+  bottom: 2px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--gold, #C4963C);
+}
+
+/* Mobile bottom nav center Z button — 60px (3 AM driver standard) */
 .mn-z {
   width: 60px;
   height: 60px;
@@ -1197,11 +1264,63 @@ body {
 
 /* Touch target minimums — 60px CRUZ standard (not 44px WCAG) */
 @media screen and (max-width: 768px) {
-  .mn-tab, .btn, button:not(.pagination-btn), a[href] {
+  .btn, button:not(.pagination-btn) {
     min-height: 60px;
   }
-  .stat-filter-item, .sidebar-nav-item, .mn-tab {
+  .stat-filter-item, .sidebar-nav-item {
     min-height: 60px;
+  }
+
+  /* Prevent horizontal overflow on all pages */
+  .page-container, .page-shell {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+
+  /* Stat cards: prevent truncation at narrow widths */
+  .kpi-card {
+    min-width: 0;
+    overflow: hidden;
+  }
+  .kpi-card-value {
+    font-size: min(7vw, 32px);
+    word-break: break-word;
+  }
+  .kpi-card-label {
+    font-size: 11px;
+    line-height: 1.3;
+  }
+
+  /* Reserve space for mobile bottom nav */
+  .cruz-main {
+    padding-bottom: calc(68px + env(safe-area-inset-bottom));
+  }
+
+  /* Table containers: enable horizontal scroll instead of overflow */
+  .table-shell {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Greeting text responsive sizing */
+  .text-display {
+    font-size: min(7vw, 28px);
+  }
+}
+
+/* ── Extra narrow (375px iPhone SE) ── */
+@media screen and (max-width: 400px) {
+  .kpi-card-value {
+    font-size: min(6vw, 24px);
+  }
+  .kpi-card {
+    padding: 14px;
+  }
+  .page-shell {
+    padding: 12px;
+  }
+  .mn-label {
+    font-size: 9px;
   }
 }
 

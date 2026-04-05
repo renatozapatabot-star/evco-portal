@@ -7,6 +7,7 @@ import { verifySession } from '@/lib/session'
 import { sanitizeIlike, sanitizeFilter } from '@/lib/sanitize'
 import { cruzChatSchema } from '@/lib/api-schemas'
 import { lookupKnowledge } from '@/lib/cruz-knowledge'
+import { buildGraph, queryGraph, graphSummary } from '@/lib/knowledge-graph'
 
 import { rateLimitDB } from '@/lib/rate-limit-db'
 import { getErrorMessage } from '@/lib/errors'
@@ -428,6 +429,19 @@ const TOOLS = [
     }
   },
   {
+    name: 'query_relationships',
+    description: 'Query the CRUZ knowledge graph for relationships between entities. "How are supplier X and product Y connected?" "What does Milacron supply?" "Which products benefit from T-MEC?" Traverses the entire network of clients, suppliers, products, carriers, and regulations.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        entity: { type: 'string', description: 'Entity name to explore (supplier name, product description, carrier, etc.)' },
+        entity_type: { type: 'string', enum: ['supplier', 'product', 'fraccion', 'carrier', 'client'], description: 'Type of entity (optional — auto-detected if omitted)' },
+        related_to: { type: 'string', description: 'Optional: find connections to this second entity' },
+      },
+      required: ['entity']
+    }
+  },
+  {
     name: 'prospect_profile',
     description: 'Get detailed profile of a specific prospect company by RFC. Import history, products, suppliers, T-MEC opportunity, estimated fees.',
     input_schema: {
@@ -806,6 +820,24 @@ async function executeTool(name: string, input: Record<string, any>, clientCtx: 
         ]
         const MVE_PENALTY_MAX = 7190 // from system_config mve_penalty_max
         return JSON.stringify({ deadlines, total_exposure: deadlines.filter(d => d.severity === 'critical').length * MVE_PENALTY_MAX + ' MXN max', action: 'navigate', path: '/cumplimiento' })
+      }
+      case 'query_relationships': {
+        // Build knowledge graph from traficos + facturas
+        const [trafGr, facGr] = await Promise.all([
+          supabase.from('traficos')
+            .select('trafico, company_id, proveedores, descripcion_mercancia, transportista_mexicano, transportista_extranjero, pedimento, regimen, estatus, fecha_cruce, importe_total')
+            .eq('company_id', companyId)
+            .gte('fecha_llegada', '2024-01-01')
+            .limit(2000),
+          supabase.from('aduanet_facturas')
+            .select('pedimento, proveedor, igi, dta, valor_usd')
+            .eq('clave_cliente', clientClave)
+            .limit(1000),
+        ])
+        const graph = buildGraph(trafGr.data || [], facGr.data || [])
+        const result = queryGraph(graph, input.entity, input.entity_type, input.related_to)
+        const summary = graphSummary(graph)
+        return JSON.stringify({ graph_summary: summary, query_result: result })
       }
       case 'find_prospects': {
         const minScore = input.min_score || 50

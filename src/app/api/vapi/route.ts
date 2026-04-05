@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
 
   // Vapi status updates (call started, ended, etc.)
   if (message?.type === 'status-update' || message?.type === 'end-of-call-report') {
-    console.log('[VAPI]', message.type, JSON.stringify(message).slice(0, 500))
+
     return NextResponse.json({ ok: true })
   }
 

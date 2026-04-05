@@ -26,8 +26,6 @@ export async function POST(request: NextRequest) {
     const accountSid = process.env.TWILIO_ACCOUNT_SID
     const authToken = process.env.TWILIO_AUTH_TOKEN
 
-    console.log(`[WhatsApp Webhook] From: ${from}, Body: "${body}", NumMedia: ${numMedia}`)
-
     // Try to find the most recent trafico associated with this phone number
     const { data: convoMatch } = await supabase
       .from('whatsapp_conversations')
@@ -126,8 +124,6 @@ export async function POST(request: NextRequest) {
         media_urls: mediaResults,
       })
       if (mediaLogError) console.error('[WhatsApp Webhook] Media log error:', mediaLogError.message)
-
-      console.log(`[WhatsApp Webhook] Processed ${mediaResults.length}/${numMedia} media files for trafico ${traficoId}`)
 
       return twiml('Recibimos tu documento. Gracias!')
     }

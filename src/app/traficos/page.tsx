@@ -15,6 +15,8 @@ import { useSessionCache } from '@/hooks/use-session-cache'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { ErrorCard } from '@/components/ui/ErrorCard'
 import { InsightWhisper } from '@/components/ui/InsightWhisper'
+import { SwipeRow } from '@/components/ui/SwipeRow'
+import { Share2, MessageSquare } from 'lucide-react'
 import { useWhisper } from '@/hooks/use-whisper'
 
 interface TraficoRow {

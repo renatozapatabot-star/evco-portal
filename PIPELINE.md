@@ -303,7 +303,7 @@ pipeline processes → Furnace learns → next client is faster
 
 | Step | Score | Target |
 |------|-------|--------|
-| 1. Intake | 9/10 | 10/10 |
+| 1. Intake | 9.5/10 | 10/10 |
 | 2. Classify | 8/10 | 9.5/10 |
 | 3. Completeness | 8/10 | 9/10 |
 | 4. Solicit | 4/10 | 9/10 |

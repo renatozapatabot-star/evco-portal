@@ -57,3 +57,31 @@
 
 *Add 3 lines per entry. Date, what was built, what broke.*
 *This is your institutional memory.*
+
+## 2026-04-04 — Setup Day Continued + Phase 6 Complete
+
+### Portal
+- Phase 6 Day 1-4 deployed (sidebar collapse, login branding, hydration fix, USD USD fix, JetBrains Mono, pedimento short format, valor/bultos real data, PRV_XXXX name resolution, date range 2024+, cross-linking, transportista, timeline, consecutive ordering)
+- Vercel Analytics installed
+- portal.renatozapata.com DNS configured
+
+### Infrastructure
+- Exchange rate updated 17.49 → 17.8117 + daily cron (banxico-rate.js, pm2, 6 AM)
+- PM2 fleet restarted: email-intake + morning-report back online
+- Credential rotation: STILL PENDING (exposed in chat April 2)
+
+### Living Files
+- CLAUDE.md: merged learnings from all 8 tabs + Boris workflow + corrections protocol
+- DESIGN_SYSTEM.md: confirmed as single source of truth (CLAUDE.md now points to it)
+- PIPELINE.md: created (12-step lifecycle, overall score 3.7/10)
+- VISION.md: created (north star document)
+- PENDING.md: added
+- Root cleaned: 6 superseded files moved to docs/archive/
+
+### Data Audit (in progress)
+- Claude Code found: hardcoded IGI 5%, exchange rate fallback 20.50, silent IVA fallback
+- Fixes executing now (C1, C2, C3, H1, H2, H3)
+
+### Tabs Consolidated
+- 8 specialist tabs → 1 Oracle tab (this chat)
+- All tab learnings merged into CLAUDE.md

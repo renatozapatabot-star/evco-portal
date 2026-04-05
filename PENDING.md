@@ -62,3 +62,29 @@
 *Cross off items as done. Add new ones as discovered.*
 *Review with THE ORACLE every morning.*
 *Friday: review with Tito.*
+
+## Added 2026-04-04
+
+### Completed Today
+- [x] CLAUDE.md Design System section → points to DESIGN_SYSTEM.md (2026-04-04)
+- [x] Exchange rate updated + daily cron built (2026-04-04)
+- [x] Phase 6 Day 1-4 deployed (2026-04-04)
+- [x] Vercel Analytics installed (2026-04-04)
+- [x] portal.renatozapata.com DNS configured (2026-04-04)
+- [x] Root directory cleaned, 6 files archived (2026-04-04)
+- [x] PIPELINE.md + VISION.md created (2026-04-04)
+- [x] All 8 tab learnings merged into CLAUDE.md (2026-04-04)
+
+### New P0 Items
+- [ ] Fix hardcoded IGI 5% in pedimento-package (C1 — data audit found)
+- [ ] Fix hardcoded exchange rate fallback 20.50 (C2 — data audit found)
+- [ ] Fix silent IVA fallback in rates.ts (C3 — data audit found)
+- [ ] Credential rotation (Supabase service role, Anthropic key, Telegram token)
+- [ ] MAFESA credentials send (after Tito review)
+
+### New P1 Items
+- [ ] StatusStrip cache TTL (H1 — 60 second max)
+- [ ] NotificationsDropdown polling (H2 — 90 second interval)
+- [ ] Traficos/Entradas cache TTL (H3 — 30 second max)
+- [ ] CRUZ AI prompt parameterization (M4 — multi-tenant violation)
+- [ ] Fake prediction probabilities (M1 — remove or label as estimates)

@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { getErrorMessage } from '@/lib/errors'
 import { NextRequest, NextResponse } from 'next/server'
+import { verifySession } from '@/lib/session'
 
 import { PORTAL_DATE_FROM } from '@/lib/data'
 
@@ -88,6 +89,9 @@ async function getContextData(query: string, companyId: string, clientClave: str
 }
 
 export async function POST(request: NextRequest) {
+  const session = await verifySession(request.cookies.get('portal_session')?.value || '')
+  if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+
   const companyId = request.cookies.get('company_id')?.value ?? ''
   const clientClave = request.cookies.get('company_clave')?.value ?? ''
   const rawName = request.cookies.get('company_name')?.value

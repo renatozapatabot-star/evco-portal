@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
+import { verifySession } from '@/lib/session'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN
@@ -14,6 +15,9 @@ async function sendTG(msg: string) {
 }
 
 export async function POST(request: NextRequest) {
+  const session = await verifySession(request.cookies.get('portal_session')?.value || '')
+  if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+
   const companyId = request.cookies.get('company_id')?.value
   const userRole = request.cookies.get('user_role')?.value
   if (!userRole) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -33,6 +37,9 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
+  const session = await verifySession(request.cookies.get('portal_session')?.value || '')
+  if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+
   const companyId = request.cookies.get('company_id')?.value
   const userRole = request.cookies.get('user_role')?.value
   if (!userRole) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

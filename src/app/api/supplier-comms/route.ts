@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { verifySession } from '@/lib/session'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -7,6 +8,9 @@ const supabase = createClient(
 )
 
 export async function GET(req: NextRequest) {
+  const session = await verifySession(req.cookies.get('portal_session')?.value || '')
+  if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+
   const companyId = req.cookies.get('company_id')?.value
   const userRole = req.cookies.get('user_role')?.value
   if (!userRole) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -17,6 +21,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const session = await verifySession(req.cookies.get('portal_session')?.value || '')
+  if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+
   const companyId = req.cookies.get('company_id')?.value
   const userRole = req.cookies.get('user_role')?.value
   if (!userRole) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getErrorMessage } from '@/lib/errors'
 import { createClient } from '@supabase/supabase-js'
+import { verifySession } from '@/lib/session'
 
 const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY!
 const supabase = createClient(
@@ -9,6 +10,9 @@ const supabase = createClient(
 )
 
 export async function POST(req: NextRequest) {
+  const session = await verifySession(req.cookies.get('portal_session')?.value || '')
+  if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+
   const { rfc } = await req.json()
   if (!rfc) return NextResponse.json({ error: 'RFC required' }, { status: 400 })
 

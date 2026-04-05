@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { PORTAL_DATE_FROM } from '@/lib/data'
+import { verifySession } from '@/lib/session'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -30,6 +31,9 @@ function generateFallbackSentence(data: KPIData, clientName: string): string {
 }
 
 export async function GET(request: NextRequest) {
+  const session = await verifySession(request.cookies.get('portal_session')?.value || '')
+  if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+
   const companyId = request.cookies.get('company_id')?.value ?? ''
   const clientClave = request.cookies.get('company_clave')?.value ?? ''
   const rawName = request.cookies.get('company_name')?.value

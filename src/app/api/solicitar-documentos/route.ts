@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { solicitarDocumentos } from '@/lib/solicitar-documentos'
+import { verifySession } from '@/lib/session'
 
 export async function POST(request: NextRequest) {
+  const session = await verifySession(request.cookies.get('portal_session')?.value || '')
+  if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+
   try {
     const clientClave = request.cookies.get('company_clave')?.value ?? ''
     const body = await request.json()

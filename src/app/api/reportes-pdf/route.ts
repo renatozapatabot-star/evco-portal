@@ -4,6 +4,7 @@ import { renderToBuffer } from '@react-pdf/renderer'
 import { PATENTE, ADUANA } from '@/lib/client-config'
 import { PORTAL_DATE_FROM } from '@/lib/data'
 import { ReportesPDF } from './pdf-document'
+import { verifySession } from '@/lib/session'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -21,6 +22,9 @@ interface SupplierRow {
 }
 
 export async function GET(request: NextRequest) {
+  const session = await verifySession(request.cookies.get('portal_session')?.value || '')
+  if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+
   const companyId = request.cookies.get('company_id')?.value ?? ''
   const clientClave = request.cookies.get('company_clave')?.value ?? ''
   const rawName = request.cookies.get('company_name')?.value

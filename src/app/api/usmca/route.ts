@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { verifySession } from '@/lib/session'
 
 export async function POST(request: NextRequest) {
+  const session = await verifySession(request.cookies.get('portal_session')?.value || '')
+  if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+
   const body = await request.json()
   const { goods_description, hs_code, origin_criterion, exporter_name } = body
   const apiKey = process.env.ANTHROPIC_API_KEY

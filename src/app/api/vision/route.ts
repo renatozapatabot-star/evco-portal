@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getErrorMessage } from '@/lib/errors'
+import { verifySession } from '@/lib/session'
 
 const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY
 
 export async function POST(request: NextRequest) {
+  const session = await verifySession(request.cookies.get('portal_session')?.value || '')
+  if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+
   if (!ANTHROPIC_KEY) return NextResponse.json({ error: 'ANTHROPIC_API_KEY not set' }, { status: 503 })
 
   const formData = await request.formData()

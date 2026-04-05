@@ -24,7 +24,7 @@ const T = {
 // ── Shared types ──
 interface TraficoRow {
   trafico: string; estatus: string; company_id: string | null
-  semaforo: string | null; descripcion_mercancia: string | null
+  semaforo: number | null; descripcion_mercancia: string | null
   fecha_cruce: string | null; proveedores: string | null
   [k: string]: unknown
 }
@@ -57,7 +57,7 @@ function AdminView() {
       const active = allTraficos.filter(t => !(t.estatus || '').toLowerCase().includes('cruz'))
       setActiveCount(active.length)
 
-      const rojo = active.filter(t => t.semaforo === 'rojo')
+      const rojo = active.filter(t => t.semaforo === 1)
       setRojoCount(rojo.length)
 
       const compMap: Record<string, number> = {}
@@ -65,7 +65,7 @@ function AdminView() {
         if (row.blocking_count > 0) compMap[row.trafico_id] = row.blocking_count
       }
 
-      const blocking = active.filter(t => compMap[t.trafico] > 0 || t.semaforo === 'rojo')
+      const blocking = active.filter(t => compMap[t.trafico] > 0 || t.semaforo === 1)
       setBlockingCount(blocking.length)
       if (blocking.length > 0) setFirstBlocking(blocking[0].trafico)
     }).catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) }).finally(() => setLoading(false))
@@ -176,9 +176,9 @@ function BrokerView() {
       setCruzadosHoy(crossed.length)
 
       // Ready to file from pipeline
-      const pipeRows = (pipeData.data ?? []) as { pipeline_status: string }[]
+      const pipeRows = (pipeData.data ?? []) as { pipeline_stage: string }[]
       setReadyToFile(pipeRows.filter(r =>
-        (r.pipeline_status || '').toLowerCase().replace(/\s+/g, '_') === 'ready_to_file'
+        (r.pipeline_stage || '').toLowerCase().replace(/\s+/g, '_') === 'ready_to_file'
       ).length)
 
       // Blocking tráficos → URGENT items
@@ -191,7 +191,7 @@ function BrokerView() {
 
       for (const t of active) {
         const bc = compMap[t.trafico] ?? 0
-        const isRojo = t.semaforo === 'rojo'
+        const isRojo = t.semaforo === 1
         if (bc > 0 || isRojo) {
           const detail = isRojo
             ? 'Semáforo rojo — requiere acción inmediata'
@@ -307,7 +307,7 @@ function BrokerView() {
         {[
           { href: '/traficos?estatus=En Proceso', value: activeCount, label: 'En proceso', color: 'var(--info-500)', dim: false },
           { href: '/traficos?estatus=Cruzado', value: cruzadosHoy, label: 'Cruzados hoy', color: 'var(--success-500)', dim: cruzadosHoy === 0 },
-          { href: '/traficos?pipeline_status=ready_to_file', value: readyToFile, label: 'Listos despacho', color: 'var(--purple-500)', dim: false },
+          { href: '/traficos?pipeline_stage=ready_to_file', value: readyToFile, label: 'Listos despacho', color: 'var(--purple-500)', dim: false },
         ].map(kpi => (
           <Link key={kpi.label} href={kpi.href} style={{ textDecoration: 'none', color: 'inherit' }}>
             <div className="kpi-card" style={{ borderTop: `3px solid ${kpi.color}`, textAlign: 'center' }}>

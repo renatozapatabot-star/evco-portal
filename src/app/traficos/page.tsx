@@ -20,7 +20,7 @@ interface TraficoRow {
   descripcion_mercancia?: string | null; peso_bruto?: number | null
   importe_total?: number | null; pedimento?: string | null
   semaforo?: number | null; transportista_mexicano?: string | null
-  fecha_pago?: string | null; [key: string]: unknown
+  fecha_pago?: string | null; fecha_cruce?: string | null; [key: string]: unknown
 }
 
 const PAGE_SIZE = 50
@@ -160,7 +160,7 @@ function TraficosContent() {
       const today = new Date().toISOString().split('T')[0]
       out = out.filter(r => {
         if (!(r.estatus || '').toLowerCase().includes('cruz')) return false
-        return r.fecha_pago?.startsWith(today) || r.fecha_llegada?.startsWith(today)
+        return r.fecha_cruce?.startsWith(today) || r.fecha_llegada?.startsWith(today)
       })
     }
 
@@ -192,7 +192,7 @@ function TraficosContent() {
   const kpiCruzadoHoy = rows.filter(r => {
     if (!(r.estatus || '').toLowerCase().includes('cruz')) return false
     const today = new Date().toISOString().split('T')[0]
-    return r.fecha_pago?.startsWith(today) || r.fecha_llegada?.startsWith(today)
+    return r.fecha_cruce?.startsWith(today) || r.fecha_llegada?.startsWith(today)
   }).length
 
   const SortArrow = ({ col }: { col: string }) => sort.column === col ? <span style={{ marginLeft: 4, fontSize: 10 }}>{sort.direction === 'asc' ? '↑' : '↓'}</span> : null

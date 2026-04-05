@@ -160,10 +160,17 @@ export async function fetchFacturas(page = 0, search?: string) {
 export async function fetchTopProveedores(limit = 6) {
   const clave = await getClientClave()
   const { data } = await supabase.from('aduanet_facturas')
-    .select('proveedor, valor_usd').eq('clave_cliente', clave).not('proveedor', 'is', null)
+    .select('referencia, proveedor, valor_usd').eq('clave_cliente', clave).not('proveedor', 'is', null)
   const rows = data || []
+  // Dedup by referencia — duplicates inflate totals ~15x
+  const seen = new Set<string>()
+  const deduped = rows.filter((r: any) => {
+    if (!r.referencia || seen.has(r.referencia)) return false
+    seen.add(r.referencia)
+    return true
+  })
   const byProv: Record<string, number> = {}
-  rows.forEach((r: any) => { if (r.proveedor) byProv[r.proveedor] = (byProv[r.proveedor] || 0) + (r.valor_usd || 0) })
+  deduped.forEach((r: any) => { if (r.proveedor) byProv[r.proveedor] = (byProv[r.proveedor] || 0) + (r.valor_usd || 0) })
   return Object.entries(byProv)
     .map(([name, valor]) => ({ name, valor: Math.round(valor as number) }))
     .sort((a, b) => b.valor - a.valor).slice(0, limit)
@@ -172,8 +179,15 @@ export async function fetchTopProveedores(limit = 6) {
 export async function fetchFinancialTotals() {
   const clave = await getClientClave()
   const { data } = await supabase.from('aduanet_facturas')
-    .select('valor_usd, dta, igi, iva').eq('clave_cliente', clave)
-  const r = data || []
+    .select('referencia, valor_usd, dta, igi, iva').eq('clave_cliente', clave)
+  const all = data || []
+  // Dedup by referencia — duplicates inflate totals ~15x
+  const seen = new Set<string>()
+  const r = all.filter((f: any) => {
+    if (!f.referencia || seen.has(f.referencia)) return false
+    seen.add(f.referencia)
+    return true
+  })
   return {
     valor: r.reduce((s: number, f: any) => s + (f.valor_usd || 0), 0),
     dta:   r.reduce((s: number, f: any) => s + (f.dta || 0), 0),

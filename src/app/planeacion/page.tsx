@@ -16,7 +16,7 @@ interface TraficoRow {
 
 interface PipelineRow {
   trafico_number: string
-  pipeline_status: string | null
+  pipeline_stage: string | null
   [k: string]: unknown
 }
 
@@ -86,11 +86,11 @@ export default function PlaneacionPage() {
   , [traficos, week])
 
   const readyToFile = useMemo(() =>
-    pipeline.filter(r => (r.pipeline_status || '').toLowerCase().replace(/\s+/g, '_') === 'ready_to_file')
+    pipeline.filter(r => (r.pipeline_stage || '').toLowerCase().replace(/\s+/g, '_') === 'ready_to_file')
   , [pipeline])
 
   const readyToCross = useMemo(() =>
-    pipeline.filter(r => (r.pipeline_status || '').toLowerCase().replace(/\s+/g, '_') === 'ready_to_cross')
+    pipeline.filter(r => (r.pipeline_stage || '').toLowerCase().replace(/\s+/g, '_') === 'ready_to_cross')
   , [pipeline])
 
   const checklist = useMemo(() => {

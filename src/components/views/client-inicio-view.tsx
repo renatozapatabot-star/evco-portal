@@ -203,6 +203,31 @@ export default function ClientInicioView() {
     setDateStr(`${days[d.getDay()]} ${d.getDate()} de ${months[d.getMonth()]}, ${d.getFullYear()}`)
   }, [])
 
+  // ── Últimas 24 horas ──
+  const last24h = useMemo(() => {
+    const cutoff = new Date(Date.now() - 86400000).toISOString()
+    const newTraficos = traficos.filter(t => t.fecha_llegada && t.fecha_llegada >= cutoff).length
+    const crossed = traficos.filter(t => t.fecha_cruce && t.fecha_cruce >= cutoff).length
+    const noPedGt7 = traficos.filter(t => {
+      if (t.pedimento) return false
+      const s = (t.estatus || '').toLowerCase()
+      if (s.includes('cruz') || s.includes('complet')) return false
+      if (!t.fecha_llegada) return false
+      return (Date.now() - new Date(t.fecha_llegada).getTime()) > 7 * 86400000
+    }).length
+    return { newTraficos, crossed, noPedGt7 }
+  }, [traficos])
+
+  // ── Contextual greeting subtitle ──
+  const greetingSub = useMemo(() => {
+    const parts: string[] = []
+    if (last24h.crossed > 0) parts.push(`${last24h.crossed} cruzaron ayer`)
+    if (last24h.newTraficos > 0) parts.push(`${last24h.newTraficos} nuevos`)
+    if (last24h.noPedGt7 > 0) parts.push(`${last24h.noPedGt7} sin pedimento >7 días`)
+    if (pendingEntradas.length > 0) parts.push(`${pendingEntradas.length} entradas pendientes`)
+    return parts.length > 0 ? parts.join(' · ') : 'Sin novedades'
+  }, [last24h, pendingEntradas])
+
   // Oldest pending entrada age (capped at 2 years to exclude legacy)
   const oldestDays = useMemo(() => {
     if (pendingEntradas.length === 0) return 0
@@ -276,13 +301,16 @@ export default function ClientInicioView() {
         })()}
       </div>
 
-      {/* Greeting */}
+      {/* Greeting — contextual with 24h summary */}
       <div style={{ marginBottom: 24 }}>
         <h1 className="text-display" style={{ color: 'var(--navy-900)', margin: 0, wordBreak: 'break-word' }}>
           {greeting}, {companyName || 'cliente'}
         </h1>
+        <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '4px 0 0' }}>
+          {greetingSub}
+        </p>
         <p className="text-caption" style={{ color: 'var(--slate-400)', margin: '4px 0 0', display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-          Resumen de su operación — <span className="font-mono">{dateStr}</span>
+          <span className="font-mono">{dateStr}</span>
           {refreshing && (
             <span className="badge badge-pendiente" style={{ fontSize: 11, animation: 'cruzPulse 1.5s infinite' }}>
               Actualizando...
@@ -411,6 +439,61 @@ export default function ClientInicioView() {
             )}
           </div>
           <Sparkline data={sparkData} width={200} height={40} color="var(--info-500)" />
+        </div>
+      )}
+
+      {/* ── Últimas 24 horas ── */}
+      {(last24h.newTraficos > 0 || last24h.crossed > 0) && (
+        <div className="card" style={{ marginBottom: 24, padding: '16px 20px' }}>
+          <div className="kpi-card-label" style={{ marginBottom: 12 }}>Últimas 24 horas</div>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)', gap: 12 }}>
+            {last24h.newTraficos > 0 && (
+              <Link href="/traficos?order_by=fecha_llegada&order_dir=desc" style={{ textDecoration: 'none', color: 'inherit' }}>
+                <div style={{ padding: '10px 12px', background: 'var(--slate-50)', borderRadius: 8 }}>
+                  <div style={{ fontSize: 20, fontWeight: 800, fontFamily: 'var(--font-mono)', color: 'var(--info-500)' }}>{last24h.newTraficos}</div>
+                  <div style={{ fontSize: 11, color: 'var(--slate-500)' }}>Tráficos nuevos</div>
+                </div>
+              </Link>
+            )}
+            {last24h.crossed > 0 && (
+              <Link href="/traficos?estatus=Cruzado" style={{ textDecoration: 'none', color: 'inherit' }}>
+                <div style={{ padding: '10px 12px', background: 'var(--green-50)', borderRadius: 8 }}>
+                  <div style={{ fontSize: 20, fontWeight: 800, fontFamily: 'var(--font-mono)', color: 'var(--success)' }}>{last24h.crossed}</div>
+                  <div style={{ fontSize: 11, color: 'var(--slate-500)' }}>Cruzaron</div>
+                </div>
+              </Link>
+            )}
+            {pendingEntradas.length > 0 && (
+              <Link href="/entradas" style={{ textDecoration: 'none', color: 'inherit' }}>
+                <div style={{ padding: '10px 12px', background: 'var(--amber-50)', borderRadius: 8 }}>
+                  <div style={{ fontSize: 20, fontWeight: 800, fontFamily: 'var(--font-mono)', color: 'var(--amber-600)' }}>{pendingEntradas.length}</div>
+                  <div style={{ fontSize: 11, color: 'var(--slate-500)' }}>Entradas pendientes</div>
+                </div>
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Próximos vencimientos ── */}
+      {last24h.noPedGt7 > 0 && (
+        <div className="card" style={{
+          marginBottom: 24, padding: '16px 20px',
+          borderLeft: '4px solid var(--amber-600)',
+          background: 'var(--amber-50)',
+        }}>
+          <div className="kpi-card-label" style={{ marginBottom: 8 }}>Atención requerida</div>
+          <Link href="/traficos" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: '#92400E' }}>
+                {last24h.noPedGt7} tráfico{last24h.noPedGt7 !== 1 ? 's' : ''} sin pedimento &gt; 7 días
+              </div>
+              <div style={{ fontSize: 12, color: 'var(--slate-500)', marginTop: 2 }}>
+                Requieren asignación de pedimento o seguimiento
+              </div>
+            </div>
+            <ChevronRight size={16} style={{ color: '#92400E', flexShrink: 0 }} />
+          </Link>
         </div>
       )}
 

@@ -17,7 +17,7 @@ export function OCAView() {
   const [material, setMaterial] = useState('')
   const [uso, setUso] = useState('')
   const [loading, setLoading] = useState(false)
-  const [result, setResult] = useState<any>(null)
+  const [result, setResult] = useState<{ fraccion: string; descripcion: string; arancel: string; tmec: string; analisis: string; fundamento: string } | null>(null)
   const [error, setError] = useState('')
   const [opinionNum] = useState(() => `OCA-2026-${String(Math.floor(Math.random() * 900) + 100).padStart(3, '0')}`)
 

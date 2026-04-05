@@ -8,6 +8,7 @@ import { createClient } from '@supabase/supabase-js'
 import { GOLD, GOLD_GRADIENT, Z_RED } from '@/lib/design-system'
 import { getClientClaveCookie } from '@/lib/client-config'
 import { formatAbsoluteETA, fmtUSD, fmtMXNInt, fmtCurrency } from '@/lib/format-utils'
+import type { DraftRow, DraftProduct } from '@/types/database'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
@@ -17,33 +18,50 @@ const TIER_CONFIG = {
   3: { label: 'Revisión completa', time: 'Sin límite · precisión sobre velocidad', color: 'var(--danger-500)', bg: '#FEF2F2' },
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapDraftRow(row: any) {
   const d = row.draft_data || {}
-  const products = d.products || []
-  const confidence = d.confidence ?? products[0]?.confidence ?? 0
+  const ext = d.extraction || {}
+  const products = d.products || d.classifications || []
+  const confRaw = d.confidence
+  const confScore = typeof confRaw === 'object' && confRaw ? confRaw.score ?? 0 : confRaw ?? products[0]?.confidence ?? 0
+  const confidence = typeof confScore === 'number' ? confScore : 0
   const tier = confidence >= 90 ? 1 : confidence >= 70 ? 2 : 3
+  const fieldScores = typeof confRaw === 'object' && confRaw ? confRaw.fieldScores || {} : {}
   return {
     id: row.id,
-    trafico: row.trafico_id || d.trafico || '',
+    trafico: row.trafico_id || d.trafico || d.email?.trafico || '',
     status: row.status || 'draft',
-    supplier: d.supplier || '',
-    country: d.country || 'US',
+    supplier: d.supplier || ext.supplier_name || '',
+    country: d.country || ext.supplier_country || 'US',
+    invoice_number: ext.invoice_number || '',
+    incoterm: ext.incoterm || '',
+    currency: ext.currency || d.currency || 'USD',
     confidence,
     tier,
+    fieldScores,
     created_at: row.created_at,
     products,
-    valor_total_usd: d.valor_total_usd || products.reduce((s: number, p: any) => s + (p.valor_usd || 0), 0),
-    tipo_cambio: d.tipo_cambio || 17.5,
+    valor_total_usd: d.valor_total_usd || ext.total_value || products.reduce((s: number, p: any) => s + (p.valor_usd || p.total_value || 0), 0),
+    tipo_cambio: d.tipo_cambio || d.contributions?.tipo_cambio || 17.5,
     regimen: d.regimen || 'IMD',
     checklist: d.checklist || [],
+    source: d.source || 'manual',
+    email: d.email || null,
   }
+}
+
+/** Verification badge — shows if a field was AI-extracted and needs human review */
+function VerifyBadge({ present, label }: { present: boolean; label?: string }) {
+  if (present) return <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--success)', marginLeft: 6 }}>✓ AI</span>
+  return <span style={{ fontSize: 10, fontWeight: 700, color: '#DC2626', background: '#FEF2F2', padding: '1px 6px', borderRadius: 4, marginLeft: 6 }}>{label || '⚠ Verificar'}</span>
 }
 
 export default function DraftReviewPage() {
   const { id } = useParams()
   const router = useRouter()
   const { toast } = useToast()
-  const [draft, setDraft] = useState<any>(null)
+  const [draft, setDraft] = useState<ReturnType<typeof mapDraftRow> | null>(null)
   const [loadingDraft, setLoadingDraft] = useState(true)
 
   useEffect(() => {
@@ -322,26 +340,68 @@ export default function DraftReviewPage() {
       {/* TAB: DATOS GENERALES */}
       {activeTab === 'review' && (
         <div>
+          {/* Extraction metadata — what Sonnet found */}
+          <div className="card" style={{ marginBottom: 16, padding: 16 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--slate-400)', marginBottom: 12 }}>
+              Datos extraídos por CRUZ
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12 }}>
+              <div>
+                <div style={{ fontSize: 11, color: 'var(--slate-400)' }}>Proveedor <VerifyBadge present={!!draft.supplier} /></div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--navy-900)' }}>{draft.supplier || '—'}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: 'var(--slate-400)' }}>País <VerifyBadge present={!!draft.country} /></div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--navy-900)' }}>{draft.country || '—'}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: 'var(--slate-400)' }}>Factura <VerifyBadge present={!!draft.invoice_number} label="Falta" /></div>
+                <div style={{ fontSize: 14, fontWeight: 600, fontFamily: 'var(--font-mono)', color: 'var(--navy-900)' }}>{draft.invoice_number || '—'}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: 'var(--slate-400)' }}>Incoterm <VerifyBadge present={!!draft.incoterm} label="Falta" /></div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--navy-900)' }}>{draft.incoterm || '—'}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: 'var(--slate-400)' }}>Moneda <VerifyBadge present={!!draft.currency} /></div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--navy-900)' }}>{draft.currency}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: 'var(--slate-400)' }}>Régimen <VerifyBadge present={!!draft.regimen} /></div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--navy-900)' }}>{draft.regimen}</div>
+              </div>
+            </div>
+            {draft.source === 'email_intake' && draft.email && (
+              <div style={{ marginTop: 12, padding: '8px 12px', background: 'var(--slate-50)', borderRadius: 6, fontSize: 11, color: 'var(--slate-500)' }}>
+                Fuente: {draft.email.sender || 'Email'} · {draft.email.subject ? draft.email.subject.substring(0, 60) : ''}
+              </div>
+            )}
+          </div>
+
+          {/* Financial calculations */}
           <div className="card" style={{ marginBottom: 16 }}>
             <table className="data-table" style={{ fontSize: 13 }}>
-              <thead><tr><th scope="col">Campo</th><th scope="col" style={{ textAlign: 'right' }}>Valor</th></tr></thead>
+              <thead><tr><th scope="col">Campo</th><th scope="col" style={{ textAlign: 'right' }}>Valor</th><th scope="col" style={{ textAlign: 'center', width: 80 }}>Estado</th></tr></thead>
               <tbody>
                 {[
-                  { label: 'Valor Aduana', value: `${fmtUSD(draft.valor_total_usd)} USD` },
-                  { label: 'Tipo de Cambio', value: `$${tc.toFixed(4)} MXN/USD` },
-                  { label: 'Valor MXN', value: `${fmtMXNInt(valMXN)} MXN` },
-                  { label: `DTA (${rates ? (rates.dta * 100).toFixed(1) : '—'}%)`, value: `${fmtMXNInt(dta)} MXN` },
-                  { label: 'IGI', value: '$0 MXN (T-MEC ✅)' },
-                  { label: 'Base IVA', value: `${fmtMXNInt(ivaBase)} MXN`, note: 'Valor + DTA + IGI' },
-                  { label: 'IVA (16%)', value: `${fmtMXNInt(iva)} MXN` },
-                  { label: 'Total Contribuciones', value: `${fmtMXNInt(totalContrib)} MXN`, bold: true },
+                  { label: 'Valor Aduana', value: `${fmtUSD(draft.valor_total_usd)} USD`, verified: draft.valor_total_usd > 0 },
+                  { label: 'Tipo de Cambio', value: `$${tc.toFixed(4)} MXN/USD`, verified: true },
+                  { label: 'Valor MXN', value: `${fmtMXNInt(valMXN)} MXN`, verified: true },
+                  { label: `DTA (${rates ? (rates.dta * 100).toFixed(1) : '—'}%)`, value: `${fmtMXNInt(dta)} MXN`, verified: !!rates },
+                  { label: 'IGI', value: '$0 MXN (T-MEC ✅)', verified: true },
+                  { label: 'Base IVA', value: `${fmtMXNInt(ivaBase)} MXN`, verified: true, note: 'Valor + DTA + IGI' },
+                  { label: 'IVA (16%)', value: `${fmtMXNInt(iva)} MXN`, verified: !!rates },
+                  { label: 'Total Contribuciones', value: `${fmtMXNInt(totalContrib)} MXN`, bold: true, verified: true },
                 ].map(r => (
                   <tr key={r.label}>
                     <td style={{ color: 'var(--slate-700)' }}>
                       {r.label}
-                      {(r as any).note && <span style={{ fontSize: 10, color: 'var(--slate-400)', marginLeft: 6 }}>({(r as any).note})</span>}
+                      {(r as { note?: string }).note && <span style={{ fontSize: 10, color: 'var(--slate-400)', marginLeft: 6 }}>({(r as { note?: string }).note})</span>}
                     </td>
-                    <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontWeight: (r as any).bold ? 800 : 600, color: (r as any).bold ? GOLD : 'var(--navy-900)' }}>{r.value}</td>
+                    <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontWeight: (r as { bold?: boolean }).bold ? 800 : 600, color: (r as { bold?: boolean }).bold ? GOLD : 'var(--navy-900)' }}>{r.value}</td>
+                    <td style={{ textAlign: 'center' }}>
+                      <VerifyBadge present={!!(r as { verified?: boolean }).verified} label="Verificar" />
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -356,19 +416,45 @@ export default function DraftReviewPage() {
       {/* TAB: PRODUCTOS */}
       {activeTab === 'products' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {draft.products.length === 0 && (
+            <div style={{ padding: 40, textAlign: 'center', color: 'var(--slate-400)', fontSize: 13 }}>
+              Sin productos extraídos — verificación manual requerida
+            </div>
+          )}
           {draft.products.map((p: any, i: number) => {
-            const borderColor = p.confidence >= 90 ? '#16A34A' : p.confidence >= 75 ? '#D97706' : 'var(--danger-500)'
+            const conf = p.confidence || 0
+            const borderColor = conf >= 90 ? '#16A34A' : conf >= 75 ? '#D97706' : 'var(--danger-500)'
+            const fraccion = p.fraccion || p.fraccion_arancelaria || ''
+            const desc = p.description || p.descripcion || ''
+            const qty = p.qty || p.quantity || 0
+            const unit = p.unit || 'PZ'
+            const value = p.valor_usd || p.total_value || p.unit_value || 0
+            const origin = p.country_of_origin || p.pais_origen || ''
             return (
               <div key={i} style={{ padding: '16px 20px', background: 'var(--bg-card)', border: `1px solid var(--border-card)`, borderLeft: `4px solid ${borderColor}`, borderRadius: 'var(--radius-md)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                  <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--navy-900)' }}>{p.description}</span>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: borderColor, fontFamily: 'var(--font-mono)' }}>{p.confidence}%</span>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--navy-900)' }}>
+                    {desc || <span style={{ color: 'var(--danger-500)' }}>⚠ Sin descripción</span>}
+                  </span>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: borderColor, fontFamily: 'var(--font-mono)' }}>
+                    {conf > 0 ? `${conf}%` : '—'}
+                  </span>
                 </div>
-                <div style={{ display: 'flex', gap: 16, fontSize: 12, color: 'var(--slate-500)' }}>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600 }}>{p.fraccion}</span>
-                  <span style={{ fontFamily: 'var(--font-mono)' }}>{p.qty.toLocaleString()} {p.unit}</span>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600 }}>{fmtUSD(p.valor_usd)} USD</span>
+                <div style={{ display: 'flex', gap: 16, fontSize: 12, color: 'var(--slate-500)', flexWrap: 'wrap' }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
+                    {fraccion || <span style={{ color: 'var(--danger-500)' }}>⚠ Sin fracción</span>}
+                    {fraccion && <VerifyBadge present={conf >= 75} label="Revisar" />}
+                  </span>
+                  {qty > 0 && <span style={{ fontFamily: 'var(--font-mono)' }}>{qty.toLocaleString()} {unit}</span>}
+                  {value > 0 && <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600 }}>{fmtUSD(value)} USD</span>}
+                  {origin && <span>Origen: {origin}</span>}
+                  {!origin && <span style={{ color: 'var(--danger-500)' }}>⚠ Sin país origen</span>}
                 </div>
+                {p.reasoning && (
+                  <div style={{ fontSize: 11, color: 'var(--slate-400)', marginTop: 6, fontStyle: 'italic' }}>
+                    {p.reasoning.substring(0, 120)}
+                  </div>
+                )}
               </div>
             )
           })}
@@ -378,7 +464,7 @@ export default function DraftReviewPage() {
       {/* TAB: CHECKLIST */}
       {activeTab === 'checklist' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          {draft.checklist.map((c: any, i: number) => (
+          {draft.checklist.map((c: { status: string; label: string; detail?: string }, i: number) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: 'var(--bg-card)', border: '1px solid var(--border-card)', borderRadius: 'var(--radius-md)', minHeight: 48 }}>
               {c.status === 'ok' && <Check size={16} style={{ color: 'var(--success)', flexShrink: 0 }} />}
               {c.status === 'warning' && <AlertTriangle size={16} style={{ color: 'var(--warning)', flexShrink: 0 }} />}

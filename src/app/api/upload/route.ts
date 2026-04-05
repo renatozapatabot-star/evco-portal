@@ -1,10 +1,23 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
+import { verifySession } from '@/lib/session'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
+
+const TELEGRAM_CHAT = '-5085543275'
+
+async function sendTelegram(msg: string) {
+  const token = process.env.TELEGRAM_BOT_TOKEN
+  if (!token) return
+  fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ chat_id: TELEGRAM_CHAT, text: msg, parse_mode: 'HTML' }),
+  }).catch(() => {})
+}
 
 const ALLOWED_TYPES = new Set([
   'application/pdf',
@@ -18,13 +31,14 @@ const MAX_SIZE = 10 * 1024 * 1024 // 10MB
 
 export async function POST(request: NextRequest) {
   try {
-    const companyId = request.cookies.get('company_id')?.value
-    if (!companyId) {
+    const session = await verifySession(request.cookies.get('portal_session')?.value || '')
+    if (!session) {
       return NextResponse.json(
-        { data: null, error: { code: 'UNAUTHORIZED', message: 'No company_id cookie' } },
+        { data: null, error: { code: 'UNAUTHORIZED', message: 'Sesión inválida' } },
         { status: 401 }
       )
     }
+    const companyId = session.role === 'client' ? session.companyId : (request.cookies.get('company_id')?.value || session.companyId)
 
     const formData = await request.formData()
     const file = formData.get('file') as File | null
@@ -94,6 +108,30 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       )
     }
+
+    // Mark any matching solicitation as received
+    await supabase
+      .from('documento_solicitudes')
+      .update({ status: 'recibido', recibido_at: new Date().toISOString() })
+      .eq('trafico_id', traficoId)
+      .eq('doc_type', docType)
+      .eq('status', 'solicitado')
+      .then(() => {}, () => {})
+
+    // Audit log
+    supabase.from('audit_log').insert({
+      action: 'document_uploaded',
+      resource: 'expediente_documentos',
+      resource_id: traficoId,
+      diff: { doc_type: docType, file_name: file.name, company_id: companyId },
+      created_at: new Date().toISOString(),
+    }).then(() => {}, () => {})
+
+    // Telegram notification
+    sendTelegram(
+      `📎 <b>${companyId}</b> subió <b>${docType}</b> para ${traficoId}\n` +
+      `Archivo: ${file.name}\n— CRUZ 🦀`
+    )
 
     return NextResponse.json({
       data: {

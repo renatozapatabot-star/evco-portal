@@ -322,8 +322,38 @@ export default function ClientInicioView() {
     return <DashboardSkeleton isMobile={isMobile} />
   }
 
+  // Zen mode: "Todo en orden" when nothing needs attention
+  const needsAttention = last24h.noPedGt7 > 0 || pendingEntradas.length > 5 || oldestDays > 30
+  const zenMode = !needsAttention && !detailOpen
+
   return (
     <div className="page-shell" style={{ maxWidth: 960 }}>
+      {/* Zen state: "Todo en orden" — the 11 PM Executive standard */}
+      {zenMode && (
+        <div style={{ textAlign: 'center', padding: isMobile ? '60px 20px' : '100px 20px' }}>
+          <div style={{ fontSize: isMobile ? 28 : 36, fontWeight: 800, color: '#1A1A1A', letterSpacing: '-0.02em' }}>
+            Todo en orden.
+          </div>
+          <p style={{ fontSize: 13, color: '#9B9B9B', margin: '12px 0 0', fontFamily: 'var(--font-mono)' }}>
+            {enProceso} en proceso · {cruzado} cruzados · {avgConf > 0 ? `${avgConf}% certeza` : ''}
+          </p>
+          {fetchedAt && (
+            <p style={{ fontSize: 11, color: '#D4D4D4', margin: '8px 0 0' }}>
+              Actualizado: {fetchedAt.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Chicago' })}
+            </p>
+          )}
+          <button onClick={() => setDetailOpen(true)} style={{
+            marginTop: 32, background: 'none', border: 'none', cursor: 'pointer',
+            fontSize: 12, color: '#C4963C', fontWeight: 600,
+          }}>
+            Ver detalle →
+          </button>
+        </div>
+      )}
+
+      {/* Full dashboard — shown when attention needed OR detail expanded */}
+      {(!zenMode || detailOpen) && <>
+
       {/* Status Strip — first thing Ursula sees */}
       <div style={{ marginBottom: 16 }}>
         <StatusStrip override={statusOverride} />
@@ -714,6 +744,8 @@ export default function ClientInicioView() {
           </div>
         )}
       </div>
+
+      </>}
     </div>
   )
 }

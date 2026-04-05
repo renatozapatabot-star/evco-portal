@@ -15,6 +15,28 @@ self.addEventListener('activate', function(event) {
   self.clients.claim()
 })
 
+
+// Push notifications
+self.addEventListener('push', function(event) {
+  var data = event.data ? event.data.json() : { title: 'CRUZ', body: 'Nueva actualización' }
+  event.waitUntil(
+    self.registration.showNotification(data.title || 'CRUZ', {
+      body: data.body || '',
+      icon: '/icon-192.png',
+      badge: '/icon-192.png',
+      tag: data.tag || 'cruz-notification',
+      data: { url: data.url || '/' },
+      vibrate: [100, 50, 100],
+    })
+  )
+})
+
+self.addEventListener('notificationclick', function(event) {
+  event.notification.close()
+  var url = event.notification.data && event.notification.data.url ? event.notification.data.url : '/'
+  event.waitUntil(clients.openWindow(url))
+})
+
 self.addEventListener('fetch', function(event) {
   if (event.request.method !== 'GET') return
   if (event.request.url.includes('/api/')) return

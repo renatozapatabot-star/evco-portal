@@ -59,7 +59,7 @@ export function CruzFAB() {
                 padding: '10px 16px', borderRadius: 24,
                 background: '#FFFFFF', border: 'none',
                 boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
-                cursor: 'pointer', minHeight: 44,
+                cursor: 'pointer', minHeight: 60,
                 animation: `fabSlideUp 150ms ease ${i * 50}ms both`,
               }}
             >
@@ -82,7 +82,7 @@ export function CruzFAB() {
         {open ? (
           <X size={22} style={{ color: '#1A1710' }} />
         ) : (
-          <span style={{ fontFamily: 'Georgia, serif', fontSize: 22, fontWeight: 700, color: '#1A1710' }}>Z</span>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 800, color: '#1A1710', letterSpacing: '0.08em' }}>CRUZ</span>
         )}
       </button>
 

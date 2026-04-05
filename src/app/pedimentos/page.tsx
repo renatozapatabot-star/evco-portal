@@ -304,7 +304,7 @@ export default function PedimentosPage() {
       {!loading && pagedGroups.length > 0 && !isMobile && (
         <div className="rounded-[3px] overflow-hidden" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
           <div className="overflow-auto" style={{ maxHeight: 'calc(100vh - 260px)' }}>
-            <table className="data-table">
+            <table className="data-table" role="table" aria-label="Lista de pedimentos">
               <thead>
                 <tr>
                   <th scope="col" style={{ cursor: 'pointer' }} onClick={() => toggleSort('pedimento')}>Pedimento{sort.column === 'pedimento' ? (sort.direction === 'asc' ? ' ↑' : ' ↓') : ''}</th>

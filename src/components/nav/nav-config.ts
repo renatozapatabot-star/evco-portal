@@ -195,7 +195,6 @@ export const ADMIN_ONLY_ROUTES = [
   '/mve',
   '/calendario',
   '/usmca',
-  '/cuentas',
   '/cumplimiento',
   '/oca',
   '/drafts',

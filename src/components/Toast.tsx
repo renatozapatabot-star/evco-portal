@@ -18,6 +18,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     const id = nextId++
     setToasts(prev => [...prev, { id, message, type }])
     setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 4000)
+    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) navigator.vibrate(type === 'error' ? [10, 30, 10] : 10)
   }, [])
 
   const dismiss = useCallback((id: number) => {
@@ -36,10 +37,10 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
           const Icon = icons[t.type]
           return (
             <div key={t.id} style={{
-              width: 320, padding: 16, borderRadius: 8, background: 'var(--bg-card)',
-              border: '1px solid var(--border-default)', borderLeft: `3px solid ${colors[t.type]}`,
+              width: 340, padding: '14px 16px', borderRadius: 14, background: 'rgba(255,255,255,0.95)',
+              border: '1px solid rgba(0,0,0,0.06)', borderLeft: `3px solid ${colors[t.type]}`,
               display: 'flex', alignItems: 'flex-start', gap: 12,
-              animation: 'fadein 200ms ease', boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+              backdropFilter: 'blur(20px) saturate(180%)', WebkitBackdropFilter: 'blur(20px) saturate(180%)', animation: 'toastSlideIn 300ms cubic-bezier(0.2, 0, 0, 1)', boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
             }}>
               <Icon size={16} style={{ color: colors[t.type], flexShrink: 0, marginTop: 2 }} />
               <span style={{ flex: 1, fontSize: 14, color: 'var(--text-primary)', lineHeight: 1.4 }}>{t.message}</span>

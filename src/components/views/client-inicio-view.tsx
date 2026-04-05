@@ -13,6 +13,8 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { ErrorCard } from '@/components/ui/ErrorCard'
 import SkeletonBase, { SkeletonKPI } from '@/components/ui/Skeleton'
 import { DashboardSkeleton } from '@/components/skeletons/DashboardSkeleton'
+import { MorningSummary } from '@/components/morning-summary'
+import { SmartAlerts } from '@/components/smart-alerts'
 import { useRouter } from 'next/navigation'
 import { ChevronRight } from 'lucide-react'
 import { useSessionCache } from '@/hooks/use-session-cache'
@@ -629,6 +631,12 @@ export default function ClientInicioView() {
       )}
 
       {/* Forecast widget — subtle info card */}
+      {/* Morning summary — proactive intelligence */}
+      <MorningSummary />
+
+      {/* Smart alerts — traficos taking longer than average */}
+      <SmartAlerts />
+
       <ForecastWidget />
 
       {/* Fleet benchmark comparison */}

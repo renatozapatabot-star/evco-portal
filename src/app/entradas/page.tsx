@@ -190,7 +190,7 @@ export default function EntradasPage() {
             <Search size={13} strokeWidth={2} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
             <input
               type="text"
-              placeholder="Tráfico, entrada, descripción..."
+              placeholder="Tráfico, entrada, descripción..." aria-label="Buscar entradas"
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(0) }}
               className="flex-1 bg-transparent outline-none text-[12.5px]"
@@ -314,7 +314,7 @@ export default function EntradasPage() {
           style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}
         >
           <div className="overflow-auto" style={{ maxHeight: 'calc(100vh - 200px)' }}>
-            <table className="data-table">
+            <table className="data-table" role="table" aria-label="Lista de entradas">
               <thead>
                 <tr>
                   <th style={{ cursor: 'pointer' }} onClick={() => toggleSort('cve_entrada')}>Entrada{sort.column === 'cve_entrada' ? (sort.direction === 'asc' ? ' ↑' : ' ↓') : ''}</th>

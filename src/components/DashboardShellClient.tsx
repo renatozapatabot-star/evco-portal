@@ -11,6 +11,7 @@ import { useIsMobile } from '@/hooks/use-mobile'
 import { usePullToRefresh } from '@/hooks/use-pull-refresh'
 import { MobileBottomNav } from './mobile-bottom-nav'
 import { WelcomeOverlay } from './WelcomeOverlay'
+import { CruzFAB } from './cruz-fab'
 import { getCookieValue } from '@/lib/client-config'
 
 interface Props { children: React.ReactNode }
@@ -214,6 +215,9 @@ export default function DashboardShellClient({ children }: Props) {
           Sin conexión — mostrando datos previos
         </div>
       )}
+
+      {/* Floating action button */}
+      <CruzFAB />
 
       {/* Welcome overlay for first-time users */}
       <WelcomeOverlay />

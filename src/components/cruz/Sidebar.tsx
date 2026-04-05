@@ -17,6 +17,7 @@ interface NavItem {
   label: string;
   href: string;
   icon: ReactNode;
+  badge?: number;
 }
 
 interface NavSection {
@@ -115,7 +116,7 @@ export default function Sidebar({
       </div>
 
       {/* Navigation */}
-      <nav className="sidebar-nav">
+      <nav className="sidebar-nav" aria-label="Menú principal">
         {navSections.map((section) => (
           <div key={section.title}>
             {!collapsed && <div className="sidebar-nav-label">{section.title}</div>}
@@ -130,9 +131,15 @@ export default function Sidebar({
                   title={collapsed ? item.label : undefined}
                   onClick={onMobileClose}
                   aria-current={isActive ? 'page' : undefined}
+                  style={{ position: 'relative' }}
                 >
                   <span className="nav-icon">{item.icon}</span>
                   {!collapsed && item.label}
+                  {item.badge && item.badge > 0 && (
+                    <span className="nav-badge" style={{ position: 'absolute', top: 6, right: 8 }}>
+                      {item.badge > 99 ? '99+' : item.badge}
+                    </span>
+                  )}
                 </Link>
               );
             })}

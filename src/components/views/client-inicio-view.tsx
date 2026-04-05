@@ -544,6 +544,9 @@ export default function ClientInicioView() {
       {/* Forecast widget — subtle info card */}
       <ForecastWidget />
 
+      {/* Fleet benchmark comparison */}
+      <BenchmarkWidget />
+
       {/* Bridge Times — hides entirely when no data (returns null) */}
       <BridgeTimes />
 
@@ -694,6 +697,44 @@ function ForecastWidget() {
           ~{fmtUSDCompact(forecast.expected_value_usd)}
         </div>
         <div style={{ fontSize: 10, color: '#9B9B9B' }}>valor estimado</div>
+      </div>
+    </div>
+  )
+}
+
+/** Benchmark comparison — fleet vs your data */
+function BenchmarkWidget() {
+  const [data, setData] = useState<{ comparisons: Record<string, { you: string; fleet: string; delta: string; better: boolean }> } | null>(null)
+
+  useEffect(() => {
+    fetch('/api/benchmarks').then(r => r.json())
+      .then(d => { if (d.comparisons && Object.keys(d.comparisons).length > 0) setData(d) })
+      .catch(() => {})
+  }, [])
+
+  if (!data) return null
+  const items = Object.entries(data.comparisons)
+  if (items.length === 0) return null
+
+  const labels: Record<string, string> = { crossing: 'Tiempo de cruce', tmec: 'Uso T-MEC', docs: 'Documentos' }
+
+  return (
+    <div className="card" style={{ marginBottom: 24, padding: '16px 20px' }}>
+      <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#9B9B9B', marginBottom: 12 }}>
+        Su operación vs promedio Patente 3596
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {items.map(([key, comp]) => (
+          <div key={key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div>
+              <div style={{ fontSize: 12, fontWeight: 600, color: '#1A1A1A' }}>{labels[key] || key}</div>
+              <div style={{ fontSize: 11, color: '#6B6B6B' }}>Usted: <b>{comp.you}</b> · Promedio: {comp.fleet}</div>
+            </div>
+            <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 4, background: comp.better ? 'rgba(22,163,74,0.1)' : 'rgba(220,38,38,0.1)', color: comp.better ? '#16A34A' : '#DC2626' }}>
+              {comp.delta}
+            </span>
+          </div>
+        ))}
       </div>
     </div>
   )

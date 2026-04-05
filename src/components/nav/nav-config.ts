@@ -231,6 +231,7 @@ export const CLIENT_ROUTES = [
   '/cruz',
   '/catalogo',
   '/exportar',
+  '/bienvenida',
   '/login',
 ] as const
 

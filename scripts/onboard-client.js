@@ -180,6 +180,29 @@ async function main() {
     console.log('5/7 Data exists — sync not needed')
   }
 
+  // ── Step 5b: Post-sync enrichment ──
+  console.log('5b. Post-sync enrichment...')
+  const { execSync: exec2 } = require('child_process')
+  const cwd = path.resolve(__dirname, '..')
+
+  // WSDL document pull
+  try {
+    exec2(`node scripts/wsdl-document-pull.js --company=${companyId}`, { cwd, timeout: 120000, stdio: 'pipe' })
+    console.log('  ✅ Expediente documents pulled')
+  } catch { console.log('  ⚠️ WSDL doc pull skipped') }
+
+  // Supplier resolution
+  try {
+    exec2(`node scripts/full-client-sync.js --phase=suppliers --company=${companyId}`, { cwd, timeout: 60000, stdio: 'pipe' })
+    console.log('  ✅ Supplier names resolved')
+  } catch { console.log('  ⚠️ Supplier resolution skipped') }
+
+  // Readiness score
+  try {
+    exec2(`node scripts/client-readiness-score.js --dry-run`, { cwd, timeout: 30000, stdio: 'pipe' })
+    console.log('  ✅ Readiness scored')
+  } catch { console.log('  ⚠️ Readiness score skipped') }
+
   // ── Step 6: Audit log ──
   console.log('6/7 Audit logging...')
   await supabase.from('audit_log').insert({

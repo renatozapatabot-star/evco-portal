@@ -9,33 +9,33 @@
 #### 1. Tráficos
 | Metric | Value | Portal Page |
 |--------|-------|-------------|
-| Total count | 894 | /traficos |
+| Total count | 895 | /traficos |
 | Date range | 2024-01-02 → 2026-03-31 | /traficos |
-| With pedimento | 887 (99.2%) | /pedimentos |
+| With pedimento | 888 (99.2%) | /pedimentos |
 | Valor total (importe_total) | $35,832,321.91 USD | /reportes |
-| T-MEC operations | 713 (79.8%) | /reportes |
+| T-MEC operations | 714 (79.8%) | /reportes |
 
 **Status distribution:**
 | Status | Count | % |
 |--------|-------|---|
-| Cruzado | 562 | 62.9% |
-| En Proceso | 201 | 22.5% |
-| Pedimento Pagado | 131 | 14.7% |
+| Cruzado | 562 | 62.8% |
+| En Proceso | 241 | 26.9% |
+| Pedimento Pagado | 92 | 10.3% |
 
 #### 2. Entradas
 | Metric | Value | % | Portal Page |
 |--------|-------|---|-------------|
 | Total count | 1,000 | — | /entradas |
-| Linked to tráfico | 526 | 52.6% | /entradas |
+| Linked to tráfico | 514 | 51.4% | /entradas |
 | Bultos populated | 1,000 | 100.0% | /entradas |
 | Peso populated | 1,000 | 100.0% | /entradas |
 
 #### 3. Aduanet Facturas
 | Metric | Value | % | Portal Page |
 |--------|-------|---|-------------|
-| Raw count | 374 | — | — |
+| Raw count | 89 | — | — |
 | After dedup (by referencia) | 89 | — | /reportes |
-| Duplicates removed | 285 | — | — |
+| Duplicates removed | 0 | — | — |
 | Total valor_usd | $4,380,804.84 USD | — | /reportes |
 | valor_usd populated | 89 | 100.0% | /pedimentos |
 | DTA populated | 56 | 62.9% | /pedimentos |
@@ -51,29 +51,41 @@
 #### 5. Expediente Documentos
 | Metric | Value | Portal Page |
 |--------|-------|-------------|
-| Total documents | 0 | /documentos |
-| Unique tráficos with docs | 0 | /documentos |
-| Coverage (tráficos with ≥1 doc) | 0.0% (0 de 894) | /documentos |
+| Total documents | 9,000 | /documentos |
+| Unique tráficos with docs | 548 | /documentos |
+| Coverage (tráficos with ≥1 doc) | 61.2% (548 de 895) | /documentos |
 
 **Document type distribution:**
 | Type | Count | % |
 |------|-------|---|
+| cove | 3,076 | 34.2% |
+| acuse_cove | 1,894 | 21.0% |
+| archivos_validacion | 1,305 | 14.5% |
+| doda | 679 | 7.5% |
+| otro | 520 | 5.8% |
+| factura_comercial | 496 | 5.5% |
+| packing_list | 445 | 4.9% |
+| cuenta_gastos | 400 | 4.4% |
+| pedimento_detallado | 118 | 1.3% |
+| bol | 38 | 0.4% |
+| pedimento_simplificado | 20 | 0.2% |
+| mve | 9 | 0.1% |
 
 #### 6. Supplier Name Resolution
 | Metric | Value | % |
 |--------|-------|---|
-| Lookup table size | 957 | — |
+| Lookup table size | 938 | — |
 | Total supplier codes in tráficos | 2,242 | — |
-| Resolved (name or non-PRV_) | 1,092 | 48.7% |
-| Unresolved PRV_ codes | 1,150 | 51.3% |
+| Resolved (name or non-PRV_) | 520 | 23.2% |
+| Unresolved PRV_ codes | 1,722 | 76.8% |
 
-**Unresolved sample:** `PRV_19`, `PRV_2042`, `PRV_1042`, `PRV_1545`, `PRV_1608`, `PRV_1828`, `PRV_1865`, `PRV_1953`, `PRV_2304`, `PRV_587`
+**Unresolved sample:** `PRV_19`, `PRV_2042`, `PRV_1608`, `PRV_1828`, `PRV_1865`, `PRV_1953`, `PRV_2304`, `PRV_2549`, `PRV_2617`, `PRV_2637`
 
 #### 7. Cross-Linking Summary
 | Relationship | Linked | Total | % |
 |-------------|--------|-------|---|
-| Entradas → Tráfico | 526 | 1,000 | 52.6% |
-| Tráficos → Pedimento | 887 | 894 | 99.2% |
+| Entradas → Tráfico | 514 | 1,000 | 51.4% |
+| Tráficos → Pedimento | 888 | 895 | 99.2% |
 | Facturas → Pedimento | 89 | 89 | 100.0% |
 
 ---
@@ -83,34 +95,31 @@
 #### 1. Tráficos
 | Metric | Value | Portal Page |
 |--------|-------|-------------|
-| Total count | 10 | /traficos |
-| Date range | 2026-03-16 → 2026-03-30 | /traficos |
-| With pedimento | 0 (0.0%) | /pedimentos |
-| Valor total (importe_total) | $2,606,000.00 USD | /reportes |
-| T-MEC operations | 10 (100.0%) | /reportes |
+| Total count | 59 | /traficos |
+| Date range | 2024-02-01 → 2026-03-03 | /traficos |
+| With pedimento | 59 (100.0%) | /pedimentos |
+| Valor total (importe_total) | $2,817,672.72 USD | /reportes |
+| T-MEC operations | 59 (100.0%) | /reportes |
 
 **Status distribution:**
 | Status | Count | % |
 |--------|-------|---|
-| En Proceso | 4 | 40.0% |
-| Cruzado | 3 | 30.0% |
-| Detenido | 2 | 20.0% |
-| Pedimento Pagado | 1 | 10.0% |
+| Cruzado | 59 | 100.0% |
 
 #### 2. Entradas
 | Metric | Value | % | Portal Page |
 |--------|-------|---|-------------|
-| Total count | 0 | — | /entradas |
+| Total count | 1,000 | — | /entradas |
 | Linked to tráfico | 0 | 0.0% | /entradas |
-| Bultos populated | 0 | 0.0% | /entradas |
-| Peso populated | 0 | 0.0% | /entradas |
+| Bultos populated | 1,000 | 100.0% | /entradas |
+| Peso populated | 1,000 | 100.0% | /entradas |
 
 #### 3. Aduanet Facturas
 | Metric | Value | % | Portal Page |
 |--------|-------|---|-------------|
-| Raw count | 431 | — | — |
+| Raw count | 56 | — | — |
 | After dedup (by referencia) | 56 | — | /reportes |
-| Duplicates removed | 375 | — | — |
+| Duplicates removed | 0 | — | — |
 | Total valor_usd | $5,856,358.91 USD | — | /reportes |
 | valor_usd populated | 56 | 100.0% | /pedimentos |
 | DTA populated | 24 | 42.9% | /pedimentos |
@@ -126,27 +135,38 @@
 #### 5. Expediente Documentos
 | Metric | Value | Portal Page |
 |--------|-------|-------------|
-| Total documents | 0 | /documentos |
-| Unique tráficos with docs | 0 | /documentos |
-| Coverage (tráficos with ≥1 doc) | 0.0% (0 de 10) | /documentos |
+| Total documents | 193 | /documentos |
+| Unique tráficos with docs | 58 | /documentos |
+| Coverage (tráficos with ≥1 doc) | 98.3% (58 de 59) | /documentos |
 
 **Document type distribution:**
 | Type | Count | % |
 |------|-------|---|
+| otro | 53 | 27.5% |
+| doda | 40 | 20.7% |
+| factura_comercial | 37 | 19.2% |
+| pedimento_detallado | 27 | 14.0% |
+| archivos_validacion | 17 | 8.8% |
+| packing_list | 8 | 4.1% |
+| pedimento_simplificado | 6 | 3.1% |
+| cove | 3 | 1.6% |
+| cuenta_gastos | 2 | 1.0% |
 
 #### 6. Supplier Name Resolution
 | Metric | Value | % |
 |--------|-------|---|
-| Lookup table size | 957 | — |
-| Total supplier codes in tráficos | 0 | — |
-| Resolved (name or non-PRV_) | 0 | 0.0% |
-| Unresolved PRV_ codes | 0 | 0.0% |
+| Lookup table size | 938 | — |
+| Total supplier codes in tráficos | 65 | — |
+| Resolved (name or non-PRV_) | 3 | 4.6% |
+| Unresolved PRV_ codes | 62 | 95.4% |
+
+**Unresolved sample:** `PRV_473`, `PRV_2669`, `PRV_7801`
 
 #### 7. Cross-Linking Summary
 | Relationship | Linked | Total | % |
 |-------------|--------|-------|---|
-| Entradas → Tráfico | 0 | 0 | 0.0% |
-| Tráficos → Pedimento | 0 | 10 | 0.0% |
+| Entradas → Tráfico | 0 | 1,000 | 0.0% |
+| Tráficos → Pedimento | 59 | 59 | 100.0% |
 | Facturas → Pedimento | 56 | 56 | 100.0% |
 
 ---
@@ -174,4 +194,4 @@
 - trafico=5913-Y1535, company_id=castores
 
 ---
-*Generated by scripts/data-verification.js on 2026-04-05T00:58:31.319Z*
+*Generated by scripts/data-verification.js on 2026-04-05T01:33:25.475Z*

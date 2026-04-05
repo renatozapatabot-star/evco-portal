@@ -8,6 +8,7 @@ import { sanitizeIlike, sanitizeFilter } from '@/lib/sanitize'
 import { cruzChatSchema } from '@/lib/api-schemas'
 import { lookupKnowledge } from '@/lib/cruz-knowledge'
 import { buildGraph, queryGraph, graphSummary } from '@/lib/knowledge-graph'
+import { assessRisk } from '@/lib/intelligence-mesh'
 
 import { rateLimitDB } from '@/lib/rate-limit-db'
 import { getErrorMessage } from '@/lib/errors'
@@ -442,6 +443,19 @@ const TOOLS = [
     }
   },
   {
+    name: 'assess_shipment_risk',
+    description: 'Comprehensive multi-source risk assessment. Combines bridge times, supplier history, currency, documents, compliance, historical patterns, and timing into a single risk score. Use for "what is the risk?" or "should we proceed?" questions about any shipment.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        trafico_id: { type: 'string', description: 'Tráfico ID to assess (for existing shipments)' },
+        value_usd: { type: 'number', description: 'Commercial value in USD (for hypothetical)' },
+        product: { type: 'string', description: 'Product description (for hypothetical)' },
+        supplier: { type: 'string', description: 'Supplier name (for hypothetical)' },
+      },
+    }
+  },
+  {
     name: 'prospect_profile',
     description: 'Get detailed profile of a specific prospect company by RFC. Import history, products, suppliers, T-MEC opportunity, estimated fees.',
     input_schema: {
@@ -820,6 +834,27 @@ async function executeTool(name: string, input: Record<string, any>, clientCtx: 
         ]
         const MVE_PENALTY_MAX = 7190 // from system_config mve_penalty_max
         return JSON.stringify({ deadlines, total_exposure: deadlines.filter(d => d.severity === 'critical').length * MVE_PENALTY_MAX + ' MXN max', action: 'navigate', path: '/cumplimiento' })
+      }
+      case 'assess_shipment_risk': {
+        let traficoData: Record<string, unknown> = { company_id: companyId }
+        if (input.trafico_id) {
+          const { data } = await supabase.from('traficos')
+            .select('trafico, company_id, proveedores, descripcion_mercancia, importe_total, pedimento, regimen, transportista_mexicano, score_reasons, fecha_llegada')
+            .eq('trafico', input.trafico_id)
+            .eq('company_id', companyId)
+            .single()
+          if (data) traficoData = data
+        }
+        const hypothetical = input.trafico_id ? undefined : {
+          value_usd: input.value_usd,
+          product: input.product,
+          supplier: input.supplier,
+        }
+        if (hypothetical?.product) traficoData.descripcion_mercancia = hypothetical.product
+        if (hypothetical?.supplier) traficoData.proveedores = hypothetical.supplier
+        if (hypothetical?.value_usd) traficoData.importe_total = hypothetical.value_usd
+        const assessment = await assessRisk(traficoData, supabase, hypothetical)
+        return JSON.stringify(assessment)
       }
       case 'query_relationships': {
         // Build knowledge graph from traficos + facturas

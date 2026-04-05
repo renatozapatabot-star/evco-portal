@@ -8,6 +8,7 @@ import { fmtDate, fmtDateShort, fmtUSD, fmtUSDCompact, fmtKg, fmtDesc } from '@/
 import { useIsMobile } from '@/hooks/use-mobile'
 import { calculateTmecSavings } from '@/lib/tmec-savings'
 import { getSmartGreeting } from '@/lib/greeting'
+import { computeStreak } from '@/lib/achievements'
 import CountingNumber from '@/components/ui/CountingNumber'
 import { Sparkline } from '@/components/sparkline'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -43,6 +44,7 @@ export default function ClientInicioView() {
   const [traficos, setTraficos] = useState<TraficoRow[]>([])
   const [pendingEntradas, setPendingEntradas] = useState<EntradaPending[]>([])
   const [sparkData, setSparkData] = useState<number[]>([])
+  const [streakDays, setStreakDays] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [companyName, setCompanyName] = useState('')
@@ -69,6 +71,17 @@ export default function ClientInicioView() {
     const companyId = getCompanyIdCookie()
     const name = getClientNameCookie()
     setCompanyName(name || '')
+
+    // Streak fetch (fire-and-forget, lightweight)
+    if (companyId) {
+      const streakParams = new URLSearchParams({
+        table: 'entradas', limit: '50', company_id: companyId,
+        order_by: 'fecha_llegada_mercancia', order_dir: 'desc',
+      })
+      fetch(`/api/data?${streakParams}`).then(r => r.json())
+        .then(d => setStreakDays(computeStreak(d.data || []).days))
+        .catch(() => {})
+    }
 
     // Try session cache first — show instantly, then refresh in background
     const cached = getCached<{ traficos: TraficoRow[]; entradas: EntradaPending[] }>('dashboard')
@@ -271,8 +284,9 @@ export default function ClientInicioView() {
       pendingEntradas: pendingEntradas.length,
       tmecSavings: tmecSavings.totalSavings,
       avgConfidence: avgConf,
+      streakDays,
     }).subtitle
-  }, [companyName, last24h, enProceso, pendingEntradas, tmecSavings, avgConf])
+  }, [companyName, last24h, enProceso, pendingEntradas, tmecSavings, avgConf, streakDays])
 
   // Oldest pending entrada age (capped at 2 years to exclude legacy)
   const oldestDays = useMemo(() => {

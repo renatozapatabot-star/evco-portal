@@ -111,6 +111,7 @@ export const CLIENT_NAV: NavTopLevel[] = [
   { href: '/anexo24',      label: 'Anexo 24',     icon: BookOpen },
   { href: '/financiero',   label: 'Financiero',   icon: DollarSign },
   { href: '/proveedores',  label: 'Proveedores',  icon: Users2 },
+  { href: '/logros',       label: 'Logros',         icon: Award },
   { href: '/actividad',    label: 'Actividad',     icon: Activity },
   { href: '/cruz',         label: 'CRUZ AI',       icon: MessageSquare, gold: true },
 ]
@@ -240,6 +241,7 @@ export const CLIENT_ROUTES = [
   '/analytics',
   '/mensajes',
   '/actividad',
+  '/logros',
   '/login',
 ] as const
 

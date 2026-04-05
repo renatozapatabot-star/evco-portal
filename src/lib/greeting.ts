@@ -54,6 +54,7 @@ export interface SmartGreetingInput {
   tmecSavings: number
   avgConfidence: number
   daysSinceLastLogin?: number
+  streakDays?: number
 }
 
 export function getSmartGreeting(name: string | undefined, stats: SmartGreetingInput): { greeting: string; subtitle: string } {
@@ -102,6 +103,7 @@ export function getSmartGreeting(name: string | undefined, stats: SmartGreetingI
     if (stats.avgConfidence > 0) parts[0] += ` · ${stats.avgConfidence}% certeza`
     if (stats.crossed24h > 0) parts.push(`${stats.crossed24h} cruzaron hoy`)
     if (stats.newTraficos24h > 0) parts.push(`${stats.newTraficos24h} nuevos`)
+    if (stats.streakDays && stats.streakDays >= 5) parts.push(`${stats.streakDays} entradas sin incidencias 🔥`)
     subtitle = parts.join(' · ')
   }
   // Default stats

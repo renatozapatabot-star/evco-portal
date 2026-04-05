@@ -9,6 +9,7 @@ import { cruzChatSchema } from '@/lib/api-schemas'
 import { lookupKnowledge } from '@/lib/cruz-knowledge'
 import { buildGraph, queryGraph, graphSummary } from '@/lib/knowledge-graph'
 import { assessRisk } from '@/lib/intelligence-mesh'
+import { calculateLandedCost, calculateValueCreated, buildEconomicSummary, aggregateClientEconomics } from '@/lib/economic-engine'
 
 import { rateLimitDB } from '@/lib/rate-limit-db'
 import { getErrorMessage } from '@/lib/errors'
@@ -443,6 +444,17 @@ const TOOLS = [
     }
   },
   {
+    name: 'calculate_economics',
+    description: 'Calculate landed cost, T-MEC savings, and value created for a specific tráfico or aggregate for the entire client. Answers "how much did Y4503 cost?" or "how much has EVCO saved this year?"',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        trafico_id: { type: 'string', description: 'Specific tráfico ID for per-shipment economics' },
+        aggregate: { type: 'boolean', description: 'If true, calculate economics for all client operations' },
+      },
+    }
+  },
+  {
     name: 'assess_shipment_risk',
     description: 'Comprehensive multi-source risk assessment. Combines bridge times, supplier history, currency, documents, compliance, historical patterns, and timing into a single risk score. Use for "what is the risk?" or "should we proceed?" questions about any shipment.',
     input_schema: {
@@ -834,6 +846,43 @@ async function executeTool(name: string, input: Record<string, any>, clientCtx: 
         ]
         const MVE_PENALTY_MAX = 7190 // from system_config mve_penalty_max
         return JSON.stringify({ deadlines, total_exposure: deadlines.filter(d => d.severity === 'critical').length * MVE_PENALTY_MAX + ' MXN max', action: 'navigate', path: '/cumplimiento' })
+      }
+      case 'calculate_economics': {
+        if (input.aggregate) {
+          const [facRes, trafRes] = await Promise.all([
+            supabase.from('aduanet_facturas')
+              .select('valor_usd, dta, igi, iva, ieps, tipo_cambio, pedimento')
+              .eq('clave_cliente', clientClave)
+              .limit(2000),
+            supabase.from('traficos')
+              .select('trafico, pedimento, peso_bruto, regimen, score_reasons, fecha_llegada, fecha_cruce, importe_total')
+              .eq('company_id', companyId)
+              .gte('fecha_llegada', '2024-01-01')
+              .limit(2000),
+          ])
+          const result = aggregateClientEconomics(facRes.data || [], trafRes.data || [])
+          return JSON.stringify(result)
+        }
+        // Per-tráfico economics
+        const [trafData, facData] = await Promise.all([
+          supabase.from('traficos')
+            .select('trafico, pedimento, peso_bruto, regimen, score_reasons, fecha_llegada, fecha_cruce, importe_total')
+            .eq('trafico', input.trafico_id || '')
+            .eq('company_id', companyId)
+            .single(),
+          supabase.from('aduanet_facturas')
+            .select('valor_usd, dta, igi, iva, ieps, tipo_cambio')
+            .ilike('pedimento', `%${sanitizeIlike(input.trafico_id || '')}%`)
+            .eq('clave_cliente', clientClave)
+            .limit(1)
+            .single(),
+        ])
+        const trafico = trafData.data || {}
+        const factura = facData.data || {}
+        const landed = calculateLandedCost(factura, trafico)
+        const value = calculateValueCreated(factura, trafico, 5)
+        const summary = buildEconomicSummary(landed, value)
+        return JSON.stringify({ trafico: input.trafico_id, landed, value, summary })
       }
       case 'assess_shipment_risk': {
         let traficoData: Record<string, unknown> = { company_id: companyId }

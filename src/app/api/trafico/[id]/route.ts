@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
+import { verifySession } from '@/lib/session'
 import { PORTAL_DATE_FROM } from '@/lib/data'
 
 const supabase = createClient(

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { verifySession } from '@/lib/session'
 import { getErrorMessage } from '@/lib/errors'
 
 export const dynamic = 'force-dynamic'

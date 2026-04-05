@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { verifySession } from '@/lib/session'
 import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 
 export async function GET(req: NextRequest) {
+  const sessionToken = req.cookies.get('portal_session')?.value || ''
+  const session = await verifySession(sessionToken)
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   const companyId = req.cookies.get('company_id')?.value ?? ''
   const limit = Math.min(Number(req.nextUrl.searchParams.get('limit') || '20'), 50)
 

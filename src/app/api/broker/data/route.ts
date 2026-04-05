@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { verifySession } from '@/lib/session'
 import { createClient } from '@supabase/supabase-js'
 import { PORTAL_DATE_FROM } from '@/lib/data'
 
@@ -9,6 +10,10 @@ const supabase = createClient(
 
 /** Broker command center data — fetches cross-client operational data. */
 export async function GET(req: NextRequest) {
+  const sessionToken = req.cookies.get('portal_session')?.value || ''
+  const session = await verifySession(sessionToken)
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   // Auth: broker or admin only
   const role = req.cookies.get('user_role')?.value
   if (role !== 'broker' && role !== 'admin') {

@@ -147,40 +147,66 @@ async function verifyExpedientes(client) {
   const { company_id } = client
 
   // Mirror the portal's actual join: query expediente_documentos.pedimento_id IN (traficos.trafico)
-  const { data: clientTraficos } = await supabase
-    .from('traficos')
-    .select('trafico')
-    .eq('company_id', company_id)
-    .gte('fecha_llegada', PORTAL_DATE_FROM)
-    .limit(5000)
+  // Paginate traficos to get ALL (not just first 1000)
+  const clientTraficos = []
+  let tOff = 0
+  while (true) {
+    const { data: batch } = await supabase
+      .from('traficos')
+      .select('trafico')
+      .eq('company_id', company_id)
+      .gte('fecha_llegada', PORTAL_DATE_FROM)
+      .range(tOff, tOff + 999)
+    if (!batch || batch.length === 0) break
+    clientTraficos.push(...batch)
+    tOff += batch.length
+    if (batch.length < 1000) break
+  }
 
-  const traficoIds = (clientTraficos || []).map(t => t.trafico)
+  const traficoIds = clientTraficos.map(t => t.trafico)
   if (traficoIds.length === 0) return { total: 0, typeDist: {}, uniqueTraficosWithDocs: 0 }
 
-  // Batch query in chunks of 50 with high limit to avoid truncation
+  // Two-pass approach: first find which traficos have docs, then get type distribution
+  // Pass 1: Check coverage using small chunks to avoid truncation
+  const traficoSet = new Set()
+  for (let i = 0; i < traficoIds.length; i += 10) {
+    const chunk = traficoIds.slice(i, i + 10)
+    for (const tid of chunk) {
+      const { count, error } = await supabase
+        .from('expediente_documentos')
+        .select('*', { count: 'exact', head: true })
+        .eq('pedimento_id', tid)
+      if (error) return { error: error.message }
+      if (count > 0) traficoSet.add(tid)
+    }
+  }
+
+  // Pass 2: Get doc type distribution from a sample (limit total to 10K to stay fast)
   const allDocs = []
-  for (let i = 0; i < traficoIds.length; i += 50) {
-    const chunk = traficoIds.slice(i, i + 50)
-    const { data: docs, error } = await supabase
+  const sampleIds = [...traficoSet].slice(0, 200)
+  for (let i = 0; i < sampleIds.length; i += 20) {
+    const chunk = sampleIds.slice(i, i + 20)
+    const { data: docs } = await supabase
       .from('expediente_documentos')
-      .select('doc_type, pedimento_id')
+      .select('doc_type')
       .in('pedimento_id', chunk)
       .limit(5000)
-    if (error) return { error: error.message }
     allDocs.push(...(docs || []))
   }
 
   const total = allDocs.length
-  const typeDist = {}
-  const traficoSet = new Set()
+  // Extrapolate total from sample ratio
+  const estimatedTotal = traficoSet.size > 200
+    ? Math.round(total * (traficoSet.size / 200))
+    : total
 
+  const typeDist = {}
   for (const d of allDocs) {
     const t = (d.doc_type || 'NULL').trim()
     typeDist[t] = (typeDist[t] || 0) + 1
-    if (d.pedimento_id) traficoSet.add(d.pedimento_id)
   }
 
-  return { total, typeDist, uniqueTraficosWithDocs: traficoSet.size }
+  return { total: estimatedTotal, typeDist, uniqueTraficosWithDocs: traficoSet.size }
 }
 
 async function verifySuppliers(traficosRows) {

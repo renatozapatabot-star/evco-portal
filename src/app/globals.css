@@ -15,7 +15,7 @@
   --gold-bg: rgba(196,150,60,0.08);
 
   /* ── Navy / Sidebar ── */
-  --navy-900: #0B1623;
+  --navy-900: #141C26;
   --navy-800: #1A2535;
   --navy-700: #18293F;
 
@@ -29,6 +29,8 @@
   /* ── Content ── */
   --bg-main: #FAFAF8;
   --bg-card: #FFFFFF;
+  --bg-surface: #FFFFFF;
+  --bg-elevated: #F8F7F4;
   --border-card: #E8E5E0;
 
   /* ── Slate ── */
@@ -1112,6 +1114,37 @@ body {
 }
 
 /* Reduced motion */
+/* ── Micro-interactions — feel it, don't see it ── */
+
+/* Button press: haptic scale */
+button:active:not(:disabled), .btn:active:not(:disabled) {
+  transform: scale(0.97);
+  transition: transform 100ms ease;
+}
+
+/* Card hover lift */
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+
+/* Real-time update pulse */
+@keyframes realtimePulse {
+  0% { box-shadow: 0 0 0 0 rgba(196,150,60,0.4); }
+  70% { box-shadow: 0 0 0 6px rgba(196,150,60,0); }
+  100% { box-shadow: 0 0 0 0 rgba(196,150,60,0); }
+}
+.realtime-pulse { animation: realtimePulse 500ms ease-out; }
+
+/* Content entrance stagger (apply stagger-1 through stagger-6) */
+.stagger-1 { animation-delay: 0ms; }
+.stagger-2 { animation-delay: 50ms; }
+.stagger-3 { animation-delay: 100ms; }
+.stagger-4 { animation-delay: 150ms; }
+.stagger-5 { animation-delay: 200ms; }
+.stagger-6 { animation-delay: 250ms; }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;

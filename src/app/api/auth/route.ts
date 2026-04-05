@@ -35,6 +35,15 @@ async function setAuthCookies(
     path: '/', maxAge, sameSite: 'lax',
     secure: process.env.NODE_ENV === 'production',
   })
+
+  // Audit log — login success
+  supabase.from('audit_log').insert({
+    action: 'login_success',
+    resource: 'auth',
+    resource_id: opts.companyId,
+    diff: { role: opts.role, company: opts.companyName },
+    created_at: new Date().toISOString(),
+  }).then(() => {}, () => {})
 }
 
 export async function POST(request: NextRequest) {
@@ -105,6 +114,14 @@ export async function POST(request: NextRequest) {
     })
     return response
   }
+
+  // Log failed login attempt
+  supabase.from('audit_log').insert({
+    action: 'login_failed',
+    resource: 'auth',
+    ip: request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || null,
+    created_at: new Date().toISOString(),
+  }).then(() => {}, () => {})
 
   return NextResponse.json({ error: 'Invalid password' }, { status: 401 })
 }

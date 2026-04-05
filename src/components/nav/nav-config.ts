@@ -87,6 +87,7 @@ export const INTERNAL_GROUPS: NavGroup[] = [
       { href: '/calendario',   label: 'Calendario',  icon: Calendar },
       { href: '/usmca',        label: 'USMCA',       icon: Award },
       { href: '/cruces',       label: 'Cruces',      icon: Clock },
+      { href: '/auditoria',   label: 'Auditoría',   icon: History },
     ],
   },
 ]
@@ -212,6 +213,7 @@ export const ADMIN_ONLY_ROUTES = [
   '/documentos-legales',
   '/cruces',
   '/alertas-internas',
+  '/auditoria',
 ] as const
 
 /** Routes accessible by client role */

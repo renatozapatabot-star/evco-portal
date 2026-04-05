@@ -96,3 +96,31 @@
 - [ ] Run dedup_facturas.sql migration (285 EVCO + 49 MAFESA duplicates)
 - [ ] Investigate "castores" company_id in traficos (unregistered client)
 - [ ] MAFESA pedimento linkage — GlobalPC sync may not be pulling their pedimento numbers
+
+## Portal Audit Findings (2026-04-04 night)
+### P0 — Security (fixing now)
+- [ ] Service role key in 7 client components → move to API routes
+- [ ] DOMPurify on CRUZ AI chat
+- [ ] Cookie auth forgeable → needs Supabase session validation
+- [ ] No rate limiting on /api/data
+
+### P1 — Design System
+- [ ] 11 pages using dark palette (need warm light conversion)
+- [ ] Auto-dim night mode feature (remove entirely)
+- [ ] CDN font links (remove, next/font handles it)
+- [ ] 40+ hardcoded hex colors in traficos/[id]
+- [ ] Gold color: unify to #C4963C
+- [ ] 4 client isolation filter mismatches
+
+### P2 — UX
+- [ ] 13 touch targets below 60px
+- [ ] ~20 pages missing empty states
+- [ ] 5 English-only strings
+- [ ] 4 JetBrains Mono missing instances
+
+### P2 — Code Quality
+- [ ] 50+ any types in financial calculations
+- [ ] 10 console.error in production
+- [ ] Nav system duplication (nav-config.ts vs Sidebar.tsx)
+- [ ] CRUZ AI missing audit logging
+- [ ] Duplicate/unused CSS variables

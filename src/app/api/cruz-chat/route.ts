@@ -10,6 +10,7 @@ import { lookupKnowledge } from '@/lib/cruz-knowledge'
 import { buildGraph, queryGraph, graphSummary } from '@/lib/knowledge-graph'
 import { assessRisk } from '@/lib/intelligence-mesh'
 import { calculateLandedCost, calculateValueCreated, buildEconomicSummary, aggregateClientEconomics } from '@/lib/economic-engine'
+import { computeNetworkMetrics, computeNetworkIntelligence, networkSummary } from '@/lib/network-value'
 
 import { rateLimitDB } from '@/lib/rate-limit-db'
 import { getErrorMessage } from '@/lib/errors'
@@ -457,6 +458,11 @@ const TOOLS = [
     }
   },
   {
+    name: 'query_network_intelligence',
+    description: 'Show how the CRUZ network improves this client. Aggregate crossing times, prediction accuracy, supplier count, reconocimiento rates — all from anonymized network data. Shows the network effect value.',
+    input_schema: { type: 'object' as const, properties: {} }
+  },
+  {
     name: 'request_documents',
     description: 'Request missing documents from a supplier. Generates upload link and optionally sends WhatsApp. Use when user says "solicita docs", "pide el COVE", etc. ALWAYS confirm with user before executing.',
     input_schema: {
@@ -885,6 +891,24 @@ async function executeTool(name: string, input: Record<string, any>, clientCtx: 
         ]
         const MVE_PENALTY_MAX = 7190 // from system_config mve_penalty_max
         return JSON.stringify({ deadlines, total_exposure: deadlines.filter(d => d.severity === 'critical').length * MVE_PENALTY_MAX + ' MXN max', action: 'navigate', path: '/cumplimiento' })
+      }
+      case 'query_network_intelligence': {
+        // Cross-client aggregate (service role, no company_id filter)
+        const [clientsRes, allOpsRes, clientOpsRes] = await Promise.all([
+          supabase.from('companies').select('company_id', { count: 'exact', head: true }).eq('active', true),
+          supabase.from('traficos').select('fecha_cruce, fecha_llegada, semaforo, proveedores').gte('fecha_llegada', '2024-01-01').limit(5000),
+          supabase.from('traficos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).gte('fecha_llegada', '2024-01-01'),
+        ])
+        const totalClients = clientsRes.count || 1
+        const totalOps = allOpsRes.data?.length || 0
+        const clientOps = clientOpsRes.count || 0
+        const metrics = computeNetworkMetrics(totalClients, totalOps, clientOps)
+        const intelligence = computeNetworkIntelligence(allOpsRes.data || [])
+        return JSON.stringify({
+          network: { ...metrics, summary: networkSummary(metrics) },
+          intelligence,
+          insight: `${clientName} contribuye ${metrics.contributionPct}% de los datos de la red. ${metrics.improvementFromNetwork}. La red tiene ${intelligence.supplierCount} proveedores únicos y un tiempo promedio de cruce de ${intelligence.avgClearanceDays} días.`,
+        })
       }
       case 'request_documents': {
         // Chain: generate upload link + optionally notify via WhatsApp

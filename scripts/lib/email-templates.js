@@ -189,6 +189,65 @@ function buildTelegramSummary(items) {
   ].join('\n')
 }
 
+// ── Auto-Response Templates ──────────────────────────
+
+const FIRMA = `Atentamente,
+
+Renato Zapata & Company
+Agentes Aduanales · Patente 3596 · Aduana 240
+ai@renatozapata.com`
+
+function buildAcuseRecibo({ contacto, documentos, trafico }) {
+  const docList = (documentos || []).map(d => `  • ${d}`).join('\n')
+  return {
+    subject: `Acuse de recibo${trafico ? ` — ${trafico}` : ''}`,
+    body: `Estimado(a) ${contacto || 'cliente'},
+
+Le confirmamos la recepción de los siguientes documentos:
+
+${docList || '  • Documentos adjuntos'}
+
+Los mismos han sido incorporados al expediente${trafico ? ` del tráfico ${trafico}` : ''} y se encuentran en proceso de revisión.
+
+${FIRMA}`,
+  }
+}
+
+function buildEstadoTrafico({ contacto, trafico, estatus, pedimento, fechaLlegada }) {
+  return {
+    subject: `Estado de tráfico ${trafico || ''}`,
+    body: `Estimado(a) ${contacto || 'cliente'},
+
+En respuesta a su consulta, el estado actual de su embarque:
+
+  Tráfico: ${trafico || '—'}
+  Estado: ${estatus || 'En proceso'}
+  ${pedimento ? `Pedimento: ${pedimento}` : 'Pedimento: En trámite'}
+  ${fechaLlegada ? `Fecha de llegada: ${fechaLlegada}` : ''}
+
+Consulte el estado en tiempo real: https://evco-portal.vercel.app
+
+${FIRMA}`,
+  }
+}
+
+function buildConfirmacionCruce({ contacto, trafico, pedimento, fechaCruce }) {
+  return {
+    subject: `Cruce confirmado — ${trafico || ''}`,
+    body: `Estimado(a) ${contacto || 'cliente'},
+
+Su embarque ha cruzado exitosamente:
+
+  Tráfico: ${trafico || '—'}
+  Pedimento: ${pedimento || '—'}
+  Fecha de cruce: ${fechaCruce || '—'}
+
+La documentación completa estará disponible en su portal.
+
+${FIRMA}`,
+  }
+}
+
 module.exports = {
   DOC_TYPE_LABELS,
   DOC_URGENCY_NOTES,
@@ -196,4 +255,8 @@ module.exports = {
   buildSolicitationEmail,
   buildSubject,
   buildTelegramSummary,
+  buildAcuseRecibo,
+  buildEstadoTrafico,
+  buildConfirmacionCruce,
+  FIRMA,
 }

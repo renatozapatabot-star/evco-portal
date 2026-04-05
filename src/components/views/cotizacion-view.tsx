@@ -32,10 +32,10 @@ function Row({ label, value, bold, highlight }: { label: string; value: string; 
 }
 
 export function CotizacionView() {
-  const [form, setForm] = useState({ valor_usd: '50000', tipo_cambio: '17.50', incoterm: 'EXW', flete_usd: '0', seguro_usd: '0', igi_rate: '5', regimen: 'A1', tmec: true })
-  const [result, setResult] = useState<any>(null)
+  const [form, setForm] = useState({ valor_usd: '50000', tipo_cambio: '17.50', incoterm: 'EXW', flete_usd: '0', seguro_usd: '0', igi_rate: '5', regimen: 'A1', tmec: true, fraccion: '', pais_origen: 'US', peso_kg: '', bultos: '' })
+  const [result, setResult] = useState<{ valorUSD: number; tc: number; valorAduanaMXN: number; dta: number; igi: number; iva: number; prev: number; total: number; igiRate: number; tmecSavings: number } | null>(null)
   const [rates, setRates] = useState<{ dta: number; iva: number; tc: number } | null>(null)
-  const set = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }))
+  const set = (k: string, v: string | boolean) => setForm(f => ({ ...f, [k]: v }))
 
   useEffect(() => {
     fetch('/api/rates').then(r => r.json()).then(d => {
@@ -111,6 +111,37 @@ export function CotizacionView() {
               <select value={form.regimen} onChange={e => set('regimen', e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }}>
                 <option value="A1">A1 — Definitiva</option><option value="IN">IN — IMMEX</option>
               </select>
+            </Field>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+            <Field label="Fracción Arancelaria">
+              <input type="text" value={form.fraccion} onChange={e => set('fraccion', e.target.value)} placeholder="3901.20.01" style={{ ...inputStyle, fontFamily: 'var(--font-mono)' }}
+                onFocus={e => e.target.style.borderColor = 'var(--amber-600)'} onBlur={e => e.target.style.borderColor = 'var(--border-primary)'} />
+            </Field>
+            <Field label="País de Origen">
+              <select value={form.pais_origen} onChange={e => { set('pais_origen', e.target.value); if (['US','CA','MX'].includes(e.target.value)) set('tmec', true) }} style={{ ...inputStyle, cursor: 'pointer' }}>
+                <option value="US">🇺🇸 Estados Unidos</option>
+                <option value="CA">🇨🇦 Canadá</option>
+                <option value="MX">🇲🇽 México</option>
+                <option value="CN">🇨🇳 China</option>
+                <option value="DE">🇩🇪 Alemania</option>
+                <option value="JP">🇯🇵 Japón</option>
+                <option value="KR">🇰🇷 Corea del Sur</option>
+                <option value="TW">🇹🇼 Taiwán</option>
+                <option value="XX">Otro</option>
+              </select>
+            </Field>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+            <Field label="Peso (kg)">
+              <input type="number" value={form.peso_kg} onChange={e => set('peso_kg', e.target.value)} placeholder="0" style={inputStyle}
+                onFocus={e => e.target.style.borderColor = 'var(--amber-600)'} onBlur={e => e.target.style.borderColor = 'var(--border-primary)'} />
+            </Field>
+            <Field label="Bultos">
+              <input type="number" value={form.bultos} onChange={e => set('bultos', e.target.value)} placeholder="0" style={inputStyle}
+                onFocus={e => e.target.style.borderColor = 'var(--amber-600)'} onBlur={e => e.target.style.borderColor = 'var(--border-primary)'} />
             </Field>
           </div>
 

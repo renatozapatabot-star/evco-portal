@@ -109,3 +109,19 @@
 - Expediente backfill: 0% → 63% EVCO coverage (3,523 rows normalized)
 - Dedup migration run: unique constraint on (referencia, clave_cliente) live
 - 47 companies confirmed in Supabase with correct claves
+
+### Foundation Complete (2026-04-05 early morning)
+- EVCO: 99.2% docs, 99.6% pedimentos, 100% suppliers, $35.8M verified
+- MAFESA: 98.3% docs, 100% pedimentos, 100% suppliers, $5.86M verified
+- 1,874 traficos enriched with real SAT merchandise descriptions
+- HMAC session validation (cookie forgery eliminated)
+- DB-backed rate limiting (survives cold starts)
+- AI audit logging with cost tracking
+- CRUZ AI parameterized per client (multi-tenant ready)
+- Role-based tool filtering (admin tools hidden from clients)
+- 400+ inline hex → CSS variables
+- 50+ any types → proper TypeScript types
+- Email pipeline switched from Qwen to Sonnet
+- All 11 dark-theme pages converted to warm light canvas
+- All PRV_ supplier codes resolved (0 remaining)
+- Touch targets + client nav stripping (in progress)

@@ -107,9 +107,11 @@ export const CLIENT_NAV: NavTopLevel[] = [
   { href: '/entradas',     label: 'Entradas',     icon: Package },
   { href: '/pedimentos',   label: 'Pedimentos',   icon: FileText },
   { href: '/documentos',   label: 'Documentos',   icon: FolderOpen },
+  { href: '/catalogo',     label: 'Catálogo',     icon: ClipboardList },
+  { href: '/anexo24',      label: 'Anexo 24',     icon: BookOpen },
   { href: '/financiero',   label: 'Financiero',   icon: DollarSign },
   { href: '/proveedores',  label: 'Proveedores',  icon: Users2 },
-  { href: '/cruz',         label: 'CRUZ AI',       icon: MessageSquare },
+  { href: '/cruz',         label: 'CRUZ AI',       icon: MessageSquare, gold: true },
 ]
 
 // ---------------------------------------------------------------------------
@@ -143,6 +145,7 @@ export const CLIENT_GROUPS: NavGroup[] = [
     children: [
       { href: '/financiero',    label: 'Financiero',    icon: DollarSign },
       { href: '/proveedores',   label: 'Proveedores',   icon: Users2 },
+      { href: '/facturacion',   label: 'Facturas',      icon: Receipt },
     ],
   },
 ]
@@ -189,7 +192,6 @@ export const ADMIN_ONLY_ROUTES = [
   '/revenue',
   '/intelligence',
   '/demo',
-  '/anexo24',
   '/mve',
   '/calendario',
   '/usmca',
@@ -230,8 +232,10 @@ export const CLIENT_ROUTES = [
   '/bodega',
   '/cruz',
   '/catalogo',
+  '/anexo24',
   '/exportar',
   '/bienvenida',
+  '/facturacion',
   '/login',
 ] as const
 

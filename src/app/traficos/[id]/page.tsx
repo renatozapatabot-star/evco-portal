@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useMemo } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Upload, Clock, FileText, Truck, BarChart3, Share2 } from 'lucide-react'
+import { ArrowLeft, Upload, FileText, Share2 } from 'lucide-react'
 import { fmtId, fmtDate, fmtDateTime, fmtUSD, fmtKg, fmtDesc, fmtMXNInt, fmtPedimentoShort, formatAbsoluteETA } from '@/lib/format-utils'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { GOLD } from '@/lib/design-system'
@@ -14,14 +14,11 @@ import { SolicitarModal } from '@/components/SolicitarModal'
 import { getMissingDocs, REQUIRED_DOC_TYPES } from '@/lib/documents'
 import { useToast } from '@/components/Toast'
 import { EmptyState } from '@/components/ui/EmptyState'
-import { calculateConfidence } from '@/lib/confidence'
 import { DocumentViewer } from '@/components/ui/DocumentViewer'
 import { ErrorCard } from '@/components/ui/ErrorCard'
 import { StickyActionBar } from '@/components/trafico/StickyActionBar'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
-
-type Tab = 'resumen' | 'documentos' | 'entradas' | 'timeline'
 
 interface Solicitud {
   id: string
@@ -77,7 +74,7 @@ function ProveedoresCard({ proveedores, pais, supplierLookup }: { proveedores: s
 }
 
 /* ═══════════════════════════════════════════════════════
-   TIMELINE TAB — real-time event feed
+   TIMELINE — real-time event feed
    ═══════════════════════════════════════════════════════ */
 
 interface TimelineEvent {
@@ -91,15 +88,15 @@ interface TimelineEvent {
 
 // Event type → color mapping (design system emotional colors)
 const EVENT_CONFIG: Record<string, { icon: string; color: string; bg: string }> = {
-  status_changed: { icon: '🔄', color: '#C4963C', bg: 'rgba(196,150,60,0.12)' },       // gold = in progress
-  doc_uploaded:   { icon: '📎', color: '#0D9488', bg: 'rgba(13,148,136,0.12)' },        // teal = completed/confirmed
+  status_changed: { icon: '🔄', color: '#C4963C', bg: 'rgba(196,150,60,0.12)' },
+  doc_uploaded:   { icon: '📎', color: '#0D9488', bg: 'rgba(13,148,136,0.12)' },
   doc_received:   { icon: '📥', color: '#0D9488', bg: 'rgba(13,148,136,0.12)' },
   crossed:        { icon: '🟢', color: '#16A34A', bg: 'rgba(22,163,74,0.12)' },
-  semaforo:       { icon: '🚦', color: '#7E22CE', bg: 'rgba(126,34,206,0.12)' },        // plum = regulatory
+  semaforo:       { icon: '🚦', color: '#7E22CE', bg: 'rgba(126,34,206,0.12)' },
   mve_filed:      { icon: '📋', color: '#7E22CE', bg: 'rgba(126,34,206,0.12)' },
   pedimento:      { icon: '📄', color: '#7E22CE', bg: 'rgba(126,34,206,0.12)' },
   cruz_ai:        { icon: '🦀', color: '#C4963C', bg: 'rgba(196,150,60,0.12)' },
-  note:           { icon: '💬', color: '#475569', bg: 'rgba(71,85,105,0.12)' },          // slate = info
+  note:           { icon: '💬', color: '#475569', bg: 'rgba(71,85,105,0.12)' },
   created:        { icon: '📦', color: '#C4963C', bg: 'rgba(196,150,60,0.12)' },
 }
 
@@ -181,10 +178,10 @@ function TimelineTab({ traficoId }: { traficoId: string }) {
       }}>
         <div style={{ fontSize: 48, lineHeight: 1, marginBottom: 16 }}>{'\uD83D\uDCC5'}</div>
         <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 8px' }}>
-          Sin eventos registrados aún
+          Sin eventos registrados aun
         </h3>
         <p style={{ fontSize: 14, color: 'var(--text-secondary)', margin: 0, maxWidth: 320, lineHeight: 1.5 }}>
-          Los eventos aparecerán aquí conforme el tráfico avanza
+          Los eventos apareceran aqui conforme el trafico avanza
         </p>
       </div>
     )
@@ -231,7 +228,7 @@ function TimelineTab({ traficoId }: { traficoId: string }) {
 }
 
 /* ═══════════════════════════════════════════════════════
-   TRÁFICO HUB — 4-tab detail page
+   TRAFICO HUB — single-page detail view
    ═══════════════════════════════════════════════════════ */
 export default function TraficoDetailPage() {
   const companyId = getCookieValue('company_id') ?? ''
@@ -250,7 +247,6 @@ export default function TraficoDetailPage() {
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState<string | null>(null)
   const [retryKey, setRetryKey] = useState(0)
-  const [activeTab, setActiveTab] = useState<Tab>('resumen')
   const [missingDocs, setMissingDocs] = useState<string[]>([])
   const [uploadingDoc, setUploadingDoc] = useState<string | null>(null)
   const [showSolicitarModal, setShowSolicitarModal] = useState(false)
@@ -264,7 +260,7 @@ export default function TraficoDetailPage() {
   // ── Upload handler (via /api/upload) ──
   const handleUpload = async (file: File | undefined, docType: string) => {
     if (!file) return
-    if (file.size > 10 * 1024 * 1024) { toast('Máximo 10MB', 'error'); return }
+    if (file.size > 10 * 1024 * 1024) { toast('Maximo 10MB', 'error'); return }
     if (!['application/pdf', 'image/jpeg', 'image/png', 'text/xml', 'application/xml'].includes(file.type)) {
       toast('Solo PDF, JPG, PNG, XML', 'error'); return
     }
@@ -326,15 +322,15 @@ export default function TraficoDetailPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: `Tráfico ${tId} recibió semáforo rojo — revisión en aduana requerida.`,
+          message: `Trafico ${tId} recibio semaforo rojo -- revision en aduana requerida.`,
           trafico_id: tId,
           type: 'semaforo_rojo',
         }),
       })
       const json = await res.json()
       if (json.error) { toast(json.error.message, 'error') }
-      else { toast('Notificación enviada por Telegram', 'success') }
-    } catch { toast('Error al enviar notificación', 'error') }
+      else { toast('Notificacion enviada por Telegram', 'success') }
+    } catch { toast('Error al enviar notificacion', 'error') }
     finally { setNotifying(false) }
   }
 
@@ -344,7 +340,7 @@ export default function TraficoDetailPage() {
     const url = `${window.location.origin}/share/${encodeURIComponent(tId)}`
     try {
       await navigator.clipboard.writeText(url)
-      toast('Enlace copiado · Funciona aunque el destinatario no haya iniciado sesión', 'success')
+      toast('Enlace copiado - Funciona aunque el destinatario no haya iniciado sesion', 'success')
     } catch {
       toast('No se pudo copiar el enlace', 'error')
     }
@@ -377,7 +373,7 @@ export default function TraficoDetailPage() {
       setCompleteness(match)
 
       setLoading(false)
-    }).catch(() => { setFetchError('No se pudo cargar el tráfico.'); setLoading(false) })
+    }).catch(() => { setFetchError('No se pudo cargar el trafico.'); setLoading(false) })
 
     // Fetch supplier name lookup for PRV_ code resolution
     fetch('/api/data?table=globalpc_proveedores&limit=5000')
@@ -409,18 +405,15 @@ export default function TraficoDetailPage() {
   const t = trafico as Record<string, any> | null
   const isCruzado = t ? ((t.estatus as string) || '').toLowerCase().includes('cruz') : false
   const isPagado = t ? ((t.estatus as string) || '').toLowerCase().includes('pagado') : false
-  const docCompleteness = Math.round((documentos.length / REQUIRED_DOC_TYPES.length) * 100)
   const regimen = t ? ((t.regimen as string) || '').toUpperCase() : ''
   const isTMEC = regimen === 'ITE' || regimen === 'ITR' || regimen === 'IMD'
-
-  // Estimated completion — uses average despacho time from bridge_intelligence
-  const fechaLlegada = t?.fecha_llegada as string | null
-  const [tiempoEstimado, similarCount, rangoMin, rangoMax] = useMemo(() => {
-    const AVG_DAYS = 5
-    const elapsed = fechaLlegada ? Math.max(0, (Date.now() - new Date(fechaLlegada).getTime()) / 86400000) : 0
-    const remaining = Math.max(0, Math.round((AVG_DAYS - elapsed) * 10) / 10)
-    return [remaining, 47, 2, 8]
-  }, [fechaLlegada])
+  // Compliance score: only count truly required docs, not receipts or artifacts
+  const docCompleteness = useMemo(() => {
+    const docs = documentos.map(d => ({ doc_type: String(d.document_type || d.doc_type || '') }))
+    const { calculateDocCompliance } = require('@/lib/documents')
+    const result = calculateDocCompliance(docs, { tmec: isTMEC })
+    return result.score
+  }, [documentos, isTMEC])
 
   // ── Grouped docs ──
   const groupedDocs = useMemo(() => {
@@ -432,14 +425,6 @@ export default function TraficoDetailPage() {
     }
     return groups
   }, [documentos])
-
-  // ── Tab config ──
-  const TABS: { key: Tab; label: string; icon: React.ReactNode; badge?: number }[] = [
-    { key: 'resumen', label: 'Resumen', icon: <BarChart3 size={14} /> },
-    { key: 'documentos', label: 'Documentos', icon: <FileText size={14} />, badge: documentos.length },
-    { key: 'entradas', label: 'Entradas', icon: <Truck size={14} />, badge: entradas.length },
-    { key: 'timeline', label: 'Timeline', icon: <Clock size={14} /> },
-  ]
 
   // ── 12-step timeline logic ──
   const getStepState = (stepNum: number): 'completed' | 'current' | 'pending' | 'blocked' => {
@@ -454,13 +439,13 @@ export default function TraficoDetailPage() {
 
   const steps = t ? [
     { num: 1, label: 'Documentos recibidos', detail: documentos.length > 0 ? `${documentos.length} docs vinculados` : 'Pendiente', date: t.fecha_llegada as string | null },
-    { num: 2, label: 'CRUZ procesó', detail: documentos.length > 0 ? `${documentos.length} docs · ${docCompleteness}%` : 'Pendiente', date: null },
+    { num: 2, label: 'CRUZ proceso', detail: documentos.length > 0 ? `${documentos.length} docs - ${docCompleteness}%` : 'Pendiente', date: null },
     { num: 3, label: 'Revisado y autorizado', detail: t.pedimento ? 'Patente 3596' : 'Pendiente', date: null },
     { num: 4, label: 'COVE generado', detail: t.pedimento ? 'Generado' : 'Pendiente', date: null },
     { num: 5, label: 'Previo', detail: 'No requerido', date: null },
     { num: 6, label: 'Pedimento transmitido', detail: t.pedimento ? fmtPedimentoShort(t.pedimento as string) : 'Pendiente', date: (t.fecha_transmision as string | null) || null },
     { num: 7, label: 'Pedimento pagado', detail: t.fecha_pago ? formatAbsoluteETA(t.fecha_pago as string) : 'Pendiente', date: (t.fecha_pago as string | null) || null },
-    { num: 8, label: 'Semáforo asignado', detail: (t.semaforo as number) === 0 ? 'Verde' : (t.semaforo as number) === 1 ? 'Rojo' : 'Pendiente', date: (t.fecha_modulacion as string | null) || null },
+    { num: 8, label: 'Semaforo asignado', detail: (t.semaforo as number) === 0 ? 'Verde' : (t.semaforo as number) === 1 ? 'Rojo' : 'Pendiente', date: (t.fecha_modulacion as string | null) || null },
     { num: 9, label: 'En cruce', detail: t.fecha_cruce ? formatAbsoluteETA(t.fecha_cruce as string) : 'Pendiente', date: (t.fecha_cruce as string | null) || null },
     { num: 10, label: 'Cruzado', detail: isCruzado && t.fecha_cruce ? formatAbsoluteETA(t.fecha_cruce as string) : 'Pendiente', date: isCruzado ? (t.fecha_cruce as string | null) : null },
     { num: 11, label: 'En ruta', detail: fmtCarrier(t.transportista_mexicano as string) || 'Por asignar', date: null },
@@ -487,29 +472,26 @@ export default function TraficoDetailPage() {
   if (!t) return (
     <div style={{ padding: 24 }}>
       <button onClick={() => router.push('/traficos')} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: 13 }}>
-        <ArrowLeft size={14} /> Volver a Tráficos
+        <ArrowLeft size={14} /> Volver a Traficos
       </button>
-      <EmptyState icon="🔍" title="Tráfico no encontrado" description="No se encontró un tráfico con este identificador" cta={{ label: 'Ver todos los tráficos', href: '/traficos' }} />
+      <EmptyState icon="🔍" title="Trafico no encontrado" description="No se encontro un trafico con este identificador" cta={{ label: 'Ver todos los traficos', href: '/traficos' }} />
     </div>
   )
 
-  // ── Semáforo color ──
+  // ── Semaforo color ──
   const semaforoColor = (t.semaforo as number) === 0 ? 'var(--success)' : (t.semaforo as number) === 1 ? 'var(--danger)' : null
 
   // ── Completeness data ──
-  const compScore = completeness?.score ?? docCompleteness
-  const compBlocking = completeness?.blocking_docs ?? missingDocs
-  const canFile = completeness?.can_file ?? false
   const canCross = completeness?.can_cross ?? false
 
   return (
     <div className="page-shell" style={{ maxWidth: 1200 }}>
       {/* ═══ BREADCRUMB ═══ */}
-      <nav aria-label="Navegación" style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16, fontSize: 12 }}>
+      <nav aria-label="Navegacion" style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16, fontSize: 12 }}>
         <Link href="/" style={{ color: 'var(--slate-400)', textDecoration: 'none', padding: '8px 4px' }}>Inicio</Link>
-        <span style={{ color: 'var(--slate-300)' }}>›</span>
-        <Link href="/traficos" style={{ color: 'var(--slate-400)', textDecoration: 'none', padding: '8px 4px' }}>Tráficos</Link>
-        <span style={{ color: 'var(--slate-300)' }}>›</span>
+        <span style={{ color: 'var(--slate-300)' }}>&#x203A;</span>
+        <Link href="/traficos" style={{ color: 'var(--slate-400)', textDecoration: 'none', padding: '8px 4px' }}>Traficos</Link>
+        <span style={{ color: 'var(--slate-300)' }}>&#x203A;</span>
         <span className="font-mono" style={{ color: 'var(--navy-900)', fontWeight: 600 }}>{fmtId(String(t?.trafico ?? decodeURIComponent(String(id))))}</span>
       </nav>
 
@@ -537,7 +519,7 @@ export default function TraficoDetailPage() {
         </div>
       )}
 
-      {/* ═══ SEMÁFORO ROJO ALERT (v2) ═══ */}
+      {/* ═══ SEMAFORO ROJO ALERT (v2) ═══ */}
       {(t.semaforo as number) === 1 && (
         <div style={{
           background: 'rgba(214, 69, 69, 0.1)',
@@ -551,7 +533,7 @@ export default function TraficoDetailPage() {
         }}>
           <span style={{ fontSize: 20 }}>🔴</span>
           <span style={{ flex: 1, fontSize: 'var(--text-body)', color: 'var(--danger-500)', fontWeight: 600 }}>
-            Semáforo rojo asignado — revisión en aduana
+            Semaforo rojo asignado -- revision en aduana
           </span>
           {isBroker && (
             <button
@@ -571,7 +553,7 @@ export default function TraficoDetailPage() {
                 transition: 'background 150ms',
               }}
             >
-              {notifying ? 'Enviando…' : 'Notificar a cliente'}
+              {notifying ? 'Enviando...' : 'Notificar a cliente'}
             </button>
           )}
         </div>
@@ -580,7 +562,7 @@ export default function TraficoDetailPage() {
       {/* ═══ HEADER ═══ */}
       <div style={{ marginBottom: 24 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-          {/* Tráfico number — large, gold, JetBrains Mono */}
+          {/* Trafico number -- large, gold, JetBrains Mono */}
           <h1 style={{
             fontFamily: 'var(--font-mono)',
             fontSize: isMobile ? 24 : 32,
@@ -614,7 +596,7 @@ export default function TraficoDetailPage() {
             </span>
           ) : (
             <span style={{ fontSize: 12, color: 'var(--slate-400)', fontStyle: 'italic' }}>
-              Pedimento en trámite
+              Pedimento en tramite
             </span>
           )}
 
@@ -637,7 +619,7 @@ export default function TraficoDetailPage() {
             {String(t.estatus ?? 'En Proceso')}
           </span>
 
-          {/* Semáforo indicator */}
+          {/* Semaforo indicator */}
           {semaforoColor && (
             <span style={{
               display: 'inline-flex', alignItems: 'center', gap: 4,
@@ -656,7 +638,7 @@ export default function TraficoDetailPage() {
           <button
             onClick={handleShare}
             title="Copiar enlace para compartir"
-            aria-label="Compartir enlace al tráfico"
+            aria-label="Compartir enlace al trafico"
             style={{
               display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
               gap: 6, padding: '8px 14px', minHeight: 60,
@@ -680,397 +662,219 @@ export default function TraficoDetailPage() {
         ) : null}
       </div>
 
-      {/* ═══ TABS ═══ */}
-      <div className="tab-bar">
-        {TABS.map(tab => (
-          <button key={tab.key} onClick={() => setActiveTab(tab.key)}
-            className={`tab-btn ${activeTab === tab.key ? 'active' : ''}`}>
-            {tab.icon}
-            {tab.label}
-            {tab.badge !== undefined && tab.badge > 0 && (
-              <span className={`tab-badge ${activeTab === tab.key ? 'active' : ''}`}>{tab.badge}</span>
-            )}
-          </button>
-        ))}
-      </div>
+      {/* ═══ RESUMEN ═══ */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
-      {/* ═══════════════════════════════════════════
-          TAB 1 — RESUMEN
-         ═══════════════════════════════════════════ */}
-      {activeTab === 'resumen' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-
-          {/* ── Key Stats Row ── */}
-          {(() => {
-            const valorUSD = Number(t.importe_total) || 0
-            const tcVal = Number(t.tipo_cambio) || 0
-            const valorMXNStr = valorUSD > 0 && tcVal > 0 ? `(≈${fmtMXNInt(Math.round(valorUSD * tcVal))} MXN)` : ''
-            return (
-          <div className="kpi-grid" style={{ gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)', gap: 12 }}>
-            {((): { label: string; value: string; mono: boolean }[] => {
-              // Fall back to linked entradas for bultos/peso if tráfico fields are empty
-              const entradaBultos = entradas.reduce((sum, e) => sum + (Number((e as Record<string, unknown>).cantidad_bultos) || 0), 0)
-              const entradaPeso = entradas.reduce((sum, e) => sum + (Number((e as Record<string, unknown>).peso_bruto) || 0), 0)
-              const valor = valorUSD > 0 ? fmtUSD(valorUSD) + ' USD' : 'Pendiente'
-              const peso = t.peso_bruto ? fmtKg(Number(t.peso_bruto)) + ' kg' : entradaPeso > 0 ? fmtKg(entradaPeso) + ' kg' : 'Pendiente'
-              const bultos = t.bultos ?? t.cantidad_bultos ?? (entradaBultos > 0 ? entradaBultos : null)
-              return [
-                { label: 'Valor', value: valor, mono: true },
-                { label: 'Peso Bruto', value: peso, mono: true },
-                { label: 'Bultos', value: String(bultos ?? 'Pendiente'), mono: true },
-                { label: 'Fecha Llegada', value: t.fecha_llegada ? fmtDate(String(t.fecha_llegada)) : 'Pendiente', mono: true },
-                { label: 'Aduana', value: String(t.aduana ?? (t.oficina ? t.oficina : '240 · Nuevo Laredo')), mono: false },
-                { label: 'Régimen', value: String(t.regimen ?? 'A1 · Definitivo'), mono: false },
-                ...(t.fraccion_arancelaria ? [{ label: 'Fracción', value: String(t.fraccion_arancelaria), mono: true }] : []),
-              ]
-            })().map(stat => (
-              <div key={stat.label} className="kpi-card" style={{ padding: '14px 16px' }}>
-                <div className="kpi-card-label">{stat.label}</div>
-                <div style={{
-                  fontSize: stat.value === 'Pendiente' ? 13 : 15,
-                  fontWeight: stat.value === 'Pendiente' ? 500 : 700,
-                  color: stat.value === 'Pendiente' ? 'var(--slate-400)' : 'var(--navy-900)',
-                  fontStyle: stat.value === 'Pendiente' ? 'italic' : undefined,
-                  fontFamily: stat.mono && stat.value !== 'Pendiente' ? 'var(--font-mono)' : undefined,
-                  marginTop: 4,
-                }}>
-                  {String(stat.value)}
-                </div>
-                {stat.label === 'Valor' && valorMXNStr && (
-                  <div style={{ fontSize: 11, color: 'var(--slate-400)', fontFamily: 'var(--font-mono)', marginTop: 2 }}>{valorMXNStr}</div>
-                )}
-                {stat.label === 'Fracción' && stat.value !== 'Pendiente' && (
-                  <Link href={`/catalogo?search=${encodeURIComponent(stat.value)}`} style={{ fontSize: 10, color: 'var(--info, #2563EB)', textDecoration: 'none', marginTop: 2, display: 'block' }}>Ver en catálogo →</Link>
-                )}
+        {/* ── Key Stats Row ── */}
+        {(() => {
+          const valorUSD = Number(t.importe_total) || 0
+          const tcVal = Number(t.tipo_cambio) || 0
+          const valorMXNStr = valorUSD > 0 && tcVal > 0 ? `(~${fmtMXNInt(Math.round(valorUSD * tcVal))} MXN)` : ''
+          return (
+        <div className="kpi-grid" style={{ gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)', gap: 12 }}>
+          {((): { label: string; value: string; mono: boolean }[] => {
+            // Fall back to linked entradas for bultos/peso if trafico fields are empty
+            const entradaBultos = entradas.reduce((sum, e) => sum + (Number((e as Record<string, unknown>).cantidad_bultos) || 0), 0)
+            const entradaPeso = entradas.reduce((sum, e) => sum + (Number((e as Record<string, unknown>).peso_bruto) || 0), 0)
+            const valor = valorUSD > 0 ? fmtUSD(valorUSD) + ' USD' : 'Pendiente'
+            const peso = t.peso_bruto ? fmtKg(Number(t.peso_bruto)) + ' kg' : entradaPeso > 0 ? fmtKg(entradaPeso) + ' kg' : 'Pendiente'
+            const bultos = t.bultos ?? t.cantidad_bultos ?? (entradaBultos > 0 ? entradaBultos : null)
+            return [
+              { label: 'Valor', value: valor, mono: true },
+              { label: 'Peso Bruto', value: peso, mono: true },
+              { label: 'Bultos', value: String(bultos ?? 'Pendiente'), mono: true },
+              { label: 'Fecha Llegada', value: t.fecha_llegada ? fmtDate(String(t.fecha_llegada)) : 'Pendiente', mono: true },
+              { label: 'Aduana', value: String(t.aduana ?? (t.oficina ? t.oficina : '240 - Nuevo Laredo')), mono: false },
+              { label: 'Regimen', value: String(t.regimen ?? 'A1 - Definitivo'), mono: false },
+              ...(t.fraccion_arancelaria ? [{ label: 'Fraccion', value: String(t.fraccion_arancelaria), mono: true }] : []),
+            ]
+          })().map(stat => (
+            <div key={stat.label} className="kpi-card" style={{ padding: '14px 16px' }}>
+              <div className="kpi-card-label">{stat.label}</div>
+              <div style={{
+                fontSize: stat.value === 'Pendiente' ? 13 : 15,
+                fontWeight: stat.value === 'Pendiente' ? 500 : 700,
+                color: stat.value === 'Pendiente' ? 'var(--slate-400)' : 'var(--navy-900)',
+                fontStyle: stat.value === 'Pendiente' ? 'italic' : undefined,
+                fontFamily: stat.mono && stat.value !== 'Pendiente' ? 'var(--font-mono)' : undefined,
+                marginTop: 4,
+              }}>
+                {String(stat.value)}
               </div>
-            ))}
-          </div>
-            )
-          })()}
-
-          {/* ── Completeness Ring ── */}
-          <div className="card" style={{ padding: 20 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
-              {/* Circular progress ring */}
-              <div style={{ position: 'relative', width: 64, height: 64, flexShrink: 0 }}>
-                <svg width="64" height="64" style={{ transform: 'rotate(-90deg)' }}>
-                  <circle cx="32" cy="32" r="28" stroke="#E5E7EB" strokeWidth="4" fill="none" />
-                  <circle cx="32" cy="32" r="28"
-                    stroke={compScore === 100 ? 'var(--success)' : compScore > 50 ? 'var(--gold)' : 'var(--danger)'}
-                    strokeWidth="4" fill="none"
-                    strokeDasharray={`${compScore * 1.759} 175.9`}
-                    strokeLinecap="round"
-                    style={{ animation: 'ringFill 800ms ease-out forwards' }}
-                  />
-                </svg>
-                <span style={{
-                  position: 'absolute', inset: 0,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 13, fontWeight: 800, color: 'var(--text-primary, #111)',
-                  fontFamily: 'var(--font-mono)',
-                }}>
-                  {compScore}%
-                </span>
-              </div>
-              <div>
-                <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--navy-900)' }}>
-                  Completitud Documental
-                </div>
-                <div style={{ fontSize: 12, color: 'var(--slate-500)', marginTop: 2 }}>
-                  {documentos.length} de {REQUIRED_DOC_TYPES.length} documentos
-                </div>
-              </div>
+              {stat.label === 'Valor' && valorMXNStr && (
+                <div style={{ fontSize: 11, color: 'var(--slate-400)', fontFamily: 'var(--font-mono)', marginTop: 2 }}>{valorMXNStr}</div>
+              )}
+              {stat.label === 'Fraccion' && stat.value !== 'Pendiente' && (
+                <Link href={`/catalogo?search=${encodeURIComponent(stat.value)}`} style={{ fontSize: 10, color: 'var(--info, #2563EB)', textDecoration: 'none', marginTop: 2, display: 'block' }}>Ver en catalogo &#x2192;</Link>
+              )}
             </div>
+          ))}
+        </div>
+          )
+        })()}
 
-            {/* Can file / Can cross indicators */}
-            <div style={{ display: 'flex', gap: 16, marginBottom: (compBlocking?.length ?? 0) > 0 ? 16 : 0, flexWrap: 'wrap' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{
-                  width: 20, height: 20, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 11, fontWeight: 700,
-                  background: canFile ? 'var(--success-bg)' : 'var(--danger-bg)',
-                  color: canFile ? 'var(--success)' : 'var(--danger)',
-                  border: canFile ? '1px solid #BBF7D0' : '1px solid rgba(194,59,34,0.2)',
-                }}>
-                  {canFile ? '✓' : '✗'}
-                </span>
-                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--slate-700)' }}>
-                  Listo para despachar
-                </span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{
-                  width: 20, height: 20, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 11, fontWeight: 700,
-                  background: canCross ? 'var(--success-bg)' : 'var(--danger-bg)',
-                  color: canCross ? 'var(--success)' : 'var(--danger)',
-                  border: canCross ? '1px solid #BBF7D0' : '1px solid rgba(194,59,34,0.2)',
-                }}>
-                  {canCross ? '✓' : '✗'}
-                </span>
-                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--slate-700)' }}>
-                  Listo para cruce
-                </span>
-              </div>
+        {/* ── Ready to Cross Action ── */}
+        <div className="card" style={{ padding: 20, textAlign: 'center' }}>
+          {isCruzado ? (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, color: 'var(--success)', fontSize: 16, fontWeight: 700 }}>
+              <span style={{ fontSize: 20 }}>&#x2713;</span> Cruzado
             </div>
-
-            {/* Blocking docs — tap to upload */}
-            {(compBlocking?.length ?? 0) > 0 && (
-              <div style={{ padding: '10px 14px', background: 'var(--danger-bg)', border: '1px solid rgba(194,59,34,0.15)', borderRadius: 8 }}>
-                <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--danger-text)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>
-                  Documentos Bloqueantes ({compBlocking?.length ?? 0}) · Toca para subir
-                </div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                  {(compBlocking ?? []).map(doc => (
-                    <label key={doc} style={{
-                      fontSize: 11, fontWeight: 600, padding: '6px 14px',
-                      borderRadius: 9999, background: 'var(--bg-card)',
-                      color: uploadingDoc === doc ? 'var(--gold)' : 'var(--danger-text)',
-                      border: '1px solid rgba(194,59,34,0.2)',
-                      cursor: uploadingDoc === doc ? 'wait' : 'pointer',
-                      display: 'inline-flex', alignItems: 'center', gap: 4,
-                      minHeight: 60, transition: 'background 150ms',
-                    }}>
-                      {uploadingDoc === doc ? (
-                        'Subiendo…'
-                      ) : (
-                        <>
-                          <Upload size={12} />
-                          {doc}
-                          <input
-                            type="file"
-                            accept=".pdf,.jpg,.jpeg,.png,.xml"
-                            style={{ display: 'none' }}
-                            onChange={e => handleUpload(e.target.files?.[0], doc)}
-                          />
-                        </>
-                      )}
-                    </label>
-                  ))}
-                </div>
+          ) : canCross ? (
+            <button style={{
+              width: '100%', padding: '16px 24px', minHeight: 60,
+              background: 'var(--success)', color: 'white',
+              border: 'none', borderRadius: 12, fontSize: 16, fontWeight: 700,
+              cursor: 'pointer', transition: 'background 150ms',
+            }}>
+              Listo para Cruzar
+            </button>
+          ) : (
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>
+                {missingDocs.length > 0 ? `${missingDocs.length} documento${missingDocs.length !== 1 ? 's' : ''} pendiente${missingDocs.length !== 1 ? 's' : ''}` : 'En proceso'}
               </div>
-            )}
-          </div>
-
-          {/* ── Proveedores ── */}
-          <ProveedoresCard proveedores={String(t.proveedores ?? '')} pais={String(t.pais_procedencia ?? '')} supplierLookup={supplierLookup} />
-
-          {/* ── Confidence Score ── */}
-          {t && (() => {
-            const conf = calculateConfidence(t as Record<string, unknown>)
-            return (
-              <div className="card" style={{ padding: '16px 20px', marginBottom: 16 }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-                  <div>
-                    <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#9B9B9B' }}>
-                      Certeza del embarque
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginTop: 4 }}>
-                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 28, fontWeight: 800, color: conf.color }}>
-                        {conf.score}%
-                      </span>
-                      <span style={{ fontSize: 12, fontWeight: 700, color: conf.color }}>{conf.label}</span>
-                    </div>
-                  </div>
-                  <div style={{ width: 48, height: 48, borderRadius: '50%', border: `3px solid ${conf.color}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 14, fontWeight: 800, color: conf.color }}>{conf.score}</span>
-                  </div>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                  {conf.factors.map(f => (
-                    <div key={f.label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 12 }}>
-                      <span style={{ color: f.met ? '#1A1A1A' : '#9B9B9B' }}>
-                        {f.met ? '✓' : '✗'} {f.label}
-                      </span>
-                      <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: f.met ? '#16A34A' : '#DC2626' }}>
-                        {f.met ? `+${f.points}` : `-${f.points}`}
-                      </span>
-                    </div>
-                  ))}
-                </div>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                {t.pedimento ? 'Pedimento transmitido' : 'Pedimento en tramite'}
               </div>
-            )
-          })()}
-
-          {/* ── Crossing Prediction ── */}
-          <CrossingPrediction />
-
-          {/* ── Estimated Completion + Share ── */}
-          {!(t.estatus || '').toLowerCase().includes('cruz') && t.fecha_llegada && (
-            <div className="card" style={{ padding: '16px 20px', marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-              <div>
-                <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--slate-400)', marginBottom: 4 }}>
-                  Tiempo estimado restante
-                </div>
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: 20, fontWeight: 800, color: tiempoEstimado <= 3 ? 'var(--success)' : tiempoEstimado <= 7 ? '#C4963C' : 'var(--danger)' }}>
-                  {tiempoEstimado > 0 ? `${tiempoEstimado} días` : '< 1 día'}
-                </div>
-                <div style={{ fontSize: 11, color: 'var(--slate-400)', marginTop: 2 }}>
-                  Basado en {similarCount} tráficos similares · {rangoMin}–{rangoMax} días
-                </div>
-              </div>
-              <button
-                onClick={() => {
-                  const url = `${window.location.origin}/share/${encodeURIComponent(t.trafico)}`
-                  navigator.clipboard.writeText(url).then(() => {
-                    toast('Enlace copiado al portapapeles', 'success')
-                  })
-                }}
-                style={{
-                  padding: '10px 16px', borderRadius: 8, fontSize: 13, fontWeight: 700,
-                  background: 'var(--bg-card)', border: '1px solid #E8E5E0',
-                  cursor: 'pointer', color: 'var(--text-primary)', minHeight: 48,
-                  display: 'flex', alignItems: 'center', gap: 6,
-                }}
-              >
-                🔗 Compartir
-              </button>
             </div>
           )}
+        </div>
 
-          {/* ── 12-Step Timeline ── */}
-          <div className="card" style={{ padding: 20 }}>
-            <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--slate-400)', marginBottom: 16 }}>
-              Estado del Tráfico
-            </div>
-            <ol style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-              {steps.map((step, i) => {
-                const state = getStepState(step.num)
-                const isLast = i === steps.length - 1
-                const dotColor = state === 'completed' ? 'var(--success-500)' : state === 'current' ? 'var(--sand-400, #C4A96A)' : state === 'blocked' ? 'var(--danger-500)' : 'var(--slate-200)'
-                const textColor = state === 'completed' ? 'var(--slate-600)' : state === 'current' ? 'var(--navy-900)' : state === 'blocked' ? 'var(--danger-500)' : 'var(--slate-400)'
-                const lineColor = state === 'completed' ? 'var(--success-500)' : 'var(--slate-200)'
-                const detailColor = step.num === 8 && step.detail === 'Verde' ? 'var(--success)'
-                  : step.num === 8 && step.detail === 'Rojo' ? 'var(--danger)'
-                  : step.num === 10 && state === 'completed' ? 'var(--teal)'
-                  : 'var(--slate-500)'
+        {/* ── Proveedores ── */}
+        <ProveedoresCard proveedores={String(t.proveedores ?? '')} pais={String(t.pais_procedencia ?? '')} supplierLookup={supplierLookup} />
 
-                return (
-                  <li key={step.num} style={{ display: 'flex', gap: 12, position: 'relative', paddingBottom: isLast ? 0 : 14, minHeight: 60 }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 20, flexShrink: 0 }}>
-                      <div style={{
-                        width: state === 'current' ? 14 : 10, height: state === 'current' ? 14 : 10,
-                        borderRadius: '50%', flexShrink: 0,
-                        background: state === 'pending' ? 'transparent' : dotColor,
-                        border: state === 'pending' ? '2px solid var(--slate-200)' : 'none',
-                        animation: state === 'current' ? 'cruzActivePulse 2s ease-in-out infinite' : undefined,
-                      }} />
-                      {!isLast && <div style={{ width: 2, flex: 1, background: lineColor, marginTop: 4 }} />}
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: textColor, lineHeight: 1.3 }}>
-                        {step.num}. {step.label}
-                        {step.num === 10 && state === 'completed' && ' ✅'}
-                      </div>
-                      <div style={{
-                        fontSize: 11, color: detailColor, marginTop: 2,
-                        fontFamily: step.num === 6 || step.num === 7 || step.num === 9 ? 'var(--font-mono)' : undefined,
-                      }}>
-                        {step.detail}
-                      </div>
-                      {step.date && state === 'completed' && (
-                        <div style={{ fontSize: 10, color: 'var(--slate-400)', fontFamily: 'var(--font-mono)', marginTop: 2 }}>
-                          {fmtDateTime(step.date)}
-                        </div>
-                      )}
-                    </div>
-                  </li>
-                )
-              })}
-            </ol>
+        {/* ── 12-Step Timeline ── */}
+        <div className="card" style={{ padding: 20 }}>
+          <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--slate-400)', marginBottom: 16 }}>
+            Estado del Trafico
           </div>
+          <ol style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+            {steps.map((step, i) => {
+              const state = getStepState(step.num)
+              const isLast = i === steps.length - 1
+              const dotColor = state === 'completed' ? 'var(--success-500)' : state === 'current' ? 'var(--sand-400, #C4A96A)' : state === 'blocked' ? 'var(--danger-500)' : 'var(--slate-200)'
+              const textColor = state === 'completed' ? 'var(--slate-600)' : state === 'current' ? 'var(--navy-900)' : state === 'blocked' ? 'var(--danger-500)' : 'var(--slate-400)'
+              const lineColor = state === 'completed' ? 'var(--success-500)' : 'var(--slate-200)'
+              const detailColor = step.num === 8 && step.detail === 'Verde' ? 'var(--success)'
+                : step.num === 8 && step.detail === 'Rojo' ? 'var(--danger)'
+                : step.num === 10 && state === 'completed' ? 'var(--teal)'
+                : 'var(--slate-500)'
 
-          {/* ── Financiero summary ── */}
-          {Number(t.importe_total) > 0 && (() => {
-            const val = Number(t.importe_total) || 0
-            const tc = Number(t.tipo_cambio) || 0
-            const valMXN = val * tc
-            const dta = rates ? Math.round(valMXN * rates.dta) : 0
-            const igi = 0
-            const ivaBase = valMXN + dta + igi
-            const iva = rates ? Math.round(ivaBase * rates.iva) : 0
-            const total = dta + igi + iva
-
-            return (
-              <div className="card" style={{ padding: 20 }}>
-                <div className="detail-label">
-                  Resumen Financiero
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12 }}>
-                  {[
-                    { label: 'Valor Factura', value: fmtUSD(val) + ' USD' },
-                    { label: 'Tipo de Cambio', value: tc ? `$${tc.toFixed(4)} MXN/USD` : 'Pendiente' },
-                    { label: 'DTA', value: val && tc ? fmtMXNInt(dta) + ' MXN' : 'Pendiente' },
-                    { label: 'IGI', value: '$0 MXN', tmec: true },
-                    { label: 'IVA (16%)', value: val && tc ? fmtMXNInt(iva) + ' MXN' : 'Pendiente' },
-                    { label: 'Total Contribuciones', value: val && tc ? fmtMXNInt(total) + ' MXN' : 'Pendiente', highlight: true },
-                  ].map(row => (
-                    <div key={row.label} style={{
-                      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                      padding: '8px 12px', borderRadius: 6,
-                      background: row.highlight ? 'var(--gold-50, #FDFAEF)' : 'var(--slate-50)',
-                    }}>
-                      <span style={{ fontSize: 12, color: 'var(--slate-600)' }}>{row.label}</span>
-                      <span style={{
-                        fontSize: 13, fontWeight: 700,
-                        fontFamily: 'var(--font-mono)',
-                        color: row.highlight ? 'var(--gold-700, #8B6914)' : 'var(--navy-900)',
-                        display: 'flex', alignItems: 'center', gap: 6,
-                      }}>
-                        {row.value}
-                        {'tmec' in row && (row as { tmec?: boolean }).tmec && (
-                          <span title="Exento por T-MEC" style={{
-                            fontSize: 10, fontWeight: 700, padding: '1px 6px',
-                            background: 'var(--green-50, #F0FDF4)', color: 'var(--green-600, #16A34A)',
-                            borderRadius: 4, fontFamily: 'var(--font-sans)',
-                          }}>✓ T-MEC</span>
-                        )}
-                      </span>
+              return (
+                <li key={step.num} style={{ display: 'flex', gap: 12, position: 'relative', paddingBottom: isLast ? 0 : 14, minHeight: 60 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 20, flexShrink: 0 }}>
+                    <div style={{
+                      width: state === 'current' ? 14 : 10, height: state === 'current' ? 14 : 10,
+                      borderRadius: '50%', flexShrink: 0,
+                      background: state === 'pending' ? 'transparent' : dotColor,
+                      border: state === 'pending' ? '2px solid var(--slate-200)' : 'none',
+                      animation: state === 'current' ? 'cruzActivePulse 2s ease-in-out infinite' : undefined,
+                    }} />
+                    {!isLast && <div style={{ width: 2, flex: 1, background: lineColor, marginTop: 4 }} />}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: textColor, lineHeight: 1.3 }}>
+                      {step.num}. {step.label}
+                      {step.num === 10 && state === 'completed' && ' ✅'}
                     </div>
-                  ))}
-                </div>
-                <div style={{ marginTop: 8, fontSize: 11, color: 'var(--slate-400)' }}>
-                  Estimado · Los montos oficiales se confirman tras la transmisión del pedimento
-                </div>
-                {t.pedimento && documentos.some(d => (d.document_type as string)?.includes('pedimento')) && (
-                  <button onClick={() => {
-                    const pedDoc = documentos.find(d => (d.document_type as string)?.includes('pedimento') && d.file_url)
-                    if (pedDoc?.file_url) window.open(pedDoc.file_url as string, '_blank')
-                    else toast('Pedimento PDF no disponible aún', 'error')
-                  }}
-                    style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, color: 'var(--gold-dark, #8B6914)', background: 'rgba(196,150,60,0.08)', border: '1px solid rgba(196,150,60,0.2)', borderRadius: 8, padding: '8px 14px', cursor: 'pointer', minHeight: 60 }}>
-                    <FileText size={14} /> Descargar Pedimento
-                  </button>
-                )}
-              </div>
-            )
-          })()}
+                    <div style={{
+                      fontSize: 11, color: detailColor, marginTop: 2,
+                      fontFamily: step.num === 6 || step.num === 7 || step.num === 9 ? 'var(--font-mono)' : undefined,
+                    }}>
+                      {step.detail}
+                    </div>
+                    {step.date && state === 'completed' && (
+                      <div style={{ fontSize: 10, color: 'var(--slate-400)', fontFamily: 'var(--font-mono)', marginTop: 2 }}>
+                        {fmtDateTime(step.date)}
+                      </div>
+                    )}
+                  </div>
+                </li>
+              )
+            })}
+          </ol>
+        </div>
 
-          {/* ── Transportista ── */}
-          {(t.transportista_mexicano || t.transportista_extranjero) ? (
+        {/* ── Financiero summary ── */}
+        {Number(t.importe_total) > 0 && (() => {
+          const val = Number(t.importe_total) || 0
+          const tc = Number(t.tipo_cambio) || 0
+          const valMXN = val * tc
+          const dta = rates ? Math.round(valMXN * rates.dta) : 0
+          const igi = 0
+          const ivaBase = valMXN + dta + igi
+          const iva = rates ? Math.round(ivaBase * rates.iva) : 0
+          const total = dta + igi + iva
+
+          return (
             <div className="card" style={{ padding: 20 }}>
               <div className="detail-label">
-                Transporte
+                Resumen Financiero
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12 }}>
-                <div>
-                  <div style={{ fontSize: 11, color: 'var(--slate-400)', marginBottom: 2 }}>Transportista MX</div>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--navy-900)' }}>{fmtCarrier(t.transportista_mexicano as string) || 'Por asignar'}</div>
-                </div>
-                <div>
-                  <div style={{ fontSize: 11, color: 'var(--slate-400)', marginBottom: 2 }}>Transportista EXT</div>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--navy-900)' }}>{fmtCarrier(t.transportista_extranjero as string) || 'Por asignar'}</div>
-                </div>
+                {[
+                  { label: 'Valor Factura', value: fmtUSD(val) + ' USD' },
+                  { label: 'Tipo de Cambio', value: tc ? `$${tc.toFixed(4)} MXN/USD` : 'Pendiente' },
+                  { label: 'DTA', value: val && tc ? fmtMXNInt(dta) + ' MXN' : 'Pendiente' },
+                  { label: 'IGI', value: '$0 MXN', tmec: true },
+                  { label: 'IVA (16%)', value: val && tc ? fmtMXNInt(iva) + ' MXN' : 'Pendiente' },
+                  { label: 'Total Contribuciones', value: val && tc ? fmtMXNInt(total) + ' MXN' : 'Pendiente', highlight: true },
+                ].map(row => (
+                  <div key={row.label} style={{
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                    padding: '8px 12px', borderRadius: 6,
+                    background: row.highlight ? 'var(--gold-50, #FDFAEF)' : 'var(--slate-50)',
+                  }}>
+                    <span style={{ fontSize: 12, color: 'var(--slate-600)' }}>{row.label}</span>
+                    <span style={{
+                      fontSize: 13, fontWeight: 700,
+                      fontFamily: 'var(--font-mono)',
+                      color: row.highlight ? 'var(--gold-700, #8B6914)' : 'var(--navy-900)',
+                      display: 'flex', alignItems: 'center', gap: 6,
+                    }}>
+                      {row.value}
+                      {'tmec' in row && (row as { tmec?: boolean }).tmec && (
+                        <span title="Exento por T-MEC" style={{
+                          fontSize: 10, fontWeight: 700, padding: '1px 6px',
+                          background: 'var(--green-50, #F0FDF4)', color: 'var(--green-600, #16A34A)',
+                          borderRadius: 4, fontFamily: 'var(--font-sans)',
+                        }}>&#x2713; T-MEC</span>
+                      )}
+                    </span>
+                  </div>
+                ))}
               </div>
+              <div style={{ marginTop: 8, fontSize: 11, color: 'var(--slate-400)' }}>
+                Estimado - Los montos oficiales se confirman tras la transmision del pedimento
+              </div>
+              {t.pedimento && documentos.some(d => (d.document_type as string)?.includes('pedimento')) && (
+                <button onClick={() => {
+                  const pedDoc = documentos.find(d => (d.document_type as string)?.includes('pedimento') && d.file_url)
+                  if (pedDoc?.file_url) window.open(pedDoc.file_url as string, '_blank')
+                  else toast('Pedimento PDF no disponible aun', 'error')
+                }}
+                  style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, color: 'var(--gold-dark, #8B6914)', background: 'rgba(196,150,60,0.08)', border: '1px solid rgba(196,150,60,0.2)', borderRadius: 8, padding: '8px 14px', cursor: 'pointer', minHeight: 60 }}>
+                  <FileText size={14} /> Descargar Pedimento
+                </button>
+              )}
             </div>
-          ) : null}
-        </div>
-      )}
+          )
+        })()}
 
-      {/* ═══════════════════════════════════════════
-          TAB 2 — DOCUMENTOS
-         ═══════════════════════════════════════════ */}
-      {activeTab === 'documentos' && (
+        {/* ── Transporte ── */}
+        {entradas.length > 0 && (
+          <div className="card" style={{ padding: '16px 20px' }}>
+            <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 6 }}>Transporte</div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>
+              {fmtCarrier((entradas[0] as Record<string, unknown>).transportista_mexicano as string) || fmtCarrier((entradas[0] as Record<string, unknown>).transportista_americano as string) || 'No registrado'}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ═══ DOCUMENTOS ═══ */}
+      <div style={{ marginTop: 32 }}>
+        <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--navy-900)', marginBottom: 16 }}>Documentos</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {/* Solicitar button */}
           {missingDocs.length > 0 && !solicitadoOk && (
@@ -1084,7 +888,7 @@ export default function TraficoDetailPage() {
                 color: 'var(--bg-card)', cursor: 'pointer', minHeight: 60,
               }}
             >
-              Solicitar {missingDocs.length} documentos faltantes →
+              Solicitar {missingDocs.length} documentos faltantes &#x2192;
             </button>
           )}
           {solicitadoOk && (
@@ -1094,7 +898,7 @@ export default function TraficoDetailPage() {
               background: 'var(--success-bg)', color: 'var(--success)', border: '1px solid #BBF7D0',
               minHeight: 60, display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
-              ✓ Documentos solicitados
+              &#x2713; Documentos solicitados
             </div>
           )}
 
@@ -1172,7 +976,7 @@ export default function TraficoDetailPage() {
                               setViewerIndex(idx >= 0 ? idx : 0)
                             }}
                             style={{ fontSize: 11, color: GOLD, fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0, minHeight: 60, display: 'flex', alignItems: 'center', paddingLeft: 8 }}>
-                            Ver →
+                            Ver &#x2192;
                           </button>
                         ) : null}
                       </div>
@@ -1182,7 +986,7 @@ export default function TraficoDetailPage() {
               </div>
             ))
           ) : missingDocs.length === 0 ? (
-            <EmptyState icon="📄" title="Sin documentos" description="Los documentos vinculados a este tráfico aparecerán aquí" />
+            <EmptyState icon="📄" title="Sin documentos" description="Los documentos vinculados a este trafico apareceran aqui" />
           ) : null}
 
           {/* Document Viewer Modal */}
@@ -1227,7 +1031,7 @@ export default function TraficoDetailPage() {
                         </div>
                         <div style={{ fontSize: 11, color: 'var(--slate-500)', fontFamily: 'var(--font-mono)', marginTop: 2 }}>
                           Solicitado {fmtDate(sol.solicitado_at)}
-                          {sol.deadline && <> · Plazo: {fmtDate(sol.deadline)}</>}
+                          {sol.deadline && <> - Plazo: {fmtDate(sol.deadline)}</>}
                         </div>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
@@ -1244,7 +1048,7 @@ export default function TraficoDetailPage() {
                           background: 'var(--success-bg)', color: 'var(--success)', border: '1px solid #BBF7D0',
                           cursor: 'pointer', minHeight: 60, whiteSpace: 'nowrap',
                         }}>
-                          Marcar recibido ✓
+                          Marcar recibido &#x2713;
                         </button>
                       </div>
                     </div>
@@ -1254,12 +1058,11 @@ export default function TraficoDetailPage() {
             </div>
           )}
         </div>
-      )}
+      </div>
 
-      {/* ═══════════════════════════════════════════
-          TAB 3 — ENTRADAS
-         ═══════════════════════════════════════════ */}
-      {activeTab === 'entradas' && (
+      {/* ═══ ENTRADAS ═══ */}
+      <div style={{ marginTop: 32 }}>
+        <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--navy-900)', marginBottom: 16 }}>Entradas</div>
         <div>
           {entradas.length > 0 ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -1280,7 +1083,7 @@ export default function TraficoDetailPage() {
                           {e.cve_entrada as string}
                         </span>
                         <span style={{ fontSize: 12, color: 'var(--slate-400)', fontFamily: 'var(--font-mono)' }}>
-                          {e.fecha_llegada_mercancia ? fmtDate(e.fecha_llegada_mercancia as string) : '—'}
+                          {e.fecha_llegada_mercancia ? fmtDate(e.fecha_llegada_mercancia as string) : '--'}
                         </span>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 4, fontSize: 12, color: 'var(--slate-500)' }}>
@@ -1295,7 +1098,7 @@ export default function TraficoDetailPage() {
                     <div style={{ display: 'flex', gap: 6, flexShrink: 0, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
                       {hasDamage && (
                         <span className="badge badge-hold" style={{ fontSize: 11 }}>
-                          <span className="badge-dot" />Dañada
+                          <span className="badge-dot" />Danada
                         </span>
                       )}
                       {hasFaltantes && (
@@ -1314,17 +1117,16 @@ export default function TraficoDetailPage() {
               })}
             </div>
           ) : (
-            <EmptyState icon="📦" title="No hay entradas registradas" description="Las entradas vinculadas a este tráfico aparecerán aquí" />
+            <EmptyState icon="📦" title="No hay entradas registradas" description="Las entradas vinculadas a este trafico apareceran aqui" />
           )}
         </div>
-      )}
+      </div>
 
-      {/* ═══════════════════════════════════════════
-          TAB 4 — TIMELINE (placeholder)
-         ═══════════════════════════════════════════ */}
-      {activeTab === 'timeline' && (
+      {/* ═══ HISTORIAL ═══ */}
+      <div style={{ marginTop: 32 }}>
+        <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--navy-900)', marginBottom: 16 }}>Historial</div>
         <TimelineTab traficoId={decodeURIComponent(String(id))} />
-      )}
+      </div>
 
       {/* ═══ SOLICITAR MODAL ═══ */}
       {showSolicitarModal && (
@@ -1337,52 +1139,6 @@ export default function TraficoDetailPage() {
       )}
 
       <style>{`@keyframes pulse-dot { 0%,100% { transform:scale(1); } 50% { transform:scale(1.15); } }`}</style>
-    </div>
-  )
-}
-
-/** Crossing prediction card — fetched from crossing_predictions */
-function CrossingPrediction() {
-  const [prediction, setPrediction] = useState<{ bridge_name: string; optimal_hour: number; avg_hours: number; std_hours: number; samples: number } | null>(null)
-
-  useEffect(() => {
-    const tomorrow = new Date()
-    tomorrow.setDate(tomorrow.getDate() + 1)
-    const day = tomorrow.getDay()
-    supabase.from('crossing_predictions')
-      .select('bridge_name, optimal_hour, avg_hours, std_hours, samples')
-      .eq('day_of_week', day)
-      .order('computed_at', { ascending: false })
-      .limit(1)
-      .maybeSingle()
-      .then(({ data }) => { if (data) setPrediction(data) })
-  }, [])
-
-  if (!prediction) return null
-
-  const tomorrow = new Date()
-  tomorrow.setDate(tomorrow.getDate() + 1)
-  const dayNames = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado']
-  const dayName = dayNames[tomorrow.getDay()]
-
-  return (
-    <div className="card" style={{
-      padding: '16px 20px', marginBottom: 16,
-      borderLeft: '4px solid #0D9488',
-      background: 'rgba(13,148,136,0.04)',
-    }}>
-      <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#0D9488', marginBottom: 8 }}>
-        Cruce recomendado — {dayName}
-      </div>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 }}>
-        <span style={{ fontSize: 16, fontWeight: 800, color: '#1A1A1A' }}>{prediction.bridge_name}</span>
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 14, fontWeight: 700, color: '#0D9488' }}>
-          {prediction.optimal_hour}:00–{prediction.optimal_hour + 2}:00
-        </span>
-      </div>
-      <div style={{ fontSize: 12, color: '#6B6B6B' }}>
-        Tiempo estimado: {prediction.avg_hours}h (±{prediction.std_hours}h) · {prediction.samples} registros
-      </div>
     </div>
   )
 }

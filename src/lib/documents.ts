@@ -1,25 +1,38 @@
 // src/lib/documents.ts
 // Single source of truth for required document types.
-// Values are EXACT from Phase 0D query on the documents table.
+// Only documents truly required for a pedimento to clear SAT.
 
+/** Always required for a standard A1 import pedimento */
 export const REQUIRED_DOC_TYPES = [
-  'FACTURA',
-  'LISTA DE EMPAQUE',
-  'PEDIMENTO',
-  'ACUSE DE COVE',
-  'ACUSE DE E-DOCUMENT',
-  'CARTA',
+  'FACTURA',          // Factura comercial
+  'COVE',             // Comprobante de Valor Electrónico
+  'PEDIMENTO',        // The filing itself
 ]
 
+/** Conditionally required — only count if the condition applies */
+export const CONDITIONAL_DOC_TYPES: { type: string; condition: string }[] = [
+  { type: 'CERTIFICADO DE ORIGEN', condition: 'tmec' },      // Only if claiming T-MEC
+  { type: 'NOM', condition: 'nom_required' },                // Only if fracción requires NOM
+  { type: 'CARTA PORTE', condition: 'land_transport' },      // Only if land transport
+  { type: 'BILL OF LADING', condition: 'ocean_air' },        // Only if ocean/air
+  { type: 'LISTA DE EMPAQUE', condition: 'multiple_bultos' }, // Only if >1 bulto
+  { type: 'MVE', condition: 'always_post_2026' },            // Always post March 2026
+]
+
+/** NOT required for compliance scoring — internal artifacts only */
+// ACUSE DE COVE — receipt, not a document
+// ACUSE DE E-DOCUMENT — validation artifact
+// Photos, internal memos, duplicate copies
+
 /**
- * Get missing documents using fuzzy first-word matching.
- * Handles: 'FACTURA' matching 'FACTURA COMERCIAL' and vice versa.
+ * Get missing REQUIRED documents using fuzzy first-word matching.
+ * Only checks truly required docs — not receipts or internal artifacts.
  */
 export function getMissingDocs(
-  existingDocs: Array<{ tipo?: string | null; document_type?: string | null }>
+  existingDocs: Array<{ tipo?: string | null; document_type?: string | null; doc_type?: string | null }>
 ): string[] {
   const existingNormalized = existingDocs
-    .map(d => (d.tipo ?? d.document_type)?.toUpperCase().trim())
+    .map(d => (d.tipo ?? d.document_type ?? d.doc_type)?.toUpperCase().trim())
     .filter(Boolean) as string[]
 
   return REQUIRED_DOC_TYPES.filter(req => {
@@ -34,17 +47,39 @@ export function getMissingDocs(
 }
 
 /**
- * Get missing docs accounting for client template docs (permanent docs on file).
- * Template docs count as "present" — they reduce the missing count.
+ * Calculate compliance score: required docs present / required docs expected.
+ * Conditional docs only counted if condition applies.
+ * Extra docs (acuse, photos, memos) don't inflate or penalize.
  */
-export function getMissingDocsWithTemplates(
-  existingDocs: Array<{ tipo?: string | null; document_type?: string | null }>,
-  templateDocTypes: string[]
-): string[] {
-  const templateNormalized = templateDocTypes.map(t => t.toUpperCase().trim())
-  const combined = [
-    ...existingDocs,
-    ...templateNormalized.map(t => ({ document_type: t })),
-  ]
-  return getMissingDocs(combined)
+export function calculateDocCompliance(
+  existingDocs: Array<{ tipo?: string | null; document_type?: string | null; doc_type?: string | null }>,
+  conditions: { tmec?: boolean; nom_required?: boolean; land_transport?: boolean; ocean_air?: boolean; multiple_bultos?: boolean }
+): { score: number; required: number; present: number; missing: string[] } {
+  const existingNormalized = existingDocs
+    .map(d => (d.tipo ?? d.document_type ?? d.doc_type)?.toUpperCase().trim())
+    .filter(Boolean) as string[]
+
+  function hasDoc(req: string): boolean {
+    const reqFirstWord = req.split(' ')[0]
+    return existingNormalized.some(e => e === req || e.startsWith(reqFirstWord) || req.startsWith(e.split(' ')[0]))
+  }
+
+  // Always required
+  const requiredList = [...REQUIRED_DOC_TYPES]
+
+  // Add conditional docs if condition applies
+  // MVE is always required post March 2026
+  requiredList.push('MVE')
+
+  for (const cond of CONDITIONAL_DOC_TYPES) {
+    if (cond.condition === 'always_post_2026') continue // Already added
+    const condKey = cond.condition as keyof typeof conditions
+    if (conditions[condKey]) requiredList.push(cond.type)
+  }
+
+  const missing = requiredList.filter(r => !hasDoc(r))
+  const present = requiredList.length - missing.length
+  const score = requiredList.length > 0 ? Math.round((present / requiredList.length) * 100) : 100
+
+  return { score, required: requiredList.length, present, missing }
 }

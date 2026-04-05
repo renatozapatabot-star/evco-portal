@@ -67,19 +67,25 @@ export async function GET(req: NextRequest) {
   const cookieRole = session.role
   const isInternal = cookieRole === 'broker' || cookieRole === 'admin'
 
-  const cookieCompanyId = isInternal ? session.companyId : req.cookies.get('company_id')?.value
+  // For client role: company_id comes from the SIGNED session, not from cookies or query params.
+  // This prevents cross-client data leaks via cookie/param manipulation.
+  // For broker/admin: internal company_id values ('admin','internal') are not real
+  // client identifiers — they use query params to select which client to view.
+  const sessionCompanyId = session.companyId
   const cookieClave = req.cookies.get('company_clave')?.value
 
-  // For broker/admin: internal company_id values ('admin','internal') are not real
-  // client identifiers — they must not be applied as filters on client-scoped tables.
-  const effectiveCookieCompanyId = isInternal ? undefined : cookieCompanyId
+  const effectiveCookieCompanyId = isInternal ? undefined : sessionCompanyId
   const effectiveCookieClave = isInternal ? undefined : cookieClave
 
   // Only apply clave_cliente when explicitly passed — not every table has this column.
   // Client isolation for tables without clave_cliente is handled by company_id filter.
   const claveCliente = params.get('clave_cliente') || undefined
   const cveCliente = params.get('cve_cliente') || undefined
-  const companyId = effectiveCookieCompanyId || params.get('company_id') || undefined
+  // Client: always use session company_id (ignore query param company_id)
+  // Broker/admin: use query param company_id (they can view any client)
+  const companyId = isInternal
+    ? (params.get('company_id') || undefined)
+    : (effectiveCookieCompanyId || undefined)
   const traficoPrefix = params.get('trafico_prefix')
   const hasClientFilter = !!(claveCliente || cveCliente || companyId || traficoPrefix)
 

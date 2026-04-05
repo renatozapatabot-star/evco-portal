@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from 'react'
 import { Search, ChevronDown, ChevronRight, Building2, TrendingUp } from 'lucide-react'
 import { getCookieValue } from '@/lib/client-config'
 import { fmtId, fmtDate, fmtUSD, fmtUSDCompact } from '@/lib/format-utils'
+import { supplierStory } from '@/lib/data-stories'
 import { countryFlag } from '@/lib/carrier-names'
 import { EmptyState } from '@/components/ui/EmptyState'
 import Link from 'next/link'
@@ -475,6 +476,20 @@ function SupplierDetail({ supplier: s }: { supplier: SupplierAgg }) {
           </div>
         ))}
       </div>
+
+      {/* Supplier narrative */}
+      <p style={{
+        fontSize: 13, color: '#6B6B6B', lineHeight: 1.6,
+        fontStyle: 'italic', maxWidth: 600, margin: '0 0 16px',
+      }}>
+        {supplierStory({
+          name: s.name.substring(0, 30),
+          traficoCount: s.traficoCount,
+          totalValue: s.totalValue,
+          tmecRate: s.tmecRate,
+          avgDeliveryDays: s.avgDeliveryDays,
+        })}
+      </p>
 
       {/* Common descriptions */}
       {descFreq.length > 0 && (

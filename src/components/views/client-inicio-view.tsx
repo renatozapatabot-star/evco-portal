@@ -11,6 +11,8 @@ import { getSmartGreeting } from '@/lib/greeting'
 import { computeStreak } from '@/lib/achievements'
 import { anticipate, isDismissed, dismissSuggestion, type Suggestion } from '@/lib/anticipate'
 import { playSound } from '@/lib/sounds'
+import { dashboardStory } from '@/lib/data-stories'
+import { DataStory } from '@/components/ui/DataStory'
 import CountingNumber from '@/components/ui/CountingNumber'
 import { Sparkline } from '@/components/sparkline'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -590,6 +592,16 @@ export default function ClientInicioView() {
             <div style={{ fontSize: 10, color: 'var(--slate-400)', marginTop: 2 }}>Con pedimento transmitido</div>
           </div>
         </div>
+      )}
+
+      {/* Data story — narrative below KPIs */}
+      {traficos.length > 0 && (
+        <DataStory text={dashboardStory({
+          enProceso, cruzado, tiempoDespacho,
+          tmecSavings: tmecSavings.totalSavings,
+          tmecOps, totalOps: traficos.length,
+          provActivos, valorYTD, sinIncidencia,
+        })} />
       )}
 
       {/* Sparkline row */}

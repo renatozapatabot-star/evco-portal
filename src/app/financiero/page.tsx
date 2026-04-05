@@ -242,6 +242,23 @@ export default function FinancieroPage() {
           )}
         </div>
 
+        {/* Data story — financial narrative */}
+        {!loading && kpis.valorTotal > 0 && (
+          <p style={{
+            fontSize: 13, color: '#6B6B6B', lineHeight: 1.6,
+            fontStyle: 'italic', maxWidth: 600, margin: '0 0 20px',
+          }}>
+            {(() => {
+              const parts: string[] = []
+              parts.push(`${fmtUSDCompact(kpis.valorTotal)} en ${kpis.activeCount} tráficos activos`)
+              if (kpis.valorCruzado > 0) parts.push(`este mes cruzaron ${fmtUSDCompact(kpis.valorCruzado)}`)
+              if (kpis.ahorrosTmec >= 1000) parts.push(`gracias a T-MEC, el ahorro estimado es ${fmtUSDCompact(kpis.ahorrosTmec)} — dinero que impacta directamente su margen`)
+              parts[0] = parts[0].charAt(0).toUpperCase() + parts[0].slice(1)
+              return parts.join('. ') + '.'
+            })()}
+          </p>
+        )}
+
         {/* ═══ SECTION 1 — KPI Cards ═══ */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16, marginBottom: 32 }}>
           <KPICard

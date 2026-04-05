@@ -11,6 +11,7 @@ import { buildGraph, queryGraph, graphSummary } from '@/lib/knowledge-graph'
 import { assessRisk } from '@/lib/intelligence-mesh'
 import { calculateLandedCost, calculateValueCreated, buildEconomicSummary, aggregateClientEconomics } from '@/lib/economic-engine'
 import { computeNetworkMetrics, computeNetworkIntelligence, networkSummary } from '@/lib/network-value'
+import { simulateRoute, simulateTariff, simulateDisruption } from '@/lib/digital-twin'
 
 import { rateLimitDB } from '@/lib/rate-limit-db'
 import { getErrorMessage } from '@/lib/errors'
@@ -458,6 +459,24 @@ const TOOLS = [
     }
   },
   {
+    name: 'simulate_scenario',
+    description: 'Digital twin simulation. Run what-if scenarios: route changes ("what if we use Colombia?"), tariff impacts ("what if IGI goes to 10%?"), supplier disruptions ("what if Milacron goes down?"). Uses 32K+ historical operations.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        type: { type: 'string', enum: ['route', 'tariff', 'supplier_disruption'], description: 'Simulation type' },
+        product: { type: 'string', description: 'Product category for route simulation' },
+        current_bridge: { type: 'string', description: 'Current bridge (route simulation)' },
+        proposed_bridge: { type: 'string', description: 'Proposed bridge (route simulation)' },
+        fraccion: { type: 'string', description: 'Fracción prefix for tariff simulation' },
+        new_rate: { type: 'number', description: 'New IGI rate % for tariff simulation' },
+        supplier: { type: 'string', description: 'Supplier name for disruption simulation' },
+        duration_days: { type: 'number', description: 'Disruption duration in days' },
+      },
+      required: ['type']
+    }
+  },
+  {
     name: 'query_network_intelligence',
     description: 'Show how the CRUZ network improves this client. Aggregate crossing times, prediction accuracy, supplier count, reconocimiento rates — all from anonymized network data. Shows the network effect value.',
     input_schema: { type: 'object' as const, properties: {} }
@@ -891,6 +910,27 @@ async function executeTool(name: string, input: Record<string, any>, clientCtx: 
         ]
         const MVE_PENALTY_MAX = 7190 // from system_config mve_penalty_max
         return JSON.stringify({ deadlines, total_exposure: deadlines.filter(d => d.severity === 'critical').length * MVE_PENALTY_MAX + ' MXN max', action: 'navigate', path: '/cumplimiento' })
+      }
+      case 'simulate_scenario': {
+        // Fetch historical data for simulation
+        const { data: simTraficos } = await supabase.from('traficos')
+          .select('trafico, company_id, proveedores, descripcion_mercancia, importe_total, regimen, semaforo, fecha_llegada, fecha_cruce')
+          .eq('company_id', companyId)
+          .gte('fecha_llegada', '2024-01-01')
+          .limit(3000)
+
+        const simData = simTraficos || []
+
+        if (input.type === 'route') {
+          return JSON.stringify(simulateRoute(simData, input.product || '', input.current_bridge || 'World Trade', input.proposed_bridge || 'Colombia'))
+        }
+        if (input.type === 'tariff') {
+          return JSON.stringify(simulateTariff(simData, input.fraccion || '', input.new_rate || 10))
+        }
+        if (input.type === 'supplier_disruption') {
+          return JSON.stringify(simulateDisruption(simData, input.supplier || '', input.duration_days || 14))
+        }
+        return JSON.stringify({ error: 'Tipo de simulación no reconocido. Use: route, tariff, o supplier_disruption.' })
       }
       case 'query_network_intelligence': {
         // Cross-client aggregate (service role, no company_id filter)

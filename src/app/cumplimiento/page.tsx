@@ -10,7 +10,7 @@ import { fmtDate } from '@/lib/format-utils'
 const T = {
   card: '#1A1814',
   border: '#302C23',
-  gold: '#B8953F',
+  gold: '#C4963C',
   textPrimary: '#F5F0E8',
   textSecondary: '#A09882',
   textMuted: '#6B6355',
@@ -330,7 +330,7 @@ function ClientCumplimientoView() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
           <div style={{
             background: 'var(--card-bg)', border: '1px solid #E8E5E0', borderRadius: 8,
-            padding: 24, borderTop: '4px solid var(--gold, #B8953F)',
+            padding: 24, borderTop: '4px solid var(--gold, #C4963C)',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
               <Calendar size={20} style={{ color: '#8B6914' }} />
@@ -350,7 +350,7 @@ function ClientCumplimientoView() {
 
           <div style={{
             background: 'var(--card-bg)', border: '1px solid #E8E5E0', borderRadius: 8,
-            padding: 24, borderTop: '4px solid var(--gold, #B8953F)',
+            padding: 24, borderTop: '4px solid var(--gold, #C4963C)',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
               <FileText size={20} style={{ color: '#8B6914' }} />
@@ -370,7 +370,7 @@ function ClientCumplimientoView() {
 
           <div style={{
             background: 'var(--card-bg)', border: '1px solid #E8E5E0', borderRadius: 8,
-            padding: 24, borderTop: '4px solid var(--gold, #B8953F)',
+            padding: 24, borderTop: '4px solid var(--gold, #C4963C)',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
               <Phone size={20} style={{ color: '#8B6914' }} />

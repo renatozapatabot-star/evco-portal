@@ -101,7 +101,7 @@ export default function UploadPage() {
       }}>
         <div style={{ textAlign: 'center', maxWidth: 400 }}>
           <span style={{
-            fontSize: 44, fontWeight: 800, color: '#D4A843',
+            fontSize: 44, fontWeight: 800, color: '#C4963C',
             fontFamily: 'var(--font-mono, "JetBrains Mono", monospace)',
           }}>Z</span>
           <div style={{ fontSize: 11, color: '#64748B', letterSpacing: '0.2em', marginTop: 4 }}>CRUZ</div>
@@ -166,7 +166,7 @@ export default function UploadPage() {
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: 24 }}>
           <span style={{
-            fontSize: 44, fontWeight: 800, color: '#D4A843',
+            fontSize: 44, fontWeight: 800, color: '#C4963C',
             fontFamily: 'var(--font-mono, "JetBrains Mono", monospace)',
           }}>Z</span>
           <div style={{ fontSize: 11, color: '#64748B', letterSpacing: '0.2em', marginTop: 4 }}>CRUZ</div>
@@ -235,7 +235,7 @@ export default function UploadPage() {
           {/* Upload button */}
           <label style={{
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-            padding: '14px 20px', background: uploading ? '#E2E8F0' : '#D4A843',
+            padding: '14px 20px', background: uploading ? '#E2E8F0' : '#C4963C',
             borderRadius: 10, cursor: uploading ? 'wait' : 'pointer',
             fontSize: 15, fontWeight: 700, color: uploading ? '#94A3B8' : 'var(--navy-900)',
             transition: 'background 150ms',

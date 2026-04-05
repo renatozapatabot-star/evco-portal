@@ -18,7 +18,7 @@ const D = {
   surface: '#1A1A18',
   surfaceHover: '#242422',
   border: '#2A2A28',
-  gold: '#B8953F',
+  gold: '#C4963C',
   goldSubtle: 'rgba(184,149,63,0.12)',
   goldBorder: 'rgba(184,149,63,0.25)',
   text: '#E8E5DF',
@@ -134,7 +134,7 @@ export default function IntelligenceSandbox() {
               className="text-2xl font-semibold"
               style={{ color: D.text }}
             >
-              Intelligence Sandbox
+              Sandbox de Inteligencia
             </h1>
             <p className="text-sm" style={{ color: D.textSec }}>
               Patente 3596 · 32,299 tráficos · 2011–2026

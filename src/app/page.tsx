@@ -15,7 +15,7 @@ const T = {
   amber: '#D97706',
   red: 'var(--danger-500)',
   gray: '#94A3B8',
-  gold: '#D4A843',
+  gold: '#C4963C',
   text: 'var(--body-text)',
   textSec: '#7A8599',
   r: 8,

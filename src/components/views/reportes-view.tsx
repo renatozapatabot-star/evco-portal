@@ -37,7 +37,7 @@ const T = {
   text: '#1A1A1A',
   textSub: '#6B6B6B',
   textMuted: '#999999',
-  gold: '#B8953F',
+  gold: '#C4963C',
   goldBg: '#FFF8EB',
   green: '#2D8540',
   amber: '#C47F17',

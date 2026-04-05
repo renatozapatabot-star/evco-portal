@@ -360,11 +360,11 @@ export default function CruzChatPage() {
             {messages.length === 0 && !loading && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16, paddingTop: 24 }}>
                 <div style={{
-                  background: D.surface, borderLeft: '3px solid #B8953F',
+                  background: D.surface, borderLeft: '3px solid #C4963C',
                   borderRadius: 8, padding: '14px 16px', marginBottom: 16,
                   maxWidth: 500,
                 }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: '#B8953F', marginBottom: 6,
+                  <div style={{ fontSize: 11, fontWeight: 700, color: '#C4963C', marginBottom: 6,
                                 letterSpacing: '0.06em', textTransform: 'uppercase' as const }}>
                     CRUZ Briefing
                   </div>
@@ -523,7 +523,7 @@ export default function CruzChatPage() {
           }}>
             {/* Críticos ahora */}
             <div>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#B8953F', marginBottom: 10,
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#C4963C', marginBottom: 10,
                             letterSpacing: '0.06em', textTransform: 'uppercase' as const }}>
                 Críticos ahora
               </div>
@@ -554,7 +554,7 @@ export default function CruzChatPage() {
 
             {/* En proceso */}
             <div>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#B8953F', marginBottom: 10,
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#C4963C', marginBottom: 10,
                             letterSpacing: '0.06em', textTransform: 'uppercase' as const }}>
                 En proceso ({panelData.enProceso.length})
               </div>
@@ -586,7 +586,7 @@ export default function CruzChatPage() {
             {/* Alertas */}
             {panelData.alertTitle && (
               <div>
-                <div style={{ fontSize: 11, fontWeight: 700, color: '#B8953F', marginBottom: 10,
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#C4963C', marginBottom: 10,
                               letterSpacing: '0.06em', textTransform: 'uppercase' as const }}>
                   Alerta activa
                 </div>

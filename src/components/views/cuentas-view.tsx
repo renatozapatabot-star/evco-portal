@@ -107,7 +107,7 @@ export function CuentasView() {
         ].filter(k => k.show).map(k => (
           <div key={k.label} className="kpi-card">
             <div className="kpi-label">{k.label}</div>
-            <div className="kpi-value" style={{ fontSize: 36, color: k.color }}>{k.value}</div>
+            <div className="kpi-value" style={{ fontSize: 36, color: k.color, fontFamily: 'var(--font-jetbrains-mono)' }}>{k.value}</div>
           </div>
         ))}
       </div>
@@ -127,7 +127,7 @@ export function CuentasView() {
                 ].filter(k => k.show).map(k => (
                   <div key={k.label} className="kpi-card">
                     <div className="kpi-label">{k.label}</div>
-                    <div className="kpi-value" style={{ fontSize: 36, color: k.color }}>{k.value}</div>
+                    <div className="kpi-value" style={{ fontSize: 36, color: k.color, fontFamily: 'var(--font-jetbrains-mono)' }}>{k.value}</div>
                   </div>
                 ))}
               </div>

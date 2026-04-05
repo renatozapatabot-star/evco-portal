@@ -18,7 +18,7 @@ const T = {
   text: '#EAE6DC',
   textSecondary: '#9C9890',
   textMuted: '#6B6560',
-  gold: '#B8953F',
+  gold: '#C4963C',
   goldSubtle: 'rgba(184,149,63,0.12)',
   goldBorder: 'rgba(184,149,63,0.25)',
   green: '#2D8540',

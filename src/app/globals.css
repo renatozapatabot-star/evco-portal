@@ -23,7 +23,7 @@
   --navy-500: #2A4365;
 
   /* ── Gold palette ── */
-  --gold-400: #D4A843;
+  --gold-400: #C4963C;
   --gold-300: #E8C468;
   --gold-200: #F0D88A;
   --gold-100: #FBF5E6;
@@ -137,14 +137,6 @@
   /* ── Sidebar ── */
   --sidebar-width: 240px;
   --sidebar-collapsed: 64px;
-}
-
-/* ── Auto-dim: Night Mode (10 PM – 6 AM) ── */
-html[data-autodim="night"] {
-  --card-bg: #1A2535;
-  --body-text: #CBD5E1;
-  --content-bg: var(--navy-900);
-  --border-dim: #2D3A4D;
 }
 
 /* ── Reset & Base ── */
@@ -329,7 +321,7 @@ body {
 
 .sidebar-nav-item.active {
   background: var(--gold-bg);
-  border-left: 4px solid var(--gold-400, #D4A843);
+  border-left: 4px solid var(--gold-400, #C4963C);
   color: var(--gold-300, #E8C468);
   font-weight: 700;
 }
@@ -1308,7 +1300,7 @@ tr.row-odd  { background: rgba(248,250,252,0.5); }
 /* ── Accessibility ───────────────────────────────── */
 
 *:focus-visible {
-  outline: 2px solid var(--gold-400, #D4A843);
+  outline: 2px solid var(--gold-400, #C4963C);
   outline-offset: 2px;
   border-radius: 4px;
 }

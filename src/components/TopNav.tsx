@@ -17,7 +17,7 @@ const T = {
   navBorder: '#2A2824',
   text: '#EAE6DC',
   textMuted: '#7C7870',
-  gold: '#B8953F',
+  gold: '#C4963C',
 } as const
 
 export function TopNav() {

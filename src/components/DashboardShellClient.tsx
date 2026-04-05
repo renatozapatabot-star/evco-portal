@@ -11,7 +11,6 @@ import { useIsMobile } from '@/hooks/use-mobile'
 import { MobileBottomNav } from './mobile-bottom-nav'
 import { WelcomeOverlay } from './WelcomeOverlay'
 import { getCookieValue } from '@/lib/client-config'
-import { useAutoDim } from '@/hooks/use-auto-dim'
 
 interface Props { children: React.ReactNode }
 
@@ -35,7 +34,7 @@ function ViewingAsBanner({ companyName, onExit }: { companyName: string; onExit:
   return (
     <div style={{
       position: 'fixed', top: 0, left: 0, right: 0, zIndex: 9999,
-      background: '#B8953F', color: '#FFFFFF', height: 36,
+      background: '#C4963C', color: '#FFFFFF', height: 36,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       gap: 12, fontSize: 13, fontWeight: 600,
     }}>
@@ -87,7 +86,6 @@ export default function DashboardShellClient({ children }: Props) {
   }, [])
 
   useKeyboardShortcuts()
-  useAutoDim()
 
   // Close mobile sidebar on route change
   useEffect(() => { setMobileOpen(false) }, [pathname])

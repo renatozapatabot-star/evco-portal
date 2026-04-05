@@ -23,7 +23,7 @@ interface TraficoRow {
 const T = {
   card: '#1A1814',
   border: '#302C23',
-  gold: '#B8953F',
+  gold: '#C4963C',
   textPrimary: '#F5F0E8',
   textSecondary: '#A09882',
   textMuted: '#6B6355',

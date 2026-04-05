@@ -45,7 +45,7 @@ export function NightModeToggle() {
         fontSize: 18,
         padding: 8,
         borderRadius: 8,
-        color: isDark ? '#B8953F' : 'var(--text-secondary)',
+        color: isDark ? '#C4963C' : 'var(--text-secondary)',
       }}
     >
       {isDark ? '\u2600\uFE0F' : '\uD83C\uDF19'}

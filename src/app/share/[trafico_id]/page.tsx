@@ -120,7 +120,7 @@ export default async function SharePage(
             fontSize: 14,
             fontWeight: 700,
             letterSpacing: '0.15em',
-            color: '#D4A843',
+            color: '#C4963C',
             textTransform: 'uppercase',
             marginBottom: 4,
           }}>
@@ -265,7 +265,7 @@ export default async function SharePage(
               padding: '14px 24px',
               minHeight: 60,
               borderRadius: 8,
-              background: '#D4A843',
+              background: '#C4963C',
               color: '#FFFFFF',
               fontSize: 14,
               fontWeight: 700,

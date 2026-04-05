@@ -14,7 +14,7 @@ const D = {
   bg: '#0D0D0C',
   card: '#161615',
   cardBorder: '#2A2A28',
-  gold: '#B8953F',
+  gold: '#C4963C',
   goldSubtle: 'rgba(184,149,63,0.12)',
   goldBorder: 'rgba(184,149,63,0.35)',
   text: '#F5F4F0',

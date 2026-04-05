@@ -48,7 +48,7 @@ const T = {
   bg: '#FAFAF8',
   card: 'var(--card-bg)',
   border: '#E8E5E0',
-  gold: '#B8953F',
+  gold: '#C4963C',
   goldSubtle: '#F5F0E4',
   goldBorder: 'rgba(184,149,63,0.25)',
   text: '#1A1A1A',
@@ -242,7 +242,7 @@ export default function BrokerCommandCenter() {
                 { href: '/cotizacion', label: 'Cotizacion' },
                 { href: '/usmca', label: 'USMCA' },
                 { href: '/anexo24', label: 'Anexo 24' },
-                { href: '/admin', label: 'Admin' },
+                { href: '/admin', label: 'Administración' },
               ].map(tool => (
                 <button
                   key={tool.href}
@@ -345,11 +345,11 @@ export default function BrokerCommandCenter() {
 function SectionHeader({ icon: Icon, title, count }: { icon: typeof Building2; title: string; count?: number }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-      <Icon size={18} style={{ color: '#B8953F' }} />
+      <Icon size={18} style={{ color: '#C4963C' }} />
       <h2 style={{ fontSize: 16, fontWeight: 700, color: '#1A1A1A', margin: 0 }}>{title}</h2>
       {count !== undefined && (
         <span style={{
-          fontSize: 11, fontWeight: 600, color: '#B8953F',
+          fontSize: 11, fontWeight: 600, color: '#C4963C',
           background: '#F5F0E4', padding: '2px 8px', borderRadius: 9999,
         }}>
           {count}

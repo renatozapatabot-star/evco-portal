@@ -10,20 +10,20 @@ export default function DemoPage() {
       <div style={{ width: 56, height: 56, borderRadius: 12, background: 'rgba(201,168,76,0.1)', border: '1.5px solid rgba(201,168,76,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24 }}>
         <span style={{ fontSize: 24, fontWeight: 700, color: GOLD }}>RZ</span>
       </div>
-      <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.02em', marginBottom: 8 }}>CRUZ Intelligence Platform</h1>
+      <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.02em', marginBottom: 8 }}>Plataforma de Inteligencia CRUZ</h1>
       <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 14, marginBottom: 32, textAlign: 'center', maxWidth: 480 }}>
-        Cross-Border Regulatory & Unified Intelligence by Renato Zapata & Company.<br />
+        Inteligencia Regulatoria y Aduanera · Renato Zapata & Company.<br />
         Patente 3596 · Aduana 240 Nuevo Laredo · Laredo, Texas
       </p>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, maxWidth: 700, width: '100%', marginBottom: 40 }}>
         {[
-          { label: 'Tráficos', value: '32,247', sub: 'Historical records' },
-          { label: 'Entradas', value: '64,489', sub: 'Warehouse receipts' },
-          { label: 'Pedimentos', value: '1,962', sub: 'Customs declarations' },
-          { label: 'Fracciones', value: '103', sub: 'Tariff codes tracked' },
-          { label: 'Proveedores', value: '71', sub: 'Active suppliers' },
-          { label: 'Scripts', value: '31', sub: 'Automated processes' },
+          { label: 'Tráficos', value: '32,247', sub: 'Registros históricos' },
+          { label: 'Entradas', value: '64,489', sub: 'Recibos de bodega' },
+          { label: 'Pedimentos', value: '1,962', sub: 'Declaraciones aduanales' },
+          { label: 'Fracciones', value: '103', sub: 'Códigos arancelarios' },
+          { label: 'Proveedores', value: '71', sub: 'Proveedores activos' },
+          { label: 'Scripts', value: '31', sub: 'Procesos automatizados' },
         ].map(k => (
           <div key={k.label} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, padding: '16px 20px', textAlign: 'center' }}>
             <div style={{ fontSize: 24, fontWeight: 800, color: GOLD, fontFamily: 'var(--font-jetbrains-mono)' }}>{k.value}</div>

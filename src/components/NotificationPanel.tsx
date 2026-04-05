@@ -258,7 +258,7 @@ export function NotificationPanel({
                             onClick={(e) => { e.stopPropagation(); markGroupRead(type) }}
                             style={{
                               display: 'block', width: '100%', padding: '6px 20px',
-                              fontSize: 11, fontWeight: 600, color: '#B8953F',
+                              fontSize: 11, fontWeight: 600, color: '#C4963C',
                               background: 'none', border: 'none', borderBottom: '1px solid #F0ECE4',
                               cursor: 'pointer', textAlign: 'left',
                             }}
@@ -357,7 +357,7 @@ export function NotificationPanel({
                         onClick={onClose}
                         style={{
                           fontSize: 12,
-                          color: '#B8953F',
+                          color: '#C4963C',
                           fontWeight: 600,
                           textDecoration: 'none',
                           marginTop: 6,

@@ -56,7 +56,7 @@ function ScoreBadge({ score }: { score: number }) {
     <span style={{
       display: 'inline-flex', alignItems: 'center', gap: 4,
       padding: '3px 8px', borderRadius: 6, fontSize: 12, fontWeight: 700,
-      color, background: bg, fontFamily: 'var(--font-data)',
+      color, background: bg, fontFamily: 'var(--font-jetbrains-mono)',
     }}>
       <Target size={11} /> {score}
     </span>
@@ -223,7 +223,7 @@ export default function ProspectosPage() {
                   <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {p.razon_social || p.rfc}
                   </div>
-                  <div style={{ fontSize: 11, color: 'var(--n-400)', fontFamily: 'var(--font-data)', marginTop: 2 }}>{p.rfc}</div>
+                  <div style={{ fontSize: 11, color: 'var(--n-400)', fontFamily: 'var(--font-jetbrains-mono)', marginTop: 2 }}>{p.rfc}</div>
                 </div>
                 <ScoreBadge score={p.opportunity_score} />
               </div>

@@ -176,7 +176,7 @@ export default function PipelinePage() {
                     </div>
                     <span style={{
                       fontSize: 10, fontWeight: 700, color: p.opportunity_score >= 70 ? 'var(--gold-600)' : 'var(--n-400)',
-                      fontFamily: 'var(--font-data)',
+                      fontFamily: 'var(--font-jetbrains-mono)',
                     }}>
                       {p.opportunity_score}
                     </span>

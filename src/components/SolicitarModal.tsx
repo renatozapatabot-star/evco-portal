@@ -271,7 +271,7 @@ export function SolicitarModal({ traficoId, missingDocs, onClose, onSuccess }: P
               flex: 2, padding: '12px', borderRadius: 8,
               border: 'none',
               background: sendState === 'sent' ? '#2D8540'
-                : selected.length > 0 && sendState === 'idle' ? '#B8953F'
+                : selected.length > 0 && sendState === 'idle' ? '#C4963C'
                 : '#E8E5E0',
               color: sendState === 'sent' || (selected.length > 0 && sendState === 'idle') ? '#FFFFFF' : '#9C9890',
               fontSize: 14, fontWeight: 700,

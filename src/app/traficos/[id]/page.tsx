@@ -100,7 +100,7 @@ function sourceBadge(source: string | null) {
   const colors: Record<string, { bg: string; text: string }> = {
     system: { bg: 'rgba(156,152,144,0.15)', text: '#9C9890' },
     mobile: { bg: 'rgba(13,148,136,0.15)', text: '#0D9488' },
-    portal: { bg: 'rgba(184,149,63,0.15)', text: '#B8953F' },
+    portal: { bg: 'rgba(184,149,63,0.15)', text: '#C4963C' },
   }
   const c = colors[source] ?? colors.system
   return (
@@ -801,7 +801,7 @@ export default function TraficoDetailPage() {
                     <label key={doc} style={{
                       fontSize: 11, fontWeight: 600, padding: '6px 14px',
                       borderRadius: 9999, background: '#FFFFFF',
-                      color: uploadingDoc === doc ? '#B8953F' : '#991B1B',
+                      color: uploadingDoc === doc ? '#C4963C' : '#991B1B',
                       border: '1px solid rgba(194,59,34,0.2)',
                       cursor: uploadingDoc === doc ? 'wait' : 'pointer',
                       display: 'inline-flex', alignItems: 'center', gap: 4,
@@ -983,7 +983,7 @@ export default function TraficoDetailPage() {
                 width: '100%', padding: '14px 16px',
                 fontSize: 14, fontWeight: 700,
                 border: 'none', borderRadius: 8,
-                background: docCompleteness === 0 ? '#C23B22' : '#B8953F',
+                background: docCompleteness === 0 ? '#C23B22' : '#C4963C',
                 color: '#FFFFFF', cursor: 'pointer', minHeight: 60,
               }}
             >

@@ -8,7 +8,7 @@ const COLORS = {
   text: '#1A1A1A',
   textSub: '#6B6B6B',
   textMuted: '#9C9890',
-  gold: '#B8953F',
+  gold: '#C4963C',
   green: '#2D8540',
   amber: '#C47F17',
   red: '#C23B22',

@@ -51,7 +51,7 @@ export default function RootLayout({
     <html lang="es" className={`${GeistSans.variable} ${GeistMono.variable} ${dmSans.variable} ${jetbrainsMono.variable}`}>
       <head>
         <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#B8953F" />
+        <meta name="theme-color" content="#C4963C" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -60,8 +60,6 @@ export default function RootLayout({
         <link rel="preconnect" href="https://jkhpafacchjxawnscplf.supabase.co" />
         <link rel="dns-prefetch" href="https://jkhpafacchjxawnscplf.supabase.co" />
         <link rel="preconnect" href="https://api.anthropic.com" />
-        <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-        <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
         <script dangerouslySetInnerHTML={{__html: `
           (function() {
             try {

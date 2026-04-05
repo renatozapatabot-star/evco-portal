@@ -32,7 +32,7 @@ const T = {
   text: '#F5F0E8',
   textSec: '#A09882',
   gray: '#7C7870',
-  gold: '#B8953F',
+  gold: '#C4963C',
   green: '#2D8540',
   amber: '#C47F17',
   red: '#C23B22',

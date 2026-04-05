@@ -139,7 +139,7 @@ function SummaryCard({
             alignItems: 'center',
             gap: 6,
             padding: '10px 20px',
-            background: soliciting || totalMissingDocs === 0 ? '#D4C9A8' : '#B8953F',
+            background: soliciting || totalMissingDocs === 0 ? '#D4C9A8' : '#C4963C',
             color: '#FFFFFF',
             border: 'none',
             borderRadius: 8,
@@ -284,7 +284,7 @@ function MobileCard({ row, onNavigate }: { row: TraficoRow; onNavigate: (id: str
           <button
             style={{
               display: 'flex', alignItems: 'center', gap: 4,
-              padding: '8px 14px', background: '#B8953F', color: '#FFFFFF',
+              padding: '8px 14px', background: '#C4963C', color: '#FFFFFF',
               border: 'none', borderRadius: 6, fontSize: 12, fontWeight: 600,
               cursor: 'pointer', minHeight: 60, fontFamily: 'inherit',
             }}
@@ -599,7 +599,7 @@ export function ExpedientesView() {
             disabled={retrying}
             style={{
               padding: '10px 24px', borderRadius: 8,
-              border: 'none', background: '#B8953F', color: '#FFFFFF',
+              border: 'none', background: '#C4963C', color: '#FFFFFF',
               fontSize: 14, fontWeight: 700, cursor: retrying ? 'default' : 'pointer',
               minHeight: 60, fontFamily: 'inherit',
               opacity: retrying ? 0.7 : 1,
@@ -613,7 +613,7 @@ export function ExpedientesView() {
           <div
             style={{
               width: 28, height: 28, border: '3px solid #E8E5E0',
-              borderTopColor: '#B8953F', borderRadius: '50%',
+              borderTopColor: '#C4963C', borderRadius: '50%',
               animation: 'spin 0.7s linear infinite',
             }}
           />
@@ -826,7 +826,7 @@ export function ExpedientesView() {
                               }}
                               style={{
                                 display: 'inline-flex', alignItems: 'center', gap: 4,
-                                padding: '6px 14px', background: '#B8953F', color: '#FFFFFF',
+                                padding: '6px 14px', background: '#C4963C', color: '#FFFFFF',
                                 border: 'none', borderRadius: 6, fontSize: 12,
                                 fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
                               }}

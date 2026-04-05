@@ -350,7 +350,7 @@ export default function ClientInicioView() {
           </div>
           <div className="kpi-card stagger-2" style={{ padding: '14px 16px', borderTop: '4px solid var(--success-500)', animation: 'fadeInUp 200ms var(--ease-enter) backwards' }}>
             <div className="kpi-card-label">Operaciones Exitosas</div>
-            <div className="font-mono" style={{ fontSize: 22, fontWeight: 800, color: sinIncidencia >= 90 ? '#16A34A' : 'var(--navy-900)', marginTop: 4 }}>
+            <div className="font-mono" style={{ fontSize: 22, fontWeight: 800, color: sinIncidencia >= 90 ? 'var(--success)' : 'var(--navy-900)', marginTop: 4, fontFamily: 'var(--font-jetbrains-mono)' }}>
               {sinIncidencia}%
             </div>
             <div style={{ fontSize: 10, color: 'var(--slate-400)', marginTop: 2 }}>Cruzados del total</div>

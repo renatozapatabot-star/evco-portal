@@ -219,7 +219,7 @@ export default function PedimentosPage() {
           </div>
           <label className="flex items-center gap-1.5 text-[11.5px] cursor-pointer" style={{ color: tmecOnly ? '#166534' : '#6b7280' }}>
             <input type="checkbox" checked={tmecOnly} onChange={e => { setTmecOnly(e.target.checked); setPage(0) }} style={{ width: 13, height: 13 }} />
-            T-MEC only
+            Solo T-MEC
           </label>
           <div
             className="flex items-center gap-2 rounded-[3px] px-3 py-1.5"
@@ -277,7 +277,7 @@ export default function PedimentosPage() {
                 textDecoration: 'none', color: 'inherit',
                 background: 'var(--bg-surface)',
                 border: '1px solid var(--border)',
-                borderLeft: `4px solid ${g.tmec ? '#16A34A' : 'var(--gold, #D4A843)'}`,
+                borderLeft: `4px solid ${g.tmec ? '#16A34A' : 'var(--gold, #C4963C)'}`,
                 borderRadius: 'var(--r-md, 8px)',
                 padding: '12px 14px',
                 display: 'block',

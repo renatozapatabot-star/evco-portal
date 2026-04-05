@@ -567,3 +567,32 @@ const result = await parser.getText()
 - bd_demo_38 = ONLY Patente 3596 data (our clients only)
 - CAZA RADAR (competitor intelligence) CANNOT be built from this source alone
 - CAZA FANTASMAS (ghost clients) and PIPELINE work fine with this data
+
+## BUILD METHODOLOGY — BORIS WORKFLOW
+
+For any feature larger than a single-file edit:
+1. Research: read all relevant files, write findings
+2. Plan: write detailed plan with code snippets. Do NOT implement yet.
+3. Wait for approval or annotations on plan
+4. Implement: follow plan exactly. Mark tasks complete as you go.
+5. Verify: run typecheck, build, and verify output matches plan
+6. Deploy: vercel --prod only after all gates pass
+
+Never skip the plan for non-trivial work. Implementation should be boring
+because the plan already made every decision.
+
+## CORRECTIONS ARE TRAINING DATA
+
+When Renato IV or Tito corrects any output:
+1. Fix the immediate issue
+2. Append the correction to .claude/memory/corrections.jsonl
+3. If the same correction has been made before, promote to learned-rules.md immediately
+4. Every correction makes the next build better. Never dismiss a correction as one-off.
+
+## CANONICAL SCRIPT LOCATIONS
+
+- Portal scripts: ~/evco-portal/scripts/ (email-intake, classifiers, banxico-rate, etc.)
+- Standalone pipeline: ~/scripts/ (rates.js is here — THREE copies exist, only edit ~/scripts/lib/rates.js)
+- When in doubt which copy is canonical: check what crontab points to (crontab -l | grep scriptname)
+- PM2 for always-on daemons (cruz-bot, globalpc-sync, email-intelligence)
+- Crontab for scheduled jobs (everything else)

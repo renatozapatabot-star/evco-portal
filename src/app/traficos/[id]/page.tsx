@@ -88,16 +88,16 @@ interface TimelineEvent {
 
 // Event type → color mapping (design system emotional colors)
 const EVENT_CONFIG: Record<string, { icon: string; color: string; bg: string }> = {
-  status_changed: { icon: '🔄', color: '#C4963C', bg: 'rgba(196,150,60,0.12)' },
+  status_changed: { icon: '🔄', color: 'var(--gold)', bg: 'var(--gold-bg)' },
   doc_uploaded:   { icon: '📎', color: '#0D9488', bg: 'rgba(13,148,136,0.12)' },
   doc_received:   { icon: '📥', color: '#0D9488', bg: 'rgba(13,148,136,0.12)' },
   crossed:        { icon: '🟢', color: '#16A34A', bg: 'rgba(22,163,74,0.12)' },
   semaforo:       { icon: '🚦', color: '#7E22CE', bg: 'rgba(126,34,206,0.12)' },
   mve_filed:      { icon: '📋', color: '#7E22CE', bg: 'rgba(126,34,206,0.12)' },
   pedimento:      { icon: '📄', color: '#7E22CE', bg: 'rgba(126,34,206,0.12)' },
-  cruz_ai:        { icon: '🦀', color: '#C4963C', bg: 'rgba(196,150,60,0.12)' },
+  cruz_ai:        { icon: '🦀', color: 'var(--gold)', bg: 'var(--gold-bg)' },
   note:           { icon: '💬', color: '#475569', bg: 'rgba(71,85,105,0.12)' },
-  created:        { icon: '📦', color: '#C4963C', bg: 'rgba(196,150,60,0.12)' },
+  created:        { icon: '📦', color: 'var(--gold)', bg: 'var(--gold-bg)' },
 }
 
 function getEventStyle(eventType: string) {
@@ -110,7 +110,7 @@ function sourceBadge(source: string | null) {
     system: { bg: 'rgba(156,152,144,0.15)', text: 'var(--text-muted)' },
     mobile: { bg: 'rgba(13,148,136,0.15)', text: '#0D9488' },
     portal: { bg: 'rgba(184,149,63,0.15)', text: '#C4963C' },
-    cruz_ai: { bg: 'rgba(196,150,60,0.15)', text: '#C4963C' },
+    cruz_ai: { bg: 'var(--gold-bg)', text: '#C4963C' },
     telegram: { bg: 'rgba(37,99,235,0.15)', text: '#2563EB' },
   }
   const c = colors[source] ?? colors.system

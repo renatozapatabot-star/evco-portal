@@ -282,17 +282,17 @@ export default function ExpedientesPage() {
                       <Link
                         href={`/traficos/${encodeURIComponent(trafico)}`}
                         onClick={e => e.stopPropagation()}
-                        style={{ fontSize: 14, fontWeight: 700, color: 'var(--gold, #C4963C)', textDecoration: 'none', fontFamily: 'var(--font-jetbrains-mono)' }}
+                        style={{ fontSize: 14, fontWeight: 700, color: 'var(--gold, #C4963C)', textDecoration: 'none', fontFamily: 'var(--font-mono)' }}
                       >
                         {fmtId(trafico)}
                       </Link>
                     ) : (
-                      <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--gold, #C4963C)', fontFamily: 'var(--font-jetbrains-mono)' }}>
+                      <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--gold, #C4963C)', fontFamily: 'var(--font-mono)' }}>
                         {fmtPedimentoShort(pedimentoId)}
                       </span>
                     )}
                     {trafico && pedimentoId !== trafico && (
-                      <span style={{ fontSize: 11, color: 'var(--text-tertiary)', fontFamily: 'var(--font-jetbrains-mono)' }}>
+                      <span style={{ fontSize: 11, color: 'var(--text-tertiary)', fontFamily: 'var(--font-mono)' }}>
                         Ped: {fmtPedimentoShort(pedimentoId)}
                       </span>
                     )}

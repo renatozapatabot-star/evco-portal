@@ -99,7 +99,7 @@ export default function AnalyticsPage() {
 
   return (
     <div style={{ padding: '24px 16px', maxWidth: 900, margin: '0 auto' }}>
-      <h1 style={{ fontSize: 24, fontWeight: 700, color: '#1A1A1A', margin: '0 0 4px' }}>Analytics</h1>
+      <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 4px' }}>Analytics</h1>
       <p style={{ fontSize: 13, color: '#6B6B6B', margin: '0 0 24px' }}>
         {rows.length.toLocaleString()} tráficos · ene 2024–presente
       </p>

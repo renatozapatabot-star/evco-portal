@@ -71,7 +71,7 @@ export default function NoticiasPage() {
           {filtered.map(alert => (
             <div key={alert.id} className="card" style={{
               padding: '16px 20px',
-              borderLeft: `4px solid ${alert.relevance === 'high' ? '#DC2626' : '#D97706'}`,
+              borderLeft: `4px solid ${alert.relevance === 'high' ? 'var(--danger-500)' : 'var(--warning-500)'}`,
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
                 <div style={{ flex: 1 }}>
@@ -84,7 +84,7 @@ export default function NoticiasPage() {
                   <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
                     <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: '#9B9B9B' }}>{fmtDate(alert.published_at || alert.created_at)}</span>
                     {alert.source && <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 4, background: '#F5F4F0', color: '#6B6B6B' }}>{alert.source}</span>}
-                    <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 4, background: alert.relevance === 'high' ? '#FEF2F2' : '#FFFBEB', color: alert.relevance === 'high' ? '#DC2626' : '#D97706' }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 4, background: alert.relevance === 'high' ? '#FEF2F2' : '#FFFBEB', color: alert.relevance === 'high' ? 'var(--danger-500)' : 'var(--warning-500)' }}>
                       {alert.relevance === 'high' ? 'Alta' : 'Media'}
                     </span>
                   </div>

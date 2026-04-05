@@ -88,7 +88,7 @@ export default function MensajesPage() {
           style={{
             width: '100%', minHeight: 80, border: '1px solid #E8E5E0', borderRadius: 8,
             padding: '10px 12px', fontSize: 13, color: '#1A1A1A', fontFamily: 'inherit',
-            resize: 'vertical', outline: 'none', background: '#FAFAF8', boxSizing: 'border-box',
+            resize: 'vertical', outline: 'none', background: 'var(--bg-main)', boxSizing: 'border-box',
           }}
         />
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
@@ -101,7 +101,7 @@ export default function MensajesPage() {
             style={{
               display: 'flex', alignItems: 'center', gap: 6,
               padding: '8px 20px', borderRadius: 8, fontSize: 13, fontWeight: 700,
-              background: replyText.trim() ? '#C4963C' : '#E8E5E0',
+              background: replyText.trim() ? 'var(--gold)' : 'var(--border)',
               border: 'none', color: replyText.trim() ? '#FFFFFF' : '#9B9B9B',
               cursor: replyText.trim() ? 'pointer' : 'default', minHeight: 40,
             }}
@@ -126,12 +126,12 @@ export default function MensajesPage() {
               <div key={msg.id} style={{
                 padding: '14px 20px', borderRadius: 12,
                 background: isOutbound ? 'rgba(196,150,60,0.06)' : '#FFFFFF',
-                border: `1px solid ${isOutbound ? 'rgba(196,150,60,0.2)' : '#E8E5E0'}`,
+                border: `1px solid ${isOutbound ? 'rgba(196,150,60,0.2)' : 'var(--border)'}`,
                 marginLeft: isOutbound ? 40 : 0,
                 marginRight: isOutbound ? 0 : 40,
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: isOutbound ? '#C4963C' : '#1A1A1A' }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: isOutbound ? 'var(--gold)' : '#1A1A1A' }}>
                     {isOutbound ? 'RZ & Company' : msg.from_name || companyName}
                   </span>
                   <span style={{ fontSize: 10, color: '#9B9B9B', fontFamily: 'var(--font-mono)' }}>{fmtDateTime(msg.created_at)}</span>

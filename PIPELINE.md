@@ -1,5 +1,5 @@
 # CRUZ PIPELINE — The Full Clearance Lifecycle
-## Single Source of Truth — Updated: 2026-04-02
+## Single Source of Truth — Updated: 2026-04-05
 ## Renato Zapata & Company · Patente 3596 · Aduana 240
 
 ---
@@ -20,316 +20,249 @@ TRANSMIT → CROSSING → CLEARANCE → INVOICE → PAYMENT → ARCHIVE
 
 ## STEP 1: INTAKE
 **Status: ✅ WORKING**
-**Owner: THE LOOM (email-intake) + THE FORGE (portal upload UI)**
+**Owner: email-intake.js + portal upload UI**
 
-Ursula sends documents via email or uploads through portal.
+Documents arrive via email or portal upload. Shadow reader observes.
 
 | Component | Status | Details |
 |-----------|--------|---------|
-| email-intake.js | ✅ online | pm2 ID 18, */15 min, downloads PDFs |
-| Gmail OAuth (ai@) | ✅ working | GMAIL_REFRESH_TOKEN_AI confirmed |
-| Gmail OAuth (Eloisa) | ✅ working | GMAIL_REFRESH_TOKEN_ELOISA confirmed |
-| Gmail OAuth (Claudia) | ✅ working | GMAIL_REFRESH_TOKEN_CLAUDIA confirmed |
-| Portal /upload/[token] | ✅ working | Magic link upload page |
-| /api/upload route | ✅ working | Handles file storage |
-
-**What's missing:** Nothing critical. Shadow mode for Eloisa/Claudia inboxes pending.
+| email-intake.js | ✅ online | Sonnet extraction, */15 min cron |
+| Gmail OAuth (ai@) | ✅ working | GMAIL_REFRESH_TOKEN_AI |
+| Gmail OAuth (Eloisa) | ✅ working | GMAIL_REFRESH_TOKEN_ELOISA |
+| Gmail OAuth (Claudia) | ✅ working | GMAIL_REFRESH_TOKEN_CLAUDIA |
+| Portal /upload/[token] | ✅ working | Magic link upload |
+| Shadow reader | ✅ working | Sonnet classification, */30 min |
+| shadow_classifications table | ✅ live | Observe-only intelligence |
 
 ---
 
 ## STEP 2: CLASSIFY
 **Status: ✅ WORKING**
-**Owner: THE FURNACE (Ollama classification)**
-
-CRUZ identifies each document: factura, packing list, BL, COVE, certificate of origin, etc.
+**Owner: doc-classifier.js (Ollama qwen3:8b) + Sonnet shadow**
 
 | Component | Status | Details |
 |-----------|--------|---------|
-| doc-classifier | ✅ working | Ollama qwen3:8b, think:false |
-| document_classifications table | ✅ live | 1,388 records, growing |
+| doc-classifier.js | ✅ working | Ollama qwen3:8b, 16 doc types |
+| shadow-reader.js | ✅ working | Sonnet classification, cost-tracked |
+| document_classifications | ✅ live | Growing dataset |
+| shadow_classifications | ✅ live | Sonnet observe-mode comparison |
 | Confidence thresholds | ✅ set | >0.85 auto, 0.60-0.85 flag, <0.60 OTRO |
-| OTRO rate | 🟡 monitor | Target: <20%. Check weekly. |
-
-**What's missing:** Confidence calibration against Tito's corrections. Accuracy dashboard not built yet.
+| Shadow weekly report | ✅ built | Sunday Telegram summary |
 
 ---
 
-## STEP 3: COMPLETENESS
+## STEP 3: COMPLETENESS + SYNC
 **Status: ✅ WORKING**
-**Owner: THE LOOM (completeness-checker)**
+**Owner: globalpc-sync + completeness-checker**
 
-CRUZ checks: do we have all 15 required document types for this shipment?
+GlobalPC sync pulls data for all active clients (47). Completeness checker
+identifies missing documents per tráfico.
 
 | Component | Status | Details |
 |-----------|--------|---------|
-| completeness-checker.js | ✅ online | pm2 ID 17, runs 6 AM daily |
-| 15-doc checklist logic | ✅ built | Per import type (standard, USMCA, IMMEX) |
-| Expediente Digital page | ✅ working | Shows completion % per tráfico |
-
-**What's missing:** Conditional rules per import regime (some types need fewer docs).
+| globalpc-sync.js | ✅ online | MySQL → Supabase, all client tables |
+| nightly-pipeline.js | ✅ working | 1 AM, all clients, anomaly + solicit chained |
+| completeness-checker.js | ✅ online | 6 AM daily, 15-doc checklist |
+| Expediente Digital page | ✅ working | Coverage % per tráfico |
+| EVCO supplier resolution | ✅ 100% | 0 PRV_ codes remaining |
+| MAFESA supplier resolution | ✅ 100% | 0 PRV_ codes remaining |
 
 ---
 
 ## STEP 4: SOLICIT
 **Status: 🟡 PARTIAL**
-**Owner: THE LOOM (solicitud-escalation) + THE FORGE (request UI)**
+**Owner: solicitud-email.js + draft-escalation.js**
 
-When documents are missing, CRUZ auto-requests them from the client.
+Missing docs → auto-request email → escalation if no response.
 
 | Component | Status | Details |
 |-----------|--------|---------|
-| solicitud-escalation.js | 🟡 exists | pm2 ID 5, */30 min, 3 restarts |
-| Email template | ❌ needs work | Template exists but not polished |
-| Portal solicitation UI | 🟡 basic | Shows missing docs, no one-tap request |
-| 4-hour escalation to Telegram | ❌ not built | No response → alert Tito/Renato |
-| Magic link for upload | ✅ working | /upload/[token] exists |
+| solicit-missing-docs.js | ✅ built | Creates solicitation drafts |
+| solicitud-email.js | 🟡 ready | Email via Resend, NOT activated (needs Tito approval) |
+| documento_solicitudes table | ✅ live | 1,000+ pending |
+| 4-hour escalation | ✅ built | draft-escalation.js, 3 levels |
+| Magic upload link | ✅ working | /upload/[token] with 72h expiry |
 
-**Next action:** Polish email template. Wire 4-hour escalation. Add one-tap "solicitar" button on portal.
+**Next:** Tito approves activation of solicitud-email.js
 
 ---
 
 ## STEP 5: DRAFT
-**Status: 🟡 PARTIAL — BLOCKED ON CREDITS**
-**Owner: THE FURNACE (pedimento-drafter + confidence score)**
-
-CRUZ drafts the pedimento using AI, assigns a confidence score.
+**Status: 🟡 PARTIAL — BLOCKED ON API CREDITS**
+**Owner: pedimento-drafter + confidence score**
 
 | Component | Status | Details |
 |-----------|--------|---------|
-| pedimento-drafter logic | ✅ built | Uses Anthropic Sonnet |
-| pedimento_drafts table | ✅ exists | Schema ready |
-| Anthropic SDK | ✅ installed | @anthropic-ai/sdk |
-| Anthropic API credits | ❌ $0 balance | BLOCKED — Friday $200 |
-| Confidence score algorithm | 🟡 designed | Doc confidence 30%, value match 25%, fracción 25%, gates 20% |
-| 9 verification gates | 🟡 designed | Not all implemented yet |
+| pedimento_drafts table | ✅ live | 131 drafts, 68 stale >48h |
+| Draft creation (Sonnet) | 🟡 blocked | API credits exhausted |
+| Confidence score | 🟡 designed | 3-tier system built |
+| CRUZ AI error handling | ✅ fixed | Clear billing/rate limit messages |
 
-**Next action:** Add Anthropic credits Friday. Test live draft. Build verification gates.
+**Next:** Replenish Anthropic credits. Test live draft creation.
 
 ---
 
-## STEP 6: REVIEW
-**Status: 🟡 PARTIAL**
-**Owner: THE FORGE (review UI) + THE NEXUS (Telegram approval)**
+## STEP 6: REVIEW + APPROVAL
+**Status: ✅ WORKING**
+**Owner: telegram-bot.js + telegram-webhook**
 
-Tito reviews the draft, corrects if needed, approves via Telegram.
+Tito reviews and approves via Telegram. Full audit trail.
 
 | Component | Status | Details |
 |-----------|--------|---------|
-| Telegram /aprobar command | ✅ built | Webhook at /api/telegram-webhook |
-| TELEGRAM_AUTHORIZED_USERS | ✅ set | 7277519813, 8538502098 |
-| 5-second cancellation window | ✅ built | Observable and interruptible |
-| Portal review UI | 🟡 basic | Needs inline correction interface |
-| Correction logging | ❌ not built | THE critical Karpathy gap |
-| corrections table | ❌ not created | Needs: field, original, corrected, reasoning |
-
-**Next action:** Create corrections table. Build inline correction UI. Every Tito correction must be logged automatically — this is the Karpathy fuel.
+| /aprobar command (bot) | ✅ built | Lists pending items with inline buttons |
+| /pendientes command | ✅ built | Counts grouped by type with stale flags |
+| Telegram webhook | ✅ working | /aprobar_[UUID] callback handling |
+| 5-second cancel window | ✅ built | Observable and interruptible |
+| "Patente 3596 honrada" | ✅ built | Confirmation message on approval |
+| audit_log | ✅ immutable | Every approval/rejection/correction logged |
+| staff_corrections table | ✅ created | For accuracy tracking |
+| Morning report | ✅ enriched | Pending counts, stale flags, shadow stats |
 
 ---
 
-## STEP 7: TRANSMIT
+## STEP 7: SHADOW INTELLIGENCE
+**Status: ✅ WORKING**
+**Owner: shadow-reader.js + shadow-weekly-report.js**
+
+Observe-only mode. Classify everything, intervene in nothing.
+
+| Component | Status | Details |
+|-----------|--------|---------|
+| shadow-reader.js | ✅ working | Sonnet classification, */30 min |
+| shadow_classifications | ✅ live | email_id, classification, confidence |
+| staff_corrections | ✅ created | Correction tracking for accuracy |
+| shadow-weekly-report.js | ✅ built | Sunday Telegram summary |
+| Cost tracking | ✅ built | api_cost_log per classification |
+
+---
+
+## STEP 8: TRANSMIT
 **Status: ❌ NOT BUILT**
-**Owner: THE NEXUS (VUCEM integration)**
 
-CRUZ sends the approved pedimento to SAT via VUCEM.
-
-| Component | Status | Details |
-|-----------|--------|---------|
-| VUCEM SOAP client | ❌ not built | Need sandbox credentials from SAT |
-| e.firma handling | ❌ not built | Each client needs their own certificate |
-| Transmission log table | ❌ not created | Every attempt must be logged |
-| Shadow mode comparison | ❌ not built | Compare CRUZ draft vs Tito's manual for 30 days |
-| Retry logic (exponential backoff) | ❌ not built | SAT APIs are unreliable |
-| Acuse retrieval | ❌ not built | Async — poll for MNVA number |
-
-**Paths:** Direct SOAP (free, 4-8 weeks) vs API wrapper like Quiana.app (paid, 1-2 weeks)
-
-**Next action:** Get VUCEM sandbox credentials. Start with shadow mode — draft but don't transmit. Compare against Tito's manual transmissions for 30 days.
+VUCEM SOAP integration. Requires sandbox credentials from SAT.
 
 ---
 
-## STEP 8: CROSSING
+## STEP 9: CROSSING
 **Status: ❌ NOT BUILT**
-**Owner: THE NEXUS (Aduanet tracking)**
 
-Shipment crosses the bridge. Semáforo assigned (verde/rojo).
-
-| Component | Status | Details |
-|-----------|--------|---------|
-| Aduanet status polling | ❌ not built | Need Aduanet API access |
-| Semáforo tracking | ❌ not built | Verde = pass, Rojo = physical inspection |
-| Bridge/lane assignment | ❌ not built | Step 9 in the tráfico timeline |
-| crossing-predictor.js | ✅ exists | pm2 ID 20, predictions in crossing_windows |
-| CBP bridge wait times | 🟡 broken | CBP API returning null (their end) |
-
-**Next action:** Wire Aduanet credentials (ADUANET_URL, ADUANET_USER, ADUANET_PASSWORD already in .env.local). Build status poller.
+Aduanet status polling. Semáforo tracking. Bridge/lane assignment.
+crossing-predictor.js exists but Aduanet integration not wired.
 
 ---
 
-## STEP 9: CLEARANCE
+## STEP 10: CLEARANCE
 **Status: ❌ NOT BUILT**
-**Owner: THE NEXUS (despacho confirmation)**
 
-Customs clearance confirmed. Shipment is released.
-
-| Component | Status | Details |
-|-----------|--------|---------|
-| Despacho confirmation logic | ❌ not built | Trigger when Aduanet shows cleared |
-| Client notification | ❌ not built | Telegram + portal notification |
-| Clearance timestamp logging | ❌ not built | For crossing time analytics |
-
-**Next action:** Depends on Step 8 (Aduanet integration). Build together.
+Despacho confirmation. Client notification. Clearance timestamp logging.
 
 ---
 
-## STEP 10: INVOICE
+## STEP 11: INVOICE + PAYMENT
 **Status: ❌ NOT BUILT**
-**Owner: THE VAULT (invoice generation) + THE NEXUS (e-conta sync)**
 
-Client invoiced for brokerage fees, duties, taxes.
-
-| Component | Status | Details |
-|-----------|--------|---------|
-| Invoice generation | ❌ not built | Need invoice template + fee calculation |
-| e-conta sync | ❌ not built | eConta MySQL at 216.251.68.5:33035 |
-| Fee calculation from system_config | 🟡 partial | DTA rates in system_config, but invoice logic not built |
-| PDF invoice generation | ❌ not built | Professional CRUZ-branded invoice |
-
-**Next action:** Define fee structure with Tito. Build invoice template. Wire e-conta sync.
-
----
-
-## STEP 11: PAYMENT
-**Status: ❌ NOT BUILT**
-**Owner: THE NEXUS (QuickBooks/bank reconciliation)**
-
-Payment tracked. Client paid → pedimento marked paid.
-
-| Component | Status | Details |
-|-----------|--------|---------|
-| QuickBooks integration | ❌ not built | Bank/payment reconciliation |
-| Payment status tracking | ❌ not built | Mark pedimentos as paid/unpaid |
-| Overdue payment alerts | ❌ not built | Telegram alert when payment is late |
-
-**Next action:** Determine if QuickBooks is the right tool or if e-conta handles this. Ask Tito.
+Invoice generation, e-conta sync, payment reconciliation.
 
 ---
 
 ## STEP 12: ARCHIVE
 **Status: 🟡 PARTIAL**
-**Owner: THE VAULT (expediente storage + audit trail)**
-
-Full expediente stored. Every document, every action, every timestamp. SAT audit-ready.
 
 | Component | Status | Details |
 |-----------|--------|---------|
-| expediente_documentos table | ✅ exists | Document storage with file_url |
-| Supabase Storage bucket | ✅ exists | "expedientes" bucket, private |
-| Audit trail (pipeline_log) | ✅ working | 2,915 entries |
-| Complete expediente view | 🟡 partial | Shows docs but not all 15 types |
-| Immutable append-only log | 🟡 needs verification | Should never delete, only append |
-
-**Next action:** Verify immutability. Build full expediente PDF export for SAT audit.
+| expediente_documentos | ✅ live | EVCO: 180K docs, MAFESA: 1.8K docs |
+| Supabase Storage | ✅ live | Private expedientes bucket |
+| pipeline_log | ✅ working | 2,900+ entries |
+| SAT audit export | ❌ not built | Full expediente PDF for audit |
 
 ---
 
-## TAB OWNERSHIP MAP
+## MONITORING + HEALTH
 
-| Tab | Steps Owned | Primary Focus |
-|-----|-------------|---------------|
-| THE ORACLE | ALL (oversight) | Sequencing, priorities, strategy |
-| THE FORGE | 1, 4, 6 | Upload UI, solicitation UI, review UI |
-| THE VAULT | 10, 12 | Invoice generation, archive, audit trail |
-| THE LOOM | 1, 3, 4 | email-intake, completeness, solicitation automation |
-| THE NEXUS | 7, 8, 9, 10, 11 | VUCEM, Aduanet, e-conta, QuickBooks |
-| THE TOWER | ALL (monitoring) | Health checks, alerts, incident response |
-| THE FURNACE | 2, 5, 6 | Classification, drafting, confidence, corrections |
-| THE HUNT | — | Client acquisition (feeds new clients into Step 1) |
+| Component | Status | Details |
+|-----------|--------|---------|
+| pipeline-health.js | ✅ built | Smart interval checks, replaces basic heartbeat |
+| heartbeat.js | ✅ working | Supabase + portal + pm2 + sync |
+| heartbeat_log | ✅ live | All scripts log completion |
+| morning-report.js | ✅ enriched | Multi-client, TC, shadow, pending approvals |
+| Telegram alerts | ✅ working | Failures → 🔴, stale → 🟡, healthy → ✅ |
 
 ---
 
-## THE CRITICAL PATH
-
-These five must happen in order. Everything else is important but not essential.
+## CRONTAB (Throne Mac Studio)
 
 ```
-1. MAFESA live (Step 1-3 working for client #2)          ← THIS WEEK
-2. Solicitation automation (Step 4 complete)               ← NEXT WEEK
-3. Pedimento drafting live (Step 5 — needs credits)        ← FRIDAY+
-4. Shadow mode accuracy (Step 5-6 measured for 30 days)    ← MAY
-5. VUCEM transmission (Step 7 — the gap that closes it)    ← JUNE
+# PATH must be first line
+PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin
+
+# ── Pipeline ──
+0 1 * * *          node ~/evco-portal/scripts/nightly-pipeline.js >> /tmp/nightly-pipeline.log 2>&1
+55 6 * * *         node ~/evco-portal/scripts/morning-report.js >> /tmp/morning-report.log 2>&1
+*/5 6-22 * * 1-6   node ~/evco-portal/scripts/email-intake.js --ollama >> /tmp/email-intake.log 2>&1
+30 2 * * *         node ~/evco-portal/scripts/doc-classifier.js >> /tmp/doc-classifier.log 2>&1
+
+# ── Monitoring ──
+*/15 * * * *       node ~/evco-portal/scripts/pipeline-health.js >> /tmp/pipeline-health.log 2>&1
+30 1 * * *         node ~/evco-portal/scripts/regression-guard.js >> /tmp/regression-guard.log 2>&1
+
+# ── Shadow mode ──
+*/30 6-22 * * 1-6  node ~/evco-portal/scripts/shadow-reader.js >> /tmp/shadow-reader.log 2>&1
+0 20 * * 0         node ~/evco-portal/scripts/shadow-weekly-report.js >> /tmp/shadow-weekly-report.log 2>&1
+
+# ── Escalation ──
+*/15 * * * *       node ~/evco-portal/scripts/draft-escalation.js >> /tmp/draft-escalation.log 2>&1
+
+# ── Data ──
+*/30 * * * *       node ~/evco-portal/scripts/fetch-bridge-times.js >> /tmp/fetch-bridge-times.log 2>&1
+0 6 * * *          node ~/evco-portal/scripts/banxico-rate.js >> /tmp/banxico-rate.log 2>&1
 ```
 
-After these five, Steps 8-11 follow naturally. Step 12 is ongoing.
-
----
-
-## KARPATHY INTEGRATION
-
-The learning loop touches Steps 2, 5, and 6:
-
-```
-Step 2 (CLASSIFY):  Every classification feeds accuracy metrics
-Step 5 (DRAFT):     Every draft gets a confidence score
-Step 6 (REVIEW):    Every Tito correction is training data
-
-correction logged → pattern detected → rule created → next draft better
-                                                        ↓
-                                            fewer corrections needed
-                                                        ↓
-                                            confidence threshold rises
-                                                        ↓
-                                            autonomous transmission enabled
-```
-
-**The Furnace is not a separate feature. It IS the pipeline getting smarter.**
-
----
-
-## CAZA / HUNT INTEGRATION
-
-THE HUNT feeds NEW clients into Step 1:
-
-```
-Ghost client identified → Tito calls → client signs →
-portal created → first email arrives → Step 1 begins →
-pipeline processes → Furnace learns → next client is faster
-```
-
-**Current HUNT state:** 46 clients in pipeline, 8 ghost clients identified, 4 competitor patentes mapped. Real intelligence, not mock data.
+**PM2 always-on:** `cruz-bot` (telegram-bot.js polling)
 
 ---
 
 ## SCORING
 
-| Step | Score | Target |
-|------|-------|--------|
-| 1. Intake | 9.5/10 | 10/10 |
-| 2. Classify | 8/10 | 9.5/10 |
-| 3. Completeness | 8/10 | 9/10 |
-| 4. Solicit | 4/10 | 9/10 |
-| 5. Draft | 3/10 (blocked) | 9/10 |
-| 6. Review | 5/10 | 9/10 |
-| 7. Transmit | 0/10 | 9/10 |
-| 8. Crossing | 1/10 | 8/10 |
-| 9. Clearance | 0/10 | 8/10 |
-| 10. Invoice | 0/10 | 8/10 |
-| 11. Payment | 0/10 | 7/10 |
-| 12. Archive | 6/10 | 9/10 |
-| **OVERALL** | **3.7/10** | **8.8/10** |
+| Step | Score | Target | Change |
+|------|-------|--------|--------|
+| 1. Intake | 9.5/10 | 10/10 | — |
+| 2. Classify | 8.5/10 | 9.5/10 | +0.5 (shadow Sonnet) |
+| 3. Completeness + Sync | 8.5/10 | 9/10 | +0.5 (PRV resolved) |
+| 4. Solicit | 5/10 | 9/10 | +1 (pipeline wired) |
+| 5. Draft | 3/10 | 9/10 | — (blocked on credits) |
+| 6. Review + Approval | 8/10 | 9/10 | +3 (/aprobar, /pendientes, morning enrichment) |
+| 7. Shadow Intelligence | 8/10 | 9/10 | NEW |
+| 8. Transmit | 0/10 | 9/10 | — |
+| 9. Crossing | 1/10 | 8/10 | — |
+| 10. Clearance | 0/10 | 8/10 | — |
+| 11. Invoice + Payment | 0/10 | 7/10 | — |
+| 12. Archive | 6/10 | 9/10 | — |
+| **OVERALL** | **4.7/10** | **8.8/10** | **+1.0** |
 
-**Steps 1-3 are strong. Steps 4-6 are close. Steps 7-11 are the mountain.**
+**Steps 1-3 strong. Steps 6-7 now strong. Steps 4-5 close (credits + Tito approval). Steps 8-11 are the mountain.**
+
+---
+
+## THE CRITICAL PATH
+
+```
+1. API credits restored (Step 5 unblocked)              ← NEXT
+2. Solicitation activated (Step 4 — Tito approval)       ← THIS WEEK
+3. Shadow accuracy measured (30 days baseline)            ← MAY
+4. VUCEM sandbox credentials (Step 8 — SAT)              ← JUNE
+5. Aduanet polling (Step 9 — crossing tracking)           ← JUNE
+```
 
 ---
 
 ## UPDATE PROTOCOL
 
 After any build session:
-1. Update the status emoji (✅ 🟡 ❌) for affected components
-2. Update the score for affected steps
-3. Update "Next action" with what comes after
-4. Commit: `git add PIPELINE.md && git commit -m "pipeline: update step X status"`
-
-This file is the map. THE ORACLE reads it every morning.
+1. Update status emoji (✅ 🟡 ❌) for affected components
+2. Update score for affected steps
+3. Update "Next action"
+4. Commit: `git add PIPELINE.md && git commit -m "pipeline: update step X"`
 
 ---
 

@@ -237,6 +237,7 @@ export const CLIENT_ROUTES = [
   '/bienvenida',
   '/facturacion',
   '/noticias',
+  '/mensajes',
   '/login',
 ] as const
 

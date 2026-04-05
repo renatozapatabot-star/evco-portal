@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { verifySession } from '@/lib/session'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -9,9 +10,9 @@ const supabase = createClient(
 export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
-  const companyId = request.cookies.get('company_id')?.value
-  const userRole = request.cookies.get('user_role')?.value
-  if (!userRole) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const session = await verifySession(request.cookies.get('portal_session')?.value || '')
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const companyId = session.role === 'client' ? session.companyId : (request.cookies.get('company_id')?.value || session.companyId)
 
   const { data, error } = await supabase
     .from('notifications')
@@ -31,9 +32,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
-  const companyId = request.cookies.get('company_id')?.value
-  const userRole = request.cookies.get('user_role')?.value
-  if (!userRole) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const session = await verifySession(request.cookies.get('portal_session')?.value || '')
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const companyId = session.role === 'client' ? session.companyId : (request.cookies.get('company_id')?.value || session.companyId)
 
   const { id } = await request.json()
 
@@ -48,4 +49,23 @@ export async function PATCH(request: NextRequest) {
     .eq('company_id', companyId)
 
   return NextResponse.json({ ok: true })
+}
+
+export async function POST(request: NextRequest) {
+  const session = await verifySession(request.cookies.get('portal_session')?.value || '')
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const companyId = session.role === 'client' ? session.companyId : (request.cookies.get('company_id')?.value || session.companyId)
+
+  const { action } = await request.json()
+
+  if (action === 'mark_all_read') {
+    await supabase
+      .from('notifications')
+      .update({ read: true })
+      .eq('company_id', companyId)
+      .eq('read', false)
+    return NextResponse.json({ ok: true })
+  }
+
+  return NextResponse.json({ error: 'Unknown action' }, { status: 400 })
 }

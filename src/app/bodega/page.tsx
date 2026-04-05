@@ -381,7 +381,7 @@ export default function BodegaPage() {
                 {danos.length === 0 ? (
                   <tr>
                     <td colSpan={isBroker ? 4 : 3}>
-                      <EmptyState icon="✅" title="Sin incidencias" description="No se han reportado faltantes ni daños" />
+                      <EmptyState icon="✅" title="Sin incidencias" description="Todo en orden — sin faltantes ni daños. 🦀" />
                     </td>
                   </tr>
                 ) : danos.map(e => {

@@ -84,7 +84,7 @@ export async function computeStatusSentence(
   // Green
   return {
     level: 'green',
-    sentence: `Todo en orden — ${activeTraficos} en ruta, sin acciones urgentes`,
+    sentence: `Todo en orden — ${activeTraficos} en ruta, sin acciones urgentes. 🦀`,
     count: 0,
   }
 }

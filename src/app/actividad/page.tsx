@@ -149,7 +149,7 @@ export default function ActividadPage() {
           {[0, 1, 2, 3, 4].map(i => <div key={i} className="skeleton-shimmer" style={{ height: 56, borderRadius: 8 }} />)}
         </div>
       ) : items.length === 0 ? (
-        <EmptyState icon="📋" title="Sin actividad reciente" description="Los eventos de sus operaciones aparecerán aquí" />
+        <EmptyState icon="📋" title="Todo tranquilo por aquí" description="Sin pendientes. Cuando haya movimiento, lo verá aquí. 🦀" />
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {items.map(item => (

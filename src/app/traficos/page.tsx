@@ -264,8 +264,8 @@ function TraficosContent() {
               {!loading && paged.length === 0 && (
                 <EmptyState
                   icon="🚛"
-                  title="No hay tráficos activos"
-                  description="Sus embarques activos aparecerán aquí"
+                  title="Sin operaciones activas"
+                  description="¿Planea un nuevo envío? Aquí aparecerán sus tráficos."
                   cta={{ label: "Contactar a su agente", href: "/comunicaciones" }}
                 />
               )}

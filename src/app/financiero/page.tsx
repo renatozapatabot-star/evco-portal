@@ -321,7 +321,7 @@ export default function FinancieroPage() {
               ))}
             </div>
           ) : filteredFacturas.length === 0 && facturas.length === 0 ? (
-            <EmptyState icon="📄" title="Facturas disponibles después de sincronización" description="Los datos de facturas se cargarán automáticamente con la próxima sincronización del pipeline" />
+            <EmptyState icon="📄" title="Sin facturas pendientes" description="Todo al día. Las próximas facturas aparecerán aquí automáticamente." />
           ) : filteredFacturas.length === 0 ? (
             <EmptyState icon="🔍" title={`Sin resultados para "${search}"`} description="Intenta con otro término de búsqueda" />
           ) : (

@@ -7,6 +7,7 @@ import { useRealtimeTrafico } from '@/hooks/use-realtime-trafico'
 import { fmtDate, fmtDateShort, fmtUSD, fmtUSDCompact, fmtKg, fmtDesc } from '@/lib/format-utils'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { calculateTmecSavings } from '@/lib/tmec-savings'
+import { getSmartGreeting } from '@/lib/greeting'
 import CountingNumber from '@/components/ui/CountingNumber'
 import { Sparkline } from '@/components/sparkline'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -53,8 +54,8 @@ export default function ClientInicioView() {
     if (lastUpdate) {
       const isCrossed = lastUpdate.estatus.toLowerCase().includes('cruz')
       setRealtimeToast(isCrossed
-        ? `✅ ${lastUpdate.trafico} acaba de cruzar`
-        : `🔄 ${lastUpdate.trafico}: ${lastUpdate.estatus}`)
+        ? `${lastUpdate.trafico} acaba de cruzar. Todo en orden. 🦀`
+        : `${lastUpdate.trafico}: ${lastUpdate.estatus}`)
       const t = setTimeout(() => setRealtimeToast(null), 5000)
       return () => clearTimeout(t)
     }
@@ -261,14 +262,17 @@ export default function ClientInicioView() {
   }, [traficos])
 
   const greetingSub = useMemo(() => {
-    const parts: string[] = []
-    if (avgConf > 0) parts.push(`${avgConf}% certeza`)
-    if (last24h.crossed > 0) parts.push(`${last24h.crossed} cruzaron ayer`)
-    if (last24h.newTraficos > 0) parts.push(`${last24h.newTraficos} nuevos`)
-    if (last24h.noPedGt7 > 0) parts.push(`${last24h.noPedGt7} sin pedimento >7 días`)
-    if (pendingEntradas.length > 0) parts.push(`${pendingEntradas.length} entradas pendientes`)
-    return parts.length > 0 ? parts.join(' · ') : 'Sin novedades'
-  }, [last24h, pendingEntradas, avgConf])
+    return getSmartGreeting(companyName || undefined, {
+      urgentCount: last24h.noPedGt7,
+      enProcesoCount: enProceso,
+      crossed24h: last24h.crossed,
+      newTraficos24h: last24h.newTraficos,
+      noPedGt7: last24h.noPedGt7,
+      pendingEntradas: pendingEntradas.length,
+      tmecSavings: tmecSavings.totalSavings,
+      avgConfidence: avgConf,
+    }).subtitle
+  }, [companyName, last24h, enProceso, pendingEntradas, tmecSavings, avgConf])
 
   // Oldest pending entrada age (capped at 2 years to exclude legacy)
   const oldestDays = useMemo(() => {
@@ -337,7 +341,12 @@ export default function ClientInicioView() {
             Todo en orden.
           </div>
           <p style={{ fontSize: 13, color: '#9B9B9B', margin: '12px 0 0', fontFamily: 'var(--font-mono)' }}>
-            {enProceso} en proceso · {cruzado} cruzados · {avgConf > 0 ? `${avgConf}% certeza` : ''}
+            {enProceso} en proceso · {cruzado} cruzados{avgConf > 0 ? ` · ${avgConf}% certeza` : ''}
+            {tmecSavings.totalSavings >= 100000
+              ? ` · Ahorro T-MEC: $${Math.round(tmecSavings.totalSavings / 1000)}K 🦀`
+              : tmecSavings.totalSavings >= 10000
+                ? ` · Ahorro T-MEC: $${Math.round(tmecSavings.totalSavings / 1000)}K`
+                : ''}
           </p>
           {fetchedAt && (
             <p style={{ fontSize: 11, color: '#D4D4D4', margin: '8px 0 0' }}>

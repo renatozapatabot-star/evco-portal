@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { getCompanyIdCookie, getClientNameCookie } from '@/lib/client-config'
 import { fmtDate, fmtDateShort, fmtUSD, fmtUSDCompact, fmtKg, fmtDesc } from '@/lib/format-utils'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { calculateTmecSavings } from '@/lib/tmec-savings'
 import CountingNumber from '@/components/ui/CountingNumber'
 import { Sparkline } from '@/components/sparkline'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -234,6 +235,9 @@ export default function ClientInicioView() {
 
   // ── Contextual greeting subtitle ──
   // Average confidence across active traficos
+  // T-MEC savings — the retention number
+  const tmecSavings = useMemo(() => calculateTmecSavings(traficos), [traficos])
+
   const avgConf = useMemo(() => {
     const active = traficos.filter(t => !(t.estatus || '').toLowerCase().includes('cruz'))
     return active.length > 0 ? averageConfidence(active) : 0
@@ -538,6 +542,34 @@ export default function ClientInicioView() {
             </div>
             <ChevronRight size={16} style={{ color: '#92400E', flexShrink: 0 }} />
           </Link>
+        </div>
+      )}
+
+      {/* T-MEC Savings — the retention card */}
+      {tmecSavings.totalSavings > 0 && (
+        <div className="card" style={{
+          marginBottom: 24, padding: '20px 24px',
+          background: 'linear-gradient(135deg, rgba(196,150,60,0.08), rgba(196,150,60,0.02))',
+          border: '1px solid rgba(196,150,60,0.2)',
+          borderLeft: '4px solid #C4963C',
+        }}>
+          <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#8B6914', marginBottom: 8 }}>
+            Ahorro T-MEC {new Date().getFullYear()}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 8 }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 28, fontWeight: 800, color: '#C4963C' }}>
+              {fmtUSDCompact(tmecSavings.totalSavings)}
+            </span>
+            <span style={{ fontSize: 13, color: '#6B6B6B' }}>
+              en {tmecSavings.tmecOperations} operaciones con tasa preferencial
+            </span>
+          </div>
+          {tmecSavings.missedOpportunities.length > 0 && (
+            <div style={{ fontSize: 12, color: '#92400E', marginTop: 4 }}>
+              💡 {tmecSavings.missedOpportunities.length} embarque{tmecSavings.missedOpportunities.length !== 1 ? 's' : ''} de US/CA sin T-MEC —
+              ahorro potencial adicional: {fmtUSDCompact(tmecSavings.missedOpportunities.reduce((s, m) => s + m.potentialSavings, 0))}
+            </div>
+          )}
         </div>
       )}
 

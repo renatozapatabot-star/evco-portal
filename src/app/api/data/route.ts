@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { rateLimit } from '@/lib/rate-limit'
 import { verifySession } from '@/lib/session'
+import { sanitizeFilter } from '@/lib/sanitize'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -116,21 +117,35 @@ export async function GET(req: NextRequest) {
   // broker_id filter removed — not all tables have this column,
   // and this is a single-broker system (Patente 3596).
 
-  if (traficoPrefix) q = q.like('trafico', `${traficoPrefix}%`)
+  if (traficoPrefix) q = q.like('trafico', `${sanitizeFilter(traficoPrefix)}%`)
 
   const cveTrafico = params.get('cve_trafico')
-  if (cveTrafico) q = q.eq('cve_trafico', cveTrafico)
+  if (cveTrafico) q = q.eq('cve_trafico', sanitizeFilter(cveTrafico))
+
+  // Whitelisted columns for generic filters — prevents column injection
+  const ALLOWED_COLUMNS = [
+    'fecha_llegada', 'fecha_cruce', 'fecha_pago', 'created_at', 'updated_at',
+    'fecha_llegada_mercancia', 'processed_at', 'detected_at', 'recorded_at',
+    'solicitado_at', 'transcribed_at', 'checked_at', 'importe_total',
+    'pedimento', 'estatus', 'severity', 'status', 'trafico',
+  ] as const
 
   // Generic gte filter — e.g. gte_field=fecha_llegada&gte_value=2024-01-01
   const gteField = params.get('gte_field')
   const gteValue = params.get('gte_value')
-  if (gteField && gteValue) q = q.gte(gteField, gteValue)
+  if (gteField && gteValue && ALLOWED_COLUMNS.includes(gteField as typeof ALLOWED_COLUMNS[number])) {
+    q = q.gte(gteField, gteValue)
+  }
 
-  // Not-null filter — e.g. not_null=pedimento filters to rows where column is not null
+  // Not-null filter — e.g. not_null=pedimento
   const notNullField = params.get('not_null')
-  if (notNullField) q = q.not(notNullField, 'is', null)
+  if (notNullField && ALLOWED_COLUMNS.includes(notNullField as typeof ALLOWED_COLUMNS[number])) {
+    q = q.not(notNullField, 'is', null)
+  }
 
-  if (orderBy) q = q.order(orderBy, { ascending: orderDir })
+  if (orderBy && ALLOWED_COLUMNS.includes(orderBy as typeof ALLOWED_COLUMNS[number])) {
+    q = q.order(orderBy, { ascending: orderDir })
+  }
 
   const { data, error } = await q
 

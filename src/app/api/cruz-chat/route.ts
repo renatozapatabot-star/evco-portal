@@ -4,6 +4,7 @@ import { PORTAL_URL } from '@/lib/client-config'
 import { PORTAL_DATE_FROM } from '@/lib/data'
 import { getDTARates, getIVARate } from '@/lib/rates'
 import { verifySession } from '@/lib/session'
+import { sanitizeIlike, sanitizeFilter } from '@/lib/sanitize'
 
 import { rateLimitDB } from '@/lib/rate-limit-db'
 
@@ -391,7 +392,7 @@ async function executeTool(name: string, input: any, clientCtx: { companyId: str
           .eq('company_id', companyId)
         if (input.trafico_id) query = query.eq('trafico', input.trafico_id)
         if (input.estatus) query = query.ilike('estatus', `%${input.estatus}%`)
-        if (input.search) query = query.or(`descripcion_mercancia.ilike.%${input.search}%,trafico.ilike.%${input.search}%,pedimento.ilike.%${input.search}%`)
+        if (input.search) { const s = sanitizeIlike(input.search); query = query.or(`descripcion_mercancia.ilike.%${s}%,trafico.ilike.%${s}%,pedimento.ilike.%${s}%`) }
         if (input.date_from) query = query.gte('fecha_llegada', input.date_from)
         if (input.date_to) query = query.lte('fecha_llegada', input.date_to)
         query = query.gte('fecha_llegada', PORTAL_DATE_FROM).order('fecha_llegada', { ascending: false }).limit(input.limit || 10)
@@ -405,7 +406,7 @@ async function executeTool(name: string, input: any, clientCtx: { companyId: str
         if (input.pedimento_id) query = query.eq('pedimento', input.pedimento_id)
         if (input.trafico) query = query.eq('referencia', input.trafico)
         if (input.tmec_only) query = query.eq('igi', 0)
-        if (input.search) query = query.or(`pedimento.ilike.%${input.search}%,proveedor.ilike.%${input.search}%`)
+        if (input.search) { const s = sanitizeIlike(input.search); query = query.or(`pedimento.ilike.%${s}%,proveedor.ilike.%${s}%`) }
         query = query.order('fecha_pago', { ascending: false }).limit(input.limit || 10)
         const { data, error } = await query
         if (error) return JSON.stringify({ error: error.message })
@@ -519,7 +520,7 @@ async function executeTool(name: string, input: any, clientCtx: { companyId: str
         const { data: docs } = await supabase.from('expediente_documentos')
           .select('pedimento_id, doc_type, file_name')
           .eq('company_id', companyId)
-          .or(`pedimento_id.eq.${input.trafico_id},pedimento_id.like.%${input.trafico_id.split('-')[1] || input.trafico_id}`)
+          .or(`pedimento_id.eq.${sanitizeFilter(input.trafico_id)},pedimento_id.like.%${sanitizeFilter(input.trafico_id.split('-')[1] || input.trafico_id)}`)
           .limit(50)
         const types = [...new Set((docs || []).map((d: any) => d.doc_type))]
         const expected = ['factura_comercial','packing_list','bill_of_lading','cove','pedimento_detallado','doda','mve','acuse_cove','cuenta_gastos','carta_porte']
@@ -641,7 +642,7 @@ async function executeTool(name: string, input: any, clientCtx: { companyId: str
         const { data: knowledge } = await supabase
           .from('institutional_knowledge')
           .select('title, content, knowledge_type, confidence, tags')
-          .or(`title.ilike.%${input.query}%,content.ilike.%${input.query}%`)
+          .or(`title.ilike.%${sanitizeIlike(input.query)}%,content.ilike.%${sanitizeIlike(input.query)}%`)
           .order('confidence', { ascending: false })
           .limit(5)
         if (input.knowledge_type) {

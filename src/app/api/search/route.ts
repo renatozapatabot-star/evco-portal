@@ -1,6 +1,8 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 import { PORTAL_DATE_FROM } from '@/lib/data'
+import { verifySession } from '@/lib/session'
+import { sanitizeIlike } from '@/lib/sanitize'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -8,7 +10,14 @@ const supabase = createClient(
 )
 
 export async function GET(request: NextRequest) {
-  const companyId = request.cookies.get('company_id')?.value ?? ''
+  // Session validation — derive company_id from signed token, never cookies
+  const sessionToken = request.cookies.get('portal_session')?.value || ''
+  const session = await verifySession(sessionToken)
+  if (!session) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  const isInternal = session.role === 'broker' || session.role === 'admin'
+  const companyId = isInternal ? '' : session.companyId
   const clientClave = request.cookies.get('company_clave')?.value ?? ''
   const q = request.nextUrl.searchParams.get('q')?.trim()
   if (!q || q.length < 2) {
@@ -21,12 +30,12 @@ export async function GET(request: NextRequest) {
       supabase.from('aduanet_facturas')
         .select('referencia, pedimento, proveedor, valor_usd, dta, igi, iva, fecha_pago, cove, moneda')
         .eq('clave_cliente', clientClave)
-        .ilike('pedimento', `%${q}%`)
+        .ilike('pedimento', `%${sanitizeIlike(q)}%`)
         .limit(1),
       supabase.from('traficos')
         .select('trafico, estatus, fecha_llegada, fecha_cruce, importe_total, pedimento, descripcion_mercancia')
         .eq('company_id', companyId)
-        .ilike('pedimento', `%${q}%`)
+        .ilike('pedimento', `%${sanitizeIlike(q)}%`)
         .gte('fecha_llegada', PORTAL_DATE_FROM)
         .limit(1),
     ])
@@ -86,22 +95,23 @@ export async function GET(request: NextRequest) {
     }
   }
 
+  const safe = sanitizeIlike(q)
   const [trafRes, entRes, factRes] = await Promise.all([
     supabase.from('traficos')
       .select('trafico, estatus, fecha_llegada, descripcion_mercancia')
       .eq('company_id', companyId)
-      .or(`trafico.ilike.%${q}%,descripcion_mercancia.ilike.%${q}%,pedimento.ilike.%${q}%`)
+      .or(`trafico.ilike.%${safe}%,descripcion_mercancia.ilike.%${safe}%,pedimento.ilike.%${safe}%`)
       .gte('fecha_llegada', PORTAL_DATE_FROM)
       .limit(5),
     supabase.from('entradas')
       .select('cve_entrada, descripcion_mercancia, fecha_llegada_mercancia, trafico')
       .eq('company_id', companyId)
-      .or(`cve_entrada.ilike.%${q}%,descripcion_mercancia.ilike.%${q}%,trafico.ilike.%${q}%`)
+      .or(`cve_entrada.ilike.%${safe}%,descripcion_mercancia.ilike.%${safe}%,trafico.ilike.%${safe}%`)
       .limit(5),
     supabase.from('aduanet_facturas')
       .select('referencia, pedimento, proveedor, valor_usd, fecha_pago')
       .eq('clave_cliente', clientClave)
-      .or(`pedimento.ilike.%${q}%,proveedor.ilike.%${q}%,referencia.ilike.%${q}%,num_factura.ilike.%${q}%`)
+      .or(`pedimento.ilike.%${safe}%,proveedor.ilike.%${safe}%,referencia.ilike.%${safe}%,num_factura.ilike.%${safe}%`)
       .limit(5),
   ])
 

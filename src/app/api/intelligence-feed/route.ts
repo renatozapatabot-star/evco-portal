@@ -63,7 +63,7 @@ export async function GET(req: NextRequest) {
   items.sort((a, b) => {
     const sevDiff = (severityOrder[a.severity] ?? 2) - (severityOrder[b.severity] ?? 2)
     if (sevDiff !== 0) return sevDiff
-    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
   })
 
   return NextResponse.json(items.slice(0, limit))

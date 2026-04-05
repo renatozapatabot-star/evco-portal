@@ -35,6 +35,10 @@ interface TraficoRow {
   estatus?: string | null
   descripcion_mercancia?: string | null
   company_id?: string | null
+  pedimento?: string | null
+  regimen?: string | null
+  fecha_cruce?: string | null
+  [k: string]: unknown
 }
 
 interface SupplierAgg {
@@ -45,6 +49,12 @@ interface SupplierAgg {
   lastDate: string | null
   avgValue: number
   traficos: TraficoRow[]
+  // Enhanced metrics
+  docCompliance: number    // % with pedimento assigned
+  avgDeliveryDays: number  // avg fecha_llegada → fecha_cruce
+  tmecRate: number         // % with T-MEC regime
+  riskLevel: 'low' | 'medium' | 'high' | 'watch'
+  firstDate: string | null
 }
 
 export default function ProveedoresPage() {
@@ -163,14 +173,54 @@ export default function ProveedoresPage() {
             lastDate: r.fecha_llegada ?? null,
             avgValue: 0,
             traficos: [r],
+            docCompliance: 0,
+            avgDeliveryDays: 0,
+            tmecRate: 0,
+            riskLevel: 'watch',
+            firstDate: r.fecha_llegada ?? null,
           })
         }
       }
     }
 
-    // Compute avg and sort
+    // Compute enhanced metrics
     const arr = Array.from(map.values())
-    arr.forEach(s => { s.avgValue = s.traficoCount > 0 ? s.totalValue / s.traficoCount : 0 })
+    arr.forEach(s => {
+      s.avgValue = s.traficoCount > 0 ? s.totalValue / s.traficoCount : 0
+
+      // Document compliance: % with pedimento
+      const withPed = s.traficos.filter(t => !!t.pedimento).length
+      s.docCompliance = s.traficoCount > 0 ? Math.round((withPed / s.traficoCount) * 100) : 0
+
+      // Average delivery time (fecha_llegada → fecha_cruce)
+      const withBoth = s.traficos.filter(t => t.fecha_llegada && (t as Record<string, unknown>).fecha_cruce)
+      if (withBoth.length > 0) {
+        const totalDays = withBoth.reduce((sum, t) => {
+          const d = (new Date((t as Record<string, unknown>).fecha_cruce as string).getTime() - new Date(t.fecha_llegada!).getTime()) / 86400000
+          return sum + Math.max(0, d)
+        }, 0)
+        s.avgDeliveryDays = Math.round((totalDays / withBoth.length) * 10) / 10
+      } else {
+        s.avgDeliveryDays = 0
+      }
+
+      // T-MEC utilization
+      const tmec = s.traficos.filter(t => {
+        const r = ((t as Record<string, unknown>).regimen as string || '').toUpperCase()
+        return r === 'ITE' || r === 'ITR' || r === 'IMD'
+      }).length
+      s.tmecRate = s.traficoCount > 0 ? Math.round((tmec / s.traficoCount) * 100) : 0
+
+      // First date
+      const dates = s.traficos.map(t => t.fecha_llegada).filter(Boolean).sort()
+      s.firstDate = dates.length > 0 ? dates[0]! : null
+
+      // Risk scoring
+      if (s.traficoCount < 5) s.riskLevel = 'watch'
+      else if (s.docCompliance < 80) s.riskLevel = 'high'
+      else if (s.avgDeliveryDays > 10) s.riskLevel = 'medium'
+      else s.riskLevel = 'low'
+    })
     arr.sort((a, b) => b.traficoCount - a.traficoCount)
     return arr
   }, [rows, clientFilter, supplierLookup])
@@ -282,7 +332,7 @@ export default function ProveedoresPage() {
           {/* Header row */}
           <div style={{
             display: 'grid',
-            gridTemplateColumns: '32px 1fr 100px 140px 120px 60px',
+            gridTemplateColumns: '32px 1fr 80px 120px 70px 60px 60px 50px',
             padding: '10px 16px',
             borderBottom: `1px solid ${T.border}`,
             fontSize: 10, fontWeight: 700, textTransform: 'uppercase',
@@ -291,8 +341,10 @@ export default function ProveedoresPage() {
             <span />
             <span>Proveedor</span>
             <span style={{ textAlign: 'right' }}>Tráficos</span>
-            <span style={{ textAlign: 'right' }}>Valor total</span>
-            <span style={{ textAlign: 'right' }}>Último embarque</span>
+            <span style={{ textAlign: 'right' }}>Valor</span>
+            <span style={{ textAlign: 'right' }}>Docs %</span>
+            <span style={{ textAlign: 'right' }}>T-MEC</span>
+            <span style={{ textAlign: 'center' }}>Riesgo</span>
             <span style={{ textAlign: 'center' }}>País</span>
           </div>
 
@@ -305,7 +357,7 @@ export default function ProveedoresPage() {
                   onClick={() => setExpandedSupplier(isExpanded ? null : s.name)}
                   style={{
                     display: 'grid',
-                    gridTemplateColumns: '32px 1fr 100px 140px 120px 60px',
+                    gridTemplateColumns: '32px 1fr 80px 120px 70px 60px 60px 50px',
                     padding: '12px 16px',
                     alignItems: 'center',
                     borderBottom: `1px solid ${T.border}`,
@@ -346,11 +398,23 @@ export default function ProveedoresPage() {
                   <span style={{ textAlign: 'right', fontFamily: T.mono, fontSize: 13, fontWeight: 700, color: T.text }}>
                     {s.traficoCount}
                   </span>
-                  <span style={{ textAlign: 'right', fontFamily: T.mono, fontSize: 13, fontWeight: 600, color: T.green }}>
-                    {s.totalValue > 0 ? fmtUSD(s.totalValue) : <span style={{ color: T.textMuted }}>—</span>}
+                  <span style={{ textAlign: 'right', fontFamily: T.mono, fontSize: 12, fontWeight: 600, color: T.green }}>
+                    {s.totalValue > 0 ? fmtUSDCompact(s.totalValue) : <span style={{ color: T.textMuted }}>—</span>}
                   </span>
-                  <span style={{ textAlign: 'right', fontFamily: T.mono, fontSize: 12, color: T.textSecondary }}>
-                    {s.lastDate ? fmtDate(s.lastDate) : '—'}
+                  <span style={{ textAlign: 'right', fontFamily: T.mono, fontSize: 12, fontWeight: 600, color: s.docCompliance >= 90 ? T.green : s.docCompliance >= 70 ? '#D97706' : T.red }}>
+                    {s.docCompliance}%
+                  </span>
+                  <span style={{ textAlign: 'right', fontFamily: T.mono, fontSize: 12, color: s.tmecRate > 0 ? T.green : T.textMuted }}>
+                    {s.tmecRate > 0 ? `${s.tmecRate}%` : '—'}
+                  </span>
+                  <span style={{ textAlign: 'center' }}>
+                    <span style={{
+                      fontSize: 9, fontWeight: 800, padding: '2px 6px', borderRadius: 9999,
+                      background: s.riskLevel === 'high' ? 'rgba(220,38,38,0.1)' : s.riskLevel === 'medium' ? 'rgba(217,119,6,0.1)' : s.riskLevel === 'watch' ? 'rgba(37,99,235,0.1)' : 'rgba(22,163,74,0.1)',
+                      color: s.riskLevel === 'high' ? '#DC2626' : s.riskLevel === 'medium' ? '#D97706' : s.riskLevel === 'watch' ? '#2563EB' : '#16A34A',
+                    }}>
+                      {s.riskLevel === 'high' ? 'ALTO' : s.riskLevel === 'medium' ? 'MED' : s.riskLevel === 'watch' ? 'NUEVO' : 'OK'}
+                    </span>
                   </span>
                   <span style={{ textAlign: 'center', fontSize: 16 }}>
                     {s.country ? countryFlag(s.country) : '🌐'}

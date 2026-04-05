@@ -85,3 +85,18 @@
 ### Tabs Consolidated
 - 8 specialist tabs → 1 Oracle tab (this chat)
 - All tab learnings merged into CLAUDE.md
+
+### Data Audit Round 2 (2026-04-04 night)
+- D1: Dedup facturas — $67M → $4.4M (DISTINCT by referencia)
+- D2: Semaforo rojo — string → integer comparison fixed
+- D3: Pipeline column — pipeline_status → pipeline_stage
+- D9: Cruzado Hoy — fecha_pago → fecha_cruce
+- PM2 resurrected after force quit (cruz-bot, globalpc-sync, banxico-rate)
+- Migration file created but NOT run: supabase/migrations/dedup_facturas.sql
+
+### Data Audit Round 2 (2026-04-04 night)
+- D1: Dedup facturas — $67M → $2.6M (DISTINCT by referencia)
+- D2: Semaforo rojo — string → integer comparison fixed
+- D3: Pipeline column — pipeline_status → pipeline_stage
+- D9: Cruzado Hoy — fecha_pago → fecha_cruce
+- PM2 resurrected after force quit (cruz-bot, globalpc-sync, banxico-rate)

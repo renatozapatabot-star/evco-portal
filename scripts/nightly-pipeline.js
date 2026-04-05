@@ -463,6 +463,57 @@ async function run() {
 
   await conn.end()
 
+  // ── Post-sync steps ──────────────────────────────────
+
+  // Step 2: Anomaly detection
+  console.log('\n🔍 Running anomaly detection...')
+  try {
+    const { execSync } = require('child_process')
+    execSync('node scripts/anomaly-check.js', {
+      cwd: path.join(__dirname, '..'),
+      timeout: 120000,
+      stdio: 'inherit',
+    })
+    console.log('  ✅ Anomaly detection complete')
+  } catch (e) {
+    console.error(`  ⚠️ Anomaly detection failed: ${e.message}`)
+    await tg(`⚠️ Anomaly detection failed: ${e.message}`)
+  }
+
+  // Step 3: Solicit missing documents
+  console.log('\n📨 Running document solicitation check...')
+  try {
+    const { execSync } = require('child_process')
+    execSync('node scripts/solicit-missing-docs.js', {
+      cwd: path.join(__dirname, '..'),
+      timeout: 120000,
+      stdio: 'inherit',
+    })
+    console.log('  ✅ Document solicitation complete')
+  } catch (e) {
+    console.error(`  ⚠️ Document solicitation failed: ${e.message}`)
+    await tg(`⚠️ Document solicitation failed: ${e.message}`)
+  }
+
+  // Step 4: Shadow weekly report (Sundays only)
+  const dayOfWeek = new Date().getDay() // 0 = Sunday
+  if (dayOfWeek === 0) {
+    console.log('\n📊 Sunday — running shadow weekly report...')
+    try {
+      const { execSync } = require('child_process')
+      execSync('node scripts/shadow-weekly-report.js', {
+        cwd: path.join(__dirname, '..'),
+        timeout: 60000,
+        stdio: 'inherit',
+      })
+      console.log('  ✅ Shadow weekly report sent')
+    } catch (e) {
+      console.error(`  ⚠️ Shadow weekly report failed: ${e.message}`)
+    }
+  }
+
+  // ── Summary ──────────────────────────────────────────
+
   const elapsed = Math.round((Date.now() - startTime) / 1000 / 60)
   const criticalClients = results.filter(r => r.alerts > 0)
 
@@ -478,13 +529,29 @@ async function run() {
     criticalClients.length > 0
       ? `⚠️ Clientes con alertas críticas:\n${criticalClients.map(c => `  • ${c.name}: ${c.alerts} alertas`).join('\n')}`
       : `✅ Sin alertas críticas`,
+    dayOfWeek === 0 ? `📊 Reporte shadow semanal enviado` : '',
     `━━━━━━━━━━━━━━━━━━━━`,
     `— CRUZ 🦀`
-  ].join('\n')
+  ].filter(Boolean).join('\n')
 
   await tg(summary)
   console.log('\n' + '═'.repeat(50))
   console.log(`✅ Pipeline complete: ${companies.length} clients, ${totalTraficos} traficos, ${elapsed} min`)
+
+  // Log completion to heartbeat_log
+  await supabase.from('heartbeat_log').insert({
+    script: 'nightly-pipeline',
+    status: 'success',
+    details: {
+      clients: companies.length,
+      traficos: totalTraficos,
+      entradas: totalEntradas,
+      facturas: totalFacturas,
+      elapsed_min: elapsed,
+      critical_alerts: criticalClients.length,
+      sunday_shadow: dayOfWeek === 0,
+    },
+  }).then(() => {}, () => {})
 
   // Cleanup PID file
   try { fs.unlinkSync('/tmp/nightly-pipeline.pid') } catch {}
@@ -493,5 +560,10 @@ async function run() {
 run().catch(async e => {
   console.error('Pipeline failed:', e)
   await tg(`❌ NIGHTLY PIPELINE FAILED\n${e.message}\n— CRUZ 🦀`)
+  await supabase.from('heartbeat_log').insert({
+    script: 'nightly-pipeline',
+    status: 'failed',
+    details: { error: e.message },
+  }).then(() => {}, () => {})
   process.exit(1)
 })

@@ -30,6 +30,14 @@ function nowCST() {
   })
 }
 
+function timeAgo(dateStr) {
+  const ms = Date.now() - new Date(dateStr).getTime()
+  const hours = Math.floor(ms / 3600000)
+  if (hours < 1) return 'hace minutos'
+  if (hours < 24) return `hace ${hours}h`
+  return `hace ${Math.floor(hours / 24)}d`
+}
+
 // ── HANDLERS ──────────────────────────────────────────────
 
 async function handleStatus() {
@@ -156,6 +164,305 @@ async function handleFinanciero() {
   ].join('\n')
 }
 
+// ── /aprobar — List pending items with inline approve/reject buttons ──
+
+async function handleAprobar(chatId) {
+  // Fetch pending drafts
+  const { data: drafts } = await supabase
+    .from('pedimento_drafts')
+    .select('id, trafico_id, draft_data, status, created_at')
+    .in('status', ['draft', 'pending', 'pending_review'])
+    .order('created_at', { ascending: true })
+    .limit(10)
+
+  // Fetch overdue documento_solicitudes
+  const { data: solicitudes } = await supabase
+    .from('documento_solicitudes')
+    .select('id, trafico_id, doc_type, status, solicitado_at')
+    .eq('status', 'solicitado')
+    .order('solicitado_at', { ascending: true })
+    .limit(10)
+
+  // Fetch entradas with faltantes (need confirmation)
+  const { data: entradas } = await supabase
+    .from('entradas')
+    .select('cve_entrada, trafico, descripcion_mercancia, tiene_faltantes, fecha_llegada_mercancia')
+    .eq('company_id', COMPANY_ID)
+    .eq('tiene_faltantes', true)
+    .order('fecha_llegada_mercancia', { ascending: false })
+    .limit(5)
+
+  const pendingDrafts = drafts || []
+  const pendingSolicitudes = solicitudes || []
+  const pendingEntradas = entradas || []
+  const totalPending = pendingDrafts.length + pendingSolicitudes.length + pendingEntradas.length
+
+  if (totalPending === 0) {
+    bot.sendMessage(chatId,
+      `✅ <b>Sin pendientes de aprobación</b>\n\nTodo al día. — CRUZ 🦀`,
+      { parse_mode: 'HTML' }
+    )
+    return
+  }
+
+  // Send header
+  bot.sendMessage(chatId,
+    `📋 <b>PENDIENTES DE APROBACIÓN</b>\n${nowCST()}\n━━━━━━━━━━━━━━━━━━━━\n${totalPending} item(s) esperando tu decisión`,
+    { parse_mode: 'HTML' }
+  )
+
+  // Send each draft with inline buttons
+  for (const draft of pendingDrafts) {
+    const dd = draft.draft_data || {}
+    const supplier = dd.extraction?.supplier || dd.supplier || '—'
+    const value = dd.extraction?.value_usd || dd.value_usd
+    const valueStr = value ? fmtUSD(value) + ' USD' : '—'
+    const confidence = dd.confidence ? `${Math.round(dd.confidence)}%` : '—'
+    const age = timeAgo(draft.created_at)
+
+    const text = [
+      `📄 <b>Borrador</b> · ${draft.status}`,
+      `Tráfico: <code>${draft.trafico_id || '—'}</code>`,
+      `Proveedor: ${supplier}`,
+      `Valor: ${valueStr}`,
+      `Confianza: ${confidence} · ${age}`,
+    ].join('\n')
+
+    bot.sendMessage(chatId, text, {
+      parse_mode: 'HTML',
+      reply_markup: {
+        inline_keyboard: [[
+          { text: '✅ Aprobar', callback_data: `aprobar_${draft.id}` },
+          { text: '❌ Rechazar', callback_data: `rechazar_${draft.id}` },
+          { text: '✏️ Corregir', callback_data: `corregir_${draft.id}` },
+        ]]
+      }
+    })
+  }
+
+  // Send solicitudes summary (no individual buttons — just info)
+  if (pendingSolicitudes.length > 0) {
+    const solLines = pendingSolicitudes.slice(0, 5).map(s =>
+      `  • ${s.trafico_id}: ${s.doc_type} — ${timeAgo(s.solicitado_at)}`
+    )
+    bot.sendMessage(chatId, [
+      `📨 <b>Documentos solicitados (${pendingSolicitudes.length})</b>`,
+      ...solLines,
+      pendingSolicitudes.length > 5 ? `  ... y ${pendingSolicitudes.length - 5} más` : '',
+    ].filter(Boolean).join('\n'), { parse_mode: 'HTML' })
+  }
+
+  // Send entradas with faltantes
+  if (pendingEntradas.length > 0) {
+    const entLines = pendingEntradas.map(e =>
+      `  • ${e.cve_entrada}: ${(e.descripcion_mercancia || '').substring(0, 35)}${e.trafico ? ` (${e.trafico})` : ''}`
+    )
+    bot.sendMessage(chatId, [
+      `⚠️ <b>Entradas con faltantes (${pendingEntradas.length})</b>`,
+      ...entLines,
+    ].join('\n'), { parse_mode: 'HTML' })
+  }
+}
+
+// ── /pendientes — Show counts grouped by type ──
+
+async function handlePendientes() {
+  const [draftsRes, solRes, entRes] = await Promise.all([
+    supabase.from('pedimento_drafts')
+      .select('id, status, created_at', { count: 'exact' })
+      .in('status', ['draft', 'pending', 'pending_review']),
+    supabase.from('documento_solicitudes')
+      .select('id, solicitado_at', { count: 'exact' })
+      .eq('status', 'solicitado'),
+    supabase.from('entradas')
+      .select('cve_entrada', { count: 'exact' })
+      .eq('company_id', COMPANY_ID)
+      .eq('tiene_faltantes', true),
+  ])
+
+  const draftCount = draftsRes.count || 0
+  const solCount = solRes.count || 0
+  const entCount = entRes.count || 0
+  const total = draftCount + solCount + entCount
+
+  // Check for stale items (>24h)
+  const staleThreshold = new Date(Date.now() - 24 * 3600000).toISOString()
+  const staleDrafts = (draftsRes.data || []).filter(d => d.created_at < staleThreshold).length
+  const staleSols = (solRes.data || []).filter(s => s.solicitado_at < staleThreshold).length
+
+  const lines = [
+    `📊 <b>PENDIENTES — CRUZ</b>`,
+    `${nowCST()}`,
+    `━━━━━━━━━━━━━━━━━━━━`,
+    `📄 Borradores: <b>${draftCount}</b>${staleDrafts > 0 ? ` ⏰ ${staleDrafts} >24h` : ''}`,
+    `📨 Docs solicitados: <b>${solCount}</b>${staleSols > 0 ? ` ⏰ ${staleSols} >24h` : ''}`,
+    `⚠️ Entradas c/faltantes: <b>${entCount}</b>`,
+    `━━━━━━━━━━━━━━━━━━━━`,
+    `Total: <b>${total}</b>`,
+  ]
+
+  if (total === 0) {
+    lines.push(`\n✅ Todo al día.`)
+  } else if (staleDrafts + staleSols > 0) {
+    lines.push(`\n⏰ ${staleDrafts + staleSols} item(s) llevan >24h esperando`)
+  }
+
+  lines.push(`\nUsa /aprobar para ver detalle`)
+  lines.push(`— CRUZ 🦀`)
+  return lines.join('\n')
+}
+
+// ── Callback query handler — approve/reject/correct from inline buttons ──
+
+async function handleCallbackQuery(query) {
+  const chatId = query.message?.chat?.id
+  const userId = query.from?.id
+  const username = query.from?.username || query.from?.first_name || 'Tito'
+  const data = query.data || ''
+
+  // Answer callback to remove loading state
+  await fetch(`https://api.telegram.org/bot${TOKEN}/answerCallbackQuery`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ callback_query_id: query.id, text: 'Procesando...' }),
+  })
+
+  if (data.startsWith('aprobar_')) {
+    const draftId = data.replace('aprobar_', '')
+    return await processApproval(chatId, draftId, username)
+  }
+
+  if (data.startsWith('rechazar_')) {
+    const draftId = data.replace('rechazar_', '')
+    await supabase.from('pedimento_drafts').update({
+      status: 'rejected',
+      reviewed_by: username,
+      reviewed_at: new Date().toISOString(),
+    }).eq('id', draftId)
+
+    await supabase.from('audit_log').insert({
+      action: 'draft_rejected_telegram',
+      details: { draft_id: draftId, rejected_by: username, channel: 'telegram' },
+      actor: username,
+      timestamp: new Date().toISOString(),
+    }).then(() => {}, () => {})
+
+    bot.sendMessage(chatId, `❌ Borrador rechazado.\n— CRUZ 🦀`, { parse_mode: 'HTML' })
+    return
+  }
+
+  if (data.startsWith('corregir_')) {
+    const draftId = data.replace('corregir_', '')
+    await supabase.from('pedimento_drafts').update({
+      status: 'approved_corrected',
+      reviewed_by: username,
+      reviewed_at: new Date().toISOString(),
+    }).eq('id', draftId)
+
+    await supabase.from('audit_log').insert({
+      action: 'draft_corrected_telegram',
+      details: { draft_id: draftId, corrected_by: username, channel: 'telegram' },
+      actor: username,
+      timestamp: new Date().toISOString(),
+    }).then(() => {}, () => {})
+
+    bot.sendMessage(chatId, `✏️ Borrador marcado para corrección.\nResponde con la nota de corrección.`, { parse_mode: 'HTML' })
+    return
+  }
+
+  if (data.startsWith('cancelar_')) {
+    const draftId = data.replace('cancelar_', '')
+    // Only revert if still in approved_pending
+    const { data: draft } = await supabase
+      .from('pedimento_drafts')
+      .select('id, status')
+      .eq('id', draftId)
+      .single()
+
+    if (draft?.status === 'approved_pending') {
+      await supabase.from('pedimento_drafts').update({
+        status: 'draft',
+        reviewed_by: null,
+      }).eq('id', draftId)
+
+      await supabase.from('audit_log').insert({
+        action: 'draft_approval_cancelled_telegram',
+        details: { draft_id: draftId, cancelled_by: username, channel: 'telegram' },
+        actor: username,
+        timestamp: new Date().toISOString(),
+      }).then(() => {}, () => {})
+
+      bot.sendMessage(chatId, `↩️ Aprobación cancelada. Borrador regresado a revisión.`, { parse_mode: 'HTML' })
+    } else {
+      bot.sendMessage(chatId, `⚠️ Ventana de cancelación expirada.`, { parse_mode: 'HTML' })
+    }
+    return
+  }
+}
+
+async function processApproval(chatId, draftId, username) {
+  // Set to approved_pending (5-second cancellation window)
+  const { error } = await supabase.from('pedimento_drafts').update({
+    status: 'approved_pending',
+    reviewed_by: username,
+    reviewed_at: new Date().toISOString(),
+  }).eq('id', draftId)
+
+  if (error) {
+    bot.sendMessage(chatId, `❌ Error: ${error.message}`, { parse_mode: 'HTML' })
+    return
+  }
+
+  // Audit log
+  await supabase.from('audit_log').insert({
+    action: 'draft_approved_telegram',
+    details: { draft_id: draftId, approved_by: username, channel: 'telegram', status: 'approved_pending' },
+    actor: username,
+    timestamp: new Date().toISOString(),
+  }).then(() => {}, () => {})
+
+  // Send confirmation with 5-second cancel button
+  const msg = await bot.sendMessage(chatId,
+    `⏳ Aprobando borrador... Tienes 5 segundos para cancelar.`,
+    {
+      parse_mode: 'HTML',
+      reply_markup: {
+        inline_keyboard: [[
+          { text: '↩️ Cancelar', callback_data: `cancelar_${draftId}` },
+        ]]
+      }
+    }
+  )
+
+  // After 5 seconds, finalize approval and remove cancel button
+  setTimeout(async () => {
+    // Check if still approved_pending (not cancelled)
+    const { data: draft } = await supabase
+      .from('pedimento_drafts')
+      .select('status')
+      .eq('id', draftId)
+      .single()
+
+    if (draft?.status === 'approved_pending') {
+      await supabase.from('pedimento_drafts').update({
+        status: 'approved',
+      }).eq('id', draftId)
+
+      // Remove cancel button and show final message
+      await fetch(`https://api.telegram.org/bot${TOKEN}/editMessageText`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: chatId,
+          message_id: msg.message_id,
+          text: `✅ Patente 3596 honrada. Gracias, Tito. 🦀`,
+          parse_mode: 'HTML',
+        }),
+      })
+    }
+  }, 5000)
+}
+
 function handleHelp() {
   return [
     `🦀 <b>CRUZ — Comandos</b>`,
@@ -166,6 +473,8 @@ function handleHelp() {
     `/traficos [ID] — Buscar tráfico específico`,
     `/entradas — Últimas 5 entradas`,
     `/financiero — Resumen financiero`,
+    `/aprobar — Pendientes de aprobación`,
+    `/pendientes — Conteo de pendientes`,
     `/help — Esta lista`,
     `━━━━━━━━━━━━━━━━━━━━`,
     `Portal: evco-portal.vercel.app`,
@@ -223,8 +532,34 @@ bot.onText(/\/financiero/, async (msg) => {
   }
 })
 
+bot.onText(/\/aprobar$/, async (msg) => {
+  try {
+    await handleAprobar(msg.chat.id)
+  } catch (e) {
+    bot.sendMessage(msg.chat.id, `❌ Error: ${e.message}`)
+  }
+})
+
+bot.onText(/\/pendientes/, async (msg) => {
+  try {
+    const reply = await handlePendientes()
+    bot.sendMessage(msg.chat.id, reply, { parse_mode: 'HTML' })
+  } catch (e) {
+    bot.sendMessage(msg.chat.id, `❌ Error: ${e.message}`)
+  }
+})
+
+// Handle inline button callbacks
+bot.on('callback_query', async (query) => {
+  try {
+    await handleCallbackQuery(query)
+  } catch (e) {
+    console.error('Callback error:', e.message)
+  }
+})
+
 bot.on('polling_error', (err) => console.error('Polling error:', err.message))
 
 console.log('🦀 CRUZ Telegram bot running...')
-console.log('Commands: /start /help /status /traficos /entradas /financiero')
+console.log('Commands: /start /help /status /traficos /entradas /financiero /aprobar /pendientes')
 console.log('Press Ctrl+C to stop')

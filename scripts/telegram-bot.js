@@ -463,6 +463,29 @@ async function processApproval(chatId, draftId, username) {
   }, 5000)
 }
 
+// ── /activar — activate a client for portal access ──
+
+async function handleActivar(chatId, companyId) {
+  if (!companyId) {
+    bot.sendMessage(chatId, `Uso: /activar [company_id]\nEjemplo: /activar garlock`, { parse_mode: 'HTML' })
+    return
+  }
+
+  bot.sendMessage(chatId, `⏳ Activando ${companyId}...`, { parse_mode: 'HTML' })
+
+  try {
+    const { execSync } = require('child_process')
+    const output = execSync(`node scripts/activate-client.js --company ${companyId}`, {
+      cwd: require('path').resolve(__dirname, '..'),
+      timeout: 30000,
+      encoding: 'utf8',
+    })
+    // activate-client.js sends its own Telegram message
+  } catch (err) {
+    bot.sendMessage(chatId, `❌ Error activando ${companyId}: ${err.message?.substring(0, 100)}`, { parse_mode: 'HTML' })
+  }
+}
+
 function handleHelp() {
   return [
     `🦀 <b>CRUZ — Comandos</b>`,
@@ -475,6 +498,7 @@ function handleHelp() {
     `/financiero — Resumen financiero`,
     `/aprobar — Pendientes de aprobación`,
     `/pendientes — Conteo de pendientes`,
+    `/activar [id] — Activar portal para cliente`,
     `/help — Esta lista`,
     `━━━━━━━━━━━━━━━━━━━━`,
     `Portal: evco-portal.vercel.app`,
@@ -549,6 +573,15 @@ bot.onText(/\/pendientes/, async (msg) => {
   }
 })
 
+bot.onText(/\/activar(.*)/, async (msg, match) => {
+  try {
+    const companyId = match[1]?.trim() || null
+    await handleActivar(msg.chat.id, companyId)
+  } catch (e) {
+    bot.sendMessage(msg.chat.id, `❌ Error: ${e.message}`)
+  }
+})
+
 // Handle inline button callbacks
 bot.on('callback_query', async (query) => {
   try {
@@ -561,5 +594,5 @@ bot.on('callback_query', async (query) => {
 bot.on('polling_error', (err) => console.error('Polling error:', err.message))
 
 console.log('🦀 CRUZ Telegram bot running...')
-console.log('Commands: /start /help /status /traficos /entradas /financiero /aprobar /pendientes')
+console.log('Commands: /start /help /status /traficos /entradas /financiero /aprobar /pendientes /activar')
 console.log('Press Ctrl+C to stop')

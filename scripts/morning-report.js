@@ -372,6 +372,36 @@ async function main() {
     }
   }
 
+  // ── AGENT STATS (last 24h) ──
+  try {
+    const dayAgo = new Date(Date.now() - 86400000).toISOString()
+    const { data: agentRows } = await supabase.from('agent_decisions')
+      .select('workflow, autonomy_level, was_correct')
+      .gte('created_at', dayAgo)
+      .limit(500)
+
+    if (agentRows && agentRows.length > 0) {
+      const total = agentRows.length
+      const autonomous = agentRows.filter(d => d.autonomy_level >= 2).length
+      const autoPct = total > 0 ? Math.round(autonomous / total * 100) : 0
+      const reviewed = agentRows.filter(d => d.was_correct !== null)
+      const correct = reviewed.filter(d => d.was_correct).length
+      const accuracy = reviewed.length > 0 ? Math.round(correct / reviewed.length * 1000) / 10 : 0
+
+      // Count by workflow
+      const wfCounts = {}
+      agentRows.forEach(d => { wfCounts[d.workflow || d.trigger_type || 'unknown'] = (wfCounts[d.workflow || d.trigger_type || 'unknown'] || 0) + 1 })
+
+      lines.push(``)
+      lines.push(`🤖 <b>CRUZ AGENT — 24h</b>`)
+      lines.push(`Decisiones: ${total} · Autónomas: ${autonomous} (${autoPct}%)`)
+      if (reviewed.length > 0) lines.push(`Precisión: ${accuracy}%`)
+      Object.entries(wfCounts).sort((a, b) => b[1] - a[1]).slice(0, 4).forEach(([wf, count]) => {
+        lines.push(`  • ${wf.replace(/_/g, ' ')}: ${count}`)
+      })
+    }
+  } catch { /* agent_decisions table may not exist yet */ }
+
   lines.push(`━━━━━━━━━━━━━━━━━━━━━━━━━━`)
   lines.push(`Patente 3596 · Aduana 240`)
   lines.push(`— CRUZ 🦀`)

@@ -4,7 +4,7 @@ import {
   Shield, Calendar, Award,
   Settings, MessageSquare, Package,
   History, Archive, Clock, ClipboardList, Receipt, Send, Phone,
-  Warehouse, Upload, Activity,
+  Warehouse, Upload, Activity, Bot,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -76,6 +76,7 @@ export const INTERNAL_GROUPS: NavGroup[] = [
       { href: '/proveedores',  label: 'Proveedores', icon: Users2 },
       { href: '/catalogo',     label: 'Catálogo',    icon: ClipboardList },
       { href: '/anexo24',      label: 'Anexo 24',    icon: BookOpen },
+      { href: '/agente',       label: 'CRUZ Agent',  icon: Bot },
     ],
   },
   {
@@ -213,6 +214,7 @@ export const ADMIN_ONLY_ROUTES = [
   '/cruces',
   '/alertas-internas',
   '/auditoria',
+  '/agente',
 ] as const
 
 /** Routes accessible by client role */

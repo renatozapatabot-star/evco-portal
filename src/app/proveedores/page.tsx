@@ -380,7 +380,7 @@ export default function ProveedoresPage() {
                     }}>
                       <Building2 size={14} style={{ color: T.gold }} />
                     </div>
-                    <span style={{
+                    <span title={s.name} style={{
                       fontSize: 13, fontWeight: 600, color: T.text,
                       overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                     }}>

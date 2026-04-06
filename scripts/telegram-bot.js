@@ -591,8 +591,75 @@ bot.on('callback_query', async (query) => {
   }
 })
 
+// ── AGENT COMMANDS ──────────────────────────────────────────
+
+bot.onText(/\/agente/, async (msg) => {
+  try {
+    const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString()
+    const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0)
+
+    const [todayRes, weekRes, configRes] = await Promise.all([
+      supabase.from('agent_decisions').select('id', { count: 'exact', head: true }).gte('created_at', todayStart.toISOString()),
+      supabase.from('agent_decisions').select('was_correct').gte('created_at', weekAgo).not('was_correct', 'is', null),
+      supabase.from('system_config').select('value').eq('key', 'agent_status').single(),
+    ])
+
+    const todayCount = todayRes.count || 0
+    const reviewed = weekRes.data || []
+    const correct = reviewed.filter(d => d.was_correct).length
+    const accuracy = reviewed.length > 0 ? Math.round((correct / reviewed.length) * 1000) / 10 : 0
+    const paused = configRes.data?.value?.paused || false
+
+    const text =
+      `🤖 <b>CRUZ Agent ${paused ? '⏸️ PAUSADO' : '● ACTIVO'}</b>\n\n` +
+      `Decisiones hoy: ${todayCount}\n` +
+      `Precisión 7d: ${accuracy}% (${reviewed.length} revisadas)\n\n` +
+      `— CRUZ Agent 🤖`
+
+    bot.sendMessage(msg.chat.id, text, { parse_mode: 'HTML' })
+  } catch (e) { bot.sendMessage(msg.chat.id, `❌ ${e.message}`) }
+})
+
+bot.onText(/\/decisiones/, async (msg) => {
+  try {
+    const { data } = await supabase.from('agent_decisions')
+      .select('workflow, decision, reasoning, confidence, created_at')
+      .order('created_at', { ascending: false })
+      .limit(5)
+
+    if (!data || data.length === 0) {
+      bot.sendMessage(msg.chat.id, '🤖 Sin decisiones recientes.')
+      return
+    }
+
+    const lines = data.map(d => {
+      const time = new Date(d.created_at).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Chicago' })
+      return `${time} — ${d.reasoning || d.decision} (${d.confidence}%)`
+    })
+
+    bot.sendMessage(msg.chat.id,
+      `🤖 <b>Últimas 5 decisiones:</b>\n\n${lines.join('\n')}\n\n— CRUZ Agent 🤖`,
+      { parse_mode: 'HTML' }
+    )
+  } catch (e) { bot.sendMessage(msg.chat.id, `❌ ${e.message}`) }
+})
+
+bot.onText(/\/pausar/, async (msg) => {
+  try {
+    await supabase.from('system_config').upsert({ key: 'agent_status', value: { paused: true } }, { onConflict: 'key' })
+    bot.sendMessage(msg.chat.id, '⏸️ CRUZ Agent pausado. Usa /reanudar para reactivar.')
+  } catch (e) { bot.sendMessage(msg.chat.id, `❌ ${e.message}`) }
+})
+
+bot.onText(/\/reanudar/, async (msg) => {
+  try {
+    await supabase.from('system_config').upsert({ key: 'agent_status', value: { paused: false } }, { onConflict: 'key' })
+    bot.sendMessage(msg.chat.id, '▶️ CRUZ Agent reanudado. Operando normalmente.')
+  } catch (e) { bot.sendMessage(msg.chat.id, `❌ ${e.message}`) }
+})
+
 bot.on('polling_error', (err) => console.error('Polling error:', err.message))
 
 console.log('🦀 CRUZ Telegram bot running...')
-console.log('Commands: /start /help /status /traficos /entradas /financiero /aprobar /pendientes /activar')
+console.log('Commands: /start /help /status /traficos /entradas /financiero /aprobar /pendientes /activar /agente /decisiones /pausar /reanudar')
 console.log('Press Ctrl+C to stop')

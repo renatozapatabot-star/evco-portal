@@ -9,7 +9,7 @@
  * HEAL: Auto-fix what can be fixed, alert on what can't
  * LEARN: Track patterns, build prevention rules
  *
- * Cron: */15 * * * *
+ * Cron: every 15 minutes
  * Patente 3596 · Aduana 240
  */
 

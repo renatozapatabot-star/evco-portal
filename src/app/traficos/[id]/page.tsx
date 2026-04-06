@@ -766,56 +766,52 @@ export default function TraficoDetailPage() {
         {/* ── Proveedores ── */}
         <ProveedoresCard proveedores={String(t.proveedores ?? '')} pais={String(t.pais_procedencia ?? '')} supplierLookup={supplierLookup} />
 
-        {/* ── 12-Step Timeline ── */}
-        <div className="card" style={{ padding: 20 }}>
+        {/* ── 12-Step Horizontal Timeline ── */}
+        <div className="card" style={{ padding: 20, overflowX: 'auto' }}>
           <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--slate-400)', marginBottom: 16 }}>
             Estado del Trafico
           </div>
-          <ol style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', minWidth: 900, position: 'relative' }}>
             {steps.map((step, i) => {
               const state = getStepState(step.num)
               const isLast = i === steps.length - 1
               const dotColor = state === 'completed' ? 'var(--success-500)' : state === 'current' ? 'var(--sand-400, #C4A96A)' : state === 'blocked' ? 'var(--danger-500)' : 'var(--slate-200)'
-              const textColor = state === 'completed' ? 'var(--slate-600)' : state === 'current' ? 'var(--navy-900)' : state === 'blocked' ? 'var(--danger-500)' : 'var(--slate-400)'
+              const textColor = state === 'completed' ? 'var(--text-secondary)' : state === 'current' ? 'var(--navy-900)' : state === 'blocked' ? 'var(--danger-500)' : 'var(--text-muted)'
               const lineColor = state === 'completed' ? 'var(--success-500)' : 'var(--slate-200)'
-              const detailColor = step.num === 8 && step.detail === 'Verde' ? 'var(--success)'
-                : step.num === 8 && step.detail === 'Rojo' ? 'var(--danger)'
-                : step.num === 10 && state === 'completed' ? 'var(--teal)'
-                : 'var(--slate-500)'
 
               return (
-                <li key={step.num} style={{ display: 'flex', gap: 12, position: 'relative', paddingBottom: isLast ? 0 : 14, minHeight: 60 }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 20, flexShrink: 0 }}>
+                <div key={step.num} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', minWidth: 70 }}>
+                  {/* Horizontal line */}
+                  {!isLast && (
                     <div style={{
-                      width: state === 'current' ? 14 : 10, height: state === 'current' ? 14 : 10,
-                      borderRadius: '50%', flexShrink: 0,
-                      background: state === 'pending' ? 'transparent' : dotColor,
-                      border: state === 'pending' ? '2px solid var(--slate-200)' : 'none',
-                      animation: state === 'current' ? 'cruzActivePulse 2s ease-in-out infinite' : undefined,
+                      position: 'absolute', top: 6, left: '50%', right: '-50%',
+                      height: 2, background: lineColor, zIndex: 0,
                     }} />
-                    {!isLast && <div style={{ width: 2, flex: 1, background: lineColor, marginTop: 4 }} />}
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: textColor, lineHeight: 1.3 }}>
-                      {step.num}. {step.label}
+                  )}
+                  {/* Dot */}
+                  <div style={{
+                    width: state === 'current' ? 14 : 10, height: state === 'current' ? 14 : 10,
+                    borderRadius: '50%', flexShrink: 0, position: 'relative', zIndex: 1,
+                    background: state === 'pending' ? 'var(--bg-card, #FFFFFF)' : dotColor,
+                    border: state === 'pending' ? '2px solid var(--slate-200)' : 'none',
+                    animation: state === 'current' ? 'cruzActivePulse 2s ease-in-out infinite' : undefined,
+                  }} />
+                  {/* Label */}
+                  <div style={{ textAlign: 'center', marginTop: 8, padding: '0 2px' }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: textColor, lineHeight: 1.2 }}>
+                      {step.label}
                       {step.num === 10 && state === 'completed' && ' ✅'}
                     </div>
-                    <div style={{
-                      fontSize: 11, color: detailColor, marginTop: 2,
-                      fontFamily: step.num === 6 || step.num === 7 || step.num === 9 ? 'var(--font-mono)' : undefined,
-                    }}>
-                      {step.detail}
-                    </div>
-                    {step.date && state === 'completed' && (
-                      <div style={{ fontSize: 10, color: 'var(--slate-400)', fontFamily: 'var(--font-mono)', marginTop: 2 }}>
-                        {fmtDateTime(step.date)}
+                    {state !== 'pending' && step.detail !== 'Pendiente' && (
+                      <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 2, lineHeight: 1.2 }}>
+                        {step.detail}
                       </div>
                     )}
                   </div>
-                </li>
+                </div>
               )
             })}
-          </ol>
+          </div>
         </div>
 
         {/* ── Financiero summary ── */}

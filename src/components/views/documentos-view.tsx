@@ -105,8 +105,7 @@ export function DocumentosView() {
   }
 
   return (
-    <div className="page-shell" style={{ maxWidth: 700 }}>
-      {/* Title removed — sidebar indicates current page */}
+    <div className="page-shell" style={{ maxWidth: 900 }}>
       <div style={{ height: 20 }} />
 
       {/* Urgency banner */}
@@ -126,102 +125,10 @@ export function DocumentosView() {
         </div>
       )}
 
-      {/* Universal upload zone */}
-      <div style={{ margin: '0 20px 24px' }}>
-        {!uploadFile ? (
-          <div
-            onClick={() => fileInputRef.current?.click()}
-            onDragOver={e => { e.preventDefault(); setDragOver(true) }}
-            onDragLeave={() => setDragOver(false)}
-            onDrop={e => { e.preventDefault(); setDragOver(false); if (e.dataTransfer.files[0]) handleUploadFile(e.dataTransfer.files[0]) }}
-            style={{
-              border: `2px dashed ${dragOver ? 'var(--gold, #C4963C)' : 'var(--border, #E8E5E0)'}`,
-              borderRadius: 12, padding: '24px 20px', textAlign: 'center', cursor: 'pointer',
-              background: dragOver ? 'rgba(196,150,60,0.04)' : 'var(--bg-card)',
-              transition: 'all 150ms', minHeight: 80,
-              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8,
-            }}
-          >
-            <Upload size={24} style={{ color: 'var(--text-muted)' }} />
-            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>Subir documento</div>
-            <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>PDF, imagen o Word — arrastra o haz clic</div>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".pdf,.jpg,.jpeg,.png,.docx,.doc"
-              style={{ display: 'none' }}
-              onChange={e => { if (e.target.files?.[0]) handleUploadFile(e.target.files[0]) }}
-            />
-          </div>
-        ) : (
-          <div style={{
-            border: '1px solid var(--border, #E8E5E0)',
-            borderRadius: 12, padding: '16px 20px',
-            background: 'var(--bg-card)',
-          }}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 12 }}>
-              {uploadFile.name}
-            </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 260px', gap: 20, padding: '0 20px 40px', alignItems: 'start' }}>
 
-            {uploading ? (
-              <div>
-                <div style={{ height: 6, background: 'var(--border, #E8E5E0)', borderRadius: 3 }}>
-                  <div style={{ width: `${uploadProgress}%`, height: '100%', background: 'var(--gold, #C4963C)', borderRadius: 3, transition: 'width 80ms linear' }} />
-                </div>
-                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4, textAlign: 'center' }}>{uploadProgress}%</div>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
-                <div style={{ position: 'relative', flex: 1, minWidth: 180 }}>
-                  <select
-                    value={uploadDocType}
-                    onChange={e => setUploadDocType(e.target.value)}
-                    style={{
-                      width: '100%', padding: '10px 32px 10px 12px', fontSize: 13,
-                      border: '1px solid var(--border, #E8E5E0)', borderRadius: 8,
-                      background: 'var(--bg-card)', color: 'var(--text-primary)',
-                      appearance: 'none', cursor: 'pointer', minHeight: 44,
-                    }}
-                  >
-                    <option value="">Tipo de documento...</option>
-                    {LEGAL_DOCS.map(d => (
-                      <option key={d.id} value={d.id}>{d.label}</option>
-                    ))}
-                    <option value="otro">Otro documento</option>
-                  </select>
-                  <ChevronDown size={14} style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', pointerEvents: 'none' }} />
-                </div>
-                <button
-                  onClick={confirmUpload}
-                  disabled={!uploadDocType}
-                  style={{
-                    background: uploadDocType ? 'var(--gold, #C4963C)' : 'var(--border, #E8E5E0)',
-                    color: uploadDocType ? '#FFF' : 'var(--text-muted)',
-                    border: 'none', borderRadius: 8, padding: '10px 20px',
-                    fontSize: 13, fontWeight: 700, cursor: uploadDocType ? 'pointer' : 'default',
-                    minHeight: 44, flexShrink: 0,
-                  }}
-                >
-                  Subir
-                </button>
-                <button
-                  onClick={() => { setUploadFile(null); setUploadDocType('') }}
-                  style={{
-                    background: 'transparent', border: 'none',
-                    fontSize: 13, color: 'var(--text-muted)', cursor: 'pointer',
-                    padding: '10px 8px', minHeight: 44,
-                  }}
-                >
-                  Cancelar
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Document checklist */}
-      <div style={{ padding: '0 20px 40px' }}>
+      {/* Document checklist — LEFT */}
+      <div>
         {loading ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {Array.from({ length: 6 }).map((_, i) => (
@@ -289,6 +196,78 @@ export function DocumentosView() {
             })}
           </div>
         )}
+      </div>
+
+      {/* Upload zone — RIGHT column */}
+      <div style={{ position: 'sticky', top: 80 }}>
+        {!uploadFile ? (
+          <div
+            onClick={() => fileInputRef.current?.click()}
+            onDragOver={e => { e.preventDefault(); setDragOver(true) }}
+            onDragLeave={() => setDragOver(false)}
+            onDrop={e => { e.preventDefault(); setDragOver(false); if (e.dataTransfer.files[0]) handleUploadFile(e.dataTransfer.files[0]) }}
+            style={{
+              border: `2px dashed ${dragOver ? 'var(--gold, #C4963C)' : 'var(--border, #E8E5E0)'}`,
+              borderRadius: 12, padding: '24px 16px', textAlign: 'center', cursor: 'pointer',
+              background: dragOver ? 'rgba(196,150,60,0.04)' : 'var(--bg-card)',
+              transition: 'all 150ms',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8,
+            }}
+          >
+            <Upload size={24} style={{ color: 'var(--text-muted)' }} />
+            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>Subir documento</div>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>PDF, imagen o Word</div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf,.jpg,.jpeg,.png,.docx,.doc"
+              style={{ display: 'none' }}
+              onChange={e => { if (e.target.files?.[0]) handleUploadFile(e.target.files[0]) }}
+            />
+          </div>
+        ) : (
+          <div style={{
+            border: '1px solid var(--border, #E8E5E0)',
+            borderRadius: 12, padding: '16px',
+            background: 'var(--bg-card)',
+          }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 10, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {uploadFile.name}
+            </div>
+            {uploading ? (
+              <div>
+                <div style={{ height: 6, background: 'var(--border, #E8E5E0)', borderRadius: 3 }}>
+                  <div style={{ width: `${uploadProgress}%`, height: '100%', background: 'var(--gold, #C4963C)', borderRadius: 3, transition: 'width 80ms linear' }} />
+                </div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4, textAlign: 'center' }}>{uploadProgress}%</div>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div style={{ position: 'relative' }}>
+                  <select value={uploadDocType} onChange={e => setUploadDocType(e.target.value)}
+                    style={{ width: '100%', padding: '10px 28px 10px 10px', fontSize: 12, border: '1px solid var(--border)', borderRadius: 8, background: 'var(--bg-card)', color: 'var(--text-primary)', appearance: 'none', cursor: 'pointer', minHeight: 44 }}>
+                    <option value="">Tipo...</option>
+                    {LEGAL_DOCS.map(d => <option key={d.id} value={d.id}>{d.label}</option>)}
+                    <option value="otro">Otro</option>
+                  </select>
+                  <ChevronDown size={12} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', pointerEvents: 'none' }} />
+                </div>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <button onClick={confirmUpload} disabled={!uploadDocType}
+                    style={{ flex: 1, background: uploadDocType ? 'var(--gold)' : 'var(--border)', color: uploadDocType ? '#FFF' : 'var(--text-muted)', border: 'none', borderRadius: 8, padding: '10px', fontSize: 12, fontWeight: 700, cursor: uploadDocType ? 'pointer' : 'default', minHeight: 44 }}>
+                    Subir
+                  </button>
+                  <button onClick={() => { setUploadFile(null); setUploadDocType('') }}
+                    style={{ background: 'transparent', border: 'none', fontSize: 12, color: 'var(--text-muted)', cursor: 'pointer', padding: '10px 6px', minHeight: 44 }}>
+                    ✕
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
       </div>
     </div>
   )

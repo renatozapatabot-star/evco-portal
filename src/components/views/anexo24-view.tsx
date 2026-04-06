@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import { Search, Download, ChevronLeft, ChevronRight } from 'lucide-react'
 import { getCompanyIdCookie, getClientClaveCookie, getCookieValue } from '@/lib/client-config'
-import { fmtDate, fmtUSD, fmtPedimentoShort, fmtKg } from '@/lib/format-utils'
+import { fmtDate, fmtUSD, fmtPedimentoShort } from '@/lib/format-utils'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { DateInputES } from '@/components/ui/DateInputES'
 import { useIsMobile } from '@/hooks/use-mobile'
@@ -203,9 +203,10 @@ export function Anexo24View() {
           </div>
         ) : (
           <div style={{ overflowX: 'auto' }}>
-            <table className="cruz-table" style={{ minWidth: 1000 }}>
+            <table className="cruz-table" style={{ minWidth: 800 }}>
               <thead>
                 <tr>
+                  <th style={{ width: 50 }}>#</th>
                   <th>Pedimento</th>
                   <th>Fecha</th>
                   <th>Proveedor</th>
@@ -213,39 +214,38 @@ export function Anexo24View() {
                   <th>Descripción</th>
                   <th>T-MEC</th>
                   <th style={{ textAlign: 'right' }}>Valor USD</th>
-                  <th style={{ textAlign: 'right' }}>Peso (kg)</th>
                   <th>Origen</th>
-                  <th>Régimen</th>
                 </tr>
               </thead>
               <tbody>
                 {paged.map((r, i) => (
                   <tr key={`${r.pedimento}-${i}`} className={`${i % 2 === 0 ? 'row-even' : 'row-odd'}`}>
-                    <td className="font-mono" style={{ fontWeight: 600, fontSize: 13, whiteSpace: 'nowrap' }}>
+                    <td style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                      {page * PAGE_SIZE + i + 1}
+                    </td>
+                    <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, fontSize: 13, whiteSpace: 'nowrap' }}>
                       {fmtPedimentoShort(r.pedimento)}
                     </td>
-                    <td className="timestamp">{fmtDate(r.fecha_pago || r.fecha_llegada)}</td>
+                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-secondary)' }}>{fmtDate(r.fecha_pago || r.fecha_llegada)}</td>
                     <td style={{ maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 12 }}
                       title={resolveProvs(r.proveedores)}>
                       {resolveProvs(r.proveedores)}
                     </td>
-                    <td className="font-mono" style={{ fontSize: 12, color: 'var(--gold-dark, #8B6914)' }}>
+                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--gold-dark, #8B6914)' }}>
                       {fraccionMap.get(r.trafico) || r.fraccion_arancelaria || '—'}
                     </td>
-                    <td style={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 12, color: 'var(--slate-600)' }}>
+                    <td style={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 12, color: 'var(--text-secondary)' }}>
                       {r.descripcion_mercancia || '—'}
                     </td>
                     <td>
                       {isT(r.regimen) ? (
-                        <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--success)', background: 'var(--success-bg)', padding: '2px 8px', borderRadius: 9999 }}>SI</span>
+                        <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--success)', background: 'var(--success-bg)', padding: '2px 8px', borderRadius: 9999 }}>T-MEC</span>
                       ) : (
-                        <span style={{ fontSize: 10, color: 'var(--slate-400)' }}>NO</span>
+                        <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>—</span>
                       )}
                     </td>
-                    <td className="currency text-right">{r.importe_total ? `${fmtUSD(r.importe_total)} USD` : '—'}</td>
-                    <td className="font-mono text-right" style={{ fontSize: 12 }}>{fmtKg(r.peso_bruto) || '—'}</td>
-                    <td style={{ fontSize: 12, color: 'var(--slate-500)' }}>{r.pais_procedencia || '—'}</td>
-                    <td className="font-mono" style={{ fontSize: 11, color: 'var(--slate-500)' }}>{r.regimen || '—'}</td>
+                    <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 500 }}>{r.importe_total ? `${fmtUSD(r.importe_total)}` : '—'}</td>
+                    <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{r.pais_procedencia || '—'}</td>
                   </tr>
                 ))}
               </tbody>

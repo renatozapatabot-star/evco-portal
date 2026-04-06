@@ -200,7 +200,7 @@ export default function EntradasPage() {
                   <th>Descripción</th>
                   <th style={{ textAlign: 'right', cursor: 'pointer', width: 80 }} onClick={() => toggleSort('cantidad_bultos')}>Bultos<SortArrow col="cantidad_bultos" /></th>
                   <th style={{ textAlign: 'right', cursor: 'pointer', width: 100 }} onClick={() => toggleSort('peso_bruto')}>Peso (kg)<SortArrow col="peso_bruto" /></th>
-                  <th style={{ width: 120 }}>Guía</th>
+                  <th style={{ width: 120 }}>Transporte</th>
                 </tr>
               </thead>
               <tbody>

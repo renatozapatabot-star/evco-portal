@@ -173,7 +173,7 @@ function FilterTabs({
   onChange: (t: FilterTab) => void
 }) {
   const tabs: { key: FilterTab; label: string; count: number }[] = [
-    { key: 'incompletos', label: 'Incompletos', count: counts.incompletos },
+    { key: 'incompletos', label: 'En progreso', count: counts.incompletos },
     { key: 'completos', label: 'Completos', count: counts.completos },
     { key: 'todos', label: 'Todos', count: counts.todos },
   ]
@@ -322,7 +322,7 @@ export function ExpedientesView() {
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [retrying, setRetrying] = useState(false)
-  const [filter, setFilter] = useState<FilterTab>('incompletos')
+  const [filter, setFilter] = useState<FilterTab>('todos')
   const [sortBy, setSortBy] = useState<SortOption>('menos_completo')
   const [soliciting, setSoliciting] = useState(false)
 

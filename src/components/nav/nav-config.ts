@@ -176,7 +176,7 @@ export const MOBILE_CLIENT_TABS: MobileTab[] = [
   { href: '/traficos',   label: 'Tráficos',      icon: Truck },
   { href: '/cruz',       label: 'CRUZ',          icon: null, center: true },
   { href: '/documentos', label: 'Documentos',    icon: FolderOpen },
-  { href: '/financiero', label: 'Financiero',    icon: DollarSign },
+  { href: '/financiero', label: 'Contabilidad',   icon: DollarSign },
 ]
 
 // ---------------------------------------------------------------------------

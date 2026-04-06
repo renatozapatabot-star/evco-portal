@@ -213,15 +213,11 @@ export default function FinancieroPage() {
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '32px 16px' }}>
 
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32, flexWrap: 'wrap', gap: 16 }}>
-          <div>
-            <h1 style={{ fontSize: 24, fontWeight: 600, margin: 0, letterSpacing: '-0.02em' }}>
-              Resumen Financiero
-            </h1>
-            <p style={{ color: D.textSec, fontSize: 14, margin: '4px 0 0' }}>
-              Operaciones aduanales · Patente 3596
-            </p>
-          </div>
+        <div style={{ marginBottom: 24 }}>
+          <h1 style={{ fontSize: 24, fontWeight: 700, margin: 0 }}>Contabilidad</h1>
+          <p style={{ color: D.textSec, fontSize: 13, margin: '4px 0 0' }}>
+            {filteredFacturas.length} factura{filteredFacturas.length !== 1 ? 's' : ''}
+          </p>
 
           {/* Company filter for broker/admin */}
           {isInternal && companies.length > 0 && (
@@ -229,68 +225,17 @@ export default function FinancieroPage() {
               value={companyFilter}
               onChange={e => { setCompanyFilter(e.target.value); setPage(0) }}
               style={{
-                background: D.card,
-                border: `1px solid ${D.cardBorder}`,
-                borderRadius: D.r,
-                color: D.text,
-                padding: '8px 12px',
-                fontSize: 14,
-                fontFamily: D.sans,
-                minHeight: 60,
+                background: D.card, border: `1px solid ${D.cardBorder}`, borderRadius: D.r,
+                color: D.text, padding: '8px 12px', fontSize: 14, fontFamily: D.sans, minHeight: 44, marginTop: 12,
               }}
             >
               <option value="">Todos los clientes</option>
-              {companies.map(c => (
-                <option key={c} value={c}>{c}</option>
-              ))}
+              {companies.map(c => (<option key={c} value={c}>{c}</option>))}
             </select>
           )}
         </div>
 
-        {/* Data story — financial narrative */}
-        {!loading && kpis.valorTotal > 0 && (
-          <p style={{
-            fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6,
-            fontStyle: 'italic', maxWidth: 600, margin: '0 0 20px',
-          }}>
-            {(() => {
-              const parts: string[] = []
-              parts.push(`${fmtUSDCompact(kpis.valorTotal)} en ${kpis.activeCount} tráficos activos`)
-              if (kpis.valorCruzado > 0) parts.push(`este mes cruzaron ${fmtUSDCompact(kpis.valorCruzado)}`)
-              if (kpis.ahorrosTmec >= 1000) parts.push(`gracias a T-MEC, el ahorro estimado es ${fmtUSDCompact(kpis.ahorrosTmec)} — dinero que impacta directamente su margen`)
-              parts[0] = parts[0].charAt(0).toUpperCase() + parts[0].slice(1)
-              return parts.join('. ') + '.'
-            })()}
-          </p>
-        )}
-
-        {/* ═══ SECTION 1 — KPI Cards ═══ */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16, marginBottom: 32 }}>
-          <KPICard
-            icon={<DollarSign size={20} />}
-            label="Valor total en operación"
-            value={loading ? '...' : fmtUSDCompact(kpis.valorTotal)}
-            sub={`${kpis.activeCount} tráficos activos · ene 2024–presente`}
-          />
-          <KPICard
-            icon={<TrendingUp size={20} />}
-            label="Valor cruzado este mes"
-            value={loading ? '...' : fmtUSDCompact(kpis.valorCruzado)}
-            sub={fmtDate(new Date()) + ' — mes actual'}
-          />
-          <KPICard
-            icon={<ShieldCheck size={20} />}
-            label="Ahorros T-MEC estimados"
-            value={loading ? '...' : fmtUSDCompact(kpis.ahorrosTmec)}
-            sub="Régimen IMD · 8% estimado"
-          />
-          <KPICard
-            icon={<BarChart3 size={20} />}
-            label="Promedio por tráfico"
-            value={loading ? '...' : `${fmtUSD(kpis.promedio)} USD`}
-            sub="Valor promedio activos"
-          />
-        </div>
+        {/* KPIs removed — clients have their own accountants */}
 
         {/* ═══ SECTION 2 — Tabla de Facturas ═══ */}
         <div style={{

@@ -48,10 +48,10 @@ function ProgressRing({ completed, total, size = 64 }: { completed: number; tota
 function getExpiryStatus(expiry: string | undefined) {
   if (!expiry) return null
   const days = Math.floor((new Date(expiry).getTime() - Date.now()) / 86400000)
-  if (days < 0) return { color: 'var(--status-red)', bg: 'rgba(239,68,68,0.15)', label: 'VENCIDO' }
-  if (days < 90) return { color: 'var(--status-red)', bg: 'rgba(239,68,68,0.15)', label: `${days} dias` }
-  if (days < 180) return { color: 'var(--status-yellow)', bg: 'rgba(234,179,8,0.15)', label: `${days} dias` }
-  return { color: 'var(--status-green)', bg: 'rgba(34,197,94,0.15)', label: 'Vigente' }
+  if (days < 0) return { color: 'var(--warning-500, #D97706)', bg: 'rgba(217,119,6,0.08)', label: 'Requiere actualización' }
+  if (days < 90) return { color: 'var(--warning-500, #D97706)', bg: 'rgba(217,119,6,0.08)', label: `${days} días restantes` }
+  if (days < 180) return { color: 'var(--text-secondary)', bg: 'rgba(107,107,107,0.08)', label: `${days} días` }
+  return { color: 'var(--success)', bg: 'rgba(34,197,94,0.08)', label: 'Vigente' }
 }
 
 function UploadZone({ docId, onUploaded }: { docId: string; onUploaded: (name: string) => void }) {

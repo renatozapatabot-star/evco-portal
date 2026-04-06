@@ -18,6 +18,7 @@ import { InsightWhisper } from '@/components/ui/InsightWhisper'
 import { SwipeRow } from '@/components/ui/SwipeRow'
 import { Share2, MessageSquare } from 'lucide-react'
 import { useWhisper } from '@/hooks/use-whisper'
+import { useSupplierNames } from '@/hooks/use-supplier-names'
 
 interface TraficoRow {
   trafico: string; estatus?: string; fecha_llegada?: string | null
@@ -56,6 +57,7 @@ export default function TraficosPage() {
 }
 
 function TraficosContent() {
+  const { resolveAll: resolveSupplier } = useSupplierNames()
   const [rows, setRows] = useState<TraficoRow[]>([])
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState<string | null>(null)

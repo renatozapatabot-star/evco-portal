@@ -80,7 +80,8 @@ export default function ProveedoresPage() {
 
   // Fetch supplier name lookup from globalpc_proveedores (resolves PRV_XXXX codes)
   useEffect(() => {
-    fetch('/api/data?table=globalpc_proveedores&limit=5000')
+    const cid = getCookieValue('company_id') || ''
+    fetch(`/api/data?table=globalpc_proveedores&limit=5000${cid ? '&company_id=' + cid : ''}`)
       .then(r => r.json())
       .then(d => {
         const provs = (d.data ?? []) as { cve_proveedor?: string; nombre?: string }[]

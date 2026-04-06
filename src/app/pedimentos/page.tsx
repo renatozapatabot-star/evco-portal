@@ -92,7 +92,8 @@ export default function PedimentosPage() {
     if (!isInternal && companyId) params.set('company_id', companyId)
 
     // Fetch supplier name lookup for PRV_ code resolution
-    fetch('/api/data?table=globalpc_proveedores&limit=5000')
+    const _cid = typeof document !== 'undefined' ? (document.cookie.match(/company_id=([^;]+)/)?.[1] || '') : ''
+    fetch(`/api/data?table=globalpc_proveedores&limit=5000${_cid ? '&company_id=' + _cid : ''}`)
       .then(r => r.json())
       .then(d => {
         const provs = (d.data ?? []) as { cve_proveedor?: string; nombre?: string }[]

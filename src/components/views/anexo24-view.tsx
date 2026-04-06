@@ -83,7 +83,7 @@ export function Anexo24View() {
     })
     if (!isInternal && companyId) params.set('company_id', companyId)
 
-    fetch('/api/data?table=globalpc_proveedores&limit=5000')
+    fetch(`/api/data?table=globalpc_proveedores&limit=5000${companyId ? '&company_id=' + companyId : ''}`)
       .then(r => r.json())
       .then(d => {
         const provs = (d.data ?? []) as { cve_proveedor?: string; nombre?: string }[]

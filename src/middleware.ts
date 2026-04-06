@@ -23,8 +23,13 @@ export async function middleware(request: NextRequest) {
   // Allow token-gated paths (track/upload) without auth
   if (TOKEN_PATHS.some(p => pathname.startsWith(p))) return NextResponse.next()
 
-  // Allow login page
-  if (PUBLIC_PATHS.includes(pathname)) return NextResponse.next()
+  // Login page: redirect authenticated users to dashboard
+  if (PUBLIC_PATHS.includes(pathname)) {
+    const existingSession = request.cookies.get('portal_session')?.value || ''
+    const existing = await verifySession(existingSession).catch(() => null)
+    if (existing) return NextResponse.redirect(new URL('/', request.url))
+    return NextResponse.next()
+  }
 
   // Validate signed session token (HMAC — cannot be forged without server secret)
   const sessionToken = request.cookies.get('portal_session')?.value || ''

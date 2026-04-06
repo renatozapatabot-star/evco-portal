@@ -1,4 +1,5 @@
-const SECRET = process.env.SESSION_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY || 'cruz-fallback-secret'
+const SECRET = process.env.SESSION_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY
+if (!SECRET) throw new Error('CRUZ: SESSION_SECRET or SUPABASE_SERVICE_ROLE_KEY must be set')
 
 /**
  * HMAC-SHA256 using Web Crypto API (Edge Runtime compatible).

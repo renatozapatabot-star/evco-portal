@@ -281,6 +281,8 @@ export default function CruzChatPage() {
     recognition.onerror = () => setListening(false)
     recognition.onend = () => setListening(false)
     recognition.start(); setListening(true)
+    // Auto-stop after 10 seconds to prevent "Escuchando..." stuck state
+    setTimeout(() => { try { recognition.stop() } catch {} setListening(false) }, 10000)
   }
   const stopVoice = () => { recognitionRef.current?.stop(); setListening(false) }
 
@@ -463,6 +465,19 @@ export default function CruzChatPage() {
                     }}>
                       <ArrowRight size={14} /> Ir a {msg.navigate}
                     </div>
+                  )}
+                  {/* Retry button on error */}
+                  {msg.role === 'assistant' && !loading && (msg.content.includes('No pude procesar') || msg.content.includes('Error del servidor') || msg.content.includes('no está disponible') || msg.content.includes('Error de API')) && (
+                    <button
+                      onClick={() => { const lastUser = messages.filter(m => m.role === 'user').pop(); if (lastUser) sendMessage(lastUser.content) }}
+                      style={{
+                        marginTop: 8, padding: '6px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600,
+                        background: 'transparent', border: `1px solid ${D.border}`, color: D.textMuted,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Reintentar
+                    </button>
                   )}
                   {/* Action confirmation buttons */}
                   {msg.role === 'assistant' && !loading && (msg.content.includes('¿Procedo?') || msg.content.includes('¿Procedemos?') || msg.content.includes('¿Confirma?')) && (

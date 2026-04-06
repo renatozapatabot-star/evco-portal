@@ -16,7 +16,7 @@ import { simulateRoute, simulateTariff, simulateDisruption } from '@/lib/digital
 import { rateLimitDB } from '@/lib/rate-limit-db'
 import { getErrorMessage } from '@/lib/errors'
 
-const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY!
+const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || ''
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -1159,6 +1159,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: 'Sesión expirada. Inicia sesión de nuevo.' }, { status: 401 })
   }
 
+  // Check API key before proceeding
+  if (!ANTHROPIC_API_KEY) {
+    return NextResponse.json({ message: 'CRUZ AI no está configurado. Contacte al administrador.' }, { status: 503 })
+  }
+
   const companyId = req.cookies.get('company_id')?.value ?? ''
   const clientClave = req.cookies.get('company_clave')?.value ?? ''
   const rawClientName = req.cookies.get('company_name')?.value
@@ -1243,11 +1248,14 @@ export async function POST(req: NextRequest) {
     while (data.stop_reason === 'tool_use') {
       const toolUseBlocks = data.content.filter((b: { type: string }) => b.type === 'tool_use')
       const toolResults = await Promise.all(
-        toolUseBlocks.map(async (block: { type: string; id: string; name: string; input: Record<string, unknown> }) => ({
-          type: 'tool_result' as const,
-          tool_use_id: block.id,
-          content: await executeTool(block.name, block.input, { companyId, clientClave, clientName }),
-        }))
+        toolUseBlocks.map(async (block: { type: string; id: string; name: string; input: Record<string, unknown> }) => {
+          try {
+            const content = await executeTool(block.name, block.input, { companyId, clientClave, clientName })
+            return { type: 'tool_result' as const, tool_use_id: block.id, content }
+          } catch (toolErr) {
+            return { type: 'tool_result' as const, tool_use_id: block.id, content: JSON.stringify({ error: `Tool ${block.name} failed: ${getErrorMessage(toolErr)}` }) }
+          }
+        })
       )
 
       loopMessages = [

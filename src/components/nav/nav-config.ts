@@ -79,6 +79,7 @@ export const INTERNAL_GROUPS: NavGroup[] = [
       { href: '/agente',       label: 'CRUZ Agent',  icon: Bot },
       { href: '/cerebro',      label: 'Cerebro',     icon: BarChart3 },
       { href: '/predicciones', label: 'Predicciones', icon: BarChart3 },
+      { href: '/simulador',    label: 'Simulador',    icon: BarChart3 },
     ],
   },
   {
@@ -219,6 +220,7 @@ export const ADMIN_ONLY_ROUTES = [
   '/agente',
   '/cerebro',
   '/predicciones',
+  '/simulador',
 ] as const
 
 /** Routes accessible by client role */

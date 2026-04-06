@@ -173,6 +173,12 @@ async function main() {
     await sendTelegram(lines.join('\n'))
   }
 
+  // Log to Operational Brain
+  try {
+    const { logDecision } = require('./decision-logger')
+    if (optimalWindows.length > 0) await logDecision({ decision_type: 'crossing_choice', decision: `${optimalWindows.length} ventanas óptimas identificadas`, reasoning: `Fleet avg: ${fleetAvgDays}d, ${crossingDays.length} muestras` })
+  } catch {}
+
   // ── Summary ──
   const elapsed = ((Date.now() - start) / 1000).toFixed(1)
   console.log(`\n✅ Crossing predictor complete · ${elapsed}s`)

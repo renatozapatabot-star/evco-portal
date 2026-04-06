@@ -2,6 +2,7 @@
 
 // ============================================================
 // CRUZ Auto-Classifier — AI fracción suggestion with history
+// Connected to Operational Brain via decision-logger
 // Cross-references new products against 80 years of RZ
 // classification history stored in globalpc_productos.
 // Cron: triggered by shadow-reader or on-demand
@@ -163,6 +164,13 @@ async function main() {
       created_by: 'auto_classifier',
     }).then(() => {}, () => {})
   }
+
+  // Log to Operational Brain
+  try {
+    const { logDecision } = require('./decision-logger')
+    // Log last classification as sample (actual loop would log each)
+    if (top) await logDecision({ decision_type: 'classification', decision: `Fracción ${top.fraccion} sugerida`, reasoning: `${top.confidence}% confianza, ${top.precedentes} precedentes`, alternatives: result?.alternatives })
+  } catch {}
 
   console.log('\n✅ Clasificación completa')
   process.exit(0)

@@ -338,6 +338,12 @@ async function run() {
     duration_s: parseFloat(elapsed),
   })
 
+  // Log to Operational Brain
+  try {
+    const { logDecision } = require('./decision-logger')
+    if (telegramItems.length > 0) await logDecision({ decision_type: 'solicitation', decision: `${telegramItems.length} solicitudes creadas`, reasoning: 'Documentos faltantes detectados automáticamente' })
+  } catch {}
+
   // Telegram notification — only if drafts were created
   if (telegramItems.length > 0) {
     await sendTelegram(buildTelegramSummary(telegramItems))

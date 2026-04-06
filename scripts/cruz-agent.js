@@ -17,6 +17,7 @@ const { createClient } = require('@supabase/supabase-js')
 const { execSync } = require('child_process')
 const crypto = require('crypto')
 
+const { logDecision: logToBrain } = require('./decision-logger')
 const SCRIPT_NAME = 'cruz-agent'
 const DRY_RUN = process.argv.includes('--dry-run')
 const VERBOSE = process.argv.includes('--verbose')
@@ -65,6 +66,8 @@ async function logDecision(workflow, triggerType, triggerId, companyId, decision
     return
   }
   await supabase.from('agent_decisions').insert(entry).then(() => {}, () => {})
+  // Also log to operational_decisions (Brain)
+  logToBrain({ trafico: triggerId, company_id: companyId, decision_type: workflow, decision, reasoning }).catch(() => {})
 }
 
 // ── FORCE-MANUAL CHECKS ──
@@ -94,6 +97,20 @@ function shouldForceManual(trafico, avgValue) {
   const value = Number(trafico.importe_total) || 0
   if (avgValue > 0 && value > avgValue * 2) reasons.push(`Valor $${value} > 2x promedio $${Math.round(avgValue)}`)
   return reasons
+}
+
+async function getPatternBoost(workflow, companyId) {
+  // Query learned_patterns for this workflow/company — boost or penalize confidence
+  const { data } = await supabase.from('learned_patterns')
+    .select('pattern_value, confidence')
+    .eq('active', true)
+    .or(`pattern_key.ilike.%${companyId}%,pattern_type.eq.${workflow}`)
+    .gte('confidence', 0.8)
+    .limit(5)
+  if (!data || data.length === 0) return 0
+  // Average confidence of matching patterns → small boost
+  const avgConf = data.reduce((s, p) => s + (p.confidence || 0), 0) / data.length
+  return avgConf > 0.9 ? 5 : avgConf > 0.8 ? 3 : 0
 }
 
 // ── SENSE ──
@@ -189,11 +206,13 @@ async function processStatusChanges(changes) {
     const forcedLevel = forceReasons.length > 0 ? 0 : null
 
     if (status.includes('pagado') && t.pedimento) {
-      const level = forcedLevel ?? 1
+      const boost = await getPatternBoost('trafico_status_changed', t.company_id)
+      const baseConf = 95 + boost
+      const level = forcedLevel ?? (baseConf >= 98 ? 2 : 1)
       await logDecision('trafico_status_changed', 'status_changed', t.trafico, t.company_id,
         'pedimento_paid_validate',
-        forceReasons.length > 0 ? `Forzado manual: ${forceReasons.join('; ')}` : `Pedimento pagado — validación rutinaria`,
-        95, level,
+        forceReasons.length > 0 ? `Forzado manual: ${forceReasons.join('; ')}` : `Pedimento pagado — validación rutinaria${boost > 0 ? ` (boost +${boost} de patrones)` : ''}`,
+        baseConf, level,
         level === 0 ? 'observed' : `Pedimento ${t.pedimento} → encolado para validación`)
     } else if (status.includes('cruz')) {
       await logDecision('trafico_status_changed', 'status_changed', t.trafico, t.company_id,

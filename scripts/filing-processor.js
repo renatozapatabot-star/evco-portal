@@ -227,6 +227,12 @@ async function main() {
     await sendTelegram(`🟡 ${SCRIPT_NAME}: ${filed} filed, ${errors} errors`)
   }
 
+  // Log to Operational Brain
+  try {
+    const { logDecision } = require('./decision-logger')
+    await logDecision({ decision_type: 'approval', decision: `${filed} filed, ${errors} errors`, reasoning: 'Tito approved via Telegram' })
+  } catch {}
+
   console.log(`✅ Filing complete: ${filed} filed, ${errors} errors`)
   process.exit(0)
 }

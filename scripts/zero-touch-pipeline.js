@@ -179,6 +179,12 @@ async function main() {
     }, { onConflict: 'metric,dimension' }).then(() => {}, () => {})
   }
 
+  // Log to Operational Brain
+  try {
+    const { logDecision } = require('./decision-logger')
+    await logDecision({ decision_type: 'zero_touch', decision: `${qualified.length} calificados de ${pending.length} (${zeroTouchRate}%)`, reasoning: `Score ≥90, zero blockers` })
+  } catch {}
+
   console.log(`\n✅ Zero-touch rate: ${zeroTouchRate}%`)
   process.exit(0)
 }

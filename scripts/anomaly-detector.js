@@ -548,6 +548,13 @@ async function run() {
     lines.push(`— CRUZ 🦀`)
     await sendTelegram(lines.join('\n'))
     console.log(`\n⚠️  ${allAlerts.reduce((n, a) => n + a.alerts.length, 0)} anomalía(s) detectada(s) — alerta enviada`)
+
+    // Log to Operational Brain
+    try {
+      const { logDecision } = require('./decision-logger')
+      const totalAnomalies = allAlerts.reduce((n, a) => n + a.alerts.length, 0)
+      await logDecision({ decision_type: 'anomaly_resolution', decision: `${totalAnomalies} anomalías detectadas`, reasoning: allAlerts.map(a => `${a.client}: ${a.alerts.map(al => al.metric).join(', ')}`).join('; ') })
+    } catch {}
   } else {
     console.log(`\n✅ Sin anomalías. Duración: ${elapsed}s`)
   }

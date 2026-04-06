@@ -506,7 +506,7 @@ export default function TraficoDetailPage() {
       <nav aria-label="Navegacion" style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16, fontSize: 12 }}>
         <Link href="/" style={{ color: 'var(--slate-400)', textDecoration: 'none', padding: '8px 4px' }}>Inicio</Link>
         <span style={{ color: 'var(--slate-300)' }}>&#x203A;</span>
-        <Link href="/traficos" style={{ color: 'var(--slate-400)', textDecoration: 'none', padding: '8px 4px' }}>Traficos</Link>
+        <Link href="/traficos" style={{ color: 'var(--slate-400)', textDecoration: 'none', padding: '8px 4px' }}>Tráficos</Link>
         <span style={{ color: 'var(--slate-300)' }}>&#x203A;</span>
         <span className="font-mono" style={{ color: 'var(--navy-900)', fontWeight: 600 }}>{fmtId(String(t?.trafico ?? decodeURIComponent(String(id))))}</span>
       </nav>

@@ -123,10 +123,10 @@ export default function LoginPage() {
               </label>
               <input
                 id="login-code"
-                type="text"
+                type="password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
-                placeholder="Ej: evco2026"
+                placeholder="Código de acceso"
                 required
                 autoFocus
                 className="login-input"
@@ -150,11 +150,7 @@ export default function LoginPage() {
               )}
             </button>
 
-            <div className="login-forgot">
-              <a href="mailto:ai@renatozapata.com?subject=Recuperar%20acceso%20a%20CRUZ">
-                ¿Olvidaste tu contraseña?
-              </a>
-            </div>
+            {/* Password recovery removed — contact broker directly */}
           </form>
 
           {/* Footer identity */}

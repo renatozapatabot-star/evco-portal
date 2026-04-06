@@ -48,7 +48,7 @@ export function CostInsights() {
         if (estimatedSavings > 1000) {
           items.push({
             type: 'saving',
-            title: `T-MEC: ~${fmtUSDCompact(estimatedSavings)} USD ahorrados`,
+            title: `T-MEC: ~${fmtUSDCompact(estimatedSavings)} ahorrados`,
             detail: `${tmecOps.length} operaciones con tasa preferencial`,
             href: '/financiero',
           })
@@ -74,7 +74,7 @@ export function CostInsights() {
               title: pctChange > 0
                 ? `Valor promedio subió ${pctChange}% vs histórico`
                 : `Valor promedio bajó ${Math.abs(pctChange)}% vs histórico`,
-              detail: `Promedio reciente: ${fmtUSDCompact(recentAvg)} USD vs ${fmtUSDCompact(avg)} USD histórico`,
+              detail: `Promedio reciente: ${fmtUSDCompact(recentAvg)} vs ${fmtUSDCompact(avg)} histórico`,
               href: '/financiero',
             })
           }

@@ -273,7 +273,7 @@ export default function ClientInicioView() {
               color: 'var(--gold-dark)',
               lineHeight: 1.2,
             }}>
-              {enProceso} asunto{enProceso !== 1 ? 's' : ''} necesita{enProceso === 1 ? '' : 'n'} atenci&oacute;n.
+              {enProceso} asunto{enProceso !== 1 ? 's' : ''} necesita{enProceso !== 1 ? 'n' : ''} atención.
             </div>
           </Link>
         )}
@@ -344,7 +344,7 @@ export default function ClientInicioView() {
                 fontSize: 24, fontWeight: 800,
                 fontFamily: 'var(--font-mono)', color: 'var(--gold-dark)',
               }}>
-                {fmtUSDCompact(tmecSavings.totalSavings)} USD
+                {fmtUSDCompact(tmecSavings.totalSavings)}
               </div>
               <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Ahorro T-MEC</div>
             </div>

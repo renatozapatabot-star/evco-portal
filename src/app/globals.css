@@ -9,6 +9,10 @@
 @tailwind utilities;
 
 :root {
+  /* ── Fonts — Geist primary, JetBrains Mono for data ── */
+  --font-sans: var(--font-geist-sans, system-ui, -apple-system, sans-serif);
+  --font-mono: var(--font-jetbrains-mono, var(--font-geist-mono, monospace));
+
   /* ── Brand ── */
   --gold: #C4963C;
   --gold-dark: #8B6914;

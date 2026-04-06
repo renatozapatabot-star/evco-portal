@@ -9,6 +9,30 @@ import Link from 'next/link'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
+const DOC_DISPLAY_NAMES: Record<string, string> = {
+  factura: 'Factura Comercial',
+  packing_list: 'Lista de Empaque',
+  pedimento: 'Pedimento',
+  cove: 'COVE',
+  doda: 'DODA',
+  carta_porte: 'Carta Porte',
+  certificado_origen: 'Certificado de Origen',
+  conocimiento_embarque: 'Conocimiento de Embarque',
+  acuse_cove: 'Acuse de COVE',
+  guia_embarque: 'Guía de Embarque',
+  nom: 'Certificado NOM',
+  proforma: 'Factura Proforma',
+  orden_compra: 'Orden de Compra',
+  permiso: 'Permiso',
+  coa: 'Certificado de Análisis',
+}
+
+function displayDocType(raw: string | null): string {
+  if (!raw) return 'Documento'
+  const key = raw.toLowerCase().replace(/\s+/g, '_')
+  return DOC_DISPLAY_NAMES[key] || raw.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+}
+
 interface FeedItem {
   id: string
   type: string
@@ -88,7 +112,7 @@ export default function ActividadPage() {
             id: `doc-${d.pedimento_id}-${d.doc_type}`,
             type: 'document',
             icon: '📄',
-            text: `${d.doc_type || 'Documento'} recibido para ${d.pedimento_id}`,
+            text: `${displayDocType(d.doc_type)} recibido para ${d.pedimento_id}`,
             href: `/expedientes`,
             timestamp: d.uploaded_at,
             isNew: d.uploaded_at > (lastSeen || ''),
@@ -103,7 +127,7 @@ export default function ActividadPage() {
             id: `sol-${s.trafico_id}-${s.doc_type}`,
             type: 'solicitation',
             icon: '📩',
-            text: `CRUZ solicitó ${s.doc_type} para ${s.trafico_id}`,
+            text: `CRUZ solicitó ${displayDocType(s.doc_type)} para ${s.trafico_id}`,
             href: `/traficos/${encodeURIComponent(s.trafico_id)}`,
             timestamp: s.solicitado_at,
             isNew: s.solicitado_at > (lastSeen || ''),
@@ -114,7 +138,7 @@ export default function ActividadPage() {
             id: `recv-${s.trafico_id}-${s.doc_type}`,
             type: 'received',
             icon: '✅',
-            text: `${s.doc_type} recibido para ${s.trafico_id}`,
+            text: `${displayDocType(s.doc_type)} recibido para ${s.trafico_id}`,
             href: `/expedientes`,
             timestamp: s.recibido_at,
             isNew: s.recibido_at > (lastSeen || ''),

@@ -285,7 +285,7 @@ export default function ExpedientesPage() {
         {/* Pagination */}
         {totalPages > 1 && (
           <div className="pagination">
-            <span className="pagination-info">{(page * PAGE_SIZE + 1).toLocaleString()}-{Math.min((page + 1) * PAGE_SIZE, grouped.length).toLocaleString()} de {grouped.length.toLocaleString()}</span>
+            <span className="pagination-info">Página {page + 1} de {totalPages}</span>
             <div className="pagination-btns">
               <button className="pagination-btn" disabled={page === 0} onClick={() => setPage(p => p - 1)}><ChevronLeft size={14} /></button>
               <button className="pagination-btn current">{page + 1}</button>

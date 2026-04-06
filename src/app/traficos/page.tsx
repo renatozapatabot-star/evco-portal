@@ -14,10 +14,8 @@ import { ErrorBoundary } from '@/components/error-boundary'
 import { useSessionCache } from '@/hooks/use-session-cache'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { ErrorCard } from '@/components/ui/ErrorCard'
-import { InsightWhisper } from '@/components/ui/InsightWhisper'
 import { SwipeRow } from '@/components/ui/SwipeRow'
 import { Share2, MessageSquare } from 'lucide-react'
-import { useWhisper } from '@/hooks/use-whisper'
 import { useSupplierNames } from '@/hooks/use-supplier-names'
 
 interface TraficoRow {
@@ -174,7 +172,8 @@ function TraficosContent() {
     } else if (statFilter === 'proceso') {
       out = out.filter(r => (r.estatus || '').toLowerCase().includes('proceso'))
     } else if (statFilter === 'docs') {
-      out = out.filter(r => (r.estatus || '').toLowerCase().includes('proceso') && (docCountMap.get(r.trafico) ?? 0) < 6)
+      const yr = String(new Date().getFullYear())
+      out = out.filter(r => (r.estatus || '').toLowerCase().includes('proceso') && (docCountMap.get(r.trafico) ?? 0) < 6 && (r.fecha_llegada || '').slice(0, 4) === yr)
     } else if (statFilter === 'cruzado') {
       const today = new Date().toISOString().split('T')[0]
       out = out.filter(r => {
@@ -207,7 +206,8 @@ function TraficosContent() {
   // Stat bar calculations — only count "en proceso" traficos for activos and docs faltantes
   const kpiEnProceso = rows.filter(r => (r.estatus || '').toLowerCase().includes('proceso')).length
   const kpiActivos = kpiEnProceso
-  const kpiDocsFaltantes = rows.filter(r => (r.estatus || '').toLowerCase().includes('proceso') && (docCountMap.get(r.trafico) ?? 0) < 6).length
+  const currentYear = String(new Date().getFullYear())
+  const kpiDocsFaltantes = rows.filter(r => (r.estatus || '').toLowerCase().includes('proceso') && (docCountMap.get(r.trafico) ?? 0) < 6 && (r.fecha_llegada || '').slice(0, 4) === currentYear).length
   const kpiCruzadoHoy = rows.filter(r => {
     if (!(r.estatus || '').toLowerCase().includes('cruz')) return false
     const today = new Date().toISOString().split('T')[0]
@@ -218,7 +218,7 @@ function TraficosContent() {
 
   return (
     <div className="page-shell">
-      <InsightWhisper text={useWhisper("traficos")} />
+      {/* Title removed — sidebar indicates current page */}
       {/* Title removed — sidebar indicates current page */}
 
       {/* Error state */}
@@ -367,7 +367,7 @@ function TraficosContent() {
 
         {totalPages > 1 && (
           <div className="pagination">
-            <span className="pagination-info">{(page * PAGE_SIZE + 1).toLocaleString()}-{Math.min((page + 1) * PAGE_SIZE, filtered.length).toLocaleString()} de {filtered.length.toLocaleString()}</span>
+            <span className="pagination-info">Página {page + 1} de {totalPages}</span>
             <div className="pagination-btns">
               <button className="pagination-btn" disabled={page === 0} onClick={() => setPage(p => p - 1)}><ChevronLeft size={14} /></button>
               <button className="pagination-btn current">{page + 1}</button>

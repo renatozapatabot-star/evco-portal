@@ -43,6 +43,7 @@ export default function PedimentosPage() {
   const [page, setPage] = useState(0)
   const { sort, toggleSort } = useSort('pedimentos', { column: 'fecha', direction: 'desc' })
   const [partidaDescMap, setPartidaDescMap] = useState<Map<string, string>>(new Map())
+  const [aduanetValorMap, setAduanetValorMap] = useState<Map<string, number>>(new Map())
 
   useEffect(() => {
     setLoading(true)
@@ -74,6 +75,19 @@ export default function PedimentosPage() {
           if (p.cve_trafico && p.descripcion && !map.has(p.cve_trafico)) map.set(p.cve_trafico, p.descripcion)
         })
         setPartidaDescMap(map)
+      }).catch(() => {})
+
+    // Aduanet facturas for valor fallback
+    const aduanetParams = new URLSearchParams({ table: 'aduanet_facturas', select: 'pedimento,valor_usd', limit: '5000' })
+    if (!isInternal && companyId) aduanetParams.set('company_id', companyId)
+    fetch(`/api/data?${aduanetParams}`)
+      .then(r => r.json()).then(d => {
+        const map = new Map<string, number>()
+        const arr = Array.isArray(d.data) ? d.data : []
+        arr.forEach((f: { pedimento?: string; valor_usd?: number }) => {
+          if (f.pedimento && f.valor_usd && !map.has(f.pedimento)) map.set(f.pedimento, f.valor_usd)
+        })
+        setAduanetValorMap(map)
       }).catch(() => {})
   }, [])
 
@@ -108,7 +122,7 @@ export default function PedimentosPage() {
         pedimento,
         trafico: first.trafico,
         fecha: first.fecha_pago || first.fecha_llegada,
-        importe: Number(first.importe_total) || 0,
+        importe: Number(first.importe_total) || aduanetValorMap.get(pedimento) || 0,
         regimen: first.regimen ?? '',
         tmec,
         descripcion: first.descripcion_mercancia ?? '',
@@ -124,7 +138,7 @@ export default function PedimentosPage() {
     })
 
     return result
-  }, [rows, search, sort])
+  }, [rows, search, sort, aduanetValorMap])
 
   const totalPages = Math.ceil(groups.length / PAGE_SIZE)
   const paged = groups.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
@@ -267,9 +281,7 @@ export default function PedimentosPage() {
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="pagination">
-          <span className="pagination-info">
-            {(page * PAGE_SIZE + 1).toLocaleString()}-{Math.min((page + 1) * PAGE_SIZE, groups.length).toLocaleString()} de {groups.length.toLocaleString()}
-          </span>
+          <span className="pagination-info">Página {page + 1} de {totalPages}</span>
           <div className="pagination-btns">
             <button className="pagination-btn" disabled={page === 0} onClick={() => setPage(p => p - 1)}><ChevronLeft size={14} /></button>
             <button className="pagination-btn" disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)}><ChevronRight size={14} /></button>

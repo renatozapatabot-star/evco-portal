@@ -46,7 +46,7 @@ const T = {
   radius: 8,
 } as const
 
-type TabKey = 'llegadas' | 'bodega' | 'danos' | 'kpis'
+type TabKey = 'llegadas' | 'bodega' | 'kpis'
 
 /* ── Helpers ── */
 
@@ -75,6 +75,7 @@ export default function BodegaPage() {
   const isBroker = role === 'broker' || role === 'admin'
 
   const [rows, setRows] = useState<Entrada[]>([])
+  const [crossedSet, setCrossedSet] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [tab, setTab] = useState<TabKey>('llegadas')
@@ -84,9 +85,24 @@ export default function BodegaPage() {
     const url = `/api/data?table=entradas&company_id=${companyId}&limit=2000&order_by=fecha_llegada_mercancia&order_dir=desc`
     setLoading(true)
     setError(null)
-    fetch(url)
-      .then(r => r.json())
-      .then(d => setRows(d.data ?? []))
+
+    // Fetch entradas + traficos in parallel
+    Promise.all([
+      fetch(url).then(r => r.json()),
+      fetch(`/api/data?table=traficos&company_id=${companyId}&limit=5000&select=trafico,fecha_cruce,estatus`).then(r => r.json()),
+    ])
+      .then(([entradaData, traficoData]) => {
+        setRows(entradaData.data ?? [])
+        // Build set of tráficos that have already crossed
+        const crossed = new Set<string>()
+        const traficos = Array.isArray(traficoData.data) ? traficoData.data : []
+        traficos.forEach((t: { trafico?: string; fecha_cruce?: string; estatus?: string }) => {
+          if (t.trafico && (t.fecha_cruce || (t.estatus || '').toLowerCase().includes('cruz'))) {
+            crossed.add(t.trafico)
+          }
+        })
+        setCrossedSet(crossed)
+      })
       .catch(() => setError('No se pudo cargar la bodega.'))
       .finally(() => setLoading(false))
   }
@@ -102,9 +118,9 @@ export default function BodegaPage() {
 
   const enBodega = useMemo(
     () => rows
-      .filter(e => e.trafico != null)
+      .filter(e => e.trafico != null && !crossedSet.has(e.trafico))
       .sort((a, b) => daysSince(b.fecha_llegada_mercancia) - daysSince(a.fecha_llegada_mercancia)),
-    [rows]
+    [rows, crossedSet]
   )
 
   const danos = useMemo(
@@ -136,8 +152,7 @@ export default function BodegaPage() {
 
   const tabs: { key: TabKey; label: string; badge?: number; brokerOnly?: boolean }[] = [
     { key: 'llegadas', label: 'Llegadas' },
-    { key: 'bodega', label: 'En Bodega' },
-    { key: 'danos', label: 'Daños', badge: danosCount > 0 ? danosCount : undefined },
+    { key: 'bodega', label: 'En Bodega', badge: enBodega.length > 0 ? enBodega.length : undefined },
     { key: 'kpis', label: 'KPIs', brokerOnly: true },
   ]
 
@@ -342,90 +357,7 @@ export default function BodegaPage() {
         )
       )}
 
-      {/* ═══ TAB 3 — Daños ═══ */}
-      {tab === 'danos' && (
-        <div>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
-            <button
-              disabled
-              title="Próximamente"
-              style={{
-                display: 'inline-flex', alignItems: 'center', gap: 8,
-                padding: '10px 16px', borderRadius: T.radius,
-                background: T.card, border: `1px solid ${T.border}`,
-                color: T.textMuted, fontSize: 13, fontWeight: 600,
-                cursor: 'not-allowed', opacity: 0.6, minHeight: 60,
-              }}
-            >
-              <Download size={14} />
-              Exportar reporte
-            </button>
-          </div>
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr>
-                  {['Entrada', 'Fecha', 'Comentarios', isBroker ? 'Cliente' : null].filter(Boolean).map(h => (
-                    <th key={h} style={{
-                      textAlign: 'left', padding: '10px 12px',
-                      fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
-                      letterSpacing: '0.06em', color: T.textMuted,
-                      borderBottom: `1px solid ${T.border}`,
-                    }}>
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {danos.length === 0 ? (
-                  <tr>
-                    <td colSpan={isBroker ? 4 : 3}>
-                      <EmptyState icon="✅" title="Sin incidencias" description="Todo en orden — sin faltantes ni daños. 🦀" />
-                    </td>
-                  </tr>
-                ) : danos.map(e => {
-                  const badge = statusBadge(e)
-                  return (
-                    <tr key={e.cve_entrada} style={{ borderBottom: `1px solid ${T.border}` }}>
-                      <td style={{ padding: '12px', fontSize: 13 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <span style={{
-                            fontWeight: 700, color: T.textPrimary,
-                            fontFamily: 'var(--font-jetbrains-mono)',
-                          }}>
-                            {e.cve_entrada}
-                          </span>
-                          <span style={{
-                            padding: '2px 8px', fontSize: 10, fontWeight: 700,
-                            borderRadius: 9999, background: badge.bg,
-                            border: `1px solid ${badge.border}`, color: badge.color,
-                          }}>
-                            {badge.label}
-                          </span>
-                        </div>
-                      </td>
-                      <td style={{ padding: '12px', fontSize: 13, color: T.textSecondary, fontFamily: 'var(--font-jetbrains-mono)' }}>
-                        {fmtDate(e.fecha_llegada_mercancia)}
-                      </td>
-                      <td style={{ padding: '12px', fontSize: 13, color: T.textSecondary, maxWidth: 300 }}>
-                        {e.comentarios_danada || '—'}
-                      </td>
-                      {isBroker && (
-                        <td style={{ padding: '12px', fontSize: 13, color: T.textMuted }}>
-                          {e.cve_cliente || e.company_id || '—'}
-                        </td>
-                      )}
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* ═══ TAB 4 — KPIs (broker/admin only) ═══ */}
+      {/* ═══ TAB 3 — KPIs (broker/admin only) ═══ */}
       {tab === 'kpis' && isBroker && (
         <div style={{
           display: 'grid',

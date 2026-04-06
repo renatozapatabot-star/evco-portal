@@ -9,8 +9,7 @@ import { useSort } from '@/hooks/use-sort'
 import { useIsMobile } from '@/hooks/use-mobile'
 import Link from 'next/link'
 import { EmptyState } from '@/components/ui/EmptyState'
-import { InsightWhisper } from '@/components/ui/InsightWhisper'
-import { useWhisper } from '@/hooks/use-whisper'
+import { fmtCarrier } from '@/lib/carrier-names'
 import { ErrorCard } from '@/components/ui/ErrorCard'
 import { useSessionCache } from '@/hooks/use-session-cache'
 
@@ -45,6 +44,7 @@ export default function EntradasPage() {
   const { sort, toggleSort } = useSort('entradas', { column: 'fecha_llegada_mercancia', direction: 'desc' })
   const [page, setPage] = useState(0)
   const [partidaDescMap, setPartidaDescMap] = useState<Map<string, string>>(new Map())
+  const [transportMap, setTransportMap] = useState<Map<string, string>>(new Map())
   const { getCached, setCache } = useSessionCache()
 
   useEffect(() => {
@@ -78,6 +78,21 @@ export default function EntradasPage() {
           if (p.cve_trafico && p.descripcion && !map.has(p.cve_trafico)) map.set(p.cve_trafico, p.descripcion)
         })
         setPartidaDescMap(map)
+      }).catch(() => {})
+
+    // Traficos for transport data
+    const tParams = new URLSearchParams({ table: 'traficos', select: 'trafico,transportista_mexicano,transportista_americano', limit: '5000' })
+    if (!isInternal && companyId) tParams.set('company_id', companyId)
+    fetch(`/api/data?${tParams}`)
+      .then(r => r.json()).then(d => {
+        const map = new Map<string, string>()
+        const arr = Array.isArray(d.data) ? d.data : []
+        arr.forEach((t: { trafico?: string; transportista_mexicano?: string; transportista_americano?: string }) => {
+          if (t.trafico && !map.has(t.trafico)) {
+            map.set(t.trafico, t.transportista_mexicano || t.transportista_americano || '')
+          }
+        })
+        setTransportMap(map)
       }).catch(() => {})
   }, [])
 
@@ -117,7 +132,7 @@ export default function EntradasPage() {
 
   return (
     <div className="page-shell">
-      <InsightWhisper text={useWhisper("entradas")} />
+      {/* Title removed — sidebar indicates current page */}
 
       {/* Title removed — sidebar indicates current page */}
 
@@ -200,7 +215,8 @@ export default function EntradasPage() {
                   <th>Descripción</th>
                   <th style={{ textAlign: 'right', cursor: 'pointer', width: 80 }} onClick={() => toggleSort('cantidad_bultos')}>Bultos<SortArrow col="cantidad_bultos" /></th>
                   <th style={{ textAlign: 'right', cursor: 'pointer', width: 100 }} onClick={() => toggleSort('peso_bruto')}>Peso (kg)<SortArrow col="peso_bruto" /></th>
-                  <th style={{ width: 120 }}>Transporte</th>
+                  <th style={{ width: 130 }}>Transporte</th>
+                  <th style={{ width: 110 }}>Guía</th>
                 </tr>
               </thead>
               <tbody>
@@ -241,7 +257,10 @@ export default function EntradasPage() {
                     <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--text-secondary)' }}>
                       {r.peso_bruto ? `${Number(r.peso_bruto).toLocaleString('es-MX')}` : '—'}
                     </td>
-                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--text-secondary)' }}>
+                    <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+                      {r.trafico ? fmtCarrier(transportMap.get(r.trafico) || '') || '—' : '—'}
+                    </td>
+                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-muted)' }}>
                       {r.num_talon || r.num_caja_trailer || '—'}
                     </td>
                   </tr>
@@ -255,9 +274,7 @@ export default function EntradasPage() {
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="pagination">
-          <span className="pagination-info">
-            {(page * PAGE_SIZE + 1).toLocaleString()}-{Math.min((page + 1) * PAGE_SIZE, filtered.length).toLocaleString()} de {filtered.length.toLocaleString()}
-          </span>
+          <span className="pagination-info">Página {page + 1} de {totalPages}</span>
           <div className="pagination-btns">
             <button className="pagination-btn" disabled={page === 0} onClick={() => setPage(p => p - 1)}><ChevronLeft size={14} /></button>
             <button className="pagination-btn" disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)}><ChevronRight size={14} /></button>

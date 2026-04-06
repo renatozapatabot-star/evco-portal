@@ -156,19 +156,18 @@ export default function ClientInicioView() {
 
   // ── Pipeline stages (TMS view) ──
   const pipeline = useMemo(() => {
-    const stages = [
-      { key: 'proceso', label: 'En Proceso', count: 0, color: 'var(--warning-500, #D97706)', href: '/traficos?estatus=En+Proceso' },
-      { key: 'pagado', label: 'Pagado', count: 0, color: 'var(--info, #2563EB)', href: '/traficos?estatus=Pagado' },
-      { key: 'cruzado', label: 'Cruzado', count: 0, color: 'var(--success)', href: '/traficos?estatus=Cruzado' },
+    const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString()
+    const pagadoCount = traficos.filter(t => (t.estatus || '').toLowerCase().includes('pagado')).length
+    const cruzadoWeek = traficos.filter(t =>
+      (t.estatus || '').toLowerCase().includes('cruz') && t.fecha_cruce && t.fecha_cruce >= weekAgo
+    ).length
+
+    return [
+      { key: 'proceso', label: 'En Proceso', count: enProceso, color: 'var(--warning-500, #D97706)', href: '/traficos?estatus=En+Proceso' },
+      { key: 'pagado', label: 'Pagado', count: pagadoCount, color: 'var(--info, #2563EB)', href: '/traficos?estatus=Pagado' },
+      { key: 'cruzado', label: 'Cruzado (7d)', count: cruzadoWeek, color: 'var(--success)', href: '/traficos?estatus=Cruzado' },
     ]
-    for (const t of traficos) {
-      const s = (t.estatus || '').toLowerCase()
-      if (s.includes('cruz')) stages[2].count++
-      else if (s.includes('pagado')) stages[1].count++
-      else stages[0].count++
-    }
-    return stages
-  }, [traficos])
+  }, [traficos, enProceso])
 
   // ── Attention items (only things that need action) ──
   const attentionItems = useMemo(() => {
@@ -347,7 +346,7 @@ export default function ClientInicioView() {
       )}
 
       {/* ── VALUE CARD ── */}
-      {(tmecSavings.totalSavings > 0 || sinIncidencia > 0) && (
+      {(tmecSavings.totalSavings > 0 || valorTotal > 0) && (
         <div style={{
           margin: '8px 20px 16px', padding: '20px 24px', borderRadius: 14,
           background: 'linear-gradient(135deg, rgba(196,150,60,0.06) 0%, rgba(196,150,60,0.02) 100%)',
@@ -360,17 +359,11 @@ export default function ClientInicioView() {
               </div>
               <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Ahorro T-MEC</div>
             </div>
-            <div>
+            <div style={{ textAlign: 'right' }}>
               <div style={{ fontSize: 22, fontWeight: 800, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
                 {fmtUSDCompact(valorTotal)}
               </div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Importado YTD</div>
-            </div>
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: 22, fontWeight: 800, fontFamily: 'var(--font-mono)', color: 'var(--success)' }}>
-                {sinIncidencia}%
-              </div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Exitosas</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Importado {new Date().getFullYear()}</div>
             </div>
           </div>
         </div>

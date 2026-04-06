@@ -255,9 +255,7 @@ function TraficosContent() {
 
         {!loading && rows.length > 0 && (
           <div className="summary-bar">
-            <div className="summary-stat"><span className="summary-value">{rows.length.toLocaleString('es-MX')}</span><span className="summary-label"> total</span></div>
-            <div className="summary-sep" />
-            <div className="summary-stat"><span className="summary-value" style={{ color: totalValor > 0 ? undefined : 'var(--slate-300)' }}>{totalValor > 0 ? fmtUSDCompact(totalValor) : '—'}</span><span className="summary-label"> valor total · ene 2024–presente</span></div>
+            <div className="summary-stat"><span className="summary-value">{rows.length.toLocaleString('es-MX')}</span><span className="summary-label"> operaciones</span></div>
           </div>
         )}
 
@@ -292,7 +290,6 @@ function TraficosContent() {
                 <th scope="col" style={{ width: 110, cursor: 'pointer' }} onClick={() => toggleSort('fecha_llegada')} aria-sort={sort.column === 'fecha_llegada' ? (sort.direction === 'asc' ? 'ascending' : 'descending') : undefined}>Fecha<SortArrow col="fecha_llegada" /></th>
                 <th scope="col">Descripción</th>
                 <th scope="col" style={{ width: 100, textAlign: 'right', cursor: 'pointer' }} onClick={() => toggleSort('peso_bruto')} aria-sort={sort.column === 'peso_bruto' ? (sort.direction === 'asc' ? 'ascending' : 'descending') : undefined}>Peso<SortArrow col="peso_bruto" /></th>
-                <th scope="col" style={{ width: 110, textAlign: 'right', cursor: 'pointer' }} onClick={() => toggleSort('importe_total')} aria-sort={sort.column === 'importe_total' ? (sort.direction === 'asc' ? 'ascending' : 'descending') : undefined}>Importe<SortArrow col="importe_total" /></th>
                 <th scope="col" style={{ width: 60, textAlign: 'center' }}>DOCS</th>
               </tr>
             </thead>
@@ -373,7 +370,7 @@ function TraficosContent() {
                       <td className="timestamp">{r.fecha_llegada ? <time dateTime={r.fecha_llegada.split('T')[0]}>{fmtDateShort(r.fecha_llegada)}</time> : '—'}</td>
                       <td className="desc-text" title={fmtDesc(r.descripcion_mercancia)}>{fmtDesc(r.descripcion_mercancia) || '—'}</td>
                       <td className="currency text-right">{r.peso_bruto ? `${fmtKg(r.peso_bruto)} kg` : '—'}</td>
-                      <td className="currency text-right" title={!(r.importe_total != null && Number(r.importe_total) > 0) ? 'Valor aún no disponible para esta operación' : undefined}>{(r.importe_total != null && Number(r.importe_total) > 0) ? `${fmtUSD(r.importe_total)} USD` : '—'}</td>
+                      {/* Importe removed from list — available in detail view */}
                       <td>
                         {(() => {
                           const count = docCountMap.get(r.trafico) ?? 0

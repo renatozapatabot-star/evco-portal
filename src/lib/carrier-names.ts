@@ -30,7 +30,7 @@ export const fmtCarrier = (code: string | null | undefined): string => {
     const extKey = `TRANS_EXT_${s}`
     if (CARRIER_MAP[mxKey]) return CARRIER_MAP[mxKey]
     if (CARRIER_MAP[extKey]) return CARRIER_MAP[extKey]
-    return `Transportista ${s}`
+    return 'Transporte asignado'
   }
   // Clean up raw codes
   return s

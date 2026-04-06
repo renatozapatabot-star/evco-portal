@@ -109,14 +109,12 @@ export default function Sidebar({
         </div>
 
         {/* Client identity block */}
-        {portalType === 'client' && !collapsed && (
+        {portalType === 'client' && !collapsed && clientName && (
           <div className="sidebar-client">
-            <div className="sidebar-avatar">{clientInitials}</div>
             <div>
               <div className="sidebar-client-name">
                 {decodeURIComponent(clientName)}
               </div>
-              <div className="sidebar-client-role">{clientRole}</div>
             </div>
           </div>
         )}

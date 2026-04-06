@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import { Search, ChevronRight, ArrowUpDown } from 'lucide-react'
 import { getCookieValue } from '@/lib/client-config'
-import { fmtUSD, fmtUSDCompact } from '@/lib/format-utils'
+// format-utils imported if needed for future columns
 import { EmptyState } from '@/components/ui/EmptyState'
 import Link from 'next/link'
 
@@ -165,8 +165,6 @@ export default function CatalogoPage() {
                 <tr>
                   <th>Descripción</th>
                   <th>Fracción</th>
-                  <th style={{ textAlign: 'right' }}>Operaciones</th>
-                  <th style={{ textAlign: 'right' }}>Valor Total USD</th>
                   <th>T-MEC</th>
                   <th>Tráficos</th>
                 </tr>
@@ -182,12 +180,6 @@ export default function CatalogoPage() {
                       color: g.fraccion ? 'var(--gold-dark, #8B6914)' : 'var(--slate-400)',
                     }}>
                       {g.fraccion || '—'}
-                    </td>
-                    <td className="font-mono" style={{ textAlign: 'right', fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>
-                      {g.count}
-                    </td>
-                    <td className="font-mono" style={{ textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
-                      {g.totalValor > 0 ? `${fmtUSD(g.totalValor)} USD` : '—'}
                     </td>
                     <td>
                       {g.tmec ? (

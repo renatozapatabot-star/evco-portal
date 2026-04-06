@@ -198,14 +198,6 @@ export default function ExpedientesPage() {
                   }}>
                     {pedimentoId}
                   </span>
-                  {trafico && (
-                    <span style={{ fontSize: 12, color: 'var(--text-muted, #9B9B9B)', fontFamily: 'var(--font-mono)' }}>
-                      {fmtId(trafico)}
-                    </span>
-                  )}
-                  <span style={{ fontSize: 11, color: 'var(--text-muted, #9B9B9B)' }}>
-                    {groupDocs.length} doc{groupDocs.length !== 1 ? 's' : ''}
-                  </span>
                 </div>
 
                 {/* Expanded: documents */}

@@ -78,7 +78,12 @@ export default function PedimentosPage() {
   }, [])
 
   const groups: PedGroup[] = useMemo(() => {
-    let filtered = rows
+    const today = new Date().toISOString().split('T')[0]
+    let filtered = rows.filter(r => {
+      const fecha = r.fecha_pago || r.fecha_llegada
+      if (fecha && fecha > today) return false
+      return true
+    })
     if (search.trim()) {
       const q = search.toLowerCase()
       filtered = filtered.filter(r =>

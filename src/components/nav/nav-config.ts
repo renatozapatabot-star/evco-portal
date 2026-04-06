@@ -111,11 +111,10 @@ export const CLIENT_NAV: NavTopLevel[] = [
   { href: '/entradas',     label: 'Entradas',             icon: Package },
   { href: '/pedimentos',   label: 'Pedimentos',           icon: FileText },
   { href: '/expedientes',  label: 'Expedientes Digitales', icon: FolderOpen },
+  { href: '/bodega',       label: 'Bodega',               icon: Warehouse },
   { href: '/catalogo',     label: 'Catálogo',             icon: ClipboardList },
   { href: '/anexo24',      label: 'Anexo 24',             icon: BookOpen },
   { href: '/documentos',   label: 'Documentos',           icon: FolderOpen },
-  { href: '/financiero',   label: 'Contabilidad',         icon: DollarSign },
-  { href: '/cruz',         label: 'CRUZ AI',              icon: MessageSquare, gold: true },
 ]
 
 // ---------------------------------------------------------------------------
@@ -147,9 +146,8 @@ export const MOBILE_INTERNAL_TABS: MobileTab[] = [
 export const MOBILE_CLIENT_TABS: MobileTab[] = [
   { href: '/',           label: 'Inicio',        icon: LayoutDashboard },
   { href: '/traficos',   label: 'Tráficos',      icon: Truck },
-  { href: '/cruz',       label: 'CRUZ',          icon: null, center: true },
+  { href: '/expedientes', label: 'Expedientes',  icon: FolderOpen },
   { href: '/documentos', label: 'Documentos',    icon: FolderOpen },
-  { href: '/financiero', label: 'Contabilidad',   icon: DollarSign },
 ]
 
 // ---------------------------------------------------------------------------

@@ -266,12 +266,13 @@ body {
 }
 
 .sidebar-client-name {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
-  color: rgba(255,255,255,0.7);
+  color: rgba(255,255,255,0.5);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: 180px;
 }
 
 .sidebar-client-role {

@@ -7,7 +7,7 @@ import { validateCsrf } from '@/lib/csrf'
 const PUBLIC_PATHS = ['/login']
 
 /** Token-gated paths — accessible without login via URL token */
-const TOKEN_PATHS = ['/track/', '/upload/', '/share/']
+const TOKEN_PATHS = ['/track/', '/upload/', '/share/', '/proveedor/']
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl

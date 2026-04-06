@@ -253,8 +253,7 @@ export default function DashboardShellClient({ children }: Props) {
       {/* Floating action button */}
       <CruzFAB />
 
-      {/* Welcome overlay for first-time users */}
-      <WelcomeOverlay />
+      {/* Welcome overlay removed — the launchpad IS the welcome */}
 
       {/* Scroll to top */}
       {showScrollTop && (

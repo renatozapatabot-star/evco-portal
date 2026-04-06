@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import { Search, ChevronLeft, ChevronRight } from 'lucide-react'
 import { getCompanyIdCookie, getCookieValue } from '@/lib/client-config'
-import { fmtUSDFull as fmtUSD, fmtDate, fmtPedimentoShort, fmtDesc } from '@/lib/format-utils'
+import { fmtUSDFull as fmtUSD, fmtDate, fmtPedimentoShort, fmtDesc, fmtId } from '@/lib/format-utils'
 import { useSort } from '@/hooks/use-sort'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -230,9 +230,13 @@ export default function PedimentosPage() {
                       </span>
                     </td>
                     <td>
-                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 600, color: 'var(--gold-dark, #8B6914)' }}>
-                        {g.trafico}
-                      </span>
+                      <Link
+                        href={`/traficos/${encodeURIComponent(g.trafico)}`}
+                        onClick={e => e.stopPropagation()}
+                        style={{ fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 600, color: 'var(--gold-dark, #8B6914)', textDecoration: 'none' }}
+                      >
+                        {fmtId(g.trafico)}
+                      </Link>
                     </td>
                     <td style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--text-secondary)' }}>
                       {g.fecha ? fmtDate(g.fecha) : '—'}

@@ -182,8 +182,8 @@ body {
 
 .cruz-sidebar {
   width: var(--sidebar-width);
-  background: var(--bg-main, #FAFAF8);
-  border-right: 1px solid var(--border, #E8E5E0);
+  background: var(--navy-900, #141C26);
+  border-right: 1px solid rgba(255,255,255,0.06);
   display: flex;
   flex-direction: column;
   position: fixed;
@@ -224,7 +224,7 @@ body {
 /* ── Sidebar Components ── */
 .sidebar-logo {
   padding: 24px 22px 20px;
-  border-bottom: 1px solid var(--border, #E8E5E0);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
 }
 
 .sidebar-logo-inner {
@@ -235,6 +235,15 @@ body {
 
 .sidebar-logo-mark {
   display: none;
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--gold, #C4963C);
+  letter-spacing: 1px;
+}
+
+.cruz-sidebar.collapsed .sidebar-logo-mark {
+  display: block;
+  text-align: center;
 }
 
 .sidebar-logo-text {
@@ -259,7 +268,7 @@ body {
 .sidebar-client-name {
   font-size: 12px;
   font-weight: 600;
-  color: var(--text-secondary, #6B6B6B);
+  color: rgba(255,255,255,0.7);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -267,7 +276,7 @@ body {
 
 .sidebar-client-role {
   font-size: 10px;
-  color: var(--text-muted, #9B9B9B);
+  color: rgba(255,255,255,0.35);
   margin-top: 1px;
 }
 
@@ -281,7 +290,7 @@ body {
 .sidebar-nav-label {
   font-size: 10px;
   font-weight: 600;
-  color: var(--text-muted, #9B9B9B);
+  color: rgba(255,255,255,0.3);
   letter-spacing: 1.2px;
   text-transform: uppercase;
   padding: 0 12px;
@@ -300,7 +309,7 @@ body {
   padding: 10px 12px;
   border-radius: 10px;
   font-size: 14px;
-  color: var(--text-secondary, #6B6B6B);
+  color: rgba(255,255,255,0.6);
   cursor: pointer;
   transition: all 0.15s ease;
   text-decoration: none;
@@ -308,13 +317,13 @@ body {
 }
 
 .sidebar-nav-item:hover {
-  background: rgba(196, 150, 60, 0.04);
-  color: var(--text-primary, #1A1A1A);
+  background: rgba(255,255,255,0.05);
+  color: rgba(255,255,255,0.9);
 }
 
 .sidebar-nav-item.active {
-  background: rgba(196, 150, 60, 0.08);
-  color: var(--gold-dark, #8B6914);
+  background: rgba(196, 150, 60, 0.12);
+  color: var(--gold, #C4963C);
   font-weight: 700;
 }
 
@@ -333,7 +342,7 @@ body {
 .sidebar-footer {
   margin-top: auto;
   padding: 16px 22px;
-  border-top: 1px solid var(--border, #E8E5E0);
+  border-top: 1px solid rgba(255,255,255,0.06);
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -341,7 +350,7 @@ body {
 
 .sidebar-footer-text {
   font-size: 11px;
-  color: var(--text-muted, #9B9B9B);
+  color: rgba(255,255,255,0.4);
 }
 
 .sidebar-footer-heritage {
@@ -396,14 +405,14 @@ body {
     opacity: 1;
     pointer-events: auto;
   }
-}
-
-@media (min-width: 768px) {
-  .sidebar-backdrop {
+  .topbar-search-label,
+  .topbar-search-kbd {
     display: none;
   }
-  .topbar-hamburger {
-    display: none;
+  .topbar-search-btn {
+    width: 38px;
+    padding: 0;
+    justify-content: center;
   }
 }
 
@@ -425,6 +434,15 @@ body {
   color: var(--navy-900);
 }
 
+@media (min-width: 768px) {
+  .sidebar-backdrop {
+    display: none;
+  }
+  .topbar-hamburger {
+    display: none;
+  }
+}
+
 .sidebar-avatar-center {
   display: flex;
   justify-content: center;
@@ -440,7 +458,7 @@ body {
   margin: 4px 8px;
   background: transparent;
   border: none;
-  color: var(--slate-500);
+  color: rgba(255,255,255,0.3);
   cursor: pointer;
   font-size: 11px;
   border-radius: var(--radius-sm);
@@ -448,26 +466,25 @@ body {
 }
 
 .sidebar-collapse-btn:hover {
-  color: var(--slate-300);
+  color: rgba(255,255,255,0.6);
 }
 
 .sidebar-footer-firm {
   font-size: 13px;
   font-weight: 500;
-  color: white;
+  color: rgba(255,255,255,0.7);
 }
 
 .sidebar-footer-patente-line {
   font-size: 10px;
-  color: var(--slate-400);
-  opacity: 0.5;
+  color: rgba(255,255,255,0.25);
   font-family: var(--font-mono);
   margin-top: 2px;
 }
 
 .sidebar-footer-link {
   font-size: 12px;
-  color: var(--slate-400);
+  color: rgba(255,255,255,0.4);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -477,57 +494,44 @@ body {
 }
 
 .sidebar-footer-link:hover {
-  color: var(--slate-300);
+  color: rgba(255,255,255,0.7);
 }
 
-/* ── Topbar ── */
-.topbar-search {
+/* ── Topbar Search Button ── */
+.topbar-search-btn {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: var(--slate-100);
-  border-radius: var(--radius-md);
   padding: 8px 14px;
-  width: 280px;
-  max-width: 50vw;
-}
-.topbar-search.topbar-search-prominent {
-  flex: 1;
-  max-width: 600px;
-  width: auto;
-  background: #FAFAF8;
+  background: var(--bg-main, #FAFAF8);
   border: 1px solid var(--border, #E8E5E0);
-  border-radius: 12px;
-  padding: 10px 16px;
+  border-radius: 10px;
+  color: var(--text-muted, #9B9B9B);
+  font-size: 13px;
+  font-family: var(--font-sans);
+  cursor: pointer;
   transition: border-color 150ms, box-shadow 150ms;
+  height: 38px;
 }
-.topbar-search.topbar-search-prominent:hover {
+
+.topbar-search-btn:hover {
   border-color: var(--gold, #C4963C);
   box-shadow: 0 2px 8px rgba(196,150,60,0.08);
 }
-.topbar-search.topbar-search-prominent input {
-  font-size: 14px;
-  min-width: 0;
+
+.topbar-search-label {
+  color: var(--text-muted, #9B9B9B);
 }
 
-.topbar-search input {
-  border: none;
-  background: transparent;
-  font-size: 13px;
-  color: var(--navy-800);
-  outline: none;
-  width: 100%;
+.topbar-search-kbd {
+  font-size: 11px;
   font-family: var(--font-sans);
-}
-
-.topbar-search input::placeholder {
-  color: var(--slate-400);
-}
-
-.topbar-search-icon {
-  color: var(--slate-400);
-  font-size: 13px;
-  flex-shrink: 0;
+  padding: 2px 6px;
+  background: var(--bg-card, #FFFFFF);
+  border: 1px solid var(--border, #E8E5E0);
+  border-radius: 4px;
+  color: var(--text-muted, #9B9B9B);
+  line-height: 1;
 }
 
 .topbar-right {
@@ -586,9 +590,6 @@ body {
   border-radius: var(--radius-sm);
 }
 
-.topbar-search-trigger {
-  cursor: pointer;
-}
 
 .topbar-bell-btn {
   position: relative;
@@ -709,13 +710,10 @@ body {
 
 /* ── Pedimento pill ── */
 .pedimento-num {
-  background: var(--navy-700);
-  color: white;
-  font-size: 11px;
-  padding: 3px 8px;
-  border-radius: 5px;
+  font-size: 13px;
   font-family: var(--font-mono);
   font-weight: 500;
+  color: var(--text-secondary, #6B6B6B);
 }
 
 .pedimento-pending {

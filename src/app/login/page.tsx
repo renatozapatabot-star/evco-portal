@@ -65,8 +65,8 @@ function LoginContent() {
       {/* Subtle grid texture */}
       <div className="login-grid" />
 
-      {/* Z watermark */}
-      <div className="login-watermark" aria-hidden="true">Z</div>
+      {/* CRUZ watermark */}
+      <div className="login-watermark" aria-hidden="true">CRUZ</div>
 
       {/* Floating gold accent */}
       <div className="login-glow" />
@@ -100,9 +100,10 @@ function LoginContent() {
         <div className="login-card" style={session ? { borderRadius: '0 0 20px 20px' } : undefined}>
           {/* Brand */}
           <div className="login-brand">
-            <div className="login-z-mark">Z</div>
+            <div className="login-cruz-wordmark">CRUZ</div>
+            <div className="login-cruz-accent" />
             <div className="login-brand-company">RENATO ZAPATA &amp; CO.</div>
-            <div className="login-brand-subtitle">CRUZ · Portal de Clientes</div>
+            <div className="login-brand-subtitle">Portal de Clientes</div>
           </div>
 
           <div className="login-divider" />
@@ -196,11 +197,12 @@ function LoginContent() {
 
         .login-watermark {
           position: absolute;
-          bottom: -60px;
-          right: -40px;
-          font-size: 320px;
+          bottom: -40px;
+          right: -60px;
+          font-size: 200px;
           font-weight: 800;
-          font-family: var(--font-mono);
+          font-family: var(--font-sans);
+          letter-spacing: 0.15em;
           color: rgba(212,168,67,0.025);
           line-height: 1;
           pointer-events: none;
@@ -250,7 +252,7 @@ function LoginContent() {
         }
         .login-btn-gold {
           flex: 1; display: flex; align-items: center; justify-content: center;
-          height: 44px; border-radius: 10px; font-size: 13px; font-weight: 600;
+          height: 60px; border-radius: 10px; font-size: 13px; font-weight: 600;
           text-decoration: none; color: var(--navy-900); background: var(--gold-400);
           transition: background 150ms ease, transform 100ms ease;
         }
@@ -258,7 +260,7 @@ function LoginContent() {
         .login-btn-gold:active { transform: translateY(0); }
         .login-btn-outline {
           flex: 1; display: flex; align-items: center; justify-content: center;
-          height: 44px; border-radius: 10px; font-size: 13px; font-weight: 600;
+          height: 60px; border-radius: 10px; font-size: 13px; font-weight: 600;
           text-decoration: none; color: #6B6B6B; border: 1px solid #E8E5E0;
           transition: background 150ms ease, border-color 150ms ease;
         }
@@ -279,19 +281,21 @@ function LoginContent() {
         .login-brand {
           text-align: center;
         }
-        .login-z-mark {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          width: 72px;
-          height: 72px;
-          border-radius: 18px;
-          background: var(--navy-900);
-          font-size: 36px;
-          font-weight: 800;
-          color: var(--gold-400);
-          font-family: var(--font-mono);
-          box-shadow: 0 4px 16px rgba(0,0,0,0.2), 0 0 0 1px rgba(212,168,67,0.1);
+        .login-cruz-wordmark {
+          font-family: var(--font-sans);
+          font-size: 42px;
+          font-weight: 700;
+          letter-spacing: 0.22em;
+          color: var(--navy-900);
+          line-height: 1;
+          text-align: center;
+        }
+        .login-cruz-accent {
+          width: 40px;
+          height: 2px;
+          background: var(--gold-400);
+          margin: 14px auto 0;
+          border-radius: 1px;
         }
         .login-brand-company {
           margin-top: 16px;
@@ -350,11 +354,11 @@ function LoginContent() {
 
         .login-input {
           width: 100%;
-          height: 46px;
+          height: 60px;
           border: 1.5px solid #E8E5E0;
           border-radius: 10px;
-          padding: 0 14px;
-          font-size: 15px;
+          padding: 0 16px;
+          font-size: 16px;
           background: #FAFAF8;
           color: #1A1A1A;
           outline: none;
@@ -374,7 +378,7 @@ function LoginContent() {
         /* ── Submit ── */
         .login-submit {
           width: 100%;
-          height: 46px;
+          height: 60px;
           margin-top: 8px;
           background: var(--gold-400);
           border: none;
@@ -453,7 +457,7 @@ function LoginContent() {
         /* ── Mobile ── */
         @media (max-width: 480px) {
           .login-card { padding: 32px 24px; border-radius: 16px; }
-          .login-z-mark { width: 60px; height: 60px; font-size: 30px; border-radius: 15px; }
+          .login-cruz-wordmark { font-size: 34px; letter-spacing: 0.18em; }
         }
       `}</style>
     </div>

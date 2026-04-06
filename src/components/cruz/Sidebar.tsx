@@ -104,7 +104,7 @@ export default function Sidebar({
       {/* Logo */}
       <div className="sidebar-logo">
         <div className="sidebar-logo-inner">
-          <div className="sidebar-logo-mark">Z</div>
+          <div className="sidebar-logo-mark">C</div>
           {!collapsed && <div className="sidebar-logo-text">CRUZ</div>}
         </div>
 

@@ -24,17 +24,18 @@ export default function TopBar({
           <Menu size={20} />
         </button>
       )}
-      <div className="topbar-search topbar-search-trigger topbar-search-prominent" onClick={() => {
-        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true }))
-      }}>
-        <Search size={16} className="topbar-search-icon" />
-        <input
-          type="text"
-          placeholder="Buscar tráfico, pedimento, documento... (⌘K)"
-          readOnly
-          className="topbar-search-trigger"
-        />
-      </div>
+      <div style={{ flex: 1 }} />
+      <button
+        className="topbar-search-btn"
+        onClick={() => {
+          document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true }))
+        }}
+        aria-label="Buscar (⌘K)"
+      >
+        <Search size={16} />
+        <span className="topbar-search-label">Buscar...</span>
+        <kbd className="topbar-search-kbd">⌘K</kbd>
+      </button>
 
       <div className="topbar-right">
         {showNotifications && (

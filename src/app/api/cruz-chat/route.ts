@@ -459,6 +459,30 @@ const TOOLS = [
     }
   },
   {
+    name: 'query_decisions',
+    description: 'Search past operational decisions with reasoning. "Why was this classified this way?" "What happened with the last Milacron shipment?" Returns decision + reasoning + alternatives + outcome.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        trafico: { type: 'string', description: 'Tráfico ID to search decisions for' },
+        decision_type: { type: 'string', description: 'Type: classification, crossing_choice, zero_touch, approval, solicitation, anomaly_resolution' },
+        limit: { type: 'number', description: 'Max results (default 5)' },
+      },
+    }
+  },
+  {
+    name: 'query_patterns',
+    description: 'Search learned operational patterns. "How is my supplier?" "What is the crossing average?" Returns patterns with confidence and sample size.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        pattern_type: { type: 'string', description: 'Type: crossing_time, supplier_behavior, correction, classification' },
+        search: { type: 'string', description: 'Free text search in pattern_value' },
+        limit: { type: 'number', description: 'Max results (default 10)' },
+      },
+    }
+  },
+  {
     name: 'simulate_scenario',
     description: 'Digital twin simulation. Run what-if scenarios: route changes ("what if we use Colombia?"), tariff impacts ("what if IGI goes to 10%?"), supplier disruptions ("what if Milacron goes down?"). Uses 32K+ historical operations.',
     input_schema: {
@@ -910,6 +934,28 @@ async function executeTool(name: string, input: Record<string, any>, clientCtx: 
         ]
         const MVE_PENALTY_MAX = 7190 // from system_config mve_penalty_max
         return JSON.stringify({ deadlines, total_exposure: deadlines.filter(d => d.severity === 'critical').length * MVE_PENALTY_MAX + ' MXN max', action: 'navigate', path: '/cumplimiento' })
+      }
+      case 'query_decisions': {
+        let q = supabase.from('operational_decisions')
+          .select('trafico, company_id, decision_type, decision, reasoning, alternatives_considered, outcome, outcome_score, created_at')
+          .eq('company_id', companyId)
+          .order('created_at', { ascending: false })
+          .limit(input.limit || 5)
+        if (input.trafico) q = q.eq('trafico', input.trafico)
+        if (input.decision_type) q = q.eq('decision_type', input.decision_type)
+        const { data: decisions } = await q
+        return JSON.stringify({ decisions: decisions || [], total: decisions?.length || 0 })
+      }
+      case 'query_patterns': {
+        let q = supabase.from('learned_patterns')
+          .select('pattern_type, pattern_key, pattern_value, confidence, sample_size, last_confirmed')
+          .eq('active', true)
+          .order('confidence', { ascending: false })
+          .limit(input.limit || 10)
+        if (input.pattern_type) q = q.eq('pattern_type', input.pattern_type)
+        if (input.search) q = q.ilike('pattern_value', `%${sanitizeIlike(input.search)}%`)
+        const { data: pats } = await q
+        return JSON.stringify({ patterns: pats || [], total: pats?.length || 0 })
       }
       case 'simulate_scenario': {
         // Fetch historical data for simulation

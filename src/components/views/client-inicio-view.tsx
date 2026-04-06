@@ -250,130 +250,123 @@ export default function ClientInicioView() {
     return <DashboardSkeleton isMobile={isMobile} />
   }
 
+  // Greeting based on time
+  const hour = new Date().getHours()
+  const greeting = hour < 12 ? 'Buenos días' : hour < 18 ? 'Buenas tardes' : 'Buenas noches'
+
+  // Short company name (remove legal suffix)
+  const shortName = (companyName || 'cliente').replace(/,?\s*S\.?\s*DE\s*R\.?L\.?\s*DE\s*C\.?V\.?/i, '').replace(/,?\s*S\.?A\.?\s*DE\s*C\.?V\.?/i, '').trim()
+
+  // Card subtitles — calm, one thing per section
+  const opsSubtitle = enProceso === 0 ? 'Todo en orden' : `${enProceso} en proceso`
+  const docsSubtitle = 'Todo al día'
+  const contaSubtitle = '0 pendientes'
+
+  const navCards = [
+    { href: '/traficos', label: 'Operaciones', subtitle: opsSubtitle, icon: '📦', color: enProceso > 0 ? 'var(--gold)' : 'var(--success)' },
+    { href: '/documentos', label: 'Documentos', subtitle: docsSubtitle, icon: '📋', color: 'var(--success)' },
+    { href: '/financiero', label: 'Contabilidad', subtitle: contaSubtitle, icon: '💰', color: 'var(--success)' },
+  ]
+
   return (
-    <div className="page-shell" style={{ maxWidth: 960 }}>
+    <div className="page-shell" style={{ maxWidth: 700 }}>
 
       {/* Realtime toast */}
       {realtimeToast && (
         <div style={{
           padding: '10px 16px', borderRadius: 10,
-          background: '#0D9488', color: 'var(--bg-card)', fontSize: 13, fontWeight: 600,
+          background: '#0D9488', color: '#FFFFFF', fontSize: 13, fontWeight: 600,
           marginBottom: 16, animation: 'fadeInUp 200ms ease',
         }}>
           {realtimeToast}
         </div>
       )}
 
-      {/* ── HEADER ── */}
-      <div style={{ padding: '32px 20px 8px' }}>
-        <div style={{ fontSize: 13, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-          {dateStr}
-        </div>
-        <h1 style={{ fontSize: isMobile ? 22 : 26, fontWeight: 800, color: 'var(--text-primary)', margin: '4px 0 0' }}>
-          {attentionItems.length === 0 ? 'Todo en orden.' : `${attentionItems.length} pendiente${attentionItems.length !== 1 ? 's' : ''}.`}
+      {/* ── GREETING ── */}
+      <div style={{ textAlign: 'center', padding: isMobile ? '48px 20px 32px' : '64px 20px 40px' }}>
+        <h1 style={{
+          fontSize: isMobile ? 26 : 32,
+          fontWeight: 800,
+          color: 'var(--text-primary)',
+          margin: 0,
+          letterSpacing: '-0.02em',
+        }}>
+          {greeting}, {shortName}.
         </h1>
+        <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '8px 0 0', fontFamily: 'var(--font-mono)' }}>
+          {dateStr}
+        </p>
       </div>
 
-      {/* ── PIPELINE (TMS view) ── */}
-      <div style={{ padding: '16px 20px', display: 'flex', gap: 8 }}>
-        {pipeline.map(stage => (
-          <Link key={stage.key} href={stage.href} style={{ textDecoration: 'none', flex: 1 }}>
+      {/* ── NAVIGATION CARDS ── */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
+        gap: 12,
+        padding: '0 20px',
+      }}>
+        {navCards.map(card => (
+          <Link key={card.href} href={card.href} style={{ textDecoration: 'none' }}>
             <div style={{
-              padding: '16px 12px', borderRadius: 12, textAlign: 'center',
-              background: 'var(--bg-card)', border: `1px solid ${stage.count > 0 ? stage.color : 'var(--border)'}`,
-              borderTop: `3px solid ${stage.count > 0 ? stage.color : 'var(--border)'}`,
-              transition: 'border-color 150ms',
-            }}>
-              <div style={{
-                fontSize: isMobile ? 24 : 32, fontWeight: 800,
-                fontFamily: 'var(--font-mono)',
-                color: stage.count > 0 ? stage.color : 'var(--text-muted)',
-              }}>
-                {stage.count}
-              </div>
-              <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', marginTop: 4, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                {stage.label}
+              padding: isMobile ? '20px 24px' : '28px 24px',
+              borderRadius: 16,
+              background: 'var(--bg-card)',
+              border: '1px solid var(--border)',
+              transition: 'border-color 150ms, box-shadow 150ms',
+              cursor: 'pointer',
+              display: 'flex',
+              flexDirection: isMobile ? 'row' : 'column',
+              alignItems: isMobile ? 'center' : 'flex-start',
+              gap: isMobile ? 16 : 12,
+              minHeight: isMobile ? undefined : 120,
+            }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--gold)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(196,150,60,0.1)' }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.boxShadow = 'none' }}
+            >
+              <span style={{ fontSize: 28 }}>{card.icon}</span>
+              <div>
+                <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>
+                  {card.label}
+                </div>
+                <div style={{ fontSize: 13, color: card.color, fontWeight: 600, marginTop: 2 }}>
+                  {card.subtitle}
+                </div>
               </div>
             </div>
           </Link>
         ))}
       </div>
 
-      {/* ── ATTENTION ITEMS ── */}
-      {attentionItems.length > 0 && (
-        <div style={{ padding: '0 20px 12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {attentionItems.map(item => (
-            <Link key={item.key} href={item.href} style={{ textDecoration: 'none' }}>
-              <div style={{
-                padding: '12px 16px', borderRadius: 10,
-                background: item.severity === 'red' ? 'rgba(220,38,38,0.04)' : 'rgba(217,119,6,0.04)',
-                border: `1px solid ${item.severity === 'red' ? 'rgba(220,38,38,0.15)' : 'rgba(217,119,6,0.15)'}`,
-                fontSize: 13, color: 'var(--text-primary)',
-                display: 'flex', alignItems: 'center', gap: 8,
-              }}>
-                <span style={{ fontSize: 12 }}>{item.severity === 'red' ? '🔴' : '🟡'}</span>
-                {item.text}
-              </div>
-            </Link>
-          ))}
-        </div>
-      )}
-
-      {/* ── RECENT CROSSINGS ── */}
-      {recentCrossings.length > 0 && (
-        <div style={{ padding: '8px 20px 16px' }}>
-          <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 8 }}>
-            Últimos cruces
+      {/* ── CRUZ AI PROMPT ── */}
+      <div style={{ padding: '24px 20px 0' }}>
+        <Link href="/cruz" style={{ textDecoration: 'none' }}>
+          <div style={{
+            padding: '16px 20px',
+            borderRadius: 14,
+            background: 'var(--bg-card)',
+            border: '1px solid var(--border)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+            cursor: 'pointer',
+            transition: 'border-color 150ms',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--gold)' }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)' }}
+          >
+            <span style={{ fontSize: 20 }}>🦀</span>
+            <span style={{ fontSize: 14, color: 'var(--text-muted)' }}>
+              Pregúntale a CRUZ...
+            </span>
           </div>
-          {recentCrossings.slice(0, 4).map(t => (
-            <Link key={t.trafico} href={`/traficos/${encodeURIComponent(t.trafico)}`} style={{ textDecoration: 'none' }}>
-              <div style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                padding: '10px 0', borderBottom: '1px solid var(--border)',
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--success)', flexShrink: 0 }} />
-                  <span style={{ fontSize: 13, fontWeight: 600, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>{t.trafico}</span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  {t.importe_total && <span style={{ fontSize: 12, fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>{fmtUSDCompact(t.importe_total)}</span>}
-                  <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>{fmtDate(t.fecha_cruce)}</span>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-      )}
-
-      {/* ── VALUE CARD ── */}
-      {(tmecSavings.totalSavings > 0 || valorTotal > 0) && (
-        <div style={{
-          margin: '8px 20px 16px', padding: '20px 24px', borderRadius: 14,
-          background: 'linear-gradient(135deg, rgba(196,150,60,0.06) 0%, rgba(196,150,60,0.02) 100%)',
-          border: '1px solid rgba(196,150,60,0.15)',
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}>
-            <div>
-              <div style={{ fontSize: 22, fontWeight: 800, fontFamily: 'var(--font-mono)', color: 'var(--gold-dark)' }}>
-                {fmtUSDCompact(tmecSavings.totalSavings)}
-              </div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Ahorro T-MEC</div>
-            </div>
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: 22, fontWeight: 800, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
-                {fmtUSDCompact(valorTotal)}
-              </div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Importado {new Date().getFullYear()}</div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── FOOTER LINK ── */}
-      <div style={{ textAlign: 'center', padding: '8px 20px 40px' }}>
-        <Link href="/traficos" style={{ fontSize: 13, fontWeight: 600, color: 'var(--gold-dark)', textDecoration: 'none' }}>
-          Ver todas las operaciones →
         </Link>
+      </div>
+
+      {/* ── FOOTER ── */}
+      <div style={{ textAlign: 'center', padding: '40px 20px 60px' }}>
+        <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+          Renato Zapata & Company · Patente 3596
+        </div>
       </div>
 
       <Celebrate trigger={!!lastUpdate && (lastUpdate.estatus || '').toLowerCase().includes('cruz')} />

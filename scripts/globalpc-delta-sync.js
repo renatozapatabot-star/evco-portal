@@ -140,13 +140,9 @@ async function run() {
       totalFound = trafRows.length
       statusChanges = changes.length
 
-      // Alert on critical status changes
-      const critical = changes.filter(c =>
-        c.to === 'Cruzado' || c.to === 'Detenido' || (c.to || '').includes('Rojo')
-      )
-      for (const ch of critical.slice(0, 5)) {
-        const emoji = (ch.to || '').includes('Cruz') ? '✅' : (ch.to || '').includes('Rojo') ? '🔴' : '⚠️'
-        await tg(`${emoji} <b>${ch.trafico}</b>\n${ch.from} → ${ch.to}\n— CRUZ 🦀`)
+      // Status change alerts handled by status-flow-engine.js (no per-change spam here)
+      if (changes.length > 0) {
+        console.log(`  Status changes: ${changes.length} (${changes.slice(0, 3).map(c => `${c.trafico}: ${c.from}→${c.to}`).join(', ')}${changes.length > 3 ? '...' : ''})`)
       }
     }
 

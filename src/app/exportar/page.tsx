@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Download, FileText, Table2, DollarSign, Package } from 'lucide-react'
 import { getCookieValue } from '@/lib/client-config'
+import { DateInputES } from '@/components/ui/DateInputES'
 
 const EXPORTS = [
   { key: 'traficos', label: 'Tráficos', desc: 'Lista completa de embarques con estatus, pedimento y valor', icon: Table2 },
@@ -58,13 +59,9 @@ export default function ExportarPage() {
           Rango de fechas (opcional)
         </div>
         <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
-          <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} style={{
-            padding: '8px 12px', borderRadius: 8, border: '1px solid #E8E5E0', fontSize: 13, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)',
-          }} />
+          <DateInputES value={dateFrom} onChange={v => setDateFrom(v)} style={{ height: 36, padding: '0 12px', fontSize: 13 }} />
           <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>a</span>
-          <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} style={{
-            padding: '8px 12px', borderRadius: 8, border: '1px solid #E8E5E0', fontSize: 13, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)',
-          }} />
+          <DateInputES value={dateTo} onChange={v => setDateTo(v)} style={{ height: 36, padding: '0 12px', fontSize: 13 }} />
           {(dateFrom || dateTo) && (
             <button onClick={() => { setDateFrom(''); setDateTo('') }} style={{
               fontSize: 11, color: 'var(--text-secondary)', background: 'none', border: 'none', cursor: 'pointer',

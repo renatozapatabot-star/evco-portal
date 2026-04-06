@@ -5,6 +5,7 @@ import { Search, Download, ChevronLeft, ChevronRight } from 'lucide-react'
 import { getCompanyIdCookie, getClientClaveCookie, getCookieValue } from '@/lib/client-config'
 import { fmtDate, fmtUSD, fmtPedimentoShort, fmtKg } from '@/lib/format-utils'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { DateInputES } from '@/components/ui/DateInputES'
 import { useIsMobile } from '@/hooks/use-mobile'
 
 interface TraficoRow {
@@ -57,6 +58,7 @@ export function Anexo24View() {
   const [dateTo, setDateTo] = useState('')
   const [page, setPage] = useState(0)
   const [supplierLookup, setSupplierLookup] = useState<Map<string, string>>(new Map())
+  const [fraccionMap, setFraccionMap] = useState<Map<string, string>>(new Map())
 
   const [companyId, setCompanyId] = useState('')
   const [clientClave, setClientClave] = useState('')
@@ -98,6 +100,22 @@ export function Anexo24View() {
       .then(d => setRows(Array.isArray(d.data) ? d.data : []))
       .catch(() => setRows([]))
       .finally(() => setLoading(false))
+
+    // Fetch fracciones from globalpc_partidas (traficos table doesn't have this column)
+    fetch(`/api/data?table=globalpc_partidas&select=cve_trafico,fraccion_arancelaria,fraccion&limit=5000`)
+      .then(r => r.json())
+      .then(d => {
+        const map = new Map<string, string>()
+        const arr = Array.isArray(d.data) ? d.data : []
+        arr.forEach((p: { cve_trafico?: string; fraccion_arancelaria?: string; fraccion?: string }) => {
+          if (p.cve_trafico && !map.has(p.cve_trafico)) {
+            const frac = p.fraccion_arancelaria || p.fraccion
+            if (frac) map.set(p.cve_trafico, frac)
+          }
+        })
+        setFraccionMap(map)
+      })
+      .catch(() => {})
   }, [cookiesReady, companyId, userRole])
 
   const filtered = useMemo(() => {
@@ -107,7 +125,7 @@ export function Anexo24View() {
       out = out.filter(r =>
         (r.pedimento ?? '').toLowerCase().includes(q) ||
         (r.proveedores ?? '').toLowerCase().includes(q) ||
-        (r.fraccion_arancelaria ?? '').toLowerCase().includes(q) ||
+        (fraccionMap.get(r.trafico) || r.fraccion_arancelaria || '').toLowerCase().includes(q) ||
         (r.descripcion_mercancia ?? '').toLowerCase().includes(q)
       )
     }
@@ -164,11 +182,9 @@ export function Anexo24View() {
             {v === 'all' ? 'Todos' : v === 'si' ? 'T-MEC' : 'Sin T-MEC'}
           </button>
         ))}
-        <input type="date" value={dateFrom} onChange={e => { setDateFrom(e.target.value); setPage(0) }}
-          style={{ height: 32, border: '1px solid var(--border-card)', borderRadius: 6, padding: '0 8px', fontSize: 11, color: 'var(--slate-500)', background: 'var(--slate-50)' }} />
+        <DateInputES value={dateFrom} onChange={v => { setDateFrom(v); setPage(0) }} />
         <span style={{ color: 'var(--slate-400)', fontSize: 11 }}>—</span>
-        <input type="date" value={dateTo} onChange={e => { setDateTo(e.target.value); setPage(0) }}
-          style={{ height: 32, border: '1px solid var(--border-card)', borderRadius: 6, padding: '0 8px', fontSize: 11, color: 'var(--slate-500)', background: 'var(--slate-50)' }} />
+        <DateInputES value={dateTo} onChange={v => { setDateTo(v); setPage(0) }} />
         {(dateFrom || dateTo) && (
           <button onClick={() => { setDateFrom(''); setDateTo(''); setPage(0) }}
             style={{ fontSize: 10, color: 'var(--danger)', border: '1px solid #FCA5A5', background: 'var(--danger-bg)', borderRadius: 4, padding: '2px 6px', cursor: 'pointer' }}>✕</button>
@@ -214,7 +230,7 @@ export function Anexo24View() {
                       {resolveProvs(r.proveedores)}
                     </td>
                     <td className="font-mono" style={{ fontSize: 12, color: 'var(--gold-dark, #8B6914)' }}>
-                      {r.fraccion_arancelaria || '—'}
+                      {fraccionMap.get(r.trafico) || r.fraccion_arancelaria || '—'}
                     </td>
                     <td style={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 12, color: 'var(--slate-600)' }}>
                       {r.descripcion_mercancia || '—'}

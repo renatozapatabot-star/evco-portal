@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import { FileText, Plus, X, ExternalLink } from 'lucide-react'
 import { getCookieValue, getCompanyIdCookie } from '@/lib/client-config'
+import { DateInputES } from '@/components/ui/DateInputES'
 import { REQUIRED_DOC_TYPES } from '@/lib/documents'
 import { fmtDate } from '@/lib/format-utils'
 
@@ -325,11 +326,10 @@ export default function PlantillasPage() {
 
               <div>
                 <label style={{ fontSize: 12, fontWeight: 700, color: T.textSec, display: 'block', marginBottom: 6 }}>Fecha de vencimiento (dejar vacío = permanente)</label>
-                <input
-                  type="date"
+                <DateInputES
                   value={formExpiry}
-                  onChange={e => setFormExpiry(e.target.value)}
-                  style={inputStyle}
+                  onChange={v => setFormExpiry(v)}
+                  style={{ height: 40, padding: '0 12px', fontSize: 14, width: '100%', borderRadius: 8 }}
                 />
               </div>
 

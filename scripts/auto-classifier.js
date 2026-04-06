@@ -17,8 +17,11 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 )
 
+const { emitEvent } = require('./lib/workflow-emitter')
 const DRY_RUN = process.argv.includes('--dry-run')
 const DESC_ARG = process.argv.find(a => a.startsWith('--desc='))?.split('=').slice(1).join('=')
+const TRIGGER_ID_ARG = process.argv.find(a => a.startsWith('--trigger-id='))?.split('=')[1]
+const COMPANY_ID_ARG = process.argv.find(a => a.startsWith('--company-id='))?.split('=')[1]
 
 async function findHistoricalMatches(description) {
   if (!description || description.length < 5) return []
@@ -168,9 +171,32 @@ async function main() {
   // Log to Operational Brain
   try {
     const { logDecision } = require('./decision-logger')
-    // Log last classification as sample (actual loop would log each)
     if (top) await logDecision({ decision_type: 'classification', decision: `Fracción ${top.fraccion} sugerida`, reasoning: `${top.confidence}% confianza, ${top.precedentes} precedentes`, alternatives: result?.alternatives })
   } catch {}
+
+  // Emit workflow event (CRUZ 2.0 orchestration)
+  const top = result?.suggestions?.[0]
+  if (top && TRIGGER_ID_ARG) {
+    const companyId = COMPANY_ID_ARG || 'unknown'
+    if (top.confidence >= 0.95) {
+      await emitEvent('classify', 'classification_complete', TRIGGER_ID_ARG, companyId, {
+        fraccion: top.fraccion,
+        confidence: top.confidence,
+        igi_rate: top.igi_rate,
+        tmec_eligible: top.tmec_eligible,
+        description,
+      })
+    } else {
+      await emitEvent('classify', 'needs_human_review', TRIGGER_ID_ARG, companyId, {
+        topOptions: (result.suggestions || []).slice(0, 3).map(s => ({
+          fraccion: s.fraccion,
+          confidence: Math.round(s.confidence * 100),
+          reasoning: s.reasoning,
+        })),
+        description,
+      })
+    }
+  }
 
   console.log('\n✅ Clasificación completa')
   process.exit(0)

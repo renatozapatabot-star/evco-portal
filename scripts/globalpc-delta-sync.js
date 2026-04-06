@@ -66,6 +66,7 @@ async function run() {
       completed_at: new Date().toISOString(),
       status: 'error', error_message: e.message
     })
+    await tg(`🔴 <b>Delta sync FAILED</b>\nGlobalPC connection: ${e.message}\n— CRUZ 🦀`)
     return
   }
 
@@ -192,7 +193,7 @@ async function run() {
     console.log(`✅ Tráficos: ${trafRows.length} (${totalNew} new, ${totalUpdated} updated, ${statusChanges} status changes)`)
     console.log(`✅ Entradas: ${entRows.length}`)
 
-    if (totalNew > 0 || statusChanges > 0) {
+    if (totalNew > 50) {
       await tg(`⚡ <b>Delta sync</b>\n${totalNew} nuevos · ${totalUpdated} actualizados · ${statusChanges} cambios estado\n— CRUZ 🦀`)
     }
   } catch (e) {

@@ -1,20 +1,13 @@
 'use client'
 
 import { useEffect, useState, useMemo } from 'react'
-import { Search, Download, ChevronLeft, ChevronRight } from 'lucide-react'
-import { getCompanyIdCookie, getClientClaveCookie, getCookieValue } from '@/lib/client-config'
-import { fmtUSDFull as fmtUSD, fmtDate, fmtPedimentoShort } from '@/lib/format-utils'
+import { Search, ChevronLeft, ChevronRight } from 'lucide-react'
+import { getCompanyIdCookie, getCookieValue } from '@/lib/client-config'
+import { fmtUSDFull as fmtUSD, fmtDate, fmtPedimentoShort, fmtDesc } from '@/lib/format-utils'
 import { useSort } from '@/hooks/use-sort'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { EmptyState } from '@/components/ui/EmptyState'
-import { InsightWhisper } from '@/components/ui/InsightWhisper'
-import { useWhisper } from '@/hooks/use-whisper'
 import Link from 'next/link'
-
-const titleCase = (s: string) => {
-  if (!s) return ''
-  return s.toLowerCase().replace(/(?:^|\s|[-/])\w/g, c => c.toUpperCase())
-}
 
 interface TraficoRow {
   trafico: string
@@ -23,9 +16,7 @@ interface TraficoRow {
   fecha_llegada: string | null
   importe_total: number | null
   estatus: string | null
-  aduana: string | null
   regimen: string | null
-  tipo_cambio: number | null
   proveedores: string | null
   descripcion_mercancia: string | null
   company_id: string | null
@@ -37,30 +28,12 @@ interface PedGroup {
   trafico: string
   fecha: string | null
   importe: number
-  estatus: string
-  aduana: string
   regimen: string
-  proveedores: string[]
   tmec: boolean
   descripcion: string
 }
 
-const PAGE_SIZE = 30
-
-function exportCSV(groups: PedGroup[], clave: string) {
-  const headers = ['Pedimento', 'Tráfico', 'Fecha Pago', 'Importe USD', 'Estatus', 'Mercancía', 'Aduana', 'Régimen', 'Proveedores']
-  const csvRows = groups.map(g => [
-    g.pedimento, g.trafico, g.fecha ?? '',
-    g.importe, g.estatus, `"${g.descripcion.replace(/"/g, '""')}"`, g.aduana, g.regimen,
-    g.proveedores.join('; '),
-  ].join(','))
-  const csv = [headers.join(','), ...csvRows].join('\n')
-  const blob = new Blob([csv], { type: 'text/csv' })
-  const a = document.createElement('a')
-  a.href = URL.createObjectURL(blob)
-  a.download = `pedimentos-${clave}-${new Date().toISOString().split('T')[0]}.csv`
-  a.click()
-}
+const PAGE_SIZE = 50
 
 export default function PedimentosPage() {
   const isMobile = useIsMobile()
@@ -68,11 +41,8 @@ export default function PedimentosPage() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(0)
-  const [dateFrom, setDateFrom] = useState('')
-  const [dateTo, setDateTo] = useState('')
   const { sort, toggleSort } = useSort('pedimentos', { column: 'fecha', direction: 'desc' })
-  const [tmecOnly, setTmecOnly] = useState(false)
-  const [supplierLookup, setSupplierLookup] = useState<Map<string, string>>(new Map())
+  const [partidaDescMap, setPartidaDescMap] = useState<Map<string, string>>(new Map())
 
   useEffect(() => {
     setLoading(true)
@@ -81,43 +51,34 @@ export default function PedimentosPage() {
     const companyId = getCompanyIdCookie()
 
     const params = new URLSearchParams({
-      table: 'traficos',
-      limit: '5000',
-      order_by: 'fecha_pago',
-      order_dir: 'desc',
+      table: 'traficos', limit: '5000',
+      order_by: 'fecha_pago', order_dir: 'desc',
       not_null: 'pedimento',
-      gte_field: 'fecha_llegada',
-      gte_value: '2024-01-01',
+      gte_field: 'fecha_llegada', gte_value: '2024-01-01',
     })
     if (!isInternal && companyId) params.set('company_id', companyId)
 
-    // Fetch supplier name lookup for PRV_ code resolution
-    const _cid = typeof document !== 'undefined' ? (document.cookie.match(/company_id=([^;]+)/)?.[1] || '') : ''
-    fetch(`/api/data?table=globalpc_proveedores&limit=5000${_cid ? '&company_id=' + _cid : ''}`)
-      .then(r => r.json())
-      .then(d => {
-        const provs = (d.data ?? []) as { cve_proveedor?: string; nombre?: string }[]
-        const lookup = new Map<string, string>()
-        provs.forEach(p => {
-          if (p.cve_proveedor && p.nombre) lookup.set(p.cve_proveedor, p.nombre)
-        })
-        setSupplierLookup(lookup)
-      })
-      .catch(() => { /* best-effort */ })
-
     fetch(`/api/data?${params}`)
-      .then((r) => r.json())
-      .then((data) => {
-        const all = (data.data ?? data ?? []) as TraficoRow[]
-        setRows(all)
-      })
-      .catch((err: unknown) => { void 0 })
+      .then(r => r.json())
+      .then(data => setRows((data.data ?? data ?? []) as TraficoRow[]))
+      .catch(() => {})
       .finally(() => setLoading(false))
+
+    // Partida descriptions
+    const partidaParams = new URLSearchParams({ table: 'globalpc_partidas', select: 'cve_trafico,descripcion', limit: '5000' })
+    fetch(`/api/data?${partidaParams}`)
+      .then(r => r.json()).then(d => {
+        const map = new Map<string, string>()
+        const arr = Array.isArray(d.data) ? d.data : []
+        arr.forEach((p: { cve_trafico?: string; descripcion?: string }) => {
+          if (p.cve_trafico && p.descripcion && !map.has(p.cve_trafico)) map.set(p.cve_trafico, p.descripcion)
+        })
+        setPartidaDescMap(map)
+      }).catch(() => {})
   }, [])
 
   const groups: PedGroup[] = useMemo(() => {
     let filtered = rows
-
     if (search.trim()) {
       const q = search.toLowerCase()
       filtered = filtered.filter(r =>
@@ -126,10 +87,7 @@ export default function PedimentosPage() {
         (r.proveedores ?? '').toLowerCase().includes(q) ||
         (r.descripcion_mercancia ?? '').toLowerCase().includes(q))
     }
-    if (dateFrom) filtered = filtered.filter(r => (r.fecha_pago || r.fecha_llegada || '') >= dateFrom)
-    if (dateTo) filtered = filtered.filter(r => (r.fecha_pago || r.fecha_llegada || '') <= dateTo)
 
-    // Group by pedimento
     const map = new Map<string, TraficoRow[]>()
     filtered.forEach(r => {
       const key = r.pedimento!
@@ -137,10 +95,8 @@ export default function PedimentosPage() {
       map.get(key)!.push(r)
     })
 
-    let result = Array.from(map.entries()).map(([pedimento, pedRows]) => {
+    const result = Array.from(map.entries()).map(([pedimento, pedRows]) => {
       const first = pedRows[0]
-      const rawProvs = [...new Set(pedRows.flatMap(r => (r.proveedores ?? '').split(',').map(s => s.trim()).filter(Boolean)))]
-      const proveedores = rawProvs.map(code => supplierLookup.get(code) || code)
       const reg = (first.regimen ?? '').toUpperCase()
       const tmec = reg === 'ITE' || reg === 'ITR' || reg === 'IMD'
       return {
@@ -148,18 +104,12 @@ export default function PedimentosPage() {
         trafico: first.trafico,
         fecha: first.fecha_pago || first.fecha_llegada,
         importe: Number(first.importe_total) || 0,
-        estatus: first.estatus ?? '',
-        aduana: first.aduana ?? '',
         regimen: first.regimen ?? '',
-        proveedores,
         tmec,
         descripcion: first.descripcion_mercancia ?? '',
       }
     })
 
-    if (tmecOnly) result = result.filter(g => g.tmec)
-
-    // Apply sort
     result.sort((a, b) => {
       const col = sort.column as keyof PedGroup
       const av = a[col] ?? ''
@@ -169,217 +119,151 @@ export default function PedimentosPage() {
     })
 
     return result
-  }, [rows, search, dateFrom, dateTo, tmecOnly, supplierLookup, sort])
+  }, [rows, search, sort])
 
   const totalPages = Math.ceil(groups.length / PAGE_SIZE)
-  const pagedGroups = groups.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
+  const paged = groups.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
 
-  const totals = useMemo(() => {
-    const totalValor = groups.reduce((s, g) => s + g.importe, 0)
-    const tmecCount = groups.filter(g => g.tmec).length
-    return { totalValor, tmecCount, total: groups.length }
-  }, [groups])
+  const SortArrow = ({ col }: { col: string }) =>
+    sort.column === col ? <span style={{ marginLeft: 4, fontSize: 10 }}>{sort.direction === 'asc' ? '↑' : '↓'}</span> : null
 
-  const clave = getClientClaveCookie()
-
-  const summaryCards = [
-    { label: 'Pedimentos', value: totals.total.toLocaleString('es-MX') },
-    { label: 'Valor Total USD', value: fmtUSD(totals.totalValor) },
-    { label: 'T-MEC', value: `${totals.tmecCount} (${totals.total > 0 ? Math.round(totals.tmecCount / totals.total * 100) : 0}%)` },
-    { label: 'Sin T-MEC', value: `${totals.total - totals.tmecCount}` },
-  ]
+  const getDesc = (g: PedGroup) => {
+    const partidaDesc = partidaDescMap.get(g.trafico)
+    if (partidaDesc) return fmtDesc(partidaDesc)
+    if (g.descripcion) return fmtDesc(g.descripcion)
+    return null
+  }
 
   return (
-    <div className="page-container" style={{ padding: isMobile ? 16 : 24 }}>
-      <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'stretch' : 'flex-start', justifyContent: 'space-between', marginBottom: 16, gap: isMobile ? 12 : 0 }}>
-        <div>
-          <h1 className="page-title">Pedimentos</h1>
-          <p className="text-[12.5px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
-            {groups.length.toLocaleString()} pedimentos &middot; <span className="font-mono">{fmtUSD(totals.totalValor)}</span> USD valor declarado · ene 2024–presente
-          </p>
-        </div>
-        <div className="flex items-center gap-2.5 flex-wrap">
-          <button
-            onClick={() => exportCSV(groups, clave)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-[3px] text-[12px] font-medium"
-            style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
-          >
-            <Download size={12} strokeWidth={2} /> CSV
-          </button>
-          <div className="flex items-center gap-1.5">
-            <input type="date" value={dateFrom} onChange={e => { setDateFrom(e.target.value); setPage(0) }}
-              className="rounded-[6px] px-2 py-1 text-[11px] outline-none"
-              style={{ border: '1px solid var(--border)', color: 'var(--text-secondary)', background: 'var(--bg-elevated)', height: 44, minHeight: 44 }} />
-            <span style={{ color: 'var(--text-disabled)', fontSize: 11 }}>—</span>
-            <input type="date" value={dateTo} onChange={e => { setDateTo(e.target.value); setPage(0) }}
-              className="rounded-[6px] px-2 py-1 text-[11px] outline-none"
-              style={{ border: '1px solid var(--border)', color: 'var(--text-secondary)', background: 'var(--bg-elevated)', height: 44, minHeight: 44 }} />
-            {(dateFrom || dateTo) && (
-              <button onClick={() => { setDateFrom(''); setDateTo(''); setPage(0) }}
-                className="text-[10px] font-medium px-1.5 py-0.5 rounded"
-                style={{ color: 'var(--red-text)', border: '1px solid var(--red-border)', background: 'var(--red-bg)' }}>✕</button>
-            )}
-          </div>
-          <label className="flex items-center gap-1.5 text-[11.5px] cursor-pointer" style={{ color: tmecOnly ? 'var(--success)' : 'var(--text-secondary)' }}>
-            <input type="checkbox" checked={tmecOnly} onChange={e => { setTmecOnly(e.target.checked); setPage(0) }} style={{ width: 13, height: 13 }} />
-            Solo T-MEC
-          </label>
-          <div
-            className="flex items-center gap-2 rounded-[3px] px-3 py-1.5"
-            style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', width: 240 }}
-          >
-            <Search size={13} strokeWidth={2} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
+    <div className="page-shell">
+      <div className="table-shell">
+        <div className="table-toolbar" style={{ justifyContent: 'flex-end' }}>
+          <div className="toolbar-search">
+            <Search size={12} style={{ color: 'var(--slate-400)', flexShrink: 0 }} />
             <input
-              type="text"
               placeholder="Pedimento, tráfico, proveedor..."
               value={search}
-              onChange={(e) => { setSearch(e.target.value); setPage(0) }}
-              className="flex-1 bg-transparent outline-none text-[12.5px]"
-              style={{ color: 'var(--text-secondary)' }}
+              onChange={e => { setSearch(e.target.value); setPage(0) }}
             />
           </div>
         </div>
-      </div>
 
-      {/* Summary stats removed — misleading for new clients */}
-
-      {/* Loading */}
-      {loading && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={`skel-${i}`} className="h-16 rounded bg-gray-200 animate-pulse" />
-          ))}
-        </div>
-      )}
-
-      {/* Empty state */}
-      {!loading && pagedGroups.length === 0 && (
-        search.trim() ? (
-          <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-            <div style={{ fontSize: 32, marginBottom: 8 }}>🔍</div>
-            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--slate-600)' }}>Sin resultados para &ldquo;{search}&rdquo;</div>
-            <button className="btn btn-outline btn-sm" style={{ marginTop: 12 }} onClick={() => { setSearch(''); setPage(0) }}>Limpiar búsqueda</button>
+        {/* Loading */}
+        {loading && (
+          <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="skeleton-shimmer" style={{ height: 44, borderRadius: 6 }} />
+            ))}
           </div>
-        ) : (
-          <EmptyState
-            icon="📋"
-            title="Sin pedimentos registrados"
-            description="Los pedimentos aparecerán aquí cuando se asignen a los tráficos."
-          />
-        )
-      )}
+        )}
 
-      {/* Mobile card layout */}
-      {!loading && pagedGroups.length > 0 && isMobile && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {pagedGroups.map((g) => (
-            <Link
-              key={g.pedimento}
-              href={`/traficos/${encodeURIComponent(g.trafico)}`}
-              style={{
-                textDecoration: 'none', color: 'inherit',
-                background: 'var(--bg-surface)',
-                border: '1px solid var(--border)',
-                borderLeft: `4px solid ${g.tmec ? 'var(--success)' : 'var(--gold, #C4963C)'}`,
-                borderRadius: 'var(--r-md, 8px)',
-                padding: '12px 14px',
-                display: 'block',
-                minHeight: 60,
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                <span style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-jetbrains-mono)', color: 'var(--text-primary)' }}>{fmtPedimentoShort(g.pedimento)}</span>
-                {g.tmec && <span className="badge-tmec">T-MEC</span>}
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'var(--font-jetbrains-mono)' }}>{g.fecha ? fmtDate(g.fecha) : ''}</span>
-                <span style={{ fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-jetbrains-mono)', color: g.importe > 0 ? 'var(--n-900)' : 'var(--text-muted)' }}>{g.importe > 0 ? fmtUSD(g.importe) : 'Pendiente'}</span>
-              </div>
-              <div style={{ fontSize: 12, color: 'var(--n-500)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {g.proveedores.length > 0 ? titleCase(g.proveedores[0]) : g.descripcion || '—'}
-              </div>
-            </Link>
-          ))}
-        </div>
-      )}
+        {/* Empty */}
+        {!loading && paged.length === 0 && (
+          search.trim() ? (
+            <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+              <div style={{ fontSize: 32, marginBottom: 8 }}>🔍</div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-secondary)' }}>Sin resultados para &ldquo;{search}&rdquo;</div>
+              <button className="btn btn-outline btn-sm" style={{ marginTop: 12 }} onClick={() => { setSearch(''); setPage(0) }}>Limpiar búsqueda</button>
+            </div>
+          ) : (
+            <EmptyState icon="📋" title="Sin pedimentos registrados" description="Los pedimentos aparecerán aquí cuando se asignen a los tráficos." />
+          )
+        )}
 
-      {/* Desktop table layout */}
-      {!loading && pagedGroups.length > 0 && !isMobile && (
-        <div className="rounded-[3px] overflow-hidden" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
-          <div className="overflow-auto" style={{ maxHeight: 'calc(100vh - 260px)' }}>
-            <table className="data-table" role="table" aria-label="Lista de pedimentos">
+        {/* Mobile cards */}
+        {!loading && paged.length > 0 && isMobile && (
+          <div style={{ padding: '8px 12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {paged.map(g => (
+              <Link
+                key={g.pedimento}
+                href={`/traficos/${encodeURIComponent(g.trafico)}`}
+                style={{
+                  textDecoration: 'none', color: 'inherit',
+                  background: 'var(--bg-card)', border: '1px solid var(--border)',
+                  borderLeft: `3px solid ${g.tmec ? 'var(--success)' : 'var(--gold, #C4963C)'}`,
+                  borderRadius: 10, padding: '14px 16px', display: 'block', minHeight: 60,
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                  <span style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>{fmtPedimentoShort(g.pedimento)}</span>
+                  {g.tmec && <span className="badge-tmec">T-MEC</span>}
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: 13, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>{g.fecha ? fmtDate(g.fecha) : ''}</span>
+                  <span style={{ fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
+                    {g.importe > 0 ? fmtUSD(g.importe) : '—'}
+                  </span>
+                </div>
+                <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {getDesc(g) || '—'}
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+
+        {/* Desktop table */}
+        {!loading && paged.length > 0 && !isMobile && (
+          <div style={{ maxHeight: 'calc(100vh - 200px)', overflowY: 'auto', overflowX: 'auto' }}>
+            <table className="cruz-table" role="table" aria-label="Lista de pedimentos" style={{ minWidth: 700 }}>
               <thead>
                 <tr>
-                  <th scope="col" style={{ cursor: 'pointer' }} onClick={() => toggleSort('pedimento')}>Pedimento{sort.column === 'pedimento' ? (sort.direction === 'asc' ? ' ↑' : ' ↓') : ''}</th>
-                  <th scope="col">Tráfico</th>
-                  <th scope="col" style={{ cursor: 'pointer' }} onClick={() => toggleSort('estatus')}>Estatus{sort.column === 'estatus' ? (sort.direction === 'asc' ? ' ↑' : ' ↓') : ''}</th>
-                  <th scope="col">Mercancía</th>
-                  <th scope="col" style={{ cursor: 'pointer' }} onClick={() => toggleSort('fecha')}>Fecha{sort.column === 'fecha' ? (sort.direction === 'asc' ? ' ↑' : ' ↓') : ''}</th>
-                  <th scope="col">Aduana</th>
-                  <th scope="col">Régimen</th>
-                  <th scope="col" style={{ textAlign: 'right', cursor: 'pointer' }} onClick={() => toggleSort('importe')}>Valor USD{sort.column === 'importe' ? (sort.direction === 'asc' ? ' ↑' : ' ↓') : ''}</th>
-                  <th scope="col" style={{ width: 28 }}></th>
+                  <th style={{ cursor: 'pointer', width: 160 }} onClick={() => toggleSort('pedimento')}>Pedimento<SortArrow col="pedimento" /></th>
+                  <th style={{ width: 140 }}>Tráfico</th>
+                  <th style={{ cursor: 'pointer', width: 110 }} onClick={() => toggleSort('fecha')}>Fecha<SortArrow col="fecha" /></th>
+                  <th>Mercancía</th>
+                  <th style={{ width: 100 }}>Régimen</th>
+                  <th style={{ textAlign: 'right', cursor: 'pointer', width: 130 }} onClick={() => toggleSort('importe')}>Valor USD<SortArrow col="importe" /></th>
                 </tr>
               </thead>
               <tbody>
-                {pagedGroups.map((g, i) => {
-                  const isCruzado = g.estatus.toLowerCase().includes('cruz')
-                  const hasTrafico = !!g.trafico
-                  return (
-                    <tr key={g.pedimento} className={`${hasTrafico ? 'clickable-row' : ''} ${i % 2 === 0 ? 'row-even' : 'row-odd'}`}
-                      onClick={() => hasTrafico && (window.location.href = `/traficos/${encodeURIComponent(g.trafico)}`)}
-                      style={{ cursor: hasTrafico ? 'pointer' : 'default' }}>
-                      <td><span className="c-id">{fmtPedimentoShort(g.pedimento)}</span></td>
-                      <td><span className="c-id">{g.trafico}</span></td>
-                      <td>
-                        <span className={`badge ${isCruzado ? 'badge-cruzado' : 'badge-proceso'}`}>
-                          <span className="badge-dot" />
-                          {isCruzado ? 'Cruzado' : g.estatus || 'En Proceso'}
-                        </span>
-                      </td>
-                      <td>
-                        <span style={{ fontSize: 12, color: 'var(--n-600)', maxWidth: 200, display: 'inline-block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {g.descripcion ? titleCase(g.descripcion) : '—'}
-                        </span>
-                      </td>
-                      <td className="text-[12px]" style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-jetbrains-mono)' }}>{g.fecha ? fmtDate(g.fecha) : ''}</td>
-                      <td className="text-[12px]" style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-jetbrains-mono)' }}>{g.aduana || '—'}</td>
-                      <td>
-                        <span style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-jetbrains-mono)' }}>
-                          {g.regimen || '—'}
-                        </span>
-                        {g.tmec && (
-                          <span style={{ marginLeft: 6, fontSize: 11, color: 'var(--success)', fontWeight: 600 }}>T-MEC</span>
-                        )}
-                      </td>
-                      <td className="c-num">{g.importe > 0 ? `${fmtUSD(g.importe)} USD` : <span style={{ color: 'var(--text-muted)' }}>Pendiente</span>}</td>
-                      <td style={{ width: 28, textAlign: 'center' }}><ChevronRight size={14} style={{ color: 'var(--slate-300)' }} /></td>
-                    </tr>
-                  )
-                })}
+                {paged.map((g, i) => (
+                  <tr
+                    key={g.pedimento}
+                    className={`clickable-row ${i % 2 === 0 ? 'row-even' : 'row-odd'}`}
+                    onClick={() => window.location.href = `/traficos/${encodeURIComponent(g.trafico)}`}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <td>
+                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+                        {fmtPedimentoShort(g.pedimento)}
+                      </span>
+                    </td>
+                    <td>
+                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 600, color: 'var(--gold-dark, #8B6914)' }}>
+                        {g.trafico}
+                      </span>
+                    </td>
+                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--text-secondary)' }}>
+                      {g.fecha ? fmtDate(g.fecha) : '—'}
+                    </td>
+                    <td className="desc-text" style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+                      {getDesc(g) || '—'}
+                    </td>
+                    <td style={{ fontSize: 13, fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>
+                      {g.regimen || '—'}
+                      {g.tmec && <span style={{ marginLeft: 6, fontSize: 11, color: 'var(--success)', fontWeight: 600 }}>T-MEC</span>}
+                    </td>
+                    <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--text-primary)', fontWeight: 600 }}>
+                      {g.importe > 0 ? `${fmtUSD(g.importe)}` : '—'}
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
+      {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between mt-3 px-1">
-          <span className="text-[11.5px]" style={{ color: 'var(--text-muted)' }}>
-            {(page * PAGE_SIZE + 1)}-{Math.min((page + 1) * PAGE_SIZE, groups.length)} de {groups.length} pedimentos
+        <div className="pagination">
+          <span className="pagination-info">
+            {(page * PAGE_SIZE + 1).toLocaleString()}-{Math.min((page + 1) * PAGE_SIZE, groups.length).toLocaleString()} de {groups.length.toLocaleString()}
           </span>
-          <div className="flex items-center gap-1.5">
-            <button disabled={page === 0} onClick={() => setPage(p => p - 1)}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-[5px] text-[11.5px] font-medium"
-              style={{ background: page === 0 ? '#f7f8fa' : 'var(--card-bg)', border: '1px solid var(--border)', color: page === 0 ? '#d1d5db' : 'var(--text-primary)', cursor: page === 0 ? 'default' : 'pointer' }}>
-              <ChevronLeft size={12} /> Anterior
-            </button>
-            <span className="mono text-[11px] px-2" style={{ color: 'var(--text-muted)' }}>{page + 1}/{totalPages}</span>
-            <button disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-[5px] text-[11.5px] font-medium"
-              style={{ background: page >= totalPages - 1 ? '#f7f8fa' : 'var(--card-bg)', border: '1px solid var(--border)', color: page >= totalPages - 1 ? '#d1d5db' : 'var(--text-primary)', cursor: page >= totalPages - 1 ? 'default' : 'pointer' }}>
-              Siguiente <ChevronRight size={12} />
-            </button>
+          <div className="pagination-btns">
+            <button className="pagination-btn" disabled={page === 0} onClick={() => setPage(p => p - 1)}><ChevronLeft size={14} /></button>
+            <button className="pagination-btn" disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)}><ChevronRight size={14} /></button>
           </div>
         </div>
       )}

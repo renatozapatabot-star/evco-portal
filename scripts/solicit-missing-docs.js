@@ -30,6 +30,7 @@ require('dotenv').config({ path: path.join(__dirname, '..', '.env.local') })
 const { createClient } = require('@supabase/supabase-js')
 const { buildSolicitationEmail, buildSubject, buildTelegramSummary, docLabel } = require('./lib/email-templates')
 
+const { emitEvent } = require('./lib/workflow-emitter')
 const SCRIPT_NAME = 'solicit-missing-docs'
 const DRY_RUN = process.argv.includes('--dry-run')
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN
@@ -283,6 +284,13 @@ async function createDrafts(incompleteList) {
       },
       company_id: item.companyId,
     }).catch(() => {})
+
+    // Emit workflow event (CRUZ 2.0 orchestration)
+    await emitEvent('docs', 'solicitation_sent', item.traficoId, item.companyId, {
+      missing_docs: item.missingDocs,
+      contact_email: contact.email,
+      coverage_before: Math.round(item.coverage * 100),
+    })
 
     telegramItems.push({ traficoId: item.traficoId, missingDocs: item.missingDocs, contactName: contact.name })
     console.log(`   ✅ ${item.traficoId} → ${item.missingDocs.length} docs, draft saved`)

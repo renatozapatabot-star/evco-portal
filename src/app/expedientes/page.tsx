@@ -169,7 +169,6 @@ export default function ExpedientesPage() {
     <div className="page-container" style={{ padding: isMobile ? 16 : 24 }}>
       <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'stretch' : 'center', gap: 12, marginBottom: 16 }}>
         <div>
-          <h1 className="pg-title">Expediente Digital</h1>
           <p className="pg-meta">
             {docs.length.toLocaleString('es-MX')} documentos · {grouped.length} tráficos
             <button

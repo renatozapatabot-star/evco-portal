@@ -21,6 +21,8 @@ const SCRIPT_NAME = 'completeness-checker'
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN
 const TELEGRAM_CHAT = process.env.TELEGRAM_CHAT_ID || '-5085543275'
 
+const { emitEvent } = require('./lib/workflow-emitter')
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -226,10 +228,17 @@ async function checkMissingDocuments() {
 
     if (hasFactura && hasListaEmpaque) {
       complete++
+      // Emit expediente complete event (CRUZ 2.0 orchestration)
+      await emitEvent('docs', 'expediente_complete', entrada.trafico_id, entrada.company_id, {
+        entrada_number: entrada.entrada_number,
+        doc_count: types.length,
+      })
       continue
     }
 
+    const missingTypes = []
     if (!hasFactura) {
+      missingTypes.push('FACTURA_COMERCIAL')
       solicitudes.push({
         trafico_id: entrada.trafico_id,
         doc_type: 'FACTURA_COMERCIAL',
@@ -238,11 +247,21 @@ async function checkMissingDocuments() {
       })
     }
     if (!hasListaEmpaque) {
+      missingTypes.push('LISTA_EMPAQUE')
       solicitudes.push({
         trafico_id: entrada.trafico_id,
         doc_type: 'LISTA_EMPAQUE',
         company_id: entrada.company_id,
         status: 'solicitado'
+      })
+    }
+
+    // Emit solicitation needed event (CRUZ 2.0 orchestration)
+    if (missingTypes.length > 0) {
+      await emitEvent('docs', 'solicitation_needed', entrada.trafico_id, entrada.company_id, {
+        missingTypes,
+        entrada_number: entrada.entrada_number,
+        existing_docs: types,
       })
     }
   }

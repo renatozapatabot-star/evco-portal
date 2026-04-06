@@ -3,8 +3,8 @@ import {
   BarChart3, DollarSign, Users2, BookOpen,
   Shield, Calendar, Award,
   Settings, MessageSquare, Package,
-  History, Archive, Clock, ClipboardList, Receipt, Send, Phone,
-  Warehouse, Upload, Activity, Bot,
+  History, Clock, ClipboardList,
+  Warehouse, Bot,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -106,50 +106,23 @@ export const INTERNAL_BOTTOM: NavTopLevel[] = [
 // ---------------------------------------------------------------------------
 
 export const CLIENT_NAV: NavTopLevel[] = [
-  { href: '/',             label: 'Inicio',       icon: LayoutDashboard },
-  { href: '/traficos',     label: 'Operaciones',  icon: Truck },
-  { href: '/documentos',   label: 'Documentos',   icon: FolderOpen },
-  { href: '/financiero',   label: 'Contabilidad', icon: DollarSign },
-  { href: '/cruz',         label: 'CRUZ AI',      icon: MessageSquare, gold: true },
+  { href: '/',             label: 'Inicio',               icon: LayoutDashboard },
+  { href: '/traficos',     label: 'Tráficos',             icon: Truck },
+  { href: '/entradas',     label: 'Entradas',             icon: Package },
+  { href: '/pedimentos',   label: 'Pedimentos',           icon: FileText },
+  { href: '/expedientes',  label: 'Expedientes Digitales', icon: FolderOpen },
+  { href: '/catalogo',     label: 'Catálogo',             icon: ClipboardList },
+  { href: '/anexo24',      label: 'Anexo 24',             icon: BookOpen },
+  { href: '/documentos',   label: 'Documentos',           icon: FolderOpen },
+  { href: '/financiero',   label: 'Contabilidad',         icon: DollarSign },
+  { href: '/cruz',         label: 'CRUZ AI',              icon: MessageSquare, gold: true },
 ]
 
 // ---------------------------------------------------------------------------
 // CLIENT NAV GROUPS — client role (dropdown menus for sidebar)
 // ---------------------------------------------------------------------------
 
-export const CLIENT_GROUPS: NavGroup[] = [
-  {
-    key: 'operaciones',
-    label: 'Operaciones',
-    icon: Truck,
-    children: [
-      { href: '/traficos',    label: 'Tráficos',    icon: Truck },
-      { href: '/entradas',    label: 'Entradas',    icon: Package },
-      { href: '/pedimentos',  label: 'Pedimentos',  icon: FileText },
-    ],
-  },
-  {
-    key: 'documentos',
-    label: 'Documentos',
-    icon: FolderOpen,
-    children: [
-      { href: '/documentos',    label: 'Documentos',   icon: FolderOpen },
-      { href: '/expedientes',   label: 'Expedientes',  icon: FolderOpen },
-      { href: '/catalogo',      label: 'Catálogo',     icon: ClipboardList },
-      { href: '/anexo24',       label: 'Anexo 24',     icon: BookOpen },
-    ],
-  },
-  {
-    key: 'costos',
-    label: 'Finanzas',
-    icon: DollarSign,
-    children: [
-      { href: '/financiero',    label: 'Resumen',      icon: DollarSign },
-      { href: '/facturacion',   label: 'Facturas',     icon: Receipt },
-      { href: '/proveedores',   label: 'Proveedores',  icon: Users2 },
-    ],
-  },
-]
+export const CLIENT_GROUPS: NavGroup[] = []
 
 // ---------------------------------------------------------------------------
 // MOBILE BOTTOM NAV
@@ -255,7 +228,7 @@ export const CLIENT_ROUTES = [
 /** Get all flat routes for a role (used for search/command palette filtering) */
 export function getRoutesForRole(role: UserRole): NavRoute[] {
   if (role === 'client') {
-    return CLIENT_GROUPS.flatMap(g => g.children)
+    return CLIENT_NAV
   }
 
   const routes: NavRoute[] = [

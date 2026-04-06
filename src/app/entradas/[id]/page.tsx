@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronLeft, Check, AlertTriangle, X } from 'lucide-react'
-import { getClientClaveCookie, getClientNameCookie, PATENTE } from '@/lib/client-config'
+import { ChevronLeft, AlertTriangle, Package, Scale, FileText } from 'lucide-react'
+import { getClientClaveCookie, PATENTE } from '@/lib/client-config'
 import { fmtDate, fmtDesc } from '@/lib/format-utils'
 import { fmtCarrier } from '@/lib/carrier-names'
 import { createClient } from '@supabase/supabase-js'
@@ -23,55 +23,21 @@ interface Entrada {
   fecha_llegada_mercancia?: string | null
   cantidad_bultos?: number | null
   peso_bruto?: number | null
-  peso_neto?: number | null
-  tipo_operacion?: string | null
-  tipo_carga?: string | null
   transportista_americano?: string | null
   transportista_mexicano?: string | null
-  recibido_por?: string | null
   tiene_faltantes?: boolean | null
   mercancia_danada?: boolean | null
-  recibio_facturas?: boolean | null
-  recibio_packing_list?: boolean | null
-  num_pedido?: string | null
+  num_talon?: string | null
+  num_caja_trailer?: string | null
   comentarios_faltantes?: string | null
   comentarios_danada?: string | null
-  comentarios_generales?: string | null
   [key: string]: unknown
-}
-
-const fmtKg = (n: number | null | undefined) =>
-  n ? `${Number(n).toLocaleString('es-MX')} kg` : ''
-
-/** Never render bare "." or empty — show contextual placeholder */
-const FieldVal = ({ value, type = 'expected' }: { value: string | number | null | undefined; type?: 'expected' | 'optional' }) => {
-  const v = value === null || value === undefined ? '' : String(value).trim()
-  if (!v || v === '.' || v === '—') {
-    return type === 'expected'
-      ? <span style={{ color: 'var(--slate-400)', fontStyle: 'italic', fontSize: 12 }}>Pendiente</span>
-      : <span style={{ color: 'var(--slate-300)', fontSize: 12 }}>N/A</span>
-  }
-  return <>{v}</>
 }
 
 const fmtTrafico = (id: string) => {
   const clave = getClientClaveCookie()
   const clean = id.replace(/[\u2013\u2014]/g, '-')
   return clean.startsWith(`${clave}-`) ? clean : `${clave}-${clean}`
-}
-
-const BoolBadge = ({ value, labelTrue, labelFalse }: { value: boolean | null | undefined; labelTrue: string; labelFalse: string }) => {
-  if (value) return (
-    <span className="badge badge-hold"><AlertTriangle size={11} /> {labelTrue}</span>
-  )
-  return (
-    <span className="badge badge-cruzado"><Check size={11} /> {labelFalse}</span>
-  )
-}
-
-const CheckBadge = ({ value }: { value: boolean | null | undefined }) => {
-  if (value) return <span className="badge badge-cruzado"><Check size={11} strokeWidth={2.5} /> Recibido</span>
-  return <span className="badge badge-hold"><X size={11} strokeWidth={2.5} /> Faltante</span>
 }
 
 const titleCase = (s: string) => s ? s.toLowerCase().replace(/(?:^|\s|[-/])\w/g, c => c.toUpperCase()) : ''
@@ -82,6 +48,7 @@ export default function EntradaDetailPage() {
   const [entrada, setEntrada] = useState<Entrada | null>(null)
   const [loading, setLoading] = useState(true)
   const [proveedorName, setProveedorName] = useState('')
+  const [partidaDesc, setPartidaDesc] = useState('')
 
   useEffect(() => {
     fetch(`/api/data?table=entradas&cve_entrada=${encodeURIComponent(id)}&limit=1`)
@@ -111,196 +78,207 @@ export default function EntradaDetailPage() {
             if (supplier?.[0]) setProveedorName(supplier[0].supplier_name)
           }
         }
+
+        // Resolve partida description if trafico linked
+        if (entry?.trafico) {
+          fetch(`/api/data?table=globalpc_partidas&cve_trafico=${encodeURIComponent(entry.trafico)}&select=descripcion&limit=1`)
+            .then(r => r.json())
+            .then(pd => {
+              const arr = pd.data ?? []
+              if (arr[0]?.descripcion) setPartidaDesc(arr[0].descripcion)
+            })
+            .catch(() => {})
+        }
       })
-      .catch((err: unknown) => { void 0 })
+      .catch(() => {})
       .finally(() => setLoading(false))
   }, [id])
 
   if (loading) return (
-    <div className="p-6">
-      <div className="skeleton" style={{ width: 200, height: 32, marginBottom: 20 }} />
-      <div className="skeleton" style={{ height: 300, borderRadius: 'var(--r-lg)' }} />
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+      <div style={{ width: 400, maxWidth: '90vw' }}>
+        <div className="skeleton-shimmer" style={{ height: 300, borderRadius: 16 }} />
+      </div>
     </div>
   )
 
   if (!entrada) return (
-    <div className="p-6">
-      <Link href="/entradas" className="flex items-center gap-1.5 text-[13px] mb-4" style={{ color: 'var(--slate-400)', textDecoration: 'none' }}>
+    <div className="page-shell" style={{ maxWidth: 600, textAlign: 'center', paddingTop: 60 }}>
+      <Link href="/entradas" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 13, color: 'var(--text-muted)', textDecoration: 'none', marginBottom: 24 }}>
         <ChevronLeft size={14} /> Entradas
       </Link>
-      <h1 className="page-title">Entrada no encontrada</h1>
+      <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)' }}>Entrada no encontrada</h1>
     </div>
   )
 
   const hasIncidencia = entrada.tiene_faltantes || entrada.mercancia_danada
+  const guia = entrada.num_talon || entrada.num_caja_trailer || null
+  const usCarrier = fmtCarrier(entrada.transportista_americano)
+  const mxCarrier = fmtCarrier(entrada.transportista_mexicano)
+  const hasTransport = usCarrier || mxCarrier
+  const description = partidaDesc ? fmtDesc(partidaDesc) : (entrada.descripcion_mercancia ? fmtDesc(entrada.descripcion_mercancia) : null)
+  const damageNote = entrada.comentarios_danada || entrada.comentarios_faltantes
 
   return (
-    <div className="p-6" style={{ maxWidth: 900 }}>
-      <Link href="/entradas" className="flex items-center gap-1.5 text-[13px] mb-4" style={{ color: 'var(--slate-400)', textDecoration: 'none' }}>
-        <ChevronLeft size={14} /> Entradas
-      </Link>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '24px 16px', minHeight: '70vh' }}>
 
-      <div className="page-header">
-        <h1 className="page-title">Entrada {entrada.cve_entrada}</h1>
-        <p className="page-sub">{getClientNameCookie()} &middot; Patente {PATENTE}</p>
-      </div>
-
-      {entrada.trafico && (
-        <Link href={`/traficos/${encodeURIComponent(fmtTrafico(entrada.trafico))}`}
-          style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, color: 'var(--gold-600)', textDecoration: 'none', marginBottom: 12 }}>
-          Tráfico: {fmtTrafico(entrada.trafico)} →
+      {/* Back link */}
+      <div style={{ width: '100%', maxWidth: 600, marginBottom: 16 }}>
+        <Link href="/entradas" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 13, color: 'var(--text-muted)', textDecoration: 'none' }}>
+          <ChevronLeft size={14} /> Entradas
         </Link>
-      )}
+      </div>
 
-      <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 24 }}>
-        {hasIncidencia ? (
-          <span className="badge badge-hold"><span className="badge-dot" />Incidencia</span>
-        ) : (
-          <span className="badge badge-cruzado"><span className="badge-dot" />OK</span>
+      {/* Main card */}
+      <div style={{
+        width: '100%', maxWidth: 600,
+        background: 'var(--bg-card)', border: '1px solid var(--border, #E8E5E0)',
+        borderRadius: 16, overflow: 'hidden',
+      }}>
+
+        {/* Damage alert banner */}
+        {damageNote && (
+          <div style={{
+            background: 'rgba(220,38,38,0.06)', borderBottom: '1px solid rgba(220,38,38,0.15)',
+            padding: '10px 24px', display: 'flex', alignItems: 'center', gap: 8,
+          }}>
+            <AlertTriangle size={14} style={{ color: 'var(--danger-500, #DC2626)', flexShrink: 0 }} />
+            <span style={{ fontSize: 13, color: 'var(--danger-500, #DC2626)', fontWeight: 600 }}>
+              {damageNote}
+            </span>
+          </div>
         )}
-        {entrada.peso_bruto && (
-          <span style={{ fontSize: 14, color: 'var(--slate-500)', fontFamily: 'var(--font-mono)' }}>{fmtKg(entrada.peso_bruto)}</span>
-        )}
+
+        <div style={{ padding: '28px 28px 24px' }}>
+
+          {/* Header */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+            <div style={{
+              width: 10, height: 10, borderRadius: '50%',
+              background: hasIncidencia ? 'var(--gold, #C4963C)' : 'var(--success, #16A34A)',
+              flexShrink: 0,
+            }} />
+            <h1 style={{
+              fontSize: 22, fontWeight: 800, fontFamily: 'var(--font-mono)',
+              color: 'var(--text-primary)', margin: 0, letterSpacing: '-0.02em',
+            }}>
+              {entrada.cve_entrada}
+            </h1>
+          </div>
+
+          {/* Subtitle: date + proveedor */}
+          <p style={{ fontSize: 14, color: 'var(--text-secondary)', margin: '0 0 24px', paddingLeft: 20 }}>
+            {entrada.fecha_llegada_mercancia ? fmtDate(entrada.fecha_llegada_mercancia) : ''}
+            {proveedorName ? ` · ${titleCase(proveedorName)}` : ''}
+          </p>
+
+          {/* KPI row */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 24 }}>
+            <div style={{
+              background: '#FAFAF8', borderRadius: 10, padding: '16px 12px', textAlign: 'center',
+            }}>
+              <Package size={18} style={{ color: 'var(--text-muted)', marginBottom: 6 }} />
+              <div style={{ fontSize: 22, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
+                {entrada.cantidad_bultos?.toLocaleString('es-MX') ?? '—'}
+              </div>
+              <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 2 }}>
+                Bultos
+              </div>
+            </div>
+            <div style={{
+              background: '#FAFAF8', borderRadius: 10, padding: '16px 12px', textAlign: 'center',
+            }}>
+              <Scale size={18} style={{ color: 'var(--text-muted)', marginBottom: 6 }} />
+              <div style={{ fontSize: 22, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
+                {entrada.peso_bruto ? Number(entrada.peso_bruto).toLocaleString('es-MX') : '—'}
+              </div>
+              <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 2 }}>
+                Peso (kg)
+              </div>
+            </div>
+            <div style={{
+              background: '#FAFAF8', borderRadius: 10, padding: '16px 12px', textAlign: 'center',
+            }}>
+              <FileText size={18} style={{ color: 'var(--text-muted)', marginBottom: 6 }} />
+              <div style={{
+                fontSize: guia && guia.length > 10 ? 16 : 22,
+                fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)',
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+              }}>
+                {guia ?? '—'}
+              </div>
+              <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 2 }}>
+                Guía
+              </div>
+            </div>
+          </div>
+
+          {/* Mercancía */}
+          {description && (
+            <div style={{ marginBottom: 20 }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>
+                Mercancía
+              </div>
+              <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.4 }}>
+                {description}
+              </div>
+            </div>
+          )}
+
+          {/* Transporte */}
+          {hasTransport && (
+            <div style={{ marginBottom: 20 }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>
+                Transporte
+              </div>
+              <div style={{ fontSize: 14, color: 'var(--text-secondary)' }}>
+                {usCarrier && <span>US: {usCarrier}</span>}
+                {usCarrier && mxCarrier && <span> · </span>}
+                {mxCarrier && <span>MX: {mxCarrier}</span>}
+              </div>
+            </div>
+          )}
+
+          {/* Tráfico link */}
+          {entrada.trafico ? (
+            <Link
+              href={`/traficos/${encodeURIComponent(fmtTrafico(entrada.trafico))}`}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '14px 16px', borderRadius: 10,
+                border: '1px solid var(--border, #E8E5E0)', borderLeft: '3px solid var(--gold, #C4963C)',
+                textDecoration: 'none', transition: 'background 100ms', minHeight: 48,
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = '#FAFAF8' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+            >
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Tráfico</div>
+                <div style={{ fontSize: 15, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--gold-dark, #8B6914)', marginTop: 2 }}>
+                  {fmtTrafico(entrada.trafico)}
+                </div>
+              </div>
+              <span style={{ fontSize: 14, color: 'var(--text-muted)' }}>→</span>
+            </Link>
+          ) : (
+            <div style={{
+              padding: '14px 16px', borderRadius: 10,
+              background: '#FAFAF8', textAlign: 'center',
+            }}>
+              <span style={{ fontSize: 13, color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                Pendiente vinculación a tráfico
+              </span>
+            </div>
+          )}
+        </div>
       </div>
 
-      <div className="card" style={{ marginBottom: 20 }}>
-        <div className="card-header">
-          <span className="card-title">Información de Entrada</span>
-        </div>
-        <div style={{ padding: 20 }}>
-          <div className="d-grid">
-            <div className="d-cell">
-              <div className="d-label">No. Entrada</div>
-              <div className="d-val mono">{entrada.cve_entrada}</div>
-            </div>
-            <div className="d-cell">
-              <div className="d-label">Trafico</div>
-              <div className="d-val mono">
-                {entrada.trafico ? (
-                  <Link href="/traficos" style={{ color: 'var(--info)', textDecoration: 'none', fontWeight: 600 }}>
-                    {fmtTrafico(entrada.trafico)}
-                  </Link>
-                ) : <span style={{ color: 'var(--slate-400)', fontStyle: 'italic', fontSize: 12 }}>Sin dato</span>}
-              </div>
-            </div>
-            <div className="d-cell">
-              <div className="d-label">Proveedor</div>
-              <div className="d-val">{proveedorName ? titleCase(proveedorName) : <span style={{ color: 'var(--slate-400)', fontStyle: 'italic', fontSize: 12 }}>Sin dato</span>}</div>
-            </div>
-            <div className="d-cell">
-              <div className="d-label">Fecha Llegada</div>
-              <div className="d-val mono">{fmtDate(entrada.fecha_llegada_mercancia)}</div>
-            </div>
-            <div className="d-cell">
-              <div className="d-label">Bultos Recibidos</div>
-              <div className="d-val mono"><FieldVal value={entrada.cantidad_bultos?.toLocaleString('es-MX')} /></div>
-            </div>
-            <div className="d-cell">
-              <div className="d-label">Num. Pedido</div>
-              <div className="d-val mono"><FieldVal value={entrada.num_pedido} type="optional" /></div>
-            </div>
-            <div className="d-cell">
-              <div className="d-label">Peso Bruto</div>
-              <div className="d-val mono"><FieldVal value={fmtKg(entrada.peso_bruto)} /></div>
-            </div>
-            <div className="d-cell">
-              <div className="d-label">Peso Neto</div>
-              <div className="d-val mono"><FieldVal value={fmtKg(entrada.peso_neto)} /></div>
-            </div>
-          </div>
+      {/* Footer */}
+      <div style={{ marginTop: 24, textAlign: 'center' }}>
+        <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+          Renato Zapata & Company · Patente {PATENTE}
         </div>
       </div>
-
-      {entrada.descripcion_mercancia && (
-        <div className="card" style={{ marginBottom: 20 }}>
-          <div className="card-header">
-            <span className="card-title">Mercancía</span>
-          </div>
-          <div style={{ padding: 20, fontSize: 15, fontWeight: 600, color: 'var(--navy-900)' }}>
-            {fmtDesc(entrada.descripcion_mercancia)}
-          </div>
-        </div>
-      )}
-
-      {(entrada.transportista_americano || entrada.transportista_mexicano) && (
-        <div className="card" style={{ marginBottom: 20 }}>
-          <div className="card-header">
-            <span className="card-title">Transportistas</span>
-          </div>
-          <div style={{ padding: 20 }}>
-            <div className="d-grid">
-              <div className="d-cell">
-                <div className="d-label">Transp. Americano</div>
-                <div className="d-val"><FieldVal value={fmtCarrier(entrada.transportista_americano)} /></div>
-              </div>
-              <div className="d-cell">
-                <div className="d-label">Transp. Mexicano</div>
-                <div className="d-val"><FieldVal value={fmtCarrier(entrada.transportista_mexicano)} /></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className="card" style={{ marginBottom: 20 }}>
-        <div className="card-header">
-          <span className="card-title">Revisión de Recepción</span>
-        </div>
-        <div style={{ padding: 20 }}>
-          <div className="d-grid">
-            <div className="d-cell">
-              <div className="d-label">Faltantes</div>
-              <div className="d-val"><BoolBadge value={entrada.tiene_faltantes} labelTrue="Sí — Faltantes" labelFalse="Sin faltantes" /></div>
-            </div>
-            <div className="d-cell">
-              <div className="d-label">Mercancía Dañada</div>
-              <div className="d-val"><BoolBadge value={entrada.mercancia_danada} labelTrue="Sí — Daño" labelFalse="Sin daño" /></div>
-            </div>
-            <div className="d-cell">
-              <div className="d-label">Facturas</div>
-              <div className="d-val"><CheckBadge value={entrada.recibio_facturas} /></div>
-            </div>
-            <div className="d-cell">
-              <div className="d-label">Packing List</div>
-              <div className="d-val"><CheckBadge value={entrada.recibio_packing_list} /></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {entrada.recibido_por && (
-        <div className="card" style={{ marginBottom: 20 }}>
-          <div className="card-header">
-            <span className="card-title">Recibido Por</span>
-          </div>
-          <div style={{ padding: 20, fontSize: 14, fontWeight: 500, color: 'var(--navy-800)' }}>{entrada.recibido_por}</div>
-        </div>
-      )}
-
-      {(entrada.comentarios_faltantes || entrada.comentarios_danada || entrada.comentarios_generales) && (
-        <div className="card">
-          <div className="card-header">
-            <span className="card-title">Comentarios</span>
-          </div>
-          <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {entrada.comentarios_faltantes && (
-              <div style={{ background: 'var(--danger-bg)', color: 'var(--danger-t)', borderRadius: 'var(--radius-md)', padding: 12, fontSize: 13, fontWeight: 600 }}>
-                Faltantes: {entrada.comentarios_faltantes}
-              </div>
-            )}
-            {entrada.comentarios_danada && (
-              <div style={{ background: 'var(--danger-bg)', color: 'var(--danger-t)', borderRadius: 'var(--radius-md)', padding: 12, fontSize: 13, fontWeight: 600 }}>
-                Daño: {entrada.comentarios_danada}
-              </div>
-            )}
-            {entrada.comentarios_generales && (
-              <div style={{ background: 'var(--slate-50)', color: 'var(--slate-700)', borderRadius: 'var(--radius-md)', padding: 12, fontSize: 13 }}>
-                {entrada.comentarios_generales}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   )
 }

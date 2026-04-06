@@ -116,10 +116,7 @@ export default function CatalogoPage() {
     <div className="page-shell">
       <div className="section-header">
         <div>
-          <h1 className="page-title">Catálogo de Productos</h1>
-          <p style={{ fontSize: 13, color: 'var(--slate-500)', marginTop: 4 }}>
-            {grouped.length} productos · {rows.length.toLocaleString('es-MX')} operaciones · <span className="font-mono">{fmtUSDCompact(totalValue)}</span> valor total
-          </p>
+          {/* Title removed — sidebar indicates current page */}
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           {(['count', 'totalValor', 'descripcion'] as SortKey[]).map(key => (

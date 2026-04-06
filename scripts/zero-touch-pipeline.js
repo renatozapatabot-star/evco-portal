@@ -17,6 +17,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 )
 
+const { emitEvent } = require('./lib/workflow-emitter')
 const DRY_RUN = process.argv.includes('--dry-run')
 const TELEGRAM_CHAT = '-5085543275'
 
@@ -167,6 +168,17 @@ async function main() {
 
   lines.push(``, `— CRUZ 🦀`)
   await sendTelegram(lines.join('\n'))
+
+  // Emit workflow events for qualified tráficos (CRUZ 2.0 orchestration)
+  if (!DRY_RUN) {
+    for (const q of qualified) {
+      await emitEvent('pedimento', 'ready_for_approval', q.trafico, q.company_id, {
+        score: q.score,
+        docs_present: q.docsPresent,
+        value: q.value,
+      })
+    }
+  }
 
   // Save metrics
   if (!DRY_RUN) {

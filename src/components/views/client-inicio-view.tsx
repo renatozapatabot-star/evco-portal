@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from 'react'
 import Link from 'next/link'
 import { getCompanyIdCookie, getClientNameCookie } from '@/lib/client-config'
 import { useRealtimeTrafico } from '@/hooks/use-realtime-trafico'
-import { fmtDate, fmtUSDCompact } from '@/lib/format-utils'
+import { fmtDate, fmtDateCompact, fmtUSDCompact } from '@/lib/format-utils'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { calculateTmecSavings } from '@/lib/tmec-savings'
 import { computeStreak } from '@/lib/achievements'
@@ -13,12 +13,14 @@ import { Celebrate } from '@/components/celebrate'
 import { ErrorCard } from '@/components/ui/ErrorCard'
 import { DashboardSkeleton } from '@/components/skeletons/DashboardSkeleton'
 import { useSessionCache } from '@/hooks/use-session-cache'
+import { Truck, FolderOpen, DollarSign, MessageSquare, ChevronRight } from 'lucide-react'
 
 interface TraficoRow {
   trafico: string; estatus: string; fecha_llegada: string | null
   importe_total: number | null; pedimento: string | null
   descripcion_mercancia: string | null; fecha_cruce: string | null
   peso_bruto: number | null; company_id: string | null
+  updated_at: string | null
   [k: string]: unknown
 }
 
@@ -116,10 +118,7 @@ export default function ClientInicioView() {
 
   // ── KPI calculations ──
   const enProceso = useMemo(() =>
-    traficos.filter(t => {
-      const s = (t.estatus || '').toLowerCase()
-      return !s.includes('cruz') && !s.includes('entreg') && !s.includes('complet')
-    }).length, [traficos])
+    traficos.filter(t => (t.estatus || '').toLowerCase() === 'en proceso').length, [traficos])
 
   const cruzadoRecent = useMemo(() => {
     const cutoff = new Date(Date.now() - 7 * 86400000).toISOString()
@@ -194,6 +193,14 @@ export default function ClientInicioView() {
       .slice(0, 5)
   }, [traficos])
 
+  // ── Recent activity (last 5 status changes) ──
+  const recentActivity = useMemo(() => {
+    return traficos
+      .filter(t => t.updated_at)
+      .sort((a, b) => (b.updated_at || '').localeCompare(a.updated_at || ''))
+      .slice(0, 5)
+  }, [traficos])
+
   // ── Date string (hydration-safe) ──
   const [dateStr, setDateStr] = useState('')
   useEffect(() => {
@@ -250,22 +257,15 @@ export default function ClientInicioView() {
     return <DashboardSkeleton isMobile={isMobile} />
   }
 
-  // Greeting based on time
-  const hour = new Date().getHours()
-  const greeting = hour < 12 ? 'Buenos días' : hour < 18 ? 'Buenas tardes' : 'Buenas noches'
-
-  // Short company name (remove legal suffix)
-  const shortName = (companyName || 'cliente').replace(/,?\s*S\.?\s*DE\s*R\.?L\.?\s*DE\s*C\.?V\.?/i, '').replace(/,?\s*S\.?A\.?\s*DE\s*C\.?V\.?/i, '').trim()
-
   // Card subtitles — calm, one thing per section
   const opsSubtitle = enProceso === 0 ? 'Todo en orden' : `${enProceso} en proceso`
   const docsSubtitle = 'Todo al día'
   const contaSubtitle = '0 pendientes'
 
   const navCards = [
-    { href: '/traficos', label: 'Operaciones', subtitle: opsSubtitle, icon: '📦', color: enProceso > 0 ? 'var(--gold)' : 'var(--success)' },
-    { href: '/documentos', label: 'Documentos', subtitle: docsSubtitle, icon: '📋', color: 'var(--success)' },
-    { href: '/financiero', label: 'Contabilidad', subtitle: contaSubtitle, icon: '💰', color: 'var(--success)' },
+    { href: '/traficos', label: 'Operaciones', subtitle: opsSubtitle, Icon: Truck, color: enProceso > 0 ? 'var(--gold)' : 'var(--success)' },
+    { href: '/documentos', label: 'Documentos', subtitle: docsSubtitle, Icon: FolderOpen, color: 'var(--success)' },
+    { href: '/financiero', label: 'Contabilidad', subtitle: contaSubtitle, Icon: DollarSign, color: 'var(--success)' },
   ]
 
   return (
@@ -282,18 +282,9 @@ export default function ClientInicioView() {
         </div>
       )}
 
-      {/* ── GREETING ── */}
-      <div style={{ textAlign: 'center', padding: isMobile ? '48px 20px 32px' : '64px 20px 40px' }}>
-        <h1 style={{
-          fontSize: isMobile ? 26 : 32,
-          fontWeight: 800,
-          color: 'var(--text-primary)',
-          margin: 0,
-          letterSpacing: '-0.02em',
-        }}>
-          {greeting}, {shortName}.
-        </h1>
-        <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '8px 0 0', fontFamily: 'var(--font-mono)' }}>
+      {/* ── DATE HEADER ── */}
+      <div style={{ padding: isMobile ? '24px 20px 16px' : '32px 20px 20px' }}>
+        <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: 0, fontFamily: 'var(--font-mono)' }}>
           {dateStr}
         </p>
       </div>
@@ -308,7 +299,7 @@ export default function ClientInicioView() {
         {navCards.map(card => (
           <Link key={card.href} href={card.href} style={{ textDecoration: 'none' }}>
             <div style={{
-              padding: isMobile ? '20px 24px' : '28px 24px',
+              padding: isMobile ? '24px 28px' : '32px 28px',
               borderRadius: 16,
               background: 'var(--bg-card)',
               border: '1px solid var(--border)',
@@ -318,17 +309,17 @@ export default function ClientInicioView() {
               flexDirection: isMobile ? 'row' : 'column',
               alignItems: isMobile ? 'center' : 'flex-start',
               gap: isMobile ? 16 : 12,
-              minHeight: isMobile ? undefined : 120,
+              minHeight: isMobile ? 72 : 130,
             }}
             onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--gold)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(196,150,60,0.1)' }}
             onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.boxShadow = 'none' }}
             >
-              <span style={{ fontSize: 28 }}>{card.icon}</span>
+              <card.Icon size={32} strokeWidth={1.5} style={{ color: 'var(--text-secondary)', flexShrink: 0 }} />
               <div>
-                <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>
+                <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>
                   {card.label}
                 </div>
-                <div style={{ fontSize: 13, color: card.color, fontWeight: 600, marginTop: 2 }}>
+                <div style={{ fontSize: 14, color: card.color, fontWeight: 600, marginTop: 4 }}>
                   {card.subtitle}
                 </div>
               </div>
@@ -337,29 +328,85 @@ export default function ClientInicioView() {
         ))}
       </div>
 
-      {/* ── CRUZ AI PROMPT ── */}
-      <div style={{ padding: '24px 20px 0' }}>
+      {/* ── CRUZ AI ── */}
+      <div style={{ padding: '16px 20px 0' }}>
         <Link href="/cruz" style={{ textDecoration: 'none' }}>
           <div style={{
-            padding: '16px 20px',
-            borderRadius: 14,
+            padding: '20px 24px',
+            borderRadius: 16,
             background: 'var(--bg-card)',
             border: '1px solid var(--border)',
+            borderLeft: '3px solid var(--gold)',
             display: 'flex',
             alignItems: 'center',
-            gap: 12,
+            gap: 16,
             cursor: 'pointer',
-            transition: 'border-color 150ms',
+            transition: 'border-color 150ms, box-shadow 150ms',
+            minHeight: 64,
           }}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--gold)' }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)' }}
+          onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 4px 16px rgba(196,150,60,0.1)' }}
+          onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none' }}
           >
-            <span style={{ fontSize: 20 }}>🦀</span>
-            <span style={{ fontSize: 14, color: 'var(--text-muted)' }}>
-              Pregúntale a CRUZ...
-            </span>
+            <MessageSquare size={24} strokeWidth={1.5} style={{ color: 'var(--gold)', flexShrink: 0 }} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>
+                CRUZ AI
+              </div>
+              <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 2 }}>
+                Consulta operaciones, clasifica, o calcula
+              </div>
+            </div>
+            <ChevronRight size={20} strokeWidth={1.5} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
           </div>
         </Link>
+      </div>
+
+      {/* ── RECENT ACTIVITY ── */}
+      <div style={{ padding: '24px 20px 0' }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 8 }}>
+          Actividad reciente
+        </div>
+        {recentActivity.length === 0 ? (
+          <div style={{ fontSize: 13, color: 'var(--text-muted)', padding: '12px 0' }}>
+            Sin actividad reciente
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {recentActivity.map(t => {
+              const isCruzado = (t.estatus || '').toLowerCase().includes('cruz')
+              return (
+                <Link
+                  key={t.trafico}
+                  href={`/traficos/${encodeURIComponent(t.trafico)}`}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 12,
+                    padding: '10px 12px', borderRadius: 8, textDecoration: 'none',
+                    transition: 'background 100ms',
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.background = '#F5F4F0' }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+                >
+                  <div style={{
+                    width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
+                    background: isCruzado ? 'var(--success)' : 'var(--gold)',
+                  }} />
+                  <div style={{ flex: 1, minWidth: 0, fontSize: 13, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {t.trafico}: {t.estatus || 'En proceso'}
+                  </div>
+                  <span style={{ fontSize: 11, color: 'var(--text-muted)', flexShrink: 0, fontFamily: 'var(--font-mono)' }}>
+                    {t.updated_at ? fmtDateCompact(t.updated_at) : ''}
+                  </span>
+                </Link>
+              )
+            })}
+            <Link
+              href="/actividad"
+              style={{ fontSize: 13, color: 'var(--gold-dark, #8B6914)', fontWeight: 600, padding: '8px 12px', textDecoration: 'none' }}
+            >
+              Ver toda la actividad &rarr;
+            </Link>
+          </div>
+        )}
       </div>
 
       {/* ── FOOTER ── */}

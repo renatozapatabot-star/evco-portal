@@ -28,6 +28,7 @@
 const path = require('path')
 const fs = require('fs')
 
+const { emitEvent } = require('./lib/workflow-emitter')
 const SCRIPT_NAME = 'email-intake'
 const PDF_DIR = '/tmp/cruz-pdfs'
 const TELEGRAM_CHAT = '-5085543275'
@@ -601,6 +602,38 @@ async function processEmail(gmail, messageId, companyId) {
     console.log('  Marked as read')
   } catch (e) {
     // Gmail token lacks gmail.modify scope — not critical, processed_emails table prevents re-processing
+  }
+
+  // Step 15: Emit workflow events (CRUZ 2.0 orchestration)
+  const products = (extraction.products || []).map(p => ({
+    description: p.description,
+    fraccion: classifications.find(c => c.description === p.description)?.fraccion || null,
+  }))
+
+  await emitEvent('intake', 'email_processed', draftId, companyId, {
+    invoice_number: extraction.invoice_number,
+    supplier: extraction.supplier_name,
+    value: extraction.total_value,
+    currency: extraction.currency,
+    confidence_score: confidence.score,
+    confidence_tier: confidence.tier,
+    products,
+  })
+
+  // Trigger classification for products that need it
+  const lowConfProducts = classifications.filter(c => !c.fraccion || c.confidence < 0.95)
+  if (lowConfProducts.length > 0) {
+    await emitEvent('classify', 'product_needs_classification', draftId, companyId, {
+      products: lowConfProducts.map(c => ({ description: c.description, current_fraccion: c.fraccion, confidence: c.confidence })),
+    })
+  }
+
+  // Signal docs attached (one event per PDF, used by completeness checker)
+  for (const pdf of pdfs) {
+    await emitEvent('docs', 'document_received', draftId, companyId, {
+      filename: pdf.filename,
+      docType: 'PENDING_CLASSIFICATION',
+    })
   }
 
   return {

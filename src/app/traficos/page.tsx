@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo, Suspense } from 'react'
 import { Search, Download, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { getCookieValue } from '@/lib/client-config'
-import { fmtId, fmtDesc, fmtKg, fmtUSD, fmtUSDCompact, fmtDate, fmtDateShort, fmtPedimentoShort, calcPriority, priorityClass } from '@/lib/format-utils'
+import { fmtId, fmtDesc, fmtUSDCompact, fmtDate, fmtDateShort, fmtPedimentoShort, calcPriority, priorityClass } from '@/lib/format-utils'
 import { fmtCarrier } from '@/lib/carrier-names'
 import { MobileTraficoCard } from '@/components/mobile-trafico-card'
 // CruzScore removed from client-facing UI — scores are internal only
@@ -69,6 +69,7 @@ function TraficosContent() {
   const [searchInput, setSearchInput] = useState(search)
   const [riskMap, setRiskMap] = useState<Map<string, any>>(new Map())
   const [docCountMap, setDocCountMap] = useState<Map<string, number>>(new Map())
+  const [partidaDescMap, setPartidaDescMap] = useState<Map<string, string>>(new Map())
   const { sort, toggleSort } = useSort('traficos', { column: 'fecha_llegada', direction: 'desc' })
   const router = useRouter()
   const isMobile = useIsMobile()
@@ -140,6 +141,18 @@ function TraficosContent() {
         arr.forEach((r: Record<string, unknown>) => { if (r.trafico_id && !map.has(r.trafico_id as string)) map.set(r.trafico_id as string, r) })
         setRiskMap(map)
       }).catch((err: unknown) => { void 0 })
+
+    // Partida descriptions (pedimento merchandise)
+    const partidaParams = new URLSearchParams({ table: 'globalpc_partidas', select: 'cve_trafico,descripcion', limit: '5000' })
+    fetch(`/api/data?${partidaParams}`)
+      .then(r => r.json()).then(d => {
+        const map = new Map<string, string>()
+        const arr = Array.isArray(d.data) ? d.data : []
+        arr.forEach((p: { cve_trafico?: string; descripcion?: string }) => {
+          if (p.cve_trafico && p.descripcion && !map.has(p.cve_trafico)) map.set(p.cve_trafico, p.descripcion)
+        })
+        setPartidaDescMap(map)
+      }).catch((err: unknown) => { void 0 })
   }, [cookiesReady, companyId, clientClave, userRole])
 
   // Stat bar filter state (must be before filtered useMemo)
@@ -155,13 +168,13 @@ function TraficosContent() {
   const filtered = useMemo(() => {
     let out = rows
 
-    // Stat bar filter
+    // Stat bar filter — activos and docs only count "en proceso"
     if (statFilter === 'activos') {
-      out = out.filter(r => !(r.estatus || '').toLowerCase().includes('cruz'))
+      out = out.filter(r => (r.estatus || '').toLowerCase().includes('proceso'))
     } else if (statFilter === 'proceso') {
       out = out.filter(r => (r.estatus || '').toLowerCase().includes('proceso'))
     } else if (statFilter === 'docs') {
-      out = out.filter(r => (docCountMap.get(r.trafico) ?? 0) < 6 && !(r.estatus || '').toLowerCase().includes('cruz'))
+      out = out.filter(r => (r.estatus || '').toLowerCase().includes('proceso') && (docCountMap.get(r.trafico) ?? 0) < 6)
     } else if (statFilter === 'cruzado') {
       const today = new Date().toISOString().split('T')[0]
       out = out.filter(r => {
@@ -191,10 +204,10 @@ function TraficosContent() {
   const paged = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
   const totalValor = useMemo(() => rows.reduce((s, r) => s + (Number(r.importe_total) || 0), 0), [rows])
 
-  // Stat bar calculations
-  const kpiActivos = rows.filter(r => !(r.estatus || '').toLowerCase().includes('cruz')).length
+  // Stat bar calculations — only count "en proceso" traficos for activos and docs faltantes
   const kpiEnProceso = rows.filter(r => (r.estatus || '').toLowerCase().includes('proceso')).length
-  const kpiDocsFaltantes = rows.filter(r => (docCountMap.get(r.trafico) ?? 0) < 6 && !(r.estatus || '').toLowerCase().includes('cruz')).length
+  const kpiActivos = kpiEnProceso
+  const kpiDocsFaltantes = rows.filter(r => (r.estatus || '').toLowerCase().includes('proceso') && (docCountMap.get(r.trafico) ?? 0) < 6).length
   const kpiCruzadoHoy = rows.filter(r => {
     if (!(r.estatus || '').toLowerCase().includes('cruz')) return false
     const today = new Date().toISOString().split('T')[0]
@@ -206,12 +219,7 @@ function TraficosContent() {
   return (
     <div className="page-shell">
       <InsightWhisper text={useWhisper("traficos")} />
-      <div className="section-header" style={{ marginBottom: 14 }}>
-        <div>
-          <h1 className="page-title">Tráficos</h1>
-          <p className="page-subtitle">{rows.length.toLocaleString('es-MX')} embarques{companyName ? ` · ${companyName}` : ''}</p>
-        </div>
-      </div>
+      {/* Title removed — sidebar indicates current page */}
 
       {/* Error state */}
       {fetchError && (
@@ -280,7 +288,7 @@ function TraficosContent() {
 
         {/* Table — desktop only */}
         {!isMobile && <div style={{ maxHeight: 'calc(100vh - 280px)', overflowY: 'auto', overflowX: 'auto' }}>
-          <table className="cruz-table" aria-label="Lista de tráficos" style={{ minWidth: 900 }}>
+          <table className="cruz-table" aria-label="Lista de tráficos" style={{ minWidth: 700 }}>
             <thead>
               <tr>
                 <th scope="col" style={{ width: 28 }}></th>
@@ -289,8 +297,6 @@ function TraficosContent() {
                 <th scope="col" style={{ width: 120 }}>Estado</th>
                 <th scope="col" style={{ width: 110, cursor: 'pointer' }} onClick={() => toggleSort('fecha_llegada')} aria-sort={sort.column === 'fecha_llegada' ? (sort.direction === 'asc' ? 'ascending' : 'descending') : undefined}>Fecha<SortArrow col="fecha_llegada" /></th>
                 <th scope="col">Descripción</th>
-                <th scope="col" style={{ width: 100, textAlign: 'right', cursor: 'pointer' }} onClick={() => toggleSort('peso_bruto')} aria-sort={sort.column === 'peso_bruto' ? (sort.direction === 'asc' ? 'ascending' : 'descending') : undefined}>Peso<SortArrow col="peso_bruto" /></th>
-                <th scope="col" style={{ width: 60, textAlign: 'center' }}>DOCS</th>
               </tr>
             </thead>
             <tbody>
@@ -302,13 +308,10 @@ function TraficosContent() {
                   <td><div className="skeleton-shimmer" style={{ width: 70, height: 13 }} /></td>
                   <td><div className="skeleton-shimmer" style={{ width: 70, height: 13 }} /></td>
                   <td><div className="skeleton-shimmer" style={{ width: 140, height: 13 }} /></td>
-                  <td><div className="skeleton-shimmer" style={{ width: 50, height: 13, marginLeft: 'auto' }} /></td>
-                  <td><div className="skeleton-shimmer" style={{ width: 60, height: 13, marginLeft: 'auto' }} /></td>
-                  <td><div className="skeleton-shimmer" style={{ width: 30, height: 13, margin: '0 auto' }} /></td>
                 </tr>
               ))}
               {!loading && paged.length === 0 && (
-                <tr><td colSpan={9}>
+                <tr><td colSpan={6}>
                   {search.trim() ? (
                     <div className="empty-state">
                       <div className="empty-state-icon">🔍</div>
@@ -343,22 +346,7 @@ function TraficosContent() {
                         {isCrossing ? <><span className="crossing-pulse" /><span className="sr-only">En cruce</span></> : ps > 0 ? <><span className={`priority-dot ${priorityClass(ps)}`} /><span className="sr-only">Requiere atención</span></> : <span style={{ width: 7, height: 7, borderRadius: '50%', display: 'inline-block', background: isCruzado ? 'var(--success-500)' : isDetenido ? 'var(--danger-500)' : 'var(--amber-500)', opacity: 0.7 }} />}
                       </td>
                       <td>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <span className="trafico-id">{fmtId(r.trafico)}</span>
-                          {(() => {
-                            const risk = riskMap.get(r.trafico)
-                            const riskScore = risk?.score || 0
-                            if (riskScore <= 0) return null
-                            return (
-                              <span className="font-mono" style={{
-                                color: riskScore >= 60 ? 'var(--danger)' : riskScore >= 30 ? 'var(--warning)' : 'var(--success)',
-                                fontWeight: 700, fontSize: 10,
-                              }} title={risk?.risk_factors ? (Array.isArray(risk.risk_factors) ? risk.risk_factors.join(', ') : String(risk.risk_factors)) : ''}>
-                                {riskScore}
-                              </span>
-                            )
-                          })()}
-                        </div>
+                        <span className="trafico-id">{fmtId(r.trafico)}</span>
                       </td>
                       <td>{r.pedimento ? <span className="pedimento-num" onClick={e => { e.stopPropagation(); router.push(`/traficos/${encodeURIComponent(r.trafico)}?tab=financiero`) }} style={{ cursor: 'pointer' }}>{fmtPedimentoShort(r.pedimento)}</span> : <span className="pedimento-pending">Pendiente</span>}</td>
                       <td>
@@ -368,22 +356,7 @@ function TraficosContent() {
                         </span>
                       </td>
                       <td className="timestamp">{r.fecha_llegada ? <time dateTime={r.fecha_llegada.split('T')[0]}>{fmtDateShort(r.fecha_llegada)}</time> : '—'}</td>
-                      <td className="desc-text" title={fmtDesc(r.descripcion_mercancia)}>{fmtDesc(r.descripcion_mercancia) || '—'}</td>
-                      <td className="currency text-right">{r.peso_bruto ? `${fmtKg(r.peso_bruto)} kg` : '—'}</td>
-                      {/* Importe removed from list — available in detail view */}
-                      <td>
-                        {(() => {
-                          const count = docCountMap.get(r.trafico) ?? 0
-                          const colorClass = count >= 5 ? 'success' : count >= 3 ? 'warning' : 'danger'
-                          return (
-                            <div className="doc-segments" title={`${count}/6 documentos`} role="progressbar" aria-valuenow={count} aria-valuemin={0} aria-valuemax={6} aria-label={`${count} de 6 documentos completos`}>
-                              {Array.from({ length: 6 }).map((_, i) => (
-                                <div key={i} className={`doc-seg${i < count ? ` filled ${colorClass}` : ''}`} />
-                              ))}
-                            </div>
-                          )
-                        })()}
-                      </td>
+                      <td className="desc-text" title={partidaDescMap.get(r.trafico) || fmtDesc(r.descripcion_mercancia) || ''}>{fmtDesc(partidaDescMap.get(r.trafico) || r.descripcion_mercancia) || '—'}</td>
                     </tr>
                 )
               })}

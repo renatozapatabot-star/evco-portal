@@ -8,33 +8,55 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { DateInputES } from '@/components/ui/DateInputES'
 import { useIsMobile } from '@/hooks/use-mobile'
 
-interface TraficoRow {
-  trafico: string
+interface PartidaRow {
+  cve_trafico: string
+  fraccion_arancelaria?: string | null
+  fraccion?: string | null
+  descripcion?: string | null
+  cantidad?: number | null
+  precio_unitario?: number | null
+  [k: string]: unknown
+}
+
+interface TraficoContext {
   pedimento: string | null
   fecha_pago: string | null
   fecha_llegada: string | null
   proveedores: string | null
-  descripcion_mercancia: string | null
-  fraccion_arancelaria: string | null
-  importe_total: number | null
-  peso_bruto: number | null
   regimen: string | null
   pais_procedencia: string | null
-  tipo_cambio: number | null
-  company_id: string | null
-  [k: string]: unknown
+  importe_total: number | null
+}
+
+interface EnrichedRow {
+  rowNum: number
+  pedimento: string
+  fecha: string | null
+  fraccion: string
+  descripcion: string
+  cantidad: number
+  valorUSD: number
+  proveedor: string
+  origen: string
+  regimen: string
+  tmec: boolean
 }
 
 const PAGE_SIZE = 50
 
-function exportCSV(rows: TraficoRow[], clave: string) {
-  const h = ['Pedimento', 'Fecha', 'Proveedor', 'Fraccion', 'Descripcion', 'T-MEC', 'Valor_USD', 'Peso_kg', 'Origen', 'Regimen']
+function isT(regimen: string | null): boolean {
+  const r = (regimen ?? '').toUpperCase()
+  return r === 'ITE' || r === 'ITR' || r === 'IMD'
+}
+
+function exportCSV(rows: EnrichedRow[], clave: string) {
+  const h = ['#', 'Pedimento', 'Fecha', 'Fraccion', 'Descripcion', 'Cantidad', 'Valor_USD', 'Proveedor', 'Origen', 'T-MEC']
   const c = rows.map(r => [
-    r.pedimento ?? '', r.fecha_pago ?? r.fecha_llegada ?? '',
-    (r.proveedores ?? '').replace(/,/g, ';'), r.fraccion_arancelaria ?? '',
-    (r.descripcion_mercancia ?? '').replace(/,/g, ' '),
-    isT(r.regimen) ? 'SI' : 'NO',
-    r.importe_total ?? '', r.peso_bruto ?? '', r.pais_procedencia ?? '', r.regimen ?? '',
+    r.rowNum, r.pedimento, r.fecha ?? '',
+    r.fraccion, (r.descripcion).replace(/,/g, ' '),
+    r.cantidad, r.valorUSD,
+    (r.proveedor).replace(/,/g, ';'), r.origen,
+    r.tmec ? 'SI' : 'NO',
   ].join(','))
   const blob = new Blob([['CRUZ — Reporte Anexo 24', `Clave: ${clave}`, `Exportado: ${fmtDate(new Date())}`, '', h.join(','), ...c].join('\n')], { type: 'text/csv' })
   const a = document.createElement('a')
@@ -43,22 +65,17 @@ function exportCSV(rows: TraficoRow[], clave: string) {
   a.click()
 }
 
-function isT(regimen: string | null): boolean {
-  const r = (regimen ?? '').toUpperCase()
-  return r === 'ITE' || r === 'ITR' || r === 'IMD'
-}
-
 export function Anexo24View() {
   const isMobile = useIsMobile()
-  const [rows, setRows] = useState<TraficoRow[]>([])
+  const [partidas, setPartidas] = useState<PartidaRow[]>([])
+  const [traficoMap, setTraficoMap] = useState<Map<string, TraficoContext>>(new Map())
+  const [supplierLookup, setSupplierLookup] = useState<Map<string, string>>(new Map())
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [tmecFilter, setTmecFilter] = useState<'all' | 'si' | 'no'>('all')
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
   const [page, setPage] = useState(0)
-  const [supplierLookup, setSupplierLookup] = useState<Map<string, string>>(new Map())
-  const [fraccionMap, setFraccionMap] = useState<Map<string, string>>(new Map())
 
   const [companyId, setCompanyId] = useState('')
   const [clientClave, setClientClave] = useState('')
@@ -77,67 +94,46 @@ export function Anexo24View() {
     const isInternal = userRole === 'broker' || userRole === 'admin'
     if (!isInternal && !companyId) { setLoading(false); return }
 
-    const params = new URLSearchParams({
-      table: 'traficos', limit: '5000',
-      order_by: 'fecha_pago', order_dir: 'desc',
-      not_null: 'pedimento',
-      gte_field: 'fecha_llegada', gte_value: '2024-01-01',
-    })
-    if (!isInternal && companyId) params.set('company_id', companyId)
+    const companyFilter = !isInternal && companyId ? `&company_id=${companyId}` : ''
 
-    fetch(`/api/data?table=globalpc_proveedores&limit=5000${companyId ? '&company_id=' + companyId : ''}`)
-      .then(r => r.json())
-      .then(d => {
-        const provs = (d.data ?? []) as { cve_proveedor?: string; nombre?: string }[]
-        const lookup = new Map<string, string>()
-        provs.forEach(p => { if (p.cve_proveedor && p.nombre) lookup.set(p.cve_proveedor, p.nombre) })
-        setSupplierLookup(lookup)
-      })
-      .catch(() => {})
+    // Fetch all three in parallel
+    Promise.all([
+      fetch(`/api/data?table=globalpc_partidas&limit=10000${companyFilter}`).then(r => r.json()),
+      fetch(`/api/data?table=traficos&limit=5000&not_null=pedimento&gte_field=fecha_llegada&gte_value=2024-01-01${companyFilter}`).then(r => r.json()),
+      fetch(`/api/data?table=globalpc_proveedores&limit=5000${companyFilter}`).then(r => r.json()),
+    ])
+      .then(([partidaData, traficoData, provData]) => {
+        setPartidas(Array.isArray(partidaData.data) ? partidaData.data : [])
 
-    fetch(`/api/data?${params}`)
-      .then(r => r.json())
-      .then(d => setRows(Array.isArray(d.data) ? d.data : []))
-      .catch(() => setRows([]))
-      .finally(() => setLoading(false))
-
-    // Fetch fracciones from globalpc_partidas (traficos table doesn't have this column)
-    fetch(`/api/data?table=globalpc_partidas&select=cve_trafico,fraccion_arancelaria,fraccion&limit=5000`)
-      .then(r => r.json())
-      .then(d => {
-        const map = new Map<string, string>()
-        const arr = Array.isArray(d.data) ? d.data : []
-        arr.forEach((p: { cve_trafico?: string; fraccion_arancelaria?: string; fraccion?: string }) => {
-          if (p.cve_trafico && !map.has(p.cve_trafico)) {
-            const frac = p.fraccion_arancelaria || p.fraccion
-            if (frac) map.set(p.cve_trafico, frac)
+        // Build trafico context map
+        const tMap = new Map<string, TraficoContext>()
+        const traficos = Array.isArray(traficoData.data) ? traficoData.data : []
+        traficos.forEach((t: Record<string, unknown>) => {
+          if (t.trafico) {
+            tMap.set(t.trafico as string, {
+              pedimento: (t.pedimento as string) || null,
+              fecha_pago: (t.fecha_pago as string) || null,
+              fecha_llegada: (t.fecha_llegada as string) || null,
+              proveedores: (t.proveedores as string) || null,
+              regimen: (t.regimen as string) || null,
+              pais_procedencia: (t.pais_procedencia as string) || null,
+              importe_total: t.importe_total != null ? Number(t.importe_total) : null,
+            })
           }
         })
-        setFraccionMap(map)
+        setTraficoMap(tMap)
+
+        // Supplier lookup
+        const sMap = new Map<string, string>()
+        const provs = Array.isArray(provData.data) ? provData.data : []
+        provs.forEach((p: { cve_proveedor?: string; nombre?: string }) => {
+          if (p.cve_proveedor && p.nombre) sMap.set(p.cve_proveedor, p.nombre)
+        })
+        setSupplierLookup(sMap)
       })
       .catch(() => {})
+      .finally(() => setLoading(false))
   }, [cookiesReady, companyId, userRole])
-
-  const filtered = useMemo(() => {
-    let out = rows
-    if (search.trim()) {
-      const q = search.toLowerCase()
-      out = out.filter(r =>
-        (r.pedimento ?? '').toLowerCase().includes(q) ||
-        (r.proveedores ?? '').toLowerCase().includes(q) ||
-        (fraccionMap.get(r.trafico) || r.fraccion_arancelaria || '').toLowerCase().includes(q) ||
-        (r.descripcion_mercancia ?? '').toLowerCase().includes(q)
-      )
-    }
-    if (tmecFilter === 'si') out = out.filter(r => isT(r.regimen))
-    if (tmecFilter === 'no') out = out.filter(r => !isT(r.regimen))
-    if (dateFrom) out = out.filter(r => (r.fecha_pago || r.fecha_llegada || '') >= dateFrom)
-    if (dateTo) out = out.filter(r => (r.fecha_pago || r.fecha_llegada || '') <= dateTo)
-    return out
-  }, [rows, search, tmecFilter, dateFrom, dateTo])
-
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE)
-  const paged = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
 
   const resolveProvs = (raw: string | null) => {
     if (!raw) return '—'
@@ -145,7 +141,55 @@ export function Anexo24View() {
       .map(code => supplierLookup.get(code) || code).join(', ')
   }
 
-  const tmecCount = useMemo(() => rows.filter(r => isT(r.regimen)).length, [rows])
+  // Build enriched rows: partida + tráfico context
+  const enriched: EnrichedRow[] = useMemo(() => {
+    const rows: EnrichedRow[] = []
+    let num = 0
+    // Sort partidas by tráfico (groups by pedimento)
+    const sorted = [...partidas].sort((a, b) => (a.cve_trafico || '').localeCompare(b.cve_trafico || ''))
+
+    for (const p of sorted) {
+      const ctx = traficoMap.get(p.cve_trafico)
+      if (!ctx?.pedimento) continue // Skip partidas without pedimento context
+      num++
+      rows.push({
+        rowNum: num,
+        pedimento: ctx.pedimento,
+        fecha: ctx.fecha_pago || ctx.fecha_llegada,
+        fraccion: p.fraccion_arancelaria || p.fraccion || '—',
+        descripcion: p.descripcion || '—',
+        cantidad: Number(p.cantidad) || 0,
+        valorUSD: Number(p.precio_unitario) || 0,
+        proveedor: resolveProvs(ctx.proveedores),
+        origen: ctx.pais_procedencia || '—',
+        regimen: ctx.regimen || '',
+        tmec: isT(ctx.regimen),
+      })
+    }
+    return rows
+  }, [partidas, traficoMap, supplierLookup])
+
+  const filtered = useMemo(() => {
+    let out = enriched
+    if (search.trim()) {
+      const q = search.toLowerCase()
+      out = out.filter(r =>
+        r.pedimento.toLowerCase().includes(q) ||
+        r.fraccion.toLowerCase().includes(q) ||
+        r.descripcion.toLowerCase().includes(q) ||
+        r.proveedor.toLowerCase().includes(q)
+      )
+    }
+    if (tmecFilter === 'si') out = out.filter(r => r.tmec)
+    if (tmecFilter === 'no') out = out.filter(r => !r.tmec)
+    if (dateFrom) out = out.filter(r => (r.fecha || '') >= dateFrom)
+    if (dateTo) out = out.filter(r => (r.fecha || '') <= dateTo)
+    return out
+  }, [enriched, search, tmecFilter, dateFrom, dateTo])
+
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE)
+  const paged = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
+  const tmecCount = useMemo(() => enriched.filter(r => r.tmec).length, [enriched])
 
   return (
     <div className="page-shell">
@@ -153,7 +197,7 @@ export function Anexo24View() {
         <div>
           <h1 className="page-title">Anexo 24</h1>
           <p style={{ fontSize: 13, color: 'var(--slate-500)', marginTop: 4 }}>
-            {filtered.length.toLocaleString('es-MX')} registros
+            {filtered.length.toLocaleString('es-MX')} partidas
             {tmecCount > 0 && <> · <span style={{ color: 'var(--success)', fontWeight: 600 }}>{tmecCount} T-MEC</span></>}
           </p>
         </div>
@@ -167,7 +211,7 @@ export function Anexo24View() {
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16, alignItems: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--bg-card)', border: '1px solid var(--border-card)', borderRadius: 8, padding: '0 12px', height: 36, flex: isMobile ? '1 1 100%' : '0 1 320px' }}>
           <Search size={13} style={{ color: 'var(--slate-400)', flexShrink: 0 }} />
-          <input placeholder="Pedimento, proveedor, fracción..." value={search}
+          <input placeholder="Pedimento, fracción, proveedor..." value={search}
             onChange={e => { setSearch(e.target.value); setPage(0) }}
             style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: 12, color: 'var(--text-primary)' }} />
         </div>
@@ -199,53 +243,60 @@ export function Anexo24View() {
           </div>
         ) : paged.length === 0 ? (
           <div style={{ padding: 32 }}>
-            <EmptyState icon="📄" title="Sin registros" description="Los pedimentos con datos Anexo 24 aparecerán aquí" />
+            <EmptyState icon="📄" title="Sin partidas" description="Las partidas del Anexo 24 aparecerán aquí" />
           </div>
         ) : (
           <div style={{ overflowX: 'auto' }}>
-            <table className="cruz-table" style={{ minWidth: 800 }}>
+            <table className="cruz-table" style={{ minWidth: 900 }}>
               <thead>
                 <tr>
-                  <th style={{ width: 50 }}>#</th>
+                  <th style={{ width: 45 }}>#</th>
                   <th>Pedimento</th>
                   <th>Fecha</th>
-                  <th>Proveedor</th>
                   <th>Fracción</th>
                   <th>Descripción</th>
-                  <th>T-MEC</th>
+                  <th style={{ textAlign: 'right' }}>Cantidad</th>
                   <th style={{ textAlign: 'right' }}>Valor USD</th>
+                  <th>Proveedor</th>
                   <th>Origen</th>
+                  <th>T-MEC</th>
                 </tr>
               </thead>
               <tbody>
                 {paged.map((r, i) => (
-                  <tr key={`${r.pedimento}-${i}`} className={`${i % 2 === 0 ? 'row-even' : 'row-odd'}`}>
+                  <tr key={`${r.pedimento}-${r.rowNum}`} className={`${i % 2 === 0 ? 'row-even' : 'row-odd'}`}>
                     <td style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-                      {page * PAGE_SIZE + i + 1}
+                      {r.rowNum}
                     </td>
                     <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, fontSize: 13, whiteSpace: 'nowrap' }}>
                       {fmtPedimentoShort(r.pedimento)}
                     </td>
-                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-secondary)' }}>{fmtDate(r.fecha_pago || r.fecha_llegada)}</td>
-                    <td style={{ maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 12 }}
-                      title={resolveProvs(r.proveedores)}>
-                      {resolveProvs(r.proveedores)}
+                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-secondary)' }}>
+                      {fmtDate(r.fecha)}
                     </td>
-                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--gold-dark, #8B6914)' }}>
-                      {fraccionMap.get(r.trafico) || r.fraccion_arancelaria || '—'}
+                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--gold-dark, #8B6914)', fontWeight: 600 }}>
+                      {r.fraccion}
                     </td>
                     <td style={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 12, color: 'var(--text-secondary)' }}>
-                      {r.descripcion_mercancia || '—'}
+                      {r.descripcion}
                     </td>
+                    <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: 12 }}>
+                      {r.cantidad > 0 ? r.cantidad.toLocaleString('es-MX') : '—'}
+                    </td>
+                    <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 500 }}>
+                      {r.valorUSD > 0 ? fmtUSD(r.valorUSD) : '—'}
+                    </td>
+                    <td style={{ maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 12 }}>
+                      {r.proveedor}
+                    </td>
+                    <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{r.origen}</td>
                     <td>
-                      {isT(r.regimen) ? (
+                      {r.tmec ? (
                         <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--success)', background: 'var(--success-bg)', padding: '2px 8px', borderRadius: 9999 }}>T-MEC</span>
                       ) : (
                         <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>—</span>
                       )}
                     </td>
-                    <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 500 }}>{r.importe_total ? `${fmtUSD(r.importe_total)}` : '—'}</td>
-                    <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{r.pais_procedencia || '—'}</td>
                   </tr>
                 ))}
               </tbody>
@@ -257,7 +308,7 @@ export function Anexo24View() {
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="pagination">
-          <span className="pagination-info">{(page * PAGE_SIZE + 1).toLocaleString()}-{Math.min((page + 1) * PAGE_SIZE, filtered.length).toLocaleString()} de {filtered.length.toLocaleString()}</span>
+          <span className="pagination-info">Página {page + 1} de {totalPages}</span>
           <div className="pagination-btns">
             <button className="pagination-btn" disabled={page === 0} onClick={() => setPage(p => p - 1)}><ChevronLeft size={14} /></button>
             <button className="pagination-btn current">{page + 1}</button>

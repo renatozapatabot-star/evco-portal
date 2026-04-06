@@ -35,6 +35,7 @@ export default function CatalogoPage() {
   const [companyId, setCompanyId] = useState('')
   const [userRole, setUserRole] = useState('')
   const [cookiesReady, setCookiesReady] = useState(false)
+  const [fraccionMap, setFraccionMap] = useState<Map<string, string>>(new Map())
 
   useEffect(() => {
     setCompanyId(getCookieValue('company_id') ?? '')
@@ -60,6 +61,20 @@ export default function CatalogoPage() {
       .then(d => setRows(Array.isArray(d.data) ? d.data : []))
       .catch(() => setRows([]))
       .finally(() => setLoading(false))
+
+    // Fracción fallback from globalpc_partidas
+    fetch('/api/data?table=globalpc_partidas&select=cve_trafico,fraccion_arancelaria,fraccion&limit=5000')
+      .then(r => r.json()).then(d => {
+        const map = new Map<string, string>()
+        const arr = Array.isArray(d.data) ? d.data : []
+        arr.forEach((p: { cve_trafico?: string; fraccion_arancelaria?: string; fraccion?: string }) => {
+          if (p.cve_trafico && !map.has(p.cve_trafico)) {
+            const frac = p.fraccion_arancelaria || p.fraccion
+            if (frac) map.set(p.cve_trafico, frac)
+          }
+        })
+        setFraccionMap(map)
+      }).catch(() => {})
   }, [cookiesReady, companyId, userRole])
 
   const grouped = useMemo(() => {
@@ -71,7 +86,7 @@ export default function CatalogoPage() {
       const valor = Number(r.importe_total ?? 0)
       const reg = (r.regimen ?? '').toUpperCase()
       const tmec = reg === 'ITE' || reg === 'ITR' || reg === 'IMD'
-      const fraccion = (r.fraccion_arancelaria ?? '') as string
+      const fraccion = (r.fraccion_arancelaria || fraccionMap.get(r.trafico) || '') as string
       const existing = map.get(key)
       if (existing) {
         existing.count++
@@ -108,7 +123,7 @@ export default function CatalogoPage() {
       )
     }
     return result
-  }, [rows, search, sortBy])
+  }, [rows, search, sortBy, fraccionMap])
 
   const totalValue = useMemo(() => rows.reduce((s, r) => s + (Number(r.importe_total) || 0), 0), [rows])
 

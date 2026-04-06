@@ -154,35 +154,46 @@ export default function ClientInicioView() {
 
   const tmecSavings = useMemo(() => calculateTmecSavings(traficos), [traficos])
 
-  // ── Predictions ──
-  const predictions = useMemo(() => {
-    const preds: { key: string; text: string; href: string }[] = []
-
-    // Active traficos that might cross soon
-    const active = traficos.filter(t => {
+  // ── Pipeline stages (TMS view) ──
+  const pipeline = useMemo(() => {
+    const stages = [
+      { key: 'proceso', label: 'En Proceso', count: 0, color: 'var(--warning-500, #D97706)', href: '/traficos?estatus=En+Proceso' },
+      { key: 'pagado', label: 'Pagado', count: 0, color: 'var(--info, #2563EB)', href: '/traficos?estatus=Pagado' },
+      { key: 'cruzado', label: 'Cruzado', count: 0, color: 'var(--success)', href: '/traficos?estatus=Cruzado' },
+    ]
+    for (const t of traficos) {
       const s = (t.estatus || '').toLowerCase()
-      return !s.includes('cruz') && !s.includes('entreg') && !s.includes('complet')
-    }).slice(0, 2)
+      if (s.includes('cruz')) stages[2].count++
+      else if (s.includes('pagado')) stages[1].count++
+      else stages[0].count++
+    }
+    return stages
+  }, [traficos])
 
-    active.forEach(t => {
-      preds.push({
-        key: `cross-${t.trafico}`,
-        text: `${t.trafico} en proceso — pendiente de cruce`,
-        href: `/traficos/${encodeURIComponent(t.trafico)}`,
-      })
-    })
+  // ── Attention items (only things that need action) ──
+  const attentionItems = useMemo(() => {
+    const items: { key: string; text: string; href: string; severity: 'red' | 'amber' }[] = []
 
-    // Missing docs
-    if (pendingEntradas.length > 0) {
-      preds.push({
-        key: 'docs-pending',
-        text: `${pendingEntradas.length} entrada${pendingEntradas.length !== 1 ? 's' : ''} sin trafico asignado`,
-        href: '/entradas',
-      })
+    // Tráficos without pedimento > 7 days
+    if (incidencias > 0) {
+      items.push({ key: 'no-ped', text: `${incidencias} sin pedimento > 7 días`, href: '/traficos', severity: 'red' })
     }
 
-    return preds.slice(0, 3)
-  }, [traficos, pendingEntradas])
+    // Pending entradas
+    if (pendingEntradas.length > 0) {
+      items.push({ key: 'entradas', text: `${pendingEntradas.length} entrada${pendingEntradas.length !== 1 ? 's' : ''} sin tráfico`, href: '/entradas', severity: 'amber' })
+    }
+
+    return items.slice(0, 3)
+  }, [incidencias, pendingEntradas])
+
+  // ── Recent crossings ──
+  const recentCrossings = useMemo(() => {
+    return traficos
+      .filter(t => (t.estatus || '').toLowerCase().includes('cruz') && t.fecha_cruce)
+      .sort((a, b) => (b.fecha_cruce || '').localeCompare(a.fecha_cruce || ''))
+      .slice(0, 5)
+  }, [traficos])
 
   // ── Date string (hydration-safe) ──
   const [dateStr, setDateStr] = useState('')
@@ -254,136 +265,124 @@ export default function ClientInicioView() {
         </div>
       )}
 
-      {/* SECTION 1 — The Answer */}
-      <div style={{ textAlign: 'center', padding: '40px 20px 24px' }}>
-        {enProceso === 0 ? (
-          <div style={{
-            fontSize: isMobile ? 28 : 36,
-            fontWeight: 800,
-            color: 'var(--success)',
-            lineHeight: 1.2,
-          }}>
-            Todo en orden. 0 pendientes.
-          </div>
-        ) : (
-          <Link href="/traficos" style={{ textDecoration: 'none' }}>
-            <div style={{
-              fontSize: isMobile ? 28 : 36,
-              fontWeight: 800,
-              color: 'var(--gold-dark)',
-              lineHeight: 1.2,
-            }}>
-              {enProceso} asunto{enProceso !== 1 ? 's' : ''} necesita{enProceso !== 1 ? 'n' : ''} atención.
-            </div>
-          </Link>
-        )}
-        <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 8, fontFamily: 'var(--font-mono)' }}>
-          {dateStr} &middot; {companyName || 'cliente'}
+      {/* ── HEADER ── */}
+      <div style={{ padding: '32px 20px 8px' }}>
+        <div style={{ fontSize: 13, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+          {dateStr}
         </div>
+        <h1 style={{ fontSize: isMobile ? 22 : 26, fontWeight: 800, color: 'var(--text-primary)', margin: '4px 0 0' }}>
+          {attentionItems.length === 0 ? 'Todo en orden.' : `${attentionItems.length} pendiente${attentionItems.length !== 1 ? 's' : ''}.`}
+        </h1>
       </div>
 
-      {/* SECTION 2 — Yesterday's Results */}
-      <div style={{
-        display: 'flex', gap: 12, overflowX: 'auto', padding: '0 20px 16px',
-        scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch',
-      }}>
-        {results.map(card => (
-          <Link href={card.href} key={card.key} style={{ textDecoration: 'none' }}>
+      {/* ── PIPELINE (TMS view) ── */}
+      <div style={{ padding: '16px 20px', display: 'flex', gap: 8 }}>
+        {pipeline.map(stage => (
+          <Link key={stage.key} href={stage.href} style={{ textDecoration: 'none', flex: 1 }}>
             <div style={{
-              minWidth: 140, padding: '16px 18px', borderRadius: 14,
-              background: 'var(--bg-card)', border: '1px solid #E8E5E0',
-              scrollSnapAlign: 'start',
+              padding: '16px 12px', borderRadius: 12, textAlign: 'center',
+              background: 'var(--bg-card)', border: `1px solid ${stage.count > 0 ? stage.color : 'var(--border)'}`,
+              borderTop: `3px solid ${stage.count > 0 ? stage.color : 'var(--border)'}`,
+              transition: 'border-color 150ms',
             }}>
               <div style={{
-                fontSize: 28, fontWeight: 800,
-                fontFamily: 'var(--font-mono)', color: card.color,
+                fontSize: isMobile ? 24 : 32, fontWeight: 800,
+                fontFamily: 'var(--font-mono)',
+                color: stage.count > 0 ? stage.color : 'var(--text-muted)',
               }}>
-                {card.value}
+                {stage.count}
               </div>
-              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
-                {card.label}
+              <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', marginTop: 4, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                {stage.label}
               </div>
             </div>
           </Link>
         ))}
       </div>
 
-      {/* SECTION 3 — Today's Predictions */}
-      {predictions.length > 0 && (
-        <div style={{ padding: '0 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {predictions.map(pred => (
-            <Link href={pred.href} key={pred.key} style={{ textDecoration: 'none' }}>
+      {/* ── ATTENTION ITEMS ── */}
+      {attentionItems.length > 0 && (
+        <div style={{ padding: '0 20px 12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {attentionItems.map(item => (
+            <Link key={item.key} href={item.href} style={{ textDecoration: 'none' }}>
               <div style={{
-                padding: '14px 18px', borderRadius: 12,
-                background: 'var(--bg-card)', border: '1px solid #E8E5E0',
-                fontSize: 14, color: 'var(--text-primary)', lineHeight: 1.5,
+                padding: '12px 16px', borderRadius: 10,
+                background: item.severity === 'red' ? 'rgba(220,38,38,0.04)' : 'rgba(217,119,6,0.04)',
+                border: `1px solid ${item.severity === 'red' ? 'rgba(220,38,38,0.15)' : 'rgba(217,119,6,0.15)'}`,
+                fontSize: 13, color: 'var(--text-primary)',
+                display: 'flex', alignItems: 'center', gap: 8,
               }}>
-                {pred.text}
+                <span style={{ fontSize: 12 }}>{item.severity === 'red' ? '🔴' : '🟡'}</span>
+                {item.text}
               </div>
             </Link>
           ))}
         </div>
       )}
 
-      {/* SECTION 4 — Your Value */}
+      {/* ── RECENT CROSSINGS ── */}
+      {recentCrossings.length > 0 && (
+        <div style={{ padding: '8px 20px 16px' }}>
+          <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 8 }}>
+            Últimos cruces
+          </div>
+          {recentCrossings.slice(0, 4).map(t => (
+            <Link key={t.trafico} href={`/traficos/${encodeURIComponent(t.trafico)}`} style={{ textDecoration: 'none' }}>
+              <div style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '10px 0', borderBottom: '1px solid var(--border)',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--success)', flexShrink: 0 }} />
+                  <span style={{ fontSize: 13, fontWeight: 600, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>{t.trafico}</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  {t.importe_total && <span style={{ fontSize: 12, fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>{fmtUSDCompact(t.importe_total)}</span>}
+                  <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>{fmtDate(t.fecha_cruce)}</span>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      )}
+
+      {/* ── VALUE CARD ── */}
       {(tmecSavings.totalSavings > 0 || sinIncidencia > 0) && (
         <div style={{
-          margin: '16px 20px 24px', padding: '20px 24px', borderRadius: 16,
-          background: 'linear-gradient(135deg, rgba(196,150,60,0.08) 0%, rgba(196,150,60,0.02) 100%)',
-          border: '1px solid rgba(196,150,60,0.2)',
+          margin: '8px 20px 16px', padding: '20px 24px', borderRadius: 14,
+          background: 'linear-gradient(135deg, rgba(196,150,60,0.06) 0%, rgba(196,150,60,0.02) 100%)',
+          border: '1px solid rgba(196,150,60,0.15)',
         }}>
-          <div style={{
-            fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
-            letterSpacing: '0.06em', color: 'var(--gold-dark)', marginBottom: 12,
-          }}>
-            Su valor este trimestre
-          </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}>
             <div>
-              <div style={{
-                fontSize: 24, fontWeight: 800,
-                fontFamily: 'var(--font-mono)', color: 'var(--gold-dark)',
-              }}>
+              <div style={{ fontSize: 22, fontWeight: 800, fontFamily: 'var(--font-mono)', color: 'var(--gold-dark)' }}>
                 {fmtUSDCompact(tmecSavings.totalSavings)}
               </div>
-              <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Ahorro T-MEC</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Ahorro T-MEC</div>
+            </div>
+            <div>
+              <div style={{ fontSize: 22, fontWeight: 800, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
+                {fmtUSDCompact(valorTotal)}
+              </div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Importado YTD</div>
             </div>
             <div style={{ textAlign: 'right' }}>
-              <div style={{
-                fontSize: 18, fontWeight: 700,
-                fontFamily: 'var(--font-mono)', color: 'var(--text-primary)',
-              }}>
+              <div style={{ fontSize: 22, fontWeight: 800, fontFamily: 'var(--font-mono)', color: 'var(--success)' }}>
                 {sinIncidencia}%
               </div>
-              <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Operaciones exitosas</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Exitosas</div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Network effect badge */}
-      {traficos.length > 0 && (
-        <div style={{
-          margin: '0 20px 16px', padding: '10px 16px', borderRadius: 10,
-          background: 'rgba(13,148,136,0.04)', border: '1px solid rgba(13,148,136,0.15)',
-          display: 'flex', alignItems: 'center', gap: 8,
-          fontSize: 12, color: 'var(--text-secondary)',
-        }}>
-          <span style={{ fontSize: 14 }}>🌐</span>
-          <span>Red CRUZ: 47 participantes contribuyen datos para mejorar sus predicciones</span>
-        </div>
-      )}
-
-      {/* Ver todo link */}
+      {/* ── FOOTER LINK ── */}
       <div style={{ textAlign: 'center', padding: '8px 20px 40px' }}>
-        <Link href="/traficos" style={{
-          fontSize: 14, fontWeight: 600, color: 'var(--gold-dark)', textDecoration: 'none',
-        }}>
-          Ver todos los traficos &rarr;
+        <Link href="/traficos" style={{ fontSize: 13, fontWeight: 600, color: 'var(--gold-dark)', textDecoration: 'none' }}>
+          Ver todas las operaciones →
         </Link>
       </div>
 
-      {/* Confetti on realtime Cruzado event */}
       <Celebrate trigger={!!lastUpdate && (lastUpdate.estatus || '').toLowerCase().includes('cruz')} />
     </div>
   )

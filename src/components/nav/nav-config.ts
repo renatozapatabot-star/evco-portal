@@ -110,7 +110,6 @@ export const CLIENT_NAV: NavTopLevel[] = [
   { href: '/traficos',     label: 'Operaciones',  icon: Truck },
   { href: '/documentos',   label: 'Documentos',   icon: FolderOpen },
   { href: '/financiero',   label: 'Financiero',   icon: DollarSign },
-  { href: '/actividad',    label: 'Actividad',    icon: Activity },
   { href: '/cruz',         label: 'CRUZ AI',      icon: MessageSquare, gold: true },
 ]
 

@@ -52,7 +52,7 @@ export default function NegociacionPage() {
     fetch('/api/negotiation')
       .then(r => r.json())
       .then(d => setData(d.data || null))
-      .catch(() => {})
+      .catch((err) => console.error('[negociacion] fetch failed:', err.message))
       .finally(() => setLoading(false))
   }, [isAdmin])
 

@@ -191,7 +191,7 @@ function RealDocuments({ traficoId }: { traficoId: string }) {
         const res1 = await fetch(`/api/data?table=expediente_documentos&pedimento_id=${encodeURIComponent(traficoId)}&limit=50`)
         const d1 = await res1.json()
         ;(d1.data ?? d1 ?? []).forEach((d: { doc_type?: string; file_name?: string; file_url?: string }) => all.push({ type: d.doc_type || 'unknown', name: d.file_name || d.doc_type || '', url: d.file_url ?? null }))
-      } catch {}
+      } catch (e) { console.error('[trafico-drawer] expediente docs:', (e as Error).message) }
       // Source 2: documents table (match by file_url containing trafico ID)
       try {
         const res2 = await fetch(`/api/data?table=documents&limit=200`)
@@ -203,7 +203,7 @@ function RealDocuments({ traficoId }: { traficoId: string }) {
             all.push({ type: d.document_type || 'unknown', name: d.metadata?.nombre || d.file_url?.split('/').pop() || d.document_type || '', url: d.file_url ?? null })
           }
         })
-      } catch {}
+      } catch (e) { console.error('[trafico-drawer] documents fetch:', (e as Error).message) }
       setDocs(all)
       setLoading(false)
     }

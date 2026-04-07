@@ -19,7 +19,7 @@ export function WhatChanged({ newCrossings, newEntradas, statusChanges, newIncid
     newEntradas > 0 && { icon: Package, iconColor: 'var(--info)', main: `${newEntradas} entrada${newEntradas > 1 ? 's' : ''} nueva${newEntradas > 1 ? 's' : ''}`, detail: 'Registradas en bodega' },
     statusChanges > 0 && { icon: FileCheck, iconColor: 'var(--gold-500)', main: `${statusChanges} cambio${statusChanges > 1 ? 's' : ''} de estado`, detail: 'Tráficos actualizados' },
     newIncidencias > 0 && { icon: AlertTriangle, iconColor: 'var(--danger)', main: `${newIncidencias} incidencia${newIncidencias > 1 ? 's' : ''} nueva${newIncidencias > 1 ? 's' : ''}`, detail: 'Requiere revisión' },
-  ].filter(Boolean) as any[]
+  ].filter(Boolean) as { icon: typeof TrendingUp; iconColor: string; main: string; detail: string }[]
 
   if (changes.length === 0 || !visible) return null
 

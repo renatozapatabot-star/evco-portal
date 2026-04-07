@@ -84,7 +84,7 @@ export default function EntradasPage() {
           if (p.cve_trafico && p.descripcion && !map.has(p.cve_trafico)) map.set(p.cve_trafico, p.descripcion)
         })
         setPartidaDescMap(map)
-      }).catch(() => {})
+      }).catch((err) => console.error('[entradas] partidas fetch:', err.message))
 
     // Traficos for transport data
     const tParams = new URLSearchParams({ table: 'traficos', select: 'trafico,transportista_mexicano,transportista_americano', limit: '5000' })
@@ -99,7 +99,7 @@ export default function EntradasPage() {
           }
         })
         setTransportMap(map)
-      }).catch(() => {})
+      }).catch((err) => console.error('[entradas] transport fetch:', err.message))
   }, [])
 
   const filtered = (() => {

@@ -53,13 +53,13 @@ export function CommandPalette() {
         const data = await res.json()
         if (controller.signal.aborted) return
         const results: NavItem[] = []
-        ;(data.traficos || []).slice(0, 5).forEach((t: any) => {
+        ;((data.traficos || []) as Array<Record<string, string>>).slice(0, 5).forEach((t) => {
           results.push({ id: `t-${t.trafico}`, label: t.trafico, sublabel: t.descripcion_mercancia?.slice(0, 40) || t.estatus || '', icon: Truck, href: `/traficos/${encodeURIComponent(t.trafico)}`, category: 'Tráficos' })
         })
-        ;(data.pedimentos || []).slice(0, 3).forEach((p: any) => {
+        ;((data.pedimentos || []) as Array<Record<string, string>>).slice(0, 3).forEach((p) => {
           results.push({ id: `p-${p.pedimento || p.referencia}`, label: p.pedimento || p.referencia, sublabel: p.proveedor || '', icon: FileText, href: '/pedimentos', category: 'Pedimentos' })
         })
-        ;(data.proveedores || []).slice(0, 3).forEach((s: any) => {
+        ;((data.proveedores || []) as Array<Record<string, string>>).slice(0, 3).forEach((s) => {
           results.push({ id: `s-${s.nombre || s.proveedor}`, label: s.nombre || s.proveedor, sublabel: s.pais || '', icon: Building2, href: '/proveedores', category: 'Proveedores' })
         })
         setSearchResults(results)

@@ -48,7 +48,7 @@ export default function IntelCompetitivaPage() {
     fetch('/api/competitive-intel')
       .then(r => r.json())
       .then(d => setData(d.data || null))
-      .catch(() => {})
+      .catch((err) => console.error('[inteligencia-competitiva] fetch failed:', err.message))
       .finally(() => setLoading(false))
   }, [isAdmin])
 

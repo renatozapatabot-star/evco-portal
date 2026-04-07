@@ -71,7 +71,7 @@ function AdminView() {
       const blocking = active.filter(t => compMap[t.trafico] > 0 || t.semaforo === 1)
       setBlockingCount(blocking.length)
       if (blocking.length > 0) setFirstBlocking(blocking[0].trafico)
-    }).catch((err: unknown) => { void 0 }).finally(() => setLoading(false))
+    }).catch((err: unknown) => console.error('[inicio] data fetch:', (err as Error).message)).finally(() => setLoading(false))
   }, [])
 
   const level = rojoCount > 0 || blockingCount >= 4 ? 'red' : blockingCount > 0 ? 'amber' : 'green'
@@ -259,7 +259,7 @@ function BrokerView() {
       const typeOrder = { urgent: 0, today: 1, new: 2, bridge: 3 }
       queue.sort((a, b) => typeOrder[a.type] - typeOrder[b.type])
       setItems(queue.slice(0, 8))
-    }).catch((err: unknown) => { void 0 }).finally(() => setLoading(false))
+    }).catch((err: unknown) => console.error('[inicio] attention feed:', (err as Error).message)).finally(() => setLoading(false))
   }, [])
 
   // ── Smart greeting from intelligence layer ──
@@ -307,8 +307,8 @@ function BrokerView() {
     if (loading) return
     const now = new Date()
     const hour = parseInt(now.toLocaleString('en-US', { timeZone: 'America/Chicago', hour: 'numeric', hour12: false }), 10)
-    const dayStr = now.toLocaleDateString('en-US', { timeZone: 'America/Chicago', weekday: 'short' })
-    const dayMap: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 }
+    const dayStr = new Intl.DateTimeFormat('es-MX', { timeZone: 'America/Chicago', weekday: 'short' }).format(now)
+    const dayMap: Record<string, number> = { dom: 0, lun: 1, mar: 2, mié: 3, jue: 4, vie: 5, sáb: 6 }
     const lastVisit = typeof window !== 'undefined' ? localStorage.getItem('cruz-last-visit') : null
 
     // Build traficos array from items for anticipation — broker doesn't have full traficos here

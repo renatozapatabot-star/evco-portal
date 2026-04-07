@@ -77,7 +77,7 @@ export default function PlaneacionPage() {
       setTraficos((trafData.data ?? []) as TraficoRow[])
       setPipeline((pipeData.data ?? []) as PipelineRow[])
       setBridges((bridgeData.bridges ?? []) as BridgeTime[])
-    }).catch((err: unknown) => { void 0 }).finally(() => setLoading(false))
+    }).catch((err: unknown) => console.error('[planeacion] fetch failed:', (err as Error).message)).finally(() => setLoading(false))
   }, [])
 
   const week = useMemo(() => getWeekRange(), [])

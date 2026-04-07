@@ -79,7 +79,7 @@ export function SavingsWidget() {
             const items = res.data || []
             const savings = items.find((p: { prediction_type?: string; description?: string }) => p.prediction_type === 'monthly_savings')
             if (savings) {
-              try { setData(JSON.parse(savings.description)) } catch {}
+              try { setData(JSON.parse(savings.description)) } catch (e) { console.error('[savings-widget] parse failed:', (e as Error).message) }
             }
           }).catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
       }

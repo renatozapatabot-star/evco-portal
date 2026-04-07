@@ -286,7 +286,7 @@ function ReferralForm() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ type: 'supplier_referral', name, email, source: 'upload_portal' }),
-    }).catch(() => {})
+    }).catch((err) => console.error('[upload] referral submit:', err.message))
     setSent(true)
   }
 

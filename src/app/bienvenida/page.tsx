@@ -74,7 +74,7 @@ export default function BienvenidaPage() {
 
   function enterPortal() {
     // Set last_login to prevent showing this page again
-    fetch('/api/data?table=companies&limit=1').catch(() => {})
+    fetch('/api/data?table=companies&limit=1').catch((err) => console.error('[bienvenida] prefetch failed:', err.message))
     router.push('/')
   }
 

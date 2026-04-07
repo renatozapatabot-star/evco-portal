@@ -17,7 +17,7 @@ function getCtx(): AudioContext | null {
     ctx = new AudioContext()
   }
   if (ctx.state === 'suspended') {
-    ctx.resume().catch(() => {})
+    ctx.resume().catch((err) => console.error('[sounds] audio resume:', err.message))
   }
   return ctx
 }

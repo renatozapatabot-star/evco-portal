@@ -16,9 +16,10 @@ const TIMELINE_STAGES = [
   { key: 'delivered', label: 'Entregado', icon: '🏭', eventKeys: ['ENTREG', 'DESTINO'] },
 ]
 
+interface TraficoEvent { tipo?: string; descripcion?: string; fecha?: string; evento?: string; [key: string]: unknown }
 interface TraficoTimelineProps {
-  trafico: any
-  eventos: any[]
+  trafico: { fecha_llegada?: string; pedimento?: string; fecha_pago?: string; fecha_cruce?: string; estatus?: string; [key: string]: unknown }
+  eventos: TraficoEvent[]
 }
 
 export function TraficoTimeline({ trafico, eventos }: TraficoTimelineProps) {

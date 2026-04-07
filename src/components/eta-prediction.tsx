@@ -37,7 +37,7 @@ export function ETAPrediction({ traficoId, isCruzado }: Props) {
         if (data.prediction) setPrediction(data.prediction)
         if (data.message) setMessage(data.message)
       })
-      .catch(() => {})
+      .catch((err) => console.error('[eta-prediction] fetch failed:', err.message))
   }, [traficoId, isCruzado])
 
   if (isCruzado || !prediction) return null

@@ -63,7 +63,7 @@ export default function PedimentosPage() {
     fetch(`/api/data?${params}`)
       .then(r => r.json())
       .then(data => setRows((data.data ?? data ?? []) as TraficoRow[]))
-      .catch(() => {})
+      .catch((err) => console.error('[pedimentos] traficos fetch:', err.message))
       .finally(() => setLoading(false))
 
     // Partida descriptions
@@ -76,7 +76,7 @@ export default function PedimentosPage() {
           if (p.cve_trafico && p.descripcion && !map.has(p.cve_trafico)) map.set(p.cve_trafico, p.descripcion)
         })
         setPartidaDescMap(map)
-      }).catch(() => {})
+      }).catch((err) => console.error('[pedimentos] partidas fetch:', err.message))
 
     // Aduanet facturas for valor fallback
     const aduanetParams = new URLSearchParams({ table: 'aduanet_facturas', select: 'pedimento,valor_usd', limit: '5000' })
@@ -89,7 +89,7 @@ export default function PedimentosPage() {
           if (f.pedimento && f.valor_usd && !map.has(f.pedimento)) map.set(f.pedimento, f.valor_usd)
         })
         setAduanetValorMap(map)
-      }).catch(() => {})
+      }).catch((err) => console.error('[pedimentos] aduanet fetch:', err.message))
   }, [])
 
   const groups: PedGroup[] = useMemo(() => {

@@ -119,7 +119,7 @@ export function ClickToCall({ phone, contactName, traficoId, companyId, compact 
       action_items: [postCallResult],
       status: 'completed',
       company_id: companyId,
-    }).then(() => {}, () => {})
+    }).then(() => {}, (e) => console.error('[audit-log] call log:', e.message))
 
     setCallStatus('ended')
     setShowBrief(false)

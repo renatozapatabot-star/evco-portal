@@ -105,7 +105,7 @@ async function handleCancellation(draftId: string, chatId: number, userId: numbe
     },
     actor: 'tito',
     timestamp: new Date().toISOString(),
-  }).then(() => {}, () => {})
+  }).then(() => {}, (e) => console.error('[audit-log] telegram-webhook:', e.message))
 
   return `↩️ Aprobación cancelada. Borrador regresado a pendiente.`
 }
@@ -155,7 +155,7 @@ async function handleApproval(draftId: string, chatId: number, userId: number, u
     },
     actor: 'tito',
     timestamp: new Date().toISOString(),
-  }).then(() => {}, () => {})
+  }).then(() => {}, (e) => console.error('[audit-log] telegram-webhook:', e.message))
 
   const supplier = draft.draft_data?.supplier || 'Desconocido'
   const companyId = draft.draft_data?.company_id || ''
@@ -169,7 +169,7 @@ async function handleApproval(draftId: string, chatId: number, userId: number, u
       description: 'Patente 3596 honrada. Gracias, Tito.',
       company_id: companyId,
       read: false,
-    }).then(() => {}, () => {})
+    }).then(() => {}, (e) => console.error('[audit-log] telegram-webhook:', e.message))
   }
 
   // Send approval message with cancel button — the telegram-bot.js PM2 process
@@ -217,7 +217,7 @@ async function handleRejection(draftId: string, reason: string, chatId: number, 
     },
     actor: 'tito',
     timestamp: new Date().toISOString(),
-  }).then(() => {}, () => {})
+  }).then(() => {}, (e) => console.error('[audit-log] telegram-webhook:', e.message))
 
   return `❌ Borrador rechazado.\nMotivo: <i>${reason}</i>`
 }
@@ -255,7 +255,7 @@ async function handleCorrection(draftId: string, note: string, chatId: number, u
     },
     actor: 'tito',
     timestamp: new Date().toISOString(),
-  }).then(() => {}, () => {})
+  }).then(() => {}, (e) => console.error('[audit-log] telegram-webhook:', e.message))
 
   return `✏️ Borrador aprobado con corrección.\nNota: <i>${note}</i>\n\n✅ Patente 3596 honrada. Gracias, Tito. 🦀`
 }

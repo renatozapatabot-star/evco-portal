@@ -75,7 +75,7 @@ export async function POST(request: Request) {
           text: `🚛 <b>Transportista confirmado</b>\n${dispatch.carrier_name} aceptó ${dispatch.trafico_id}`,
           parse_mode: 'HTML',
         }),
-      }).catch(() => {})
+      }).catch((err) => console.error('[carrier] telegram notify:', err.message))
     }
   } else if (isDeclined) {
     await supabase

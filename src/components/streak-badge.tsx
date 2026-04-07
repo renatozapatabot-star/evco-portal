@@ -54,7 +54,7 @@ export function StreakBadge() {
 
         setData({ daysNoIncident, operationsThisMonth: opsThisMonth, tmecRate })
       })
-      .catch(() => {})
+      .catch((err) => console.error('[streak-badge] fetch failed:', err.message))
   }, [])
 
   if (!data) return null

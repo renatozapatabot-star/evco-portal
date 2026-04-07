@@ -43,7 +43,7 @@ async function setAuthCookies(
     resource_id: opts.companyId,
     diff: { role: opts.role, company: opts.companyName },
     created_at: new Date().toISOString(),
-  }).then(() => {}, () => {})
+  }).then(() => {}, (e) => console.error('[audit-log] login success:', e.message))
 }
 
 export async function POST(request: NextRequest) {
@@ -121,7 +121,7 @@ export async function POST(request: NextRequest) {
     resource: 'auth',
     ip: request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || null,
     created_at: new Date().toISOString(),
-  }).then(() => {}, () => {})
+  }).then(() => {}, (e) => console.error('[audit-log] login failed:', e.message))
 
   return NextResponse.json({ error: 'Invalid password' }, { status: 401 })
 }

@@ -94,7 +94,7 @@ export function MorningSummary() {
       }
 
       setItems(summaryItems.slice(0, 3)) // Max 3 items
-    }).catch(() => {})
+    }).catch((err) => console.error('[morning-summary] fetch failed:', err.message))
       .finally(() => setLoading(false))
   }, [])
 

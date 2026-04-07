@@ -48,7 +48,7 @@ export function useSupplierNames(): SupplierMap {
           sessionStorage.setItem('cruz-supplier-lookup', JSON.stringify([...map.entries()]))
         } catch { /* storage full */ }
       })
-      .catch(() => {})
+      .catch((err) => console.error('[use-supplier-names] fetch failed:', err.message))
       .finally(() => setLoaded(true))
   }, [])
 

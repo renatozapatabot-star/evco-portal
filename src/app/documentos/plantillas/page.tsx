@@ -72,7 +72,7 @@ export default function PlantillasPage() {
     fetch(url)
       .then(r => r.json())
       .then(d => setTemplates(d.data ?? []))
-      .catch((err: unknown) => { void 0 })
+      .catch((err: unknown) => console.error('[plantillas] fetch failed:', (err as Error).message))
       .finally(() => setLoading(false))
   }, [isInternal])
 

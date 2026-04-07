@@ -98,7 +98,7 @@ export function CostInsights() {
       }
 
       setInsights(items.slice(0, 3))
-    }).catch(() => {})
+    }).catch((err) => console.error('[cost-insights] fetch failed:', err.message))
   }, [])
 
   if (insights.length === 0) return null

@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
 
   if (probability !== null) {
     if (probability > 0.3) factors.push('Carrier con historial elevado')
-    if (new Date().toLocaleDateString('en-US', { timeZone: 'America/Chicago', weekday: 'short' }) === 'Fri') factors.push('Viernes — tasa mayor')
+    if (new Intl.DateTimeFormat('es-MX', { timeZone: 'America/Chicago', weekday: 'short' }).format(new Date()) === 'vie') factors.push('Viernes — tasa mayor')
     if ((riskData?.overall_score || 0) > 50) factors.push('Risk score alto')
   }
 

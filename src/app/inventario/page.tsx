@@ -76,7 +76,7 @@ export default function InventarioPage() {
     fetch('/api/inventory-oracle')
       .then(r => r.json())
       .then(d => setData(d.data || null))
-      .catch(() => {})
+      .catch((err) => console.error('[inventario] fetch failed:', err.message))
       .finally(() => setLoading(false))
   }, [isAdmin])
 

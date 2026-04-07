@@ -120,7 +120,7 @@ export default function ClientInicioView() {
               .then(d2 => setStreakDays(computeStreak(d2.data || []).days))
           }
         })
-        .catch(() => {})
+        .catch((err) => console.error('[client-inicio] streak fetch:', err.message))
     }
 
     // Try session cache first

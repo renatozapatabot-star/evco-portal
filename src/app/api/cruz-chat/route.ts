@@ -656,8 +656,9 @@ async function executeTool(name: string, input: Record<string, any>, clientCtx: 
         return JSON.stringify({ count: data?.length, total, results: data?.slice(0, 10) })
       }
       case 'check_bridge_status': {
-        const laredoDayStr = new Date().toLocaleDateString('en-US', { timeZone: 'America/Chicago', weekday: 'short' })
-        const laredoDayMap: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 }
+        // Get Laredo day-of-week (0=Sun..6=Sat) via Intl es-MX
+        const laredoDayStr = new Intl.DateTimeFormat('es-MX', { timeZone: 'America/Chicago', weekday: 'short' }).format(new Date())
+        const laredoDayMap: Record<string, number> = { dom: 0, lun: 1, mar: 2, mié: 3, jue: 4, vie: 5, sáb: 6 }
         const day = input.day_of_week ?? (laredoDayMap[laredoDayStr] ?? new Date().getDay())
         const { data } = await supabase.from('bridge_intelligence').select('bridge_name, crossing_hours, day_of_week').eq('day_of_week', day)
         const bridges: Record<string, number[]> = {}
@@ -905,7 +906,7 @@ async function executeTool(name: string, input: Record<string, any>, clientCtx: 
             body: JSON.stringify({ trafico_id: input.trafico_id })
           })
           if (pfRes.ok) return JSON.stringify(await pfRes.json())
-        } catch {}
+        } catch (e) { console.error('[cruz-chat] predict-arrival:', (e as Error).message) }
         return JSON.stringify({ trafico_id: input.trafico_id, note: 'Prediction service unavailable' })
       }
       case 'send_whatsapp': {
@@ -1311,7 +1312,7 @@ async function executeTool(name: string, input: Record<string, any>, clientCtx: 
           },
           actor: 'tito',
           timestamp: new Date().toISOString(),
-        }).then(() => {}, () => {})
+        }).then(() => {}, (e) => console.error('[audit-log] cruz-chat approval:', e.message))
         // Celebration notification
         if (draft.draft_data?.company_id) {
           supabase.from('notifications').insert({
@@ -1321,7 +1322,7 @@ async function executeTool(name: string, input: Record<string, any>, clientCtx: 
             description: 'Patente 3596 honrada. Gracias, Tito.',
             company_id: draft.draft_data.company_id,
             read: false,
-          }).then(() => {}, () => {})
+          }).then(() => {}, (e) => console.error('[audit-log] cruz-chat notification:', e.message))
         }
         return JSON.stringify({
           success: true,
@@ -1540,7 +1541,7 @@ export async function POST(req: NextRequest) {
             try {
               const parsed = JSON.parse(block.content)
               if (parsed.action === 'navigate') navigatePath = parsed.path
-            } catch {}
+            } catch (e) { console.error('[cruz-chat] navigate parse:', (e as Error).message) }
           }
         }
       }
@@ -1563,7 +1564,7 @@ export async function POST(req: NextRequest) {
       tools_used: toolsUsed.length > 0 ? toolsUsed : null,
       page_context: context?.page || '',
       response_time_ms: Date.now() - startTime,
-    }).then(() => {}, () => {})
+    }).then(() => {}, (e) => console.error('[audit-log] cruz-chat conversation:', e.message))
 
     // AI audit log (CLAUDE.md: prompt_hash, model, tokens, user_id, client_code, timestamp)
     supabase.from('api_cost_log').insert({
@@ -1574,7 +1575,7 @@ export async function POST(req: NextRequest) {
       action: 'cruz_chat',
       client_code: clientClave || companyId,
       latency_ms: Date.now() - startTime,
-    }).then(() => {}, () => {})
+    }).then(() => {}, (e) => console.error('[audit-log] cruz-chat cost:', e.message))
 
     // Stream response to client
     const encoder = new TextEncoder()

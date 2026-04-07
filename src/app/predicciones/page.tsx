@@ -90,9 +90,9 @@ export default function PrediccionesPage() {
     if (!isAdmin) { setLoading(false); return }
     Promise.all([
       fetch('/api/data?table=demand_forecasts&limit=50&order_by=forecast_date&order_dir=asc')
-        .then(r => r.json()).then(d => setPredictions(d.data || [])).catch(() => {}),
+        .then(r => r.json()).then(d => setPredictions(d.data || [])).catch((err) => console.error('[predicciones] forecasts fetch:', err.message)),
       fetch('/api/po-predictions')
-        .then(r => r.json()).then(d => setPOData(d.data || null)).catch(() => {}),
+        .then(r => r.json()).then(d => setPOData(d.data || null)).catch((err) => console.error('[predicciones] PO fetch:', err.message)),
     ]).finally(() => setLoading(false))
   }, [isAdmin])
 

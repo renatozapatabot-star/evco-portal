@@ -247,7 +247,7 @@ export function CotizacionView() {
                   }),
                 })
                 if (res.ok) setRequestSent(true)
-              } catch {}
+              } catch (e) { console.error('[cotizacion] request submit:', (e as Error).message) }
               setRequestSending(false)
             }}
             disabled={requestSending}

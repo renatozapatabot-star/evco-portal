@@ -208,14 +208,14 @@ async function executeTool(name: string, input: Record<string, any>): Promise<st
         supabase.from('audit_log').insert({
           action: 'draft_approved_voice', actor: 'tito', timestamp: new Date().toISOString(),
           details: { draft_id: draft.id, approved_by: 'tito', supplier: draft.draft_data?.supplier, valor_usd: draft.draft_data?.valor_total_usd, channel: 'voice', status: 'approved_pending' },
-        }).then(() => {}, () => {})
+        }).then(() => {}, (e) => console.error('[audit-log] vapi draft approved:', e.message))
         if (draft.draft_data?.company_id) {
           supabase.from('notifications').insert({
             type: 'approval_complete', severity: 'celebration',
             title: `🦀 Borrador aprobado: ${draft.draft_data?.supplier || 'Desconocido'}`,
             description: 'Patente 3596 honrada. Gracias, Tito.',
             company_id: draft.draft_data.company_id, read: false,
-          }).then(() => {}, () => {})
+          }).then(() => {}, (e) => console.error('[audit-log] vapi notification:', e.message))
         }
         return JSON.stringify({ success: true, draft_id: draft.id, supplier: draft.draft_data?.supplier, valor_usd: draft.draft_data?.valor_total_usd, status: 'approved_pending', cancellation_window: '5 seconds' })
       }
@@ -401,7 +401,7 @@ export async function POST(req: NextRequest) {
       action: 'cruz_voice',
       client_code: DIRECTOR_CTX?.clientClave || '',
       latency_ms: Date.now() - startTime,
-    }).then(() => {}, () => {})
+    }).then(() => {}, (e) => console.error('[audit-log] vapi cost:', e.message))
 
     // Conversation log
     const lastUserMsg = anthropicMessages.filter((m: { role: string }) => m.role === 'user').pop()
@@ -414,7 +414,7 @@ export async function POST(req: NextRequest) {
         .flatMap((m) => (Array.isArray(m.content) ? m.content : []).filter((b: { type: string }) => b.type === 'tool_use').map((b: { name?: string }) => b.name)),
       page_context: 'voice',
       response_time_ms: Date.now() - startTime,
-    }).then(() => {}, () => {})
+    }).then(() => {}, (e) => console.error('[audit-log] vapi conversation:', e.message))
 
     // Return OpenAI-compatible response
     return NextResponse.json({

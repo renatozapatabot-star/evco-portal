@@ -90,9 +90,9 @@ export async function POST(req: NextRequest) {
   const companyId =
     req.cookies.get('company_id')?.value || session.companyId
 
-  const today = new Date().toLocaleDateString('en-CA', {
-    timeZone: 'America/Chicago',
-  })
+  // YYYY-MM-DD in Laredo timezone for DB storage
+  const now = new Date()
+  const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Chicago', year: 'numeric', month: '2-digit', day: '2-digit' }).format(now)
 
   const { error } = await supabase.from('launchpad_completions').upsert(
     {

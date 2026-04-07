@@ -63,7 +63,7 @@ export default function RentabilidadPage() {
     fetch('/api/profitability')
       .then(r => r.json())
       .then(d => setData(d.data || null))
-      .catch(() => {})
+      .catch((err) => console.error('[rentabilidad] fetch failed:', err.message))
       .finally(() => setLoading(false))
   }, [isAdmin])
 

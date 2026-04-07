@@ -32,6 +32,9 @@ const SEV_STYLE = {
   info: { bg: 'var(--n-50)', border: 'var(--n-150)', dot: 'var(--gold-500)', label: 'Informativas' },
 }
 
+interface TraficoData { trafico: string; estatus?: string; pedimento?: string; fecha_llegada?: string; fecha_cruce?: string; descripcion_mercancia?: string; [key: string]: unknown }
+interface EntradaData { cve_entrada: string; fecha_llegada_mercancia?: string; mercancia_danada?: boolean; tiene_faltantes?: boolean; [key: string]: unknown }
+
 export default function AlertasPage() {
   const isMobile = useIsMobile()
   const [alerts, setAlerts] = useState<Alert[]>([])
@@ -51,20 +54,20 @@ export default function AlertasPage() {
           fetch(`/api/data?table=traficos&company_id=${companyId}&limit=500&order_by=fecha_llegada&order_dir=desc`).then(r => r.json()),
           fetch(`/api/data?table=entradas&cve_cliente=${clientClave}&limit=200&order_by=fecha_llegada_mercancia&order_dir=desc`).then(r => r.json()),
         ])
-        const traf = (trafRes.data ?? []).filter((t: any) =>
+        const traf = ((trafRes.data ?? []) as TraficoData[]).filter((t) =>
           t.fecha_llegada && t.fecha_llegada >= fifteenDaysAgo
         )
-        const ent = (entRes.data ?? []).filter((e: any) =>
+        const ent = ((entRes.data ?? []) as EntradaData[]).filter((e) =>
           e.fecha_llegada_mercancia && e.fecha_llegada_mercancia >= fifteenDaysAgo
         )
         const items: Alert[] = []
 
         // Score < 50 + En Proceso → critical (NO MVE alerts)
-        traf.filter((t: any) => {
+        traf.filter((t) => {
           if ((t.estatus || '').toLowerCase().includes('cruz')) return false
-          return calculateCruzScore(extractScoreInput(t)) < 50
-        }).slice(0, 8).forEach((t: any) => {
-          const score = calculateCruzScore(extractScoreInput(t))
+          return calculateCruzScore(extractScoreInput(t as unknown as Parameters<typeof extractScoreInput>[0])) < 50
+        }).slice(0, 8).forEach((t) => {
+          const score = calculateCruzScore(extractScoreInput(t as unknown as Parameters<typeof extractScoreInput>[0]))
           items.push({
             id: `score-${t.trafico}`, severity: 'critica', icon: 'shield',
             title: `Score ${score} — ${t.trafico}`,
@@ -77,23 +80,23 @@ export default function AlertasPage() {
 
         // En Proceso > 48 hours → warning
         const twoDaysAgo = new Date(Date.now() - 2 * 86400000).toISOString().split('T')[0]
-        traf.filter((t: any) => {
+        traf.filter((t) => {
           if ((t.estatus || '').toLowerCase().includes('cruz')) return false
           return t.fecha_llegada && t.fecha_llegada < twoDaysAgo
-        }).slice(0, 6).forEach((t: any) => {
-          const days = Math.floor((Date.now() - new Date(t.fecha_llegada).getTime()) / 86400000)
+        }).slice(0, 6).forEach((t) => {
+          const days = Math.floor((Date.now() - new Date(t.fecha_llegada!).getTime()) / 86400000)
           items.push({
             id: `slow-${t.trafico}`, severity: 'atención', icon: 'clock',
             title: `${days}d en proceso — ${t.trafico}`,
             sub: t.descripcion_mercancia?.slice(0, 50) || 'Sin descripción',
             href: `/traficos/${encodeURIComponent(t.trafico)}`,
-            time: t.fecha_llegada,
+            time: t.fecha_llegada || '',
             resolved: false,
           })
         })
 
         // Entradas with incidencias → warning
-        ent.filter((e: any) => e.mercancia_danada || e.tiene_faltantes).slice(0, 5).forEach((e: any) => {
+        ent.filter((e) => e.mercancia_danada || e.tiene_faltantes).slice(0, 5).forEach((e) => {
           items.push({
             id: `inc-${e.cve_entrada}`, severity: 'atención', icon: 'alert',
             title: `Incidencia — ${e.cve_entrada}`,
@@ -105,8 +108,8 @@ export default function AlertasPage() {
         })
 
         // Crossed traficos in last 15 days → resolved
-        traf.filter((t: any) => (t.estatus || '').toLowerCase().includes('cruz'))
-          .slice(0, 10).forEach((t: any) => {
+        traf.filter((t) => (t.estatus || '').toLowerCase().includes('cruz'))
+          .slice(0, 10).forEach((t) => {
             items.push({
               id: `done-${t.trafico}`, severity: 'info', icon: 'package',
               title: `Cruzado — ${t.trafico}`,
@@ -120,7 +123,7 @@ export default function AlertasPage() {
         // Deduplicate
         const seen = new Set<string>()
         setAlerts(items.filter(a => { if (seen.has(a.id)) return false; seen.add(a.id); return true }))
-      } catch {}
+      } catch (e) { console.error('[alertas] load failed:', (e as Error).message) }
       setLoading(false)
     }
     load()

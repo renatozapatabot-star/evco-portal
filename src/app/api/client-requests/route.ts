@@ -26,7 +26,7 @@ async function sendTelegram(message: string) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ chat_id: chatId, text: message, parse_mode: 'HTML' }),
     })
-  } catch {}
+  } catch (e) { console.error('[client-requests] telegram send:', (e as Error).message) }
 }
 
 export async function POST(request: NextRequest) {

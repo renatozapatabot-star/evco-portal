@@ -254,7 +254,7 @@ export default function ProveedorPage() {
                       method: 'PATCH',
                       headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify({ token, action: 'referral_click' }),
-                    }).catch(() => {})
+                    }).catch((err) => console.error('[proveedor] referral click:', err.message))
                   }}
                   style={{
                     display: 'inline-block', padding: '10px 20px',

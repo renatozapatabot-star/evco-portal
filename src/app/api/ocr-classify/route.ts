@@ -133,7 +133,7 @@ export async function POST(req: NextRequest) {
       size_bytes: file.size,
     },
     company_id: req.cookies.get('company_id')?.value || '',
-  }).then(() => {}, () => {})
+  }).then(() => {}, (e) => console.error('[audit-log] ocr-classify:', e.message))
 
   // Log cost
   await supabase.from('api_cost_log').insert({
@@ -144,7 +144,7 @@ export async function POST(req: NextRequest) {
     action: 'ocr_classify',
     client_code: req.cookies.get('company_clave')?.value || '',
     latency_ms: 0,
-  }).then(() => {}, () => {})
+  }).then(() => {}, (e) => console.error('[audit-log] ocr-classify:', e.message))
 
   return NextResponse.json({
     document_type: classification.document_type,

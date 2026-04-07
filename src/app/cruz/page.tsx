@@ -58,7 +58,7 @@ export default function CruzChatPage() {
   useEffect(() => {
     fetch('/api/cruz-alerts').then(r => r.json())
       .then(data => setCruzAlerts(data.alerts ?? []))
-      .catch((err: unknown) => { void 0 })
+      .catch((err: unknown) => console.error('[cruz] alerts fetch failed:', (err as Error).message))
   }, [])
 
   // Proactive briefing fetch
@@ -238,7 +238,7 @@ export default function CruzChatPage() {
     recognition.onerror = () => setListening(false)
     recognition.onend = () => setListening(false)
     recognition.start(); setListening(true)
-    setTimeout(() => { try { recognition.stop() } catch {} setListening(false) }, 10000)
+    setTimeout(() => { try { recognition.stop() } catch (e) { console.error('[cruz] recognition stop:', (e as Error).message) } setListening(false) }, 10000)
   }
   const stopVoice = () => { recognitionRef.current?.stop(); setListening(false) }
 
@@ -254,7 +254,7 @@ export default function CruzChatPage() {
 
   const saveFeedback = async (msgId: string, helpful: boolean) => {
     setMessages(prev => prev.map(m => m.id === msgId ? { ...m, feedback: helpful } : m))
-    try { await fetch('/api/cruz-feedback', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sessionId, helpful }) }) } catch {}
+    try { await fetch('/api/cruz-feedback', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sessionId, helpful }) }) } catch (e) { console.error('[cruz] feedback failed:', (e as Error).message) }
   }
 
   const handleAbort = () => { abortRef.current?.abort(); setLoading(false) }

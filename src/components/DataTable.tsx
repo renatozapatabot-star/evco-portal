@@ -72,7 +72,7 @@ export default function DataTable<T extends Record<string, any>>({
       try {
         const stored = localStorage.getItem(`cruz-views-${viewStorageKey}`)
         if (stored) setSavedViews(JSON.parse(stored))
-      } catch {}
+      } catch (e) { console.error('[data-table] localStorage parse:', (e as Error).message) }
     }
   })
 

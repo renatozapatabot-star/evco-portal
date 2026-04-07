@@ -123,7 +123,7 @@ function EntradaDocuments({ traficoId }: { traficoId: string }) {
             })
           }
         })
-      } catch {}
+      } catch (e) { console.error('[entrada-drawer] documents fetch:', (e as Error).message) }
       setDocs(all)
       setLoading(false)
     }

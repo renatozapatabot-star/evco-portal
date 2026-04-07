@@ -78,7 +78,7 @@ REGLAS:
       action: 'chat',
       client_code: clientClave || companyId,
       latency_ms: 0,
-    }).then(() => {}, () => {})
+    }).then(() => {}, (e) => console.error('[audit-log] chat cost:', e.message))
     return NextResponse.json({ response: data.content?.[0]?.text || 'Sin respuesta', intent })
   } catch (e: unknown) {
     return NextResponse.json({ response: `Error: ${getErrorMessage(e)}` })

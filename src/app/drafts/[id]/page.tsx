@@ -8,7 +8,7 @@ import { createClient } from '@supabase/supabase-js'
 import { GOLD, GOLD_GRADIENT, Z_RED } from '@/lib/design-system'
 import { getClientClaveCookie } from '@/lib/client-config'
 import { formatAbsoluteETA, fmtUSD, fmtMXNInt, fmtCurrency } from '@/lib/format-utils'
-import type { DraftRow, DraftProduct } from '@/types/database'
+import type { DraftRow, DraftProduct, DraftData } from '@/types/database'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
@@ -18,34 +18,34 @@ const TIER_CONFIG = {
   3: { label: 'Revisión completa', time: 'Sin límite · precisión sobre velocidad', color: 'var(--danger-500)', bg: '#FEF2F2' },
 }
 
-function mapDraftRow(row: any) {
-  const d = row.draft_data || {}
-  const ext = d.extraction || {}
+function mapDraftRow(row: DraftRow) {
+  const d = row.draft_data || ({} as DraftData)
+  const ext = (d.extraction || {}) as Record<string, string | number | undefined>
   const products = d.products || d.classifications || []
   const confRaw = d.confidence
-  const confScore = typeof confRaw === 'object' && confRaw ? confRaw.score ?? 0 : confRaw ?? products[0]?.confidence ?? 0
+  const confScore = typeof confRaw === 'number' ? confRaw : products[0]?.confidence ?? 0
   const confidence = typeof confScore === 'number' ? confScore : 0
   const tier = confidence >= 90 ? 1 : confidence >= 70 ? 2 : 3
-  const fieldScores = typeof confRaw === 'object' && confRaw ? confRaw.fieldScores || {} : {}
+  const contribs = (d.contributions || {}) as Record<string, number | undefined>
   return {
     id: row.id,
-    trafico: row.trafico_id || d.trafico || d.email?.trafico || '',
+    trafico: row.trafico_id || d.trafico || d.trafico_id || '',
     status: row.status || 'draft',
-    supplier: d.supplier || ext.supplier_name || '',
-    country: d.country || ext.supplier_country || 'US',
-    invoice_number: ext.invoice_number || '',
-    incoterm: ext.incoterm || '',
-    currency: ext.currency || d.currency || 'USD',
+    supplier: d.supplier || String(ext.supplier_name || ''),
+    country: d.country || String(ext.supplier_country || 'US'),
+    invoice_number: String(ext.invoice_number || d.invoice_number || ''),
+    incoterm: String(ext.incoterm || d.incoterm || ''),
+    currency: String(ext.currency || d.currency || 'USD'),
     confidence,
     tier,
-    fieldScores,
+    fieldScores: {} as Record<string, number>,
     created_at: row.created_at,
     products,
-    valor_total_usd: d.valor_total_usd || ext.total_value || products.reduce((s: number, p: any) => s + (p.valor_usd || p.total_value || 0), 0),
-    tipo_cambio: d.tipo_cambio || d.contributions?.tipo_cambio || 0,
+    valor_total_usd: d.valor_total_usd || Number(ext.total_value || 0) || products.reduce((s: number, p: DraftProduct) => s + (p.valor_usd || 0), 0),
+    tipo_cambio: d.tipo_cambio || Number(contribs.tipo_cambio || 0),
     regimen: d.regimen || 'IMD',
     checklist: d.checklist || [],
-    source: d.source || 'manual',
+    source: 'manual' as string,
     email: d.email || null,
   }
 }
@@ -420,15 +420,16 @@ export default function DraftReviewPage() {
               Sin productos extraídos — verificación manual requerida
             </div>
           )}
-          {draft.products.map((p: any, i: number) => {
-            const conf = p.confidence || 0
+          {draft.products.map((p, i: number) => {
+            const pRec = p as DraftProduct & Record<string, string | number | undefined>
+            const conf = pRec.confidence || 0
             const borderColor = conf >= 90 ? 'var(--success)' : conf >= 75 ? 'var(--warning-500, #D97706)' : 'var(--danger-500)'
-            const fraccion = p.fraccion || p.fraccion_arancelaria || ''
-            const desc = p.description || p.descripcion || ''
-            const qty = p.qty || p.quantity || 0
-            const unit = p.unit || 'PZ'
-            const value = p.valor_usd || p.total_value || p.unit_value || 0
-            const origin = p.country_of_origin || p.pais_origen || ''
+            const fraccion = String(pRec.fraccion || pRec.fraccion_arancelaria || '')
+            const desc = String(pRec.description || pRec.descripcion || '')
+            const qty = Number(pRec.cantidad || pRec.quantity || 0)
+            const unit = String(pRec.unit || 'PZ')
+            const value = Number(pRec.valor_usd || pRec.total_value || pRec.unit_value || 0)
+            const origin = String(pRec.country_of_origin || pRec.pais_origen || '')
             return (
               <div key={i} style={{ padding: '16px 20px', background: 'var(--bg-card)', border: `1px solid var(--border-card)`, borderLeft: `4px solid ${borderColor}`, borderRadius: 'var(--radius-md)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
@@ -449,9 +450,9 @@ export default function DraftReviewPage() {
                   {origin && <span>Origen: {origin}</span>}
                   {!origin && <span style={{ color: 'var(--danger-500)' }}>⚠ Sin país origen</span>}
                 </div>
-                {p.reasoning && (
+                {pRec.reasoning && (
                   <div style={{ fontSize: 11, color: 'var(--slate-400)', marginTop: 6, fontStyle: 'italic' }}>
-                    {p.reasoning.substring(0, 120)}
+                    {String(pRec.reasoning).substring(0, 120)}
                   </div>
                 )}
               </div>
@@ -463,7 +464,7 @@ export default function DraftReviewPage() {
       {/* TAB: CHECKLIST */}
       {activeTab === 'checklist' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          {draft.checklist.map((c: { status: string; label: string; detail?: string }, i: number) => (
+          {(draft.checklist as unknown as { status: string; label: string; detail?: string }[]).map((c, i: number) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: 'var(--bg-card)', border: '1px solid var(--border-card)', borderRadius: 'var(--radius-md)', minHeight: 48 }}>
               {c.status === 'ok' && <Check size={16} style={{ color: 'var(--success)', flexShrink: 0 }} />}
               {c.status === 'warning' && <AlertTriangle size={16} style={{ color: 'var(--warning)', flexShrink: 0 }} />}

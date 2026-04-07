@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
     resource_id: companyId,
     diff: { type, rows: data.length, date_from, date_to, filename },
     created_at: new Date().toISOString(),
-  }).then(() => {}, () => {})
+  }).then(() => {}, (e) => console.error('[audit-log] export:', e.message))
 
   return new Response(csv, {
     headers: {

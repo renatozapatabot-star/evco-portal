@@ -63,7 +63,7 @@ export function SoiaView() {
             verdeRate: total > 0 ? (verde / total) * 100 : 0,
           })
         })
-        .catch(() => {})
+        .catch((err) => console.error('[soia] semaforo fetch:', err.message))
     }
     // Bridge intelligence
     fetch(`/api/data?table=bridge_intelligence&company_id=${companyId}&limit=500`)

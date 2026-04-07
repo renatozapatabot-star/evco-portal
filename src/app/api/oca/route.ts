@@ -124,7 +124,7 @@ Responde ÚNICAMENTE con JSON válido:
       action: 'oca_classification',
       client_code: companyId,
       latency_ms: Date.now() - start,
-    }).then(() => {}, () => {})
+    }).then(() => {}, (e) => console.error('[audit-log] oca cost:', e.message))
 
     // Save to oca_database
     await supabase.from('oca_database').insert({
@@ -138,7 +138,7 @@ Responde ÚNICAMENTE con JSON válido:
       company_id: companyId,
       pais_origen,
       created_by: 'CRUZ',
-    }).then(() => {}, () => {})
+    }).then(() => {}, (e) => console.error('[audit-log] oca save:', e.message))
 
     // Audit log
     supabase.from('audit_log').insert({
@@ -152,7 +152,7 @@ Responde ÚNICAMENTE con JSON válido:
       },
       actor: 'CRUZ',
       timestamp: new Date().toISOString(),
-    }).then(() => {}, () => {})
+    }).then(() => {}, (e) => console.error('[audit-log] oca generated:', e.message))
 
     return NextResponse.json({
       opinion_number: opinionNum,

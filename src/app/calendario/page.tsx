@@ -131,7 +131,7 @@ export default function CalendarioPage() {
         setDeadlines((deadlineData.data ?? []) as DocDeadline[])
         setEvents((eventData.data ?? []) as CalendarEvent[])
       })
-      .catch(() => {})
+      .catch((err) => console.error('[calendario] fetch failed:', err.message))
       .finally(() => setLoading(false))
   }, [isBroker])
 

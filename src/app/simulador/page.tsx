@@ -100,7 +100,7 @@ export default function SimuladorPage() {
         .order('fecha_llegada', { ascending: false })
         .limit(30)
     ).then(({ data }) => setPending(data || []))
-      .catch(() => {})
+      .catch((err) => console.error('[simulador] fetch failed:', err.message))
       .finally(() => setLoading(false))
   }, [isAdmin])
 

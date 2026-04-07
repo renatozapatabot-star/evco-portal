@@ -13,21 +13,25 @@ const T = {
   shadow: '0 4px 16px rgba(0,0,0,0.08)',
 }
 
-function fmtUSD(v: any) { return '$' + Number(v || 0).toLocaleString('en-US', { maximumFractionDigits: 0 }) }
-function fmtNum(v: any) { return Number(v || 0).toLocaleString('es-MX') }
-function fmtDate(v: any) {
+function fmtUSD(v: string | number | null | undefined) { return '$' + Number(v || 0).toLocaleString('en-US', { maximumFractionDigits: 0 }) }
+function fmtNum(v: string | number | null | undefined) { return Number(v || 0).toLocaleString('es-MX') }
+function fmtDate(v: string | number | null | undefined) {
   if (!v) return ''
   return new Date(v).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })
 }
 
-const STATUS_CFG: Record<string, any> = {
+const STATUS_CFG: Record<string, { color: string; bg: string }> = {
   'En Proceso': { color: 'var(--amber-text, #92400E)', bg: '#FEF3C7' },
   'Cruzado':    { color: 'var(--success-dark, #166534)', bg: '#DCFCE7' },
   'Detenido':   { color: 'var(--danger-text, #991B1B)', bg: '#FEE2E2' },
 }
 
 export function TraficoDetail({ traficoId, onClose }: { traficoId: string; onClose: () => void }) {
-  const [data, setData] = useState<any>(null)
+  interface FacturaItem { pedimento?: string; referencia?: string; valor_usd?: number; proveedor?: string; tipo_cambio?: number; dta?: number; igi?: number; iva?: number }
+  interface EntradaItem { cve_entrada?: string; fecha_llegada_mercancia?: string; descripcion_mercancia?: string; bultos?: number; peso_bruto?: number; transporte?: string; guia?: string; cantidad_bultos?: number; tiene_faltantes?: boolean; mercancia_danada?: boolean }
+  interface DocItem { doc_type?: string; doc_name?: string; file_url?: string }
+  interface TraficoData { trafico?: string; estatus?: string; pedimento?: string; descripcion_mercancia?: string; fecha_llegada?: string; fecha_pago?: string; fecha_cruce?: string; peso_bruto?: number; importe_total?: number; proveedor?: string; tipo_cambio?: number; transportista_extranjero?: string; transportista_mexicano?: string; embarque?: string; oficina?: string }
+  const [data, setData] = useState<{ trafico?: TraficoData; facturas?: FacturaItem[]; entradas?: EntradaItem[]; documents?: DocItem[] } | null>(null)
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('overview')
 
@@ -42,10 +46,10 @@ export function TraficoDetail({ traficoId, onClose }: { traficoId: string; onClo
   const facturas = data?.facturas || []
   const entradas = data?.entradas || []
   const documents = data?.documents || []
-  const totalValor = facturas.reduce((s: number, f: any) => s + (f.valor_usd || 0), 0)
-  const totalGravamen = facturas.reduce((s: number, f: any) =>
+  const totalValor = facturas.reduce((s: number, f: FacturaItem) => s + (f.valor_usd || 0), 0)
+  const totalGravamen = facturas.reduce((s: number, f: FacturaItem) =>
     s + (f.dta || 0) + (f.igi || 0) + (f.iva || 0), 0)
-  const status = t?.estatus
+  const status = t?.estatus ?? ''
   const statusCfg = STATUS_CFG[status] || { color: T.textMuted, bg: T.surfaceAlt }
 
   const TABS = ['overview', 'facturas', 'entradas', 'documentos']
@@ -173,7 +177,7 @@ export function TraficoDetail({ traficoId, onClose }: { traficoId: string; onClo
                   </div>
                 ) : (
                   <div>
-                    {facturas.map((f: any, i: number) => (
+                    {facturas.map((f: FacturaItem, i: number) => (
                       <div key={i} style={{ background: T.surfaceAlt, border: `1px solid ${T.border}`,
                         borderRadius: 8, padding: 14, marginBottom: 10 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
@@ -206,7 +210,7 @@ export function TraficoDetail({ traficoId, onClose }: { traficoId: string; onClo
                   </div>
                 ) : (
                   <div>
-                    {entradas.map((e: any, i: number) => (
+                    {entradas.map((e: EntradaItem, i: number) => (
                       <div key={i} style={{ background: T.surfaceAlt, border: `1px solid ${T.border}`,
                         borderRadius: 8, padding: 12, marginBottom: 8 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
@@ -238,7 +242,7 @@ export function TraficoDetail({ traficoId, onClose }: { traficoId: string; onClo
                       <div style={{ fontSize: 12 }}>Sube documentos en la vista Expedientes</div>
                     </div>
                   ) : (
-                    documents.map((d: any, i: number) => (
+                    documents.map((d: DocItem, i: number) => (
                       <div key={i} style={{ display: 'flex', justifyContent: 'space-between',
                         alignItems: 'center', padding: '10px 0', borderBottom: `1px solid ${T.border}` }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

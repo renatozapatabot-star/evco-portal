@@ -17,8 +17,10 @@ export default function AccionesPage() {
   const isMobile = useIsMobile()
   const router = useRouter()
   const { toast } = useToast()
-  const [traficos, setTraficos] = useState<any[]>([])
-  const [entradas, setEntradas] = useState<any[]>([])
+  interface TraficoRow { trafico: string; estatus?: string; pedimento?: string; fecha_llegada?: string; fecha_cruce?: string; descripcion_mercancia?: string; [key: string]: unknown }
+  interface EntradaRow { cve_entrada: string; fecha_llegada_mercancia?: string; mercancia_danada?: boolean; tiene_faltantes?: boolean; [key: string]: unknown }
+  const [traficos, setTraficos] = useState<TraficoRow[]>([])
+  const [entradas, setEntradas] = useState<EntradaRow[]>([])
   const [loading, setLoading] = useState(true)
   const [done, setDone] = useState<Set<string>>(new Set())
   const mveDays = daysUntilMVE()
@@ -32,14 +34,15 @@ export default function AccionesPage() {
     ]).then(([t, e]) => {
       setTraficos(t.data ?? [])
       setEntradas(e.data ?? [])
-    }).catch((err: unknown) => { void 0 }).finally(() => setLoading(false))
+    }).catch((err: unknown) => console.error('[acciones] fetch failed:', (err as Error).message)).finally(() => setLoading(false))
   }, [])
 
   const actions = useMemo(() => {
     const now = Date.now()
-    const urgent: any[] = []
-    const today: any[] = []
-    const week: any[] = []
+    interface ActionItem { id: string; icon: typeof AlertTriangle; color: string; label: string; sub: string; href: string }
+    const urgent: ActionItem[] = []
+    const today: ActionItem[] = []
+    const week: ActionItem[] = []
 
     // MVE pending
     const mvePending = traficos.filter(t => (t.estatus || '').toLowerCase().includes('proceso') && !t.pedimento)
@@ -57,7 +60,7 @@ export default function AccionesPage() {
     }
 
     // Damaged entries
-    const damaged = entradas.filter((e: any) => e.mercancia_danada || e.tiene_faltantes)
+    const damaged = entradas.filter((e) => e.mercancia_danada || e.tiene_faltantes)
     if (damaged.length > 0) {
       urgent.push({ id: 'danos', icon: Package, color: 'var(--danger)', label: `${damaged.length} entradas con incidencia`, sub: 'Mercancía dañada o faltante', href: '/entradas' })
     }

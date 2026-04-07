@@ -13,7 +13,7 @@ export function BridgeTimes() {
       try {
         const res = await fetch('/api/bridge-times')
         setData(await res.json())
-      } catch {}
+      } catch (e) { console.error('[bridge-times] load failed:', (e as Error).message) }
       setLoading(false)
     }
     load()

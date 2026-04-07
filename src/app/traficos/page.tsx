@@ -134,7 +134,7 @@ function TraficosContent() {
         })
         setDocCountMap(map)
       })
-      .catch((err: unknown) => { void 0 })
+      .catch((err: unknown) => console.error('[traficos] doc count fetch:', (err as Error).message))
 
     // Risk scores
     const riskParams = new URLSearchParams({ table: 'pedimento_risk_scores', limit: '2000', order_by: 'calculated_at', order_dir: 'desc' })
@@ -145,7 +145,7 @@ function TraficosContent() {
         const arr = Array.isArray(d.data) ? d.data : []
         arr.forEach((r: Record<string, unknown>) => { if (r.trafico_id && !map.has(r.trafico_id as string)) map.set(r.trafico_id as string, r) })
         setRiskMap(map)
-      }).catch((err: unknown) => { void 0 })
+      }).catch((err: unknown) => console.error('[traficos] risk scores fetch:', (err as Error).message))
 
     // Partida descriptions (pedimento merchandise)
     const partidaParams = new URLSearchParams({ table: 'globalpc_partidas', select: 'cve_trafico,descripcion', limit: '5000' })
@@ -157,7 +157,7 @@ function TraficosContent() {
           if (p.cve_trafico && p.descripcion && !map.has(p.cve_trafico)) map.set(p.cve_trafico, p.descripcion)
         })
         setPartidaDescMap(map)
-      }).catch((err: unknown) => { void 0 })
+      }).catch((err: unknown) => console.error('[traficos] partidas fetch:', (err as Error).message))
   }, [cookiesReady, companyId, clientClave, userRole])
 
   // Stat bar filter state (must be before filtered useMemo)

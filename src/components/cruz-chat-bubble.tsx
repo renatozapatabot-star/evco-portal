@@ -179,7 +179,7 @@ export function CruzChatBubble() {
     recognition.onerror = () => setListening(false)
     recognition.onend = () => setListening(false)
     recognition.start(); setListening(true)
-    setTimeout(() => { try { recognition.stop() } catch {} setListening(false) }, 10000)
+    setTimeout(() => { try { recognition.stop() } catch (e) { console.error('[chat-bubble] recognition stop:', (e as Error).message) } setListening(false) }, 10000)
   }
   const stopVoice = () => { recognitionRef.current?.stop(); setListening(false) }
 
@@ -195,7 +195,7 @@ export function CruzChatBubble() {
 
   const saveFeedback = async (msgId: string, helpful: boolean) => {
     setMessages(prev => prev.map(m => m.id === msgId ? { ...m, feedback: helpful } : m))
-    try { await csrfFetch('/api/cruz-feedback', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sessionId, helpful }) }) } catch {}
+    try { await csrfFetch('/api/cruz-feedback', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sessionId, helpful }) }) } catch (e) { console.error('[chat-bubble] feedback failed:', (e as Error).message) }
   }
 
   const linkifyEntities = (text: string): React.ReactNode[] => {

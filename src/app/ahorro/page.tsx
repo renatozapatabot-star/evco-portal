@@ -71,7 +71,7 @@ export default function AhorroPage() {
     fetch('/api/cost-insights')
       .then(r => r.json())
       .then(d => setData(d.data || null))
-      .catch(() => {})
+      .catch((err) => console.error('[ahorro] fetch failed:', err.message))
       .finally(() => setLoading(false))
   }, [isAdmin])
 

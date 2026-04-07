@@ -40,7 +40,7 @@ export function AlertsPanel() {
         if (overdue.length > 0) a.push({ id: 'overdue', severity: 'yellow', label: 'Overdue +7d', count: overdue.length, href: '/traficos' })
         a.sort((x, y) => (x.severity === 'red' ? 0 : 1) - (y.severity === 'red' ? 0 : 1))
         setAlerts(a)
-      } catch {} setLoading(false)
+      } catch (e) { console.error('[alerts-panel] load failed:', (e as Error).message) } setLoading(false)
     }
     load()
   }, [])

@@ -16,7 +16,7 @@ async function sendTelegram(msg: string) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ chat_id: TELEGRAM_CHAT, text: msg, parse_mode: 'HTML' }),
-  }).catch(() => {})
+  }).catch((err) => console.error('[upload] telegram notify:', err.message))
 }
 
 const ALLOWED_TYPES = new Set([
@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
       .eq('trafico_id', traficoId)
       .eq('doc_type', docType)
       .eq('status', 'solicitado')
-      .then(() => {}, () => {})
+      .then(() => {}, (e) => console.error('[audit-log] upload solicitud:', e.message))
 
     // Audit log
     supabase.from('audit_log').insert({
@@ -125,7 +125,7 @@ export async function POST(request: NextRequest) {
       resource_id: traficoId,
       diff: { doc_type: docType, file_name: file.name, company_id: companyId },
       created_at: new Date().toISOString(),
-    }).then(() => {}, () => {})
+    }).then(() => {}, (e) => console.error('[audit-log] upload doc:', e.message))
 
     // Telegram notification
     sendTelegram(

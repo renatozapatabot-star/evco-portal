@@ -54,7 +54,7 @@ export function IntelligenceTicker() {
         ticker.push({ text: `📊 Aduana 240 Nuevo Laredo · Patente 3596`, href: '/admin' })
 
         setItems(ticker)
-      } catch {}
+      } catch (e) { console.error('[intelligence-ticker] load failed:', (e as Error).message) }
     }
     load()
     const interval = setInterval(load, 60000)

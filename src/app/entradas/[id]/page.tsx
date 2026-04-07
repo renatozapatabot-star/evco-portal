@@ -87,10 +87,10 @@ export default function EntradaDetailPage() {
               const arr = pd.data ?? []
               if (arr[0]?.descripcion) setPartidaDesc(arr[0].descripcion)
             })
-            .catch(() => {})
+            .catch((err) => console.error('[entrada-detail] partida fetch:', err.message))
         }
       })
-      .catch(() => {})
+      .catch((err) => console.error('[entrada-detail] main fetch:', err.message))
       .finally(() => setLoading(false))
   }, [id])
 

@@ -72,7 +72,7 @@ export default function ResultadosPage() {
           clientCount: clients.size,
         })
       })
-      .catch(() => {})
+      .catch((err) => console.error('[resultados] fetch failed:', err.message))
       .finally(() => setLoading(false))
   }, [])
 

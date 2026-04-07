@@ -56,7 +56,7 @@ export default function PlantillasDocPage() {
     fetch('/api/doc-templates')
       .then(r => r.json())
       .then(d => setData(d.data || null))
-      .catch(() => {})
+      .catch((err) => console.error('[plantillas-doc] fetch failed:', err.message))
       .finally(() => setLoading(false))
   }, [isAdmin])
 

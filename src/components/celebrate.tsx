@@ -40,7 +40,7 @@ export function useConfetti() {
       if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
         navigator.vibrate([15, 50, 15])
       }
-    } catch {}
+    } catch (e) { console.error('[celebrate] confetti failed:', (e as Error).message) }
   }, [])
 
   return fire

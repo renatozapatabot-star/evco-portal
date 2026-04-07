@@ -14,7 +14,7 @@ export function NotificationsDropdown() {
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    try { const saved = localStorage.getItem('cruz-notif-read'); if (saved) setReadIds(new Set(JSON.parse(saved))) } catch {}
+    try { const saved = localStorage.getItem('cruz-notif-read'); if (saved) setReadIds(new Set(JSON.parse(saved))) } catch (e) { console.error('[notifications] localStorage parse:', (e as Error).message) }
   }, [])
 
   useEffect(() => {
@@ -67,7 +67,7 @@ export function NotificationsDropdown() {
           }))
 
         setItems(notifs.map(n => ({ ...n, read: readIds.has(n.id) })))
-      } catch {}
+      } catch (e) { console.error('[notifications] load failed:', (e as Error).message) }
     }
     load()
 

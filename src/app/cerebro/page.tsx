@@ -73,7 +73,7 @@ export default function CerebroPage() {
       setDecisions(decData.data || [])
       setPatterns((patData.data || []).filter((p: Pattern) => p.active))
       setAssumptions(assData.data || [])
-    }).catch(() => {})
+    }).catch((err) => console.error('[cerebro] fetch failed:', err.message))
       .finally(() => setLoading(false))
   }, [isAdmin])
 

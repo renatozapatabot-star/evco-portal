@@ -110,7 +110,7 @@ export function ComplianceCalendar() {
 
         setDeadlines(items)
       })
-      .catch(() => {})
+      .catch((err) => console.error('[compliance-calendar] fetch failed:', err.message))
       .finally(() => setLoading(false))
   }, [])
 

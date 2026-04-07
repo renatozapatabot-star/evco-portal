@@ -68,7 +68,7 @@ export default function RiesgoAuditoriaPage() {
         setCurrent(d.data?.current || null)
         setHistory(d.data?.history || [])
       })
-      .catch(() => {})
+      .catch((err) => console.error('[riesgo-auditoria] fetch failed:', err.message))
       .finally(() => setLoading(false))
   }, [isAdmin])
 

@@ -104,7 +104,7 @@ export function useWhisper(page: PageName): string | null {
             break
           }
         }
-      } catch {}
+      } catch (e) { console.error('[use-whisper] insight compute:', (e as Error).message) }
     }
 
     compute()

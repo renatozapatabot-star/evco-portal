@@ -92,7 +92,7 @@ export default function ComunicacionesPage() {
       const res = await fetch(`/api/gmail?action=read&id=${id}`)
       const json = await res.json()
       setSelectedEmail(json.data || null)
-    } catch {}
+    } catch (e) { console.error('[comunicaciones] email read failed:', (e as Error).message) }
     setEmailLoading(false)
   }
 
@@ -159,7 +159,7 @@ export default function ComunicacionesPage() {
       })
       const data = await res.json()
       setBody(data.content || data.message || body)
-    } catch {}
+    } catch (e) { console.error('[comunicaciones] AI draft failed:', (e as Error).message) }
     setDrafting(false)
   }
 

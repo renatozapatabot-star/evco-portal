@@ -56,7 +56,7 @@ export default function AgentePage() {
 
         setStats({ total, autonomous, pending, accuracy })
       })
-      .catch(() => {})
+      .catch((err) => console.error('[agente] fetch failed:', err.message))
       .finally(() => setLoading(false))
   }, [isAdmin])
 

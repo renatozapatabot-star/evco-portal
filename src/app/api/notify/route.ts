@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
     },
     actor: userRole,
     timestamp: new Date().toISOString(),
-  }).then(() => {}, () => {})
+  }).then(() => {}, (e) => console.error('[audit-log] notify:', e.message))
 
   if (!sent) {
     return NextResponse.json({

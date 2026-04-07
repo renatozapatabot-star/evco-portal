@@ -45,13 +45,13 @@ export default function MvePage() {
     fetch(`/api/data?table=traficos&company_id=${companyId}&limit=5000&order_by=fecha_llegada&order_dir=desc`)
       .then(r => r.json())
       .then(data => setRows(data.data ?? []))
-      .catch((err: unknown) => { void 0 })
+      .catch((err: unknown) => console.error('[mve] traficos fetch failed:', (err as Error).message))
       .finally(() => setLoading(false))
     // Compliance predictions for MVE
     fetch(`/api/data?table=compliance_predictions&company_id=${companyId}&limit=50&order_by=severity&order_dir=asc`)
       .then(r => r.json())
       .then(d => setCompAlerts((d.data ?? []).filter((a: Record<string, unknown>) => !a.resolved)))
-      .catch((err: unknown) => { void 0 })
+      .catch((err: unknown) => console.error('[mve] compliance fetch failed:', (err as Error).message))
     // Fetch MVE deadline from deadlines table (not hardcoded)
     fetch(`/api/data?table=deadlines&company_id=${companyId}&limit=10&order_by=deadline&order_dir=desc`)
       .then(r => r.json())
@@ -60,7 +60,7 @@ export default function MvePage() {
         const mve = deadlines.find((dl: Record<string, unknown>) => dl.type === 'MVE')
         if (mve?.deadline) setMveDeadline(new Date(mve.deadline as string))
       })
-      .catch((err: unknown) => { void 0 })
+      .catch((err: unknown) => console.error('[mve] deadlines fetch failed:', (err as Error).message))
   }, [])
 
   const { pending, compliant } = useMemo(() => {

@@ -1,24 +1,40 @@
 'use client'
 import { memo } from 'react'
 import { fmtId, fmtDesc, fmtKg, fmtUSD, fmtDate } from '@/lib/format-utils'
+import { getTraficoUrgency } from '@/lib/trafico-urgency'
 
-interface Props { trafico: { trafico: string; estatus?: string | null; descripcion_mercancia?: string | null; pedimento?: string | null; fecha_llegada?: string | null; peso_bruto?: number | null; importe_total?: number | null; [key: string]: unknown }; onClick: () => void }
+interface Props { trafico: { trafico: string; estatus?: string | null; descripcion_mercancia?: string | null; pedimento?: string | null; fecha_llegada?: string | null; peso_bruto?: number | null; importe_total?: number | null; doc_count?: number; [key: string]: unknown }; onClick: () => void }
+
+const URGENCY_BADGE: Record<string, string> = {
+  completed: 'badge-success',
+  active: 'badge-warning',
+  overdue: 'badge-danger',
+  stalled: 'badge-danger',
+  zombie: 'badge-muted',
+}
 
 export const MobileTraficoCard = memo(function MobileTraficoCard({ trafico: r, onClick }: Props) {
-  const isCruzado = (r.estatus ?? '').toLowerCase().includes('cruz')
-  const isHold = (r.estatus ?? '').toLowerCase().includes('hold') || (r.estatus ?? '').toLowerCase().includes('deten')
-  const dotClass = isCruzado ? 'm-card-dot--success' : isHold ? 'm-card-dot--danger' : 'm-card-dot--warning'
+  const urgency = getTraficoUrgency({
+    estatus: r.estatus ?? '',
+    fecha_llegada: r.fecha_llegada ?? null,
+    pedimento: r.pedimento,
+    doc_count: r.doc_count,
+  })
+  const badgeClass = URGENCY_BADGE[urgency.class] ?? 'badge-warning'
+  const dotClass = urgency.class === 'completed' ? 'm-card-dot--success'
+    : urgency.class === 'active' ? 'm-card-dot--warning'
+    : 'm-card-dot--danger'
 
   return (
-    <button className="m-card" onClick={onClick}>
+    <button className="m-card" onClick={onClick} style={{ borderLeft: `3px solid ${urgency.color}` }}>
       <div className="m-card-top">
         <div className="m-card-id-group">
           <span className={`m-card-dot ${dotClass}`} />
           <span className="m-card-id">{fmtId(r.trafico)}</span>
         </div>
         <div className="m-card-right">
-          <span className={`badge ${isCruzado ? 'badge-success' : isHold ? 'badge-danger' : 'badge-warning'}`} style={{ height: 20, fontSize: 11 }}>
-            <span className="badge-dot" /><span className="sr-only">Estado: </span>{isCruzado ? 'Cruzado' : isHold ? 'Detenido' : 'Proceso'}
+          <span className={`badge ${badgeClass}`} style={{ height: 20, fontSize: 11 }}>
+            <span className="badge-dot" /><span className="sr-only">Estado: </span>{urgency.label}
           </span>
         </div>
       </div>

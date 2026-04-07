@@ -63,7 +63,7 @@ export function SmartAlerts() {
 
         setAlerts(smartAlerts)
       })
-      .catch(() => {})
+      .catch((err) => console.error('[smart-alerts] fetch failed:', err.message))
   }, [])
 
   const visible = alerts.filter(a => !dismissed.has(a.trafico))

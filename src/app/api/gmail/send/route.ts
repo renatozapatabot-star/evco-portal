@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
       action: 'gmail_send',
       details: { to, subject: subject || '(no subject)', messageId: result.id },
       user_id: session.companyId,
-    }).then(() => {}, () => {})
+    }).then(() => {}, (e) => console.error('[audit-log] gmail send:', e.message))
 
     return NextResponse.json({ data: { id: result.id, threadId: result.threadId } })
   } catch (err: unknown) {

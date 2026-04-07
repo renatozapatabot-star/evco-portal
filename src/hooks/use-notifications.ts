@@ -44,7 +44,7 @@ export function useNotificationBadge() {
         const unread = notifs.filter((n: { read: boolean }) => !n.read).length
         setCount(unread)
       })
-      .catch(() => {})
+      .catch((err) => console.error('[use-notifications] fetch failed:', err.message))
   }, [companyId])
 
   // Realtime subscription

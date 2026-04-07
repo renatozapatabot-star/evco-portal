@@ -84,7 +84,7 @@ function BrokerCumplimientoView() {
           }))
         setUsmcaExpiring(expiring)
       })
-      .catch((err: unknown) => { void 0 })
+      .catch((err: unknown) => console.error('[cumplimiento] fetch failed:', (err as Error).message))
       .finally(() => setLoading(false))
   }, [])
 

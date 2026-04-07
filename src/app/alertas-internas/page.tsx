@@ -87,7 +87,7 @@ export default function AlertasInternasPage() {
       details: { anomaly_id: id },
       actor: getCookieValue('user_role') || 'admin',
       timestamp: new Date().toISOString(),
-    }).then(() => {}, () => {})
+    }).then(() => {}, (e) => console.error('[alertas-internas] audit log:', e.message))
     setAnomalies(prev => prev.map(a => a.id === id ? { ...a, resolved_at: new Date().toISOString() } : a))
     setResolving(null)
   }

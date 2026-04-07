@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
       status: 'initiated',
       company_id: session.companyId,
       created_at: new Date().toISOString(),
-    }).then(() => {}, () => {})
+    }).then(() => {}, (e) => console.error('[audit-log] voice call:', e.message))
 
     return NextResponse.json({
       data: {

@@ -88,7 +88,7 @@ export default function ExcepcionesPage() {
     fetch('/api/exceptions')
       .then(r => r.json())
       .then(d => setData(d.data || null))
-      .catch(() => {})
+      .catch((err) => console.error('[excepciones] fetch failed:', err.message))
       .finally(() => setLoading(false))
   }, [isAdmin])
 

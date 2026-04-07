@@ -141,20 +141,19 @@ export function TopNav() {
   /* ─── Desktop: slim 44px top bar (right-side icons only) ─── */
   return (
     <>
-      <nav className="tn-bar" aria-label="Barra de herramientas">
+      <nav className="tn-bar" aria-label="Barra de herramientas" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         {/* Search trigger */}
         <div
           className="tn-search-trigger"
+          style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}
           onClick={() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }))}
         >
-          <Search size={14} style={{ color: '#9C9890' }} />
+          <Search size={14} style={{ color: '#9C9890', flexShrink: 0 }} />
           <span style={{ fontSize: 12, color: '#9C9890' }}>Buscar tráfico, pedimento... &#8984;K</span>
         </div>
 
-        <div style={{ flex: 1 }} />
-
         {/* Right icons */}
-        <div className="tn-right">
+        <div className="tn-right" style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
           {syncLabel && (
             <div className="tn-sync-indicator">
               <span

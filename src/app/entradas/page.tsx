@@ -23,6 +23,8 @@ interface EntradaRow {
   peso_bruto?: number | null
   num_talon?: string | null
   num_caja_trailer?: string | null
+  transportista_mexicano?: string | null
+  transportista_americano?: string | null
   [key: string]: unknown
 }
 
@@ -43,7 +45,7 @@ export default function EntradasPage() {
   const [search, setSearch] = useState('')
   const { sort, toggleSort } = useSort('entradas', { column: 'fecha_llegada_mercancia', direction: 'desc' })
   const [page, setPage] = useState(0)
-  const [partidaDescMap, setPartidaDescMap] = useState<Map<string, string>>(new Map())
+  const [traficoDescMap, setTraficoDescMap] = useState<Map<string, string>>(new Map())
   const [transportMap, setTransportMap] = useState<Map<string, string>>(new Map())
   const { getCached, setCache } = useSessionCache()
 
@@ -74,32 +76,23 @@ export default function EntradasPage() {
       })
       .finally(() => setLoading(false))
 
-    // Partida descriptions (pedimento merchandise)
-    const partidaParams = new URLSearchParams({ table: 'globalpc_partidas', select: 'cve_trafico,descripcion', limit: '5000' })
-    fetch(`/api/data?${partidaParams}`)
-      .then(r => r.json()).then(d => {
-        const map = new Map<string, string>()
-        const arr = Array.isArray(d.data) ? d.data : []
-        arr.forEach((p: { cve_trafico?: string; descripcion?: string }) => {
-          if (p.cve_trafico && p.descripcion && !map.has(p.cve_trafico)) map.set(p.cve_trafico, p.descripcion)
-        })
-        setPartidaDescMap(map)
-      }).catch((err) => console.error('[entradas] partidas fetch:', err.message))
-
-    // Traficos for transport data
-    const tParams = new URLSearchParams({ table: 'traficos', select: 'trafico,transportista_mexicano,transportista_americano', limit: '5000' })
+    // Traficos for descriptions + transport data (single fetch)
+    const tParams = new URLSearchParams({ table: 'traficos', select: 'trafico,descripcion_mercancia,transportista_mexicano,transportista_americano', limit: '5000' })
     if (!isInternal && companyId) tParams.set('company_id', companyId)
     fetch(`/api/data?${tParams}`)
       .then(r => r.json()).then(d => {
-        const map = new Map<string, string>()
+        const descMap = new Map<string, string>()
+        const transMap = new Map<string, string>()
         const arr = Array.isArray(d.data) ? d.data : []
-        arr.forEach((t: { trafico?: string; transportista_mexicano?: string; transportista_americano?: string }) => {
-          if (t.trafico && !map.has(t.trafico)) {
-            map.set(t.trafico, t.transportista_mexicano || t.transportista_americano || '')
+        arr.forEach((t: { trafico?: string; descripcion_mercancia?: string; transportista_mexicano?: string; transportista_americano?: string }) => {
+          if (t.trafico) {
+            if (t.descripcion_mercancia && !descMap.has(t.trafico)) descMap.set(t.trafico, t.descripcion_mercancia)
+            if (!transMap.has(t.trafico)) transMap.set(t.trafico, t.transportista_mexicano || t.transportista_americano || '')
           }
         })
-        setTransportMap(map)
-      }).catch((err) => console.error('[entradas] transport fetch:', err.message))
+        setTraficoDescMap(descMap)
+        setTransportMap(transMap)
+      }).catch(() => {})
   }, [])
 
   const filtered = (() => {
@@ -127,20 +120,28 @@ export default function EntradasPage() {
   const SortArrow = ({ col }: { col: string }) =>
     sort.column === col ? <span style={{ marginLeft: 4, fontSize: 10 }}>{sort.direction === 'asc' ? '↑' : '↓'}</span> : null
 
-  const getDesc = (r: EntradaRow) => {
+  // Resolve transporte: traficos lookup → entrada's own transport fields
+  const getTransporte = (r: EntradaRow): string => {
+    // First try the traficos join lookup
     if (r.trafico) {
-      const partidaDesc = partidaDescMap.get(r.trafico)
-      if (partidaDesc) return fmtDesc(partidaDesc)
+      const fromTrafico = fmtCarrier(transportMap.get(r.trafico) || '')
+      if (fromTrafico) return fromTrafico
     }
-    if (r.descripcion_mercancia) return fmtDesc(r.descripcion_mercancia)
-    return null
+    // Fallback to the entrada's own transport fields
+    const direct = fmtCarrier(r.transportista_mexicano || r.transportista_americano || '')
+    return direct
+  }
+
+  const getDesc = (r: EntradaRow) => {
+    const entradaDesc = r.descripcion_mercancia || ''
+    const traficoDesc = r.trafico ? (traficoDescMap.get(r.trafico) || '') : ''
+    // Pick the longer description — more specific
+    const best = entradaDesc.length >= traficoDesc.length ? entradaDesc : traficoDesc
+    return best ? fmtDesc(best) : null
   }
 
   return (
     <div className="page-shell">
-      {/* Title removed — sidebar indicates current page */}
-
-      {/* Title removed — sidebar indicates current page */}
 
       <div className="table-shell">
         <div className="table-toolbar" style={{ justifyContent: 'flex-end' }}>
@@ -203,7 +204,7 @@ export default function EntradasPage() {
                   </span>
                 </div>
                 <div style={{ fontSize: 13, color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {getDesc(r) || <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }} title="Sin tráfico asignado">Pendiente tráfico</span>}
+                  {getDesc(r) || <span style={{ color: 'var(--text-muted)' }}>—</span>}
                 </div>
               </div>
             ))}
@@ -213,17 +214,17 @@ export default function EntradasPage() {
         {/* Desktop table */}
         {!loading && paged.length > 0 && !isMobile && (
           <div style={{ maxHeight: 'calc(100vh - 240px)', overflowY: 'auto', overflowX: 'auto' }}>
-            <table className="cruz-table" role="table" aria-label="Lista de entradas" style={{ minWidth: 700 }}>
+            <table className="cruz-table" role="table" aria-label="Lista de entradas" style={{ minWidth: 960 }}>
               <thead>
                 <tr>
                   <th style={{ cursor: 'pointer', width: 120 }} onClick={() => toggleSort('cve_entrada')}>Entrada<SortArrow col="cve_entrada" /></th>
                   <th style={{ width: 140 }}>Tráfico</th>
                   <th style={{ cursor: 'pointer', width: 110 }} onClick={() => toggleSort('fecha_llegada_mercancia')}>Fecha<SortArrow col="fecha_llegada_mercancia" /></th>
-                  <th>Descripción</th>
+                  <th style={{ minWidth: 200 }}>Descripción</th>
                   <th style={{ textAlign: 'right', cursor: 'pointer', width: 80 }} onClick={() => toggleSort('cantidad_bultos')}>Bultos<SortArrow col="cantidad_bultos" /></th>
                   <th style={{ textAlign: 'right', cursor: 'pointer', width: 100 }} onClick={() => toggleSort('peso_bruto')}>Peso (kg)<SortArrow col="peso_bruto" /></th>
                   <th style={{ width: 130 }}>Transporte</th>
-                  <th style={{ width: 110 }}>Guía</th>
+                  <th style={{ minWidth: 140 }}>Guía</th>
                 </tr>
               </thead>
               <tbody>
@@ -249,14 +250,14 @@ export default function EntradasPage() {
                           {fmtTrafico(r.trafico)}
                         </Link>
                       ) : (
-                        <span style={{ fontSize: 13, color: 'var(--text-muted)', fontStyle: 'italic' }}>Pendiente</span>
+                        <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>—</span>
                       )}
                     </td>
                     <td style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--text-secondary)' }}>
                       {r.fecha_llegada_mercancia ? <time dateTime={r.fecha_llegada_mercancia.split('T')[0]}>{fmtDate(r.fecha_llegada_mercancia)}</time> : <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Pendiente</span>}
                     </td>
                     <td className="desc-text" style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-                      {getDesc(r) || <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }} title="Sin tráfico asignado">Pendiente tráfico</span>}
+                      {getDesc(r) || <span style={{ color: 'var(--text-muted)' }}>—</span>}
                     </td>
                     <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--text-secondary)' }}>
                       {r.cantidad_bultos ?? <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Pendiente</span>}
@@ -265,7 +266,7 @@ export default function EntradasPage() {
                       {r.peso_bruto ? `${Number(r.peso_bruto).toLocaleString('es-MX')}` : <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Pendiente</span>}
                     </td>
                     <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
-                      {r.trafico ? fmtCarrier(transportMap.get(r.trafico) || '') || <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Pendiente</span> : <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Pendiente</span>}
+                      {getTransporte(r) || <span style={{ color: 'var(--text-muted)' }}>—</span>}
                     </td>
                     <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-muted)' }}>
                       {r.num_talon || r.num_caja_trailer || <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Pendiente</span>}

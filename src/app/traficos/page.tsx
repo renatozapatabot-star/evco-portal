@@ -259,7 +259,7 @@ function TraficosContent() {
         <div className="table-toolbar" style={{ justifyContent: 'flex-end' }}>
           <div className="toolbar-search">
             <Search size={12} style={{ color: 'var(--slate-400)', flexShrink: 0 }} />
-            <input placeholder="Tráfico, pedimento..." value={searchInput}
+            <input placeholder="Buscar tráfico, pedimento o referencia…" value={searchInput}
               onChange={e => setSearchInput(e.target.value)} aria-label="Buscar tráficos" />
           </div>
           <button className="btn btn-outline btn-sm" onClick={() => exportCSV(filtered, 'todos', clientClave, companyId)}>

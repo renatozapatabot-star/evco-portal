@@ -14,7 +14,7 @@ import { Celebrate } from '@/components/celebrate'
 import { ErrorCard } from '@/components/ui/ErrorCard'
 import { DashboardSkeleton } from '@/components/skeletons/DashboardSkeleton'
 import { useSessionCache } from '@/hooks/use-session-cache'
-import { Truck, FolderOpen, DollarSign, ChevronRight } from 'lucide-react'
+import { Truck, FolderOpen, DollarSign, ChevronRight, CheckCircle2, Package } from 'lucide-react'
 
 const sbClient = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
@@ -300,8 +300,8 @@ export default function ClientInicioView() {
     ).length
 
     return [
-      { key: 'proceso', label: 'En Proceso', count: enProceso, color: 'var(--warning-500, #D97706)', href: '/traficos?estatus=En+Proceso' },
-      { key: 'pagado', label: 'Pagado', count: pagadoCount, color: 'var(--info, #2563EB)', href: '/traficos?estatus=Pagado' },
+      { key: 'proceso', label: 'En Proceso', count: enProceso, color: 'var(--warning, #D97706)', href: '/traficos?estatus=En+Proceso' },
+      { key: 'pagado', label: 'Pagado', count: pagadoCount, color: 'var(--gold)', href: '/traficos?estatus=Pagado' },
       { key: 'cruzado', label: 'Cruzado (7d)', count: cruzadoWeek, color: 'var(--success)', href: '/traficos?estatus=Cruzado' },
     ]
   }, [traficos, enProceso])
@@ -387,18 +387,14 @@ export default function ClientInicioView() {
     return <DashboardSkeleton isMobile={isMobile} />
   }
 
-  // Card subtitles — calm, one thing per section
-  const opsSubtitle = enProceso === 0 ? 'Todo en orden' : `${enProceso} en proceso`
-  const docsSubtitle = 'Todo al día'
-  const contaSubtitle = '0 pendientes'
-
+  // Nav cards with KPI numbers — the number IS the card
   const navCards = [
-    { href: '/traficos', label: 'Tráficos', subtitle: opsSubtitle, Icon: Truck, color: enProceso > 0 ? 'var(--gold)' : 'var(--success)' },
-    { href: '/entradas', label: 'Entradas', subtitle: `${pendingEntradas.length} sin asignar`, Icon: Truck, color: pendingEntradas.length > 0 ? 'var(--gold)' : 'var(--success)' },
-    { href: '/expedientes', label: 'Expedientes', subtitle: docsSubtitle, Icon: FolderOpen, color: 'var(--success)' },
-    { href: '/pedimentos', label: 'Pedimentos', subtitle: 'Declaraciones aduanales', Icon: FolderOpen, color: 'var(--success)' },
-    { href: '/financiero', label: 'Contabilidad', subtitle: contaSubtitle, Icon: DollarSign, color: 'var(--success)' },
-    { href: '/bodega', label: 'Inventario', subtitle: 'Mercancía en bodega', Icon: Truck, color: 'var(--success)' },
+    { href: '/traficos', label: 'Tráficos', kpi: enProceso, kpiLabel: 'en proceso', Icon: Truck, color: enProceso > 0 ? 'var(--warning)' : 'var(--success)', good: enProceso === 0 },
+    { href: '/entradas', label: 'Entradas', kpi: pendingEntradas.length, kpiLabel: 'sin asignar', Icon: Package, color: pendingEntradas.length > 0 ? 'var(--warning)' : 'var(--success)', good: pendingEntradas.length === 0 },
+    { href: '/expedientes', label: 'Expedientes', kpi: 0, kpiLabel: 'docs faltantes', Icon: FolderOpen, color: 'var(--success)', good: true },
+    { href: '/pedimentos', label: 'Pedimentos', kpi: null, kpiLabel: 'Declaraciones aduanales', Icon: FolderOpen, color: 'var(--text-muted)', good: false },
+    { href: '/financiero', label: 'Contabilidad', kpi: 0, kpiLabel: 'pendientes', Icon: DollarSign, color: 'var(--success)', good: true },
+    { href: '/bodega', label: 'Inventario', kpi: null, kpiLabel: 'Mercancía en bodega', Icon: Truck, color: 'var(--text-muted)', good: false },
   ]
 
   return (
@@ -418,8 +414,37 @@ export default function ClientInicioView() {
       {/* ── DATE HEADER ── */}
       <div style={{ padding: isMobile ? '24px 20px 16px' : '32px 20px 20px' }}>
         <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: 0, fontFamily: 'var(--font-mono)' }}>
-          {dateStr}
+          Hoy, {dateStr}
         </p>
+      </div>
+
+      {/* ── PIPELINE BAR ── */}
+      <div style={{
+        display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8,
+        padding: '0 20px', marginBottom: 16,
+      }}>
+        {pipeline.map(stage => (
+          <Link key={stage.key} href={stage.href} style={{ textDecoration: 'none' }}>
+            <div style={{
+              textAlign: 'center', padding: '12px 8px', borderRadius: 10,
+              background: 'var(--bg-card)', border: '1px solid var(--border)',
+              transition: 'border-color 150ms',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = stage.color }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)' }}
+            >
+              <div style={{
+                fontSize: 22, fontWeight: 800, fontFamily: 'var(--font-mono)',
+                color: stage.count > 0 ? stage.color : 'var(--text-muted)',
+              }}>
+                {stage.count}
+              </div>
+              <div style={{ fontSize: 11, color: 'var(--text-secondary)', fontWeight: 500, marginTop: 2 }}>
+                {stage.label}
+              </div>
+            </div>
+          </Link>
+        ))}
       </div>
 
       {/* ── WHILE YOU WERE AWAY ── */}
@@ -464,30 +489,44 @@ export default function ClientInicioView() {
         {navCards.map(card => (
           <Link key={card.href} href={card.href} style={{ textDecoration: 'none' }}>
             <div style={{
-              padding: isMobile ? '24px 28px' : '32px 28px',
+              padding: isMobile ? '16px 20px' : '24px 28px',
               borderRadius: 16,
               background: 'var(--bg-card)',
               border: '1px solid var(--border)',
               transition: 'border-color 150ms, box-shadow 150ms',
               cursor: 'pointer',
               display: 'flex',
-              flexDirection: isMobile ? 'row' : 'column',
-              alignItems: isMobile ? 'center' : 'flex-start',
-              gap: isMobile ? 16 : 12,
-              minHeight: isMobile ? 72 : 130,
+              alignItems: 'center',
+              gap: 14,
+              minHeight: isMobile ? 72 : 90,
             }}
             onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--gold)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(196,150,60,0.1)' }}
             onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.boxShadow = 'none' }}
             >
-              <card.Icon size={32} strokeWidth={1.5} style={{ color: 'var(--text-secondary)', flexShrink: 0 }} />
-              <div>
-                <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>
+              <card.Icon size={28} strokeWidth={1.5} style={{ color: 'var(--text-secondary)', flexShrink: 0 }} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>
                   {card.label}
                 </div>
-                <div style={{ fontSize: 14, color: card.color, fontWeight: 600, marginTop: 4 }}>
-                  {card.subtitle}
+                <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 2, display: 'flex', alignItems: 'center', gap: 4 }}>
+                  {card.good && card.kpi === 0 && (
+                    <CheckCircle2 size={12} style={{ color: 'var(--success)', flexShrink: 0 }} />
+                  )}
+                  <span style={{ color: card.color, fontWeight: 500 }}>
+                    {card.good && card.kpi === 0 ? 'Todo en orden' : card.kpiLabel}
+                  </span>
                 </div>
               </div>
+              {card.kpi !== null && (
+                <div style={{
+                  fontSize: 24, fontWeight: 800, fontFamily: 'var(--font-mono)',
+                  color: card.good && card.kpi === 0 ? 'var(--success)' : card.color,
+                  flexShrink: 0,
+                }}>
+                  {card.kpi}
+                </div>
+              )}
+              <ChevronRight size={18} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
             </div>
           </Link>
         ))}

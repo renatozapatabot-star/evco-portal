@@ -469,22 +469,24 @@ export function CruzChatBubble() {
         <button
           onClick={handleOpen}
           aria-label="Abrir CRUZ AI"
+          className="cruz-thought-bubble"
           style={{
             position: 'fixed',
-            bottom: isMobile ? 80 : 24,
+            bottom: isMobile ? 84 : 24,
             right: isMobile ? 16 : 24,
             zIndex: 60,
-            width: 56, height: 56, borderRadius: '50%',
+            width: 120, height: 64, borderRadius: 32,
             background: GOLD_GRADIENT,
             border: 'none', cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 4px 16px rgba(196,150,60,0.35)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+            boxShadow: '0 4px 20px rgba(196,150,60,0.4)',
             transition: 'transform 0.15s, box-shadow 0.15s',
           }}
-          onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.08)'; e.currentTarget.style.boxShadow = '0 6px 24px rgba(196,150,60,0.45)' }}
-          onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(196,150,60,0.35)' }}
+          onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.06)'; e.currentTarget.style.boxShadow = '0 6px 28px rgba(196,150,60,0.5)' }}
+          onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(196,150,60,0.4)' }}
         >
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 800, color: D.text, letterSpacing: '0.08em' }}>CRUZ</span>
+          <span style={{ fontSize: 16, lineHeight: 1 }}>&#10022;</span>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 800, color: D.text, letterSpacing: '0.06em' }}>CRUZ AI</span>
           {/* Unread indicator */}
           {hasUnread && (
             <div style={{
@@ -500,6 +502,29 @@ export function CruzChatBubble() {
         @keyframes cruz-typing-dot {
           0%, 60%, 100% { opacity: 0.2; transform: translateY(0); }
           30% { opacity: 1; transform: translateY(-3px); }
+        }
+        .cruz-thought-bubble { position: relative; }
+        .cruz-thought-bubble::before {
+          content: '';
+          position: absolute;
+          bottom: -8px;
+          right: 10px;
+          width: 14px;
+          height: 14px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #C4963C, #8B6914);
+          box-shadow: 0 2px 8px rgba(196,150,60,0.25);
+        }
+        .cruz-thought-bubble::after {
+          content: '';
+          position: absolute;
+          bottom: -18px;
+          right: 2px;
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #C4963C, #8B6914);
+          box-shadow: 0 2px 6px rgba(196,150,60,0.2);
         }
       `}</style>
     </>

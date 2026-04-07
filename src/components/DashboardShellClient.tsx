@@ -5,14 +5,13 @@ import { useEffect, useState, useRef } from 'react'
 import CruzLayout from './cruz/CruzLayout'
 import { CommandPalette } from './command-palette'
 import { ShortcutHelp } from './shortcut-help'
-import { ToastProvider } from './Toast'
+import { ToastProvider, useToast } from './Toast'
 import { useKeyboardShortcuts } from '@/hooks/use-shortcuts'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { usePullToRefresh } from '@/hooks/use-pull-refresh'
 import { MobileBottomNav } from './mobile-bottom-nav'
 import { WelcomeOverlay } from './WelcomeOverlay'
 import { CruzChatBubble } from './cruz-chat-bubble'
-import { SmartBar } from './ui/SmartBar'
 import { useOnboarding } from '@/hooks/use-onboarding'
 import { OnboardingHint } from './ui/OnboardingHint'
 import { getCookieValue } from '@/lib/client-config'
@@ -49,6 +48,20 @@ function PageTransition({ children }: { children: React.ReactNode }) {
       {children}
     </div>
   )
+}
+
+/** Listens for celebration events dispatched by use-notifications Realtime and triggers toasts. */
+function CelebrationListener() {
+  const { toast } = useToast()
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<{ title: string }>).detail
+      toast(detail.title, 'celebration')
+    }
+    window.addEventListener('cruz:celebration', handler)
+    return () => window.removeEventListener('cruz:celebration', handler)
+  }, [toast])
+  return null
 }
 
 /** Gold banner shown when broker is impersonating a client view. */
@@ -172,6 +185,7 @@ export default function DashboardShellClient({ children }: Props) {
 
   return (
     <ToastProvider>
+      <CelebrationListener />
       <a href="#main-content" className="skip-link">Ir al contenido</a>
 
       {/* Broker viewing-as banner */}
@@ -221,7 +235,6 @@ export default function DashboardShellClient({ children }: Props) {
 
       <CommandPalette />
       {!isMobile && <ShortcutHelp />}
-      <SmartBar />
       {/* Global onboarding hint (nav-targeted hints) */}
       {globalHint && globalHint.target.startsWith('nav_') && (
         <div style={{

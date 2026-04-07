@@ -460,10 +460,22 @@ async function autoCreateTrafico(extraction, classifications, contributions, con
 
 // ── Step 2: Filter — is this a shipment document? ───────────────────────────
 
+function isAutoReply(headers) {
+  for (const h of (headers || [])) {
+    const name = (h.name || '').toLowerCase()
+    const value = (h.value || '').toLowerCase()
+    if (name === 'auto-submitted' && value !== 'no') return true
+    if (name === 'x-auto-reply' && value === 'yes') return true
+    if (name === 'x-cruz-automated') return true
+    if (name === 'precedence' && (value === 'bulk' || value === 'junk' || value === 'auto_reply')) return true
+  }
+  return false
+}
+
 function isShipmentEmail(subject, sender) {
   const subjectLower = (subject || '').toLowerCase()
   // Skip non-invoice documents (warehouse receipts, status notifications)
-  const excludePatterns = ['entrada de bodega', 'reporte anexo', 'envío automático']
+  const excludePatterns = ['entrada de bodega', 'reporte anexo', 'envío automático', 'out of office', 'fuera de oficina', 'automatic reply', 'respuesta automática']
   if (excludePatterns.some(p => subjectLower.includes(p))) return false
 
   const keywords = [
@@ -493,6 +505,12 @@ async function processEmail(gmail, messageId, companyId) {
 
   console.log(`  From:    ${sender.substring(0, 60)}`)
   console.log(`  Subject: ${subject.substring(0, 70)}`)
+
+  // Step 1.5: Loop detection — skip auto-replies to prevent infinite loops
+  if (isAutoReply(headers)) {
+    console.log('  Auto-reply detected — skip (loop prevention)')
+    return null
+  }
 
   // Step 2: Filter — shipment document?
   if (!isShipmentEmail(subject, sender)) {

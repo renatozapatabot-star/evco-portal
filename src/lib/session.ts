@@ -1,5 +1,8 @@
-const SECRET = process.env.SESSION_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY
-if (!SECRET) throw new Error('CRUZ: SESSION_SECRET or SUPABASE_SERVICE_ROLE_KEY must be set')
+function getSecret(): string {
+  const secret = process.env.SESSION_SECRET
+  if (!secret) throw new Error('CRUZ: SESSION_SECRET must be set. Do NOT fall back to SUPABASE_SERVICE_ROLE_KEY.')
+  return secret
+}
 
 /**
  * HMAC-SHA256 using Web Crypto API (Edge Runtime compatible).
@@ -7,18 +10,20 @@ if (!SECRET) throw new Error('CRUZ: SESSION_SECRET or SUPABASE_SERVICE_ROLE_KEY 
 async function hmacSign(payload: string): Promise<string> {
   const enc = new TextEncoder()
   const key = await crypto.subtle.importKey(
-    'raw', enc.encode(SECRET), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+    'raw', enc.encode(getSecret()), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
   )
   const sig = await crypto.subtle.sign('HMAC', key, enc.encode(payload))
-  return Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 32)
+  return Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, '0')).join('')
 }
 
 async function hmacVerify(payload: string, signature: string): Promise<boolean> {
   const expected = await hmacSign(payload)
-  // Constant-time comparison
-  if (expected.length !== signature.length) return false
-  let mismatch = 0
-  for (let i = 0; i < expected.length; i++) mismatch |= expected.charCodeAt(i) ^ signature.charCodeAt(i)
+  // Constant-time comparison (no early exit on length mismatch)
+  const maxLen = Math.max(expected.length, signature.length)
+  let mismatch = expected.length ^ signature.length
+  for (let i = 0; i < maxLen; i++) {
+    mismatch |= (expected.charCodeAt(i) || 0) ^ (signature.charCodeAt(i) || 0)
+  }
   return mismatch === 0
 }
 

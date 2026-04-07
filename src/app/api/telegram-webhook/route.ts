@@ -267,6 +267,10 @@ export async function POST(request: NextRequest) {
 
   const update = await request.json()
 
+  // Idempotency: deduplicate Telegram retries (5-minute window)
+  const processedCallbacks = (globalThis as Record<string, unknown>).__cruzProcessedCallbacks as Map<string, number> ??
+    ((globalThis as Record<string, unknown>).__cruzProcessedCallbacks = new Map<string, number>())
+
   // Handle callback queries from inline keyboard buttons
   if (update.callback_query) {
     const cb = update.callback_query
@@ -274,6 +278,17 @@ export async function POST(request: NextRequest) {
     const userId = cb.from?.id
     const username = cb.from?.username || cb.from?.first_name || ''
     const data = cb.data || ''
+
+    // Deduplicate: skip if same callback already processed in last 5 minutes
+    if (processedCallbacks.has(cb.id)) {
+      await answerCallbackQuery(cb.id, '✅ Ya procesado')
+      return NextResponse.json({ ok: true })
+    }
+    processedCallbacks.set(cb.id, Date.now())
+    // Cleanup old entries
+    for (const [key, ts] of processedCallbacks) {
+      if (Date.now() - ts > 300000) processedCallbacks.delete(key)
+    }
 
     if (!isAuthorized(userId)) {
       await answerCallbackQuery(cb.id, '⛔ No autorizado')

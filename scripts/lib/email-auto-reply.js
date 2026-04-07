@@ -69,7 +69,7 @@ async function sendAutoReply(gmail, opts, supabase) {
     'ai@renatozapata.com',
   ].join('\n')
 
-  // Build RFC 2822 compliant email with threading headers
+  // Build RFC 2822 compliant email with threading + loop prevention headers
   const replySubject = subject.startsWith('Re:') ? subject : `Re: ${subject}`
   const rawMessage = [
     `From: ai@renatozapata.com`,
@@ -78,6 +78,10 @@ async function sendAutoReply(gmail, opts, supabase) {
     `In-Reply-To: ${messageId}`,
     `References: ${messageId}`,
     `Content-Type: text/plain; charset=UTF-8`,
+    `X-Auto-Reply: yes`,
+    `Auto-Submitted: auto-replied`,
+    `X-CRUZ-Automated: true`,
+    `Precedence: bulk`,
     '',
     body,
   ].join('\r\n')

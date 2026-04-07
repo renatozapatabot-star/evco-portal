@@ -20,6 +20,7 @@
 const path = require('path')
 require('dotenv').config({ path: path.join(__dirname, '..', '.env.local') })
 const { createClient } = require('@supabase/supabase-js')
+const { fetchAll } = require('./lib/paginate')
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -44,13 +45,12 @@ async function run() {
     console.log(`\n━━━ ${client.label} (${client.company_id}) ━━━`)
 
     // 1. Get all tráficos for this client
-    const { data: traficos } = await supabase
+    const traficos = await fetchAll(supabase
       .from('traficos')
       .select('trafico, pedimento')
       .eq('company_id', client.company_id)
       .not('pedimento', 'is', null)
-      .neq('pedimento', '')
-      .limit(5000)
+      .neq('pedimento', ''))
 
     console.log(`Tráficos with pedimento: ${traficos.length}`)
 

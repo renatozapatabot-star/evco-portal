@@ -24,6 +24,7 @@
 const path = require('path')
 require('dotenv').config({ path: path.join(__dirname, '..', '.env.local') })
 const { createClient } = require('@supabase/supabase-js')
+const { fetchAll } = require('./lib/paginate')
 
 const SCRIPT_NAME = 'build-eta-model'
 const DRY_RUN = process.argv.includes('--dry-run')
@@ -50,16 +51,15 @@ async function run() {
   console.log('═'.repeat(55))
 
   // Get all completed traficos with both dates
-  const { data: traficos } = await supabase
+  const traficos = await fetchAll(supabase
     .from('traficos')
     .select('trafico, company_id, fecha_llegada, fecha_cruce, regimen, importe_total')
     .not('fecha_llegada', 'is', null)
     .not('fecha_cruce', 'is', null)
-    .gte('fecha_llegada', '2023-01-01')
-    .limit(10000)
+    .gte('fecha_llegada', '2023-01-01'))
 
-  if (!traficos || traficos.length < 50) {
-    console.log('   Not enough historical data:', (traficos || []).length, 'traficos')
+  if (traficos.length < 50) {
+    console.log('   Not enough historical data:', traficos.length, 'traficos')
     return
   }
 

@@ -16,6 +16,7 @@ const path = require('path')
 require('dotenv').config({ path: path.join(__dirname, '..', '.env.local') })
 const mysql = require('mysql2/promise')
 const { createClient } = require('@supabase/supabase-js')
+const { fetchAll } = require('./lib/paginate')
 
 const SCRIPT_NAME = 'backfill-transportista'
 const DRY_RUN = process.argv.includes('--dry-run')
@@ -72,18 +73,17 @@ async function run() {
   }
 
   // Find entradas missing transportista
-  const { data: entradas } = await supabase
+  const entradas = await fetchAll(supabase
     .from('entradas')
     .select('id, trafico, transportista_mexicano, transportista_americano')
     .not('trafico', 'is', null)
     .is('transportista_mexicano', null)
-    .is('transportista_americano', null)
-    .limit(10000)
+    .is('transportista_americano', null))
 
-  console.log(`   Entradas without transportista: ${(entradas || []).length}`)
+  console.log(`   Entradas without transportista: ${entradas.length}`)
 
   let updated = 0
-  for (const e of (entradas || [])) {
+  for (const e of entradas) {
     const carrier = carrierMap.get(e.trafico)
     if (!carrier) continue
     if (!carrier.mexicano && !carrier.americano) continue
@@ -110,7 +110,7 @@ async function run() {
   await supabase.from('pipeline_log').insert({
     step: `${SCRIPT_NAME}:complete`,
     status: updated > 0 ? 'success' : 'noop',
-    input_summary: JSON.stringify({ mysql_rows: rows.length, entradas_missing: (entradas||[]).length, updated }),
+    input_summary: JSON.stringify({ mysql_rows: rows.length, entradas_missing: entradas.length, updated }),
     timestamp: new Date().toISOString(),
   }).then(() => {}, () => {})
 }

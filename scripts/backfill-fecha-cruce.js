@@ -17,6 +17,7 @@ const path = require('path')
 require('dotenv').config({ path: path.join(__dirname, '..', '.env.local') })
 const mysql = require('mysql2/promise')
 const { createClient } = require('@supabase/supabase-js')
+const { fetchAll } = require('./lib/paginate')
 
 const SCRIPT_NAME = 'backfill-fecha-cruce'
 const DRY_RUN = process.argv.includes('--dry-run')
@@ -61,11 +62,10 @@ async function run() {
   console.log(`   GlobalPC rows with fecha_cruce: ${rows.length}`)
 
   // Find Supabase traficos missing fecha_cruce
-  const { data: missing } = await supabase
+  const missing = await fetchAll(supabase
     .from('traficos')
     .select('trafico')
-    .is('fecha_cruce', null)
-    .limit(10000)
+    .is('fecha_cruce', null))
 
   const missingSet = new Set((missing || []).map(t => t.trafico))
   console.log(`   Supabase traficos without fecha_cruce: ${missingSet.size}`)

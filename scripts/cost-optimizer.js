@@ -29,6 +29,7 @@ const supabase = createClient(
 const DRY_RUN = process.argv.includes('--dry-run')
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN
 const TELEGRAM_CHAT = '-5085543275'
+const { fetchAll } = require('./lib/paginate')
 const SCRIPT_NAME = 'cost-optimizer'
 
 async function tg(msg) {
@@ -310,34 +311,29 @@ async function main() {
     console.log(`\n  Analizando: ${companyId}`)
 
     // Fetch data
-    const [traficoRes, facturaRes, crossingRes] = await Promise.all([
-      supabase.from('traficos')
+    const [traficos, allFacturas, crossingWindows] = await Promise.all([
+      fetchAll(supabase.from('traficos')
         .select('trafico, company_id, proveedores, descripcion_mercancia, fecha_llegada, fecha_cruce, importe_total, regimen, estatus')
         .eq('company_id', companyId)
         .gte('fecha_llegada', '2024-01-01')
-        .not('fecha_llegada', 'is', null)
-        .limit(5000),
-      supabase.from('aduanet_facturas')
+        .not('fecha_llegada', 'is', null)),
+      fetchAll(supabase.from('aduanet_facturas')
         .select('referencia, clave_cliente, proveedor, valor_usd, fecha_pago')
         .eq('clave_cliente', companyId)
         .not('proveedor', 'is', null)
-        .gte('fecha_pago', '2024-01-01')
-        .limit(5000),
-      supabase.from('crossing_windows')
+        .gte('fecha_pago', '2024-01-01')),
+      fetchAll(supabase.from('crossing_windows')
         .select('*')
-        .eq('company_id', companyId),
+        .eq('company_id', companyId)),
     ])
 
-    const traficos = traficoRes.data || []
     // Dedup facturas
     const seenRef = new Set()
-    const facturas = (facturaRes.data || []).filter(f => {
+    const facturas = allFacturas.filter(f => {
       if (!f.referencia || seenRef.has(f.referencia)) return false
       seenRef.add(f.referencia)
       return true
     })
-    const crossingWindows = crossingRes.data || []
-
     if (traficos.length < 10) {
       console.log(`    Insuficientes operaciones (${traficos.length})`)
       continue

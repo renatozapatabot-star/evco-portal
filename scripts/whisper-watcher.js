@@ -34,6 +34,7 @@ function transcribe(audioPath) {
 async function extractActions(transcript) {
   if (!ANTHROPIC_KEY) return null
   try {
+    const callStart = Date.now()
     const res = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-api-key': ANTHROPIC_KEY, 'anthropic-version': '2023-06-01' }, body: JSON.stringify({
       model: 'claude-sonnet-4-20250514', max_tokens: 1200,
       messages: [{ role: 'user', content: `Analiza esta transcripción de llamada de operaciones aduanales (Renato Zapata & Company, Laredo TX).
@@ -51,7 +52,18 @@ Responde en JSON:
 Transcripción:
 ${transcript.substring(0, 4000)}` }]
     }) })
-    const data = await res.json(); const m = data.content?.[0]?.text?.match(/\{[\s\S]*\}/); return m ? JSON.parse(m[0]) : null
+    const data = await res.json()
+    // Cost tracking
+    supabase.from('api_cost_log').insert({
+      model: 'claude-sonnet-4-20250514',
+      input_tokens: data.usage?.input_tokens || 0,
+      output_tokens: data.usage?.output_tokens || 0,
+      cost_usd: ((data.usage?.input_tokens || 0) * 0.003 + (data.usage?.output_tokens || 0) * 0.015) / 1000,
+      action: 'whisper_call_analysis',
+      client_code: 'system',
+      latency_ms: Date.now() - callStart,
+    }).then(() => {}, () => {})
+    const m = data.content?.[0]?.text?.match(/\{[\s\S]*\}/); return m ? JSON.parse(m[0]) : null
   } catch { return null }
 }
 

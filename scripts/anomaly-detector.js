@@ -30,6 +30,7 @@
 const path = require('path')
 require('dotenv').config({ path: path.join(__dirname, '..', '.env.local') })
 const { createClient } = require('@supabase/supabase-js')
+const { fetchAll } = require('./lib/paginate')
 
 const SCRIPT_NAME = 'anomaly-detector'
 const DRY_RUN = process.argv.includes('--dry-run')
@@ -468,13 +469,12 @@ async function run() {
 
     // ── Check 7: Missing T-MEC (from US/CA without T-MEC flag) ──
     console.log('   Check 7: missing_tmec...')
-    const { data: usTrafs } = await supabase
+    const usTrafs = await fetchAll(supabase
       .from('traficos')
       .select('trafico, regimen, pais_procedencia')
       .eq('company_id', client)
       .gte('fecha_llegada', PORTAL_DATE_FROM)
-      .in('pais_procedencia', ['US', 'USA', 'ESTADOS UNIDOS', 'CA', 'CAN', 'CANADA'])
-      .limit(5000)
+      .in('pais_procedencia', ['US', 'USA', 'ESTADOS UNIDOS', 'CA', 'CAN', 'CANADA']))
     const missingTmec = (usTrafs || []).filter(t => {
       const r = (t.regimen || '').toUpperCase()
       return r !== 'ITE' && r !== 'ITR' && r !== 'IMD'
@@ -489,12 +489,11 @@ async function run() {
 
     // ── Check 8: Duplicate descriptions on same day (double entry) ──
     console.log('   Check 8: duplicate_descriptions...')
-    const { data: recentTrafs } = await supabase
+    const recentTrafs = await fetchAll(supabase
       .from('traficos')
       .select('trafico, descripcion_mercancia, fecha_llegada')
       .eq('company_id', client)
-      .gte('fecha_llegada', new Date(Date.now() - 30 * 86400000).toISOString())
-      .limit(5000)
+      .gte('fecha_llegada', new Date(Date.now() - 30 * 86400000).toISOString()))
     const dayDescMap = new Map()
     const dupDescs = []
     for (const t of (recentTrafs || [])) {

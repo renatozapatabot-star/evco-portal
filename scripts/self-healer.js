@@ -18,6 +18,7 @@ require('dotenv').config({ path: path.join(__dirname, '..', '.env.local') })
 const { createClient } = require('@supabase/supabase-js')
 const { execSync } = require('child_process')
 
+const { fetchAll } = require('./lib/paginate')
 const SCRIPT_NAME = 'self-healer'
 const DRY_RUN = process.argv.includes('--dry-run')
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN
@@ -229,10 +230,9 @@ async function checkDuplicates() {
   const { data } = await supabase.rpc('check_duplicate_pedimentos').catch(() => ({ data: null }))
   // If RPC doesn't exist, do manual check
   if (!data) {
-    const { data: dups } = await supabase.from('traficos')
+    const dups = await fetchAll(supabase.from('traficos')
       .select('pedimento, company_id')
-      .not('pedimento', 'is', null)
-      .limit(5000)
+      .not('pedimento', 'is', null))
 
     const seen = new Map()
     const duplicates = []

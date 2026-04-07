@@ -18,6 +18,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 )
 
+const { fetchAll } = require('./lib/paginate')
 const DRY_RUN = process.argv.includes('--dry-run')
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN
 const TELEGRAM_CHAT = '-5085543275'
@@ -38,13 +39,13 @@ async function main() {
   console.log(`🏭 Supplier Network Scorer — ${DRY_RUN ? 'DRY RUN' : 'LIVE'}`)
 
   // Fetch all traficos with supplier data since 2024
-  const { data: traficos, error } = await supabase.from('traficos')
-    .select('proveedores, company_id, pedimento, regimen, fecha_llegada, fecha_cruce')
-    .not('proveedores', 'is', null)
-    .gte('fecha_llegada', '2024-01-01')
-    .limit(10000)
-
-  if (error) {
+  let traficos
+  try {
+    traficos = await fetchAll(supabase.from('traficos')
+      .select('proveedores, company_id, pedimento, regimen, fecha_llegada, fecha_cruce')
+      .not('proveedores', 'is', null)
+      .gte('fecha_llegada', '2024-01-01'))
+  } catch (error) {
     console.error('Fetch error:', error.message)
     await tg(`🔴 Supplier Network Scorer failed: ${error.message}`)
     process.exit(1)

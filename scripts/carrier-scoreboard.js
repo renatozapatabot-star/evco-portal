@@ -22,6 +22,7 @@
 const path = require('path')
 require('dotenv').config({ path: path.join(__dirname, '..', '.env.local') })
 const { createClient } = require('@supabase/supabase-js')
+const { fetchAll } = require('./lib/paginate')
 
 const DRY_RUN = process.argv.includes('--dry-run')
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN
@@ -47,25 +48,23 @@ async function run() {
   console.log('═'.repeat(55))
 
   // Get traficos with carrier data
-  const { data: traficos } = await supabase.from('traficos')
+  const traficos = await fetchAll(supabase.from('traficos')
     .select('trafico, transportista_mexicano, transportista_extranjero, fecha_llegada, fecha_cruce, company_id')
     .not('transportista_mexicano', 'is', null)
-    .gte('fecha_llegada', '2024-01-01')
-    .limit(10000)
+    .gte('fecha_llegada', '2024-01-01'))
 
   // Get entradas for damage data
-  const { data: entradas } = await supabase.from('entradas')
+  const entradas = await fetchAll(supabase.from('entradas')
     .select('trafico, transportista_mexicano, tiene_faltantes, mercancia_danada')
-    .not('trafico', 'is', null)
-    .limit(10000)
+    .not('trafico', 'is', null))
 
-  console.log(`   Traficos with carrier: ${(traficos || []).length}`)
-  console.log(`   Entradas with damage data: ${(entradas || []).length}`)
+  console.log(`   Traficos with carrier: ${traficos.length}`)
+  console.log(`   Entradas with damage data: ${entradas.length}`)
 
   // Score each carrier
   const carrierData = {}
 
-  for (const t of (traficos || [])) {
+  for (const t of traficos) {
     const carrier = t.transportista_mexicano || t.transportista_extranjero
     if (!carrier) continue
 
@@ -81,7 +80,7 @@ async function run() {
   }
 
   // Add damage data from entradas
-  for (const e of (entradas || [])) {
+  for (const e of entradas) {
     const carrier = e.transportista_mexicano
     if (!carrier || !carrierData[carrier]) continue
     carrierData[carrier].totalEntradas++

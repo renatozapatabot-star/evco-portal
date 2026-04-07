@@ -5,6 +5,7 @@
 // Cron: 0 4 * * 0 (Sunday 4 AM)
 
 const { createClient } = require('@supabase/supabase-js')
+const { fetchAll } = require('./lib/paginate')
 const path = require('path')
 require('dotenv').config({ path: path.join(__dirname, '..', '.env.local') })
 
@@ -229,19 +230,19 @@ async function main() {
   for (const config of TABLES_TO_PROFILE) {
     console.log(`\n🔍 Profiling: ${config.table}`)
 
-    // Fetch rows (up to 5000 for profiling)
-    const { data: rows, error } = await supabase
-      .from(config.table)
-      .select('*')
-      .limit(5000)
-
-    if (error) {
+    // Fetch rows (paginated)
+    let rows
+    try {
+      rows = await fetchAll(supabase
+        .from(config.table)
+        .select('*'))
+    } catch (error) {
       console.log(`  ❌ Error: ${error.message}`)
       tableScores.push({ table: config.table, score: 0, issues: [error.message] })
       continue
     }
 
-    if (!rows || rows.length === 0) {
+    if (rows.length === 0) {
       console.log(`  ⚠️  No data`)
       tableScores.push({ table: config.table, score: 0, issues: ['Empty table'] })
       continue

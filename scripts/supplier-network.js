@@ -7,6 +7,8 @@ const { createClient } = require('@supabase/supabase-js')
 const path = require('path')
 require('dotenv').config({ path: path.join(__dirname, '..', '.env.local') })
 
+const { fetchAll } = require('./lib/paginate')
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://jkhpafacchjxawnscplf.supabase.co',
   process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -17,17 +19,12 @@ async function main() {
   const start = Date.now()
 
   // 1. Fetch data sources
-  const [provRes, factRes, entRes, partRes] = await Promise.all([
-    supabase.from('globalpc_proveedores').select('cve_proveedor, nombre, pais').limit(5000),
-    supabase.from('aduanet_facturas').select('proveedor, valor_usd, igi, referencia, pedimento').limit(10000),
-    supabase.from('entradas').select('trafico, tiene_faltantes, mercancia_danada').eq('company_id', 'evco').limit(10000),
-    supabase.from('globalpc_partidas').select('cve_proveedor, fraccion_arancelaria, fraccion').limit(10000),
+  const [proveedores, facturas, entradas, partidas] = await Promise.all([
+    fetchAll(supabase.from('globalpc_proveedores').select('cve_proveedor, nombre, pais')),
+    fetchAll(supabase.from('aduanet_facturas').select('proveedor, valor_usd, igi, referencia, pedimento')),
+    fetchAll(supabase.from('entradas').select('trafico, tiene_faltantes, mercancia_danada').eq('company_id', 'evco')),
+    fetchAll(supabase.from('globalpc_partidas').select('cve_proveedor, fraccion_arancelaria, fraccion')),
   ])
-
-  const proveedores = provRes.data || []
-  const facturas = factRes.data || []
-  const entradas = entRes.data || []
-  const partidas = partRes.data || []
 
   // 2. Build supplier profiles
   const suppliers = {} // normalized_name -> profile

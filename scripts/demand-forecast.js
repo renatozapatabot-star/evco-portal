@@ -10,6 +10,7 @@
 const path = require('path')
 require('dotenv').config({ path: path.resolve(__dirname, '..', '.env.local') })
 const { createClient } = require('@supabase/supabase-js')
+const { fetchAll } = require('./lib/paginate')
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -42,15 +43,14 @@ function fmtUSD(n) { return '$' + Number(n || 0).toLocaleString('en-US', { maxim
 async function forecastClient(client) {
   const yearAgo = new Date(Date.now() - 365 * 86400000).toISOString().split('T')[0]
 
-  const { data: traficos } = await supabase
+  const traficos = await fetchAll(supabase
     .from('traficos')
     .select('trafico, fecha_llegada, importe_total, estatus, descripcion_mercancia, proveedores')
     .eq('company_id', client.company_id)
     .gte('fecha_llegada', yearAgo)
-    .order('fecha_llegada', { ascending: true })
-    .limit(5000)
+    .order('fecha_llegada', { ascending: true }))
 
-  const rows = traficos || []
+  const rows = traficos
   if (rows.length < 10) return null
 
   // Group by month

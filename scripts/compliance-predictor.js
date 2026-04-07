@@ -10,6 +10,7 @@
 const path = require('path')
 require('dotenv').config({ path: path.join(__dirname, '..', '.env.local') })
 const { createClient } = require('@supabase/supabase-js')
+const { fetchAll } = require('./lib/paginate')
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -34,24 +35,22 @@ async function sendTelegram(msg) {
 
 async function buildBaselines() {
   // Fleet semáforo rojo rate
-  const { data: semaforoData } = await supabase
+  const semaforoData = await fetchAll(supabase
     .from('traficos')
     .select('semaforo')
     .gte('fecha_llegada', '2024-01-01')
-    .not('semaforo', 'is', null)
-    .limit(10000)
-  const total = (semaforoData || []).length
-  const rojos = (semaforoData || []).filter(t => t.semaforo === 1).length
+    .not('semaforo', 'is', null))
+  const total = semaforoData.length
+  const rojos = semaforoData.filter(t => t.semaforo === 1).length
   const rojoRate = total > 0 ? rojos / total : 0.08
 
   // Average value
-  const { data: valData } = await supabase
+  const valData = await fetchAll(supabase
     .from('traficos')
     .select('importe_total')
     .gte('fecha_llegada', '2024-01-01')
-    .not('importe_total', 'is', null)
-    .limit(10000)
-  const vals = (valData || []).map(t => Number(t.importe_total)).filter(v => v > 0)
+    .not('importe_total', 'is', null))
+  const vals = valData.map(t => Number(t.importe_total)).filter(v => v > 0)
   const avgValue = vals.length > 0 ? vals.reduce((s, v) => s + v, 0) / vals.length : 10000
 
   return { rojoRate, avgValue }

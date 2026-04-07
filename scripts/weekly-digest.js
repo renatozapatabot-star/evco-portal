@@ -30,6 +30,8 @@ const RESEND_API_KEY = process.env.RESEND_API_KEY
 const FROM_EMAIL = 'CRUZ — Renato Zapata & Co. <ai@renatozapata.com>'
 const PORTAL_URL = 'https://evco-portal.vercel.app'
 
+const { fetchAll } = require('./lib/paginate')
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -105,14 +107,11 @@ async function generateDigest(companyId) {
 
   const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString().split('T')[0]
 
-  const { data: traficos } = await supabase
+  const all = await fetchAll(supabase
     .from('traficos')
     .select('trafico, estatus, importe_total, regimen, fecha_cruce')
     .eq('company_id', companyId)
-    .gte('fecha_llegada', '2024-01-01')
-    .limit(5000)
-
-  const all = traficos || []
+    .gte('fecha_llegada', '2024-01-01'))
   const cruzadosThisWeek = all.filter(t => t.fecha_cruce && t.fecha_cruce >= weekAgo).length
   const enProceso = all.filter(t => {
     const s = (t.estatus || '').toLowerCase()

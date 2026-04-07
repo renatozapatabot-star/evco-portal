@@ -11,6 +11,7 @@
 const path = require('path')
 require('dotenv').config({ path: path.resolve(__dirname, '..', '.env.local') })
 const { createClient } = require('@supabase/supabase-js')
+const { fetchAll } = require('./lib/paginate')
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -38,14 +39,13 @@ async function buildProfile(company) {
   const { company_id, name, clave_cliente } = company
 
   // ── OPERATIONAL ──
-  const { data: traficos } = await supabase
+  const traficos = await fetchAll(supabase
     .from('traficos')
     .select('trafico, estatus, fecha_llegada, fecha_cruce, importe_total, regimen, pais_procedencia, descripcion_mercancia, proveedores')
     .eq('company_id', company_id)
-    .gte('fecha_llegada', PORTAL_DATE_FROM)
-    .limit(5000)
+    .gte('fecha_llegada', PORTAL_DATE_FROM))
 
-  const traf = traficos || []
+  const traf = traficos
   if (traf.length < 3) return null // Too few for meaningful profile
 
   // Monthly volumes

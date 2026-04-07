@@ -10,6 +10,7 @@
 const path = require('path')
 require('dotenv').config({ path: path.resolve(__dirname, '..', '.env.local') })
 const { createClient } = require('@supabase/supabase-js')
+const { fetchAll } = require('./lib/paginate')
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -46,15 +47,14 @@ async function main() {
 
   // ── 1. Crossing times ──
   console.log('\n1. Crossing times...')
-  const { data: crossingData } = await supabase
+  const crossingData = await fetchAll(supabase
     .from('traficos')
     .select('fecha_llegada, fecha_cruce, company_id')
     .not('fecha_cruce', 'is', null)
     .not('fecha_llegada', 'is', null)
-    .gte('fecha_llegada', PORTAL_DATE_FROM)
-    .limit(10000)
+    .gte('fecha_llegada', PORTAL_DATE_FROM))
 
-  const crossingDays = (crossingData || []).map(t => {
+  const crossingDays = crossingData.map(t => {
     const d = (new Date(t.fecha_cruce).getTime() - new Date(t.fecha_llegada).getTime()) / 86400000
     return { days: Math.max(0, d), company: t.company_id }
   }).filter(d => d.days > 0 && d.days < 60)
@@ -78,28 +78,26 @@ async function main() {
 
   // ── 2. Pedimento processing time ──
   console.log('2. Pedimento processing...')
-  const { data: pedData } = await supabase
+  const pedData = await fetchAll(supabase
     .from('traficos')
     .select('fecha_llegada, company_id, pedimento')
     .not('pedimento', 'is', null)
-    .gte('fecha_llegada', PORTAL_DATE_FROM)
-    .limit(10000)
+    .gte('fecha_llegada', PORTAL_DATE_FROM))
 
-  const withPed = (pedData || []).length
-  const totalTrafs = crossingDays.length + (pedData || []).filter(t => !t.fecha_cruce).length
+  const withPed = pedData.length
+  const totalTrafs = crossingDays.length + pedData.filter(t => !t.fecha_cruce).length
   const pedRate = totalTrafs > 0 ? Math.round((withPed / Math.max(1, totalTrafs)) * 100) : 0
   console.log(`  Pedimento rate: ${pedRate}% (${withPed}/${totalTrafs})`)
   await saveBenchmark('pedimento_rate', 'fleet', pedRate, totalTrafs, period)
 
   // ── 3. T-MEC utilization ──
   console.log('3. T-MEC utilization...')
-  const { data: regimenData } = await supabase
+  const regimenData = await fetchAll(supabase
     .from('traficos')
     .select('regimen, company_id')
-    .gte('fecha_llegada', PORTAL_DATE_FROM)
-    .limit(10000)
+    .gte('fecha_llegada', PORTAL_DATE_FROM))
 
-  const allRegs = regimenData || []
+  const allRegs = regimenData
   const tmecRegs = allRegs.filter(t => {
     const r = (t.regimen || '').toUpperCase()
     return r === 'ITE' || r === 'ITR' || r === 'IMD'
@@ -123,14 +121,13 @@ async function main() {
 
   // ── 4. Document completeness ──
   console.log('4. Document completeness...')
-  const { data: docData } = await supabase
+  const docData = await fetchAll(supabase
     .from('traficos')
     .select('company_id, pedimento')
-    .gte('fecha_llegada', PORTAL_DATE_FROM)
-    .limit(10000)
+    .gte('fecha_llegada', PORTAL_DATE_FROM))
 
   const docByClient = {}
-  for (const t of (docData || [])) {
+  for (const t of docData) {
     if (!docByClient[t.company_id]) docByClient[t.company_id] = { total: 0, complete: 0 }
     docByClient[t.company_id].total++
     if (t.pedimento) docByClient[t.company_id].complete++
@@ -149,14 +146,13 @@ async function main() {
 
   // ── 5. Value per tráfico ──
   console.log('5. Value averages...')
-  const { data: valueData } = await supabase
+  const valueData = await fetchAll(supabase
     .from('traficos')
     .select('importe_total, company_id')
     .gte('fecha_llegada', PORTAL_DATE_FROM)
-    .not('importe_total', 'is', null)
-    .limit(10000)
+    .not('importe_total', 'is', null))
 
-  const values = (valueData || []).filter(t => Number(t.importe_total) > 0)
+  const values = valueData.filter(t => Number(t.importe_total) > 0)
   if (values.length > 0) {
     const fleetAvgValue = Math.round(values.reduce((s, t) => s + Number(t.importe_total), 0) / values.length)
     await saveBenchmark('avg_value_usd', 'fleet', fleetAvgValue, values.length, period)

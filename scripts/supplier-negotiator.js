@@ -25,6 +25,7 @@ const supabase = createClient(
 const DRY_RUN = process.argv.includes('--dry-run')
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN
 const TELEGRAM_CHAT = '-5085543275'
+const { fetchAll } = require('./lib/paginate')
 const SCRIPT_NAME = 'supplier-negotiator'
 
 async function tg(msg) {
@@ -55,23 +56,21 @@ async function main() {
 
   for (const companyId of companyIds) {
     // Fetch tráficos for supplier analysis
-    const { data: traficos } = await supabase.from('traficos')
+    const traficos = await fetchAll(supabase.from('traficos')
       .select('trafico, proveedores, fecha_llegada, fecha_cruce, importe_total, regimen')
       .eq('company_id', companyId)
       .not('proveedores', 'is', null)
-      .gte('fecha_llegada', '2023-01-01')
-      .limit(5000)
+      .gte('fecha_llegada', '2023-01-01'))
 
     if (!traficos || traficos.length < 10) continue
 
     // Fetch facturas (deduped)
-    const { data: allFacturas } = await supabase.from('aduanet_facturas')
+    const allFacturas = await fetchAll(supabase.from('aduanet_facturas')
       .select('referencia, proveedor, valor_usd')
       .eq('clave_cliente', companyId)
       .not('proveedor', 'is', null)
       .not('valor_usd', 'is', null)
-      .gte('fecha_pago', '2023-01-01')
-      .limit(5000)
+      .gte('fecha_pago', '2023-01-01'))
 
     const seenRef = new Set()
     const facturas = (allFacturas || []).filter(f => {

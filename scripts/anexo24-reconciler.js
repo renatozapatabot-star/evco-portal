@@ -19,6 +19,7 @@ const supabase = createClient(
 const DRY_RUN = process.argv.includes('--dry-run')
 const TELEGRAM_CHAT = '-5085543275'
 const IMMEX_REGIMES = ['IN', 'in', 'ITE', 'ITR']
+const { fetchAll } = require('./lib/paginate')
 const DEADLINE_MONTHS = 18 // IMMEX temporary import deadline
 const WARN_90_DAYS = 90 * 86400000
 const WARN_30_DAYS = 30 * 86400000
@@ -40,26 +41,24 @@ function fmtUSD(n) { return '$' + Number(n).toLocaleString('en-US', { maximumFra
 
 async function reconcileClient(companyId) {
   // Get all IMMEX temporary imports
-  const { data: imports } = await supabase
+  const imports = await fetchAll(supabase
     .from('traficos')
     .select('trafico, pedimento, fecha_llegada, importe_total, descripcion_mercancia, regimen, estatus')
     .eq('company_id', companyId)
     .in('regimen', IMMEX_REGIMES)
     .gte('fecha_llegada', '2022-01-01') // 2+ years for 18-month window
-    .order('fecha_llegada', { ascending: true })
-    .limit(5000)
+    .order('fecha_llegada', { ascending: true }))
 
   if (!imports || imports.length === 0) return null
 
   // Get exports/returns (régimen RT, RE, or Cruzado status)
-  const { data: exports } = await supabase
+  const exports = await fetchAll(supabase
     .from('traficos')
     .select('trafico, pedimento, fecha_cruce, importe_total')
     .eq('company_id', companyId)
     .ilike('estatus', '%cruz%')
     .in('regimen', IMMEX_REGIMES)
-    .gte('fecha_llegada', '2022-01-01')
-    .limit(5000)
+    .gte('fecha_llegada', '2022-01-01'))
 
   const exportedSet = new Set((exports || []).map(e => e.trafico))
   const now = Date.now()
@@ -100,7 +99,7 @@ async function reconcileClient(companyId) {
   return {
     company_id: companyId,
     total_imports: imports.length,
-    total_exports: exports?.length || 0,
+    total_exports: exports.length || 0,
     open_items: openItems.length,
     open_value: Math.round(openValue),
     expired: expired.length,

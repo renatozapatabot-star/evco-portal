@@ -15,6 +15,7 @@
 const path = require('path')
 require('dotenv').config({ path: path.resolve(__dirname, '..', '.env.local') })
 const { createClient } = require('@supabase/supabase-js')
+const { fetchAll } = require('./lib/paginate')
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -206,14 +207,13 @@ async function main() {
   }
 
   // Fleet-wide reconocimiento rate
-  const { data: fleetSemaforo } = await supabase.from('traficos')
+  const fleetSemaforo = await fetchAll(supabase.from('traficos')
     .select('semaforo')
     .not('semaforo', 'is', null)
-    .gte('fecha_llegada', new Date(Date.now() - 90 * 86400000).toISOString())
-    .limit(5000)
+    .gte('fecha_llegada', new Date(Date.now() - 90 * 86400000).toISOString()))
 
-  const fleetTotal = (fleetSemaforo || []).length
-  const fleetRojo = (fleetSemaforo || []).filter(t => t.semaforo === 1).length
+  const fleetTotal = fleetSemaforo.length
+  const fleetRojo = fleetSemaforo.filter(t => t.semaforo === 1).length
   const fleetRecoRate = fleetTotal > 0 ? fleetRojo / fleetTotal : 0.05
 
   console.log(`  Fleet reconocimiento rate: ${Math.round(fleetRecoRate * 100)}% (${fleetRojo}/${fleetTotal})`)

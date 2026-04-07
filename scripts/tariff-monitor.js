@@ -24,6 +24,8 @@ const DRY_RUN = process.argv.includes('--dry-run')
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN
 const TELEGRAM_CHAT = process.env.TELEGRAM_CHAT_ID || '-5085543275'
 
+const { fetchAll } = require('./lib/paginate')
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -44,12 +46,11 @@ async function run() {
   console.log('═'.repeat(55))
 
   // Get all unique fracciones used by active clients
-  const { data: traficos } = await supabase
+  const traficos = await fetchAll(supabase
     .from('traficos')
     .select('company_id, fraccion_arancelaria, regimen, descripcion_mercancia')
     .not('fraccion_arancelaria', 'is', null)
-    .gte('fecha_llegada', '2025-01-01')
-    .limit(5000)
+    .gte('fecha_llegada', '2025-01-01'))
 
   if (!traficos || traficos.length === 0) {
     console.log('   No traficos with fracciones found')

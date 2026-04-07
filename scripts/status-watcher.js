@@ -32,6 +32,7 @@ const POLL_INTERVAL_MS = 60_000
 // These 3 event types are LIVE — inserted as 'pending' regardless of SHADOW_MODE.
 // All other event types remain 'shadow' until graduated.
 const LIVE_TRIGGERS = new Set(['docs_complete', 'cleared', 'hold_placed'])
+const { fetchAll } = require('./lib/paginate')
 const CHECKPOINT_PATH = path.join(__dirname, '..', '.status-watcher-checkpoint.json')
 const PORTAL_URL = 'https://portal.renatozapata.com'
 
@@ -134,12 +135,13 @@ async function poll() {
   // First run: seed known_statuses without triggering notifications
   if (!cp.last_checked) {
     console.log(`[${SCRIPT_NAME}] First run — seeding known statuses (no notifications)`)
-    const { data, error } = await supabase
-      .from('traficos')
-      .select('trafico, estatus, company_id')
-      .limit(5000)
-    if (error) {
-      console.error(`[${SCRIPT_NAME}] Seed fetch error:`, error.message)
+    let data
+    try {
+      data = await fetchAll(supabase
+        .from('traficos')
+        .select('trafico, estatus, company_id'))
+    } catch (err) {
+      console.error(`[${SCRIPT_NAME}] Seed fetch error:`, err.message)
       return
     }
     const known = {}
@@ -148,10 +150,9 @@ async function poll() {
     }
     // Seed completeness from trafico_completeness view
     const knownComplete = {}
-    const { data: tcData } = await supabase
+    const tcData = await fetchAll(supabase
       .from('trafico_completeness')
-      .select('trafico_id, can_file')
-      .limit(5000)
+      .select('trafico_id, can_file'))
     if (tcData) {
       for (const row of tcData) {
         knownComplete[row.trafico_id] = !!row.can_file

@@ -26,6 +26,7 @@ const supabase = createClient(
 const DRY_RUN = process.argv.includes('--dry-run')
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN
 const TELEGRAM_CHAT = '-5085543275'
+const { fetchAll } = require('./lib/paginate')
 const SCRIPT_NAME = 'carrier-intelligence'
 
 async function tg(msg) {
@@ -54,19 +55,17 @@ async function main() {
 
   for (const companyId of companyIds) {
     // Fetch tráficos with carrier data
-    const { data: traficos } = await supabase.from('traficos')
+    const traficos = await fetchAll(supabase.from('traficos')
       .select('trafico, transportista_extranjero, transportista_mexicano, fecha_llegada, fecha_cruce, peso_bruto, importe_total, descripcion_mercancia')
       .eq('company_id', companyId)
-      .gte('fecha_llegada', '2024-01-01')
-      .limit(5000)
+      .gte('fecha_llegada', '2024-01-01'))
 
     if (!traficos || traficos.length < 5) continue
 
     // Fetch entradas for damage data
-    const { data: entradas } = await supabase.from('entradas')
+    const entradas = await fetchAll(supabase.from('entradas')
       .select('trafico, tiene_faltantes, mercancia_danada')
-      .eq('company_id', companyId)
-      .limit(5000)
+      .eq('company_id', companyId))
 
     const damageMap = new Map()
     for (const e of (entradas || [])) {

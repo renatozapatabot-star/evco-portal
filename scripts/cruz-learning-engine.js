@@ -7,6 +7,7 @@
 
 require('dotenv').config({ path: require('path').join(__dirname, '..', '.env.local') })
 const { createClient } = require('@supabase/supabase-js')
+const { fetchAll } = require('./lib/paginate')
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -48,14 +49,13 @@ async function learnFromCompany(company) {
   let patterns = 0
 
   // Pattern: Best crossing day
-  const { data: crossings } = await supabase
+  const crossings = await fetchAll(supabase
     .from('traficos')
     .select('fecha_cruce')
     .eq('company_id', cid)
-    .not('fecha_cruce', 'is', null)
-    .limit(2000)
+    .not('fecha_cruce', 'is', null))
 
-  if (crossings?.length > 20) {
+  if (crossings.length > 20) {
     const dayCounts = [0, 0, 0, 0, 0, 0, 0]
     crossings.forEach(c => { dayCounts[new Date(c.fecha_cruce).getDay()]++ })
     const bestIdx = dayCounts.indexOf(Math.max(...dayCounts))
@@ -66,7 +66,7 @@ async function learnFromCompany(company) {
   }
 
   // Pattern: Monthly volume spikes
-  if (crossings?.length > 50) {
+  if (crossings.length > 50) {
     const monthCounts = {}
     crossings.forEach(c => {
       const m = new Date(c.fecha_cruce).getMonth()
@@ -102,13 +102,12 @@ async function learnFromCompany(company) {
   }
 
   // Pattern: Top supplier by volume
-  const { data: facturas } = await supabase
+  const facturas = await fetchAll(supabase
     .from('globalpc_facturas')
     .select('cve_proveedor')
-    .eq('company_id', cid)
-    .limit(5000)
+    .eq('company_id', cid))
 
-  if (facturas?.length > 20) {
+  if (facturas.length > 20) {
     const provCounts = {}
     facturas.forEach(f => {
       if (f.cve_proveedor) provCounts[f.cve_proveedor] = (provCounts[f.cve_proveedor] || 0) + 1

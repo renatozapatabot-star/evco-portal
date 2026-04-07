@@ -19,6 +19,7 @@
 const path = require('path')
 require('dotenv').config({ path: path.resolve(__dirname, '..', '.env.local') })
 const { createClient } = require('@supabase/supabase-js')
+const { fetchAll } = require('./lib/paginate')
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -48,16 +49,15 @@ async function detectTariffChanges() {
   const insights = []
 
   // Look for fracciones where IGI rate changed recently
-  const { data: recent } = await supabase.from('aduanet_facturas')
+  const recent = await fetchAll(supabase.from('aduanet_facturas')
     .select('referencia, proveedor, valor_usd, igi, fecha_pago')
     .not('igi', 'is', null)
     .not('valor_usd', 'is', null)
-    .gte('fecha_pago', daysAgo(30))
-    .limit(2000)
+    .gte('fecha_pago', daysAgo(30)))
 
   // Dedup
   const seen = new Set()
-  const facturas = (recent || []).filter(f => {
+  const facturas = recent.filter(f => {
     if (!f.referencia || seen.has(f.referencia)) return false
     seen.add(f.referencia)
     return f.valor_usd > 0
@@ -74,16 +74,15 @@ async function detectTariffChanges() {
   }
 
   // Compare with historical (30-90 days ago)
-  const { data: historical } = await supabase.from('aduanet_facturas')
+  const historical = await fetchAll(supabase.from('aduanet_facturas')
     .select('referencia, proveedor, valor_usd, igi')
     .not('igi', 'is', null)
     .not('valor_usd', 'is', null)
     .gte('fecha_pago', daysAgo(90))
-    .lt('fecha_pago', daysAgo(30))
-    .limit(2000)
+    .lt('fecha_pago', daysAgo(30)))
 
   const seenH = new Set()
-  const histFacturas = (historical || []).filter(f => {
+  const histFacturas = historical.filter(f => {
     if (!f.referencia || seenH.has(f.referencia)) return false
     seenH.add(f.referencia)
     return f.valor_usd > 0
@@ -135,24 +134,22 @@ async function detectVolumeShifts() {
   const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
   const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString()
 
-  const { data: thisMonth } = await supabase.from('traficos')
+  const thisMonth = await fetchAll(supabase.from('traficos')
     .select('company_id')
-    .gte('fecha_llegada', thisMonthStart)
-    .limit(5000)
+    .gte('fecha_llegada', thisMonthStart))
 
-  const { data: lastMonth } = await supabase.from('traficos')
+  const lastMonth = await fetchAll(supabase.from('traficos')
     .select('company_id')
     .gte('fecha_llegada', lastMonthStart)
-    .lt('fecha_llegada', thisMonthStart)
-    .limit(5000)
+    .lt('fecha_llegada', thisMonthStart))
 
   const thisCount = new Map()
-  for (const t of (thisMonth || [])) {
+  for (const t of thisMonth) {
     thisCount.set(t.company_id, (thisCount.get(t.company_id) || 0) + 1)
   }
 
   const lastCount = new Map()
-  for (const t of (lastMonth || [])) {
+  for (const t of lastMonth) {
     lastCount.set(t.company_id, (lastCount.get(t.company_id) || 0) + 1)
   }
 

@@ -10,6 +10,8 @@
 require('dotenv').config({ path: require('path').resolve(__dirname, '..', '.env.local') })
 const { createClient } = require('@supabase/supabase-js')
 
+const { fetchAll } = require('./lib/paginate')
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -43,10 +45,9 @@ async function main() {
   await test('No duplicate aduanet_facturas', async () => {
     // Manual dedup check — no RPC needed
     {
-      const { data: facturas } = await supabase
+      const facturas = await fetchAll(supabase
         .from('aduanet_facturas')
-        .select('pedimento, referencia')
-        .limit(5000)
+        .select('pedimento, referencia'))
       const seen = new Set()
       let dupes = 0
       for (const f of (facturas || [])) {

@@ -7,6 +7,8 @@
 require('dotenv').config({ path: require('path').join(__dirname, '..', '.env.local') })
 const { createClient } = require('@supabase/supabase-js')
 
+const { fetchAll } = require('./lib/paginate')
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -21,11 +23,10 @@ async function run() {
   const activeClients = companies?.length || 0
 
   // T-MEC savings
-  const { data: tmecOps } = await supabase
+  const tmecOps = await fetchAll(supabase
     .from('aduanet_facturas')
     .select('valor_usd, igi')
-    .eq('igi', 0)
-    .limit(10000)
+    .eq('igi', 0))
   const tmecSavings = (tmecOps || []).reduce((s, f) => s + (f.valor_usd || 0) * 0.05, 0)
 
   // Pedimentos processed

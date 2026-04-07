@@ -8,6 +8,7 @@
 // ============================================================
 
 const { createClient } = require('@supabase/supabase-js')
+const { fetchAll } = require('./lib/paginate')
 const path = require('path')
 require('dotenv').config({ path: path.join(__dirname, '..', '.env.local') })
 
@@ -40,16 +41,15 @@ async function main() {
 
   // ── 1. Build model from bridge_intelligence (hourly data) ──
   console.log('1. Building hourly bridge model...')
-  const { data: bridgeData } = await supabase
+  const bridgeData = await fetchAll(supabase
     .from('bridge_intelligence')
     .select('bridge_name, crossing_hours, day_of_week, hour_of_day')
     .not('bridge_name', 'is', null)
-    .not('crossing_hours', 'is', null)
-    .limit(10000)
+    .not('crossing_hours', 'is', null))
 
   // Model: bridge → day → hour → stats
   const model = {}
-  for (const row of (bridgeData || [])) {
+  for (const row of bridgeData) {
     const b = row.bridge_name, d = row.day_of_week, h = row.hour_of_day ?? -1
     if (d == null || h < 0) continue
     if (!model[b]) model[b] = {}
@@ -61,16 +61,15 @@ async function main() {
   // ── 2. Also build model from tráfico crossing times (fleet-wide) ──
   console.log('2. Enriching with fleet crossing data...')
   const ninetyDaysAgo = new Date(Date.now() - 90 * 86400000).toISOString()
-  const { data: cruzados } = await supabase
+  const cruzados = await fetchAll(supabase
     .from('traficos')
     .select('fecha_llegada, fecha_cruce')
     .not('fecha_cruce', 'is', null)
     .not('fecha_llegada', 'is', null)
-    .gte('fecha_cruce', ninetyDaysAgo)
-    .limit(5000)
+    .gte('fecha_cruce', ninetyDaysAgo))
 
   const crossingDays = []
-  for (const t of (cruzados || [])) {
+  for (const t of cruzados) {
     const days = (new Date(t.fecha_cruce).getTime() - new Date(t.fecha_llegada).getTime()) / 86400000
     if (days > 0 && days < 30) crossingDays.push(days)
   }
@@ -80,7 +79,7 @@ async function main() {
     : 5
 
   const bridges = Object.keys(model)
-  console.log(`  ${bridges.length} bridges · ${(bridgeData || []).length} hourly points · ${crossingDays.length} fleet crossings`)
+  console.log(`  ${bridges.length} bridges · ${bridgeData.length} hourly points · ${crossingDays.length} fleet crossings`)
 
   // ── 3. Compute optimal windows (best bridge+hour per day) ──
   console.log('3. Computing optimal windows...')

@@ -543,18 +543,20 @@ export function ReportesView() {
           </button>
 
           <button
-            onClick={() => window.open('/api/reportes-pdf', '_blank')}
+            disabled
+            title="Próximamente"
             style={{
               display: 'flex', alignItems: 'center', gap: 8,
               padding: '12px 20px',
-              border: `1px solid ${T.gold}`,
+              border: `1px solid ${T.border}`,
               borderRadius: 8,
-              background: T.goldBg,
+              background: 'transparent',
               fontSize: 13,
               fontWeight: 600,
-              color: T.gold,
-              cursor: 'pointer',
+              color: T.textMuted,
+              cursor: 'not-allowed',
               minHeight: 60,
+              opacity: 0.5,
               transition: 'all 150ms',
             }}
           >
@@ -566,7 +568,7 @@ export function ReportesView() {
             <div style={{ textAlign: 'left' }}>
               <div>Generar PDF</div>
               <div style={{ fontSize: 11, color: T.textMuted, fontWeight: 400, marginTop: 2 }}>
-                Reporte ejecutivo completo
+                Próximamente
               </div>
             </div>
           </button>

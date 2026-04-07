@@ -380,8 +380,8 @@ function TraficosContent() {
                           </span>
                         )}
                       </td>
-                      <td className="timestamp">{r.fecha_llegada ? <time dateTime={r.fecha_llegada.split('T')[0]}>{fmtDateShort(r.fecha_llegada)}</time> : '—'}</td>
-                      <td className="desc-text" title={partidaDescMap.get(r.trafico) || fmtDesc(r.descripcion_mercancia) || ''}>{fmtDesc(partidaDescMap.get(r.trafico) || r.descripcion_mercancia) || '—'}</td>
+                      <td className="timestamp">{r.fecha_llegada ? <time dateTime={r.fecha_llegada.split('T')[0]}>{fmtDateShort(r.fecha_llegada)}</time> : <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Pendiente</span>}</td>
+                      <td className="desc-text" title={partidaDescMap.get(r.trafico) || fmtDesc(r.descripcion_mercancia) || ''}>{fmtDesc(partidaDescMap.get(r.trafico) || r.descripcion_mercancia) || <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Pendiente</span>}</td>
                     </tr>
                 )
               })}

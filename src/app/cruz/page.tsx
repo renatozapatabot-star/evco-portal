@@ -316,6 +316,7 @@ export default function CruzChatPage() {
             onSend={sendMessage}
             onStartVoice={startVoice}
             onStopVoice={stopVoice}
+            onAbort={handleAbort}
           />
         </div>
 

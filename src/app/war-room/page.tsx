@@ -73,7 +73,7 @@ export default function WarRoom() {
             const days = t.fecha_llegada ? Math.floor((Date.now() - new Date(t.fecha_llegada).getTime()) / 86400000) : 0
             const color = days > 14 ? 'var(--danger-500)' : days > 7 ? 'var(--warning-500, #D97706)' : 'var(--success)'
             return (
-              <div key={t.trafico} style={{ padding: '6px 0', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
+              <div key={t.trafico} style={{ padding: '6px 0', minHeight: 60, borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 13 }}>
                 <span style={{ fontFamily: 'var(--font-jetbrains-mono)', fontWeight: 600 }}>{t.trafico}</span>
                 <span style={{ color, fontWeight: 700 }}>{days}d</span>
               </div>
@@ -114,7 +114,7 @@ export default function WarRoom() {
             { icon: '⚠️', label: 'Alertas críticas', value: data?.critical || 0, color: 'var(--danger-500)' },
             { icon: '🔴', label: 'Riesgo alto', value: data?.risks?.length || 0, color: 'var(--warning)' },
           ].map(item => (
-            <div key={item.label} style={{ padding: '10px 0', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div key={item.label} style={{ padding: '10px 0', minHeight: 60, borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ fontSize: 14 }}>{item.icon} {item.label}</span>
               <span style={{ fontSize: 22, fontWeight: 800, color: item.value > 0 ? item.color : 'var(--success)', fontFamily: 'var(--font-jetbrains-mono)' }}>{item.value}</span>
             </div>
@@ -131,7 +131,7 @@ export default function WarRoom() {
             { label: 'Urgentes (+7d)', value: urgentes },
             { label: 'Total cartera', value: data?.total || 0 },
           ].map(item => (
-            <div key={item.label} style={{ padding: '10px 0', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between' }}>
+            <div key={item.label} style={{ padding: '10px 0', minHeight: 60, borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ fontSize: 14, color: 'var(--text-secondary)' }}>{item.label}</span>
               <span style={{ fontSize: 20, fontWeight: 800, fontFamily: 'var(--font-jetbrains-mono)' }}>{item.value}</span>
             </div>

@@ -161,7 +161,7 @@ export default function CatalogoPage() {
           {(['count', 'totalValor', 'descripcion'] as SortKey[]).map(key => (
             <button key={key} onClick={() => setSortBy(key)}
               style={{
-                fontSize: 11, fontWeight: 600, padding: '8px 14px', minHeight: 44, borderRadius: 6, cursor: 'pointer',
+                fontSize: 11, fontWeight: 600, padding: '8px 14px', minHeight: 60, borderRadius: 6, cursor: 'pointer',
                 border: `1px solid ${sortBy === key ? 'var(--gold)' : 'var(--border-card)'}`,
                 background: sortBy === key ? 'rgba(196,150,60,0.08)' : 'transparent',
                 color: sortBy === key ? 'var(--gold-dark, #8B6914)' : 'var(--slate-500)',

@@ -423,7 +423,7 @@ function BrokerView() {
       )}
 
       {/* Stat cards */}
-      <div className="kpi-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)', marginTop: 32 }}>
+      <div className="kpi-grid" style={{ marginTop: 32 }}>
         {[
           { href: '/traficos?estatus=En Proceso', value: activeCount, label: 'En proceso', color: 'var(--info-500)', dim: false },
           { href: '/traficos?estatus=Cruzado', value: cruzadosHoy, label: 'Cruzados hoy', color: 'var(--success-500)', dim: cruzadosHoy === 0 },

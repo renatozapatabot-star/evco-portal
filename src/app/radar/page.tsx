@@ -76,7 +76,7 @@ export default async function RadarPage() {
             return Object.entries(bridgeMap).map(([name, hours]) => {
               const avg = hours.reduce((a, b) => a + b, 0) / hours.length
               return (
-                <div key={name} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #2A2A2A' }}>
+                <div key={name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 0', minHeight: 60, borderBottom: '1px solid #2A2A2A' }}>
                   <span style={{ fontSize: 14 }}>{name}</span>
                   <span style={{ fontFamily: 'var(--font-jetbrains-mono)', color: avg > 2 ? 'var(--danger-500)' : avg > 1 ? 'var(--warning-500, #D97706)' : 'var(--success)', fontWeight: 700 }}>{Math.round(avg * 60)}min</span>
                 </div>

@@ -519,7 +519,7 @@ export default function CalendarioPage() {
                   aria-label={cell ? `${cell.day} — ${cell.arrivals} llegada${cell.arrivals !== 1 ? 's' : ''}, ${cell.crossings} cruce${cell.crossings !== 1 ? 's' : ''}` : undefined}
                   style={{
                     minHeight: 60,
-                    padding: 4,
+                    padding: 8,
                     borderRadius: 4,
                     border: isSelected
                       ? `2px solid ${T.gold}`

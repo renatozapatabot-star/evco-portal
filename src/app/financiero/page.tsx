@@ -183,7 +183,7 @@ export default function FinancieroPage() {
                 <span style={{ fontSize: 11, fontWeight: 600, color: D.textSec, textTransform: 'uppercase', letterSpacing: '0.07em' }}>Total importado</span>
               </div>
               <div style={{ fontSize: 24, fontWeight: 700, fontFamily: 'var(--font-mono)', color: D.text }}>
-                ${(summary.totalUSD / 1000000).toFixed(1)}M
+                ${(summary.totalUSD / 1000000).toFixed(1)}M USD
               </div>
               <div style={{ fontSize: 11, color: D.textSec, marginTop: 4 }}>
                 {summary.cruzadoCount} cruzados · {summary.enProcesoCount} en proceso
@@ -196,9 +196,9 @@ export default function FinancieroPage() {
                 <span style={{ fontSize: 11, fontWeight: 600, color: D.textSec, textTransform: 'uppercase', letterSpacing: '0.07em' }}>Cruzados</span>
               </div>
               <div style={{ fontSize: 24, fontWeight: 700, fontFamily: 'var(--font-mono)', color: D.text }}>
-                ${(summary.cruzadoUSD / 1000000).toFixed(1)}M
+                ${(summary.cruzadoUSD / 1000000).toFixed(1)}M USD
               </div>
-              <div style={{ fontSize: 11, color: D.textSec, marginTop: 4 }}>USD · {summary.cruzadoCount} operaciones</div>
+              <div style={{ fontSize: 11, color: D.textSec, marginTop: 4 }}>{summary.cruzadoCount} operaciones</div>
             </div>
 
             <div style={{ background: D.card, border: `1px solid ${D.cardBorder}`, borderRadius: D.r, padding: 20 }}>
@@ -207,9 +207,9 @@ export default function FinancieroPage() {
                 <span style={{ fontSize: 11, fontWeight: 600, color: D.textSec, textTransform: 'uppercase', letterSpacing: '0.07em' }}>En proceso</span>
               </div>
               <div style={{ fontSize: 24, fontWeight: 700, fontFamily: 'var(--font-mono)', color: D.text }}>
-                ${(summary.enProcesoUSD / 1000000).toFixed(1)}M
+                ${(summary.enProcesoUSD / 1000000).toFixed(1)}M USD
               </div>
-              <div style={{ fontSize: 11, color: D.textSec, marginTop: 4 }}>USD · {summary.enProcesoCount} tráficos</div>
+              <div style={{ fontSize: 11, color: D.textSec, marginTop: 4 }}>{summary.enProcesoCount} tráficos</div>
             </div>
           </div>
         )}
@@ -234,7 +234,7 @@ export default function FinancieroPage() {
                 }}>
                   <div style={{ fontSize: 11, color: D.textSec, marginBottom: 4 }}>{b.label}</div>
                   <div style={{ fontSize: 18, fontWeight: 700, fontFamily: 'var(--font-mono)', color: b.color }}>
-                    ${(b.value / 1000).toFixed(0)}K
+                    ${(b.value / 1000).toFixed(0)}K USD
                   </div>
                   <div style={{ marginTop: 6, height: 4, borderRadius: 2, background: 'var(--border)' }}>
                     <div style={{
@@ -262,7 +262,7 @@ export default function FinancieroPage() {
                 return (
                   <div key={m.month} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
                     <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: D.textSec }}>
-                      ${(m.amount / 1000000).toFixed(1)}M
+                      ${(m.amount / 1000000).toFixed(1)}M USD
                     </span>
                     <div style={{
                       width: '100%', maxWidth: 48, height: `${Math.max(pct, 4)}%`,

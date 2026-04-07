@@ -60,6 +60,7 @@ export function DocumentosView() {
     setUploadDocType('')
   }, [])
 
+  // TODO: Replace with real Supabase Storage upload
   const confirmUpload = useCallback(() => {
     if (!uploadFile || !uploadDocType) return
     setUploading(true)
@@ -114,15 +115,15 @@ export function DocumentosView() {
       {!loading && pendingRequired > 0 && (
         <div style={{
           margin: '0 20px 16px',
-          background: 'rgba(192,48,48,0.06)',
-          border: '1px solid rgba(192,48,48,0.25)',
+          background: 'rgba(217,119,6,0.06)',
+          border: '1px solid rgba(217,119,6,0.25)',
           borderRadius: 10, padding: '14px 16px',
         }}>
-          <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--danger-500, #C23B22)' }}>
+          <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--gold-dark, #8B6914)' }}>
             {pendingRequired} documento{pendingRequired !== 1 ? 's' : ''} requerido{pendingRequired !== 1 ? 's' : ''} pendiente{pendingRequired !== 1 ? 's' : ''}
           </div>
           <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4 }}>
-            Riesgo de observación ante SAT en próxima revisión.
+            Documentos requeridos pendientes para cumplimiento SAT
           </div>
         </div>
       )}
@@ -247,7 +248,7 @@ export function DocumentosView() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <div style={{ position: 'relative' }}>
                   <select value={uploadDocType} onChange={e => setUploadDocType(e.target.value)}
-                    style={{ width: '100%', padding: '10px 28px 10px 10px', fontSize: 12, border: '1px solid var(--border)', borderRadius: 8, background: 'var(--bg-card)', color: 'var(--text-primary)', appearance: 'none', cursor: 'pointer', minHeight: 44 }}>
+                    style={{ width: '100%', padding: '10px 28px 10px 10px', fontSize: 12, border: '1px solid var(--border)', borderRadius: 8, background: 'var(--bg-card)', color: 'var(--text-primary)', appearance: 'none', cursor: 'pointer', minHeight: 60 }}>
                     <option value="">Tipo...</option>
                     {LEGAL_DOCS.map(d => <option key={d.id} value={d.id}>{d.label}</option>)}
                     <option value="otro">Otro</option>
@@ -256,11 +257,11 @@ export function DocumentosView() {
                 </div>
                 <div style={{ display: 'flex', gap: 6 }}>
                   <button onClick={confirmUpload} disabled={!uploadDocType}
-                    style={{ flex: 1, background: uploadDocType ? 'var(--gold)' : 'var(--border)', color: uploadDocType ? '#FFF' : 'var(--text-muted)', border: 'none', borderRadius: 8, padding: '10px', fontSize: 12, fontWeight: 700, cursor: uploadDocType ? 'pointer' : 'default', minHeight: 44 }}>
+                    style={{ flex: 1, background: uploadDocType ? 'var(--gold)' : 'var(--border)', color: uploadDocType ? '#FFF' : 'var(--text-muted)', border: 'none', borderRadius: 8, padding: '10px', fontSize: 12, fontWeight: 700, cursor: uploadDocType ? 'pointer' : 'default', minHeight: 60 }}>
                     Subir
                   </button>
                   <button onClick={() => { setUploadFile(null); setUploadDocType('') }}
-                    style={{ background: 'transparent', border: 'none', fontSize: 12, color: 'var(--text-muted)', cursor: 'pointer', padding: '10px 6px', minHeight: 44 }}>
+                    style={{ background: 'transparent', border: 'none', fontSize: 12, color: 'var(--text-muted)', cursor: 'pointer', padding: '10px 6px', minHeight: 60 }}>
                     ✕
                   </button>
                 </div>

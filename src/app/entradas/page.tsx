@@ -253,22 +253,22 @@ export default function EntradasPage() {
                       )}
                     </td>
                     <td style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--text-secondary)' }}>
-                      {r.fecha_llegada_mercancia ? <time dateTime={r.fecha_llegada_mercancia.split('T')[0]}>{fmtDate(r.fecha_llegada_mercancia)}</time> : '—'}
+                      {r.fecha_llegada_mercancia ? <time dateTime={r.fecha_llegada_mercancia.split('T')[0]}>{fmtDate(r.fecha_llegada_mercancia)}</time> : <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Pendiente</span>}
                     </td>
                     <td className="desc-text" style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
                       {getDesc(r) || <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Pendiente tráfico</span>}
                     </td>
                     <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--text-secondary)' }}>
-                      {r.cantidad_bultos ?? '—'}
+                      {r.cantidad_bultos ?? <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Pendiente</span>}
                     </td>
                     <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--text-secondary)' }}>
-                      {r.peso_bruto ? `${Number(r.peso_bruto).toLocaleString('es-MX')}` : '—'}
+                      {r.peso_bruto ? `${Number(r.peso_bruto).toLocaleString('es-MX')}` : <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Pendiente</span>}
                     </td>
                     <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
-                      {r.trafico ? fmtCarrier(transportMap.get(r.trafico) || '') || '—' : '—'}
+                      {r.trafico ? fmtCarrier(transportMap.get(r.trafico) || '') || <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Pendiente</span> : <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Pendiente</span>}
                     </td>
                     <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-muted)' }}>
-                      {r.num_talon || r.num_caja_trailer || '—'}
+                      {r.num_talon || r.num_caja_trailer || <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Pendiente</span>}
                     </td>
                   </tr>
                 ))}

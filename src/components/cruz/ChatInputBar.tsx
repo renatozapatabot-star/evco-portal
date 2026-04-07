@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, useEffect } from 'react'
-import { Send, Mic } from 'lucide-react'
+import { Send, Mic, Square } from 'lucide-react'
 import { GOLD, GOLD_GRADIENT } from '@/lib/design-system'
 import { D } from './ChatMessageList'
 
@@ -13,6 +13,7 @@ interface ChatInputBarProps {
   onSend: (text: string) => void
   onStartVoice: () => void
   onStopVoice: () => void
+  onAbort?: () => void
 }
 
 export default function ChatInputBar({
@@ -23,6 +24,7 @@ export default function ChatInputBar({
   onSend,
   onStartVoice,
   onStopVoice,
+  onAbort,
 }: ChatInputBarProps) {
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
@@ -69,19 +71,34 @@ export default function ChatInputBar({
         >
           <Mic size={20} />
         </button>
-        <button
-          onClick={() => onSend(input)}
-          disabled={loading || !input.trim()}
-          style={{
-            width: 60, height: 60, borderRadius: 14, border: 'none', cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-            background: GOLD_GRADIENT, color: 'var(--text-primary)',
-            opacity: loading || !input.trim() ? 0.4 : 1,
-            transition: 'opacity 0.15s',
-          }}
-        >
-          <Send size={18} strokeWidth={2} />
-        </button>
+        {loading && onAbort ? (
+          <button
+            onClick={onAbort}
+            style={{
+              width: 60, height: 60, borderRadius: 14, border: 'none', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+              background: 'var(--danger-500, #DC2626)', color: '#fff',
+              transition: 'opacity 0.15s',
+            }}
+            title="Detener"
+          >
+            <Square size={18} strokeWidth={2} />
+          </button>
+        ) : (
+          <button
+            onClick={() => onSend(input)}
+            disabled={loading || !input.trim()}
+            style={{
+              width: 60, height: 60, borderRadius: 14, border: 'none', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+              background: GOLD_GRADIENT, color: 'var(--text-primary)',
+              opacity: loading || !input.trim() ? 0.4 : 1,
+              transition: 'opacity 0.15s',
+            }}
+          >
+            <Send size={18} strokeWidth={2} />
+          </button>
+        )}
       </div>
     </div>
   )

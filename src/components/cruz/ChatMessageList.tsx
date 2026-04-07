@@ -70,9 +70,9 @@ export default function ChatMessageList({
     const parts = text.split(traficoPattern)
     return parts.map((part, i) => {
       if (traficoTest.test(part))
-        return <Link key={i} href={`/traficos/${part}`} style={{ color: GOLD, fontWeight: 700, fontFamily: 'var(--font-data)', textDecoration: 'none', borderBottom: `1px solid rgba(201,168,76,0.4)` }}>{part}</Link>
+        return <Link key={i} href={`/traficos/${part}`} style={{ color: GOLD, fontWeight: 700, fontFamily: 'var(--font-data)', textDecoration: 'none', borderBottom: `1px solid rgba(201,168,76,0.4)`, whiteSpace: 'nowrap' }}>{part}</Link>
       if (/^[67]\d{6}$/.test(part))
-        return <Link key={i} href={`/pedimentos?search=${part}`} style={{ color: GOLD, fontWeight: 700, fontFamily: 'var(--font-data)', textDecoration: 'none' }}>{part}</Link>
+        return <Link key={i} href={`/pedimentos?search=${part}`} style={{ color: GOLD, fontWeight: 700, fontFamily: 'var(--font-data)', textDecoration: 'none', whiteSpace: 'nowrap' }}>{part}</Link>
       return <span key={i}>{part}</span>
     })
   }

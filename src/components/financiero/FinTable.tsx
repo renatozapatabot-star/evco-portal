@@ -234,6 +234,7 @@ export function FinTable({ facturas, facturasLoading, isMobile, companyFilter }:
               </span>
               <div style={{ display: 'flex', gap: 8 }}>
                 <button
+                  aria-label="Página anterior"
                   onClick={() => setPage(p => Math.max(0, p - 1))}
                   disabled={page === 0}
                   style={{
@@ -250,6 +251,7 @@ export function FinTable({ facturas, facturasLoading, isMobile, companyFilter }:
                   <ChevronLeft size={16} /> Anterior
                 </button>
                 <button
+                  aria-label="Página siguiente"
                   onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
                   disabled={page >= totalPages - 1}
                   style={{
@@ -285,6 +287,8 @@ function SortTh({ col, label, sort, onSort, align }: {
   const isActive = sort.col === col
   return (
     <th
+      role="columnheader"
+      aria-sort={isActive ? (sort.dir === 'asc' ? 'ascending' : 'descending') : 'none'}
       onClick={() => onSort(col)}
       style={{
         padding: '10px 20px',
@@ -300,7 +304,7 @@ function SortTh({ col, label, sort, onSort, align }: {
       }}
     >
       {label}
-      <ArrowUpDown size={12} style={{ marginLeft: 4, opacity: isActive ? 1 : 0.3, verticalAlign: 'middle' }} />
+      <ArrowUpDown size={12} style={{ marginLeft: 4, opacity: isActive ? 1 : 0.3, verticalAlign: 'middle', transform: isActive && sort.dir === 'asc' ? 'scaleY(-1)' : undefined, transition: 'transform 150ms' }} />
     </th>
   )
 }

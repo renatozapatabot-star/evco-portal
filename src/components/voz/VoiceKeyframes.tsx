@@ -31,6 +31,10 @@ export default function VoiceKeyframes() {
         0%, 100% { opacity: 0.7; }
         50% { opacity: 1; }
       }
+      @keyframes pulse-dot {
+        0%, 100% { opacity: 0.4; transform: scale(0.8); }
+        50% { opacity: 1; transform: scale(1.2); }
+      }
     `}</style>
   )
 }

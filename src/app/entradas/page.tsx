@@ -203,7 +203,7 @@ export default function EntradasPage() {
                   </span>
                 </div>
                 <div style={{ fontSize: 13, color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {getDesc(r) || <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Pendiente tráfico</span>}
+                  {getDesc(r) || <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }} title="Sin tráfico asignado">Pendiente tráfico</span>}
                 </div>
               </div>
             ))}
@@ -256,7 +256,7 @@ export default function EntradasPage() {
                       {r.fecha_llegada_mercancia ? <time dateTime={r.fecha_llegada_mercancia.split('T')[0]}>{fmtDate(r.fecha_llegada_mercancia)}</time> : <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Pendiente</span>}
                     </td>
                     <td className="desc-text" style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-                      {getDesc(r) || <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Pendiente tráfico</span>}
+                      {getDesc(r) || <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }} title="Sin tráfico asignado">Pendiente tráfico</span>}
                     </td>
                     <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--text-secondary)' }}>
                       {r.cantidad_bultos ?? <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Pendiente</span>}

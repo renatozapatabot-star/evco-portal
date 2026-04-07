@@ -166,7 +166,7 @@ export default function CatalogoPage() {
                 background: sortBy === key ? 'rgba(196,150,60,0.08)' : 'transparent',
                 color: sortBy === key ? 'var(--gold-dark, #8B6914)' : 'var(--slate-500)',
               }}>
-              {key === 'count' ? 'Frecuencia' : key === 'totalValor' ? 'Valor' : 'A-Z'}
+              {key === 'count' ? `Frecuencia${sortBy === 'count' ? ' ↓' : ''}` : key === 'totalValor' ? `Valor${sortBy === 'totalValor' ? ' ↓' : ''}` : `A-Z${sortBy === 'descripcion' ? ' ↓' : ''}`}
             </button>
           ))}
         </div>

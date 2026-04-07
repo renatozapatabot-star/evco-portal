@@ -230,11 +230,14 @@ export default function BodegaPage() {
           >
             {t.label}
             {t.badge != null && (
-              <span style={{
-                background: 'var(--teal, #0D9488)', color: '#FFFFFF',
-                fontSize: 11, fontWeight: 700, padding: '2px 7px',
-                borderRadius: 9999, lineHeight: 1.2,
-              }}>
+              <span
+                aria-label={`${t.badge} entradas en bodega`}
+                style={{
+                  background: 'var(--teal, #0D9488)', color: '#FFFFFF',
+                  fontSize: 11, fontWeight: 700, padding: '2px 7px',
+                  borderRadius: 9999, lineHeight: 1.2,
+                }}
+              >
                 {t.badge}
               </span>
             )}

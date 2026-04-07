@@ -118,7 +118,10 @@ export default function CrucesPage() {
         </div>
 
         {/* Best time recommendation */}
-        {bestHour && (
+        {loading && (
+          <div className="skeleton-shimmer" style={{ height: 80, borderRadius: 12, marginBottom: 16 }} />
+        )}
+        {!loading && bestHour && (
           <div style={{
             marginBottom: 24, padding: '16px 20px', borderRadius: 8,
             background: 'rgba(22,163,74,0.08)', border: '1px solid rgba(22,163,74,0.2)',

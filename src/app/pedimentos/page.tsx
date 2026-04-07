@@ -274,10 +274,10 @@ export default function PedimentosPage() {
               <thead>
                 <tr>
                   <th style={{ cursor: 'pointer', width: 160 }} onClick={() => toggleSort('pedimento')}>Pedimento<SortArrow col="pedimento" /></th>
-                  <th style={{ width: 140 }}>Tráfico</th>
+                  <th style={{ width: 140, cursor: 'pointer' }} onClick={() => toggleSort('trafico')}>Tráfico<SortArrow col="trafico" /></th>
                   <th style={{ cursor: 'pointer', width: 110 }} onClick={() => toggleSort('fecha')}>Fecha<SortArrow col="fecha" /></th>
                   <th>Mercancía</th>
-                  <th style={{ width: 100 }}>Régimen</th>
+                  <th style={{ width: 100, cursor: 'pointer' }} onClick={() => toggleSort('regimen')}>Régimen<SortArrow col="regimen" /></th>
                   <th style={{ textAlign: 'right', cursor: 'pointer', width: 130 }} onClick={() => toggleSort('importe')}>Valor USD<SortArrow col="importe" /></th>
                 </tr>
               </thead>

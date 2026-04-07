@@ -304,7 +304,7 @@ export default function SimuladorPage() {
                   )}
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: 8, marginBottom: 10 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)', gap: 8, marginBottom: 10 }}>
                   {[
                     { label: 'DTA', value: `$${opt.dta.toLocaleString()}` },
                     { label: 'IGI', value: opt.igi === 0 ? '$0 (T-MEC)' : `$${opt.igi.toLocaleString()}` },

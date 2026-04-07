@@ -149,7 +149,17 @@ function exportCSV(rows: TraficoRow[], clientClave: string) {
     (r.proveedores ?? '').replace(/,/g, ';'),
   ].join(','))
 
-  const blob = new Blob([[...meta, headers.join(','), ...csvRows].join('\n')], { type: 'text/csv' })
+  // Totals row
+  const totalTraficos = rows.length
+  const totalValue = rows.reduce((sum, r) => sum + (Number(r.importe_total) || 0), 0)
+  const tmecCount = rows.filter(r => {
+    const reg = (r.regimen || '').toUpperCase()
+    return reg === 'ITE' || reg === 'ITR' || reg === 'IMD'
+  }).length
+  const tmecPct = totalTraficos > 0 ? ((tmecCount / totalTraficos) * 100).toFixed(1) : '0.0'
+  const totalsRow = `TOTALES,${totalTraficos} traficos,,,,${totalValue.toFixed(2)},,T-MEC ${tmecPct}%`
+
+  const blob = new Blob([[...meta, headers.join(','), ...csvRows, '', totalsRow].join('\n')], { type: 'text/csv' })
   const fname = `CRUZ_Traficos_${clientClave}_${new Date().toISOString().split('T')[0]}.csv`
   const a = document.createElement('a')
   a.href = URL.createObjectURL(blob)
@@ -292,7 +302,7 @@ export function ReportesView() {
       const suppliers = provStr.split(',').map(s => s.trim()).filter(Boolean)
       suppliers.forEach(rawName => {
         // Resolve PRV_ codes to real supplier names
-        const name = supplierLookup.get(rawName) || rawName
+        const name = supplierLookup.get(rawName) || rawName.replace(/^PRV_/, 'Proveedor #')
         const prev = suppMap.get(name) || { count: 0, totalValue: 0, tmecCount: 0 }
         prev.count++
         prev.totalValue += Number(t.importe_total) || 0
@@ -395,7 +405,7 @@ export function ReportesView() {
                 allowDecimals={false}
               />
               <Tooltip content={<CustomTooltip />} />
-              <Bar dataKey="count" fill={T.gold} radius={[4, 4, 0, 0]} cursor="pointer"
+              <Bar dataKey="count" fill={T.gold} radius={[4, 4, 0, 0]} cursor="pointer" label={{ position: 'top', fill: T.textMuted, fontSize: 11, fontFamily: 'var(--font-mono)' }}
                 onClick={(_data: unknown, idx: number) => {
                   const bucket = monthlyData[idx]
                   if (bucket?.month) {

@@ -268,7 +268,7 @@ function TraficosContent() {
           </button>
         </div>
 
-        {!loading && rows.length > 0 && (
+        {!loading && rows.length > 0 && !isMobile && (
           <div className="summary-bar">
             <div className="summary-stat"><span className="summary-value">{rows.length.toLocaleString('es-MX')}</span><span className="summary-label"> operaciones</span></div>
           </div>
@@ -301,7 +301,7 @@ function TraficosContent() {
                 <th scope="col" style={{ width: 28 }}></th>
                 <th scope="col" style={{ width: 160, cursor: 'pointer' }} onClick={() => toggleSort('trafico')} aria-sort={sort.column === 'trafico' ? (sort.direction === 'asc' ? 'ascending' : 'descending') : undefined}>Tráfico<SortArrow col="trafico" /></th>
                 <th scope="col" style={{ width: 110 }}>Pedimento</th>
-                <th scope="col" style={{ width: 120 }}>Estado</th>
+                <th scope="col" style={{ width: 120, cursor: 'pointer' }} onClick={() => toggleSort('estatus')} aria-sort={sort.column === 'estatus' ? (sort.direction === 'asc' ? 'ascending' : 'descending') : undefined}>Estado<SortArrow col="estatus" /></th>
                 <th scope="col" style={{ width: 110, cursor: 'pointer' }} onClick={() => toggleSort('fecha_llegada')} aria-sort={sort.column === 'fecha_llegada' ? (sort.direction === 'asc' ? 'ascending' : 'descending') : undefined}>Fecha<SortArrow col="fecha_llegada" /></th>
                 <th scope="col">Descripción</th>
               </tr>

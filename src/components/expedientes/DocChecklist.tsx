@@ -171,7 +171,7 @@ export function DocChecklist({ trafico, pedimento, docs, entrada, proveedor, val
             display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600,
             color: 'var(--gold-dark, #8B6914)', background: 'none',
             border: '1px solid var(--border-card, #E8E5E0)', borderRadius: 8,
-            padding: '8px 14px', textDecoration: 'none', minHeight: 40,
+            padding: '8px 14px', textDecoration: 'none', minHeight: 60,
           }} onClick={e => e.stopPropagation()}>
           <ExternalLink size={13} /> Ver tráfico
         </Link>
@@ -180,7 +180,7 @@ export function DocChecklist({ trafico, pedimento, docs, entrada, proveedor, val
             display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600,
             color: 'var(--text-muted)', background: 'none',
             border: '1px solid var(--border-card, #E8E5E0)', borderRadius: 8,
-            padding: '8px 14px', cursor: 'pointer', minHeight: 40,
+            padding: '8px 14px', cursor: 'pointer', minHeight: 60,
           }}>
           <Mail size={13} /> Solicitar documento
         </button>

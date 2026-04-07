@@ -132,6 +132,17 @@ export function DocumentosView() {
 
       {/* Document checklist — LEFT */}
       <div>
+        {!loading && companyDocs.length === 0 && (
+          <div style={{
+            textAlign: 'center', padding: '32px 20px', marginBottom: 16,
+            background: 'var(--bg-card)', border: '1px solid var(--border, #E8E5E0)',
+            borderRadius: 10,
+          }}>
+            <div style={{ fontSize: 32, marginBottom: 8 }}>📄</div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>Sin documentos</div>
+            <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4 }}>Suba sus documentos para comenzar.</div>
+          </div>
+        )}
         {loading ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {Array.from({ length: 6 }).map((_, i) => (
@@ -174,7 +185,9 @@ export function DocumentosView() {
                         {doc.label}
                       </span>
                       {doc.required && !complete && (
-                        <span style={{
+                        <span
+                          aria-label="Documento requerido"
+                          style={{
                           background: 'rgba(192,48,48,0.1)', color: 'var(--danger-500, #C23B22)',
                           borderRadius: 4, padding: '1px 5px', fontSize: 10, fontWeight: 700,
                         }}>
@@ -295,7 +308,7 @@ export function DocumentosView() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <div style={{ position: 'relative' }}>
                   <select value={uploadDocType} onChange={e => setUploadDocType(e.target.value)}
-                    style={{ width: '100%', padding: '10px 28px 10px 10px', fontSize: 12, border: '1px solid var(--border)', borderRadius: 8, background: 'var(--bg-card)', color: 'var(--text-primary)', appearance: 'none', cursor: 'pointer', minHeight: 60 }}>
+                    style={{ width: '100%', padding: '10px 28px 10px 10px', fontSize: 12, fontFamily: 'var(--font-mono)', border: '1px solid var(--border)', borderRadius: 8, background: 'var(--bg-card)', color: 'var(--text-primary)', appearance: 'none', cursor: 'pointer', minHeight: 60 }}>
                     <option value="">Tipo...</option>
                     {LEGAL_DOCS.map(d => <option key={d.id} value={d.id}>{d.label}</option>)}
                     <option value="otro">Otro</option>

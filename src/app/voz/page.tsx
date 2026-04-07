@@ -60,16 +60,33 @@ export default function VozPage() {
           <VoiceOrb voiceState={voiceState} onTap={handleOrbTap} />
 
           {/* Status Text */}
-          <p style={{
-            color: voiceState === 'LISTENING' ? COLORS.gold : COLORS.grayLight,
-            fontSize: 16,
-            fontWeight: voiceState === 'LISTENING' ? 600 : 400,
-            letterSpacing: 0.5,
-            margin: 0,
-            transition: 'all 0.3s ease',
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 8,
           }}>
-            {STATUS_LABELS[voiceState]}
-          </p>
+            {voiceState === 'PROCESSING' && (
+              <span style={{
+                display: 'inline-block',
+                width: 10,
+                height: 10,
+                borderRadius: '50%',
+                background: COLORS.gold,
+                animation: 'pulse-dot 1.2s ease-in-out infinite',
+              }} />
+            )}
+            <p style={{
+              color: voiceState === 'LISTENING' ? COLORS.gold : COLORS.grayLight,
+              fontSize: 16,
+              fontWeight: voiceState === 'LISTENING' || voiceState === 'PROCESSING' ? 600 : 400,
+              letterSpacing: 0.5,
+              margin: 0,
+              transition: 'all 0.3s ease',
+            }}>
+              {STATUS_LABELS[voiceState]}
+            </p>
+          </div>
 
           {/* Transcript Area */}
           <div style={{
@@ -175,6 +192,7 @@ export default function VozPage() {
             Toca el orbe o di &ldquo;Oye Cruz&rdquo;
           </p>
           <button
+            aria-label="Volver al panel principal"
             onClick={() => router.push('/')}
             style={{
               marginTop: 8,

@@ -384,7 +384,7 @@ function BrokerView() {
           </div>
           <button
             onClick={() => { dismissSuggestion(suggestion.id); setSuggestionDismissed(true) }}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'var(--text-muted)' }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 8, minHeight: 44, color: 'var(--text-muted)' }}
             aria-label="Descartar"
           >
             <X size={16} />
@@ -402,6 +402,11 @@ function BrokerView() {
             <div className="status-banner-text">
               {activeCount === 0 ? 'Sin pendientes · Buen día' : `Todo en orden · ${activeCount} tráficos en curso`}
             </div>
+            {activeCount === 0 && (
+              <Link href="/traficos" style={{ display: 'inline-block', marginTop: 8, fontSize: 13, fontWeight: 600, color: 'var(--gold-dark, #8B6914)', textDecoration: 'none' }}>
+                Ver todos los tráficos →
+              </Link>
+            )}
           </div>
         </div>
       ) : (

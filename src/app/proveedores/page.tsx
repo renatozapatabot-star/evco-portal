@@ -124,7 +124,8 @@ export default function ProveedoresPage() {
       }
 
       for (const raw of names) {
-        const resolved = supplierLookup.get(raw.trim()) || raw.trim()
+        const rawTrimmed = raw.trim()
+        const resolved = supplierLookup.get(rawTrimmed) || rawTrimmed.replace(/^PRV_/, 'Proveedor #')
         const name = resolved
         if (!name) continue
         const key = name.toLowerCase()

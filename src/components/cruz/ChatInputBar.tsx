@@ -61,7 +61,14 @@ export default function ChatInputBar({
           }}
         />
         <button
-          onClick={listening ? onStopVoice : onStartVoice}
+          onClick={() => {
+            if (listening) {
+              onStopVoice()
+            } else {
+              if ('vibrate' in navigator) navigator.vibrate(50)
+              onStartVoice()
+            }
+          }}
           style={{
             width: 60, height: 60, borderRadius: 14, border: 'none', cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,

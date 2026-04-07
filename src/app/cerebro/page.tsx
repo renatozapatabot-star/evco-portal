@@ -129,7 +129,7 @@ export default function CerebroPage() {
               Decisiones Recientes
             </div>
             {decisions.length === 0 ? (
-              <EmptyState icon="🧠" title="Sin decisiones" description="Las decisiones aparecerán cuando el sistema opere." />
+              <EmptyState icon="🧠" title="Sin decisiones recientes" description="Las decisiones autónomas aparecerán aquí." />
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {decisions.slice(0, 15).map(d => (
@@ -172,8 +172,8 @@ export default function CerebroPage() {
             {patterns.length === 0 ? (
               <EmptyState icon="📊" title="Sin patrones" description="CRUZ aprenderá patrones conforme opere." />
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {patterns.slice(0, 20).map(p => (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 400, overflowY: 'auto' }}>
+                {patterns.map(p => (
                   <div key={p.id} style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                     padding: '8px 0', borderBottom: `1px solid ${T.border}`,

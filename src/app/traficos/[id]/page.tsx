@@ -59,7 +59,7 @@ function ProveedoresCard({ proveedores, pais, supplierLookup }: { proveedores: s
       </div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
         {list.map(prov => {
-          const name = supplierLookup.get(prov) || prov
+          const name = supplierLookup.get(prov) || prov.replace(/^PRV_/, 'Proveedor ')
           return (
             <Link key={prov} href={`/proveedores?search=${encodeURIComponent(name)}`} style={{
               fontSize: 13, fontWeight: 600, padding: '6px 14px',
@@ -165,25 +165,39 @@ function TimelineTab({ traficoId, trafico }: { traficoId: string; trafico: Recor
         merged.push(ev as TimelineEvent)
       }
 
-      // Solicitudes as timeline events
+      // Solicitudes as timeline events — deduplicate by doc_type (group repeated solicitudes)
+      const solsByType = new Map<string, { count: number; first: string; last: string; id: string; recibido_at?: string; status?: string }>()
       for (const s of (dsRes.data ?? [])) {
-        const docName = (s.doc_type || '').replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, (c: string) => c.toUpperCase())
+        const key = s.doc_type || 'unknown'
+        const existing = solsByType.get(key)
+        if (existing) {
+          existing.count++
+          if (s.solicitado_at < existing.first) existing.first = s.solicitado_at
+          if (s.solicitado_at > existing.last) existing.last = s.solicitado_at
+          if (s.status === 'recibido' && s.recibido_at) { existing.recibido_at = s.recibido_at; existing.status = 'recibido' }
+        } else {
+          solsByType.set(key, { count: 1, first: s.solicitado_at, last: s.solicitado_at, id: s.id, recibido_at: s.recibido_at ?? undefined, status: s.status ?? undefined })
+        }
+      }
+      for (const [docType, info] of solsByType) {
+        const docName = docType.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, (c: string) => c.toUpperCase())
+        const label = info.count > 1 ? `CRUZ solicitó ${docName} (×${info.count})` : `CRUZ solicitó ${docName}`
         merged.push({
-          id: `sol-${s.id}`,
+          id: `sol-${info.id}`,
           trafico_id: traficoId,
           event_type: 'doc_received',
-          content_es: `RZ solicitó ${docName}`,
+          content_es: label,
           source: 'cruz_ai',
-          created_at: s.solicitado_at,
+          created_at: info.last,
         })
-        if (s.status === 'recibido' && s.recibido_at) {
+        if (info.status === 'recibido' && info.recibido_at) {
           merged.push({
-            id: `sol-r-${s.id}`,
+            id: `sol-r-${info.id}`,
             trafico_id: traficoId,
             event_type: 'doc_uploaded',
             content_es: `Documento recibido: ${docName}`,
             source: 'system',
-            created_at: s.recibido_at,
+            created_at: info.recibido_at,
           })
         }
       }
@@ -350,6 +364,7 @@ export default function TraficoDetailPage() {
   const [trafico, setTrafico] = useState<Record<string, unknown> | null>(null)
   const [documentos, setDocumentos] = useState<Record<string, unknown>[]>([])
   const [entradas, setEntradas] = useState<Record<string, unknown>[]>([])
+  const [facturas, setFacturas] = useState<Record<string, unknown>[]>([])
   const [completeness, setCompleteness] = useState<Completeness | null>(null)
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState<string | null>(null)
@@ -360,7 +375,7 @@ export default function TraficoDetailPage() {
   const [viewerIndex, setViewerIndex] = useState(-1)
   const [solicitadoOk, setSolicitadoOk] = useState(false)
   const [solicitudes, setSolicitudes] = useState<Solicitud[]>([])
-  const [rates, setRates] = useState<{ dta: number; iva: number; tc: number } | null>(null)
+  const [rates, setRates] = useState<{ dta_amount: number; iva: number; tc: number } | null>(null)
   const [notifying, setNotifying] = useState(false)
   const [supplierLookup, setSupplierLookup] = useState<Map<string, string>>(new Map())
   const [riskAssessment, setRiskAssessment] = useState<MeshAssessment | null>(null)
@@ -467,12 +482,14 @@ export default function TraficoDetailPage() {
       const t = tRes.trafico ?? tRes.data ?? null
       const docs = tRes.documents ?? []
       const ent = tRes.entradas ?? []
+      const facts = tRes.facturas ?? []
       setTrafico(t)
       setDocumentos(docs)
       setMissingDocs(getMissingDocs(docs))
       setEntradas(ent)
-      if (!ratesRes.error && ratesRes.dta?.rate && ratesRes.iva?.rate && ratesRes.tc?.rate) {
-        setRates({ dta: ratesRes.dta.rate, iva: ratesRes.iva.rate, tc: ratesRes.tc.rate })
+      setFacturas(facts)
+      if (!ratesRes.error && ratesRes.iva?.rate && ratesRes.tc?.rate) {
+        setRates({ dta_amount: ratesRes.dta?.amount || 462, iva: ratesRes.iva.rate, tc: ratesRes.tc.rate })
       }
 
       // Match completeness row for this trafico
@@ -534,6 +551,11 @@ export default function TraficoDetailPage() {
     return result.score
   }, [documentos, isTMEC])
 
+  // ── Facturas total (fallback when importe_total is empty) ──
+  const facturasTotal = useMemo(() => {
+    return facturas.reduce((sum, f) => sum + (Number((f as Record<string, unknown>).valor_usd) || 0), 0)
+  }, [facturas])
+
   // ── Grouped docs ──
   const groupedDocs = useMemo(() => {
     const groups: Record<string, Record<string, unknown>[]> = {}
@@ -564,7 +586,7 @@ export default function TraficoDetailPage() {
     { num: 5, label: 'Previo', detail: 'No requerido', date: null },
     { num: 6, label: 'Pedimento transmitido', detail: t.pedimento ? fmtPedimentoShort(t.pedimento as string) : 'Pendiente', date: (t.fecha_transmision as string | null) || null },
     { num: 7, label: 'Pedimento pagado', detail: t.fecha_pago ? formatAbsoluteETA(t.fecha_pago as string) : 'Pendiente', date: (t.fecha_pago as string | null) || null },
-    { num: 8, label: 'Semaforo asignado', detail: (t.semaforo as number) === 0 ? 'Verde' : (t.semaforo as number) === 1 ? 'Rojo' : 'Pendiente', date: (t.fecha_modulacion as string | null) || null },
+    { num: 8, label: 'Semáforo asignado', detail: (t.semaforo as number) === 0 ? 'Verde' : (t.semaforo as number) === 1 ? 'Rojo' : 'Pendiente', date: (t.fecha_modulacion as string | null) || null },
     { num: 9, label: 'En cruce', detail: t.fecha_cruce ? formatAbsoluteETA(t.fecha_cruce as string) : 'Pendiente', date: (t.fecha_cruce as string | null) || null },
     { num: 10, label: 'Cruzado', detail: isCruzado && t.fecha_cruce ? formatAbsoluteETA(t.fecha_cruce as string) : 'Pendiente', date: isCruzado ? (t.fecha_cruce as string | null) : null },
     { num: 11, label: 'En ruta', detail: fmtCarrier(t.transportista_mexicano as string) || 'Por asignar', date: null },
@@ -591,9 +613,9 @@ export default function TraficoDetailPage() {
   if (!t) return (
     <div style={{ padding: 24 }}>
       <button onClick={() => router.push('/traficos')} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: 13 }}>
-        <ArrowLeft size={14} /> Volver a Traficos
+        <ArrowLeft size={14} /> Volver a Tráficos
       </button>
-      <EmptyState icon="🔍" title="Trafico no encontrado" description="No se encontro un trafico con este identificador" cta={{ label: 'Ver todos los traficos', href: '/traficos' }} />
+      <EmptyState icon="🔍" title="Tráfico no encontrado" description="No se encontró un tráfico con este identificador" cta={{ label: 'Ver todos los tráficos', href: '/traficos' }} />
     </div>
   )
 
@@ -618,7 +640,7 @@ export default function TraficoDetailPage() {
       <StickyActionBar
         traficoNumber={fmtId(String(t.trafico ?? ''))}
         status={String(t.estatus ?? 'En Proceso')}
-        valueUSD={t.importe_total ? fmtUSD(Number(t.importe_total)) + ' USD' : null}
+        valueUSD={(Number(t.importe_total) || facturasTotal) ? fmtUSD(Number(t.importe_total) || facturasTotal) + ' USD' : null}
         hasMissingDocs={missingDocs.length > 0}
         onSolicitar={missingDocs.length > 0 ? () => setShowSolicitarModal(true) : undefined}
       />
@@ -652,7 +674,7 @@ export default function TraficoDetailPage() {
         }}>
           <span style={{ fontSize: 20 }}>🔴</span>
           <span style={{ flex: 1, fontSize: 'var(--text-body)', color: 'var(--danger-500)', fontWeight: 600 }}>
-            Semaforo rojo asignado -- revision en aduana
+            Semáforo rojo asignado — revisión en aduana
           </span>
           {isBroker && (
             <button
@@ -802,7 +824,7 @@ export default function TraficoDetailPage() {
 
         {/* ── Key Stats Row ── */}
         {(() => {
-          const valorUSD = Number(t.importe_total) || 0
+          const valorUSD = Number(t.importe_total) || facturasTotal || 0
           const tcVal = Number(t.tipo_cambio) || 0
           const valorMXNStr = valorUSD > 0 && tcVal > 0 ? `(~${fmtMXNInt(Math.round(valorUSD * tcVal))} MXN)` : ''
           return (
@@ -820,8 +842,8 @@ export default function TraficoDetailPage() {
               { label: 'Bultos', value: String(bultos ?? 'Pendiente'), mono: true },
               { label: 'Fecha Llegada', value: t.fecha_llegada ? fmtDate(String(t.fecha_llegada)) : 'Pendiente', mono: true },
               { label: 'Aduana', value: String(t.aduana ?? (t.oficina ? t.oficina : '240 - Nuevo Laredo')), mono: false },
-              { label: 'Regimen', value: String(t.regimen ?? 'A1 - Definitivo'), mono: false },
-              ...(t.fraccion_arancelaria ? [{ label: 'Fraccion', value: String(t.fraccion_arancelaria), mono: true }] : []),
+              { label: 'Régimen', value: String(t.regimen ?? 'A1 - Definitivo'), mono: false },
+              ...(t.fraccion_arancelaria ? [{ label: 'Fracción', value: String(t.fraccion_arancelaria), mono: true }] : []),
             ]
           })().map(stat => (
             <div key={stat.label} className="kpi-card" style={{ padding: '14px 16px' }}>
@@ -884,40 +906,46 @@ export default function TraficoDetailPage() {
         {/* ── Proveedores ── */}
         <ProveedoresCard proveedores={String(t.proveedores ?? '')} pais={String(t.pais_procedencia ?? '')} supplierLookup={supplierLookup} />
 
-        {/* ── Risk Assessment (Intelligence Mesh) ── */}
-        {riskAssessment && (
+        {/* ── Confidence Assessment (Intelligence Mesh) ── */}
+        {riskAssessment && (() => {
+          const confidence = 100 - riskAssessment.riskScore
+          const confidenceColor = confidence >= 70 ? 'var(--success-500)' : confidence >= 40 ? 'var(--warning-500, #D97706)' : 'var(--danger-500)'
+          return (
           <div className="card" style={{ padding: 20 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-              <ShieldAlert size={16} style={{ color: riskAssessment.riskLevel === 'critical' || riskAssessment.riskLevel === 'elevated' ? 'var(--danger-500)' : riskAssessment.riskLevel === 'moderate' ? 'var(--warning-500, #D97706)' : 'var(--success-500)' }} />
+              <ShieldAlert size={16} style={{ color: confidenceColor }} />
               <span style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--slate-400)' }}>
-                Evaluación de Riesgo
+                Nivel de Confianza
               </span>
               <span style={{
                 marginLeft: 'auto', fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-mono)',
-                color: riskAssessment.riskLevel === 'critical' || riskAssessment.riskLevel === 'elevated' ? 'var(--danger-500)' : riskAssessment.riskLevel === 'moderate' ? 'var(--warning-500, #D97706)' : 'var(--success-500)',
+                color: confidenceColor,
               }}>
-                {riskAssessment.riskScore}/100
+                {confidence}/100
               </span>
             </div>
             {/* 7 dimension bars */}
             <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)', gap: 8 }}>
-              {riskAssessment.dimensions.map(dim => (
+              {riskAssessment.dimensions.map(dim => {
+                const dimConfidence = 100 - dim.score
+                return (
                 <div key={dim.source} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0' }}>
                   <div style={{ width: 90, fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'capitalize' }}>
                     {dim.source === 'bridge' ? 'Puente' : dim.source === 'supplier' ? 'Proveedor' : dim.source === 'currency' ? 'Divisa' : dim.source === 'documents' ? 'Documentos' : dim.source === 'compliance' ? 'Cumplimiento' : dim.source === 'historical' ? 'Historial' : dim.source === 'temporal' ? 'Temporal' : dim.source}
                   </div>
                   <div style={{ flex: 1, height: 6, borderRadius: 3, background: 'var(--slate-100)', overflow: 'hidden' }}>
                     <div style={{
-                      width: `${Math.min(dim.score, 100)}%`, height: '100%', borderRadius: 3,
-                      background: dim.score >= 70 ? 'var(--danger-500)' : dim.score >= 40 ? 'var(--warning-500, #D97706)' : 'var(--success-500)',
+                      width: `${Math.min(dimConfidence, 100)}%`, height: '100%', borderRadius: 3,
+                      background: dimConfidence >= 70 ? 'var(--success-500)' : dimConfidence >= 40 ? 'var(--warning-500, #D97706)' : 'var(--danger-500)',
                       transition: 'width 300ms ease',
                     }} />
                   </div>
                   <span style={{ width: 28, fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', textAlign: 'right' }}>
-                    {dim.score}
+                    {dimConfidence}
                   </span>
                 </div>
-              ))}
+                )
+              })}
             </div>
             {/* Recommendation */}
             {riskAssessment.recommendation && (
@@ -936,7 +964,8 @@ export default function TraficoDetailPage() {
               </div>
             )}
           </div>
-        )}
+          )
+        })()}
 
         {/* ── 12-Step Horizontal Timeline ── */}
         <div className="card" style={{ padding: 20, overflowX: 'auto' }}>
@@ -993,11 +1022,11 @@ export default function TraficoDetailPage() {
         <ProximoPaso trafico={t} />
 
         {/* ── Financiero summary ── */}
-        {Number(t.importe_total) > 0 && (() => {
-          const val = Number(t.importe_total) || 0
+        {(Number(t.importe_total) > 0 || facturasTotal > 0) && (() => {
+          const val = Number(t.importe_total) || facturasTotal || 0
           const tc = Number(t.tipo_cambio) || 0
           const valMXN = val * tc
-          const dta = rates ? Math.round(valMXN * rates.dta) : 0
+          const dta = rates ? rates.dta_amount : 0
           const igi = 0
           const ivaBase = valMXN + dta + igi
           const iva = rates ? Math.round(ivaBase * rates.iva) : 0

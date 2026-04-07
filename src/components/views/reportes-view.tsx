@@ -146,7 +146,7 @@ function exportCSV(rows: TraficoRow[], clientClave: string) {
     r.peso_bruto ?? '',
     r.importe_total ?? '',
     r.pedimento ?? '',
-    (r.proveedores ?? '').replace(/,/g, ';'),
+    (r.proveedores ?? '').replace(/PRV_/g, 'Proveedor ').replace(/,/g, ';'),
   ].join(','))
 
   // Totals row
@@ -302,7 +302,7 @@ export function ReportesView() {
       const suppliers = provStr.split(',').map(s => s.trim()).filter(Boolean)
       suppliers.forEach(rawName => {
         // Resolve PRV_ codes to real supplier names
-        const name = supplierLookup.get(rawName) || rawName.replace(/^PRV_/, 'Proveedor #')
+        const name = supplierLookup.get(rawName) || rawName.replace(/^PRV_/, 'Proveedor ')
         const prev = suppMap.get(name) || { count: 0, totalValue: 0, tmecCount: 0 }
         prev.count++
         prev.totalValue += Number(t.importe_total) || 0
@@ -355,7 +355,7 @@ export function ReportesView() {
             style={{ height: 60, border: `1px solid ${T.border}`, borderRadius: 6, padding: '0 12px', fontSize: 13, color: T.textSub, background: T.surfaceAlt }} />
           {(dateFrom || dateTo) && (
             <button onClick={() => { setDateFrom(''); setDateTo('') }}
-              style={{ fontSize: 10, fontWeight: 600, color: T.red, border: `1px solid ${T.red}33`, background: 'var(--danger-bg)', borderRadius: 4, padding: '2px 6px', cursor: 'pointer' }}>✕</button>
+              style={{ fontSize: 13, fontWeight: 600, color: T.red, border: `1px solid ${T.red}33`, background: 'var(--danger-bg)', borderRadius: 6, padding: '0 12px', minWidth: 40, minHeight: 40, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
           )}
         </div>
 

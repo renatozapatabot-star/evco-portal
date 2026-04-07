@@ -125,7 +125,7 @@ export default function ProveedoresPage() {
 
       for (const raw of names) {
         const rawTrimmed = raw.trim()
-        const resolved = supplierLookup.get(rawTrimmed) || rawTrimmed.replace(/^PRV_/, 'Proveedor #')
+        const resolved = supplierLookup.get(rawTrimmed) || rawTrimmed.replace(/^PRV_/, 'Proveedor ')
         const name = resolved
         if (!name) continue
         const key = name.toLowerCase()
@@ -283,8 +283,8 @@ export default function ProveedoresPage() {
           onClick={() => {
             const csvData = filtered.map(s => ({
               Proveedor: s.name,
-              'Pais': s.country ?? '',
-              'Traficos': s.traficoCount,
+              'País': s.country ?? '',
+              'Tráficos': s.traficoCount,
               'Valor USD': s.totalValue.toFixed(2),
               'T-MEC %': s.tmecRate,
               'Entrega Promedio': s.avgDeliveryDays,
@@ -309,7 +309,7 @@ export default function ProveedoresPage() {
       <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
         {([
           { key: 'value' as const, label: 'Valor' },
-          { key: 'traficos' as const, label: 'Traficos' },
+          { key: 'traficos' as const, label: 'Tráficos' },
           { key: 'name' as const, label: 'Nombre' },
         ]).map(opt => (
           <button

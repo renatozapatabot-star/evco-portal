@@ -67,6 +67,10 @@ export function useSupplierNames(): SupplierMap {
       const withPrefix = lookup.get('PRV_' + trimmed)
       if (withPrefix) return withPrefix
     }
+    // Never expose raw PRV_ codes — strip prefix for display
+    if (trimmed.startsWith('PRV_')) {
+      return trimmed.replace(/^PRV_/, 'Proveedor ')
+    }
     return trimmed
   }, [lookup])
 

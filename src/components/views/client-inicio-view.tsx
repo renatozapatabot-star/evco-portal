@@ -387,7 +387,7 @@ export default function ClientInicioView() {
     return [
       { key: 'proceso', label: 'En Proceso', count: enProceso, color: 'var(--warning, #D97706)', href: '/traficos?estatus=En+Proceso' },
       { key: 'pagado', label: 'Pagado', count: pagadoCount, color: 'var(--gold)', href: '/traficos?estatus=Pagado' },
-      { key: 'cruzado', label: 'Cruzado (7d)', count: cruzadoWeek, color: 'var(--success)', href: '/traficos?estatus=Cruzado' },
+      { key: 'cruzado', label: 'Cruzado (últimos 7 días)', count: cruzadoWeek, color: 'var(--success)', href: '/traficos?estatus=Cruzado' },
     ]
   }, [traficos, enProceso])
 
@@ -428,7 +428,7 @@ export default function ClientInicioView() {
       {
         key: 'cruzados',
         value: String(cruzadoRecent),
-        label: 'cruzaron (7d)',
+        label: 'cruzaron (últimos 7 días)',
         color: 'var(--success)',
         href: '/traficos?estatus=Cruzado',
       },
@@ -483,7 +483,20 @@ export default function ClientInicioView() {
   ]
 
   return (
-    <div className="page-shell" style={{ maxWidth: 700 }}>
+    <div className="page-shell" style={{ maxWidth: 700, overflowX: 'hidden' }}>
+
+      {/* Unavailable page toast */}
+      {typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('unavailable') && (
+        <div style={{
+          padding: '12px 16px', borderRadius: 10,
+          background: 'var(--bg-card)', border: '1px solid var(--border)',
+          borderLeft: '3px solid var(--warning-500, #D97706)',
+          fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)',
+          marginBottom: 16,
+        }}>
+          Esa página no está disponible en este momento.
+        </div>
+      )}
 
       {/* Realtime toast */}
       {realtimeToast && (
@@ -567,7 +580,7 @@ export default function ClientInicioView() {
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 14, color: 'var(--text-primary)' }}>{suggestion.text}</div>
             {suggestion.action && (
-              <Link href={suggestion.action.href} style={{ fontSize: 13, color: 'var(--gold-dark, #8B6914)', fontWeight: 600, textDecoration: 'none' }}>
+              <Link href={suggestion.action.href} style={{ fontSize: 13, color: 'var(--gold-dark, #8B6914)', fontWeight: 600, textDecoration: 'none', display: 'inline-block', padding: '8px 0', minHeight: 40 }}>
                 {suggestion.action.label} &rarr;
               </Link>
             )}
@@ -624,7 +637,7 @@ export default function ClientInicioView() {
         {navCards.map(card => (
           <Link key={card.href} href={card.href} style={{ textDecoration: 'none' }}>
             <div style={{
-              padding: isMobile ? '16px 20px' : '24px 28px',
+              padding: isMobile ? '16px 20px' : '20px 16px',
               borderRadius: 16,
               background: 'var(--bg-card)',
               border: '1px solid var(--border)',
@@ -640,7 +653,7 @@ export default function ClientInicioView() {
             >
               <card.Icon size={28} strokeWidth={1.5} style={{ color: 'var(--text-secondary)', flexShrink: 0 }} />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>
+                <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {card.label}
                 </div>
                 <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 2, display: 'flex', alignItems: 'center', gap: 4 }}>

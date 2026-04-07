@@ -98,6 +98,7 @@ export const INTERNAL_GROUPS: NavGroup[] = [
       { href: '/usmca',        label: 'USMCA',       icon: Award },
       { href: '/cruces',       label: 'Cruces',      icon: Clock },
       { href: '/auditoria',   label: 'Auditoría',   icon: History },
+      { href: '/riesgo-auditoria', label: 'Riesgo SAT', icon: Shield },
     ],
   },
 ]
@@ -201,6 +202,7 @@ export const ADMIN_ONLY_ROUTES = [
   '/predicciones',
   '/inventario',
   '/excepciones',
+  '/riesgo-auditoria',
   '/simulador',
   '/archivos',
 ] as const

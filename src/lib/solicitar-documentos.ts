@@ -39,8 +39,7 @@ export async function solicitarDocumentos(
       .upsert(records, { onConflict: 'trafico_id,doc_type' })
 
     if (insertError) {
-      // Table may not exist yet — log but don't fail
-      console.error('[solicitar-documentos] Insert error:', insertError.message)
+      // Table may not exist yet — don't fail
     }
 
     // 2. Update expediente_documentos status to 'solicitado' if they exist

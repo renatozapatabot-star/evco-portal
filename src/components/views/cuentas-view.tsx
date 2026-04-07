@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useMemo } from 'react'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { DollarSign, TrendingUp, TrendingDown, CreditCard, Search, BarChart3, AlertTriangle } from 'lucide-react'
 import { getClientClaveCookie, getCompanyIdCookie } from '@/lib/client-config'
 import { fmtMXN, fmtDate } from '@/lib/format-utils'
@@ -17,6 +18,7 @@ interface FinancialIntel { period: string; total_revenue: number; outstanding_re
 type Tab = 'resumen' | 'cartera' | 'ingresos' | 'egresos' | 'facturas'
 
 export function CuentasView() {
+  const isMobile = useIsMobile()
   const [cartera, setCartera] = useState<CarteraRow[]>([])
   const [ingresos, setIngresos] = useState<IngresoRow[]>([])
   const [egresos, setEgresos] = useState<EgresoRow[]>([])
@@ -69,7 +71,7 @@ export function CuentasView() {
   if (loading) return (
     <div style={{ padding: 24 }}>
       <div className="skeleton" style={{ width: 200, height: 28, marginBottom: 20 }} />
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 20 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: 12, marginBottom: 20 }}>
         {[0,1,2,3].map(i => <div key={i} className="skeleton" style={{ height: 90, borderRadius: 'var(--r-lg)' }} />)}
       </div>
       <div className="skeleton" style={{ height: 300, borderRadius: 'var(--r-lg)' }} />
@@ -184,7 +186,7 @@ export function CuentasView() {
                 {aging.d60 > 0 && <div style={{ flex: aging.d60, background: 'var(--warning)' }} />}
                 {aging.d90plus > 0 && <div style={{ flex: aging.d90plus, background: 'var(--danger-500)' }} />}
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 12 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: 12 }}>
                 {[
                   { label: '0-30 días', value: aging.current, color: 'var(--success)' },
                   { label: '30-60 días', value: aging.d30, color: 'var(--warning)' },
@@ -203,7 +205,7 @@ export function CuentasView() {
       })()}
 
       {/* Recent movements */}
-      <div className={`grid gap-4 ${egresos.length > 0 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+      <div className={`grid gap-4 ${egresos.length > 0 ? (isMobile ? 'grid-cols-1' : 'grid-cols-2') : 'grid-cols-1'}`}>
             <div className="rounded-[10px] overflow-hidden" style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.06)' }}>
               <div className="px-5 py-3" style={{ borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
                 <div className="text-[13px] font-semibold" style={{ color: 'var(--text-primary)' }}>Últimos Ingresos</div>

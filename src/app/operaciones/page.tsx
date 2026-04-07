@@ -71,7 +71,7 @@ export default async function OperacionesPage() {
   }
 
   return (
-    <div style={{ padding: '24px 28px', fontFamily: 'var(--font-geist-sans)', color: 'var(--border)' }}>
+    <div style={{ fontFamily: 'var(--font-geist-sans)', color: 'var(--border)' }} className="p-4 md:px-7 md:py-6">
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: 22, fontWeight: 800, margin: 0 }}>Operaciones Autónomas</h1>
         <p style={{ color: '#666', fontSize: 13, margin: '4px 0 0' }}>
@@ -83,7 +83,7 @@ export default async function OperacionesPage() {
       </div>
 
       {/* Source Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 24 }}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
         {sourceData.map(src => (
           <div key={src.key} style={{
             background: 'var(--navy-900)', border: '1px solid #2A2A2A', borderRadius: 12,
@@ -123,7 +123,7 @@ export default async function OperacionesPage() {
       </div>
 
       {/* Recent Activity Feed */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div style={{ background: 'var(--navy-900)', border: '1px solid #2A2A2A', borderRadius: 12, overflow: 'hidden' }}>
           <div style={{ padding: '14px 16px', borderBottom: '1px solid #2A2A2A' }}>
             <h2 style={{ fontSize: 14, fontWeight: 700, margin: 0, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>

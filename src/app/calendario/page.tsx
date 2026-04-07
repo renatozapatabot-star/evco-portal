@@ -29,7 +29,7 @@ const T = {
   textSecondary: 'var(--text-secondary)',
   textMuted: 'var(--text-muted)',
   blue: 'var(--info)',
-  blueBg: '#EFF6FF',
+  blueBg: 'var(--bg-primary)',
   green: 'var(--success)',
   greenDot: 'var(--success)',
   amber: 'var(--warning)',
@@ -334,6 +334,7 @@ export default function CalendarioPage() {
                   key={i}
                   onClick={() => cell && hasEvents && setSelectedDate(isSelected ? null : cell.dateStr)}
                   disabled={!cell || !hasEvents}
+                  aria-label={cell ? `${cell.day} — ${cell.arrivals} llegada${cell.arrivals !== 1 ? 's' : ''}, ${cell.crossings} cruce${cell.crossings !== 1 ? 's' : ''}` : undefined}
                   style={{
                     minHeight: 60,
                     padding: 4,

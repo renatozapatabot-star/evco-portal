@@ -33,7 +33,7 @@ export async function routeAIQuery(
       const data = await res.json()
       if (data.response) return data.response
     } catch (e) {
-      console.warn('Local Qwen unavailable, falling back to Claude')
+
     }
   }
 

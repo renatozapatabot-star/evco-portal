@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Download, FileText, Table2, DollarSign, Package } from 'lucide-react'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { getCookieValue } from '@/lib/client-config'
 import { DateInputES } from '@/components/ui/DateInputES'
 
@@ -13,6 +14,7 @@ const EXPORTS = [
 ] as const
 
 export default function ExportarPage() {
+  const isMobile = useIsMobile()
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
   const [downloading, setDownloading] = useState<string | null>(null)
@@ -83,7 +85,8 @@ export default function ExportarPage() {
           const isDownloading = downloading === exp.key
           return (
             <div key={exp.key} className="card" style={{
-              padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16,
+              padding: isMobile ? '16px' : '20px 24px', display: 'flex', alignItems: isMobile ? 'flex-start' : 'center', justifyContent: 'space-between', gap: 16,
+              flexDirection: isMobile ? 'column' : 'row',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 16, flex: 1 }}>
                 <div style={{

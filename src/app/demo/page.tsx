@@ -2,8 +2,10 @@
 
 import { useState } from 'react'
 import { Search, ArrowRight } from 'lucide-react'
+import { useIsMobile } from '@/hooks/use-mobile'
 
 export default function DemoPage() {
+  const isMobile = useIsMobile()
   const [clave, setClave] = useState('')
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<{ count: number; name: string } | null>(null)
@@ -21,7 +23,7 @@ export default function DemoPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg-main)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg-main)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: isMobile ? 16 : 24 }}>
       <div style={{ maxWidth: 480, width: '100%', textAlign: 'center' }}>
         <div style={{ fontFamily: 'var(--font-mono)', fontSize: 28, fontWeight: 800, color: 'var(--gold)', letterSpacing: '0.15em', marginBottom: 8 }}>CRUZ</div>
         <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 32 }}>Inteligencia Aduanal · Patente 3596</div>

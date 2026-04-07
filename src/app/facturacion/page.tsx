@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import { getCookieValue } from '@/lib/client-config'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { fmtDateTime } from '@/lib/format-utils'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Download } from 'lucide-react'
@@ -34,6 +35,7 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }
 function fmtMXN(n: number) { return '$' + n.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }
 
 export default function FacturacionPage() {
+  const isMobile = useIsMobile()
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [loading, setLoading] = useState(true)
   const [selected, setSelected] = useState<Invoice | null>(null)
@@ -76,7 +78,7 @@ export default function FacturacionPage() {
       ) : invoices.length === 0 ? (
         <EmptyState icon="💰" title="Sin facturas" description="Las facturas aparecerán aquí al final de cada mes" />
       ) : (
-        <div style={{ display: 'flex', gap: 24, flexDirection: selected ? 'row' : 'column' }}>
+        <div style={{ display: 'flex', gap: 24, flexDirection: (selected && !isMobile) ? 'row' : 'column' }}>
           {/* Invoice list */}
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
             {invoices.map(inv => {
@@ -105,7 +107,7 @@ export default function FacturacionPage() {
 
           {/* Detail panel */}
           {selected && (
-            <div style={{ width: 400, flexShrink: 0 }}>
+            <div style={{ width: isMobile ? '100%' : 400, flexShrink: 0 }}>
               <div className="card" style={{ padding: 24, position: 'sticky', top: 24 }}>
                 <div style={{ fontSize: 18, fontWeight: 800, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)', marginBottom: 4 }}>{selected.invoice_number}</div>
                 <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 16 }}>{selected.company_id} · Vence {selected.due_date || '—'}</div>

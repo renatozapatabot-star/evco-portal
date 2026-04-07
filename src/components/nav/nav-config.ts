@@ -4,7 +4,7 @@ import {
   Shield, Calendar, Award,
   Settings, MessageSquare, Package,
   History, Clock, ClipboardList,
-  Warehouse, Bot,
+  Warehouse, Bot, Rocket,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -59,9 +59,10 @@ export const INTERNAL_GROUPS: NavGroup[] = [
     label: 'Operaciones',
     icon: Truck,
     children: [
+      { href: '/launchpad',    label: 'Launchpad',   icon: Rocket },
       { href: '/traficos',     label: 'Traficos',    icon: Truck },
       { href: '/entradas',     label: 'Entradas',    icon: Package },
-      { href: '/bodega',       label: 'Bodega',      icon: Warehouse },
+      { href: '/bodega',       label: 'Inventario',      icon: Warehouse },
       { href: '/pedimentos',   label: 'Pedimentos',  icon: FileText },
       { href: '/expedientes',  label: 'Expedientes', icon: FolderOpen },
     ],
@@ -97,7 +98,7 @@ export const INTERNAL_GROUPS: NavGroup[] = [
 ]
 
 export const INTERNAL_BOTTOM: NavTopLevel[] = [
-  { href: '/broker', label: 'CRUZ', icon: MessageSquare, gold: true, roles: ['admin', 'broker'] },
+  // CRUZ AI is now a floating bubble — no nav entry needed
   { href: '/admin',  label: 'Config', icon: Settings, roles: ['admin', 'broker'] },
 ]
 
@@ -111,7 +112,7 @@ export const CLIENT_NAV: NavTopLevel[] = [
   { href: '/entradas',     label: 'Entradas',             icon: Package },
   { href: '/pedimentos',   label: 'Pedimentos',           icon: FileText },
   { href: '/expedientes',  label: 'Expedientes Digitales', icon: FolderOpen },
-  { href: '/bodega',       label: 'Bodega',               icon: Warehouse },
+  { href: '/bodega',       label: 'Inventario',               icon: Warehouse },
   { href: '/catalogo',     label: 'Catálogo',             icon: ClipboardList },
   { href: '/anexo24',      label: 'Anexo 24',             icon: BookOpen },
   { href: '/documentos',   label: 'Documentos',           icon: FolderOpen },
@@ -138,9 +139,9 @@ export interface MobileTab {
 export const MOBILE_INTERNAL_TABS: MobileTab[] = [
   { href: '/',           label: 'Inicio',        icon: LayoutDashboard },
   { href: '/traficos',   label: 'Operaciones',   icon: Truck },
-  { href: '/broker',     label: 'CRUZ',          icon: null, center: true },
   { href: '/reportes',   label: 'Inteligencia',  icon: BarChart3 },
-  { href: '/mve',        label: 'Mas',           icon: Settings },
+  { href: '/mve',        label: 'Cumplimiento',  icon: Shield },
+  { href: '/admin',      label: 'Config',        icon: Settings },
 ]
 
 export const MOBILE_CLIENT_TABS: MobileTab[] = [
@@ -157,6 +158,7 @@ export const MOBILE_CLIENT_TABS: MobileTab[] = [
 /** Routes that only admin/broker can access. Client hitting these → redirect to / */
 export const ADMIN_ONLY_ROUTES = [
   '/admin',
+  '/launchpad',
   '/war-room',
   '/operaciones',
   '/radar',

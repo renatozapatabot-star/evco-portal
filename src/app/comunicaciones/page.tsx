@@ -5,6 +5,7 @@ import { createClient } from '@supabase/supabase-js'
 import { Send, Inbox, FileText, PenLine, X } from 'lucide-react'
 import { getCompanyIdCookie } from '@/lib/client-config'
 import { fmtDateTime } from '@/lib/format-utils'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { EmptyState } from '@/components/ui/EmptyState'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
@@ -25,6 +26,7 @@ const TEMPLATES = [
 type Tab = 'inbox' | 'compose' | 'sent' | 'templates'
 
 export default function ComunicacionesPage() {
+  const isMobile = useIsMobile()
   const [events, setEvents] = useState<{ id?: string; from_address?: string; subject?: string; is_urgent?: boolean; urgent_keywords?: string[]; scanned_at?: string; date?: string; body_preview?: string }[]>([])
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState<Tab>('inbox')
@@ -109,7 +111,7 @@ export default function ComunicacionesPage() {
       </div>
 
       {/* Tab bar */}
-      <div style={{ display: 'flex', gap: 4, marginBottom: 20 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 20 }}>
         {tabs.map(t => (
           <button key={t.key} onClick={() => setTab(t.key)}
             className="tab-btn flex items-center gap-1.5"
@@ -122,7 +124,7 @@ export default function ComunicacionesPage() {
       {/* COMPOSE TAB */}
       {tab === 'compose' && (
         <div className="card" style={{ padding: 24 }}>
-          <div className="grid grid-cols-2 gap-4 mb-4">
+          <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-4 mb-4`}>
             <div>
               <label className="text-[10.5px] font-semibold uppercase tracking-[0.07em] mb-1 block" style={{ color: 'var(--slate-400)' }}>Destinatario</label>
               <select value={recipient} onChange={e => setRecipient(e.target.value)}
@@ -164,7 +166,7 @@ export default function ComunicacionesPage() {
               style={{ border: '1px solid var(--border)', color: 'var(--text-primary)', background: 'var(--bg-input)', fontFamily: 'inherit', resize: 'vertical' }} />
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className={`flex ${isMobile ? 'flex-col' : 'items-center'} gap-3`}>
             <button onClick={handleSend}
               className="flex items-center gap-2 px-4 py-2.5 rounded-[6px] text-[13px] font-semibold"
               style={{ background: 'var(--amber-600)', color: '#fff', border: 'none', cursor: 'pointer' }}>
@@ -206,6 +208,7 @@ export default function ComunicacionesPage() {
           {tab === 'inbox' && (
             <div className="mb-3">
               <input value={filter} onChange={e => setFilter(e.target.value)} placeholder="Filtrar por remitente, asunto, keyword..."
+                aria-label="Filtrar comunicaciones"
                 className="rounded-[6px] px-3 py-2 text-[13px] outline-none w-full max-w-[400px]"
                 style={{ border: '1px solid var(--border)', color: 'var(--text-primary)', background: 'var(--bg-input)' }} />
             </div>
@@ -217,7 +220,7 @@ export default function ComunicacionesPage() {
               <EmptyState icon="📨" title="Sin comunicaciones" description="Los correos y solicitudes enviados aparecerán aquí" />
             ) : (
               <div style={{ overflowX: 'auto' }}>
-              <table className="cruz-table">
+              <table className="cruz-table" aria-label="Bandeja de comunicaciones">
                 <thead>
                   <tr>
                     <th style={{ width: 30 }}></th>

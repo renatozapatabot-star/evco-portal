@@ -87,9 +87,13 @@ export default function BodegaPage() {
     setError(null)
 
     // Fetch entradas + traficos in parallel
+    const safeFetch = (u: string) => fetch(u).then(r => {
+      if (!r.ok) throw new Error(r.status === 401 ? 'session_expired' : 'fetch_error')
+      return r.json()
+    })
     Promise.all([
-      fetch(url).then(r => r.json()),
-      fetch(`/api/data?table=traficos&company_id=${companyId}&limit=5000&select=trafico,fecha_cruce,estatus`).then(r => r.json()),
+      safeFetch(url),
+      safeFetch(`/api/data?table=traficos&company_id=${companyId}&limit=5000&select=trafico,fecha_cruce,estatus`),
     ])
       .then(([entradaData, traficoData]) => {
         setRows(entradaData.data ?? [])
@@ -103,7 +107,10 @@ export default function BodegaPage() {
         })
         setCrossedSet(crossed)
       })
-      .catch(() => setError('No se pudo cargar la bodega.'))
+      .catch(err => {
+        if (err.message === 'session_expired') { window.location.href = '/login'; return }
+        setError('No se pudo cargar el inventario.')
+      })
       .finally(() => setLoading(false))
   }
 
@@ -188,7 +195,7 @@ export default function BodegaPage() {
       {/* Header */}
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: 24, fontWeight: 700, color: T.textPrimary, marginBottom: 4 }}>
-          Bodega
+          Inventario
         </h1>
         <p style={{ fontSize: 14, color: T.textSecondary }}>
           Inteligencia de almacén · {rows.length} entradas
@@ -232,7 +239,7 @@ export default function BodegaPage() {
       {/* ═══ TAB 1 — Llegadas ═══ */}
       {tab === 'llegadas' && (
         <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }} aria-label="Llegadas de mercancía">
             <thead>
               <tr>
                 {['Fecha', 'Entrada', 'Tráfico', 'Bultos', 'Peso (kg)', 'Estado'].map(h => (

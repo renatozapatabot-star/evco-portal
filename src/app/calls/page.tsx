@@ -5,6 +5,7 @@ import { createClient } from '@supabase/supabase-js'
 import { Phone, Clock, CheckCircle, ChevronDown, ChevronRight } from 'lucide-react'
 import { GOLD } from '@/lib/design-system'
 import { getCookieValue } from '@/lib/client-config'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { fmtDateShort } from '@/lib/format-utils'
 
@@ -35,6 +36,7 @@ function fmtDuration(s: number) {
 }
 
 export default function CallsPage() {
+  const isMobile = useIsMobile()
   const companyId = getCookieValue('company_id') ?? ''
   const [calls, setCalls] = useState<CallTranscript[]>([])
   const [loading, setLoading] = useState(true)
@@ -72,7 +74,7 @@ export default function CallsPage() {
   const totalActions = calls.reduce((s, c) => s + (c.action_items?.length || 0), 0)
 
   return (
-    <div className="p-6">
+    <div className={isMobile ? 'p-4' : 'p-6'}>
       <div className="mb-4">
         <h1 className="text-[18px] font-semibold" style={{ color: 'var(--text-primary)' }}>Llamadas</h1>
         <p className="text-[12.5px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
@@ -81,7 +83,7 @@ export default function CallsPage() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-3 gap-3 mb-4">
+      <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-3'} gap-3 mb-4`}>
         {[
           { label: 'Total Llamadas', value: totalCalls, icon: Phone },
           { label: 'Duración Total', value: fmtDuration(totalDuration), icon: Clock },
@@ -110,9 +112,9 @@ export default function CallsPage() {
               <div key={call.id} style={{ borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
                 <div
                   onClick={() => setExpanded(isExpanded ? null : call.id)}
-                  className="flex items-center gap-4 px-4 py-3"
+                  className={`flex ${isMobile ? 'flex-wrap gap-2 px-3 py-3' : 'items-center gap-4 px-4 py-3'}`}
                   style={{ cursor: 'pointer', background: isExpanded ? 'rgba(201,168,76,0.04)' : 'transparent' }}
-                  onMouseEnter={e => { if (!isExpanded) e.currentTarget.style.background = '#fafbfc' }}
+                  onMouseEnter={e => { if (!isExpanded) e.currentTarget.style.background = 'var(--bg-primary)' }}
                   onMouseLeave={e => { if (!isExpanded) e.currentTarget.style.background = 'transparent' }}
                 >
                   {isExpanded ? <ChevronDown size={14} style={{ color: GOLD }} /> : <ChevronRight size={14} style={{ color: 'var(--text-muted)' }} />}
@@ -142,7 +144,7 @@ export default function CallsPage() {
 
                 {isExpanded && (
                   <div style={{ padding: '16px 20px 20px', background: 'var(--bg-elevated)', borderTop: '1px solid rgba(0,0,0,0.04)' }}>
-                    <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-4 mb-4`}>
                       <div>
                         <div className="text-[10px] font-semibold uppercase tracking-[0.06em] mb-1" style={{ color: 'var(--text-muted)' }}>Archivo</div>
                         <div className="mono text-[12px]" style={{ color: 'var(--text-secondary)' }}>{call.filename}</div>
@@ -213,7 +215,7 @@ export default function CallsPage() {
                           Email de seguimiento
                         </summary>
                         <pre className="mt-2 p-3 rounded-[6px] text-[12px] leading-relaxed overflow-auto max-h-[200px]"
-                          style={{ background: '#FFFDF5', border: '1px solid var(--border)', color: 'var(--text-primary)', whiteSpace: 'pre-wrap', fontFamily: 'inherit' }}>
+                          style={{ background: 'var(--bg-primary)', border: '1px solid var(--border)', color: 'var(--text-primary)', whiteSpace: 'pre-wrap', fontFamily: 'inherit' }}>
                           {call.follow_up_email}
                         </pre>
                       </details>

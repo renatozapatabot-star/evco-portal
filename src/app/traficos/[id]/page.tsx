@@ -140,47 +140,86 @@ function sourceBadge(source: string | null) {
   )
 }
 
-function TimelineTab({ traficoId }: { traficoId: string }) {
+function TimelineTab({ traficoId, trafico }: { traficoId: string; trafico: Record<string, unknown> | null }) {
   const [events, setEvents] = useState<TimelineEvent[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    supabase
-      .from('trafico_timeline')
-      .select('id, trafico_id, event_type, content_es, source, created_at')
-      .eq('trafico_id', traficoId)
-      .order('created_at', { ascending: false })
-      .limit(100)
-      .then(({ data }) => {
-        setEvents((data ?? []) as TimelineEvent[])
-        setLoading(false)
-      })
+    // Merge: trafico_timeline + documento_solicitudes + derived lifecycle events
+    Promise.all([
+      supabase.from('trafico_timeline')
+        .select('id, trafico_id, event_type, content_es, source, created_at')
+        .eq('trafico_id', traficoId)
+        .order('created_at', { ascending: false }).limit(100),
+      supabase.from('documento_solicitudes')
+        .select('id, trafico_id, doc_type, status, solicitado_at, recibido_at')
+        .eq('trafico_id', traficoId)
+        .order('solicitado_at', { ascending: false }).limit(20),
+    ]).then(([tlRes, dsRes]) => {
+      const merged: TimelineEvent[] = []
+
+      // Timeline events
+      for (const ev of (tlRes.data ?? [])) {
+        merged.push(ev as TimelineEvent)
+      }
+
+      // Solicitudes as timeline events
+      for (const s of (dsRes.data ?? [])) {
+        const docName = (s.doc_type || '').replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, (c: string) => c.toUpperCase())
+        merged.push({
+          id: `sol-${s.id}`,
+          trafico_id: traficoId,
+          event_type: 'doc_received',
+          content_es: `CRUZ solicitó ${docName}`,
+          source: 'cruz_ai',
+          created_at: s.solicitado_at,
+        })
+        if (s.status === 'recibido' && s.recibido_at) {
+          merged.push({
+            id: `sol-r-${s.id}`,
+            trafico_id: traficoId,
+            event_type: 'doc_uploaded',
+            content_es: `Documento recibido: ${docName}`,
+            source: 'system',
+            created_at: s.recibido_at,
+          })
+        }
+      }
+
+      // Derived lifecycle events from tráfico fields
+      const t = trafico
+      if (t) {
+        if (t.fecha_llegada) merged.push({ id: 'lc-llegada', trafico_id: traficoId, event_type: 'created', content_es: 'Tráfico registrado — mercancía en bodega', source: 'system', created_at: t.fecha_llegada as string })
+        if (t.fecha_pago) merged.push({ id: 'lc-pago', trafico_id: traficoId, event_type: 'customs_paid', content_es: `Pedimento pagado${t.pedimento ? ' — ' + (t.pedimento as string) : ''}`, source: 'system', created_at: t.fecha_pago as string })
+        if (t.fecha_cruce) {
+          merged.push({ id: 'lc-cruce', trafico_id: traficoId, event_type: 'crossed', content_es: 'Cruzó World Trade Bridge', source: 'system', created_at: t.fecha_cruce as string })
+        }
+      }
+
+      // Deduplicate and sort
+      const seen = new Set<string>()
+      const unique = merged.filter(e => { if (seen.has(e.id)) return false; seen.add(e.id); return true })
+      unique.sort((a, b) => b.created_at.localeCompare(a.created_at))
+      setEvents(unique)
+      setLoading(false)
+    })
 
     // Real-time subscription
     const channel = supabase
       .channel(`timeline-${traficoId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'trafico_timeline',
-          filter: `trafico_id=eq.${traficoId}`,
-        },
-        (payload) => {
-          setEvents(prev => [payload.new as TimelineEvent, ...prev])
-        }
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'trafico_timeline', filter: `trafico_id=eq.${traficoId}` },
+        (payload) => { setEvents(prev => [payload.new as TimelineEvent, ...prev]) }
       )
       .subscribe()
 
     return () => { supabase.removeChannel(channel) }
-  }, [traficoId])
+  }, [traficoId, trafico])
 
   if (loading) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: 16 }}>
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={`tl-skel-${i}`} style={{ height: 48, borderRadius: 8, background: 'rgba(255,255,255,0.04)', animation: 'pulse 1.5s infinite' }} />
+          <div key={`tl-skel-${i}`} className="skel" style={{ height: 48, borderRadius: 8 }} />
         ))}
       </div>
     )
@@ -190,14 +229,14 @@ function TimelineTab({ traficoId }: { traficoId: string }) {
     return (
       <div style={{
         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-        background: 'var(--bg-card)', border: '1px solid #E8E5E0', borderRadius: 12, padding: '48px 32px', textAlign: 'center',
+        background: 'var(--bg-card)', border: '1px solid #E8E5E0', borderRadius: 12, padding: '32px 24px', textAlign: 'center',
       }}>
-        <div style={{ fontSize: 48, lineHeight: 1, marginBottom: 16 }}>{'\uD83D\uDCC5'}</div>
-        <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 8px' }}>
-          Sin eventos registrados aun
+        <div style={{ fontSize: 36, lineHeight: 1, marginBottom: 12 }}>{'\uD83D\uDCC5'}</div>
+        <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 6px' }}>
+          Sin eventos registrados
         </h3>
-        <p style={{ fontSize: 14, color: 'var(--text-secondary)', margin: 0, maxWidth: 320, lineHeight: 1.5 }}>
-          Los eventos apareceran aqui conforme el trafico avanza
+        <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0, maxWidth: 300, lineHeight: 1.5 }}>
+          Los eventos aparecerán aquí conforme el tráfico avanza
         </p>
       </div>
     )
@@ -210,7 +249,6 @@ function TimelineTab({ traficoId }: { traficoId: string }) {
         const isLast = i === events.length - 1
         return (
           <div key={ev.id} style={{ display: 'flex', gap: 12, position: 'relative' }}>
-            {/* Vertical line + color-coded dot */}
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 32, flexShrink: 0 }}>
               <div style={{
                 width: 28, height: 28, borderRadius: '50%',
@@ -224,7 +262,6 @@ function TimelineTab({ traficoId }: { traficoId: string }) {
                 <div style={{ width: 2, flex: 1, background: 'var(--border)', minHeight: 16 }} />
               )}
             </div>
-            {/* Content */}
             <div style={{ flex: 1, paddingBottom: isLast ? 0 : 16 }}>
               <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.5 }}>
                 {ev.content_es || ev.event_type.replace(/_/g, ' ')}
@@ -239,6 +276,58 @@ function TimelineTab({ traficoId }: { traficoId: string }) {
           </div>
         )
       })}
+    </div>
+  )
+}
+
+/* ── Próximo Paso — tells client what happens next ── */
+function ProximoPaso({ trafico }: { trafico: Record<string, unknown> }) {
+  const estatus = ((trafico.estatus as string) || '').toLowerCase()
+  const hasPedimento = !!trafico.pedimento
+  const isCruzado = estatus.includes('cruz')
+  const isPagado = estatus.includes('pagado')
+
+  let icon = '⏳'
+  let title = 'Recopilando documentos'
+  let description = 'CRUZ está verificando documentos con proveedores. Le notificamos cuando el expediente esté completo.'
+
+  if (isCruzado) {
+    icon = '✅'
+    title = 'Operación completada'
+    description = 'Su mercancía cruzó exitosamente. Los documentos finales estarán disponibles pronto.'
+  } else if (isPagado) {
+    icon = '🌉'
+    title = 'Esperando cruce'
+    description = 'El pedimento está pagado. El siguiente paso es la asignación de semáforo y cruce por World Trade Bridge.'
+  } else if (hasPedimento) {
+    icon = '💳'
+    title = 'Pago de pedimento'
+    description = 'El pedimento fue transmitido. Estamos procesando el pago ante el banco.'
+  } else if ((trafico.importe_total as number) > 0) {
+    icon = '📄'
+    title = 'Preparando pedimento'
+    description = 'Documentos en revisión. CRUZ está armando el pedimento para transmisión.'
+  }
+
+  return (
+    <div className="card" style={{
+      padding: 20,
+      borderLeft: isCruzado ? '3px solid var(--success)' : '3px solid var(--gold)',
+    }}>
+      <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--gold-dark, #8B6914)', marginBottom: 10 }}>
+        Próximo paso
+      </div>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+        <span style={{ fontSize: 24, lineHeight: 1, flexShrink: 0 }}>{icon}</span>
+        <div>
+          <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>
+            {title}
+          </div>
+          <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+            {description}
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
@@ -771,7 +860,7 @@ export default function TraficoDetailPage() {
           <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--slate-400)', marginBottom: 16 }}>
             Estado del Trafico
           </div>
-          <div style={{ display: 'flex', alignItems: 'flex-start', minWidth: 900, position: 'relative' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', minWidth: isMobile ? 'auto' : 900, position: 'relative', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? 0 : undefined }}>
             {steps.map((step, i) => {
               const state = getStepState(step.num)
               const isLast = i === steps.length - 1
@@ -780,10 +869,13 @@ export default function TraficoDetailPage() {
               const lineColor = state === 'completed' ? 'var(--success-500)' : 'var(--slate-200)'
 
               return (
-                <div key={step.num} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', minWidth: 70 }}>
-                  {/* Horizontal line */}
+                <div key={step.num} style={{ flex: isMobile ? undefined : 1, display: 'flex', flexDirection: isMobile ? 'row' : 'column', alignItems: isMobile ? 'center' : 'center', position: 'relative', minWidth: isMobile ? undefined : 70, gap: isMobile ? 12 : undefined, paddingBottom: isMobile ? 12 : undefined }}>
+                  {/* Connecting line */}
                   {!isLast && (
-                    <div style={{
+                    <div style={isMobile ? {
+                      position: 'absolute', left: 5, top: 14, bottom: 0,
+                      width: 2, background: lineColor, zIndex: 0,
+                    } : {
                       position: 'absolute', top: 6, left: '50%', right: '-50%',
                       height: 2, background: lineColor, zIndex: 0,
                     }} />
@@ -797,7 +889,7 @@ export default function TraficoDetailPage() {
                     animation: state === 'current' ? 'cruzActivePulse 2s ease-in-out infinite' : undefined,
                   }} />
                   {/* Label */}
-                  <div style={{ textAlign: 'center', marginTop: 8, padding: '0 2px' }}>
+                  <div style={{ textAlign: isMobile ? 'left' : 'center', marginTop: isMobile ? 0 : 8, padding: '0 2px' }}>
                     <div style={{ fontSize: 10, fontWeight: 700, color: textColor, lineHeight: 1.2 }}>
                       {step.label}
                       {step.num === 10 && state === 'completed' && ' ✅'}
@@ -813,6 +905,9 @@ export default function TraficoDetailPage() {
             })}
           </div>
         </div>
+
+        {/* ── Próximo Paso ── */}
+        <ProximoPaso trafico={t} />
 
         {/* ── Financiero summary ── */}
         {Number(t.importe_total) > 0 && (() => {
@@ -1144,7 +1239,7 @@ export default function TraficoDetailPage() {
       {/* ═══ HISTORIAL ═══ */}
       <div style={{ marginTop: 32 }}>
         <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--navy-900)', marginBottom: 16 }}>Historial</div>
-        <TimelineTab traficoId={decodeURIComponent(String(id))} />
+        <TimelineTab traficoId={decodeURIComponent(String(id))} trafico={t} />
       </div>
 
       {/* ═══ SOLICITAR MODAL ═══ */}

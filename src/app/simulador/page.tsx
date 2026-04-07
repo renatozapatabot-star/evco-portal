@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useMemo } from 'react'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { Calculator, ChevronDown, Check } from 'lucide-react'
 import { getCookieValue, getCompanyIdCookie } from '@/lib/client-config'
 import { fmtUSD, fmtUSDCompact } from '@/lib/format-utils'
@@ -30,6 +31,7 @@ interface TraficoOption {
   importe_total: number | null
   peso_bruto: number | null
   regimen: string | null
+  fraccion_arancelaria: string | null
 }
 
 interface SimOption {
@@ -47,12 +49,16 @@ interface SimOption {
 }
 
 export default function SimuladorPage() {
+  const isMobile = useIsMobile()
   const [pending, setPending] = useState<TraficoOption[]>([])
   const [selected, setSelected] = useState<TraficoOption | null>(null)
   const [manual, setManual] = useState(false)
   const [loading, setLoading] = useState(true)
   const [simulating, setSimulating] = useState(false)
   const [result, setResult] = useState<{ options: SimOption[]; bestIdx: number; savings: number } | null>(null)
+  const [sysRates, setSysRates] = useState<{ dta: number; iva: number; tc: number } | null>(null)
+  const [ratesError, setRatesError] = useState(false)
+  const [tariffRates, setTariffRates] = useState<Map<string, number>>(new Map())
 
   // Manual inputs
   const [mDesc, setMDesc] = useState('')
@@ -67,9 +73,27 @@ export default function SimuladorPage() {
 
   useEffect(() => {
     if (!isAdmin) { setLoading(false); return }
+    // Fetch live rates from system_config
+    fetch('/api/rates').then(r => r.json()).then(d => {
+      if (!d.error && d.dta?.rate && d.iva?.rate && d.tc?.rate) {
+        setSysRates({ dta: d.dta.rate, iva: d.iva.rate, tc: d.tc.rate })
+      } else {
+        setRatesError(true)
+      }
+    }).catch(() => setRatesError(true))
+
+    // Fetch per-fraccion tariff rates
+    supabase.from('tariff_rates').select('fraccion, igi_rate').then(({ data }) => {
+      if (data?.length) {
+        const map = new Map<string, number>()
+        data.forEach((r: { fraccion: string; igi_rate: number }) => map.set(r.fraccion, r.igi_rate))
+        setTariffRates(map)
+      }
+    })
+
     Promise.resolve(
       supabase.from('traficos')
-        .select('trafico, descripcion_mercancia, proveedores, importe_total, peso_bruto, regimen')
+        .select('trafico, descripcion_mercancia, proveedores, importe_total, peso_bruto, regimen, fraccion_arancelaria')
         .is('fecha_cruce', null)
         .not('estatus', 'ilike', '%cruz%')
         .gte('fecha_llegada', '2024-01-01')
@@ -81,16 +105,20 @@ export default function SimuladorPage() {
   }, [isAdmin])
 
   function simulate(t: TraficoOption | { descripcion_mercancia: string; proveedores: string; importe_total: number; peso_bruto: number; regimen: string }) {
+    if (!sysRates) return
     setSimulating(true)
     const value = Number(t.importe_total) || 0
-    const tc = 17.81 // current rate from system_config
+    const tc = sysRates.tc
     const valorMXN = value * tc
     const regimen = (t.regimen || '').toUpperCase()
     const isTmec = regimen === 'ITE' || regimen === 'ITR' || regimen === 'IMD'
 
-    const dta = Math.round(valorMXN * 0.008)
-    const igi = isTmec ? 0 : Math.round(valorMXN * 0.05)
-    const iva = Math.round((valorMXN + dta + igi) * 0.16)
+    const dta = Math.round(valorMXN * sysRates.dta)
+    // Look up per-fraccion IGI rate from tariff_rates, fallback to 5% estimate
+    const fraccion = 'fraccion_arancelaria' in t ? (t as TraficoOption).fraccion_arancelaria : null
+    const igiRate = isTmec ? 0 : (fraccion && tariffRates.has(fraccion) ? tariffRates.get(fraccion)! : 0.05)
+    const igi = Math.round(valorMXN * igiRate)
+    const iva = Math.round((valorMXN + dta + igi) * sysRates.iva)
 
     const options: SimOption[] = [
       {
@@ -133,6 +161,16 @@ export default function SimuladorPage() {
       <div className="page-shell" style={{ textAlign: 'center', padding: 60 }}>
         <Calculator size={48} style={{ color: T.textMuted, marginBottom: 16 }} />
         <div style={{ fontSize: 16, fontWeight: 600, color: T.text }}>Acceso restringido</div>
+      </div>
+    )
+  }
+
+  if (ratesError) {
+    return (
+      <div className="page-shell" style={{ textAlign: 'center', padding: 60 }}>
+        <Calculator size={48} style={{ color: 'var(--danger-500, #DC2626)', marginBottom: 16 }} />
+        <div style={{ fontSize: 16, fontWeight: 600, color: T.text }}>Error cargando tasas</div>
+        <div style={{ fontSize: 13, color: T.textMuted, marginTop: 8 }}>No se pudieron obtener las tasas de DTA, IVA y tipo de cambio. Contacta al administrador.</div>
       </div>
     )
   }
@@ -198,7 +236,7 @@ export default function SimuladorPage() {
 
       {/* Manual input */}
       {manual && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12, marginBottom: 20 }}>
           {[
             { label: 'Producto', value: mDesc, set: setMDesc, placeholder: 'ej: polipropileno virgen' },
             { label: 'Proveedor', value: mSupplier, set: setMSupplier, placeholder: 'ej: Milacron' },
@@ -266,7 +304,7 @@ export default function SimuladorPage() {
                   )}
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 10 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: 8, marginBottom: 10 }}>
                   {[
                     { label: 'DTA', value: `$${opt.dta.toLocaleString()}` },
                     { label: 'IGI', value: opt.igi === 0 ? '$0 (T-MEC)' : `$${opt.igi.toLocaleString()}` },
@@ -280,7 +318,7 @@ export default function SimuladorPage() {
                   ))}
                 </div>
 
-                <div style={{ display: 'flex', gap: 16, fontSize: 12, color: T.textSec }}>
+                <div style={{ display: 'flex', gap: isMobile ? 8 : 16, fontSize: 12, color: T.textSec, flexWrap: 'wrap' }}>
                   <span>Reconocimiento: {opt.recoRate}%</span>
                   <span>Tiempo: ~{opt.crossingHours}h</span>
                   <span>Confianza: {opt.confidence}%</span>

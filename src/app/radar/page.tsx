@@ -33,7 +33,7 @@ export default async function RadarPage() {
   const sevBg: Record<string, string> = { critical: 'rgba(220,38,38,0.1)', high: 'rgba(217,119,6,0.1)', medium: 'rgba(201,168,76,0.1)', low: 'rgba(22,163,74,0.1)' }
 
   return (
-    <div style={{ padding: '24px 28px', fontFamily: 'var(--font-geist-sans)', color: 'var(--border)' }}>
+    <div style={{ fontFamily: 'var(--font-geist-sans)', color: 'var(--border)' }} className="p-4 md:px-7 md:py-6">
       <h1 style={{ fontSize: 22, fontWeight: 800, margin: '0 0 4px' }}>Radar de Riesgos</h1>
       <p style={{ color: '#666', fontSize: 13, margin: '0 0 24px' }}>
         Monitoreo de amenazas en tiempo real &middot; <span style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtDateTimeLocal(new Date()).split(' · ')[1] || fmtDateTimeLocal(new Date())}</span> CST

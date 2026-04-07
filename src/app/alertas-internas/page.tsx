@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import { getCookieValue } from '@/lib/client-config'
 import { fmtDateTime } from '@/lib/format-utils'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { EmptyState } from '@/components/ui/EmptyState'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
@@ -41,6 +42,7 @@ const METRIC_LABELS: Record<string, string> = {
 }
 
 export default function AlertasInternasPage() {
+  const isMobile = useIsMobile()
   const [anomalies, setAnomalies] = useState<AnomalyRow[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'all' | 'critical' | 'warning' | 'info'>('all')
@@ -100,7 +102,7 @@ export default function AlertasInternasPage() {
       </p>
 
       {/* Summary strip */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 24 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: 12, marginBottom: 24 }}>
         {[
           { label: 'Críticas', count: counts.critical, color: 'var(--danger-500)' },
           { label: 'Advertencias', count: counts.warning, color: 'var(--warning-500, #D97706)' },
@@ -115,7 +117,7 @@ export default function AlertasInternasPage() {
       </div>
 
       {/* Filter tabs */}
-      <div style={{ display: 'flex', gap: 4, marginBottom: 16, borderBottom: '1px solid #E8E5E0' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 16, borderBottom: '1px solid #E8E5E0' }}>
         {(['all', 'critical', 'warning', 'info'] as const).map(f => (
           <button key={f} onClick={() => setFilter(f)} style={{
             padding: '8px 16px', background: 'none', border: 'none', cursor: 'pointer',

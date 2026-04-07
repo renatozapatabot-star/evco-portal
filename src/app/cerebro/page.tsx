@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { Brain, TrendingUp, AlertTriangle, CheckCircle, Clock } from 'lucide-react'
 import { getCookieValue } from '@/lib/client-config'
 import { fmtDateTime } from '@/lib/format-utils'
@@ -52,6 +53,7 @@ const T = {
 }
 
 export default function CerebroPage() {
+  const isMobile = useIsMobile()
   const [decisions, setDecisions] = useState<Decision[]>([])
   const [patterns, setPatterns] = useState<Pattern[]>([])
   const [assumptions, setAssumptions] = useState<Assumption[]>([])
@@ -107,7 +109,7 @@ export default function CerebroPage() {
       ) : (
         <>
           {/* Section 1 — KPIs */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 24 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: 12, marginBottom: 24 }}>
             {[
               { label: 'Patrones activos', value: patterns.length, color: T.gold },
               { label: 'Decisiones (30d)', value: decisions.length, color: T.success },

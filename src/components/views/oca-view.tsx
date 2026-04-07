@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { getClientNameCookie, getClientRfcCookie } from '@/lib/client-config'
+import { useIsMobile } from '@/hooks/use-mobile'
 
 const T = { bg: 'var(--bg-main)', surface: 'var(--card-bg)', border: 'var(--border)', surfaceAlt: '#F5F3EF', text: 'var(--text-primary)', textSub: 'var(--text-secondary)', textMuted: '#999999', navy: 'var(--gold-dark)', gold: 'var(--gold-dark)', goldBg: '#FFF8EB', goldBorder: '#E8C84A', green: 'var(--success)', greenBg: '#EAF3DE', shadow: '0 1px 3px rgba(0,0,0,0.07)' }
 
@@ -13,6 +14,7 @@ const EXAMPLES = [
 ]
 
 export function OCAView() {
+  const isMobile = useIsMobile()
   const [product, setProduct] = useState('')
   const [material, setMaterial] = useState('')
   const [uso, setUso] = useState('')
@@ -78,12 +80,12 @@ export function OCAView() {
   }
 
   return (
-    <div style={{ padding: '24px 28px', fontFamily: 'var(--font-geist-sans)' }}>
+    <div style={{ padding: isMobile ? '16px 12px' : '24px 28px', fontFamily: 'var(--font-geist-sans)' }}>
       <div style={{ marginBottom: 20 }}>
         <h2 style={{ color: T.text, fontSize: 18, fontWeight: 700, margin: 0 }}>OCA — Opinión de Clasificación Arancelaria</h2>
         <p style={{ color: T.textMuted, fontSize: 12, margin: '4px 0 0' }}>Generador automático · Patente 3596 · Firmado por Renato Zapata III</p>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: result ? '1fr 1fr' : '1fr', gap: 20 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: (result && !isMobile) ? '1fr 1fr' : '1fr', gap: 20 }}>
         <div>
           <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 12, boxShadow: T.shadow, padding: 20, marginBottom: 16 }}>
             <div style={{ color: T.textMuted, fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 16 }}>Datos del Producto</div>

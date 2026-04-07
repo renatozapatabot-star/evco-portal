@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { Package, TrendingUp } from 'lucide-react'
 import { getCookieValue } from '@/lib/client-config'
 import { fmtDate, fmtUSDCompact } from '@/lib/format-utils'
@@ -24,6 +25,7 @@ interface Prediction {
 }
 
 export default function PrediccionesPage() {
+  const isMobile = useIsMobile()
   const [predictions, setPredictions] = useState<Prediction[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -58,8 +60,8 @@ export default function PrediccionesPage() {
   })
 
   return (
-    <div className="page-shell">
-      <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+    <div className="page-shell" style={{ padding: isMobile ? '16px' : undefined }}>
+      <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4, fontSize: isMobile ? 20 : undefined }}>
         <TrendingUp size={24} style={{ color: 'var(--gold)' }} />
         Predicciones de Demanda
       </h1>
@@ -137,7 +139,7 @@ function PredictionCard({ prediction: p, past }: { prediction: Prediction; past?
           )}
         </div>
       </div>
-      <div style={{ display: 'flex', gap: 16, marginTop: 8, fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+      <div style={{ display: 'flex', gap: 16, marginTop: 8, fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', flexWrap: 'wrap' }}>
         <span>{d.confidence || 0}% conf</span>
         <span>cada {d.avg_frequency_days || '?'}d</span>
         <span>~{fmtUSDCompact(d.avg_value || 0)}</span>

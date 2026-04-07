@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useMemo } from 'react'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { Search, Filter, TrendingUp, Building2, MapPin, ChevronRight, Users, DollarSign, Target, Briefcase } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -86,6 +87,7 @@ function StatusPill({ status }: { status: string }) {
 }
 
 export default function ProspectosPage() {
+  const isMobile = useIsMobile()
   const router = useRouter()
   const [prospects, setProspects] = useState<Prospect[]>([])
   const [loading, setLoading] = useState(true)
@@ -135,7 +137,7 @@ export default function ProspectosPage() {
   return (
     <div className="page-enter" style={{ padding: '20px 24px' }}>
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
+      <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'stretch' : 'flex-start', marginBottom: 20, gap: isMobile ? 12 : 0 }}>
         <div>
           <h1 className="pg-title">Prospectos</h1>
           <p className="pg-meta">Empresas cruzando Aduana 240 · Inteligencia comercial</p>
@@ -151,7 +153,7 @@ export default function ProspectosPage() {
       </div>
 
       {/* KPI Summary */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 20 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: 12, marginBottom: 20 }}>
         {[
           { label: 'Total Empresas', value: prospects.length, icon: Building2 },
           { label: 'Prospectos', value: nonClients.length, icon: Users },
@@ -191,6 +193,7 @@ export default function ProspectosPage() {
           <div className="tbl-search">
             <Search size={11} />
             <input placeholder="RFC, razón social..." value={search}
+              aria-label="Buscar prospectos por RFC o razón social"
               onChange={e => setSearch(e.target.value)} />
           </div>
         </div>

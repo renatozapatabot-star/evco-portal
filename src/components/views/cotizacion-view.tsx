@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { getCompanyIdCookie } from '@/lib/client-config'
+import { useIsMobile } from '@/hooks/use-mobile'
 
 const fmtUSD = (n: number) => '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 const fmtMXN = (n: number) => '$' + n.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
@@ -32,6 +33,7 @@ function Row({ label, value, bold, highlight }: { label: string; value: string; 
 }
 
 export function CotizacionView() {
+  const isMobile = useIsMobile()
   const [form, setForm] = useState({ valor_usd: '50000', tipo_cambio: '17.50', incoterm: 'EXW', flete_usd: '0', seguro_usd: '0', igi_rate: '5', regimen: 'A1', tmec: true, fraccion: '', pais_origen: 'US', peso_kg: '', bultos: '' })
   const [result, setResult] = useState<{ valorUSD: number; tc: number; valorAduanaMXN: number; dta: number; igi: number; iva: number; prev: number; total: number; igiRate: number; tmecSavings: number } | null>(null)
   const [rates, setRates] = useState<{ dta: number; iva: number; tc: number } | null>(null)
@@ -70,13 +72,13 @@ export function CotizacionView() {
   useEffect(() => { const t = setTimeout(calculate, 300); return () => clearTimeout(t) }, [calculate])
 
   return (
-    <div style={{ padding: 32 }}>
+    <div style={{ padding: isMobile ? 16 : 32 }}>
       <div style={{ marginBottom: 24 }}>
         <h1 className="pg-title">Cotización Aduanal</h1>
         <p className="pg-meta">Calculadora de contribuciones &middot; DTA + IGI + IVA &middot; Patente 3596</p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '55% 45%', gap: 24 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '55% 45%', gap: 24 }}>
         {/* Form */}
         <div className="card" style={{ padding: 24 }}>
           <div style={{ color: 'var(--amber-700)', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 24 }}>Parámetros del Embarque</div>
@@ -161,7 +163,7 @@ export function CotizacionView() {
         </div>
 
         {/* Live Results */}
-        <div className="card" style={{ padding: 32, alignSelf: 'start', position: 'sticky', top: 32 }}>
+        <div className="card" style={{ padding: isMobile ? 20 : 32, alignSelf: 'start', position: isMobile ? 'static' : 'sticky', top: 32 }}>
           <div className="section-header" style={{ marginBottom: 24 }}>Contribuciones Estimadas</div>
 
           {!result ? (

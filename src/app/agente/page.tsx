@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Bot, Activity, CheckCircle, AlertTriangle, Pause, Play } from 'lucide-react'
 import { getCookieValue } from '@/lib/client-config'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { fmtDateTime } from '@/lib/format-utils'
 import { WORKFLOWS, LEVEL_NAMES, LEVEL_ICONS } from '@/lib/agent-workflows'
 
@@ -28,6 +29,7 @@ interface AgentStats {
 }
 
 export default function AgentePage() {
+  const isMobile = useIsMobile()
   const [decisions, setDecisions] = useState<Decision[]>([])
   const [stats, setStats] = useState<AgentStats>({ total: 0, autonomous: 0, pending: 0, accuracy: 0 })
   const [loading, setLoading] = useState(true)
@@ -70,7 +72,7 @@ export default function AgentePage() {
 
   return (
     <div className="page-shell">
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? 12 : 0 }}>
         <div>
           <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <Bot size={24} style={{ color: 'var(--gold)' }} />
@@ -97,7 +99,7 @@ export default function AgentePage() {
       </div>
 
       {/* Stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 24 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: 12, marginBottom: 24 }}>
         {[
           { label: 'Decisiones', value: stats.total, color: 'var(--gold)' },
           { label: 'Autónomas', value: stats.autonomous, color: 'var(--success)' },

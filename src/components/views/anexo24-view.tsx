@@ -97,10 +97,14 @@ export function Anexo24View() {
     const companyFilter = !isInternal && companyId ? `&company_id=${companyId}` : ''
 
     // Fetch all three in parallel
+    const safeFetch = (u: string) => fetch(u).then(r => {
+      if (!r.ok) throw new Error(r.status === 401 ? 'session_expired' : 'fetch_error')
+      return r.json()
+    })
     Promise.all([
-      fetch(`/api/data?table=globalpc_partidas&limit=10000${companyFilter}`).then(r => r.json()),
-      fetch(`/api/data?table=traficos&limit=5000&not_null=pedimento&gte_field=fecha_llegada&gte_value=2024-01-01${companyFilter}`).then(r => r.json()),
-      fetch(`/api/data?table=globalpc_proveedores&limit=5000${companyFilter}`).then(r => r.json()),
+      safeFetch(`/api/data?table=globalpc_partidas&limit=10000${companyFilter}`),
+      safeFetch(`/api/data?table=traficos&limit=5000&not_null=pedimento&gte_field=fecha_llegada&gte_value=2024-01-01${companyFilter}`),
+      safeFetch(`/api/data?table=globalpc_proveedores&limit=5000${companyFilter}`),
     ])
       .then(([partidaData, traficoData, provData]) => {
         setPartidas(Array.isArray(partidaData.data) ? partidaData.data : [])
@@ -131,7 +135,9 @@ export function Anexo24View() {
         })
         setSupplierLookup(sMap)
       })
-      .catch(() => {})
+      .catch(err => {
+        if (err.message === 'session_expired') { window.location.href = '/login'; return }
+      })
       .finally(() => setLoading(false))
   }, [cookiesReady, companyId, userRole])
 
@@ -245,7 +251,40 @@ export function Anexo24View() {
           <div style={{ padding: 32 }}>
             <EmptyState icon="📄" title="Sin partidas" description="Las partidas del Anexo 24 aparecerán aquí" />
           </div>
-        ) : (
+        ) : isMobile ? (
+            <div style={{ padding: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {paged.map((r) => (
+                <div key={`${r.pedimento}-${r.rowNum}`} style={{
+                  background: 'var(--bg-main)', border: '1px solid var(--border-card)',
+                  borderRadius: 8, padding: '12px 14px',
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, fontSize: 13 }}>
+                      {fmtPedimentoShort(r.pedimento)}
+                    </span>
+                    {r.tmec ? (
+                      <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--success)', background: 'var(--success-bg)', padding: '2px 8px', borderRadius: 9999 }}>T-MEC</span>
+                    ) : null}
+                  </div>
+                  <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {r.descripcion}
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--gold-dark, #8B6914)', fontWeight: 600 }}>
+                      {r.fraccion}
+                    </span>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 500 }}>
+                      {r.valorUSD > 0 ? fmtUSD(r.valorUSD) : '—'}
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--text-muted)' }}>
+                    <span style={{ fontFamily: 'var(--font-mono)' }}>{fmtDate(r.fecha)}</span>
+                    <span>{r.origen}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
           <div style={{ overflowX: 'auto' }}>
             <table className="cruz-table" style={{ minWidth: 900 }}>
               <thead>
@@ -302,7 +341,7 @@ export function Anexo24View() {
               </tbody>
             </table>
           </div>
-        )}
+          )}
       </div>
 
       {/* Pagination */}

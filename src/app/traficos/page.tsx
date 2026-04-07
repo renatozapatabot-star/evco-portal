@@ -109,9 +109,15 @@ function TraficosContent() {
     const cached = getCached<TraficoRow[]>('traficos')
     if (cached) setRows(cached)
     fetch(`/api/data?${traficosParams}`)
-      .then(r => r.json())
+      .then(r => {
+        if (!r.ok) throw new Error(r.status === 401 ? 'session_expired' : 'fetch_error')
+        return r.json()
+      })
       .then(d => { const arr = d.data ?? d; const rows = Array.isArray(arr) ? arr : []; setRows(rows); setCache('traficos', rows) })
-      .catch(() => setFetchError('Error cargando tráficos. Reintentar →'))
+      .catch(err => {
+        if (err.message === 'session_expired') { window.location.href = '/login'; return }
+        setFetchError('Error cargando tráficos. Reintentar →')
+      })
       .finally(() => setLoading(false))
 
     // Document counts
@@ -254,7 +260,7 @@ function TraficosContent() {
           <div className="toolbar-search">
             <Search size={12} style={{ color: 'var(--slate-400)', flexShrink: 0 }} />
             <input placeholder="Tráfico, pedimento..." value={searchInput}
-              onChange={e => setSearchInput(e.target.value)} />
+              onChange={e => setSearchInput(e.target.value)} aria-label="Buscar tráficos" />
           </div>
           <button className="btn btn-outline btn-sm" onClick={() => exportCSV(filtered, 'todos', clientClave, companyId)}>
             <Download size={12} /> CSV
@@ -369,9 +375,9 @@ function TraficosContent() {
           <div className="pagination">
             <span className="pagination-info">Página {page + 1} de {totalPages}</span>
             <div className="pagination-btns">
-              <button className="pagination-btn" disabled={page === 0} onClick={() => setPage(p => p - 1)}><ChevronLeft size={14} /></button>
+              <button className="pagination-btn" disabled={page === 0} onClick={() => setPage(p => p - 1)} aria-label="Página anterior"><ChevronLeft size={14} /></button>
               <button className="pagination-btn current">{page + 1}</button>
-              <button className="pagination-btn" disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)}><ChevronRight size={14} /></button>
+              <button className="pagination-btn" disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)} aria-label="Página siguiente"><ChevronRight size={14} /></button>
             </div>
           </div>
         )}

@@ -1,10 +1,11 @@
 'use client'
 
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useCallback } from 'react'
 import Link from 'next/link'
+import { createClient } from '@supabase/supabase-js'
 import { getCompanyIdCookie, getClientNameCookie } from '@/lib/client-config'
 import { useRealtimeTrafico } from '@/hooks/use-realtime-trafico'
-import { fmtDate, fmtDateCompact, fmtUSDCompact } from '@/lib/format-utils'
+import { fmtDate, fmtRelativeTime, fmtUSDCompact } from '@/lib/format-utils'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { calculateTmecSavings } from '@/lib/tmec-savings'
 import { computeStreak } from '@/lib/achievements'
@@ -13,7 +14,37 @@ import { Celebrate } from '@/components/celebrate'
 import { ErrorCard } from '@/components/ui/ErrorCard'
 import { DashboardSkeleton } from '@/components/skeletons/DashboardSkeleton'
 import { useSessionCache } from '@/hooks/use-session-cache'
-import { Truck, FolderOpen, DollarSign, MessageSquare, ChevronRight } from 'lucide-react'
+import { Truck, FolderOpen, DollarSign, ChevronRight } from 'lucide-react'
+
+const sbClient = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
+
+interface PulseItem {
+  id: string
+  text: string
+  timestamp: string
+  href: string
+  color: string // dot color
+}
+
+function describeWorkflowEvent(workflow: string, eventType: string, payload: Record<string, unknown>): string {
+  const docType = (payload?.docType as string) || ''
+  const filename = (payload?.filename as string) || ''
+  switch (`${workflow}.${eventType}`) {
+    case 'intake.email_processed': return `CRUZ procesó email${filename ? `: ${filename}` : ''}`
+    case 'classify.product_needs_classification': return 'Producto pendiente de clasificación'
+    case 'docs.completeness_check': return `Revisión de documentos${docType ? `: ${docType.replace(/_/g, ' ')}` : ''}`
+    case 'docs.document_received': return `Documento recibido${docType ? `: ${docType.replace(/_/g, ' ')}` : ''}`
+    default: return `${workflow}: ${eventType.replace(/_/g, ' ')}`
+  }
+}
+
+function describeAgentDecision(triggerType: string, decision: string, action: string): string {
+  if (triggerType === 'solicitation_overdue' && decision === 'escalation_queued') {
+    const match = action.match(/(\d+) docs/)
+    return `CRUZ escaló ${match?.[1] || ''} documentos pendientes`
+  }
+  return `CRUZ: ${decision.replace(/_/g, ' ')}`
+}
 
 interface TraficoRow {
   trafico: string; estatus: string; fecha_llegada: string | null
@@ -41,6 +72,9 @@ export default function ClientInicioView() {
   const { lastUpdate } = useRealtimeTrafico()
   const [realtimeToast, setRealtimeToast] = useState<string | null>(null)
   const { getCached, setCache, endRefresh, startRefresh } = useSessionCache()
+  const [pulse, setPulse] = useState<PulseItem[]>([])
+  const [pulseLoading, setPulseLoading] = useState(true)
+  const [awaySummary, setAwaySummary] = useState<{ total: number; solicitudes: number; docs: number; events: number } | null>(null)
 
   // Show toast on realtime status change
   useEffect(() => {
@@ -116,6 +150,95 @@ export default function ClientInicioView() {
 
   useEffect(() => { loadData() }, [])
 
+  // ── Activity Pulse — live workflow engine feed ──
+  const loadPulse = useCallback(async () => {
+    const companyId = getCompanyIdCookie()
+    if (!companyId) return
+
+    const [weRes, adRes, dsRes] = await Promise.all([
+      sbClient.from('workflow_events')
+        .select('id, workflow, event_type, payload, created_at, trigger_id')
+        .eq('company_id', companyId).eq('status', 'completed')
+        .order('created_at', { ascending: false }).limit(10),
+      sbClient.from('agent_decisions')
+        .select('id, trigger_type, decision, action_taken, confidence, created_at')
+        .eq('company_id', companyId)
+        .order('created_at', { ascending: false }).limit(5),
+      sbClient.from('documento_solicitudes')
+        .select('id, trafico_id, doc_type, status, solicitado_at, recibido_at')
+        .eq('company_id', companyId)
+        .order('solicitado_at', { ascending: false }).limit(5),
+    ])
+
+    const items: PulseItem[] = []
+
+    for (const e of (weRes.data || [])) {
+      items.push({
+        id: `we-${e.id}`,
+        text: describeWorkflowEvent(e.workflow, e.event_type, e.payload || {}),
+        timestamp: e.created_at,
+        href: e.trigger_id ? `/traficos/${encodeURIComponent(e.trigger_id)}` : '/traficos',
+        color: 'var(--success)',
+      })
+    }
+
+    for (const d of (adRes.data || [])) {
+      items.push({
+        id: `ad-${d.id}`,
+        text: describeAgentDecision(d.trigger_type, d.decision, d.action_taken || ''),
+        timestamp: d.created_at,
+        href: '/traficos',
+        color: '#0D9488', // teal — agent
+      })
+    }
+
+    for (const s of (dsRes.data || [])) {
+      const docName = (s.doc_type || '').replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, (c: string) => c.toUpperCase())
+      if (s.status === 'recibido' && s.recibido_at) {
+        items.push({
+          id: `ds-r-${s.id}`,
+          text: `Recibido: ${docName} de ${s.trafico_id}`,
+          timestamp: s.recibido_at,
+          href: `/traficos/${encodeURIComponent(s.trafico_id)}`,
+          color: 'var(--success)',
+        })
+      } else {
+        items.push({
+          id: `ds-${s.id}`,
+          text: `CRUZ solicitó ${docName} para ${s.trafico_id}`,
+          timestamp: s.solicitado_at,
+          href: `/traficos/${encodeURIComponent(s.trafico_id)}`,
+          color: 'var(--gold)',
+        })
+      }
+    }
+
+    // Deduplicate by id, sort by timestamp desc, take top 10
+    const seen = new Set<string>()
+    const unique = items.filter(i => { if (seen.has(i.id)) return false; seen.add(i.id); return true })
+    unique.sort((a, b) => b.timestamp.localeCompare(a.timestamp))
+    setPulse(unique.slice(0, 10))
+    setPulseLoading(false)
+
+    // "While you were away" — count events since last visit
+    const lastVisit = localStorage.getItem('cruz-last-visit')
+    if (lastVisit) {
+      const sinceEvents = (weRes.data || []).filter(e => e.created_at > lastVisit).length
+      const sinceDecisions = (adRes.data || []).filter(d => d.created_at > lastVisit).length
+      const sinceSolicitudes = (dsRes.data || []).filter(s => s.solicitado_at > lastVisit).length
+      const total = sinceEvents + sinceDecisions + sinceSolicitudes
+      if (total > 0) {
+        setAwaySummary({ total, events: sinceEvents, solicitudes: sinceSolicitudes, docs: sinceDecisions })
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    loadPulse()
+    const interval = setInterval(loadPulse, 30000) // Auto-refresh every 30s
+    return () => clearInterval(interval)
+  }, [loadPulse])
+
   // ── KPI calculations ──
   const enProceso = useMemo(() =>
     traficos.filter(t => (t.estatus || '').toLowerCase() === 'en proceso').length, [traficos])
@@ -190,14 +313,6 @@ export default function ClientInicioView() {
     return traficos
       .filter(t => (t.estatus || '').toLowerCase().includes('cruz') && t.fecha_cruce)
       .sort((a, b) => (b.fecha_cruce || '').localeCompare(a.fecha_cruce || ''))
-      .slice(0, 5)
-  }, [traficos])
-
-  // ── Recent activity (last 5 status changes) ──
-  const recentActivity = useMemo(() => {
-    return traficos
-      .filter(t => t.updated_at)
-      .sort((a, b) => (b.updated_at || '').localeCompare(a.updated_at || ''))
       .slice(0, 5)
   }, [traficos])
 
@@ -289,6 +404,38 @@ export default function ClientInicioView() {
         </p>
       </div>
 
+      {/* ── WHILE YOU WERE AWAY ── */}
+      {awaySummary && awaySummary.total > 0 && (
+        <div style={{
+          margin: '0 20px 16px',
+          padding: '16px 20px',
+          borderRadius: 12,
+          background: 'var(--bg-card)',
+          border: '1px solid var(--border)',
+          borderLeft: '3px solid #0D9488',
+        }}>
+          <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#0D9488', marginBottom: 8 }}>
+            Mientras estuvo fuera
+          </div>
+          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.5 }}>
+            CRUZ procesó {awaySummary.total} accion{awaySummary.total !== 1 ? 'es' : ''}
+            {awaySummary.events > 0 && ` · ${awaySummary.events} verificacion${awaySummary.events !== 1 ? 'es' : ''}`}
+            {awaySummary.solicitudes > 0 && ` · ${awaySummary.solicitudes} solicitud${awaySummary.solicitudes !== 1 ? 'es' : ''}`}
+            {awaySummary.docs > 0 && ` · ${awaySummary.docs} decision${awaySummary.docs !== 1 ? 'es' : ''} autónoma${awaySummary.docs !== 1 ? 's' : ''}`}
+          </div>
+          <button
+            onClick={() => setAwaySummary(null)}
+            style={{
+              marginTop: 8, fontSize: 11, fontWeight: 600,
+              color: 'var(--text-muted)', background: 'none',
+              border: 'none', cursor: 'pointer', padding: 0,
+            }}
+          >
+            Entendido
+          </button>
+        </div>
+      )}
+
       {/* ── NAVIGATION CARDS ── */}
       <div style={{
         display: 'grid',
@@ -328,77 +475,55 @@ export default function ClientInicioView() {
         ))}
       </div>
 
-      {/* ── CRUZ AI ── */}
-      <div style={{ padding: '16px 20px 0' }}>
-        <Link href="/cruz" style={{ textDecoration: 'none' }}>
-          <div style={{
-            padding: '20px 24px',
-            borderRadius: 16,
-            background: 'var(--bg-card)',
-            border: '1px solid var(--border)',
-            borderLeft: '3px solid var(--gold)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 16,
-            cursor: 'pointer',
-            transition: 'border-color 150ms, box-shadow 150ms',
-            minHeight: 64,
-          }}
-          onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 4px 16px rgba(196,150,60,0.1)' }}
-          onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none' }}
-          >
-            <MessageSquare size={24} strokeWidth={1.5} style={{ color: 'var(--gold)', flexShrink: 0 }} />
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>
-                CRUZ AI
-              </div>
-              <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 2 }}>
-                Consulta operaciones, clasifica, o calcula
-              </div>
-            </div>
-            <ChevronRight size={20} strokeWidth={1.5} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
-          </div>
-        </Link>
-      </div>
-
-      {/* ── RECENT ACTIVITY ── */}
+      {/* ── ACTIVITY PULSE — live workflow engine feed ── */}
       <div style={{ padding: '24px 20px 0' }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 8 }}>
-          Actividad reciente
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+          <div style={{
+            width: 8, height: 8, borderRadius: '50%',
+            background: 'var(--success)',
+            boxShadow: '0 0 6px rgba(22,163,74,0.4)',
+            animation: 'cruzPulse 2s ease-in-out infinite',
+          }} />
+          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' }}>
+            CRUZ trabajando
+          </div>
         </div>
-        {recentActivity.length === 0 ? (
+        {pulseLoading ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {[0, 1, 2].map(i => (
+              <div key={i} className="skel" style={{ height: 40, borderRadius: 8 }} />
+            ))}
+          </div>
+        ) : pulse.length === 0 ? (
           <div style={{ fontSize: 13, color: 'var(--text-muted)', padding: '12px 0' }}>
-            Sin actividad reciente
+            Sistema operativo. Sin eventos recientes.
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {recentActivity.map(t => {
-              const isCruzado = (t.estatus || '').toLowerCase().includes('cruz')
-              return (
-                <Link
-                  key={t.trafico}
-                  href={`/traficos/${encodeURIComponent(t.trafico)}`}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 12,
-                    padding: '10px 12px', borderRadius: 8, textDecoration: 'none',
-                    transition: 'background 100ms',
-                  }}
-                  onMouseEnter={e => { e.currentTarget.style.background = '#F5F4F0' }}
-                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
-                >
-                  <div style={{
-                    width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
-                    background: isCruzado ? 'var(--success)' : 'var(--gold)',
-                  }} />
-                  <div style={{ flex: 1, minWidth: 0, fontSize: 13, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {t.trafico}: {t.estatus || 'En proceso'}
-                  </div>
-                  <span style={{ fontSize: 11, color: 'var(--text-muted)', flexShrink: 0, fontFamily: 'var(--font-mono)' }}>
-                    {t.updated_at ? fmtDateCompact(t.updated_at) : ''}
-                  </span>
-                </Link>
-              )
-            })}
+            {pulse.map(item => (
+              <Link
+                key={item.id}
+                href={item.href}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 12,
+                  padding: '10px 12px', borderRadius: 8, textDecoration: 'none',
+                  transition: 'background 100ms',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = '#F5F4F0' }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+              >
+                <div style={{
+                  width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
+                  background: item.color,
+                }} />
+                <div style={{ flex: 1, minWidth: 0, fontSize: 13, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {item.text}
+                </div>
+                <span style={{ fontSize: 11, color: 'var(--text-muted)', flexShrink: 0, fontFamily: 'var(--font-mono)' }}>
+                  {fmtRelativeTime(item.timestamp)}
+                </span>
+              </Link>
+            ))}
             <Link
               href="/actividad"
               style={{ fontSize: 13, color: 'var(--gold-dark, #8B6914)', fontWeight: 600, padding: '8px 12px', textDecoration: 'none' }}
@@ -408,6 +533,13 @@ export default function ClientInicioView() {
           </div>
         )}
       </div>
+
+      <style>{`
+        @keyframes cruzPulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.4; }
+        }
+      `}</style>
 
       {/* ── FOOTER ── */}
       <div style={{ textAlign: 'center', padding: '40px 20px 60px' }}>

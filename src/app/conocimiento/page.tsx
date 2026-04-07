@@ -34,7 +34,7 @@ export default async function ConocimientoPage() {
   }
 
   return (
-    <div style={{ padding: '24px 28px', fontFamily: 'var(--font-geist-sans)', color: 'var(--border)' }}>
+    <div style={{ fontFamily: 'var(--font-geist-sans)', color: 'var(--border)' }} className="p-4 md:px-7 md:py-6">
       <h1 style={{ fontSize: 22, fontWeight: 800, margin: '0 0 4px' }}>Base de Conocimiento</h1>
       <p style={{ color: '#666', fontSize: 13, margin: '0 0 24px' }}>
         Memoria institucional de CRUZ &middot; {(knowledge || []).length} precedentes

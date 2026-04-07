@@ -110,8 +110,15 @@ async function run() {
       ;(existing || []).forEach(t => { existMap[t.trafico] = t })
 
       const changes = []
+      const skippedClaves = new Set()
       for (let i = 0; i < trafRows.length; i += 100) {
-        const batch = trafRows.slice(i, i + 100).map(r => {
+        const batch = trafRows.slice(i, i + 100).filter(r => {
+          if (!claveMap[r.clave_cliente]) {
+            skippedClaves.add(r.clave_cliente)
+            return false
+          }
+          return true
+        }).map(r => {
           const prev = existMap[r.trafico]
           if (prev && prev.estatus !== r.estatus) {
             changes.push({ trafico: r.trafico, from: prev.estatus, to: r.estatus })
@@ -120,7 +127,7 @@ async function run() {
           return {
             trafico: r.trafico,
             clave_cliente: r.clave_cliente,
-            company_id: claveMap[r.clave_cliente] || r.clave_cliente,
+            company_id: claveMap[r.clave_cliente],
             fecha_llegada: r.fecha_llegada,
             fecha_cruce: r.fecha_cruce,
             fecha_pago: r.fecha_pago,
@@ -167,10 +174,16 @@ async function run() {
 
     if (entRows.length > 0) {
       for (let i = 0; i < entRows.length; i += 200) {
-        const batch = entRows.slice(i, i + 200).map(r => ({
+        const batch = entRows.slice(i, i + 200).filter(r => {
+          if (!claveMap[r.cve_cliente]) {
+            skippedClaves.add(r.cve_cliente)
+            return false
+          }
+          return true
+        }).map(r => ({
           entrada_id: r.entrada_id,
           cve_cliente: r.cve_cliente,
-          company_id: claveMap[r.cve_cliente] || r.cve_cliente,
+          company_id: claveMap[r.cve_cliente],
           fecha_llegada: r.fecha_llegada,
           bultos_recibidos: r.bultos_recibidos,
           peso_recibido: r.peso_recibido,
@@ -188,6 +201,12 @@ async function run() {
 
     console.log(`✅ Tráficos: ${trafRows.length} (${totalNew} new, ${totalUpdated} updated, ${statusChanges} status changes)`)
     console.log(`✅ Entradas: ${entRows.length}`)
+
+    if (skippedClaves.size > 0) {
+      const claveList = [...skippedClaves].join(', ')
+      console.warn(`⚠️ Skipped unmapped claves: ${claveList}`)
+      await tg(`⚠️ <b>Delta sync</b>\nClaves sin registrar en companies: ${claveList}\nRegistra en tabla companies para sincronizar.\n— CRUZ 🦀`)
+    }
 
     if (totalNew > 50) {
       await tg(`⚡ <b>Delta sync</b>\n${totalNew} nuevos · ${totalUpdated} actualizados · ${statusChanges} cambios estado\n— CRUZ 🦀`)

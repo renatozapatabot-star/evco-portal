@@ -3,11 +3,13 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { getClientClaveCookie, getCompanyIdCookie } from '@/lib/client-config'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { GOLD } from '@/lib/design-system'
 import { fmtDateTimeLocal } from '@/lib/format-utils'
 import { useStatusSentence } from '@/hooks/use-status-sentence'
 
 export default function WarRoom() {
+  const isMobile = useIsMobile()
   const router = useRouter()
   const statusSentence = useStatusSentence()
   const [data, setData] = useState<{ enProceso: { trafico: string; fecha_llegada?: string | null }[]; cruzadosHoy: number; bridgeSummary: { name: string; avg: number }[]; critical: number; risks: { overall_score?: number }[]; noPedimento: number; mveCount: number; total: number } | null>(null)
@@ -48,10 +50,10 @@ export default function WarRoom() {
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: `${ambient}`, backgroundColor: 'var(--bg-main)', fontFamily: 'var(--font-geist-sans)', color: 'var(--text-primary)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
       {/* Header */}
-      <div style={{ padding: '12px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)' }}>
+      <div style={{ padding: isMobile ? '10px 16px' : '12px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', flexWrap: isMobile ? 'wrap' : 'nowrap', gap: isMobile ? 8 : 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <div style={{ width: 10, height: 10, borderRadius: '50%', background: urgentes > 5 ? 'var(--danger-500)' : 'var(--success)', animation: 'pulse 2s infinite' }} />
-          <span style={{ fontSize: 16, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase' }}>WAR ROOM — CRUZ</span>
+          <span style={{ fontSize: isMobile ? 13 : 16, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase' }}>WAR ROOM — CRUZ</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtDateTimeLocal(new Date()).split(' · ')[1] || fmtDateTimeLocal(new Date())}</span>
@@ -60,7 +62,7 @@ export default function WarRoom() {
       </div>
 
       {/* 4 Quadrants */}
-      <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr', gap: 1, background: 'var(--border)' }}>
+      <div style={{ flex: 1, display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gridTemplateRows: isMobile ? 'auto' : '1fr 1fr', gap: 1, background: 'var(--border)', overflowY: isMobile ? 'auto' : 'hidden' }}>
         {/* Q1: Active Tráficos */}
         <div style={{ background: 'var(--bg-card)', padding: 20, overflow: 'auto' }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>

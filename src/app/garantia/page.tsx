@@ -2,6 +2,7 @@
 
 import { Shield, Clock, FileText, Award } from 'lucide-react'
 import Link from 'next/link'
+import { useIsMobile } from '@/hooks/use-mobile'
 
 /**
  * /garantia — The CRUZ Guarantee (BUILD 160)
@@ -9,6 +10,7 @@ import Link from 'next/link'
  * CRUZ guarantees it because the system prevents failures.
  */
 export default function GarantiaPage() {
+  const isMobile = useIsMobile()
   const guarantees = [
     {
       icon: <Clock size={28} style={{ color: 'var(--gold)' }} />,
@@ -32,13 +34,13 @@ export default function GarantiaPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-main)' }}>
-      <div style={{ maxWidth: 720, margin: '0 auto', padding: '60px 24px' }}>
+      <div style={{ maxWidth: 720, margin: '0 auto', padding: isMobile ? '32px 16px' : '60px 24px' }}>
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: 48 }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 64, height: 64, borderRadius: 16, background: 'rgba(196,150,60,0.08)', border: '2px solid rgba(196,150,60,0.2)', marginBottom: 20 }}>
             <Award size={32} style={{ color: 'var(--gold)' }} />
           </div>
-          <h1 style={{ fontSize: 32, fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1.2, margin: '0 0 12px' }}>
+          <h1 style={{ fontSize: isMobile ? 24 : 32, fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1.2, margin: '0 0 12px' }}>
             Garantía CRUZ
           </h1>
           <p style={{ fontSize: 16, color: 'var(--text-secondary)', lineHeight: 1.6, maxWidth: 480, margin: '0 auto' }}>

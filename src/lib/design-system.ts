@@ -20,4 +20,4 @@ export const BORDER = '#E8E5E0'
 
 export const TEXT_PRIMARY = '#1A1A1A'
 export const TEXT_SECONDARY = '#6B6B6B'
-export const TEXT_MUTED = '#999999'
+export const TEXT_MUTED = '#737373'

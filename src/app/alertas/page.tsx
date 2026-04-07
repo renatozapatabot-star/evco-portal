@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { AlertTriangle, CheckCircle, Clock, Package, ShieldAlert } from 'lucide-react'
 import { calculateCruzScore, extractScoreInput } from '@/lib/cruz-score'
 import { getClientClaveCookie, getCompanyIdCookie } from '@/lib/client-config'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { fmtDateShort } from '@/lib/format-utils'
 
 interface Alert {
@@ -32,6 +33,7 @@ const SEV_STYLE = {
 }
 
 export default function AlertasPage() {
+  const isMobile = useIsMobile()
   const [alerts, setAlerts] = useState<Alert[]>([])
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState<'pendientes' | 'resueltas'>('pendientes')
@@ -175,7 +177,7 @@ export default function AlertasPage() {
                 }}>
                 <Icon size={16} style={{ color: sStyle.dot, marginTop: 2, flexShrink: 0 }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'center', gap: isMobile ? 4 : 0 }}>
                     <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--n-900)' }}>{a.title}</span>
                     <span style={{ fontSize: 10, color: 'var(--n-400)', flexShrink: 0, fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtTime(a.time)}</span>
                   </div>

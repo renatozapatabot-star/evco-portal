@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useMemo } from 'react'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { getCookieValue } from '@/lib/client-config'
 import { fmtId, fmtDate } from '@/lib/format-utils'
 import { Truck, Package, BarChart3, MessageSquare } from 'lucide-react'
@@ -57,6 +58,7 @@ function getWeekRange(): { start: string; end: string; dayLabels: string[] } {
 }
 
 export default function PlaneacionPage() {
+  const isMobile = useIsMobile()
   const [loading, setLoading] = useState(true)
   const [traficos, setTraficos] = useState<TraficoRow[]>([])
   const [pipeline, setPipeline] = useState<PipelineRow[]>([])
@@ -228,7 +230,7 @@ export default function PlaneacionPage() {
           <h2 style={{ fontSize: 14, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.gray, marginBottom: 12 }}>
             Capacidad
           </h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: 8 }}>
             <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.r, padding: '16px 20px' }}>
               <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: T.textSec, marginBottom: 6 }}>
                 Activos
@@ -278,7 +280,7 @@ export default function PlaneacionPage() {
           <h2 style={{ fontSize: 14, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.gray, marginBottom: 12 }}>
             Acceso rápido
           </h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)', gap: 8 }}>
             {[
               { href: '/traficos', label: 'Tráficos', icon: <Truck size={20} />, count: activeCount },
               { href: '/bodega', label: 'Bodega', icon: <Package size={20} />, count: null },

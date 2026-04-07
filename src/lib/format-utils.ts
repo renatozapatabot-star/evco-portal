@@ -131,6 +131,25 @@ export const fmtDateCompact = (date: string | Date | null | undefined): string =
   } catch { return '—' }
 }
 
+/** Relative time — "hace 2h", "hace 3d". Only for actividad feed. All other pages use absolute dates. */
+export const fmtRelativeTime = (date: string | Date | null | undefined): string => {
+  if (!date) return '—'
+  try {
+    const now = new Date()
+    const then = new Date(date)
+    const diffMs = now.getTime() - then.getTime()
+    if (diffMs < 0) return fmtDateCompact(date)
+    const mins = Math.floor(diffMs / 60000)
+    if (mins < 1) return 'ahora'
+    if (mins < 60) return `hace ${mins} min`
+    const hours = Math.floor(mins / 60)
+    if (hours < 24) return `hace ${hours}h`
+    const days = Math.floor(hours / 24)
+    if (days < 7) return `hace ${days}d`
+    return fmtDateCompact(date)
+  } catch { return '—' }
+}
+
 // ID formatter — no em-dashes, client-prefix aware
 export const fmtId = (id: string | null | undefined): string => {
   if (!id) return ''

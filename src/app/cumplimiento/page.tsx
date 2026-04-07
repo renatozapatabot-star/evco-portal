@@ -5,6 +5,7 @@ import { Calendar, FileText, Phone, Shield, AlertTriangle, FileCheck } from 'luc
 import { getClientClaveCookie, getCompanyIdCookie, getCookieValue } from '@/lib/client-config'
 import { daysUntilMVE } from '@/lib/compliance-dates'
 import { fmtDate } from '@/lib/format-utils'
+import { useIsMobile } from '@/hooks/use-mobile'
 
 /* ── Light tokens (DESIGN_SYSTEM.md v6) ── */
 const T = {
@@ -31,6 +32,7 @@ const T = {
    ══════════════════════════════════════════ */
 
 function BrokerCumplimientoView() {
+  const isMobile = useIsMobile()
   const [loading, setLoading] = useState(true)
   const [semaforoRojo, setSemaforoRojo] = useState(0)
   const [blockingDocs, setBlockingDocs] = useState(0)
@@ -102,7 +104,7 @@ function BrokerCumplimientoView() {
   }
 
   return (
-    <div style={{ padding: 32, minHeight: '100vh' }}>
+    <div style={{ padding: isMobile ? 16 : 32, minHeight: '100vh' }}>
       <div style={{ maxWidth: 960, margin: '0 auto' }}>
         <div style={{ marginBottom: 32 }}>
           <h1 style={{ fontSize: 24, fontWeight: 700, color: T.textPrimary, marginBottom: 4 }}>
@@ -115,7 +117,7 @@ function BrokerCumplimientoView() {
 
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+          gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(280px, 1fr))',
           gap: 16, marginBottom: 24,
         }}>
 
@@ -279,6 +281,7 @@ function BrokerCumplimientoView() {
    ══════════════════════════════════════════ */
 
 function ClientCumplimientoView() {
+  const isMobile = useIsMobile()
   const [deadlineCount, setDeadlineCount] = useState(0)
   const [pendingDocsCount, setPendingDocsCount] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -314,7 +317,7 @@ function ClientCumplimientoView() {
   }, [])
 
   return (
-    <div style={{ padding: 32, background: 'var(--bg-main)', minHeight: '100vh' }}>
+    <div style={{ padding: isMobile ? 16 : 32, background: 'var(--bg-main)', minHeight: '100vh' }}>
       <div style={{ marginBottom: 32 }}>
         <h1 style={{ fontSize: 24, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>
           Cumplimiento
@@ -327,7 +330,7 @@ function ClientCumplimientoView() {
       {loading ? (
         <div style={{ textAlign: 'center', padding: 64, color: 'var(--text-muted)' }}>Cargando...</div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
           <div style={{
             background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: 8,
             padding: 24, borderTop: '4px solid var(--gold, #C4963C)',

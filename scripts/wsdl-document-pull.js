@@ -25,21 +25,85 @@ const REAUTH_INTERVAL = 1 // GlobalPC keys are single-use — auth before every 
 
 // Map WSDL Spanish labels → check-constrained doc_type codes
 const DOC_TYPE_MAP = {
+  // Facturas
   'FACTURA': 'factura_comercial',
   'FACTURA DOLARES': 'factura_comercial',
   'FACTURA PESOS': 'factura_comercial',
+  'FACTURA COMERCIAL': 'factura_comercial',
+  'XML DE FACTURA': 'factura_comercial',
+  'CFDI': 'factura_comercial',
+  'XML CFDI': 'factura_comercial',
+  'COMPLEMENTO DE PAGO': 'factura_comercial',
+  'PROFORMA': 'proforma',
+  'PRO FORMA': 'proforma',
+  // Packing
   'LISTA DE EMPAQUE': 'packing_list',
+  'PACKING LIST': 'packing_list',
+  'PACKING': 'packing_list',
+  // COVE
   'DETALLE DE COVE': 'cove',
   'XML DE COVE': 'cove',
+  'COVE': 'cove',
   'ACUSE DE COVE': 'acuse_cove',
   'ACUSE DE E-DOCUMENT': 'acuse_cove',
+  'ACUSE E-DOCUMENT': 'acuse_cove',
+  'ACUSE': 'acuse_cove',
+  // Pedimento
   'PEDIMENTO': 'pedimento_detallado',
   'PEDIMENTO DETALLADO': 'pedimento_detallado',
-  'PEDIMENTO SIMPLIFICADO': 'pedimento_detallado',
+  'PEDIMENTO SIMPLIFICADO': 'pedimento_simplificado',
+  'PEDIMENTO COMPLEMENTARIO': 'pedimento_detallado',
+  // DODA
   'QR DODA': 'doda',
+  'DODA': 'doda',
+  'DODA PREVIO': 'doda',
+  'DESPACHO PREVIO': 'doda',
+  // Transport / BL
+  'CONOCIMIENTO DE EMBARQUE': 'bol',
+  'BILL OF LADING': 'bol',
+  'BL': 'bol',
+  'BOL': 'bol',
+  'GUIA DE EMBARQUE': 'bol',
+  'GUIA AEREA': 'bol',
+  'AWB': 'bol',
+  'CARTA PORTE': 'carta_porte',
+  'CARTA DE PORTE': 'carta_porte',
+  'CFDI TRASLADO': 'carta_porte',
+  // Certificates
+  'CERTIFICADO DE ORIGEN': 'certificado_origen',
+  'CERTIFICATE OF ORIGIN': 'certificado_origen',
+  'T-MEC': 'certificado_origen',
+  'USMCA': 'certificado_origen',
+  'CERTIFICADO': 'certificado_origen',
+  // Value declaration
+  'MANIFESTACION DE VALOR': 'mve',
+  'MVE': 'mve',
+  'MV': 'mve',
+  // Compliance / NOM
+  'NOM': 'nom',
+  'NORMA OFICIAL': 'nom',
+  'CERTIFICADO DE ANALISIS': 'coa',
+  'COA': 'coa',
+  // Accounting
+  'CUENTA DE GASTOS': 'cuenta_gastos',
+  'CUENTA GASTOS': 'cuenta_gastos',
+  'HONORARIOS': 'cuenta_gastos',
+  // Permits
+  'PERMISO': 'permiso',
+  'COFEPRIS': 'permiso',
+  // Orders
+  'ORDEN DE COMPRA': 'orden_compra',
+  'PURCHASE ORDER': 'orden_compra',
+  // Validation
   'ARCHIVOS DE VALIDACION': 'archivos_validacion',
-  'XML DE FACTURA': 'factura_comercial',
+  'VALIDACION': 'archivos_validacion',
+  // Bodega
+  'ENTRADA DE BODEGA': 'entrada_bodega',
+  'RECIBO DE ALMACEN': 'entrada_bodega',
+  // Catch-all (truly unclassifiable)
   'CARTA': 'otro',
+  'OTROS': 'otro',
+  'OTRO': 'otro',
 }
 function mapDocType(wsdlLabel) {
   return DOC_TYPE_MAP[(wsdlLabel || '').toUpperCase()] || 'otro'

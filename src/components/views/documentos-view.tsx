@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useRef, useCallback } from 'react'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { createClient } from '@supabase/supabase-js'
 import { Upload, CheckCircle, XCircle, ChevronDown } from 'lucide-react'
 import { getClientNameCookie } from '@/lib/client-config'
@@ -24,6 +25,7 @@ const LEGAL_DOCS = [
 ]
 
 export function DocumentosView() {
+  const isMobile = useIsMobile()
   const [companyDocs, setCompanyDocs] = useState<{ tipo_documento?: string; [key: string]: unknown }[]>([])
   const [loading, setLoading] = useState(true)
   const [docError, setDocError] = useState<string | null>(null)
@@ -125,7 +127,7 @@ export function DocumentosView() {
         </div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 260px', gap: 20, padding: '0 20px 40px', alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 260px', gap: 20, padding: '0 20px 40px', alignItems: 'start' }}>
 
       {/* Document checklist — LEFT */}
       <div>

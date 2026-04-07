@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useMemo } from 'react'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { Search, ChevronRight, ArrowUpDown } from 'lucide-react'
 import { getCookieValue } from '@/lib/client-config'
 // format-utils imported if needed for future columns
@@ -28,6 +29,7 @@ interface ProductGroup {
 type SortKey = 'count' | 'totalValor' | 'descripcion'
 
 export default function CatalogoPage() {
+  const isMobile = useIsMobile()
   const [rows, setRows] = useState<TraficoRow[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -57,9 +59,15 @@ export default function CatalogoPage() {
     if (!isInternal && companyId) params.set('company_id', companyId)
 
     fetch(`/api/data?${params}`)
-      .then(r => r.json())
+      .then(r => {
+        if (!r.ok) throw new Error(r.status === 401 ? 'session_expired' : 'fetch_error')
+        return r.json()
+      })
       .then(d => setRows(Array.isArray(d.data) ? d.data : []))
-      .catch(() => setRows([]))
+      .catch(err => {
+        if (err.message === 'session_expired') { window.location.href = '/login'; return }
+        setRows([])
+      })
       .finally(() => setLoading(false))
 
     // Fracción fallback from globalpc_partidas
@@ -157,6 +165,7 @@ export default function CatalogoPage() {
         <Search size={14} style={{ color: 'var(--slate-400)', flexShrink: 0 }} />
         <input placeholder="Buscar descripción o fracción..." value={search}
           onChange={e => setSearch(e.target.value)}
+          aria-label="Buscar productos en catálogo"
           style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: 13, color: 'var(--text-primary)' }} />
       </div>
 
@@ -173,9 +182,51 @@ export default function CatalogoPage() {
             <EmptyState icon="📋" title="Sin productos registrados"
               description="Los productos de sus operaciones aparecerán aquí agrupados por tipo" />
           </div>
-        ) : (
+        ) : isMobile ? (
+            <div style={{ padding: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {grouped.map((g) => (
+                <div key={g.descripcion} style={{
+                  background: 'var(--bg-main)', border: '1px solid var(--border-card)',
+                  borderRadius: 8, padding: '12px 14px',
+                }}>
+                  <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 6, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {g.descripcion}
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                    <span className="font-mono" style={{
+                      fontWeight: 600, fontSize: 13,
+                      color: g.fraccion ? 'var(--gold-dark, #8B6914)' : 'var(--slate-400)',
+                    }}>
+                      {g.fraccion || '—'}
+                    </span>
+                    {g.tmec ? (
+                      <span style={{ fontSize: 11, color: 'var(--success)', fontWeight: 600, background: 'var(--success-bg)', padding: '2px 8px', borderRadius: 9999 }}>T-MEC</span>
+                    ) : (
+                      <span style={{ fontSize: 11, color: 'var(--slate-400)' }}>—</span>
+                    )}
+                  </div>
+                  <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                    {g.traficos.slice(0, 3).map(t => (
+                      <Link key={t} href={`/traficos/${encodeURIComponent(t)}`}
+                        onClick={e => e.stopPropagation()}
+                        className="font-mono" style={{
+                          fontSize: 10, fontWeight: 600, color: 'var(--info, #2563EB)',
+                          textDecoration: 'none', background: '#EFF6FF',
+                          padding: '1px 6px', borderRadius: 4,
+                        }}>
+                        {t.length > 15 ? t.slice(-8) : t}
+                      </Link>
+                    ))}
+                    {g.traficos.length > 3 && (
+                      <span style={{ fontSize: 10, color: 'var(--slate-400)' }}>+{g.traficos.length - 3}</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
           <div style={{ overflowX: 'auto' }}>
-            <table className="cruz-table" style={{ minWidth: 700 }}>
+            <table className="cruz-table" aria-label="Catálogo de productos" style={{ minWidth: 700 }}>
               <thead>
                 <tr>
                   <th>Descripción</th>
@@ -226,7 +277,7 @@ export default function CatalogoPage() {
               </tbody>
             </table>
           </div>
-        )}
+          )}
       </div>
     </div>
   )

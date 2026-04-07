@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { AlertTriangle, CheckCircle, Clock, Shield, Plus } from 'lucide-react'
 import Link from 'next/link'
 import { getCookieValue } from '@/lib/client-config'
@@ -78,6 +79,7 @@ function getInitialDocs(): LegalDoc[] {
 }
 
 export default function DocumentosLegalesPage() {
+  const isMobile = useIsMobile()
   const [docs, setDocs] = useState<LegalDoc[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -227,7 +229,7 @@ export default function DocumentosLegalesPage() {
           <Shield size={14} style={{ verticalAlign: 'middle', marginRight: 6 }} />
           Alertas Automáticas
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 12, fontSize: 12, color: 'var(--n-500)' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: 12, fontSize: 12, color: 'var(--n-500)' }}>
           <div><Clock size={12} style={{ verticalAlign: 'middle', marginRight: 4 }} /> 90 días: Advertencia</div>
           <div><Clock size={12} style={{ verticalAlign: 'middle', marginRight: 4 }} /> 60 días: Recordatorio</div>
           <div><AlertTriangle size={12} style={{ verticalAlign: 'middle', marginRight: 4 }} /> 30 días: Crítico</div>

@@ -5,6 +5,7 @@ import DataTable, { Column } from '@/components/DataTable'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Landmark } from 'lucide-react'
 import { getCompanyIdCookie } from '@/lib/client-config'
+import { useIsMobile } from '@/hooks/use-mobile'
 
 const BRIDGES = [
   { name: 'Puente Internacional I', sub: 'Gateway to Americas', type: 'Pasajero', status: 'green', wait: '-' },
@@ -23,6 +24,7 @@ function StatusBadge({ value }: { value: string }) {
 }
 
 export function SoiaView() {
+  const isMobile = useIsMobile()
   const [cruces, setCruces] = useState<Record<string, unknown>[]>([])
   const [loading, setLoading] = useState(true)
   const [bridgeRec, setBridgeRec] = useState<{ name: string; avg: number } | null>(null)
@@ -77,7 +79,7 @@ export function SoiaView() {
   }, [cruces])
 
   return (
-    <div style={{ padding: 32 }}>
+    <div style={{ padding: isMobile ? 16 : 32 }}>
       <div style={{ marginBottom: 24 }}>
         <h1 className="pg-title">SOIA — Semáforo Aduanal</h1>
         <p className="pg-meta">Aduana 240 Nuevo Laredo &middot; {cruces.length} registros</p>
@@ -116,7 +118,7 @@ export function SoiaView() {
       })()}
 
       {/* Bridge Status Grid 2x2 */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16, marginBottom: 24 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)', gap: 16, marginBottom: 24 }}>
         {BRIDGES.map(b => (
           <div key={b.name} style={{ background: 'var(--bg-card)', border: '1px solid var(--border-primary)', borderRadius: 8, padding: 24 }}>
             <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>{b.name}</div>
@@ -134,8 +136,8 @@ export function SoiaView() {
       </div>
 
       {/* Summary KPIs */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 24 }}>
-        <div style={{ background: 'var(--bg-card)', borderRadius: 8, padding: 24, textAlign: 'center' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 16, marginBottom: 24 }}>
+        <div style={{ background: 'var(--bg-card)', borderRadius: 8, padding: isMobile ? 16 : 24, textAlign: 'center' }}>
           <div className="mono" style={{ fontSize: 32, fontWeight: 600, color: 'var(--status-green)' }}>{desaduanado}</div>
           <div style={{ fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--amber-700)', marginTop: 4 }}>Desaduanado</div>
         </div>

@@ -1,30 +1,21 @@
 'use client'
 
 import { useEffect, useState, useMemo } from 'react'
-import { Search, ChevronDown, ChevronRight, Building2, TrendingUp } from 'lucide-react'
+import { useIsMobile } from '@/hooks/use-mobile'
+import { Search } from 'lucide-react'
 import { getCookieValue } from '@/lib/client-config'
-import { fmtId, fmtDate, fmtUSD, fmtUSDCompact } from '@/lib/format-utils'
-import { supplierStory } from '@/lib/data-stories'
-import { countryFlag } from '@/lib/carrier-names'
-import { EmptyState } from '@/components/ui/EmptyState'
-import Link from 'next/link'
+import { fmtUSDCompact } from '@/lib/format-utils'
+import { SupplierKPIs } from '@/components/proveedores/SupplierKPIs'
+import { SupplierTable } from '@/components/proveedores/SupplierTable'
+import type { SupplierAgg } from '@/components/proveedores/SupplierDetail'
 
-/* ── Light tokens (DESIGN_SYSTEM.md v6) ── */
 const T = {
   bg: 'var(--bg-main)',
   surface: 'var(--bg-card)',
-  surfaceHover: '#F5F4F0',
-  surfaceActive: '#EEEDE8',
   border: 'var(--border)',
   text: 'var(--text-primary)',
   textSecondary: 'var(--text-secondary)',
   textMuted: 'var(--text-muted)',
-  gold: 'var(--gold)',
-  goldSubtle: 'rgba(196,150,60,0.08)',
-  goldBorder: 'rgba(196,150,60,0.25)',
-  green: 'var(--success)',
-  red: 'var(--danger-500)',
-  mono: 'var(--font-jetbrains-mono)',
 } as const
 
 interface TraficoRow {
@@ -42,23 +33,8 @@ interface TraficoRow {
   [k: string]: unknown
 }
 
-interface SupplierAgg {
-  name: string
-  country: string | null
-  traficoCount: number
-  totalValue: number
-  lastDate: string | null
-  avgValue: number
-  traficos: TraficoRow[]
-  // Enhanced metrics
-  docCompliance: number    // % with pedimento assigned
-  avgDeliveryDays: number  // avg fecha_llegada → fecha_cruce
-  tmecRate: number         // % with T-MEC regime
-  riskLevel: 'low' | 'medium' | 'high' | 'watch'
-  firstDate: string | null
-}
-
 export default function ProveedoresPage() {
+  const isMobile = useIsMobile()
   const [rows, setRows] = useState<TraficoRow[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -78,7 +54,7 @@ export default function ProveedoresPage() {
 
   const isInternal = userRole === 'broker' || userRole === 'admin'
 
-  // Fetch supplier name lookup from globalpc_proveedores (resolves PRV_XXXX codes)
+  // Fetch supplier name lookup from globalpc_proveedores
   useEffect(() => {
     const cid = getCookieValue('company_id') || ''
     fetch(`/api/data?table=globalpc_proveedores&limit=5000${cid ? '&company_id=' + cid : ''}`)
@@ -134,10 +110,8 @@ export default function ProveedoresPage() {
       const prov = r.proveedores
       if (!prov || (typeof prov === 'string' && !prov.trim())) continue
 
-      // proveedores can be comma-separated text or JSONB stringified
       let names: string[] = []
       if (typeof prov === 'string') {
-        // Try parsing as JSON array first
         try {
           const parsed = JSON.parse(prov)
           if (Array.isArray(parsed)) names = parsed.map(String)
@@ -148,7 +122,6 @@ export default function ProveedoresPage() {
       }
 
       for (const raw of names) {
-        // Resolve PRV_XXXX codes to actual supplier names
         const resolved = supplierLookup.get(raw.trim()) || raw.trim()
         const name = resolved
         if (!name) continue
@@ -189,12 +162,8 @@ export default function ProveedoresPage() {
     const arr = Array.from(map.values())
     arr.forEach(s => {
       s.avgValue = s.traficoCount > 0 ? s.totalValue / s.traficoCount : 0
-
-      // Document compliance: % with pedimento
       const withPed = s.traficos.filter(t => !!t.pedimento).length
       s.docCompliance = s.traficoCount > 0 ? Math.round((withPed / s.traficoCount) * 100) : 0
-
-      // Average delivery time (fecha_llegada → fecha_cruce)
       const withBoth = s.traficos.filter(t => t.fecha_llegada && (t as Record<string, unknown>).fecha_cruce)
       if (withBoth.length > 0) {
         const totalDays = withBoth.reduce((sum, t) => {
@@ -205,19 +174,13 @@ export default function ProveedoresPage() {
       } else {
         s.avgDeliveryDays = 0
       }
-
-      // T-MEC utilization
       const tmec = s.traficos.filter(t => {
-        const r = ((t as Record<string, unknown>).regimen as string || '').toUpperCase()
-        return r === 'ITE' || r === 'ITR' || r === 'IMD'
+        const reg = ((t as Record<string, unknown>).regimen as string || '').toUpperCase()
+        return reg === 'ITE' || reg === 'ITR' || reg === 'IMD'
       }).length
       s.tmecRate = s.traficoCount > 0 ? Math.round((tmec / s.traficoCount) * 100) : 0
-
-      // First date
       const dates = s.traficos.map(t => t.fecha_llegada).filter(Boolean).sort()
       s.firstDate = dates.length > 0 ? dates[0]! : null
-
-      // Risk scoring
       if (s.traficoCount < 5) s.riskLevel = 'watch'
       else if (s.docCompliance < 80) s.riskLevel = 'high'
       else if (s.avgDeliveryDays > 10) s.riskLevel = 'medium'
@@ -238,6 +201,7 @@ export default function ProveedoresPage() {
   }, [suppliers, search])
 
   const totalValue = useMemo(() => suppliers.reduce((s, r) => s + r.totalValue, 0), [suppliers])
+  const totalTraficoCount = useMemo(() => new Set(suppliers.flatMap(s => s.traficos.map(t => t.trafico))).size, [suppliers])
 
   return (
     <div style={{ minHeight: '100vh', background: T.bg, margin: -36, padding: 36 }}>
@@ -255,26 +219,12 @@ export default function ProveedoresPage() {
 
       {/* KPI strip */}
       {!loading && suppliers.length > 0 && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 24 }}>
-          {[
-            { label: 'Proveedores', value: String(suppliers.length), color: T.gold },
-            { label: 'Tráficos con proveedor', value: String(new Set(suppliers.flatMap(s => s.traficos.map(t => t.trafico))).size), color: T.text },
-            { label: 'Valor total', value: fmtUSDCompact(totalValue), color: T.green },
-            { label: 'Promedio por embarque', value: totalValue > 0 && suppliers.length > 0 ? fmtUSDCompact(totalValue / suppliers.reduce((s, r) => s + r.traficoCount, 0)) : '—', color: T.text },
-          ].map(kpi => (
-            <div key={kpi.label} style={{
-              background: T.surface, border: `1px solid ${T.border}`, borderRadius: 8,
-              padding: '16px 20px',
-            }}>
-              <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.textMuted, marginBottom: 6 }}>
-                {kpi.label}
-              </div>
-              <div style={{ fontSize: 20, fontWeight: 800, fontFamily: T.mono, color: kpi.color }}>
-                {kpi.value}
-              </div>
-            </div>
-          ))}
-        </div>
+        <SupplierKPIs
+          supplierCount={suppliers.length}
+          traficoCount={totalTraficoCount}
+          totalValue={totalValue}
+          isMobile={isMobile}
+        />
       )}
 
       {/* Controls */}
@@ -289,6 +239,7 @@ export default function ProveedoresPage() {
             placeholder="Buscar proveedor..."
             value={search}
             onChange={e => setSearch(e.target.value)}
+            aria-label="Buscar proveedores"
             style={{
               flex: 1, background: 'transparent', border: 'none', outline: 'none',
               color: T.text, fontSize: 13, fontFamily: 'var(--font-geist-sans)',
@@ -315,256 +266,14 @@ export default function ProveedoresPage() {
       </div>
 
       {/* Table */}
-      {loading ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          {Array.from({ length: 10 }).map((_, i) => (
-            <div key={i} style={{ height: 48, background: T.surface, borderRadius: i === 0 ? '8px 8px 0 0' : i === 9 ? '0 0 8px 8px' : 0 }} />
-          ))}
-        </div>
-      ) : filtered.length === 0 ? (
-        <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 8, padding: 48 }}>
-          <EmptyState
-            icon="🏭"
-            title={search ? `Sin resultados para "${search}"` : 'Sin datos de proveedores'}
-            description={search ? 'Intenta con otro término' : 'Los proveedores se extraen del campo proveedores de cada tráfico'}
-          />
-        </div>
-      ) : (
-        <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 8, overflow: 'hidden' }}>
-          {/* Header row */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: '32px 1fr 80px 120px 70px 60px 60px 50px',
-            padding: '10px 16px',
-            borderBottom: `1px solid ${T.border}`,
-            fontSize: 10, fontWeight: 700, textTransform: 'uppercase',
-            letterSpacing: '0.08em', color: T.textMuted,
-          }}>
-            <span />
-            <span>Proveedor</span>
-            <span style={{ textAlign: 'right' }}>Tráficos</span>
-            <span style={{ textAlign: 'right' }}>Valor</span>
-            <span style={{ textAlign: 'right' }}>Docs %</span>
-            <span style={{ textAlign: 'right' }}>T-MEC</span>
-            <span style={{ textAlign: 'center' }}>Riesgo</span>
-            <span style={{ textAlign: 'center' }}>País</span>
-          </div>
-
-          {/* Rows */}
-          {filtered.map((s, idx) => {
-            const isExpanded = expandedSupplier === s.name
-            return (
-              <div key={s.name}>
-                <div
-                  onClick={() => setExpandedSupplier(isExpanded ? null : s.name)}
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: '32px 1fr 80px 120px 70px 60px 60px 50px',
-                    padding: '12px 16px',
-                    alignItems: 'center',
-                    borderBottom: `1px solid ${T.border}`,
-                    cursor: 'pointer',
-                    background: isExpanded ? T.surfaceActive : 'transparent',
-                    transition: 'background 100ms',
-                  }}
-                  onMouseEnter={e => { if (!isExpanded) e.currentTarget.style.background = T.surfaceHover }}
-                  onMouseLeave={e => { if (!isExpanded) e.currentTarget.style.background = 'transparent' }}
-                >
-                  <span style={{ color: T.textMuted }}>
-                    {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                  </span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
-                    <div style={{
-                      width: 28, height: 28, borderRadius: 6,
-                      background: T.goldSubtle, border: `1px solid ${T.goldBorder}`,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                    }}>
-                      <Building2 size={14} style={{ color: T.gold }} />
-                    </div>
-                    <span title={s.name} style={{
-                      fontSize: 13, fontWeight: 600, color: T.text,
-                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                    }}>
-                      {s.name}
-                    </span>
-                    {idx < 3 && (
-                      <span style={{
-                        fontSize: 9, fontWeight: 800, padding: '2px 6px', borderRadius: 9999,
-                        background: T.goldSubtle, color: T.gold, border: `1px solid ${T.goldBorder}`,
-                        flexShrink: 0,
-                      }}>
-                        TOP {idx + 1}
-                      </span>
-                    )}
-                  </div>
-                  <span style={{ textAlign: 'right', fontFamily: T.mono, fontSize: 13, fontWeight: 700, color: T.text }}>
-                    {s.traficoCount}
-                  </span>
-                  <span style={{ textAlign: 'right', fontFamily: T.mono, fontSize: 12, fontWeight: 600, color: T.green }}>
-                    {s.totalValue > 0 ? fmtUSDCompact(s.totalValue) : <span style={{ color: T.textMuted }}>—</span>}
-                  </span>
-                  <span style={{ textAlign: 'right', fontFamily: T.mono, fontSize: 12, fontWeight: 600, color: s.docCompliance >= 90 ? T.green : s.docCompliance >= 70 ? 'var(--warning-500, #D97706)' : T.red }}>
-                    {s.docCompliance}%
-                  </span>
-                  <span style={{ textAlign: 'right', fontFamily: T.mono, fontSize: 12, color: s.tmecRate > 0 ? T.green : T.textMuted }}>
-                    {s.tmecRate > 0 ? `${s.tmecRate}%` : '—'}
-                  </span>
-                  <span style={{ textAlign: 'center' }}>
-                    <span style={{
-                      fontSize: 9, fontWeight: 800, padding: '2px 6px', borderRadius: 9999,
-                      background: s.riskLevel === 'high' ? 'rgba(220,38,38,0.1)' : s.riskLevel === 'medium' ? 'rgba(217,119,6,0.1)' : s.riskLevel === 'watch' ? 'rgba(37,99,235,0.1)' : 'rgba(22,163,74,0.1)',
-                      color: s.riskLevel === 'high' ? 'var(--danger-500)' : s.riskLevel === 'medium' ? 'var(--warning-500, #D97706)' : s.riskLevel === 'watch' ? 'var(--info)' : 'var(--success)',
-                    }}>
-                      {s.riskLevel === 'high' ? 'ALTO' : s.riskLevel === 'medium' ? 'MED' : s.riskLevel === 'watch' ? 'NUEVO' : 'OK'}
-                    </span>
-                  </span>
-                  <span style={{ textAlign: 'center', fontSize: 16 }}>
-                    {s.country ? countryFlag(s.country) : '🌐'}
-                  </span>
-                </div>
-
-                {/* Expanded detail */}
-                {isExpanded && (
-                  <SupplierDetail supplier={s} />
-                )}
-              </div>
-            )
-          })}
-        </div>
-      )}
-    </div>
-  )
-}
-
-/* ══════════════════════════════════════════
-   SUPPLIER DETAIL — expanded row
-   ══════════════════════════════════════════ */
-function SupplierDetail({ supplier: s }: { supplier: SupplierAgg }) {
-  // Most common descriptions (proxy for product/doc types)
-  const descFreq = useMemo(() => {
-    const map = new Map<string, number>()
-    s.traficos.forEach(t => {
-      const desc = (t.descripcion_mercancia ?? '').trim()
-      if (desc) map.set(desc, (map.get(desc) ?? 0) + 1)
-    })
-    return Array.from(map.entries())
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 5)
-  }, [s])
-
-  return (
-    <div style={{
-      background: T.surfaceActive, borderBottom: `1px solid ${T.border}`,
-      padding: '20px 16px 20px 48px',
-    }}>
-      {/* Stats row */}
-      <div style={{ display: 'flex', gap: 24, marginBottom: 20, flexWrap: 'wrap' }}>
-        {[
-          { label: 'Tráficos', value: String(s.traficoCount) },
-          { label: 'Valor total', value: s.totalValue > 0 ? fmtUSD(s.totalValue) : '—' },
-          { label: 'Promedio por embarque', value: s.avgValue > 0 ? fmtUSD(s.avgValue) : '—' },
-          { label: 'País', value: s.country ? `${countryFlag(s.country)} ${s.country}` : '🌐 Desconocido' },
-          { label: 'Primer embarque', value: s.traficos.length > 0 ? fmtDate(s.traficos[s.traficos.length - 1].fecha_llegada) : '—' },
-          { label: 'Último embarque', value: s.lastDate ? fmtDate(s.lastDate) : '—' },
-        ].map(stat => (
-          <div key={stat.label}>
-            <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.textMuted, marginBottom: 4 }}>
-              {stat.label}
-            </div>
-            <div style={{ fontSize: 14, fontWeight: 700, fontFamily: T.mono, color: T.text }}>
-              {stat.value}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Supplier narrative */}
-      <p style={{
-        fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6,
-        fontStyle: 'italic', maxWidth: 600, margin: '0 0 16px',
-      }}>
-        {supplierStory({
-          name: s.name.substring(0, 30),
-          traficoCount: s.traficoCount,
-          totalValue: s.totalValue,
-          tmecRate: s.tmecRate,
-          avgDeliveryDays: s.avgDeliveryDays,
-        })}
-      </p>
-
-      {/* Common descriptions */}
-      {descFreq.length > 0 && (
-        <div style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.textMuted, marginBottom: 8 }}>
-            Mercancías frecuentes
-          </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-            {descFreq.map(([desc, count]) => (
-              <span key={desc} style={{
-                fontSize: 11, fontWeight: 500, padding: '4px 10px', borderRadius: 6,
-                background: 'rgba(255,255,255,0.04)', border: `1px solid ${T.border}`,
-                color: T.textSecondary, maxWidth: 280,
-                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-              }}>
-                {desc} <span style={{ color: T.textMuted, fontFamily: T.mono }}>({count})</span>
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Tráficos list */}
-      <div>
-        <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.textMuted, marginBottom: 8 }}>
-          Tráficos ({s.traficos.length})
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          {s.traficos.slice(0, 20).map(t => {
-            const isCruzado = (t.estatus ?? '').toLowerCase().includes('cruz')
-            return (
-              <Link
-                key={t.trafico}
-                href={`/traficos/${encodeURIComponent(t.trafico)}`}
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: '120px 100px 1fr 100px',
-                  padding: '8px 12px', borderRadius: 6,
-                  background: 'rgba(255,255,255,0.02)',
-                  border: `1px solid ${T.border}`,
-                  textDecoration: 'none', alignItems: 'center',
-                  gap: 8, transition: 'background 100ms',
-                }}
-                onMouseEnter={e => (e.currentTarget.style.background = T.surfaceHover)}
-                onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.02)')}
-              >
-                <span style={{ fontFamily: T.mono, fontSize: 13, fontWeight: 700, color: T.gold }}>
-                  {fmtId(t.trafico)}
-                </span>
-                <span style={{
-                  fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 9999,
-                  background: isCruzado ? 'rgba(45,133,64,0.15)' : 'rgba(196,127,23,0.15)',
-                  color: isCruzado ? T.green : '#C47F17',
-                  border: `1px solid ${isCruzado ? 'rgba(45,133,64,0.25)' : 'rgba(196,127,23,0.25)'}`,
-                  textAlign: 'center',
-                }}>
-                  {isCruzado ? 'Cruzado' : 'En Proceso'}
-                </span>
-                <span style={{ fontSize: 12, color: T.textSecondary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {t.descripcion_mercancia ?? '—'}
-                </span>
-                <span style={{ fontFamily: T.mono, fontSize: 12, color: T.text, textAlign: 'right' }}>
-                  {t.importe_total && Number(t.importe_total) > 0 ? fmtUSD(Number(t.importe_total)) : '—'}
-                </span>
-              </Link>
-            )
-          })}
-          {s.traficos.length > 20 && (
-            <div style={{ fontSize: 12, color: T.textMuted, padding: '8px 12px' }}>
-              +{s.traficos.length - 20} tráficos más
-            </div>
-          )}
-        </div>
-      </div>
+      <SupplierTable
+        filtered={filtered}
+        expandedSupplier={expandedSupplier}
+        onToggleExpand={setExpandedSupplier}
+        isMobile={isMobile}
+        search={search}
+        loading={loading}
+      />
     </div>
   )
 }

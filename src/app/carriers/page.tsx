@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Truck, Clock, TrendingUp, AlertTriangle, ChevronRight, X } from 'lucide-react'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { EmptyState } from '@/components/ui/EmptyState'
 
 interface Carrier {
@@ -21,6 +22,7 @@ function scoreColor(s: number) { return s >= 90 ? '#166534' : s >= 70 ? 'var(--a
 function scoreBg(s: number) { return s >= 90 ? '#DCFCE7' : s >= 70 ? '#FEF3C7' : '#FEE2E2' }
 
 export default function CarriersPage() {
+  const isMobile = useIsMobile()
   const [carriers, setCarriers] = useState<Carrier[]>([])
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -69,7 +71,7 @@ export default function CarriersPage() {
 
       {/* KPI Cards */}
       {!loading && carriers.length > 0 && (
-        <div className="grid grid-cols-4 gap-3 mb-4">
+        <div className={`grid ${isMobile ? 'grid-cols-2' : 'grid-cols-4'} gap-3 mb-4`}>
           <div className="rounded-[3px] p-4" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
             <div className="flex items-center gap-2 mb-1">
               <Truck size={13} style={{ color: 'var(--text-muted)' }} />
@@ -107,13 +109,14 @@ export default function CarriersPage() {
         </div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: selected ? '1fr 380px' : '1fr', gap: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : (selected ? '1fr 380px' : '1fr'), gap: 16 }}>
         {/* Main Table */}
         <div className="rounded-[3px] overflow-hidden" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
           {loading ? (
             <div className="text-center py-12 text-[13px]" style={{ color: 'var(--text-muted)' }}>Cargando carriers...</div>
           ) : (
-            <table className="data-table">
+            <div style={{ overflowX: 'auto' }}>
+            <table className="data-table" aria-label="Rendimiento de transportistas">
               <thead>
                 <tr>
                   <th style={{ width: 40 }}>#</th>
@@ -163,6 +166,7 @@ export default function CarriersPage() {
                 ))}
               </tbody>
             </table>
+            </div>
           )}
         </div>
 
@@ -174,7 +178,7 @@ export default function CarriersPage() {
                 <div className="text-[14px] font-semibold" style={{ color: 'var(--text-primary)' }}>{selected.name}</div>
                 <div className="text-[11px]" style={{ color: 'var(--text-muted)' }}>Detalle de transportista</div>
               </div>
-              <button onClick={() => setSelected(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>
+              <button onClick={() => setSelected(null)} aria-label="Cerrar detalle de transportista" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>
                 <X size={16} />
               </button>
             </div>

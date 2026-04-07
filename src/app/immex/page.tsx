@@ -1,12 +1,14 @@
 'use client'
 
 import { useEffect, useState, useMemo } from 'react'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { getClientNameCookie, getClientClaveCookie, getCompanyIdCookie } from '@/lib/client-config'
 import { fmtDate } from '@/lib/format-utils'
 
 type ImmexRow = { trafico: string; fecha_llegada: string; estatus: string; descripcion_mercancia: string; peso_bruto: number; importe_total: number; pedimento: string }
 
 export default function ImmexPage() {
+  const isMobile = useIsMobile()
   const [rows, setRows] = useState<ImmexRow[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -35,7 +37,7 @@ export default function ImmexPage() {
   const ok = immexData.filter(d => d.daysRemaining > 180)
   const totalValor = immexData.reduce((s, d) => s + (d.importe_total || 0), 0)
 
-  function barColor(days: number) { return days <= 60 ? '#EF4444' : days <= 180 ? 'var(--warning-500)' : '#10B981' }
+  function barColor(days: number) { return days <= 60 ? 'var(--status-red)' : days <= 180 ? 'var(--warning-500)' : 'var(--status-green)' }
 
   return (
     <div style={{ padding: 32 }}>
@@ -45,10 +47,10 @@ export default function ImmexPage() {
       </div>
 
       {/* KPI strip */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 24 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: 12, marginBottom: 24 }}>
         {[
           { label: 'Temporales Activos', value: immexData.length.toLocaleString(), color: 'var(--text-primary)' },
-          { label: 'Críticos (<60d)', value: critical.length.toLocaleString(), color: critical.length > 0 ? '#EF4444' : 'var(--status-green)' },
+          { label: 'Críticos (<60d)', value: critical.length.toLocaleString(), color: critical.length > 0 ? 'var(--status-red)' : 'var(--status-green)' },
           { label: 'Atención (<180d)', value: warning.length.toLocaleString(), color: warning.length > 0 ? 'var(--warning-500)' : 'var(--text-primary)' },
           { label: 'Valor Temporal', value: `$${(totalValor / 1000).toFixed(0)}K`, color: 'var(--amber-600)' },
         ].map(k => (
@@ -78,7 +80,8 @@ export default function ImmexPage() {
             <div style={{ fontSize: 13, color: 'var(--n-400)' }}>Todo bajo control</div>
           </div>
         ) : (
-          <table className="data-table">
+          <div style={{ overflowX: 'auto' }}>
+            <table className="data-table" aria-label="Tráficos de importación temporal IMMEX">
             <thead>
               <tr>
                 <th>Tráfico</th>
@@ -114,7 +117,8 @@ export default function ImmexPage() {
                 </tr>
               ))}
             </tbody>
-          </table>
+            </table>
+          </div>
         )}
       </div>
     </div>

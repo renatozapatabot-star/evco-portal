@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { CheckCircle } from 'lucide-react'
 import { GOLD } from '@/lib/design-system'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { formatAbsoluteETA, fmtUSD } from '@/lib/format-utils'
 import { getCompanyIdCookie } from '@/lib/client-config'
 import { createClient } from '@supabase/supabase-js'
@@ -31,6 +32,7 @@ function resolveStatus(draft: { status: string; updated_at: string }): string {
 
 export default function DraftsPage() {
   const router = useRouter()
+  const isMobile = useIsMobile()
   const [filter, setFilter] = useState<'all' | 'pending' | 'approved'>('pending')
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase returns dynamic draft_data shapes
   const [drafts, setDrafts] = useState<any[]>([])
@@ -128,7 +130,9 @@ export default function DraftsPage() {
             return (
               <div key={d.id} onClick={() => router.push(`/drafts/${d.id}`)}
                 style={{
-                  display: 'flex', alignItems: 'center', gap: 16, padding: '16px 20px',
+                  display: 'flex', flexDirection: isMobile ? 'column' : 'row',
+                  alignItems: isMobile ? 'flex-start' : 'center', gap: isMobile ? 8 : 16,
+                  padding: '16px 20px',
                   background: 'var(--bg-card)', border: 'var(--b-default)', borderRadius: 'var(--radius-md)',
                   cursor: 'pointer', borderLeft: `4px solid ${tier.color}`, minHeight: 60,
                 }}>

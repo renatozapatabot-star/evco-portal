@@ -53,7 +53,7 @@ export default async function StatusPage() {
   const allOp = systems.every(s => s.status === 'operational' || s.status === 'healthy')
 
   return (
-    <div style={{ fontFamily: 'var(--font-geist-sans)', background: 'var(--bg-dark)', color: 'var(--border)', padding: '40px 20px', minHeight: '100vh' }}>
+    <div style={{ fontFamily: 'var(--font-geist-sans)', background: 'var(--bg-dark)', color: 'var(--border)', minHeight: '100vh' }} className="px-4 py-6 md:px-5 md:py-10">
       <div style={{ maxWidth: 640, margin: '0 auto' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 32 }}>
           <div style={{ width: 40, height: 40, background: GOLD_GRADIENT, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-primary)', fontWeight: 900, fontSize: 18, fontFamily: 'Georgia, serif' }}>Z</div>

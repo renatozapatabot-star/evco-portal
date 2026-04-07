@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { getErrorMessage } from '@/lib/errors'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { PORTAL_URL } from '@/lib/client-config'
 
 const ENDPOINTS = [
@@ -20,6 +21,7 @@ const ENDPOINTS = [
 ]
 
 export default function ApiDocsPage() {
+  const isMobile = useIsMobile()
   const [tryResult, setTryResult] = useState<string | null>(null)
   const [trying, setTrying] = useState<string | null>(null)
 
@@ -38,7 +40,7 @@ export default function ApiDocsPage() {
   }
 
   return (
-    <div style={{ padding: 32, maxWidth: 900, margin: '0 auto' }}>
+    <div style={{ padding: isMobile ? 16 : 32, maxWidth: 900, margin: '0 auto' }}>
       <div style={{ marginBottom: 32 }}>
         <h1 className="pg-title">CRUZ API v1</h1>
         <p className="pg-meta">Intelligence API · Renato Zapata & Company</p>
@@ -52,13 +54,13 @@ export default function ApiDocsPage() {
 
       {ENDPOINTS.map((ep, i) => (
         <div key={i} className="card" style={{ marginBottom: 12, overflow: 'hidden' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: isMobile ? '12px 14px' : '14px 20px', flexWrap: isMobile ? 'wrap' : 'nowrap' }}>
             <span style={{
               fontSize: 11, fontWeight: 700, padding: '3px 8px', borderRadius: 4, fontFamily: 'var(--font-mono)',
               background: ep.method === 'GET' ? 'rgba(22,163,74,0.1)' : 'rgba(37,99,235,0.1)',
               color: ep.method === 'GET' ? 'var(--success)' : 'var(--info)',
             }}>{ep.method}</span>
-            <code style={{ fontSize: 13, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)', flex: 1 }}>{ep.path}</code>
+            <code style={{ fontSize: isMobile ? 11 : 13, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)', flex: 1, overflowWrap: 'break-word', wordBreak: 'break-all' }}>{ep.path}</code>
             {ep.method === 'GET' && (
               <button onClick={() => tryEndpoint(ep)} disabled={trying === ep.path}
                 style={{ fontSize: 11, fontWeight: 600, padding: '4px 12px', borderRadius: 6, border: '1px solid var(--border-primary)', background: 'var(--bg-card)', cursor: 'pointer', color: 'var(--amber-700)' }}>

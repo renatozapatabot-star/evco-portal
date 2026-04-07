@@ -23,17 +23,18 @@ type TrackingData = {
   lastUpdated: string | null
 }
 
-const DARK = '#0F0F0D'
-const SURFACE = '#1A1A17'
-const MUTED = '#6B6B5E'
-const WHITE = '#F5F5F0'
+// Track page uses dark theme intentionally — external-facing, not part of portal shell
+const DARK = 'var(--navy-900, #0F0F0D)'
+const SURFACE = 'var(--navy-800, #1A1A17)'
+const MUTED = 'var(--text-muted, #6B6B5E)'
+const WHITE = 'var(--bg-primary, #F5F5F0)'
 
 const STATUS_COLORS: Record<string, string> = {
   IN_TRANSIT: 'var(--info-500)',
   CUSTOMS_CLEARANCE: 'var(--warning-500)',
   AT_BORDER: 'var(--warning-500)',
-  CLEARED: '#10B981',
-  DELIVERED: '#10B981',
+  CLEARED: 'var(--status-green)',
+  DELIVERED: 'var(--status-green)',
 }
 
 function formatDate(iso: string | null): string {
@@ -76,7 +77,7 @@ export default function TrackingPage() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{
             width: 32, height: 32, borderRadius: 8,
-            background: `linear-gradient(135deg, ${GOLD}, #A88A3D)`,
+            background: `linear-gradient(135deg, ${GOLD}, var(--gold-700))`,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: 14, fontWeight: 800, color: DARK,
           }}>C</div>

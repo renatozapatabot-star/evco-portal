@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useMemo } from 'react'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { createClient } from '@supabase/supabase-js'
 import { getCookieValue } from '@/lib/client-config'
 import { fmtDateTime } from '@/lib/format-utils'
@@ -50,6 +51,7 @@ const ACTION_COLORS: Record<string, string> = {
 }
 
 export default function AuditoriaPage() {
+  const isMobile = useIsMobile()
   const [rows, setRows] = useState<AuditRow[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -118,7 +120,7 @@ export default function AuditoriaPage() {
   return (
     <div style={{ padding: '24px 16px', maxWidth: 1100, margin: '0 auto' }}>
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
+      <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'stretch' : 'flex-start', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
         <div>
           <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>Auditoría</h1>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '4px 0 0' }}>
@@ -133,7 +135,7 @@ export default function AuditoriaPage() {
           }}>
             <Shield size={12} /> SAT Compliant · Patente 3596 · Aduana 240
           </div>
-          <button onClick={exportCSV} style={{
+          <button onClick={exportCSV} aria-label="Exportar registros de auditoría a CSV" style={{
             display: 'flex', alignItems: 'center', gap: 4, padding: '8px 16px',
             borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer',
             background: 'var(--gold)', border: 'none', color: 'var(--bg-card)', minHeight: 36,
@@ -154,12 +156,14 @@ export default function AuditoriaPage() {
             placeholder="Buscar en auditoría..."
             value={search}
             onChange={e => setSearch(e.target.value)}
+            aria-label="Buscar en registros de auditoría"
             style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: 13, color: 'var(--text-primary)' }}
           />
         </div>
         <select
           value={actionFilter}
           onChange={e => setActionFilter(e.target.value)}
+          aria-label="Filtrar por tipo de acción"
           style={{ height: 40, padding: '0 12px', borderRadius: 8, border: '1px solid #E8E5E0', fontSize: 12, color: 'var(--text-primary)', cursor: 'pointer', background: 'var(--bg-card)' }}
         >
           <option value="">Todas las acciones</option>
@@ -168,6 +172,7 @@ export default function AuditoriaPage() {
         <select
           value={actorFilter}
           onChange={e => setActorFilter(e.target.value)}
+          aria-label="Filtrar por actor"
           style={{ height: 40, padding: '0 12px', borderRadius: 8, border: '1px solid #E8E5E0', fontSize: 12, color: 'var(--text-primary)', cursor: 'pointer', background: 'var(--bg-card)' }}
         >
           <option value="">Todos los actores</option>
@@ -185,7 +190,7 @@ export default function AuditoriaPage() {
       ) : (
         <div style={{ background: 'var(--bg-card)', border: '1px solid #E8E5E0', borderRadius: 8, overflow: 'hidden' }}>
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }} aria-label="Registro de auditoría">
               <thead>
                 <tr style={{ borderBottom: '1px solid #E8E5E0' }}>
                   <th style={{ padding: '10px 16px', textAlign: 'left', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)' }}>Fecha</th>

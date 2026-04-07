@@ -1,78 +1,56 @@
 'use client'
 
 import { useEffect, useState, useMemo } from 'react'
-import { Search, ChevronLeft, ChevronRight, FileText, FolderOpen, Mail } from 'lucide-react'
+import { Search, ChevronLeft, ChevronRight } from 'lucide-react'
 import { getCookieValue } from '@/lib/client-config'
-import { fmtId, fmtDate, fmtDateCompact, fmtPedimentoShort } from '@/lib/format-utils'
+import { fmtId, fmtDesc, fmtDateShort, fmtPedimentoShort } from '@/lib/format-utils'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { useSort } from '@/hooks/use-sort'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { ErrorCard } from '@/components/ui/ErrorCard'
 import { DocumentViewer } from '@/components/ui/DocumentViewer'
+import { DocCompleteness } from '@/components/expedientes/DocCompleteness'
+import { DocChecklist } from '@/components/expedientes/DocChecklist'
+import type { DocFile } from '@/components/expedientes/DocChecklist'
 
-interface DocRow {
-  id: string
-  pedimento_id: string | null
-  doc_type: string | null
-  file_name: string | null
-  file_url: string | null
-  uploaded_at: string | null
-  uploaded_by: string | null
-  company_id: string | null
-  metadata: string | null
-}
+const REQUIRED_DOCS = [
+  'factura_comercial', 'packing_list', 'pedimento_detallado',
+  'cove', 'acuse_cove', 'doda',
+]
 
-interface AduanetInfo {
-  fecha_pago: string | null
-  proveedor: string | null
-}
-
-function friendlyName(fileName: string | null, docType: string | null): string {
-  const raw = (fileName || docType || 'Documento').toUpperCase()
-  if (raw.includes('PACKINGLIST') || raw.includes('PACKING_LIST') || raw.includes('LISTA_EMPAQUE') || raw.includes('LISTA EMPAQUE')) return 'Packing List'
-  if (raw.includes('COVE') && raw.includes('DETALLE')) return 'COVE Detalle'
-  if (raw.includes('COVE') && raw.includes('XML')) return 'COVE XML'
-  if (raw.includes('ACUSE') && raw.includes('COVE')) return 'Acuse COVE'
-  if (raw.includes('COVE')) return 'COVE'
-  if (raw.includes('FACTURA') || raw.includes('INVOICE')) return 'Factura Comercial'
-  if (raw.includes('PEDIMENTO') && raw.includes('SIMP')) return 'Pedimento Simplificado'
-  if (raw.includes('PEDIMENTO') && raw.includes('TXT')) return 'Pedimento TXT'
-  if (raw.includes('PEDIMENTO')) return 'Pedimento'
-  if (raw.includes('DODA')) return 'DODA'
-  if (raw.includes('CARTA') && raw.includes('PORTE')) return 'Carta Porte'
-  if (raw.includes('CUENTA') || raw.includes('GASTOS')) return 'Cuenta de Gastos'
-  if (raw.includes('CONOCIMIENTO') || raw.startsWith('BOL') || raw.startsWith('BL')) return 'B/L'
-  if (raw.includes('MVE') && raw.includes('ACUSE')) return 'Acuse MVE'
-  if (raw.includes('MVE')) return 'MVE'
-  if (raw.includes('E_DOC') || raw.includes('EDOC')) return 'e-Document'
-  if (raw.includes('HOJADECALCULO') || raw.includes('HOJA_DE_CALCULO') || raw.includes('HOJA DE CALCULO')) return 'Hoja de Cálculo'
-  if (raw.includes('VALIDACION') || raw.includes('VALIDACIÓN')) return 'Archivo Validación'
-  if (raw.endsWith('.ERR')) return 'Archivo Error'
-  return (fileName || 'Documento').replace(/\.pdf$/i, '').replace(/\.xml$/i, '').replace(/\.err$/i, '').slice(0, 40)
-}
-
-function parseTrafico(metadata: string | null): string | null {
-  if (!metadata) return null
-  try { return JSON.parse(metadata).trafico || null } catch { return null }
+interface TraficoRow {
+  trafico: string
+  estatus: string
+  fecha_llegada: string | null
+  pedimento: string | null
+  importe_total: number | null
+  descripcion_mercancia: string | null
+  proveedores: string | null
+  docs: DocFile[]
+  docCount: number
+  pct: number
+  missing: string[]
+  entrada: string | null
 }
 
 const PAGE_SIZE = 50
 
 export default function ExpedientesPage() {
   const isMobile = useIsMobile()
-  const [docs, setDocs] = useState<DocRow[]>([])
+  const [rows, setRows] = useState<TraficoRow[]>([])
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [searchInput, setSearchInput] = useState('')
-  const [userRole, setUserRole] = useState('')
-  const [cookiesReady, setCookiesReady] = useState(false)
   const [page, setPage] = useState(0)
   const [expandedId, setExpandedId] = useState<string | null>(null)
-  const [viewerDocs, setViewerDocs] = useState<DocRow[]>([])
+  const [statFilter, setStatFilter] = useState<string | null>(null)
+  const [viewerDocs, setViewerDocs] = useState<DocFile[]>([])
   const [viewerIndex, setViewerIndex] = useState(-1)
-  const [viewerTrafico, setViewerTrafico] = useState('')
-  const [aduanetMap, setAduanetMap] = useState<Map<string, AduanetInfo>>(new Map())
-  const [partidaDescMap, setPartidaDescMap] = useState<Map<string, string>>(new Map())
+  const { sort, toggleSort } = useSort('expedientes', { column: 'fecha_llegada', direction: 'desc' })
+
+  const [cookiesReady, setCookiesReady] = useState(false)
+  const [userRole, setUserRole] = useState('')
 
   useEffect(() => {
     setUserRole(getCookieValue('user_role') ?? '')
@@ -84,108 +62,226 @@ export default function ExpedientesPage() {
     const isInternal = userRole === 'broker' || userRole === 'admin'
     const companyId = getCookieValue('company_id') ?? ''
     if (!isInternal && !companyId) { setLoading(false); return }
-
-    const companyFilter = !isInternal && companyId ? `&company_id=${companyId}` : ''
+    const cf = !isInternal && companyId ? `&company_id=${companyId}` : ''
 
     setFetchError(null)
+    const safeFetch = (url: string) => fetch(url).then(r => {
+      if (!r.ok) throw new Error(r.status === 401 ? 'session_expired' : 'fetch_error')
+      return r.json()
+    })
+
     Promise.all([
-      fetch(`/api/data?table=expediente_documentos&limit=5000&order_by=uploaded_at&order_dir=desc${companyFilter}`).then(r => r.json()),
-      fetch(`/api/data?table=aduanet_facturas&select=pedimento,fecha_pago,proveedor&limit=5000${companyFilter}`).then(r => r.json()),
-      fetch(`/api/data?table=globalpc_partidas&select=cve_trafico,descripcion&limit=5000`).then(r => r.json()),
-    ])
-      .then(([docData, aduanetData, partidaData]) => {
-        setDocs((docData.data ?? []) as DocRow[])
+      safeFetch(`/api/data?table=traficos&limit=5000&order_by=fecha_llegada&order_dir=desc${cf}`),
+      safeFetch(`/api/data?table=expediente_documentos&limit=5000${cf}`),
+      safeFetch(`/api/data?table=entradas&limit=5000${cf}`),
+    ]).then(([traficoData, docData, entradaData]) => {
+      const traficos = (traficoData.data ?? []) as Array<Record<string, unknown>>
+      const allDocs = (docData.data ?? []) as Array<Record<string, unknown>>
+      const entradas = (entradaData.data ?? []) as Array<Record<string, unknown>>
 
-        const aMap = new Map<string, AduanetInfo>()
-        const aArr = Array.isArray(aduanetData.data) ? aduanetData.data : []
-        aArr.forEach((f: { pedimento?: string; fecha_pago?: string; proveedor?: string }) => {
-          if (f.pedimento && !aMap.has(f.pedimento)) {
-            aMap.set(f.pedimento, { fecha_pago: f.fecha_pago || null, proveedor: f.proveedor || null })
-          }
+      // Build doc map: pedimento_id (= trafico) → docs
+      const docMap = new Map<string, DocFile[]>()
+      allDocs.forEach(d => {
+        const key = String(d.pedimento_id ?? '')
+        if (!key) return
+        if (!docMap.has(key)) docMap.set(key, [])
+        docMap.get(key)!.push({
+          id: String(d.id ?? ''),
+          doc_type: d.doc_type as string | null,
+          file_name: d.file_name as string | null,
+          file_url: d.file_url as string | null,
+          uploaded_at: d.uploaded_at as string | null,
         })
-        setAduanetMap(aMap)
-
-        const pMap = new Map<string, string>()
-        const pArr = Array.isArray(partidaData.data) ? partidaData.data : []
-        pArr.forEach((p: { cve_trafico?: string; descripcion?: string }) => {
-          if (p.cve_trafico && p.descripcion && !pMap.has(p.cve_trafico)) pMap.set(p.cve_trafico, p.descripcion)
-        })
-        setPartidaDescMap(pMap)
       })
-      .catch(() => setFetchError('Error cargando expedientes. Reintentar →'))
-      .finally(() => setLoading(false))
+
+      // Build entrada map: trafico → cve_entrada
+      const entradaMap = new Map<string, string>()
+      entradas.forEach(e => {
+        const t = String(e.trafico ?? '')
+        if (t) entradaMap.set(t, String(e.cve_entrada ?? ''))
+      })
+
+      // Build enriched rows
+      const enriched: TraficoRow[] = traficos.map(t => {
+        const trafico = String(t.trafico ?? '')
+        const docs = docMap.get(trafico) ?? []
+        const presentTypes = new Set(docs.map(d => d.doc_type).filter(Boolean))
+        const docCount = REQUIRED_DOCS.filter(r => presentTypes.has(r)).length
+        const missing = REQUIRED_DOCS.filter(r => !presentTypes.has(r))
+        const pct = Math.round((docCount / REQUIRED_DOCS.length) * 100)
+
+        return {
+          trafico,
+          estatus: String(t.estatus ?? 'En Proceso'),
+          fecha_llegada: t.fecha_llegada as string | null,
+          pedimento: t.pedimento as string | null,
+          importe_total: t.importe_total as number | null,
+          descripcion_mercancia: t.descripcion_mercancia as string | null,
+          proveedores: t.proveedores as string | null,
+          docs,
+          docCount,
+          pct,
+          missing,
+          entrada: entradaMap.get(trafico) ?? null,
+        }
+      })
+
+      setRows(enriched)
+    }).catch(err => {
+      if (err.message === 'session_expired') { window.location.href = '/login'; return }
+      setFetchError('Error cargando expedientes. Reintentar →')
+    }).finally(() => setLoading(false))
   }, [cookiesReady, userRole])
 
+  // Debounced search
   useEffect(() => {
     const timer = setTimeout(() => { setSearch(searchInput); setPage(0) }, 300)
     return () => clearTimeout(timer)
   }, [searchInput])
 
+  // Stats
+  const kpiTotal = rows.length
+  const kpiCompletos = rows.filter(r => r.pct === 100).length
+  const kpiIncompletos = rows.filter(r => r.pct < 100 && r.docs.length > 0).length
+  const kpiCriticos = rows.filter(r => r.missing.includes('factura_comercial') || r.missing.includes('pedimento_detallado')).length
+
   const filtered = useMemo(() => {
-    if (!search.trim()) return docs
-    const q = search.toLowerCase()
-    return docs.filter(d =>
-      (d.pedimento_id || '').toLowerCase().includes(q) ||
-      (d.file_name || '').toLowerCase().includes(q) ||
-      (parseTrafico(d.metadata) || '').toLowerCase().includes(q) ||
-      friendlyName(d.file_name, d.doc_type).toLowerCase().includes(q)
-    )
-  }, [docs, search])
+    let out = rows
 
-  const grouped = useMemo(() => {
-    const map = new Map<string, DocRow[]>()
-    for (const d of filtered) {
-      const key = d.pedimento_id || 'sin-pedimento'
-      const arr = map.get(key)
-      if (arr) arr.push(d)
-      else map.set(key, [d])
+    if (statFilter === 'completos') out = out.filter(r => r.pct === 100)
+    else if (statFilter === 'incompletos') out = out.filter(r => r.pct < 100 && r.docs.length > 0)
+    else if (statFilter === 'criticos') out = out.filter(r => r.missing.includes('factura_comercial') || r.missing.includes('pedimento_detallado'))
+
+    if (search.trim()) {
+      const q = search.toLowerCase()
+      out = out.filter(r =>
+        fmtId(r.trafico).toLowerCase().includes(q) ||
+        (r.pedimento ?? '').toLowerCase().includes(q) ||
+        (r.descripcion_mercancia ?? '').toLowerCase().includes(q)
+      )
     }
-    return [...map.entries()]
-  }, [filtered])
 
-  const totalPages = Math.ceil(grouped.length / PAGE_SIZE)
-  const pageGroups = grouped.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
+    return [...out].sort((a, b) => {
+      const col = sort.column as keyof TraficoRow
+      const aVal = a[col]
+      const bVal = b[col]
+      if (aVal == null) return 1
+      if (bVal == null) return -1
+      const cmp = aVal < bVal ? -1 : aVal > bVal ? 1 : 0
+      return sort.direction === 'asc' ? cmp : -cmp
+    })
+  }, [rows, search, sort, statFilter])
+
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE)
+  const paged = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
+
+  const SortArrow = ({ col }: { col: string }) => sort.column === col ? <span style={{ marginLeft: 4, fontSize: 10 }}>{sort.direction === 'asc' ? '↑' : '↓'}</span> : null
 
   return (
     <div className="page-shell">
-      {fetchError && (
-        <div style={{ marginBottom: 16 }}>
-          <ErrorCard message={fetchError} onRetry={() => window.location.reload()} />
+      {fetchError && <div style={{ marginBottom: 16 }}><ErrorCard message={fetchError} onRetry={() => window.location.reload()} /></div>}
+
+      {/* Stat Filter Bar */}
+      {!loading && !fetchError && rows.length > 0 && (
+        <div className="stat-filter-bar">
+          {[
+            { key: null, label: 'Todos', value: kpiTotal },
+            { key: 'completos', label: 'Completos', value: kpiCompletos },
+            { key: 'incompletos', label: 'Incompletos', value: kpiIncompletos },
+            { key: 'criticos', label: 'Faltantes Críticos', value: kpiCriticos, danger: kpiCriticos > 0 },
+          ].map(stat => (
+            <button
+              key={stat.key ?? 'all'}
+              className={`stat-filter-item${statFilter === stat.key ? ' active' : ''}`}
+              onClick={() => { setStatFilter(statFilter === stat.key ? null : stat.key); setPage(0) }}
+            >
+              <span className={`stat-filter-value${stat.value === 0 ? ' zero' : ''}${'danger' in stat && stat.danger ? ' danger' : ''}`}>{stat.value}</span>
+              <span className="stat-filter-label">{stat.label}</span>
+            </button>
+          ))}
         </div>
       )}
 
-      <div className="table-shell">
+      <div className="table-shell" style={!loading && !fetchError && rows.length > 0 ? { borderTopLeftRadius: 0, borderTopRightRadius: 0 } : undefined}>
         <div className="table-toolbar" style={{ justifyContent: 'flex-end' }}>
           <div className="toolbar-search">
             <Search size={12} style={{ color: 'var(--slate-400)', flexShrink: 0 }} />
-            <input placeholder="Pedimento, documento..." value={searchInput}
-              onChange={e => setSearchInput(e.target.value)} />
+            <input placeholder="Tráfico, pedimento..." value={searchInput}
+              onChange={e => setSearchInput(e.target.value)} aria-label="Buscar expedientes" />
           </div>
         </div>
 
-        {/* Table */}
+        {/* Mobile cards */}
+        {isMobile && (
+          <div style={{ padding: '8px 12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {loading && Array.from({ length: 4 }).map((_, i) => (
+              <div key={`skel-${i}`} style={{ height: 80, borderRadius: 10, background: 'var(--bg-elevated)', animation: 'cruzShimmer 1.5s linear infinite' }} />
+            ))}
+            {!loading && paged.length === 0 && (
+              <EmptyState icon="📂" title="Sin expedientes" description="Los expedientes digitales de sus tráficos aparecerán aquí" cta={{ label: 'Ver tráficos', href: '/traficos' }} />
+            )}
+            {paged.map(r => {
+              const isCruzado = (r.estatus || '').toLowerCase().includes('cruz')
+              const isExpanded = expandedId === r.trafico
+              return (
+                <div key={r.trafico}>
+                  <button className="m-card" onClick={() => setExpandedId(isExpanded ? null : r.trafico)}
+                    style={{ width: '100%', textAlign: 'left' }}>
+                    <div className="m-card-top">
+                      <div className="m-card-id-group">
+                        <span className={`m-card-dot ${isCruzado ? 'm-card-dot--success' : 'm-card-dot--warning'}`} />
+                        <span className="m-card-id">{fmtId(r.trafico)}</span>
+                      </div>
+                      <DocCompleteness present={r.docCount} />
+                    </div>
+                    <div className="m-card-bottom">
+                      {r.pedimento && <span className="ped-pill" style={{ fontSize: 11, padding: '2px 7px' }}>{fmtPedimentoShort(r.pedimento)}</span>}
+                      <span className="m-card-meta">{r.fecha_llegada ? fmtDateShort(r.fecha_llegada) : '—'}</span>
+                    </div>
+                  </button>
+                  {isExpanded && (
+                    <DocChecklist
+                      trafico={r.trafico} pedimento={r.pedimento} docs={r.docs}
+                      entrada={r.entrada} proveedor={r.proveedores?.split(',')[0]?.trim()} valor={r.importe_total}
+                      onClose={() => setExpandedId(null)}
+                      onViewDoc={(docs, idx) => { setViewerDocs(docs); setViewerIndex(idx) }}
+                    />
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )}
+
+        {/* Desktop table */}
         {!isMobile && (
-          <div style={{ maxHeight: 'calc(100vh - 200px)', overflowY: 'auto', overflowX: 'auto' }}>
-            <table className="cruz-table" aria-label="Expedientes digitales" style={{ minWidth: 600 }}>
+          <div style={{ maxHeight: 'calc(100vh - 280px)', overflowY: 'auto', overflowX: 'auto' }}>
+            <table className="cruz-table" aria-label="Expedientes digitales" style={{ minWidth: 700 }}>
               <thead>
                 <tr>
                   <th scope="col" style={{ width: 28 }}></th>
-                  <th scope="col">Pedimento</th>
-                  <th scope="col" style={{ width: 120 }}>Fecha</th>
+                  <th scope="col" style={{ width: 160, cursor: 'pointer' }} onClick={() => toggleSort('trafico')}>Tráfico<SortArrow col="trafico" /></th>
+                  <th scope="col" style={{ width: 120 }}>Pedimento</th>
+                  <th scope="col" style={{ width: 110 }}>Estado</th>
+                  <th scope="col" style={{ width: 100, cursor: 'pointer' }} onClick={() => toggleSort('fecha_llegada')}>Fecha<SortArrow col="fecha_llegada" /></th>
+                  <th scope="col" style={{ width: 120, cursor: 'pointer' }} onClick={() => toggleSort('pct')}>Documentos<SortArrow col="pct" /></th>
                   <th scope="col">Descripción</th>
                 </tr>
               </thead>
               <tbody>
-                {loading && Array.from({ length: 6 }).map((_, i) => (
+                {loading && Array.from({ length: 8 }).map((_, i) => (
                   <tr key={`s-${i}`}>
                     <td><div className="skeleton-shimmer" style={{ width: 7, height: 7, borderRadius: '50%' }} /></td>
-                    <td><div className="skeleton-shimmer" style={{ width: 110, height: 13 }} /></td>
+                    <td><div className="skeleton-shimmer" style={{ width: 96, height: 13 }} /></td>
+                    <td><div className="skeleton-shimmer" style={{ width: 90, height: 13 }} /></td>
+                    <td><div className="skeleton-shimmer" style={{ width: 70, height: 13 }} /></td>
+                    <td><div className="skeleton-shimmer" style={{ width: 60, height: 13 }} /></td>
                     <td><div className="skeleton-shimmer" style={{ width: 80, height: 13 }} /></td>
                     <td><div className="skeleton-shimmer" style={{ width: 140, height: 13 }} /></td>
                   </tr>
                 ))}
-                {!loading && pageGroups.length === 0 && (
-                  <tr><td colSpan={4}>
+                {!loading && paged.length === 0 && (
+                  <tr><td colSpan={7}>
                     {search.trim() ? (
                       <div className="empty-state">
                         <div className="empty-state-icon">🔍</div>
@@ -193,37 +289,37 @@ export default function ExpedientesPage() {
                         <button className="btn btn-outline btn-sm" style={{ marginTop: 12 }} onClick={() => { setSearchInput(''); setSearch('') }}>Limpiar búsqueda</button>
                       </div>
                     ) : (
-                      <EmptyState icon="📂" title="Sin expedientes digitales" description="Los documentos de cada pedimento aparecerán aquí" cta={{ label: 'Ver tráficos', href: '/traficos' }} />
+                      <EmptyState icon="📂" title="Sin expedientes digitales" description="Los expedientes de cada tráfico aparecerán aquí" cta={{ label: 'Ver tráficos', href: '/traficos' }} />
                     )}
                   </td></tr>
                 )}
-                {pageGroups.map(([pedimentoId, groupDocs], idx) => {
-                  const trafico = parseTrafico(groupDocs[0]?.metadata)
-                  const isExpanded = expandedId === pedimentoId
-                  const aduanet = aduanetMap.get(pedimentoId)
-                  const desc = trafico ? partidaDescMap.get(trafico) : null
+                {paged.map((r, idx) => {
+                  const isCruzado = (r.estatus || '').toLowerCase().includes('cruz')
+                  const isDetenido = (r.estatus || '').toLowerCase().includes('deten')
+                  const isExpanded = expandedId === r.trafico
 
                   return (
-                    <tr
-                      key={pedimentoId}
+                    <tr key={r.trafico}
                       className={`clickable-row ${idx % 2 === 0 ? 'row-even' : 'row-odd'}${isExpanded ? ' row-even' : ''}`}
                       style={{ cursor: 'pointer' }}
-                      onClick={() => setExpandedId(isExpanded ? null : pedimentoId)}
-                    >
+                      onClick={() => setExpandedId(isExpanded ? null : r.trafico)}>
                       <td style={{ width: 28, paddingRight: 0 }}>
-                        <FolderOpen size={13} style={{ color: isExpanded ? 'var(--gold, #C4963C)' : 'var(--slate-400)', opacity: 0.7 }} />
+                        <span style={{
+                          width: 7, height: 7, borderRadius: '50%', display: 'inline-block',
+                          background: isCruzado ? 'var(--success-500)' : isDetenido ? 'var(--danger-500)' : 'var(--amber-500)',
+                          opacity: 0.7,
+                        }} />
                       </td>
+                      <td><span className="trafico-id">{fmtId(r.trafico)}</span></td>
+                      <td>{r.pedimento ? <span className="pedimento-num">{fmtPedimentoShort(r.pedimento)}</span> : <span className="pedimento-pending">Pendiente</span>}</td>
                       <td>
-                        <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, fontSize: 13 }}>
-                          {fmtPedimentoShort(pedimentoId)}
+                        <span className={`badge ${isDetenido ? 'badge-detenido' : isCruzado ? 'badge-cruzado' : 'badge-proceso'}`}>
+                          <span className="badge-dot" aria-hidden="true" />{isDetenido ? 'Detenido' : isCruzado ? 'Cruzado' : 'En Proceso'}
                         </span>
                       </td>
-                      <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-secondary)' }}>
-                        {aduanet?.fecha_pago ? fmtDate(aduanet.fecha_pago) : '—'}
-                      </td>
-                      <td className="desc-text" style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
-                        {desc || '—'}
-                      </td>
+                      <td className="timestamp">{r.fecha_llegada ? fmtDateShort(r.fecha_llegada) : '—'}</td>
+                      <td><DocCompleteness present={r.docCount} /></td>
+                      <td className="desc-text">{fmtDesc(r.descripcion_mercancia) || '—'}</td>
                     </tr>
                   )
                 })}
@@ -232,84 +328,36 @@ export default function ExpedientesPage() {
           </div>
         )}
 
-        {/* Mobile cards */}
-        {isMobile && (
-          <div style={{ padding: '8px 12px' }}>
-            <div className="m-card-list">
-              {loading && Array.from({ length: 4 }).map((_, i) => (
-                <div key={`skel-${i}`} className="h-20 rounded-lg bg-gray-200 animate-pulse" />
-              ))}
-              {!loading && pageGroups.length === 0 && (
-                <EmptyState icon="📂" title="Sin expedientes digitales" description="Los documentos de cada pedimento aparecerán aquí" cta={{ label: 'Ver tráficos', href: '/traficos' }} />
-              )}
-              {pageGroups.map(([pedimentoId, groupDocs]) => (
-                <div key={pedimentoId} onClick={() => setExpandedId(expandedId === pedimentoId ? null : pedimentoId)} className="m-card" style={{ cursor: 'pointer' }}>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, fontSize: 13 }}>{fmtPedimentoShort(pedimentoId)}</span>
-                  <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 8 }}>{groupDocs.length} doc{groupDocs.length !== 1 ? 's' : ''}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* Expanded checklist (below table, outside the scroll container) */}
+        {expandedId && (() => {
+          const r = rows.find(r => r.trafico === expandedId)
+          if (!r) return null
+          return (
+            <DocChecklist
+              trafico={r.trafico} pedimento={r.pedimento} docs={r.docs}
+              entrada={r.entrada} proveedor={r.proveedores?.split(',')[0]?.trim()} valor={r.importe_total}
+              onClose={() => setExpandedId(null)}
+              onViewDoc={(docs, idx) => { setViewerDocs(docs); setViewerIndex(idx) }}
+            />
+          )
+        })()}
 
         {/* Pagination */}
         {totalPages > 1 && (
           <div className="pagination">
             <span className="pagination-info">Página {page + 1} de {totalPages}</span>
             <div className="pagination-btns">
-              <button className="pagination-btn" disabled={page === 0} onClick={() => setPage(p => p - 1)}><ChevronLeft size={14} /></button>
+              <button className="pagination-btn" disabled={page === 0} onClick={() => setPage(p => p - 1)} aria-label="Página anterior"><ChevronLeft size={14} /></button>
               <button className="pagination-btn current">{page + 1}</button>
-              <button className="pagination-btn" disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)}><ChevronRight size={14} /></button>
+              <button className="pagination-btn" disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)} aria-label="Página siguiente"><ChevronRight size={14} /></button>
             </div>
           </div>
         )}
       </div>
 
-      {/* Expanded document panel */}
-      {expandedId && (() => {
-        const groupDocs = grouped.find(([id]) => id === expandedId)?.[1] || []
-        const trafico = parseTrafico(groupDocs[0]?.metadata)
-        return (
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-card, #E8E5E0)', borderRadius: 12, marginTop: 12, overflow: 'hidden' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px', background: 'var(--bg-main, #FAFAF8)', borderBottom: '1px solid var(--border-card, #E8E5E0)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <FolderOpen size={16} style={{ color: 'var(--gold, #C4963C)' }} />
-                <span style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-mono)' }}>{fmtPedimentoShort(expandedId)}</span>
-                {trafico && (
-                  <span style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>· Tráfico {fmtId(trafico)}</span>
-                )}
-              </div>
-              <button onClick={() => setExpandedId(null)} style={{ fontSize: 12, color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 8px' }}>Cerrar ✕</button>
-            </div>
-            <div style={{ padding: 0 }}>
-              {groupDocs.map((doc, idx) => (
-                <div key={doc.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 20px', borderBottom: idx < groupDocs.length - 1 ? '1px solid var(--border-card, #E8E5E0)' : 'none' }} className="clickable-row">
-                  <FileText size={14} style={{ color: 'var(--slate-400)', flexShrink: 0 }} />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{friendlyName(doc.file_name, doc.doc_type)}</div>
-                  </div>
-                  {doc.uploaded_at && <span style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', flexShrink: 0 }}>{fmtDateCompact(doc.uploaded_at)}</span>}
-                  {doc.file_url && (
-                    <button onClick={(e) => { e.stopPropagation(); setViewerDocs(groupDocs); setViewerIndex(idx); setViewerTrafico(expandedId) }}
-                      style={{ fontSize: 12, fontWeight: 600, color: 'var(--gold, #C4963C)', background: 'rgba(196,150,60,0.06)', border: '1px solid rgba(196,150,60,0.15)', borderRadius: 6, cursor: 'pointer', padding: '6px 12px', flexShrink: 0, minHeight: 32 }}>
-                      Ver
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
-            <div style={{ padding: '10px 20px', borderTop: '1px solid var(--border-card, #E8E5E0)', display: 'flex', gap: 8 }}>
-              <button onClick={(e) => { e.stopPropagation(); window.open('mailto:ai@renatozapata.com?subject=Solicitud de documento — Pedimento ' + expandedId, '_blank') }}
-                style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', background: 'none', border: '1px solid var(--border-card, #E8E5E0)', borderRadius: 8, padding: '8px 14px', cursor: 'pointer', minHeight: 40 }}>
-                <Mail size={13} /> Solicitar documento
-              </button>
-            </div>
-          </div>
-        )
-      })()}
-
+      {/* Document viewer modal */}
       {viewerIndex >= 0 && viewerDocs.length > 0 && (
-        <DocumentViewer documents={viewerDocs} initialIndex={viewerIndex} onClose={() => setViewerIndex(-1)} traficoId={viewerTrafico} />
+        <DocumentViewer documents={viewerDocs} initialIndex={viewerIndex} onClose={() => setViewerIndex(-1)} traficoId={expandedId || ''} />
       )}
     </div>
   )

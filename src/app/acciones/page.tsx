@@ -2,6 +2,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { AlertTriangle, Clock, FileText, CheckCircle2, ChevronRight, Truck, Package } from 'lucide-react'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { getClientClaveCookie, getCompanyIdCookie } from '@/lib/client-config'
 import { fmtId, fmtDate, formatAbsoluteETA } from '@/lib/format-utils'
 import { daysUntilMVE } from '@/lib/compliance-dates'
@@ -13,6 +14,7 @@ function getGreeting(): string {
 }
 
 export default function AccionesPage() {
+  const isMobile = useIsMobile()
   const router = useRouter()
   const { toast } = useToast()
   const [traficos, setTraficos] = useState<any[]>([])
@@ -90,7 +92,7 @@ export default function AccionesPage() {
   const todayStr = new Date().toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'America/Chicago' })
 
   return (
-    <div className="acciones-page" style={{ padding: '24px 16px' }}>
+    <div className="acciones-page" style={{ padding: isMobile ? '16px 12px' : '24px 16px' }}>
       <div className="acc-header">
         <h1 className="acc-greeting">{getGreeting()}, Renato</h1>
         <div className="acc-date">{todayStr}</div>

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Shield, TrendingUp, Clock, Award } from 'lucide-react'
 import Link from 'next/link'
+import { useIsMobile } from '@/hooks/use-mobile'
 
 interface Claims {
   avgCrossingDays: number
@@ -22,6 +23,7 @@ interface Claims {
  * All computed from real data. No claims without proof.
  */
 export default function ResultadosPage() {
+  const isMobile = useIsMobile()
   const [claims, setClaims] = useState<Claims | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -113,13 +115,13 @@ export default function ResultadosPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-main)' }}>
-      <div style={{ maxWidth: 800, margin: '0 auto', padding: '60px 24px' }}>
+      <div style={{ maxWidth: 800, margin: '0 auto', padding: isMobile ? '32px 16px' : '60px 24px' }}>
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: 48 }}>
           <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'var(--gold)', marginBottom: 16 }}>
             Resultados verificados
           </div>
-          <h1 style={{ fontSize: 36, fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1.2, margin: 0 }}>
+          <h1 style={{ fontSize: isMobile ? 26 : 36, fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1.2, margin: 0 }}>
             La diferencia se mide en datos.
           </h1>
           <p style={{ fontSize: 16, color: 'var(--text-secondary)', marginTop: 16, lineHeight: 1.6 }}>
@@ -129,14 +131,14 @@ export default function ResultadosPage() {
         </div>
 
         {/* Stats grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 20, marginBottom: 48 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(320px, 1fr))', gap: 20, marginBottom: 48 }}>
           {stats.map((stat, i) => (
             <div key={i} className="card card-enter" style={{
               padding: '32px 28px', textAlign: 'center',
               animationDelay: `${i * 100}ms`,
             }}>
               <div style={{ marginBottom: 16 }}>{stat.icon}</div>
-              <div style={{ fontSize: 48, fontWeight: 800, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)', lineHeight: 1 }}>
+              <div style={{ fontSize: isMobile ? 36 : 48, fontWeight: 800, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)', lineHeight: 1 }}>
                 {stat.value}
               </div>
               <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-secondary)', marginTop: 8 }}>

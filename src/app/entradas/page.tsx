@@ -63,9 +63,15 @@ export default function EntradasPage() {
     })
     if (!isInternal && companyId) params.set('company_id', companyId)
     fetch(`/api/data?${params}`)
-      .then(r => r.json())
+      .then(r => {
+        if (!r.ok) throw new Error(r.status === 401 ? 'session_expired' : 'fetch_error')
+        return r.json()
+      })
       .then(data => { const arr = data.data ?? data ?? []; setRows(arr); setCache('entradas', arr) })
-      .catch(() => setFetchError('Error cargando entradas. Reintentar.'))
+      .catch(err => {
+        if (err.message === 'session_expired') { window.location.href = '/login'; return }
+        setFetchError('Error cargando entradas. Reintentar.')
+      })
       .finally(() => setLoading(false))
 
     // Partida descriptions (pedimento merchandise)
@@ -144,6 +150,7 @@ export default function EntradasPage() {
               placeholder="Entrada, tráfico, descripción..."
               value={search}
               onChange={e => { setSearch(e.target.value); setPage(0) }}
+              aria-label="Buscar entradas"
             />
           </div>
         </div>
@@ -276,8 +283,8 @@ export default function EntradasPage() {
         <div className="pagination">
           <span className="pagination-info">Página {page + 1} de {totalPages}</span>
           <div className="pagination-btns">
-            <button className="pagination-btn" disabled={page === 0} onClick={() => setPage(p => p - 1)}><ChevronLeft size={14} /></button>
-            <button className="pagination-btn" disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)}><ChevronRight size={14} /></button>
+            <button className="pagination-btn" disabled={page === 0} onClick={() => setPage(p => p - 1)} aria-label="Página anterior"><ChevronLeft size={14} /></button>
+            <button className="pagination-btn" disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)} aria-label="Página siguiente"><ChevronRight size={14} /></button>
           </div>
         </div>
       )}

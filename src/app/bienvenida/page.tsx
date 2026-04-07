@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { getCompanyIdCookie, getClientNameCookie } from '@/lib/client-config'
+import { useIsMobile } from '@/hooks/use-mobile'
 
 function AnimatedCounter({ target, label, delay }: { target: number; label: string; delay: number }) {
   const [value, setValue] = useState(0)
@@ -32,6 +33,7 @@ function AnimatedCounter({ target, label, delay }: { target: number; label: stri
 
 export default function BienvenidaPage() {
   const router = useRouter()
+  const isMobile = useIsMobile()
   const [companyName, setCompanyName] = useState('')
   const [stats, setStats] = useState({ traficos: 0, docs: 0, suppliers: 0, value: 0 })
   const [loaded, setLoaded] = useState(false)
@@ -78,32 +80,32 @@ export default function BienvenidaPage() {
 
   return (
     <div style={{
-      minHeight: '100vh', background: '#0D0D0C',
+      minHeight: '100vh', background: 'var(--bg-primary)',
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-      padding: '40px 24px', color: '#F5F3EE',
+      padding: isMobile ? '24px 16px' : '40px 24px', color: 'var(--text-primary)',
     }}>
       {/* Z Mark */}
       <div style={{
         width: 64, height: 64, borderRadius: 16,
-        background: 'linear-gradient(135deg, #C4963C, #8B6914)',
+        background: 'linear-gradient(135deg, var(--gold), var(--gold-700))',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        boxShadow: '0 0 40px rgba(196,150,60,0.3)',
+        boxShadow: '0 0 40px rgba(196,150,60,0.15)',
         marginBottom: 32,
       }}>
-        <span style={{ fontFamily: 'Georgia, serif', fontSize: 32, fontWeight: 700, color: 'var(--text-primary)' }}>Z</span>
+        <span style={{ fontFamily: 'Georgia, serif', fontSize: 32, fontWeight: 700, color: 'var(--bg-card)' }}>Z</span>
       </div>
 
       <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.02em', margin: '0 0 8px', textAlign: 'center' }}>
         Bienvenido a CRUZ
       </h1>
-      <p style={{ fontSize: 18, color: 'var(--gold)', fontWeight: 600, margin: '0 0 40px' }}>
+      <p style={{ fontSize: 18, color: 'var(--gold-700)', fontWeight: 600, margin: '0 0 40px' }}>
         {companyName}
       </p>
 
       {/* Animated counters */}
       <div style={{
-        display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16,
-        maxWidth: 480, width: '100%', marginBottom: 40,
+        display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)', gap: 16,
+        maxWidth: 480, width: '100%', marginBottom: isMobile ? 24 : 40,
       }}>
         <AnimatedCounter target={stats.traficos} label="tráficos encontrados" delay={300} />
         <AnimatedCounter target={stats.docs} label="documentos en expediente" delay={600} />
@@ -111,7 +113,7 @@ export default function BienvenidaPage() {
         <AnimatedCounter target={stats.value} label="$ USD en operaciones" delay={1200} />
       </div>
 
-      <p style={{ fontSize: 15, color: '#9C9890', maxWidth: 400, textAlign: 'center', lineHeight: 1.6, marginBottom: 32 }}>
+      <p style={{ fontSize: 15, color: 'var(--text-muted)', maxWidth: 400, textAlign: 'center', lineHeight: 1.6, marginBottom: 32 }}>
         Sus datos de los últimos 2 años ya están aquí.<br />
         No necesita subir nada. Explore su portal.
       </p>
@@ -120,16 +122,16 @@ export default function BienvenidaPage() {
         onClick={enterPortal}
         style={{
           padding: '16px 48px', borderRadius: 12, border: 'none',
-          background: 'linear-gradient(135deg, #C4963C, #8B6914)',
-          color: 'var(--text-primary)', fontSize: 16, fontWeight: 800,
+          background: 'linear-gradient(135deg, var(--gold), var(--gold-700))',
+          color: 'var(--bg-card)', fontSize: 16, fontWeight: 800,
           cursor: 'pointer', minHeight: 60,
-          boxShadow: '0 4px 24px rgba(196,150,60,0.3)',
+          boxShadow: '0 4px 24px rgba(196,150,60,0.2)',
         }}
       >
         Entrar al portal →
       </button>
 
-      <div style={{ marginTop: 48, fontSize: 11, color: '#4A4A48', textAlign: 'center' }}>
+      <div style={{ marginTop: 48, fontSize: 11, color: 'var(--text-muted)', textAlign: 'center' }}>
         Patente 3596 · Aduana 240 · Renato Zapata &amp; Company
       </div>
     </div>

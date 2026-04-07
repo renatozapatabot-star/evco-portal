@@ -42,7 +42,7 @@ function mapDraftRow(row: any) {
     created_at: row.created_at,
     products,
     valor_total_usd: d.valor_total_usd || ext.total_value || products.reduce((s: number, p: any) => s + (p.valor_usd || p.total_value || 0), 0),
-    tipo_cambio: d.tipo_cambio || d.contributions?.tipo_cambio || 17.5,
+    tipo_cambio: d.tipo_cambio || d.contributions?.tipo_cambio || 0,
     regimen: d.regimen || 'IMD',
     checklist: d.checklist || [],
     source: d.source || 'manual',

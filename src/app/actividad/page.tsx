@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import { getCompanyIdCookie } from '@/lib/client-config'
-import { fmtDateCompact } from '@/lib/format-utils'
+import { useIsMobile } from '@/hooks/use-mobile'
+import { fmtRelativeTime } from '@/lib/format-utils'
 import { EmptyState } from '@/components/ui/EmptyState'
 import Link from 'next/link'
 
@@ -44,6 +45,7 @@ interface FeedItem {
 }
 
 export default function ActividadPage() {
+  const isMobile = useIsMobile()
   const [items, setItems] = useState<FeedItem[]>([])
   const [loading, setLoading] = useState(true)
   const [lastSeen, setLastSeen] = useState<string>('')
@@ -162,7 +164,7 @@ export default function ActividadPage() {
   const newCount = items.filter(i => i.isNew).length
 
   return (
-    <div style={{ padding: '24px 16px', maxWidth: 600, margin: '0 auto' }}>
+    <div style={{ padding: isMobile ? '16px 12px' : '24px 16px', maxWidth: 600, margin: '0 auto' }}>
       <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 4px' }}>Actividad</h1>
       <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '0 0 24px' }}>
         {newCount > 0 ? `${newCount} nuevo${newCount !== 1 ? 's' : ''}` : 'Todo al día'}
@@ -203,7 +205,7 @@ export default function ActividadPage() {
               </div>
               {/* Time */}
               <span style={{ fontSize: 11, color: 'var(--text-muted)', flexShrink: 0, fontFamily: 'var(--font-mono)' }}>
-                {fmtDateCompact(item.timestamp)}
+                {fmtRelativeTime(item.timestamp)}
               </span>
             </Link>
           ))}

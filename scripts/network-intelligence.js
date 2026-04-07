@@ -161,6 +161,75 @@ async function main() {
 
   console.log(`  Last 72h: ${crossings.length} crossings · avg ${avgCrossing} days`)
 
+  // ── 3b. CROSSING TIMES BY DAY OF WEEK ──
+  console.log('\n── Crossing Times by Day ──')
+  const { data: crossingByDay } = await supabase.from('traficos')
+    .select('fecha_llegada, fecha_cruce')
+    .not('fecha_cruce', 'is', null)
+    .not('fecha_llegada', 'is', null)
+    .gte('fecha_llegada', '2024-01-01')
+    .limit(5000)
+
+  const dayBuckets = { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] }
+  const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
+  for (const t of (crossingByDay || [])) {
+    const hours = (new Date(t.fecha_cruce).getTime() - new Date(t.fecha_llegada).getTime()) / 3600000
+    if (hours < 0 || hours > 720) continue // skip outliers (>30d)
+    const day = new Date(t.fecha_cruce).getDay()
+    dayBuckets[day].push(hours)
+  }
+
+  function percentile(arr, p) {
+    if (arr.length === 0) return 0
+    const sorted = [...arr].sort((a, b) => a - b)
+    const idx = Math.ceil(sorted.length * p / 100) - 1
+    return Math.round(sorted[Math.max(0, idx)] * 10) / 10
+  }
+
+  for (const [day, hours] of Object.entries(dayBuckets)) {
+    if (hours.length < 3) continue
+    const avg = Math.round(hours.reduce((a, b) => a + b, 0) / hours.length * 10) / 10
+    const p50 = percentile(hours, 50)
+    const p95 = percentile(hours, 95)
+    if (!DRY_RUN) {
+      await supabase.from('network_intelligence').upsert({
+        metric_type: 'crossing_by_day',
+        metric_key: `crossing:day_${day}`,
+        metric_value: { day: Number(day), day_name: dayNames[day], avg_hours: avg, p50_hours: p50, p95_hours: p95, sample: hours.length },
+        sample_size: hours.length,
+        computed_at: new Date().toISOString(),
+      }, { onConflict: 'metric_type,metric_key' }).catch(() => {})
+      metricsWritten++
+    }
+    console.log(`  ${dayNames[day].padEnd(12)} avg: ${avg}h · p50: ${p50}h · p95: ${p95}h (${hours.length} ops)`)
+  }
+
+  // ── 3c. RECONOCIMIENTO BY DAY ──
+  console.log('\n── Reconocimiento by Day ──')
+  const recoDayBuckets = { 0: { t: 0, r: 0 }, 1: { t: 0, r: 0 }, 2: { t: 0, r: 0 }, 3: { t: 0, r: 0 }, 4: { t: 0, r: 0 }, 5: { t: 0, r: 0 }, 6: { t: 0, r: 0 } }
+  for (const t of (recoData || [])) {
+    if (!t.fecha_cruce) continue
+    const day = new Date(t.fecha_cruce).getDay()
+    recoDayBuckets[day].t++
+    if (t.semaforo === 1) recoDayBuckets[day].r++
+  }
+
+  for (const [day, stats] of Object.entries(recoDayBuckets)) {
+    if (stats.t < 3) continue
+    const rate = Math.round(stats.r / stats.t * 1000) / 10
+    if (!DRY_RUN) {
+      await supabase.from('network_intelligence').upsert({
+        metric_type: 'reconocimiento_by_day',
+        metric_key: `reco_day:${day}`,
+        metric_value: { day: Number(day), day_name: dayNames[day], rate, total: stats.t, rojo: stats.r },
+        sample_size: stats.t,
+        computed_at: new Date().toISOString(),
+      }, { onConflict: 'metric_type,metric_key' }).catch(() => {})
+      metricsWritten++
+    }
+    console.log(`  ${dayNames[day].padEnd(12)} ${rate}% reco (${stats.r}/${stats.t})`)
+  }
+
   // ── 4. COST BENCHMARKS ──
   console.log('\n── Cost Benchmarks ──')
   const { data: costData } = await supabase.from('traficos')
@@ -215,6 +284,44 @@ async function main() {
   console.log(`  Fleet avg value: $${networkAvgValue.toLocaleString()} USD (${allValues.length} ops)`)
   console.log(`  ${companyBenchmarks.length} company benchmarks computed`)
 
+  // ── 4b. COST BY FRACCION CATEGORY ──
+  console.log('\n── Cost by Fracción Category ──')
+  const { data: partidaCost } = await supabase.from('globalpc_partidas')
+    .select('fraccion_arancelaria, fraccion, precio_unitario')
+    .not('precio_unitario', 'is', null)
+    .limit(5000)
+
+  const fraccionCosts = {}
+  for (const p of (partidaCost || [])) {
+    const frac = (p.fraccion_arancelaria || p.fraccion || '').split('.')[0] // chapter (first 4 digits)
+    if (!frac || frac.length < 4) continue
+    const chapter = frac.substring(0, 4)
+    const val = Number(p.precio_unitario) || 0
+    if (val <= 0) continue
+    if (!fraccionCosts[chapter]) fraccionCosts[chapter] = []
+    fraccionCosts[chapter].push(val)
+  }
+
+  let fraccionMetrics = 0
+  for (const [chapter, values] of Object.entries(fraccionCosts)) {
+    if (values.length < 5) continue
+    const avg = Math.round(values.reduce((a, b) => a + b, 0) / values.length * 100) / 100
+    const p50 = percentile(values, 50)
+    const p95 = percentile(values, 95)
+    if (!DRY_RUN) {
+      await supabase.from('network_intelligence').upsert({
+        metric_type: 'cost_by_fraccion',
+        metric_key: `cost_frac:${chapter}`,
+        metric_value: { chapter, avg_usd: avg, p50_usd: p50, p95_usd: p95, sample: values.length },
+        sample_size: values.length,
+        computed_at: new Date().toISOString(),
+      }, { onConflict: 'metric_type,metric_key' }).catch(() => {})
+      metricsWritten++
+      fraccionMetrics++
+    }
+  }
+  console.log(`  ${fraccionMetrics} fracción chapters benchmarked`)
+
   // ── Telegram summary ──
   await tg(
     `🌐 <b>Network Intelligence — Actualizado</b>\n\n` +
@@ -225,6 +332,8 @@ async function main() {
     `Proveedores red: ${networkSuppliers.length} (2+ clientes)\n` +
     `Top: ${networkSuppliers[0]?.name || '—'} (score ${networkSuppliers[0]?.score || 0})\n\n` +
     `Cruces últimas 72h: ${crossings.length} · avg ${avgCrossing}d\n` +
+    `Crossing by day: ${Object.values(dayBuckets).filter(b => b.length >= 3).length} days computed\n` +
+    `Fracción benchmarks: ${fraccionMetrics} chapters\n` +
     `Valor promedio red: $${networkAvgValue.toLocaleString()} USD\n\n` +
     `${metricsWritten} métricas actualizadas\n` +
     `— CRUZ 🌐`

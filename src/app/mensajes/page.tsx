@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import { getCookieValue, getCompanyIdCookie, getClientNameCookie } from '@/lib/client-config'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { fmtDateTime } from '@/lib/format-utils'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Send, FileText } from 'lucide-react'
@@ -20,6 +21,7 @@ interface Message {
 }
 
 export default function MensajesPage() {
+  const isMobile = useIsMobile()
   const [messages, setMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState(true)
   const [replyText, setReplyText] = useState('')
@@ -127,8 +129,8 @@ export default function MensajesPage() {
                 padding: '14px 20px', borderRadius: 12,
                 background: isOutbound ? 'rgba(196,150,60,0.06)' : 'var(--bg-card)',
                 border: `1px solid ${isOutbound ? 'rgba(196,150,60,0.2)' : 'var(--border)'}`,
-                marginLeft: isOutbound ? 40 : 0,
-                marginRight: isOutbound ? 0 : 40,
+                marginLeft: isOutbound ? (isMobile ? 16 : 40) : 0,
+                marginRight: isOutbound ? 0 : (isMobile ? 16 : 40),
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
                   <span style={{ fontSize: 12, fontWeight: 700, color: isOutbound ? 'var(--gold)' : 'var(--text-primary)' }}>

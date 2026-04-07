@@ -11,7 +11,7 @@ import { useIsMobile } from '@/hooks/use-mobile'
 import { usePullToRefresh } from '@/hooks/use-pull-refresh'
 import { MobileBottomNav } from './mobile-bottom-nav'
 import { WelcomeOverlay } from './WelcomeOverlay'
-import { CruzFAB } from './cruz-fab'
+import { CruzChatBubble } from './cruz-chat-bubble'
 import { SmartBar } from './ui/SmartBar'
 import { useOnboarding } from '@/hooks/use-onboarding'
 import { OnboardingHint } from './ui/OnboardingHint'
@@ -250,8 +250,8 @@ export default function DashboardShellClient({ children }: Props) {
         </div>
       )}
 
-      {/* Floating action button */}
-      <CruzFAB />
+      {/* Floating CRUZ AI chat bubble */}
+      <CruzChatBubble />
 
       {/* Welcome overlay removed — the launchpad IS the welcome */}
 

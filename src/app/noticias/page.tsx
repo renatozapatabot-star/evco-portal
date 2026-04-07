@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import { fmtDate } from '@/lib/format-utils'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { EmptyState } from '@/components/ui/EmptyState'
 import Link from 'next/link'
 
@@ -21,6 +22,7 @@ interface AlertRow {
 }
 
 export default function NoticiasPage() {
+  const isMobile = useIsMobile()
   const [alerts, setAlerts] = useState<AlertRow[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'all' | 'high' | 'medium'>('all')
@@ -73,7 +75,7 @@ export default function NoticiasPage() {
               padding: '16px 20px',
               borderLeft: `4px solid ${alert.relevance === 'high' ? 'var(--danger-500)' : 'var(--warning-500)'}`,
             }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, flexDirection: isMobile ? 'column' : 'row' }}>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>{alert.title}</div>
                   {alert.description && (

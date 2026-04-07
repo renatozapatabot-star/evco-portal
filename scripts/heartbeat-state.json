@@ -1,21 +1,7 @@
 {
-  "supabase": {
-    "status": "ok",
-    "last_ok": "2026-03-29T02:30:00.977Z",
-    "alerted": false
-  },
-  "portal": {
-    "status": "ok",
-    "last_ok": "2026-03-29T02:30:00.977Z",
-    "alerted": false
-  },
-  "morning_report": {
-    "last_run": null,
-    "alerted": true
-  },
-  "globalpc": {
-    "status": "connected",
-    "last_ok": null
-  },
-  "morning_report_last_run": "2026-04-02T17:00:09.999Z"
+  "script": "workflow-processor",
+  "status": "idle",
+  "timestamp": "2026-04-07T00:09:32.637Z",
+  "pid": 17636,
+  "cycle_id": "21e0eb58"
 }

@@ -7,7 +7,8 @@
 //         → match Supabase entradas.cve_entrada (primary, most accurate)
 // Pass 2: MySQL sNumPedido join fallback (handles comma-separated POs)
 // Idempotent — safe to run multiple times.
-// EVCO-specific — not a multi-client pattern
+// Multi-client: use --client=mafesa or --clave=4598 to target a specific client.
+// Default: runs for all active clients in the companies table.
 // ============================================================================
 
 const path = require('path')
@@ -49,11 +50,43 @@ function getMySQLConfig() {
 const PAGE = 1000
 const BATCH = 100
 
-async function run() {
+// Parse --client=<company_id> or --clave=<clave> from CLI args
+function parseClientArg() {
+  for (const arg of process.argv.slice(2)) {
+    if (arg.startsWith('--client=')) return { field: 'company_id', value: arg.split('=')[1] }
+    if (arg.startsWith('--clave=')) return { field: 'clave', value: arg.split('=')[1] }
+  }
+  return null
+}
+
+async function getClients() {
+  const clientArg = parseClientArg()
+  const { data: companies } = await supabase
+    .from('companies').select('company_id, clave_cliente').eq('active', true)
+
+  if (!companies?.length) {
+    console.error('No active companies found')
+    process.exit(1)
+  }
+
+  if (clientArg) {
+    const match = companies.find(c =>
+      clientArg.field === 'company_id' ? c.company_id === clientArg.value : c.clave_cliente === clientArg.value
+    )
+    if (!match) {
+      console.error(`Client not found: ${clientArg.value}`)
+      process.exit(1)
+    }
+    return [match]
+  }
+  return companies
+}
+
+async function linkClient(client) {
   const t0 = Date.now()
-  console.log('\n🔗 CRUZ Entradas Linkage')
-  console.log(`   ${new Date().toLocaleString('es-MX', { timeZone: 'America/Chicago' })}`)
-  console.log('   Patente 3596 · Aduana 240\n')
+  const clave = client.clave_cliente
+  const companyId = client.company_id
+  console.log(`\n── ${companyId.toUpperCase()} (clave: ${clave}) ──`)
 
   // ── Pass 1: MySQL 3-way join via sReferenciaCliente ─────────────────────
   console.log('   Pass 1: MySQL sReferenciaCliente → entradas...')
@@ -65,14 +98,13 @@ async function run() {
   try {
     mysqlConn = await mysql.createConnection(getMySQLConfig())
 
-    // Step 1: Get all EVCO traficos with sReferenciaCliente from MySQL
     const [traficos] = await mysqlConn.execute(`
       SELECT sCveTrafico, sReferenciaCliente
       FROM cb_trafico
-      WHERE sCveCliente = '9254'
+      WHERE sCveCliente = ?
         AND sReferenciaCliente IS NOT NULL
         AND sReferenciaCliente != ''
-    `)
+    `, [clave])
 
     console.log(`   ${traficos.length} MySQL tráficos con sReferenciaCliente`)
 
@@ -95,8 +127,8 @@ async function run() {
     const [mysqlEntradas] = await mysqlConn.execute(`
       SELECT sCveEntradaBodega
       FROM cb_entrada_bodega
-      WHERE sCveCliente = '9254'
-    `)
+      WHERE sCveCliente = ?
+    `, [clave])
 
     console.log(`   ${mysqlEntradas.length} MySQL entradas found`)
 
@@ -116,13 +148,14 @@ async function run() {
 
     console.log(`   ${linkMap.size} validated entrada→tráfico links`)
 
-    // Step 5: Fetch unlinked entradas from Supabase and match
+    // Step 5: Fetch unlinked entradas from Supabase and match (filtered by client)
     const allEntradas = []
     let ePage = 0
     while (true) {
       const { data, error } = await supabase
         .from('entradas')
         .select('id, cve_entrada')
+        .eq('company_id', companyId)
         .is('trafico', null)
         .range(ePage * PAGE, (ePage + 1) * PAGE - 1)
       if (error) {
@@ -202,11 +235,11 @@ async function run() {
           e.sNumPedido = t.sNumPedido
           OR FIND_IN_SET(e.sNumPedido, REPLACE(t.sNumPedido, ' ', '')) > 0
         )
-      WHERE e.sCveCliente = '9254'
-        AND t.sCveCliente = '9254'
+      WHERE e.sCveCliente = ?
+        AND t.sCveCliente = ?
         AND e.sNumPedido IS NOT NULL
         AND e.sNumPedido != ''
-    `)
+    `, [clave, clave])
     await mysqlConn.end()
 
     console.log(`   ${mysqlMatches.length} MySQL PO matches found`)
@@ -218,13 +251,14 @@ async function run() {
       if (!mysqlMap.has(key)) mysqlMap.set(key, m.trafico_id)
     }
 
-    // Re-fetch still-unlinked entradas
+    // Re-fetch still-unlinked entradas (filtered by client)
     const stillUnlinked = []
     let p2Page = 0
     while (true) {
       const { data, error } = await supabase
         .from('entradas')
         .select('id, cve_entrada')
+        .eq('company_id', companyId)
         .is('trafico', null)
         .range(p2Page * PAGE, (p2Page + 1) * PAGE - 1)
       if (error) break
@@ -268,19 +302,42 @@ async function run() {
   const totalUpdated = pass1Updated + pass2Updated
   const totalErrors = pass1Errors + pass2Errors
   const sec = ((Date.now() - t0) / 1000).toFixed(1)
-  console.log(`\n══ Done · ${sec}s · Pass 1: ${pass1Updated} · Pass 2: ${pass2Updated} · Total: ${totalUpdated} · Errors: ${totalErrors} ══\n`)
+  console.log(`\n── ${companyId}: ${sec}s · P1:${pass1Updated} · P2:${pass2Updated} · Total:${totalUpdated} · Errors:${totalErrors} ──\n`)
+
+  return { companyId, pass1Updated, pass2Updated, totalUpdated, totalErrors, sec }
+}
+
+async function run() {
+  const t0 = Date.now()
+  console.log('\n🔗 CRUZ Entradas Linkage (multi-client)')
+  console.log(`   ${new Date().toLocaleString('es-MX', { timeZone: 'America/Chicago' })}`)
+  console.log('   Patente 3596 · Aduana 240\n')
+
+  const clients = await getClients()
+  console.log(`   Clients: ${clients.map(c => c.company_id).join(', ')}`)
+
+  let grandTotal = 0
+  let grandErrors = 0
+
+  for (const client of clients) {
+    const result = await linkClient(client)
+    grandTotal += result.totalUpdated
+    grandErrors += result.totalErrors
+  }
+
+  const sec = ((Date.now() - t0) / 1000).toFixed(1)
 
   // Log to heartbeat
   await supabase.from('heartbeat_log').insert({
     script: 'sync-entradas-linkage',
-    status: totalErrors > 0 ? 'partial' : 'success',
-    details: { pass1: pass1Updated, pass2: pass2Updated, total: totalUpdated, errors: totalErrors, elapsed_s: parseFloat(sec) },
+    status: grandErrors > 0 ? 'partial' : 'success',
+    details: { total: grandTotal, errors: grandErrors, clients: clients.length, elapsed_s: parseFloat(sec) },
   }).then(() => {}, () => {})
 
-  if (totalErrors > 0) {
-    await sendTG(`🟡 <b>Entradas Linkage</b> · ${totalUpdated} vinculadas (P1:${pass1Updated} P2:${pass2Updated}) · ${totalErrors} error(es) · ${sec}s`)
+  if (grandErrors > 0) {
+    await sendTG(`🟡 <b>Entradas Linkage</b> · ${grandTotal} vinculadas · ${grandErrors} error(es) · ${clients.length} clientes · ${sec}s`)
   } else {
-    await sendTG(`✅ <b>Entradas Linkage</b> · ${totalUpdated} vinculadas (P1:${pass1Updated} P2:${pass2Updated}) · ${sec}s`)
+    await sendTG(`✅ <b>Entradas Linkage</b> · ${grandTotal} vinculadas · ${clients.length} clientes · ${sec}s`)
   }
 }
 

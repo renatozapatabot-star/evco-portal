@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useMemo } from 'react'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { getCookieValue } from '@/lib/client-config'
 import { fmtDateTime } from '@/lib/format-utils'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -36,6 +37,7 @@ function waitBg(min: number | null): string {
 }
 
 export default function CrucesPage() {
+  const isMobile = useIsMobile()
   const [bridges, setBridges] = useState<Bridge[]>([])
   const [historical, setHistorical] = useState<HistoricalRow[]>([])
   const [loading, setLoading] = useState(true)
@@ -182,7 +184,8 @@ export default function CrucesPage() {
               Promedios Históricos
             </h2>
             <div className="card" style={{ overflow: 'hidden' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+              <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }} aria-label="Promedios históricos de tiempos de cruce">
                 <thead>
                   <tr style={{ borderBottom: '1px solid #E8E5E0' }}>
                     <th style={{ padding: '10px 16px', textAlign: 'left', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)' }}>Puente</th>
@@ -202,6 +205,7 @@ export default function CrucesPage() {
                   ))}
                 </tbody>
               </table>
+              </div>
             </div>
           </div>
         )}

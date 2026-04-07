@@ -98,7 +98,7 @@ export async function fetchDashboardKPIs() {
   const [trafRes, factRes, entRes] = await Promise.all([
     supabase.from('traficos').select('estatus, peso_bruto').eq('company_id', companyId).gte('fecha_llegada', PORTAL_DATE_FROM),
     supabase.from('aduanet_facturas').select('valor_usd, dta, igi, iva, pedimento').eq('clave_cliente', clave),
-    supabase.from('entradas').select('tiene_faltantes, peso_bruto').eq('company_id', companyId).limit(1000),
+    supabase.from('entradas').select('tiene_faltantes, peso_bruto').eq('company_id', companyId).gte('fecha_llegada_mercancia', PORTAL_DATE_FROM).limit(1000),
   ])
   const traf = trafRes.data || []
   const fact = factRes.data || []
@@ -142,6 +142,7 @@ export async function fetchEntradas(page = 0, search?: string) {
   const companyId = await getCompanyId()
   let q = supabase.from('entradas').select('*', { count: 'exact' })
     .eq('company_id', companyId)
+    .gte('fecha_llegada_mercancia', PORTAL_DATE_FROM)
     .order('fecha_llegada_mercancia', { ascending: false })
     .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1)
   if (search) q = q.or(`descripcion_mercancia.ilike.%${search}%,cve_entrada.ilike.%${search}%,trafico.ilike.%${search}%`)

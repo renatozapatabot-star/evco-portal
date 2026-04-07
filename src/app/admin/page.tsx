@@ -55,7 +55,7 @@ export default async function AdminPage() {
   }
 
   return (
-    <div style={{ padding: '24px 28px', fontFamily: 'var(--font-sans)', color: T.text, minHeight: '100vh' }}>
+    <div style={{ fontFamily: 'var(--font-sans)', color: T.text, minHeight: '100vh' }} className="p-4 md:px-7 md:py-6">
       {/* Header */}
       <div style={{ marginBottom: 28 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4 }}>
@@ -72,7 +72,7 @@ export default async function AdminPage() {
       </div>
 
       {/* Fleet KPIs */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 12, marginBottom: 24 }}>
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
         {[
           { label: 'Active Clients', value: totalClients, color: T.gold },
           { label: 'Total Tráficos', value: totalTraficos.toLocaleString(), color: T.text },
@@ -93,7 +93,7 @@ export default async function AdminPage() {
       </div>
 
       {/* Quick Actions */}
-      <div style={{ display: 'flex', gap: 10, marginBottom: 24 }}>
+      <div className="flex flex-wrap gap-2.5 mb-6">
         {[
           { label: 'Sync All Clients', href: '#', action: 'sync-all' },
           { label: 'Generate Reports', href: '#', action: 'reports' },
@@ -118,7 +118,8 @@ export default async function AdminPage() {
             Client Health
           </h2>
         </div>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <div style={{ overflowX: 'auto' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 700 }} aria-label="Estado de salud de clientes">
           <thead>
             <tr style={{ borderBottom: `1px solid ${T.border}` }}>
               {['Client', 'Clave', 'Tráficos', 'Health Score', 'Last Sync', 'Alerts', 'Actions'].map(h => (
@@ -165,6 +166,7 @@ export default async function AdminPage() {
             })}
           </tbody>
         </table>
+        </div>
       </div>
 
       {/* Integration Health */}
@@ -175,7 +177,7 @@ export default async function AdminPage() {
               Integration Health
             </h2>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 1, padding: 1 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 1, padding: 1 }}>
             {integrations.map(i => (
               <div key={i.integration_name} style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
                 <span style={{ width: 8, height: 8, borderRadius: '50%',

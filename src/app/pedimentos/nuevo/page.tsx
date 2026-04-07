@@ -61,12 +61,12 @@ export default function NuevoPedimentoPage() {
       if (!d.error && d.dta?.rate && d.iva?.rate && d.tc?.rate) {
         setSysRates({ dta: d.dta.rate, iva: d.iva.rate, tc: d.tc.rate })
         setTipoCambio(d.tc.rate)
+      } else {
+        setError('No se pudieron cargar las tasas actuales. Verifica system_config.')
       }
-    }).catch((err: unknown) => { void 0 })
-    fetch('/api/tipo-cambio')
-      .then(r => r.json())
-      .then(d => { if (d.rate) setTipoCambio(Number(d.rate)) })
-      .catch(() => setTipoCambio(20.50))
+    }).catch(() => {
+      setError('Error de conexión al cargar tasas. Intenta de nuevo.')
+    })
   }, [])
 
   async function loadTrafico() {
@@ -119,7 +119,12 @@ export default function NuevoPedimentoPage() {
 
       // Calculate estimates
       const valorUSD = Number(factura.valor_comercial) || 0
-      const tc = tipoCambio || 20.50
+      if (!tipoCambio) {
+        setError('Tipo de cambio no disponible. Verifica la conexión a Banxico/system_config.')
+        setLoading(false)
+        return
+      }
+      const tc = tipoCambio
       const valorMXN = valorUSD * tc
       const tmecEligible = supplierContact?.[0]?.usmca_eligible ?? false
 

@@ -163,6 +163,7 @@ export default function PedimentosPage() {
               placeholder="Pedimento, tráfico, proveedor..."
               value={search}
               onChange={e => { setSearch(e.target.value); setPage(0) }}
+              aria-label="Buscar pedimentos"
             />
           </div>
         </div>
@@ -283,8 +284,8 @@ export default function PedimentosPage() {
         <div className="pagination">
           <span className="pagination-info">Página {page + 1} de {totalPages}</span>
           <div className="pagination-btns">
-            <button className="pagination-btn" disabled={page === 0} onClick={() => setPage(p => p - 1)}><ChevronLeft size={14} /></button>
-            <button className="pagination-btn" disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)}><ChevronRight size={14} /></button>
+            <button className="pagination-btn" disabled={page === 0} onClick={() => setPage(p => p - 1)} aria-label="Página anterior"><ChevronLeft size={14} /></button>
+            <button className="pagination-btn" disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)} aria-label="Página siguiente"><ChevronRight size={14} /></button>
           </div>
         </div>
       )}

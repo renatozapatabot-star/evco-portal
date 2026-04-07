@@ -24,7 +24,7 @@ const DEFAULT_SUGGESTIONS = [
 
 function buildDynamicPrompts(statusData: { urgentes: number; enProceso: number; loading: boolean }): string[] {
   const prompts: string[] = []
-  if (statusData?.urgentes > 0) prompts.push(`${statusData.urgentes} urgentes — ¿qué hago primero?`)
+  if (statusData?.urgentes > 0) prompts.push(`${statusData.urgentes} en seguimiento — ¿qué hago primero?`)
   const hour = new Date().getHours()
   if (hour < 10) prompts.push('Resumen ejecutivo de hoy')
   else if (hour < 15) prompts.push('¿Cómo van los cruces de hoy?')

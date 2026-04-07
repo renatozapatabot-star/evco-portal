@@ -96,7 +96,7 @@ export default function UploadPage() {
       <div style={{
         minHeight: '100vh', background: 'var(--navy-900)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontFamily: 'var(--font-sans, "DM Sans", system-ui, sans-serif)',
+        fontFamily: 'var(--font-sans, system-ui, sans-serif)',
         padding: 20,
       }}>
         <div style={{ textAlign: 'center', maxWidth: 400 }}>
@@ -134,7 +134,7 @@ export default function UploadPage() {
       <div style={{
         minHeight: '100vh', background: 'var(--navy-900)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontFamily: 'var(--font-sans, "DM Sans", system-ui, sans-serif)',
+        fontFamily: 'var(--font-sans, system-ui, sans-serif)',
         padding: 20,
       }}>
         <div style={{ textAlign: 'center', maxWidth: 400 }}>
@@ -170,7 +170,7 @@ export default function UploadPage() {
     <div style={{
       minHeight: '100vh', background: 'var(--navy-900)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontFamily: 'var(--font-sans, "DM Sans", system-ui, sans-serif)',
+      fontFamily: 'var(--font-sans, system-ui, sans-serif)',
       padding: 20,
     }}>
       <div style={{ width: '100%', maxWidth: 420 }}>

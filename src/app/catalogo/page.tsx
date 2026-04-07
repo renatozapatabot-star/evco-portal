@@ -211,9 +211,9 @@ export default function CatalogoPage() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                     <span className="font-mono" style={{
                       fontWeight: 600, fontSize: 13,
-                      color: g.fraccion ? 'var(--gold-dark, #8B6914)' : 'var(--slate-400)',
+                      color: g.fraccion ? 'var(--gold-dark, #8B6914)' : 'var(--slate-500)',
                     }}>
-                      {g.fraccion || '—'}
+                      {g.fraccion || 'Pendiente'}
                     </span>
                     {g.tmec ? (
                       <span style={{ fontSize: 11, color: 'var(--success)', fontWeight: 600, background: 'var(--success-bg)', padding: '2px 8px', borderRadius: 9999 }}>T-MEC</span>
@@ -259,9 +259,9 @@ export default function CatalogoPage() {
                     </td>
                     <td className="font-mono" style={{
                       fontWeight: 600, fontSize: 13,
-                      color: g.fraccion ? 'var(--gold-dark, #8B6914)' : 'var(--slate-400)',
+                      color: g.fraccion ? 'var(--gold-dark, #8B6914)' : 'var(--slate-500)',
                     }}>
-                      {g.fraccion || '—'}
+                      {g.fraccion || 'Pendiente'}
                     </td>
                     <td>
                       {g.tmec ? (

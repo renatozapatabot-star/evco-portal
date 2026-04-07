@@ -20,11 +20,11 @@ export default function ChatContextPanel({ panelData }: ChatContextPanelProps) {
       padding: 20, overflowY: 'auto', background: D.bg,
       display: 'flex', flexDirection: 'column', gap: 20,
     }}>
-      {/* Criticos ahora */}
+      {/* En seguimiento */}
       <div>
         <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--gold)', marginBottom: 10,
                       letterSpacing: '0.06em', textTransform: 'uppercase' as const }}>
-          Criticos ahora
+          En seguimiento
         </div>
         {panelData.urgent.length > 0 ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -35,7 +35,7 @@ export default function ChatContextPanel({ panelData }: ChatContextPanelProps) {
                 display: 'flex', alignItems: 'center', gap: 8,
               }}>
                 <AlertTriangle size={14} style={{ color: '#C47F17', flexShrink: 0 }} />
-                <div style={{ fontSize: 12, color: D.text, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div style={{ fontSize: 12, color: D.text, fontWeight: 600, fontFamily: 'var(--font-jetbrains-mono)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {t.trafico_number || t.id || 'Sin numero'}
                 </div>
                 <div style={{ fontSize: 11, color: D.textMuted, marginLeft: 'auto', flexShrink: 0 }}>
@@ -46,7 +46,7 @@ export default function ChatContextPanel({ panelData }: ChatContextPanelProps) {
           </div>
         ) : (
           <div style={{ fontSize: 12, color: D.textMuted, padding: '8px 0' }}>
-            Sin traficos criticos
+            Sin pendientes
           </div>
         )}
       </div>
@@ -66,7 +66,7 @@ export default function ChatContextPanel({ panelData }: ChatContextPanelProps) {
                 display: 'flex', alignItems: 'center', gap: 8,
               }}>
                 <Clock size={14} style={{ color: D.textMuted, flexShrink: 0 }} />
-                <div style={{ fontSize: 12, color: D.text, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div style={{ fontSize: 12, color: D.text, fontWeight: 600, fontFamily: 'var(--font-jetbrains-mono)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {t.trafico_number || t.id || 'Sin numero'}
                 </div>
                 <div style={{ fontSize: 11, color: D.textMuted, marginLeft: 'auto', flexShrink: 0 }}>

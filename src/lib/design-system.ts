@@ -3,9 +3,9 @@
 // For CSS/Tailwind contexts, use var(--gold-500) etc. instead.
 // This file is excluded from the gsd-verify color check by path name.
 
-export const GOLD = '#C4963C'
+export const GOLD = '#C9A84C'
 export const GOLD_HOVER = '#B8933B'
-export const GOLD_GRADIENT = 'linear-gradient(135deg, #C4963C, #8B6914)'
+export const GOLD_GRADIENT = 'linear-gradient(135deg, #C9A84C, #8B6914)'
 export const GOLD_TEXT = '#8B6914'
 
 export const GREEN = '#16A34A'

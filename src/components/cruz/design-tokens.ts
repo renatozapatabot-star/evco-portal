@@ -67,7 +67,7 @@ export const colors = {
 } as const;
 
 export const typography = {
-  fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+  fontFamily: "'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
   fontFamilyMono: "'JetBrains Mono', 'SF Mono', 'Fira Code', monospace",
 
   // Size scale

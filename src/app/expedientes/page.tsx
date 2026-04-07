@@ -199,14 +199,16 @@ export default function ExpedientesPage() {
             { key: null, label: 'Todos', value: kpiTotal },
             { key: 'completos', label: 'Completos', value: kpiCompletos },
             { key: 'incompletos', label: 'Incompletos', value: kpiIncompletos },
-            { key: 'criticos', label: 'Faltantes Críticos', value: kpiCriticos, danger: kpiCriticos > 0 },
+            ...(userRole === 'broker' || userRole === 'admin'
+              ? [{ key: 'criticos', label: 'Pendientes de integración', value: kpiCriticos }]
+              : []),
           ].map(stat => (
             <button
               key={stat.key ?? 'all'}
               className={`stat-filter-item${statFilter === stat.key ? ' active' : ''}`}
               onClick={() => { setStatFilter(statFilter === stat.key ? null : stat.key); setPage(0) }}
             >
-              <span className={`stat-filter-value${stat.value === 0 ? ' zero' : ''}${'danger' in stat && stat.danger ? ' danger' : ''}`}>{stat.value}</span>
+              <span className={`stat-filter-value${stat.value === 0 ? ' zero' : ''}`}>{stat.value}</span>
               <span className="stat-filter-label">{stat.label}</span>
             </button>
           ))}

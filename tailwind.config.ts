@@ -39,7 +39,7 @@ const config: Config = {
         plum: '#7E22CE',
       },
       fontFamily: {
-        sans: ['var(--font-dm-sans)', 'var(--font-geist-sans)', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-geist-sans)', 'system-ui', 'sans-serif'],
         mono: ['var(--font-jetbrains-mono)', 'var(--font-geist-mono)', 'monospace'],
       },
       borderColor: {

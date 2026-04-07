@@ -9,6 +9,7 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { fmtDate } from '@/lib/format-utils'
 import { ErrorCard } from '@/components/ui/ErrorCard'
+import { DateInputES } from '@/components/ui/DateInputES'
 
 // Generate distinct color from name hash for provider avatars
 function avatarColor(name: string): { bg: string; text: string } {
@@ -330,10 +331,10 @@ export function ReportesView() {
           <p className="page-subtitle">{totalFiltered.toLocaleString('es-MX')} tráficos</p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-          <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)}
+          <DateInputES value={dateFrom} onChange={setDateFrom}
             style={{ height: 60, border: `1px solid ${T.border}`, borderRadius: 6, padding: '0 12px', fontSize: 13, color: T.textSub, background: T.surfaceAlt }} />
           <span style={{ color: T.textMuted, fontSize: 11 }}>—</span>
-          <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)}
+          <DateInputES value={dateTo} onChange={setDateTo}
             style={{ height: 60, border: `1px solid ${T.border}`, borderRadius: 6, padding: '0 12px', fontSize: 13, color: T.textSub, background: T.surfaceAlt }} />
           {(dateFrom || dateTo) && (
             <button onClick={() => { setDateFrom(''); setDateTo('') }}

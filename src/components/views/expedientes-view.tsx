@@ -642,7 +642,7 @@ export function ExpedientesView() {
           <FileText size={32} strokeWidth={1.5} style={{ color: 'var(--success)', margin: '0 auto 12px' }} />
           <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--success)' }}>Todos los expedientes completos &#10003;</p>
           <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-            Los {rawTraficos.length} tráficos activos tienen todos sus documentos en orden. · Última verificación: hace 5 min
+            Los {rawTraficos.length} tráficos activos tienen todos sus documentos en orden.
           </p>
         </div>
       ) : (
@@ -693,7 +693,7 @@ export function ExpedientesView() {
                 {filter === 'completos' ? 'Sin expedientes completos' : 'Todos los expedientes completos ✓'}
               </p>
               <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                {filter === 'completos' ? 'Aún no hay tráficos con todos sus documentos.' : 'Todos los documentos están en orden. · Última verificación: hace 5 min'}
+                {filter === 'completos' ? 'Aún no hay tráficos con todos sus documentos.' : 'Todos los documentos están en orden.'}
               </p>
             </div>
           ) : isMobile ? (

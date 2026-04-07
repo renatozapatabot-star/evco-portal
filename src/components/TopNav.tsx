@@ -166,9 +166,7 @@ export function TopNav() {
               <span style={{ color: syncMins !== null && syncMins > 120 ? '#C47F17' : '#9C9890' }}>
                 {syncMins !== null && syncMins <= 30
                   ? `Datos de hoy, ${syncLabel}`
-                  : syncMins !== null && syncMins > 120
-                    ? `Actualizado hace ${syncLabel}`
-                    : `Sync: ${syncLabel}`
+                  : `Última sincronización: ${syncLabel}`
                 }
               </span>
             </div>

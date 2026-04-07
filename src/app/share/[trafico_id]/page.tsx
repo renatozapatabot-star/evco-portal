@@ -92,7 +92,7 @@ export default async function SharePage(
       alignItems: 'center',
       justifyContent: 'center',
       padding: 20,
-      fontFamily: 'var(--font-sans, "DM Sans", system-ui, sans-serif)',
+      fontFamily: 'var(--font-sans, system-ui, sans-serif)',
       position: 'relative',
       overflow: 'hidden',
     }}>

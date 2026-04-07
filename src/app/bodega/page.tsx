@@ -225,7 +225,7 @@ export default function BodegaPage() {
             {t.label}
             {t.badge != null && (
               <span style={{
-                background: T.red, color: T.textPrimary,
+                background: 'var(--teal, #0D9488)', color: '#FFFFFF',
                 fontSize: 11, fontWeight: 700, padding: '2px 7px',
                 borderRadius: 9999, lineHeight: 1.2,
               }}>

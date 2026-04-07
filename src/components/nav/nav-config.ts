@@ -143,6 +143,8 @@ export const CLIENT_NAV: NavTopLevel[] = [
   { href: '/bodega',       label: 'Inventario',           icon: Warehouse },
   { href: '/catalogo',     label: 'Catálogo',             icon: ClipboardList },
   { href: '/anexo24',      label: 'Anexo 24',             icon: BookOpen },
+  { href: '/reportes',     label: 'Reportes',             icon: BarChart3 },
+  { href: '/financiero',   label: 'Financiero',           icon: DollarSign },
   { href: '/documentos',   label: 'Documentos',           icon: FolderOpen },
   { href: '/cruz',         label: 'CRUZ AI',              icon: MessageSquare, gold: true },
 ]

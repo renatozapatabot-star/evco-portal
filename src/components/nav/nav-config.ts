@@ -4,7 +4,7 @@ import {
   Shield, Calendar, Award,
   Settings, MessageSquare, Package,
   History, Clock, ClipboardList,
-  Warehouse, Bot, Rocket,
+  Warehouse, Bot, Rocket, Tags, Layers, TrendingUp,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -60,11 +60,14 @@ export const INTERNAL_GROUPS: NavGroup[] = [
     icon: Truck,
     children: [
       { href: '/launchpad',    label: 'Launchpad',   icon: Rocket },
+      { href: '/clasificar',   label: 'Clasificar',  icon: Tags },
+      { href: '/lotes',        label: 'Lotes',       icon: Layers },
       { href: '/traficos',     label: 'Traficos',    icon: Truck },
       { href: '/entradas',     label: 'Entradas',    icon: Package },
       { href: '/bodega',       label: 'Inventario',      icon: Warehouse },
       { href: '/pedimentos',   label: 'Pedimentos',  icon: FileText },
       { href: '/expedientes',  label: 'Expedientes', icon: FolderOpen },
+      { href: '/archivos',     label: 'Archivos',    icon: FolderOpen },
     ],
   },
   {
@@ -80,6 +83,7 @@ export const INTERNAL_GROUPS: NavGroup[] = [
       { href: '/agente',       label: 'CRUZ Agent',  icon: Bot },
       { href: '/cerebro',      label: 'Cerebro',     icon: BarChart3 },
       { href: '/predicciones', label: 'Predicciones', icon: BarChart3 },
+      { href: '/inventario',   label: 'Inv. Inteligente', icon: TrendingUp },
       { href: '/simulador',    label: 'Simulador',    icon: BarChart3 },
     ],
   },
@@ -159,6 +163,8 @@ export const MOBILE_CLIENT_TABS: MobileTab[] = [
 export const ADMIN_ONLY_ROUTES = [
   '/admin',
   '/launchpad',
+  '/clasificar',
+  '/lotes',
   '/war-room',
   '/operaciones',
   '/radar',
@@ -192,7 +198,9 @@ export const ADMIN_ONLY_ROUTES = [
   '/agente',
   '/cerebro',
   '/predicciones',
+  '/inventario',
   '/simulador',
+  '/archivos',
 ] as const
 
 /** Routes accessible by client role */

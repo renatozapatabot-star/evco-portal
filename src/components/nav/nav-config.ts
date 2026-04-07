@@ -4,7 +4,7 @@ import {
   Shield, Calendar, Award,
   Settings, MessageSquare, Package,
   History, Clock, ClipboardList,
-  Warehouse, Bot, Rocket, Tags, Layers, TrendingUp,
+  Warehouse, Bot, Rocket, Tags, Layers, TrendingUp, Search,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -84,6 +84,7 @@ export const INTERNAL_GROUPS: NavGroup[] = [
       { href: '/cerebro',      label: 'Cerebro',     icon: BarChart3 },
       { href: '/predicciones', label: 'Predicciones', icon: BarChart3 },
       { href: '/inventario',   label: 'Inv. Inteligente', icon: TrendingUp },
+      { href: '/excepciones',  label: 'Excepciones',  icon: Search },
       { href: '/simulador',    label: 'Simulador',    icon: BarChart3 },
     ],
   },
@@ -199,6 +200,7 @@ export const ADMIN_ONLY_ROUTES = [
   '/cerebro',
   '/predicciones',
   '/inventario',
+  '/excepciones',
   '/simulador',
   '/archivos',
 ] as const

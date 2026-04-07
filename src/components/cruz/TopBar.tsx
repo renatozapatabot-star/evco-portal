@@ -30,11 +30,10 @@ export default function TopBar({
         onClick={() => {
           document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true }))
         }}
-        aria-label="Buscar (⌘K)"
+        aria-label="Buscar"
       >
         <Search size={16} />
-        <span className="topbar-search-label">Buscar...</span>
-        <kbd className="topbar-search-kbd">⌘K</kbd>
+        <span className="topbar-search-label">Buscar tráfico, pedimento...</span>
       </button>
 
       <div className="topbar-right">

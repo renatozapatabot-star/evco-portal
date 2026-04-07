@@ -279,11 +279,17 @@ export default async function SharePage(
           </a>
         </div>
 
-        {/* Footer */}
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: 11, color: '#64748B' }}>
-            Renato Zapata &amp; Company · Patente 3596 · Est. 1941
-          </div>
+        {/* CRUZ CTA */}
+        <div style={{ marginTop: 40, padding: '24px 20px', borderTop: '1px solid var(--border, #E8E5E0)', textAlign: 'center' }}>
+          <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 8 }}>
+            ¿Quiere esta visibilidad para sus importaciones?
+          </p>
+          <p style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>
+            CRUZ — Inteligencia aduanal en tiempo real
+          </p>
+          <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
+            Renato Zapata &amp; Company · Patente 3596
+          </p>
         </div>
       </div>
     </div>

@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { createClient } from '@supabase/supabase-js'
-import { Upload, CheckCircle, XCircle, ChevronDown, Download, Trash2 } from 'lucide-react'
+import { Upload, CheckCircle, ChevronDown, Download, Trash2 } from 'lucide-react'
 import { getClientNameCookie } from '@/lib/client-config'
 import { ErrorCard } from '@/components/ui/ErrorCard'
 
@@ -111,20 +111,32 @@ export function DocumentosView() {
     <div className="page-shell" style={{ maxWidth: 900 }}>
       <div style={{ height: 20 }} />
 
-      {/* Urgency banner */}
-      {!loading && pendingRequired > 0 && (
+      {/* Progress banner */}
+      {!loading && (
         <div style={{
           margin: '0 20px 16px',
-          background: 'rgba(217,119,6,0.06)',
-          border: '1px solid rgba(217,119,6,0.25)',
+          background: completedRequired === requiredDocs.length ? 'rgba(22,163,74,0.06)' : 'rgba(217,119,6,0.06)',
+          border: `1px solid ${completedRequired === requiredDocs.length ? 'rgba(22,163,74,0.25)' : 'rgba(217,119,6,0.25)'}`,
           borderRadius: 10, padding: '14px 16px',
         }}>
-          <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--gold-dark, #8B6914)' }}>
-            {pendingRequired} documento{pendingRequired !== 1 ? 's' : ''} requerido{pendingRequired !== 1 ? 's' : ''} pendiente{pendingRequired !== 1 ? 's' : ''}
+          <div style={{ fontSize: 14, fontWeight: 700, color: completedRequired === requiredDocs.length ? 'var(--success, #16A34A)' : 'var(--gold-dark, #8B6914)' }}>
+            {completedRequired} de {requiredDocs.length} documentos completos
           </div>
-          <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4 }}>
-            Documentos requeridos pendientes para cumplimiento SAT
+          {/* Progress bar */}
+          <div style={{ height: 6, background: 'var(--border, #E8E5E0)', borderRadius: 9999, overflow: 'hidden', marginTop: 8 }}>
+            <div style={{
+              width: `${Math.round((completedRequired / requiredDocs.length) * 100)}%`,
+              height: '100%',
+              background: completedRequired === requiredDocs.length ? 'var(--success, #16A34A)' : 'var(--gold, #C4963C)',
+              borderRadius: 9999,
+              transition: 'width 0.4s ease',
+            }} />
           </div>
+          {pendingRequired > 0 && (
+            <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 6 }}>
+              Documentos requeridos pendientes para cumplimiento SAT
+            </div>
+          )}
         </div>
       )}
 
@@ -164,7 +176,7 @@ export function DocumentosView() {
                     padding: '14px 16px', borderRadius: 10,
                     background: 'var(--bg-card)',
                     border: `1px solid ${complete ? 'var(--border, #E8E5E0)' : 'var(--border, #E8E5E0)'}`,
-                    borderLeft: complete ? '3px solid var(--success, #16A34A)' : '3px solid var(--gold, #C4963C)',
+                    borderLeft: complete ? '3px solid var(--success, #16A34A)' : '3px solid var(--border, #E8E5E0)',
                     transition: 'background 100ms',
                   }}
                 >
@@ -172,7 +184,7 @@ export function DocumentosView() {
                   {complete ? (
                     <CheckCircle size={20} style={{ color: 'var(--success, #16A34A)', flexShrink: 0 }} />
                   ) : (
-                    <XCircle size={20} style={{ color: 'var(--gold, #C4963C)', flexShrink: 0, opacity: 0.7 }} />
+                    <div style={{ width: 20, height: 20, borderRadius: '50%', border: '2px solid var(--border, #E8E5E0)', flexShrink: 0 }} />
                   )}
 
                   {/* Doc info */}
@@ -188,7 +200,7 @@ export function DocumentosView() {
                         <span
                           aria-label="Documento requerido"
                           style={{
-                          background: 'rgba(192,48,48,0.1)', color: 'var(--danger-500, #C23B22)',
+                          background: 'rgba(0,0,0,0.05)', color: 'var(--text-muted, #9B9B9B)',
                           borderRadius: 4, padding: '1px 5px', fontSize: 10, fontWeight: 700,
                         }}>
                           REQ
@@ -249,7 +261,7 @@ export function DocumentosView() {
                     )}
                     <span style={{
                       fontSize: 12, fontWeight: 600,
-                      color: complete ? 'var(--success, #16A34A)' : 'var(--gold-dark, #8B6914)',
+                      color: complete ? 'var(--success, #16A34A)' : 'var(--text-muted, #9B9B9B)',
                     }}>
                       {complete ? (up ? 'Recibido' : 'Vigente') : 'Pendiente'}
                     </span>

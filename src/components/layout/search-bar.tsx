@@ -80,7 +80,7 @@ export function SearchBar() {
           onKeyDown={handleKey}
           onFocus={() => results.length > 0 && setOpen(true)}
           onBlur={() => setTimeout(() => setOpen(false), 150)}
-          placeholder="Buscar tráfico... (⌘K)"
+          placeholder="Buscar tráfico, pedimento..."
           style={{ paddingLeft: 32, paddingRight: loading ? 32 : 12, height: 32,
             border: `1px solid ${T.border}`, borderRadius: 7, background: T.surface,
             color: T.text, fontSize: 12, outline: 'none', width: '100%', fontFamily: 'inherit',

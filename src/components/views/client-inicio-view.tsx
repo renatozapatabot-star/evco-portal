@@ -257,6 +257,12 @@ export default function ClientInicioView() {
     return () => clearInterval(interval)
   }, [loadPulse])
 
+  // ── Fresh pulse items (only < 24h old) — hide entire feed if all stale ──
+  const freshPulse = useMemo(() => {
+    const cutoff24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+    return pulse.filter(item => item.timestamp > cutoff24h)
+  }, [pulse])
+
   // ── KPI calculations ──
   const enProceso = useMemo(() =>
     traficos.filter(t => (t.estatus || '').toLowerCase() === 'en proceso').length, [traficos])
@@ -661,64 +667,62 @@ export default function ClientInicioView() {
         ))}
       </div>
 
-      {/* ── ACTIVITY PULSE — live workflow engine feed ── */}
-      <div style={{ padding: '24px 20px 0' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-          <div style={{
-            width: 8, height: 8, borderRadius: '50%',
-            background: 'var(--success)',
-            boxShadow: '0 0 6px rgba(22,163,74,0.4)',
-            animation: 'cruzPulse 2s ease-in-out infinite',
-          }} />
-          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' }}>
-            RZ trabajando
+      {/* ── ACTIVITY PULSE — only shown when fresh events exist (< 24h) ── */}
+      {(pulseLoading || freshPulse.length > 0) && (
+        <div style={{ padding: '24px 20px 0' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+            <div style={{
+              width: 8, height: 8, borderRadius: '50%',
+              background: 'var(--success)',
+              boxShadow: '0 0 6px rgba(22,163,74,0.4)',
+              animation: 'cruzPulse 2s ease-in-out infinite',
+            }} />
+            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' }}>
+              RZ trabajando
+            </div>
           </div>
-        </div>
-        {pulseLoading ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {[0, 1, 2].map(i => (
-              <div key={i} className="skel" style={{ height: 40, borderRadius: 8 }} />
-            ))}
-          </div>
-        ) : pulse.length === 0 ? (
-          <div style={{ fontSize: 13, color: 'var(--text-muted)', padding: '12px 0' }}>
-            Sistema operativo. Sin eventos recientes.
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {pulse.map(item => (
+          {pulseLoading ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {[0, 1, 2].map(i => (
+                <div key={i} className="skel" style={{ height: 40, borderRadius: 8 }} />
+              ))}
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {freshPulse.map(item => (
+                <Link
+                  key={item.id}
+                  href={item.href}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 12,
+                    padding: '10px 12px', borderRadius: 8, textDecoration: 'none',
+                    transition: 'background 100ms',
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.background = '#F5F4F0' }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+                >
+                  <div style={{
+                    width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
+                    background: item.color,
+                  }} />
+                  <div style={{ flex: 1, minWidth: 0, fontSize: 13, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {item.text}
+                  </div>
+                  <span style={{ fontSize: 11, color: 'var(--text-muted)', flexShrink: 0, fontFamily: 'var(--font-mono)' }}>
+                    {fmtRelativeTime(item.timestamp)}
+                  </span>
+                </Link>
+              ))}
               <Link
-                key={item.id}
-                href={item.href}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 12,
-                  padding: '10px 12px', borderRadius: 8, textDecoration: 'none',
-                  transition: 'background 100ms',
-                }}
-                onMouseEnter={e => { e.currentTarget.style.background = '#F5F4F0' }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+                href="/actividad"
+                style={{ fontSize: 13, color: 'var(--gold-dark, #8B6914)', fontWeight: 600, padding: '8px 12px', textDecoration: 'none' }}
               >
-                <div style={{
-                  width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
-                  background: item.color,
-                }} />
-                <div style={{ flex: 1, minWidth: 0, fontSize: 13, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {item.text}
-                </div>
-                <span style={{ fontSize: 11, color: 'var(--text-muted)', flexShrink: 0, fontFamily: 'var(--font-mono)' }}>
-                  {fmtRelativeTime(item.timestamp)}
-                </span>
+                Ver toda la actividad &rarr;
               </Link>
-            ))}
-            <Link
-              href="/actividad"
-              style={{ fontSize: 13, color: 'var(--gold-dark, #8B6914)', fontWeight: 600, padding: '8px 12px', textDecoration: 'none' }}
-            >
-              Ver toda la actividad &rarr;
-            </Link>
-          </div>
-        )}
-      </div>
+            </div>
+          )}
+        </div>
+      )}
 
       <style>{`
         @keyframes cruzPulse {

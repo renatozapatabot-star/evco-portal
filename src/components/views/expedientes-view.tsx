@@ -105,7 +105,7 @@ function SummaryCard({
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
         <div style={{ flex: 1, minWidth: 200 }}>
           <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--body-text)', margin: 0 }}>
-            {incompletos} expediente{incompletos !== 1 ? 's' : ''} incompleto{incompletos !== 1 ? 's' : ''}
+            {total - incompletos} de {total} expedientes completos
           </p>
           {/* Progress bar */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 8 }}>
@@ -793,8 +793,8 @@ export function ExpedientesView() {
                                     style={{
                                       fontSize: 10, fontWeight: 600,
                                       padding: '2px 8px', borderRadius: 4,
-                                      background: 'var(--danger-bg)', border: '1px solid #FECACA',
-                                      color: 'var(--danger-text)', whiteSpace: 'nowrap',
+                                      background: 'var(--border, #F5F4F0)', border: '1px solid var(--border, #E8E5E0)',
+                                      color: 'var(--text-secondary, #6B6B6B)', whiteSpace: 'nowrap',
                                     }}
                                   >
                                     {getDocLabel(m)}

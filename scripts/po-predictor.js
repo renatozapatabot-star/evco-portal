@@ -103,15 +103,28 @@ async function main() {
   }
 
   // Step 2: Fetch tráficos with supplier + dates (full historical for patterns)
-  const { data: allTraficos, error: tErr } = await supabase.from('traficos')
-    .select('trafico, company_id, proveedores, descripcion_mercancia, fecha_llegada, importe_total, peso_bruto')
-    .not('proveedores', 'is', null)
-    .not('fecha_llegada', 'is', null)
-    .gte('fecha_llegada', '2023-01-01')
-    .order('fecha_llegada', { ascending: true })
-    .limit(50000)
+  // Supabase PostgREST caps at 1,000 rows per request — paginate with .range()
+  const allTraficos = []
+  {
+    const BATCH = 1000
+    let offset = 0
+    while (true) {
+      const { data, error } = await supabase.from('traficos')
+        .select('trafico, company_id, proveedores, descripcion_mercancia, fecha_llegada, importe_total, peso_bruto')
+        .not('proveedores', 'is', null)
+        .not('fecha_llegada', 'is', null)
+        .gte('fecha_llegada', '2023-01-01')
+        .order('fecha_llegada', { ascending: true })
+        .range(offset, offset + BATCH - 1)
+      if (error) { console.error(`  tráficos fetch error at offset ${offset}:`, error.message); break }
+      if (!data || data.length === 0) break
+      allTraficos.push(...data)
+      offset += BATCH
+      if (data.length < BATCH) break
+    }
+  }
 
-  if (tErr || !allTraficos?.length) {
+  if (!allTraficos.length) {
     console.log('  No tráficos with supplier data.')
     await tg(`🔮 <b>${SCRIPT_NAME}</b> — sin datos de tráficos.`)
     return
@@ -119,12 +132,25 @@ async function main() {
   console.log(`  ${allTraficos.length} tráficos cargados`)
 
   // Step 3: Fetch financial data (dedup by referencia to avoid 15x inflation)
-  const { data: allFacturas } = await supabase.from('aduanet_facturas')
-    .select('referencia, clave_cliente, proveedor, valor_usd, dta, igi, iva, fecha_pago')
-    .not('proveedor', 'is', null)
-    .not('valor_usd', 'is', null)
-    .gte('fecha_pago', '2023-01-01')
-    .limit(10000)
+  // Same pagination — PostgREST 1,000-row cap applies here too
+  let allFacturas = []
+  {
+    const BATCH = 1000
+    let offset = 0
+    while (true) {
+      const { data, error } = await supabase.from('aduanet_facturas')
+        .select('referencia, clave_cliente, proveedor, valor_usd, dta, igi, iva, fecha_pago')
+        .not('proveedor', 'is', null)
+        .not('valor_usd', 'is', null)
+        .gte('fecha_pago', '2023-01-01')
+        .range(offset, offset + BATCH - 1)
+      if (error) { console.error(`  facturas fetch error at offset ${offset}:`, error.message); break }
+      if (!data || data.length === 0) break
+      allFacturas.push(...data)
+      offset += BATCH
+      if (data.length < BATCH) break
+    }
+  }
 
   // Dedup facturas by referencia
   const seenRef = new Set()

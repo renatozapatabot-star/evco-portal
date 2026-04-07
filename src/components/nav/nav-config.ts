@@ -87,6 +87,8 @@ export const INTERNAL_GROUPS: NavGroup[] = [
       { href: '/excepciones',  label: 'Excepciones',  icon: Search },
       { href: '/ahorro',       label: 'Ahorro',       icon: DollarSign },
       { href: '/negociacion',  label: 'Negociación',  icon: Users2 },
+      { href: '/plantillas-doc', label: 'Red Docs', icon: FileText },
+      { href: '/inteligencia-competitiva', label: 'Competencia', icon: BarChart3 },
       { href: '/simulador',    label: 'Simulador',    icon: BarChart3 },
     ],
   },
@@ -208,6 +210,8 @@ export const ADMIN_ONLY_ROUTES = [
   '/riesgo-auditoria',
   '/ahorro',
   '/negociacion',
+  '/plantillas-doc',
+  '/inteligencia-competitiva',
   '/simulador',
   '/archivos',
 ] as const

@@ -247,8 +247,15 @@ export function ReportesView() {
   const filteredRows = useMemo(() => {
     let out = rows
     if (companyFilter) out = out.filter(r => r.company_id === companyFilter)
-    if (dateFrom) out = out.filter(r => (r.fecha_llegada || '') >= dateFrom)
-    if (dateTo) out = out.filter(r => (r.fecha_llegada || '') <= dateTo)
+    // Normalize date range: swap if dateFrom > dateTo
+    let from = dateFrom
+    let to = dateTo
+    if (from && to && from > to) {
+      from = dateTo
+      to = dateFrom
+    }
+    if (from) out = out.filter(r => (r.fecha_llegada || '') >= from)
+    if (to) out = out.filter(r => (r.fecha_llegada || '') <= to)
     return out
   }, [rows, companyFilter, dateFrom, dateTo])
 
@@ -289,7 +296,7 @@ export function ReportesView() {
         const prev = suppMap.get(name) || { count: 0, totalValue: 0, tmecCount: 0 }
         prev.count++
         prev.totalValue += Number(t.importe_total) || 0
-        const reg = t.regimen
+        const reg = (t.regimen || '').toUpperCase()
         if (reg === 'ITE' || reg === 'ITR' || reg === 'IMD') prev.tmecCount++
         suppMap.set(name, prev)
       })

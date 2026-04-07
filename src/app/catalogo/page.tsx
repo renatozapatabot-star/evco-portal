@@ -225,6 +225,7 @@ export default function CatalogoPage() {
                     {g.traficos.slice(0, 3).map(t => (
                       <Link key={t} href={`/traficos/${encodeURIComponent(t)}`}
                         onClick={e => e.stopPropagation()}
+                        title={t}
                         className="font-mono" style={{
                           fontSize: 10, fontWeight: 600, color: 'var(--info, #2563EB)',
                           textDecoration: 'none', background: '#EFF6FF',
@@ -275,6 +276,7 @@ export default function CatalogoPage() {
                         {g.traficos.slice(0, 3).map(t => (
                           <Link key={t} href={`/traficos/${encodeURIComponent(t)}`}
                             onClick={e => e.stopPropagation()}
+                            title={t}
                             className="font-mono" style={{
                               fontSize: 10, fontWeight: 600, color: 'var(--info, #2563EB)',
                               textDecoration: 'none', background: '#EFF6FF',

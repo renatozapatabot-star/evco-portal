@@ -258,7 +258,7 @@ function TraficosContent() {
 
       <div className="table-shell" style={!loading && !fetchError && rows.length > 0 ? { borderTopLeftRadius: 0, borderTopRightRadius: 0 } : undefined}>
         <div className="table-toolbar" style={{ justifyContent: 'flex-end' }}>
-          <div className="toolbar-search">
+          <div className="toolbar-search" style={{ minHeight: 60 }}>
             <Search size={12} style={{ color: 'var(--slate-400)', flexShrink: 0 }} />
             <input placeholder="Buscar tráfico, pedimento o referencia…" value={searchInput}
               onChange={e => setSearchInput(e.target.value)} aria-label="Buscar tráficos" />

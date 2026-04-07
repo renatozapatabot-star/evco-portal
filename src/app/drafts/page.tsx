@@ -113,7 +113,7 @@ export default function DraftsPage() {
 
       {loading ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {[0, 1, 2].map(i => <div key={i} className="skeleton-shimmer" style={{ height: 80, borderRadius: 'var(--radius-md)' }} />)}
+          {[0, 1, 2].map(i => <div key={i} className="skeleton-shimmer" style={{ height: 120, borderRadius: 'var(--radius-md)' }} />)}
         </div>
       ) : drafts.length === 0 ? (
         <EmptyState icon="✅" title="Sin borradores pendientes" description="Todos los borradores han sido revisados" />

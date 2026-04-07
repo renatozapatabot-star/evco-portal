@@ -67,6 +67,12 @@ function dwellColor(days: number): string {
   return T.redBorder
 }
 
+function dwellTextColor(days: number): string {
+  if (days < 1) return T.green
+  if (days <= 2) return T.amber
+  return T.red
+}
+
 /* ── Component ── */
 
 export default function BodegaPage() {
@@ -238,8 +244,8 @@ export default function BodegaPage() {
 
       {/* ═══ TAB 1 — Llegadas ═══ */}
       {tab === 'llegadas' && (
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }} aria-label="Llegadas de mercancía">
+        <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+          <table style={{ width: '100%', minWidth: 520, borderCollapse: 'collapse' }} aria-label="Llegadas de mercancía">
             <thead>
               <tr>
                 {['Fecha', 'Entrada', 'Tráfico', 'Bultos', 'Peso (kg)'].map(h => (
@@ -312,6 +318,7 @@ export default function BodegaPage() {
             {enBodega.map(e => {
               const days = daysSince(e.fecha_llegada_mercancia)
               const borderColor = dwellColor(days)
+              const textColor = dwellTextColor(days)
               return (
                 <div key={e.cve_entrada} style={{
                   background: T.card,
@@ -329,7 +336,7 @@ export default function BodegaPage() {
                     <div style={{
                       fontSize: 28, fontWeight: 900, lineHeight: 1,
                       fontFamily: 'var(--font-jetbrains-mono)',
-                      color: borderColor,
+                      color: textColor,
                     }}>
                       {days}<span style={{ fontSize: 11, fontWeight: 600, color: T.textMuted }}>d</span>
                     </div>

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useMemo } from 'react'
-import { Search, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Search, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react'
 import { getCookieValue } from '@/lib/client-config'
 import { fmtId, fmtDesc, fmtDateShort, fmtPedimentoShort } from '@/lib/format-utils'
 import { useIsMobile } from '@/hooks/use-mobile'
@@ -217,7 +217,7 @@ export default function ExpedientesPage() {
 
       <div className="table-shell" style={!loading && !fetchError && rows.length > 0 ? { borderTopLeftRadius: 0, borderTopRightRadius: 0 } : undefined}>
         <div className="table-toolbar" style={{ justifyContent: 'flex-end' }}>
-          <div className="toolbar-search">
+          <div className="toolbar-search" style={{ minHeight: 60 }}>
             <Search size={12} style={{ color: 'var(--slate-400)', flexShrink: 0 }} />
             <input placeholder="Tráfico, pedimento..." value={searchInput}
               onChange={e => setSearchInput(e.target.value)} aria-label="Buscar expedientes" />
@@ -245,11 +245,14 @@ export default function ExpedientesPage() {
                         <span className={`m-card-dot ${isCruzado ? 'm-card-dot--success' : 'm-card-dot--warning'}`} />
                         <span className="m-card-id">{fmtId(r.trafico)}</span>
                       </div>
-                      <DocCompleteness present={r.docCount} />
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <DocCompleteness present={r.docCount} />
+                        <ChevronDown size={14} style={{ color: 'var(--text-muted)', transition: 'transform 150ms', transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)', flexShrink: 0 }} />
+                      </div>
                     </div>
                     <div className="m-card-bottom">
                       {r.pedimento && <span className="ped-pill" style={{ fontSize: 11, padding: '2px 7px' }}>{fmtPedimentoShort(r.pedimento)}</span>}
-                      <span className="m-card-meta">{r.fecha_llegada ? fmtDateShort(r.fecha_llegada) : '—'}</span>
+                      <span className="m-card-meta" style={{ fontFamily: 'var(--font-jetbrains-mono, var(--font-mono))' }}>{r.fecha_llegada ? fmtDateShort(r.fecha_llegada) : '—'}</span>
                     </div>
                   </button>
                   {isExpanded && (

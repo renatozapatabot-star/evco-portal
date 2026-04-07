@@ -144,7 +144,7 @@ export default function EntradasPage() {
 
       <div className="table-shell">
         <div className="table-toolbar" style={{ justifyContent: 'flex-end' }}>
-          <div className="toolbar-search">
+          <div className="toolbar-search" style={{ minHeight: 60 }}>
             <Search size={12} style={{ color: 'var(--slate-400)', flexShrink: 0 }} />
             <input
               placeholder="Entrada, tráfico, descripción..."
@@ -193,7 +193,7 @@ export default function EntradasPage() {
                 onClick={() => router.push(r.trafico ? `/traficos/${encodeURIComponent(fmtTrafico(r.trafico))}` : `/entradas/${r.cve_entrada}`)}
                 style={{
                   background: 'var(--bg-card)', border: '1px solid var(--border)',
-                  borderRadius: 10, padding: '14px 16px', cursor: 'pointer', minHeight: 60,
+                  borderRadius: 10, padding: '14px 16px', cursor: 'pointer', minHeight: 72,
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>

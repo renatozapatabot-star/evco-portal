@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { createClient } from '@supabase/supabase-js'
-import { Upload, CheckCircle, XCircle, ChevronDown } from 'lucide-react'
+import { Upload, CheckCircle, XCircle, ChevronDown, Download, Trash2 } from 'lucide-react'
 import { getClientNameCookie } from '@/lib/client-config'
 import { ErrorCard } from '@/components/ui/ErrorCard'
 
@@ -187,13 +187,60 @@ export function DocumentosView() {
                     </div>
                   </div>
 
-                  {/* Status badge */}
-                  <span style={{
-                    fontSize: 12, fontWeight: 600, flexShrink: 0,
-                    color: complete ? 'var(--success, #16A34A)' : 'var(--gold-dark, #8B6914)',
-                  }}>
-                    {complete ? (up ? 'Recibido' : 'Vigente') : 'Pendiente'}
-                  </span>
+                  {/* Actions + Status badge */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                    {complete && (() => {
+                      const companyDoc = companyDocs.find(cd => cd.tipo_documento?.toLowerCase().includes(doc.id.toLowerCase()))
+                      const fileUrl = (companyDoc as Record<string, unknown>)?.file_url as string | undefined
+                      return fileUrl ? (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); window.open(fileUrl, '_blank') }}
+                          title="Descargar"
+                          style={{
+                            background: 'none', border: 'none', cursor: 'pointer', padding: 4,
+                            color: 'var(--text-muted)', display: 'flex', alignItems: 'center',
+                          }}
+                        >
+                          <Download size={16} />
+                        </button>
+                      ) : null
+                    })()}
+                    {complete && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          // TODO: Implement actual Supabase delete logic
+                          // 1. Show confirmation dialog
+                          // 2. Delete from company_documents table
+                          // 3. Delete file from Supabase Storage
+                          // 4. Refresh document list
+                          if (window.confirm(`Eliminar documento: ${doc.label}?`)) {
+                            // Delete from local uploaded state if applicable
+                            if (uploaded[doc.id]) {
+                              setUploaded(prev => {
+                                const next = { ...prev }
+                                delete next[doc.id]
+                                return next
+                              })
+                            }
+                          }
+                        }}
+                        title="Eliminar"
+                        style={{
+                          background: 'none', border: 'none', cursor: 'pointer', padding: 4,
+                          color: 'var(--text-muted)', display: 'flex', alignItems: 'center',
+                        }}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    )}
+                    <span style={{
+                      fontSize: 12, fontWeight: 600,
+                      color: complete ? 'var(--success, #16A34A)' : 'var(--gold-dark, #8B6914)',
+                    }}>
+                      {complete ? (up ? 'Recibido' : 'Vigente') : 'Pendiente'}
+                    </span>
+                  </div>
                 </div>
               )
             })}
@@ -202,7 +249,7 @@ export function DocumentosView() {
       </div>
 
       {/* Upload zone — RIGHT column */}
-      <div style={{ position: 'sticky', top: 80 }}>
+      <div style={{ position: isMobile ? 'relative' : 'sticky', top: isMobile ? undefined : 80 }}>
         {!uploadFile ? (
           <div
             onClick={() => fileInputRef.current?.click()}

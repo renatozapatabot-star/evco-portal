@@ -2,9 +2,10 @@
 
 import { useEffect, useState, useMemo } from 'react'
 import { useIsMobile } from '@/hooks/use-mobile'
-import { Search } from 'lucide-react'
+import { Search, Download, ArrowUpDown } from 'lucide-react'
 import { getCookieValue } from '@/lib/client-config'
 import { fmtUSDCompact } from '@/lib/format-utils'
+import { downloadCSV } from '@/lib/export-utils'
 import { SupplierKPIs } from '@/components/proveedores/SupplierKPIs'
 import { SupplierTable } from '@/components/proveedores/SupplierTable'
 import type { SupplierAgg } from '@/components/proveedores/SupplierDetail'
@@ -40,6 +41,7 @@ export default function ProveedoresPage() {
   const [search, setSearch] = useState('')
   const [expandedSupplier, setExpandedSupplier] = useState<string | null>(null)
   const [clientFilter, setClientFilter] = useState<string>('all')
+  const [sortBy, setSortBy] = useState<'value' | 'traficos' | 'name'>('value')
 
   const [userRole, setUserRole] = useState('')
   const [companyId, setCompanyId] = useState('')
@@ -167,7 +169,12 @@ export default function ProveedoresPage() {
       const withBoth = s.traficos.filter(t => t.fecha_llegada && (t as Record<string, unknown>).fecha_cruce)
       if (withBoth.length > 0) {
         const totalDays = withBoth.reduce((sum, t) => {
-          const d = (new Date((t as Record<string, unknown>).fecha_cruce as string).getTime() - new Date(t.fecha_llegada!).getTime()) / 86400000
+          // Use America/Chicago timezone for date comparison per CRUZ domain rules
+          const cruceStr = String((t as Record<string, unknown>).fecha_cruce)
+          const llegadaStr = String(t.fecha_llegada)
+          const cruceDate = new Date(cruceStr + (cruceStr.includes('T') ? '' : 'T12:00:00-06:00'))
+          const llegadaDate = new Date(llegadaStr + (llegadaStr.includes('T') ? '' : 'T12:00:00-06:00'))
+          const d = (cruceDate.getTime() - llegadaDate.getTime()) / 86400000
           return sum + Math.max(0, d)
         }, 0)
         s.avgDeliveryDays = Math.round((totalDays / withBoth.length) * 10) / 10
@@ -190,15 +197,22 @@ export default function ProveedoresPage() {
     return arr
   }, [rows, clientFilter, supplierLookup])
 
-  // Filter by search
+  // Filter by search + sort
   const filtered = useMemo(() => {
-    if (!search.trim()) return suppliers
-    const q = search.toLowerCase()
-    return suppliers.filter(s =>
-      s.name.toLowerCase().includes(q) ||
-      (s.country ?? '').toLowerCase().includes(q)
-    )
-  }, [suppliers, search])
+    let result = suppliers
+    if (search.trim()) {
+      const q = search.toLowerCase()
+      result = result.filter(s =>
+        s.name.toLowerCase().includes(q) ||
+        (s.country ?? '').toLowerCase().includes(q)
+      )
+    }
+    const sorted = [...result]
+    if (sortBy === 'value') sorted.sort((a, b) => b.totalValue - a.totalValue)
+    else if (sortBy === 'traficos') sorted.sort((a, b) => b.traficoCount - a.traficoCount)
+    else if (sortBy === 'name') sorted.sort((a, b) => a.name.localeCompare(b.name, 'es'))
+    return sorted
+  }, [suppliers, search, sortBy])
 
   const totalValue = useMemo(() => suppliers.reduce((s, r) => s + r.totalValue, 0), [suppliers])
   const totalTraficoCount = useMemo(() => new Set(suppliers.flatMap(s => s.traficos.map(t => t.trafico))).size, [suppliers])
@@ -228,11 +242,11 @@ export default function ProveedoresPage() {
       )}
 
       {/* Controls */}
-      <div style={{ display: 'flex', gap: 12, marginBottom: 20, alignItems: 'center' }}>
+      <div style={{ display: 'flex', gap: 12, marginBottom: 12, alignItems: 'center', flexWrap: 'wrap' }}>
         <div style={{
           display: 'flex', alignItems: 'center', gap: 8,
           background: T.surface, border: `1px solid ${T.border}`, borderRadius: 8,
-          padding: '0 12px', height: 60, flex: 1, maxWidth: 360,
+          padding: '0 12px', height: 60, flex: 1, maxWidth: 360, minWidth: 180,
         }}>
           <Search size={14} style={{ color: T.textMuted }} />
           <input
@@ -263,6 +277,57 @@ export default function ProveedoresPage() {
             ))}
           </select>
         )}
+
+        <button
+          onClick={() => {
+            const csvData = filtered.map(s => ({
+              Proveedor: s.name,
+              'Pais': s.country ?? '',
+              'Traficos': s.traficoCount,
+              'Valor USD': s.totalValue.toFixed(2),
+              'T-MEC %': s.tmecRate,
+              'Entrega Promedio': s.avgDeliveryDays,
+            }))
+            downloadCSV(csvData, 'proveedores')
+          }}
+          disabled={filtered.length === 0}
+          style={{
+            background: T.surface, border: `1px solid ${T.border}`, borderRadius: 8,
+            padding: '0 16px', height: 60, color: T.textSecondary, fontSize: 13,
+            fontFamily: 'var(--font-geist-sans)', cursor: filtered.length > 0 ? 'pointer' : 'default',
+            display: 'flex', alignItems: 'center', gap: 6,
+            opacity: filtered.length === 0 ? 0.5 : 1,
+          }}
+        >
+          <Download size={14} />
+          CSV
+        </button>
+      </div>
+
+      {/* Sort buttons */}
+      <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+        {([
+          { key: 'value' as const, label: 'Valor' },
+          { key: 'traficos' as const, label: 'Traficos' },
+          { key: 'name' as const, label: 'Nombre' },
+        ]).map(opt => (
+          <button
+            key={opt.key}
+            onClick={() => setSortBy(opt.key)}
+            style={{
+              background: sortBy === opt.key ? 'var(--gold, #C9A84C)' : T.surface,
+              color: sortBy === opt.key ? '#FFFFFF' : T.textSecondary,
+              border: `1px solid ${sortBy === opt.key ? 'var(--gold, #C9A84C)' : T.border}`,
+              borderRadius: 8, padding: '0 14px', height: 36,
+              fontSize: 12, fontWeight: 600, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', gap: 4,
+              fontFamily: 'var(--font-geist-sans)',
+            }}
+          >
+            <ArrowUpDown size={12} />
+            {opt.label}
+          </button>
+        ))}
       </div>
 
       {/* Table */}

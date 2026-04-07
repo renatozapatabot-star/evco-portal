@@ -62,7 +62,7 @@ export default function WarRoom() {
       </div>
 
       {/* 4 Quadrants */}
-      <div style={{ flex: 1, display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gridTemplateRows: isMobile ? 'auto' : '1fr 1fr', gap: 1, background: 'var(--border)', overflowY: isMobile ? 'auto' : 'hidden' }}>
+      <div style={{ flex: 1, display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gridTemplateRows: isMobile ? 'auto' : '1fr 1fr', gap: 1, background: 'var(--border)', overflowY: isMobile ? 'auto' : 'hidden', ...(isMobile ? { maxHeight: 'calc(100vh - 120px)' } : {}) }}>
         {/* Q1: Active Tráficos */}
         <div style={{ background: 'var(--bg-card)', padding: 20, overflow: 'auto' }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>

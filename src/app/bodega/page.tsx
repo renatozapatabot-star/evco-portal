@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useMemo } from 'react'
-import { Download } from 'lucide-react'
+import { Download, Search } from 'lucide-react'
 import { getCookieValue, getCompanyIdCookie } from '@/lib/client-config'
 import { fmtDate, fmtKg } from '@/lib/format-utils'
 import { useIsMobile } from '@/hooks/use-mobile'
@@ -85,6 +85,7 @@ export default function BodegaPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [tab, setTab] = useState<TabKey>('llegadas')
+  const [bodegaSearch, setBodegaSearch] = useState('')
 
   function loadData() {
     const companyId = getCompanyIdCookie()
@@ -103,13 +104,14 @@ export default function BodegaPage() {
     ])
       .then(([entradaData, traficoData]) => {
         setRows(entradaData.data ?? [])
-        // Build set of tráficos that have already crossed
+        // Build set of tráficos that have already crossed or completed
         const crossed = new Set<string>()
         const traficos = Array.isArray(traficoData.data) ? traficoData.data : []
         traficos.forEach((t: { trafico?: string; fecha_cruce?: string; estatus?: string }) => {
-          if (t.trafico && (t.fecha_cruce || (t.estatus || '').toLowerCase().includes('cruz'))) {
-            crossed.add(t.trafico)
-          }
+          if (!t.trafico) return
+          const s = (t.estatus || '').toLowerCase()
+          const isComplete = t.fecha_cruce || s.includes('cruz') || s.includes('complet') || s.includes('pagado') || s.includes('libera')
+          if (isComplete) crossed.add(t.trafico)
         })
         setCrossedSet(crossed)
       })
@@ -129,12 +131,16 @@ export default function BodegaPage() {
     [rows]
   )
 
-  const enBodega = useMemo(
-    () => rows
-      .filter(e => e.trafico != null && !crossedSet.has(e.trafico))
-      .sort((a, b) => daysSince(b.fecha_llegada_mercancia) - daysSince(a.fecha_llegada_mercancia)),
-    [rows, crossedSet]
-  )
+  const enBodega = useMemo(() => {
+    const cutoff = Date.now() - 90 * 86400000 // 90 days max — older entries are not in the warehouse
+    return rows
+      .filter(e => {
+        if (!e.trafico || crossedSet.has(e.trafico)) return false
+        const arrived = e.fecha_llegada_mercancia ? new Date(e.fecha_llegada_mercancia).getTime() : 0
+        return arrived >= cutoff
+      })
+      .sort((a, b) => daysSince(b.fecha_llegada_mercancia) - daysSince(a.fecha_llegada_mercancia))
+  }, [rows, crossedSet])
 
   const danos = useMemo(
     () => rows.filter(e => e.mercancia_danada || e.tiene_faltantes),
@@ -247,7 +253,25 @@ export default function BodegaPage() {
 
       {/* ═══ TAB 1 — Llegadas ═══ */}
       {tab === 'llegadas' && (
-        <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+        <div>
+          {/* Search */}
+          <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8, padding: '0 4px' }}>
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 8, flex: 1,
+              background: T.card, border: `1px solid ${T.border}`, borderRadius: T.radius,
+              padding: '0 14px', height: 48,
+            }}>
+              <Search size={14} style={{ color: T.textMuted, flexShrink: 0 }} />
+              <input
+                placeholder="Buscar entrada, tráfico..."
+                value={bodegaSearch}
+                onChange={e => setBodegaSearch(e.target.value)}
+                style={{ border: 'none', outline: 'none', background: 'transparent', fontSize: 13, color: T.textPrimary, width: '100%' }}
+                aria-label="Buscar en inventario"
+              />
+            </div>
+          </div>
+          <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
           <table style={{ width: '100%', minWidth: 520, borderCollapse: 'collapse' }} aria-label="Llegadas de mercancía">
             <thead>
               <tr>
@@ -270,7 +294,11 @@ export default function BodegaPage() {
                     <EmptyState icon="📦" title="Sin entradas registradas" description="Las llegadas de mercancía aparecerán aquí" cta={{ label: 'Ver entradas', href: '/entradas' }} />
                   </td>
                 </tr>
-              ) : rows.map(e => {
+              ) : rows.filter(e => {
+                if (!bodegaSearch.trim()) return true
+                const q = bodegaSearch.toLowerCase()
+                return (e.cve_entrada || '').toLowerCase().includes(q) || (e.trafico || '').toLowerCase().includes(q)
+              }).map(e => {
                 const badge = statusBadge(e)
                 return (
                   <tr key={e.cve_entrada} style={{ borderBottom: `1px solid ${T.border}` }}>
@@ -303,6 +331,7 @@ export default function BodegaPage() {
               })}
             </tbody>
           </table>
+          </div>
         </div>
       )}
 

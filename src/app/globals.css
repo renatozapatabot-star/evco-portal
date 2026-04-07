@@ -148,7 +148,6 @@
 
   /* ── Sidebar ── */
   --sidebar-width: 240px;
-  --sidebar-collapsed: 64px;
 }
 
 /* ── Reset & Base ── */
@@ -233,18 +232,6 @@ body {
   gap: 10px;
 }
 
-.sidebar-logo-mark {
-  display: none;
-  font-size: 20px;
-  font-weight: 800;
-  color: var(--gold, #C9A84C);
-  letter-spacing: 1px;
-}
-
-.cruz-sidebar.collapsed .sidebar-logo-mark {
-  display: block;
-  text-align: center;
-}
 
 .sidebar-logo-text {
   font-size: 20px;
@@ -366,15 +353,6 @@ body {
   font-family: var(--font-mono);
 }
 
-/* ── Sidebar collapsed state ── */
-.cruz-sidebar.collapsed {
-  width: var(--sidebar-collapsed);
-}
-
-.cruz-sidebar.collapsed .sidebar-nav-item {
-  justify-content: center;
-  padding: 10px 0;
-}
 
 /* ── Mobile sidebar overlay (<768px) ── */
 @media (max-width: 767px) {
@@ -389,9 +367,6 @@ body {
   }
   .cruz-main {
     margin-left: 0;
-  }
-  .sidebar-collapse-btn {
-    display: none;
   }
   .sidebar-backdrop {
     position: fixed;
@@ -444,31 +419,6 @@ body {
   }
 }
 
-.sidebar-avatar-center {
-  display: flex;
-  justify-content: center;
-  margin-top: 12px;
-}
-
-.sidebar-collapse-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 8px 12px;
-  margin: 4px 8px;
-  background: transparent;
-  border: none;
-  color: rgba(255,255,255,0.3);
-  cursor: pointer;
-  font-size: 11px;
-  border-radius: var(--radius-sm);
-  transition: color 150ms;
-}
-
-.sidebar-collapse-btn:hover {
-  color: rgba(255,255,255,0.6);
-}
 
 .sidebar-footer-firm {
   font-size: 13px;

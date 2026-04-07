@@ -175,6 +175,32 @@ async function lookupTariffRate(fraccion, supabase) {
   }
 }
 
+// ── Historical DTA lookup ──────────────────────────────────────────────────
+//
+// DTA varies per pedimento (462, 924, 1386, etc.) based on partida count.
+// Partida data is not available, so we use the median historical DTA
+// for same client + regime as the best available estimator.
+// DTA estimado — partidas no disponibles.
+
+async function lookupHistoricalDTA(claveCliente, regimen, supabase) {
+  const { data } = await supabase
+    .from('aduanet_facturas')
+    .select('dta')
+    .eq('clave_cliente', claveCliente)
+    .eq('cve_documento', regimen)
+    .gt('dta', 0)
+    .order('fecha_pago', { ascending: false })
+    .limit(50)
+
+  if (!data || data.length < 3) return null // not enough history
+
+  const sorted = data.map(r => r.dta).sort((a, b) => a - b)
+  const mid = Math.floor(sorted.length / 2)
+  return sorted.length % 2 === 0
+    ? Math.round((sorted[mid - 1] + sorted[mid]) / 2)
+    : sorted[mid]
+}
+
 // ── Calculate contributions (cascading IVA — NEVER flat) ────────────────────
 //
 // DTA in Mexico is a FIXED FEE per pedimento, NOT a percentage of valor.
@@ -193,8 +219,9 @@ function calculateContributions(valorUSD, regimen, igiRate, rates, options = {})
   // DTA: ALWAYS a fixed fee per pedimento in Mexican customs (SAT 2024-2026).
   // Standard A1/IN: 462 MXN. IT/ITE/ITR (IMMEX temporal): 408 MXN.
   // Never calculate as percentage of valor — that is fundamentally wrong.
+  // options.dtaOverride: historical median DTA for better multi-partida accuracy.
   const dtaConfig = dtaRates[regimen] || dtaRates['A1'] || {}
-  const dtaAmount = dtaConfig.amount || 462 // MXN fixed fee — NEVER percentage
+  const dtaAmount = options.dtaOverride || dtaConfig.amount || 462
 
   // IGI: percentage of valor_aduana. T-MEC eligibility handled upstream.
   const igiAmount = Math.round(valorMXN * (igiRate || 0) * 100) / 100
@@ -331,8 +358,14 @@ async function runGhostForFactura(factura, supabase, options = {}) {
   const valorUSD = parseFloat(factura.valor_usd) || 0
   if (valorUSD <= 0) flags.push('NO_VALUE')
 
-  // 7. Calculate contributions
-  const contributions = calculateContributions(valorUSD, regimen, igiRate, rates, { tmec: tmecConfirmed })
+  // 7. Look up historical DTA for better multi-partida accuracy
+  const historicalDTA = await lookupHistoricalDTA(factura.clave_cliente, regimen, supabase)
+
+  // 8. Calculate contributions
+  const contributions = calculateContributions(valorUSD, regimen, igiRate, rates, {
+    tmec: tmecConfirmed,
+    dtaOverride: historicalDTA,
+  })
 
   // 8. Validate
   const ghostData = {
@@ -615,6 +648,7 @@ module.exports = {
   findHistoricalMatches,
   classifyWithHaiku,
   lookupTariffRate,
+  lookupHistoricalDTA,
   FIELD_WEIGHTS,
   DEFAULT_TOLERANCES,
 }

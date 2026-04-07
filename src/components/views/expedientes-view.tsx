@@ -374,7 +374,7 @@ export function ExpedientesView() {
 
           chunkDocs?.forEach((d: { pedimento_id: string; doc_type: string | null }) => {
             if (!docMap.has(d.pedimento_id)) docMap.set(d.pedimento_id, new Set())
-            if (d.doc_type) docMap.get(d.pedimento_id)!.add(d.doc_type)
+            if (d.doc_type) docMap.get(d.pedimento_id)!.add(d.doc_type.toLowerCase())
           })
         }
       }
@@ -454,7 +454,7 @@ export function ExpedientesView() {
               if (!docs) return
               const present = new Set(
                 docs
-                  .map((d: { doc_type: string | null }) => d.doc_type)
+                  .map((d: { doc_type: string | null }) => d.doc_type?.toLowerCase())
                   .filter(Boolean) as string[]
               )
               const docsPresent = REQUIRED_DOCS.filter((rd) => present.has(rd)).length

@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { getCompanyIdCookie } from '@/lib/client-config'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { Send, CheckCircle } from 'lucide-react'
 
 const fmtUSD = (n: number) => '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 const fmtMXN = (n: number) => '$' + n.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
@@ -37,6 +38,8 @@ export function CotizacionView() {
   const [form, setForm] = useState({ valor_usd: '50000', tipo_cambio: '17.50', incoterm: 'EXW', flete_usd: '0', seguro_usd: '0', igi_rate: '5', regimen: 'A1', tmec: true, fraccion: '', pais_origen: 'US', peso_kg: '', bultos: '' })
   const [result, setResult] = useState<{ valorUSD: number; tc: number; valorAduanaMXN: number; dta: number; igi: number; iva: number; prev: number; total: number; igiRate: number; tmecSavings: number } | null>(null)
   const [rates, setRates] = useState<{ dta: number; iva: number; tc: number } | null>(null)
+  const [requestSending, setRequestSending] = useState(false)
+  const [requestSent, setRequestSent] = useState(false)
   const set = (k: string, v: string | boolean) => setForm(f => ({ ...f, [k]: v }))
 
   useEffect(() => {
@@ -207,6 +210,58 @@ export function CotizacionView() {
             </>
           )}
         </div>
+      </div>
+
+      {/* Formal quote request */}
+      <div className="card" style={{ padding: 24, marginTop: 24 }}>
+        <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 8 }}>
+          Solicitar cotización formal
+        </h2>
+        <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 16 }}>
+          Envíe los datos del embarque y recibirá una cotización oficial por parte de Renato Zapata &amp; Company.
+        </p>
+
+        {requestSent ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: 16, background: 'rgba(22,163,74,0.06)', borderRadius: 8, border: '1px solid rgba(22,163,74,0.2)' }}>
+            <CheckCircle size={18} style={{ color: 'var(--success)' }} />
+            <span style={{ fontSize: 13, color: 'var(--success)', fontWeight: 600 }}>
+              Solicitud enviada — le responderemos en breve
+            </span>
+          </div>
+        ) : (
+          <button
+            onClick={async () => {
+              setRequestSending(true)
+              try {
+                const res = await fetch('/api/client-requests', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    type: 'quote',
+                    product_description: form.fraccion ? `Fracción ${form.fraccion}` : 'Mercancía general',
+                    fraccion: form.fraccion || null,
+                    origin_country: form.pais_origen || 'US',
+                    estimated_value_usd: parseFloat(form.valor_usd) || null,
+                    incoterm: form.incoterm,
+                    notes: result ? `Estimado calculado: $${result.total.toFixed(2)} MXN total (DTA: $${result.dta.toFixed(2)}, IGI: $${result.igi.toFixed(2)}, IVA: $${result.iva.toFixed(2)})` : null,
+                  }),
+                })
+                if (res.ok) setRequestSent(true)
+              } catch {}
+              setRequestSending(false)
+            }}
+            disabled={requestSending}
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+              width: '100%', padding: '12px 24px', borderRadius: 8,
+              background: 'var(--gold)', border: 'none', color: 'var(--bg-card)',
+              fontSize: 14, fontWeight: 700, cursor: 'pointer', minHeight: 48,
+              fontFamily: 'var(--font-sans)',
+            }}
+          >
+            <Send size={16} /> {requestSending ? 'Enviando...' : 'Solicitar cotización formal'}
+          </button>
+        )}
       </div>
     </div>
   )

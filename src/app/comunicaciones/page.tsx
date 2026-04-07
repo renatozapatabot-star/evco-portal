@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
-import { Send, Inbox, FileText, PenLine, X } from 'lucide-react'
-import { getCompanyIdCookie } from '@/lib/client-config'
+import { Send, Inbox, FileText, PenLine, X, Mail, ArrowLeft, Paperclip, RefreshCw } from 'lucide-react'
+import { getCompanyIdCookie, getCookieValue } from '@/lib/client-config'
 import { fmtDateTime } from '@/lib/format-utils'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -23,7 +23,28 @@ const TEMPLATES = [
   { id: 'custom', name: 'Personalizado', body: '' },
 ]
 
-type Tab = 'inbox' | 'compose' | 'sent' | 'templates'
+type Tab = 'inbox' | 'gmail' | 'compose' | 'sent' | 'templates'
+
+interface GmailMessage {
+  id: string
+  threadId: string
+  from: string
+  subject: string
+  date: string
+  snippet: string
+  isUnread: boolean
+}
+
+interface GmailDetail {
+  id: string
+  threadId: string
+  from: string
+  to: string
+  subject: string
+  date: string
+  body: string
+  attachments: { filename: string; mimeType: string; size: number }[]
+}
 
 export default function ComunicacionesPage() {
   const isMobile = useIsMobile()
@@ -39,6 +60,70 @@ export default function ComunicacionesPage() {
   const [body, setBody] = useState('')
   const [drafting, setDrafting] = useState(false)
   const [sendStatus, setSendStatus] = useState('')
+
+  // Gmail live state
+  const role = getCookieValue('portal_role') || 'client'
+  const isInternal = role === 'broker' || role === 'admin'
+  const [gmailMessages, setGmailMessages] = useState<GmailMessage[]>([])
+  const [gmailLoading, setGmailLoading] = useState(false)
+  const [gmailSearch, setGmailSearch] = useState('')
+  const [selectedEmail, setSelectedEmail] = useState<GmailDetail | null>(null)
+  const [emailLoading, setEmailLoading] = useState(false)
+  const [replyBody, setReplyBody] = useState('')
+  const [replying, setReplying] = useState(false)
+  const [replyStatus, setReplyStatus] = useState('')
+
+  async function loadGmail(q?: string) {
+    setGmailLoading(true)
+    try {
+      const params = new URLSearchParams({ action: 'list', limit: '30' })
+      if (q) params.set('q', q)
+      const res = await fetch(`/api/gmail?${params}`)
+      const json = await res.json()
+      setGmailMessages(json.data || [])
+    } catch { setGmailMessages([]) }
+    setGmailLoading(false)
+  }
+
+  async function readEmail(id: string) {
+    setEmailLoading(true)
+    setSelectedEmail(null)
+    try {
+      const res = await fetch(`/api/gmail?action=read&id=${id}`)
+      const json = await res.json()
+      setSelectedEmail(json.data || null)
+    } catch {}
+    setEmailLoading(false)
+  }
+
+  async function sendReply() {
+    if (!replyBody.trim() || !selectedEmail) return
+    setReplying(true)
+    setReplyStatus('')
+    try {
+      const res = await fetch('/api/gmail/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: selectedEmail.from,
+          subject: `Re: ${selectedEmail.subject}`,
+          body: replyBody,
+          threadId: selectedEmail.threadId,
+        }),
+      })
+      if (res.ok) {
+        setReplyStatus('✅ Enviado')
+        setReplyBody('')
+        setTimeout(() => setReplyStatus(''), 3000)
+      } else {
+        const err = await res.json()
+        setReplyStatus(`❌ ${err.error}`)
+      }
+    } catch {
+      setReplyStatus('❌ Error de conexión')
+    }
+    setReplying(false)
+  }
 
   useEffect(() => {
     supabase.from('communication_events').select('*').order('scanned_at', { ascending: false }).limit(200)
@@ -98,6 +183,7 @@ export default function ComunicacionesPage() {
 
   const tabs: { key: Tab; label: string; icon: React.ElementType }[] = [
     { key: 'inbox', label: `Bandeja (${events.length})`, icon: Inbox },
+    ...(isInternal ? [{ key: 'gmail' as Tab, label: 'Gmail', icon: Mail }] : []),
     { key: 'compose', label: 'Redactar', icon: PenLine },
     { key: 'sent', label: 'Enviados', icon: Send },
     { key: 'templates', label: 'Plantillas', icon: FileText },
@@ -178,6 +264,182 @@ export default function ComunicacionesPage() {
             </button>
             {sendStatus && <span className="text-[12px] font-medium" style={{ color: 'var(--green)' }}>{sendStatus}</span>}
           </div>
+        </div>
+      )}
+
+      {/* GMAIL TAB */}
+      {tab === 'gmail' && isInternal && (
+        <div>
+          {selectedEmail ? (
+            /* Email detail view */
+            <div>
+              <button
+                onClick={() => setSelectedEmail(null)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  fontSize: 13, color: 'var(--text-secondary)', marginBottom: 12,
+                  padding: '4px 0', minHeight: 44,
+                }}
+              >
+                <ArrowLeft size={14} /> Volver a la bandeja
+              </button>
+              <div className="card" style={{ padding: 24 }}>
+                <h2 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 8 }}>
+                  {selectedEmail.subject || '(sin asunto)'}
+                </h2>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16, flexWrap: 'wrap', gap: 8 }}>
+                  <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+                    De: <strong>{selectedEmail.from}</strong>
+                  </span>
+                  <span style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                    {selectedEmail.date}
+                  </span>
+                </div>
+
+                {/* Attachments */}
+                {selectedEmail.attachments.length > 0 && (
+                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 16 }}>
+                    {selectedEmail.attachments.map((a, i) => (
+                      <span key={i} style={{
+                        display: 'flex', alignItems: 'center', gap: 4,
+                        padding: '4px 10px', borderRadius: 6,
+                        background: 'var(--slate-100)', fontSize: 11, color: 'var(--text-secondary)',
+                      }}>
+                        <Paperclip size={10} /> {a.filename} ({Math.round(a.size / 1024)}KB)
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* Body */}
+                <div style={{
+                  fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.6,
+                  whiteSpace: 'pre-wrap', borderTop: '1px solid var(--border)',
+                  paddingTop: 16, maxHeight: 500, overflowY: 'auto',
+                }}>
+                  {emailLoading ? 'Cargando...' : selectedEmail.body}
+                </div>
+
+                {/* Reply */}
+                <div style={{ marginTop: 20, borderTop: '1px solid var(--border)', paddingTop: 16 }}>
+                  <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.07em', display: 'block', marginBottom: 6 }}>
+                    Responder
+                  </label>
+                  <textarea
+                    value={replyBody}
+                    onChange={e => setReplyBody(e.target.value)}
+                    placeholder="Escribe tu respuesta..."
+                    rows={4}
+                    style={{
+                      width: '100%', border: '1px solid var(--border)', borderRadius: 8,
+                      padding: '10px 12px', fontSize: 13, color: 'var(--text-primary)',
+                      fontFamily: 'inherit', resize: 'vertical', outline: 'none',
+                      background: 'var(--bg-main)', boxSizing: 'border-box',
+                    }}
+                  />
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 8 }}>
+                    <button
+                      onClick={sendReply}
+                      disabled={!replyBody.trim() || replying}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 6,
+                        padding: '8px 20px', borderRadius: 8, fontSize: 13, fontWeight: 700,
+                        background: replyBody.trim() ? 'var(--gold)' : 'var(--border)',
+                        border: 'none', color: replyBody.trim() ? 'var(--bg-card)' : 'var(--text-muted)',
+                        cursor: replyBody.trim() ? 'pointer' : 'default', minHeight: 40,
+                      }}
+                    >
+                      <Send size={14} /> {replying ? 'Enviando...' : 'Enviar respuesta'}
+                    </button>
+                    {replyStatus && <span style={{ fontSize: 12, color: replyStatus.startsWith('✅') ? 'var(--green)' : 'var(--status-red)' }}>{replyStatus}</span>}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            /* Email list */
+            <div>
+              <div style={{ display: 'flex', gap: 8, marginBottom: 12, alignItems: 'center' }}>
+                <input
+                  value={gmailSearch}
+                  onChange={e => setGmailSearch(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && loadGmail(gmailSearch)}
+                  placeholder="Buscar en Gmail..."
+                  style={{
+                    flex: 1, border: '1px solid var(--border)', borderRadius: 8,
+                    padding: '10px 12px', fontSize: 13, color: 'var(--text-primary)',
+                    background: 'var(--bg-card)', outline: 'none', fontFamily: 'inherit',
+                    minHeight: 40,
+                  }}
+                />
+                <button
+                  onClick={() => loadGmail(gmailSearch)}
+                  disabled={gmailLoading}
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    width: 40, height: 40, borderRadius: 8,
+                    background: 'var(--gold)', border: 'none', cursor: 'pointer',
+                  }}
+                >
+                  <RefreshCw size={14} style={{ color: 'var(--bg-card)' }} />
+                </button>
+              </div>
+
+              {gmailLoading ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {[0, 1, 2, 3].map(i => <div key={i} className="skeleton-shimmer" style={{ height: 60, borderRadius: 8 }} />)}
+                </div>
+              ) : gmailMessages.length === 0 ? (
+                <EmptyState
+                  icon="📧"
+                  title={gmailMessages.length === 0 && !gmailLoading ? 'Haz clic en el botón para cargar Gmail' : 'Sin correos'}
+                  description="Los correos del buzón ai@renatozapata.com aparecerán aquí"
+                />
+              ) : (
+                <div className="card" style={{ overflow: 'hidden' }}>
+                  {gmailMessages.map(msg => (
+                    <button
+                      key={msg.id}
+                      onClick={() => readEmail(msg.id)}
+                      style={{
+                        display: 'flex', alignItems: 'flex-start', gap: 12, width: '100%',
+                        padding: '12px 16px', border: 'none', borderBottom: '1px solid var(--border)',
+                        background: msg.isUnread ? 'rgba(196,150,60,0.04)' : 'transparent',
+                        cursor: 'pointer', textAlign: 'left', minHeight: 60,
+                      }}
+                    >
+                      {/* Unread dot */}
+                      <span style={{
+                        width: 8, height: 8, borderRadius: '50%', marginTop: 6, flexShrink: 0,
+                        background: msg.isUnread ? 'var(--gold)' : 'transparent',
+                      }} />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+                          <span style={{
+                            fontSize: 13, fontWeight: msg.isUnread ? 700 : 400,
+                            color: 'var(--text-primary)', overflow: 'hidden',
+                            textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                          }}>
+                            {msg.from.replace(/<.*>/, '').trim().substring(0, 40)}
+                          </span>
+                          <span style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                            {msg.date ? new Date(msg.date).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', timeZone: 'America/Chicago' }) : ''}
+                          </span>
+                        </div>
+                        <div style={{ fontSize: 12, fontWeight: msg.isUnread ? 600 : 400, color: 'var(--text-primary)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {msg.subject || '(sin asunto)'}
+                        </div>
+                        <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {msg.snippet}
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 

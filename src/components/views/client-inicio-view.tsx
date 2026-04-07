@@ -30,7 +30,7 @@ function describeWorkflowEvent(workflow: string, eventType: string, payload: Rec
   const docType = (payload?.docType as string) || ''
   const filename = (payload?.filename as string) || ''
   switch (`${workflow}.${eventType}`) {
-    case 'intake.email_processed': return `CRUZ procesó email${filename ? `: ${filename}` : ''}`
+    case 'intake.email_processed': return `RZ procesó email${filename ? `: ${filename}` : ''}`
     case 'classify.product_needs_classification': return 'Producto pendiente de clasificación'
     case 'docs.completeness_check': return `Revisión de documentos${docType ? `: ${docType.replace(/_/g, ' ')}` : ''}`
     case 'docs.document_received': return `Documento recibido${docType ? `: ${docType.replace(/_/g, ' ')}` : ''}`
@@ -41,7 +41,7 @@ function describeWorkflowEvent(workflow: string, eventType: string, payload: Rec
 function describeAgentDecision(triggerType: string, decision: string, action: string): string {
   if (triggerType === 'solicitation_overdue' && decision === 'escalation_queued') {
     const match = action.match(/(\d+) docs/)
-    return `CRUZ escaló ${match?.[1] || ''} documentos pendientes`
+    return `RZ escaló ${match?.[1] || ''} documentos pendientes`
   }
   return `CRUZ: ${decision.replace(/_/g, ' ')}`
 }
@@ -66,6 +66,7 @@ export default function ClientInicioView() {
   const [traficos, setTraficos] = useState<TraficoRow[]>([])
   const [pendingEntradas, setPendingEntradas] = useState<EntradaPending[]>([])
   const [streakDays, setStreakDays] = useState(0)
+  const [streakRecord, setStreakRecord] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [companyName, setCompanyName] = useState('')
@@ -94,14 +95,28 @@ export default function ClientInicioView() {
     const name = getClientNameCookie()
     setCompanyName(name || '')
 
-    // Streak fetch (fire-and-forget, lightweight)
+    // Streak fetch — try daily_performance first, fallback to entradas
     if (companyId) {
-      const streakParams = new URLSearchParams({
-        table: 'entradas', limit: '50', company_id: companyId,
-        order_by: 'fecha_llegada_mercancia', order_dir: 'desc',
+      const perfParams = new URLSearchParams({
+        table: 'daily_performance', limit: '1', company_id: companyId,
+        order_by: 'date', order_dir: 'desc',
       })
-      fetch(`/api/data?${streakParams}`).then(r => r.json())
-        .then(d => setStreakDays(computeStreak(d.data || []).days))
+      fetch(`/api/data?${perfParams}`).then(r => r.json())
+        .then(d => {
+          const row = (d.data || [])[0]
+          if (row && row.streak_days != null) {
+            setStreakDays(row.streak_days)
+            setStreakRecord(row.streak_record || 0)
+          } else {
+            // Fallback: compute from entradas
+            const streakParams = new URLSearchParams({
+              table: 'entradas', limit: '50', company_id: companyId,
+              order_by: 'fecha_llegada_mercancia', order_dir: 'desc',
+            })
+            return fetch(`/api/data?${streakParams}`).then(r => r.json())
+              .then(d2 => setStreakDays(computeStreak(d2.data || []).days))
+          }
+        })
         .catch(() => {})
     }
 
@@ -205,7 +220,7 @@ export default function ClientInicioView() {
       } else {
         items.push({
           id: `ds-${s.id}`,
-          text: `CRUZ solicitó ${docName} para ${s.trafico_id}`,
+          text: `RZ solicitó ${docName} para ${s.trafico_id}`,
           timestamp: s.solicitado_at,
           href: `/traficos/${encodeURIComponent(s.trafico_id)}`,
           color: 'var(--gold)',
@@ -351,13 +366,13 @@ export default function ClientInicioView() {
       cards.push({
         key: 'streak',
         value: `${streakDays}d`,
-        label: 'racha sin incidencia',
+        label: streakRecord > streakDays ? `racha (récord: ${streakRecord}d)` : 'racha sin incidencia',
         color: 'var(--gold-dark)',
-        href: '/traficos',
+        href: '/logros',
       })
     }
     return cards
-  }, [cruzadoRecent, valorTotal, incidencias, streakDays])
+  }, [cruzadoRecent, valorTotal, incidencias, streakDays, streakRecord])
 
   // ── Error / Loading states ──
   if (error) {
@@ -378,9 +393,12 @@ export default function ClientInicioView() {
   const contaSubtitle = '0 pendientes'
 
   const navCards = [
-    { href: '/traficos', label: 'Operaciones', subtitle: opsSubtitle, Icon: Truck, color: enProceso > 0 ? 'var(--gold)' : 'var(--success)' },
-    { href: '/documentos', label: 'Documentos', subtitle: docsSubtitle, Icon: FolderOpen, color: 'var(--success)' },
+    { href: '/traficos', label: 'Tráficos', subtitle: opsSubtitle, Icon: Truck, color: enProceso > 0 ? 'var(--gold)' : 'var(--success)' },
+    { href: '/entradas', label: 'Entradas', subtitle: `${pendingEntradas.length} sin asignar`, Icon: Truck, color: pendingEntradas.length > 0 ? 'var(--gold)' : 'var(--success)' },
+    { href: '/expedientes', label: 'Expedientes', subtitle: docsSubtitle, Icon: FolderOpen, color: 'var(--success)' },
+    { href: '/pedimentos', label: 'Pedimentos', subtitle: 'Declaraciones aduanales', Icon: FolderOpen, color: 'var(--success)' },
     { href: '/financiero', label: 'Contabilidad', subtitle: contaSubtitle, Icon: DollarSign, color: 'var(--success)' },
+    { href: '/bodega', label: 'Inventario', subtitle: 'Mercancía en bodega', Icon: Truck, color: 'var(--success)' },
   ]
 
   return (
@@ -418,7 +436,7 @@ export default function ClientInicioView() {
             Mientras estuvo fuera
           </div>
           <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.5 }}>
-            CRUZ procesó {awaySummary.total} accion{awaySummary.total !== 1 ? 'es' : ''}
+            Renato Zapata procesó {awaySummary.total} accion{awaySummary.total !== 1 ? 'es' : ''}
             {awaySummary.events > 0 && ` · ${awaySummary.events} verificacion${awaySummary.events !== 1 ? 'es' : ''}`}
             {awaySummary.solicitudes > 0 && ` · ${awaySummary.solicitudes} solicitud${awaySummary.solicitudes !== 1 ? 'es' : ''}`}
             {awaySummary.docs > 0 && ` · ${awaySummary.docs} decision${awaySummary.docs !== 1 ? 'es' : ''} autónoma${awaySummary.docs !== 1 ? 's' : ''}`}
@@ -485,7 +503,7 @@ export default function ClientInicioView() {
             animation: 'cruzPulse 2s ease-in-out infinite',
           }} />
           <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' }}>
-            CRUZ trabajando
+            RZ trabajando
           </div>
         </div>
         {pulseLoading ? (

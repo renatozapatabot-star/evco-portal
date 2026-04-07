@@ -566,6 +566,33 @@ const TOOLS = [
       required: ['rfc']
     }
   },
+  {
+    name: 'get_pending_summary',
+    description: 'Get count of pending items needing attention today. Drafts awaiting approval, agent decisions to review, document follow-ups. Use when user asks "cuantos pendientes", "como va el dia", "que falta".',
+    input_schema: { type: 'object' as const, properties: {} }
+  },
+  {
+    name: 'approve_draft',
+    description: 'Approve a pedimento draft by supplier name or draft ID. Use when user says "aprueba", "dale", "autoriza". ALWAYS confirm the specific draft (name + value) before approving.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        supplier_name: { type: 'string', description: 'Supplier name to fuzzy match' },
+        draft_id: { type: 'string', description: 'Direct draft UUID' },
+      },
+    }
+  },
+  {
+    name: 'lookup_contact',
+    description: 'Look up phone number for staff (Eloisa, Juan Jose, Tito) or supplier contacts. Use when user says "llamame a", "el numero de", "contactar a". Returns phone number for dialing.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        name: { type: 'string', description: 'Person name to look up' },
+      },
+      required: ['name']
+    }
+  },
 ]
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- AI tool inputs are dynamically shaped per tool
@@ -1186,6 +1213,154 @@ async function executeTool(name: string, input: Record<string, any>, clientCtx: 
           .order('fecha_pago', { ascending: false })
           .limit(10)
         return JSON.stringify({ prospect, recent_operations: sightings || [] })
+      }
+      case 'get_pending_summary': {
+        const [draftsRes, decisionsRes, solicitRes, autoRes] = await Promise.all([
+          supabase.from('pedimento_drafts')
+            .select('id, draft_data, status', { count: 'exact' })
+            .in('status', ['draft', 'pending', 'approved_pending'])
+            .limit(10),
+          supabase.from('agent_decisions')
+            .select('id', { count: 'exact' })
+            .is('was_correct', null)
+            .lte('autonomy_level', 1)
+            .limit(1),
+          supabase.from('documento_solicitudes')
+            .select('id', { count: 'exact' })
+            .eq('status', 'solicitado')
+            .limit(1),
+          supabase.from('cruz_auto_actions')
+            .select('id, description, time_saved_minutes')
+            .gte('created_at', new Date(new Date().setHours(0, 0, 0, 0)).toISOString())
+            .limit(20),
+        ])
+        const approvals = draftsRes.count || 0
+        const decisions = decisionsRes.count || 0
+        const followUps = solicitRes.count || 0
+        const autoActions = autoRes.data || []
+        const totalAuto = autoActions.length
+        const totalTimeSaved = autoActions.reduce((s, a: { time_saved_minutes?: number }) => s + (a.time_saved_minutes || 0), 0)
+        const estimatedMinutes = approvals * 5 + decisions * 3 + followUps * 8
+        return JSON.stringify({
+          approvals, decisions, follow_ups: followUps,
+          total: approvals + decisions + followUps,
+          estimated_minutes: estimatedMinutes,
+          auto_processed_today: totalAuto,
+          total_time_saved_minutes: totalTimeSaved,
+          pending_drafts: (draftsRes.data || []).map((d: { id: string; draft_data?: { supplier?: string; valor_total_usd?: number } }) => ({
+            id: d.id, supplier: d.draft_data?.supplier, valor_usd: d.draft_data?.valor_total_usd,
+          })),
+        })
+      }
+      case 'approve_draft': {
+        // Find the draft — by ID or by fuzzy supplier name match
+        let draftQuery = supabase.from('pedimento_drafts')
+          .select('id, status, draft_data')
+          .in('status', ['draft', 'pending'])
+        if (input.draft_id) {
+          draftQuery = draftQuery.eq('id', input.draft_id)
+        }
+        const { data: candidates } = await draftQuery.limit(20)
+        if (!candidates?.length) {
+          return JSON.stringify({ error: 'No hay borradores pendientes de aprobación.' })
+        }
+        // Filter by supplier name if provided
+        let matches = candidates
+        if (input.supplier_name) {
+          const needle = (input.supplier_name as string).toLowerCase()
+          matches = candidates.filter((d: { draft_data?: { supplier?: string } }) =>
+            (d.draft_data?.supplier || '').toLowerCase().includes(needle)
+          )
+        }
+        if (matches.length === 0) {
+          return JSON.stringify({
+            error: `No se encontró borrador de "${input.supplier_name}".`,
+            available: candidates.map((d: { id: string; draft_data?: { supplier?: string; valor_total_usd?: number } }) => ({
+              id: d.id, supplier: d.draft_data?.supplier, valor_usd: d.draft_data?.valor_total_usd,
+            })),
+          })
+        }
+        if (matches.length > 1) {
+          return JSON.stringify({
+            disambiguation: true,
+            message: `Hay ${matches.length} borradores que coinciden. ¿Cuál apruebo?`,
+            options: matches.map((d: { id: string; draft_data?: { supplier?: string; valor_total_usd?: number } }) => ({
+              id: d.id, supplier: d.draft_data?.supplier, valor_usd: d.draft_data?.valor_total_usd,
+            })),
+          })
+        }
+        // Exactly one match — approve it
+        const draft = matches[0] as { id: string; status: string; draft_data?: { supplier?: string; valor_total_usd?: number; company_id?: string } }
+        const { error: updateErr } = await supabase
+          .from('pedimento_drafts')
+          .update({ status: 'approved_pending', reviewed_by: 'tito', updated_at: new Date().toISOString() })
+          .eq('id', draft.id)
+        if (updateErr) return JSON.stringify({ error: `Error: ${updateErr.message}` })
+        // Audit log — immutable chain of custody
+        supabase.from('audit_log').insert({
+          action: 'draft_approved_voice',
+          details: {
+            draft_id: draft.id,
+            approved_by: 'tito',
+            supplier: draft.draft_data?.supplier,
+            valor_usd: draft.draft_data?.valor_total_usd,
+            channel: 'voice',
+            status: 'approved_pending',
+          },
+          actor: 'tito',
+          timestamp: new Date().toISOString(),
+        }).then(() => {}, () => {})
+        // Celebration notification
+        if (draft.draft_data?.company_id) {
+          supabase.from('notifications').insert({
+            type: 'approval_complete',
+            severity: 'celebration',
+            title: `🦀 Borrador aprobado: ${draft.draft_data?.supplier || 'Desconocido'}`,
+            description: 'Patente 3596 honrada. Gracias, Tito.',
+            company_id: draft.draft_data.company_id,
+            read: false,
+          }).then(() => {}, () => {})
+        }
+        return JSON.stringify({
+          success: true,
+          draft_id: draft.id,
+          supplier: draft.draft_data?.supplier,
+          valor_usd: draft.draft_data?.valor_total_usd,
+          status: 'approved_pending',
+          cancellation_window: '5 seconds',
+          message: `Borrador de ${draft.draft_data?.supplier} aprobado. 5 segundos para cancelar.`,
+        })
+      }
+      case 'lookup_contact': {
+        // Staff directory — Tito to provide actual phone numbers
+        const STAFF_CONTACTS: Record<string, { name: string; phone: string; title: string }> = {
+          eloisa: { name: 'Eloisa', phone: '+528123456789', title: 'Coordinadora' },
+          juanjose: { name: 'Juan José', phone: '+528123456790', title: 'Clasificador' },
+          tito: { name: 'Tito', phone: '+19566727859', title: 'Director General' },
+        }
+        const searchName = (input.name as string).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        // Check staff first
+        const staffMatch = Object.values(STAFF_CONTACTS).find(s =>
+          s.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').includes(searchName)
+        )
+        if (staffMatch) {
+          return JSON.stringify({ found: true, type: 'staff', ...staffMatch, tel_url: `tel:${staffMatch.phone}` })
+        }
+        // Fall back to supplier contacts
+        const { data: contacts } = await supabase.from('supplier_contacts')
+          .select('supplier_name, contact_name, contact_phone, contact_email')
+          .or(`contact_name.ilike.%${sanitizeIlike(input.name)}%,supplier_name.ilike.%${sanitizeIlike(input.name)}%`)
+          .limit(5)
+        if (contacts?.length) {
+          const c = contacts[0] as { supplier_name?: string; contact_name?: string; contact_phone?: string; contact_email?: string }
+          return JSON.stringify({
+            found: true, type: 'supplier',
+            name: c.contact_name || c.supplier_name,
+            phone: c.contact_phone, email: c.contact_email,
+            tel_url: c.contact_phone ? `tel:${c.contact_phone}` : null,
+          })
+        }
+        return JSON.stringify({ found: false, message: `No se encontró contacto para "${input.name}".` })
       }
       default:
         return JSON.stringify({ error: `Unknown tool: ${name}` })

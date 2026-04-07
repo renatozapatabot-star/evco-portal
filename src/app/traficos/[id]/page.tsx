@@ -170,7 +170,7 @@ function TimelineTab({ traficoId, trafico }: { traficoId: string; trafico: Recor
           id: `sol-${s.id}`,
           trafico_id: traficoId,
           event_type: 'doc_received',
-          content_es: `CRUZ solicitó ${docName}`,
+          content_es: `RZ solicitó ${docName}`,
           source: 'cruz_ai',
           created_at: s.solicitado_at,
         })

@@ -50,39 +50,55 @@ export default function CatalogoPage() {
     const isInternal = userRole === 'broker' || userRole === 'admin'
     if (!isInternal && !companyId) { setLoading(false); return }
 
+    // Fetch traficos (without not_null filter — we'll enrich with GlobalPC)
     const params = new URLSearchParams({
       table: 'traficos', limit: '5000',
       order_by: 'fecha_llegada', order_dir: 'desc',
-      not_null: 'descripcion_mercancia',
       gte_field: 'fecha_llegada', gte_value: '2024-01-01',
     })
     if (!isInternal && companyId) params.set('company_id', companyId)
 
-    fetch(`/api/data?${params}`)
-      .then(r => {
+    // Fetch traficos + globalpc_partidas in parallel
+    const partidaParams = new URLSearchParams({
+      table: 'globalpc_partidas', limit: '10000',
+    })
+
+    Promise.all([
+      fetch(`/api/data?${params}`).then(r => {
         if (!r.ok) throw new Error(r.status === 401 ? 'session_expired' : 'fetch_error')
         return r.json()
+      }),
+      fetch(`/api/data?${partidaParams}`).then(r => r.json()).catch(() => ({ data: [] })),
+    ])
+      .then(([trafData, partidaData]) => {
+        const traficos = Array.isArray(trafData.data) ? trafData.data : []
+        const partidas = Array.isArray(partidaData.data) ? partidaData.data : []
+
+        // Build partida description + fraccion map keyed by cve_trafico
+        const descMap = new Map<string, string>()
+        const fracMap = new Map<string, string>()
+        for (const p of partidas as { cve_trafico?: string; descripcion?: string; fraccion_arancelaria?: string; fraccion?: string }[]) {
+          if (p.cve_trafico) {
+            if (p.descripcion && !descMap.has(p.cve_trafico)) descMap.set(p.cve_trafico, p.descripcion)
+            const frac = p.fraccion_arancelaria || p.fraccion
+            if (frac && !fracMap.has(p.cve_trafico)) fracMap.set(p.cve_trafico, frac)
+          }
+        }
+        setFraccionMap(fracMap)
+
+        // Enrich traficos with GlobalPC descriptions
+        const enriched = traficos.map((t: Record<string, unknown>) => ({
+          ...t,
+          descripcion_mercancia: t.descripcion_mercancia || descMap.get(t.trafico as string) || null,
+        })).filter((t: Record<string, unknown>) => t.descripcion_mercancia)
+
+        setRows(enriched)
       })
-      .then(d => setRows(Array.isArray(d.data) ? d.data : []))
       .catch(err => {
         if (err.message === 'session_expired') { window.location.href = '/login'; return }
         setRows([])
       })
       .finally(() => setLoading(false))
-
-    // Fracción fallback from globalpc_partidas
-    fetch('/api/data?table=globalpc_partidas&select=cve_trafico,fraccion_arancelaria,fraccion&limit=5000')
-      .then(r => r.json()).then(d => {
-        const map = new Map<string, string>()
-        const arr = Array.isArray(d.data) ? d.data : []
-        arr.forEach((p: { cve_trafico?: string; fraccion_arancelaria?: string; fraccion?: string }) => {
-          if (p.cve_trafico && !map.has(p.cve_trafico)) {
-            const frac = p.fraccion_arancelaria || p.fraccion
-            if (frac) map.set(p.cve_trafico, frac)
-          }
-        })
-        setFraccionMap(map)
-      }).catch(() => {})
   }, [cookiesReady, companyId, userRole])
 
   const grouped = useMemo(() => {

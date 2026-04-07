@@ -335,6 +335,128 @@ function scoreConfidence(extraction, classifications) {
   return { score: pct, tier, fieldScores }
 }
 
+// ── BUILD 209: Supplier + Client Matching ──────────────────────────────────
+// When both supplier and client are matched with high confidence, CRUZ
+// auto-creates a tráfico instead of just a draft.
+
+async function matchSupplier(extraction, companyId) {
+  const supplierName = (extraction.supplier_name || '').trim()
+  if (!supplierName) return { matched: false, confidence: 0 }
+
+  // 1. Exact match on supplier_profiles
+  const { data: exact } = await supabase
+    .from('supplier_profiles')
+    .select('supplier_code, supplier_name')
+    .eq('company_id', companyId)
+    .ilike('supplier_name', supplierName)
+    .limit(1)
+
+  if (exact && exact.length > 0) {
+    return { matched: true, confidence: 0.98, supplier_code: exact[0].supplier_code, supplier_name: exact[0].supplier_name, method: 'exact' }
+  }
+
+  // 2. Fuzzy: first 3 words of supplier name
+  const words = supplierName.split(/\s+/).slice(0, 3).join(' ')
+  if (words.length < 4) return { matched: false, confidence: 0 }
+
+  const { data: fuzzy } = await supabase
+    .from('supplier_profiles')
+    .select('supplier_code, supplier_name')
+    .eq('company_id', companyId)
+    .ilike('supplier_name', `%${words}%`)
+    .limit(3)
+
+  if (fuzzy && fuzzy.length === 1) {
+    return { matched: true, confidence: 0.85, supplier_code: fuzzy[0].supplier_code, supplier_name: fuzzy[0].supplier_name, method: 'fuzzy' }
+  }
+
+  // 3. Check traficos history for this supplier name
+  const { data: hist } = await supabase
+    .from('traficos')
+    .select('proveedor')
+    .eq('company_id', companyId)
+    .ilike('proveedor', `%${words}%`)
+    .limit(1)
+
+  if (hist && hist.length > 0) {
+    return { matched: true, confidence: 0.80, supplier_code: null, supplier_name: hist[0].proveedor, method: 'history' }
+  }
+
+  return { matched: false, confidence: 0 }
+}
+
+async function matchClient(extraction, sender, companyId) {
+  // For now, emails arriving at ai@renatozapata.com are processed under DEFAULT_COMPANY_ID.
+  // When multi-client is live, we match by:
+  // 1. Sender domain → known client domains
+  // 2. PO reference patterns → historical tráfico references
+
+  // Currently single-client: if companyId is set, that's the match
+  if (companyId) {
+    return { matched: true, confidence: 0.95, company_id: companyId, method: 'default_company' }
+  }
+
+  return { matched: false, confidence: 0 }
+}
+
+function generateTraficoNumber(companyId) {
+  // Format: Y + last 2 digits of year + 4 random digits
+  const year = new Date().getFullYear().toString().slice(-2)
+  const rand = Math.floor(1000 + Math.random() * 9000)
+  return `Y${year}${rand}`
+}
+
+async function autoCreateTrafico(extraction, classifications, contributions, confidence, supplierMatch, clientMatch, emailMeta, companyId) {
+  const traficoNumber = generateTraficoNumber(companyId)
+  const primaryFraccion = classifications.find(c => c.fraccion)?.fraccion || null
+
+  const { data: trafico, error } = await supabase
+    .from('traficos')
+    .insert({
+      trafico: traficoNumber,
+      company_id: companyId,
+      proveedor: supplierMatch.supplier_name || extraction.supplier_name,
+      cve_proveedor: supplierMatch.supplier_code || null,
+      descripcion_mercancia: (extraction.products || []).map(p => p.description).join('; ').substring(0, 500),
+      fraccion_arancelaria: primaryFraccion,
+      importe_total: extraction.total_value || 0,
+      moneda: extraction.currency || 'USD',
+      pais_origen: extraction.supplier_country || null,
+      regimen: contributions.igi?.tmec ? 'ITE' : 'A1',
+      estatus: 'En proceso',
+      created_by: 'CRUZ',
+      created_at: new Date().toISOString(),
+    })
+    .select('id, trafico')
+    .single()
+
+  if (error) {
+    console.error(`  ⚠ Tráfico creation failed: ${error.message}`)
+    return null
+  }
+
+  console.log(`  🆕 Tráfico created: ${trafico.trafico}`)
+
+  // Link email PDF as first expediente document
+  for (const pdf of (emailMeta.pdfs || [])) {
+    await supabase.from('expediente_documentos').insert({
+      trafico_id: trafico.trafico,
+      doc_type: 'FACTURA_COMERCIAL',
+      nombre: pdf.filename,
+      status: 'pendiente',
+      company_id: companyId,
+    }).then(() => {}, () => {})
+  }
+
+  // Emit workflow events for downstream processing
+  await emitEvent('docs', 'completeness_check', trafico.trafico, companyId, {
+    trafico_number: trafico.trafico,
+    supplier: extraction.supplier_name,
+  })
+
+  return trafico
+}
+
 // ── Step 2: Filter — is this a shipment document? ───────────────────────────
 
 function isShipmentEmail(subject, sender) {
@@ -522,6 +644,43 @@ async function processEmail(gmail, messageId, companyId) {
   const confidence = scoreConfidence(extraction, classifications)
   console.log(`  Confidence: ${confidence.score}% · Tier ${confidence.tier}`)
 
+  // Step 10b: BUILD 209 — Supplier + Client matching for auto-tráfico creation
+  const supplierMatch = await matchSupplier(extraction, companyId)
+  const clientMatch = await matchClient(extraction, sender, companyId)
+  console.log(`  Supplier match: ${supplierMatch.matched ? `✓ ${supplierMatch.supplier_name} (${Math.round(supplierMatch.confidence * 100)}%)` : '✗'}`)
+  console.log(`  Client match: ${clientMatch.matched ? `✓ ${clientMatch.company_id} (${Math.round(clientMatch.confidence * 100)}%)` : '✗'}`)
+
+  let autoTrafico = null
+  const autoCreateThreshold = supplierMatch.confidence >= 0.85 && clientMatch.confidence >= 0.90 && confidence.score >= 80
+  if (autoCreateThreshold) {
+    autoTrafico = await autoCreateTrafico(
+      extraction, classifications, contributions, confidence,
+      supplierMatch, clientMatch,
+      { pdfs, sender, subject, receivedAt },
+      companyId
+    )
+  } else if (supplierMatch.matched || clientMatch.matched) {
+    // Partial match — log as agent decision for human review
+    await supabase.from('agent_decisions').insert({
+      trigger_type: 'email_intake',
+      decision: `Correo recibido de ${extraction.supplier_name || sender} — confianza insuficiente para crear tráfico automáticamente`,
+      confidence: Math.min(supplierMatch.confidence, clientMatch.confidence),
+      autonomy_level: 0,
+      action_taken: 'queued_for_review',
+      company_id: companyId,
+      payload: {
+        supplier_name: extraction.supplier_name,
+        supplier_match: supplierMatch,
+        client_match: clientMatch,
+        invoice_number: extraction.invoice_number,
+        value: extraction.total_value,
+        currency: extraction.currency,
+        gmail_message_id: messageId,
+      },
+    }).then(() => {}, (err) => console.error('agent_decisions error:', err.message))
+    console.log('  📋 Queued for human review (partial match)')
+  }
+
   // Step 11: INSERT into pedimento_drafts
   const draftData = {
     extraction,
@@ -532,16 +691,17 @@ async function processEmail(gmail, messageId, companyId) {
     source: 'email_intake',
     email: { sender, subject, received_at: receivedAt, gmail_message_id: messageId },
     regimen: detectedRegimen,
+    supplier_match: supplierMatch.matched ? supplierMatch : undefined,
+    auto_trafico: autoTrafico ? autoTrafico.trafico : undefined,
   }
 
   const { data: draft, error: draftErr } = await supabase
     .from('pedimento_drafts')
     .insert({
-      trafico_id: null, // Will be linked when tráfico is created
+      trafico_id: autoTrafico ? autoTrafico.trafico : null,
       draft_data: draftData,
       status: confidence.tier === 1 ? 'pending' : 'draft',
       created_by: 'CRUZ',
-      // company_id removed — column does not exist in pedimento_drafts
     })
     .select('id')
     .single()
@@ -552,10 +712,11 @@ async function processEmail(gmail, messageId, companyId) {
 
   // Step 12: Telegram notification
   const tmecLabel = contributions.igi.tmec ? '✅' : '❌'
+  const autoLabel = autoTrafico ? `\n🆕 Tráfico creado: <b>${autoTrafico.trafico}</b>` : ''
   const tgMsg = [
     `📥 <b>Borrador listo</b> · ${extraction.invoice_number || 'Sin factura'}`,
     `${extraction.supplier_name || 'Proveedor desconocido'} · $${(extraction.total_value || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })} ${extraction.currency || 'USD'}`,
-    `Confianza: ${confidence.score}% · T-MEC ${tmecLabel}`,
+    `Confianza: ${confidence.score}% · T-MEC ${tmecLabel}${autoLabel}`,
     `— CRUZ 🦀`,
   ].join('\n')
   await sendTelegram(tgMsg)
@@ -577,9 +738,9 @@ async function processEmail(gmail, messageId, companyId) {
 
   // Step 14a: Log to audit_log (immutable)
   await supabase.from('audit_log').insert({
-    action: 'email_intake_draft_created',
-    entity_type: 'pedimento_draft',
-    entity_id: draftId,
+    action: autoTrafico ? 'email_intake_trafico_created' : 'email_intake_draft_created',
+    entity_type: autoTrafico ? 'trafico' : 'pedimento_draft',
+    entity_id: autoTrafico ? autoTrafico.trafico : draftId,
     details: {
       invoice: extraction.invoice_number,
       supplier: extraction.supplier_name,
@@ -588,6 +749,9 @@ async function processEmail(gmail, messageId, companyId) {
       confidence: confidence.score,
       tier: confidence.tier,
       mode: MODE,
+      auto_trafico: autoTrafico?.trafico || null,
+      draft_id: draftId,
+      supplier_match: supplierMatch.matched ? { confidence: supplierMatch.confidence, method: supplierMatch.method } : null,
       classifications: classifications.map(c => ({ fraccion: c.fraccion, confidence: c.confidence })),
     },
     company_id: companyId,
@@ -636,6 +800,18 @@ async function processEmail(gmail, messageId, companyId) {
     })
   }
 
+  // Emit tráfico creation event if auto-created
+  if (autoTrafico) {
+    await emitEvent('intake', 'trafico_auto_created', autoTrafico.trafico, companyId, {
+      trafico_number: autoTrafico.trafico,
+      draft_id: draftId,
+      supplier: extraction.supplier_name,
+      value: extraction.total_value,
+      currency: extraction.currency,
+      confidence_score: confidence.score,
+    })
+  }
+
   return {
     draftId, sender, subject,
     pdfCount: pdfs.length,
@@ -644,6 +820,7 @@ async function processEmail(gmail, messageId, companyId) {
     tmec: contributions.igi.tmec,
     value: extraction.total_value,
     currency: extraction.currency,
+    autoTrafico: autoTrafico?.trafico || null,
   }
 }
 
@@ -752,6 +929,7 @@ async function run() {
 
   let emailsProcessed = 0
   let draftsCreated = 0
+  let traficosCreated = 0
   let errors = 0
 
   for (const m of messages) {
@@ -761,7 +939,9 @@ async function run() {
       if (result) {
         emailsProcessed++
         draftsCreated++
-        console.log(`  ✅ Draft ${result.draftId} · ${result.confidence}% · Tier ${result.tier}\n`)
+        if (result.autoTrafico) traficosCreated++
+        const traficoLabel = result.autoTrafico ? ` · Tráfico ${result.autoTrafico}` : ''
+        console.log(`  ✅ Draft ${result.draftId} · ${result.confidence}% · Tier ${result.tier}${traficoLabel}\n`)
       } else {
         console.log('')
       }
@@ -779,10 +959,11 @@ async function run() {
     step: 'email_intake',
     status: errors > 0 ? 'partial' : 'completed',
     input_summary: `${messages.length} emails found`,
-    output_summary: `${emailsProcessed} processed, ${draftsCreated} drafts created`,
+    output_summary: `${emailsProcessed} processed, ${draftsCreated} drafts, ${traficosCreated} tráficos created`,
     details: {
       mode: MODE, emails_found: messages.length,
       emails_processed: emailsProcessed, drafts_created: draftsCreated,
+      traficos_created: traficosCreated,
       errors, elapsed_s: parseFloat(elapsed),
     },
   }).then(() => {}, (err) => console.error('pipeline_log error:', err.message))
@@ -795,7 +976,8 @@ async function run() {
   }).then(() => {}, () => {})
 
   // Summary
-  const summary = `${emailsProcessed} emails → ${draftsCreated} drafts · ${errors} error(s) · ${elapsed}s · ${MODE}`
+  const traficoSummary = traficosCreated > 0 ? ` · ${traficosCreated} tráficos` : ''
+  const summary = `${emailsProcessed} emails → ${draftsCreated} drafts${traficoSummary} · ${errors} error(s) · ${elapsed}s · ${MODE}`
   console.log(`\n${summary}`)
 
   // Telegram — always notify, success AND failure

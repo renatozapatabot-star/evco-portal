@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { X, Bell, CheckCircle, AlertTriangle, FileX, Clock, Package, Search, FileCheck } from 'lucide-react'
+import { X, Bell, CheckCircle, AlertTriangle, FileX, Clock, Package, Search, FileCheck, PartyPopper } from 'lucide-react'
 import { fmtDateTime } from '@/lib/format-utils'
 import Link from 'next/link'
 
@@ -22,6 +22,7 @@ const SEVERITY_ICON: Record<string, typeof Bell> = {
   warning: AlertTriangle,
   critical: AlertTriangle,
   info: Bell,
+  celebration: PartyPopper,
 }
 
 const SEVERITY_COLOR: Record<string, string> = {
@@ -29,6 +30,7 @@ const SEVERITY_COLOR: Record<string, string> = {
   warning: '#C47F17',
   critical: '#C23B22',
   info: '#9C9890',
+  celebration: '#C9A84C',
 }
 
 const GROUP_CONFIG: Record<string, { label: (n: number) => string; icon: typeof Bell }> = {
@@ -37,6 +39,7 @@ const GROUP_CONFIG: Record<string, { label: (n: number) => string; icon: typeof 
   entrada_received: { label: (n) => `${n} entrada${n !== 1 ? 's' : ''} en bodega`, icon: Package },
   anomaly_detected: { label: (n) => `${n} anomalía${n !== 1 ? 's' : ''} detectada${n !== 1 ? 's' : ''}`, icon: Search },
   doc_recibido: { label: (n) => `${n} documento${n !== 1 ? 's' : ''} recibido${n !== 1 ? 's' : ''}`, icon: FileCheck },
+  good_news: { label: (n) => `${n} buena${n !== 1 ? 's' : ''} noticia${n !== 1 ? 's' : ''}`, icon: PartyPopper },
 }
 
 function groupNotifications(notifications: Notification[]) {
@@ -44,7 +47,11 @@ function groupNotifications(notifications: Notification[]) {
   const ungrouped: Notification[] = []
 
   for (const n of notifications) {
-    if (GROUP_CONFIG[n.type]) {
+    if (n.severity === 'celebration') {
+      // All celebration notifications group under 'good_news'
+      if (!groups['good_news']) groups['good_news'] = []
+      groups['good_news'].push(n)
+    } else if (GROUP_CONFIG[n.type]) {
       if (!groups[n.type]) groups[n.type] = []
       groups[n.type].push(n)
     } else {

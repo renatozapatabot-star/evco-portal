@@ -129,7 +129,7 @@ export default function ActividadPage() {
             id: `sol-${s.trafico_id}-${s.doc_type}`,
             type: 'solicitation',
             icon: '📩',
-            text: `CRUZ solicitó ${displayDocType(s.doc_type)} para ${s.trafico_id}`,
+            text: `RZ solicitó ${displayDocType(s.doc_type)} para ${s.trafico_id}`,
             href: `/traficos/${encodeURIComponent(s.trafico_id)}`,
             timestamp: s.solicitado_at,
             isNew: s.solicitado_at > (lastSeen || ''),

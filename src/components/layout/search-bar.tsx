@@ -72,7 +72,7 @@ export function SearchBar() {
   }
 
   return (
-    <div style={{ position: 'relative' }}>
+    <div style={{ position: 'relative', width: '100%', maxWidth: 600 }}>
       <div style={{ position: 'relative' }}>
         <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: T.textMuted, fontSize: 14, pointerEvents: 'none' }}>🔍</span>
         <input value={query}
@@ -83,7 +83,7 @@ export function SearchBar() {
           placeholder="Buscar tráfico... (⌘K)"
           style={{ paddingLeft: 32, paddingRight: loading ? 32 : 12, height: 32,
             border: `1px solid ${T.border}`, borderRadius: 7, background: T.surface,
-            color: T.text, fontSize: 12, outline: 'none', width: 280, fontFamily: 'inherit',
+            color: T.text, fontSize: 12, outline: 'none', width: '100%', fontFamily: 'inherit',
             transition: 'border-color 0.15s' }} />
         {loading && (
           <div style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)',

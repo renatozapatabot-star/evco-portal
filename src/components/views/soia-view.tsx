@@ -3,9 +3,17 @@
 import { useEffect, useState, useMemo } from 'react'
 import DataTable, { Column } from '@/components/DataTable'
 import { EmptyState } from '@/components/ui/EmptyState'
-import { Landmark } from 'lucide-react'
+import { Landmark, Shield } from 'lucide-react'
 import { getCompanyIdCookie } from '@/lib/client-config'
 import { useIsMobile } from '@/hooks/use-mobile'
+
+interface SemaforoStats {
+  total: number
+  verde: number
+  rojo: number
+  pending: number
+  verdeRate: number
+}
 
 const BRIDGES = [
   { name: 'Puente Internacional I', sub: 'Gateway to Americas', type: 'Pasajero', status: 'green', wait: '-' },
@@ -28,12 +36,35 @@ export function SoiaView() {
   const [cruces, setCruces] = useState<Record<string, unknown>[]>([])
   const [loading, setLoading] = useState(true)
   const [bridgeRec, setBridgeRec] = useState<{ name: string; avg: number } | null>(null)
+  const [semaforoStats, setSemaforoStats] = useState<SemaforoStats | null>(null)
 
   useEffect(() => {
     const companyId = getCompanyIdCookie()
     fetch('/api/data?table=soia_cruces&limit=200&order_by=created_at&order_dir=desc')
       .then(r => r.json()).then(d => setCruces(d.data || []))
       .catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) }).finally(() => setLoading(false))
+
+    // Semáforo stats from traficos (semaforo field: 0=verde, 1=rojo, null=pending)
+    if (companyId) {
+      fetch(`/api/data?table=traficos&company_id=${companyId}&limit=5000&gte_field=fecha_llegada&gte_value=2024-01-01`)
+        .then(r => r.json())
+        .then(d => {
+          const rows = (d.data || []) as { semaforo?: number | null }[]
+          const withSemaforo = rows.filter(r => r.semaforo != null)
+          const verde = withSemaforo.filter(r => r.semaforo === 0).length
+          const rojo = withSemaforo.filter(r => r.semaforo === 1).length
+          const pending = rows.length - withSemaforo.length
+          const total = withSemaforo.length
+          setSemaforoStats({
+            total,
+            verde,
+            rojo,
+            pending,
+            verdeRate: total > 0 ? (verde / total) * 100 : 0,
+          })
+        })
+        .catch(() => {})
+    }
     // Bridge intelligence
     fetch(`/api/data?table=bridge_intelligence&company_id=${companyId}&limit=500`)
       .then(r => r.json()).then(d => {
@@ -116,6 +147,46 @@ export function SoiaView() {
           </div>
         )
       })()}
+
+      {/* Semáforo Statistics */}
+      {semaforoStats && semaforoStats.total > 0 && (
+        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-primary)', borderRadius: 8, padding: 20, marginBottom: 24 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+            <Shield size={16} style={{ color: 'var(--gold)' }} />
+            <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>
+              Historial de semáforo
+            </span>
+            <span style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+              {semaforoStats.total} tráficos
+            </span>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: 16 }}>
+            <div style={{ textAlign: 'center', padding: 12 }}>
+              <div className="mono" style={{ fontSize: 28, fontWeight: 700, color: 'var(--status-green)' }}>{semaforoStats.verde}</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>Verde</div>
+            </div>
+            <div style={{ textAlign: 'center', padding: 12 }}>
+              <div className="mono" style={{ fontSize: 28, fontWeight: 700, color: 'var(--status-red, #DC2626)' }}>{semaforoStats.rojo}</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>Rojo</div>
+            </div>
+            <div style={{ textAlign: 'center', padding: 12 }}>
+              <div className="mono" style={{ fontSize: 28, fontWeight: 700, color: 'var(--status-green)' }}>{semaforoStats.verdeRate.toFixed(1)}%</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>Tasa verde</div>
+            </div>
+          </div>
+          {/* Verde bar */}
+          <div style={{ marginTop: 12, height: 8, borderRadius: 4, background: 'var(--border-primary, #E8E5E0)', overflow: 'hidden' }}>
+            <div style={{
+              height: '100%', borderRadius: 4, background: 'var(--status-green)',
+              width: `${semaforoStats.verdeRate}%`, transition: 'width 300ms',
+            }} />
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4, fontSize: 10, color: 'var(--text-muted)' }}>
+            <span>Verde: {semaforoStats.verde}</span>
+            <span>Rojo: {semaforoStats.rojo}</span>
+          </div>
+        </div>
+      )}
 
       {/* Bridge Status Grid 2x2 */}
       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)', gap: 16, marginBottom: 24 }}>

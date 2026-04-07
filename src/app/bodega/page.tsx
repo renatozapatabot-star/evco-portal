@@ -242,7 +242,7 @@ export default function BodegaPage() {
           <table style={{ width: '100%', borderCollapse: 'collapse' }} aria-label="Llegadas de mercancía">
             <thead>
               <tr>
-                {['Fecha', 'Entrada', 'Tráfico', 'Bultos', 'Peso (kg)', 'Estado'].map(h => (
+                {['Fecha', 'Entrada', 'Tráfico', 'Bultos', 'Peso (kg)'].map(h => (
                   <th key={h} style={{
                     textAlign: 'left', padding: '10px 12px',
                     fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
@@ -257,7 +257,7 @@ export default function BodegaPage() {
             <tbody>
               {rows.length === 0 ? (
                 <tr>
-                  <td colSpan={6}>
+                  <td colSpan={5}>
                     <EmptyState icon="📦" title="Sin entradas registradas" description="Las llegadas de mercancía aparecerán aquí" cta={{ label: 'Ver entradas', href: '/entradas' }} />
                   </td>
                 </tr>
@@ -265,7 +265,7 @@ export default function BodegaPage() {
                 const badge = statusBadge(e)
                 return (
                   <tr key={e.cve_entrada} style={{ borderBottom: `1px solid ${T.border}` }}>
-                    <td style={{ padding: '12px', fontSize: 13, color: T.textSecondary, fontFamily: 'var(--font-jetbrains-mono)' }}>
+                    <td style={{ padding: '12px', fontSize: 13, color: T.textSecondary }}>
                       {fmtDate(e.fecha_llegada_mercancia)}
                     </td>
                     <td style={{ padding: '12px', fontSize: 13, fontWeight: 700, color: T.textPrimary, fontFamily: 'var(--font-jetbrains-mono)' }}>
@@ -288,16 +288,6 @@ export default function BodegaPage() {
                     </td>
                     <td style={{ padding: '12px', fontSize: 13, color: T.textPrimary, fontFamily: 'var(--font-jetbrains-mono)' }}>
                       {e.peso_bruto != null ? fmtKg(e.peso_bruto) : '—'}
-                    </td>
-                    <td style={{ padding: '12px' }}>
-                      <span style={{
-                        display: 'inline-block', padding: '3px 10px',
-                        fontSize: 11, fontWeight: 700, borderRadius: 9999,
-                        background: badge.bg, border: `1px solid ${badge.border}`,
-                        color: badge.color,
-                      }}>
-                        {badge.label}
-                      </span>
                     </td>
                   </tr>
                 )

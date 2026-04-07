@@ -62,9 +62,16 @@ export function useNotificationBadge() {
           table: 'notifications',
           filter: `company_id=eq.${companyId}`,
         },
-        () => {
+        (payload: { new: { severity?: string; title?: string; description?: string } }) => {
           // Buffer the notification
           bufferRef.current += 1
+
+          // Dispatch celebration event for toast bridge
+          if (payload.new.severity === 'celebration' && typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('cruz:celebration', {
+              detail: { title: payload.new.title || '', description: payload.new.description || '' },
+            }))
+          }
 
           // If quiet hours, don't flush (accumulate)
           if (isQuietHours()) return

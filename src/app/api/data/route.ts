@@ -25,6 +25,8 @@ const ALLOWED_TABLES = [
   'pipeline_overview',
   'trafico_completeness',
   'expediente_documentos',
+  'daily_performance',
+  'calendar_events',
 ]
 
 // Tables that contain client-specific data and MUST be filtered by a client identifier.
@@ -40,6 +42,7 @@ const CLIENT_SCOPED_TABLES = new Set([
   'econta_cartera',
   'econta_ingresos',
   'pipeline_overview',
+  'daily_performance',
 ])
 
 export async function GET(req: NextRequest) {
@@ -128,7 +131,7 @@ export async function GET(req: NextRequest) {
     'fecha_llegada', 'fecha_cruce', 'fecha_pago', 'created_at', 'updated_at',
     'fecha_llegada_mercancia', 'processed_at', 'detected_at', 'recorded_at',
     'solicitado_at', 'transcribed_at', 'checked_at', 'importe_total',
-    'pedimento', 'estatus', 'severity', 'status', 'trafico',
+    'pedimento', 'estatus', 'severity', 'status', 'trafico', 'date',
   ] as const
 
   // Generic gte filter — e.g. gte_field=fecha_llegada&gte_value=2024-01-01

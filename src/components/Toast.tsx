@@ -4,7 +4,7 @@ import { createContext, useContext, useState, useCallback } from 'react'
 import { CheckCircle, AlertTriangle, Info, X } from 'lucide-react'
 import { playSound } from '@/lib/sounds'
 
-type ToastType = 'success' | 'error' | 'info'
+type ToastType = 'success' | 'error' | 'info' | 'celebration'
 interface Toast { id: number; message: string; type: ToastType }
 
 const ToastCtx = createContext<{ toast: (msg: string, type?: ToastType) => void }>({ toast: () => {} })
@@ -18,17 +18,17 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   const toast = useCallback((message: string, type: ToastType = 'success') => {
     const id = nextId++
     setToasts(prev => [...prev, { id, message, type }])
-    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 4000)
+    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), type === 'celebration' ? 6000 : 4000)
     if (typeof navigator !== 'undefined' && 'vibrate' in navigator) navigator.vibrate(type === 'error' ? [10, 30, 10] : 10)
-    playSound(type === 'error' ? 'alert' : 'success')
+    playSound(type === 'celebration' ? 'achievement' : type === 'error' ? 'alert' : 'success')
   }, [])
 
   const dismiss = useCallback((id: number) => {
     setToasts(prev => prev.filter(t => t.id !== id))
   }, [])
 
-  const icons = { success: CheckCircle, error: AlertTriangle, info: Info }
-  const colors = { success: 'var(--status-green)', error: 'var(--status-red)', info: 'var(--status-blue)' }
+  const icons: Record<string, typeof CheckCircle | null> = { success: CheckCircle, error: AlertTriangle, info: Info, celebration: null }
+  const colors: Record<string, string> = { success: 'var(--status-green)', error: 'var(--status-red)', info: 'var(--status-blue)', celebration: 'var(--gold, #C9A84C)' }
 
   return (
     <ToastCtx.Provider value={{ toast }}>
@@ -44,7 +44,10 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
               display: 'flex', alignItems: 'flex-start', gap: 12,
               backdropFilter: 'blur(20px) saturate(180%)', WebkitBackdropFilter: 'blur(20px) saturate(180%)', animation: 'toastSlideIn 300ms cubic-bezier(0.2, 0, 0, 1)', boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
             }}>
-              <Icon size={16} style={{ color: colors[t.type], flexShrink: 0, marginTop: 2 }} />
+              {Icon
+                ? <Icon size={16} style={{ color: colors[t.type], flexShrink: 0, marginTop: 2 }} />
+                : <span style={{ fontSize: 16, flexShrink: 0, marginTop: 1, lineHeight: 1 }}>🦀</span>
+              }
               <span style={{ flex: 1, fontSize: 14, color: 'var(--text-primary)', lineHeight: 1.4 }}>{t.message}</span>
               <button onClick={() => dismiss(t.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-dim)', padding: 0 }}>
                 <X size={14} />

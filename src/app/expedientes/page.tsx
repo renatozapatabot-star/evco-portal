@@ -74,7 +74,8 @@ export default function ExpedientesPage() {
       safeFetch(`/api/data?table=traficos&limit=5000&order_by=fecha_llegada&order_dir=desc${cf}`),
       safeFetch(`/api/data?table=expediente_documentos&limit=5000${cf}`),
       safeFetch(`/api/data?table=entradas&limit=5000${cf}`),
-    ]).then(([traficoData, docData, entradaData]) => {
+      safeFetch('/api/data?table=globalpc_partidas&limit=10000').catch(() => ({ data: [] })),
+    ]).then(([traficoData, docData, entradaData, partidaData]) => {
       const traficos = (traficoData.data ?? []) as Array<Record<string, unknown>>
       const allDocs = (docData.data ?? []) as Array<Record<string, unknown>>
       const entradas = (entradaData.data ?? []) as Array<Record<string, unknown>>
@@ -92,6 +93,16 @@ export default function ExpedientesPage() {
           file_url: d.file_url as string | null,
           uploaded_at: d.uploaded_at as string | null,
         })
+      })
+
+      // Build partida description map: cve_trafico → descripcion
+      const partidaDescMap = new Map<string, string>()
+      const allPartidas = (partidaData.data ?? []) as Array<Record<string, unknown>>
+      allPartidas.forEach(p => {
+        const key = String(p.cve_trafico ?? '')
+        if (key && p.descripcion && !partidaDescMap.has(key)) {
+          partidaDescMap.set(key, String(p.descripcion))
+        }
       })
 
       // Build entrada map: trafico → cve_entrada
@@ -116,7 +127,7 @@ export default function ExpedientesPage() {
           fecha_llegada: t.fecha_llegada as string | null,
           pedimento: t.pedimento as string | null,
           importe_total: t.importe_total as number | null,
-          descripcion_mercancia: t.descripcion_mercancia as string | null,
+          descripcion_mercancia: (t.descripcion_mercancia as string | null) || partidaDescMap.get(trafico) || null,
           proveedores: t.proveedores as string | null,
           docs,
           docCount,

@@ -5,6 +5,7 @@ import { useConfetti } from '@/components/celebrate'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { fmtDate } from '@/lib/format-utils'
 import { WorkflowPanel } from '@/components/launchpad/WorkflowPanel'
+import VoiceFAB from '@/components/launchpad/VoiceFAB'
 import { ClasificacionPanel } from '@/components/launchpad/ClasificacionPanel'
 import { BorradorPanel } from '@/components/launchpad/BorradorPanel'
 import { LlamarPanel } from '@/components/launchpad/LlamarPanel'
@@ -537,7 +538,8 @@ export default function LaunchpadPage() {
               action={action}
               onStart={() => handleStart(action)}
               onPostpone={() => handlePostpone(action)}
-              loading={actionLoading}
+              loading={actionLoading || loadingWorkflow === action.id}
+              dimmed={!!activeWorkflow}
             />
           ))}
         </div>
@@ -547,6 +549,37 @@ export default function LaunchpadPage() {
           title="Sin acciones pendientes"
           description="CRUZ está aprendiendo. Las acciones aparecerán conforme el agente procese operaciones."
         />
+      )}
+
+      {/* Workflow panel */}
+      {activeWorkflow && (
+        <WorkflowPanel
+          open={true}
+          onClose={() => setActiveWorkflow(null)}
+          title={WORKFLOW_TITLES[activeWorkflow.detail.type] ?? activeWorkflow.action.title}
+        >
+          {activeWorkflow.detail.type === 'clasificacion' && (
+            <ClasificacionPanel
+              detail={activeWorkflow.detail}
+              onComplete={handleWorkflowComplete}
+              loading={workflowBusy}
+            />
+          )}
+          {activeWorkflow.detail.type === 'borrador' && (
+            <BorradorPanel
+              detail={activeWorkflow.detail}
+              onComplete={handleWorkflowComplete}
+              loading={workflowBusy}
+            />
+          )}
+          {activeWorkflow.detail.type === 'llamar' && (
+            <LlamarPanel
+              detail={activeWorkflow.detail}
+              onComplete={handleWorkflowComplete}
+              loading={workflowBusy}
+            />
+          )}
+        </WorkflowPanel>
       )}
 
       {/* Divider */}
@@ -559,6 +592,9 @@ export default function LaunchpadPage() {
           totalTimeSaved={data.total_time_saved}
         />
       )}
+
+      {/* Voice FAB — big mic button for hands-free operation */}
+      <VoiceFAB />
     </div>
   )
 }

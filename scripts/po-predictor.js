@@ -80,6 +80,17 @@ async function main() {
   console.log(`🔮 PO Predictor — ${DRY_RUN ? 'DRY RUN' : 'LIVE'}`)
   const startTime = Date.now()
 
+  // Pre-flight: verify po_predictions table exists
+  const { count, error: tableErr } = await supabase
+    .from('po_predictions')
+    .select('*', { count: 'exact', head: true })
+  if (tableErr) {
+    console.error(`❌ po_predictions table not accessible: ${tableErr.message}`)
+    await tg(`🔴 <b>${SCRIPT_NAME}</b> — po_predictions table missing or inaccessible: ${tableErr.message}`)
+    process.exit(1)
+  }
+  console.log(`  po_predictions table OK (${count} existing rows)`)
+
   // Step 1: Fetch all rates (refuses if expired)
   let rates
   try {
@@ -98,7 +109,7 @@ async function main() {
     .not('fecha_llegada', 'is', null)
     .gte('fecha_llegada', '2023-01-01')
     .order('fecha_llegada', { ascending: true })
-    .limit(10000)
+    .limit(50000)
 
   if (tErr || !allTraficos?.length) {
     console.log('  No tráficos with supplier data.')
@@ -377,30 +388,33 @@ async function main() {
 
         if (!existing) {
           const { _prediction_date, _daysUntil, ...stageData } = s
-          await supabase.from('staged_traficos').insert({
+          const { error: stageErr } = await supabase.from('staged_traficos').insert({
             ...stageData,
             po_prediction_id: pred.id,
           })
+          if (stageErr) console.error(`  ⚠ Staged insert failed for ${s.company_id}/${s.supplier}: ${stageErr.message}`)
         }
       }
     }
 
     // Expire old missed predictions
     const cutoff = new Date(today.getTime() - 14 * 86400000).toISOString().split('T')[0]
-    await supabase.from('po_predictions')
+    const { error: expireErr } = await supabase.from('po_predictions')
       .update({ status: 'missed', updated_at: new Date().toISOString() })
       .eq('status', 'active')
       .lt('predicted_date', cutoff)
+    if (expireErr) console.error('  ⚠ Expire predictions failed:', expireErr.message)
 
     // Expire old staged traficos
-    await supabase.from('staged_traficos')
+    const { error: expStageErr } = await supabase.from('staged_traficos')
       .update({ status: 'expired', updated_at: new Date().toISOString() })
       .eq('status', 'staged')
       .lt('created_at', new Date(today.getTime() - 21 * 86400000).toISOString())
+    if (expStageErr) console.error('  ⚠ Expire staged failed:', expStageErr.message)
 
     // Log to learned_patterns
     for (const p of predictions.filter(pr => pr.confidence >= 85)) {
-      await supabase.from('learned_patterns').upsert({
+      const { error: lpErr } = await supabase.from('learned_patterns').upsert({
         pattern_type: 'po_prediction',
         pattern_key: `po:${p.company_id}:${p.supplier.substring(0, 20).toLowerCase().replace(/\s+/g, '_')}`,
         pattern_value: `${p.supplier} envía cada ${p.avg_frequency_days}d (±${p.std_deviation_days}d). ` +
@@ -411,7 +425,8 @@ async function main() {
         sample_size: p.sample_size,
         last_confirmed: new Date().toISOString(),
         active: true,
-      }, { onConflict: 'pattern_type,pattern_key' }).catch(() => {})
+      }, { onConflict: 'pattern_type,pattern_key' })
+      if (lpErr) console.error('insert failed:', lpErr)
     }
   }
 
@@ -453,7 +468,7 @@ async function main() {
 
   // Log to heartbeat
   if (!DRY_RUN) {
-    await supabase.from('heartbeat_log').insert({
+    const { error: hbErr } = await supabase.from('heartbeat_log').insert({
       script: SCRIPT_NAME,
       status: 'success',
       details: {
@@ -462,7 +477,8 @@ async function main() {
         staged: staged.length,
         duration_ms: Date.now() - startTime,
       },
-    }).catch(() => {})
+    })
+    if (hbErr) console.error('insert failed:', hbErr)
   }
 
   console.log(`\n✅ ${predictions.length} predicciones · ${staged.length} pre-staged · ${((Date.now() - startTime) / 1000).toFixed(1)}s`)

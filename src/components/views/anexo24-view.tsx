@@ -103,7 +103,7 @@ export function Anexo24View() {
     })
     Promise.all([
       safeFetch(`/api/data?table=globalpc_partidas&limit=10000${companyFilter}`),
-      safeFetch(`/api/data?table=traficos&limit=5000&not_null=pedimento&gte_field=fecha_llegada&gte_value=2024-01-01${companyFilter}`),
+      safeFetch(`/api/data?table=traficos&limit=5000&gte_field=fecha_llegada&gte_value=2024-01-01${companyFilter}`),
       safeFetch(`/api/data?table=globalpc_proveedores&limit=5000${companyFilter}`),
     ])
       .then(([partidaData, traficoData, provData]) => {
@@ -156,20 +156,20 @@ export function Anexo24View() {
 
     for (const p of sorted) {
       const ctx = traficoMap.get(p.cve_trafico)
-      if (!ctx?.pedimento) continue // Skip partidas without pedimento context
+      // Include partidas even without pedimento — show as 'Pendiente'
       num++
       rows.push({
         rowNum: num,
-        pedimento: ctx.pedimento,
-        fecha: ctx.fecha_pago || ctx.fecha_llegada,
+        pedimento: ctx?.pedimento || 'Pendiente',
+        fecha: ctx?.fecha_pago || ctx?.fecha_llegada || null,
         fraccion: p.fraccion_arancelaria || p.fraccion || '—',
         descripcion: p.descripcion || '—',
         cantidad: Number(p.cantidad) || 0,
         valorUSD: Number(p.precio_unitario) || 0,
-        proveedor: resolveProvs(ctx.proveedores),
-        origen: ctx.pais_procedencia || '—',
-        regimen: ctx.regimen || '',
-        tmec: isT(ctx.regimen),
+        proveedor: resolveProvs(ctx?.proveedores || null),
+        origen: ctx?.pais_procedencia || '—',
+        regimen: ctx?.regimen || '',
+        tmec: isT(ctx?.regimen || null),
       })
     }
     return rows

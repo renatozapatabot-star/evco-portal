@@ -158,6 +158,19 @@ async function handleApproval(draftId: string, chatId: number, userId: number, u
   }).then(() => {}, () => {})
 
   const supplier = draft.draft_data?.supplier || 'Desconocido'
+  const companyId = draft.draft_data?.company_id || ''
+
+  // Insert celebration notification for portal users
+  if (companyId) {
+    await supabase.from('notifications').insert({
+      type: 'approval_complete',
+      severity: 'celebration',
+      title: `🦀 Borrador aprobado: ${supplier}`,
+      description: 'Patente 3596 honrada. Gracias, Tito.',
+      company_id: companyId,
+      read: false,
+    }).then(() => {}, () => {})
+  }
 
   // Send approval message with 5-second cancel button
   // After 5 seconds, filing-processor.js picks up approved_pending drafts and:

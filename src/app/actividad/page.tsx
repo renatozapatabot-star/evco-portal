@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import { getCompanyIdCookie } from '@/lib/client-config'
 import { useIsMobile } from '@/hooks/use-mobile'
-import { fmtRelativeTime } from '@/lib/format-utils'
+import { fmtDateTime } from '@/lib/format-utils'
 import { EmptyState } from '@/components/ui/EmptyState'
 import Link from 'next/link'
 
@@ -205,7 +205,7 @@ export default function ActividadPage() {
               </div>
               {/* Time */}
               <span style={{ fontSize: 11, color: 'var(--text-muted)', flexShrink: 0, fontFamily: 'var(--font-mono)' }}>
-                {fmtRelativeTime(item.timestamp)}
+                {fmtDateTime(item.timestamp)}
               </span>
             </Link>
           ))}

@@ -23,25 +23,34 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-// Director context — voice is Tito-only
-const DIRECTOR_CTX = {
-  companyId: 'evco',
-  clientClave: '9254',
-  clientName: 'EVCO Plastics de México',
-  patente: '3596',
-  aduana: '240',
+// Director context — loaded from DB at request time, fallback for server-to-server VAPI calls
+async function getDirectorContext() {
+  const { data } = await supabase
+    .from('companies')
+    .select('company_id, clave_cliente, name')
+    .eq('company_id', 'evco')
+    .single()
+  return {
+    companyId: data?.company_id || 'evco',
+    clientClave: data?.clave_cliente || '',
+    clientName: data?.name || 'Cliente',
+    patente: '3596',
+    aduana: '240',
+  }
 }
+// Cached per cold start
+let DIRECTOR_CTX: { companyId: string; clientClave: string; clientName: string; patente: string; aduana: string } | null = null
 
-function buildVoiceSystemPrompt(): string {
+function buildVoiceSystemPrompt(ctx: NonNullable<typeof DIRECTOR_CTX>): string {
   return `Eres CRUZ, el sistema de inteligencia aduanal de Renato Zapata & Company, Laredo, Texas.
 
 IDENTIDAD:
-- Hablas como un agente aduanal senior con 20 años de experiencia en Aduana ${DIRECTOR_CTX.aduana} Nuevo Laredo
+- Hablas como un agente aduanal senior con 20 años de experiencia en Aduana ${ctx.aduana} Nuevo Laredo
 - Eres directo, específico, orientado a la acción
 - Hablas español siempre — este es un canal de voz
 - Términos técnicos en español: pedimento, fracción, tráfico, COVE, MVE, IGI, DTA
 
-CLIENTE ACTUAL: ${DIRECTOR_CTX.clientName} (clave ${DIRECTOR_CTX.clientClave})
+CLIENTE ACTUAL: ${ctx.clientName} (clave ${ctx.clientClave})
 
 MODO VOZ ACTIVO:
 - Responde en 1-3 oraciones máximo. Habla como colega, no como reporte.
@@ -121,6 +130,7 @@ const VOICE_TOOLS = [
 // Reuse executeTool from cruz-chat — imported inline to avoid circular deps
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function executeTool(name: string, input: Record<string, any>): Promise<string> {
+  if (!DIRECTOR_CTX) DIRECTOR_CTX = await getDirectorContext()
   const { companyId, clientClave } = DIRECTOR_CTX
   try {
     switch (name) {
@@ -278,6 +288,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'AI not configured' }, { status: 503 })
   }
 
+  // Lazy-load director context from DB
+  if (!DIRECTOR_CTX) DIRECTOR_CTX = await getDirectorContext()
+
   try {
     const body = await req.json()
 
@@ -311,7 +324,7 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 512,
-        system: buildVoiceSystemPrompt(),
+        system: buildVoiceSystemPrompt(DIRECTOR_CTX!),
         tools: VOICE_TOOLS,
         messages: anthropicMessages,
       }),
@@ -361,7 +374,7 @@ export async function POST(req: NextRequest) {
         body: JSON.stringify({
           model: 'claude-sonnet-4-20250514',
           max_tokens: 512,
-          system: buildVoiceSystemPrompt(),
+          system: buildVoiceSystemPrompt(DIRECTOR_CTX!),
           tools: VOICE_TOOLS,
           messages: loopMessages,
         }),
@@ -386,7 +399,7 @@ export async function POST(req: NextRequest) {
       output_tokens: outputTokens,
       cost_usd: (inputTokens * 0.003 + outputTokens * 0.015) / 1000,
       action: 'cruz_voice',
-      client_code: DIRECTOR_CTX.clientClave,
+      client_code: DIRECTOR_CTX?.clientClave || '',
       latency_ms: Date.now() - startTime,
     }).then(() => {}, () => {})
 
@@ -394,7 +407,7 @@ export async function POST(req: NextRequest) {
     const lastUserMsg = anthropicMessages.filter((m: { role: string }) => m.role === 'user').pop()
     supabase.from('cruz_conversations').insert({
       session_id: `voice-${Date.now()}`,
-      company_id: DIRECTOR_CTX.companyId,
+      company_id: DIRECTOR_CTX?.companyId || '',
       user_message: (typeof lastUserMsg?.content === 'string' ? lastUserMsg.content : '').substring(0, 2000),
       cruz_response: text.substring(0, 5000),
       tools_used: loopMessages.filter((m: { role: string; content: unknown }) => m.role === 'assistant' && Array.isArray(m.content))

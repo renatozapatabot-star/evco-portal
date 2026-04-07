@@ -132,7 +132,7 @@ export default function LotesPage() {
             <p style={{ margin: '2px 0 0', fontSize: 12, color: '#9B9B9B' }}>tráficos</p>
           </div>
           <div>
-            <span className="font-mono" style={{ fontSize: 20, fontWeight: 700, color: '#C9A84C' }}>
+            <span className="font-mono" style={{ fontSize: 20, fontWeight: 700, color: 'var(--gold)' }}>
               ~{totalTime} min
             </span>
             <p style={{ margin: '2px 0 0', fontSize: 12, color: '#9B9B9B' }}>tiempo estimado</p>
@@ -206,7 +206,7 @@ export default function LotesPage() {
                 style={{
                   minHeight: 48,
                   borderRadius: 12,
-                  background: '#C9A84C',
+                  background: 'var(--gold)',
                   color: '#FFFFFF',
                   border: 'none',
                   fontSize: 15,
@@ -215,7 +215,7 @@ export default function LotesPage() {
                   transition: 'background 150ms',
                 }}
                 onMouseOver={(e) => { e.currentTarget.style.background = '#B8933B' }}
-                onMouseOut={(e) => { e.currentTarget.style.background = '#C9A84C' }}
+                onMouseOut={(e) => { e.currentTarget.style.background = 'var(--gold)' }}
               >
                 {ACTION_LABELS[batch.action] || 'Procesar lote'}
               </button>

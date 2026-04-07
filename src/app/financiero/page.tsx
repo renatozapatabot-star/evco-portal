@@ -7,6 +7,7 @@ import { FinTable } from '@/components/financiero/FinTable'
 import { FinExchange } from '@/components/financiero/FinExchange'
 import type { FacturaRow } from '@/components/financiero/FinTable'
 import type { TipoCambio } from '@/components/financiero/FinExchange'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { DollarSign, TrendingUp, Clock, AlertTriangle } from 'lucide-react'
 
 /* ── Light tokens (DESIGN_SYSTEM.md v6) ── */
@@ -168,8 +169,13 @@ export default function FinancieroPage() {
           )}
         </div>
 
+        {/* Empty state */}
+        {!loading && traficos.length === 0 && facturas.length === 0 && (
+          <EmptyState icon="💰" title="Sin datos financieros" description="Los datos de tráficos y facturas aparecerán aquí cuando se registren operaciones." />
+        )}
+
         {/* Summary Cards */}
-        {!loading && (
+        {!loading && (traficos.length > 0 || facturas.length > 0) && (
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: 16, marginBottom: 24 }}>
             <div style={{ background: D.card, border: `1px solid ${D.cardBorder}`, borderRadius: D.r, padding: 20 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>

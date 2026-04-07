@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { cookies } from 'next/headers'
+import { verifySession } from '@/lib/session'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -8,9 +8,11 @@ const supabase = createClient(
 )
 
 // GET — fetch unreviewed classification decisions
-export async function GET() {
-  const cookieStore = await cookies()
-  const companyId = cookieStore.get('company_clave')?.value || 'evco'
+export async function GET(request: NextRequest) {
+  const sessionToken = request.cookies.get('portal_session')?.value || ''
+  const session = await verifySession(sessionToken)
+  if (!session) return NextResponse.json({ data: null, error: { code: 'UNAUTHORIZED', message: 'Not authenticated' } }, { status: 401 })
+  const companyId = session.companyId
 
   const { data, error } = await supabase
     .from('agent_decisions')
@@ -29,9 +31,11 @@ export async function GET() {
 }
 
 // POST — vote on a classification (confirm or correct)
-export async function POST(request: Request) {
-  const cookieStore = await cookies()
-  const companyId = cookieStore.get('company_clave')?.value || 'evco'
+export async function POST(request: NextRequest) {
+  const sessionToken = request.cookies.get('portal_session')?.value || ''
+  const session = await verifySession(sessionToken)
+  if (!session) return NextResponse.json({ data: null, error: { code: 'UNAUTHORIZED', message: 'Not authenticated' } }, { status: 401 })
+  const companyId = session.companyId
 
   const body = await request.json()
   const { decision_id, action, corrected_to } = body

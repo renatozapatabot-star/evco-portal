@@ -24,7 +24,7 @@
   --navy-700: #18293F;
 
   /* ── Gold palette ── */
-  --gold-400: #C4963C;
+  --gold-400: #C9A84C;
   --gold-300: #E8C468;
   --gold-200: #F0D88A;
   --gold-100: #FBF5E6;
@@ -237,7 +237,7 @@ body {
   display: none;
   font-size: 20px;
   font-weight: 800;
-  color: var(--gold, #C4963C);
+  color: var(--gold, #C9A84C);
   letter-spacing: 1px;
 }
 
@@ -249,7 +249,7 @@ body {
 .sidebar-logo-text {
   font-size: 20px;
   font-weight: 800;
-  color: var(--gold, #C4963C);
+  color: var(--gold, #C9A84C);
   letter-spacing: 2px;
 }
 
@@ -324,7 +324,7 @@ body {
 
 .sidebar-nav-item.active {
   background: rgba(196, 150, 60, 0.12);
-  color: var(--gold, #C4963C);
+  color: var(--gold, #C9A84C);
   font-weight: 700;
 }
 
@@ -337,7 +337,7 @@ body {
 
 .sidebar-nav-item.active .nav-icon {
   opacity: 1;
-  color: var(--gold, #C4963C);
+  color: var(--gold, #C9A84C);
 }
 
 .sidebar-footer {
@@ -520,7 +520,7 @@ body {
 }
 
 .topbar-search-btn:hover {
-  border-color: var(--gold, #C4963C);
+  border-color: var(--gold, #C9A84C);
   box-shadow: 0 2px 8px rgba(196,150,60,0.08);
 }
 
@@ -1230,7 +1230,7 @@ button:active:not(:disabled), .btn:active:not(:disabled) {
 }
 
 .mn-tab.mn-active {
-  color: var(--gold, #C4963C);
+  color: var(--gold, #C9A84C);
 }
 
 .mn-tab.mn-center {
@@ -1261,7 +1261,7 @@ button:active:not(:disabled), .btn:active:not(:disabled) {
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: var(--gold, #C4963C);
+  background: var(--gold, #C9A84C);
 }
 
 /* Mobile bottom nav center Z button — 60px (3 AM driver standard) */
@@ -1452,7 +1452,7 @@ tr.clickable-row:hover {
 
 /* Row hover with gold left border */
 tr.clickable-row:hover td:first-child {
-  box-shadow: inset 3px 0 0 var(--gold, #C4963C);
+  box-shadow: inset 3px 0 0 var(--gold, #C9A84C);
 }
 
 /* Zebra striping */
@@ -1486,7 +1486,7 @@ tr.row-odd  { background: rgba(248,250,252,0.5); }
 /* ── Accessibility ───────────────────────────────── */
 
 *:focus-visible {
-  outline: 2px solid var(--gold-400, #C4963C);
+  outline: 2px solid var(--gold-400, #C9A84C);
   outline-offset: 2px;
   border-radius: 4px;
 }

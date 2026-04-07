@@ -799,7 +799,8 @@ async function executeTool(name: string, input: Record<string, any>, clientCtx: 
         return JSON.stringify({ company_id: cid2, metrics: savings })
       }
       case 'pre_filing_check': {
-        const pfRes = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL ? '' : 'http://localhost:3000'}/api/pre-filing-check`, {
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://evco-portal.vercel.app'
+        const pfRes = await fetch(`${siteUrl}/api/pre-filing-check`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ trafico_id: input.trafico_id })
         }).catch(() => null)
@@ -901,7 +902,8 @@ async function executeTool(name: string, input: Record<string, any>, clientCtx: 
       }
       case 'predict_arrival': {
         try {
-          const pfRes = await fetch('http://localhost:3000/api/predict-arrival', {
+          const arrivalUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://evco-portal.vercel.app'
+          const pfRes = await fetch(`${arrivalUrl}/api/predict-arrival`, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ trafico_id: input.trafico_id })
           })
@@ -911,7 +913,7 @@ async function executeTool(name: string, input: Record<string, any>, clientCtx: 
       }
       case 'send_whatsapp': {
         try {
-          const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/whatsapp`, {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'https://evco-portal.vercel.app'}/api/whatsapp`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ trafico_id: input.trafico_id, supplier_phone: input.supplier_phone, missing_docs: input.missing_docs }),
@@ -925,7 +927,7 @@ async function executeTool(name: string, input: Record<string, any>, clientCtx: 
       }
       case 'generate_tracking_link': {
         try {
-          const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/tracking/generate`, {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'https://evco-portal.vercel.app'}/api/tracking/generate`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ trafico_id: input.trafico_id }),
@@ -1030,7 +1032,7 @@ async function executeTool(name: string, input: Record<string, any>, clientCtx: 
         // Chain: generate upload link + optionally notify via WhatsApp
         const docTypes = input.doc_types || ['FACTURA', 'COVE']
         const token = Array.from({ length: 32 }, () => Math.floor(Math.random() * 16).toString(16)).join('')
-        const uploadUrl = `https://evco-portal.vercel.app/upload/${token}`
+        const uploadUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://evco-portal.vercel.app'}/upload/${token}`
 
         await supabase.from('upload_tokens').insert({
           token,

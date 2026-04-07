@@ -123,7 +123,7 @@ export default function AlertasInternasPage() {
             padding: '8px 16px', background: 'none', border: 'none', cursor: 'pointer',
             fontSize: 13, fontWeight: filter === f ? 700 : 500,
             color: filter === f ? 'var(--gold)' : 'var(--text-secondary)',
-            borderBottom: filter === f ? '2px solid #C4963C' : '2px solid transparent',
+            borderBottom: filter === f ? '2px solid #C9A84C' : '2px solid transparent',
             marginBottom: -1,
           }}>
             {f === 'all' ? 'Todas' : (SEVERITY_CONFIG[f]?.label || f)}

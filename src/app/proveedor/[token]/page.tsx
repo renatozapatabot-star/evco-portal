@@ -172,7 +172,7 @@ export default function ProveedorPage() {
               disabled={uploading}
               style={{
                 width: '100%', padding: '16px 24px', borderRadius: 12,
-                background: '#C4963C', color: '#FFFFFF', border: 'none',
+                background: '#C9A84C', color: '#FFFFFF', border: 'none',
                 fontSize: 16, fontWeight: 700, cursor: uploading ? 'wait' : 'pointer',
                 minHeight: 56, opacity: uploading ? 0.7 : 1,
               }}
@@ -258,7 +258,7 @@ export default function ProveedorPage() {
                   }}
                   style={{
                     display: 'inline-block', padding: '10px 20px',
-                    borderRadius: 8, background: '#C4963C', color: '#FFFFFF',
+                    borderRadius: 8, background: '#C9A84C', color: '#FFFFFF',
                     fontSize: 13, fontWeight: 700, textDecoration: 'none',
                     minHeight: 40,
                   }}
@@ -305,7 +305,7 @@ const styles = {
   logo: {
     fontSize: 24,
     fontWeight: 800,
-    color: '#C4963C',
+    color: '#C9A84C',
     letterSpacing: '0.1em',
     marginBottom: 4,
   } as React.CSSProperties,

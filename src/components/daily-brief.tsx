@@ -43,7 +43,7 @@ export function DailyBrief({
     <div style={{
       background: 'var(--bg-card)',
       border: '1px solid #E8E5E0',
-      borderLeft: '3px solid #C4963C',
+      borderLeft: '3px solid #C9A84C',
       borderRadius: 12,
       padding: 20,
       maxWidth: 480,

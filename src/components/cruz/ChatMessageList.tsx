@@ -83,7 +83,7 @@ export default function ChatMessageList({
       {messages.length === 0 && !loading && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16, paddingTop: 24 }}>
           <div style={{
-            background: D.surface, borderLeft: '3px solid #C4963C',
+            background: D.surface, borderLeft: '3px solid #C9A84C',
             borderRadius: 8, padding: '14px 16px', marginBottom: 16,
             maxWidth: 500,
           }}>

@@ -155,7 +155,7 @@ export default function EntradaDetailPage() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
             <div style={{
               width: 10, height: 10, borderRadius: '50%',
-              background: hasIncidencia ? 'var(--gold, #C4963C)' : 'var(--success, #16A34A)',
+              background: hasIncidencia ? 'var(--gold, #C9A84C)' : 'var(--success, #16A34A)',
               flexShrink: 0,
             }} />
             <h1 style={{
@@ -246,7 +246,7 @@ export default function EntradaDetailPage() {
               style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 padding: '14px 16px', borderRadius: 10,
-                border: '1px solid var(--border, #E8E5E0)', borderLeft: '3px solid var(--gold, #C4963C)',
+                border: '1px solid var(--border, #E8E5E0)', borderLeft: '3px solid var(--gold, #C9A84C)',
                 textDecoration: 'none', transition: 'background 100ms', minHeight: 48,
               }}
               onMouseEnter={e => { e.currentTarget.style.background = '#FAFAF8' }}

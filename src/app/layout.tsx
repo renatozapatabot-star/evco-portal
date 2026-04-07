@@ -44,7 +44,7 @@ export default function RootLayout({
     <html lang="es" className={`${GeistSans.variable} ${GeistMono.variable} ${jetbrainsMono.variable}`}>
       <head>
         <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#C4963C" />
+        <meta name="theme-color" content="#C9A84C" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />

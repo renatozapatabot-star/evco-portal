@@ -127,7 +127,7 @@ export function DocumentosView() {
             <div style={{
               width: `${Math.round((completedRequired / requiredDocs.length) * 100)}%`,
               height: '100%',
-              background: completedRequired === requiredDocs.length ? 'var(--success, #16A34A)' : 'var(--gold, #C4963C)',
+              background: completedRequired === requiredDocs.length ? 'var(--success, #16A34A)' : 'var(--gold, #C9A84C)',
               borderRadius: 9999,
               transition: 'width 0.4s ease',
             }} />
@@ -282,7 +282,7 @@ export function DocumentosView() {
             onDragLeave={() => setDragOver(false)}
             onDrop={e => { e.preventDefault(); setDragOver(false); if (e.dataTransfer.files[0]) handleUploadFile(e.dataTransfer.files[0]) }}
             style={{
-              border: `2px dashed ${dragOver ? 'var(--gold, #C4963C)' : 'var(--border, #E8E5E0)'}`,
+              border: `2px dashed ${dragOver ? 'var(--gold, #C9A84C)' : 'var(--border, #E8E5E0)'}`,
               borderRadius: 12, padding: '24px 16px', textAlign: 'center', cursor: 'pointer',
               background: dragOver ? 'rgba(196,150,60,0.04)' : 'var(--bg-card)',
               transition: 'all 150ms',
@@ -312,7 +312,7 @@ export function DocumentosView() {
             {uploading ? (
               <div>
                 <div style={{ height: 6, background: 'var(--border, #E8E5E0)', borderRadius: 3 }}>
-                  <div style={{ width: `${uploadProgress}%`, height: '100%', background: 'var(--gold, #C4963C)', borderRadius: 3, transition: 'width 80ms linear' }} />
+                  <div style={{ width: `${uploadProgress}%`, height: '100%', background: 'var(--gold, #C9A84C)', borderRadius: 3, transition: 'width 80ms linear' }} />
                 </div>
                 <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4, textAlign: 'center' }}>{uploadProgress}%</div>
               </div>

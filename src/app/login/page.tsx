@@ -256,7 +256,7 @@ function LoginContent() {
           text-decoration: none; color: var(--navy-900); background: var(--gold-400);
           transition: background 150ms ease, transform 100ms ease;
         }
-        .login-btn-gold:hover { background: #C4963C; transform: translateY(-1px); }
+        .login-btn-gold:hover { background: #C9A84C; transform: translateY(-1px); }
         .login-btn-gold:active { transform: translateY(0); }
         .login-btn-outline {
           flex: 1; display: flex; align-items: center; justify-content: center;
@@ -396,7 +396,7 @@ function LoginContent() {
           position: relative;
         }
         .login-submit:hover:not(:disabled) {
-          background: #C4963C;
+          background: #C9A84C;
           transform: translateY(-1px);
           box-shadow: 0 4px 12px rgba(196,150,60,0.25);
         }

@@ -512,7 +512,7 @@ export function CruzChatBubble() {
           width: 14px;
           height: 14px;
           border-radius: 50%;
-          background: linear-gradient(135deg, #C4963C, #8B6914);
+          background: linear-gradient(135deg, #C9A84C, #8B6914);
           box-shadow: 0 2px 8px rgba(196,150,60,0.25);
         }
         .cruz-thought-bubble::after {
@@ -523,7 +523,7 @@ export function CruzChatBubble() {
           width: 8px;
           height: 8px;
           border-radius: 50%;
-          background: linear-gradient(135deg, #C4963C, #8B6914);
+          background: linear-gradient(135deg, #C9A84C, #8B6914);
           box-shadow: 0 2px 6px rgba(196,150,60,0.2);
         }
       `}</style>

@@ -106,6 +106,7 @@ export const INTERNAL_GROUPS: NavGroup[] = [
 
 export const INTERNAL_BOTTOM: NavTopLevel[] = [
   // CRUZ AI is now a floating bubble — no nav entry needed
+  { href: '/rentabilidad', label: 'Rentabilidad', icon: DollarSign, roles: ['admin'] },
   { href: '/admin',  label: 'Config', icon: Settings, roles: ['admin', 'broker'] },
 ]
 

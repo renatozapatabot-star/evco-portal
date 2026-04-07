@@ -19,6 +19,7 @@
 const path = require('path')
 require('dotenv').config({ path: path.join(__dirname, '..', '.env.local') })
 const { createClient } = require('@supabase/supabase-js')
+const { fetchAll } = require('./lib/paginate')
 
 const SCRIPT_NAME = 'link-orphan-entradas'
 const DRY_RUN = process.argv.includes('--dry-run')
@@ -45,14 +46,16 @@ async function run() {
   console.log('═'.repeat(50))
 
   // Get orphan entradas (no trafico link)
-  const { data: orphans, error } = await supabase
-    .from('entradas')
-    .select('id, cve_entrada, cve_embarque, company_id, cve_proveedor, fecha_llegada_mercancia')
-    .is('trafico', null)
-    .not('cve_embarque', 'is', null)
-    .limit(5000)
-
-  if (error) throw new Error(`Query orphans failed: ${error.message}`)
+  let orphans
+  try {
+    orphans = await fetchAll(supabase
+      .from('entradas')
+      .select('id, cve_entrada, cve_embarque, company_id, cve_proveedor, fecha_llegada_mercancia')
+      .is('trafico', null)
+      .not('cve_embarque', 'is', null))
+  } catch (error) {
+    throw new Error(`Query orphans failed: ${error.message}`)
+  }
   console.log(`   Orphan entradas with embarque: ${(orphans || []).length}`)
 
   if (!orphans || orphans.length === 0) {
@@ -61,11 +64,10 @@ async function run() {
   }
 
   // Get all traficos for matching
-  const { data: traficos } = await supabase
+  const traficos = await fetchAll(supabase
     .from('traficos')
     .select('trafico, embarque, company_id')
-    .not('embarque', 'is', null)
-    .limit(10000)
+    .not('embarque', 'is', null))
 
   // Build embarque → trafico map
   const embarqueMap = new Map()

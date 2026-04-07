@@ -17,6 +17,7 @@
 const path = require('path')
 require('dotenv').config({ path: path.resolve(__dirname, '..', '.env.local') })
 const { createClient } = require('@supabase/supabase-js')
+const { fetchAll } = require('./lib/paginate')
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -91,11 +92,10 @@ async function main() {
   const startTime = Date.now()
 
   // Step 1: Fetch all completed document requests across all clients
-  const { data: solicitudes } = await supabase.from('documento_solicitudes')
+  const solicitudes = await fetchAll(supabase.from('documento_solicitudes')
     .select('id, trafico_id, doc_type, status, solicitado_at, recibido_at')
     .eq('status', 'recibido')
-    .not('recibido_at', 'is', null)
-    .limit(5000)
+    .not('recibido_at', 'is', null))
 
   console.log(`  ${(solicitudes || []).length} solicitudes completadas`)
 
@@ -185,11 +185,10 @@ async function main() {
   }
 
   // Step 5: Also build templates from expediente_documentos (broader coverage)
-  const { data: allDocs } = await supabase.from('expediente_documentos')
+  const allDocs = await fetchAll(supabase.from('expediente_documentos')
     .select('trafico_id, doc_type, created_at')
     .not('doc_type', 'is', null)
-    .gte('created_at', '2024-01-01')
-    .limit(5000)
+    .gte('created_at', '2024-01-01'))
 
   const docGroups = new Map()
   for (const doc of (allDocs || [])) {

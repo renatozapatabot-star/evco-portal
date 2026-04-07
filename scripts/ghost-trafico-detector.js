@@ -14,6 +14,7 @@
 const path = require('path')
 require('dotenv').config({ path: path.resolve(__dirname, '..', '.env.local') })
 const { createClient } = require('@supabase/supabase-js')
+const { fetchAll } = require('./lib/paginate')
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -54,10 +55,9 @@ async function main() {
   const alerts = []
 
   // Load recent tráficos across ALL clients
-  const { data: allTraficos } = await supabase.from('traficos')
+  const allTraficos = await fetchAll(supabase.from('traficos')
     .select('trafico, company_id, proveedores, importe_total, pedimento, fecha_llegada, transportista_mexicano, descripcion_mercancia, fecha_cruce')
-    .gte('fecha_llegada', '2024-01-01')
-    .limit(5000)
+    .gte('fecha_llegada', '2024-01-01'))
 
   const traficos = allTraficos || []
   console.log(`  ${traficos.length} tráficos loaded for analysis`)

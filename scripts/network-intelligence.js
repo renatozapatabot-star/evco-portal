@@ -14,6 +14,7 @@
 const path = require('path')
 require('dotenv').config({ path: path.resolve(__dirname, '..', '.env.local') })
 const { createClient } = require('@supabase/supabase-js')
+const { fetchAll } = require('./lib/paginate')
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -42,11 +43,10 @@ async function main() {
 
   // ── 1. RECONOCIMIENTO PATTERNS ──
   console.log('\n── Reconocimiento Patterns ──')
-  const { data: recoData } = await supabase.from('traficos')
+  const recoData = await fetchAll(supabase.from('traficos')
     .select('semaforo, descripcion_mercancia, company_id, fecha_cruce')
     .not('semaforo', 'is', null)
-    .gte('fecha_llegada', '2024-01-01')
-    .limit(5000)
+    .gte('fecha_llegada', '2024-01-01'))
 
   const recoByCategory = {}
   for (const t of (recoData || [])) {
@@ -80,11 +80,10 @@ async function main() {
 
   // ── 2. SUPPLIER NETWORK SCORES ──
   console.log('\n── Supplier Network Scores ──')
-  const { data: supplierData } = await supabase.from('traficos')
+  const supplierData = await fetchAll(supabase.from('traficos')
     .select('proveedores, company_id, pedimento, fecha_llegada, fecha_cruce, regimen')
     .not('proveedores', 'is', null)
-    .gte('fecha_llegada', '2024-01-01')
-    .limit(5000)
+    .gte('fecha_llegada', '2024-01-01'))
 
   const supplierStats = {}
   for (const t of (supplierData || [])) {
@@ -163,12 +162,11 @@ async function main() {
 
   // ── 3b. CROSSING TIMES BY DAY OF WEEK ──
   console.log('\n── Crossing Times by Day ──')
-  const { data: crossingByDay } = await supabase.from('traficos')
+  const crossingByDay = await fetchAll(supabase.from('traficos')
     .select('fecha_llegada, fecha_cruce')
     .not('fecha_cruce', 'is', null)
     .not('fecha_llegada', 'is', null)
-    .gte('fecha_llegada', '2024-01-01')
-    .limit(5000)
+    .gte('fecha_llegada', '2024-01-01'))
 
   const dayBuckets = { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] }
   const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
@@ -232,11 +230,10 @@ async function main() {
 
   // ── 4. COST BENCHMARKS ──
   console.log('\n── Cost Benchmarks ──')
-  const { data: costData } = await supabase.from('traficos')
+  const costData = await fetchAll(supabase.from('traficos')
     .select('company_id, importe_total, regimen')
     .not('importe_total', 'is', null)
-    .gte('fecha_llegada', '2024-01-01')
-    .limit(5000)
+    .gte('fecha_llegada', '2024-01-01'))
 
   const allValues = (costData || []).map(t => Number(t.importe_total) || 0).filter(v => v > 0)
   const networkAvgValue = allValues.length > 0 ? Math.round(allValues.reduce((a, b) => a + b, 0) / allValues.length) : 0
@@ -286,10 +283,9 @@ async function main() {
 
   // ── 4b. COST BY FRACCION CATEGORY ──
   console.log('\n── Cost by Fracción Category ──')
-  const { data: partidaCost } = await supabase.from('globalpc_partidas')
+  const partidaCost = await fetchAll(supabase.from('globalpc_partidas')
     .select('fraccion_arancelaria, fraccion, precio_unitario')
-    .not('precio_unitario', 'is', null)
-    .limit(5000)
+    .not('precio_unitario', 'is', null))
 
   const fraccionCosts = {}
   for (const p of (partidaCost || [])) {

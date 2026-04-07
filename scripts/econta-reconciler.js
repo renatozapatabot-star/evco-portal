@@ -10,6 +10,7 @@
 const path = require('path')
 require('dotenv').config({ path: path.resolve(__dirname, '..', '.env.local') })
 const { createClient } = require('@supabase/supabase-js')
+const { fetchAll } = require('./lib/paginate')
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -39,23 +40,21 @@ async function main() {
   console.log(`💰 CRUZ eConta Reconciler — ${DRY_RUN ? 'DRY RUN' : 'LIVE'}`)
 
   // ── 1. Get completed tráficos ──
-  const { data: operations } = await supabase
+  const operations = await fetchAll(supabase
     .from('traficos')
     .select('trafico, pedimento, company_id, importe_total, estatus')
     .not('pedimento', 'is', null)
     .ilike('estatus', '%cruz%')
-    .gte('fecha_llegada', '2024-01-01')
-    .limit(5000)
+    .gte('fecha_llegada', '2024-01-01'))
 
   const ops = operations || []
   console.log(`  Completed tráficos: ${ops.length}`)
 
   // ── 2. Get aduanet_facturas (these have referencia = trafico ID) ──
-  const { data: aduanetFacts } = await supabase
+  const aduanetFacts = await fetchAll(supabase
     .from('aduanet_facturas')
     .select('referencia, pedimento, valor_usd, clave_cliente')
-    .gte('fecha_pago', '2024-01-01')
-    .limit(5000)
+    .gte('fecha_pago', '2024-01-01'))
 
   const aduanet = aduanetFacts || []
   console.log(`  Aduanet facturas: ${aduanet.length}`)
@@ -86,11 +85,10 @@ async function main() {
   console.log(`  Unbilled: ${unbilled.length}`)
 
   // ── 3. Get econta_cartera for receivables ──
-  const { data: cartera } = await supabase
+  const cartera = await fetchAll(supabase
     .from('econta_cartera')
     .select('consecutivo, cve_cliente, importe, saldo, fecha')
-    .gt('saldo', 0)
-    .limit(5000)
+    .gt('saldo', 0))
 
   const crt = cartera || []
   const now = Date.now()
@@ -103,11 +101,10 @@ async function main() {
   console.log(`  Overdue >30d: ${overdue30.length} | >60d: ${overdue60.length} | >90d: ${overdue90.length}`)
 
   // ── 4. Get econta_facturas totals ──
-  const { data: econtaFacts } = await supabase
+  const econtaFacts = await fetchAll(supabase
     .from('econta_facturas')
     .select('total')
-    .gte('fecha', '2024-01-01')
-    .limit(5000)
+    .gte('fecha', '2024-01-01'))
 
   const totalFacturado = (econtaFacts || []).reduce((s, f) => s + (Number(f.total) || 0), 0)
   console.log(`  eConta facturado (2024+): ${fmtMXN(totalFacturado)}`)

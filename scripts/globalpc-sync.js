@@ -4,6 +4,7 @@ const soap = require('soap')
 const fs = require('fs')
 const path = require('path')
 require('dotenv').config({ path: '.env.local' })
+const { fetchAll } = require('./lib/paginate')
 
 // ─── Config ───
 const supabase = createClient(
@@ -633,12 +634,11 @@ async function run() {
         const { clave, companyId } = client
         console.log(`\n── WSDL docs: ${companyId} (${clave}) ──`)
 
-        const { data: traficos } = await supabase
+        const traficos = await fetchAll(supabase
           .from('traficos')
           .select('trafico')
           .like('trafico', `${clave}-%`)
-          .order('fecha_llegada', { ascending: false, nullsFirst: false })
-          .limit(5000)
+          .order('fecha_llegada', { ascending: false, nullsFirst: false }))
 
         if (!traficos || traficos.length === 0) {
           console.log(`   No tráficos for ${companyId} — skipping`)

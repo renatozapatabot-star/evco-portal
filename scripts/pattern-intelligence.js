@@ -9,6 +9,7 @@
 const path = require('path')
 require('dotenv').config({ path: path.resolve(__dirname, '..', '.env.local') })
 const { createClient } = require('@supabase/supabase-js')
+const { fetchAll } = require('./lib/paginate')
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -37,12 +38,11 @@ async function main() {
 
   // ── 1. Reconocimiento patterns ──
   console.log('1. Reconocimiento patterns...')
-  const { data: semaforoData } = await supabase
+  const semaforoData = await fetchAll(supabase
     .from('traficos')
     .select('semaforo, descripcion_mercancia, importe_total')
     .not('semaforo', 'is', null)
-    .gte('fecha_llegada', '2024-01-01')
-    .limit(10000)
+    .gte('fecha_llegada', '2024-01-01'))
 
   const sem = semaforoData || []
   const total = sem.length
@@ -63,12 +63,11 @@ async function main() {
 
   // ── 2. Supplier patterns ──
   console.log('2. Supplier patterns...')
-  const { data: suppData } = await supabase
+  const suppData = await fetchAll(supabase
     .from('traficos')
     .select('proveedores, company_id')
     .gte('fecha_llegada', '2024-01-01')
-    .not('proveedores', 'is', null)
-    .limit(10000)
+    .not('proveedores', 'is', null))
 
   const supplierClients = {}
   for (const t of (suppData || [])) {
@@ -96,11 +95,10 @@ async function main() {
 
   // ── 3. Volume trends ──
   console.log('3. Volume trends...')
-  const { data: volumeData } = await supabase
+  const volumeData = await fetchAll(supabase
     .from('traficos')
     .select('fecha_llegada')
-    .gte('fecha_llegada', '2024-01-01')
-    .limit(10000)
+    .gte('fecha_llegada', '2024-01-01'))
 
   const monthlyVolume = {}
   for (const t of (volumeData || [])) {
@@ -125,10 +123,9 @@ async function main() {
 
   // ── 4. Document patterns ──
   console.log('4. Document patterns...')
-  const { data: solData } = await supabase
+  const solData = await fetchAll(supabase
     .from('documento_solicitudes')
-    .select('doc_type, status')
-    .limit(5000)
+    .select('doc_type, status'))
 
   const docMissing = {}
   for (const s of (solData || [])) {
@@ -148,14 +145,13 @@ async function main() {
 
   // ── 5. Price trends ──
   console.log('5. Price trends...')
-  const { data: priceData } = await supabase
+  const priceData = await fetchAll(supabase
     .from('traficos')
     .select('importe_total, peso_bruto, fecha_llegada')
     .gte('fecha_llegada', '2024-01-01')
     .not('importe_total', 'is', null)
     .not('peso_bruto', 'is', null)
-    .gt('peso_bruto', 0)
-    .limit(5000)
+    .gt('peso_bruto', 0))
 
   if ((priceData || []).length > 100) {
     const prices = (priceData || []).map(t => ({

@@ -5,6 +5,7 @@
 // Test: node scripts/morning-report.js --dry-run
 
 const { createClient } = require('@supabase/supabase-js')
+const { fetchAll } = require('./lib/paginate')
 const path = require('path')
 require('dotenv').config({ path: path.join(__dirname, '..', '.env.local') })
 
@@ -164,9 +165,9 @@ async function getClientReport(client) {
   const highRisk = traf.filter(t => (t.risk_score || 0) >= 70).length
 
   // Entradas
-  const { data: entradas } = await supabase
+  const entradas = await fetchAll(supabase
     .from('entradas').select('tiene_faltantes, mercancia_danada')
-    .eq('company_id', client.company_id).limit(5000)
+    .eq('company_id', client.company_id))
   const ent = entradas || []
   const totalEntradas = ent.length
   const conFaltantes = ent.filter(e => e.tiene_faltantes).length

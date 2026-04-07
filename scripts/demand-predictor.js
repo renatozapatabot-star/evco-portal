@@ -14,6 +14,7 @@
 const path = require('path')
 require('dotenv').config({ path: path.resolve(__dirname, '..', '.env.local') })
 const { createClient } = require('@supabase/supabase-js')
+const { fetchAll } = require('./lib/paginate')
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -52,13 +53,12 @@ async function main() {
   console.log(`📦 Demand Predictor — ${DRY_RUN ? 'DRY RUN' : 'LIVE'}`)
 
   // Get all tráficos with supplier + dates for frequency analysis
-  const { data: allTraficos } = await supabase.from('traficos')
+  const allTraficos = await fetchAll(supabase.from('traficos')
     .select('trafico, company_id, proveedores, descripcion_mercancia, fecha_llegada, importe_total')
     .not('proveedores', 'is', null)
     .not('fecha_llegada', 'is', null)
     .gte('fecha_llegada', '2024-01-01')
-    .order('fecha_llegada', { ascending: true })
-    .limit(5000)
+    .order('fecha_llegada', { ascending: true }))
 
   if (!allTraficos || allTraficos.length === 0) {
     console.log('  No tráficos with supplier data.')

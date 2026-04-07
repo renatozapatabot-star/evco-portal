@@ -3,6 +3,7 @@
 // Statistical price anomaly detection per fraccion per proveedor
 
 const { createClient } = require('@supabase/supabase-js')
+const { fetchAll } = require('./lib/paginate')
 const path = require('path')
 require('dotenv').config({ path: path.join(__dirname, '..', '.env.local') })
 
@@ -24,9 +25,8 @@ async function main() {
   if (!facturas?.length) { console.log('No facturas found'); return }
 
   // 2. Also get partidas for fraccion-level analysis
-  const { data: partidas } = await supabase.from('globalpc_partidas')
-    .select('cve_trafico, cve_proveedor, fraccion_arancelaria, fraccion, valor_comercial, precio_unitario')
-    .limit(10000)
+  const partidas = await fetchAll(supabase.from('globalpc_partidas')
+    .select('cve_trafico, cve_proveedor, fraccion_arancelaria, fraccion, valor_comercial, precio_unitario'))
 
   // 3. Build price baselines per supplier
   const supplierPrices = {} // supplier -> [values]

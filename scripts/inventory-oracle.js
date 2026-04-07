@@ -18,6 +18,7 @@
 const path = require('path')
 require('dotenv').config({ path: path.resolve(__dirname, '..', '.env.local') })
 const { createClient } = require('@supabase/supabase-js')
+const { fetchAll } = require('./lib/paginate')
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -61,16 +62,21 @@ async function main() {
   const today = new Date()
 
   // Step 1: Fetch tráficos with weight + product data (last 2 years for patterns)
-  const { data: allTraficos, error: tErr } = await supabase.from('traficos')
-    .select('trafico, company_id, proveedores, descripcion_mercancia, fecha_llegada, peso_bruto, importe_total')
-    .not('descripcion_mercancia', 'is', null)
-    .not('fecha_llegada', 'is', null)
-    .not('peso_bruto', 'is', null)
-    .gte('fecha_llegada', '2024-01-01')
-    .order('fecha_llegada', { ascending: true })
-    .limit(10000)
+  let allTraficos
+  try {
+    allTraficos = await fetchAll(supabase.from('traficos')
+      .select('trafico, company_id, proveedores, descripcion_mercancia, fecha_llegada, peso_bruto, importe_total')
+      .not('descripcion_mercancia', 'is', null)
+      .not('fecha_llegada', 'is', null)
+      .not('peso_bruto', 'is', null)
+      .gte('fecha_llegada', '2024-01-01')
+      .order('fecha_llegada', { ascending: true }))
+  } catch (tErr) {
+    console.log(`  Error fetching tráficos: ${tErr.message}`)
+    allTraficos = null
+  }
 
-  if (tErr || !allTraficos?.length) {
+  if (!allTraficos?.length) {
     console.log('  Sin tráficos con datos de peso/producto.')
     await tg(`📦 <b>${SCRIPT_NAME}</b> — sin datos de tráficos.`)
     return

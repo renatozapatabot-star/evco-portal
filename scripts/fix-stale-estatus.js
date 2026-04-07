@@ -24,6 +24,7 @@
 const path = require('path')
 require('dotenv').config({ path: path.join(__dirname, '..', '.env.local') })
 const { createClient } = require('@supabase/supabase-js')
+const { fetchAll } = require('./lib/paginate')
 
 const SCRIPT_NAME = 'fix-stale-estatus'
 const DRY_RUN = process.argv.includes('--dry-run')
@@ -72,14 +73,16 @@ async function run() {
   const byClient = {}
 
   // Rule 1: Has fecha_cruce but not Cruzado → Cruzado
-  const { data: withCruce, error: err1 } = await supabase
-    .from('traficos')
-    .select('trafico, company_id, estatus, fecha_cruce')
-    .not('fecha_cruce', 'is', null)
-    .neq('estatus', 'Cruzado')
-    .limit(5000)
-
-  if (err1) throw new Error(`Query 1 failed: ${err1.message}`)
+  let withCruce
+  try {
+    withCruce = await fetchAll(supabase
+      .from('traficos')
+      .select('trafico, company_id, estatus, fecha_cruce')
+      .not('fecha_cruce', 'is', null)
+      .neq('estatus', 'Cruzado'))
+  } catch (err1) {
+    throw new Error(`Query 1 failed: ${err1.message}`)
+  }
 
   for (const t of (withCruce || [])) {
     if (!DRY_RUN) {

@@ -37,6 +37,16 @@ Tone: polite but firm. Mention compliance deadline. Keep under 200 words. Return
     })
   })
   const data = await res.json()
+  // Cost tracking
+  supabase.from('api_cost_log').insert({
+    model: 'claude-sonnet-4-20250514',
+    input_tokens: data.usage?.input_tokens || 0,
+    output_tokens: data.usage?.output_tokens || 0,
+    cost_usd: ((data.usage?.input_tokens || 0) * 0.003 + (data.usage?.output_tokens || 0) * 0.015) / 1000,
+    action: 'supplier_comms_draft',
+    client_code: 'system',
+    latency_ms: 0,
+  }).then(() => {}, () => {})
   const text = data.content?.[0]?.text || ''
   const lines = text.split('\n')
   const subjectLine = lines.find(l => l.startsWith('Asunto:')) || lines[0]

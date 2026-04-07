@@ -369,7 +369,7 @@ async function run() {
     .eq('active', true)
 
   const companyIds = (companies || []).map(c => c.company_id)
-  if (companyIds.length === 0) companyIds.push('evco') // Fallback
+  if (companyIds.length === 0) { companyIds.push('evco'); console.warn('  ⚠️  No active companies found — falling back to evco') }
 
   let totalCreated = 0
   let totalNotified = 0

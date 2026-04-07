@@ -49,12 +49,23 @@ async function run() {
     : `${now.getFullYear()}-${String(now.getMonth()).padStart(2, '0')}`
   const lastYear = `${now.getFullYear() - 1}-${String(now.getMonth() + 1).padStart(2, '0')}`
 
-  // Get traficos for analysis
-  const { data: traficos } = await supabase.from('traficos')
-    .select('company_id, proveedores, descripcion_mercancia, regimen, importe_total, fecha_llegada, pais_procedencia')
-    .gte('fecha_llegada', '2024-01-01')
-    .not('fecha_llegada', 'is', null)
-    .limit(50000)
+  // Get traficos for analysis — paginate past Supabase 1,000-row cap
+  const traficos = []
+  {
+    const BATCH = 1000
+    let offset = 0
+    while (true) {
+      const { data, error } = await supabase.from('traficos')
+        .select('company_id, proveedores, descripcion_mercancia, regimen, importe_total, fecha_llegada, pais_procedencia')
+        .gte('fecha_llegada', '2024-01-01')
+        .not('fecha_llegada', 'is', null)
+        .range(offset, offset + BATCH - 1)
+      if (error || !data || data.length === 0) break
+      traficos.push(...data)
+      offset += BATCH
+      if (data.length < BATCH) break
+    }
+  }
 
   if (!traficos || traficos.length === 0) {
     console.log('   No data for analysis')

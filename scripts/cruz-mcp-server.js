@@ -125,6 +125,16 @@ Return JSON only: { "fraccion": "XXXX.XX.XX", "description_es": "...", "igi_rate
   })
 
   const data = await res.json()
+  // Cost tracking — operational resilience rule #4
+  supabase.from('api_cost_log').insert({
+    model: 'claude-haiku-4-5-20251001',
+    input_tokens: data.usage?.input_tokens || 0,
+    output_tokens: data.usage?.output_tokens || 0,
+    cost_usd: ((data.usage?.input_tokens || 0) * 0.001 + (data.usage?.output_tokens || 0) * 0.005) / 1000,
+    action: 'mcp_classify_product',
+    client_code: 'mcp',
+    latency_ms: 0,
+  }).then(() => {}, () => {})
   const text = data.content?.[0]?.text || ''
   try {
     const jsonMatch = text.match(/\{[\s\S]*\}/)

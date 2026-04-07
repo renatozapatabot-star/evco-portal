@@ -17,6 +17,7 @@
 const path = require('path')
 require('dotenv').config({ path: path.resolve(__dirname, '..', '.env.local') })
 const { createClient } = require('@supabase/supabase-js')
+const { getExchangeRate } = require('./lib/rates')
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -24,6 +25,7 @@ const supabase = createClient(
 )
 
 const DRY_RUN = process.argv.includes('--dry-run')
+let exchangeRate = 17.5 // overwritten in main() from system_config
 const TELEGRAM_CHAT = '-5085543275'
 
 const REQUIRED_DOCS = ['FACTURA', 'COVE', 'PEDIMENTO']
@@ -43,6 +45,9 @@ async function sendTelegram(msg) {
 
 async function main() {
   console.log(`🔄 CRUZ Supply Chain Orchestrator — ${DRY_RUN ? 'DRY RUN' : 'LIVE'}`)
+
+  try { const fxData = await getExchangeRate(); exchangeRate = fxData.rate } catch { /* fallback 17.5 */ }
+  console.log(`  TC: ${exchangeRate}`)
 
   // Fetch active tráficos
   const { data: traficos } = await supabase
@@ -149,8 +154,7 @@ async function main() {
 
     // Estimate duties
     const value = Number(t.importe_total) || 0
-    const tc = 17.5 // approximate — real rate from system_config
-    const valorMXN = value * tc
+    const valorMXN = value * exchangeRate
     const dta = Math.round(valorMXN * 0.008)
     const igiRate = (regimen === 'IMD') ? 0 : 0.05
     const igi = Math.round(valorMXN * igiRate)

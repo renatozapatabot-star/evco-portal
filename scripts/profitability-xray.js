@@ -64,7 +64,7 @@ async function main() {
     .select('company_id')
     .eq('active', true)
   const companyIds = (companies || []).map(c => c.company_id)
-  if (companyIds.length === 0) companyIds.push('evco')
+  if (companyIds.length === 0) { companyIds.push('evco'); console.warn('  ⚠️  No active companies found — falling back to evco') }
 
   const results = []
 

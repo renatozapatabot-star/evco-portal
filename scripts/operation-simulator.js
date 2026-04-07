@@ -9,6 +9,7 @@
 const path = require('path')
 require('dotenv').config({ path: path.resolve(__dirname, '..', '.env.local') })
 const { createClient } = require('@supabase/supabase-js')
+const { getExchangeRate } = require('./lib/rates')
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -22,7 +23,8 @@ const supabase = createClient(
  */
 async function simulateCrossing(trafico) {
   const value = Number(trafico.importe_total) || 0
-  const tc = 17.5
+  let tc = 17.5
+  try { const fxData = await getExchangeRate(); tc = fxData.rate } catch { /* fallback */ }
 
   // Get learned patterns for crossing times
   const { data: crossingPatterns } = await supabase.from('learned_patterns')

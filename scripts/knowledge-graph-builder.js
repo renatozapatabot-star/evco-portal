@@ -27,12 +27,24 @@ async function upsertRelationship(a_type, a_id, rel, b_type, b_id, strength, com
 }
 
 async function buildSupplierProductRelationships() {
-  const { data } = await supabase
-    .from('globalpc_productos')
-    .select('cve_proveedor, fraccion, company_id')
-    .not('cve_proveedor', 'is', null)
-    .not('fraccion', 'is', null)
-    .limit(50000)
+  // Paginate past Supabase 1,000-row cap
+  const data = []
+  {
+    const BATCH = 1000
+    let offset = 0
+    while (true) {
+      const { data: batch, error } = await supabase
+        .from('globalpc_productos')
+        .select('cve_proveedor, fraccion, company_id')
+        .not('cve_proveedor', 'is', null)
+        .not('fraccion', 'is', null)
+        .range(offset, offset + BATCH - 1)
+      if (error || !batch || batch.length === 0) break
+      data.push(...batch)
+      offset += BATCH
+      if (batch.length < BATCH) break
+    }
+  }
 
   const pairs = {}
   ;(data || []).forEach(r => {

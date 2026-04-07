@@ -213,6 +213,16 @@ Máximo 4 párrafos. Tono ejecutivo profesional. Incluye recomendaciones acciona
         })
       })
       const data = await res.json()
+      // Cost tracking
+      supabase.from('api_cost_log').insert({
+        model: 'claude-sonnet-4-20250514',
+        input_tokens: data.usage?.input_tokens || 0,
+        output_tokens: data.usage?.output_tokens || 0,
+        cost_usd: ((data.usage?.input_tokens || 0) * 0.003 + (data.usage?.output_tokens || 0) * 0.015) / 1000,
+        action: 'monthly_report_narrative',
+        client_code: client.company_id || 'system',
+        latency_ms: 0,
+      }).then(() => {}, () => {})
       narrative = data.content?.[0]?.text || ''
     } catch (e) {
       console.log(`  ⚠️  Claude narrative failed: ${e.message}`)

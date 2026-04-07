@@ -6,6 +6,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 )
 
+const { getExchangeRate } = require('./lib/rates')
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN
 const TELEGRAM_CHAT = '-5085543275'
 const COMPANY_ID = 'evco'
@@ -48,7 +49,8 @@ async function run() {
     : 0.05 // Default 5% estimate
   const tmecValue = tmecOps.reduce((s, f) => s + Number(f.valor_usd || 0), 0)
   const tmecSavingsUSD = tmecValue * avgIgiRate
-  const tipoCambio = 17.5 // Approximate
+  let tipoCambio = 17.5
+  try { const fxData = await getExchangeRate(); tipoCambio = fxData.rate } catch { /* fallback */ }
   const tmecSavingsMXN = tmecSavingsUSD * tipoCambio
 
   // Penalties avoided: MVE folios filed

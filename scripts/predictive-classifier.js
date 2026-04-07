@@ -12,6 +12,7 @@
 const path = require('path')
 require('dotenv').config({ path: path.resolve(__dirname, '..', '.env.local') })
 const { createClient } = require('@supabase/supabase-js')
+const { getExchangeRate } = require('./lib/rates')
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -19,6 +20,7 @@ const supabase = createClient(
 )
 
 const DRY_RUN = process.argv.includes('--dry-run')
+let exchangeRate = 17.5 // overwritten in main() from system_config
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN
 const TELEGRAM_CHAT = '-5085543275'
 
@@ -97,8 +99,7 @@ function buildPrediction(t, history, supplier) {
 
   // 4. Estimate landed cost
   const value = Number(t.importe_total) || 0
-  const tc = 17.5
-  const valorMXN = value * tc
+  const valorMXN = value * exchangeRate
   const dta = Math.round(valorMXN * 0.008)
   const igiAmount = Math.round(valorMXN * (igi / 100))
   const iva = Math.round((valorMXN + dta + igiAmount) * 0.16)
@@ -125,6 +126,9 @@ function buildPrediction(t, history, supplier) {
 
 async function main() {
   console.log(`🔮 Predictive Classifier — ${DRY_RUN ? 'DRY RUN' : 'LIVE'}`)
+
+  try { const fxData = await getExchangeRate(); exchangeRate = fxData.rate } catch { /* fallback 17.5 */ }
+  console.log(`  TC: ${exchangeRate}`)
 
   // Find tráficos without prediction that have supplier info
   const { data: unpredicted } = await supabase.from('traficos')

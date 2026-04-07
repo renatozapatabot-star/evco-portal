@@ -65,12 +65,23 @@ async function run() {
   console.log(`\n🚀 ${prefix}CRUZ — Activate Trial Clients`)
   console.log('═'.repeat(70))
 
-  // Get all traficos for scoring
-  const { data: allTrafs } = await supabase.from('traficos')
-    .select('company_id, pedimento, fecha_cruce, importe_total, descripcion_mercancia, regimen, proveedores, estatus')
-    .gte('fecha_llegada', '2024-01-01')
-    .not('fecha_llegada', 'is', null)
-    .limit(50000)
+  // Get all traficos for scoring — paginate past Supabase 1,000-row cap
+  const allTrafs = []
+  {
+    const BATCH = 1000
+    let offset = 0
+    while (true) {
+      const { data, error } = await supabase.from('traficos')
+        .select('company_id, pedimento, fecha_cruce, importe_total, descripcion_mercancia, regimen, proveedores, estatus')
+        .gte('fecha_llegada', '2024-01-01')
+        .not('fecha_llegada', 'is', null)
+        .range(offset, offset + BATCH - 1)
+      if (error || !data || data.length === 0) break
+      allTrafs.push(...data)
+      offset += BATCH
+      if (data.length < BATCH) break
+    }
+  }
 
   const byClient = {}
   for (const t of (allTrafs || [])) {

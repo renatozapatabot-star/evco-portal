@@ -3,8 +3,10 @@
 import React, { useEffect, useState, useMemo } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Upload, FileText, Share2 } from 'lucide-react'
+import { ArrowLeft, Upload, FileText, Share2, ShieldAlert } from 'lucide-react'
 import { fmtId, fmtDate, fmtDateTime, fmtUSD, fmtKg, fmtDesc, fmtMXNInt, fmtPedimentoShort, formatAbsoluteETA } from '@/lib/format-utils'
+import { getTraficoUrgency } from '@/lib/trafico-urgency'
+import type { MeshAssessment } from '@/lib/intelligence-mesh'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { GOLD } from '@/lib/design-system'
 import { fmtCarrier, countryFlag } from '@/lib/carrier-names'
@@ -361,6 +363,7 @@ export default function TraficoDetailPage() {
   const [rates, setRates] = useState<{ dta: number; iva: number; tc: number } | null>(null)
   const [notifying, setNotifying] = useState(false)
   const [supplierLookup, setSupplierLookup] = useState<Map<string, string>>(new Map())
+  const [riskAssessment, setRiskAssessment] = useState<MeshAssessment | null>(null)
 
   // ── Upload handler (via /api/upload) ──
   const handleUpload = async (file: File | undefined, docType: string) => {
@@ -505,6 +508,16 @@ export default function TraficoDetailPage() {
         if (solData && solData.length > 0) setSolicitudes(solData as Solicitud[])
       })
   }, [id, companyId, retryKey])
+
+  // ── Fetch risk assessment (non-blocking) ──
+  useEffect(() => {
+    if (!id || loading) return
+    const tId = decodeURIComponent(String(id))
+    fetch(`/api/intelligence/risk-assessment?trafico_id=${encodeURIComponent(tId)}`)
+      .then(r => r.json())
+      .then(res => { if (res.data) setRiskAssessment(res.data) })
+      .catch(() => { /* best-effort — risk assessment is non-critical */ })
+  }, [id, loading])
 
   // ── Derived ──
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -719,11 +732,27 @@ export default function TraficoDetailPage() {
             </span>
           )}
 
-          {/* Status badge */}
-          <span className={`badge ${isCruzado ? 'badge-cruzado' : 'badge-proceso'}`}>
-            <span className="badge-dot" />
-            {String(t.estatus ?? 'En Proceso')}
-          </span>
+          {/* Status badge with urgency */}
+          {(() => {
+            const urgency = getTraficoUrgency({
+              estatus: String(t.estatus ?? ''),
+              fecha_llegada: (t.fecha_llegada as string) || null,
+              pedimento: (t.pedimento as string) || undefined,
+              doc_count: documentos.length,
+            })
+            return (
+              <span
+                className={`badge ${urgency.class === 'completed' ? 'badge-cruzado' : urgency.class === 'zombie' || urgency.class === 'stalled' ? 'badge-detenido' : 'badge-proceso'}`}
+                title={urgency.action || undefined}
+              >
+                <span className="badge-dot" />
+                {urgency.label}
+                {urgency.days > 1 && urgency.class !== 'completed' && (
+                  <span style={{ marginLeft: 4, fontSize: 10, opacity: 0.7 }}>· {urgency.days}d</span>
+                )}
+              </span>
+            )
+          })()}
 
           {/* Semaforo indicator */}
           {semaforoColor && (
@@ -854,6 +883,60 @@ export default function TraficoDetailPage() {
 
         {/* ── Proveedores ── */}
         <ProveedoresCard proveedores={String(t.proveedores ?? '')} pais={String(t.pais_procedencia ?? '')} supplierLookup={supplierLookup} />
+
+        {/* ── Risk Assessment (Intelligence Mesh) ── */}
+        {riskAssessment && (
+          <div className="card" style={{ padding: 20 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+              <ShieldAlert size={16} style={{ color: riskAssessment.riskLevel === 'critical' || riskAssessment.riskLevel === 'elevated' ? 'var(--danger-500)' : riskAssessment.riskLevel === 'moderate' ? 'var(--warning-500, #D97706)' : 'var(--success-500)' }} />
+              <span style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--slate-400)' }}>
+                Evaluación de Riesgo
+              </span>
+              <span style={{
+                marginLeft: 'auto', fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-mono)',
+                color: riskAssessment.riskLevel === 'critical' || riskAssessment.riskLevel === 'elevated' ? 'var(--danger-500)' : riskAssessment.riskLevel === 'moderate' ? 'var(--warning-500, #D97706)' : 'var(--success-500)',
+              }}>
+                {riskAssessment.riskScore}/100
+              </span>
+            </div>
+            {/* 7 dimension bars */}
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)', gap: 8 }}>
+              {riskAssessment.dimensions.map(dim => (
+                <div key={dim.source} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0' }}>
+                  <div style={{ width: 90, fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'capitalize' }}>
+                    {dim.source === 'bridge' ? 'Puente' : dim.source === 'supplier' ? 'Proveedor' : dim.source === 'currency' ? 'Divisa' : dim.source === 'documents' ? 'Documentos' : dim.source === 'compliance' ? 'Cumplimiento' : dim.source === 'historical' ? 'Historial' : dim.source === 'temporal' ? 'Temporal' : dim.source}
+                  </div>
+                  <div style={{ flex: 1, height: 6, borderRadius: 3, background: 'var(--slate-100)', overflow: 'hidden' }}>
+                    <div style={{
+                      width: `${Math.min(dim.score, 100)}%`, height: '100%', borderRadius: 3,
+                      background: dim.score >= 70 ? 'var(--danger-500)' : dim.score >= 40 ? 'var(--warning-500, #D97706)' : 'var(--success-500)',
+                      transition: 'width 300ms ease',
+                    }} />
+                  </div>
+                  <span style={{ width: 28, fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', textAlign: 'right' }}>
+                    {dim.score}
+                  </span>
+                </div>
+              ))}
+            </div>
+            {/* Recommendation */}
+            {riskAssessment.recommendation && (
+              <div style={{ marginTop: 12, padding: '10px 14px', borderRadius: 8, background: 'var(--slate-50)', fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                {riskAssessment.recommendation}
+              </div>
+            )}
+            {/* Correlations */}
+            {riskAssessment.correlations.length > 0 && (
+              <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-muted)' }}>
+                {riskAssessment.correlations.map((c, i) => (
+                  <span key={i} style={{ display: 'inline-block', marginRight: 8, padding: '2px 8px', borderRadius: 4, background: 'rgba(126,34,206,0.08)', color: '#7E22CE', fontSize: 11 }}>
+                    {c}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* ── 12-Step Horizontal Timeline ── */}
         <div className="card" style={{ padding: 20, overflowX: 'auto' }}>

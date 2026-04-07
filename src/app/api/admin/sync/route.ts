@@ -2,13 +2,18 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getErrorMessage } from '@/lib/errors'
 import { exec } from 'child_process'
 import { promisify } from 'util'
+import { verifySession } from '@/lib/session'
 
 const execAsync = promisify(exec)
 
 export async function POST(request: NextRequest) {
-  const role = request.cookies.get('user_role')?.value
-  if (role !== 'admin') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+  const sessionToken = request.cookies.get('portal_session')?.value || ''
+  const session = await verifySession(sessionToken)
+  if (!session) {
+    return NextResponse.json({ data: null, error: { code: 'UNAUTHORIZED', message: 'Sesión inválida' } }, { status: 401 })
+  }
+  if (session.role !== 'admin') {
+    return NextResponse.json({ data: null, error: { code: 'UNAUTHORIZED', message: 'Solo administrador' } }, { status: 403 })
   }
 
   const { searchParams } = new URL(request.url)

@@ -16,16 +16,23 @@ interface TraficoUpdate {
   timestamp: string
 }
 
+interface EntradaUpdate {
+  cve_entrada: string
+  pipeline_status?: string
+  timestamp: string
+}
+
 /**
- * Subscribe to real-time tráfico status changes for current company.
- * Returns latest update + last-updated timestamp.
+ * Subscribe to real-time tráfico + entrada status changes for current company.
+ * Returns latest updates for both entity types.
  */
 export function useRealtimeTrafico() {
   const [lastUpdate, setLastUpdate] = useState<TraficoUpdate | null>(null)
+  const [lastEntradaUpdate, setLastEntradaUpdate] = useState<EntradaUpdate | null>(null)
   const [updatedAt, setUpdatedAt] = useState<Date | null>(null)
   const companyIdRef = useRef('')
 
-  const handleUpdate = useCallback((payload: { new: Record<string, unknown>; old: Record<string, unknown> }) => {
+  const handleTraficoUpdate = useCallback((payload: { new: Record<string, unknown>; old: Record<string, unknown> }) => {
     const newRow = payload.new
     const oldRow = payload.old
     const newEstatus = String(newRow.estatus || '')
@@ -43,12 +50,22 @@ export function useRealtimeTrafico() {
     }
   }, [])
 
+  const handleEntradaUpdate = useCallback((payload: { new: Record<string, unknown>; old: Record<string, unknown> }) => {
+    const newRow = payload.new
+    setLastEntradaUpdate({
+      cve_entrada: String(newRow.cve_entrada || ''),
+      pipeline_status: String(newRow.pipeline_status || ''),
+      timestamp: new Date().toISOString(),
+    })
+    setUpdatedAt(new Date())
+  }, [])
+
   useEffect(() => {
     const companyId = getCompanyIdCookie()
     companyIdRef.current = companyId
 
     const channel = supabase
-      .channel('traficos-realtime')
+      .channel('cruz-realtime')
       .on(
         'postgres_changes' as any,
         {
@@ -57,7 +74,17 @@ export function useRealtimeTrafico() {
           table: 'traficos',
           filter: `company_id=eq.${companyId}`,
         },
-        handleUpdate
+        handleTraficoUpdate
+      )
+      .on(
+        'postgres_changes' as any,
+        {
+          event: '*',
+          schema: 'public',
+          table: 'entradas',
+          filter: `company_id=eq.${companyId}`,
+        },
+        handleEntradaUpdate
       )
       .subscribe()
 
@@ -66,7 +93,7 @@ export function useRealtimeTrafico() {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [handleUpdate])
+  }, [handleTraficoUpdate, handleEntradaUpdate])
 
-  return { lastUpdate, updatedAt }
+  return { lastUpdate, lastEntradaUpdate, updatedAt }
 }

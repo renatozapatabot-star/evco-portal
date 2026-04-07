@@ -75,6 +75,9 @@ interface TraficoInput {
 
 // ── Constants ──
 
+// Last-resort fallback when factura.tipo_cambio is null AND system_config unavailable.
+// Callers should pass the rate from system_config whenever possible.
+// This value is only used in offline/degraded scenarios.
 const DEFAULT_TC = 17.5
 const DEFAULT_IGI_RATE = 0.05        // 5% general rate
 const HOLDING_COST_PER_DAY = 200     // USD estimated daily cost of goods in transit

@@ -231,11 +231,16 @@ async function handleAprobar(chatId) {
     bot.sendMessage(chatId, text, {
       parse_mode: 'HTML',
       reply_markup: {
-        inline_keyboard: [[
-          { text: '✅ Aprobar', callback_data: `aprobar_${draft.id}` },
-          { text: '❌ Rechazar', callback_data: `rechazar_${draft.id}` },
-          { text: '✏️ Corregir', callback_data: `corregir_${draft.id}` },
-        ]]
+        inline_keyboard: [
+          [
+            { text: '✅ Aprobar', callback_data: `aprobar_${draft.id}` },
+            { text: '❌ Rechazar', callback_data: `rechazar_${draft.id}` },
+          ],
+          [
+            { text: '✏️ Corregir', callback_data: `corregir_${draft.id}` },
+            { text: '🔗 Editar en portal', url: `https://evco-portal.vercel.app/drafts/${draft.id}` },
+          ],
+        ]
       }
     })
   }
@@ -310,6 +315,43 @@ async function handlePendientes() {
   lines.push(`\nUsa /aprobar para ver detalle`)
   lines.push(`— CRUZ 🦀`)
   return lines.join('\n')
+}
+
+// ── /lote — Batch approve all pending drafts ──
+
+async function handleLote(chatId, username) {
+  const { data: drafts } = await supabase
+    .from('pedimento_drafts')
+    .select('id, trafico_id, draft_data, created_at')
+    .in('status', ['draft', 'pending', 'pending_review'])
+    .order('created_at', { ascending: true })
+    .limit(20)
+
+  const pending = drafts || []
+  if (pending.length === 0) {
+    bot.sendMessage(chatId, `✅ Sin borradores pendientes. Todo al día. — CRUZ 🦀`, { parse_mode: 'HTML' })
+    return
+  }
+
+  bot.sendMessage(chatId,
+    `📋 <b>APROBACIÓN EN LOTE</b>\n${pending.length} borrador(es) pendiente(s).\nCada uno tendrá su ventana de 5 segundos.`,
+    { parse_mode: 'HTML' }
+  )
+
+  for (const draft of pending) {
+    const dd = draft.draft_data || {}
+    const supplier = dd.extraction?.supplier || dd.supplier || '—'
+    const valueStr = dd.extraction?.value_usd || dd.value_usd ? fmtUSD(dd.extraction?.value_usd || dd.value_usd) + ' USD' : '—'
+
+    bot.sendMessage(chatId,
+      `📄 <b>${draft.trafico_id || '—'}</b> · ${supplier} · ${valueStr}`,
+      { parse_mode: 'HTML' }
+    )
+
+    await processApproval(chatId, draft.id, username)
+    // Small gap between approvals for readability
+    await new Promise(r => setTimeout(r, 500))
+  }
 }
 
 // ── Callback query handler — approve/reject/correct from inline buttons ──
@@ -421,46 +463,58 @@ async function processApproval(chatId, draftId, username) {
     timestamp: new Date().toISOString(),
   }).then(() => {}, () => {})
 
-  // Send confirmation with 5-second cancel button
+  // Send confirmation with visual countdown + cancel button
   const msg = await bot.sendMessage(chatId,
-    `⏳ Aprobando borrador... Tienes 5 segundos para cancelar.`,
+    `⏳ <b>5</b> — Aprobando... Cancelar ahora si hay error.`,
     {
       parse_mode: 'HTML',
       reply_markup: {
         inline_keyboard: [[
-          { text: '↩️ Cancelar', callback_data: `cancelar_${draftId}` },
+          { text: '❌ CANCELAR', callback_data: `cancelar_${draftId}` },
         ]]
       }
     }
   )
 
-  // After 5 seconds, finalize approval and remove cancel button
-  setTimeout(async () => {
-    // Check if still approved_pending (not cancelled)
-    const { data: draft } = await supabase
-      .from('pedimento_drafts')
-      .select('status')
-      .eq('id', draftId)
-      .single()
+  // Visual countdown: 5...4...3...2...1...done
+  const editMsg = async (text, markup) => {
+    await fetch(`https://api.telegram.org/bot${TOKEN}/editMessageText`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: chatId,
+        message_id: msg.message_id,
+        text,
+        parse_mode: 'HTML',
+        ...(markup ? { reply_markup: markup } : {}),
+      }),
+    }).catch(() => {})
+  }
 
-    if (draft?.status === 'approved_pending') {
-      await supabase.from('pedimento_drafts').update({
-        status: 'approved',
-      }).eq('id', draftId)
+  const cancelBtn = { inline_keyboard: [[{ text: '❌ CANCELAR', callback_data: `cancelar_${draftId}` }]] }
 
-      // Remove cancel button and show final message
-      await fetch(`https://api.telegram.org/bot${TOKEN}/editMessageText`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          chat_id: chatId,
-          message_id: msg.message_id,
-          text: `✅ Patente 3596 honrada. Gracias, Tito. 🦀`,
-          parse_mode: 'HTML',
-        }),
-      })
-    }
-  }, 5000)
+  for (let i = 4; i >= 1; i--) {
+    await new Promise(r => setTimeout(r, 1000))
+
+    // Check if cancelled during countdown
+    const { data: check } = await supabase
+      .from('pedimento_drafts').select('status').eq('id', draftId).single()
+    if (check?.status !== 'approved_pending') return // Cancelled — stop countdown
+
+    await editMsg(`⏳ <b>${i}</b> — Aprobando... Cancelar ahora si hay error.`, cancelBtn)
+  }
+
+  // Final second wait
+  await new Promise(r => setTimeout(r, 1000))
+
+  // Check one last time — was it cancelled in the last second?
+  const { data: draft } = await supabase
+    .from('pedimento_drafts').select('status').eq('id', draftId).single()
+
+  if (draft?.status === 'approved_pending') {
+    await supabase.from('pedimento_drafts').update({ status: 'approved' }).eq('id', draftId)
+    await editMsg(`✅ Patente 3596 honrada. Gracias, Tito. 🦀`)
+  }
 }
 
 // ── /activar — activate a client for portal access ──
@@ -497,6 +551,7 @@ function handleHelp() {
     `/entradas — Últimas 5 entradas`,
     `/financiero — Resumen financiero`,
     `/aprobar — Pendientes de aprobación`,
+    `/lote — Aprobar todos los borradores en lote`,
     `/pendientes — Conteo de pendientes`,
     `/activar [id] — Activar portal para cliente`,
     `/help — Esta lista`,
@@ -568,6 +623,15 @@ bot.onText(/\/pendientes/, async (msg) => {
   try {
     const reply = await handlePendientes()
     bot.sendMessage(msg.chat.id, reply, { parse_mode: 'HTML' })
+  } catch (e) {
+    bot.sendMessage(msg.chat.id, `❌ Error: ${e.message}`)
+  }
+})
+
+bot.onText(/\/lote/, async (msg) => {
+  try {
+    const username = msg.from?.username || msg.from?.first_name || 'Tito'
+    await handleLote(msg.chat.id, username)
   } catch (e) {
     bot.sendMessage(msg.chat.id, `❌ Error: ${e.message}`)
   }

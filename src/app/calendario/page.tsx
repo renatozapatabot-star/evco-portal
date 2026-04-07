@@ -360,7 +360,7 @@ export default function CalendarioPage() {
               display: 'flex', alignItems: 'center', gap: 6,
               padding: '8px 16px', borderRadius: 8, fontSize: 13, fontWeight: 600,
               background: 'var(--gold)', border: 'none', color: 'var(--bg-card)',
-              cursor: 'pointer', minHeight: 40,
+              cursor: 'pointer', minHeight: 60,
             }}
           >
             <Plus size={14} /> Crear evento
@@ -427,7 +427,7 @@ export default function CalendarioPage() {
                 background: newEventTitle.trim() && newEventDate ? 'var(--gold)' : 'var(--border)',
                 border: 'none', color: newEventTitle.trim() && newEventDate ? 'var(--bg-card)' : T.textMuted,
                 cursor: newEventTitle.trim() && newEventDate ? 'pointer' : 'default',
-                alignSelf: 'flex-end', minHeight: 40, minWidth: 120,
+                alignSelf: 'flex-end', minHeight: 60, minWidth: 120,
               }}
             >
               Guardar
@@ -604,7 +604,7 @@ export default function CalendarioPage() {
                   display: 'flex', alignItems: 'center', gap: 12,
                   padding: '10px 20px', textDecoration: 'none',
                   borderBottom: `1px solid var(--border)`,
-                  minHeight: 48,
+                  minHeight: 60,
                 }}
               >
                 <FileText size={14} style={{ color: T.amber, flexShrink: 0 }} />
@@ -638,7 +638,7 @@ export default function CalendarioPage() {
                 display: 'flex', alignItems: 'center', gap: 12,
                 padding: '10px 20px',
                 borderBottom: `1px solid var(--border)`,
-                minHeight: 48,
+                minHeight: 60,
               }}>
                 <span style={{
                   width: 8, height: 8, borderRadius: '50%', flexShrink: 0,

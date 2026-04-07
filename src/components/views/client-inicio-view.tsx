@@ -10,11 +10,14 @@ import { useIsMobile } from '@/hooks/use-mobile'
 import { calculateTmecSavings } from '@/lib/tmec-savings'
 import { computeStreak } from '@/lib/achievements'
 import { playSound } from '@/lib/sounds'
+import { getSmartGreeting } from '@/lib/greeting'
+import { dashboardStory } from '@/lib/data-stories'
+import { anticipate, isDismissed, dismissSuggestion } from '@/lib/anticipate'
 import { Celebrate } from '@/components/celebrate'
 import { ErrorCard } from '@/components/ui/ErrorCard'
 import { DashboardSkeleton } from '@/components/skeletons/DashboardSkeleton'
 import { useSessionCache } from '@/hooks/use-session-cache'
-import { Truck, FolderOpen, DollarSign, ChevronRight, CheckCircle2, Package } from 'lucide-react'
+import { Truck, FolderOpen, DollarSign, ChevronRight, CheckCircle2, Package, X } from 'lucide-react'
 
 const sbClient = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
@@ -291,6 +294,82 @@ export default function ClientInicioView() {
 
   const tmecSavings = useMemo(() => calculateTmecSavings(traficos), [traficos])
 
+  // ── Smart Greeting (intelligence layer) ──
+  const greetingData = useMemo(() => {
+    if (loading || traficos.length === 0) return null
+    const lastVisit = typeof window !== 'undefined' ? localStorage.getItem('cruz-last-visit') : null
+    const daysSinceLastLogin = lastVisit ? Math.floor((Date.now() - new Date(lastVisit).getTime()) / 86400000) : undefined
+    const today = new Date().toISOString().split('T')[0]
+    const crossed24h = traficos.filter(t =>
+      (t.estatus || '').toLowerCase().includes('cruz') && t.fecha_cruce && t.fecha_cruce >= today
+    ).length
+    const newTraficos24h = traficos.filter(t => t.fecha_llegada && t.fecha_llegada >= today).length
+
+    return getSmartGreeting(companyName?.split(' ')[0], {
+      urgentCount: incidencias,
+      enProcesoCount: enProceso,
+      crossed24h,
+      newTraficos24h,
+      noPedGt7: incidencias,
+      pendingEntradas: pendingEntradas.length,
+      tmecSavings: tmecSavings.totalSavings,
+      avgConfidence: sinIncidencia,
+      daysSinceLastLogin,
+      streakDays: streakDays > 0 ? streakDays : undefined,
+    })
+  }, [loading, traficos, companyName, incidencias, enProceso, pendingEntradas, tmecSavings, sinIncidencia, streakDays])
+
+  // ── Narrative story (intelligence layer) ──
+  const narrative = useMemo(() => {
+    if (loading || traficos.length === 0) return ''
+    const cruzados = traficos.filter(t => (t.estatus || '').toLowerCase().includes('cruz'))
+    const proveedores = new Set(traficos.map(t => String(t.descripcion_mercancia || '').split(',')[0]?.trim()).filter(Boolean))
+    return dashboardStory({
+      enProceso,
+      cruzado: cruzados.length,
+      tiempoDespacho: 0,
+      tmecSavings: tmecSavings.totalSavings,
+      tmecOps: tmecSavings.tmecOperations,
+      totalOps: traficos.length,
+      provActivos: proveedores.size,
+      valorYTD: valorTotal,
+      sinIncidencia,
+    })
+  }, [loading, traficos, enProceso, tmecSavings, valorTotal, sinIncidencia])
+
+  // ── Anticipation engine (intelligence layer) ──
+  const [suggestion, setSuggestion] = useState<{ id: string; icon: string; text: string; action?: { label: string; href: string } } | null>(null)
+  const [suggestionDismissed, setSuggestionDismissed] = useState(false)
+
+  useEffect(() => {
+    if (loading || traficos.length === 0) return
+    const now = new Date()
+    const hour = parseInt(now.toLocaleString('en-US', { timeZone: 'America/Chicago', hour: 'numeric', hour12: false }), 10)
+    const dayStr = now.toLocaleDateString('en-US', { timeZone: 'America/Chicago', weekday: 'short' })
+    const dayMap: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 }
+    const lastVisit = typeof window !== 'undefined' ? localStorage.getItem('cruz-last-visit') : null
+
+    const s = anticipate({
+      traficos: traficos.map(t => ({
+        trafico: t.trafico,
+        estatus: t.estatus,
+        pedimento: t.pedimento,
+        fecha_llegada: t.fecha_llegada,
+        fecha_cruce: t.fecha_cruce,
+        proveedores: t.descripcion_mercancia,
+        importe_total: t.importe_total,
+      })),
+      tmecSavings: tmecSavings.totalSavings,
+      dayOfWeek: dayMap[dayStr] ?? now.getDay(),
+      hour,
+      lastVisit,
+    })
+
+    if (s && !isDismissed(s.id)) {
+      setSuggestion(s)
+    }
+  }, [loading, traficos, tmecSavings])
+
   // ── Pipeline stages (TMS view) ──
   const pipeline = useMemo(() => {
     const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString()
@@ -411,8 +490,18 @@ export default function ClientInicioView() {
         </div>
       )}
 
-      {/* ── DATE HEADER ── */}
+      {/* ── SMART GREETING + DATE ── */}
       <div style={{ padding: isMobile ? '24px 20px 16px' : '32px 20px 20px' }}>
+        {greetingData && (
+          <>
+            <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>
+              {greetingData.greeting}
+            </div>
+            <div style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: 8 }}>
+              {greetingData.subtitle}
+            </div>
+          </>
+        )}
         <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: 0, fontFamily: 'var(--font-mono)' }}>
           Hoy, {dateStr}
         </p>
@@ -446,6 +535,46 @@ export default function ClientInicioView() {
           </Link>
         ))}
       </div>
+
+      {/* ── NARRATIVE INSIGHT ── */}
+      {narrative && (
+        <div style={{
+          margin: '0 20px 12px',
+          padding: '14px 18px', borderRadius: 12,
+          background: 'var(--bg-card)', border: '1px solid var(--border)',
+          fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.6,
+        }}>
+          {narrative}
+        </div>
+      )}
+
+      {/* ── ANTICIPATION SUGGESTION ── */}
+      {suggestion && !suggestionDismissed && (
+        <div style={{
+          margin: '0 20px 12px',
+          padding: '14px 18px', borderRadius: 12,
+          background: 'var(--bg-card)', border: '1px solid var(--border)',
+          borderLeft: '3px solid var(--gold)',
+          display: 'flex', alignItems: 'center', gap: 12,
+        }}>
+          <span style={{ fontSize: 18, flexShrink: 0 }}>{suggestion.icon}</span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 14, color: 'var(--text-primary)' }}>{suggestion.text}</div>
+            {suggestion.action && (
+              <Link href={suggestion.action.href} style={{ fontSize: 13, color: 'var(--gold-dark, #8B6914)', fontWeight: 600, textDecoration: 'none' }}>
+                {suggestion.action.label} &rarr;
+              </Link>
+            )}
+          </div>
+          <button
+            onClick={() => { dismissSuggestion(suggestion.id); setSuggestionDismissed(true) }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'var(--text-muted)', flexShrink: 0 }}
+            aria-label="Descartar"
+          >
+            <X size={16} />
+          </button>
+        </div>
+      )}
 
       {/* ── WHILE YOU WERE AWAY ── */}
       {awaySummary && awaySummary.total > 0 && (

@@ -104,8 +104,7 @@ export default function CrucesPage() {
   }, [historical])
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg-main)', padding: '24px 16px' }}>
-      <div style={{ maxWidth: 1000, margin: '0 auto' }}>
+    <div className="page-shell" style={{ maxWidth: 1000 }}>
 
         {/* Header */}
         <div style={{ marginBottom: 24 }}>
@@ -215,7 +214,6 @@ export default function CrucesPage() {
           Datos de CBP (U.S. Customs and Border Protection) · Actualización cada 30 min
           <br />Patente 3596 · Aduana 240 · Nuevo Laredo
         </div>
-      </div>
     </div>
   )
 }

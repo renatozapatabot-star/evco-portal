@@ -1,10 +1,13 @@
 'use client'
 
 import { useEffect, useState, useMemo } from 'react'
-import { CheckCircle } from 'lucide-react'
+import { CheckCircle, X } from 'lucide-react'
 import { getCookieValue } from '@/lib/client-config'
 import ClientInicioView from '@/components/views/client-inicio-view'
 import { fmtId, fmtDate } from '@/lib/format-utils'
+import { getSmartGreeting } from '@/lib/greeting'
+import { dashboardStory } from '@/lib/data-stories'
+import { anticipate, isDismissed, dismissSuggestion } from '@/lib/anticipate'
 import Link from 'next/link'
 
 // ── Design tokens (CRUZ Navy light) ──
@@ -76,6 +79,17 @@ function AdminView() {
   const headline = level === 'red' ? 'Acción inmediata' : level === 'amber' ? 'Atención requerida' : 'Todo en orden'
   const enCurso = activeCount - blockingCount
 
+  // Admin greeting
+  const [adminGreeting, setAdminGreeting] = useState('')
+  useEffect(() => {
+    setAdminGreeting(getSmartGreeting('Tito', {
+      urgentCount: blockingCount,
+      enProcesoCount: activeCount,
+      crossed24h: 0, newTraficos24h: 0, noPedGt7: 0,
+      pendingEntradas: 0, tmecSavings: 0, avgConfidence: 0,
+    }).greeting)
+  }, [blockingCount, activeCount])
+
   if (loading) {
     return (
       <div className="admin-loading">
@@ -86,6 +100,9 @@ function AdminView() {
 
   return (
     <div className="admin-center">
+      {adminGreeting && (
+        <div className="text-display" style={{ marginBottom: 16, textAlign: 'center' }}>{adminGreeting}</div>
+      )}
       <div className="card admin-status-card">
         {/* Status dot + headline */}
         <div className="admin-headline">
@@ -245,11 +262,69 @@ function BrokerView() {
     }).catch((err: unknown) => { void 0 }).finally(() => setLoading(false))
   }, [])
 
-  const [greeting, setGreeting] = useState('')
+  // ── Smart greeting from intelligence layer ──
+  const [greetingData, setGreetingData] = useState<{ greeting: string; subtitle: string }>({ greeting: '', subtitle: '' })
   useEffect(() => {
-    const h = new Date().getHours()
-    setGreeting(h < 12 ? 'Buenos días' : h < 20 ? 'Buenas tardes' : 'Buenas noches')
-  }, [])
+    const today = new Date().toISOString().split('T')[0]
+    const crossed24h = (items.filter(i => i.type === 'urgent').length === 0) ? cruzadosHoy : 0
+    const lastVisit = typeof window !== 'undefined' ? localStorage.getItem('cruz-last-visit') : null
+    const daysSinceLastLogin = lastVisit ? Math.floor((Date.now() - new Date(lastVisit).getTime()) / 86400000) : undefined
+
+    setGreetingData(getSmartGreeting(companyName?.split(' ')[0], {
+      urgentCount: items.filter(i => i.type === 'urgent').length,
+      enProcesoCount: activeCount,
+      crossed24h: cruzadosHoy,
+      newTraficos24h: 0,
+      noPedGt7: 0,
+      pendingEntradas: 0,
+      tmecSavings: 0,
+      avgConfidence: 0,
+      daysSinceLastLogin,
+    }))
+  }, [items, activeCount, cruzadosHoy, companyName])
+
+  // ── Narrative story ──
+  const narrative = useMemo(() => {
+    if (loading) return ''
+    return dashboardStory({
+      enProceso: activeCount,
+      cruzado: cruzadosHoy,
+      tiempoDespacho: 0,
+      tmecSavings: 0,
+      tmecOps: 0,
+      totalOps: activeCount + cruzadosHoy,
+      provActivos: 0,
+      valorYTD: 0,
+      sinIncidencia: 0,
+    })
+  }, [loading, activeCount, cruzadosHoy])
+
+  // ── Anticipation engine ──
+  const [suggestion, setSuggestion] = useState<{ id: string; icon: string; text: string; action?: { label: string; href: string } } | null>(null)
+  const [suggestionDismissed, setSuggestionDismissed] = useState(false)
+
+  useEffect(() => {
+    if (loading) return
+    const now = new Date()
+    const hour = parseInt(now.toLocaleString('en-US', { timeZone: 'America/Chicago', hour: 'numeric', hour12: false }), 10)
+    const dayStr = now.toLocaleDateString('en-US', { timeZone: 'America/Chicago', weekday: 'short' })
+    const dayMap: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 }
+    const lastVisit = typeof window !== 'undefined' ? localStorage.getItem('cruz-last-visit') : null
+
+    // Build traficos array from items for anticipation — broker doesn't have full traficos here
+    // so we pass a minimal representation
+    const s = anticipate({
+      traficos: [],
+      tmecSavings: 0,
+      dayOfWeek: dayMap[dayStr] ?? now.getDay(),
+      hour,
+      lastVisit,
+    })
+
+    if (s && !isDismissed(s.id)) {
+      setSuggestion(s)
+    }
+  }, [loading])
 
   if (loading) {
     return (
@@ -264,13 +339,58 @@ function BrokerView() {
 
   return (
     <div className="page-shell" style={{ maxWidth: 720 }}>
-      {/* Greeting */}
-      <div style={{ marginBottom: 32 }}>
-        <div className="text-display">{greeting}{companyName ? `, ${companyName.split(' ')[0]}` : ''}</div>
-        <div className="font-mono" style={{ fontSize: 14, color: 'var(--slate-400)', marginTop: 4 }} suppressHydrationWarning>
+      {/* Smart Greeting */}
+      <div style={{ marginBottom: 24 }}>
+        <div className="text-display">{greetingData.greeting}</div>
+        {greetingData.subtitle && (
+          <div style={{ fontSize: 14, color: 'var(--text-secondary)', marginTop: 4, lineHeight: 1.5 }}>
+            {greetingData.subtitle}
+          </div>
+        )}
+        <div className="font-mono" style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }} suppressHydrationWarning>
           {fmtDate(new Date())}
         </div>
       </div>
+
+      {/* Narrative insight */}
+      {narrative && (
+        <div style={{
+          padding: '12px 16px', borderRadius: 10,
+          background: 'var(--bg-card)', border: '1px solid var(--border)',
+          fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.6,
+          marginBottom: 16,
+        }}>
+          {narrative}
+        </div>
+      )}
+
+      {/* Anticipation suggestion */}
+      {suggestion && !suggestionDismissed && (
+        <div style={{
+          padding: '12px 16px', borderRadius: 10,
+          background: 'var(--bg-card)', border: '1px solid var(--border)',
+          borderLeft: '3px solid var(--gold)',
+          display: 'flex', alignItems: 'center', gap: 12,
+          marginBottom: 16,
+        }}>
+          <span style={{ fontSize: 18, flexShrink: 0 }}>{suggestion.icon}</span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 14, color: 'var(--text-primary)' }}>{suggestion.text}</div>
+            {suggestion.action && (
+              <Link href={suggestion.action.href} style={{ fontSize: 13, color: 'var(--gold-dark, #8B6914)', fontWeight: 600, textDecoration: 'none' }}>
+                {suggestion.action.label} &rarr;
+              </Link>
+            )}
+          </div>
+          <button
+            onClick={() => { dismissSuggestion(suggestion.id); setSuggestionDismissed(true) }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'var(--text-muted)' }}
+            aria-label="Descartar"
+          >
+            <X size={16} />
+          </button>
+        </div>
+      )}
 
       {/* Action queue */}
       {items.length === 0 ? (

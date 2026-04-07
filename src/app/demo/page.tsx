@@ -35,13 +35,13 @@ export default function DemoPage() {
         </p>
         {!result && !notified && (
           <div style={{ display: 'flex', gap: 8 }}>
-            <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 10, padding: '0 16px', height: 52, borderRadius: 12, border: '2px solid var(--border)', background: 'var(--bg-card)' }}>
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 10, padding: '0 16px', height: 60, borderRadius: 12, border: '2px solid var(--border)', background: 'var(--bg-card)' }}>
               <Search size={18} style={{ color: 'var(--text-muted)' }} />
               <input type="text" value={clave} onChange={e => setClave(e.target.value)} onKeyDown={e => e.key === 'Enter' && handlePreview()}
                 placeholder="Ingrese su clave" style={{ flex: 1, border: 'none', outline: 'none', background: 'transparent', fontSize: 15, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }} />
             </div>
             <button onClick={handlePreview} disabled={loading || !clave.trim()} style={{
-              width: 52, height: 52, borderRadius: 12, border: 'none', background: 'var(--gold)', color: 'var(--bg-card)',
+              width: 60, height: 60, borderRadius: 12, border: 'none', background: 'var(--gold)', color: 'var(--bg-card)',
               cursor: clave.trim() ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: clave.trim() ? 1 : 0.5,
             }}>
               <ArrowRight size={20} />
@@ -52,7 +52,7 @@ export default function DemoPage() {
           <div className="card card-enter" style={{ padding: 32, marginTop: 24 }}>
             <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 24 }}>Sus datos están disponibles.</div>
             <button onClick={() => setNotified(true)} className="spring-press" style={{
-              width: '100%', padding: '14px 24px', minHeight: 52, borderRadius: 12, border: 'none',
+              width: '100%', padding: '14px 24px', minHeight: 60, borderRadius: 12, border: 'none',
               background: 'var(--gold)', color: 'var(--bg-card)', fontSize: 15, fontWeight: 700, cursor: 'pointer',
             }}>Solicitar acceso</button>
           </div>

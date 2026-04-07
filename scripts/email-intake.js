@@ -29,6 +29,7 @@ const path = require('path')
 const fs = require('fs')
 
 const { emitEvent } = require('./lib/workflow-emitter')
+const { sendAutoReply } = require('./lib/email-auto-reply')
 const SCRIPT_NAME = 'email-intake'
 const PDF_DIR = '/tmp/cruz-pdfs'
 const TELEGRAM_CHAT = '-5085543275'
@@ -766,6 +767,24 @@ async function processEmail(gmail, messageId, companyId) {
     console.log('  Marked as read')
   } catch (e) {
     // Gmail token lacks gmail.modify scope — not critical, processed_emails table prevents re-processing
+  }
+
+  // Step 14c: Auto-reply in Spanish (threaded reply to original email)
+  try {
+    await sendAutoReply(gmail, {
+      messageId: `<${messageId}@mail.gmail.com>`,
+      threadId: msg.threadId,
+      to: sender,
+      subject,
+      supplierName: extraction.supplier_name,
+      invoiceNumber: extraction.invoice_number,
+      draftId,
+      traficoNumber: autoTrafico?.trafico || null,
+      confidenceScore: confidence.score,
+    }, supabase)
+  } catch (e) {
+    console.error(`  [auto-reply] Error: ${e.message}`)
+    // Non-critical — pipeline continues even if reply fails
   }
 
   // Step 15: Emit workflow events (CRUZ 2.0 orchestration)

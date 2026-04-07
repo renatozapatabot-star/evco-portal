@@ -8,7 +8,7 @@
  *
  * Juan José reviews in 30 seconds instead of typing for 15 minutes.
  *
- * Cron: */30 * * * * (every 30 min, checks for newly-complete expedientes)
+ * Cron: every 30 min (checks for newly-complete expedientes)
  *
  * Patente 3596 · Aduana 240
  * ============================================================================
@@ -330,6 +330,18 @@ async function run() {
     const tier = validation.score >= 95 ? 1 : validation.score >= 80 ? 2 : 3
     const TIER_MINUTES = { 1: 2, 2: 5, 3: 10 }
 
+    // USMCA savings calculation — compare T-MEC rate vs MFN baseline
+    const isTMEC = ['ITE', 'ITR', 'IMD'].includes((regimen || '').toUpperCase())
+    const mfnIgiRate = 0.05 // Conservative 5% MFN baseline for plastics/industrials
+    const mfnIgiAmount = isTMEC ? Math.round(contributions.valor_aduana_mxn * mfnIgiRate * 100) / 100 : 0
+    const tmecSavings = isTMEC ? {
+      igi_saved_mxn: mfnIgiAmount,
+      igi_saved_usd: Math.round(mfnIgiAmount / contributions.tipo_cambio * 100) / 100,
+      mfn_rate: mfnIgiRate,
+      applied_rate: 0,
+      regime: regimen,
+    } : null
+
     // Build draft data
     const draftData = {
       type: 'borrador',
@@ -345,6 +357,7 @@ async function run() {
       },
       classifications,
       contributions,
+      tmec_savings: tmecSavings,
       confidence: { score: validation.score, tier },
       validation,
       regimen,
@@ -381,14 +394,22 @@ async function run() {
       currency: validationData.currency,
     })
 
-    // Telegram notification
+    // Telegram notification (readable on Tito's phone at 11 PM)
+    const tmecLine = tmecSavings
+      ? `\nAhorro T-MEC: $${tmecSavings.igi_saved_usd.toLocaleString('en-US', { minimumFractionDigits: 2 })} USD (IGI exento)`
+      : ''
+    const dtaStr = `$${contributions.dta.amount_mxn.toLocaleString('es-MX')} MXN`
+    const ivaStr = `$${contributions.iva.amount_mxn.toLocaleString('es-MX')} MXN`
     await sendTelegram(
-      `📝 <b>Pedimento pre-llenado</b>\n` +
-      `Tráfico: ${traf.trafico}\n` +
+      `📄 <b>Borrador de Pedimento</b>\n` +
+      `Tráfico: <code>${traf.trafico}</code>\n` +
       `Proveedor: ${validationData.supplier_name || 'N/A'}\n` +
       `Valor: $${totalValue.toLocaleString('en-US', { minimumFractionDigits: 2 })} ${validationData.currency}\n` +
+      `Régimen: ${regimen}${isTMEC ? ' (T-MEC)' : ''}\n` +
+      `IGI: ${isTMEC ? '$0.00 (exento T-MEC)' : contributions.igi.amount_mxn.toLocaleString('es-MX') + ' MXN'}\n` +
+      `DTA: ${dtaStr}\n` +
+      `IVA: ${ivaStr}${tmecLine}\n` +
       `Score: ${validation.score}/100 · Tier ${tier}\n` +
-      `Tiempo estimado revisión: ~${TIER_MINUTES[tier]} min\n` +
       `— CRUZ 🦀`
     )
 

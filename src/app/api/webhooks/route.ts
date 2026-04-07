@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import crypto from 'crypto'
+import { verifySession } from '@/lib/session'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -9,9 +10,15 @@ const supabase = createClient(
 
 // GET — list subscriptions
 export async function GET(req: NextRequest) {
-  const companyId = req.cookies.get('company_id')?.value
-  const userRole = req.cookies.get('user_role')?.value
-  if (!userRole) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const getSessionToken = req.cookies.get('portal_session')?.value || ''
+  const getSession = await verifySession(getSessionToken)
+  if (!getSession) {
+    return NextResponse.json({ data: null, error: { code: 'UNAUTHORIZED', message: 'Sesión inválida' } }, { status: 401 })
+  }
+  if (getSession.role !== 'broker' && getSession.role !== 'admin') {
+    return NextResponse.json({ data: null, error: { code: 'UNAUTHORIZED', message: 'Acceso restringido' } }, { status: 401 })
+  }
+  const companyId = getSession.companyId
 
   const { data } = await supabase.from('webhook_subscriptions')
     .select('id, company_id, url, events, active, created_at')
@@ -21,9 +28,15 @@ export async function GET(req: NextRequest) {
 
 // POST — subscribe or deliver
 export async function POST(req: NextRequest) {
-  const companyId = req.cookies.get('company_id')?.value
-  const userRole = req.cookies.get('user_role')?.value
-  if (!userRole) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const postSessionToken = req.cookies.get('portal_session')?.value || ''
+  const postSession = await verifySession(postSessionToken)
+  if (!postSession) {
+    return NextResponse.json({ data: null, error: { code: 'UNAUTHORIZED', message: 'Sesión inválida' } }, { status: 401 })
+  }
+  if (postSession.role !== 'broker' && postSession.role !== 'admin') {
+    return NextResponse.json({ data: null, error: { code: 'UNAUTHORIZED', message: 'Acceso restringido' } }, { status: 401 })
+  }
+  const companyId = postSession.companyId
   const body = await req.json()
 
   // Subscribe
@@ -76,9 +89,15 @@ export async function POST(req: NextRequest) {
 
 // DELETE — unsubscribe
 export async function DELETE(req: NextRequest) {
-  const companyId = req.cookies.get('company_id')?.value
-  const userRole = req.cookies.get('user_role')?.value
-  if (!userRole) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const delSessionToken = req.cookies.get('portal_session')?.value || ''
+  const delSession = await verifySession(delSessionToken)
+  if (!delSession) {
+    return NextResponse.json({ data: null, error: { code: 'UNAUTHORIZED', message: 'Sesión inválida' } }, { status: 401 })
+  }
+  if (delSession.role !== 'broker' && delSession.role !== 'admin') {
+    return NextResponse.json({ data: null, error: { code: 'UNAUTHORIZED', message: 'Acceso restringido' } }, { status: 401 })
+  }
+  const companyId = delSession.companyId
 
   const id = req.nextUrl.searchParams.get('id')
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 })

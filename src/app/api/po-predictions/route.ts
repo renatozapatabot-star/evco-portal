@@ -3,6 +3,7 @@
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import { createClient } from '@supabase/supabase-js'
+import { verifySession } from '@/lib/session'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -11,12 +12,17 @@ const supabase = createClient(
 
 export async function GET() {
   const cookieStore = await cookies()
-  const role = cookieStore.get('user_role')?.value
+  const sessionToken = cookieStore.get('portal_session')?.value || ''
+  const session = await verifySession(sessionToken)
+  if (!session) {
+    return NextResponse.json({ data: null, error: { code: 'UNAUTHORIZED', message: 'Sesión inválida' } }, { status: 401 })
+  }
+  const role = session.role
   if (role !== 'broker' && role !== 'admin') {
     return NextResponse.json({ data: null, error: { code: 'UNAUTHORIZED', message: 'Acceso restringido' } }, { status: 401 })
   }
 
-  const companyId = cookieStore.get('company_clave')?.value
+  const companyId = session.companyId
   if (!companyId) {
     return NextResponse.json({ data: null, error: { code: 'UNAUTHORIZED', message: 'Sin empresa' } }, { status: 401 })
   }

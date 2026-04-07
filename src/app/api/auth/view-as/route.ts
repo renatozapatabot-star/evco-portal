@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { verifySession } from '@/lib/session'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -8,9 +9,14 @@ const supabase = createClient(
 
 /** POST: Broker "view as client" — swaps cookies to impersonate a client. */
 export async function POST(request: NextRequest) {
-  const role = request.cookies.get('user_role')?.value
+  const sessionToken = request.cookies.get('portal_session')?.value || ''
+  const session = await verifySession(sessionToken)
+  if (!session) {
+    return NextResponse.json({ data: null, error: { code: 'UNAUTHORIZED', message: 'Sesión inválida' } }, { status: 401 })
+  }
+  const role = session.role
   if (role !== 'broker' && role !== 'admin') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    return NextResponse.json({ data: null, error: { code: 'UNAUTHORIZED', message: 'Acceso restringido' } }, { status: 403 })
   }
 
   const { company_id } = await request.json()
@@ -45,6 +51,11 @@ export async function POST(request: NextRequest) {
 
 /** DELETE: Exit "view as" — restore broker identity cookies. */
 export async function DELETE(request: NextRequest) {
+  const delSessionToken = request.cookies.get('portal_session')?.value || ''
+  const delSession = await verifySession(delSessionToken)
+  if (!delSession) {
+    return NextResponse.json({ data: null, error: { code: 'UNAUTHORIZED', message: 'Sesión inválida' } }, { status: 401 })
+  }
   const viewingAs = request.cookies.get('viewing_as')?.value
   if (!viewingAs) {
     return NextResponse.json({ error: 'Not viewing as client' }, { status: 400 })

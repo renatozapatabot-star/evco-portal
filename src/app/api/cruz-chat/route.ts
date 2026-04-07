@@ -12,6 +12,8 @@ import { assessRisk } from '@/lib/intelligence-mesh'
 import { calculateLandedCost, calculateValueCreated, buildEconomicSummary, aggregateClientEconomics } from '@/lib/economic-engine'
 import { computeNetworkMetrics, computeNetworkIntelligence, networkSummary } from '@/lib/network-value'
 import { simulateRoute, simulateTariff, simulateDisruption } from '@/lib/digital-twin'
+import { getMemoryContext } from '@/lib/institutional-memory'
+import { isActionIntent } from '@/lib/action-intents'
 
 import { rateLimitDB } from '@/lib/rate-limit-db'
 import { getErrorMessage } from '@/lib/errors'
@@ -1425,6 +1427,23 @@ export async function POST(req: NextRequest) {
     const contextLine = context?.page ? `\n\nCURRENT CONTEXT: ${context.page}. Timestamp: ${context.timestamp || new Date().toISOString()}` : ''
     const voiceLine = context?.voice_mode ? `\n\nVOICE MODE ACTIVE: Respond in 1-3 sentences maximum. Use spoken language, not written. No markdown, no bullet points, no formatting. Speak naturally in Spanish as if talking to a colleague.` : ''
 
+    // Inject institutional memory context (non-blocking, best-effort)
+    let memoryLine = ''
+    try {
+      const lastUserMessage = messages.filter((m: { role: string }) => m.role === 'user').pop()
+      const userText = typeof lastUserMessage?.content === 'string' ? lastUserMessage.content : ''
+      if (userText && companyId) {
+        const memCtx = await getMemoryContext(supabase, companyId, userText)
+        if (memCtx) memoryLine = `\n\nMEMORIA INSTITUCIONAL (patrones aprendidos de este cliente):\n${memCtx}`
+      }
+    } catch { /* best-effort — memory enrichment is non-critical */ }
+
+    // Detect if user is requesting an action (for confirmation flow)
+    const lastMsg = messages.filter((m: { role: string }) => m.role === 'user').pop()
+    const userMsgText = typeof lastMsg?.content === 'string' ? lastMsg.content : ''
+    const actionDetected = userMsgText ? isActionIntent(userMsgText) : false
+    const actionLine = actionDetected ? '\n\nACCIÓN DETECTADA: El usuario parece solicitar una acción. Confirma antes de ejecutar.' : ''
+
     // Filter tools by role — admin-only tools hidden from clients
     const userRole = session.role
     const isInternal = userRole === 'broker' || userRole === 'admin'
@@ -1441,7 +1460,7 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: context?.voice_mode ? 512 : 4096,
-        system: buildSystemPrompt({ clientName: resolvedName, companyId, clientClave, patente, aduana }) + contextLine + voiceLine,
+        system: buildSystemPrompt({ clientName: resolvedName, companyId, clientClave, patente, aduana }) + contextLine + voiceLine + memoryLine + actionLine,
         tools: filteredTools,
         messages,
       }),

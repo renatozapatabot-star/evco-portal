@@ -5,6 +5,7 @@ import {
   Settings, MessageSquare, Package,
   History, Clock, ClipboardList,
   Warehouse, Bot, Rocket, Tags, Layers, TrendingUp, Search,
+  Mail, FileEdit, Activity, Radio, Phone, Code, Briefcase, Mic, Brain,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -59,15 +60,19 @@ export const INTERNAL_GROUPS: NavGroup[] = [
     label: 'Operaciones',
     icon: Truck,
     children: [
-      { href: '/launchpad',    label: 'Launchpad',   icon: Rocket },
-      { href: '/clasificar',   label: 'Clasificar',  icon: Tags },
-      { href: '/lotes',        label: 'Lotes',       icon: Layers },
-      { href: '/traficos',     label: 'Traficos',    icon: Truck },
-      { href: '/entradas',     label: 'Entradas',    icon: Package },
-      { href: '/bodega',       label: 'Inventario',      icon: Warehouse },
-      { href: '/pedimentos',   label: 'Pedimentos',  icon: FileText },
-      { href: '/expedientes',  label: 'Expedientes', icon: FolderOpen },
-      { href: '/archivos',     label: 'Archivos',    icon: FolderOpen },
+      { href: '/launchpad',      label: 'Launchpad',      icon: Rocket },
+      { href: '/war-room',       label: 'War Room',       icon: Radio },
+      { href: '/clasificar',     label: 'Clasificar',     icon: Tags },
+      { href: '/lotes',          label: 'Lotes',          icon: Layers },
+      { href: '/traficos',       label: 'Traficos',       icon: Truck },
+      { href: '/entradas',       label: 'Entradas',       icon: Package },
+      { href: '/bodega',         label: 'Inventario',     icon: Warehouse },
+      { href: '/pedimentos',     label: 'Pedimentos',     icon: FileText },
+      { href: '/expedientes',    label: 'Expedientes',    icon: FolderOpen },
+      { href: '/archivos',       label: 'Archivos',       icon: FolderOpen },
+      { href: '/drafts',         label: 'Borradores',     icon: FileEdit },
+      { href: '/comunicaciones', label: 'Comunicaciones',  icon: Mail },
+      { href: '/acciones',       label: 'Acciones',       icon: Activity },
     ],
   },
   {
@@ -81,7 +86,7 @@ export const INTERNAL_GROUPS: NavGroup[] = [
       { href: '/catalogo',     label: 'Catálogo',    icon: ClipboardList },
       { href: '/anexo24',      label: 'Anexo 24',    icon: BookOpen },
       { href: '/agente',       label: 'CRUZ Agent',  icon: Bot },
-      { href: '/cerebro',      label: 'Cerebro',     icon: BarChart3 },
+      { href: '/cerebro',      label: 'Cerebro',     icon: Brain },
       { href: '/predicciones', label: 'Predicciones', icon: BarChart3 },
       { href: '/inventario',   label: 'Inv. Inteligente', icon: TrendingUp },
       { href: '/excepciones',  label: 'Excepciones',  icon: Search },
@@ -90,6 +95,8 @@ export const INTERNAL_GROUPS: NavGroup[] = [
       { href: '/plantillas-doc', label: 'Red Docs', icon: FileText },
       { href: '/inteligencia-competitiva', label: 'Competencia', icon: BarChart3 },
       { href: '/simulador',    label: 'Simulador',    icon: BarChart3 },
+      { href: '/soia',          label: 'SOIA Cruces',  icon: Clock },
+      { href: '/radar',         label: 'Radar',        icon: BarChart3 },
     ],
   },
   {
@@ -105,12 +112,22 @@ export const INTERNAL_GROUPS: NavGroup[] = [
       { href: '/riesgo-auditoria', label: 'Riesgo SAT', icon: Shield },
     ],
   },
+  {
+    key: 'ventas',
+    label: 'Ventas',
+    icon: Briefcase,
+    children: [
+      { href: '/prospectos',   label: 'Prospectos',   icon: Users2 },
+      { href: '/cotizacion',   label: 'Cotización',   icon: DollarSign },
+      { href: '/facturacion',  label: 'Facturación',  icon: FileText },
+    ],
+  },
 ]
 
 export const INTERNAL_BOTTOM: NavTopLevel[] = [
-  // CRUZ AI is now a floating bubble — no nav entry needed
+  { href: '/voz',          label: 'Voz',          icon: Mic, roles: ['admin', 'broker'] },
   { href: '/rentabilidad', label: 'Rentabilidad', icon: DollarSign, roles: ['admin'] },
-  { href: '/admin',  label: 'Config', icon: Settings, roles: ['admin', 'broker'] },
+  { href: '/admin',        label: 'Config',       icon: Settings, roles: ['admin', 'broker'] },
 ]
 
 // ---------------------------------------------------------------------------
@@ -123,10 +140,11 @@ export const CLIENT_NAV: NavTopLevel[] = [
   { href: '/entradas',     label: 'Entradas',             icon: Package },
   { href: '/pedimentos',   label: 'Pedimentos',           icon: FileText },
   { href: '/expedientes',  label: 'Expedientes Digitales', icon: FolderOpen },
-  { href: '/bodega',       label: 'Inventario',               icon: Warehouse },
+  { href: '/bodega',       label: 'Inventario',           icon: Warehouse },
   { href: '/catalogo',     label: 'Catálogo',             icon: ClipboardList },
   { href: '/anexo24',      label: 'Anexo 24',             icon: BookOpen },
   { href: '/documentos',   label: 'Documentos',           icon: FolderOpen },
+  { href: '/cruz',         label: 'CRUZ AI',              icon: MessageSquare, gold: true },
 ]
 
 // ---------------------------------------------------------------------------

@@ -1,13 +1,20 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 import { PORTAL_DATE_FROM } from '@/lib/data'
+import { verifySession } from '@/lib/session'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 
 const MAX_HOURS = 72 // Outlier filter: crossings > 72h are data anomalies
 
 export async function GET(request: NextRequest) {
-  const companyId = request.cookies.get('company_id')?.value ?? ''
+  const sessionToken = request.cookies.get('portal_session')?.value || ''
+  const session = await verifySession(sessionToken)
+  if (!session) {
+    return NextResponse.json({ data: null, error: { code: 'UNAUTHORIZED', message: 'Sesión inválida' } }, { status: 401 })
+  }
+
+  const companyId = session.companyId
   // Get historical crossing times using REAL fecha_cruce column
   const { data: cruzados } = await supabase.from('traficos')
     .select('trafico, transportista_extranjero, fecha_llegada, fecha_cruce, estatus')

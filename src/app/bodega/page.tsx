@@ -169,7 +169,7 @@ export default function BodegaPage() {
 
   if (error) {
     return (
-      <div style={{ padding: isMobile ? 16 : 32, maxWidth: 1200, margin: '0 auto' }}>
+      <div className="page-shell" style={{ maxWidth: 1200 }}>
         <ErrorCard message={error} onRetry={loadData} />
       </div>
     )
@@ -179,7 +179,7 @@ export default function BodegaPage() {
 
   if (loading) {
     return (
-      <div style={{ padding: isMobile ? 16 : 32, maxWidth: 1200, margin: '0 auto' }}>
+      <div className="page-shell" style={{ maxWidth: 1200 }}>
         {Array.from({ length: 6 }).map((_, i) => (
           <div key={i} style={{
             background: T.card, border: `1px solid ${T.border}`,
@@ -191,7 +191,7 @@ export default function BodegaPage() {
   }
 
   return (
-    <div style={{ padding: isMobile ? 16 : 32, maxWidth: 1200, margin: '0 auto' }}>
+    <div className="page-shell" style={{ maxWidth: 1200 }}>
       {/* Header */}
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: 24, fontWeight: 700, color: T.textPrimary, marginBottom: 4 }}>

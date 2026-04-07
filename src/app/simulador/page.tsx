@@ -220,7 +220,7 @@ export default function SimuladorPage() {
                   padding: '12px 16px', borderRadius: 10, textAlign: 'left',
                   background: selected?.trafico === t.trafico ? 'rgba(196,150,60,0.06)' : T.card,
                   border: `1px solid ${selected?.trafico === t.trafico ? T.gold : T.border}`,
-                  cursor: 'pointer', minHeight: 48,
+                  cursor: 'pointer', minHeight: 60,
                 }}>
                   <div>
                     <span style={{ fontSize: 13, fontWeight: 700, fontFamily: T.mono, color: T.text }}>{t.trafico}</span>
@@ -250,7 +250,7 @@ export default function SimuladorPage() {
                 style={{
                   width: '100%', marginTop: 4, padding: '10px 12px', borderRadius: 8,
                   border: `1px solid ${T.border}`, fontSize: 14, color: T.text, background: T.card,
-                  outline: 'none', minHeight: 44,
+                  outline: 'none', minHeight: 60,
                 }}
               />
             </div>
@@ -268,7 +268,7 @@ export default function SimuladorPage() {
           })} style={{
             gridColumn: '1 / -1', padding: '12px 20px', borderRadius: 10,
             background: T.gold, color: '#FFFFFF', border: 'none', cursor: 'pointer',
-            fontSize: 14, fontWeight: 700, minHeight: 48,
+            fontSize: 14, fontWeight: 700, minHeight: 60,
           }}>
             Simular
           </button>
@@ -343,7 +343,7 @@ export default function SimuladorPage() {
           <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
             <button style={{
               padding: '12px 24px', borderRadius: 10, fontSize: 14, fontWeight: 700,
-              background: T.gold, color: '#FFFFFF', border: 'none', cursor: 'pointer', minHeight: 48,
+              background: T.gold, color: '#FFFFFF', border: 'none', cursor: 'pointer', minHeight: 60,
               display: 'flex', alignItems: 'center', gap: 8,
             }}>
               <Check size={16} /> Aprobar y transmitir
@@ -351,7 +351,7 @@ export default function SimuladorPage() {
             <button onClick={() => setResult(null)} style={{
               padding: '12px 24px', borderRadius: 10, fontSize: 14, fontWeight: 600,
               background: 'transparent', color: T.textSec, border: `1px solid ${T.border}`,
-              cursor: 'pointer', minHeight: 48,
+              cursor: 'pointer', minHeight: 60,
             }}>
               Modificar
             </button>

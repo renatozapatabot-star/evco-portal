@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { getCookieValue } from '@/lib/client-config'
 import { fmtId, fmtDesc, fmtUSDCompact, fmtDate, fmtDateShort, fmtPedimentoShort, calcPriority, priorityClass } from '@/lib/format-utils'
 import { fmtCarrier } from '@/lib/carrier-names'
+import { getTraficoUrgency } from '@/lib/trafico-urgency'
 import { MobileTraficoCard } from '@/components/mobile-trafico-card'
 // CruzScore removed from client-facing UI — scores are internal only
 import { useSort } from '@/hooks/use-sort'
@@ -341,6 +342,12 @@ function TraficosContent() {
                 const isCrossing = (r.estatus || '').toLowerCase().includes('cruc') && !isCruzado
                 const isDetenido = (r.estatus || '').toLowerCase().includes('deten')
                 const isHighValue = (Number(r.importe_total) || 0) > 100000 && !isCruzado
+                const urgency = getTraficoUrgency({
+                  estatus: r.estatus || '',
+                  fecha_llegada: r.fecha_llegada || null,
+                  pedimento: r.pedimento,
+                  doc_count: docCountMap.get(r.trafico),
+                })
 
                 return (
                     <tr key={r.trafico}
@@ -356,10 +363,22 @@ function TraficosContent() {
                       </td>
                       <td>{r.pedimento ? <span className="pedimento-num" onClick={e => { e.stopPropagation(); router.push(`/traficos/${encodeURIComponent(r.trafico)}?tab=financiero`) }} style={{ cursor: 'pointer' }}>{fmtPedimentoShort(r.pedimento)}</span> : <span className="pedimento-pending">Pendiente</span>}</td>
                       <td>
-                        <span className={`badge ${isDetenido ? 'badge-detenido' : isCruzado ? 'badge-cruzado' : 'badge-proceso'}`} aria-label={`Estado: ${isDetenido ? 'Detenido' : isCruzado ? 'Cruzado' : 'En Proceso'}`}>
-                          <span className="badge-dot" aria-hidden="true" />{isDetenido ? 'Detenido' : isCruzado ? 'Cruzado' : 'En Proceso'}
-                          {(() => { const d = r.fecha_llegada ? Math.floor((Date.now() - new Date(r.fecha_llegada).getTime()) / 86400000) : 0; return d > 1 && !isCruzado ? <span style={{ marginLeft: 4, fontSize: 10, opacity: 0.7 }}>· {d}d</span> : null })()}
-                        </span>
+                        {isDetenido ? (
+                          <span className="badge badge-detenido" aria-label="Estado: Detenido">
+                            <span className="badge-dot" aria-hidden="true" />Detenido
+                          </span>
+                        ) : (
+                          <span
+                            className={`badge ${urgency.class === 'completed' ? 'badge-cruzado' : urgency.class === 'zombie' || urgency.class === 'stalled' ? 'badge-detenido' : urgency.class === 'overdue' ? 'badge-proceso' : 'badge-proceso'}`}
+                            aria-label={`Estado: ${urgency.label}`}
+                            title={urgency.action || undefined}
+                          >
+                            <span className="badge-dot" aria-hidden="true" />{urgency.label}
+                            {urgency.days > 1 && urgency.class !== 'completed' && (
+                              <span style={{ marginLeft: 4, fontSize: 10, opacity: 0.7 }}>· {urgency.days}d</span>
+                            )}
+                          </span>
+                        )}
                       </td>
                       <td className="timestamp">{r.fecha_llegada ? <time dateTime={r.fecha_llegada.split('T')[0]}>{fmtDateShort(r.fecha_llegada)}</time> : '—'}</td>
                       <td className="desc-text" title={partidaDescMap.get(r.trafico) || fmtDesc(r.descripcion_mercancia) || ''}>{fmtDesc(partidaDescMap.get(r.trafico) || r.descripcion_mercancia) || '—'}</td>

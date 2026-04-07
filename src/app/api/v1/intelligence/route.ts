@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { verifySession } from '@/lib/session'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -13,7 +14,13 @@ const envelope = (data: unknown) => ({
 })
 
 export async function GET(req: NextRequest) {
-  const companyId = req.cookies.get('company_id')?.value ?? ''
+  const sessionToken = req.cookies.get('portal_session')?.value || ''
+  const session = await verifySession(sessionToken)
+  if (!session) {
+    return NextResponse.json({ data: null, error: { code: 'UNAUTHORIZED', message: 'Sesión inválida' } }, { status: 401 })
+  }
+
+  const companyId = session.companyId
   const type = req.nextUrl.searchParams.get('type')
   const id = req.nextUrl.searchParams.get('id')
 

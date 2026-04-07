@@ -42,15 +42,46 @@ const supabase = createClient(
 )
 
 // ── Required documents per régimen ──
-// Minimum docs required to consider an expediente "complete".
-// Anything missing from this list becomes a solicitation draft.
+// Loaded from doc_requirements table (Build 0 migration).
+// Falls back to hardcoded defaults if table is empty or query fails.
 
-const REQUIRED_DOCS = {
+const FALLBACK_REQUIRED_DOCS = {
   DEFAULT: ['FACTURA_COMERCIAL', 'LISTA_EMPAQUE', 'CONOCIMIENTO_EMBARQUE'],
   A1: ['FACTURA_COMERCIAL', 'LISTA_EMPAQUE', 'CONOCIMIENTO_EMBARQUE', 'MANIFESTACION_VALOR'],
   ITE: ['FACTURA_COMERCIAL', 'LISTA_EMPAQUE', 'CONOCIMIENTO_EMBARQUE'],
   ITR: ['FACTURA_COMERCIAL', 'LISTA_EMPAQUE'],
   IMD: ['FACTURA_COMERCIAL', 'LISTA_EMPAQUE', 'CONOCIMIENTO_EMBARQUE', 'MANIFESTACION_VALOR'],
+}
+
+let REQUIRED_DOCS = null
+
+async function loadDocRequirements() {
+  try {
+    const { data, error } = await supabase
+      .from('doc_requirements')
+      .select('fraccion_prefix, regimen, required_docs')
+      .order('fraccion_prefix', { ascending: true })
+
+    if (error || !data || data.length === 0) {
+      console.log('  doc_requirements table empty — using fallback')
+      REQUIRED_DOCS = FALLBACK_REQUIRED_DOCS
+      return
+    }
+
+    // Build lookup: regimen → required_docs (use DEFAULT prefix entries)
+    const lookup = {}
+    for (const row of data) {
+      if (row.fraccion_prefix === 'DEFAULT') {
+        lookup[row.regimen] = row.required_docs
+      }
+    }
+    lookup.DEFAULT = lookup.DEFAULT || FALLBACK_REQUIRED_DOCS.DEFAULT
+    REQUIRED_DOCS = lookup
+    console.log(`  Loaded doc_requirements: ${Object.keys(lookup).length} régimen(s)`)
+  } catch (err) {
+    console.error(`  doc_requirements load failed: ${err.message} — using fallback`)
+    REQUIRED_DOCS = FALLBACK_REQUIRED_DOCS
+  }
 }
 
 // ── Client contacts (multi-tenant ready) ──
@@ -311,6 +342,9 @@ async function run() {
   console.log('═'.repeat(55))
 
   await logPipeline('startup', 'success', { mode: DRY_RUN ? 'dry-run' : 'production' })
+
+  // Load doc requirements from database (falls back to hardcoded defaults)
+  await loadDocRequirements()
 
   // Step 1: Find incomplete expedientes
   console.log('\n── Paso 1: Identificar expedientes incompletos')

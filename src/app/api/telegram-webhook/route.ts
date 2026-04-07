@@ -172,13 +172,12 @@ async function handleApproval(draftId: string, chatId: number, userId: number, u
     }).then(() => {}, () => {})
   }
 
-  // Send approval message with 5-second cancel button
-  // After 5 seconds, filing-processor.js picks up approved_pending drafts and:
-  // 1. Finalizes to 'approved' → 2. Prepares filing data → 3. Sets 'transmitido'
-  // 4. Sends "Patente 3596 honrada. Gracias, Tito." confirmation
-  await sendTelegramMessage(chatId, `✅ Aprobado: <b>${supplier}</b>\n\n⏱️ 5 segundos para cancelar. Después: transmisión automática.`, {
+  // Send approval message with cancel button — the telegram-bot.js PM2 process
+  // handles the visual 5-second countdown via editMessageText. The webhook just
+  // sets the initial state and sends the first message.
+  await sendTelegramMessage(chatId, `⏳ <b>5</b> — Aprobando <b>${supplier}</b>... Cancelar ahora si hay error.`, {
     inline_keyboard: [[
-      { text: '❌ Cancelar aprobación', callback_data: `cancelar_${draftId}` },
+      { text: '❌ CANCELAR', callback_data: `cancelar_${draftId}` },
     ]],
   })
 

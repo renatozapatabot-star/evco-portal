@@ -86,6 +86,7 @@ export const INTERNAL_GROUPS: NavGroup[] = [
       { href: '/inventario',   label: 'Inv. Inteligente', icon: TrendingUp },
       { href: '/excepciones',  label: 'Excepciones',  icon: Search },
       { href: '/ahorro',       label: 'Ahorro',       icon: DollarSign },
+      { href: '/negociacion',  label: 'Negociación',  icon: Users2 },
       { href: '/simulador',    label: 'Simulador',    icon: BarChart3 },
     ],
   },
@@ -206,6 +207,7 @@ export const ADMIN_ONLY_ROUTES = [
   '/excepciones',
   '/riesgo-auditoria',
   '/ahorro',
+  '/negociacion',
   '/simulador',
   '/archivos',
 ] as const

@@ -19,7 +19,7 @@
   --gold-bg: rgba(196,150,60,0.08);
 
   /* ── Navy / Sidebar ── */
-  --navy-900: #141C26;
+  --navy-900: #0D0D0C;
   --navy-800: #1A2535;
   --navy-700: #18293F;
 
@@ -98,7 +98,7 @@
   --red-800: #991B1B;
 
   /* ── Typography ── */
-  --font-sans: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-sans: var(--font-geist-sans, system-ui, -apple-system, sans-serif);
   --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
 
   /* ── Radii ── */
@@ -182,7 +182,7 @@ body {
 
 .cruz-sidebar {
   width: var(--sidebar-width);
-  background: var(--navy-900, #141C26);
+  background: var(--navy-900, #0D0D0C);
   border-right: 1px solid rgba(255,255,255,0.06);
   display: flex;
   flex-direction: column;
@@ -205,12 +205,12 @@ body {
 }
 
 .cruz-topbar {
-  background: white;
+  background: var(--navy-900, #0D0D0C);
   padding: 12px 28px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid var(--slate-200);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
   position: sticky;
   top: 0;
   z-index: 30;
@@ -425,14 +425,14 @@ body {
   height: 40px;
   border: none;
   background: transparent;
-  color: var(--slate-600);
+  color: rgba(255,255,255,0.5);
   cursor: pointer;
   border-radius: var(--radius-md);
   flex-shrink: 0;
 }
 .topbar-hamburger:hover {
-  background: var(--slate-100);
-  color: var(--navy-900);
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.9);
 }
 
 @media (min-width: 768px) {
@@ -508,10 +508,10 @@ body {
   align-items: center;
   gap: 8px;
   padding: 8px 14px;
-  background: var(--bg-main, #FAFAF8);
-  border: 1px solid var(--border, #E8E5E0);
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
   border-radius: 10px;
-  color: var(--text-muted, #9B9B9B);
+  color: rgba(255,255,255,0.5);
   font-size: 13px;
   font-family: var(--font-sans);
   cursor: pointer;
@@ -521,21 +521,21 @@ body {
 
 .topbar-search-btn:hover {
   border-color: var(--gold, #C9A84C);
-  box-shadow: 0 2px 8px rgba(196,150,60,0.08);
+  box-shadow: 0 2px 8px rgba(196,150,60,0.12);
 }
 
 .topbar-search-label {
-  color: var(--text-muted, #9B9B9B);
+  color: rgba(255,255,255,0.4);
 }
 
 .topbar-search-kbd {
   font-size: 11px;
   font-family: var(--font-sans);
   padding: 2px 6px;
-  background: var(--bg-card, #FFFFFF);
-  border: 1px solid var(--border, #E8E5E0);
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.1);
   border-radius: 4px;
-  color: var(--text-muted, #9B9B9B);
+  color: rgba(255,255,255,0.4);
   line-height: 1;
 }
 
@@ -604,14 +604,14 @@ body {
   padding: 6px 8px;
   background: transparent;
   border: none;
-  color: var(--slate-500);
+  color: rgba(255,255,255,0.5);
   cursor: pointer;
   border-radius: var(--radius-md);
   transition: color 150ms;
 }
 
 .topbar-bell-btn:hover {
-  color: var(--navy-800);
+  color: rgba(255,255,255,0.9);
 }
 
 .topbar-bell-badge {
@@ -807,10 +807,6 @@ body {
 .desc-text {
   font-size: 12.5px;
   color: var(--slate-500);
-  max-width: 220px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 /* ── Importe (money) ── */

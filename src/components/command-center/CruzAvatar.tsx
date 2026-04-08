@@ -1,6 +1,7 @@
 'use client'
 
 import type { Urgency } from '@/lib/card-urgency'
+import { CruzMark } from './CruzMark'
 
 interface CruzAvatarProps {
   size: 48 | 36 | 32
@@ -15,8 +16,6 @@ const MOOD_GLOW: Record<string, string> = {
   red: '0 0 0 3px rgba(220,38,38,0.3), 0 0 12px rgba(220,38,38,0.15)',
   neutral: '0 0 0 3px rgba(155,155,155,0.2), 0 0 8px rgba(155,155,155,0.1)',
 }
-
-const FONT_SIZE: Record<number, number> = { 48: 20, 36: 15, 32: 13 }
 
 export function CruzAvatar({ size, mood, onClick, className }: CruzAvatarProps) {
   const interactive = !!onClick
@@ -47,18 +46,7 @@ export function CruzAvatar({ size, mood, onClick, className }: CruzAvatarProps) 
         flexShrink: 0,
       }}
     >
-      <span
-        style={{
-          fontFamily: 'Georgia, "Times New Roman", serif',
-          fontSize: FONT_SIZE[size] || 16,
-          fontWeight: 700,
-          color: '#0B1623',
-          lineHeight: 1,
-          userSelect: 'none',
-        }}
-      >
-        Z
-      </span>
+      <CruzMark size={size} bare />
     </button>
   )
 }

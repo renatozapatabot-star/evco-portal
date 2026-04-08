@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { getCookieValue } from '@/lib/client-config'
+import { CruzMark } from '@/components/command-center/CruzMark'
 
 export default function LoginPage() {
   return (
@@ -101,7 +102,7 @@ function LoginContent() {
           {/* Brand */}
           <div className="login-brand">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 8 }}>
-              <div className="cruz-brand-z" style={{ width: 48, height: 48, fontSize: 20 }}>Z</div>
+              <CruzMark size={48} />
               <div className="login-cruz-wordmark">CRUZ</div>
             </div>
             <div className="login-cruz-accent" />

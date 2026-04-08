@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { Search, Bell, Menu } from 'lucide-react';
 import { useNotificationBadge } from '@/hooks/use-notifications';
+import { CruzMark } from '@/components/command-center/CruzMark';
 
 interface TopBarProps {
   showNotifications?: boolean;
@@ -33,7 +34,7 @@ export default function TopBar({
       <header className="cruz-topbar cruz-topbar--client">
         {/* Logo */}
         <Link href="/" className="topbar-logo" aria-label="CRUZ inicio">
-          <div className="cruz-brand-z" style={{ width: 32, height: 32, fontSize: 14 }}>Z</div>
+          <CruzMark size={32} />
           <span className="topbar-logo-text">CRUZ</span>
         </Link>
 

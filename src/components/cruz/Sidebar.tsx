@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { LogOut } from 'lucide-react';
+import { CruzMark } from '@/components/command-center/CruzMark';
 import type { ReactNode } from 'react';
 import { INTERNAL_GROUPS, CLIENT_NAV, CLIENT_GROUPS } from '@/components/nav/nav-config';
 
@@ -86,7 +87,7 @@ export default function Sidebar({
       {/* Logo */}
       <div className="sidebar-logo">
         <div className="sidebar-logo-inner">
-          <div className="cruz-brand-z" style={{ width: 32, height: 32, fontSize: 14 }}>Z</div>
+          <CruzMark size={32} />
           <div className="sidebar-logo-text">CRUZ</div>
         </div>
 

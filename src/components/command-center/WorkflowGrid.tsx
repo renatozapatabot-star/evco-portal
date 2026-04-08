@@ -36,9 +36,9 @@ const CARDS: CardDef[] = [
   {
     key: 'entradas', href: '/entradas', label: 'Entradas', Icon: Package, span: 3,
     getKpi: (p) => p.pendingEntradas,
-    getSubtitle: (p, u) => u === 'green' || u === 'neutral'
-      ? '0 pendientes'
-      : `sin asignar`,
+    getSubtitle: (_p, u) => u === 'green' || u === 'neutral'
+      ? 'Todo asignado — al corriente'
+      : 'sin asignar — accion requerida',
     getActions: (_p, u) => u === 'green' || u === 'neutral'
       ? [{ label: 'Ver historial', href: '/entradas', primary: true }]
       : [{ label: 'Asignar ahora', href: '/entradas', primary: true }, { label: 'Ver lista', href: '/entradas' }],
@@ -47,9 +47,9 @@ const CARDS: CardDef[] = [
     key: 'traficos', href: '/traficos', label: 'Tráficos', Icon: Truck, span: 3,
     getKpi: (p) => p.enProceso > 0 ? p.enProceso : (p.cruzadosEsteMes ?? 0),
     getSubtitle: (p, u) => {
-      if (u === 'red' || u === 'amber') return 'en proceso'
+      if (u === 'red' || u === 'amber') return 'en proceso — monitorear'
       const mes = p.cruzadosEsteMes ?? 0
-      return mes > 0 ? 'cruzados este mes' : 'sin actividad'
+      return mes > 0 ? 'cruzados este mes — excelente' : 'sin operaciones activas'
     },
     getActions: (_p, u) => u === 'green' || u === 'neutral'
       ? [{ label: 'Ver todos', href: '/traficos', primary: true }]
@@ -62,9 +62,9 @@ const CARDS: CardDef[] = [
       if (faltantes > 0) return faltantes
       return p.expedientesTotal ?? 0
     },
-    getSubtitle: (p, u) => {
-      if (u === 'amber' || u === 'red') return 'docs faltantes'
-      return 'expedientes'
+    getSubtitle: (_p, u) => {
+      if (u === 'amber' || u === 'red') return 'docs faltantes — completar'
+      return 'expedientes completos'
     },
     getActions: () => [{ label: 'Ver todos', href: '/expedientes', primary: true }],
   },
@@ -73,7 +73,7 @@ const CARDS: CardDef[] = [
     getKpi: (p) => p.pedimentosThisMonth ?? 0,
     getSubtitle: (p) => {
       const n = p.pedimentosThisMonth ?? 0
-      return n > 0 ? 'este mes' : 'sin declaraciones'
+      return n > 0 ? 'este mes — operaciones activas' : 'sin declaraciones pendientes'
     },
     getActions: () => [{ label: 'Ver todos', href: '/pedimentos', primary: true }],
   },
@@ -86,7 +86,7 @@ const CARDS: CardDef[] = [
     getSubtitle: (p) => {
       const val = p.facturacionMes ?? 0
       if (val > 0) return 'USD facturado este mes'
-      return 'Sin movimientos este mes'
+      return 'Sin movimientos — todo al corriente'
     },
     getActions: () => [{ label: 'Ver detalle', href: '/financiero', primary: true }],
   },
@@ -96,9 +96,9 @@ const CARDS: CardDef[] = [
     getSubtitle: (p) => {
       const bultos = p.inventarioBultos ?? 0
       const tons = p.inventarioPeso ?? 0
-      if (bultos > 0 && tons > 0) return `bultos · ${tons.toFixed(1)} ton`
+      if (bultos > 0 && tons > 0) return `bultos · ${tons.toFixed(1)} ton — en bodega`
       if (bultos > 0) return 'bultos en bodega'
-      return 'Bodega sin mercancia'
+      return 'Bodega disponible — sin mercancia'
     },
     getActions: () => [{ label: 'Ver bodega', href: '/bodega', primary: true }],
   },
@@ -107,7 +107,7 @@ const CARDS: CardDef[] = [
     getKpi: (p) => p.cruzadosHoy ?? 0,
     getSubtitle: (p) => {
       const hoy = p.cruzadosHoy ?? 0
-      return hoy > 0 ? 'cruzados hoy' : 'Sin cruces hoy'
+      return hoy > 0 ? 'cruzados hoy — en movimiento' : 'Sin cruces hoy — todo fluye'
     },
     getActions: () => [{ label: 'Abrir reportes', href: '/reportes', primary: true }],
   },

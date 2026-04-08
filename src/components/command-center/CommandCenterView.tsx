@@ -120,32 +120,27 @@ export function CommandCenterView() {
         isMobile={isMobile}
       />
 
-      {/* Wide-screen 2-column grid: cards left, pulse right */}
-      <div className="cc-grid-wide">
-        <div>
-          {/* Away banner */}
-          {awayBanner && <div style={{ marginBottom: 16 }}>{awayBanner}</div>}
+      {/* Away banner */}
+      {awayBanner && <div style={{ marginBottom: 16 }}>{awayBanner}</div>}
 
-          {/* Workflow Cards — two-tier layout */}
-          <WorkflowGrid
-            enProceso={data.enProceso}
-            urgentes={data.urgentes || status.urgentes}
-            pendingEntradas={data.pendingEntradas.length}
-            inventarioBultos={data.inventarioBultos}
-            inventarioPeso={data.inventarioPeso}
-            pedimentosThisMonth={data.pedimentosThisMonth}
-            expedientesTotal={data.expedientesTotal}
-            facturacionMes={data.facturacionMes}
-            cruzadosEsteMes={data.cruzadosEsteMes}
-            cruzadosHoy={data.cruzadosHoy}
-            isMobile={isMobile}
-          />
-        </div>
+      {/* Workflow Cards — full-width centered grid */}
+      <WorkflowGrid
+        enProceso={data.enProceso}
+        urgentes={data.urgentes || status.urgentes}
+        pendingEntradas={data.pendingEntradas.length}
+        inventarioBultos={data.inventarioBultos}
+        inventarioPeso={data.inventarioPeso}
+        pedimentosThisMonth={data.pedimentosThisMonth}
+        expedientesTotal={data.expedientesTotal}
+        facturacionMes={data.facturacionMes}
+        cruzadosEsteMes={data.cruzadosEsteMes}
+        cruzadosHoy={data.cruzadosHoy}
+        isMobile={isMobile}
+      />
 
-        {/* Right column: Activity Pulse (sticky on wide screens) */}
-        <div className="cc-pulse-col">
-          <ActivityPulseSection pulse={pulse} loading={pulseLoading} defaultCollapsed={isMobile} dark={!isMobile} />
-        </div>
+      {/* Activity Pulse — below cards */}
+      <div style={{ marginTop: 24 }}>
+        <ActivityPulseSection pulse={pulse} loading={pulseLoading} defaultCollapsed={isMobile} dark={!isMobile} />
       </div>
 
       {/* Footer */}

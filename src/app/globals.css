@@ -183,7 +183,8 @@
   --slate-500: #8B949E;
   --slate-600: #8B949E;
   --slate-700: #CDD6E0;
-  background: var(--bg-main);
+  background: radial-gradient(ellipse at top center, #1A1A1A 0%, #111111 50%, #0A0A0A 100%);
+  background-attachment: fixed;
   color: var(--text-primary);
 }
 .cruz-dark .cruz-table td { border-bottom-color: rgba(255,255,255,0.06); }

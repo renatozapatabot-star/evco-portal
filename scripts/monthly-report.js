@@ -12,6 +12,7 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://jkhpafacchjxawnscplf.supabase.co',
   process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 )
+const { llmCall } = require('./lib/llm')
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN
 const TELEGRAM_CHAT = '-5085543275'
 const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY
@@ -189,12 +190,9 @@ async function generateClientReport(client) {
   let narrative = ''
   if (ANTHROPIC_KEY) {
     try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-api-key': ANTHROPIC_KEY, 'anthropic-version': '2023-06-01' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514', max_tokens: 1500,
-          messages: [{ role: 'user', content: `Genera un resumen ejecutivo profesional en español para el reporte mensual de operaciones aduanales de ${client.name}, periodo ${periodStr}.
+      const result = await llmCall({
+        modelClass: 'smart',
+        messages: [{ role: 'user', content: `Genera un resumen ejecutivo profesional en español para el reporte mensual de operaciones aduanales de ${client.name}, periodo ${periodStr}.
 
 Datos clave:
 - ${totalOps} operaciones, ${cruzados} cruzados
@@ -209,21 +207,21 @@ Datos clave:
 Hallazgos: ${JSON.stringify(highlights)}
 Recomendaciones: ${JSON.stringify(recommendations)}
 
-Máximo 4 párrafos. Tono ejecutivo profesional. Incluye recomendaciones accionables.` }]
-        })
+Máximo 4 párrafos. Tono ejecutivo profesional. Incluye recomendaciones accionables.` }],
+        maxTokens: 1500,
+        callerName: 'monthly-report',
       })
-      const data = await res.json()
       // Cost tracking
       supabase.from('api_cost_log').insert({
-        model: 'claude-sonnet-4-20250514',
-        input_tokens: data.usage?.input_tokens || 0,
-        output_tokens: data.usage?.output_tokens || 0,
-        cost_usd: ((data.usage?.input_tokens || 0) * 0.003 + (data.usage?.output_tokens || 0) * 0.015) / 1000,
+        model: result.model,
+        input_tokens: result.tokensIn,
+        output_tokens: result.tokensOut,
+        cost_usd: (result.tokensIn * 0.003 + result.tokensOut * 0.015) / 1000,
         action: 'monthly_report_narrative',
         client_code: client.company_id || 'system',
-        latency_ms: 0,
+        latency_ms: result.durationMs,
       }).then(() => {}, () => {})
-      narrative = data.content?.[0]?.text || ''
+      narrative = result.text
     } catch (e) {
       console.log(`  ⚠️  Claude narrative failed: ${e.message}`)
     }

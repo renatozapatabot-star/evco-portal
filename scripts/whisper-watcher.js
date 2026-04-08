@@ -7,6 +7,7 @@ require('dotenv').config({ path: path.join(__dirname, '..', '.env.local') })
 const CALLS_DIR = path.join(process.env.HOME, 'Desktop', 'CALLS')
 const PROCESSED_DIR = path.join(CALLS_DIR, 'processed')
 const TRANSCRIPTS_DIR = path.join(CALLS_DIR, 'transcripts')
+const { llmCall } = require('./lib/llm')
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN; const TELEGRAM_CHAT = '-5085543275'
 const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY
 const AUDIO_EXT = ['.mp3', '.m4a', '.wav', '.ogg', '.mp4', '.webm']
@@ -34,9 +35,8 @@ function transcribe(audioPath) {
 async function extractActions(transcript) {
   if (!ANTHROPIC_KEY) return null
   try {
-    const callStart = Date.now()
-    const res = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-api-key': ANTHROPIC_KEY, 'anthropic-version': '2023-06-01' }, body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514', max_tokens: 1200,
+    const result = await llmCall({
+      modelClass: 'smart',
       messages: [{ role: 'user', content: `Analiza esta transcripción de llamada de operaciones aduanales (Renato Zapata & Company, Laredo TX).
 
 Extrae:
@@ -50,20 +50,21 @@ Responde en JSON:
 {"resumen":"...","acciones":[{"tarea":"...","responsable":"...","urgente":false}],"traficos_mencionados":[],"urgente":false,"follow_up_email":"...","idioma":"es"}
 
 Transcripción:
-${transcript.substring(0, 4000)}` }]
-    }) })
-    const data = await res.json()
+${transcript.substring(0, 4000)}` }],
+      maxTokens: 1200,
+      callerName: 'whisper-watcher',
+    })
     // Cost tracking
     supabase.from('api_cost_log').insert({
-      model: 'claude-sonnet-4-20250514',
-      input_tokens: data.usage?.input_tokens || 0,
-      output_tokens: data.usage?.output_tokens || 0,
-      cost_usd: ((data.usage?.input_tokens || 0) * 0.003 + (data.usage?.output_tokens || 0) * 0.015) / 1000,
+      model: result.model,
+      input_tokens: result.tokensIn,
+      output_tokens: result.tokensOut,
+      cost_usd: (result.tokensIn * 0.003 + result.tokensOut * 0.015) / 1000,
       action: 'whisper_call_analysis',
       client_code: 'system',
-      latency_ms: Date.now() - callStart,
+      latency_ms: result.durationMs,
     }).then(() => {}, () => {})
-    const m = data.content?.[0]?.text?.match(/\{[\s\S]*\}/); return m ? JSON.parse(m[0]) : null
+    const m = result.text?.match(/\{[\s\S]*\}/); return m ? JSON.parse(m[0]) : null
   } catch { return null }
 }
 

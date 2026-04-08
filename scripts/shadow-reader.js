@@ -86,18 +86,16 @@ function getAttachmentInfo(payload) {
 
 // ── Classify with Anthropic Sonnet ──────────────
 async function classifyEmail(sender, subject, snippet, attachments) {
-  const Anthropic = require('@anthropic-ai/sdk')
-  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+  const { llmCall } = require('./lib/llm')
 
   const attachmentList = attachments.length > 0
     ? attachments.map(a => `${a.name} (${a.mimeType})`).join(', ')
     : 'ninguno'
 
-  const start = Date.now()
-
-  const response = await client.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 512,
+  const result = await llmCall({
+    modelClass: 'smart',
+    maxTokens: 512,
+    callerName: 'shadow-reader',
     messages: [{
       role: 'user',
       content: `Eres un sistema de clasificación de emails para una agencia aduanal en Laredo, Texas (Patente 3596).
@@ -121,20 +119,20 @@ Responde con este formato exacto:
     }],
   })
 
-  const latency = Date.now() - start
+  const latency = result.durationMs
 
   // Cost tracking — non-blocking
   supabase.from('api_cost_log').insert({
-    model: 'claude-sonnet-4-20250514',
-    input_tokens: response.usage.input_tokens,
-    output_tokens: response.usage.output_tokens,
-    cost_usd: (response.usage.input_tokens * 0.003 + response.usage.output_tokens * 0.015) / 1000,
+    model: result.model,
+    input_tokens: result.tokensIn,
+    output_tokens: result.tokensOut,
+    cost_usd: (result.tokensIn * 0.003 + result.tokensOut * 0.015) / 1000,
     action: 'shadow_classification',
     client_code: 'internal',
     latency_ms: latency,
   }).then(() => {}, () => {})
 
-  const text = response.content[0]?.text || ''
+  const text = result.text
 
   try {
     const jsonMatch = text.match(/\{[\s\S]*\}/)
@@ -155,7 +153,7 @@ Responde con este formato exacto:
       summary: parsed.summary || '',
       raw: {
         response: text,
-        tokens: { input: response.usage.input_tokens, output: response.usage.output_tokens },
+        tokens: { input: result.tokensIn, output: result.tokensOut },
         latency_ms: latency,
       },
     }

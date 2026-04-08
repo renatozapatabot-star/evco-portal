@@ -90,17 +90,8 @@ Responde con este formato exacto:
 
 // ── Haiku classification ────────────────────────────────────────────────────
 
-let anthropic = null
-function getAnthropic() {
-  if (!anthropic) {
-    const Anthropic = require('@anthropic-ai/sdk')
-    anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
-  }
-  return anthropic
-}
-
 async function classifyWithHaiku(supabase, emails) {
-  const client = getAnthropic()
+  const { llmCall } = require('./lib/llm')
   const results = []
 
   for (const email of emails) {
@@ -108,29 +99,26 @@ async function classifyWithHaiku(supabase, emails) {
       ? email.attachments.map(a => a.name).join(', ')
       : 'ninguno'
 
-    const start = Date.now()
-
     try {
-      const response = await client.messages.create({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 256,
+      const result = await llmCall({
+        modelClass: 'fast',
+        maxTokens: 256,
+        callerName: 'bootcamp-email-speedrun',
         messages: [{
           role: 'user',
           content: `${CLASSIFICATION_PROMPT}\n\nDe: ${email.from}\nPara: ${email.to}\nAsunto: ${email.subject}\nFragmento: ${email.snippet}\nAdjuntos: ${attachmentList}`,
         }],
       })
 
-      const latencyMs = Date.now() - start
-
-      // Cost tracking
-      await logCost(supabase, 'claude-haiku-4-5-20251001', {
-        input_tokens: response.usage.input_tokens,
-        output_tokens: response.usage.output_tokens,
-        latency_ms: latencyMs,
+      // Cost tracking — KEEP existing logCost
+      await logCost(supabase, result.model, {
+        input_tokens: result.tokensIn,
+        output_tokens: result.tokensOut,
+        latency_ms: result.durationMs,
       }, 'bootcamp_email_classification')
 
       // Parse response
-      const text = response.content[0]?.text || ''
+      const text = result.text
       const jsonMatch = text.match(/\{[\s\S]*\}/)
       if (!jsonMatch) {
         results.push({ email_id: email.id, error: 'no_json', raw: text })

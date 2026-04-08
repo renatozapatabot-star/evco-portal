@@ -64,16 +64,7 @@ const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN
 const OLLAMA_URL = 'http://localhost:11434/api/generate'
 const OLLAMA_MODEL = 'qwen3.5:35b'
 
-// ── Anthropic client (lazy — only loaded in default mode) ───────────────────
-
-let anthropic = null
-function getAnthropic() {
-  if (!anthropic) {
-    const Anthropic = require('@anthropic-ai/sdk')
-    anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
-  }
-  return anthropic
-}
+// ── LLM abstraction (replaces direct Anthropic SDK usage) ───────────────────
 
 // ── Telegram ────────────────────────────────────────────────────────────────
 
@@ -137,8 +128,9 @@ async function extractPdfText(filePath) {
 
 // ── Step 6: AI Extraction ───────────────────────────────────────────────────
 
-const EXTRACTION_PROMPT = `You are a customs invoice data extractor. Extract the following fields from this document text as JSON:
-{ "invoice_number", "supplier_name", "supplier_country", "total_value", "currency", "incoterm", "products": [{ "description", "quantity", "unit", "unit_value", "total_value", "country_of_origin" }] }
+const EXTRACTION_PROMPT = `Eres un agente de clasificación aduanal mexicano. Extrae los datos de esta factura comercial con precisión absoluta. Responde SOLO en JSON válido. Nunca inventes datos — si un campo no está en la factura, devuelve null.
+Campos requeridos:
+{ "invoice_number", "supplier_name", "supplier_country", "supplier_address", "fecha_factura", "total_value", "currency", "incoterm", "peso_bruto", "peso_neto", "products": [{ "description", "quantity", "unit", "unit_value", "total_value", "country_of_origin" }] }
 Return ONLY valid JSON, no explanation.`
 
 async function extractWithOllama(text) {
@@ -157,24 +149,26 @@ async function extractWithOllama(text) {
 }
 
 async function extractWithAnthropic(text) {
-  const client = getAnthropic()
-  const start = Date.now()
-  const response = await client.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 2000,
+  const { llmCall } = require('./lib/llm')
+  const result = await llmCall({
+    modelClass: 'smart',
+    maxTokens: 2000,
     system: EXTRACTION_PROMPT,
+    callerName: 'email-intake-extraction',
     messages: [{ role: 'user', content: text.substring(0, 12000) }],
   })
+  const extractTokens = result.tokensIn + result.tokensOut
   // Cost tracking
   await supabase.from('api_cost_log').insert({
-    model: 'claude-sonnet-4-20250514',
-    input_tokens: response.usage.input_tokens,
-    output_tokens: response.usage.output_tokens,
+    model: result.model,
+    input_tokens: result.tokensIn,
+    output_tokens: result.tokensOut,
     action: 'email_intake_extraction',
-    latency_ms: Date.now() - start,
+    latency_ms: result.durationMs,
   }).then(() => {}, () => {})
-  const content = response.content[0]?.text || ''
-  return parseJsonResponse(content)
+  const parsed = parseJsonResponse(result.text)
+  parsed._extractionTokens = extractTokens
+  return parsed
 }
 
 function getMockExtraction() {
@@ -211,13 +205,31 @@ Return JSON: { "fraccion": "XXXX.XX.XX", "confidence": 0.0-1.0, "reasoning": "..
 
 async function classifyProduct(product, companyId) {
   // Fetch historical matches from traficos
+  const keyword = (product.description || '').substring(0, 30)
   const { data: history } = await supabase
     .from('traficos')
     .select('fraccion_arancelaria, descripcion_mercancia, regimen')
     .eq('company_id', companyId)
     .not('fraccion_arancelaria', 'is', null)
-    .ilike('descripcion_mercancia', `%${(product.description || '').substring(0, 30)}%`)
+    .ilike('descripcion_mercancia', `%${keyword}%`)
     .limit(5)
+
+  // Check for strong historical match (same fraccion used 3+ times)
+  const fraccionCounts = {}
+  for (const h of (history || [])) {
+    if (h.fraccion_arancelaria) {
+      fraccionCounts[h.fraccion_arancelaria] = (fraccionCounts[h.fraccion_arancelaria] || 0) + 1
+    }
+  }
+  const topFraccion = Object.entries(fraccionCounts).sort((a, b) => b[1] - a[1])[0]
+  if (topFraccion && topFraccion[1] >= 3) {
+    return {
+      fraccion: topFraccion[0],
+      confidence: 0.90,
+      reasoning: `Clasificación histórica — ${topFraccion[1]} operaciones previas con misma fracción`,
+      source: 'historica',
+    }
+  }
 
   const historyStr = (history || [])
     .map(h => `${h.fraccion_arancelaria} — ${h.descripcion_mercancia} (${h.regimen})`)
@@ -234,7 +246,7 @@ ${historyStr || '(no history)'}
 `
 
   if (MODE === 'dry-run') {
-    return { fraccion: '3901.20.01', confidence: 0.92, reasoning: 'Dry run — PE pellets' }
+    return { fraccion: '3901.20.01', confidence: 0.92, reasoning: 'Dry run — PE pellets', source: 'historica' }
   }
 
   if (MODE === 'ollama') {
@@ -245,30 +257,41 @@ ${historyStr || '(no history)'}
     })
     if (!res.ok) throw new Error(`Ollama classify error: ${res.status}`)
     const data = await res.json()
-    return parseJsonResponse(data.response)
+    const result = parseJsonResponse(data.response)
+    return { ...result, source: 'sugerida' }
   }
 
   // Anthropic Haiku for classification (cheap + fast)
-  const client = getAnthropic()
-  const start = Date.now()
-  const response = await client.messages.create({
-    model: 'claude-haiku-4-5-20251001',
-    max_tokens: 500,
+  const { llmCall } = require('./lib/llm')
+  const llmResult = await llmCall({
+    modelClass: 'fast',
+    maxTokens: 500,
+    callerName: 'email-intake-classification',
     messages: [{ role: 'user', content: prompt }],
   })
+  const classTokens = llmResult.tokensIn + llmResult.tokensOut
   await supabase.from('api_cost_log').insert({
-    model: 'claude-haiku-4-5-20251001',
-    input_tokens: response.usage.input_tokens,
-    output_tokens: response.usage.output_tokens,
+    model: llmResult.model,
+    input_tokens: llmResult.tokensIn,
+    output_tokens: llmResult.tokensOut,
     action: 'email_intake_classification',
-    latency_ms: Date.now() - start,
+    latency_ms: llmResult.durationMs,
   }).then(() => {}, () => {})
-  return parseJsonResponse(response.content[0]?.text || '')
+  const result = parseJsonResponse(llmResult.text)
+  return { ...result, source: 'sugerida', tokens: classTokens }
 }
 
 // ── Step 9: Calculate contributions ─────────────────────────────────────────
 
-function calculateContributions(valorAduanaUSD, regimen, fraccionData, rates) {
+function isTMECEligible(regimen, paisOrigen) {
+  const tmecRegimes = ['ITE', 'ITR', 'IMD']
+  const tmecCountries = ['USA', 'US', 'UNITED STATES', 'ESTADOS UNIDOS', 'CANADA', 'CANADÁ', 'CA', 'CAN']
+  const regimeOK = tmecRegimes.includes((regimen || '').toUpperCase())
+  const countryOK = tmecCountries.includes((paisOrigen || '').toUpperCase().trim())
+  return regimeOK || countryOK
+}
+
+function calculateContributions(valorAduanaUSD, regimen, fraccionData, rates, paisOrigen) {
   const { exchangeRate, dtaRates, ivaRate } = rates
   const valorAduanaMXN = Math.round(valorAduanaUSD * exchangeRate * 100) / 100
 
@@ -276,8 +299,8 @@ function calculateContributions(valorAduanaUSD, regimen, fraccionData, rates) {
   const dtaConfig = dtaRates[regimen] || dtaRates['A1'] || { rate: 0.008 }
   const dtaAmount = Math.round(valorAduanaMXN * dtaConfig.rate * 100) / 100
 
-  // IGI — check T-MEC (ITE/ITR/IMD = 0% IGI)
-  const isTMEC = ['ITE', 'ITR', 'IMD'].includes((regimen || '').toUpperCase())
+  // IGI — check T-MEC (regime OR country of origin)
+  const isTMEC = isTMECEligible(regimen, paisOrigen)
   const igiRate = isTMEC ? 0 : (fraccionData?.igi_rate || 0)
   const igiAmount = Math.round(valorAduanaMXN * igiRate * 100) / 100
 
@@ -491,6 +514,7 @@ function isShipmentEmail(subject, sender) {
 // ── Process a single email (steps 1-14) ─────────────────────────────────────
 
 async function processEmail(gmail, messageId, companyId) {
+  const emailStartTime = Date.now()
   // Step 1: Already fetched by caller
 
   const { data: msg } = await gmail.users.messages.get({
@@ -608,16 +632,19 @@ async function processEmail(gmail, messageId, companyId) {
 
   // Step 7: Classify fracción per product
   const classifications = []
+  let classificationTokens = 0
   for (const product of (extraction.products || [])) {
     try {
       const result = await classifyProduct(product, companyId)
+      classificationTokens += result.tokens || 0
       classifications.push({
         description: product.description,
         fraccion: result.fraccion,
         confidence: result.confidence,
         reasoning: result.reasoning,
+        source: result.source || 'sugerida',
       })
-      console.log(`    ${result.fraccion} (${Math.round(result.confidence * 100)}%) — ${(product.description || '').substring(0, 40)}`)
+      console.log(`    ${result.fraccion} (${Math.round(result.confidence * 100)}%) [${result.source || 'sugerida'}] — ${(product.description || '').substring(0, 40)}`)
     } catch (err) {
       console.error(`    Classification failed: ${err.message}`)
       classifications.push({
@@ -625,6 +652,7 @@ async function processEmail(gmail, messageId, companyId) {
         fraccion: null,
         confidence: 0,
         reasoning: `Error: ${err.message}`,
+        source: 'error',
       })
     }
   }
@@ -649,12 +677,14 @@ async function processEmail(gmail, messageId, companyId) {
     if (histRegimen?.regimen) detectedRegimen = histRegimen.regimen
   }
 
-  // Step 9: Calculate contributions
+  // Step 9: Calculate contributions (T-MEC checks regime AND country of origin)
+  const paisOrigen = extraction.supplier_country || (extraction.products?.[0]?.country_of_origin) || null
   const contributions = calculateContributions(
     extraction.total_value || 0,
     detectedRegimen,
     { igi_rate: 0 }, // T-MEC exempt by default — will be overridden by regime check
-    rates
+    rates,
+    paisOrigen
   )
   console.log(`  DTA: ${contributions.dta.amount_mxn} MXN · IGI: ${contributions.igi.amount_mxn} MXN · IVA: ${contributions.iva.amount_mxn} MXN`)
   console.log(`  T-MEC: ${contributions.igi.tmec ? 'Yes' : 'No'} · Total: ${contributions.total_contribuciones_mxn} MXN`)
@@ -700,16 +730,37 @@ async function processEmail(gmail, messageId, companyId) {
     console.log('  📋 Queued for human review (partial match)')
   }
 
+  // Step 10c: Build flags array (items requiring human review)
+  const flags = []
+  const requiredFields = ['invoice_number', 'supplier_name', 'total_value', 'currency']
+  for (const field of requiredFields) {
+    if (!extraction[field]) flags.push(`Campo ${field} no encontrado en factura`)
+  }
+  for (const c of classifications) {
+    if (!c.fraccion) {
+      flags.push(`Producto sin fracción: ${(c.description || '').substring(0, 40)}`)
+    } else if (c.source === 'historica') {
+      flags.push(`Clasificación histórica — verificar: ${c.fraccion}`)
+    } else if (c.confidence < 0.8) {
+      flags.push(`Clasificación sugerida — requiere validación de Tito: ${c.fraccion}`)
+    }
+  }
+  if (!supplierMatch.matched) flags.push('Proveedor no reconocido')
+  const confianzaLabel = confidence.tier === 1 ? 'alta' : confidence.tier === 2 ? 'media' : 'baja'
+
   // Step 11: INSERT into pedimento_drafts
   const draftData = {
     extraction,
     classifications,
     contributions,
     confidence,
+    confianza: confianzaLabel,
+    flags,
     mode: MODE,
-    source: 'email_intake',
+    source: 'ghost_pedimento',
     email: { sender, subject, received_at: receivedAt, gmail_message_id: messageId },
     regimen: detectedRegimen,
+    pais_origen: paisOrigen,
     supplier_match: supplierMatch.matched ? supplierMatch : undefined,
     auto_trafico: autoTrafico ? autoTrafico.trafico : undefined,
   }
@@ -721,24 +772,75 @@ async function processEmail(gmail, messageId, companyId) {
       draft_data: draftData,
       status: confidence.tier === 1 ? 'pending' : 'draft',
       created_by: 'CRUZ',
+      company_id: companyId,
     })
     .select('id')
     .single()
 
   if (draftErr) throw new Error(`Draft insert failed: ${draftErr.message}`)
   const draftId = draft.id
-  console.log(`  Draft created: ${draftId}`)
+  console.log(`  Draft created: ${draftId} · Confianza: ${confianzaLabel} · Flags: ${flags.length}`)
 
-  // Step 12: Telegram notification
-  const tmecLabel = contributions.igi.tmec ? '✅' : '❌'
+  // Step 12: Ghost Pedimento Telegram notification with inline buttons
+  const primaryClassSource = classifications.find(c => c.fraccion)?.source || 'sugerida'
+  const flagsSection = flags.length > 0
+    ? `\n🚩 <b>REQUIERE REVISIÓN:</b>\n${flags.map(f => `  • ${f}`).join('\n')}`
+    : ''
+  const confianzaEmoji = confidence.tier === 1 ? '✅ Confianza: ALTA'
+    : confidence.tier === 2 ? '⚠️ Confianza: MEDIA'
+    : '🔴 Confianza: BAJA'
   const autoLabel = autoTrafico ? `\n🆕 Tráfico creado: <b>${autoTrafico.trafico}</b>` : ''
+
   const tgMsg = [
-    `📥 <b>Borrador listo</b> · ${extraction.invoice_number || 'Sin factura'}`,
-    `${extraction.supplier_name || 'Proveedor desconocido'} · $${(extraction.total_value || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })} ${extraction.currency || 'USD'}`,
-    `Confianza: ${confidence.score}% · T-MEC ${tmecLabel}${autoLabel}`,
-    `— CRUZ 🦀`,
-  ].join('\n')
-  await sendTelegram(tgMsg)
+    `🤖 <b>GHOST PEDIMENTO — ${companyId.toUpperCase()}</b>`,
+    `━━━━━━━━━━━━━━━━━━━━━━━━`,
+    `📦 ${(extraction.products?.[0]?.description || 'Sin descripción').substring(0, 60)}`,
+    `🏭 Proveedor: ${extraction.supplier_name || '—'}`,
+    `💰 Valor: $${(extraction.total_value || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })} ${extraction.currency || 'USD'}`,
+    `🔢 Fracción: <code>${primaryFraccion || '—'}</code> (${primaryClassSource})`,
+    `🇲🇽 T-MEC: ${contributions.igi.tmec ? 'Aplicado ✅' : 'No aplica ❌'}`,
+    `━━━━━━━━━━━━━━━━━━━━━━━━`,
+    `<b>CONTRIBUCIONES:</b>`,
+    `  IGI:  $${contributions.igi.amount_mxn.toLocaleString('en-US', { minimumFractionDigits: 2 })} MXN (${Math.round(contributions.igi.rate * 100)}%)`,
+    `  DTA:  $${contributions.dta.amount_mxn.toLocaleString('en-US', { minimumFractionDigits: 2 })} MXN`,
+    `  IVA:  $${contributions.iva.amount_mxn.toLocaleString('en-US', { minimumFractionDigits: 2 })} MXN`,
+    `  ━━━━`,
+    `  <b>TOTAL: $${contributions.total_contribuciones_mxn.toLocaleString('en-US', { minimumFractionDigits: 2 })} MXN</b>`,
+    `━━━━━━━━━━━━━━━━━━━━━━━━`,
+    flagsSection,
+    confianzaEmoji,
+    autoLabel,
+    ``,
+    `Ver en portal: evco-portal.vercel.app/drafts/${draftId}`,
+  ].filter(Boolean).join('\n')
+
+  // Send with inline approve/reject buttons (not plain sendTelegram)
+  if (process.env.TELEGRAM_SILENT !== 'true' && TELEGRAM_TOKEN) {
+    try {
+      await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: TELEGRAM_CHAT,
+          text: tgMsg,
+          parse_mode: 'HTML',
+          reply_markup: {
+            inline_keyboard: [
+              [
+                { text: '✅ Aprobar', callback_data: `aprobar_${draftId}` },
+                { text: '❌ Rechazar', callback_data: `rechazar_${draftId}` },
+              ],
+              [
+                { text: '✏️ Editar en portal', url: `https://evco-portal.vercel.app/drafts/${draftId}` },
+              ],
+            ],
+          },
+        }),
+      })
+    } catch (e) { console.error('Telegram error:', e.message) }
+  } else {
+    console.log('[TG skip]', tgMsg.replace(/<[^>]+>/g, ''))
+  }
 
   // Step 13: Log to processed_emails (email_queue)
   await supabase.from('email_queue').insert({
@@ -849,11 +951,27 @@ async function processEmail(gmail, messageId, companyId) {
     })
   }
 
+  // Step 16: Log to ghost_pedimento_runs (observability)
+  const extractionTokens = extraction._extractionTokens || 0
+  await supabase.from('ghost_pedimento_runs').insert({
+    referencia: `${companyId}-GHOST-${Date.now()}`,
+    draft_id: draftId,
+    company_id: companyId,
+    status: 'success',
+    confianza: confianzaLabel,
+    flags_count: flags.length,
+    extraction_tokens: extractionTokens,
+    classification_tokens: classificationTokens,
+    duration_ms: Date.now() - emailStartTime,
+  }).then(() => {}, (err) => console.error('ghost_pedimento_runs error:', err.message))
+
   return {
     draftId, sender, subject,
     pdfCount: pdfs.length,
     confidence: confidence.score,
     tier: confidence.tier,
+    confianza: confianzaLabel,
+    flags: flags.length,
     tmec: contributions.igi.tmec,
     value: extraction.total_value,
     currency: extraction.currency,
@@ -871,26 +989,36 @@ async function runDryRun(companyId) {
 
   const classifications = []
   for (const product of extraction.products) {
-    const result = { fraccion: '3901.20.01', confidence: 0.92, reasoning: 'Dry run mock' }
+    const result = { fraccion: '3901.20.01', confidence: 0.92, reasoning: 'Dry run mock', source: 'historica' }
     classifications.push({ description: product.description, ...result })
-    console.log(`  ${result.fraccion} (${Math.round(result.confidence * 100)}%)`)
+    console.log(`  ${result.fraccion} (${Math.round(result.confidence * 100)}%) [${result.source}]`)
   }
 
   console.log('Fetching rates...')
   const rates = await getAllRates()
   console.log(`  TC: ${rates.exchangeRate} · IVA: ${rates.ivaRate}`)
 
-  const contributions = calculateContributions(extraction.total_value, 'ITE', { igi_rate: 0 }, rates)
+  const contributions = calculateContributions(extraction.total_value, 'ITE', { igi_rate: 0 }, rates, 'US')
   console.log(`  DTA: ${contributions.dta.amount_mxn} MXN · IGI: ${contributions.igi.amount_mxn} MXN · IVA: ${contributions.iva.amount_mxn} MXN`)
 
   const confidence = scoreConfidence(extraction, classifications)
   console.log(`  Confidence: ${confidence.score}% · Tier ${confidence.tier}`)
 
+  // Build flags for dry run
+  const flags = []
+  if (classifications.some(c => c.source === 'historica')) {
+    flags.push('Clasificación histórica — verificar: 3901.20.01')
+  }
+  const confianzaLabel = confidence.tier === 1 ? 'alta' : confidence.tier === 2 ? 'media' : 'baja'
+
   const draftData = {
     extraction, classifications, contributions, confidence,
-    mode: 'dry-run', source: 'email_intake',
+    confianza: confianzaLabel,
+    flags,
+    mode: 'dry-run', source: 'ghost_pedimento',
     email: { sender: 'dry-run@test.com', subject: 'DRY RUN', gmail_message_id: 'dry-run-001' },
     regimen: 'ITE',
+    pais_origen: 'US',
   }
 
   const { data: draft, error: draftErr } = await supabase
@@ -900,7 +1028,7 @@ async function runDryRun(companyId) {
       draft_data: draftData,
       status: 'draft',
       created_by: 'CRUZ',
-      // company_id removed — column does not exist in pedimento_drafts
+      company_id: companyId,
     })
     .select('id')
     .single()
@@ -910,21 +1038,32 @@ async function runDryRun(companyId) {
     return
   }
 
-  console.log(`\nDraft created: ${draft.id}`)
+  console.log(`\nDraft created: ${draft.id} · Confianza: ${confianzaLabel} · Flags: ${flags.length}`)
 
   const tmecLabel = contributions.igi.tmec ? '✅' : '❌'
   await sendTelegram([
-    `🧪 <b>DRY RUN — Borrador listo</b> · ${extraction.invoice_number}`,
+    `🧪 <b>DRY RUN — GHOST PEDIMENTO</b> · ${extraction.invoice_number}`,
     `${extraction.supplier_name} · $${extraction.total_value.toLocaleString('en-US', { minimumFractionDigits: 2 })} ${extraction.currency}`,
-    `Confianza: ${confidence.score}% · T-MEC ${tmecLabel}`,
+    `Confianza: ${confianzaLabel} · T-MEC ${tmecLabel}`,
+    `Flags: ${flags.length} · Draft: ${draft.id}`,
     `— CRUZ 🦀`,
   ].join('\n'))
 
+  // Log to ghost_pedimento_runs
+  await supabase.from('ghost_pedimento_runs').insert({
+    referencia: `${companyId}-GHOST-DRY-${Date.now()}`,
+    draft_id: draft.id,
+    company_id: companyId,
+    status: 'success',
+    confianza: confianzaLabel,
+    flags_count: flags.length,
+  }).then(() => {}, () => {})
+
   await supabase.from('audit_log').insert({
-    action: 'email_intake_dry_run',
+    action: 'ghost_pedimento_dry_run',
     entity_type: 'pedimento_draft',
     entity_id: draft.id,
-    details: { mode: 'dry-run', confidence: confidence.score },
+    details: { mode: 'dry-run', confidence: confidence.score, confianza: confianzaLabel, flags },
     company_id: companyId,
   }).then(() => {}, () => {})
 
@@ -985,7 +1124,13 @@ async function run() {
     } catch (err) {
       errors++
       console.error(`  ❌ Error: ${err.message}\n`)
-      await sendTelegram(`🔴 <b>Email Intake</b> error on ${m.id}:\n${err.message.substring(0, 200)}`)
+      await sendTelegram(`🔴 <b>Ghost Pedimento FALLÓ</b> — ${m.id}:\n${err.message.substring(0, 200)}\nRequiere revisión manual`)
+      // Log failed run to observability table
+      await supabase.from('ghost_pedimento_runs').insert({
+        company_id: companyId,
+        status: 'failed',
+        error_message: err.message.substring(0, 500),
+      }).then(() => {}, () => {})
     }
   }
 

@@ -8,6 +8,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 )
 
+const { llmCall } = require('./lib/llm')
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN
 const TELEGRAM_CHAT = '-5085543275'
 const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY
@@ -62,31 +63,23 @@ Format your response as:
 Be specific and actionable. If no significant changes found, say so clearly.`
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': ANTHROPIC_KEY,
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        messages: [{ role: 'user', content: prompt }]
-      })
+    const result = await llmCall({
+      modelClass: 'smart',
+      messages: [{ role: 'user', content: prompt }],
+      maxTokens: 1000,
+      callerName: 'deep-research-scheduler',
     })
-    const data = await res.json()
     // Cost tracking
     supabase.from('api_cost_log').insert({
-      model: 'claude-sonnet-4-20250514',
-      input_tokens: data.usage?.input_tokens || 0,
-      output_tokens: data.usage?.output_tokens || 0,
-      cost_usd: ((data.usage?.input_tokens || 0) * 0.003 + (data.usage?.output_tokens || 0) * 0.015) / 1000,
+      model: result.model,
+      input_tokens: result.tokensIn,
+      output_tokens: result.tokensOut,
+      cost_usd: (result.tokensIn * 0.003 + result.tokensOut * 0.015) / 1000,
       action: 'deep_research',
       client_code: 'system',
-      latency_ms: 0,
+      latency_ms: result.durationMs,
     }).then(() => {}, () => {})
-    return data.content?.[0]?.text || null
+    return result.text || null
   } catch (e) {
     console.error('Claude API error:', e.message)
     return null

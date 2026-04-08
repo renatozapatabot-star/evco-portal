@@ -9,9 +9,9 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://jkhpafacchjxawnscplf.supabase.co',
   process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 )
+const { llmCall } = require('./lib/llm')
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN
 const TELEGRAM_CHAT = '-5085543275'
-const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY
 const GMAIL_TOKEN = process.env.GMAIL_REFRESH_TOKEN
 
 async function sendTG(msg) {
@@ -24,35 +24,35 @@ async function sendTG(msg) {
 }
 
 async function draftEmail(supplier, traficos) {
-  if (!ANTHROPIC_KEY) return fallbackDraft(supplier, traficos)
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: { 'x-api-key': ANTHROPIC_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514', max_tokens: 512,
+  try {
+    const result = await llmCall({
+      modelClass: 'smart',
       messages: [{ role: 'user', content:
         `Draft a professional email in Spanish requesting USMCA/T-MEC certificates of origin from supplier "${supplier.name}" (${supplier.email || 'no email'}).
 Traficos missing certificates: ${traficos.join(', ')}.
-Tone: polite but firm. Mention compliance deadline. Keep under 200 words. Return subject line on first line prefixed "Asunto:", then body.` }]
+Tone: polite but firm. Mention compliance deadline. Keep under 200 words. Return subject line on first line prefixed "Asunto:", then body.` }],
+      maxTokens: 512,
+      callerName: 'supplier-comms',
     })
-  })
-  const data = await res.json()
-  // Cost tracking
-  supabase.from('api_cost_log').insert({
-    model: 'claude-sonnet-4-20250514',
-    input_tokens: data.usage?.input_tokens || 0,
-    output_tokens: data.usage?.output_tokens || 0,
-    cost_usd: ((data.usage?.input_tokens || 0) * 0.003 + (data.usage?.output_tokens || 0) * 0.015) / 1000,
-    action: 'supplier_comms_draft',
-    client_code: 'system',
-    latency_ms: 0,
-  }).then(() => {}, () => {})
-  const text = data.content?.[0]?.text || ''
-  const lines = text.split('\n')
-  const subjectLine = lines.find(l => l.startsWith('Asunto:')) || lines[0]
-  const subject = subjectLine.replace(/^Asunto:\s*/, '').trim()
-  const body = lines.filter(l => l !== subjectLine).join('\n').trim()
-  return { subject: subject || 'Solicitud de Certificado T-MEC', body: body || text }
+    // Cost tracking
+    supabase.from('api_cost_log').insert({
+      model: result.model,
+      input_tokens: result.tokensIn,
+      output_tokens: result.tokensOut,
+      cost_usd: (result.tokensIn * 0.003 + result.tokensOut * 0.015) / 1000,
+      action: 'supplier_comms_draft',
+      client_code: 'system',
+      latency_ms: result.durationMs,
+    }).then(() => {}, () => {})
+    const text = result.text
+    const lines = text.split('\n')
+    const subjectLine = lines.find(l => l.startsWith('Asunto:')) || lines[0]
+    const subject = subjectLine.replace(/^Asunto:\s*/, '').trim()
+    const body = lines.filter(l => l !== subjectLine).join('\n').trim()
+    return { subject: subject || 'Solicitud de Certificado T-MEC', body: body || text }
+  } catch {
+    return fallbackDraft(supplier, traficos)
+  }
 }
 
 function fallbackDraft(supplier, traficos) {

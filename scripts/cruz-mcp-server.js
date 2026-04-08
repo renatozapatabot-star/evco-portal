@@ -24,6 +24,7 @@ const { createClient } = require('@supabase/supabase-js')
 // ── Environment ──
 require('dotenv').config({ path: require('path').resolve(__dirname, '../.env.local') })
 
+const { llmCall } = require('./lib/llm')
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
 const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY
@@ -103,39 +104,28 @@ async function classifyProduct({ description, origin_country }) {
     return { error: 'No pattern match found and AI classification unavailable' }
   }
 
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': ANTHROPIC_KEY,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 300,
-      messages: [{
-        role: 'user',
-        content: `Classify this product for Mexican customs (fracción arancelaria XXXX.XX.XX format).
+  const result = await llmCall({
+    modelClass: 'fast',
+    messages: [{ role: 'user', content: `Classify this product for Mexican customs (fracción arancelaria XXXX.XX.XX format).
 Product: ${description}
 Origin: ${origin_country || 'Unknown'}
 
-Return JSON only: { "fraccion": "XXXX.XX.XX", "description_es": "...", "igi_rate": 0.05, "confidence": 85 }`
-      }],
-    }),
+Return JSON only: { "fraccion": "XXXX.XX.XX", "description_es": "...", "igi_rate": 0.05, "confidence": 85 }` }],
+    maxTokens: 300,
+    callerName: 'cruz-mcp-server',
   })
 
-  const data = await res.json()
   // Cost tracking — operational resilience rule #4
   supabase.from('api_cost_log').insert({
-    model: 'claude-haiku-4-5-20251001',
-    input_tokens: data.usage?.input_tokens || 0,
-    output_tokens: data.usage?.output_tokens || 0,
-    cost_usd: ((data.usage?.input_tokens || 0) * 0.001 + (data.usage?.output_tokens || 0) * 0.005) / 1000,
+    model: result.model,
+    input_tokens: result.tokensIn,
+    output_tokens: result.tokensOut,
+    cost_usd: (result.tokensIn * 0.001 + result.tokensOut * 0.005) / 1000,
     action: 'mcp_classify_product',
     client_code: 'mcp',
-    latency_ms: 0,
+    latency_ms: result.durationMs,
   }).then(() => {}, () => {})
-  const text = data.content?.[0]?.text || ''
+  const text = result.text
   try {
     const jsonMatch = text.match(/\{[\s\S]*\}/)
     if (jsonMatch) {

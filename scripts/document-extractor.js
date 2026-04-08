@@ -16,7 +16,6 @@ const supabase = createClient(
 )
 
 const DRY_RUN = process.argv.includes('--dry-run')
-const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY
 const TELEGRAM_CHAT = '-5085543275'
 
 // Extraction schemas per document type
@@ -86,6 +85,8 @@ async function sendTelegram(msg) {
 }
 
 async function extractDocument(doc) {
+  const { llmCall } = require('./lib/llm')
+
   const docType = (doc.doc_type || '').toLowerCase().replace(/\s+/g, '_')
   const schema = SCHEMAS[docType]
   if (!schema) return null // No schema for this type
@@ -93,8 +94,6 @@ async function extractDocument(doc) {
   // Need a real file URL to send to Sonnet
   const fileUrl = doc.file_url
   if (!fileUrl || fileUrl.startsWith('globalpc://')) return null
-
-  if (!ANTHROPIC_API_KEY) return null
 
   const prompt = `Extract structured data from this customs document.
 Document type: ${docType}
@@ -106,24 +105,14 @@ ${schema}
 If a field cannot be determined, use null. Extract all visible data.`
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 2000,
-        messages: [{ role: 'user', content: prompt }],
-      }),
+    const result = await llmCall({
+      modelClass: 'vision',
+      maxTokens: 2000,
+      callerName: 'document-extractor',
+      messages: [{ role: 'user', content: prompt }],
     })
 
-    const data = await res.json()
-    if (data.error) return null
-
-    const text = data.content?.[0]?.text || ''
+    const text = result.text
     const jsonMatch = text.match(/\{[\s\S]*\}/)
     if (!jsonMatch) return null
 
@@ -131,10 +120,10 @@ If a field cannot be determined, use null. Extract all visible data.`
 
     // Cost tracking
     supabase.from('api_cost_log').insert({
-      model: 'claude-sonnet-4-20250514',
-      input_tokens: data.usage?.input_tokens || 0,
-      output_tokens: data.usage?.output_tokens || 0,
-      cost_usd: ((data.usage?.input_tokens || 0) * 0.003 + (data.usage?.output_tokens || 0) * 0.015) / 1000,
+      model: result.model,
+      input_tokens: result.tokensIn,
+      output_tokens: result.tokensOut,
+      cost_usd: (result.tokensIn * 0.003 + result.tokensOut * 0.015) / 1000,
       action: 'document_extraction',
       client_code: doc.company_id || 'system',
     }).then(() => {}, () => {})

@@ -84,8 +84,7 @@ async function findHistoricalMatches(description, supabase) {
 // ── AI classification via Haiku (cost-tracked) ─────────────────────────────
 
 async function classifyWithHaiku(description, historicalMatches, supabase) {
-  const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY
-  if (!ANTHROPIC_API_KEY) return null
+  const { llmCall } = require('./llm')
 
   const historyContext = historicalMatches.length > 0
     ? `\n\nHISTORIAL DE CLASIFICACIONES SIMILARES (Patente 3596):\n${historicalMatches.map(m => `- ${m.fraccion}: ${m.count} clasificaciones previas (${m.descriptions.join('; ')})`).join('\n')}`
@@ -112,38 +111,34 @@ Responde SOLO con JSON:
   "consistency_warning": null
 }`
 
-  const start = Date.now()
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-api-key': ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 1000, messages: [{ role: 'user', content: prompt }] }),
+    const result = await llmCall({
+      modelClass: 'fast',
+      maxTokens: 1000,
+      callerName: 'ghost-pipeline',
+      messages: [{ role: 'user', content: prompt }],
     })
-    const data = await res.json()
-    if (data.error) return null
 
-    const text = data.content?.[0]?.text || ''
+    const text = result.text
     const match = text.match(/\{[\s\S]*\}/)
     if (!match) return null
 
-    const inputTokens = data.usage?.input_tokens || 0
-    const outputTokens = data.usage?.output_tokens || 0
-    const costUsd = (inputTokens * 0.001 + outputTokens * 0.005) / 1000
+    const costUsd = (result.tokensIn * 0.001 + result.tokensOut * 0.005) / 1000
 
     // Cost tracking — fire and forget
     supabase.from('api_cost_log').insert({
-      model: 'claude-haiku-4-5-20251001',
-      input_tokens: inputTokens,
-      output_tokens: outputTokens,
+      model: result.model,
+      input_tokens: result.tokensIn,
+      output_tokens: result.tokensOut,
       cost_usd: costUsd,
       action: 'ghost_classification',
-      latency_ms: Date.now() - start,
+      latency_ms: result.durationMs,
     }).then(() => {}, () => {})
 
     const parsed = JSON.parse(match[0])
     return {
       ...parsed,
-      tokens: { input: inputTokens, output: outputTokens },
+      tokens: { input: result.tokensIn, output: result.tokensOut },
       cost_usd: costUsd,
     }
   } catch { return null }

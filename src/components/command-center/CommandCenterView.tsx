@@ -165,39 +165,50 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
       {awayBanner}
 
       {/* ── COMMAND STRIP (operator only — hidden from clients) ── */}
-      {!isClient && <div style={{
-        borderRadius: 10,
-        marginBottom: 12,
-        borderLeft: criticalCount > 0 ? '3px solid var(--danger-500, #DC2626)' : '3px solid var(--success, #16A34A)',
-        background: criticalCount > 0 ? 'rgba(220,38,38,0.06)' : 'rgba(22,163,74,0.06)',
-        overflow: 'hidden',
-      }}>
-        <div
-          onClick={() => criticalCount > 0 && setCriticosOpen(v => !v)}
-          style={{
-            padding: isMobile ? '10px 12px' : '10px 16px',
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            flexWrap: 'wrap', gap: 8,
-            cursor: criticalCount > 0 ? 'pointer' : 'default',
-          }}
-        >
-          <span style={{ fontSize: 13, fontWeight: 700, color: criticalCount > 0 ? '#DC2626' : '#16A34A' }}>
-            {criticalCount > 0
-              ? `${criticalCount} pendiente${criticalCount !== 1 ? 's' : ''} critico${criticalCount !== 1 ? 's' : ''}`
-              : mood === 'allgreen' ? 'Todo completado — excelente día' : 'Todo al corriente — sin pendientes criticos'
-            }
+      {!isClient && (() => {
+        // 3-state: red (urgentes), amber (busy but not critical), green (all clear)
+        const bannerLevel = urgentes > 0 ? 'red' : criticalCount > 0 ? 'amber' : 'green'
+        const bannerColors = {
+          red:   { border: '#DC2626', bg: 'rgba(220,38,38,0.06)', text: '#DC2626', btn: '#DC2626' },
+          amber: { border: '#D97706', bg: 'rgba(217,119,6,0.06)', text: '#D97706', btn: '#D97706' },
+          green: { border: '#16A34A', bg: 'rgba(22,163,74,0.06)', text: '#16A34A', btn: '#16A34A' },
+        }
+        const bc = bannerColors[bannerLevel]
+        const bannerText = bannerLevel === 'red'
+          ? `${urgentes} urgente${urgentes !== 1 ? 's' : ''} — resolver ahora`
+          : bannerLevel === 'amber'
+            ? `${criticalCount} pendiente${criticalCount !== 1 ? 's' : ''} — monitorear`
+            : mood === 'allgreen' ? 'Todo completado — excelente día' : 'Todo al corriente — sin pendientes'
+        return <div style={{
+          borderRadius: 10,
+          marginBottom: 12,
+          borderLeft: `3px solid ${bc.border}`,
+          background: bc.bg,
+          overflow: 'hidden',
+        }}>
+          <div
+            onClick={() => criticalCount > 0 && setCriticosOpen(v => !v)}
+            style={{
+              padding: isMobile ? '10px 12px' : '10px 16px',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              flexWrap: 'wrap', gap: 8,
+              cursor: criticalCount > 0 ? 'pointer' : 'default',
+            }}
+          >
+            <span style={{ fontSize: 13, fontWeight: 700, color: bc.text }}>
+              {bannerText}
+              {criticalCount > 0 && (
+                <span style={{ fontSize: 11, marginLeft: 6, color: 'var(--text-muted)' }}>{criticosOpen ? '▲' : '▼'}</span>
+              )}
+            </span>
             {criticalCount > 0 && (
-              <span style={{ fontSize: 11, marginLeft: 6, color: 'var(--text-muted)' }}>{criticosOpen ? '▲' : '▼'}</span>
+              <Link href={criticalHref} onClick={e => e.stopPropagation()} style={{
+                padding: '6px 14px', borderRadius: 6, fontSize: 12, fontWeight: 700,
+                background: bc.btn, color: '#FFFFFF', textDecoration: 'none',
+              }}>
+                {bannerLevel === 'red' ? 'Resolver ahora' : 'Ver pendientes'}
+              </Link>
             )}
-          </span>
-          {criticalCount > 0 && (
-            <Link href={criticalHref} onClick={e => e.stopPropagation()} style={{
-              padding: '6px 14px', borderRadius: 6, fontSize: 12, fontWeight: 700,
-              background: '#DC2626', color: '#FFFFFF', textDecoration: 'none',
-            }}>
-              Resolver ahora
-            </Link>
-          )}
         </div>
         {/* Expanded critical items */}
         {criticosOpen && criticalCount > 0 && (
@@ -235,7 +246,8 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
             )}
           </div>
         )}
-      </div>}
+      </div>
+      })()}
 
       {/* ── Client calm status (replaces critical banner) ── */}
       {isClient && (

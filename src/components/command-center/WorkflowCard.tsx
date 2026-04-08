@@ -27,9 +27,15 @@ interface WorkflowCardProps {
   urgency?: CardUrgency
 }
 
+// 3-state urgency color system: RED = urgent, AMBER = ojo/monitorear, GREEN = all good
+const U_BORDER = { red: 'rgba(220,38,38,0.25)', amber: 'rgba(217,119,6,0.25)', green: 'rgba(22,163,74,0.25)', neutral: 'rgba(255,255,255,0.08)' }
+const U_TOP    = { red: 'rgba(220,38,38,0.7)', amber: 'rgba(217,119,6,0.6)', green: 'rgba(22,163,74,0.5)', neutral: 'rgba(201,168,76,0.4)' }
+const U_SHADOW = { red: 'rgba(220,38,38,0.1)', amber: 'rgba(217,119,6,0.08)', green: 'rgba(22,163,74,0.08)', neutral: 'rgba(0,0,0,0.2)' }
+const U_ICON   = { red: 'rgba(220,38,38,0.7)', amber: 'rgba(217,119,6,0.7)', green: 'rgba(22,163,74,0.7)', neutral: 'rgba(255,255,255,0.5)' }
+
 export function WorkflowCard({ href, label, Icon, kpi, subtitle, variant, actions, delay = 0, spanFull, urgency }: WorkflowCardProps) {
-  const isGood = urgency === 'green' || urgency === 'neutral' || (!urgency && (kpi === 0 || kpi === null))
-  const isUrgent = urgency === 'red' || urgency === 'amber'
+  const u = urgency || 'neutral'
+  const isGood = u === 'green' || u === 'neutral'
 
   // ── UNIFORM VARIANT — all cards same style, full command center feel ──
   if (variant === 'uniform') {
@@ -46,21 +52,9 @@ export function WorkflowCard({ href, label, Icon, kpi, subtitle, variant, action
           padding: '20px 20px',
           borderRadius: 14,
           background: 'var(--bg-elevated, #222222)',
-          border: isUrgent
-            ? '1px solid rgba(220,38,38,0.25)'
-            : isGood
-              ? '1px solid rgba(22,163,74,0.25)'
-              : '1px solid rgba(255,255,255,0.08)',
-          borderTop: isUrgent
-            ? '3px solid rgba(220,38,38,0.7)'
-            : isGood
-              ? '3px solid rgba(22,163,74,0.5)'
-              : '3px solid rgba(201,168,76,0.4)',
-          boxShadow: isUrgent
-            ? '0 2px 12px rgba(220,38,38,0.1)'
-            : isGood
-              ? '0 2px 12px rgba(22,163,74,0.08)'
-              : '0 2px 12px rgba(0,0,0,0.2)',
+          border: `1px solid ${U_BORDER[u]}`,
+          borderTop: `3px solid ${U_TOP[u]}`,
+          boxShadow: `0 2px 12px ${U_SHADOW[u]}`,
           display: 'flex',
           flexDirection: 'column',
           height: '100%',
@@ -80,7 +74,7 @@ export function WorkflowCard({ href, label, Icon, kpi, subtitle, variant, action
         )}
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-          <Icon size={22} strokeWidth={1.5} style={{ color: isUrgent ? 'rgba(220,38,38,0.7)' : isGood ? 'rgba(22,163,74,0.7)' : 'rgba(255,255,255,0.5)' }} />
+          <Icon size={22} strokeWidth={1.5} style={{ color: U_ICON[u] }} />
           <span style={{ fontSize: 16, fontWeight: 700, color: '#FFFFFF' }}>{label}</span>
         </div>
 

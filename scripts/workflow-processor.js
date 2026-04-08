@@ -25,8 +25,11 @@ require('dotenv').config({ path: path.join(__dirname, '..', '.env.local') })
 const fs = require('fs')
 const crypto = require('crypto')
 
-const { fetchPendingEvents, updateEventStatus, chainNext, supabase } = require('./lib/workflow-emitter')
+const { fetchPendingEvents, updateEventStatus, chainNext, emitEvent, supabase } = require('./lib/workflow-emitter')
 const { logDecision } = require('./decision-logger')
+const batcher = require('./lib/notification-batcher')
+const { calculateContributions, lookupTariffRate, lookupHistoricalDTA } = require('./lib/ghost-pipeline')
+const { getAllRates } = require('./lib/rates')
 
 const SCRIPT_NAME = 'workflow-processor'
 const DRY_RUN = process.argv.includes('--dry-run')
@@ -90,25 +93,209 @@ const HANDLERS = {
 
   // ── Workflow 2: Classification ──
   'classify.product_needs_classification': async (event) => {
-    // Phase 2: require('./auto-classifier') and run for specific products
+    const { spawn } = require('child_process')
+
     const products = event.payload?.products || []
-    if (VERBOSE) console.log(`  Classify: ${products.length} products for ${event.trigger_id}`)
-    return { success: true, result: `Classification queued for ${products.length} products` }
+    const companyId = event.company_id
+    const triggerId = event.trigger_id
+
+    if (products.length === 0) {
+      return { success: true, result: 'No products in payload — nothing to classify' }
+    }
+
+    if (!companyId) {
+      return { success: false, result: 'Missing company_id — cannot classify without tenant scope' }
+    }
+
+    if (VERBOSE) console.log(`  [classify handler] ${products.length} products from ${companyId} (trigger: ${triggerId})`)
+
+    // Fire-and-forget: spawn a child process per product.
+    // Each child runs auto-classifier in single-product mode (--desc=).
+    // We don't await — the child runs independently and writes its own results to the DB.
+    // If the child crashes, only that product fails — workflow processor stays alive.
+
+    let dispatched = 0
+    let skipped = 0
+
+    for (const product of products) {
+      const description = product.description || product.descripcion
+      const cveProveedor = product.cve_proveedor || product.cveProveedor
+      const cveProducto = product.cve_producto || product.cveProducto
+
+      if (!description) {
+        skipped++
+        continue
+      }
+
+      const args = [
+        path.join(__dirname, 'auto-classifier.js'),
+        '--desc=' + description,
+        '--cve-cliente=' + companyId,
+        '--company-id=' + companyId,
+        '--trigger-id=' + triggerId,
+      ]
+      if (cveProveedor) args.push('--cve-proveedor=' + cveProveedor)
+      if (cveProducto) args.push('--cve-producto=' + cveProducto)
+
+      try {
+        const child = spawn('node', args, {
+          detached: true,
+          stdio: 'ignore',
+          cwd: path.join(__dirname, '..'), // repo root so .env.local resolves
+        })
+        child.unref()
+        dispatched++
+      } catch (spawnErr) {
+        console.error(`  [classify handler] failed to spawn for product:`, spawnErr.message)
+      }
+    }
+
+    if (dispatched === 0 && products.length > 0) {
+      return { success: false, result: `All ${products.length} products failed to dispatch (${skipped} had no description)` }
+    }
+
+    return {
+      success: true,
+      result: `Dispatched ${dispatched} classifications (${skipped} skipped, ${products.length} total) for ${triggerId}`,
+    }
   },
   'classify.classification_complete': async (event) => {
-    return { success: true, result: `Classified: ${event.payload?.fraccion || 'pending'}` }
+    const fraccion = event.payload?.fraccion
+    const confidence = event.payload?.confidence || 0
+    const description = event.payload?.description || event.payload?.descripcion || ''
+    const tmecEligible = event.payload?.tmec_eligible || false
+    const traficoId = event.trigger_id
+    const companyId = event.company_id
+
+    if (!fraccion) {
+      return { success: true, result: 'No fracción in payload — skipping duty calc' }
+    }
+
+    // Look up trafico to get valor (importe_total = USD value)
+    const { data: trafico } = await supabase
+      .from('traficos')
+      .select('importe_total, company_id')
+      .eq('trafico', traficoId)
+      .eq('company_id', companyId)
+      .maybeSingle()
+
+    const valorUSD = trafico?.importe_total || 0
+
+    // If no valor_aduana, create a draft awaiting manual input
+    if (!valorUSD || valorUSD <= 0) {
+      await supabase.from('pedimento_drafts').insert({
+        trafico_id: traficoId,
+        company_id: companyId,
+        status: 'awaiting_valor_aduana',
+        needs_manual_intervention: true,
+        created_by: 'workflow-processor',
+        draft_data: {
+          fraccion,
+          confidence,
+          description,
+          tmec_eligible: tmecEligible,
+          note: 'Valor aduana no disponible — requiere entrada manual',
+          calculated_by: 'workflow-processor',
+          calculated_at: new Date().toISOString(),
+        },
+      })
+
+      await emitEvent('pedimento', 'duties_calculated', traficoId, companyId, {
+        fraccion,
+        status: 'awaiting_valor_aduana',
+        needs_manual_intervention: true,
+      }, event.id)
+
+      return { success: true, result: `Awaiting valor_aduana for ${traficoId}` }
+    }
+
+    // Get current rates from system_config
+    let rates
+    try {
+      const allRates = await getAllRates()
+      rates = {
+        exchangeRate: allRates.exchangeRate,
+        dtaRates: allRates.dtaRates,
+        ivaRate: allRates.ivaRate,
+      }
+    } catch (e) {
+      console.error(`[pedimento] Failed to get rates: ${e.message}`)
+      return { success: false, result: `Rate lookup failed: ${e.message}` }
+    }
+
+    // Look up IGI rate from tariff_rates if not in payload
+    let igiRate = event.payload?.igi_rate
+    if (igiRate === undefined || igiRate === null) {
+      const tariff = await lookupTariffRate(fraccion, supabase)
+      igiRate = tariff?.igi_rate || 0
+    }
+
+    // Look up historical DTA for better multi-partida accuracy
+    const regimen = 'A1' // Standard import
+    const dtaOverride = await lookupHistoricalDTA(companyId, regimen, supabase)
+
+    // Calculate contributions (cascading IVA — NEVER flat)
+    const contributions = calculateContributions(valorUSD, regimen, igiRate, rates, {
+      tmec: tmecEligible,
+      dtaOverride: dtaOverride || undefined,
+    })
+
+    // Persist to pedimento_drafts
+    const { error: insertErr } = await supabase.from('pedimento_drafts').insert({
+      trafico_id: traficoId,
+      company_id: companyId,
+      status: 'duties_calculated',
+      created_by: 'workflow-processor',
+      needs_manual_intervention: false,
+      draft_data: {
+        fraccion,
+        confidence,
+        description,
+        tmec_eligible: tmecEligible,
+        regimen,
+        contributions,
+        valor_aduana_usd: valorUSD,
+        valor_aduana_mxn: contributions.valor_aduana_mxn,
+        tipo_cambio: contributions.tipo_cambio,
+        igi_rate: igiRate,
+        igi_amount: contributions.igi.amount_mxn,
+        dta_amount: contributions.dta.amount_mxn,
+        iva_base: contributions.iva.base_mxn,
+        iva_amount: contributions.iva.amount_mxn,
+        total_contribuciones_mxn: contributions.total_contribuciones_mxn,
+        calculated_by: 'workflow-processor',
+        calculated_at: new Date().toISOString(),
+      },
+    })
+
+    if (insertErr) {
+      console.error(`[pedimento] Draft insert failed: ${insertErr.message}`)
+      return { success: false, result: `Draft insert failed: ${insertErr.message}` }
+    }
+
+    // Emit next event in the chain
+    await emitEvent('pedimento', 'duties_calculated', traficoId, companyId, {
+      fraccion,
+      valor_aduana_usd: valorUSD,
+      total_contribuciones_mxn: contributions.total_contribuciones_mxn,
+      tmec_eligible: tmecEligible,
+      confidence,
+    }, event.id)
+
+    if (VERBOSE) {
+      console.log(`  Duties: IGI=${contributions.igi.amount_mxn} DTA=${contributions.dta.amount_mxn} IVA=${contributions.iva.amount_mxn} Total=${contributions.total_contribuciones_mxn}`)
+    }
+
+    return { success: true, result: `Duties calculated for ${traficoId}: $${contributions.total_contribuciones_mxn} MXN` }
   },
   'classify.needs_human_review': async (event) => {
-    // Telegram to Juan José with top options
-    const options = event.payload?.topOptions || []
-    const optStr = options.map((o, i) => `${i + 1}. ${o.fraccion} (${o.confidence}%)`).join('\n')
-    await tg(
-      `🔍 <b>Clasificación requiere revisión</b>\n` +
-      `Tráfico: ${event.trigger_id}\n` +
-      `Opciones:\n${optStr || '(sin sugerencias)'}\n` +
-      `— CRUZ Workflow`
-    )
-    return { success: true, result: 'Human review requested via Telegram' }
+    batcher.queueReview({
+      trigger_id: event.trigger_id,
+      company_id: event.company_id,
+      description: event.payload?.descripcion || event.payload?.description || event.payload?.cve_producto || '',
+      options: event.payload?.topOptions || [],
+    })
+    return { success: true, result: 'Review queued in batcher' }
   },
 
   // ── Workflow 3: Documents ──

@@ -5,7 +5,7 @@ export function DashboardSkeleton({ isMobile = false }: { isMobile?: boolean }) 
       <div style={{
         display: 'flex', alignItems: 'center', gap: 16,
         padding: isMobile ? '16px 20px' : '24px 28px',
-        margin: '16px 0', borderRadius: 16, background: '#1A1A1A',
+        margin: '16px 0', borderRadius: 16, background: 'var(--bg-card, #1A1A1A)',
       }}>
         <div className="skeleton-shimmer" style={{ width: 48, height: 48, borderRadius: '50%', flexShrink: 0 }} />
         <div style={{ flex: 1 }}>
@@ -25,7 +25,7 @@ export function DashboardSkeleton({ isMobile = false }: { isMobile?: boolean }) 
           }}>
             {[0, 1].map(i => (
               <div key={i} className="skeleton-shimmer" style={{
-                height: 200, borderRadius: 16, background: '#222222',
+                height: 200, borderRadius: 16, background: 'var(--bg-elevated, #222222)',
               }} />
             ))}
           </div>

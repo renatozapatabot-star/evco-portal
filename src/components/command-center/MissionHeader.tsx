@@ -35,7 +35,7 @@ export function MissionHeader({ mood, sentence, quickAction, onAvatarClick, load
         padding: isMobile ? '16px 20px' : '24px 28px',
         margin: '16px 0',
         borderRadius: 16,
-        background: '#1A1A1A',
+        background: 'var(--bg-card, #1A1A1A)',
         flexWrap: isMobile ? 'wrap' : 'nowrap',
       }}
     >

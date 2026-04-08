@@ -34,7 +34,7 @@ export function WorkflowCard({ href, label, Icon, kpi, subtitle, variant, action
         style={{
           padding: '24px 28px',
           borderRadius: 16,
-          background: '#222222',
+          background: 'var(--bg-elevated, #222222)',
           border: '1px solid rgba(255,255,255,0.08)',
           boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
           minHeight: 200,
@@ -123,9 +123,10 @@ export function WorkflowCard({ href, label, Icon, kpi, subtitle, variant, action
         style={{
           padding: '20px 16px',
           borderRadius: 12,
-          background: 'var(--bg-card)',
-          border: '1px solid var(--border)',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+          background: '#FFFFFF',
+          border: '1px solid rgba(255,255,255,0.1)',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+          color: '#1A1A1A',
           display: 'flex',
           flexDirection: 'column',
           minHeight: 160,
@@ -142,12 +143,12 @@ export function WorkflowCard({ href, label, Icon, kpi, subtitle, variant, action
         )}
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Icon size={24} strokeWidth={1.5} style={{ color: 'var(--text-secondary)' }} />
-          <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>{label}</span>
+          <Icon size={24} strokeWidth={1.5} style={{ color: '#6B6B6B' }} />
+          <span style={{ fontSize: 15, fontWeight: 700, color: '#1A1A1A' }}>{label}</span>
         </div>
 
         <div style={{
-          fontSize: 13, color: 'var(--text-secondary)',
+          fontSize: 13, color: '#6B6B6B',
           display: 'flex', alignItems: 'center', gap: 4,
           marginTop: 8,
         }}>

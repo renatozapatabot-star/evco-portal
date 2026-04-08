@@ -150,6 +150,43 @@
   --sidebar-width: 240px;
 }
 
+/* ── Client Dark Cockpit Theme ── */
+.cruz-dark {
+  --bg-main: #111111;
+  --bg-card: #1A1A1A;
+  --bg-surface: #1A1A1A;
+  --bg-elevated: #222222;
+  --bg-hover: #2A2A2A;
+  --border-card: rgba(255,255,255,0.08);
+  --border: rgba(255,255,255,0.06);
+  --text-primary: #E6EDF3;
+  --text-secondary: #8B949E;
+  --text-muted: #6E7681;
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.3);
+  --shadow-elevated: 0 4px 12px rgba(0,0,0,0.4);
+  --slate-50: #1A1D23;
+  --slate-100: #22272E;
+  --slate-200: #30363D;
+  --slate-300: #484F58;
+  --green-50: #0D2818;
+  --green-100: #1A4D2E;
+  --amber-50: #2D1F0A;
+  --amber-100: #4D3510;
+  --red-50: #2D1216;
+  --red-100: #4D2024;
+  --gold-bg: rgba(196,150,60,0.15);
+  background: var(--bg-main);
+  color: var(--text-primary);
+}
+.cruz-dark .skeleton-shimmer {
+  background: linear-gradient(90deg, #1A1A1A 25%, #2A2A2A 50%, #1A1A1A 75%);
+  background-size: 200% 100%;
+}
+.cruz-dark tr.row-even { background: var(--bg-card); }
+.cruz-dark tr.row-odd { background: rgba(255,255,255,0.02); }
+.cruz-dark .cruz-table tr:hover { background: rgba(255,255,255,0.04); }
+.cruz-dark .mn-nav { background: var(--bg-main); border-top-color: rgba(255,255,255,0.06); }
+
 /* ── Reset & Base ── */
 * {
   margin: 0;
@@ -363,7 +400,7 @@ body {
 
 /* Dark Activity Pulse container */
 .cc-pulse-dark {
-  background: #222222;
+  background: var(--bg-elevated, #222222);
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: 16px;
   padding: 20px;
@@ -411,6 +448,8 @@ body {
 .cruz-brand-z {
   border-radius: 50%;
   background: linear-gradient(135deg, #C9A84C, #8B6914);
+  border: 2px solid rgba(201,168,76,0.3);
+  box-shadow: 0 0 12px rgba(201,168,76,0.15);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -802,7 +841,7 @@ body {
 
 /* ── Stat / Metric Cards ── */
 .stat-card {
-  background: white;
+  background: var(--bg-card);
   border: 1px solid var(--slate-200);
   border-radius: var(--radius-lg);
   padding: 18px 20px;
@@ -895,7 +934,7 @@ body {
 
 /* ── Data Table ── */
 .cruz-table-wrap {
-  background: white;
+  background: var(--bg-card);
   border: 1px solid var(--slate-200);
   border-radius: var(--radius-lg);
   overflow: hidden;
@@ -1044,7 +1083,7 @@ body {
 }
 
 .btn-outline {
-  background: white;
+  background: var(--bg-card);
   color: var(--slate-500);
   border: 1px solid var(--slate-200);
 }
@@ -1531,7 +1570,7 @@ button:active:not(:disabled), .btn:active:not(:disabled) {
 
 /* ═══ v2 Error Card ═══ */
 .error-card {
-  background: white;
+  background: var(--bg-card);
   border: 1px solid var(--red-100);
   border-left: 4px solid var(--danger-500);
   border-radius: var(--radius-lg);
@@ -1620,7 +1659,7 @@ tr.clickable-row:hover td:first-child {
 }
 
 /* Zebra striping */
-tr.row-even { background: white; }
+tr.row-even { background: var(--bg-card); }
 tr.row-odd  { background: rgba(248,250,252,0.5); }
 
 /* Mobile card list alternation — subtle warm shading */

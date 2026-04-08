@@ -47,7 +47,7 @@ export default function CruzLayout({
           />
         </>
       )}
-      <main className={`cruz-main ${hideSidebar ? 'cruz-main--full' : ''}`}>
+      <main className={`cruz-main ${hideSidebar ? 'cruz-main--full cruz-dark' : ''}`}>
         <TopBar
           showNotifications={false}
           onMenuToggle={hideSidebar ? undefined : onMobileToggle}

@@ -230,6 +230,7 @@ export const ADMIN_ONLY_ROUTES = [
   '/inteligencia-competitiva',
   '/simulador',
   '/archivos',
+  '/operador',
 ] as const
 
 /** Routes accessible by client role */

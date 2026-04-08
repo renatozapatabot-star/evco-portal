@@ -169,6 +169,7 @@ async function fetchPendingEvents(limit = 20) {
     .from('workflow_events')
     .select('*')
     .eq('status', 'pending')
+    .neq('event_type', 'entrada_synced')   // skip passthrough noise — starves real events
     .order('created_at', { ascending: true })
     .limit(limit)
 

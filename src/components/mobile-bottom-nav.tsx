@@ -37,9 +37,10 @@ export function MobileBottomNav() {
               onClick={() => document.dispatchEvent(new CustomEvent('cruz:open-chat'))}
               aria-label="CRUZ AI"
             >
-              <span className="mn-icon-wrap">
+              <span className="mn-icon-wrap mn-center-ring">
                 <CruzAvatar size={36} mood={mood} />
               </span>
+              <span className="mn-label">CRUZ</span>
             </button>
           )
         }

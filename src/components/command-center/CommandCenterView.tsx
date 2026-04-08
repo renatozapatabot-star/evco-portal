@@ -42,6 +42,27 @@ function useRealtimeToast(lastUpdate: { trafico: string; estatus: string } | nul
   return toast
 }
 
+// ── Progress Ring SVG ──
+function ProgressRing({ pct, size = 56 }: { pct: number; size?: number }) {
+  const stroke = 4
+  const radius = (size - stroke) / 2
+  const circ = 2 * Math.PI * radius
+  const offset = circ - (pct / 100) * circ
+  const color = pct === 100 ? '#16A34A' : 'var(--gold, #C9A84C)'
+  return (
+    <svg width={size} height={size} style={{ flexShrink: 0 }}>
+      <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="var(--border, #E8E5E0)" strokeWidth={stroke} />
+      <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke={color} strokeWidth={stroke}
+        strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round"
+        style={{ transition: 'stroke-dashoffset 600ms ease', transform: 'rotate(-90deg)', transformOrigin: '50% 50%' }} />
+      <text x="50%" y="50%" textAnchor="middle" dy="0.35em"
+        style={{ fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-mono)', fill: 'var(--text-primary, #1A1A1A)' }}>
+        {pct}%
+      </text>
+    </svg>
+  )
+}
+
 export function CommandCenterView() {
   const isMobile = useIsMobile()
   const { data, loading, error, reload } = useCommandCenterData()
@@ -49,6 +70,7 @@ export function CommandCenterView() {
   const { lastUpdate } = useRealtimeTrafico()
   const status = useStatusSentence()
   const realtimeToast = useRealtimeToast(lastUpdate)
+  const [criticosOpen, setCriticosOpen] = useState(false)
 
   if (error) {
     return (
@@ -126,58 +148,105 @@ export function CommandCenterView() {
       {/* Away banner */}
       {awayBanner}
 
-      {/* ── COMMAND STRIP ── */}
+      {/* ── COMMAND STRIP (collapsible criticos) ── */}
       <div style={{
-        padding: isMobile ? '10px 12px' : '10px 16px',
         borderRadius: 10,
         marginBottom: 12,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        flexWrap: 'wrap',
-        gap: 8,
         borderLeft: criticalCount > 0 ? '3px solid var(--danger-500, #DC2626)' : '3px solid var(--success, #16A34A)',
         background: criticalCount > 0 ? 'rgba(220,38,38,0.06)' : 'rgba(22,163,74,0.06)',
+        overflow: 'hidden',
       }}>
-        <span style={{ fontSize: 13, fontWeight: 700, color: criticalCount > 0 ? '#DC2626' : '#16A34A' }}>
-          {criticalCount > 0
-            ? `${criticalCount} pendiente${criticalCount !== 1 ? 's' : ''} critico${criticalCount !== 1 ? 's' : ''}`
-            : 'Todo al corriente — sin pendientes criticos'
-          }
-        </span>
-        {criticalCount > 0 && (
-          <Link href={criticalHref} style={{
-            padding: '6px 14px', borderRadius: 6, fontSize: 12, fontWeight: 700,
-            background: '#DC2626', color: '#FFFFFF', textDecoration: 'none',
-          }}>
-            Resolver ahora
-          </Link>
+        <div
+          onClick={() => criticalCount > 0 && setCriticosOpen(v => !v)}
+          style={{
+            padding: isMobile ? '10px 12px' : '10px 16px',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            flexWrap: 'wrap', gap: 8,
+            cursor: criticalCount > 0 ? 'pointer' : 'default',
+          }}
+        >
+          <span style={{ fontSize: 13, fontWeight: 700, color: criticalCount > 0 ? '#DC2626' : '#16A34A' }}>
+            {criticalCount > 0
+              ? `${criticalCount} pendiente${criticalCount !== 1 ? 's' : ''} critico${criticalCount !== 1 ? 's' : ''}`
+              : 'Todo al corriente — sin pendientes criticos'
+            }
+            {criticalCount > 0 && (
+              <span style={{ fontSize: 11, marginLeft: 6, color: 'var(--text-muted)' }}>{criticosOpen ? '▲' : '▼'}</span>
+            )}
+          </span>
+          {criticalCount > 0 && (
+            <Link href={criticalHref} onClick={e => e.stopPropagation()} style={{
+              padding: '6px 14px', borderRadius: 6, fontSize: 12, fontWeight: 700,
+              background: '#DC2626', color: '#FFFFFF', textDecoration: 'none',
+            }}>
+              Resolver ahora
+            </Link>
+          )}
+        </div>
+        {/* Expanded critical items */}
+        {criticosOpen && criticalCount > 0 && (
+          <div style={{ padding: '0 12px 12px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {data.pendingEntradas.slice(0, 3).map(e => (
+              <Link key={e.cve_entrada} href={`/entradas/${e.cve_entrada}`} style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
+                padding: '8px 10px', borderRadius: 6,
+                background: 'rgba(255,255,255,0.5)', border: '1px solid var(--border)',
+                textDecoration: 'none', color: 'inherit',
+              }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
+                    {e.cve_entrada}
+                  </span>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {e.descripcion_mercancia || 'Sin descripcion'}
+                  </div>
+                </div>
+                <span style={{
+                  fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 4,
+                  background: 'var(--gold, #C9A84C)', color: '#FFFFFF', flexShrink: 0,
+                }}>
+                  Resolver
+                </span>
+              </Link>
+            ))}
+            {criticalCount > 3 && (
+              <Link href={criticalHref} style={{
+                fontSize: 11, fontWeight: 600, color: 'var(--gold, #C9A84C)',
+                textDecoration: 'none', textAlign: 'center', padding: '4px 0',
+              }}>
+                Ver {criticalCount - 3} mas →
+              </Link>
+            )}
+          </div>
         )}
       </div>
 
-      {/* ── DAILY COMPLETION LOOP ── */}
+      {/* ── DAILY COMPLETION LOOP (ring + text) ── */}
       <div style={{
-        padding: isMobile ? '8px 12px' : '8px 16px',
-        borderRadius: 8,
+        padding: isMobile ? '10px 12px' : '10px 16px',
+        borderRadius: 10,
         marginBottom: 16,
-        background: 'rgba(255,255,255,0.03)',
+        background: 'var(--bg-card, #FFFFFF)',
+        border: '1px solid var(--border, #E8E5E0)',
         display: 'flex',
         alignItems: 'center',
-        gap: 12,
-        flexWrap: 'wrap',
+        gap: 14,
       }}>
-        <span style={{ fontSize: 12, fontWeight: 700, color: completionPct === 100 ? '#16A34A' : 'rgba(255,255,255,0.6)' }}>
-          Hoy: {completionPct}%{totalActions > 0 ? ` · Faltan ${totalActions} acciones` : ' — excelente dia'}
-        </span>
-        <div style={{
-          flex: 1, minWidth: 100, height: 4, borderRadius: 2,
-          background: 'rgba(255,255,255,0.08)',
-        }}>
-          <div style={{
-            width: `${completionPct}%`, height: '100%', borderRadius: 2,
-            background: completionPct === 100 ? '#16A34A' : 'var(--gold, #C9A84C)',
-            transition: 'width 500ms ease',
-          }} />
+        <ProgressRing pct={completionPct} size={isMobile ? 52 : 56} />
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary, #1A1A1A)' }}>
+            {totalActions > 0
+              ? `Faltan ${totalActions} accion${totalActions !== 1 ? 'es' : ''}`
+              : 'Excelente dia'
+            }
+          </div>
+          <div style={{ fontSize: 11, color: 'var(--text-muted, #9B9B9B)', marginTop: 2 }}>
+            {completionPct >= 100 ? 'Todo completado'
+              : completionPct >= 80 ? 'Casi listo'
+              : completionPct >= 50 ? 'Buen ritmo'
+              : `${completedToday} completado${completedToday !== 1 ? 's' : ''} hoy`
+            }
+          </div>
         </div>
       </div>
 

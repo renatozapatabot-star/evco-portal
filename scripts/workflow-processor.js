@@ -308,14 +308,100 @@ const HANDLERS = {
     return { success: true, result: 'Completeness check queued' }
   },
   'docs.expediente_complete': async (event) => {
+    const { validateCompleteness } = require('./lib/document-types')
+
+    const traficoId = event.trigger_id || event.payload?.trafico_id
+    const companyId = event.company_id
+
+    if (!traficoId) {
+      return { success: false, result: 'No trafico_id in trigger_id or payload' }
+    }
+
+    // Query documents for this trafico
+    const { data: docs, error: docsErr } = await supabase
+      .from('documents')
+      .select('document_type')
+      .eq('trafico_id', traficoId)
+      .eq('company_id', companyId)
+
+    if (docsErr) {
+      return { success: false, result: `Documents query failed: ${docsErr.message}` }
+    }
+
+    const presentLabels = (docs || []).map(d => d.document_type).filter(Boolean)
+    const validation = validateCompleteness(presentLabels)
+
+    const docsValidation = {
+      ...validation,
+      validated_at: new Date().toISOString(),
+    }
+
+    // Persist to pedimento_drafts.draft_data.docs_validation
+    // First check if a draft already exists for this trafico
+    const { data: existingDraft } = await supabase
+      .from('pedimento_drafts')
+      .select('id, draft_data')
+      .eq('trafico_id', traficoId)
+      .eq('company_id', companyId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    if (existingDraft) {
+      // Update existing draft with docs_validation
+      const updatedDraftData = {
+        ...(existingDraft.draft_data || {}),
+        docs_validation: docsValidation,
+      }
+      await supabase
+        .from('pedimento_drafts')
+        .update({ draft_data: updatedDraftData, updated_at: new Date().toISOString() })
+        .eq('id', existingDraft.id)
+    } else {
+      // Create a new draft with docs_validation only
+      await supabase.from('pedimento_drafts').insert({
+        trafico_id: traficoId,
+        company_id: companyId,
+        status: 'docs_validated',
+        created_by: 'workflow-processor',
+        needs_manual_intervention: validation.blocked,
+        draft_data: { docs_validation: docsValidation },
+      })
+    }
+
+    // Emit next event based on validation result
+    if (validation.blocked) {
+      await emitEvent('docs', 'blocked', traficoId, companyId, {
+        missing_critical: validation.missing_critical,
+        missing_required: validation.missing_required,
+        completeness_pct: validation.completeness_pct,
+      }, event.id)
+
+      if (VERBOSE) {
+        console.log(`  Docs blocked: missing critical = ${validation.missing_critical.join(', ')}`)
+      }
+    } else {
+      await emitEvent('docs', 'ready_for_pedimento', traficoId, companyId, {
+        completeness_pct: validation.completeness_pct,
+        present: validation.present,
+        missing_optional: validation.missing_optional,
+      }, event.id)
+    }
+
     await tg(
-      `📋 <b>Expediente completo</b>\n` +
-      `Tráfico: ${event.trigger_id}\n` +
-      `Empresa: ${event.company_id}\n` +
-      `→ Zero-touch pipeline activado\n` +
+      `${validation.blocked ? '🔴' : '📋'} <b>Docs validation: ${validation.blocked ? 'BLOCKED' : 'READY'}</b>\n` +
+      `Tráfico: ${traficoId}\n` +
+      `Completeness: ${validation.completeness_pct}% (${validation.present.length}/${validation.total_types})\n` +
+      (validation.blocked ? `Missing critical: ${validation.missing_critical.join(', ')}\n` : '') +
       `— CRUZ Workflow`
     )
-    return { success: true, result: `Expediente complete for ${event.trigger_id}` }
+
+    return {
+      success: true,
+      result: validation.blocked
+        ? `Docs blocked for ${traficoId}: missing ${validation.missing_critical.join(', ')}`
+        : `Docs ready for ${traficoId}: ${validation.completeness_pct}% complete`,
+    }
   },
   'docs.solicitation_needed': async (event) => {
     // Phase 2: require('./solicit-missing-docs') for specific docs

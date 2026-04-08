@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import { Search, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Search, ChevronLeft, ChevronRight, Eye } from 'lucide-react'
 import { getCompanyIdCookie, getClientClaveCookie, getCookieValue } from '@/lib/client-config'
 import { fmtDesc, fmtDate } from '@/lib/format-utils'
 import { useSort } from '@/hooks/use-sort'
@@ -12,6 +12,7 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { fmtCarrier } from '@/lib/carrier-names'
 import { ErrorCard } from '@/components/ui/ErrorCard'
 import { useSessionCache } from '@/hooks/use-session-cache'
+import { SwipeRow } from '@/components/ui/SwipeRow'
 
 interface EntradaRow {
   id: number
@@ -140,6 +141,8 @@ export default function EntradasPage() {
     return best ? fmtDesc(best) : null
   }
 
+  const unassignedCount = useMemo(() => rows.filter(r => !r.trafico).length, [rows])
+
   return (
     <div className="page-shell">
 
@@ -163,11 +166,25 @@ export default function EntradasPage() {
           </div>
         )}
 
-        {/* Loading */}
+        {/* Loading — card-shaped skeletons */}
         {loading && (
-          <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="skeleton-shimmer" style={{ height: 44, borderRadius: 6 }} />
+          <div style={{ padding: '8px 14px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} style={{
+                borderRadius: 10, padding: '16px 18px',
+                border: '1px solid var(--border)', borderLeft: '3px solid var(--border)',
+                background: 'var(--bg-card)',
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <div className="skeleton-shimmer" style={{ width: 80, height: 14, borderRadius: 4 }} />
+                  <div className="skeleton-shimmer" style={{ width: 90, height: 12, borderRadius: 4 }} />
+                </div>
+                <div className="skeleton-shimmer" style={{ width: '75%', height: 13, borderRadius: 4, marginBottom: 10 }} />
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <div className="skeleton-shimmer" style={{ width: 60, height: 16, borderRadius: 4 }} />
+                  <div className="skeleton-shimmer" style={{ width: 50, height: 16, borderRadius: 4 }} />
+                </div>
+              </div>
             ))}
           </div>
         )}
@@ -187,27 +204,113 @@ export default function EntradasPage() {
 
         {/* Mobile cards */}
         {!loading && paged.length > 0 && isMobile && (
-          <div style={{ padding: '8px 12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {paged.map(r => (
-              <div
-                key={r.cve_entrada}
-                onClick={() => router.push(r.trafico ? `/traficos/${encodeURIComponent(fmtTrafico(r.trafico))}` : `/entradas/${r.cve_entrada}`)}
-                style={{
-                  background: 'var(--bg-card)', border: '1px solid var(--border)',
-                  borderRadius: 10, padding: '14px 16px', cursor: 'pointer', minHeight: 72,
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                  <span style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>{r.cve_entrada}</span>
-                  <span style={{ fontSize: 12, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
-                    {r.fecha_llegada_mercancia ? fmtDate(r.fecha_llegada_mercancia) : ''}
-                  </span>
-                </div>
-                <div style={{ fontSize: 13, color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {getDesc(r) || <span style={{ color: 'var(--text-muted)' }}>—</span>}
-                </div>
-              </div>
-            ))}
+          <div style={{ padding: '8px 14px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {paged.map(r => {
+              const transporte = getTransporte(r)
+              const hasTrafico = !!r.trafico
+              const cardHref = hasTrafico ? `/traficos/${encodeURIComponent(fmtTrafico(r.trafico!))}` : `/entradas/${r.cve_entrada}`
+              return (
+                <SwipeRow
+                  key={r.cve_entrada}
+                  style={{ borderRadius: 10 }}
+                  leftAction={{
+                    icon: <Eye size={14} />,
+                    label: 'Ver detalle',
+                    color: '#0D9488',
+                    bg: 'rgba(13,148,136,0.1)',
+                    onAction: () => router.push(cardHref),
+                  }}
+                >
+                  <div
+                    onClick={() => router.push(cardHref)}
+                    className="entrada-card-mobile"
+                    style={{
+                      background: 'var(--bg-card)',
+                      border: '1px solid var(--border)',
+                      borderLeft: `3px solid ${hasTrafico ? '#16A34A' : 'var(--gold, #C9A84C)'}`,
+                      borderRadius: 10,
+                      padding: '16px 18px',
+                      cursor: 'pointer',
+                      minHeight: 72,
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+                      transition: 'transform 100ms ease',
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                      <span style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>{r.cve_entrada}</span>
+                      <span style={{ fontSize: 12, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
+                        {r.fecha_llegada_mercancia ? fmtDate(r.fecha_llegada_mercancia) : ''}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: 13, color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: 8 }}>
+                      {getDesc(r) || <span style={{ color: 'var(--text-muted)' }}>—</span>}
+                    </div>
+                    {/* Metadata pills */}
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
+                      {hasTrafico && (
+                        <span style={{
+                          fontSize: 11, fontWeight: 600, fontFamily: 'var(--font-mono)',
+                          padding: '2px 8px', borderRadius: 4,
+                          background: 'rgba(13,148,136,0.08)', color: '#0D9488',
+                          border: '1px solid rgba(13,148,136,0.15)',
+                        }}>
+                          {r.trafico}
+                        </span>
+                      )}
+                      {(r.cantidad_bultos ?? 0) > 0 && (
+                        <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
+                          {r.cantidad_bultos} bultos
+                        </span>
+                      )}
+                      {(r.peso_bruto ?? 0) > 0 && (
+                        <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
+                          {Number(r.peso_bruto).toLocaleString('es-MX')} kg
+                        </span>
+                      )}
+                      {transporte && (
+                        <span style={{ fontSize: 11, color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 120 }}>
+                          {transporte}
+                        </span>
+                      )}
+                      {!hasTrafico && (
+                        <span style={{
+                          fontSize: 11, fontWeight: 600,
+                          padding: '2px 8px', borderRadius: 4,
+                          background: 'rgba(201,168,76,0.08)', color: 'var(--gold, #C9A84C)',
+                          border: '1px solid rgba(201,168,76,0.15)',
+                          marginLeft: 'auto',
+                        }}>
+                          Sin asignar
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </SwipeRow>
+              )
+            })}
+          </div>
+        )}
+
+        {/* Floating unassigned summary bar (mobile only) */}
+        {isMobile && !loading && unassignedCount > 0 && (
+          <div
+            onClick={() => { setSearch(''); setPage(0) }}
+            style={{
+              position: 'fixed', bottom: 72, left: 16, right: 16,
+              padding: '12px 16px', borderRadius: 10,
+              background: 'var(--gold, #C9A84C)', color: '#FFFFFF',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+              zIndex: 40, cursor: 'pointer',
+              animation: 'fadeInUp 200ms ease',
+            }}
+          >
+            <span style={{ fontSize: 13, fontWeight: 700 }}>
+              {unassignedCount} entrada{unassignedCount !== 1 ? 's' : ''} sin asignar
+            </span>
+            <span style={{ fontSize: 12, fontWeight: 600, opacity: 0.9 }}>
+              Ver todas →
+            </span>
           </div>
         )}
 

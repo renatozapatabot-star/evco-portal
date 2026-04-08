@@ -1449,6 +1449,17 @@ button:active:not(:disabled), .btn:active:not(:disabled) {
   width: 48px;
   height: 48px;
 }
+.mn-center-ring {
+  border: 1.5px solid var(--gold, #C9A84C);
+  border-radius: 50%;
+  padding: 3px;
+  box-shadow: 0 0 8px rgba(201,168,76,0.15);
+}
+
+/* Mobile card press feedback */
+.entrada-card-mobile:active {
+  transform: scale(0.98);
+}
 
 .mn-icon-wrap {
   display: flex;

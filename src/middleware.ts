@@ -4,7 +4,7 @@ import { verifySession } from '@/lib/session'
 import { validateCsrf } from '@/lib/csrf'
 
 /** Public paths that bypass auth */
-const PUBLIC_PATHS = ['/login']
+const PUBLIC_PATHS = ['/login', '/signup', '/onboarding']
 
 /** Token-gated paths — accessible without login via URL token */
 const TOKEN_PATHS = ['/track/', '/upload/', '/share/', '/proveedor/']

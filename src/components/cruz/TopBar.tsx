@@ -102,6 +102,31 @@ export default function TopBar({
           <div className="topbar-avatar" title={clientName || ''}>
             {clientInitials || 'CL'}
           </div>
+          {onLogout && (
+            <button
+              onClick={onLogout}
+              aria-label="Cerrar sesion"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                padding: '6px 12px',
+                borderRadius: 8,
+                background: 'transparent',
+                border: '1px solid rgba(255,255,255,0.15)',
+                color: 'var(--text-muted, #888)',
+                fontSize: 12,
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'color 150ms, border-color 150ms',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.color = '#FFFFFF'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)' }}
+              onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted, #888)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)' }}
+            >
+              <LogOut size={14} />
+              Salir
+            </button>
+          )}
         </div>
       </header>
     );

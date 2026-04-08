@@ -133,6 +133,11 @@ export function CommandCenterView() {
             pendingEntradas={data.pendingEntradas.length}
             inventarioBultos={data.inventarioBultos}
             inventarioPeso={data.inventarioPeso}
+            pedimentosThisMonth={data.pedimentosThisMonth}
+            expedientesTotal={data.expedientesTotal}
+            facturacionMes={data.facturacionMes}
+            cruzadosEsteMes={data.cruzadosEsteMes}
+            cruzadosHoy={data.cruzadosHoy}
             isMobile={isMobile}
           />
         </div>

@@ -16,18 +16,129 @@ interface WorkflowCardProps {
   Icon: LucideIcon
   kpi: number | null
   subtitle: string
-  variant: 'large' | 'small'
+  variant: 'large' | 'small' | 'uniform'
   actions: CardAction[]
   delay?: number
-  /** For last small card spanning full width on mobile */
+  /** For last card spanning full width on mobile odd count */
   spanFull?: boolean
 }
 
 export function WorkflowCard({ href, label, Icon, kpi, subtitle, variant, actions, delay = 0, spanFull }: WorkflowCardProps) {
-  const isLarge = variant === 'large'
-  const isGood = !isLarge && (kpi === 0 || kpi === null)
+  const isGood = kpi === 0 || kpi === null
 
-  if (isLarge) {
+  // ── UNIFORM VARIANT — all cards same style, full command center feel ──
+  if (variant === 'uniform') {
+    const hasData = kpi !== null && kpi > 0
+    const isFormatUSD = subtitle.includes('USD')
+    const displayKpi = isFormatUSD && kpi
+      ? `$${kpi.toLocaleString()}`
+      : kpi !== null ? kpi.toLocaleString() : ''
+
+    return (
+      <div
+        className="cc-card"
+        style={{
+          padding: '20px 20px',
+          borderRadius: 14,
+          background: 'var(--bg-elevated, #222222)',
+          border: isGood
+            ? '1px solid rgba(22,163,74,0.25)'
+            : '1px solid rgba(255,255,255,0.08)',
+          borderTop: isGood
+            ? '2px solid rgba(22,163,74,0.5)'
+            : '2px solid rgba(201,168,76,0.4)',
+          boxShadow: isGood
+            ? '0 2px 12px rgba(22,163,74,0.08)'
+            : '0 2px 12px rgba(0,0,0,0.2)',
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+          minHeight: 180,
+          animation: `ccCountUp 300ms ease both`,
+          animationDelay: `${delay}ms`,
+          position: 'relative',
+          ...(spanFull ? { gridColumn: '1 / -1' } : {}),
+        }}
+      >
+        {/* Status indicator — top right */}
+        {isGood && (
+          <div className="cc-check-badge">
+            <CheckCircle2 size={14} style={{ color: '#FFFFFF' }} />
+          </div>
+        )}
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+          <Icon size={22} strokeWidth={1.5} style={{ color: isGood ? 'rgba(22,163,74,0.7)' : 'rgba(255,255,255,0.5)' }} />
+          <span style={{ fontSize: 16, fontWeight: 700, color: '#FFFFFF' }}>{label}</span>
+        </div>
+
+        <div style={{ marginBottom: 16, minHeight: 40 }}>
+          {hasData ? (
+            <>
+              <span style={{
+                fontSize: isFormatUSD ? 26 : 32,
+                fontWeight: 800,
+                fontFamily: 'var(--font-mono)',
+                color: '#FFFFFF',
+                lineHeight: 1,
+                textShadow: '0 0 16px rgba(201,168,76,0.2)',
+                display: 'inline-block',
+              }}>
+                {displayKpi}
+              </span>
+              <span style={{
+                fontSize: 13, fontWeight: 500,
+                color: 'rgba(255,255,255,0.5)', marginLeft: 8,
+              }}>
+                {isFormatUSD ? subtitle.replace('USD ', '') : subtitle}
+              </span>
+            </>
+          ) : (
+            <span style={{
+              fontSize: 14,
+              color: isGood ? 'rgba(22,163,74,0.7)' : 'rgba(255,255,255,0.4)',
+              fontWeight: 600,
+            }}>
+              {subtitle}
+            </span>
+          )}
+        </div>
+
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 'auto' }}>
+          {actions.map(action => (
+            <Link
+              key={action.label}
+              href={action.href}
+              style={{
+                padding: '8px 16px',
+                borderRadius: 8,
+                fontSize: 12,
+                fontWeight: 700,
+                textDecoration: 'none',
+                minHeight: 44,
+                display: 'inline-flex',
+                alignItems: 'center',
+                ...(action.primary ? {
+                  background: 'var(--gold, #C9A84C)',
+                  color: '#1A1A1A',
+                  border: 'none',
+                } : {
+                  background: 'transparent',
+                  color: '#FFFFFF',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                }),
+              }}
+            >
+              {action.label}
+            </Link>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  // ── LARGE VARIANT (legacy) ──
+  if (variant === 'large') {
     return (
       <div
         className="cc-card"
@@ -106,7 +217,7 @@ export function WorkflowCard({ href, label, Icon, kpi, subtitle, variant, action
     )
   }
 
-  // ── SMALL CARD — entire card clickable, equal height ──
+  // ── SMALL CARD (legacy) — entire card clickable, equal height ──
   return (
     <Link
       href={href}
@@ -135,7 +246,6 @@ export function WorkflowCard({ href, label, Icon, kpi, subtitle, variant, action
           position: 'relative',
         }}
       >
-        {/* Green checkmark badge — top right */}
         {isGood && (
           <div className="cc-check-badge">
             <CheckCircle2 size={14} style={{ color: '#FFFFFF' }} />

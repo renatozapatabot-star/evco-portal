@@ -36,6 +36,10 @@ export interface CommandCenterData {
   tmecSavings: number
   inventarioBultos: number
   inventarioPeso: number
+  pedimentosThisMonth: number
+  expedientesTotal: number
+  facturacionMes: number
+  cruzadosEsteMes: number
 }
 
 interface UseCommandCenterReturn {
@@ -56,6 +60,27 @@ const EMPTY: CommandCenterData = {
   tmecSavings: 0,
   inventarioBultos: 0,
   inventarioPeso: 0,
+  pedimentosThisMonth: 0,
+  expedientesTotal: 0,
+  facturacionMes: 0,
+  cruzadosEsteMes: 0,
+}
+
+function computeMonthlyMetrics(allT: TraficoRow[]) {
+  const thisMonth = new Date().toISOString().slice(0, 7)
+  const pedimentosThisMonth = new Set(
+    allT.filter(t => t.pedimento && (t.fecha_cruce || t.updated_at || '').slice(0, 7) === thisMonth)
+      .map(t => t.pedimento)
+  ).size
+  const expedientesTotal = allT.filter(t => t.pedimento).length
+  const facturacionMes = allT
+    .filter(t => (t.fecha_cruce || t.updated_at || '').slice(0, 7) === thisMonth)
+    .reduce((sum, t) => sum + (t.importe_total || 0), 0)
+  const cruzadosEsteMes = allT.filter(t =>
+    (t.estatus || '').toLowerCase().includes('cruz') &&
+    (t.fecha_cruce || '').slice(0, 7) === thisMonth
+  ).length
+  return { pedimentosThisMonth, expedientesTotal, facturacionMes, cruzadosEsteMes }
 }
 
 export function useCommandCenterData(): UseCommandCenterReturn {
@@ -76,6 +101,7 @@ export function useCommandCenterData(): UseCommandCenterReturn {
       const tmec = calculateTmecSavings(cached.traficos)
       const bultos = cached.entradas.reduce((sum, e) => sum + (Number((e as unknown as Record<string, unknown>).cantidad_bultos) || 0), 0)
       const peso = cached.entradas.reduce((sum, e) => sum + (Number((e as unknown as Record<string, unknown>).peso_bruto) || 0), 0)
+      const monthly = computeMonthlyMetrics(cached.traficos)
       setData({
         traficos: cached.traficos,
         pendingEntradas: cached.entradas,
@@ -86,6 +112,7 @@ export function useCommandCenterData(): UseCommandCenterReturn {
         tmecSavings: tmec.totalSavings,
         inventarioBultos: bultos,
         inventarioPeso: peso / 1000,
+        ...monthly,
       })
       setLoading(false)
       startRefresh()
@@ -132,6 +159,7 @@ export function useCommandCenterData(): UseCommandCenterReturn {
         const bultos = unassigned.reduce((sum, e) => sum + (Number(e.cantidad_bultos) || 0), 0)
         const peso = unassigned.reduce((sum, e) => sum + (Number(e.peso_bruto) || 0), 0)
 
+        const monthly = computeMonthlyMetrics(allT)
         setData({
           traficos: allT,
           pendingEntradas: ents,
@@ -142,6 +170,7 @@ export function useCommandCenterData(): UseCommandCenterReturn {
           tmecSavings: tmec.totalSavings,
           inventarioBultos: bultos,
           inventarioPeso: peso / 1000,
+          ...monthly,
         })
         setCache('command-center', { traficos: allT, entradas: ents })
       })

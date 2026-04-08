@@ -12,6 +12,11 @@ interface WorkflowGridProps {
   docsFaltantes?: number
   inventarioBultos?: number
   inventarioPeso?: number
+  pedimentosThisMonth?: number
+  expedientesTotal?: number
+  facturacionMes?: number
+  cruzadosEsteMes?: number
+  cruzadosHoy?: number
   isMobile?: boolean
 }
 
@@ -20,6 +25,8 @@ interface CardDef {
   href: string
   label: string
   Icon: typeof Truck
+  /** Desktop grid span (out of 12 cols) */
+  span: number
   getKpi: (props: WorkflowGridProps) => number | null
   getSubtitle: (props: WorkflowGridProps, urgency: Urgency) => string
   getActions: (props: WorkflowGridProps, urgency: Urgency) => CardAction[]
@@ -27,55 +34,81 @@ interface CardDef {
 
 const CARDS: CardDef[] = [
   {
-    key: 'traficos', href: '/traficos', label: 'Tráficos', Icon: Truck,
-    getKpi: (p) => p.enProceso,
-    getSubtitle: (_p, u) => u === 'green' ? 'Todo en orden' : 'en proceso',
+    key: 'entradas', href: '/entradas', label: 'Entradas', Icon: Package, span: 3,
+    getKpi: (p) => p.pendingEntradas,
+    getSubtitle: (p, u) => u === 'green' || u === 'neutral'
+      ? '0 pendientes'
+      : `sin asignar`,
+    getActions: (_p, u) => u === 'green' || u === 'neutral'
+      ? [{ label: 'Ver historial', href: '/entradas', primary: true }]
+      : [{ label: 'Asignar ahora', href: '/entradas', primary: true }, { label: 'Ver lista', href: '/entradas' }],
+  },
+  {
+    key: 'traficos', href: '/traficos', label: 'Tráficos', Icon: Truck, span: 3,
+    getKpi: (p) => p.enProceso > 0 ? p.enProceso : (p.cruzadosEsteMes ?? 0),
+    getSubtitle: (p, u) => {
+      if (u === 'red' || u === 'amber') return 'en proceso'
+      const mes = p.cruzadosEsteMes ?? 0
+      return mes > 0 ? 'cruzados este mes' : 'sin actividad'
+    },
     getActions: (_p, u) => u === 'green' || u === 'neutral'
       ? [{ label: 'Ver todos', href: '/traficos', primary: true }]
       : [{ label: 'Ver en mapa', href: '/traficos' }, { label: 'Procesar', href: '/traficos?estatus=En+Proceso', primary: true }],
   },
   {
-    key: 'entradas', href: '/entradas', label: 'Entradas', Icon: Package,
-    getKpi: (p) => p.pendingEntradas,
-    getSubtitle: (_p, u) => u === 'green' ? 'Todo en orden' : 'sin asignar',
-    getActions: (_p, u) => u === 'green' || u === 'neutral'
-      ? [{ label: 'Ver todos', href: '/entradas', primary: true }]
-      : [{ label: 'Asignar ahora', href: '/entradas', primary: true }, { label: 'Ver lista completa', href: '/entradas' }],
-  },
-  {
-    key: 'expedientes', href: '/expedientes', label: 'Expedientes', Icon: FolderOpen,
-    getKpi: (p) => p.docsFaltantes ?? 0,
-    getSubtitle: (_p, u) => u === 'green' ? 'Todo en orden' : 'Docs faltantes',
+    key: 'expedientes', href: '/expedientes', label: 'Expedientes', Icon: FolderOpen, span: 3,
+    getKpi: (p) => {
+      const faltantes = p.docsFaltantes ?? 0
+      if (faltantes > 0) return faltantes
+      return p.expedientesTotal ?? 0
+    },
+    getSubtitle: (p, u) => {
+      if (u === 'amber' || u === 'red') return 'docs faltantes'
+      return 'expedientes'
+    },
     getActions: () => [{ label: 'Ver todos', href: '/expedientes', primary: true }],
   },
   {
-    key: 'pedimentos', href: '/pedimentos', label: 'Pedimentos', Icon: FileText,
-    getKpi: () => null,
-    getSubtitle: () => 'Declaraciones aduanales',
+    key: 'pedimentos', href: '/pedimentos', label: 'Pedimentos', Icon: FileText, span: 3,
+    getKpi: (p) => p.pedimentosThisMonth ?? 0,
+    getSubtitle: (p) => {
+      const n = p.pedimentosThisMonth ?? 0
+      return n > 0 ? 'este mes' : 'sin declaraciones'
+    },
     getActions: () => [{ label: 'Ver todos', href: '/pedimentos', primary: true }],
   },
   {
-    key: 'contabilidad', href: '/financiero', label: 'Contabilidad', Icon: DollarSign,
-    getKpi: () => 0,
-    getSubtitle: (_p, u) => u === 'green' ? 'Sin pendientes' : 'Pendientes',
-    getActions: () => [{ label: 'Ver todos', href: '/financiero', primary: true }],
+    key: 'contabilidad', href: '/financiero', label: 'Contabilidad', Icon: DollarSign, span: 4,
+    getKpi: (p) => {
+      const val = p.facturacionMes ?? 0
+      return val > 0 ? Math.round(val) : 0
+    },
+    getSubtitle: (p) => {
+      const val = p.facturacionMes ?? 0
+      if (val > 0) return 'USD facturado este mes'
+      return 'Sin movimientos este mes'
+    },
+    getActions: () => [{ label: 'Ver detalle', href: '/financiero', primary: true }],
   },
   {
-    key: 'inventario', href: '/bodega', label: 'Inventario', Icon: Warehouse,
-    getKpi: (p) => p.inventarioBultos ?? null,
+    key: 'inventario', href: '/bodega', label: 'Inventario', Icon: Warehouse, span: 4,
+    getKpi: (p) => p.inventarioBultos ?? 0,
     getSubtitle: (p) => {
       const bultos = p.inventarioBultos ?? 0
       const tons = p.inventarioPeso ?? 0
       if (bultos > 0 && tons > 0) return `bultos · ${tons.toFixed(1)} ton`
       if (bultos > 0) return 'bultos en bodega'
-      return 'Mercancía en bodega'
+      return 'Bodega sin mercancia'
     },
     getActions: () => [{ label: 'Ver bodega', href: '/bodega', primary: true }],
   },
   {
-    key: 'reportes', href: '/reportes', label: 'Reportes', Icon: BarChart3,
-    getKpi: () => null,
-    getSubtitle: () => 'Análisis y finanzas',
+    key: 'reportes', href: '/reportes', label: 'Reportes', Icon: BarChart3, span: 4,
+    getKpi: (p) => p.cruzadosHoy ?? 0,
+    getSubtitle: (p) => {
+      const hoy = p.cruzadosHoy ?? 0
+      return hoy > 0 ? 'cruzados hoy' : 'Sin cruces hoy'
+    },
     getActions: () => [{ label: 'Abrir reportes', href: '/reportes', primary: true }],
   },
 ]
@@ -83,72 +116,66 @@ const CARDS: CardDef[] = [
 export function WorkflowGrid(props: WorkflowGridProps) {
   const isMobile = props.isMobile ?? false
 
-  const { urgencyCards, healthyCards } = useMemo(() => {
+  const allCards = useMemo(() => {
     const kpis: CardKPIs = {
       enProceso: props.enProceso,
       urgentes: props.urgentes,
       pendingEntradas: props.pendingEntradas,
       docsFaltantes: props.docsFaltantes ?? 0,
     }
-    const all = CARDS.map(card => ({ ...card, urgency: getCardUrgency(card.key, kpis) }))
-    return {
-      urgencyCards: all.filter(c => c.urgency === 'red' || c.urgency === 'amber'),
-      healthyCards: all.filter(c => c.urgency === 'green' || c.urgency === 'neutral'),
-    }
+    return CARDS.map(card => ({ ...card, urgency: getCardUrgency(card.key, kpis) }))
   }, [props.enProceso, props.urgentes, props.pendingEntradas, props.docsFaltantes])
 
-  const healthyOdd = healthyCards.length % 2 !== 0 && isMobile
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-      {/* Tier 1: Large dark urgency cards */}
-      {urgencyCards.length > 0 && (
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: isMobile ? '1fr' : `repeat(${Math.min(urgencyCards.length, 2)}, 1fr)`,
-          gap: 16,
-        }}>
-          {urgencyCards.map((card, i) => (
-            <WorkflowCard
-              key={card.key}
-              href={card.href}
-              label={card.label}
-              Icon={card.Icon}
-              kpi={card.getKpi(props)}
-              subtitle={card.getSubtitle(props, card.urgency)}
-              variant="large"
-              actions={card.getActions(props, card.urgency)}
-              delay={i * 80}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* Tier 2: Small light healthy cards — equal height */}
+  if (isMobile) {
+    return (
       <div style={{
         display: 'grid',
-        gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : `repeat(${Math.min(healthyCards.length, 5)}, 1fr)`,
+        gridTemplateColumns: 'repeat(2, 1fr)',
         gridAutoRows: '1fr',
         gap: 12,
+        width: '100%',
       }}>
-        {healthyCards.map((card, i) => {
-          const isLast = i === healthyCards.length - 1
-          return (
-            <WorkflowCard
-              key={card.key}
-              href={card.href}
-              label={card.label}
-              Icon={card.Icon}
-              kpi={card.getKpi(props)}
-              subtitle={card.getSubtitle(props, card.urgency)}
-              variant="small"
-              actions={card.getActions(props, card.urgency)}
-              delay={(urgencyCards.length * 80) + (i * 60)}
-              spanFull={isLast && healthyOdd}
-            />
-          )
-        })}
+        {allCards.map((card, i) => (
+          <WorkflowCard
+            key={card.key}
+            href={card.href}
+            label={card.label}
+            Icon={card.Icon}
+            kpi={card.getKpi(props)}
+            subtitle={card.getSubtitle(props, card.urgency)}
+            variant="uniform"
+            actions={card.getActions(props, card.urgency)}
+            delay={i * 60}
+            spanFull={i === allCards.length - 1 && allCards.length % 2 !== 0}
+          />
+        ))}
       </div>
+    )
+  }
+
+  // Desktop: 12-column grid — row 1 (4×3), row 2 (3×4)
+  return (
+    <div style={{
+      display: 'grid',
+      gridTemplateColumns: 'repeat(12, 1fr)',
+      gridAutoRows: '1fr',
+      gap: 16,
+      width: '100%',
+    }}>
+      {allCards.map((card, i) => (
+        <div key={card.key} style={{ gridColumn: `span ${card.span}` }}>
+          <WorkflowCard
+            href={card.href}
+            label={card.label}
+            Icon={card.Icon}
+            kpi={card.getKpi(props)}
+            subtitle={card.getSubtitle(props, card.urgency)}
+            variant="uniform"
+            actions={card.getActions(props, card.urgency)}
+            delay={i * 60}
+          />
+        </div>
+      ))}
     </div>
   )
 }

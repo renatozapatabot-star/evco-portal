@@ -51,6 +51,7 @@ export default function CruzLayout({
         <TopBar
           showNotifications={false}
           onMenuToggle={hideSidebar ? undefined : onMobileToggle}
+          onLogout={onLogout}
           portalType={portalType}
           clientName={clientName}
           clientInitials={clientInitials}

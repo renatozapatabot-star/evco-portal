@@ -50,7 +50,7 @@ export function MobileBottomNav() {
               key="buscar"
               type="button"
               className={`mn-tab`}
-              onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }))}
+              onClick={() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true }))}
               aria-label="Buscar"
             >
               <span className="mn-icon-wrap">

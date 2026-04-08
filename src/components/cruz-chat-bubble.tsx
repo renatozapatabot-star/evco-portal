@@ -48,6 +48,13 @@ export function CruzChatBubble() {
   const [open, setOpen] = useState(false)
   const [hasUnread, setHasUnread] = useState(false)
 
+  // Listen for global open event (from shortcuts, command palette, FAB, etc.)
+  useEffect(() => {
+    const handleOpen = () => { setOpen(true); setHasUnread(false) }
+    document.addEventListener('cruz:open-chat', handleOpen)
+    return () => document.removeEventListener('cruz:open-chat', handleOpen)
+  }, [])
+
   // Chat state
   const [messages, setMessages] = useState<Message[]>(() => {
     if (typeof window !== 'undefined') {
@@ -464,16 +471,16 @@ export function CruzChatBubble() {
         </div>
       )}
 
-      {/* Collapsed bubble — only show when panel is closed */}
-      {!open && (
+      {/* Collapsed bubble — hidden on mobile (Z tab in bottom nav replaces it) */}
+      {!open && !isMobile && (
         <button
           onClick={handleOpen}
           aria-label="Abrir CRUZ AI"
           className="cruz-thought-bubble"
           style={{
             position: 'fixed',
-            bottom: isMobile ? 84 : 24,
-            right: isMobile ? 16 : 24,
+            bottom: 24,
+            right: 24,
             zIndex: 60,
             width: 120, height: 64, borderRadius: 32,
             background: GOLD_GRADIENT,

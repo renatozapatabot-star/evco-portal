@@ -108,6 +108,20 @@ module.exports = {
       error_file: '/tmp/risk-feed-error.log',
       out_file: '/tmp/risk-feed-out.log',
       log_date_format: 'YYYY-MM-DD HH:mm:ss'
+    },
+    {
+      name: 'clearance-sandbox',
+      script: 'scripts/sandbox/clearance-sandbox.js',
+      args: '--run',
+      cwd,
+      cron_restart: '0 5 * * *',
+      autorestart: false,
+      watch: false,
+      max_memory_restart: '512M',
+      env: { NODE_ENV: 'production' },
+      error_file: '/tmp/clearance-sandbox-error.log',
+      out_file: '/tmp/clearance-sandbox-out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss',
     }
   ]
 }

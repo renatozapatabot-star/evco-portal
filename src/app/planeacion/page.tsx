@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from 'react'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { getCookieValue } from '@/lib/client-config'
 import { fmtId, fmtDate } from '@/lib/format-utils'
-import { Truck, Package, BarChart3, MessageSquare } from 'lucide-react'
+import { Truck, Package, BarChart3 } from 'lucide-react'
 import Link from 'next/link'
 
 interface TraficoRow {
@@ -285,7 +285,6 @@ export default function PlaneacionPage() {
               { href: '/traficos', label: 'Tráficos', icon: <Truck size={20} />, count: activeCount },
               { href: '/bodega', label: 'Bodega', icon: <Package size={20} />, count: null },
               { href: '/reportes', label: 'Reportes', icon: <BarChart3 size={20} />, count: null },
-              { href: '/cruz', label: 'CRUZ AI', icon: <MessageSquare size={20} />, count: null },
             ].map(link => (
               <Link
                 key={link.href}

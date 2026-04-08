@@ -160,9 +160,6 @@ function TraficosContent() {
       }).catch((err: unknown) => console.error('[traficos] partidas fetch:', (err as Error).message))
   }, [cookiesReady, companyId, clientClave, userRole])
 
-  // Stat bar filter state (must be before filtered useMemo)
-  const [statFilter, setStatFilter] = useState<string | null>(null)
-
   // Debounced search
   useEffect(() => {
     const timer = setTimeout(() => { setSearch(searchInput); setPage(0) }, 300)
@@ -172,22 +169,6 @@ function TraficosContent() {
 
   const filtered = useMemo(() => {
     let out = rows
-
-    // Stat bar filter — activos and docs only count "en proceso"
-    if (statFilter === 'activos') {
-      out = out.filter(r => (r.estatus || '').toLowerCase().includes('proceso'))
-    } else if (statFilter === 'proceso') {
-      out = out.filter(r => (r.estatus || '').toLowerCase().includes('proceso'))
-    } else if (statFilter === 'docs') {
-      const yr = String(new Date().getFullYear())
-      out = out.filter(r => (r.estatus || '').toLowerCase().includes('proceso') && (docCountMap.get(r.trafico) ?? 0) < 6 && (r.fecha_llegada || '').slice(0, 4) === yr)
-    } else if (statFilter === 'cruzado') {
-      const today = new Date().toISOString().split('T')[0]
-      out = out.filter(r => {
-        if (!(r.estatus || '').toLowerCase().includes('cruz')) return false
-        return r.fecha_cruce?.startsWith(today) || r.fecha_llegada?.startsWith(today)
-      })
-    }
 
     // Text search
     if (search.trim()) {
@@ -204,22 +185,11 @@ function TraficosContent() {
       const cmp = aVal < bVal ? -1 : aVal > bVal ? 1 : 0
       return activeSort.direction === 'asc' ? cmp : -cmp
     })
-  }, [rows, search, sort, sortParam, orderParam, statFilter, docCountMap])
+  }, [rows, search, sort, sortParam, orderParam, docCountMap])
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE)
   const paged = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
   const totalValor = useMemo(() => rows.reduce((s, r) => s + (Number(r.importe_total) || 0), 0), [rows])
-
-  // Stat bar calculations — only count "en proceso" traficos for activos and docs faltantes
-  const kpiEnProceso = rows.filter(r => (r.estatus || '').toLowerCase().includes('proceso')).length
-  const kpiActivos = kpiEnProceso
-  const currentYear = String(new Date().getFullYear())
-  const kpiDocsFaltantes = rows.filter(r => (r.estatus || '').toLowerCase().includes('proceso') && (docCountMap.get(r.trafico) ?? 0) < 6 && (r.fecha_llegada || '').slice(0, 4) === currentYear).length
-  const kpiCruzadoHoy = rows.filter(r => {
-    if (!(r.estatus || '').toLowerCase().includes('cruz')) return false
-    const today = new Date().toISOString().split('T')[0]
-    return r.fecha_cruce?.startsWith(today) || r.fecha_llegada?.startsWith(today)
-  }).length
 
   const SortArrow = ({ col }: { col: string }) => sort.column === col ? <span style={{ marginLeft: 4, fontSize: 10 }}>{sort.direction === 'asc' ? '↑' : '↓'}</span> : null
 
@@ -235,28 +205,7 @@ function TraficosContent() {
         </div>
       )}
 
-      {/* Stat Filter Bar */}
-      {!loading && !fetchError && rows.length > 0 && (
-        <div className="stat-filter-bar">
-          {[
-            { key: 'activos', label: 'Activos', value: kpiActivos, danger: false },
-            { key: 'proceso', label: 'En Proceso', value: kpiEnProceso, danger: false },
-            { key: 'docs', label: 'Docs Faltantes', value: kpiDocsFaltantes, danger: kpiDocsFaltantes > 0 },
-            { key: 'cruzado', label: 'Cruzado Hoy', value: kpiCruzadoHoy, danger: false },
-          ].map(stat => (
-            <button
-              key={stat.key}
-              className={`stat-filter-item${statFilter === stat.key ? ' active' : ''}`}
-              onClick={() => { setStatFilter(statFilter === stat.key ? null : stat.key); setPage(0) }}
-            >
-              <span className={`stat-filter-value${stat.value === 0 ? ' zero' : ''}${stat.danger ? ' danger' : ''}`}>{stat.value}</span>
-              <span className="stat-filter-label">{stat.label}</span>
-            </button>
-          ))}
-        </div>
-      )}
-
-      <div className="table-shell" style={!loading && !fetchError && rows.length > 0 ? { borderTopLeftRadius: 0, borderTopRightRadius: 0 } : undefined}>
+      <div className="table-shell">
         <div className="table-toolbar" style={{ justifyContent: 'flex-end' }}>
           <div className="toolbar-search" style={{ minHeight: 60 }}>
             <Search size={12} style={{ color: 'var(--slate-400)', flexShrink: 0 }} />

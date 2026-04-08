@@ -27,6 +27,12 @@ function mapDraftRow(row: DraftRow) {
   const confidence = typeof confScore === 'number' ? confScore : 0
   const tier = confidence >= 90 ? 1 : confidence >= 70 ? 2 : 3
   const contribs = (d.contributions || {}) as Record<string, number | undefined>
+  const flags: string[] = d.flags || []
+  const confianza = d.confianza || (tier === 1 ? 'alta' : tier === 2 ? 'media' : 'baja')
+  const isTMEC = (d.contributions as Record<string, unknown>)?.igi
+    ? ((d.contributions as Record<string, unknown>).igi as Record<string, unknown>)?.tmec === true
+    : false
+
   return {
     id: row.id,
     trafico: row.trafico_id || d.trafico || d.trafico_id || '',
@@ -38,14 +44,18 @@ function mapDraftRow(row: DraftRow) {
     currency: String(ext.currency || d.currency || 'USD'),
     confidence,
     tier,
+    confianza,
+    flags,
+    isTMEC,
     fieldScores: {} as Record<string, number>,
     created_at: row.created_at,
     products,
     valor_total_usd: d.valor_total_usd || Number(ext.total_value || 0) || products.reduce((s: number, p: DraftProduct) => s + (p.valor_usd || 0), 0),
     tipo_cambio: d.tipo_cambio || Number(contribs.tipo_cambio || 0),
     regimen: d.regimen || 'IMD',
+    pais_origen: d.pais_origen || String(ext.supplier_country || ''),
     checklist: d.checklist || [],
-    source: 'manual' as string,
+    source: d.source || 'manual' as string,
     email: d.email || null,
   }
 }
@@ -171,7 +181,7 @@ export default function DraftReviewPage() {
   const tc = rates?.tc || draft.tipo_cambio
   const valMXN = draft.valor_total_usd * tc
   const dta = rates ? Math.round(valMXN * rates.dta) : 0
-  const igi = 0 // T-MEC
+  const igi = draft.isTMEC ? 0 : 0 // IGI from tariff rate if not T-MEC (currently 0 for all EVCO)
   const ivaBase = valMXN + dta + igi // Cascading base — NOT flat
   const iva = rates ? Math.round(ivaBase * rates.iva) : 0
   const totalContrib = dta + igi + iva
@@ -301,13 +311,23 @@ export default function DraftReviewPage() {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20, gap: 16, flexWrap: 'wrap' }}>
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, flexWrap: 'wrap' }}>
             <span style={{ fontSize: 11, fontWeight: 800, padding: '3px 10px', borderRadius: 4, background: tier.bg, color: tier.color, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-              Revisión Requerida · Tier {draft.tier}
+              {draft.confianza === 'alta' ? '✅ Alta' : draft.confianza === 'media' ? '⚠️ Media' : '🔴 Baja'}
             </span>
+            {draft.isTMEC && (
+              <span style={{ fontSize: 11, fontWeight: 800, padding: '3px 10px', borderRadius: 4, background: '#F0FDFA', color: '#0D9488', border: '1px solid #99F6E4' }}>
+                T-MEC
+              </span>
+            )}
+            {draft.source === 'ghost_pedimento' && (
+              <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 4, background: '#F0F0FF', color: '#6366F1', border: '1px solid #C7D2FE' }}>
+                🤖 Ghost Pedimento
+              </span>
+            )}
             <span style={{ fontSize: 12, color: 'var(--slate-400)' }}>{tier.time}</span>
           </div>
-          <h1 style={{ fontFamily: 'var(--font-mono)', fontSize: 24, fontWeight: 900, color: 'var(--navy-900)', margin: 0 }}>{draft.trafico}</h1>
+          <h1 style={{ fontFamily: 'var(--font-mono)', fontSize: 24, fontWeight: 900, color: 'var(--navy-900)', margin: 0 }}>{draft.trafico || draft.id.substring(0, 8)}</h1>
           <div style={{ fontSize: 13, color: 'var(--slate-500)', marginTop: 4 }}>
             {draft.supplier} · {draft.country} · Recibido {formatAbsoluteETA(draft.created_at)}
           </div>
@@ -317,6 +337,21 @@ export default function DraftReviewPage() {
           <div style={{ fontSize: 11, color: 'var(--slate-400)' }}>confianza CRUZ</div>
         </div>
       </div>
+
+      {/* Flags — items requiring human review */}
+      {draft.flags.length > 0 && (
+        <div style={{ marginBottom: 20, padding: '12px 16px', background: '#FEF3C7', border: '1px solid #FDE68A', borderRadius: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+            <AlertTriangle size={16} style={{ color: '#92400E' }} />
+            <span style={{ fontSize: 13, fontWeight: 700, color: '#92400E' }}>Requiere revisión ({draft.flags.length})</span>
+          </div>
+          <ul style={{ margin: 0, paddingLeft: 20 }}>
+            {draft.flags.map((flag, i) => (
+              <li key={i} style={{ fontSize: 13, color: '#92400E', marginBottom: 2 }}>{flag}</li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {/* Tabs */}
       <div style={{ display: 'flex', gap: 2, marginBottom: 20, borderBottom: '1px solid var(--border-card)' }}>
@@ -370,9 +405,9 @@ export default function DraftReviewPage() {
                 <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--navy-900)' }}>{draft.regimen}</div>
               </div>
             </div>
-            {draft.source === 'email_intake' && draft.email && (
+            {(draft.source === 'ghost_pedimento' || draft.source === 'email_intake') && draft.email && (
               <div style={{ marginTop: 12, padding: '8px 12px', background: 'var(--slate-50)', borderRadius: 6, fontSize: 11, color: 'var(--slate-500)' }}>
-                Fuente: {draft.email.sender || 'Email'} · {draft.email.subject ? draft.email.subject.substring(0, 60) : ''}
+                Fuente: Ghost Pedimento · {draft.email.sender || 'Email'} · {draft.email.subject ? draft.email.subject.substring(0, 60) : ''}
               </div>
             )}
           </div>
@@ -387,7 +422,7 @@ export default function DraftReviewPage() {
                   { label: 'Tipo de Cambio', value: `$${tc.toFixed(4)} MXN/USD`, verified: true },
                   { label: 'Valor MXN', value: `${fmtMXNInt(valMXN)} MXN`, verified: true },
                   { label: `DTA (${rates ? (rates.dta * 100).toFixed(1) : '—'}%)`, value: `${fmtMXNInt(dta)} MXN`, verified: !!rates },
-                  { label: 'IGI', value: '$0 MXN (T-MEC ✅)', verified: true },
+                  { label: 'IGI', value: draft.isTMEC ? '$0 MXN (T-MEC ✅)' : `${fmtMXNInt(igi)} MXN`, verified: true },
                   { label: 'Base IVA', value: `${fmtMXNInt(ivaBase)} MXN`, verified: true, note: 'Valor + DTA + IGI' },
                   { label: 'IVA (16%)', value: `${fmtMXNInt(iva)} MXN`, verified: !!rates },
                   { label: 'Total Contribuciones', value: `${fmtMXNInt(totalContrib)} MXN`, bold: true, verified: true },

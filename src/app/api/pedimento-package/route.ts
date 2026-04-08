@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
   const igiPending = !(tmecApplicable && usmcaCertOnFile)
   const igiRate = 0
   const dtaRates = await getDTARates()
-  const dta = valorMXN * dtaRates.A1.rate
+  const dta = dtaRates.A1.amount
   const igi = valorMXN * igiRate
   const ivaRate = await getIVARate()
   const iva = (valorMXN + dta + igi) * ivaRate

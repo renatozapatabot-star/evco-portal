@@ -188,7 +188,7 @@ export default function CallsPage() {
 
                     {call.traficos_mentioned?.length > 0 && (
                       <div className="mb-4">
-                        <div className="text-[10px] font-semibold uppercase tracking-[0.06em] mb-1" style={{ color: 'var(--text-muted)' }}>Traficos Mencionados</div>
+                        <div className="text-[10px] font-semibold uppercase tracking-[0.06em] mb-1" style={{ color: 'var(--text-muted)' }}>Tráficos Mencionados</div>
                         <div className="flex flex-wrap gap-1.5">
                           {call.traficos_mentioned.map(t => (
                             <span key={t} className="ped-pill text-[11px]">{t}</span>

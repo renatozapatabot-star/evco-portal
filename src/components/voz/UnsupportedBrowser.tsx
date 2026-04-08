@@ -1,11 +1,8 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
 import { COLORS } from './types'
 
 export default function UnsupportedBrowser() {
-  const router = useRouter()
-
   return (
     <div style={{
       minHeight: '100vh',
@@ -42,7 +39,7 @@ export default function UnsupportedBrowser() {
         Tu navegador no soporta reconocimiento de voz. Usa Chrome o Safari.
       </p>
       <button
-        onClick={() => router.push('/cruz')}
+        onClick={() => document.dispatchEvent(new CustomEvent('cruz:open-chat'))}
         style={{
           marginTop: 32,
           padding: '12px 24px',

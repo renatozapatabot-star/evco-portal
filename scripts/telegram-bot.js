@@ -356,11 +356,24 @@ async function handleLote(chatId, username) {
 
 // ── Callback query handler — approve/reject/correct from inline buttons ──
 
+// Only Tito and Renato IV can approve/reject/correct drafts
+const AUTHORIZED_APPROVERS = [8538502098, 7277519813]
+
 async function handleCallbackQuery(query) {
   const chatId = query.message?.chat?.id
   const userId = query.from?.id
   const username = query.from?.username || query.from?.first_name || 'Tito'
   const data = query.data || ''
+
+  // Authorization check — only Tito and Renato IV can take actions
+  if (!AUTHORIZED_APPROVERS.includes(Number(userId))) {
+    await fetch(`https://api.telegram.org/bot${TOKEN}/answerCallbackQuery`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ callback_query_id: query.id, text: 'No autorizado', show_alert: true }),
+    })
+    return
+  }
 
   // Answer callback to remove loading state
   await fetch(`https://api.telegram.org/bot${TOKEN}/answerCallbackQuery`, {

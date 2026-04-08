@@ -12,11 +12,29 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
+// Transport code resolution (known from historical data)
+const TRANS_MX: Record<string, string> = {
+  'TRANS_MEX_584': 'TEXAS CARRIER',
+  'TRANS_MEX_593': 'DX BORDER FREIGHT',
+  '5': 'TEXAS CARRIER',
+}
+const TRANS_EXT: Record<string, string> = {
+  '1': 'CUSTOMER TRUCK',
+  '2': 'UPS',
+  '3': 'FED-EX',
+  'TRANS_EXT_46': 'CUSTOMER TRUCK',
+  'TRANS_EXT_38': 'STAGECOACH',
+  'TRANS_EXT_37': 'STAGECOACH',
+  'TRANS_EXT_86': 'CUSTOMER TRUCK',
+  'TRANS_EXT_11': 'FED-EX',
+  '108': 'CUSTOMER TRUCK',
+}
+
 /**
- * GET /api/auditoria-pdf?from=2026-03-30&to=2026-04-03
+ * GET /api/auditoria-pdf?from=2026-03-23&to=2026-03-27
  *
- * Generates the dark-themed "Auditoría Semanal" PDF matching the EVCO format.
- * Requires authentication. Scoped to the logged-in company.
+ * Generates the dark-themed "Auditoría Semanal" PDF.
+ * Queries by fecha_pago. Uses globalpc_facturas for per-invoice detail.
  */
 export async function GET(request: NextRequest) {
   const session = await verifySession(request.cookies.get('portal_session')?.value || '')
@@ -36,78 +54,122 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // Parallel data fetch for the date range
-    const [trafRes, factRes, entRes, provRes] = await Promise.all([
-      // Traficos with pedimentos in range
-      supabase
-        .from('traficos')
-        .select('trafico, pedimento, regimen, estatus, importe_total, moneda, fecha_llegada, fecha_cruce, fecha_pago, transportista_mexicano, proveedor, descripcion_mercancia, semaforo, fraccion_arancelaria, tipo_cambio')
-        .eq('company_id', companyId)
-        .gte('fecha_llegada', from)
-        .lte('fecha_llegada', to + 'T23:59:59')
-        .order('fecha_llegada', { ascending: true })
-        .limit(200),
+    // 1. Traficos by fecha_pago (anchor for weekly audit)
+    const { data: traficosRaw } = await supabase
+      .from('traficos')
+      .select('trafico, pedimento, regimen, estatus, importe_total, fecha_llegada, fecha_cruce, fecha_pago, transportista_mexicano, transportista_extranjero, descripcion_mercancia, semaforo, tipo_cambio, peso_bruto')
+      .eq('company_id', companyId)
+      .gte('fecha_pago', from)
+      .lte('fecha_pago', to + 'T23:59:59')
+      .order('fecha_pago', { ascending: true })
+      .limit(200)
 
-      // Aduanet facturas for these pedimentos
-      supabase
-        .from('aduanet_facturas')
-        .select('pedimento, valor_usd, igi, dta, iva, proveedor, cove, factura, fecha_pago')
-        .eq('clave_cliente', clientClave)
-        .gte('fecha_pago', from)
-        .lte('fecha_pago', to + 'T23:59:59')
-        .limit(500),
+    const traficos = traficosRaw ?? []
+    const traficoNums = traficos.map(t => t.trafico)
+    const pedNums = traficos.map(t => t.pedimento).filter(Boolean)
 
-      // Entradas (remesas) in range
+    // 2. Parallel: globalpc_facturas, entradas, proveedores, aduanet_facturas
+    const [gpFactRes, entRes, provRes, aduaRes] = await Promise.all([
+      traficoNums.length > 0
+        ? supabase
+            .from('globalpc_facturas')
+            .select('cve_trafico, cve_proveedor, numero, incoterm, moneda, valor_comercial, flete, seguros, embalajes, incrementables, cove_vucem')
+            .in('cve_trafico', traficoNums)
+            .limit(500)
+        : Promise.resolve({ data: [] }),
+
       supabase
         .from('entradas')
-        .select('cve_entrada, fecha_llegada_mercancia, descripcion_mercancia, num_pedido, cantidad_bultos, peso_bruto, trafico, proveedor')
+        .select('cve_entrada, fecha_llegada_mercancia, descripcion_mercancia, num_pedido, cantidad_bultos, peso_bruto, trafico, cve_proveedor')
         .eq('company_id', companyId)
         .gte('fecha_llegada_mercancia', from)
         .lte('fecha_llegada_mercancia', to + 'T23:59:59')
         .order('fecha_llegada_mercancia', { ascending: true })
         .limit(500),
 
-      // Supplier lookup
-      supabase
-        .from('globalpc_proveedores')
-        .select('cve_proveedor, nombre')
-        .eq('company_id', companyId)
-        .limit(1000),
+      // Placeholder - proveedores queried after facturas load
+      Promise.resolve({ data: [] }),
+
+      pedNums.length > 0
+        ? supabase
+            .from('aduanet_facturas')
+            .select('pedimento, referencia, dta, igi, iva, valor_usd, tipo_cambio, cve_documento, proveedor, cove, num_factura, fecha_pago')
+            .in('pedimento', pedNums)
+            .limit(500)
+        : Promise.resolve({ data: [] }),
     ])
 
-    const traficos = trafRes.data ?? []
-    const facturas = factRes.data ?? []
+    const gpFacturas = gpFactRes.data ?? []
     const entradas = entRes.data ?? []
+    const aduaFacturas = aduaRes.data ?? []
+
+    // Collect unique proveedor codes, then batch-query names (avoids 1000-row limit)
+    const allProvCodes = new Set<string>()
+    for (const f of gpFacturas) if (f.cve_proveedor) allProvCodes.add(f.cve_proveedor)
+    for (const e of entradas) if (e.cve_proveedor) allProvCodes.add(e.cve_proveedor)
+
     const provLookup = new Map<string, string>()
-    for (const p of (provRes.data ?? [])) {
-      if (p.cve_proveedor && p.nombre) provLookup.set(p.cve_proveedor, p.nombre.trim())
+    const provCodes = Array.from(allProvCodes)
+    for (let i = 0; i < provCodes.length; i += 50) {
+      const batch = provCodes.slice(i, i + 50)
+      const { data: provBatch } = await supabase
+        .from('globalpc_proveedores')
+        .select('cve_proveedor, nombre')
+        .in('cve_proveedor', batch)
+        .limit(200)
+      for (const p of (provBatch ?? [])) {
+        if (p.cve_proveedor && p.nombre) provLookup.set(p.cve_proveedor, p.nombre.trim())
+      }
+    }
+
+    // Aduanet facturas by pedimento (aggregated tax data)
+    const aduaByPed = new Map<string, { dta: number; igi: number; iva: number }>()
+    for (const a of aduaFacturas) {
+      const existing = aduaByPed.get(a.pedimento) || { dta: 0, igi: 0, iva: 0 }
+      existing.dta += Number(a.dta) || 0
+      existing.igi += Number(a.igi) || 0
+      existing.iva += Number(a.iva) || 0
+      aduaByPed.set(a.pedimento, existing)
     }
 
     // Build pedimento summaries
     const pedimentoMap = new Map<string, {
       trafico: string; pedimento: string; clave: string; regimen: string
-      fechaPago: string | null; tc: number; valorUSD: number
+      fechaPago: string | null; fechaCruce: string | null; tc: number; valorUSD: number
       dtaMXN: number; igiMXN: number; ivaMXN: number; totalGravamen: number
-      estatus: string; facturas: typeof facturas
+      estatus: string; transpMX: string; transpExt: string
+      gpFacturas: typeof gpFacturas; aduaFacturas: typeof aduaFacturas
     }>()
 
     for (const t of traficos) {
       if (!t.pedimento) continue
-      const pedFacturas = facturas.filter(f => f.pedimento === t.pedimento)
-      const valorUSD = Number(t.importe_total) || pedFacturas.reduce((s, f) => s + (Number(f.valor_usd) || 0), 0)
-      const dtaMXN = pedFacturas.reduce((s, f) => s + (Number(f.dta) || 0), 0)
-      const igiMXN = pedFacturas.reduce((s, f) => s + (Number(f.igi) || 0), 0)
-      const ivaMXN = pedFacturas.reduce((s, f) => s + (Number(f.iva) || 0), 0)
+      const gpFacts = gpFacturas.filter(f => f.cve_trafico === t.trafico)
+
+      // Value: prefer importe_total, fallback to summing globalpc_facturas
+      const valorUSD = Number(t.importe_total) || gpFacts.reduce((s, f) => s + (Number(f.valor_comercial) || 0), 0)
       const tc = Number(t.tipo_cambio) || 17.5
       const reg = (t.regimen || '').toUpperCase()
-      const claveReg = reg === 'ITE' || reg === 'ITR' ? 'IN' : reg === 'IMD' ? 'IN' : 'A1'
+      const claveReg = reg === 'ITE' || reg === 'ITR' ? 'IN' : 'A1'
+      const regimenLabel = (reg === 'ITE' || reg === 'ITR') ? 'Importación' : reg === 'IMD' ? 'Imp. Definitiva' : 'Imp. Definitiva'
+
+      // Tax data from aduanet (may be empty for recent pedimentos)
+      const adua = aduaByPed.get(t.pedimento)
+      const dtaMXN = adua?.dta || 0
+      const igiMXN = adua?.igi || 0
+      const ivaMXN = adua?.iva || 0
+
+      const transpMX = TRANS_MX[t.transportista_mexicano || ''] || t.transportista_mexicano || ''
+      const transpExt = TRANS_EXT[t.transportista_extranjero || ''] || t.transportista_extranjero || ''
+
+      const pedAduaFacts = aduaFacturas.filter(f => f.pedimento === t.pedimento)
 
       pedimentoMap.set(t.pedimento, {
         trafico: t.trafico,
         pedimento: t.pedimento,
         clave: claveReg,
-        regimen: reg === 'A1' ? 'Imp. Definitiva' : reg === 'ITE' || reg === 'ITR' ? 'Importación' : 'Imp. Definitiva',
-        fechaPago: t.fecha_pago,
+        regimen: regimenLabel,
+        fechaPago: t.fecha_pago ? t.fecha_pago.split('T')[0] : null,
+        fechaCruce: t.fecha_cruce ? t.fecha_cruce.split('T')[0] : null,
         tc,
         valorUSD,
         dtaMXN,
@@ -115,7 +177,10 @@ export async function GET(request: NextRequest) {
         ivaMXN,
         totalGravamen: dtaMXN + igiMXN + ivaMXN,
         estatus: t.estatus || 'En Proceso',
-        facturas: pedFacturas,
+        transpMX,
+        transpExt,
+        gpFacturas: gpFacts,
+        aduaFacturas: pedAduaFacts,
       })
     }
 
@@ -136,19 +201,7 @@ export async function GET(request: NextRequest) {
       entradasByDay.get(day)!.push(e)
     }
 
-    // Fracciones used
-    const fraccionMap = new Map<string, { fraccion: string; valorUSD: number; count: number; pedimentos: string[] }>()
-    type FraccionEntry = { fraccion: string; valorUSD: number; count: number; pedimentos: string[] }
-    for (const t of traficos) {
-      if (!t.fraccion_arancelaria) continue
-      const f: FraccionEntry = fraccionMap.get(t.fraccion_arancelaria) || { fraccion: t.fraccion_arancelaria, valorUSD: 0, count: 0, pedimentos: [] as string[] }
-      f.valorUSD += Number(t.importe_total) || 0
-      f.count++
-      if (t.pedimento) f.pedimentos.push(`${t.pedimento} → ${t.trafico}`)
-      fraccionMap.set(t.fraccion_arancelaria, f)
-    }
-
-    // Format dates for header
+    // Format dates
     const fmtEs = (d: string) => {
       const months = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
       const dt = new Date(d + 'T12:00:00')
@@ -160,11 +213,12 @@ export async function GET(request: NextRequest) {
       return `${dt.getDate()} ${months[dt.getMonth()]} ${dt.getFullYear()}`
     }
 
-    const traficosListStr = traficos.filter(t => t.pedimento).map(t => t.trafico.split('-')[1] || t.trafico).join(' · ')
+    const traficosListStr = pedimentos.map(p => p.trafico.replace(/^\d+-/, '')).join(' · ')
     const totalPeso = entradas.reduce((s, e) => s + (Number(e.peso_bruto) || 0), 0)
     const totalBultos = entradas.reduce((s, e) => s + (Number(e.cantidad_bultos) || 0), 0)
 
     // Supplier detail (grouped by pedimento)
+    // Prefer aduanet_facturas (has tax data, proveedor as name), fallback to globalpc_facturas
     const supplierDetail: Array<{
       pedimentoHeader: string
       rows: Array<{
@@ -175,28 +229,52 @@ export async function GET(request: NextRequest) {
     }> = []
 
     for (const ped of pedimentos) {
-      const traf = traficos.find(t => t.pedimento === ped.pedimento)
-      const transpMX = traf?.transportista_mexicano || ''
-      const header = `${ped.trafico} · Pedimento ${ped.pedimento} · ${transpMX}`
+      const header = `${ped.trafico} · Pedimento ${ped.pedimento} · ${ped.gpFacturas.length} líneas · ${ped.transpMX} / ${ped.transpExt}`
 
-      const rows = ped.facturas.map(f => ({
-        trafico: ped.trafico,
-        pedimento: ped.pedimento,
-        fechaPago: (f.fecha_pago || '').split('T')[0],
-        fechaCruce: (traf?.fecha_cruce || '').split('T')[0],
-        proveedor: provLookup.get(f.proveedor || '') || f.proveedor || '',
-        factura: f.factura || '',
-        cove: f.cove || '',
-        valorUSD: Number(f.valor_usd) || 0,
-        transpMX,
-        transpExt: '',
-        estatus: 'OK',
-      }))
+      let rows: Array<{
+        trafico: string; pedimento: string; fechaPago: string; fechaCruce: string
+        proveedor: string; factura: string; cove: string; valorUSD: number
+        transpMX: string; transpExt: string; estatus: string
+      }>
 
-      if (rows.length > 0) {
-        supplierDetail.push({ pedimentoHeader: header, rows })
+      if (ped.aduaFacturas.length > 0) {
+        // Use aduanet_facturas (proveedor is already a name)
+        rows = ped.aduaFacturas.map(f => ({
+          trafico: ped.trafico,
+          pedimento: ped.pedimento,
+          fechaPago: ped.fechaPago || '',
+          fechaCruce: ped.fechaCruce || '',
+          proveedor: f.proveedor || '',
+          factura: f.num_factura || '',
+          cove: f.cove || '',
+          valorUSD: Number(f.valor_usd) || 0,
+          transpMX: ped.transpMX,
+          transpExt: ped.transpExt,
+          estatus: 'OK',
+        }))
+      } else {
+        // Fallback to globalpc_facturas (proveedor is a code, needs resolution)
+        rows = ped.gpFacturas.map(f => ({
+          trafico: ped.trafico,
+          pedimento: ped.pedimento,
+          fechaPago: ped.fechaPago || '',
+          fechaCruce: ped.fechaCruce || '',
+          proveedor: provLookup.get(f.cve_proveedor || '') || f.cve_proveedor || '',
+          factura: f.numero || '',
+          cove: f.cove_vucem || '',
+          valorUSD: Number(f.valor_comercial) || 0,
+          transpMX: ped.transpMX,
+          transpExt: ped.transpExt,
+          estatus: 'OK',
+        }))
       }
+
+      supplierDetail.push({ pedimentoHeader: header, rows })
     }
+
+    // Fracciones: not available for most recent traficos (would need globalpc_productos join)
+    // Aggregate from aduanet_facturas cve_documento for regime classification
+    const fracciones: Array<{ fraccion: string; valorUSD: number; count: number; pedimentos: string[] }> = []
 
     const data = {
       from,
@@ -207,7 +285,6 @@ export async function GET(request: NextRequest) {
       clientClave,
       clientRFC,
       emittedDate: fmtEs(new Date().toISOString().split('T')[0]),
-      // KPIs
       totalValorUSD,
       pedimentoCount: pedimentos.length,
       traficosListStr,
@@ -215,21 +292,30 @@ export async function GET(request: NextRequest) {
       totalPeso,
       totalBultos,
       incidencias: 0,
-      // Section I: Pedimentos
-      pedimentos,
+      pedimentos: pedimentos.map(p => ({
+        trafico: p.trafico,
+        pedimento: p.pedimento,
+        clave: p.clave,
+        regimen: p.regimen,
+        fechaPago: p.fechaPago,
+        tc: p.tc,
+        valorUSD: p.valorUSD,
+        dtaMXN: p.dtaMXN,
+        igiMXN: p.igiMXN,
+        ivaMXN: p.ivaMXN,
+        totalGravamen: p.totalGravamen,
+        estatus: p.estatus,
+      })),
       totalDTA,
       totalIGI,
       totalIVA,
       totalGravamen,
-      // Section II: Supplier detail
       supplierDetail,
-      // Section III: Entradas by day
-      entradasByDay: Array.from(entradasByDay.entries()).map(([day, ents]) => ({
+      entradasByDay: Array.from(entradasByDay.entries()).sort().map(([day, ents]) => ({
         day,
         entradas: ents,
       })),
-      // Section IV: Fracciones
-      fracciones: Array.from(fraccionMap.values()).sort((a, b) => b.valorUSD - a.valorUSD),
+      fracciones,
     }
 
     const buffer = await renderToBuffer(AuditoriaPDF({ data }))

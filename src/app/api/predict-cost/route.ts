@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
     const valorMXN = value_usd * tc
 
     // DTA
-    const dta = valorMXN * (dtaRates.A1?.rate || 0.008)
+    const dta = dtaRates.A1?.amount || 462
     const dtaUSD = Math.round(dta / tc)
 
     // IGI — use 5% default, 0% if T-MEC

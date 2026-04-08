@@ -84,6 +84,7 @@ function dayLabel(dateStr: string) {
 
 interface AuditData {
   from: string; to: string; dateRangeLabel: string; dateRangeLong: string
+  reportTitle?: string; reportSubtitle?: string
   clientName: string; clientClave: string; clientRFC: string; emittedDate: string
   totalValorUSD: number; pedimentoCount: number; traficosListStr: string
   remesaCount: number; totalPeso: number; totalBultos: number; incidencias: number
@@ -111,13 +112,13 @@ export function AuditoriaPDF({ data }: { data: AuditData }) {
     <Document>
       <Page size="LETTER" style={s.page}>
         {/* ── HEADER ── */}
-        <Text style={s.headerTitle}>AUDITORÍA SEMANAL</Text>
+        <Text style={s.headerTitle}>{d.reportTitle || 'AUDITORÍA SEMANAL'}</Text>
         <Text style={s.headerDate}>{d.dateRangeLong}</Text>
 
         <View style={s.headerRow}>
           <View style={s.headerLeft}>
-            <Text style={s.headerLabel}>AUDITORÍA SEMANAL DE IMPORTACIONES</Text>
-            <Text style={s.headerCompany}>Reporte de Embarques — Semana {d.dateRangeLabel}</Text>
+            <Text style={s.headerLabel}>{d.reportTitle || 'AUDITORÍA SEMANAL'} DE IMPORTACIONES</Text>
+            <Text style={s.headerCompany}>{d.reportSubtitle || `Reporte de Embarques — Semana ${d.dateRangeLabel}`}</Text>
             <Text style={s.headerSub}>Preparado por Grupo Aduanal Renato Zapata S.C. · Patente 3596 · Aduana 240 Nuevo Laredo</Text>
           </View>
           <View style={s.headerRight}>

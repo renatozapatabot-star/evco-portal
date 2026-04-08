@@ -201,7 +201,8 @@ async function run() {
         sDescripcionMercancia AS desc_merc, dFechaLlegadaMercancia AS fecha_llegada,
         bFaltantes AS faltantes, bMercanciaDanada AS danada,
         bRecibioFacturas AS facturas, bRecibioPackingList AS packing,
-        sRecibidoPor AS recibido, sNumPedido AS pedido
+        sRecibidoPor AS recibido, sNumPedido AS pedido,
+        sNumTalon AS num_talon, sNumCajaTrailer AS num_caja_trailer
       FROM cb_entrada_bodega WHERE sCveCliente = '${clave}' ORDER BY dFechaIngreso ASC`,
       table: 'entradas',
       conflictCol: 'cve_entrada',
@@ -215,6 +216,7 @@ async function run() {
         tiene_faltantes: r.faltantes === '1', mercancia_danada: r.danada === '1',
         recibio_facturas: r.facturas === '1', recibio_packing_list: r.packing === '1',
         recibido_por: r.recibido, num_pedido: r.pedido,
+        num_talon: r.num_talon || null, num_caja_trailer: r.num_caja_trailer || null,
         updated_at: new Date().toISOString(),
       }),
     })

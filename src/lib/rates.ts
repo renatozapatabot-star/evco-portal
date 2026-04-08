@@ -5,10 +5,16 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
+export interface DTARateEntry {
+  type: 'fixed'
+  amount: number
+}
+
 export interface DTARates {
-  A1: { rate: number; type: 'percent' }
-  IN: { type: 'fixed'; amount: number }
-  IT: { type: 'fixed'; amount: number }
+  A1: DTARateEntry
+  IN: DTARateEntry
+  IT: DTARateEntry
+  [key: string]: DTARateEntry
 }
 
 export async function getDTARates(): Promise<DTARates> {

@@ -57,19 +57,23 @@ export interface DraftData {
   supplier?: string
   supplier_name?: string
   country?: string
-  confidence?: number
+  confidence?: number | { score: number; tier: number; fieldScores?: Record<string, number> }
+  confianza?: 'alta' | 'media' | 'baja'
+  flags?: string[]
   products?: DraftProduct[]
   valor_total_usd?: number
   tipo_cambio?: number
   regimen?: string
+  pais_origen?: string
   checklist?: string[]
   trafico?: string
   trafico_id?: string
   invoice_number?: string
   currency?: string
   incoterm?: string
+  source?: string
   extraction?: Record<string, unknown>
-  classifications?: Array<{ fraccion?: string; confidence?: number; descripcion?: string; reasoning?: string }>
+  classifications?: Array<{ fraccion?: string; confidence?: number; descripcion?: string; reasoning?: string; source?: string }>
   contributions?: Record<string, unknown>
   email?: { sender?: string; subject?: string; received_at?: string; gmail_message_id?: string }
   missing_docs?: string[]

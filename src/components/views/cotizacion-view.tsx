@@ -37,15 +37,15 @@ export function CotizacionView() {
   const isMobile = useIsMobile()
   const [form, setForm] = useState({ valor_usd: '50000', tipo_cambio: '17.50', incoterm: 'EXW', flete_usd: '0', seguro_usd: '0', igi_rate: '5', regimen: 'A1', tmec: true, fraccion: '', pais_origen: 'US', peso_kg: '', bultos: '' })
   const [result, setResult] = useState<{ valorUSD: number; tc: number; valorAduanaMXN: number; dta: number; igi: number; iva: number; prev: number; total: number; igiRate: number; tmecSavings: number } | null>(null)
-  const [rates, setRates] = useState<{ dta: number; iva: number; tc: number } | null>(null)
+  const [rates, setRates] = useState<{ dta_amount: number; iva: number; tc: number } | null>(null)
   const [requestSending, setRequestSending] = useState(false)
   const [requestSent, setRequestSent] = useState(false)
   const set = (k: string, v: string | boolean) => setForm(f => ({ ...f, [k]: v }))
 
   useEffect(() => {
     fetch('/api/rates').then(r => r.json()).then(d => {
-      if (!d.error && d.dta?.rate && d.iva?.rate && d.tc?.rate) {
-        setRates({ dta: d.dta.rate, iva: d.iva.rate, tc: d.tc.rate })
+      if (!d.error && d.iva?.rate && d.tc?.rate) {
+        setRates({ dta_amount: d.dta?.amount || 462, iva: d.iva.rate, tc: d.tc.rate })
       }
     }).catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
   }, [])
@@ -60,10 +60,10 @@ export function CotizacionView() {
     if (['EXW', 'FOB', 'FCA'].includes(form.incoterm)) valorAduanaUSD = valorUSD + fleteUSD + seguroUSD
     else if (['CFR', 'CPT'].includes(form.incoterm)) valorAduanaUSD = valorUSD + seguroUSD
     const valorAduanaMXN = valorAduanaUSD * tc
-    const dtaRate = rates?.dta ?? null
+    const dtaAmount = rates?.dta_amount ?? null
     const ivaRate = rates?.iva ?? null
-    if (dtaRate === null || ivaRate === null) { setResult(null); return }
-    const dta = form.regimen === 'IN' ? 347.09 : valorAduanaMXN * dtaRate
+    if (dtaAmount === null || ivaRate === null) { setResult(null); return }
+    const dta = dtaAmount
     const igiRate = form.tmec ? 0 : (parseFloat(form.igi_rate) || 0) / 100
     const igi = valorAduanaMXN * igiRate
     const iva = (valorAduanaMXN + igi + dta) * ivaRate
@@ -176,7 +176,7 @@ export function CotizacionView() {
           ) : (
             <>
               <Row label="Valor Aduana (MXN)" value={fmtMXN(result.valorAduanaMXN)} highlight />
-              <Row label="DTA (8‰)" value={fmtMXN(result.dta)} />
+              <Row label="DTA (fijo)" value={fmtMXN(result.dta)} />
               <Row label={`IGI (${result.igiRate.toFixed(1)}%)`} value={result.igi === 0 ? 'T-MEC $0' : fmtMXN(result.igi)} />
               <Row label="IVA (16%)" value={fmtMXN(result.iva)} />
               <Row label="PREV" value={fmtMXN(result.prev)} />

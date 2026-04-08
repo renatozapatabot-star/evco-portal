@@ -26,28 +26,26 @@ export function DateInputES({ value, onChange, style }: DateInputESProps) {
           borderRadius: 6,
           padding: '0 8px',
           fontSize: 11,
-          color: value ? 'transparent' : 'var(--text-muted, #9B9B9B)',
+          color: 'transparent',
           background: 'var(--bg-card, #FFFFFF)',
           fontFamily: 'var(--font-mono)',
           minWidth: 130,
           ...style,
         }}
       />
-      {value && (
-        <span
-          style={{
-            position: 'absolute',
-            left: 10,
-            fontSize: 12,
-            fontFamily: 'var(--font-mono)',
-            color: 'var(--text-primary, #1A1A1A)',
-            pointerEvents: 'none',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {fmtDate(value)}
-        </span>
-      )}
+      <span
+        style={{
+          position: 'absolute',
+          left: 10,
+          fontSize: 12,
+          fontFamily: 'var(--font-mono)',
+          color: value ? 'var(--text-primary, #1A1A1A)' : 'var(--text-muted, #9B9B9B)',
+          pointerEvents: 'none',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        {value ? fmtDate(value) : 'dd/mm/aaaa'}
+      </span>
     </div>
   )
 }

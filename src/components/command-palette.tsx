@@ -9,7 +9,7 @@ interface NavItem { id: string; label: string; sublabel: string; icon: React.Com
 
 const NAV_ITEMS: NavItem[] = [
   { id: 'dashboard',   label: 'Dashboard',     sublabel: 'Inicio',        icon: LayoutDashboard, href: '/',            category: 'Navegación' },
-  { id: 'cruz',        label: 'CRUZ AI',       sublabel: 'Asistente inteligente', icon: MessageSquare, href: '/cruz',       category: 'Navegación' },
+  { id: 'cruz',        label: 'CRUZ AI',       sublabel: 'Asistente inteligente', icon: MessageSquare, href: '__cruz_chat__',       category: 'Navegación' },
   { id: 'voz',         label: 'Modo Voz',      sublabel: 'Control por voz', icon: Mic,           href: '/voz',         category: 'Navegación' },
   { id: 'traficos',    label: 'Tráficos',      sublabel: 'Operaciones',   icon: Truck,           href: '/traficos',    category: 'Navegación' },
   { id: 'entradas',    label: 'Entradas',       sublabel: 'Remesas bodega',icon: Package,         href: '/entradas',    category: 'Navegación' },
@@ -87,7 +87,9 @@ export function CommandPalette() {
     if (e.key === 'ArrowDown') { e.preventDefault(); setSelected(p => Math.min(p+1, flatItems.length-1)) }
     else if (e.key === 'ArrowUp') { e.preventDefault(); setSelected(p => Math.max(p-1, 0)) }
     else if (e.key === 'Enter' && flatItems[selected]) {
-      router.push(flatItems[selected].href); setOpen(false)
+      const href = flatItems[selected].href
+      if (href === '__cruz_chat__') { document.dispatchEvent(new CustomEvent('cruz:open-chat')) } else { router.push(href) }
+      setOpen(false)
     }
   }
 
@@ -116,7 +118,7 @@ export function CommandPalette() {
                   itemIndex++
                   const idx = itemIndex
                   return (
-                    <button key={item.id} className={`cmd-item ${idx === selected ? 'selected' : ''}`} onClick={() => { router.push(item.href); setOpen(false) }} onMouseEnter={() => setSelected(idx)} role="option" aria-selected={idx === selected}>
+                    <button key={item.id} className={`cmd-item ${idx === selected ? 'selected' : ''}`} onClick={() => { if (item.href === '__cruz_chat__') { document.dispatchEvent(new CustomEvent('cruz:open-chat')) } else { router.push(item.href) }; setOpen(false) }} onMouseEnter={() => setSelected(idx)} role="option" aria-selected={idx === selected}>
                       <item.icon size={15} style={{ color: 'var(--n-400)', flexShrink: 0 }} />
                       <span className="cmd-item-label">{item.label}</span>
                       <span className="cmd-item-sub">{item.sublabel}</span>

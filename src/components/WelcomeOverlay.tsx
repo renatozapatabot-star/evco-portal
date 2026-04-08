@@ -74,7 +74,7 @@ export function WelcomeOverlay() {
     localStorage.setItem('cruz_first_visit', new Date().toISOString())
     localStorage.setItem('cruz_pending_question', question)
     setShow(false)
-    router.push('/cruz')
+    document.dispatchEvent(new CustomEvent('cruz:open-chat'))
   }
 
   if (!show || !data) return null

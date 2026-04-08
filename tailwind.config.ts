@@ -22,7 +22,7 @@ const config: Config = {
         navy: {
           700: '#18293F',
           800: '#1A2535',
-          900: '#141C26',
+          900: '#0D0D0C',
         },
         // Brand — Z Red (mark only)
         'z-red': '#CC1B2F',

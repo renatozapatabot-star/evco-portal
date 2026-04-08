@@ -28,7 +28,7 @@ export function CruzFAB() {
     {
       icon: MessageSquare, label: 'CRUZ AI',
       color: 'var(--gold)',
-      action: () => router.push('/cruz'),
+      action: () => document.dispatchEvent(new CustomEvent('cruz:open-chat')),
     },
     {
       icon: Phone, label: 'Llamar',

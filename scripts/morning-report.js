@@ -403,6 +403,114 @@ async function main() {
     }
   } catch { /* agent_decisions table may not exist yet */ }
 
+  // ── CLASIFICACIONES AUTONOMAS (Block 6 data) ──
+  try {
+    const dayAgo = new Date(Date.now() - 86400000).toISOString()
+
+    // Recent classifications (24h)
+    const { data: recentClass } = await supabase.from('agent_decisions')
+      .select('id, decision, confidence, action_taken, payload')
+      .eq('trigger_type', 'classification')
+      .gte('created_at', dayAgo)
+      .order('confidence', { ascending: true })
+      .limit(200)
+
+    // Pending reviews (all time — matches /clasificar page)
+    const { count: pendingCount } = await supabase.from('agent_decisions')
+      .select('*', { count: 'exact', head: true })
+      .eq('trigger_type', 'classification')
+      .is('was_correct', null)
+
+    if ((recentClass && recentClass.length > 0) || (pendingCount && pendingCount > 0)) {
+      const autoApplied = (recentClass || []).filter(c => (c.action_taken || '').includes('auto-aplicada')).length
+      const humanReview = (recentClass || []).length - autoApplied
+      const pending = pendingCount || 0
+
+      lines.push(``)
+      lines.push(`🏷️ <b>CLASIFICACIONES</b>`)
+      if (recentClass && recentClass.length > 0) {
+        lines.push(`  24h: ${autoApplied} auto-aplicadas · ${humanReview} revisión humana`)
+      }
+      if (pending > 0) {
+        lines.push(`  ⏳ Pendientes revisión: <b>${pending}</b>`)
+        // Show top 5 lowest-confidence pending
+        const { data: pendingRows } = await supabase.from('agent_decisions')
+          .select('confidence, payload')
+          .eq('trigger_type', 'classification')
+          .is('was_correct', null)
+          .order('confidence', { ascending: true })
+          .limit(5)
+        if (pendingRows && pendingRows.length > 0) {
+          for (const p of pendingRows) {
+            const frac = p.payload?.suggested_fraccion || '?'
+            const desc = (p.payload?.product_description || '').substring(0, 30)
+            const pct = Math.round((p.confidence || 0) * 100)
+            lines.push(`    ⚡ ${frac} — ${pct}% — ${desc}`)
+          }
+          if (pending > 5) lines.push(`    + ${pending - 5} más`)
+        }
+        lines.push(`  → <b>/clasificar</b> para revisar`)
+      }
+    }
+  } catch { /* clasificaciones section optional */ }
+
+  // ── CADENA AUTONOMA (Blocks 8-9 workflow chain stats) ──
+  try {
+    const dayAgo = new Date(Date.now() - 86400000).toISOString()
+
+    const [dutiesRes, readyRes, blockedRes] = await Promise.all([
+      supabase.from('workflow_events').select('id, payload', { count: 'exact' })
+        .eq('event_type', 'duties_calculated').eq('workflow', 'pedimento')
+        .gte('created_at', dayAgo).limit(200),
+      supabase.from('workflow_events').select('id', { count: 'exact', head: true })
+        .eq('event_type', 'ready_for_pedimento').eq('workflow', 'docs')
+        .gte('created_at', dayAgo),
+      supabase.from('workflow_events').select('id', { count: 'exact', head: true })
+        .eq('event_type', 'blocked').eq('workflow', 'docs')
+        .gte('created_at', dayAgo),
+    ])
+
+    const dutiesCount = dutiesRes.count || (dutiesRes.data || []).length
+    const readyCount = readyRes.count || 0
+    const blockedCount = blockedRes.count || 0
+
+    if (dutiesCount > 0 || readyCount > 0 || blockedCount > 0) {
+      const totalMxn = (dutiesRes.data || []).reduce((s, e) => {
+        return s + (e.payload?.total_contribuciones_mxn || e.payload?.total || 0)
+      }, 0)
+
+      lines.push(``)
+      lines.push(`⛓️ <b>CADENA AUTÓNOMA (24h)</b>`)
+      lines.push(`  Calcular → Validar docs → Listo`)
+      if (dutiesCount > 0) lines.push(`  💰 ${dutiesCount} contribuciones calculadas · ${fmtUSD(totalMxn)} MXN`)
+      if (readyCount > 0) lines.push(`  ✅ ${readyCount} docs listos para pedimento`)
+      if (blockedCount > 0) lines.push(`  🔴 ${blockedCount} bloqueados por docs faltantes`)
+    }
+  } catch { /* chain section optional */ }
+
+  // ── DOCS INCOMPLETOS (Block 9 blocked traficos) ──
+  try {
+    const { data: blockedDrafts } = await supabase.from('pedimento_drafts')
+      .select('trafico_id, draft_data')
+      .eq('needs_manual_intervention', true)
+      .not('draft_data->docs_validation', 'is', null)
+      .limit(5)
+
+    const blocked = (blockedDrafts || []).filter(d =>
+      d.draft_data?.docs_validation?.blocked === true
+    )
+
+    if (blocked.length > 0) {
+      lines.push(``)
+      lines.push(`📋 <b>DOCS INCOMPLETOS</b>`)
+      for (const d of blocked.slice(0, 5)) {
+        const missing = (d.draft_data.docs_validation.missing_critical || []).join(', ')
+        lines.push(`  • ${d.trafico_id} — falta: ${missing || 'desconocido'}`)
+      }
+    }
+  } catch { /* docs section optional */ }
+
+  lines.push(``)
   lines.push(`━━━━━━━━━━━━━━━━━━━━━━━━━━`)
   lines.push(`Patente 3596 · Aduana 240`)
   lines.push(`— CRUZ 🦀`)

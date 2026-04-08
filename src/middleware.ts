@@ -57,7 +57,7 @@ export async function middleware(request: NextRequest) {
       pathname === route || pathname.startsWith(route + '/')
     )
     if (isAdminRoute) {
-      return NextResponse.redirect(new URL('/', request.url))
+      return NextResponse.redirect(new URL('/?unavailable=1', request.url))
     }
   }
 

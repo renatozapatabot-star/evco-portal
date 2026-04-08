@@ -237,7 +237,7 @@ export function Anexo24View() {
         <DateInputES value={dateTo} onChange={v => { setDateTo(v); setPage(0) }} />
         {(dateFrom || dateTo) && (
           <button onClick={() => { setDateFrom(''); setDateTo(''); setPage(0) }}
-            style={{ fontSize: 10, color: 'var(--danger)', border: '1px solid #FCA5A5', background: 'var(--danger-bg)', borderRadius: 4, padding: '2px 6px', cursor: 'pointer' }}>✕</button>
+            style={{ fontSize: 13, color: 'var(--danger)', border: '1px solid #FCA5A5', background: 'var(--danger-bg)', borderRadius: 6, padding: '0 12px', minWidth: 40, minHeight: 40, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
         )}
       </div>
 

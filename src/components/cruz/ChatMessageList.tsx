@@ -1,14 +1,13 @@
 'use client'
 
-import { useRef, useEffect, RefObject } from 'react'
+import { useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowRight, Volume2, ThumbsUp, ThumbsDown, Square } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import DOMPurify from 'dompurify'
-import { GOLD, GOLD_GRADIENT } from '@/lib/design-system'
+import { GOLD } from '@/lib/design-system'
 import { getClientClaveCookie } from '@/lib/client-config'
-import { PriorityChip } from '@/lib/cruz-priority'
 
 export interface Message {
   id: string
@@ -28,17 +27,14 @@ export const D = {
   textSub: 'var(--text-secondary)',
   userBubble: 'rgba(184,149,63,0.08)',
   userBorder: 'rgba(184,149,63,0.20)',
-  aiBubble: '#1A1A18',
-  aiBorder: '#2A2A28',
+  aiBubble: '#0D0D0C',
+  aiBorder: '#1A1A18',
   aiText: '#E8E5DF',
 }
 
 interface ChatMessageListProps {
   messages: Message[]
   loading: boolean
-  briefing: string
-  priorityChips: PriorityChip[]
-  suggestions: string[]
   sendMessage: (text: string) => void
   saveFeedback: (msgId: string, helpful: boolean) => void
   speak: (text: string) => void
@@ -48,9 +44,6 @@ interface ChatMessageListProps {
 export default function ChatMessageList({
   messages,
   loading,
-  briefing,
-  priorityChips,
-  suggestions,
   sendMessage,
   saveFeedback,
   speak,
@@ -79,53 +72,7 @@ export default function ChatMessageList({
 
   return (
     <div style={{ flex: 1, overflowY: 'auto', padding: '24px 28px', display: 'flex', flexDirection: 'column', gap: 16, WebkitOverflowScrolling: 'touch' }}>
-      {/* Briefing card when no messages */}
-      {messages.length === 0 && !loading && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, paddingTop: 24 }}>
-          <div style={{
-            background: D.surface, borderLeft: '3px solid #C9A84C',
-            borderRadius: 8, padding: '14px 16px', marginBottom: 16,
-            maxWidth: 500,
-          }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--gold)', marginBottom: 6,
-                          letterSpacing: '0.06em', textTransform: 'uppercase' as const }}>
-              CRUZ Briefing
-            </div>
-            <div style={{ fontSize: 13, color: D.text, lineHeight: 1.5, whiteSpace: 'pre-wrap' as const }}>
-              {briefing}
-            </div>
-          </div>
-
-          {/* Priority chips */}
-          <div style={{
-            display: 'flex', gap: 8, flexWrap: 'nowrap', overflowX: 'auto',
-            WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none',
-            padding: '8px 0',
-          }} className="pill-scroll">
-            {(priorityChips.length > 0 ? priorityChips : suggestions.slice(0, 4).map(s => ({ label: s, query: s, urgency: 'info' as const }))).map(chip => {
-              const borderColor = chip.urgency === 'critical' ? '#C23B22'
-                : chip.urgency === 'warning' ? '#C47F17'
-                : D.border
-              const bgColor = chip.urgency === 'critical' ? 'rgba(194,59,34,0.06)'
-                : chip.urgency === 'warning' ? 'rgba(196,127,23,0.06)'
-                : D.surface
-              const textColor = chip.urgency === 'critical' ? '#C23B22'
-                : chip.urgency === 'warning' ? '#C47F17'
-                : D.textSub
-              return (
-                <button key={chip.label} onClick={() => sendMessage(chip.query)} style={{
-                  flexShrink: 0, padding: '8px 14px', borderRadius: 9999,
-                  border: `1px solid ${borderColor}`, background: bgColor,
-                  fontSize: 12, fontWeight: 600, color: textColor,
-                  cursor: 'pointer', whiteSpace: 'nowrap',
-                }}>
-                  {chip.label}
-                </button>
-              )
-            })}
-          </div>
-        </div>
-      )}
+      {/* Clean empty state — no pre-prompts, just ready to chat */}
 
       {messages.map(msg => (
         <div key={msg.id} style={{ display: 'flex', gap: 12, maxWidth: msg.role === 'user' ? '75%' : '85%', marginLeft: msg.role === 'user' ? 'auto' : 0, flexDirection: msg.role === 'user' ? 'row-reverse' : 'row' }}>

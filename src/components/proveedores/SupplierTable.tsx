@@ -119,7 +119,7 @@ function MobileCards({ filtered, expandedSupplier, onToggleExpand }: {
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginLeft: 22 }}>
                 <div>
-                  <div style={{ fontSize: 10, color: T.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Traficos</div>
+                  <div style={{ fontSize: 10, color: T.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Tráficos</div>
                   <div style={{ fontFamily: T.mono, fontSize: 14, fontWeight: 700, color: T.text }}>{s.traficoCount}</div>
                 </div>
                 <div>
@@ -158,12 +158,12 @@ function DesktopTable({ filtered, expandedSupplier, onToggleExpand }: {
       }}>
         <span />
         <span>Proveedor</span>
-        <span style={{ textAlign: 'right' }}>Traficos</span>
+        <span style={{ textAlign: 'right' }}>Tráficos</span>
         <span style={{ textAlign: 'right' }}>Valor</span>
         <span style={{ textAlign: 'right' }}>Docs %</span>
         <span style={{ textAlign: 'right' }}>T-MEC</span>
         <span style={{ textAlign: 'center' }}>Riesgo</span>
-        <span style={{ textAlign: 'center' }}>Pais</span>
+        <span style={{ textAlign: 'center' }}>País</span>
       </div>
 
       {/* Rows */}

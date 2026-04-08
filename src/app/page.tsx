@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from 'react'
 import { CheckCircle, X } from 'lucide-react'
 import { getCookieValue } from '@/lib/client-config'
 import ClientInicioView from '@/components/views/client-inicio-view'
-import { fmtId, fmtDate } from '@/lib/format-utils'
+import { fmtId } from '@/lib/format-utils'
 import { getSmartGreeting } from '@/lib/greeting'
 import { dashboardStory } from '@/lib/data-stories'
 import { anticipate, isDismissed, dismissSuggestion } from '@/lib/anticipate'
@@ -262,27 +262,6 @@ function BrokerView() {
     }).catch((err: unknown) => console.error('[inicio] attention feed:', (err as Error).message)).finally(() => setLoading(false))
   }, [])
 
-  // ── Smart greeting from intelligence layer ──
-  const [greetingData, setGreetingData] = useState<{ greeting: string; subtitle: string }>({ greeting: '', subtitle: '' })
-  useEffect(() => {
-    const today = new Date().toISOString().split('T')[0]
-    const crossed24h = (items.filter(i => i.type === 'urgent').length === 0) ? cruzadosHoy : 0
-    const lastVisit = typeof window !== 'undefined' ? localStorage.getItem('cruz-last-visit') : null
-    const daysSinceLastLogin = lastVisit ? Math.floor((Date.now() - new Date(lastVisit).getTime()) / 86400000) : undefined
-
-    setGreetingData(getSmartGreeting(companyName?.split(' ')[0], {
-      urgentCount: items.filter(i => i.type === 'urgent').length,
-      enProcesoCount: activeCount,
-      crossed24h: cruzadosHoy,
-      newTraficos24h: 0,
-      noPedGt7: 0,
-      pendingEntradas: 0,
-      tmecSavings: 0,
-      avgConfidence: 0,
-      daysSinceLastLogin,
-    }))
-  }, [items, activeCount, cruzadosHoy, companyName])
-
   // ── Narrative story ──
   const narrative = useMemo(() => {
     if (loading) return ''
@@ -339,18 +318,6 @@ function BrokerView() {
 
   return (
     <div className="page-shell" style={{ maxWidth: 720 }}>
-      {/* Smart Greeting */}
-      <div style={{ marginBottom: 24 }}>
-        <div className="text-display">{greetingData.greeting}</div>
-        {greetingData.subtitle && (
-          <div style={{ fontSize: 14, color: 'var(--text-secondary)', marginTop: 4, lineHeight: 1.5 }}>
-            {greetingData.subtitle}
-          </div>
-        )}
-        <div className="font-mono" style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }} suppressHydrationWarning>
-          {fmtDate(new Date())}
-        </div>
-      </div>
 
       {/* Narrative insight */}
       {narrative && (
@@ -403,7 +370,7 @@ function BrokerView() {
               {activeCount === 0 ? 'Sin pendientes · Buen día' : `Todo en orden · ${activeCount} tráficos en curso`}
             </div>
             {activeCount === 0 && (
-              <Link href="/traficos" style={{ display: 'inline-block', marginTop: 8, fontSize: 13, fontWeight: 600, color: 'var(--gold-dark, #8B6914)', textDecoration: 'none' }}>
+              <Link href="/traficos" style={{ display: 'inline-flex', alignItems: 'center', marginTop: 8, fontSize: 13, fontWeight: 600, color: 'var(--gold-dark, #8B6914)', textDecoration: 'none', minHeight: 44, padding: '8px 0' }}>
                 Ver todos los tráficos →
               </Link>
             )}

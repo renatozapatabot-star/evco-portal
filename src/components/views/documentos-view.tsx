@@ -4,7 +4,7 @@ import { useEffect, useState, useRef, useCallback } from 'react'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { createClient } from '@supabase/supabase-js'
 import { Upload, CheckCircle, ChevronDown, Download, Trash2 } from 'lucide-react'
-import { getClientNameCookie } from '@/lib/client-config'
+import { getClientNameCookie, getCompanyIdCookie } from '@/lib/client-config'
 import { ErrorCard } from '@/components/ui/ErrorCard'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
@@ -60,26 +60,49 @@ export function DocumentosView() {
     setUploadDocType('')
   }, [])
 
-  // TODO: Replace with real Supabase Storage upload
-  const confirmUpload = useCallback(() => {
+  const confirmUpload = useCallback(async () => {
     if (!uploadFile || !uploadDocType) return
     setUploading(true)
-    setUploadProgress(0)
-    let p = 0
-    const interval = setInterval(() => {
-      p += 5
-      setUploadProgress(p)
-      if (p >= 100) {
-        clearInterval(interval)
-        setTimeout(() => {
-          setUploaded(prev => ({ ...prev, [uploadDocType]: { name: uploadFile.name, time: new Date().toLocaleString('es-MX') } }))
-          setUploadFile(null)
-          setUploadDocType('')
-          setUploading(false)
-          setUploadProgress(0)
-        }, 200)
-      }
-    }, 80)
+    setUploadProgress(10)
+
+    try {
+      const companyId = getCompanyIdCookie() || 'unknown'
+      const ext = uploadFile.name.split('.').pop() || 'pdf'
+      const storagePath = `${companyId}/legal/${uploadDocType}_${Date.now()}.${ext}`
+
+      setUploadProgress(30)
+
+      // Upload to Supabase Storage
+      const { error: storageError } = await supabase.storage
+        .from('company-documents')
+        .upload(storagePath, uploadFile, { upsert: true })
+
+      if (storageError) throw storageError
+      setUploadProgress(70)
+
+      // Insert record into company_documents table
+      const { error: dbError } = await supabase.from('company_documents').insert({
+        company_id: companyId,
+        tipo_documento: uploadDocType,
+        filename: uploadFile.name,
+        storage_path: storagePath,
+        uploaded_at: new Date().toISOString(),
+      })
+
+      if (dbError) throw dbError
+      setUploadProgress(100)
+
+      // Update local state
+      setUploaded(prev => ({ ...prev, [uploadDocType]: { name: uploadFile.name, time: new Date().toLocaleString('es-MX') } }))
+      setUploadFile(null)
+      setUploadDocType('')
+      loadDocs()
+    } catch (err) {
+      setDocError(`Error al subir documento: ${err instanceof Error ? err.message : 'Error desconocido'}`)
+    } finally {
+      setUploading(false)
+      setUploadProgress(0)
+    }
   }, [uploadFile, uploadDocType])
 
   const isDocComplete = (docId: string) =>

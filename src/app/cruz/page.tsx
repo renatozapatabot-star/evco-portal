@@ -3,68 +3,26 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { X } from 'lucide-react'
-import { GOLD, GOLD_GRADIENT } from '@/lib/design-system'
-import { getClientClaveCookie, getCompanyIdCookie } from '@/lib/client-config'
+import { GOLD_GRADIENT } from '@/lib/design-system'
+import { getCompanyIdCookie } from '@/lib/client-config'
 import { useIsMobile } from '@/hooks/use-mobile'
-import { useStatusSentence } from '@/hooks/use-status-sentence'
-import { getMostActionableChips, PriorityChip } from '@/lib/cruz-priority'
 import { playSound } from '@/lib/sounds'
 import ChatMessageList, { Message, D } from '@/components/cruz/ChatMessageList'
 import ChatInputBar from '@/components/cruz/ChatInputBar'
 import ChatContextPanel from '@/components/cruz/ChatContextPanel'
-
-const DEFAULT_SUGGESTIONS = [
-  '¿Cuántos tráficos en proceso?',
-  '¿Qué puente me recomiendas?',
-  'Clasifica: polipropileno virgen',
-  'Calcula impuestos $50K USD',
-  'Resumen ejecutivo del día',
-  '¿Cuánto ahorramos en T-MEC?',
-]
-
-function buildDynamicPrompts(statusData: { urgentes: number; enProceso: number; loading: boolean }): string[] {
-  const prompts: string[] = []
-  if (statusData?.urgentes > 0) prompts.push(`${statusData.urgentes} en seguimiento — ¿qué hago primero?`)
-  const hour = new Date().getHours()
-  if (hour < 10) prompts.push('Resumen ejecutivo de hoy')
-  else if (hour < 15) prompts.push('¿Cómo van los cruces de hoy?')
-  else prompts.push('¿Qué queda pendiente para mañana?')
-  prompts.push('¿Cuánto podemos ahorrar en T-MEC?')
-  prompts.push('Clasifica un producto nuevo')
-  prompts.push('¿Qué puente me recomiendas?')
-  if (statusData?.enProceso > 0) prompts.push(`${statusData.enProceso} en proceso — resumen`)
-  return prompts.slice(0, 6)
-}
 
 export default function CruzChatPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const traficoContext = searchParams.get('trafico')
   const isMobile = useIsMobile()
-  const [suggestions, setSuggestions] = useState(DEFAULT_SUGGESTIONS)
-  const [priorityChips, setPriorityChips] = useState<PriorityChip[]>([])
-  const [cruzAlerts, setCruzAlerts] = useState<{ icon: string; title: string; action: string; prompt: string }[]>([])
-
-  // Briefing state
-  const [briefing, setBriefing] = useState<string>('Cargando resumen operativo...')
   const [panelData, setPanelData] = useState<{ enProceso: { trafico_number?: string; id?: string; estatus?: string }[]; urgent: { trafico_number?: string; id?: string }[]; alertTitle: string | null }>({
     enProceso: [], urgent: [], alertTitle: null,
   })
 
-  const statusData = useStatusSentence()
-  useEffect(() => {
-    if (!statusData.loading) setSuggestions(buildDynamicPrompts(statusData))
-  }, [statusData.loading, statusData.urgentes, statusData.enProceso])
-  useEffect(() => {
-    fetch('/api/cruz-alerts').then(r => r.json())
-      .then(data => setCruzAlerts(data.alerts ?? []))
-      .catch((err: unknown) => console.error('[cruz] alerts fetch failed:', (err as Error).message))
-  }, [])
-
-  // Proactive briefing fetch
+  // Fetch context panel data
   useEffect(() => {
     const companyId = getCompanyIdCookie()
-    const clientClave = getClientClaveCookie()
     Promise.all([
       fetch(`/api/data?table=traficos&company_id=${companyId}&limit=5000&gte_field=fecha_llegada&gte_value=2024-01-01`).then(r => r.json()),
       fetch('/api/cruz-alerts').then(r => r.json()).catch(() => ({ alerts: [] })),
@@ -72,39 +30,12 @@ export default function CruzChatPage() {
       const traficos = trafData.data ?? []
       const enProceso = traficos.filter((t: { estatus?: string | null }) => !(t.estatus || '').toLowerCase().includes('cruz'))
       const urgent = enProceso.filter((t: { pedimento?: string | null }) => !t.pedimento)
-      const hour = new Date().getHours()
-      const greeting = hour < 12 ? 'Buenos días' : hour < 18 ? 'Buenas tardes' : 'Buenas noches'
-      const lines = [`${greeting}.`]
-      if (enProceso.length > 0) lines.push(`${enProceso.length} tráficos en proceso.`)
-      const nextCrossing = enProceso
-        .filter((t: { pedimento?: string | null; fecha_llegada?: string | null }) => t.pedimento && t.fecha_llegada)
-        .sort((a: { fecha_llegada?: string | null }, b: { fecha_llegada?: string | null }) => (a.fecha_llegada || '').localeCompare(b.fecha_llegada || ''))
-      if (nextCrossing.length > 0) {
-        const next = nextCrossing[0] as { trafico?: string }
-        lines.push(`${next.trafico || 'Un tráfico'} debería cruzar pronto — le avisamos cuando suceda.`)
-      } else if (urgent.length > 0) {
-        lines.push(`${urgent.length} requieren documentos.`)
-      }
-      if (alertData.alerts?.length > 0) lines.push(alertData.alerts[0].title + '.')
-      lines.push('\n¿Necesita algo más?')
-      setBriefing(lines.join(' '))
       setPanelData({
         enProceso: enProceso.slice(0, 5),
         urgent: urgent.slice(0, 5),
         alertTitle: alertData.alerts?.[0]?.title ?? null,
       })
-      const fourteenDaysAgo = new Date(Date.now() - 14 * 86400000)
-      const stale = enProceso.filter((tr: Record<string, unknown>) => {
-        const updated = tr.updated_at || tr.fecha_llegada
-        return updated && new Date(updated as string) < fourteenDaysAgo
-      })
-      const chips = getMostActionableChips({
-        urgentCount: urgent.length,
-        pendingSolicitudes: 0,
-        staleTraficos: stale.length,
-      })
-      setPriorityChips(chips)
-    }).catch(() => setBriefing('Sistema operativo. ¿En qué puedo ayudarte?'))
+    }).catch(() => { /* panel data unavailable — non-blocking */ })
   }, [])
 
   const [messages, setMessages] = useState<Message[]>(() => {
@@ -261,8 +192,8 @@ export default function CruzChatPage() {
 
   return (
     <div style={{ background: D.bg, color: D.text, display: 'flex', flexDirection: 'column', height: 'calc(100vh - 56px)', overflow: 'hidden' }}>
-      {/* Header */}
-      <div style={{ padding: '16px 24px', borderBottom: `1px solid ${D.border}`, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: D.surface }}>
+      {/* Header — dark navy to match sidebar */}
+      <div style={{ padding: '16px 24px', borderBottom: '1px solid rgba(255,255,255,0.06)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#0D0D0C' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
           <div style={{
             width: 40, height: 40, borderRadius: 10,
@@ -270,24 +201,21 @@ export default function CruzChatPage() {
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             boxShadow: '0 2px 8px rgba(201,168,76,0.35)',
           }}>
-            <span style={{ fontFamily: 'Georgia, serif', fontSize: 20, fontWeight: 700, color: 'var(--text-primary)' }}>Z</span>
+            <span style={{ fontFamily: 'Georgia, serif', fontSize: 20, fontWeight: 700, color: '#0D0D0C' }}>Z</span>
           </div>
           <div>
-            <h1 style={{ fontSize: 18, fontWeight: 800, color: D.text, letterSpacing: '-0.02em', margin: 0 }}>CRUZ</h1>
-            <div style={{ fontSize: 12, color: D.textMuted }}>
-              {traficoContext ? `Contexto: ${traficoContext}` : 'Tu asistente aduanal \u00b7 Respuesta en tiempo real'}
+            <h1 style={{ fontSize: 18, fontWeight: 800, color: '#E8E5DF', letterSpacing: '-0.02em', margin: 0 }}>CRUZ</h1>
+            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)' }}>
+              {traficoContext ? `Contexto: ${traficoContext}` : 'Asistente aduanal'}
             </div>
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          {messages.length > 0 && (
-            <span style={{ fontSize: 10, color: D.textMuted, opacity: 0.6 }}>Historial guardado</span>
-          )}
           <button onClick={() => { setMessages([]); localStorage.removeItem('cruz-chat-history') }}
-            style={{ fontSize: 12, color: D.textMuted, background: 'none', border: 'none', cursor: 'pointer', padding: 8 }}>
+            style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', background: 'none', border: 'none', cursor: 'pointer', padding: 8 }}>
             Nueva conversación
           </button>
-          <button onClick={() => router.back()} style={{ background: 'none', border: 'none', cursor: 'pointer', color: D.textMuted, padding: 8 }}>
+          <button onClick={() => router.back()} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.45)', padding: 8 }}>
             <X size={18} />
           </button>
         </div>
@@ -300,9 +228,6 @@ export default function CruzChatPage() {
           <ChatMessageList
             messages={messages}
             loading={loading}
-            briefing={briefing}
-            priorityChips={priorityChips}
-            suggestions={suggestions}
             sendMessage={sendMessage}
             saveFeedback={saveFeedback}
             speak={speak}

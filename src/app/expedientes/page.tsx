@@ -1,16 +1,15 @@
 'use client'
 
 import { useEffect, useState, useMemo } from 'react'
-import { Search, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { Search, ChevronLeft, ChevronRight } from 'lucide-react'
 import { getCookieValue } from '@/lib/client-config'
 import { fmtId, fmtDesc, fmtDateShort, fmtPedimentoShort } from '@/lib/format-utils'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useSort } from '@/hooks/use-sort'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { ErrorCard } from '@/components/ui/ErrorCard'
-import { DocumentViewer } from '@/components/ui/DocumentViewer'
 import { DocCompleteness } from '@/components/expedientes/DocCompleteness'
-import { DocChecklist } from '@/components/expedientes/DocChecklist'
 import type { DocFile } from '@/components/expedientes/DocChecklist'
 
 const REQUIRED_DOCS = [
@@ -36,6 +35,7 @@ interface TraficoRow {
 const PAGE_SIZE = 50
 
 export default function ExpedientesPage() {
+  const router = useRouter()
   const isMobile = useIsMobile()
   const [rows, setRows] = useState<TraficoRow[]>([])
   const [loading, setLoading] = useState(true)
@@ -43,10 +43,6 @@ export default function ExpedientesPage() {
   const [search, setSearch] = useState('')
   const [searchInput, setSearchInput] = useState('')
   const [page, setPage] = useState(0)
-  const [expandedId, setExpandedId] = useState<string | null>(null)
-  const [statFilter, setStatFilter] = useState<string | null>(null)
-  const [viewerDocs, setViewerDocs] = useState<DocFile[]>([])
-  const [viewerIndex, setViewerIndex] = useState(-1)
   const { sort, toggleSort } = useSort('expedientes', { column: 'fecha_llegada', direction: 'desc' })
 
   const [cookiesReady, setCookiesReady] = useState(false)
@@ -150,18 +146,8 @@ export default function ExpedientesPage() {
     return () => clearTimeout(timer)
   }, [searchInput])
 
-  // Stats
-  const kpiTotal = rows.length
-  const kpiCompletos = rows.filter(r => r.pct === 100).length
-  const kpiIncompletos = rows.filter(r => r.pct < 100 && r.docs.length > 0).length
-  const kpiCriticos = rows.filter(r => r.missing.includes('factura_comercial') || r.missing.includes('pedimento_detallado')).length
-
   const filtered = useMemo(() => {
     let out = rows
-
-    if (statFilter === 'completos') out = out.filter(r => r.pct === 100)
-    else if (statFilter === 'incompletos') out = out.filter(r => r.pct < 100 && r.docs.length > 0)
-    else if (statFilter === 'criticos') out = out.filter(r => r.missing.includes('factura_comercial') || r.missing.includes('pedimento_detallado'))
 
     if (search.trim()) {
       const q = search.toLowerCase()
@@ -181,7 +167,7 @@ export default function ExpedientesPage() {
       const cmp = aVal < bVal ? -1 : aVal > bVal ? 1 : 0
       return sort.direction === 'asc' ? cmp : -cmp
     })
-  }, [rows, search, sort, statFilter])
+  }, [rows, search, sort])
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE)
   const paged = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
@@ -192,30 +178,9 @@ export default function ExpedientesPage() {
     <div className="page-shell">
       {fetchError && <div style={{ marginBottom: 16 }}><ErrorCard message={fetchError} onRetry={() => window.location.reload()} /></div>}
 
-      {/* Stat Filter Bar */}
-      {!loading && !fetchError && rows.length > 0 && (
-        <div className="stat-filter-bar">
-          {[
-            { key: null, label: 'Todos', value: kpiTotal },
-            { key: 'completos', label: 'Completos', value: kpiCompletos },
-            { key: 'incompletos', label: 'Incompletos', value: kpiIncompletos },
-            ...(userRole === 'broker' || userRole === 'admin'
-              ? [{ key: 'criticos', label: 'Pendientes de integración', value: kpiCriticos }]
-              : []),
-          ].map(stat => (
-            <button
-              key={stat.key ?? 'all'}
-              className={`stat-filter-item${statFilter === stat.key ? ' active' : ''}`}
-              onClick={() => { setStatFilter(statFilter === stat.key ? null : stat.key); setPage(0) }}
-            >
-              <span className={`stat-filter-value${stat.value === 0 ? ' zero' : ''}`}>{stat.value}</span>
-              <span className="stat-filter-label">{stat.label}</span>
-            </button>
-          ))}
-        </div>
-      )}
+      {/* KPI cards removed — table is self-explanatory */}
 
-      <div className="table-shell" style={!loading && !fetchError && rows.length > 0 ? { borderTopLeftRadius: 0, borderTopRightRadius: 0 } : undefined}>
+      <div className="table-shell">
         <div className="table-toolbar" style={{ justifyContent: 'flex-end' }}>
           <div className="toolbar-search" style={{ minHeight: 60 }}>
             <Search size={12} style={{ color: 'var(--slate-400)', flexShrink: 0 }} />
@@ -235,10 +200,9 @@ export default function ExpedientesPage() {
             )}
             {paged.map(r => {
               const isCruzado = (r.estatus || '').toLowerCase().includes('cruz')
-              const isExpanded = expandedId === r.trafico
               return (
                 <div key={r.trafico}>
-                  <button className="m-card" onClick={() => setExpandedId(isExpanded ? null : r.trafico)}
+                  <button className="m-card" onClick={() => router.push(`/traficos/${r.trafico}`)}
                     style={{ width: '100%', textAlign: 'left' }}>
                     <div className="m-card-top">
                       <div className="m-card-id-group">
@@ -246,8 +210,10 @@ export default function ExpedientesPage() {
                         <span className="m-card-id">{fmtId(r.trafico)}</span>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <DocCompleteness present={r.docCount} />
-                        <ChevronDown size={14} style={{ color: 'var(--text-muted)', transition: 'transform 150ms', transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)', flexShrink: 0 }} />
+                        {isCruzado
+                          ? <DocCompleteness present={REQUIRED_DOCS.length} />
+                          : <span style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic' }}>Pendiente</span>
+                        }
                       </div>
                     </div>
                     <div className="m-card-bottom">
@@ -255,14 +221,6 @@ export default function ExpedientesPage() {
                       <span className="m-card-meta" style={{ fontFamily: 'var(--font-jetbrains-mono, var(--font-mono))' }}>{r.fecha_llegada ? fmtDateShort(r.fecha_llegada) : '—'}</span>
                     </div>
                   </button>
-                  {isExpanded && (
-                    <DocChecklist
-                      trafico={r.trafico} pedimento={r.pedimento} docs={r.docs}
-                      entrada={r.entrada} proveedor={r.proveedores?.split(',')[0]?.trim()} valor={r.importe_total}
-                      onClose={() => setExpandedId(null)}
-                      onViewDoc={(docs, idx) => { setViewerDocs(docs); setViewerIndex(idx) }}
-                    />
-                  )}
                 </div>
               )
             })}
@@ -312,13 +270,12 @@ export default function ExpedientesPage() {
                 {paged.map((r, idx) => {
                   const isCruzado = (r.estatus || '').toLowerCase().includes('cruz')
                   const isDetenido = (r.estatus || '').toLowerCase().includes('deten')
-                  const isExpanded = expandedId === r.trafico
 
                   return (
                     <tr key={r.trafico}
-                      className={`clickable-row ${idx % 2 === 0 ? 'row-even' : 'row-odd'}${isExpanded ? ' row-even' : ''}`}
+                      className={`clickable-row ${idx % 2 === 0 ? 'row-even' : 'row-odd'}`}
                       style={{ cursor: 'pointer' }}
-                      onClick={() => setExpandedId(isExpanded ? null : r.trafico)}>
+                      onClick={() => router.push(`/traficos/${r.trafico}`)}>
                       <td style={{ width: 28, paddingRight: 0 }}>
                         <span style={{
                           width: 7, height: 7, borderRadius: '50%', display: 'inline-block',
@@ -334,7 +291,12 @@ export default function ExpedientesPage() {
                         </span>
                       </td>
                       <td className="timestamp">{r.fecha_llegada ? fmtDateShort(r.fecha_llegada) : '—'}</td>
-                      <td><DocCompleteness present={r.docCount} /></td>
+                      <td>
+                        {isCruzado
+                          ? <DocCompleteness present={REQUIRED_DOCS.length} />
+                          : <span style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic' }}>Pendiente</span>
+                        }
+                      </td>
                       <td className="desc-text">{fmtDesc(r.descripcion_mercancia) || '—'}</td>
                     </tr>
                   )
@@ -343,20 +305,6 @@ export default function ExpedientesPage() {
             </table>
           </div>
         )}
-
-        {/* Expanded checklist (below table, outside the scroll container) */}
-        {expandedId && (() => {
-          const r = rows.find(r => r.trafico === expandedId)
-          if (!r) return null
-          return (
-            <DocChecklist
-              trafico={r.trafico} pedimento={r.pedimento} docs={r.docs}
-              entrada={r.entrada} proveedor={r.proveedores?.split(',')[0]?.trim()} valor={r.importe_total}
-              onClose={() => setExpandedId(null)}
-              onViewDoc={(docs, idx) => { setViewerDocs(docs); setViewerIndex(idx) }}
-            />
-          )
-        })()}
 
         {/* Pagination */}
         {totalPages > 1 && (
@@ -371,10 +319,6 @@ export default function ExpedientesPage() {
         )}
       </div>
 
-      {/* Document viewer modal */}
-      {viewerIndex >= 0 && viewerDocs.length > 0 && (
-        <DocumentViewer documents={viewerDocs} initialIndex={viewerIndex} onClose={() => setViewerIndex(-1)} traficoId={expandedId || ''} />
-      )}
     </div>
   )
 }

@@ -42,7 +42,6 @@ export default function PedimentosPage() {
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(0)
   const { sort, toggleSort } = useSort('pedimentos', { column: 'fecha', direction: 'desc' })
-  const [tmecFilter, setTmecFilter] = useState<string | null>(null)
   const [partidaDescMap, setPartidaDescMap] = useState<Map<string, string>>(new Map())
   const [aduanetValorMap, setAduanetValorMap] = useState<Map<string, number>>(new Map())
 
@@ -130,12 +129,7 @@ export default function PedimentosPage() {
       }
     })
 
-    // Apply T-MEC filter
-    const tmecFiltered = tmecFilter === 'tmec' ? result.filter(g => g.tmec)
-      : tmecFilter === 'sin_tmec' ? result.filter(g => !g.tmec)
-      : result
-
-    tmecFiltered.sort((a, b) => {
+    result.sort((a, b) => {
       const col = sort.column as keyof PedGroup
       const av = a[col] ?? ''
       const bv = b[col] ?? ''
@@ -143,8 +137,8 @@ export default function PedimentosPage() {
       return sort.direction === 'asc' ? cmp : -cmp
     })
 
-    return tmecFiltered
-  }, [rows, search, sort, aduanetValorMap, tmecFilter])
+    return result
+  }, [rows, search, sort, aduanetValorMap])
 
   const totalPages = Math.ceil(groups.length / PAGE_SIZE)
   const paged = groups.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
@@ -159,48 +153,10 @@ export default function PedimentosPage() {
     return null
   }
 
-  // T-MEC stats (recomputed from raw rows for accurate counts regardless of tmecFilter)
-  const allGroups = useMemo(() => {
-    const today = new Date().toISOString().split('T')[0]
-    const filtered = rows.filter(r => {
-      const fecha = r.fecha_pago || r.fecha_llegada
-      if (fecha && fecha > today) return false
-      return true
-    }).filter(r => r.pedimento)
-    const map = new Map<string, TraficoRow[]>()
-    filtered.forEach(r => { const k = r.pedimento!; if (!map.has(k)) map.set(k, []); map.get(k)!.push(r) })
-    return Array.from(map.entries()).map(([, pedRows]) => {
-      const reg = (pedRows[0].regimen ?? '').toUpperCase()
-      return { tmec: reg === 'ITE' || reg === 'ITR' || reg === 'IMD' }
-    })
-  }, [rows])
-  const kpiTodos = allGroups.length
-  const kpiTmec = allGroups.filter(g => g.tmec).length
-  const kpiSinTmec = allGroups.filter(g => !g.tmec).length
-
   return (
     <div className="page-shell">
-      {/* T-MEC Filter Bar */}
-      {!loading && kpiTodos > 0 && (
-        <div className="stat-filter-bar" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
-          {[
-            { key: null, label: 'Todos', value: kpiTodos },
-            { key: 'tmec', label: 'T-MEC', value: kpiTmec },
-            { key: 'sin_tmec', label: 'Sin T-MEC', value: kpiSinTmec },
-          ].map(stat => (
-            <button
-              key={stat.key ?? 'all'}
-              className={`stat-filter-item${tmecFilter === stat.key ? ' active' : ''}`}
-              onClick={() => { setTmecFilter(tmecFilter === stat.key ? null : stat.key); setPage(0) }}
-            >
-              <span className={`stat-filter-value${stat.value === 0 ? ' zero' : ''}`}>{stat.value}</span>
-              <span className="stat-filter-label">{stat.label}</span>
-            </button>
-          ))}
-        </div>
-      )}
 
-      <div className="table-shell" style={!loading && kpiTodos > 0 ? { borderTopLeftRadius: 0, borderTopRightRadius: 0 } : undefined}>
+      <div className="table-shell">
         <div className="table-toolbar" style={{ justifyContent: 'flex-end' }}>
           <div className="toolbar-search" style={{ minHeight: 60 }}>
             <Search size={12} style={{ color: 'var(--slate-400)', flexShrink: 0 }} />

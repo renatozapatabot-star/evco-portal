@@ -100,6 +100,7 @@ async function run() {
       LIMIT 5000
     `, [lastSyncStr])
 
+    const skippedClaves = new Set()
     if (trafRows.length > 0) {
       // Get existing for comparison
       const ids = trafRows.map(r => r.trafico)
@@ -111,7 +112,6 @@ async function run() {
       ;(existing || []).forEach(t => { existMap[t.trafico] = t })
 
       const changes = []
-      const skippedClaves = new Set()
       for (let i = 0; i < trafRows.length; i += 100) {
         const batch = trafRows.slice(i, i + 100).filter(r => {
           if (!claveMap[r.clave_cliente]) {
@@ -157,16 +157,18 @@ async function run() {
     // Delta entradas
     const [entRows] = await conn.execute(`
       SELECT
-        e.sCveEntradaBodega as entrada_id,
+        e.sCveEntradaBodega as cve_entrada,
         e.sCveCliente as cve_cliente,
-        e.dFechaLlegadaMercancia as fecha_llegada,
-        e.iCantidadBultosRecibidos as bultos_recibidos,
-        e.iPesoBruto as peso_recibido,
+        e.dFechaLlegadaMercancia as fecha_llegada_mercancia,
+        e.iCantidadBultosRecibidos as cantidad_bultos,
+        e.iPesoBruto as peso_bruto,
         e.bFaltantes as tiene_faltantes,
         e.bMercanciaDanada as mercancia_danada,
         e.sDescripcionMercancia as descripcion_mercancia,
         e.sRecibidoPor as recibido_por,
-        e.sCveProveedor as proveedor
+        e.sCveProveedor as cve_proveedor,
+        e.sNumTalon as num_talon,
+        e.sNumCajaTrailer as num_caja_trailer
       FROM cb_entrada_bodega e
       WHERE e.dFechaActualizacion >= ?
       ORDER BY e.dFechaActualizacion DESC
@@ -182,28 +184,30 @@ async function run() {
           }
           return true
         }).map(r => ({
-          entrada_id: r.entrada_id,
+          cve_entrada: r.cve_entrada,
           cve_cliente: r.cve_cliente,
           company_id: claveMap[r.cve_cliente],
-          fecha_llegada: r.fecha_llegada,
-          bultos_recibidos: r.bultos_recibidos,
-          peso_recibido: r.peso_recibido,
+          fecha_llegada_mercancia: r.fecha_llegada_mercancia,
+          cantidad_bultos: r.cantidad_bultos,
+          peso_bruto: r.peso_bruto,
           tiene_faltantes: r.tiene_faltantes === '1' || r.tiene_faltantes === 1,
           mercancia_danada: r.mercancia_danada === '1' || r.mercancia_danada === 1,
           descripcion_mercancia: r.descripcion_mercancia,
           recibido_por: r.recibido_por,
-          proveedor: r.proveedor,
+          cve_proveedor: r.cve_proveedor,
+          num_talon: r.num_talon || null,
+          num_caja_trailer: r.num_caja_trailer || null,
           updated_at: new Date().toISOString()
         }))
-        await supabase.from('entradas').upsert(batch, { onConflict: 'entrada_id', ignoreDuplicates: false })
+        await supabase.from('entradas').upsert(batch, { onConflict: 'cve_entrada', ignoreDuplicates: false })
 
         // Emit entrada_synced events for PO matching (po-matcher.js consumes these)
         for (const entry of batch) {
-          if (entry.proveedor && entry.company_id) {
-            await emitEvent('intake', 'entrada_synced', entry.entrada_id, entry.company_id, {
-              supplier: entry.proveedor,
+          if (entry.cve_proveedor && entry.company_id) {
+            await emitEvent('intake', 'entrada_synced', entry.cve_entrada, entry.company_id, {
+              supplier: entry.cve_proveedor,
               descripcion_mercancia: entry.descripcion_mercancia,
-              peso_bruto: entry.peso_recibido,
+              peso_bruto: entry.peso_bruto,
             }).catch(() => {}) // Non-blocking — sync continues even if event emission fails
           }
         }

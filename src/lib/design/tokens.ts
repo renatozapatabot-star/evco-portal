@@ -6,7 +6,7 @@ export const tokens = {
   color: {
     bg: '#FAFAF8',
     bgDark: '#0D0D0C',
-    ink: '#141C26',
+    ink: '#0D0D0C',
     gold: '#C9A84C',
     teal: '#2C7A7B',
     slate: '#64748B',

@@ -128,7 +128,7 @@ export default function WarRoom() {
           </div>
           {[
             { label: 'Cruzados hoy', value: data?.cruzadosHoy || 0 },
-            { label: 'Urgentes (+7d)', value: urgentes },
+            { label: 'Urgentes (más de 7 días)', value: urgentes },
             { label: 'Total cartera', value: data?.total || 0 },
           ].map(item => (
             <div key={item.label} style={{ padding: '10px 0', minHeight: 60, borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

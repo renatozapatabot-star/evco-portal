@@ -44,3 +44,7 @@ credentials/
 
 # Status watcher local checkpoint
 .status-watcher-checkpoint.json
+
+# Sandbox run results (JSON per run, local only)
+scripts/sandbox/results/
+!scripts/sandbox/results/.gitkeep

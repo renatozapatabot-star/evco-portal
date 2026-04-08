@@ -57,10 +57,12 @@ async function answerCallbackQuery(callbackQueryId: string, text?: string) {
   })
 }
 
+// Hardcoded fallback: Tito (8538502098) and Renato IV (7277519813)
+const FALLBACK_APPROVERS = ['8538502098', '7277519813']
+
 function isAuthorized(userId: number): boolean {
-  // If no authorized users configured, allow all (dev mode)
-  if (AUTHORIZED_USERS.length === 0) return true
-  return AUTHORIZED_USERS.includes(String(userId))
+  const allowList = AUTHORIZED_USERS.length > 0 ? AUTHORIZED_USERS : FALLBACK_APPROVERS
+  return allowList.includes(String(userId))
 }
 
 async function handleCancellation(draftId: string, chatId: number, userId: number, username: string) {

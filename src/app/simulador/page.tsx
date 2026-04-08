@@ -56,7 +56,7 @@ export default function SimuladorPage() {
   const [loading, setLoading] = useState(true)
   const [simulating, setSimulating] = useState(false)
   const [result, setResult] = useState<{ options: SimOption[]; bestIdx: number; savings: number } | null>(null)
-  const [sysRates, setSysRates] = useState<{ dta: number; iva: number; tc: number } | null>(null)
+  const [sysRates, setSysRates] = useState<{ dta_amount: number; iva: number; tc: number } | null>(null)
   const [ratesError, setRatesError] = useState(false)
   const [tariffRates, setTariffRates] = useState<Map<string, number>>(new Map())
 
@@ -75,8 +75,8 @@ export default function SimuladorPage() {
     if (!isAdmin) { setLoading(false); return }
     // Fetch live rates from system_config
     fetch('/api/rates').then(r => r.json()).then(d => {
-      if (!d.error && d.dta?.rate && d.iva?.rate && d.tc?.rate) {
-        setSysRates({ dta: d.dta.rate, iva: d.iva.rate, tc: d.tc.rate })
+      if (!d.error && d.iva?.rate && d.tc?.rate) {
+        setSysRates({ dta_amount: d.dta?.amount || 462, iva: d.iva.rate, tc: d.tc.rate })
       } else {
         setRatesError(true)
       }
@@ -113,7 +113,7 @@ export default function SimuladorPage() {
     const regimen = (t.regimen || '').toUpperCase()
     const isTmec = regimen === 'ITE' || regimen === 'ITR' || regimen === 'IMD'
 
-    const dta = Math.round(valorMXN * sysRates.dta)
+    const dta = sysRates.dta_amount
     // Look up per-fraccion IGI rate from tariff_rates, fallback to 5% estimate
     const fraccion = 'fraccion_arancelaria' in t ? (t as TraficoOption).fraccion_arancelaria : null
     const igiRate = isTmec ? 0 : (fraccion && tariffRates.has(fraccion) ? tariffRates.get(fraccion)! : 0.05)

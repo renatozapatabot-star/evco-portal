@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { Camera, Upload, Check, AlertTriangle, Loader2 } from 'lucide-react'
+import { Upload, Check, AlertTriangle, Loader2 } from 'lucide-react'
 import { useToast } from '@/components/Toast'
 
 interface PhotoUploadProps {
@@ -98,8 +98,8 @@ export function PhotoUpload({ traficoId, onClassified }: PhotoUploadProps) {
       >
         {status === 'idle' && (
           <>
-            <Camera size={20} />
-            <span>Foto de documento</span>
+            <Upload size={20} />
+            <span>Subir documento — CRUZ clasifica automáticamente</span>
           </>
         )}
         {status === 'uploading' && (

@@ -20,16 +20,17 @@ export function useKeyboardShortcuts() {
       }
 
       if (e.metaKey || e.ctrlKey) {
-        if (e.key === '/') { e.preventDefault(); router.push('/cruz') }
+        if (e.key === '/') { e.preventDefault(); document.dispatchEvent(new CustomEvent('cruz:open-chat')) }
         return
       }
       if (e.altKey) return
 
       const routes: Record<string, string> = {
         '1':'/', '2':'/traficos', '3':'/entradas', '4':'/pedimentos',
-        '5':'/expedientes', '6':'/reportes', '7':'/cuentas', '8':'/anexo24', '9':'/cruz',
+        '5':'/expedientes', '6':'/reportes', '7':'/cuentas', '8':'/anexo24',
       }
       if (routes[e.key]) { e.preventDefault(); router.push(routes[e.key]); return }
+      if (e.key === '9') { e.preventDefault(); document.dispatchEvent(new CustomEvent('cruz:open-chat')); return }
 
       // J/K row navigation
       if (e.key === 'j' || e.key === 'k') {

@@ -49,7 +49,7 @@ export default function ChatInputBar({
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Pregunta sobre traficos, puentes, impuestos..."
+          placeholder="Pregunta sobre tráficos, puentes, impuestos..."
           rows={1}
           disabled={loading}
           style={{

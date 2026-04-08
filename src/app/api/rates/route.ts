@@ -11,8 +11,10 @@ export async function GET() {
       getExchangeRate(),
     ])
 
+    // DTA is a fixed fee per pedimento (not a percentage of valor)
+    const dtaA1 = dta.A1 || {}
     return NextResponse.json({
-      dta: { rate: dta.A1.rate },
+      dta: { amount: dtaA1.amount || 462, type: dtaA1.type || 'fixed' },
       iva: { rate: iva },
       tc: { rate: tc.rate, date: tc.date, source: tc.source },
     })

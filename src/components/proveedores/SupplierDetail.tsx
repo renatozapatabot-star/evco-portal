@@ -69,12 +69,12 @@ export function SupplierDetail({ supplier: s }: { supplier: SupplierAgg }) {
       {/* Stats row */}
       <div style={{ display: 'flex', gap: 24, marginBottom: 20, flexWrap: 'wrap' }}>
         {[
-          { label: 'Traficos', value: String(s.traficoCount) },
+          { label: 'Tráficos', value: String(s.traficoCount) },
           { label: 'Valor total', value: s.totalValue > 0 ? fmtUSD(s.totalValue) : '\u2014' },
           { label: 'Promedio por embarque', value: s.avgValue > 0 ? fmtUSD(s.avgValue) : '\u2014' },
-          { label: 'Pais', value: s.country ? `${countryFlag(s.country)} ${s.country}` : '\uD83C\uDF10 Desconocido' },
+          { label: 'País', value: s.country ? `${countryFlag(s.country)} ${s.country}` : '\uD83C\uDF10 Desconocido' },
           { label: 'Primer embarque', value: s.traficos.length > 0 ? fmtDate(s.traficos[s.traficos.length - 1].fecha_llegada) : '\u2014' },
-          { label: 'Ultimo embarque', value: s.lastDate ? fmtDate(s.lastDate) : '\u2014' },
+          { label: 'Último embarque', value: s.lastDate ? fmtDate(s.lastDate) : '\u2014' },
         ].map(stat => (
           <div key={stat.label}>
             <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.textMuted, marginBottom: 4 }}>
@@ -105,7 +105,7 @@ export function SupplierDetail({ supplier: s }: { supplier: SupplierAgg }) {
       {descFreq.length > 0 && (
         <div style={{ marginBottom: 20 }}>
           <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.textMuted, marginBottom: 8 }}>
-            Mercancias frecuentes
+            Mercancías frecuentes
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
             {descFreq.map(([desc, count]) => (
@@ -125,7 +125,7 @@ export function SupplierDetail({ supplier: s }: { supplier: SupplierAgg }) {
       {/* Traficos list */}
       <div>
         <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.textMuted, marginBottom: 8 }}>
-          Traficos ({s.traficos.length})
+          Tráficos ({s.traficos.length})
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
           {s.traficos.slice(0, 20).map(t => {

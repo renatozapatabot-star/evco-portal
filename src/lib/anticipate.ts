@@ -86,6 +86,7 @@ export function anticipate(input: AnticipateInput): Suggestion | null {
   const threeDaysAgo = new Date(now - 3 * 86400000).toISOString()
   const pendingDoc = traficos.find(t => {
     if (isCruzado(t)) return false
+    if (t.fecha_cruce) return false // Already crossed — not pending
     if (t.pedimento) return false
     return t.fecha_llegada && t.fecha_llegada < threeDaysAgo
   })

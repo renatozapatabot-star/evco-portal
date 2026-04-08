@@ -125,12 +125,12 @@ export async function GET(req: NextRequest) {
     narrative || 'Sin actividad reciente.',
     '',
     `En proceso: ${enProceso}`,
-    `Cruzados (7d): ${cruzadoRecent7d}`,
+    `Cruzados (últimos 7 días): ${cruzadoRecent7d}`,
     `Importado YTD: ${fmtUSDCompact(valorYTD)}`,
     `Incidencias: ${incidencias}`,
   ]
   if (urgentItems.length > 0) {
-    textParts.push('', 'Requiere atencion:')
+    textParts.push('', 'Requiere atención:')
     for (const item of urgentItems) {
       textParts.push(`  - ${item.text}`)
     }
@@ -177,7 +177,7 @@ export async function GET(req: NextRequest) {
       <td style="width:8px;"></td>
       <td style="text-align:center;padding:16px 8px;background:#FAFAF8;border-radius:8px;width:25%;">
         <div style="font-size:24px;font-weight:800;color:#16A34A;font-family:monospace;">${cruzadoRecent7d}</div>
-        <div style="font-size:11px;color:#6B6B6B;margin-top:4px;">Cruzados (7d)</div>
+        <div style="font-size:11px;color:#6B6B6B;margin-top:4px;">Cruzados (7 días)</div>
       </td>
       <td style="width:8px;"></td>
       <td style="text-align:center;padding:16px 8px;background:#FAFAF8;border-radius:8px;width:25%;">

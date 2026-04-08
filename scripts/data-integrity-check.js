@@ -119,7 +119,7 @@ async function main() {
       .select('value')
       .eq('key', 'dta_rates')
       .single()
-    assert(data?.value?.A1?.rate > 0, 'DTA A1 rate missing or zero')
+    assert(data?.value?.A1?.amount > 0 || data?.value?.A1?.rate > 0, 'DTA A1 config missing or zero')
   })
 
   // ── 6. RLS: service role can read, tables exist ──

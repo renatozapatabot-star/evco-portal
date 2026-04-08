@@ -94,7 +94,7 @@ export default function DraftsPage() {
     <div style={{ padding: 24, maxWidth: 900, margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
         <div>
-          <h1 style={{ fontSize: 28, fontWeight: 900, color: 'var(--navy-900)', letterSpacing: '-0.02em', margin: 0 }}>Borradores</h1>
+          <h1 style={{ fontSize: 28, fontWeight: 900, color: 'var(--navy-900)', letterSpacing: '-0.02em', margin: 0 }}>Ghost Pedimentos</h1>
           <p style={{ fontSize: 13, color: 'var(--slate-400)', marginTop: 4 }}>{drafts.length} borrador{drafts.length !== 1 ? 'es' : ''} {filter === 'pending' ? 'pendientes' : filter === 'approved' ? 'aprobados' : 'totales'}</p>
         </div>
       </div>
@@ -120,12 +120,18 @@ export default function DraftsPage() {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {drafts.map(d => {
-            const tier = TIER_CONFIG[d.review_tier || 2]
-            const confidence = d.overall_confidence || 0
-            const valorUSD = d.contributions?.valor_total_usd || d.extracted_fields?.valor_usd || 0
-            const trafico = d.trafico_id || d.id
-            const supplier = d.extracted_fields?.supplier || d.extracted_fields?.proveedor || '—'
-            const product = d.products?.[0]?.description || d.extracted_fields?.descripcion || '—'
+            const dd = d.draft_data || {}
+            const tierNum = dd.confidence?.tier || d.review_tier || 2
+            const tier = TIER_CONFIG[tierNum]
+            const confidence = dd.confidence?.score || d.overall_confidence || 0
+            const valorUSD = dd.contributions?.valor_aduana_usd || dd.extraction?.total_value || d.contributions?.valor_total_usd || 0
+            const trafico = d.trafico_id || d.id?.substring(0, 8)
+            const supplier = dd.extraction?.supplier_name || dd.supplier || d.extracted_fields?.supplier || '—'
+            const product = dd.extraction?.products?.[0]?.description || dd.extraction?.descripcion || '—'
+            const fraccion = dd.classifications?.[0]?.fraccion || null
+            const isTMEC = dd.contributions?.igi?.tmec === true
+            const confianza = dd.confianza || (tierNum === 1 ? 'alta' : tierNum === 2 ? 'media' : 'baja')
+            const flagsCount = dd.flags?.length || 0
 
             return (
               <div key={d.id} onClick={() => router.push(`/drafts/${d.id}`)}
@@ -136,19 +142,31 @@ export default function DraftsPage() {
                   background: 'var(--bg-card)', border: 'var(--b-default)', borderRadius: 'var(--radius-md)',
                   cursor: 'pointer', borderLeft: `4px solid ${tier.color}`, minHeight: 60,
                 }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
                     <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 800, fontSize: 15, color: 'var(--navy-900)' }}>{trafico}</span>
                     <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 4, background: tier.bg, color: tier.color, border: `1px solid ${tier.border}` }}>
-                      Tier {d.review_tier || '?'} · {tier.label}
+                      {confianza === 'alta' ? '✅ Alta' : confianza === 'media' ? '⚠️ Media' : '🔴 Baja'}
                     </span>
+                    {isTMEC && (
+                      <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 4, background: '#F0FDFA', color: '#0D9488', border: '1px solid #99F6E4' }}>
+                        T-MEC
+                      </span>
+                    )}
+                    {flagsCount > 0 && (
+                      <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 4, background: '#FEF3C7', color: '#92400E', border: '1px solid #FDE68A' }}>
+                        🚩 {flagsCount}
+                      </span>
+                    )}
                   </div>
-                  <div style={{ fontSize: 13, color: 'var(--slate-600)' }}>{supplier} · {product}</div>
-                  <div style={{ fontSize: 12, color: 'var(--slate-400)', marginTop: 2, fontFamily: 'var(--font-mono)' }}>
-                    {formatAbsoluteETA(d.created_at)} {valorUSD > 0 && `· ${fmtUSD(Number(valorUSD))} USD`}
+                  <div style={{ fontSize: 13, color: 'var(--slate-600)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{supplier} · {product}</div>
+                  <div style={{ fontSize: 12, color: 'var(--slate-400)', marginTop: 2, fontFamily: 'var(--font-mono)', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    <span>{formatAbsoluteETA(d.created_at)}</span>
+                    {valorUSD > 0 && <span>{fmtUSD(Number(valorUSD))} USD</span>}
+                    {fraccion && <span>{fraccion}</span>}
                   </div>
                 </div>
-                <div style={{ textAlign: 'right' }}>
+                <div style={{ textAlign: 'right', flexShrink: 0 }}>
                   <div style={{ fontSize: 24, fontWeight: 900, fontFamily: 'var(--font-mono)', color: tier.color }}>{confidence}%</div>
                   <div style={{ fontSize: 11, color: 'var(--slate-400)' }}>confianza</div>
                 </div>

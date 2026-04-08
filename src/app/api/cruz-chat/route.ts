@@ -40,6 +40,8 @@ CLIENTE ACTUAL: ${ctx.clientName} (clave ${ctx.clientClave})
 - Cuando busques tráficos, filtra por este cliente automáticamente
 
 DATOS DEL SISTEMA:
+- FECHA DE HOY: ${new Date().toLocaleDateString('es-MX', { day: '2-digit', month: 'long', year: 'numeric', timeZone: 'America/Chicago' })}
+- HORA ACTUAL: ${new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Chicago' })} (hora de Laredo)
 - Historial completo de tráficos de ${ctx.clientName} disponible para consulta
 - MVE formato E2 obligatorio desde 31 marzo 2026
 - Patente ${ctx.patente}, Aduana ${ctx.aduana} Nuevo Laredo
@@ -192,7 +194,7 @@ const TOOLS = [
   },
   {
     name: 'check_mve_compliance',
-    description: 'Check MVE (Manifestacion de Valor) compliance status. Shows traficos needing E2 folios.',
+    description: 'Verificar cumplimiento de MVE (Manifestación de Valor). Muestra tráficos que necesitan folios E2.',
     input_schema: {
       type: 'object' as const,
       properties: {
@@ -691,7 +693,7 @@ async function executeTool(name: string, input: Record<string, any>, clientCtx: 
         try { dtaRates = await getDTARates() } catch {
           return JSON.stringify({ error: 'No se pudo calcular — tasas DTA no disponibles en system_config' })
         }
-        const dta = valueMXN * dtaRates.A1.rate
+        const dta = dtaRates.A1.amount
         const igi = input.tmec ? 0 : valueMXN * 0.05
         const ivaRate = await getIVARate()
         const iva = (valueMXN + dta + igi) * ivaRate

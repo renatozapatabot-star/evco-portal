@@ -36,8 +36,8 @@ const REQUIRED_DOCS = [
   'Factura Comercial',
   'Packing List',
   'Bill of Lading / Carta Porte',
-  'COVE (Comprobante de Valor Electronico)',
-  'MVE (Manifestacion de Valor)',
+  'COVE (Comprobante de Valor Electrónico)',
+  'MVE (Manifestación de Valor)',
   'Pedimento de Importación',
   'Certificado T-MEC / USMCA (si aplica)',
   'CFDI / XML',
@@ -261,10 +261,10 @@ export default function NuevoPedimentoPage() {
                 </div>
               </div>
 
-              <div className="text-[10.5px] font-semibold uppercase tracking-[0.07em] mb-3" style={{ color: 'var(--text-muted)' }}>Regimen / T-MEC</div>
+              <div className="text-[10.5px] font-semibold uppercase tracking-[0.07em] mb-3" style={{ color: 'var(--text-muted)' }}>Régimen / T-MEC</div>
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-[12px]" style={{ color: 'var(--text-muted)' }}>Regimen</span>
+                  <span className="text-[12px]" style={{ color: 'var(--text-muted)' }}>Régimen</span>
                   <span className="text-[12.5px] font-medium" style={{ color: 'var(--text-primary)' }}>{draft.regimen}</span>
                 </div>
                 <div className="flex justify-between items-center">

@@ -26,7 +26,7 @@ export function IntelKPISection({
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           icon={<Database size={20} />}
-          label="Traficos Historicos"
+          label="Tráficos Históricos"
           value={stats?.totalHistorical ?? null}
           loading={loading}
           format="number"

@@ -107,25 +107,27 @@ export const fmtDateTime = (date: string | Date | null | undefined): string => {
   } catch { return '—' }
 }
 
-// Short date — "27 mar"
+// Short date — "27 mar 2026"
 export const fmtDateShort = (date: string | Date | null | undefined): string => {
   if (!date) return '—'
   try {
     return new Date(date).toLocaleDateString('es-MX', {
       day: '2-digit',
       month: 'short',
+      year: 'numeric',
       timeZone: 'America/Chicago'
     })
   } catch { return '—' }
 }
 
-// Compact date — "27 mar" (alias for fmtDateShort with explicit typing)
+// Compact date — "27 mar 2026"
 export const fmtDateCompact = (date: string | Date | null | undefined): string => {
   if (!date) return '—'
   try {
     return new Date(date).toLocaleDateString('es-MX', {
       day: '2-digit',
       month: 'short',
+      year: 'numeric',
       timeZone: 'America/Chicago'
     })
   } catch { return '—' }

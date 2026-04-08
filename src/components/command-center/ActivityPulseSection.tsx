@@ -19,7 +19,7 @@ export function ActivityPulseSection({ pulse, loading, defaultCollapsed = false 
   if (!loading && pulse.length === 0) return null
 
   return (
-    <div style={{ padding: '0 20px' }}>
+    <div>
       {/* Header — clickable to toggle */}
       <button
         type="button"

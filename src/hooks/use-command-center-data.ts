@@ -35,6 +35,7 @@ export interface CommandCenterData {
   total: number
   tmecSavings: number
   inventarioBultos: number
+  inventarioPeso: number
 }
 
 interface UseCommandCenterReturn {
@@ -54,6 +55,7 @@ const EMPTY: CommandCenterData = {
   total: 0,
   tmecSavings: 0,
   inventarioBultos: 0,
+  inventarioPeso: 0,
 }
 
 export function useCommandCenterData(): UseCommandCenterReturn {
@@ -73,6 +75,7 @@ export function useCommandCenterData(): UseCommandCenterReturn {
       const enProceso = cached.traficos.filter(t => (t.estatus || '').toLowerCase() === 'en proceso').length
       const tmec = calculateTmecSavings(cached.traficos)
       const bultos = cached.entradas.reduce((sum, e) => sum + (Number((e as unknown as Record<string, unknown>).cantidad_bultos) || 0), 0)
+      const peso = cached.entradas.reduce((sum, e) => sum + (Number((e as unknown as Record<string, unknown>).peso_bruto) || 0), 0)
       setData({
         traficos: cached.traficos,
         pendingEntradas: cached.entradas,
@@ -82,6 +85,7 @@ export function useCommandCenterData(): UseCommandCenterReturn {
         total: status.total,
         tmecSavings: tmec.totalSavings,
         inventarioBultos: bultos,
+        inventarioPeso: peso / 1000,
       })
       setLoading(false)
       startRefresh()
@@ -124,9 +128,9 @@ export function useCommandCenterData(): UseCommandCenterReturn {
 
         const enProceso = allT.filter(t => (t.estatus || '').toLowerCase() === 'en proceso').length
         const tmec = calculateTmecSavings(allT)
-        const bultos = allEnts
-          .filter(e => !e.trafico)
-          .reduce((sum, e) => sum + (Number(e.cantidad_bultos) || 0), 0)
+        const unassigned = allEnts.filter(e => !e.trafico)
+        const bultos = unassigned.reduce((sum, e) => sum + (Number(e.cantidad_bultos) || 0), 0)
+        const peso = unassigned.reduce((sum, e) => sum + (Number(e.peso_bruto) || 0), 0)
 
         setData({
           traficos: allT,
@@ -137,6 +141,7 @@ export function useCommandCenterData(): UseCommandCenterReturn {
           total: status.total,
           tmecSavings: tmec.totalSavings,
           inventarioBultos: bultos,
+          inventarioPeso: peso / 1000,
         })
         setCache('command-center', { traficos: allT, entradas: ents })
       })

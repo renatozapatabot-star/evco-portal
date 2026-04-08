@@ -37,7 +37,7 @@ export default function TopBar({
           <span className="topbar-logo-text">CRUZ</span>
         </Link>
 
-        {/* Wide search bar */}
+        {/* Wide search bar (desktop) */}
         <button
           className="topbar-search-wide"
           onClick={openCommandPalette}
@@ -49,13 +49,26 @@ export default function TopBar({
           </span>
         </button>
 
-        {/* Right: bell + avatar */}
+        {/* Compact search icon (mobile — shows when wide bar is hidden) */}
+        <div style={{ flex: 1 }} className="topbar-mobile-spacer" />
+        <button
+          className="topbar-search-icon-mobile"
+          onClick={openCommandPalette}
+          aria-label="Buscar"
+        >
+          <Search size={18} />
+        </button>
+
+        {/* Right: bell + company name + avatar */}
         <div className="topbar-right">
           {badgeText && (
             <button className="topbar-bell-btn" aria-label={`${unreadCount} notificaciones`}>
               <Bell size={16} />
               <span className="topbar-bell-badge badge-bounce">{badgeText}</span>
             </button>
+          )}
+          {clientName && (
+            <span className="topbar-client-name">{clientName}</span>
           )}
           <div className="topbar-avatar" title={clientName || ''}>
             {clientInitials || 'CL'}

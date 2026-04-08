@@ -266,6 +266,31 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.topbar-client-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.7);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 160px;
+}
+.topbar-search-icon-mobile {
+  display: none;
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.5);
+  cursor: pointer;
+  padding: 8px;
+}
+.topbar-mobile-spacer { display: none; }
+@media (max-width: 767px) {
+  .topbar-client-name { display: none; }
+  .topbar-search-wide { display: none; }
+  .topbar-search-icon-mobile { display: flex; }
+  .topbar-mobile-spacer { display: block !important; }
+  .cruz-topbar--client .topbar-right { margin-left: 0; }
+}
 .topbar-avatar {
   width: 32px;
   height: 32px;
@@ -280,19 +305,53 @@ body {
   flex-shrink: 0;
 }
 
-/* ── Command Center card animations ────────── */
-.cc-card-large,
-.cc-card-small {
-  transition: transform 300ms ease-out, box-shadow 300ms ease-out;
+/* ── Command Center wide-screen grid ────────── */
+.cc-grid-wide {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
 }
-.cc-card-large:hover {
+@media (min-width: 1200px) {
+  .cc-grid-wide {
+    grid-template-columns: 3fr 1fr;
+  }
+}
+.cc-pulse-col {
+  position: sticky;
+  top: 80px;
+  align-self: start;
+  min-width: 260px;
+}
+
+/* ── Unified card transitions ────────── */
+.cc-card {
+  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.cc-card:hover {
   transform: scale(1.02);
   box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+  border-color: var(--gold);
 }
-.cc-card-small:hover {
-  transform: scale(1.02);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+.cc-card:active {
+  transform: scale(0.98);
 }
+.cc-card:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+/* ── Fixed toast — no layout shift ────────── */
+.cc-toast-fixed {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 70;
+  max-width: 500px;
+  width: calc(100% - 48px);
+}
+
+/* ── Animations ────────── */
 @keyframes ccCountUp {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
@@ -300,6 +359,12 @@ body {
 @keyframes ccPillPulse {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.04); }
+}
+
+/* ── Reduced motion ────────── */
+@media (prefers-reduced-motion: reduce) {
+  .cc-card { transition: none !important; }
+  .cc-card:hover, .cc-card:active { transform: none !important; }
 }
 
 .cruz-topbar {

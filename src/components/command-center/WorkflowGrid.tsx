@@ -4,7 +4,6 @@ import { useMemo } from 'react'
 import { Truck, Package, FolderOpen, FileText, DollarSign, Warehouse, BarChart3 } from 'lucide-react'
 import { WorkflowCard, type CardAction } from './WorkflowCard'
 import { getCardUrgency, type CardKey, type CardKPIs, type Urgency } from '@/lib/card-urgency'
-import { useIsMobile } from '@/hooks/use-mobile'
 
 interface WorkflowGridProps {
   enProceso: number
@@ -12,6 +11,8 @@ interface WorkflowGridProps {
   pendingEntradas: number
   docsFaltantes?: number
   inventarioBultos?: number
+  inventarioPeso?: number
+  isMobile?: boolean
 }
 
 interface CardDef {
@@ -26,74 +27,53 @@ interface CardDef {
 
 const CARDS: CardDef[] = [
   {
-    key: 'traficos',
-    href: '/traficos',
-    label: 'Tráficos',
-    Icon: Truck,
+    key: 'traficos', href: '/traficos', label: 'Tráficos', Icon: Truck,
     getKpi: (p) => p.enProceso,
-    getSubtitle: (p, u) => u === 'green' ? 'Todo en orden' : 'en proceso',
+    getSubtitle: (_p, u) => u === 'green' ? 'Todo en orden' : 'en proceso',
     getActions: (_p, u) => u === 'green' || u === 'neutral'
       ? [{ label: 'Ver todos', href: '/traficos', primary: true }]
-      : [
-          { label: 'Ver en mapa', href: '/traficos' },
-          { label: 'Procesar', href: '/traficos?estatus=En+Proceso', primary: true },
-        ],
+      : [{ label: 'Ver en mapa', href: '/traficos' }, { label: 'Procesar', href: '/traficos?estatus=En+Proceso', primary: true }],
   },
   {
-    key: 'entradas',
-    href: '/entradas',
-    label: 'Entradas',
-    Icon: Package,
+    key: 'entradas', href: '/entradas', label: 'Entradas', Icon: Package,
     getKpi: (p) => p.pendingEntradas,
-    getSubtitle: (p, u) => u === 'green' ? 'Todo en orden' : 'sin asignar',
+    getSubtitle: (_p, u) => u === 'green' ? 'Todo en orden' : 'sin asignar',
     getActions: (_p, u) => u === 'green' || u === 'neutral'
       ? [{ label: 'Ver todos', href: '/entradas', primary: true }]
-      : [
-          { label: 'Asignar ahora', href: '/entradas', primary: true },
-          { label: 'Ver lista completa', href: '/entradas' },
-        ],
+      : [{ label: 'Asignar ahora', href: '/entradas', primary: true }, { label: 'Ver lista completa', href: '/entradas' }],
   },
   {
-    key: 'expedientes',
-    href: '/expedientes',
-    label: 'Expedientes',
-    Icon: FolderOpen,
+    key: 'expedientes', href: '/expedientes', label: 'Expedientes', Icon: FolderOpen,
     getKpi: (p) => p.docsFaltantes ?? 0,
     getSubtitle: (_p, u) => u === 'green' ? 'Todo en orden' : 'Docs faltantes',
     getActions: () => [{ label: 'Ver todos', href: '/expedientes', primary: true }],
   },
   {
-    key: 'pedimentos',
-    href: '/pedimentos',
-    label: 'Pedimentos',
-    Icon: FileText,
+    key: 'pedimentos', href: '/pedimentos', label: 'Pedimentos', Icon: FileText,
     getKpi: () => null,
     getSubtitle: () => 'Declaraciones aduanales',
     getActions: () => [{ label: 'Ver todos', href: '/pedimentos', primary: true }],
   },
   {
-    key: 'contabilidad',
-    href: '/financiero',
-    label: 'Contabilidad',
-    Icon: DollarSign,
+    key: 'contabilidad', href: '/financiero', label: 'Contabilidad', Icon: DollarSign,
     getKpi: () => 0,
     getSubtitle: (_p, u) => u === 'green' ? 'Sin pendientes' : 'Pendientes',
     getActions: () => [{ label: 'Ver todos', href: '/financiero', primary: true }],
   },
   {
-    key: 'inventario',
-    href: '/bodega',
-    label: 'Inventario',
-    Icon: Warehouse,
+    key: 'inventario', href: '/bodega', label: 'Inventario', Icon: Warehouse,
     getKpi: (p) => p.inventarioBultos ?? null,
-    getSubtitle: (p) => p.inventarioBultos ? 'bultos en bodega' : 'Mercancía en bodega',
+    getSubtitle: (p) => {
+      const bultos = p.inventarioBultos ?? 0
+      const tons = p.inventarioPeso ?? 0
+      if (bultos > 0 && tons > 0) return `bultos · ${tons.toFixed(1)} ton`
+      if (bultos > 0) return 'bultos en bodega'
+      return 'Mercancía en bodega'
+    },
     getActions: () => [{ label: 'Ver bodega', href: '/bodega', primary: true }],
   },
   {
-    key: 'reportes',
-    href: '/reportes',
-    label: 'Reportes',
-    Icon: BarChart3,
+    key: 'reportes', href: '/reportes', label: 'Reportes', Icon: BarChart3,
     getKpi: () => null,
     getSubtitle: () => 'Análisis y finanzas',
     getActions: () => [{ label: 'Abrir reportes', href: '/reportes', primary: true }],
@@ -101,7 +81,7 @@ const CARDS: CardDef[] = [
 ]
 
 export function WorkflowGrid(props: WorkflowGridProps) {
-  const isMobile = useIsMobile()
+  const isMobile = props.isMobile ?? false
 
   const { urgencyCards, healthyCards } = useMemo(() => {
     const kpis: CardKPIs = {
@@ -110,20 +90,17 @@ export function WorkflowGrid(props: WorkflowGridProps) {
       pendingEntradas: props.pendingEntradas,
       docsFaltantes: props.docsFaltantes ?? 0,
     }
-
-    const all = CARDS.map(card => ({
-      ...card,
-      urgency: getCardUrgency(card.key, kpis),
-    }))
-
+    const all = CARDS.map(card => ({ ...card, urgency: getCardUrgency(card.key, kpis) }))
     return {
       urgencyCards: all.filter(c => c.urgency === 'red' || c.urgency === 'amber'),
       healthyCards: all.filter(c => c.urgency === 'green' || c.urgency === 'neutral'),
     }
   }, [props.enProceso, props.urgentes, props.pendingEntradas, props.docsFaltantes])
 
+  const healthyOdd = healthyCards.length % 2 !== 0 && isMobile
+
   return (
-    <div style={{ padding: '0 24px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       {/* Tier 1: Large dark urgency cards */}
       {urgencyCards.length > 0 && (
         <div style={{
@@ -147,27 +124,30 @@ export function WorkflowGrid(props: WorkflowGridProps) {
         </div>
       )}
 
-      {/* Tier 2: Small light healthy cards */}
+      {/* Tier 2: Small light healthy cards — equal height */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: isMobile
-          ? 'repeat(2, 1fr)'
-          : `repeat(${Math.min(healthyCards.length, 5)}, 1fr)`,
+        gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : `repeat(${Math.min(healthyCards.length, 5)}, 1fr)`,
+        gridAutoRows: '1fr',
         gap: 12,
       }}>
-        {healthyCards.map((card, i) => (
-          <WorkflowCard
-            key={card.key}
-            href={card.href}
-            label={card.label}
-            Icon={card.Icon}
-            kpi={card.getKpi(props)}
-            subtitle={card.getSubtitle(props, card.urgency)}
-            variant="small"
-            actions={card.getActions(props, card.urgency)}
-            delay={(urgencyCards.length * 80) + (i * 60)}
-          />
-        ))}
+        {healthyCards.map((card, i) => {
+          const isLast = i === healthyCards.length - 1
+          return (
+            <WorkflowCard
+              key={card.key}
+              href={card.href}
+              label={card.label}
+              Icon={card.Icon}
+              kpi={card.getKpi(props)}
+              subtitle={card.getSubtitle(props, card.urgency)}
+              variant="small"
+              actions={card.getActions(props, card.urgency)}
+              delay={(urgencyCards.length * 80) + (i * 60)}
+              spanFull={isLast && healthyOdd}
+            />
+          )
+        })}
       </div>
     </div>
   )

@@ -11,6 +11,7 @@ interface MissionHeaderProps {
   quickAction: { label: string; href: string } | null
   onAvatarClick?: () => void
   loading?: boolean
+  isMobile?: boolean
 }
 
 function getMoodFromCounts(enProceso: number, urgentes: number): Urgency | 'green' {
@@ -21,7 +22,7 @@ function getMoodFromCounts(enProceso: number, urgentes: number): Urgency | 'gree
 
 export { getMoodFromCounts }
 
-export function MissionHeader({ mood, sentence, quickAction, onAvatarClick, loading }: MissionHeaderProps) {
+export function MissionHeader({ mood, sentence, quickAction, onAvatarClick, loading, isMobile }: MissionHeaderProps) {
   const isAllGreen = mood === 'green' && !quickAction
   const hasUrgency = mood === 'red' || mood === 'amber'
 
@@ -30,15 +31,16 @@ export function MissionHeader({ mood, sentence, quickAction, onAvatarClick, load
       style={{
         display: 'flex',
         alignItems: 'center',
-        gap: 16,
-        padding: '24px 28px',
-        margin: '16px 24px',
+        gap: isMobile ? 12 : 16,
+        padding: isMobile ? '16px 20px' : '24px 28px',
+        margin: '16px 0',
         borderRadius: 16,
         background: '#1A1A1A',
+        flexWrap: isMobile ? 'wrap' : 'nowrap',
       }}
     >
       {isAllGreen ? (
-        <CheckCircle2 size={32} style={{ color: 'var(--success)', flexShrink: 0 }} />
+        <CheckCircle2 size={isMobile ? 28 : 32} style={{ color: 'var(--success)', flexShrink: 0 }} />
       ) : (
         <CruzAvatar size={48} mood={mood} onClick={onAvatarClick} />
       )}
@@ -47,14 +49,12 @@ export function MissionHeader({ mood, sentence, quickAction, onAvatarClick, load
         {loading ? (
           <div className="skeleton-shimmer" style={{ width: '70%', height: 22, borderRadius: 4 }} />
         ) : (
-          <div
-            style={{
-              fontSize: 20,
-              fontWeight: 700,
-              color: '#FFFFFF',
-              lineHeight: 1.3,
-            }}
-          >
+          <div style={{
+            fontSize: isMobile ? 16 : 20,
+            fontWeight: 700,
+            color: '#FFFFFF',
+            lineHeight: 1.3,
+          }}>
             {isAllGreen ? 'Todo en orden — Excelente trabajo' : sentence}
           </div>
         )}
@@ -67,7 +67,7 @@ export function MissionHeader({ mood, sentence, quickAction, onAvatarClick, load
             display: 'inline-flex',
             alignItems: 'center',
             gap: 6,
-            padding: '10px 20px',
+            padding: isMobile ? '8px 16px' : '10px 20px',
             borderRadius: 24,
             background: 'var(--gold, #C9A84C)',
             color: '#1A1A1A',
@@ -77,7 +77,7 @@ export function MissionHeader({ mood, sentence, quickAction, onAvatarClick, load
             flexShrink: 0,
             whiteSpace: 'nowrap',
             animation: hasUrgency ? 'ccPillPulse 2s ease-in-out infinite' : 'none',
-            transition: 'transform 150ms, background 150ms',
+            transition: 'background 150ms',
           }}
           onMouseEnter={e => { e.currentTarget.style.background = 'var(--gold-hover, #B8933B)' }}
           onMouseLeave={e => { e.currentTarget.style.background = 'var(--gold, #C9A84C)' }}

@@ -15,9 +15,7 @@ import { DashboardSkeleton } from '@/components/skeletons/DashboardSkeleton'
 import { Celebrate } from '@/components/celebrate'
 
 function buildStatusSentence(enProceso: number, urgentes: number, cruzadosHoy: number): string {
-  if (enProceso === 0 && cruzadosHoy === 0) {
-    return 'Sin operaciones activas. Estamos listos.'
-  }
+  if (enProceso === 0 && cruzadosHoy === 0) return 'Sin operaciones activas. Estamos listos.'
   const parts: string[] = []
   if (enProceso > 0) parts.push(`${enProceso} en ruta`)
   if (urgentes > 0) parts.push(`${urgentes} requiere${urgentes !== 1 ? 'n' : ''} atención`)
@@ -27,36 +25,26 @@ function buildStatusSentence(enProceso: number, urgentes: number, cruzadosHoy: n
 }
 
 function buildQuickAction(urgentes: number, pendingEntradas: number): { label: string; href: string } | null {
-  if (urgentes > 0) {
-    return { label: `Ver ${urgentes} urgente${urgentes !== 1 ? 's' : ''}`, href: '/traficos?estatus=En+Proceso' }
-  }
-  if (pendingEntradas > 0) {
-    return { label: `${pendingEntradas} entrada${pendingEntradas !== 1 ? 's' : ''} sin asignar`, href: '/entradas' }
-  }
+  if (urgentes > 0) return { label: `Procesar ${urgentes} urgente${urgentes !== 1 ? 's' : ''}`, href: '/traficos?estatus=En+Proceso' }
+  if (pendingEntradas > 0) return { label: `${pendingEntradas} entrada${pendingEntradas !== 1 ? 's' : ''} sin asignar`, href: '/entradas' }
   return null
 }
 
 function useRealtimeToast(lastUpdate: { trafico: string; estatus: string } | null): string | null {
   const [toast, setToast] = useState<string | null>(null)
   const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
-
   const show = useCallback((msg: string) => {
     setToast(msg)
     if (timerRef.current) clearTimeout(timerRef.current)
     timerRef.current = setTimeout(() => setToast(null), 5000)
   }, [])
-
   useEffect(() => {
     if (!lastUpdate) return
     const isCrossed = lastUpdate.estatus.toLowerCase().includes('cruz')
     if (isCrossed) playSound('success')
-    const msg = isCrossed
-      ? `${lastUpdate.trafico} acaba de cruzar. Todo en orden.`
-      : `${lastUpdate.trafico}: ${lastUpdate.estatus}`
-    show(msg)
+    show(isCrossed ? `${lastUpdate.trafico} acaba de cruzar. Todo en orden.` : `${lastUpdate.trafico}: ${lastUpdate.estatus}`)
     return () => { if (timerRef.current) clearTimeout(timerRef.current) }
   }, [lastUpdate, show])
-
   return toast
 }
 
@@ -72,31 +60,24 @@ export function CommandCenterView() {
   const sentence = loading ? '' : buildStatusSentence(data.enProceso, data.urgentes || status.urgentes, data.cruzadosHoy || status.cruzadosHoy)
   const quickAction = buildQuickAction(data.urgentes || status.urgentes, data.pendingEntradas.length)
 
-  const openChat = () => {
-    document.dispatchEvent(new CustomEvent('cruz:open-chat'))
-  }
+  const openChat = () => { document.dispatchEvent(new CustomEvent('cruz:open-chat')) }
 
   if (error) {
     return (
-      <div style={{ maxWidth: 960, margin: '0 auto', padding: 24 }}>
+      <div style={{ padding: 48 }}>
         <ErrorCard message={error} onRetry={reload} />
       </div>
     )
   }
 
-  if (loading) {
-    return <DashboardSkeleton isMobile={isMobile} />
-  }
+  if (loading) return <DashboardSkeleton isMobile={isMobile} />
 
-  // ── WHILE YOU WERE AWAY ──
+  // Away banner
   const awayBanner = awaySummary && awaySummary.total > 0 ? (
     <div style={{
-      padding: '16px 20px',
-      borderRadius: 12,
-      background: 'var(--bg-card)',
-      border: '1px solid var(--border)',
+      padding: '16px 20px', borderRadius: 12,
+      background: 'var(--bg-card)', border: '1px solid var(--border)',
       borderLeft: '3px solid #0D9488',
-      margin: '0 24px 16px',
     }}>
       <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#0D9488', marginBottom: 8 }}>
         Mientras estuvo fuera
@@ -107,27 +88,23 @@ export function CommandCenterView() {
         {awaySummary.solicitudes > 0 && ` · ${awaySummary.solicitudes} solicitud${awaySummary.solicitudes !== 1 ? 'es' : ''}`}
         {awaySummary.docs > 0 && ` · ${awaySummary.docs} decision${awaySummary.docs !== 1 ? 'es' : ''} autónoma${awaySummary.docs !== 1 ? 's' : ''}`}
       </div>
-      <button
-        onClick={dismissAway}
-        style={{
-          marginTop: 8, fontSize: 11, fontWeight: 600,
-          color: 'var(--text-muted)', background: 'none',
-          border: 'none', cursor: 'pointer', padding: 0,
-        }}
-      >
+      <button onClick={dismissAway} style={{
+        marginTop: 8, fontSize: 11, fontWeight: 600,
+        color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+      }}>
         Entendido
       </button>
     </div>
   ) : null
 
   return (
-    <div style={{ maxWidth: 1200, margin: '0 auto', overflowX: 'hidden', paddingBottom: 60 }}>
-      {/* Realtime toast */}
+    <div style={{ padding: isMobile ? '0 16px' : '0 48px', paddingBottom: 60, overflowX: 'hidden' }}>
+      {/* Fixed toast — no layout shift */}
       {realtimeToast && (
-        <div style={{
+        <div className="cc-toast-fixed" style={{
           padding: '10px 16px', borderRadius: 10,
           background: '#0D9488', color: '#FFFFFF', fontSize: 13, fontWeight: 600,
-          margin: '0 24px 8px', animation: 'fadeInUp 200ms ease',
+          animation: 'fadeInUp 200ms ease',
         }}>
           {realtimeToast}
         </div>
@@ -140,26 +117,34 @@ export function CommandCenterView() {
         quickAction={quickAction}
         onAvatarClick={openChat}
         loading={loading}
+        isMobile={isMobile}
       />
 
-      {/* While You Were Away */}
-      {awayBanner}
+      {/* Wide-screen 2-column grid: cards left, pulse right */}
+      <div className="cc-grid-wide">
+        <div>
+          {/* Away banner */}
+          {awayBanner && <div style={{ marginBottom: 16 }}>{awayBanner}</div>}
 
-      {/* Workflow Cards — two-tier layout */}
-      <WorkflowGrid
-        enProceso={data.enProceso}
-        urgentes={data.urgentes || status.urgentes}
-        pendingEntradas={data.pendingEntradas.length}
-        inventarioBultos={data.inventarioBultos}
-      />
+          {/* Workflow Cards — two-tier layout */}
+          <WorkflowGrid
+            enProceso={data.enProceso}
+            urgentes={data.urgentes || status.urgentes}
+            pendingEntradas={data.pendingEntradas.length}
+            inventarioBultos={data.inventarioBultos}
+            inventarioPeso={data.inventarioPeso}
+            isMobile={isMobile}
+          />
+        </div>
 
-      {/* Activity Pulse */}
-      <div style={{ marginTop: 24 }}>
-        <ActivityPulseSection pulse={pulse} loading={pulseLoading} defaultCollapsed={isMobile} />
+        {/* Right column: Activity Pulse (sticky on wide screens) */}
+        <div className="cc-pulse-col">
+          <ActivityPulseSection pulse={pulse} loading={pulseLoading} defaultCollapsed={isMobile} />
+        </div>
       </div>
 
       {/* Footer */}
-      <div style={{ textAlign: 'center', padding: '32px 24px 0' }}>
+      <div style={{ textAlign: 'center', padding: '32px 0 0' }}>
         <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
           Patente 3596 · Aduana 240
         </div>

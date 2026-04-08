@@ -274,3 +274,23 @@ Eloisa currently processes EVCO shipments using GlobalPC (legacy desktop softwar
 
 *Block 11 is the portal split that makes CRUZ a real multi-user platform.*
 *Block 8 (pedimento handler) ships first. Block 11 builds on that foundation.*
+
+---
+
+## Real schema (as deployed 2026-04-08)
+
+### operators
+Columns: `id, auth_user_id, email, full_name, role, company_id, active, created_at, updated_at`
+- `auth_user_id` is nullable (null for password-based client logins, set for /signup flow)
+- `role` values: `admin`, `operator`, `client`
+- `company_id` is slug (e.g., `evco`, `mafesa`) or `internal` for broker, `null` for pending
+
+### operator_actions
+Columns: `id, operator_id, action_type, target_table, target_id, company_id, payload, duration_ms, user_agent, created_at`
+- `operator_id` is UUID FK to `operators.id`
+- `payload` is JSONB (the migration draft called this `metadata` — code uses `payload`)
+
+### NOTE
+An earlier draft migration at `_deprecated_20260409_operators_and_actions.sql.bak`
+proposed a different schema (columns `name`, `company_assignment`, `operator_name`).
+That draft was never applied. Ignore it.

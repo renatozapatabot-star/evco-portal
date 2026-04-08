@@ -88,20 +88,11 @@ export default function TopBar({
           <Search size={18} />
         </button>
 
-        {/* Right: bell + company name + avatar */}
+        {/* Right: company name + logout */}
         <div className="topbar-right">
-          {badgeText && (
-            <button className="topbar-bell-btn" aria-label={`${unreadCount} notificaciones`}>
-              <Bell size={16} />
-              <span className="topbar-bell-badge badge-bounce">{badgeText}</span>
-            </button>
-          )}
           {clientName && (
             <span className="topbar-client-name">{clientName}</span>
           )}
-          <div className="topbar-avatar" title={clientName || ''}>
-            {clientInitials || 'CL'}
-          </div>
           {onLogout && (
             <button
               onClick={onLogout}

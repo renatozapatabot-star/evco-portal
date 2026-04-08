@@ -64,6 +64,93 @@ function ProgressRing({ pct, size = 56 }: { pct: number; size?: number }) {
   )
 }
 
+// ── Command Strip (extracted to avoid IIFE-in-JSX) ──
+function CommandStrip({ urgentes, criticalCount, mood, isMobile, criticosOpen, setCriticosOpen, criticalHref, pendingEntradas }: {
+  urgentes: number; criticalCount: number; mood: SystemMood; isMobile: boolean
+  criticosOpen: boolean; setCriticosOpen: (fn: (v: boolean) => boolean) => void
+  criticalHref: string; pendingEntradas: { cve_entrada: string; descripcion_mercancia?: string | null }[]
+}) {
+  const bannerLevel = urgentes > 0 ? 'red' : criticalCount > 0 ? 'amber' : 'green' as const
+  const bannerColors = {
+    red:   { border: '#DC2626', bg: 'rgba(220,38,38,0.06)', text: '#DC2626', btn: '#DC2626' },
+    amber: { border: '#D97706', bg: 'rgba(217,119,6,0.06)', text: '#D97706', btn: '#D97706' },
+    green: { border: '#16A34A', bg: 'rgba(22,163,74,0.06)', text: '#16A34A', btn: '#16A34A' },
+  }
+  const bc = bannerColors[bannerLevel]
+  const bannerText = bannerLevel === 'red'
+    ? `${urgentes} urgente${urgentes !== 1 ? 's' : ''} — resolver ahora`
+    : bannerLevel === 'amber'
+      ? `${criticalCount} pendiente${criticalCount !== 1 ? 's' : ''} — monitorear`
+      : mood === 'allgreen' ? 'Todo completado — excelente día' : 'Todo al corriente — sin pendientes'
+
+  return (
+    <div style={{
+      borderRadius: 10, marginBottom: 12,
+      borderLeft: `3px solid ${bc.border}`, background: bc.bg, overflow: 'hidden',
+    }}>
+      <div
+        onClick={() => criticalCount > 0 && setCriticosOpen(v => !v)}
+        style={{
+          padding: isMobile ? '10px 12px' : '10px 16px',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          flexWrap: 'wrap', gap: 8,
+          cursor: criticalCount > 0 ? 'pointer' : 'default',
+        }}
+      >
+        <span style={{ fontSize: 13, fontWeight: 700, color: bc.text }}>
+          {bannerText}
+          {criticalCount > 0 && (
+            <span style={{ fontSize: 11, marginLeft: 6, color: 'var(--text-muted)' }}>{criticosOpen ? '▲' : '▼'}</span>
+          )}
+        </span>
+        {criticalCount > 0 && (
+          <Link href={criticalHref} onClick={e => e.stopPropagation()} style={{
+            padding: '6px 14px', borderRadius: 6, fontSize: 12, fontWeight: 700,
+            background: bc.btn, color: '#FFFFFF', textDecoration: 'none',
+          }}>
+            {bannerLevel === 'red' ? 'Resolver ahora' : 'Ver pendientes'}
+          </Link>
+        )}
+      </div>
+      {criticosOpen && criticalCount > 0 && (
+        <div style={{ padding: '0 12px 12px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {pendingEntradas.slice(0, 3).map(e => (
+            <Link key={e.cve_entrada} href={`/entradas/${e.cve_entrada}`} style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
+              padding: '8px 10px', borderRadius: 6,
+              background: 'rgba(255,255,255,0.5)', border: '1px solid var(--border)',
+              textDecoration: 'none', color: 'inherit',
+            }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <span style={{ fontSize: 12, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
+                  {e.cve_entrada}
+                </span>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {e.descripcion_mercancia || 'Sin descripcion'}
+                </div>
+              </div>
+              <span style={{
+                fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 4,
+                background: 'var(--gold, #C9A84C)', color: '#FFFFFF', flexShrink: 0,
+              }}>
+                Resolver
+              </span>
+            </Link>
+          ))}
+          {criticalCount > 3 && (
+            <Link href={criticalHref} style={{
+              fontSize: 11, fontWeight: 600, color: 'var(--gold, #C9A84C)',
+              textDecoration: 'none', textAlign: 'center', padding: '4px 0',
+            }}>
+              Ver {criticalCount - 3} mas →
+            </Link>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client' | 'operator' }) {
   const isClient = viewMode === 'client'
   const isMobile = useIsMobile()
@@ -165,89 +252,16 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
       {awayBanner}
 
       {/* ── COMMAND STRIP (operator only — hidden from clients) ── */}
-      {!isClient && (() => {
-        // 3-state: red (urgentes), amber (busy but not critical), green (all clear)
-        const bannerLevel = urgentes > 0 ? 'red' : criticalCount > 0 ? 'amber' : 'green'
-        const bannerColors = {
-          red:   { border: '#DC2626', bg: 'rgba(220,38,38,0.06)', text: '#DC2626', btn: '#DC2626' },
-          amber: { border: '#D97706', bg: 'rgba(217,119,6,0.06)', text: '#D97706', btn: '#D97706' },
-          green: { border: '#16A34A', bg: 'rgba(22,163,74,0.06)', text: '#16A34A', btn: '#16A34A' },
-        }
-        const bc = bannerColors[bannerLevel]
-        const bannerText = bannerLevel === 'red'
-          ? `${urgentes} urgente${urgentes !== 1 ? 's' : ''} — resolver ahora`
-          : bannerLevel === 'amber'
-            ? `${criticalCount} pendiente${criticalCount !== 1 ? 's' : ''} — monitorear`
-            : mood === 'allgreen' ? 'Todo completado — excelente día' : 'Todo al corriente — sin pendientes'
-        return <div style={{
-          borderRadius: 10,
-          marginBottom: 12,
-          borderLeft: `3px solid ${bc.border}`,
-          background: bc.bg,
-          overflow: 'hidden',
-        }}>
-          <div
-            onClick={() => criticalCount > 0 && setCriticosOpen(v => !v)}
-            style={{
-              padding: isMobile ? '10px 12px' : '10px 16px',
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              flexWrap: 'wrap', gap: 8,
-              cursor: criticalCount > 0 ? 'pointer' : 'default',
-            }}
-          >
-            <span style={{ fontSize: 13, fontWeight: 700, color: bc.text }}>
-              {bannerText}
-              {criticalCount > 0 && (
-                <span style={{ fontSize: 11, marginLeft: 6, color: 'var(--text-muted)' }}>{criticosOpen ? '▲' : '▼'}</span>
-              )}
-            </span>
-            {criticalCount > 0 && (
-              <Link href={criticalHref} onClick={e => e.stopPropagation()} style={{
-                padding: '6px 14px', borderRadius: 6, fontSize: 12, fontWeight: 700,
-                background: bc.btn, color: '#FFFFFF', textDecoration: 'none',
-              }}>
-                {bannerLevel === 'red' ? 'Resolver ahora' : 'Ver pendientes'}
-              </Link>
-            )}
-        </div>
-        {/* Expanded critical items */}
-        {criticosOpen && criticalCount > 0 && (
-          <div style={{ padding: '0 12px 12px', display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {data.pendingEntradas.slice(0, 3).map(e => (
-              <Link key={e.cve_entrada} href={`/entradas/${e.cve_entrada}`} style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
-                padding: '8px 10px', borderRadius: 6,
-                background: 'rgba(255,255,255,0.5)', border: '1px solid var(--border)',
-                textDecoration: 'none', color: 'inherit',
-              }}>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <span style={{ fontSize: 12, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
-                    {e.cve_entrada}
-                  </span>
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {e.descripcion_mercancia || 'Sin descripcion'}
-                  </div>
-                </div>
-                <span style={{
-                  fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 4,
-                  background: 'var(--gold, #C9A84C)', color: '#FFFFFF', flexShrink: 0,
-                }}>
-                  Resolver
-                </span>
-              </Link>
-            ))}
-            {criticalCount > 3 && (
-              <Link href={criticalHref} style={{
-                fontSize: 11, fontWeight: 600, color: 'var(--gold, #C9A84C)',
-                textDecoration: 'none', textAlign: 'center', padding: '4px 0',
-              }}>
-                Ver {criticalCount - 3} mas →
-              </Link>
-            )}
-          </div>
-        )}
-      </div>
-      })()}
+      {!isClient && <CommandStrip
+        urgentes={urgentes}
+        criticalCount={criticalCount}
+        mood={mood}
+        isMobile={isMobile}
+        criticosOpen={criticosOpen}
+        setCriticosOpen={setCriticosOpen}
+        criticalHref={criticalHref}
+        pendingEntradas={data.pendingEntradas}
+      />}
 
       {/* ── Client calm status (replaces critical banner) ── */}
       {isClient && (

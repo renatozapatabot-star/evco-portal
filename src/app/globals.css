@@ -441,6 +441,26 @@ body {
   box-shadow: 0 0 8px rgba(22,163,74,0.3);
 }
 
+/* ── Command Palette ────────── */
+.cmd-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100; backdrop-filter: blur(2px); }
+.cmd-palette { position: fixed; top: 12%; left: 50%; transform: translateX(-50%); width: 92%; max-width: 560px; background: #1A1A1A; border: 1px solid rgba(201,168,76,0.2); border-radius: 14px; z-index: 101; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.5); animation: ccCountUp 200ms ease both; }
+.cmd-search-row { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+.cmd-input { flex: 1; background: transparent; border: none; outline: none; color: #FFFFFF; font-size: 15px; font-family: inherit; }
+.cmd-input::placeholder { color: rgba(255,255,255,0.4); }
+.cmd-esc { font-size: 10px; padding: 2px 6px; border-radius: 4px; background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.5); font-family: var(--font-mono); }
+.cmd-results { max-height: 340px; overflow-y: auto; padding: 8px 0; }
+.cmd-cat-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: rgba(255,255,255,0.4); padding: 8px 16px 4px; }
+.cmd-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 16px; background: transparent; border: none; color: #FFFFFF; cursor: pointer; font-size: 13px; text-align: left; transition: background 100ms; }
+.cmd-item:hover, .cmd-item.selected { background: rgba(201,168,76,0.12); }
+.cmd-item-label { font-weight: 600; }
+.cmd-item-sub { color: rgba(255,255,255,0.4); font-size: 12px; margin-left: 4px; }
+.cmd-empty { padding: 24px 16px; text-align: center; color: rgba(255,255,255,0.4); font-size: 13px; }
+.cmd-footer { display: flex; gap: 16px; padding: 8px 16px; border-top: 1px solid rgba(255,255,255,0.08); font-size: 11px; color: rgba(255,255,255,0.3); flex-wrap: wrap; }
+@media (max-width: 767px) {
+  .cmd-palette { top: 8%; width: 96%; }
+  .cmd-footer { display: none; }
+}
+
 /* ── Reduced motion ────────── */
 @media (prefers-reduced-motion: reduce) {
   .cc-card { transition: none !important; }
@@ -1459,6 +1479,40 @@ button:active:not(:disabled), .btn:active:not(:disabled) {
 /* Mobile card press feedback */
 .entrada-card-mobile:active {
   transform: scale(0.98);
+}
+
+/* CRUZ orbit dot — persistent AI indicator */
+.cruz-orbit-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--gold, #C9A84C);
+  border: none;
+  cursor: pointer;
+  z-index: 50;
+  box-shadow: 0 0 8px rgba(201,168,76,0.4);
+  animation: cruzPulse 3s ease-in-out infinite;
+  padding: 0;
+}
+.cruz-orbit-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  background: #DC2626;
+  color: #FFFFFF;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+}
+@keyframes cruzPulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(201,168,76,0.4); transform: scale(1); }
+  50% { box-shadow: 0 0 16px rgba(201,168,76,0.6); transform: scale(1.15); }
 }
 
 .mn-icon-wrap {

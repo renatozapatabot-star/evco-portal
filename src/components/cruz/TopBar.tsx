@@ -16,7 +16,7 @@ interface TopBarProps {
 }
 
 function openCommandPalette() {
-  document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true }))
+  document.dispatchEvent(new CustomEvent('cruz:open-search'))
 }
 
 export default function TopBar({

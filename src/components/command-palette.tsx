@@ -32,12 +32,15 @@ export function CommandPalette() {
   const router = useRouter()
 
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); setOpen(p => !p); setQuery(''); setSelected(0); setSearchResults([]) }
+    const toggle = () => { setOpen(p => !p); setQuery(''); setSelected(0); setSearchResults([]) }
+    const keyHandler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); toggle() }
       if (e.key === 'Escape') setOpen(false)
     }
-    document.addEventListener('keydown', handler)
-    return () => document.removeEventListener('keydown', handler)
+    const eventHandler = () => toggle()
+    document.addEventListener('keydown', keyHandler)
+    document.addEventListener('cruz:open-search', eventHandler)
+    return () => { document.removeEventListener('keydown', keyHandler); document.removeEventListener('cruz:open-search', eventHandler) }
   }, [])
 
   useEffect(() => { if (open) setTimeout(() => inputRef.current?.focus(), 50) }, [open])

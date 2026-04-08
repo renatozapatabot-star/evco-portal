@@ -98,6 +98,72 @@ export default async function AdminPage() {
   )
   const syncCoverage = syncCoverageResults.filter(s => s.total > 0)
 
+  // ── Block 11D: Operator cross-fleet views ──
+  const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString()
+  const fortyEightHoursAgo = new Date(Date.now() - 48 * 3600000).toISOString()
+
+  const [leaderboardRes, stuckRes, recentActionsRes, operatorsRes] = await Promise.all([
+    supabase.from('operator_actions')
+      .select('operator_id, action_type, created_at')
+      .gte('created_at', sevenDaysAgo),
+    supabase.from('traficos')
+      .select('id, trafico, company_id, descripcion_mercancia, importe_total, assigned_to_operator_id, created_at, semaforo')
+      .eq('estatus', 'En Proceso')
+      .lt('created_at', fortyEightHoursAgo)
+      .order('created_at', { ascending: true })
+      .limit(10),
+    supabase.from('operator_actions')
+      .select('id, operator_id, action_type, target_table, target_id, company_id, payload, created_at')
+      .order('created_at', { ascending: false })
+      .limit(20),
+    supabase.from('operators')
+      .select('id, full_name, email, role, company_id'),
+  ])
+
+  // Leaderboard aggregation
+  const byOperator = new Map<string, { totalActions: number; classifications: number; assignments: number; lastActiveAt: string | null }>()
+  for (const row of leaderboardRes.data || []) {
+    if (!byOperator.has(row.operator_id)) {
+      byOperator.set(row.operator_id, { totalActions: 0, classifications: 0, assignments: 0, lastActiveAt: null })
+    }
+    const stats = byOperator.get(row.operator_id)!
+    stats.totalActions += 1
+    if (row.action_type === 'vote_classification' || row.action_type === 'override_ai_decision') stats.classifications += 1
+    if (row.action_type === 'assign_trafico') stats.assignments += 1
+    if (!stats.lastActiveAt || row.created_at > stats.lastActiveAt) stats.lastActiveAt = row.created_at
+  }
+  const opDetails = operatorsRes.data || []
+  const leaderboard = opDetails
+    .filter(op => byOperator.has(op.id))
+    .map(op => ({ ...op, ...byOperator.get(op.id)! }))
+    .sort((a, b) => b.totalActions - a.totalActions)
+  const opNames: Record<string, string> = Object.fromEntries(opDetails.map(o => [o.id, o.full_name]))
+
+  const stuckTraficos = stuckRes.data || []
+  const recentActions = recentActionsRes.data || []
+
+  function relTime(dateStr: string | null): string {
+    if (!dateStr) return ''
+    const diffMs = Date.now() - new Date(dateStr).getTime()
+    const mins = Math.floor(diffMs / 60000)
+    if (mins < 1) return 'ahora'
+    if (mins < 60) return `hace ${mins}m`
+    const hours = Math.floor(mins / 60)
+    if (hours < 24) return `hace ${hours}h`
+    return `hace ${Math.floor(hours / 24)}d`
+  }
+
+  const ACTION_LABELS: Record<string, string> = {
+    view_page: 'vió página',
+    login: 'inició sesión',
+    logout: 'cerró sesión',
+    vote_classification: 'votó clasificación',
+    override_ai_decision: 'corrigió clasificación',
+    assign_trafico: 'asignó tráfico',
+    release_trafico: 'liberó tráfico',
+    send_email: 'envió email',
+  }
+
   const T = {
     bg: 'var(--bg-dark)', surface: 'var(--navy-900)', border: '#2A2A2A',
     text: 'var(--border)', sub: '#9C9690', muted: '#666',
@@ -430,6 +496,126 @@ export default async function AdminPage() {
               </div>
             ))}
           </div>
+        </div>
+      )}
+    </div>
+
+    {/* ── BLOCK 11D: CROSS-OPERATOR VIEWS ── */}
+
+    {/* Section A — Operator Leaderboard */}
+    <div style={{ marginTop: 24, borderRadius: 10, border: `1px solid ${T.border}`, overflow: 'hidden' }}>
+      <div style={{ padding: '14px 18px', borderBottom: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span style={{ fontSize: 15, fontWeight: 700 }}>👥 Equipo (últimos 7 días)</span>
+      </div>
+      {leaderboard.length === 0 ? (
+        <div style={{ padding: 24, textAlign: 'center', color: T.muted, fontSize: 13 }}>
+          Sin actividad en los últimos 7 días — operator shadowing apenas comenzó
+        </div>
+      ) : (
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+          <thead>
+            <tr style={{ borderBottom: `1px solid ${T.border}` }}>
+              <th style={{ padding: '10px 14px', textAlign: 'left', color: T.sub, fontWeight: 600, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Operador</th>
+              <th style={{ padding: '10px 14px', textAlign: 'center', color: T.sub, fontWeight: 600, fontSize: 11, textTransform: 'uppercase' }}>Rol</th>
+              <th style={{ padding: '10px 14px', textAlign: 'center', color: T.sub, fontWeight: 600, fontSize: 11, textTransform: 'uppercase' }}>Acciones</th>
+              <th style={{ padding: '10px 14px', textAlign: 'center', color: T.sub, fontWeight: 600, fontSize: 11, textTransform: 'uppercase' }}>Votos</th>
+              <th style={{ padding: '10px 14px', textAlign: 'center', color: T.sub, fontWeight: 600, fontSize: 11, textTransform: 'uppercase' }}>Asignaciones</th>
+              <th style={{ padding: '10px 14px', textAlign: 'right', color: T.sub, fontWeight: 600, fontSize: 11, textTransform: 'uppercase' }}>Últ. activo</th>
+            </tr>
+          </thead>
+          <tbody>
+            {leaderboard.map((op, i) => (
+              <tr key={op.id} style={{ borderBottom: i < leaderboard.length - 1 ? `1px solid ${T.border}` : 'none' }}>
+                <td style={{ padding: '10px 14px', fontWeight: 600 }}>{op.full_name}</td>
+                <td style={{ padding: '10px 14px', textAlign: 'center', color: T.sub }}>{op.role}</td>
+                <td style={{ padding: '10px 14px', textAlign: 'center', fontFamily: 'var(--font-mono)', fontWeight: 700, color: T.gold }}>{op.totalActions}</td>
+                <td style={{ padding: '10px 14px', textAlign: 'center', fontFamily: 'var(--font-mono)' }}>{op.classifications}</td>
+                <td style={{ padding: '10px 14px', textAlign: 'center', fontFamily: 'var(--font-mono)' }}>{op.assignments}</td>
+                <td style={{ padding: '10px 14px', textAlign: 'right', color: T.sub, fontSize: 11 }}>{relTime(op.lastActiveAt)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+
+    {/* Section B — Stuck Work */}
+    <div style={{ marginTop: 16, borderRadius: 10, border: `1px solid ${T.border}`, overflow: 'hidden' }}>
+      <div style={{ padding: '14px 18px', borderBottom: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span style={{ fontSize: 15, fontWeight: 700 }}>⚠️ Tráficos atascados (&gt; 48h)</span>
+        <span style={{ fontSize: 12, color: T.muted, marginLeft: 'auto' }}>{stuckTraficos.length}</span>
+      </div>
+      {stuckTraficos.length === 0 ? (
+        <div style={{ padding: 24, textAlign: 'center', color: T.green, fontSize: 13 }}>
+          Sin tráficos atascados — todo fluyendo ✅
+        </div>
+      ) : (
+        <div style={{ padding: '8px 12px' }}>
+          {stuckTraficos.map(t => {
+            const ageMs = Date.now() - new Date(t.created_at).getTime()
+            const isOld = ageMs > 72 * 3600000
+            const assignedName = t.assigned_to_operator_id ? (opNames[t.assigned_to_operator_id] || 'Asignado') : 'Sin asignar'
+            return (
+              <Link key={t.id} href={`/traficos/${t.id}`} style={{
+                display: 'flex', alignItems: 'center', gap: 10,
+                padding: '10px 12px', borderRadius: 8, textDecoration: 'none', color: 'inherit',
+                borderLeft: `3px solid ${isOld ? T.red : T.amber}`,
+                marginBottom: 6, background: 'rgba(255,255,255,0.02)',
+              }}>
+                <span style={{ fontSize: 12, fontWeight: 700, fontFamily: 'var(--font-mono)', color: isOld ? T.red : T.amber }}>
+                  {t.trafico}
+                </span>
+                <span style={{ fontSize: 11, color: T.sub }}>{t.company_id}</span>
+                {t.importe_total && (
+                  <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: T.sub }}>
+                    ${Number(t.importe_total).toLocaleString()} USD
+                  </span>
+                )}
+                <span style={{ fontSize: 10, color: T.muted, marginLeft: 'auto' }}>{relTime(t.created_at)}</span>
+                <span style={{ fontSize: 10, color: T.sub }}>{assignedName}</span>
+              </Link>
+            )
+          })}
+        </div>
+      )}
+    </div>
+
+    {/* Section C — Recent Operator Actions */}
+    <div style={{ marginTop: 16, borderRadius: 10, border: `1px solid ${T.border}`, overflow: 'hidden' }}>
+      <div style={{ padding: '14px 18px', borderBottom: `1px solid ${T.border}` }}>
+        <span style={{ fontSize: 15, fontWeight: 700 }}>⚡ Actividad reciente</span>
+      </div>
+      {recentActions.length === 0 ? (
+        <div style={{ padding: 24, textAlign: 'center', color: T.muted, fontSize: 13 }}>
+          Sin actividad reciente
+        </div>
+      ) : (
+        <div style={{ padding: '8px 12px' }}>
+          {recentActions.map(a => {
+            const label = ACTION_LABELS[a.action_type] || a.action_type
+            const name = opNames[a.operator_id] || 'Operador'
+            const detail = a.action_type === 'vote_classification'
+              ? String((a.payload as Record<string, unknown>)?.corrected_to || a.target_id || '—')
+              : a.action_type === 'assign_trafico'
+              ? String((a.payload as Record<string, unknown>)?.trafico || a.target_id || '—')
+              : a.target_id || '—'
+            return (
+              <div key={a.id} style={{
+                display: 'flex', alignItems: 'center', gap: 10,
+                padding: '8px 10px', borderRadius: 6,
+                fontSize: 12,
+              }}>
+                <span style={{ color: T.muted, fontSize: 10, fontFamily: 'var(--font-mono)', width: 60, flexShrink: 0, textAlign: 'right' }}>
+                  {relTime(a.created_at)}
+                </span>
+                <span style={{ fontWeight: 600, minWidth: 100 }}>{name}</span>
+                <span style={{ color: T.gold }}>{label}</span>
+                <span style={{ color: T.sub, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
+                  {detail}
+                </span>
+              </div>
+            )
+          })}
         </div>
       )}
     </div>

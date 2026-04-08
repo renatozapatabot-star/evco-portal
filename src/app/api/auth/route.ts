@@ -12,7 +12,7 @@ const supabase = createClient(
 /** Set auth + company cookies on a successful login response. */
 async function setAuthCookies(
   response: NextResponse,
-  opts: { companyId: string; companyName: string; companyClave: string; companyRfc?: string; role: string }
+  opts: { companyId: string; companyName: string; companyClave: string; companyRfc?: string; role: string; operatorName?: string }
 ) {
   const maxAge = 28800 // 8 hours — forces daily re-login
   const sessionToken = await signSession(opts.companyId, opts.role, maxAge)
@@ -36,6 +36,11 @@ async function setAuthCookies(
     secure: process.env.NODE_ENV === 'production',
   })
 
+  // Operator identity cookie (for action shadowing)
+  if (opts.operatorName) {
+    response.cookies.set('operator_name', opts.operatorName, { path: '/', maxAge })
+  }
+
   // Audit log — login success
   supabase.from('audit_log').insert({
     action: 'login_success',
@@ -44,6 +49,17 @@ async function setAuthCookies(
     diff: { role: opts.role, company: opts.companyName },
     created_at: new Date().toISOString(),
   }).then(() => {}, (e) => console.error('[audit-log] login success:', e.message))
+
+  // Operator action shadow log
+  if (opts.role === 'admin' || opts.role === 'broker') {
+    supabase.from('operator_actions').insert({
+      operator_name: opts.operatorName || opts.role,
+      action_type: 'login',
+      resource_type: 'auth',
+      company_id: opts.companyId,
+      metadata: { role: opts.role },
+    }).then(() => {}, () => {})
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -66,6 +82,7 @@ export async function POST(request: NextRequest) {
       companyName: 'CRUZ Admin',
       companyClave: '',
       role: 'admin',
+      operatorName: 'tito',
     })
     return response
   }
@@ -82,6 +99,7 @@ export async function POST(request: NextRequest) {
       companyName: 'Renato Zapata & Company',
       companyClave: 'internal',
       role: 'broker',
+      operatorName: 'renato',
     })
     return response
   }

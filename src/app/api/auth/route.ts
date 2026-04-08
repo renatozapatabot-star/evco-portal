@@ -12,7 +12,7 @@ const supabase = createClient(
 /** Set auth + company cookies on a successful login response. */
 async function setAuthCookies(
   response: NextResponse,
-  opts: { companyId: string; companyName: string; companyClave: string; companyRfc?: string; role: string; operatorName?: string }
+  opts: { companyId: string; companyName: string; companyClave: string; companyRfc?: string; role: string; operatorName?: string; operatorId?: string }
 ) {
   const maxAge = 28800 // 8 hours — forces daily re-login
   const sessionToken = await signSession(opts.companyId, opts.role, maxAge)
@@ -36,9 +36,12 @@ async function setAuthCookies(
     secure: process.env.NODE_ENV === 'production',
   })
 
-  // Operator identity cookie (for action shadowing)
+  // Operator identity cookies (for action shadowing)
   if (opts.operatorName) {
     response.cookies.set('operator_name', opts.operatorName, { path: '/', maxAge })
+  }
+  if (opts.operatorId) {
+    response.cookies.set('operator_id', opts.operatorId, { path: '/', maxAge })
   }
 
   // Audit log — login success
@@ -50,14 +53,13 @@ async function setAuthCookies(
     created_at: new Date().toISOString(),
   }).then(() => {}, (e) => console.error('[audit-log] login success:', e.message))
 
-  // Operator action shadow log
-  if (opts.role === 'admin' || opts.role === 'broker') {
+  // Operator action shadow log (uses operator_id FK if available)
+  if ((opts.role === 'admin' || opts.role === 'broker') && opts.operatorId) {
     supabase.from('operator_actions').insert({
-      operator_name: opts.operatorName || opts.role,
+      operator_id: opts.operatorId,
       action_type: 'login',
-      resource_type: 'auth',
       company_id: opts.companyId,
-      metadata: { role: opts.role },
+      payload: { role: opts.role },
     }).then(() => {}, () => {})
   }
 }
@@ -72,6 +74,10 @@ export async function POST(request: NextRequest) {
 
   // Check admin password first
   if (password === process.env.ADMIN_PASSWORD) {
+    // Look up operator record for shadowing
+    const { data: adminOp } = await supabase.from('operators')
+      .select('id').eq('role', 'admin').eq('active', true).limit(1).maybeSingle()
+
     const response = NextResponse.json({
       success: true,
       role: 'admin',
@@ -83,12 +89,17 @@ export async function POST(request: NextRequest) {
       companyClave: '',
       role: 'admin',
       operatorName: 'tito',
+      operatorId: adminOp?.id,
     })
     return response
   }
 
   // Check broker password — internal operator access to command center
   if (password === process.env.BROKER_PASSWORD) {
+    // Look up operator record for shadowing
+    const { data: brokerOp } = await supabase.from('operators')
+      .select('id').eq('email', 'renato@renatozapata.com').eq('active', true).maybeSingle()
+
     const response = NextResponse.json({
       success: true,
       role: 'broker',
@@ -100,6 +111,7 @@ export async function POST(request: NextRequest) {
       companyClave: 'internal',
       role: 'broker',
       operatorName: 'renato',
+      operatorId: brokerOp?.id,
     })
     return response
   }

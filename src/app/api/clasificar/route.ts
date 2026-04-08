@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { verifySession } from '@/lib/session'
-import { logOperatorAction, getOperatorName } from '@/lib/operator-actions'
+import { logOperatorAction, getOperatorId } from '@/lib/operator-actions'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -176,14 +176,14 @@ export async function POST(request: NextRequest) {
   }
 
   // Shadow log — operator classification review
-  const operatorName = getOperatorName(request.cookies)
+  const opId = getOperatorId(request.cookies)
   logOperatorAction({
-    operatorName,
-    actionType: wasCorrect ? 'classification_confirm' : 'classification_correct',
-    resourceType: 'agent_decision',
-    resourceId: String(decision_id),
+    operatorId: opId,
+    actionType: wasCorrect ? 'vote_classification' : 'override_ai_decision',
+    targetTable: 'agent_decisions',
+    targetId: String(decision_id),
     companyId: companyId,
-    metadata: { corrected_to: corrected_to || null },
+    payload: { was_correct: wasCorrect, corrected_to: corrected_to || null },
   })
 
   return NextResponse.json({ data: { success: true, writeback: writebackResult }, error: null })

@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
-import { Truck, Package, FolderOpen, FileText, DollarSign, Warehouse, BarChart3, TrendingUp, Clock, CheckCircle, ClipboardList, Sparkles } from 'lucide-react'
+import { Truck, Package, FolderOpen, FileText, DollarSign, Warehouse, BarChart3, TrendingUp, CheckCircle, ClipboardList } from 'lucide-react'
 import { WorkflowCard, type CardAction } from './WorkflowCard'
 import { getCardUrgency, type CardKey, type CardKPIs, type Urgency } from '@/lib/card-urgency'
 import { fmtDateTime } from '@/lib/format-utils'
@@ -19,12 +19,12 @@ interface WorkflowGridProps {
   facturacionMes?: number
   cruzadosEsteMes?: number
   cruzadosHoy?: number
-  bridgeWaitMinutes?: number | null
   exchangeRate?: number | null
   exchangeRateDate?: string | null
   lastCrossing?: { trafico: string; fecha: string; id?: string } | null
   docsPendientes?: number
   isMobile?: boolean
+  viewMode?: 'client' | 'operator'
 }
 
 interface CardDef {
@@ -37,43 +37,41 @@ interface CardDef {
   getActions: (props: WorkflowGridProps, urgency: Urgency) => CardAction[]
 }
 
-/** Context-aware agent suggestions */
-function getAgentActions(props: WorkflowGridProps): CardAction[] {
-  const actions: CardAction[] = []
-  if (props.pendingEntradas > 0)
-    actions.push({ label: `Asignar ${props.pendingEntradas} entradas`, href: '/entradas', primary: true })
-  if ((props.docsPendientes ?? 0) > 0)
-    actions.push({ label: 'Enviar recordatorios', href: '/expedientes', primary: true })
-  if (props.enProceso > 0)
-    actions.push({ label: `Monitorear ${props.enProceso} en transito`, href: '/traficos' })
-  if (actions.length === 0)
-    actions.push({ label: 'Pregunta lo que necesites', href: '#cruz-chat', primary: true })
-  return actions.slice(0, 3)
-}
-
 const CARDS: CardDef[] = [
   // ── Row 1: Operations ──
   {
     key: 'entradas', href: '/entradas', label: 'Entradas', Icon: Package,
     getKpi: (p) => p.pendingEntradas,
-    getSubtitle: (_p, u) => u === 'green' || u === 'neutral'
-      ? 'Todo asignado — al corriente'
-      : 'sin asignar — accion requerida',
-    getActions: (_p, u) => u === 'green' || u === 'neutral'
-      ? [{ label: 'Ver historial', href: '/entradas', primary: true }]
-      : [{ label: 'Asignar ahora', href: '/entradas', primary: true }, { label: 'Ver lista', href: '/entradas' }],
+    getSubtitle: (p, u) => {
+      if (p.viewMode === 'client') return u === 'green' || u === 'neutral' ? 'Todo al corriente' : 'recibidas esta semana'
+      return u === 'green' || u === 'neutral' ? 'Todo asignado — al corriente' : 'sin asignar — accion requerida'
+    },
+    getActions: (p, u) => {
+      if (p.viewMode === 'client') return [{ label: 'Ver lista', href: '/entradas', primary: true }]
+      return u === 'green' || u === 'neutral'
+        ? [{ label: 'Ver historial', href: '/entradas', primary: true }]
+        : [{ label: 'Asignar ahora', href: '/entradas', primary: true }, { label: 'Ver lista', href: '/entradas' }]
+    },
   },
   {
     key: 'traficos', href: '/traficos', label: 'Tráficos', Icon: Truck,
     getKpi: (p) => p.enProceso > 0 ? p.enProceso : (p.cruzadosEsteMes ?? 0),
     getSubtitle: (p, u) => {
+      if (p.viewMode === 'client') {
+        if (u === 'red' || u === 'amber') return 'envíos en tránsito'
+        const mes = p.cruzadosEsteMes ?? 0
+        return mes > 0 ? 'cruzados este mes' : 'sin operaciones activas'
+      }
       if (u === 'red' || u === 'amber') return 'en proceso — monitorear'
       const mes = p.cruzadosEsteMes ?? 0
       return mes > 0 ? 'cruzados este mes — excelente' : 'sin operaciones activas'
     },
-    getActions: (_p, u) => u === 'green' || u === 'neutral'
-      ? [{ label: 'Ver todos', href: '/traficos', primary: true }]
-      : [{ label: 'Ver en mapa', href: '/traficos' }, { label: 'Procesar', href: '/traficos?estatus=En+Proceso', primary: true }],
+    getActions: (p, u) => {
+      if (p.viewMode === 'client') return [{ label: 'Ver todos', href: '/traficos', primary: true }]
+      return u === 'green' || u === 'neutral'
+        ? [{ label: 'Ver todos', href: '/traficos', primary: true }]
+        : [{ label: 'Ver en mapa', href: '/traficos' }, { label: 'Procesar', href: '/traficos?estatus=En+Proceso', primary: true }]
+    },
   },
   {
     key: 'expedientes', href: '/expedientes', label: 'Expedientes', Icon: FolderOpen,
@@ -143,20 +141,14 @@ const CARDS: CardDef[] = [
   },
   // ── Row 3: Intelligence ──
   {
-    key: 'puente', href: '/cruces', label: 'Puente WTB', Icon: Clock,
-    getKpi: (p) => p.bridgeWaitMinutes ?? null,
-    getSubtitle: (p) => {
-      if (p.bridgeWaitMinutes === null) return 'Sin datos — CBP no disponible'
-      return 'min — World Trade Bridge'
-    },
-    getActions: () => [{ label: 'Ver puentes', href: '/cruces', primary: true }],
-  },
-  {
     key: 'ultimo_cruce', href: '/traficos', label: 'Ultimo Cruce', Icon: CheckCircle,
     getKpi: () => null,
     getSubtitle: (p) => {
       if (!p.lastCrossing) return 'Sin cruces registrados'
-      return `${p.lastCrossing.trafico} — ${fmtDateTime(p.lastCrossing.fecha)}`
+      const trafico = p.viewMode === 'client'
+        ? p.lastCrossing.trafico.replace(/^\d+-/, '') // Strip patente prefix for clients
+        : p.lastCrossing.trafico
+      return `${trafico} — ${fmtDateTime(p.lastCrossing.fecha)}`
     },
     getActions: (p) => {
       const id = p.lastCrossing?.id
@@ -172,20 +164,14 @@ const CARDS: CardDef[] = [
     },
     getActions: () => [{ label: 'Ver pendientes', href: '/expedientes', primary: true }],
   },
-  {
-    key: 'cruz_ai', href: '#', label: 'CRUZ AI', Icon: Sparkles,
-    getKpi: () => null,
-    getSubtitle: (p) => {
-      const pending = p.pendingEntradas + p.enProceso + (p.docsPendientes ?? 0)
-      if (pending > 0) return `${pending} acciones sugeridas`
-      return 'Pregunta lo que necesites'
-    },
-    getActions: (p) => getAgentActions(p),
-  },
 ]
 
 export function WorkflowGrid(props: WorkflowGridProps) {
   const isMobile = props.isMobile ?? false
+  const isClient = props.viewMode === 'client'
+
+  // Cards hidden from clients (operator-only intelligence)
+  const CLIENT_HIDDEN_CARDS: CardKey[] = ['docs_pendientes']
 
   const allCards = useMemo(() => {
     const kpis: CardKPIs = {
@@ -194,10 +180,12 @@ export function WorkflowGrid(props: WorkflowGridProps) {
       pendingEntradas: props.pendingEntradas,
       docsFaltantes: props.docsFaltantes ?? 0,
     }
-    return CARDS.map(card => ({
-      ...card,
-      urgency: getCardUrgency(card.key, kpis),
-    }))
+    return CARDS
+      .filter(card => !(isClient && CLIENT_HIDDEN_CARDS.includes(card.key)))
+      .map(card => ({
+        ...card,
+        urgency: getCardUrgency(card.key, kpis),
+      }))
   }, [props.enProceso, props.urgentes, props.pendingEntradas, props.docsFaltantes])
 
   if (isMobile) {

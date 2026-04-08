@@ -63,7 +63,8 @@ function ProgressRing({ pct, size = 56 }: { pct: number; size?: number }) {
   )
 }
 
-export function CommandCenterView() {
+export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client' | 'operator' }) {
+  const isClient = viewMode === 'client'
   const isMobile = useIsMobile()
   const { data, loading, error, reload } = useCommandCenterData()
   const { pulse, loading: pulseLoading, awaySummary, dismissAway } = useActivityPulse()
@@ -145,11 +146,25 @@ export function CommandCenterView() {
         </div>
       )}
 
+      {/* CRUZ orbit dot — persistent AI indicator (mobile only) */}
+      {isMobile && (
+        <button
+          onClick={() => document.dispatchEvent(new CustomEvent('cruz:open-chat'))}
+          aria-label="CRUZ AI"
+          className="cruz-orbit-dot"
+          style={{ position: 'fixed', top: 16, right: 16 }}
+        >
+          {criticalCount > 0 && (
+            <span className="cruz-orbit-badge">{criticalCount > 99 ? '99+' : criticalCount}</span>
+          )}
+        </button>
+      )}
+
       {/* Away banner */}
       {awayBanner}
 
-      {/* ── COMMAND STRIP (collapsible criticos) ── */}
-      <div style={{
+      {/* ── COMMAND STRIP (operator only — hidden from clients) ── */}
+      {!isClient && <div style={{
         borderRadius: 10,
         marginBottom: 12,
         borderLeft: criticalCount > 0 ? '3px solid var(--danger-500, #DC2626)' : '3px solid var(--success, #16A34A)',
@@ -219,10 +234,27 @@ export function CommandCenterView() {
             )}
           </div>
         )}
-      </div>
+      </div>}
 
-      {/* ── DAILY COMPLETION LOOP (ring + text) ── */}
-      <div style={{
+      {/* ── Client calm status (replaces critical banner) ── */}
+      {isClient && (
+        <div style={{
+          padding: isMobile ? '10px 12px' : '10px 16px',
+          borderRadius: 10, marginBottom: 12,
+          borderLeft: '3px solid var(--success, #16A34A)',
+          background: 'rgba(22,163,74,0.06)',
+        }}>
+          <span style={{ fontSize: 13, fontWeight: 700, color: '#16A34A' }}>
+            {data.enProceso > 0
+              ? `Todo en orden · ${data.enProceso} envío${data.enProceso !== 1 ? 's' : ''} en tránsito`
+              : 'Sin novedades · todo fluye'
+            }
+          </span>
+        </div>
+      )}
+
+      {/* ── DAILY COMPLETION LOOP (operator only) ── */}
+      {!isClient && <div style={{
         padding: isMobile ? '10px 12px' : '10px 16px',
         borderRadius: 10,
         marginBottom: 16,
@@ -248,7 +280,7 @@ export function CommandCenterView() {
             }
           </div>
         </div>
-      </div>
+      </div>}
 
       {/* ── CARD GRID ── */}
       <WorkflowGrid
@@ -262,12 +294,12 @@ export function CommandCenterView() {
         facturacionMes={data.facturacionMes}
         cruzadosEsteMes={data.cruzadosEsteMes}
         cruzadosHoy={data.cruzadosHoy}
-        bridgeWaitMinutes={data.bridgeWaitMinutes}
         exchangeRate={data.exchangeRate}
         exchangeRateDate={data.exchangeRateDate}
         lastCrossing={data.lastCrossing}
         docsPendientes={data.docsPendientes}
         isMobile={isMobile}
+        viewMode={viewMode}
       />
 
       {/* Activity Pulse — collapsed below cards */}

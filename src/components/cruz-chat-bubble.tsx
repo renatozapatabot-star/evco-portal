@@ -26,19 +26,19 @@ const SUGGESTIONS = [
   'Calcula impuestos $50K USD',
 ]
 
-// Warm-light theme — matches portal design system
+// Dark cockpit theme — matches the dark portal
 const D = {
-  bg: '#FAFAF8',
-  surface: '#FFFFFF',
-  border: '#E8E5E0',
-  text: '#1A1A1A',
-  textMuted: '#9B9B9B',
-  textSub: '#6B6B6B',
-  userBubble: 'rgba(184,149,63,0.08)',
-  userBorder: 'rgba(184,149,63,0.20)',
-  aiBubble: '#F5F4F0',
-  aiBorder: '#E8E5E0',
-  aiText: '#1A1A1A',
+  bg: '#111111',
+  surface: '#1A1A1A',
+  border: 'rgba(255,255,255,0.08)',
+  text: '#E6EDF3',
+  textMuted: '#6E7681',
+  textSub: '#8B949E',
+  userBubble: 'rgba(201,168,76,0.12)',
+  userBorder: 'rgba(201,168,76,0.25)',
+  aiBubble: '#1A1A1A',
+  aiBorder: 'rgba(255,255,255,0.06)',
+  aiText: '#E6EDF3',
 }
 
 export function CruzChatBubble() {
@@ -265,13 +265,14 @@ export function CruzChatBubble() {
             background: D.surface, flexShrink: 0,
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{
-                width: 32, height: 32, borderRadius: 8,
-                background: GOLD_GRADIENT,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: '0 2px 6px rgba(196,150,60,0.3)',
-              }}>
-                <span style={{ fontFamily: 'Georgia, serif', fontSize: 16, fontWeight: 700, color: D.text }}>Z</span>
+              <div className="cruz-brand-z" style={{ width: 32, height: 32 }}>
+                <svg viewBox="0 0 24 24" width={16} height={16} fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <line x1="12" y1="3" x2="12" y2="21" stroke="#0B1623" strokeWidth="2" strokeLinecap="round" />
+                  <line x1="3" y1="12" x2="21" y2="12" stroke="#0B1623" strokeWidth="2" strokeLinecap="round" />
+                  <path d="M12 8.5L15.5 12L12 15.5L8.5 12Z" fill="#0B1623" />
+                  <path d="M12 3L14 6H10Z" fill="#0B1623" />
+                  <path d="M21 12L18 10V14Z" fill="#0B1623" />
+                </svg>
               </div>
               <div>
                 <div style={{ fontSize: 15, fontWeight: 800, color: D.text, letterSpacing: '-0.02em' }}>CRUZ</div>

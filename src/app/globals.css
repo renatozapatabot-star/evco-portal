@@ -269,13 +269,13 @@ body {
 .cruz-topbar--client {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 10px 24px;
+  gap: 20px;
+  padding: 16px 32px;
 }
 .topbar-logo {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   text-decoration: none;
   flex-shrink: 0;
 }
@@ -294,19 +294,18 @@ body {
 }
 .topbar-logo-text {
   font-family: var(--font-mono);
-  font-size: 16px;
+  font-size: 20px;
   font-weight: 800;
   color: rgba(255,255,255,0.9);
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
 }
 .topbar-search-wide {
   flex: 1;
-  max-width: 600px;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 16px;
-  border-radius: 8px;
+  gap: 12px;
+  padding: 12px 20px;
+  border-radius: 10px;
   border: 1px solid rgba(255,255,255,0.12);
   background: rgba(255,255,255,0.06);
   cursor: pointer;
@@ -318,7 +317,7 @@ body {
   background: rgba(255,255,255,0.08);
 }
 .topbar-search-placeholder {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 400;
   white-space: nowrap;
   overflow: hidden;

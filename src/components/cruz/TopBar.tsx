@@ -62,7 +62,7 @@ export default function TopBar({
 
         {/* Logo */}
         <Link href="/" className="topbar-logo" aria-label="CRUZ inicio">
-          <CruzMark size={32} />
+          <CruzMark size={40} />
           <span className="topbar-logo-text">CRUZ</span>
         </Link>
 

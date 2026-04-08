@@ -175,9 +175,19 @@
   --red-50: #2D1216;
   --red-100: #4D2024;
   --gold-bg: rgba(196,150,60,0.15);
+  /* Navy/slate overrides — these are used as TEXT color in 15+ classes */
+  --navy-900: #E6EDF3;
+  --navy-800: #CDD6E0;
+  --navy-700: #ADBAC7;
+  --slate-400: #8B949E;
+  --slate-500: #8B949E;
+  --slate-600: #8B949E;
+  --slate-700: #CDD6E0;
   background: var(--bg-main);
   color: var(--text-primary);
 }
+.cruz-dark .cruz-table td { border-bottom-color: rgba(255,255,255,0.06); }
+.cruz-dark .cruz-table th { background: var(--bg-elevated); color: var(--text-secondary); }
 .cruz-dark .skeleton-shimmer {
   background: linear-gradient(90deg, #1A1A1A 25%, #2A2A2A 50%, #1A1A1A 75%);
   background-size: 200% 100%;

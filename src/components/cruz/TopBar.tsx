@@ -1,13 +1,15 @@
 'use client';
 
 import Link from 'next/link';
-import { Search, Bell, Menu } from 'lucide-react';
+import { usePathname } from 'next/navigation';
+import { Search, Bell, Menu, LogOut, ChevronLeft } from 'lucide-react';
 import { useNotificationBadge } from '@/hooks/use-notifications';
 import { CruzMark } from '@/components/command-center/CruzMark';
 
 interface TopBarProps {
   showNotifications?: boolean;
   onMenuToggle?: () => void;
+  onLogout?: () => void;
   portalType?: 'operator' | 'client';
   clientName?: string;
   clientInitials?: string;
@@ -20,18 +22,44 @@ function openCommandPalette() {
 export default function TopBar({
   showNotifications = false,
   onMenuToggle,
+  onLogout,
   portalType = 'operator',
   clientName,
   clientInitials,
 }: TopBarProps) {
+  const pathname = usePathname();
   const { unreadCount } = useNotificationBadge();
   const badgeText = unreadCount === 0 ? null : unreadCount > 9 ? '9+' : String(unreadCount);
   const isClient = portalType === 'client';
+  const isHome = pathname === '/';
 
   // ── CLIENT PORTAL TOPBAR — full-width cockpit mode ──
   if (isClient) {
     return (
       <header className="cruz-topbar cruz-topbar--client">
+        {/* Back button — shown on inner pages only */}
+        {!isHome && (
+          <Link
+            href="/"
+            aria-label="Volver al inicio"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 36,
+              height: 36,
+              borderRadius: 8,
+              color: 'rgba(255,255,255,0.6)',
+              transition: 'color 150ms, background 150ms',
+              flexShrink: 0,
+            }}
+            onMouseEnter={e => { e.currentTarget.style.color = '#FFFFFF'; e.currentTarget.style.background = 'rgba(255,255,255,0.08)' }}
+            onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; e.currentTarget.style.background = 'transparent' }}
+          >
+            <ChevronLeft size={20} />
+          </Link>
+        )}
+
         {/* Logo */}
         <Link href="/" className="topbar-logo" aria-label="CRUZ inicio">
           <CruzMark size={32} />
@@ -109,6 +137,32 @@ export default function TopBar({
                 {badgeText}
               </span>
             )}
+          </button>
+        )}
+        {onLogout && (
+          <button
+            onClick={onLogout}
+            className="topbar-logout-btn"
+            aria-label="Cerrar sesion"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: '6px 12px',
+              borderRadius: 8,
+              background: 'transparent',
+              border: '1px solid rgba(255,255,255,0.15)',
+              color: 'var(--text-muted, #888)',
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: 'pointer',
+              transition: 'color 150ms, border-color 150ms',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.color = '#FFFFFF'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)' }}
+            onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted, #888)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)' }}
+          >
+            <LogOut size={14} />
+            Salir
           </button>
         )}
       </div>

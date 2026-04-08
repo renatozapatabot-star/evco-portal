@@ -100,7 +100,10 @@ function LoginContent() {
         <div className="login-card" style={session ? { borderRadius: '0 0 20px 20px' } : undefined}>
           {/* Brand */}
           <div className="login-brand">
-            <div className="login-cruz-wordmark">CRUZ</div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 8 }}>
+              <div className="cruz-brand-z" style={{ width: 48, height: 48, fontSize: 20 }}>Z</div>
+              <div className="login-cruz-wordmark">CRUZ</div>
+            </div>
             <div className="login-cruz-accent" />
             <div className="login-brand-company">RENATO ZAPATA &amp; CO.</div>
             <div className="login-brand-subtitle">Portal de Clientes</div>

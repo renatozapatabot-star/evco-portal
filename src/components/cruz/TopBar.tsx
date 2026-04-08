@@ -33,7 +33,7 @@ export default function TopBar({
       <header className="cruz-topbar cruz-topbar--client">
         {/* Logo */}
         <Link href="/" className="topbar-logo" aria-label="CRUZ inicio">
-          <span className="topbar-logo-z">Z</span>
+          <div className="cruz-brand-z" style={{ width: 32, height: 32, fontSize: 14 }}>Z</div>
           <span className="topbar-logo-text">CRUZ</span>
         </Link>
 

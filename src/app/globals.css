@@ -407,6 +407,20 @@ body {
   flex: 1;
 }
 
+/* ── Shared CRUZ brand Z mark ── */
+.cruz-brand-z {
+  border-radius: 50%;
+  background: linear-gradient(135deg, #C9A84C, #8B6914);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 700;
+  color: #0B1623;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
 /* ── Sidebar Components ── */
 .sidebar-logo {
   padding: 24px 22px 20px;

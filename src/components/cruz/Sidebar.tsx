@@ -86,6 +86,7 @@ export default function Sidebar({
       {/* Logo */}
       <div className="sidebar-logo">
         <div className="sidebar-logo-inner">
+          <div className="cruz-brand-z" style={{ width: 32, height: 32, fontSize: 14 }}>Z</div>
           <div className="sidebar-logo-text">CRUZ</div>
         </div>
 

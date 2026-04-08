@@ -77,6 +77,77 @@ export async function POST(request: NextRequest) {
     )
   }
 
+  // Writeback resolved fracción to globalpc_productos (closes human feedback loop)
+  let writebackResult: { matched: number; updated: number; error: string | null } = {
+    matched: 0,
+    updated: 0,
+    error: null,
+  }
+
+  try {
+    const { data: decisionRow, error: fetchErr } = await supabase
+      .from('agent_decisions')
+      .select('id, company_id, payload')
+      .eq('id', decision_id)
+      .single()
+
+    if (fetchErr || !decisionRow) {
+      writebackResult.error = 'Could not fetch decision row: ' + (fetchErr?.message || 'not found')
+    } else {
+      const payload = decisionRow.payload as Record<string, unknown> | null
+      const productDescription = payload?.product_description as string | undefined
+      const suggestedFraccion = payload?.suggested_fraccion as string | undefined
+
+      const resolvedFraccion = wasCorrect
+        ? suggestedFraccion
+        : (corrected_to || suggestedFraccion)
+
+      if (!productDescription) {
+        writebackResult.error = 'No product_description in payload'
+      } else if (!resolvedFraccion) {
+        writebackResult.error = 'No fracción to write'
+      } else {
+        const { data: matchingRows, error: matchErr } = await supabase
+          .from('globalpc_productos')
+          .select('id')
+          .eq('company_id', decisionRow.company_id)
+          .eq('descripcion', productDescription)
+
+        if (matchErr) {
+          writebackResult.error = 'Match query failed: ' + matchErr.message
+        } else {
+          writebackResult.matched = matchingRows?.length || 0
+
+          if (matchingRows && matchingRows.length > 0) {
+            const updateIds = matchingRows.map(r => r.id)
+            const fraccionSource = wasCorrect ? 'human_tito' : 'human_correction_tito'
+
+            const { error: wbUpdateErr } = await supabase
+              .from('globalpc_productos')
+              .update({
+                fraccion: resolvedFraccion,
+                fraccion_source: fraccionSource,
+                fraccion_classified_at: new Date().toISOString(),
+              })
+              .in('id', updateIds)
+
+            if (wbUpdateErr) {
+              writebackResult.error = 'Update failed: ' + wbUpdateErr.message
+            } else {
+              writebackResult.updated = updateIds.length
+            }
+          }
+        }
+      }
+    }
+  } catch (e) {
+    writebackResult.error = 'Writeback exception: ' + (e instanceof Error ? e.message : String(e))
+  }
+
+  if (writebackResult.error) {
+    console.error('[clasificar writeback] ' + writebackResult.error)
+  }
+
   // Update autonomy_config counters
   const { data: config } = await supabase
     .from('autonomy_config')
@@ -103,5 +174,5 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  return NextResponse.json({ data: { success: true }, error: null })
+  return NextResponse.json({ data: { success: true, writeback: writebackResult }, error: null })
 }

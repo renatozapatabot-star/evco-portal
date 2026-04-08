@@ -25,8 +25,8 @@ function buildStatusSentence(enProceso: number, urgentes: number, cruzadosHoy: n
 }
 
 function buildQuickAction(urgentes: number, pendingEntradas: number): { label: string; href: string } | null {
-  if (urgentes > 0) return { label: `Procesar ${urgentes} urgente${urgentes !== 1 ? 's' : ''}`, href: '/traficos?estatus=En+Proceso' }
-  if (pendingEntradas > 0) return { label: `${pendingEntradas} entrada${pendingEntradas !== 1 ? 's' : ''} sin asignar`, href: '/entradas' }
+  if (urgentes > 0) return { label: `Procesar ${urgentes} urgente${urgentes !== 1 ? 's' : ''} ahora`, href: '/traficos?estatus=En+Proceso' }
+  if (pendingEntradas > 0) return { label: `Asignar ${pendingEntradas} entrada${pendingEntradas !== 1 ? 's' : ''} ahora`, href: '/entradas' }
   return null
 }
 
@@ -98,7 +98,7 @@ export function CommandCenterView() {
   ) : null
 
   return (
-    <div style={{ padding: isMobile ? '0 16px' : '0 48px', paddingBottom: 60, overflowX: 'hidden' }}>
+    <div style={{ padding: isMobile ? '0 8px' : '0 48px', paddingBottom: 60, overflowX: 'hidden' }}>
       {/* Fixed toast — no layout shift */}
       {realtimeToast && (
         <div className="cc-toast-fixed" style={{
@@ -139,7 +139,7 @@ export function CommandCenterView() {
 
         {/* Right column: Activity Pulse (sticky on wide screens) */}
         <div className="cc-pulse-col">
-          <ActivityPulseSection pulse={pulse} loading={pulseLoading} defaultCollapsed={isMobile} />
+          <ActivityPulseSection pulse={pulse} loading={pulseLoading} defaultCollapsed={isMobile} dark={!isMobile} />
         </div>
       </div>
 

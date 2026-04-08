@@ -309,7 +309,7 @@ body {
 .cc-grid-wide {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 24px;
+  gap: 16px;
 }
 @media (min-width: 1200px) {
   .cc-grid-wide {
@@ -358,7 +358,30 @@ body {
 }
 @keyframes ccPillPulse {
   0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.04); }
+  50% { transform: scale(1.03); }
+}
+
+/* Dark Activity Pulse container */
+.cc-pulse-dark {
+  background: #222222;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 20px;
+}
+
+/* Green checkmark badge (small card top-right) */
+.cc-check-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--success, #16A34A);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 8px rgba(22,163,74,0.3);
 }
 
 /* ── Reduced motion ────────── */

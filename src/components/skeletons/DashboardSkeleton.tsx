@@ -42,10 +42,13 @@ export function DashboardSkeleton({ isMobile = false }: { isMobile?: boolean }) 
             ))}
           </div>
         </div>
-        {/* Pulse skeleton */}
+        {/* Pulse skeleton — dark themed */}
         {!isMobile && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <div className="skeleton-shimmer" style={{ height: 200, borderRadius: 12 }} />
+          <div className="cc-pulse-dark" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div className="skeleton-shimmer" style={{ height: 16, width: '60%', borderRadius: 4 }} />
+            {[0, 1, 2, 3].map(i => (
+              <div key={i} className="skeleton-shimmer" style={{ height: 36, borderRadius: 8 }} />
+            ))}
           </div>
         )}
       </div>

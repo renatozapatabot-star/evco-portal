@@ -76,7 +76,8 @@ export function MissionHeader({ mood, sentence, quickAction, onAvatarClick, load
             textDecoration: 'none',
             flexShrink: 0,
             whiteSpace: 'nowrap',
-            animation: hasUrgency ? 'ccPillPulse 2s ease-in-out infinite' : 'none',
+            animation: hasUrgency ? 'ccPillPulse 3s ease-in-out infinite' : 'none',
+            boxShadow: hasUrgency ? '0 0 16px rgba(201,168,76,0.3)' : 'none',
             transition: 'background 150ms',
           }}
           onMouseEnter={e => { e.currentTarget.style.background = 'var(--gold-hover, #B8933B)' }}

@@ -9,18 +9,25 @@ import type { PulseItem } from '@/hooks/use-activity-pulse'
 interface ActivityPulseSectionProps {
   pulse: PulseItem[]
   loading: boolean
-  /** Start collapsed on mobile */
   defaultCollapsed?: boolean
+  /** Dark theme for desktop right column */
+  dark?: boolean
 }
 
-export function ActivityPulseSection({ pulse, loading, defaultCollapsed = false }: ActivityPulseSectionProps) {
+export function ActivityPulseSection({ pulse, loading, defaultCollapsed = false, dark = false }: ActivityPulseSectionProps) {
   const [collapsed, setCollapsed] = useState(defaultCollapsed)
 
   if (!loading && pulse.length === 0) return null
 
+  const textColor = dark ? 'rgba(255,255,255,0.85)' : 'var(--text-primary)'
+  const textMuted = dark ? 'rgba(255,255,255,0.5)' : 'var(--text-muted)'
+  const textSub = dark ? 'rgba(255,255,255,0.6)' : 'var(--text-secondary)'
+  const hoverBg = dark ? 'rgba(255,255,255,0.06)' : '#F5F4F0'
+  const linkColor = dark ? 'var(--gold, #C9A84C)' : 'var(--gold-dark, #8B6914)'
+
   return (
-    <div>
-      {/* Header — clickable to toggle */}
+    <div className={dark ? 'cc-pulse-dark' : ''}>
+      {/* Header */}
       <button
         type="button"
         onClick={() => setCollapsed(c => !c)}
@@ -43,17 +50,16 @@ export function ActivityPulseSection({ pulse, loading, defaultCollapsed = false 
           animation: 'cruzPulse 2s ease-in-out infinite',
           flexShrink: 0,
         }} />
-        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', flex: 1, textAlign: 'left' }}>
-          RZ trabajando{pulse.length > 0 ? ` (${pulse.length})` : ''}
+        <div style={{ fontSize: 13, fontWeight: 700, color: textSub, flex: 1, textAlign: 'left' }}>
+          Actividad reciente{pulse.length > 0 ? ` (${pulse.length})` : ''}
         </div>
         {collapsed ? (
-          <ChevronRight size={14} style={{ color: 'var(--text-muted)' }} />
+          <ChevronRight size={14} style={{ color: textMuted }} />
         ) : (
-          <ChevronDown size={14} style={{ color: 'var(--text-muted)' }} />
+          <ChevronDown size={14} style={{ color: textMuted }} />
         )}
       </button>
 
-      {/* Content */}
       {!collapsed && (
         <>
           {loading ? (
@@ -73,7 +79,7 @@ export function ActivityPulseSection({ pulse, loading, defaultCollapsed = false 
                     padding: '10px 12px', borderRadius: 8, textDecoration: 'none',
                     transition: 'background 100ms',
                   }}
-                  onMouseEnter={e => { e.currentTarget.style.background = '#F5F4F0' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = hoverBg }}
                   onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
                 >
                   <div style={{
@@ -81,13 +87,13 @@ export function ActivityPulseSection({ pulse, loading, defaultCollapsed = false 
                     background: item.color,
                   }} />
                   <div style={{
-                    flex: 1, minWidth: 0, fontSize: 13, color: 'var(--text-primary)',
+                    flex: 1, minWidth: 0, fontSize: 13, color: textColor,
                     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                   }}>
                     {item.text}
                   </div>
                   <span style={{
-                    fontSize: 11, color: 'var(--text-muted)', flexShrink: 0,
+                    fontSize: 11, color: textMuted, flexShrink: 0,
                     fontFamily: 'var(--font-mono)',
                   }}>
                     {fmtRelativeTime(item.timestamp)}
@@ -97,7 +103,7 @@ export function ActivityPulseSection({ pulse, loading, defaultCollapsed = false 
               <Link
                 href="/actividad"
                 style={{
-                  fontSize: 13, color: 'var(--gold-dark, #8B6914)',
+                  fontSize: 13, color: linkColor,
                   fontWeight: 600, padding: '8px 12px', textDecoration: 'none',
                 }}
               >

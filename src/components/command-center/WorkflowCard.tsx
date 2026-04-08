@@ -36,6 +36,7 @@ export function WorkflowCard({ href, label, Icon, kpi, subtitle, variant, action
           borderRadius: 16,
           background: '#222222',
           border: '1px solid rgba(255,255,255,0.08)',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
           minHeight: 200,
           display: 'flex',
           flexDirection: 'column',
@@ -124,16 +125,24 @@ export function WorkflowCard({ href, label, Icon, kpi, subtitle, variant, action
           borderRadius: 12,
           background: 'var(--bg-card)',
           border: '1px solid var(--border)',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
           display: 'flex',
           flexDirection: 'column',
-          justifyContent: 'space-between',
           minHeight: 160,
           height: '100%',
           cursor: 'pointer',
+          position: 'relative',
         }}
       >
+        {/* Green checkmark badge — top right */}
+        {isGood && (
+          <div className="cc-check-badge">
+            <CheckCircle2 size={14} style={{ color: '#FFFFFF' }} />
+          </div>
+        )}
+
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Icon size={20} strokeWidth={1.5} style={{ color: 'var(--text-secondary)' }} />
+          <Icon size={24} strokeWidth={1.5} style={{ color: 'var(--text-secondary)' }} />
           <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>{label}</span>
         </div>
 
@@ -142,7 +151,6 @@ export function WorkflowCard({ href, label, Icon, kpi, subtitle, variant, action
           display: 'flex', alignItems: 'center', gap: 4,
           marginTop: 8,
         }}>
-          {isGood && <CheckCircle2 size={14} style={{ color: 'var(--success)' }} />}
           {kpi !== null && kpi > 0 && (
             <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600 }}>{kpi} </span>
           )}

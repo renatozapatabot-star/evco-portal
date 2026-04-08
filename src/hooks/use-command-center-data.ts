@@ -34,6 +34,7 @@ export interface CommandCenterData {
   cruzadosHoy: number
   total: number
   tmecSavings: number
+  inventarioBultos: number
 }
 
 interface UseCommandCenterReturn {
@@ -52,6 +53,7 @@ const EMPTY: CommandCenterData = {
   cruzadosHoy: 0,
   total: 0,
   tmecSavings: 0,
+  inventarioBultos: 0,
 }
 
 export function useCommandCenterData(): UseCommandCenterReturn {
@@ -70,6 +72,7 @@ export function useCommandCenterData(): UseCommandCenterReturn {
     if (cached) {
       const enProceso = cached.traficos.filter(t => (t.estatus || '').toLowerCase() === 'en proceso').length
       const tmec = calculateTmecSavings(cached.traficos)
+      const bultos = cached.entradas.reduce((sum, e) => sum + (Number((e as unknown as Record<string, unknown>).cantidad_bultos) || 0), 0)
       setData({
         traficos: cached.traficos,
         pendingEntradas: cached.entradas,
@@ -78,6 +81,7 @@ export function useCommandCenterData(): UseCommandCenterReturn {
         cruzadosHoy: status.cruzadosHoy,
         total: status.total,
         tmecSavings: tmec.totalSavings,
+        inventarioBultos: bultos,
       })
       setLoading(false)
       startRefresh()
@@ -113,12 +117,16 @@ export function useCommandCenterData(): UseCommandCenterReturn {
     ])
       .then(([trafData, entData]) => {
         const allT: TraficoRow[] = trafData.data ?? []
-        const ents: EntradaPending[] = (entData.data ?? [])
-          .filter((e: Record<string, unknown>) => !e.trafico)
-          .slice(0, 20)
+        const allEnts: Record<string, unknown>[] = entData.data ?? []
+        const ents: EntradaPending[] = allEnts
+          .filter((e) => !e.trafico)
+          .slice(0, 20) as unknown as EntradaPending[]
 
         const enProceso = allT.filter(t => (t.estatus || '').toLowerCase() === 'en proceso').length
         const tmec = calculateTmecSavings(allT)
+        const bultos = allEnts
+          .filter(e => !e.trafico)
+          .reduce((sum, e) => sum + (Number(e.cantidad_bultos) || 0), 0)
 
         setData({
           traficos: allT,
@@ -128,6 +136,7 @@ export function useCommandCenterData(): UseCommandCenterReturn {
           cruzadosHoy: status.cruzadosHoy,
           total: status.total,
           tmecSavings: tmec.totalSavings,
+          inventarioBultos: bultos,
         })
         setCache('command-center', { traficos: allT, entradas: ents })
       })

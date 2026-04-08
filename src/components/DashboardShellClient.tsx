@@ -12,8 +12,6 @@ import { usePullToRefresh } from '@/hooks/use-pull-refresh'
 import { MobileBottomNav } from './mobile-bottom-nav'
 import { WelcomeOverlay } from './WelcomeOverlay'
 import { CruzChatBubble } from './cruz-chat-bubble'
-import { useOnboarding } from '@/hooks/use-onboarding'
-import { OnboardingHint } from './ui/OnboardingHint'
 import { getCookieValue } from '@/lib/client-config'
 
 interface Props { children: React.ReactNode }
@@ -104,7 +102,6 @@ export default function DashboardShellClient({ children }: Props) {
   const [clientName, setClientName] = useState<string | undefined>(undefined)
   const [clientInitials, setClientInitials] = useState<string | undefined>(undefined)
   const [mobileOpen, setMobileOpen] = useState(false)
-  const { hint: globalHint, dismiss: dismissGlobalHint } = useOnboarding()
 
   useEffect(() => {
     const role = getCookieValue('user_role')
@@ -226,6 +223,7 @@ export default function DashboardShellClient({ children }: Props) {
         onLogout={() => { window.location.href = '/api/auth/logout' }}
         mobileOpen={mobileOpen}
         onMobileToggle={() => setMobileOpen(v => !v)}
+        hideSidebar={portalType === 'client'}
       >
         <LoadingBar />
         <div id="main-content" ref={scrollRef}>
@@ -235,18 +233,7 @@ export default function DashboardShellClient({ children }: Props) {
 
       <CommandPalette />
       {!isMobile && <ShortcutHelp />}
-      {/* Global onboarding hint (nav-targeted hints) */}
-      {globalHint && globalHint.target.startsWith('nav_') && (
-        <div style={{
-          position: 'fixed',
-          bottom: isMobile ? 140 : 80,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          zIndex: 48,
-        }}>
-          <OnboardingHint text={globalHint.text} onDismiss={() => dismissGlobalHint(globalHint.id)} />
-        </div>
-      )}
+
       {isMobile && <MobileBottomNav />}
 
       {/* Offline banner */}

@@ -1,22 +1,71 @@
 'use client';
 
+import Link from 'next/link';
 import { Search, Bell, Menu } from 'lucide-react';
 import { useNotificationBadge } from '@/hooks/use-notifications';
 
 interface TopBarProps {
-  /** Show notification bell (operator only) */
   showNotifications?: boolean;
-  /** Mobile hamburger toggle */
   onMenuToggle?: () => void;
+  portalType?: 'operator' | 'client';
+  clientName?: string;
+  clientInitials?: string;
+}
+
+function openCommandPalette() {
+  document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true }))
 }
 
 export default function TopBar({
   showNotifications = false,
   onMenuToggle,
+  portalType = 'operator',
+  clientName,
+  clientInitials,
 }: TopBarProps) {
   const { unreadCount } = useNotificationBadge();
   const badgeText = unreadCount === 0 ? null : unreadCount > 9 ? '9+' : String(unreadCount);
+  const isClient = portalType === 'client';
 
+  // ── CLIENT PORTAL TOPBAR — full-width cockpit mode ──
+  if (isClient) {
+    return (
+      <header className="cruz-topbar cruz-topbar--client">
+        {/* Logo */}
+        <Link href="/" className="topbar-logo" aria-label="CRUZ inicio">
+          <span className="topbar-logo-z">Z</span>
+          <span className="topbar-logo-text">CRUZ</span>
+        </Link>
+
+        {/* Wide search bar */}
+        <button
+          className="topbar-search-wide"
+          onClick={openCommandPalette}
+          aria-label="Buscar"
+        >
+          <Search size={16} style={{ opacity: 0.5, flexShrink: 0 }} />
+          <span className="topbar-search-placeholder">
+            Buscar tráfico, entradas, pedimentos... o presiona ⌘K
+          </span>
+        </button>
+
+        {/* Right: bell + avatar */}
+        <div className="topbar-right">
+          {badgeText && (
+            <button className="topbar-bell-btn" aria-label={`${unreadCount} notificaciones`}>
+              <Bell size={16} />
+              <span className="topbar-bell-badge badge-bounce">{badgeText}</span>
+            </button>
+          )}
+          <div className="topbar-avatar" title={clientName || ''}>
+            {clientInitials || 'CL'}
+          </div>
+        </div>
+      </header>
+    );
+  }
+
+  // ── OPERATOR PORTAL TOPBAR — unchanged ──
   return (
     <header className="cruz-topbar">
       {onMenuToggle && (
@@ -27,9 +76,7 @@ export default function TopBar({
       <div style={{ flex: 1 }} />
       <button
         className="topbar-search-btn"
-        onClick={() => {
-          document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true }))
-        }}
+        onClick={openCommandPalette}
         aria-label="Buscar"
       >
         <Search size={16} />

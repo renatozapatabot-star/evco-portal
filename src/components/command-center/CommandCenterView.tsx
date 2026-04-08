@@ -1,7 +1,6 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import Link from 'next/link'
 import { useCommandCenterData } from '@/hooks/use-command-center-data'
 import { useActivityPulse } from '@/hooks/use-activity-pulse'
 import { useRealtimeTrafico } from '@/hooks/use-realtime-trafico'
@@ -20,18 +19,10 @@ function buildStatusSentence(enProceso: number, urgentes: number, cruzadosHoy: n
     return 'Sin operaciones activas. Estamos listos.'
   }
   const parts: string[] = []
-  if (enProceso > 0) {
-    parts.push(`${enProceso} en ruta`)
-  }
-  if (urgentes > 0) {
-    parts.push(`${urgentes} requiere${urgentes !== 1 ? 'n' : ''} atención`)
-  }
-  if (cruzadosHoy > 0) {
-    parts.push(`${cruzadosHoy} cruzó hoy`)
-  }
-  if (enProceso > 0 && urgentes === 0) {
-    return `Todo en orden — ${parts.join(', ')}.`
-  }
+  if (enProceso > 0) parts.push(`${enProceso} en ruta`)
+  if (urgentes > 0) parts.push(`${urgentes} requiere${urgentes !== 1 ? 'n' : ''} atención`)
+  if (cruzadosHoy > 0) parts.push(`${cruzadosHoy} cruzó hoy`)
+  if (enProceso > 0 && urgentes === 0) return `Todo en orden — ${parts.join(', ')}.`
   return parts.join(' · ')
 }
 
@@ -45,10 +36,6 @@ function buildQuickAction(urgentes: number, pendingEntradas: number): { label: s
   return null
 }
 
-/**
- * Realtime toast that auto-dismisses. Uses ref + callback to avoid
- * the React Compiler "setState in effect" lint rule.
- */
 function useRealtimeToast(lastUpdate: { trafico: string; estatus: string } | null): string | null {
   const [toast, setToast] = useState<string | null>(null)
   const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
@@ -91,7 +78,7 @@ export function CommandCenterView() {
 
   if (error) {
     return (
-      <div className="page-shell" style={{ maxWidth: 960 }}>
+      <div style={{ maxWidth: 960, margin: '0 auto', padding: 24 }}>
         <ErrorCard message={error} onRetry={reload} />
       </div>
     )
@@ -109,6 +96,7 @@ export function CommandCenterView() {
       background: 'var(--bg-card)',
       border: '1px solid var(--border)',
       borderLeft: '3px solid #0D9488',
+      margin: '0 24px 16px',
     }}>
       <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#0D9488', marginBottom: 8 }}>
         Mientras estuvo fuera
@@ -132,105 +120,20 @@ export function CommandCenterView() {
     </div>
   ) : null
 
-  // ── EMPTY STATE — no active operations ──
-  const emptyCard = data.traficos.length === 0 ? (
-    <Link
-      href="/documentos"
-      style={{
-        display: 'block',
-        margin: '0 20px 12px',
-        padding: '20px',
-        borderRadius: 12,
-        background: 'var(--bg-card)',
-        border: '2px solid var(--gold, #C9A84C)',
-        textDecoration: 'none',
-        textAlign: 'center',
-      }}
-    >
-      <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>
-        Iniciar nueva operación
-      </div>
-      <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-        Envíe documentos para comenzar &rarr;
-      </div>
-    </Link>
-  ) : null
-
-  // ── DESKTOP TWO-COLUMN / MOBILE SINGLE-COLUMN ──
-  if (!isMobile) {
-    return (
-      <div className="page-shell" style={{ maxWidth: 1100, overflowX: 'hidden' }}>
-        {/* Realtime toast */}
-        {realtimeToast && (
-          <div style={{
-            padding: '10px 16px', borderRadius: 10,
-            background: '#0D9488', color: '#FFFFFF', fontSize: 13, fontWeight: 600,
-            margin: '0 20px 16px', animation: 'fadeInUp 200ms ease',
-          }}>
-            {realtimeToast}
-          </div>
-        )}
-
-        {/* Mission Header — full width */}
-        <MissionHeader
-          mood={mood}
-          sentence={sentence}
-          quickAction={quickAction}
-          onAvatarClick={openChat}
-          loading={loading}
-        />
-
-        {emptyCard}
-
-        {/* Two-column grid */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 340px',
-          gap: 24,
-          padding: '0 0 40px',
-          alignItems: 'start',
-        }}>
-          {/* Left: Workflow Cards */}
-          <WorkflowGrid
-            enProceso={data.enProceso}
-            urgentes={data.urgentes || status.urgentes}
-            pendingEntradas={data.pendingEntradas.length}
-          />
-
-          {/* Right: Activity Pulse + Away Banner */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16, position: 'sticky', top: 20 }}>
-            {awayBanner && <div style={{ padding: '0 20px' }}>{awayBanner}</div>}
-            <ActivityPulseSection pulse={pulse} loading={pulseLoading} />
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div style={{ textAlign: 'center', padding: '0 20px 60px' }}>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-            Patente 3596 · Aduana 240
-          </div>
-        </div>
-
-        <Celebrate trigger={!!lastUpdate && (lastUpdate.estatus || '').toLowerCase().includes('cruz')} />
-      </div>
-    )
-  }
-
-  // ── MOBILE LAYOUT ──
   return (
-    <div className="page-shell" style={{ maxWidth: 700, overflowX: 'hidden' }}>
+    <div style={{ maxWidth: 1200, margin: '0 auto', overflowX: 'hidden', paddingBottom: 60 }}>
       {/* Realtime toast */}
       {realtimeToast && (
         <div style={{
           padding: '10px 16px', borderRadius: 10,
           background: '#0D9488', color: '#FFFFFF', fontSize: 13, fontWeight: 600,
-          margin: '0 20px 16px', animation: 'fadeInUp 200ms ease',
+          margin: '0 24px 8px', animation: 'fadeInUp 200ms ease',
         }}>
           {realtimeToast}
         </div>
       )}
 
-      {/* Mission Header */}
+      {/* Dark Hero Header */}
       <MissionHeader
         mood={mood}
         sentence={sentence}
@@ -240,24 +143,23 @@ export function CommandCenterView() {
       />
 
       {/* While You Were Away */}
-      {awayBanner && <div style={{ padding: '0 20px', marginBottom: 12 }}>{awayBanner}</div>}
+      {awayBanner}
 
-      {emptyCard}
-
-      {/* Workflow Cards — urgency sorted */}
+      {/* Workflow Cards — two-tier layout */}
       <WorkflowGrid
         enProceso={data.enProceso}
         urgentes={data.urgentes || status.urgentes}
         pendingEntradas={data.pendingEntradas.length}
+        inventarioBultos={data.inventarioBultos}
       />
 
-      {/* Activity Pulse — collapsed by default on mobile */}
-      <div style={{ marginTop: 20 }}>
-        <ActivityPulseSection pulse={pulse} loading={pulseLoading} defaultCollapsed />
+      {/* Activity Pulse */}
+      <div style={{ marginTop: 24 }}>
+        <ActivityPulseSection pulse={pulse} loading={pulseLoading} defaultCollapsed={isMobile} />
       </div>
 
       {/* Footer */}
-      <div style={{ textAlign: 'center', padding: '40px 20px 60px' }}>
+      <div style={{ textAlign: 'center', padding: '32px 24px 0' }}>
         <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
           Patente 3596 · Aduana 240
         </div>

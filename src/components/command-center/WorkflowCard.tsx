@@ -68,6 +68,7 @@ export function WorkflowCard({ href, label, Icon, kpi, subtitle, variant, action
           animation: `ccCountUp 300ms ease both`,
           animationDelay: `${delay}ms`,
           position: 'relative',
+          opacity: isGood && !hasData ? 0.85 : 1,
           ...(spanFull ? { gridColumn: '1 / -1' } : {}),
         }}
       >

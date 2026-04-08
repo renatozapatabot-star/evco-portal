@@ -1,9 +1,11 @@
 'use client'
 
 import { useMemo } from 'react'
-import { Truck, Package, FolderOpen, FileText, DollarSign, Warehouse, BarChart3 } from 'lucide-react'
+import { Truck, Package, FolderOpen, FileText, DollarSign, Warehouse, BarChart3, TrendingUp, Clock, CheckCircle, ClipboardList, Sparkles } from 'lucide-react'
 import { WorkflowCard, type CardAction } from './WorkflowCard'
 import { getCardUrgency, type CardKey, type CardKPIs, type Urgency } from '@/lib/card-urgency'
+import { fmtDateTime } from '@/lib/format-utils'
+import type { CommandCenterData } from '@/hooks/use-command-center-data'
 
 interface WorkflowGridProps {
   enProceso: number
@@ -17,6 +19,11 @@ interface WorkflowGridProps {
   facturacionMes?: number
   cruzadosEsteMes?: number
   cruzadosHoy?: number
+  bridgeWaitMinutes?: number | null
+  exchangeRate?: number | null
+  exchangeRateDate?: string | null
+  lastCrossing?: { trafico: string; fecha: string; id?: string } | null
+  docsPendientes?: number
   isMobile?: boolean
 }
 
@@ -25,16 +32,29 @@ interface CardDef {
   href: string
   label: string
   Icon: typeof Truck
-  /** Desktop grid span (out of 12 cols) */
-  span: number
   getKpi: (props: WorkflowGridProps) => number | null
   getSubtitle: (props: WorkflowGridProps, urgency: Urgency) => string
   getActions: (props: WorkflowGridProps, urgency: Urgency) => CardAction[]
 }
 
+/** Context-aware agent suggestions */
+function getAgentActions(props: WorkflowGridProps): CardAction[] {
+  const actions: CardAction[] = []
+  if (props.pendingEntradas > 0)
+    actions.push({ label: `Asignar ${props.pendingEntradas} entradas`, href: '/entradas', primary: true })
+  if ((props.docsPendientes ?? 0) > 0)
+    actions.push({ label: 'Enviar recordatorios', href: '/expedientes', primary: true })
+  if (props.enProceso > 0)
+    actions.push({ label: `Monitorear ${props.enProceso} en transito`, href: '/traficos' })
+  if (actions.length === 0)
+    actions.push({ label: 'Pregunta lo que necesites', href: '#cruz-chat', primary: true })
+  return actions.slice(0, 3)
+}
+
 const CARDS: CardDef[] = [
+  // ── Row 1: Operations ──
   {
-    key: 'entradas', href: '/entradas', label: 'Entradas', Icon: Package, span: 3,
+    key: 'entradas', href: '/entradas', label: 'Entradas', Icon: Package,
     getKpi: (p) => p.pendingEntradas,
     getSubtitle: (_p, u) => u === 'green' || u === 'neutral'
       ? 'Todo asignado — al corriente'
@@ -44,7 +64,7 @@ const CARDS: CardDef[] = [
       : [{ label: 'Asignar ahora', href: '/entradas', primary: true }, { label: 'Ver lista', href: '/entradas' }],
   },
   {
-    key: 'traficos', href: '/traficos', label: 'Tráficos', Icon: Truck, span: 3,
+    key: 'traficos', href: '/traficos', label: 'Tráficos', Icon: Truck,
     getKpi: (p) => p.enProceso > 0 ? p.enProceso : (p.cruzadosEsteMes ?? 0),
     getSubtitle: (p, u) => {
       if (u === 'red' || u === 'amber') return 'en proceso — monitorear'
@@ -56,7 +76,7 @@ const CARDS: CardDef[] = [
       : [{ label: 'Ver en mapa', href: '/traficos' }, { label: 'Procesar', href: '/traficos?estatus=En+Proceso', primary: true }],
   },
   {
-    key: 'expedientes', href: '/expedientes', label: 'Expedientes', Icon: FolderOpen, span: 3,
+    key: 'expedientes', href: '/expedientes', label: 'Expedientes', Icon: FolderOpen,
     getKpi: (p) => {
       const faltantes = p.docsFaltantes ?? 0
       if (faltantes > 0) return faltantes
@@ -69,7 +89,7 @@ const CARDS: CardDef[] = [
     getActions: () => [{ label: 'Ver todos', href: '/expedientes', primary: true }],
   },
   {
-    key: 'pedimentos', href: '/pedimentos', label: 'Pedimentos', Icon: FileText, span: 3,
+    key: 'pedimentos', href: '/pedimentos', label: 'Pedimentos', Icon: FileText,
     getKpi: (p) => p.pedimentosThisMonth ?? 0,
     getSubtitle: (p) => {
       const n = p.pedimentosThisMonth ?? 0
@@ -77,8 +97,9 @@ const CARDS: CardDef[] = [
     },
     getActions: () => [{ label: 'Ver todos', href: '/pedimentos', primary: true }],
   },
+  // ── Row 2: Business ──
   {
-    key: 'contabilidad', href: '/financiero', label: 'Contabilidad', Icon: DollarSign, span: 4,
+    key: 'contabilidad', href: '/financiero', label: 'Contabilidad', Icon: DollarSign,
     getKpi: (p) => {
       const val = p.facturacionMes ?? 0
       return val > 0 ? Math.round(val) : 0
@@ -91,7 +112,7 @@ const CARDS: CardDef[] = [
     getActions: () => [{ label: 'Ver detalle', href: '/financiero', primary: true }],
   },
   {
-    key: 'inventario', href: '/bodega', label: 'Inventario', Icon: Warehouse, span: 4,
+    key: 'inventario', href: '/bodega', label: 'Inventario', Icon: Warehouse,
     getKpi: (p) => p.inventarioBultos ?? 0,
     getSubtitle: (p) => {
       const bultos = p.inventarioBultos ?? 0
@@ -103,13 +124,63 @@ const CARDS: CardDef[] = [
     getActions: () => [{ label: 'Ver bodega', href: '/bodega', primary: true }],
   },
   {
-    key: 'reportes', href: '/reportes', label: 'Reportes', Icon: BarChart3, span: 4,
+    key: 'reportes', href: '/reportes', label: 'Reportes', Icon: BarChart3,
     getKpi: (p) => p.cruzadosHoy ?? 0,
     getSubtitle: (p) => {
       const hoy = p.cruzadosHoy ?? 0
       return hoy > 0 ? 'cruzados hoy — en movimiento' : 'Sin cruces hoy — todo fluye'
     },
     getActions: () => [{ label: 'Abrir reportes', href: '/reportes', primary: true }],
+  },
+  {
+    key: 'tipo_cambio', href: '/financiero', label: 'Tipo de Cambio', Icon: TrendingUp,
+    getKpi: (p) => p.exchangeRate ?? 0,
+    getSubtitle: (p) => {
+      if (!p.exchangeRate) return 'Sin datos — verificar'
+      return 'MXN/USD — Banxico FIX'
+    },
+    getActions: () => [{ label: 'Ver historico', href: '/financiero', primary: true }],
+  },
+  // ── Row 3: Intelligence ──
+  {
+    key: 'puente', href: '/cruces', label: 'Puente WTB', Icon: Clock,
+    getKpi: (p) => p.bridgeWaitMinutes ?? null,
+    getSubtitle: (p) => {
+      if (p.bridgeWaitMinutes === null) return 'Sin datos — CBP no disponible'
+      return 'min — World Trade Bridge'
+    },
+    getActions: () => [{ label: 'Ver puentes', href: '/cruces', primary: true }],
+  },
+  {
+    key: 'ultimo_cruce', href: '/traficos', label: 'Ultimo Cruce', Icon: CheckCircle,
+    getKpi: () => null,
+    getSubtitle: (p) => {
+      if (!p.lastCrossing) return 'Sin cruces registrados'
+      return `${p.lastCrossing.trafico} — ${fmtDateTime(p.lastCrossing.fecha)}`
+    },
+    getActions: (p) => {
+      const id = p.lastCrossing?.id
+      return [{ label: 'Ver trafico', href: id ? `/traficos/${id}` : '/traficos', primary: true }]
+    },
+  },
+  {
+    key: 'docs_pendientes', href: '/expedientes', label: 'Docs Pendientes', Icon: ClipboardList,
+    getKpi: (p) => p.docsPendientes ?? 0,
+    getSubtitle: (_p, u) => {
+      if (u === 'amber') return 'traficos sin pedimento — completar'
+      return 'Todo recibido — al corriente'
+    },
+    getActions: () => [{ label: 'Ver pendientes', href: '/expedientes', primary: true }],
+  },
+  {
+    key: 'cruz_ai', href: '#', label: 'CRUZ AI', Icon: Sparkles,
+    getKpi: () => null,
+    getSubtitle: (p) => {
+      const pending = p.pendingEntradas + p.enProceso + (p.docsPendientes ?? 0)
+      if (pending > 0) return `${pending} acciones sugeridas`
+      return 'Pregunta lo que necesites'
+    },
+    getActions: (p) => getAgentActions(p),
   },
 ]
 
@@ -123,7 +194,10 @@ export function WorkflowGrid(props: WorkflowGridProps) {
       pendingEntradas: props.pendingEntradas,
       docsFaltantes: props.docsFaltantes ?? 0,
     }
-    return CARDS.map(card => ({ ...card, urgency: getCardUrgency(card.key, kpis) }))
+    return CARDS.map(card => ({
+      ...card,
+      urgency: getCardUrgency(card.key, kpis),
+    }))
   }, [props.enProceso, props.urgentes, props.pendingEntradas, props.docsFaltantes])
 
   if (isMobile) {
@@ -146,15 +220,14 @@ export function WorkflowGrid(props: WorkflowGridProps) {
             variant="uniform"
             actions={card.getActions(props, card.urgency)}
             urgency={card.urgency}
-            delay={i * 60}
-            spanFull={i === allCards.length - 1 && allCards.length % 2 !== 0}
+            delay={i * 40}
           />
         ))}
       </div>
     )
   }
 
-  // Desktop: 12-column grid — row 1 (4×3), row 2 (3×4)
+  // Desktop: 12-col adaptive grid — critical cards span 6, others span 3
   return (
     <div style={{
       display: 'grid',
@@ -162,22 +235,26 @@ export function WorkflowGrid(props: WorkflowGridProps) {
       gridAutoRows: '1fr',
       gap: 16,
       width: '100%',
+      flex: 1,
     }}>
-      {allCards.map((card, i) => (
-        <div key={card.key} style={{ gridColumn: `span ${card.span}` }}>
-          <WorkflowCard
-            href={card.href}
-            label={card.label}
-            Icon={card.Icon}
-            kpi={card.getKpi(props)}
-            subtitle={card.getSubtitle(props, card.urgency)}
-            variant="uniform"
-            actions={card.getActions(props, card.urgency)}
-            urgency={card.urgency}
-            delay={i * 60}
-          />
-        </div>
-      ))}
+      {allCards.map((card, i) => {
+        const span = (card.urgency === 'red' || card.urgency === 'amber') ? 6 : 3
+        return (
+          <div key={card.key} style={{ gridColumn: `span ${span}` }}>
+            <WorkflowCard
+              href={card.href}
+              label={card.label}
+              Icon={card.Icon}
+              kpi={card.getKpi(props)}
+              subtitle={card.getSubtitle(props, card.urgency)}
+              variant="uniform"
+              actions={card.getActions(props, card.urgency)}
+              urgency={card.urgency}
+              delay={i * 40}
+            />
+          </div>
+        )
+      })}
     </div>
   )
 }

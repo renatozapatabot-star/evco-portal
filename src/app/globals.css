@@ -196,7 +196,16 @@
 .cruz-dark tr.row-even { background: var(--bg-card); }
 .cruz-dark tr.row-odd { background: rgba(255,255,255,0.02); }
 .cruz-dark .cruz-table tr:hover { background: rgba(255,255,255,0.04); }
-.cruz-dark .mn-nav { background: var(--bg-main); border-top-color: rgba(255,255,255,0.06); }
+.cruz-dark .mn-nav { background: #1A1A1A; border-top-color: rgba(201,168,76,0.15); }
+.cruz-dark .mn-nav .mn-tab { color: rgba(255,255,255,0.5); }
+.cruz-dark .mn-nav .mn-tab.active { color: var(--gold, #C9A84C); }
+.cruz-dark .mn-nav .mn-label { color: inherit; }
+
+/* ── System mood backgrounds ── */
+.mood-cleared { background: radial-gradient(ellipse at top center, rgba(22,163,74,0.06) 0%, #111111 40%, #0A0A0A 100%) !important; background-attachment: fixed; }
+.mood-calm { background: radial-gradient(ellipse at top center, #1A1A1A 0%, #111111 50%, #0A0A0A 100%) !important; background-attachment: fixed; }
+.mood-busy { background: radial-gradient(ellipse at top center, rgba(217,119,6,0.05) 0%, #111111 40%, #0A0A0A 100%) !important; background-attachment: fixed; }
+.mood-critical { background: radial-gradient(ellipse at top center, rgba(220,38,38,0.06) 0%, #111111 40%, #0A0A0A 100%) !important; background-attachment: fixed; }
 
 /* ── Reset & Base ── */
 * {

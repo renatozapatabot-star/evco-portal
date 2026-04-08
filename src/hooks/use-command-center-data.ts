@@ -40,6 +40,12 @@ export interface CommandCenterData {
   expedientesTotal: number
   facturacionMes: number
   cruzadosEsteMes: number
+  // New: real-time intelligence
+  bridgeWaitMinutes: number | null
+  exchangeRate: number | null
+  exchangeRateDate: string | null
+  lastCrossing: { trafico: string; fecha: string; id?: string } | null
+  docsPendientes: number
 }
 
 interface UseCommandCenterReturn {
@@ -64,9 +70,14 @@ const EMPTY: CommandCenterData = {
   expedientesTotal: 0,
   facturacionMes: 0,
   cruzadosEsteMes: 0,
+  bridgeWaitMinutes: null,
+  exchangeRate: null,
+  exchangeRateDate: null,
+  lastCrossing: null,
+  docsPendientes: 0,
 }
 
-function computeMonthlyMetrics(allT: TraficoRow[]) {
+function computeDerivedMetrics(allT: TraficoRow[]) {
   const thisMonth = new Date().toISOString().slice(0, 7)
   const pedimentosThisMonth = new Set(
     allT.filter(t => t.pedimento && (t.fecha_cruce || t.updated_at || '').slice(0, 7) === thisMonth)
@@ -80,7 +91,38 @@ function computeMonthlyMetrics(allT: TraficoRow[]) {
     (t.estatus || '').toLowerCase().includes('cruz') &&
     (t.fecha_cruce || '').slice(0, 7) === thisMonth
   ).length
-  return { pedimentosThisMonth, expedientesTotal, facturacionMes, cruzadosEsteMes }
+
+  // Last crossing — most recent trafico that crossed
+  const crossed = allT
+    .filter(t => (t.estatus || '').toLowerCase().includes('cruz') && t.fecha_cruce)
+    .sort((a, b) => (b.fecha_cruce || '').localeCompare(a.fecha_cruce || ''))
+  const lastCrossing = crossed.length > 0
+    ? { trafico: crossed[0].trafico, fecha: crossed[0].fecha_cruce!, id: String(crossed[0].id ?? '') }
+    : null
+
+  // Docs pendientes — active traficos (en proceso) that don't have a pedimento yet
+  const docsPendientes = allT.filter(t =>
+    (t.estatus || '').toLowerCase() === 'en proceso' && !t.pedimento
+  ).length
+
+  return { pedimentosThisMonth, expedientesTotal, facturacionMes, cruzadosEsteMes, lastCrossing, docsPendientes }
+}
+
+async function fetchIntelligence(): Promise<{ bridgeWaitMinutes: number | null; exchangeRate: number | null; exchangeRateDate: string | null }> {
+  try {
+    const [bridgeRes, tcRes] = await Promise.all([
+      fetch('/api/bridge-times').then(r => r.ok ? r.json() : null).catch(() => null),
+      fetch('/api/tipo-cambio').then(r => r.ok ? r.json() : null).catch(() => null),
+    ])
+    const wtb = bridgeRes?.bridges?.find((b: { name: string }) => b.name?.includes('World Trade'))
+    return {
+      bridgeWaitMinutes: wtb?.commercial ?? bridgeRes?.fastest?.commercial ?? null,
+      exchangeRate: tcRes?.tc ?? null,
+      exchangeRateDate: tcRes?.fecha ?? null,
+    }
+  } catch {
+    return { bridgeWaitMinutes: null, exchangeRate: null, exchangeRateDate: null }
+  }
 }
 
 export function useCommandCenterData(): UseCommandCenterReturn {
@@ -101,7 +143,7 @@ export function useCommandCenterData(): UseCommandCenterReturn {
       const tmec = calculateTmecSavings(cached.traficos)
       const bultos = cached.entradas.reduce((sum, e) => sum + (Number((e as unknown as Record<string, unknown>).cantidad_bultos) || 0), 0)
       const peso = cached.entradas.reduce((sum, e) => sum + (Number((e as unknown as Record<string, unknown>).peso_bruto) || 0), 0)
-      const monthly = computeMonthlyMetrics(cached.traficos)
+      const derived = computeDerivedMetrics(cached.traficos)
       setData({
         traficos: cached.traficos,
         pendingEntradas: cached.entradas,
@@ -112,7 +154,10 @@ export function useCommandCenterData(): UseCommandCenterReturn {
         tmecSavings: tmec.totalSavings,
         inventarioBultos: bultos,
         inventarioPeso: peso / 1000,
-        ...monthly,
+        ...derived,
+        bridgeWaitMinutes: null,
+        exchangeRate: null,
+        exchangeRateDate: null,
       })
       setLoading(false)
       startRefresh()
@@ -145,8 +190,9 @@ export function useCommandCenterData(): UseCommandCenterReturn {
     Promise.all([
       fetch(`/api/data?${trafParams}`).then(r => r.json()),
       fetch(`/api/data?${entParams}`).then(r => r.json()),
+      fetchIntelligence(),
     ])
-      .then(([trafData, entData]) => {
+      .then(([trafData, entData, intel]) => {
         const allT: TraficoRow[] = trafData.data ?? []
         const allEnts: Record<string, unknown>[] = entData.data ?? []
         const ents: EntradaPending[] = allEnts
@@ -159,7 +205,7 @@ export function useCommandCenterData(): UseCommandCenterReturn {
         const bultos = unassigned.reduce((sum, e) => sum + (Number(e.cantidad_bultos) || 0), 0)
         const peso = unassigned.reduce((sum, e) => sum + (Number(e.peso_bruto) || 0), 0)
 
-        const monthly = computeMonthlyMetrics(allT)
+        const derived = computeDerivedMetrics(allT)
         setData({
           traficos: allT,
           pendingEntradas: ents,
@@ -170,7 +216,8 @@ export function useCommandCenterData(): UseCommandCenterReturn {
           tmecSavings: tmec.totalSavings,
           inventarioBultos: bultos,
           inventarioPeso: peso / 1000,
-          ...monthly,
+          ...derived,
+          ...intel,
         })
         setCache('command-center', { traficos: allT, entradas: ents })
       })

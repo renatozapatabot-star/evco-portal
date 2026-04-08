@@ -9,7 +9,7 @@ import { ToastProvider, useToast } from './Toast'
 import { useKeyboardShortcuts } from '@/hooks/use-shortcuts'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { usePullToRefresh } from '@/hooks/use-pull-refresh'
-import { MobileBottomNav } from './mobile-bottom-nav'
+// MobileBottomNav removed — navigation via topbar + floating CRUZ chat
 import { WelcomeOverlay } from './WelcomeOverlay'
 import { CruzChatBubble } from './cruz-chat-bubble'
 import { getCookieValue } from '@/lib/client-config'
@@ -234,12 +234,12 @@ export default function DashboardShellClient({ children }: Props) {
       <CommandPalette />
       {!isMobile && <ShortcutHelp />}
 
-      {isMobile && <MobileBottomNav />}
+      {/* Bottom nav removed — navigation via topbar logo, search icon, and floating CRUZ chat */}
 
       {/* Offline banner */}
       {isOffline && (
         <div style={{
-          position: 'fixed', bottom: 80, left: '50%', transform: 'translateX(-50%)',
+          position: 'fixed', bottom: 20, left: '50%', transform: 'translateX(-50%)',
           zIndex: 9998, background: 'var(--navy-900)', color: 'var(--bg-card)',
           padding: '10px 24px', borderRadius: 'var(--radius-lg)',
           fontSize: 13, fontWeight: 600, boxShadow: '0 4px 24px rgba(0,0,0,0.3)',
@@ -261,7 +261,7 @@ export default function DashboardShellClient({ children }: Props) {
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           aria-label="Volver arriba"
           style={{
-            position: 'fixed', bottom: 90, right: 20, zIndex: 40,
+            position: 'fixed', bottom: 24, right: 20, zIndex: 40,
             width: 40, height: 40, borderRadius: '50%',
             background: 'var(--navy-900)', color: 'var(--bg-card)',
             border: 'none', cursor: 'pointer', fontSize: 16,

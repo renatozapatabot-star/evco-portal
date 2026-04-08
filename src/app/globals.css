@@ -342,6 +342,8 @@ body {
 }
 .topbar-mobile-spacer { display: none; }
 @media (max-width: 767px) {
+  .cruz-topbar--client { padding: 8px 12px; gap: 12px; }
+  .topbar-logo-text { font-size: 16px; }
   .topbar-client-name { display: none; }
   .topbar-search-wide { display: none; }
   .topbar-search-icon-mobile { display: flex; }

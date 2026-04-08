@@ -194,7 +194,7 @@ export function WorkflowGrid(props: WorkflowGridProps) {
         display: 'grid',
         gridTemplateColumns: 'repeat(2, 1fr)',
         gridAutoRows: '1fr',
-        gap: 12,
+        gap: 8,
         width: '100%',
       }}>
         {allCards.map((card, i) => (

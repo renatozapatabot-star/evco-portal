@@ -129,7 +129,7 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
     <div
       className={`mood-${mood}`}
       style={{
-        padding: isMobile ? '8px 8px 80px' : '16px 48px 32px',
+        padding: isMobile ? '8px 8px 16px' : '16px 48px 32px',
         overflowX: 'hidden',
         minHeight: 'calc(100vh - 60px)',
         display: 'flex',

@@ -1,0 +1,64 @@
+'use client'
+
+import type { Urgency } from '@/lib/card-urgency'
+
+interface CruzAvatarProps {
+  size: 48 | 36 | 32
+  mood: Urgency | 'green'
+  onClick?: () => void
+  className?: string
+}
+
+const MOOD_GLOW: Record<string, string> = {
+  green: '0 0 0 3px rgba(22,163,74,0.3), 0 0 12px rgba(22,163,74,0.15)',
+  amber: '0 0 0 3px rgba(217,119,6,0.3), 0 0 12px rgba(217,119,6,0.15)',
+  red: '0 0 0 3px rgba(220,38,38,0.3), 0 0 12px rgba(220,38,38,0.15)',
+  neutral: '0 0 0 3px rgba(155,155,155,0.2), 0 0 8px rgba(155,155,155,0.1)',
+}
+
+const FONT_SIZE: Record<number, number> = { 48: 20, 36: 15, 32: 13 }
+
+export function CruzAvatar({ size, mood, onClick, className }: CruzAvatarProps) {
+  const interactive = !!onClick
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={!interactive}
+      className={className}
+      aria-label="CRUZ AI"
+      style={{
+        width: size,
+        height: size,
+        minWidth: size,
+        minHeight: size,
+        borderRadius: '50%',
+        background: 'linear-gradient(135deg, #C9A84C, #8B6914)',
+        border: 'none',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        cursor: interactive ? 'pointer' : 'default',
+        boxShadow: MOOD_GLOW[mood] || MOOD_GLOW.green,
+        animation: 'cruzMoodPulse 2s ease-in-out infinite',
+        transition: 'box-shadow 300ms ease',
+        padding: 0,
+        flexShrink: 0,
+      }}
+    >
+      <span
+        style={{
+          fontFamily: 'Georgia, "Times New Roman", serif',
+          fontSize: FONT_SIZE[size] || 16,
+          fontWeight: 700,
+          color: '#0B1623',
+          lineHeight: 1,
+          userSelect: 'none',
+        }}
+      >
+        Z
+      </span>
+    </button>
+  )
+}

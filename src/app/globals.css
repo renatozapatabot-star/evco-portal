@@ -1214,17 +1214,23 @@ button:active:not(:disabled), .btn:active:not(:disabled) {
 .mn-z {
   width: 60px;
   height: 60px;
-  background: var(--navy-900);
-  border: 2px solid var(--sand-400);
+  background: linear-gradient(135deg, #C9A84C, #8B6914);
+  border: none;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--font-mono);
+  font-family: Georgia, "Times New Roman", serif;
   font-size: 20px;
-  font-weight: 800;
-  color: var(--sand-400);
+  font-weight: 700;
+  color: #0B1623;
   margin-top: -8px;
+}
+
+/* CRUZ Avatar mood ring pulse */
+@keyframes cruzMoodPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
 }
 
 /* Touch target minimums — 60px CRUZ standard (not 44px WCAG) */

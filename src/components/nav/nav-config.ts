@@ -2,7 +2,7 @@ import {
   LayoutDashboard, Truck, FileText, FolderOpen,
   BarChart3, DollarSign, Users2, BookOpen,
   Shield, Calendar, Award,
-  Settings, MessageSquare, Package,
+  Settings, Package,
   History, Clock, ClipboardList,
   Warehouse, Bot, Rocket, Tags, Layers, TrendingUp, Search,
   Mail, FileEdit, Activity, Radio, Phone, Code, Briefcase, Mic, Brain,
@@ -64,7 +64,7 @@ export const INTERNAL_GROUPS: NavGroup[] = [
       { href: '/war-room',       label: 'War Room',       icon: Radio },
       { href: '/clasificar',     label: 'Clasificar',     icon: Tags },
       { href: '/lotes',          label: 'Lotes',          icon: Layers },
-      { href: '/traficos',       label: 'Traficos',       icon: Truck },
+      { href: '/traficos',       label: 'Tráficos',       icon: Truck },
       { href: '/entradas',       label: 'Entradas',       icon: Package },
       { href: '/bodega',         label: 'Inventario',     icon: Warehouse },
       { href: '/pedimentos',     label: 'Pedimentos',     icon: FileText },
@@ -144,7 +144,6 @@ export const CLIENT_NAV: NavTopLevel[] = [
   { href: '/reportes',     label: 'Reportes',             icon: BarChart3 },
   { href: '/financiero',   label: 'Financiero',           icon: DollarSign },
   { href: '/documentos',   label: 'Documentos',           icon: FolderOpen },
-  { href: '/cruz',         label: 'CRUZ AI',              icon: MessageSquare, gold: true },
 ]
 
 // ---------------------------------------------------------------------------
@@ -175,9 +174,8 @@ export const MOBILE_INTERNAL_TABS: MobileTab[] = [
 
 export const MOBILE_CLIENT_TABS: MobileTab[] = [
   { href: '/',           label: 'Inicio',        icon: LayoutDashboard },
-  { href: '/traficos',   label: 'Tráficos',      icon: Truck },
-  { href: '/expedientes', label: 'Expedientes',  icon: FolderOpen },
-  { href: '/documentos', label: 'Documentos',    icon: FolderOpen },
+  { href: '#cruz-ai',    label: '',              icon: null, center: true },
+  { href: '#buscar',     label: 'Buscar',        icon: Search },
 ]
 
 // ---------------------------------------------------------------------------
@@ -246,7 +244,6 @@ export const CLIENT_ROUTES = [
   '/reportes',
   '/expedientes',
   '/bodega',
-  '/cruz',
   '/catalogo',
   '/anexo24',
   '/exportar',

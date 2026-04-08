@@ -48,13 +48,18 @@ export function useConfetti() {
 
 /**
  * Auto-fires confetti when `trigger` changes to true.
+ * Uses sessionStorage guard so it only fires once per session per id.
  */
-export function Celebrate({ trigger }: { trigger: boolean }) {
+export function Celebrate({ trigger, id = 'default' }: { trigger: boolean; id?: string }) {
   const fire = useConfetti()
 
   useEffect(() => {
-    if (trigger) fire()
-  }, [trigger, fire])
+    if (!trigger) return
+    const key = `cruz_celebrated_${id}`
+    if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem(key)) return
+    if (typeof sessionStorage !== 'undefined') sessionStorage.setItem(key, '1')
+    fire()
+  }, [trigger, fire, id])
 
   return null
 }

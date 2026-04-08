@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from 'react'
 import { CheckCircle, X } from 'lucide-react'
 import { getCookieValue } from '@/lib/client-config'
 import ClientInicioView from '@/components/views/client-inicio-view'
+import { Celebrate } from '@/components/celebrate'
 import { fmtId } from '@/lib/format-utils'
 import { getSmartGreeting } from '@/lib/greeting'
 import { dashboardStory } from '@/lib/data-stories'
@@ -100,16 +101,24 @@ function AdminView() {
 
   return (
     <div className="admin-center">
+      <Celebrate trigger={level === 'green' && !loading} id="admin-allgreen" />
       {adminGreeting && (
         <div className="text-display" style={{ marginBottom: 16, textAlign: 'center' }}>{adminGreeting}</div>
       )}
-      <div className="card admin-status-card">
+      <div
+        className="card admin-status-card"
+        style={level === 'green' ? { background: 'linear-gradient(180deg, rgba(22,163,74,0.04) 0%, #FFFFFF 60%)' } : undefined}
+      >
         {/* Status dot + headline */}
         <div className="admin-headline">
-          <span
-            className={`admin-dot ${level !== 'green' ? 'dot-live' : ''}`}
-            style={{ background: dotColor }}
-          />
+          {level === 'green' ? (
+            <CheckCircle size={24} style={{ color: T.green, flexShrink: 0 }} />
+          ) : (
+            <span
+              className="admin-dot dot-live"
+              style={{ background: dotColor }}
+            />
+          )}
           <span className="text-display">{headline}</span>
         </div>
 
@@ -144,7 +153,7 @@ function AdminView() {
    ═══════════════════════════════════════════════════════════ */
 interface ActionItem {
   id: string
-  type: 'urgent' | 'today' | 'new' | 'bridge'
+  type: 'urgent' | 'draft' | 'today' | 'new' | 'bridge'
   icon: string
   label: string
   detail: string
@@ -174,13 +183,17 @@ function BrokerView() {
     const pipeParams = new URLSearchParams({
       table: 'pipeline_overview', limit: '500',
     })
+    const draftParams = new URLSearchParams({
+      table: 'drafts', limit: '50',
+    })
     Promise.all([
       fetch(`/api/data?${trafParams}`).then(r => r.json()),
       fetch('/api/data?table=trafico_completeness&limit=5000').then(r => r.json()),
       fetch(`/api/data?${entParams}`).then(r => r.json()),
       fetch('/api/bridge-times').then(r => r.json()),
       fetch(`/api/data?${pipeParams}`).then(r => r.json()),
-    ]).then(([trafData, compData, entData, bridgeData, pipeData]) => {
+      fetch(`/api/data?${draftParams}`).then(r => r.json()),
+    ]).then(([trafData, compData, entData, bridgeData, pipeData, draftData]) => {
       const allTraficos: TraficoRow[] = trafData.data ?? []
       const active = allTraficos.filter(t => !(t.estatus || '').toLowerCase().includes('cruz'))
       setActiveCount(active.length)
@@ -240,6 +253,48 @@ function BrokerView() {
         })
       }
 
+      // Drafts pending review → DRAFT items
+      const drafts = (draftData.data ?? []) as { id: string; status: string; trafico_id: string | null }[]
+      const pendingDrafts = drafts.filter(d => d.status === 'ready_for_review' || d.status === 'ready')
+      if (pendingDrafts.length > 0) {
+        queue.push({
+          id: 'pending-drafts',
+          type: 'draft',
+          icon: '\u270F\uFE0F',
+          label: `${pendingDrafts.length} borrador${pendingDrafts.length !== 1 ? 'es' : ''} listo${pendingDrafts.length !== 1 ? 's' : ''}`,
+          detail: 'Pendientes de revisión',
+          href: '/drafts',
+        })
+      }
+
+      // Ready to file → action item (not just KPI)
+      const rtfCount = pipeRows.filter(r =>
+        (r.pipeline_stage || '').toLowerCase().replace(/\s+/g, '_') === 'ready_to_file'
+      ).length
+      if (rtfCount > 0) {
+        queue.push({
+          id: 'ready-to-file',
+          type: 'today',
+          icon: '\uD83D\uDE80',
+          label: `${rtfCount} listo${rtfCount !== 1 ? 's' : ''} para despacho`,
+          detail: 'Tráficos completos — listos para cruzar',
+          href: '/traficos?pipeline_stage=ready_to_file',
+        })
+      }
+
+      // Unassigned entradas → TODAY items
+      const unassigned = recentEntradas.filter(e => !(e as Record<string, unknown>).trafico)
+      if (unassigned.length > 0) {
+        queue.push({
+          id: 'unassigned-entradas',
+          type: 'today',
+          icon: '\uD83D\uDCE8',
+          label: `${unassigned.length} entrada${unassigned.length !== 1 ? 's' : ''} sin asignar`,
+          detail: 'Sin tráfico vinculado',
+          href: '/bodega',
+        })
+      }
+
       // Bridge times > 30 min → BRIDGE items
       const bridges: BridgeTime[] = bridgeData?.bridges ?? []
       const slowBridges = bridges.filter(b => b.commercial !== null && b.commercial! > 30)
@@ -255,10 +310,10 @@ function BrokerView() {
         })
       }
 
-      // Sort: urgent → today → new → bridge, max 8
-      const typeOrder = { urgent: 0, today: 1, new: 2, bridge: 3 }
+      // Sort: urgent → draft → today → new → bridge, max 10
+      const typeOrder: Record<string, number> = { urgent: 0, draft: 1, today: 2, new: 3, bridge: 4 }
       queue.sort((a, b) => typeOrder[a.type] - typeOrder[b.type])
-      setItems(queue.slice(0, 8))
+      setItems(queue.slice(0, 10))
     }).catch((err: unknown) => console.error('[inicio] attention feed:', (err as Error).message)).finally(() => setLoading(false))
   }, [])
 
@@ -351,7 +406,7 @@ function BrokerView() {
           </div>
           <button
             onClick={() => { dismissSuggestion(suggestion.id); setSuggestionDismissed(true) }}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 8, minHeight: 44, color: 'var(--text-muted)' }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 8, minHeight: 60, color: 'var(--text-muted)' }}
             aria-label="Descartar"
           >
             <X size={16} />
@@ -360,17 +415,26 @@ function BrokerView() {
       )}
 
       {/* Action queue */}
+      <Celebrate trigger={items.length === 0 && !loading} id="broker-allgreen" />
       {items.length === 0 ? (
-        <div className={`status-banner ${activeCount === 0 ? 'ok' : 'ok'}`}>
+        <div className="status-banner allgreen">
           <div className="status-banner-icon">
-            <CheckCircle size={24} />
+            <CheckCircle size={32} />
           </div>
           <div>
             <div className="status-banner-text">
-              {activeCount === 0 ? 'Sin pendientes · Buen día' : `Todo en orden · ${activeCount} tráficos en curso`}
+              {activeCount === 0 ? 'Día despejado' : 'Todo al corriente'}
+            </div>
+            <div className="status-banner-sub">
+              {cruzadosHoy > 0
+                ? `${cruzadosHoy} tráfico${cruzadosHoy !== 1 ? 's' : ''} cruzado${cruzadosHoy !== 1 ? 's' : ''} hoy`
+                : activeCount > 0
+                  ? `${activeCount} tráficos en curso — sin acciones pendientes`
+                  : 'Sin pendientes · Buen día'
+              }
             </div>
             {activeCount === 0 && (
-              <Link href="/traficos" style={{ display: 'inline-flex', alignItems: 'center', marginTop: 8, fontSize: 13, fontWeight: 600, color: 'var(--gold-dark, #8B6914)', textDecoration: 'none', minHeight: 44, padding: '8px 0' }}>
+              <Link href="/traficos" style={{ display: 'inline-flex', alignItems: 'center', marginTop: 8, fontSize: 13, fontWeight: 600, color: 'var(--gold-dark, #8B6914)', textDecoration: 'none', minHeight: 60, padding: '8px 0' }}>
                 Ver todos los tráficos →
               </Link>
             )}
@@ -379,7 +443,7 @@ function BrokerView() {
       ) : (
         <div className="broker-queue">
           {items.map(item => {
-            const borderColor = item.type === 'urgent' ? 'var(--danger-500)' : item.type === 'today' ? 'var(--warning)' : item.type === 'new' ? 'var(--gold)' : 'var(--slate-400)'
+            const borderColor = item.type === 'urgent' ? 'var(--danger-500)' : item.type === 'draft' ? 'var(--warning)' : item.type === 'today' ? 'var(--gold)' : item.type === 'new' ? 'var(--gold)' : 'var(--slate-400)'
             return (
               <Link key={item.id} href={item.href} className="broker-action-item" style={{ borderLeftColor: borderColor }}>
                 <span className="broker-action-icon">{item.icon}</span>
@@ -398,11 +462,11 @@ function BrokerView() {
       <div className="kpi-grid" style={{ marginTop: 32 }}>
         {[
           { href: '/traficos?estatus=En Proceso', value: activeCount, label: 'En proceso', color: 'var(--info-500)', dim: false },
-          { href: '/traficos?estatus=Cruzado', value: cruzadosHoy, label: 'Cruzados hoy', color: 'var(--success-500)', dim: cruzadosHoy === 0 },
+          { href: '/traficos?estatus=Cruzado', value: cruzadosHoy, label: 'Cruzados hoy', color: 'var(--success-500)', dim: cruzadosHoy === 0 && items.length > 0 },
           { href: '/traficos?pipeline_stage=ready_to_file', value: readyToFile, label: 'Listos despacho', color: 'var(--purple-500)', dim: false },
         ].map(kpi => (
           <Link key={kpi.label} href={kpi.href} style={{ textDecoration: 'none', color: 'inherit' }}>
-            <div className="kpi-card" style={{ borderTop: `3px solid ${kpi.color}`, textAlign: 'center' }}>
+            <div className={`kpi-card${items.length === 0 ? ' allgreen' : ''}`} style={{ borderTop: `3px solid ${kpi.color}`, textAlign: 'center' }}>
               <div className="kpi-card-value" style={{ color: kpi.dim ? 'var(--slate-300)' : undefined }}>{kpi.value}</div>
               <div className="kpi-card-label">{kpi.label}</div>
             </div>

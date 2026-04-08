@@ -19,6 +19,7 @@ function LoginContent() {
   const [loading, setLoading] = useState(false)
   const [session, setSession] = useState<{ role: string; name: string } | null>(null)
   const [mounted, setMounted] = useState(false)
+  const [entering, setEntering] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -42,7 +43,10 @@ function LoginContent() {
         body: JSON.stringify({ password }),
       })
       if (res.ok) {
+        setEntering(true)
+        if (typeof sessionStorage !== 'undefined') sessionStorage.setItem('cruz_just_entered', '1')
         const next = searchParams.get('next')
+        await new Promise(resolve => setTimeout(resolve, 300))
         router.push(next && next.startsWith('/') ? next : '/')
         router.refresh()
       } else {
@@ -75,8 +79,8 @@ function LoginContent() {
       <div
         className="login-container"
         style={{
-          opacity: mounted ? 1 : 0,
-          transform: mounted ? 'translateY(0)' : 'translateY(12px)',
+          opacity: entering ? 0 : mounted ? 1 : 0,
+          transform: entering ? 'translateY(8px) scale(0.98)' : mounted ? 'translateY(0)' : 'translateY(12px)',
           transition: 'opacity 500ms cubic-bezier(.2,0,0,1), transform 500ms cubic-bezier(.2,0,0,1)',
         }}
       >
@@ -350,7 +354,7 @@ function LoginContent() {
           display: block;
           font-size: 11px;
           font-weight: 600;
-          letter-spacing: 0.06em;
+          letter-spacing: 0.08em;
           text-transform: uppercase;
           color: #9B9B9B;
           margin-bottom: 6px;
@@ -462,6 +466,9 @@ function LoginContent() {
         @media (max-width: 480px) {
           .login-card { padding: 32px 24px; border-radius: 16px; }
           .login-cruz-wordmark { font-size: 34px; letter-spacing: 0.18em; }
+        }
+        @media (max-width: 375px) {
+          .login-session-actions { gap: 8px; }
         }
       `}</style>
     </div>

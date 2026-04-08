@@ -15,12 +15,13 @@ import { DashboardSkeleton } from '@/components/skeletons/DashboardSkeleton'
 import { Celebrate } from '@/components/celebrate'
 
 // ── State mood — drives background atmosphere ──
-type SystemMood = 'cleared' | 'calm' | 'busy' | 'critical'
+type SystemMood = 'cleared' | 'calm' | 'busy' | 'critical' | 'allgreen'
 
 function getSystemMood(enProceso: number, urgentes: number, pendingEntradas: number): SystemMood {
   if (urgentes > 0) return 'critical'
   if (enProceso > 3 || pendingEntradas > 5) return 'busy'
-  if (enProceso === 0 && pendingEntradas === 0) return 'cleared'
+  if (enProceso === 0 && pendingEntradas === 0) return 'allgreen'
+  if (enProceso <= 3 && urgentes === 0) return 'cleared'
   return 'calm'
 }
 
@@ -183,7 +184,7 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
           <span style={{ fontSize: 13, fontWeight: 700, color: criticalCount > 0 ? '#DC2626' : '#16A34A' }}>
             {criticalCount > 0
               ? `${criticalCount} pendiente${criticalCount !== 1 ? 's' : ''} critico${criticalCount !== 1 ? 's' : ''}`
-              : 'Todo al corriente — sin pendientes criticos'
+              : mood === 'allgreen' ? 'Todo completado — excelente día' : 'Todo al corriente — sin pendientes criticos'
             }
             {criticalCount > 0 && (
               <span style={{ fontSize: 11, marginLeft: 6, color: 'var(--text-muted)' }}>{criticosOpen ? '▲' : '▼'}</span>
@@ -238,19 +239,28 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
 
       {/* ── Client calm status (replaces critical banner) ── */}
       {isClient && (
-        <div style={{
-          padding: isMobile ? '10px 12px' : '10px 16px',
-          borderRadius: 10, marginBottom: 12,
-          borderLeft: '3px solid var(--success, #16A34A)',
-          background: 'rgba(22,163,74,0.06)',
-        }}>
-          <span style={{ fontSize: 13, fontWeight: 700, color: '#16A34A' }}>
-            {data.enProceso > 0
-              ? `Todo en orden · ${data.enProceso} envío${data.enProceso !== 1 ? 's' : ''} en tránsito`
-              : 'Sin novedades · todo fluye'
-            }
-          </span>
-        </div>
+        data.enProceso === 0 ? (
+          <div className="status-banner allgreen" style={{ marginBottom: 12 }}>
+            <div className="status-banner-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+            <div>
+              <div className="status-banner-text">Todos sus envíos al corriente</div>
+              <div className="status-banner-sub">Sin novedades — todo fluye</div>
+            </div>
+          </div>
+        ) : (
+          <div style={{
+            padding: isMobile ? '10px 12px' : '10px 16px',
+            borderRadius: 10, marginBottom: 12,
+            borderLeft: '3px solid var(--success, #16A34A)',
+            background: 'rgba(22,163,74,0.06)',
+          }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: '#16A34A' }}>
+              {`Todo en orden · ${data.enProceso} envío${data.enProceso !== 1 ? 's' : ''} en tránsito`}
+            </span>
+          </div>
+        )
       )}
 
       {/* ── DAILY COMPLETION LOOP (operator only) ── */}
@@ -258,22 +268,24 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
         padding: isMobile ? '10px 12px' : '10px 16px',
         borderRadius: 10,
         marginBottom: 16,
-        background: 'var(--bg-card, #FFFFFF)',
-        border: '1px solid var(--border, #E8E5E0)',
+        background: completionPct >= 100 ? 'linear-gradient(135deg, rgba(22,163,74,0.06), var(--bg-card, #FFFFFF))' : 'var(--bg-card, #FFFFFF)',
+        border: completionPct >= 100 ? '1px solid rgba(22,163,74,0.15)' : '1px solid var(--border, #E8E5E0)',
         display: 'flex',
         alignItems: 'center',
         gap: 14,
       }}>
-        <ProgressRing pct={completionPct} size={isMobile ? 52 : 56} />
+        <div className={completionPct >= 100 ? 'ring-complete' : ''}>
+          <ProgressRing pct={completionPct} size={isMobile ? 52 : 56} />
+        </div>
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary, #1A1A1A)' }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: completionPct >= 100 ? '#16A34A' : 'var(--text-primary, #1A1A1A)' }}>
             {totalActions > 0
               ? `Faltan ${totalActions} accion${totalActions !== 1 ? 'es' : ''}`
-              : 'Excelente dia'
+              : 'Día perfecto'
             }
           </div>
           <div style={{ fontSize: 11, color: 'var(--text-muted, #9B9B9B)', marginTop: 2 }}>
-            {completionPct >= 100 ? 'Todo completado'
+            {completionPct >= 100 ? 'Todo completado — sin pendientes'
               : completionPct >= 80 ? 'Casi listo'
               : completionPct >= 50 ? 'Buen ritmo'
               : `${completedToday} completado${completedToday !== 1 ? 's' : ''} hoy`
@@ -281,6 +293,7 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
           </div>
         </div>
       </div>}
+      <Celebrate trigger={completionPct >= 100} id="operator-allgreen" />
 
       {/* ── CARD GRID ── */}
       <WorkflowGrid

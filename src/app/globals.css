@@ -206,6 +206,7 @@
 .mood-calm { background: radial-gradient(ellipse at top center, #1A1A1A 0%, #111111 50%, #0A0A0A 100%) !important; background-attachment: fixed; }
 .mood-busy { background: radial-gradient(ellipse at top center, rgba(217,119,6,0.05) 0%, #111111 40%, #0A0A0A 100%) !important; background-attachment: fixed; }
 .mood-critical { background: radial-gradient(ellipse at top center, rgba(220,38,38,0.06) 0%, #111111 40%, #0A0A0A 100%) !important; background-attachment: fixed; }
+.mood-allgreen { background: radial-gradient(ellipse at top center, rgba(22,163,74,0.10) 0%, rgba(22,163,74,0.03) 35%, #111111 55%, #0A0A0A 100%) !important; background-attachment: fixed; }
 
 /* ── Reset & Base ── */
 * {
@@ -1229,6 +1230,42 @@ body {
 
 .status-banner.ok .status-banner-sub { color: var(--green-600); }
 
+/* ── All-green celebration banner ── */
+.status-banner.allgreen {
+  background: linear-gradient(135deg, var(--green-50), rgba(22,163,74,0.08));
+  border: 1px solid var(--green-200);
+  box-shadow: 0 0 20px rgba(22,163,74,0.06);
+}
+.status-banner.allgreen .status-banner-icon {
+  background: var(--green-100);
+  color: var(--green-600);
+  width: 44px;
+  height: 44px;
+  box-shadow: 0 0 12px rgba(22,163,74,0.15);
+}
+.status-banner.allgreen .status-banner-text {
+  color: var(--green-800);
+  font-size: 15px;
+  font-weight: 700;
+}
+.status-banner.allgreen .status-banner-sub { color: var(--green-600); }
+
+/* ── Progress ring celebration ── */
+@keyframes ringCelebrate {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+.ring-complete {
+  animation: ringCelebrate 600ms ease-out;
+}
+
+/* ── KPI card all-green glow ── */
+.kpi-card.allgreen {
+  border-top-color: var(--success) !important;
+  box-shadow: 0 -2px 8px rgba(22,163,74,0.08);
+}
+
 /* ── Powered-by footer ── */
 .powered-footer {
   text-align: center;
@@ -1992,6 +2029,7 @@ tr.row-odd  { background: rgba(248,250,252,0.5); }
   height: 12px;
   border-radius: 50%;
   flex-shrink: 0;
+  transition: background 600ms ease;
 }
 
 .admin-count-primary {

@@ -145,6 +145,7 @@ export function WorkflowGrid(props: WorkflowGridProps) {
             subtitle={card.getSubtitle(props, card.urgency)}
             variant="uniform"
             actions={card.getActions(props, card.urgency)}
+            urgency={card.urgency}
             delay={i * 60}
             spanFull={i === allCards.length - 1 && allCards.length % 2 !== 0}
           />
@@ -172,6 +173,7 @@ export function WorkflowGrid(props: WorkflowGridProps) {
             subtitle={card.getSubtitle(props, card.urgency)}
             variant="uniform"
             actions={card.getActions(props, card.urgency)}
+            urgency={card.urgency}
             delay={i * 60}
           />
         </div>

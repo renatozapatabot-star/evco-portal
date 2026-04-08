@@ -22,22 +22,14 @@ function MarkSVG({ size }: { size: number }) {
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      {/* Stylized Z/compass: diagonal cross with arrow direction */}
-      <path
-        d="M6 6L18 6L6 18L18 18"
-        stroke="#0B1623"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      {/* Upper-right arrow tip — direction indicator */}
-      <path
-        d="M14 3L18 6L15 9"
-        stroke="#0B1623"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+      {/* Geometric crosshair — evokes crossing/compass */}
+      <line x1="12" y1="3" x2="12" y2="21" stroke="#0B1623" strokeWidth="2" strokeLinecap="round" />
+      <line x1="3" y1="12" x2="21" y2="12" stroke="#0B1623" strokeWidth="2" strokeLinecap="round" />
+      {/* Diamond center */}
+      <path d="M12 8.5L15.5 12L12 15.5L8.5 12Z" fill="#0B1623" />
+      {/* Directional arrow tips — north and east */}
+      <path d="M12 3L14 6H10Z" fill="#0B1623" />
+      <path d="M21 12L18 10V14Z" fill="#0B1623" />
     </svg>
   )
 }

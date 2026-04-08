@@ -7,7 +7,6 @@ import { useRealtimeTrafico } from '@/hooks/use-realtime-trafico'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useStatusSentence } from '@/hooks/use-status-sentence'
 import { playSound } from '@/lib/sounds'
-import { MissionHeader, getMoodFromCounts } from './MissionHeader'
 import { WorkflowGrid } from './WorkflowGrid'
 import { ActivityPulseSection } from './ActivityPulseSection'
 import { ErrorCard } from '@/components/ui/ErrorCard'
@@ -56,11 +55,8 @@ export function CommandCenterView() {
   const status = useStatusSentence()
   const realtimeToast = useRealtimeToast(lastUpdate)
 
-  const mood = getMoodFromCounts(data.enProceso, data.urgentes || status.urgentes)
-  const sentence = loading ? '' : buildStatusSentence(data.enProceso, data.urgentes || status.urgentes, data.cruzadosHoy || status.cruzadosHoy)
-  const quickAction = buildQuickAction(data.urgentes || status.urgentes, data.pendingEntradas.length)
-
   const openChat = () => { document.dispatchEvent(new CustomEvent('cruz:open-chat')) }
+  void openChat // keep for future use
 
   if (error) {
     return (
@@ -109,16 +105,6 @@ export function CommandCenterView() {
           {realtimeToast}
         </div>
       )}
-
-      {/* Dark Hero Header */}
-      <MissionHeader
-        mood={mood}
-        sentence={sentence}
-        quickAction={quickAction}
-        onAvatarClick={openChat}
-        loading={loading}
-        isMobile={isMobile}
-      />
 
       {/* Away banner */}
       {awayBanner && <div style={{ marginBottom: 16 }}>{awayBanner}</div>}

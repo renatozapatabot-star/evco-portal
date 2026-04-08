@@ -10,6 +10,8 @@ export interface CardAction {
   primary?: boolean
 }
 
+type CardUrgency = 'red' | 'amber' | 'green' | 'neutral'
+
 interface WorkflowCardProps {
   href: string
   label: string
@@ -21,10 +23,13 @@ interface WorkflowCardProps {
   delay?: number
   /** For last card spanning full width on mobile odd count */
   spanFull?: boolean
+  /** Card urgency for border color */
+  urgency?: CardUrgency
 }
 
-export function WorkflowCard({ href, label, Icon, kpi, subtitle, variant, actions, delay = 0, spanFull }: WorkflowCardProps) {
-  const isGood = kpi === 0 || kpi === null
+export function WorkflowCard({ href, label, Icon, kpi, subtitle, variant, actions, delay = 0, spanFull, urgency }: WorkflowCardProps) {
+  const isGood = urgency === 'green' || urgency === 'neutral' || (!urgency && (kpi === 0 || kpi === null))
+  const isUrgent = urgency === 'red' || urgency === 'amber'
 
   // ── UNIFORM VARIANT — all cards same style, full command center feel ──
   if (variant === 'uniform') {
@@ -41,15 +46,21 @@ export function WorkflowCard({ href, label, Icon, kpi, subtitle, variant, action
           padding: '20px 20px',
           borderRadius: 14,
           background: 'var(--bg-elevated, #222222)',
-          border: isGood
-            ? '1px solid rgba(22,163,74,0.25)'
-            : '1px solid rgba(255,255,255,0.08)',
-          borderTop: isGood
-            ? '2px solid rgba(22,163,74,0.5)'
-            : '2px solid rgba(201,168,76,0.4)',
-          boxShadow: isGood
-            ? '0 2px 12px rgba(22,163,74,0.08)'
-            : '0 2px 12px rgba(0,0,0,0.2)',
+          border: isUrgent
+            ? '1px solid rgba(220,38,38,0.25)'
+            : isGood
+              ? '1px solid rgba(22,163,74,0.25)'
+              : '1px solid rgba(255,255,255,0.08)',
+          borderTop: isUrgent
+            ? '3px solid rgba(220,38,38,0.7)'
+            : isGood
+              ? '3px solid rgba(22,163,74,0.5)'
+              : '3px solid rgba(201,168,76,0.4)',
+          boxShadow: isUrgent
+            ? '0 2px 12px rgba(220,38,38,0.1)'
+            : isGood
+              ? '0 2px 12px rgba(22,163,74,0.08)'
+              : '0 2px 12px rgba(0,0,0,0.2)',
           display: 'flex',
           flexDirection: 'column',
           height: '100%',
@@ -68,7 +79,7 @@ export function WorkflowCard({ href, label, Icon, kpi, subtitle, variant, action
         )}
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-          <Icon size={22} strokeWidth={1.5} style={{ color: isGood ? 'rgba(22,163,74,0.7)' : 'rgba(255,255,255,0.5)' }} />
+          <Icon size={22} strokeWidth={1.5} style={{ color: isUrgent ? 'rgba(220,38,38,0.7)' : isGood ? 'rgba(22,163,74,0.7)' : 'rgba(255,255,255,0.5)' }} />
           <span style={{ fontSize: 16, fontWeight: 700, color: '#FFFFFF' }}>{label}</span>
         </div>
 

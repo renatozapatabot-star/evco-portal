@@ -439,12 +439,12 @@ body {
 }
 
 .cruz-topbar {
-  background: var(--navy-900, #0D0D0C);
+  background: #1A1A1A;
   padding: 12px 28px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
+  border-bottom: 1px solid rgba(201,168,76,0.15);
   position: sticky;
   top: 0;
   z-index: 30;

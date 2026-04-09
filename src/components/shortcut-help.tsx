@@ -4,7 +4,7 @@ import { X } from 'lucide-react'
 
 const SHORTCUTS = [
   { section: 'Navegación', items: [
-    { keys: ['⌘','K'], desc: 'Abrir búsqueda global' },
+    { keys: ['Ctrl','K'], desc: 'Abrir búsqueda global' },
     { keys: ['g','d'], desc: 'Ir a Dashboard' },
     { keys: ['g','t'], desc: 'Ir a Tráficos' },
     { keys: ['g','e'], desc: 'Ir a Entradas' },

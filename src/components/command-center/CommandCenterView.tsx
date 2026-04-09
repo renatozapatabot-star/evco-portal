@@ -15,6 +15,7 @@ import { useNetworkStatus } from '@/hooks/use-network-status'
 import { getCookieValue } from '@/lib/client-config'
 import { WorkflowGrid } from './WorkflowGrid'
 import { ActivityPulseSection } from './ActivityPulseSection'
+import { NewsBanner, buildClientItems } from '@/components/cockpit/shared/NewsBanner'
 import { PullRefreshIndicator } from '@/components/broker/PullRefreshIndicator'
 import { ErrorCard } from '@/components/ui/ErrorCard'
 import { DashboardSkeleton } from '@/components/skeletons/DashboardSkeleton'
@@ -322,6 +323,17 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
     >
       {/* Pull-to-refresh indicator */}
       <PullRefreshIndicator pullDistance={pullDistance} isRefreshing={isRefreshing} progress={pullProgress} />
+
+      {/* Client news banner */}
+      {isClient && !loading && (
+        <NewsBanner items={buildClientItems({
+          activeShipments: data.enProceso,
+          cruzadosEsteMes: data.cruzadosEsteMes,
+          facturadoThisMonth: data.facturacionMes,
+          nextCrossing: data.lastCrossing,
+          exchangeRate: data.exchangeRate,
+        })} />
+      )}
 
       {/* Offline/online status */}
       {!network.isOnline && (

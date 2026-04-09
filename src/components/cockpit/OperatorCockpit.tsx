@@ -4,6 +4,7 @@ import type { OperatorData } from './shared/fetchCockpitData'
 import { NextUpHero } from './operator/NextUpHero'
 import { MyDayPanel } from './operator/MyDayPanel'
 import { BlockedPanel } from './operator/BlockedPanel'
+import { NewsBanner, buildOperatorItems } from './shared/NewsBanner'
 
 interface Props {
   data: OperatorData
@@ -15,8 +16,19 @@ export function OperatorCockpit({ data, operatorName, operatorId }: Props) {
   const hour = new Date().getHours()
   const greeting = hour < 12 ? 'Buenos días' : hour < 18 ? 'Buenas tardes' : 'Buenas noches'
 
+  const bannerItems = buildOperatorItems({
+    assigned: data.myDay.assigned,
+    completed: data.myDay.completed,
+    inProgress: data.myDay.inProgress,
+    blockedCount: data.blocked.length,
+    unassignedCount: data.unassignedCount,
+  })
+
   return (
     <div>
+      {/* News Banner */}
+      <NewsBanner items={bannerItems} />
+
       {/* Header */}
       <div style={{ marginBottom: 20 }}>
         <h1 style={{

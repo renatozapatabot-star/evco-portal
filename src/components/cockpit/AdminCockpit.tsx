@@ -7,6 +7,8 @@ import { SmartQueuePanel } from './admin/SmartQueuePanel'
 import { TeamPanel } from './admin/TeamPanel'
 import { ClientsTablePanel } from './admin/ClientsTablePanel'
 import { RightRail } from './admin/RightRail'
+import { NewsBanner, buildAdminItems } from './shared/NewsBanner'
+import { Trend, computeDelta } from './shared/Trend'
 
 interface Props {
   data: AdminData
@@ -23,6 +25,24 @@ export function AdminCockpit({ data, operatorName }: Props) {
   const hour = new Date().getHours()
   const greeting = hour < 12 ? 'Buenos días' : hour < 18 ? 'Buenas tardes' : 'Buenas noches'
   const biz = data.businessSummary
+
+  const overdue = data.escalations.filter(e => {
+    const ageH = (Date.now() - new Date(e.created_at).getTime()) / 3600000
+    return ageH > 24
+  })
+
+  const bannerItems = buildAdminItems({
+    totalTraficos: biz.totalTraficos,
+    activeTraficos: biz.activeTraficos,
+    cruzadosThisMonth: biz.cruzadosThisMonth,
+    cruzadosLastMonth: biz.cruzadosLastMonth,
+    valorYtdUsd: biz.valorYtdUsd,
+    activeClients: biz.activeClients,
+    escalationCount: data.escalations.length,
+    overdueCount: overdue.length,
+    decisionsTotal30d: data.agentDecisions30d.total,
+    accuracy30d: data.agentDecisions30d.accuracy,
+  })
 
   // Business health level
   const healthLevel: 'green' | 'amber' | 'red' =
@@ -52,6 +72,9 @@ export function AdminCockpit({ data, operatorName }: Props) {
 
   return (
     <div>
+      {/* News Banner */}
+      <NewsBanner items={bannerItems} />
+
       {/* Header */}
       <div style={{ marginBottom: 20 }}>
         <h1 style={{

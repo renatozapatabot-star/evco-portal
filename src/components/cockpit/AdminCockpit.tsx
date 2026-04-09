@@ -5,6 +5,7 @@ import { CruzAutonomoPanel } from './admin/CruzAutonomoPanel'
 import { NeedsJudgmentPanel } from './admin/NeedsJudgmentPanel'
 import { SmartQueuePanel } from './admin/SmartQueuePanel'
 import { TeamPanel } from './admin/TeamPanel'
+import { TeamLivePanel } from './admin/TeamLivePanel'
 import { ClientsTablePanel } from './admin/ClientsTablePanel'
 import { RightRail } from './admin/RightRail'
 import { NewsBanner, buildAdminItems } from './shared/NewsBanner'
@@ -180,6 +181,7 @@ export function AdminCockpit({ data, operatorName }: Props) {
           <NeedsJudgmentPanel escalations={data.escalations} />
           <SmartQueuePanel queue={data.smartQueue} />
           <TeamPanel team={data.teamStats} unassigned={data.unassignedCount} />
+          <TeamLivePanel />
           <ClientsTablePanel companies={data.companies} />
         </div>
 

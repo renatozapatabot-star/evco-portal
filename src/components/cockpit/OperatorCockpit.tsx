@@ -4,6 +4,7 @@ import type { OperatorData } from './shared/fetchCockpitData'
 import { NextUpHero } from './operator/NextUpHero'
 import { MyDayPanel } from './operator/MyDayPanel'
 import { BlockedPanel } from './operator/BlockedPanel'
+import { DocumentChaser } from './operator/DocumentChaser'
 import { OperatorSearch } from './operator/OperatorSearch'
 import { PerformanceStrip } from './operator/PerformanceStrip'
 import { NewsBanner, buildOperatorItems } from './shared/NewsBanner'
@@ -55,13 +56,21 @@ export function OperatorCockpit({ data, operatorName, operatorId }: Props) {
 
       {/* Single column, hero first */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 700 }}>
-        <NextUpHero nextUp={data.nextUp} operatorId={operatorId} />
+        {/* MI TURNO — the single most important next action */}
+        <NextUpHero data={data} operatorName={operatorName} />
+
+        {/* Document Chaser — copy-paste WhatsApp messages for missing docs */}
+        <DocumentChaser blocked={data.blocked} operatorName={operatorName} />
+
+        {/* My Day + Team stats */}
         <MyDayPanel
           myDay={data.myDay}
           teamStats={data.teamStats}
           unassignedCount={data.unassignedCount}
           operatorId={operatorId}
         />
+
+        {/* Blocked traficos (those without specific missing docs) */}
         <BlockedPanel blocked={data.blocked} operatorId={operatorId} />
       </div>
     </div>

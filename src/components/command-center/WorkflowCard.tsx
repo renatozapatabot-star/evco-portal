@@ -248,8 +248,9 @@ export function WorkflowCard({
 
   // ── KPI VARIANT — compact strip cell ──
   if (variant === 'kpi') {
-    const isUSD = subtitle.includes('USD')
-    const isDecimal = label === 'T/C' || (kpi !== null && kpi > 0 && kpi < 100 && kpi % 1 !== 0)
+    const isExchangeRate = label === 'T/C'
+    const isUSD = !isExchangeRate && subtitle.includes('USD')
+    const isDecimal = isExchangeRate || (kpi !== null && kpi > 0 && kpi < 100 && kpi % 1 !== 0)
     return (
       <Link href={href} style={{ textDecoration: 'none', display: 'block' }}>
         <motion.div

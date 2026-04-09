@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import { useReducedMotion } from 'framer-motion'
-import { Truck, Package, FolderOpen, FileText, DollarSign, Warehouse, BarChart3, TrendingUp, CheckCircle, ClipboardList, Navigation, LineChart, PiggyBank, Radio, Tags, FileSpreadsheet, Archive, ChevronDown } from 'lucide-react'
+import { Truck, Package, FolderOpen, FileText, DollarSign, Warehouse, BarChart3, CheckCircle, Tags, FileSpreadsheet, Archive, ChevronDown } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { WorkflowCard, type CardAction } from './WorkflowCard'
 import { getCardUrgency, getUrgencyIntensity, INTENSITY_CSS_CLASS, sortByUrgency, type CardKey, type CardKPIs, type Urgency } from '@/lib/card-urgency'
@@ -78,10 +78,10 @@ const HERO_CARD: CardDef = {
 // ── TIER 2: KPI STRIP ──
 const KPI_CARDS: CardDef[] = [
   {
-    key: 'tiempo_cruce' as CardKey, href: '/cruces', label: 'Puente', Icon: TrendingUp, tier: 'kpi',
-    getKpi: (p) => p.bridgeWaitMinutes != null && p.bridgeWaitMinutes > 0 ? p.bridgeWaitMinutes : null,
-    getSubtitle: (p) => p.bridgeWaitMinutes != null && p.bridgeWaitMinutes > 0 ? 'min · World Trade' : 'Esperando datos',
-    getActions: () => [{ label: 'Ver', href: '/cruces', primary: true }],
+    key: 'traficos' as CardKey, href: '/traficos', label: 'Operaciones', Icon: Truck, tier: 'kpi',
+    getKpi: (p) => p.totalTraficos ?? 0,
+    getSubtitle: () => 'desde 2024',
+    getActions: () => [{ label: 'Ver', href: '/traficos', primary: true }],
   },
   {
     key: 'contabilidad' as CardKey, href: '/financiero', label: 'T/C', Icon: DollarSign, tier: 'kpi',
@@ -171,13 +171,35 @@ const ACTION_CARDS: CardDef[] = [
   },
 ]
 
-// ── TIER 4: REFERENCE ROW ──
+// ── TIER 4: REFERENCE ROW (same size as action cards) ──
 const REFERENCE_CARDS: CardDef[] = [
-  { key: 'catalogo' as CardKey, href: '/catalogo', label: 'Catálogo', Icon: Tags, tier: 'reference', getKpi: () => null, getSubtitle: () => 'Fracciones arancelarias', getActions: () => [] },
-  { key: 'anexo24' as CardKey, href: '/anexo24', label: 'Anexo 24', Icon: FileSpreadsheet, tier: 'reference', getKpi: () => null, getSubtitle: () => 'Control IMMEX', getActions: () => [] },
-  { key: 'documentos' as CardKey, href: '/documentos', label: 'Documentos', Icon: Archive, tier: 'reference', getKpi: () => null, getSubtitle: () => 'Archivo digital', getActions: () => [] },
-  { key: 'reportes' as CardKey, href: '/reportes', label: 'Reportes', Icon: BarChart3, tier: 'reference', getKpi: () => null, getSubtitle: () => 'Análisis y finanzas', getActions: () => [] },
-  { key: 'tiempo_cruce' as CardKey, href: '/cruces', label: 'Cruces', Icon: Navigation, tier: 'reference', getKpi: () => null, getSubtitle: () => 'Inteligencia de cruce', getActions: () => [] },
+  {
+    key: 'catalogo' as CardKey, href: '/catalogo', label: 'Catálogo', Icon: Tags, tier: 'reference',
+    getKpi: () => null,
+    getSubtitle: () => 'Fracciones arancelarias registradas',
+    getActions: () => [{ label: 'Ver catálogo', href: '/catalogo', primary: true }],
+  },
+  {
+    key: 'anexo24' as CardKey, href: '/anexo24', label: 'Anexo 24', Icon: FileSpreadsheet, tier: 'reference',
+    getKpi: () => null,
+    getSubtitle: () => 'Control IMMEX — al corriente',
+    getActions: () => [{ label: 'Ver anexo', href: '/anexo24', primary: true }],
+  },
+  {
+    key: 'documentos' as CardKey, href: '/documentos', label: 'Documentos', Icon: Archive, tier: 'reference',
+    getKpi: (p) => p.expedientesTotal ?? 0,
+    getSubtitle: (p) => {
+      const t = p.expedientesTotal ?? 0
+      return t > 0 ? 'expedientes digitales' : 'Archivo digital disponible'
+    },
+    getActions: () => [{ label: 'Ver documentos', href: '/documentos', primary: true }],
+  },
+  {
+    key: 'reportes' as CardKey, href: '/reportes', label: 'Reportes', Icon: BarChart3, tier: 'reference',
+    getKpi: () => null,
+    getSubtitle: () => 'Análisis y finanzas',
+    getActions: () => [{ label: 'Abrir reportes', href: '/reportes', primary: true }],
+  },
 ]
 
 export function WorkflowGrid(props: WorkflowGridProps) {
@@ -297,12 +319,12 @@ export function WorkflowGrid(props: WorkflowGridProps) {
           <ChevronDown size={14} style={{ transform: showMore ? 'rotate(180deg)' : 'none', transition: 'transform 200ms' }} />
         </button>
         {showMore && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {REFERENCE_CARDS.filter(c => !isClient || c.key !== 'docs_pendientes').map((card, i) => (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {REFERENCE_CARDS.map((card, i) => (
               <WorkflowCard
                 key={card.key + '-ref'} href={card.href} label={card.label} Icon={card.Icon}
-                kpi={null} subtitle={card.getSubtitle(props, 'neutral')}
-                variant="compact" actions={[]} urgency="neutral" delay={i * 30}
+                kpi={card.getKpi(props)} subtitle={card.getSubtitle(props, 'neutral')}
+                variant="uniform" actions={card.getActions(props, 'neutral')} urgency="neutral" delay={i * 30}
               />
             ))}
           </div>
@@ -387,17 +409,18 @@ export function WorkflowGrid(props: WorkflowGridProps) {
         ))}
       </div>
 
-      {/* TIER 4: REFERENCE ROW — 5 compact cells */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10 }}>
+      {/* TIER 4: REFERENCE ROW — 4 uniform cards (same size as action cards) */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
         {REFERENCE_CARDS.map((card, i) => (
           <motion.div key={card.key + '-ref'}
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-            transition={{ delay: prefersReduced ? 0 : 0.3 + i * 0.04 }}
+            initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 30, delay: prefersReduced ? 0 : 0.3 + i * 0.05 }}
           >
             <WorkflowCard
               href={card.href} label={card.label} Icon={card.Icon}
-              kpi={null} subtitle={card.getSubtitle(props, 'neutral')}
-              variant="compact" actions={[]} urgency="neutral" delay={i * 30}
+              kpi={card.getKpi(props)} subtitle={card.getSubtitle(props, 'neutral')}
+              variant="uniform" actions={card.getActions(props, 'neutral')}
+              urgency="neutral" delay={i * 40}
             />
           </motion.div>
         ))}

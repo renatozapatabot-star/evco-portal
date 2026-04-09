@@ -2,6 +2,7 @@
 
 import type { ClientData } from '../shared/fetchCockpitData'
 import { IfThenCard } from '../shared/IfThenCard'
+import { CruzRecommendation } from '../shared/CruzRecommendation'
 import { computeStatusHeroState } from '../shared/cardStates'
 
 interface Props {
@@ -52,11 +53,21 @@ export function StatusHero({ statusLevel, statusSentence, entradasThisWeek, acti
           </div>
         </>
       }
-      footer={nextCrossing ? (
-        <span style={{ color: '#C9A84C' }}>
-          Próximo cruce: <span className="font-mono" style={{ fontWeight: 600 }}>{nextCrossing.trafico}</span>
-        </span>
-      ) : undefined}
+      footer={
+        activeShipments > 0 ? (
+          <CruzRecommendation
+            compact
+            recommendation={activeShipments === 1 ? 'CRUZ monitorea tu envío en tiempo real' : `CRUZ monitorea tus ${activeShipments} envíos`}
+            confidence={95}
+            approveLabel="Ver detalle"
+            approveHref="/traficos"
+          />
+        ) : nextCrossing ? (
+          <span style={{ color: '#C9A84C' }}>
+            Próximo cruce: <span className="font-mono" style={{ fontWeight: 600 }}>{nextCrossing.trafico}</span>
+          </span>
+        ) : undefined
+      }
     />
   )
 }

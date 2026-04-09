@@ -2,6 +2,7 @@
 
 import type { AdminData } from '../shared/fetchCockpitData'
 import { IfThenCard } from '../shared/IfThenCard'
+import { CruzRecommendation } from '../shared/CruzRecommendation'
 
 interface Props {
   intelligence: AdminData['intelligence']
@@ -32,6 +33,20 @@ export function IntelligenceCard({ intelligence }: Props) {
           <Stat value={riskAlerts} label="alertas" color={riskAlerts > 0 ? '#D97706' : '#8B949E'} />
         </div>
       }
+      footer={riskAlerts > 0 || otroRate > 15 ? (
+        <CruzRecommendation
+          compact
+          recommendation={criticalAlerts > 0
+            ? `${criticalAlerts} alerta${criticalAlerts !== 1 ? 's' : ''} crítica${criticalAlerts !== 1 ? 's' : ''} — intervenir`
+            : otroRate > 15
+              ? `Tasa OTRO al ${otroRate}% — revisar clasificaciones`
+              : `${riskAlerts} señal${riskAlerts !== 1 ? 'es' : ''} de riesgo activa${riskAlerts !== 1 ? 's' : ''}`
+          }
+          confidence={criticalAlerts > 0 ? 60 : 78}
+          approveLabel={criticalAlerts > 0 ? 'Resolver' : 'Revisar'}
+          approveHref="/riesgo-auditoria"
+        />
+      ) : undefined}
     />
   )
 }

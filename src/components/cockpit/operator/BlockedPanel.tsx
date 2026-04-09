@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import type { OperatorData } from '../shared/fetchCockpitData'
 import { IfThenCard } from '../shared/IfThenCard'
+import { CruzRecommendation } from '../shared/CruzRecommendation'
 import { computeBlockedState } from '../shared/cardStates'
 
 interface Props {
@@ -54,6 +55,15 @@ export function BlockedPanel({ blocked, operatorId, onClear }: Props) {
           ))}
         </div>
       }
+      footer={blocked.length > 0 ? (
+        <CruzRecommendation
+          compact
+          recommendation={`CRUZ recomienda enviar recordatorio a ${blocked.length} proveedor${blocked.length !== 1 ? 'es' : ''}`}
+          confidence={80}
+          approveLabel="Enviar"
+          approveHref="/traficos?estatus=Documentacion"
+        />
+      ) : undefined}
     />
   )
 }

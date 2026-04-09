@@ -3,6 +3,7 @@
 import { fmtMXNCompact, fmtDelta } from '../shared/formatters'
 import type { ClientData } from '../shared/fetchCockpitData'
 import { IfThenCard } from '../shared/IfThenCard'
+import { CruzRecommendation } from '../shared/CruzRecommendation'
 import { computeFinancialState } from '../shared/cardStates'
 
 interface Props {
@@ -52,6 +53,15 @@ export function FinancialPanel({ financial }: Props) {
           </div>
         </div>
       }
+      footer={financial.facturadoThisMonth > 0 ? (
+        <CruzRecommendation
+          compact
+          recommendation="CRUZ monitorea tus costos y detecta oportunidades de ahorro"
+          confidence={92}
+          approveLabel="Ver detalle"
+          approveHref="/financiero"
+        />
+      ) : undefined}
     />
   )
 }

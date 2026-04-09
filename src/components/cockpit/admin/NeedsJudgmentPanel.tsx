@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { fmtRelativeTime } from '../shared/formatters'
 import type { AdminData } from '../shared/fetchCockpitData'
 import { IfThenCard } from '../shared/IfThenCard'
+import { CruzRecommendation } from '../shared/CruzRecommendation'
 import { computeEscalationState } from '../shared/cardStates'
 
 interface Props {
@@ -60,6 +61,18 @@ export function NeedsJudgmentPanel({ escalations }: Props) {
           </div>
         )
       }
+      footer={escalations.length > 0 ? (
+        <CruzRecommendation
+          compact
+          recommendation={overdue.length > 0
+            ? `${overdue.length} vencida${overdue.length !== 1 ? 's' : ''} — resolver primero`
+            : `${escalations.length} pendiente${escalations.length !== 1 ? 's' : ''} — revisar borradores`
+          }
+          confidence={overdue.length > 0 ? 65 : 85}
+          approveLabel={overdue.length > 0 ? 'Resolver' : 'Revisar'}
+          approveHref="/drafts"
+        />
+      ) : undefined}
     />
   )
 }

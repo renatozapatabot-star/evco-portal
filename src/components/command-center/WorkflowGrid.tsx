@@ -37,6 +37,7 @@ export interface WorkflowGridProps {
   totalTraficos?: number
   totalCruzados?: number
   facturacionYTD?: number
+  newThisWeek?: number
 }
 
 interface CardDef {
@@ -80,7 +81,10 @@ const KPI_CARDS: CardDef[] = [
   {
     key: 'traficos' as CardKey, href: '/traficos', label: 'Operaciones', Icon: Truck, tier: 'kpi',
     getKpi: (p) => p.totalTraficos ?? 0,
-    getSubtitle: () => 'desde 2024',
+    getSubtitle: (p) => {
+      const nw = p.newThisWeek ?? 0
+      return nw > 0 ? `+${nw} esta semana` : 'desde 2024'
+    },
     getActions: () => [{ label: 'Ver', href: '/traficos', primary: true }],
   },
   {
@@ -362,8 +366,8 @@ export function WorkflowGrid(props: WorkflowGridProps) {
         />
       </motion.div>
 
-      {/* TIER 2: KPI STRIP — 4 compact cells */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+      {/* TIER 2: KPI STRIP — 4 cells, same 4-col grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
         {KPI_CARDS.map((card, i) => (
           <motion.div key={`kpi-${i}`}
             initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }}
@@ -390,8 +394,8 @@ export function WorkflowGrid(props: WorkflowGridProps) {
         ))}
       </div>
 
-      {/* TIER 3: ACTION CARDS — 2 columns */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
+      {/* TIER 3: ACTION CARDS — 4 columns (matches KPI + reference grid) */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
         {actionCards.map((card, i) => (
           <motion.div key={card.key}
             initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }}
@@ -403,6 +407,10 @@ export function WorkflowGrid(props: WorkflowGridProps) {
               variant="uniform" actions={card.getActions(props, card.urgency)}
               urgency={card.urgency} cardKey={card.key} intensityClass={card.intensityClass}
               sparklineData={card.key === 'entradas' ? props.sparklines?.entradas : undefined}
+              criticalItem={card.key === 'entradas' && props.pendingEntradas > 0 ? `¡${props.pendingEntradas} sin asignar!` : undefined}
+              completionRing={card.key === 'expedientes' && (props.totalTraficos ?? 0) > 0
+                ? Math.round(((props.expedientesTotal ?? 0) / (props.totalTraficos ?? 1)) * 100)
+                : undefined}
               delay={i * 40}
             />
           </motion.div>

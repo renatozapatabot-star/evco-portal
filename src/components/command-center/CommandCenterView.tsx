@@ -21,6 +21,34 @@ import { ErrorCard } from '@/components/ui/ErrorCard'
 import { DashboardSkeleton } from '@/components/skeletons/DashboardSkeleton'
 import { Celebrate } from '@/components/celebrate'
 
+// ── Live status indicator ──
+function LiveIndicator({ lastFetchTime }: { lastFetchTime: number | null }) {
+  const [now, setNow] = useState(Date.now())
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 10000)
+    return () => clearInterval(t)
+  }, [])
+  if (!lastFetchTime) return null
+  const secsAgo = Math.round((now - lastFetchTime) / 1000)
+  const minsAgo = Math.round(secsAgo / 60)
+  const color = secsAgo < 300 ? '#16A34A' : secsAgo < 1800 ? '#D97706' : '#DC2626'
+  const label = secsAgo < 60 ? `${secsAgo}s` : `${minsAgo}m`
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 6,
+      padding: '6px 0', marginBottom: 8,
+      fontSize: 11, fontWeight: 600, color: '#6E7681',
+    }}>
+      <span style={{
+        width: 6, height: 6, borderRadius: '50%', background: color,
+        boxShadow: `0 0 6px ${color}`,
+        animation: secsAgo < 300 ? 'livePulse 2s ease-in-out infinite' : 'none',
+      }} />
+      Sistema en vivo · Actualizado hace {label}
+    </div>
+  )
+}
+
 // ── State mood — drives background atmosphere ──
 type SystemMood = 'cleared' | 'calm' | 'busy' | 'critical' | 'allgreen'
 
@@ -244,6 +272,8 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
   const isMobile = useIsMobile()
   const prefersReduced = useReducedMotion()
   const { data, loading, error, reload } = useCommandCenterData()
+  const [lastFetchTime, setLastFetchTime] = useState<number | null>(null)
+  useEffect(() => { if (!loading && data.totalTraficos > 0) setLastFetchTime(Date.now()) }, [loading, data.totalTraficos])
   const { pulse, loading: pulseLoading, awaySummary, dismissAway } = useActivityPulse()
   const { lastUpdate } = useRealtimeTrafico()
   const { pullDistance, isRefreshing, progress: pullProgress } = usePullRefreshV2({
@@ -334,6 +364,9 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
           exchangeRate: data.exchangeRate,
         })} />
       )}
+
+      {/* Live status indicator */}
+      {!loading && <LiveIndicator lastFetchTime={lastFetchTime} />}
 
       {/* Offline/online status */}
       {!network.isOnline && (
@@ -446,6 +479,7 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
         totalTraficos={data.totalTraficos}
         totalCruzados={data.totalCruzados}
         facturacionYTD={data.facturacionYTD}
+        newThisWeek={data.newThisWeek}
       />
 
       {/* Activity Pulse — collapsed below cards */}

@@ -42,6 +42,8 @@ interface WorkflowCardProps {
   totalTraficos?: number
   totalCruzados?: number
   lastCrossingInfo?: { trafico: string; fecha: string } | null
+  /** For uniform: small completion ring (0-100) */
+  completionRing?: number
 }
 
 const U_BORDER = { red: 'rgba(220,38,38,0.25)', amber: 'rgba(217,119,6,0.25)', green: 'rgba(22,163,74,0.25)', neutral: 'rgba(255,255,255,0.08)' }
@@ -79,7 +81,7 @@ function AnimatedKpi({ value, size = 32, isUSD = false, decimals = 0 }: { value:
 export function WorkflowCard({
   href, label, Icon, kpi, subtitle, variant, actions, delay = 0, spanFull,
   urgency, cardKey, intensityClass, sparklineData, criticalItem, activeItems,
-  completionPct, trendDelta, totalTraficos, totalCruzados, lastCrossingInfo,
+  completionPct, trendDelta, totalTraficos, totalCruzados, lastCrossingInfo, completionRing,
 }: WorkflowCardProps) {
   const u = urgency || 'neutral'
   const isGood = u === 'green' || u === 'neutral'
@@ -260,10 +262,10 @@ export function WorkflowCard({
           onTapStart={() => haptic.micro()}
           transition={{ type: 'spring', stiffness: 400, damping: 25 }}
           style={{
-            padding: '14px 16px 8px',
-            borderRadius: 12,
+            padding: '16px 20px 10px',
+            borderRadius: 14,
             background: 'var(--bg-elevated, #222222)',
-            border: '1px solid rgba(255,255,255,0.06)',
+            border: '1px solid rgba(255,255,255,0.08)',
             height: '100%',
             display: 'flex',
             flexDirection: 'column',
@@ -376,12 +378,28 @@ export function WorkflowCard({
           </div>
         )}
 
-        {/* Sparkline in top-right */}
-        {sparklineData && sparklineData.length >= 2 && (
+        {/* Sparkline or completion ring in top-right */}
+        {completionRing !== undefined ? (
+          <div style={{ position: 'absolute', top: 12, right: 12 }}>
+            <svg width={36} height={36} style={{ flexShrink: 0 }}>
+              <circle cx={18} cy={18} r={15} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={3} />
+              <circle cx={18} cy={18} r={15} fill="none"
+                stroke={completionRing >= 90 ? '#16A34A' : 'var(--gold, #C9A84C)'}
+                strokeWidth={3} strokeDasharray={2 * Math.PI * 15}
+                strokeDashoffset={2 * Math.PI * 15 * (1 - Math.min(completionRing, 100) / 100)}
+                strokeLinecap="round"
+                style={{ transform: 'rotate(-90deg)', transformOrigin: '50% 50%', transition: 'stroke-dashoffset 800ms ease' }} />
+              <text x="50%" y="50%" textAnchor="middle" dy="0.35em"
+                style={{ fontSize: 9, fontWeight: 700, fontFamily: 'var(--font-mono)', fill: '#E6EDF3' }}>
+                {completionRing}%
+              </text>
+            </svg>
+          </div>
+        ) : sparklineData && sparklineData.length >= 2 ? (
           <div style={{ position: 'absolute', top: 14, right: 14, opacity: 0.6 }}>
             <Sparkline data={sparklineData} width={64} height={24} color={U_SPARK[u]} />
           </div>
-        )}
+        ) : null}
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
           <Icon size={22} strokeWidth={1.5} style={{ color: U_ICON[u] }} />

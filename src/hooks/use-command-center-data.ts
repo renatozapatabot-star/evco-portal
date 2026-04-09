@@ -54,6 +54,7 @@ export interface CommandCenterData {
   totalTraficos: number
   totalCruzados: number
   facturacionYTD: number
+  newThisWeek: number
 }
 
 interface UseCommandCenterReturn {
@@ -89,6 +90,7 @@ const EMPTY: CommandCenterData = {
   totalTraficos: 0,
   totalCruzados: 0,
   facturacionYTD: 0,
+  newThisWeek: 0,
 }
 
 function computeDerivedMetrics(allT: TraficoRow[]) {
@@ -167,6 +169,7 @@ function computeDerivedMetrics(allT: TraficoRow[]) {
     trends: { thisWeekCruces, lastWeekCruces },
     activeTraficosList,
     totalTraficos, totalCruzados, facturacionYTD,
+    newThisWeek: spark.traficos.reduce((a, b) => a + b, 0),
   }
 }
 

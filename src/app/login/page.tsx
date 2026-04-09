@@ -170,6 +170,17 @@ function LoginContent() {
             {/* Password recovery removed — contact broker directly */}
           </form>
 
+          {/* Platform stats — social proof */}
+          <div style={{
+            display: 'flex', justifyContent: 'center', gap: 16, flexWrap: 'wrap',
+            padding: '12px 0', margin: '12px 0 0',
+            borderTop: '1px solid rgba(255,255,255,0.06)',
+          }}>
+            <Stat value="30,707" label="tráficos" />
+            <Stat value="307K" label="documentos" />
+            <Stat value="64K" label="facturas" />
+          </div>
+
           {/* Footer identity */}
           <div className="login-footer">
             <p className="login-footer-name">Renato Zapata &amp; Company</p>
@@ -473,6 +484,15 @@ function LoginContent() {
           .login-session-actions { gap: 8px; }
         }
       `}</style>
+    </div>
+  )
+}
+
+function Stat({ value, label }: { value: string; label: string }) {
+  return (
+    <div style={{ textAlign: 'center' }}>
+      <div style={{ fontFamily: 'var(--font-mono, monospace)', fontSize: 16, fontWeight: 700, color: '#C9A84C' }}>{value}</div>
+      <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{label}</div>
     </div>
   )
 }

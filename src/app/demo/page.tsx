@@ -26,12 +26,35 @@ export default function DemoPage() {
     <div style={{ minHeight: '100vh', background: 'var(--bg-main)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: isMobile ? 16 : 24 }}>
       <div style={{ maxWidth: 480, width: '100%', textAlign: 'center' }}>
         <div style={{ fontFamily: 'var(--font-mono)', fontSize: 28, fontWeight: 800, color: 'var(--gold)', letterSpacing: '0.15em', marginBottom: 8 }}>CRUZ</div>
-        <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 32 }}>Inteligencia Aduanal · Patente 3596</div>
+        <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24 }}>Inteligencia Aduanal · Patente 3596</div>
+
+        {/* Before/After strip */}
+        <div style={{ display: 'flex', gap: 12, marginBottom: 24, textAlign: 'center' }}>
+          <div style={{ flex: 1, padding: '16px 12px', borderRadius: 10, background: 'rgba(220,38,38,0.06)', border: '1px solid rgba(220,38,38,0.15)' }}>
+            <div style={{ fontSize: 28, fontWeight: 800, color: '#DC2626', fontFamily: 'var(--font-mono)' }}>22 min</div>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>Proceso manual</div>
+          </div>
+          <div style={{ flex: 1, padding: '16px 12px', borderRadius: 10, background: 'rgba(22,163,74,0.06)', border: '1px solid rgba(22,163,74,0.15)' }}>
+            <div style={{ fontSize: 28, fontWeight: 800, color: '#16A34A', fontFamily: 'var(--font-mono)' }}>2 min</div>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>Con CRUZ</div>
+          </div>
+        </div>
+
+        {/* Live demo CTA */}
+        <a href="/demo/live" style={{
+          display: 'block', padding: '16px 24px', borderRadius: 12, marginBottom: 24,
+          background: 'var(--gold)', color: '#111', fontSize: 16, fontWeight: 700,
+          textDecoration: 'none', textAlign: 'center', minHeight: 60,
+          lineHeight: '28px',
+        }}>
+          Ver demo en vivo →
+        </a>
+
         <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.3, margin: '0 0 8px' }}>
-          Su información ya está aquí.
+          ¿Ya tiene clave? Ingrese aquí.
         </h1>
-        <p style={{ fontSize: 14, color: 'var(--text-secondary)', margin: '0 0 32px', lineHeight: 1.6 }}>
-          No necesita instalar nada. No necesita subir datos. Abra el portal. Todo listo.
+        <p style={{ fontSize: 14, color: 'var(--text-secondary)', margin: '0 0 24px', lineHeight: 1.6 }}>
+          Si ya es cliente, ingrese su clave para acceder a su portal personalizado.
         </p>
         {!result && !notified && (
           <div style={{ display: 'flex', gap: 8 }}>

@@ -207,12 +207,11 @@ async function fetchAdminData(): Promise<AdminData> {
     sb.from('companies')
       .select('company_id, name')
       .limit(100),
-    // 7: all active traficos for team stats + company portfolio
+    // 7: all traficos since 2024 for team stats + company portfolio (includes all statuses for YTD valor)
     sb.from('traficos')
       .select('id, trafico, assigned_to_operator_id, estatus, company_id, importe_total, fecha_llegada')
-      .in('estatus', ['En Proceso', 'Documentacion', 'En Aduana'])
       .gte('fecha_llegada', '2024-01-01')
-      .limit(2000),
+      .limit(5000),
     // 8: agent_decisions last 30 days (for quiet-period fallback)
     sb.from('agent_decisions')
       .select('id, was_correct, created_at')

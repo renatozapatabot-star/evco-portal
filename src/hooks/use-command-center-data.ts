@@ -40,12 +40,16 @@ export interface CommandCenterData {
   expedientesTotal: number
   facturacionMes: number
   cruzadosEsteMes: number
-  // New: real-time intelligence
+  // Real-time intelligence
   bridgeWaitMinutes: number | null
   exchangeRate: number | null
   exchangeRateDate: string | null
   lastCrossing: { trafico: string; fecha: string; id?: string } | null
   docsPendientes: number
+  // Bento grid data
+  sparklines: { traficos: number[]; entradas: number[]; cruzados: number[]; facturacion: number[] }
+  trends: { thisWeekCruces: number; lastWeekCruces: number }
+  activeTraficosList: { trafico: string; pedimento: string | null; estatus: string; daysOld: number }[]
 }
 
 interface UseCommandCenterReturn {
@@ -75,6 +79,9 @@ const EMPTY: CommandCenterData = {
   exchangeRateDate: null,
   lastCrossing: null,
   docsPendientes: 0,
+  sparklines: { traficos: [], entradas: [], cruzados: [], facturacion: [] },
+  trends: { thisWeekCruces: 0, lastWeekCruces: 0 },
+  activeTraficosList: [],
 }
 
 function computeDerivedMetrics(allT: TraficoRow[]) {
@@ -105,7 +112,46 @@ function computeDerivedMetrics(allT: TraficoRow[]) {
     (t.estatus || '').toLowerCase() === 'en proceso' && !t.pedimento
   ).length
 
-  return { pedimentosThisMonth, expedientesTotal, facturacionMes, cruzadosEsteMes, lastCrossing, docsPendientes }
+  // 7-day sparkline data — group by day (entradas filled externally)
+  const today = new Date()
+  const spark = { traficos: [] as number[], entradas: [0,0,0,0,0,0,0], cruzados: [] as number[], facturacion: [] as number[] }
+  for (let d = 6; d >= 0; d--) {
+    const day = new Date(today)
+    day.setDate(day.getDate() - d)
+    const dayStr = day.toISOString().slice(0, 10)
+    spark.traficos.push(allT.filter(t => (t.fecha_llegada || '').slice(0, 10) === dayStr).length)
+    spark.cruzados.push(allT.filter(t => (t.fecha_cruce || '').slice(0, 10) === dayStr).length)
+    spark.facturacion.push(allT.filter(t => (t.fecha_cruce || t.updated_at || '').slice(0, 10) === dayStr).reduce((s, t) => s + (t.importe_total || 0), 0))
+  }
+
+  // Previous week totals for trend arrows
+  const thisWeekStart = new Date(today)
+  thisWeekStart.setDate(thisWeekStart.getDate() - 7)
+  const lastWeekStart = new Date(today)
+  lastWeekStart.setDate(lastWeekStart.getDate() - 14)
+  const twStr = thisWeekStart.toISOString().slice(0, 10)
+  const lwStr = lastWeekStart.toISOString().slice(0, 10)
+  const thisWeekCruces = allT.filter(t => (t.fecha_cruce || '') >= twStr).length
+  const lastWeekCruces = allT.filter(t => (t.fecha_cruce || '') >= lwStr && (t.fecha_cruce || '') < twStr).length
+
+  // Critical items for info scent
+  const activeTraficosList = allT
+    .filter(t => (t.estatus || '').toLowerCase() === 'en proceso')
+    .sort((a, b) => (a.fecha_llegada || '').localeCompare(b.fecha_llegada || ''))
+    .slice(0, 3)
+    .map(t => ({
+      trafico: t.trafico,
+      pedimento: t.pedimento,
+      estatus: t.estatus,
+      daysOld: t.fecha_llegada ? Math.floor((Date.now() - new Date(t.fecha_llegada).getTime()) / 86400000) : 0,
+    }))
+
+  return {
+    pedimentosThisMonth, expedientesTotal, facturacionMes, cruzadosEsteMes, lastCrossing, docsPendientes,
+    sparklines: spark,
+    trends: { thisWeekCruces, lastWeekCruces },
+    activeTraficosList,
+  }
 }
 
 async function fetchIntelligence(): Promise<{ bridgeWaitMinutes: number | null; exchangeRate: number | null; exchangeRateDate: string | null }> {

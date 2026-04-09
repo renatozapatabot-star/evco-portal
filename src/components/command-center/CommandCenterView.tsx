@@ -440,6 +440,9 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
         docsPendientes={data.docsPendientes}
         isMobile={isMobile}
         viewMode={viewMode}
+        sparklines={data.sparklines}
+        trends={data.trends}
+        activeTraficosList={data.activeTraficosList}
       />
 
       {/* Activity Pulse — collapsed below cards */}

@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { fmtUSDCompact } from '../shared/formatters'
 import type { OperatorData } from '../shared/fetchCockpitData'
 import { IfThenCard } from '../shared/IfThenCard'
+import { CruzRecommendation } from '../shared/CruzRecommendation'
 import { computeNextUp } from '../shared/computeNextUp'
 
 interface Props {
@@ -107,25 +108,20 @@ export function NextUpHero({ data, operatorName }: Props) {
               </div>
             )}
 
-            {/* AI suggestion */}
+            {/* CRUZ Recommendation */}
             {nextUp.suggestion && (
-              <div style={{
-                background: 'rgba(255,255,255,0.03)', borderRadius: 10,
-                padding: '12px 16px', border: '1px solid rgba(255,255,255,0.06)',
-              }}>
-                <div style={{ fontSize: 12, color: '#8B949E', marginBottom: 4 }}>🤖 CRUZ sugiere:</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <span className="font-mono" style={{ fontSize: 16, fontWeight: 700, color: '#E6EDF3' }}>
-                    {nextUp.suggestion.fraccion}
-                  </span>
-                  <span className="font-mono" style={{
-                    fontSize: 13, fontWeight: 600, color: confidenceColor,
-                    background: confidenceBg, padding: '2px 8px', borderRadius: 6,
-                  }}>
-                    {nextUp.suggestion.confidence}%
-                  </span>
-                </div>
-              </div>
+              <CruzRecommendation
+                recommendation={`Clasificar como ${nextUp.suggestion.fraccion}`}
+                confidence={nextUp.suggestion.confidence}
+                approveLabel="Confirmar clasificación"
+                approveHref="/clasificar"
+                reviewLabel="Revisar"
+                reviewHref={`/traficos/${encodeURIComponent(nextUp.trafico)}`}
+                reasoning={[
+                  `Fracción sugerida: ${nextUp.suggestion.fraccion}`,
+                  `Basado en ${nextUp.suggestion.confidence >= 85 ? 'alta' : nextUp.suggestion.confidence >= 70 ? 'media' : 'baja'} similitud con clasificaciones previas`,
+                ]}
+              />
             )}
           </>
         ) : (

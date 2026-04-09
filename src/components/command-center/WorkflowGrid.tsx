@@ -33,6 +33,10 @@ export interface WorkflowGridProps {
   sparklines?: { traficos: number[]; entradas: number[]; cruzados: number[]; facturacion: number[] }
   trends?: { thisWeekCruces: number; lastWeekCruces: number }
   activeTraficosList?: { trafico: string; pedimento: string | null; estatus: string; daysOld: number }[]
+  // Data density fallbacks
+  totalTraficos?: number
+  totalCruzados?: number
+  facturacionYTD?: number
 }
 
 interface CardDef {
@@ -50,16 +54,18 @@ interface CardDef {
 // ── TIER 1: HERO ──
 const HERO_CARD: CardDef = {
   key: 'traficos', href: '/traficos', label: 'Tráficos', Icon: Truck, tier: 'hero',
-  getKpi: (p) => p.enProceso > 0 ? p.enProceso : (p.cruzadosEsteMes ?? 0),
+  getKpi: (p) => {
+    if (p.enProceso > 0) return p.enProceso
+    if ((p.cruzadosEsteMes ?? 0) > 0) return p.cruzadosEsteMes!
+    return p.totalTraficos ?? 0 // fallback: total since 2024
+  },
   getSubtitle: (p, u) => {
-    if (p.viewMode === 'client') {
-      if (u === 'red' || u === 'amber') return `en tránsito · seguimiento activo`
-      const mes = p.cruzadosEsteMes ?? 0
-      return mes > 0 ? `cruzados este mes — todo fluye` : 'Sin operaciones activas — todo en orden'
+    if (u === 'red' || u === 'amber') {
+      return p.viewMode === 'client' ? 'en tránsito · seguimiento activo' : `en proceso · ${p.urgentes} urgente${p.urgentes !== 1 ? 's' : ''}`
     }
-    if (u === 'red' || u === 'amber') return `en proceso · ${p.urgentes} urgente${p.urgentes !== 1 ? 's' : ''}`
     const mes = p.cruzadosEsteMes ?? 0
-    return mes > 0 ? `cruzados este mes — excelente` : 'Sin operaciones activas'
+    if (mes > 0) return 'cruzados este mes'
+    return 'operaciones desde 2024'
   },
   getActions: (p, u) => {
     if (p.viewMode === 'client') return [{ label: 'Ver todos', href: '/traficos', primary: true }]
@@ -72,32 +78,41 @@ const HERO_CARD: CardDef = {
 // ── TIER 2: KPI STRIP ──
 const KPI_CARDS: CardDef[] = [
   {
-    key: 'tiempo_cruce', href: '/cruces', label: 'Puente', Icon: TrendingUp, tier: 'kpi',
+    key: 'tiempo_cruce' as CardKey, href: '/cruces', label: 'Puente', Icon: TrendingUp, tier: 'kpi',
     getKpi: (p) => p.bridgeWaitMinutes != null && p.bridgeWaitMinutes > 0 ? p.bridgeWaitMinutes : null,
-    getSubtitle: (p) => p.bridgeWaitMinutes != null && p.bridgeWaitMinutes > 0 ? 'min · World Trade' : 'Sin datos',
+    getSubtitle: (p) => p.bridgeWaitMinutes != null && p.bridgeWaitMinutes > 0 ? 'min · World Trade' : 'Esperando datos',
     getActions: () => [{ label: 'Ver', href: '/cruces', primary: true }],
   },
   {
-    key: 'contabilidad', href: '/financiero', label: 'T/C', Icon: DollarSign, tier: 'kpi',
+    key: 'contabilidad' as CardKey, href: '/financiero', label: 'T/C', Icon: DollarSign, tier: 'kpi',
     getKpi: (p) => p.exchangeRate ? Math.round(p.exchangeRate * 100) / 100 : null,
     getSubtitle: () => 'MXN/USD · Banxico',
     getActions: () => [{ label: 'Ver', href: '/financiero', primary: true }],
   },
   {
-    key: 'ultimo_cruce', href: '/traficos', label: 'Cruzados', Icon: CheckCircle, tier: 'kpi',
-    getKpi: (p) => p.cruzadosEsteMes ?? 0,
-    getSubtitle: () => 'este mes',
+    key: 'ultimo_cruce' as CardKey, href: '/traficos', label: 'Cruzados', Icon: CheckCircle, tier: 'kpi',
+    getKpi: (p) => {
+      const mes = p.cruzadosEsteMes ?? 0
+      return mes > 0 ? mes : (p.totalCruzados ?? 0) // fallback: total cruzados
+    },
+    getSubtitle: (p) => (p.cruzadosEsteMes ?? 0) > 0 ? 'este mes' : 'total desde 2024',
     getActions: () => [{ label: 'Ver', href: '/traficos', primary: true }],
   },
   {
-    key: 'contabilidad', href: '/financiero', label: 'Facturación', Icon: DollarSign, tier: 'kpi',
+    key: 'inventario' as CardKey, href: '/financiero', label: 'Facturación', Icon: DollarSign, tier: 'kpi',
     getKpi: (p) => {
-      const val = p.facturacionMes ?? 0
-      return val > 0 ? Math.round(val) : 0
+      const mes = p.facturacionMes ?? 0
+      if (mes > 0) return Math.round(mes)
+      const ytd = p.facturacionYTD ?? 0
+      return ytd > 0 ? Math.round(ytd) : 0
     },
     getSubtitle: (p) => {
-      const val = p.facturacionMes ?? 0
-      return val > 1000 ? `$${Math.round(val / 1000)}K USD` : val > 0 ? `$${val.toFixed(0)} USD` : 'Sin movimientos'
+      const mes = p.facturacionMes ?? 0
+      if (mes > 0) {
+        return mes > 1000 ? `$${Math.round(mes / 1000)}K USD este mes` : `$${mes.toFixed(0)} USD este mes`
+      }
+      const ytd = p.facturacionYTD ?? 0
+      return ytd > 1000 ? `$${Math.round(ytd / 1000)}K USD YTD` : ytd > 0 ? `$${ytd.toFixed(0)} USD YTD` : 'Sin movimientos'
     },
     getActions: () => [{ label: 'Ver', href: '/financiero', primary: true }],
   },
@@ -180,7 +195,9 @@ export function WorkflowGrid(props: WorkflowGridProps) {
 
   const heroUrgency = getCardUrgency('traficos', kpis)
   const heroIntensity = getUrgencyIntensity(heroUrgency, props.oldestUrgentDate ?? null)
-  const trendDelta = props.trends ? computeDelta(props.trends.thisWeekCruces, props.trends.lastWeekCruces) : 0
+  // Only show trend when enough data to be meaningful (>=3 total cruces across both weeks)
+  const trendDelta = props.trends && (props.trends.thisWeekCruces + props.trends.lastWeekCruces >= 3)
+    ? computeDelta(props.trends.thisWeekCruces, props.trends.lastWeekCruces) : undefined
 
   // Completion percentage for hero progress bar
   const totalActions = props.pendingEntradas + props.enProceso + (props.docsPendientes ?? 0)
@@ -218,6 +235,9 @@ export function WorkflowGrid(props: WorkflowGridProps) {
           sparklineData={props.sparklines?.traficos}
           completionPct={completionPct}
           trendDelta={trendDelta}
+          totalTraficos={props.totalTraficos}
+          totalCruzados={props.totalCruzados}
+          lastCrossingInfo={props.lastCrossing}
         />
 
         {/* KPI strip — 2x2 grid on mobile */}
@@ -314,6 +334,9 @@ export function WorkflowGrid(props: WorkflowGridProps) {
           sparklineData={props.sparklines?.traficos}
           completionPct={completionPct}
           trendDelta={trendDelta}
+          totalTraficos={props.totalTraficos}
+          totalCruzados={props.totalCruzados}
+          lastCrossingInfo={props.lastCrossing}
         />
       </motion.div>
 

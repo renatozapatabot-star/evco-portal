@@ -38,6 +38,10 @@ interface WorkflowCardProps {
   completionPct?: number
   /** Trend delta percentage */
   trendDelta?: number
+  /** For hero empty state: cumulative stats */
+  totalTraficos?: number
+  totalCruzados?: number
+  lastCrossingInfo?: { trafico: string; fecha: string } | null
 }
 
 const U_BORDER = { red: 'rgba(220,38,38,0.25)', amber: 'rgba(217,119,6,0.25)', green: 'rgba(22,163,74,0.25)', neutral: 'rgba(255,255,255,0.08)' }
@@ -54,9 +58,10 @@ function glowClass(u: CardUrgency) {
 }
 
 // ── Animated KPI number ──
-function AnimatedKpi({ value, size = 32, isUSD = false }: { value: number; size?: number; isUSD?: boolean }) {
-  const animated = useCountUp(value, 800)
-  const display = isUSD ? `$${animated.toLocaleString()}` : animated.toLocaleString()
+function AnimatedKpi({ value, size = 32, isUSD = false, decimals = 0 }: { value: number; size?: number; isUSD?: boolean; decimals?: number }) {
+  const animated = useCountUp(value, 800, decimals)
+  const formatted = decimals > 0 ? animated.toFixed(decimals) : animated.toLocaleString()
+  const display = isUSD ? `$${formatted}` : formatted
   return (
     <span style={{
       fontSize: size,
@@ -74,7 +79,7 @@ function AnimatedKpi({ value, size = 32, isUSD = false }: { value: number; size?
 export function WorkflowCard({
   href, label, Icon, kpi, subtitle, variant, actions, delay = 0, spanFull,
   urgency, cardKey, intensityClass, sparklineData, criticalItem, activeItems,
-  completionPct, trendDelta,
+  completionPct, trendDelta, totalTraficos, totalCruzados, lastCrossingInfo,
 }: WorkflowCardProps) {
   const u = urgency || 'neutral'
   const isGood = u === 'green' || u === 'neutral'
@@ -192,8 +197,28 @@ export function WorkflowCard({
                 ))}
               </div>
             ) : (
-              <div style={{ fontSize: 13, color: '#8B949E' }}>
-                Sin operaciones activas — todo al corriente
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <CheckCircle2 size={16} style={{ color: '#0D9488' }} />
+                  <span style={{ fontSize: 14, fontWeight: 600, color: '#0D9488' }}>Todo al corriente</span>
+                </div>
+                {(totalTraficos ?? 0) > 0 && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    <span style={{ fontSize: 12, color: '#8B949E' }}>
+                      <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, color: '#E6EDF3' }}>{totalTraficos?.toLocaleString()}</span> operaciones desde 2024
+                    </span>
+                    {(totalCruzados ?? 0) > 0 && (
+                      <span style={{ fontSize: 12, color: '#8B949E' }}>
+                        <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, color: '#E6EDF3' }}>{totalCruzados?.toLocaleString()}</span> cruces completados
+                      </span>
+                    )}
+                  </div>
+                )}
+                {lastCrossingInfo && (
+                  <div style={{ fontSize: 11, color: '#6E7681', marginTop: 4 }}>
+                    Último: <span style={{ fontFamily: 'var(--font-mono)', color: '#8B949E' }}>{lastCrossingInfo.trafico}</span>
+                  </div>
+                )}
               </div>
             )}
 
@@ -224,6 +249,7 @@ export function WorkflowCard({
   // ── KPI VARIANT — compact strip cell ──
   if (variant === 'kpi') {
     const isUSD = subtitle.includes('USD')
+    const isDecimal = label === 'T/C' || (kpi !== null && kpi > 0 && kpi < 100 && kpi % 1 !== 0)
     return (
       <Link href={href} style={{ textDecoration: 'none', display: 'block' }}>
         <motion.div
@@ -253,9 +279,9 @@ export function WorkflowCard({
             </div>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
               {kpi !== null && kpi > 0 ? (
-                <AnimatedKpi value={kpi} size={22} isUSD={isUSD} />
+                <AnimatedKpi value={kpi} size={22} isUSD={isUSD} decimals={isDecimal ? 2 : 0} />
               ) : (
-                <span style={{ fontSize: 22, fontWeight: 800, fontFamily: 'var(--font-mono)', color: 'rgba(255,255,255,0.3)' }}>—</span>
+                <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,0.4)' }}>N/D</span>
               )}
               {trendDelta !== undefined && trendDelta !== 0 && (
                 <span className="font-mono" style={{

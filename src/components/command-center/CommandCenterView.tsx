@@ -443,6 +443,9 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
         sparklines={data.sparklines}
         trends={data.trends}
         activeTraficosList={data.activeTraficosList}
+        totalTraficos={data.totalTraficos}
+        totalCruzados={data.totalCruzados}
+        facturacionYTD={data.facturacionYTD}
       />
 
       {/* Activity Pulse — collapsed below cards */}

@@ -50,6 +50,10 @@ export interface CommandCenterData {
   sparklines: { traficos: number[]; entradas: number[]; cruzados: number[]; facturacion: number[] }
   trends: { thisWeekCruces: number; lastWeekCruces: number }
   activeTraficosList: { trafico: string; pedimento: string | null; estatus: string; daysOld: number }[]
+  // Data density fallbacks (never show empty)
+  totalTraficos: number
+  totalCruzados: number
+  facturacionYTD: number
 }
 
 interface UseCommandCenterReturn {
@@ -82,6 +86,9 @@ const EMPTY: CommandCenterData = {
   sparklines: { traficos: [], entradas: [], cruzados: [], facturacion: [] },
   trends: { thisWeekCruces: 0, lastWeekCruces: 0 },
   activeTraficosList: [],
+  totalTraficos: 0,
+  totalCruzados: 0,
+  facturacionYTD: 0,
 }
 
 function computeDerivedMetrics(allT: TraficoRow[]) {
@@ -146,11 +153,20 @@ function computeDerivedMetrics(allT: TraficoRow[]) {
       daysOld: t.fecha_llegada ? Math.floor((Date.now() - new Date(t.fecha_llegada).getTime()) / 86400000) : 0,
     }))
 
+  // Data density fallbacks — always have numbers even during quiet periods
+  const totalTraficos = allT.length
+  const totalCruzados = crossed.length
+  const ytdStart = new Date().getFullYear() + '-01-01'
+  const facturacionYTD = allT
+    .filter(t => (t.fecha_cruce || t.updated_at || '') >= ytdStart)
+    .reduce((sum, t) => sum + (t.importe_total || 0), 0)
+
   return {
     pedimentosThisMonth, expedientesTotal, facturacionMes, cruzadosEsteMes, lastCrossing, docsPendientes,
     sparklines: spark,
     trends: { thisWeekCruces, lastWeekCruces },
     activeTraficosList,
+    totalTraficos, totalCruzados, facturacionYTD,
   }
 }
 

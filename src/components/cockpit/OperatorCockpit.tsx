@@ -48,11 +48,17 @@ export function OperatorCockpit({ data, operatorName, operatorId }: Props) {
         </p>
       </div>
 
-      {/* Performance strip */}
+      {/* Performance strip — gamified */}
       <PerformanceStrip
-        completedToday={data.performance.completedToday}
-        completedThisWeek={data.performance.completedThisWeek}
-        completedThisMonth={data.performance.completedThisMonth}
+        todayCount={data.performance.completedToday}
+        yesterdayCount={0}
+        weekCount={data.performance.completedThisWeek}
+        monthCount={data.performance.completedThisMonth}
+        personalRecord={data.performance.completedThisMonth}
+        currentStreak={1}
+        teamRank={1}
+        teamSize={8}
+        operatorName={operatorName}
       />
 
       {/* Universal search */}

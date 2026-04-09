@@ -10,6 +10,7 @@ import { ClientsTablePanel } from './admin/ClientsTablePanel'
 import { IntelligenceCard } from './admin/IntelligenceCard'
 import { PipelineFinanceCard } from './admin/PipelineFinanceCard'
 import { WeeklyTrendCard } from './admin/WeeklyTrendCard'
+import { TeamActivityFeed } from './admin/TeamActivityFeed'
 import { RightRail } from './admin/RightRail'
 import { NewsBanner, buildAdminItems } from './shared/NewsBanner'
 import { Trend, computeDelta } from './shared/Trend'
@@ -197,6 +198,7 @@ export function AdminCockpit({ data, operatorName }: Props) {
           </div>
 
           <TeamLivePanel />
+          <TeamActivityFeed />
           <ClientsTablePanel companies={data.companies} />
         </div>
 

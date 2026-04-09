@@ -1,38 +1,111 @@
 'use client'
 
-interface Props {
-  completedToday: number
-  completedThisWeek: number
-  completedThisMonth: number
+import type { OperatorPerformance } from '../shared/computeOperatorPerformance'
+
+interface Props extends OperatorPerformance {
+  operatorName: string
 }
 
-export function PerformanceStrip({ completedToday, completedThisWeek, completedThisMonth }: Props) {
+export function PerformanceStrip({
+  todayCount, yesterdayCount, weekCount, monthCount,
+  personalRecord, currentStreak, teamRank, teamSize,
+  operatorName,
+}: Props) {
+  const firstName = operatorName.split(' ')[0]
+  const delta = todayCount - yesterdayCount
+  const isRecord = todayCount > personalRecord && todayCount > 0
+
+  // Next milestone
+  const milestones = [5, 10, 25, 50, 100]
+  const nextMilestone = milestones.find(m => m > todayCount) || todayCount + 25
+  const prevMilestone = milestones.filter(m => m <= todayCount).pop() || 0
+  const progress = nextMilestone > prevMilestone
+    ? ((todayCount - prevMilestone) / (nextMilestone - prevMilestone)) * 100
+    : 0
+
   return (
     <div style={{
-      display: 'flex', gap: 16, flexWrap: 'wrap',
-      padding: '10px 16px', borderRadius: 8,
-      background: '#1A1A1A', border: '1px solid rgba(255,255,255,0.06)',
+      background: '#1A1A1A',
+      borderRadius: 10,
+      padding: '12px 16px',
       marginBottom: 12,
+      border: isRecord ? '1px solid rgba(201,168,76,0.3)' : '1px solid rgba(255,255,255,0.06)',
     }}>
-      <Stat value={completedToday} label="hoy" />
-      <Stat value={completedThisWeek} label="esta semana" />
-      <Stat value={completedThisMonth} label="este mes" />
-    </div>
-  )
-}
+      {/* Top row: greeting + main KPIs */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
+          {/* Today count */}
+          <div>
+            <span className="font-mono" style={{
+              fontSize: 28, fontWeight: 800,
+              color: isRecord ? '#C9A84C' : todayCount > 0 ? '#E6EDF3' : '#6E7681',
+            }}>
+              {todayCount}
+            </span>
+            <span style={{ fontSize: 11, color: '#8B949E', marginLeft: 6 }}>
+              acción{todayCount !== 1 ? 'es' : ''} hoy
+            </span>
+          </div>
 
-function Stat({ value, label }: { value: number; label: string }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-      <span className="font-mono" style={{
-        fontSize: 18, fontWeight: 700,
-        color: value > 0 ? '#C9A84C' : '#6E7681',
-      }}>
-        {value}
-      </span>
-      <span style={{ fontSize: 11, color: '#8B949E' }}>
-        completado{value !== 1 ? 's' : ''} {label}
-      </span>
+          {/* Delta vs yesterday */}
+          {yesterdayCount > 0 && (
+            <span className="font-mono" style={{
+              fontSize: 14, fontWeight: 600,
+              color: delta >= 0 ? '#16A34A' : '#DC2626',
+            }}>
+              {delta >= 0 ? '↑' : '↓'}{Math.abs(delta)} vs ayer
+            </span>
+          )}
+
+          {/* Record badge */}
+          {isRecord && (
+            <span style={{
+              fontSize: 11, fontWeight: 700, color: '#C9A84C',
+              background: 'rgba(201,168,76,0.15)',
+              padding: '2px 8px', borderRadius: 4,
+            }}>
+              ★ Récord
+            </span>
+          )}
+        </div>
+
+        {/* Right: streak + rank */}
+        <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+          {currentStreak > 1 && (
+            <span className="font-mono" style={{ fontSize: 13, color: '#C9A84C' }}>
+              🔥 {currentStreak}d racha
+            </span>
+          )}
+          <span className="font-mono" style={{ fontSize: 13, color: '#8B949E' }}>
+            {teamRank}º de {teamSize}
+          </span>
+        </div>
+      </div>
+
+      {/* Progress bar to next milestone */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ flex: 1, height: 4, background: 'rgba(255,255,255,0.06)', borderRadius: 2, overflow: 'hidden' }}>
+          <div style={{
+            width: `${Math.min(progress, 100)}%`,
+            height: '100%', borderRadius: 2,
+            background: isRecord ? '#C9A84C' : '#16A34A',
+            transition: 'width 500ms ease',
+          }} />
+        </div>
+        <span style={{ fontSize: 10, color: '#6E7681', flexShrink: 0 }}>
+          meta: {nextMilestone}
+        </span>
+      </div>
+
+      {/* Bottom: week + month */}
+      <div style={{ display: 'flex', gap: 16, marginTop: 8 }}>
+        <span style={{ fontSize: 11, color: '#6E7681' }}>
+          Semana: <span className="font-mono" style={{ color: '#8B949E', fontWeight: 600 }}>{weekCount}</span>
+        </span>
+        <span style={{ fontSize: 11, color: '#6E7681' }}>
+          Mes: <span className="font-mono" style={{ color: '#8B949E', fontWeight: 600 }}>{monthCount}</span>
+        </span>
+      </div>
     </div>
   )
 }

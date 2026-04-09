@@ -24,7 +24,7 @@ function AnimatedCounter({ target, label, delay }: { target: number; label: stri
   return (
     <div style={{ textAlign: 'center', padding: '16px 0' }}>
       <div style={{ fontFamily: 'var(--font-mono)', fontSize: 36, fontWeight: 800, color: 'var(--gold)' }}>
-        {label.includes('$') ? `$${value.toLocaleString('en-US')}` : value.toLocaleString('es-MX')}
+        {label.includes('$') ? `$${value.toLocaleString('es-MX')}` : value.toLocaleString('es-MX')}
       </div>
       <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4 }}>{label}</div>
     </div>

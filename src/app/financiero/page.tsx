@@ -76,7 +76,7 @@ export default function FinancieroPage() {
       fetch(`/api/data?table=aduanet_facturas${claveParam}&limit=5000&order_by=fecha_pago&order_dir=desc`)
         .then(r => r.json()).catch(() => ({ data: [] })),
       fetch('/api/tipo-cambio')
-        .then(r => r.json()).catch(() => ({ tc: 17.50, fecha: '', source: 'fallback' })),
+        .then(r => r.json()).catch(() => ({ tc: null, fecha: '', source: 'unavailable' })),
     ]).then(([trafData, factData, tcData]) => {
       setTraficos(trafData.data ?? [])
       setFacturas(factData.data ?? [])

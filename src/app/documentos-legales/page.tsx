@@ -94,18 +94,11 @@ export default function DocumentosLegalesPage() {
             status: getStatus(d.expiry_date ?? null),
           })))
         } else {
-          // Use initial hardcoded data
-          setDocs(getInitialDocs().map(d => ({
-            ...d,
-            status: getStatus(d.expiry_date),
-          })))
+          setDocs([])
         }
       })
       .catch(() => {
-        setDocs(getInitialDocs().map(d => ({
-          ...d,
-          status: getStatus(d.expiry_date),
-        })))
+        setDocs([])
       })
       .finally(() => setLoading(false))
   }, [])
@@ -158,8 +151,17 @@ export default function DocumentosLegalesPage() {
         </div>
       )}
 
+      {/* Empty state */}
+      {!loading && docs.length === 0 && (
+        <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+          <Shield size={32} style={{ color: 'var(--n-300)', margin: '0 auto 12px', display: 'block' }} />
+          <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>Sin documentos legales registrados</div>
+          <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Contacte a su agente aduanal para registrar poderes, encargos y permisos</div>
+        </div>
+      )}
+
       {/* Documents table */}
-      <div className="card">
+      {(loading || docs.length > 0) && <div className="card">
         <div style={{ overflowX: 'auto' }}>
           <table className="data-table">
             <thead>
@@ -221,7 +223,7 @@ export default function DocumentosLegalesPage() {
             </tbody>
           </table>
         </div>
-      </div>
+      </div>}
 
       {/* Alert schedule info */}
       <div style={{ marginTop: 20, padding: '16px 20px', background: 'var(--n-50)', borderRadius: 12, border: '1px solid var(--border-light)' }}>

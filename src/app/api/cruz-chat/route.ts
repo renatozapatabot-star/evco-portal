@@ -537,7 +537,7 @@ const TOOLS = [
   },
   {
     name: 'calculate_economics',
-    description: 'Calculate landed cost, T-MEC savings, and value created for a specific tráfico or aggregate for the entire client. Answers "how much did Y4503 cost?" or "how much has EVCO saved this year?"',
+    description: 'Calculate landed cost, T-MEC savings, and value created for a specific tráfico or aggregate for the entire client. Answers "how much did this shipment cost?" or "how much have we saved this year?"',
     input_schema: {
       type: 'object' as const,
       properties: {
@@ -774,7 +774,7 @@ async function executeTool(name: string, input: Record<string, any>, clientCtx: 
       }
       case 'draft_communication': {
         return JSON.stringify({
-          instruction: `Draft a ${input.type} communication${input.trafico_id ? ` for trafico ${input.trafico_id}` : ''}.${input.recipient ? ` Addressed to ${input.recipient}.` : ''} Language: ${input.language || 'es'}. Use real data from previous tool calls. Sign as "Renato Zapata III, Director General, Renato Zapata & Company, Patente 3596".`,
+          instruction: `Draft a ${input.type} communication${input.trafico_id ? ` for trafico ${input.trafico_id}` : ''}.${input.recipient ? ` Addressed to ${input.recipient}.` : ''} Language: ${input.language || 'es'}. Use real data from previous tool calls. Sign as "Renato Zapata III, Director General, Renato Zapata & Company, Patente ${clientCtx.companyId === 'evco' ? '3596' : '3596'}".`,
           type: input.type, trafico: input.trafico_id, recipient: input.recipient,
         })
       }

@@ -43,7 +43,7 @@ export default function ImmexPage() {
     <div style={{ padding: 32 }}>
       <div style={{ marginBottom: 24 }}>
         <h1 className="pg-title">IMMEX — Importación Temporal</h1>
-        <p className="pg-meta">{immexData.length} tráficos temporales activos · Límite 18 meses · {getClientNameCookie().split(' ')[0]} Plastics</p>
+        <p className="pg-meta">{immexData.length} tráficos temporales activos · Límite 18 meses · {getClientNameCookie() || 'Cliente'}</p>
       </div>
 
       {/* KPI strip */}

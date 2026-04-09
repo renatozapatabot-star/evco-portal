@@ -15,16 +15,28 @@ const STAGE_LABELS: Record<string, string> = {
 
 interface Props {
   decisions: AdminData['agentDecisions24h']
+  decisions30d: AdminData['agentDecisions30d']
+  decisionsAllTime: AdminData['agentDecisionsAllTime']
   workflow: AdminData['workflowEvents24h']
+  workflow30d: AdminData['workflowEvents30d']
   actions: AdminData['operatorActions24h']
+  actions30d: AdminData['operatorActions30d']
 }
 
-export function CruzAutonomoPanel({ decisions, workflow, actions }: Props) {
-  const urgencyColor = decisions.accuracy >= 90
+export function CruzAutonomoPanel({ decisions, decisions30d, decisionsAllTime, workflow, workflow30d, actions, actions30d }: Props) {
+  // Use 30d metrics when 24h is zero for a less empty-looking dashboard
+  const showDecisions = decisions.total > 0 ? decisions : decisions30d
+  const showActions = actions.total > 0 ? actions : actions30d
+  const period = decisions.total > 0 ? 'hoy' : '30 días'
+  const actionPeriod = actions.total > 0 ? 'hoy' : '30 días'
+
+  const urgencyColor = showDecisions.accuracy >= 90
     ? 'rgba(22,163,74,0.5)'
-    : decisions.accuracy >= 70
+    : showDecisions.accuracy >= 70
       ? 'rgba(217,119,6,0.6)'
-      : 'rgba(220,38,38,0.7)'
+      : showDecisions.total === 0
+        ? 'rgba(201,168,76,0.4)' // gold/neutral when no data
+        : 'rgba(220,38,38,0.7)'
 
   return (
     <div style={{
@@ -40,21 +52,40 @@ export function CruzAutonomoPanel({ decisions, workflow, actions }: Props) {
           fontSize: 11, fontWeight: 600, textTransform: 'uppercase',
           letterSpacing: '0.05em', color: '#6E7681',
         }}>
-          CRUZ Autonomo
+          CRUZ Autónomo
         </span>
         <p style={{ fontSize: 13, color: '#8B949E', margin: '4px 0 0' }}>
-          La IA está trabajando
+          {decisions.total > 0
+            ? 'La IA está trabajando'
+            : decisionsAllTime.total > 0
+              ? `${decisionsAllTime.total.toLocaleString('es-MX')} decisiones desde lanzamiento`
+              : 'Sistema listo — esperando actividad'
+          }
         </p>
       </div>
 
       {/* KPIs row */}
       <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', marginBottom: 16 }}>
-        <KPI value={decisions.total} label="decisiones hoy" />
-        <KPI value={`${decisions.accuracy}%`} label="precisión" />
-        <KPI value={actions.hoursSaved} label="horas ahorradas" />
+        <KPI
+          value={showDecisions.total}
+          label={`decisiones · ${period}`}
+          sub={decisions.total === 0 && decisionsAllTime.total > 0
+            ? `${decisionsAllTime.total} total`
+            : undefined
+          }
+        />
+        <KPI
+          value={showDecisions.total > 0 ? `${showDecisions.accuracy}%` : '—'}
+          label="precisión"
+          sub={showDecisions.total > 0 ? `${showDecisions.correct} correctas` : undefined}
+        />
+        <KPI
+          value={showActions.hoursSaved}
+          label={`horas ahorradas · ${actionPeriod}`}
+        />
       </div>
 
-      {/* Workflow chain */}
+      {/* Workflow chain — show 30d counts if 24h is empty */}
       <div style={{
         display: 'flex', gap: 4, flexWrap: 'wrap',
         padding: '12px 0', borderTop: '1px solid rgba(255,255,255,0.06)',
@@ -93,11 +124,18 @@ export function CruzAutonomoPanel({ decisions, workflow, actions }: Props) {
           )
         })}
       </div>
+
+      {/* 30d workflow total if available */}
+      {workflow30d.total > 0 && (
+        <div style={{ fontSize: 11, color: '#6E7681', textAlign: 'right', marginTop: 4 }}>
+          {workflow30d.total.toLocaleString('es-MX')} eventos en 30 días
+        </div>
+      )}
     </div>
   )
 }
 
-function KPI({ value, label }: { value: number | string; label: string }) {
+function KPI({ value, label, sub }: { value: number | string; label: string; sub?: string }) {
   return (
     <div>
       <div className="font-mono" style={{
@@ -106,6 +144,7 @@ function KPI({ value, label }: { value: number | string; label: string }) {
         {value}
       </div>
       <div style={{ fontSize: 12, color: '#8B949E', marginTop: 2 }}>{label}</div>
+      {sub && <div style={{ fontSize: 11, color: '#6E7681', marginTop: 1 }}>{sub}</div>}
     </div>
   )
 }

@@ -4,8 +4,23 @@ import { createServerClient } from '@/lib/supabase-server'
 
 export interface AdminData {
   agentDecisions24h: { total: number; correct: number; accuracy: number }
+  agentDecisions30d: { total: number; correct: number; accuracy: number }
+  agentDecisionsAllTime: { total: number }
   workflowEvents24h: { total: number; byStage: Record<string, number> }
+  workflowEvents30d: { total: number }
   operatorActions24h: { total: number; hoursSaved: number }
+  operatorActions30d: { total: number; hoursSaved: number }
+  /** Business-level summary for the hero card */
+  businessSummary: {
+    totalTraficos: number
+    activeTraficos: number
+    cruzadosThisMonth: number
+    cruzadosLastMonth: number
+    last30Days: number
+    valorYtdUsd: number
+    activeClients: number
+    oldestActiveAgeDays: number | null
+  }
   escalations: Array<{
     id: string; type: string; description: string
     company: string; urgency: string; created_at: string
@@ -117,7 +132,10 @@ function todayStart(): string {
 async function fetchAdminData(): Promise<AdminData> {
   const sb = createServerClient()
   const h24 = hoursAgo(24)
-  const today = todayStart()
+  const d30 = new Date(Date.now() - 30 * 86400000).toISOString()
+  const thisMonthStart = startOfMonth(0)
+  const lastMonthStart = startOfMonth(-1)
+  const ytdStart = new Date(new Date().getFullYear(), 0, 1).toISOString()
 
   const results = await Promise.allSettled([
     // 0: agent_decisions last 24h
@@ -135,7 +153,7 @@ async function fetchAdminData(): Promise<AdminData> {
       .select('id, operator_id, action_type, duration_ms, created_at')
       .gte('created_at', h24)
       .limit(500),
-    // 3: escalations — drafts needing intervention + high-value unreviewed decisions
+    // 3: escalations — drafts needing intervention
     sb.from('pedimento_drafts')
       .select('id, trafico_id, status, company_id, created_at, draft_data')
       .eq('status', 'pending')
@@ -163,6 +181,59 @@ async function fetchAdminData(): Promise<AdminData> {
       .in('estatus', ['En Proceso', 'Documentacion', 'En Aduana'])
       .gte('fecha_llegada', '2024-01-01')
       .limit(2000),
+    // 8: agent_decisions last 30 days (for quiet-period fallback)
+    sb.from('agent_decisions')
+      .select('id, was_correct, created_at')
+      .gte('created_at', d30)
+      .limit(2000),
+    // 9: agent_decisions all-time count
+    sb.from('agent_decisions')
+      .select('id', { count: 'exact', head: true }),
+    // 10: workflow_events last 30 days count
+    sb.from('workflow_events')
+      .select('id', { count: 'exact', head: true })
+      .gte('created_at', d30),
+    // 11: operator_actions last 30 days
+    sb.from('operator_actions')
+      .select('id', { count: 'exact', head: true })
+      .gte('created_at', d30),
+    // 12: business summary — total traficos
+    sb.from('traficos')
+      .select('id', { count: 'exact', head: true }),
+    // 13: business summary — cruzados this month
+    sb.from('traficos')
+      .select('id', { count: 'exact', head: true })
+      .eq('estatus', 'Cruzado')
+      .gte('fecha_cruce', thisMonthStart),
+    // 14: business summary — cruzados last month
+    sb.from('traficos')
+      .select('id', { count: 'exact', head: true })
+      .eq('estatus', 'Cruzado')
+      .gte('fecha_cruce', lastMonthStart)
+      .lt('fecha_cruce', thisMonthStart),
+    // 15: business summary — last 30 days traficos
+    sb.from('traficos')
+      .select('id', { count: 'exact', head: true })
+      .gte('fecha_llegada', d30),
+    // 16: business summary — YTD value from traficos
+    sb.from('traficos')
+      .select('importe_total')
+      .gte('fecha_llegada', ytdStart)
+      .not('importe_total', 'is', null)
+      .limit(5000),
+    // 17: business summary — active clients (companies with active traficos)
+    sb.from('traficos')
+      .select('company_id')
+      .in('estatus', ['En Proceso', 'Documentacion', 'En Aduana', 'Pedimento Pagado'])
+      .gte('fecha_llegada', '2024-01-01')
+      .limit(5000),
+    // 18: oldest active trafico (for aging)
+    sb.from('traficos')
+      .select('fecha_llegada')
+      .in('estatus', ['En Proceso', 'Documentacion', 'En Aduana'])
+      .not('fecha_llegada', 'is', null)
+      .order('fecha_llegada', { ascending: true })
+      .limit(1),
   ])
 
   // Extract settled values with safe defaults
@@ -239,10 +310,54 @@ async function fetchAdminData(): Promise<AdminData> {
     }))
     .slice(0, 5)
 
+  // 30-day agent decisions
+  const decisions30d = results[8].status === 'fulfilled' ? results[8].value.data ?? [] : []
+  const reviewed30d = decisions30d.filter((d: Record<string, unknown>) => d.was_correct !== null)
+  const correct30d = reviewed30d.filter((d: Record<string, unknown>) => d.was_correct === true)
+  const accuracy30d = reviewed30d.length > 0 ? Math.round((correct30d.length / reviewed30d.length) * 100) : 0
+
+  // All-time agent decisions count
+  const decisionsAllTimeCount = results[9].status === 'fulfilled' ? results[9].value.count ?? 0 : 0
+
+  // 30-day workflow + operator counts
+  const wfEvents30dCount = results[10].status === 'fulfilled' ? results[10].value.count ?? 0 : 0
+  const opActions30dCount = results[11].status === 'fulfilled' ? results[11].value.count ?? 0 : 0
+
+  // Business summary
+  const totalTraficos = results[12].status === 'fulfilled' ? results[12].value.count ?? 0 : 0
+  const cruzadosThisMonth = results[13].status === 'fulfilled' ? results[13].value.count ?? 0 : 0
+  const cruzadosLastMonth = results[14].status === 'fulfilled' ? results[14].value.count ?? 0 : 0
+  const last30Days = results[15].status === 'fulfilled' ? results[15].value.count ?? 0 : 0
+
+  const ytdRows = results[16].status === 'fulfilled' ? results[16].value.data ?? [] : []
+  const valorYtdUsd = ytdRows.reduce((s: number, r: Record<string, unknown>) => s + Number(r.importe_total || 0), 0)
+
+  const activeClientRows = results[17].status === 'fulfilled' ? results[17].value.data ?? [] : []
+  const activeClients = new Set(activeClientRows.map((r: Record<string, unknown>) => r.company_id)).size
+
+  const oldestActiveRow = results[18].status === 'fulfilled' ? results[18].value.data?.[0] : null
+  const oldestActiveAgeDays = oldestActiveRow?.fecha_llegada
+    ? Math.floor((Date.now() - new Date(oldestActiveRow.fecha_llegada as string).getTime()) / 86400000)
+    : null
+
   return {
     agentDecisions24h: { total: decisions.length, correct: correct.length, accuracy },
+    agentDecisions30d: { total: decisions30d.length, correct: correct30d.length, accuracy: accuracy30d },
+    agentDecisionsAllTime: { total: decisionsAllTimeCount },
     workflowEvents24h: { total: wfEvents.length, byStage },
+    workflowEvents30d: { total: wfEvents30dCount },
     operatorActions24h: { total: opActions.length, hoursSaved },
+    operatorActions30d: { total: opActions30dCount, hoursSaved: Math.round((opActions30dCount * 3) / 60 * 10) / 10 },
+    businessSummary: {
+      totalTraficos,
+      activeTraficos: allActiveTraficos.length,
+      cruzadosThisMonth,
+      cruzadosLastMonth,
+      last30Days,
+      valorYtdUsd,
+      activeClients,
+      oldestActiveAgeDays,
+    },
     escalations,
     smartQueue,
     teamStats,
@@ -521,8 +636,17 @@ export async function fetchCockpitData(
   if (role === 'admin' || role === 'broker') {
     const admin = await safeQuery(() => fetchAdminData(), {
       agentDecisions24h: { total: 0, correct: 0, accuracy: 0 },
+      agentDecisions30d: { total: 0, correct: 0, accuracy: 0 },
+      agentDecisionsAllTime: { total: 0 },
       workflowEvents24h: { total: 0, byStage: {} },
+      workflowEvents30d: { total: 0 },
       operatorActions24h: { total: 0, hoursSaved: 0 },
+      operatorActions30d: { total: 0, hoursSaved: 0 },
+      businessSummary: {
+        totalTraficos: 0, activeTraficos: 0, cruzadosThisMonth: 0,
+        cruzadosLastMonth: 0, last30Days: 0, valorYtdUsd: 0,
+        activeClients: 0, oldestActiveAgeDays: null,
+      },
       escalations: [], smartQueue: [], teamStats: [],
       unassignedCount: 0, companies: [],
       bridges: [], intelligenceFeed: [],

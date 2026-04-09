@@ -49,11 +49,19 @@ export function CruzChatBubble() {
   const [hasUnread, setHasUnread] = useState(false)
 
   // Listen for global open event (from shortcuts, command palette, FAB, etc.)
+  // On mobile, navigate to full /cruz page instead of opening overlay
   useEffect(() => {
-    const handleOpen = () => { setOpen(true); setHasUnread(false) }
+    const handleOpen = () => {
+      if (isMobile) {
+        router.push('/cruz')
+        return
+      }
+      setOpen(true)
+      setHasUnread(false)
+    }
     document.addEventListener('cruz:open-chat', handleOpen)
     return () => document.removeEventListener('cruz:open-chat', handleOpen)
-  }, [])
+  }, [isMobile, router])
 
   // Chat state
   const [messages, setMessages] = useState<Message[]>(() => {

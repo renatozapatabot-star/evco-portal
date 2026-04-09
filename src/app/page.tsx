@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useCallback } from 'react'
 import { CheckCircle, X } from 'lucide-react'
 import { getCookieValue } from '@/lib/client-config'
 import ClientInicioView from '@/components/views/client-inicio-view'
@@ -9,6 +9,10 @@ import { fmtId } from '@/lib/format-utils'
 import { getSmartGreeting } from '@/lib/greeting'
 import { dashboardStory } from '@/lib/data-stories'
 import { anticipate, isDismissed, dismissSuggestion } from '@/lib/anticipate'
+import { ActionStack } from '@/components/broker/ActionStack'
+import { PullRefreshIndicator } from '@/components/broker/PullRefreshIndicator'
+import { usePullRefreshV2 } from '@/hooks/use-pull-refresh-v2'
+import type { ActionItem } from '@/components/broker/SwipeableActionCard'
 import Link from 'next/link'
 
 // ── Design tokens (CRUZ Navy light) ──
@@ -151,15 +155,6 @@ function AdminView() {
 /* ═══════════════════════════════════════════════════════════
    VIEW 2 — BROKER (Renato Jr): Self-writing action queue
    ═══════════════════════════════════════════════════════════ */
-interface ActionItem {
-  id: string
-  type: 'urgent' | 'draft' | 'today' | 'new' | 'bridge'
-  icon: string
-  label: string
-  detail: string
-  href: string
-}
-
 function BrokerView() {
   const [loading, setLoading] = useState(true)
   const [items, setItems] = useState<ActionItem[]>([])
@@ -177,7 +172,7 @@ function BrokerView() {
     ? (getCookieValue('company_name') ?? '')
     : ''
 
-  useEffect(() => {
+  const loadData = useCallback(async () => {
     // Broker/admin: no company_id or trafico_prefix filters — see all tráficos
     const trafParams = new URLSearchParams({
       table: 'traficos', limit: '5000',
@@ -193,18 +188,20 @@ function BrokerView() {
     const draftParams = new URLSearchParams({
       table: 'drafts', limit: '50',
     })
-    Promise.all([
-      fetch(`/api/data?${trafParams}`).then(r => r.json()),
-      fetch('/api/data?table=trafico_completeness&limit=5000').then(r => r.json()),
-      fetch(`/api/data?${entParams}`).then(r => r.json()),
-      fetch('/api/bridge-times').then(r => r.json()),
-      fetch(`/api/data?${pipeParams}`).then(r => r.json()),
-      fetch(`/api/data?${draftParams}`).then(r => r.json()),
-      fetch('/api/data?table=po_predictions&limit=100').then(r => r.json()).catch(() => ({ data: [] })),
-      fetch('/api/cost-savings').then(r => r.json()).catch(() => ({ total_estimated_usd: 0 })),
-      fetch('/api/data?table=globalpc_partidas&limit=10000').then(r => r.json()).catch(() => ({ data: [] })),
-      fetch('/api/data?table=globalpc_productos&limit=10000').then(r => r.json()).catch(() => ({ data: [] })),
-    ]).then(([trafData, compData, entData, bridgeData, pipeData, draftData, predData, savingsData, partidasData, productosData]) => {
+    try {
+      const [trafData, compData, entData, bridgeData, pipeData, draftData, predData, savingsData, partidasData, productosData] = await Promise.all([
+        fetch(`/api/data?${trafParams}`).then(r => r.json()),
+        fetch('/api/data?table=trafico_completeness&limit=5000').then(r => r.json()),
+        fetch(`/api/data?${entParams}`).then(r => r.json()),
+        fetch('/api/bridge-times').then(r => r.json()),
+        fetch(`/api/data?${pipeParams}`).then(r => r.json()),
+        fetch(`/api/data?${draftParams}`).then(r => r.json()),
+        fetch('/api/data?table=po_predictions&limit=100').then(r => r.json()).catch(() => ({ data: [] })),
+        fetch('/api/cost-savings').then(r => r.json()).catch(() => ({ total_estimated_usd: 0 })),
+        fetch('/api/data?table=globalpc_partidas&limit=10000').then(r => r.json()).catch(() => ({ data: [] })),
+        fetch('/api/data?table=globalpc_productos&limit=10000').then(r => r.json()).catch(() => ({ data: [] })),
+      ])
+
       const allTraficos: TraficoRow[] = trafData.data ?? []
       const active = allTraficos.filter(t => !(t.estatus || '').toLowerCase().includes('cruz'))
       setActiveCount(active.length)
@@ -307,8 +304,8 @@ function BrokerView() {
       }
 
       // Bridge times > 30 min → BRIDGE items
-      const bridges: BridgeTime[] = bridgeData?.bridges ?? []
-      const slowBridges = bridges.filter(b => b.commercial !== null && b.commercial! > 30)
+      const bridgeList: BridgeTime[] = bridgeData?.bridges ?? []
+      const slowBridges = bridgeList.filter(b => b.commercial !== null && b.commercial! > 30)
       if (slowBridges.length > 0) {
         const worst = slowBridges.reduce((a, b) => (a.commercial! > b.commercial! ? a : b))
         queue.push({
@@ -322,7 +319,7 @@ function BrokerView() {
       }
 
       // Store bridge data for status line
-      setBridges(bridges)
+      setBridges(bridgeList)
 
       // Store predictions count (future 30 days)
       const now = new Date().toISOString().split('T')[0]
@@ -347,7 +344,22 @@ function BrokerView() {
       const typeOrder: Record<string, number> = { urgent: 0, draft: 1, today: 2, new: 3, bridge: 4 }
       queue.sort((a, b) => typeOrder[a.type] - typeOrder[b.type])
       setItems(queue.slice(0, 10))
-    }).catch((err: unknown) => console.error('[inicio] attention feed:', (err as Error).message)).finally(() => setLoading(false))
+    } catch (err: unknown) {
+      console.error('[inicio] attention feed:', (err as Error).message)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  // Initial load
+  useEffect(() => { loadData() }, [loadData])
+
+  // Pull-to-refresh
+  const { pullDistance, isRefreshing, progress: pullProgress } = usePullRefreshV2({ onRefresh: loadData })
+
+  // Resolve action item (remove from local state)
+  const handleResolve = useCallback((id: string) => {
+    setItems(prev => prev.filter(item => item.id !== id))
   }, [])
 
   // ── Narrative story ──
@@ -447,6 +459,9 @@ function BrokerView() {
         </div>
       )}
 
+      {/* Pull-to-refresh indicator */}
+      <PullRefreshIndicator pullDistance={pullDistance} isRefreshing={isRefreshing} progress={pullProgress} />
+
       {/* Action queue */}
       <Celebrate trigger={items.length === 0 && !loading} id="broker-allgreen" />
       {items.length === 0 ? (
@@ -474,21 +489,7 @@ function BrokerView() {
           </div>
         </div>
       ) : (
-        <div className="broker-queue">
-          {items.map(item => {
-            const borderColor = item.type === 'urgent' ? 'var(--danger-500)' : item.type === 'draft' ? 'var(--warning)' : item.type === 'today' ? 'var(--gold)' : item.type === 'new' ? 'var(--gold)' : 'var(--slate-400)'
-            return (
-              <Link key={item.id} href={item.href} className="broker-action-item" style={{ borderLeftColor: borderColor }}>
-                <span className="broker-action-icon">{item.icon}</span>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div className="broker-action-label">{item.label}</div>
-                  <div className="broker-action-detail">{item.detail}</div>
-                </div>
-                <span className="broker-action-arrow">→</span>
-              </Link>
-            )
-          })}
-        </div>
+        <ActionStack items={items} onResolve={handleResolve} />
       )}
 
       {/* Bridge status line */}

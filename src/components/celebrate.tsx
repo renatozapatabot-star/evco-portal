@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useCallback } from 'react'
+import { haptic } from '@/hooks/use-haptic'
 
 /**
  * Fire confetti from both sides — used when a trafico crosses.
@@ -37,9 +38,7 @@ export function useConfetti() {
       })
 
       // Haptic
-      if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
-        navigator.vibrate([15, 50, 15])
-      }
+      haptic.celebrate()
     } catch (e) { console.error('[celebrate] confetti failed:', (e as Error).message) }
   }, [])
 

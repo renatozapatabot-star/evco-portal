@@ -353,12 +353,33 @@ body {
   padding: 8px;
 }
 .topbar-mobile-spacer { display: none; }
+.topbar-ai-mobile {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #C9A84C, #8B6914);
+  color: #0B1623;
+  text-decoration: none;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(196,150,60,0.3);
+  transition: box-shadow 150ms, transform 150ms;
+}
+.topbar-ai-mobile:active {
+  transform: scale(0.95);
+  box-shadow: 0 1px 4px rgba(196,150,60,0.2);
+}
 @media (max-width: 767px) {
   .cruz-topbar--client { padding: 8px 12px; gap: 12px; }
   .topbar-logo-text { font-size: 16px; }
   .topbar-client-name { display: none; }
   .topbar-search-wide { display: none; }
   .topbar-search-icon-mobile { display: flex; }
+  .topbar-ai-mobile { display: flex; }
   .topbar-mobile-spacer { display: block !important; }
   .cruz-topbar--client .topbar-right { margin-left: 0; }
 }
@@ -2124,6 +2145,37 @@ tr.row-odd  { background: rgba(248,250,252,0.5); }
   color: var(--gold);
   font-weight: 600;
   flex-shrink: 0;
+}
+
+/* ═══ Premium interactions — swipe, pull-refresh, urgency pulse ═══ */
+
+@keyframes pullSpinner {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes urgencyPulse {
+  0%, 100% { border-left-color: var(--danger-500); }
+  50% { border-left-color: rgba(220, 38, 38, 0.4); }
+}
+
+.urgency-pulse-red {
+  animation: urgencyPulse 2s ease-in-out infinite;
+}
+
+.urgency-pulse-amber {
+  animation: urgencyPulse 2s ease-in-out infinite;
+}
+
+.urgency-pulse-amber {
+  --danger-500: var(--warning-500, #D97706);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .urgency-pulse-red,
+  .urgency-pulse-amber {
+    animation: none !important;
+  }
 }
 
 /* ═══ Session 3 — Tráficos List ═══ */

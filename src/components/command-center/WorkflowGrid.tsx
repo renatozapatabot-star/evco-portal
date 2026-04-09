@@ -1,9 +1,10 @@
 'use client'
 
 import { useMemo } from 'react'
-import { Truck, Package, FolderOpen, FileText, DollarSign, Warehouse, BarChart3, TrendingUp, CheckCircle, ClipboardList } from 'lucide-react'
+import { Truck, Package, FolderOpen, FileText, DollarSign, Warehouse, BarChart3, TrendingUp, CheckCircle, ClipboardList, Navigation, LineChart, PiggyBank, Radio } from 'lucide-react'
+import { AnimatePresence, motion } from 'framer-motion'
 import { WorkflowCard, type CardAction } from './WorkflowCard'
-import { getCardUrgency, type CardKey, type CardKPIs, type Urgency } from '@/lib/card-urgency'
+import { getCardUrgency, sortByUrgency, type CardKey, type CardKPIs, type Urgency } from '@/lib/card-urgency'
 import { fmtDateTime } from '@/lib/format-utils'
 import type { CommandCenterData } from '@/hooks/use-command-center-data'
 
@@ -164,6 +165,31 @@ const CARDS: CardDef[] = [
     },
     getActions: () => [{ label: 'Ver pendientes', href: '/expedientes', primary: true }],
   },
+  // ── Row 4: Part 5 Intelligence Skills ──
+  {
+    key: 'crossing_intelligence', href: '/cruces', label: 'Inteligencia de Cruce', Icon: Navigation,
+    getKpi: () => null,
+    getSubtitle: () => 'Predicciones de espera y rutas — proximamente',
+    getActions: () => [{ label: 'Ver cruces', href: '/cruces', primary: true }],
+  },
+  {
+    key: 'demand_forecast', href: '/predicciones', label: 'Pronóstico de Demanda', Icon: LineChart,
+    getKpi: () => null,
+    getSubtitle: () => 'Volumen esperado y tendencias — proximamente',
+    getActions: () => [{ label: 'Ver predicciones', href: '/predicciones', primary: true }],
+  },
+  {
+    key: 'cost_optimizer', href: '/ahorro', label: 'Optimización de Costos', Icon: PiggyBank,
+    getKpi: () => null,
+    getSubtitle: () => 'Ahorro estimado y oportunidades — proximamente',
+    getActions: () => [{ label: 'Ver ahorro', href: '/ahorro', primary: true }],
+  },
+  {
+    key: 'dispatch_coordinator', href: '/operaciones', label: 'Coordinación de Despacho', Icon: Radio,
+    getKpi: () => null,
+    getSubtitle: () => 'Asignación inteligente de operaciones — proximamente',
+    getActions: () => [{ label: 'Ver operaciones', href: '/operaciones', primary: true }],
+  },
 ]
 
 export function WorkflowGrid(props: WorkflowGridProps) {
@@ -171,7 +197,7 @@ export function WorkflowGrid(props: WorkflowGridProps) {
   const isClient = props.viewMode === 'client'
 
   // Cards hidden from clients (operator-only intelligence)
-  const CLIENT_HIDDEN_CARDS: CardKey[] = ['docs_pendientes']
+  const CLIENT_HIDDEN_CARDS: CardKey[] = ['docs_pendientes', 'crossing_intelligence', 'demand_forecast', 'cost_optimizer', 'dispatch_coordinator']
 
   const allCards = useMemo(() => {
     const kpis: CardKPIs = {
@@ -188,29 +214,43 @@ export function WorkflowGrid(props: WorkflowGridProps) {
       }))
   }, [props.enProceso, props.urgentes, props.pendingEntradas, props.docsFaltantes])
 
+  // Mobile: vertical urgency-sorted stack — most urgent on top
+  const sortedCards = useMemo(
+    () => sortByUrgency(allCards),
+    [allCards],
+  )
+
   if (isMobile) {
     return (
       <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(2, 1fr)',
-        gridAutoRows: '1fr',
-        gap: 8,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 10,
         width: '100%',
       }}>
-        {allCards.map((card, i) => (
-          <WorkflowCard
-            key={card.key}
-            href={card.href}
-            label={card.label}
-            Icon={card.Icon}
-            kpi={card.getKpi(props)}
-            subtitle={card.getSubtitle(props, card.urgency)}
-            variant="uniform"
-            actions={card.getActions(props, card.urgency)}
-            urgency={card.urgency}
-            delay={i * 40}
-          />
-        ))}
+        <AnimatePresence mode="popLayout">
+          {sortedCards.map((card, i) => (
+            <motion.div
+              key={card.key}
+              layout
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 30, delay: i * 0.04 }}
+            >
+              <WorkflowCard
+                href={card.href}
+                label={card.label}
+                Icon={card.Icon}
+                kpi={card.getKpi(props)}
+                subtitle={card.getSubtitle(props, card.urgency)}
+                variant="uniform"
+                actions={card.getActions(props, card.urgency)}
+                urgency={card.urgency}
+              />
+            </motion.div>
+          ))}
+        </AnimatePresence>
       </div>
     )
   }
@@ -228,7 +268,14 @@ export function WorkflowGrid(props: WorkflowGridProps) {
       {allCards.map((card, i) => {
         const span = (card.urgency === 'red' || card.urgency === 'amber') ? 6 : 3
         return (
-          <div key={card.key} style={{ gridColumn: `span ${span}` }}>
+          <motion.div
+            key={card.key}
+            layout
+            style={{ gridColumn: `span ${span}` }}
+            initial={{ opacity: 0, scale: 0.97 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 30, delay: i * 0.04 }}
+          >
             <WorkflowCard
               href={card.href}
               label={card.label}
@@ -240,7 +287,7 @@ export function WorkflowGrid(props: WorkflowGridProps) {
               urgency={card.urgency}
               delay={i * 40}
             />
-          </div>
+          </motion.div>
         )
       })}
     </div>

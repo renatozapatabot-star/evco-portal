@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import { getCompanyIdCookie } from '@/lib/client-config'
+import { haptic } from '@/hooks/use-haptic'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -40,24 +41,53 @@ export function useRealtimeTrafico() {
 
     // Only fire on actual status changes
     if (newEstatus && newEstatus !== oldEstatus) {
+      const traficoId = String(newRow.trafico || '')
       setLastUpdate({
-        trafico: String(newRow.trafico || ''),
+        trafico: traficoId,
         estatus: newEstatus,
         previous_estatus: oldEstatus || undefined,
         timestamp: new Date().toISOString(),
       })
       setUpdatedAt(new Date())
+
+      // Slide-in notification for trafico status changes
+      if (typeof document !== 'undefined') {
+        const isCrossed = newEstatus.toLowerCase().includes('cruz')
+        haptic.notify()
+        document.dispatchEvent(new CustomEvent('cruz:notification-slide', {
+          detail: {
+            title: isCrossed ? `${traficoId} cruzado` : `${traficoId}: ${newEstatus}`,
+            description: isCrossed ? 'Cruce exitoso — todo en orden' : `Cambio de estatus: ${oldEstatus} → ${newEstatus}`,
+            severity: isCrossed ? 'success' : 'info',
+            href: `/traficos/${encodeURIComponent(traficoId)}`,
+          },
+        }))
+      }
     }
   }, [])
 
   const handleEntradaUpdate = useCallback((payload: { new: Record<string, unknown>; old: Record<string, unknown> }) => {
     const newRow = payload.new
+    const entradaId = String(newRow.cve_entrada || '')
     setLastEntradaUpdate({
-      cve_entrada: String(newRow.cve_entrada || ''),
+      cve_entrada: entradaId,
       pipeline_status: String(newRow.pipeline_status || ''),
       timestamp: new Date().toISOString(),
     })
     setUpdatedAt(new Date())
+
+    // Slide-in notification for new entradas
+    if (typeof document !== 'undefined' && entradaId) {
+      haptic.notify()
+      document.dispatchEvent(new CustomEvent('cruz:notification-slide', {
+        detail: {
+          title: `Nueva entrada: ${entradaId}`,
+          description: String(newRow.proveedor || 'Mercancía recibida'),
+          severity: 'info',
+          href: '/entradas',
+        },
+      }))
+    }
   }, [])
 
   useEffect(() => {

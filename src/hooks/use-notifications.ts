@@ -73,6 +73,17 @@ export function useNotificationBadge() {
             }))
           }
 
+          // Dispatch slide-in notification for real-time visibility
+          if (typeof document !== 'undefined' && payload.new.title) {
+            document.dispatchEvent(new CustomEvent('cruz:notification-slide', {
+              detail: {
+                title: payload.new.title,
+                description: payload.new.description || '',
+                severity: payload.new.severity || 'info',
+              },
+            }))
+          }
+
           // If quiet hours, don't flush (accumulate)
           if (isQuietHours()) return
 

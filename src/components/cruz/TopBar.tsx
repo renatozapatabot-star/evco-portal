@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Search, Bell, Menu, LogOut, ChevronLeft } from 'lucide-react';
+import { Search, Bell, Menu, LogOut, ChevronLeft, Sparkles } from 'lucide-react';
 import { useNotificationBadge } from '@/hooks/use-notifications';
 import { CruzMark } from '@/components/command-center/CruzMark';
 
@@ -87,6 +87,15 @@ export default function TopBar({
         >
           <Search size={18} />
         </button>
+
+        {/* CRUZ AI button (mobile only — navigates to full AI page) */}
+        <Link
+          href="/cruz"
+          className="topbar-ai-mobile"
+          aria-label="CRUZ AI"
+        >
+          <Sparkles size={16} />
+        </Link>
 
         {/* Right: company name + logout */}
         <div className="topbar-right">

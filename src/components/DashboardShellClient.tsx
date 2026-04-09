@@ -12,6 +12,7 @@ import { usePullToRefresh } from '@/hooks/use-pull-refresh'
 // MobileBottomNav removed — navigation via topbar + floating CRUZ chat
 import { WelcomeOverlay } from './WelcomeOverlay'
 import { CruzChatBubble } from './cruz-chat-bubble'
+import { SlideInNotification } from './notifications/SlideInNotification'
 import { getCookieValue } from '@/lib/client-config'
 
 interface Props { children: React.ReactNode }
@@ -183,6 +184,7 @@ export default function DashboardShellClient({ children }: Props) {
   return (
     <ToastProvider>
       <CelebrationListener />
+      <SlideInNotification />
       <a href="#main-content" className="skip-link">Ir al contenido</a>
 
       {/* Broker viewing-as banner */}

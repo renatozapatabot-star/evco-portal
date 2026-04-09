@@ -3,6 +3,8 @@
 import Link from 'next/link'
 import { CheckCircle2 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
+import { motion, useReducedMotion } from 'framer-motion'
+import { haptic } from '@/hooks/use-haptic'
 
 export interface CardAction {
   label: string
@@ -36,6 +38,7 @@ const U_ICON   = { red: 'rgba(220,38,38,0.7)', amber: 'rgba(217,119,6,0.7)', gre
 export function WorkflowCard({ href, label, Icon, kpi, subtitle, variant, actions, delay = 0, spanFull, urgency }: WorkflowCardProps) {
   const u = urgency || 'neutral'
   const isGood = u === 'green' || u === 'neutral'
+  const prefersReduced = useReducedMotion()
 
   // ── UNIFORM VARIANT — all cards same style, full command center feel ──
   if (variant === 'uniform') {
@@ -46,8 +49,12 @@ export function WorkflowCard({ href, label, Icon, kpi, subtitle, variant, action
       : kpi !== null ? kpi.toLocaleString() : ''
 
     return (
-      <div
-        className="cc-card"
+      <motion.div
+        className={`cc-card${u === 'red' ? ' urgency-pulse-red' : u === 'amber' ? ' urgency-pulse-amber' : ''}`}
+        whileHover={prefersReduced ? undefined : { scale: 1.015, boxShadow: `0 4px 20px ${U_SHADOW[u]}` }}
+        whileTap={prefersReduced ? undefined : { scale: 0.97 }}
+        onTapStart={() => haptic.micro()}
+        transition={{ type: 'spring', stiffness: 400, damping: 25 }}
         style={{
           padding: '20px 20px',
           borderRadius: 14,
@@ -139,7 +146,7 @@ export function WorkflowCard({ href, label, Icon, kpi, subtitle, variant, action
             </Link>
           ))}
         </div>
-      </div>
+      </motion.div>
     )
   }
 

@@ -7,9 +7,11 @@ import { useActivityPulse } from '@/hooks/use-activity-pulse'
 import { useRealtimeTrafico } from '@/hooks/use-realtime-trafico'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useStatusSentence } from '@/hooks/use-status-sentence'
+import { usePullRefreshV2 } from '@/hooks/use-pull-refresh-v2'
 import { playSound } from '@/lib/sounds'
 import { WorkflowGrid } from './WorkflowGrid'
 import { ActivityPulseSection } from './ActivityPulseSection'
+import { PullRefreshIndicator } from '@/components/broker/PullRefreshIndicator'
 import { ErrorCard } from '@/components/ui/ErrorCard'
 import { DashboardSkeleton } from '@/components/skeletons/DashboardSkeleton'
 import { Celebrate } from '@/components/celebrate'
@@ -151,12 +153,52 @@ function CommandStrip({ urgentes, criticalCount, mood, isMobile, criticosOpen, s
   )
 }
 
+function PasswordResetBanner() {
+  const [dismissed, setDismissed] = useState(false)
+  if (dismissed) return null
+  return (
+    <div style={{
+      padding: '10px 16px', borderRadius: 10, marginBottom: 12,
+      borderLeft: '3px solid var(--gold, #C9A84C)',
+      background: 'rgba(201,168,76,0.06)',
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      flexWrap: 'wrap', gap: 8,
+    }}>
+      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary, #1A1A1A)' }}>
+        Te recomendamos cambiar tu contraseña temporal
+      </span>
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <Link href="/cambiar-contrasena" style={{
+          padding: '6px 14px', borderRadius: 6, fontSize: 12, fontWeight: 700,
+          background: 'var(--gold, #C9A84C)', color: '#FFFFFF', textDecoration: 'none',
+          minHeight: 44, display: 'inline-flex', alignItems: 'center',
+        }}>
+          Cambiar ahora
+        </Link>
+        <button
+          onClick={() => { setDismissed(true); sessionStorage.setItem('cruz-pw-banner-dismissed', '1') }}
+          style={{
+            background: 'none', border: 'none', cursor: 'pointer', fontSize: 12,
+            color: 'var(--text-muted, #9B9B9B)', padding: 8, minHeight: 44, minWidth: 44,
+          }}
+          aria-label="Descartar"
+        >
+          ✕
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client' | 'operator' }) {
   const isClient = viewMode === 'client'
   const isMobile = useIsMobile()
   const { data, loading, error, reload } = useCommandCenterData()
   const { pulse, loading: pulseLoading, awaySummary, dismissAway } = useActivityPulse()
   const { lastUpdate } = useRealtimeTrafico()
+  const { pullDistance, isRefreshing, progress: pullProgress } = usePullRefreshV2({
+    onRefresh: async () => { reload() },
+  })
   const status = useStatusSentence()
   const realtimeToast = useRealtimeToast(lastUpdate)
   const [criticosOpen, setCriticosOpen] = useState(false)
@@ -223,6 +265,9 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
         flexDirection: 'column',
       }}
     >
+      {/* Pull-to-refresh indicator */}
+      <PullRefreshIndicator pullDistance={pullDistance} isRefreshing={isRefreshing} progress={pullProgress} />
+
       {/* Toast */}
       {realtimeToast && (
         <div className="cc-toast-fixed" style={{
@@ -250,6 +295,11 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
 
       {/* Away banner */}
       {awayBanner}
+
+      {/* Password reset banner for clients with temporary passwords */}
+      {isClient && typeof window !== 'undefined' && sessionStorage.getItem('cruz-pw-banner-dismissed') !== '1' && (
+        <PasswordResetBanner />
+      )}
 
       {/* ── COMMAND STRIP (operator only — hidden from clients) ── */}
       {!isClient && <CommandStrip

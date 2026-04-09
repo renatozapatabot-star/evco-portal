@@ -13,7 +13,7 @@ import type { LucideIcon } from 'lucide-react'
 // ---------------------------------------------------------------------------
 // Roles — from user_role cookie set on login (see api/auth/route.ts)
 // ---------------------------------------------------------------------------
-export type UserRole = 'admin' | 'client' | 'broker'
+export type UserRole = 'admin' | 'client' | 'broker' | 'operator'
 
 // ---------------------------------------------------------------------------
 // Route item — single link in the nav
@@ -162,6 +162,22 @@ export const CLIENT_NAV: NavTopLevel[] = [
 export const CLIENT_GROUPS: NavGroup[] = []
 
 // ---------------------------------------------------------------------------
+// OPERATOR NAV — slim workflow-focused nav (no financials)
+// ---------------------------------------------------------------------------
+
+export const OPERATOR_NAV: NavTopLevel[] = [
+  { href: '/',             label: 'Mi Turno',         icon: LayoutDashboard },
+  { href: '/traficos',     label: 'Tráficos',         icon: Truck },
+  { href: '/entradas',     label: 'Entradas',         icon: Package },
+  { href: '/pedimentos',   label: 'Pedimentos',       icon: FileText },
+  { href: '/expedientes',  label: 'Expedientes',      icon: FolderOpen },
+  { href: '/clasificar',   label: 'Clasificar',       icon: Tags },
+  { href: '/bodega',       label: 'Inventario',       icon: Warehouse },
+]
+
+export const OPERATOR_GROUPS: NavGroup[] = []
+
+// ---------------------------------------------------------------------------
 // MOBILE BOTTOM NAV
 // ---------------------------------------------------------------------------
 
@@ -279,9 +295,8 @@ export const CLIENT_ROUTES = [
 
 /** Get all flat routes for a role (used for search/command palette filtering) */
 export function getRoutesForRole(role: UserRole): NavRoute[] {
-  if (role === 'client') {
-    return CLIENT_NAV
-  }
+  if (role === 'client') return CLIENT_NAV
+  if (role === 'operator') return OPERATOR_NAV
 
   const routes: NavRoute[] = [
     ...INTERNAL_TOP,
@@ -304,9 +319,29 @@ export function getActiveGroup(pathname: string, groups?: NavGroup[]): string | 
   return null
 }
 
+/** Routes accessible by operator role (no financials) */
+export const OPERATOR_ROUTES = [
+  '/',
+  '/traficos',
+  '/entradas',
+  '/pedimentos',
+  '/expedientes',
+  '/clasificar',
+  '/bodega',
+  '/login',
+  '/cruz',
+  '/cambiar-contrasena',
+] as const
+
 /** Check if a route is allowed for a given role */
 export function isRouteAllowed(pathname: string, role: UserRole): boolean {
   if (role === 'admin' || role === 'broker') return true
+
+  if (role === 'operator') {
+    return OPERATOR_ROUTES.some(route =>
+      route === '/' ? pathname === '/' : pathname.startsWith(route)
+    )
+  }
 
   // Client: check against allowed list
   return CLIENT_ROUTES.some(route =>

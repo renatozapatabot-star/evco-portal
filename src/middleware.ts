@@ -61,6 +61,29 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // Operators: block financial routes (no brokerage data exposure)
+  if (role === 'operator') {
+    const FINANCIAL_ROUTES = ['/financiero', '/cuentas', '/rentabilidad', '/facturacion', '/resultados', '/cotizacion']
+    const isFinancialRoute = FINANCIAL_ROUTES.some(route =>
+      pathname === route || pathname.startsWith(route + '/')
+    )
+    if (isFinancialRoute) {
+      return NextResponse.redirect(new URL('/', request.url))
+    }
+    // Operators also cannot access admin-only routes (except those in OPERATOR_ROUTES)
+    const isAdminRoute = ADMIN_ONLY_ROUTES.some(route =>
+      pathname === route || pathname.startsWith(route + '/')
+    )
+    // Allow specific operator routes through
+    const OPERATOR_ALLOWED = ['/', '/traficos', '/entradas', '/pedimentos', '/expedientes', '/clasificar', '/bodega', '/cruz', '/cambiar-contrasena']
+    const isOperatorAllowed = OPERATOR_ALLOWED.some(route =>
+      pathname === route || pathname.startsWith(route + '/')
+    )
+    if (isAdminRoute && !isOperatorAllowed) {
+      return NextResponse.redirect(new URL('/', request.url))
+    }
+  }
+
   return NextResponse.next()
 }
 

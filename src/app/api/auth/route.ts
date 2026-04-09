@@ -116,6 +116,51 @@ export async function POST(request: NextRequest) {
     return response
   }
 
+  // Check operator passwords — per-operator login for CRUZ staff
+  const OPERATOR_PASSWORDS: Record<string, string> = {
+    'eloisa2026': 'eloisa@cruz.local',
+    'claudia2026': 'claudia@cruz.local',
+    'anabel2026': 'anabel@cruz.local',
+    'vicente2026': 'vicente@cruz.local',
+    'clementina2026': 'clementina@cruz.local',
+    'arusha2026': 'arusha@cruz.local',
+    'eduardo2026': 'eduardo@cruz.local',
+  }
+
+  const operatorEmail = OPERATOR_PASSWORDS[password]
+  if (operatorEmail) {
+    const { data: operatorMatch } = await supabase.from('operators')
+      .select('id, full_name, email, role, company_id, active')
+      .eq('email', operatorEmail)
+      .eq('active', true)
+      .maybeSingle()
+
+    if (operatorMatch) {
+      const response = NextResponse.json({
+        success: true,
+        role: 'operator',
+        company: { company_id: 'internal', name: 'Renato Zapata & Company' }
+      })
+      await setAuthCookies(response, {
+        companyId: 'internal',
+        companyName: 'Renato Zapata & Company',
+        companyClave: 'internal',
+        role: 'operator',
+        operatorName: operatorMatch.full_name,
+        operatorId: operatorMatch.id,
+      })
+
+      // Log operator login
+      supabase.from('operator_actions').insert({
+        operator_id: operatorMatch.id,
+        action_type: 'operator_login',
+        payload: { full_name: operatorMatch.full_name, role: 'operator' },
+      }).then(() => {}, () => {})
+
+      return response
+    }
+  }
+
   // Lookup by portal_password in companies table (covers all clients)
   const { data: company } = await supabase
     .from('companies')

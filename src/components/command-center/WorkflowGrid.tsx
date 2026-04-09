@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
+import { useReducedMotion } from 'framer-motion'
 import { Truck, Package, FolderOpen, FileText, DollarSign, Warehouse, BarChart3, TrendingUp, CheckCircle, ClipboardList, Navigation, LineChart, PiggyBank, Radio } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { WorkflowCard, type CardAction } from './WorkflowCard'
@@ -195,6 +196,7 @@ const CARDS: CardDef[] = [
 export function WorkflowGrid(props: WorkflowGridProps) {
   const isMobile = props.isMobile ?? false
   const isClient = props.viewMode === 'client'
+  const prefersReduced = useReducedMotion()
 
   // Cards hidden from clients (operator-only intelligence)
   const CLIENT_HIDDEN_CARDS: CardKey[] = ['docs_pendientes', 'crossing_intelligence', 'demand_forecast', 'cost_optimizer', 'dispatch_coordinator']
@@ -236,7 +238,7 @@ export function WorkflowGrid(props: WorkflowGridProps) {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 30, delay: i * 0.04 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 30, delay: prefersReduced ? 0 : 0.3 + i * 0.05 }}
             >
               <WorkflowCard
                 href={card.href}
@@ -247,6 +249,7 @@ export function WorkflowGrid(props: WorkflowGridProps) {
                 variant="uniform"
                 actions={card.getActions(props, card.urgency)}
                 urgency={card.urgency}
+
               />
             </motion.div>
           ))}
@@ -274,7 +277,7 @@ export function WorkflowGrid(props: WorkflowGridProps) {
             style={{ gridColumn: `span ${span}` }}
             initial={{ opacity: 0, scale: 0.97 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ type: 'spring', stiffness: 400, damping: 30, delay: i * 0.04 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 30, delay: prefersReduced ? 0 : 0.3 + i * 0.05 }}
           >
             <WorkflowCard
               href={card.href}

@@ -9,17 +9,17 @@ import { getSmartGreeting } from '@/lib/greeting'
 import { GodView } from '@/components/god-view/GodView'
 import Link from 'next/link'
 
-// ── Design tokens (CRUZ Navy light) ──
+// ── Design tokens (cockpit dark — resolved via .cruz-dark CSS vars) ──
 const T = {
-  card: 'var(--card-bg)',
-  border: '#E3E7EE',
-  green: 'var(--success-500)',
-  amber: 'var(--warning-500, #D97706)',
-  red: 'var(--danger-500)',
-  gray: '#94A3B8',
+  card: 'var(--bg-card)',
+  border: 'var(--border)',
+  green: 'var(--success)',
+  amber: 'var(--warning)',
+  red: 'var(--danger)',
+  gray: 'var(--text-muted)',
   gold: 'var(--gold)',
-  text: 'var(--body-text)',
-  textSec: '#7A8599',
+  text: 'var(--text-primary)',
+  textSec: 'var(--text-secondary)',
   r: 8,
 } as const
 
@@ -101,7 +101,7 @@ function AdminView() {
       )}
       <div
         className="card admin-status-card"
-        style={level === 'green' ? { background: 'linear-gradient(180deg, rgba(22,163,74,0.04) 0%, #FFFFFF 60%)' } : undefined}
+        style={level === 'green' ? { background: 'linear-gradient(180deg, rgba(22,163,74,0.06) 0%, var(--bg-card) 60%)' } : undefined}
       >
         {/* Status dot + headline */}
         <div className="admin-headline">

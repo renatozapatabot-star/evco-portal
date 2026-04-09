@@ -216,7 +216,7 @@ export default function EntradasPage() {
                   leftAction={{
                     icon: <Eye size={14} />,
                     label: 'Ver detalle',
-                    color: '#0D9488',
+                    color: 'var(--teal, #0D9488)',
                     bg: 'rgba(13,148,136,0.1)',
                     onAction: () => router.push(cardHref),
                   }}
@@ -227,7 +227,7 @@ export default function EntradasPage() {
                     style={{
                       background: 'var(--bg-card)',
                       border: '1px solid var(--border)',
-                      borderLeft: `3px solid ${hasTrafico ? '#16A34A' : 'var(--gold, #C9A84C)'}`,
+                      borderLeft: `3px solid ${hasTrafico ? 'var(--success, #16A34A)' : 'var(--gold, #C9A84C)'}`,
                       borderRadius: 10,
                       padding: '16px 18px',
                       cursor: 'pointer',
@@ -251,7 +251,7 @@ export default function EntradasPage() {
                         <span style={{
                           fontSize: 11, fontWeight: 600, fontFamily: 'var(--font-mono)',
                           padding: '2px 8px', borderRadius: 4,
-                          background: 'rgba(13,148,136,0.08)', color: '#0D9488',
+                          background: 'rgba(13,148,136,0.08)', color: 'var(--teal, #0D9488)',
                           border: '1px solid rgba(13,148,136,0.15)',
                         }}>
                           {r.trafico}

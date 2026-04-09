@@ -14,16 +14,16 @@ import { DateInputES } from '@/components/ui/DateInputES'
 // Generate distinct color from name hash for provider avatars
 function avatarColor(name: string): { bg: string; text: string } {
   const PALETTE = [
-    { bg: '#FEF3C7', text: 'var(--amber-text, #92400E)' }, // amber
-    { bg: '#DBEAFE', text: '#1E40AF' }, // blue
-    { bg: '#DCFCE7', text: 'var(--success-dark, #166534)' }, // green
-    { bg: '#F3E8FF', text: '#6B21A8' }, // purple
-    { bg: '#FFE4E6', text: '#9F1239' }, // rose
-    { bg: '#E0F2FE', text: '#075985' }, // sky
-    { bg: '#FEF9C3', text: 'var(--gold-dark)' }, // yellow
-    { bg: '#F0FDF4', text: '#14532D' }, // emerald
-    { bg: '#FCE7F3', text: '#9D174D' }, // pink
-    { bg: '#ECFDF5', text: '#065F46' }, // teal
+    { bg: 'rgba(217,119,6,0.15)', text: '#F59E0B' },   // amber
+    { bg: 'rgba(59,130,246,0.15)', text: '#60A5FA' },   // blue
+    { bg: 'rgba(22,163,74,0.15)', text: '#4ADE80' },    // green
+    { bg: 'rgba(139,92,246,0.15)', text: '#A78BFA' },   // purple
+    { bg: 'rgba(244,63,94,0.15)', text: '#FB7185' },    // rose
+    { bg: 'rgba(14,165,233,0.15)', text: '#38BDF8' },   // sky
+    { bg: 'rgba(201,168,76,0.15)', text: 'var(--gold)' }, // gold
+    { bg: 'rgba(16,185,129,0.15)', text: '#34D399' },   // emerald
+    { bg: 'rgba(236,72,153,0.15)', text: '#F472B6' },   // pink
+    { bg: 'rgba(13,148,136,0.15)', text: '#2DD4BF' },   // teal
   ]
   let hash = 0
   for (let i = 0; i < name.length; i++) hash = ((hash << 5) - hash + name.charCodeAt(i)) | 0
@@ -33,18 +33,18 @@ function avatarColor(name: string): { bg: string; text: string } {
 // ── Design tokens (v6 warm white) ──────────────────────
 const T = {
   bg: 'var(--bg-main)',
-  surface: 'var(--card-bg)',
+  surface: 'var(--bg-card)',
   border: 'var(--border)',
-  surfaceAlt: '#F5F3EF',
+  surfaceAlt: 'var(--bg-elevated)',
   text: 'var(--text-primary)',
   textSub: 'var(--text-secondary)',
-  textMuted: '#999999',
+  textMuted: 'var(--text-muted)',
   gold: 'var(--gold)',
-  goldBg: '#FFF8EB',
-  green: '#2D8540',
-  amber: '#C47F17',
-  red: '#C23B22',
-  shadow: '0 1px 3px rgba(0,0,0,0.07)',
+  goldBg: 'var(--gold-bg)',
+  green: 'var(--success)',
+  amber: 'var(--warning)',
+  red: 'var(--danger)',
+  shadow: 'var(--shadow-card)',
 }
 
 const TOOLTIP_STYLE: React.CSSProperties = {
@@ -486,7 +486,7 @@ export function ReportesView() {
                       key={s.name}
                       style={{
                         borderBottom: `1px solid ${T.border}`,
-                        background: i === 0 ? T.goldBg : s.tmecPct === 0 ? '#FFFBEB' : 'transparent',
+                        background: i === 0 ? T.goldBg : s.tmecPct === 0 ? 'var(--amber-50)' : 'transparent',
                       }}
                     >
                       <td style={{ padding: '12px 20px', fontFamily: 'var(--font-mono)', fontSize: 12, color: T.textMuted }}>{i + 1}</td>

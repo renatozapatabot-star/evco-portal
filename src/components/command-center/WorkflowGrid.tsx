@@ -143,11 +143,11 @@ const CARDS: CardDef[] = [
       if (!p.exchangeRate) return 'Sin datos — verificar'
       return 'MXN/USD — Banxico FIX'
     },
-    getActions: () => [{ label: 'Ver historico', href: '/financiero', primary: true }],
+    getActions: () => [{ label: 'Ver histórico', href: '/financiero', primary: true }],
   },
   // ── Row 3: Intelligence ──
   {
-    key: 'ultimo_cruce', href: '/traficos', label: 'Ultimo Cruce', Icon: CheckCircle,
+    key: 'ultimo_cruce', href: '/traficos', label: 'Último Cruce', Icon: CheckCircle,
     getKpi: () => null,
     getSubtitle: (p) => {
       if (!p.lastCrossing) return 'Sin cruces registrados'

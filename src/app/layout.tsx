@@ -21,8 +21,8 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  title: "CRUZ · Customs Intelligence",
-  description: "Cross-border intelligence platform · Patente 3596 · Aduana 240",
+  title: "CRUZ · Inteligencia Aduanal",
+  description: "Plataforma de inteligencia aduanal · Patente 3596 · Aduana 240 · Nuevo Laredo",
   icons: { icon: '/favicon.svg' },
   openGraph: {
     title: 'CRUZ — Cross-Border Intelligence',

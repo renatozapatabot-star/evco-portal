@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useCallback } from 'react'
+import { useEffect, useCallback, useState } from 'react'
 
 interface ReviewerShortcutHandlers {
   onApprove?: () => void
@@ -70,11 +70,15 @@ export function useReviewerShortcuts({
  * Small floating help indicator showing "?" that reveals shortcuts on hover/click.
  */
 export function ReviewerShortcutHelp() {
+  const [show, setShow] = useState(false)
+
   return (
-    <div style={{
-      position: 'fixed', bottom: 16, right: 16, zIndex: 80,
-    }}>
-      <div className="reviewer-help-trigger" style={{
+    <div
+      style={{ position: 'fixed', bottom: 16, right: 16, zIndex: 80 }}
+      onMouseEnter={() => setShow(true)}
+      onMouseLeave={() => setShow(false)}
+    >
+      <div style={{
         width: 32, height: 32, borderRadius: '50%',
         background: 'rgba(201,168,76,0.15)', border: '1px solid rgba(201,168,76,0.3)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -82,34 +86,32 @@ export function ReviewerShortcutHelp() {
       }}>
         ?
       </div>
-      <div className="reviewer-help-tooltip" style={{
-        position: 'absolute', bottom: 40, right: 0,
-        background: '#1A1A1A', border: '1px solid rgba(255,255,255,0.1)',
-        borderRadius: 10, padding: '12px 16px', minWidth: 220,
-        display: 'none', boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
-      }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: '#C9A84C', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-          Atajos de teclado
-        </div>
-        {[
-          ['A / Enter', 'Aprobar'],
-          ['Espacio', 'Aprobar + siguiente'],
-          ['X / Esc', 'Rechazar'],
-          ['R', 'Revisar detalle'],
-          ['J / K', 'Navegar'],
-          ['Shift+A', 'Aprobar todo'],
-          ['F', 'Modo flujo'],
-        ].map(([key, label]) => (
-          <div key={key} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-            <span className="font-mono" style={{ fontSize: 11, color: '#C9A84C', fontWeight: 600 }}>{key}</span>
-            <span style={{ fontSize: 11, color: '#8B949E' }}>{label}</span>
+      {show && (
+        <div style={{
+          position: 'absolute', bottom: 40, right: 0,
+          background: '#1A1A1A', border: '1px solid rgba(255,255,255,0.1)',
+          borderRadius: 10, padding: '12px 16px', minWidth: 220,
+          boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+        }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: '#C9A84C', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            Atajos de teclado
           </div>
-        ))}
-      </div>
-      <style>{`
-        .reviewer-help-trigger:hover + .reviewer-help-tooltip,
-        .reviewer-help-tooltip:hover { display: block !important; }
-      `}</style>
+          {[
+            ['A / Enter', 'Aprobar'],
+            ['Espacio', 'Aprobar + siguiente'],
+            ['X / Esc', 'Rechazar'],
+            ['R', 'Revisar detalle'],
+            ['J / K', 'Navegar'],
+            ['Shift+A', 'Aprobar todo'],
+            ['F', 'Modo flujo'],
+          ].map(([key, label]) => (
+            <div key={key} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+              <span className="font-mono" style={{ fontSize: 11, color: '#C9A84C', fontWeight: 600 }}>{key}</span>
+              <span style={{ fontSize: 11, color: '#8B949E' }}>{label}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

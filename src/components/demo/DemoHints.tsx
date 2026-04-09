@@ -28,6 +28,7 @@ export function DemoHints() {
     if (currentHint >= HINTS.length - 1) {
       setDismissed(true)
       if (typeof sessionStorage !== 'undefined') sessionStorage.setItem('demo-hints-seen', '1')
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     } else {
       setCurrentHint(c => c + 1)
     }
@@ -60,17 +61,26 @@ export function DemoHints() {
         <div style={{ fontSize: 14, fontWeight: 600, lineHeight: 1.5, marginBottom: 12 }}>
           {hint.text}
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
           <span style={{ fontSize: 11, opacity: 0.7 }}>
             {currentHint + 1} de {HINTS.length}
           </span>
-          <button onClick={handleNext} style={{
-            background: '#111', color: '#C9A84C', border: 'none',
-            padding: '8px 20px', borderRadius: 8, fontSize: 13, fontWeight: 700,
-            cursor: 'pointer', minHeight: 36,
-          }}>
-            {currentHint >= HINTS.length - 1 ? 'Explorar →' : 'Siguiente →'}
-          </button>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button onClick={() => { setDismissed(true); if (typeof sessionStorage !== 'undefined') sessionStorage.setItem('demo-hints-seen', '1'); window.scrollTo({ top: 0, behavior: 'smooth' }) }} style={{
+              background: 'transparent', color: 'rgba(0,0,0,0.5)', border: 'none',
+              padding: '8px 12px', borderRadius: 8, fontSize: 12,
+              cursor: 'pointer', minHeight: 36,
+            }}>
+              Saltar
+            </button>
+            <button onClick={handleNext} style={{
+              background: '#111', color: '#C9A84C', border: 'none',
+              padding: '8px 20px', borderRadius: 8, fontSize: 13, fontWeight: 700,
+              cursor: 'pointer', minHeight: 36,
+            }}>
+              {currentHint >= HINTS.length - 1 ? 'Explorar →' : 'Siguiente →'}
+            </button>
+          </div>
         </div>
       </div>
     </div>

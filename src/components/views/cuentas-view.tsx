@@ -226,7 +226,7 @@ export function CuentasView() {
             {egresos.length > 0 && (
               <div className="rounded-[10px] overflow-hidden" style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.06)' }}>
                 <div className="px-5 py-3" style={{ borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
-                  <div className="text-[13px] font-semibold" style={{ color: 'var(--text-primary)' }}>Ultimos Egresos</div>
+                  <div className="text-[13px] font-semibold" style={{ color: 'var(--text-primary)' }}>Últimos Egresos</div>
                 </div>
                 <table className="data-table">
                   <thead><tr><th scope="col">Fecha</th><th scope="col">Beneficiario</th><th scope="col" style={{ textAlign: 'right' }}>Importe</th></tr></thead>

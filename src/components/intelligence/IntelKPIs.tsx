@@ -47,7 +47,7 @@ export function IntelKPISection({
         />
         <StatCard
           icon={<Clock size={20} />}
-          label="Ultimo Entrenamiento"
+          label="Último Entrenamiento"
           value={stats?.lastTrainingRun ?? null}
           loading={loading}
           format="date"

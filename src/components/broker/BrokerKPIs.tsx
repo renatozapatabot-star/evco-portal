@@ -45,8 +45,8 @@ export function BrokerKPIs({ staffConfig, opsMetrics }: BrokerKPIsProps) {
         {staffConfig.role === 'coordinator' && (
           <>
             <OpsCard title="Escalaciones" value={String(opsMetrics.pendingEscalations)} sub="Documentos vencidos" accent={opsMetrics.pendingEscalations > 0 ? T.red : T.green} />
-            <OpsCard title="Clientes activos" value={`${opsMetrics.activeClients7d}/${opsMetrics.totalClients}`} sub="Ultimos 7 dias" accent={T.green} />
-            <OpsCard title="Correos hoy" value={String(opsMetrics.emailsProcessedToday)} sub="Procesados automaticamente" accent={T.gold} />
+            <OpsCard title="Clientes activos" value={`${opsMetrics.activeClients7d}/${opsMetrics.totalClients}`} sub="Últimos 7 días" accent={T.green} />
+            <OpsCard title="Correos hoy" value={String(opsMetrics.emailsProcessedToday)} sub="Procesados automáticamente" accent={T.gold} />
           </>
         )}
       </div>

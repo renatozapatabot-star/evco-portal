@@ -74,7 +74,7 @@ export default function TopBar({
         >
           <Search size={16} style={{ opacity: 0.5, flexShrink: 0 }} />
           <span className="topbar-search-placeholder">
-            Buscar tráfico, entradas, pedimentos... o presiona ⌘K
+            Buscar tráfico, entradas, pedimentos...
           </span>
         </button>
 

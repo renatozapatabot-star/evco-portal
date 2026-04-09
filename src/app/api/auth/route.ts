@@ -125,6 +125,43 @@ export async function POST(request: NextRequest) {
     .single()
 
   if (company) {
+    // Look for or auto-create a client operator for action tracking
+    const { data: clientOp } = await supabase.from('operators')
+      .select('id, full_name')
+      .eq('company_id', company.company_id)
+      .eq('role', 'client')
+      .eq('active', true)
+      .limit(1)
+      .maybeSingle()
+
+    let clientOperatorId = clientOp?.id
+    let clientOperatorName = clientOp?.full_name
+
+    if (!clientOp) {
+      const { data: newOp } = await supabase.from('operators')
+        .insert({
+          auth_user_id: null,
+          email: null,
+          full_name: company.name,
+          role: 'client',
+          company_id: company.company_id,
+          active: true,
+        })
+        .select('id, full_name')
+        .single()
+
+      if (newOp) {
+        clientOperatorId = newOp.id
+        clientOperatorName = newOp.full_name
+        supabase.from('operator_actions').insert({
+          operator_id: newOp.id,
+          action_type: 'auto_created_on_first_login',
+          company_id: company.company_id,
+          payload: { role: 'client', company_name: company.name },
+        }).then(() => {}, () => {})
+      }
+    }
+
     const response = NextResponse.json({
       success: true,
       role: 'client',
@@ -141,6 +178,8 @@ export async function POST(request: NextRequest) {
       companyClave: company.clave_cliente || '',
       companyRfc: company.rfc || '',
       role: 'client',
+      operatorName: clientOperatorName || undefined,
+      operatorId: clientOperatorId || undefined,
     })
     return response
   }
@@ -167,5 +206,7 @@ export async function DELETE() {
   response.cookies.delete('viewing_as')
   response.cookies.delete('broker_id')
   response.cookies.delete('csrf_token')
+  response.cookies.delete('operator_id')
+  response.cookies.delete('operator_name')
   return response
 }

@@ -1,4 +1,9 @@
--- Block 11A: Operators + Operator Actions tables
+-- DEPRECATED 2026-04-08: This migration was never applied.
+-- The real operators + operator_actions schema was created via an earlier run
+-- with different column names (full_name, auth_user_id, company_id, operator_id).
+-- This file is kept as a breadcrumb. DO NOT APPLY.
+--
+-- Block 11A: Operators + Operator Actions tables (ORIGINAL DRAFT — NEVER APPLIED)
 -- Foundation for three-portal architecture (admin/operator/client)
 
 -- ── Operators table ──

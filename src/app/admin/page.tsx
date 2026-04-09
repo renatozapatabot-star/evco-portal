@@ -3,6 +3,7 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { GOLD, GOLD_HOVER, GOLD_GRADIENT, GREEN, AMBER, RED } from '@/lib/design-system'
+import { ChaserButton } from './ChaserButton'
 import { fmtDate, fmtDateTime } from '@/lib/format-utils'
 import { WORKFLOW_LABELS, WORKFLOW_ORDER } from '@/lib/workflow-events'
 
@@ -138,6 +139,7 @@ export default async function AdminPage() {
     .map(op => ({ ...op, ...byOperator.get(op.id)! }))
     .sort((a, b) => b.totalActions - a.totalActions)
   const opNames: Record<string, string> = Object.fromEntries(opDetails.map(o => [o.id, o.full_name]))
+  const opEmails: Record<string, string> = Object.fromEntries(opDetails.filter(o => o.email).map(o => [o.id, o.email]))
 
   const stuckTraficos = stuckRes.data || []
   const recentActions = recentActionsRes.data || []
@@ -573,6 +575,15 @@ export default async function AdminPage() {
                 )}
                 <span style={{ fontSize: 10, color: T.muted, marginLeft: 'auto' }}>{relTime(t.created_at)}</span>
                 <span style={{ fontSize: 10, color: T.sub }}>{assignedName}</span>
+                <span onClick={e => e.preventDefault()}>
+                  <ChaserButton
+                    traficoId={t.id}
+                    traficoNum={t.trafico}
+                    operatorEmail={t.assigned_to_operator_id ? (opEmails[t.assigned_to_operator_id] || null) : null}
+                    operatorName={t.assigned_to_operator_id ? (opNames[t.assigned_to_operator_id] || null) : null}
+                    companyId={t.company_id}
+                  />
+                </span>
               </Link>
             )
           })}

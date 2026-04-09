@@ -903,6 +903,31 @@ export default function TraficoDetailPage() {
           )}
         </div>
 
+        {/* ── Dispatch coordinator (wa.me) — shown when cruzado ── */}
+        {isCruzado && (t.transportista_mexicano || t.transportista_extranjero) && (
+          <a
+            href={`https://wa.me/?text=${encodeURIComponent(
+              `Coordinación de transporte — CRUZ\n\nTráfico: ${t.trafico}\nCliente: ${t.company_id || ''}\nMercancía: ${(t.descripcion_mercancia as string || 'N/A').substring(0, 80)}\nPeso: ${Number(t.peso_bruto || 0).toLocaleString()} kg\nTransportista: ${fmtCarrier(t.transportista_mexicano as string) || fmtCarrier(t.transportista_extranjero as string) || 'N/A'}\n\nFavor confirmar disponibilidad para recolección.`
+            )}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="card"
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+              padding: 16, textDecoration: 'none', color: 'inherit',
+              borderLeft: '3px solid #25D366', cursor: 'pointer', minHeight: 60,
+            }}
+          >
+            <span style={{ fontSize: 18 }}>📱</span>
+            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>
+              Coordinar transporte →
+            </span>
+            <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 'auto' }}>
+              {fmtCarrier(t.transportista_mexicano as string) || 'WhatsApp'}
+            </span>
+          </a>
+        )}
+
         {/* ── Proveedores ── */}
         <ProveedoresCard proveedores={String(t.proveedores ?? '')} pais={String(t.pais_procedencia ?? '')} supplierLookup={supplierLookup} />
 

@@ -79,8 +79,16 @@ async function callAIAnalysis(prompt) {
   }
 }
 
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://evco-portal.vercel.app'
+
 function fmtNum(n) { return Number(n || 0).toLocaleString('en-US') }
 function fmtUSD(n) { return '$' + Number(n || 0).toLocaleString('en-US', { maximumFractionDigits: 0 }) }
+
+/** Deep link helper — returns <a> tag for telegram/html, plain text for plain */
+function link(text, path, format) {
+  if (format === 'plain') return text
+  return `<a href="${BASE_URL}${path}">${text}</a>`
+}
 
 function staleBadge(dateStr) {
   if (!dateStr) return ''
@@ -242,6 +250,36 @@ async function getClientReport(client) {
   }
 }
 
+// ── EMAIL HTML WRAPPER ──────────────────────────────
+function wrapInEmailHtml(briefHtml, dateStr) {
+  // Convert Telegram HTML to email-friendly HTML (same tags, just wrapped in template)
+  // Replace plain \n with <br> for email rendering
+  const bodyHtml = briefHtml.replace(/\n/g, '<br>\n')
+  return `<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#F5F4F0;font-family:'DM Sans',Geist,system-ui,sans-serif;">
+<div style="max-width:600px;margin:24px auto;background:#FFFFFF;border:1px solid #E5E7EB;border-radius:12px;overflow:hidden;">
+  <div style="background:#0B1623;padding:20px 24px;color:#FFFFFF;">
+    <div style="font-size:18px;font-weight:700;letter-spacing:0.15em;">CRUZ</div>
+    <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:4px;">Morning Brief — ${dateStr}</div>
+  </div>
+  <div style="padding:24px;font-size:14px;line-height:1.7;color:#1A1A1A;">
+    ${bodyHtml}
+  </div>
+  <div style="padding:16px 24px;border-top:1px solid #E5E7EB;text-align:center;">
+    <a href="${BASE_URL}" style="display:inline-block;padding:10px 24px;background:#C4963C;color:#FFFFFF;text-decoration:none;border-radius:6px;font-size:13px;font-weight:600;">
+      Abrir CRUZ →
+    </a>
+    <div style="margin-top:12px;font-size:11px;color:#9B9B9B;">
+      Patente 3596 · Aduana 240 · Renato Zapata &amp; Company
+    </div>
+  </div>
+</div>
+</body>
+</html>`
+}
+
 // ── MAIN ─────────────────────────────────────────────
 async function main() {
   console.log(`${DRY_RUN ? '[DRY RUN] ' : ''}Multi-Client Morning Report — CRUZ`)
@@ -326,7 +364,7 @@ async function main() {
 
   // ── Cross-client: Pending approvals ──
   lines.push(`━━━ <b>PENDIENTES</b> ━━━`)
-  lines.push(`📄 Borradores: <b>${g.draftCount}</b>`)
+  lines.push(`📄 ${link(`Borradores: <b>${g.draftCount}</b>`, '/drafts', 'telegram')}`)
   if (g.pendingDrafts.length > 0) {
     // Show oldest drafts with stale badges
     const oldest = g.pendingDrafts
@@ -341,8 +379,8 @@ async function main() {
     }
   }
   lines.push(`📨 Docs solicitados: <b>${g.solPending}</b> pendientes · ${g.solSent} enviados ayer`)
-  if (g.stale48 > 0) lines.push(`🔴 ${g.stale48} item(s) llevan &gt;48h — <b>/aprobar</b>`)
-  else if (g.stale24 > 0) lines.push(`🟡 ${g.stale24} item(s) llevan &gt;24h — <b>/aprobar</b>`)
+  if (g.stale48 > 0) lines.push(`🔴 ${link(`${g.stale48} item(s) llevan &gt;48h — aprobar`, '/admin', 'telegram')}`)
+  else if (g.stale24 > 0) lines.push(`🟡 ${link(`${g.stale24} item(s) llevan &gt;24h — aprobar`, '/admin', 'telegram')}`)
   else if (g.draftCount === 0 && g.solPending === 0) lines.push(`✅ Todo al día`)
   lines.push(``)
 
@@ -432,7 +470,7 @@ async function main() {
         lines.push(`  24h: ${autoApplied} auto-aplicadas · ${humanReview} revisión humana`)
       }
       if (pending > 0) {
-        lines.push(`  ⏳ Pendientes revisión: <b>${pending}</b>`)
+        lines.push(`  ⏳ ${link(`Pendientes revisión: <b>${pending}</b>`, '/clasificar', 'telegram')}`)
         // Show top 5 lowest-confidence pending
         const { data: pendingRows } = await supabase.from('agent_decisions')
           .select('confidence, payload')
@@ -449,7 +487,7 @@ async function main() {
           }
           if (pending > 5) lines.push(`    + ${pending - 5} más`)
         }
-        lines.push(`  → <b>/clasificar</b> para revisar`)
+        lines.push(`  → ${link('<b>Revisar clasificaciones</b>', '/clasificar', 'telegram')}`)
       }
     }
   } catch { /* clasificaciones section optional */ }
@@ -484,7 +522,7 @@ async function main() {
       lines.push(`  Calcular → Validar docs → Listo`)
       if (dutiesCount > 0) lines.push(`  💰 ${dutiesCount} contribuciones calculadas · ${fmtUSD(totalMxn)} MXN`)
       if (readyCount > 0) lines.push(`  ✅ ${readyCount} docs listos para pedimento`)
-      if (blockedCount > 0) lines.push(`  🔴 ${blockedCount} bloqueados por docs faltantes`)
+      if (blockedCount > 0) lines.push(`  🔴 ${link(`${blockedCount} bloqueados por docs faltantes`, '/operador', 'telegram')}`)
     }
   } catch { /* chain section optional */ }
 
@@ -502,7 +540,7 @@ async function main() {
 
     if (blocked.length > 0) {
       lines.push(``)
-      lines.push(`📋 <b>DOCS INCOMPLETOS</b>`)
+      lines.push(`📋 ${link('<b>DOCS INCOMPLETOS</b>', '/operador', 'telegram')}`)
       for (const d of blocked.slice(0, 5)) {
         const missing = (d.draft_data.docs_validation.missing_critical || []).join(', ')
         lines.push(`  • ${d.trafico_id} — falta: ${missing || 'desconocido'}`)
@@ -533,7 +571,36 @@ async function main() {
     }
   }
 
-  console.log('✅ Morning report sent!')
+  console.log('✅ Morning report sent to Telegram!')
+
+  // ── Email fanout to admin operators ──
+  try {
+    const { sendEmail } = require('./lib/email-send')
+    const { data: admins } = await supabase
+      .from('operators')
+      .select('email, full_name')
+      .eq('role', 'admin')
+      .eq('active', true)
+
+    if (admins && admins.length > 0) {
+      const htmlBrief = wrapInEmailHtml(fullReport, `${day}, ${dateStr}`)
+      const plainBrief = fullReport.replace(/<[^>]+>/g, '')
+
+      for (const admin of admins) {
+        if (!admin.email) continue
+        const result = await sendEmail({
+          to: admin.email,
+          subject: `CRUZ Morning Brief — ${day}, ${dateStr}`,
+          htmlBody: htmlBrief,
+          textBody: plainBrief,
+        })
+        if (result.success) console.log(`[email] ✅ ${admin.email}`)
+        else console.error(`[email] ❌ ${admin.email}: ${result.error}`)
+      }
+    }
+  } catch (err) {
+    console.error(`[email fanout] ❌ ${err.message}`)
+  }
 
   // Heartbeat
   await supabase.from('heartbeat_log').insert({

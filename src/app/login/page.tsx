@@ -276,13 +276,15 @@ function LoginContent() {
 
         /* ── Login Card ── */
         .login-card {
-          background: #FFFFFF;
+          background: rgba(255, 255, 255, 0.85);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
           border-radius: 20px;
           padding: 40px;
+          border: 1px solid rgba(255, 255, 255, 0.45);
           box-shadow:
-            0 0 0 1px rgba(0,0,0,0.03),
-            0 2px 4px rgba(0,0,0,0.04),
-            0 12px 40px rgba(0,0,0,0.25);
+            0 4px 24px rgba(0,0,0,0.15),
+            0 12px 40px rgba(0,0,0,0.20);
         }
 
         /* ── Brand ── */

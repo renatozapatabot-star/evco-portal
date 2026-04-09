@@ -166,6 +166,9 @@ function BrokerView() {
   const [activeCount, setActiveCount] = useState(0)
   const [readyToFile, setReadyToFile] = useState(0)
   const [cruzadosHoy, setCruzadosHoy] = useState(0)
+  const [bridges, setBridges] = useState<BridgeTime[]>([])
+  const [predictionsCount, setPredictionsCount] = useState(0)
+  const [savingsUsd, setSavingsUsd] = useState(0)
   const companyName = typeof document !== 'undefined'
     ? (getCookieValue('company_name') ?? '')
     : ''
@@ -193,7 +196,9 @@ function BrokerView() {
       fetch('/api/bridge-times').then(r => r.json()),
       fetch(`/api/data?${pipeParams}`).then(r => r.json()),
       fetch(`/api/data?${draftParams}`).then(r => r.json()),
-    ]).then(([trafData, compData, entData, bridgeData, pipeData, draftData]) => {
+      fetch('/api/data?table=po_predictions&limit=100').then(r => r.json()).catch(() => ({ data: [] })),
+      fetch('/api/cost-savings').then(r => r.json()).catch(() => ({ total_estimated_usd: 0 })),
+    ]).then(([trafData, compData, entData, bridgeData, pipeData, draftData, predData, savingsData]) => {
       const allTraficos: TraficoRow[] = trafData.data ?? []
       const active = allTraficos.filter(t => !(t.estatus || '').toLowerCase().includes('cruz'))
       setActiveCount(active.length)
@@ -309,6 +314,18 @@ function BrokerView() {
           href: '/soia',
         })
       }
+
+      // Store bridge data for status line
+      setBridges(bridges)
+
+      // Store predictions count (future 30 days)
+      const now = new Date().toISOString().split('T')[0]
+      const thirtyDaysOut = new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0]
+      const preds = (predData.data ?? []) as { predicted_date?: string }[]
+      setPredictionsCount(preds.filter(p => p.predicted_date && p.predicted_date >= now && p.predicted_date <= thirtyDaysOut).length)
+
+      // Store savings
+      setSavingsUsd(savingsData?.total_estimated_usd || savingsData?.summary?.total_estimated_usd || 0)
 
       // Sort: urgent → draft → today → new → bridge, max 10
       const typeOrder: Record<string, number> = { urgent: 0, draft: 1, today: 2, new: 3, bridge: 4 }
@@ -458,12 +475,35 @@ function BrokerView() {
         </div>
       )}
 
+      {/* Bridge status line */}
+      {bridges.length > 0 && (
+        <Link href="/cruces" style={{
+          display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap',
+          padding: '10px 16px', borderRadius: 10, marginTop: 24,
+          background: 'var(--bg-card)', border: '1px solid var(--border)',
+          textDecoration: 'none', color: 'inherit',
+        }}>
+          <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>Puentes</span>
+          {bridges.filter(b => b.commercial != null).slice(0, 3).map(b => {
+            const color = (b.commercial ?? 0) < 30 ? 'var(--success)' : (b.commercial ?? 0) < 60 ? 'var(--warning-500, #D97706)' : 'var(--danger-500)'
+            return (
+              <span key={b.id} style={{ fontSize: 12, color, fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
+                {b.nameEs}: {b.commercial} min
+              </span>
+            )
+          })}
+          <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 'auto' }}>Ver detalles →</span>
+        </Link>
+      )}
+
       {/* Stat cards */}
-      <div className="kpi-grid" style={{ marginTop: 32 }}>
+      <div className="kpi-grid" style={{ marginTop: 16 }}>
         {[
           { href: '/traficos?estatus=En Proceso', value: activeCount, label: 'En proceso', color: 'var(--info-500)', dim: false },
           { href: '/traficos?estatus=Cruzado', value: cruzadosHoy, label: 'Cruzados hoy', color: 'var(--success-500)', dim: cruzadosHoy === 0 && items.length > 0 },
           { href: '/traficos?pipeline_stage=ready_to_file', value: readyToFile, label: 'Listos despacho', color: 'var(--purple-500)', dim: false },
+          ...(predictionsCount > 0 ? [{ href: '/predicciones', value: predictionsCount, label: 'Previstos 30d', color: 'var(--teal, #0D9488)', dim: false }] : []),
+          ...(savingsUsd > 0 ? [{ href: '/ahorro', value: `$${Math.round(savingsUsd / 1000)}K`, label: 'Ahorro estimado', color: 'var(--gold)', dim: false }] : []),
         ].map(kpi => (
           <Link key={kpi.label} href={kpi.href} style={{ textDecoration: 'none', color: 'inherit' }}>
             <div className={`kpi-card${items.length === 0 ? ' allgreen' : ''}`} style={{ borderTop: `3px solid ${kpi.color}`, textAlign: 'center' }}>

@@ -4,8 +4,9 @@ import { useState, useEffect } from 'react'
 
 const HINTS = [
   { text: 'Este es tu estado en tiempo real — todo actualizado automáticamente', position: 'top' },
-  { text: 'Toca cualquier tarjeta para ver más detalle', position: 'middle' },
-  { text: 'CRUZ AI responde preguntas sobre tus operaciones aduanales', position: 'bottom' },
+  { text: 'Toca cualquier tarjeta para ver más detalle sobre tus operaciones', position: 'middle' },
+  { text: 'CRUZ AI responde preguntas sobre tus tráficos, pedimentos y documentos', position: 'middle' },
+  { text: '¿Lo quieres para tu firma? Toca el botón dorado abajo ↓', position: 'bottom' },
 ]
 
 export function DemoHints() {

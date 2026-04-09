@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import type { AdminData } from './shared/fetchCockpitData'
 import { CruzAutonomoPanel } from './admin/CruzAutonomoPanel'
 import { NeedsJudgmentPanel } from './admin/NeedsJudgmentPanel'
@@ -16,6 +16,7 @@ import { RightRail } from './admin/RightRail'
 import { SlideOver } from './shared/SlideOver'
 import { NewsBanner, buildAdminItems } from './shared/NewsBanner'
 import { Trend, computeDelta } from './shared/Trend'
+import { useCockpitRealtime } from '@/hooks/use-cockpit-realtime'
 
 interface Props {
   data: AdminData
@@ -30,9 +31,20 @@ function fmtUSD(n: number): string {
 
 export function AdminCockpit({ data, operatorName }: Props) {
   const [slideOver, setSlideOver] = useState<{ title: string; content: React.ReactNode } | null>(null)
+  const { isLive, latestAction } = useCockpitRealtime()
+  const [realtimeToast, setRealtimeToast] = useState<string | null>(null)
   const hour = new Date().getHours()
   const greeting = hour < 12 ? 'Buenos días' : hour < 18 ? 'Buenas tardes' : 'Buenas noches'
   const biz = data.businessSummary
+
+  // Show toast on realtime action
+  useEffect(() => {
+    if (!latestAction) return
+    const actionLabel = latestAction.action_type.replace('operator_', '').replace(/_/g, ' ')
+    setRealtimeToast(actionLabel)
+    const t = setTimeout(() => setRealtimeToast(null), 3000)
+    return () => clearTimeout(t)
+  }, [latestAction])
 
   const overdue = data.escalations.filter(e => {
     const ageH = (Date.now() - new Date(e.created_at).getTime()) / 3600000
@@ -80,6 +92,17 @@ export function AdminCockpit({ data, operatorName }: Props) {
 
   return (
     <div>
+      {/* Realtime toast */}
+      {realtimeToast && (
+        <div style={{
+          padding: '8px 16px', borderRadius: 8, marginBottom: 8,
+          background: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.2)',
+          fontSize: 12, color: '#C9A84C', animation: 'fadeIn 300ms ease',
+        }}>
+          ● {realtimeToast}
+        </div>
+      )}
+
       {/* News Banner */}
       <NewsBanner items={bannerItems} />
 
@@ -92,6 +115,7 @@ export function AdminCockpit({ data, operatorName }: Props) {
         </h1>
         <p style={{ fontSize: 13, color: '#6E7681', margin: '4px 0 0' }}>
           Patente 3596 · Aduana 240 Nuevo Laredo
+          {isLive && <span style={{ color: '#16A34A', marginLeft: 8 }}>● En vivo</span>}
         </p>
       </div>
 

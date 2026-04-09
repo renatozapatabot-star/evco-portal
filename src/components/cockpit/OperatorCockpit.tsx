@@ -51,13 +51,13 @@ export function OperatorCockpit({ data, operatorName, operatorId }: Props) {
       {/* Performance strip — gamified */}
       <PerformanceStrip
         todayCount={data.performance.completedToday}
-        yesterdayCount={0}
+        yesterdayCount={data.performance.yesterdayCount}
         weekCount={data.performance.completedThisWeek}
         monthCount={data.performance.completedThisMonth}
-        personalRecord={data.performance.completedThisMonth}
-        currentStreak={1}
-        teamRank={1}
-        teamSize={8}
+        personalRecord={data.performance.personalRecord}
+        currentStreak={data.performance.currentStreak}
+        teamRank={data.performance.teamRank}
+        teamSize={data.performance.teamSize}
         operatorName={operatorName}
       />
 

@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import type { AdminData } from './shared/fetchCockpitData'
 import { CruzAutonomoPanel } from './admin/CruzAutonomoPanel'
 import { NeedsJudgmentPanel } from './admin/NeedsJudgmentPanel'
@@ -12,6 +13,7 @@ import { PipelineFinanceCard } from './admin/PipelineFinanceCard'
 import { WeeklyTrendCard } from './admin/WeeklyTrendCard'
 import { TeamActivityFeed } from './admin/TeamActivityFeed'
 import { RightRail } from './admin/RightRail'
+import { SlideOver } from './shared/SlideOver'
 import { NewsBanner, buildAdminItems } from './shared/NewsBanner'
 import { Trend, computeDelta } from './shared/Trend'
 
@@ -27,6 +29,7 @@ function fmtUSD(n: number): string {
 }
 
 export function AdminCockpit({ data, operatorName }: Props) {
+  const [slideOver, setSlideOver] = useState<{ title: string; content: React.ReactNode } | null>(null)
   const hour = new Date().getHours()
   const greeting = hour < 12 ? 'Buenos días' : hour < 18 ? 'Buenas tardes' : 'Buenas noches'
   const biz = data.businessSummary
@@ -227,6 +230,15 @@ export function AdminCockpit({ data, operatorName }: Props) {
           .admin-right-rail-mobile { display: block !important; }
         }
       `}</style>
+
+      {/* Slide-over detail panel */}
+      <SlideOver
+        open={!!slideOver}
+        onClose={() => setSlideOver(null)}
+        title={slideOver?.title}
+      >
+        {slideOver?.content}
+      </SlideOver>
     </div>
   )
 }

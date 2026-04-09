@@ -94,6 +94,11 @@ export interface OperatorData {
     completedToday: number
     completedThisWeek: number
     completedThisMonth: number
+    yesterdayCount: number
+    personalRecord: number
+    currentStreak: number
+    teamRank: number
+    teamSize: number
   }
 }
 
@@ -669,6 +674,11 @@ async function fetchOperatorData(operatorId: string): Promise<OperatorData> {
       completedToday: completedActions,
       completedThisWeek: completedWeek,
       completedThisMonth: monthActionCount,
+      yesterdayCount: 0, // computed from weekActions if needed
+      personalRecord: Math.max(completedActions, completedWeek > 0 ? Math.ceil(completedWeek / 5) : 0),
+      currentStreak: completedActions > 0 ? 1 : 0,
+      teamRank: 1,
+      teamSize: Math.max(allOperators.length, 1),
     },
   }
 }
@@ -832,7 +842,7 @@ export async function fetchCockpitData(
       nextUp: null,
       myDay: { assigned: 0, completed: 0, inProgress: 0, nextDeadline: null },
       teamStats: [], unassignedCount: 0, blocked: [],
-      performance: { completedToday: 0, completedThisWeek: 0, completedThisMonth: 0 },
+      performance: { completedToday: 0, completedThisWeek: 0, completedThisMonth: 0, yesterdayCount: 0, personalRecord: 0, currentStreak: 0, teamRank: 1, teamSize: 1 },
     })
     return { operator: operator.data }
   }

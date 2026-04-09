@@ -248,23 +248,23 @@ function LoginContent() {
 
         /* ── Session Card ── */
         .login-session-card {
-          background: #FFFFFF;
-          border: 1px solid #E8E5E0;
+          background: #222222;
+          border: 1px solid rgba(255,255,255,0.08);
           border-radius: 20px 20px 0 0;
           padding: 20px 24px;
           margin-bottom: -1px;
-          box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+          box-shadow: 0 4px 24px rgba(0,0,0,0.3);
           position: relative;
           z-index: 1;
         }
         .login-session-label {
-          font-size: 12px; color: #6B6B6B; margin-bottom: 6px; font-weight: 500;
+          font-size: 12px; color: #8B949E; margin-bottom: 6px; font-weight: 500;
         }
         .login-session-name {
-          font-size: 16px; font-weight: 700; color: #1A1A1A; margin-bottom: 2px;
+          font-size: 16px; font-weight: 700; color: #E6EDF3; margin-bottom: 2px;
         }
         .login-session-role {
-          font-size: 12px; color: #9B9B9B; margin-bottom: 16px;
+          font-size: 12px; color: #8B949E; margin-bottom: 16px;
         }
         .login-session-actions {
           display: flex; gap: 10px;
@@ -280,19 +280,17 @@ function LoginContent() {
         .login-btn-outline {
           flex: 1; display: flex; align-items: center; justify-content: center;
           height: 60px; border-radius: 10px; font-size: 13px; font-weight: 600;
-          text-decoration: none; color: #6B6B6B; border: 1px solid #E8E5E0;
+          text-decoration: none; color: #8B949E; border: 1px solid rgba(255,255,255,0.12);
           transition: background 150ms ease, border-color 150ms ease;
         }
-        .login-btn-outline:hover { background: #FAFAF8; border-color: #D1CEC9; }
+        .login-btn-outline:hover { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.2); }
 
         /* ── Login Card ── */
         .login-card {
-          background: rgba(255, 255, 255, 0.85);
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
+          background: #1A1A1A;
           border-radius: 20px;
           padding: 40px;
-          border: 1px solid rgba(255, 255, 255, 0.45);
+          border: 1px solid rgba(255, 255, 255, 0.08);
           box-shadow:
             0 4px 24px rgba(0,0,0,0.15),
             0 12px 40px rgba(0,0,0,0.20);
@@ -323,7 +321,7 @@ function LoginContent() {
           font-size: 14px;
           font-weight: 600;
           letter-spacing: 0.15em;
-          color: #1A1A1A;
+          color: #E6EDF3;
           font-family: var(--font-sans);
         }
         .login-brand-subtitle {
@@ -331,12 +329,12 @@ function LoginContent() {
           font-size: 11px;
           font-weight: 500;
           letter-spacing: 0.08em;
-          color: #9B9B9B;
+          color: #8B949E;
         }
 
         .login-divider {
           height: 1px;
-          background: linear-gradient(90deg, transparent, #E8E5E0, transparent);
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
           margin: 28px 0;
         }
 
@@ -376,24 +374,24 @@ function LoginContent() {
         .login-input {
           width: 100%;
           height: 60px;
-          border: 1.5px solid #E8E5E0;
+          border: 1.5px solid rgba(255,255,255,0.12);
           border-radius: 10px;
           padding: 0 16px;
           font-size: 16px;
-          background: #FAFAF8;
-          color: #1A1A1A;
+          background: #222222;
+          color: #E6EDF3;
           outline: none;
           font-family: inherit;
           box-sizing: border-box;
           transition: border-color 150ms ease, box-shadow 150ms ease;
         }
         .login-input::placeholder {
-          color: #C4C0B9;
+          color: #6E7681;
         }
         .login-input:focus {
-          border-color: var(--gold-400);
-          box-shadow: 0 0 0 3px rgba(212,168,67,0.12);
-          background: #FFFFFF;
+          border-color: #C9A84C;
+          box-shadow: 0 0 0 3px rgba(201,168,76,0.15);
+          background: #2A2A2A;
         }
 
         /* ── Submit ── */
@@ -463,14 +461,14 @@ function LoginContent() {
         .login-footer {
           margin-top: 32px;
           padding-top: 20px;
-          border-top: 1px solid #F0EEEA;
+          border-top: 1px solid rgba(255,255,255,0.06);
           text-align: center;
         }
         .login-footer-name {
-          font-size: 13px; color: #6B6B6B; font-weight: 500;
+          font-size: 13px; color: #8B949E; font-weight: 500;
         }
         .login-footer-meta {
-          font-size: 11px; color: #B0ADA6; margin-top: 4px;
+          font-size: 11px; color: #6E7681; margin-top: 4px;
           font-family: var(--font-mono);
           letter-spacing: 0.02em;
         }

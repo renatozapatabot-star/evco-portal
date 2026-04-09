@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useCallback } from 'react'
 import type { OperatorData } from './shared/fetchCockpitData'
 import { NextUpHero } from './operator/NextUpHero'
 import { MyDayPanel } from './operator/MyDayPanel'
@@ -11,6 +12,7 @@ import { EntradasCard } from './operator/EntradasCard'
 import { ClassificationsCard } from './operator/ClassificationsCard'
 import { BridgeCard } from './operator/BridgeCard'
 import { ExchangeRateCard } from './operator/ExchangeRateCard'
+import { CardClearAnimation, getClearVariant } from './shared/CardClearAnimation'
 import { NewsBanner, buildOperatorItems } from './shared/NewsBanner'
 
 interface Props {
@@ -22,6 +24,29 @@ interface Props {
 export function OperatorCockpit({ data, operatorName, operatorId }: Props) {
   const hour = new Date().getHours()
   const greeting = hour < 12 ? 'Buenos días' : hour < 18 ? 'Buenas tardes' : 'Buenas noches'
+
+  // Card clear tracking
+  const [clearCount, setClearCount] = useState(data.performance.completedToday)
+  const [showClearAnim, setShowClearAnim] = useState(false)
+  const [clearVariant, setClearVariant] = useState<'small' | 'medium' | 'large' | 'celebration'>('small')
+
+  const handleCardClear = useCallback((cardId: string) => {
+    const newCount = clearCount + 1
+    setClearCount(newCount)
+    setClearVariant(getClearVariant(newCount) || 'small')
+    setShowClearAnim(true)
+
+    // Log to operator_actions
+    fetch('/api/data?table=operator_actions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    }).catch(() => {}) // fire and forget — the action is logged server-side elsewhere
+
+    // Persist cleared card for today
+    const today = new Date().toISOString().split('T')[0]
+    const key = `cruz-cleared:${cardId}:${today}`
+    if (typeof sessionStorage !== 'undefined') sessionStorage.setItem(key, '1')
+  }, [clearCount])
 
   const bannerItems = buildOperatorItems({
     assigned: data.myDay.assigned,
@@ -48,9 +73,12 @@ export function OperatorCockpit({ data, operatorName, operatorId }: Props) {
         </p>
       </div>
 
-      {/* Performance strip — gamified */}
+      {/* Clear animation overlay */}
+      <CardClearAnimation show={showClearAnim} variant={clearVariant} onComplete={() => setShowClearAnim(false)} />
+
+      {/* Performance strip — gamified with live count */}
       <PerformanceStrip
-        todayCount={data.performance.completedToday}
+        todayCount={clearCount}
         yesterdayCount={data.performance.yesterdayCount}
         weekCount={data.performance.completedThisWeek}
         monthCount={data.performance.completedThisMonth}

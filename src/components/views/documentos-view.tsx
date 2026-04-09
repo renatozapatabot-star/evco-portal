@@ -21,7 +21,7 @@ const LEGAL_DOCS = [
   { id: 'nom_plasticos', label: 'NOM Plásticos', desc: 'Normas aplicables Cap. 39', required: false },
   { id: 'contrato_agencia', label: 'Contrato de Agencia', desc: 'Contrato con Renato Zapata & Company', required: true },
   { id: 'seguro_mercancias', label: 'Seguro de Mercancías', desc: 'Póliza de seguro de carga', required: false },
-  { id: 'certificado_origen', label: 'Certificados T-MEC', desc: 'USMCA certificates on file', required: true },
+  { id: 'certificado_origen', label: 'Certificados T-MEC', desc: 'Certificados de origen en archivo', required: true },
 ]
 
 export function DocumentosView() {
@@ -42,7 +42,8 @@ export function DocumentosView() {
   function loadDocs() {
     setLoading(true)
     setDocError(null)
-    supabase.from('company_documents').select('*').limit(100)
+    const companyId = getCompanyIdCookie() || ''
+    supabase.from('company_documents').select('*').eq('company_id', companyId).limit(100)
       .then(({ data, error }) => {
         if (error) { setDocError('No se pudieron cargar los documentos.') }
         else { setCompanyDocs(data || []) }

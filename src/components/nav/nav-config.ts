@@ -234,6 +234,10 @@ export const ADMIN_ONLY_ROUTES = [
   '/simulador',
   '/archivos',
   '/operador',
+  '/cuentas',
+  '/rentabilidad',
+  '/resultados',
+  '/garantia',
 ] as const
 
 /** Routes accessible by client role */
@@ -259,6 +263,8 @@ export const CLIENT_ROUTES = [
   '/actividad',
   '/logros',
   '/login',
+  '/cruz',
+  '/cambiar-contrasena',
 ] as const
 
 // ---------------------------------------------------------------------------

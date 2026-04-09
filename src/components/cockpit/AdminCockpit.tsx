@@ -192,7 +192,41 @@ export function AdminCockpit({ data, operatorName }: Props) {
             <PipelineFinanceCard pipeline={data.financialPipeline} />
           </div>
 
-          <SmartQueuePanel queue={data.smartQueue} />
+          <SmartQueuePanel queue={data.smartQueue} onItemClick={(item) => setSlideOver({
+            title: item.trafico,
+            content: (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <div>
+                  <div style={{ fontSize: 11, color: '#6E7681', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Tráfico</div>
+                  <div className="font-mono" style={{ fontSize: 20, fontWeight: 700, color: '#C9A84C' }}>{item.trafico}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 11, color: '#6E7681', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Cliente</div>
+                  <div style={{ fontSize: 14, color: '#E6EDF3' }}>{item.company_id}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 11, color: '#6E7681', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Descripción</div>
+                  <div style={{ fontSize: 14, color: '#E6EDF3' }}>{item.descripcion || 'Sin descripción'}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 11, color: '#6E7681', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Valor</div>
+                  <div className="font-mono" style={{ fontSize: 18, fontWeight: 700, color: '#E6EDF3' }}>{fmtUSD(item.valor_usd)} USD</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 11, color: '#6E7681', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Estatus</div>
+                  <div style={{ fontSize: 14, color: '#D97706' }}>{item.estatus} · {item.reason}</div>
+                </div>
+                <a href={'/traficos/' + encodeURIComponent(item.trafico)} style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  padding: '14px 20px', borderRadius: 10, marginTop: 12,
+                  background: '#C9A84C', color: '#111', fontSize: 15, fontWeight: 700,
+                  textDecoration: 'none', minHeight: 60,
+                }}>
+                  Abrir tráfico completo →
+                </a>
+              </div>
+            ),
+          })} />
 
           {/* Row: Team + Weekly Trend */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 12 }}>

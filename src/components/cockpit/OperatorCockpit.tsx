@@ -121,7 +121,7 @@ export function OperatorCockpit({ data, operatorName, operatorId }: Props) {
         </div>
 
         {/* Blocked traficos */}
-        <BlockedPanel blocked={data.blocked} operatorId={operatorId} />
+        <BlockedPanel blocked={data.blocked} operatorId={operatorId} onClear={() => handleCardClear('blocked')} />
       </div>
     </div>
   )

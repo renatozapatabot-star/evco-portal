@@ -8,9 +8,10 @@ import { computeBlockedState } from '../shared/cardStates'
 interface Props {
   blocked: OperatorData['blocked']
   operatorId: string
+  onClear?: () => void
 }
 
-export function BlockedPanel({ blocked, operatorId }: Props) {
+export function BlockedPanel({ blocked, operatorId, onClear }: Props) {
   const cardState = computeBlockedState(blocked.length)
 
   if (blocked.length === 0) return null
@@ -25,6 +26,7 @@ export function BlockedPanel({ blocked, operatorId }: Props) {
       urgentCondition={cardState.urgentCondition}
       urgentAction={cardState.urgentAction}
       actionHref="/traficos?estatus=Documentacion"
+      onClear={onClear}
       quietContent={
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {blocked.map(item => (

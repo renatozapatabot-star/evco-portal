@@ -8,6 +8,7 @@ import { CockpitShell } from '@/components/cockpit/shared/CockpitShell'
 import { AdminCockpit } from '@/components/cockpit/AdminCockpit'
 import { OperatorCockpit } from '@/components/cockpit/OperatorCockpit'
 import { CommandCenterView } from '@/components/command-center/CommandCenterView'
+import { DemoHints } from '@/components/demo/DemoHints'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -78,6 +79,7 @@ export default async function Dashboard() {
 
   return (
     <CockpitShell>
+      {isDemo && <DemoHints />}
       {isDemo && (
         <div style={{
           background: 'rgba(201,168,76,0.08)',

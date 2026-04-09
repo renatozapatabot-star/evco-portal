@@ -8,9 +8,10 @@ import { computeQueueState } from '../shared/cardStates'
 
 interface Props {
   queue: AdminData['smartQueue']
+  onItemClick?: (item: AdminData['smartQueue'][0]) => void
 }
 
-export function SmartQueuePanel({ queue }: Props) {
+export function SmartQueuePanel({ queue, onItemClick }: Props) {
   const cardState = computeQueueState(queue.length)
 
   return (
@@ -29,7 +30,7 @@ export function SmartQueuePanel({ queue }: Props) {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {queue.map((item, i) => (
-              <Link key={item.trafico} href={`/traficos/${encodeURIComponent(item.trafico)}`} style={{
+              <div key={item.trafico} onClick={() => onItemClick ? onItemClick(item) : window.location.assign(`/traficos/${encodeURIComponent(item.trafico)}`)} style={{ cursor: 'pointer',
                 display: 'flex', alignItems: 'center', gap: 12,
                 padding: '10px 12px',
                 background: i === 0 ? 'rgba(201,168,76,0.06)' : 'rgba(255,255,255,0.02)',
@@ -45,7 +46,7 @@ export function SmartQueuePanel({ queue }: Props) {
                 <span className="font-mono" style={{ fontSize: 12, color: '#6E7681', flexShrink: 0 }}>
                   {fmtUSDCompact(item.valor_usd)}
                 </span>
-              </Link>
+              </div>
             ))}
           </div>
         )

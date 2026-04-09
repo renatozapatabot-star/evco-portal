@@ -4,7 +4,7 @@ import { verifySession } from '@/lib/session'
 import { validateCsrf } from '@/lib/csrf'
 
 /** Public paths that bypass auth */
-const PUBLIC_PATHS = ['/login', '/signup', '/onboarding']
+const PUBLIC_PATHS = ['/login', '/signup', '/onboarding', '/demo']
 
 /** Token-gated paths — accessible without login via URL token */
 const TOKEN_PATHS = ['/track/', '/upload/', '/share/', '/proveedor/']
@@ -22,6 +22,9 @@ export async function middleware(request: NextRequest) {
 
   // Allow token-gated paths (track/upload) without auth
   if (TOKEN_PATHS.some(p => pathname.startsWith(p))) return NextResponse.next()
+
+  // Demo routes are always public (no redirect if authenticated)
+  if (pathname.startsWith('/demo')) return NextResponse.next()
 
   // Login page: redirect authenticated users to dashboard
   if (PUBLIC_PATHS.includes(pathname)) {

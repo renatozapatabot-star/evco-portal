@@ -13,6 +13,7 @@ import { ClassificationsCard } from './operator/ClassificationsCard'
 import { BridgeCard } from './operator/BridgeCard'
 import { ExchangeRateCard } from './operator/ExchangeRateCard'
 import { CardClearAnimation, getClearVariant } from './shared/CardClearAnimation'
+import { DueloDelDia } from './operator/DueloDelDia'
 import { NewsBanner, buildOperatorItems } from './shared/NewsBanner'
 
 interface Props {
@@ -88,6 +89,9 @@ export function OperatorCockpit({ data, operatorName, operatorId }: Props) {
         teamSize={data.performance.teamSize}
         operatorName={operatorName}
       />
+
+      {/* Duelo del día — daily leaderboard */}
+      <DueloDelDia />
 
       {/* Universal search */}
       <OperatorSearch />

@@ -46,8 +46,9 @@ const CARDS: CardDef[] = [
     key: 'entradas', href: '/entradas', label: 'Entradas', Icon: Package,
     getKpi: (p) => p.pendingEntradas,
     getSubtitle: (p, u) => {
-      if (p.viewMode === 'client') return u === 'green' || u === 'neutral' ? 'Todo al corriente' : 'recibidas esta semana'
-      return u === 'green' || u === 'neutral' ? 'Todo asignado — al corriente' : 'sin asignar — acción requerida'
+      const n = p.pendingEntradas
+      if (p.viewMode === 'client') return u === 'green' || u === 'neutral' ? 'Todo al corriente — sin pendientes' : `${n} sin tráfico asignado · revisar`
+      return u === 'green' || u === 'neutral' ? 'Todo asignado — al corriente' : `${n} sin asignar — acción requerida`
     },
     getActions: (p, u) => {
       if (p.viewMode === 'client') return [{ label: 'Ver lista', href: '/entradas', primary: true }]
@@ -61,13 +62,13 @@ const CARDS: CardDef[] = [
     getKpi: (p) => p.enProceso > 0 ? p.enProceso : (p.cruzadosEsteMes ?? 0),
     getSubtitle: (p, u) => {
       if (p.viewMode === 'client') {
-        if (u === 'red' || u === 'amber') return 'envíos en tránsito'
+        if (u === 'red' || u === 'amber') return `${p.enProceso} en tránsito · seguimiento activo`
         const mes = p.cruzadosEsteMes ?? 0
-        return mes > 0 ? 'cruzados este mes' : 'sin operaciones activas'
+        return mes > 0 ? `${mes} cruzados este mes — todo fluye` : 'Sin operaciones activas — todo en orden'
       }
-      if (u === 'red' || u === 'amber') return 'en proceso — monitorear'
+      if (u === 'red' || u === 'amber') return `${p.enProceso} en proceso · ${p.urgentes} urgente${p.urgentes !== 1 ? 's' : ''}`
       const mes = p.cruzadosEsteMes ?? 0
-      return mes > 0 ? 'cruzados este mes — excelente' : 'sin operaciones activas'
+      return mes > 0 ? `${mes} cruzados este mes — excelente` : 'Sin operaciones activas'
     },
     getActions: (p, u) => {
       if (p.viewMode === 'client') return [{ label: 'Ver todos', href: '/traficos', primary: true }]
@@ -83,9 +84,11 @@ const CARDS: CardDef[] = [
       if (faltantes > 0) return faltantes
       return p.expedientesTotal ?? 0
     },
-    getSubtitle: (_p, u) => {
-      if (u === 'amber' || u === 'red') return 'docs faltantes — completar'
-      return 'expedientes completos'
+    getSubtitle: (p, u) => {
+      const faltantes = p.docsFaltantes ?? 0
+      if (u === 'amber' || u === 'red') return `${faltantes} tráfico${faltantes !== 1 ? 's' : ''} sin pedimento · completar docs`
+      const total = p.expedientesTotal ?? 0
+      return total > 0 ? `${total} expedientes completos — al corriente` : 'Expedientes digitales disponibles'
     },
     getActions: () => [{ label: 'Ver todos', href: '/expedientes', primary: true }],
   },
@@ -94,7 +97,7 @@ const CARDS: CardDef[] = [
     getKpi: (p) => p.pedimentosThisMonth ?? 0,
     getSubtitle: (p) => {
       const n = p.pedimentosThisMonth ?? 0
-      return n > 0 ? 'este mes — operaciones activas' : 'sin declaraciones pendientes'
+      return n > 0 ? `${n} pedimento${n !== 1 ? 's' : ''} este mes — todo al corriente` : 'Sin declaraciones pendientes — todo limpio'
     },
     getActions: () => [{ label: 'Ver todos', href: '/pedimentos', primary: true }],
   },
@@ -107,7 +110,7 @@ const CARDS: CardDef[] = [
     },
     getSubtitle: (p) => {
       const val = p.facturacionMes ?? 0
-      if (val > 0) return 'USD facturado este mes'
+      if (val > 0) return `$${val > 1000 ? Math.round(val / 1000) + 'K' : val.toFixed(0)} USD facturado este mes`
       return 'Sin movimientos — todo al corriente'
     },
     getActions: () => [{ label: 'Ver detalle', href: '/financiero', primary: true }],
@@ -118,9 +121,9 @@ const CARDS: CardDef[] = [
     getSubtitle: (p) => {
       const bultos = p.inventarioBultos ?? 0
       const tons = p.inventarioPeso ?? 0
-      if (bultos > 0 && tons > 0) return `${bultos === 1 ? 'bulto' : 'bultos'} · ${tons.toFixed(1)} ton — en bodega`
-      if (bultos > 0) return bultos === 1 ? 'bulto en bodega' : 'bultos en bodega'
-      return 'Bodega disponible — sin mercancia'
+      if (bultos > 0 && tons > 0) return `${bultos} ${bultos === 1 ? 'bulto' : 'bultos'} · ${tons.toFixed(1)} ton en bodega`
+      if (bultos > 0) return `${bultos} ${bultos === 1 ? 'bulto' : 'bultos'} en bodega`
+      return 'Bodega disponible — sin mercancía'
     },
     getActions: () => [{ label: 'Ver bodega', href: '/bodega', primary: true }],
   },

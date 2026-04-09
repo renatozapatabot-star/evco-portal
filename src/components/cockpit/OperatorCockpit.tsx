@@ -7,6 +7,10 @@ import { BlockedPanel } from './operator/BlockedPanel'
 import { DocumentChaser } from './operator/DocumentChaser'
 import { OperatorSearch } from './operator/OperatorSearch'
 import { PerformanceStrip } from './operator/PerformanceStrip'
+import { EntradasCard } from './operator/EntradasCard'
+import { ClassificationsCard } from './operator/ClassificationsCard'
+import { BridgeCard } from './operator/BridgeCard'
+import { ExchangeRateCard } from './operator/ExchangeRateCard'
 import { NewsBanner, buildOperatorItems } from './shared/NewsBanner'
 
 interface Props {
@@ -54,13 +58,19 @@ export function OperatorCockpit({ data, operatorName, operatorId }: Props) {
       {/* Universal search */}
       <OperatorSearch />
 
-      {/* Single column, hero first */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 700 }}>
+      {/* Cards grid */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 800 }}>
         {/* MI TURNO — the single most important next action */}
         <NextUpHero data={data} operatorName={operatorName} />
 
         {/* Document Chaser — copy-paste WhatsApp messages for missing docs */}
         <DocumentChaser blocked={data.blocked} operatorName={operatorName} />
+
+        {/* Row: Classifications + Entradas */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 12 }}>
+          <ClassificationsCard />
+          <EntradasCard />
+        </div>
 
         {/* My Day + Team stats */}
         <MyDayPanel
@@ -70,7 +80,13 @@ export function OperatorCockpit({ data, operatorName, operatorId }: Props) {
           operatorId={operatorId}
         />
 
-        {/* Blocked traficos (those without specific missing docs) */}
+        {/* Row: Bridges + Exchange Rate */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 12 }}>
+          <BridgeCard />
+          <ExchangeRateCard />
+        </div>
+
+        {/* Blocked traficos */}
         <BlockedPanel blocked={data.blocked} operatorId={operatorId} />
       </div>
     </div>

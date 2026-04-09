@@ -50,6 +50,23 @@ export interface AdminData {
     sources: Array<{ source: string; healthy: boolean; minutesAgo: number | null }>
     allHealthy: boolean
   }
+  /** Intelligence data — risk, compliance, email patterns */
+  intelligence: {
+    riskAlerts: number
+    criticalAlerts: number
+    emailsToday: number
+    classificationsToday: number
+    otroRate: number
+  }
+  /** Financial pipeline — cartera aging */
+  financialPipeline: {
+    carteraTotal: number
+    cartera30d: number
+    cartera60d: number
+    cartera90plus: number
+  }
+  /** Weekly activity trend (last 7 days) */
+  weeklyTrend: Array<{ day: string; actions: number }>
 }
 
 export interface OperatorData {
@@ -244,6 +261,30 @@ async function fetchAdminData(): Promise<AdminData> {
       .not('fecha_llegada', 'is', null)
       .order('fecha_llegada', { ascending: true })
       .limit(1),
+    // 19: compliance/risk alerts
+    sb.from('compliance_predictions')
+      .select('id, severity')
+      .eq('resolved', false)
+      .limit(100),
+    // 20: email intelligence today
+    sb.from('email_intelligence')
+      .select('id')
+      .gte('created_at', todayStart())
+      .limit(500),
+    // 21: shadow classifications today
+    sb.from('shadow_classifications')
+      .select('id, doc_type')
+      .gte('created_at', todayStart())
+      .limit(200),
+    // 22: econta cartera for aging
+    sb.from('econta_cartera')
+      .select('fecha, importe, tipo')
+      .limit(5000),
+    // 23: operator actions last 7 days for trend
+    sb.from('operator_actions')
+      .select('created_at')
+      .gte('created_at', new Date(Date.now() - 7 * 86400000).toISOString())
+      .limit(5000),
   ])
 
   // Extract settled values with safe defaults
@@ -386,6 +427,54 @@ async function fetchAdminData(): Promise<AdminData> {
     bridges: [], // Fetched client-side via /api/bridge-times (external API)
     intelligenceFeed: [], // Fetched client-side via /api/intelligence-feed
     syncStatus: { sources: [], allHealthy: true }, // Fetched client-side via /api/sync-status
+
+    // Intelligence (from new queries 19-23)
+    intelligence: (() => {
+      const riskRows = results[19].status === 'fulfilled' ? results[19].value.data ?? [] : []
+      const criticalAlerts = riskRows.filter((r: Record<string, unknown>) => r.severity === 'critical').length
+      const emailRows = results[20].status === 'fulfilled' ? results[20].value.data ?? [] : []
+      const classRows = results[21].status === 'fulfilled' ? results[21].value.data ?? [] : []
+      const otroCount = classRows.filter((r: Record<string, unknown>) => r.doc_type === 'OTRO').length
+      return {
+        riskAlerts: riskRows.length,
+        criticalAlerts,
+        emailsToday: emailRows.length,
+        classificationsToday: classRows.length,
+        otroRate: classRows.length > 0 ? Math.round((otroCount / classRows.length) * 100) : 0,
+      }
+    })(),
+
+    financialPipeline: (() => {
+      const carteraRows = results[22].status === 'fulfilled' ? results[22].value.data ?? [] : []
+      const nowMs = Date.now()
+      let total = 0, d30 = 0, d60 = 0, d90plus = 0
+      for (const r of carteraRows as Array<Record<string, unknown>>) {
+        if (r.tipo !== 'C') continue
+        const amt = Math.abs(Number(r.importe || 0))
+        const days = r.fecha ? Math.floor((nowMs - new Date(r.fecha as string).getTime()) / 86400000) : 999
+        total += amt
+        if (days <= 30) d30 += amt
+        else if (days <= 60) d60 += amt
+        else d90plus += amt
+      }
+      return { carteraTotal: total, cartera30d: d30, cartera60d: d60, cartera90plus: d90plus }
+    })(),
+
+    weeklyTrend: (() => {
+      const actionRows = results[23].status === 'fulfilled' ? results[23].value.data ?? [] : []
+      const days: Record<string, number> = {}
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(Date.now() - i * 86400000)
+        const key = d.toLocaleDateString('es-MX', { weekday: 'short', timeZone: 'America/Chicago' })
+        days[key] = 0
+      }
+      for (const a of actionRows as Array<Record<string, unknown>>) {
+        const d = new Date(a.created_at as string)
+        const key = d.toLocaleDateString('es-MX', { weekday: 'short', timeZone: 'America/Chicago' })
+        if (key in days) days[key]++
+      }
+      return Object.entries(days).map(([day, actions]) => ({ day, actions }))
+    })(),
   }
 }
 
@@ -731,6 +820,9 @@ export async function fetchCockpitData(
       unassignedCount: 0, companies: [],
       bridges: [], intelligenceFeed: [],
       syncStatus: { sources: [], allHealthy: true },
+      intelligence: { riskAlerts: 0, criticalAlerts: 0, emailsToday: 0, classificationsToday: 0, otroRate: 0 },
+      financialPipeline: { carteraTotal: 0, cartera30d: 0, cartera60d: 0, cartera90plus: 0 },
+      weeklyTrend: [],
     })
     return { admin: admin.data }
   }

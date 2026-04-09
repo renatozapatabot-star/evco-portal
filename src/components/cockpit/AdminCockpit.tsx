@@ -7,6 +7,9 @@ import { SmartQueuePanel } from './admin/SmartQueuePanel'
 import { TeamPanel } from './admin/TeamPanel'
 import { TeamLivePanel } from './admin/TeamLivePanel'
 import { ClientsTablePanel } from './admin/ClientsTablePanel'
+import { IntelligenceCard } from './admin/IntelligenceCard'
+import { PipelineFinanceCard } from './admin/PipelineFinanceCard'
+import { WeeklyTrendCard } from './admin/WeeklyTrendCard'
 import { RightRail } from './admin/RightRail'
 import { NewsBanner, buildAdminItems } from './shared/NewsBanner'
 import { Trend, computeDelta } from './shared/Trend'
@@ -179,8 +182,20 @@ export function AdminCockpit({ data, operatorName }: Props) {
             actions30d={data.operatorActions30d}
           />
           <NeedsJudgmentPanel escalations={data.escalations} />
+          {/* Row: Intelligence + Finance side by side on desktop */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 12 }}>
+            <IntelligenceCard intelligence={data.intelligence} />
+            <PipelineFinanceCard pipeline={data.financialPipeline} />
+          </div>
+
           <SmartQueuePanel queue={data.smartQueue} />
-          <TeamPanel team={data.teamStats} unassigned={data.unassignedCount} />
+
+          {/* Row: Team + Weekly Trend */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 12 }}>
+            <TeamPanel team={data.teamStats} unassigned={data.unassignedCount} />
+            <WeeklyTrendCard trend={data.weeklyTrend} />
+          </div>
+
           <TeamLivePanel />
           <ClientsTablePanel companies={data.companies} />
         </div>

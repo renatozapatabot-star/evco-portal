@@ -22,7 +22,7 @@ interface CockpitKPIStripProps {
  */
 export function CockpitKPIStrip({ items }: CockpitKPIStripProps) {
   return (
-    <div style={{
+    <div className="cockpit-kpi-strip" style={{
       display: 'grid',
       gridTemplateColumns: `repeat(${Math.min(items.length, 5)}, 1fr)`,
       gap: 10,

@@ -7,7 +7,7 @@ import { fetchCockpitData } from '@/components/cockpit/shared/fetchCockpitData'
 import { CockpitShell } from '@/components/cockpit/shared/CockpitShell'
 import { AdminCockpit } from '@/components/cockpit/AdminCockpit'
 import { OperatorCockpit } from '@/components/cockpit/OperatorCockpit'
-import { ClientCockpit } from '@/components/cockpit/ClientCockpit'
+import { CommandCenterView } from '@/components/command-center/CommandCenterView'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -73,14 +73,10 @@ export default async function Dashboard() {
     )
   }
 
-  // Default: client view — company name from cookie or operator name
-  const companyName = cookieStore.get('company_name')?.value
-    ? decodeURIComponent(cookieStore.get('company_name')!.value)
-    : operatorName || session.companyId
-
+  // Default: client view — full command center with client viewMode
   return (
     <CockpitShell>
-      <ClientCockpit data={data.client!} companyName={companyName} />
+      <CommandCenterView viewMode="client" />
     </CockpitShell>
   )
 }

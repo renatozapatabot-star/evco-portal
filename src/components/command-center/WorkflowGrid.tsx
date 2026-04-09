@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react'
 import { useReducedMotion } from 'framer-motion'
-import { Truck, Package, FolderOpen, FileText, DollarSign, Warehouse, BarChart3, TrendingUp, CheckCircle, ClipboardList, Navigation, LineChart, PiggyBank, Radio } from 'lucide-react'
+import { Truck, Package, FolderOpen, FileText, DollarSign, Warehouse, BarChart3, TrendingUp, CheckCircle, ClipboardList, Navigation, LineChart, PiggyBank, Radio, Tags, FileSpreadsheet, Archive } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { WorkflowCard, type CardAction } from './WorkflowCard'
 import { getCardUrgency, getUrgencyIntensity, INTENSITY_CSS_CLASS, sortByUrgency, type CardKey, type CardKPIs, type Urgency } from '@/lib/card-urgency'
@@ -191,6 +191,28 @@ const CARDS: CardDef[] = [
     getKpi: () => null,
     getSubtitle: () => 'Asignación inteligente de operaciones — proximamente',
     getActions: () => [{ label: 'Ver operaciones', href: '/operaciones', primary: true }],
+  },
+  // ── Row 5: Client-facing reference cards ──
+  {
+    key: 'catalogo', href: '/catalogo', label: 'Catálogo', Icon: Tags,
+    getKpi: () => null,
+    getSubtitle: () => 'Fracciones arancelarias registradas',
+    getActions: () => [{ label: 'Ver catálogo', href: '/catalogo', primary: true }],
+  },
+  {
+    key: 'anexo24', href: '/anexo24', label: 'Anexo 24', Icon: FileSpreadsheet,
+    getKpi: () => null,
+    getSubtitle: () => 'Control IMMEX — al corriente',
+    getActions: () => [{ label: 'Ver anexo', href: '/anexo24', primary: true }],
+  },
+  {
+    key: 'documentos', href: '/documentos', label: 'Documentos', Icon: Archive,
+    getKpi: (p) => p.expedientesTotal ?? 0,
+    getSubtitle: (p) => {
+      const total = p.expedientesTotal ?? 0
+      return total > 0 ? 'archivos digitales disponibles' : 'Archivo digital disponible'
+    },
+    getActions: () => [{ label: 'Ver documentos', href: '/documentos', primary: true }],
   },
 ]
 

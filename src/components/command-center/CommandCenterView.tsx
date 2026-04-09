@@ -15,6 +15,8 @@ import { useNetworkStatus } from '@/hooks/use-network-status'
 import { getCookieValue } from '@/lib/client-config'
 import { WorkflowGrid } from './WorkflowGrid'
 import { ActivityPulseSection } from './ActivityPulseSection'
+import { CockpitKPIStrip, type KPIItem } from '@/components/cockpit/CockpitKPIStrip'
+import { fmtDate } from '@/lib/format-utils'
 import { PullRefreshIndicator } from '@/components/broker/PullRefreshIndicator'
 import { ErrorCard } from '@/components/ui/ErrorCard'
 import { DashboardSkeleton } from '@/components/skeletons/DashboardSkeleton'
@@ -389,7 +391,11 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
             </div>
             <div>
               <div className="status-banner-text">Todos sus envíos al corriente</div>
-              <div className="status-banner-sub">Sin novedades — todo fluye</div>
+              <div className="status-banner-sub">
+                {data.total > 0
+                  ? `${data.total} operaciones completadas${data.lastCrossing ? ` · último cruce: ${fmtDate(data.lastCrossing.fecha)}` : ''}`
+                  : 'Sin novedades — todo fluye'}
+              </div>
             </div>
           </div>
         ) : (
@@ -404,6 +410,22 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
             </span>
           </div>
         )
+      )}
+
+      {/* ── Client KPI strip ── */}
+      {isClient && (
+        <div className="cockpit-kpi-strip" style={{ marginBottom: 16 }}>
+          <CockpitKPIStrip items={(() => {
+            const items: KPIItem[] = [
+              { label: 'Tráficos', value: data.total, href: '/traficos', dim: data.total === 0 },
+              { label: 'Cruzados', value: data.cruzadosEsteMes, href: '/traficos', color: 'var(--success, #16A34A)', dim: data.cruzadosEsteMes === 0 },
+              { label: 'Pedimentos', value: data.pedimentosThisMonth, href: '/pedimentos', dim: data.pedimentosThisMonth === 0 },
+              { label: 'MXN/USD', value: data.exchangeRate ? `$${data.exchangeRate.toFixed(2)}` : '—', href: '/financiero' },
+              { label: 'T-MEC Ahorro', value: data.tmecSavings > 0 ? `$${(data.tmecSavings / 1000).toFixed(1)}K` : '$0', href: '/reportes', color: 'var(--success, #16A34A)', dim: data.tmecSavings === 0 },
+            ]
+            return items
+          })()} />
+        </div>
       )}
 
       {/* ── DAILY COMPLETION LOOP (operator only) ── */}
@@ -467,7 +489,7 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
 
       {/* Activity Pulse — collapsed below cards */}
       <div style={{ marginTop: 16 }}>
-        <ActivityPulseSection pulse={pulse} loading={pulseLoading} defaultCollapsed dark={!isMobile} />
+        <ActivityPulseSection pulse={pulse} loading={pulseLoading} defaultCollapsed={!isClient} dark={!isMobile} />
       </div>
 
       <Celebrate trigger={!!lastUpdate && (lastUpdate.estatus || '').toLowerCase().includes('cruz')} />

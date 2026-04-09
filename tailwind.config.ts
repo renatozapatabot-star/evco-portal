@@ -7,12 +7,12 @@ const config: Config = {
       colors: {
         // Brand — Gold
         gold: {
-          DEFAULT: '#C4963C',
+          DEFAULT: '#C9A84C',
           50: 'rgba(196,150,60,0.08)',
           100: '#FBF5E6',
           200: '#F0D88A',
           300: '#E8C468',
-          400: '#C4963C',
+          400: '#C9A84C',
           500: '#C9A84C',
           600: '#B8933B',
           700: '#8B6914',

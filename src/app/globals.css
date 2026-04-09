@@ -194,8 +194,7 @@
   --slate-500: #8B949E;
   --slate-600: #8B949E;
   --slate-700: #CDD6E0;
-  background: radial-gradient(ellipse at top center, #1A1A1A 0%, #111111 50%, #0A0A0A 100%);
-  background-attachment: fixed;
+  background: #111111;
   color: var(--text-primary);
 }
 .cruz-dark .cruz-table td { border-bottom-color: rgba(255,255,255,0.06); }
@@ -212,12 +211,28 @@
 .cruz-dark .mn-nav .mn-tab.active { color: var(--gold, #C9A84C); }
 .cruz-dark .mn-nav .mn-label { color: inherit; }
 
-/* ── System mood backgrounds ── */
-.mood-cleared { background: radial-gradient(ellipse at top center, rgba(22,163,74,0.06) 0%, #111111 40%, #0A0A0A 100%) !important; background-attachment: fixed; }
-.mood-calm { background: radial-gradient(ellipse at top center, #1A1A1A 0%, #111111 50%, #0A0A0A 100%) !important; background-attachment: fixed; }
-.mood-busy { background: radial-gradient(ellipse at top center, rgba(217,119,6,0.05) 0%, #111111 40%, #0A0A0A 100%) !important; background-attachment: fixed; }
-.mood-critical { background: radial-gradient(ellipse at top center, rgba(220,38,38,0.06) 0%, #111111 40%, #0A0A0A 100%) !important; background-attachment: fixed; }
-.mood-allgreen { background: radial-gradient(ellipse at top center, rgba(22,163,74,0.10) 0%, rgba(22,163,74,0.03) 35%, #111111 55%, #0A0A0A 100%) !important; background-attachment: fixed; }
+/* ── Cockpit grid (12-col responsive) ── */
+.cockpit-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  grid-auto-rows: 1fr;
+  gap: 12px;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .cockpit-grid {
+    grid-template-columns: 1fr;
+    grid-auto-rows: auto;
+  }
+}
+
+/* ── System mood backgrounds (simplified — flat dark) ── */
+.mood-cleared { background: #111111 !important; }
+.mood-calm { background: #111111 !important; }
+.mood-busy { background: #111111 !important; }
+.mood-critical { background: #111111 !important; }
+.mood-allgreen { background: #111111 !important; }
 
 /* ── Reset & Base ── */
 * {
@@ -419,9 +434,9 @@ body {
   transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 .cc-card:hover {
-  transform: scale(1.02);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
-  border-color: var(--gold);
+  transform: scale(1.005);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+  border-color: rgba(255,255,255,0.12);
 }
 .cc-card:active {
   transform: scale(0.98);
@@ -463,16 +478,16 @@ body {
 /* Green checkmark badge (small card top-right) */
 .cc-check-badge {
   position: absolute;
-  top: 12px;
-  right: 12px;
-  width: 24px;
-  height: 24px;
+  top: 10px;
+  right: 10px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   background: var(--success, #16A34A);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 8px rgba(22,163,74,0.3);
+  box-shadow: 0 0 6px rgba(22,163,74,0.25);
 }
 
 /* ── Command Palette ────────── */

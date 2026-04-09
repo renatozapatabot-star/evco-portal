@@ -13,9 +13,10 @@ caused a real regression, a compliance risk, or a silent failure in production.
 
 ## DESIGN SYSTEM
 
-1. **No hardcoded colors.** Every color uses v5.0 design system tokens defined
-   in `tailwind.config`. Dark palette (`bg-slate-950`, `#0A0A0A`, `#0D0D0C`)
-   is for PDF report generation ONLY — never in portal UI components.
+1. **No hardcoded colors.** Every color uses design system tokens defined
+   in `tailwind.config` or CSS variables. Dark cockpit theme (`.cruz-dark`)
+   is THE standard for all authenticated portal pages. Login is the only
+   light-themed page. No glassmorphism (backdrop-filter: blur) on cards.
    verify: `grep -r "bg-slate-9" src/components/` → 0 matches
 
 2. **Gold is never text on light backgrounds.** Use `#8B6914` (WCAG AA 5.2:1).

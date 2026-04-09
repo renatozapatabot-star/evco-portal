@@ -149,6 +149,19 @@ Business logic in `lib/`. Never in route handlers or components.
 
 Do not use any color, font, or component pattern not defined in DESIGN_SYSTEM.md.
 Read it before any frontend work. No exceptions.
+
+### COCKPIT AESTHETIC — THE STANDARD (April 2026)
+
+Every authenticated page uses the dark cockpit theme (`.cruz-dark` class).
+Login is the only light-themed page.
+
+- Dark canvas (#111111), elevated cards (#222222), urgency-colored top borders
+- Gold #C9A84C — the only accent color, for CTAs and active nav
+- Geist Sans for text, JetBrains Mono for ALL data/numbers
+- No glassmorphism (backdrop-filter: blur) on portal cards — solid surfaces only
+- Linear-inspired: dense spacing (16px card padding), tight typography, quiet when healthy
+- framer-motion for gestures (swipe, pull-refresh) and layout animations
+- Haptic feedback on meaningful interactions (resolve, celebrate, notify)
 ## DATE AND TIME — NON-NEGOTIABLE
 
 All dates are absolute. Relative time is banned from the portal.
@@ -300,9 +313,10 @@ Ship at 9.5+. Never at 8.5 when one more pass reaches 9.5.
 
 ```
 Go to evco-portal.vercel.app, log in with evco2026, audit every page.
-Check: slate-100 background, navy sidebar, 5 nav items only, JetBrains Mono on all numbers,
-no relative times anywhere, no English dates, gold is #D4A843,
-status badges consistent, no dark mode outside /cruz and login,
+Check: dark cockpit theme (#111111 background, #222222 cards), JetBrains Mono on all numbers,
+no relative times anywhere, no English dates, gold is #C9A84C,
+urgency-colored card top borders (red/amber/green), green check badges on healthy cards,
+status badges consistent on dark background, no glassmorphism (no backdrop-filter blur),
 empty states not blank, no firm-wide data, no compliance scores or
 penalty amounts visible to client. Report everything that fails.
 ```
@@ -372,7 +386,9 @@ ALL must pass before any task is done:
 - Commit to main directly
 - Modify `.env` / `.env.local`
 - Run destructive DB commands without confirmation
-- Hardcode colors (gold is #D4A843 — CRUZ Navy system)
+- Hardcode colors (gold is #C9A84C — cockpit system)
+- Use light-theme cards in authenticated pages (dark cockpit only, login is the only light page)
+- Use glassmorphism (backdrop-filter: blur) on portal cards — solid elevated surfaces only
 - Hardcode rates or IVA — always from `system_config`
 - Skip RLS on any table
 - Render unsanitized AI output

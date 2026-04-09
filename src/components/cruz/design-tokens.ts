@@ -14,7 +14,7 @@ export const colors = {
 
   // Gold accent — logo, active states, premium touches
   gold: {
-    400: '#C4963C',
+    400: '#C9A84C',
     300: '#E8C468',
     200: '#F0D88A',
     100: '#FBF5E6',

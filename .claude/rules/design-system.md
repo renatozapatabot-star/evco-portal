@@ -1,96 +1,111 @@
 ---
-description: CRUZ Design System enforcement rules from the 23-section audit
+description: CRUZ Design System enforcement rules — cockpit dark theme standard
 paths:
   - "src/components/**/*"
-  - "src/app/dashboard/**/*"
   - "src/app/**/page.tsx"
   - "src/app/**/layout.tsx"
   - "tailwind.config*"
 ---
 
-# CRUZ Design System v5.0 Rules
+# CRUZ Design System — Cockpit Standard (April 2026)
 
-These rules encode the v5.0 spec. Warm light canvas, gold accent, Geist typography. **Any dark-mode references from earlier sessions are superseded.** Dark palette (#0A0A0A) is for PDF reports only.
+These rules encode the cockpit dark theme. All authenticated pages use `.cruz-dark`.
+Login is the only light-themed page. See `DESIGN_SYSTEM.md` for full token reference.
 
-## Color Tokens — No Exceptions
+## Color Tokens — Cockpit Theme
 
-v5.0 warm canvas (portal UI):
-- Page background/canvas: `#FAFAF8` (warm white)
-- Card/surface: `#FFFFFF` with `border border-[#E8E5E0]`
-- Elevated surface: `#FFFFFF` with shadow-sm
-- Border: `#E8E5E0` (warm gray)
-- Accent/Primary (gold): `#C9A84C` — primary buttons, active nav, branding, links
-- Accent hover: `#B8933B`
-- Text primary: `#1A1A1A`
-- Text secondary: `#6B6B6B`
-- Text muted: `#9B9B9B`
+All portal UI uses `.cruz-dark` CSS variable overrides:
+- Page canvas: `#111111` (flat, no gradients)
+- Card elevated: `#222222` (the standard card background)
+- Card base: `#1A1A1A`
+- Borders: `rgba(255,255,255,0.08)` (cards), `rgba(255,255,255,0.06)` (dividers)
+- Gold accent: `#C9A84C` — CTAs, active nav. ONE job only.
+- Gold text on dark: `#C9A84C` is fine (high contrast against #222222)
+- Text primary: `#E6EDF3` (light on dark)
+- Text secondary: `#8B949E`
+- Text muted: `#6E7681`
 
-Dark palette (`#0A0A0A`, `#111111`, `bg-slate-950`) is for **PDF report generation only** (EVCO audit skill). Never use dark palette classes in portal components.
+Never use light-theme tokens (#FAFAF8, #FFFFFF, #E8E5E0) in authenticated portal pages.
+No glassmorphism (backdrop-filter: blur) — solid elevated surfaces only.
 
-If you need a color not in this list, add it to `tailwind.config.ts` as a design token first. Never use arbitrary Tailwind values in component files without defining the token.
+## Card Pattern — CockpitCard
 
-## Status Badges — Global Mapping
+```
+Background:    var(--bg-elevated) = #222222
+Border:        1px solid rgba(255,255,255,0.08)
+Top border:    3px solid [urgency color: red/amber/green/gold]
+Border radius: 14px
+Padding:       16px (tight, Linear-inspired)
+Min height:    180px
+```
 
-This mapping is enforced across every page. No per-page custom colors:
+Urgency border colors:
+- Red: `rgba(220,38,38,0.7)` — urgent, action required
+- Amber: `rgba(217,119,6,0.6)` — monitor, attention needed
+- Green: `rgba(22,163,74,0.5)` — healthy, green check badge shown
+- Neutral: `rgba(201,168,76,0.4)` — informational, gold accent
 
-| Status | Tailwind | Use |
-|--------|----------|-----|
-| Active / En tránsito | `bg-amber-50 text-amber-700 border border-amber-200` | Tráfico active, in-transit |
-| Completed / Liberado | `bg-green-50 text-green-700 border border-green-200` | Cleared, paid, done |
-| Warning / Observación | `bg-orange-50 text-orange-700 border border-orange-200` | MVE approaching, partial docs |
-| Error / Rechazado | `bg-red-50 text-red-700 border border-red-200` | Failed, rejected, overdue |
-| Pending / En revisión | `bg-gray-50 text-gray-600 border border-gray-200` | Awaiting action |
+## Status Badges on Dark
 
-Use the `<StatusBadge status={status} />` component. Never inline badge styles.
+StatusBadge component adapts via `.cruz-dark` variable overrides:
+- Active: `bg-[--amber-50] text-amber-400 border-amber-800`
+- Completed: `bg-[--green-50] text-green-400 border-green-800`
+- Warning: `bg-[--amber-50] text-orange-400 border-orange-800`
+- Error: `bg-[--red-50] text-red-400 border-red-800`
+- Pending: `bg-[--slate-100] text-slate-400 border-slate-600`
 
-## Tables
+Use `<StatusBadge status={status} />` always. Never inline badge styles.
 
-- Every table MUST have an empty state: icon + message + CTA button.
-- Column headers: `text-gray-500 text-xs font-medium uppercase tracking-wider`.
-- Row hover: `hover:bg-[#F5F4F0]` (warm hover, not cold gray).
-- No empty columns. If a column has no data for the current view, hide it or show "—".
-- Sortable columns show sort indicator. Default sort must be meaningful (most recent first, highest priority first).
-- Table borders: `border-[#E8E5E0]`. Not slate or gray defaults.
+## Tables on Dark
 
-## Cards and Containers
-
-- Card pattern: `bg-white border border-[#E8E5E0] rounded-lg p-4 shadow-sm` (or p-6 for larger cards).
-- No nested cards with the same background. Inner elements use `bg-[#FAFAF8]` or subtle gold accent border.
-- Card spacing between cards: `gap-4` minimum.
+- Headers: `var(--bg-elevated)`, `--text-secondary`, 11px uppercase tracking-wider
+- Row even: `var(--bg-card)` = #1A1A1A
+- Row odd: `rgba(255,255,255,0.02)`
+- Row hover: `rgba(255,255,255,0.04)`
+- Borders: `rgba(255,255,255,0.06)`
+- Numbers: JetBrains Mono
+- Every table MUST have an empty state: icon + message + action on dark bg
+- Sortable columns show sort indicator
 
 ## Typography
 
-- Font family: `Geist` for all UI text. `Geist Mono` for data.
-- Headings: `font-semibold text-[#1A1A1A]`. Page titles: `text-2xl`. Section titles: `text-lg`.
-- Body: `text-sm text-[#6B6B6B]`.
-- Data values (pedimento numbers, fracciones, amounts): `font-mono` (Geist Mono).
-- Amounts/currency: right-aligned, `font-mono tabular-nums`.
+- Font: Geist Sans for text, JetBrains Mono for ALL data
+- Headings: 18px semibold, `--text-primary`
+- Section labels: 11px uppercase tracking-wider, `--text-muted` (Linear signature)
+- Body: 14px, `--text-secondary`
+- KPI values: JetBrains Mono, 28-32px weight 800, `--text-primary`
+- Data: JetBrains Mono, 13px, `--text-primary`
 
-## Spacing
+## Spacing (Linear-tight)
 
-4px grid. Use only: `p-1 p-2 p-3 p-4 p-6 p-8`. Same for margin and gap.
-No arbitrary spacing values.
+- Card padding: 16px
+- Card gap: 12px
+- Section gap: 16px
+- Page padding: 16px mobile, 48px desktop
+- 4px base grid. No arbitrary spacing values.
 
 ## Mobile
 
-- All layouts must work at 375px width.
-- Touch targets: minimum 44px × 44px.
-- Tables on mobile: horizontal scroll with sticky first column, OR card view.
-- Navigation: bottom nav on mobile, sidebar on desktop.
-- Test: resize browser to 375px before marking any UI task complete.
+- All layouts must work at 375px width
+- Touch targets: 60px minimum (border at 3 AM, not WCAG 44px)
+- Tables: horizontal scroll OR card view on mobile
+- Cards: single column, sorted by urgency (most urgent top)
+- Test at 375px before marking any UI task complete
 
 ## Micro-interactions
 
-- Loading states: skeleton loaders matching the layout shape, not spinners.
-- Error states: inline error with retry action, not just red text.
-- Success feedback: brief toast notification, auto-dismiss 3s.
-- Transitions: `transition-colors duration-150` on interactive elements.
+- Card hover: scale(1.005), border brightens, 150ms (barely perceptible)
+- Card tap: scale(0.97), haptic.micro()
+- Swipe-to-resolve: translateX with green reveal strip
+- Loading: skeleton loaders with dark shimmer (not spinners)
+- Entrance: stagger 30ms, translateY(6px), spring animation
+- prefers-reduced-motion: disable all springs, instant transitions
 
-## Operational Depth (the gap between "dashboard" and "tool")
+## Operational Depth
 
-Every data view must support in-context actions. A tráfico card should let the user:
-- See status at a glance (badge)
+Every data view must support in-context actions:
+- See status at a glance (urgency border + badge)
 - Click through to detail (cross-link)
-- Take the most common action without leaving the page (quick action button)
+- Take the most common action without leaving (gold action button or swipe)
 
 If a page is read-only with no actions, it's a dashboard, not a tool. CRUZ is a tool.

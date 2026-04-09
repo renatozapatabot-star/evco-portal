@@ -4,6 +4,8 @@ import type { OperatorData } from './shared/fetchCockpitData'
 import { NextUpHero } from './operator/NextUpHero'
 import { MyDayPanel } from './operator/MyDayPanel'
 import { BlockedPanel } from './operator/BlockedPanel'
+import { OperatorSearch } from './operator/OperatorSearch'
+import { PerformanceStrip } from './operator/PerformanceStrip'
 import { NewsBanner, buildOperatorItems } from './shared/NewsBanner'
 
 interface Props {
@@ -30,7 +32,7 @@ export function OperatorCockpit({ data, operatorName, operatorId }: Props) {
       <NewsBanner items={bannerItems} />
 
       {/* Header */}
-      <div style={{ marginBottom: 20 }}>
+      <div style={{ marginBottom: 12 }}>
         <h1 style={{
           fontSize: 18, fontWeight: 600, color: '#E6EDF3', margin: 0,
         }}>
@@ -40,6 +42,16 @@ export function OperatorCockpit({ data, operatorName, operatorId }: Props) {
           Tu panel de trabajo — CRUZ
         </p>
       </div>
+
+      {/* Performance strip */}
+      <PerformanceStrip
+        completedToday={data.performance.completedToday}
+        completedThisWeek={data.performance.completedThisWeek}
+        completedThisMonth={data.performance.completedThisMonth}
+      />
+
+      {/* Universal search */}
+      <OperatorSearch />
 
       {/* Single column, hero first */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 700 }}>

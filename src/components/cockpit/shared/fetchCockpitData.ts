@@ -57,6 +57,8 @@ export interface OperatorData {
     id: string; trafico: string; company: string
     description: string; valor_usd: number; arrived_ago: string
     suggestion: { decision_id: string; fraccion: string; confidence: number } | null
+    /** Document completeness for the next-up trafico */
+    docs: { total: number; present: number; missing: string[] } | null
   } | null
   myDay: {
     assigned: number; completed: number; inProgress: number
@@ -67,7 +69,15 @@ export interface OperatorData {
   blocked: Array<{
     id: string; trafico: string; reason: string
     type: 'waiting_doc' | 'waiting_approval'
+    /** Specific missing documents when type is waiting_doc */
+    missingDocs: string[]
   }>
+  /** Operator performance metrics */
+  performance: {
+    completedToday: number
+    completedThisWeek: number
+    completedThisMonth: number
+  }
 }
 
 export interface ClientData {
@@ -425,6 +435,21 @@ async function fetchOperatorData(operatorId: string): Promise<OperatorData> {
       .is('was_correct', null)
       .order('confidence', { ascending: true })
       .limit(10),
+    // 6: expediente docs for assigned traficos (doc completeness)
+    sb.from('expediente_documentos')
+      .select('pedimento_id, doc_type, company_id')
+      .limit(2000),
+    // 7: operator actions this week (performance)
+    sb.from('operator_actions')
+      .select('id, action_type, created_at')
+      .eq('operator_id', operatorId)
+      .gte('created_at', startOfWeek())
+      .limit(500),
+    // 8: operator actions this month (performance)
+    sb.from('operator_actions')
+      .select('id', { count: 'exact', head: true })
+      .eq('operator_id', operatorId)
+      .gte('created_at', startOfMonth(0)),
   ])
 
   const myTraficos = results[0].status === 'fulfilled' ? results[0].value.data ?? [] : []
@@ -459,6 +484,23 @@ async function fetchOperatorData(operatorId: string): Promise<OperatorData> {
       }
     }
 
+    // Doc completeness for next-up trafico
+    const REQUIRED_DOC_TYPES = ['factura_comercial', 'packing_list', 'conocimiento_embarque', 'cove', 'pedimento_detallado']
+    const allDocs = results[6].status === 'fulfilled' ? results[6].value.data ?? [] : []
+    const traficoId = first.trafico as string
+    const trafikoDocs = allDocs.filter((d: Record<string, unknown>) => {
+      const pid = String(d.pedimento_id || '')
+      return pid.includes(traficoId.split('-').pop() || '___none')
+    })
+    const presentTypes = new Set(trafikoDocs.map((d: Record<string, unknown>) => d.doc_type as string))
+    const missingDocTypes = REQUIRED_DOC_TYPES.filter(t => !presentTypes.has(t))
+
+    const docsInfo = {
+      total: REQUIRED_DOC_TYPES.length,
+      present: REQUIRED_DOC_TYPES.length - missingDocTypes.length,
+      missing: missingDocTypes.map(t => t.replace(/_/g, ' ')),
+    }
+
     nextUp = {
       id: first.id as string,
       trafico: first.trafico as string,
@@ -467,6 +509,7 @@ async function fetchOperatorData(operatorId: string): Promise<OperatorData> {
       valor_usd: Number(first.importe_total || 0),
       arrived_ago: arrivedStr,
       suggestion,
+      docs: docsInfo,
     }
   }
 
@@ -493,17 +536,39 @@ async function fetchOperatorData(operatorId: string): Promise<OperatorData> {
       ).length,
     }))
 
-  // Blocked items (traficos in waiting states)
+  // Blocked items with specific missing doc reasons
+  const REQUIRED_DOCS_SHORT = ['factura_comercial', 'packing_list', 'conocimiento_embarque', 'cove', 'pedimento_detallado']
+  const allDocsForBlocked = results[6].status === 'fulfilled' ? results[6].value.data ?? [] : []
+
   const blocked = myTraficos
     .filter((t: Record<string, unknown>) =>
       (t.estatus as string) === 'Documentacion'
     )
-    .map((t: Record<string, unknown>) => ({
-      id: t.id as string,
-      trafico: t.trafico as string,
-      reason: 'Esperando documentos',
-      type: 'waiting_doc' as const,
-    }))
+    .map((t: Record<string, unknown>) => {
+      const tid = (t.trafico as string) || ''
+      const suffix = tid.split('-').pop() || '___none'
+      const docs = allDocsForBlocked.filter((d: Record<string, unknown>) =>
+        String(d.pedimento_id || '').includes(suffix)
+      )
+      const present = new Set(docs.map((d: Record<string, unknown>) => d.doc_type as string))
+      const missing = REQUIRED_DOCS_SHORT.filter(dt => !present.has(dt))
+        .map(dt => dt.replace(/_/g, ' '))
+
+      return {
+        id: t.id as string,
+        trafico: t.trafico as string,
+        reason: missing.length > 0 ? `Falta: ${missing.join(', ')}` : 'Esperando documentos',
+        type: 'waiting_doc' as const,
+        missingDocs: missing,
+      }
+    })
+
+  // Performance metrics
+  const weekActions = results[7].status === 'fulfilled' ? results[7].value.data ?? [] : []
+  const monthActionCount = results[8].status === 'fulfilled' ? results[8].value.count ?? 0 : 0
+  const completedWeek = weekActions.filter(
+    (a: Record<string, unknown>) => a.action_type === 'vote_classification' || a.action_type === 'complete_trafico'
+  ).length
 
   return {
     nextUp,
@@ -511,6 +576,11 @@ async function fetchOperatorData(operatorId: string): Promise<OperatorData> {
     teamStats,
     unassignedCount: unassignedResult?.count ?? 0,
     blocked,
+    performance: {
+      completedToday: completedActions,
+      completedThisWeek: completedWeek,
+      completedThisMonth: monthActionCount,
+    },
   }
 }
 
@@ -670,6 +740,7 @@ export async function fetchCockpitData(
       nextUp: null,
       myDay: { assigned: 0, completed: 0, inProgress: 0, nextDeadline: null },
       teamStats: [], unassignedCount: 0, blocked: [],
+      performance: { completedToday: 0, completedThisWeek: 0, completedThisMonth: 0 },
     })
     return { operator: operator.data }
   }

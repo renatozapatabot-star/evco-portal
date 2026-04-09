@@ -73,6 +73,38 @@ export function NextUpHero({ nextUp, operatorId }: Props) {
             </div>
           </div>
 
+          {/* Document checklist */}
+          {nextUp.docs && (
+            <div style={{
+              background: 'rgba(255,255,255,0.03)', borderRadius: 10,
+              padding: '10px 14px', border: '1px solid rgba(255,255,255,0.06)',
+              marginBottom: 8,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                <span style={{ fontSize: 11, color: '#8B949E' }}>Documentos:</span>
+                <span className="font-mono" style={{
+                  fontSize: 12, fontWeight: 600,
+                  color: nextUp.docs.present === nextUp.docs.total ? '#16A34A' : nextUp.docs.missing.length > 2 ? '#DC2626' : '#D97706',
+                }}>
+                  {nextUp.docs.present}/{nextUp.docs.total}
+                </span>
+                {/* Progress bar */}
+                <div style={{ flex: 1, height: 4, background: 'rgba(255,255,255,0.08)', borderRadius: 2 }}>
+                  <div style={{
+                    width: `${(nextUp.docs.present / nextUp.docs.total) * 100}%`,
+                    height: '100%', borderRadius: 2,
+                    background: nextUp.docs.present === nextUp.docs.total ? '#16A34A' : '#C9A84C',
+                  }} />
+                </div>
+              </div>
+              {nextUp.docs.missing.length > 0 && (
+                <div style={{ fontSize: 11, color: '#D97706' }}>
+                  Falta: {nextUp.docs.missing.join(', ')}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* AI suggestion */}
           {nextUp.suggestion && (
             <div style={{

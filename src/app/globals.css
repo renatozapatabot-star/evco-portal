@@ -3477,11 +3477,21 @@ input:focus, select:focus, textarea:focus {
   .urgency-critical,
   .urgency-overdue,
   .ring-approaching,
-  .mood-ceremony {
+  .mood-ceremony,
+  .cruz-pulse-subtle {
     animation: none !important;
   }
   .cc-offline-banner,
   .cc-online-banner {
     animation: none !important;
   }
+}
+
+/* IfThenCard subtle pulse for urgent state */
+@keyframes cruzPulseSubtle {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.92; }
+}
+.cruz-pulse-subtle {
+  animation: cruzPulseSubtle 2.5s ease-in-out infinite;
 }

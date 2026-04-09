@@ -2,6 +2,8 @@
 
 import { fmtMXNCompact, fmtDelta } from '../shared/formatters'
 import type { ClientData } from '../shared/fetchCockpitData'
+import { IfThenCard } from '../shared/IfThenCard'
+import { computeFinancialState } from '../shared/cardStates'
 
 interface Props {
   financial: ClientData['financial']
@@ -10,72 +12,46 @@ interface Props {
 export function FinancialPanel({ financial }: Props) {
   const facturadoDelta = fmtDelta(financial.facturadoThisMonth, financial.facturadoLastMonth)
   const arancelesDelta = fmtDelta(financial.arancelesThisMonth, financial.arancelesLastMonth)
+  const cardState = computeFinancialState(financial.facturadoThisMonth, financial.facturadoLastMonth)
 
   return (
-    <div style={{
-      display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-      gap: 12,
-    }}>
-      {/* Facturado */}
-      <div style={{
-        background: '#222222', borderRadius: 14,
-        border: '1px solid rgba(255,255,255,0.08)',
-        borderTop: '3px solid rgba(201,168,76,0.4)',
-        padding: 16,
-      }}>
-        <div style={{
-          fontSize: 11, fontWeight: 600, textTransform: 'uppercase',
-          letterSpacing: '0.05em', color: '#6E7681', marginBottom: 8,
-        }}>
-          Financiero — este mes
+    <IfThenCard
+      id="client-financial"
+      state={cardState.state}
+      title="Financiero"
+      activeCondition={cardState.activeCondition}
+      activeAction={cardState.activeAction}
+      urgentCondition={cardState.urgentCondition}
+      urgentAction={cardState.urgentAction}
+      actionHref="/financiero"
+      quietContent={
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
+          <div>
+            <div className="font-mono" style={{ fontSize: 24, fontWeight: 800, color: '#E6EDF3', lineHeight: 1 }}>
+              {fmtMXNCompact(financial.facturadoThisMonth) || '$0 MXN'}
+            </div>
+            <div style={{ fontSize: 12, color: '#8B949E', marginTop: 4 }}>facturado este mes</div>
+            <div className="font-mono" style={{
+              fontSize: 13, marginTop: 2,
+              color: facturadoDelta.startsWith('▲') ? '#16A34A' : facturadoDelta.startsWith('▼') ? '#DC2626' : '#8B949E',
+            }}>
+              {facturadoDelta} vs mes anterior
+            </div>
+          </div>
+          <div>
+            <div className="font-mono" style={{ fontSize: 24, fontWeight: 800, color: '#E6EDF3', lineHeight: 1 }}>
+              {fmtMXNCompact(financial.arancelesThisMonth) || '$0 MXN'}
+            </div>
+            <div style={{ fontSize: 12, color: '#8B949E', marginTop: 4 }}>aranceles pagados</div>
+            <div className="font-mono" style={{
+              fontSize: 13, marginTop: 2,
+              color: arancelesDelta.startsWith('▲') ? '#DC2626' : arancelesDelta.startsWith('▼') ? '#16A34A' : '#8B949E',
+            }}>
+              {arancelesDelta} vs mes anterior
+            </div>
+          </div>
         </div>
-        <div className="font-mono" style={{
-          fontSize: 28, fontWeight: 800, color: '#E6EDF3', lineHeight: 1,
-        }}>
-          {fmtMXNCompact(financial.facturadoThisMonth) || '$0 MXN'}
-        </div>
-        <div style={{ fontSize: 12, color: '#8B949E', marginTop: 4 }}>
-          facturado
-        </div>
-        <div className="font-mono" style={{
-          fontSize: 13,
-          color: facturadoDelta.startsWith('▲') ? '#16A34A' : facturadoDelta.startsWith('▼') ? '#DC2626' : '#8B949E',
-          marginTop: 4,
-        }}>
-          {facturadoDelta} vs mes anterior
-        </div>
-      </div>
-
-      {/* Aranceles */}
-      <div style={{
-        background: '#222222', borderRadius: 14,
-        border: '1px solid rgba(255,255,255,0.08)',
-        borderTop: '3px solid rgba(201,168,76,0.4)',
-        padding: 16,
-      }}>
-        <div style={{
-          fontSize: 11, fontWeight: 600, textTransform: 'uppercase',
-          letterSpacing: '0.05em', color: '#6E7681', marginBottom: 8,
-        }}>
-          Aranceles — este mes
-        </div>
-        <div className="font-mono" style={{
-          fontSize: 28, fontWeight: 800, color: '#E6EDF3', lineHeight: 1,
-        }}>
-          {fmtMXNCompact(financial.arancelesThisMonth) || '$0 MXN'}
-        </div>
-        <div style={{ fontSize: 12, color: '#8B949E', marginTop: 4 }}>
-          aranceles pagados
-        </div>
-        <div className="font-mono" style={{
-          fontSize: 13,
-          color: arancelesDelta.startsWith('▲') ? '#DC2626' : arancelesDelta.startsWith('▼') ? '#16A34A' : '#8B949E',
-          marginTop: 4,
-        }}>
-          {arancelesDelta} vs mes anterior
-        </div>
-      </div>
-    </div>
+      }
+    />
   )
 }

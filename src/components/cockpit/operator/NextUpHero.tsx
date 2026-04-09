@@ -6,6 +6,7 @@ import type { OperatorData } from '../shared/fetchCockpitData'
 import { IfThenCard } from '../shared/IfThenCard'
 import { CruzRecommendation } from '../shared/CruzRecommendation'
 import { computeNextUp } from '../shared/computeNextUp'
+import { approveClassification } from '@/app/actions/reviewer'
 
 interface Props {
   data: OperatorData
@@ -114,7 +115,10 @@ export function NextUpHero({ data, operatorName }: Props) {
                 recommendation={`Clasificar como ${nextUp.suggestion.fraccion}`}
                 confidence={nextUp.suggestion.confidence}
                 approveLabel="Confirmar clasificación"
-                approveHref="/clasificar"
+                onApprove={async () => {
+                  const result = await approveClassification(nextUp.suggestion!.decision_id, nextUp.suggestion!.fraccion)
+                  if (!result.ok) { /* error handled by sound/haptic in CruzRecommendation */ }
+                }}
                 reviewLabel="Revisar"
                 reviewHref={`/traficos/${encodeURIComponent(nextUp.trafico)}`}
                 reasoning={[

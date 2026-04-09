@@ -4,7 +4,9 @@ import Link from 'next/link'
 import { fmtUSDCompact } from '../shared/formatters'
 import type { AdminData } from '../shared/fetchCockpitData'
 import { IfThenCard } from '../shared/IfThenCard'
+import { CruzRecommendation } from '../shared/CruzRecommendation'
 import { computeQueueState } from '../shared/cardStates'
+import { takeTrafico } from '@/app/actions/reviewer'
 
 interface Props {
   queue: AdminData['smartQueue']
@@ -51,6 +53,18 @@ export function SmartQueuePanel({ queue, onItemClick }: Props) {
           </div>
         )
       }
+      footer={queue.length > 0 ? (
+        <CruzRecommendation
+          compact
+          recommendation={`Asignar ${queue[0].trafico} al siguiente operador disponible`}
+          confidence={82}
+          approveLabel="Asignar"
+          onApprove={async () => {
+            const first = queue[0]
+            if (first) await takeTrafico(String(first.valor_usd), first.trafico)
+          }}
+        />
+      ) : undefined}
     />
   )
 }

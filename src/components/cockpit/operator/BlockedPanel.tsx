@@ -5,6 +5,7 @@ import type { OperatorData } from '../shared/fetchCockpitData'
 import { IfThenCard } from '../shared/IfThenCard'
 import { CruzRecommendation } from '../shared/CruzRecommendation'
 import { computeBlockedState } from '../shared/cardStates'
+import { escalateBlocked } from '@/app/actions/reviewer'
 
 interface Props {
   blocked: OperatorData['blocked']
@@ -58,10 +59,14 @@ export function BlockedPanel({ blocked, operatorId, onClear }: Props) {
       footer={blocked.length > 0 ? (
         <CruzRecommendation
           compact
-          recommendation={`CRUZ recomienda enviar recordatorio a ${blocked.length} proveedor${blocked.length !== 1 ? 'es' : ''}`}
+          recommendation={`CRUZ recomienda escalar ${blocked.length} bloqueo${blocked.length !== 1 ? 's' : ''}`}
           confidence={80}
-          approveLabel="Enviar"
-          approveHref="/traficos?estatus=Documentacion"
+          approveLabel="Escalar"
+          onApprove={async () => {
+            for (const b of blocked) {
+              await escalateBlocked(b.id, b.trafico, b.reason)
+            }
+          }}
         />
       ) : undefined}
     />

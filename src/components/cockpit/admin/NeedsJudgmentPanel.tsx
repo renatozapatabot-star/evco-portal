@@ -6,6 +6,7 @@ import type { AdminData } from '../shared/fetchCockpitData'
 import { IfThenCard } from '../shared/IfThenCard'
 import { CruzRecommendation } from '../shared/CruzRecommendation'
 import { computeEscalationState } from '../shared/cardStates'
+import { approveDraft } from '@/app/actions/reviewer'
 
 interface Props {
   escalations: AdminData['escalations']
@@ -66,11 +67,16 @@ export function NeedsJudgmentPanel({ escalations }: Props) {
           compact
           recommendation={overdue.length > 0
             ? `${overdue.length} vencida${overdue.length !== 1 ? 's' : ''} — resolver primero`
-            : `${escalations.length} pendiente${escalations.length !== 1 ? 's' : ''} — revisar borradores`
+            : `${escalations.length} pendiente${escalations.length !== 1 ? 's' : ''} — aprobar borrador`
           }
           confidence={overdue.length > 0 ? 65 : 85}
-          approveLabel={overdue.length > 0 ? 'Resolver' : 'Revisar'}
-          approveHref="/drafts"
+          approveLabel={overdue.length > 0 ? 'Resolver' : 'Aprobar'}
+          onApprove={async () => {
+            const first = escalations[0]
+            if (first) await approveDraft(first.id)
+          }}
+          reviewLabel="Ver todos"
+          reviewHref="/drafts"
         />
       ) : undefined}
     />

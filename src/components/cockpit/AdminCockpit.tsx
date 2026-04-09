@@ -12,6 +12,7 @@ import { IntelligenceCard } from './admin/IntelligenceCard'
 import { PipelineFinanceCard } from './admin/PipelineFinanceCard'
 import { WeeklyTrendCard } from './admin/WeeklyTrendCard'
 import { TeamActivityFeed } from './admin/TeamActivityFeed'
+import { DecisionesPendientesCard } from './admin/DecisionesPendientesCard'
 import { RightRail } from './admin/RightRail'
 import { SlideOver } from './shared/SlideOver'
 import { NewsBanner, buildAdminItems } from './shared/NewsBanner'
@@ -258,6 +259,7 @@ export function AdminCockpit({ data, operatorName }: Props) {
             <WeeklyTrendCard trend={data.weeklyTrend} />
           </div>
 
+          <DecisionesPendientesCard escalations={data.escalations} queue={data.smartQueue} />
           <TeamLivePanel />
           <TeamActivityFeed />
           <ClientsTablePanel companies={data.companies} />

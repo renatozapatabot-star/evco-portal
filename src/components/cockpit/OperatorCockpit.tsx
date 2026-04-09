@@ -11,7 +11,7 @@ import { PerformanceStrip } from './operator/PerformanceStrip'
 import { EntradasCard } from './operator/EntradasCard'
 import { ClassificationsCard } from './operator/ClassificationsCard'
 import { BridgeCard } from './operator/BridgeCard'
-import { ExchangeRateCard } from './operator/ExchangeRateCard'
+import { ProximasAccionesCard } from './operator/ProximasAccionesCard'
 import { CardClearAnimation, getClearVariant } from './shared/CardClearAnimation'
 import { DueloDelDia } from './operator/DueloDelDia'
 import { NewsBanner, buildOperatorItems } from './shared/NewsBanner'
@@ -118,10 +118,10 @@ export function OperatorCockpit({ data, operatorName, operatorId }: Props) {
           operatorId={operatorId}
         />
 
-        {/* Row: Bridges + Exchange Rate */}
+        {/* Row: Bridges + Próximas Acciones */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 12 }}>
           <BridgeCard />
-          <ExchangeRateCard />
+          <ProximasAccionesCard data={data} />
         </div>
 
         {/* Blocked traficos */}

@@ -69,15 +69,15 @@ export default function CambiarContrasena() {
     return (
       <div style={{
         minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: 'var(--bg-primary, #FAFAF8)', padding: 16,
+        background: '#111111', padding: 16,
       }}>
         <div style={{
           maxWidth: 400, width: '100%', textAlign: 'center',
-          background: 'var(--bg-card, #FFFFFF)', border: '1px solid var(--border, #E8E5E0)',
+          background: '#222222', border: '1px solid rgba(255,255,255,0.08)',
           borderRadius: 12, padding: 32,
         }}>
           <CheckCircle size={48} style={{ color: 'var(--success-500, #16A34A)', margin: '0 auto 16px' }} />
-          <h2 style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary, #1A1A1A)', marginBottom: 8 }}>
+          <h2 style={{ fontSize: 18, fontWeight: 600, color: '#E6EDF3', marginBottom: 8 }}>
             Contraseña actualizada
           </h2>
           <p style={{ fontSize: 14, color: 'var(--text-secondary, #6B6B6B)' }}>
@@ -91,16 +91,16 @@ export default function CambiarContrasena() {
   return (
     <div style={{
       minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: 'var(--bg-primary, #FAFAF8)', padding: 16,
+      background: '#111111', padding: 16,
     }}>
       <form onSubmit={handleSubmit} style={{
         maxWidth: 400, width: '100%',
-        background: 'var(--bg-card, #FFFFFF)', border: '1px solid var(--border, #E8E5E0)',
+        background: '#222222', border: '1px solid rgba(255,255,255,0.08)',
         borderRadius: 12, padding: 32,
       }}>
         <div style={{ textAlign: 'center', marginBottom: 24 }}>
           <Lock size={32} style={{ color: 'var(--gold, #C9A84C)', margin: '0 auto 12px' }} />
-          <h1 style={{ fontSize: 20, fontWeight: 600, color: 'var(--text-primary, #1A1A1A)', marginBottom: 4 }}>
+          <h1 style={{ fontSize: 20, fontWeight: 600, color: '#E6EDF3', marginBottom: 4 }}>
             Cambiar contraseña
           </h1>
           {companyName && (
@@ -121,7 +121,7 @@ export default function CambiarContrasena() {
 
         {/* Current password */}
         <label style={{ display: 'block', marginBottom: 16 }}>
-          <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary, #1A1A1A)', display: 'block', marginBottom: 6 }}>
+          <span style={{ fontSize: 13, fontWeight: 500, color: '#E6EDF3', display: 'block', marginBottom: 6 }}>
             Contraseña actual
           </span>
           <div style={{ position: 'relative' }}>
@@ -133,8 +133,8 @@ export default function CambiarContrasena() {
               autoComplete="current-password"
               style={{
                 width: '100%', padding: '12px 44px 12px 12px', fontSize: 15,
-                border: '1px solid var(--border, #E8E5E0)', borderRadius: 8,
-                background: 'var(--bg-primary, #FAFAF8)', minHeight: 60,
+                border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8,
+                background: '#111111', minHeight: 60,
                 boxSizing: 'border-box',
               }}
             />
@@ -144,7 +144,7 @@ export default function CambiarContrasena() {
               style={{
                 position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
                 background: 'none', border: 'none', cursor: 'pointer', padding: 8,
-                color: 'var(--text-muted, #9B9B9B)', minHeight: 44, minWidth: 44,
+                color: '#6E7681', minHeight: 44, minWidth: 44,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}
               aria-label={showCurrent ? 'Ocultar' : 'Mostrar'}
@@ -156,7 +156,7 @@ export default function CambiarContrasena() {
 
         {/* New password */}
         <label style={{ display: 'block', marginBottom: 16 }}>
-          <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary, #1A1A1A)', display: 'block', marginBottom: 6 }}>
+          <span style={{ fontSize: 13, fontWeight: 500, color: '#E6EDF3', display: 'block', marginBottom: 6 }}>
             Nueva contraseña
           </span>
           <div style={{ position: 'relative' }}>
@@ -169,8 +169,8 @@ export default function CambiarContrasena() {
               autoComplete="new-password"
               style={{
                 width: '100%', padding: '12px 44px 12px 12px', fontSize: 15,
-                border: '1px solid var(--border, #E8E5E0)', borderRadius: 8,
-                background: 'var(--bg-primary, #FAFAF8)', minHeight: 60,
+                border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8,
+                background: '#111111', minHeight: 60,
                 boxSizing: 'border-box',
               }}
             />
@@ -180,7 +180,7 @@ export default function CambiarContrasena() {
               style={{
                 position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
                 background: 'none', border: 'none', cursor: 'pointer', padding: 8,
-                color: 'var(--text-muted, #9B9B9B)', minHeight: 44, minWidth: 44,
+                color: '#6E7681', minHeight: 44, minWidth: 44,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}
               aria-label={showNew ? 'Ocultar' : 'Mostrar'}
@@ -197,7 +197,7 @@ export default function CambiarContrasena() {
 
         {/* Confirm password */}
         <label style={{ display: 'block', marginBottom: 24 }}>
-          <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary, #1A1A1A)', display: 'block', marginBottom: 6 }}>
+          <span style={{ fontSize: 13, fontWeight: 500, color: '#E6EDF3', display: 'block', marginBottom: 6 }}>
             Confirmar nueva contraseña
           </span>
           <div style={{ position: 'relative' }}>
@@ -209,14 +209,14 @@ export default function CambiarContrasena() {
               autoComplete="new-password"
               style={{
                 width: '100%', padding: 12, paddingRight: 48, fontSize: 15,
-                border: `1px solid ${confirmPw && confirmPw !== newPw ? 'var(--red-500, #DC2626)' : 'var(--border, #E8E5E0)'}`,
-                borderRadius: 8, background: 'var(--bg-primary, #FAFAF8)', minHeight: 60,
+                border: `1px solid ${confirmPw && confirmPw !== newPw ? 'var(--red-500, #DC2626)' : 'rgba(255,255,255,0.08)'}`,
+                borderRadius: 8, background: '#111111', minHeight: 60,
                 boxSizing: 'border-box',
               }}
             />
             <button type="button" onClick={() => setShowConfirm(!showConfirm)} style={{
               position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
-              background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted, #6E7681)', padding: 4,
+              background: 'none', border: 'none', cursor: 'pointer', color: '#8B949E', padding: 4,
             }}>
               {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
@@ -241,8 +241,8 @@ export default function CambiarContrasena() {
           disabled={!isValid || loading}
           style={{
             width: '100%', padding: 14, fontSize: 15, fontWeight: 600,
-            background: isValid && !loading ? 'var(--gold, #C9A84C)' : 'var(--border, #E8E5E0)',
-            color: isValid && !loading ? '#FFFFFF' : 'var(--text-muted, #9B9B9B)',
+            background: isValid && !loading ? 'var(--gold, #C9A84C)' : 'rgba(255,255,255,0.08)',
+            color: isValid && !loading ? '#FFFFFF' : '#6E7681',
             border: 'none', borderRadius: 8, cursor: isValid && !loading ? 'pointer' : 'not-allowed',
             minHeight: 60, transition: 'background 150ms',
           }}

@@ -14,6 +14,8 @@ import { BridgeCard } from './operator/BridgeCard'
 import { ProximasAccionesCard } from './operator/ProximasAccionesCard'
 import { CardClearAnimation, getClearVariant } from './shared/CardClearAnimation'
 import { DueloDelDia } from './operator/DueloDelDia'
+import { FlowMode } from './shared/FlowMode'
+import { useReviewerShortcuts, ReviewerShortcutHelp } from '@/hooks/use-reviewer-shortcuts'
 import { NewsBanner, buildOperatorItems } from './shared/NewsBanner'
 
 interface Props {
@@ -25,6 +27,13 @@ interface Props {
 export function OperatorCockpit({ data, operatorName, operatorId }: Props) {
   const hour = new Date().getHours()
   const greeting = hour < 12 ? 'Buenos días' : hour < 18 ? 'Buenas tardes' : 'Buenas noches'
+  const [flowModeOpen, setFlowModeOpen] = useState(false)
+
+  // Keyboard shortcuts
+  useReviewerShortcuts({
+    onToggleFlow: () => setFlowModeOpen(f => !f),
+    enabled: !flowModeOpen,
+  })
 
   // Card clear tracking
   const [clearCount, setClearCount] = useState(data.performance.completedToday)
@@ -126,7 +135,45 @@ export function OperatorCockpit({ data, operatorName, operatorId }: Props) {
 
         {/* Blocked traficos */}
         <BlockedPanel blocked={data.blocked} operatorId={operatorId} onClear={() => handleCardClear('blocked')} />
+
+        {/* Flow mode toggle */}
+        <button
+          onClick={() => setFlowModeOpen(true)}
+          style={{
+            width: '100%', padding: '14px 20px', borderRadius: 10, marginTop: 8,
+            background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.2)',
+            color: '#C9A84C', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+            minHeight: 60, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+          }}
+        >
+          ⚡ Modo flujo — revisar todo en secuencia (F)
+        </button>
       </div>
+
+      {/* Flow mode overlay */}
+      {flowModeOpen && (
+        <FlowMode
+          items={[
+            ...(data.nextUp ? [{
+              id: 'mi-turno',
+              label: `MI TURNO · ${data.nextUp.trafico}`,
+              recommendation: data.nextUp.suggestion ? `Clasificar como ${data.nextUp.suggestion.fraccion}` : 'Revisar tráfico',
+              confidence: data.nextUp.suggestion?.confidence ?? 80,
+            }] : []),
+            ...data.blocked.map(b => ({
+              id: `blocked-${b.id}`,
+              label: `Bloqueado · ${b.trafico}`,
+              recommendation: b.missingDocs.length > 0 ? `Falta: ${b.missingDocs.join(', ')}` : b.reason,
+              confidence: 80,
+            })),
+          ]}
+          onClose={() => setFlowModeOpen(false)}
+          operatorName={operatorName}
+        />
+      )}
+
+      {/* Keyboard shortcut help */}
+      <ReviewerShortcutHelp />
     </div>
   )
 }

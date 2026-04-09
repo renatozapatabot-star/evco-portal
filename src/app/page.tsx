@@ -169,6 +169,10 @@ function BrokerView() {
   const [bridges, setBridges] = useState<BridgeTime[]>([])
   const [predictionsCount, setPredictionsCount] = useState(0)
   const [savingsUsd, setSavingsUsd] = useState(0)
+  const [partidasTotal, setPartidasTotal] = useState(0)
+  const [partidasConFraccion, setPartidasConFraccion] = useState(0)
+  const [productosTotal, setProductosTotal] = useState(0)
+  const [productosClasificados, setProductosClasificados] = useState(0)
   const companyName = typeof document !== 'undefined'
     ? (getCookieValue('company_name') ?? '')
     : ''
@@ -198,7 +202,9 @@ function BrokerView() {
       fetch(`/api/data?${draftParams}`).then(r => r.json()),
       fetch('/api/data?table=po_predictions&limit=100').then(r => r.json()).catch(() => ({ data: [] })),
       fetch('/api/cost-savings').then(r => r.json()).catch(() => ({ total_estimated_usd: 0 })),
-    ]).then(([trafData, compData, entData, bridgeData, pipeData, draftData, predData, savingsData]) => {
+      fetch('/api/data?table=globalpc_partidas&limit=10000').then(r => r.json()).catch(() => ({ data: [] })),
+      fetch('/api/data?table=globalpc_productos&limit=10000').then(r => r.json()).catch(() => ({ data: [] })),
+    ]).then(([trafData, compData, entData, bridgeData, pipeData, draftData, predData, savingsData, partidasData, productosData]) => {
       const allTraficos: TraficoRow[] = trafData.data ?? []
       const active = allTraficos.filter(t => !(t.estatus || '').toLowerCase().includes('cruz'))
       setActiveCount(active.length)
@@ -326,6 +332,16 @@ function BrokerView() {
 
       // Store savings
       setSavingsUsd(savingsData?.total_estimated_usd || savingsData?.summary?.total_estimated_usd || 0)
+
+      // Store Anexo 24 health (partidas with/without fraccion)
+      const partidas = (partidasData.data ?? []) as { fraccion_arancelaria?: string | null; fraccion?: string | null }[]
+      setPartidasTotal(partidas.length)
+      setPartidasConFraccion(partidas.filter(p => p.fraccion_arancelaria || p.fraccion).length)
+
+      // Store Catálogo health (productos classified)
+      const productos = (productosData.data ?? []) as { fraccion?: string | null; fraccion_classified_at?: string | null }[]
+      setProductosTotal(productos.length)
+      setProductosClasificados(productos.filter(p => p.fraccion || p.fraccion_classified_at).length)
 
       // Sort: urgent → draft → today → new → bridge, max 10
       const typeOrder: Record<string, number> = { urgent: 0, draft: 1, today: 2, new: 3, bridge: 4 }
@@ -504,6 +520,8 @@ function BrokerView() {
           { href: '/traficos?pipeline_stage=ready_to_file', value: readyToFile, label: 'Listos despacho', color: 'var(--purple-500)', dim: false },
           ...(predictionsCount > 0 ? [{ href: '/predicciones', value: predictionsCount, label: 'Previstos 30d', color: 'var(--teal, #0D9488)', dim: false }] : []),
           ...(savingsUsd > 0 ? [{ href: '/ahorro', value: `$${Math.round(savingsUsd / 1000)}K`, label: 'Ahorro estimado', color: 'var(--gold)', dim: false }] : []),
+          ...(partidasTotal > 0 ? [{ href: '/anexo24', value: partidasTotal.toLocaleString(), label: `Anexo 24 · ${partidasTotal > 0 ? Math.round(partidasConFraccion / partidasTotal * 100) : 0}%`, color: partidasConFraccion / Math.max(1, partidasTotal) > 0.9 ? 'var(--success)' : 'var(--warning-500, #D97706)', dim: false }] : []),
+          ...(productosTotal > 0 ? [{ href: '/catalogo', value: productosTotal.toLocaleString(), label: `Catálogo · ${productosTotal > 0 ? Math.round(productosClasificados / productosTotal * 100) : 0}%`, color: productosClasificados / Math.max(1, productosTotal) > 0.9 ? 'var(--success)' : productosClasificados / Math.max(1, productosTotal) > 0.5 ? 'var(--warning-500, #D97706)' : 'var(--danger-500)', dim: false }] : []),
         ].map(kpi => (
           <Link key={kpi.label} href={kpi.href} style={{ textDecoration: 'none', color: 'inherit' }}>
             <div className={`kpi-card${items.length === 0 ? ' allgreen' : ''}`} style={{ borderTop: `3px solid ${kpi.color}`, textAlign: 'center' }}>

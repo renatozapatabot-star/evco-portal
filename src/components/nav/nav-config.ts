@@ -6,6 +6,7 @@ import {
   History, Clock, ClipboardList,
   Warehouse, Bot, Rocket, Tags, Layers, TrendingUp, Search,
   Mail, FileEdit, Activity, Radio, Phone, Code, Briefcase, Mic, Brain,
+  FileSpreadsheet,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -140,6 +141,8 @@ export const CLIENT_NAV: NavTopLevel[] = [
   { href: '/entradas',     label: 'Entradas',             icon: Package },
   { href: '/pedimentos',   label: 'Pedimentos',           icon: FileText },
   { href: '/expedientes',  label: 'Expedientes Digitales', icon: FolderOpen },
+  { href: '/catalogo',     label: 'Catálogo',             icon: Tags },
+  { href: '/anexo24',      label: 'Anexo 24',             icon: FileSpreadsheet },
   { href: '/bodega',       label: 'Inventario',           icon: Warehouse },
   { href: '/reportes',     label: 'Reportes',             icon: BarChart3 },
   { href: '/financiero',   label: 'Financiero',           icon: DollarSign },

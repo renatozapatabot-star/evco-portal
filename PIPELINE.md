@@ -88,17 +88,17 @@ Missing docs → auto-request email → escalation if no response.
 ---
 
 ## STEP 5: DRAFT
-**Status: 🟡 PARTIAL — BLOCKED ON API CREDITS**
+**Status: 🟢 READY — API credits funded**
 **Owner: pedimento-drafter + confidence score**
 
 | Component | Status | Details |
 |-----------|--------|---------|
 | pedimento_drafts table | ✅ live | 131 drafts, 68 stale >48h |
-| Draft creation (Sonnet) | 🟡 blocked | API credits exhausted |
+| Draft creation (Sonnet) | ✅ ready | API credits funded (April 2026) |
 | Confidence score | 🟡 designed | 3-tier system built |
 | CRUZ AI error handling | ✅ fixed | Clear billing/rate limit messages |
 
-**Next:** Replenish Anthropic credits. Test live draft creation.
+**Next:** Test live draft creation end-to-end.
 
 ---
 

@@ -61,3 +61,23 @@ export function getCardUrgency(card: CardKey, data: CardKPIs): Urgency {
 export function sortByUrgency<T extends { urgency: Urgency }>(cards: T[]): T[] {
   return [...cards].sort((a, b) => URGENCY_SORT[a.urgency] - URGENCY_SORT[b.urgency])
 }
+
+// ── Urgency Intensity — escalates with age ──
+export type UrgencyIntensity = 'normal' | 'elevated' | 'critical' | 'overdue'
+
+export function getUrgencyIntensity(urgency: Urgency, oldestUrgentDate: string | null): UrgencyIntensity {
+  if (urgency !== 'red' && urgency !== 'amber') return 'normal'
+  if (!oldestUrgentDate) return 'normal'
+  const days = (Date.now() - new Date(oldestUrgentDate).getTime()) / 86400000
+  if (urgency === 'red' && days > 5) return 'overdue'
+  if (days > 3) return 'critical'
+  if (days > 1) return 'elevated'
+  return 'normal'
+}
+
+export const INTENSITY_CSS_CLASS: Record<UrgencyIntensity, string> = {
+  normal: '',
+  elevated: 'urgency-elevated',
+  critical: 'urgency-critical',
+  overdue: 'urgency-overdue',
+}

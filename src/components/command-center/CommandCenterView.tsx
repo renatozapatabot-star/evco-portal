@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useReducedMotion } from 'framer-motion'
 import Link from 'next/link'
 import { useCommandCenterData } from '@/hooks/use-command-center-data'
 import { useActivityPulse } from '@/hooks/use-activity-pulse'
@@ -9,6 +10,9 @@ import { useIsMobile } from '@/hooks/use-mobile'
 import { useStatusSentence } from '@/hooks/use-status-sentence'
 import { usePullRefreshV2 } from '@/hooks/use-pull-refresh-v2'
 import { playSound } from '@/lib/sounds'
+import { haptic } from '@/hooks/use-haptic'
+import { useNetworkStatus } from '@/hooks/use-network-status'
+import { getCookieValue } from '@/lib/client-config'
 import { WorkflowGrid } from './WorkflowGrid'
 import { ActivityPulseSection } from './ActivityPulseSection'
 import { PullRefreshIndicator } from '@/components/broker/PullRefreshIndicator'
@@ -45,22 +49,42 @@ function useRealtimeToast(lastUpdate: { trafico: string; estatus: string } | nul
   return toast
 }
 
-// ── Progress Ring SVG ──
-function ProgressRing({ pct, size = 56 }: { pct: number; size?: number }) {
+// ── Progress Ring SVG with animated count-up ──
+function ProgressRing({ pct, size = 56, animate = false }: { pct: number; size?: number; animate?: boolean }) {
   const stroke = 4
   const radius = (size - stroke) / 2
   const circ = 2 * Math.PI * radius
-  const offset = circ - (pct / 100) * circ
-  const color = pct === 100 ? '#16A34A' : 'var(--gold, #C9A84C)'
+  const [displayPct, setDisplayPct] = useState(animate ? 0 : pct)
+  const rafRef = useRef<number>(0)
+
+  useEffect(() => {
+    if (!animate || pct === 0) { setDisplayPct(pct); return }
+    const start = performance.now()
+    const duration = 800
+    const step = (now: number) => {
+      const elapsed = now - start
+      const progress = Math.min(elapsed / duration, 1)
+      // ease-out cubic
+      const eased = 1 - Math.pow(1 - progress, 3)
+      setDisplayPct(Math.round(eased * pct))
+      if (progress < 1) rafRef.current = requestAnimationFrame(step)
+    }
+    rafRef.current = requestAnimationFrame(step)
+    return () => cancelAnimationFrame(rafRef.current)
+  }, [pct, animate])
+
+  const offset = circ - (displayPct / 100) * circ
+  const color = displayPct === 100 ? '#16A34A' : 'var(--gold, #C9A84C)'
+  const approaching = pct >= 95 && pct < 100
   return (
-    <svg width={size} height={size} style={{ flexShrink: 0 }}>
-      <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="var(--border, #E8E5E0)" strokeWidth={stroke} />
+    <svg width={size} height={size} style={{ flexShrink: 0 }} className={approaching ? 'ring-approaching' : undefined}>
+      <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="var(--border, rgba(255,255,255,0.08))" strokeWidth={stroke} />
       <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke={color} strokeWidth={stroke}
         strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round"
-        style={{ transition: 'stroke-dashoffset 600ms ease', transform: 'rotate(-90deg)', transformOrigin: '50% 50%' }} />
+        style={{ transition: animate ? 'none' : 'stroke-dashoffset 600ms ease', transform: 'rotate(-90deg)', transformOrigin: '50% 50%' }} />
       <text x="50%" y="50%" textAnchor="middle" dy="0.35em"
-        style={{ fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-mono)', fill: 'var(--text-primary, #1A1A1A)' }}>
-        {pct}%
+        style={{ fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-mono)', fill: 'var(--text-primary, #E6EDF3)' }}>
+        {displayPct}%
       </text>
     </svg>
   )
@@ -153,6 +177,30 @@ function CommandStrip({ urgentes, criticalCount, mood, isMobile, criticosOpen, s
   )
 }
 
+function CeremonyEffect({ active }: { active: boolean }) {
+  const firedRef = useRef(false)
+  useEffect(() => {
+    if (!active || firedRef.current) return
+    const key = `cruz_ceremony_${new Date().toISOString().split('T')[0]}`
+    if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem(key)) return
+    firedRef.current = true
+    if (typeof sessionStorage !== 'undefined') sessionStorage.setItem(key, '1')
+    playSound('achievement')
+    haptic.celebrate()
+    const companyName = typeof document !== 'undefined' ? getCookieValue('company_name') || '' : ''
+    if (typeof document !== 'undefined') {
+      document.dispatchEvent(new CustomEvent('cruz:notification-slide', {
+        detail: {
+          title: 'Día perfecto',
+          description: companyName ? `Excelente día, ${companyName} — todo al corriente` : 'Todo completado — excelente día',
+          severity: 'success',
+        },
+      }))
+    }
+  }, [active])
+  return null
+}
+
 function PasswordResetBanner() {
   const [dismissed, setDismissed] = useState(false)
   if (dismissed) return null
@@ -193,6 +241,7 @@ function PasswordResetBanner() {
 export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client' | 'operator' }) {
   const isClient = viewMode === 'client'
   const isMobile = useIsMobile()
+  const prefersReduced = useReducedMotion()
   const { data, loading, error, reload } = useCommandCenterData()
   const { pulse, loading: pulseLoading, awaySummary, dismissAway } = useActivityPulse()
   const { lastUpdate } = useRealtimeTrafico()
@@ -201,7 +250,13 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
   })
   const status = useStatusSentence()
   const realtimeToast = useRealtimeToast(lastUpdate)
+  const network = useNetworkStatus()
   const [criticosOpen, setCriticosOpen] = useState(false)
+
+  // Auto-reload when coming back online
+  useEffect(() => {
+    if (network.wasOffline && network.isOnline) reload()
+  }, [network.wasOffline, network.isOnline, reload])
 
   if (error) {
     return (
@@ -256,7 +311,7 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
 
   return (
     <div
-      className={`mood-${mood}`}
+      className={`mood-${mood}${completionPct >= 100 ? ' mood-ceremony' : ''}`}
       style={{
         padding: isMobile ? '8px 8px 16px' : '16px 48px 32px',
         overflowX: 'hidden',
@@ -267,6 +322,18 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
     >
       {/* Pull-to-refresh indicator */}
       <PullRefreshIndicator pullDistance={pullDistance} isRefreshing={isRefreshing} progress={pullProgress} />
+
+      {/* Offline/online status */}
+      {!network.isOnline && (
+        <div className="cc-offline-banner">
+          Sin conexión · Datos de hace {network.lastOnlineAt ? Math.max(1, Math.round((Date.now() - network.lastOnlineAt.getTime()) / 60000)) : '?'} min
+        </div>
+      )}
+      {network.wasOffline && network.isOnline && (
+        <div className="cc-online-banner">
+          Conectado · Sincronizado
+        </div>
+      )}
 
       {/* Toast */}
       {realtimeToast && (
@@ -302,7 +369,7 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
       )}
 
       {/* ── COMMAND STRIP (operator only — hidden from clients) ── */}
-      {!isClient && <CommandStrip
+      {!isClient && <div className={prefersReduced ? undefined : 'cc-entrance-strip'}><CommandStrip
         urgentes={urgentes}
         criticalCount={criticalCount}
         mood={mood}
@@ -311,12 +378,12 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
         setCriticosOpen={setCriticosOpen}
         criticalHref={criticalHref}
         pendingEntradas={data.pendingEntradas}
-      />}
+      /></div>}
 
       {/* ── Client calm status (replaces critical banner) ── */}
       {isClient && (
         data.enProceso === 0 ? (
-          <div className="status-banner allgreen" style={{ marginBottom: 12 }}>
+          <div className={`status-banner allgreen${prefersReduced ? '' : ' cc-entrance-status'}`} style={{ marginBottom: 12 }}>
             <div className="status-banner-icon">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
             </div>
@@ -351,7 +418,7 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
         gap: 14,
       }}>
         <div className={completionPct >= 100 ? 'ring-complete' : ''}>
-          <ProgressRing pct={completionPct} size={isMobile ? 52 : 56} />
+          <ProgressRing pct={completionPct} size={isMobile ? 52 : 56} animate={!prefersReduced} />
         </div>
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: completionPct >= 100 ? '#16A34A' : 'var(--text-primary, #1A1A1A)' }}>
@@ -370,9 +437,16 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
         </div>
       </div>}
       <Celebrate trigger={completionPct >= 100} id="operator-allgreen" />
+      <CeremonyEffect active={completionPct >= 100} />
 
       {/* ── CARD GRID ── */}
       <WorkflowGrid
+        oldestUrgentDate={(() => {
+          const urgent = data.traficos.filter(t => (t.estatus || '').toLowerCase() === 'en proceso' && !t.pedimento)
+          if (urgent.length === 0) return null
+          const oldest = urgent.reduce((a, b) => ((a.updated_at || '') < (b.updated_at || '') ? a : b))
+          return oldest.updated_at || null
+        })()}
         enProceso={data.enProceso}
         urgentes={urgentes}
         pendingEntradas={pendingEntradas}

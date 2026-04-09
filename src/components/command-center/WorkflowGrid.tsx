@@ -5,7 +5,7 @@ import { useReducedMotion } from 'framer-motion'
 import { Truck, Package, FolderOpen, FileText, DollarSign, Warehouse, BarChart3, TrendingUp, CheckCircle, ClipboardList, Navigation, LineChart, PiggyBank, Radio } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { WorkflowCard, type CardAction } from './WorkflowCard'
-import { getCardUrgency, sortByUrgency, type CardKey, type CardKPIs, type Urgency } from '@/lib/card-urgency'
+import { getCardUrgency, getUrgencyIntensity, INTENSITY_CSS_CLASS, sortByUrgency, type CardKey, type CardKPIs, type Urgency } from '@/lib/card-urgency'
 import { fmtDateTime } from '@/lib/format-utils'
 import type { CommandCenterData } from '@/hooks/use-command-center-data'
 
@@ -27,6 +27,7 @@ interface WorkflowGridProps {
   docsPendientes?: number
   isMobile?: boolean
   viewMode?: 'client' | 'operator'
+  oldestUrgentDate?: string | null
 }
 
 interface CardDef {
@@ -210,10 +211,15 @@ export function WorkflowGrid(props: WorkflowGridProps) {
     }
     return CARDS
       .filter(card => !(isClient && CLIENT_HIDDEN_CARDS.includes(card.key)))
-      .map(card => ({
-        ...card,
-        urgency: getCardUrgency(card.key, kpis),
-      }))
+      .map(card => {
+        const urgency = getCardUrgency(card.key, kpis)
+        const intensity = getUrgencyIntensity(urgency, props.oldestUrgentDate ?? null)
+        return {
+          ...card,
+          urgency,
+          intensityClass: INTENSITY_CSS_CLASS[intensity],
+        }
+      })
   }, [props.enProceso, props.urgentes, props.pendingEntradas, props.docsFaltantes])
 
   // Mobile: vertical urgency-sorted stack — most urgent on top
@@ -249,7 +255,8 @@ export function WorkflowGrid(props: WorkflowGridProps) {
                 variant="uniform"
                 actions={card.getActions(props, card.urgency)}
                 urgency={card.urgency}
-
+                cardKey={card.key}
+                intensityClass={card.intensityClass}
               />
             </motion.div>
           ))}
@@ -288,6 +295,8 @@ export function WorkflowGrid(props: WorkflowGridProps) {
               variant="uniform"
               actions={card.getActions(props, card.urgency)}
               urgency={card.urgency}
+              cardKey={card.key}
+              intensityClass={card.intensityClass}
               delay={i * 40}
             />
           </motion.div>

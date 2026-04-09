@@ -27,6 +27,10 @@ interface WorkflowCardProps {
   spanFull?: boolean
   /** Card urgency for border color */
   urgency?: CardUrgency
+  /** Card key for contextual actions */
+  cardKey?: string
+  /** CSS class for urgency intensity animation */
+  intensityClass?: string
 }
 
 // 3-state urgency color system: RED = urgent, AMBER = ojo/monitorear, GREEN = all good
@@ -35,7 +39,7 @@ const U_TOP    = { red: 'rgba(220,38,38,0.7)', amber: 'rgba(217,119,6,0.6)', gre
 const U_SHADOW = { red: 'rgba(220,38,38,0.1)', amber: 'rgba(217,119,6,0.08)', green: 'rgba(22,163,74,0.08)', neutral: 'rgba(0,0,0,0.2)' }
 const U_ICON   = { red: 'rgba(220,38,38,0.7)', amber: 'rgba(217,119,6,0.7)', green: 'rgba(22,163,74,0.7)', neutral: 'rgba(255,255,255,0.5)' }
 
-export function WorkflowCard({ href, label, Icon, kpi, subtitle, variant, actions, delay = 0, spanFull, urgency }: WorkflowCardProps) {
+export function WorkflowCard({ href, label, Icon, kpi, subtitle, variant, actions, delay = 0, spanFull, urgency, cardKey, intensityClass }: WorkflowCardProps) {
   const u = urgency || 'neutral'
   const isGood = u === 'green' || u === 'neutral'
   const prefersReduced = useReducedMotion()
@@ -50,7 +54,7 @@ export function WorkflowCard({ href, label, Icon, kpi, subtitle, variant, action
 
     return (
       <motion.div
-        className={`cc-card${u === 'red' ? ' urgency-pulse-red' : u === 'amber' ? ' urgency-pulse-amber' : ''}`}
+        className={`cc-card${intensityClass ? ` ${intensityClass}` : u === 'red' ? ' urgency-pulse-red' : u === 'amber' ? ' urgency-pulse-amber' : ''}`}
         whileHover={prefersReduced ? undefined : { scale: 1.015, boxShadow: `0 4px 20px ${U_SHADOW[u]}` }}
         whileTap={prefersReduced ? undefined : { scale: 0.97 }}
         onTapStart={() => haptic.micro()}

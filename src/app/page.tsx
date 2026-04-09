@@ -1,165 +1,86 @@
-'use client'
+import { cookies } from 'next/headers'
+import { redirect } from 'next/navigation'
+import { verifySession } from '@/lib/session'
+import { logOperatorAction } from '@/lib/operator-actions'
+import { createServerClient } from '@/lib/supabase-server'
+import { fetchCockpitData } from '@/components/cockpit/shared/fetchCockpitData'
+import { CockpitShell } from '@/components/cockpit/shared/CockpitShell'
+import { AdminCockpit } from '@/components/cockpit/AdminCockpit'
+import { OperatorCockpit } from '@/components/cockpit/OperatorCockpit'
+import { ClientCockpit } from '@/components/cockpit/ClientCockpit'
 
-import { useEffect, useState } from 'react'
-import { CheckCircle } from 'lucide-react'
-import { getCookieValue } from '@/lib/client-config'
-import ClientInicioView from '@/components/views/client-inicio-view'
-import { Celebrate } from '@/components/celebrate'
-import { getSmartGreeting } from '@/lib/greeting'
-import { GodView } from '@/components/god-view/GodView'
-import Link from 'next/link'
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
-// ── Design tokens (cockpit dark — resolved via .cruz-dark CSS vars) ──
-const T = {
-  card: 'var(--bg-card)',
-  border: 'var(--border)',
-  green: 'var(--success)',
-  amber: 'var(--warning)',
-  red: 'var(--danger)',
-  gray: 'var(--text-muted)',
-  gold: 'var(--gold)',
-  text: 'var(--text-primary)',
-  textSec: 'var(--text-secondary)',
-  r: 8,
-} as const
+export default async function Dashboard() {
+  const cookieStore = await cookies()
+  const sessionToken = cookieStore.get('portal_session')?.value
 
-// ── Shared types ──
-interface TraficoRow {
-  trafico: string; estatus: string; company_id: string | null
-  semaforo: number | null; descripcion_mercancia: string | null
-  fecha_cruce: string | null; proveedores: string | null
-  [k: string]: unknown
-}
+  if (!sessionToken) redirect('/login')
 
-/* ═══════════════════════════════════════════════════════════
-   VIEW 1 — ADMIN (Renato Sr): Single status block
-   ═══════════════════════════════════════════════════════════ */
-function AdminView() {
-  const [loading, setLoading] = useState(true)
-  const [activeCount, setActiveCount] = useState(0)
-  const [blockingCount, setBlockingCount] = useState(0)
-  const [rojoCount, setRojoCount] = useState(0)
-  const [firstBlocking, setFirstBlocking] = useState<string | null>(null)
+  const session = await verifySession(sessionToken)
+  if (!session) redirect('/login')
 
-  useEffect(() => {
-    // Broker/admin: no company_id filter — see all tráficos (matches /traficos page logic)
-    const trafParams = new URLSearchParams({
-      table: 'traficos', limit: '5000',
-      gte_field: 'fecha_llegada', gte_value: '2024-01-01',
+  const opId = cookieStore.get('operator_id')?.value
+  const role = session.role
+
+  // Resolve operator identity from operators table
+  let operatorName = ''
+  let operatorCompanyId = session.companyId
+  if (opId) {
+    const sb = createServerClient()
+    const { data: op } = await sb
+      .from('operators')
+      .select('full_name, company_id, role')
+      .eq('id', opId)
+      .maybeSingle()
+    if (op) {
+      operatorName = op.full_name || ''
+      operatorCompanyId = op.company_id || session.companyId
+    }
+  }
+
+  // Log cockpit view (fire-and-forget)
+  if (opId) {
+    logOperatorAction({
+      operatorId: opId,
+      actionType: 'view_cockpit',
+      payload: { role_rendered: role },
     })
-    Promise.all([
-      fetch(`/api/data?${trafParams}`).then(r => r.json()),
-      fetch('/api/data?table=trafico_completeness&limit=5000').then(r => r.json()),
-    ]).then(([trafData, compData]) => {
-      const allTraficos: TraficoRow[] = trafData.data ?? []
-      const active = allTraficos.filter(t => !(t.estatus || '').toLowerCase().includes('cruz'))
-      setActiveCount(active.length)
+  }
 
-      const rojo = active.filter(t => t.semaforo === 1)
-      setRojoCount(rojo.length)
+  // Fetch role-specific data server-side
+  const data = await fetchCockpitData(role, operatorCompanyId, opId)
 
-      const compMap: Record<string, number> = {}
-      for (const row of (compData.data ?? []) as { trafico_id: string; blocking_count: number }[]) {
-        if (row.blocking_count > 0) compMap[row.trafico_id] = row.blocking_count
-      }
-
-      const blocking = active.filter(t => compMap[t.trafico] > 0 || t.semaforo === 1)
-      setBlockingCount(blocking.length)
-      if (blocking.length > 0) setFirstBlocking(blocking[0].trafico)
-    }).catch((err: unknown) => console.error('[inicio] data fetch:', (err as Error).message)).finally(() => setLoading(false))
-  }, [])
-
-  const level = rojoCount > 0 || blockingCount >= 4 ? 'red' : blockingCount > 0 ? 'amber' : 'green'
-  const dotColor = level === 'red' ? T.red : level === 'amber' ? T.amber : T.green
-  const headline = level === 'red' ? 'Acción inmediata' : level === 'amber' ? 'Atención requerida' : 'Todo en orden'
-  const enCurso = activeCount - blockingCount
-
-  // Admin greeting
-  const [adminGreeting, setAdminGreeting] = useState('')
-  useEffect(() => {
-    setAdminGreeting(getSmartGreeting('Tito', {
-      urgentCount: blockingCount,
-      enProcesoCount: activeCount,
-      crossed24h: 0, newTraficos24h: 0, noPedGt7: 0,
-      pendingEntradas: 0, tmecSavings: 0, avgConfidence: 0,
-    }).greeting)
-  }, [blockingCount, activeCount])
-
-  if (loading) {
+  // Route by role: admin/broker → AdminCockpit, operator → OperatorCockpit, client → ClientCockpit
+  if (role === 'admin' || role === 'broker') {
     return (
-      <div className="admin-loading">
-        <div className="admin-loading-dot" />
-      </div>
+      <CockpitShell>
+        <AdminCockpit data={data.admin!} operatorName={operatorName} />
+      </CockpitShell>
     )
   }
 
+  if (role === 'operator') {
+    return (
+      <CockpitShell>
+        <OperatorCockpit
+          data={data.operator!}
+          operatorName={operatorName}
+          operatorId={opId || ''}
+        />
+      </CockpitShell>
+    )
+  }
+
+  // Default: client view — company name from cookie or operator name
+  const companyName = cookieStore.get('company_name')?.value
+    ? decodeURIComponent(cookieStore.get('company_name')!.value)
+    : operatorName || session.companyId
+
   return (
-    <div className="admin-center">
-      <Celebrate trigger={level === 'green' && !loading} id="admin-allgreen" />
-      {adminGreeting && (
-        <div className="text-display" style={{ marginBottom: 16, textAlign: 'center' }}>{adminGreeting}</div>
-      )}
-      <div
-        className="card admin-status-card"
-        style={level === 'green' ? { background: 'linear-gradient(180deg, rgba(22,163,74,0.06) 0%, var(--bg-card) 60%)' } : undefined}
-      >
-        {/* Status dot + headline */}
-        <div className="admin-headline">
-          {level === 'green' ? (
-            <CheckCircle size={24} style={{ color: T.green, flexShrink: 0 }} />
-          ) : (
-            <span
-              className="admin-dot dot-live"
-              style={{ background: dotColor }}
-            />
-          )}
-          <span className="text-display">{headline}</span>
-        </div>
-
-        {/* Counts */}
-        <div className="admin-count-primary">
-          <span className="font-mono" style={{ fontWeight: 700 }}>{activeCount}</span> tráficos activos
-        </div>
-        <div className="admin-count-secondary">
-          <span className="font-mono">{enCurso}</span> en curso
-          {blockingCount > 0 && (
-            <> · <span className="font-mono" style={{ color: dotColor, fontWeight: 700 }}>{blockingCount}</span> atención</>
-          )}
-        </div>
-
-        {/* Link to first blocking tráfico */}
-        {firstBlocking && blockingCount > 0 && (
-          <Link
-            href={blockingCount === 1 ? `/traficos/${encodeURIComponent(firstBlocking)}` : '/traficos?filter=blocking'}
-            className="btn btn-primary"
-            style={{ marginTop: 24 }}
-          >
-            {blockingCount === 1 ? 'Ver el único pendiente →' : `Ver ${blockingCount} pendientes →`}
-          </Link>
-        )}
-      </div>
-    </div>
+    <CockpitShell>
+      <ClientCockpit data={data.client!} companyName={companyName} />
+    </CockpitShell>
   )
-}
-
-/* ═══════════════════════════════════════════════════════════
-   VIEW 2 — BROKER (Renato Jr): GOD View — mission control
-   ═══════════════════════════════════════════════════════════ */
-function BrokerView() {
-  return <GodView />
-}
-
-/* ═══════════════════════════════════════════════════════════
-   ROUTER — pick view by role
-   ═══════════════════════════════════════════════════════════ */
-export default function Dashboard() {
-  const [role, setRole] = useState<string>('client')
-
-  useEffect(() => {
-    setRole(getCookieValue('user_role') ?? 'client')
-  }, [])
-
-  if (role === 'admin') return <AdminView />
-  if (role === 'broker') return <BrokerView />
-  return <ClientInicioView />
 }

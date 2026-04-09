@@ -1,0 +1,111 @@
+'use client'
+
+import type { AdminData } from '../shared/fetchCockpitData'
+
+const WORKFLOW_STAGES = ['intake', 'classify', 'docs', 'pedimento', 'crossing', 'post_op', 'invoice']
+const STAGE_LABELS: Record<string, string> = {
+  intake: 'Recepcion',
+  classify: 'Clasificacion',
+  docs: 'Documentos',
+  pedimento: 'Pedimento',
+  crossing: 'Cruce',
+  post_op: 'Post-Op',
+  invoice: 'Facturacion',
+}
+
+interface Props {
+  decisions: AdminData['agentDecisions24h']
+  workflow: AdminData['workflowEvents24h']
+  actions: AdminData['operatorActions24h']
+}
+
+export function CruzAutonomoPanel({ decisions, workflow, actions }: Props) {
+  const urgencyColor = decisions.accuracy >= 90
+    ? 'rgba(22,163,74,0.5)'
+    : decisions.accuracy >= 70
+      ? 'rgba(217,119,6,0.6)'
+      : 'rgba(220,38,38,0.7)'
+
+  return (
+    <div style={{
+      background: '#222222',
+      borderRadius: 14,
+      border: '1px solid rgba(255,255,255,0.08)',
+      borderTop: `3px solid ${urgencyColor}`,
+      padding: 16,
+    }}>
+      {/* Header */}
+      <div style={{ marginBottom: 12 }}>
+        <span style={{
+          fontSize: 11, fontWeight: 600, textTransform: 'uppercase',
+          letterSpacing: '0.05em', color: '#6E7681',
+        }}>
+          CRUZ Autonomo
+        </span>
+        <p style={{ fontSize: 13, color: '#8B949E', margin: '4px 0 0' }}>
+          La IA esta trabajando
+        </p>
+      </div>
+
+      {/* KPIs row */}
+      <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', marginBottom: 16 }}>
+        <KPI value={decisions.total} label="decisiones hoy" />
+        <KPI value={`${decisions.accuracy}%`} label="precision" />
+        <KPI value={actions.hoursSaved} label="horas ahorradas" />
+      </div>
+
+      {/* Workflow chain */}
+      <div style={{
+        display: 'flex', gap: 4, flexWrap: 'wrap',
+        padding: '12px 0', borderTop: '1px solid rgba(255,255,255,0.06)',
+      }}>
+        {WORKFLOW_STAGES.map((stage, i) => {
+          const count = workflow.byStage[stage] || 0
+          return (
+            <div key={stage} style={{
+              display: 'flex', alignItems: 'center', gap: 4,
+            }}>
+              <div style={{
+                background: count > 0 ? 'rgba(201,168,76,0.15)' : 'rgba(255,255,255,0.04)',
+                border: `1px solid ${count > 0 ? 'rgba(201,168,76,0.3)' : 'rgba(255,255,255,0.06)'}`,
+                borderRadius: 8,
+                padding: '6px 10px',
+                textAlign: 'center' as const,
+                minWidth: 60,
+              }}>
+                <div className="font-mono" style={{
+                  fontSize: 16, fontWeight: 700,
+                  color: count > 0 ? '#C9A84C' : '#6E7681',
+                }}>
+                  {count}
+                </div>
+                <div style={{
+                  fontSize: 10, color: '#8B949E',
+                  textTransform: 'uppercase', letterSpacing: '0.03em',
+                }}>
+                  {STAGE_LABELS[stage]}
+                </div>
+              </div>
+              {i < WORKFLOW_STAGES.length - 1 && (
+                <span style={{ color: '#6E7681', fontSize: 12 }}>→</span>
+              )}
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+function KPI({ value, label }: { value: number | string; label: string }) {
+  return (
+    <div>
+      <div className="font-mono" style={{
+        fontSize: 28, fontWeight: 800, color: '#E6EDF3', lineHeight: 1,
+      }}>
+        {value}
+      </div>
+      <div style={{ fontSize: 12, color: '#8B949E', marginTop: 2 }}>{label}</div>
+    </div>
+  )
+}

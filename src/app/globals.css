@@ -1,7 +1,6 @@
 /* CRUZ Design System — globals.css
-   Drop this into your app/globals.css (or import alongside Tailwind)
-   Google Fonts: add to app/layout.tsx <head>:
-   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+   Fonts: Geist Sans + JetBrains Mono loaded via next/font in layout.tsx
+   Theme: .cruz-dark class applies dark cockpit tokens to all authenticated pages
 */
 
 @tailwind base;
@@ -2145,6 +2144,582 @@ tr.row-odd  { background: rgba(248,250,252,0.5); }
   color: var(--gold);
   font-weight: 600;
   flex-shrink: 0;
+}
+
+/* ═══ GOD View — operator mission control ═══ */
+
+.god-shell {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ── Heartbeat strip ── */
+.god-heartbeat {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 16px;
+  background: var(--bg-card, #FFFFFF);
+  border: 1px solid var(--border, #E8E5E0);
+  border-radius: 10px;
+  min-height: 48px;
+}
+.god-heartbeat--warn {
+  border-left: 3px solid var(--danger-500, #DC2626);
+}
+.god-heartbeat--error {
+  opacity: 0.6;
+}
+.god-hb-services {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.god-hb-service {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.god-hb-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.god-hb-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary, #6B6B6B);
+}
+.god-hb-alert {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--danger-500, #DC2626);
+}
+.god-hb-time {
+  font-size: 11px;
+  color: var(--text-muted, #9B9B9B);
+  white-space: nowrap;
+  margin-left: auto;
+}
+
+/* ── Sections ── */
+.god-section {
+  background: var(--bg-card, #FFFFFF);
+  border: 1px solid var(--border, #E8E5E0);
+  border-radius: 10px;
+  padding: 16px;
+}
+.god-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  cursor: default;
+  padding: 0;
+}
+.god-section-header--toggle {
+  cursor: pointer;
+}
+.god-section-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary, #1A1A1A);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+.god-link {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gold-dark, #8B6914);
+  text-decoration: none;
+}
+.god-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 11px;
+  background: var(--warning-500, #D97706);
+  color: #FFFFFF;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+}
+.god-badge--muted {
+  background: var(--border, #E8E5E0);
+  color: var(--text-secondary, #6B6B6B);
+}
+.god-empty {
+  padding: 20px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-muted, #9B9B9B);
+}
+.god-empty--good {
+  color: var(--success-500, #16A34A);
+  font-weight: 600;
+}
+
+/* ── Grid layout ── */
+.god-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+}
+.god-grid-wide { min-width: 0; }
+.god-grid-narrow { min-width: 0; }
+
+@media (max-width: 767px) {
+  .god-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Smart Queue ── */
+.god-queue-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.god-queue-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: inherit;
+  transition: background 150ms;
+  min-height: 60px;
+}
+.god-queue-item:hover {
+  background: var(--bg-primary, #FAFAF8);
+}
+.god-queue-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 100px;
+}
+.god-queue-id {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary, #1A1A1A);
+}
+.god-queue-company {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted, #9B9B9B);
+}
+.god-queue-center {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.god-queue-reason {
+  font-size: 13px;
+  color: var(--text-secondary, #6B6B6B);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.god-queue-sub {
+  font-size: 11px;
+  color: var(--text-muted, #9B9B9B);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.god-queue-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
+}
+.god-queue-days {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--warning-500, #D97706);
+}
+.god-queue-value {
+  font-size: 11px;
+  color: var(--text-muted, #9B9B9B);
+}
+
+/* ── Chips ── */
+.god-chips {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+.god-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  min-height: 36px;
+}
+.god-chip--gold {
+  background: rgba(201,168,76,0.1);
+  color: var(--gold-dark, #8B6914);
+  border: 1px solid rgba(201,168,76,0.2);
+}
+.god-chip--red {
+  background: rgba(220,38,38,0.06);
+  color: var(--danger-500, #DC2626);
+  border: 1px solid rgba(220,38,38,0.15);
+}
+.god-chip--muted {
+  background: transparent;
+  color: var(--text-muted, #9B9B9B);
+  border: 1px solid var(--border, #E8E5E0);
+}
+
+/* ── CRUZ Autónomo ── */
+.god-pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success-500, #16A34A);
+  animation: godPulse 2s ease-in-out infinite;
+}
+@keyframes godPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.god-autonomo-summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+}
+.god-autonomo-stat {
+  font-size: 13px;
+  color: var(--text-secondary, #6B6B6B);
+}
+.god-autonomo-stat--accent {
+  color: var(--success-500, #16A34A);
+  font-weight: 700;
+}
+.god-autonomo-body {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.god-workflow-chain {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  overflow-x: auto;
+  padding: 8px 0;
+}
+.god-workflow-step {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex-shrink: 0;
+}
+.god-workflow-node {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--bg-primary, #FAFAF8);
+  border: 2px solid var(--border, #E8E5E0);
+  flex-shrink: 0;
+}
+.god-workflow-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted, #9B9B9B);
+  position: absolute;
+  margin-top: 40px;
+  white-space: nowrap;
+}
+.god-workflow-step {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 60px;
+}
+.god-workflow-connector {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  width: 60px;
+  height: 2px;
+  background: var(--border, #E8E5E0);
+  z-index: 0;
+}
+.god-autonomo-metrics {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.god-metric-mini {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 80px;
+  padding: 8px 12px;
+  background: var(--bg-primary, #FAFAF8);
+  border-radius: 8px;
+}
+.god-metric-mini-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary, #1A1A1A);
+}
+.god-metric-mini-label {
+  font-size: 11px;
+  color: var(--text-muted, #9B9B9B);
+}
+.god-corrections {
+  padding: 12px;
+  background: var(--bg-primary, #FAFAF8);
+  border-radius: 8px;
+}
+.god-corrections-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary, #6B6B6B);
+  margin-bottom: 8px;
+}
+.god-correction-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  padding: 4px 0;
+}
+.god-correction-old {
+  color: var(--danger-500, #DC2626);
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+.god-correction-arrow {
+  color: var(--text-muted, #9B9B9B);
+}
+.god-correction-new {
+  color: var(--success-500, #16A34A);
+  font-weight: 600;
+}
+
+/* ── KPI tiles ── */
+.god-kpi-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.god-kpi-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 8px;
+  border-radius: 8px;
+  background: var(--bg-primary, #FAFAF8);
+  border-top: 3px solid transparent;
+  text-decoration: none;
+  color: inherit;
+  transition: background 150ms;
+  min-height: 60px;
+}
+.god-kpi-tile:hover {
+  background: var(--border, #E8E5E0);
+}
+.god-kpi-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary, #1A1A1A);
+}
+.god-kpi-label {
+  font-size: 11px;
+  color: var(--text-muted, #9B9B9B);
+  text-align: center;
+  margin-top: 2px;
+}
+
+/* ── Client Health ── */
+.god-client-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.god-client-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: inherit;
+  transition: background 150ms;
+  min-height: 48px;
+}
+.god-client-row:hover {
+  background: var(--bg-primary, #FAFAF8);
+}
+.god-client-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.god-client-name {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary, #1A1A1A);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.god-client-count {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary, #1A1A1A);
+  min-width: 30px;
+  text-align: right;
+}
+.god-client-valor {
+  font-size: 12px;
+  color: var(--text-secondary, #6B6B6B);
+  min-width: 80px;
+  text-align: right;
+}
+.god-client-status {
+  font-size: 11px;
+  font-weight: 600;
+  min-width: 100px;
+  text-align: right;
+}
+.god-client-status--ok {
+  color: var(--success-500, #16A34A);
+}
+.god-client-status--warn {
+  color: var(--warning-500, #D97706);
+}
+.god-client-status--inactive {
+  color: var(--text-muted, #9B9B9B);
+}
+
+/* ── Border Intel ── */
+.god-bridge-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.god-bridge-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  min-height: 40px;
+}
+.god-bridge-row--best {
+  background: rgba(201,168,76,0.06);
+  border: 1px solid rgba(201,168,76,0.15);
+}
+.god-bridge-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.god-bridge-name {
+  flex: 1;
+  font-size: 13px;
+  color: var(--text-primary, #1A1A1A);
+}
+.god-bridge-time {
+  font-size: 13px;
+  font-weight: 700;
+}
+.god-intel-feed {
+  margin-top: 16px;
+}
+.god-intel-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary, #6B6B6B);
+  margin-bottom: 8px;
+}
+.god-intel-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 0;
+  text-decoration: none;
+  color: inherit;
+  border-bottom: 1px solid var(--border, #E8E5E0);
+}
+.god-intel-item:last-child {
+  border-bottom: none;
+}
+.god-intel-severity {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 6px;
+}
+.god-intel-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.god-intel-item-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary, #1A1A1A);
+}
+.god-intel-body {
+  font-size: 11px;
+  color: var(--text-muted, #9B9B9B);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Mobile adjustments ── */
+@media (max-width: 767px) {
+  .god-shell { padding: 8px; gap: 12px; }
+  .god-heartbeat { flex-wrap: wrap; padding: 8px 12px; }
+  .god-hb-time { width: 100%; margin-top: 4px; margin-left: 0; }
+  .god-queue-item { flex-wrap: wrap; }
+  .god-queue-center { width: 100%; order: 3; }
+  .god-client-valor { display: none; }
+  .god-client-status { min-width: auto; font-size: 10px; }
+  .god-autonomo-metrics { flex-direction: column; }
 }
 
 /* ═══ Premium interactions — swipe, pull-refresh, urgency pulse ═══ */

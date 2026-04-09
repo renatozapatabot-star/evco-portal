@@ -358,19 +358,7 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
         </div>
       )}
 
-      {/* CRUZ orbit dot — persistent AI indicator (mobile only) */}
-      {isMobile && (
-        <button
-          onClick={() => document.dispatchEvent(new CustomEvent('cruz:open-chat'))}
-          aria-label="CRUZ AI"
-          className="cruz-orbit-dot"
-          style={{ position: 'fixed', top: 16, right: 16 }}
-        >
-          {criticalCount > 0 && (
-            <span className="cruz-orbit-badge">{criticalCount > 99 ? '99+' : criticalCount}</span>
-          )}
-        </button>
-      )}
+      {/* Mobile AI indicator removed — TopBar has CRUZ AI link + chat bubble covers desktop */}
 
       {/* Away banner */}
       {awayBanner}
@@ -447,6 +435,7 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
         cruzadosHoy={data.cruzadosHoy}
         exchangeRate={data.exchangeRate}
         exchangeRateDate={data.exchangeRateDate}
+        bridgeWaitMinutes={data.bridgeWaitMinutes}
         lastCrossing={data.lastCrossing}
         docsPendientes={data.docsPendientes}
         isMobile={isMobile}

@@ -26,7 +26,7 @@ export interface CardKPIs {
   docsFaltantes: number
 }
 
-export type CardKey = 'traficos' | 'entradas' | 'expedientes' | 'pedimentos' | 'contabilidad' | 'inventario' | 'reportes' | 'tipo_cambio' | 'ultimo_cruce' | 'docs_pendientes' | 'crossing_intelligence' | 'demand_forecast' | 'cost_optimizer' | 'dispatch_coordinator' | 'catalogo' | 'anexo24' | 'documentos'
+export type CardKey = 'traficos' | 'entradas' | 'expedientes' | 'pedimentos' | 'contabilidad' | 'inventario' | 'reportes' | 'tiempo_cruce' | 'ultimo_cruce' | 'docs_pendientes' | 'crossing_intelligence' | 'demand_forecast' | 'cost_optimizer' | 'dispatch_coordinator' | 'catalogo' | 'anexo24' | 'documentos'
 
 export function getCardUrgency(card: CardKey, data: CardKPIs): Urgency {
   switch (card) {
@@ -44,7 +44,7 @@ export function getCardUrgency(card: CardKey, data: CardKPIs): Urgency {
       return 'neutral'
     case 'reportes':
       return 'neutral'
-    case 'tipo_cambio':
+    case 'tiempo_cruce':
       return 'neutral'
     case 'ultimo_cruce':
       return 'green'

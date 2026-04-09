@@ -252,8 +252,8 @@ export default function DashboardShellClient({ children }: Props) {
         </div>
       )}
 
-      {/* Floating CRUZ AI chat bubble */}
-      <CruzChatBubble />
+      {/* Floating CRUZ AI chat bubble — desktop only (mobile uses TopBar AI link) */}
+      {!isMobile && <CruzChatBubble />}
 
       {/* Welcome overlay removed — the launchpad IS the welcome */}
 

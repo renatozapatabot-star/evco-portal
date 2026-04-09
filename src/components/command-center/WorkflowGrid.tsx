@@ -23,6 +23,7 @@ interface WorkflowGridProps {
   cruzadosHoy?: number
   exchangeRate?: number | null
   exchangeRateDate?: string | null
+  bridgeWaitMinutes?: number | null
   lastCrossing?: { trafico: string; fecha: string; id?: string } | null
   docsPendientes?: number
   isMobile?: boolean
@@ -35,6 +36,7 @@ interface CardDef {
   href: string
   label: string
   Icon: typeof Truck
+  hero?: boolean // span 2 columns on desktop
   getKpi: (props: WorkflowGridProps) => number | null
   getSubtitle: (props: WorkflowGridProps, urgency: Urgency) => string
   getActions: (props: WorkflowGridProps, urgency: Urgency) => CardAction[]
@@ -58,7 +60,7 @@ const CARDS: CardDef[] = [
     },
   },
   {
-    key: 'traficos', href: '/traficos', label: 'Tráficos', Icon: Truck,
+    key: 'traficos', href: '/traficos', label: 'Tráficos', Icon: Truck, hero: true,
     getKpi: (p) => p.enProceso > 0 ? p.enProceso : (p.cruzadosEsteMes ?? 0),
     getSubtitle: (p, u) => {
       if (p.viewMode === 'client') {
@@ -103,15 +105,17 @@ const CARDS: CardDef[] = [
   },
   // ── Row 2: Business ──
   {
-    key: 'contabilidad', href: '/financiero', label: 'Contabilidad', Icon: DollarSign,
+    key: 'contabilidad', href: '/financiero', label: 'Finanzas', Icon: DollarSign, hero: true,
     getKpi: (p) => {
       const val = p.facturacionMes ?? 0
       return val > 0 ? Math.round(val) : 0
     },
     getSubtitle: (p) => {
       const val = p.facturacionMes ?? 0
-      if (val > 0) return `$${val > 1000 ? Math.round(val / 1000) + 'K' : val.toFixed(0)} USD facturado este mes`
-      return 'Sin movimientos — todo al corriente'
+      const tc = p.exchangeRate
+      const tcStr = tc ? ` · T/C ${tc.toFixed(2)}` : ''
+      if (val > 0) return `$${val > 1000 ? Math.round(val / 1000) + 'K' : val.toFixed(0)} USD facturado este mes${tcStr}`
+      return tc ? `T/C ${tc.toFixed(2)} MXN/USD — sin movimientos` : 'Sin movimientos — todo al corriente'
     },
     getActions: () => [{ label: 'Ver detalle', href: '/financiero', primary: true }],
   },
@@ -137,13 +141,16 @@ const CARDS: CardDef[] = [
     getActions: () => [{ label: 'Abrir reportes', href: '/reportes', primary: true }],
   },
   {
-    key: 'tipo_cambio', href: '/financiero', label: 'Tipo de Cambio', Icon: TrendingUp,
-    getKpi: (p) => p.exchangeRate ?? 0,
-    getSubtitle: (p) => {
-      if (!p.exchangeRate) return 'Sin datos — verificar'
-      return 'MXN/USD — Banxico FIX'
+    key: 'tiempo_cruce', href: '/cruces', label: 'Tiempo de Cruce', Icon: TrendingUp,
+    getKpi: (p) => {
+      if (p.bridgeWaitMinutes != null && p.bridgeWaitMinutes > 0) return p.bridgeWaitMinutes
+      return null
     },
-    getActions: () => [{ label: 'Ver histórico', href: '/financiero', primary: true }],
+    getSubtitle: (p) => {
+      if (p.bridgeWaitMinutes != null && p.bridgeWaitMinutes > 0) return 'min · World Trade Bridge'
+      return 'Sin datos en tiempo real'
+    },
+    getActions: () => [{ label: 'Ver cruces', href: '/cruces', primary: true }],
   },
   // ── Row 3: Intelligence ──
   {
@@ -290,22 +297,22 @@ export function WorkflowGrid(props: WorkflowGridProps) {
     )
   }
 
-  // Desktop: uniform 4-col grid — all cards same size
+  // Desktop: 4-col grid with hero cards spanning 2 columns
   return (
     <div style={{
       display: 'grid',
       gridTemplateColumns: 'repeat(4, 1fr)',
-      gridAutoRows: '1fr',
       gap: 16,
       width: '100%',
       flex: 1,
     }}>
       {allCards.map((card, i) => {
+        const isHero = card.hero === true
         return (
           <motion.div
             key={card.key}
             layout
-            style={{ gridColumn: 'span 1' }}
+            style={{ gridColumn: isHero ? 'span 2' : 'span 1' }}
             initial={{ opacity: 0, scale: 0.97 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ type: 'spring', stiffness: 400, damping: 30, delay: prefersReduced ? 0 : 0.3 + i * 0.05 }}

@@ -33,6 +33,6 @@ export async function GET(request: NextRequest) {
 
   return NextResponse.json(
     { enProceso, urgentes, cruzadosHoy, total: rows.length },
-    { headers: { 'Cache-Control': 's-maxage=60, stale-while-revalidate=120' } }
+    { headers: { 'Cache-Control': 's-maxage=7200, stale-while-revalidate=14400' } }
   )
 }

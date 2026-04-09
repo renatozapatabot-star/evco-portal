@@ -15,6 +15,9 @@ export async function GET() {
     const obs = data?.bmx?.series?.[0]?.datos || []
     const latest = obs.filter((d: { dato: string; fecha: string }) => d.dato !== 'N/E').pop()
     if (!latest) throw new Error('No data')
-    return NextResponse.json({ tc: parseFloat(latest.dato), fecha: latest.fecha, source: 'Banxico FIX', series: BANXICO_SERIES })
+    // Banxico returns fecha in dd/mm/yyyy format — convert to ISO yyyy-mm-dd for correct JS Date parsing
+    const [d, m, y] = latest.fecha.split('/')
+    const fechaISO = `${y}-${m}-${d}`
+    return NextResponse.json({ tc: parseFloat(latest.dato), fecha: fechaISO, source: 'Banxico FIX', series: BANXICO_SERIES })
   } catch (e: unknown) { return NextResponse.json({ tc: 17.50, fecha: new Date().toISOString().split('T')[0], source: 'fallback', error: getErrorMessage(e) }) }
 }

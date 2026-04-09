@@ -71,8 +71,8 @@ export function NotificationsDropdown() {
     }
     load()
 
-    // Refresh notifications every 90 seconds
-    const interval = setInterval(load, 90_000)
+    // Refresh notifications every 2 hours
+    const interval = setInterval(load, 7_200_000)
     return () => clearInterval(interval)
   }, [readIds])
 

@@ -15,7 +15,7 @@ interface Props {
 
 export function AdminCockpit({ data, operatorName }: Props) {
   const hour = new Date().getHours()
-  const greeting = hour < 12 ? 'Buenos dias' : hour < 18 ? 'Buenas tardes' : 'Buenas noches'
+  const greeting = hour < 12 ? 'Buenos días' : hour < 18 ? 'Buenas tardes' : 'Buenas noches'
 
   return (
     <div>

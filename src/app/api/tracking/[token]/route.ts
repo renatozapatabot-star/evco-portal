@@ -60,7 +60,7 @@ export async function GET(
   // Map internal status to tracking status
   const statusRaw = (trafico.estatus || '').toLowerCase()
   let trackingStatus = 'IN_TRANSIT'
-  let statusLabel = 'En Transito'
+  let statusLabel = 'En Tránsito'
 
   if (statusRaw.includes('proceso') || statusRaw.includes('despacho')) {
     trackingStatus = 'CUSTOMS_CLEARANCE'

@@ -38,7 +38,7 @@ function exportCSV(rows: TraficoRow[], activeFilter: string, clientClave: string
     `Total registros: ${rows.length}`,
     '',
   ]
-  const h = ['Trafico','Estatus','Fecha','Descripcion','Peso_kg','Importe_USD','Pedimento']
+  const h = ['Tráfico','Estatus','Fecha','Descripción','Peso_kg','Importe_USD','Pedimento']
   const c = rows.map(r => [r.trafico, r.estatus??'', r.fecha_llegada?.split('T')[0]??'', (r.descripcion_mercancia??'').replace(/,/g,' '), r.peso_bruto??'', r.importe_total??'', r.pedimento??''].join(','))
   const b = new Blob([[...meta, h.join(','), ...c].join('\n')], { type: 'text/csv' })
   const fname = `${(companyId || 'export').toUpperCase()}_Traficos_${activeFilter !== 'todos' ? activeFilter + '_' : ''}${new Date().toISOString().split('T')[0]}.csv`

@@ -446,8 +446,8 @@ async function fetchClientData(companyId: string): Promise<ClientData> {
   const statusLevel: ClientData['statusLevel'] = activeCount === 0 ? 'green' : activeCount > 10 ? 'amber' : 'green'
 
   const statusSentence = activeCount === 0
-    ? 'Sin envios activos — todo en orden'
-    : `${activeCount} envio${activeCount !== 1 ? 's' : ''} en proceso`
+    ? 'Sin envíos activos — todo en orden'
+    : `${activeCount} envío${activeCount !== 1 ? 's' : ''} en proceso`
 
   // Next crossing
   const nextCrossing = activeTraficos.length > 0

@@ -36,7 +36,7 @@ export default function ChatContextPanel({ panelData }: ChatContextPanelProps) {
               }}>
                 <AlertTriangle size={14} style={{ color: '#C47F17', flexShrink: 0 }} />
                 <div style={{ fontSize: 12, color: D.text, fontWeight: 600, fontFamily: 'var(--font-jetbrains-mono)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {t.trafico_number || t.id || 'Sin numero'}
+                  {t.trafico_number || t.id || 'Sin número'}
                 </div>
                 <div style={{ fontSize: 11, color: D.textMuted, marginLeft: 'auto', flexShrink: 0 }}>
                   Sin pedimento
@@ -67,7 +67,7 @@ export default function ChatContextPanel({ panelData }: ChatContextPanelProps) {
               }}>
                 <Clock size={14} style={{ color: D.textMuted, flexShrink: 0 }} />
                 <div style={{ fontSize: 12, color: D.text, fontWeight: 600, fontFamily: 'var(--font-jetbrains-mono)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {t.trafico_number || t.id || 'Sin numero'}
+                  {t.trafico_number || t.id || 'Sin número'}
                 </div>
                 <div style={{ fontSize: 11, color: D.textMuted, marginLeft: 'auto', flexShrink: 0 }}>
                   {t.estatus || 'En proceso'}

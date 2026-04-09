@@ -207,7 +207,7 @@ export default function NuevoPedimentoPage() {
           value={traficoInput}
           onChange={e => setTraficoInput(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && loadTrafico()}
-          placeholder="Numero de trafico (ej: Y4457 o {clave}-Y0000)"
+          placeholder="Número de tráfico (ej: Y4457 o {clave}-Y0000)"
           className="flex-1 bg-transparent outline-none text-[14px]"
           style={{ color: 'var(--text-primary)' }}
         />
@@ -317,14 +317,14 @@ export default function NuevoPedimentoPage() {
                 </div>
               </div>
 
-              <div className="text-[10.5px] font-semibold uppercase tracking-[0.07em] mb-3" style={{ color: 'var(--text-muted)' }}>Fraccion</div>
+              <div className="text-[10.5px] font-semibold uppercase tracking-[0.07em] mb-3" style={{ color: 'var(--text-muted)' }}>Fracción</div>
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-[12px]" style={{ color: 'var(--text-muted)' }}>Fraccion Arancelaria</span>
+                  <span className="text-[12px]" style={{ color: 'var(--text-muted)' }}>Fracción Arancelaria</span>
                   <span className="mono text-[12.5px] font-semibold" style={{ color: 'var(--text-primary)' }}>{draft.fraccion_arancelaria || ''}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-[12px]" style={{ color: 'var(--text-muted)' }}>Descripcion</span>
+                  <span className="text-[12px]" style={{ color: 'var(--text-muted)' }}>Descripción</span>
                   <span className="text-[12px]" style={{ color: 'var(--text-secondary)', maxWidth: 200, textAlign: 'right' }}>{draft.descripcion_mercancia.substring(0, 60)}</span>
                 </div>
               </div>
@@ -343,8 +343,8 @@ export default function NuevoPedimentoPage() {
                 <thead>
                   <tr>
                     <th style={{ width: 40 }}>#</th>
-                    <th>Fraccion</th>
-                    <th>Descripcion</th>
+                    <th>Fracción</th>
+                    <th>Descripción</th>
                     <th style={{ textAlign: 'right' }}>Cantidad</th>
                     <th style={{ textAlign: 'right' }}>Valor</th>
                   </tr>

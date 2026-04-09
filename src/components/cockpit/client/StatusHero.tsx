@@ -31,7 +31,7 @@ export function StatusHero({ statusLevel, statusSentence, entradasThisWeek, acti
           background: dotColor, display: 'inline-block', flexShrink: 0,
         }} />
         <span style={{ fontSize: 18, fontWeight: 600, color: '#E6EDF3' }}>
-          {statusLevel === 'green' ? 'Todo en orden' : statusLevel === 'amber' ? 'Atencion' : 'Accion requerida'}
+          {statusLevel === 'green' ? 'Todo en orden' : statusLevel === 'amber' ? 'Atención' : 'Acción requerida'}
         </span>
       </div>
 
@@ -55,7 +55,7 @@ export function StatusHero({ statusLevel, statusSentence, entradasThisWeek, acti
             {activeShipments}
           </span>
           <span style={{ fontSize: 12, color: '#8B949E', marginLeft: 6 }}>
-            envio{activeShipments !== 1 ? 's' : ''} en transito
+            envío{activeShipments !== 1 ? 's' : ''} en tránsito
           </span>
         </div>
       </div>
@@ -70,7 +70,7 @@ export function StatusHero({ statusLevel, statusSentence, entradasThisWeek, acti
           border: '1px solid rgba(201,168,76,0.15)',
           fontSize: 13, color: '#C9A84C',
         }}>
-          Proximo cruce esperado: <span className="font-mono" style={{ fontWeight: 600 }}>{nextCrossing.trafico}</span>
+          Próximo cruce esperado: <span className="font-mono" style={{ fontWeight: 600 }}>{nextCrossing.trafico}</span>
         </div>
       )}
     </div>

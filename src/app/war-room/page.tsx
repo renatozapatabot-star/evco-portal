@@ -38,7 +38,7 @@ export default function WarRoom() {
       setData({ enProceso, cruzadosHoy, bridgeSummary, critical, risks, noPedimento, mveCount, total: traficos.length })
     }
     load()
-    const i = setInterval(load, 30000)
+    const i = setInterval(load, 300_000) // 5 minutes
     const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') router.back() }
     window.addEventListener('keydown', esc)
     return () => { clearInterval(i); window.removeEventListener('keydown', esc) }

@@ -220,7 +220,7 @@ export default async function OperadorPage() {
                   {String(e.descripcion_mercancia || 'Sin descripción').substring(0, 50)}
                 </div>
                 <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>
-                  {e.cantidad_bultos ? `${e.cantidad_bultos} bultos` : ''} · {String(e.company_id)}
+                  {e.cantidad_bultos ? `${e.cantidad_bultos} ${e.cantidad_bultos === 1 ? 'bulto' : 'bultos'}` : ''} · {String(e.company_id)}
                 </div>
               </div>
             ))}

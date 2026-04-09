@@ -27,7 +27,7 @@ export function MyDayPanel({ myDay, teamStats, unassignedCount, operatorId }: Pr
           fontSize: 11, fontWeight: 600, textTransform: 'uppercase',
           letterSpacing: '0.05em', color: '#6E7681', marginBottom: 12,
         }}>
-          Mi dia
+          Mi día
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <StatRow label="Asignados" value={myDay.assigned} />
@@ -41,7 +41,7 @@ export function MyDayPanel({ myDay, teamStats, unassignedCount, operatorId }: Pr
               border: '1px solid rgba(217,119,6,0.15)',
               fontSize: 12, color: '#D97706',
             }}>
-              Proximo vencimiento: {myDay.nextDeadline.trafico}
+              Próximo vencimiento: {myDay.nextDeadline.trafico}
             </div>
           )}
         </div>
@@ -78,8 +78,8 @@ export function MyDayPanel({ myDay, teamStats, unassignedCount, operatorId }: Pr
               padding: '6px 0', borderTop: '1px solid rgba(255,255,255,0.06)',
               marginTop: 4, paddingTop: 10,
             }}>
-              <span style={{ fontSize: 13, color: '#D97706' }}>
-                Sin asignar: {unassignedCount}
+              <span style={{ fontSize: 13, color: '#8B949E' }}>
+                Listos para asignar: {unassignedCount}
               </span>
               <form action="/cockpit/actions" method="POST">
                 <input type="hidden" name="action" value="take_from_queue" />

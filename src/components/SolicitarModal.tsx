@@ -152,7 +152,7 @@ export function SolicitarModal({ traficoId, missingDocs, onClose, onSuccess }: P
               Solicitar documentos
             </h3>
             <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--text-secondary)' }}>
-              Tráfico {traficoId} · {selected.length} documentos
+              Tráfico {traficoId} · {selected.length} {selected.length === 1 ? 'documento' : 'documentos'}
             </p>
           </div>
           <button
@@ -284,7 +284,7 @@ export function SolicitarModal({ traficoId, missingDocs, onClose, onSuccess }: P
               ? '\u2713 Solicitud enviada'
               : sendState === 'sending'
               ? 'Enviando...'
-              : `Enviar solicitud (${selected.length} documentos) \u2192`}
+              : `Enviar solicitud (${selected.length} ${selected.length === 1 ? 'documento' : 'documentos'}) \u2192`}
           </button>
         </div>
       </div>

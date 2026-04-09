@@ -29,7 +29,7 @@ export function InventoryPanel({ inventory }: Props) {
         </div>
       ) : (
         <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
-          <Stat value={inventory.bultos} label="bultos" />
+          <Stat value={inventory.bultos} label={inventory.bultos === 1 ? 'bulto' : 'bultos'} />
           <Stat value={`${inventory.tons} ton`} label="peso" />
           <Stat value={`${inventory.oldestDays}d`} label="mas antiguo" />
           {inventory.pendingRelease > 0 && (

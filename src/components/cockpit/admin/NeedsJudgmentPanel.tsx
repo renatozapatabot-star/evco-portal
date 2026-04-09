@@ -38,7 +38,7 @@ export function NeedsJudgmentPanel({ escalations }: Props) {
         <span className="font-mono" style={{
           fontSize: 13, color: '#8B949E', marginLeft: 8,
         }}>
-          {escalations.length} escalacion{escalations.length !== 1 ? 'es' : ''}
+          {escalations.length} escalación{escalations.length !== 1 ? 'es' : ''}
           {overdue.length > 0 && (
             <span style={{ color: '#DC2626' }}> · {overdue.length} vencida{overdue.length !== 1 ? 's' : ''}</span>
           )}
@@ -47,7 +47,7 @@ export function NeedsJudgmentPanel({ escalations }: Props) {
 
       {escalations.length === 0 ? (
         <div style={{ padding: '16px 0', textAlign: 'center', color: '#6E7681', fontSize: 13 }}>
-          Sin escalaciones pendientes
+          Sin escalaciónes pendientes
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>

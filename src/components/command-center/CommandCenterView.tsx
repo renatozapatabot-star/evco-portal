@@ -15,8 +15,6 @@ import { useNetworkStatus } from '@/hooks/use-network-status'
 import { getCookieValue } from '@/lib/client-config'
 import { WorkflowGrid } from './WorkflowGrid'
 import { ActivityPulseSection } from './ActivityPulseSection'
-import { CockpitKPIStrip, type KPIItem } from '@/components/cockpit/CockpitKPIStrip'
-import { fmtDate } from '@/lib/format-utils'
 import { PullRefreshIndicator } from '@/components/broker/PullRefreshIndicator'
 import { ErrorCard } from '@/components/ui/ErrorCard'
 import { DashboardSkeleton } from '@/components/skeletons/DashboardSkeleton'
@@ -154,7 +152,7 @@ function CommandStrip({ urgentes, criticalCount, mood, isMobile, criticosOpen, s
                   {e.cve_entrada}
                 </span>
                 <div style={{ fontSize: 11, color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {e.descripcion_mercancia || 'Sin descripcion'}
+                  {e.descripcion_mercancia || 'Sin descripción'}
                 </div>
               </div>
               <span style={{
@@ -170,7 +168,7 @@ function CommandStrip({ urgentes, criticalCount, mood, isMobile, criticosOpen, s
               fontSize: 11, fontWeight: 600, color: 'var(--gold, #C9A84C)',
               textDecoration: 'none', textAlign: 'center', padding: '4px 0',
             }}>
-              Ver {criticalCount - 3} mas →
+              Ver {criticalCount - 3} más →
             </Link>
           )}
         </div>
@@ -300,7 +298,7 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
         Mientras estuvo fuera
       </div>
       <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.4 }}>
-        {awaySummary.total} accion{awaySummary.total !== 1 ? 'es' : ''} procesada{awaySummary.total !== 1 ? 's' : ''}
+        {awaySummary.total} acción{awaySummary.total !== 1 ? 'es' : ''} procesada{awaySummary.total !== 1 ? 's' : ''}
       </div>
       <button onClick={dismissAway} style={{
         marginTop: 4, fontSize: 11, fontWeight: 600,
@@ -382,51 +380,7 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
         pendingEntradas={data.pendingEntradas}
       /></div>}
 
-      {/* ── Client calm status (replaces critical banner) ── */}
-      {isClient && (
-        data.enProceso === 0 ? (
-          <div className={`status-banner allgreen${prefersReduced ? '' : ' cc-entrance-status'}`} style={{ marginBottom: 12 }}>
-            <div className="status-banner-icon">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-            </div>
-            <div>
-              <div className="status-banner-text">Todos sus envíos al corriente</div>
-              <div className="status-banner-sub">
-                {data.total > 0
-                  ? `${data.total} operaciones completadas${data.lastCrossing ? ` · último cruce: ${fmtDate(data.lastCrossing.fecha)}` : ''}`
-                  : 'Sin novedades — todo fluye'}
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div style={{
-            padding: isMobile ? '10px 12px' : '10px 16px',
-            borderRadius: 10, marginBottom: 12,
-            borderLeft: '3px solid var(--success, #16A34A)',
-            background: 'rgba(22,163,74,0.06)',
-          }}>
-            <span style={{ fontSize: 13, fontWeight: 700, color: '#16A34A' }}>
-              {`Todo en orden · ${data.enProceso} envío${data.enProceso !== 1 ? 's' : ''} en tránsito`}
-            </span>
-          </div>
-        )
-      )}
-
-      {/* ── Client KPI strip ── */}
-      {isClient && (
-        <div className="cockpit-kpi-strip" style={{ marginBottom: 16 }}>
-          <CockpitKPIStrip items={(() => {
-            const items: KPIItem[] = [
-              { label: 'Tráficos', value: data.total, href: '/traficos', dim: data.total === 0 },
-              { label: 'Cruzados', value: data.cruzadosEsteMes, href: '/traficos', color: 'var(--success, #16A34A)', dim: data.cruzadosEsteMes === 0 },
-              { label: 'Pedimentos', value: data.pedimentosThisMonth, href: '/pedimentos', dim: data.pedimentosThisMonth === 0 },
-              { label: 'MXN/USD', value: data.exchangeRate ? `$${data.exchangeRate.toFixed(2)}` : '—', href: '/financiero' },
-              { label: 'T-MEC Ahorro', value: data.tmecSavings > 0 ? `$${(data.tmecSavings / 1000).toFixed(1)}K` : '$0', href: '/reportes', color: 'var(--success, #16A34A)', dim: data.tmecSavings === 0 },
-            ]
-            return items
-          })()} />
-        </div>
-      )}
+      {/* Client status and KPI strip removed — cards provide all the information */}
 
       {/* ── DAILY COMPLETION LOOP (operator only) ── */}
       {!isClient && <div style={{
@@ -445,7 +399,7 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: completionPct >= 100 ? '#16A34A' : 'var(--text-primary, #1A1A1A)' }}>
             {totalActions > 0
-              ? `Faltan ${totalActions} accion${totalActions !== 1 ? 'es' : ''}`
+              ? `Faltan ${totalActions} acción${totalActions !== 1 ? 'es' : ''}`
               : 'Día perfecto'
             }
           </div>

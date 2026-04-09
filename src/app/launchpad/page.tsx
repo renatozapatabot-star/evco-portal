@@ -415,7 +415,7 @@ export default function LaunchpadPage() {
       setLoading(false)
     }
     refresh()
-    const interval = setInterval(refresh, 60_000)
+    const interval = setInterval(refresh, 10_800_000) // 3 hours
     return () => { cancelled = true; clearInterval(interval) }
   }, [])
 

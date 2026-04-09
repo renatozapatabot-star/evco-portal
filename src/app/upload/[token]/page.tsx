@@ -106,10 +106,13 @@ export default function UploadPage() {
           }}>Z</span>
           <div style={{ fontSize: 11, color: '#64748B', letterSpacing: '0.2em', marginTop: 4 }}>CRUZ</div>
           <div style={{ fontSize: 18, fontWeight: 700, color: '#CBD5E1', marginTop: 24, marginBottom: 8 }}>
-            {error === 'expired' ? 'Link expirado' : error === 'not_found' ? 'Link no válido' : 'Error'}
+            {error === 'expired' ? 'Enlace expirado' : error === 'not_found' ? 'Enlace no válido' : 'Error'}
+          </div>
+          <div style={{ color: '#64748B', fontSize: 14, marginBottom: 8 }}>
+            Contacta a Renato Zapata &amp; Company para un nuevo enlace.
           </div>
           <div style={{ color: '#64748B', fontSize: 14 }}>
-            Contacta a Renato Zapata &amp; Company para un nuevo link.
+            Contacto: ai@renatozapata.com
           </div>
         </div>
       </div>
@@ -268,7 +271,7 @@ export default function UploadPage() {
         </div>
 
         <div style={{ textAlign: 'center', marginTop: 16, fontSize: 11, color: '#475569' }}>
-          Link válido por 48 horas · Renato Zapata &amp; Company
+          Enlace válido por 48 horas · Renato Zapata &amp; Company
         </div>
       </div>
     </div>

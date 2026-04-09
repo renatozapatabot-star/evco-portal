@@ -72,7 +72,32 @@ export default function ChatMessageList({
 
   return (
     <div style={{ flex: 1, overflowY: 'auto', padding: '24px 28px', display: 'flex', flexDirection: 'column', gap: 16, WebkitOverflowScrolling: 'touch' }}>
-      {/* Clean empty state — no pre-prompts, just ready to chat */}
+      {/* Starter questions when empty */}
+      {messages.length === 0 && (
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, padding: '40px 20px' }}>
+          <div style={{ fontSize: 32, marginBottom: 8 }}>💬</div>
+          <p style={{ fontSize: 15, fontWeight: 600, color: D.text, textAlign: 'center' }}>
+            ¿En qué te puedo ayudar?
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, width: '100%', maxWidth: 400 }}>
+            {[
+              '¿Cuál es el estatus de mi último tráfico?',
+              '¿Cuántos pedimentos tengo este mes?',
+              '¿Qué documentos me faltan?',
+              '¿Cuánto pagué en aranceles este mes?',
+            ].map(q => (
+              <button key={q} onClick={() => sendMessage(q)} style={{
+                padding: '12px 16px', borderRadius: 10, fontSize: 13, fontWeight: 500,
+                background: D.userBubble, border: `1px solid ${D.userBorder}`,
+                color: D.text, cursor: 'pointer', textAlign: 'left',
+                minHeight: 48,
+              }}>
+                {q}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {messages.map(msg => (
         <div key={msg.id} style={{ display: 'flex', gap: 12, maxWidth: msg.role === 'user' ? '75%' : '85%', marginLeft: msg.role === 'user' ? 'auto' : 0, flexDirection: msg.role === 'user' ? 'row-reverse' : 'row' }}>

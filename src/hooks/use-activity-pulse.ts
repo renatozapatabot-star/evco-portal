@@ -137,7 +137,7 @@ export function useActivityPulse() {
 
   useEffect(() => {
     loadPulse()
-    const interval = setInterval(loadPulse, 30000)
+    const interval = setInterval(loadPulse, 7_200_000) // 2 hours
     return () => clearInterval(interval)
   }, [loadPulse])
 

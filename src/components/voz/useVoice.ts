@@ -200,10 +200,10 @@ export function useVoice(): UseVoiceReturn {
       recognitionRef.current = null
       if (event.error === 'not-allowed') {
         setMicPermission('denied')
-        setError('Permiso de microfono denegado. Habilitalo en la configuracion del navegador.')
+        setError('Permiso de micrófono denegado. Habilítalo en la configuración del navegador.')
         setVoiceState('IDLE')
       } else if (event.error === 'no-speech') {
-        setError('No se detecto voz. Intenta de nuevo.')
+        setError('No se detectó voz. Intenta de nuevo.')
         setVoiceState('IDLE')
       } else if (event.error !== 'aborted') {
         setError('Error de reconocimiento de voz. Intenta de nuevo.')

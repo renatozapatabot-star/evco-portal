@@ -174,11 +174,18 @@ export default function ExpedientesPage() {
 
   const SortArrow = ({ col }: { col: string }) => sort.column === col ? <span style={{ marginLeft: 4, fontSize: 10 }}>{sort.direction === 'asc' ? '↑' : '↓'}</span> : null
 
+  const completeCount = useMemo(() => rows.filter(r => r.pct === 100).length, [rows])
+
   return (
     <div className="page-shell">
-      {fetchError && <div style={{ marginBottom: 16 }}><ErrorCard message={fetchError} onRetry={() => window.location.reload()} /></div>}
+      <div style={{ marginBottom: 12 }}>
+        <h1 className="page-title">Expedientes Digitales</h1>
+        <p className="page-subtitle">
+          {completeCount} de {rows.length} expedientes completos
+        </p>
+      </div>
 
-      {/* KPI cards removed — table is self-explanatory */}
+      {fetchError && <div style={{ marginBottom: 16 }}><ErrorCard message={fetchError} onRetry={() => window.location.reload()} /></div>}
 
       <div className="table-shell">
         <div className="table-toolbar" style={{ justifyContent: 'flex-end' }}>

@@ -17,8 +17,8 @@ const RECIPIENTS = [
 
 const TEMPLATES = [
   { id: 'doc_request', name: 'Solicitud de Documentos', body: 'Estimado(a) {recipient},\n\nPor medio de la presente, le solicito los siguientes documentos para el trafico {trafico}:\n\n- Factura comercial\n- Packing list\n- Bill of Lading\n\nAgradezco su pronta respuesta.\n\nAtentamente,\nRenato Zapata & Company' },
-  { id: 'status_update', name: 'Actualizacion de Estado', body: 'Estimado(a) {recipient},\n\nLe informo sobre el estado actual de sus operaciones:\n\n{status_details}\n\nQuedamos a sus ordenes.\n\nRenato Zapata & Company' },
-  { id: 'compliance_notice', name: 'Aviso de Cumplimiento', body: 'AVISO DE CUMPLIMIENTO\n\n{recipient},\n\nSe le notifica que la siguiente obligacion esta proxima a vencer:\n\n{compliance_details}\n\nFavor de tomar accion antes de la fecha limite.\n\nRenato Zapata & Company' },
+  { id: 'status_update', name: 'Actualización de Estado', body: 'Estimado(a) {recipient},\n\nLe informo sobre el estado actual de sus operaciones:\n\n{status_details}\n\nQuedamos a sus órdenes.\n\nRenato Zapata & Company' },
+  { id: 'compliance_notice', name: 'Aviso de Cumplimiento', body: 'AVISO DE CUMPLIMIENTO\n\n{recipient},\n\nSe le notifica que la siguiente obligación está próxima a vencer:\n\n{compliance_details}\n\nFavor de tomar acción antes de la fecha límite.\n\nRenato Zapata & Company' },
   { id: 'weekly_summary', name: 'Resumen Semanal', body: 'Estimado(a) {recipient},\n\nAdjunto el resumen semanal de operaciones.\n\n{summary}\n\nRenato Zapata & Company' },
   { id: 'custom', name: 'Personalizado', body: '' },
 ]
@@ -154,7 +154,7 @@ export default function ComunicacionesPage() {
       const res = await fetch('/api/chat', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: [{ role: 'user', content: `Redacta un email profesional bilingue (espanol primario) para ${recipient || 'el cliente'} sobre: ${subject || 'operaciones aduanales'}. ${body ? 'Contexto adicional: ' + body : ''}. Firma como Renato Zapata & Company.` }]
+          messages: [{ role: 'user', content: `Redacta un email profesional bilingüe (español primario) para ${recipient || 'el cliente'} sobre: ${subject || 'operaciones aduanales'}. ${body ? 'Contexto adicional: ' + body : ''}. Firma como Renato Zapata & Company.` }]
         })
       })
       const data = await res.json()

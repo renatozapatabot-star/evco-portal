@@ -8,9 +8,10 @@ export function CruzAskPanel() {
   const [loading, setLoading] = useState(false)
 
   const examples = [
-    'Donde esta mi envio?',
-    'Cuanto en aranceles este mes?',
-    'Que falta para cerrar mi trafico?',
+    '¿Cuál es el estatus de mi último tráfico?',
+    '¿Cuántos pedimentos tengo este mes?',
+    '¿Qué documentos me faltan?',
+    '¿Cuánto pagué en aranceles este mes?',
   ]
 
   async function handleSubmit(e: React.FormEvent) {
@@ -28,7 +29,7 @@ export function CruzAskPanel() {
       const data = await res.json()
       setAnswer(data.answer || data.error || 'Sin respuesta')
     } catch {
-      setAnswer('Error de conexion. Intenta de nuevo.')
+      setAnswer('Error de conexión. Intenta de nuevo.')
     } finally {
       setLoading(false)
     }
@@ -45,7 +46,7 @@ export function CruzAskPanel() {
         fontSize: 11, fontWeight: 600, textTransform: 'uppercase',
         letterSpacing: '0.05em', color: '#6E7681', marginBottom: 12,
       }}>
-        Preguntale a CRUZ
+        Pregúntale a CRUZ
       </div>
 
       {/* Example prompts */}

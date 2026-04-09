@@ -52,7 +52,7 @@ export default function VoiceOrb({ voiceState, onTap }: VoiceOrbProps) {
     <div
       role="button"
       tabIndex={0}
-      aria-label={voiceState === 'IDLE' ? 'Activar microfono' : 'Detener'}
+      aria-label={voiceState === 'IDLE' ? 'Activar micrófono' : 'Detener'}
       onClick={onTap}
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onTap() }}
       style={{

@@ -53,11 +53,11 @@ export function BrokerTools({ heartbeat, intelligence, isMobile }: BrokerToolsPr
         gap: 12, marginBottom: 32,
       }}>
         {[
-          { href: '/oca', label: 'OCA Clasificacion' },
-          { href: '/cotizacion', label: 'Cotizacion' },
+          { href: '/oca', label: 'OCA Clasificación' },
+          { href: '/cotizacion', label: 'Cotización' },
           { href: '/usmca', label: 'USMCA' },
           { href: '/anexo24', label: 'Anexo 24' },
-          { href: '/admin', label: 'Administracion' },
+          { href: '/admin', label: 'Administración' },
         ].map(tool => (
           <button
             key={tool.href}

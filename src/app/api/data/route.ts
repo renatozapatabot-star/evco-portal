@@ -160,7 +160,7 @@ export async function GET(req: NextRequest) {
   // Cache control based on table type
   const LONG_CACHE = new Set(['oca_database', 'supplier_network', 'anomaly_baselines'])
   const MEDIUM_CACHE = new Set(['aduanet_facturas', 'econta_facturas', 'econta_cartera', 'product_intelligence'])
-  const maxAge = LONG_CACHE.has(table) ? 3600 : MEDIUM_CACHE.has(table) ? 300 : 30
+  const maxAge = LONG_CACHE.has(table) ? 7200 : MEDIUM_CACHE.has(table) ? 3600 : 3600
   const stale = maxAge * 2
 
   return NextResponse.json({ data }, {

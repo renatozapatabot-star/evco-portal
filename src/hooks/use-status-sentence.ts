@@ -10,7 +10,7 @@ interface StatusSummary {
 }
 
 const CACHE_KEY = 'cruz_status_summary'
-const CACHE_TTL = 60_000 // 1 minute
+const CACHE_TTL = 7_200_000 // 2 hours
 
 let inFlight: Promise<StatusSummary> | null = null
 

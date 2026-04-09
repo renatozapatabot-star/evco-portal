@@ -21,7 +21,7 @@ export function useTabTitle() {
       }
     }
     update()
-    const t = setInterval(update, 30000)
+    const t = setInterval(update, 7_200_000) // 2 hours
     return () => { clearInterval(t); document.title = BASE }
   }, [])
 }

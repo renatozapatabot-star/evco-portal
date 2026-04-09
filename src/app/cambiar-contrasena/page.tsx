@@ -12,6 +12,7 @@ export default function CambiarContrasena() {
   const [confirmPw, setConfirmPw] = useState('')
   const [showCurrent, setShowCurrent] = useState(false)
   const [showNew, setShowNew] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
@@ -199,19 +200,27 @@ export default function CambiarContrasena() {
           <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary, #1A1A1A)', display: 'block', marginBottom: 6 }}>
             Confirmar nueva contraseña
           </span>
-          <input
-            type="password"
-            value={confirmPw}
-            onChange={e => setConfirmPw(e.target.value)}
-            required
-            autoComplete="new-password"
-            style={{
-              width: '100%', padding: 12, fontSize: 15,
-              border: `1px solid ${confirmPw && confirmPw !== newPw ? 'var(--red-500, #DC2626)' : 'var(--border, #E8E5E0)'}`,
-              borderRadius: 8, background: 'var(--bg-primary, #FAFAF8)', minHeight: 60,
-              boxSizing: 'border-box',
-            }}
-          />
+          <div style={{ position: 'relative' }}>
+            <input
+              type={showConfirm ? 'text' : 'password'}
+              value={confirmPw}
+              onChange={e => setConfirmPw(e.target.value)}
+              required
+              autoComplete="new-password"
+              style={{
+                width: '100%', padding: 12, paddingRight: 48, fontSize: 15,
+                border: `1px solid ${confirmPw && confirmPw !== newPw ? 'var(--red-500, #DC2626)' : 'var(--border, #E8E5E0)'}`,
+                borderRadius: 8, background: 'var(--bg-primary, #FAFAF8)', minHeight: 60,
+                boxSizing: 'border-box',
+              }}
+            />
+            <button type="button" onClick={() => setShowConfirm(!showConfirm)} style={{
+              position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
+              background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted, #6E7681)', padding: 4,
+            }}>
+              {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
           {confirmPw && confirmPw !== newPw && (
             <span style={{ fontSize: 12, color: 'var(--red-text, #991B1B)', marginTop: 4, display: 'block' }}>
               Las contraseñas no coinciden

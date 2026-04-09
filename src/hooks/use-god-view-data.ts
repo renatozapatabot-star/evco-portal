@@ -278,7 +278,7 @@ export function useGodViewData(): GodViewData {
 
   useEffect(() => {
     fetchAll()
-    const interval = setInterval(fetchAll, 60000)
+    const interval = setInterval(fetchAll, 10_800_000) // 3 hours
     return () => clearInterval(interval)
   }, [fetchAll])
 

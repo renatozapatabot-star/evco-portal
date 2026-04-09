@@ -387,7 +387,7 @@ export default async function AdminPage() {
             <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 750 }} aria-label="Clasificaciones recientes de productos">
               <thead>
                 <tr style={{ borderBottom: `1px solid ${T.border}` }}>
-                  {['Cliente', 'Cve Producto', 'Fraccion', 'Fuente', 'Descripcion', 'Clasificado'].map(h => (
+                  {['Cliente', 'Cve Producto', 'Fracción', 'Fuente', 'Descripción', 'Clasificado'].map(h => (
                     <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontSize: 11, fontWeight: 600,
                       color: T.muted, letterSpacing: '0.05em', textTransform: 'uppercase' }}>{h}</th>
                   ))}
@@ -443,7 +443,7 @@ export default async function AdminPage() {
             <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 650 }} aria-label="Cobertura de productos por cliente">
               <thead>
                 <tr style={{ borderBottom: `1px solid ${T.border}` }}>
-                  {['Cliente', 'Total Productos', 'Con Fraccion', 'Con Descripcion', 'Cobertura'].map(h => (
+                  {['Cliente', 'Total Productos', 'Con Fracción', 'Con Descripción', 'Cobertura'].map(h => (
                     <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontSize: 11, fontWeight: 600,
                       color: T.muted, letterSpacing: '0.05em', textTransform: 'uppercase' }}>{h}</th>
                   ))}

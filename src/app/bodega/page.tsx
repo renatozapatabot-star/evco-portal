@@ -374,7 +374,7 @@ export default function BodegaPage() {
                     </div>
                   </div>
                   <div style={{ display: 'flex', gap: 16, fontSize: 13, color: T.textSecondary }}>
-                    <span>{e.cantidad_bultos ?? 0} bultos</span>
+                    <span>{e.cantidad_bultos ?? 0} {(e.cantidad_bultos ?? 0) === 1 ? 'bulto' : 'bultos'}</span>
                     <span>{e.peso_bruto != null ? `${fmtKg(e.peso_bruto)} kg` : '—'}</span>
                   </div>
                   {e.trafico && (

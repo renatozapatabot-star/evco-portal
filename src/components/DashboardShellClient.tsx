@@ -287,7 +287,7 @@ export default function DashboardShellClient({ children }: Props) {
       {idle && (
         <div className="idle-overlay" onClick={() => { setIdle(false); setShowWarning(false) }}>
           <div style={{ fontSize: 48, marginBottom: 16 }}>&#128274;</div>
-          <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 8 }}>Sesion bloqueada</div>
+          <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 8 }}>Sesión bloqueada</div>
           <div style={{ fontSize: 13, color: '#94a3b8', marginBottom: 20 }}>Haz clic o toca para continuar</div>
         </div>
       )}

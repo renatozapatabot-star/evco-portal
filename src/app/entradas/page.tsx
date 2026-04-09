@@ -145,6 +145,13 @@ export default function EntradasPage() {
 
   return (
     <div className="page-shell">
+      <div style={{ marginBottom: 12 }}>
+        <h1 className="page-title">Entradas</h1>
+        <p className="page-subtitle">
+          {rows.length.toLocaleString('es-MX')} entrada{rows.length !== 1 ? 's' : ''}
+          {unassignedCount > 0 && ` · ${unassignedCount} sin tráfico`}
+        </p>
+      </div>
 
       <div className="table-shell">
         <div className="table-toolbar" style={{ justifyContent: 'flex-end' }}>
@@ -259,7 +266,7 @@ export default function EntradasPage() {
                       )}
                       {(r.cantidad_bultos ?? 0) > 0 && (
                         <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
-                          {r.cantidad_bultos} bultos
+                          {r.cantidad_bultos} {r.cantidad_bultos === 1 ? 'bulto' : 'bultos'}
                         </span>
                       )}
                       {(r.peso_bruto ?? 0) > 0 && (

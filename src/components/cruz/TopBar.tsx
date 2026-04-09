@@ -105,7 +105,7 @@ export default function TopBar({
           {onLogout && (
             <button
               onClick={onLogout}
-              aria-label="Cerrar sesion"
+              aria-label="Cerrar sesión"
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -168,7 +168,7 @@ export default function TopBar({
           <button
             onClick={onLogout}
             className="topbar-logout-btn"
-            aria-label="Cerrar sesion"
+            aria-label="Cerrar sesión"
             style={{
               display: 'inline-flex',
               alignItems: 'center',

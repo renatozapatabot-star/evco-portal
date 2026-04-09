@@ -83,13 +83,17 @@ export default function ProveedorPage() {
   }
 
   // Error state
+  const errorMessage = error === 'not_found' || error === 'expired'
+    ? 'Enlace no válido o expirado. Por favor solicita un enlace nuevo a tu agente aduanal: ai@renatozapata.com'
+    : error
+
   if (error && !info) {
     return (
       <div style={styles.page}>
         <div style={styles.card}>
           <div style={styles.logo}>CRUZ</div>
-          <div style={{ fontSize: 16, fontWeight: 600, color: '#DC2626', marginBottom: 8 }}>Enlace no válido</div>
-          <p style={{ fontSize: 14, color: '#6B6B6B' }}>{error}</p>
+          <div style={{ fontSize: 16, fontWeight: 600, color: '#DC2626', marginBottom: 12 }}>Enlace no válido</div>
+          <p style={{ fontSize: 14, color: '#6B6B6B', lineHeight: 1.6 }}>{errorMessage}</p>
         </div>
       </div>
     )

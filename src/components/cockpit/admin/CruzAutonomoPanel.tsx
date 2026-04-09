@@ -4,13 +4,13 @@ import type { AdminData } from '../shared/fetchCockpitData'
 
 const WORKFLOW_STAGES = ['intake', 'classify', 'docs', 'pedimento', 'crossing', 'post_op', 'invoice']
 const STAGE_LABELS: Record<string, string> = {
-  intake: 'Recepcion',
-  classify: 'Clasificacion',
+  intake: 'Recepción',
+  classify: 'Clasificación',
   docs: 'Documentos',
   pedimento: 'Pedimento',
   crossing: 'Cruce',
   post_op: 'Post-Op',
-  invoice: 'Facturacion',
+  invoice: 'Facturación',
 }
 
 interface Props {
@@ -43,14 +43,14 @@ export function CruzAutonomoPanel({ decisions, workflow, actions }: Props) {
           CRUZ Autonomo
         </span>
         <p style={{ fontSize: 13, color: '#8B949E', margin: '4px 0 0' }}>
-          La IA esta trabajando
+          La IA está trabajando
         </p>
       </div>
 
       {/* KPIs row */}
       <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', marginBottom: 16 }}>
         <KPI value={decisions.total} label="decisiones hoy" />
-        <KPI value={`${decisions.accuracy}%`} label="precision" />
+        <KPI value={`${decisions.accuracy}%`} label="precisión" />
         <KPI value={actions.hoursSaved} label="horas ahorradas" />
       </div>
 

@@ -137,7 +137,7 @@ function exportCSV(rows: TraficoRow[], clientClave: string) {
     `Total registros: ${rows.length}`,
     '',
   ]
-  const headers = ['Trafico', 'Estatus', 'Fecha', 'Descripcion', 'Peso_kg', 'Importe_USD', 'Pedimento', 'Proveedores']
+  const headers = ['Tráfico', 'Estatus', 'Fecha', 'Descripción', 'Peso_kg', 'Importe_USD', 'Pedimento', 'Proveedores']
   const csvRows = rows.map(r => [
     r.trafico,
     r.estatus ?? '',

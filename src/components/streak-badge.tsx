@@ -73,7 +73,7 @@ export function StreakBadge() {
   if (data.operationsThisMonth > 0) {
     badges.push({
       icon: <TrendingUp size={14} style={{ color: 'var(--success)' }} />,
-      text: `${data.operationsThisMonth} operacion${data.operationsThisMonth !== 1 ? 'es' : ''} este mes`,
+      text: `${data.operationsThisMonth} operación${data.operationsThisMonth !== 1 ? 'es' : ''} este mes`,
       color: 'var(--success)',
       bg: 'rgba(22, 163, 74, 0.08)',
     })

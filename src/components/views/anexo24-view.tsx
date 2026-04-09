@@ -50,7 +50,7 @@ function isT(regimen: string | null): boolean {
 }
 
 function exportCSV(rows: EnrichedRow[], clave: string) {
-  const h = ['#', 'Pedimento', 'Fecha', 'Fraccion', 'Descripcion', 'Cantidad', 'Valor_USD', 'Proveedor', 'Origen', 'T-MEC']
+  const h = ['#', 'Pedimento', 'Fecha', 'Fracción', 'Descripción', 'Cantidad', 'Valor_USD', 'Proveedor', 'Origen', 'T-MEC']
   const c = rows.map(r => [
     r.rowNum, r.pedimento, r.fecha ?? '',
     r.fraccion, (r.descripcion).replace(/,/g, ' '),

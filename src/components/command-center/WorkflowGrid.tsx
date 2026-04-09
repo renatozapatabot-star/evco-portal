@@ -47,7 +47,7 @@ const CARDS: CardDef[] = [
     getKpi: (p) => p.pendingEntradas,
     getSubtitle: (p, u) => {
       if (p.viewMode === 'client') return u === 'green' || u === 'neutral' ? 'Todo al corriente' : 'recibidas esta semana'
-      return u === 'green' || u === 'neutral' ? 'Todo asignado — al corriente' : 'sin asignar — accion requerida'
+      return u === 'green' || u === 'neutral' ? 'Todo asignado — al corriente' : 'sin asignar — acción requerida'
     },
     getActions: (p, u) => {
       if (p.viewMode === 'client') return [{ label: 'Ver lista', href: '/entradas', primary: true }]
@@ -118,8 +118,8 @@ const CARDS: CardDef[] = [
     getSubtitle: (p) => {
       const bultos = p.inventarioBultos ?? 0
       const tons = p.inventarioPeso ?? 0
-      if (bultos > 0 && tons > 0) return `bultos · ${tons.toFixed(1)} ton — en bodega`
-      if (bultos > 0) return 'bultos en bodega'
+      if (bultos > 0 && tons > 0) return `${bultos === 1 ? 'bulto' : 'bultos'} · ${tons.toFixed(1)} ton — en bodega`
+      if (bultos > 0) return bultos === 1 ? 'bulto en bodega' : 'bultos en bodega'
       return 'Bodega disponible — sin mercancia'
     },
     getActions: () => [{ label: 'Ver bodega', href: '/bodega', primary: true }],
@@ -171,25 +171,25 @@ const CARDS: CardDef[] = [
   {
     key: 'crossing_intelligence', href: '/cruces', label: 'Inteligencia de Cruce', Icon: Navigation,
     getKpi: () => null,
-    getSubtitle: () => 'Predicciones de espera y rutas — proximamente',
+    getSubtitle: () => 'Predicciones de espera y rutas — próximamente',
     getActions: () => [{ label: 'Ver cruces', href: '/cruces', primary: true }],
   },
   {
     key: 'demand_forecast', href: '/predicciones', label: 'Pronóstico de Demanda', Icon: LineChart,
     getKpi: () => null,
-    getSubtitle: () => 'Volumen esperado y tendencias — proximamente',
+    getSubtitle: () => 'Volumen esperado y tendencias — próximamente',
     getActions: () => [{ label: 'Ver predicciones', href: '/predicciones', primary: true }],
   },
   {
     key: 'cost_optimizer', href: '/ahorro', label: 'Optimización de Costos', Icon: PiggyBank,
     getKpi: () => null,
-    getSubtitle: () => 'Ahorro estimado y oportunidades — proximamente',
+    getSubtitle: () => 'Ahorro estimado y oportunidades — próximamente',
     getActions: () => [{ label: 'Ver ahorro', href: '/ahorro', primary: true }],
   },
   {
     key: 'dispatch_coordinator', href: '/operaciones', label: 'Coordinación de Despacho', Icon: Radio,
     getKpi: () => null,
-    getSubtitle: () => 'Asignación inteligente de operaciones — proximamente',
+    getSubtitle: () => 'Asignación inteligente de operaciones — próximamente',
     getActions: () => [{ label: 'Ver operaciones', href: '/operaciones', primary: true }],
   },
   // ── Row 5: Client-facing reference cards ──
@@ -287,23 +287,22 @@ export function WorkflowGrid(props: WorkflowGridProps) {
     )
   }
 
-  // Desktop: 12-col adaptive grid — critical cards span 6, others span 3
+  // Desktop: uniform 4-col grid — all cards same size
   return (
     <div style={{
       display: 'grid',
-      gridTemplateColumns: 'repeat(12, 1fr)',
+      gridTemplateColumns: 'repeat(4, 1fr)',
       gridAutoRows: '1fr',
       gap: 16,
       width: '100%',
       flex: 1,
     }}>
       {allCards.map((card, i) => {
-        const span = (card.urgency === 'red' || card.urgency === 'amber') ? 6 : 3
         return (
           <motion.div
             key={card.key}
             layout
-            style={{ gridColumn: `span ${span}` }}
+            style={{ gridColumn: 'span 1' }}
             initial={{ opacity: 0, scale: 0.97 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ type: 'spring', stiffness: 400, damping: 30, delay: prefersReduced ? 0 : 0.3 + i * 0.05 }}

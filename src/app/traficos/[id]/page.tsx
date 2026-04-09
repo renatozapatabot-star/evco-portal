@@ -463,7 +463,7 @@ export default function TraficoDetailPage() {
     const url = `${window.location.origin}/share/${encodeURIComponent(tId)}`
     try {
       await navigator.clipboard.writeText(url)
-      toast('Enlace copiado - Funciona aunque el destinatario no haya iniciado sesion', 'success')
+      toast('Enlace copiado - Funciona aunque el destinatario no haya iniciado sesión', 'success')
     } catch {
       toast('No se pudo copiar el enlace', 'error')
     }
@@ -1139,7 +1139,7 @@ export default function TraficoDetailPage() {
                 color: 'var(--bg-card)', cursor: 'pointer', minHeight: 60,
               }}
             >
-              Solicitar {missingDocs.length} documentos faltantes &#x2192;
+              Solicitar {missingDocs.length} {missingDocs.length === 1 ? 'documento faltante' : 'documentos faltantes'} &#x2192;
             </button>
           )}
           {solicitadoOk && (
@@ -1339,7 +1339,7 @@ export default function TraficoDetailPage() {
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 4, fontSize: 12, color: 'var(--slate-500)' }}>
                         {e.cantidad_bultos != null && (
-                          <span><strong>{String(e.cantidad_bultos)}</strong> bultos</span>
+                          <span><strong>{String(e.cantidad_bultos)}</strong> {e.cantidad_bultos === 1 ? 'bulto' : 'bultos'}</span>
                         )}
                         {e.peso_bruto != null && Number(e.peso_bruto) > 0 && (
                           <span style={{ fontFamily: 'var(--font-mono)' }}>{fmtKg(Number(e.peso_bruto))} kg</span>

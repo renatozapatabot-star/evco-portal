@@ -57,7 +57,7 @@ export function IntelligenceTicker() {
       } catch (e) { console.error('[intelligence-ticker] load failed:', (e as Error).message) }
     }
     load()
-    const interval = setInterval(load, 60000)
+    const interval = setInterval(load, 10_800_000) // 3 hours
     return () => clearInterval(interval)
   }, [])
 

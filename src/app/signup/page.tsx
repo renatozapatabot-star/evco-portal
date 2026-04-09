@@ -5,7 +5,7 @@ import { signupAction } from './actions'
 import Link from 'next/link'
 import { CruzMark } from '@/components/command-center/CruzMark'
 
-const ADUANAS = ['Nuevo Laredo', 'Laredo', 'Colombia', 'Reynosa', 'Ciudad Juárez', 'Tijuana', 'Monterrey', 'Guadalajara', 'Otra']
+const ADUANAS = ['Nuevo Laredo (240)', 'Colombia (240)', 'Reynosa (260)', 'Matamoros (210)', 'Ciudad Juárez (070)', 'Tijuana (070)', 'Mexicali (071)', 'Nogales (080)', 'Manzanillo (160)', 'Lázaro Cárdenas (470)', 'Veracruz (430)', 'Monterrey', 'Guadalajara', 'Otra']
 
 export default function SignupPage() {
   const [state, action, pending] = useActionState(
@@ -53,7 +53,7 @@ export default function SignupPage() {
 
         <form action={action} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <Input name="full_name" label="Nombre del agente" placeholder="Juan García López" required />
-          <Input name="email" label="Email" type="email" placeholder="juan@agencia.com" required />
+          <Input name="email" label="Correo electrónico" type="email" placeholder="juan@agencia.com" required />
           <Input name="firm_name" label="Nombre de la agencia" placeholder="Agencia Aduanal García" required />
           <Input name="patente" label="Patente aduanal" placeholder="3596" required maxLength={5} />
           <div>

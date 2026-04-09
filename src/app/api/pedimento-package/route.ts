@@ -81,8 +81,8 @@ export async function GET(request: NextRequest) {
   const presentDocs = docs.map((d: { doc_type?: string }) => d.doc_type).filter((x): x is string => !!x)
   const missingDocs = REQUIRED_DOCS.filter(d => !presentDocs.some(p => p.includes(d.split('_')[0])))
   const blockers: string[] = []
-  if (missingDocs.length > 0) blockers.push(`Faltan ${missingDocs.length} documentos: ${missingDocs.map(d => DOC_LABELS[d] || d).join(', ')}`)
-  if (!traf.pedimento) blockers.push('Sin numero de pedimento')
+  if (missingDocs.length > 0) blockers.push(`Faltan ${missingDocs.length} ${missingDocs.length === 1 ? 'documento' : 'documentos'}: ${missingDocs.map(d => DOC_LABELS[d] || d).join(', ')}`)
+  if (!traf.pedimento) blockers.push('Sin número de pedimento')
   if (riskScore > 70) blockers.push(`Risk score alto: ${riskScore}/100`)
   if (igiPending) blockers.push('Tasa IGI pendiente — requiere clasificación arancelaria')
 

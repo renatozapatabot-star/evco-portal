@@ -31,7 +31,7 @@ export function WeekAheadPanel({ weekAhead }: Props) {
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr>
-                {['', 'Trafico', 'Descripcion', 'Valor', 'Estado'].map(h => (
+                {['', 'Tráfico', 'Descripción', 'Valor', 'Estado'].map(h => (
                   <th key={h} style={{
                     fontSize: 11, fontWeight: 600, textTransform: 'uppercase',
                     letterSpacing: '0.05em', color: '#6E7681',

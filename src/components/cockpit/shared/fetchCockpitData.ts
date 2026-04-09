@@ -37,7 +37,7 @@ export interface AdminData {
   unassignedCount: number
   companies: Array<{
     company_id: string; name: string; trafico_count: number
-    valor_ytd: number
+    valor_ytd: number; last_activity: string | null
   }>
   bridges: Array<{
     name: string; nameEs: string; commercial: number | null
@@ -175,9 +175,9 @@ async function fetchAdminData(): Promise<AdminData> {
     sb.from('companies')
       .select('company_id, name')
       .limit(100),
-    // 7: all active traficos for team stats
+    // 7: all active traficos for team stats + company portfolio
     sb.from('traficos')
-      .select('id, trafico, assigned_to_operator_id, estatus, company_id')
+      .select('id, trafico, assigned_to_operator_id, estatus, company_id, importe_total, fecha_llegada')
       .in('estatus', ['En Proceso', 'Documentacion', 'En Aduana'])
       .gte('fecha_llegada', '2024-01-01')
       .limit(2000),
@@ -284,18 +284,28 @@ async function fetchAdminData(): Promise<AdminData> {
     }
   })
 
-  // Companies with trafico counts
+  // Companies with trafico counts, YTD value, and last activity
   const companyStats = companies.map((c: Record<string, unknown>) => {
     const traficos = allActiveTraficos.filter(
       (t: Record<string, unknown>) => t.company_id === c.company_id
     )
+    const valorYtd = traficos.reduce(
+      (s: number, t: Record<string, unknown>) => s + Number(t.importe_total || 0), 0
+    )
+    const dates = traficos
+      .map((t: Record<string, unknown>) => t.fecha_llegada as string | null)
+      .filter(Boolean)
+      .sort()
+    const lastActivity = dates.length > 0 ? dates[dates.length - 1] : null
     return {
       company_id: c.company_id as string,
       name: c.name as string,
       trafico_count: traficos.length,
-      valor_ytd: 0,
+      valor_ytd: valorYtd,
+      last_activity: lastActivity,
     }
   }).filter(c => c.trafico_count > 0)
+    .sort((a, b) => b.trafico_count - a.trafico_count)
 
   // Smart queue — top 5 from unassigned by simple priority
   const smartQueue = unassignedTraficos

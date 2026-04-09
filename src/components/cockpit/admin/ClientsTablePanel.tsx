@@ -1,6 +1,7 @@
 'use client'
 
-import { fmtUSDCompact } from '../shared/formatters'
+import Link from 'next/link'
+import { fmtUSDCompact, fmtRelativeTime } from '../shared/formatters'
 import type { AdminData } from '../shared/fetchCockpitData'
 
 interface Props {
@@ -16,25 +17,28 @@ export function ClientsTablePanel({ companies }: Props) {
       borderTop: '3px solid rgba(201,168,76,0.4)',
       padding: 16,
     }}>
-      <div style={{ marginBottom: 12 }}>
+      <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span style={{
           fontSize: 11, fontWeight: 600, textTransform: 'uppercase',
           letterSpacing: '0.05em', color: '#6E7681',
         }}>
-          Clientes
+          Cartera de clientes
+        </span>
+        <span style={{ fontSize: 11, color: '#6E7681' }}>
+          {companies.length} con tráficos activos
         </span>
       </div>
 
       {companies.length === 0 ? (
         <div style={{ padding: '16px 0', textAlign: 'center', color: '#6E7681', fontSize: 13 }}>
-          Sin clientes con traficos activos
+          Sin clientes con tráficos activos
         </div>
       ) : (
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr>
-                {['Cliente', 'Traficos', 'Valor YTD'].map(h => (
+                {['Cliente', 'Tráficos', 'Valor USD', 'Última actividad'].map(h => (
                   <th key={h} style={{
                     fontSize: 11, fontWeight: 600, textTransform: 'uppercase',
                     letterSpacing: '0.05em', color: '#6E7681',
@@ -53,17 +57,30 @@ export function ClientsTablePanel({ companies }: Props) {
                   background: i % 2 === 0 ? '#1A1A1A' : 'rgba(255,255,255,0.02)',
                 }}>
                   <td style={{ padding: '10px 12px', fontSize: 13, color: '#E6EDF3' }}>
-                    {c.name}
+                    <Link
+                      href={`/traficos?company=${encodeURIComponent(c.company_id)}`}
+                      style={{ color: '#E6EDF3', textDecoration: 'none' }}
+                    >
+                      {c.name}
+                    </Link>
                   </td>
                   <td className="font-mono" style={{
-                    padding: '10px 12px', fontSize: 13, color: '#E6EDF3', textAlign: 'right',
+                    padding: '10px 12px', fontSize: 13, color: '#C9A84C', textAlign: 'right', fontWeight: 600,
                   }}>
                     {c.trafico_count}
                   </td>
                   <td className="font-mono" style={{
-                    padding: '10px 12px', fontSize: 13, color: '#8B949E', textAlign: 'right',
+                    padding: '10px 12px', fontSize: 13,
+                    color: c.valor_ytd > 0 ? '#E6EDF3' : '#6E7681',
+                    textAlign: 'right',
                   }}>
-                    {fmtUSDCompact(c.valor_ytd) || '—'}
+                    {c.valor_ytd > 0 ? fmtUSDCompact(c.valor_ytd) : '—'}
+                  </td>
+                  <td className="font-mono" style={{
+                    padding: '10px 12px', fontSize: 12,
+                    color: '#8B949E', textAlign: 'right',
+                  }}>
+                    {c.last_activity ? fmtRelativeTime(c.last_activity) : '—'}
                   </td>
                 </tr>
               ))}

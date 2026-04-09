@@ -446,6 +446,50 @@ Not a demo. A real pedimento. A real broker. A real clearance.
 
 ---
 
+## V1 PORTAL — CURRENT STATE (updated 2026-04-09, post-marathon)
+
+**Portal:** https://evco-portal.vercel.app
+**Demo:** https://evco-portal.vercel.app/demo/live (or password: demo2026)
+
+### Marathon Results (April 8-9, 2026)
+- 80 commits, 266 files, 22,632 lines added
+- 30+ architectural blocks shipped (16-20, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U)
+- 48 cockpit components across admin/operator/client
+- 36 surfaces truth-audited against Supabase (100% pass rate)
+
+### Three Cockpits
+- **Admin:** 12 cards — business health hero, CRUZ Autónomo, escalations, intelligence, pipeline finance, weekly trend, team live, team activity feed, decisiones pendientes, smart queue, clients table, right rail
+- **Operator:** 12 cards — MI TURNO, doc chaser, classifications, entradas, my day, team, bridges, próximas acciones, blocked, performance strip, duelo del día, search
+- **Client:** WorkflowGrid with 11+ tiles — tráficos, entradas, expedientes, pedimentos, contabilidad, inventario, reportes, tipo de cambio, último cruce, catálogo, documentos
+
+### Thesis
+**"CRUZ exists to turn customs work from doing into reviewing. 99% automated, 1% one-touch approval."**
+- CruzRecommendation at 3 levels (card, row, section)
+- 6 server actions with real database writes
+- Proposal engine with rule-first generators
+- Form pre-fill with gold/white pattern
+
+### Accounts
+- **8 operators:** Renato IV (admin), Eloisa, Claudia, Anabel, Vicente, Clementina, Arusha, Eduardo
+- **16 client accounts** with passwords
+- **1 demo company** (DEMO PLASTICS, 152 seeded rows)
+
+### Pending SQL Migrations (Renato must run in Supabase SQL Editor)
+1. `supabase/migrations/20260409_v3_requiem.sql` — operator_memories, cockpit_snapshots, demo_leads
+2. `supabase/migrations/20260410_block_j_proposal_engine.sql` — surface_proposals, proposal_generation_log
+3. `supabase/migrations/20260410_block_s_gap_closure.sql` — notifications, shift_handoffs, client_issues, transportistas, carrier_assignments
+
+### Key Design Decisions
+- Dark cockpit theme (#111111 canvas, #222222 cards, #C9A84C gold)
+- Login is single password field (access code), no email required
+- Operators see cross-client data, clients isolated by company_id
+- Financial routes blocked for operators (/financiero, /cuentas, /rentabilidad)
+- Polling reduced to 2-3 hours (not Wall Street)
+- All animations respect prefers-reduced-motion
+- Mexican Spanish throughout with proper orthography
+
+---
+
 ## PIPELINE — CURRENT STATE (updated 2026-04-02)
 
 ### Crontab: 17 jobs on Throne

@@ -52,10 +52,15 @@ function DeltaBadge({ delta, label, anomaly }: { delta: number; label: string; a
   )
 }
 
+interface KPIConfigFull extends KPIConfig {
+  shortLabel: string
+}
+
 export function SmartKPIStrip(props: Props) {
-  const kpis: KPIConfig[] = [
+  const kpis: KPIConfigFull[] = [
     {
-      label: 'Tráficos activos',
+      label: 'En proceso',
+      shortLabel: 'En proceso',
       value: props.activeShipments,
       delta: props.activeShipments - props.activeShipmentsYesterday,
       deltaLabel: 'hoy',
@@ -63,12 +68,14 @@ export function SmartKPIStrip(props: Props) {
     },
     {
       label: 'Entradas este mes',
+      shortLabel: 'Entradas',
       value: props.entradasThisMonth,
       delta: props.entradasThisMonth - props.entradasLastWeek,
       deltaLabel: 'vs semana pasada',
     },
     {
       label: `Cruzados ${new Date().getFullYear()}`,
+      shortLabel: 'Cruzados',
       value: props.cruzadosYTD,
       delta: props.cruzadosYTD - props.cruzadosLastMonth,
       deltaLabel: 'vs mes pasado',
@@ -76,6 +83,7 @@ export function SmartKPIStrip(props: Props) {
     },
     {
       label: 'Pedimentos en trámite',
+      shortLabel: 'Pedimentos',
       value: props.pedimentosEnProceso,
       delta: 0,
       deltaLabel: '',
@@ -97,23 +105,32 @@ export function SmartKPIStrip(props: Props) {
       marginBottom: 16,
     }}>
       {kpis.map((kpi) => (
-        <div key={kpi.label} style={{ textAlign: 'center' }}>
+        <div key={kpi.label} style={{ textAlign: 'center', overflow: 'hidden' }}>
           <CountingNumber
             value={kpi.value}
             sessionKey={`client-kpi-${kpi.label}`}
+            className="kpi-number"
             style={{
-              fontSize: 32, fontWeight: 800,
+              fontWeight: 800,
               color: kpi.color || '#E6EDF3',
               lineHeight: 1.1,
               display: 'block',
             }}
           />
-          <div style={{
+          <div className="kpi-label-full" style={{
             fontSize: 10, fontWeight: 700, color: '#8b9ab5',
             textTransform: 'uppercase', letterSpacing: '0.08em',
             marginTop: 6, marginBottom: 4,
           }}>
             {kpi.label}
+          </div>
+          <div className="kpi-label-short" style={{
+            fontSize: 10, fontWeight: 700, color: '#8b9ab5',
+            textTransform: 'uppercase', letterSpacing: '0.08em',
+            marginTop: 4, marginBottom: 2,
+            display: 'none',
+          }}>
+            {kpi.shortLabel}
           </div>
           <DeltaBadge delta={kpi.delta} label={kpi.deltaLabel} anomaly={kpi.anomaly} />
         </div>
@@ -123,6 +140,9 @@ export function SmartKPIStrip(props: Props) {
         .smart-kpi-strip {
           grid-template-columns: repeat(4, 1fr);
         }
+        .kpi-number {
+          font-size: 32px;
+        }
         @media (max-width: 1024px) {
           .smart-kpi-strip {
             grid-template-columns: repeat(2, 1fr) !important;
@@ -131,7 +151,17 @@ export function SmartKPIStrip(props: Props) {
         @media (max-width: 640px) {
           .smart-kpi-strip {
             grid-template-columns: repeat(2, 1fr) !important;
-            padding: 14px 16px !important;
+            padding: 12px !important;
+            gap: 8px !important;
+          }
+          .kpi-number {
+            font-size: 24px !important;
+          }
+          .kpi-label-full {
+            display: none !important;
+          }
+          .kpi-label-short {
+            display: block !important;
           }
         }
       `}</style>

@@ -301,6 +301,7 @@ export function ClientHome({ companyName, data }: { companyName?: string; data: 
         @media (max-width: 640px) {
           .nav-cards-grid {
             grid-template-columns: repeat(2, 1fr) !important;
+            gap: 8px !important;
           }
         }
       `}</style>

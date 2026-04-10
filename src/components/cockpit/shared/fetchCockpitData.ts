@@ -151,22 +151,18 @@ function hoursAgo(h: number): string {
 
 function startOfMonth(offset = 0): string {
   const d = new Date()
-  d.setMonth(d.getMonth() + offset, 1)
-  d.setHours(0, 0, 0, 0)
-  return d.toISOString()
+  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + offset, 1)).toISOString()
 }
 
 function startOfWeek(): string {
   const d = new Date()
-  d.setDate(d.getDate() - d.getDay())
-  d.setHours(0, 0, 0, 0)
-  return d.toISOString()
+  const diff = d.getUTCDate() - d.getUTCDay()
+  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), diff)).toISOString()
 }
 
 function todayStart(): string {
   const d = new Date()
-  d.setHours(0, 0, 0, 0)
-  return d.toISOString()
+  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())).toISOString()
 }
 
 // ── Admin Data ──────────────────────────────────────────
@@ -702,12 +698,12 @@ async function fetchClientData(companyId: string): Promise<ClientData> {
   const lastMonthStart = startOfMonth(-1)
 
   const results = await Promise.allSettled([
-    // 0: active traficos for this company
+    // 0: active traficos for this company (last 90 days — older = ghost, not active)
     sb.from('traficos')
       .select('id, trafico, estatus, descripcion_mercancia, importe_total, fecha_llegada, fecha_cruce')
       .eq('company_id', companyId)
       .in('estatus', ['En Proceso', 'Documentacion', 'En Aduana', 'Pedimento Pagado'])
-      .gte('fecha_llegada', '2024-01-01')
+      .gte('fecha_llegada', new Date(Date.now() - 90 * 86400000).toISOString())
       .order('fecha_llegada', { ascending: false })
       .limit(50),
     // 1: entradas this week
@@ -736,12 +732,12 @@ async function fetchClientData(companyId: string): Promise<ClientData> {
       .gte('fecha_cruce', new Date(Date.now() - 30 * 86400000).toISOString())
       .order('fecha_cruce', { ascending: false })
       .limit(50),
-    // 5: at-risk shipments (oldest active, sorted by arrival date)
+    // 5: at-risk shipments (last 90 days only — older = ghost, not alert-worthy)
     sb.from('traficos')
       .select('id, trafico, estatus, descripcion_mercancia, importe_total, fecha_llegada')
       .eq('company_id', companyId)
       .in('estatus', ['En Proceso', 'Documentacion', 'En Aduana'])
-      .gte('fecha_llegada', '2024-01-01')
+      .gte('fecha_llegada', new Date(Date.now() - 90 * 86400000).toISOString())
       .order('fecha_llegada', { ascending: true })
       .limit(5),
     // 6: pedimentos en proceso count
@@ -750,12 +746,12 @@ async function fetchClientData(companyId: string): Promise<ClientData> {
       .eq('company_id', companyId)
       .eq('estatus', 'En Aduana')
       .gte('fecha_llegada', '2024-01-01'),
-    // 7: cruzados this month
+    // 7: cruzados this month (use updated_at — fecha_cruce is often null)
     sb.from('traficos')
       .select('id', { count: 'exact', head: true })
       .eq('company_id', companyId)
       .eq('estatus', 'Cruzado')
-      .gte('fecha_cruce', monthStart),
+      .gte('updated_at', monthStart),
     // 8: recent activity (last 48h status changes)
     sb.from('traficos')
       .select('trafico, estatus, updated_at, descripcion_mercancia')
@@ -849,7 +845,7 @@ async function fetchClientData(companyId: string): Promise<ClientData> {
       valor_usd: Number(t.importe_total || 0),
       status: (t.estatus as string) || '',
       daysActive: Math.round((Date.now() - new Date(t.fecha_llegada as string).getTime()) / 86400000),
-    })),
+    })).filter((t) => t.daysActive <= 90),
     pedimentosEnProceso: pedimentosResult?.count ?? 0,
     cruzadosThisMonth: cruzadosResult?.count ?? 0,
     recentActivity: (recentActivityRaw as Record<string, unknown>[]).map((t) => ({

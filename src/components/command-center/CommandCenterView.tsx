@@ -367,7 +367,8 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
       {!loading && (() => {
         const hour = new Date().getHours()
         const greeting = hour < 12 ? 'Buenos días' : hour < 18 ? 'Buenas tardes' : 'Buenas noches'
-        const name = typeof document !== 'undefined' ? getCookieValue('company_name') || getCookieValue('operator_name') || '' : ''
+        const rawName = typeof document !== 'undefined' ? getCookieValue('company_name') || getCookieValue('operator_name') || '' : ''
+        const name = rawName.length > 30 ? rawName.slice(0, 30) + '…' : rawName
         return (
           <div style={{ fontSize: 14, fontWeight: 600, color: '#E6EDF3', marginBottom: 8, opacity: 0.8 }}>
             {greeting}{name ? `, ${name}` : ''}

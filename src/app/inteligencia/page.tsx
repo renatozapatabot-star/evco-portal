@@ -133,7 +133,9 @@ export default function InteligenciaPage() {
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <span style={{ fontSize: 11, fontWeight: 700, color: '#64748b', width: 20 }}>{i + 1}</span>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 14, fontWeight: 700, color: '#E6EDF3' }}>{f.fraccion}</span>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 14, fontWeight: 700, color: '#E6EDF3' }}>
+                    {f.fraccion.includes('.') ? f.fraccion : f.fraccion.replace(/^(\d{4})(\d{2})(\d{2})(\d*)$/, '$1.$2.$3')}
+                  </span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <div style={{

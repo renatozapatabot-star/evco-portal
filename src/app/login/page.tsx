@@ -431,8 +431,8 @@ function LoginContent() {
           box-shadow: none;
         }
         .login-submit:disabled {
-          background: #E8E5E0;
-          color: #9B9B9B;
+          background: rgba(234,179,8,0.3);
+          color: #64748b;
           cursor: default;
         }
 

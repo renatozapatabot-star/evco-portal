@@ -165,7 +165,7 @@ export function WorkflowCard({
 
           {/* Right: Mini table of active tráficos */}
           <div style={{ flex: 1, minWidth: 0, borderLeft: '1px solid rgba(255,255,255,0.06)', paddingLeft: 24 }}>
-            <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#6E7681', marginBottom: 8 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#6E7681', marginBottom: 8 }}>
               {hasActive ? 'En tránsito ahora' : 'Último cruce'}
             </div>
             {hasActive ? (
@@ -183,7 +183,7 @@ export function WorkflowCard({
                     <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                       <span style={{ fontSize: 11, color: '#8B949E' }}>{item.estatus}</span>
                       <span style={{
-                        fontSize: 10, fontFamily: 'var(--font-mono)', fontWeight: 700, padding: '2px 6px', borderRadius: 4,
+                        fontSize: 12, fontFamily: 'var(--font-mono)', fontWeight: 700, padding: '2px 6px', borderRadius: 4,
                         background: item.daysOld > 5 ? 'rgba(220,38,38,0.15)' : item.daysOld > 2 ? 'rgba(217,119,6,0.12)' : 'rgba(255,255,255,0.06)',
                         color: item.daysOld > 5 ? '#DC2626' : item.daysOld > 2 ? '#D97706' : '#8B949E',
                       }}>
@@ -272,7 +272,7 @@ export function WorkflowCard({
           }}
         >
           <div>
-            <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#6E7681', marginBottom: 4 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#6E7681', marginBottom: 4 }}>
               {label}
             </div>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
@@ -283,14 +283,14 @@ export function WorkflowCard({
               )}
               {trendDelta !== undefined && trendDelta !== 0 && (
                 <span className="font-mono" style={{
-                  fontSize: 10, fontWeight: 700,
+                  fontSize: 12, fontWeight: 700,
                   color: trendDelta > 0 ? '#16A34A' : '#DC2626',
                 }}>
                   {trendDelta > 0 ? '↑' : '↓'}{Math.abs(Math.round(trendDelta))}%
                 </span>
               )}
             </div>
-            <div style={{ fontSize: 10, color: '#6E7681', marginTop: 2 }}>{subtitle}</div>
+            <div style={{ fontSize: 12, color: '#6E7681', marginTop: 2 }}>{subtitle}</div>
           </div>
           {/* Blue gradient progress bar at bottom */}
           <div style={{
@@ -338,7 +338,7 @@ export function WorkflowCard({
           <Icon size={18} strokeWidth={1.5} style={{ color: 'rgba(255,255,255,0.4)', flexShrink: 0 }} />
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 13, fontWeight: 600, color: '#E6EDF3' }}>{label}</div>
-            <div style={{ fontSize: 10, color: '#6E7681', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{subtitle}</div>
+            <div style={{ fontSize: 12, color: '#6E7681', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{subtitle}</div>
           </div>
         </motion.div>
       </Link>
@@ -392,7 +392,7 @@ export function WorkflowCard({
                 strokeLinecap="round"
                 style={{ transform: 'rotate(-90deg)', transformOrigin: '50% 50%', transition: 'stroke-dashoffset 800ms ease' }} />
               <text x="50%" y="50%" textAnchor="middle" dy="0.35em"
-                style={{ fontSize: 9, fontWeight: 700, fontFamily: 'var(--font-mono)', fill: '#E6EDF3' }}>
+                style={{ fontSize: 10, fontWeight: 700, fontFamily: 'var(--font-mono)', fill: '#E6EDF3' }}>
                 {completionRing}%
               </text>
             </svg>

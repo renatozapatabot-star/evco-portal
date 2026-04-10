@@ -3,7 +3,8 @@ import { useState, useEffect, useRef, useDeferredValue } from 'react'
 import { useRouter } from 'next/navigation'
 import { Search, LayoutDashboard, Truck, Package, FileText,
          FolderOpen, BarChart3, MessageSquare, Mic, Shield, Link2,
-         Building2, CreditCard, Table2, ArrowRight, Loader2 } from 'lucide-react'
+         Building2, CreditCard, Table2, ArrowRight, Loader2,
+         Tags, Warehouse, DollarSign } from 'lucide-react'
 
 interface NavItem { id: string; label: string; sublabel: string; icon: React.ComponentType<{ size?: number; style?: React.CSSProperties }>; href: string; category: string }
 
@@ -18,7 +19,14 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'reportes',    label: 'Reportes',       sublabel: 'Análisis',      icon: BarChart3,       href: '/reportes',    category: 'Navegación' },
   { id: 'cumplimiento', label: 'Cumplimiento', sublabel: 'Calendario compliance', icon: Shield,   href: '/cumplimiento', category: 'Navegación' },
   { id: 'cuentas',     label: 'Cuentas',        sublabel: 'eConta',        icon: CreditCard,      href: '/cuentas',     category: 'Navegación' },
-  { id: 'anexo24',     label: 'Anexo 24',       sublabel: 'Fracciones',    icon: Table2,          href: '/anexo24',     category: 'Navegación' },
+  { id: 'anexo24',     label: 'Anexo 24',       sublabel: 'Control IMMEX',  icon: Table2,          href: '/anexo24',     category: 'Navegación' },
+  { id: 'catalogo',    label: 'Catálogo',       sublabel: 'Fracciones arancelarias', icon: Tags,  href: '/catalogo',    category: 'Navegación' },
+  { id: 'documentos',  label: 'Documentos',     sublabel: 'Archivo digital', icon: FileText,      href: '/documentos',  category: 'Navegación' },
+  { id: 'bodega',      label: 'Bodega',         sublabel: 'Inventario',    icon: Warehouse,       href: '/bodega',      category: 'Navegación' },
+  { id: 'financiero',  label: 'Financiero',     sublabel: 'Contabilidad',  icon: DollarSign,      href: '/financiero',  category: 'Navegación' },
+  { id: 'facturacion', label: 'Facturación',    sublabel: 'Mis facturas',  icon: CreditCard,      href: '/facturacion', category: 'Navegación' },
+  { id: 'inteligencia', label: 'Inteligencia',  sublabel: 'Corredor Laredo', icon: BarChart3,     href: '/inteligencia', category: 'Navegación' },
+  { id: 'fracciones',  label: 'Fracciones',     sublabel: 'Búsqueda AI',   icon: Search,          href: '/fracciones',  category: 'Navegación' },
 ]
 
 export function CommandPalette() {

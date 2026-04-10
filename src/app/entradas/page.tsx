@@ -39,6 +39,7 @@ export default function EntradasPage() {
   const [page, setPage] = useState(0)
   const [transportMap, setTransportMap] = useState<Map<string, string>>(new Map())
   const [supplierMap, setSupplierMap] = useState<Map<string, string>>(new Map())
+  const [partidaDescMap, setPartidaDescMap] = useState<Map<string, string>>(new Map())
   const { getCached, setCache } = useSessionCache()
 
   useEffect(() => {
@@ -77,10 +78,21 @@ export default function EntradasPage() {
         const arr = Array.isArray(d.data) ? d.data : []
         arr.forEach((t: { trafico?: string; transportista_mexicano?: string; transportista_americano?: string }) => {
           if (t.trafico && !transMap.has(t.trafico)) {
-            transMap.set(t.trafico, t.transportista_mexicano || t.transportista_americano || '')
+            transMap.set(t.trafico, t.transportista_americano || t.transportista_mexicano || '')
           }
         })
         setTransportMap(transMap)
+      }).catch(() => {})
+
+    // GlobalPC partida descriptions for enrichment
+    fetch('/api/data?table=globalpc_partidas&select=cve_trafico,descripcion&limit=10000')
+      .then(r => r.json()).then(d => {
+        const map = new Map<string, string>()
+        const arr = Array.isArray(d.data) ? d.data : []
+        arr.forEach((p: { cve_trafico?: string; descripcion?: string }) => {
+          if (p.cve_trafico && p.descripcion && !map.has(p.cve_trafico)) map.set(p.cve_trafico, p.descripcion)
+        })
+        setPartidaDescMap(map)
       }).catch(() => {})
 
     // Supplier names — NO company_id filter (table may not have this column)
@@ -101,7 +113,7 @@ export default function EntradasPage() {
       const q = search.toLowerCase()
       out = out.filter(r =>
         (r.trafico ?? '').toLowerCase().includes(q) ||
-        (r.descripcion_mercancia ?? '').toLowerCase().includes(q) ||
+        getDesc(r).toLowerCase().includes(q) ||
         (r.cve_entrada ?? '').toLowerCase().includes(q) ||
         (r.cve_proveedor ?? '').toLowerCase().includes(q) ||
         (supplierMap.get(r.cve_proveedor ?? '') ?? '').toLowerCase().includes(q)
@@ -114,7 +126,7 @@ export default function EntradasPage() {
       const cmp = String(av).localeCompare(String(bv), 'es', { numeric: true })
       return sort.direction === 'asc' ? cmp : -cmp
     })
-  }, [rows, search, sort, supplierMap])
+  }, [rows, search, sort, supplierMap, partidaDescMap])
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE)
   const paged = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
@@ -127,7 +139,7 @@ export default function EntradasPage() {
       const fromTrafico = fmtCarrier(transportMap.get(r.trafico) || '')
       if (fromTrafico) return fromTrafico
     }
-    return fmtCarrier(r.transportista_mexicano || r.transportista_americano || '')
+    return fmtCarrier(r.transportista_americano || r.transportista_mexicano || '')
   }
 
   const getProveedor = (r: EntradaRow): string => {
@@ -135,6 +147,9 @@ export default function EntradasPage() {
     if (!code) return ''
     return supplierMap.get(code) || code
   }
+
+  const getDesc = (r: EntradaRow): string =>
+    r.descripcion_mercancia || (r.trafico ? partidaDescMap.get(r.trafico) ?? '' : '')
 
   const getGuia = (r: EntradaRow): string => r.num_talon || r.num_caja_trailer || ''
 
@@ -237,7 +252,7 @@ export default function EntradasPage() {
                     </div>
                   )}
                   <div style={{ fontSize: 12, color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: 8 }}>
-                    {fmtDesc(r.descripcion_mercancia || '') || '—'}
+                    {fmtDesc(getDesc(r)) || '—'}
                   </div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
                     <span>{r.trafico || 'Pendiente'}</span>
@@ -263,7 +278,7 @@ export default function EntradasPage() {
                   <th style={{ width: 160 }}>Proveedor</th>
                   <th style={{ minWidth: 160 }}>Descripción</th>
                   <th style={{ width: 130 }}>Tráfico</th>
-                  <th style={{ width: 120 }}>Transporte</th>
+                  <th style={{ width: 120 }}>Transporte US</th>
                   <th style={{ textAlign: 'right', cursor: 'pointer', width: 70 }} onClick={() => toggleSort('cantidad_bultos')}>Bultos<SortArrow col="cantidad_bultos" /></th>
                   <th style={{ textAlign: 'right', cursor: 'pointer', width: 90 }} onClick={() => toggleSort('peso_bruto')}>Peso (kg)<SortArrow col="peso_bruto" /></th>
                   <th style={{ width: 120 }}>Guía</th>
@@ -284,7 +299,7 @@ export default function EntradasPage() {
                       {getProveedor(r) || <span style={{ color: 'var(--text-muted)' }}>—</span>}
                     </td>
                     <td className="desc-text" style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-                      {fmtDesc(r.descripcion_mercancia || '') || <span style={{ color: 'var(--text-muted)' }}>—</span>}
+                      {fmtDesc(getDesc(r)) || <span style={{ color: 'var(--text-muted)' }}>—</span>}
                     </td>
                     <td>
                       {r.trafico ? (

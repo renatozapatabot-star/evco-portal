@@ -17,6 +17,7 @@ interface TraficoRow {
   trafico: string
   estatus?: string
   fecha_llegada?: string | null
+  fecha_cruce?: string | null
   descripcion_mercancia?: string | null
   peso_bruto?: number | null
   importe_total?: number | null
@@ -26,6 +27,17 @@ interface TraficoRow {
   embarque?: number | null
   transportista_mexicano?: string | null
   [key: string]: unknown
+}
+
+/** Generate date-based guía from fecha_llegada: MMDDYY */
+function computeGuia(fechaLlegada: string | null | undefined): string {
+  if (!fechaLlegada) return ''
+  const d = new Date(fechaLlegada)
+  if (isNaN(d.getTime())) return ''
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  const dd = String(d.getDate()).padStart(2, '0')
+  const yy = String(d.getFullYear()).slice(-2)
+  return `${mm}${dd}${yy}`
 }
 
 interface FacturaLookup {
@@ -433,7 +445,7 @@ function TraficosContent() {
         {/* Desktop table */}
         {!isMobile && (
           <div style={{ maxHeight: 'calc(100vh - 280px)', overflowY: 'auto', overflowX: 'auto' }}>
-            <table className="aduana-table" aria-label="Lista de tráficos" style={{ minWidth: 1100 }}>
+            <table className="aduana-table" aria-label="Lista de tráficos" style={{ minWidth: 1300 }}>
               <thead>
                 <tr>
                   <th scope="col" style={{ width: 150, cursor: 'pointer' }} onClick={() => toggleSort('trafico')}>Clave de Tráfico<SortArrow col="trafico" /></th>
@@ -444,18 +456,20 @@ function TraficosContent() {
                   <th scope="col" style={{ width: 110, textAlign: 'right', cursor: 'pointer' }} onClick={() => toggleSort('importe_total')}>Valor USD<SortArrow col="importe_total" /></th>
                   <th scope="col" style={{ width: 120 }}>Pedimento</th>
                   <th scope="col" style={{ width: 100, cursor: 'pointer' }} onClick={() => toggleSort('estatus')}>Status<SortArrow col="estatus" /></th>
+                  <th scope="col" style={{ width: 100 }}>Fecha Cruce</th>
+                  <th scope="col" style={{ width: 80 }}>Guía</th>
                 </tr>
               </thead>
               <tbody>
                 {loading && Array.from({ length: 8 }).map((_, i) => (
                   <tr key={`s-${i}`}>
-                    {Array.from({ length: 8 }).map((_, j) => (
+                    {Array.from({ length: 10 }).map((_, j) => (
                       <td key={j}><div className="skeleton-shimmer" style={{ width: j === 4 ? 140 : 80, height: 13 }} /></td>
                     ))}
                   </tr>
                 ))}
                 {!loading && paged.length === 0 && (
-                  <tr><td colSpan={8}>
+                  <tr><td colSpan={10}>
                     {search.trim() ? (
                       <div className="empty-state">
                         <div className="empty-state-icon">🔍</div>
@@ -506,6 +520,12 @@ function TraficosContent() {
                         <span className={`badge ${status === 'Cruzado' ? 'badge-cruzado' : 'badge-proceso'}`}>
                           {status}
                         </span>
+                      </td>
+                      <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-secondary)' }}>
+                        {r.fecha_cruce ? fmtDate(r.fecha_cruce) : <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Pendiente</span>}
+                      </td>
+                      <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-secondary)' }}>
+                        {computeGuia(r.fecha_llegada) || <span style={{ color: 'var(--text-muted)' }}>—</span>}
                       </td>
                     </tr>
                   )

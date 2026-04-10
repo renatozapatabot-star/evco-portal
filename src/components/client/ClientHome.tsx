@@ -29,7 +29,7 @@ const TILES: NavTile[] = [
   { href: '/entradas',    label: 'Entradas',              icon: Package,         description: 'Mercancía recibida',        dataKey: 'entradasThisMonth' },
   { href: '/traficos',    label: 'Tráficos',              icon: Truck,           description: 'Operaciones activas',       dataKey: 'activeShipments' },
   { href: '/pedimentos',  label: 'Pedimentos',            icon: FileText,        description: 'Declaraciones aduanales',   dataKey: 'pedimentosEnProceso' },
-  { href: '/catalogo',    label: 'Catálogo de Partes',    icon: ClipboardList,   description: 'Productos y fracciones',    dataKey: 'catalog' },
+  { href: '/catalogo',    label: 'Tráficos Recientes',    icon: ClipboardList,   description: 'Productos y fracciones',    dataKey: 'catalog' },
   { href: '/anexo24',     label: 'Anexo 24',              icon: FileSpreadsheet, description: 'Control de inventarios' },
   { href: '/expedientes', label: 'Expedientes Digitales', icon: FolderOpen,      description: 'Documentos por operación' },
   { href: '/reportes',    label: 'Reportes',              icon: BarChart3,       description: 'Análisis y estadísticas' },

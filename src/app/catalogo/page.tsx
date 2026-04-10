@@ -62,6 +62,7 @@ export default function CatalogoPage() {
     const partidaParams = new URLSearchParams({
       table: 'globalpc_partidas', limit: '10000',
     })
+    if (!isInternal && companyId) partidaParams.set('company_id', companyId)
 
     Promise.all([
       fetch(`/api/data?${params}`).then(r => {
@@ -195,8 +196,8 @@ export default function CatalogoPage() {
           </div>
         ) : grouped.length === 0 ? (
           <div style={{ padding: 32 }}>
-            <EmptyState icon="📋" title="Sin productos registrados"
-              description="Los productos de sus operaciones aparecerán aquí agrupados por tipo" />
+            <EmptyState icon="📋" title="Sin tráficos recientes"
+              description="Los tráficos recientes con sus fracciones aparecerán aquí" />
           </div>
         ) : isMobile ? (
             <div style={{ padding: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -243,7 +244,7 @@ export default function CatalogoPage() {
             </div>
           ) : (
           <div style={{ overflowX: 'auto' }}>
-            <table className="aduana-table" aria-label="Catálogo de productos" style={{ minWidth: 700 }}>
+            <table className="aduana-table" aria-label="Tráficos recientes" style={{ minWidth: 700 }}>
               <thead>
                 <tr>
                   <th>Descripción</th>

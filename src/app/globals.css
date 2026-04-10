@@ -347,8 +347,9 @@ body {
   font-family: var(--font-mono);
   font-size: 20px;
   font-weight: 800;
-  color: rgba(255,255,255,0.9);
+  color: rgba(255,255,255,0.95);
   letter-spacing: 0.1em;
+  text-shadow: 0 0 20px rgba(34,211,238,0.5), 0 0 40px rgba(34,211,238,0.15);
 }
 .topbar-search-wide {
   flex: 1;
@@ -512,7 +513,7 @@ body {
   padding: 20px;
 }
 
-/* Green checkmark badge (small card top-right) */
+/* Cyan verified badge (small card top-right) */
 .cc-check-badge {
   position: absolute;
   top: 10px;
@@ -520,11 +521,11 @@ body {
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: var(--success, #16A34A);
+  background: #22D3EE;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 6px rgba(22,163,74,0.25);
+  box-shadow: 0 0 6px rgba(34,211,238,0.4);
 }
 
 /* ── Command Palette ────────── */
@@ -604,8 +605,9 @@ body {
 .sidebar-logo-text {
   font-size: 20px;
   font-weight: 800;
-  color: var(--gold, #C9A84C);
+  color: rgba(255,255,255,0.95);
   letter-spacing: 2px;
+  text-shadow: 0 0 20px rgba(34,211,238,0.5), 0 0 40px rgba(34,211,238,0.15);
 }
 
 .sidebar-client {

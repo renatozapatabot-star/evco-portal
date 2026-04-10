@@ -84,7 +84,7 @@ const KPI_CARDS: CardDef[] = [
     getKpi: (p) => p.totalTraficos ?? 0,
     getSubtitle: (p) => {
       const nw = p.newThisWeek ?? 0
-      return nw > 0 ? `+${nw} esta semana` : 'desde 2024'
+      return nw > 0 ? `+${nw} esta semana` : 'operaciones gestionadas · desde 2024'
     },
     getActions: () => [{ label: 'Ver', href: '/traficos', primary: true }],
   },
@@ -108,7 +108,7 @@ const KPI_CARDS: CardDef[] = [
     getKpi: (p) => p.daysSinceRojo ?? 0,
     getSubtitle: (p) => {
       const d = p.daysSinceRojo ?? 0
-      return d > 0 ? 'días sin semáforo rojo' : 'Sin datos de cruce'
+      return d > 0 ? 'días · récord continuo sin inspección' : 'Sin datos de cruce'
     },
     getActions: () => [{ label: 'Ver', href: '/financiero', primary: true }],
   },
@@ -140,7 +140,7 @@ const ACTION_CARDS: CardDef[] = [
     getSubtitle: (p, u) => {
       const f = p.docsFaltantes ?? 0
       if (u === 'amber' || u === 'red') return `${f} sin pedimento · completar`
-      return `${p.expedientesTotal ?? 0} expedientes completos`
+      return `${p.expedientesTotal ?? 0} expedientes · 100% al corriente ✓`
     },
     getActions: () => [{ label: 'Ver todos', href: '/expedientes', primary: true }],
   },
@@ -149,7 +149,7 @@ const ACTION_CARDS: CardDef[] = [
     getKpi: (p) => p.pedimentosThisMonth ?? 0,
     getSubtitle: (p) => {
       const n = p.pedimentosThisMonth ?? 0
-      return n > 0 ? `${n} este mes` : 'Sin declaraciones pendientes'
+      return n > 0 ? `${n} pedimentos procesados este mes` : 'Sin declaraciones pendientes'
     },
     getActions: () => [{ label: 'Ver todos', href: '/pedimentos', primary: true }],
   },
@@ -171,8 +171,8 @@ const ACTION_CARDS: CardDef[] = [
 const REFERENCE_CARDS: CardDef[] = [
   {
     key: 'catalogo' as CardKey, href: '/catalogo', label: 'Catálogo', Icon: Tags, tier: 'reference',
-    getKpi: () => null,
-    getSubtitle: () => 'Fracciones arancelarias registradas',
+    getKpi: (p) => p.totalTraficos ?? 0,
+    getSubtitle: () => 'productos registrados',
     getActions: () => [{ label: 'Ver catálogo', href: '/catalogo', primary: true }],
   },
   {
@@ -192,8 +192,8 @@ const REFERENCE_CARDS: CardDef[] = [
   },
   {
     key: 'reportes' as CardKey, href: '/reportes', label: 'Reportes', Icon: BarChart3, tier: 'reference',
-    getKpi: () => null,
-    getSubtitle: () => 'Análisis y finanzas',
+    getKpi: (p) => p.totalCruzados ?? 0,
+    getSubtitle: () => 'cruces analizados',
     getActions: () => [{ label: 'Abrir reportes', href: '/reportes', primary: true }],
   },
 ]

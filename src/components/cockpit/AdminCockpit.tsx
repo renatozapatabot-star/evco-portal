@@ -269,31 +269,7 @@ export function AdminCockpit({ data, operatorName }: Props) {
           <ClientsTablePanel companies={data.companies} />
         </div>
 
-        {/* Right rail — hidden on mobile, 320px on desktop */}
-        <div style={{
-          width: 320,
-          flexShrink: 0,
-          display: 'none',
-        }} className="admin-right-rail">
-          <RightRail />
-        </div>
       </div>
-
-      {/* Mobile: right rail stacks below */}
-      <div style={{ marginTop: 12 }} className="admin-right-rail-mobile">
-        <RightRail />
-      </div>
-
-      <style>{`
-        @media (min-width: 768px) {
-          .admin-right-rail { display: block !important; }
-          .admin-right-rail-mobile { display: none !important; }
-        }
-        @media (max-width: 767px) {
-          .admin-right-rail { display: none !important; }
-          .admin-right-rail-mobile { display: block !important; }
-        }
-      `}</style>
 
       {/* Slide-over detail panel */}
       <SlideOver

@@ -464,7 +464,7 @@ body {
   border: 1px solid rgba(34,211,238,0.3);
   box-shadow:
     0 25px 50px -12px rgba(0,0,0,0.4),
-    inset 0 2px 0 rgba(255,255,255,0.1),
+    inset 0 2px 0 rgba(255,255,255,0.14),
     0 0 25px -8px rgb(34,211,238);
 }
 .cc-card:hover {
@@ -2818,6 +2818,41 @@ tr.row-odd  { background: rgba(248,250,252,0.5); }
   .glow-amber {
     animation: none !important;
   }
+}
+
+/* ── Neon number glow — electric KPI numbers ── */
+.neon-number {
+  text-shadow: 0 0 15px rgba(34,211,238,0.4), 0 0 30px rgba(34,211,238,0.1);
+}
+
+/* ── AI button pulse ring ── */
+.cruz-thought-bubble::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  border: 2px solid rgba(34,211,238,0.3);
+  animation: aiPulseRing 2s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes aiPulseRing {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.1); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cruz-thought-bubble::before { animation: none; }
+}
+
+/* ── Global circuit dot pattern ── */
+.aduana-main.aduana-dark::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    radial-gradient(circle, rgba(34,211,238,0.025) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none;
+  z-index: 0;
 }
 
 /* ── Gold button glow on hover ── */

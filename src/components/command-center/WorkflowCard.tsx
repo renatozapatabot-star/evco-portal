@@ -62,7 +62,7 @@ function AnimatedKpi({ value, size = 32, isUSD = false, decimals = 0 }: { value:
   const formatted = decimals > 0 ? animated.toFixed(decimals) : animated.toLocaleString()
   const display = isUSD ? `$${formatted}` : formatted
   return (
-    <span style={{
+    <span className="neon-number" style={{
       fontSize: size,
       fontWeight: 800,
       fontFamily: 'var(--font-mono)',

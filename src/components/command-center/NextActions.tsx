@@ -74,6 +74,7 @@ export function NextActions({ pendingEntradas, activeTraficosList, docsPendiente
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             padding: '8px 12px', borderRadius: 10,
             background: item.urgent ? 'rgba(34,211,238,0.04)' : 'transparent',
+            borderLeft: item.urgent ? '3px solid rgba(251,191,36,0.5)' : '3px solid transparent',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
               <item.icon size={14} style={{ color: item.urgent ? '#22D3EE' : '#22C55E', flexShrink: 0 }} />

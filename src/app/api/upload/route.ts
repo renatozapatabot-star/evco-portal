@@ -29,6 +29,30 @@ const ALLOWED_TYPES = new Set([
 
 const MAX_SIZE = 10 * 1024 * 1024 // 10MB
 
+/** Loose filename validation: warn if file name doesn't match expected doc type */
+const DOC_TYPE_KEYWORDS: Record<string, string[]> = {
+  factura_comercial: ['factura', 'invoice', 'fac', 'fc'],
+  packing_list: ['packing', 'empaque', 'lista', 'pl'],
+  pedimento_detallado: ['pedimento', 'ped', 'detallado'],
+  cove: ['cove', 'valor'],
+  acuse_cove: ['acuse', 'cove'],
+  doda: ['doda', 'previo'],
+  carta_porte: ['carta', 'porte', 'cp'],
+  certificado_origen: ['certificado', 'origen', 'tmec', 'usmca', 'co'],
+  bill_of_lading: ['bill', 'lading', 'bl', 'conocimiento', 'embarque'],
+}
+
+function validateDocRelevance(filename: string, docType: string): { valid: boolean; warning?: string } {
+  const keywords = DOC_TYPE_KEYWORDS[docType]
+  if (!keywords) return { valid: true } // unknown doc type, skip validation
+  const lower = filename.toLowerCase().replace(/[_\-\.]/g, ' ')
+  const matches = keywords.some(kw => lower.includes(kw))
+  if (!matches) {
+    return { valid: true, warning: `El archivo "${filename}" podría no corresponder a ${docType.replace(/_/g, ' ')}` }
+  }
+  return { valid: true }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const session = await verifySession(request.cookies.get('portal_session')?.value || '')
@@ -65,6 +89,9 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       )
     }
+
+    // Check filename relevance (warning only, not blocking)
+    const relevance = validateDocRelevance(file.name, docType)
 
     // Build storage path: {company_id}/{trafico_id}/{doc_type}_{timestamp}.{ext}
     const ext = file.name.split('.').pop() ?? 'bin'
@@ -138,6 +165,7 @@ export async function POST(request: NextRequest) {
         success: true,
         file_url: fileUrl,
         doc_id: docRecord?.id ?? null,
+        warning: relevance.warning ?? null,
       },
       error: null,
     })

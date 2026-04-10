@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useMemo } from 'react'
-import { Search, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Search, ChevronLeft, ChevronRight, Download } from 'lucide-react'
 import { getCompanyIdCookie, getCookieValue } from '@/lib/client-config'
 import { fmtUSDFull as fmtUSD, fmtDate, fmtPedimentoShort, fmtDesc, fmtId } from '@/lib/format-utils'
 import { useSort } from '@/hooks/use-sort'
@@ -235,6 +235,7 @@ export default function PedimentosPage() {
                   <th>Mercancía</th>
                   <th style={{ width: 100, cursor: 'pointer' }} onClick={() => toggleSort('regimen')}>Régimen<SortArrow col="regimen" /></th>
                   <th style={{ textAlign: 'right', cursor: 'pointer', width: 130 }} onClick={() => toggleSort('importe')}>Valor USD<SortArrow col="importe" /></th>
+                  <th style={{ width: 50, textAlign: 'center' }}>PDF</th>
                 </tr>
               </thead>
               <tbody>
@@ -271,6 +272,22 @@ export default function PedimentosPage() {
                     </td>
                     <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--text-primary)', fontWeight: 600 }}>
                       {g.importe > 0 ? `${fmtUSD(g.importe)}` : '—'}
+                    </td>
+                    <td style={{ textAlign: 'center' }}>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          window.open(`/api/pedimento-pdf?trafico=${encodeURIComponent(g.trafico)}`, '_blank')
+                        }}
+                        title="Descargar PDF"
+                        style={{
+                          background: 'none', border: 'none', cursor: 'pointer',
+                          padding: 4, borderRadius: 4, display: 'inline-flex',
+                          color: 'var(--text-muted)',
+                        }}
+                      >
+                        <Download size={14} />
+                      </button>
                     </td>
                   </tr>
                 ))}

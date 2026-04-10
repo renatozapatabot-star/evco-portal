@@ -322,6 +322,29 @@ export function ReportesView() {
       .slice(0, 10)
   }, [filteredRows, supplierLookup])
 
+  // ── SECTION EXTRA: Resumen de Operaciones + T-MEC + Régimen ──
+  const opsSummary = useMemo(() => {
+    const total = filteredRows.length
+    const cruzados = filteredRows.filter(r => (r.estatus || '').toLowerCase().includes('cruz')).length
+    const totalValue = filteredRows.reduce((s, r) => s + (Number(r.importe_total) || 0), 0)
+    const tmecCount = filteredRows.filter(r => {
+      const reg = (r.regimen || '').toUpperCase()
+      return reg === 'ITE' || reg === 'ITR' || reg === 'IMD'
+    }).length
+    const tmecPct = total > 0 ? Math.round(tmecCount / total * 100) : 0
+    const successRate = total > 0 ? Math.round(cruzados / total * 100) : 0
+
+    // Regimen breakdown
+    const regimenMap = new Map<string, number>()
+    filteredRows.forEach(r => {
+      const reg = (r.regimen || 'A1').toUpperCase()
+      regimenMap.set(reg, (regimenMap.get(reg) || 0) + 1)
+    })
+    const regimenBreakdown = Array.from(regimenMap.entries()).sort((a, b) => b[1] - a[1])
+
+    return { total, cruzados, totalValue, tmecCount, tmecPct, successRate, regimenBreakdown }
+  }, [filteredRows])
+
   // ── Error ─────────────────────────────────
   if (error) return (
     <div className="page-shell">
@@ -524,7 +547,67 @@ export function ReportesView() {
         )}
       </Card>
 
-      {/* ─── SECTION 3: Exportar ─────────────────────── */}
+      {/* ─── SECTION 3: Resumen de Operaciones ────────── */}
+      <Card style={{ padding: 20 }}>
+        <SectionTitle title="Resumen de Operaciones" sub="Indicadores clave del período seleccionado" />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12 }}>
+          {[
+            { label: 'Total Operaciones', value: fmtNum(opsSummary.total) },
+            { label: 'Cruzados', value: fmtNum(opsSummary.cruzados) },
+            { label: 'Valor USD', value: fmtUSDShort(opsSummary.totalValue) },
+            { label: 'Tasa de Éxito', value: `${opsSummary.successRate}%` },
+            { label: 'T-MEC', value: `${opsSummary.tmecPct}%` },
+            { label: 'Operaciones T-MEC', value: fmtNum(opsSummary.tmecCount) },
+          ].map(kpi => (
+            <div key={kpi.label} style={{
+              background: T.surfaceAlt, borderRadius: 8, padding: '12px 16px',
+              border: `1px solid ${T.border}`,
+            }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>
+                {kpi.label}
+              </div>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 20, fontWeight: 800, color: T.text }}>
+                {kpi.value}
+              </div>
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      {/* ─── SECTION 4: Distribución por Régimen ──────── */}
+      {opsSummary.regimenBreakdown.length > 0 && (
+        <Card style={{ padding: 20 }}>
+          <SectionTitle title="Distribución por Régimen" sub="Tipo de operación aduanal" />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {opsSummary.regimenBreakdown.map(([reg, count]) => {
+              const pct = opsSummary.total > 0 ? Math.round(count / opsSummary.total * 100) : 0
+              const isTmec = reg === 'ITE' || reg === 'ITR' || reg === 'IMD'
+              return (
+                <div key={reg} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <span style={{
+                    fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 700,
+                    color: isTmec ? T.green : T.text, minWidth: 40,
+                  }}>
+                    {reg}
+                  </span>
+                  <div style={{ flex: 1, height: 8, background: T.surfaceAlt, borderRadius: 4, overflow: 'hidden' }}>
+                    <div style={{
+                      height: '100%', width: `${pct}%`,
+                      background: isTmec ? T.green : T.gold,
+                      borderRadius: 4,
+                    }} />
+                  </div>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: T.textMuted, minWidth: 70, textAlign: 'right' }}>
+                    {count} ({pct}%)
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+        </Card>
+      )}
+
+      {/* ─── SECTION 5: Exportar ─────────────────────── */}
       <Card style={{ padding: 20 }}>
         <SectionTitle title="Exportar" sub="Descarga los datos en el formato que necesites" />
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
@@ -560,20 +643,20 @@ export function ReportesView() {
           </button>
 
           <button
-            disabled
-            title="Próximamente"
+            onClick={() => window.open('/api/reportes-pdf', '_blank')}
+            disabled={filteredRows.length === 0}
             style={{
               display: 'flex', alignItems: 'center', gap: 8,
               padding: '12px 20px',
               border: `1px solid ${T.border}`,
               borderRadius: 8,
-              background: 'transparent',
+              background: filteredRows.length === 0 ? 'transparent' : T.surface,
               fontSize: 13,
               fontWeight: 600,
-              color: T.textMuted,
-              cursor: 'not-allowed',
+              color: filteredRows.length === 0 ? T.textMuted : T.text,
+              cursor: filteredRows.length === 0 ? 'not-allowed' : 'pointer',
               minHeight: 60,
-              opacity: 0.5,
+              opacity: filteredRows.length === 0 ? 0.5 : 1,
               transition: 'all 150ms',
             }}
           >
@@ -585,7 +668,7 @@ export function ReportesView() {
             <div style={{ textAlign: 'left' }}>
               <div>Generar PDF</div>
               <div style={{ fontSize: 11, color: T.textMuted, fontWeight: 400, marginTop: 2 }}>
-                Próximamente
+                Reporte completo
               </div>
             </div>
           </button>

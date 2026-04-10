@@ -1,4 +1,4 @@
-# CRUZ — Cross-Border Intelligence Platform
+# ADUANA — Cross-Border Intelligence Platform
 ## Principal Engineer Constitution + Execution Rules
 ### Renato Zapata & Company · Patente 3596 · Aduana 240 · Laredo TX · Est. 1941
 
@@ -13,7 +13,9 @@ and get smarter every session. Every decision is evaluated against one question:
 
 ## IDENTITY
 
-**Platform:** CRUZ — Cross-Border Intelligence. Never "CRUD."
+**Platform:** ADUANA — Cross-Border Intelligence. Never "CRUD."
+The brand was renamed from CRUZ to ADUANA in April 2026. All user-facing text says "ADUANA".
+Internal code still has some "Cruz" in component names (CruzMark.tsx etc.) — this is fine.
 Search for "CRUD" before every deploy: `grep -r "CRUD" src/` → zero matches required.
 
 **Owner:** Renato Zapata III ("Tito") — Director General, both US + Mexican
@@ -23,11 +25,10 @@ licenses, final authority on all operations and regulatory matters.
 
 **Stack:** Next.js App Router · Supabase Pro · Vercel · Anthropic API · Tailwind · TypeScript
 
-**Live:** evco-portal.vercel.app (login: evco2026) · Primary client: EVCO Plastics de México (clave: 9254)
+**Live:** evco-portal.vercel.app (login: evco2026) · Primary client: EVCO Plastics de México
 
-**Next client:** MAFESA — get RFC + GlobalPC clave from Tito first.
-Run white-label dry-run (find every hardcoded "9254") BEFORE promising anything.
-GlobalPC clave is the same connection for all clients — only the client filter changes.
+**Active clients:** EVCO, MAFESA (historical data), 290+ in GlobalPC.
+Client isolation: NEVER hardcode company_id values. Use cookies/session.
 
 ---
 
@@ -78,7 +79,7 @@ npx supabase db push
 npx supabase gen types typescript --local > types/supabase.ts
 ```
 
-**CRUZ evolution commands (in Claude Code):**
+**ADUANA evolution commands (in Claude Code):**
 ```
 /boot          # Session start — load memory, verify all rules
 /review        # Pre-commit review — runs typecheck, lint, build, diff review
@@ -98,7 +99,7 @@ src/
     traficos/          # Shipments list + [id] detail
     reportes/          # Analytics + finance merged (T-MEC + Estado de Cuenta)
     documentos/        # Expedientes + upload (formerly /expedientes)
-    cruz/              # CRUZ AI full-screen dark interface
+    aduana/            # ADUANA AI full-screen dark interface
     cumplimiento/      # CLIENT-SAFE only — no scores, no penalties
     pedimentos/        # Customs declarations
     drafts/            # Draft review + Telegram approval
@@ -130,14 +131,26 @@ supabase/
   agents/              # aduanero, architect, reviewer
   memory/              # learned-rules.md, corrections, observations
 scripts/
-  email-intake.js          # Gmail → Sonnet extraction → draft + Telegram inline buttons
-  heartbeat.js             # pm2 + Supabase + Vercel health check every 15 min
+  lib/job-runner.js        # Heartbeat wrapper — ALL scripts use this
+  email-intake.js          # Gmail → Sonnet extraction → draft + Telegram
+  heartbeat.js             # pm2 + Supabase + Vercel health check
   regression-guard.js      # Post-sync coverage % and row count delta
   draft-escalation.js      # 30min WhatsApp → 2h Telegram → 4h manual flag
-  fetch-bridge-times.js    # CBP API → 480min ceiling → historical fallback
+  fetch-bridge-times.js    # CBP API → bridge wait times
   wsdl-document-pull.js    # GlobalPC WSDL → expediente_documentos
-  expedientes-monitor.js   # Nightly expediente coverage vs yesterday
-  email-study.js           # Study mode: eloisa@ + claudia@ → email_intelligence table
+  watchdog.js              # Stale job checker (*/5 cron)
+  daily-brief.js           # Morning summary to Telegram (6:35 AM M-S)
+  proactive-alerts.js      # Problem prevention (*/30 cron)
+  backfill-orchestrator.js # Multi-client classification engine
+  vucem-mv-generator.js    # VUCEM MV compliance (E2 format)
+  build-supplier-profiles.js # Supplier intelligence builder
+  anomaly-interceptor.js   # Value/weight deviation detector
+  correction-digest.js     # Weekly correction pattern summary
+  demo-sync.sh             # One-shot sync for demo readiness
+agents/
+  intake-agent.yaml        # Haiku intake + Opus advisor
+  compliance-agent.yaml    # Sonnet compliance scanner
+  pedimento-agent.yaml     # Sonnet pedimento drafter
 ```
 
 Dependency flow: `app/api/ → lib/ → types/`
@@ -150,18 +163,24 @@ Business logic in `lib/`. Never in route handlers or components.
 Do not use any color, font, or component pattern not defined in DESIGN_SYSTEM.md.
 Read it before any frontend work. No exceptions.
 
-### COCKPIT AESTHETIC — THE STANDARD (April 2026)
+### CINEMATIC GLASS SYSTEM — THE STANDARD (April 2026)
 
-Every authenticated page uses the dark cockpit theme (`.cruz-dark` class).
-Login is the only light-themed page.
+Every authenticated page uses `.aduana-dark` class with full glassmorphism.
+Login uses the same glass theme (not a separate light theme).
 
-- Dark canvas (#111111), elevated cards (#222222), urgency-colored top borders
-- Gold #C9A84C — the only accent color, for CTAs and active nav
-- Geist Sans for text, JetBrains Mono for ALL data/numbers
-- No glassmorphism (backdrop-filter: blur) on portal cards — solid surfaces only
-- Linear-inspired: dense spacing (16px card padding), tight typography, quiet when healthy
-- framer-motion for gestures (swipe, pull-refresh) and layout animations
-- Haptic feedback on meaningful interactions (resolve, celebrate, notify)
+**Follow DESIGN_SYSTEM.md for all visual decisions. Key rules:**
+
+- Background: gradient `#030508 → #0D1525` + radial cyan glow at center
+- Cards: `rgba(9,9,11,0.75)` dark glass + `backdrop-filter: blur(20px)`
+- Borders: `rgba(34,211,238,0.3)` cyan tint
+- Shadows: multi-layer neon (`0 0 25px -8px rgb(34,211,238)`)
+- Gold `#eab308` — ONLY for CTA buttons. Never for borders/accents.
+- Cyan `#00E5FF` — intelligence, active states, data flow
+- Inter for text, JetBrains Mono for ALL data/numbers
+- Cards that need attention PULSE (`.needs-action`) — NO colored borders
+- 20px border-radius on all cards
+- framer-motion for gestures + layout animations
+- NO opaque backgrounds (#111111, #222222, #1A1A1A) on authenticated pages
 ## DATE AND TIME — NON-NEGOTIABLE
 
 All dates are absolute. Relative time is banned from the portal.

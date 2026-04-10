@@ -13,15 +13,15 @@ caused a real regression, a compliance risk, or a silent failure in production.
 
 ## DESIGN SYSTEM
 
-1. **No hardcoded colors.** Every color uses design system tokens defined
-   in `tailwind.config` or CSS variables. Dark cockpit theme (`.cruz-dark`)
-   is THE standard for all authenticated portal pages. Login is the only
-   light-themed page. No glassmorphism (backdrop-filter: blur) on cards.
-   verify: `grep -r "bg-slate-9" src/components/` → 0 matches
+1. **No hardcoded opaque backgrounds.** `.aduana-dark` class with cinematic glass
+   system on ALL authenticated pages including login. Cards use `rgba(9,9,11,0.75)`
+   with `backdrop-filter: blur(20px)`. NEVER #111111, #222222, #1A1A1A on cards.
+   Glassmorphism is REQUIRED (was banned — rule reversed April 2026).
+   verify: `grep -rn "background.*'#111111'\|background.*'#222222'" src/components/` → 0 matches
 
-2. **Gold is never text on light backgrounds.** Use `#8B6914` (WCAG AA 5.2:1).
-   Amber is never text on white. Use `#92400E`.
-   verify: `grep -r "#C9A84C" src/` → 0 matches outside tailwind.config
+2. **Gold #eab308 for CTA buttons ONLY.** Never for borders or card accents.
+   Cyan rgba(34,211,238,0.3) for all borders. No colored urgency borders.
+   verify: `grep -r "#C9A84C" src/` → 0 matches (old gold removed)
 
 3. **Badge consistency across ALL pages.** Use `<StatusBadge>` component only.
    Never inline badge styles. Global mapping: amber=active, green=completed,

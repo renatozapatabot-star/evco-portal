@@ -397,9 +397,9 @@ function LoginContent() {
           color: #6E7681;
         }
         .login-input:focus {
-          border-color: #eab308;
-          box-shadow: 0 0 0 3px rgba(234,179,8,0.15);
-          background: #2A2A2A;
+          border-color: rgba(0,229,255,0.4);
+          box-shadow: 0 0 0 3px rgba(0,229,255,0.1), 0 0 12px rgba(0,229,255,0.1);
+          background: rgba(255,255,255,0.06);
         }
 
         /* ── Submit ── */
@@ -425,7 +425,7 @@ function LoginContent() {
         .login-submit:hover:not(:disabled) {
           background: #eab308;
           transform: translateY(-1px);
-          box-shadow: 0 4px 12px rgba(234,179,8,0.25);
+          box-shadow: 0 4px 12px rgba(234,179,8,0.25), 0 0 16px rgba(234,179,8,0.2);
         }
         .login-submit:active:not(:disabled) {
           transform: translateY(0);

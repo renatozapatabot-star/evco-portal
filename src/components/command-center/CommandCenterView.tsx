@@ -297,6 +297,12 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
     )
   }
 
+  // Auto-refresh every 30 minutes
+  useEffect(() => {
+    const timer = setInterval(() => { reload() }, 30 * 60 * 1000)
+    return () => clearInterval(timer)
+  }, [reload])
+
   if (loading) return <DashboardSkeleton isMobile={isMobile} />
 
   const urgentes = data.urgentes || status.urgentes
@@ -372,7 +378,7 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: isMobile ? '8px 12px' : '10px 16px',
           marginBottom: 12, borderRadius: 12,
-          background: 'var(--bg-elevated, #1a2338)',
+          background: 'var(--bg-elevated, rgba(255,255,255,0.04))',
           border: '1px solid var(--border-card, #334155)',
           flexWrap: 'wrap', gap: 8,
         }}>

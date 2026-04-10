@@ -97,8 +97,8 @@ export function AduanaAutonomoPanel({ decisions, decisions30d, decisionsAllTime,
               display: 'flex', alignItems: 'center', gap: 4,
             }}>
               <div style={{
-                background: count > 0 ? 'rgba(201,168,76,0.15)' : 'rgba(255,255,255,0.04)',
-                border: `1px solid ${count > 0 ? 'rgba(201,168,76,0.3)' : 'rgba(255,255,255,0.06)'}`,
+                background: count > 0 ? 'rgba(0,229,255,0.08)' : 'rgba(255,255,255,0.04)',
+                border: `1px solid ${count > 0 ? 'rgba(0,229,255,0.15)' : 'rgba(255,255,255,0.06)'}`,
                 borderRadius: 8,
                 padding: '6px 10px',
                 textAlign: 'center' as const,

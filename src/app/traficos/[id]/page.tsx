@@ -1,15 +1,15 @@
 'use client'
 
 import React, { useEffect, useState, useMemo } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
-import { fmtId, fmtDate, fmtUSD, fmtKg, fmtDesc, fmtPedimentoShort } from '@/lib/format-utils'
+import { ArrowLeft, FileText } from 'lucide-react'
+import { fmtId, fmtDate, fmtUSD, fmtDesc, fmtPedimentoShort } from '@/lib/format-utils'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { fmtCarrier } from '@/lib/carrier-names'
-import { getCookieValue } from '@/lib/client-config'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { ErrorCard } from '@/components/ui/ErrorCard'
+import { useSupplierNames } from '@/hooks/use-supplier-names'
 
 interface PartidaRow {
   id?: number
@@ -34,7 +34,26 @@ interface EntradaRow {
   fecha_llegada_mercancia?: string | null
 }
 
-/** Binary status */
+interface FacturaRow {
+  referencia?: string
+  pedimento?: string | null
+  proveedor?: string | null
+  num_factura?: string | null
+  valor_usd?: number | null
+  dta?: number | null
+  igi?: number | null
+  iva?: number | null
+  tipo_cambio?: number | null
+  descripcion?: string | null
+}
+
+interface DocRow {
+  id?: string
+  document_type?: string | null
+  doc_type?: string | null
+  file_name?: string | null
+}
+
 function getStatus(estatus: string | undefined): 'Cruzado' | 'Pendiente' {
   if (!estatus) return 'Pendiente'
   return estatus.toLowerCase().includes('cruz') ? 'Cruzado' : 'Pendiente'
@@ -42,60 +61,66 @@ function getStatus(estatus: string | undefined): 'Cruzado' | 'Pendiente' {
 
 export default function TraficoDetailPage() {
   const { id } = useParams()
-  const router = useRouter()
   const isMobile = useIsMobile()
+  const { resolve: resolveSupplier } = useSupplierNames()
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [trafico, setTrafico] = useState<Record<string, any> | null>(null)
   const [partidas, setPartidas] = useState<PartidaRow[]>([])
   const [entradas, setEntradas] = useState<EntradaRow[]>([])
-  const [supplierLookup, setSupplierLookup] = useState<Map<string, string>>(new Map())
+  const [facturas, setFacturas] = useState<FacturaRow[]>([])
+  const [documents, setDocuments] = useState<DocRow[]>([])
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!id) return
     const tId = decodeURIComponent(String(id))
-    const companyId = getCookieValue('company_id') || ''
 
-    // Fetch tráfico data + partidas + entradas in parallel
     Promise.all([
       fetch(`/api/trafico/${encodeURIComponent(tId)}`).then(r => r.json()).catch(() => ({})),
       fetch(`/api/data?table=globalpc_partidas&cve_trafico=${encodeURIComponent(tId)}&limit=500`).then(r => r.json()).catch(() => ({ data: [] })),
     ]).then(([tRes, partidasRes]) => {
-      const t = tRes.trafico ?? tRes.data ?? null
-      const ent = tRes.entradas ?? []
-      setTrafico(t)
-      setEntradas(ent)
+      setTrafico(tRes.trafico ?? tRes.data ?? null)
+      setEntradas(tRes.entradas ?? [])
+      setFacturas(tRes.facturas ?? [])
+      setDocuments(tRes.documents ?? [])
       setPartidas(Array.isArray(partidasRes.data) ? partidasRes.data : [])
       setLoading(false)
     }).catch(() => {
       setFetchError('No se pudo cargar el tráfico.')
       setLoading(false)
     })
-
-    // Supplier name lookup (best-effort)
-    fetch(`/api/data?table=globalpc_proveedores&limit=5000${companyId ? '&company_id=' + companyId : ''}`)
-      .then(r => r.json())
-      .then(d => {
-        const lookup = new Map<string, string>()
-        for (const p of (d.data ?? []) as { cve_proveedor?: string; nombre?: string }[]) {
-          if (p.cve_proveedor && p.nombre) lookup.set(p.cve_proveedor, p.nombre)
-        }
-        setSupplierLookup(lookup)
-      })
-      .catch(() => {})
   }, [id])
 
   const t = trafico
   const status = getStatus(t?.estatus)
 
+  // Derived from facturas (the real data source)
+  const facSummary = useMemo(() => {
+    if (facturas.length === 0) return null
+    const totalUSD = facturas.reduce((s, f) => s + (Number(f.valor_usd) || 0), 0)
+    const totalDTA = facturas.reduce((s, f) => s + (Number(f.dta) || 0), 0)
+    const totalIGI = facturas.reduce((s, f) => s + (Number(f.igi) || 0), 0)
+    const totalIVA = facturas.reduce((s, f) => s + (Number(f.iva) || 0), 0)
+    const proveedor = facturas.find(f => f.proveedor)?.proveedor || ''
+    const numFactura = facturas.find(f => f.num_factura)?.num_factura || ''
+    const descripcion = facturas.find(f => f.descripcion)?.descripcion || ''
+    const tc = facturas.find(f => f.tipo_cambio)?.tipo_cambio || 0
+    return { totalUSD, totalDTA, totalIGI, totalIVA, proveedor, numFactura, descripcion, tc }
+  }, [facturas])
+
   // Resolve supplier name
   const supplierName = useMemo(() => {
-    if (!t?.proveedores) return ''
-    const first = String(t.proveedores).split(',')[0]?.trim() || ''
-    return supplierLookup.get(first) || first.replace(/^PRV_/, '')
-  }, [t?.proveedores, supplierLookup])
+    const raw = facSummary?.proveedor || String(t?.proveedores ?? '').split(',')[0]?.trim() || ''
+    if (!raw) return ''
+    return resolveSupplier(raw)
+  }, [facSummary?.proveedor, t?.proveedores, resolveSupplier])
+
+  // Best description
+  const bestDescription = useMemo(() => {
+    return t?.descripcion_mercancia || facSummary?.descripcion || ''
+  }, [t?.descripcion_mercancia, facSummary?.descripcion])
 
   // Guía from entradas
   const guia = useMemo(() => {
@@ -106,7 +131,9 @@ export default function TraficoDetailPage() {
     return null
   }, [entradas])
 
-  // ── Loading ──
+  // Valor — prefer facturas sum, fallback to trafico field
+  const valorUSD = facSummary?.totalUSD || Number(t?.importe_total) || 0
+
   if (loading) {
     return (
       <div className="page-shell" style={{ maxWidth: 1000, margin: '0 auto' }}>
@@ -119,7 +146,6 @@ export default function TraficoDetailPage() {
     )
   }
 
-  // ── Error ──
   if (fetchError || !t) {
     return (
       <div className="page-shell" style={{ maxWidth: 1000, margin: '0 auto' }}>
@@ -149,9 +175,14 @@ export default function TraficoDetailPage() {
             <h1 style={{ fontSize: 20, fontWeight: 800, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)', margin: 0 }}>
               {fmtId(String(t.trafico))}
             </h1>
-            {t.descripcion_mercancia && (
+            {supplierName && supplierName !== '—' && (
+              <p style={{ fontSize: 14, fontWeight: 600, color: '#00E5FF', marginTop: 4, margin: '4px 0 0' }}>
+                {supplierName}
+              </p>
+            )}
+            {bestDescription && (
               <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4, margin: '4px 0 0' }}>
-                {fmtDesc(String(t.descripcion_mercancia))}
+                {fmtDesc(String(bestDescription))}
               </p>
             )}
           </div>
@@ -162,21 +193,21 @@ export default function TraficoDetailPage() {
       </div>
 
       {/* Key stats grid */}
-      <div className="kpi-grid" style={{
+      <div style={{
         display: 'grid',
         gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
         gap: 12,
         marginBottom: 16,
       }}>
         {[
-          { label: 'Proveedor', value: supplierName || '—', mono: false },
-          { label: 'Valor', value: t.importe_total ? `${fmtUSD(Number(t.importe_total))} USD` : '—', mono: true },
+          { label: 'Valor', value: valorUSD > 0 ? `${fmtUSD(valorUSD)} USD` : '—', mono: true },
           { label: 'Pedimento', value: t.pedimento ? fmtPedimentoShort(String(t.pedimento)) : 'Pendiente', mono: true },
           { label: 'Fecha Llegada', value: t.fecha_llegada ? fmtDate(String(t.fecha_llegada)) : '—', mono: true },
+          { label: 'Invoice', value: facSummary?.numFactura || String(t.facturas ?? '') || '—', mono: true },
           { label: 'Transporte MX', value: fmtCarrier(String(t.transportista_mexicano ?? '')) || '—', mono: false },
           { label: 'Régimen', value: String(t.regimen ?? 'A1'), mono: false },
-          { label: 'Invoice', value: String(t.facturas ?? '—'), mono: true },
           { label: 'Guía', value: guia || '—', mono: true },
+          { label: 'Documentos', value: documents.length > 0 ? `${documents.length} archivo${documents.length !== 1 ? 's' : ''}` : '—', mono: false },
         ].map(stat => (
           <div key={stat.label} className="kpi-card" style={{ padding: '14px 16px' }}>
             <div className="kpi-card-label">{stat.label}</div>
@@ -197,6 +228,39 @@ export default function TraficoDetailPage() {
         ))}
       </div>
 
+      {/* Financial breakdown from facturas */}
+      {facSummary && facSummary.totalUSD > 0 && (
+        <div className="card" style={{ padding: 20, marginBottom: 16 }}>
+          <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: 12 }}>
+            Desglose Financiero
+          </div>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
+            gap: 12,
+          }}>
+            {[
+              { label: 'Valor Comercial', value: fmtUSD(facSummary.totalUSD), suffix: ' USD' },
+              { label: 'DTA', value: facSummary.totalDTA > 0 ? `$${facSummary.totalDTA.toLocaleString('es-MX')}` : '—', suffix: '' },
+              { label: 'IGI', value: facSummary.totalIGI > 0 ? `$${facSummary.totalIGI.toLocaleString('es-MX')}` : '—', suffix: '' },
+              { label: 'IVA', value: facSummary.totalIVA > 0 ? `$${facSummary.totalIVA.toLocaleString('es-MX')}` : '—', suffix: '' },
+            ].map(item => (
+              <div key={item.label}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{item.label}</div>
+                <div style={{ fontSize: 15, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)', marginTop: 4 }}>
+                  {item.value}{item.suffix}
+                </div>
+              </div>
+            ))}
+          </div>
+          {facSummary.tc > 0 && (
+            <div style={{ marginTop: 8, fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+              T/C: {facSummary.tc.toFixed(4)} MXN/USD
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Partidas table */}
       <div className="table-shell">
         <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)' }}>
@@ -210,14 +274,11 @@ export default function TraficoDetailPage() {
             <EmptyState icon="📦" title="Sin partidas registradas" description="Las partidas aparecerán cuando se procese el pedimento." />
           </div>
         ) : isMobile ? (
-          /* Mobile: stacked cards */
           <div style={{ padding: '8px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
             {partidas.map((p, i) => (
               <div key={p.id ?? i} style={{
-                background: 'var(--bg-card)',
-                border: '1px solid var(--border)',
-                borderRadius: 10,
-                padding: '14px 16px',
+                background: 'var(--bg-card)', border: '1px solid var(--border)',
+                borderRadius: 10, padding: '14px 16px',
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
                   <span style={{ fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
@@ -233,7 +294,7 @@ export default function TraficoDetailPage() {
                   </div>
                 )}
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
-                  <span>{status}</span>
+                  <span>{status === 'Cruzado' ? 'Sí' : 'No'}</span>
                   {(p.cantidad_bultos ?? p.cantidad) ? <span>{p.cantidad_bultos ?? p.cantidad} btos</span> : null}
                   {p.peso_bruto ? <span>{Number(p.peso_bruto).toLocaleString('es-MX')} kg</span> : null}
                   {p.regimen && <span>{p.regimen}</span>}
@@ -242,7 +303,6 @@ export default function TraficoDetailPage() {
             ))}
           </div>
         ) : (
-          /* Desktop table */
           <div style={{ overflowX: 'auto' }}>
             <table className="aduana-table" style={{ minWidth: 900 }}>
               <thead>
@@ -297,6 +357,32 @@ export default function TraficoDetailPage() {
           </div>
         )}
       </div>
+
+      {/* Documents summary */}
+      {documents.length > 0 && (
+        <div className="card" style={{ padding: 20, marginTop: 16 }}>
+          <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: 12 }}>
+            Expediente Digital ({documents.length})
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {documents.map((doc, i) => {
+              const docType = (doc.document_type || doc.doc_type || 'Documento').replace(/_/g, ' ')
+              return (
+                <div key={doc.id ?? i} style={{
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  fontSize: 12, padding: '6px 12px', borderRadius: 8,
+                  background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  color: 'var(--text-secondary)',
+                }}>
+                  <FileText size={12} style={{ color: 'var(--text-muted)' }} />
+                  {docType}
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Entradas linked */}
       {entradas.length > 0 && (

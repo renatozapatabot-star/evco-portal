@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useMemo, Suspense } from 'react'
-import { Search, Download, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Search, Download, ChevronLeft, ChevronRight, Truck } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { getCookieValue } from '@/lib/client-config'
 import { fmtId, fmtDesc, fmtUSDCompact, fmtDate, fmtDateShort, fmtPedimentoShort } from '@/lib/format-utils'
@@ -28,6 +28,13 @@ interface TraficoRow {
   [key: string]: unknown
 }
 
+interface FacturaLookup {
+  proveedor: string
+  num_factura: string
+  valor_usd: number
+  descripcion: string
+}
+
 const PAGE_SIZE = 50
 
 /** Binary status: Cruzado or Pendiente */
@@ -36,7 +43,13 @@ function getStatus(estatus: string | undefined): 'Cruzado' | 'Pendiente' {
   return estatus.toLowerCase().includes('cruz') ? 'Cruzado' : 'Pendiente'
 }
 
-function exportCSV(rows: TraficoRow[], clientClave: string, companyId: string) {
+function exportCSV(
+  rows: TraficoRow[],
+  clientClave: string,
+  companyId: string,
+  facMap: Map<string, FacturaLookup>,
+  entMap: Map<string, string>,
+) {
   const meta = [
     'ADUANA — Renato Zapata & Company',
     `Clave: ${clientClave}`,
@@ -44,17 +57,20 @@ function exportCSV(rows: TraficoRow[], clientClave: string, companyId: string) {
     `Total registros: ${rows.length}`,
     '',
   ]
-  const h = ['Clave_Trafico', 'Ref_Cliente', 'Proveedor', 'Invoice', 'Descripcion', 'Valor_USD', 'Pedimento', 'Status']
-  const c = rows.map(r => [
-    r.trafico,
-    r.embarque ?? '',
-    (r.proveedores ?? '').replace(/,/g, ';'),
-    (r.facturas ?? '').replace(/,/g, ';'),
-    (r.descripcion_mercancia ?? '').replace(/,/g, ' '),
-    r.importe_total ?? '',
-    r.pedimento ?? '',
-    getStatus(r.estatus),
-  ].join(','))
+  const h = ['Clave_Trafico', 'Entrada', 'Proveedor', 'Invoice', 'Descripcion', 'Valor_USD', 'Pedimento', 'Status']
+  const c = rows.map(r => {
+    const fac = facMap.get(r.trafico)
+    return [
+      r.trafico,
+      entMap.get(r.trafico) ?? '',
+      (fac?.proveedor || r.proveedores || '').replace(/,/g, ';'),
+      (fac?.num_factura || r.facturas || '').replace(/,/g, ';'),
+      (r.descripcion_mercancia ?? fac?.descripcion ?? '').replace(/,/g, ' '),
+      fac?.valor_usd || r.importe_total || '',
+      r.pedimento ?? '',
+      getStatus(r.estatus),
+    ].join(',')
+  })
   const b = new Blob([[...meta, h.join(','), ...c].join('\n')], { type: 'text/csv' })
   const fname = `${(companyId || 'export').toUpperCase()}_Traficos_${new Date().toISOString().split('T')[0]}.csv`
   const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = fname; a.click()
@@ -71,7 +87,7 @@ export default function TraficosPage() {
 }
 
 function TraficosContent() {
-  const { resolveAll: resolveSupplier } = useSupplierNames()
+  const { resolve: resolveSupplier } = useSupplierNames()
   const [rows, setRows] = useState<TraficoRow[]>([])
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState<string | null>(null)
@@ -85,6 +101,10 @@ function TraficosContent() {
   const router = useRouter()
   const isMobile = useIsMobile()
   const { getCached, setCache } = useSessionCache()
+
+  // Lookup maps from aduanet_facturas and entradas
+  const [facturasMap, setFacturasMap] = useState<Map<string, FacturaLookup>>(new Map())
+  const [entradaMap, setEntradaMap] = useState<Map<string, string>>(new Map())
 
   const [companyId, setCompanyId] = useState('')
   const [clientClave, setClientClave] = useState('')
@@ -130,13 +150,87 @@ function TraficosContent() {
         setFetchError('Error cargando tráficos. Reintentar.')
       })
       .finally(() => setLoading(false))
-  }, [cookiesReady, companyId, userRole])
+
+    // Fetch aduanet_facturas for proveedor, invoice#, valor
+    const facParams = new URLSearchParams({ table: 'aduanet_facturas', limit: '5000' })
+    if (!isInternal && clientClave) facParams.set('clave_cliente', clientClave)
+    fetch(`/api/data?${facParams}`)
+      .then(r => r.json())
+      .then(d => {
+        const arr = Array.isArray(d.data) ? d.data : []
+        const map = new Map<string, FacturaLookup>()
+        // Group by referencia (= trafico ID), aggregate
+        for (const f of arr as { referencia?: string; proveedor?: string; num_factura?: string; valor_usd?: number; descripcion?: string }[]) {
+          if (!f.referencia) continue
+          const existing = map.get(f.referencia)
+          if (existing) {
+            existing.valor_usd += Number(f.valor_usd) || 0
+            if (!existing.proveedor && f.proveedor) existing.proveedor = f.proveedor
+            if (!existing.num_factura && f.num_factura) existing.num_factura = f.num_factura
+            if (!existing.descripcion && f.descripcion) existing.descripcion = f.descripcion
+          } else {
+            map.set(f.referencia, {
+              proveedor: f.proveedor || '',
+              num_factura: f.num_factura || '',
+              valor_usd: Number(f.valor_usd) || 0,
+              descripcion: f.descripcion || '',
+            })
+          }
+        }
+        setFacturasMap(map)
+      })
+      .catch(() => {})
+
+    // Fetch entradas for cve_entrada → trafico mapping
+    const entParams = new URLSearchParams({ table: 'entradas', limit: '5000' })
+    if (!isInternal && companyId) entParams.set('company_id', companyId)
+    fetch(`/api/data?${entParams}`)
+      .then(r => r.json())
+      .then(d => {
+        const arr = Array.isArray(d.data) ? d.data : []
+        const map = new Map<string, string>()
+        for (const e of arr as { trafico?: string; cve_entrada?: string }[]) {
+          if (e.trafico && e.cve_entrada && !map.has(e.trafico)) {
+            map.set(e.trafico, e.cve_entrada)
+          }
+        }
+        setEntradaMap(map)
+      })
+      .catch(() => {})
+  }, [cookiesReady, companyId, clientClave, userRole])
 
   // Debounced search
   useEffect(() => {
     const timer = setTimeout(() => { setSearch(searchInput); setPage(0) }, 300)
     return () => clearTimeout(timer)
   }, [searchInput])
+
+  // Helpers to get enriched data
+  const getProveedor = (r: TraficoRow): string => {
+    const fac = facturasMap.get(r.trafico)
+    const raw = fac?.proveedor || r.proveedores || ''
+    if (!raw) return ''
+    const first = raw.split(',')[0]?.trim() || ''
+    return resolveSupplier(first)
+  }
+
+  const getInvoice = (r: TraficoRow): string => {
+    const fac = facturasMap.get(r.trafico)
+    return fac?.num_factura || r.facturas || ''
+  }
+
+  const getValor = (r: TraficoRow): number => {
+    const fac = facturasMap.get(r.trafico)
+    return fac?.valor_usd || Number(r.importe_total) || 0
+  }
+
+  const getDesc = (r: TraficoRow): string => {
+    if (r.descripcion_mercancia) return r.descripcion_mercancia
+    const fac = facturasMap.get(r.trafico)
+    return fac?.descripcion || ''
+  }
+
+  const getEntrada = (r: TraficoRow): string => entradaMap.get(r.trafico) || ''
 
   const filtered = useMemo(() => {
     let out = rows
@@ -145,9 +239,10 @@ function TraficosContent() {
       out = out.filter(r =>
         fmtId(r.trafico).toLowerCase().includes(q) ||
         (r.pedimento ?? '').toLowerCase().includes(q) ||
-        (r.descripcion_mercancia ?? '').toLowerCase().includes(q) ||
-        (r.proveedores ?? '').toLowerCase().includes(q) ||
-        (r.facturas ?? '').toLowerCase().includes(q)
+        getDesc(r).toLowerCase().includes(q) ||
+        getProveedor(r).toLowerCase().includes(q) ||
+        getInvoice(r).toLowerCase().includes(q) ||
+        getEntrada(r).toLowerCase().includes(q)
       )
     }
     const activeSort = sortParam ? { column: sortParam, direction: (orderParam ?? 'desc') as 'asc' | 'desc' } : sort
@@ -159,7 +254,7 @@ function TraficosContent() {
       const cmp = aVal < bVal ? -1 : aVal > bVal ? 1 : 0
       return activeSort.direction === 'asc' ? cmp : -cmp
     })
-  }, [rows, search, sort, sortParam, orderParam])
+  }, [rows, search, sort, sortParam, orderParam, facturasMap, entradaMap])
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE)
   const paged = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
@@ -167,19 +262,25 @@ function TraficosContent() {
   const SortArrow = ({ col }: { col: string }) =>
     sort.column === col ? <span style={{ marginLeft: 4, fontSize: 10 }}>{sort.direction === 'asc' ? '\u2191' : '\u2193'}</span> : null
 
-  const fmtSupplier = (prov: string | null | undefined): string => {
-    if (!prov) return ''
-    const first = prov.split(',')[0]?.trim() || ''
-    return resolveSupplier(first) || first
-  }
-
   return (
     <div className="page-shell">
-      <div style={{ marginBottom: 12 }}>
-        <h1 className="page-title">Tráficos</h1>
-        <p className="page-subtitle">
-          {rows.length.toLocaleString('es-MX')} operacion{rows.length !== 1 ? 'es' : ''}
-        </p>
+      {/* Header — glass theme */}
+      <div style={{ marginBottom: 20, display: 'flex', alignItems: 'center', gap: 14 }}>
+        <div style={{
+          width: 44, height: 44, borderRadius: 14,
+          background: 'rgba(0,229,255,0.08)',
+          border: '1px solid rgba(0,229,255,0.15)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          flexShrink: 0,
+        }}>
+          <Truck size={20} color="#00E5FF" strokeWidth={1.8} />
+        </div>
+        <h1 style={{
+          fontSize: 22, fontWeight: 800, color: '#E6EDF3',
+          letterSpacing: '-0.02em', margin: 0,
+        }}>
+          Tráficos
+        </h1>
       </div>
 
       {fetchError && (
@@ -199,7 +300,7 @@ function TraficosContent() {
               aria-label="Buscar tráficos"
             />
           </div>
-          <button className="btn btn-outline btn-sm" onClick={() => exportCSV(filtered, clientClave, companyId)}>
+          <button className="btn btn-outline btn-sm" onClick={() => exportCSV(filtered, clientClave, companyId, facturasMap, entradaMap)}>
             <Download size={12} /> CSV
           </button>
         </div>
@@ -209,6 +310,8 @@ function TraficosContent() {
           <div style={{ padding: '8px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
             {paged.map(r => {
               const status = getStatus(r.estatus)
+              const prov = getProveedor(r)
+              const valor = getValor(r)
               return (
                 <div
                   key={r.trafico}
@@ -227,16 +330,16 @@ function TraficosContent() {
                       {status}
                     </span>
                   </div>
-                  {fmtSupplier(r.proveedores) && (
+                  {prov && prov !== '—' && (
                     <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {fmtSupplier(r.proveedores)}
+                      {prov}
                     </div>
                   )}
                   <div style={{ fontSize: 12, color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: 8 }}>
-                    {fmtDesc(r.descripcion_mercancia) || '—'}
+                    {fmtDesc(getDesc(r)) || '—'}
                   </div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
-                    {r.importe_total ? <span>{fmtUSDCompact(r.importe_total)}</span> : null}
+                    {valor > 0 && <span>{fmtUSDCompact(valor)}</span>}
                     {r.pedimento ? <span>{fmtPedimentoShort(r.pedimento)}</span> : <span>Ped. pendiente</span>}
                     {r.fecha_llegada ? <span>{fmtDateShort(r.fecha_llegada)}</span> : null}
                   </div>
@@ -267,7 +370,7 @@ function TraficosContent() {
               <thead>
                 <tr>
                   <th scope="col" style={{ width: 150, cursor: 'pointer' }} onClick={() => toggleSort('trafico')}>Clave de Tráfico<SortArrow col="trafico" /></th>
-                  <th scope="col" style={{ width: 100 }}>Ref. Cliente</th>
+                  <th scope="col" style={{ width: 100 }}>Entrada</th>
                   <th scope="col" style={{ width: 160 }}>Proveedor</th>
                   <th scope="col" style={{ width: 120 }}>Invoice #</th>
                   <th scope="col" style={{ minWidth: 160 }}>Descripción</th>
@@ -299,6 +402,7 @@ function TraficosContent() {
                 )}
                 {paged.map((r, idx) => {
                   const status = getStatus(r.estatus)
+                  const valor = getValor(r)
                   return (
                     <tr
                       key={r.trafico}
@@ -310,19 +414,19 @@ function TraficosContent() {
                         <span className="trafico-id">{fmtId(r.trafico)}</span>
                       </td>
                       <td style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--text-secondary)' }}>
-                        {r.embarque ?? <span style={{ color: 'var(--text-muted)' }}>—</span>}
+                        {getEntrada(r) || <span style={{ color: 'var(--text-muted)' }}>—</span>}
                       </td>
                       <td style={{ fontSize: 13, color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 160 }}>
-                        {fmtSupplier(r.proveedores) || <span style={{ color: 'var(--text-muted)' }}>—</span>}
+                        {(() => { const p = getProveedor(r); return p && p !== '—' ? p : <span style={{ color: 'var(--text-muted)' }}>—</span> })()}
                       </td>
                       <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 120 }}>
-                        {r.facturas || <span style={{ color: 'var(--text-muted)' }}>—</span>}
+                        {getInvoice(r) || <span style={{ color: 'var(--text-muted)' }}>—</span>}
                       </td>
                       <td className="desc-text" style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-                        {fmtDesc(r.descripcion_mercancia) || <span style={{ color: 'var(--text-muted)' }}>—</span>}
+                        {fmtDesc(getDesc(r)) || <span style={{ color: 'var(--text-muted)' }}>—</span>}
                       </td>
                       <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--text-primary)', fontWeight: 600 }}>
-                        {r.importe_total ? fmtUSDCompact(r.importe_total) : <span style={{ color: 'var(--text-muted)' }}>—</span>}
+                        {valor > 0 ? fmtUSDCompact(valor) : <span style={{ color: 'var(--text-muted)' }}>—</span>}
                       </td>
                       <td>
                         {r.pedimento ? (

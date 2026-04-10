@@ -1,8 +1,8 @@
 'use client'
 
 import { useEffect, useState, useMemo } from 'react'
-import { Search, ChevronLeft, ChevronRight } from 'lucide-react'
-import { getCompanyIdCookie, getClientClaveCookie, getCookieValue } from '@/lib/client-config'
+import { Search, ChevronLeft, ChevronRight, Package } from 'lucide-react'
+import { getCompanyIdCookie, getCookieValue } from '@/lib/client-config'
 import { fmtDesc, fmtDate } from '@/lib/format-utils'
 import { useSort } from '@/hooks/use-sort'
 import { useIsMobile } from '@/hooks/use-mobile'
@@ -68,8 +68,8 @@ export default function EntradasPage() {
       })
       .finally(() => setLoading(false))
 
-    // Traficos for transport data (single fetch)
-    const tParams = new URLSearchParams({ table: 'traficos', select: 'trafico,transportista_mexicano,transportista_americano', limit: '5000' })
+    // Traficos for transport data
+    const tParams = new URLSearchParams({ table: 'traficos', limit: '5000' })
     if (!isInternal && companyId) tParams.set('company_id', companyId)
     fetch(`/api/data?${tParams}`)
       .then(r => r.json()).then(d => {
@@ -83,10 +83,8 @@ export default function EntradasPage() {
         setTransportMap(transMap)
       }).catch(() => {})
 
-    // Supplier names lookup
-    const sParams = new URLSearchParams({ table: 'globalpc_proveedores', select: 'cve_proveedor,nombre', limit: '5000' })
-    if (!isInternal && companyId) sParams.set('company_id', companyId)
-    fetch(`/api/data?${sParams}`)
+    // Supplier names — NO company_id filter (table may not have this column)
+    fetch('/api/data?table=globalpc_proveedores&limit=5000')
       .then(r => r.json()).then(d => {
         const map = new Map<string, string>()
         const arr = Array.isArray(d.data) ? d.data : []
@@ -138,13 +136,27 @@ export default function EntradasPage() {
     return supplierMap.get(code) || code
   }
 
+  const getGuia = (r: EntradaRow): string => r.num_talon || r.num_caja_trailer || ''
+
   return (
     <div className="page-shell">
-      <div style={{ marginBottom: 12 }}>
-        <h1 className="page-title">Entradas</h1>
-        <p className="page-subtitle">
-          {rows.length.toLocaleString('es-MX')} entrada{rows.length !== 1 ? 's' : ''}
-        </p>
+      {/* Header — glass theme */}
+      <div style={{ marginBottom: 20, display: 'flex', alignItems: 'center', gap: 14 }}>
+        <div style={{
+          width: 44, height: 44, borderRadius: 14,
+          background: 'rgba(0,229,255,0.08)',
+          border: '1px solid rgba(0,229,255,0.15)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          flexShrink: 0,
+        }}>
+          <Package size={20} color="#00E5FF" strokeWidth={1.8} />
+        </div>
+        <h1 style={{
+          fontSize: 22, fontWeight: 800, color: '#E6EDF3',
+          letterSpacing: '-0.02em', margin: 0,
+        }}>
+          Entradas
+        </h1>
       </div>
 
       <div className="table-shell">
@@ -202,6 +214,7 @@ export default function EntradasPage() {
             {paged.map(r => {
               const proveedor = getProveedor(r)
               const transporte = getTransporte(r)
+              const guia = getGuia(r)
               return (
                 <div
                   key={r.cve_entrada}
@@ -231,6 +244,7 @@ export default function EntradasPage() {
                     {transporte && <span>{transporte}</span>}
                     {(r.cantidad_bultos ?? 0) > 0 && <span>{r.cantidad_bultos} bto{r.cantidad_bultos !== 1 ? 's' : ''}</span>}
                     {(r.peso_bruto ?? 0) > 0 && <span>{Number(r.peso_bruto).toLocaleString('es-MX')} kg</span>}
+                    {guia && <span>{guia}</span>}
                   </div>
                 </div>
               )
@@ -241,25 +255,23 @@ export default function EntradasPage() {
         {/* Desktop table */}
         {!loading && paged.length > 0 && !isMobile && (
           <div style={{ maxHeight: 'calc(100vh - 240px)', overflowY: 'auto', overflowX: 'auto' }}>
-            <table className="aduana-table" role="table" aria-label="Lista de entradas" style={{ minWidth: 1000 }}>
+            <table className="aduana-table" role="table" aria-label="Lista de entradas" style={{ minWidth: 1100 }}>
               <thead>
                 <tr>
                   <th style={{ cursor: 'pointer', width: 110 }} onClick={() => toggleSort('fecha_llegada_mercancia')}>Fecha<SortArrow col="fecha_llegada_mercancia" /></th>
-                  <th style={{ cursor: 'pointer', width: 120 }} onClick={() => toggleSort('cve_entrada')}>Entrada<SortArrow col="cve_entrada" /></th>
+                  <th style={{ cursor: 'pointer', width: 110 }} onClick={() => toggleSort('cve_entrada')}>Entrada<SortArrow col="cve_entrada" /></th>
                   <th style={{ width: 160 }}>Proveedor</th>
-                  <th style={{ minWidth: 180 }}>Descripción</th>
-                  <th style={{ width: 140 }}>Tráfico</th>
-                  <th style={{ width: 130 }}>Transporte</th>
-                  <th style={{ textAlign: 'right', cursor: 'pointer', width: 80 }} onClick={() => toggleSort('cantidad_bultos')}>Bultos<SortArrow col="cantidad_bultos" /></th>
-                  <th style={{ textAlign: 'right', cursor: 'pointer', width: 100 }} onClick={() => toggleSort('peso_bruto')}>Peso (kg)<SortArrow col="peso_bruto" /></th>
+                  <th style={{ minWidth: 160 }}>Descripción</th>
+                  <th style={{ width: 130 }}>Tráfico</th>
+                  <th style={{ width: 120 }}>Transporte</th>
+                  <th style={{ textAlign: 'right', cursor: 'pointer', width: 70 }} onClick={() => toggleSort('cantidad_bultos')}>Bultos<SortArrow col="cantidad_bultos" /></th>
+                  <th style={{ textAlign: 'right', cursor: 'pointer', width: 90 }} onClick={() => toggleSort('peso_bruto')}>Peso (kg)<SortArrow col="peso_bruto" /></th>
+                  <th style={{ width: 120 }}>Guía</th>
                 </tr>
               </thead>
               <tbody>
                 {paged.map((r, i) => (
-                  <tr
-                    key={r.cve_entrada}
-                    className={i % 2 === 0 ? 'row-even' : 'row-odd'}
-                  >
+                  <tr key={r.cve_entrada} className={i % 2 === 0 ? 'row-even' : 'row-odd'}>
                     <td style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--text-secondary)' }}>
                       {r.fecha_llegada_mercancia ? <time dateTime={r.fecha_llegada_mercancia.split('T')[0]}>{fmtDate(r.fecha_llegada_mercancia)}</time> : <span style={{ color: 'var(--text-muted)' }}>—</span>}
                     </td>
@@ -291,6 +303,9 @@ export default function EntradasPage() {
                     </td>
                     <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--text-secondary)' }}>
                       {r.peso_bruto ? Number(r.peso_bruto).toLocaleString('es-MX') : <span style={{ color: 'var(--text-muted)' }}>—</span>}
+                    </td>
+                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-muted)' }}>
+                      {getGuia(r) || <span style={{ color: 'var(--text-muted)' }}>—</span>}
                     </td>
                   </tr>
                 ))}

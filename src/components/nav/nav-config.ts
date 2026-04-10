@@ -145,16 +145,14 @@ export const INTERNAL_BOTTOM: NavTopLevel[] = [
 
 export const CLIENT_NAV: NavTopLevel[] = [
   { href: '/',             label: 'Inicio',               icon: LayoutDashboard },
-  { href: '/traficos',     label: 'Tráficos',             icon: Truck },
   { href: '/entradas',     label: 'Entradas',             icon: Package },
+  { href: '/traficos',     label: 'Tráficos',             icon: Truck },
   { href: '/pedimentos',   label: 'Pedimentos',           icon: FileText },
-  { href: '/expedientes',  label: 'Expedientes Digitales', icon: FolderOpen },
-  { href: '/catalogo',     label: 'Catálogo',             icon: Tags },
+  { href: '/catalogo',     label: 'Catálogo de Partes',   icon: ClipboardList },
   { href: '/anexo24',      label: 'Anexo 24',             icon: FileSpreadsheet },
-  { href: '/bodega',       label: 'Inventario',           icon: Warehouse },
+  { href: '/expedientes',  label: 'Expedientes Digitales', icon: FolderOpen },
   { href: '/reportes',     label: 'Reportes',             icon: BarChart3 },
-  { href: '/financiero',   label: 'Financiero',           icon: DollarSign },
-  { href: '/documentos',   label: 'Documentos',           icon: FolderOpen },
+  { href: '/kpis',         label: "KPI's",                icon: TrendingUp },
 ]
 
 // ---------------------------------------------------------------------------
@@ -201,8 +199,9 @@ export const MOBILE_INTERNAL_TABS: MobileTab[] = [
 
 export const MOBILE_CLIENT_TABS: MobileTab[] = [
   { href: '/',           label: 'Inicio',        icon: LayoutDashboard },
-  { href: '#cruz-ai',    label: '',              icon: null, center: true },
-  { href: '#buscar',     label: 'Buscar',        icon: Search },
+  { href: '/entradas',   label: 'Entradas',      icon: Package },
+  { href: '/traficos',   label: 'Tráficos',      icon: Truck },
+  { href: '/reportes',   label: 'Reportes',      icon: BarChart3 },
 ]
 
 // ---------------------------------------------------------------------------
@@ -268,25 +267,14 @@ export const ADMIN_ONLY_ROUTES = [
 /** Routes accessible by client role */
 export const CLIENT_ROUTES = [
   '/',
-  '/traficos',
   '/entradas',
+  '/traficos',
   '/pedimentos',
-  '/documentos',
-  '/financiero',
-  '/proveedores',
-  '/reportes',
-  '/expedientes',
-  '/bodega',
   '/catalogo',
   '/anexo24',
-  '/exportar',
-  '/bienvenida',
-  '/facturacion',
-  '/noticias',
-  '/analytics',
-  '/mensajes',
-  '/actividad',
-  '/logros',
+  '/expedientes',
+  '/reportes',
+  '/kpis',
   '/login',
   '/aduana',
   '/cambiar-contrasena',

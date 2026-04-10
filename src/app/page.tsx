@@ -7,7 +7,7 @@ import { fetchCockpitData } from '@/components/cockpit/shared/fetchCockpitData'
 import { CockpitShell } from '@/components/cockpit/shared/CockpitShell'
 import { AdminCockpit } from '@/components/cockpit/AdminCockpit'
 import { OperatorCockpit } from '@/components/cockpit/OperatorCockpit'
-import { CommandCenterView } from '@/components/command-center/CommandCenterView'
+import { ClientHome } from '@/components/client/ClientHome'
 import { DemoHints } from '@/components/demo/DemoHints'
 
 export const dynamic = 'force-dynamic'
@@ -74,8 +74,18 @@ export default async function Dashboard() {
     )
   }
 
-  // Default: client view — full command center with client viewMode
+  // Default: client view — clean 8-tile navigation grid
   const isDemo = session.companyId === 'demo-plastics'
+
+  // Resolve company name for the header
+  let companyName = ''
+  const sb = createServerClient()
+  const { data: company } = await sb
+    .from('companies')
+    .select('name')
+    .eq('company_id', session.companyId)
+    .maybeSingle()
+  companyName = company?.name || ''
 
   return (
     <CockpitShell>
@@ -101,7 +111,7 @@ export default async function Dashboard() {
           </a>
         </div>
       )}
-      <CommandCenterView viewMode="client" />
+      <ClientHome companyName={companyName} />
     </CockpitShell>
   )
 }

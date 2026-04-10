@@ -4,44 +4,59 @@ import { useEffect, useState, useMemo, Suspense } from 'react'
 import { Search, Download, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { getCookieValue } from '@/lib/client-config'
-import { fmtId, fmtDesc, fmtUSDCompact, fmtDate, fmtDateShort, fmtPedimentoShort, calcPriority, priorityClass } from '@/lib/format-utils'
-import { fmtCarrier } from '@/lib/carrier-names'
-import { getTraficoUrgency } from '@/lib/trafico-urgency'
-import { MobileTraficoCard } from '@/components/mobile-trafico-card'
-// CruzScore removed from client-facing UI — scores are internal only
+import { fmtId, fmtDesc, fmtUSDCompact, fmtDate, fmtDateShort, fmtPedimentoShort } from '@/lib/format-utils'
 import { useSort } from '@/hooks/use-sort'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { ErrorBoundary } from '@/components/error-boundary'
 import { useSessionCache } from '@/hooks/use-session-cache'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { ErrorCard } from '@/components/ui/ErrorCard'
-import { SwipeRow } from '@/components/ui/SwipeRow'
-import { Share2, MessageSquare } from 'lucide-react'
 import { useSupplierNames } from '@/hooks/use-supplier-names'
 
 interface TraficoRow {
-  trafico: string; estatus?: string; fecha_llegada?: string | null
-  descripcion_mercancia?: string | null; peso_bruto?: number | null
-  importe_total?: number | null; pedimento?: string | null
-  semaforo?: number | null; transportista_mexicano?: string | null
-  fecha_pago?: string | null; fecha_cruce?: string | null; [key: string]: unknown
+  trafico: string
+  estatus?: string
+  fecha_llegada?: string | null
+  descripcion_mercancia?: string | null
+  peso_bruto?: number | null
+  importe_total?: number | null
+  pedimento?: string | null
+  proveedores?: string | null
+  facturas?: string | null
+  embarque?: number | null
+  transportista_mexicano?: string | null
+  [key: string]: unknown
 }
 
 const PAGE_SIZE = 50
 
-function exportCSV(rows: TraficoRow[], activeFilter: string, clientClave: string, companyId: string) {
+/** Binary status: Cruzado or Pendiente */
+function getStatus(estatus: string | undefined): 'Cruzado' | 'Pendiente' {
+  if (!estatus) return 'Pendiente'
+  return estatus.toLowerCase().includes('cruz') ? 'Cruzado' : 'Pendiente'
+}
+
+function exportCSV(rows: TraficoRow[], clientClave: string, companyId: string) {
   const meta = [
-    'CRUZ — Renato Zapata & Company',
+    'ADUANA — Renato Zapata & Company',
     `Clave: ${clientClave}`,
     `Exportado: ${fmtDate(new Date())}`,
-    `Filtro: ${activeFilter}`,
     `Total registros: ${rows.length}`,
     '',
   ]
-  const h = ['Tráfico','Estatus','Fecha','Descripción','Peso_kg','Importe_USD','Pedimento']
-  const c = rows.map(r => [r.trafico, r.estatus??'', r.fecha_llegada?.split('T')[0]??'', (r.descripcion_mercancia??'').replace(/,/g,' '), r.peso_bruto??'', r.importe_total??'', r.pedimento??''].join(','))
+  const h = ['Clave_Trafico', 'Ref_Cliente', 'Proveedor', 'Invoice', 'Descripcion', 'Valor_USD', 'Pedimento', 'Status']
+  const c = rows.map(r => [
+    r.trafico,
+    r.embarque ?? '',
+    (r.proveedores ?? '').replace(/,/g, ';'),
+    (r.facturas ?? '').replace(/,/g, ';'),
+    (r.descripcion_mercancia ?? '').replace(/,/g, ' '),
+    r.importe_total ?? '',
+    r.pedimento ?? '',
+    getStatus(r.estatus),
+  ].join(','))
   const b = new Blob([[...meta, h.join(','), ...c].join('\n')], { type: 'text/csv' })
-  const fname = `${(companyId || 'export').toUpperCase()}_Traficos_${activeFilter !== 'todos' ? activeFilter + '_' : ''}${new Date().toISOString().split('T')[0]}.csv`
+  const fname = `${(companyId || 'export').toUpperCase()}_Traficos_${new Date().toISOString().split('T')[0]}.csv`
   const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = fname; a.click()
 }
 
@@ -66,20 +81,13 @@ function TraficosContent() {
   const orderParam = searchParams.get('order')
   const [page, setPage] = useState(0)
   const [searchInput, setSearchInput] = useState(search)
-  const [riskMap, setRiskMap] = useState<Map<string, any>>(new Map())
-  const [docCountMap, setDocCountMap] = useState<Map<string, number>>(new Map())
-  const [partidaDescMap, setPartidaDescMap] = useState<Map<string, string>>(new Map())
   const { sort, toggleSort } = useSort('traficos', { column: 'fecha_llegada', direction: 'desc' })
   const router = useRouter()
   const isMobile = useIsMobile()
   const { getCached, setCache } = useSessionCache()
 
-  // Cookie values in state to avoid SSR/client hydration mismatch.
-  // getCookieValue returns undefined during SSR (no document), so we
-  // initialize to '' and populate on mount.
   const [companyId, setCompanyId] = useState('')
   const [clientClave, setClientClave] = useState('')
-  const [companyName, setCompanyName] = useState('')
   const [userRole, setUserRole] = useState('')
   const [cookiesReady, setCookiesReady] = useState(false)
 
@@ -87,78 +95,42 @@ function TraficosContent() {
     setCompanyId(getCookieValue('company_id') ?? '')
     setClientClave(getCookieValue('company_clave') ?? '')
     setUserRole(getCookieValue('user_role') ?? '')
-    const cn = getCookieValue('company_name')
-    setCompanyName(cn ?? '')
     setCookiesReady(true)
   }, [])
-
 
   useEffect(() => {
     if (!cookiesReady) return
     const isInternal = userRole === 'broker' || userRole === 'admin'
-    // Client role needs companyId to fetch; broker/admin fetch all
     if (!isInternal && !companyId) { setLoading(false); return }
     setLoading(true)
-
-    // Broker/admin: no company_id or trafico_prefix filters → see all tráficos
-    const traficosParams = new URLSearchParams({ table: 'traficos', limit: '5000', order_by: 'fecha_llegada', order_dir: 'desc', gte_field: 'fecha_llegada', gte_value: '2024-01-01' })
-    if (!isInternal) {
-      traficosParams.set('company_id', companyId)
-
-    }
     setFetchError(null)
+
     const cached = getCached<TraficoRow[]>('traficos')
     if (cached) setRows(cached)
+
+    const traficosParams = new URLSearchParams({
+      table: 'traficos', limit: '5000',
+      order_by: 'fecha_llegada', order_dir: 'desc',
+      gte_field: 'fecha_llegada', gte_value: '2024-01-01',
+    })
+    if (!isInternal) traficosParams.set('company_id', companyId)
+
     fetch(`/api/data?${traficosParams}`)
       .then(r => {
         if (!r.ok) throw new Error(r.status === 401 ? 'session_expired' : 'fetch_error')
         return r.json()
       })
-      .then(d => { const arr = d.data ?? d; const rows = Array.isArray(arr) ? arr : []; setRows(rows); setCache('traficos', rows) })
+      .then(d => {
+        const arr = Array.isArray(d.data ?? d) ? (d.data ?? d) : []
+        setRows(arr)
+        setCache('traficos', arr)
+      })
       .catch(err => {
         if (err.message === 'session_expired') { window.location.href = '/login'; return }
-        setFetchError('Error cargando tráficos. Reintentar →')
+        setFetchError('Error cargando tráficos. Reintentar.')
       })
       .finally(() => setLoading(false))
-
-    // Document counts
-    const docParams = new URLSearchParams({ table: 'documents', select: 'trafico_id,document_type', limit: '10000' })
-    if (!isInternal) docParams.set('company_id', companyId)
-    fetch(`/api/data?${docParams}`)
-      .then(r => r.json())
-      .then(d => {
-        const docs = Array.isArray(d.data) ? d.data : []
-        const map = new Map<string, number>()
-        docs.forEach((doc: { trafico_id?: string }) => {
-          if (doc.trafico_id) map.set(doc.trafico_id, (map.get(doc.trafico_id) || 0) + 1)
-        })
-        setDocCountMap(map)
-      })
-      .catch((err: unknown) => console.error('[traficos] doc count fetch:', (err as Error).message))
-
-    // Risk scores
-    const riskParams = new URLSearchParams({ table: 'pedimento_risk_scores', limit: '2000', order_by: 'calculated_at', order_dir: 'desc' })
-    if (!isInternal) riskParams.set('company_id', companyId)
-    fetch(`/api/data?${riskParams}`)
-      .then(r => r.json()).then(d => {
-        const map = new Map<string, Record<string, unknown>>()
-        const arr = Array.isArray(d.data) ? d.data : []
-        arr.forEach((r: Record<string, unknown>) => { if (r.trafico_id && !map.has(r.trafico_id as string)) map.set(r.trafico_id as string, r) })
-        setRiskMap(map)
-      }).catch((err: unknown) => console.error('[traficos] risk scores fetch:', (err as Error).message))
-
-    // Partida descriptions (pedimento merchandise)
-    const partidaParams = new URLSearchParams({ table: 'globalpc_partidas', select: 'cve_trafico,descripcion', limit: '5000' })
-    fetch(`/api/data?${partidaParams}`)
-      .then(r => r.json()).then(d => {
-        const map = new Map<string, string>()
-        const arr = Array.isArray(d.data) ? d.data : []
-        arr.forEach((p: { cve_trafico?: string; descripcion?: string }) => {
-          if (p.cve_trafico && p.descripcion && !map.has(p.cve_trafico)) map.set(p.cve_trafico, p.descripcion)
-        })
-        setPartidaDescMap(map)
-      }).catch((err: unknown) => console.error('[traficos] partidas fetch:', (err as Error).message))
-  }, [cookiesReady, companyId, clientClave, userRole])
+  }, [cookiesReady, companyId, userRole])
 
   // Debounced search
   useEffect(() => {
@@ -166,16 +138,18 @@ function TraficosContent() {
     return () => clearTimeout(timer)
   }, [searchInput])
 
-
   const filtered = useMemo(() => {
     let out = rows
-
-    // Text search
     if (search.trim()) {
       const q = search.toLowerCase()
-      out = out.filter(r => fmtId(r.trafico).toLowerCase().includes(q) || (r.pedimento ?? '').toLowerCase().includes(q) || (r.descripcion_mercancia ?? '').toLowerCase().includes(q))
+      out = out.filter(r =>
+        fmtId(r.trafico).toLowerCase().includes(q) ||
+        (r.pedimento ?? '').toLowerCase().includes(q) ||
+        (r.descripcion_mercancia ?? '').toLowerCase().includes(q) ||
+        (r.proveedores ?? '').toLowerCase().includes(q) ||
+        (r.facturas ?? '').toLowerCase().includes(q)
+      )
     }
-    // Sort — URL params override interactive sort
     const activeSort = sortParam ? { column: sortParam, direction: (orderParam ?? 'desc') as 'asc' | 'desc' } : sort
     return [...out].sort((a, b) => {
       const aVal = a[activeSort.column as keyof TraficoRow]
@@ -185,23 +159,32 @@ function TraficosContent() {
       const cmp = aVal < bVal ? -1 : aVal > bVal ? 1 : 0
       return activeSort.direction === 'asc' ? cmp : -cmp
     })
-  }, [rows, search, sort, sortParam, orderParam, docCountMap])
+  }, [rows, search, sort, sortParam, orderParam])
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE)
   const paged = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
-  const totalValor = useMemo(() => rows.reduce((s, r) => s + (Number(r.importe_total) || 0), 0), [rows])
 
-  const SortArrow = ({ col }: { col: string }) => sort.column === col ? <span style={{ marginLeft: 4, fontSize: 10 }}>{sort.direction === 'asc' ? '↑' : '↓'}</span> : null
+  const SortArrow = ({ col }: { col: string }) =>
+    sort.column === col ? <span style={{ marginLeft: 4, fontSize: 10 }}>{sort.direction === 'asc' ? '\u2191' : '\u2193'}</span> : null
+
+  const fmtSupplier = (prov: string | null | undefined): string => {
+    if (!prov) return ''
+    const first = prov.split(',')[0]?.trim() || ''
+    return resolveSupplier(first) || first
+  }
 
   return (
     <div className="page-shell">
-      {/* Title removed — sidebar indicates current page */}
-      {/* Title removed — sidebar indicates current page */}
+      <div style={{ marginBottom: 12 }}>
+        <h1 className="page-title">Tráficos</h1>
+        <p className="page-subtitle">
+          {rows.length.toLocaleString('es-MX')} operacion{rows.length !== 1 ? 'es' : ''}
+        </p>
+      </div>
 
-      {/* Error state */}
       {fetchError && (
         <div style={{ marginBottom: 16 }}>
-          <ErrorCard message={fetchError} onRetry={() => { setFetchError(null); setLoading(true); window.location.reload() }} />
+          <ErrorCard message={fetchError} onRetry={() => window.location.reload()} />
         </div>
       )}
 
@@ -209,135 +192,157 @@ function TraficosContent() {
         <div className="table-toolbar" style={{ justifyContent: 'flex-end' }}>
           <div className="toolbar-search" style={{ minHeight: 60 }}>
             <Search size={12} style={{ color: 'var(--slate-400)', flexShrink: 0 }} />
-            <input placeholder="Buscar tráfico, pedimento o referencia…" value={searchInput}
-              onChange={e => setSearchInput(e.target.value)} aria-label="Buscar tráficos" />
+            <input
+              placeholder="Tráfico, pedimento, proveedor, factura..."
+              value={searchInput}
+              onChange={e => setSearchInput(e.target.value)}
+              aria-label="Buscar tráficos"
+            />
           </div>
-          <button className="btn btn-outline btn-sm" onClick={() => exportCSV(filtered, 'todos', clientClave, companyId)}>
+          <button className="btn btn-outline btn-sm" onClick={() => exportCSV(filtered, clientClave, companyId)}>
             <Download size={12} /> CSV
           </button>
         </div>
 
-        {!loading && rows.length > 0 && !isMobile && (
-          <div className="summary-bar">
-            <div className="summary-stat"><span className="summary-value">{rows.length.toLocaleString('es-MX')}</span><span className="summary-label"> operaciones</span></div>
-          </div>
-        )}
-
         {/* Mobile Cards */}
-        {isMobile && (
-          <div style={{ padding: '8px 12px' }}>
-            <div className="m-card-list">
-              {paged.map(r => (
-                <MobileTraficoCard key={r.trafico} trafico={r} onClick={() => router.push(`/traficos/${encodeURIComponent(r.trafico)}`)} />
-              ))}
-              {!loading && paged.length === 0 && (
-                <EmptyState
-                  icon="🚛"
-                  title="Sin operaciones activas"
-                  description="¿Planea un nuevo envío? Aquí aparecerán sus tráficos."
-                  cta={{ label: "Contactar a su agente", href: "/comunicaciones" }}
-                />
-              )}
-            </div>
+        {isMobile && !loading && paged.length > 0 && (
+          <div style={{ padding: '8px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {paged.map(r => {
+              const status = getStatus(r.estatus)
+              return (
+                <div
+                  key={r.trafico}
+                  onClick={() => router.push(`/traficos/${encodeURIComponent(r.trafico)}`)}
+                  style={{
+                    background: 'var(--bg-card)',
+                    border: '1px solid var(--border)',
+                    borderRadius: 10,
+                    padding: '14px 16px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                    <span style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>{fmtId(r.trafico)}</span>
+                    <span className={`badge ${status === 'Cruzado' ? 'badge-cruzado' : 'badge-proceso'}`} style={{ fontSize: 11 }}>
+                      {status}
+                    </span>
+                  </div>
+                  {fmtSupplier(r.proveedores) && (
+                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {fmtSupplier(r.proveedores)}
+                    </div>
+                  )}
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: 8 }}>
+                    {fmtDesc(r.descripcion_mercancia) || '—'}
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
+                    {r.importe_total ? <span>{fmtUSDCompact(r.importe_total)}</span> : null}
+                    {r.pedimento ? <span>{fmtPedimentoShort(r.pedimento)}</span> : <span>Ped. pendiente</span>}
+                    {r.fecha_llegada ? <span>{fmtDateShort(r.fecha_llegada)}</span> : null}
+                  </div>
+                </div>
+              )
+            })}
           </div>
         )}
 
-        {/* Table — desktop only */}
-        {!isMobile && <div style={{ maxHeight: 'calc(100vh - 280px)', overflowY: 'auto', overflowX: 'auto' }}>
-          <table className="aduana-table" aria-label="Lista de tráficos" style={{ minWidth: 700 }}>
-            <thead>
-              <tr>
-                <th scope="col" style={{ width: 28 }}></th>
-                <th scope="col" style={{ width: 160, cursor: 'pointer' }} onClick={() => toggleSort('trafico')} aria-sort={sort.column === 'trafico' ? (sort.direction === 'asc' ? 'ascending' : 'descending') : undefined}>Tráfico<SortArrow col="trafico" /></th>
-                <th scope="col" style={{ width: 110 }}>Pedimento</th>
-                <th scope="col" style={{ width: 120, cursor: 'pointer' }} onClick={() => toggleSort('estatus')} aria-sort={sort.column === 'estatus' ? (sort.direction === 'asc' ? 'ascending' : 'descending') : undefined}>Estado<SortArrow col="estatus" /></th>
-                <th scope="col" style={{ width: 110, cursor: 'pointer' }} onClick={() => toggleSort('fecha_llegada')} aria-sort={sort.column === 'fecha_llegada' ? (sort.direction === 'asc' ? 'ascending' : 'descending') : undefined}>Fecha<SortArrow col="fecha_llegada" /></th>
-                <th scope="col">Descripción</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading && Array.from({ length: 8 }).map((_, i) => (
-                <tr key={`s-${i}`}>
-                  <td><div className="skeleton-shimmer" style={{ width: 7, height: 7, borderRadius: '50%' }} /></td>
-                  <td><div className="skeleton-shimmer" style={{ width: 96, height: 13 }} /></td>
-                  <td><div className="skeleton-shimmer" style={{ width: 70, height: 13 }} /></td>
-                  <td><div className="skeleton-shimmer" style={{ width: 70, height: 13 }} /></td>
-                  <td><div className="skeleton-shimmer" style={{ width: 70, height: 13 }} /></td>
-                  <td><div className="skeleton-shimmer" style={{ width: 140, height: 13 }} /></td>
-                </tr>
-              ))}
-              {!loading && paged.length === 0 && (
-                <tr><td colSpan={6}>
-                  {search.trim() ? (
-                    <div className="empty-state">
-                      <div className="empty-state-icon">🔍</div>
-                      <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--slate-600)' }}>Sin resultados para &ldquo;{search}&rdquo;</div>
-                      <div className="empty-state-hint">Verifica el número o intenta con el pedimento</div>
-                      <button className="btn btn-outline btn-sm" style={{ marginTop: 12 }} onClick={() => { setSearchInput(''); setSearch('') }}>Limpiar filtros</button>
-                    </div>
-                  ) : (
-                    <EmptyState
-                      icon="🚛"
-                      title="No hay tráficos activos"
-                      description="Sus embarques activos aparecerán aquí"
-                      cta={{ label: "Contactar a su agente", href: "/comunicaciones" }}
-                    />
-                  )}
-                </td></tr>
-              )}
-              {paged.map((r, idx) => {
-                const ps = calcPriority(r)
-                const isCruzado = (r.estatus || '').toLowerCase().includes('cruz')
-                const isCrossing = (r.estatus || '').toLowerCase().includes('cruc') && !isCruzado
-                const isDetenido = (r.estatus || '').toLowerCase().includes('deten')
-                const isHighValue = (Number(r.importe_total) || 0) > 100000 && !isCruzado
-                const urgency = getTraficoUrgency({
-                  estatus: r.estatus || '',
-                  fecha_llegada: r.fecha_llegada || null,
-                  pedimento: r.pedimento,
-                  doc_count: docCountMap.get(r.trafico),
-                })
+        {isMobile && !loading && paged.length === 0 && (
+          <div style={{ padding: 16 }}>
+            {search.trim() ? (
+              <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+                <div style={{ fontSize: 32, marginBottom: 8 }}>🔍</div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-secondary)' }}>Sin resultados para &ldquo;{search}&rdquo;</div>
+                <button className="btn btn-outline btn-sm" style={{ marginTop: 12 }} onClick={() => { setSearchInput(''); setSearch('') }}>Limpiar búsqueda</button>
+              </div>
+            ) : (
+              <EmptyState icon="🚛" title="Sin operaciones activas" description="Sus embarques activos aparecerán aquí." />
+            )}
+          </div>
+        )}
 
-                return (
-                    <tr key={r.trafico}
-                      className={`clickable-row ${idx % 2 === 0 ? 'row-even' : 'row-odd'}${isCrossing ? ' row-crossing' : ''}`}
-                      style={isHighValue && !isDetenido ? { borderLeft: '3px solid var(--gold)' } : undefined}
-                      title={fmtCarrier(r.transportista_mexicano as string) || undefined}
-                      onClick={() => router.push(`/traficos/${encodeURIComponent(r.trafico)}`)}>
-                      <td style={{ width: 28, paddingRight: 0 }}>
-                        {isCrossing ? <><span className="crossing-pulse" /><span className="sr-only">En cruce</span></> : ps > 0 ? <><span className={`priority-dot ${priorityClass(ps)}`} /><span className="sr-only">Requiere atención</span></> : <span style={{ width: 7, height: 7, borderRadius: '50%', display: 'inline-block', background: isCruzado ? 'var(--success-500)' : isDetenido ? 'var(--danger-500)' : 'var(--amber-500)', opacity: 0.7 }} />}
-                      </td>
+        {/* Desktop table */}
+        {!isMobile && (
+          <div style={{ maxHeight: 'calc(100vh - 280px)', overflowY: 'auto', overflowX: 'auto' }}>
+            <table className="aduana-table" aria-label="Lista de tráficos" style={{ minWidth: 1100 }}>
+              <thead>
+                <tr>
+                  <th scope="col" style={{ width: 150, cursor: 'pointer' }} onClick={() => toggleSort('trafico')}>Clave de Tráfico<SortArrow col="trafico" /></th>
+                  <th scope="col" style={{ width: 100 }}>Ref. Cliente</th>
+                  <th scope="col" style={{ width: 160 }}>Proveedor</th>
+                  <th scope="col" style={{ width: 120 }}>Invoice #</th>
+                  <th scope="col" style={{ minWidth: 160 }}>Descripción</th>
+                  <th scope="col" style={{ width: 110, textAlign: 'right', cursor: 'pointer' }} onClick={() => toggleSort('importe_total')}>Valor USD<SortArrow col="importe_total" /></th>
+                  <th scope="col" style={{ width: 120 }}>Pedimento</th>
+                  <th scope="col" style={{ width: 100, cursor: 'pointer' }} onClick={() => toggleSort('estatus')}>Status<SortArrow col="estatus" /></th>
+                </tr>
+              </thead>
+              <tbody>
+                {loading && Array.from({ length: 8 }).map((_, i) => (
+                  <tr key={`s-${i}`}>
+                    {Array.from({ length: 8 }).map((_, j) => (
+                      <td key={j}><div className="skeleton-shimmer" style={{ width: j === 4 ? 140 : 80, height: 13 }} /></td>
+                    ))}
+                  </tr>
+                ))}
+                {!loading && paged.length === 0 && (
+                  <tr><td colSpan={8}>
+                    {search.trim() ? (
+                      <div className="empty-state">
+                        <div className="empty-state-icon">🔍</div>
+                        <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--slate-600)' }}>Sin resultados para &ldquo;{search}&rdquo;</div>
+                        <button className="btn btn-outline btn-sm" style={{ marginTop: 12 }} onClick={() => { setSearchInput(''); setSearch('') }}>Limpiar filtros</button>
+                      </div>
+                    ) : (
+                      <EmptyState icon="🚛" title="No hay tráficos activos" description="Sus embarques activos aparecerán aquí." />
+                    )}
+                  </td></tr>
+                )}
+                {paged.map((r, idx) => {
+                  const status = getStatus(r.estatus)
+                  return (
+                    <tr
+                      key={r.trafico}
+                      className={`clickable-row ${idx % 2 === 0 ? 'row-even' : 'row-odd'}`}
+                      onClick={() => router.push(`/traficos/${encodeURIComponent(r.trafico)}`)}
+                      style={{ cursor: 'pointer' }}
+                    >
                       <td>
                         <span className="trafico-id">{fmtId(r.trafico)}</span>
                       </td>
-                      <td>{r.pedimento ? <span className="pedimento-num" onClick={e => { e.stopPropagation(); router.push(`/traficos/${encodeURIComponent(r.trafico)}?tab=financiero`) }} style={{ cursor: 'pointer' }}>{fmtPedimentoShort(r.pedimento)}</span> : <span className="pedimento-pending">Pendiente</span>}</td>
+                      <td style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--text-secondary)' }}>
+                        {r.embarque ?? <span style={{ color: 'var(--text-muted)' }}>—</span>}
+                      </td>
+                      <td style={{ fontSize: 13, color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 160 }}>
+                        {fmtSupplier(r.proveedores) || <span style={{ color: 'var(--text-muted)' }}>—</span>}
+                      </td>
+                      <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 120 }}>
+                        {r.facturas || <span style={{ color: 'var(--text-muted)' }}>—</span>}
+                      </td>
+                      <td className="desc-text" style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+                        {fmtDesc(r.descripcion_mercancia) || <span style={{ color: 'var(--text-muted)' }}>—</span>}
+                      </td>
+                      <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--text-primary)', fontWeight: 600 }}>
+                        {r.importe_total ? fmtUSDCompact(r.importe_total) : <span style={{ color: 'var(--text-muted)' }}>—</span>}
+                      </td>
                       <td>
-                        {isDetenido ? (
-                          <span className="badge badge-detenido" aria-label="Estado: Detenido">
-                            <span className="badge-dot" aria-hidden="true" />Detenido
-                          </span>
+                        {r.pedimento ? (
+                          <span className="pedimento-num">{fmtPedimentoShort(r.pedimento)}</span>
                         ) : (
-                          <span
-                            className={`badge ${urgency.class === 'completed' ? 'badge-cruzado' : urgency.class === 'zombie' || urgency.class === 'stalled' ? 'badge-detenido' : urgency.class === 'overdue' ? 'badge-proceso' : 'badge-proceso'}`}
-                            aria-label={`Estado: ${urgency.label}`}
-                            title={urgency.action || undefined}
-                          >
-                            <span className="badge-dot" aria-hidden="true" />{urgency.label}
-                            {urgency.days > 1 && urgency.class !== 'completed' && (
-                              <span style={{ marginLeft: 4, fontSize: 10, opacity: 0.7 }}>· {urgency.days}d</span>
-                            )}
-                          </span>
+                          <span className="pedimento-pending">Pendiente</span>
                         )}
                       </td>
-                      <td className="timestamp">{r.fecha_llegada ? <time dateTime={r.fecha_llegada.split('T')[0]}>{fmtDateShort(r.fecha_llegada)}</time> : <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Pendiente</span>}</td>
-                      <td className="desc-text" title={partidaDescMap.get(r.trafico) || fmtDesc(r.descripcion_mercancia) || ''}>{fmtDesc(partidaDescMap.get(r.trafico) || r.descripcion_mercancia) || <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Pendiente</span>}</td>
+                      <td>
+                        <span className={`badge ${status === 'Cruzado' ? 'badge-cruzado' : 'badge-proceso'}`}>
+                          {status}
+                        </span>
+                      </td>
                     </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>}
-
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
 
         {totalPages > 1 && (
           <div className="pagination">
@@ -350,14 +355,6 @@ function TraficosContent() {
           </div>
         )}
       </div>
-
-      {/* Sync timestamp */}
-      {!loading && rows.length > 0 && (
-        <div className="timestamp" style={{ textAlign: 'right', padding: '8px 0', fontSize: 10, color: 'var(--slate-400)' }} suppressHydrationWarning>
-          Sincronizado: {fmtDate(new Date())}
-        </div>
-      )}
     </div>
   )
 }
-

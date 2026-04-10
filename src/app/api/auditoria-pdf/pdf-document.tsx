@@ -7,7 +7,7 @@ const C = {
   surface: '#1A1918',
   surfaceLight: '#222120',
   border: '#333230',
-  gold: '#C9A84C',
+  gold: '#eab308',
   goldDark: '#8B6914',
   goldMuted: '#6B5A2E',
   orange: '#E67E22',

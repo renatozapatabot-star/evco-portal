@@ -316,9 +316,9 @@ export default function ProveedoresPage() {
             key={opt.key}
             onClick={() => setSortBy(opt.key)}
             style={{
-              background: sortBy === opt.key ? 'var(--gold, #C9A84C)' : T.surface,
+              background: sortBy === opt.key ? 'var(--gold, #eab308)' : T.surface,
               color: sortBy === opt.key ? '#FFFFFF' : T.textSecondary,
-              border: `1px solid ${sortBy === opt.key ? 'var(--gold, #C9A84C)' : T.border}`,
+              border: `1px solid ${sortBy === opt.key ? 'var(--gold, #eab308)' : T.border}`,
               borderRadius: 8, padding: '0 14px', height: 36,
               fontSize: 12, fontWeight: 600, cursor: 'pointer',
               display: 'flex', alignItems: 'center', gap: 4,

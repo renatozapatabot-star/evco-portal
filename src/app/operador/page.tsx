@@ -136,7 +136,7 @@ export default async function OperadorPage() {
 
   // ── Styles ──
   const colStyle: React.CSSProperties = {
-    background: 'var(--bg-card, #1A1A1A)',
+    background: 'var(--bg-card, rgba(255,255,255,0.03))',
     borderRadius: 12,
     border: '1px solid var(--border, rgba(255,255,255,0.06))',
     display: 'flex',
@@ -148,7 +148,7 @@ export default async function OperadorPage() {
     borderBottom: '1px solid var(--border, rgba(255,255,255,0.06))',
     position: 'sticky' as const,
     top: 0,
-    background: 'var(--bg-card, #1A1A1A)',
+    background: 'var(--bg-card, rgba(255,255,255,0.03))',
     zIndex: 2,
     display: 'flex',
     alignItems: 'center',
@@ -157,13 +157,13 @@ export default async function OperadorPage() {
   const cardStyle: React.CSSProperties = {
     padding: '12px 14px',
     borderRadius: 8,
-    background: 'var(--bg-elevated, #222222)',
+    background: 'var(--bg-elevated, rgba(255,255,255,0.04))',
     border: '1px solid rgba(255,255,255,0.06)',
     marginBottom: 8,
   }
   const btnGold: React.CSSProperties = {
     padding: '6px 14px', borderRadius: 6, fontSize: 11, fontWeight: 700,
-    background: 'var(--gold, #C9A84C)', color: '#1A1A1A', border: 'none', cursor: 'pointer',
+    background: 'var(--gold, #eab308)', color: 'rgba(255,255,255,0.03)', border: 'none', cursor: 'pointer',
   }
   const btnOutline: React.CSSProperties = {
     padding: '6px 14px', borderRadius: 6, fontSize: 11, fontWeight: 700,
@@ -176,7 +176,7 @@ export default async function OperadorPage() {
       <div style={{
         display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap',
         padding: '12px 16px', borderRadius: 10,
-        background: 'var(--bg-card, #1A1A1A)', border: '1px solid var(--border)',
+        background: 'var(--bg-card, rgba(255,255,255,0.03))', border: '1px solid var(--border)',
         marginBottom: 16, fontSize: 13, color: 'var(--text-secondary)',
       }}>
         <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>

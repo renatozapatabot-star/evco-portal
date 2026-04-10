@@ -63,7 +63,7 @@ export function StatusHero({ statusLevel, statusSentence, entradasThisWeek, acti
             approveHref="/traficos"
           />
         ) : nextCrossing ? (
-          <span style={{ color: '#C9A84C' }}>
+          <span style={{ color: '#eab308' }}>
             Próximo cruce: <span className="font-mono" style={{ fontWeight: 600 }}>{nextCrossing.trafico}</span>
           </span>
         ) : undefined

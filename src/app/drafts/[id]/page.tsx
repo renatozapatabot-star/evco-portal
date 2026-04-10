@@ -221,7 +221,7 @@ export default function DraftReviewPage() {
 
   // ═══ BLESSING ANIMATION ═══
   if (approvalState === 'blessing') return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 200, background: '#0D0D0C', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 200, background: '#05070B', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{
         width: 80, height: 80, borderRadius: 20,
         background: GOLD_GRADIENT,

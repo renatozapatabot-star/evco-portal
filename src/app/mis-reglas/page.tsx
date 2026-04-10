@@ -53,14 +53,14 @@ export default function MisReglasPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {memories.map(m => (
             <div key={m.id} style={{
-              background: '#222222', borderRadius: 14, padding: 16,
+              background: 'rgba(255,255,255,0.04)', borderRadius: 14, padding: 16,
               border: m.active ? '1px solid rgba(201,168,76,0.2)' : '1px solid rgba(255,255,255,0.06)',
               opacity: m.active ? 1 : 0.5,
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
                 <span style={{
                   fontSize: 10, fontWeight: 600, textTransform: 'uppercase',
-                  letterSpacing: '0.05em', color: '#C9A84C',
+                  letterSpacing: '0.05em', color: '#eab308',
                   background: 'rgba(201,168,76,0.1)', padding: '2px 8px', borderRadius: 4,
                 }}>
                   {m.memory_type.replace(/_/g, ' ')}

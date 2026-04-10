@@ -97,7 +97,7 @@ export function BorradorPanel({ detail, onComplete, loading }: Props) {
           <circle cx={40} cy={40} r={34} fill="none" stroke="#E8E5E0" strokeWidth={4} />
           <circle
             cx={40} cy={40} r={34}
-            fill="none" stroke="#C9A84C" strokeWidth={4}
+            fill="none" stroke="#eab308" strokeWidth={4}
             strokeLinecap="round"
             strokeDasharray={circumference}
             strokeDashoffset={circumference * (countdown / 5)}
@@ -107,7 +107,7 @@ export function BorradorPanel({ detail, onComplete, loading }: Props) {
           <text
             x={40} y={44}
             textAnchor="middle"
-            style={{ fontSize: 24, fontWeight: 700, fill: '#C9A84C', fontFamily: 'var(--font-jetbrains-mono)' }}
+            style={{ fontSize: 24, fontWeight: 700, fill: '#eab308', fontFamily: 'var(--font-jetbrains-mono)' }}
           >
             {countdown}
           </text>
@@ -141,7 +141,7 @@ export function BorradorPanel({ detail, onComplete, loading }: Props) {
   if (state === 'blessing') {
     return (
       <div style={{ textAlign: 'center', padding: 32 }}>
-        <div style={{ fontSize: 48, marginBottom: 12, color: '#C9A84C' }}>&#10003;</div>
+        <div style={{ fontSize: 48, marginBottom: 12, color: '#eab308' }}>&#10003;</div>
         <p style={{ fontSize: 16, fontWeight: 600, color: '#1A1A1A', margin: 0 }}>
           Patente 3596 honrada.
         </p>
@@ -210,7 +210,7 @@ export function BorradorPanel({ detail, onComplete, loading }: Props) {
             flex: 1,
             minHeight: 60,
             borderRadius: 12,
-            background: '#C9A84C',
+            background: '#eab308',
             color: '#FFFFFF',
             border: 'none',
             fontSize: 16,

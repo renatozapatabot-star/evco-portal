@@ -96,7 +96,7 @@ function ProgressBar({ completed, total }: { completed: number; total: number })
           marginBottom: 8,
         }}
       >
-        <span style={{ fontSize: 14, fontWeight: 600, color: '#1A1A1A' }}>
+        <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,0.03)' }}>
           Progreso del día
         </span>
         <span
@@ -119,7 +119,7 @@ function ProgressBar({ completed, total }: { completed: number; total: number })
             height: '100%',
             width: `${pct}%`,
             borderRadius: 4,
-            background: '#C9A84C',
+            background: '#eab308',
             transition: 'width 500ms cubic-bezier(0.34, 1.56, 0.64, 1)',
           }}
         />
@@ -165,7 +165,7 @@ function ActionCard({
             width: 36,
             height: 36,
             borderRadius: '50%',
-            background: '#C9A84C',
+            background: '#eab308',
             color: '#FFFFFF',
             display: 'flex',
             alignItems: 'center',
@@ -184,7 +184,7 @@ function ActionCard({
               margin: 0,
               fontSize: 16,
               fontWeight: 600,
-              color: '#1A1A1A',
+              color: 'rgba(255,255,255,0.03)',
               lineHeight: 1.3,
             }}
           >
@@ -223,7 +223,7 @@ function ActionCard({
             flex: 1,
             minHeight: 60,
             borderRadius: 12,
-            background: '#C9A84C',
+            background: '#eab308',
             color: '#FFFFFF',
             border: 'none',
             fontSize: 16,
@@ -235,7 +235,7 @@ function ActionCard({
             if (!loading) (e.currentTarget.style.background = '#B8933B')
           }}
           onMouseOut={(e) => {
-            e.currentTarget.style.background = '#C9A84C'
+            e.currentTarget.style.background = '#eab308'
           }}
         >
           Empezar
@@ -272,7 +272,7 @@ function CompletionCard() {
       style={{
         textAlign: 'center',
         padding: 32,
-        border: '2px solid #C9A84C',
+        border: '2px solid #eab308',
       }}
     >
       <div style={{ fontSize: 48, marginBottom: 12 }}>&#10003;</div>
@@ -281,7 +281,7 @@ function CompletionCard() {
           margin: '0 0 8px',
           fontSize: 24,
           fontWeight: 700,
-          color: '#1A1A1A',
+          color: 'rgba(255,255,255,0.03)',
         }}
       >
         Día completo
@@ -322,7 +322,7 @@ function CruzAutoSection({
         style={{
           fontSize: 16,
           fontWeight: 600,
-          color: '#1A1A1A',
+          color: 'rgba(255,255,255,0.03)',
           margin: '0 0 16px',
           display: 'flex',
           alignItems: 'center',
@@ -347,7 +347,7 @@ function CruzAutoSection({
               &#10003;
             </span>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <span style={{ fontSize: 14, color: '#1A1A1A' }}>
+              <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.03)' }}>
                 {a.description}
               </span>
               <span
@@ -501,7 +501,7 @@ export default function LaunchpadPage() {
             margin: '0 0 4px',
             fontSize: 24,
             fontWeight: 700,
-            color: '#1A1A1A',
+            color: 'rgba(255,255,255,0.03)',
           }}
         >
           Launchpad

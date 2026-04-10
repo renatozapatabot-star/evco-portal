@@ -69,7 +69,7 @@ export function MissionHeader({ mood, sentence, quickAction, onAvatarClick, load
             gap: 6,
             padding: isMobile ? '8px 16px' : '10px 20px',
             borderRadius: 24,
-            background: 'var(--gold, #C9A84C)',
+            background: 'var(--gold, #eab308)',
             color: '#1A1A1A',
             fontSize: 13,
             fontWeight: 700,
@@ -81,7 +81,7 @@ export function MissionHeader({ mood, sentence, quickAction, onAvatarClick, load
             transition: 'background 150ms',
           }}
           onMouseEnter={e => { e.currentTarget.style.background = 'var(--gold-hover, #B8933B)' }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'var(--gold, #C9A84C)' }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'var(--gold, #eab308)' }}
         >
           {quickAction.label} &rarr;
         </Link>

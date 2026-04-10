@@ -18,12 +18,12 @@ export default function SignupPage() {
 
   return (
     <div style={{
-      minHeight: '100vh', background: '#0D0D0C',
+      minHeight: '100vh', background: '#05070B',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       padding: 24,
     }}>
       <div style={{
-        width: '100%', maxWidth: 480, background: '#1A1A1A',
+        width: '100%', maxWidth: 480, background: 'rgba(255,255,255,0.03)',
         borderRadius: 20, padding: 40, border: '1px solid rgba(255,255,255,0.06)',
       }}>
         {/* Brand */}
@@ -62,7 +62,7 @@ export default function SignupPage() {
             </label>
             <select name="aduana" required style={{
               width: '100%', padding: '10px 14px', borderRadius: 8,
-              background: '#222222', border: '1px solid rgba(255,255,255,0.1)',
+              background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)',
               color: '#FFFFFF', fontSize: 14,
             }}>
               <option value="">Seleccionar...</option>
@@ -73,7 +73,7 @@ export default function SignupPage() {
 
           <button type="submit" disabled={pending} style={{
             marginTop: 8, padding: '14px 20px', borderRadius: 10,
-            background: 'var(--gold, #C9A84C)', color: '#1A1A1A',
+            background: 'var(--gold, #eab308)', color: 'rgba(255,255,255,0.03)',
             fontSize: 15, fontWeight: 700, border: 'none', cursor: pending ? 'wait' : 'pointer',
             opacity: pending ? 0.6 : 1,
           }}>
@@ -83,7 +83,7 @@ export default function SignupPage() {
 
         <p style={{ marginTop: 20, fontSize: 12, color: 'rgba(255,255,255,0.3)', textAlign: 'center' }}>
           ¿Ya tienes acceso?{' '}
-          <Link href="/login" style={{ color: 'var(--gold, #C9A84C)', textDecoration: 'none' }}>
+          <Link href="/login" style={{ color: 'var(--gold, #eab308)', textDecoration: 'none' }}>
             Iniciar sesión
           </Link>
         </p>
@@ -102,7 +102,7 @@ function Input({ name, label, type = 'text', placeholder, required, maxLength }:
       </label>
       <input name={name} type={type} placeholder={placeholder} required={required} maxLength={maxLength} style={{
         width: '100%', padding: '10px 14px', borderRadius: 8,
-        background: '#222222', border: '1px solid rgba(255,255,255,0.1)',
+        background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)',
         color: '#FFFFFF', fontSize: 14,
       }} />
     </div>

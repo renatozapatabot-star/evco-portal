@@ -59,7 +59,7 @@ export function DueloDelDia() {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         marginBottom: 10,
       }}>
-        <span style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#C9A84C' }}>
+        <span style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#eab308' }}>
           Duelo del día
         </span>
         <span style={{ fontSize: 10, color: '#6E7681' }}>{stake}</span>
@@ -73,12 +73,12 @@ export function DueloDelDia() {
             borderRadius: 8,
           }}>
             <div style={{ fontSize: 20, marginBottom: 4 }}>{MEDALS[i]}</div>
-            <div style={{ fontSize: 13, fontWeight: 600, color: i === 0 ? '#C9A84C' : '#E6EDF3' }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: i === 0 ? '#eab308' : '#E6EDF3' }}>
               {l.name}
             </div>
             <div className="font-mono" style={{
               fontSize: 18, fontWeight: 800,
-              color: i === 0 ? '#C9A84C' : '#8B949E',
+              color: i === 0 ? '#eab308' : '#8B949E',
             }}>
               {l.count}
             </div>

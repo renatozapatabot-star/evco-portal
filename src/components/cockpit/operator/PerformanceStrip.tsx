@@ -38,7 +38,7 @@ export function PerformanceStrip({
           <div>
             <span className="font-mono" style={{
               fontSize: 28, fontWeight: 800,
-              color: isRecord ? '#C9A84C' : todayCount > 0 ? '#E6EDF3' : '#6E7681',
+              color: isRecord ? '#eab308' : todayCount > 0 ? '#E6EDF3' : '#6E7681',
             }}>
               {todayCount}
             </span>
@@ -60,7 +60,7 @@ export function PerformanceStrip({
           {/* Record badge */}
           {isRecord && (
             <span style={{
-              fontSize: 11, fontWeight: 700, color: '#C9A84C',
+              fontSize: 11, fontWeight: 700, color: '#eab308',
               background: 'rgba(201,168,76,0.15)',
               padding: '2px 8px', borderRadius: 4,
             }}>
@@ -72,7 +72,7 @@ export function PerformanceStrip({
         {/* Right: streak + rank */}
         <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
           {currentStreak > 1 && (
-            <span className="font-mono" style={{ fontSize: 13, color: '#C9A84C' }}>
+            <span className="font-mono" style={{ fontSize: 13, color: '#eab308' }}>
               🔥 {currentStreak}d racha
             </span>
           )}
@@ -88,7 +88,7 @@ export function PerformanceStrip({
           <div style={{
             width: `${Math.min(progress, 100)}%`,
             height: '100%', borderRadius: 2,
-            background: isRecord ? '#C9A84C' : '#16A34A',
+            background: isRecord ? '#eab308' : '#16A34A',
             transition: 'width 500ms ease',
           }} />
         </div>

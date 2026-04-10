@@ -30,7 +30,7 @@ export default function RequestAccessPage() {
 
   if (success) {
     return (
-      <div style={{ minHeight: '100vh', background: '#0D0D0C', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+      <div style={{ minHeight: '100vh', background: '#05070B', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
         <div style={{ maxWidth: 480, width: '100%', textAlign: 'center' }}>
           <div style={{ fontSize: 48, marginBottom: 16 }}>🦀</div>
           <h1 style={{ fontSize: 22, fontWeight: 700, color: '#E6EDF3', marginBottom: 8 }}>
@@ -41,7 +41,7 @@ export default function RequestAccessPage() {
           </p>
           <Link href="/demo/live" style={{
             display: 'inline-block', padding: '14px 28px', borderRadius: 10,
-            background: '#C9A84C', color: '#111', fontSize: 15, fontWeight: 700,
+            background: '#eab308', color: '#111', fontSize: 15, fontWeight: 700,
             textDecoration: 'none',
           }}>
             Seguir explorando el demo →
@@ -52,9 +52,9 @@ export default function RequestAccessPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0D0D0C', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-      <div style={{ maxWidth: 480, width: '100%', background: '#1A1A1A', borderRadius: 20, padding: isMobile ? 24 : 40, border: '1px solid rgba(255,255,255,0.06)' }}>
-        <div style={{ fontFamily: 'var(--font-mono)', fontSize: 22, fontWeight: 800, color: '#C9A84C', letterSpacing: '0.08em', textAlign: 'center', marginBottom: 8 }}>
+    <div style={{ minHeight: '100vh', background: '#05070B', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+      <div style={{ maxWidth: 480, width: '100%', background: 'rgba(255,255,255,0.03)', borderRadius: 20, padding: isMobile ? 24 : 40, border: '1px solid rgba(255,255,255,0.06)' }}>
+        <div style={{ fontFamily: 'var(--font-mono)', fontSize: 22, fontWeight: 800, color: '#eab308', letterSpacing: '0.08em', textAlign: 'center', marginBottom: 8 }}>
           CRUZ
         </div>
         <h1 style={{ fontSize: 20, fontWeight: 700, color: '#FFF', textAlign: 'center', marginBottom: 8 }}>
@@ -89,7 +89,7 @@ export default function RequestAccessPage() {
           </div>
           <button type="submit" disabled={loading} style={{
             marginTop: 8, padding: '16px 20px', borderRadius: 10,
-            background: '#C9A84C', color: '#1A1A1A', fontSize: 16, fontWeight: 700,
+            background: '#eab308', color: 'rgba(255,255,255,0.03)', fontSize: 16, fontWeight: 700,
             border: 'none', cursor: loading ? 'wait' : 'pointer',
             opacity: loading ? 0.6 : 1, minHeight: 60,
           }}>
@@ -98,7 +98,7 @@ export default function RequestAccessPage() {
         </form>
 
         <p style={{ marginTop: 20, fontSize: 12, color: 'rgba(255,255,255,0.3)', textAlign: 'center' }}>
-          <Link href="/demo/live" style={{ color: '#C9A84C', textDecoration: 'none' }}>
+          <Link href="/demo/live" style={{ color: '#eab308', textDecoration: 'none' }}>
             ← Volver al demo
           </Link>
         </p>

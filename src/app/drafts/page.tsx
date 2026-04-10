@@ -186,7 +186,7 @@ export default function DraftsPage() {
         }}>
           <div style={{
             width: 120, height: 120,
-            background: 'linear-gradient(135deg, #C9A84C 0%, #D4B05C 50%, #8B6914 100%)',
+            background: 'linear-gradient(135deg, #eab308 0%, #D4B05C 50%, #8B6914 100%)',
             borderRadius: 28,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: 64, fontWeight: 900, color: 'var(--text-primary)',

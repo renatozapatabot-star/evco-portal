@@ -333,7 +333,7 @@ function ClientCumplimientoView() {
         <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
           <div style={{
             background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: 8,
-            padding: 24, borderTop: '4px solid var(--gold, #C9A84C)',
+            padding: 24, borderTop: '4px solid var(--gold, #eab308)',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
               <Calendar size={20} style={{ color: 'var(--gold-dark)' }} />
@@ -353,7 +353,7 @@ function ClientCumplimientoView() {
 
           <div style={{
             background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: 8,
-            padding: 24, borderTop: '4px solid var(--gold, #C9A84C)',
+            padding: 24, borderTop: '4px solid var(--gold, #eab308)',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
               <FileText size={20} style={{ color: 'var(--gold-dark)' }} />
@@ -373,7 +373,7 @@ function ClientCumplimientoView() {
 
           <div style={{
             background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: 8,
-            padding: 24, borderTop: '4px solid var(--gold, #C9A84C)',
+            padding: 24, borderTop: '4px solid var(--gold, #eab308)',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
               <Phone size={20} style={{ color: 'var(--gold-dark)' }} />

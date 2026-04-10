@@ -158,7 +158,7 @@ export function CockpitCard({
                 display: 'inline-flex',
                 alignItems: 'center',
                 ...(action.primary ? {
-                  background: 'var(--gold, #C9A84C)',
+                  background: 'var(--gold, #eab308)',
                   color: '#1A1A1A',
                   border: 'none',
                 } : {

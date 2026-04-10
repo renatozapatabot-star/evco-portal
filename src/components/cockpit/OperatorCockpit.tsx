@@ -142,7 +142,7 @@ export function OperatorCockpit({ data, operatorName, operatorId }: Props) {
           style={{
             width: '100%', padding: '14px 20px', borderRadius: 10, marginTop: 8,
             background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.2)',
-            color: '#C9A84C', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+            color: '#eab308', fontSize: 14, fontWeight: 600, cursor: 'pointer',
             minHeight: 60, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
           }}
         >

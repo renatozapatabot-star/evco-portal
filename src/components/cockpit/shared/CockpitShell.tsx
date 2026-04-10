@@ -7,7 +7,7 @@ interface CockpitShellProps {
 
 /**
  * Server-component shell for cockpit pages.
- * Dark canvas (#111111), responsive padding.
+ * Dark canvas (#05070B), responsive padding.
  * Shows sticky demo banner when cruz_demo cookie is set.
  */
 export async function CockpitShell({ children }: CockpitShellProps) {
@@ -35,7 +35,7 @@ export async function CockpitShell({ children }: CockpitShellProps) {
             ¿Quieres esto para tu firma?
           </span>
           <a href="/demo/request-access" style={{
-            background: '#111', color: '#C9A84C', padding: '8px 20px',
+            background: '#111', color: '#eab308', padding: '8px 20px',
             borderRadius: 6, fontSize: 13, fontWeight: 700, textDecoration: 'none',
             minHeight: 36, display: 'inline-flex', alignItems: 'center',
           }}>

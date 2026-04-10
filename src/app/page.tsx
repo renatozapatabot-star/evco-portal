@@ -88,12 +88,12 @@ export default async function Dashboard() {
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           flexWrap: 'wrap', gap: 8, marginBottom: 12, borderRadius: 8,
         }}>
-          <span style={{ fontSize: 13, color: '#C9A84C' }}>
+          <span style={{ fontSize: 13, color: '#eab308' }}>
             <strong>MODO DEMO</strong>
             <span style={{ color: '#8B949E', marginLeft: 8 }}>Datos de muestra · DEMO PLASTICS S.A. DE C.V.</span>
           </span>
           <a href="/demo/request-access" style={{
-            background: '#C9A84C', color: '#111', padding: '6px 16px',
+            background: '#eab308', color: '#111', padding: '6px 16px',
             borderRadius: 6, fontSize: 12, fontWeight: 700, textDecoration: 'none',
             minHeight: 36, display: 'inline-flex', alignItems: 'center',
           }}>

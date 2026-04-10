@@ -51,7 +51,7 @@ export function NeedsJudgmentPanel({ escalations }: Props) {
                 </div>
                 <Link href="/drafts" style={{
                   padding: '8px 16px', background: 'rgba(201,168,76,0.15)',
-                  color: '#C9A84C', borderRadius: 8, fontSize: 12, fontWeight: 600,
+                  color: '#eab308', borderRadius: 8, fontSize: 12, fontWeight: 600,
                   textDecoration: 'none', flexShrink: 0, minHeight: 36,
                   display: 'flex', alignItems: 'center',
                 }}>

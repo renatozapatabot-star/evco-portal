@@ -69,11 +69,11 @@ export default function CambiarContrasena() {
     return (
       <div style={{
         minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: '#111111', padding: 16,
+        background: '#05070B', padding: 16,
       }}>
         <div style={{
           maxWidth: 400, width: '100%', textAlign: 'center',
-          background: '#222222', border: '1px solid rgba(255,255,255,0.08)',
+          background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
           borderRadius: 12, padding: 32,
         }}>
           <CheckCircle size={48} style={{ color: 'var(--success-500, #16A34A)', margin: '0 auto 16px' }} />
@@ -91,15 +91,15 @@ export default function CambiarContrasena() {
   return (
     <div style={{
       minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: '#111111', padding: 16,
+      background: '#05070B', padding: 16,
     }}>
       <form onSubmit={handleSubmit} style={{
         maxWidth: 400, width: '100%',
-        background: '#222222', border: '1px solid rgba(255,255,255,0.08)',
+        background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
         borderRadius: 12, padding: 32,
       }}>
         <div style={{ textAlign: 'center', marginBottom: 24 }}>
-          <Lock size={32} style={{ color: 'var(--gold, #C9A84C)', margin: '0 auto 12px' }} />
+          <Lock size={32} style={{ color: 'var(--gold, #eab308)', margin: '0 auto 12px' }} />
           <h1 style={{ fontSize: 20, fontWeight: 600, color: '#E6EDF3', marginBottom: 4 }}>
             Cambiar contraseña
           </h1>
@@ -134,7 +134,7 @@ export default function CambiarContrasena() {
               style={{
                 width: '100%', padding: '12px 44px 12px 12px', fontSize: 15,
                 border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8,
-                background: '#111111', minHeight: 60,
+                background: '#05070B', minHeight: 60,
                 boxSizing: 'border-box',
               }}
             />
@@ -170,7 +170,7 @@ export default function CambiarContrasena() {
               style={{
                 width: '100%', padding: '12px 44px 12px 12px', fontSize: 15,
                 border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8,
-                background: '#111111', minHeight: 60,
+                background: '#05070B', minHeight: 60,
                 boxSizing: 'border-box',
               }}
             />
@@ -210,7 +210,7 @@ export default function CambiarContrasena() {
               style={{
                 width: '100%', padding: 12, paddingRight: 48, fontSize: 15,
                 border: `1px solid ${confirmPw && confirmPw !== newPw ? 'var(--red-500, #DC2626)' : 'rgba(255,255,255,0.08)'}`,
-                borderRadius: 8, background: '#111111', minHeight: 60,
+                borderRadius: 8, background: '#05070B', minHeight: 60,
                 boxSizing: 'border-box',
               }}
             />
@@ -241,7 +241,7 @@ export default function CambiarContrasena() {
           disabled={!isValid || loading}
           style={{
             width: '100%', padding: 14, fontSize: 15, fontWeight: 600,
-            background: isValid && !loading ? 'var(--gold, #C9A84C)' : 'rgba(255,255,255,0.08)',
+            background: isValid && !loading ? 'var(--gold, #eab308)' : 'rgba(255,255,255,0.08)',
             color: isValid && !loading ? '#FFFFFF' : '#6E7681',
             border: 'none', borderRadius: 8, cursor: isValid && !loading ? 'pointer' : 'not-allowed',
             minHeight: 60, transition: 'background 150ms',

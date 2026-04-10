@@ -54,7 +54,7 @@ export function PullRefreshIndicator({ pullDistance, isRefreshing, progress }: P
           cy={10}
           r={8}
           fill="none"
-          stroke="var(--gold, #C9A84C)"
+          stroke="var(--gold, #eab308)"
           strokeWidth={2.5}
           strokeDasharray="38 12"
           strokeLinecap="round"

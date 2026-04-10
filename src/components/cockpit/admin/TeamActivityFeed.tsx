@@ -90,7 +90,7 @@ export function TeamActivityFeed() {
                 animation: i === 0 ? 'fadeIn 300ms ease' : undefined,
               }}>
                 <span style={{ fontSize: 14, flexShrink: 0, width: 20, textAlign: 'center' }}>{item.icon}</span>
-                <span style={{ fontSize: 12, color: '#C9A84C', fontWeight: 600, flexShrink: 0 }}>
+                <span style={{ fontSize: 12, color: '#eab308', fontWeight: 600, flexShrink: 0 }}>
                   {item.operatorName.split(' ')[0]}
                 </span>
                 <span style={{ fontSize: 12, color: '#8B949E', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>

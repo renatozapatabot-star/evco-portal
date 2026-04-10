@@ -20,7 +20,7 @@ const SEVERITY_BORDER: Record<string, string> = {
   success: 'var(--success, #16A34A)',
   warning: 'var(--warning-500, #D97706)',
   error: 'var(--danger-500, #DC2626)',
-  celebration: 'var(--gold, #C9A84C)',
+  celebration: 'var(--gold, #eab308)',
 }
 
 const AUTO_DISMISS_MS = 5000

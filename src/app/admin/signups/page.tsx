@@ -105,7 +105,7 @@ export default async function AdminSignupsPage() {
                 <input type="hidden" name="id" value={s.id} />
                 <button type="submit" style={{
                   padding: '8px 16px', borderRadius: 8, fontSize: 12, fontWeight: 700,
-                  background: 'var(--gold, #C9A84C)', color: '#1A1A1A', border: 'none', cursor: 'pointer',
+                  background: 'var(--gold, #eab308)', color: 'rgba(255,255,255,0.03)', border: 'none', cursor: 'pointer',
                 }}>
                   Aprobar
                 </button>

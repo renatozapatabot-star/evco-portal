@@ -20,7 +20,7 @@ interface Props {
 }
 
 const TYPE_COLORS: Record<string, string> = {
-  trafico: '#C9A84C',
+  trafico: '#eab308',
   entrada: '#0D9488',
   pedimento: '#8B5CF6',
   expediente: '#3B82F6',
@@ -72,7 +72,7 @@ export function EntityRadar({ center, nodes }: Props) {
       {/* Header */}
       <div style={{
         fontSize: 10, fontWeight: 700, textTransform: 'uppercase',
-        letterSpacing: '0.08em', color: '#C9A84C', marginBottom: 12,
+        letterSpacing: '0.08em', color: '#eab308', marginBottom: 12,
       }}>
         Radar de entidades
       </div>
@@ -83,7 +83,7 @@ export function EntityRadar({ center, nodes }: Props) {
         background: 'rgba(201,168,76,0.08)', borderRadius: 10,
         border: '1px solid rgba(201,168,76,0.15)',
       }}>
-        <div style={{ fontSize: 10, color: '#C9A84C', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>
+        <div style={{ fontSize: 10, color: '#eab308', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>
           {center.type}
         </div>
         <div className="font-mono" style={{ fontSize: 18, fontWeight: 700, color: '#E6EDF3' }}>

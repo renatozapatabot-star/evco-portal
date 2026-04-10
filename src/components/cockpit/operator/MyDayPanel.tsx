@@ -75,7 +75,7 @@ export function MyDayPanel({ myDay, teamStats, unassignedCount }: Props) {
                   Listos para asignar: {unassignedCount}
                 </span>
                 <Link href="/traficos" style={{
-                  background: 'rgba(201,168,76,0.15)', color: '#C9A84C',
+                  background: 'rgba(201,168,76,0.15)', color: '#eab308',
                   borderRadius: 8, padding: '8px 16px', fontSize: 12, fontWeight: 600,
                   textDecoration: 'none', minHeight: 36, display: 'flex', alignItems: 'center',
                 }}>

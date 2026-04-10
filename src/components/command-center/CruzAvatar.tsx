@@ -33,7 +33,7 @@ export function AduanaAvatar({ size, mood, onClick, className }: AduanaAvatarPro
         minWidth: size,
         minHeight: size,
         borderRadius: '50%',
-        background: 'linear-gradient(135deg, #C9A84C, #8B6914)',
+        background: 'linear-gradient(135deg, #eab308, #8B6914)',
         border: 'none',
         display: 'flex',
         alignItems: 'center',

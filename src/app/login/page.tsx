@@ -386,7 +386,7 @@ function LoginContent() {
           border-radius: 10px;
           padding: 0 16px;
           font-size: 16px;
-          background: #222222;
+          background: rgba(255,255,255,0.04);
           color: #E6EDF3;
           outline: none;
           font-family: inherit;

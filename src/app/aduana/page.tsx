@@ -193,7 +193,7 @@ export default function CruzChatPage() {
   return (
     <div style={{ background: D.bg, color: D.text, display: 'flex', flexDirection: 'column', height: 'calc(100vh - 56px)', overflow: 'hidden' }}>
       {/* Header — dark navy to match sidebar */}
-      <div style={{ padding: '16px 24px', borderBottom: '1px solid rgba(255,255,255,0.06)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#0D0D0C' }}>
+      <div style={{ padding: '16px 24px', borderBottom: '1px solid rgba(255,255,255,0.06)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#05070B' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
           <div style={{
             width: 40, height: 40, borderRadius: 10,
@@ -201,7 +201,7 @@ export default function CruzChatPage() {
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             boxShadow: '0 2px 8px rgba(201,168,76,0.35)',
           }}>
-            <span style={{ fontFamily: 'Georgia, serif', fontSize: 20, fontWeight: 700, color: '#0D0D0C' }}>Z</span>
+            <span style={{ fontFamily: 'Georgia, serif', fontSize: 20, fontWeight: 700, color: '#05070B' }}>Z</span>
           </div>
           <div>
             <h1 style={{ fontSize: 18, fontWeight: 800, color: '#E8E5DF', letterSpacing: '-0.02em', margin: 0 }}>ADUANA</h1>

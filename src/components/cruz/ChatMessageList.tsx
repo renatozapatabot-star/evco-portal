@@ -27,7 +27,7 @@ export const D = {
   textSub: 'var(--text-secondary)',
   userBubble: 'rgba(184,149,63,0.08)',
   userBorder: 'rgba(184,149,63,0.20)',
-  aiBubble: '#0D0D0C',
+  aiBubble: '#05070B',
   aiBorder: '#1A1A18',
   aiText: '#E8E5DF',
 }

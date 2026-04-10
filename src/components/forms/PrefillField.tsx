@@ -33,7 +33,7 @@ export function PrefillField({ label, name, prefill, type = 'text', placeholder,
   const [showReasoning, setShowReasoning] = useState(false)
 
   const isPrefilled = !!prefill && !touched
-  const textColor = isPrefilled ? '#C9A84C' : '#E6EDF3'
+  const textColor = isPrefilled ? '#eab308' : '#E6EDF3'
   const borderColor = isPrefilled ? 'rgba(201,168,76,0.3)' : 'rgba(255,255,255,0.12)'
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -57,7 +57,7 @@ export function PrefillField({ label, name, prefill, type = 'text', placeholder,
           <button
             onClick={() => setShowReasoning(!showReasoning)}
             style={{
-              fontSize: 9, fontWeight: 600, color: '#C9A84C',
+              fontSize: 9, fontWeight: 600, color: '#eab308',
               background: 'rgba(201,168,76,0.1)', border: 'none',
               padding: '2px 8px', borderRadius: 3, cursor: 'pointer',
               textTransform: 'uppercase', letterSpacing: '0.05em',
@@ -93,7 +93,7 @@ export function PrefillField({ label, name, prefill, type = 'text', placeholder,
             width: '100%', padding: '12px 14px',
             paddingRight: isPrefilled ? 36 : 14,
             borderRadius: 8,
-            background: '#222222',
+            background: 'rgba(255,255,255,0.04)',
             border: `1px solid ${borderColor}`,
             color: textColor,
             fontSize: 14,
@@ -109,7 +109,7 @@ export function PrefillField({ label, name, prefill, type = 'text', placeholder,
         {isPrefilled && (
           <span style={{
             position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
-            fontSize: 12, color: '#C9A84C', pointerEvents: 'none',
+            fontSize: 12, color: '#eab308', pointerEvents: 'none',
           }}>
             ⚡
           </span>
@@ -146,7 +146,7 @@ export function ConfirmAllButton({
       justifyContent: 'space-between', flexWrap: 'wrap', gap: 10,
     }}>
       <div>
-        <div style={{ fontSize: 13, fontWeight: 600, color: '#C9A84C' }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: '#eab308' }}>
           CRUZ pre-llenó {prefillCount} de {totalFields} campos ({pct}%)
         </div>
         <div style={{ fontSize: 11, color: '#8B949E', marginTop: 2 }}>
@@ -158,7 +158,7 @@ export function ConfirmAllButton({
         disabled={loading}
         style={{
           padding: '12px 24px', borderRadius: 8,
-          background: '#C9A84C', color: '#111',
+          background: '#eab308', color: '#111',
           fontSize: 14, fontWeight: 700, border: 'none',
           cursor: loading ? 'wait' : 'pointer',
           opacity: loading ? 0.6 : 1, minHeight: 48,

@@ -77,7 +77,7 @@ export default function ProposalEnginePage() {
       </div>
 
       {/* Run history */}
-      <div style={{ background: '#222222', borderRadius: 14, border: '1px solid rgba(255,255,255,0.08)', overflow: 'hidden' }}>
+      <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 14, border: '1px solid rgba(255,255,255,0.08)', overflow: 'hidden' }}>
         <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
           <span style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#6E7681' }}>
             Últimas ejecuciones
@@ -100,12 +100,12 @@ export default function ProposalEnginePage() {
             </thead>
             <tbody>
               {logs.map((l, i) => (
-                <tr key={l.id} style={{ background: i % 2 === 0 ? '#1A1A1A' : 'transparent' }}>
+                <tr key={l.id} style={{ background: i % 2 === 0 ? 'rgba(255,255,255,0.03)' : 'transparent' }}>
                   <td className="font-mono" style={{ padding: '8px 12px', fontSize: 12, color: '#E6EDF3' }}>
                     {new Date(l.run_at).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'America/Chicago' })}
                   </td>
                   <td className="font-mono" style={{ padding: '8px 12px', fontSize: 12, color: '#8B949E' }}>{l.duration_ms}ms</td>
-                  <td className="font-mono" style={{ padding: '8px 12px', fontSize: 12, color: '#C9A84C', fontWeight: 600 }}>{l.proposals_generated}</td>
+                  <td className="font-mono" style={{ padding: '8px 12px', fontSize: 12, color: '#eab308', fontWeight: 600 }}>{l.proposals_generated}</td>
                   <td className="font-mono" style={{ padding: '8px 12px', fontSize: 12, color: '#16A34A' }}>{l.rule_based_count}</td>
                   <td className="font-mono" style={{ padding: '8px 12px', fontSize: 12, color: '#D97706' }}>{l.llm_based_count}</td>
                   <td className="font-mono" style={{ padding: '8px 12px', fontSize: 12, color: '#8B949E' }}>${(l.llm_cost_usd || 0).toFixed(4)}</td>
@@ -126,7 +126,7 @@ export default function ProposalEnginePage() {
 
 function KPI({ label, value, color }: { label: string; value: string; color?: string }) {
   return (
-    <div style={{ background: '#222222', borderRadius: 10, padding: '12px 16px', border: '1px solid rgba(255,255,255,0.06)' }}>
+    <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 10, padding: '12px 16px', border: '1px solid rgba(255,255,255,0.06)' }}>
       <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#6E7681', marginBottom: 4 }}>{label}</div>
       <div className="font-mono" style={{ fontSize: 20, fontWeight: 700, color: color || '#E6EDF3' }}>{value}</div>
     </div>

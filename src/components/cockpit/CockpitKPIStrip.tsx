@@ -36,7 +36,7 @@ export function CockpitKPIStrip({ items }: CockpitKPIStripProps) {
           <div style={{
             background: 'var(--bg-elevated, #222222)',
             border: '1px solid rgba(255,255,255,0.08)',
-            borderTop: `3px solid ${kpi.color || 'var(--gold, #C9A84C)'}`,
+            borderTop: `3px solid ${kpi.color || 'var(--gold, #eab308)'}`,
             borderRadius: 10,
             padding: '12px 14px',
             textAlign: 'center',

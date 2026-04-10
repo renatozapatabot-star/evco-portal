@@ -75,7 +75,7 @@ export function FlowMode({ items, onClose, operatorName }: Props) {
   if (completed) {
     return (
       <div style={{
-        position: 'fixed', inset: 0, zIndex: 300, background: '#111111',
+        position: 'fixed', inset: 0, zIndex: 300, background: '#05070B',
         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
         padding: 24,
       }}>
@@ -88,7 +88,7 @@ export function FlowMode({ items, onClose, operatorName }: Props) {
         </div>
         <button onClick={onClose} style={{
           padding: '14px 32px', borderRadius: 10,
-          background: '#C9A84C', color: '#111', fontSize: 16, fontWeight: 700,
+          background: '#eab308', color: '#111', fontSize: 16, fontWeight: 700,
           border: 'none', cursor: 'pointer', minHeight: 60,
         }}>
           Volver al cockpit →
@@ -104,7 +104,7 @@ export function FlowMode({ items, onClose, operatorName }: Props) {
 
   return (
     <div style={{
-      position: 'fixed', inset: 0, zIndex: 300, background: '#111111',
+      position: 'fixed', inset: 0, zIndex: 300, background: '#05070B',
       display: 'flex', flexDirection: 'column',
       padding: '24px 24px 100px',
     }}>
@@ -114,7 +114,7 @@ export function FlowMode({ items, onClose, operatorName }: Props) {
         marginBottom: 24,
       }}>
         <div>
-          <span style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#C9A84C' }}>
+          <span style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#eab308' }}>
             Modo flujo
           </span>
           <span className="font-mono" style={{ fontSize: 13, color: '#8B949E', marginLeft: 12 }}>
@@ -134,7 +134,7 @@ export function FlowMode({ items, onClose, operatorName }: Props) {
       <div style={{ height: 3, background: 'rgba(255,255,255,0.06)', borderRadius: 2, marginBottom: 24, overflow: 'hidden' }}>
         <div style={{
           width: `${((currentIndex + 1) / items.length) * 100}%`,
-          height: '100%', background: '#C9A84C', borderRadius: 2,
+          height: '100%', background: '#eab308', borderRadius: 2,
           transition: 'width 300ms ease',
         }} />
       </div>
@@ -161,10 +161,10 @@ export function FlowMode({ items, onClose, operatorName }: Props) {
       {/* Approved counter */}
       <div style={{
         position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)',
-        background: '#222222', borderRadius: 10, padding: '10px 20px',
+        background: 'rgba(255,255,255,0.04)', borderRadius: 10, padding: '10px 20px',
         border: '1px solid rgba(201,168,76,0.2)',
       }}>
-        <span className="font-mono" style={{ fontSize: 20, fontWeight: 800, color: '#C9A84C' }}>
+        <span className="font-mono" style={{ fontSize: 20, fontWeight: 800, color: '#eab308' }}>
           {approved.size}
         </span>
         <span style={{ fontSize: 12, color: '#8B949E', marginLeft: 8 }}>

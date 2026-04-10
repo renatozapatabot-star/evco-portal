@@ -40,7 +40,7 @@ export function AduanaAutonomoPanel({ decisions, decisions30d, decisionsAllTime,
 
   return (
     <div style={{
-      background: '#222222',
+      background: 'rgba(255,255,255,0.04)',
       borderRadius: 14,
       border: '1px solid rgba(255,255,255,0.08)',
       borderTop: `3px solid ${urgencyColor}`,
@@ -106,7 +106,7 @@ export function AduanaAutonomoPanel({ decisions, decisions30d, decisionsAllTime,
               }}>
                 <div className="font-mono" style={{
                   fontSize: 16, fontWeight: 700,
-                  color: count > 0 ? '#C9A84C' : '#6E7681',
+                  color: count > 0 ? '#eab308' : '#6E7681',
                 }}>
                   {count}
                 </div>

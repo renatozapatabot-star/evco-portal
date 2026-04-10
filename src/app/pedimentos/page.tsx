@@ -201,7 +201,7 @@ export default function PedimentosPage() {
                 style={{
                   textDecoration: 'none', color: 'inherit',
                   background: 'var(--bg-card)', border: '1px solid var(--border)',
-                  borderLeft: `3px solid ${g.tmec ? 'var(--success)' : 'var(--gold, #C9A84C)'}`,
+                  borderLeft: `3px solid ${g.tmec ? 'var(--success)' : 'var(--gold, #eab308)'}`,
                   borderRadius: 10, padding: '14px 16px', display: 'block', minHeight: 60,
                 }}
               >

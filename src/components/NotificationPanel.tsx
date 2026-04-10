@@ -30,7 +30,7 @@ const SEVERITY_COLOR: Record<string, string> = {
   warning: '#C47F17',
   critical: '#C23B22',
   info: '#9C9890',
-  celebration: '#C9A84C',
+  celebration: '#eab308',
 }
 
 const GROUP_CONFIG: Record<string, { label: (n: number) => string; icon: typeof Bell }> = {

@@ -22,7 +22,7 @@ export function ExchangeRateCard() {
       quietContent={
         tc ? (
           <div>
-            <div className="font-mono" style={{ fontSize: 24, fontWeight: 800, color: '#C9A84C', lineHeight: 1 }}>
+            <div className="font-mono" style={{ fontSize: 24, fontWeight: 800, color: '#eab308', lineHeight: 1 }}>
               ${tc.tc.toFixed(4)}
             </div>
             <div style={{ fontSize: 11, color: '#8B949E', marginTop: 4 }}>

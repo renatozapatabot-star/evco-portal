@@ -234,7 +234,7 @@ export default function EntradasPage() {
                     style={{
                       background: 'var(--bg-card)',
                       border: '1px solid var(--border)',
-                      borderLeft: `3px solid ${hasTrafico ? 'var(--success, #16A34A)' : 'var(--gold, #C9A84C)'}`,
+                      borderLeft: `3px solid ${hasTrafico ? 'var(--success, #16A34A)' : 'var(--gold, #eab308)'}`,
                       borderRadius: 10,
                       padding: '16px 18px',
                       cursor: 'pointer',
@@ -283,7 +283,7 @@ export default function EntradasPage() {
                         <span style={{
                           fontSize: 11, fontWeight: 600,
                           padding: '2px 8px', borderRadius: 4,
-                          background: 'rgba(201,168,76,0.08)', color: 'var(--gold, #C9A84C)',
+                          background: 'rgba(201,168,76,0.08)', color: 'var(--gold, #eab308)',
                           border: '1px solid rgba(201,168,76,0.15)',
                           marginLeft: 'auto',
                         }}>
@@ -305,7 +305,7 @@ export default function EntradasPage() {
             style={{
               position: 'fixed', bottom: 72, left: 16, right: 16,
               padding: '12px 16px', borderRadius: 10,
-              background: 'var(--gold, #C9A84C)', color: '#FFFFFF',
+              background: 'var(--gold, #eab308)', color: '#FFFFFF',
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
               zIndex: 40, cursor: 'pointer',

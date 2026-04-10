@@ -153,7 +153,7 @@ export default function ClasificarPage() {
     return (
       <div style={{ maxWidth: 600, margin: '0 auto', padding: '40px 16px', textAlign: 'center' }}>
         <div style={{ fontSize: 48, marginBottom: 16 }}>&#127881;</div>
-        <h2 style={{ margin: '0 0 8px', fontSize: 24, fontWeight: 700, color: '#1A1A1A' }}>
+        <h2 style={{ margin: '0 0 8px', fontSize: 24, fontWeight: 700, color: 'rgba(255,255,255,0.03)' }}>
           ¡Listo!
         </h2>
         <p style={{ margin: '0 0 24px', fontSize: 16, color: '#6B6B6B' }}>
@@ -183,7 +183,7 @@ export default function ClasificarPage() {
     <div style={{ maxWidth: 600, margin: '0 auto', padding: '24px 16px' }}>
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <h1 style={{ margin: 0, fontSize: 24, fontWeight: 700, color: '#1A1A1A' }}>Clasificar</h1>
+        <h1 style={{ margin: 0, fontSize: 24, fontWeight: 700, color: 'rgba(255,255,255,0.03)' }}>Clasificar</h1>
         <span className="font-mono" style={{ fontSize: 14, color: '#9B9B9B' }}>
           {currentIndex + 1} de {total}
         </span>
@@ -195,7 +195,7 @@ export default function ClasificarPage() {
           style={{
             height: '100%',
             width: `${(currentIndex / total) * 100}%`,
-            background: '#C9A84C',
+            background: '#eab308',
             borderRadius: 2,
             transition: 'width 300ms ease',
           }}
@@ -216,7 +216,7 @@ export default function ClasificarPage() {
         {/* Product description */}
         <div>
           <p style={{ margin: '0 0 4px', fontSize: 13, color: '#9B9B9B', fontWeight: 500 }}>Producto</p>
-          <p style={{ margin: 0, fontSize: 18, fontWeight: 700, color: '#1A1A1A', lineHeight: 1.3 }}>
+          <p style={{ margin: 0, fontSize: 18, fontWeight: 700, color: 'rgba(255,255,255,0.03)', lineHeight: 1.3 }}>
             {p.product_description || current.decision}
           </p>
         </div>
@@ -226,13 +226,13 @@ export default function ClasificarPage() {
           {p.supplier && (
             <div>
               <p style={{ margin: '0 0 2px', fontSize: 12, color: '#9B9B9B' }}>Proveedor</p>
-              <p style={{ margin: 0, fontSize: 14, color: '#1A1A1A' }}>{p.supplier}</p>
+              <p style={{ margin: 0, fontSize: 14, color: 'rgba(255,255,255,0.03)' }}>{p.supplier}</p>
             </div>
           )}
           {p.value_usd != null && (
             <div>
               <p style={{ margin: '0 0 2px', fontSize: 12, color: '#9B9B9B' }}>Valor</p>
-              <p className="font-mono" style={{ margin: 0, fontSize: 14, color: '#1A1A1A' }}>
+              <p className="font-mono" style={{ margin: 0, fontSize: 14, color: 'rgba(255,255,255,0.03)' }}>
                 ${p.value_usd.toLocaleString('en-US', { minimumFractionDigits: 2 })} USD
               </p>
             </div>
@@ -248,7 +248,7 @@ export default function ClasificarPage() {
             <p style={{ margin: 0, fontSize: 13, color: '#9B9B9B', fontWeight: 500 }}>CRUZ sugiere</p>
             <ConfidenceBadge value={current.confidence} />
           </div>
-          <p className="font-mono" style={{ margin: 0, fontSize: 28, fontWeight: 700, color: '#1A1A1A' }}>
+          <p className="font-mono" style={{ margin: 0, fontSize: 28, fontWeight: 700, color: 'rgba(255,255,255,0.03)' }}>
             {p.suggested_fraccion || 'N/A'}
           </p>
           {p.precedent_count != null && (
@@ -291,7 +291,7 @@ export default function ClasificarPage() {
         {/* Correction panel */}
         {showCorrection && (
           <div style={{ background: '#FAFAF8', borderRadius: 8, padding: 16 }}>
-            <p style={{ margin: '0 0 12px', fontSize: 14, fontWeight: 600, color: '#1A1A1A' }}>
+            <p style={{ margin: '0 0 12px', fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,0.03)' }}>
               Seleccionar fracción correcta
             </p>
             {(p.alternatives || []).map(alt => (
@@ -306,7 +306,7 @@ export default function ClasificarPage() {
                   marginBottom: 8,
                   cursor: 'pointer',
                   background: selectedAlt === alt.fraccion ? '#FFF7E0' : '#FFFFFF',
-                  border: selectedAlt === alt.fraccion ? '2px solid #C9A84C' : '1px solid #E8E5E0',
+                  border: selectedAlt === alt.fraccion ? '2px solid #eab308' : '1px solid #E8E5E0',
                   transition: 'all 150ms',
                 }}
               >
@@ -316,7 +316,7 @@ export default function ClasificarPage() {
                   value={alt.fraccion}
                   checked={selectedAlt === alt.fraccion}
                   onChange={() => setSelectedAlt(alt.fraccion)}
-                  style={{ accentColor: '#C9A84C' }}
+                  style={{ accentColor: '#eab308' }}
                 />
                 <span className="font-mono" style={{ fontSize: 16, fontWeight: 600 }}>{alt.fraccion}</span>
                 <span style={{ fontSize: 13, color: '#6B6B6B', flex: 1 }}>{alt.description}</span>
@@ -348,7 +348,7 @@ export default function ClasificarPage() {
                   flex: 1,
                   minHeight: 48,
                   borderRadius: 12,
-                  background: selectedAlt ? '#C9A84C' : '#E8E5E0',
+                  background: selectedAlt ? '#eab308' : '#E8E5E0',
                   color: '#FFFFFF',
                   border: 'none',
                   fontSize: 14,
@@ -373,7 +373,7 @@ export default function ClasificarPage() {
                 minHeight: 60,
                 borderRadius: 12,
                 background: '#F5F4F0',
-                color: '#1A1A1A',
+                color: 'rgba(255,255,255,0.03)',
                 border: '1px solid #E8E5E0',
                 fontSize: 18,
                 fontWeight: 600,
@@ -390,7 +390,7 @@ export default function ClasificarPage() {
                 flex: 2,
                 minHeight: 60,
                 borderRadius: 12,
-                background: '#C9A84C',
+                background: '#eab308',
                 color: '#FFFFFF',
                 border: 'none',
                 fontSize: 18,
@@ -399,7 +399,7 @@ export default function ClasificarPage() {
                 transition: 'background 150ms',
               }}
               onMouseOver={(e) => { if (!voting) e.currentTarget.style.background = '#B8933B' }}
-              onMouseOut={(e) => { e.currentTarget.style.background = '#C9A84C' }}
+              onMouseOut={(e) => { e.currentTarget.style.background = '#eab308' }}
             >
               ✓ SÍ APROBAR
             </button>

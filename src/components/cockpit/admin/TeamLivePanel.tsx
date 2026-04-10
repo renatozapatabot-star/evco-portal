@@ -91,7 +91,7 @@ export function TeamLivePanel() {
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     {op.actionsToday > 0 && (
-                      <span className="font-mono" style={{ fontSize: 12, color: '#C9A84C', fontWeight: 600 }}>
+                      <span className="font-mono" style={{ fontSize: 12, color: '#eab308', fontWeight: 600 }}>
                         {op.actionsToday}
                       </span>
                     )}

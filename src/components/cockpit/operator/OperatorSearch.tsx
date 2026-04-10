@@ -76,7 +76,7 @@ export function OperatorSearch() {
   }
 
   const typeColors: Record<string, string> = {
-    trafico: '#C9A84C',
+    trafico: '#eab308',
     entrada: '#0D9488',
     pedimento: '#8B949E',
   }
@@ -114,7 +114,7 @@ export function OperatorSearch() {
           onClick={doSearch}
           disabled={loading || query.trim().length < 2}
           style={{
-            background: 'rgba(201,168,76,0.15)', color: '#C9A84C',
+            background: 'rgba(201,168,76,0.15)', color: '#eab308',
             border: 'none', borderRadius: 8, padding: '8px 16px',
             fontSize: 12, fontWeight: 600, cursor: 'pointer',
             minHeight: 36, opacity: loading || query.trim().length < 2 ? 0.5 : 1,
@@ -127,7 +127,7 @@ export function OperatorSearch() {
       {/* Results */}
       {searched && results.length > 0 && (
         <div style={{
-          marginTop: 8, background: '#222222', borderRadius: 10,
+          marginTop: 8, background: 'rgba(255,255,255,0.04)', borderRadius: 10,
           border: '1px solid rgba(255,255,255,0.08)', overflow: 'hidden',
         }}>
           {results.map((r, i) => (
@@ -161,7 +161,7 @@ export function OperatorSearch() {
       {searched && results.length === 0 && !loading && (
         <div style={{
           marginTop: 8, padding: '12px 14px', borderRadius: 10,
-          background: '#222222', border: '1px solid rgba(255,255,255,0.08)',
+          background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
           fontSize: 13, color: '#6E7681', textAlign: 'center',
         }}>
           Sin resultados para &quot;{query}&quot;

@@ -8,7 +8,7 @@ import { REQUIRED_DOC_TYPES } from '@/lib/documents'
 import { fmtDate } from '@/lib/format-utils'
 
 const T = {
-  bg: '#0D0D0C',
+  bg: '#05070B',
   card: '#1A1814',
   border: '#302C23',
   gold: 'var(--gold)',

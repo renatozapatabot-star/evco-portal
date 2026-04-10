@@ -11,7 +11,7 @@ interface Props {
 export function ClientsTablePanel({ companies }: Props) {
   return (
     <div style={{
-      background: '#222222',
+      background: 'rgba(255,255,255,0.04)',
       borderRadius: 14,
       border: '1px solid rgba(255,255,255,0.08)',
       borderTop: '3px solid rgba(201,168,76,0.4)',
@@ -65,7 +65,7 @@ export function ClientsTablePanel({ companies }: Props) {
                     </Link>
                   </td>
                   <td className="font-mono" style={{
-                    padding: '10px 12px', fontSize: 13, color: '#C9A84C', textAlign: 'right', fontWeight: 600,
+                    padding: '10px 12px', fontSize: 13, color: '#eab308', textAlign: 'right', fontWeight: 600,
                   }}>
                     {c.trafico_count}
                   </td>

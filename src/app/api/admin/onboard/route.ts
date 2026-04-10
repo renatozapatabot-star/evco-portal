@@ -192,7 +192,7 @@ function buildWelcomeEmail(companyName: string, password: string): string {
         <div style="margin-bottom: 12px;">
           <span style="font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 0.05em;">Portal</span>
           <div style="font-size: 14px; font-weight: 600;">
-            <a href="https://${PORTAL_URL}" style="color: #C9A84C; text-decoration: none;">
+            <a href="https://${PORTAL_URL}" style="color: #eab308; text-decoration: none;">
               https://${PORTAL_URL}
             </a>
           </div>

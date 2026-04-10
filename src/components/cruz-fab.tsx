@@ -3,7 +3,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { Upload, Search, MessageSquare, Phone, X } from 'lucide-react'
 
-const GOLD_GRADIENT = 'linear-gradient(135deg, #C9A84C, #8B6914)'
+const GOLD_GRADIENT = 'linear-gradient(135deg, #eab308, #8B6914)'
 
 export function CruzFAB() {
   const router = useRouter()

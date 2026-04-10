@@ -38,7 +38,7 @@ const STATE_STYLES: Record<IfThenCardState | 'cleared', {
   active: {
     border: '1px solid rgba(201,168,76,0.3)',
     borderTop: '3px solid rgba(201,168,76,0.6)',
-    conditionColor: '#C9A84C',
+    conditionColor: '#eab308',
     actionBg: 'rgba(201,168,76,0.15)',
   },
   urgent: {
@@ -138,7 +138,7 @@ export function IfThenCard({
       data-card-state={effectiveState}
       className={state === 'urgent' ? 'aduana-pulse-subtle' : undefined}
       style={{
-        background: '#222222',
+        background: 'rgba(255,255,255,0.04)',
         borderRadius: 14,
         border: s.border,
         borderTop: s.borderTop,

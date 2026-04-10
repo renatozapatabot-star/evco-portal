@@ -10,7 +10,7 @@ interface Props {
 export function WeekAheadPanel({ weekAhead }: Props) {
   return (
     <div style={{
-      background: '#222222', borderRadius: 14,
+      background: 'rgba(255,255,255,0.04)', borderRadius: 14,
       border: '1px solid rgba(255,255,255,0.08)',
       borderTop: '3px solid rgba(201,168,76,0.4)',
       padding: 16,
@@ -53,7 +53,7 @@ export function WeekAheadPanel({ weekAhead }: Props) {
                     {item.statusIcon}
                   </td>
                   <td className="font-mono" style={{
-                    padding: '10px', fontSize: 13, fontWeight: 600, color: '#C9A84C',
+                    padding: '10px', fontSize: 13, fontWeight: 600, color: '#eab308',
                   }}>
                     {item.trafico}
                   </td>

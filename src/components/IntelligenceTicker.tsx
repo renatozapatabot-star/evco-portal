@@ -68,7 +68,7 @@ export function IntelligenceTicker() {
 
   return (
     <div className="intelligence-ticker" style={{
-      height: 32, background: '#0D0D0C', overflow: 'hidden',
+      height: 32, background: '#05070B', overflow: 'hidden',
       display: 'flex', alignItems: 'center', position: 'relative',
       borderBottom: '1px solid rgba(201,168,76,0.15)',
       zIndex: 100

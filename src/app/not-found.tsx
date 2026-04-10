@@ -4,7 +4,7 @@ import { GOLD } from '@/lib/design-system'
 export default function NotFound() {
   return (
     <div style={{
-      minHeight: '100vh', background: '#0D0D0C',
+      minHeight: '100vh', background: '#05070B',
       display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center', gap: 24,
     }}>

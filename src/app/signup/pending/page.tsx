@@ -4,12 +4,12 @@ import Link from 'next/link'
 export default function SignupPendingPage() {
   return (
     <div style={{
-      minHeight: '100vh', background: '#0D0D0C',
+      minHeight: '100vh', background: '#05070B',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       padding: 24,
     }}>
       <div style={{
-        width: '100%', maxWidth: 480, background: '#1A1A1A',
+        width: '100%', maxWidth: 480, background: 'rgba(255,255,255,0.03)',
         borderRadius: 20, padding: 40, border: '1px solid rgba(255,255,255,0.06)',
         textAlign: 'center',
       }}>
@@ -41,7 +41,7 @@ export default function SignupPendingPage() {
 
         <Link href="/login" style={{
           display: 'inline-block', marginTop: 24, fontSize: 13,
-          color: 'var(--gold, #C9A84C)', textDecoration: 'none',
+          color: 'var(--gold, #eab308)', textDecoration: 'none',
         }}>
           ← Volver al inicio
         </Link>

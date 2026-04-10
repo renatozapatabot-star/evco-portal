@@ -37,7 +37,7 @@ export function AduanaAskPanel() {
 
   return (
     <div style={{
-      background: '#222222', borderRadius: 14,
+      background: 'rgba(255,255,255,0.04)', borderRadius: 14,
       border: '1px solid rgba(255,255,255,0.08)',
       borderTop: '3px solid rgba(201,168,76,0.4)',
       padding: 16,
@@ -93,8 +93,8 @@ export function AduanaAskPanel() {
           type="submit"
           disabled={loading || !question.trim()}
           style={{
-            background: '#C9A84C',
-            color: '#111111',
+            background: '#eab308',
+            color: '#05070B',
             border: 'none',
             borderRadius: 10,
             padding: '0 20px',

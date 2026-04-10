@@ -129,7 +129,7 @@ export default function ProveedorPage() {
             {/* Request info */}
             <div style={{ marginBottom: 24 }}>
               <div style={{ fontSize: 13, color: '#6B6B6B', marginBottom: 4 }}>Solicitud de</div>
-              <div style={{ fontSize: 16, fontWeight: 700, color: '#1A1A1A' }}>{info.company_id}</div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: 'rgba(255,255,255,0.03)' }}>{info.company_id}</div>
             </div>
 
             {/* Required docs */}
@@ -141,7 +141,7 @@ export default function ProveedorPage() {
                     <div key={doc} style={{
                       padding: '10px 14px', borderRadius: 8,
                       background: '#FAFAF8', border: '1px solid #E8E5E0',
-                      fontSize: 14, color: '#1A1A1A',
+                      fontSize: 14, color: 'rgba(255,255,255,0.03)',
                     }}>
                       📄 {DOC_LABELS[doc] || doc}
                     </div>
@@ -176,7 +176,7 @@ export default function ProveedorPage() {
               disabled={uploading}
               style={{
                 width: '100%', padding: '16px 24px', borderRadius: 12,
-                background: '#C9A84C', color: '#FFFFFF', border: 'none',
+                background: '#eab308', color: '#FFFFFF', border: 'none',
                 fontSize: 16, fontWeight: 700, cursor: uploading ? 'wait' : 'pointer',
                 minHeight: 56, opacity: uploading ? 0.7 : 1,
               }}
@@ -210,7 +210,7 @@ export default function ProveedorPage() {
             {/* Success state */}
             <div style={{ textAlign: 'center', padding: '20px 0' }}>
               <div style={{ fontSize: 48, marginBottom: 12 }}>✅</div>
-              <div style={{ fontSize: 18, fontWeight: 700, color: '#1A1A1A', marginBottom: 8 }}>
+              <div style={{ fontSize: 18, fontWeight: 700, color: 'rgba(255,255,255,0.03)', marginBottom: 8 }}>
                 Documento recibido
               </div>
               <p style={{ fontSize: 14, color: '#6B6B6B', marginBottom: 4 }}>
@@ -243,7 +243,7 @@ export default function ProveedorPage() {
                 background: 'rgba(196,150,60,0.04)',
                 border: '1px solid rgba(196,150,60,0.15)',
               }}>
-                <div style={{ fontSize: 14, fontWeight: 600, color: '#1A1A1A', marginBottom: 6 }}>
+                <div style={{ fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,0.03)', marginBottom: 6 }}>
                   ¿Trabaja con otros importadores en México?
                 </div>
                 <p style={{ fontSize: 13, color: '#6B6B6B', marginBottom: 12, lineHeight: 1.5 }}>
@@ -262,7 +262,7 @@ export default function ProveedorPage() {
                   }}
                   style={{
                     display: 'inline-block', padding: '10px 20px',
-                    borderRadius: 8, background: '#C9A84C', color: '#FFFFFF',
+                    borderRadius: 8, background: '#eab308', color: '#FFFFFF',
                     fontSize: 13, fontWeight: 700, textDecoration: 'none',
                     minHeight: 40,
                   }}
@@ -309,7 +309,7 @@ const styles = {
   logo: {
     fontSize: 24,
     fontWeight: 800,
-    color: '#C9A84C',
+    color: '#eab308',
     letterSpacing: '0.1em',
     marginBottom: 4,
   } as React.CSSProperties,

@@ -80,7 +80,7 @@ export default function NuevoEmbarquePage() {
           </p>
           <button onClick={() => router.push('/')} style={{
             padding: '14px 28px', borderRadius: 10,
-            background: '#C9A84C', color: '#111', fontSize: 15, fontWeight: 700,
+            background: '#eab308', color: '#111', fontSize: 15, fontWeight: 700,
             border: 'none', cursor: 'pointer', minHeight: 60,
           }}>
             Volver al portal →
@@ -157,7 +157,7 @@ export default function NuevoEmbarquePage() {
               style={{
                 padding: '12px 14px', borderRadius: 8,
                 background: '#222', border: '1px solid rgba(255,255,255,0.12)',
-                color: '#C9A84C', fontSize: 14, fontWeight: 700, minHeight: 48,
+                color: '#eab308', fontSize: 14, fontWeight: 700, minHeight: 48,
                 fontFamily: 'var(--font-jetbrains-mono)',
               }}
             >
@@ -186,7 +186,7 @@ export default function NuevoEmbarquePage() {
                 flex: 1, padding: '10px 8px', borderRadius: 8, textAlign: 'center',
                 background: form.urgencia === u.value ? 'rgba(201,168,76,0.15)' : '#222',
                 border: `1px solid ${form.urgencia === u.value ? 'rgba(201,168,76,0.3)' : 'rgba(255,255,255,0.08)'}`,
-                color: form.urgencia === u.value ? '#C9A84C' : '#8B949E',
+                color: form.urgencia === u.value ? '#eab308' : '#8B949E',
                 fontSize: 12, fontWeight: 600, cursor: 'pointer', minHeight: 48,
               }}>
                 {u.label}
@@ -209,7 +209,7 @@ export default function NuevoEmbarquePage() {
           disabled={loading}
           style={{
             width: '100%', padding: '16px 24px', borderRadius: 10, marginTop: 8,
-            background: '#C9A84C', color: '#111', fontSize: 16, fontWeight: 700,
+            background: '#eab308', color: '#111', fontSize: 16, fontWeight: 700,
             border: 'none', cursor: loading ? 'wait' : 'pointer',
             opacity: loading ? 0.6 : 1, minHeight: 60,
           }}

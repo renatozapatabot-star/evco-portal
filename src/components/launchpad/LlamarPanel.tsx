@@ -35,7 +35,7 @@ export function LlamarPanel({ detail, onComplete, loading }: Props) {
             gap: 8,
             minHeight: 60,
             borderRadius: 12,
-            border: '2px solid #C9A84C',
+            border: '2px solid #eab308',
             background: '#FFFBEB',
             color: '#1A1A1A',
             fontSize: 18,
@@ -104,7 +104,7 @@ export function LlamarPanel({ detail, onComplete, loading }: Props) {
         style={{
           minHeight: 60,
           borderRadius: 12,
-          background: '#C9A84C',
+          background: '#eab308',
           color: '#FFFFFF',
           border: 'none',
           fontSize: 16,

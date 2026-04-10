@@ -22,12 +22,12 @@ function OnboardingContent() {
 
   return (
     <div style={{
-      minHeight: '100vh', background: '#0D0D0C',
+      minHeight: '100vh', background: '#05070B',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       padding: 24,
     }}>
       <div style={{
-        width: '100%', maxWidth: 560, background: '#1A1A1A',
+        width: '100%', maxWidth: 560, background: 'rgba(255,255,255,0.03)',
         borderRadius: 20, padding: 40, border: '1px solid rgba(255,255,255,0.06)',
       }}>
         {/* Brand */}
@@ -43,7 +43,7 @@ function OnboardingContent() {
           {steps.map(s => (
             <div key={s.num} style={{
               flex: 1, height: 4, borderRadius: 2,
-              background: s.num <= step ? 'var(--gold, #C9A84C)' : 'rgba(255,255,255,0.1)',
+              background: s.num <= step ? 'var(--gold, #eab308)' : 'rgba(255,255,255,0.1)',
               transition: 'background 300ms',
             }} />
           ))}
@@ -166,7 +166,7 @@ function OnboardingContent() {
 
 const btnStyle: React.CSSProperties = {
   width: '100%', padding: '14px 20px', borderRadius: 10,
-  background: 'var(--gold, #C9A84C)', color: '#1A1A1A',
+  background: 'var(--gold, #eab308)', color: 'rgba(255,255,255,0.03)',
   fontSize: 15, fontWeight: 700, border: 'none', cursor: 'pointer',
 }
 
@@ -178,7 +178,7 @@ const demoField: React.CSSProperties = {
 
 export default function OnboardingPage() {
   return (
-    <Suspense fallback={<div style={{ minHeight: '100vh', background: '#0D0D0C' }} />}>
+    <Suspense fallback={<div style={{ minHeight: '100vh', background: '#05070B' }} />}>
       <OnboardingContent />
     </Suspense>
   )

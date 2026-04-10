@@ -101,7 +101,7 @@ export function ClasificacionPanel({ detail, onComplete, loading }: Props) {
                 gap: 12,
                 padding: 12,
                 borderRadius: 8,
-                border: `1px solid ${selected === alt.fraccion ? '#C9A84C' : '#E8E5E0'}`,
+                border: `1px solid ${selected === alt.fraccion ? '#eab308' : '#E8E5E0'}`,
                 background: selected === alt.fraccion ? '#FFFBEB' : '#FFFFFF',
                 cursor: 'pointer',
                 minHeight: 48,
@@ -113,7 +113,7 @@ export function ClasificacionPanel({ detail, onComplete, loading }: Props) {
                 value={alt.fraccion}
                 checked={selected === alt.fraccion}
                 onChange={() => setSelected(alt.fraccion)}
-                style={{ accentColor: '#C9A84C' }}
+                style={{ accentColor: '#eab308' }}
               />
               <span className="font-mono" style={{ fontSize: 14, fontWeight: 600 }}>
                 {alt.fraccion}
@@ -144,7 +144,7 @@ export function ClasificacionPanel({ detail, onComplete, loading }: Props) {
                 flex: 1,
                 minHeight: 60,
                 borderRadius: 12,
-                background: '#C9A84C',
+                background: '#eab308',
                 color: '#FFFFFF',
                 border: 'none',
                 fontSize: 16,
@@ -180,7 +180,7 @@ export function ClasificacionPanel({ detail, onComplete, loading }: Props) {
               flex: 1,
               minHeight: 60,
               borderRadius: 12,
-              background: selected ? '#C9A84C' : '#E8E5E0',
+              background: selected ? '#eab308' : '#E8E5E0',
               color: selected ? '#FFFFFF' : '#9B9B9B',
               border: 'none',
               fontSize: 16,

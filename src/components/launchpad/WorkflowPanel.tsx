@@ -31,7 +31,7 @@ export function WorkflowPanel({ open, onClose, title, children }: WorkflowPanelP
         marginTop: 8,
         overflow: 'hidden',
         animation: 'panelSlideDown 250ms cubic-bezier(0.34, 1.56, 0.64, 1)',
-        border: '2px solid #C9A84C',
+        border: '2px solid #eab308',
       }}
     >
       <div

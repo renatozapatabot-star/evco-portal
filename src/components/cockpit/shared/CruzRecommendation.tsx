@@ -29,7 +29,7 @@ export function AduanaRecommendation({
   recommendation, confidence, approveLabel = 'Aprobar', approveHref, onApprove,
   reviewLabel = 'Revisar', reviewHref, reasoning, memoryBadge, compact,
 }: Props) {
-  const confidenceColor = confidence >= 85 ? '#16A34A' : confidence >= 70 ? '#C9A84C' : '#D97706'
+  const confidenceColor = confidence >= 85 ? '#16A34A' : confidence >= 70 ? '#eab308' : '#D97706'
 
   const handleApprove = () => {
     playSound('success')
@@ -45,7 +45,7 @@ export function AduanaRecommendation({
         background: 'rgba(201,168,76,0.06)',
         border: '1px solid rgba(201,168,76,0.12)',
       }}>
-        <span style={{ fontSize: 11, color: '#C9A84C', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <span style={{ fontSize: 11, color: '#eab308', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {recommendation}
         </span>
         <span className="font-mono" style={{ fontSize: 10, color: confidenceColor, flexShrink: 0 }}>
@@ -54,14 +54,14 @@ export function AduanaRecommendation({
         {(approveHref || onApprove) && (
           approveHref ? (
             <Link href={approveHref} onClick={handleApprove} style={{
-              fontSize: 10, fontWeight: 700, color: '#111', background: '#C9A84C',
+              fontSize: 10, fontWeight: 700, color: '#111', background: '#eab308',
               padding: '3px 10px', borderRadius: 4, textDecoration: 'none', flexShrink: 0,
             }}>
               {approveLabel}
             </Link>
           ) : (
             <button onClick={handleApprove} style={{
-              fontSize: 10, fontWeight: 700, color: '#111', background: '#C9A84C',
+              fontSize: 10, fontWeight: 700, color: '#111', background: '#eab308',
               padding: '3px 10px', borderRadius: 4, border: 'none', cursor: 'pointer', flexShrink: 0,
             }}>
               {approveLabel}
@@ -80,7 +80,7 @@ export function AduanaRecommendation({
     }}>
       {/* Memory badge */}
       {memoryBadge && (
-        <div style={{ fontSize: 10, color: '#C9A84C', marginBottom: 6, fontWeight: 600 }}>
+        <div style={{ fontSize: 10, color: '#eab308', marginBottom: 6, fontWeight: 600 }}>
           🧠 {memoryBadge}
         </div>
       )}
@@ -117,7 +117,7 @@ export function AduanaRecommendation({
             <Link href={approveHref} onClick={handleApprove} style={{
               flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
               padding: '10px 16px', borderRadius: 8, minHeight: 44,
-              background: '#C9A84C', color: '#111', fontSize: 13, fontWeight: 700,
+              background: '#eab308', color: '#111', fontSize: 13, fontWeight: 700,
               textDecoration: 'none',
             }}>
               {approveLabel} →
@@ -125,7 +125,7 @@ export function AduanaRecommendation({
           ) : (
             <button onClick={handleApprove} style={{
               flex: 1, padding: '10px 16px', borderRadius: 8, minHeight: 44,
-              background: '#C9A84C', color: '#111', fontSize: 13, fontWeight: 700,
+              background: '#eab308', color: '#111', fontSize: 13, fontWeight: 700,
               border: 'none', cursor: 'pointer',
             }}>
               {approveLabel} →

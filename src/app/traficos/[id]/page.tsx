@@ -63,7 +63,7 @@ function ProveedoresCard({ proveedores, pais, supplierLookup }: { proveedores: s
           return (
             <Link key={prov} href={`/proveedores?search=${encodeURIComponent(name)}`} style={{
               fontSize: 13, fontWeight: 600, padding: '6px 14px',
-              borderRadius: 8, background: 'var(--slate-50)',
+              borderRadius: 8, background: 'rgba(9,9,11,0.75)',
               color: 'var(--navy-800)', border: '1px solid var(--border-card)',
               textDecoration: 'none', transition: 'background 150ms',
             }}>
@@ -648,7 +648,7 @@ export default function TraficoDetailPage() {
       {/* ═══ CROSSING ESTIMATE ═══ */}
       {t && ((t.estatus as string) || '').toLowerCase().includes('cruc') && !((t.estatus as string) || '').toLowerCase().includes('cruzado') && (
         <div style={{
-          background: 'var(--blue-50, #EFF6FF)', borderLeft: '4px solid var(--info-500)',
+          background: 'rgba(34,211,238,0.06)', borderLeft: '4px solid var(--info-500)',
           borderRadius: 'var(--radius-lg)', padding: '12px 16px', marginBottom: 16,
           display: 'flex', alignItems: 'center', gap: 10, fontSize: 13,
         }}>
@@ -730,7 +730,7 @@ export default function TraficoDetailPage() {
           {t.pedimento ? (
             <span style={{
               fontSize: 12, fontWeight: 600, padding: '4px 10px',
-              borderRadius: 8, background: 'var(--slate-100)', color: 'var(--slate-600)',
+              borderRadius: 8, background: 'rgba(9,9,11,0.75)', color: 'var(--slate-600)',
               fontFamily: 'var(--font-mono)',
             }}>
               Ped. {fmtPedimentoShort(t.pedimento as string)}
@@ -746,7 +746,7 @@ export default function TraficoDetailPage() {
             <span style={{
               display: 'inline-flex', alignItems: 'center', gap: 4,
               padding: '4px 12px', borderRadius: 9999,
-              background: 'var(--green-50, #F0FDF4)',
+              background: 'rgba(34,197,94,0.06)',
               color: 'var(--success)', fontSize: 12, fontWeight: 600,
               border: '1px solid var(--green-100, #DCFCE7)',
             }}>
@@ -958,7 +958,7 @@ export default function TraficoDetailPage() {
                   <div style={{ width: 90, fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'capitalize' }}>
                     {dim.source === 'bridge' ? 'Puente' : dim.source === 'supplier' ? 'Proveedor' : dim.source === 'currency' ? 'Divisa' : dim.source === 'documents' ? 'Documentos' : dim.source === 'compliance' ? 'Cumplimiento' : dim.source === 'historical' ? 'Historial' : dim.source === 'temporal' ? 'Temporal' : dim.source}
                   </div>
-                  <div style={{ flex: 1, height: 6, borderRadius: 3, background: 'var(--slate-100)', overflow: 'hidden' }}>
+                  <div style={{ flex: 1, height: 6, borderRadius: 3, background: 'rgba(9,9,11,0.75)', overflow: 'hidden' }}>
                     <div style={{
                       width: `${Math.min(dimConfidence, 100)}%`, height: '100%', borderRadius: 3,
                       background: dimConfidence >= 70 ? 'var(--success-500)' : dimConfidence >= 40 ? 'var(--warning-500, #D97706)' : 'var(--danger-500)',
@@ -974,7 +974,7 @@ export default function TraficoDetailPage() {
             </div>
             {/* Recommendation */}
             {riskAssessment.recommendation && (
-              <div style={{ marginTop: 12, padding: '10px 14px', borderRadius: 8, background: 'var(--slate-50)', fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+              <div style={{ marginTop: 12, padding: '10px 14px', borderRadius: 8, background: 'rgba(9,9,11,0.75)', fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
                 {riskAssessment.recommendation}
               </div>
             )}
@@ -1087,7 +1087,7 @@ export default function TraficoDetailPage() {
                       {'tmec' in row && (row as { tmec?: boolean }).tmec && (
                         <span title="Exento por T-MEC" style={{
                           fontSize: 10, fontWeight: 700, padding: '1px 6px',
-                          background: 'var(--green-50, #F0FDF4)', color: 'var(--green-600, #16A34A)',
+                          background: 'rgba(34,197,94,0.06)', color: 'var(--green-600, #16A34A)',
                           borderRadius: 4, fontFamily: 'var(--font-sans)',
                         }}>&#x2713; T-MEC</span>
                       )}
@@ -1202,7 +1202,7 @@ export default function TraficoDetailPage() {
                     return (
                       <div key={i} style={{
                         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                        padding: '10px 14px', background: 'var(--slate-50)',
+                        padding: '10px 14px', background: 'rgba(9,9,11,0.75)',
                         borderRadius: 8, border: '1px solid #BBF7D0',
                         minHeight: 60,
                       }}>

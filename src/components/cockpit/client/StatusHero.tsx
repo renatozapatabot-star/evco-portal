@@ -8,13 +8,13 @@ import { computeStatusHeroState } from '../shared/cardStates'
 interface Props {
   statusLevel: ClientData['statusLevel']
   statusSentence: string
-  entradasThisWeek: number
+  entradasThisMonth: number
   activeShipments: number
   nextCrossing: ClientData['nextCrossing']
 }
 
-export function StatusHero({ statusLevel, statusSentence, entradasThisWeek, activeShipments, nextCrossing }: Props) {
-  const cardState = computeStatusHeroState(activeShipments, entradasThisWeek)
+export function StatusHero({ statusLevel, statusSentence, entradasThisMonth, activeShipments, nextCrossing }: Props) {
+  const cardState = computeStatusHeroState(activeShipments, entradasThisMonth)
   const dotColor = statusLevel === 'green' ? '#16A34A'
     : statusLevel === 'amber' ? '#D97706' : '#DC2626'
 
@@ -43,8 +43,8 @@ export function StatusHero({ statusLevel, statusSentence, entradasThisWeek, acti
           <div style={{ fontSize: 13, color: '#8B949E', marginBottom: 10 }}>{statusSentence}</div>
           <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
             <div>
-              <span className="font-mono" style={{ fontSize: 18, fontWeight: 700, color: '#E6EDF3' }}>{entradasThisWeek}</span>
-              <span style={{ fontSize: 12, color: '#8B949E', marginLeft: 6 }}>entrada{entradasThisWeek !== 1 ? 's' : ''} esta semana</span>
+              <span className="font-mono" style={{ fontSize: 18, fontWeight: 700, color: '#E6EDF3' }}>{entradasThisMonth}</span>
+              <span style={{ fontSize: 12, color: '#8B949E', marginLeft: 6 }}>entrada{entradasThisMonth !== 1 ? 's' : ''} este mes</span>
             </div>
             <div>
               <span className="font-mono" style={{ fontSize: 18, fontWeight: 700, color: '#E6EDF3' }}>{activeShipments}</span>

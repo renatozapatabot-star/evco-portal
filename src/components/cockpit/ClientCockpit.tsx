@@ -32,7 +32,7 @@ export function ClientCockpit({ data, companyName }: Props) {
         <StatusHero
           statusLevel={data.statusLevel}
           statusSentence={data.statusSentence}
-          entradasThisWeek={data.entradasThisWeek}
+          entradasThisMonth={data.entradasThisMonth}
           activeShipments={data.activeShipments}
           nextCrossing={data.nextCrossing}
         />

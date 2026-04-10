@@ -102,9 +102,12 @@ function TraficosContent() {
   const isMobile = useIsMobile()
   const { getCached, setCache } = useSessionCache()
 
-  // Lookup maps from aduanet_facturas and entradas
+  // Lookup maps from aduanet_facturas, entradas, globalpc_partidas, globalpc_facturas, globalpc_proveedores
   const [facturasMap, setFacturasMap] = useState<Map<string, FacturaLookup>>(new Map())
   const [entradaMap, setEntradaMap] = useState<Map<string, string>>(new Map())
+  const [partidaDescMap, setPartidaDescMap] = useState<Map<string, string>>(new Map())
+  const [gpcFacturasMap, setGpcFacturasMap] = useState<Map<string, { cve_proveedor: string; numero: string; valor_comercial: number }>>(new Map())
+  const [proveedorMap, setProveedorMap] = useState<Map<string, string>>(new Map())
 
   const [companyId, setCompanyId] = useState('')
   const [clientClave, setClientClave] = useState('')
@@ -197,6 +200,57 @@ function TraficosContent() {
         setEntradaMap(map)
       })
       .catch(() => {})
+
+    // GlobalPC partida descriptions for enrichment
+    fetch('/api/data?table=globalpc_partidas&select=cve_trafico,descripcion&limit=10000')
+      .then(r => r.json())
+      .then(d => {
+        const map = new Map<string, string>()
+        const arr = Array.isArray(d.data) ? d.data : []
+        for (const p of arr as { cve_trafico?: string; descripcion?: string }[]) {
+          if (p.cve_trafico && p.descripcion && !map.has(p.cve_trafico)) map.set(p.cve_trafico, p.descripcion)
+        }
+        setPartidaDescMap(map)
+      })
+      .catch(() => {})
+
+    // GlobalPC facturas — fallback for proveedor, invoice, valor when aduanet_facturas has no match
+    fetch('/api/data?table=globalpc_facturas&limit=10000')
+      .then(r => r.json())
+      .then(d => {
+        const arr = Array.isArray(d.data) ? d.data : []
+        const map = new Map<string, { cve_proveedor: string; numero: string; valor_comercial: number }>()
+        for (const f of arr as { cve_trafico?: string; cve_proveedor?: string; numero?: string; valor_comercial?: number }[]) {
+          if (!f.cve_trafico) continue
+          const existing = map.get(f.cve_trafico)
+          if (existing) {
+            existing.valor_comercial += Number(f.valor_comercial) || 0
+            if (!existing.cve_proveedor && f.cve_proveedor) existing.cve_proveedor = f.cve_proveedor
+            if (!existing.numero && f.numero) existing.numero = f.numero
+          } else {
+            map.set(f.cve_trafico, {
+              cve_proveedor: f.cve_proveedor || '',
+              numero: f.numero || '',
+              valor_comercial: Number(f.valor_comercial) || 0,
+            })
+          }
+        }
+        setGpcFacturasMap(map)
+      })
+      .catch(() => {})
+
+    // GlobalPC proveedores — supplier code → name resolution
+    fetch('/api/data?table=globalpc_proveedores&limit=5000')
+      .then(r => r.json())
+      .then(d => {
+        const arr = Array.isArray(d.data) ? d.data : []
+        const map = new Map<string, string>()
+        for (const p of arr as { cve_proveedor?: string; nombre?: string }[]) {
+          if (p.cve_proveedor && p.nombre) map.set(p.cve_proveedor, p.nombre)
+        }
+        setProveedorMap(map)
+      })
+      .catch(() => {})
   }, [cookiesReady, companyId, clientClave, userRole])
 
   // Debounced search
@@ -205,29 +259,42 @@ function TraficosContent() {
     return () => clearTimeout(timer)
   }, [searchInput])
 
-  // Helpers to get enriched data
+  // Helpers to get enriched data (fallback chain: aduanet → traficos → globalpc)
   const getProveedor = (r: TraficoRow): string => {
     const fac = facturasMap.get(r.trafico)
     const raw = fac?.proveedor || r.proveedores || ''
-    if (!raw) return ''
-    const first = raw.split(',')[0]?.trim() || ''
-    return resolveSupplier(first)
+    if (raw) {
+      const first = raw.split(',')[0]?.trim() || ''
+      return resolveSupplier(first)
+    }
+    // Fallback: globalpc_facturas → globalpc_proveedores
+    const gpc = gpcFacturasMap.get(r.trafico)
+    if (gpc?.cve_proveedor) return proveedorMap.get(gpc.cve_proveedor) || gpc.cve_proveedor
+    return ''
   }
 
   const getInvoice = (r: TraficoRow): string => {
     const fac = facturasMap.get(r.trafico)
-    return fac?.num_factura || r.facturas || ''
+    if (fac?.num_factura) return fac.num_factura
+    if (r.facturas) return r.facturas
+    // Fallback: globalpc_facturas
+    const gpc = gpcFacturasMap.get(r.trafico)
+    return gpc?.numero || ''
   }
 
   const getValor = (r: TraficoRow): number => {
     const fac = facturasMap.get(r.trafico)
-    return fac?.valor_usd || Number(r.importe_total) || 0
+    if (fac?.valor_usd && fac.valor_usd > 0) return fac.valor_usd
+    if (r.importe_total && Number(r.importe_total) > 0) return Number(r.importe_total)
+    // Fallback: globalpc_facturas
+    const gpc = gpcFacturasMap.get(r.trafico)
+    return gpc?.valor_comercial || 0
   }
 
   const getDesc = (r: TraficoRow): string => {
     if (r.descripcion_mercancia) return r.descripcion_mercancia
     const fac = facturasMap.get(r.trafico)
-    return fac?.descripcion || ''
+    return fac?.descripcion || partidaDescMap.get(r.trafico) || ''
   }
 
   const getEntrada = (r: TraficoRow): string => entradaMap.get(r.trafico) || ''

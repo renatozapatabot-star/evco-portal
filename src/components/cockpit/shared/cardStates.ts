@@ -16,9 +16,9 @@ function pl(n: number, s: string, p: string): string {
 
 export function computeStatusHeroState(
   activeShipments: number,
-  entradasThisWeek: number,
+  entradasThisMonth: number,
 ): CardStateResult {
-  if (activeShipments === 0 && entradasThisWeek === 0) {
+  if (activeShipments === 0 && entradasThisMonth === 0) {
     return { state: 'quiet' }
   }
   if (activeShipments > 0) {

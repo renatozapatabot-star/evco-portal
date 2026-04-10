@@ -23,32 +23,10 @@ export async function CockpitShell({ children }: CockpitShellProps) {
         color: '#E6EDF3',
       }}
     >
-      {/* Sticky demo bottom CTA */}
-      {isDemo && (
-        <div style={{
-          position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 90,
-          background: 'rgba(201,168,76,0.95)', backdropFilter: 'blur(8px)',
-          padding: '12px 20px',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12,
-        }}>
-          <span style={{ fontSize: 13, fontWeight: 600, color: '#111' }}>
-            ¿Quieres esto para tu firma?
-          </span>
-          <a href="/demo/request-access" style={{
-            background: '#111', color: '#eab308', padding: '8px 20px',
-            borderRadius: 6, fontSize: 13, fontWeight: 700, textDecoration: 'none',
-            minHeight: 36, display: 'inline-flex', alignItems: 'center',
-          }}>
-            Solicita acceso →
-          </a>
-        </div>
-      )}
-
       <div style={{
         maxWidth: 1400,
         margin: '0 auto',
         padding: '24px 16px',
-        paddingBottom: isDemo ? 80 : 24,
       }}>
         {children}
       </div>

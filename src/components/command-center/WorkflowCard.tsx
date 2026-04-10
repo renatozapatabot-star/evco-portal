@@ -46,17 +46,14 @@ interface WorkflowCardProps {
   completionRing?: number
 }
 
-const U_BORDER = { red: 'rgba(220,38,38,0.25)', amber: 'rgba(217,119,6,0.25)', green: 'rgba(22,163,74,0.25)', neutral: 'rgba(255,255,255,0.08)' }
-const U_TOP    = { red: 'rgba(220,38,38,0.7)', amber: 'rgba(217,119,6,0.6)', green: 'rgba(22,163,74,0.5)', neutral: 'rgba(201,168,76,0.4)' }
-const U_SHADOW = { red: 'rgba(220,38,38,0.1)', amber: 'rgba(217,119,6,0.08)', green: 'rgba(22,163,74,0.08)', neutral: 'rgba(0,0,0,0.2)' }
-const U_ICON   = { red: 'rgba(220,38,38,0.7)', amber: 'rgba(217,119,6,0.7)', green: 'rgba(22,163,74,0.7)', neutral: 'rgba(255,255,255,0.5)' }
-const U_SPARK  = { red: '#DC2626', amber: '#D97706', green: '#16A34A', neutral: '#C8962E' }
+// Uniform cyan theme — NO colored borders. Cards pulse when they need action.
+const CARD_BORDER = 'rgba(0,229,255,0.1)'
+const CARD_SHADOW = 'rgba(0,0,0,0.3)'
+const U_ICON   = { red: 'rgba(0,229,255,0.8)', amber: 'rgba(0,229,255,0.7)', green: 'rgba(0,229,255,0.5)', neutral: 'rgba(255,255,255,0.4)' }
+const U_SPARK  = { red: '#00E5FF', amber: '#00E5FF', green: '#00E5FF', neutral: '#00E5FF' }
 
-function glowClass(u: CardUrgency) {
-  if (u === 'red') return 'glow-red'
-  if (u === 'amber') return 'glow-amber'
-  if (u === 'green') return 'glow-green'
-  return ''
+function needsActionClass(u: CardUrgency) {
+  return (u === 'red' || u === 'amber') ? 'needs-action' : ''
 }
 
 // ── Animated KPI number ──
@@ -92,7 +89,7 @@ export function WorkflowCard({
     const hasActive = activeItems && activeItems.length > 0
     return (
       <motion.div
-        className={`cc-card hero-circuit-bg ${glowClass(u)}${intensityClass ? ` ${intensityClass}` : ''}`}
+        className={`cc-card hero-circuit-bg ${needsActionClass(u)}${intensityClass ? ` ${intensityClass}` : ''}`}
         whileHover={prefersReduced ? undefined : { scale: 1.005 }}
         whileTap={prefersReduced ? undefined : { scale: 0.995 }}
         onTapStart={() => haptic.micro()}
@@ -101,9 +98,7 @@ export function WorkflowCard({
           padding: '24px 28px',
           borderRadius: 20,
           background: 'var(--bg-elevated, rgba(255,255,255,0.04))',
-          border: `1px solid ${U_BORDER[u]}`,
-          borderTop: `3px solid ${U_TOP[u]}`,
-          boxShadow: `0 2px 16px ${U_SHADOW[u]}`,
+          border: '1px solid rgba(0,229,255,0.1)',
           display: 'flex',
           flexDirection: 'column',
           minHeight: 200,
@@ -357,8 +352,8 @@ export function WorkflowCard({
 
     return (
       <motion.div
-        className={`cc-card ${glowClass(u)}${intensityClass ? ` ${intensityClass}` : ''}`}
-        whileHover={prefersReduced ? undefined : { scale: 1.015, boxShadow: `0 4px 20px ${U_SHADOW[u]}` }}
+        className={`cc-card ${needsActionClass(u)}${intensityClass ? ` ${intensityClass}` : ''}`}
+        whileHover={prefersReduced ? undefined : { scale: 1.015, boxShadow: '0 14px 45px rgba(0,0,0,0.5)' }}
         whileTap={prefersReduced ? undefined : { scale: 0.97 }}
         onTapStart={() => haptic.micro()}
         transition={{ type: 'spring', stiffness: 400, damping: 25 }}
@@ -366,9 +361,7 @@ export function WorkflowCard({
           padding: '20px 20px',
           borderRadius: 20,
           background: 'var(--bg-elevated, rgba(255,255,255,0.04))',
-          border: `1px solid ${U_BORDER[u]}`,
-          borderTop: `3px solid ${U_TOP[u]}`,
-          boxShadow: `0 2px 12px ${U_SHADOW[u]}`,
+          border: '1px solid rgba(0,229,255,0.1)',
           display: 'flex',
           flexDirection: 'column',
           height: '100%',

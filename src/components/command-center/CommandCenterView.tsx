@@ -354,6 +354,18 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
       {/* Pull-to-refresh indicator */}
       <PullRefreshIndicator pullDistance={pullDistance} isRefreshing={isRefreshing} progress={pullProgress} />
 
+      {/* Time-of-day greeting */}
+      {!loading && (() => {
+        const hour = new Date().getHours()
+        const greeting = hour < 12 ? 'Buenos días' : hour < 18 ? 'Buenas tardes' : 'Buenas noches'
+        const name = typeof document !== 'undefined' ? getCookieValue('company_name') || getCookieValue('operator_name') || '' : ''
+        return (
+          <div style={{ fontSize: 14, fontWeight: 600, color: '#E6EDF3', marginBottom: 8, opacity: 0.8 }}>
+            {greeting}{name ? `, ${name}` : ''}
+          </div>
+        )
+      })()}
+
       {/* Static top strip — facturado + live indicator */}
       {!loading && (
         <div style={{

@@ -15,6 +15,8 @@ import { useNetworkStatus } from '@/hooks/use-network-status'
 import { getCookieValue } from '@/lib/client-config'
 import { WorkflowGrid } from './WorkflowGrid'
 import { PipelineFunnel } from '@/components/cockpit/shared/PipelineFunnel'
+import { ValueSummary } from './ValueSummary'
+import { NextActions } from './NextActions'
 import { ActivityPulseSection } from './ActivityPulseSection'
 import { NewsBanner, buildClientItems } from '@/components/cockpit/shared/NewsBanner'
 import { PullRefreshIndicator } from '@/components/broker/PullRefreshIndicator'
@@ -479,6 +481,27 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
       <Celebrate trigger={completionPct >= 100} id="operator-allgreen" />
       <CeremonyEffect active={completionPct >= 100} />
 
+      {/* ── VALUE SUMMARY — what ADUANA did for you ── */}
+      {!loading && (
+        <ValueSummary
+          pedimentosThisMonth={data.pedimentosThisMonth}
+          daysSinceRojo={data.daysSinceRojo}
+          totalClassified={data.expedientesTotal}
+          totalTraficos={data.totalTraficos}
+        />
+      )}
+
+      {/* ── NEXT ACTIONS — what needs you right now ── */}
+      {!loading && (
+        <NextActions
+          pendingEntradas={pendingEntradas}
+          activeTraficosList={data.activeTraficosList}
+          docsPendientes={data.docsPendientes}
+          expedientesTotal={data.expedientesTotal}
+          totalTraficos={data.totalTraficos}
+        />
+      )}
+
       {/* ── PIPELINE FUNNEL (operator view only) ── */}
       {!isClient && <PipelineFunnel />}
 
@@ -517,9 +540,9 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
         daysSinceRojo={data.daysSinceRojo}
       />
 
-      {/* Activity Pulse — collapsed below cards */}
+      {/* Activity Pulse — always visible, shows AI working */}
       <div style={{ marginTop: 16 }}>
-        <ActivityPulseSection pulse={pulse} loading={pulseLoading} defaultCollapsed={!isClient} dark={!isMobile} />
+        <ActivityPulseSection pulse={pulse} loading={pulseLoading} defaultCollapsed={false} dark={!isMobile} />
       </div>
 
       <Celebrate trigger={!!lastUpdate && (lastUpdate.estatus || '').toLowerCase().includes('cruz')} />

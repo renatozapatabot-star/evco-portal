@@ -17,7 +17,7 @@ const supabase = createClient(
 
 const TIER_CONFIG: Record<number, { label: string; time: string; color: string; bg: string; border: string }> = {
   1: { label: 'Alta confianza', time: '~2 min', color: 'var(--success)', bg: '#F0FDF4', border: '#BBF7D0' },
-  2: { label: 'Confianza media', time: '~5 min', color: 'var(--warning)', bg: '#FFFBEB', border: '#FDE68A' },
+  2: { label: 'Confianza media', time: '~5 min', color: 'var(--warning)', bg: 'rgba(234,179,8,0.08)', border: 'rgba(234,179,8,0.2)' },
   3: { label: 'Revisión completa', time: 'Sin límite', color: 'var(--danger-500)', bg: '#FEF2F2', border: '#FECACA' },
 }
 
@@ -103,7 +103,7 @@ export default function DraftsPage() {
         {(['pending', 'approved', 'all'] as const).map(f => (
           <button key={f} onClick={() => setFilter(f)} style={{
             padding: '10px 16px', borderRadius: 6, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer', minHeight: 60,
-            background: filter === f ? 'white' : 'transparent', color: filter === f ? 'var(--navy-900)' : 'var(--slate-400)',
+            background: filter === f ? 'rgba(0,229,255,0.15)' : 'transparent', color: filter === f ? '#E6EDF3' : 'var(--slate-400)',
             boxShadow: filter === f ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
           }}>
             {f === 'pending' ? 'Pendientes' : f === 'approved' ? 'Aprobados' : 'Todos'}

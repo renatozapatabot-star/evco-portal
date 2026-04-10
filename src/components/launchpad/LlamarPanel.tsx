@@ -36,7 +36,7 @@ export function LlamarPanel({ detail, onComplete, loading }: Props) {
             minHeight: 60,
             borderRadius: 12,
             border: '2px solid #eab308',
-            background: '#FFFBEB',
+            background: 'rgba(234,179,8,0.08)',
             color: '#1A1A1A',
             fontSize: 18,
             fontWeight: 700,
@@ -56,7 +56,7 @@ export function LlamarPanel({ detail, onComplete, loading }: Props) {
             minHeight: 60,
             borderRadius: 12,
             border: '1px solid #E8E5E0',
-            background: '#FAFAF8',
+            background: 'rgba(255,255,255,0.06)',
             color: '#9B9B9B',
             fontSize: 14,
           }}
@@ -68,7 +68,7 @@ export function LlamarPanel({ detail, onComplete, loading }: Props) {
       {/* Call script */}
       <div
         style={{
-          background: '#FAFAF8',
+          background: 'rgba(255,255,255,0.06)',
           borderRadius: 8,
           padding: 16,
           border: '1px solid #E8E5E0',

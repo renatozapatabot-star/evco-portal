@@ -113,7 +113,7 @@ export function OCAView() {
                 <option value="XX">Otro</option>
               </select>
             </div>
-            <button onClick={generateOCA} disabled={loading || !product.trim()} style={{ width: '100%', height: 42, background: loading || !product.trim() ? '#CBD5E1' : T.navy, border: 'none', borderRadius: 8, color: '#fff', fontSize: 14, fontWeight: 700, cursor: loading || !product.trim() ? 'default' : 'pointer', fontFamily: 'inherit' }}>{loading ? '⏳ Analizando TIGIE...' : '⚖️ Generar Opinión OCA'}</button>
+            <button onClick={generateOCA} disabled={loading || !product.trim()} style={{ width: '100%', height: 42, background: loading || !product.trim() ? '#CBD5E1' : T.navy, border: 'none', borderRadius: 8, color: 'rgba(255,255,255,0.04)', fontSize: 14, fontWeight: 700, cursor: loading || !product.trim() ? 'default' : 'pointer', fontFamily: 'inherit' }}>{loading ? '⏳ Analizando TIGIE...' : '⚖️ Generar Opinión OCA'}</button>
             {error && <div style={{ marginTop: 12, background: '#FEE2E2', border: '1px solid #FECACA', borderRadius: 8, padding: '10px 12px', color: 'var(--danger-text)', fontSize: 12 }}>{error}</div>}
           </div>
           <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 12, boxShadow: T.shadow, padding: 16 }}>
@@ -130,7 +130,7 @@ export function OCAView() {
           <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 12, boxShadow: T.shadow, padding: 20, borderTop: `3px solid ${T.gold}` }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
               <div><div style={{ color: T.gold, fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{String(result.opinion_number || '')}</div><div style={{ color: T.text, fontSize: 15, fontWeight: 700, marginTop: 2 }}>Opinión de Clasificación</div></div>
-              <button onClick={downloadOpinion} style={{ background: T.navy, border: 'none', borderRadius: 7, padding: '7px 14px', color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>⬇️ Descargar</button>
+              <button onClick={downloadOpinion} style={{ background: T.navy, border: 'none', borderRadius: 7, padding: '7px 14px', color: 'rgba(255,255,255,0.04)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>⬇️ Descargar</button>
             </div>
             <div style={{ background: T.goldBg, border: `1px solid ${T.goldBorder}`, borderRadius: 10, padding: '14px 16px', marginBottom: 16, textAlign: 'center' }}>
               <div style={{ color: T.textMuted, fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>Fracción Arancelaria</div>

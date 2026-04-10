@@ -24,7 +24,7 @@ interface AnomalyRow {
 
 const SEVERITY_CONFIG: Record<string, { icon: string; color: string; bg: string; label: string }> = {
   critical: { icon: '🔴', color: 'var(--danger-500)', bg: '#FEF2F2', label: 'Crítico' },
-  warning:  { icon: '🟡', color: 'var(--warning-500, #D97706)', bg: '#FFFBEB', label: 'Advertencia' },
+  warning:  { icon: '🟡', color: 'var(--warning-500, #D97706)', bg: 'rgba(234,179,8,0.08)', label: 'Advertencia' },
   info:     { icon: '🔵', color: 'var(--info)', bg: '#EFF6FF', label: 'Información' },
   ok:       { icon: '✅', color: 'var(--success)', bg: '#F0FDF4', label: 'OK' },
 }

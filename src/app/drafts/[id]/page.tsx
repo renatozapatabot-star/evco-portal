@@ -14,7 +14,7 @@ const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env
 
 const TIER_CONFIG = {
   1: { label: 'Alta confianza', time: '~2 min', color: 'var(--success)', bg: '#F0FDF4' },
-  2: { label: 'Confianza media', time: '~5 min', color: 'var(--warning)', bg: '#FFFBEB' },
+  2: { label: 'Confianza media', time: '~5 min', color: 'var(--warning)', bg: 'rgba(234,179,8,0.08)' },
   3: { label: 'Revisión completa', time: 'Sin límite · precisión sobre velocidad', color: 'var(--danger-500)', bg: '#FEF2F2' },
 }
 

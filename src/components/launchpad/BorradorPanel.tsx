@@ -15,7 +15,7 @@ type PanelState = 'idle' | 'countdown' | 'blessing' | 'done'
 
 function ConfidenceBadge({ value }: { value: number }) {
   const color = value >= 85 ? '#16A34A' : value >= 70 ? '#D4952A' : '#DC2626'
-  const bg = value >= 85 ? '#F0FDF4' : value >= 70 ? '#FFFBEB' : '#FEF2F2'
+  const bg = value >= 85 ? '#F0FDF4' : value >= 70 ? 'rgba(234,179,8,0.08)' : '#FEF2F2'
   return (
     <span
       className="font-mono"
@@ -120,7 +120,7 @@ export function BorradorPanel({ detail, onComplete, loading }: Props) {
             minHeight: 60,
             minWidth: 200,
             borderRadius: 12,
-            background: '#FFFFFF',
+            background: 'rgba(255,255,255,0.04)',
             color: '#DC2626',
             border: '1px solid #DC2626',
             fontSize: 16,
@@ -227,7 +227,7 @@ export function BorradorPanel({ detail, onComplete, loading }: Props) {
             flex: 1,
             minHeight: 60,
             borderRadius: 12,
-            background: '#FFFFFF',
+            background: 'rgba(255,255,255,0.04)',
             color: '#1A1A1A',
             border: '1px solid #E8E5E0',
             fontSize: 16,

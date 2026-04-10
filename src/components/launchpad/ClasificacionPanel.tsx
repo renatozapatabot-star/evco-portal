@@ -11,7 +11,7 @@ interface Props {
 
 function ConfidenceBadge({ value }: { value: number }) {
   const color = value >= 85 ? '#16A34A' : value >= 70 ? '#D4952A' : '#DC2626'
-  const bg = value >= 85 ? '#F0FDF4' : value >= 70 ? '#FFFBEB' : '#FEF2F2'
+  const bg = value >= 85 ? '#F0FDF4' : value >= 70 ? 'rgba(234,179,8,0.08)' : '#FEF2F2'
   return (
     <span
       className="font-mono"
@@ -66,7 +66,7 @@ export function ClasificacionPanel({ detail, onComplete, loading }: Props) {
       {/* CRUZ suggestion */}
       <div
         style={{
-          background: '#FAFAF8',
+          background: 'rgba(255,255,255,0.06)',
           borderRadius: 8,
           padding: 16,
           border: '1px solid #E8E5E0',
@@ -102,7 +102,7 @@ export function ClasificacionPanel({ detail, onComplete, loading }: Props) {
                 padding: 12,
                 borderRadius: 8,
                 border: `1px solid ${selected === alt.fraccion ? '#eab308' : '#E8E5E0'}`,
-                background: selected === alt.fraccion ? '#FFFBEB' : '#FFFFFF',
+                background: selected === alt.fraccion ? 'rgba(234,179,8,0.08)' : 'rgba(255,255,255,0.04)',
                 cursor: 'pointer',
                 minHeight: 48,
               }}
@@ -145,7 +145,7 @@ export function ClasificacionPanel({ detail, onComplete, loading }: Props) {
                 minHeight: 60,
                 borderRadius: 12,
                 background: '#eab308',
-                color: '#FFFFFF',
+                color: 'rgba(255,255,255,0.04)',
                 border: 'none',
                 fontSize: 16,
                 fontWeight: 600,
@@ -161,7 +161,7 @@ export function ClasificacionPanel({ detail, onComplete, loading }: Props) {
                 flex: 1,
                 minHeight: 60,
                 borderRadius: 12,
-                background: '#FFFFFF',
+                background: 'rgba(255,255,255,0.04)',
                 color: '#1A1A1A',
                 border: '1px solid #E8E5E0',
                 fontSize: 16,

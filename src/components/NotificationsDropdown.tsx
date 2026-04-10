@@ -104,7 +104,7 @@ export function NotificationsDropdown() {
         <Bell size={15} strokeWidth={1.8} style={{ color: 'var(--text-muted)' }} />
         {unread > 0 && (
           <span style={{ position: 'absolute', top: 2, right: 2, width: 14, height: 14, borderRadius: '50%',
-            background: '#EF4444', color: '#fff', fontSize: 8, fontWeight: 700,
+            background: '#EF4444', color: 'rgba(255,255,255,0.04)', fontSize: 8, fontWeight: 700,
             display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{unread > 9 ? '9+' : unread}</span>
         )}
       </button>

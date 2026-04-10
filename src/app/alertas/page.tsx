@@ -146,7 +146,7 @@ export default function AlertasPage() {
           <button key={t} onClick={() => setTab(t)} style={{
             padding: '6px 16px', borderRadius: 6, fontSize: 13, fontWeight: 600,
             border: 'none', cursor: 'pointer', fontFamily: 'inherit',
-            background: tab === t ? 'white' : 'transparent',
+            background: tab === t ? 'rgba(0,229,255,0.15)' : 'transparent',
             color: tab === t ? 'var(--n-900)' : 'var(--n-400)',
             boxShadow: tab === t ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
           }}>

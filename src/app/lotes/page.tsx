@@ -113,7 +113,7 @@ export default function LotesPage() {
             display: 'flex',
             gap: 24,
             padding: '12px 16px',
-            background: '#FAFAF8',
+            background: 'rgba(255,255,255,0.06)',
             borderRadius: 12,
             border: '1px solid #E8E5E0',
             marginBottom: 24,
@@ -184,7 +184,7 @@ export default function LotesPage() {
                       padding: '2px 8px',
                       borderRadius: 6,
                       fontSize: 12,
-                      background: '#FAFAF8',
+                      background: 'rgba(255,255,255,0.06)',
                       border: '1px solid #E8E5E0',
                       color: '#6B6B6B',
                     }}

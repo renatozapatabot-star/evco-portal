@@ -133,7 +133,7 @@ export default function TrackingPage() {
                 fontSize: 13,
                 fontWeight: 700,
                 backgroundColor: STATUS_COLORS[data.status] || MUTED,
-                color: '#fff',
+                color: 'rgba(255,255,255,0.04)',
               }}>
                 {data.statusLabel}
               </div>

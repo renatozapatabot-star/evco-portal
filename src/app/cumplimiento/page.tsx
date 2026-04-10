@@ -22,8 +22,8 @@ const T = {
   greenBg: '#F0FDF4',
   greenBorder: '#BBF7D0',
   amber: 'var(--warning-500, #D97706)',
-  amberBg: '#FFFBEB',
-  amberBorder: '#FDE68A',
+  amberBg: 'rgba(234,179,8,0.08)',
+  amberBorder: 'rgba(234,179,8,0.2)',
   radius: 8,
 } as const
 

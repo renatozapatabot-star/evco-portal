@@ -186,7 +186,7 @@ export default async function SharePage(
                     borderRadius: 6,
                     fontSize: 12,
                     fontWeight: 600,
-                    background: '#FFF7ED',
+                    background: 'rgba(234,179,8,0.06)',
                     color: '#B45309',
                     border: '1px solid #FED7AA',
                   }}>

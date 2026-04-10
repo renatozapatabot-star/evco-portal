@@ -175,7 +175,7 @@ export default function EntradaDetailPage() {
           {/* KPI row */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 24 }}>
             <div style={{
-              background: '#FAFAF8', borderRadius: 10, padding: '16px 12px', textAlign: 'center',
+              background: 'rgba(255,255,255,0.06)', borderRadius: 10, padding: '16px 12px', textAlign: 'center',
             }}>
               <Package size={18} style={{ color: 'var(--text-muted)', marginBottom: 6 }} />
               <div style={{ fontSize: 22, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
@@ -186,7 +186,7 @@ export default function EntradaDetailPage() {
               </div>
             </div>
             <div style={{
-              background: '#FAFAF8', borderRadius: 10, padding: '16px 12px', textAlign: 'center',
+              background: 'rgba(255,255,255,0.06)', borderRadius: 10, padding: '16px 12px', textAlign: 'center',
             }}>
               <Scale size={18} style={{ color: 'var(--text-muted)', marginBottom: 6 }} />
               <div style={{ fontSize: 22, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
@@ -197,7 +197,7 @@ export default function EntradaDetailPage() {
               </div>
             </div>
             <div style={{
-              background: '#FAFAF8', borderRadius: 10, padding: '16px 12px', textAlign: 'center',
+              background: 'rgba(255,255,255,0.06)', borderRadius: 10, padding: '16px 12px', textAlign: 'center',
             }}>
               <FileText size={18} style={{ color: 'var(--text-muted)', marginBottom: 6 }} />
               <div style={{
@@ -249,7 +249,7 @@ export default function EntradaDetailPage() {
                 border: '1px solid var(--border, #E8E5E0)', borderLeft: '3px solid var(--gold, #eab308)',
                 textDecoration: 'none', transition: 'background 100ms', minHeight: 48,
               }}
-              onMouseEnter={e => { e.currentTarget.style.background = '#FAFAF8' }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)' }}
               onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
             >
               <div>
@@ -263,7 +263,7 @@ export default function EntradaDetailPage() {
           ) : (
             <div style={{
               padding: '14px 16px', borderRadius: 10,
-              background: '#FAFAF8', textAlign: 'center',
+              background: 'rgba(255,255,255,0.06)', textAlign: 'center',
             }}>
               <span style={{ fontSize: 13, color: 'var(--text-muted)', fontStyle: 'italic' }}>
                 Pendiente vinculación a tráfico

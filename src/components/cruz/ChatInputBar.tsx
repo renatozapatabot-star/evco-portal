@@ -84,7 +84,7 @@ export default function ChatInputBar({
             style={{
               width: 60, height: 60, borderRadius: 14, border: 'none', cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-              background: 'var(--danger-500, #DC2626)', color: '#fff',
+              background: 'var(--danger-500, #DC2626)', color: 'rgba(255,255,255,0.04)',
               transition: 'opacity 0.15s',
             }}
             title="Detener"

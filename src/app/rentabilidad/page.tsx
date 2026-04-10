@@ -45,7 +45,7 @@ interface ProfitData {
 
 const TIER_COLORS: Record<string, { color: string; bg: string }> = {
   platinum: { color: '#6366F1', bg: '#EEF2FF' },
-  gold: { color: '#D97706', bg: '#FFFBEB' },
+  gold: { color: '#D97706', bg: 'rgba(234,179,8,0.08)' },
   silver: { color: '#6B7280', bg: '#F9FAFB' },
   bronze: { color: '#92400E', bg: '#FEF3C7' },
 }

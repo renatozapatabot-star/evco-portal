@@ -51,7 +51,7 @@ async function postVote(decisionId: string, action: 'confirm' | 'correct', corre
 function ConfidenceBadge({ value }: { value: number }) {
   const pct = Math.round(value * 100)
   const color = pct >= 85 ? '#16A34A' : pct >= 70 ? '#D4952A' : '#DC2626'
-  const bg = pct >= 85 ? '#F0FDF4' : pct >= 70 ? '#FFFBEB' : '#FEF2F2'
+  const bg = pct >= 85 ? '#F0FDF4' : pct >= 70 ? 'rgba(234,179,8,0.08)' : '#FEF2F2'
   return (
     <span
       className="font-mono"
@@ -277,7 +277,7 @@ export default function ClasificarPage() {
 
         {/* Alternative (show top 1) */}
         {p.alternatives && p.alternatives.length > 0 && !showCorrection && (
-          <div style={{ background: '#FAFAF8', borderRadius: 8, padding: 12 }}>
+          <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: 8, padding: 12 }}>
             <p style={{ margin: '0 0 4px', fontSize: 12, color: '#9B9B9B' }}>Alternativa</p>
             <span className="font-mono" style={{ fontSize: 16, color: '#6B6B6B' }}>
               {p.alternatives[0].fraccion}
@@ -290,7 +290,7 @@ export default function ClasificarPage() {
 
         {/* Correction panel */}
         {showCorrection && (
-          <div style={{ background: '#FAFAF8', borderRadius: 8, padding: 16 }}>
+          <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: 8, padding: 16 }}>
             <p style={{ margin: '0 0 12px', fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,0.03)' }}>
               Seleccionar fracción correcta
             </p>
@@ -305,7 +305,7 @@ export default function ClasificarPage() {
                   borderRadius: 8,
                   marginBottom: 8,
                   cursor: 'pointer',
-                  background: selectedAlt === alt.fraccion ? '#FFF7E0' : '#FFFFFF',
+                  background: selectedAlt === alt.fraccion ? 'rgba(0,229,255,0.08)' : 'rgba(255,255,255,0.04)',
                   border: selectedAlt === alt.fraccion ? '2px solid #eab308' : '1px solid #E8E5E0',
                   transition: 'all 150ms',
                 }}
@@ -349,7 +349,7 @@ export default function ClasificarPage() {
                   minHeight: 48,
                   borderRadius: 12,
                   background: selectedAlt ? '#eab308' : '#E8E5E0',
-                  color: '#FFFFFF',
+                  color: 'rgba(255,255,255,0.04)',
                   border: 'none',
                   fontSize: 14,
                   fontWeight: 600,
@@ -391,7 +391,7 @@ export default function ClasificarPage() {
                 minHeight: 60,
                 borderRadius: 12,
                 background: '#eab308',
-                color: '#FFFFFF',
+                color: 'rgba(255,255,255,0.04)',
                 border: 'none',
                 fontSize: 18,
                 fontWeight: 600,

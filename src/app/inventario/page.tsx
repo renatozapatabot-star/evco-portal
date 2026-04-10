@@ -52,7 +52,7 @@ interface InventoryData {
 
 const RISK_CONFIG = {
   critical: { icon: AlertTriangle, color: '#DC2626', bg: '#FEF2F2', border: '#FECACA', label: 'CRÍTICO' },
-  warning: { icon: AlertTriangle, color: '#D97706', bg: '#FFFBEB', border: '#FDE68A', label: 'ATENCIÓN' },
+  warning: { icon: AlertTriangle, color: '#D97706', bg: 'rgba(234,179,8,0.08)', border: 'rgba(234,179,8,0.2)', label: 'ATENCIÓN' },
   watch: { icon: Eye, color: '#6B7280', bg: '#F9FAFB', border: '#E5E7EB', label: 'MONITOREO' },
   ok: { icon: ShieldCheck, color: '#16A34A', bg: '#F0FDF4', border: '#BBF7D0', label: 'OK' },
 } as const
@@ -176,7 +176,7 @@ export default function InventarioPage() {
           {data.alerts.length > 0 && (
             <div style={{
               padding: '12px 16px', borderRadius: 8, marginBottom: 16,
-              background: '#FFFBEB', border: '1px solid #FDE68A',
+              background: 'rgba(234,179,8,0.08)', border: '1px solid #FDE68A',
             }}>
               <div style={{ fontSize: 12, fontWeight: 700, color: '#92400E', marginBottom: 4 }}>
                 {data.alerts.length} alerta(s) de reorden pendiente(s)

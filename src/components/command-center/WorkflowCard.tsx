@@ -490,7 +490,7 @@ export function WorkflowCard({
   return (
     <Link href={href} style={{ textDecoration: 'none', display: 'block', animation: `ccCountUp 300ms ease both`, animationDelay: `${delay}ms`, ...(spanFull ? { gridColumn: '1 / -1' } : {}) }}>
       <div className="cc-card" style={{
-        padding: '20px 16px', borderRadius: 20, background: '#FFFFFF', border: '1px solid rgba(255,255,255,0.1)',
+        padding: '20px 16px', borderRadius: 20, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)',
         boxShadow: '0 2px 8px rgba(0,0,0,0.08)', color: '#1A1A1A', display: 'flex', flexDirection: 'column', minHeight: 160, height: '100%', cursor: 'pointer', position: 'relative',
       }}>
         {isGood && <div className="cc-check-badge"><CheckCircle2 size={14} style={{ color: '#FFFFFF' }} /></div>}

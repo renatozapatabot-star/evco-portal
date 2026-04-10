@@ -19,7 +19,7 @@ export const D = {
   green: 'var(--success)',
   greenBg: '#F0FDF4',
   amber: 'var(--warning-500, #D97706)',
-  amberBg: '#FFFBEB',
+  amberBg: 'rgba(234,179,8,0.08)',
   red: 'var(--danger-500)',
   redBg: '#FEF2F2',
   teal: '#0D9488',

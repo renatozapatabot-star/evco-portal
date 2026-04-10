@@ -236,7 +236,7 @@ export function ClickToCall({ phone, contactName, traficoId, companyId, compact 
               style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                 width: '100%', padding: '12px 24px', borderRadius: 8,
-                background: 'var(--success)', border: 'none', color: '#fff',
+                background: 'var(--success)', border: 'none', color: 'rgba(255,255,255,0.04)',
                 fontSize: 14, fontWeight: 700, cursor: 'pointer', minHeight: 48,
               }}
             >
@@ -253,7 +253,7 @@ export function ClickToCall({ phone, contactName, traficoId, companyId, compact 
                 margin: '0 auto 12px', display: 'flex', alignItems: 'center', justifyContent: 'center',
                 animation: callStatus === 'ringing' ? 'pulse 1.5s ease infinite' : 'none',
               }}>
-                <Phone size={24} style={{ color: '#fff' }} />
+                <Phone size={24} style={{ color: 'rgba(255,255,255,0.04)' }} />
               </div>
               <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>
                 {callStatus === 'ringing' ? 'Llamando...' : 'En llamada'}

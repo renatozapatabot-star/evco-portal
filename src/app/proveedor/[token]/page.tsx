@@ -140,7 +140,7 @@ export default function ProveedorPage() {
                   {remaining.map(doc => (
                     <div key={doc} style={{
                       padding: '10px 14px', borderRadius: 8,
-                      background: '#FAFAF8', border: '1px solid #E8E5E0',
+                      background: 'rgba(255,255,255,0.06)', border: '1px solid #E8E5E0',
                       fontSize: 14, color: 'rgba(255,255,255,0.03)',
                     }}>
                       📄 {DOC_LABELS[doc] || doc}
@@ -291,7 +291,7 @@ export default function ProveedorPage() {
 const styles = {
   page: {
     minHeight: '100vh',
-    background: '#FAFAF8',
+    background: 'rgba(255,255,255,0.06)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -300,7 +300,7 @@ const styles = {
   card: {
     width: '100%',
     maxWidth: 420,
-    background: '#FFFFFF',
+    background: 'rgba(255,255,255,0.04)',
     borderRadius: 16,
     padding: '32px 28px',
     border: '1px solid #E8E5E0',

@@ -245,7 +245,7 @@ function TimelineTab({ traficoId, trafico }: { traficoId: string; trafico: Recor
     return (
       <div style={{
         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-        background: 'var(--bg-card)', border: '1px solid #E8E5E0', borderRadius: 12, padding: '32px 24px', textAlign: 'center',
+        background: 'rgba(9,9,11,0.75)', border: '1px solid rgba(34,211,238,0.3)', borderRadius: 20, padding: '32px 24px', textAlign: 'center',
       }}>
         <div style={{ fontSize: 36, lineHeight: 1, marginBottom: 12 }}>{'\uD83D\uDCC5'}</div>
         <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 6px' }}>
@@ -685,7 +685,7 @@ export default function TraficoDetailPage() {
                 minHeight: 60,
                 borderRadius: 8,
                 background: notifying ? 'var(--slate-200)' : 'var(--danger-500, #DC2626)',
-                color: 'var(--bg-card)',
+                color: '#FFFFFF',
                 border: 'none',
                 cursor: notifying ? 'not-allowed' : 'pointer',
                 fontSize: 13,
@@ -1136,7 +1136,7 @@ export default function TraficoDetailPage() {
                 fontSize: 14, fontWeight: 700,
                 border: 'none', borderRadius: 8,
                 background: docCompleteness === 0 ? 'var(--danger)' : 'var(--gold)',
-                color: 'var(--bg-card)', cursor: 'pointer', minHeight: 60,
+                color: '#FFFFFF', cursor: 'pointer', minHeight: 60,
               }}
             >
               Solicitar {missingDocs.length} {missingDocs.length === 1 ? 'documento faltante' : 'documentos faltantes'} &#x2192;

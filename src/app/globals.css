@@ -7,6 +7,12 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Force dark background on html/body to prevent cream leak ── */
+html, body {
+  background: #030508 !important;
+  min-height: 100vh;
+}
+
 :root {
   /* ── Fonts — Inter primary, JetBrains Mono for data ── */
   --font-sans: var(--font-inter, system-ui, -apple-system, sans-serif);

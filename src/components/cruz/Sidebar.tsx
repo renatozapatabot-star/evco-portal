@@ -87,7 +87,6 @@ export default function Sidebar({
       {/* Logo */}
       <div className="sidebar-logo">
         <div className="sidebar-logo-inner">
-          <AduanaMark size={32} />
           <div className="sidebar-logo-text">ADUANA</div>
         </div>
 

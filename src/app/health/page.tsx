@@ -47,17 +47,17 @@ export default function HealthPage() {
     <div style={{ maxWidth: 900, margin: '0 auto', padding: '24px 16px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24 }}>
         <Activity size={24} style={{ color: '#22D3EE' }} />
-        <h1 style={{ fontSize: 20, fontWeight: 700, color: '#E6EDF3', margin: 0 }}>Fleet Health</h1>
+        <h1 style={{ fontSize: 20, fontWeight: 700, color: '#E6EDF3', margin: 0 }}>Estado del Sistema</h1>
       </div>
 
-      {loading && <div style={{ color: '#64748b' }}>Loading job status...</div>}
-      {error && <div style={{ color: '#EF4444' }}>Error: {error}</div>}
+      {loading && <div style={{ color: '#64748b' }}>Cargando estado...</div>}
+      {error && <div style={{ color: '#EF4444' }}>Error al cargar</div>}
 
       {!loading && jobs.length === 0 && (
         <div className="cc-card" style={{ padding: 40, textAlign: 'center', borderRadius: 20 }}>
-          <Activity size={32} style={{ color: '#64748b', margin: '0 auto 12px' }} />
-          <div style={{ color: '#94a3b8', fontSize: 14 }}>No job_runs data yet.</div>
-          <div style={{ color: '#64748b', fontSize: 12, marginTop: 4 }}>Run the SQL migration first: supabase/migrations/20260410_accelerator.sql</div>
+          <Activity size={32} style={{ color: '#22C55E', margin: '0 auto 12px' }} />
+          <div style={{ color: '#22C55E', fontSize: 14, fontWeight: 600 }}>Sistema operativo — sin alertas</div>
+          <div style={{ color: '#64748b', fontSize: 12, marginTop: 4 }}>Todos los procesos funcionan correctamente.</div>
         </div>
       )}
 

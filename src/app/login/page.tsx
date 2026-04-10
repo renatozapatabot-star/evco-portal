@@ -106,7 +106,6 @@ function LoginContent() {
           {/* Brand */}
           <div className="login-brand">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 8 }}>
-              <AduanaMark size={48} />
               <div className="login-cruz-wordmark">ADUANA</div>
             </div>
             <div className="login-cruz-accent" />

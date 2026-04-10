@@ -227,8 +227,8 @@ function POPredictionCard({ prediction: p }: { prediction: POPrediction }) {
   return (
     <div style={{
       padding: '14px 18px', borderRadius: 12,
-      background: isMatched ? '#F0FDF4' : 'var(--bg-card)',
-      border: `1px solid ${isMatched ? '#BBF7D0' : p.confidence >= 85 ? 'var(--gold)' : 'var(--border)'}`,
+      background: isMatched ? 'rgba(34,197,94,0.1)' : 'var(--bg-card)',
+      border: `1px solid ${isMatched ? 'rgba(34,197,94,0.2)' : p.confidence >= 85 ? 'var(--gold)' : 'var(--border)'}`,
       borderLeft: `3px solid ${statusColor}`,
       opacity: isMatched ? 0.85 : 1,
     }}>

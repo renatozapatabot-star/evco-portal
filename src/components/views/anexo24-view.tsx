@@ -226,7 +226,7 @@ export function Anexo24View() {
             style={{
               fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 6, cursor: 'pointer',
               border: `1px solid ${tmecFilter === v ? 'var(--success)' : 'var(--border-card)'}`,
-              background: tmecFilter === v ? '#F0FDF4' : 'transparent',
+              background: tmecFilter === v ? 'rgba(34,197,94,0.1)' : 'transparent',
               color: tmecFilter === v ? 'var(--success)' : 'var(--slate-500)',
             }}>
             {v === 'all' ? 'Todos' : v === 'si' ? 'T-MEC' : 'Sin T-MEC'}

@@ -73,7 +73,7 @@ export default function ExportarPage() {
       </div>
 
       {error && (
-        <div style={{ marginBottom: 16, padding: '10px 16px', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 8, color: 'var(--danger-text, #991B1B)', fontSize: 13 }}>
+        <div style={{ marginBottom: 16, padding: '10px 16px', background: 'rgba(239,68,68,0.1)', border: '1px solid #FECACA', borderRadius: 8, color: 'var(--danger-text, #991B1B)', fontSize: 13 }}>
           {error}
         </div>
       )}

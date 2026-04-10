@@ -8,8 +8,8 @@ const T = {
   navy: '#FFF8EB', gold: 'var(--gold-dark)', goldBg: '#FFF8EB',
   green: 'var(--success)', greenBg: '#EAF3DE',
   amber: 'var(--gold-dark)', amberBg: '#FEF9C3',
-  red: 'var(--danger-500)', redBg: '#FEF2F2',
-  blue: 'var(--info)', blueBg: '#EFF6FF',
+  red: 'var(--danger-500)', redBg: 'rgba(239,68,68,0.1)',
+  blue: 'var(--info)', blueBg: 'rgba(59,130,246,0.1)',
   shadow: '0 4px 16px rgba(0,0,0,0.08)',
 }
 

@@ -1146,7 +1146,7 @@ export default function TraficoDetailPage() {
             <div style={{
               width: '100%', padding: '14px 16px', textAlign: 'center',
               fontSize: 14, fontWeight: 700, borderRadius: 8,
-              background: 'var(--success-bg)', color: 'var(--success)', border: '1px solid #BBF7D0',
+              background: 'var(--success-bg)', color: 'var(--success)', border: '1px solid rgba(34,197,94,0.2)',
               minHeight: 60, display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
               &#x2713; Documentos solicitados
@@ -1203,7 +1203,7 @@ export default function TraficoDetailPage() {
                       <div key={i} style={{
                         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                         padding: '10px 14px', background: 'rgba(9,9,11,0.75)',
-                        borderRadius: 8, border: '1px solid #BBF7D0',
+                        borderRadius: 8, border: '1px solid rgba(34,197,94,0.2)',
                         minHeight: 60,
                       }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
@@ -1296,7 +1296,7 @@ export default function TraficoDetailPage() {
                         </span>
                         <button onClick={() => markSolicitudCompleta(sol.id)} style={{
                           fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 8,
-                          background: 'var(--success-bg)', color: 'var(--success)', border: '1px solid #BBF7D0',
+                          background: 'var(--success-bg)', color: 'var(--success)', border: '1px solid rgba(34,197,94,0.2)',
                           cursor: 'pointer', minHeight: 60, whiteSpace: 'nowrap',
                         }}>
                           Marcar recibido &#x2713;

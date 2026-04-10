@@ -26,10 +26,10 @@ interface Invoice {
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
   draft: { label: 'Borrador', color: 'var(--text-secondary)', bg: '#F5F4F0' },
-  sent: { label: 'Enviada', color: 'var(--info)', bg: '#EFF6FF' },
+  sent: { label: 'Enviada', color: 'var(--info)', bg: 'rgba(59,130,246,0.1)' },
   viewed: { label: 'Vista', color: '#7E22CE', bg: '#F5F3FF' },
-  paid: { label: 'Pagada', color: 'var(--success)', bg: '#F0FDF4' },
-  overdue: { label: 'Vencida', color: 'var(--danger-500)', bg: '#FEF2F2' },
+  paid: { label: 'Pagada', color: 'var(--success)', bg: 'rgba(34,197,94,0.1)' },
+  overdue: { label: 'Vencida', color: 'var(--danger-500)', bg: 'rgba(239,68,68,0.1)' },
 }
 
 function fmtMXN(n: number) { return '$' + n.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }

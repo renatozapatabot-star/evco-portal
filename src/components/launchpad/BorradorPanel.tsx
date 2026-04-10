@@ -15,7 +15,7 @@ type PanelState = 'idle' | 'countdown' | 'blessing' | 'done'
 
 function ConfidenceBadge({ value }: { value: number }) {
   const color = value >= 85 ? '#16A34A' : value >= 70 ? '#D4952A' : '#DC2626'
-  const bg = value >= 85 ? '#F0FDF4' : value >= 70 ? 'rgba(234,179,8,0.08)' : '#FEF2F2'
+  const bg = value >= 85 ? 'rgba(34,197,94,0.1)' : value >= 70 ? 'rgba(234,179,8,0.08)' : 'rgba(239,68,68,0.1)'
   return (
     <span
       className="font-mono"

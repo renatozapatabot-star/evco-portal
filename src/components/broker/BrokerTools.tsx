@@ -159,8 +159,8 @@ function HealthCheck({ icon: Icon, label, ok, detail }: {
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px',
-      background: ok ? '#F0FDF4' : '#FEF2F2',
-      border: `1px solid ${ok ? '#BBF7D0' : '#FECACA'}`,
+      background: ok ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)',
+      border: `1px solid ${ok ? 'rgba(34,197,94,0.2)' : '#FECACA'}`,
       borderRadius: 6,
     }}>
       <Icon size={16} style={{ color: ok ? '#2D8540' : '#C23B22', flexShrink: 0 }} />

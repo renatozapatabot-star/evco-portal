@@ -228,7 +228,7 @@ export default function CatalogoPage() {
                         title={t}
                         className="font-mono" style={{
                           fontSize: 10, fontWeight: 600, color: 'var(--info, #2563EB)',
-                          textDecoration: 'none', background: '#EFF6FF',
+                          textDecoration: 'none', background: 'rgba(59,130,246,0.1)',
                           padding: '1px 6px', borderRadius: 4,
                         }}>
                         {t.length > 15 ? t.slice(-8) : t}
@@ -279,7 +279,7 @@ export default function CatalogoPage() {
                             title={t}
                             className="font-mono" style={{
                               fontSize: 10, fontWeight: 600, color: 'var(--info, #2563EB)',
-                              textDecoration: 'none', background: '#EFF6FF',
+                              textDecoration: 'none', background: 'rgba(59,130,246,0.1)',
                               padding: '1px 6px', borderRadius: 4,
                             }}>
                             {t.length > 15 ? t.slice(-8) : t}

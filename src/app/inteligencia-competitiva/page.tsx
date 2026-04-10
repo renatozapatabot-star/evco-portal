@@ -111,8 +111,8 @@ export default function IntelCompetitivaPage() {
               return (
                 <div key={item.id} style={{
                   padding: '14px 18px', borderRadius: 10,
-                  background: item.actionable ? '#F0FDF4' : 'var(--bg-card)',
-                  border: `1px solid ${item.actionable ? '#BBF7D0' : 'var(--border)'}`,
+                  background: item.actionable ? 'rgba(34,197,94,0.1)' : 'var(--bg-card)',
+                  border: `1px solid ${item.actionable ? 'rgba(34,197,94,0.2)' : 'var(--border)'}`,
                   borderLeft: `3px solid ${config.color}`,
                 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>

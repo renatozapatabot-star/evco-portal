@@ -111,7 +111,7 @@ export default function CambiarContrasena() {
         {error && (
           <div style={{
             display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px',
-            background: 'var(--red-50, #FEF2F2)', border: '1px solid var(--red-200, #FECACA)',
+            background: 'var(--red-50, rgba(239,68,68,0.1))', border: '1px solid var(--red-200, #FECACA)',
             borderRadius: 8, marginBottom: 16, fontSize: 13, color: 'var(--red-700, #B91C1C)',
           }}>
             <AlertCircle size={16} style={{ flexShrink: 0 }} />

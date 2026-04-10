@@ -46,7 +46,7 @@ export default async function StatusPage() {
     healthy: { color: '#166534', bg: '#DCFCE7', label: 'Operacional', dot: 'var(--success)' },
     operational: { color: '#166534', bg: '#DCFCE7', label: 'Operacional', dot: 'var(--success)' },
     degraded: { color: 'var(--amber-text, #92400E)', bg: '#FEF3C7', label: 'Degradado', dot: 'var(--warning-500, #D97706)' },
-    pending: { color: '#1E40AF', bg: '#EFF6FF', label: 'Pendiente', dot: 'var(--info-500)' },
+    pending: { color: '#1E40AF', bg: 'rgba(59,130,246,0.1)', label: 'Pendiente', dot: 'var(--info-500)' },
     down: { color: 'var(--danger-text)', bg: '#FEE2E2', label: 'Caído', dot: 'var(--danger-500)' },
   }
 

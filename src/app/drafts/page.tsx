@@ -16,9 +16,9 @@ const supabase = createClient(
 )
 
 const TIER_CONFIG: Record<number, { label: string; time: string; color: string; bg: string; border: string }> = {
-  1: { label: 'Alta confianza', time: '~2 min', color: 'var(--success)', bg: '#F0FDF4', border: '#BBF7D0' },
+  1: { label: 'Alta confianza', time: '~2 min', color: 'var(--success)', bg: 'rgba(34,197,94,0.1)', border: 'rgba(34,197,94,0.2)' },
   2: { label: 'Confianza media', time: '~5 min', color: 'var(--warning)', bg: 'rgba(234,179,8,0.08)', border: 'rgba(234,179,8,0.2)' },
-  3: { label: 'Revisión completa', time: 'Sin límite', color: 'var(--danger-500)', bg: '#FEF2F2', border: '#FECACA' },
+  3: { label: 'Revisión completa', time: 'Sin límite', color: 'var(--danger-500)', bg: 'rgba(239,68,68,0.1)', border: '#FECACA' },
 }
 
 // Resolve approved_pending → approved after 5-second cancellation window

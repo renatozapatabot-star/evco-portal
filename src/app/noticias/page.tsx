@@ -86,7 +86,7 @@ export default function NoticiasPage() {
                   <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
                     <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>{fmtDate(alert.published_at || alert.created_at)}</span>
                     {alert.source && <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 4, background: '#F5F4F0', color: 'var(--text-secondary)' }}>{alert.source}</span>}
-                    <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 4, background: alert.relevance === 'high' ? '#FEF2F2' : 'rgba(234,179,8,0.08)', color: alert.relevance === 'high' ? 'var(--danger-500)' : 'var(--warning-500)' }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 4, background: alert.relevance === 'high' ? 'rgba(239,68,68,0.1)' : 'rgba(234,179,8,0.08)', color: alert.relevance === 'high' ? 'var(--danger-500)' : 'var(--warning-500)' }}>
                       {alert.relevance === 'high' ? 'Alta' : 'Media'}
                     </span>
                   </div>

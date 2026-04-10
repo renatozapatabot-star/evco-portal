@@ -51,7 +51,7 @@ async function postVote(decisionId: string, action: 'confirm' | 'correct', corre
 function ConfidenceBadge({ value }: { value: number }) {
   const pct = Math.round(value * 100)
   const color = pct >= 85 ? '#16A34A' : pct >= 70 ? '#D4952A' : '#DC2626'
-  const bg = pct >= 85 ? '#F0FDF4' : pct >= 70 ? 'rgba(234,179,8,0.08)' : '#FEF2F2'
+  const bg = pct >= 85 ? 'rgba(34,197,94,0.1)' : pct >= 70 ? 'rgba(234,179,8,0.08)' : 'rgba(239,68,68,0.1)'
   return (
     <span
       className="font-mono"
@@ -268,7 +268,7 @@ export default function ClasificarPage() {
               fontSize: 13,
               fontWeight: 600,
               color: p.tmec_eligible ? '#16A34A' : '#DC2626',
-              background: p.tmec_eligible ? '#F0FDF4' : '#FEF2F2',
+              background: p.tmec_eligible ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)',
             }}>
               T-MEC: {p.tmec_eligible ? '✅ IGI 0%' : `❌ IGI ${(p.igi_rate || 0) * 100}%`}
             </span>

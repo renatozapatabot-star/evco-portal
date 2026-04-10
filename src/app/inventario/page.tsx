@@ -51,10 +51,10 @@ interface InventoryData {
 }
 
 const RISK_CONFIG = {
-  critical: { icon: AlertTriangle, color: '#DC2626', bg: '#FEF2F2', border: '#FECACA', label: 'CRÍTICO' },
+  critical: { icon: AlertTriangle, color: '#DC2626', bg: 'rgba(239,68,68,0.1)', border: '#FECACA', label: 'CRÍTICO' },
   warning: { icon: AlertTriangle, color: '#D97706', bg: 'rgba(234,179,8,0.08)', border: 'rgba(234,179,8,0.2)', label: 'ATENCIÓN' },
   watch: { icon: Eye, color: '#6B7280', bg: '#F9FAFB', border: '#E5E7EB', label: 'MONITOREO' },
-  ok: { icon: ShieldCheck, color: '#16A34A', bg: '#F0FDF4', border: '#BBF7D0', label: 'OK' },
+  ok: { icon: ShieldCheck, color: '#16A34A', bg: 'rgba(34,197,94,0.1)', border: 'rgba(34,197,94,0.2)', label: 'OK' },
 } as const
 
 function fmtKg(v: number | null): string {

@@ -154,8 +154,8 @@ function ClientCard({ client: c, isMobile }: { client: ClientProfit; isMobile: b
   return (
     <div style={{
       padding: '16px 20px', borderRadius: 10,
-      background: isProfitable ? '#F0FDF4' : '#FEF2F2',
-      border: `1px solid ${isProfitable ? '#BBF7D0' : '#FECACA'}`,
+      background: isProfitable ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)',
+      border: `1px solid ${isProfitable ? 'rgba(34,197,94,0.2)' : '#FECACA'}`,
       borderLeft: `4px solid ${isProfitable ? '#16A34A' : '#DC2626'}`,
     }}>
       {/* Header */}

@@ -49,8 +49,8 @@ export function BridgeTimes() {
           const isFastest = fastest && b.id === fastest.id
           return (
             <div key={b.id} style={{
-              background: isFastest ? '#F0FDF4' : 'var(--bg-surface)',
-              border: isFastest ? '1px solid #BBF7D0' : `1px solid var(--border)`,
+              background: isFastest ? 'rgba(34,197,94,0.1)' : 'var(--bg-surface)',
+              border: isFastest ? '1px solid rgba(34,197,94,0.2)' : `1px solid var(--border)`,
               borderLeft: `4px solid ${statusColor(b.status)}`,
               borderRadius: 8, padding: '12px 14px', position: 'relative',
             }}>

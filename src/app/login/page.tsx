@@ -348,7 +348,7 @@ function LoginContent() {
         /* ── Error ── */
         .login-error {
           display: flex; gap: 10px; padding: 12px 14px;
-          background: #FEF2F2; border: 1px solid #FECACA;
+          background: rgba(239,68,68,0.1); border: 1px solid #FECACA;
           border-radius: 10px; margin-bottom: 20px;
           align-items: flex-start;
         }

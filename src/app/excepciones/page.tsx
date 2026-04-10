@@ -61,7 +61,7 @@ interface ExceptionData {
 }
 
 const SEVERITY_CONFIG = {
-  critical: { color: '#DC2626', bg: '#FEF2F2', border: '#FECACA', label: 'CRÍTICO' },
+  critical: { color: '#DC2626', bg: 'rgba(239,68,68,0.1)', border: '#FECACA', label: 'CRÍTICO' },
   high: { color: '#D97706', bg: 'rgba(234,179,8,0.08)', border: 'rgba(234,179,8,0.2)', label: 'ALTO' },
   medium: { color: '#6B7280', bg: '#F9FAFB', border: '#E5E7EB', label: 'MEDIO' },
   low: { color: '#9CA3AF', bg: '#F9FAFB', border: '#F3F4F6', label: 'BAJO' },

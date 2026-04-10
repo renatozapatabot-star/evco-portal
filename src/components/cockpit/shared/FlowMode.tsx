@@ -161,7 +161,7 @@ export function FlowMode({ items, onClose, operatorName }: Props) {
       {/* Approved counter */}
       <div style={{
         position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)',
-        background: 'rgba(255,255,255,0.04)', borderRadius: 10, padding: '10px 20px',
+        background: 'rgba(9,9,11,0.75)', borderRadius: 10, padding: '10px 20px',
         border: '1px solid rgba(201,168,76,0.2)',
       }}>
         <span className="font-mono" style={{ fontSize: 20, fontWeight: 800, color: '#eab308' }}>

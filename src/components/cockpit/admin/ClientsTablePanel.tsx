@@ -11,7 +11,7 @@ interface Props {
 export function ClientsTablePanel({ companies }: Props) {
   return (
     <div style={{
-      background: 'rgba(255,255,255,0.04)',
+      background: 'rgba(9,9,11,0.75)',
       borderRadius: 14,
       border: '1px solid rgba(255,255,255,0.08)',
       borderTop: '3px solid rgba(201,168,76,0.4)',

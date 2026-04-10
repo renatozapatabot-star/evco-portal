@@ -40,7 +40,7 @@ export function AduanaAutonomoPanel({ decisions, decisions30d, decisionsAllTime,
 
   return (
     <div style={{
-      background: 'rgba(255,255,255,0.04)',
+      background: 'rgba(9,9,11,0.75)',
       borderRadius: 14,
       border: '1px solid rgba(255,255,255,0.08)',
       borderTop: `3px solid ${urgencyColor}`,
@@ -97,7 +97,7 @@ export function AduanaAutonomoPanel({ decisions, decisions30d, decisionsAllTime,
               display: 'flex', alignItems: 'center', gap: 4,
             }}>
               <div style={{
-                background: count > 0 ? 'rgba(0,229,255,0.08)' : 'rgba(255,255,255,0.04)',
+                background: count > 0 ? 'rgba(0,229,255,0.08)' : 'rgba(9,9,11,0.75)',
                 border: `1px solid ${count > 0 ? 'rgba(0,229,255,0.15)' : 'rgba(255,255,255,0.06)'}`,
                 borderRadius: 8,
                 padding: '6px 10px',

@@ -300,7 +300,7 @@ const styles = {
   card: {
     width: '100%',
     maxWidth: 420,
-    background: 'rgba(255,255,255,0.04)',
+    background: 'rgba(9,9,11,0.75)',
     borderRadius: 16,
     padding: '32px 28px',
     border: '1px solid #E8E5E0',

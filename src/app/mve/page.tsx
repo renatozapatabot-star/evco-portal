@@ -111,7 +111,7 @@ export default function MvePage() {
 
       {/* KPI Row */}
       <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-3'} gap-3 mb-5`}>
-        <div className="rounded-[10px] p-4" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(0,0,0,0.07)' }}>
+        <div className="rounded-[10px] p-4" style={{ background: 'rgba(9,9,11,0.75)', border: '1px solid rgba(0,0,0,0.07)' }}>
           <div className="text-[10.5px] font-semibold uppercase tracking-[0.07em] mb-1.5" style={{ color: 'var(--text-secondary)' }}>Total Tráficos</div>
           <div className="mono text-[22px] font-semibold" style={{ color: 'var(--text-primary)' }}>{rows.length.toLocaleString()}</div>
         </div>
@@ -160,7 +160,7 @@ export default function MvePage() {
           </p>
         </div>
         <div className="flex items-center gap-2 rounded-[7px] px-3 py-1.5"
-          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(0,0,0,0.09)', width: isMobile ? '100%' : 260 }}>
+          style={{ background: 'rgba(9,9,11,0.75)', border: '1px solid rgba(0,0,0,0.09)', width: isMobile ? '100%' : 260 }}>
           <Search size={13} strokeWidth={2} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
           <input type="text" placeholder="Buscar tráfico..." value={search}
             onChange={e => setSearch(e.target.value)}
@@ -170,7 +170,7 @@ export default function MvePage() {
       </div>
 
       {/* Table */}
-      <div className="rounded-[10px] overflow-hidden" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(0,0,0,0.06)' }}>
+      <div className="rounded-[10px] overflow-hidden" style={{ background: 'rgba(9,9,11,0.75)', border: '1px solid rgba(0,0,0,0.06)' }}>
         <div className="overflow-x-auto">
           <table className="aduana-table" aria-label="Tráficos pendientes MVE">
             <thead>
@@ -236,7 +236,7 @@ export default function MvePage() {
               {compliant.length} tráficos cruzados
             </span>
           </div>
-          <div className="rounded-[10px] overflow-hidden" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(0,0,0,0.06)' }}>
+          <div className="rounded-[10px] overflow-hidden" style={{ background: 'rgba(9,9,11,0.75)', border: '1px solid rgba(0,0,0,0.06)' }}>
             <div className="overflow-x-auto" style={{ maxHeight: 300 }}>
               <table className="aduana-table" aria-label="Tráficos cruzados con MVE">
                 <thead>

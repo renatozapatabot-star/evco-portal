@@ -157,7 +157,7 @@ export default async function OperadorPage() {
   const cardStyle: React.CSSProperties = {
     padding: '12px 14px',
     borderRadius: 8,
-    background: 'var(--bg-elevated, rgba(255,255,255,0.04))',
+    background: 'var(--bg-elevated, rgba(9,9,11,0.75))',
     border: '1px solid rgba(255,255,255,0.06)',
     marginBottom: 8,
   }

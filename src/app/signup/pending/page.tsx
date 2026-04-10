@@ -33,7 +33,7 @@ export default function SignupPendingPage() {
 
         <div style={{
           padding: '16px 20px', borderRadius: 12,
-          background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)',
+          background: 'rgba(9,9,11,0.75)', border: '1px solid rgba(255,255,255,0.06)',
           fontSize: 13, color: 'rgba(255,255,255,0.5)', lineHeight: 1.6,
         }}>
           Mientras tanto, puedes preparar tu información de GlobalPC y acceso al portal de ANAM — los necesitarás durante la configuración.

@@ -127,14 +127,14 @@ export function OperatorSearch() {
       {/* Results */}
       {searched && results.length > 0 && (
         <div style={{
-          marginTop: 8, background: 'rgba(255,255,255,0.04)', borderRadius: 10,
+          marginTop: 8, background: 'rgba(9,9,11,0.75)', borderRadius: 10,
           border: '1px solid rgba(255,255,255,0.08)', overflow: 'hidden',
         }}>
           {results.map((r, i) => (
             <Link key={`${r.type}-${r.id}`} href={r.href} style={{
               display: 'flex', alignItems: 'center', gap: 10,
               padding: '10px 14px', textDecoration: 'none',
-              borderBottom: i < results.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
+              borderBottom: i < results.length - 1 ? '1px solid rgba(9,9,11,0.75)' : 'none',
               background: i === 0 ? 'rgba(201,168,76,0.04)' : 'transparent',
             }}>
               <span style={{
@@ -161,7 +161,7 @@ export function OperatorSearch() {
       {searched && results.length === 0 && !loading && (
         <div style={{
           marginTop: 8, padding: '12px 14px', borderRadius: 10,
-          background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
+          background: 'rgba(9,9,11,0.75)', border: '1px solid rgba(255,255,255,0.08)',
           fontSize: 13, color: '#6E7681', textAlign: 'center',
         }}>
           Sin resultados para &quot;{query}&quot;

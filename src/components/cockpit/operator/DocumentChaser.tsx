@@ -57,7 +57,7 @@ Patente 3596 · Aduana 240`
             <div key={item.id} style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               padding: '10px 12px', background: 'rgba(255,255,255,0.02)',
-              borderRadius: 8, border: '1px solid rgba(255,255,255,0.04)', gap: 10,
+              borderRadius: 8, border: '1px solid rgba(9,9,11,0.75)', gap: 10,
             }}>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <Link href={`/traficos/${encodeURIComponent(item.trafico)}`} style={{

@@ -76,7 +76,7 @@ export function RightRail() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12, width: '100%' }}>
       {/* FRONTERA */}
       <div style={{
-        background: 'rgba(255,255,255,0.04)', borderRadius: 14,
+        background: 'rgba(9,9,11,0.75)', borderRadius: 14,
         border: '1px solid rgba(255,255,255,0.08)', padding: 16,
       }}>
         <div style={{
@@ -111,7 +111,7 @@ export function RightRail() {
 
       {/* ALERTAS */}
       <div style={{
-        background: 'rgba(255,255,255,0.04)', borderRadius: 14,
+        background: 'rgba(9,9,11,0.75)', borderRadius: 14,
         border: '1px solid rgba(255,255,255,0.08)', padding: 16,
       }}>
         <div style={{
@@ -139,7 +139,7 @@ export function RightRail() {
 
       {/* SISTEMA */}
       <div style={{
-        background: 'rgba(255,255,255,0.04)', borderRadius: 14,
+        background: 'rgba(9,9,11,0.75)', borderRadius: 14,
         border: '1px solid rgba(255,255,255,0.08)', padding: 16,
       }}>
         <div style={{

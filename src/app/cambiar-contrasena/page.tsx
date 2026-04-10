@@ -73,7 +73,7 @@ export default function CambiarContrasena() {
       }}>
         <div style={{
           maxWidth: 400, width: '100%', textAlign: 'center',
-          background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
+          background: 'rgba(9,9,11,0.75)', border: '1px solid rgba(255,255,255,0.08)',
           borderRadius: 12, padding: 32,
         }}>
           <CheckCircle size={48} style={{ color: 'var(--success-500, #16A34A)', margin: '0 auto 16px' }} />
@@ -95,7 +95,7 @@ export default function CambiarContrasena() {
     }}>
       <form onSubmit={handleSubmit} style={{
         maxWidth: 400, width: '100%',
-        background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
+        background: 'rgba(9,9,11,0.75)', border: '1px solid rgba(255,255,255,0.08)',
         borderRadius: 12, padding: 32,
       }}>
         <div style={{ textAlign: 'center', marginBottom: 24 }}>

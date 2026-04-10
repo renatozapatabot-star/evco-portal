@@ -138,7 +138,7 @@ export function IfThenCard({
       data-card-state={effectiveState}
       className={state === 'urgent' ? 'aduana-pulse-subtle' : undefined}
       style={{
-        background: 'rgba(255,255,255,0.04)',
+        background: 'rgba(9,9,11,0.75)',
         borderRadius: 14,
         border: s.border,
         borderTop: s.borderTop,

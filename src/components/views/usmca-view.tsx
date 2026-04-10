@@ -115,13 +115,13 @@ export function USMCAView() {
               <div style={{ color: T.textMuted, fontSize: 11 }}><strong>Criterion {form.origin_criterion}:</strong> {ORIGIN_CRITERIA.find(c => c.code === form.origin_criterion)?.label}</div>
             </div>
           </div>
-          <button onClick={generateCertificate} disabled={generating || !form.goods_description || !form.hs_code} style={{ height: 44, background: generating || !form.goods_description || !form.hs_code ? '#CBD5E1' : T.navy, border: 'none', borderRadius: 10, color: 'rgba(255,255,255,0.04)', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{generating ? '⏳ Validating...' : '📜 Generate USMCA Certificate'}</button>
+          <button onClick={generateCertificate} disabled={generating || !form.goods_description || !form.hs_code} style={{ height: 44, background: generating || !form.goods_description || !form.hs_code ? '#CBD5E1' : T.navy, border: 'none', borderRadius: 10, color: 'rgba(9,9,11,0.75)', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{generating ? '⏳ Validating...' : '📜 Generate USMCA Certificate'}</button>
         </div>
         {cert && (
           <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 12, boxShadow: T.shadow, padding: 20, borderTop: `3px solid ${T.gold}` }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
               <div><div style={{ color: T.gold, fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{certNum}</div><div style={{ color: T.text, fontSize: 15, fontWeight: 700, marginTop: 2 }}>Certificate of Origin</div></div>
-              <button onClick={downloadCert} style={{ background: T.navy, border: 'none', borderRadius: 7, padding: '7px 14px', color: 'rgba(255,255,255,0.04)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>⬇️ Download</button>
+              <button onClick={downloadCert} style={{ background: T.navy, border: 'none', borderRadius: 7, padding: '7px 14px', color: 'rgba(9,9,11,0.75)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>⬇️ Download</button>
             </div>
             <div style={{ background: cert.qualifies ? T.greenBg : '#FEE2E2', border: `1px solid ${cert.qualifies ? T.green : '#FCA5A5'}30`, borderRadius: 8, padding: '10px 14px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10 }}>
               <span style={{ fontSize: 18 }}>{cert.qualifies ? '✅' : '⚠️'}</span>

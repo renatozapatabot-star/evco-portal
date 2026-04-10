@@ -111,7 +111,7 @@ export function SupplierDetail({ supplier: s }: { supplier: SupplierAgg }) {
             {descFreq.map(([desc, count]) => (
               <span key={desc} style={{
                 fontSize: 11, fontWeight: 500, padding: '4px 10px', borderRadius: 6,
-                background: 'rgba(255,255,255,0.04)', border: `1px solid ${T.border}`,
+                background: 'rgba(9,9,11,0.75)', border: `1px solid ${T.border}`,
                 color: T.textSecondary, maxWidth: 280,
                 overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
               }}>

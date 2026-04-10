@@ -120,7 +120,7 @@ function NodeChip({ node }: { node: EntityNode }) {
     <div style={{
       display: 'inline-flex', alignItems: 'center', gap: 6,
       padding: '6px 10px', borderRadius: 6,
-      background: 'rgba(255,255,255,0.04)',
+      background: 'rgba(9,9,11,0.75)',
       border: `1px solid ${color}25`,
       cursor: node.href ? 'pointer' : 'default',
     }}>

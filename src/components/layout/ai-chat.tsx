@@ -32,7 +32,7 @@ export function AIChat() {
 
   const ZAvatar = () => (
     <div style={{ width: 28, height: 28, background: 'var(--amber-600, #BA7517)', borderRadius: 6, border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="2" strokeLinecap="round"><path d="M12 2L13.5 8.5L20 10L13.5 11.5L12 18L10.5 11.5L4 10L10.5 8.5L12 2Z"/></svg>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(9,9,11,0.75)" strokeWidth="2" strokeLinecap="round"><path d="M12 2L13.5 8.5L20 10L13.5 11.5L12 18L10.5 11.5L4 10L10.5 8.5L12 2Z"/></svg>
     </div>
   )
 
@@ -48,7 +48,7 @@ export function AIChat() {
           background: 'var(--amber-600, #BA7517)', border: 'none',
           borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center',
           cursor: 'pointer', zIndex: 200, boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
-          transition: 'all 0.2s ease', color: 'rgba(255,255,255,0.04)',
+          transition: 'all 0.2s ease', color: 'rgba(9,9,11,0.75)',
         }}
         onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.2)' }}
         onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.15)' }}
@@ -67,15 +67,15 @@ export function AIChat() {
         <div style={{ position: 'fixed', bottom: 80, right: 24, width: 380, height: 520, background: T.surface, border: `1px solid ${T.border}`, borderRadius: 16, boxShadow: T.shadow, zIndex: 199, display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-geist-sans)', overflow: 'hidden' }}>
           <div style={{ background: 'var(--amber-600, #BA7517)', padding: '14px 16px', flexShrink: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="2" strokeLinecap="round"><path d="M12 2L13.5 8.5L20 10L13.5 11.5L12 18L10.5 11.5L4 10L10.5 8.5L12 2Z"/></svg>
-              <div><div style={{ color: 'rgba(255,255,255,0.04)', fontSize: 14, fontWeight: 700 }}>ADUANA Intelligence</div><div style={{ color: 'rgba(255,255,255,0.7)', fontSize: 11 }}>{getClientNameCookie().split(' ')[0]} Plastics &middot; Patente {PATENTE}</div></div>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(9,9,11,0.75)" strokeWidth="2" strokeLinecap="round"><path d="M12 2L13.5 8.5L20 10L13.5 11.5L12 18L10.5 11.5L4 10L10.5 8.5L12 2Z"/></svg>
+              <div><div style={{ color: 'rgba(9,9,11,0.75)', fontSize: 14, fontWeight: 700 }}>ADUANA Intelligence</div><div style={{ color: 'rgba(255,255,255,0.7)', fontSize: 11 }}>{getClientNameCookie().split(' ')[0]} Plastics &middot; Patente {PATENTE}</div></div>
             </div>
           </div>
           <div style={{ flex: 1, overflowY: 'auto', padding: 14, display: 'flex', flexDirection: 'column', gap: 10 }}>
             {messages.map((m, i) => (
               <div key={i} style={{ display: 'flex', flexDirection: m.role === 'user' ? 'row-reverse' : 'row', alignItems: 'flex-end', gap: 8 }}>
                 {m.role === 'assistant' && <ZAvatar />}
-                <div style={{ maxWidth: '75%', padding: '9px 12px', borderRadius: 12, borderBottomLeftRadius: m.role === 'assistant' ? 4 : 12, borderBottomRightRadius: m.role === 'user' ? 4 : 12, background: m.role === 'user' ? 'var(--amber-600, #BA7517)' : T.surfaceAlt, color: m.role === 'user' ? 'rgba(255,255,255,0.04)' : T.text, fontSize: 13, lineHeight: 1.5 }}>
+                <div style={{ maxWidth: '75%', padding: '9px 12px', borderRadius: 12, borderBottomLeftRadius: m.role === 'assistant' ? 4 : 12, borderBottomRightRadius: m.role === 'user' ? 4 : 12, background: m.role === 'user' ? 'var(--amber-600, #BA7517)' : T.surfaceAlt, color: m.role === 'user' ? 'rgba(9,9,11,0.75)' : T.text, fontSize: 13, lineHeight: 1.5 }}>
                   {m.content}<div style={{ color: m.role === 'user' ? 'rgba(255,255,255,0.4)' : T.textMuted, fontSize: 9, marginTop: 4, textAlign: 'right' }}>{m.ts}</div>
                 </div>
               </div>
@@ -86,7 +86,7 @@ export function AIChat() {
           </div>
           <div style={{ padding: '10px 12px', borderTop: `1px solid ${T.border}`, display: 'flex', gap: 8, flexShrink: 0 }}>
             <input ref={inputRef} value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && sendMessage()} placeholder="Pregunta sobre tus operaciones..." style={{ flex: 1, height: 38, border: `1px solid ${T.border}`, borderRadius: 8, padding: '0 12px', fontSize: 13, color: T.text, background: T.surfaceAlt, outline: 'none', fontFamily: 'inherit' }} />
-            <button onClick={() => sendMessage()} disabled={!input.trim() || loading} style={{ width: 38, height: 38, background: input.trim() && !loading ? 'var(--amber-600, #BA7517)' : T.border, border: 'none', borderRadius: 8, color: 'rgba(255,255,255,0.04)', fontSize: 16, cursor: input.trim() && !loading ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>&rarr;</button>
+            <button onClick={() => sendMessage()} disabled={!input.trim() || loading} style={{ width: 38, height: 38, background: input.trim() && !loading ? 'var(--amber-600, #BA7517)' : T.border, border: 'none', borderRadius: 8, color: 'rgba(9,9,11,0.75)', fontSize: 16, cursor: input.trim() && !loading ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>&rarr;</button>
           </div>
         </div>
       )}

@@ -97,7 +97,7 @@ export function WorkflowCard({
         style={{
           padding: '24px 28px',
           borderRadius: 20,
-          background: 'var(--bg-elevated, rgba(255,255,255,0.04))',
+          background: 'var(--bg-elevated, rgba(9,9,11,0.75))',
           border: '1px solid rgba(0,229,255,0.2)',
           display: 'flex',
           flexDirection: 'column',
@@ -175,7 +175,7 @@ export function WorkflowCard({
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                     padding: '6px 10px', borderRadius: 8,
                     background: 'rgba(255,255,255,0.03)',
-                    border: '1px solid rgba(255,255,255,0.04)',
+                    border: '1px solid rgba(9,9,11,0.75)',
                   }}>
                     <span style={{ fontSize: 12, fontFamily: 'var(--font-mono)', fontWeight: 600, color: '#E6EDF3' }}>
                       {item.pedimento || item.trafico}
@@ -259,7 +259,7 @@ export function WorkflowCard({
           style={{
             padding: '16px 20px 10px',
             borderRadius: 20,
-            background: 'var(--bg-elevated, rgba(255,255,255,0.04))',
+            background: 'var(--bg-elevated, rgba(9,9,11,0.75))',
             border: '1px solid var(--border-card, #334155)',
             height: '100%',
             display: 'flex',
@@ -296,7 +296,7 @@ export function WorkflowCard({
           <div style={{
             position: 'absolute', bottom: 0, left: 0, right: 0, height: 3,
             borderRadius: '0 0 20px 20px', overflow: 'hidden',
-            background: 'rgba(255,255,255,0.04)',
+            background: 'rgba(9,9,11,0.75)',
           }}>
             <div style={{
               height: '100%',
@@ -325,7 +325,7 @@ export function WorkflowCard({
           style={{
             padding: '14px 16px',
             borderRadius: 10,
-            background: 'var(--bg-elevated, rgba(255,255,255,0.04))',
+            background: 'var(--bg-elevated, rgba(9,9,11,0.75))',
             border: '1px solid rgba(255,255,255,0.05)',
             height: '100%',
             display: 'flex',
@@ -360,7 +360,7 @@ export function WorkflowCard({
         style={{
           padding: '20px 20px',
           borderRadius: 20,
-          background: 'var(--bg-elevated, rgba(255,255,255,0.04))',
+          background: 'var(--bg-elevated, rgba(9,9,11,0.75))',
           border: '1px solid rgba(0,229,255,0.2)',
           display: 'flex',
           flexDirection: 'column',
@@ -459,7 +459,7 @@ export function WorkflowCard({
     return (
       <div className="cc-card" style={{
         padding: '24px 28px', borderRadius: 16,
-        background: 'var(--bg-elevated, rgba(255,255,255,0.04))',
+        background: 'var(--bg-elevated, rgba(9,9,11,0.75))',
         border: '1px solid rgba(255,255,255,0.08)',
         boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
         minHeight: 200, display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
@@ -490,7 +490,7 @@ export function WorkflowCard({
   return (
     <Link href={href} style={{ textDecoration: 'none', display: 'block', animation: `ccCountUp 300ms ease both`, animationDelay: `${delay}ms`, ...(spanFull ? { gridColumn: '1 / -1' } : {}) }}>
       <div className="cc-card" style={{
-        padding: '20px 16px', borderRadius: 20, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)',
+        padding: '20px 16px', borderRadius: 20, background: 'rgba(9,9,11,0.75)', border: '1px solid rgba(255,255,255,0.1)',
         boxShadow: '0 2px 8px rgba(0,0,0,0.08)', color: '#1A1A1A', display: 'flex', flexDirection: 'column', minHeight: 160, height: '100%', cursor: 'pointer', position: 'relative',
       }}>
         {isGood && <div className="cc-check-badge"><CheckCircle2 size={14} style={{ color: '#FFFFFF' }} /></div>}

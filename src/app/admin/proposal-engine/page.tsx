@@ -77,7 +77,7 @@ export default function ProposalEnginePage() {
       </div>
 
       {/* Run history */}
-      <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 14, border: '1px solid rgba(255,255,255,0.08)', overflow: 'hidden' }}>
+      <div style={{ background: 'rgba(9,9,11,0.75)', borderRadius: 14, border: '1px solid rgba(255,255,255,0.08)', overflow: 'hidden' }}>
         <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
           <span style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#6E7681' }}>
             Últimas ejecuciones
@@ -92,7 +92,7 @@ export default function ProposalEnginePage() {
             <thead>
               <tr>
                 {['Hora', 'Duración', 'Generadas', 'Reglas', 'LLM', 'Costo', 'P50', 'P90', 'Errores'].map(h => (
-                  <th key={h} style={{ padding: '8px 12px', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#6E7681', textAlign: 'left', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                  <th key={h} style={{ padding: '8px 12px', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#6E7681', textAlign: 'left', borderBottom: '1px solid rgba(9,9,11,0.75)' }}>
                     {h}
                   </th>
                 ))}
@@ -126,7 +126,7 @@ export default function ProposalEnginePage() {
 
 function KPI({ label, value, color }: { label: string; value: string; color?: string }) {
   return (
-    <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 10, padding: '12px 16px', border: '1px solid rgba(255,255,255,0.06)' }}>
+    <div style={{ background: 'rgba(9,9,11,0.75)', borderRadius: 10, padding: '12px 16px', border: '1px solid rgba(255,255,255,0.06)' }}>
       <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#6E7681', marginBottom: 4 }}>{label}</div>
       <div className="font-mono" style={{ fontSize: 20, fontWeight: 700, color: color || '#E6EDF3' }}>{value}</div>
     </div>

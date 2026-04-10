@@ -250,7 +250,7 @@ function LoginContent() {
 
         /* ── Session Card — glass ── */
         .login-session-card {
-          background: rgba(255,255,255,0.04);
+          background: rgba(9,9,11,0.75);
           backdrop-filter: blur(20px);
           -webkit-backdrop-filter: blur(20px);
           border: 1px solid rgba(0,229,255,0.2);
@@ -287,11 +287,11 @@ function LoginContent() {
           text-decoration: none; color: #8B949E; border: 1px solid rgba(255,255,255,0.12);
           transition: background 150ms ease, border-color 150ms ease;
         }
-        .login-btn-outline:hover { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.2); }
+        .login-btn-outline:hover { background: rgba(9,9,11,0.75); border-color: rgba(255,255,255,0.2); }
 
         /* ── Login Card — glass ── */
         .login-card {
-          background: rgba(255,255,255,0.04);
+          background: rgba(9,9,11,0.75);
           backdrop-filter: blur(20px);
           -webkit-backdrop-filter: blur(20px);
           border-radius: 20px;
@@ -386,7 +386,7 @@ function LoginContent() {
           border-radius: 10px;
           padding: 0 16px;
           font-size: 16px;
-          background: rgba(255,255,255,0.04);
+          background: rgba(9,9,11,0.75);
           color: #E6EDF3;
           outline: none;
           font-family: inherit;

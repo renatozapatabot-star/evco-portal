@@ -96,7 +96,7 @@ export function AduanaProposalSection({ proposal, subjectLabel, onApprove, onRej
   return (
     <>
       <div style={{
-        background: 'rgba(255,255,255,0.04)', borderRadius: 14, padding: '24px',
+        background: 'rgba(9,9,11,0.75)', borderRadius: 14, padding: '24px',
         border: `1px solid ${proposal.confidence >= 0.85 ? 'rgba(201,168,76,0.3)' : 'rgba(255,255,255,0.08)'}`,
         borderTop: `3px solid ${confidenceColor}`,
         marginBottom: 16,
@@ -203,7 +203,7 @@ export function AduanaProposalSection({ proposal, subjectLabel, onApprove, onRej
             ].map(opt => (
               <button key={opt.key} onClick={() => handleReject(opt.key)} style={{
                 display: 'block', width: '100%', padding: '12px 16px', marginBottom: 8,
-                borderRadius: 8, background: 'rgba(255,255,255,0.04)',
+                borderRadius: 8, background: 'rgba(9,9,11,0.75)',
                 border: '1px solid rgba(255,255,255,0.08)', color: '#E6EDF3',
                 fontSize: 14, textAlign: 'left', cursor: 'pointer', minHeight: 48,
               }}>

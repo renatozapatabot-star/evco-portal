@@ -339,7 +339,7 @@ export default function MensajesPage() {
                     {/* Unread badge */}
                     {contact.unreadCount > 0 && (
                       <span style={{
-                        background: 'var(--success)', color: 'rgba(255,255,255,0.04)',
+                        background: 'var(--success)', color: 'rgba(9,9,11,0.75)',
                         fontSize: 10, fontWeight: 700, borderRadius: 10,
                         padding: '2px 7px', alignSelf: 'center',
                       }}>

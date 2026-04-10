@@ -72,7 +72,7 @@ export default function TopBar() {
           <Bell size={15} strokeWidth={1.8} style={{ color: 'var(--n-400)' }} />
           {alertCount > 0 && (
             <span style={{ position: 'absolute', top: 2, right: 2, width: 14, height: 14, borderRadius: '50%',
-              background: '#EF4444', color: 'rgba(255,255,255,0.04)', fontSize: 8, fontWeight: 700,
+              background: '#EF4444', color: 'rgba(9,9,11,0.75)', fontSize: 8, fontWeight: 700,
               display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{alertCount > 9 ? '9+' : alertCount}</span>
           )}
         </Link>

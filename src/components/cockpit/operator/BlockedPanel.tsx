@@ -35,7 +35,7 @@ export function BlockedPanel({ blocked, operatorId, onClear }: Props) {
             <div key={item.id} style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               padding: '10px 12px', background: 'rgba(255,255,255,0.02)',
-              borderRadius: 8, border: '1px solid rgba(255,255,255,0.04)', gap: 12,
+              borderRadius: 8, border: '1px solid rgba(9,9,11,0.75)', gap: 12,
             }}>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <span className="font-mono" style={{ fontSize: 13, fontWeight: 600, color: '#eab308' }}>

@@ -255,7 +255,7 @@ export default function ComunicacionesPage() {
           <div className={`flex ${isMobile ? 'flex-col' : 'items-center'} gap-3`}>
             <button onClick={handleSend}
               className="flex items-center gap-2 px-4 py-2.5 rounded-[6px] text-[13px] font-semibold"
-              style={{ background: 'var(--amber-600)', color: 'rgba(255,255,255,0.04)', border: 'none', cursor: 'pointer' }}>
+              style={{ background: 'var(--amber-600)', color: 'rgba(9,9,11,0.75)', border: 'none', cursor: 'pointer' }}>
               <Send size={14} /> Aprobar y Enviar
             </button>
             <button className="px-4 py-2.5 rounded-[6px] text-[13px] font-medium"

@@ -480,6 +480,7 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
         totalCruzados={data.totalCruzados}
         facturacionYTD={data.facturacionYTD}
         newThisWeek={data.newThisWeek}
+        daysSinceRojo={data.daysSinceRojo}
       />
 
       {/* Activity Pulse — collapsed below cards */}

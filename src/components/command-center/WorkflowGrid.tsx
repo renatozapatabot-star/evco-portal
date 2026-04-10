@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import { useReducedMotion } from 'framer-motion'
-import { Truck, Package, FolderOpen, FileText, DollarSign, Warehouse, BarChart3, CheckCircle, Tags, FileSpreadsheet, Archive, ChevronDown } from 'lucide-react'
+import { Truck, Package, FolderOpen, FileText, DollarSign, Warehouse, BarChart3, CheckCircle, Tags, FileSpreadsheet, Archive, ChevronDown, Shield } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { WorkflowCard, type CardAction } from './WorkflowCard'
 import { getCardUrgency, getUrgencyIntensity, INTENSITY_CSS_CLASS, sortByUrgency, type CardKey, type CardKPIs, type Urgency } from '@/lib/card-urgency'
@@ -38,6 +38,7 @@ export interface WorkflowGridProps {
   totalCruzados?: number
   facturacionYTD?: number
   newThisWeek?: number
+  daysSinceRojo?: number
 }
 
 interface CardDef {
@@ -103,20 +104,11 @@ const KPI_CARDS: CardDef[] = [
     getActions: () => [{ label: 'Ver', href: '/traficos', primary: true }],
   },
   {
-    key: 'inventario' as CardKey, href: '/financiero', label: 'Facturación', Icon: DollarSign, tier: 'kpi',
-    getKpi: (p) => {
-      const mes = p.facturacionMes ?? 0
-      if (mes > 0) return Math.round(mes)
-      const ytd = p.facturacionYTD ?? 0
-      return ytd > 0 ? Math.round(ytd) : 0
-    },
+    key: 'inventario' as CardKey, href: '/traficos', label: 'Sin Rojo', Icon: Shield, tier: 'kpi',
+    getKpi: (p) => p.daysSinceRojo ?? 0,
     getSubtitle: (p) => {
-      const mes = p.facturacionMes ?? 0
-      if (mes > 0) {
-        return mes > 1000 ? `$${Math.round(mes / 1000)}K USD este mes` : `$${mes.toFixed(0)} USD este mes`
-      }
-      const ytd = p.facturacionYTD ?? 0
-      return ytd > 1000 ? `$${Math.round(ytd / 1000)}K USD YTD` : ytd > 0 ? `$${ytd.toFixed(0)} USD YTD` : 'Sin movimientos'
+      const d = p.daysSinceRojo ?? 0
+      return d > 0 ? 'días sin semáforo rojo' : 'Sin datos de cruce'
     },
     getActions: () => [{ label: 'Ver', href: '/financiero', primary: true }],
   },
@@ -384,7 +376,6 @@ export function WorkflowGrid(props: WorkflowGridProps) {
               urgency="neutral"
               sparklineData={
                 i === 2 ? props.sparklines?.cruzados :
-                i === 3 ? props.sparklines?.facturacion :
                 undefined
               }
               trendDelta={i === 2 ? trendDelta : undefined}

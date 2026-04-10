@@ -55,6 +55,7 @@ export interface CommandCenterData {
   totalCruzados: number
   facturacionYTD: number
   newThisWeek: number
+  daysSinceRojo: number
 }
 
 interface UseCommandCenterReturn {
@@ -91,6 +92,7 @@ const EMPTY: CommandCenterData = {
   totalCruzados: 0,
   facturacionYTD: 0,
   newThisWeek: 0,
+  daysSinceRojo: 0,
 }
 
 function computeDerivedMetrics(allT: TraficoRow[]) {
@@ -155,6 +157,19 @@ function computeDerivedMetrics(allT: TraficoRow[]) {
       daysOld: t.fecha_llegada ? Math.floor((Date.now() - new Date(t.fecha_llegada).getTime()) / 86400000) : 0,
     }))
 
+  // Days since last semáforo rojo — the customs safety board
+  const rojoCrossings = allT
+    .filter(t => (t.semaforo as string || '').toLowerCase() === 'rojo' && t.fecha_cruce)
+    .sort((a, b) => (b.fecha_cruce || '').localeCompare(a.fecha_cruce || ''))
+  let daysSinceRojo = 0
+  if (rojoCrossings.length > 0) {
+    daysSinceRojo = Math.floor((Date.now() - new Date(rojoCrossings[0].fecha_cruce!).getTime()) / 86400000)
+  } else if (crossed.length > 0) {
+    // No rojo ever — streak since oldest crossing
+    const oldest = crossed[crossed.length - 1]
+    daysSinceRojo = Math.floor((Date.now() - new Date(oldest.fecha_cruce!).getTime()) / 86400000)
+  }
+
   // Data density fallbacks — always have numbers even during quiet periods
   const totalTraficos = allT.length
   const totalCruzados = crossed.length
@@ -170,6 +185,7 @@ function computeDerivedMetrics(allT: TraficoRow[]) {
     activeTraficosList,
     totalTraficos, totalCruzados, facturacionYTD,
     newThisWeek: spark.traficos.reduce((a, b) => a + b, 0),
+    daysSinceRojo,
   }
 }
 

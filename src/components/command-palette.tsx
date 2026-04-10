@@ -9,7 +9,7 @@ interface NavItem { id: string; label: string; sublabel: string; icon: React.Com
 
 const NAV_ITEMS: NavItem[] = [
   { id: 'dashboard',   label: 'Dashboard',     sublabel: 'Inicio',        icon: LayoutDashboard, href: '/',            category: 'Navegación' },
-  { id: 'cruz',        label: 'CRUZ AI',       sublabel: 'Asistente inteligente', icon: MessageSquare, href: '__cruz_chat__',       category: 'Navegación' },
+  { id: 'cruz',        label: 'ADUANA AI',       sublabel: 'Asistente inteligente', icon: MessageSquare, href: '__cruz_chat__',       category: 'Navegación' },
   { id: 'voz',         label: 'Modo Voz',      sublabel: 'Control por voz', icon: Mic,           href: '/voz',         category: 'Navegación' },
   { id: 'traficos',    label: 'Tráficos',      sublabel: 'Operaciones',   icon: Truck,           href: '/traficos',    category: 'Navegación' },
   { id: 'entradas',    label: 'Entradas',       sublabel: 'Remesas bodega',icon: Package,         href: '/entradas',    category: 'Navegación' },

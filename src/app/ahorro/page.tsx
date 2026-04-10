@@ -91,7 +91,7 @@ export default function AhorroPage() {
         Optimización de Costos
       </h1>
       <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24 }}>
-        Oportunidades de ahorro detectadas por CRUZ en cada operación
+        Oportunidades de ahorro detectadas por ADUANA en cada operación
       </p>
 
       {loading ? (

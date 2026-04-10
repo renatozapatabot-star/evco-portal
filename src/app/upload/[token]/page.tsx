@@ -104,7 +104,7 @@ export default function UploadPage() {
             fontSize: 44, fontWeight: 800, color: 'var(--gold)',
             fontFamily: 'var(--font-mono, "JetBrains Mono", monospace)',
           }}>Z</span>
-          <div style={{ fontSize: 11, color: '#64748B', letterSpacing: '0.2em', marginTop: 4 }}>CRUZ</div>
+          <div style={{ fontSize: 11, color: '#64748B', letterSpacing: '0.2em', marginTop: 4 }}>ADUANA</div>
           <div style={{ fontSize: 18, fontWeight: 700, color: '#CBD5E1', marginTop: 24, marginBottom: 8 }}>
             {error === 'expired' ? 'Enlace expirado' : error === 'not_found' ? 'Enlace no válido' : 'Error'}
           </div>
@@ -183,7 +183,7 @@ export default function UploadPage() {
             fontSize: 44, fontWeight: 800, color: 'var(--gold)',
             fontFamily: 'var(--font-mono, "JetBrains Mono", monospace)',
           }}>Z</span>
-          <div style={{ fontSize: 11, color: '#64748B', letterSpacing: '0.2em', marginTop: 4 }}>CRUZ</div>
+          <div style={{ fontSize: 11, color: '#64748B', letterSpacing: '0.2em', marginTop: 4 }}>ADUANA</div>
         </div>
 
         {/* Upload card */}

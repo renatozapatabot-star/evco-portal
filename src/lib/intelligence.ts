@@ -1,5 +1,5 @@
 // src/lib/intelligence.ts
-// CRUZ Intelligence Sandbox — configuration and tier definitions
+// ADUANA Intelligence Sandbox — configuration and tier definitions
 //
 // The portal shows 2024+ only. Intelligence uses ALL historical data (2011-2026)
 // for training, predictions, and pattern detection.

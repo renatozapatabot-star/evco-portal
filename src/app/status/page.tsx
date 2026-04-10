@@ -24,9 +24,9 @@ export default async function StatusPage() {
     'Base de Datos': 'Sincronización de Datos',
     'GlobalPC MySQL': 'Sincronización de Datos',
     'Supabase': 'Sincronización de Datos',
-    'CRUZ Intelligence': 'CRUZ AI',
+    'ADUANA Intelligence': 'ADUANA AI',
     'Telegram Bot': 'Notificaciones',
-    'Ollama': 'CRUZ AI',
+    'Ollama': 'ADUANA AI',
   }
 
   // If no integration_health data, show defaults
@@ -39,7 +39,7 @@ export default async function StatusPage() {
     : [
         { name: 'Portal Web', status: 'operational', detail: 'Activo' },
         { name: 'Sincronización de Datos', status: 'operational', detail: 'Activo' },
-        { name: 'CRUZ AI', status: 'operational', detail: 'Activo' },
+        { name: 'ADUANA AI', status: 'operational', detail: 'Activo' },
       ]
 
   const cfg: Record<string, { color: string; bg: string; label: string; dot: string }> = {
@@ -59,7 +59,7 @@ export default async function StatusPage() {
           <div style={{ width: 40, height: 40, background: GOLD_GRADIENT, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-primary)', fontWeight: 900, fontSize: 18, fontFamily: 'Georgia, serif' }}>Z</div>
           <div>
             <h1 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>Estado del Sistema</h1>
-            <p style={{ color: '#666', fontSize: 12, margin: 0 }}>CRUZ Intelligence Platform</p>
+            <p style={{ color: '#666', fontSize: 12, margin: 0 }}>ADUANA Intelligence Platform</p>
           </div>
         </div>
 
@@ -93,7 +93,7 @@ export default async function StatusPage() {
         </div>
 
         <div style={{ textAlign: 'center', marginTop: 24, color: '#666', fontSize: 11 }}>
-          <p>CRUZ Intelligence Platform &middot; Patente 3596 &middot; Aduana 240 Nuevo Laredo</p>
+          <p>ADUANA Intelligence Platform &middot; Patente 3596 &middot; Aduana 240 Nuevo Laredo</p>
           <p style={{ marginTop: 4 }}>Auto-refresh: every 60 seconds</p>
         </div>
       </div>

@@ -111,7 +111,7 @@ export function PhotoUpload({ traficoId, onClassified }: PhotoUploadProps) {
         {status === 'classifying' && (
           <>
             <Loader2 size={20} style={{ animation: 'spin 1s linear infinite' }} />
-            <span>Clasificando con CRUZ AI...</span>
+            <span>Clasificando con ADUANA AI...</span>
           </>
         )}
         {status === 'done' && result && (

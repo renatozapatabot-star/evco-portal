@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { getCompanyIdCookie } from '@/lib/client-config'
 
-const BASE = 'CRUZ · Inteligencia Aduanal'
+const BASE = 'ADUANA · Inteligencia Aduanal'
 
 export function useTabTitle() {
   useEffect(() => {

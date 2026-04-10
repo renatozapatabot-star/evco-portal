@@ -57,7 +57,7 @@ export function StatusHero({ statusLevel, statusSentence, entradasThisWeek, acti
         activeShipments > 0 ? (
           <CruzRecommendation
             compact
-            recommendation={activeShipments === 1 ? 'CRUZ monitorea tu envío en tiempo real' : `CRUZ monitorea tus ${activeShipments} envíos`}
+            recommendation={activeShipments === 1 ? 'ADUANA monitorea tu envío en tiempo real' : `ADUANA monitorea tus ${activeShipments} envíos`}
             confidence={95}
             approveLabel="Ver detalle"
             approveHref="/traficos"

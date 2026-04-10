@@ -63,7 +63,7 @@ export default function ProposalEnginePage() {
     <div className="page-shell">
       <div style={{ marginBottom: 16 }}>
         <h1 className="page-title">Motor de Propuestas</h1>
-        <p className="page-subtitle">Genera recomendaciones para cada superficie de CRUZ</p>
+        <p className="page-subtitle">Genera recomendaciones para cada superficie de ADUANA</p>
       </div>
 
       {/* KPIs */}

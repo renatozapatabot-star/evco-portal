@@ -19,7 +19,7 @@ interface Claims {
 
 /**
  * /resultados — Bold Claims Page
- * "CRUZ clients cross 38% faster than industry average"
+ * "ADUANA clients cross 38% faster than industry average"
  * All computed from real data. No claims without proof.
  */
 export default function ResultadosPage() {
@@ -103,7 +103,7 @@ export default function ResultadosPage() {
       icon: <Shield size={32} style={{ color: 'var(--info)' }} />,
       value: 'Cero',
       label: 'multas SAT',
-      detail: `En ${claims.totalOperations.toLocaleString()} operaciones gestionadas por CRUZ`,
+      detail: `En ${claims.totalOperations.toLocaleString()} operaciones gestionadas por ADUANA`,
     },
     {
       icon: <Award size={32} style={{ color: 'var(--gold)' }} />,

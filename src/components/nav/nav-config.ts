@@ -43,7 +43,7 @@ export interface NavGroup {
 // Top-level item (no accordion)
 // ---------------------------------------------------------------------------
 export interface NavTopLevel extends NavRoute {
-  /** Gold accent treatment (CRUZ AI) */
+  /** Gold accent treatment (ADUANA AI) */
   gold?: boolean
 }
 

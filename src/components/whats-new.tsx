@@ -2,7 +2,7 @@
 import { useState } from 'react'
 
 const UPDATES = [
-  { text: 'CRUZ AI con 17 herramientas, voz, y memoria de sesión' },
+  { text: 'ADUANA AI con 17 herramientas, voz, y memoria de sesión' },
   { text: 'Cruz Score con documentos (40%), tiempo, pagos, cumplimiento' },
   { text: 'Alertas en tiempo real — score < 50, overdue, incidencias' },
   { text: 'T-MEC savings calculator en pedimentos' },

@@ -26,7 +26,7 @@ export function CruzAvatar({ size, mood, onClick, className }: CruzAvatarProps) 
       onClick={onClick}
       disabled={!interactive}
       className={className}
-      aria-label="CRUZ AI"
+      aria-label="ADUANA AI"
       style={{
         width: size,
         height: size,

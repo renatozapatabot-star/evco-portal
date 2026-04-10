@@ -32,7 +32,7 @@ export function CruzProposalSection({ proposal, subjectLabel, onApprove, onRejec
       }}>
         <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#6E7681', flexShrink: 0 }} />
         <span style={{ fontSize: 13, color: '#6E7681' }}>
-          CRUZ está analizando {subjectLabel}...
+          ADUANA está analizando {subjectLabel}...
         </span>
       </div>
     )

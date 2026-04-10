@@ -305,7 +305,7 @@ function ProximoPaso({ trafico }: { trafico: Record<string, unknown> }) {
 
   let icon = '⏳'
   let title = 'Recopilando documentos'
-  let description = 'CRUZ está verificando documentos con proveedores. Le notificamos cuando el expediente esté completo.'
+  let description = 'ADUANA está verificando documentos con proveedores. Le notificamos cuando el expediente esté completo.'
 
   if (isCruzado) {
     icon = '✅'
@@ -322,7 +322,7 @@ function ProximoPaso({ trafico }: { trafico: Record<string, unknown> }) {
   } else if ((trafico.importe_total as number) > 0) {
     icon = '📄'
     title = 'Preparando pedimento'
-    description = 'Documentos en revisión. CRUZ está armando el pedimento para transmisión.'
+    description = 'Documentos en revisión. ADUANA está armando el pedimento para transmisión.'
   }
 
   return (

@@ -1,6 +1,6 @@
 /**
  * CRUZ Customs Domain Knowledge — embedded reference data
- * Used by CRUZ AI to answer classification, T-MEC, and compliance questions
+ * Used by ADUANA AI to answer classification, T-MEC, and compliance questions
  * without hitting the database for every query.
  *
  * Source: TIGIE, RGCE, Ley Aduanera, T-MEC Capítulo 4

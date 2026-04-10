@@ -47,7 +47,7 @@ export async function GET(req: NextRequest) {
   const timeValueMonthly = monthlyTimeSaved * hourlyRate
 
   // Penalty avoidance (industry average: $4,790 per incident)
-  const penaltyAvoidance = 0 // CRUZ clients have zero penalties
+  const penaltyAvoidance = 0 // ADUANA clients have zero penalties
 
   // Total annual savings
   const portalCostAnnual = 3600 // $300/month

@@ -156,7 +156,7 @@ export async function GET(req: NextRequest) {
 
   <!-- Header -->
   <tr><td style="background:#1A1A1A;padding:24px 32px;">
-    <div style="font-size:18px;font-weight:700;color:#C9A84C;letter-spacing:0.05em;">CRUZ</div>
+    <div style="font-size:18px;font-weight:700;color:#C9A84C;letter-spacing:0.05em;">ADUANA</div>
     <div style="font-size:13px;color:#9B9B9B;margin-top:4px;">Resumen diario &middot; ${todayStr}</div>
   </td></tr>
 

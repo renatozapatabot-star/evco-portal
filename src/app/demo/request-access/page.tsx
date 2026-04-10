@@ -78,7 +78,7 @@ export default function RequestAccessPage() {
           <Field label="Correo electrónico (opcional)" value={form.email} onChange={v => setForm(f => ({ ...f, email: v }))} type="email" />
           <div>
             <label style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.6)', display: 'block', marginBottom: 4 }}>
-              ¿Qué te interesó de CRUZ? (opcional)
+              ¿Qué te interesó de ADUANA? (opcional)
             </label>
             <textarea
               value={form.notes}

@@ -103,7 +103,7 @@ function ProgressRing({ pct, size = 56, animate = false }: { pct: number; size?:
   }, [pct, animate])
 
   const offset = circ - (displayPct / 100) * circ
-  const color = displayPct === 100 ? '#16A34A' : 'var(--gold, #C9A84C)'
+  const color = displayPct === 100 ? '#16A34A' : 'var(--gold, #eab308)'
   const approaching = pct >= 95 && pct < 100
   return (
     <svg width={size} height={size} style={{ flexShrink: 0 }} className={approaching ? 'ring-approaching' : undefined}>
@@ -186,7 +186,7 @@ function CommandStrip({ urgentes, criticalCount, mood, isMobile, criticosOpen, s
               </div>
               <span style={{
                 fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 4,
-                background: 'var(--gold, #C9A84C)', color: '#FFFFFF', flexShrink: 0,
+                background: 'var(--gold, #eab308)', color: '#FFFFFF', flexShrink: 0,
               }}>
                 Resolver
               </span>
@@ -194,7 +194,7 @@ function CommandStrip({ urgentes, criticalCount, mood, isMobile, criticosOpen, s
           ))}
           {criticalCount > 3 && (
             <Link href={criticalHref} style={{
-              fontSize: 11, fontWeight: 600, color: 'var(--gold, #C9A84C)',
+              fontSize: 11, fontWeight: 600, color: 'var(--gold, #eab308)',
               textDecoration: 'none', textAlign: 'center', padding: '4px 0',
             }}>
               Ver {criticalCount - 3} más →
@@ -236,7 +236,7 @@ function PasswordResetBanner() {
   return (
     <div style={{
       padding: '10px 16px', borderRadius: 10, marginBottom: 12,
-      borderLeft: '3px solid var(--gold, #C9A84C)',
+      borderLeft: '3px solid var(--gold, #eab308)',
       background: 'rgba(201,168,76,0.06)',
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       flexWrap: 'wrap', gap: 8,
@@ -247,7 +247,7 @@ function PasswordResetBanner() {
       <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
         <Link href="/cambiar-contrasena" style={{
           padding: '6px 14px', borderRadius: 6, fontSize: 12, fontWeight: 700,
-          background: 'var(--gold, #C9A84C)', color: '#FFFFFF', textDecoration: 'none',
+          background: 'var(--gold, #eab308)', color: '#FFFFFF', textDecoration: 'none',
           minHeight: 44, display: 'inline-flex', alignItems: 'center',
         }}>
           Cambiar ahora
@@ -391,7 +391,7 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
         </div>
       )}
 
-      {/* Mobile AI indicator removed — TopBar has CRUZ AI link + chat bubble covers desktop */}
+      {/* Mobile AI indicator removed — TopBar has ADUANA AI link + chat bubble covers desktop */}
 
       {/* Away banner */}
       {awayBanner}

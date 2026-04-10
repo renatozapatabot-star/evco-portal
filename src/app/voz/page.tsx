@@ -182,7 +182,7 @@ export default function VozPage() {
             margin: 0,
             opacity: 0.8,
           }}>
-            Modo Voz &middot; CRUZ AI
+            Modo Voz &middot; ADUANA AI
           </p>
           <p style={{
             color: COLORS.gray,

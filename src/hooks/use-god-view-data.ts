@@ -100,7 +100,7 @@ export interface GodViewData {
   pendingDrafts: number
   pendingEscalations: number
 
-  // Section C: CRUZ Autónomo
+  // Section C: ADUANA Autónomo
   opsCenter: OpsCenterData | null
   agentDecisions24h: number
   agentAccuracy: number

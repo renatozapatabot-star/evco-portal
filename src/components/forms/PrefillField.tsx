@@ -24,7 +24,7 @@ interface Props {
  * and turns white when the operator edits it (corrected).
  *
  * The reviewer thesis applied to forms:
- * Gold = "CRUZ filled this, just confirm"
+ * Gold = "ADUANA filled this, just confirm"
  * White = "You changed it, CRUZ will learn"
  */
 export function PrefillField({ label, name, prefill, type = 'text', placeholder, required, onChange }: Props) {

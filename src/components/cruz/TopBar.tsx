@@ -61,9 +61,9 @@ export default function TopBar({
         )}
 
         {/* Logo */}
-        <Link href="/" className="topbar-logo" aria-label="CRUZ inicio">
+        <Link href="/" className="topbar-logo" aria-label="ADUANA inicio">
           <CruzMark size={40} />
-          <span className="topbar-logo-text">CRUZ</span>
+          <span className="topbar-logo-text">ADUANA</span>
         </Link>
 
         {/* Wide search bar (desktop) */}
@@ -88,11 +88,11 @@ export default function TopBar({
           <Search size={18} />
         </button>
 
-        {/* CRUZ AI button (mobile only — navigates to full AI page) */}
+        {/* ADUANA AI button (mobile only — navigates to full AI page) */}
         <Link
           href="/cruz"
           className="topbar-ai-mobile"
-          aria-label="CRUZ AI"
+          aria-label="ADUANA AI"
         >
           <Zap size={16} />
         </Link>

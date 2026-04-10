@@ -54,7 +54,7 @@ Gracias,
 Admin CRUZ
 
 ---
-Este recordatorio fue generado desde CRUZ: ${BASE_URL}/admin`
+Este recordatorio fue generado desde ADUANA: ${BASE_URL}/admin`
 
   const htmlBody = `<div style="font-family:'DM Sans',Geist,system-ui,sans-serif;font-size:14px;line-height:1.6;color:#1A1A1A;">
 ${textBody.replace(/\n/g, '<br>')}

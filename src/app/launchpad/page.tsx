@@ -310,7 +310,7 @@ function CruzAutoSection({
         <EmptyState
           icon="&#129302;"
           title="Sin acciones automáticas hoy"
-          description="CRUZ activará automatizaciones conforme aumente la confianza."
+          description="ADUANA activará automatizaciones conforme aumente la confianza."
         />
       </div>
     )
@@ -547,7 +547,7 @@ export default function LaunchpadPage() {
         <EmptyState
           icon="&#129302;"
           title="Sin acciones pendientes"
-          description="CRUZ está aprendiendo. Las acciones aparecerán conforme el agente procese operaciones."
+          description="ADUANA está aprendiendo. Las acciones aparecerán conforme el agente procese operaciones."
         />
       )}
 

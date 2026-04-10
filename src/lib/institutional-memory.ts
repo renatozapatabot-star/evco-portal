@@ -9,7 +9,7 @@
  * "This client prefers email over WhatsApp."
  *
  * Captures patterns from operational data and makes them
- * available to every CRUZ AI conversation.
+ * available to every ADUANA AI conversation.
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js'
@@ -194,7 +194,7 @@ export async function writeMemories(
   return written
 }
 
-// ── Memory Reader (for CRUZ AI context) ──
+// ── Memory Reader (for ADUANA AI context) ──
 
 export async function getMemoryContext(
   supabase: SupabaseClient,

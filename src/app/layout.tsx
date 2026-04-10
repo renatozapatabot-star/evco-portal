@@ -1,11 +1,15 @@
 import { Analytics } from "@vercel/analytics/react"
 import type { Metadata, Viewport } from "next"
-import { GeistSans } from 'geist/font/sans'
-import { GeistMono } from 'geist/font/mono'
-import { JetBrains_Mono } from 'next/font/google'
+import { Inter, JetBrains_Mono } from 'next/font/google'
 import DashboardShellClient from "@/components/DashboardShellClient"
 import { QueryProvider } from "@/components/QueryProvider"
 import "./globals.css"
+
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+})
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ['latin'],
@@ -21,13 +25,13 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  title: "CRUZ · Inteligencia Aduanal",
+  title: "ADUANA · Inteligencia Aduanal",
   description: "Plataforma de inteligencia aduanal · Patente 3596 · Aduana 240 · Nuevo Laredo",
   icons: { icon: '/favicon.svg' },
   openGraph: {
-    title: 'CRUZ — Cross-Border Intelligence',
+    title: 'ADUANA — Cross-Border Intelligence',
     description: 'Renato Zapata & Company · Patente 3596 · Est. 1941',
-    siteName: 'CRUZ',
+    siteName: 'ADUANA',
   },
   appleWebApp: {
     capable: true,
@@ -41,14 +45,14 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="es" className={`${GeistSans.variable} ${GeistMono.variable} ${jetbrainsMono.variable}`}>
+    <html lang="es" className={`${inter.variable} ${jetbrainsMono.variable}`}>
       <head>
         <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#C9A84C" />
+        <meta name="theme-color" content="#0a0f1c" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="CRUZ" />
+        <meta name="apple-mobile-web-app-title" content="ADUANA" />
         <link rel="apple-touch-icon" href="/icon-192.png" />
         <link rel="preconnect" href="https://jkhpafacchjxawnscplf.supabase.co" />
         <link rel="dns-prefetch" href="https://jkhpafacchjxawnscplf.supabase.co" />

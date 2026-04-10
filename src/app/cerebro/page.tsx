@@ -170,7 +170,7 @@ export default function CerebroPage() {
               Patrones Aprendidos ({patterns.length})
             </div>
             {patterns.length === 0 ? (
-              <EmptyState icon="📊" title="Sin patrones" description="CRUZ aprenderá patrones conforme opere." />
+              <EmptyState icon="📊" title="Sin patrones" description="ADUANA aprenderá patrones conforme opere." />
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 400, overflowY: 'auto' }}>
                 {patterns.map(p => (

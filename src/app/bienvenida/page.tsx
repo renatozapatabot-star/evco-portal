@@ -96,7 +96,7 @@ export default function BienvenidaPage() {
       </div>
 
       <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.02em', margin: '0 0 8px', textAlign: 'center' }}>
-        Bienvenido a CRUZ
+        Bienvenido a ADUANA
       </h1>
       <p style={{ fontSize: 18, color: 'var(--gold-700)', fontWeight: 600, margin: '0 0 40px' }}>
         {companyName}

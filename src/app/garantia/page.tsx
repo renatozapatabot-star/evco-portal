@@ -22,7 +22,7 @@ export default function GarantiaPage() {
       icon: <Shield size={28} style={{ color: 'var(--success)' }} />,
       title: 'Cero multas por errores',
       detail: 'O cubrimos la penalización',
-      proof: 'Validación automática pre-despacho con CRUZ AI',
+      proof: 'Validación automática pre-despacho con ADUANA AI',
     },
     {
       icon: <FileText size={28} style={{ color: 'var(--info)' }} />,
@@ -41,7 +41,7 @@ export default function GarantiaPage() {
             <Award size={32} style={{ color: 'var(--gold)' }} />
           </div>
           <h1 style={{ fontSize: isMobile ? 24 : 32, fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1.2, margin: '0 0 12px' }}>
-            Garantía CRUZ
+            Garantía ADUANA
           </h1>
           <p style={{ fontSize: 16, color: 'var(--text-secondary)', lineHeight: 1.6, maxWidth: 480, margin: '0 auto' }}>
             Respaldada por 80 años de operación y datos verificados de Patente 3596.

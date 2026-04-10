@@ -19,7 +19,7 @@ export async function CockpitShell({ children }: CockpitShellProps) {
       className="cruz-dark"
       style={{
         minHeight: '100vh',
-        background: '#111111',
+        background: '#0a0f1c',
         color: '#E6EDF3',
       }}
     >

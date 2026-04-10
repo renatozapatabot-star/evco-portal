@@ -126,7 +126,7 @@ export async function POST(request: NextRequest) {
       await resend.emails.send({
         from: 'onboarding@resend.dev',
         to: primary_email,
-        subject: 'Bienvenido a CRUZ — Renato Zapata & Company',
+        subject: 'Bienvenido a ADUANA — Renato Zapata & Company',
         html: buildWelcomeEmail(company_name, password),
       })
       emailSent = true

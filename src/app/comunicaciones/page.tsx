@@ -148,7 +148,7 @@ export default function ComunicacionesPage() {
     if (t) setBody(t.body)
   }
 
-  async function draftWithCRUZ() {
+  async function draftWithADUANA() {
     setDrafting(true)
     try {
       const res = await fetch('/api/chat', {
@@ -241,10 +241,10 @@ export default function ComunicacionesPage() {
           <div className="mb-4">
             <div className="flex justify-between items-center mb-1">
               <label className="text-[10.5px] font-semibold uppercase tracking-[0.07em]" style={{ color: 'var(--slate-400)' }}>Mensaje</label>
-              <button onClick={draftWithCRUZ} disabled={drafting}
+              <button onClick={draftWithADUANA} disabled={drafting}
                 className="flex items-center gap-1.5 px-3 py-1 rounded-[4px] text-[11px] font-semibold"
                 style={{ background: 'var(--amber-100)', color: 'var(--amber-600)', border: '1px solid var(--amber-200)', cursor: 'pointer' }}>
-                {drafting ? 'Redactando...' : '🦀 Redactar con CRUZ'}
+                {drafting ? 'Redactando...' : '🦀 Redactar con ADUANA'}
               </button>
             </div>
             <textarea value={body} onChange={e => setBody(e.target.value)} rows={12}

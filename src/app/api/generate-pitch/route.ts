@@ -64,7 +64,7 @@ ESTRUCTURA DE LA PROPUESTA:
    - Si T-MEC elegible: ahorro estimado en aranceles
    - Si alto volumen: eficiencia operativa
    - Si IMMEX: experiencia en régimen temporal
-4. Nuestra propuesta de valor (tecnología CRUZ, servicio personalizado)
+4. Nuestra propuesta de valor (tecnología ADUANA, servicio personalizado)
 5. Datos de contacto y siguiente paso sugerido
 
 Tono: profesional pero cercano, como un experto hablando con otro empresario.

@@ -173,7 +173,7 @@ export async function GET(request: NextRequest) {
     return new NextResponse(new Uint8Array(pdfBuffer), {
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `inline; filename="CRUZ-Reporte-${companyId}-${now.toISOString().split('T')[0]}.pdf"`,
+        'Content-Disposition': `inline; filename="ADUANA-Reporte-${companyId}-${now.toISOString().split('T')[0]}.pdf"`,
         'Cache-Control': 'no-store',
       },
     })

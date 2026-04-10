@@ -30,7 +30,7 @@ export function CruzAutonomo({ opsCenter, agentDecisions24h, agentAccuracy, erro
     return (
       <div className="god-section">
         <h2 className="god-section-title">
-          <Bot size={16} /> CRUZ Autónomo
+          <Bot size={16} /> ADUANA Autónomo
         </h2>
         <div className="god-empty">Sin datos del agente</div>
       </div>
@@ -49,7 +49,7 @@ export function CruzAutonomo({ opsCenter, agentDecisions24h, agentAccuracy, erro
       >
         <h2 className="god-section-title">
           <span className="god-pulse-dot" />
-          CRUZ Autónomo
+          ADUANA Autónomo
         </h2>
         <div className="god-autonomo-summary">
           <span className="font-mono god-autonomo-stat">

@@ -26,7 +26,7 @@ export function CruzFAB() {
       action: () => { document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true })) },
     },
     {
-      icon: MessageSquare, label: 'CRUZ AI',
+      icon: MessageSquare, label: 'ADUANA AI',
       color: 'var(--gold)',
       action: () => document.dispatchEvent(new CustomEvent('cruz:open-chat')),
     },

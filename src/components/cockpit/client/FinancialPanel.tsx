@@ -56,7 +56,7 @@ export function FinancialPanel({ financial }: Props) {
       footer={financial.facturadoThisMonth > 0 ? (
         <CruzRecommendation
           compact
-          recommendation="CRUZ monitorea tus costos y detecta oportunidades de ahorro"
+          recommendation="ADUANA monitorea tus costos y detecta oportunidades de ahorro"
           confidence={92}
           approveLabel="Ver detalle"
           approveHref="/financiero"

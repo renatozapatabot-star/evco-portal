@@ -25,7 +25,7 @@ Reglas:
 - Tono: profesional, cálido, confiable. Como un agente aduanal senior de confianza.`
 
 /**
- * CRUZ AI quick-ask endpoint — lightweight Q&A for the cockpit panel.
+ * ADUANA AI quick-ask endpoint — lightweight Q&A for the cockpit panel.
  * Uses Haiku for speed and cost. Context-scoped to the logged-in company.
  * POST { question: string } → { answer: string }
  */
@@ -131,7 +131,7 @@ export async function POST(req: NextRequest) {
     const apiKey = process.env.ANTHROPIC_API_KEY
     if (!apiKey) {
       return NextResponse.json({
-        answer: 'CRUZ AI no está disponible en este momento. Contacta a soporte.',
+        answer: 'ADUANA AI no está disponible en este momento. Contacta a soporte.',
       })
     }
 
@@ -158,9 +158,9 @@ export async function POST(req: NextRequest) {
       console.error('[cruz-ai/ask] LLM error:', errMsg)
 
       if (errMsg.includes('credit balance') || errMsg.includes('billing')) {
-        answer = 'CRUZ AI no está disponible temporalmente — créditos de API agotados. Tu pregunta fue registrada y será respondida cuando se restablezca el servicio.'
+        answer = 'ADUANA AI no está disponible temporalmente — créditos de API agotados. Tu pregunta fue registrada y será respondida cuando se restablezca el servicio.'
       } else if (errMsg.includes('rate_limit') || errMsg.includes('overloaded')) {
-        answer = 'CRUZ AI está ocupado en este momento. Por favor intenta de nuevo en unos segundos.'
+        answer = 'ADUANA AI está ocupado en este momento. Por favor intenta de nuevo en unos segundos.'
       }
       // For other errors, keep the default "hubo un problema" message
     }

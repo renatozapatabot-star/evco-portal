@@ -152,7 +152,7 @@ function OnboardingContent() {
               ¡Listo!
             </h2>
             <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)', marginBottom: 24 }}>
-              Tu agencia CRUZ está activada. El panel de control te espera.
+              Tu agencia ADUANA está activada. El panel de control te espera.
             </p>
             <button onClick={() => router.push('/login')} style={btnStyle}>
               Ir al panel →

@@ -1,5 +1,5 @@
 /**
- * CRUZ Intelligence Mesh — Multi-Source Risk Correlator
+ * ADUANA Intelligence Mesh — Multi-Source Risk Correlator
  *
  * Combines 7 data dimensions into a single risk assessment.
  * "What's the risk for this shipment?" answered in 2 seconds

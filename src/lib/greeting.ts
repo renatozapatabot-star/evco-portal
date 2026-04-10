@@ -14,7 +14,7 @@ export function getGreeting(name?: string): string {
   const displayName = name || ''
 
   let greeting: string
-  if (hour < 6) greeting = `Madrugada${displayName ? `, ${displayName}` : ''} — CRUZ está listo`
+  if (hour < 6) greeting = `Madrugada${displayName ? `, ${displayName}` : ''} — ADUANA está listo`
   else if (hour < 12) greeting = `Buenos días${displayName ? `, ${displayName}` : ''}`
   else if (hour < 18) greeting = `Buenas tardes${displayName ? `, ${displayName}` : ''}`
   else greeting = `Buenas noches${displayName ? `, ${displayName}` : ''}`
@@ -63,7 +63,7 @@ export function getSmartGreeting(name: string | undefined, stats: SmartGreetingI
   const displayName = name || ''
 
   let greeting: string
-  if (hour < 6) greeting = `Madrugada${displayName ? `, ${displayName}` : ''} — CRUZ está listo`
+  if (hour < 6) greeting = `Madrugada${displayName ? `, ${displayName}` : ''} — ADUANA está listo`
   else if (hour < 12) greeting = `Buenos días${displayName ? `, ${displayName}` : ''}`
   else if (hour < 18) greeting = `Buenas tardes${displayName ? `, ${displayName}` : ''}`
   else greeting = `Buenas noches${displayName ? `, ${displayName}` : ''}`

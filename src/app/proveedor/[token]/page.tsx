@@ -91,7 +91,7 @@ export default function ProveedorPage() {
     return (
       <div style={styles.page}>
         <div style={styles.card}>
-          <div style={styles.logo}>CRUZ</div>
+          <div style={styles.logo}>ADUANA</div>
           <div style={{ fontSize: 16, fontWeight: 600, color: '#DC2626', marginBottom: 12 }}>Enlace no válido</div>
           <p style={{ fontSize: 14, color: '#6B6B6B', lineHeight: 1.6 }}>{errorMessage}</p>
         </div>
@@ -104,7 +104,7 @@ export default function ProveedorPage() {
     return (
       <div style={styles.page}>
         <div style={styles.card}>
-          <div style={styles.logo}>CRUZ</div>
+          <div style={styles.logo}>ADUANA</div>
           <div className="skeleton-shimmer" style={{ height: 120, borderRadius: 8 }} />
         </div>
       </div>
@@ -118,7 +118,7 @@ export default function ProveedorPage() {
       <div style={styles.card}>
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: 24 }}>
-          <div style={styles.logo}>CRUZ</div>
+          <div style={styles.logo}>ADUANA</div>
           <div style={{ fontSize: 11, color: '#9B9B9B', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
             Portal de Documentos
           </div>

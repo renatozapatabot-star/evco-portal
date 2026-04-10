@@ -26,18 +26,18 @@ const SUGGESTIONS = [
   'Calcula impuestos $50K USD',
 ]
 
-// Dark cockpit theme — matches the dark portal
+// Aduana cinematic dark theme
 const D = {
-  bg: '#111111',
-  surface: '#1A1A1A',
-  border: 'rgba(255,255,255,0.08)',
+  bg: '#0a0f1c',
+  surface: '#1a2338',
+  border: '#334155',
   text: '#E6EDF3',
-  textMuted: '#6E7681',
-  textSub: '#8B949E',
-  userBubble: 'rgba(201,168,76,0.12)',
-  userBorder: 'rgba(201,168,76,0.25)',
-  aiBubble: '#1A1A1A',
-  aiBorder: 'rgba(255,255,255,0.06)',
+  textMuted: '#64748b',
+  textSub: '#94a3b8',
+  userBubble: 'rgba(234,179,8,0.12)',
+  userBorder: 'rgba(234,179,8,0.25)',
+  aiBubble: '#0f1729',
+  aiBorder: 'rgba(51,65,85,0.5)',
   aiText: '#E6EDF3',
 }
 
@@ -484,7 +484,7 @@ export function CruzChatBubble() {
       {!open && !isMobile && (
         <button
           onClick={handleOpen}
-          aria-label="Abrir CRUZ AI"
+          aria-label="Abrir ADUANA AI"
           className="cruz-thought-bubble"
           style={{
             position: 'fixed',
@@ -502,7 +502,7 @@ export function CruzChatBubble() {
           onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(196,150,60,0.4)' }}
         >
           <span style={{ fontSize: 16, lineHeight: 1 }}>&#10022;</span>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 800, color: D.text, letterSpacing: '0.06em' }}>CRUZ AI</span>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 800, color: D.text, letterSpacing: '0.06em' }}>ADUANA AI</span>
           {/* Unread indicator */}
           {hasUnread && (
             <div style={{

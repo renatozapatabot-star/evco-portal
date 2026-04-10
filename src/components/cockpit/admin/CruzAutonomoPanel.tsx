@@ -52,7 +52,7 @@ export function CruzAutonomoPanel({ decisions, decisions30d, decisionsAllTime, w
           fontSize: 11, fontWeight: 600, textTransform: 'uppercase',
           letterSpacing: '0.05em', color: '#6E7681',
         }}>
-          CRUZ Autónomo
+          ADUANA Autónomo
         </span>
         <p style={{ fontSize: 13, color: '#8B949E', margin: '4px 0 0' }}>
           {decisions.total > 0

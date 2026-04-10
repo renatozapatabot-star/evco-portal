@@ -1,6 +1,6 @@
-/* CRUZ Design System — globals.css
-   Fonts: Geist Sans + JetBrains Mono loaded via next/font in layout.tsx
-   Theme: .cruz-dark class applies dark cockpit tokens to all authenticated pages
+/* ADUANA Design System — globals.css
+   Fonts: Inter + JetBrains Mono loaded via next/font in layout.tsx
+   Theme: .cruz-dark class applies cinematic dark tokens to all authenticated pages
 */
 
 @tailwind base;
@@ -8,13 +8,13 @@
 @tailwind utilities;
 
 :root {
-  /* ── Fonts — Geist primary, JetBrains Mono for data ── */
-  --font-sans: var(--font-geist-sans, system-ui, -apple-system, sans-serif);
-  --font-mono: var(--font-jetbrains-mono, var(--font-geist-mono, monospace));
+  /* ── Fonts — Inter primary, JetBrains Mono for data ── */
+  --font-sans: var(--font-inter, system-ui, -apple-system, sans-serif);
+  --font-mono: var(--font-jetbrains-mono, monospace);
 
   /* ── Brand ── */
-  --gold: #C9A84C;
-  --gold-dark: #8B6914;
+  --gold: #eab308;
+  --gold-dark: #a16207;
   --gold-bg: rgba(196,150,60,0.08);
 
   /* ── Navy / Sidebar ── */
@@ -156,45 +156,48 @@
   --sidebar-width: 240px;
 }
 
-/* ── Client Dark Cockpit Theme ── */
+/* ── Aduana Premium Cinematic Dark Theme ── */
 .cruz-dark {
-  --bg-main: #111111;
-  --bg-card: #1A1A1A;
-  --bg-surface: #1A1A1A;
-  --bg-elevated: #222222;
-  --bg-hover: #2A2A2A;
-  --border-card: rgba(255,255,255,0.08);
-  --border: rgba(255,255,255,0.06);
+  --bg-main: #0a0f1c;
+  --bg-card: #0f1729;
+  --bg-surface: #0f1729;
+  --bg-elevated: #1a2338;
+  --bg-hover: #243050;
+  --border-card: #334155;
+  --border: rgba(51,65,85,0.6);
   --text-primary: #E6EDF3;
-  --text-secondary: #8B949E;
-  --text-muted: #6E7681;
-  --shadow-card: 0 1px 3px rgba(0,0,0,0.3);
-  --shadow-elevated: 0 4px 12px rgba(0,0,0,0.4);
-  --glass-bg: rgba(255, 255, 255, 0.06);
-  --glass-border: rgba(255, 255, 255, 0.10);
-  --glass-blur: 20px;
-  --glass-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
-  --glass-shadow-elevated: 0 8px 32px rgba(0, 0, 0, 0.35);
-  --slate-50: #1A1D23;
-  --slate-100: #22272E;
-  --slate-200: #30363D;
-  --slate-300: #484F58;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.4), 0 0 1px rgba(0,136,255,0.1);
+  --shadow-elevated: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08);
+  --glass-bg: rgba(26, 35, 56, 0.7);
+  --glass-border: rgba(51,65,85,0.5);
+  --glass-blur: 12px;
+  --glass-shadow: 0 4px 24px rgba(0,0,0,0.3);
+  --glass-shadow-elevated: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08);
+  --accent-blue: #0088ff;
+  --glow-blue: rgba(0,170,255,0.35);
+  --glow-blue-subtle: rgba(0,170,255,0.12);
+  --slate-50: #0f1729;
+  --slate-100: #1a2338;
+  --slate-200: #334155;
+  --slate-300: #475569;
   --green-50: #0D2818;
   --green-100: #1A4D2E;
   --amber-50: #2D1F0A;
   --amber-100: #4D3510;
   --red-50: #2D1216;
   --red-100: #4D2024;
-  --gold-bg: rgba(196,150,60,0.15);
+  --gold-bg: rgba(234,179,8,0.12);
   /* Navy/slate overrides — these are used as TEXT color in 15+ classes */
   --navy-900: #E6EDF3;
   --navy-800: #CDD6E0;
   --navy-700: #ADBAC7;
-  --slate-400: #8B949E;
-  --slate-500: #8B949E;
-  --slate-600: #8B949E;
+  --slate-400: #94a3b8;
+  --slate-500: #94a3b8;
+  --slate-600: #94a3b8;
   --slate-700: #CDD6E0;
-  background: #111111;
+  background: #0a0f1c;
   color: var(--text-primary);
 }
 .cruz-dark .cruz-table td { border-bottom-color: rgba(255,255,255,0.06); }
@@ -429,14 +432,16 @@ body {
   min-width: 260px;
 }
 
-/* ── Unified card transitions ────────── */
+/* ── Unified card transitions — Aduana glassmorphism ────────── */
 .cc-card {
   transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 .cc-card:hover {
   transform: scale(1.005);
-  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
-  border-color: rgba(255,255,255,0.12);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.3), 0 0 20px var(--glow-blue-subtle, rgba(0,170,255,0.12));
+  border-color: rgba(0,136,255,0.3);
 }
 .cc-card:active {
   transform: scale(0.98);
@@ -517,7 +522,7 @@ body {
 }
 
 .cruz-topbar {
-  background: #1A1A1A;
+  background: #0f1729;
   padding: 12px 28px;
   display: flex;
   align-items: center;

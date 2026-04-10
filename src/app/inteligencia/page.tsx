@@ -188,7 +188,7 @@ export default function InteligenciaPage() {
       </div>
 
       {/* Performance Summary */}
-      <div className="cc-card" style={{ padding: 24, borderRadius: 20 }}>
+      <div className="cc-card" style={{ padding: 24, borderRadius: 20, marginBottom: 24 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
           <AlertTriangle size={16} style={{ color: '#00E5FF', opacity: 0.7 }} />
           <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#64748b' }}>Rendimiento ADUANA AI</span>
@@ -204,6 +204,26 @@ export default function InteligenciaPage() {
             'La clasificación automática se activará cuando se procesen productos.'
           )}
         </div>
+      </div>
+
+      {/* Supplier Performance */}
+      <div className="cc-card" style={{ padding: 24, borderRadius: 20 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#64748b', marginBottom: 16 }}>
+          <Users2 size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6, color: '#00E5FF', opacity: 0.7 }} />
+          Rendimiento de proveedores
+        </div>
+        {s.topFracciones.length > 0 ? (
+          <div style={{ fontSize: 13, color: '#94a3b8', lineHeight: 1.6 }}>
+            <strong style={{ color: '#E6EDF3' }}>{s.topFracciones.length}</strong> fracciones activas de{' '}
+            <strong style={{ color: '#E6EDF3' }}>{s.totalTraficos.toLocaleString()}</strong> operaciones.
+            {s.totalCruzados > 0 && (
+              <> Tasa de cruce: <strong style={{ color: '#00E5FF' }}>{Math.round(s.totalCruzados / s.totalTraficos * 100)}%</strong>.</>
+            )}
+            {' '}Los datos de proveedores se enriquecerán automáticamente conforme se procesen más operaciones.
+          </div>
+        ) : (
+          <div style={{ fontSize: 13, color: '#64748b' }}>Los perfiles de proveedores aparecerán cuando haya suficientes operaciones procesadas.</div>
+        )}
       </div>
     </div>
   )

@@ -102,10 +102,24 @@ export interface OperatorData {
   }
 }
 
+export interface ClientInsight {
+  type: 'anomaly' | 'positive' | 'action'
+  text: string
+  severity: 'critical' | 'warning' | 'info'
+  entityLink?: string
+}
+
+export interface ClientSuggestedAction {
+  label: string
+  href: string
+  reason: string
+  urgency: 'high' | 'medium' | 'low'
+}
+
 export interface ClientData {
   statusLevel: 'green' | 'amber' | 'red'
   statusSentence: string
-  entradasThisWeek: number
+  entradasThisMonth: number
   activeShipments: number
   nextCrossing: { trafico: string; expected: string } | null
   weekAhead: Array<{
@@ -122,11 +136,25 @@ export interface ClientData {
     valor_usd: number; status: string; daysActive: number
   }>
   pedimentosEnProceso: number
-  cruzadosThisMonth: number
+  cruzadosYTD: number
   recentActivity: Array<{
     trafico: string; estatus: string; updated_at: string
     description: string
   }>
+  // KPI deltas
+  entradasLastWeek: number
+  activeShipmentsYesterday: number
+  cruzadosLastMonth: number
+  // Nav card micro-status
+  navMicroStatus: {
+    traficos: { active: number; delayed: number; atRisk: number }
+    entradas: { thisMonth: number; withFaltantes: number }
+    pedimentos: { active: number; todayActivity: boolean }
+  }
+  // Server-computed insights
+  computedInsights: ClientInsight[]
+  // Suggested next actions
+  suggestedActions: ClientSuggestedAction[]
 }
 
 export interface CockpitData {
@@ -696,6 +724,9 @@ async function fetchClientData(companyId: string): Promise<ClientData> {
   const weekStart = startOfWeek()
   const monthStart = startOfMonth(0)
   const lastMonthStart = startOfMonth(-1)
+  const ytdStart = new Date(Date.UTC(new Date().getUTCFullYear(), 0, 1)).toISOString()
+  const today = todayStart()
+  const lastWeekStart = new Date(new Date(weekStart).getTime() - 7 * 86400000).toISOString()
 
   const results = await Promise.allSettled([
     // 0: active traficos for this company (last 90 days — older = ghost, not active)
@@ -706,11 +737,11 @@ async function fetchClientData(companyId: string): Promise<ClientData> {
       .gte('fecha_llegada', new Date(Date.now() - 90 * 86400000).toISOString())
       .order('fecha_llegada', { ascending: false })
       .limit(50),
-    // 1: entradas this week
+    // 1: entradas this month
     sb.from('entradas')
       .select('id', { count: 'exact', head: true })
       .eq('company_id', companyId)
-      .gte('created_at', weekStart),
+      .gte('created_at', monthStart),
     // 2: traficos this month for financial
     sb.from('traficos')
       .select('importe_total, fecha_pago')
@@ -746,12 +777,12 @@ async function fetchClientData(companyId: string): Promise<ClientData> {
       .eq('company_id', companyId)
       .eq('estatus', 'En Aduana')
       .gte('fecha_llegada', '2024-01-01'),
-    // 7: cruzados this month (use updated_at — fecha_cruce is often null)
+    // 7: cruzados YTD (by fecha_llegada — fecha_cruce is often null)
     sb.from('traficos')
       .select('id', { count: 'exact', head: true })
       .eq('company_id', companyId)
       .eq('estatus', 'Cruzado')
-      .gte('updated_at', monthStart),
+      .gte('fecha_llegada', ytdStart),
     // 8: recent activity (last 48h status changes)
     sb.from('traficos')
       .select('trafico, estatus, updated_at, descripcion_mercancia')
@@ -759,6 +790,32 @@ async function fetchClientData(companyId: string): Promise<ClientData> {
       .gte('updated_at', hoursAgo(48))
       .order('updated_at', { ascending: false })
       .limit(15),
+    // 9: entradas last week (for week-over-week delta)
+    sb.from('entradas')
+      .select('id', { count: 'exact', head: true })
+      .eq('company_id', companyId)
+      .gte('created_at', lastWeekStart)
+      .lt('created_at', weekStart),
+    // 10: active traficos as of yesterday (for "+N hoy" delta)
+    sb.from('traficos')
+      .select('id', { count: 'exact', head: true })
+      .eq('company_id', companyId)
+      .in('estatus', ['En Proceso', 'Documentacion', 'En Aduana', 'Pedimento Pagado'])
+      .gte('fecha_llegada', new Date(Date.now() - 90 * 86400000).toISOString())
+      .lt('created_at', today),
+    // 11: cruzados last month (for month-over-month delta)
+    sb.from('traficos')
+      .select('id', { count: 'exact', head: true })
+      .eq('company_id', companyId)
+      .eq('estatus', 'Cruzado')
+      .gte('updated_at', lastMonthStart)
+      .lt('updated_at', monthStart),
+    // 12: entradas with faltantes this week
+    sb.from('entradas')
+      .select('id', { count: 'exact', head: true })
+      .eq('company_id', companyId)
+      .eq('tiene_faltantes', true)
+      .gte('created_at', weekStart),
   ])
 
   const activeTraficos = results[0].status === 'fulfilled' ? results[0].value.data ?? [] : []
@@ -770,6 +827,10 @@ async function fetchClientData(companyId: string): Promise<ClientData> {
   const pedimentosResult = results[6].status === 'fulfilled' ? results[6].value : null
   const cruzadosResult = results[7].status === 'fulfilled' ? results[7].value : null
   const recentActivityRaw = results[8].status === 'fulfilled' ? results[8].value.data ?? [] : []
+  const entradasLastWeekResult = results[9].status === 'fulfilled' ? results[9].value : null
+  const activeYesterdayResult = results[10].status === 'fulfilled' ? results[10].value : null
+  const cruzadosLastMonthResult = results[11].status === 'fulfilled' ? results[11].value : null
+  const faltantesResult = results[12].status === 'fulfilled' ? results[12].value : null
 
   // Status level
   const activeCount = activeTraficos.length
@@ -824,10 +885,101 @@ async function fetchClientData(companyId: string): Promise<ClientData> {
     ? Math.round((Date.now() - new Date((recentlyCrossed[recentlyCrossed.length - 1] as Record<string, unknown>).fecha_cruce as string).getTime()) / 86400000)
     : 0
 
+  // Derived values for new fields
+  const entradasThisMonth = entradasResult?.count ?? 0
+  const entradasLastWeek = entradasLastWeekResult?.count ?? 0
+  const activeShipmentsYesterday = activeYesterdayResult?.count ?? activeCount
+  const pedimentosCount = pedimentosResult?.count ?? 0
+  const cruzadosYTD = cruzadosResult?.count ?? 0
+  const cruzadosLastMonth = cruzadosLastMonthResult?.count ?? 0
+  const faltantesCount = faltantesResult?.count ?? 0
+
+  // Map at-risk shipments
+  const atRiskMapped = (atRiskRaw as Record<string, unknown>[]).map((t) => ({
+    id: t.id as string,
+    trafico: t.trafico as string,
+    description: (t.descripcion_mercancia as string) || '',
+    valor_usd: Number(t.importe_total || 0),
+    status: (t.estatus as string) || '',
+    daysActive: Math.round((Date.now() - new Date(t.fecha_llegada as string).getTime()) / 86400000),
+  })).filter((t) => t.daysActive <= 90)
+
+  // Delayed = active > 14 days
+  const delayedCount = (activeTraficos as Record<string, unknown>[]).filter((t) => {
+    const arrived = new Date(t.fecha_llegada as string).getTime()
+    return (Date.now() - arrived) / 86400000 > 14
+  }).length
+
+  // Any pedimento activity today
+  const pedimentoActivityToday = (recentActivityRaw as Record<string, unknown>[]).some(
+    (t) => (t.estatus as string) === 'En Aduana' || (t.estatus as string) === 'Pedimento Pagado'
+  )
+
+  // Compute insights
+  const computedInsights: ClientInsight[] = []
+  const extremeRisk = atRiskMapped.find((s) => s.daysActive > 30)
+  if (extremeRisk) {
+    computedInsights.push({
+      type: 'anomaly',
+      text: `${extremeRisk.trafico} lleva ${extremeRisk.daysActive} días activo`,
+      severity: 'critical',
+      entityLink: `/traficos/${extremeRisk.id}`,
+    })
+  }
+  if (pedimentosCount === 0 && activeCount > 0) {
+    computedInsights.push({
+      type: 'anomaly',
+      text: 'No hay pedimentos en trámite — posible cuello de botella',
+      severity: 'warning',
+    })
+  }
+  if (cruzadosYTD > cruzadosLastMonth && cruzadosLastMonth > 0) {
+    computedInsights.push({
+      type: 'positive',
+      text: `${cruzadosYTD} cruzados este año vs ${cruzadosLastMonth} el mes pasado`,
+      severity: 'info',
+    })
+  }
+  if (delayedCount > 0) {
+    computedInsights.push({
+      type: 'action',
+      text: `${delayedCount} tráfico${delayedCount !== 1 ? 's' : ''} con más de 14 días activo${delayedCount !== 1 ? 's' : ''}`,
+      severity: 'warning',
+      entityLink: '/traficos',
+    })
+  }
+
+  // Compute suggested actions
+  const suggestedActions: ClientSuggestedAction[] = []
+  if (atRiskMapped.length > 0) {
+    suggestedActions.push({
+      label: `Revisar ${atRiskMapped.length} operación${atRiskMapped.length > 1 ? 'es' : ''} en riesgo`,
+      href: `/traficos/${atRiskMapped[0].id}`,
+      reason: `${atRiskMapped[0].daysActive} días activo`,
+      urgency: 'high',
+    })
+  }
+  if (pedimentosCount === 0 && activeCount > 0) {
+    suggestedActions.push({
+      label: 'Verificar estado de pedimentos',
+      href: '/pedimentos',
+      reason: 'Sin pedimentos activos',
+      urgency: 'medium',
+    })
+  }
+  if (faltantesCount > 0) {
+    suggestedActions.push({
+      label: `${faltantesCount} entrada${faltantesCount !== 1 ? 's' : ''} con faltantes`,
+      href: '/entradas',
+      reason: 'Revisar mercancía incompleta',
+      urgency: 'medium',
+    })
+  }
+
   return {
     statusLevel,
     statusSentence,
-    entradasThisWeek: entradasResult?.count ?? 0,
+    entradasThisMonth,
     activeShipments: activeCount,
     nextCrossing,
     weekAhead,
@@ -838,22 +990,25 @@ async function fetchClientData(companyId: string): Promise<ClientData> {
       oldestDays: oldest,
       pendingRelease: 0,
     },
-    atRiskShipments: (atRiskRaw as Record<string, unknown>[]).map((t) => ({
-      id: t.id as string,
-      trafico: t.trafico as string,
-      description: (t.descripcion_mercancia as string) || '',
-      valor_usd: Number(t.importe_total || 0),
-      status: (t.estatus as string) || '',
-      daysActive: Math.round((Date.now() - new Date(t.fecha_llegada as string).getTime()) / 86400000),
-    })).filter((t) => t.daysActive <= 90),
-    pedimentosEnProceso: pedimentosResult?.count ?? 0,
-    cruzadosThisMonth: cruzadosResult?.count ?? 0,
+    atRiskShipments: atRiskMapped,
+    pedimentosEnProceso: pedimentosCount,
+    cruzadosYTD,
     recentActivity: (recentActivityRaw as Record<string, unknown>[]).map((t) => ({
       trafico: t.trafico as string,
       estatus: (t.estatus as string) || '',
       updated_at: t.updated_at as string,
       description: (t.descripcion_mercancia as string) || '',
     })),
+    entradasLastWeek,
+    activeShipmentsYesterday,
+    cruzadosLastMonth,
+    navMicroStatus: {
+      traficos: { active: activeCount, delayed: delayedCount, atRisk: atRiskMapped.length },
+      entradas: { thisMonth: entradasThisMonth, withFaltantes: faltantesCount },
+      pedimentos: { active: pedimentosCount, todayActivity: pedimentoActivityToday },
+    },
+    computedInsights,
+    suggestedActions,
   }
 }
 
@@ -903,7 +1058,7 @@ export async function fetchCockpitData(
   const client = await safeQuery(() => fetchClientData(companyId), {
     statusLevel: 'green' as const,
     statusSentence: 'Cargando...',
-    entradasThisWeek: 0,
+    entradasThisMonth: 0,
     activeShipments: 0,
     nextCrossing: null,
     weekAhead: [],
@@ -911,8 +1066,18 @@ export async function fetchCockpitData(
     inventory: { bultos: 0, tons: 0, oldestDays: 0, pendingRelease: 0 },
     atRiskShipments: [],
     pedimentosEnProceso: 0,
-    cruzadosThisMonth: 0,
+    cruzadosYTD: 0,
     recentActivity: [],
+    entradasLastWeek: 0,
+    activeShipmentsYesterday: 0,
+    cruzadosLastMonth: 0,
+    navMicroStatus: {
+      traficos: { active: 0, delayed: 0, atRisk: 0 },
+      entradas: { thisMonth: 0, withFaltantes: 0 },
+      pedimentos: { active: 0, todayActivity: false },
+    },
+    computedInsights: [],
+    suggestedActions: [],
   })
   return { client: client.data }
 }

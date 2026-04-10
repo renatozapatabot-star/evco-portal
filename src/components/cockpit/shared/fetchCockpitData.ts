@@ -117,6 +117,16 @@ export interface ClientData {
     arancelesThisMonth: number; arancelesLastMonth: number
   }
   inventory: { bultos: number; tons: number; oldestDays: number; pendingRelease: number }
+  atRiskShipments: Array<{
+    id: string; trafico: string; description: string
+    valor_usd: number; status: string; daysActive: number
+  }>
+  pedimentosEnProceso: number
+  cruzadosThisMonth: number
+  recentActivity: Array<{
+    trafico: string; estatus: string; updated_at: string
+    description: string
+  }>
 }
 
 export interface CockpitData {
@@ -726,6 +736,33 @@ async function fetchClientData(companyId: string): Promise<ClientData> {
       .gte('fecha_cruce', new Date(Date.now() - 30 * 86400000).toISOString())
       .order('fecha_cruce', { ascending: false })
       .limit(50),
+    // 5: at-risk shipments (oldest active, sorted by arrival date)
+    sb.from('traficos')
+      .select('id, trafico, estatus, descripcion_mercancia, importe_total, fecha_llegada')
+      .eq('company_id', companyId)
+      .in('estatus', ['En Proceso', 'Documentacion', 'En Aduana'])
+      .gte('fecha_llegada', '2024-01-01')
+      .order('fecha_llegada', { ascending: true })
+      .limit(5),
+    // 6: pedimentos en proceso count
+    sb.from('traficos')
+      .select('id', { count: 'exact', head: true })
+      .eq('company_id', companyId)
+      .eq('estatus', 'En Aduana')
+      .gte('fecha_llegada', '2024-01-01'),
+    // 7: cruzados this month
+    sb.from('traficos')
+      .select('id', { count: 'exact', head: true })
+      .eq('company_id', companyId)
+      .eq('estatus', 'Cruzado')
+      .gte('fecha_cruce', monthStart),
+    // 8: recent activity (last 48h status changes)
+    sb.from('traficos')
+      .select('trafico, estatus, updated_at, descripcion_mercancia')
+      .eq('company_id', companyId)
+      .gte('updated_at', hoursAgo(48))
+      .order('updated_at', { ascending: false })
+      .limit(15),
   ])
 
   const activeTraficos = results[0].status === 'fulfilled' ? results[0].value.data ?? [] : []
@@ -733,6 +770,10 @@ async function fetchClientData(companyId: string): Promise<ClientData> {
   const thisMonthTraficos = results[2].status === 'fulfilled' ? results[2].value.data ?? [] : []
   const lastMonthTraficos = results[3].status === 'fulfilled' ? results[3].value.data ?? [] : []
   const recentlyCrossed = results[4].status === 'fulfilled' ? results[4].value.data ?? [] : []
+  const atRiskRaw = results[5].status === 'fulfilled' ? results[5].value.data ?? [] : []
+  const pedimentosResult = results[6].status === 'fulfilled' ? results[6].value : null
+  const cruzadosResult = results[7].status === 'fulfilled' ? results[7].value : null
+  const recentActivityRaw = results[8].status === 'fulfilled' ? results[8].value.data ?? [] : []
 
   // Status level
   const activeCount = activeTraficos.length
@@ -801,6 +842,22 @@ async function fetchClientData(companyId: string): Promise<ClientData> {
       oldestDays: oldest,
       pendingRelease: 0,
     },
+    atRiskShipments: (atRiskRaw as Record<string, unknown>[]).map((t) => ({
+      id: t.id as string,
+      trafico: t.trafico as string,
+      description: (t.descripcion_mercancia as string) || '',
+      valor_usd: Number(t.importe_total || 0),
+      status: (t.estatus as string) || '',
+      daysActive: Math.round((Date.now() - new Date(t.fecha_llegada as string).getTime()) / 86400000),
+    })),
+    pedimentosEnProceso: pedimentosResult?.count ?? 0,
+    cruzadosThisMonth: cruzadosResult?.count ?? 0,
+    recentActivity: (recentActivityRaw as Record<string, unknown>[]).map((t) => ({
+      trafico: t.trafico as string,
+      estatus: (t.estatus as string) || '',
+      updated_at: t.updated_at as string,
+      description: (t.descripcion_mercancia as string) || '',
+    })),
   }
 }
 
@@ -856,6 +913,10 @@ export async function fetchCockpitData(
     weekAhead: [],
     financial: { facturadoThisMonth: 0, facturadoLastMonth: 0, arancelesThisMonth: 0, arancelesLastMonth: 0 },
     inventory: { bultos: 0, tons: 0, oldestDays: 0, pendingRelease: 0 },
+    atRiskShipments: [],
+    pedimentosEnProceso: 0,
+    cruzadosThisMonth: 0,
+    recentActivity: [],
   })
   return { client: client.data }
 }

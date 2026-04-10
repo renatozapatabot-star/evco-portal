@@ -111,7 +111,7 @@ export default async function Dashboard() {
           </a>
         </div>
       )}
-      <ClientHome companyName={companyName} />
+      <ClientHome companyName={companyName} data={data.client!} />
     </CockpitShell>
   )
 }

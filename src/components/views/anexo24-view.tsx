@@ -1,11 +1,12 @@
 'use client'
 
 import { useEffect, useState, useMemo } from 'react'
-import { Search, Download, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Search, Download, ChevronLeft, ChevronRight, FileText, Loader2 } from 'lucide-react'
 import { getCompanyIdCookie, getClientClaveCookie, getCookieValue } from '@/lib/client-config'
 import { fmtDate, fmtUSD, fmtPedimentoShort } from '@/lib/format-utils'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { DateInputES } from '@/components/ui/DateInputES'
+import { CockpitPage } from '@/components/cockpit/CockpitPage'
 import { useIsMobile } from '@/hooks/use-mobile'
 
 interface PartidaRow {
@@ -58,11 +59,27 @@ function exportCSV(rows: EnrichedRow[], clave: string) {
     (r.proveedor).replace(/,/g, ';'), r.origen,
     r.tmec ? 'SI' : 'NO',
   ].join(','))
-  const blob = new Blob([['CRUZ — Reporte Anexo 24', `Clave: ${clave}`, `Exportado: ${fmtDate(new Date())}`, '', h.join(','), ...c].join('\n')], { type: 'text/csv' })
+  const blob = new Blob([['ADUANA — Reporte Anexo 24', `Clave: ${clave}`, `Exportado: ${fmtDate(new Date())}`, '', h.join(','), ...c].join('\n')], { type: 'text/csv' })
   const a = document.createElement('a')
   a.href = URL.createObjectURL(blob)
   a.download = `Anexo24_${clave}_${new Date().toISOString().split('T')[0]}.csv`
   a.click()
+}
+
+// Glass card styles
+const glassCard: React.CSSProperties = {
+  background: 'rgba(255,255,255,0.04)',
+  backdropFilter: 'blur(20px)',
+  WebkitBackdropFilter: 'blur(20px)',
+  border: '1px solid rgba(255,255,255,0.08)',
+  borderRadius: 20,
+  boxShadow: '0 10px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05), 0 0 1px rgba(0,229,255,0.12)',
+}
+
+function fmtUSDCompact(v: number): string {
+  if (v >= 1e6) return `$${(v / 1e6).toFixed(1)}M`
+  if (v >= 1e3) return `$${(v / 1e3).toFixed(0)}K`
+  return fmtUSD(v)
 }
 
 export function Anexo24View() {
@@ -76,6 +93,7 @@ export function Anexo24View() {
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
   const [page, setPage] = useState(0)
+  const [generating, setGenerating] = useState(false)
 
   const [companyId, setCompanyId] = useState('')
   const [clientClave, setClientClave] = useState('')
@@ -96,7 +114,6 @@ export function Anexo24View() {
 
     const companyFilter = !isInternal && companyId ? `&company_id=${companyId}` : ''
 
-    // Fetch all three in parallel
     const safeFetch = (u: string) => fetch(u).then(r => {
       if (!r.ok) throw new Error(r.status === 401 ? 'session_expired' : 'fetch_error')
       return r.json()
@@ -109,7 +126,6 @@ export function Anexo24View() {
       .then(([partidaData, traficoData, provData]) => {
         setPartidas(Array.isArray(partidaData.data) ? partidaData.data : [])
 
-        // Build trafico context map
         const tMap = new Map<string, TraficoContext>()
         const traficos = Array.isArray(traficoData.data) ? traficoData.data : []
         traficos.forEach((t: Record<string, unknown>) => {
@@ -127,7 +143,6 @@ export function Anexo24View() {
         })
         setTraficoMap(tMap)
 
-        // Supplier lookup
         const sMap = new Map<string, string>()
         const provs = Array.isArray(provData.data) ? provData.data : []
         provs.forEach((p: { cve_proveedor?: string; nombre?: string }) => {
@@ -147,16 +162,13 @@ export function Anexo24View() {
       .map(code => supplierLookup.get(code) || code).join(', ')
   }
 
-  // Build enriched rows: partida + tráfico context
   const enriched: EnrichedRow[] = useMemo(() => {
     const rows: EnrichedRow[] = []
     let num = 0
-    // Sort partidas by tráfico (groups by pedimento)
     const sorted = [...partidas].sort((a, b) => (a.cve_trafico || '').localeCompare(b.cve_trafico || ''))
 
     for (const p of sorted) {
       const ctx = traficoMap.get(p.cve_trafico)
-      // Include partidas even without pedimento — show as 'Pendiente'
       num++
       rows.push({
         rowNum: num,
@@ -195,96 +207,188 @@ export function Anexo24View() {
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE)
   const paged = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
-  const tmecCount = useMemo(() => enriched.filter(r => r.tmec).length, [enriched])
+
+  // KPI computations
+  const kpis = useMemo(() => {
+    const totalValue = enriched.reduce((s, r) => s + r.valorUSD, 0)
+    const uniqueFracciones = new Set(enriched.map(r => r.fraccion).filter(f => f !== '—')).size
+    const uniqueProveedores = new Set(enriched.map(r => r.proveedor).filter(p => p !== '—')).size
+    const tmecCount = enriched.filter(r => r.tmec).length
+    const tmecPct = enriched.length > 0 ? Math.round((tmecCount / enriched.length) * 100) : 0
+    return { totalPartidas: enriched.length, totalValue, uniqueFracciones, uniqueProveedores, tmecCount, tmecPct }
+  }, [enriched])
+
+  const handleGeneratePDF = () => {
+    setGenerating(true)
+    const params = new URLSearchParams()
+    if (dateFrom) params.set('from', dateFrom)
+    if (dateTo) params.set('to', dateTo)
+    const url = `/api/anexo24-pdf${params.toString() ? '?' + params.toString() : ''}`
+    window.open(url, '_blank')
+    setTimeout(() => setGenerating(false), 3000)
+  }
+
+  const subtitle = loading
+    ? 'Cargando...'
+    : `${filtered.length.toLocaleString('es-MX')} partidas${kpis.tmecCount > 0 ? ` · ${kpis.tmecCount} T-MEC` : ''}`
 
   return (
-    <div className="page-shell">
-      <div className="section-header">
-        <div>
-          <h1 className="page-title">Anexo 24</h1>
-          <p style={{ fontSize: 13, color: 'var(--slate-500)', marginTop: 4 }}>
-            {filtered.length.toLocaleString('es-MX')} partidas
-            {tmecCount > 0 && <> · <span style={{ color: 'var(--success)', fontWeight: 600 }}>{tmecCount} T-MEC</span></>}
-          </p>
+    <CockpitPage
+      title="Anexo 24"
+      subtitle={subtitle}
+      headerActions={
+        <>
+          <button
+            onClick={() => exportCSV(filtered, clientClave)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6, height: 40, padding: '0 14px',
+              borderRadius: 12, border: '1px solid rgba(255,255,255,0.12)', background: 'transparent',
+              cursor: 'pointer', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary, #94a3b8)',
+              minWidth: 60, justifyContent: 'center',
+            }}
+          >
+            <Download size={14} /> CSV
+          </button>
+          <button
+            onClick={handleGeneratePDF}
+            disabled={generating || loading}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 8, minHeight: 60, padding: '0 20px',
+              borderRadius: 12, border: 'none', background: '#eab308', cursor: generating ? 'wait' : 'pointer',
+              fontSize: 13, fontWeight: 700, color: '#000', opacity: generating ? 0.7 : 1,
+              transition: 'opacity 0.2s',
+            }}
+          >
+            {generating ? <Loader2 size={16} className="animate-spin" /> : <FileText size={16} />}
+            Generar Reporte PDF
+          </button>
+        </>
+      }
+    >
+      {/* KPI Cards */}
+      {!loading && enriched.length > 0 && (
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(5, 1fr)',
+          gap: 12,
+          marginBottom: 20,
+        }}>
+          {[
+            { label: 'Total Partidas', value: kpis.totalPartidas.toLocaleString('es-MX'), color: 'var(--text-primary, #E6EDF3)' },
+            { label: 'Valor Total USD', value: fmtUSDCompact(kpis.totalValue), color: '#eab308' },
+            { label: 'Fracciones', value: String(kpis.uniqueFracciones), color: 'var(--text-primary, #E6EDF3)' },
+            { label: 'T-MEC', value: `${kpis.tmecPct}%`, color: kpis.tmecPct >= 50 ? '#22C55E' : '#FBBF24' },
+            { label: 'Proveedores', value: String(kpis.uniqueProveedores), color: 'var(--text-primary, #E6EDF3)' },
+          ].map(kpi => (
+            <div key={kpi.label} style={{ ...glassCard, padding: 16, textAlign: 'center' }}>
+              <div style={{
+                fontFamily: 'var(--font-mono)', fontSize: 24, fontWeight: 800,
+                color: kpi.color, lineHeight: 1.2, marginBottom: 4,
+              }}>
+                {kpi.value}
+              </div>
+              <div style={{
+                fontSize: 10, fontWeight: 600, textTransform: 'uppercase',
+                letterSpacing: '0.08em', color: 'var(--text-muted, #64748b)',
+              }}>
+                {kpi.label}
+              </div>
+            </div>
+          ))}
         </div>
-        <button onClick={() => exportCSV(filtered, clientClave)}
-          style={{ display: 'flex', alignItems: 'center', gap: 6, height: 36, padding: '0 14px', borderRadius: 8, border: '1px solid var(--border-card)', background: 'transparent', cursor: 'pointer', fontSize: 12, fontWeight: 600, color: 'var(--slate-600)' }}>
-          <Download size={13} /> CSV
-        </button>
-      </div>
+      )}
 
       {/* Filters */}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16, alignItems: 'center' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--bg-card)', border: '1px solid var(--border-card)', borderRadius: 8, padding: '0 12px', height: 36, flex: isMobile ? '1 1 100%' : '0 1 320px' }}>
-          <Search size={13} style={{ color: 'var(--slate-400)', flexShrink: 0 }} />
-          <input placeholder="Pedimento, fracción, proveedor..." value={search}
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 8,
+          ...glassCard, borderRadius: 12, padding: '0 12px', height: 40,
+          flex: isMobile ? '1 1 100%' : '0 1 320px',
+        }}>
+          <Search size={14} style={{ color: 'var(--text-muted, #64748b)', flexShrink: 0 }} />
+          <input
+            placeholder="Pedimento, fracción, proveedor..."
+            value={search}
             onChange={e => { setSearch(e.target.value); setPage(0) }}
-            style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: 12, color: 'var(--text-primary)' }} />
+            style={{
+              flex: 1, background: 'transparent', border: 'none', outline: 'none',
+              fontSize: 13, color: 'var(--text-primary, #E6EDF3)',
+            }}
+          />
         </div>
         {(['all', 'si', 'no'] as const).map(v => (
           <button key={v} onClick={() => { setTmecFilter(v); setPage(0) }}
             style={{
-              fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 6, cursor: 'pointer',
-              border: `1px solid ${tmecFilter === v ? 'var(--success)' : 'var(--border-card)'}`,
-              background: tmecFilter === v ? 'rgba(34,197,94,0.1)' : 'transparent',
-              color: tmecFilter === v ? 'var(--success)' : 'var(--slate-500)',
+              fontSize: 11, fontWeight: 600, padding: '6px 12px', borderRadius: 8, cursor: 'pointer',
+              minHeight: 40,
+              border: `1px solid ${tmecFilter === v ? 'rgba(34,211,238,0.3)' : 'rgba(255,255,255,0.08)'}`,
+              background: tmecFilter === v ? 'rgba(34,211,238,0.08)' : 'transparent',
+              color: tmecFilter === v ? '#00E5FF' : 'var(--text-muted, #64748b)',
+              transition: 'all 0.15s',
             }}>
             {v === 'all' ? 'Todos' : v === 'si' ? 'T-MEC' : 'Sin T-MEC'}
           </button>
         ))}
         <DateInputES value={dateFrom} onChange={v => { setDateFrom(v); setPage(0) }} />
-        <span style={{ color: 'var(--slate-400)', fontSize: 11 }}>—</span>
+        <span style={{ color: 'var(--text-muted, #64748b)', fontSize: 11 }}>—</span>
         <DateInputES value={dateTo} onChange={v => { setDateTo(v); setPage(0) }} />
         {(dateFrom || dateTo) && (
           <button onClick={() => { setDateFrom(''); setDateTo(''); setPage(0) }}
-            style={{ fontSize: 13, color: 'var(--danger)', border: '1px solid #FCA5A5', background: 'var(--danger-bg)', borderRadius: 6, padding: '0 12px', minWidth: 40, minHeight: 40, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
+            style={{
+              fontSize: 13, color: '#EF4444', border: '1px solid rgba(239,68,68,0.3)',
+              background: 'rgba(239,68,68,0.08)', borderRadius: 8, padding: '0 12px',
+              minWidth: 40, minHeight: 40, cursor: 'pointer', display: 'flex',
+              alignItems: 'center', justifyContent: 'center',
+            }}>
+            &times;
+          </button>
         )}
       </div>
 
       {/* Table */}
-      <div className="table-shell">
+      <div style={{ ...glassCard, overflow: 'hidden' }}>
         {loading ? (
           <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 8 }}>
             {Array.from({ length: 8 }).map((_, i) => <div key={i} className="skeleton-shimmer" style={{ height: 40 }} />)}
           </div>
         ) : paged.length === 0 ? (
           <div style={{ padding: 32 }}>
-            <EmptyState icon="📄" title="Sin partidas" description="Las partidas del Anexo 24 aparecerán aquí" />
+            <EmptyState icon="📄" title="Sin partidas" description="Las partidas del Anexo 24 aparecerán aquí cuando se registren operaciones" />
           </div>
         ) : isMobile ? (
-            <div style={{ padding: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {paged.map((r) => (
-                <div key={`${r.pedimento}-${r.rowNum}`} style={{
-                  background: 'var(--bg-main)', border: '1px solid var(--border-card)',
-                  borderRadius: 8, padding: '12px 14px',
-                }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                    <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, fontSize: 13 }}>
-                      {fmtPedimentoShort(r.pedimento)}
-                    </span>
-                    {r.tmec ? (
-                      <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--success)', background: 'var(--success-bg)', padding: '2px 8px', borderRadius: 9999 }}>T-MEC</span>
-                    ) : null}
-                  </div>
-                  <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {r.descripcion}
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--gold-dark, #8B6914)', fontWeight: 600 }}>
-                      {r.fraccion}
-                    </span>
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 500 }}>
-                      {r.valorUSD > 0 ? fmtUSD(r.valorUSD) : '—'}
-                    </span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--text-muted)' }}>
-                    <span style={{ fontFamily: 'var(--font-mono)' }}>{fmtDate(r.fecha)}</span>
-                    <span>{r.origen}</span>
-                  </div>
+          <div style={{ padding: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {paged.map((r) => (
+              <div key={`${r.pedimento}-${r.rowNum}`} style={{
+                background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)',
+                borderRadius: 12, padding: '12px 14px',
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, fontSize: 13, color: 'var(--text-primary, #E6EDF3)' }}>
+                    {fmtPedimentoShort(r.pedimento)}
+                  </span>
+                  {r.tmec ? (
+                    <span style={{ fontSize: 10, fontWeight: 700, color: '#22C55E', background: 'rgba(34,197,94,0.12)', padding: '2px 8px', borderRadius: 9999 }}>T-MEC</span>
+                  ) : null}
                 </div>
-              ))}
-            </div>
-          ) : (
+                <div style={{ fontSize: 12, color: 'var(--text-secondary, #94a3b8)', marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {r.descripcion}
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: '#eab308', fontWeight: 600 }}>
+                    {r.fraccion}
+                  </span>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 500, color: 'var(--text-primary, #E6EDF3)' }}>
+                    {r.valorUSD > 0 ? fmtUSD(r.valorUSD) : '—'}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--text-muted, #64748b)' }}>
+                  <span style={{ fontFamily: 'var(--font-mono)' }}>{fmtDate(r.fecha)}</span>
+                  <span>{r.origen}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
           <div style={{ overflowX: 'auto' }}>
             <table className="aduana-table" style={{ minWidth: 900 }}>
               <thead>
@@ -304,36 +408,36 @@ export function Anexo24View() {
               <tbody>
                 {paged.map((r, i) => (
                   <tr key={`${r.pedimento}-${r.rowNum}`} className={`${i % 2 === 0 ? 'row-even' : 'row-odd'}`}>
-                    <td style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                    <td style={{ fontSize: 11, color: 'var(--text-muted, #64748b)', fontFamily: 'var(--font-mono)' }}>
                       {r.rowNum}
                     </td>
-                    <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, fontSize: 13, whiteSpace: 'nowrap' }}>
+                    <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, fontSize: 13, whiteSpace: 'nowrap', color: 'var(--text-primary, #E6EDF3)' }}>
                       {fmtPedimentoShort(r.pedimento)}
                     </td>
-                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-secondary)' }}>
+                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-secondary, #94a3b8)' }}>
                       {fmtDate(r.fecha)}
                     </td>
-                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--gold-dark, #8B6914)', fontWeight: 600 }}>
+                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: '#eab308', fontWeight: 600 }}>
                       {r.fraccion}
                     </td>
-                    <td style={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 12, color: 'var(--text-secondary)' }}>
+                    <td style={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 12, color: 'var(--text-secondary, #94a3b8)' }}>
                       {r.descripcion}
                     </td>
-                    <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: 12 }}>
+                    <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-primary, #E6EDF3)' }}>
                       {r.cantidad > 0 ? r.cantidad.toLocaleString('es-MX') : '—'}
                     </td>
-                    <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 500 }}>
+                    <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 500, color: 'var(--text-primary, #E6EDF3)' }}>
                       {r.valorUSD > 0 ? fmtUSD(r.valorUSD) : '—'}
                     </td>
-                    <td style={{ maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 12 }}>
+                    <td style={{ maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 12, color: 'var(--text-secondary, #94a3b8)' }}>
                       {r.proveedor}
                     </td>
-                    <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{r.origen}</td>
+                    <td style={{ fontSize: 12, color: 'var(--text-secondary, #94a3b8)' }}>{r.origen}</td>
                     <td>
                       {r.tmec ? (
-                        <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--success)', background: 'var(--success-bg)', padding: '2px 8px', borderRadius: 9999 }}>T-MEC</span>
+                        <span style={{ fontSize: 10, fontWeight: 700, color: '#22C55E', background: 'rgba(34,197,94,0.12)', padding: '2px 8px', borderRadius: 9999 }}>T-MEC</span>
                       ) : (
-                        <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>—</span>
+                        <span style={{ fontSize: 10, color: 'var(--text-muted, #64748b)' }}>—</span>
                       )}
                     </td>
                   </tr>
@@ -341,20 +445,55 @@ export function Anexo24View() {
               </tbody>
             </table>
           </div>
-          )}
+        )}
       </div>
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="pagination">
-          <span className="pagination-info">Página {page + 1} de {totalPages}</span>
-          <div className="pagination-btns">
-            <button className="pagination-btn" disabled={page === 0} onClick={() => setPage(p => p - 1)}><ChevronLeft size={14} /></button>
-            <button className="pagination-btn current">{page + 1}</button>
-            <button className="pagination-btn" disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)}><ChevronRight size={14} /></button>
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          marginTop: 16, padding: '12px 16px', ...glassCard, borderRadius: 12,
+        }}>
+          <span style={{ fontSize: 12, color: 'var(--text-muted, #64748b)', fontFamily: 'var(--font-mono)' }}>
+            Página {page + 1} de {totalPages}
+          </span>
+          <div style={{ display: 'flex', gap: 4 }}>
+            <button
+              disabled={page === 0}
+              onClick={() => setPage(p => p - 1)}
+              style={{
+                width: 40, height: 40, borderRadius: 8, border: '1px solid rgba(255,255,255,0.08)',
+                background: 'transparent', cursor: page === 0 ? 'default' : 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: page === 0 ? 'var(--text-muted, #64748b)' : 'var(--text-primary, #E6EDF3)',
+                opacity: page === 0 ? 0.4 : 1,
+              }}
+            >
+              <ChevronLeft size={16} />
+            </button>
+            <div style={{
+              minWidth: 40, height: 40, borderRadius: 8, border: '1px solid rgba(34,211,238,0.3)',
+              background: 'rgba(34,211,238,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 600, color: '#00E5FF',
+            }}>
+              {page + 1}
+            </div>
+            <button
+              disabled={page >= totalPages - 1}
+              onClick={() => setPage(p => p + 1)}
+              style={{
+                width: 40, height: 40, borderRadius: 8, border: '1px solid rgba(255,255,255,0.08)',
+                background: 'transparent', cursor: page >= totalPages - 1 ? 'default' : 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: page >= totalPages - 1 ? 'var(--text-muted, #64748b)' : 'var(--text-primary, #E6EDF3)',
+                opacity: page >= totalPages - 1 ? 0.4 : 1,
+              }}
+            >
+              <ChevronRight size={16} />
+            </button>
           </div>
         </div>
       )}
-    </div>
+    </CockpitPage>
   )
 }

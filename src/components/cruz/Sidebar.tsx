@@ -88,7 +88,7 @@ export default function Sidebar({
       <div className="sidebar-logo">
         <div className="sidebar-logo-inner">
           <AduanaMark size={32} />
-          <div className="sidebar-logo-text">CRUZ</div>
+          <div className="sidebar-logo-text">ADUANA</div>
         </div>
 
         {/* Client identity block */}

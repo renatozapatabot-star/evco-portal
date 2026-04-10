@@ -1,6 +1,6 @@
-# CRUZ Design System — Single Source of Truth
+# Design System — Aduana Premium Cinematic Dark Theme (v2.3)
 ## Renato Zapata & Company · Patente 3596 · Est. 1941
-## Last updated: 2026-04-08
+## Last updated: 2026-04-10
 
 **This file is the ONLY authority on visual decisions.**
 **CLAUDE.md references this file. Do not duplicate tokens in CLAUDE.md.**
@@ -8,295 +8,146 @@
 
 ---
 
-## THE AESTHETIC
+## Overview & Vision
 
-Dark cockpit. Gold accents. Linear-inspired.
+Official design system for **Aduana** — the AI-powered cross-border customs clearance platform.
+Ultra-premium, cinematic, luxurious: deep navy backgrounds with refined glassmorphism,
+consistent cyan edge glows, volumetric lighting, and a glossy 3D infinity logo.
+Gold is used sparingly for high-priority actions only.
 
-Dense information display. Quiet when healthy (small green badges),
-loud when urgent (red borders, urgency pulses). Monospace on all data.
-Gold is the only accent color — used sparingly for CTAs.
-
-Think: Linear meets Bloomberg Terminal, built by someone who respects
-the craft of customs brokerage. Not a dashboard. A command center.
-
-**Key principles:**
-- Every authenticated page uses the dark cockpit theme (`.cruz-dark`)
-- Login is the only light-themed page
-- No glassmorphism — solid elevated surfaces only
-- Animations: subtle, spring-based, 30ms stagger between cards
-- Dense spacing — cockpit, not magazine layout
+**Core Mood**: Sophisticated, intelligent, futuristic logistics OS.
+**Brand Symbol**: Translucent infinity logo with circuit details = continuous intelligent flow.
 
 ---
 
-## COLOR TOKENS (CSS Variables in globals.css)
+## Color System — Semantic Lighting
 
-### Cockpit Theme (primary — applied via `.cruz-dark` class)
+| Token | Value | Usage |
+|-------|-------|-------|
+| Background gradient | `#05070B → #0B1220` | All authenticated pages |
+| Ambient glow | `radial-gradient(ellipse, rgba(0,229,255,0.05))` | Center of viewport |
+| Card/Panel | `rgba(255,255,255,0.04)` | Glass surface |
+| Border base | `rgba(255,255,255,0.08)` | Card edges |
+| Border hover | `rgba(0,229,255,0.2)` | Active card edges |
+| Accent cyan | `#00E5FF` | Intelligence, active, data flow |
+| Accent blue | `#3B82F6` | Secondary accent |
+| Blue gradient | `linear-gradient(135deg, #00f0ff, #0088ff, #0044cc)` | Logo, progress bars |
+| Gold | `#eab308` | CTAs, financial values ONLY |
+| Gold hover | `#ca8a04` | Button hover |
+| Success green | `#22C55E` | Live, completed |
+| Warning amber | `#FBBF24` | Alerts |
+| Danger red | `#EF4444` | Risk, urgent |
+| Text primary | `#E6EDF3` | Headings, KPIs |
+| Text secondary | `#94a3b8` | Labels, descriptions |
+| Text muted | `#64748b` | Metadata |
+
+### Semantic Rules
+- **Cyan** = system intelligence, live states, active data flow
+- **Gold** = high-priority actions, CTAs, financial values ONLY. Never overuse.
+- **Green** = success, completed, healthy
+- **Red** = alerts, risks, urgent
+- Every glow means "data is flowing." No decoration.
+
+---
+
+## Glass Card System
+
 ```css
---bg-main: #111111;              /* page canvas */
---bg-card: #1A1A1A;              /* card base */
---bg-elevated: #222222;          /* elevated cards (the standard card bg) */
---bg-hover: #2A2A2A;             /* hover state */
---border-card: rgba(255,255,255,0.08);  /* card borders */
---border: rgba(255,255,255,0.06);       /* subtle dividers */
---text-primary: #E6EDF3;         /* primary text (light on dark) */
---text-secondary: #8B949E;       /* secondary text */
---text-muted: #6E7681;           /* muted/tertiary text */
---shadow-card: 0 1px 3px rgba(0,0,0,0.3);
---shadow-elevated: 0 4px 12px rgba(0,0,0,0.4);
+backdrop-filter: blur(20px);
+-webkit-backdrop-filter: blur(20px);
+background: rgba(255,255,255,0.04);
+border: 1px solid rgba(255,255,255,0.08);
+box-shadow:
+  0 10px 30px rgba(0,0,0,0.4),
+  inset 0 1px 0 rgba(255,255,255,0.05),
+  0 0 1px rgba(0,229,255,0.12);
+border-radius: 20px;
 ```
 
-### Light Theme (login page only)
+### Hover
 ```css
---bg-main: #FAFAF8;              /* warm off-white canvas */
---bg-card: #FFFFFF;              /* white cards */
---border-card: #E8E5E0;          /* warm gray borders */
---text-primary: #1A1A1A;
---text-secondary: #6B6B6B;
---text-muted: #737373;
+background: rgba(255,255,255,0.06);
+box-shadow:
+  0 12px 40px rgba(0,0,0,0.5),
+  inset 0 1px 0 rgba(255,255,255,0.08),
+  0 0 30px rgba(0,229,255,0.18);
+border-color: rgba(0,229,255,0.2);
+transform: scale(1.008);
 ```
 
-### Gold (Brand Accent)
+### BANNED on authenticated pages
+`#222222`, `#1A1A1A`, `#1a2338`, `#111111` — NO opaque card backgrounds.
+
+---
+
+## Typography
+
+| Element | Font | Size | Weight | Color |
+|---------|------|------|--------|-------|
+| Body text | Inter | 14px | 400 | text-secondary |
+| KPI numbers | JetBrains Mono | 22-48px | 800 | white |
+| KPI labels | Inter | 10px uppercase | 700 | text-muted |
+| Card titles | Inter | 16px | 700 | white |
+| Section labels | Inter | 11px uppercase | 700 | text-muted |
+| Metadata | JetBrains Mono | 11-12px | 400 | text-muted |
+
+Letter-spacing: 0.08em on all uppercase labels.
+
+---
+
+## Spacing & Layout
+
+- Card padding: 20px
+- Card gap: 16px
+- Border-radius: 20px (all cards)
+- 4px base grid
+- Command center: Hero → KPI strip → 4-col action → 4-col reference
+- Floating "ADUANA AI" pill: bottom-right, gold gradient
+
+---
+
+## Ambient Background
+
 ```css
---gold: #C9A84C;                /* buttons, CTAs, active nav — ONE JOB ONLY */
---gold-dark: #8B6914;            /* gold TEXT on light backgrounds (WCAG AA 5.2:1) */
---gold-bg: rgba(196,150,60,0.15); /* active nav item background (cockpit) */
---gold-hover: #B8933B;           /* button hover state */
-```
-
-### Gold Rules
-- Gold does ONE job: primary CTAs + active nav indicator
-- Links: use blue (#2563EB), NEVER gold
-- "Salir" button: muted text, NEVER gold
-- Chart bars: gold is fine (brand chart color)
-- Text on dark: gold (#C9A84C) is fine — high contrast against #222222
-- Text on light: ALWAYS use --gold-dark (#8B6914), NEVER --gold
-
-### Brand Mark
-```css
---z-red: #CC1B2F;               /* Z mark ONLY — nothing else uses this */
-```
-
-### Status / Semantic
-```css
---success: #16A34A;              /* green — completed, confirmed */
---warning: #D97706;              /* amber — borders/bg, never text on white */
---warning-text: #92400E;         /* amber text (WCAG AA 7.3:1) */
---danger: #DC2626;               /* red — errors, critical */
---danger-text: #991B1B;          /* red text on white */
---info: #2563EB;                 /* blue — links, informational */
-```
-
-### Status on Dark (`.cruz-dark` overrides)
-```css
---green-50: #0D2818;   --green-100: #1A4D2E;
---amber-50: #2D1F0A;   --amber-100: #4D3510;
---red-50: #2D1216;     --red-100: #4D2024;
-```
-
-### Urgency System (card top borders)
-```css
-Red:     rgba(220,38,38,0.7)     /* urgent — action required */
-Amber:   rgba(217,119,6,0.6)     /* monitor — attention needed */
-Green:   rgba(22,163,74,0.5)     /* healthy — all good */
-Neutral: rgba(201,168,76,0.4)    /* informational — gold accent */
-```
-
-### Emotional Colors (max 3 visible simultaneously on any screen)
-```css
---teal: #0D9488;                 /* CERTAINTY — confirmed facts, locked ETAs */
---slate: #475569;                /* WAITING — in progress, on schedule */
---warm-gray: #78716C;            /* ARCHIVED — done, historical */
---plum: #7E22CE;                 /* REGULATORY — not urgent today, urgent soon */
+background:
+  radial-gradient(ellipse at 50% 20%, rgba(0,229,255,0.05) 0%, transparent 50%),
+  linear-gradient(180deg, #05070B 0%, #0B1220 100%);
 ```
 
 ---
 
-## TYPOGRAPHY
+## Mobile (375px minimum)
 
-### Font Stack
-```css
-/* Body — loaded via next/font, NOT CDN @import */
-font-family: 'Geist Sans', var(--font-geist-sans), system-ui, sans-serif;
-
-/* Numeric — ALL financial figures, ALL timestamps, ALL IDs. No exceptions. */
-font-family: 'JetBrains Mono', var(--font-jetbrains-mono), monospace;
-```
-
-### Scale (Linear-inspired — tight, dense)
-```
-Display:     Geist Sans, 28px, weight 700, color --text-primary
-Title:       Geist Sans, 18px, weight 600, color --text-primary
-Heading:     Geist Sans, 16px, weight 600, color --text-primary
-Section:     Geist Sans, 11px, weight 500, uppercase, tracking-wider, color --text-muted
-Body:        Geist Sans, 14px, weight 400, color --text-secondary, line-height 1.5
-Caption:     Geist Sans, 12px, weight 400, color --text-muted
-Mono/Data:   JetBrains Mono, 13px, weight 400, color --text-primary
-Mono/Large:  JetBrains Mono, 28-32px, weight 800, color --text-primary (KPI values)
-Mono/Small:  JetBrains Mono, 11px, weight 400, color --text-muted
-```
-
-### Typography Rules
-- Base font size: 14px (dense, not generous)
-- Line height: 1.5 for body, 1.1 for KPI numbers
-- JetBrains Mono on: pedimento numbers, trafico IDs, monetary values, dates, timestamps, percentages, KPI values
-- Geist Sans on: everything else (headings, body text, labels, buttons)
-- Never use DM Sans, Inter, Roboto, Arial, or system-ui as primary
-- Never load fonts via CDN @import — use next/font only
+- Touch targets: 60px minimum (border at 3 AM standard)
+- Cards stack vertically, sorted by urgency
+- Glass effect preserved (reduce blur to 12px for performance)
+- KPI strip: 2x2 grid
+- Reference row: behind "Ver más" expandable
 
 ---
 
-## COCKPIT CARD PATTERN (CockpitCard)
+## Status Badges
 
-The primary UI element. Every metric, action, and data view lives inside a cockpit card.
-
-```
-Background:    var(--bg-elevated) = #222222
-Border:        1px solid rgba(255,255,255,0.08)
-Top border:    3px solid [urgency color]
-Border radius: 14px
-Padding:       16px (Linear-tight)
-Min height:    180px
-Shadow:        0 2px 12px [urgency shadow color]
-```
-
-### Card urgency states:
-- **Red** (urgent): red top border, red shadow glow, urgency pulse animation
-- **Amber** (monitor): amber top border, amber shadow
-- **Green** (healthy): green top border, green check badge top-right, 85% opacity if no data
-- **Neutral** (info): gold top border, no badge
-
-### Card anatomy:
-1. Icon + Label header (16px semibold, white)
-2. KPI value (JetBrains Mono, 26-32px, white, gold text-shadow)
-3. Subtitle (13px, muted)
-4. Action buttons (gold pills, 12px bold)
-
-### Green check badge:
-- 18px circle, green bg, white checkmark icon
-- Position: top-right corner of card
-- Only visible when urgency = green or neutral
+Always use `<StatusBadge status={status} />`. Never inline badge styles.
+Badges use semi-transparent backgrounds matching glass system.
 
 ---
 
-## COCKPIT TABLE PATTERN (CockpitTable)
+## Strict Rules for All Code
 
-For data lists inside the cockpit aesthetic.
-
-```
-Background:    transparent (inherits dark canvas)
-Header:        var(--bg-elevated), --text-secondary, 11px uppercase tracking-wider
-Row even:      var(--bg-card) = #1A1A1A
-Row odd:       rgba(255,255,255,0.02)
-Row hover:     rgba(255,255,255,0.04)
-Border:        border-bottom rgba(255,255,255,0.06)
-Numbers:       JetBrains Mono
-Status:        StatusBadge with .cruz-dark overrides
-Empty state:   icon + message + action on dark background
-```
+1. Always use cinematic dark glass theme on all authenticated pages.
+2. Apply glassmorphism + cyan idle glow to every card.
+3. Cyan = intelligence. Gold = action. Green = success. Red = risk.
+4. Maintain typography hierarchy — KPIs huge, labels uppercase, metadata muted.
+5. NO opaque backgrounds on cards. NO #222222. NO #1A1A1A.
+6. 60px touch targets on mobile.
+7. JetBrains Mono on ALL numbers and timestamps.
+8. All monetary values carry MXN or USD label.
+9. No clutter — generous whitespace and clear hierarchy.
+10. When in doubt, match the mockup: glass infinity logo, cyan glows, gold CTAs.
 
 ---
 
-## COCKPIT PAGE LAYOUT
-
-```
-Page wrapper:  .cruz-dark class (applies all dark token overrides)
-Background:    #111111 (flat, no gradients)
-Padding:       16px mobile, 48px desktop
-Max width:     1200px centered
-Grid:          12-column CSS grid, gap 12px
-               Critical cards (red/amber): span 6 cols
-               Normal cards (green/neutral): span 3 cols
-               Mobile: single column, sorted by urgency (most urgent top)
-```
-
----
-
-## SPACING SYSTEM (Linear-tight)
-
-```
-4px base: p-1(4) p-2(8) p-3(12) p-4(16) p-5(20) p-6(24) p-8(32)
-No arbitrary values. Use the Tailwind scale.
-
-Card padding:   16px (tight)
-Card gap:       12px
-Section gap:    16px
-Page padding:   16px (mobile) / 48px (desktop)
-Max content:    1200px
-```
-
----
-
-## ANIMATION RULES (Linear-inspired)
-
-```
-Card entrance:   stagger 30ms, translateY(6px→0), 200ms spring
-Card hover:      scale(1.005), border brightens, 150ms
-Card tap:        scale(0.97), 100ms
-Swipe resolve:   translateX → 300, fade out, 300ms
-Pull refresh:    gold spinner, proportional rotation
-Page transition: fade + translateY(4px→0), 160ms
-Numbers:         count-up spring animation on KPI values
-Tab indicator:   gold underline slides with layout animation
-```
-
-### Animation Principles
-- Subtle and confident. Never bouncy or flashy.
-- prefers-reduced-motion: disable all springs, use instant transitions
-- framer-motion for gestures and layout animations
-- CSS transitions for hover/focus micro-interactions
-
----
-
-## TOUCH TARGETS
-
-- Desktop interactive elements: min 44px
-- Mobile interactive elements: min 60px (this is the border at 3 AM, not WCAG)
-- Table row click targets: full row width, min-h-[48px]
-
----
-
-## RESPONSIVE BREAKPOINTS
-
-```
-Mobile:    375px minimum (test everything here)
-Tablet:    768px
-Desktop:   1024px+
-Max width: 1200px
-
-Cards:       1-col mobile (urgency-sorted), 12-col grid desktop
-Tables:      horizontal scroll on mobile, full width on desktop
-Sidebar:     hidden on client portal, visible on operator portal
-Touch:       60px on mobile, 44px on desktop
-```
-
----
-
-## STATUS BADGES (global — use StatusBadge component always)
-
-On dark backgrounds, badges use `.cruz-dark` overrides:
-```
-En proceso:  bg-[--amber-50]  text-amber-400  border-amber-800
-Cruzado:     bg-[--green-50]  text-green-400  border-green-800
-Warning:     bg-[--amber-50]  text-orange-400 border-orange-800
-Error:       bg-[--red-50]    text-red-400    border-red-800
-Pending:     bg-[--slate-100] text-slate-400  border-slate-600
-T-MEC:       gold pill (same amber tokens)
-```
-
----
-
-## WHAT NEVER TO DO
-
-- NEVER use light-theme cards in authenticated pages (login is the only light page)
-- NEVER use glassmorphism (backdrop-filter: blur) on portal cards — solid surfaces only
-- NEVER use Inter, Roboto, DM Sans, Arial, or system fonts as primary
-- NEVER use purple gradients or blue as primary accent
-- NEVER hardcode hex colors in components — use CSS variables
-- NEVER inline badge styles — use StatusBadge component
-- NEVER leave empty states as blank space (icon + message + action)
-- NEVER use radial gradients on page backgrounds — flat #111111 only
-
----
-
-*CRUZ Design System · Renato Zapata & Company · Patente 3596*
-*Last verified against live portal: 2026-04-08*
+*Version 2.3 — Cinematic Glass Control Tower*
+*Updated: April 2026*
+*Priority: Highest*

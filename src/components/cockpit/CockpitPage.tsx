@@ -19,7 +19,6 @@ export function CockpitPage({ title, subtitle, headerActions, children }: Cockpi
   return (
     <div className="aduana-dark" style={{
       minHeight: '100vh',
-      background: '#111111',
       color: 'var(--text-primary, #E6EDF3)',
     }}>
       <div style={{

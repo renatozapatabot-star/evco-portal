@@ -2,11 +2,11 @@
 
 import { useEffect, useState, useMemo } from 'react'
 import { getCookieValue } from '@/lib/client-config'
-import { fmtDate } from '@/lib/format-utils'
 import { EmptyState } from '@/components/ui/EmptyState'
+import type { LucideIcon } from 'lucide-react'
 import {
-  Package, TrendingUp, Clock, Shield,
-  DollarSign, FileText, Truck, BarChart3,
+  Package, TrendingUp, Zap, Shield,
+  DollarSign, FileText,
 } from 'lucide-react'
 
 interface TraficoRow {
@@ -14,6 +14,7 @@ interface TraficoRow {
   estatus?: string
   fecha_llegada?: string | null
   fecha_cruce?: string | null
+  fecha_pago?: string | null
   importe_total?: number | null
   pedimento?: string | null
   regimen?: string | null
@@ -29,42 +30,71 @@ interface FacturaRow {
   igi?: number
   iva?: number
   fraccion?: string
+  fecha_pago?: string | null
   [key: string]: unknown
 }
 
-function KPICard({ icon: Icon, label, value, sub, color }: {
-  icon: typeof Package; label: string; value: string; sub?: string; color?: string
+// ── Premium KPI Card ───────────────────────────────────────
+
+function KPICard({ icon: Icon, label, value, sub, accent }: {
+  icon: LucideIcon; label: string; value: string; sub?: string; accent: string
 }) {
   return (
-    <div style={{
+    <div className="kpi-premium-card" style={{
+      position: 'relative',
       background: 'rgba(255,255,255,0.04)',
       backdropFilter: 'blur(20px)',
       WebkitBackdropFilter: 'blur(20px)',
       border: '1px solid rgba(255,255,255,0.08)',
       borderRadius: 16,
-      padding: '20px',
+      padding: '24px',
       boxShadow: '0 10px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)',
+      overflow: 'hidden',
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+      {/* Accent top line */}
+      <div style={{
+        position: 'absolute', top: 0, left: 0, right: 0, height: 3,
+        background: `linear-gradient(90deg, ${accent}, ${accent}66)`,
+      }} />
+
+      {/* Radial glow behind value */}
+      <div style={{
+        position: 'absolute', bottom: -20, left: '30%',
+        width: 120, height: 60,
+        background: `radial-gradient(ellipse, ${accent}12 0%, transparent 70%)`,
+        pointerEvents: 'none',
+      }} />
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16, position: 'relative' }}>
         <div style={{
-          width: 36, height: 36, borderRadius: 10,
-          background: `${color || 'rgba(0,229,255,0.08)'}`,
+          width: 38, height: 38, borderRadius: 11,
+          background: `${accent}18`,
+          border: `1px solid ${accent}30`,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
-          <Icon size={18} color={color === 'rgba(34,197,94,0.12)' ? '#22C55E' : color === 'rgba(234,179,8,0.12)' ? '#eab308' : '#00E5FF'} strokeWidth={1.8} />
+          <Icon size={18} color={accent} strokeWidth={1.8} />
         </div>
-        <span style={{ fontSize: 11, fontWeight: 700, color: '#8b9ab5', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+        <span style={{
+          fontSize: 11, fontWeight: 700, color: '#8b9ab5',
+          textTransform: 'uppercase', letterSpacing: '0.08em',
+        }}>
           {label}
         </span>
       </div>
+
       <div style={{
-        fontFamily: 'var(--font-mono)', fontSize: 28, fontWeight: 800,
-        color: '#E6EDF3', lineHeight: 1.1,
+        fontFamily: 'var(--font-mono)', fontSize: 36, fontWeight: 800,
+        color: '#E6EDF3', lineHeight: 1.1, position: 'relative',
+        letterSpacing: '-0.02em',
       }}>
         {value}
       </div>
+
       {sub && (
-        <div style={{ fontSize: 12, color: '#64748b', marginTop: 6 }}>
+        <div style={{
+          fontSize: 13, color: '#64748b', marginTop: 8, lineHeight: 1.4,
+          position: 'relative',
+        }}>
           {sub}
         </div>
       )}
@@ -75,14 +105,32 @@ function KPICard({ icon: Icon, label, value, sub, color }: {
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
     <h2 style={{
-      fontSize: 14, fontWeight: 700, color: '#94a3b8',
-      textTransform: 'uppercase', letterSpacing: '0.08em',
-      marginBottom: 12, marginTop: 28,
+      fontSize: 13, fontWeight: 700, color: '#94a3b8',
+      textTransform: 'uppercase', letterSpacing: '0.1em',
+      marginBottom: 12, marginTop: 32,
     }}>
       {children}
     </h2>
   )
 }
+
+function GlassPanel({ children, style = {} }: { children: React.ReactNode; style?: React.CSSProperties }) {
+  return (
+    <div style={{
+      background: 'rgba(255,255,255,0.04)',
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)',
+      border: '1px solid rgba(255,255,255,0.08)',
+      borderRadius: 16, padding: '24px',
+      boxShadow: '0 10px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)',
+      ...style,
+    }}>
+      {children}
+    </div>
+  )
+}
+
+// ── Page ───────────────────────────────────────────────────
 
 export default function KPIsPage() {
   const [traficos, setTraficos] = useState<TraficoRow[]>([])
@@ -141,17 +189,19 @@ export default function KPIsPage() {
     const totalIGI = facturas.reduce((s, f) => s + (Number(f.igi) || 0), 0)
     const totalIVA = facturas.reduce((s, f) => s + (Number(f.iva) || 0), 0)
 
-    // Clearance time
-    const clearanceTimes: number[] = []
+    // Speed score: % cleared within 48h of pedimento payment
+    let fastClearCount = 0
+    let clearWithDates = 0
     for (const t of cruzados) {
-      if (t.fecha_llegada && t.fecha_cruce) {
-        const days = (new Date(t.fecha_cruce).getTime() - new Date(t.fecha_llegada).getTime()) / 86400000
-        if (days > 0 && days < 365) clearanceTimes.push(days)
+      const pago = t.fecha_pago as string | null
+      const cruce = t.fecha_cruce as string | null
+      if (pago && cruce) {
+        clearWithDates++
+        const hours = (new Date(cruce).getTime() - new Date(pago).getTime()) / 3600000
+        if (hours >= 0 && hours <= 48) fastClearCount++
       }
     }
-    const avgClearance = clearanceTimes.length > 0
-      ? Math.round(clearanceTimes.reduce((s, d) => s + d, 0) / clearanceTimes.length * 10) / 10
-      : null
+    const speedScore = clearWithDates > 0 ? Math.round(fastClearCount / clearWithDates * 100) : null
 
     // T-MEC
     const tmecOps = traficos.filter(t => {
@@ -160,7 +210,7 @@ export default function KPIsPage() {
     })
     const tmecPct = total > 0 ? Math.round(tmecOps.length / total * 100) : 0
 
-    // Success rate (cruzados / total)
+    // Success rate
     const successRate = total > 0 ? Math.round(cruzados.length / total * 100) : 0
 
     // Monthly volumes
@@ -180,13 +230,9 @@ export default function KPIsPage() {
     const fracMap = new Map<string, number>()
     for (const f of facturas) {
       const frac = (f as Record<string, unknown>).fraccion as string || ''
-      if (frac && frac !== '—') {
-        fracMap.set(frac, (fracMap.get(frac) || 0) + 1)
-      }
+      if (frac && frac !== '—') fracMap.set(frac, (fracMap.get(frac) || 0) + 1)
     }
-    const topFracciones = Array.from(fracMap.entries())
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 8)
+    const topFracciones = Array.from(fracMap.entries()).sort((a, b) => b[1] - a[1]).slice(0, 8)
 
     // Regimen breakdown
     const regimenMap = new Map<string, number>()
@@ -194,14 +240,14 @@ export default function KPIsPage() {
       const reg = (t.regimen || 'A1').toUpperCase()
       regimenMap.set(reg, (regimenMap.get(reg) || 0) + 1)
     }
-    const regimenBreakdown = Array.from(regimenMap.entries())
-      .sort((a, b) => b[1] - a[1])
+    const regimenBreakdown = Array.from(regimenMap.entries()).sort((a, b) => b[1] - a[1])
 
     return {
       total, cruzados: cruzados.length, enProceso: enProceso.length,
       withPedimento: withPedimento.length,
       totalValueUSD, totalDTA, totalIGI, totalIVA,
-      avgClearance, tmecPct, tmecOps: tmecOps.length, successRate,
+      speedScore, fastClearCount, clearWithDates,
+      tmecPct, tmecOps: tmecOps.length, successRate,
       monthlyVolumes, topFracciones, regimenBreakdown,
     }
   }, [traficos, facturas])
@@ -211,7 +257,7 @@ export default function KPIsPage() {
       <div className="page-shell">
         <div style={{ padding: 40, display: 'flex', flexDirection: 'column', gap: 12 }}>
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="skeleton-shimmer" style={{ height: 80, borderRadius: 16 }} />
+            <div key={i} className="skeleton-shimmer" style={{ height: 100, borderRadius: 16 }} />
           ))}
         </div>
       </div>
@@ -233,129 +279,164 @@ export default function KPIsPage() {
 
   return (
     <div className="page-shell">
-      <div style={{ marginBottom: 12 }}>
+      <div style={{ marginBottom: 16 }}>
         <h1 className="page-title">Indicadores de Rendimiento</h1>
-        <p className="page-subtitle">Análisis completo de operaciones aduanales</p>
+        <p className="page-subtitle" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          Análisis completo de operaciones aduanales
+          <span style={{
+            fontFamily: 'var(--font-mono)', fontSize: 11, color: '#64748b',
+            background: 'rgba(255,255,255,0.04)', padding: '2px 8px', borderRadius: 6,
+          }}>
+            Datos desde ene 2024
+          </span>
+        </p>
       </div>
 
       {/* ── KPI Grid ─────────────────────────────────── */}
-      <div className="kpi-page-grid" style={{ display: 'grid', gap: 12, marginBottom: 8 }}>
-        <KPICard icon={Package} label="Operaciones Totales" value={String(kpis.total)}
+      <div className="kpi-page-grid" style={{ display: 'grid', gap: 14, marginBottom: 8 }}>
+        <KPICard icon={Package} accent="#00E5FF"
+          label="Operaciones Totales" value={String(kpis.total)}
           sub={`${kpis.cruzados} cruzados · ${kpis.enProceso} en proceso`} />
-        <KPICard icon={DollarSign} label="Valor Importado USD" value={fmtUSD(kpis.totalValueUSD)}
-          sub={`DTA ${fmtUSD(kpis.totalDTA)} · IGI ${fmtUSD(kpis.totalIGI)} · IVA ${fmtUSD(kpis.totalIVA)}`}
-          color="rgba(234,179,8,0.12)" />
-        <KPICard icon={Clock} label="Tiempo Promedio Despacho" value={kpis.avgClearance ? `${kpis.avgClearance} días` : 'N/D'}
-          sub={kpis.avgClearance ? `De ${kpis.cruzados} operaciones cruzadas` : 'Sin datos de cruce disponibles'} />
-        <KPICard icon={Shield} label="Tasa de Éxito" value={`${kpis.successRate}%`}
-          sub={`${kpis.cruzados} de ${kpis.total} operaciones completadas`}
-          color="rgba(34,197,94,0.12)" />
-        <KPICard icon={TrendingUp} label="Cumplimiento T-MEC" value={`${kpis.tmecPct}%`}
+
+        <KPICard icon={DollarSign} accent="#eab308"
+          label="Valor Importado USD" value={fmtUSD(kpis.totalValueUSD)}
+          sub={`DTA ${fmtUSD(kpis.totalDTA)} · IGI ${fmtUSD(kpis.totalIGI)} · IVA ${fmtUSD(kpis.totalIVA)}`} />
+
+        <KPICard icon={Zap} accent="#22C55E"
+          label="Despacho Rápido"
+          value={kpis.speedScore !== null ? `${kpis.speedScore}%` : 'N/D'}
+          sub={kpis.speedScore !== null
+            ? `${kpis.fastClearCount} de ${kpis.clearWithDates} cruzados en menos de 48h`
+            : 'Sin datos de pago/cruce disponibles'} />
+
+        <KPICard icon={Shield} accent="#10B981"
+          label="Tasa de Éxito" value={`${kpis.successRate}%`}
+          sub={`${kpis.cruzados} de ${kpis.total} operaciones completadas`} />
+
+        <KPICard icon={TrendingUp} accent="#0D9488"
+          label="Cumplimiento T-MEC" value={`${kpis.tmecPct}%`}
           sub={`${kpis.tmecOps} operaciones con régimen T-MEC`} />
-        <KPICard icon={FileText} label="Pedimentos Asignados" value={`${Math.round(kpis.withPedimento / kpis.total * 100)}%`}
+
+        <KPICard icon={FileText} accent="#3B82F6"
+          label="Pedimentos Asignados" value={`${Math.round(kpis.withPedimento / kpis.total * 100)}%`}
           sub={`${kpis.withPedimento} de ${kpis.total} tráficos con pedimento`} />
       </div>
 
       {/* ── Volumen Mensual ──────────────────────────── */}
       <SectionTitle>Volumen Mensual de Operaciones</SectionTitle>
-      <div style={{
-        background: 'rgba(255,255,255,0.04)',
-        backdropFilter: 'blur(20px)',
-        border: '1px solid rgba(255,255,255,0.08)',
-        borderRadius: 16, padding: '20px',
-        boxShadow: '0 10px 30px rgba(0,0,0,0.4)',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: 120 }}>
+      <GlassPanel>
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 140 }}>
           {kpis.monthlyVolumes.map(([month, count]) => {
             const pct = (count / maxMonthly) * 100
             const [y, m] = month.split('-')
             const label = new Date(Number(y), Number(m) - 1).toLocaleDateString('es-MX', { month: 'short' })
             return (
               <div key={month} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: '#E6EDF3', fontWeight: 600 }}>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: '#E6EDF3', fontWeight: 700 }}>
                   {count}
                 </span>
                 <div style={{
-                  width: '100%', maxWidth: 32, height: `${Math.max(pct, 4)}%`,
-                  background: 'linear-gradient(180deg, #00E5FF 0%, rgba(0,229,255,0.3) 100%)',
-                  borderRadius: '4px 4px 0 0',
-                  minHeight: 4,
+                  width: '100%', maxWidth: 36,
+                  height: `${Math.max(pct, 6)}%`,
+                  background: 'linear-gradient(180deg, #00E5FF 0%, #00E5FF44 60%, #00E5FF11 100%)',
+                  borderRadius: '6px 6px 2px 2px',
+                  minHeight: 6,
+                  boxShadow: count > 0 ? '0 0 8px #00E5FF22' : 'none',
                 }} />
-                <span style={{ fontSize: 9, color: '#64748b', textTransform: 'uppercase' }}>
+                <span style={{ fontSize: 9, color: '#64748b', textTransform: 'uppercase', fontWeight: 600 }}>
                   {label}
                 </span>
               </div>
             )
           })}
         </div>
-      </div>
+      </GlassPanel>
 
       {/* ── Distribución por Régimen ──────────────────── */}
       <SectionTitle>Distribución por Régimen</SectionTitle>
-      <div style={{
-        background: 'rgba(255,255,255,0.04)',
-        backdropFilter: 'blur(20px)',
-        border: '1px solid rgba(255,255,255,0.08)',
-        borderRadius: 16, padding: '20px',
-        boxShadow: '0 10px 30px rgba(0,0,0,0.4)',
-        display: 'flex', flexDirection: 'column', gap: 8,
-      }}>
+      <GlassPanel style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {kpis.regimenBreakdown.map(([reg, count]) => {
           const pct = Math.round(count / kpis.total * 100)
           const isTmec = reg === 'ITE' || reg === 'ITR' || reg === 'IMD'
+          const barColor = isTmec ? '#22C55E' : '#00E5FF'
           return (
             <div key={reg} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <span style={{
                 fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 700,
-                color: isTmec ? '#22C55E' : '#E6EDF3', minWidth: 40,
+                color: isTmec ? '#22C55E' : '#E6EDF3', minWidth: 44,
               }}>
                 {reg}
               </span>
-              <div style={{ flex: 1, height: 8, background: 'rgba(255,255,255,0.06)', borderRadius: 4, overflow: 'hidden' }}>
+              <div style={{
+                flex: 1, height: 10, background: 'rgba(255,255,255,0.06)',
+                borderRadius: 5, overflow: 'hidden',
+              }}>
                 <div style={{
                   height: '100%', width: `${pct}%`,
-                  background: isTmec ? '#22C55E' : '#00E5FF',
-                  borderRadius: 4, transition: 'width 0.5s ease',
+                  background: `linear-gradient(90deg, ${barColor}, ${barColor}88)`,
+                  borderRadius: 5,
+                  boxShadow: `0 0 6px ${barColor}33`,
+                  transition: 'width 0.6s ease',
                 }} />
               </div>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: '#8b9ab5', minWidth: 60, textAlign: 'right' }}>
+              <span style={{
+                fontFamily: 'var(--font-mono)', fontSize: 12, color: '#8b9ab5',
+                minWidth: 70, textAlign: 'right',
+              }}>
                 {count} ({pct}%)
               </span>
             </div>
           )
         })}
-      </div>
+      </GlassPanel>
 
       {/* ── Top Fracciones ───────────────────────────── */}
       {kpis.topFracciones.length > 0 && (
         <>
           <SectionTitle>Fracciones Arancelarias Más Frecuentes</SectionTitle>
-          <div style={{
-            background: 'rgba(255,255,255,0.04)',
-            backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255,255,255,0.08)',
-            borderRadius: 16, padding: '20px',
-            boxShadow: '0 10px 30px rgba(0,0,0,0.4)',
-            display: 'flex', flexDirection: 'column', gap: 6,
-          }}>
-            {kpis.topFracciones.map(([frac, count]) => (
-              <div key={frac} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 14, fontWeight: 600, color: '#eab308' }}>
-                  {frac}
-                </span>
+          <GlassPanel style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+            {kpis.topFracciones.map(([frac, count], i) => (
+              <div key={frac} className="fraccion-row" style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '10px 4px',
+                borderBottom: i < kpis.topFracciones.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
+                borderRadius: 4,
+                transition: 'background 150ms ease',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span style={{
+                    fontFamily: 'var(--font-mono)', fontSize: 11, color: '#475569',
+                    minWidth: 20, textAlign: 'right',
+                  }}>
+                    {i + 1}
+                  </span>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 14, fontWeight: 700, color: '#eab308' }}>
+                    {frac}
+                  </span>
+                </div>
                 <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: '#8b9ab5' }}>
                   {count} operaciones
                 </span>
               </div>
             ))}
-          </div>
+          </GlassPanel>
         </>
       )}
 
-      {/* ── Responsive ───────────────────────────────── */}
+      {/* ── Responsive + hover styles ────────────────── */}
       <style>{`
         .kpi-page-grid {
           grid-template-columns: repeat(3, 1fr);
+        }
+        .kpi-premium-card {
+          transition: transform 150ms ease, box-shadow 150ms ease;
+        }
+        .kpi-premium-card:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 14px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08) !important;
+        }
+        .fraccion-row:hover {
+          background: rgba(255,255,255,0.03);
         }
         @media (max-width: 1024px) {
           .kpi-page-grid {
@@ -365,6 +446,10 @@ export default function KPIsPage() {
         @media (max-width: 640px) {
           .kpi-page-grid {
             grid-template-columns: 1fr !important;
+            gap: 10px !important;
+          }
+          .kpi-premium-card {
+            padding: 18px !important;
           }
         }
       `}</style>

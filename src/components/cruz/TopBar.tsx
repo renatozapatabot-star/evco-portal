@@ -63,7 +63,7 @@ export default function TopBar({
         {/* Logo */}
         <Link href="/" className="topbar-logo" aria-label="ADUANA inicio">
           <AduanaMark size={40} />
-          <span className="topbar-logo-text">ADUANA <span style={{ fontWeight: 400, opacity: 0.6 }}>IO</span></span>
+          <span className="topbar-logo-text">ADUANA</span>
         </Link>
 
         {/* Wide search bar (desktop) */}

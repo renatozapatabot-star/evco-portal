@@ -219,8 +219,8 @@
 }
 .aduana-dark tr.row-even { background: var(--bg-card); }
 .aduana-dark tr.row-odd { background: rgba(255,255,255,0.02); }
-.aduana-dark .aduana-table tr:hover { background: rgba(255,255,255,0.04); }
-.aduana-dark .mn-nav { background: #1A1A1A; border-top-color: rgba(201,168,76,0.15); }
+.aduana-dark .aduana-table tr:hover { background: rgba(0,229,255,0.04); }
+.aduana-dark .mn-nav { background: rgba(5,7,11,0.9); backdrop-filter: blur(20px); border-top-color: rgba(0,229,255,0.1); }
 .aduana-dark .mn-nav .mn-tab { color: rgba(255,255,255,0.5); }
 .aduana-dark .mn-nav .mn-tab.active { color: var(--gold, #C9A84C); }
 .aduana-dark .mn-nav .mn-label { color: inherit; }
@@ -443,26 +443,26 @@ body {
   min-width: 260px;
 }
 
-/* ── Unified card transitions — Cinematic Glass System ────────── */
+/* ── Cinematic Glass Card System — Premium Control Tower ────────── */
 .cc-card {
   transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.08);
+  border: 1px solid rgba(0,229,255,0.1);
   box-shadow:
     0 10px 30px rgba(0,0,0,0.4),
     inset 0 1px 0 rgba(255,255,255,0.05),
-    0 0 1px rgba(0,229,255,0.12);
+    0 0 8px rgba(0,229,255,0.15);
 }
 .cc-card:hover {
-  transform: scale(1.008);
+  transform: scale(1.012) translateY(-2px);
   background: rgba(255,255,255,0.06);
   box-shadow:
-    0 12px 40px rgba(0,0,0,0.5),
-    inset 0 1px 0 rgba(255,255,255,0.08),
-    0 0 30px rgba(0,229,255,0.18);
-  border-color: rgba(0,229,255,0.2);
+    0 14px 45px rgba(0,0,0,0.5),
+    inset 0 1px 0 rgba(255,255,255,0.1),
+    0 0 40px rgba(0,229,255,0.25);
+  border-color: rgba(0,229,255,0.25);
 }
 .cc-card:active {
   transform: scale(0.98);

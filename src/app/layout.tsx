@@ -25,7 +25,7 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  title: "ADUANA IO · Inteligencia Aduanal",
+  title: "ADUANA · Inteligencia Aduanal",
   description: "Plataforma de inteligencia aduanal · Patente 3596 · Aduana 240 · Nuevo Laredo",
   icons: { icon: '/favicon.svg' },
   openGraph: {

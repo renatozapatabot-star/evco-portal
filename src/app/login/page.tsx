@@ -107,7 +107,7 @@ function LoginContent() {
           <div className="login-brand">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 8 }}>
               <AduanaMark size={48} />
-              <div className="login-cruz-wordmark">ADUANA <span style={{ fontWeight: 400, opacity: 0.6 }}>IO</span></div>
+              <div className="login-cruz-wordmark">ADUANA</div>
             </div>
             <div className="login-cruz-accent" />
             <div className="login-brand-company">RENATO ZAPATA &amp; CO.</div>
@@ -193,7 +193,9 @@ function LoginContent() {
         .login-page {
           min-height: 100vh;
           min-height: 100dvh;
-          background: var(--navy-900);
+          background:
+            radial-gradient(ellipse at 50% 30%, rgba(0,229,255,0.06) 0%, transparent 50%),
+            linear-gradient(180deg, #05070B 0%, #0B1220 100%);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -207,8 +209,8 @@ function LoginContent() {
           position: absolute;
           inset: 0;
           background-image:
-            linear-gradient(rgba(234,179,8,0.03) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(234,179,8,0.03) 1px, transparent 1px);
+            linear-gradient(rgba(0,229,255,0.02) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(0,229,255,0.02) 1px, transparent 1px);
           background-size: 64px 64px;
           mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, black 20%, transparent 70%);
           -webkit-mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, black 20%, transparent 70%);
@@ -222,7 +224,7 @@ function LoginContent() {
           font-weight: 800;
           font-family: var(--font-sans);
           letter-spacing: 0.15em;
-          color: rgba(234,179,8,0.025);
+          color: rgba(0,229,255,0.03);
           line-height: 1;
           pointer-events: none;
           user-select: none;
@@ -235,7 +237,7 @@ function LoginContent() {
           transform: translate(-50%, -50%);
           width: 500px;
           height: 500px;
-          background: radial-gradient(circle, rgba(234,179,8,0.06) 0%, transparent 70%);
+          background: radial-gradient(circle, rgba(0,229,255,0.08) 0%, transparent 70%);
           pointer-events: none;
         }
 
@@ -246,14 +248,16 @@ function LoginContent() {
           z-index: 1;
         }
 
-        /* ── Session Card ── */
+        /* ── Session Card — glass ── */
         .login-session-card {
-          background: #222222;
-          border: 1px solid rgba(255,255,255,0.08);
+          background: rgba(255,255,255,0.04);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border: 1px solid rgba(0,229,255,0.1);
           border-radius: 20px 20px 0 0;
           padding: 20px 24px;
           margin-bottom: -1px;
-          box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+          box-shadow: 0 10px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05), 0 0 8px rgba(0,229,255,0.12);
           position: relative;
           z-index: 1;
         }
@@ -285,15 +289,18 @@ function LoginContent() {
         }
         .login-btn-outline:hover { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.2); }
 
-        /* ── Login Card ── */
+        /* ── Login Card — glass ── */
         .login-card {
-          background: #1A1A1A;
+          background: rgba(255,255,255,0.04);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
           border-radius: 20px;
           padding: 40px;
-          border: 1px solid rgba(255, 255, 255, 0.08);
+          border: 1px solid rgba(0,229,255,0.1);
           box-shadow:
-            0 4px 24px rgba(0,0,0,0.15),
-            0 12px 40px rgba(0,0,0,0.20);
+            0 10px 30px rgba(0,0,0,0.4),
+            inset 0 1px 0 rgba(255,255,255,0.05),
+            0 0 8px rgba(0,229,255,0.12);
         }
 
         /* ── Brand ── */
@@ -305,14 +312,15 @@ function LoginContent() {
           font-size: 42px;
           font-weight: 700;
           letter-spacing: 0.22em;
-          color: var(--navy-900);
+          color: #E6EDF3;
           line-height: 1;
           text-align: center;
+          text-shadow: 0 0 20px rgba(0,229,255,0.3);
         }
         .login-cruz-accent {
           width: 40px;
           height: 2px;
-          background: var(--gold-400);
+          background: linear-gradient(90deg, #00f0ff, #0088ff);
           margin: 14px auto 0;
           border-radius: 1px;
         }

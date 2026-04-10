@@ -1,5 +1,5 @@
 /**
- * ADUANA IO brand mark — abstract "A" formed by 3 flowing ribbon loops.
+ * ADUANA brand mark — abstract "A" formed by 3 flowing ribbon loops.
  * Blue gradient symbolizing intelligent flow across borders.
  * Used in: TopBar, Sidebar, Login, AduanaAvatar.
  */

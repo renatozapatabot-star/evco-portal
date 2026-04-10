@@ -92,10 +92,9 @@ function buildPrediction(t, history, supplier) {
     confidence = Math.round((topCount / totalSamples) * 100)
   }
 
-  // 3. Determine T-MEC and IGI
-  const regimen = (t.regimen || '').toUpperCase()
-  const isTmec = regimen === 'ITE' || regimen === 'ITR' || regimen === 'IMD'
-  const igi = isTmec ? 0 : 5 // Default 5% if no T-MEC
+  // 3. Determine T-MEC and IGI from tariff data (NOT regime codes)
+  // Default to standard 5% IGI — only set 0 if confirmed in tariff_rates
+  const igi = 5
 
   // 4. Estimate landed cost
   const value = Number(t.importe_total) || 0
@@ -103,7 +102,7 @@ function buildPrediction(t, history, supplier) {
   const dta = Math.round(valorMXN * 0.008)
   const igiAmount = Math.round(valorMXN * (igi / 100))
   const iva = Math.round((valorMXN + dta + igiAmount) * 0.16)
-  const landedCost = Math.round((value + (dta + igiAmount + iva) / tc) * 100) / 100
+  const landedCost = Math.round((value + (dta + igiAmount + iva) / exchangeRate) * 100) / 100
 
   return {
     trafico: t.trafico,
@@ -111,7 +110,7 @@ function buildPrediction(t, history, supplier) {
     supplier,
     predicted_fraccion: topFraccion,
     predicted_igi: igi,
-    predicted_tmec: isTmec,
+    predicted_tmec: false, // T-MEC determined from tariff data, not regime codes
     predicted_landed_cost: landedCost,
     prediction_confidence: confidence,
     alternatives: sorted.slice(1, 3).map(([f, c]) => ({

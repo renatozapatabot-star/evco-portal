@@ -300,12 +300,77 @@ const HANDLERS = {
 
   // ── Workflow 3: Documents ──
   'docs.document_received': async (event) => {
-    // Phase 2: require('./completeness-checker') for this tráfico
-    return { success: true, result: `Doc received: ${event.payload?.docType || 'unknown'}` }
+    const traficoId = event.trigger_id || event.payload?.trafico_id
+    const companyId = event.company_id
+    const docType = event.payload?.docType || event.payload?.doc_type || 'unknown'
+    const fileUrl = event.payload?.file_url || null
+
+    if (!traficoId) {
+      return { success: false, result: 'No trafico_id in event' }
+    }
+
+    // Record document receipt in expediente_documentos if not already there
+    if (fileUrl) {
+      const fileName = event.payload?.file_name || fileUrl.split('/').pop() || 'document'
+      await supabase.from('expediente_documentos').upsert({
+        pedimento_id: traficoId,
+        doc_type: docType,
+        file_name: fileName,
+        file_url: fileUrl,
+        company_id: companyId,
+        uploaded_by: 'workflow-processor',
+        uploaded_at: new Date().toISOString(),
+      }, { onConflict: 'pedimento_id,doc_type' }).then(() => {}, (e) => {
+        console.error(`[docs.document_received] upsert error: ${e.message}`)
+      })
+    }
+
+    if (VERBOSE) console.log(`  Doc received: ${docType} for ${traficoId}`)
+    // chainNext() will trigger docs.completeness_check via workflow_chains
+    return { success: true, result: `Doc received: ${docType} for ${traficoId}` }
   },
+
   'docs.completeness_check': async (event) => {
-    // Phase 2: run completeness check, emit expediente_complete or solicitation_needed
-    return { success: true, result: 'Completeness check queued' }
+    const traficoId = event.trigger_id || event.payload?.trafico_id
+    const companyId = event.company_id
+
+    if (!traficoId) {
+      return { success: false, result: 'No trafico_id for completeness check' }
+    }
+
+    const REQUIRED_DOCS = ['factura_comercial', 'packing_list', 'pedimento_detallado', 'cove', 'acuse_cove', 'doda']
+
+    // Query existing documents for this trafico
+    const { data: docs, error: docsErr } = await supabase
+      .from('expediente_documentos')
+      .select('doc_type')
+      .eq('pedimento_id', traficoId)
+      .eq('company_id', companyId)
+
+    if (docsErr) {
+      return { success: false, result: `Docs query failed: ${docsErr.message}` }
+    }
+
+    const presentTypes = new Set((docs || []).map(d => d.doc_type).filter(Boolean))
+    const missingDocs = REQUIRED_DOCS.filter(r => !presentTypes.has(r))
+    const completePct = Math.round(((REQUIRED_DOCS.length - missingDocs.length) / REQUIRED_DOCS.length) * 100)
+
+    if (missingDocs.length === 0) {
+      // All docs present — emit expediente_complete
+      await emitEvent('docs', 'expediente_complete', traficoId, companyId, {
+        completeness_pct: 100,
+        present: Array.from(presentTypes),
+      }, event.id)
+      return { success: true, result: `Expediente complete for ${traficoId}: 100%` }
+    } else {
+      // Missing docs — emit solicitation_needed
+      await emitEvent('docs', 'solicitation_needed', traficoId, companyId, {
+        missingTypes: missingDocs,
+        completeness_pct: completePct,
+        present: Array.from(presentTypes),
+      }, event.id)
+      return { success: true, result: `Expediente ${completePct}% for ${traficoId}: missing ${missingDocs.join(', ')}` }
+    }
   },
   'docs.expediente_complete': async (event) => {
     const { validateCompleteness } = require('./lib/document-types')
@@ -404,22 +469,128 @@ const HANDLERS = {
     }
   },
   'docs.solicitation_needed': async (event) => {
-    // Phase 2: require('./solicit-missing-docs') for specific docs
-    const missing = event.payload?.missingTypes || []
-    if (VERBOSE) console.log(`  Missing docs: ${missing.join(', ')}`)
-    return { success: true, result: `Solicitation needed: ${missing.join(', ')}` }
+    const traficoId = event.trigger_id || event.payload?.trafico_id
+    const companyId = event.company_id
+    const missingDocs = event.payload?.missingTypes || []
+
+    if (!traficoId || missingDocs.length === 0) {
+      return { success: true, result: 'No missing docs to solicit' }
+    }
+
+    // Create documento_solicitudes rows for each missing doc
+    const solicitations = missingDocs.map(docType => ({
+      trafico_id: traficoId,
+      company_id: companyId,
+      doc_type: docType,
+      status: 'solicitado',
+      created_at: new Date().toISOString(),
+    }))
+
+    await supabase.from('documento_solicitudes').upsert(solicitations, {
+      onConflict: 'trafico_id,doc_type',
+    }).then(() => {}, (e) => {
+      console.error(`[docs.solicitation_needed] upsert error: ${e.message}`)
+    })
+
+    // Telegram alert for missing docs
+    await tg(
+      `📋 <b>Documentos faltantes</b>\n` +
+      `Tráfico: ${traficoId}\n` +
+      `Empresa: ${companyId}\n` +
+      `Faltan: ${missingDocs.map(d => d.replace(/_/g, ' ')).join(', ')}\n` +
+      `Completeness: ${event.payload?.completeness_pct || 0}%\n` +
+      `— CRUZ Workflow`
+    )
+
+    // Emit solicitation_sent for audit trail
+    await emitEvent('docs', 'solicitation_sent', traficoId, companyId, {
+      solicited_docs: missingDocs,
+      solicited_at: new Date().toISOString(),
+    }, event.id)
+
+    return { success: true, result: `Solicitation created for ${missingDocs.length} docs: ${missingDocs.join(', ')}` }
   },
+
   'docs.solicitation_sent': async (event) => {
-    return { success: true, result: 'Solicitation sent' }
+    // Audit trail — solicitation was sent, log and continue
+    const traficoId = event.trigger_id || event.payload?.trafico_id
+    if (VERBOSE) console.log(`  Solicitation sent for ${traficoId}: ${(event.payload?.solicited_docs || []).join(', ')}`)
+    return { success: true, result: `Solicitation audit logged for ${traficoId}` }
   },
 
   // ── Workflow 4: Pedimento ──
   'pedimento.expediente_complete': async (event) => {
-    // Phase 2: require('./zero-touch-pipeline') for this tráfico
-    return { success: true, result: `Zero-touch evaluation for ${event.trigger_id}` }
+    const traficoId = event.trigger_id || event.payload?.trafico_id
+    const companyId = event.company_id
+
+    if (!traficoId) {
+      return { success: false, result: 'No trafico_id for pedimento.expediente_complete' }
+    }
+
+    // Chain to duties calculation — the classify.classification_complete handler
+    // already calculates duties and upserts pedimento_drafts, so we just need to
+    // verify a draft exists and emit ready_for_approval
+    const { data: draft } = await supabase
+      .from('pedimento_drafts')
+      .select('id, draft_data, status')
+      .eq('trafico_id', traficoId)
+      .eq('company_id', companyId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    if (draft && draft.draft_data?.duties) {
+      // Draft with duties exists — emit ready_for_approval
+      await emitEvent('pedimento', 'ready_for_approval', traficoId, companyId, {
+        score: draft.draft_data.score || 0,
+        duties: draft.draft_data.duties,
+      }, event.id)
+      return { success: true, result: `Pedimento draft ready for ${traficoId}, score ${draft.draft_data.score || 0}` }
+    }
+
+    // No draft with duties yet — emit duties_calculated to trigger calculation
+    await emitEvent('pedimento', 'duties_calculated', traficoId, companyId, {
+      trafico_id: traficoId,
+    }, event.id)
+    return { success: true, result: `Duties calculation triggered for ${traficoId}` }
   },
+
   'pedimento.duties_calculated': async (event) => {
-    return { success: true, result: 'Duties calculated' }
+    const traficoId = event.trigger_id || event.payload?.trafico_id
+    const companyId = event.company_id
+
+    if (!traficoId) {
+      return { success: true, result: 'No trafico_id — skipping' }
+    }
+
+    // Check if pedimento_drafts has a complete draft
+    const { data: draft } = await supabase
+      .from('pedimento_drafts')
+      .select('id, draft_data, status')
+      .eq('trafico_id', traficoId)
+      .eq('company_id', companyId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    if (!draft) {
+      if (VERBOSE) console.log(`  No draft found for ${traficoId} — waiting for classification`)
+      return { success: true, result: `No draft yet for ${traficoId} — will be created by classification` }
+    }
+
+    const duties = draft.draft_data?.duties || draft.draft_data?.contributions
+    if (!duties) {
+      if (VERBOSE) console.log(`  Draft exists but no duties calculated for ${traficoId}`)
+      return { success: true, result: `Draft incomplete for ${traficoId} — awaiting classification` }
+    }
+
+    // Draft with duties exists — emit ready_for_approval
+    await emitEvent('pedimento', 'ready_for_approval', traficoId, companyId, {
+      score: draft.draft_data.score || 0,
+      duties,
+    }, event.id)
+
+    return { success: true, result: `Duties verified for ${traficoId}: ready for approval` }
   },
   'pedimento.ready_for_approval': async (event) => {
     const score = event.payload?.score || 0
@@ -433,13 +604,64 @@ const HANDLERS = {
     return { success: true, result: `Approval requested, score: ${score}` }
   },
   'pedimento.approved': async (event) => {
-    return { success: true, result: 'Pedimento approved by Tito' }
+    const traficoId = event.trigger_id || event.payload?.trafico_id
+    const companyId = event.company_id
+
+    // Update draft status to approved
+    if (traficoId) {
+      await supabase
+        .from('pedimento_drafts')
+        .update({ status: 'approved', reviewed_by: 'tito', updated_at: new Date().toISOString() })
+        .eq('trafico_id', traficoId)
+        .eq('company_id', companyId)
+        .eq('status', 'draft')
+        .then(() => {}, (e) => console.error(`[pedimento.approved] update error: ${e.message}`))
+
+      await tg(
+        `✅ <b>Pedimento aprobado por Tito</b>\n` +
+        `Tráfico: ${traficoId}\n` +
+        `Empresa: ${companyId}\n` +
+        `→ Procediendo a cruce\n` +
+        `— CRUZ Workflow`
+      )
+    }
+
+    // chainNext() will emit crossing.pedimento_paid via workflow_chains
+    return { success: true, result: `Pedimento approved for ${traficoId}` }
   },
 
   // ── Workflow 5: Crossing ──
   'crossing.pedimento_paid': async (event) => {
-    // Phase 3: require('./crossing-prediction') for this tráfico
-    return { success: true, result: 'Crossing optimization started' }
+    const traficoId = event.trigger_id || event.payload?.trafico_id
+    const companyId = event.company_id
+
+    if (!traficoId) {
+      return { success: true, result: 'No trafico_id for crossing' }
+    }
+
+    // Query latest bridge times for crossing recommendation
+    const { data: bridges } = await supabase
+      .from('bridge_intelligence')
+      .select('bridge_name, wait_time_minutes, updated_at')
+      .order('updated_at', { ascending: false })
+      .limit(10)
+
+    const bestBridge = (bridges || []).reduce((best, b) => {
+      if (!best || (b.wait_time_minutes || 999) < (best.wait_time_minutes || 999)) return b
+      return best
+    }, null)
+
+    const bridgeName = bestBridge?.bridge_name || 'World Trade'
+    const waitMin = bestBridge?.wait_time_minutes || null
+
+    // Emit dispatch_ready with bridge recommendation
+    await emitEvent('crossing', 'dispatch_ready', traficoId, companyId, {
+      recommended_bridge: bridgeName,
+      wait_minutes: waitMin,
+      carrier: event.payload?.carrier || 'Por asignar',
+    }, event.id)
+
+    return { success: true, result: `Crossing scheduled for ${traficoId} via ${bridgeName} (${waitMin ? waitMin + ' min wait' : 'unknown wait'})` }
   },
   'crossing.dispatch_ready': async (event) => {
     const carrier = event.payload?.carrier || 'TBD'
@@ -454,13 +676,84 @@ const HANDLERS = {
     return { success: true, result: `Dispatch: ${carrier} via ${bridge}` }
   },
   'crossing.crossing_complete': async (event) => {
-    return { success: true, result: 'Crossing complete' }
+    const traficoId = event.trigger_id || event.payload?.trafico_id
+    const companyId = event.company_id
+
+    if (!traficoId) {
+      return { success: true, result: 'No trafico_id for crossing complete' }
+    }
+
+    // Update traficos status to Cruzado
+    const now = new Date().toISOString()
+    await supabase
+      .from('traficos')
+      .update({ estatus: 'Cruzado', fecha_cruce: now, updated_at: now })
+      .eq('trafico', traficoId)
+      .eq('company_id', companyId)
+      .then(() => {}, (e) => console.error(`[crossing.crossing_complete] update error: ${e.message}`))
+
+    await tg(
+      `🌉 <b>Cruce completado</b>\n` +
+      `Tráfico: ${traficoId}\n` +
+      `Empresa: ${companyId}\n` +
+      `Estatus: Cruzado ✅\n` +
+      `— CRUZ Workflow`
+    )
+
+    // chainNext() will emit post_op.crossing_complete via workflow_chains
+    return { success: true, result: `Crossing complete for ${traficoId} — marked Cruzado` }
   },
 
   // ── Workflow 6: Post-Op ──
   'post_op.crossing_complete': async (event) => {
-    // Phase 3: require('./post-operation-analysis') for this tráfico
-    return { success: true, result: 'Post-op analysis started' }
+    const traficoId = event.trigger_id || event.payload?.trafico_id
+    const companyId = event.company_id
+
+    if (!traficoId) {
+      return { success: true, result: 'No trafico_id for post-op' }
+    }
+
+    // Calculate operation score
+    const { data: trafico } = await supabase
+      .from('traficos')
+      .select('fecha_llegada, fecha_cruce, pedimento, importe_total')
+      .eq('trafico', traficoId)
+      .eq('company_id', companyId)
+      .maybeSingle()
+
+    let score = 50 // base score
+    let transitDays = null
+
+    if (trafico?.fecha_llegada && trafico?.fecha_cruce) {
+      transitDays = Math.round((new Date(trafico.fecha_cruce).getTime() - new Date(trafico.fecha_llegada).getTime()) / 86400000)
+      // Speed bonus: under 7 days = +20, under 14 = +10
+      if (transitDays <= 7) score += 20
+      else if (transitDays <= 14) score += 10
+    }
+    // Pedimento assigned = +15
+    if (trafico?.pedimento) score += 15
+    // Has value = +10
+    if (Number(trafico?.importe_total) > 0) score += 10
+
+    // Check doc completeness
+    const { count: docCount } = await supabase
+      .from('expediente_documentos')
+      .select('id', { count: 'exact', head: true })
+      .eq('pedimento_id', traficoId)
+      .eq('company_id', companyId)
+
+    // Docs present = +5 per doc, max 25
+    score += Math.min((docCount || 0) * 5, 25)
+    score = Math.min(score, 100)
+
+    // Emit operation_scored
+    await emitEvent('post_op', 'operation_scored', traficoId, companyId, {
+      score,
+      transit_days: transitDays,
+      doc_count: docCount || 0,
+    }, event.id)
+
+    return { success: true, result: `Post-op scored ${traficoId}: ${score}/100 (${transitDays ?? '?'} days transit)` }
   },
   'post_op.operation_scored': async (event) => {
     const score = event.payload?.score || 0
@@ -469,7 +762,23 @@ const HANDLERS = {
 
   // ── Workflow 7: Invoice ──
   'invoice.operation_accumulated': async (event) => {
-    return { success: true, result: 'Operation accumulated for billing' }
+    const traficoId = event.trigger_id || event.payload?.trafico_id
+    const companyId = event.company_id
+    const score = event.payload?.score || 0
+
+    // Log the accumulation — actual billing is a future feature
+    if (VERBOSE) console.log(`  Invoice accumulated: ${traficoId} (score ${score})`)
+
+    // Log to operational_decisions for Operational Brain
+    await logDecision({
+      trafico: traficoId,
+      company_id: companyId,
+      decision_type: 'invoice',
+      decision: 'operation_accumulated',
+      reasoning: `Tráfico ${traficoId} completed pipeline with score ${score}/100. Cost accumulated for monthly invoice.`,
+    }).catch(() => {})
+
+    return { success: true, result: `Operation accumulated for ${traficoId} (score ${score}/100) — end of pipeline` }
   },
   'invoice.invoice_ready': async (event) => {
     await tg(

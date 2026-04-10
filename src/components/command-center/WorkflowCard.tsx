@@ -92,14 +92,14 @@ export function WorkflowCard({
     const hasActive = activeItems && activeItems.length > 0
     return (
       <motion.div
-        className={`cc-card ${glowClass(u)}${intensityClass ? ` ${intensityClass}` : ''}`}
+        className={`cc-card hero-circuit-bg ${glowClass(u)}${intensityClass ? ` ${intensityClass}` : ''}`}
         whileHover={prefersReduced ? undefined : { scale: 1.005 }}
         whileTap={prefersReduced ? undefined : { scale: 0.995 }}
         onTapStart={() => haptic.micro()}
         transition={{ type: 'spring', stiffness: 400, damping: 25 }}
         style={{
           padding: '24px 28px',
-          borderRadius: 14,
+          borderRadius: 20,
           background: 'var(--bg-elevated, #1a2338)',
           border: `1px solid ${U_BORDER[u]}`,
           borderTop: `3px solid ${U_TOP[u]}`,
@@ -263,9 +263,9 @@ export function WorkflowCard({
           transition={{ type: 'spring', stiffness: 400, damping: 25 }}
           style={{
             padding: '16px 20px 10px',
-            borderRadius: 14,
+            borderRadius: 20,
             background: 'var(--bg-elevated, #1a2338)',
-            border: '1px solid rgba(255,255,255,0.08)',
+            border: '1px solid var(--border-card, #334155)',
             height: '100%',
             display: 'flex',
             flexDirection: 'column',
@@ -297,12 +297,21 @@ export function WorkflowCard({
             </div>
             <div style={{ fontSize: 10, color: '#6E7681', marginTop: 2 }}>{subtitle}</div>
           </div>
-          {/* Sparkline at bottom edge */}
-          {sparklineData && sparklineData.length >= 2 && (
-            <div style={{ marginTop: 4, marginLeft: -16, marginRight: -16, marginBottom: -8, opacity: 0.5 }}>
-              <Sparkline data={sparklineData} width={160} height={28} color={U_SPARK[u]} />
-            </div>
-          )}
+          {/* Blue gradient progress bar at bottom */}
+          <div style={{
+            position: 'absolute', bottom: 0, left: 0, right: 0, height: 3,
+            borderRadius: '0 0 20px 20px', overflow: 'hidden',
+            background: 'rgba(255,255,255,0.04)',
+          }}>
+            <div style={{
+              height: '100%',
+              width: kpi !== null && kpi > 0 ? `${Math.min(100, Math.max(15, (kpi / (kpi * 1.5)) * 100))}%` : '0%',
+              background: 'linear-gradient(90deg, #00f0ff, #0088ff)',
+              opacity: 0.4,
+              borderRadius: '0 2px 2px 0',
+              transition: 'width 800ms ease',
+            }} />
+          </div>
         </motion.div>
       </Link>
     )
@@ -355,7 +364,7 @@ export function WorkflowCard({
         transition={{ type: 'spring', stiffness: 400, damping: 25 }}
         style={{
           padding: '20px 20px',
-          borderRadius: 14,
+          borderRadius: 20,
           background: 'var(--bg-elevated, #1a2338)',
           border: `1px solid ${U_BORDER[u]}`,
           borderTop: `3px solid ${U_TOP[u]}`,
@@ -488,7 +497,7 @@ export function WorkflowCard({
   return (
     <Link href={href} style={{ textDecoration: 'none', display: 'block', animation: `ccCountUp 300ms ease both`, animationDelay: `${delay}ms`, ...(spanFull ? { gridColumn: '1 / -1' } : {}) }}>
       <div className="cc-card" style={{
-        padding: '20px 16px', borderRadius: 12, background: '#FFFFFF', border: '1px solid rgba(255,255,255,0.1)',
+        padding: '20px 16px', borderRadius: 20, background: '#FFFFFF', border: '1px solid rgba(255,255,255,0.1)',
         boxShadow: '0 2px 8px rgba(0,0,0,0.08)', color: '#1A1A1A', display: 'flex', flexDirection: 'column', minHeight: 160, height: '100%', cursor: 'pointer', position: 'relative',
       }}>
         {isGood && <div className="cc-check-badge"><CheckCircle2 size={14} style={{ color: '#FFFFFF' }} /></div>}

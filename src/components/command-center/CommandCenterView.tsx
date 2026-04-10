@@ -354,19 +354,28 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
       {/* Pull-to-refresh indicator */}
       <PullRefreshIndicator pullDistance={pullDistance} isRefreshing={isRefreshing} progress={pullProgress} />
 
-      {/* Client news banner */}
-      {isClient && !loading && (
-        <NewsBanner items={buildClientItems({
-          activeShipments: data.enProceso,
-          cruzadosEsteMes: data.cruzadosEsteMes,
-          facturadoThisMonth: data.facturacionMes,
-          nextCrossing: data.lastCrossing,
-          exchangeRate: data.exchangeRate,
-        })} />
+      {/* Static top strip — facturado + live indicator */}
+      {!loading && (
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: isMobile ? '8px 12px' : '10px 16px',
+          marginBottom: 12, borderRadius: 12,
+          background: 'var(--bg-elevated, #1a2338)',
+          border: '1px solid var(--border-card, #334155)',
+          flexWrap: 'wrap', gap: 8,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {data.facturacionMes > 0 && (
+              <span style={{ fontSize: 12, color: 'var(--text-secondary, #94a3b8)' }}>
+                Facturado este mes: <strong style={{ color: '#eab308', fontFamily: 'var(--font-mono)' }}>
+                  ${data.facturacionMes > 1000 ? `${Math.round(data.facturacionMes / 1000)}K` : data.facturacionMes.toFixed(0)} MXN
+                </strong>
+              </span>
+            )}
+          </div>
+          <LiveIndicator lastFetchTime={lastFetchTime} />
+        </div>
       )}
-
-      {/* Live status indicator */}
-      {!loading && <LiveIndicator lastFetchTime={lastFetchTime} />}
 
       {/* Offline/online status */}
       {!network.isOnline && (

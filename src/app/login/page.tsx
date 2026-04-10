@@ -7,7 +7,7 @@ import { AduanaMark } from '@/components/command-center/CruzMark'
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div style={{ minHeight: '100vh', background: '#0D0D0C' }} />}>
+    <Suspense fallback={<div style={{ minHeight: '100vh', background: '#0a0f1c' }} />}>
       <LoginContent />
     </Suspense>
   )
@@ -207,8 +207,8 @@ function LoginContent() {
           position: absolute;
           inset: 0;
           background-image:
-            linear-gradient(rgba(212,168,67,0.03) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(212,168,67,0.03) 1px, transparent 1px);
+            linear-gradient(rgba(234,179,8,0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(234,179,8,0.03) 1px, transparent 1px);
           background-size: 64px 64px;
           mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, black 20%, transparent 70%);
           -webkit-mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, black 20%, transparent 70%);
@@ -222,7 +222,7 @@ function LoginContent() {
           font-weight: 800;
           font-family: var(--font-sans);
           letter-spacing: 0.15em;
-          color: rgba(212,168,67,0.025);
+          color: rgba(234,179,8,0.025);
           line-height: 1;
           pointer-events: none;
           user-select: none;
@@ -235,7 +235,7 @@ function LoginContent() {
           transform: translate(-50%, -50%);
           width: 500px;
           height: 500px;
-          background: radial-gradient(circle, rgba(196,150,60,0.06) 0%, transparent 70%);
+          background: radial-gradient(circle, rgba(234,179,8,0.06) 0%, transparent 70%);
           pointer-events: none;
         }
 
@@ -275,7 +275,7 @@ function LoginContent() {
           text-decoration: none; color: var(--navy-900); background: var(--gold-400);
           transition: background 150ms ease, transform 100ms ease;
         }
-        .login-btn-gold:hover { background: #C9A84C; transform: translateY(-1px); }
+        .login-btn-gold:hover { background: #eab308; transform: translateY(-1px); }
         .login-btn-gold:active { transform: translateY(0); }
         .login-btn-outline {
           flex: 1; display: flex; align-items: center; justify-content: center;
@@ -389,8 +389,8 @@ function LoginContent() {
           color: #6E7681;
         }
         .login-input:focus {
-          border-color: #C9A84C;
-          box-shadow: 0 0 0 3px rgba(201,168,76,0.15);
+          border-color: #eab308;
+          box-shadow: 0 0 0 3px rgba(234,179,8,0.15);
           background: #2A2A2A;
         }
 
@@ -415,9 +415,9 @@ function LoginContent() {
           position: relative;
         }
         .login-submit:hover:not(:disabled) {
-          background: #C9A84C;
+          background: #eab308;
           transform: translateY(-1px);
-          box-shadow: 0 4px 12px rgba(196,150,60,0.25);
+          box-shadow: 0 4px 12px rgba(234,179,8,0.25);
         }
         .login-submit:active:not(:disabled) {
           transform: translateY(0);
@@ -489,7 +489,7 @@ function LoginContent() {
 function Stat({ value, label }: { value: string; label: string }) {
   return (
     <div style={{ textAlign: 'center' }}>
-      <div style={{ fontFamily: 'var(--font-mono, monospace)', fontSize: 16, fontWeight: 700, color: '#C9A84C' }}>{value}</div>
+      <div style={{ fontFamily: 'var(--font-mono, monospace)', fontSize: 16, fontWeight: 700, color: '#eab308' }}>{value}</div>
       <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{label}</div>
     </div>
   )

@@ -235,13 +235,15 @@ function PasswordResetBanner() {
   if (dismissed) return null
   return (
     <div style={{
-      padding: '10px 16px', borderRadius: 10, marginBottom: 12,
-      borderLeft: '3px solid var(--gold, #eab308)',
-      background: 'rgba(201,168,76,0.06)',
+      padding: '10px 16px', borderRadius: 14, marginBottom: 12,
+      borderLeft: '3px solid rgba(0,229,255,0.4)',
+      background: 'rgba(255,255,255,0.04)',
+      backdropFilter: 'blur(20px)',
+      border: '1px solid rgba(0,229,255,0.15)',
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       flexWrap: 'wrap', gap: 8,
     }}>
-      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary, #1A1A1A)' }}>
+      <span style={{ fontSize: 13, fontWeight: 600, color: '#E6EDF3' }}>
         Te recomendamos cambiar tu contraseña temporal
       </span>
       <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>

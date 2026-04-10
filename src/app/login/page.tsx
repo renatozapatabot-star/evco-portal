@@ -253,11 +253,11 @@ function LoginContent() {
           background: rgba(255,255,255,0.04);
           backdrop-filter: blur(20px);
           -webkit-backdrop-filter: blur(20px);
-          border: 1px solid rgba(0,229,255,0.1);
+          border: 1px solid rgba(0,229,255,0.2);
           border-radius: 20px 20px 0 0;
           padding: 20px 24px;
           margin-bottom: -1px;
-          box-shadow: 0 10px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05), 0 0 8px rgba(0,229,255,0.12);
+          box-shadow: 0 10px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06), 0 0 15px rgba(0,229,255,0.3);
           position: relative;
           z-index: 1;
         }
@@ -296,11 +296,11 @@ function LoginContent() {
           -webkit-backdrop-filter: blur(20px);
           border-radius: 20px;
           padding: 40px;
-          border: 1px solid rgba(0,229,255,0.1);
+          border: 1px solid rgba(0,229,255,0.2);
           box-shadow:
             0 10px 30px rgba(0,0,0,0.4),
-            inset 0 1px 0 rgba(255,255,255,0.05),
-            0 0 8px rgba(0,229,255,0.12);
+            inset 0 1px 0 rgba(255,255,255,0.06),
+            0 0 15px rgba(0,229,255,0.3);
         }
 
         /* ── Brand ── */
@@ -397,8 +397,8 @@ function LoginContent() {
           color: #6E7681;
         }
         .login-input:focus {
-          border-color: rgba(0,229,255,0.4);
-          box-shadow: 0 0 0 3px rgba(0,229,255,0.1), 0 0 12px rgba(0,229,255,0.1);
+          border-color: rgba(0,229,255,0.5);
+          box-shadow: 0 0 0 3px rgba(0,229,255,0.15), 0 0 20px rgba(0,229,255,0.2);
           background: rgba(255,255,255,0.06);
         }
 

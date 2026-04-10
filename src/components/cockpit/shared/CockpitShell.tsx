@@ -19,7 +19,7 @@ export async function CockpitShell({ children }: CockpitShellProps) {
       className="aduana-dark"
       style={{
         minHeight: '100vh',
-        background: 'linear-gradient(180deg, #05070B 0%, #0B1220 100%)',
+        background: 'linear-gradient(180deg, #030508 0%, #0D1525 100%)',
         color: '#E6EDF3',
       }}
     >

@@ -47,7 +47,7 @@ interface WorkflowCardProps {
 }
 
 // Uniform cyan theme — NO colored borders. Cards pulse when they need action.
-const CARD_BORDER = 'rgba(0,229,255,0.1)'
+const CARD_BORDER = 'rgba(0,229,255,0.2)'
 const CARD_SHADOW = 'rgba(0,0,0,0.3)'
 const U_ICON   = { red: 'rgba(0,229,255,0.8)', amber: 'rgba(0,229,255,0.7)', green: 'rgba(0,229,255,0.5)', neutral: 'rgba(255,255,255,0.4)' }
 const U_SPARK  = { red: '#00E5FF', amber: '#00E5FF', green: '#00E5FF', neutral: '#00E5FF' }
@@ -98,7 +98,7 @@ export function WorkflowCard({
           padding: '24px 28px',
           borderRadius: 20,
           background: 'var(--bg-elevated, rgba(255,255,255,0.04))',
-          border: '1px solid rgba(0,229,255,0.1)',
+          border: '1px solid rgba(0,229,255,0.2)',
           display: 'flex',
           flexDirection: 'column',
           minHeight: 200,
@@ -361,7 +361,7 @@ export function WorkflowCard({
           padding: '20px 20px',
           borderRadius: 20,
           background: 'var(--bg-elevated, rgba(255,255,255,0.04))',
-          border: '1px solid rgba(0,229,255,0.1)',
+          border: '1px solid rgba(0,229,255,0.2)',
           display: 'flex',
           flexDirection: 'column',
           height: '100%',

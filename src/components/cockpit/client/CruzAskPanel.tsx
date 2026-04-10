@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 
-export function CruzAskPanel() {
+export function AduanaAskPanel() {
   const [question, setQuestion] = useState('')
   const [answer, setAnswer] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)

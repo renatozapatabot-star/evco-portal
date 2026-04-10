@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { CruzMark } from '@/components/command-center/CruzMark'
+import { AduanaMark } from '@/components/command-center/CruzMark'
 import { Suspense } from 'react'
 
 function OnboardingContent() {
@@ -32,7 +32,7 @@ function OnboardingContent() {
       }}>
         {/* Brand */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24, justifyContent: 'center' }}>
-          <CruzMark size={36} />
+          <AduanaMark size={36} />
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: 18, fontWeight: 800, color: 'rgba(255,255,255,0.9)', letterSpacing: '0.08em' }}>
             CRUZ
           </span>

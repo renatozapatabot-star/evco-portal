@@ -59,7 +59,7 @@ export default function ClientDashboard({
   const safeCompany = decodeURIComponent(companyName);
 
   return (
-    <div className="cruz-content" style={{ maxWidth: 900 }}>
+    <div className="aduana-content" style={{ maxWidth: 900 }}>
       {/* Greeting */}
       <h1 className="page-title" style={{ fontSize: 24 }}>
         {getGreeting()}, {safeName}
@@ -125,8 +125,8 @@ export default function ClientDashboard({
           />
         </div>
       ) : (
-        <div className="cruz-table-wrap" style={{ marginBottom: 28 }}>
-          <table className="cruz-table">
+        <div className="aduana-table-wrap" style={{ marginBottom: 28 }}>
+          <table className="aduana-table">
             <thead>
               <tr>
                 <th>Tráfico</th>

@@ -78,7 +78,7 @@ export async function middleware(request: NextRequest) {
       pathname === route || pathname.startsWith(route + '/')
     )
     // Allow specific operator routes through
-    const OPERATOR_ALLOWED = ['/', '/traficos', '/entradas', '/pedimentos', '/expedientes', '/clasificar', '/bodega', '/cruz', '/cambiar-contrasena']
+    const OPERATOR_ALLOWED = ['/', '/traficos', '/entradas', '/pedimentos', '/expedientes', '/clasificar', '/bodega', '/aduana', '/cambiar-contrasena']
     const isOperatorAllowed = OPERATOR_ALLOWED.some(route =>
       pathname === route || pathname.startsWith(route + '/')
     )

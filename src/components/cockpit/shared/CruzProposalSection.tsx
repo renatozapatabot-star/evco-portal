@@ -18,7 +18,7 @@ interface Props {
  * Renders at the TOP of the page, above all data.
  * Full reasoning, confidence bar, alternatives, one-tap approve.
  */
-export function CruzProposalSection({ proposal, subjectLabel, onApprove, onReject, approveLabel }: Props) {
+export function AduanaProposalSection({ proposal, subjectLabel, onApprove, onReject, approveLabel }: Props) {
   const [status, setStatus] = useState<'idle' | 'loading' | 'approved' | 'rejected'>('idle')
   const [showRejectModal, setShowRejectModal] = useState(false)
   const [rejectNote, setRejectNote] = useState('')

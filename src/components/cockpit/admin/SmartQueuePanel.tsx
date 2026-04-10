@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { fmtUSDCompact } from '../shared/formatters'
 import type { AdminData } from '../shared/fetchCockpitData'
 import { IfThenCard } from '../shared/IfThenCard'
-import { CruzRecommendation } from '../shared/CruzRecommendation'
+import { AduanaRecommendation } from '../shared/CruzRecommendation'
 import { computeQueueState } from '../shared/cardStates'
 import { takeTrafico } from '@/app/actions/reviewer'
 
@@ -54,7 +54,7 @@ export function SmartQueuePanel({ queue, onItemClick }: Props) {
         )
       }
       footer={queue.length > 0 ? (
-        <CruzRecommendation
+        <AduanaRecommendation
           compact
           recommendation={`Asignar ${queue[0].trafico} al siguiente operador disponible`}
           confidence={82}

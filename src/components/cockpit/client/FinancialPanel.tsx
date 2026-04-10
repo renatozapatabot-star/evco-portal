@@ -3,7 +3,7 @@
 import { fmtMXNCompact, fmtDelta } from '../shared/formatters'
 import type { ClientData } from '../shared/fetchCockpitData'
 import { IfThenCard } from '../shared/IfThenCard'
-import { CruzRecommendation } from '../shared/CruzRecommendation'
+import { AduanaRecommendation } from '../shared/CruzRecommendation'
 import { computeFinancialState } from '../shared/cardStates'
 
 interface Props {
@@ -54,7 +54,7 @@ export function FinancialPanel({ financial }: Props) {
         </div>
       }
       footer={financial.facturadoThisMonth > 0 ? (
-        <CruzRecommendation
+        <AduanaRecommendation
           compact
           recommendation="ADUANA monitorea tus costos y detecta oportunidades de ahorro"
           confidence={92}

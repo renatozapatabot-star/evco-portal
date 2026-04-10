@@ -22,7 +22,7 @@ const WORKFLOW_STEPS = [
   { key: 'invoice', label: 'Factura' },
 ]
 
-export function CruzAutonomo({ opsCenter, agentDecisions24h, agentAccuracy, error }: Props) {
+export function AduanaAutonomo({ opsCenter, agentDecisions24h, agentAccuracy, error }: Props) {
   const isMobile = useIsMobile()
   const [expanded, setExpanded] = useState(!isMobile)
 

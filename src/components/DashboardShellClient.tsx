@@ -2,7 +2,7 @@
 
 import { usePathname } from 'next/navigation'
 import { useEffect, useState, useRef } from 'react'
-import CruzLayout from './cruz/CruzLayout'
+import AduanaLayout from './cruz/CruzLayout'
 import { CommandPalette } from './command-palette'
 import { ShortcutHelp } from './shortcut-help'
 import { ToastProvider, useToast } from './Toast'
@@ -11,7 +11,7 @@ import { useIsMobile } from '@/hooks/use-mobile'
 import { usePullToRefresh } from '@/hooks/use-pull-refresh'
 // MobileBottomNav removed — navigation via topbar + floating CRUZ chat
 import { WelcomeOverlay } from './WelcomeOverlay'
-import { CruzChatBubble } from './cruz-chat-bubble'
+import { AduanaChatBubble } from './cruz-chat-bubble'
 import { SlideInNotification } from './notifications/SlideInNotification'
 import { getCookieValue } from '@/lib/client-config'
 
@@ -218,7 +218,7 @@ export default function DashboardShellClient({ children }: Props) {
         </div>
       )}
 
-      <CruzLayout
+      <AduanaLayout
         portalType={portalType}
         clientName={clientName}
         clientInitials={clientInitials}
@@ -231,7 +231,7 @@ export default function DashboardShellClient({ children }: Props) {
         <div id="main-content" ref={scrollRef}>
           <PageTransition>{children}</PageTransition>
         </div>
-      </CruzLayout>
+      </AduanaLayout>
 
       <CommandPalette />
       {!isMobile && <ShortcutHelp />}
@@ -253,7 +253,7 @@ export default function DashboardShellClient({ children }: Props) {
       )}
 
       {/* Floating ADUANA AI chat bubble — desktop only (mobile uses TopBar AI link) */}
-      {!isMobile && <CruzChatBubble />}
+      {!isMobile && <AduanaChatBubble />}
 
       {/* Welcome overlay removed — the launchpad IS the welcome */}
 

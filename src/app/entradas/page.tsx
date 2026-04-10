@@ -324,7 +324,7 @@ export default function EntradasPage() {
         {/* Desktop table */}
         {!loading && paged.length > 0 && !isMobile && (
           <div style={{ maxHeight: 'calc(100vh - 240px)', overflowY: 'auto', overflowX: 'auto' }}>
-            <table className="cruz-table" role="table" aria-label="Lista de entradas" style={{ minWidth: 960 }}>
+            <table className="aduana-table" role="table" aria-label="Lista de entradas" style={{ minWidth: 960 }}>
               <thead>
                 <tr>
                   <th style={{ cursor: 'pointer', width: 120 }} onClick={() => toggleSort('cve_entrada')}>Entrada<SortArrow col="cve_entrada" /></th>

@@ -2,7 +2,7 @@
 
 import type { AdminData } from '../shared/fetchCockpitData'
 import { IfThenCard } from '../shared/IfThenCard'
-import { CruzRecommendation } from '../shared/CruzRecommendation'
+import { AduanaRecommendation } from '../shared/CruzRecommendation'
 
 interface Props {
   intelligence: AdminData['intelligence']
@@ -34,7 +34,7 @@ export function IntelligenceCard({ intelligence }: Props) {
         </div>
       }
       footer={riskAlerts > 0 || otroRate > 15 ? (
-        <CruzRecommendation
+        <AduanaRecommendation
           compact
           recommendation={criticalAlerts > 0
             ? `${criticalAlerts} alerta${criticalAlerts !== 1 ? 's' : ''} crítica${criticalAlerts !== 1 ? 's' : ''} — intervenir`

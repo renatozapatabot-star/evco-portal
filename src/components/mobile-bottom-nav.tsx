@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { MOBILE_INTERNAL_TABS, MOBILE_CLIENT_TABS, type UserRole } from '@/components/nav/nav-config'
 import { getCookieValue } from '@/lib/client-config'
-import { CruzAvatar } from '@/components/command-center/CruzAvatar'
+import { AduanaAvatar } from '@/components/command-center/CruzAvatar'
 import { useStatusSentence } from '@/hooks/use-status-sentence'
 import { getMoodFromCounts } from '@/components/command-center/MissionHeader'
 
@@ -38,7 +38,7 @@ export function MobileBottomNav() {
               aria-label="ADUANA AI"
             >
               <span className="mn-icon-wrap mn-center-ring">
-                <CruzAvatar size={36} mood={mood} />
+                <AduanaAvatar size={36} mood={mood} />
               </span>
               <span className="mn-label">CRUZ</span>
             </button>

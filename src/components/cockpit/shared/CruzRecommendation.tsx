@@ -25,7 +25,7 @@ interface Props {
   compact?: boolean
 }
 
-export function CruzRecommendation({
+export function AduanaRecommendation({
   recommendation, confidence, approveLabel = 'Aprobar', approveHref, onApprove,
   reviewLabel = 'Revisar', reviewHref, reasoning, memoryBadge, compact,
 }: Props) {

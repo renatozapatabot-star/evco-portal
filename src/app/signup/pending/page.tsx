@@ -1,4 +1,4 @@
-import { CruzMark } from '@/components/command-center/CruzMark'
+import { AduanaMark } from '@/components/command-center/CruzMark'
 import Link from 'next/link'
 
 export default function SignupPendingPage() {
@@ -14,7 +14,7 @@ export default function SignupPendingPage() {
         textAlign: 'center',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 32, justifyContent: 'center' }}>
-          <CruzMark size={40} />
+          <AduanaMark size={40} />
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: 22, fontWeight: 800, color: 'rgba(255,255,255,0.9)', letterSpacing: '0.08em' }}>
             CRUZ
           </span>

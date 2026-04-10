@@ -136,7 +136,7 @@ export function IfThenCard({
     <div
       data-card-id={id}
       data-card-state={effectiveState}
-      className={state === 'urgent' ? 'cruz-pulse-subtle' : undefined}
+      className={state === 'urgent' ? 'aduana-pulse-subtle' : undefined}
       style={{
         background: '#222222',
         borderRadius: 14,

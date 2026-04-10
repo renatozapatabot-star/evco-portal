@@ -4,7 +4,7 @@
  * Used in: TopBar, Sidebar, Login, AduanaAvatar.
  */
 
-interface CruzMarkProps {
+interface AduanaMarkProps {
   /** Circle diameter in px */
   size: number
   className?: string
@@ -54,14 +54,14 @@ function InfinitySVG({ size }: { size: number }) {
   )
 }
 
-export function CruzMark({ size, className, bare }: CruzMarkProps) {
+export function AduanaMark({ size, className, bare }: AduanaMarkProps) {
   if (bare) {
     return <InfinitySVG size={size} />
   }
 
   return (
     <div
-      className={`cruz-brand-z ${className || ''}`}
+      className={`aduana-brand ${className || ''}`}
       style={{
         width: size,
         height: size,

@@ -3,7 +3,7 @@
 import { useActionState } from 'react'
 import { signupAction } from './actions'
 import Link from 'next/link'
-import { CruzMark } from '@/components/command-center/CruzMark'
+import { AduanaMark } from '@/components/command-center/CruzMark'
 
 const ADUANAS = ['Nuevo Laredo (240)', 'Colombia (240)', 'Reynosa (260)', 'Matamoros (210)', 'Ciudad Juárez (070)', 'Tijuana (070)', 'Mexicali (071)', 'Nogales (080)', 'Manzanillo (160)', 'Lázaro Cárdenas (470)', 'Veracruz (430)', 'Monterrey', 'Guadalajara', 'Otra']
 
@@ -28,7 +28,7 @@ export default function SignupPage() {
       }}>
         {/* Brand */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 32, justifyContent: 'center' }}>
-          <CruzMark size={40} />
+          <AduanaMark size={40} />
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: 22, fontWeight: 800, color: 'rgba(255,255,255,0.9)', letterSpacing: '0.08em' }}>
             CRUZ
           </span>

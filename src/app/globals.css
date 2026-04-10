@@ -1,6 +1,6 @@
 /* ADUANA Design System — globals.css
    Fonts: Inter + JetBrains Mono loaded via next/font in layout.tsx
-   Theme: .cruz-dark class applies cinematic dark tokens to all authenticated pages
+   Theme: .aduana-dark class applies cinematic dark tokens to all authenticated pages
 */
 
 @tailwind base;
@@ -157,7 +157,7 @@
 }
 
 /* ── Aduana Premium Cinematic Dark Theme ── */
-.cruz-dark {
+.aduana-dark {
   --bg-main: #0a0f1c;
   --bg-card: #0f1729;
   --bg-surface: #0f1729;
@@ -200,19 +200,19 @@
   background: #0a0f1c;
   color: var(--text-primary);
 }
-.cruz-dark .cruz-table td { border-bottom-color: rgba(255,255,255,0.06); }
-.cruz-dark .cruz-table th { background: var(--bg-elevated); color: var(--text-secondary); }
-.cruz-dark .skeleton-shimmer {
+.aduana-dark .aduana-table td { border-bottom-color: rgba(255,255,255,0.06); }
+.aduana-dark .aduana-table th { background: var(--bg-elevated); color: var(--text-secondary); }
+.aduana-dark .skeleton-shimmer {
   background: linear-gradient(90deg, #1A1A1A 25%, #2A2A2A 50%, #1A1A1A 75%);
   background-size: 200% 100%;
 }
-.cruz-dark tr.row-even { background: var(--bg-card); }
-.cruz-dark tr.row-odd { background: rgba(255,255,255,0.02); }
-.cruz-dark .cruz-table tr:hover { background: rgba(255,255,255,0.04); }
-.cruz-dark .mn-nav { background: #1A1A1A; border-top-color: rgba(201,168,76,0.15); }
-.cruz-dark .mn-nav .mn-tab { color: rgba(255,255,255,0.5); }
-.cruz-dark .mn-nav .mn-tab.active { color: var(--gold, #C9A84C); }
-.cruz-dark .mn-nav .mn-label { color: inherit; }
+.aduana-dark tr.row-even { background: var(--bg-card); }
+.aduana-dark tr.row-odd { background: rgba(255,255,255,0.02); }
+.aduana-dark .aduana-table tr:hover { background: rgba(255,255,255,0.04); }
+.aduana-dark .mn-nav { background: #1A1A1A; border-top-color: rgba(201,168,76,0.15); }
+.aduana-dark .mn-nav .mn-tab { color: rgba(255,255,255,0.5); }
+.aduana-dark .mn-nav .mn-tab.active { color: var(--gold, #C9A84C); }
+.aduana-dark .mn-nav .mn-label { color: inherit; }
 
 /* ── Cockpit grid (12-col responsive) ── */
 .cockpit-grid {
@@ -261,12 +261,12 @@ body {
 }
 
 /* ── Layout Shell ── */
-.cruz-layout {
+.aduana-layout {
   display: flex;
   min-height: 100vh;
 }
 
-.cruz-sidebar {
+.aduana-sidebar {
   width: var(--sidebar-width);
   background: var(--navy-900, #0D0D0C);
   border-right: 1px solid rgba(255,255,255,0.06);
@@ -280,7 +280,7 @@ body {
   transition: width 0.2s ease;
 }
 
-.cruz-main {
+.aduana-main {
   margin-left: var(--sidebar-width);
   flex: 1;
   display: flex;
@@ -290,12 +290,12 @@ body {
   overflow-x: hidden;
 }
 /* Client portal — no sidebar, full-width cockpit */
-.cruz-main.cruz-main--full {
+.aduana-main.aduana-main--full {
   margin-left: 0;
 }
 
 /* ── Client TopBar — full-width nav hub ────────── */
-.cruz-topbar--client {
+.aduana-topbar--client {
   display: flex;
   align-items: center;
   gap: 20px;
@@ -391,14 +391,14 @@ body {
   box-shadow: 0 1px 4px rgba(196,150,60,0.2);
 }
 @media (max-width: 767px) {
-  .cruz-topbar--client { padding: 8px 12px; gap: 12px; }
+  .aduana-topbar--client { padding: 8px 12px; gap: 12px; }
   .topbar-logo-text { font-size: 16px; }
   .topbar-client-name { display: none; }
   .topbar-search-wide { display: none; }
   .topbar-search-icon-mobile { display: flex; }
   .topbar-ai-mobile { display: flex; }
   .topbar-mobile-spacer { display: block !important; }
-  .cruz-topbar--client .topbar-right { margin-left: 0; }
+  .aduana-topbar--client .topbar-right { margin-left: 0; }
 }
 .topbar-avatar {
   width: 32px;
@@ -521,7 +521,7 @@ body {
   .cc-card:hover, .cc-card:active { transform: none !important; }
 }
 
-.cruz-topbar {
+.aduana-topbar {
   background: #0f1729;
   padding: 12px 28px;
   display: flex;
@@ -533,13 +533,13 @@ body {
   z-index: 30;
 }
 
-.cruz-content {
+.aduana-content {
   padding: 32px;
   flex: 1;
 }
 
 /* ── Shared CRUZ brand Z mark ── */
-.cruz-brand-z {
+.aduana-brand {
   border-radius: 50%;
   background: linear-gradient(135deg, #C9A84C, #8B6914);
   border: 2px solid rgba(201,168,76,0.3);
@@ -692,16 +692,16 @@ body {
 
 /* ── Mobile sidebar overlay (<768px) ── */
 @media (max-width: 767px) {
-  .cruz-sidebar {
+  .aduana-sidebar {
     transform: translateX(-100%);
     transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     width: 260px;
     z-index: 50;
   }
-  .cruz-sidebar.mobile-open {
+  .aduana-sidebar.mobile-open {
     transform: translateX(0);
   }
-  .cruz-main {
+  .aduana-main {
     margin-left: 0;
   }
   .sidebar-backdrop {
@@ -1035,14 +1035,14 @@ body {
 .docs-dot.missing { background: var(--slate-200); }
 
 /* ── Data Table ── */
-.cruz-table-wrap {
+.aduana-table-wrap {
   background: var(--bg-card);
   border: 1px solid var(--slate-200);
   border-radius: var(--radius-lg);
   overflow: hidden;
 }
 
-.cruz-table-header {
+.aduana-table-header {
   padding: 16px 20px;
   display: flex;
   align-items: center;
@@ -1050,13 +1050,13 @@ body {
   border-bottom: 1px solid var(--slate-200);
 }
 
-.cruz-table {
+.aduana-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 13px;
 }
 
-.cruz-table th {
+.aduana-table th {
   text-align: left;
   padding: 10px 16px;
   font-size: 11px;
@@ -1071,18 +1071,18 @@ body {
   z-index: 10;
 }
 
-.cruz-table td {
+.aduana-table td {
   padding: 12px 16px;
   border-bottom: 1px solid rgba(226, 232, 240, 0.6);
   color: var(--navy-800);
   vertical-align: middle;
 }
 
-.cruz-table tr:hover {
+.aduana-table tr:hover {
   background: rgba(241, 245, 249, 0.5);
 }
 
-.cruz-table tr:last-child td {
+.aduana-table tr:last-child td {
   border-bottom: none;
 }
 
@@ -1518,7 +1518,7 @@ button:active:not(:disabled), .btn:active:not(:disabled) {
 }
 
 /* Safe area insets for fixed elements */
-.cruz-topbar-mobile {
+.aduana-topbar-mobile {
   padding-bottom: env(safe-area-inset-bottom);
 }
 
@@ -1587,7 +1587,7 @@ button:active:not(:disabled), .btn:active:not(:disabled) {
 }
 
 /* CRUZ orbit dot — persistent AI indicator */
-.cruz-orbit-dot {
+.aduana-orbit-dot {
   width: 14px;
   height: 14px;
   border-radius: 50%;
@@ -1599,7 +1599,7 @@ button:active:not(:disabled), .btn:active:not(:disabled) {
   animation: cruzPulse 3s ease-in-out infinite;
   padding: 0;
 }
-.cruz-orbit-badge {
+.aduana-orbit-badge {
   position: absolute;
   top: -6px;
   right: -6px;
@@ -1704,7 +1704,7 @@ button:active:not(:disabled), .btn:active:not(:disabled) {
   }
 
   /* Reserve space for mobile bottom nav */
-  .cruz-main {
+  .aduana-main {
     padding-bottom: calc(68px + env(safe-area-inset-bottom));
   }
 
@@ -3500,7 +3500,7 @@ input:focus, select:focus, textarea:focus {
   .urgency-overdue,
   .ring-approaching,
   .mood-ceremony,
-  .cruz-pulse-subtle {
+  .aduana-pulse-subtle {
     animation: none !important;
   }
   .cc-offline-banner,
@@ -3514,7 +3514,7 @@ input:focus, select:focus, textarea:focus {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.92; }
 }
-.cruz-pulse-subtle {
+.aduana-pulse-subtle {
   animation: cruzPulseSubtle 2.5s ease-in-out infinite;
 }
 

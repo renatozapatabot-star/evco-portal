@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Search, Bell, Menu, LogOut, ChevronLeft, Zap } from 'lucide-react';
 import { useNotificationBadge } from '@/hooks/use-notifications';
-import { CruzMark } from '@/components/command-center/CruzMark';
+import { AduanaMark } from '@/components/command-center/CruzMark';
 
 interface TopBarProps {
   showNotifications?: boolean;
@@ -36,7 +36,7 @@ export default function TopBar({
   // ── CLIENT PORTAL TOPBAR — full-width cockpit mode ──
   if (isClient) {
     return (
-      <header className="cruz-topbar cruz-topbar--client">
+      <header className="aduana-topbar aduana-topbar--client">
         {/* Back button — shown on inner pages only */}
         {!isHome && (
           <Link
@@ -62,7 +62,7 @@ export default function TopBar({
 
         {/* Logo */}
         <Link href="/" className="topbar-logo" aria-label="ADUANA inicio">
-          <CruzMark size={40} />
+          <AduanaMark size={40} />
           <span className="topbar-logo-text">ADUANA</span>
         </Link>
 
@@ -90,7 +90,7 @@ export default function TopBar({
 
         {/* ADUANA AI button (mobile only — navigates to full AI page) */}
         <Link
-          href="/cruz"
+          href="/aduana"
           className="topbar-ai-mobile"
           aria-label="ADUANA AI"
         >
@@ -134,7 +134,7 @@ export default function TopBar({
 
   // ── OPERATOR PORTAL TOPBAR — unchanged ──
   return (
-    <header className="cruz-topbar">
+    <header className="aduana-topbar">
       {onMenuToggle && (
         <button className="topbar-hamburger" onClick={onMenuToggle} aria-label="Abrir menú">
           <Menu size={20} />

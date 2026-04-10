@@ -23,7 +23,7 @@ interface Props {
   actions30d: AdminData['operatorActions30d']
 }
 
-export function CruzAutonomoPanel({ decisions, decisions30d, decisionsAllTime, workflow, workflow30d, actions, actions30d }: Props) {
+export function AduanaAutonomoPanel({ decisions, decisions30d, decisionsAllTime, workflow, workflow30d, actions, actions30d }: Props) {
   // Use 30d metrics when 24h is zero for a less empty-looking dashboard
   const showDecisions = decisions.total > 0 ? decisions : decisions30d
   const showActions = actions.total > 0 ? actions : actions30d

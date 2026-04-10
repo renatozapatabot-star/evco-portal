@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import type { AdminData } from './shared/fetchCockpitData'
-import { CruzAutonomoPanel } from './admin/CruzAutonomoPanel'
+import { AduanaAutonomoPanel } from './admin/CruzAutonomoPanel'
 import { NeedsJudgmentPanel } from './admin/NeedsJudgmentPanel'
 import { SmartQueuePanel } from './admin/SmartQueuePanel'
 import { TeamPanel } from './admin/TeamPanel'
@@ -201,7 +201,7 @@ export function AdminCockpit({ data, operatorName }: Props) {
             </div>
           </div>
 
-          <CruzAutonomoPanel
+          <AduanaAutonomoPanel
             decisions={data.agentDecisions24h}
             decisions30d={data.agentDecisions30d}
             decisionsAllTime={data.agentDecisionsAllTime}

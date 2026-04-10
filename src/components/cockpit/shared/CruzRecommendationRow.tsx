@@ -16,7 +16,7 @@ interface Props {
  * One line: [proposal text] [confidence dot] [Aprobar]
  * Designed to make scrolling = reviewing.
  */
-export function CruzRecommendationRow({ proposal, onApprove, onReview }: Props) {
+export function AduanaRecommendationRow({ proposal, onApprove, onReview }: Props) {
   const [cleared, setCleared] = useState(false)
   const [loading, setLoading] = useState(false)
 

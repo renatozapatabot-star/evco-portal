@@ -3,7 +3,7 @@
 import { useGodViewData } from '@/hooks/use-god-view-data'
 import { SystemHeartbeat } from './SystemHeartbeat'
 import { SmartQueue } from './SmartQueue'
-import { CruzAutonomo } from './CruzAutonomo'
+import { AduanaAutonomo } from './CruzAutonomo'
 import { OperationalKPIs } from './OperationalKPIs'
 import { ClientHealth } from './ClientHealth'
 import { BorderIntel } from './BorderIntel'
@@ -57,7 +57,7 @@ export function GodView() {
       {/* C + D: Autonomo (wide) + KPIs (narrow) */}
       <div className="god-grid">
         <div className="god-grid-wide">
-          <CruzAutonomo
+          <AduanaAutonomo
             opsCenter={data.opsCenter}
             agentDecisions24h={data.agentDecisions24h}
             agentAccuracy={data.agentAccuracy}

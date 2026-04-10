@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { CheckCircle2 } from 'lucide-react'
-import { CruzAvatar } from './CruzAvatar'
+import { AduanaAvatar } from './CruzAvatar'
 import type { Urgency } from '@/lib/card-urgency'
 
 interface MissionHeaderProps {
@@ -42,7 +42,7 @@ export function MissionHeader({ mood, sentence, quickAction, onAvatarClick, load
       {isAllGreen ? (
         <CheckCircle2 size={isMobile ? 28 : 32} style={{ color: 'var(--success)', flexShrink: 0 }} />
       ) : (
-        <CruzAvatar size={48} mood={mood} onClick={onAvatarClick} />
+        <AduanaAvatar size={48} mood={mood} onClick={onAvatarClick} />
       )}
 
       <div style={{ flex: 1, minWidth: 0 }}>

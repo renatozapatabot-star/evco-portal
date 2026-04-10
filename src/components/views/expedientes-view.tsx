@@ -706,7 +706,7 @@ export function ExpedientesView() {
           ) : (
             /* ── Desktop table ── */
             <div className="table-shell">
-              <table className="cruz-table">
+              <table className="aduana-table">
                 <thead>
                   <tr>
                     <th scope="col">Tráfico</th>

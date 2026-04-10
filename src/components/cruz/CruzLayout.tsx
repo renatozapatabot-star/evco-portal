@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import Sidebar from './Sidebar';
 import TopBar from './TopBar';
 
-interface CruzLayoutProps {
+interface AduanaLayoutProps {
   children: ReactNode;
   portalType: 'operator' | 'client';
   clientName?: string;
@@ -17,7 +17,7 @@ interface CruzLayoutProps {
   hideSidebar?: boolean;
 }
 
-export default function CruzLayout({
+export default function AduanaLayout({
   children,
   portalType,
   clientName,
@@ -26,9 +26,9 @@ export default function CruzLayout({
   mobileOpen = false,
   onMobileToggle,
   hideSidebar = false,
-}: CruzLayoutProps) {
+}: AduanaLayoutProps) {
   return (
-    <div className="cruz-layout">
+    <div className="aduana-layout">
       {/* Sidebar + backdrop — only for operator portal */}
       {!hideSidebar && (
         <>
@@ -47,7 +47,7 @@ export default function CruzLayout({
           />
         </>
       )}
-      <main className={`cruz-main cruz-dark ${hideSidebar ? 'cruz-main--full' : ''}`}>
+      <main className={`aduana-main aduana-dark ${hideSidebar ? 'aduana-main--full' : ''}`}>
         <TopBar
           showNotifications={false}
           onMenuToggle={hideSidebar ? undefined : onMobileToggle}

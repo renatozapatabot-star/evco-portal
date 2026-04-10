@@ -285,7 +285,7 @@ export const CLIENT_ROUTES = [
   '/actividad',
   '/logros',
   '/login',
-  '/cruz',
+  '/aduana',
   '/cambiar-contrasena',
 ] as const
 
@@ -329,7 +329,7 @@ export const OPERATOR_ROUTES = [
   '/clasificar',
   '/bodega',
   '/login',
-  '/cruz',
+  '/aduana',
   '/cambiar-contrasena',
 ] as const
 

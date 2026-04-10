@@ -1,9 +1,9 @@
 'use client'
 
 import type { Urgency } from '@/lib/card-urgency'
-import { CruzMark } from './CruzMark'
+import { AduanaMark } from './CruzMark'
 
-interface CruzAvatarProps {
+interface AduanaAvatarProps {
   size: 48 | 36 | 32
   mood: Urgency | 'green'
   onClick?: () => void
@@ -17,7 +17,7 @@ const MOOD_GLOW: Record<string, string> = {
   neutral: '0 0 0 3px rgba(155,155,155,0.2), 0 0 8px rgba(155,155,155,0.1)',
 }
 
-export function CruzAvatar({ size, mood, onClick, className }: CruzAvatarProps) {
+export function AduanaAvatar({ size, mood, onClick, className }: AduanaAvatarProps) {
   const interactive = !!onClick
 
   return (
@@ -46,7 +46,7 @@ export function CruzAvatar({ size, mood, onClick, className }: CruzAvatarProps) 
         flexShrink: 0,
       }}
     >
-      <CruzMark size={size} bare />
+      <AduanaMark size={size} bare />
     </button>
   )
 }

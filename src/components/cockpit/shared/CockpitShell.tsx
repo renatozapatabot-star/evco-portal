@@ -16,7 +16,7 @@ export async function CockpitShell({ children }: CockpitShellProps) {
 
   return (
     <div
-      className="cruz-dark"
+      className="aduana-dark"
       style={{
         minHeight: '100vh',
         background: '#0a0f1c',

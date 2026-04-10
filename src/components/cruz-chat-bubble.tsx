@@ -41,7 +41,7 @@ const D = {
   aiText: '#E6EDF3',
 }
 
-export function CruzChatBubble() {
+export function AduanaChatBubble() {
   const router = useRouter()
   const pathname = usePathname()
   const isMobile = useIsMobile()
@@ -53,7 +53,7 @@ export function CruzChatBubble() {
   useEffect(() => {
     const handleOpen = () => {
       if (isMobile) {
-        router.push('/cruz')
+        router.push('/aduana')
         return
       }
       setOpen(true)
@@ -273,7 +273,7 @@ export function CruzChatBubble() {
             background: D.surface, flexShrink: 0,
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div className="cruz-brand-z" style={{ width: 32, height: 32 }}>
+              <div className="aduana-brand" style={{ width: 32, height: 32 }}>
                 <svg viewBox="0 0 24 24" width={16} height={16} fill="none" xmlns="http://www.w3.org/2000/svg">
                   <line x1="12" y1="3" x2="12" y2="21" stroke="#0B1623" strokeWidth="2" strokeLinecap="round" />
                   <line x1="3" y1="12" x2="21" y2="12" stroke="#0B1623" strokeWidth="2" strokeLinecap="round" />

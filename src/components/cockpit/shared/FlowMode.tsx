@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { CruzRecommendation } from './CruzRecommendation'
+import { AduanaRecommendation } from './CruzRecommendation'
 import { useReviewerShortcuts } from '@/hooks/use-reviewer-shortcuts'
 import { playSound } from '@/lib/sounds'
 import { haptic } from '@/hooks/use-haptic'
@@ -145,7 +145,7 @@ export function FlowMode({ items, onClose, operatorName }: Props) {
           <div style={{ fontSize: 13, color: '#6E7681', marginBottom: 8 }}>
             {current.label}
           </div>
-          <CruzRecommendation
+          <AduanaRecommendation
             recommendation={current.recommendation}
             confidence={current.confidence}
             approveLabel="Aprobar"

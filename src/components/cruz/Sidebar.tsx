@@ -3,7 +3,7 @@
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { LogOut } from 'lucide-react';
-import { CruzMark } from '@/components/command-center/CruzMark';
+import { AduanaMark } from '@/components/command-center/CruzMark';
 import type { ReactNode } from 'react';
 import { INTERNAL_GROUPS, CLIENT_NAV, CLIENT_GROUPS } from '@/components/nav/nav-config';
 
@@ -83,11 +83,11 @@ export default function Sidebar({
   const navSections = portalType === 'operator' ? operatorNav : clientNav;
 
   return (
-    <aside className={`cruz-sidebar${mobileOpen ? ' mobile-open' : ''}`}>
+    <aside className={`aduana-sidebar${mobileOpen ? ' mobile-open' : ''}`}>
       {/* Logo */}
       <div className="sidebar-logo">
         <div className="sidebar-logo-inner">
-          <CruzMark size={32} />
+          <AduanaMark size={32} />
           <div className="sidebar-logo-text">CRUZ</div>
         </div>
 

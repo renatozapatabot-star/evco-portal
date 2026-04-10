@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { fmtUSDCompact } from '../shared/formatters'
 import type { OperatorData } from '../shared/fetchCockpitData'
 import { IfThenCard } from '../shared/IfThenCard'
-import { CruzRecommendation } from '../shared/CruzRecommendation'
+import { AduanaRecommendation } from '../shared/CruzRecommendation'
 import { computeNextUp } from '../shared/computeNextUp'
 import { approveClassification } from '@/app/actions/reviewer'
 
@@ -111,13 +111,13 @@ export function NextUpHero({ data, operatorName }: Props) {
 
             {/* CRUZ Recommendation */}
             {nextUp.suggestion && (
-              <CruzRecommendation
+              <AduanaRecommendation
                 recommendation={`Clasificar como ${nextUp.suggestion.fraccion}`}
                 confidence={nextUp.suggestion.confidence}
                 approveLabel="Confirmar clasificación"
                 onApprove={async () => {
                   const result = await approveClassification(nextUp.suggestion!.decision_id, nextUp.suggestion!.fraccion)
-                  if (!result.ok) { /* error handled by sound/haptic in CruzRecommendation */ }
+                  if (!result.ok) { /* error handled by sound/haptic in AduanaRecommendation */ }
                 }}
                 reviewLabel="Revisar"
                 reviewHref={`/traficos/${encodeURIComponent(nextUp.trafico)}`}

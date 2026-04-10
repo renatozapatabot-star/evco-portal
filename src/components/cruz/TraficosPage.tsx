@@ -74,7 +74,7 @@ export default function TraficosPage({
     : traficos;
 
   return (
-    <div className="cruz-content">
+    <div className="aduana-content">
       {/* Page header */}
       <div
         style={{
@@ -122,8 +122,8 @@ export default function TraficosPage({
       </div>
 
       {/* Table */}
-      <div className="cruz-table-wrap">
-        <div className="cruz-table-header">
+      <div className="aduana-table-wrap">
+        <div className="aduana-table-header">
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <span style={{ fontSize: 13, color: 'var(--slate-500)' }}>
               <strong style={{ color: 'var(--navy-800)', fontWeight: 600 }}>
@@ -155,7 +155,7 @@ export default function TraficosPage({
           </div>
         </div>
 
-        <table className="cruz-table">
+        <table className="aduana-table">
           <thead>
             <tr>
               <th>Tráfico</th>

@@ -2,7 +2,7 @@
 
 import type { ClientData } from '../shared/fetchCockpitData'
 import { IfThenCard } from '../shared/IfThenCard'
-import { CruzRecommendation } from '../shared/CruzRecommendation'
+import { AduanaRecommendation } from '../shared/CruzRecommendation'
 import { computeStatusHeroState } from '../shared/cardStates'
 
 interface Props {
@@ -55,7 +55,7 @@ export function StatusHero({ statusLevel, statusSentence, entradasThisWeek, acti
       }
       footer={
         activeShipments > 0 ? (
-          <CruzRecommendation
+          <AduanaRecommendation
             compact
             recommendation={activeShipments === 1 ? 'ADUANA monitorea tu envío en tiempo real' : `ADUANA monitorea tus ${activeShipments} envíos`}
             confidence={95}

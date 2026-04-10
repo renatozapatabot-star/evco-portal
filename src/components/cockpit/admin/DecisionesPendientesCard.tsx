@@ -1,7 +1,7 @@
 'use client'
 
 import { IfThenCard } from '../shared/IfThenCard'
-import { CruzRecommendation } from '../shared/CruzRecommendation'
+import { AduanaRecommendation } from '../shared/CruzRecommendation'
 import type { AdminData } from '../shared/fetchCockpitData'
 import { approveDraft } from '@/app/actions/reviewer'
 
@@ -58,7 +58,7 @@ export function DecisionesPendientesCard({ escalations, queue }: Props) {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {decisions.slice(0, 4).map(d => (
-              <CruzRecommendation
+              <AduanaRecommendation
                 key={d.id}
                 compact
                 recommendation={d.label}

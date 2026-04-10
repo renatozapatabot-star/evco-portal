@@ -243,7 +243,7 @@ export default function CatalogoPage() {
             </div>
           ) : (
           <div style={{ overflowX: 'auto' }}>
-            <table className="cruz-table" aria-label="Catálogo de productos" style={{ minWidth: 700 }}>
+            <table className="aduana-table" aria-label="Catálogo de productos" style={{ minWidth: 700 }}>
               <thead>
                 <tr>
                   <th>Descripción</th>

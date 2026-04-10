@@ -11,13 +11,13 @@ interface CockpitPageProps {
 }
 
 /**
- * Dark cockpit page wrapper. Applies .cruz-dark theme,
+ * Dark cockpit page wrapper. Applies .aduana-dark theme,
  * renders title bar, and wraps children in responsive padding.
  * Use this to wrap any authenticated page content.
  */
 export function CockpitPage({ title, subtitle, headerActions, children }: CockpitPageProps) {
   return (
-    <div className="cruz-dark" style={{
+    <div className="aduana-dark" style={{
       minHeight: '100vh',
       background: '#111111',
       color: 'var(--text-primary, #E6EDF3)',

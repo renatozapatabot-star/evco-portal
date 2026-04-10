@@ -1,7 +1,7 @@
 'use client'
 
 import { IfThenCard } from '../shared/IfThenCard'
-import { CruzRecommendation } from '../shared/CruzRecommendation'
+import { AduanaRecommendation } from '../shared/CruzRecommendation'
 import type { OperatorData } from '../shared/fetchCockpitData'
 import { computeNextUp } from '../shared/computeNextUp'
 
@@ -62,7 +62,7 @@ export function ProximasAccionesCard({ data }: Props) {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {actions.slice(0, 3).map((a, i) => (
-              <CruzRecommendation
+              <AduanaRecommendation
                 key={i}
                 compact
                 recommendation={a.label}

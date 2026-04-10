@@ -34,7 +34,7 @@ interface CockpitTableProps<T> {
 
 /**
  * Dark-themed data table for the cockpit aesthetic.
- * Uses existing .cruz-dark .cruz-table styles.
+ * Uses existing .aduana-dark .aduana-table styles.
  * Alternating rows, JetBrains Mono on numeric columns.
  */
 export function CockpitTable<T>({
@@ -63,7 +63,7 @@ export function CockpitTable<T>({
 
   return (
     <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-      <table className="cruz-table" style={{
+      <table className="aduana-table" style={{
         width: '100%',
         borderCollapse: 'collapse',
         fontSize: 13,

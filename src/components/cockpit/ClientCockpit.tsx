@@ -5,7 +5,7 @@ import { StatusHero } from './client/StatusHero'
 import { WeekAheadPanel } from './client/WeekAheadPanel'
 import { FinancialPanel } from './client/FinancialPanel'
 import { InventoryPanel } from './client/InventoryPanel'
-import { CruzAskPanel } from './client/CruzAskPanel'
+import { AduanaAskPanel } from './client/CruzAskPanel'
 
 interface Props {
   data: ClientData
@@ -39,7 +39,7 @@ export function ClientCockpit({ data, companyName }: Props) {
         <WeekAheadPanel weekAhead={data.weekAhead} />
         <FinancialPanel financial={data.financial} />
         <InventoryPanel inventory={data.inventory} />
-        <CruzAskPanel />
+        <AduanaAskPanel />
       </div>
     </div>
   )

@@ -244,7 +244,7 @@ function TraficosContent() {
 
         {/* Table — desktop only */}
         {!isMobile && <div style={{ maxHeight: 'calc(100vh - 280px)', overflowY: 'auto', overflowX: 'auto' }}>
-          <table className="cruz-table" aria-label="Lista de tráficos" style={{ minWidth: 700 }}>
+          <table className="aduana-table" aria-label="Lista de tráficos" style={{ minWidth: 700 }}>
             <thead>
               <tr>
                 <th scope="col" style={{ width: 28 }}></th>

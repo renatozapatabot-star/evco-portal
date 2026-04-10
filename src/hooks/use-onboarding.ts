@@ -76,7 +76,7 @@ export function useOnboarding(): {
       '/documentos': 'documents',
       '/financiero': 'financiero',
       '/proveedores': 'proveedores',
-      '/cruz': 'cruz_ai',
+      '/aduana': 'cruz_ai',
       '/documentos/subir': 'upload',
     }
 

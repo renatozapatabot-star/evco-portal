@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { fmtRelativeTime } from '../shared/formatters'
 import type { AdminData } from '../shared/fetchCockpitData'
 import { IfThenCard } from '../shared/IfThenCard'
-import { CruzRecommendation } from '../shared/CruzRecommendation'
+import { AduanaRecommendation } from '../shared/CruzRecommendation'
 import { computeEscalationState } from '../shared/cardStates'
 import { approveDraft } from '@/app/actions/reviewer'
 
@@ -63,7 +63,7 @@ export function NeedsJudgmentPanel({ escalations }: Props) {
         )
       }
       footer={escalations.length > 0 ? (
-        <CruzRecommendation
+        <AduanaRecommendation
           compact
           recommendation={overdue.length > 0
             ? `${overdue.length} vencida${overdue.length !== 1 ? 's' : ''} — resolver primero`

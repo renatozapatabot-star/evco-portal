@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import type { OperatorData } from '../shared/fetchCockpitData'
 import { IfThenCard } from '../shared/IfThenCard'
-import { CruzRecommendation } from '../shared/CruzRecommendation'
+import { AduanaRecommendation } from '../shared/CruzRecommendation'
 import { computeBlockedState } from '../shared/cardStates'
 import { escalateBlocked } from '@/app/actions/reviewer'
 
@@ -57,7 +57,7 @@ export function BlockedPanel({ blocked, operatorId, onClear }: Props) {
         </div>
       }
       footer={blocked.length > 0 ? (
-        <CruzRecommendation
+        <AduanaRecommendation
           compact
           recommendation={`CRUZ recomienda escalar ${blocked.length} bloqueo${blocked.length !== 1 ? 's' : ''}`}
           confidence={80}

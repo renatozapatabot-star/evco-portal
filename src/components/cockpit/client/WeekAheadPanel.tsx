@@ -47,7 +47,7 @@ export function WeekAheadPanel({ weekAhead }: Props) {
             <tbody>
               {weekAhead.map((item, i) => (
                 <tr key={item.trafico} style={{
-                  background: i % 2 === 0 ? '#1A1A1A' : 'rgba(255,255,255,0.02)',
+                  background: i % 2 === 0 ? 'rgba(9,9,11,0.75)' : 'rgba(255,255,255,0.02)',
                 }}>
                   <td style={{ padding: '10px', fontSize: 16, textAlign: 'center' }}>
                     {item.statusIcon}

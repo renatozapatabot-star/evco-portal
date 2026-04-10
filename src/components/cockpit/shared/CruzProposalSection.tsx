@@ -26,7 +26,7 @@ export function AduanaProposalSection({ proposal, subjectLabel, onApprove, onRej
   if (!proposal) {
     return (
       <div style={{
-        background: '#1A1A1A', borderRadius: 14, padding: '16px 20px',
+        background: 'rgba(9,9,11,0.75)', borderRadius: 14, padding: '16px 20px',
         border: '1px solid rgba(255,255,255,0.06)', marginBottom: 16,
         display: 'flex', alignItems: 'center', gap: 10,
       }}>
@@ -190,7 +190,7 @@ export function AduanaProposalSection({ proposal, subjectLabel, onApprove, onRej
           padding: 20,
         }} onClick={() => setShowRejectModal(false)}>
           <div style={{
-            background: '#1A1A1A', borderRadius: 16, padding: 24,
+            background: 'rgba(9,9,11,0.75)', borderRadius: 16, padding: 24,
             maxWidth: 400, width: '100%', border: '1px solid rgba(255,255,255,0.08)',
           }} onClick={e => e.stopPropagation()}>
             <div style={{ fontSize: 16, fontWeight: 700, color: '#E6EDF3', marginBottom: 16 }}>

@@ -54,7 +54,7 @@ export function ClientsTablePanel({ companies }: Props) {
             <tbody>
               {companies.map((c, i) => (
                 <tr key={c.company_id} style={{
-                  background: i % 2 === 0 ? '#1A1A1A' : 'rgba(255,255,255,0.02)',
+                  background: i % 2 === 0 ? 'rgba(9,9,11,0.75)' : 'rgba(255,255,255,0.02)',
                 }}>
                   <td style={{ padding: '10px 12px', fontSize: 13, color: '#E6EDF3' }}>
                     <Link

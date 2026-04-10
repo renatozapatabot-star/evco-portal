@@ -92,7 +92,7 @@ export function OperatorSearch() {
       {/* Search input */}
       <div style={{
         display: 'flex', gap: 8,
-        background: '#1A1A1A', borderRadius: 10,
+        background: 'rgba(9,9,11,0.75)', borderRadius: 10,
         border: '1px solid rgba(255,255,255,0.08)',
         padding: '4px 4px 4px 14px',
         alignItems: 'center',

@@ -52,7 +52,7 @@ export function DueloDelDia() {
 
   return (
     <div style={{
-      background: '#1A1A1A', borderRadius: 10, padding: '12px 16px',
+      background: 'rgba(9,9,11,0.75)', borderRadius: 10, padding: '12px 16px',
       border: '1px solid rgba(201,168,76,0.15)', marginBottom: 12,
     }}>
       <div style={{

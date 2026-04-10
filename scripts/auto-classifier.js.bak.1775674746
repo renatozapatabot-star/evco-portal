@@ -1,0 +1,653 @@
+#!/usr/bin/env node
+
+// ============================================================
+// CRUZ Auto-Classifier — AI fracción suggestion with history
+// Connected to Operational Brain via decision-logger
+// Cross-references new products against 80 years of RZ
+// classification history stored in globalpc_productos.
+// Cron: triggered by shadow-reader or on-demand
+// ============================================================
+
+const path = require('path')
+require('dotenv').config({ path: path.resolve(__dirname, '..', '.env.local') })
+const { createClient } = require('@supabase/supabase-js')
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+)
+
+const { emitEvent } = require('./lib/workflow-emitter')
+const DRY_RUN = process.argv.includes('--dry-run')
+const DESC_ARG = process.argv.find(a => a.startsWith('--desc='))?.split('=').slice(1).join('=')
+const TRIGGER_ID_ARG = process.argv.find(a => a.startsWith('--trigger-id='))?.split('=')[1]
+const COMPANY_ID_ARG = process.argv.find(a => a.startsWith('--company-id='))?.split('=')[1]
+const CVE_CLIENTE_ARG = process.argv.find(a => a.startsWith('--cve-cliente='))?.split('=')[1]
+const CVE_PROVEEDOR_ARG = process.argv.find(a => a.startsWith('--cve-proveedor='))?.split('=')[1]
+const CVE_PRODUCTO_ARG = process.argv.find(a => a.startsWith('--cve-producto='))?.split('=')[1]
+const BATCH_MODE = process.argv.includes('--batch')
+const BATCH_LIMIT = parseInt(process.argv.find(a => a.startsWith('--limit='))?.split('=')[1] || '100', 10)
+const TIER_ARG = process.argv.find(a => a.startsWith('--tier='))?.split('=')[1]
+const TIER = TIER_ARG ? parseInt(TIER_ARG, 10) : null
+if (TIER && ![1, 2, 3].includes(TIER)) {
+  console.error('--tier must be 1, 2, or 3')
+  process.exit(1)
+}
+
+/**
+ * Normalize a fracción arancelaria to the canonical XXXX.XX.XX format.
+ * Accepts:
+ *   "8443.91.99"        → "8443.91.99"
+ *   "8443919900"        → "8443.91.99"  (strips trailing NICO)
+ *   "8443.91.99.99"     → "8443.91.99"  (strips trailing NICO segment)
+ *   "8443 91 99"        → "8443.91.99"
+ *   "84439199"          → "8443.91.99"
+ * Returns null if input is invalid (not enough digits to form a fracción).
+ */
+function normalizeFraccion(raw) {
+  if (!raw || typeof raw !== 'string') return null
+  const digits = raw.replace(/\D/g, '')
+  if (digits.length < 8) return null
+  const f = digits.slice(0, 8)
+  return `${f.slice(0, 4)}.${f.slice(4, 6)}.${f.slice(6, 8)}`
+}
+
+/**
+ * Find historical fracción matches from globalpc_productos.
+ * Tiered scoping: supplier+client → client-only → global (with confidence penalties).
+ */
+async function findHistoricalMatches(description, cveCliente, cveProveedor) {
+  if (!description || description.length < 5) return []
+
+  const searchTerms = description.toLowerCase().split(/\s+/).filter(w => w.length > 3).slice(0, 3)
+  if (searchTerms.length === 0) return []
+
+  // Tier 1: client + supplier scoped (strongest match)
+  if (cveCliente && cveProveedor) {
+    const results = await queryHistorical(searchTerms, cveCliente, cveProveedor)
+    if (results.length > 0) return results
+  }
+
+  // Tier 2: client-only scoped (confidence penalty: -0.05)
+  if (cveCliente) {
+    const results = await queryHistorical(searchTerms, cveCliente, null)
+    if (results.length > 0) return results.map(r => ({ ...r, confidencePenalty: -0.05 }))
+  }
+
+  // Tier 3: global scope (confidence penalty: -0.15)
+  const results = await queryHistorical(searchTerms, null, null)
+  return results.map(r => ({ ...r, confidencePenalty: -0.15 }))
+}
+
+async function queryHistorical(searchTerms, cveCliente, cveProveedor) {
+  let query = supabase
+    .from('globalpc_productos')
+    .select('fraccion, descripcion, company_id, cve_cliente')
+    .not('fraccion', 'is', null)
+    .ilike('descripcion', `%${searchTerms[0]}%`)
+    .limit(100)
+
+  if (cveCliente) query = query.eq('cve_cliente', cveCliente)
+  if (cveProveedor) query = query.eq('cve_proveedor', cveProveedor)
+
+  const { data } = await query
+  if (!data || data.length === 0) return []
+
+  // Score matches by keyword overlap
+  const scored = data.map(row => {
+    const rowDesc = (row.descripcion || '').toLowerCase()
+    const matches = searchTerms.filter(t => rowDesc.includes(t)).length
+    return { ...row, matchScore: matches / searchTerms.length }
+  }).filter(r => r.matchScore > 0.3).sort((a, b) => b.matchScore - a.matchScore)
+
+  // Group by fracción
+  const byFraccion = {}
+  for (const row of scored) {
+    const f = row.fraccion
+    if (!byFraccion[f]) byFraccion[f] = { fraccion: f, count: 0, descriptions: [], companies: new Set(), confidencePenalty: 0 }
+    byFraccion[f].count++
+    if (byFraccion[f].descriptions.length < 3) byFraccion[f].descriptions.push(row.descripcion?.substring(0, 40))
+    byFraccion[f].companies.add(row.cve_cliente || row.company_id)
+  }
+
+  return Object.values(byFraccion)
+    .map(g => ({ ...g, companies: g.companies.size }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5)
+}
+
+async function classifyWithSonnet(description, historicalMatches, cveCliente) {
+  const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY
+  if (!ANTHROPIC_API_KEY) return null
+
+  const historyContext = historicalMatches.length > 0
+    ? `\n\nHISTORIAL DE CLASIFICACIONES SIMILARES (Patente 3596):\n${historicalMatches.map(m => `- ${m.fraccion}: ${m.count} clasificaciones previas (${m.descriptions.join('; ')})`).join('\n')}`
+    : ''
+
+  const prompt = `Eres un experto en clasificación arancelaria mexicana (TIGIE).
+Clasifica este producto. Sugiere las 3 mejores fracciones arancelarias.
+
+PRODUCTO: ${description}
+${historyContext}
+
+Responde SOLO con JSON:
+{
+  "suggestions": [
+    {
+      "fraccion": "XXXX.XX.XX",
+      "description_tigie": "descripción oficial",
+      "confidence": 0.0-1.0,
+      "reasoning": "por qué esta fracción",
+      "igi_rate": "X%",
+      "tmec_eligible": true/false
+    }
+  ],
+  "consistency_warning": null or "string si hay inconsistencia con historial"
+}`
+
+  try {
+    const startMs = Date.now()
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
+      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 1000, messages: [{ role: 'user', content: prompt }] }),
+    })
+    const data = await res.json()
+    if (data.error) return null
+    const text = data.content?.[0]?.text || ''
+    const match = text.match(/\{[\s\S]*\}/)
+    if (!match) return null
+
+    const costUsd = ((data.usage?.input_tokens || 0) * 0.001 + (data.usage?.output_tokens || 0) * 0.005) / 1000
+
+    // Cost tracking
+    supabase.from('api_cost_log').insert({
+      model: 'claude-haiku-4-5-20251001',
+      input_tokens: data.usage?.input_tokens || 0,
+      output_tokens: data.usage?.output_tokens || 0,
+      cost_usd: costUsd,
+      action: 'auto_classification',
+      client_code: cveCliente || null,
+      latency_ms: Date.now() - startMs,
+    }).then(() => {}, () => {})
+
+    const parsed = JSON.parse(match[0])
+    parsed._cost_usd = costUsd
+    parsed._input_tokens = data.usage?.input_tokens || 0
+    parsed._output_tokens = data.usage?.output_tokens || 0
+
+    // Normalize fracciones to canonical XXXX.XX.XX format
+    if (parsed.suggestions) {
+      for (const s of parsed.suggestions) {
+        const normalized = normalizeFraccion(s.fraccion)
+        if (normalized) {
+          s.fraccion = normalized
+        } else {
+          console.warn(`  ⚠️ Invalid fracción format from AI: "${s.fraccion}" — skipping normalization`)
+        }
+      }
+    }
+
+    // Apply confidence penalties from historical scope tier
+    if (parsed.suggestions && historicalMatches.length > 0) {
+      const penalty = historicalMatches[0].confidencePenalty || 0
+      if (penalty !== 0) {
+        for (const s of parsed.suggestions) {
+          s.confidence = Math.max(0, s.confidence + penalty)
+        }
+      }
+    }
+
+    return parsed
+  } catch { return null }
+}
+
+/**
+ * Write classification to globalpc_productos (the production table).
+ * Only writes if confidence >= 0.85 AND we have the row id.
+ */
+async function writeToGlobalpc(productRowId, fraccion, confidence) {
+  if (confidence < 0.85) return false
+  if (!productRowId) return false
+
+  const normalizedFraccion = normalizeFraccion(fraccion)
+  if (!normalizedFraccion) {
+    console.warn(`  ⚠️ Cannot write invalid fracción to globalpc: "${fraccion}"`)
+    return false
+  }
+
+  const { error } = await supabase
+    .from('globalpc_productos')
+    .update({
+      fraccion: normalizedFraccion,
+      fraccion_source: 'ai_auto_classifier',
+      fraccion_classified_at: new Date().toISOString(),
+    })
+    .eq('id', productRowId)
+
+  if (error) {
+    console.error(`  [globalpc] Write failed for id=${productRowId}: ${error.message}`)
+    return false
+  }
+  return true
+}
+
+/**
+ * Classify a single product. Used by both single-product and batch modes.
+ * Returns { top, result, wroteGlobalpc } or null on failure.
+ */
+async function classifySingle({ description, cveCliente, cveProveedor, cveProducto, productRowId, quiet }) {
+  const log = quiet ? () => {} : console.log
+
+  // 1. Historical matches (tenant-scoped)
+  const history = await findHistoricalMatches(description, cveCliente, cveProveedor)
+  if (!quiet && history.length > 0) {
+    log(`  ${history.length} fracciones históricas encontradas:`)
+    history.forEach(h => log(`    ${h.fraccion}: ${h.count} precedentes (${h.companies} clientes)`))
+  } else if (!quiet) {
+    log('  Sin historial — producto nuevo')
+  }
+
+  // 2. AI classification
+  const result = await classifyWithSonnet(description, history, cveCliente)
+  const top = result?.suggestions?.[0]
+
+  if (!quiet && result?.suggestions) {
+    for (const s of result.suggestions) {
+      log(`  ${s.confidence >= 0.9 ? '🟢' : s.confidence >= 0.7 ? '🟡' : '🔴'} ${s.fraccion} (${Math.round(s.confidence * 100)}%)`)
+      log(`    ${s.description_tigie}`)
+      log(`    ${s.reasoning}`)
+      log(`    IGI: ${s.igi_rate} · T-MEC: ${s.tmec_eligible ? 'Sí' : 'No'}`)
+    }
+    if (result.consistency_warning) {
+      log(`\n  ⚠️ ${result.consistency_warning}`)
+    }
+  } else if (!quiet) {
+    log('  ⚠️ API no disponible — usando solo historial')
+    if (history.length > 0) {
+      log(`  Recomendación basada en historial: ${history[0].fraccion} (${history[0].count} precedentes)`)
+    }
+  }
+
+  // 3. Save to oca_database (audit trail — always, with normalized fracción)
+  if (!DRY_RUN && top) {
+    await supabase.from('oca_database').insert({
+      product_description: description,
+      description: description,
+      fraccion: normalizeFraccion(top.fraccion) || top.fraccion,
+      confidence: top.confidence,
+      source: 'auto_classifier',
+      alternative_fracciones: result.suggestions?.slice(1).map(s => normalizeFraccion(s.fraccion) || s.fraccion) || null,
+      company_id: cveCliente || null,
+    }).then(() => {}, () => {})
+  }
+
+  // 4. Write to globalpc_productos (production table — confidence >= 0.85 only)
+  let wroteGlobalpc = false
+  if (!DRY_RUN && top && top.confidence >= 0.85) {
+    wroteGlobalpc = await writeToGlobalpc(productRowId, top.fraccion, top.confidence)
+  }
+
+  // 5. Log to Operational Brain
+  try {
+    const { logDecision } = require('./decision-logger')
+    if (top) {
+      await logDecision({
+        company_id: cveCliente || null,
+        decision_type: 'classification',
+        decision: `Fracción ${top.fraccion} sugerida para "${description?.substring(0, 50)}"`,
+        reasoning: `${Math.round(top.confidence * 100)}% confianza, ${history.length} fracciones históricas`,
+        alternatives: result?.suggestions?.slice(1).map(s => ({
+          option: s.fraccion,
+          score: s.confidence,
+          reason_rejected: s.reasoning,
+        })),
+      })
+    }
+  } catch {}
+
+  // 6. Emit workflow event (CRUZ 2.0 orchestration)
+  if (top && TRIGGER_ID_ARG) {
+    const companyId = COMPANY_ID_ARG || cveCliente || 'unknown'
+    if (top.confidence >= 0.95) {
+      await emitEvent('classify', 'classification_complete', TRIGGER_ID_ARG, companyId, {
+        fraccion: normalizeFraccion(top.fraccion) || top.fraccion,
+        confidence: top.confidence,
+        igi_rate: top.igi_rate,
+        tmec_eligible: top.tmec_eligible,
+        description,
+      })
+    } else {
+      await emitEvent('classify', 'needs_human_review', TRIGGER_ID_ARG, companyId, {
+        topOptions: (result.suggestions || []).slice(0, 3).map(s => ({
+          fraccion: normalizeFraccion(s.fraccion) || s.fraccion,
+          confidence: Math.round(s.confidence * 100),
+          reasoning: s.reasoning,
+        })),
+        description,
+      })
+    }
+  }
+
+  return { top, result, wroteGlobalpc }
+}
+
+// ============================================================
+// BATCH MODE
+// ============================================================
+
+async function runBatch() {
+  const clientFilter = CVE_CLIENTE_ARG
+  const limit = Math.min(BATCH_LIMIT, 1000)
+  const tierLabel = TIER ? `tier=${TIER}` : 'tier=any'
+
+  console.log(`⚖️ CRUZ Auto-Classifier — BATCH MODE`)
+  console.log(`  Limit: ${limit} · Client: ${clientFilter || 'all'} · Tier: ${tierLabel} · Dry run: ${DRY_RUN}\n`)
+
+  // Build priors-having cve_cliente set (needed for Tier 1 and Tier 2 filtering)
+  // Pattern from scripts/tier-classifiable.js — paginate through classified rows
+  let priorsSet = null
+  if (TIER === 1 || TIER === 2) {
+    priorsSet = new Set()
+    let from = 0
+    while (true) {
+      let q = supabase.from('globalpc_productos')
+        .select('cve_cliente')
+        .not('fraccion', 'is', null)
+        .range(from, from + 999)
+      if (clientFilter) q = q.eq('cve_cliente', clientFilter)
+      const r = await q
+      if (r.error || !r.data || r.data.length === 0) break
+      r.data.forEach(row => priorsSet.add(row.cve_cliente))
+      if (r.data.length < 1000) break
+      from += 1000
+    }
+    console.log(`[batch] ${priorsSet.size} cve_cliente values with prior classifications\n`)
+  }
+
+  // Tier 3 warning — give user 5 seconds to abort
+  if (TIER === 3) {
+    console.log(`⚠️  WARNING: Tier 3 products have thin or null descriptions.`)
+    console.log(`   Expected high-conf rate: ~20%`)
+    console.log(`   These classifications are systematically biased.`)
+    console.log(`   Consider description enrichment before running.`)
+    console.log(`   Press Ctrl+C in the next 5 seconds to abort, or wait to continue...\n`)
+    await new Promise(r => setTimeout(r, 5000))
+  }
+
+  // Pull unclassified products, ordered by company volume (top companies first)
+  // We fetch ordered by cve_cliente to group by company, then sort by volume client-side
+  // Over-fetch for post-fetch filtering (description length, tier membership)
+  const fetchLimit = TIER ? limit * 4 : limit * 2
+  let query = supabase
+    .from('globalpc_productos')
+    .select('id, cve_producto, cve_cliente, cve_proveedor, descripcion, company_id')
+    .is('fraccion', null)
+    .order('cve_cliente', { ascending: true })
+    .limit(fetchLimit)
+
+  // Tier 3 wants null/thin descriptions; all others want non-null
+  if (TIER === 3) {
+    query = query.or('descripcion.is.null,descripcion.eq.')
+  } else {
+    query = query.not('descripcion', 'is', null)
+  }
+
+  if (clientFilter) query = query.eq('cve_cliente', clientFilter)
+
+  const { data: rawCandidates, error } = await query
+  if (error) {
+    console.error(`[batch] Failed to fetch candidates: ${error.message}`)
+    process.exit(1)
+  }
+
+  if (!rawCandidates || rawCandidates.length === 0) {
+    console.log('[batch] No unclassified products found.')
+    process.exit(0)
+  }
+
+  // Post-fetch tier filtering (Postgres can't do LENGTH() >= 30 via PostgREST)
+  let candidates
+  if (TIER === 1) {
+    candidates = rawCandidates.filter(r =>
+      (r.descripcion || '').trim().length >= 30 && priorsSet.has(r.cve_cliente)
+    )
+  } else if (TIER === 2) {
+    candidates = rawCandidates.filter(r =>
+      (r.descripcion || '').trim().length >= 30 && !priorsSet.has(r.cve_cliente)
+    )
+  } else if (TIER === 3) {
+    candidates = rawCandidates.filter(r =>
+      (r.descripcion || '').trim().length < 30
+    )
+  } else {
+    candidates = rawCandidates
+  }
+
+  if (candidates.length === 0) {
+    console.log(`[batch] No unclassified products found matching ${tierLabel}.`)
+    process.exit(0)
+  }
+
+  // Sort by company volume (prioritize top companies)
+  const companyVolume = {}
+  for (const row of candidates) {
+    companyVolume[row.cve_cliente] = (companyVolume[row.cve_cliente] || 0) + 1
+  }
+  candidates.sort((a, b) => (companyVolume[b.cve_cliente] || 0) - (companyVolume[a.cve_cliente] || 0))
+
+  const batch = candidates.slice(0, limit)
+  console.log(`[batch] ${batch.length} products to classify from ${Object.keys(companyVolume).length} companies (${tierLabel})\n`)
+
+  let done = 0
+  let highConf = 0
+  let needsReview = 0
+  let failed = 0
+  let totalCost = 0
+
+  for (const row of batch) {
+    done++
+    const desc = row.descripcion?.trim()
+    if (!desc || desc.length < 5) {
+      failed++
+      continue
+    }
+
+    try {
+      const outcome = await classifySingle({
+        description: desc,
+        cveCliente: row.cve_cliente,
+        cveProveedor: row.cve_proveedor,
+        cveProducto: row.cve_producto,
+        productRowId: row.id,
+        quiet: true,
+      })
+
+      if (outcome?.top) {
+        totalCost += outcome.result?._cost_usd || 0
+        if (outcome.top.confidence >= 0.85) {
+          highConf++
+        } else {
+          needsReview++
+        }
+        // Brief per-row log
+        const emoji = outcome.top.confidence >= 0.85 ? '🟢' : '🟡'
+        const gpc = outcome.wroteGlobalpc ? ' → globalpc' : ''
+        console.log(`  ${emoji} [${done}/${batch.length}] ${row.cve_cliente}/${row.cve_producto || 'N/A'}: ${outcome.top.fraccion} (${Math.round(outcome.top.confidence * 100)}%)${gpc}`)
+
+        // Emit workflow event (CRUZ 2.0 — batch mode)
+        if (process.env.CRUZ_BATCH_EMIT_EVENTS !== 'false') {
+          try {
+            const companyId = row.company_id || row.cve_cliente || 'unknown'
+            const triggerId = `batch-${Date.now()}-${companyId}-${row.cve_producto || 'N/A'}`.slice(0, 80)
+
+            if (outcome.top.confidence >= 0.85) {
+              await emitEvent(
+                'classify',
+                'classification_complete',
+                triggerId,
+                companyId,
+                {
+                  fraccion: outcome.top.fraccion,
+                  confidence: outcome.top.confidence,
+                  igi_rate: outcome.top.igi_rate,
+                  tmec_eligible: outcome.top.tmec_eligible,
+                  cve_proveedor: row.cve_proveedor,
+                  cve_producto: row.cve_producto,
+                  descripcion: desc?.slice(0, 200),
+                  source: 'auto_classifier_batch',
+                }
+              )
+            } else if (outcome.top.confidence >= 0.65) {
+              await emitEvent(
+                'classify',
+                'needs_human_review',
+                triggerId,
+                companyId,
+                {
+                  topOptions: (outcome.result?.suggestions || []).slice(0, 3).map(s => ({
+                    fraccion: s.fraccion,
+                    confidence: Math.round(s.confidence * 100),
+                    reasoning: s.reasoning,
+                  })),
+                  cve_proveedor: row.cve_proveedor,
+                  cve_producto: row.cve_producto,
+                  descripcion: desc?.slice(0, 200),
+                  source: 'auto_classifier_batch',
+                }
+              )
+            }
+            // confidence < 0.65: no event emitted, just logged to oca_database
+          } catch (emitErr) {
+            console.error(`[batch] event emit failed for ${row.cve_producto}:`, emitErr.message)
+          }
+        }
+      } else {
+        failed++
+        console.log(`  🔴 [${done}/${batch.length}] ${row.cve_cliente}/${row.cve_producto || 'N/A'}: API failed`)
+      }
+    } catch (err) {
+      // Rate limit detection — exit gracefully
+      if (err.message?.includes('rate') || err.message?.includes('429')) {
+        console.log(`\n[batch] Rate limited at ${done}/${batch.length}. Exiting gracefully.`)
+        break
+      }
+      failed++
+      console.log(`  🔴 [${done}/${batch.length}] ${row.cve_cliente}/${row.cve_producto || 'N/A'}: ${err.message}`)
+    }
+
+    // Progress summary every 25
+    if (done % 25 === 0) {
+      console.log(`\n  [batch] ${done}/${batch.length} done · $${totalCost.toFixed(4)} spent · ${highConf} high-conf · ${needsReview} needs-review · ${failed} failed\n`)
+    }
+
+    // Throttle: 500ms between calls
+    if (done < batch.length) {
+      await new Promise(r => setTimeout(r, 500))
+    }
+  }
+
+  console.log(`\n[batch] COMPLETE`)
+  console.log(`  Total: ${done}/${batch.length}`)
+  console.log(`  High confidence (≥85%): ${highConf}`)
+  console.log(`  Needs review (<85%): ${needsReview}`)
+  console.log(`  Failed: ${failed}`)
+  console.log(`  Cost: $${totalCost.toFixed(4)}`)
+  if (highConf > 0) {
+    console.log(`  Cost per classification: $${(totalCost / (highConf + needsReview)).toFixed(4)}`)
+  }
+  console.log(`  Written to globalpc_productos: ${highConf} rows`)
+
+  process.exit(0)
+}
+
+// ============================================================
+// SINGLE PRODUCT MODE (original CLI)
+// ============================================================
+
+async function main() {
+  if (BATCH_MODE) {
+    return runBatch()
+  }
+
+  const description = DESC_ARG
+  if (!description) {
+    console.log('Usage:')
+    console.log('  Single:  node scripts/auto-classifier.js --desc="polipropileno virgen en pellets" [--cve-cliente=9254] [--cve-proveedor=PRV_5]')
+    console.log('  Batch:   node scripts/auto-classifier.js --batch [--limit=100] [--cve-cliente=9254] [--tier=1|2|3]')
+    process.exit(0)
+  }
+
+  console.log(`⚖️ CRUZ Auto-Classifier`)
+  console.log(`  Producto: ${description}`)
+  if (CVE_CLIENTE_ARG) console.log(`  Cliente: ${CVE_CLIENTE_ARG}`)
+  if (CVE_PROVEEDOR_ARG) console.log(`  Proveedor: ${CVE_PROVEEDOR_ARG}`)
+  console.log()
+
+  // Look up the product row if we have identifiers (for globalpc write)
+  let productRowId = null
+  if (CVE_CLIENTE_ARG && CVE_PRODUCTO_ARG) {
+    let query = supabase
+      .from('globalpc_productos')
+      .select('id')
+      .eq('cve_cliente', CVE_CLIENTE_ARG)
+      .eq('cve_producto', CVE_PRODUCTO_ARG)
+    if (CVE_PROVEEDOR_ARG) query = query.eq('cve_proveedor', CVE_PROVEEDOR_ARG)
+    const { data } = await query.limit(1).single()
+    productRowId = data?.id || null
+  }
+
+  console.log('1. Buscando historial...')
+  const outcome = await classifySingle({
+    description,
+    cveCliente: CVE_CLIENTE_ARG,
+    cveProveedor: CVE_PROVEEDOR_ARG,
+    cveProducto: CVE_PRODUCTO_ARG,
+    productRowId,
+    quiet: false,
+  })
+
+  if (outcome?.wroteGlobalpc) {
+    console.log(`\n  ✅ Written to globalpc_productos (id=${productRowId})`)
+  } else if (outcome?.top && outcome.top.confidence < 0.85) {
+    console.log(`\n  ⚠️ Confidence ${Math.round(outcome.top.confidence * 100)}% < 85% — only oca_database written`)
+  }
+
+  if (outcome?.result?._cost_usd) {
+    console.log(`  💰 Cost: $${outcome.result._cost_usd.toFixed(4)}`)
+  }
+
+  console.log('\n✅ Clasificación completa')
+  process.exit(0)
+}
+
+// Self-test for normalizeFraccion — run with: node scripts/auto-classifier.js --test-normalize
+if (process.argv.includes('--test-normalize')) {
+  const cases = [
+    ['8443.91.99', '8443.91.99'],
+    ['8443919900', '8443.91.99'],
+    ['8443.91.99.99', '8443.91.99'],
+    ['8443 91 99', '8443.91.99'],
+    ['84439199', '8443.91.99'],
+    ['  8443.91.99  ', '8443.91.99'],
+    ['', null],
+    ['xyz', null],
+    ['123', null],
+  ]
+  let passed = 0
+  let failed = 0
+  for (const [input, expected] of cases) {
+    const got = normalizeFraccion(input)
+    if (got === expected) {
+      console.log(`✅ ${JSON.stringify(input)} → ${got}`)
+      passed++
+    } else {
+      console.log(`❌ ${JSON.stringify(input)} → ${got} (expected ${expected})`)
+      failed++
+    }
+  }
+  console.log(`\n${passed}/${passed + failed} passed`)
+  process.exit(failed > 0 ? 1 : 0)
+}
+
+main().catch(err => { console.error('Fatal:', err.message); process.exit(1) })

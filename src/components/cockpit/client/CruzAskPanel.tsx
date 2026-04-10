@@ -79,7 +79,7 @@ export function AduanaAskPanel() {
           placeholder="Escribe tu pregunta..."
           style={{
             flex: 1,
-            background: '#1A1A1A',
+            background: 'rgba(9,9,11,0.75)',
             border: '1px solid rgba(255,255,255,0.08)',
             borderRadius: 10,
             padding: '14px 16px',

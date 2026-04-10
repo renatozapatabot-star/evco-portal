@@ -66,7 +66,7 @@ export function EntityRadar({ center, nodes }: Props) {
 
   return (
     <div style={{
-      background: '#1A1A1A', borderRadius: 14, padding: '16px 20px',
+      background: 'rgba(9,9,11,0.75)', borderRadius: 14, padding: '16px 20px',
       border: '1px solid rgba(255,255,255,0.06)', marginBottom: 16,
     }}>
       {/* Header */}

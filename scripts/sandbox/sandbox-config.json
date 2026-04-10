@@ -1,0 +1,32 @@
+{
+  "pass_threshold": 95,
+  "streak_target_days": 30,
+  "streak_min_accuracy": 99.0,
+  "daily_sample_when_no_new": 10,
+  "max_ai_cost_per_run_usd": 2.00,
+  "field_weights": {
+    "fraccion": 40,
+    "total": 30,
+    "tmec": 20,
+    "extraction": 10
+  },
+  "tolerances": {
+    "fraccion": "exact",
+    "valor_pct": 0.01,
+    "igi_pct": 0.05,
+    "dta_pct": 0.05,
+    "iva_pct": 0.05,
+    "total_pct": 0.05,
+    "tipo_cambio_pct": 0.02
+  },
+  "accuracy_thresholds": {
+    "fraccion_accuracy": 99.0,
+    "valor_accuracy": 99.5,
+    "igi_accuracy": 99.9,
+    "dta_accuracy": 99.9,
+    "iva_accuracy": 99.9,
+    "total_accuracy": 99.5,
+    "tmec_detection_rate": 100.0,
+    "extraction_completeness": 98.0
+  }
+}

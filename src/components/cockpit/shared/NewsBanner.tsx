@@ -39,7 +39,7 @@ export function NewsBanner({ items, interval = 5000 }: NewsBannerProps) {
 
   return (
     <div style={{
-      background: '#1A1A1A',
+      background: 'rgba(9,9,11,0.75)',
       borderBottom: '1px solid rgba(255,255,255,0.06)',
       padding: '8px 16px',
       display: 'flex',

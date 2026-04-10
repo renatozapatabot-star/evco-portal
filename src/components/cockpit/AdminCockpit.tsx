@@ -14,6 +14,7 @@ import { WeeklyTrendCard } from './admin/WeeklyTrendCard'
 import { TeamActivityFeed } from './admin/TeamActivityFeed'
 import { DecisionesPendientesCard } from './admin/DecisionesPendientesCard'
 import { RightRail } from './admin/RightRail'
+import { PipelineFunnel } from './shared/PipelineFunnel'
 import { SlideOver } from './shared/SlideOver'
 import { NewsBanner, buildAdminItems } from './shared/NewsBanner'
 import { Trend, computeDelta } from './shared/Trend'
@@ -200,6 +201,9 @@ export function AdminCockpit({ data, operatorName }: Props) {
               )}
             </div>
           </div>
+
+          {/* Pipeline Funnel — shows items at each workflow stage */}
+          <PipelineFunnel />
 
           <AduanaAutonomoPanel
             decisions={data.agentDecisions24h}

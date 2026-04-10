@@ -14,6 +14,7 @@ import { haptic } from '@/hooks/use-haptic'
 import { useNetworkStatus } from '@/hooks/use-network-status'
 import { getCookieValue } from '@/lib/client-config'
 import { WorkflowGrid } from './WorkflowGrid'
+import { PipelineFunnel } from '@/components/cockpit/shared/PipelineFunnel'
 import { ActivityPulseSection } from './ActivityPulseSection'
 import { NewsBanner, buildClientItems } from '@/components/cockpit/shared/NewsBanner'
 import { PullRefreshIndicator } from '@/components/broker/PullRefreshIndicator'
@@ -476,6 +477,9 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
       </div>}
       <Celebrate trigger={completionPct >= 100} id="operator-allgreen" />
       <CeremonyEffect active={completionPct >= 100} />
+
+      {/* ── PIPELINE FUNNEL (operator view only) ── */}
+      {!isClient && <PipelineFunnel />}
 
       {/* ── CARD GRID ── */}
       <WorkflowGrid

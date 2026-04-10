@@ -174,14 +174,15 @@ export default function ExpedientesPage() {
 
   const SortArrow = ({ col }: { col: string }) => sort.column === col ? <span style={{ marginLeft: 4, fontSize: 10 }}>{sort.direction === 'asc' ? '↑' : '↓'}</span> : null
 
-  const completeCount = useMemo(() => rows.filter(r => r.pct === 100).length, [rows])
+  const withPedimento = useMemo(() => rows.filter(r => r.pedimento), [rows])
+  const completeCount = useMemo(() => withPedimento.filter(r => r.pct === 100).length, [withPedimento])
 
   return (
     <div className="page-shell">
       <div style={{ marginBottom: 12 }}>
         <h1 className="page-title">Expedientes Digitales</h1>
         <p className="page-subtitle">
-          {completeCount} de {rows.length} expedientes completos
+          {completeCount} de {withPedimento.length} expedientes completos
         </p>
       </div>
 

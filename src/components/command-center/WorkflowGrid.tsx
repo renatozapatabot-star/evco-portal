@@ -214,8 +214,9 @@ export function WorkflowGrid(props: WorkflowGridProps) {
   const heroUrgency = getCardUrgency('traficos', kpis)
   const heroIntensity = getUrgencyIntensity(heroUrgency, props.oldestUrgentDate ?? null)
   // Only show trend when enough data to be meaningful (>=3 total cruces across both weeks)
-  const trendDelta = props.trends && (props.trends.thisWeekCruces + props.trends.lastWeekCruces >= 3)
+  const rawTrend = props.trends && (props.trends.thisWeekCruces + props.trends.lastWeekCruces >= 5)
     ? computeDelta(props.trends.thisWeekCruces, props.trends.lastWeekCruces) : undefined
+  const trendDelta = rawTrend !== undefined ? Math.max(-99, Math.min(99, rawTrend)) : undefined
 
   // Completion percentage for hero progress bar
   const totalActions = props.pendingEntradas + props.enProceso + (props.docsPendientes ?? 0)

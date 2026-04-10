@@ -1123,6 +1123,50 @@ export default function TraficoDetailPage() {
         )}
       </div>
 
+      {/* ═══ ENTRADAS + HISTORIAL — side by side (moved above docs) ═══ */}
+      <div style={{ marginTop: 32, display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 16 }}>
+        {/* LEFT: Entradas */}
+        <div className="cc-card" style={{ padding: 20, borderRadius: 20 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#64748b', marginBottom: 12 }}>Entradas</div>
+          {entradas.length > 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {entradas.map((e: Record<string, unknown>) => {
+                const hasDamage = e.mercancia_danada === true
+                const hasFaltantes = e.tiene_faltantes === true
+                const hasIncidencia = hasDamage || hasFaltantes
+                return (
+                  <div key={String(e.cve_entrada) + '-top'} style={{
+                    padding: '10px 14px', borderRadius: 10,
+                    background: 'rgba(255,255,255,0.03)',
+                    borderLeft: hasIncidencia ? '3px solid rgba(239,68,68,0.5)' : '3px solid rgba(34,211,238,0.3)',
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8,
+                  }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <span style={{ fontWeight: 700, fontSize: 13, fontFamily: 'var(--font-mono)', color: '#E6EDF3' }}>{e.cve_entrada as string}</span>
+                      <span style={{ fontSize: 11, color: '#64748b', fontFamily: 'var(--font-mono)', marginLeft: 8 }}>{e.fecha_llegada_mercancia ? fmtDate(e.fecha_llegada_mercancia as string) : '--'}</span>
+                      <div style={{ display: 'flex', gap: 10, marginTop: 3, fontSize: 11, color: '#94a3b8' }}>
+                        {e.cantidad_bultos != null && <span><strong style={{ color: '#E6EDF3' }}>{String(e.cantidad_bultos)}</strong> bultos</span>}
+                        {e.peso_bruto != null && Number(e.peso_bruto) > 0 && <span style={{ fontFamily: 'var(--font-mono)' }}>{fmtKg(Number(e.peso_bruto))} kg</span>}
+                      </div>
+                    </div>
+                    <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 6, background: hasIncidencia ? 'rgba(239,68,68,0.1)' : 'rgba(34,211,238,0.1)', color: hasIncidencia ? '#EF4444' : '#22D3EE' }}>
+                      {hasIncidencia ? (hasDamage ? 'Daño' : 'Faltante') : 'OK'}
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
+          ) : (
+            <div style={{ color: '#64748b', fontSize: 13 }}>Sin entradas registradas</div>
+          )}
+        </div>
+        {/* RIGHT: Historial */}
+        <div className="cc-card" style={{ padding: 20, borderRadius: 20 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#64748b', marginBottom: 12 }}>Historial</div>
+          <TimelineTab traficoId={decodeURIComponent(String(id))} trafico={t} />
+        </div>
+      </div>
+
       {/* ═══ DOCUMENTOS ═══ */}
       <div style={{ marginTop: 32 }}>
         <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--navy-900)', marginBottom: 16 }}>Documentos</div>
@@ -1311,73 +1355,6 @@ export default function TraficoDetailPage() {
         </div>
       </div>
 
-      {/* ═══ ENTRADAS ═══ */}
-      <div style={{ marginTop: 32 }}>
-        <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--navy-900)', marginBottom: 16 }}>Entradas</div>
-        <div>
-          {entradas.length > 0 ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {entradas.map((e: Record<string, unknown>) => {
-                const hasDamage = e.mercancia_danada === true
-                const hasFaltantes = e.tiene_faltantes === true
-                const hasIncidencia = hasDamage || hasFaltantes
-                return (
-                  <div key={e.cve_entrada as string} className="card" style={{
-                    padding: '14px 16px',
-                    borderLeft: hasIncidencia ? '4px solid #C23B22' : '4px solid #2D8540',
-                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                    minHeight: 60, gap: 12,
-                  }}>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                        <span style={{ fontWeight: 700, fontSize: 14, fontFamily: 'var(--font-mono)', color: 'var(--navy-900)' }}>
-                          {e.cve_entrada as string}
-                        </span>
-                        <span style={{ fontSize: 12, color: 'var(--slate-400)', fontFamily: 'var(--font-mono)' }}>
-                          {e.fecha_llegada_mercancia ? fmtDate(e.fecha_llegada_mercancia as string) : '--'}
-                        </span>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 4, fontSize: 12, color: 'var(--slate-500)' }}>
-                        {e.cantidad_bultos != null && (
-                          <span><strong>{String(e.cantidad_bultos)}</strong> {e.cantidad_bultos === 1 ? 'bulto' : 'bultos'}</span>
-                        )}
-                        {e.peso_bruto != null && Number(e.peso_bruto) > 0 && (
-                          <span style={{ fontFamily: 'var(--font-mono)' }}>{fmtKg(Number(e.peso_bruto))} kg</span>
-                        )}
-                      </div>
-                    </div>
-                    <div style={{ display: 'flex', gap: 6, flexShrink: 0, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-                      {hasDamage && (
-                        <span className="badge badge-hold" style={{ fontSize: 11 }}>
-                          <span className="badge-dot" />Danada
-                        </span>
-                      )}
-                      {hasFaltantes && (
-                        <span className="badge badge-hold" style={{ fontSize: 11 }}>
-                          <span className="badge-dot" />Faltantes
-                        </span>
-                      )}
-                      {!hasIncidencia && (
-                        <span className="badge badge-cruzado" style={{ fontSize: 11 }}>
-                          <span className="badge-dot" />OK
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          ) : (
-            <EmptyState icon="📦" title="No hay entradas registradas" description="Las entradas vinculadas a este trafico apareceran aqui" />
-          )}
-        </div>
-      </div>
-
-      {/* ═══ HISTORIAL ═══ */}
-      <div style={{ marginTop: 32 }}>
-        <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--navy-900)', marginBottom: 16 }}>Historial</div>
-        <TimelineTab traficoId={decodeURIComponent(String(id))} trafico={t} />
-      </div>
 
       {/* ═══ SOLICITAR MODAL ═══ */}
       {showSolicitarModal && (

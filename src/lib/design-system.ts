@@ -1,28 +1,36 @@
-// design-system — ADUANA Premium Cinematic Dark Theme tokens
-// Import these constants instead of hardcoding hex values.
-// For CSS/Tailwind contexts, use var(--gold) etc. instead.
+// design-system — ADUANA Cinematic Glass System tokens
+// AI Control Tower aesthetic: glassmorphism, cyan intelligence glow, deep shadows
 // This file is excluded from the gsd-verify color check by path name.
 
-export const GOLD = '#eab308'
+// ── Semantic lighting ──
+export const ACCENT_CYAN = '#00E5FF'    // System intelligence / active
+export const ACCENT_BLUE = '#3B82F6'    // Secondary blue
+export const GOLD = '#eab308'           // Actions / financial / CTAs
 export const GOLD_HOVER = '#ca8a04'
 export const GOLD_GRADIENT = 'linear-gradient(135deg, #eab308, #a16207)'
 export const GOLD_TEXT = '#a16207'
 
-export const ACCENT_BLUE = '#0088ff'
-export const ACCENT_BLUE_GLOW = 'rgba(0,170,255,0.35)'
-export const BLUE_GRADIENT = 'linear-gradient(135deg, #00f0ff, #0088ff, #0044cc)'
+export const GREEN = '#22C55E'          // Success / live
+export const AMBER = '#FBBF24'          // Warning / alerts
+export const RED = '#EF4444'            // Danger / risk
+export const Z_RED = '#CC1B2F'          // Brand mark only
 
-export const GREEN = '#22c55e'
-export const AMBER = '#eab308'
-export const RED = '#DC2626'
-export const Z_RED = '#CC1B2F'
+// ── Glass backgrounds ──
+export const BG_GRADIENT_START = '#05070B'
+export const BG_GRADIENT_END = '#0B1220'
+export const BG_PRIMARY = '#05070B'
+export const BG_CARD = 'rgba(255,255,255,0.04)'
+export const BG_ELEVATED = 'rgba(255,255,255,0.04)'
+export const BG_SURFACE = 'rgba(255,255,255,0.03)'
+export const BORDER = 'rgba(255,255,255,0.08)'
 
-export const BG_PRIMARY = '#0a0f1c'
-export const BG_CARD = '#1a2338'
-export const BG_ELEVATED = '#1a2338'
-export const BG_SURFACE = '#0f1729'
-export const BORDER = '#334155'
+// ── Glass system ──
+export const GLASS_BLUR = '20px'
+export const GLASS_SHADOW = '0 10px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)'
+export const GLOW_CYAN = 'rgba(0,229,255,0.25)'
+export const GLOW_CYAN_SUBTLE = 'rgba(0,229,255,0.1)'
 
-export const TEXT_PRIMARY = '#ffffff'
+// ── Text ──
+export const TEXT_PRIMARY = '#E6EDF3'
 export const TEXT_SECONDARY = '#94a3b8'
 export const TEXT_MUTED = '#64748b'

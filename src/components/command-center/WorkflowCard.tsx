@@ -100,7 +100,7 @@ export function WorkflowCard({
         style={{
           padding: '24px 28px',
           borderRadius: 20,
-          background: 'var(--bg-elevated, #1a2338)',
+          background: 'var(--bg-elevated, rgba(255,255,255,0.04))',
           border: `1px solid ${U_BORDER[u]}`,
           borderTop: `3px solid ${U_TOP[u]}`,
           boxShadow: `0 2px 16px ${U_SHADOW[u]}`,
@@ -264,7 +264,7 @@ export function WorkflowCard({
           style={{
             padding: '16px 20px 10px',
             borderRadius: 20,
-            background: 'var(--bg-elevated, #1a2338)',
+            background: 'var(--bg-elevated, rgba(255,255,255,0.04))',
             border: '1px solid var(--border-card, #334155)',
             height: '100%',
             display: 'flex',
@@ -330,7 +330,7 @@ export function WorkflowCard({
           style={{
             padding: '14px 16px',
             borderRadius: 10,
-            background: 'var(--bg-elevated, #1a2338)',
+            background: 'var(--bg-elevated, rgba(255,255,255,0.04))',
             border: '1px solid rgba(255,255,255,0.05)',
             height: '100%',
             display: 'flex',
@@ -365,7 +365,7 @@ export function WorkflowCard({
         style={{
           padding: '20px 20px',
           borderRadius: 20,
-          background: 'var(--bg-elevated, #1a2338)',
+          background: 'var(--bg-elevated, rgba(255,255,255,0.04))',
           border: `1px solid ${U_BORDER[u]}`,
           borderTop: `3px solid ${U_TOP[u]}`,
           boxShadow: `0 2px 12px ${U_SHADOW[u]}`,
@@ -466,7 +466,7 @@ export function WorkflowCard({
     return (
       <div className="cc-card" style={{
         padding: '24px 28px', borderRadius: 16,
-        background: 'var(--bg-elevated, #1a2338)',
+        background: 'var(--bg-elevated, rgba(255,255,255,0.04))',
         border: '1px solid rgba(255,255,255,0.08)',
         boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
         minHeight: 200, display: 'flex', flexDirection: 'column', justifyContent: 'space-between',

@@ -156,40 +156,48 @@
   --sidebar-width: 240px;
 }
 
-/* ── Aduana Premium Cinematic Dark Theme ── */
+/* ── Aduana Cinematic Glass System — AI Control Tower Theme ── */
 .aduana-dark {
-  --bg-main: #0a0f1c;
-  --bg-card: #0f1729;
-  --bg-surface: #0f1729;
-  --bg-elevated: #1a2338;
-  --bg-hover: #243050;
-  --border-card: #334155;
-  --border: rgba(51,65,85,0.6);
+  /* ── Backgrounds — gradient, not flat ── */
+  --bg-main: #05070B;
+  --bg-card: rgba(255,255,255,0.03);
+  --bg-surface: rgba(255,255,255,0.03);
+  --bg-elevated: rgba(255,255,255,0.04);
+  --bg-hover: rgba(255,255,255,0.08);
+  /* ── Glass system ── */
+  --border-card: rgba(255,255,255,0.08);
+  --border: rgba(255,255,255,0.06);
+  --glass-blur: 20px;
+  --glass-shadow: 0 10px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+  --glass-shadow-elevated: 0 12px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08);
+  /* ── Text ── */
   --text-primary: #E6EDF3;
   --text-secondary: #94a3b8;
   --text-muted: #64748b;
-  --shadow-card: 0 1px 3px rgba(0,0,0,0.4), 0 0 1px rgba(0,136,255,0.1);
-  --shadow-elevated: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08);
-  --glass-bg: rgba(26, 35, 56, 0.7);
-  --glass-border: rgba(51,65,85,0.5);
-  --glass-blur: 12px;
-  --glass-shadow: 0 4px 24px rgba(0,0,0,0.3);
-  --glass-shadow-elevated: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08);
-  --accent-blue: #0088ff;
-  --glow-blue: rgba(0,170,255,0.35);
-  --glow-blue-subtle: rgba(0,170,255,0.12);
-  --slate-50: #0f1729;
-  --slate-100: #1a2338;
-  --slate-200: #334155;
-  --slate-300: #475569;
-  --green-50: #0D2818;
-  --green-100: #1A4D2E;
-  --amber-50: #2D1F0A;
-  --amber-100: #4D3510;
-  --red-50: #2D1216;
-  --red-100: #4D2024;
+  /* ── Shadows ── */
+  --shadow-card: 0 10px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05), 0 0 1px rgba(0,229,255,0.15);
+  --shadow-elevated: 0 12px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08);
+  /* ── Semantic lighting — cyan = intelligence, gold = action ── */
+  --accent-cyan: #00E5FF;
+  --accent-blue: #3B82F6;
+  --glow-cyan: rgba(0,229,255,0.25);
+  --glow-cyan-subtle: rgba(0,229,255,0.1);
+  --glow-cyan-active: rgba(0,229,255,0.35);
+  --glow-blue: rgba(59,130,246,0.25);
+  --glow-blue-subtle: rgba(59,130,246,0.12);
+  /* ── Status semantic palette ── */
+  --slate-50: rgba(255,255,255,0.02);
+  --slate-100: rgba(255,255,255,0.04);
+  --slate-200: rgba(255,255,255,0.08);
+  --slate-300: rgba(255,255,255,0.12);
+  --green-50: rgba(34,197,94,0.08);
+  --green-100: rgba(34,197,94,0.15);
+  --amber-50: rgba(251,191,36,0.08);
+  --amber-100: rgba(251,191,36,0.15);
+  --red-50: rgba(239,68,68,0.08);
+  --red-100: rgba(239,68,68,0.15);
   --gold-bg: rgba(234,179,8,0.12);
-  /* Navy/slate overrides — these are used as TEXT color in 15+ classes */
+  /* Navy/slate overrides — text colors for dark theme */
   --navy-900: #E6EDF3;
   --navy-800: #CDD6E0;
   --navy-700: #ADBAC7;
@@ -197,7 +205,10 @@
   --slate-500: #94a3b8;
   --slate-600: #94a3b8;
   --slate-700: #CDD6E0;
-  background: #0a0f1c;
+  /* ── Background: gradient + ambient glow + vignette ── */
+  background:
+    radial-gradient(ellipse at 50% 20%, rgba(0,229,255,0.05) 0%, transparent 50%),
+    linear-gradient(180deg, #05070B 0%, #0B1220 100%);
   color: var(--text-primary);
 }
 .aduana-dark .aduana-table td { border-bottom-color: rgba(255,255,255,0.06); }
@@ -432,16 +443,26 @@ body {
   min-width: 260px;
 }
 
-/* ── Unified card transitions — Aduana glassmorphism ────────── */
+/* ── Unified card transitions — Cinematic Glass System ────────── */
 .cc-card {
-  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow:
+    0 10px 30px rgba(0,0,0,0.4),
+    inset 0 1px 0 rgba(255,255,255,0.05),
+    0 0 1px rgba(0,229,255,0.12);
 }
 .cc-card:hover {
-  transform: scale(1.005);
-  box-shadow: 0 6px 20px rgba(0,0,0,0.3), 0 0 20px var(--glow-blue-subtle, rgba(0,170,255,0.12));
-  border-color: rgba(0,136,255,0.3);
+  transform: scale(1.008);
+  background: rgba(255,255,255,0.06);
+  box-shadow:
+    0 12px 40px rgba(0,0,0,0.5),
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    0 0 30px rgba(0,229,255,0.18);
+  border-color: rgba(0,229,255,0.2);
 }
 .cc-card:active {
   transform: scale(0.98);
@@ -522,7 +543,9 @@ body {
 }
 
 .aduana-topbar {
-  background: #0f1729;
+  background: rgba(5,7,11,0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   padding: 12px 28px;
   display: flex;
   align-items: center;

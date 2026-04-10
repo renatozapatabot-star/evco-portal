@@ -1,5 +1,5 @@
 ---
-description: CRUZ Design System enforcement rules — cockpit dark theme standard
+description: ADUANA Cinematic Glass System — design enforcement rules
 paths:
   - "src/components/**/*"
   - "src/app/**/page.tsx"
@@ -7,105 +7,84 @@ paths:
   - "tailwind.config*"
 ---
 
-# CRUZ Design System — Cockpit Standard (April 2026)
+# ADUANA Design System — Cinematic Glass Control Tower (April 2026)
 
-These rules encode the cockpit dark theme. All authenticated pages use `.cruz-dark`.
-Login is the only light-themed page. See `DESIGN_SYSTEM.md` for full token reference.
+All authenticated pages use `.aduana-dark` class with true glassmorphism.
+Login page has its own dark theme (same palette, different layout).
 
-## Color Tokens — Cockpit Theme
-
-All portal UI uses `.cruz-dark` CSS variable overrides:
-- Page canvas: `#111111` (flat, no gradients)
-- Card elevated: `#222222` (the standard card background)
-- Card base: `#1A1A1A`
-- Borders: `rgba(255,255,255,0.08)` (cards), `rgba(255,255,255,0.06)` (dividers)
-- Gold accent: `#C9A84C` — CTAs, active nav. ONE job only.
-- Gold text on dark: `#C9A84C` is fine (high contrast against #222222)
-- Text primary: `#E6EDF3` (light on dark)
-- Text secondary: `#8B949E`
-- Text muted: `#6E7681`
-
-Never use light-theme tokens (#FAFAF8, #FFFFFF, #E8E5E0) in authenticated portal pages.
-No glassmorphism (backdrop-filter: blur) — solid elevated surfaces only.
-
-## Card Pattern — CockpitCard
+## Color System — Semantic Lighting
 
 ```
-Background:    var(--bg-elevated) = #222222
-Border:        1px solid rgba(255,255,255,0.08)
-Top border:    3px solid [urgency color: red/amber/green/gold]
-Border radius: 14px
-Padding:       16px (tight, Linear-inspired)
-Min height:    180px
+Background gradient:  #05070B → #0B1220 (with radial cyan glow at center)
+Glass cards:          rgba(255,255,255,0.04) + backdrop-blur(20px)
+Borders:              rgba(255,255,255,0.08)
+Accent cyan:          #00E5FF (system intelligence / active states)
+Accent blue:          #3B82F6 (secondary)
+Gold:                 #eab308 (actions / CTAs / financial only)
+Success green:        #22C55E
+Warning amber:        #FBBF24
+Danger red:           #EF4444
+Text primary:         #E6EDF3
+Text secondary:       #94a3b8
+Text muted:           #64748b
 ```
 
-Urgency border colors:
-- Red: `rgba(220,38,38,0.7)` — urgent, action required
-- Amber: `rgba(217,119,6,0.6)` — monitor, attention needed
-- Green: `rgba(22,163,74,0.5)` — healthy, green check badge shown
-- Neutral: `rgba(201,168,76,0.4)` — informational, gold accent
+## Semantic Lighting Rules
 
-## Status Badges on Dark
+- **Cyan** = system intelligence, live states, active data flow
+- **Gold** = high-priority actions, CTAs, financial values ONLY
+- **Green** = success, completed, live/healthy
+- **Red** = alerts, risks, urgent
+- Never use cyan for decoration. Every glow means "data is flowing."
 
-StatusBadge component adapts via `.cruz-dark` variable overrides:
-- Active: `bg-[--amber-50] text-amber-400 border-amber-800`
-- Completed: `bg-[--green-50] text-green-400 border-green-800`
-- Warning: `bg-[--amber-50] text-orange-400 border-orange-800`
-- Error: `bg-[--red-50] text-red-400 border-red-800`
-- Pending: `bg-[--slate-100] text-slate-400 border-slate-600`
+## Glass Card System
 
-Use `<StatusBadge status={status} />` always. Never inline badge styles.
+```css
+backdrop-filter: blur(20px);
+background: rgba(255,255,255,0.04);
+border: 1px solid rgba(255,255,255,0.08);
+box-shadow:
+  0 10px 30px rgba(0,0,0,0.4),
+  inset 0 1px 0 rgba(255,255,255,0.05),
+  0 0 1px rgba(0,229,255,0.12);  /* subtle cyan idle glow */
+border-radius: 20px;
+```
 
-## Tables on Dark
+**Hover state:**
+```css
+background: rgba(255,255,255,0.06);
+box-shadow:
+  0 12px 40px rgba(0,0,0,0.5),
+  inset 0 1px 0 rgba(255,255,255,0.08),
+  0 0 30px rgba(0,229,255,0.18);
+border-color: rgba(0,229,255,0.2);
+```
 
-- Headers: `var(--bg-elevated)`, `--text-secondary`, 11px uppercase tracking-wider
-- Row even: `var(--bg-card)` = #1A1A1A
-- Row odd: `rgba(255,255,255,0.02)`
-- Row hover: `rgba(255,255,255,0.04)`
-- Borders: `rgba(255,255,255,0.06)`
-- Numbers: JetBrains Mono
-- Every table MUST have an empty state: icon + message + action on dark bg
-- Sortable columns show sort indicator
+## NO opaque card backgrounds on authenticated pages.
+`#222222`, `#1A1A1A`, `#1a2338` are BANNED. Use `rgba(255,255,255,0.04)` or CSS var.
 
 ## Typography
 
-- Font: Geist Sans for text, JetBrains Mono for ALL data
-- Headings: 18px semibold, `--text-primary`
-- Section labels: 11px uppercase tracking-wider, `--text-muted` (Linear signature)
-- Body: 14px, `--text-secondary`
-- KPI values: JetBrains Mono, 28-32px weight 800, `--text-primary`
-- Data: JetBrains Mono, 13px, `--text-primary`
+- Font: Inter (body) + JetBrains Mono (all data/numbers)
+- KPI labels: 10px uppercase, letter-spacing 0.08em, text-muted color
+- Large numbers: font-weight 800, pure white
+- Secondary metadata: 60% opacity
 
-## Spacing (Linear-tight)
+## Spacing
 
-- Card padding: 16px
-- Card gap: 12px
-- Section gap: 16px
-- Page padding: 16px mobile, 48px desktop
-- 4px base grid. No arbitrary spacing values.
+- Card padding: 20px (tight control-room density)
+- Card gap: 16px
+- Border-radius: 20px (premium rounded)
+- 4px base grid
 
 ## Mobile
 
-- All layouts must work at 375px width
-- Touch targets: 60px minimum (border at 3 AM, not WCAG 44px)
-- Tables: horizontal scroll OR card view on mobile
-- Cards: single column, sorted by urgency (most urgent top)
-- Test at 375px before marking any UI task complete
+- 375px minimum width
+- Touch targets: 60px minimum
+- Cards stack vertically, sorted by urgency
+- Glass effect preserved (reduce blur to 12px if performance)
 
-## Micro-interactions
+## Status Badges on Dark
 
-- Card hover: scale(1.005), border brightens, 150ms (barely perceptible)
-- Card tap: scale(0.97), haptic.micro()
-- Swipe-to-resolve: translateX with green reveal strip
-- Loading: skeleton loaders with dark shimmer (not spinners)
-- Entrance: stagger 30ms, translateY(6px), spring animation
-- prefers-reduced-motion: disable all springs, instant transitions
-
-## Operational Depth
-
-Every data view must support in-context actions:
-- See status at a glance (urgency border + badge)
-- Click through to detail (cross-link)
-- Take the most common action without leaving (gold action button or swipe)
-
-If a page is read-only with no actions, it's a dashboard, not a tool. CRUZ is a tool.
+Use `<StatusBadge status={status} />` always. Never inline badge styles.
+Badges use semi-transparent backgrounds matching the glass system.

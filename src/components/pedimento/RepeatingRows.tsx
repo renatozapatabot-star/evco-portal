@@ -16,12 +16,13 @@ import { ACCENT_SILVER, ACCENT_SILVER_DIM, TEXT_PRIMARY, TEXT_MUTED } from '@/li
 import type { ChildTable } from '@/lib/pedimento-types'
 import { useAutosaveChildRow } from '@/lib/hooks/useAutosaveChildRow'
 import { AutosaveIndicator } from './AutosaveIndicator'
+import { BankSelector } from '@/components/banks/BankSelector'
 
 const BORDER_SILVER = 'rgba(192,197,206,0.22)'
 const BORDER_FOCUS = 'rgba(192,197,206,0.55)'
 const RED = '#EF4444'
 
-export type ColumnVariant = 'text' | 'number' | 'select' | 'textarea'
+export type ColumnVariant = 'text' | 'number' | 'select' | 'textarea' | 'bank'
 
 export interface Column<R> {
   field: string
@@ -360,7 +361,17 @@ function FieldCell<R>({ col, value, error, onChange, onBlur }: FieldCellProps<R>
       >
         {col.label}
       </label>
-      {col.variant === 'textarea' ? (
+      {col.variant === 'bank' ? (
+        <BankSelector
+          value={value || null}
+          onChange={(code) => {
+            onChange(code)
+            setTimeout(() => onBlur(), 0)
+          }}
+          onlyPece
+          ariaLabel={col.label}
+        />
+      ) : col.variant === 'textarea' ? (
         <textarea
           value={value}
           placeholder={col.placeholder}

@@ -8,15 +8,14 @@ export interface PagosVirtualesTabProps {
   rows: PagoVirtualRow[]
 }
 
-// Block 11 replaces `bank_code` free-text with a real BankSelector (75+ banks).
-// For B6c we accept free text so the workflow is usable today.
+// Block 11 · `bank_code` now uses BankSelector backed by the 87-bank catalog.
 const columns: readonly Column<PagoVirtualRow>[] = [
   {
     field: 'bank_code',
-    label: 'Clave de banco',
+    label: 'Banco',
+    variant: 'bank',
     mono: true,
-    placeholder: '002 · BBVA',
-    helpText: 'Bloque 11 sustituye este campo por selector de bancos',
+    helpText: 'Selecciona de los bancos autorizados para PECE',
   },
   {
     field: 'payment_form',

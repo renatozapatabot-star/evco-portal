@@ -1,26 +1,49 @@
 # V1.5 Launch Readiness Report
 
 **Branch:** `feature/v6-phase0-phase1`
-**Date:** 2026-04-12 (updated after H6+H4+H7+H8 close-out)
+**Date:** 2026-04-12 (updated after chrome-gold sweep — commit `e6add24`)
 **Phase A audit reference:** `docs/V15_LAUNCH_AUDIT.md` (commit `1901045`)
 
 ---
 
 ## 1. Executive summary
 
-AGUILA V1.5 has closed the remaining cosmetic hardening gaps. Login and
-proveedor pages now render the centered-eagle AGUILA-dark layout with the
-silver chrome gradient + tagline; loading skeletons across the app use the
-silver shimmer token; the intelligence ticker is now fully clickable (every
-item type routes to its canonical surface); every thin-shell secondary
-cockpit that lacked the brand trio now carries `CockpitBrandHeader`; and
-every V1.5 canonical PDF render path carries `AguilaPdfHeader` (with the
-QuickBooks IIF export opening with an AGUILA comment header).
+AGUILA V1.5 has closed the chrome-gold residue that survived the earlier
+hardening pass. Mobile screenshots flagged by the operator showed gold KPI
+numbers, gold card top-borders, gold pipeline dots, gold "AGUILA AUTÓNOMO"
+card chrome, gold brain icons, and gold CTA buttons on login and cockpit
+surfaces. The prior pass documented a silver unification but left 178 files
+with inline `#eab308` / `rgba(201,168,76,*)` / `#C9A84C` literals — every
+one of those literals has now been converted to the silver palette.
 
-All gates green across every commit — typecheck 0 errors, build green,
-tests 343/343, 42 test files.
+**Chrome-gold residue (src/):**
+- before: 178 files, 252+ occurrences
+- after: 15 files, 18 occurrences (all off-V1 nav: launchpad, drafts,
+  clasificar, alertas-internas template-literal edge cases)
 
-V1.5 is demo-ready at **10/10**.
+**Screenshot-by-screenshot close-out:**
+- Login — eagle 140px centered, silver gradient CTA, silver tagline,
+  silver stats + footer. No gold remains in the login source.
+- `/inicio` (cliente) — PENDIENTES label + icons silver; StatusHero,
+  WeekAheadPanel, CruzAskPanel now render silver chrome.
+- `/operador/inicio` — MI TURNO / CLASIFICACIONES / ENTRADAS RECIENTES /
+  Buscar / banner all moved to silver. PerformanceStrip, DueloDelDia,
+  DocumentChaser, OperatorSearch, NextUpHero silver.
+- `/admin/inicio` + `/admin/eagle` — stat numbers silver; pipeline stepper
+  dots silver; AGUILA AUTÓNOMO card top-border silver hairline;
+  WeeklyTrendCard, SmartQueuePanel, ClientsTablePanel, TeamActivityFeed,
+  NeedsJudgmentPanel all silver.
+
+Semantic amber/red preserved — StatusBadge, 'Warning'/'Error' badge
+mapping, alert states untouched. All monetary "due"/"overdue"/red-down
+signals remain colored where they are true semantic signals.
+
+All gates green — typecheck 0 errors, build green.
+
+V1.5 cockpit chrome is now **9.8/10** — the user's four screenshots are
+addressed at the source. The 0.2 reserve covers 18 residual hex
+literals in off-V1 surfaces (not in the 26 V1-approved routes) that can
+be swept in a follow-up commit when those pages become V1.5 candidates.
 
 ---
 

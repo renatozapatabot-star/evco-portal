@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ArrowLeft, FileText } from 'lucide-react'
+import { ArrowLeft, FileText, Workflow } from 'lucide-react'
 import { fmtDateTime } from '@/lib/format-utils'
 import {
   ACCENT_CYAN,
@@ -157,9 +157,28 @@ export function Header({
         )}
 
         <Link
-          href={`/traficos/${encodeURIComponent(traficoNumber)}/pedimento`}
+          href={`/traficos/${encodeURIComponent(traficoNumber)}/trace`}
           style={{
             marginLeft: 'auto',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            minHeight: 60,
+            padding: '0 16px',
+            fontSize: 13,
+            fontWeight: 600,
+            color: ACCENT_SILVER,
+            background: 'rgba(192,197,206,0.08)',
+            border: '1px solid rgba(192,197,206,0.22)',
+            borderRadius: 10,
+            textDecoration: 'none',
+          }}
+        >
+          <Workflow size={14} /> Ver cronología completa
+        </Link>
+        <Link
+          href={`/traficos/${encodeURIComponent(traficoNumber)}/pedimento`}
+          style={{
             display: 'inline-flex',
             alignItems: 'center',
             gap: 6,

@@ -17,8 +17,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       data: {
         query: q,
-        traficos: [], entradas: [], pedimentos: [],
-        proveedores: [], productos: [], fracciones: [], documentos: [],
+        traficos: [], pedimentos: [], entradas: [], facturas: [], partidas: [],
+        productos: [], fracciones: [], clientes: [], proveedores: [],
+        operadores: [], documentos: [], ordenes_carga: [],
         took_ms: 0,
       },
       error: null,

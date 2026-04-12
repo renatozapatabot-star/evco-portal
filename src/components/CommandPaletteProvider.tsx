@@ -18,17 +18,28 @@ function isTypingTarget(el: EventTarget | null): boolean {
 
 export function CommandPaletteProvider() {
   const [open, setOpen] = useState(false)
+  const [mode, setMode] = useState<'quick' | 'advanced'>('quick')
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const isMeta = e.metaKey || e.ctrlKey
-      if (isMeta && (e.key === 'k' || e.key === 'K')) {
+      // Shift+⌘K / Shift+Ctrl+K — advanced mode.
+      if (isMeta && e.shiftKey && (e.key === 'k' || e.key === 'K')) {
         e.preventDefault()
+        setMode('advanced')
+        setOpen(true)
+        return
+      }
+      // ⌘K / Ctrl+K — quick mode.
+      if (isMeta && !e.shiftKey && (e.key === 'k' || e.key === 'K')) {
+        e.preventDefault()
+        setMode('quick')
         setOpen(v => !v)
         return
       }
       if (e.key === '/' && !isTypingTarget(e.target) && !open) {
         e.preventDefault()
+        setMode('quick')
         setOpen(true)
       }
     }
@@ -38,7 +49,7 @@ export function CommandPaletteProvider() {
 
   const onClose = useCallback(() => setOpen(false), [])
 
-  return <CommandPalette open={open} onClose={onClose} />
+  return <CommandPalette open={open} onClose={onClose} initialMode={mode} />
 }
 
 export default CommandPaletteProvider

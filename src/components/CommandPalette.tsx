@@ -5,43 +5,49 @@ import { useRouter } from 'next/navigation'
 import {
   UniversalSearchHit,
   UniversalSearchResponse,
-  GROUP_LABELS_ES,
-  GROUP_LIST_HREFS,
 } from '@/lib/search/types'
-
-type GroupKey = keyof typeof GROUP_LABELS_ES
-
-const GROUP_ORDER: GroupKey[] = [
-  'traficos', 'entradas', 'pedimentos',
-  'proveedores', 'productos', 'fracciones', 'documentos',
-]
+import { SEARCH_ENTITIES, AGUILA } from '@/lib/search-registry'
+import { useTrack } from '@/lib/telemetry/useTrack'
+import { SearchResultGroup } from './search/SearchResultGroup'
+import { SmartSuggestions, pushRecent } from './search/SmartSuggestions'
+import { AdvancedSearchModal } from './search/AdvancedSearchModal'
+import type { EntityId } from '@/types/search'
 
 const VISIBLE_PER_GROUP = 3
 
 interface Props {
   open: boolean
   onClose: () => void
+  initialMode?: 'quick' | 'advanced'
 }
 
 type ApiResponse = { data: UniversalSearchResponse | null; error: { code: string; message: string } | null }
 
-export function CommandPalette({ open, onClose }: Props) {
+export function CommandPalette({ open, onClose, initialMode = 'quick' }: Props) {
   const router = useRouter()
+  const track = useTrack()
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<UniversalSearchResponse | null>(null)
   const [loading, setLoading] = useState(false)
   const [activeIdx, setActiveIdx] = useState(0)
+  const [advancedOpen, setAdvancedOpen] = useState(initialMode === 'advanced')
   const inputRef = useRef<HTMLInputElement | null>(null)
   const abortRef = useRef<AbortController | null>(null)
+  const settledRef = useRef<Set<string>>(new Set())
 
   useEffect(() => {
     if (open) {
       setQuery('')
       setResults(null)
       setActiveIdx(0)
+      settledRef.current = new Set()
+      setAdvancedOpen(initialMode === 'advanced')
+      track('page_view', {
+        metadata: { event: 'search_palette_opened', mode: initialMode },
+      })
       setTimeout(() => inputRef.current?.focus(), 30)
     }
-  }, [open])
+  }, [open, initialMode, track])
 
   useEffect(() => {
     if (!open) return
@@ -65,23 +71,46 @@ export function CommandPalette({ open, onClose }: Props) {
         .catch(() => { /* aborted or network — ignore */ })
         .finally(() => { if (!ctrl.signal.aborted) setLoading(false) })
     }, 150)
-    return () => { clearTimeout(t); ctrl.abort() }
-  }, [query, open])
+
+    // Settled-query telemetry: 500ms after stop typing, deduped per open session.
+    const settleTimer = setTimeout(() => {
+      const q = query.trim()
+      if (q.length >= 3 && !settledRef.current.has(q)) {
+        settledRef.current.add(q)
+        track('page_view', {
+          metadata: { event: 'search_query_settled', query: q },
+        })
+      }
+    }, 500)
+
+    return () => { clearTimeout(t); clearTimeout(settleTimer); ctrl.abort() }
+  }, [query, open, track])
 
   const flat = useMemo<UniversalSearchHit[]>(() => {
     if (!results) return []
     const out: UniversalSearchHit[] = []
-    for (const g of GROUP_ORDER) {
-      const rows = results[g].slice(0, VISIBLE_PER_GROUP)
-      out.push(...rows)
+    for (const e of SEARCH_ENTITIES) {
+      if (e.scope === 'stub') continue
+      const rows = (results[e.id as keyof UniversalSearchResponse] as UniversalSearchHit[] | undefined) ?? []
+      out.push(...rows.slice(0, VISIBLE_PER_GROUP))
     }
     return out
   }, [results])
 
   const navigate = useCallback((hit: UniversalSearchHit) => {
+    pushRecent(query)
+    const pos = flat.findIndex(h => h.id === hit.id && h.kind === hit.kind)
+    track('page_view', {
+      metadata: {
+        event: 'search_result_clicked',
+        entity_id: hit.kind,
+        query: query.trim(),
+        position: pos,
+      },
+    })
     onClose()
     router.push(hit.href)
-  }, [onClose, router])
+  }, [onClose, router, query, flat, track])
 
   const onKeyDown = useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key === 'Escape') { e.preventDefault(); onClose(); return }
@@ -100,8 +129,17 @@ export function CommandPalette({ open, onClose }: Props) {
 
   if (!open) return null
 
-  let runningIdx = 0
+  if (advancedOpen) {
+    return (
+      <AdvancedSearchModal
+        open={advancedOpen}
+        onClose={() => { setAdvancedOpen(false); onClose() }}
+      />
+    )
+  }
+
   const totalHits = flat.length
+  let runningBase = 0
 
   return (
     <div
@@ -125,22 +163,21 @@ export function CommandPalette({ open, onClose }: Props) {
           width: 'min(680px, calc(100vw - 24px))',
           maxHeight: 'min(70vh, 640px)',
           display: 'flex', flexDirection: 'column',
-          background: 'rgba(9, 9, 11, 0.75)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          border: '1px solid rgba(0, 229, 255, 0.18)',
+          background: AGUILA.BG_ELEVATED,
+          border: `1px solid ${AGUILA.BORDER_HAIRLINE}`,
           borderRadius: 20,
-          boxShadow: '0 20px 60px rgba(0,0,0,0.5), 0 0 30px rgba(0,229,255,0.12)',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)',
           overflow: 'hidden',
-          fontFamily: 'Inter, system-ui, sans-serif',
+          fontFamily: 'var(--font-geist-sans), Inter, system-ui, sans-serif',
+          color: '#E6EDF3',
         }}
       >
         <div style={{
           display: 'flex', alignItems: 'center', gap: 12,
           padding: '16px 20px',
-          borderBottom: '1px solid rgba(255,255,255,0.08)',
+          borderBottom: `1px solid ${AGUILA.BORDER_HAIRLINE}`,
         }}>
-          <span aria-hidden style={{ color: '#00E5FF', fontSize: 18 }}>⌕</span>
+          <span aria-hidden style={{ color: AGUILA.ACCENT_SILVER, fontSize: 18 }}>⌕</span>
           <input
             ref={inputRef}
             value={query}
@@ -151,87 +188,62 @@ export function CommandPalette({ open, onClose }: Props) {
               flex: 1, minWidth: 0, minHeight: 32,
               background: 'transparent', border: 'none', outline: 'none',
               color: '#E6EDF3', fontSize: 16,
-              fontFamily: 'Inter, system-ui, sans-serif',
+              fontFamily: 'var(--font-geist-sans), Inter, system-ui, sans-serif',
             }}
           />
           <kbd style={{
-            fontFamily: 'JetBrains Mono, monospace', fontSize: 11,
-            color: '#94a3b8', border: '1px solid rgba(255,255,255,0.12)',
+            fontFamily: 'var(--font-jetbrains-mono), JetBrains Mono, monospace', fontSize: 11,
+            color: AGUILA.TEXT_TERTIARY, border: `1px solid ${AGUILA.BORDER_HAIRLINE}`,
             borderRadius: 6, padding: '2px 8px',
           }}>Esc</kbd>
         </div>
 
-        <div style={{ overflowY: 'auto', padding: '8px 0' }}>
+        <div style={{ overflowY: 'auto', padding: '8px 0', flex: 1 }}>
           {loading && (
-            <div style={{ padding: '20px', color: '#94a3b8', fontSize: 13 }}>Cargando…</div>
+            <div style={{ padding: '20px', color: AGUILA.TEXT_TERTIARY, fontSize: 13 }}>Cargando…</div>
+          )}
+          {!loading && query.trim().length < 2 && (
+            <SmartSuggestions
+              onPick={(q) => setQuery(q)}
+              onSuggestionClick={(type) => {
+                track('page_view', {
+                  metadata: {
+                    event: type === 'recent' ? 'search_recent_clicked' : 'search_suggestion_clicked',
+                    suggestion_type: type,
+                  },
+                })
+              }}
+            />
           )}
           {!loading && query.trim().length >= 2 && totalHits === 0 && (
-            <div style={{ padding: '24px 20px', color: '#94a3b8', fontSize: 13 }}>
+            <div style={{ padding: '24px 20px', color: AGUILA.TEXT_TERTIARY, fontSize: 13 }}>
               Sin resultados para &ldquo;{query.trim()}&rdquo;.
             </div>
           )}
-          {!loading && query.trim().length < 2 && (
-            <div style={{ padding: '20px', color: '#64748b', fontSize: 12 }}>
-              Escribe al menos 2 caracteres. Prueba un número de tráfico, pedimento, fracción o nombre de proveedor.
-            </div>
-          )}
 
-          {!loading && totalHits > 0 && GROUP_ORDER.map(g => {
-            const rows = results?.[g] ?? []
-            if (rows.length === 0) return null
-            const visible = rows.slice(0, VISIBLE_PER_GROUP)
-            const extra = rows.length - visible.length
+          {!loading && totalHits > 0 && SEARCH_ENTITIES.map(cfg => {
+            const rows = (results?.[cfg.id as keyof UniversalSearchResponse] as UniversalSearchHit[] | undefined) ?? []
+            if (cfg.scope !== 'stub' && rows.length === 0) return null
+            const baseIdx = runningBase
+            if (cfg.scope !== 'stub') runningBase += Math.min(rows.length, VISIBLE_PER_GROUP)
             return (
-              <div key={g} style={{ padding: '6px 0' }}>
-                <div style={{
-                  padding: '6px 20px',
-                  fontSize: 10, fontWeight: 600, letterSpacing: '0.08em',
-                  textTransform: 'uppercase', color: '#64748b',
-                }}>
-                  {GROUP_LABELS_ES[g]}
-                </div>
-                {visible.map(hit => {
-                  const idx = runningIdx++
-                  const isActive = idx === activeIdx
-                  return (
-                    <button
-                      key={`${hit.kind}-${hit.id}-${idx}`}
-                      onMouseEnter={() => setActiveIdx(idx)}
-                      onClick={() => navigate(hit)}
-                      style={{
-                        display: 'flex', flexDirection: 'column', gap: 2,
-                        width: '100%', minHeight: 60, textAlign: 'left',
-                        padding: '10px 20px',
-                        background: isActive ? 'rgba(0,229,255,0.08)' : 'transparent',
-                        borderLeft: isActive ? '2px solid #00E5FF' : '2px solid transparent',
-                        border: 'none', borderRadius: 0, cursor: 'pointer',
-                        color: '#E6EDF3',
-                      }}
-                    >
-                      <span style={{
-                        fontFamily: /^\d|\./.test(hit.title) ? 'JetBrains Mono, monospace' : 'Inter, system-ui, sans-serif',
-                        fontSize: 14, fontWeight: 600,
-                      }}>{hit.title}</span>
-                      {hit.subtitle && (
-                        <span style={{ fontSize: 12, color: '#94a3b8' }}>{hit.subtitle}</span>
-                      )}
-                    </button>
-                  )
-                })}
-                {extra > 0 && (
-                  <button
-                    onClick={() => { onClose(); router.push(GROUP_LIST_HREFS[g]) }}
-                    style={{
-                      width: '100%', textAlign: 'left',
-                      padding: '8px 20px', minHeight: 36,
-                      background: 'transparent', border: 'none',
-                      color: '#00E5FF', fontSize: 12, cursor: 'pointer',
-                    }}
-                  >
-                    Ver más en {GROUP_LABELS_ES[g]} →
-                  </button>
-                )}
-              </div>
+              <SearchResultGroup
+                key={cfg.id}
+                config={cfg}
+                rows={rows}
+                visibleCount={VISIBLE_PER_GROUP}
+                activeGlobalIdx={activeIdx}
+                baseIdx={baseIdx}
+                onActivate={setActiveIdx}
+                onNavigate={navigate}
+                onMoreClick={() => {
+                  track('page_view', {
+                    metadata: { event: 'search_group_more_clicked', entity_id: cfg.id as EntityId, query: query.trim() },
+                  })
+                  onClose()
+                  router.push(`${cfg.listHref}?q=${encodeURIComponent(query.trim())}`)
+                }}
+              />
             )
           })}
         </div>
@@ -239,12 +251,22 @@ export function CommandPalette({ open, onClose }: Props) {
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           gap: 8, padding: '10px 20px',
-          borderTop: '1px solid rgba(255,255,255,0.08)',
-          fontSize: 11, color: '#64748b',
-          fontFamily: 'JetBrains Mono, monospace',
+          borderTop: `1px solid ${AGUILA.BORDER_HAIRLINE}`,
+          fontSize: 11, color: AGUILA.TEXT_TERTIARY,
+          fontFamily: 'var(--font-jetbrains-mono), JetBrains Mono, monospace',
         }}>
           <span>↑↓ navegar · ⏎ abrir · esc cerrar</span>
-          {results && <span>{results.took_ms} ms</span>}
+          <button
+            type="button"
+            onClick={() => setAdvancedOpen(true)}
+            style={{
+              background: 'transparent', border: 'none',
+              color: AGUILA.TEXT_TERTIARY, cursor: 'pointer',
+              fontFamily: 'inherit', fontSize: 11, padding: 0,
+            }}
+          >
+            Búsqueda avanzada · Shift+⌘K
+          </button>
         </div>
       </div>
 

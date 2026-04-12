@@ -34,3 +34,12 @@ export const GLOW_CYAN_SUBTLE = 'rgba(0,229,255,0.1)'
 export const TEXT_PRIMARY = '#E6EDF3'
 export const TEXT_SECONDARY = '#94a3b8'
 export const TEXT_MUTED = '#64748b'
+
+// ── AGUILA tokens (Block 2 · Unified Search) ──
+// Scoped to the search surface (palette + advanced modal). Do not repurpose
+// elsewhere without design review. TEXT_TERTIARY is a semantic alias of
+// TEXT_SECONDARY — naming distinction helps search UI readability.
+export const AGUILA_BG_ELEVATED = '#1c1c22'
+export const BORDER_HAIRLINE = 'rgba(255,255,255,0.06)'
+export const ACCENT_SILVER = '#C0C5CE'
+export const TEXT_TERTIARY = '#94a3b8'

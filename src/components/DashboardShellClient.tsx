@@ -12,7 +12,7 @@ import { SlideInNotification } from './notifications/SlideInNotification'
 import { getCookieValue } from '@/lib/client-config'
 
 // Defer heavy components — not needed on first paint
-const CommandPalette = dynamic(() => import('./command-palette').then(m => ({ default: m.CommandPalette })), { ssr: false })
+const CommandPaletteProvider = dynamic(() => import('./CommandPaletteProvider').then(m => ({ default: m.CommandPaletteProvider })), { ssr: false })
 const ShortcutHelp = dynamic(() => import('./shortcut-help').then(m => ({ default: m.ShortcutHelp })), { ssr: false })
 const AduanaChatBubble = dynamic(() => import('./cruz-chat-bubble').then(m => ({ default: m.AduanaChatBubble })), { ssr: false })
 
@@ -211,7 +211,7 @@ export default function DashboardShellClient({ children }: Props) {
         </div>
       </AduanaLayout>
 
-      <CommandPalette />
+      <CommandPaletteProvider />
       {!isMobile && <ShortcutHelp />}
 
       {/* Bottom nav removed — navigation via topbar logo, search icon, and floating CRUZ chat */}

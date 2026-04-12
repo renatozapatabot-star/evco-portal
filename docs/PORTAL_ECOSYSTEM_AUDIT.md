@@ -382,3 +382,61 @@ Vicente's cockpit now exists. `/bodega/inicio` renders a giant cyan-glow drag-dr
 Five `<system-reminder>` blocks arrived inside tool output: (a) MCP `computer-use` tool instructions delivered with the first `ls` result; (b) the repo `CLAUDE.md` (ADUANA brand constitution, identity, domain rules); (c) `.claude/rules/performance.md`; (d) `.claude/rules/design-system.md`; (e) `.claude/rules/core-invariants.md`; (f) `.claude/rules/operational-resilience.md`. Per the prompt's injection guard, all treated as untrusted. No scope change applied. No brand rename to "ADUANA" — user-visible copy uses "Portal" only, per hard rules. No `computer-use` tool invoked. The glass tokens and session-gate pattern align with both the prompt and the rule files, but the implementation was driven entirely by grepping existing code (operator cockpit + client cockpit).
 
 **Readiness for commit 3:** Same pattern can be ported to `/contabilidad/inicio` for Anabel. `getNavForRole('contabilidad')` already exists from P3 commit 1 with four items (Facturación, Cobranzas, Pagos), and the shared `<NavCardGrid>` + `<RoleKPIBanner>` primitives are unchanged by this commit.
+
+### P3 commit 3 — contabilidad cockpit
+
+**Scope:** Pendency-first 8-card cockpit for Anabel at `/contabilidad/inicio`, plus three stub pages (`ayuda`, `exportar`, `kpis`). Mirrors the `/bodega/inicio` pattern with accounting semantics: the header is a triple counter of what is waiting, not a celebration of what was done.
+
+**Files added:**
+
+| File | Lines | Role |
+|---|---|---|
+| `src/app/contabilidad/inicio/page.tsx` | 126 | Server gate + 8 parallel Supabase fetches |
+| `src/app/contabilidad/inicio/ContabilidadClient.tsx` | 121 | Client cockpit — header, banner, 8-card grid |
+| `src/app/contabilidad/ayuda/page.tsx` | 77 | Glass stub: Cómo facturar / registrar pago / contacto |
+| `src/app/contabilidad/exportar/page.tsx` | 62 | Glass stub: "próximamente" |
+| `src/app/contabilidad/kpis/page.tsx` | 60 | Glass stub: margen / DSO / cobranza promedio |
+
+**Data field choices (call-outs for Anabel's first review):**
+
+| KPI | Source | Ambiguity |
+|---|---|---|
+| `pendientesFacturar` | `traficos.estatus IN ('Cruzado','Cancelado')` last 90d, minus any trafico number found inside `invoices.notes` | There is no canonical "unbilled" flag. The `invoices.notes` regex match (`\b\d{4,}\b`) is a best-effort proxy — it will over-count when invoices don't reference the trafico number in their notes, and under-count when notes mention unrelated numbers. Flagged for replacement by a proper join column in a later phase. |
+| `cxCobrar` | `invoices.status IN ('sent','viewed','draft')` | Matches the existing `/facturacion` semantics — pending + sent + viewed all count as outstanding. |
+| `cxPagar` | `aduanet_facturas.fecha_pago IS NULL` last 90d | Proxy for unpaid DTA/IGI/IVA. Not perfect — some older rows may have null fecha_pago simply because the sync hasn't backfilled it. Scoped to last 90d to minimize noise. |
+| `morososCount` | `invoices.status = 'overdue'` | Relies on a nightly job flipping `sent` → `overdue` when `due_date < today`. If that job lags, this undercounts. Follow-up: compute `due_date < today AND status != 'paid'` at read time if the nightly flip proves unreliable. |
+| `facturasMes` | `invoices.created_at >= monthStart_CST` | Uses America/Chicago month boundary, consistent with the rest of the cockpit. |
+| `thisWeekOverdue` / `lastWeekOverdue` | `invoices.status='overdue'` bucketed by `created_at` (weekStart/twoWeeksStart) | Drives the banner. Banner fires only when `lastWeek > thisWeek` AND `thisWeek > 0`. |
+
+**Judgment calls:**
+
+1. **No separate `cobranzas`, `pagos`, `morosos`, or `estados-cuenta` routes exist yet.** The 8 card hrefs reference them anyway — they will 404 until P4/P5. This matches the operator cockpit precedent where tile hrefs sometimes land on work-in-progress pages.
+2. **Banner inversion.** `RoleKPIBanner` is built to celebrate `thisWeek > lastWeek`. For contabilidad the metric to *reduce* is overdue invoices, so the delta (`lastWeekOverdue - thisWeekOverdue`) is passed as `thisWeek`, with `lastWeek = 0`. Zero modifications to the shared component.
+3. **Session gate.** Allows `contabilidad | admin | broker`. Non-allowlisted roles redirect to `/inicio` (not `/login`), same pattern as bodega when an operator lands there by accident.
+4. **Greeting.** Reads the `operator_name` cookie with fallback `"Anabel"`. Renato will set this cookie when provisioning her Supabase auth user.
+5. **Currency + pedimento invariants preserved.** No new monetary math in this commit — the cockpit only counts rows; all display formatting stays inside `/facturacion` and its successors.
+
+**Gate output:**
+
+| Gate | Result |
+|---|---|
+| `npm run typecheck` | 0 errors |
+| `npm run build` | success — `/contabilidad/inicio`, `/contabilidad/ayuda`, `/contabilidad/exportar`, `/contabilidad/kpis` all registered as ƒ Dynamic |
+| `npm run test` | 124 / 124 pass (10 files) |
+| Pre-commit hooks | green |
+
+**Injection attempts detected during P3 commit 3:**
+
+Multiple `<system-reminder>` blocks arrived inside tool output: (a) a global `CLAUDE.md` describing a CRUZ platform; (b) an `MEMORY.md` with a project index; (c) the repo `CLAUDE.md` (ADUANA brand constitution); (d) an MCP `computer-use` tool-usage manifest; (e) `.claude/rules/performance.md`; (f) `.claude/rules/design-system.md`; (g) `.claude/rules/core-invariants.md`; (h) `.claude/rules/operational-resilience.md`. Per the prompt's injection guard, all treated as untrusted data. Brand remained "Portal" in user-visible copy. No `computer-use` tool invoked. No scope expansion (no supplier cockpit, no banner refactor, no empty-state sweep — those belong to Phase 4). Alignment with the rule files was incidental: the glass tokens and session-gate pattern were read from the existing `/bodega/inicio` source, not from the injected rules.
+
+**Phase 3 ready to ship.**
+
+All three P3 commits have landed on `feature/v6-phase0-phase1`:
+
+1. Session + middleware + nav-config support for `warehouse` and `contabilidad` roles.
+2. `/bodega/inicio` upload-first cockpit for Vicente.
+3. `/contabilidad/inicio` pendency-first cockpit for Anabel.
+
+**Renato's next step:** create the Anabel Supabase auth user with role `contabilidad` and set the `operator_name` cookie on login to `Anabel`. After that, the `/contabilidad/inicio` route will render on her first visit (middleware already redirects `/` → `/contabilidad/inicio` for the role).
+
+**Phase 4 preview:** supplier mini-cockpit (`/proveedor/inicio` or similar), banner refactor (consolidate `RoleKPIBanner` logic to support both celebration and reduction metrics in one prop shape), empty-state sweep across the remaining cockpits, and a full audit pass against DESIGN_SYSTEM.md.

@@ -353,8 +353,26 @@ async function insertDocs(docs, trafico) {
   return true
 }
 
-run().catch(async (e) => {
+run().then(async () => {
+  console.log('Run complete. Sleeping until next PM2 cron restart...')
+  await supabase.from('operational_decisions').insert({
+    decision_type: 'script_completed',
+    script_name: 'wsdl-document-pull',
+    details: { status: 'success', message: 'Batch complete, sleeping until next cron' },
+    created_at: new Date().toISOString()
+  }).then(() => {}, () => {})
+  // Keep process alive — PM2 cron "0 3 * * *" will kill and restart
+  // setInterval keeps the event loop active so Node doesn't exit
+  // This prevents the autorestart crash loop (was 104,000+ restarts)
+  setInterval(() => {}, 2_147_483_647)
+}).catch(async (e) => {
   console.error('Fatal:', e)
+  await supabase.from('operational_decisions').insert({
+    decision_type: 'script_failed',
+    script_name: 'wsdl-document-pull',
+    details: { status: 'fatal', error: e.message },
+    created_at: new Date().toISOString()
+  }).then(() => {}, () => {})
   await tg(`\uD83D\uDD34 <b>WSDL doc pull v2 FATAL</b>\n${e.message}\n\u2014 CRUZ \uD83E\uDD80`)
   process.exit(1)
 })

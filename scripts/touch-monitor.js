@@ -147,7 +147,24 @@ async function run() {
   }
 }
 
-run().catch(async err => {
-  console.error('Touch monitor error:', err.message)
-  // Don't alert on every run — this runs every minute
-}).finally(() => process.exit(0))
+// Daemon mode — run every 60 seconds
+// Matches the original cron: * * * * * (every minute)
+// Converted from one-shot to daemon to prevent PM2 crash loop (was 529+ restarts)
+async function tick() {
+  try {
+    await run()
+  } catch (err) {
+    console.error('Touch monitor error:', err.message)
+    await supabase.from('operational_decisions').insert({
+      decision_type: 'script_failed',
+      script_name: 'touch-monitor',
+      details: { status: 'error', error: err.message },
+      created_at: new Date().toISOString()
+    }).then(() => {}, () => {})
+  }
+}
+
+// Initial run + interval
+tick()
+setInterval(tick, 60_000)
+console.log('Touch monitor daemon started — polling every 60s')

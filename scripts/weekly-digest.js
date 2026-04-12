@@ -27,7 +27,7 @@ const SINGLE_CLIENT = process.argv.find(a => a.startsWith('--client='))?.split('
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN
 const TELEGRAM_CHAT = process.env.TELEGRAM_CHAT_ID || '-5085543275'
 const RESEND_API_KEY = process.env.RESEND_API_KEY
-const FROM_EMAIL = 'CRUZ — Renato Zapata & Co. <ai@renatozapata.com>'
+const FROM_EMAIL = 'Renato Zapata & Co. <ai@renatozapata.com>'
 const PORTAL_URL = 'https://evco-portal.vercel.app'
 
 const { fetchAll } = require('./lib/paginate')
@@ -61,7 +61,7 @@ function buildDigestHtml(contact, stats) {
 <body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#1A1A1A;max-width:600px;margin:0 auto;padding:20px;">
   <div style="border-bottom:3px solid #C4963C;padding-bottom:12px;margin-bottom:24px;">
     <h2 style="margin:0;font-size:18px;">Renato Zapata &amp; Company</h2>
-    <p style="margin:4px 0 0;font-size:13px;color:#6B6B6B;">Resumen semanal · CRUZ Intelligence</p>
+    <p style="margin:4px 0 0;font-size:13px;color:#6B6B6B;">Resumen semanal · Portal Intelligence</p>
   </div>
 
   <p style="font-size:15px;">Estimado/a <strong>${contact.name}</strong>,</p>
@@ -92,7 +92,7 @@ function buildDigestHtml(contact, stats) {
 
   <div style="text-align:center;margin:28px 0;">
     <a href="${PORTAL_URL}" style="background:#C4963C;color:#FFFFFF;text-decoration:none;padding:14px 32px;border-radius:8px;font-size:16px;font-weight:600;display:inline-block;">
-      Ver en CRUZ Portal
+      Ver en Portal
     </a>
   </div>
 

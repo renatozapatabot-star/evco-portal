@@ -131,7 +131,7 @@ function CustomTooltip({ active, payload, label }: { active?: boolean; payload?:
 
 function exportCSV(rows: TraficoRow[], clientClave: string) {
   const meta = [
-    'CRUZ — Renato Zapata & Company',
+    'Renato Zapata & Co.',
     `Clave: ${clientClave}`,
     `Exportado: ${fmtDate(new Date())}`,
     `Total registros: ${rows.length}`,
@@ -160,7 +160,7 @@ function exportCSV(rows: TraficoRow[], clientClave: string) {
   const totalsRow = `TOTALES,${totalTraficos} traficos,,,,${totalValue.toFixed(2)},,T-MEC ${tmecPct}%`
 
   const blob = new Blob([[...meta, headers.join(','), ...csvRows, '', totalsRow].join('\n')], { type: 'text/csv' })
-  const fname = `CRUZ_Traficos_${clientClave}_${new Date().toISOString().split('T')[0]}.csv`
+  const fname = `Portal_Traficos_${clientClave}_${new Date().toISOString().split('T')[0]}.csv`
   const a = document.createElement('a')
   a.href = URL.createObjectURL(blob)
   a.download = fname
@@ -676,7 +676,7 @@ export function ReportesView() {
       </Card>
 
       <p style={{ fontSize: 10, color: T.textMuted, marginTop: 20, fontStyle: 'italic', textAlign: 'center' }}>
-        CRUZ — Renato Zapata & Company · Patente 3596 · Aduana 240, Nuevo Laredo
+        Renato Zapata & Co. · Patente 3596 · Aduana 240, Nuevo Laredo
       </p>
     </div>
   )

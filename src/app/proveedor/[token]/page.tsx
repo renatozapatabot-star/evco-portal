@@ -91,7 +91,7 @@ export default function ProveedorPage() {
     return (
       <div style={styles.page}>
         <div style={styles.card}>
-          <div style={styles.logo}>ADUANA</div>
+          <div style={styles.logo}>Portal</div>
           <div style={{ fontSize: 16, fontWeight: 600, color: '#DC2626', marginBottom: 12 }}>Enlace no válido</div>
           <p style={{ fontSize: 14, color: '#6B6B6B', lineHeight: 1.6 }}>{errorMessage}</p>
         </div>
@@ -104,7 +104,7 @@ export default function ProveedorPage() {
     return (
       <div style={styles.page}>
         <div style={styles.card}>
-          <div style={styles.logo}>ADUANA</div>
+          <div style={styles.logo}>Portal</div>
           <div className="skeleton-shimmer" style={{ height: 120, borderRadius: 8 }} />
         </div>
       </div>
@@ -118,7 +118,7 @@ export default function ProveedorPage() {
       <div style={styles.card}>
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: 24 }}>
-          <div style={styles.logo}>ADUANA</div>
+          <div style={styles.logo}>Portal</div>
           <div style={{ fontSize: 11, color: '#9B9B9B', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
             Portal de Documentos
           </div>
@@ -247,7 +247,7 @@ export default function ProveedorPage() {
                   ¿Trabaja con otros importadores en México?
                 </div>
                 <p style={{ fontSize: 13, color: '#6B6B6B', marginBottom: 12, lineHeight: 1.5 }}>
-                  CRUZ organiza todos sus documentos automáticamente.
+                  El Portal organiza todos sus documentos automáticamente.
                   Sus clientes reciben todo a tiempo, sin llamadas ni correos.
                 </p>
                 <a
@@ -277,7 +277,7 @@ export default function ProveedorPage() {
         {/* Footer */}
         <div style={{ textAlign: 'center', marginTop: 32, paddingTop: 16, borderTop: '1px solid #E8E5E0' }}>
           <div style={{ fontSize: 11, color: '#9B9B9B' }}>
-            CRUZ — Renato Zapata & Company
+            Renato Zapata & Co.
           </div>
           <div style={{ fontSize: 10, color: '#C4C4C4', marginTop: 2 }}>
             Patente 3596 · Aduana 240 · Est. 1941

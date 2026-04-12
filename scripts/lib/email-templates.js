@@ -61,7 +61,7 @@ function footer() {
   return `
   <hr style="border:none;border-top:1px solid #E8E5E0;margin:24px 0;">
   <p style="font-size:13px;color:#6B6B6B;">
-    Este mensaje fue generado por el sistema CRUZ — Renato Zapata &amp; Company.<br>
+    Este mensaje fue generado por el Portal — Renato Zapata &amp; Co.<br>
     Para consultas: <a href="mailto:ai@renatozapata.com" style="color:#8B6914;">ai@renatozapata.com</a>
   </p>
   <p style="font-size:11px;color:#9CA3AF;">

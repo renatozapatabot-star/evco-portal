@@ -47,7 +47,7 @@ export async function generateMetadata(
   const t = await fetchPreview(id)
 
   if (!t) {
-    return { title: `Tráfico · CRUZ` }
+    return { title: `Tráfico · Portal` }
   }
 
   const desc = [
@@ -57,12 +57,12 @@ export async function generateMetadata(
   ].filter(Boolean).join(' · ')
 
   return {
-    title: `Tráfico ${id} · CRUZ`,
+    title: `Tráfico ${id} · Portal`,
     description: desc,
     openGraph: {
-      title: `Tráfico ${id} · CRUZ`,
+      title: `Tráfico ${id} · Portal`,
       description: desc,
-      siteName: 'CRUZ · Renato Zapata & Company',
+      siteName: 'Portal · Renato Zapata & Co.',
       type: 'website',
     },
   }
@@ -124,7 +124,7 @@ export default async function SharePage(
             textTransform: 'uppercase',
             marginBottom: 4,
           }}>
-            CRUZ
+            Portal
           </div>
           <div style={{
             fontSize: 12,
@@ -285,7 +285,7 @@ export default async function SharePage(
             ¿Quiere esta visibilidad para sus importaciones?
           </p>
           <p style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>
-            CRUZ — Inteligencia aduanal en tiempo real
+            Portal — Inteligencia aduanal en tiempo real
           </p>
           <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
             Renato Zapata &amp; Company · Patente 3596

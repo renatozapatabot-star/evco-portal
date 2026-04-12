@@ -270,7 +270,7 @@ async function handleSolicitationSent(event) {
       subject,
       html: emailHtml,
       to: supplierEmail,
-      from: 'CRUZ — Renato Zapata & Co. <ai@renatozapata.com>',
+      from: 'Renato Zapata & Co. <ai@renatozapata.com>',
     },
     source: 'workflow-processor:docs.solicitation_sent',
     generated_at: new Date().toISOString(),

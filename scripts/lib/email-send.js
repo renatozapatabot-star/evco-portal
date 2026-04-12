@@ -6,7 +6,7 @@ const path = require('path')
 require('dotenv').config({ path: path.join(__dirname, '..', '..', '.env.local') })
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY
-const FROM_EMAIL = 'CRUZ — Renato Zapata & Co. <ai@renatozapata.com>'
+const FROM_EMAIL = 'Renato Zapata & Co. <ai@renatozapata.com>'
 
 /**
  * Send an email via Resend API.

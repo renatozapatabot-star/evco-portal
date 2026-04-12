@@ -103,7 +103,7 @@ export default function ResultadosPage() {
       icon: <Shield size={32} style={{ color: 'var(--info)' }} />,
       value: 'Cero',
       label: 'multas SAT',
-      detail: `En ${claims.totalOperations.toLocaleString()} operaciones gestionadas por ADUANA`,
+      detail: `En ${claims.totalOperations.toLocaleString()} operaciones gestionadas por el Portal`,
     },
     {
       icon: <Award size={32} style={{ color: 'var(--gold)' }} />,

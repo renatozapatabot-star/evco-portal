@@ -25,7 +25,7 @@ export default function DemoPage() {
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-main)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: isMobile ? 16 : 24 }}>
       <div style={{ maxWidth: 480, width: '100%', textAlign: 'center' }}>
-        <div style={{ fontFamily: 'var(--font-mono)', fontSize: 28, fontWeight: 800, color: 'var(--gold)', letterSpacing: '0.15em', marginBottom: 8 }}>ADUANA</div>
+        <div style={{ fontFamily: 'var(--font-mono)', fontSize: 28, fontWeight: 800, color: 'var(--gold)', letterSpacing: '0.15em', marginBottom: 8 }}>Portal</div>
         <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24 }}>Inteligencia Aduanal · Patente 3596</div>
 
         {/* Before/After strip */}
@@ -36,7 +36,7 @@ export default function DemoPage() {
           </div>
           <div style={{ flex: 1, padding: '16px 12px', borderRadius: 10, background: 'rgba(22,163,74,0.06)', border: '1px solid rgba(22,163,74,0.15)' }}>
             <div style={{ fontSize: 28, fontWeight: 800, color: '#16A34A', fontFamily: 'var(--font-mono)' }}>2 min</div>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>Con ADUANA</div>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>Con Portal</div>
           </div>
         </div>
 

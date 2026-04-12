@@ -26,7 +26,7 @@ const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN
 const TELEGRAM_CHAT = '-5085543275'
 const SCRIPT_NAME = 'send-notifications'
 const PORTAL_URL = 'https://portal.renatozapata.com'
-const FROM_EMAIL = 'CRUZ | Renato Zapata & Company <ai@renatozapata.com>'
+const FROM_EMAIL = 'Renato Zapata & Co. <ai@renatozapata.com>'
 const BATCH_SIZE = 20
 
 // ── Telegram alerting ──
@@ -53,7 +53,7 @@ const TEMPLATES = {
       { label: 'Mercanc\u00EDa', value: p.descripcion_mercancia },
       { label: 'Valor Estimado', value: p.valor_estimado },
     ],
-    cta: { text: 'Ver en Portal CRUZ', path: '' },
+    cta: { text: 'Ver en Portal', path: '' },
   },
 
   docs_complete: {
@@ -135,18 +135,18 @@ function buildEmailHTML(template, payload) {
       <td align="center" style="padding: 40px 16px;">
         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width: 520px;">
 
-          <!-- CRUZ Logo -->
+          <!-- Portal Header -->
           <tr>
             <td align="center" style="padding-bottom: 8px;">
               <span style="font-size: 28px; font-weight: 900; letter-spacing: 0.15em; background: linear-gradient(135deg, #B8953F, #D4B86A); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
-                CRUZ
+                Portal
               </span>
             </td>
           </tr>
           <tr>
             <td align="center" style="padding-bottom: 32px;">
               <span style="font-size: 11px; color: #6b7280; letter-spacing: 0.08em; text-transform: uppercase;">
-                Cross-Border Intelligence &middot; Renato Zapata &amp; Company
+                Renato Zapata &amp; Co.
               </span>
             </td>
           </tr>
@@ -221,7 +221,7 @@ async function sendEmail(to, subject, html) {
 
   // Try with branded from address first; fall back to Resend test sender
   // if domain is not yet verified (403).
-  const fromAddresses = [FROM_EMAIL, 'CRUZ Test <onboarding@resend.dev>']
+  const fromAddresses = [FROM_EMAIL, 'Portal Test <onboarding@resend.dev>']
 
   for (const fromAddr of fromAddresses) {
     const res = await fetch('https://api.resend.com/emails', {

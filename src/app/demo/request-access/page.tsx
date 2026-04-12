@@ -55,7 +55,7 @@ export default function RequestAccessPage() {
     <div style={{ minHeight: '100vh', background: '#05070B', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
       <div style={{ maxWidth: 480, width: '100%', background: 'rgba(255,255,255,0.03)', borderRadius: 20, padding: isMobile ? 24 : 40, border: '1px solid rgba(255,255,255,0.06)' }}>
         <div style={{ fontFamily: 'var(--font-mono)', fontSize: 22, fontWeight: 800, color: '#eab308', letterSpacing: '0.08em', textAlign: 'center', marginBottom: 8 }}>
-          CRUZ
+          Portal
         </div>
         <h1 style={{ fontSize: 20, fontWeight: 700, color: '#FFF', textAlign: 'center', marginBottom: 8 }}>
           Solicita acceso real
@@ -78,7 +78,7 @@ export default function RequestAccessPage() {
           <Field label="Correo electrónico (opcional)" value={form.email} onChange={v => setForm(f => ({ ...f, email: v }))} type="email" />
           <div>
             <label style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.6)', display: 'block', marginBottom: 4 }}>
-              ¿Qué te interesó de ADUANA? (opcional)
+              ¿Qué te interesó del Portal? (opcional)
             </label>
             <textarea
               value={form.notes}

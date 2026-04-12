@@ -78,7 +78,7 @@ export default function CallsPage() {
       <div className="mb-4">
         <h1 className="text-[18px] font-semibold" style={{ color: 'var(--text-primary)' }}>Llamadas</h1>
         <p className="text-[12.5px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
-          Transcripciones procesadas por Whisper + CRUZ
+          Transcripciones procesadas por Whisper + Portal
         </p>
       </div>
 

@@ -251,7 +251,7 @@ async function createDrafts(incompleteList) {
         subject,
         html: emailHtml,
         to: contact.email,
-        from: 'CRUZ — Renato Zapata & Co. <ai@renatozapata.com>',
+        from: 'Renato Zapata & Co. <ai@renatozapata.com>',
       },
       source: SCRIPT_NAME,
       generated_at: new Date().toISOString(),

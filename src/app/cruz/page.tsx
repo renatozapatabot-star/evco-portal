@@ -204,7 +204,7 @@ export default function CruzChatPage() {
             <span style={{ fontFamily: 'Georgia, serif', fontSize: 20, fontWeight: 700, color: '#05070B' }}>Z</span>
           </div>
           <div>
-            <h1 style={{ fontSize: 18, fontWeight: 800, color: '#E8E5DF', letterSpacing: '-0.02em', margin: 0 }}>ADUANA</h1>
+            <h1 style={{ fontSize: 18, fontWeight: 800, color: '#E8E5DF', letterSpacing: '-0.02em', margin: 0 }}>Portal AI</h1>
             <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)' }}>
               {traficoContext ? `Contexto: ${traficoContext}` : 'Asistente aduanal'}
             </div>

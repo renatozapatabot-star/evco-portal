@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Search, Menu, LogOut, ChevronLeft } from 'lucide-react';
 import NotificationBell from '@/components/NotificationBell';
+import LocaleToggle from '@/components/i18n/LocaleToggle';
 
 interface TopBarProps {
   showNotifications?: boolean;
@@ -86,6 +87,7 @@ export default function TopBar({
 
         {/* Right: company name + logout */}
         <div className="topbar-right">
+          <LocaleToggle />
           {clientName && (
             <span className="topbar-client-name">{clientName}</span>
           )}
@@ -138,6 +140,7 @@ export default function TopBar({
       </button>
 
       <div className="topbar-right">
+        <LocaleToggle />
         {showNotifications && <NotificationBell />}
         {onLogout && (
           <button

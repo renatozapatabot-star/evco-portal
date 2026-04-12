@@ -93,6 +93,15 @@ export const INTERNAL_GROUPS: NavGroup[] = [
     ],
   },
   {
+    key: 'equipo',
+    label: 'Equipo',
+    icon: Users2,
+    roles: ['admin', 'broker'],
+    children: [
+      { href: '/admin/operadores', label: 'Desempeño operadores', icon: Users2, roles: ['admin', 'broker'] },
+    ],
+  },
+  {
     key: 'interno',
     label: 'Interno',
     icon: Play,

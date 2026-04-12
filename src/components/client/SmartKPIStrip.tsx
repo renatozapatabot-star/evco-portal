@@ -118,7 +118,7 @@ export function SmartKPIStrip(props: Props) {
       value: props.pedimentosEnProceso,
       delta: 0,
       deltaLabel: '',
-      anomaly: props.pedimentosEnProceso === 0 && props.activeShipments > 0,
+      anomaly: props.pedimentosEnProceso === 0 && props.activeShipments > 0 && ![0, 6].includes(new Date().getDay()),
       isUrgency: true,
       calmLabel: 'Al corriente',
     },

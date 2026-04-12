@@ -177,7 +177,7 @@ function LoginContent() {
           }}>
             <Stat value="30,707" label="tráficos" />
             <Stat value="307K" label="documentos" />
-            <Stat value="64K" label="facturas" />
+            <Stat value="16K" label="cruces" />
           </div>
 
           {/* Footer identity */}

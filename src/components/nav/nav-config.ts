@@ -3,7 +3,7 @@ import {
   BarChart3, DollarSign, Users2, BookOpen,
   Shield, Settings, Package,
   Warehouse, TrendingUp, Radio, Brain,
-  FileSpreadsheet, ScanLine, Eye,
+  FileSpreadsheet, ScanLine, Eye, Play,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -90,6 +90,15 @@ export const INTERNAL_GROUPS: NavGroup[] = [
       { href: '/admin/quickbooks-export',  label: 'Exportar QuickBooks', icon: FileSpreadsheet, roles: ['admin', 'broker'] },
       { href: '/clientes',                 label: 'Clientes',          icon: Users2,          roles: ['admin', 'broker'] },
       { href: '/admin/clientes-dormidos',  label: 'Clientes dormidos', icon: Users2,          roles: ['admin', 'broker'] },
+    ],
+  },
+  {
+    key: 'interno',
+    label: 'Interno',
+    icon: Play,
+    roles: ['admin', 'broker'],
+    children: [
+      { href: '/admin/demo', label: 'Demo orquestado', icon: Play, roles: ['admin', 'broker'] },
     ],
   },
 ]

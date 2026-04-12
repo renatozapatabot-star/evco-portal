@@ -142,6 +142,18 @@ export async function POST(request: NextRequest) {
       },
     })
 
+    // V1.5 F12 — Telegram routing (fire-and-forget).
+    const { dispatchTelegramForEvent } = await import('@/lib/telegram/dispatch')
+    void dispatchTelegramForEvent('pece_payment_confirmed', {
+      trafico_id: row.trafico_id,
+      company_id: row.company_id,
+      pedimento_number: row.pedimento_id,
+      amount: row.amount,
+      currency: 'MXN',
+      bank_name: row.bank_code,
+      actor,
+    })
+
     await logDecision({
       trafico: row.trafico_id,
       company_id: row.company_id,

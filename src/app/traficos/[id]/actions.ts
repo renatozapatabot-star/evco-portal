@@ -134,6 +134,23 @@ export async function fireLifecycleEvent(
   })
   if (insErr) return { ok: false, error: insErr.message }
 
+  // V1.5 F12 — Telegram routing. Map lifecycle events to routable kinds.
+  // Fire-and-forget: delivery failures never block the lifecycle write.
+  const { dispatchTelegramForEvent } = await import('@/lib/telegram/dispatch')
+  const kindMap: Record<string, string> = {
+    semaforo_first_green: 'semaforo_verde',
+    merchandise_customs_cleared: 'trafico_completed',
+  }
+  const dispatchKind = kindMap[eventType]
+  if (dispatchKind) {
+    void dispatchTelegramForEvent(dispatchKind, {
+      trafico_id: traficoId,
+      company_id: companyId,
+      actor,
+      ...(payload ?? {}),
+    })
+  }
+
   await logDecision({
     trafico: traficoId,
     company_id: companyId,

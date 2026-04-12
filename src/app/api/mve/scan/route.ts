@@ -87,6 +87,15 @@ export async function GET(request: NextRequest) {
       if (!insErr) {
         created++
         if (c.severity === 'critical') criticalNew++
+        // V1.5 F12 — Telegram routing per-user dispatch.
+        const { dispatchTelegramForEvent } = await import('@/lib/telegram/dispatch')
+        void dispatchTelegramForEvent('mve_alert_raised', {
+          trafico_id: c.trafico_id,
+          company_id: c.company_id,
+          pedimento_number: c.pedimento_id,
+          days_remaining: c.days_remaining,
+          severity: c.severity,
+        })
       }
     } else if (!existing.resolved && existing.severity !== c.severity) {
       const { error: updErr } = await supabase

@@ -108,6 +108,7 @@ export const INTERNAL_GROUPS: NavGroup[] = [
     roles: ['admin', 'broker'],
     children: [
       { href: '/admin/demo', label: 'Demo orquestado', icon: Play, roles: ['admin', 'broker'] },
+      { href: '/admin/notificaciones', label: 'Notificaciones', icon: Radio, roles: ['admin', 'broker'] },
     ],
   },
 ]

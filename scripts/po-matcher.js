@@ -4,7 +4,7 @@
  *
  * Polls workflow_events for:
  * - email_processed (supplier email with PO/invoice data)
- * - entrada_synced (new warehouse entry from GlobalPC)
+ * (entrada_synced removed — entradas table is source of truth)
  *
  * Match scoring:
  * - timing:  1.0 if within 3 days, linear decay to 0 at 14 days
@@ -154,7 +154,7 @@ async function main() {
   const { data: events, error: evErr } = await supabase.from('workflow_events')
     .select('*')
     .eq('status', 'pending')
-    .in('event_type', ['email_processed', 'entrada_synced'])
+    .in('event_type', ['email_processed'])
     .order('created_at', { ascending: true })
     .limit(50)
 

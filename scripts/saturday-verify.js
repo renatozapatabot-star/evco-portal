@@ -221,36 +221,6 @@ async function runTest(name, fn) {
     return `workflow-processor in pm2 list, ${stuck.count || 0} stuck events`
   })
 
-  // Test 7: entrada_synced filter still active
-  await runTest('Block 4.5 entrada_synced filter', async () => {
-    const triggerId = 'sat-filter-test-' + Date.now()
-
-    await sb.from('workflow_events').insert({
-      workflow: 'intake',
-      event_type: 'entrada_synced',
-      trigger_id: triggerId,
-      company_id: 'evco',
-      status: 'pending',
-      payload: { test: true },
-    })
-
-    await new Promise(r => setTimeout(r, 60000))
-
-    const after = await sb.from('workflow_events')
-      .select('status')
-      .eq('trigger_id', triggerId)
-      .single()
-
-    if (after.data && after.data.status !== 'pending') {
-      await sb.from('workflow_events').delete().eq('trigger_id', triggerId)
-      throw new Error('REGRESSION: entrada_synced was processed (Block 4.5 filter failed) — status=' + after.data.status)
-    }
-
-    // Cleanup
-    await sb.from('workflow_events').delete().eq('trigger_id', triggerId)
-
-    return 'entrada_synced stayed pending (filter intact)'
-  })
 
   // Final report
   console.log('═══════════════════════════════════════════════════════')

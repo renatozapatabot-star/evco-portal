@@ -13,7 +13,7 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 )
-const { emitEvent } = require('./lib/workflow-emitter')
+
 
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN
 const TELEGRAM_CHAT = '-5085543275'
@@ -201,16 +201,6 @@ async function run() {
         }))
         await supabase.from('entradas').upsert(batch, { onConflict: 'cve_entrada', ignoreDuplicates: false })
 
-        // Emit entrada_synced events for PO matching (po-matcher.js consumes these)
-        for (const entry of batch) {
-          if (entry.cve_proveedor && entry.company_id) {
-            await emitEvent('intake', 'entrada_synced', entry.cve_entrada, entry.company_id, {
-              supplier: entry.cve_proveedor,
-              descripcion_mercancia: entry.descripcion_mercancia,
-              peso_bruto: entry.peso_bruto,
-            }).catch(() => {}) // Non-blocking — sync continues even if event emission fails
-          }
-        }
       }
       totalFound += entRows.length
     }

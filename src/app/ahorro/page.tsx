@@ -63,26 +63,13 @@ export default function AhorroPage() {
   const [data, setData] = useState<CostData | null>(null)
   const [loading, setLoading] = useState(true)
 
-  const role = getCookieValue('user_role')
-  const isAdmin = role === 'admin' || role === 'broker'
-
   useEffect(() => {
-    if (!isAdmin) { setLoading(false); return }
     fetch('/api/cost-insights')
       .then(r => r.json())
       .then(d => setData(d.data || null))
       .catch((err) => console.error('[ahorro] fetch failed:', err.message))
       .finally(() => setLoading(false))
-  }, [isAdmin])
-
-  if (!isAdmin) {
-    return (
-      <div className="page-shell" style={{ textAlign: 'center', padding: 60 }}>
-        <DollarSign size={48} style={{ color: 'var(--text-muted)', marginBottom: 16 }} />
-        <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>Acceso restringido</div>
-      </div>
-    )
-  }
+  }, [])
 
   return (
     <div className="page-shell" style={{ padding: isMobile ? '16px' : undefined }}>

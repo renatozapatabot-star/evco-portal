@@ -5,6 +5,7 @@ import {
   Package, Truck, FileText, ClipboardList,
   FileSpreadsheet, FolderOpen, BarChart3, TrendingUp,
   Activity, Clock, ChevronDown, ChevronUp,
+  Ship, Tags, DollarSign,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { ClientData } from '@/components/cockpit/shared/fetchCockpitData'
@@ -34,6 +35,9 @@ const TILES: NavTile[] = [
   { href: '/expedientes', label: 'Expedientes Digitales', icon: FolderOpen,      description: 'Documentos por operación' },
   { href: '/reportes',    label: 'Reportes',              icon: BarChart3,       description: 'Análisis y estadísticas' },
   { href: '/kpis',        label: "KPI's",                 icon: TrendingUp,      description: 'Indicadores clave' },
+  { href: '/solicitar',   label: 'Solicitar Embarque',    icon: Ship,            description: 'Iniciar nueva operación' },
+  { href: '/clasificar-producto', label: 'Clasificar Producto', icon: Tags,      description: 'Consultar fracción arancelaria' },
+  { href: '/ahorro',      label: 'Ahorro',                icon: DollarSign,      description: 'T-MEC y optimización' },
 ]
 
 // ── Helpers ────────────────────────────────────────────────

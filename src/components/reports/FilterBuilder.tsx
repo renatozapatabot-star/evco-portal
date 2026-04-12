@@ -26,7 +26,7 @@ export function FilterBuilder({
           type="button"
           onClick={onAdd}
           disabled={columns.length === 0}
-          className="h-[44px] rounded-lg border border-white/10 bg-white/[0.03] px-3 text-xs text-slate-200 hover:border-cyan-400/40 disabled:opacity-40"
+          className="h-[44px] rounded-lg border border-white/10 bg-white/[0.03] px-3 text-xs text-slate-200 hover:border-slate-300/40 disabled:opacity-40"
         >
           + Agregar filtro
         </button>

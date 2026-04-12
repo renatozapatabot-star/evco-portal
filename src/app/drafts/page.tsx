@@ -103,7 +103,7 @@ export default function DraftsPage() {
         {(['pending', 'approved', 'all'] as const).map(f => (
           <button key={f} onClick={() => setFilter(f)} style={{
             padding: '10px 16px', borderRadius: 6, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer', minHeight: 60,
-            background: filter === f ? 'rgba(0,229,255,0.15)' : 'transparent', color: filter === f ? '#E6EDF3' : 'var(--slate-400)',
+            background: filter === f ? 'rgba(192,197,206,0.15)' : 'transparent', color: filter === f ? '#E6EDF3' : 'var(--slate-400)',
             boxShadow: filter === f ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
           }}>
             {f === 'pending' ? 'Pendientes' : f === 'approved' ? 'Aprobados' : 'Todos'}

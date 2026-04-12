@@ -319,9 +319,9 @@ function FilterButton({
       style={{
         minHeight: 60,
         padding: '0 14px',
-        background: active ? 'rgba(0,229,255,0.12)' : 'transparent',
+        background: active ? 'rgba(192,197,206,0.12)' : 'transparent',
         color: active ? TEXT_PRIMARY : TEXT_MUTED,
-        border: `1px solid ${active ? 'rgba(0,229,255,0.4)' : BORDER}`,
+        border: `1px solid ${active ? 'rgba(192,197,206,0.4)' : BORDER}`,
         borderRadius: 12,
         fontSize: 12,
         fontWeight: 700,

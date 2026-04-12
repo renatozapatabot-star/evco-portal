@@ -249,7 +249,7 @@ export function CommentThread({ traficoId, notes, currentUserId, availableUsers 
                     width: 36,
                     height: 36,
                     borderRadius: '50%',
-                    background: 'rgba(0,229,255,0.1)',
+                    background: 'rgba(192,197,206,0.1)',
                     border: `1px solid ${ACCENT_CYAN}`,
                     color: ACCENT_CYAN,
                     display: 'flex',

@@ -34,7 +34,7 @@ const PIPELINE_STAGES = [
 ] as const
 
 const STATUS_COLORS: Record<string, string> = {
-  pending: '#00E5FF',
+  pending: '#C0C5CE',
   completed: '#22C55E',
   failed: '#EF4444',
 }
@@ -145,7 +145,7 @@ export function WorkflowMonitor() {
     return (
       <div style={glassCard}>
         <h2 style={sectionTitle}>
-          <Activity size={16} style={{ color: '#00E5FF' }} />
+          <Activity size={16} style={{ color: '#C0C5CE' }} />
           Monitor de Workflows
         </h2>
         <div style={{ ...mutedText, marginTop: 16 }}>Cargando eventos...</div>
@@ -158,7 +158,7 @@ export function WorkflowMonitor() {
     return (
       <div style={glassCard}>
         <h2 style={sectionTitle}>
-          <Activity size={16} style={{ color: '#00E5FF' }} />
+          <Activity size={16} style={{ color: '#C0C5CE' }} />
           Monitor de Workflows
         </h2>
         <div style={{ ...secondaryText, marginTop: 16 }}>
@@ -175,7 +175,7 @@ export function WorkflowMonitor() {
       <div style={glassCard}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
           <h2 style={sectionTitle}>
-            <Activity size={16} style={{ color: '#00E5FF' }} />
+            <Activity size={16} style={{ color: '#C0C5CE' }} />
             Pipeline de Workflows
           </h2>
           <button
@@ -211,17 +211,17 @@ export function WorkflowMonitor() {
                       height: 36,
                       borderRadius: '50%',
                       background: hasPending
-                        ? 'rgba(0,229,255,0.15)'
+                        ? 'rgba(192,197,206,0.15)'
                         : 'rgba(255,255,255,0.06)',
-                      border: `2px solid ${hasPending ? '#00E5FF' : 'rgba(255,255,255,0.12)'}`,
+                      border: `2px solid ${hasPending ? '#C0C5CE' : 'rgba(255,255,255,0.12)'}`,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      boxShadow: hasPending ? '0 0 12px rgba(0,229,255,0.3)' : 'none',
+                      boxShadow: hasPending ? '0 0 12px rgba(192,197,206,0.3)' : 'none',
                     }}
                   >
                     {hasPending ? (
-                      <span style={{ color: '#00E5FF', fontSize: 12, fontWeight: 700, fontFamily: 'var(--font-mono)' }}>
+                      <span style={{ color: '#C0C5CE', fontSize: 12, fontWeight: 700, fontFamily: 'var(--font-mono)' }}>
                         {stats.pending}
                       </span>
                     ) : (
@@ -264,7 +264,7 @@ export function WorkflowMonitor() {
       {/* Recent events table */}
       <div style={glassCard}>
         <h2 style={{ ...sectionTitle, marginBottom: 12 }}>
-          <Clock size={16} style={{ color: '#00E5FF' }} />
+          <Clock size={16} style={{ color: '#C0C5CE' }} />
           Eventos Recientes
         </h2>
 

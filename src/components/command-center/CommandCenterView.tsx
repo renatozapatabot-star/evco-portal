@@ -239,10 +239,10 @@ function PasswordResetBanner() {
   return (
     <div style={{
       padding: '10px 16px', borderRadius: 14, marginBottom: 12,
-      borderLeft: '3px solid rgba(0,229,255,0.4)',
+      borderLeft: '3px solid rgba(192,197,206,0.4)',
       background: 'rgba(9,9,11,0.75)',
       backdropFilter: 'blur(20px)',
-      border: '1px solid rgba(0,229,255,0.15)',
+      border: '1px solid rgba(192,197,206,0.15)',
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       flexWrap: 'wrap', gap: 8,
     }}>

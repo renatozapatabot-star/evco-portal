@@ -18,9 +18,9 @@ const urgencyStyles: Record<ClientSuggestedAction['urgency'], {
     iconColor: '#FBBF24',
   },
   medium: {
-    border: 'rgba(0,229,255,0.15)',
-    bg: 'rgba(0,229,255,0.04)',
-    iconColor: '#00E5FF',
+    border: 'rgba(192,197,206,0.15)',
+    bg: 'rgba(192,197,206,0.04)',
+    iconColor: '#C0C5CE',
   },
   low: {
     border: 'rgba(255,255,255,0.08)',

@@ -170,7 +170,7 @@ export function ExceptionCard({ event, onAction }: ExceptionCardProps) {
               style={{
                 fontSize: 13,
                 fontFamily: 'var(--font-mono)',
-                color: '#00E5FF',
+                color: '#C0C5CE',
                 textDecoration: 'none',
               }}
             >

@@ -194,7 +194,7 @@ function LoginContent() {
           min-height: 100vh;
           min-height: 100dvh;
           background:
-            radial-gradient(ellipse at 50% 30%, rgba(0,229,255,0.06) 0%, transparent 50%),
+            radial-gradient(ellipse at 50% 30%, rgba(192,197,206,0.06) 0%, transparent 50%),
             linear-gradient(180deg, #05070B 0%, #0B1220 100%);
           display: flex;
           align-items: center;
@@ -209,8 +209,8 @@ function LoginContent() {
           position: absolute;
           inset: 0;
           background-image:
-            linear-gradient(rgba(0,229,255,0.02) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(0,229,255,0.02) 1px, transparent 1px);
+            linear-gradient(rgba(192,197,206,0.02) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(192,197,206,0.02) 1px, transparent 1px);
           background-size: 64px 64px;
           mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, black 20%, transparent 70%);
           -webkit-mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, black 20%, transparent 70%);
@@ -224,7 +224,7 @@ function LoginContent() {
           font-weight: 800;
           font-family: var(--font-sans);
           letter-spacing: 0.15em;
-          color: rgba(0,229,255,0.03);
+          color: rgba(192,197,206,0.03);
           line-height: 1;
           pointer-events: none;
           user-select: none;
@@ -237,7 +237,7 @@ function LoginContent() {
           transform: translate(-50%, -50%);
           width: 500px;
           height: 500px;
-          background: radial-gradient(circle, rgba(0,229,255,0.08) 0%, transparent 70%);
+          background: radial-gradient(circle, rgba(192,197,206,0.08) 0%, transparent 70%);
           pointer-events: none;
         }
 
@@ -253,11 +253,11 @@ function LoginContent() {
           background: rgba(9,9,11,0.75);
           backdrop-filter: blur(20px);
           -webkit-backdrop-filter: blur(20px);
-          border: 1px solid rgba(0,229,255,0.2);
+          border: 1px solid rgba(192,197,206,0.2);
           border-radius: 20px 20px 0 0;
           padding: 20px 24px;
           margin-bottom: -1px;
-          box-shadow: 0 10px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06), 0 0 15px rgba(0,229,255,0.3);
+          box-shadow: 0 10px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06), 0 0 15px rgba(192,197,206,0.3);
           position: relative;
           z-index: 1;
         }
@@ -296,11 +296,11 @@ function LoginContent() {
           -webkit-backdrop-filter: blur(20px);
           border-radius: 20px;
           padding: 40px;
-          border: 1px solid rgba(0,229,255,0.2);
+          border: 1px solid rgba(192,197,206,0.2);
           box-shadow:
             0 10px 30px rgba(0,0,0,0.4),
             inset 0 1px 0 rgba(255,255,255,0.06),
-            0 0 15px rgba(0,229,255,0.3);
+            0 0 15px rgba(192,197,206,0.3);
         }
 
         /* ── Brand ── */
@@ -315,7 +315,7 @@ function LoginContent() {
           color: #E6EDF3;
           line-height: 1;
           text-align: center;
-          text-shadow: 0 0 20px rgba(0,229,255,0.3);
+          text-shadow: 0 0 20px rgba(192,197,206,0.3);
         }
         .login-cruz-accent {
           width: 40px;
@@ -397,8 +397,8 @@ function LoginContent() {
           color: #6E7681;
         }
         .login-input:focus {
-          border-color: rgba(0,229,255,0.5);
-          box-shadow: 0 0 0 3px rgba(0,229,255,0.15), 0 0 20px rgba(0,229,255,0.2);
+          border-color: rgba(192,197,206,0.5);
+          box-shadow: 0 0 0 3px rgba(192,197,206,0.15), 0 0 20px rgba(192,197,206,0.2);
           background: rgba(255,255,255,0.06);
         }
 

@@ -41,7 +41,7 @@ export function HeroStrip({ hero }: { hero: InicioData['hero'] }) {
             WebkitBackdropFilter: 'blur(20px)',
             border: '1px solid rgba(255,255,255,0.08)',
             boxShadow:
-              '0 10px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05), 0 0 1px rgba(0,229,255,0.12)',
+              '0 10px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05), 0 0 1px rgba(192,197,206,0.12)',
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'space-between',

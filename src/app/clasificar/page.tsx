@@ -305,7 +305,7 @@ export default function ClasificarPage() {
                   borderRadius: 8,
                   marginBottom: 8,
                   cursor: 'pointer',
-                  background: selectedAlt === alt.fraccion ? 'rgba(0,229,255,0.08)' : 'rgba(9,9,11,0.75)',
+                  background: selectedAlt === alt.fraccion ? 'rgba(192,197,206,0.08)' : 'rgba(9,9,11,0.75)',
                   border: selectedAlt === alt.fraccion ? '2px solid #eab308' : '1px solid #E8E5E0',
                   transition: 'all 150ms',
                 }}

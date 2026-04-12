@@ -318,7 +318,7 @@ export function ReportBuilderClient({
               value={reportName}
               onChange={(e) => setReportName(e.target.value)}
               placeholder="Ej. Tráficos activos · semana 16"
-              className="h-[60px] w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 text-sm text-slate-100 focus:border-cyan-400 focus:outline-none"
+              className="h-[60px] w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 text-sm text-slate-100 focus:border-slate-300 focus:outline-none"
             />
           </label>
         </div>
@@ -343,7 +343,7 @@ export function ReportBuilderClient({
               onClick={() => setScopeSave('private')}
               className={`h-[44px] flex-1 rounded-lg border px-2 text-xs ${
                 scopeSave === 'private'
-                  ? 'border-cyan-400 text-cyan-200'
+                  ? 'border-slate-300 text-slate-200'
                   : 'border-white/10 text-slate-400'
               }`}
             >
@@ -354,7 +354,7 @@ export function ReportBuilderClient({
               onClick={() => setScopeSave('team')}
               className={`h-[44px] flex-1 rounded-lg border px-2 text-xs ${
                 scopeSave === 'team'
-                  ? 'border-cyan-400 text-cyan-200'
+                  ? 'border-slate-300 text-slate-200'
                   : 'border-white/10 text-slate-400'
               }`}
             >

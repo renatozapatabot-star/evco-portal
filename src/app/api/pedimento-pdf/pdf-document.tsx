@@ -3,7 +3,7 @@ import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
 const C = {
   bg: '#0D1117', surface: '#161B22', border: '#30363D',
   text: '#E6EDF3', muted: '#8B949E', dim: '#484F58',
-  gold: '#C9A84C', green: '#22C55E', cyan: '#00E5FF',
+  gold: '#C9A84C', green: '#22C55E', cyan: '#C0C5CE',
   red: '#EF4444', amber: '#F59E0B',
 }
 

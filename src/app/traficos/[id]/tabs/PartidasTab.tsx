@@ -255,9 +255,9 @@ function SortButton({
       style={{
         minHeight: 32,
         padding: '0 12px',
-        background: active ? 'rgba(0,229,255,0.12)' : 'transparent',
+        background: active ? 'rgba(192,197,206,0.12)' : 'transparent',
         color: active ? TEXT_PRIMARY : TEXT_MUTED,
-        border: `1px solid ${active ? 'rgba(0,229,255,0.4)' : BORDER}`,
+        border: `1px solid ${active ? 'rgba(192,197,206,0.4)' : BORDER}`,
         borderRadius: 8,
         fontSize: 11,
         fontWeight: 700,

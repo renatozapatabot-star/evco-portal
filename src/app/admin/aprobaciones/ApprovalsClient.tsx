@@ -95,7 +95,7 @@ export function ApprovalsClient({ initialDrafts }: Props) {
         <button
           onClick={() => setSelectedId(null)}
           style={{
-            background: 'none', border: 'none', color: '#00E5FF',
+            background: 'none', border: 'none', color: '#C0C5CE',
             fontSize: 14, fontWeight: 600, cursor: 'pointer',
             padding: '8px 0', marginBottom: 12,
             display: 'flex', alignItems: 'center', gap: 4,

@@ -65,8 +65,8 @@ export default function NotificacionesPage() {
                   onClick={() => toggle(event.key, ch.key)}
                   style={{
                     width: 36, height: 36, borderRadius: 8, border: 'none', cursor: 'pointer',
-                    background: prefs[event.key]?.[ch.key] ? 'rgba(34,211,238,0.15)' : 'rgba(255,255,255,0.04)',
-                    color: prefs[event.key]?.[ch.key] ? '#22D3EE' : '#475569',
+                    background: prefs[event.key]?.[ch.key] ? 'rgba(192,197,206,0.15)' : 'rgba(255,255,255,0.04)',
+                    color: prefs[event.key]?.[ch.key] ? '#C0C5CE' : '#475569',
                     fontSize: 16, transition: 'all 150ms',
                   }}
                 >

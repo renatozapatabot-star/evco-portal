@@ -131,7 +131,7 @@ export default async function PipelineStagePage({ params }: PageProps) {
               fontWeight: 700,
               letterSpacing: '0.08em',
               textTransform: 'uppercase',
-              color: '#00E5FF',
+              color: '#C0C5CE',
               marginBottom: 4,
             }}
           >
@@ -158,7 +158,7 @@ export default async function PipelineStagePage({ params }: PageProps) {
             background: 'rgba(9,9,11,0.75)',
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
-            border: '1px solid rgba(34,211,238,0.2)',
+            border: '1px solid rgba(192,197,206,0.2)',
             borderRadius: 20,
             overflow: 'hidden',
             boxShadow: '0 10px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)',

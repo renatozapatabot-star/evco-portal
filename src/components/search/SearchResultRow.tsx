@@ -29,7 +29,7 @@ export function SearchResultRow({ hit, active, entityLabel, onMouseEnter, onClic
         display: 'flex', alignItems: 'center', gap: 12,
         width: '100%', minHeight: 60, textAlign: 'left',
         padding: '10px 20px',
-        background: active ? 'rgba(0,229,255,0.08)' : 'transparent',
+        background: active ? 'rgba(192,197,206,0.08)' : 'transparent',
         borderLeft: active ? `2px solid ${AGUILA.ACCENT_SILVER}` : '2px solid transparent',
         border: 'none', borderRadius: 0, cursor: 'pointer',
         color: '#E6EDF3',

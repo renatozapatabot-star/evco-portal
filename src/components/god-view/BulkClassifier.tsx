@@ -171,7 +171,7 @@ export function BulkClassifier() {
     return (
       <div style={glassCard}>
         <h2 style={sectionTitle}>
-          <Package size={16} style={{ color: '#00E5FF' }} />
+          <Package size={16} style={{ color: '#C0C5CE' }} />
           Clasificador Masivo
         </h2>
         <div style={{ ...mutedText, marginTop: 16 }}>Cargando productos...</div>
@@ -184,7 +184,7 @@ export function BulkClassifier() {
     return (
       <div style={glassCard}>
         <h2 style={sectionTitle}>
-          <Package size={16} style={{ color: '#00E5FF' }} />
+          <Package size={16} style={{ color: '#C0C5CE' }} />
           Clasificador Masivo
         </h2>
         <div style={{ ...secondaryText, marginTop: 16 }}>Sin datos de productos disponibles</div>
@@ -198,11 +198,11 @@ export function BulkClassifier() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
         <div>
           <h2 style={sectionTitle}>
-            <Package size={16} style={{ color: '#00E5FF' }} />
+            <Package size={16} style={{ color: '#C0C5CE' }} />
             Clasificador Masivo
           </h2>
           <p style={{ ...secondaryText, marginTop: 4 }}>
-            <span style={{ fontFamily: 'var(--font-mono)', color: '#00E5FF', fontWeight: 700 }}>
+            <span style={{ fontFamily: 'var(--font-mono)', color: '#C0C5CE', fontWeight: 700 }}>
               {productos.length}
             </span>{' '}
             producto{productos.length !== 1 ? 's' : ''} sin clasificar
@@ -243,7 +243,7 @@ export function BulkClassifier() {
                     style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex' }}
                   >
                     {selected.size === productos.length ? (
-                      <CheckSquare size={16} style={{ color: '#00E5FF' }} />
+                      <CheckSquare size={16} style={{ color: '#C0C5CE' }} />
                     ) : (
                       <Square size={16} style={{ color: '#64748b' }} />
                     )}
@@ -275,7 +275,7 @@ export function BulkClassifier() {
                     key={p.id}
                     style={{
                       borderBottom: '1px solid rgba(255,255,255,0.04)',
-                      background: selected.has(p.id) ? 'rgba(0,229,255,0.04)' : 'transparent',
+                      background: selected.has(p.id) ? 'rgba(192,197,206,0.04)' : 'transparent',
                     }}
                   >
                     {/* Checkbox */}
@@ -286,7 +286,7 @@ export function BulkClassifier() {
                         style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', minHeight: 44, alignItems: 'center' }}
                       >
                         {selected.has(p.id) ? (
-                          <CheckSquare size={16} style={{ color: '#00E5FF' }} />
+                          <CheckSquare size={16} style={{ color: '#C0C5CE' }} />
                         ) : (
                           <Square size={16} style={{ color: '#64748b' }} />
                         )}

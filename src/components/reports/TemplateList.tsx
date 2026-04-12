@@ -41,7 +41,7 @@ function Section({
             <button
               type="button"
               onClick={() => onLoad(t)}
-              className="flex-1 text-left text-sm text-slate-200 hover:text-cyan-300"
+              className="flex-1 text-left text-sm text-slate-200 hover:text-slate-300"
             >
               <div className="font-medium">{t.name}</div>
               <div className="text-[11px] text-slate-500">{t.source_entity}</div>

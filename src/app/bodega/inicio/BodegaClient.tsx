@@ -135,7 +135,7 @@ export function BodegaClient({ operatorName, kpis }: BodegaClientProps) {
             padding: '28px 24px',
             borderRadius: 20,
             border: `1.5px dashed ${ACCENT_CYAN}`,
-            background: 'rgba(0,229,255,0.04)',
+            background: 'rgba(192,197,206,0.04)',
             backdropFilter: `blur(${GLASS_BLUR})`,
             WebkitBackdropFilter: `blur(${GLASS_BLUR})`,
             boxShadow: `${GLASS_SHADOW}, 0 0 32px -8px ${GLOW_CYAN}, inset 0 0 0 1px ${GLOW_CYAN_SUBTLE}`,
@@ -148,7 +148,7 @@ export function BodegaClient({ operatorName, kpis }: BodegaClientProps) {
           <div
             style={{
               width: 60, height: 60, borderRadius: 16,
-              background: 'rgba(0,229,255,0.1)',
+              background: 'rgba(192,197,206,0.1)',
               border: `1px solid ${GLOW_CYAN}`,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               flexShrink: 0,

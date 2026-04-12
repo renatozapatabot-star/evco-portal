@@ -46,7 +46,7 @@ export default function HealthPage() {
   return (
     <div style={{ maxWidth: 900, margin: '0 auto', padding: '24px 16px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24 }}>
-        <Activity size={24} style={{ color: '#22D3EE' }} />
+        <Activity size={24} style={{ color: '#C0C5CE' }} />
         <h1 style={{ fontSize: 20, fontWeight: 700, color: '#E6EDF3', margin: 0 }}>Estado del Sistema</h1>
       </div>
 

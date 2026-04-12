@@ -139,7 +139,7 @@ function NavTile({ tile }: { tile: Tile }) {
         transition: 'all 120ms',
       }}
       onMouseEnter={e => {
-        e.currentTarget.style.borderColor = 'rgba(0,229,255,0.2)'
+        e.currentTarget.style.borderColor = 'rgba(192,197,206,0.2)'
         e.currentTarget.style.background = 'rgba(255,255,255,0.05)'
       }}
       onMouseLeave={e => {

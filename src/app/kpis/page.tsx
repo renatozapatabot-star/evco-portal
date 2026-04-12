@@ -294,7 +294,7 @@ export default function KPIsPage() {
 
       {/* ── KPI Grid ─────────────────────────────────── */}
       <div className="kpi-page-grid" style={{ display: 'grid', gap: 14, marginBottom: 8 }}>
-        <KPICard icon={Package} accent="#00E5FF"
+        <KPICard icon={Package} accent="#C0C5CE"
           label="Operaciones Totales" value={String(kpis.total)}
           sub={`${kpis.cruzados} cruzados · ${kpis.enProceso} en proceso`} />
 
@@ -338,10 +338,10 @@ export default function KPIsPage() {
                 <div style={{
                   width: '100%', maxWidth: 36,
                   height: `${Math.max(pct, 6)}%`,
-                  background: 'linear-gradient(180deg, #00E5FF 0%, #00E5FF44 60%, #00E5FF11 100%)',
+                  background: 'linear-gradient(180deg, #C0C5CE 0%, #C0C5CE44 60%, #C0C5CE11 100%)',
                   borderRadius: '6px 6px 2px 2px',
                   minHeight: 6,
-                  boxShadow: count > 0 ? '0 0 8px #00E5FF22' : 'none',
+                  boxShadow: count > 0 ? '0 0 8px #C0C5CE22' : 'none',
                 }} />
                 <span style={{ fontSize: 9, color: '#64748b', textTransform: 'uppercase', fontWeight: 600 }}>
                   {label}
@@ -358,7 +358,7 @@ export default function KPIsPage() {
         {kpis.regimenBreakdown.map(([reg, count]) => {
           const pct = Math.round(count / kpis.total * 100)
           const isTmec = reg === 'ITE' || reg === 'ITR' || reg === 'IMD'
-          const barColor = isTmec ? '#22C55E' : '#00E5FF'
+          const barColor = isTmec ? '#22C55E' : '#C0C5CE'
           return (
             <div key={reg} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <span style={{

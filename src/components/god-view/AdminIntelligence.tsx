@@ -385,7 +385,7 @@ function ProfitabilityPanel() {
                 <div style={{
                   width: `${(e.revenue / maxRevenue) * 100}%`,
                   height: '100%',
-                  background: 'linear-gradient(90deg, #00E5FF, #3B82F6)',
+                  background: 'linear-gradient(90deg, #C0C5CE, #3B82F6)',
                   borderRadius: 2,
                 }} />
               </div>
@@ -426,14 +426,14 @@ function GhostPanel() {
     <div style={glassCard}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h3 style={sectionTitle}>
-          <Ghost size={16} style={{ color: '#00E5FF' }} />
+          <Ghost size={16} style={{ color: '#C0C5CE' }} />
           Tráficos Fantasma
           {ghosts.length > 0 && (
             <span style={{
               fontFamily: 'var(--font-mono)',
               fontSize: 11,
-              background: 'rgba(0,229,255,0.12)',
-              color: '#00E5FF',
+              background: 'rgba(192,197,206,0.12)',
+              color: '#C0C5CE',
               padding: '2px 8px',
               borderRadius: 6,
               fontWeight: 700,

@@ -83,10 +83,10 @@ export function SearchBar() {
           onBlur={() => { setFocused(false); setTimeout(() => setOpen(false), 150) }}
           placeholder="Buscar tráfico, pedimento..."
           style={{ paddingLeft: 32, paddingRight: loading ? 32 : 12, height: 32,
-            border: `1px solid ${focused ? 'rgba(0,229,255,0.5)' : T.border}`, borderRadius: 7, background: T.surface,
+            border: `1px solid ${focused ? 'rgba(192,197,206,0.5)' : T.border}`, borderRadius: 7, background: T.surface,
             color: T.text, fontSize: 12, outline: 'none', width: '100%', fontFamily: 'inherit',
             transition: 'border-color 0.15s, box-shadow 0.15s',
-            boxShadow: focused ? '0 0 0 2px rgba(0,229,255,0.1)' : 'none',
+            boxShadow: focused ? '0 0 0 2px rgba(192,197,206,0.1)' : 'none',
           }} />
         {loading && (
           <div style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)',

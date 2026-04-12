@@ -219,8 +219,8 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
         {suggestedFraccion && (
           <div
             style={{
-              background: 'rgba(0,229,255,0.06)',
-              border: '1px solid rgba(0,229,255,0.15)',
+              background: 'rgba(192,197,206,0.06)',
+              border: '1px solid rgba(192,197,206,0.15)',
               borderRadius: 12,
               padding: 12,
             }}
@@ -229,7 +229,7 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
               Sugerencia IA
             </span>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginTop: 4 }}>
-              <span style={{ fontSize: 16, fontFamily: 'var(--font-mono)', color: '#00E5FF', fontWeight: 700 }}>
+              <span style={{ fontSize: 16, fontFamily: 'var(--font-mono)', color: '#C0C5CE', fontWeight: 700 }}>
                 {suggestedFraccion}
               </span>
               {confidence !== undefined && (

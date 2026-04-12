@@ -425,7 +425,7 @@ export function PatioClient() {
                         {e.yard_position}
                       </span>
                       {e.refrigerated && (
-                        <Snowflake size={14} color="#67E8F9" aria-label="Refrigerada" />
+                        <Snowflake size={14} color="#C0C5CE" aria-label="Refrigerada" />
                       )}
                     </div>
                     <div
@@ -645,7 +645,7 @@ export function PatioClient() {
           }}
         >
           <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Snowflake size={18} color={refrigerated ? '#67E8F9' : '#7A7E86'} />
+            <Snowflake size={18} color={refrigerated ? '#C0C5CE' : '#7A7E86'} />
             <span style={{ fontSize: 15, color: '#E6EDF3' }}>Refrigerada</span>
           </span>
           <input

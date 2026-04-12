@@ -73,7 +73,7 @@ const glassCard: React.CSSProperties = {
   WebkitBackdropFilter: 'blur(20px)',
   border: '1px solid rgba(255,255,255,0.08)',
   borderRadius: 20,
-  boxShadow: '0 10px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05), 0 0 1px rgba(0,229,255,0.12)',
+  boxShadow: '0 10px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05), 0 0 1px rgba(192,197,206,0.12)',
 }
 
 function fmtUSDCompact(v: number): string {
@@ -321,9 +321,9 @@ export function Anexo24View() {
             style={{
               fontSize: 11, fontWeight: 600, padding: '6px 12px', borderRadius: 8, cursor: 'pointer',
               minHeight: 40,
-              border: `1px solid ${tmecFilter === v ? 'rgba(34,211,238,0.3)' : 'rgba(255,255,255,0.08)'}`,
-              background: tmecFilter === v ? 'rgba(34,211,238,0.08)' : 'transparent',
-              color: tmecFilter === v ? '#00E5FF' : 'var(--text-muted, #64748b)',
+              border: `1px solid ${tmecFilter === v ? 'rgba(192,197,206,0.3)' : 'rgba(255,255,255,0.08)'}`,
+              background: tmecFilter === v ? 'rgba(192,197,206,0.08)' : 'transparent',
+              color: tmecFilter === v ? '#C0C5CE' : 'var(--text-muted, #64748b)',
               transition: 'all 0.15s',
             }}>
             {v === 'all' ? 'Todos' : v === 'si' ? 'T-MEC' : 'Sin T-MEC'}
@@ -472,9 +472,9 @@ export function Anexo24View() {
               <ChevronLeft size={16} />
             </button>
             <div style={{
-              minWidth: 40, height: 40, borderRadius: 8, border: '1px solid rgba(34,211,238,0.3)',
-              background: 'rgba(34,211,238,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 600, color: '#00E5FF',
+              minWidth: 40, height: 40, borderRadius: 8, border: '1px solid rgba(192,197,206,0.3)',
+              background: 'rgba(192,197,206,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 600, color: '#C0C5CE',
             }}>
               {page + 1}
             </div>

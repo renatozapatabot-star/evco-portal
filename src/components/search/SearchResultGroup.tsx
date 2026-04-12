@@ -78,7 +78,7 @@ export function SearchResultGroup({
             width: '100%', textAlign: 'left',
             padding: '8px 20px', minHeight: 36,
             background: 'transparent', border: 'none',
-            color: '#00E5FF', fontSize: 12, cursor: 'pointer',
+            color: '#C0C5CE', fontSize: 12, cursor: 'pointer',
           }}
         >
           Ver más en {config.labelEs} →

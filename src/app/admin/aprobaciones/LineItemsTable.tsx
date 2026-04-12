@@ -37,7 +37,7 @@ function confidenceDot(confidence: number) {
 function sourceBadge(source: string) {
   const config: Record<string, { bg: string; text: string; label: string }> = {
     historica: { bg: 'rgba(34,197,94,0.1)', text: '#22C55E', label: 'Histórica' },
-    sugerida: { bg: 'rgba(0,229,255,0.1)', text: '#00E5FF', label: 'IA' },
+    sugerida: { bg: 'rgba(192,197,206,0.1)', text: '#C0C5CE', label: 'IA' },
     manual: { bg: 'rgba(148,163,184,0.1)', text: '#94a3b8', label: 'Manual' },
   }
   const c = config[source] || config.manual

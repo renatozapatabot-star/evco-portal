@@ -160,12 +160,12 @@ export default function EntradasPage() {
       <div style={{ marginBottom: 20, display: 'flex', alignItems: 'center', gap: 14 }}>
         <div style={{
           width: 44, height: 44, borderRadius: 14,
-          background: 'rgba(0,229,255,0.08)',
-          border: '1px solid rgba(0,229,255,0.15)',
+          background: 'rgba(192,197,206,0.08)',
+          border: '1px solid rgba(192,197,206,0.15)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           flexShrink: 0,
         }}>
-          <Package size={20} color="#00E5FF" strokeWidth={1.8} />
+          <Package size={20} color="#C0C5CE" strokeWidth={1.8} />
         </div>
         <h1 style={{
           fontSize: 22, fontWeight: 800, color: '#E6EDF3',
@@ -257,7 +257,7 @@ export default function EntradasPage() {
                   </div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
                     {r.trafico ? (
-                      <Link href={`/traficos/${encodeURIComponent(r.trafico)}`} style={{ color: '#00E5FF', textDecoration: 'none' }}>{r.trafico}</Link>
+                      <Link href={`/traficos/${encodeURIComponent(r.trafico)}`} style={{ color: '#C0C5CE', textDecoration: 'none' }}>{r.trafico}</Link>
                     ) : (
                       <span>Pendiente</span>
                     )}
@@ -308,7 +308,7 @@ export default function EntradasPage() {
                     </td>
                     <td>
                       {r.trafico ? (
-                        <Link href={`/traficos/${encodeURIComponent(r.trafico)}`} style={{ fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 600, color: '#00E5FF', textDecoration: 'none' }}>
+                        <Link href={`/traficos/${encodeURIComponent(r.trafico)}`} style={{ fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 600, color: '#C0C5CE', textDecoration: 'none' }}>
                           {r.trafico}
                         </Link>
                       ) : (

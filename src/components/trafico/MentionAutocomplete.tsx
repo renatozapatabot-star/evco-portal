@@ -206,7 +206,7 @@ export function MentionAutocomplete({
               width: '100%',
               minHeight: 60,
               padding: '0 14px',
-              background: active ? 'rgba(0,229,255,0.08)' : 'transparent',
+              background: active ? 'rgba(192,197,206,0.08)' : 'transparent',
               cursor: 'pointer',
               borderBottom: idx < filtered.length - 1 ? `1px solid ${BORDER}` : 'none',
             }}

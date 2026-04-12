@@ -40,12 +40,12 @@ export function SmartNavCard({ href, label, icon: Icon, description, count, micr
       >
         <div className="nav-card-icon" style={{
           width: 40, height: 40, borderRadius: 12,
-          background: 'rgba(0,229,255,0.08)',
-          border: '1px solid rgba(0,229,255,0.15)',
+          background: 'rgba(192,197,206,0.08)',
+          border: '1px solid rgba(192,197,206,0.15)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           flexShrink: 0,
         }}>
-          <Icon className="nav-card-icon-svg" size={18} color="#00E5FF" strokeWidth={1.8} />
+          <Icon className="nav-card-icon-svg" size={18} color="#C0C5CE" strokeWidth={1.8} />
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div className="nav-card-label" style={{

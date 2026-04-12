@@ -15,7 +15,7 @@ interface Props {
 }
 
 const STATUS_PILL: Record<string, { bg: string; fg: string; label: string }> = {
-  'En Proceso':       { bg: 'rgba(0,229,255,0.12)',  fg: ACCENT_CYAN, label: 'En proceso' },
+  'En Proceso':       { bg: 'rgba(192,197,206,0.12)',  fg: ACCENT_CYAN, label: 'En proceso' },
   'Documentacion':    { bg: 'rgba(148,163,184,0.12)', fg: TEXT_SECONDARY, label: 'Documentación' },
   'En Aduana':        { bg: 'rgba(148,163,184,0.12)', fg: TEXT_SECONDARY, label: 'En aduana' },
   'Pedimento Pagado': { bg: 'rgba(34,197,94,0.12)',   fg: GREEN, label: 'Pagado' },

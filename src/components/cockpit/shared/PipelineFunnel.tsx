@@ -89,8 +89,8 @@ export function PipelineFunnel() {
                 style={{
                   padding: '10px 6px',
                   borderRadius: 12,
-                  background: hasItems ? 'rgba(0,229,255,0.06)' : 'rgba(9,9,11,0.75)',
-                  border: `1px solid ${hasItems ? 'rgba(34,211,238,0.3)' : 'rgba(255,255,255,0.06)'}`,
+                  background: hasItems ? 'rgba(192,197,206,0.06)' : 'rgba(9,9,11,0.75)',
+                  border: `1px solid ${hasItems ? 'rgba(192,197,206,0.3)' : 'rgba(255,255,255,0.06)'}`,
                   textAlign: 'center',
                   cursor: 'pointer',
                   position: 'relative',
@@ -115,7 +115,7 @@ export function PipelineFunnel() {
                 <div style={{
                   fontFamily: 'var(--font-mono)',
                   fontSize: 18, fontWeight: 800,
-                  color: hasItems ? '#00E5FF' : '#64748b',
+                  color: hasItems ? '#C0C5CE' : '#64748b',
                 }}>
                   {stage.count}
                 </div>

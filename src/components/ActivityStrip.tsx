@@ -131,10 +131,10 @@ export function ActivityStrip() {
           width: 6,
           height: 6,
           borderRadius: '50%',
-          background: hasNew ? '#00E5FF' : 'rgba(255,255,255,0.2)',
+          background: hasNew ? '#C0C5CE' : 'rgba(255,255,255,0.2)',
           flexShrink: 0,
           transition: 'background 300ms',
-          boxShadow: hasNew ? '0 0 8px rgba(0,229,255,0.6)' : 'none',
+          boxShadow: hasNew ? '0 0 8px rgba(192,197,206,0.6)' : 'none',
           animation: hasNew ? 'activityPulse 1.5s ease-in-out infinite' : 'none',
         }} />
         <span style={{
@@ -196,7 +196,7 @@ export function ActivityStrip() {
                       <Link
                         href={item.entityHref}
                         style={{
-                          color: '#00E5FF',
+                          color: '#C0C5CE',
                           textDecoration: 'none',
                           fontFamily: 'var(--font-mono)',
                           fontSize: 11,

@@ -290,7 +290,7 @@ export function SubirClient({ traficos }: SubirClientProps) {
             width: 36,
             height: 36,
             borderRadius: 10,
-            background: 'rgba(0,229,255,0.08)',
+            background: 'rgba(192,197,206,0.08)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',

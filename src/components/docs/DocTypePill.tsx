@@ -183,7 +183,7 @@ export function DocTypePill({ documentId, currentType, confidence }: DocTypePill
                   padding: '8px 12px',
                   fontSize: 13,
                   color: TEXT_PRIMARY,
-                  background: selected ? 'rgba(0,229,255,0.08)' : 'transparent',
+                  background: selected ? 'rgba(192,197,206,0.08)' : 'transparent',
                   border: 'none',
                   borderRadius: 10,
                   textAlign: 'left',

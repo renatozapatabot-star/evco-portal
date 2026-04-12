@@ -53,7 +53,7 @@ export default function FraccionesPage() {
           flex: 1, display: 'flex', alignItems: 'center', gap: 10,
           padding: '0 16px', height: 52, borderRadius: 14,
           background: 'rgba(9,9,11,0.75)',
-          border: '1px solid rgba(0,229,255,0.1)',
+          border: '1px solid rgba(192,197,206,0.1)',
           backdropFilter: 'blur(20px)',
         }}>
           <Search size={18} style={{ color: '#64748b', flexShrink: 0 }} />
@@ -97,7 +97,7 @@ export default function FraccionesPage() {
       {!loading && searched && results.length === 0 && (
         <div style={{
           padding: 40, textAlign: 'center', borderRadius: 20,
-          background: 'rgba(9,9,11,0.75)', border: '1px solid rgba(0,229,255,0.1)',
+          background: 'rgba(9,9,11,0.75)', border: '1px solid rgba(192,197,206,0.1)',
           backdropFilter: 'blur(20px)',
         }}>
           <Tag size={32} style={{ color: '#64748b', margin: '0 auto 12px' }} />
@@ -112,7 +112,7 @@ export default function FraccionesPage() {
             <div key={i} style={{
               padding: 20, borderRadius: 20,
               background: 'rgba(9,9,11,0.75)',
-              border: '1px solid rgba(0,229,255,0.1)',
+              border: '1px solid rgba(192,197,206,0.1)',
               backdropFilter: 'blur(20px)',
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             }}>
@@ -124,9 +124,9 @@ export default function FraccionesPage() {
               </div>
               <div style={{
                 padding: '6px 14px', borderRadius: 10,
-                background: 'rgba(0,229,255,0.08)',
+                background: 'rgba(192,197,206,0.08)',
                 fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 700,
-                color: '#00E5FF',
+                color: '#C0C5CE',
               }}>
                 {Math.round(r.confidence * 100)}%
               </div>

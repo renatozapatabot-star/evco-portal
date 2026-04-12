@@ -95,7 +95,7 @@ function pillColor(status: string | null): { bg: string; fg: string; label: stri
   const s = (status ?? '').toLowerCase()
   if (s.includes('cruz')) return { bg: 'rgba(34,197,94,0.12)', fg: GREEN, label: status ?? '' }
   if (s.includes('pagado')) return { bg: 'rgba(34,197,94,0.12)', fg: GREEN, label: status ?? '' }
-  return { bg: 'rgba(0,229,255,0.12)', fg: ACCENT_CYAN, label: status ?? 'Sin estatus' }
+  return { bg: 'rgba(192,197,206,0.12)', fg: ACCENT_CYAN, label: status ?? 'Sin estatus' }
 }
 
 // ── Page ────────────────────────────────────────────────────
@@ -280,8 +280,8 @@ export default async function TraficoDetailPage({
               textTransform: 'uppercase',
               letterSpacing: '0.08em',
               padding: '4px 10px',
-              background: 'rgba(0,229,255,0.12)',
-              border: `1px solid rgba(0,229,255,0.24)`,
+              background: 'rgba(192,197,206,0.12)',
+              border: `1px solid rgba(192,197,206,0.24)`,
               borderRadius: 999,
             }}
           >

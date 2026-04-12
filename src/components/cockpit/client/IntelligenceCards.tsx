@@ -44,11 +44,11 @@ function CardShell({ title, icon: Icon, children, loading }: {
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
         <div style={{
           width: 32, height: 32, borderRadius: 10,
-          background: 'rgba(0,229,255,0.08)',
-          border: '1px solid rgba(0,229,255,0.15)',
+          background: 'rgba(192,197,206,0.08)',
+          border: '1px solid rgba(192,197,206,0.15)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
-          <Icon size={16} color="#00E5FF" strokeWidth={1.8} />
+          <Icon size={16} color="#C0C5CE" strokeWidth={1.8} />
         </div>
         <span style={{ fontSize: 13, fontWeight: 700, color: '#E6EDF3' }}>{title}</span>
       </div>

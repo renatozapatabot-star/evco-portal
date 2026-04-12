@@ -213,7 +213,7 @@ export default function NotificationBell() {
         }}
         onMouseEnter={e => {
           e.currentTarget.style.background = 'rgba(255,255,255,0.04)'
-          e.currentTarget.style.borderColor = 'rgba(0,229,255,0.2)'
+          e.currentTarget.style.borderColor = 'rgba(192,197,206,0.2)'
         }}
         onMouseLeave={e => {
           e.currentTarget.style.background = 'transparent'
@@ -248,9 +248,9 @@ export default function NotificationBell() {
             background: 'rgba(9,9,11,0.95)',
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
-            border: '1px solid rgba(34,211,238,0.25)',
+            border: '1px solid rgba(192,197,206,0.25)',
             borderRadius: 20,
-            boxShadow: '0 20px 50px rgba(0,0,0,0.5), 0 0 25px -8px rgba(34,211,238,0.4)',
+            boxShadow: '0 20px 50px rgba(0,0,0,0.5), 0 0 25px -8px rgba(192,197,206,0.4)',
             padding: 12,
           }}
         >
@@ -292,22 +292,22 @@ export default function NotificationBell() {
                     width: '100%', textAlign: 'left',
                     display: 'flex', gap: 10, alignItems: 'flex-start',
                     padding: '10px 8px', borderRadius: 12,
-                    background: n.read ? 'transparent' : 'rgba(0,229,255,0.06)',
+                    background: n.read ? 'transparent' : 'rgba(192,197,206,0.06)',
                     border: '1px solid transparent',
                     color: '#E6EDF3', cursor: 'pointer',
                     transition: 'background 150ms, border-color 150ms',
                     minHeight: 60,
                   }}
                   onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}
-                  onMouseLeave={e => { e.currentTarget.style.background = n.read ? 'transparent' : 'rgba(0,229,255,0.06)' }}
+                  onMouseLeave={e => { e.currentTarget.style.background = n.read ? 'transparent' : 'rgba(192,197,206,0.06)' }}
                 >
                   <span
                     aria-hidden
                     style={{
                       width: 8, height: 8, marginTop: 6, flexShrink: 0,
                       borderRadius: '50%',
-                      background: n.read ? 'transparent' : '#00E5FF',
-                      boxShadow: n.read ? 'none' : '0 0 8px rgba(0,229,255,0.6)',
+                      background: n.read ? 'transparent' : '#C0C5CE',
+                      boxShadow: n.read ? 'none' : '0 0 8px rgba(192,197,206,0.6)',
                     }}
                   />
                   <span style={{ flex: 1, minWidth: 0 }}>

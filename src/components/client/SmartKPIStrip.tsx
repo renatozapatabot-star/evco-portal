@@ -91,7 +91,7 @@ export function SmartKPIStrip(props: Props) {
       value: props.activeShipments,
       delta: props.activeShipments - props.activeShipmentsYesterday,
       deltaLabel: 'hoy',
-      color: '#00E5FF',
+      color: '#C0C5CE',
       isUrgency: true,
       calmLabel: 'Despejado',
     },
@@ -144,7 +144,7 @@ export function SmartKPIStrip(props: Props) {
               {calm ? (
                 <>
                   <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 4 }}>
-                    <Check size={24} color="#00E5FF" strokeWidth={2.5} />
+                    <Check size={24} color="#C0C5CE" strokeWidth={2.5} />
                   </div>
                   <div className="kpi-label-full" style={{
                     fontSize: 10, fontWeight: 700, color: '#8b9ab5',

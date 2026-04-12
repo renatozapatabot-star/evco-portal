@@ -384,7 +384,7 @@ export default function ProveedorPage() {
             style={{
               fontSize: 11,
               fontWeight: 700,
-              color: '#00E5FF',
+              color: '#C0C5CE',
               textTransform: 'uppercase',
               letterSpacing: '0.08em',
               marginBottom: 8,
@@ -890,8 +890,8 @@ export default function ProveedorPage() {
                   fontSize: 13,
                   padding: '10px 12px',
                   borderRadius: 10,
-                  background: 'rgba(0,229,255,0.06)',
-                  border: '1px solid rgba(0,229,255,0.25)',
+                  background: 'rgba(192,197,206,0.06)',
+                  border: '1px solid rgba(192,197,206,0.25)',
                   color: '#E6EDF3',
                 }}
               >
@@ -949,7 +949,7 @@ function ActionCard({
   onClick,
 }: ActionCardProps) {
   const border = active
-    ? '1px solid rgba(0,229,255,0.45)'
+    ? '1px solid rgba(192,197,206,0.45)'
     : confirmed
       ? '1px solid rgba(34,197,94,0.3)'
       : '1px solid rgba(255,255,255,0.08)'
@@ -957,9 +957,9 @@ function ActionCard({
   const iconBg = confirmed
     ? 'rgba(34,197,94,0.1)'
     : active
-      ? 'rgba(0,229,255,0.15)'
-      : 'rgba(0,229,255,0.08)'
-  const iconColor = confirmed ? '#22C55E' : '#00E5FF'
+      ? 'rgba(192,197,206,0.15)'
+      : 'rgba(192,197,206,0.08)'
+  const iconColor = confirmed ? '#22C55E' : '#C0C5CE'
 
   return (
     <button
@@ -980,7 +980,7 @@ function ActionCard({
         alignItems: 'center',
         gap: 12,
         boxShadow: active
-          ? '0 12px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08), 0 0 30px rgba(0,229,255,0.18)'
+          ? '0 12px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08), 0 0 30px rgba(192,197,206,0.18)'
           : '0 10px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)',
         transition: 'all 150ms ease',
       }}
@@ -991,7 +991,7 @@ function ActionCard({
           height: 44,
           borderRadius: 12,
           background: iconBg,
-          border: `1px solid ${confirmed ? 'rgba(34,197,94,0.25)' : 'rgba(0,229,255,0.15)'}`,
+          border: `1px solid ${confirmed ? 'rgba(34,197,94,0.25)' : 'rgba(192,197,206,0.15)'}`,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -1061,7 +1061,7 @@ function Panel({
           style={{
             fontSize: 11,
             fontWeight: 700,
-            color: '#00E5FF',
+            color: '#C0C5CE',
             textTransform: 'uppercase',
             letterSpacing: '0.08em',
           }}
@@ -1147,7 +1147,7 @@ const styles = {
   page: {
     minHeight: '100vh',
     background:
-      'radial-gradient(circle at 50% 20%, rgba(0,229,255,0.08), transparent 55%), linear-gradient(180deg, #05070B 0%, #0B1220 100%)',
+      'radial-gradient(circle at 50% 20%, rgba(192,197,206,0.08), transparent 55%), linear-gradient(180deg, #05070B 0%, #0B1220 100%)',
     display: 'flex',
     alignItems: 'flex-start',
     justifyContent: 'center',
@@ -1160,7 +1160,7 @@ const styles = {
     border: '1px solid rgba(255,255,255,0.08)',
     borderRadius: 20,
     boxShadow:
-      '0 10px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05), 0 0 1px rgba(0,229,255,0.12)',
+      '0 10px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05), 0 0 1px rgba(192,197,206,0.12)',
   } as React.CSSProperties,
   logo: {
     fontSize: 24,

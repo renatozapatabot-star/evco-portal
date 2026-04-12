@@ -231,9 +231,9 @@ export function PedimentoDetail({ draft, onActionComplete }: Props) {
               onClick={() => setActionState('changes')}
               style={{
                 flex: 1, minHeight: 60, borderRadius: 14,
-                background: 'transparent', color: '#00E5FF',
+                background: 'transparent', color: '#C0C5CE',
                 fontSize: 14, fontWeight: 700,
-                border: '1px solid rgba(0,229,255,0.3)',
+                border: '1px solid rgba(192,197,206,0.3)',
                 cursor: 'pointer', display: 'flex', alignItems: 'center',
                 justifyContent: 'center', gap: 6,
               }}
@@ -274,7 +274,7 @@ export function PedimentoDetail({ draft, onActionComplete }: Props) {
                 disabled={!note.trim()}
                 style={{
                   flex: 1, minHeight: 48, borderRadius: 10,
-                  background: note.trim() ? '#00E5FF' : 'rgba(0,229,255,0.2)',
+                  background: note.trim() ? '#C0C5CE' : 'rgba(192,197,206,0.2)',
                   color: '#111', fontSize: 14, fontWeight: 700,
                   border: 'none', cursor: note.trim() ? 'pointer' : 'not-allowed',
                 }}

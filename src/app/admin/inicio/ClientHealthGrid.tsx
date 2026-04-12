@@ -15,7 +15,7 @@ const panelStyle: React.CSSProperties = {
   WebkitBackdropFilter: 'blur(20px)',
   border: '1px solid rgba(255,255,255,0.08)',
   boxShadow:
-    '0 10px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05), 0 0 1px rgba(0,229,255,0.12)',
+    '0 10px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05), 0 0 1px rgba(192,197,206,0.12)',
 }
 
 function dotColor(s: HealthStatus): string {
@@ -90,7 +90,7 @@ function ClientCard({ client }: { client: ClientHealth }) {
         transition: 'all 120ms',
       }}
       onMouseEnter={e => {
-        e.currentTarget.style.borderColor = 'rgba(0,229,255,0.2)'
+        e.currentTarget.style.borderColor = 'rgba(192,197,206,0.2)'
         e.currentTarget.style.background = 'rgba(255,255,255,0.05)'
       }}
       onMouseLeave={e => {

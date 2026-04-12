@@ -52,11 +52,11 @@ export default async function ColaPage() {
             width: 40,
             height: 40,
             borderRadius: 12,
-            background: 'rgba(0,229,255,0.1)',
+            background: 'rgba(192,197,206,0.1)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: '#00E5FF',
+            color: '#C0C5CE',
           }}
         >
           <AlertTriangle size={20} />

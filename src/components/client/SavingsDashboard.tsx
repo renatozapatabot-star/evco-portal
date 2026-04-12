@@ -205,7 +205,7 @@ export function SavingsDashboard() {
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         gap: 12, minHeight: 200,
       }}>
-        <Loader2 size={20} color="#00E5FF" style={{ animation: 'spin 1s linear infinite' }} />
+        <Loader2 size={20} color="#C0C5CE" style={{ animation: 'spin 1s linear infinite' }} />
         <span style={{ fontSize: 14, color: '#94a3b8' }}>Cargando indicadores...</span>
         <style>{`
           @keyframes spin {
@@ -276,9 +276,9 @@ export function SavingsDashboard() {
       {/* ── Header ── */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <TrendingUp size={18} color="#00E5FF" />
+          <TrendingUp size={18} color="#C0C5CE" />
           <span style={{
-            fontSize: 14, fontWeight: 700, color: '#00E5FF',
+            fontSize: 14, fontWeight: 700, color: '#C0C5CE',
             textTransform: 'uppercase', letterSpacing: '0.08em',
           }}>
             Valor Generado
@@ -330,7 +330,7 @@ export function SavingsDashboard() {
               subtitle={`${new Date().getFullYear()}`}
             />
             <KPICard
-              icon={<Package size={16} color="#00E5FF" />}
+              icon={<Package size={16} color="#C0C5CE" />}
               label="Operaciones procesadas"
               value={operationCount.toLocaleString('es-MX')}
               accent="#E6EDF3"
@@ -343,7 +343,7 @@ export function SavingsDashboard() {
               subtitle="días hábiles"
             />
             <KPICard
-              icon={<Target size={16} color="#00E5FF" />}
+              icon={<Target size={16} color="#C0C5CE" />}
               label="Precisión clasificación"
               value={data.classification_accuracy > 0 ? `${data.classification_accuracy.toFixed(1)}%` : '—'}
               accent={data.classification_accuracy >= 90 ? '#22C55E' : data.classification_accuracy >= 75 ? '#FBBF24' : '#EF4444'}

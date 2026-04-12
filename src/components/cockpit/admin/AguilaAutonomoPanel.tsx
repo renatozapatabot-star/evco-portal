@@ -102,8 +102,8 @@ export function AguilaAutonomoPanel({ decisions, decisions30d, decisionsAllTime,
                 aria-label={`Ver eventos recientes de ${STAGE_LABELS[stage]}`}
                 className="pipeline-stage-link"
                 style={{
-                  background: count > 0 ? 'rgba(0,229,255,0.08)' : 'rgba(9,9,11,0.75)',
-                  border: `1px solid ${count > 0 ? 'rgba(0,229,255,0.15)' : 'rgba(255,255,255,0.06)'}`,
+                  background: count > 0 ? 'rgba(192,197,206,0.08)' : 'rgba(9,9,11,0.75)',
+                  border: `1px solid ${count > 0 ? 'rgba(192,197,206,0.15)' : 'rgba(255,255,255,0.06)'}`,
                   borderRadius: 8,
                   padding: '6px 10px',
                   textAlign: 'center' as const,
@@ -139,11 +139,11 @@ export function AguilaAutonomoPanel({ decisions, decisions30d, decisionsAllTime,
         })}
         <style jsx>{`
           :global(.pipeline-stage-link:hover) {
-            background: rgba(0,229,255,0.14) !important;
-            border-color: rgba(0,229,255,0.35) !important;
+            background: rgba(192,197,206,0.14) !important;
+            border-color: rgba(192,197,206,0.35) !important;
           }
           :global(.pipeline-stage-link:focus-visible) {
-            outline: 2px solid #00E5FF;
+            outline: 2px solid #C0C5CE;
             outline-offset: 2px;
           }
         `}</style>

@@ -201,9 +201,9 @@ export function ShipmentRequest() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       {/* ── Header ── */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <Truck size={18} color="#00E5FF" />
+        <Truck size={18} color="#C0C5CE" />
         <span style={{
-          fontSize: 14, fontWeight: 700, color: '#00E5FF',
+          fontSize: 14, fontWeight: 700, color: '#C0C5CE',
           textTransform: 'uppercase', letterSpacing: '0.08em',
         }}>
           Nueva Solicitud de Embarque
@@ -291,9 +291,9 @@ export function ShipmentRequest() {
                         minHeight: 48,
                         padding: '10px 8px',
                         borderRadius: 12,
-                        border: `1px solid ${isActive ? 'rgba(0,229,255,0.3)' : 'rgba(255,255,255,0.08)'}`,
-                        background: isActive ? 'rgba(0,229,255,0.08)' : 'rgba(255,255,255,0.04)',
-                        color: isActive ? '#00E5FF' : '#94a3b8',
+                        border: `1px solid ${isActive ? 'rgba(192,197,206,0.3)' : 'rgba(255,255,255,0.08)'}`,
+                        background: isActive ? 'rgba(192,197,206,0.08)' : 'rgba(255,255,255,0.04)',
+                        color: isActive ? '#C0C5CE' : '#94a3b8',
                         fontSize: 12,
                         fontWeight: 600,
                         cursor: 'pointer',
@@ -358,7 +358,7 @@ export function ShipmentRequest() {
                     fontSize: 13,
                     color: '#94a3b8',
                   }}>
-                    <FileUp size={14} color="#00E5FF" />
+                    <FileUp size={14} color="#C0C5CE" />
                     <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {file.name}
                     </span>
@@ -454,7 +454,7 @@ export function ShipmentRequest() {
           to { transform: rotate(360deg); }
         }
         textarea:focus, input:focus {
-          border-color: rgba(0,229,255,0.3) !important;
+          border-color: rgba(192,197,206,0.3) !important;
         }
       `}</style>
     </div>

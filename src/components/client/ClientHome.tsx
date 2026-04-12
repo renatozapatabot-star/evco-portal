@@ -110,7 +110,7 @@ function toDisplayName(legalName: string): { display: string; suffix: string } {
 // ── Fix 4: Activity status pills ──────────────────────────
 
 const STATUS_PILL_CONFIG: Record<string, { bg: string; text: string; label: string }> = {
-  'En Proceso':       { bg: 'rgba(0,229,255,0.12)',  text: '#00E5FF', label: 'En proceso' },
+  'En Proceso':       { bg: 'rgba(192,197,206,0.12)',  text: '#C0C5CE', label: 'En proceso' },
   'Documentacion':    { bg: 'rgba(148,163,184,0.12)', text: '#94a3b8', label: 'Documentación' },
   'En Aduana':        { bg: 'rgba(148,163,184,0.12)', text: '#94a3b8', label: 'En aduana' },
   'Pedimento Pagado': { bg: 'rgba(34,197,94,0.12)',   text: '#22C55E', label: 'Pagado' },
@@ -279,7 +279,7 @@ export function ClientHome({ companyName, data }: { companyName?: string; data: 
                 cursor: 'pointer', padding: 0, marginBottom: hasActivity ? 12 : 0,
               }}
             >
-              <Activity size={14} color="#00E5FF" />
+              <Activity size={14} color="#C0C5CE" />
               <span style={{
                 fontSize: 11, fontWeight: 700, color: '#94a3b8',
                 textTransform: 'uppercase', letterSpacing: '0.08em',
@@ -349,7 +349,7 @@ export function ClientHome({ companyName, data }: { companyName?: string; data: 
                     onClick={() => setActivityExpanded(true)}
                     style={{
                       background: 'none', border: 'none', cursor: 'pointer',
-                      fontSize: 12, color: '#00E5FF', fontWeight: 600,
+                      fontSize: 12, color: '#C0C5CE', fontWeight: 600,
                       padding: '6px 0', textAlign: 'left',
                     }}
                   >

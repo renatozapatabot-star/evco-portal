@@ -22,7 +22,7 @@ function KpiCard({ label, value, icon: Icon, sub }: { label: string; value: stri
       display: 'flex', flexDirection: 'column', gap: 8,
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <Icon size={18} style={{ color: '#00E5FF', opacity: 0.7 }} />
+        <Icon size={18} style={{ color: '#C0C5CE', opacity: 0.7 }} />
         <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#64748b' }}>{label}</span>
       </div>
       <div style={{ fontFamily: 'var(--font-mono)', fontSize: 28, fontWeight: 800, color: '#E6EDF3' }}>{typeof value === 'number' ? value.toLocaleString() : value}</div>
@@ -139,7 +139,7 @@ export default function InteligenciaPage() {
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <div style={{
-                    height: 4, borderRadius: 2, background: 'rgba(0,229,255,0.15)',
+                    height: 4, borderRadius: 2, background: 'rgba(192,197,206,0.15)',
                     width: Math.max(20, (f.count / (s.topFracciones[0]?.count || 1)) * 120),
                   }}>
                     <div style={{
@@ -174,7 +174,7 @@ export default function InteligenciaPage() {
                   <div style={{
                     width: '100%', maxWidth: 40, height: `${height}%`, minHeight: 2,
                     borderRadius: '4px 4px 0 0',
-                    background: 'linear-gradient(180deg, #00E5FF, #0044cc)',
+                    background: 'linear-gradient(180deg, #C0C5CE, #0044cc)',
                     opacity: 0.6,
                   }} />
                   <span style={{ fontSize: 9, color: '#64748b', transform: 'rotate(-45deg)', whiteSpace: 'nowrap' }}>{m.month.slice(5)}</span>
@@ -190,14 +190,14 @@ export default function InteligenciaPage() {
       {/* Performance Summary */}
       <div className="cc-card" style={{ padding: 24, borderRadius: 20, marginBottom: 24 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-          <AlertTriangle size={16} style={{ color: '#00E5FF', opacity: 0.7 }} />
+          <AlertTriangle size={16} style={{ color: '#C0C5CE', opacity: 0.7 }} />
           <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#64748b' }}>Rendimiento Portal AI</span>
         </div>
         <div style={{ fontSize: 13, color: '#94a3b8', lineHeight: 1.6 }}>
           {s.totalClassified > 0 ? (
             <>
               El Portal ha clasificado <strong style={{ color: '#E6EDF3' }}>{s.totalClassified.toLocaleString()}</strong> productos con una confianza promedio de{' '}
-              <strong style={{ color: '#00E5FF' }}>{s.avgConfidence}%</strong>.
+              <strong style={{ color: '#C0C5CE' }}>{s.avgConfidence}%</strong>.
               {s.totalClassified > 100 && <> Esto representa un ahorro estimado de <strong style={{ color: '#eab308' }}>{Math.round(s.totalClassified * 3 / 60)} horas</strong> de trabajo manual.</>}
             </>
           ) : (
@@ -209,7 +209,7 @@ export default function InteligenciaPage() {
       {/* Supplier Performance */}
       <div className="cc-card" style={{ padding: 24, borderRadius: 20 }}>
         <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#64748b', marginBottom: 16 }}>
-          <Users2 size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6, color: '#00E5FF', opacity: 0.7 }} />
+          <Users2 size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6, color: '#C0C5CE', opacity: 0.7 }} />
           Rendimiento de proveedores
         </div>
         {s.topFracciones.length > 0 ? (
@@ -217,7 +217,7 @@ export default function InteligenciaPage() {
             <strong style={{ color: '#E6EDF3' }}>{s.topFracciones.length}</strong> fracciones activas de{' '}
             <strong style={{ color: '#E6EDF3' }}>{s.totalTraficos.toLocaleString()}</strong> operaciones.
             {s.totalCruzados > 0 && (
-              <> Tasa de cruce: <strong style={{ color: '#00E5FF' }}>{Math.round(s.totalCruzados / s.totalTraficos * 100)}%</strong>.</>
+              <> Tasa de cruce: <strong style={{ color: '#C0C5CE' }}>{Math.round(s.totalCruzados / s.totalTraficos * 100)}%</strong>.</>
             )}
             {' '}Los datos de proveedores se enriquecerán automáticamente conforme se procesen más operaciones.
           </div>

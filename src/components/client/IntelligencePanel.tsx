@@ -14,7 +14,7 @@ interface Props {
 const severityAccent: Record<ClientInsight['severity'], string> = {
   critical: '#EF4444',
   warning: '#FBBF24',
-  info: '#00E5FF',
+  info: '#C0C5CE',
 }
 
 const typeIcon: Record<ClientInsight['type'], typeof AlertTriangle> = {
@@ -28,7 +28,7 @@ export function IntelligencePanel({ computedInsights, activeShipments, cruzadosY
   const hasCritical = computedInsights.some(i => i.severity === 'critical')
   const hasWarning = computedInsights.some(i => i.severity === 'warning')
   const headerLabel = hasCritical ? 'Requiere atención' : hasWarning ? 'Pendientes' : 'Estado de operaciones'
-  const headerColor = hasCritical ? '#EF4444' : hasWarning ? '#FBBF24' : '#00E5FF'
+  const headerColor = hasCritical ? '#EF4444' : hasWarning ? '#FBBF24' : '#C0C5CE'
 
   return (
     <div style={{

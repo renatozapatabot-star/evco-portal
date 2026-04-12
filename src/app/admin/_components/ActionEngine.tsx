@@ -132,7 +132,7 @@ export function ActionEngine({ draft, onActionComplete, totalPending }: ActionEn
             {draft.trafico_id && (
               <Link
                 href={`/traficos/${draft.trafico_id}`}
-                style={{ fontSize: 13, fontFamily: 'var(--font-mono)', color: '#00E5FF', textDecoration: 'none' }}
+                style={{ fontSize: 13, fontFamily: 'var(--font-mono)', color: '#C0C5CE', textDecoration: 'none' }}
               >
                 {draft.trafico_id}
               </Link>

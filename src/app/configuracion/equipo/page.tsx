@@ -56,7 +56,7 @@ export default function EquipoPage() {
               placeholder="correo@empresa.com"
               style={{
                 flex: 1, minWidth: 200, padding: '10px 14px', borderRadius: 8,
-                background: 'rgba(9,9,11,0.75)', border: '1px solid rgba(34,211,238,0.3)',
+                background: 'rgba(9,9,11,0.75)', border: '1px solid rgba(192,197,206,0.3)',
                 color: '#E6EDF3', fontSize: 14, outline: 'none',
               }}
             />
@@ -65,7 +65,7 @@ export default function EquipoPage() {
               onChange={e => setInviteRole(e.target.value as 'editor' | 'viewer')}
               style={{
                 padding: '10px 14px', borderRadius: 8,
-                background: 'rgba(9,9,11,0.75)', border: '1px solid rgba(34,211,238,0.3)',
+                background: 'rgba(9,9,11,0.75)', border: '1px solid rgba(192,197,206,0.3)',
                 color: '#E6EDF3', fontSize: 14,
               }}
             >
@@ -92,9 +92,9 @@ export default function EquipoPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <div style={{
                 width: 36, height: 36, borderRadius: '50%',
-                background: 'rgba(34,211,238,0.15)',
+                background: 'rgba(192,197,206,0.15)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontWeight: 700, color: '#22D3EE', fontSize: 14,
+                fontWeight: 700, color: '#C0C5CE', fontSize: 14,
               }}>
                 {member.name.charAt(0)}
               </div>
@@ -106,8 +106,8 @@ export default function EquipoPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <span style={{
                 fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 6,
-                background: member.role === 'admin' ? 'rgba(34,211,238,0.1)' : 'rgba(255,255,255,0.04)',
-                color: member.role === 'admin' ? '#22D3EE' : '#94a3b8',
+                background: member.role === 'admin' ? 'rgba(192,197,206,0.1)' : 'rgba(255,255,255,0.04)',
+                color: member.role === 'admin' ? '#C0C5CE' : '#94a3b8',
               }}>
                 {ROLE_LABELS[member.role]}
               </span>

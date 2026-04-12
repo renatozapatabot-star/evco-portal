@@ -335,10 +335,10 @@ export function CruceClient({
                   padding: '8px 14px',
                   borderRadius: 10,
                   background: bridgeFilter[b]
-                    ? 'rgba(0,229,255,0.12)'
+                    ? 'rgba(192,197,206,0.12)'
                     : 'rgba(255,255,255,0.04)',
                   border: `1px solid ${
-                    bridgeFilter[b] ? 'rgba(0,229,255,0.35)' : BORDER
+                    bridgeFilter[b] ? 'rgba(192,197,206,0.35)' : BORDER
                   }`,
                   color: bridgeFilter[b] ? ACCENT_CYAN : TEXT_SECONDARY,
                   fontSize: 12,
@@ -398,7 +398,7 @@ export function CruceClient({
                         marginLeft: 8,
                         padding: '2px 8px',
                         borderRadius: 12,
-                        background: 'rgba(0,229,255,0.12)',
+                        background: 'rgba(192,197,206,0.12)',
                         color: ACCENT_CYAN,
                         fontSize: 10,
                       }}

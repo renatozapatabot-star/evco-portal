@@ -134,9 +134,9 @@ export function SelfClassify() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       {/* ── Header ── */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <Search size={18} color="#00E5FF" />
+        <Search size={18} color="#C0C5CE" />
         <span style={{
-          fontSize: 14, fontWeight: 700, color: '#00E5FF',
+          fontSize: 14, fontWeight: 700, color: '#C0C5CE',
           textTransform: 'uppercase', letterSpacing: '0.08em',
         }}>
           Clasificar Producto
@@ -297,11 +297,11 @@ export function SelfClassify() {
       {state === 'success' && result && (
         <div style={{
           ...glassCard,
-          borderColor: 'rgba(0,229,255,0.2)',
-          boxShadow: '0 10px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05), 0 0 25px -8px rgba(0,229,255,0.15)',
+          borderColor: 'rgba(192,197,206,0.2)',
+          boxShadow: '0 10px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05), 0 0 25px -8px rgba(192,197,206,0.15)',
         }}>
           <div style={{
-            fontSize: 11, fontWeight: 700, color: '#00E5FF',
+            fontSize: 11, fontWeight: 700, color: '#C0C5CE',
             textTransform: 'uppercase', letterSpacing: '0.08em',
             marginBottom: 16,
           }}>
@@ -318,7 +318,7 @@ export function SelfClassify() {
                 fontSize: 28,
                 fontWeight: 800,
                 fontFamily: 'var(--font-mono)',
-                color: '#00E5FF',
+                color: '#C0C5CE',
                 letterSpacing: '0.04em',
               }}>
                 {result.fraccion}
@@ -487,7 +487,7 @@ export function SelfClassify() {
           to { transform: rotate(360deg); }
         }
         textarea:focus, input:focus {
-          border-color: rgba(0,229,255,0.3) !important;
+          border-color: rgba(192,197,206,0.3) !important;
         }
       `}</style>
     </div>

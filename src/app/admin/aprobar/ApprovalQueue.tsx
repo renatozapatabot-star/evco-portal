@@ -251,8 +251,8 @@ export function ApprovalQueue({ initialPending, initialRecent, initialEscalation
               padding: '10px 16px', borderRadius: 20, border: 'none',
               fontSize: 13, fontWeight: 600, cursor: 'pointer',
               minHeight: 44,
-              background: activeTab === tab.key ? 'rgba(0,229,255,0.12)' : 'rgba(255,255,255,0.04)',
-              color: activeTab === tab.key ? '#00E5FF' : '#94a3b8',
+              background: activeTab === tab.key ? 'rgba(192,197,206,0.12)' : 'rgba(255,255,255,0.04)',
+              color: activeTab === tab.key ? '#C0C5CE' : '#94a3b8',
               transition: 'all 150ms',
             }}
           >
@@ -260,7 +260,7 @@ export function ApprovalQueue({ initialPending, initialRecent, initialEscalation
               <span style={{
                 marginLeft: 6, fontSize: 11, fontWeight: 700,
                 padding: '2px 8px', borderRadius: 10,
-                background: activeTab === tab.key ? 'rgba(0,229,255,0.2)' : 'rgba(255,255,255,0.06)',
+                background: activeTab === tab.key ? 'rgba(192,197,206,0.2)' : 'rgba(255,255,255,0.06)',
               }}>
                 {tab.count}
               </span>
@@ -309,7 +309,7 @@ export function ApprovalQueue({ initialPending, initialRecent, initialEscalation
                       <span style={{
                         fontSize: 10, fontWeight: 700, textTransform: 'uppercase',
                         padding: '2px 8px', borderRadius: 10,
-                        background: 'rgba(0,229,255,0.08)', color: '#00E5FF',
+                        background: 'rgba(192,197,206,0.08)', color: '#C0C5CE',
                       }}>
                         {draft.company_id || 'SIN CLAVE'}
                       </span>
@@ -318,7 +318,7 @@ export function ApprovalQueue({ initialPending, initialRecent, initialEscalation
                           href={`/traficos/${encodeURIComponent(draft.trafico_id)}`}
                           style={{
                             fontSize: 13, fontFamily: 'var(--font-mono)', fontWeight: 600,
-                            color: '#00E5FF', textDecoration: 'none',
+                            color: '#C0C5CE', textDecoration: 'none',
                           }}
                         >
                           {draft.trafico_id.substring(0, 12)}
@@ -523,7 +523,7 @@ export function ApprovalQueue({ initialPending, initialRecent, initialEscalation
                       {String(esc.event_type || '').replace(/\./g, ' → ')}
                     </span>
                   </div>
-                  <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 10, background: 'rgba(0,229,255,0.08)', color: '#00E5FF' }}>
+                  <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 10, background: 'rgba(192,197,206,0.08)', color: '#C0C5CE' }}>
                     {esc.company_id}
                   </span>
                 </div>

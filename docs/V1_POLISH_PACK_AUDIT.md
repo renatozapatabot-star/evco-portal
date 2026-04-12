@@ -780,3 +780,68 @@ Derived from last `updated_at/created_at`: green <2d · amber <14d · red ≥14d
 - **RLS cross-client leak test:** Access `/clientes/{otherCompanyId}` with non-admin, non-assigned operator session. Gate in code redirects to `/`, but a live session test confirms end-to-end. `globalpc_partidas` and `globalpc_proveedores` RLS must also enforce `company_id` isolation for defense-in-depth.
 - **Entry points:** No upstream page was modified to link to `/clientes/[id]`. Deferred per prompt: infrastructure is enough for this slice. Follow-up block can wire `ClientHealthGrid` cards and client badges.
 - **Companies schema:** `rfc`, `contacto_*` columns are read tolerantly (optional). If production `companies` uses different column names, rail will show em-dashes — no crash.
+
+---
+
+## Block 12 — Shadow data dashboard
+
+**Route:** `/admin/shadow` (new) — gated to `role === 'broker' | 'admin'`.
+
+### Files created
+
+| File | Purpose |
+|---|---|
+| `src/lib/shadow-analysis.ts` | `computeAgreementStats(days, client)` — joins `operational_decisions` by `(trafico, decision_type)`, returns `{totalCompared, agreementRate, humanWinsWhenDisagree, systemWinsWhenDisagree, byAction, byDay, insufficient, progress}` |
+| `src/lib/__tests__/shadow-analysis.test.ts` | 3 tests — empty data, agreement/disagreement counting, single-row skip |
+| `src/app/admin/shadow/page.tsx` | Server component — session gate, dual 7d/30d computation, 4-tile hero, 2-col grid, disagreements list |
+| `src/app/admin/shadow/_components/AgreementChart.tsx` | Inline SVG stacked bar (30-day series). Recharts is present but this chart is trivial — no extra bundle cost. |
+| `src/app/admin/shadow/_components/PageOpenTracker.tsx` | `page_view` with `entityType: 'shadow'` |
+
+### Actor inference — judgment call
+
+`operational_decisions` has no `actor`/`source` column today. The module
+infers human-authored rows by `reasoning.length >= 40` (templates from
+scripts are shorter/null). This is **the** assumption. When Renato adds
+an explicit `actor text` column the single `isHumanSourced` helper swaps
+to a one-line check; the rest of the module is unchanged.
+
+### Empty state
+
+When `totalCompared < 100` the page hides the hero tiles entirely and
+renders a single honest card: "Recolectando datos · Necesitamos 100+
+comparaciones · Actual: X/100". The 30-day chart still renders because
+the zero bars themselves are useful context.
+
+### Layout (matches ClientHome / Block 1 / Block 4)
+
+- Header: "Inteligencia del Sistema" + subtitle
+- 4-tile `HeroStrip` (7-day window) OR empty-state card
+- `1fr 340px` grid: left = stacked bar chart, right = agreement rate by decision_type
+- Below: top 10 disagreements this week, each a 60px link to `/traficos/{trafico}`
+
+### Telemetry
+
+- `page_view` with `entityType: 'shadow'` on mount
+
+### Hard-rules compliance
+
+- Zero new `any` types
+- Zero `.catch(() => {})`
+- All user-visible strings Spanish (es-MX); "Portal" as brand label
+- `fmtDateTime` equivalents unused here (dates rendered as `MM-DD` axis labels in mono)
+- All interactive elements (back link, disagreement rows) at 60px minimum
+- Glass tokens: `BG_CARD`, `BORDER`, `GLASS_BLUR`, `GLASS_SHADOW`
+- No new dependencies — inline SVG instead of recharts even though recharts is installed. Kept bundle flat.
+- Broker/admin gate enforced at top of server component before any query.
+
+### Gate output
+
+- `npm run typecheck` — **PASS** (0 errors)
+- `npm run build` — **PASS** (compiled 3.8s, `/admin/shadow` dynamic route registered)
+- `npm run test` — **PASS** (124/124; +3 new tests in `shadow-analysis.test.ts`)
+
+### Blocked on Renato
+
+- **Accumulated data:** `operational_decisions` currently has a handful of rows; dashboard will show the empty state until 100 comparisons accumulate. This is by design and documented in the empty state itself.
+- **Actor column decision:** Whether to add an explicit `actor text` (values: `human`, `script:<name>`, `workflow:<name>`) or `source text` column to `operational_decisions`. Until then, the reasoning-length heuristic stands. Recommend adding via `ALTER TABLE operational_decisions ADD COLUMN actor text;` + backfill from existing `reasoning` heuristic in a one-shot migration.
+- **Live non-admin gate test:** Log in as `operator` role and hit `/admin/shadow` directly — confirm redirect to `/`. Log in as `client` role, same test. Neither code path should expose cross-tenant decision data.

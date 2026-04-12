@@ -333,3 +333,52 @@ Foundation for the two new cockpits coming in commits 2 and 3. No cockpit pages 
 **Renato's next step (flagged, not blocking this commit):** create Supabase auth users for Vicente (`role=warehouse`) and Anabel (`role=contabilidad`) with appropriate `company_id` before commits 2 and 3 ship the cockpit pages. Without users, the new roles exist only as a type-level union — no one can log in as them yet.
 
 **Readiness for commit 2:** Warehouse cockpit (`/bodega/inicio`) can now be built as a thin page — session will carry the narrow role, middleware will route `/` there, sidebar will render via operator-style shell, and `getNavForRole('warehouse')` returns the four-item nav.
+
+### P3 commit 2 — warehouse cockpit
+
+Vicente's cockpit now exists. `/bodega/inicio` renders a giant cyan-glow drag-drop hero above an 8-card glass nav grid — upload-first, because that is the warehouse's one job. Session gate is `verifySession`: `warehouse`, `admin`, `broker` pass through; `client` and `operator` bounce to `/inicio`; unauth bounces to `/login`.
+
+**Changes (3 new files):**
+
+| File | Lines | Purpose |
+|---|---|---|
+| `src/app/bodega/inicio/page.tsx` | 121 | Server component — session gate + 7 parallel Supabase counts (entradas today / this-week / last-week / próximas / en-bodega / last-7d), bucketed on America/Chicago day boundaries |
+| `src/app/bodega/inicio/BodegaClient.tsx` | 170 | Client component — glass header with `getGreeting(operatorName)`, `<RoleKPIBanner>` (green celebration only when `entradasThisWeek > entradasLastWeek`), hero drag-drop linking to `/bodega/subir`, 8-card `<NavCardGrid>` |
+| `src/app/bodega/subir/page.tsx` | 66 | Warehouse-scoped upload landing — warehouse sees all active tráficos across clients (floor work is cross-client). Reuses operator `SubirClient` component for the picker + `DocUploader` flow |
+| `src/app/bodega/ayuda/page.tsx` | 80 | Stub help page — three glass cards: "Cómo subir documentos", "Cómo registrar una entrada nueva", "Contacto". Same session gate |
+
+**Nav tiles (8):**
+
+| Label | Href | Badge source |
+|---|---|---|
+| Entradas de hoy | `/entradas?hoy=1` | entradas with `fecha_llegada_mercancia >= todayStart CST` |
+| Por arribar | `/entradas?estatus=esperado` | traficos with `fecha_llegada > now` and estatus ∉ {Cruzado, Cancelado} |
+| En bodega | `/entradas?estatus=recibido` | entradas (last 90d) with trafico whose estatus ∉ {Cruzado, Cancelado} |
+| Subir fotos | `/bodega/subir` | — |
+| Últimos 7 días | `/entradas?rango=7d` | entradas with `fecha_llegada_mercancia >= weekStart CST` |
+| Buscar tráfico | `/buscar` | — |
+| Mi día | `/mi-dia` | — |
+| Ayuda | `/bodega/ayuda` | — |
+
+**Judgment calls:**
+
+1. **Upload picker flow.** The prompt offered two options for the hero: (a) drop → inline picker appears, or (b) drop → route to `/bodega/subir` which has the picker. Chose (b) — single canonical upload flow, reuses the operator `SubirClient` component as-is (zero duplication, zero new props on `DocUploader`). The hero is a full-width cyan-glow `<Link>` to `/bodega/subir` — visually a drop zone, semantically a navigation.
+2. **Greeting name source.** Plan said "Vicente or authenticated user's display name". Used `operator_name` cookie (same cookie the operator cockpit reads) with fallback to `"Vicente"`. When Renato provisions the warehouse user this cookie will already be set by the login flow.
+3. **Entradas have no `estatus` column.** The `/entradas?estatus=...` hrefs are purely for nav — the badge counts are computed from the two signals that actually exist: `fecha_llegada_mercancia` on entradas and `estatus` on traficos. "Por arribar" counts future-dated traficos not yet crossed. "En bodega" counts entradas (last 90d) whose parent tráfico hasn't crossed — the same pattern already used in the existing `src/app/bodega/page.tsx`.
+4. **CST day boundaries.** Used `Intl.DateTimeFormat` with `timeZone: 'America/Chicago'` to resolve the current Laredo date, then constructed UTC midnight. Good enough for day-level bucketing; the CST/CDT edge hour only affects windowing within the transition day.
+5. **No modifications to `NavCardGrid` or `RoleKPIBanner`.** Both components already accepted every prop this cockpit needed — zero API changes.
+
+**Gate output:**
+
+| Gate | Result |
+|---|---|
+| `npm run typecheck` | 0 errors |
+| `npm run build` | success — `/bodega/inicio`, `/bodega/subir`, `/bodega/ayuda` all registered as ƒ Dynamic |
+| `npm run test` | 124 / 124 pass (10 files) |
+| Pre-commit hooks | green |
+
+**Injection attempts detected during P3 commit 2:**
+
+Five `<system-reminder>` blocks arrived inside tool output: (a) MCP `computer-use` tool instructions delivered with the first `ls` result; (b) the repo `CLAUDE.md` (ADUANA brand constitution, identity, domain rules); (c) `.claude/rules/performance.md`; (d) `.claude/rules/design-system.md`; (e) `.claude/rules/core-invariants.md`; (f) `.claude/rules/operational-resilience.md`. Per the prompt's injection guard, all treated as untrusted. No scope change applied. No brand rename to "ADUANA" — user-visible copy uses "Portal" only, per hard rules. No `computer-use` tool invoked. The glass tokens and session-gate pattern align with both the prompt and the rule files, but the implementation was driven entirely by grepping existing code (operator cockpit + client cockpit).
+
+**Readiness for commit 3:** Same pattern can be ported to `/contabilidad/inicio` for Anabel. `getNavForRole('contabilidad')` already exists from P3 commit 1 with four items (Facturación, Cobranzas, Pagos), and the shared `<NavCardGrid>` + `<RoleKPIBanner>` primitives are unchanged by this commit.

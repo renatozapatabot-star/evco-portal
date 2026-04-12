@@ -70,7 +70,7 @@ export function IntelligenceTicker() {
     <div className="intelligence-ticker" style={{
       height: 32, background: '#05070B', overflow: 'hidden',
       display: 'flex', alignItems: 'center', position: 'relative',
-      borderBottom: '1px solid rgba(201,168,76,0.15)',
+      borderBottom: '1px solid rgba(192,197,206,0.15)',
       zIndex: 100
     }}>
       <div className="ticker-track" style={{

@@ -99,7 +99,7 @@ export default function CambiarContrasena() {
         borderRadius: 12, padding: 32,
       }}>
         <div style={{ textAlign: 'center', marginBottom: 24 }}>
-          <Lock size={32} style={{ color: 'var(--gold, #eab308)', margin: '0 auto 12px' }} />
+          <Lock size={32} style={{ color: 'var(--gold, #E8EAED)', margin: '0 auto 12px' }} />
           <h1 style={{ fontSize: 20, fontWeight: 600, color: '#E6EDF3', marginBottom: 4 }}>
             Cambiar contraseña
           </h1>
@@ -241,7 +241,7 @@ export default function CambiarContrasena() {
           disabled={!isValid || loading}
           style={{
             width: '100%', padding: 14, fontSize: 15, fontWeight: 600,
-            background: isValid && !loading ? 'var(--gold, #eab308)' : 'rgba(255,255,255,0.08)',
+            background: isValid && !loading ? 'var(--gold, #E8EAED)' : 'rgba(255,255,255,0.08)',
             color: isValid && !loading ? '#FFFFFF' : '#6E7681',
             border: 'none', borderRadius: 8, cursor: isValid && !loading ? 'pointer' : 'not-allowed',
             minHeight: 60, transition: 'background 150ms',

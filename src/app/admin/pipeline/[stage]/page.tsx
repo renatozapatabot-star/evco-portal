@@ -35,7 +35,7 @@ function statusKind(status: string | null | undefined): StatusPillKind {
 function pillStyle(kind: StatusPillKind): React.CSSProperties {
   const map: Record<StatusPillKind, { bg: string; fg: string; border: string }> = {
     success: { bg: 'rgba(34,197,94,0.12)', fg: '#22C55E', border: 'rgba(34,197,94,0.3)' },
-    pending: { bg: 'rgba(234,179,8,0.12)', fg: '#eab308', border: 'rgba(234,179,8,0.3)' },
+    pending: { bg: 'rgba(192,197,206,0.12)', fg: '#E8EAED', border: 'rgba(192,197,206,0.3)' },
     failed:  { bg: 'rgba(239,68,68,0.12)', fg: '#EF4444', border: 'rgba(239,68,68,0.3)' },
     neutral: { bg: 'rgba(255,255,255,0.04)', fg: '#8B949E', border: 'rgba(255,255,255,0.08)' },
   }

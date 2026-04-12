@@ -44,8 +44,8 @@ export function AguilaMark({
     fill = '#E8EAED'
     stroke = '#E8EAED'
   } else if (tone === 'gold') {
-    fill = '#eab308'
-    stroke = '#eab308'
+    fill = '#E8EAED'
+    stroke = '#E8EAED'
   } else {
     fill = 'currentColor'
     stroke = 'currentColor'

@@ -76,7 +76,7 @@ export function OperatorSearch() {
   }
 
   const typeColors: Record<string, string> = {
-    trafico: '#eab308',
+    trafico: '#E8EAED',
     entrada: '#0D9488',
     pedimento: '#8B949E',
   }
@@ -114,7 +114,7 @@ export function OperatorSearch() {
           onClick={doSearch}
           disabled={loading || query.trim().length < 2}
           style={{
-            background: 'rgba(201,168,76,0.15)', color: '#eab308',
+            background: 'rgba(192,197,206,0.15)', color: '#E8EAED',
             border: 'none', borderRadius: 8, padding: '8px 16px',
             fontSize: 12, fontWeight: 600, cursor: 'pointer',
             minHeight: 36, opacity: loading || query.trim().length < 2 ? 0.5 : 1,
@@ -135,7 +135,7 @@ export function OperatorSearch() {
               display: 'flex', alignItems: 'center', gap: 10,
               padding: '10px 14px', textDecoration: 'none',
               borderBottom: i < results.length - 1 ? '1px solid rgba(9,9,11,0.75)' : 'none',
-              background: i === 0 ? 'rgba(201,168,76,0.04)' : 'transparent',
+              background: i === 0 ? 'rgba(192,197,206,0.04)' : 'transparent',
             }}>
               <span style={{
                 fontSize: 9, fontWeight: 700, textTransform: 'uppercase',

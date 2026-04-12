@@ -69,7 +69,7 @@ export function CardClearAnimation({ show, variant = 'small', onComplete }: Prop
   if (variant === 'large') {
     return (
       <div style={{ ...baseStyle, inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ fontSize: 36, color: '#eab308', animation: 'cruzPing 600ms ease-out' }}>✓</span>
+        <span style={{ fontSize: 36, color: '#E8EAED', animation: 'cruzPing 600ms ease-out' }}>✓</span>
       </div>
     )
   }

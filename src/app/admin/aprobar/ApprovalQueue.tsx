@@ -205,7 +205,7 @@ export function ApprovalQueue({ initialPending, initialRecent, initialEscalation
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontSize: 64, marginBottom: 16 }}>🦀</div>
             <div style={{
-              fontSize: 20, fontWeight: 800, color: '#eab308',
+              fontSize: 20, fontWeight: 800, color: '#E8EAED',
               letterSpacing: '-0.02em',
             }}>
               Patente 3596 honrada.
@@ -221,11 +221,11 @@ export function ApprovalQueue({ initialPending, initialRecent, initialEscalation
       <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
         <div style={{
           width: 44, height: 44, borderRadius: 14,
-          background: 'rgba(234,179,8,0.1)',
-          border: '1px solid rgba(234,179,8,0.2)',
+          background: 'rgba(192,197,206,0.1)',
+          border: '1px solid rgba(192,197,206,0.2)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
-          <Shield size={20} color="#eab308" strokeWidth={1.8} />
+          <Shield size={20} color="#E8EAED" strokeWidth={1.8} />
         </div>
         <div>
           <h1 style={{ fontSize: 22, fontWeight: 800, color: '#E6EDF3', margin: 0 }}>
@@ -295,12 +295,12 @@ export function ApprovalQueue({ initialPending, initialRecent, initialEscalation
                   background: 'rgba(255,255,255,0.04)',
                   backdropFilter: 'blur(20px)',
                   WebkitBackdropFilter: 'blur(20px)',
-                  border: `1px solid ${isApproving ? 'rgba(234,179,8,0.3)' : 'rgba(255,255,255,0.08)'}`,
+                  border: `1px solid ${isApproving ? 'rgba(192,197,206,0.3)' : 'rgba(255,255,255,0.08)'}`,
                   borderRadius: 20,
                   padding: 20,
                   transition: 'all 300ms',
                   boxShadow: isApproving
-                    ? '0 0 20px rgba(234,179,8,0.15)'
+                    ? '0 0 20px rgba(192,197,206,0.15)'
                     : '0 10px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)',
                 }}>
                   {/* Top row: company + confidence + trafico */}
@@ -384,12 +384,12 @@ export function ApprovalQueue({ initialPending, initialRecent, initialEscalation
                     <div style={{
                       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                       padding: '12px 16px', borderRadius: 12,
-                      background: 'rgba(234,179,8,0.08)',
-                      border: '1px solid rgba(234,179,8,0.2)',
+                      background: 'rgba(192,197,206,0.08)',
+                      border: '1px solid rgba(192,197,206,0.2)',
                     }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <Clock size={16} color="#eab308" />
-                        <span style={{ fontSize: 13, color: '#eab308', fontWeight: 600 }}>
+                        <Clock size={16} color="#E8EAED" />
+                        <span style={{ fontSize: 13, color: '#E8EAED', fontWeight: 600 }}>
                           Aprobando... {countdown !== undefined ? `${countdown}s` : ''}
                         </span>
                       </div>
@@ -416,7 +416,7 @@ export function ApprovalQueue({ initialPending, initialRecent, initialEscalation
                         style={{
                           flex: 1, minWidth: 140, padding: '12px 20px', borderRadius: 12,
                           border: 'none', cursor: 'pointer', minHeight: 60,
-                          background: isLoading ? 'rgba(234,179,8,0.3)' : '#eab308',
+                          background: isLoading ? 'rgba(192,197,206,0.3)' : '#E8EAED',
                           color: '#000', fontSize: 15, fontWeight: 800,
                           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                           transition: 'all 150ms',
@@ -572,7 +572,7 @@ export function ApprovalQueue({ initialPending, initialRecent, initialEscalation
                 disabled={!modalText.trim() || actionLoading === actionModal.draft.id}
                 style={{
                   flex: 1, padding: '14px 20px', borderRadius: 12, border: 'none',
-                  background: actionModal.type === 'reject' ? '#EF4444' : '#eab308',
+                  background: actionModal.type === 'reject' ? '#EF4444' : '#E8EAED',
                   color: actionModal.type === 'reject' ? '#FFF' : '#000',
                   fontSize: 15, fontWeight: 800, cursor: 'pointer', minHeight: 60,
                   opacity: !modalText.trim() ? 0.4 : 1,

@@ -31,15 +31,15 @@ const STATE_STYLES: Record<IfThenCardState | 'cleared', {
 }> = {
   quiet: {
     border: '1px solid rgba(255,255,255,0.08)',
-    borderTop: '3px solid rgba(201,168,76,0.4)',
+    borderTop: '3px solid rgba(192,197,206,0.4)',
     conditionColor: '#8B949E',
     actionBg: 'rgba(255,255,255,0.06)',
   },
   active: {
-    border: '1px solid rgba(201,168,76,0.3)',
-    borderTop: '3px solid rgba(201,168,76,0.6)',
-    conditionColor: '#eab308',
-    actionBg: 'rgba(201,168,76,0.15)',
+    border: '1px solid rgba(192,197,206,0.3)',
+    borderTop: '3px solid rgba(192,197,206,0.6)',
+    conditionColor: '#E8EAED',
+    actionBg: 'rgba(192,197,206,0.15)',
   },
   urgent: {
     border: '1px solid rgba(217,119,6,0.4)',
@@ -115,7 +115,7 @@ export function IfThenCard({
         background: s.actionBg, color: s.conditionColor,
         fontSize: 13, fontWeight: 600, textDecoration: 'none',
         minHeight: 44, marginTop: 8,
-        border: `1px solid ${state === 'urgent' ? 'rgba(217,119,6,0.3)' : 'rgba(201,168,76,0.2)'}`,
+        border: `1px solid ${state === 'urgent' ? 'rgba(217,119,6,0.3)' : 'rgba(192,197,206,0.2)'}`,
       }}>
         {action} →
       </Link>
@@ -125,7 +125,7 @@ export function IfThenCard({
         width: '100%', padding: '10px 16px', borderRadius: 8,
         background: s.actionBg, color: s.conditionColor,
         fontSize: 13, fontWeight: 600, cursor: 'pointer',
-        minHeight: 44, marginTop: 8, border: `1px solid ${state === 'urgent' ? 'rgba(217,119,6,0.3)' : 'rgba(201,168,76,0.2)'}`,
+        minHeight: 44, marginTop: 8, border: `1px solid ${state === 'urgent' ? 'rgba(217,119,6,0.3)' : 'rgba(192,197,206,0.2)'}`,
       }}>
         {action} →
       </button>

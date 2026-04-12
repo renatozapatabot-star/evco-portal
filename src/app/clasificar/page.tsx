@@ -51,7 +51,7 @@ async function postVote(decisionId: string, action: 'confirm' | 'correct', corre
 function ConfidenceBadge({ value }: { value: number }) {
   const pct = Math.round(value * 100)
   const color = pct >= 85 ? '#16A34A' : pct >= 70 ? '#D4952A' : '#DC2626'
-  const bg = pct >= 85 ? 'rgba(34,197,94,0.1)' : pct >= 70 ? 'rgba(234,179,8,0.08)' : 'rgba(239,68,68,0.1)'
+  const bg = pct >= 85 ? 'rgba(34,197,94,0.1)' : pct >= 70 ? 'rgba(192,197,206,0.08)' : 'rgba(239,68,68,0.1)'
   return (
     <span
       className="font-mono"
@@ -195,7 +195,7 @@ export default function ClasificarPage() {
           style={{
             height: '100%',
             width: `${(currentIndex / total) * 100}%`,
-            background: '#eab308',
+            background: '#E8EAED',
             borderRadius: 2,
             transition: 'width 300ms ease',
           }}
@@ -316,7 +316,7 @@ export default function ClasificarPage() {
                   value={alt.fraccion}
                   checked={selectedAlt === alt.fraccion}
                   onChange={() => setSelectedAlt(alt.fraccion)}
-                  style={{ accentColor: '#eab308' }}
+                  style={{ accentColor: '#E8EAED' }}
                 />
                 <span className="font-mono" style={{ fontSize: 16, fontWeight: 600 }}>{alt.fraccion}</span>
                 <span style={{ fontSize: 13, color: '#6B6B6B', flex: 1 }}>{alt.description}</span>
@@ -348,7 +348,7 @@ export default function ClasificarPage() {
                   flex: 1,
                   minHeight: 48,
                   borderRadius: 12,
-                  background: selectedAlt ? '#eab308' : '#E8E5E0',
+                  background: selectedAlt ? '#E8EAED' : '#E8E5E0',
                   color: 'rgba(9,9,11,0.75)',
                   border: 'none',
                   fontSize: 14,
@@ -390,7 +390,7 @@ export default function ClasificarPage() {
                 flex: 2,
                 minHeight: 60,
                 borderRadius: 12,
-                background: '#eab308',
+                background: '#E8EAED',
                 color: 'rgba(9,9,11,0.75)',
                 border: 'none',
                 fontSize: 18,
@@ -399,7 +399,7 @@ export default function ClasificarPage() {
                 transition: 'background 150ms',
               }}
               onMouseOver={(e) => { if (!voting) e.currentTarget.style.background = '#B8933B' }}
-              onMouseOut={(e) => { e.currentTarget.style.background = '#eab308' }}
+              onMouseOut={(e) => { e.currentTarget.style.background = '#E8EAED' }}
             >
               ✓ SÍ APROBAR
             </button>

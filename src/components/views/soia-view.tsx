@@ -26,7 +26,7 @@ function StatusBadge({ value }: { value: string }) {
   const v = (value || '').toUpperCase()
   const isGreen = v.includes('DESADUAN')
   const isBlue = v.includes('CUMPLIDO')
-  const bg = isGreen ? 'rgba(34,197,94,0.15)' : isBlue ? 'rgba(59,130,246,0.15)' : 'rgba(234,179,8,0.15)'
+  const bg = isGreen ? 'rgba(34,197,94,0.15)' : isBlue ? 'rgba(59,130,246,0.15)' : 'rgba(192,197,206,0.15)'
   const color = isGreen ? 'var(--status-green)' : isBlue ? 'var(--status-blue)' : 'var(--status-yellow)'
   return <span style={{ background: bg, color, fontSize: 12, fontWeight: 600, padding: '4px 8px', borderRadius: 4, textTransform: 'uppercase', letterSpacing: '0.03em' }}>{v || '-'}</span>
 }

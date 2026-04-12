@@ -69,7 +69,7 @@ export function MissionHeader({ mood, sentence, quickAction, onAvatarClick, load
             gap: 6,
             padding: isMobile ? '8px 16px' : '10px 20px',
             borderRadius: 24,
-            background: 'var(--gold, #eab308)',
+            background: 'var(--gold, #E8EAED)',
             color: '#1A1A1A',
             fontSize: 13,
             fontWeight: 700,
@@ -77,11 +77,11 @@ export function MissionHeader({ mood, sentence, quickAction, onAvatarClick, load
             flexShrink: 0,
             whiteSpace: 'nowrap',
             animation: hasUrgency ? 'ccPillPulse 3s ease-in-out infinite' : 'none',
-            boxShadow: hasUrgency ? '0 0 16px rgba(201,168,76,0.3)' : 'none',
+            boxShadow: hasUrgency ? '0 0 16px rgba(192,197,206,0.3)' : 'none',
             transition: 'background 150ms',
           }}
           onMouseEnter={e => { e.currentTarget.style.background = 'var(--gold-hover, #B8933B)' }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'var(--gold, #eab308)' }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'var(--gold, #E8EAED)' }}
         >
           {quickAction.label} &rarr;
         </Link>

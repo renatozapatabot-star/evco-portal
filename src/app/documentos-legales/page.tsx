@@ -48,7 +48,7 @@ function getStatus(expiryDate: string | null): LegalDoc['status'] {
 function StatusBadge({ status, days }: { status: LegalDoc['status']; days: number | null }) {
   const config = {
     valid: { label: 'Vigente', color: 'var(--success)', bg: 'rgba(34,197,94,0.08)' },
-    expiring_90: { label: `${days}d restantes`, color: 'var(--warning)', bg: 'rgba(234,179,8,0.08)' },
+    expiring_90: { label: `${days}d restantes`, color: 'var(--warning)', bg: 'rgba(192,197,206,0.08)' },
     expiring_30: { label: `${days}d — URGENTE`, color: 'var(--danger)', bg: 'rgba(239,68,68,0.08)' },
     expired: { label: 'EXPIRADO', color: 'var(--danger)', bg: 'rgba(239,68,68,0.12)' },
     verify: { label: 'Verificar', color: 'var(--n-400)', bg: 'var(--n-50)' },
@@ -126,8 +126,8 @@ export default function DocumentosLegalesPage() {
       {/* Alert summary */}
       {(expired.length > 0 || expiringSoon.length > 0) && (
         <div style={{
-          background: expired.length > 0 ? 'rgba(239,68,68,0.06)' : 'rgba(234,179,8,0.06)',
-          border: `1px solid ${expired.length > 0 ? 'rgba(239,68,68,0.2)' : 'rgba(234,179,8,0.2)'}`,
+          background: expired.length > 0 ? 'rgba(239,68,68,0.06)' : 'rgba(192,197,206,0.06)',
+          border: `1px solid ${expired.length > 0 ? 'rgba(239,68,68,0.2)' : 'rgba(192,197,206,0.2)'}`,
           borderRadius: 12, padding: '16px 20px', marginBottom: 20,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>

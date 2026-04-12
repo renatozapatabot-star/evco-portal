@@ -129,9 +129,9 @@ export default function VozPage() {
               overflowY: 'auto',
               width: '100%',
               padding: '16px',
-              backgroundColor: 'rgba(201,168,76,0.08)',
+              backgroundColor: 'rgba(192,197,206,0.08)',
               borderRadius: 12,
-              border: '1px solid rgba(201,168,76,0.15)',
+              border: '1px solid rgba(192,197,206,0.15)',
               animation: 'fadeIn 0.4s ease',
             }}>
               <p style={{

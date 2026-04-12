@@ -15,7 +15,7 @@ type PanelState = 'idle' | 'countdown' | 'blessing' | 'done'
 
 function ConfidenceBadge({ value }: { value: number }) {
   const color = value >= 85 ? '#16A34A' : value >= 70 ? '#D4952A' : '#DC2626'
-  const bg = value >= 85 ? 'rgba(34,197,94,0.1)' : value >= 70 ? 'rgba(234,179,8,0.08)' : 'rgba(239,68,68,0.1)'
+  const bg = value >= 85 ? 'rgba(34,197,94,0.1)' : value >= 70 ? 'rgba(192,197,206,0.08)' : 'rgba(239,68,68,0.1)'
   return (
     <span
       className="font-mono"
@@ -97,7 +97,7 @@ export function BorradorPanel({ detail, onComplete, loading }: Props) {
           <circle cx={40} cy={40} r={34} fill="none" stroke="#E8E5E0" strokeWidth={4} />
           <circle
             cx={40} cy={40} r={34}
-            fill="none" stroke="#eab308" strokeWidth={4}
+            fill="none" stroke="#E8EAED" strokeWidth={4}
             strokeLinecap="round"
             strokeDasharray={circumference}
             strokeDashoffset={circumference * (countdown / 5)}
@@ -107,7 +107,7 @@ export function BorradorPanel({ detail, onComplete, loading }: Props) {
           <text
             x={40} y={44}
             textAnchor="middle"
-            style={{ fontSize: 24, fontWeight: 700, fill: '#eab308', fontFamily: 'var(--font-jetbrains-mono)' }}
+            style={{ fontSize: 24, fontWeight: 700, fill: '#E8EAED', fontFamily: 'var(--font-jetbrains-mono)' }}
           >
             {countdown}
           </text>
@@ -141,7 +141,7 @@ export function BorradorPanel({ detail, onComplete, loading }: Props) {
   if (state === 'blessing') {
     return (
       <div style={{ textAlign: 'center', padding: 32 }}>
-        <div style={{ fontSize: 48, marginBottom: 12, color: '#eab308' }}>&#10003;</div>
+        <div style={{ fontSize: 48, marginBottom: 12, color: '#E8EAED' }}>&#10003;</div>
         <p style={{ fontSize: 16, fontWeight: 600, color: '#1A1A1A', margin: 0 }}>
           Patente 3596 honrada.
         </p>
@@ -210,7 +210,7 @@ export function BorradorPanel({ detail, onComplete, loading }: Props) {
             flex: 1,
             minHeight: 60,
             borderRadius: 12,
-            background: '#eab308',
+            background: '#E8EAED',
             color: '#FFFFFF',
             border: 'none',
             fontSize: 16,

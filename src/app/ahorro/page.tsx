@@ -51,7 +51,7 @@ const TYPE_CONFIG: Record<string, { icon: typeof DollarSign; label: string; colo
 }
 
 const STATUS_LABELS: Record<string, { label: string; color: string; bg: string }> = {
-  new: { label: 'NUEVO', color: '#D97706', bg: 'rgba(234,179,8,0.08)' },
+  new: { label: 'NUEVO', color: '#D97706', bg: 'rgba(192,197,206,0.08)' },
   reviewed: { label: 'REVISADO', color: '#6B7280', bg: '#F9FAFB' },
   accepted: { label: 'ACEPTADO', color: '#16A34A', bg: 'rgba(34,197,94,0.1)' },
   implemented: { label: 'IMPLEMENTADO', color: '#16A34A', bg: '#DCFCE7' },

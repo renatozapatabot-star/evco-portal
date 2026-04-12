@@ -50,8 +50,8 @@ export function NeedsJudgmentPanel({ escalations }: Props) {
                   <div style={{ fontSize: 11, color: '#6E7681' }}>{e.company} · {fmtDateTime(e.created_at)}</div>
                 </div>
                 <Link href="/drafts" style={{
-                  padding: '8px 16px', background: 'rgba(201,168,76,0.15)',
-                  color: '#eab308', borderRadius: 8, fontSize: 12, fontWeight: 600,
+                  padding: '8px 16px', background: 'rgba(192,197,206,0.15)',
+                  color: '#E8EAED', borderRadius: 8, fontSize: 12, fontWeight: 600,
                   textDecoration: 'none', flexShrink: 0, minHeight: 36,
                   display: 'flex', alignItems: 'center',
                 }}>

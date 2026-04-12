@@ -63,7 +63,7 @@ export default function ChatMessageList({
     const parts = text.split(traficoPattern)
     return parts.map((part, i) => {
       if (traficoTest.test(part))
-        return <Link key={i} href={`/traficos/${part}`} style={{ color: GOLD, fontWeight: 700, fontFamily: 'var(--font-data)', textDecoration: 'none', borderBottom: `1px solid rgba(201,168,76,0.4)`, whiteSpace: 'nowrap' }}>{part}</Link>
+        return <Link key={i} href={`/traficos/${part}`} style={{ color: GOLD, fontWeight: 700, fontFamily: 'var(--font-data)', textDecoration: 'none', borderBottom: `1px solid rgba(192,197,206,0.4)`, whiteSpace: 'nowrap' }}>{part}</Link>
       if (/^[67]\d{6}$/.test(part))
         return <Link key={i} href={`/pedimentos?search=${part}`} style={{ color: GOLD, fontWeight: 700, fontFamily: 'var(--font-data)', textDecoration: 'none', whiteSpace: 'nowrap' }}>{part}</Link>
       return <span key={i}>{part}</span>
@@ -127,7 +127,7 @@ export default function ChatMessageList({
             {msg.navigate && (
               <div onClick={() => router.push(msg.navigate!)} style={{
                 display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, padding: '8px 12px',
-                background: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.2)',
+                background: 'rgba(192,197,206,0.1)', border: '1px solid rgba(192,197,206,0.2)',
                 borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600, color: GOLD,
               }}>
                 <ArrowRight size={14} /> Ir a {msg.navigate}

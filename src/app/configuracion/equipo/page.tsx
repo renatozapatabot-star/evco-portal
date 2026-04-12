@@ -37,7 +37,7 @@ export default function EquipoPage() {
           style={{
             display: 'flex', alignItems: 'center', gap: 6,
             padding: '10px 20px', borderRadius: 12,
-            background: '#eab308', color: '#05070B', fontWeight: 700, fontSize: 13,
+            background: '#E8EAED', color: '#05070B', fontWeight: 700, fontSize: 13,
             border: 'none', cursor: 'pointer', minHeight: 44,
           }}
         >
@@ -74,7 +74,7 @@ export default function EquipoPage() {
             </select>
             <button style={{
               padding: '10px 20px', borderRadius: 8,
-              background: '#eab308', color: '#05070B', fontWeight: 700, fontSize: 13,
+              background: '#E8EAED', color: '#05070B', fontWeight: 700, fontSize: 13,
               border: 'none', cursor: 'pointer', minHeight: 44,
             }}>
               <Mail size={14} style={{ marginRight: 4 }} /> Enviar invitación

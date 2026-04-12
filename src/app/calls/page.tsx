@@ -113,7 +113,7 @@ export default function CallsPage() {
                 <div
                   onClick={() => setExpanded(isExpanded ? null : call.id)}
                   className={`flex ${isMobile ? 'flex-wrap gap-2 px-3 py-3' : 'items-center gap-4 px-4 py-3'}`}
-                  style={{ cursor: 'pointer', background: isExpanded ? 'rgba(201,168,76,0.04)' : 'transparent' }}
+                  style={{ cursor: 'pointer', background: isExpanded ? 'rgba(192,197,206,0.04)' : 'transparent' }}
                   onMouseEnter={e => { if (!isExpanded) e.currentTarget.style.background = 'var(--bg-primary)' }}
                   onMouseLeave={e => { if (!isExpanded) e.currentTarget.style.background = 'transparent' }}
                 >

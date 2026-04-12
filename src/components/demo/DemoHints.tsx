@@ -49,7 +49,7 @@ export function DemoHints() {
       <div style={{
         position: 'absolute',
         ...positionStyles[hint.position],
-        background: '#eab308',
+        background: '#E8EAED',
         color: '#111',
         padding: '16px 24px',
         borderRadius: 12,
@@ -74,7 +74,7 @@ export function DemoHints() {
               Saltar
             </button>
             <button onClick={handleNext} style={{
-              background: '#111', color: '#eab308', border: 'none',
+              background: '#111', color: '#E8EAED', border: 'none',
               padding: '8px 20px', borderRadius: 8, fontSize: 13, fontWeight: 700,
               cursor: 'pointer', minHeight: 36,
             }}>

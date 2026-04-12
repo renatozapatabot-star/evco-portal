@@ -51,7 +51,7 @@ export default async function RevenuePage() {
         ))}
       </div>
 
-      <div style={{ background: 'linear-gradient(135deg, rgba(201,168,76,0.1), rgba(168,122,34,0.05))', border: '1px solid rgba(201,168,76,0.3)', borderRadius: 12, padding: 24 }}>
+      <div style={{ background: 'linear-gradient(135deg, rgba(192,197,206,0.1), rgba(168,122,34,0.05))', border: '1px solid rgba(192,197,206,0.3)', borderRadius: 12, padding: 24 }}>
         <div style={{ fontSize: 11, fontWeight: 700, color: GOLD, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>Valor Plataforma (modelo SaaS)</div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>

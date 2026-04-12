@@ -28,7 +28,7 @@ interface CockpitCardProps {
 
 // Urgency color system
 const U_BORDER = { red: 'rgba(220,38,38,0.25)', amber: 'rgba(217,119,6,0.25)', green: 'rgba(22,163,74,0.25)', neutral: 'rgba(255,255,255,0.08)' }
-const U_TOP    = { red: 'rgba(220,38,38,0.7)', amber: 'rgba(217,119,6,0.6)', green: 'rgba(22,163,74,0.5)', neutral: 'rgba(201,168,76,0.4)' }
+const U_TOP    = { red: 'rgba(220,38,38,0.7)', amber: 'rgba(217,119,6,0.6)', green: 'rgba(22,163,74,0.5)', neutral: 'rgba(192,197,206,0.4)' }
 const U_SHADOW = { red: 'rgba(220,38,38,0.1)', amber: 'rgba(217,119,6,0.08)', green: 'rgba(22,163,74,0.08)', neutral: 'rgba(0,0,0,0.2)' }
 const U_ICON   = { red: 'rgba(220,38,38,0.7)', amber: 'rgba(217,119,6,0.7)', green: 'rgba(22,163,74,0.7)', neutral: 'rgba(255,255,255,0.5)' }
 
@@ -108,7 +108,7 @@ export function CockpitCard({
                 fontFamily: 'var(--font-mono)',
                 color: '#FFFFFF',
                 lineHeight: 1.1,
-                textShadow: '0 0 16px rgba(201,168,76,0.2)',
+                textShadow: '0 0 16px rgba(192,197,206,0.2)',
                 display: 'inline-block',
               }}>
                 {displayKpi}
@@ -158,7 +158,7 @@ export function CockpitCard({
                 display: 'inline-flex',
                 alignItems: 'center',
                 ...(action.primary ? {
-                  background: 'var(--gold, #eab308)',
+                  background: 'var(--gold, #E8EAED)',
                   color: '#1A1A1A',
                   border: 'none',
                 } : {

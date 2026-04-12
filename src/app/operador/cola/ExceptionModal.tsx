@@ -115,7 +115,7 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
                 flex: 1,
                 minHeight: 60,
                 padding: '14px 20px',
-                background: loading ? '#64748b' : '#eab308',
+                background: loading ? '#64748b' : '#E8EAED',
                 border: 'none',
                 borderRadius: 12,
                 color: '#0D0D0C',
@@ -181,7 +181,7 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
               flex: 1,
               minHeight: 60,
               padding: '14px 20px',
-              background: loading ? '#64748b' : '#eab308',
+              background: loading ? '#64748b' : '#E8EAED',
               border: 'none',
               borderRadius: 12,
               color: '#0D0D0C',
@@ -277,7 +277,7 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
           style={{
             minHeight: 60,
             padding: '14px 20px',
-            background: loading ? '#64748b' : '#eab308',
+            background: loading ? '#64748b' : '#E8EAED',
             border: 'none',
             borderRadius: 12,
             color: '#0D0D0C',
@@ -382,7 +382,7 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
               flex: 1,
               minHeight: 60,
               padding: '14px 20px',
-              background: loading ? '#64748b' : '#eab308',
+              background: loading ? '#64748b' : '#E8EAED',
               border: 'none',
               borderRadius: 12,
               color: '#0D0D0C',
@@ -436,7 +436,7 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
           style={{
             minHeight: 60,
             padding: '14px 20px',
-            background: loading ? '#64748b' : '#eab308',
+            background: loading ? '#64748b' : '#E8EAED',
             border: 'none',
             borderRadius: 12,
             color: '#0D0D0C',
@@ -526,7 +526,7 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
             disabled={loading}
             style={{
               flex: 1, minHeight: 60, padding: '14px 20px',
-              background: loading ? '#64748b' : '#eab308',
+              background: loading ? '#64748b' : '#E8EAED',
               border: 'none', borderRadius: 12,
               color: '#0D0D0C', fontSize: 14, fontWeight: 700,
               cursor: loading ? 'wait' : 'pointer',
@@ -582,7 +582,7 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
             disabled={loading}
             style={{
               flex: 1, minHeight: 60, padding: '14px 20px',
-              background: loading ? '#64748b' : '#eab308',
+              background: loading ? '#64748b' : '#E8EAED',
               border: 'none', borderRadius: 12,
               color: '#0D0D0C', fontSize: 14, fontWeight: 700,
               cursor: loading ? 'wait' : 'pointer',
@@ -632,7 +632,7 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
         style={{
           minHeight: 60,
           padding: '14px 20px',
-          background: loading ? '#64748b' : '#eab308',
+          background: loading ? '#64748b' : '#E8EAED',
           border: 'none',
           borderRadius: 12,
           color: '#0D0D0C',

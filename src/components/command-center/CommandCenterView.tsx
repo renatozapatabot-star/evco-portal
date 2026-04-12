@@ -106,7 +106,7 @@ function ProgressRing({ pct, size = 56, animate = false }: { pct: number; size?:
   }, [pct, animate])
 
   const offset = circ - (displayPct / 100) * circ
-  const color = displayPct === 100 ? '#16A34A' : 'var(--gold, #eab308)'
+  const color = displayPct === 100 ? '#16A34A' : 'var(--gold, #E8EAED)'
   const approaching = pct >= 95 && pct < 100
   return (
     <svg width={size} height={size} style={{ flexShrink: 0 }} className={approaching ? 'ring-approaching' : undefined}>
@@ -189,7 +189,7 @@ function CommandStrip({ urgentes, criticalCount, mood, isMobile, criticosOpen, s
               </div>
               <span style={{
                 fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 4,
-                background: 'var(--gold, #eab308)', color: '#FFFFFF', flexShrink: 0,
+                background: 'var(--gold, #E8EAED)', color: '#FFFFFF', flexShrink: 0,
               }}>
                 Resolver
               </span>
@@ -197,7 +197,7 @@ function CommandStrip({ urgentes, criticalCount, mood, isMobile, criticosOpen, s
           ))}
           {criticalCount > 3 && (
             <Link href={criticalHref} style={{
-              fontSize: 11, fontWeight: 600, color: 'var(--gold, #eab308)',
+              fontSize: 11, fontWeight: 600, color: 'var(--gold, #E8EAED)',
               textDecoration: 'none', textAlign: 'center', padding: '4px 0',
             }}>
               Ver {criticalCount - 3} más →
@@ -252,7 +252,7 @@ function PasswordResetBanner() {
       <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
         <Link href="/cambiar-contrasena" style={{
           padding: '6px 14px', borderRadius: 6, fontSize: 12, fontWeight: 700,
-          background: 'var(--gold, #eab308)', color: '#FFFFFF', textDecoration: 'none',
+          background: 'var(--gold, #E8EAED)', color: '#FFFFFF', textDecoration: 'none',
           minHeight: 44, display: 'inline-flex', alignItems: 'center',
         }}>
           Cambiar ahora
@@ -391,7 +391,7 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             {data.facturacionMes > 0 && (
               <span style={{ fontSize: 12, color: 'var(--text-secondary, #94a3b8)' }}>
-                Facturado este mes: <strong style={{ color: '#eab308', fontFamily: 'var(--font-mono)' }}>
+                Facturado este mes: <strong style={{ color: '#E8EAED', fontFamily: 'var(--font-mono)' }}>
                   ${data.facturacionMes > 1000 ? `${Math.round(data.facturacionMes / 1000)}K` : data.facturacionMes.toFixed(0)} MXN
                 </strong>
               </span>

@@ -298,7 +298,7 @@ export default function KPIsPage() {
           label="Operaciones Totales" value={String(kpis.total)}
           sub={`${kpis.cruzados} cruzados · ${kpis.enProceso} en proceso`} />
 
-        <KPICard icon={DollarSign} accent="#eab308"
+        <KPICard icon={DollarSign} accent="#E8EAED"
           label="Valor Importado USD" value={fmtUSD(kpis.totalValueUSD)}
           sub={`DTA ${fmtUSD(kpis.totalDTA)} · IGI ${fmtUSD(kpis.totalIGI)} · IVA ${fmtUSD(kpis.totalIVA)}`} />
 
@@ -410,7 +410,7 @@ export default function KPIsPage() {
                   }}>
                     {i + 1}
                   </span>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 14, fontWeight: 700, color: '#eab308' }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 14, fontWeight: 700, color: '#E8EAED' }}>
                     {frac}
                   </span>
                 </div>

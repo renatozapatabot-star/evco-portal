@@ -155,7 +155,7 @@ export default function EntradaDetailPage() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
             <div style={{
               width: 10, height: 10, borderRadius: '50%',
-              background: hasIncidencia ? 'var(--gold, #eab308)' : 'var(--success, #16A34A)',
+              background: hasIncidencia ? 'var(--gold, #E8EAED)' : 'var(--success, #16A34A)',
               flexShrink: 0,
             }} />
             <h1 style={{
@@ -246,7 +246,7 @@ export default function EntradaDetailPage() {
               style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 padding: '14px 16px', borderRadius: 10,
-                border: '1px solid var(--border, #E8E5E0)', borderLeft: '3px solid var(--gold, #eab308)',
+                border: '1px solid var(--border, #E8E5E0)', borderLeft: '3px solid var(--gold, #E8EAED)',
                 textDecoration: 'none', transition: 'background 100ms', minHeight: 48,
               }}
               onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)' }}
@@ -254,7 +254,7 @@ export default function EntradaDetailPage() {
             >
               <div>
                 <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Tráfico</div>
-                <div style={{ fontSize: 15, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--gold-dark, #8B6914)', marginTop: 2 }}>
+                <div style={{ fontSize: 15, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--gold-dark, #7A7E86)', marginTop: 2 }}>
                   {fmtTrafico(entrada.trafico)}
                 </div>
               </div>

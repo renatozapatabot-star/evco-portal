@@ -254,7 +254,7 @@ export function Anexo24View() {
             disabled={generating || loading}
             style={{
               display: 'flex', alignItems: 'center', gap: 8, minHeight: 60, padding: '0 20px',
-              borderRadius: 12, border: 'none', background: '#eab308', cursor: generating ? 'wait' : 'pointer',
+              borderRadius: 12, border: 'none', background: '#E8EAED', cursor: generating ? 'wait' : 'pointer',
               fontSize: 13, fontWeight: 700, color: '#000', opacity: generating ? 0.7 : 1,
               transition: 'opacity 0.2s',
             }}
@@ -275,7 +275,7 @@ export function Anexo24View() {
         }}>
           {[
             { label: 'Total Partidas', value: kpis.totalPartidas.toLocaleString('es-MX'), color: 'var(--text-primary, #E6EDF3)' },
-            { label: 'Valor Total USD', value: fmtUSDCompact(kpis.totalValue), color: '#eab308' },
+            { label: 'Valor Total USD', value: fmtUSDCompact(kpis.totalValue), color: '#E8EAED' },
             { label: 'Fracciones', value: String(kpis.uniqueFracciones), color: 'var(--text-primary, #E6EDF3)' },
             { label: 'T-MEC', value: `${kpis.tmecPct}%`, color: kpis.tmecPct >= 50 ? '#22C55E' : '#FBBF24' },
             { label: 'Proveedores', value: String(kpis.uniqueProveedores), color: 'var(--text-primary, #E6EDF3)' },
@@ -374,7 +374,7 @@ export function Anexo24View() {
                   {r.descripcion}
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: '#eab308', fontWeight: 600 }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: '#E8EAED', fontWeight: 600 }}>
                     {r.fraccion}
                   </span>
                   <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 500, color: 'var(--text-primary, #E6EDF3)' }}>
@@ -417,7 +417,7 @@ export function Anexo24View() {
                     <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-secondary, #94a3b8)' }}>
                       {fmtDate(r.fecha)}
                     </td>
-                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: '#eab308', fontWeight: 600 }}>
+                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: '#E8EAED', fontWeight: 600 }}>
                       {r.fraccion}
                     </td>
                     <td style={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 12, color: 'var(--text-secondary, #94a3b8)' }}>

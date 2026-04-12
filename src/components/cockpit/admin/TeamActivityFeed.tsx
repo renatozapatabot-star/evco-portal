@@ -86,11 +86,11 @@ export function TeamActivityFeed() {
               <div key={item.id} style={{
                 display: 'flex', alignItems: 'center', gap: 10,
                 padding: '6px 8px', borderRadius: 6,
-                background: i === 0 ? 'rgba(201,168,76,0.04)' : 'transparent',
+                background: i === 0 ? 'rgba(192,197,206,0.04)' : 'transparent',
                 animation: i === 0 ? 'fadeIn 300ms ease' : undefined,
               }}>
                 <span style={{ fontSize: 14, flexShrink: 0, width: 20, textAlign: 'center' }}>{item.icon}</span>
-                <span style={{ fontSize: 12, color: '#eab308', fontWeight: 600, flexShrink: 0 }}>
+                <span style={{ fontSize: 12, color: '#E8EAED', fontWeight: 600, flexShrink: 0 }}>
                   {item.operatorName.split(' ')[0]}
                 </span>
                 <span style={{ fontSize: 12, color: '#8B949E', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>

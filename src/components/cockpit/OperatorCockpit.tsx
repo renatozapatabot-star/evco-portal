@@ -141,8 +141,8 @@ export function OperatorCockpit({ data, operatorName, operatorId }: Props) {
           onClick={() => setFlowModeOpen(true)}
           style={{
             width: '100%', padding: '14px 20px', borderRadius: 10, marginTop: 8,
-            background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.2)',
-            color: '#eab308', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+            background: 'rgba(192,197,206,0.08)', border: '1px solid rgba(192,197,206,0.2)',
+            color: '#E8EAED', fontSize: 14, fontWeight: 600, cursor: 'pointer',
             minHeight: 60, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
           }}
         >

@@ -83,7 +83,7 @@ export function DocumentosTab({
         style={{
           minHeight: 60,
           padding: '0 20px',
-          background: missingDocs.length === 0 ? 'rgba(234,179,8,0.35)' : GOLD,
+          background: missingDocs.length === 0 ? 'rgba(192,197,206,0.35)' : GOLD,
           color: '#0B1220',
           border: 'none',
           borderRadius: 12,

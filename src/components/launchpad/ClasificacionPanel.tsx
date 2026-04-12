@@ -11,7 +11,7 @@ interface Props {
 
 function ConfidenceBadge({ value }: { value: number }) {
   const color = value >= 85 ? '#16A34A' : value >= 70 ? '#D4952A' : '#DC2626'
-  const bg = value >= 85 ? 'rgba(34,197,94,0.1)' : value >= 70 ? 'rgba(234,179,8,0.08)' : 'rgba(239,68,68,0.1)'
+  const bg = value >= 85 ? 'rgba(34,197,94,0.1)' : value >= 70 ? 'rgba(192,197,206,0.08)' : 'rgba(239,68,68,0.1)'
   return (
     <span
       className="font-mono"
@@ -101,8 +101,8 @@ export function ClasificacionPanel({ detail, onComplete, loading }: Props) {
                 gap: 12,
                 padding: 12,
                 borderRadius: 8,
-                border: `1px solid ${selected === alt.fraccion ? '#eab308' : '#E8E5E0'}`,
-                background: selected === alt.fraccion ? 'rgba(234,179,8,0.08)' : 'rgba(9,9,11,0.75)',
+                border: `1px solid ${selected === alt.fraccion ? '#E8EAED' : '#E8E5E0'}`,
+                background: selected === alt.fraccion ? 'rgba(192,197,206,0.08)' : 'rgba(9,9,11,0.75)',
                 cursor: 'pointer',
                 minHeight: 48,
               }}
@@ -113,7 +113,7 @@ export function ClasificacionPanel({ detail, onComplete, loading }: Props) {
                 value={alt.fraccion}
                 checked={selected === alt.fraccion}
                 onChange={() => setSelected(alt.fraccion)}
-                style={{ accentColor: '#eab308' }}
+                style={{ accentColor: '#E8EAED' }}
               />
               <span className="font-mono" style={{ fontSize: 14, fontWeight: 600 }}>
                 {alt.fraccion}
@@ -144,7 +144,7 @@ export function ClasificacionPanel({ detail, onComplete, loading }: Props) {
                 flex: 1,
                 minHeight: 60,
                 borderRadius: 12,
-                background: '#eab308',
+                background: '#E8EAED',
                 color: 'rgba(9,9,11,0.75)',
                 border: 'none',
                 fontSize: 16,
@@ -180,7 +180,7 @@ export function ClasificacionPanel({ detail, onComplete, loading }: Props) {
               flex: 1,
               minHeight: 60,
               borderRadius: 12,
-              background: selected ? '#eab308' : '#E8E5E0',
+              background: selected ? '#E8EAED' : '#E8E5E0',
               color: selected ? '#FFFFFF' : '#9B9B9B',
               border: 'none',
               fontSize: 16,

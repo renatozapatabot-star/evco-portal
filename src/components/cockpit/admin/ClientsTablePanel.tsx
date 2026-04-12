@@ -14,7 +14,7 @@ export function ClientsTablePanel({ companies }: Props) {
       background: 'rgba(9,9,11,0.75)',
       borderRadius: 14,
       border: '1px solid rgba(255,255,255,0.08)',
-      borderTop: '3px solid rgba(201,168,76,0.4)',
+      borderTop: '3px solid rgba(192,197,206,0.4)',
       padding: 16,
     }}>
       <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -65,7 +65,7 @@ export function ClientsTablePanel({ companies }: Props) {
                     </Link>
                   </td>
                   <td className="font-mono" style={{
-                    padding: '10px 12px', fontSize: 13, color: '#eab308', textAlign: 'right', fontWeight: 600,
+                    padding: '10px 12px', fontSize: 13, color: '#E8EAED', textAlign: 'right', fontWeight: 600,
                   }}>
                     {c.trafico_count}
                   </td>

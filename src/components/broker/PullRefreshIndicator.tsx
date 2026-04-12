@@ -54,7 +54,7 @@ export function PullRefreshIndicator({ pullDistance, isRefreshing, progress }: P
           cy={10}
           r={8}
           fill="none"
-          stroke="var(--gold, #eab308)"
+          stroke="var(--gold, #E8EAED)"
           strokeWidth={2.5}
           strokeDasharray="38 12"
           strokeLinecap="round"
@@ -63,7 +63,7 @@ export function PullRefreshIndicator({ pullDistance, isRefreshing, progress }: P
       <span style={{
         fontSize: 13,
         fontWeight: 600,
-        color: 'var(--gold-dark, #8B6914)',
+        color: 'var(--gold-dark, #7A7E86)',
       }}>
         {isRefreshing ? 'Actualizando...' : progress >= 1 ? 'Soltar para actualizar' : 'Deslizar para actualizar'}
       </span>

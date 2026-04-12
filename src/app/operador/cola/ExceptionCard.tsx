@@ -234,7 +234,7 @@ export function ExceptionCard({ event, onAction }: ExceptionCardProps) {
             minWidth: 100,
             minHeight: 60,
             padding: '12px 16px',
-            background: '#eab308',
+            background: '#E8EAED',
             color: '#0D0D0C',
             border: 'none',
             borderRadius: 12,
@@ -244,7 +244,7 @@ export function ExceptionCard({ event, onAction }: ExceptionCardProps) {
             transition: 'background 150ms ease',
           }}
           onMouseEnter={(e) => { e.currentTarget.style.background = '#ca8a04' }}
-          onMouseLeave={(e) => { e.currentTarget.style.background = '#eab308' }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = '#E8EAED' }}
         >
           {getCTAText(event)}
         </button>

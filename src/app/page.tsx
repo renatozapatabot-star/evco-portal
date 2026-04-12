@@ -92,18 +92,18 @@ export default async function Dashboard() {
       {isDemo && <DemoHints />}
       {isDemo && (
         <div style={{
-          background: 'rgba(201,168,76,0.08)',
-          borderBottom: '1px solid rgba(201,168,76,0.2)',
+          background: 'rgba(192,197,206,0.08)',
+          borderBottom: '1px solid rgba(192,197,206,0.2)',
           padding: '10px 16px',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           flexWrap: 'wrap', gap: 8, marginBottom: 12, borderRadius: 8,
         }}>
-          <span style={{ fontSize: 13, color: '#eab308' }}>
+          <span style={{ fontSize: 13, color: '#E8EAED' }}>
             <strong>MODO DEMO</strong>
             <span style={{ color: '#8B949E', marginLeft: 8 }}>Datos de muestra · DEMO PLASTICS S.A. DE C.V.</span>
           </span>
           <a href="/demo/request-access" style={{
-            background: '#eab308', color: '#111', padding: '6px 16px',
+            background: '#E8EAED', color: '#111', padding: '6px 16px',
             borderRadius: 6, fontSize: 12, fontWeight: 700, textDecoration: 'none',
             minHeight: 36, display: 'inline-flex', alignItems: 'center',
           }}>

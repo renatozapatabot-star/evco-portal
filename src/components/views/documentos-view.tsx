@@ -143,7 +143,7 @@ export function DocumentosView() {
           border: `1px solid ${completedRequired === requiredDocs.length ? 'rgba(22,163,74,0.25)' : 'rgba(217,119,6,0.25)'}`,
           borderRadius: 10, padding: '14px 16px',
         }}>
-          <div style={{ fontSize: 14, fontWeight: 700, color: completedRequired === requiredDocs.length ? 'var(--success, #16A34A)' : 'var(--gold-dark, #8B6914)' }}>
+          <div style={{ fontSize: 14, fontWeight: 700, color: completedRequired === requiredDocs.length ? 'var(--success, #16A34A)' : 'var(--gold-dark, #7A7E86)' }}>
             {completedRequired} de {requiredDocs.length} documentos completos
           </div>
           {/* Progress bar */}
@@ -151,7 +151,7 @@ export function DocumentosView() {
             <div style={{
               width: `${Math.round((completedRequired / requiredDocs.length) * 100)}%`,
               height: '100%',
-              background: completedRequired === requiredDocs.length ? 'var(--success, #16A34A)' : 'var(--gold, #eab308)',
+              background: completedRequired === requiredDocs.length ? 'var(--success, #16A34A)' : 'var(--gold, #E8EAED)',
               borderRadius: 9999,
               transition: 'width 0.4s ease',
             }} />
@@ -306,7 +306,7 @@ export function DocumentosView() {
             onDragLeave={() => setDragOver(false)}
             onDrop={e => { e.preventDefault(); setDragOver(false); if (e.dataTransfer.files[0]) handleUploadFile(e.dataTransfer.files[0]) }}
             style={{
-              border: `2px dashed ${dragOver ? 'var(--gold, #eab308)' : 'var(--border, #E8E5E0)'}`,
+              border: `2px dashed ${dragOver ? 'var(--gold, #E8EAED)' : 'var(--border, #E8E5E0)'}`,
               borderRadius: 12, padding: '24px 16px', textAlign: 'center', cursor: 'pointer',
               background: dragOver ? 'rgba(196,150,60,0.04)' : 'var(--bg-card)',
               transition: 'all 150ms',
@@ -336,7 +336,7 @@ export function DocumentosView() {
             {uploading ? (
               <div>
                 <div style={{ height: 6, background: 'var(--border, #E8E5E0)', borderRadius: 3 }}>
-                  <div style={{ width: `${uploadProgress}%`, height: '100%', background: 'var(--gold, #eab308)', borderRadius: 3, transition: 'width 80ms linear' }} />
+                  <div style={{ width: `${uploadProgress}%`, height: '100%', background: 'var(--gold, #E8EAED)', borderRadius: 3, transition: 'width 80ms linear' }} />
                 </div>
                 <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4, textAlign: 'center' }}>{uploadProgress}%</div>
               </div>

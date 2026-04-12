@@ -88,7 +88,7 @@ export function FlowMode({ items, onClose, operatorName }: Props) {
         </div>
         <button onClick={onClose} style={{
           padding: '14px 32px', borderRadius: 10,
-          background: '#eab308', color: '#111', fontSize: 16, fontWeight: 700,
+          background: '#E8EAED', color: '#111', fontSize: 16, fontWeight: 700,
           border: 'none', cursor: 'pointer', minHeight: 60,
         }}>
           Volver al cockpit →
@@ -114,7 +114,7 @@ export function FlowMode({ items, onClose, operatorName }: Props) {
         marginBottom: 24,
       }}>
         <div>
-          <span style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#eab308' }}>
+          <span style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#E8EAED' }}>
             Modo flujo
           </span>
           <span className="font-mono" style={{ fontSize: 13, color: '#8B949E', marginLeft: 12 }}>
@@ -134,7 +134,7 @@ export function FlowMode({ items, onClose, operatorName }: Props) {
       <div style={{ height: 3, background: 'rgba(255,255,255,0.06)', borderRadius: 2, marginBottom: 24, overflow: 'hidden' }}>
         <div style={{
           width: `${((currentIndex + 1) / items.length) * 100}%`,
-          height: '100%', background: '#eab308', borderRadius: 2,
+          height: '100%', background: '#E8EAED', borderRadius: 2,
           transition: 'width 300ms ease',
         }} />
       </div>
@@ -162,9 +162,9 @@ export function FlowMode({ items, onClose, operatorName }: Props) {
       <div style={{
         position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)',
         background: 'rgba(9,9,11,0.75)', borderRadius: 10, padding: '10px 20px',
-        border: '1px solid rgba(201,168,76,0.2)',
+        border: '1px solid rgba(192,197,206,0.2)',
       }}>
-        <span className="font-mono" style={{ fontSize: 20, fontWeight: 800, color: '#eab308' }}>
+        <span className="font-mono" style={{ fontSize: 20, fontWeight: 800, color: '#E8EAED' }}>
           {approved.size}
         </span>
         <span style={{ fontSize: 12, color: '#8B949E', marginLeft: 8 }}>

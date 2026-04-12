@@ -40,8 +40,8 @@ export function ValueSummary({ pedimentosThisMonth, daysSinceRojo, totalClassifi
         )}
         {hoursSaved > 0 && (
           <span>
-            <Clock size={12} style={{ display: 'inline', verticalAlign: 'middle', color: '#eab308', marginRight: 3 }} />
-            Ahorro: <strong style={{ color: '#eab308', fontFamily: 'var(--font-mono)' }}>{hoursSaved}h</strong> de trabajo manual
+            <Clock size={12} style={{ display: 'inline', verticalAlign: 'middle', color: '#E8EAED', marginRight: 3 }} />
+            Ahorro: <strong style={{ color: '#E8EAED', fontFamily: 'var(--font-mono)' }}>{hoursSaved}h</strong> de trabajo manual
           </span>
         )}
         {pedimentosThisMonth === 0 && daysSinceRojo === 0 && hoursSaved === 0 && (

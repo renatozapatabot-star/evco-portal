@@ -41,7 +41,7 @@ interface Assessment {
 const RISK_COLORS = {
   low: { color: '#16A34A', bg: 'rgba(34,197,94,0.1)', border: 'rgba(34,197,94,0.2)', label: 'BAJO' },
   moderate: { color: '#6B7280', bg: '#F9FAFB', border: '#E5E7EB', label: 'MODERADO' },
-  elevated: { color: '#D97706', bg: 'rgba(234,179,8,0.08)', border: 'rgba(234,179,8,0.2)', label: 'ELEVADO' },
+  elevated: { color: '#D97706', bg: 'rgba(192,197,206,0.08)', border: 'rgba(192,197,206,0.2)', label: 'ELEVADO' },
   high: { color: '#DC2626', bg: 'rgba(239,68,68,0.1)', border: '#FECACA', label: 'ALTO' },
 } as const
 

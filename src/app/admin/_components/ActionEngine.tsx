@@ -62,10 +62,10 @@ export function ActionEngine({ draft, onActionComplete, totalPending }: ActionEn
       background: BG_CARD,
       backdropFilter: 'blur(20px)',
       WebkitBackdropFilter: 'blur(20px)',
-      border: `1px solid rgba(234,179,8,0.25)`,
+      border: `1px solid rgba(192,197,206,0.25)`,
       borderRadius: 20,
       padding: 24,
-      boxShadow: '0 0 30px rgba(234,179,8,0.15), 0 10px 30px rgba(0,0,0,0.4)',
+      boxShadow: '0 0 30px rgba(192,197,206,0.15), 0 10px 30px rgba(0,0,0,0.4)',
       flex: 1,
     }}>
       {/* Header */}
@@ -104,7 +104,7 @@ export function ActionEngine({ draft, onActionComplete, totalPending }: ActionEn
             width: 56,
             height: 56,
             borderRadius: '50%',
-            background: 'rgba(234,179,8,0.12)',
+            background: 'rgba(192,197,206,0.12)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',

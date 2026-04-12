@@ -37,7 +37,7 @@ export function OperationalKPIs({ enProceso, cruzadosHoy, listosDespacho, emails
       href: '/traficos?pipeline_stage=ready_to_file',
       value: String(listosDespacho),
       label: 'Listos despacho',
-      color: 'var(--gold, #eab308)',
+      color: 'var(--gold, #E8EAED)',
     },
     {
       href: '/comunicaciones',
@@ -55,7 +55,7 @@ export function OperationalKPIs({ enProceso, cruzadosHoy, listosDespacho, emails
       href: '/ahorro',
       value: fmtCurrency(ahorroTmec, { currency: 'USD' }),
       label: 'Ahorro T-MEC',
-      color: 'var(--gold, #eab308)',
+      color: 'var(--gold, #E8EAED)',
     }] : []),
   ]
 

@@ -478,7 +478,7 @@ function SwipeCard({
   }
 
   const rightBg = 'rgba(34,197,94,0.18)'
-  const leftBg = 'rgba(234,179,8,0.18)'
+  const leftBg = 'rgba(192,197,206,0.18)'
 
   return (
     <div style={{ position: 'relative', minHeight: 72, touchAction: 'pan-y' }}>

@@ -39,7 +39,7 @@ export function AduanaAskPanel() {
     <div style={{
       background: 'rgba(9,9,11,0.75)', borderRadius: 14,
       border: '1px solid rgba(255,255,255,0.08)',
-      borderTop: '3px solid rgba(201,168,76,0.4)',
+      borderTop: '3px solid rgba(192,197,206,0.4)',
       padding: 16,
     }}>
       <div style={{
@@ -93,7 +93,7 @@ export function AduanaAskPanel() {
           type="submit"
           disabled={loading || !question.trim()}
           style={{
-            background: '#eab308',
+            background: '#E8EAED',
             color: '#05070B',
             border: 'none',
             borderRadius: 10,
@@ -115,9 +115,9 @@ export function AduanaAskPanel() {
         <div style={{
           marginTop: 12,
           padding: '12px 16px',
-          background: 'rgba(201,168,76,0.06)',
+          background: 'rgba(192,197,206,0.06)',
           borderRadius: 10,
-          border: '1px solid rgba(201,168,76,0.15)',
+          border: '1px solid rgba(192,197,206,0.15)',
           fontSize: 14,
           color: '#E6EDF3',
           lineHeight: 1.5,

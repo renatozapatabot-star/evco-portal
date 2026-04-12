@@ -238,7 +238,7 @@ export default function PedimentosPage() {
                 style={{
                   textDecoration: 'none', color: 'inherit',
                   background: 'var(--bg-card)', border: '1px solid var(--border)',
-                  borderLeft: `3px solid ${g.tmec ? 'var(--success)' : 'var(--gold, #eab308)'}`,
+                  borderLeft: `3px solid ${g.tmec ? 'var(--success)' : 'var(--gold, #E8EAED)'}`,
                   borderRadius: 10, padding: '14px 16px', display: 'block', minHeight: 60,
                 }}
               >
@@ -292,7 +292,7 @@ export default function PedimentosPage() {
                       <Link
                         href={`/traficos/${encodeURIComponent(g.trafico)}`}
                         onClick={e => e.stopPropagation()}
-                        style={{ fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 600, color: 'var(--gold-dark, #8B6914)', textDecoration: 'none' }}
+                        style={{ fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 600, color: 'var(--gold-dark, #7A7E86)', textDecoration: 'none' }}
                       >
                         {fmtId(g.trafico)}
                       </Link>

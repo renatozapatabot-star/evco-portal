@@ -420,7 +420,7 @@ export function ShipmentRequest() {
               padding: '16px 32px',
               borderRadius: 14,
               border: 'none',
-              background: canSubmit && state !== 'loading' ? '#eab308' : 'rgba(255,255,255,0.06)',
+              background: canSubmit && state !== 'loading' ? '#E8EAED' : 'rgba(255,255,255,0.06)',
               color: canSubmit && state !== 'loading' ? '#000' : '#64748b',
               fontSize: 15,
               fontWeight: 700,

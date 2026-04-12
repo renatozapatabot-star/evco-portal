@@ -63,7 +63,7 @@ Patente 3596 · Aduana 240`
                 <Link href={`/traficos/${encodeURIComponent(item.trafico)}`} style={{
                   textDecoration: 'none',
                 }}>
-                  <span className="font-mono" style={{ fontSize: 13, fontWeight: 600, color: '#eab308' }}>
+                  <span className="font-mono" style={{ fontSize: 13, fontWeight: 600, color: '#E8EAED' }}>
                     {item.trafico}
                   </span>
                 </Link>
@@ -75,8 +75,8 @@ Patente 3596 · Aduana 240`
               <button
                 onClick={() => copyMessage(item)}
                 style={{
-                  background: copiedId === item.id ? 'rgba(22,163,74,0.15)' : 'rgba(201,168,76,0.15)',
-                  color: copiedId === item.id ? '#16A34A' : '#eab308',
+                  background: copiedId === item.id ? 'rgba(22,163,74,0.15)' : 'rgba(192,197,206,0.15)',
+                  color: copiedId === item.id ? '#16A34A' : '#E8EAED',
                   border: 'none', borderRadius: 8, padding: '8px 14px',
                   fontSize: 12, fontWeight: 600, cursor: 'pointer',
                   whiteSpace: 'nowrap', minHeight: 36,

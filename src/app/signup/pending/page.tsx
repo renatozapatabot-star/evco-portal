@@ -41,7 +41,7 @@ export default function SignupPendingPage() {
 
         <Link href="/login" style={{
           display: 'inline-block', marginTop: 24, fontSize: 13,
-          color: 'var(--gold, #eab308)', textDecoration: 'none',
+          color: 'var(--gold, #E8EAED)', textDecoration: 'none',
         }}>
           ← Volver al inicio
         </Link>

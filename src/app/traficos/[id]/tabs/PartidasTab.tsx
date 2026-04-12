@@ -163,7 +163,7 @@ export function PartidasTab({ traficoId, partidas }: PartidasTabProps) {
                           fontWeight: 700,
                           color: GOLD,
                           padding: '2px 8px',
-                          background: 'rgba(234,179,8,0.12)',
+                          background: 'rgba(192,197,206,0.12)',
                           border: `1px solid ${GOLD}66`,
                           borderRadius: 999,
                         }}

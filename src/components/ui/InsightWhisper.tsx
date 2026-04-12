@@ -76,7 +76,7 @@ export function InsightWhisper({ text, delay = 1500, duration = 8000 }: InsightW
         background: 'linear-gradient(135deg, rgba(196,150,60,0.06) 0%, rgba(196,150,60,0.02) 100%)',
         borderBottom: '1px solid rgba(196,150,60,0.15)',
         fontSize: 13,
-        color: 'var(--gold-dark, #8B6914)',
+        color: 'var(--gold-dark, #7A7E86)',
         textAlign: 'center',
         fontWeight: 500,
         cursor: 'pointer',

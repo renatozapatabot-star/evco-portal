@@ -198,7 +198,7 @@ export default function InteligenciaPage() {
             <>
               AGUILA ha clasificado <strong style={{ color: '#E6EDF3' }}>{s.totalClassified.toLocaleString()}</strong> productos con una confianza promedio de{' '}
               <strong style={{ color: '#C0C5CE' }}>{s.avgConfidence}%</strong>.
-              {s.totalClassified > 100 && <> Esto representa un ahorro estimado de <strong style={{ color: '#eab308' }}>{Math.round(s.totalClassified * 3 / 60)} horas</strong> de trabajo manual.</>}
+              {s.totalClassified > 100 && <> Esto representa un ahorro estimado de <strong style={{ color: '#E8EAED' }}>{Math.round(s.totalClassified * 3 / 60)} horas</strong> de trabajo manual.</>}
             </>
           ) : (
             'La clasificación automática se activará cuando se procesen productos.'

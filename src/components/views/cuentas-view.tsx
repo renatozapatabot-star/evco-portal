@@ -148,7 +148,7 @@ export function CuentasView() {
                       </div>
                       <div style={{
                         width: '100%', minHeight: 4, height: `${Math.max(pct, 4)}%`,
-                        background: i === finIntel.slice(-12).length - 1 ? GOLD : 'rgba(201,168,76,0.3)',
+                        background: i === finIntel.slice(-12).length - 1 ? GOLD : 'rgba(192,197,206,0.3)',
                         borderRadius: '3px 3px 0 0', transition: 'height 0.3s',
                       }} />
                       <div style={{ fontSize: 8.5, color: '#9ca3af', fontFamily: 'var(--font-data)' }}>

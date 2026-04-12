@@ -99,7 +99,7 @@ export function PriorityZone({ atRiskShipments }: Props) {
                 {s.description || s.status}
               </span>
               <span style={{
-                fontSize: 12, fontWeight: 600, color: '#eab308',
+                fontSize: 12, fontWeight: 600, color: '#E8EAED',
                 flexShrink: 0, display: 'flex', alignItems: 'center', gap: 4,
               }}>
                 Revisar <ArrowRight size={12} />

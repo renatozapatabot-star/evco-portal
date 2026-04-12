@@ -14,7 +14,7 @@ const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env
 
 const TIER_CONFIG = {
   1: { label: 'Alta confianza', time: '~2 min', color: 'var(--success)', bg: 'rgba(34,197,94,0.1)' },
-  2: { label: 'Confianza media', time: '~5 min', color: 'var(--warning)', bg: 'rgba(234,179,8,0.08)' },
+  2: { label: 'Confianza media', time: '~5 min', color: 'var(--warning)', bg: 'rgba(192,197,206,0.08)' },
   3: { label: 'Revisión completa', time: 'Sin límite · precisión sobre velocidad', color: 'var(--danger-500)', bg: 'rgba(239,68,68,0.1)' },
 }
 
@@ -226,7 +226,7 @@ export default function DraftReviewPage() {
         width: 80, height: 80, borderRadius: 20,
         background: GOLD_GRADIENT,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        boxShadow: '0 0 60px rgba(201,168,76,0.4)',
+        boxShadow: '0 0 60px rgba(192,197,206,0.4)',
         animation: 'blessing-pulse 0.8s ease-in-out',
         marginBottom: 24,
       }}>
@@ -240,9 +240,9 @@ export default function DraftReviewPage() {
       </div>
       <style>{`
         @keyframes blessing-pulse {
-          0% { transform: scale(0.8); opacity: 0; box-shadow: 0 0 0 0 rgba(201,168,76,0.6); }
-          50% { transform: scale(1.1); opacity: 1; box-shadow: 0 0 80px 20px rgba(201,168,76,0.3); }
-          100% { transform: scale(1); opacity: 1; box-shadow: 0 0 60px rgba(201,168,76,0.4); }
+          0% { transform: scale(0.8); opacity: 0; box-shadow: 0 0 0 0 rgba(192,197,206,0.6); }
+          50% { transform: scale(1.1); opacity: 1; box-shadow: 0 0 80px 20px rgba(192,197,206,0.3); }
+          100% { transform: scale(1); opacity: 1; box-shadow: 0 0 60px rgba(192,197,206,0.4); }
         }
       `}</style>
     </div>

@@ -105,7 +105,7 @@ export default function ProposalEnginePage() {
                     {new Date(l.run_at).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'America/Chicago' })}
                   </td>
                   <td className="font-mono" style={{ padding: '8px 12px', fontSize: 12, color: '#8B949E' }}>{l.duration_ms}ms</td>
-                  <td className="font-mono" style={{ padding: '8px 12px', fontSize: 12, color: '#eab308', fontWeight: 600 }}>{l.proposals_generated}</td>
+                  <td className="font-mono" style={{ padding: '8px 12px', fontSize: 12, color: '#E8EAED', fontWeight: 600 }}>{l.proposals_generated}</td>
                   <td className="font-mono" style={{ padding: '8px 12px', fontSize: 12, color: '#16A34A' }}>{l.rule_based_count}</td>
                   <td className="font-mono" style={{ padding: '8px 12px', fontSize: 12, color: '#D97706' }}>{l.llm_based_count}</td>
                   <td className="font-mono" style={{ padding: '8px 12px', fontSize: 12, color: '#8B949E' }}>${(l.llm_cost_usd || 0).toFixed(4)}</td>

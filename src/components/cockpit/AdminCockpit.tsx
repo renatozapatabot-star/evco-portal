@@ -99,8 +99,8 @@ export function AdminCockpit({ data, operatorName }: Props) {
       {realtimeToast && (
         <div style={{
           padding: '8px 16px', borderRadius: 8, marginBottom: 8,
-          background: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.2)',
-          fontSize: 12, color: '#eab308', animation: 'fadeIn 300ms ease',
+          background: 'rgba(192,197,206,0.1)', border: '1px solid rgba(192,197,206,0.2)',
+          fontSize: 12, color: '#E8EAED', animation: 'fadeIn 300ms ease',
         }}>
           ● {realtimeToast}
         </div>
@@ -203,7 +203,7 @@ export function AdminCockpit({ data, operatorName }: Props) {
                 <div style={{ fontSize: 11, color: '#8B949E' }}>tráficos totales</div>
               </div>
               <div>
-                <div className="font-mono" style={{ fontSize: 24, fontWeight: 800, color: '#eab308' }}>
+                <div className="font-mono" style={{ fontSize: 24, fontWeight: 800, color: '#E8EAED' }}>
                   {biz.activeTraficos}
                 </div>
                 <div style={{ fontSize: 11, color: '#8B949E' }}>en proceso</div>
@@ -268,7 +268,7 @@ export function AdminCockpit({ data, operatorName }: Props) {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 <div>
                   <div style={{ fontSize: 11, color: '#6E7681', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Tráfico</div>
-                  <div className="font-mono" style={{ fontSize: 20, fontWeight: 700, color: '#eab308' }}>{item.trafico}</div>
+                  <div className="font-mono" style={{ fontSize: 20, fontWeight: 700, color: '#E8EAED' }}>{item.trafico}</div>
                 </div>
                 <div>
                   <div style={{ fontSize: 11, color: '#6E7681', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Cliente</div>
@@ -289,7 +289,7 @@ export function AdminCockpit({ data, operatorName }: Props) {
                 <a href={'/traficos/' + encodeURIComponent(item.trafico)} style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   padding: '14px 20px', borderRadius: 10, marginTop: 12,
-                  background: '#eab308', color: '#111', fontSize: 15, fontWeight: 700,
+                  background: '#E8EAED', color: '#111', fontSize: 15, fontWeight: 700,
                   textDecoration: 'none', minHeight: 60,
                 }}>
                   Abrir tráfico completo →

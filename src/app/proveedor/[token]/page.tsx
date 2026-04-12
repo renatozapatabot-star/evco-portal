@@ -619,7 +619,7 @@ export default function ProveedorPage() {
                                     minHeight: 44,
                                     padding: '10px 16px',
                                     borderRadius: 12,
-                                    background: isUploading ? 'rgba(234,179,8,0.4)' : '#eab308',
+                                    background: isUploading ? 'rgba(192,197,206,0.4)' : '#E8EAED',
                                     color: '#0B1220',
                                     border: 'none',
                                     fontSize: 14,
@@ -688,7 +688,7 @@ export default function ProveedorPage() {
                 minHeight: 60,
                 padding: '18px 24px',
                 borderRadius: 16,
-                background: uploading ? 'rgba(234,179,8,0.4)' : '#eab308',
+                background: uploading ? 'rgba(192,197,206,0.4)' : '#E8EAED',
                 color: '#0B1220',
                 border: 'none',
                 fontSize: 16,
@@ -1234,7 +1234,7 @@ const styles = {
   logo: {
     fontSize: 24,
     fontWeight: 800,
-    color: '#eab308',
+    color: '#E8EAED',
     letterSpacing: '0.1em',
   } as React.CSSProperties,
   chromeSubtitle: {

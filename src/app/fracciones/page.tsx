@@ -74,12 +74,12 @@ export default function FraccionesPage() {
           disabled={loading || !query.trim()}
           style={{
             padding: '0 24px', height: 52, borderRadius: 14,
-            background: '#eab308', color: '#05070B', fontWeight: 700, fontSize: 14,
+            background: '#E8EAED', color: '#05070B', fontWeight: 700, fontSize: 14,
             border: 'none', cursor: 'pointer',
             opacity: loading || !query.trim() ? 0.5 : 1,
             transition: 'opacity 150ms, box-shadow 150ms',
           }}
-          onMouseEnter={e => { if (!loading) e.currentTarget.style.boxShadow = '0 0 16px rgba(234,179,8,0.35)' }}
+          onMouseEnter={e => { if (!loading) e.currentTarget.style.boxShadow = '0 0 16px rgba(192,197,206,0.35)' }}
           onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none' }}
         >
           {loading ? <Loader2 size={18} className="animate-spin" /> : 'Buscar'}

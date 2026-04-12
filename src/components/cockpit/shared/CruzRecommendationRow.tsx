@@ -34,7 +34,7 @@ export function AduanaRecommendationRow({ proposal, onApprove, onReview }: Props
   }
 
   const dotColor = proposal.confidence >= 0.90 ? '#16A34A'
-    : proposal.confidence >= 0.75 ? '#eab308'
+    : proposal.confidence >= 0.75 ? '#E8EAED'
     : '#D97706'
 
   const handleApprove = async () => {
@@ -54,7 +54,7 @@ export function AduanaRecommendationRow({ proposal, onApprove, onReview }: Props
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 6, padding: '4px 8px',
-      background: 'rgba(201,168,76,0.04)', borderRadius: 4, marginTop: 4,
+      background: 'rgba(192,197,206,0.04)', borderRadius: 4, marginTop: 4,
       flexWrap: 'wrap',
     }}>
       {/* Confidence dot */}
@@ -65,7 +65,7 @@ export function AduanaRecommendationRow({ proposal, onApprove, onReview }: Props
 
       {/* Proposal text */}
       <span style={{
-        fontSize: 11, color: '#eab308', flex: 1,
+        fontSize: 11, color: '#E8EAED', flex: 1,
         overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
       }}>
         {proposal.proposal_label_es}
@@ -78,7 +78,7 @@ export function AduanaRecommendationRow({ proposal, onApprove, onReview }: Props
           disabled={loading}
           style={{
             fontSize: 10, fontWeight: 700, color: '#111',
-            background: '#eab308', border: 'none',
+            background: '#E8EAED', border: 'none',
             padding: '4px 12px', borderRadius: 4,
             cursor: loading ? 'wait' : 'pointer',
             opacity: loading ? 0.6 : 1,

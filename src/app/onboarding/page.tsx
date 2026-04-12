@@ -43,7 +43,7 @@ function OnboardingContent() {
           {steps.map(s => (
             <div key={s.num} style={{
               flex: 1, height: 4, borderRadius: 2,
-              background: s.num <= step ? 'var(--gold, #eab308)' : 'rgba(255,255,255,0.1)',
+              background: s.num <= step ? 'var(--gold, #E8EAED)' : 'rgba(255,255,255,0.1)',
               transition: 'background 300ms',
             }} />
           ))}
@@ -166,7 +166,7 @@ function OnboardingContent() {
 
 const btnStyle: React.CSSProperties = {
   width: '100%', padding: '14px 20px', borderRadius: 10,
-  background: 'var(--gold, #eab308)', color: 'rgba(255,255,255,0.03)',
+  background: 'var(--gold, #E8EAED)', color: 'rgba(255,255,255,0.03)',
   fontSize: 15, fontWeight: 700, border: 'none', cursor: 'pointer',
 }
 

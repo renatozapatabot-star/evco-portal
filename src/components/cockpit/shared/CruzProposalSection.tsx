@@ -66,7 +66,7 @@ export function AduanaProposalSection({ proposal, subjectLabel, onApprove, onRej
   }
 
   const confidenceColor = proposal.confidence >= 0.90 ? '#16A34A'
-    : proposal.confidence >= 0.75 ? '#eab308'
+    : proposal.confidence >= 0.75 ? '#E8EAED'
     : '#D97706'
   const confidencePct = Math.round(proposal.confidence * 100)
 
@@ -97,14 +97,14 @@ export function AduanaProposalSection({ proposal, subjectLabel, onApprove, onRej
     <>
       <div style={{
         background: 'rgba(9,9,11,0.75)', borderRadius: 14, padding: '24px',
-        border: `1px solid ${proposal.confidence >= 0.85 ? 'rgba(201,168,76,0.3)' : 'rgba(255,255,255,0.08)'}`,
+        border: `1px solid ${proposal.confidence >= 0.85 ? 'rgba(192,197,206,0.3)' : 'rgba(255,255,255,0.08)'}`,
         borderTop: `3px solid ${confidenceColor}`,
         marginBottom: 16,
       }}>
         {/* Header */}
         <div style={{
           fontSize: 10, fontWeight: 700, textTransform: 'uppercase',
-          letterSpacing: '0.08em', color: '#eab308', marginBottom: 12,
+          letterSpacing: '0.08em', color: '#E8EAED', marginBottom: 12,
         }}>
           CRUZ propone
         </div>
@@ -132,7 +132,7 @@ export function AduanaProposalSection({ proposal, subjectLabel, onApprove, onRej
 
         {/* Reasoning bullets */}
         {proposal.reasoning_bullets && proposal.reasoning_bullets.length > 0 && (
-          <div style={{ marginBottom: 16, paddingLeft: 12, borderLeft: '2px solid rgba(201,168,76,0.2)' }}>
+          <div style={{ marginBottom: 16, paddingLeft: 12, borderLeft: '2px solid rgba(192,197,206,0.2)' }}>
             {proposal.reasoning_bullets.map((b: { text: string }, i: number) => (
               <div key={i} style={{ fontSize: 13, color: '#8B949E', lineHeight: 1.6, marginBottom: 4 }}>
                 {b.text}
@@ -162,7 +162,7 @@ export function AduanaProposalSection({ proposal, subjectLabel, onApprove, onRej
             disabled={status === 'loading'}
             style={{
               flex: 1, minWidth: 140, padding: '14px 24px', borderRadius: 10,
-              background: '#eab308', color: '#111', fontSize: 15, fontWeight: 700,
+              background: '#E8EAED', color: '#111', fontSize: 15, fontWeight: 700,
               border: 'none', cursor: status === 'loading' ? 'wait' : 'pointer',
               minHeight: 60, opacity: status === 'loading' ? 0.6 : 1,
             }}

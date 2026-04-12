@@ -28,7 +28,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const icons: Record<string, typeof CheckCircle | null> = { success: CheckCircle, error: AlertTriangle, info: Info, celebration: null }
-  const colors: Record<string, string> = { success: 'var(--status-green)', error: 'var(--status-red)', info: 'var(--status-blue)', celebration: 'var(--gold, #eab308)' }
+  const colors: Record<string, string> = { success: 'var(--status-green)', error: 'var(--status-red)', info: 'var(--status-blue)', celebration: 'var(--gold, #E8EAED)' }
 
   return (
     <ToastCtx.Provider value={{ toast }}>

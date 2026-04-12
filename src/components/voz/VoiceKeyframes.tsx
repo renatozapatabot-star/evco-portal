@@ -12,8 +12,8 @@ export default function VoiceKeyframes() {
         50% { transform: scale(1.15); }
       }
       @keyframes glow {
-        0%, 100% { box-shadow: 0 0 20px rgba(201,168,76,0.3), 0 0 40px rgba(201,168,76,0.1); }
-        50% { box-shadow: 0 0 40px rgba(201,168,76,0.6), 0 0 80px rgba(201,168,76,0.2); }
+        0%, 100% { box-shadow: 0 0 20px rgba(192,197,206,0.3), 0 0 40px rgba(192,197,206,0.1); }
+        50% { box-shadow: 0 0 40px rgba(192,197,206,0.6), 0 0 80px rgba(192,197,206,0.2); }
       }
       @keyframes spin {
         0% { transform: rotate(0deg); }

@@ -66,7 +66,7 @@ export function NextUpHero({ data, operatorName }: Props) {
             {/* Trafico info */}
             <div style={{ marginBottom: 12 }}>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 }}>
-                <span className="font-mono" style={{ fontSize: 22, fontWeight: 700, color: '#eab308' }}>
+                <span className="font-mono" style={{ fontSize: 22, fontWeight: 700, color: '#E8EAED' }}>
                   {nextUp.trafico}
                 </span>
                 <span style={{ fontSize: 13, color: '#8B949E' }}>· {nextUp.company}</span>
@@ -97,7 +97,7 @@ export function NextUpHero({ data, operatorName }: Props) {
                     <div style={{
                       width: `${(nextUp.docs.present / Math.max(nextUp.docs.total, 1)) * 100}%`,
                       height: '100%', borderRadius: 2,
-                      background: nextUp.docs.present === nextUp.docs.total ? '#16A34A' : '#eab308',
+                      background: nextUp.docs.present === nextUp.docs.total ? '#16A34A' : '#E8EAED',
                     }} />
                   </div>
                 </div>

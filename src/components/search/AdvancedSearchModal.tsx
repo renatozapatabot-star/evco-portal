@@ -259,7 +259,7 @@ export function AdvancedSearchModal({ open, onClose }: Props) {
             onClick={onSubmit}
             style={{
               minHeight: 44, padding: '8px 20px',
-              background: canSubmit ? '#eab308' : 'rgba(234,179,8,0.3)',
+              background: canSubmit ? '#E8EAED' : 'rgba(192,197,206,0.3)',
               border: 'none', borderRadius: 10,
               color: canSubmit ? '#05070B' : '#94a3b8',
               fontSize: 13, fontWeight: 600,

@@ -165,7 +165,7 @@ export default function CatalogoPage() {
                 fontSize: 11, fontWeight: 600, padding: '8px 14px', minHeight: 60, borderRadius: 6, cursor: 'pointer',
                 border: `1px solid ${sortBy === key ? 'var(--gold)' : 'var(--border-card)'}`,
                 background: sortBy === key ? 'rgba(196,150,60,0.08)' : 'transparent',
-                color: sortBy === key ? 'var(--gold-dark, #8B6914)' : 'var(--slate-500)',
+                color: sortBy === key ? 'var(--gold-dark, #7A7E86)' : 'var(--slate-500)',
               }}>
               {key === 'count' ? `Frecuencia${sortBy === 'count' ? ' ↓' : ''}` : key === 'totalValor' ? `Valor${sortBy === 'totalValor' ? ' ↓' : ''}` : `A-Z${sortBy === 'descripcion' ? ' ↓' : ''}`}
             </button>
@@ -212,7 +212,7 @@ export default function CatalogoPage() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                     <span className="font-mono" style={{
                       fontWeight: 600, fontSize: 13,
-                      color: g.fraccion ? 'var(--gold-dark, #8B6914)' : 'var(--slate-500)',
+                      color: g.fraccion ? 'var(--gold-dark, #7A7E86)' : 'var(--slate-500)',
                     }}>
                       {g.fraccion || 'Pendiente'}
                     </span>
@@ -261,7 +261,7 @@ export default function CatalogoPage() {
                     </td>
                     <td className="font-mono" style={{
                       fontWeight: 600, fontSize: 13,
-                      color: g.fraccion ? 'var(--gold-dark, #8B6914)' : 'var(--slate-500)',
+                      color: g.fraccion ? 'var(--gold-dark, #7A7E86)' : 'var(--slate-500)',
                     }}>
                       {g.fraccion || 'Pendiente'}
                     </td>

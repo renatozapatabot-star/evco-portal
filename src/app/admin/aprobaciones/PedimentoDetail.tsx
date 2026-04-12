@@ -219,7 +219,7 @@ export function PedimentoDetail({ draft, onActionComplete }: Props) {
               onClick={handleApprove}
               style={{
                 flex: 2, minHeight: 60, borderRadius: 14,
-                background: '#eab308', color: '#111',
+                background: '#E8EAED', color: '#111',
                 fontSize: 16, fontWeight: 800, border: 'none',
                 cursor: 'pointer', display: 'flex', alignItems: 'center',
                 justifyContent: 'center', gap: 8,
@@ -339,7 +339,7 @@ export function PedimentoDetail({ draft, onActionComplete }: Props) {
         {actionState === 'approving' && (
           <div style={{
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            minHeight: 60, color: '#eab308', fontSize: 16, fontWeight: 700,
+            minHeight: 60, color: '#E8EAED', fontSize: 16, fontWeight: 700,
           }}>
             Aprobando...
           </div>

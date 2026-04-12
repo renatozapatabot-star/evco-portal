@@ -34,8 +34,8 @@ const D = {
   text: '#E6EDF3',
   textMuted: '#64748b',
   textSub: '#94a3b8',
-  userBubble: 'rgba(234,179,8,0.12)',
-  userBorder: 'rgba(234,179,8,0.25)',
+  userBubble: 'rgba(192,197,206,0.12)',
+  userBorder: 'rgba(192,197,206,0.25)',
   aiBubble: '#0f1729',
   aiBorder: 'rgba(51,65,85,0.5)',
   aiText: '#E6EDF3',
@@ -221,7 +221,7 @@ export function AguilaChatBubble() {
     const parts = text.split(traficoPattern)
     return parts.map((part, i) => {
       if (traficoTest.test(part))
-        return <Link key={i} href={`/traficos/${part}`} onClick={() => setOpen(false)} style={{ color: GOLD, fontWeight: 700, fontFamily: 'var(--font-data)', textDecoration: 'none', borderBottom: '1px solid rgba(201,168,76,0.4)' }}>{part}</Link>
+        return <Link key={i} href={`/traficos/${part}`} onClick={() => setOpen(false)} style={{ color: GOLD, fontWeight: 700, fontFamily: 'var(--font-data)', textDecoration: 'none', borderBottom: '1px solid rgba(192,197,206,0.4)' }}>{part}</Link>
       if (/^[67]\d{6}$/.test(part))
         return <Link key={i} href={`/pedimentos?search=${part}`} onClick={() => setOpen(false)} style={{ color: GOLD, fontWeight: 700, fontFamily: 'var(--font-data)', textDecoration: 'none' }}>{part}</Link>
       return <span key={i}>{part}</span>

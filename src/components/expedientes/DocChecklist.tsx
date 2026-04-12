@@ -88,7 +88,7 @@ export function DocChecklist({ trafico, pedimento, docs, entrada, proveedor, val
         }}>
           {proveedor && <span>Proveedor: <strong>{proveedor}</strong></span>}
           {valor != null && valor > 0 && <span>Valor: <strong style={{ fontFamily: 'var(--font-mono)' }}>{fmtUSD(valor)}</strong></span>}
-          {entrada && <span>Entrada: <Link href={`/entradas/${entrada}`} style={{ color: 'var(--gold-dark, #8B6914)', fontWeight: 600, textDecoration: 'none' }} onClick={e => e.stopPropagation()}>{entrada}</Link></span>}
+          {entrada && <span>Entrada: <Link href={`/entradas/${entrada}`} style={{ color: 'var(--gold-dark, #7A7E86)', fontWeight: 600, textDecoration: 'none' }} onClick={e => e.stopPropagation()}>{entrada}</Link></span>}
         </div>
       )}
 
@@ -169,7 +169,7 @@ export function DocChecklist({ trafico, pedimento, docs, entrada, proveedor, val
         <Link href={`/traficos/${encodeURIComponent(trafico)}`}
           style={{
             display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600,
-            color: 'var(--gold-dark, #8B6914)', background: 'none',
+            color: 'var(--gold-dark, #7A7E86)', background: 'none',
             border: '1px solid var(--border-card, #E8E5E0)', borderRadius: 8,
             padding: '8px 14px', textDecoration: 'none', minHeight: 60,
           }} onClick={e => e.stopPropagation()}>

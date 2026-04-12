@@ -73,7 +73,7 @@ export default function SignupPage() {
 
           <button type="submit" disabled={pending} style={{
             marginTop: 8, padding: '14px 20px', borderRadius: 10,
-            background: 'var(--gold, #eab308)', color: 'rgba(255,255,255,0.03)',
+            background: 'var(--gold, #E8EAED)', color: 'rgba(255,255,255,0.03)',
             fontSize: 15, fontWeight: 700, border: 'none', cursor: pending ? 'wait' : 'pointer',
             opacity: pending ? 0.6 : 1,
           }}>
@@ -83,7 +83,7 @@ export default function SignupPage() {
 
         <p style={{ marginTop: 20, fontSize: 12, color: 'rgba(255,255,255,0.3)', textAlign: 'center' }}>
           ¿Ya tienes acceso?{' '}
-          <Link href="/login" style={{ color: 'var(--gold, #eab308)', textDecoration: 'none' }}>
+          <Link href="/login" style={{ color: 'var(--gold, #E8EAED)', textDecoration: 'none' }}>
             Iniciar sesión
           </Link>
         </p>

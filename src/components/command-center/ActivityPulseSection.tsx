@@ -23,7 +23,7 @@ export function ActivityPulseSection({ pulse, loading, defaultCollapsed = false,
   const textMuted = dark ? 'rgba(255,255,255,0.5)' : 'var(--text-muted)'
   const textSub = dark ? 'rgba(255,255,255,0.6)' : 'var(--text-secondary)'
   const hoverBg = dark ? 'rgba(255,255,255,0.06)' : '#F5F4F0'
-  const linkColor = dark ? 'var(--gold, #eab308)' : 'var(--gold-dark, #8B6914)'
+  const linkColor = dark ? 'var(--gold, #E8EAED)' : 'var(--gold-dark, #7A7E86)'
 
   return (
     <div className={dark ? 'cc-pulse-dark' : ''}>

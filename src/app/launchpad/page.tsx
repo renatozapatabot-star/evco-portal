@@ -119,7 +119,7 @@ function ProgressBar({ completed, total }: { completed: number; total: number })
             height: '100%',
             width: `${pct}%`,
             borderRadius: 4,
-            background: '#eab308',
+            background: '#E8EAED',
             transition: 'width 500ms cubic-bezier(0.34, 1.56, 0.64, 1)',
           }}
         />
@@ -165,7 +165,7 @@ function ActionCard({
             width: 36,
             height: 36,
             borderRadius: '50%',
-            background: '#eab308',
+            background: '#E8EAED',
             color: '#FFFFFF',
             display: 'flex',
             alignItems: 'center',
@@ -223,7 +223,7 @@ function ActionCard({
             flex: 1,
             minHeight: 60,
             borderRadius: 12,
-            background: '#eab308',
+            background: '#E8EAED',
             color: '#FFFFFF',
             border: 'none',
             fontSize: 16,
@@ -235,7 +235,7 @@ function ActionCard({
             if (!loading) (e.currentTarget.style.background = '#B8933B')
           }}
           onMouseOut={(e) => {
-            e.currentTarget.style.background = '#eab308'
+            e.currentTarget.style.background = '#E8EAED'
           }}
         >
           Empezar
@@ -367,7 +367,7 @@ function CruzAutoSection({
           borderTop: '1px solid #E8E5E0',
           fontSize: 14,
           fontWeight: 600,
-          color: '#8B6914',
+          color: '#7A7E86',
         }}
       >
         <span className="font-mono">

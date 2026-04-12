@@ -51,7 +51,7 @@ const secondaryText: React.CSSProperties = {
 }
 
 const goldButton: React.CSSProperties = {
-  background: '#eab308',
+  background: '#E8EAED',
   color: '#0D0D0C',
   border: 'none',
   borderRadius: 10,

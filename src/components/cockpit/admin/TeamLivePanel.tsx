@@ -77,7 +77,7 @@ export function TeamLivePanel() {
                 <div key={op.id} style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                   padding: '8px 10px', borderRadius: 6,
-                  background: isActive ? 'rgba(201,168,76,0.04)' : 'transparent',
+                  background: isActive ? 'rgba(192,197,206,0.04)' : 'transparent',
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <span style={{
@@ -91,7 +91,7 @@ export function TeamLivePanel() {
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     {op.actionsToday > 0 && (
-                      <span className="font-mono" style={{ fontSize: 12, color: '#eab308', fontWeight: 600 }}>
+                      <span className="font-mono" style={{ fontSize: 12, color: '#E8EAED', fontWeight: 600 }}>
                         {op.actionsToday}
                       </span>
                     )}

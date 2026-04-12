@@ -101,7 +101,7 @@ export default async function BodegaAyudaPage() {
                   padding: '0 20px',
                   marginTop: 12,
                   borderRadius: 14,
-                  background: '#eab308',
+                  background: '#E8EAED',
                   color: '#0D0D0C',
                   fontSize: 14,
                   fontWeight: 700,

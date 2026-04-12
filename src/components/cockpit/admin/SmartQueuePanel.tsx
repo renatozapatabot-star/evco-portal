@@ -35,11 +35,11 @@ export function SmartQueuePanel({ queue, onItemClick }: Props) {
               <div key={item.trafico} onClick={() => onItemClick ? onItemClick(item) : window.location.assign(`/traficos/${encodeURIComponent(item.trafico)}`)} style={{ cursor: 'pointer',
                 display: 'flex', alignItems: 'center', gap: 12,
                 padding: '10px 12px',
-                background: i === 0 ? 'rgba(201,168,76,0.06)' : 'rgba(255,255,255,0.02)',
+                background: i === 0 ? 'rgba(192,197,206,0.06)' : 'rgba(255,255,255,0.02)',
                 borderRadius: 8, border: '1px solid rgba(9,9,11,0.75)',
                 textDecoration: 'none',
               }}>
-                <span className="font-mono" style={{ fontSize: 13, fontWeight: 600, color: '#eab308', flexShrink: 0 }}>
+                <span className="font-mono" style={{ fontSize: 13, fontWeight: 600, color: '#E8EAED', flexShrink: 0 }}>
                   {item.trafico}
                 </span>
                 <span style={{ fontSize: 12, color: '#8B949E', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>

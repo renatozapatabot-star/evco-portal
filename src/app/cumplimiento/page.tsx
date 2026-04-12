@@ -22,8 +22,8 @@ const T = {
   greenBg: 'rgba(34,197,94,0.1)',
   greenBorder: 'rgba(34,197,94,0.2)',
   amber: 'var(--warning-500, #D97706)',
-  amberBg: 'rgba(234,179,8,0.08)',
-  amberBorder: 'rgba(234,179,8,0.2)',
+  amberBg: 'rgba(192,197,206,0.08)',
+  amberBorder: 'rgba(192,197,206,0.2)',
   radius: 8,
 } as const
 
@@ -333,7 +333,7 @@ function ClientCumplimientoView() {
         <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
           <div style={{
             background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: 8,
-            padding: 24, borderTop: '4px solid var(--gold, #eab308)',
+            padding: 24, borderTop: '4px solid var(--gold, #E8EAED)',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
               <Calendar size={20} style={{ color: 'var(--gold-dark)' }} />
@@ -353,7 +353,7 @@ function ClientCumplimientoView() {
 
           <div style={{
             background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: 8,
-            padding: 24, borderTop: '4px solid var(--gold, #eab308)',
+            padding: 24, borderTop: '4px solid var(--gold, #E8EAED)',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
               <FileText size={20} style={{ color: 'var(--gold-dark)' }} />
@@ -373,7 +373,7 @@ function ClientCumplimientoView() {
 
           <div style={{
             background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: 8,
-            padding: 24, borderTop: '4px solid var(--gold, #eab308)',
+            padding: 24, borderTop: '4px solid var(--gold, #E8EAED)',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
               <Phone size={20} style={{ color: 'var(--gold-dark)' }} />

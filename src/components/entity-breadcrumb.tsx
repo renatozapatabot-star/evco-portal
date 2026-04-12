@@ -35,7 +35,7 @@ export function EntityBreadcrumb({ segments }: EntityBreadcrumbProps) {
               alignItems: 'center',
               gap: 4,
               textDecoration: 'none',
-              color: i === segments.length - 1 ? 'var(--text-primary, #1A1A1A)' : 'var(--gold-dark, #8B6914)',
+              color: i === segments.length - 1 ? 'var(--text-primary, #1A1A1A)' : 'var(--gold-dark, #7A7E86)',
               fontWeight: i === segments.length - 1 ? 600 : 500,
             }}
           >

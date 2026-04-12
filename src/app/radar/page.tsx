@@ -30,7 +30,7 @@ export default async function RadarPage() {
     .limit(20)
 
   const sevColor: Record<string, string> = { critical: RED, high: AMBER, medium: GOLD, low: GREEN }
-  const sevBg: Record<string, string> = { critical: 'rgba(220,38,38,0.1)', high: 'rgba(217,119,6,0.1)', medium: 'rgba(201,168,76,0.1)', low: 'rgba(22,163,74,0.1)' }
+  const sevBg: Record<string, string> = { critical: 'rgba(220,38,38,0.1)', high: 'rgba(217,119,6,0.1)', medium: 'rgba(192,197,206,0.1)', low: 'rgba(22,163,74,0.1)' }
 
   return (
     <div style={{ fontFamily: 'var(--font-geist-sans)', color: 'var(--border)' }} className="p-4 md:px-7 md:py-6">

@@ -199,7 +199,7 @@ export default function CruzChatPage() {
             width: 40, height: 40, borderRadius: 10,
             background: GOLD_GRADIENT,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 2px 8px rgba(201,168,76,0.35)',
+            boxShadow: '0 2px 8px rgba(192,197,206,0.35)',
           }}>
             <span style={{ fontFamily: 'Georgia, serif', fontSize: 20, fontWeight: 700, color: '#05070B' }}>Z</span>
           </div>

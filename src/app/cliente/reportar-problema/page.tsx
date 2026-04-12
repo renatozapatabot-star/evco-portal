@@ -60,7 +60,7 @@ export default function ReportarProblemaPage() {
           </p>
           <button onClick={() => router.push('/')} style={{
             padding: '14px 28px', borderRadius: 10,
-            background: '#eab308', color: '#111', fontSize: 15, fontWeight: 700,
+            background: '#E8EAED', color: '#111', fontSize: 15, fontWeight: 700,
             border: 'none', cursor: 'pointer', minHeight: 60,
           }}>
             Volver al portal →
@@ -137,7 +137,7 @@ export default function ReportarProblemaPage() {
 
         <button onClick={handleSubmit} disabled={loading || !form.title || !form.description} style={{
           width: '100%', padding: '16px 24px', borderRadius: 10,
-          background: '#eab308', color: '#111', fontSize: 16, fontWeight: 700,
+          background: '#E8EAED', color: '#111', fontSize: 16, fontWeight: 700,
           border: 'none', cursor: loading ? 'wait' : 'pointer',
           opacity: (loading || !form.title || !form.description) ? 0.5 : 1, minHeight: 60,
         }}>

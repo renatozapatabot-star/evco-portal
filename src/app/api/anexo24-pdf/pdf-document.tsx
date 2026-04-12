@@ -8,7 +8,7 @@ const C = {
   text: '#1A1A1A',
   textSub: '#6B6B6B',
   textMuted: '#9C9890',
-  gold: '#C9A84C',
+  gold: '#C0C5CE',
   green: '#2D8540',
   amber: '#C47F17',
   red: '#C23B22',

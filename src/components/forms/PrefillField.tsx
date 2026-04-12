@@ -33,8 +33,8 @@ export function PrefillField({ label, name, prefill, type = 'text', placeholder,
   const [showReasoning, setShowReasoning] = useState(false)
 
   const isPrefilled = !!prefill && !touched
-  const textColor = isPrefilled ? '#eab308' : '#E6EDF3'
-  const borderColor = isPrefilled ? 'rgba(201,168,76,0.3)' : 'rgba(255,255,255,0.12)'
+  const textColor = isPrefilled ? '#E8EAED' : '#E6EDF3'
+  const borderColor = isPrefilled ? 'rgba(192,197,206,0.3)' : 'rgba(255,255,255,0.12)'
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const newVal = e.target.value
@@ -57,8 +57,8 @@ export function PrefillField({ label, name, prefill, type = 'text', placeholder,
           <button
             onClick={() => setShowReasoning(!showReasoning)}
             style={{
-              fontSize: 9, fontWeight: 600, color: '#eab308',
-              background: 'rgba(201,168,76,0.1)', border: 'none',
+              fontSize: 9, fontWeight: 600, color: '#E8EAED',
+              background: 'rgba(192,197,206,0.1)', border: 'none',
               padding: '2px 8px', borderRadius: 3, cursor: 'pointer',
               textTransform: 'uppercase', letterSpacing: '0.05em',
             }}
@@ -72,8 +72,8 @@ export function PrefillField({ label, name, prefill, type = 'text', placeholder,
       {showReasoning && prefill && (
         <div style={{
           fontSize: 11, color: '#8B949E', padding: '6px 10px',
-          background: 'rgba(201,168,76,0.06)', borderRadius: 6,
-          border: '1px solid rgba(201,168,76,0.1)', marginBottom: 6,
+          background: 'rgba(192,197,206,0.06)', borderRadius: 6,
+          border: '1px solid rgba(192,197,206,0.1)', marginBottom: 6,
           lineHeight: 1.5,
         }}>
           {prefill.reasoning || `Basado en ${prefill.source}`}
@@ -109,7 +109,7 @@ export function PrefillField({ label, name, prefill, type = 'text', placeholder,
         {isPrefilled && (
           <span style={{
             position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
-            fontSize: 12, color: '#eab308', pointerEvents: 'none',
+            fontSize: 12, color: '#E8EAED', pointerEvents: 'none',
           }}>
             ⚡
           </span>
@@ -140,13 +140,13 @@ export function ConfirmAllButton({
 
   return (
     <div style={{
-      background: 'rgba(201,168,76,0.08)', borderRadius: 10,
-      border: '1px solid rgba(201,168,76,0.2)', padding: '14px 16px',
+      background: 'rgba(192,197,206,0.08)', borderRadius: 10,
+      border: '1px solid rgba(192,197,206,0.2)', padding: '14px 16px',
       marginBottom: 16, display: 'flex', alignItems: 'center',
       justifyContent: 'space-between', flexWrap: 'wrap', gap: 10,
     }}>
       <div>
-        <div style={{ fontSize: 13, fontWeight: 600, color: '#eab308' }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: '#E8EAED' }}>
           AGUILA pre-llenó {prefillCount} de {totalFields} campos ({pct}%)
         </div>
         <div style={{ fontSize: 11, color: '#8B949E', marginTop: 2 }}>
@@ -158,7 +158,7 @@ export function ConfirmAllButton({
         disabled={loading}
         style={{
           padding: '12px 24px', borderRadius: 8,
-          background: '#eab308', color: '#111',
+          background: '#E8EAED', color: '#111',
           fontSize: 14, fontWeight: 700, border: 'none',
           cursor: loading ? 'wait' : 'pointer',
           opacity: loading ? 0.6 : 1, minHeight: 48,

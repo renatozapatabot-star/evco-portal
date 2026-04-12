@@ -128,7 +128,7 @@ export function NotificationsDropdown() {
               <div style={{ padding: '32px 14px', textAlign: 'center', color: 'var(--text-muted)', fontSize: 12 }}>Sin notificaciones</div>
             ) : items.map(n => (
               <div key={n.id} style={{ display: 'flex', gap: 10, padding: '10px 14px',
-                borderBottom: '1px solid var(--border-light)', background: n.read ? 'transparent' : 'rgba(201,168,76,0.04)',
+                borderBottom: '1px solid var(--border-light)', background: n.read ? 'transparent' : 'rgba(192,197,206,0.04)',
                 cursor: 'pointer' }}>
                 <span style={{ width: 8, height: 8, borderRadius: '50%', background: n.color, marginTop: 5, flexShrink: 0 }} />
                 <div style={{ flex: 1, minWidth: 0 }}>

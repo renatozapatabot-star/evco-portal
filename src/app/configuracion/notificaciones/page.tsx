@@ -80,7 +80,7 @@ export default function NotificacionesPage() {
 
       <button style={{
         marginTop: 16, padding: '12px 24px', borderRadius: 12,
-        background: '#eab308', color: '#05070B', fontWeight: 700, fontSize: 14,
+        background: '#E8EAED', color: '#05070B', fontWeight: 700, fontSize: 14,
         border: 'none', cursor: 'pointer', minHeight: 48,
       }}>
         Guardar preferencias

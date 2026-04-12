@@ -53,13 +53,13 @@ export function DueloDelDia() {
   return (
     <div style={{
       background: 'rgba(9,9,11,0.75)', borderRadius: 10, padding: '12px 16px',
-      border: '1px solid rgba(201,168,76,0.15)', marginBottom: 12,
+      border: '1px solid rgba(192,197,206,0.15)', marginBottom: 12,
     }}>
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         marginBottom: 10,
       }}>
-        <span style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#eab308' }}>
+        <span style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#E8EAED' }}>
           Duelo del día
         </span>
         <span style={{ fontSize: 10, color: '#6E7681' }}>{stake}</span>
@@ -69,16 +69,16 @@ export function DueloDelDia() {
         {leaders.map((l, i) => (
           <div key={l.name} style={{
             flex: 1, textAlign: 'center', padding: '8px 4px',
-            background: i === 0 ? 'rgba(201,168,76,0.08)' : 'transparent',
+            background: i === 0 ? 'rgba(192,197,206,0.08)' : 'transparent',
             borderRadius: 8,
           }}>
             <div style={{ fontSize: 20, marginBottom: 4 }}>{MEDALS[i]}</div>
-            <div style={{ fontSize: 13, fontWeight: 600, color: i === 0 ? '#eab308' : '#E6EDF3' }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: i === 0 ? '#E8EAED' : '#E6EDF3' }}>
               {l.name}
             </div>
             <div className="font-mono" style={{
               fontSize: 18, fontWeight: 800,
-              color: i === 0 ? '#eab308' : '#8B949E',
+              color: i === 0 ? '#E8EAED' : '#8B949E',
             }}>
               {l.count}
             </div>

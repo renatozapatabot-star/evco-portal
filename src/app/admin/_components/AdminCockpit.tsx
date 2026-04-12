@@ -53,7 +53,7 @@ function healthBadge(score: number) {
 
 function sourceBadge(source: string | null) {
   if (!source) return { bg: 'rgba(102,102,102,0.15)', color: TEXT_MUTED, label: '\u2014' }
-  if (source === 'ai_auto_classifier') return { bg: 'rgba(201,168,76,0.15)', color: GOLD, label: 'AI' }
+  if (source === 'ai_auto_classifier') return { bg: 'rgba(192,197,206,0.15)', color: GOLD, label: 'AI' }
   if (source.startsWith('human')) return { bg: 'rgba(22,163,74,0.15)', color: GREEN, label: 'Humano' }
   return { bg: 'rgba(102,102,102,0.15)', color: TEXT_MUTED, label: source }
 }

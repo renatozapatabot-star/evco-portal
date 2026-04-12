@@ -47,8 +47,8 @@ export function OperationsTrend({ traficos }: Props) {
         <AreaChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
           <defs>
             <linearGradient id="goldGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#eab308" stopOpacity={0.3} />
-              <stop offset="100%" stopColor="#eab308" stopOpacity={0.02} />
+              <stop offset="0%" stopColor="#E8EAED" stopOpacity={0.3} />
+              <stop offset="100%" stopColor="#E8EAED" stopOpacity={0.02} />
             </linearGradient>
             <linearGradient id="greenGrad" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#16A34A" stopOpacity={0.2} />
@@ -61,7 +61,7 @@ export function OperationsTrend({ traficos }: Props) {
             contentStyle={{ background: 'rgba(255,255,255,0.95)', border: '1px solid #E8E5E0', borderRadius: 8, fontSize: 12, backdropFilter: 'blur(8px)' }}
             formatter={(value) => [String(value)]}
           />
-          <Area type="monotone" dataKey="total" stroke="#eab308" strokeWidth={2} fill="url(#goldGrad)" />
+          <Area type="monotone" dataKey="total" stroke="#E8EAED" strokeWidth={2} fill="url(#goldGrad)" />
           <Area type="monotone" dataKey="cruzado" stroke="#16A34A" strokeWidth={1.5} fill="url(#greenGrad)" />
         </AreaChart>
       </ResponsiveContainer>

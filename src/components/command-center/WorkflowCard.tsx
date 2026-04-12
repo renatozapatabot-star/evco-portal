@@ -68,7 +68,7 @@ function AnimatedKpi({ value, size = 32, isUSD = false, decimals = 0 }: { value:
       fontFamily: 'var(--font-mono)',
       color: '#FFFFFF',
       lineHeight: 1,
-      textShadow: '0 0 16px rgba(201,168,76,0.2)',
+      textShadow: '0 0 16px rgba(192,197,206,0.2)',
     }}>
       {display}
     </span>
@@ -154,7 +154,7 @@ export function WorkflowCard({
                   padding: '8px 16px', borderRadius: 8, fontSize: 12, fontWeight: 700,
                   textDecoration: 'none', minHeight: 44, display: 'inline-flex', alignItems: 'center',
                   ...(action.primary
-                    ? { background: 'var(--gold, #eab308)', color: '#1A1A1A' }
+                    ? { background: 'var(--gold, #E8EAED)', color: '#1A1A1A' }
                     : { background: 'transparent', color: '#FFFFFF', border: '1px solid rgba(255,255,255,0.2)' }),
                 }}>
                   {action.label}
@@ -234,7 +234,7 @@ export function WorkflowCard({
             <div style={{
               height: '100%', borderRadius: 2,
               width: `${Math.min(completionPct, 100)}%`,
-              background: completionPct >= 100 ? '#16A34A' : 'var(--gold, #eab308)',
+              background: completionPct >= 100 ? '#16A34A' : 'var(--gold, #E8EAED)',
               transition: 'width 800ms ease',
             }} />
           </div>
@@ -386,7 +386,7 @@ export function WorkflowCard({
             <svg width={36} height={36} style={{ flexShrink: 0 }}>
               <circle cx={18} cy={18} r={15} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={3} />
               <circle cx={18} cy={18} r={15} fill="none"
-                stroke={completionRing >= 90 ? '#16A34A' : 'var(--gold, #eab308)'}
+                stroke={completionRing >= 90 ? '#16A34A' : 'var(--gold, #E8EAED)'}
                 strokeWidth={3} strokeDasharray={2 * Math.PI * 15}
                 strokeDashoffset={2 * Math.PI * 15 * (1 - Math.min(completionRing, 100) / 100)}
                 strokeLinecap="round"
@@ -443,7 +443,7 @@ export function WorkflowCard({
               padding: '8px 16px', borderRadius: 8, fontSize: 12, fontWeight: 700,
               textDecoration: 'none', minHeight: 44, display: 'inline-flex', alignItems: 'center',
               ...(action.primary
-                ? { background: 'var(--gold, #eab308)', color: '#1A1A1A', border: 'none' }
+                ? { background: 'var(--gold, #E8EAED)', color: '#1A1A1A', border: 'none' }
                 : { background: 'transparent', color: '#FFFFFF', border: '1px solid rgba(255,255,255,0.2)' }),
             }}>
               {action.label}
@@ -478,7 +478,7 @@ export function WorkflowCard({
             <Link key={a.label} href={a.href} className="cc-card" style={{
               padding: '10px 20px', borderRadius: 8, fontSize: 13, fontWeight: 600,
               textDecoration: 'none', minHeight: 44, display: 'inline-flex', alignItems: 'center',
-              ...(a.primary ? { background: 'var(--gold, #eab308)', color: '#1A1A1A' } : { background: 'transparent', color: '#FFFFFF', border: '1px solid rgba(255,255,255,0.25)' }),
+              ...(a.primary ? { background: 'var(--gold, #E8EAED)', color: '#1A1A1A' } : { background: 'transparent', color: '#FFFFFF', border: '1px solid rgba(255,255,255,0.25)' }),
             }}>{a.label}</Link>
           ))}
         </div>
@@ -503,7 +503,7 @@ export function WorkflowCard({
           <span>{subtitle}</span>
         </div>
         {actions[0] && (
-          <span style={{ display: 'inline-flex', alignItems: 'center', padding: '8px 16px', borderRadius: 8, background: 'var(--gold, #eab308)', color: '#1A1A1A', fontSize: 12, fontWeight: 700, marginTop: 'auto', alignSelf: 'flex-start' }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', padding: '8px 16px', borderRadius: 8, background: 'var(--gold, #E8EAED)', color: '#1A1A1A', fontSize: 12, fontWeight: 700, marginTop: 'auto', alignSelf: 'flex-start' }}>
             {actions[0].label}
           </span>
         )}

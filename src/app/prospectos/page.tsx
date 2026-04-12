@@ -52,7 +52,7 @@ const fmtMXN = (n: number) => {
 
 function ScoreBadge({ score }: { score: number }) {
   const color = score >= 80 ? 'var(--gold-600)' : score >= 60 ? 'var(--info)' : score >= 40 ? 'var(--n-500)' : 'var(--n-300)'
-  const bg = score >= 80 ? 'rgba(201,168,76,0.12)' : score >= 60 ? 'rgba(37,99,235,0.08)' : 'rgba(136,128,112,0.08)'
+  const bg = score >= 80 ? 'rgba(192,197,206,0.12)' : score >= 60 ? 'rgba(37,99,235,0.08)' : 'rgba(136,128,112,0.08)'
   return (
     <span style={{
       display: 'inline-flex', alignItems: 'center', gap: 4,
@@ -66,7 +66,7 @@ function ScoreBadge({ score }: { score: number }) {
 
 function StatusPill({ status }: { status: string }) {
   const config: Record<string, { label: string; color: string; bg: string }> = {
-    prospect: { label: 'Prospecto', color: 'var(--gold-600)', bg: 'rgba(201,168,76,0.1)' },
+    prospect: { label: 'Prospecto', color: 'var(--gold-600)', bg: 'rgba(192,197,206,0.1)' },
     contacted: { label: 'Contactado', color: 'var(--info)', bg: 'rgba(37,99,235,0.08)' },
     meeting: { label: 'Reunión', color: '#8B5CF6', bg: 'rgba(139,92,246,0.08)' },
     proposal: { label: 'Propuesta', color: 'var(--warning)', bg: 'rgba(217,119,6,0.08)' },
@@ -144,7 +144,7 @@ export default function ProspectosPage() {
         </div>
         <Link href="/prospectos/pipeline" style={{
           padding: '8px 16px', borderRadius: 6, fontSize: 13, fontWeight: 600,
-          background: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.3)',
+          background: 'rgba(192,197,206,0.1)', border: '1px solid rgba(192,197,206,0.3)',
           color: 'var(--gold-600)', textDecoration: 'none',
           display: 'flex', alignItems: 'center', gap: 6,
         }}>
@@ -215,9 +215,9 @@ export default function ProspectosPage() {
             <div key={p.rfc} onClick={() => setSelectedRFC(selectedRFC === p.rfc ? null : p.rfc)}
               style={{
                 padding: '14px 16px', borderRadius: 8, cursor: 'pointer',
-                background: 'var(--bg-elevated)', border: `1px solid ${p.opportunity_score >= 80 ? 'rgba(201,168,76,0.3)' : 'var(--border-light)'}`,
+                background: 'var(--bg-elevated)', border: `1px solid ${p.opportunity_score >= 80 ? 'rgba(192,197,206,0.3)' : 'var(--border-light)'}`,
                 transition: 'border-color 0.15s, box-shadow 0.15s',
-                boxShadow: selectedRFC === p.rfc ? '0 0 0 2px rgba(201,168,76,0.2)' : 'none',
+                boxShadow: selectedRFC === p.rfc ? '0 0 0 2px rgba(192,197,206,0.2)' : 'none',
                 opacity: p.opportunity_score < 40 && !p.is_current_client ? 0.7 : 1,
               }}>
               {/* Card header */}
@@ -247,7 +247,7 @@ export default function ProspectosPage() {
                   </span>
                 )}
                 {p.high_value_importer && (
-                  <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 3, background: 'rgba(201,168,76,0.1)', color: 'var(--gold-600)', fontWeight: 600 }}>
+                  <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 3, background: 'rgba(192,197,206,0.1)', color: 'var(--gold-600)', fontWeight: 600 }}>
                     Alto valor
                   </span>
                 )}

@@ -47,7 +47,7 @@ export function BridgeCard() {
               </div>
             ))}
             {best && (
-              <div style={{ fontSize: 11, color: '#eab308', marginTop: 4 }}>
+              <div style={{ fontSize: 11, color: '#E8EAED', marginTop: 4 }}>
                 Recomendado: {best.nameEs || best.name} ({best.commercial}m)
               </div>
             )}

@@ -29,7 +29,7 @@ export function PerformanceStrip({
       borderRadius: 10,
       padding: '12px 16px',
       marginBottom: 12,
-      border: isRecord ? '1px solid rgba(201,168,76,0.3)' : '1px solid rgba(255,255,255,0.06)',
+      border: isRecord ? '1px solid rgba(192,197,206,0.3)' : '1px solid rgba(255,255,255,0.06)',
     }}>
       {/* Top row: greeting + main KPIs */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 8 }}>
@@ -38,7 +38,7 @@ export function PerformanceStrip({
           <div>
             <span className="font-mono" style={{
               fontSize: 28, fontWeight: 800,
-              color: isRecord ? '#eab308' : todayCount > 0 ? '#E6EDF3' : '#6E7681',
+              color: isRecord ? '#E8EAED' : todayCount > 0 ? '#E6EDF3' : '#6E7681',
             }}>
               {todayCount}
             </span>
@@ -60,8 +60,8 @@ export function PerformanceStrip({
           {/* Record badge */}
           {isRecord && (
             <span style={{
-              fontSize: 11, fontWeight: 700, color: '#eab308',
-              background: 'rgba(201,168,76,0.15)',
+              fontSize: 11, fontWeight: 700, color: '#E8EAED',
+              background: 'rgba(192,197,206,0.15)',
               padding: '2px 8px', borderRadius: 4,
             }}>
               ★ Récord
@@ -72,7 +72,7 @@ export function PerformanceStrip({
         {/* Right: streak + rank */}
         <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
           {currentStreak > 1 && (
-            <span className="font-mono" style={{ fontSize: 13, color: '#eab308' }}>
+            <span className="font-mono" style={{ fontSize: 13, color: '#E8EAED' }}>
               🔥 {currentStreak}d racha
             </span>
           )}
@@ -88,7 +88,7 @@ export function PerformanceStrip({
           <div style={{
             width: `${Math.min(progress, 100)}%`,
             height: '100%', borderRadius: 2,
-            background: isRecord ? '#eab308' : '#16A34A',
+            background: isRecord ? '#E8EAED' : '#16A34A',
             transition: 'width 500ms ease',
           }} />
         </div>

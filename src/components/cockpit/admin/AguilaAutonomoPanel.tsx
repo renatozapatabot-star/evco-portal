@@ -36,7 +36,7 @@ export function AguilaAutonomoPanel({ decisions, decisions30d, decisionsAllTime,
     : showDecisions.accuracy >= 70
       ? 'rgba(217,119,6,0.6)'
       : showDecisions.total === 0
-        ? 'rgba(201,168,76,0.4)' // gold/neutral when no data
+        ? 'rgba(192,197,206,0.4)' // gold/neutral when no data
         : 'rgba(220,38,38,0.7)'
 
   return (
@@ -120,7 +120,7 @@ export function AguilaAutonomoPanel({ decisions, decisions30d, decisionsAllTime,
               >
                 <div className="font-mono" style={{
                   fontSize: 16, fontWeight: 700,
-                  color: count > 0 ? '#eab308' : '#6E7681',
+                  color: count > 0 ? '#E8EAED' : '#6E7681',
                 }}>
                   {count}
                 </div>

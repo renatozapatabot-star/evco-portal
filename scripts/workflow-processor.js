@@ -289,13 +289,49 @@ const HANDLERS = {
     return { success: true, result: `Duties calculated for ${traficoId}: $${contributions.total_contribuciones_mxn} MXN` }
   },
   'classify.needs_human_review': async (event) => {
+    const companyId = event.company_id
+    const triggerId = event.trigger_id
+    const description = event.payload?.descripcion || event.payload?.description || ''
+    const cveProducto = event.payload?.cve_producto || event.payload?.cveProducto
+    const topOptions = event.payload?.topOptions || []
+
+    if (!companyId) {
+      return { success: false, result: 'Missing company_id — cannot flag review without tenant scope' }
+    }
+
+    // Persist review-needed state in globalpc_productos so it survives restarts
+    let flagged = false
+    if (cveProducto) {
+      const { error: updateErr } = await supabase
+        .from('globalpc_productos')
+        .update({
+          fraccion_source: 'needs_human_review',
+          fraccion_classified_at: new Date().toISOString(),
+        })
+        .eq('cve_producto', cveProducto)
+        .eq('company_id', companyId)
+
+      if (updateErr) {
+        console.error(`  [classify.needs_human_review] flag failed for ${cveProducto}: ${updateErr.message}`)
+      } else {
+        flagged = true
+      }
+    }
+
+    // Batch Telegram notification (N items → 1 message)
     batcher.queueReview({
-      trigger_id: event.trigger_id,
-      company_id: event.company_id,
-      description: event.payload?.descripcion || event.payload?.description || event.payload?.cve_producto || '',
-      options: event.payload?.topOptions || [],
+      trigger_id: triggerId,
+      company_id: companyId,
+      description: description || cveProducto || '',
+      options: topOptions,
     })
-    return { success: true, result: 'Review queued in batcher' }
+
+    const topFraccion = topOptions[0]?.fraccion || '?'
+    const topConf = topOptions[0]?.confidence || '?'
+    return {
+      success: true,
+      result: `Review flagged for ${cveProducto || triggerId} (top: ${topFraccion} @ ${topConf}%${flagged ? ', DB updated' : ''})`,
+    }
   },
 
   // ── Workflow 3: Documents ──

@@ -3,7 +3,7 @@ import {
   BarChart3, DollarSign, Users2, BookOpen,
   Shield, Settings, Package,
   Warehouse, TrendingUp, Radio, Brain,
-  FileSpreadsheet,
+  FileSpreadsheet, ScanLine,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -140,10 +140,11 @@ export const OPERATOR_GROUPS: NavGroup[] = []
 
 // V1 warehouse nav (Phase 4 cull) — 4 items.
 export const WAREHOUSE_NAV: NavTopLevel[] = [
-  { href: '/bodega/inicio',  label: 'Inicio',   icon: LayoutDashboard },
-  { href: '/bodega/recibir', label: 'Recibir',  icon: Package },
-  { href: '/bodega/patio',   label: 'Patio',    icon: Warehouse },
-  { href: '/bodega/ayuda',   label: 'Ayuda',    icon: BookOpen },
+  { href: '/bodega/inicio',   label: 'Inicio',    icon: LayoutDashboard },
+  { href: '/bodega/recibir',  label: 'Recibir',   icon: Package },
+  { href: '/bodega/escanear', label: 'Escanear',  icon: ScanLine },
+  { href: '/bodega/patio',    label: 'Patio',     icon: Warehouse },
+  { href: '/bodega/ayuda',    label: 'Ayuda',     icon: BookOpen },
 ]
 
 export const WAREHOUSE_GROUPS: NavGroup[] = []

@@ -21,6 +21,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { z } from 'zod'
 import { logDecision } from '@/lib/decision-logger'
+import { createEntradaQrCode } from '@/lib/qr/codes'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -78,7 +79,7 @@ export async function POST(request: NextRequest) {
   // Idempotent: if already confirmed, return ok without re-emitting events.
   if (tokenRow.shipment_confirmed_at) {
     return NextResponse.json({
-      data: { ok: true, alreadyConfirmed: true, confirmedAt: tokenRow.shipment_confirmed_at },
+      data: { ok: true, alreadyConfirmed: true, confirmedAt: tokenRow.shipment_confirmed_at, qr: null },
       error: null,
     })
   }
@@ -132,8 +133,24 @@ export async function POST(request: NextRequest) {
     },
   })
 
+  // Auto-generate a QR label the proveedor can print and stick on the trailer.
+  // Failure here is non-fatal — the confirmation has already landed.
+  let qrPayload: { code: string; qrDataUrl: string } | null = null
+  if (tokenRow.trafico_id && tokenRow.company_id) {
+    try {
+      qrPayload = await createEntradaQrCode({
+        traficoId: tokenRow.trafico_id,
+        companyId: tokenRow.company_id,
+        generatedBy: `proveedor:${tokenRow.id}`,
+        client: supabase,
+      })
+    } catch (err) {
+      console.error('[supplier/confirm-shipment] qr generation failed:', err instanceof Error ? err.message : String(err))
+    }
+  }
+
   return NextResponse.json({
-    data: { ok: true, alreadyConfirmed: false, confirmedAt },
+    data: { ok: true, alreadyConfirmed: false, confirmedAt, qr: qrPayload },
     error: null,
   })
 }

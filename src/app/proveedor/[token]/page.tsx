@@ -125,6 +125,7 @@ export default function ProveedorPage() {
   const [confirming, setConfirming] = useState(false)
   const [confirmNote, setConfirmNote] = useState('')
   const [confirmResult, setConfirmResult] = useState<string | null>(null)
+  const [qrLabel, setQrLabel] = useState<{ code: string; dataUrl: string } | null>(null)
 
   const load = async () => {
     try {
@@ -303,6 +304,9 @@ export default function ProveedorPage() {
       const data = await res.json()
       if (res.ok && data?.data?.ok) {
         setConfirmResult('Embarque confirmado. Renato Zapata & Co. ha sido notificado.')
+        if (data?.data?.qr?.code && data?.data?.qr?.qrDataUrl) {
+          setQrLabel({ code: data.data.qr.code, dataUrl: data.data.qr.qrDataUrl })
+        }
         track('checklist_item_viewed', {
           entityType: 'supplier_portal',
           entityId: String(token ?? ''),
@@ -896,6 +900,65 @@ export default function ProveedorPage() {
                 }}
               >
                 {confirmResult}
+              </div>
+            )}
+            {qrLabel && (
+              <div
+                className="qr-label-print"
+                style={{
+                  marginTop: 16,
+                  padding: 16,
+                  borderRadius: 12,
+                  background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(192,197,206,0.18)',
+                  textAlign: 'center',
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 11,
+                    letterSpacing: '0.08em',
+                    textTransform: 'uppercase',
+                    color: '#94a3b8',
+                    marginBottom: 8,
+                  }}
+                >
+                  Etiqueta de caja — imprimir y colocar en el remolque
+                </div>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={qrLabel.dataUrl}
+                  alt={`Código QR ${qrLabel.code}`}
+                  style={{ width: 180, height: 180, background: '#FFFFFF', padding: 8, borderRadius: 8 }}
+                />
+                <div
+                  style={{
+                    fontFamily: 'var(--font-jetbrains-mono), ui-monospace, monospace',
+                    fontSize: 14,
+                    letterSpacing: '0.12em',
+                    color: '#E6EDF3',
+                    marginTop: 8,
+                  }}
+                >
+                  {qrLabel.code}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  style={{
+                    marginTop: 12,
+                    minHeight: 44,
+                    padding: '10px 16px',
+                    borderRadius: 10,
+                    border: '1px solid rgba(192,197,206,0.35)',
+                    background: 'transparent',
+                    color: '#E6EDF3',
+                    fontSize: 13,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Imprimir etiqueta
+                </button>
               </div>
             )}
           </Panel>

@@ -9,6 +9,8 @@ import { cookies } from 'next/headers'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { verifySession } from '@/lib/session'
+import { AguilaMark } from '@/components/brand/AguilaMark'
+import { AguilaWordmark } from '@/components/brand/AguilaWordmark'
 import { Anexo24Client } from './Anexo24Client'
 
 export const dynamic = 'force-dynamic'
@@ -33,6 +35,10 @@ export default async function ReportesAnexo24Page() {
         </nav>
 
         <header className="mb-6">
+          <div className="mb-3 flex items-center gap-2 opacity-80">
+            <AguilaMark size={18} tone="silver" />
+            <AguilaWordmark size={14} tone="silver" />
+          </div>
           <h1 className="text-2xl font-semibold text-slate-100">Anexo 24</h1>
           <p className="mt-2 text-sm text-slate-400">
             Generación de reporte Anexo 24 en PDF y Excel. Filtra por periodo

@@ -2,6 +2,8 @@ import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import type { CarrierFull } from '@/lib/carriers'
+import { AguilaMark } from '@/components/brand/AguilaMark'
+import { AguilaWordmark } from '@/components/brand/AguilaWordmark'
 import { AdminCarriersList } from './_components/AdminCarriersList'
 
 export const dynamic = 'force-dynamic'
@@ -26,15 +28,15 @@ export default async function AdminCarriersPage() {
   const carriers = (data ?? []) as CarrierFull[]
 
   return (
-    <div
-      style={{
-        padding: 24,
-        minHeight: '100vh',
-        background: '#0A0A0C',
-        color: '#E6EDF3',
-      }}
+    <main
+      className="aduana-dark"
+      style={{ padding: 24, minHeight: '100vh', color: '#E6EDF3' }}
     >
       <header style={{ marginBottom: 20 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, opacity: 0.8 }}>
+          <AguilaMark size={18} tone="silver" />
+          <AguilaWordmark size={14} tone="silver" />
+        </div>
         <h1 style={{ margin: 0, fontSize: 22, fontWeight: 600 }}>
           Catálogo de transportistas
         </h1>
@@ -43,6 +45,6 @@ export default async function AdminCarriersPage() {
         </p>
       </header>
       <AdminCarriersList initialCarriers={carriers} />
-    </div>
+    </main>
   )
 }

@@ -3,6 +3,8 @@ import Link from 'next/link'
 import { redirect, notFound } from 'next/navigation'
 import { createServerClient } from '@/lib/supabase-server'
 import { verifySession } from '@/lib/session'
+import { AguilaMark } from '@/components/brand/AguilaMark'
+import { AguilaWordmark } from '@/components/brand/AguilaWordmark'
 import { RegulatoryDocClient } from '../doda/RegulatoryDocClient'
 
 interface TraficoLite {
@@ -47,6 +49,10 @@ export default async function CartaPortePage({
         </nav>
 
         <header className="mb-6">
+          <div className="mb-3 flex items-center gap-2 opacity-80">
+            <AguilaMark size={18} tone="silver" />
+            <AguilaWordmark size={14} tone="silver" />
+          </div>
           <h1 className="text-2xl font-semibold text-slate-100">Carta Porte</h1>
           <p className="mt-2 text-sm text-slate-400">
             CFDI 4.0 con Complemento Carta Porte · Tráfico{' '}

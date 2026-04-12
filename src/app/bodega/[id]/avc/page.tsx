@@ -3,6 +3,8 @@ import Link from 'next/link'
 import { redirect, notFound } from 'next/navigation'
 import { createServerClient } from '@/lib/supabase-server'
 import { verifySession } from '@/lib/session'
+import { AguilaMark } from '@/components/brand/AguilaMark'
+import { AguilaWordmark } from '@/components/brand/AguilaWordmark'
 import { RegulatoryDocClient } from '@/app/traficos/[id]/doda/RegulatoryDocClient'
 
 interface WarehouseEntryLite {
@@ -48,6 +50,10 @@ export default async function AvcPage({
         </nav>
 
         <header className="mb-6">
+          <div className="mb-3 flex items-center gap-2 opacity-80">
+            <AguilaMark size={18} tone="silver" />
+            <AguilaWordmark size={14} tone="silver" />
+          </div>
           <h1 className="text-2xl font-semibold text-slate-100">AVC</h1>
           <p className="mt-2 text-sm text-slate-400">
             Aviso de cruce · Caja{' '}

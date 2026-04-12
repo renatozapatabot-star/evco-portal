@@ -60,6 +60,29 @@ function shouldLog(pedimentoId: string): boolean {
   return true
 }
 
+// Cronología sampling: one `pedimento_field_modified` per pedimento per actor
+// per 5 minutes. Key format: `${pedimentoId}:${actor}`.
+const lastEventAt = new Map<string, number>()
+const EVENT_SAMPLE_MS = 5 * 60_000
+
+function shouldFireFieldEvent(pedimentoId: string, actor: string): boolean {
+  const key = `${pedimentoId}:${actor}`
+  const prev = lastEventAt.get(key) ?? 0
+  const now = Date.now()
+  if (now - prev < EVENT_SAMPLE_MS) return false
+  lastEventAt.set(key, now)
+  return true
+}
+
+/** Significant fields that fire sampled `pedimento_field_modified` events. */
+const SIGNIFICANT_FIELDS: ReadonlySet<string> = new Set([
+  'pedimento_number',
+  'regime_type',
+  'document_type',
+  'exchange_rate',
+  'status',
+])
+
 async function getSession() {
   const cookieStore = await cookies()
   return verifySession(cookieStore.get('portal_session')?.value ?? '')
@@ -133,6 +156,15 @@ export async function createPedimento(
     decision: `Pedimento ${created.id} creado para tráfico ${traficoId}`,
   })
 
+  // Cronología — fire only on first creation (above short-circuit returns if existing)
+  await supabase.from('workflow_events').insert({
+    event_type: 'initial_pedimento_data_captured',
+    workflow: 'pedimento',
+    trigger_id: traficoId,
+    company_id: trafico.company_id,
+    payload: { pedimento_id: created.id, actor: `${session.companyId}:${session.role}` },
+  })
+
   return { data: { id: created.id }, error: null }
 }
 
@@ -166,6 +198,21 @@ export async function savePedimentoField(
       decision: `Campo ${tab}.${field} actualizado`,
       dataPoints: { pedimento_id: pedimentoId, tab, field },
     })
+  }
+
+  // Cronología — sampled event for significant fields only
+  if (SIGNIFICANT_FIELDS.has(field)) {
+    const session = await getSession()
+    const actor = session ? `${session.companyId}:${session.role}` : 'unknown:unknown'
+    if (shouldFireFieldEvent(pedimentoId, actor)) {
+      await supabase.from('workflow_events').insert({
+        event_type: 'pedimento_field_modified',
+        workflow: 'pedimento',
+        trigger_id: loaded.row.trafico_id,
+        company_id: loaded.companyId,
+        payload: { pedimento_id: pedimentoId, tab, field, actor },
+      })
+    }
   }
 
   return { data: { updated_at: data.updated_at }, error: null }

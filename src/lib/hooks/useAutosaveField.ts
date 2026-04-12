@@ -134,29 +134,4 @@ export function useAutosaveField<T>(opts: UseAutosaveFieldOptions<T>): UseAutosa
   return { value, onChange, onBlur, status, lastSaved, errorMessage }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Child-row autosave — stub for B6c. Keeps the import surface stable so
-// extended tabs can be wired without touching call sites.
-// ─────────────────────────────────────────────────────────────────────────────
-
-export interface UseAutosaveChildRowOptions {
-  pedimentoId: string
-  /** child table name, e.g. 'pedimento_destinatarios' */
-  table: string
-  rowId: string | null
-}
-
-export interface UseAutosaveChildRowResult {
-  status: AutosaveStatus
-  saveField: (field: string, value: unknown) => void
-}
-
-/** Stub — real implementation lands in B6c alongside extended tabs. */
-export function useAutosaveChildRow(_opts: UseAutosaveChildRowOptions): UseAutosaveChildRowResult {
-  return {
-    status: 'idle',
-    saveField: () => {
-      /* B6c */
-    },
-  }
-}
+// Real `useAutosaveChildRow` lives in ./useAutosaveChildRow.ts — B6c completed.

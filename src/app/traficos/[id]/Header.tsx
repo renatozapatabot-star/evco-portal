@@ -1,8 +1,9 @@
 import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, FileText } from 'lucide-react'
 import { fmtDateTime } from '@/lib/format-utils'
 import {
   ACCENT_CYAN,
+  ACCENT_SILVER,
   AMBER,
   RED,
   TEXT_MUTED,
@@ -146,7 +147,6 @@ export function Header({
         {latestTs && (
           <span
             style={{
-              marginLeft: 'auto',
               fontSize: 11,
               fontFamily: 'var(--font-mono)',
               color: TEXT_MUTED,
@@ -155,6 +155,27 @@ export function Header({
             Últ. evento: {fmtDateTime(latestTs)}
           </span>
         )}
+
+        <Link
+          href={`/traficos/${encodeURIComponent(traficoNumber)}/pedimento`}
+          style={{
+            marginLeft: 'auto',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            minHeight: 60,
+            padding: '0 16px',
+            fontSize: 13,
+            fontWeight: 600,
+            color: ACCENT_SILVER,
+            background: 'rgba(192,197,206,0.08)',
+            border: '1px solid rgba(192,197,206,0.22)',
+            borderRadius: 10,
+            textDecoration: 'none',
+          }}
+        >
+          <FileText size={14} /> Ver pedimento
+        </Link>
       </div>
 
       {subtitleParts.length > 0 && (

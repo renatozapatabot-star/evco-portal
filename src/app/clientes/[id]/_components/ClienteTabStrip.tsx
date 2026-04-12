@@ -34,12 +34,15 @@ export function ClienteTabStrip({ tabs, clienteId, defaultTab }: {
       <div
         role="tablist"
         aria-label="Secciones del cliente"
+        className="cliente-tablist"
         style={{
           display: 'flex',
           gap: 4,
           padding: '8px 12px 0',
           borderBottom: `1px solid ${BORDER}`,
           overflowX: 'auto',
+          scrollSnapType: 'x mandatory',
+          WebkitOverflowScrolling: 'touch',
         }}
       >
         {tabs.map((t) => {
@@ -59,6 +62,7 @@ export function ClienteTabStrip({ tabs, clienteId, defaultTab }: {
               }}
               style={{
                 minHeight: 60,
+                minWidth: 60,
                 padding: '14px 18px',
                 background: 'transparent',
                 border: 'none',
@@ -69,6 +73,8 @@ export function ClienteTabStrip({ tabs, clienteId, defaultTab }: {
                 letterSpacing: '0.02em',
                 cursor: 'pointer',
                 whiteSpace: 'nowrap',
+                scrollSnapAlign: 'start',
+                flexShrink: 0,
               }}
             >
               {t.label}
@@ -79,6 +85,12 @@ export function ClienteTabStrip({ tabs, clienteId, defaultTab }: {
       <div role="tabpanel" style={{ padding: 20 }}>
         {tabs.find((t) => t.id === active)?.content ?? null}
       </div>
+      <style>{`
+        @media (max-width: 600px) {
+          .cliente-tablist { padding: 6px 8px 0 !important; }
+          .cliente-tablist button { padding: 14px 14px !important; font-size: 12px !important; }
+        }
+      `}</style>
     </div>
   )
 }

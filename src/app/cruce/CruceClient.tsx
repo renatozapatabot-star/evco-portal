@@ -247,6 +247,7 @@ export function CruceClient({
 
       {/* Hero strip */}
       <div
+        className="cruce-hero-grid"
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(4, 1fr)',
@@ -422,6 +423,16 @@ export function CruceClient({
           })}
         </div>
       )}
+
+      <style>{`
+        @media (max-width: 900px) {
+          .cruce-hero-grid { grid-template-columns: repeat(2, 1fr) !important; }
+        }
+        @media (max-width: 600px) {
+          .bridge-timeline-desktop { display: none !important; }
+          .bridge-cards-mobile { display: flex !important; }
+        }
+      `}</style>
     </div>
   )
 }
@@ -533,6 +544,7 @@ function BridgeRow({
       </div>
 
       <div
+        className="bridge-timeline-desktop"
         style={{
           position: 'relative',
           height: 56,
@@ -622,6 +634,59 @@ function BridgeRow({
             </Link>
           )
         })}
+      </div>
+
+      {/* Mobile vertical card list (< 600px) */}
+      <div
+        className="bridge-cards-mobile"
+        style={{ display: 'none', flexDirection: 'column', gap: 8, marginTop: 8 }}
+      >
+        {items.length === 0 ? (
+          <div style={{ fontSize: 11, color: TEXT_MUTED, padding: 8 }}>Sin cruces</div>
+        ) : (
+          items.map((item, idx) => {
+            const color = statusColor(item.status)
+            return (
+              <Link
+                key={`m-${item.row.trafico}-${idx}`}
+                href={`/traficos/${encodeURIComponent(item.row.trafico)}`}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: 8,
+                  minHeight: 60,
+                  padding: '10px 12px',
+                  borderRadius: 10,
+                  background: `${color}1A`,
+                  border: `1px solid ${color}55`,
+                  color: TEXT_PRIMARY,
+                  textDecoration: 'none',
+                }}
+              >
+                <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                  <span style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 12, fontWeight: 700, color }}>
+                    {item.row.trafico}
+                  </span>
+                  <span style={{ fontSize: 10, color: TEXT_MUTED, fontFamily: 'var(--font-jetbrains-mono)' }}>
+                    {fmtDateTime(item.scheduled.toISOString())}
+                    {item.row.lane ? ` · Carril ${item.row.lane}` : ''}
+                  </span>
+                </div>
+                <span
+                  style={{
+                    width: 10,
+                    height: 10,
+                    borderRadius: '50%',
+                    background: color,
+                    boxShadow: `0 0 8px ${color}`,
+                    flexShrink: 0,
+                  }}
+                />
+              </Link>
+            )
+          })
+        )}
       </div>
     </div>
   )

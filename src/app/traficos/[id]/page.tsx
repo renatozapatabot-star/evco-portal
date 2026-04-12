@@ -379,6 +379,10 @@ export default async function TraficoDetailPage({
         @media (max-width: 1024px) {
           .trafico-main-grid { grid-template-columns: 1fr !important; }
         }
+        @media (max-width: 600px) {
+          .trafico-main-grid { gap: 12px !important; }
+          .trafico-main-grid h1 { font-size: 24px !important; }
+        }
       `}</style>
 
     </div>

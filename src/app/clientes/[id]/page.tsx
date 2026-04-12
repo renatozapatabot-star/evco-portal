@@ -348,6 +348,10 @@ export default async function ClienteDetailPage({
         @media (max-width: 1024px) {
           .cliente-main-grid { grid-template-columns: 1fr !important; }
         }
+        @media (max-width: 600px) {
+          .cliente-main-grid { gap: 12px !important; }
+          .cliente-main-grid h1 { font-size: 22px !important; }
+        }
       `}</style>
     </div>
   )

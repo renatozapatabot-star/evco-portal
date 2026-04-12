@@ -317,11 +317,19 @@ async function createDrafts(incompleteList) {
     }).catch(() => {})
 
     // Emit workflow event (CRUZ 2.0 orchestration)
-    await emitEvent('docs', 'solicitation_sent', item.traficoId, item.companyId, {
-      missing_docs: item.missingDocs,
-      contact_email: contact.email,
-      coverage_before: Math.round(item.coverage * 100),
-    })
+    // Guard: if no missing docs, nothing to solicit — emit expediente_complete instead
+    if (!Array.isArray(item.missingDocs) || item.missingDocs.length === 0) {
+      await emitEvent('docs', 'expediente_complete', item.traficoId, item.companyId, {
+        completeness_pct: 100,
+        reason: 'solicit-missing-docs: nothing to solicit',
+      })
+    } else {
+      await emitEvent('docs', 'solicitation_sent', item.traficoId, item.companyId, {
+        missing_document_types: item.missingDocs,
+        contact_email: contact.email,
+        coverage_before: Math.round(item.coverage * 100),
+      })
+    }
 
     telegramItems.push({ traficoId: item.traficoId, missingDocs: item.missingDocs, contactName: contact.name })
     console.log(`   ✅ ${item.traficoId} → ${item.missingDocs.length} docs, draft saved`)

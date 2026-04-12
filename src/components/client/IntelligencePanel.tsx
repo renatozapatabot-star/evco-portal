@@ -105,7 +105,7 @@ export function IntelligencePanel({ computedInsights, activeShipments, cruzadosY
               . Todo en orden.
             </>
           ) : (
-            'Sin operaciones activas. ADUANA está lista para responder sus preguntas.'
+            'Sin operaciones activas en este momento.'
           )}
         </p>
       )}

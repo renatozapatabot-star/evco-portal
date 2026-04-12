@@ -787,7 +787,7 @@ async function fetchClientData(companyId: string): Promise<ClientData> {
     sb.from('traficos')
       .select('trafico, estatus, updated_at, descripcion_mercancia')
       .eq('company_id', companyId)
-      .gte('updated_at', hoursAgo(48))
+      .gte('updated_at', hoursAgo(168))
       .order('updated_at', { ascending: false })
       .limit(15),
     // 9: entradas last week (for week-over-week delta)

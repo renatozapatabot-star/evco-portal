@@ -14,6 +14,7 @@ import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import { createClient } from '@supabase/supabase-js'
 import { verifySession, type PortalRole } from '@/lib/session'
+import { getLatestBridgeWaits, refreshIfStale } from '@/lib/bridges/fetch'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -40,19 +41,39 @@ function usdMxnItem(): Item {
   return { id: 'fx', label: 'USD/MXN', value: '17.34', trend: 'up' }
 }
 
-function solidarityWaitItem(): Item {
-  // TODO(F18): wire CBP bridge-times cron
-  return { id: 'bridge-solidarity', label: 'Puente Solidarity', value: '18 min', trend: 'flat' }
+async function solidarityWaitItem(): Promise<Item> {
+  // F18: live CBP feed via bridge_wait_times; stale-triggered refresh.
+  await refreshIfStale()
+  const rows = await getLatestBridgeWaits()
+  const top =
+    rows.find(r => r.lane_type === 'commercial' && r.direction === 'northbound') ??
+    rows[0]
+  if (!top || top.wait_minutes == null) {
+    return { id: 'bridge-top', label: 'Puente líder', value: '— min', trend: 'flat' }
+  }
+  return {
+    id: `bridge-${top.bridge_code}`,
+    label: `${top.bridge_name} N`,
+    value: `${top.wait_minutes} min`,
+    trend: 'flat',
+  }
 }
 
-function bridgeWaitsItems(): Item[] {
-  // TODO(F18): wire CBP bridge-times cron for 4 bridges
-  return [
-    { id: 'b-solidarity', label: 'Solidarity', value: '18 min' },
-    { id: 'b-world-trade', label: 'World Trade', value: '24 min' },
-    { id: 'b-colombia', label: 'Colombia', value: '9 min' },
-    { id: 'b-bnw', label: 'B&M', value: '32 min' },
-  ]
+async function bridgeWaitsItems(): Promise<Item[]> {
+  // F18: live CBP feed via bridge_wait_times for the four Laredo bridges.
+  await refreshIfStale()
+  const rows = await getLatestBridgeWaits()
+  const commNorth = rows.filter(
+    r => r.lane_type === 'commercial' && r.direction === 'northbound',
+  )
+  if (commNorth.length === 0) {
+    return [{ id: 'b-none', label: 'Puentes', value: 'Sin datos' }]
+  }
+  return commNorth.slice(0, 4).map(r => ({
+    id: `b-${r.bridge_code}`,
+    label: r.bridge_name,
+    value: r.wait_minutes == null ? '— min' : `${r.wait_minutes} min`,
+  }))
 }
 
 // --- Live fetchers ---------------------------------------------------------
@@ -251,16 +272,21 @@ async function yardOccupancyItem(): Promise<Item | null> {
 
 async function itemsForRole(role: PortalRole, companyId: string): Promise<Item[]> {
   if (role === 'admin' || role === 'broker') {
-    const [mom, dormant, mve] = await Promise.all([
+    const [mom, dormant, mve, bridgeTop] = await Promise.all([
       topClientMoMDelta(),
       dormantClientsItems(),
       mveCriticalCount(),
+      solidarityWaitItem(),
     ])
-    return [usdMxnItem(), ...(mom ? [mom] : []), ...dormant, ...(mve ? [mve] : []), solidarityWaitItem()]
+    return [usdMxnItem(), ...(mom ? [mom] : []), ...dormant, ...(mve ? [mve] : []), bridgeTop]
   }
   if (role === 'operator') {
-    const [docs, mve] = await Promise.all([pendingDocSolicitationsCount(), mveCriticalCount()])
-    return [...bridgeWaitsItems(), ...(docs ? [docs] : []), ...(mve ? [mve] : [])]
+    const [bridges, docs, mve] = await Promise.all([
+      bridgeWaitsItems(),
+      pendingDocSolicitationsCount(),
+      mveCriticalCount(),
+    ])
+    return [...bridges, ...(docs ? [docs] : []), ...(mve ? [mve] : [])]
   }
   if (role === 'contabilidad') {
     const ar = await overdueARTotal()

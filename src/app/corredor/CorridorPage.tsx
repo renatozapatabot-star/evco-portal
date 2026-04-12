@@ -10,6 +10,7 @@ import { createClient, type RealtimeChannel } from '@supabase/supabase-js'
 import { useTrack } from '@/lib/telemetry/useTrack'
 import { BG_DEEP } from '@/lib/design-system'
 import { LiveFlowPanel } from '@/components/corridor/LiveFlowPanel'
+import { BridgeWaitChips } from '@/components/corridor/BridgeWaitChips'
 import { InTransitCard } from '@/components/corridor/InTransitCard'
 import { SelectedTraficoRail } from '@/components/corridor/SelectedTraficoRail'
 import { CoordinatesHeader } from '@/components/corridor/CoordinatesHeader'
@@ -192,6 +193,7 @@ export function CorridorPage({ landmarks, companyId, role }: CorridorPageProps) 
         onLandmarkHover={handleLandmarkHover}
       />
       <CoordinatesHeader />
+      <BridgeWaitChips />
       <LiveFlowPanel
         shipments={stats.total}
         knownPositions={stats.known}

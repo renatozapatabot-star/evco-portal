@@ -688,3 +688,95 @@ Sender: `Renato Zapata & Company <sistema@renatozapata.com>` — requires Resend
 - **Live smoke test** (after `users` seeded): type `@ren` in a trafico's Comunicación tab → confirm dropdown appears filtered, Enter inserts `@renato-iv:admin `, submit → verify notification row with that `recipient_key`.
 - **Realtime** on `trafico_notes` for multi-operator live threads is NOT in this slice (Block 6 Realtime covers the bell, not the thread itself).
 
+
+---
+
+## Block 4 — Per-client detail page
+
+**Route:** `/clientes/[id]` (new) — async server component mirroring the Block 1
+tráfico detail layout (header + 4-tile HeroStrip + `1fr 340px` grid).
+
+### Files created
+
+| File | Purpose |
+|---|---|
+| `src/app/clientes/[id]/page.tsx` | Main server component — session gate, data fetches, layout |
+| `src/app/clientes/[id]/_components/ClienteTabStrip.tsx` | Client tab strip (5 tabs, cyan underline, 60px targets) |
+| `src/app/clientes/[id]/_components/TraficosTab.tsx` | Rows of `traficos` with link to `/traficos/[id]` |
+| `src/app/clientes/[id]/_components/FraccionesTab.tsx` | Top 20 fracciones by partida count |
+| `src/app/clientes/[id]/_components/Placeholder.tsx` | Honest empty/placeholder panel |
+| `src/app/clientes/[id]/_components/SidePanel.tsx` | `ContactoPanel` + `AlertasPanel` |
+| `src/app/clientes/[id]/_components/PageOpenTracker.tsx` | `page_view` telemetry with `entityType: 'cliente'` |
+
+### Data fetches (Promise.all)
+
+Single round-trip for 8 queries scoped by `company_id = clienteId`:
+
+1. `companies` row (tolerant of optional columns: RFC, contacto_*)
+2. `traficos` active count (head-only)
+3. `traficos` last-30-days count (head-only)
+4. `traficos` YTD rows (aggregated for Valor YTD)
+5. `traficos` all (for tab list, last 100 by updated_at)
+6. `globalpc_partidas` (fraccion histogram, top 20)
+7. `globalpc_proveedores` (tolerated empty if table/column missing)
+8. `operational_decisions` recent 20 (alerts rail + compliance denominator)
+
+### Access gate
+
+- `isInternal` (broker/admin) → full access
+- Client `role` viewing own company → allowed
+- `operator` viewing other company → requires at least one row in
+  `traficos` where `company_id = clienteId AND assigned_to_operator_id = session.companyId`.
+  Otherwise `redirect('/')`.
+- Unauthenticated → `redirect('/login')`
+
+### Hero tiles
+
+| Label | Value |
+|---|---|
+| Tráficos activos | count of `traficos` in En Proceso / Documentación / En Aduana |
+| Tráficos último mes | count of `traficos` created in last 30d |
+| Valor YTD | sum of `traficos.importe_total` YTD (fmtUSDCompact) |
+| Cumplimiento | approval-type decisions / total decisions; `—` with "Datos insuficientes" hint when <10 decisions |
+
+### Status dot
+
+Derived from last `updated_at/created_at`: green <2d · amber <14d · red ≥14d.
+
+### Tabs
+
+| Tab | Content |
+|---|---|
+| Tráficos | Real table of last 100 tráficos, linked to `/traficos/[id]` |
+| Proveedores | Real table if `globalpc_proveedores` yields rows; Placeholder otherwise |
+| Fracciones usadas | Real histogram (top 20) from `globalpc_partidas` |
+| Cumplimiento | Placeholder with "Datos insuficientes" when <10 decisions |
+| Finanzas | Placeholder — requires facturas / contabilidad schema not touched here |
+
+### Right rail
+
+- `ContactoPanel` — nombre, email, teléfono, RFC from `companies` (all optional)
+- `AlertasPanel` — last 5 `operational_decisions` rows
+
+### Hard-rules compliance
+
+- Zero new `any` types (intentional single cast of raw `companies` row to `Record<string, unknown>` for tolerant column access — narrowed field-by-field)
+- Zero `.catch(() => {})`
+- All user-visible strings Spanish (es-MX)
+- `fmtDateTime` only — no relative time
+- All interactive elements (back link, tab buttons) at 60px minimum
+- Glass tokens: `BG_CARD`, `BORDER`, `GLASS_BLUR`, `GLASS_SHADOW` from `design-system.ts`
+- Multi-tenant: ALL queries filter by `company_id = clienteId` — no `'evco'`/`'9254'` literals
+
+### Gate output
+
+- `npm run typecheck` — **PASS** (0 errors)
+- `npm run build` — **PASS** (compiled 3.8s, `/clientes/[id]` registered as dynamic route)
+- `npm run test` — **PASS** (121/121)
+- Bundle: `/clientes/[id]` is SSR-rendered, no client JS beyond PageOpenTracker + TabStrip
+
+### Blocked on Renato
+
+- **RLS cross-client leak test:** Access `/clientes/{otherCompanyId}` with non-admin, non-assigned operator session. Gate in code redirects to `/`, but a live session test confirms end-to-end. `globalpc_partidas` and `globalpc_proveedores` RLS must also enforce `company_id` isolation for defense-in-depth.
+- **Entry points:** No upstream page was modified to link to `/clientes/[id]`. Deferred per prompt: infrastructure is enough for this slice. Follow-up block can wire `ClientHealthGrid` cards and client badges.
+- **Companies schema:** `rfc`, `contacto_*` columns are read tolerantly (optional). If production `companies` uses different column names, rail will show em-dashes — no crash.

@@ -1,4 +1,5 @@
 export type HealthStatus = 'red' | 'yellow' | 'green'
+export type SystemStatus = 'healthy' | 'warning' | 'critical'
 
 export interface ClientHealth {
   company_id: string
@@ -10,12 +11,6 @@ export interface ClientHealth {
   summary: string
 }
 
-export interface PulsePoint {
-  day: string
-  events: number
-  decisions: number
-}
-
 export interface TeamActivity {
   operator_id: string
   name: string
@@ -23,6 +18,11 @@ export interface TeamActivity {
 }
 
 export interface InicioData {
+  greeting: {
+    name: string
+    systemStatus: SystemStatus
+    summaryLine: string
+  }
   hero: {
     clientes_activos: number
     traficos_motion: number
@@ -30,12 +30,6 @@ export interface InicioData {
     valor_transito_usd: number
     en_riesgo: number
     dias_sin_rojo: number
-  }
-  pulse: {
-    last24h_events: number
-    last24h_decisions: number
-    last24h_cost_usd: number
-    sparkline: PulsePoint[]
   }
   clientHealth: ClientHealth[]
   rightRail: {

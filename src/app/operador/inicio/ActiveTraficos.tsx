@@ -2,7 +2,10 @@
 
 import { useMemo, useState, useTransition } from 'react'
 import Link from 'next/link'
-import { MoreVertical } from 'lucide-react'
+import {
+  MoreVertical, Truck, FileText, AlertTriangle, Tags, CalendarClock, Users,
+} from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { fmtDateTime } from '@/lib/format-utils'
 import {
   BG_CARD, BORDER, GLASS_BLUR, GLASS_SHADOW,
@@ -17,11 +20,19 @@ const STATUS_OPTIONS = ['En Proceso', 'Cruzado', 'Pagado', 'Retrasado', 'Estanca
 
 interface Props {
   rows: TraficoRow[]
-  filterKey: 'entradasHoy' | 'activos' | 'pendientes' | 'atrasados' | null
   onRefresh?: () => void
 }
 
-export function ActiveTraficos({ rows, filterKey, onRefresh }: Props) {
+interface Tile {
+  href: string
+  label: string
+  description: string
+  icon: LucideIcon
+  count: number
+  tone: 'muted' | 'action' | 'overdue'
+}
+
+export function ActiveTraficos({ rows, onRefresh }: Props) {
   const [clientFilter, setClientFilter] = useState<string>('')
   const [statusFilter, setStatusFilter] = useState<string>('')
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null)
@@ -33,20 +44,77 @@ export function ActiveTraficos({ rows, filterKey, onRefresh }: Props) {
     [rows]
   )
 
-  const visible = useMemo(() => {
+  const overdueCount = useMemo(() => {
     const now = Date.now()
+    return rows.filter(r => {
+      if (!r.updated_at) return false
+      return (now - new Date(r.updated_at).getTime()) / 86400000 > 7
+    }).length
+  }, [rows])
+
+  const pendingPedimentoCount = useMemo(
+    () => rows.filter(r => !r.pedimento).length,
+    [rows]
+  )
+
+  const tiles: Tile[] = [
+    {
+      href: '/traficos?estatus=En+Proceso',
+      label: 'Tráficos activos',
+      description: 'En motion ahora',
+      icon: Truck,
+      count: rows.length,
+      tone: rows.length > 0 ? 'action' : 'muted',
+    },
+    {
+      href: '/operador/cola',
+      label: 'Cola de excepciones',
+      description: 'Requieren revisión',
+      icon: AlertTriangle,
+      count: overdueCount,
+      tone: overdueCount > 0 ? 'overdue' : 'muted',
+    },
+    {
+      href: '/traficos?sin_pedimento=1',
+      label: 'Pedimentos pendientes',
+      description: 'Sin pedimento',
+      icon: FileText,
+      count: pendingPedimentoCount,
+      tone: pendingPedimentoCount > 0 ? 'action' : 'muted',
+    },
+    {
+      href: '/clasificar-producto',
+      label: 'Clasificaciones',
+      description: 'Productos por clasificar',
+      icon: Tags,
+      count: 0,
+      tone: 'muted',
+    },
+    {
+      href: '/operador/mi-dia',
+      label: 'Mi día',
+      description: 'Plan y tareas',
+      icon: CalendarClock,
+      count: 0,
+      tone: 'muted',
+    },
+    {
+      href: '/operador/equipo',
+      label: 'Equipo',
+      description: 'Estado del turno',
+      icon: Users,
+      count: 0,
+      tone: 'muted',
+    },
+  ]
+
+  const visible = useMemo(() => {
     return rows.filter(r => {
       if (clientFilter && r.company_id !== clientFilter) return false
       if (statusFilter && r.estatus !== statusFilter) return false
-      if (filterKey === 'atrasados') {
-        if (!r.updated_at) return false
-        const days = (now - new Date(r.updated_at).getTime()) / 86400000
-        return days > 7
-      }
-      if (filterKey === 'pendientes') return !r.pedimento
       return true
     })
-  }, [rows, clientFilter, statusFilter, filterKey])
+  }, [rows, clientFilter, statusFilter])
 
   const showToast = (msg: string) => {
     setToast(msg)
@@ -81,8 +149,26 @@ export function ActiveTraficos({ rows, filterKey, onRefresh }: Props) {
   }
 
   return (
-    <div
-      style={{
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {/* Entity card grid */}
+      <div
+        className="oper-nav-grid"
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(2, 1fr)',
+          gap: 12,
+        }}
+      >
+        {tiles.map(t => <NavTile key={t.href} tile={t} />)}
+        <style>{`
+          @media (max-width: 640px) {
+            .oper-nav-grid { grid-template-columns: 1fr !important; }
+          }
+        `}</style>
+      </div>
+
+      {/* Collapsible table below the fold */}
+      <details style={{
         background: BG_CARD,
         backdropFilter: `blur(${GLASS_BLUR})`,
         WebkitBackdropFilter: `blur(${GLASS_BLUR})`,
@@ -90,146 +176,148 @@ export function ActiveTraficos({ rows, filterKey, onRefresh }: Props) {
         borderRadius: 20,
         boxShadow: GLASS_SHADOW,
         overflow: 'hidden',
-      }}
-    >
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', gap: 12, flexWrap: 'wrap' }}>
-        <div>
-          <div style={{ fontSize: 14, fontWeight: 800, color: TEXT_PRIMARY }}>
-            Tráficos activos
-          </div>
-          <div style={{ fontSize: 11, color: TEXT_MUTED, marginTop: 2 }}>
+      }}>
+        <summary style={{
+          cursor: 'pointer',
+          padding: '14px 20px',
+          fontSize: 12,
+          fontWeight: 700,
+          color: ACCENT_CYAN,
+          listStyle: 'none',
+        }}>
+          Ver tabla completa ({rows.length}) →
+        </summary>
+
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px', gap: 12, flexWrap: 'wrap', borderTop: `1px solid ${BORDER}` }}>
+          <div style={{ fontSize: 11, color: TEXT_MUTED }}>
             {visible.length} de {rows.length} · orden por última actualización
           </div>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <FilterSelect value={clientFilter} onChange={setClientFilter} options={clients} placeholder="Cliente" />
+            <FilterSelect value={statusFilter} onChange={setStatusFilter} options={STATUS_OPTIONS} placeholder="Estatus" />
+          </div>
         </div>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <FilterSelect value={clientFilter} onChange={setClientFilter} options={clients} placeholder="Cliente" />
-          <FilterSelect value={statusFilter} onChange={setStatusFilter} options={STATUS_OPTIONS} placeholder="Estatus" />
-        </div>
-      </div>
 
-      <div className="inicio-table" style={{ overflowX: 'auto' }}>
-        <style>{`
-          @media (max-width: 768px) {
-            .inicio-table table { font-size: 11px; }
-            .inicio-table .col-hide { display: none; }
-          }
-        `}</style>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
-          <thead>
-            <tr style={{ color: TEXT_MUTED, textTransform: 'uppercase', fontSize: 9, letterSpacing: '0.08em' }}>
-              <Th>Tráfico</Th>
-              <Th className="col-hide">Cliente</Th>
-              <Th className="col-hide">Proveedor</Th>
-              <Th>Descripción</Th>
-              <Th>Estatus</Th>
-              <Th className="col-hide">Actualizado</Th>
-              <Th>Días</Th>
-              <Th style={{ width: 48 }}></Th>
-            </tr>
-          </thead>
-          <tbody>
-            {visible.length === 0 ? (
-              <tr>
-                <td colSpan={8} style={{ padding: 32, textAlign: 'center', color: TEXT_MUTED }}>
-                  Sin tráficos que coincidan con el filtro
-                </td>
+        <div className="inicio-table" style={{ overflowX: 'auto' }}>
+          <style>{`
+            @media (max-width: 768px) {
+              .inicio-table table { font-size: 11px; }
+              .inicio-table .col-hide { display: none; }
+            }
+          `}</style>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+            <thead>
+              <tr style={{ color: TEXT_MUTED, textTransform: 'uppercase', fontSize: 9, letterSpacing: '0.08em' }}>
+                <Th>Tráfico</Th>
+                <Th className="col-hide">Cliente</Th>
+                <Th className="col-hide">Proveedor</Th>
+                <Th>Descripción</Th>
+                <Th>Estatus</Th>
+                <Th className="col-hide">Actualizado</Th>
+                <Th>Días</Th>
+                <Th style={{ width: 48 }}></Th>
               </tr>
-            ) : visible.map((r) => {
-              const daysActive = r.updated_at
-                ? Math.floor((Date.now() - new Date(r.updated_at).getTime()) / 86400000)
-                : 0
-              const isStale = daysActive > 7
-              return (
-                <tr key={r.trafico} style={{ borderTop: `1px solid ${BORDER}` }}>
-                  <Td>
-                    <Link
-                      href={`/traficos/${encodeURIComponent(r.trafico)}`}
-                      style={{
-                        fontFamily: 'var(--font-mono)',
-                        fontWeight: 700,
-                        color: ACCENT_CYAN,
-                        textDecoration: 'none',
-                      }}
-                    >
-                      {r.trafico}
-                    </Link>
-                  </Td>
-                  <Td className="col-hide">
-                    <span style={{ fontFamily: 'var(--font-mono)', color: TEXT_SECONDARY }}>
-                      {r.company_id || '—'}
-                    </span>
-                  </Td>
-                  <Td className="col-hide">
-                    <span style={{ color: TEXT_SECONDARY }}>
-                      {truncate(r.proveedores, 24) || '—'}
-                    </span>
-                  </Td>
-                  <Td>
-                    <span style={{ color: TEXT_PRIMARY }}>
-                      {truncate(r.descripcion_mercancia, 48) || '—'}
-                    </span>
-                  </Td>
-                  <Td>
-                    <EstatusChip estatus={r.estatus} />
-                  </Td>
-                  <Td className="col-hide">
-                    <span style={{ fontFamily: 'var(--font-mono)', color: TEXT_MUTED, fontSize: 11 }}>
-                      {fmtDateTime(r.updated_at)}
-                    </span>
-                  </Td>
-                  <Td>
-                    <span style={{
-                      fontFamily: 'var(--font-mono)',
-                      fontWeight: 700,
-                      color: isStale ? RED : (daysActive > 3 ? GOLD : GREEN),
-                    }}>
-                      {daysActive}d
-                    </span>
-                  </Td>
-                  <Td>
-                    <div style={{ position: 'relative' }}>
-                      <button
-                        type="button"
-                        onClick={() => setMenuOpenId(menuOpenId === r.trafico ? null : r.trafico)}
-                        aria-label="Acciones"
+            </thead>
+            <tbody>
+              {visible.length === 0 ? (
+                <tr>
+                  <td colSpan={8} style={{ padding: 32, textAlign: 'center', color: TEXT_MUTED }}>
+                    Sin tráficos que coincidan con el filtro
+                  </td>
+                </tr>
+              ) : visible.map((r) => {
+                const daysActive = r.updated_at
+                  ? Math.floor((Date.now() - new Date(r.updated_at).getTime()) / 86400000)
+                  : 0
+                const isStale = daysActive > 7
+                return (
+                  <tr key={r.trafico} style={{ borderTop: `1px solid ${BORDER}` }}>
+                    <Td>
+                      <Link
+                        href={`/traficos/${encodeURIComponent(r.trafico)}`}
                         style={{
-                          width: 32,
-                          height: 32,
-                          background: 'transparent',
-                          border: 'none',
-                          color: TEXT_SECONDARY,
-                          cursor: 'pointer',
-                          borderRadius: 8,
+                          fontFamily: 'var(--font-jetbrains-mono), monospace',
+                          fontWeight: 700,
+                          color: ACCENT_CYAN,
+                          textDecoration: 'none',
                         }}
                       >
-                        <MoreVertical size={16} />
-                      </button>
-                      {menuOpenId === r.trafico && (
-                        <RowMenu
-                          trafico={r}
-                          onClose={() => setMenuOpenId(null)}
-                          onStatus={(next) => handleStatusChange(r, next)}
-                          onReceive={() => handleMarkReceived(r)}
-                          onSendEmail={() => handleSendEmail(r)}
-                        />
-                      )}
-                    </div>
-                  </Td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
-      </div>
+                        {r.trafico}
+                      </Link>
+                    </Td>
+                    <Td className="col-hide">
+                      <span style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', color: TEXT_SECONDARY }}>
+                        {r.company_id || '—'}
+                      </span>
+                    </Td>
+                    <Td className="col-hide">
+                      <span style={{ color: TEXT_SECONDARY }}>
+                        {truncate(r.proveedores, 24) || '—'}
+                      </span>
+                    </Td>
+                    <Td>
+                      <span style={{ color: TEXT_PRIMARY }}>
+                        {truncate(r.descripcion_mercancia, 48) || '—'}
+                      </span>
+                    </Td>
+                    <Td>
+                      <EstatusChip estatus={r.estatus} />
+                    </Td>
+                    <Td className="col-hide">
+                      <span style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', color: TEXT_MUTED, fontSize: 11 }}>
+                        {fmtDateTime(r.updated_at)}
+                      </span>
+                    </Td>
+                    <Td>
+                      <span style={{
+                        fontFamily: 'var(--font-jetbrains-mono), monospace',
+                        fontWeight: 700,
+                        color: isStale ? RED : (daysActive > 3 ? GOLD : GREEN),
+                      }}>
+                        {daysActive}d
+                      </span>
+                    </Td>
+                    <Td>
+                      <div style={{ position: 'relative' }}>
+                        <button
+                          type="button"
+                          onClick={() => setMenuOpenId(menuOpenId === r.trafico ? null : r.trafico)}
+                          aria-label="Acciones"
+                          style={{
+                            width: 32, height: 32,
+                            background: 'transparent', border: 'none',
+                            color: TEXT_SECONDARY, cursor: 'pointer', borderRadius: 8,
+                          }}
+                        >
+                          <MoreVertical size={16} />
+                        </button>
+                        {menuOpenId === r.trafico && (
+                          <RowMenu
+                            trafico={r}
+                            onClose={() => setMenuOpenId(null)}
+                            onStatus={(next) => handleStatusChange(r, next)}
+                            onReceive={() => handleMarkReceived(r)}
+                            onSendEmail={() => handleSendEmail(r)}
+                          />
+                        )}
+                      </div>
+                    </Td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
 
-      <div style={{ padding: '12px 20px', borderTop: `1px solid ${BORDER}`, display: 'flex', justifyContent: 'space-between' }}>
-        <span style={{ fontSize: 11, color: TEXT_MUTED }}>
-          {isPending ? 'Guardando…' : '\u00A0'}
-        </span>
-        <Link href="/traficos" style={{ color: ACCENT_CYAN, fontSize: 12, fontWeight: 700, textDecoration: 'none' }}>
-          Ver todos →
-        </Link>
-      </div>
+        <div style={{ padding: '12px 20px', borderTop: `1px solid ${BORDER}`, display: 'flex', justifyContent: 'space-between' }}>
+          <span style={{ fontSize: 11, color: TEXT_MUTED }}>
+            {isPending ? 'Guardando…' : '\u00A0'}
+          </span>
+          <Link href="/traficos" style={{ color: ACCENT_CYAN, fontSize: 12, fontWeight: 700, textDecoration: 'none' }}>
+            Ver todos →
+          </Link>
+        </div>
+      </details>
 
       {toast && (
         <div style={{
@@ -250,6 +338,66 @@ export function ActiveTraficos({ rows, filterKey, onRefresh }: Props) {
         </div>
       )}
     </div>
+  )
+}
+
+function NavTile({ tile }: { tile: Tile }) {
+  const Icon = tile.icon
+  const countColor =
+    tile.tone === 'overdue' ? RED :
+    tile.tone === 'action' ? GOLD :
+    TEXT_MUTED
+  return (
+    <Link
+      href={tile.href}
+      style={{
+        display: 'block',
+        padding: 18,
+        borderRadius: 20,
+        background: BG_CARD,
+        backdropFilter: `blur(${GLASS_BLUR})`,
+        WebkitBackdropFilter: `blur(${GLASS_BLUR})`,
+        border: `1px solid ${BORDER}`,
+        boxShadow: GLASS_SHADOW,
+        textDecoration: 'none',
+        color: 'inherit',
+        transition: 'all 120ms',
+      }}
+      onMouseEnter={e => {
+        e.currentTarget.style.borderColor = 'rgba(0,229,255,0.2)'
+        e.currentTarget.style.background = 'rgba(255,255,255,0.05)'
+      }}
+      onMouseLeave={e => {
+        e.currentTarget.style.borderColor = BORDER
+        e.currentTarget.style.background = BG_CARD
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+          <Icon size={18} color={TEXT_SECONDARY} />
+          <div style={{ minWidth: 0 }}>
+            <div style={{
+              fontSize: 14, fontWeight: 700, color: TEXT_PRIMARY,
+              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+            }}>
+              {tile.label}
+            </div>
+            <div style={{ fontSize: 11, color: TEXT_MUTED, marginTop: 2 }}>
+              {tile.description}
+            </div>
+          </div>
+        </div>
+        <span style={{
+          fontFamily: 'var(--font-jetbrains-mono), monospace',
+          fontSize: 22, fontWeight: 800,
+          color: countColor,
+          fontVariantNumeric: 'tabular-nums',
+          flexShrink: 0,
+        }}>
+          {tile.count}
+        </span>
+      </div>
+    </Link>
   )
 }
 

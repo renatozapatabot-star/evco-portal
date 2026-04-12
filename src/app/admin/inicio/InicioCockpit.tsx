@@ -1,14 +1,50 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient as createBrowserSupabase } from '@/lib/supabase/client'
-import { BG_GRADIENT_START, BG_GRADIENT_END } from '@/lib/design-system'
+import {
+  BG_GRADIENT_START, BG_GRADIENT_END,
+  GREEN, AMBER, RED, TEXT_PRIMARY, TEXT_SECONDARY, TEXT_MUTED,
+} from '@/lib/design-system'
 import { HeroStrip } from './HeroStrip'
-import { PortfolioPulse } from './PortfolioPulse'
 import { ClientHealthGrid } from './ClientHealthGrid'
 import { RightRail } from './RightRail'
-import type { InicioData } from './types'
+import type { InicioData, SystemStatus } from './types'
+
+function statusColor(s: SystemStatus): string {
+  if (s === 'critical') return RED
+  if (s === 'warning') return AMBER
+  return GREEN
+}
+
+function partOfDay(): string {
+  const h = Number(new Date().toLocaleString('en-US', { timeZone: 'America/Chicago', hour: 'numeric', hour12: false }))
+  if (h < 12) return 'días'
+  if (h < 19) return 'tardes'
+  return 'noches'
+}
+
+function LiveTimestamp() {
+  const [now, setNow] = useState<Date | null>(null)
+  useEffect(() => {
+    setNow(new Date())
+    const id = setInterval(() => setNow(new Date()), 30_000)
+    return () => clearInterval(id)
+  }, [])
+  if (!now) return null
+  const dateStr = now.toLocaleDateString('es-MX', {
+    weekday: 'long', day: 'numeric', month: 'long', timeZone: 'America/Chicago',
+  })
+  const timeStr = now.toLocaleTimeString('es-MX', {
+    hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/Chicago',
+  })
+  return (
+    <div style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', fontSize: 11, color: TEXT_MUTED, marginTop: 4 }}>
+      {dateStr} · {timeStr} · Datos en vivo
+    </div>
+  )
+}
 
 export function InicioCockpit({ data }: { data: InicioData }) {
   const router = useRouter()
@@ -32,6 +68,8 @@ export function InicioCockpit({ data }: { data: InicioData }) {
     }
   }, [router])
 
+  const dotColor = statusColor(data.greeting.systemStatus)
+
   return (
     <div
       className="aduana-dark"
@@ -42,36 +80,38 @@ export function InicioCockpit({ data }: { data: InicioData }) {
       }}
     >
       <div style={{ maxWidth: 1400, margin: '0 auto' }}>
-        <header style={{ marginBottom: 24 }}>
-          <h1
-            style={{
-              fontSize: 28,
-              fontWeight: 900,
-              color: '#E6EDF3',
-              letterSpacing: '-0.03em',
-              margin: 0,
-            }}
-          >
-            Inicio
-          </h1>
-          <p style={{ fontSize: 14, color: '#94a3b8', marginTop: 4 }}>
-            Portafolio de la correduría · Patente 3596
-          </p>
-        </header>
+        {/* Greeting header */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+          <div style={{
+            width: 12, height: 12, borderRadius: '50%',
+            background: dotColor, boxShadow: `0 0 8px ${dotColor}`, flexShrink: 0,
+          }} />
+          <div>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
+              <h1 style={{
+                fontSize: 24, fontWeight: 800, color: TEXT_PRIMARY,
+                margin: 0, letterSpacing: '-0.03em',
+              }}>
+                Buenas {partOfDay()}, {data.greeting.name}
+              </h1>
+              <span style={{
+                fontFamily: 'var(--font-jetbrains-mono), monospace',
+                fontSize: 10, color: TEXT_MUTED,
+                textTransform: 'uppercase', letterSpacing: '0.04em',
+              }}>
+                PATENTE 3596
+              </span>
+            </div>
+            <p style={{ fontSize: 14, color: TEXT_SECONDARY, marginTop: 2, marginBottom: 0, fontWeight: 500 }}>
+              {data.greeting.summaryLine}
+            </p>
+            <LiveTimestamp />
+          </div>
+        </div>
 
-        <HeroStrip hero={data.hero} />
-
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 320px)',
-            gap: 16,
-            marginTop: 16,
-          }}
-          className="inicio-main-grid"
-        >
+        <div className="inicio-main-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 16 }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16, minWidth: 0 }}>
-            <PortfolioPulse pulse={data.pulse} />
+            <HeroStrip hero={data.hero} />
             <ClientHealthGrid clients={data.clientHealth} />
           </div>
           <RightRail rail={data.rightRail} />
@@ -79,9 +119,9 @@ export function InicioCockpit({ data }: { data: InicioData }) {
       </div>
 
       <style jsx>{`
-        @media (max-width: 900px) {
+        @media (max-width: 1024px) {
           :global(.inicio-main-grid) {
-            grid-template-columns: minmax(0, 1fr) !important;
+            grid-template-columns: 1fr !important;
           }
         }
       `}</style>

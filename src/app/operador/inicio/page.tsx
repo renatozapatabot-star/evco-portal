@@ -3,7 +3,7 @@ import { cookies } from 'next/headers'
 import { createServerClient } from '@/lib/supabase-server'
 import { logOperatorAction } from '@/lib/operator-actions'
 import { InicioClient } from './InicioClient'
-import type { TraficoRow, DecisionRow } from './types'
+import type { TraficoRow, DecisionRow, SystemStatus } from './types'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -89,6 +89,15 @@ export default async function OperadorInicioPage() {
   const traficos = (activeTraficosRes.data || []) as TraficoRow[]
   const feed = (feedRes.data || []) as DecisionRow[]
 
+  const colaCount = colaCountRes.count || 0
+  const systemStatus: SystemStatus =
+    kpis.atrasados > 0 || colaCount > 0 ? 'warning' : 'healthy'
+  const summaryLine = colaCount > 0
+    ? `${colaCount} en cola${kpis.atrasados > 0 ? ` · ${kpis.atrasados} atrasados` : ''}`
+    : kpis.atrasados > 0
+    ? `${kpis.atrasados} tráfico${kpis.atrasados === 1 ? '' : 's'} atrasado${kpis.atrasados === 1 ? '' : 's'} >7 días`
+    : 'Sin pendientes inmediatos.'
+
   return (
     <InicioClient
       operatorName={opName}
@@ -98,7 +107,9 @@ export default async function OperadorInicioPage() {
       feed={feed}
       personalAssigned={personalRes.count || 0}
       personalDone={personalDoneRes.count || 0}
-      colaCount={colaCountRes.count || 0}
+      colaCount={colaCount}
+      systemStatus={systemStatus}
+      summaryLine={summaryLine}
     />
   )
 }

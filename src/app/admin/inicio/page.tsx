@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import { verifySession } from '@/lib/session'
 import { createServerClient } from '@/lib/supabase-server'
 import { InicioCockpit } from './InicioCockpit'
-import type { InicioData, ClientHealth, PulsePoint, TeamActivity } from './types'
+import type { InicioData, ClientHealth, TeamActivity, SystemStatus } from './types'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -42,9 +42,6 @@ export default async function InicioPage() {
     atRiskStaleRes,
     workflowFailedRes,
     redSemaforoRes,
-    pulseDecisionsRes,
-    pulseApiCostRes,
-    pulseWorkflowRes,
     recentTraficosRes,
     teamActivityRes,
     systemSpendRes,
@@ -66,12 +63,6 @@ export default async function InicioPage() {
       .in('status', ['failed', 'dead_letter']),
     sb.from('traficos').select('fecha_llegada').eq('semaforo', 'rojo')
       .order('fecha_llegada', { ascending: false }).limit(1),
-    sb.from('operational_decisions').select('id, operator_id, created_at')
-      .gte('created_at', last7d).limit(5000),
-    sb.from('api_cost_log').select('cost_usd, created_at')
-      .gte('created_at', last7d).limit(10000),
-    sb.from('workflow_events').select('id, created_at, status')
-      .gte('created_at', last7d).limit(10000),
     sb.from('traficos')
       .select('id, company_id, estatus, fecha_llegada, importe_total, pedimento, updated_at')
       .gte('updated_at', last7d)
@@ -86,7 +77,6 @@ export default async function InicioPage() {
       .eq('status', 'ready_for_approval'),
   ])
 
-  // Companies map for grid
   const companyIds = new Set<string>()
   ;(motionTraficosRes.data || []).forEach(t => t.company_id && companyIds.add(t.company_id))
   ;(recentTraficosRes.data || []).forEach(t => t.company_id && companyIds.add(t.company_id))
@@ -99,7 +89,6 @@ export default async function InicioPage() {
   const companyMap = new Map<string, { name: string; active: boolean }>()
   ;(companiesData || []).forEach(c => companyMap.set(c.company_id, { name: c.name, active: c.active }))
 
-  // Operator names
   const operatorIds = new Set<string>()
   ;(teamActivityRes.data || []).forEach(d => d.operator_id && operatorIds.add(d.operator_id))
   let operatorNames: Record<string, string> = {}
@@ -111,7 +100,6 @@ export default async function InicioPage() {
     )
   }
 
-  // Hero: totals
   const motion = motionTraficosRes.data || []
   const valorEnTransito = motion.reduce((sum, t) => sum + (Number(t.importe_total) || 0), 0)
   const atRiskCount = (atRiskStaleRes.count || 0) + (workflowFailedRes.count || 0)
@@ -121,7 +109,6 @@ export default async function InicioPage() {
     ? Math.floor((now.getTime() - new Date(lastRed).getTime()) / 86_400_000)
     : 999
 
-  // Client Health Grid
   type Agg = { traficos: number; value: number; red: boolean; yellow: boolean; last: string | null }
   const byCompany = new Map<string, Agg>()
   ;(recentTraficosRes.data || []).forEach(t => {
@@ -158,37 +145,8 @@ export default async function InicioPage() {
       if (order[a.status] !== order[b.status]) return order[a.status] - order[b.status]
       return (b.last_activity || '').localeCompare(a.last_activity || '')
     })
-    .slice(0, 12)
+    .slice(0, 6)
 
-  // Pulse 7-day sparkline — bin by local day
-  const days: string[] = []
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date(now.getTime() - i * 86_400_000)
-    days.push(d.toISOString().slice(0, 10))
-  }
-  const pulse: PulsePoint[] = days.map(d => ({ day: d, events: 0, decisions: 0 }))
-  const pulseIndex = Object.fromEntries(pulse.map((p, i) => [p.day, i]))
-  ;(pulseDecisionsRes.data || []).forEach(r => {
-    const k = r.created_at?.slice(0, 10)
-    if (k && pulseIndex[k] != null) pulse[pulseIndex[k]].decisions += 1
-  })
-  ;(pulseWorkflowRes.data || []).forEach(r => {
-    const k = r.created_at?.slice(0, 10)
-    if (k && pulseIndex[k] != null) pulse[pulseIndex[k]].events += 1
-  })
-
-  // Pulse 24h
-  const pulse24hDecisions = (pulseDecisionsRes.data || []).filter(
-    r => r.created_at && r.created_at >= last24h
-  ).length
-  const pulse24hEvents = (pulseWorkflowRes.data || []).filter(
-    r => r.created_at && r.created_at >= last24h
-  ).length
-  const pulse24hCostUsd = (pulseApiCostRes.data || [])
-    .filter(r => r.created_at && r.created_at >= last24h)
-    .reduce((s, r) => s + (Number(r.cost_usd) || 0), 0)
-
-  // Team
   const teamMap = new Map<string, number>()
   ;(teamActivityRes.data || []).forEach(d => {
     if (!d.operator_id) return
@@ -199,14 +157,29 @@ export default async function InicioPage() {
     .sort((a, b) => b.actions - a.actions)
     .slice(0, 5)
 
-  // System
   const todaySpend = (systemSpendRes.data || [])
     .reduce((s, r) => s + (Number(r.cost_usd) || 0), 0)
   const wfHealth = workflowHealthRes.data || []
   const failedCount = wfHealth.filter(w => w.status === 'failed' || w.status === 'dead_letter').length
   const pendingCount = wfHealth.filter(w => w.status === 'pending').length
 
+  // Greeting status
+  const systemStatus: SystemStatus = failedCount > 0 ? 'critical' : pendingCount >= 10 ? 'warning' : 'healthy'
+  const redClients = clientHealth.filter(c => c.status === 'red').length
+  const summaryLine = failedCount > 0
+    ? `${failedCount} evento${failedCount === 1 ? '' : 's'} fallido${failedCount === 1 ? '' : 's'} · revisar pipeline`
+    : redClients > 0
+    ? `${redClients} cliente${redClients === 1 ? '' : 's'} con atención urgente · ${motion.length} tráficos en motion`
+    : pendingCount >= 10
+    ? `${pendingCount} eventos en cola · ${motion.length} tráficos en motion`
+    : `${motion.length} tráfico${motion.length === 1 ? '' : 's'} en motion · operación estable`
+
   const data: InicioData = {
+    greeting: {
+      name: 'Renato Zapata III',
+      systemStatus,
+      summaryLine,
+    },
     hero: {
       clientes_activos: activeClientsRes.count || 0,
       traficos_motion: motion.length,
@@ -214,12 +187,6 @@ export default async function InicioPage() {
       valor_transito_usd: valorEnTransito,
       en_riesgo: atRiskCount,
       dias_sin_rojo: diasSinRojo,
-    },
-    pulse: {
-      last24h_events: pulse24hEvents,
-      last24h_decisions: pulse24hDecisions,
-      last24h_cost_usd: pulse24hCostUsd,
-      sparkline: pulse,
     },
     clientHealth,
     rightRail: {

@@ -1,3 +1,5 @@
+export type SystemStatus = 'healthy' | 'warning' | 'critical'
+
 export interface TraficoRow {
   trafico: string
   company_id: string | null

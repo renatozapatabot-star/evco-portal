@@ -2,7 +2,9 @@
 
 import Link from 'next/link'
 import { fmtUSDFull } from '@/lib/format-utils'
-import { ACCENT_CYAN, GOLD, GREEN, AMBER, RED, TEXT_MUTED, TEXT_PRIMARY, TEXT_SECONDARY } from '@/lib/design-system'
+import {
+  GOLD, GREEN, AMBER, RED, TEXT_MUTED, TEXT_PRIMARY, TEXT_SECONDARY,
+} from '@/lib/design-system'
 import type { InicioData } from './types'
 
 const panelStyle: React.CSSProperties = {
@@ -28,14 +30,14 @@ const labelStyle: React.CSSProperties = {
 export function RightRail({ rail }: { rail: InicioData['rightRail'] }) {
   const sysFailed = rail.system.workflowFailed
   const sysPending = rail.system.workflowPending
-  const sysHealthy = sysFailed === 0 && sysPending < 10
-
   const sysColor = sysFailed > 0 ? RED : sysPending >= 10 ? AMBER : GREEN
   const sysLabel = sysFailed > 0
-    ? `🔴 ${sysFailed} evento${sysFailed === 1 ? '' : 's'} fallido${sysFailed === 1 ? '' : 's'}`
+    ? `${sysFailed} evento${sysFailed === 1 ? '' : 's'} fallido${sysFailed === 1 ? '' : 's'}`
     : sysPending >= 10
-    ? `🟡 ${sysPending} eventos en cola`
-    : '🟢 Pipeline saludable'
+    ? `${sysPending} eventos en cola`
+    : 'Pipeline saludable'
+
+  const topOperator = rail.team[0]
 
   return (
     <aside style={{ display: 'flex', flexDirection: 'column', gap: 16, minWidth: 0 }}>
@@ -72,7 +74,7 @@ export function RightRail({ rail }: { rail: InicioData['rightRail'] }) {
               width: '100%',
             }}
           >
-            Ver cola de aprobaciones →
+            Ver cola →
           </Link>
         ) : (
           <p style={{ fontSize: 12, color: TEXT_SECONDARY, margin: 0 }}>
@@ -81,52 +83,19 @@ export function RightRail({ rail }: { rail: InicioData['rightRail'] }) {
         )}
       </section>
 
-      {/* Equipo */}
+      {/* Estado del sistema */}
       <section style={panelStyle}>
-        <h3 style={labelStyle}>Equipo activo (24h)</h3>
-        {rail.team.length === 0 ? (
-          <p style={{ fontSize: 12, color: TEXT_SECONDARY, marginTop: 12, marginBottom: 0 }}>
-            Sin actividad reciente.
-          </p>
-        ) : (
-          <ul style={{ listStyle: 'none', padding: 0, margin: '12px 0 0 0', display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {rail.team.map(t => (
-              <li
-                key={t.operator_id}
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '8px 12px',
-                  borderRadius: 10,
-                  background: 'rgba(255,255,255,0.03)',
-                  border: '1px solid rgba(255,255,255,0.05)',
-                }}
-              >
-                <span style={{ fontSize: 13, color: TEXT_PRIMARY, fontWeight: 600 }}>{t.name}</span>
-                <span
-                  style={{
-                    fontFamily: 'var(--font-jetbrains-mono), monospace',
-                    fontSize: 13,
-                    color: ACCENT_CYAN,
-                    fontVariantNumeric: 'tabular-nums',
-                  }}
-                >
-                  {t.actions} acc{t.actions === 1 ? 'ión' : 'iones'}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-
-      {/* Sistema */}
-      <section style={panelStyle}>
-        <h3 style={labelStyle}>Sistema</h3>
-        <div style={{ fontSize: 13, color: sysColor, fontWeight: 700, marginTop: 12, marginBottom: 8 }}>
-          {sysLabel}
+        <h3 style={labelStyle}>Estado del sistema</h3>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, marginBottom: 10 }}>
+          <span style={{
+            width: 8, height: 8, borderRadius: '50%',
+            background: sysColor, boxShadow: `0 0 6px ${sysColor}`,
+          }} />
+          <span style={{ fontSize: 13, color: TEXT_PRIMARY, fontWeight: 600 }}>
+            {sysLabel}
+          </span>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: topOperator ? 10 : 0 }}>
           <span style={{ fontSize: 11, color: TEXT_MUTED }}>Costo IA hoy</span>
           <span
             style={{
@@ -139,10 +108,13 @@ export function RightRail({ rail }: { rail: InicioData['rightRail'] }) {
             {fmtUSDFull(rail.system.todaySpendUsd)}
           </span>
         </div>
-        {sysHealthy ? null : (
-          <p style={{ fontSize: 11, color: TEXT_SECONDARY, marginTop: 12, marginBottom: 0 }}>
-            Revisa la cola de workflow_events.
-          </p>
+        {topOperator && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: 11, color: TEXT_MUTED }}>Operador más activo</span>
+            <span style={{ fontSize: 12, color: TEXT_PRIMARY, fontWeight: 600 }}>
+              {topOperator.name} · {topOperator.actions}
+            </span>
+          </div>
         )}
       </section>
     </aside>

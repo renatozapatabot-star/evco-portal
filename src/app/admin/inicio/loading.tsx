@@ -23,30 +23,27 @@ export default function Loading() {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(6, minmax(0, 1fr))',
-            gap: 12,
-            marginBottom: 16,
-          }}
-        >
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} style={{ ...skelCard, minHeight: 140 }} />
-          ))}
-        </div>
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 320px)',
+            gridTemplateColumns: '1fr 340px',
             gap: 16,
           }}
         >
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <div style={{ ...skelCard, height: 240 }} />
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+                gap: 12,
+              }}
+            >
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} style={{ ...skelCard, minHeight: 120 }} />
+              ))}
+            </div>
             <div style={{ ...skelCard, height: 380 }} />
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <div style={{ ...skelCard, height: 160 }} />
-            <div style={{ ...skelCard, height: 200 }} />
-            <div style={{ ...skelCard, height: 140 }} />
+            <div style={{ ...skelCard, height: 180 }} />
+            <div style={{ ...skelCard, height: 180 }} />
           </div>
         </div>
       </div>

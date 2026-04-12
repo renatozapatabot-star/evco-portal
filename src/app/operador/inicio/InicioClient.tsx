@@ -1,15 +1,18 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef, useTransition } from 'react'
+import { useEffect, useCallback, useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient as createBrowserSupabaseClient } from '@/lib/supabase/client'
-import { BG_GRADIENT_START, BG_GRADIENT_END, TEXT_PRIMARY, TEXT_MUTED, GOLD_GRADIENT } from '@/lib/design-system'
-import { fmtDate } from '@/lib/format-utils'
+import {
+  BG_GRADIENT_START, BG_GRADIENT_END,
+  GREEN, AMBER, RED,
+  TEXT_PRIMARY, TEXT_SECONDARY, TEXT_MUTED,
+} from '@/lib/design-system'
 import { HeroStrip } from './HeroStrip'
 import { QuickActions } from './QuickActions'
 import { ActiveTraficos } from './ActiveTraficos'
 import { RightRail } from './RightRail'
-import type { TraficoRow, DecisionRow, KPIs } from './types'
+import type { TraficoRow, DecisionRow, KPIs, SystemStatus } from './types'
 
 interface Props {
   operatorName: string
@@ -20,11 +23,46 @@ interface Props {
   personalAssigned: number
   personalDone: number
   colaCount: number
+  systemStatus: SystemStatus
+  summaryLine: string
+}
+
+function statusColor(s: SystemStatus): string {
+  if (s === 'critical') return RED
+  if (s === 'warning') return AMBER
+  return GREEN
+}
+
+function partOfDay(): string {
+  const h = Number(new Date().toLocaleString('en-US', { timeZone: 'America/Chicago', hour: 'numeric', hour12: false }))
+  if (h < 12) return 'días'
+  if (h < 19) return 'tardes'
+  return 'noches'
+}
+
+function LiveTimestamp() {
+  const [now, setNow] = useState<Date | null>(null)
+  useEffect(() => {
+    setNow(new Date())
+    const id = setInterval(() => setNow(new Date()), 30_000)
+    return () => clearInterval(id)
+  }, [])
+  if (!now) return null
+  const dateStr = now.toLocaleDateString('es-MX', {
+    weekday: 'long', day: 'numeric', month: 'long', timeZone: 'America/Chicago',
+  })
+  const timeStr = now.toLocaleTimeString('es-MX', {
+    hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/Chicago',
+  })
+  return (
+    <div style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', fontSize: 11, color: TEXT_MUTED, marginTop: 4 }}>
+      {dateStr} · {timeStr} · Datos en vivo
+    </div>
+  )
 }
 
 export function InicioClient(props: Props) {
   const router = useRouter()
-  const [filterKey, setFilterKey] = useState<keyof KPIs | null>(null)
   const [, startTransition] = useTransition()
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -52,6 +90,8 @@ export function InicioClient(props: Props) {
     }
   }, [refresh])
 
+  const dotColor = statusColor(props.systemStatus)
+
   return (
     <div
       className="aduana-dark"
@@ -62,46 +102,43 @@ export function InicioClient(props: Props) {
         fontFamily: 'var(--font-sans)',
       }}
     >
-      <div className="p-4 md:px-7 md:py-6">
-        {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18 }}>
+      <div className="p-4 md:px-7 md:py-6" style={{ maxWidth: 1400, margin: '0 auto' }}>
+        {/* Greeting header */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
           <div style={{
-            width: 36, height: 36, background: GOLD_GRADIENT,
-            borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 16, fontWeight: 900, color: '#0D0D0C', fontFamily: 'Georgia, serif',
-          }}>Z</div>
+            width: 12, height: 12, borderRadius: '50%',
+            background: dotColor, boxShadow: `0 0 8px ${dotColor}`, flexShrink: 0,
+          }} />
           <div>
-            <h1 style={{ fontSize: 22, fontWeight: 800, margin: 0, letterSpacing: '-0.02em' }}>
-              Buenos días, {props.operatorName}
+            <h1 style={{
+              fontSize: 24, fontWeight: 800, color: TEXT_PRIMARY,
+              margin: 0, letterSpacing: '-0.03em',
+            }}>
+              Buenas {partOfDay()}, {props.operatorName}
             </h1>
-            <p style={{ color: TEXT_MUTED, fontSize: 12, margin: '4px 0 0 0' }}>
-              Inicio · <span style={{ fontFamily: 'var(--font-mono)' }}>{fmtDate(new Date())}</span>
+            <p style={{ fontSize: 14, color: TEXT_SECONDARY, marginTop: 2, marginBottom: 0, fontWeight: 500 }}>
+              {props.summaryLine}
             </p>
+            <LiveTimestamp />
           </div>
         </div>
 
         <QuickActions />
 
-        <HeroStrip
-          kpis={props.kpis}
-          active={filterKey}
-          onFilter={setFilterKey}
-        />
-
-        <div className="inicio-main" style={{ display: 'grid', gridTemplateColumns: '3fr 2fr', gap: 16 }}>
+        <div className="inicio-main" style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 16 }}>
           <style>{`
             @media (max-width: 1024px) {
               .inicio-main { grid-template-columns: 1fr !important; }
             }
           `}</style>
-          <ActiveTraficos
-            rows={props.traficos}
-            filterKey={filterKey}
-            onRefresh={refresh}
-          />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16, minWidth: 0 }}>
+            <HeroStrip kpis={props.kpis} />
+            <ActiveTraficos
+              rows={props.traficos}
+              onRefresh={refresh}
+            />
+          </div>
           <RightRail
-            personalAssigned={props.personalAssigned}
-            personalDone={props.personalDone}
             colaCount={props.colaCount}
             feed={props.feed}
           />

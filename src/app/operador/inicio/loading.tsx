@@ -17,14 +17,25 @@ function Skeleton({ height = 120 }: { height?: number }) {
 
 export default function Loading() {
   return (
-    <div className="p-4 md:px-7 md:py-6" style={{ minHeight: '100vh' }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 20 }}>
-        <Skeleton /><Skeleton /><Skeleton /><Skeleton />
+    <div className="p-4 md:px-7 md:py-6" style={{ minHeight: '100vh', maxWidth: 1400, margin: '0 auto' }}>
+      <Skeleton height={80} />
+      <div style={{ marginTop: 16 }}>
+        <Skeleton height={64} />
       </div>
-      <Skeleton height={64} />
-      <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '3fr 2fr', gap: 16 }}>
-        <Skeleton height={520} />
-        <Skeleton height={520} />
+      <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 340px', gap: 16 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+            <Skeleton /><Skeleton /><Skeleton /><Skeleton />
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+            <Skeleton height={96} /><Skeleton height={96} />
+            <Skeleton height={96} /><Skeleton height={96} />
+          </div>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <Skeleton height={200} />
+          <Skeleton height={220} />
+        </div>
       </div>
     </div>
   )

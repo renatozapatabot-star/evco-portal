@@ -40,13 +40,15 @@ async function sendTelegram(msg) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ chat_id: TELEGRAM_CHAT, text: msg, parse_mode: 'HTML' }),
-  }).catch(() => {})
+  }).catch(e => console.error('[telegram]', e.message))
 }
 
 async function main() {
   console.log(`🔄 CRUZ Supply Chain Orchestrator — ${DRY_RUN ? 'DRY RUN' : 'LIVE'}`)
 
-  try { const fxData = await getExchangeRate(); exchangeRate = fxData.rate } catch { /* fallback 17.5 */ }
+  const fxData = await getExchangeRate()
+  if (!fxData?.rate) throw new Error('Exchange rate unavailable from system_config — refusing to calculate with stale data')
+  exchangeRate = fxData.rate
   console.log(`  TC: ${exchangeRate}`)
 
   // Fetch active tráficos

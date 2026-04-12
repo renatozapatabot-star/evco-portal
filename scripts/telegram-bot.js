@@ -8,8 +8,32 @@ const COMPANY_ID = 'evco'
 const CLAVE = '9254'
 
 if (!TOKEN) {
-  console.error('❌ TELEGRAM_BOT_TOKEN not found in .env.local')
-  process.exit(1)
+  const msg = [
+    '❌ TELEGRAM_BOT_TOKEN not found.',
+    '  This env var is required for the CRUZ Telegram bot (cruz-bot PM2 process).',
+    '  Without it: no /aprobar /rechazar commands, no draft approvals, no Telegram alerts.',
+    '  Fix: Add TELEGRAM_BOT_TOKEN=<your-bot-token> to ~/evco-portal/.env.local',
+    '  Then: pm2 restart cruz-bot && pm2 save',
+  ].join('\n')
+  console.error(msg)
+
+  // Log to operational_decisions so audit script surfaces this
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  if (supabaseUrl && supabaseKey) {
+    const { createClient } = require('@supabase/supabase-js')
+    const sb = createClient(supabaseUrl, supabaseKey)
+    sb.from('operational_decisions').insert({
+      decision_type: 'startup_failure',
+      script_name: 'telegram-bot',
+      reasoning: 'TELEGRAM_BOT_TOKEN missing from .env.local — bot cannot start',
+      action_taken: 'process.exit(1)',
+      created_at: new Date().toISOString(),
+    }).then(() => process.exit(1)).catch(() => process.exit(1))
+  } else {
+    process.exit(1)
+  }
+  return // prevent further execution while async insert runs
 }
 
 const bot = new TelegramBot(TOKEN, { polling: true })

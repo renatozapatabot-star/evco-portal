@@ -597,7 +597,7 @@ async function buildSection6() {
       const handlerKeys = new Set(handlers.map(h => h.key))
       const gaps = []
       for (const chain of chains) {
-        const targetKey = `${chain.target_workflow}.${chain.target_event_type}`
+        const targetKey = `${chain.target_workflow}.${chain.target_event}`
         if (!handlerKeys.has(targetKey)) {
           gaps.push(targetKey)
         }
@@ -871,15 +871,16 @@ async function buildSection9(currentData) {
   try {
     const prevContent = fs.readFileSync(PREVIOUS_PATH, 'utf8')
 
-    // Extract row counts from previous run
+    // ── Row count deltas ──
     const extractRowCounts = (content) => {
       const counts = {}
+      // Match rows in Section 2 table: | table_name | 1,234 | +5 |
       const tableRegex = /\|\s*(\w+)\s*\|\s*([\d,]+)\s*\|/g
       let match
       while ((match = tableRegex.exec(content)) !== null) {
         const table = match[1]
         const count = parseInt(match[2].replace(/,/g, ''))
-        if (!isNaN(count) && table !== 'Table' && table !== 'Field' && table !== 'Metric') {
+        if (!isNaN(count) && !['Table', 'Field', 'Metric', 'Source', 'Status', 'Period', 'Cost'].includes(table)) {
           counts[table] = count
         }
       }
@@ -895,45 +896,153 @@ async function buildSection9(currentData) {
       }
     }
 
-    // Row count delta
     const allTables = new Set([...Object.keys(prevCounts), ...Object.keys(currCounts)])
-    let hasChanges = false
+    let hasRowChanges = false
     let deltaLines = `### Row Count Deltas\n\n| Table | Previous | Current | Delta |\n|---|---|---|---|\n`
     for (const table of allTables) {
       const prev = prevCounts[table]
       const curr = currCounts[table]
       if (prev !== undefined && curr !== undefined && prev !== curr) {
-        hasChanges = true
+        hasRowChanges = true
         const delta = curr - prev
         deltaLines += `| ${table} | ${prev.toLocaleString()} | ${curr.toLocaleString()} | ${delta > 0 ? '+' : ''}${delta.toLocaleString()} |\n`
       }
     }
+    lines += hasRowChanges ? deltaLines : `No row count changes detected.\n`
 
-    if (hasChanges) {
-      lines += deltaLines
-    } else {
-      lines += `No row count changes detected.\n`
-    }
-
-    // Extract previous health status
+    // ── Health transition ──
     const prevHealthMatch = prevContent.match(/Health:\s*(GREEN|YELLOW|RED)/)
+    const currentHealth = currentData.health || 'UNKNOWN'
     if (prevHealthMatch) {
-      const currentHealth = currentData.health || 'UNKNOWN'
-      lines += `\n- Previous health: ${prevHealthMatch[1]}\n`
-      lines += `- Current health: ${currentHealth}\n`
+      const prevHealth = prevHealthMatch[1]
+      const transition = prevHealth === currentHealth ? `${currentHealth} (unchanged)` : `${prevHealth} → ${currentHealth}`
+      lines += `\n### Health Transition\n\n- ${transition}\n`
     }
 
-    // Extract previous AI cost
-    const prevCostMatch = prevContent.match(/\$(\d+\.\d+)\s*.*Last 24h/)
+    // ── AI cost delta ──
+    const prevCostMatch = prevContent.match(/\|\s*Last 24h\s*\|\s*\$([\d.]+)\s*\|/)
+    const currCost = currentData.section7?.data?.cost24h || 0
     if (prevCostMatch) {
-      lines += `\n- Previous 24h AI cost: $${prevCostMatch[1]}\n`
-      lines += `- Current 24h AI cost: $${(currentData.section7?.data?.cost24h || 0).toFixed(4)}\n`
+      const prevCost = parseFloat(prevCostMatch[1])
+      const costDelta = currCost - prevCost
+      lines += `\n### AI Cost (24h)\n\n- Previous: $${prevCost.toFixed(4)}\n- Current: $${currCost.toFixed(4)}\n- Delta: ${costDelta >= 0 ? '+' : ''}$${costDelta.toFixed(4)}\n`
     }
+
+    // ── PM2 process diff ──
+    const extractPM2Names = (content) => {
+      const names = {}
+      const pm2Regex = /\|\s*(\S+)\s*\|\s*(online|stopped|errored|launching)\s*\|/g
+      let m
+      while ((m = pm2Regex.exec(content)) !== null) {
+        if (m[1] !== 'Name') names[m[1]] = m[2]
+      }
+      return names
+    }
+    const prevPM2 = extractPM2Names(prevContent)
+    const currPM2 = {}
+    if (currentData.section3?.data?.processes) {
+      try {
+        const raw = runCmd('pm2 jlist 2>/dev/null', { fallback: '[]' })
+        const procs = JSON.parse(raw)
+        for (const p of procs) {
+          currPM2[p.name] = p.pm2_env?.status || 'unknown'
+        }
+      } catch { /* use empty */ }
+    }
+
+    const allProcs = new Set([...Object.keys(prevPM2), ...Object.keys(currPM2)])
+    if (allProcs.size > 0) {
+      const pm2Changes = []
+      for (const name of allProcs) {
+        const prev = prevPM2[name]
+        const curr = currPM2[name]
+        if (!prev && curr) pm2Changes.push(`+ \`${name}\` (new, ${curr})`)
+        else if (prev && !curr) pm2Changes.push(`- \`${name}\` (removed, was ${prev})`)
+        else if (prev !== curr) pm2Changes.push(`~ \`${name}\` ${prev} → ${curr}`)
+      }
+      if (pm2Changes.length > 0) {
+        lines += `\n### PM2 Changes\n\n`
+        for (const c of pm2Changes) lines += `- ${c}\n`
+      }
+    }
+
+    // ── Handler breakdown diff ──
+    const prevHandlerMatch = prevContent.match(/- REAL: (\d+)\n- STUB: (\d+)\n- TODO: (\d+)/)
+    if (prevHandlerMatch && currentData.section6?.data) {
+      const prev = { real: parseInt(prevHandlerMatch[1]), stub: parseInt(prevHandlerMatch[2]), todo: parseInt(prevHandlerMatch[3]) }
+      const curr = currentData.section6.data
+      const changes = []
+      if (prev.real !== curr.real) changes.push(`REAL: ${prev.real} → ${curr.real}`)
+      if (prev.stub !== curr.stub) changes.push(`STUB: ${prev.stub} → ${curr.stub}`)
+      if (prev.todo !== curr.todo) changes.push(`TODO: ${prev.todo} → ${curr.todo}`)
+      if (changes.length > 0) {
+        lines += `\n### Handler Changes\n\n`
+        for (const c of changes) lines += `- ${c}\n`
+      }
+    }
+
+    // ── Uncommitted files diff ──
+    const prevUncommittedMatch = prevContent.match(/(\d+) uncommitted file/)
+    const currUncommitted = currentData.section1?.data?.uncommitted || 0
+    if (prevUncommittedMatch) {
+      const prevCount = parseInt(prevUncommittedMatch[1])
+      if (prevCount !== currUncommitted) {
+        lines += `\n### Uncommitted Files\n\n- Previous: ${prevCount}\n- Current: ${currUncommitted}\n`
+      }
+    }
+
   } catch (e) {
     lines += `(diff failed: ${e.message})\n`
   }
 
   return { text: lines }
+}
+
+function buildBrokenSummary(sectionData, sectionErrors) {
+  const criticals = []
+  const warnings = []
+
+  // Crashed/errored PM2 processes
+  const pm2Flags = sectionData.section3?.data?.flags || []
+  for (const f of pm2Flags) {
+    if (f.startsWith('ERRORED')) criticals.push(f)
+    else if (f.startsWith('CRASH LOOP')) criticals.push(f)
+    else if (f.startsWith('PHANTOM')) warnings.push(f)
+  }
+
+  // Stuck workflow events > 1h
+  const stuck = sectionData.section2?.data?.results?._workflow_events?.stuck || 0
+  if (stuck > 100) criticals.push(`${stuck} workflow events stuck pending > 1 hour`)
+  else if (stuck > 0) warnings.push(`${stuck} workflow events stuck pending > 1 hour`)
+
+  // Failed jobs in 24h
+  const healthIssues = sectionData.section8?.data?.healthIssues || []
+  for (const issue of healthIssues) {
+    if (issue.includes('failed') || issue.includes('CRITICAL')) criticals.push(issue)
+    else if (issue.includes('dead letter') || issue.includes('stale') || issue.includes('error')) warnings.push(issue)
+  }
+
+  // Section build failures
+  for (const err of sectionErrors) {
+    warnings.push(`Audit section failed: ${err}`)
+  }
+
+  const total = criticals.length + warnings.length
+  const topItems = [...criticals, ...warnings].slice(0, 5)
+
+  let block = `=== WHAT'S BROKEN RIGHT NOW ===\n`
+  if (criticals.length > 0) block += `🔴 ${criticals.length} critical issue${criticals.length === 1 ? '' : 's'}\n`
+  if (warnings.length > 0) block += `🟡 ${warnings.length} warning${warnings.length === 1 ? '' : 's'}\n`
+  if (total === 0) block += `🟢 No critical issues\n`
+
+  if (topItems.length > 0) {
+    block += `\nTop actionable items:\n`
+    for (let i = 0; i < topItems.length; i++) {
+      block += `${i + 1}. ${topItems[i]}\n`
+    }
+  }
+
+  return block
 }
 
 // ── Main ──
@@ -1054,8 +1163,15 @@ async function main() {
   const classifications24h = sectionData.section7?.data?.calls24h || 0
   const cost24h = sectionData.section7?.data?.cost24h || 0
 
-  // Section 9 — Diff
-  const currentSummary = { section2: sectionData.section2, section7: sectionData.section7, health }
+  // Section 9 — Diff (pass all section data for richer comparison)
+  const currentSummary = {
+    section1: sectionData.section1,
+    section2: sectionData.section2,
+    section3: sectionData.section3,
+    section6: sectionData.section6,
+    section7: sectionData.section7,
+    health,
+  }
   try {
     sectionData.section9 = await buildSection9(currentSummary)
     sections.push(sectionData.section9.text)
@@ -1075,10 +1191,17 @@ async function main() {
     `Last 24h: ${events24h} events processed, ${classifications24h} classifications, $${cost24h.toFixed(4)}`,
   ].join('\n')
 
+  // Build "What's broken" summary
+  const brokenSummary = buildBrokenSummary(sectionData, sectionErrors)
+
   // Assemble final output
   const output = [
     '```',
     header,
+    '```',
+    '',
+    '```',
+    brokenSummary,
     '```',
     '',
     '# ADUANA System State Audit',

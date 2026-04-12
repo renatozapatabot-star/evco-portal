@@ -126,12 +126,14 @@ function buildPrediction(t, history, supplier) {
 async function main() {
   console.log(`🔮 Predictive Classifier — ${DRY_RUN ? 'DRY RUN' : 'LIVE'}`)
 
-  try { const fxData = await getExchangeRate(); exchangeRate = fxData.rate } catch { /* fallback 17.5 */ }
+  const fxData = await getExchangeRate()
+  if (!fxData?.rate) throw new Error('Exchange rate unavailable from system_config — refusing to calculate with stale data')
+  exchangeRate = fxData.rate
   console.log(`  TC: ${exchangeRate}`)
 
   // Find tráficos without prediction that have supplier info
   const { data: unpredicted } = await supabase.from('traficos')
-    .select('trafico, company_id, proveedores, descripcion_mercancia, importe_total, regimen')
+    .select('trafico, company_id, proveedores, descripcion_mercancia, importe_total')
     .is('predicted_fraccion', null)
     .not('proveedores', 'is', null)
     .gte('fecha_llegada', '2024-01-01')

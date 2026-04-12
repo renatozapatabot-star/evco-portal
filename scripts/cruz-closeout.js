@@ -54,7 +54,9 @@ function daysBetween(d1, d2) {
 async function findReadyForCloseout() {
   const { data, error } = await supabase
     .from('traficos')
-    .select('trafico, company_id, estatus, pedimento, importe_total, moneda, regimen, proveedor, fecha_llegada, fecha_cruce, fecha_pago, semaforo, transportista_mexicano')
+    .select('trafico, company_id, estatus, pedimento, importe_total, proveedor, fecha_llegada, fecha_cruce, fecha_pago, semaforo, transportista_mexicano')
+    // moneda removed: traficos has no currency column, importe_total is implicitly USD
+    // regimen removed: not on traficos table — TODO: fetch from pedimentos if T-MEC detection needed
     .or('estatus.ilike.%cruz%,estatus.ilike.%entreg%')
     .gte('fecha_cruce', new Date(Date.now() - 30 * 86400000).toISOString()) // Last 30 days
     .limit(50)
@@ -80,7 +82,8 @@ async function findReadyForCloseout() {
 async function calculateSavings(trafico, rates) {
   const valorUSD = Number(trafico.importe_total) || 0
   const valorMXN = Math.round(valorUSD * rates.exchangeRate * 100) / 100
-  const regimen = (trafico.regimen || '').toUpperCase()
+  // TODO: regimen should come from pedimentos table, not traficos (column doesn't exist)
+  const regimen = ''
   const isTMEC = ['ITE', 'ITR', 'IMD'].includes(regimen)
 
   // DTA calculation

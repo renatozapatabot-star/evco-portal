@@ -1,28 +1,21 @@
 'use client'
 
 /**
- * V1 Polish Pack · Block 5 — Supplier document request composer.
+ * Block 4 · Supplier Doc Solicitation Polish — SolicitarDocsModal (rewrite).
  *
- * Replaces the "Disponible próximamente" stub on AccionesRapidasPanel.
- * Three-step modal:
- *   1. Check which missing docs to request (pre-checked from Block 10)
- *   2. Review/edit Spanish email (subject + recipient + body)
- *   3. Send → POST /api/solicitations/send
+ * Extends the V1-Polish Block 5 modal with:
+ *   - 50-entry catalog grouping from `src/lib/document-types.ts`
+ *   - Collapsible category sections with per-category counts
+ *   - "Seleccionar requeridos" quick-button
+ *   - "Otro (especificar)" custom row with inline name + desc inputs
+ *   - Accepts both legacy DocType[] and catalog codes via `mapLegacyDocType`
  *
- * On send the endpoint:
- *   - Inserts one documento_solicitudes row per doc type (tenant-scoped)
- *   - Emits a `docs.solicitation_sent` workflow_events row with the
- *     missing_document_types array (upstream of the bug fixed earlier —
- *     processor now gets a populated array)
- *   - Sends the email via Resend from sistema@renatozapata.com
- *   - Logs to operational_decisions via decision-logger
- *
- * Design: dark glass card matching ClientHome. 60px CTA, JetBrains Mono
- * for the tráfico id, Spanish es-MX throughout.
+ * Design: dark glass card, cinematic system. 60px CTA, es-MX.
+ * Brand stays "Portal" — AGUILA only appears on the outbound supplier email.
  */
 
 import { useMemo, useState } from 'react'
-import { X, Send, Loader2, Check, Mail } from 'lucide-react'
+import { X, Send, Loader2, Check, Mail, ChevronDown, ChevronRight, Plus } from 'lucide-react'
 import {
   ACCENT_CYAN,
   BG_CARD,
@@ -37,15 +30,55 @@ import {
 } from '@/lib/design-system'
 import { useToast } from '@/components/Toast'
 import { useTrack } from '@/lib/telemetry/useTrack'
-import { labelForDocType, type DocType } from '@/lib/doc-requirements'
+import type { DocType } from '@/lib/doc-requirements'
+import {
+  DOCUMENT_TYPE_CATEGORIES,
+  getDocumentTypeByCode,
+  labelForDocCode,
+  mapLegacyDocType,
+  type DocCategory,
+  type DocTypeEntry,
+} from '@/lib/document-types'
+
+const CATEGORY_LABELS: Record<DocCategory, string> = {
+  COMERCIAL: 'Comercial',
+  TRANSPORTE: 'Transporte',
+  ORIGEN: 'Origen',
+  REGULATORIO: 'Regulatorio',
+  TECNICO: 'Técnico',
+  FISCAL: 'Fiscal',
+  ADUANAL: 'Aduanal',
+  FINANCIERO: 'Financiero',
+  OTROS: 'Otros',
+}
+const CATEGORY_ORDER: DocCategory[] = [
+  'COMERCIAL',
+  'TRANSPORTE',
+  'ORIGEN',
+  'REGULATORIO',
+  'TECNICO',
+  'FISCAL',
+  'ADUANAL',
+  'FINANCIERO',
+  'OTROS',
+]
 
 interface SolicitarDocsModalProps {
   traficoId: string
   cliente: string
   proveedor?: string | null
-  missingDocs: DocType[]
+  /**
+   * Accepts legacy DocType[] or catalog codes. Either way, rows are
+   * pre-checked in the modal.
+   */
+  missingDocs: Array<DocType | string>
   operatorName: string
   onClose: () => void
+}
+
+interface CustomDoc {
+  custom_name: string
+  custom_desc: string
 }
 
 interface SendResponse {
@@ -53,28 +86,38 @@ interface SendResponse {
   error: { code: string; message: string } | null
 }
 
+function normalizeToCatalog(docs: Array<DocType | string>): string[] {
+  return Array.from(new Set(docs.map((d) => mapLegacyDocType(d))))
+}
+
 function buildEmailBody(params: {
   proveedor: string
   traficoId: string
   cliente: string
-  docs: DocType[]
+  codes: string[]
+  customs: CustomDoc[]
   operatorName: string
 }): string {
-  const { proveedor, traficoId, cliente, docs, operatorName } = params
-  const lines = docs.map((d) => `  • ${labelForDocType(d)}`).join('\n')
+  const { proveedor, traficoId, cliente, codes, customs, operatorName } = params
+  const lines: string[] = []
+  for (const c of codes) lines.push(`  • ${labelForDocCode(c)}`)
+  for (const c of customs) {
+    if (c.custom_name.trim()) lines.push(`  • ${c.custom_name.trim()}`)
+  }
   return (
     `Estimado/a ${proveedor || 'proveedor'},\n\n` +
-    `Le escribo en relación al tráfico ${traficoId} del cliente ${cliente}.\n\n` +
-    `Para completar el expediente, necesitamos los siguientes documentos:\n${lines}\n\n` +
-    `Le agradecemos su envío a la brevedad.\n\n` +
-    `Saludos cordiales,\n${operatorName}\n` +
-    `Renato Zapata & Company\n` +
-    `Patente 3596 · Aduana 240 Nuevo Laredo`
+    `En representación de ${cliente}, solicitamos los siguientes documentos ` +
+    `para completar el despacho aduanero del tráfico ${traficoId}:\n\n` +
+    `${lines.join('\n')}\n\n` +
+    `Puede cargar los documentos directamente en el enlace que le compartimos por correo.\n\n` +
+    `Gracias por su apoyo.\n\n` +
+    `Atentamente,\n${operatorName}\n` +
+    `Renato Zapata & Co. · Patente 3596`
   )
 }
 
 function buildSubject(traficoId: string, cliente: string): string {
-  return `Solicitud de documentos — Tráfico ${traficoId} · ${cliente}`
+  return `Documentos requeridos · ${cliente} · Tráfico ${traficoId}`
 }
 
 export function SolicitarDocsModal({
@@ -88,7 +131,21 @@ export function SolicitarDocsModal({
   const { toast } = useToast()
   const track = useTrack()
 
-  const [selected, setSelected] = useState<Set<DocType>>(() => new Set(missingDocs))
+  const initialCodes = useMemo(() => normalizeToCatalog(missingDocs), [missingDocs])
+  const [selected, setSelected] = useState<Set<string>>(() => new Set(initialCodes))
+  const [expanded, setExpanded] = useState<Record<DocCategory, boolean>>(() => ({
+    COMERCIAL: true,
+    TRANSPORTE: true,
+    ORIGEN: true,
+    REGULATORIO: true,
+    TECNICO: true,
+    FISCAL: true,
+    ADUANAL: true,
+    FINANCIERO: true,
+    OTROS: true,
+  }))
+  const [otroEnabled, setOtroEnabled] = useState(false)
+  const [customs, setCustoms] = useState<CustomDoc[]>([{ custom_name: '', custom_desc: '' }])
   const [recipientEmail, setRecipientEmail] = useState('')
   const [subject, setSubject] = useState(() => buildSubject(traficoId, cliente))
   const [body, setBody] = useState(() =>
@@ -96,38 +153,112 @@ export function SolicitarDocsModal({
       proveedor: proveedor ?? '',
       traficoId,
       cliente,
-      docs: missingDocs,
+      codes: initialCodes,
+      customs: [],
       operatorName,
     }),
   )
   const [sending, setSending] = useState(false)
 
   const selectedList = useMemo(() => Array.from(selected), [selected])
+  const validCustoms = useMemo(
+    () => customs.filter((c) => c.custom_name.trim().length > 0),
+    [customs],
+  )
 
-  function toggleDoc(doc: DocType) {
-    setSelected((prev) => {
-      const next = new Set(prev)
-      if (next.has(doc)) next.delete(doc)
-      else next.add(doc)
-      return next
-    })
-    // Re-derive body from current selection so the operator's edits to
-    // subject/recipient are preserved but the list stays in sync.
-    const nextDocs = (() => {
-      const n = new Set(selected)
-      if (n.has(doc)) n.delete(doc)
-      else n.add(doc)
-      return Array.from(n)
-    })()
+  function refreshBody(nextCodes: string[], nextCustoms: CustomDoc[]) {
     setBody(
       buildEmailBody({
         proveedor: proveedor ?? '',
         traficoId,
         cliente,
-        docs: nextDocs,
+        codes: nextCodes,
+        customs: nextCustoms,
         operatorName,
       }),
     )
+  }
+
+  function toggleDoc(code: string) {
+    setSelected((prev) => {
+      const next = new Set(prev)
+      const on = !next.has(code)
+      if (on) next.add(code)
+      else next.delete(code)
+      refreshBody(Array.from(next), validCustoms)
+      const entry = getDocumentTypeByCode(code)
+      track('checklist_item_viewed', {
+        entityType: 'doc_type',
+        entityId: code,
+        metadata: {
+          event: on ? 'doc_solicitation_doc_selected' : 'doc_solicitation_doc_deselected',
+          doc_code: code,
+          category: entry?.category,
+        },
+      })
+      return next
+    })
+  }
+
+  function toggleCategory(cat: DocCategory) {
+    setExpanded((prev) => {
+      const next = { ...prev, [cat]: !prev[cat] }
+      if (next[cat]) {
+        track('checklist_item_viewed', {
+          entityType: 'doc_category',
+          entityId: cat,
+          metadata: {
+            event: 'doc_solicitation_category_expanded',
+            category: cat,
+            doc_count: DOCUMENT_TYPE_CATEGORIES[cat].length,
+          },
+        })
+      }
+      return next
+    })
+  }
+
+  function selectAllRequired() {
+    const required = new Set<string>()
+    for (const cat of CATEGORY_ORDER) {
+      for (const entry of DOCUMENT_TYPE_CATEGORIES[cat]) {
+        if (entry.required) required.add(entry.code)
+      }
+    }
+    setSelected(required)
+    refreshBody(Array.from(required), validCustoms)
+  }
+
+  function updateCustom(i: number, patch: Partial<CustomDoc>) {
+    setCustoms((prev) => {
+      const next = prev.map((c, idx) => (idx === i ? { ...c, ...patch } : c))
+      refreshBody(
+        selectedList,
+        next.filter((c) => c.custom_name.trim().length > 0),
+      )
+      return next
+    })
+  }
+
+  function addCustomRow() {
+    setCustoms((prev) => [...prev, { custom_name: '', custom_desc: '' }])
+  }
+
+  function handleOtroToggle() {
+    setOtroEnabled((prev) => {
+      const next = !prev
+      if (next && customs.length === 0) {
+        setCustoms([{ custom_name: '', custom_desc: '' }])
+      }
+      if (next) {
+        track('checklist_item_viewed', {
+          entityType: 'doc_type',
+          entityId: 'otro',
+          metadata: { event: 'doc_solicitation_otro_added' },
+        })
+      }
+      return next
+    })
   }
 
   async function handleSend() {
@@ -140,7 +271,7 @@ export function SolicitarDocsModal({
       toast('Correo inválido', 'error')
       return
     }
-    if (selectedList.length === 0) {
+    if (selectedList.length === 0 && validCustoms.length === 0) {
       toast('Selecciona al menos un documento', 'error')
       return
     }
@@ -157,6 +288,7 @@ export function SolicitarDocsModal({
         body: JSON.stringify({
           traficoId,
           docTypes: selectedList,
+          customDocs: validCustoms,
           recipientEmail: emailTrim,
           recipientName: proveedor ?? '',
           subject: subject.trim(),
@@ -165,7 +297,6 @@ export function SolicitarDocsModal({
       })
       const json = (await res.json().catch((err: unknown) => {
         if (process.env.NODE_ENV !== 'production') {
-          // eslint-disable-next-line no-console
           console.warn('[SolicitarDocsModal] bad JSON', err)
         }
         return null
@@ -181,9 +312,11 @@ export function SolicitarDocsModal({
         entityType: 'trafico',
         entityId: traficoId,
         metadata: {
+          event: 'doc_solicitation_sent',
           doc_count: selectedList.length,
+          custom_count: validCustoms.length,
           solicitation_id: json.data.solicitationId,
-          recipient: emailTrim,
+          recipient_domain: emailTrim.split('@')[1] ?? null,
         },
       })
       toast(`Solicitud enviada a ${emailTrim}`, 'success')
@@ -194,6 +327,18 @@ export function SolicitarDocsModal({
       setSending(false)
     }
   }
+
+  // Fire modal-open event once on mount via useMemo trick
+  useMemo(() => {
+    track('checklist_item_viewed', {
+      entityType: 'trafico',
+      entityId: traficoId,
+      metadata: { event: 'doc_solicitation_opened' },
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const totalSelected = selectedList.length + validCustoms.length
 
   return (
     <div
@@ -219,8 +364,8 @@ export function SolicitarDocsModal({
       <div
         style={{
           width: '100%',
-          maxWidth: 620,
-          maxHeight: '90vh',
+          maxWidth: 680,
+          maxHeight: '92vh',
           overflowY: 'auto',
           background: BG_CARD,
           backdropFilter: `blur(${GLASS_BLUR})`,
@@ -266,61 +411,117 @@ export function SolicitarDocsModal({
           </button>
         </div>
 
-        {/* Step 1 — checklist */}
-        <div style={{ marginBottom: 18 }}>
-          <div
+        {/* Quick-select required */}
+        <div style={{ display: 'flex', gap: 8, marginBottom: 14, flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            onClick={selectAllRequired}
             style={{
-              fontSize: 11,
-              fontWeight: 800,
-              color: TEXT_MUTED,
-              textTransform: 'uppercase',
-              letterSpacing: '0.08em',
-              marginBottom: 8,
+              all: 'unset',
+              cursor: 'pointer',
+              padding: '10px 14px',
+              minHeight: 44,
+              fontSize: 12,
+              fontWeight: 700,
+              color: GOLD,
+              border: `1px solid ${GOLD}`,
+              borderRadius: 12,
+              letterSpacing: '0.02em',
             }}
           >
-            Documentos a solicitar ({selectedList.length} / {missingDocs.length})
+            Seleccionar requeridos
+          </button>
+          <div style={{ display: 'flex', alignItems: 'center', fontSize: 11, color: TEXT_MUTED }}>
+            {totalSelected} seleccionado{totalSelected === 1 ? '' : 's'}
           </div>
-          {missingDocs.length === 0 ? (
-            <div style={{ fontSize: 13, color: TEXT_MUTED, padding: '12px 0' }}>
-              No hay documentos faltantes según el régimen configurado.
-            </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-              {missingDocs.map((doc, i) => {
-                const checked = selected.has(doc)
-                return (
-                  <label
-                    key={doc}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 12,
-                      minHeight: 60,
-                      padding: '0 4px',
-                      borderBottom: i < missingDocs.length - 1 ? `1px solid ${BORDER}` : 'none',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={checked}
-                      onChange={() => toggleDoc(doc)}
-                      style={{
-                        width: 18,
-                        height: 18,
-                        accentColor: ACCENT_CYAN,
-                        cursor: 'pointer',
-                      }}
-                    />
-                    <span style={{ fontSize: 13, color: TEXT_PRIMARY }}>{labelForDocType(doc)}</span>
-                  </label>
-                )
-              })}
+        </div>
+
+        {/* Category sections */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
+          {CATEGORY_ORDER.map((cat) => (
+            <CategorySection
+              key={cat}
+              cat={cat}
+              entries={DOCUMENT_TYPE_CATEGORIES[cat]}
+              selected={selected}
+              expanded={expanded[cat]}
+              onToggleCategory={() => toggleCategory(cat)}
+              onToggleDoc={toggleDoc}
+            />
+          ))}
+        </div>
+
+        {/* Otro (especificar) */}
+        <div
+          style={{
+            border: `1px solid ${BORDER}`,
+            borderRadius: 12,
+            padding: 12,
+            marginBottom: 16,
+          }}
+        >
+          <label
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              minHeight: 44,
+              cursor: 'pointer',
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={otroEnabled}
+              onChange={handleOtroToggle}
+              style={{ width: 18, height: 18, accentColor: ACCENT_CYAN, cursor: 'pointer' }}
+            />
+            <span style={{ fontSize: 13, color: TEXT_PRIMARY, fontWeight: 600 }}>
+              Otro (especificar)
+            </span>
+          </label>
+          {otroEnabled && (
+            <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {customs.map((c, i) => (
+                <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <input
+                    type="text"
+                    placeholder="Nombre del documento"
+                    value={c.custom_name}
+                    onChange={(e) => updateCustom(i, { custom_name: e.target.value })}
+                    style={inputStyle}
+                    aria-label={`Nombre del documento personalizado ${i + 1}`}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Descripción (opcional)"
+                    value={c.custom_desc}
+                    onChange={(e) => updateCustom(i, { custom_desc: e.target.value })}
+                    style={inputStyle}
+                    aria-label={`Descripción del documento personalizado ${i + 1}`}
+                  />
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={addCustomRow}
+                style={{
+                  all: 'unset',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  fontSize: 12,
+                  color: ACCENT_CYAN,
+                  padding: 8,
+                }}
+              >
+                <Plus size={14} /> Agregar otro
+              </button>
             </div>
           )}
         </div>
 
-        {/* Step 2 — recipient / subject / body */}
+        {/* Recipient / subject / body */}
         <div style={{ marginBottom: 14 }}>
           <label htmlFor="sol-recipient" style={labelStyle}>
             Correo del proveedor
@@ -362,10 +563,13 @@ export function SolicitarDocsModal({
           />
         </div>
 
-        {/* Step 3 — send */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+        {/* Summary card */}
+        <SummaryCard selected={selected} customsCount={validCustoms.length} />
+
+        {/* Actions */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginTop: 14 }}>
           <span style={{ fontSize: 11, color: TEXT_MUTED }}>
-            Remitente: <span style={{ color: TEXT_SECONDARY }}>sistema@renatozapata.com</span>
+            Remitente: <span style={{ color: TEXT_SECONDARY }}>ai@renatozapata.com</span>
           </span>
           <div style={{ display: 'flex', gap: 8 }}>
             <button
@@ -390,18 +594,18 @@ export function SolicitarDocsModal({
             <button
               type="button"
               onClick={handleSend}
-              disabled={sending || selectedList.length === 0}
+              disabled={sending || totalSelected === 0}
               style={{
                 minHeight: 60,
                 minWidth: 140,
                 padding: '0 20px',
-                background: sending || selectedList.length === 0 ? 'rgba(234,179,8,0.35)' : GOLD,
+                background: sending || totalSelected === 0 ? 'rgba(234,179,8,0.35)' : GOLD,
                 color: '#0B1220',
                 border: 'none',
                 borderRadius: 12,
                 fontSize: 13,
                 fontWeight: 700,
-                cursor: sending || selectedList.length === 0 ? 'not-allowed' : 'pointer',
+                cursor: sending || totalSelected === 0 ? 'not-allowed' : 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -424,8 +628,7 @@ export function SolicitarDocsModal({
           </div>
         </div>
 
-        {/* WCAG note: warn on empty docs */}
-        {missingDocs.length === 0 && (
+        {totalSelected === 0 && (
           <div
             style={{
               marginTop: 12,
@@ -440,12 +643,197 @@ export function SolicitarDocsModal({
             }}
           >
             <Check size={14} style={{ color: ACCENT_CYAN }} />
-            Expediente completo — nada que solicitar ahora mismo.
+            Selecciona al menos un documento para enviar la solicitud.
           </div>
         )}
 
         <style>{`@keyframes spin { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }`}</style>
       </div>
+    </div>
+  )
+}
+
+function CategorySection({
+  cat,
+  entries,
+  selected,
+  expanded,
+  onToggleCategory,
+  onToggleDoc,
+}: {
+  cat: DocCategory
+  entries: DocTypeEntry[]
+  selected: Set<string>
+  expanded: boolean
+  onToggleCategory: () => void
+  onToggleDoc: (code: string) => void
+}) {
+  const countSel = entries.filter((e) => selected.has(e.code)).length
+  return (
+    <div style={{ border: `1px solid ${BORDER}`, borderRadius: 12, overflow: 'hidden' }}>
+      <button
+        type="button"
+        onClick={onToggleCategory}
+        aria-expanded={expanded}
+        style={{
+          all: 'unset',
+          cursor: 'pointer',
+          width: '100%',
+          boxSizing: 'border-box',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 10,
+          padding: '12px 14px',
+          minHeight: 48,
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {expanded ? <ChevronDown size={16} color={TEXT_MUTED} /> : <ChevronRight size={16} color={TEXT_MUTED} />}
+          <span
+            style={{
+              fontSize: 11,
+              fontWeight: 800,
+              color: TEXT_PRIMARY,
+              textTransform: 'uppercase',
+              letterSpacing: '0.08em',
+            }}
+          >
+            {CATEGORY_LABELS[cat]} ({entries.length})
+          </span>
+        </div>
+        {countSel > 0 && (
+          <span
+            style={{
+              fontSize: 11,
+              fontWeight: 700,
+              color: ACCENT_CYAN,
+              fontFamily: 'var(--font-mono)',
+            }}
+          >
+            {countSel}
+          </span>
+        )}
+      </button>
+      {expanded && (
+        <div style={{ borderTop: `1px solid ${BORDER}` }}>
+          {entries.map((entry, i) => {
+            const checked = selected.has(entry.code)
+            return (
+              <label
+                key={entry.code}
+                style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: 12,
+                  minHeight: 60,
+                  padding: '10px 14px',
+                  borderBottom: i < entries.length - 1 ? `1px solid ${BORDER}` : 'none',
+                  cursor: 'pointer',
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  onChange={() => onToggleDoc(entry.code)}
+                  style={{
+                    width: 18,
+                    height: 18,
+                    accentColor: ACCENT_CYAN,
+                    cursor: 'pointer',
+                    marginTop: 2,
+                  }}
+                  aria-label={entry.name_es}
+                />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: 13, color: TEXT_PRIMARY, fontWeight: 600 }}>
+                      {entry.name_es}
+                    </span>
+                    {entry.required && (
+                      <span
+                        style={{
+                          fontSize: 10,
+                          fontWeight: 800,
+                          color: '#0B1220',
+                          background: GOLD,
+                          borderRadius: 999,
+                          padding: '2px 8px',
+                          letterSpacing: '0.04em',
+                        }}
+                      >
+                        Requerido
+                      </span>
+                    )}
+                  </div>
+                  {entry.desc && (
+                    <div style={{ fontSize: 11, color: TEXT_MUTED, marginTop: 2 }}>
+                      {entry.desc}
+                    </div>
+                  )}
+                </div>
+              </label>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function SummaryCard({ selected, customsCount }: { selected: Set<string>; customsCount: number }) {
+  const perCategory: Record<string, number> = {}
+  for (const code of selected) {
+    const entry = getDocumentTypeByCode(code)
+    const cat = entry?.category ?? 'OTROS'
+    perCategory[cat] = (perCategory[cat] ?? 0) + 1
+  }
+  const rows = Object.entries(perCategory)
+  const total = selected.size + customsCount
+  return (
+    <div
+      style={{
+        border: `1px solid ${BORDER}`,
+        borderRadius: 12,
+        padding: '10px 12px',
+        background: 'rgba(0,0,0,0.2)',
+      }}
+    >
+      <div
+        style={{
+          fontSize: 10,
+          fontWeight: 800,
+          color: TEXT_MUTED,
+          textTransform: 'uppercase',
+          letterSpacing: '0.08em',
+          marginBottom: 6,
+        }}
+      >
+        Resumen ({total} documento{total === 1 ? '' : 's'})
+      </div>
+      {rows.length === 0 && customsCount === 0 ? (
+        <div style={{ fontSize: 12, color: TEXT_MUTED }}>Nada seleccionado aún.</div>
+      ) : (
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          {rows.map(([cat, count]) => (
+            <span
+              key={cat}
+              style={{
+                fontSize: 11,
+                color: TEXT_SECONDARY,
+                fontFamily: 'var(--font-mono)',
+              }}
+            >
+              {CATEGORY_LABELS[cat as DocCategory]}: <strong style={{ color: TEXT_PRIMARY }}>{count}</strong>
+            </span>
+          ))}
+          {customsCount > 0 && (
+            <span style={{ fontSize: 11, color: ACCENT_CYAN, fontFamily: 'var(--font-mono)' }}>
+              Otros: <strong>{customsCount}</strong>
+            </span>
+          )}
+        </div>
+      )}
     </div>
   )
 }
@@ -462,7 +850,7 @@ const labelStyle: React.CSSProperties = {
 
 const inputStyle: React.CSSProperties = {
   width: '100%',
-  minHeight: 60,
+  minHeight: 44,
   padding: '10px 14px',
   background: 'rgba(0,0,0,0.3)',
   color: TEXT_PRIMARY,

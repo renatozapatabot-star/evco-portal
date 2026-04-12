@@ -32,8 +32,11 @@ export function DocumentosTab({
 
   const requiredDocs = getRequiredDocs(regimen)
 
-  function handleMissingDocClick(docType: DocType) {
-    setDefaultDocType(docType)
+  function handleMissingDocClick(docCode: string) {
+    // Legacy DocumentosTab still uses legacy DocType. Cast is safe because
+    // this legacy path feeds DocType[] into requiredDocs, so onMissingDocClick
+    // only receives codes that exist in the legacy union.
+    setDefaultDocType(docCode as DocType)
     // Smooth-scroll the uploader into view + focus it for the 3 AM Driver flow.
     if (uploaderRef.current) {
       uploaderRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })

@@ -17,6 +17,11 @@
  * Canonical doc type identifiers. These match the slugs produced by
  * Block 3's vision classifier (`vision-classifier.ts`) so the
  * checklist can diff directly against `expediente_documentos.document_type`.
+ *
+ * @deprecated Block 4 (2026-04-15) introduced the full 50-code catalog at
+ * `src/lib/document-types.ts`. New code should import `DocTypeEntry` + catalog
+ * helpers and use catalog codes. `mapLegacyDocType()` bridges this legacy
+ * union to the catalog for the 9 remaining consumers.
  */
 export type DocType =
   | 'factura'
@@ -135,4 +140,34 @@ export function getRequiredDocs(regimen: string | null | undefined): DocType[] {
 export function labelForDocType(type: string): string {
   if (type in DOC_TYPE_LABELS_ES) return DOC_TYPE_LABELS_ES[type as DocType]
   return type.replace(/_/g, ' ')
+}
+
+/**
+ * Block 4 extension — return catalog codes (from `document-types.ts`) for a
+ * régimen. New consumers should use this. Legacy `getRequiredDocs` keeps
+ * returning the deprecated DocType union for backward compat.
+ *
+ * Lazy import to avoid a circular dep: document-types.ts imports DocType
+ * from this file.
+ */
+export function getRequiredDocCodesByRegimen(
+  regimen: string | null | undefined,
+): string[] {
+  const legacy = getRequiredDocs(regimen)
+  if (legacy.length === 0) return []
+  // Inline map to avoid the circular import. Keep in sync with
+  // document-types.ts `legacyAlias` fields — covered by unit test.
+  const LEGACY_TO_CODE: Record<DocType, string> = {
+    factura: 'factura_comercial',
+    packing_list: 'lista_empaque',
+    bill_of_lading: 'bl',
+    carta_porte: 'carta_porte',
+    certificado_origen: 'certificado_origen_tmec',
+    pedimento: 'pedimento',
+    rfc_constancia: 'rfc_constancia',
+    encargo_conferido: 'encargo_conferido',
+    cove: 'cove',
+    mve: 'mve',
+  }
+  return legacy.map((d) => LEGACY_TO_CODE[d])
 }

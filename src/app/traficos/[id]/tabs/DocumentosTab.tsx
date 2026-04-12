@@ -8,8 +8,23 @@ import { DocUploader } from '@/components/docs/DocUploader'
 import { DocTypePill } from '@/components/docs/DocTypePill'
 import { ExpedienteChecklist } from '@/components/docs/ExpedienteChecklist'
 import { SolicitarDocsModal } from '@/components/trafico/SolicitarDocsModal'
-import { getRequiredDocs, type DocType } from '@/lib/doc-requirements'
+import { getRequiredDocCodesByRegimen, type DocType } from '@/lib/doc-requirements'
 import type { DocRow } from '../types'
+
+// Inverse of the catalog `legacyAlias` map, local to this file. We only need
+// this for DocUploader's defaultDocType prop which is still typed DocType.
+const LEGACY_BY_CODE: Record<string, DocType> = {
+  factura_comercial: 'factura',
+  lista_empaque: 'packing_list',
+  bl: 'bill_of_lading',
+  carta_porte: 'carta_porte',
+  certificado_origen_tmec: 'certificado_origen',
+  pedimento: 'pedimento',
+  rfc_constancia: 'rfc_constancia',
+  encargo_conferido: 'encargo_conferido',
+  cove: 'cove',
+  mve: 'mve',
+}
 
 interface DocumentosTabProps {
   traficoId: string
@@ -33,10 +48,14 @@ export function DocumentosTab({
   const uploaderRef = useRef<HTMLDivElement | null>(null)
   const [defaultDocType, setDefaultDocType] = useState<DocType | undefined>(undefined)
   const [modalOpen, setModalOpen] = useState(false)
-  const requiredDocs = getRequiredDocs(regimen)
+  const requiredDocCodes = getRequiredDocCodesByRegimen(regimen)
 
-  function handleMissingDocClick(docType: DocType) {
-    setDefaultDocType(docType)
+  function handleMissingDocClick(code: string) {
+    // Best-effort back-translation to legacy DocType for DocUploader's
+    // defaultDocType prop (still typed to DocType). Unknown codes fall back
+    // to undefined — uploader just opens without a preselection.
+    const legacy = LEGACY_BY_CODE[code] as DocType | undefined
+    setDefaultDocType(legacy)
     if (uploaderRef.current) {
       uploaderRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
       const button = uploaderRef.current.querySelector<HTMLElement>('[role="button"]')
@@ -47,9 +66,10 @@ export function DocumentosTab({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <ExpedienteChecklist
-        requiredDocs={requiredDocs}
+        requiredDocs={requiredDocCodes}
         uploadedDocs={docs}
         onMissingDocClick={handleMissingDocClick}
+        grouped
       />
 
       <div ref={uploaderRef}>

@@ -248,6 +248,201 @@ ${FIRMA}`,
   }
 }
 
+// ── Block 4 · AGUILA-branded supplier solicitation ─────────
+//
+// This is the ONE external-facing AGUILA surface. All logged-in portal
+// surfaces stay branded "Portal" — suppliers have never seen that brand,
+// so AGUILA debuts on the email. Inline SVG eagle + wordmark + "Año 85"
+// footer. Gmail/Outlook/Apple Mail all render inline SVG reliably; no
+// external image dependency.
+
+// Stylized eagle silhouette, gold stroke, ~72px wide.
+// Simple geometric eagle: head crest, wings spread, tail — all in path data
+// so it renders identically in every major email client.
+const AGUILA_SVG = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72" width="72" height="72" aria-hidden="true" role="img">
+  <g fill="none" stroke="#eab308" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M36 12 L33 18 L30 16 L32 22 L26 20 L30 26 L22 26 L28 30 L18 32 L28 34 L20 40 L30 38 L24 46 L32 42 L30 52 L36 46 L42 52 L40 42 L48 46 L42 38 L52 40 L44 34 L54 32 L44 30 L50 26 L42 26 L46 20 L40 22 L42 16 L39 18 Z"/>
+    <circle cx="36" cy="14" r="1.4" fill="#eab308"/>
+    <path d="M34 16 L36 18 L38 16"/>
+    <path d="M36 46 L36 58"/>
+    <path d="M32 58 L36 62 L40 58"/>
+  </g>
+</svg>`
+
+function aguilaLetterhead({ traficoRef, clienteName, dueDate, operatorName }) {
+  return `
+  <div style="border-bottom:2px solid #eab308;padding-bottom:16px;margin-bottom:20px;display:flex;align-items:center;gap:16px;">
+    <div style="flex-shrink:0;">${AGUILA_SVG}</div>
+    <div style="flex:1;min-width:0;">
+      <div style="font-family:Georgia,'Times New Roman',serif;font-size:28px;font-weight:800;color:#1A1A1A;letter-spacing:0.08em;line-height:1;">AGUILA</div>
+      <div style="font-size:12px;color:#6B6B6B;margin-top:4px;">Inteligencia aduanal para Renato Zapata &amp; Co.</div>
+      <div style="font-family:'Courier New',monospace;font-size:11px;color:#8B6914;margin-top:8px;">
+        Tráfico <strong>${escapeHtml(traficoRef)}</strong>
+        · ${escapeHtml(clienteName)}
+        · Vence <strong>${escapeHtml(dueDate)}</strong>
+        · ${escapeHtml(operatorName)}
+      </div>
+    </div>
+  </div>`
+}
+
+function aguilaFooter() {
+  return `
+  <hr style="border:none;border-top:1px solid #eab308;margin:24px 0 12px;">
+  <p style="font-size:11px;color:#6B6B6B;text-align:center;letter-spacing:0.06em;">
+    AGUILA · Patente 3596 · Aduana 240 Nuevo Laredo · Año 85
+  </p>`
+}
+
+function escapeHtml(s) {
+  return String(s ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
+// Category labels for grouped table in the email.
+const CATEGORY_LABELS_ES = {
+  COMERCIAL: 'Comercial',
+  TRANSPORTE: 'Transporte',
+  ORIGEN: 'Origen',
+  REGULATORIO: 'Regulatorio',
+  TECNICO: 'Técnico',
+  FISCAL: 'Fiscal',
+  ADUANAL: 'Aduanal',
+  FINANCIERO: 'Financiero',
+  OTROS: 'Otros',
+}
+
+/**
+ * Block 4 — AGUILA-branded supplier solicitation HTML.
+ *
+ * @param {object} ctx
+ * @param {string} ctx.traficoRef
+ * @param {string} ctx.clienteName
+ * @param {string} ctx.dueDate              - Human-formatted Spanish date
+ * @param {string} ctx.operatorName
+ * @param {string} ctx.supplierContact
+ * @param {string} [ctx.uploadUrl]
+ * @param {Array<{ category: string, entries: Array<{ name: string, desc?: string, required?: boolean }> }>} ctx.groupedDocs
+ * @param {Array<{ custom_name: string, custom_desc?: string }>} [ctx.customDocs]
+ * @returns {string}
+ */
+function renderSupplierSolicitationHTML(ctx) {
+  const {
+    traficoRef,
+    clienteName,
+    dueDate,
+    operatorName,
+    supplierContact,
+    uploadUrl,
+    groupedDocs,
+    customDocs = [],
+  } = ctx
+
+  const tableRows = groupedDocs
+    .map((group) => {
+      const head = `
+      <tr style="background:#F3F0EB;">
+        <td colspan="3" style="padding:8px 12px;font-size:11px;color:#6B6B6B;text-transform:uppercase;letter-spacing:0.08em;font-weight:700;">
+          ${escapeHtml(CATEGORY_LABELS_ES[group.category] || group.category)}
+        </td>
+      </tr>`
+      const body = group.entries
+        .map((e) => {
+          const leftBorder = e.required ? 'border-left:4px solid #eab308;' : ''
+          return `
+        <tr>
+          <td style="padding:10px 12px;border-bottom:1px solid #E8E5E0;font-size:14px;font-weight:600;color:#1A1A1A;${leftBorder}">
+            ${escapeHtml(e.name)}
+          </td>
+          <td style="padding:10px 12px;border-bottom:1px solid #E8E5E0;font-size:13px;color:#6B6B6B;">
+            ${escapeHtml(e.desc || '')}
+          </td>
+          <td style="padding:10px 12px;border-bottom:1px solid #E8E5E0;font-size:11px;color:${e.required ? '#8B6914' : '#9CA3AF'};font-weight:700;text-align:right;">
+            ${e.required ? 'Requerido' : '—'}
+          </td>
+        </tr>`
+        })
+        .join('')
+      return head + body
+    })
+    .join('')
+
+  const customRows = customDocs.length
+    ? `
+    <tr style="background:#F3F0EB;">
+      <td colspan="3" style="padding:8px 12px;font-size:11px;color:#6B6B6B;text-transform:uppercase;letter-spacing:0.08em;font-weight:700;">
+        Otros
+      </td>
+    </tr>
+    ${customDocs
+      .map(
+        (c) => `
+    <tr>
+      <td style="padding:10px 12px;border-bottom:1px solid #E8E5E0;font-size:14px;font-weight:600;color:#1A1A1A;">
+        ${escapeHtml(c.custom_name)}
+      </td>
+      <td style="padding:10px 12px;border-bottom:1px solid #E8E5E0;font-size:13px;color:#6B6B6B;">
+        ${escapeHtml(c.custom_desc || '')}
+      </td>
+      <td style="padding:10px 12px;border-bottom:1px solid #E8E5E0;font-size:11px;color:#9CA3AF;font-weight:700;text-align:right;">—</td>
+    </tr>`,
+      )
+      .join('')}`
+    : ''
+
+  const uploadBtn = uploadUrl
+    ? `
+  <div style="text-align:center;margin:28px 0;">
+    <a href="${escapeHtml(uploadUrl)}"
+       style="background:#eab308;color:#0B1220;text-decoration:none;padding:16px 32px;border-radius:12px;font-size:16px;font-weight:800;display:inline-block;letter-spacing:0.04em;">
+      Cargar documentos
+    </a>
+    <p style="font-size:11px;color:#9CA3AF;margin-top:8px;">
+      Enlace seguro, expira en 7 días.
+    </p>
+  </div>`
+    : ''
+
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#1A1A1A;max-width:640px;margin:0 auto;padding:20px;background:#FAFAF8;">
+  ${aguilaLetterhead({ traficoRef, clienteName, dueDate, operatorName })}
+  <p style="font-size:15px;">Estimado/a <strong>${escapeHtml(supplierContact)}</strong>,</p>
+  <p style="font-size:15px;line-height:1.55;">
+    En representación de <strong>${escapeHtml(clienteName)}</strong>, solicitamos los siguientes
+    documentos para completar el despacho aduanero del tráfico
+    <strong style="color:#8B6914;">${escapeHtml(traficoRef)}</strong>:
+  </p>
+  <table style="width:100%;border-collapse:collapse;background:#FFFFFF;border:1px solid #E8E5E0;border-radius:8px;margin:16px 0;overflow:hidden;">
+    ${tableRows}
+    ${customRows}
+  </table>
+  <p style="font-size:14px;color:#1A1A1A;">
+    <strong>Fecha límite de entrega:</strong> ${escapeHtml(dueDate)}
+  </p>
+  ${uploadBtn}
+  <p style="font-size:13px;color:#6B6B6B;line-height:1.55;">
+    Si necesita ampliación del plazo, responda a este correo. Gracias por su apoyo.
+  </p>
+  <p style="font-size:13px;color:#1A1A1A;margin-top:16px;">
+    Atentamente,<br>
+    <strong>${escapeHtml(operatorName)}</strong><br>
+    Renato Zapata &amp; Co. · Patente 3596
+  </p>
+  ${aguilaFooter()}
+</body>
+</html>`
+}
+
+function buildSupplierSolicitationSubject(clienteName, traficoRef) {
+  return `Documentos requeridos · ${clienteName} · Tráfico ${traficoRef}`
+}
+
 module.exports = {
   DOC_TYPE_LABELS,
   DOC_URGENCY_NOTES,
@@ -259,4 +454,8 @@ module.exports = {
   buildEstadoTrafico,
   buildConfirmacionCruce,
   FIRMA,
+  // Block 4 exports
+  AGUILA_SVG,
+  renderSupplierSolicitationHTML,
+  buildSupplierSolicitationSubject,
 }

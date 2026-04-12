@@ -32,6 +32,20 @@ import {
   X,
 } from 'lucide-react'
 import { fmtDate, fmtDateTime } from '@/lib/format-utils'
+import { categoryForDocCode, type DocCategory } from '@/lib/document-types'
+import { track } from '@/lib/telemetry/useTrack'
+
+const CATEGORY_LABELS: Record<DocCategory, string> = {
+  COMERCIAL: 'Comercial',
+  TRANSPORTE: 'Transporte',
+  ORIGEN: 'Origen',
+  REGULATORIO: 'Regulatorio',
+  TECNICO: 'Técnico',
+  FISCAL: 'Fiscal',
+  ADUANAL: 'Aduanal',
+  FINANCIERO: 'Financiero',
+  OTROS: 'Otros',
+}
 
 const ALLOWED_TYPES = [
   'application/pdf',
@@ -100,7 +114,12 @@ export default function ProveedorPage() {
   // Upload state
   const [uploading, setUploading] = useState(false)
   const [uploaded, setUploaded] = useState<string[]>([])
+  const [uploadingDoc, setUploadingDoc] = useState<string | null>(null)
+  const [rowSuccess, setRowSuccess] = useState<string | null>(null)
+  const [rowError, setRowError] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
+  const perDocFileRef = useRef<HTMLInputElement>(null)
+  const pendingDocCodeRef = useRef<string | null>(null)
 
   // Confirm state
   const [confirming, setConfirming] = useState(false)
@@ -121,6 +140,19 @@ export default function ProveedorPage() {
 
   useEffect(() => {
     void load()
+    // Telemetry: supplier_portal_opened (routed through checklist_item_viewed
+    // with metadata.event — TelemetryEvent union stays locked).
+    const isMobile =
+      typeof window !== 'undefined' &&
+      window.matchMedia?.('(max-width: 600px)')?.matches
+    track('checklist_item_viewed', {
+      entityType: 'supplier_portal',
+      entityId: String(token ?? ''),
+      metadata: {
+        event: 'supplier_portal_opened',
+        device: isMobile ? 'mobile' : 'desktop',
+      },
+    })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token])
 
@@ -142,6 +174,88 @@ export default function ProveedorPage() {
   )
 
   // ------ Handlers ------
+  function triggerUploadForDoc(docCode: string) {
+    pendingDocCodeRef.current = docCode
+    setUploadingDoc(docCode)
+    setRowError(null)
+    setRowSuccess(null)
+    const start = performance.now()
+    track('doc_uploaded', {
+      entityType: 'doc_type',
+      entityId: docCode,
+      metadata: { event: 'supplier_upload_started', doc_code: docCode, start_ms: start },
+    })
+    perDocFileRef.current?.click()
+  }
+
+  async function handlePerDocFiles(files: FileList | null) {
+    const docCode = pendingDocCodeRef.current
+    if (!files || files.length === 0 || !info || !docCode) {
+      setUploadingDoc(null)
+      return
+    }
+    const start = performance.now()
+    setRowError(null)
+    setRowSuccess(null)
+    let bytes = 0
+    const ok: string[] = []
+    for (const file of Array.from(files)) {
+      if (!ALLOWED_TYPES.includes(file.type)) {
+        setRowError(`Tipo no permitido: ${file.name}`)
+        continue
+      }
+      if (file.size > MAX_SIZE) {
+        setRowError(`${file.name} excede 25 MB`)
+        continue
+      }
+      bytes += file.size
+      const fd = new FormData()
+      fd.append('file', file)
+      fd.append('token', token)
+      fd.append('trafico_id', info.trafico_id)
+      fd.append('company_id', info.company_id)
+      fd.append('doc_type_code', docCode)
+      try {
+        const res = await fetch('/api/upload-token', { method: 'POST', body: fd })
+        const data = await res.json()
+        if (data.success) ok.push(file.name)
+        else setRowError(data.error || 'Error al subir')
+      } catch (err) {
+        setRowError('Error de conexión')
+        console.error('[proveedor] upload:', err instanceof Error ? err.message : String(err))
+      }
+    }
+    setUploadingDoc(null)
+    pendingDocCodeRef.current = null
+    if (ok.length > 0) {
+      setUploaded((prev) => [...prev, ...ok])
+      setRowSuccess(docCode)
+      track('doc_uploaded', {
+        entityType: 'doc_type',
+        entityId: docCode,
+        metadata: {
+          event: 'supplier_upload_completed',
+          doc_code: docCode,
+          file_count: ok.length,
+          bytes,
+          duration_ms: Math.round(performance.now() - start),
+        },
+      })
+      void load()
+      window.setTimeout(() => setRowSuccess(null), 2000)
+    } else {
+      track('doc_uploaded', {
+        entityType: 'doc_type',
+        entityId: docCode,
+        metadata: {
+          event: 'supplier_upload_failed',
+          doc_code: docCode,
+          error_code: 'no_files_accepted',
+        },
+      })
+    }
+  }
+
   async function handleFiles(files: FileList | null) {
     if (!files || files.length === 0 || !info) return
     setError('')
@@ -189,6 +303,14 @@ export default function ProveedorPage() {
       const data = await res.json()
       if (res.ok && data?.data?.ok) {
         setConfirmResult('Embarque confirmado. Renato Zapata & Co. ha sido notificado.')
+        track('checklist_item_viewed', {
+          entityType: 'supplier_portal',
+          entityId: String(token ?? ''),
+          metadata: {
+            event: 'supplier_shipment_confirmed',
+            has_note: confirmNote.trim().length > 0,
+          },
+        })
         void load()
       } else {
         setConfirmResult(data?.error?.message || 'No se pudo confirmar. Intente de nuevo.')
@@ -393,50 +515,146 @@ export default function ProveedorPage() {
         {/* Active panel */}
         {panel === 'docs' && (
           <Panel title="Documentos solicitados" onClose={() => setPanel(null)}>
+            <input
+              ref={perDocFileRef}
+              type="file"
+              accept=".pdf,image/*,.xlsx"
+              capture="environment"
+              multiple
+              onChange={(e) => handlePerDocFiles(e.target.files)}
+              style={{ display: 'none' }}
+            />
             {(info.required_docs || []).length === 0 ? (
               <EmptyLine>No hay documentos pendientes en esta solicitud.</EmptyLine>
             ) : (
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {info.required_docs.map((doc) => {
-                  const received =
-                    info.docs_received?.map((d) => d.toUpperCase()).includes(doc.toUpperCase()) ||
-                    uploaded.some((u) => u.toUpperCase().includes(doc.toUpperCase()))
-                  return (
-                    <li
-                      key={doc}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 10,
-                        padding: '12px 14px',
-                        borderRadius: 12,
-                        background: received
-                          ? 'rgba(34,197,94,0.08)'
-                          : 'rgba(255,255,255,0.03)',
-                        border: received
-                          ? '1px solid rgba(34,197,94,0.25)'
-                          : '1px solid rgba(255,255,255,0.08)',
-                        minHeight: 48,
-                      }}
-                    >
-                      {received ? (
-                        <CheckCircle2 size={18} color="#22C55E" />
-                      ) : (
-                        <FileText size={18} color="#94a3b8" />
-                      )}
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 14, color: '#E6EDF3', fontWeight: 600 }}>
-                          {labelForDoc(doc)}
+              (() => {
+                // Group requested docs by category for mobile-first upload cards.
+                const groups = new Map<DocCategory, string[]>()
+                for (const doc of info.required_docs) {
+                  const cat = categoryForDocCode(doc)
+                  const bucket = groups.get(cat) ?? []
+                  bucket.push(doc)
+                  groups.set(cat, bucket)
+                }
+                return (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                    {Array.from(groups.entries()).map(([cat, codes]) => (
+                      <div key={cat} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                        <div
+                          style={{
+                            fontSize: 10,
+                            fontWeight: 800,
+                            color: '#94a3b8',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.08em',
+                          }}
+                        >
+                          {CATEGORY_LABELS[cat]}
                         </div>
-                        <div style={{ fontSize: 11, color: received ? '#22C55E' : '#64748b', marginTop: 2 }}>
-                          {received ? 'Recibido' : 'Pendiente'}
-                        </div>
+                        {codes.map((doc) => {
+                          const received =
+                            info.docs_received?.map((d) => d.toUpperCase()).includes(doc.toUpperCase()) ||
+                            uploaded.some((u) => u.toUpperCase().includes(doc.toUpperCase()))
+                          const isUploading = uploadingDoc === doc
+                          const justSucceeded = rowSuccess === doc
+                          return (
+                            <div
+                              key={doc}
+                              style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: 8,
+                                padding: '12px 14px',
+                                borderRadius: 12,
+                                background: justSucceeded
+                                  ? 'rgba(34,197,94,0.14)'
+                                  : received
+                                    ? 'rgba(34,197,94,0.08)'
+                                    : 'rgba(255,255,255,0.03)',
+                                border: received
+                                  ? '1px solid rgba(34,197,94,0.25)'
+                                  : '1px solid rgba(255,255,255,0.08)',
+                                animation: justSucceeded ? 'pulseGreen 1s ease-out' : undefined,
+                              }}
+                            >
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                {received ? (
+                                  <CheckCircle2 size={18} color="#22C55E" />
+                                ) : (
+                                  <FileText size={18} color="#94a3b8" />
+                                )}
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                  <div style={{ fontSize: 14, color: '#E6EDF3', fontWeight: 600 }}>
+                                    {labelForDoc(doc)}
+                                  </div>
+                                  <div
+                                    style={{
+                                      fontSize: 11,
+                                      color: received ? '#22C55E' : '#64748b',
+                                      marginTop: 2,
+                                    }}
+                                  >
+                                    {received ? 'Recibido' : 'Pendiente'}
+                                  </div>
+                                </div>
+                              </div>
+                              {!received && (
+                                <button
+                                  type="button"
+                                  onClick={() => triggerUploadForDoc(doc)}
+                                  disabled={isUploading}
+                                  aria-label={`Subir ${labelForDoc(doc)}`}
+                                  style={{
+                                    width: '100%',
+                                    minHeight: 44,
+                                    padding: '10px 16px',
+                                    borderRadius: 12,
+                                    background: isUploading ? 'rgba(234,179,8,0.4)' : '#eab308',
+                                    color: '#0B1220',
+                                    border: 'none',
+                                    fontSize: 14,
+                                    fontWeight: 700,
+                                    cursor: isUploading ? 'wait' : 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: 8,
+                                  }}
+                                >
+                                  {isUploading ? (
+                                    <>
+                                      <Loader2 size={14} style={{ animation: 'spin 1.2s linear infinite' }} />
+                                      Subiendo…
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Upload size={14} /> Subir
+                                    </>
+                                  )}
+                                </button>
+                              )}
+                              {rowError && uploadingDoc === null && isUploading === false && (
+                                <div
+                                  role="alert"
+                                  style={{
+                                    fontSize: 12,
+                                    color: '#EF4444',
+                                    padding: 6,
+                                  }}
+                                >
+                                  {rowError}
+                                </div>
+                              )}
+                            </div>
+                          )
+                        })}
                       </div>
-                    </li>
-                  )
-                })}
-              </ul>
+                    ))}
+                  </div>
+                )
+              })()
             )}
+            <style>{`@keyframes pulseGreen { 0%{box-shadow:0 0 0 0 rgba(34,197,94,0.6)}100%{box-shadow:0 0 0 12px rgba(34,197,94,0)} }`}</style>
           </Panel>
         )}
 
@@ -445,7 +663,8 @@ export default function ProveedorPage() {
             <input
               ref={fileRef}
               type="file"
-              accept=".pdf,.jpg,.jpeg,.png,.xlsx"
+              accept=".pdf,image/*,.xlsx"
+              capture="environment"
               multiple
               onChange={(e) => handleFiles(e.target.files)}
               style={{ display: 'none' }}

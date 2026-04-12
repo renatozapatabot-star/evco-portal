@@ -232,3 +232,69 @@ The full transition table is the source of truth — this doc is illustrative.
 ---
 
 *Recon compiled April 2026. Patente 3596. Renato Zapata & Company.*
+
+---
+
+## Supplier Document Types — Block 4 Extension (2026-04-15)
+
+This section documents which of the 50 catalog codes in
+`src/lib/document-types.ts` came out of GlobalPC's historical demand vs.
+SAT/VUCEM regulatory obligations documented in `V2_ADUANET_RECON.md`.
+
+Each catalog entry carries a `reconSource` marker:
+- `globalpc` — appeared in GlobalPC supplier emails or tráfico expedientes
+- `aduanet` — required by SAT/VUCEM/Anexo 22 (see V2_ADUANET_RECON.md)
+- `both` — demanded by both layers (the core 10)
+- `regulatory` — added for regulatory completeness; neither recon demanded
+  explicitly but NOM / COFEPRIS / SAGARPA / SEMARNAT / SENER require them
+  when the commodity class triggers them.
+
+### Category breakdown
+
+| Category | Count | Notes |
+|---|---:|---|
+| COMERCIAL | 6 | Factura + packing list core; PO + proforma + contrato + nota |
+| TRANSPORTE | 6 | BL / AWB / carta porte 3.1 / guía / seguro / manifiesto |
+| ORIGEN | 4 | T-MEC principal + otros tratados + declaración + BOM |
+| REGULATORIO | 7 | 5 regulators + permiso genérico + padrón (all regulatory) |
+| TECNICO | 6 | COA + ficha + MSDS + fotos + catálogo + dictamen |
+| FISCAL | 4 | RFC + CFDI pago + retenciones + opinión cumplimiento |
+| ADUANAL | 7 | Pedimento / COVE / MVE / encargo / DODA / Anexo 24 / Anexo 31 / declaratoria |
+| FINANCIERO | 5 | SWIFT / carta crédito / estado cuenta / nota crédito / factoraje |
+| OTROS | 4 | Entrada bodega + correspondencia + evidencia entrega + "otro" |
+| **Total** | **50** | |
+
+### Legacy mapping
+
+The 10 codes from the V1-Polish Block-10 `DocType` union each map 1:1 to a
+catalog entry via `legacyAlias`. `mapLegacyDocType()` translates them, and
+all 9 existing consumers keep compiling.
+
+| Legacy code | Catalog code |
+|---|---|
+| `factura` | `factura_comercial` |
+| `packing_list` | `lista_empaque` |
+| `bill_of_lading` | `bl` |
+| `carta_porte` | `carta_porte` |
+| `certificado_origen` | `certificado_origen_tmec` |
+| `pedimento` | `pedimento` |
+| `rfc_constancia` | `rfc_constancia` |
+| `encargo_conferido` | `encargo_conferido` |
+| `cove` | `cove` |
+| `mve` | `mve` |
+
+### "Otro" — custom doc audit
+
+Operators selecting "Otro (especificar)" in `SolicitarDocsModal` write the
+custom name to `expediente_documentos.custom_doc_name`. A weekly detector
+(`src/lib/doc-audit.ts`) surfaces recurring custom names (≥ 3 occurrences)
+as `operational_decisions` rows with `decision_type='audit_suggestion'` so
+the team can promote them to the global catalog.
+
+### Cross-reference
+
+- SAT/VUCEM regulatory breakdown: `docs/recon/V2_ADUANET_RECON.md`
+- Email template with inline AGUILA branding: `scripts/lib/email-templates.js`
+  (function `renderSupplierSolicitationHTML`)
+- Supplier portal (mobile-first 375px primary): `src/app/proveedor/[token]/page.tsx`
+- Solicitation modal (collapsible categories): `src/components/trafico/SolicitarDocsModal.tsx`

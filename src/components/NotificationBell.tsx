@@ -1,0 +1,272 @@
+'use client'
+
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { Bell } from 'lucide-react'
+import { fmtDateTime } from '@/lib/format-utils'
+import { track } from '@/lib/telemetry/useTrack'
+
+/**
+ * V1 Polish Pack · Block 6 — in-app notification bell.
+ * - Polling on mount + on window focus (Realtime deferred to follow-up)
+ * - Dropdown: 20 most recent, grouped by date
+ * - Click a row → mark read + navigate to action_url
+ * - ADUANA dark glass styling, JetBrains Mono on timestamps
+ * - 60px min touch target on bell button
+ */
+
+interface Notification {
+  id: string
+  title: string
+  description: string
+  severity: string
+  action_url: string | null
+  trafico_id: string | null
+  entity_type: string | null
+  entity_id: string | null
+  read: boolean
+  created_at: string
+}
+
+type ListResponse = {
+  data: { notifications: Notification[]; unread: number } | null
+  error: { code: string; message: string } | null
+}
+
+function groupByDay(items: Notification[]): Array<{ label: string; items: Notification[] }> {
+  const fmt = (d: Date) => d.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'America/Chicago' })
+  const today = fmt(new Date())
+  const yesterday = fmt(new Date(Date.now() - 86400000))
+  const groups = new Map<string, Notification[]>()
+  for (const n of items) {
+    const key = fmt(new Date(n.created_at))
+    const label = key === today ? 'Hoy' : key === yesterday ? 'Ayer' : key
+    const arr = groups.get(label) ?? []
+    arr.push(n)
+    groups.set(label, arr)
+  }
+  return Array.from(groups.entries()).map(([label, items]) => ({ label, items }))
+}
+
+export default function NotificationBell() {
+  const [open, setOpen] = useState(false)
+  const [items, setItems] = useState<Notification[]>([])
+  const [unread, setUnread] = useState(0)
+  const [loading, setLoading] = useState(false)
+  const boxRef = useRef<HTMLDivElement | null>(null)
+
+  const fetchList = useCallback(async () => {
+    setLoading(true)
+    try {
+      const res = await fetch('/api/notifications/list', { cache: 'no-store' })
+      if (!res.ok) return
+      const json = (await res.json()) as ListResponse
+      if (json.data) {
+        setItems(json.data.notifications)
+        setUnread(json.data.unread)
+      }
+    } catch (err) {
+      if (process.env.NODE_ENV !== 'production') {
+        // eslint-disable-next-line no-console
+        console.warn('[notification-bell] list failed', err)
+      }
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  // Initial load + refetch on window focus (polling-lite; Realtime deferred).
+  useEffect(() => {
+    fetchList()
+    const onFocus = () => fetchList()
+    window.addEventListener('focus', onFocus)
+    return () => window.removeEventListener('focus', onFocus)
+  }, [fetchList])
+
+  // Close on outside click
+  useEffect(() => {
+    if (!open) return
+    const onClick = (e: MouseEvent) => {
+      if (boxRef.current && !boxRef.current.contains(e.target as Node)) setOpen(false)
+    }
+    window.addEventListener('mousedown', onClick)
+    return () => window.removeEventListener('mousedown', onClick)
+  }, [open])
+
+  const handleOpen = () => {
+    setOpen(v => !v)
+    if (!open) fetchList()
+  }
+
+  const handleClick = async (n: Notification) => {
+    track('notification_clicked', {
+      entityType: n.entity_type ?? 'notification',
+      entityId: n.id,
+      metadata: { severity: n.severity, hasAction: Boolean(n.action_url) },
+    })
+    if (!n.read) {
+      try {
+        await fetch('/api/notifications/mark-read', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ id: n.id }),
+        })
+        setItems(prev => prev.map(i => (i.id === n.id ? { ...i, read: true } : i)))
+        setUnread(u => Math.max(0, u - 1))
+      } catch (err) {
+        if (process.env.NODE_ENV !== 'production') {
+          // eslint-disable-next-line no-console
+          console.warn('[notification-bell] mark-read failed', err)
+        }
+      }
+    }
+    if (n.action_url) window.location.href = n.action_url
+  }
+
+  const badge = unread === 0 ? null : unread > 9 ? '9+' : String(unread)
+  const groups = groupByDay(items)
+
+  return (
+    <div ref={boxRef} style={{ position: 'relative' }}>
+      <button
+        type="button"
+        onClick={handleOpen}
+        aria-label={`${unread} notificaciones sin leer`}
+        aria-expanded={open}
+        style={{
+          position: 'relative',
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minWidth: 60,
+          minHeight: 60,
+          padding: 8,
+          borderRadius: 12,
+          background: 'transparent',
+          border: '1px solid rgba(255,255,255,0.08)',
+          color: 'rgba(230,237,243,0.85)',
+          cursor: 'pointer',
+          transition: 'background 150ms, border-color 150ms',
+        }}
+        onMouseEnter={e => {
+          e.currentTarget.style.background = 'rgba(255,255,255,0.04)'
+          e.currentTarget.style.borderColor = 'rgba(0,229,255,0.2)'
+        }}
+        onMouseLeave={e => {
+          e.currentTarget.style.background = 'transparent'
+          e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'
+        }}
+      >
+        <Bell size={18} />
+        {badge && (
+          <span
+            aria-hidden
+            style={{
+              position: 'absolute', top: 10, right: 10,
+              minWidth: 18, height: 18, padding: '0 5px',
+              borderRadius: 9, background: '#eab308', color: '#0B1220',
+              fontSize: 10, fontWeight: 800,
+              display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+              fontFamily: 'var(--font-mono)',
+            }}
+          >
+            {badge}
+          </span>
+        )}
+      </button>
+
+      {open && (
+        <div
+          role="dialog"
+          aria-label="Notificaciones"
+          style={{
+            position: 'absolute', top: 'calc(100% + 8px)', right: 0, zIndex: 9999,
+            width: 380, maxHeight: 480, overflowY: 'auto',
+            background: 'rgba(9,9,11,0.95)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            border: '1px solid rgba(34,211,238,0.25)',
+            borderRadius: 20,
+            boxShadow: '0 20px 50px rgba(0,0,0,0.5), 0 0 25px -8px rgba(34,211,238,0.4)',
+            padding: 12,
+          }}
+        >
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: '4px 8px 12px',
+            borderBottom: '1px solid rgba(255,255,255,0.06)',
+          }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: '#E6EDF3' }}>Notificaciones</div>
+            <div style={{ fontSize: 11, color: '#94a3b8', fontFamily: 'var(--font-mono)' }}>
+              {loading ? 'Cargando…' : unread > 0 ? `${unread} sin leer` : 'Al día'}
+            </div>
+          </div>
+
+          {items.length === 0 && !loading && (
+            <div style={{ padding: '32px 16px', textAlign: 'center' }}>
+              <Bell size={24} style={{ opacity: 0.4, marginBottom: 8 }} />
+              <div style={{ fontSize: 13, color: '#94a3b8' }}>Sin notificaciones recientes</div>
+              <div style={{ fontSize: 11, color: '#64748b', marginTop: 4 }}>
+                Las menciones y alertas del sistema aparecerán aquí.
+              </div>
+            </div>
+          )}
+
+          {groups.map(group => (
+            <div key={group.label} style={{ marginTop: 8 }}>
+              <div style={{
+                fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em',
+                color: '#64748b', padding: '4px 8px',
+              }}>
+                {group.label}
+              </div>
+              {group.items.map(n => (
+                <button
+                  key={n.id}
+                  type="button"
+                  onClick={() => handleClick(n)}
+                  style={{
+                    width: '100%', textAlign: 'left',
+                    display: 'flex', gap: 10, alignItems: 'flex-start',
+                    padding: '10px 8px', borderRadius: 12,
+                    background: n.read ? 'transparent' : 'rgba(0,229,255,0.06)',
+                    border: '1px solid transparent',
+                    color: '#E6EDF3', cursor: 'pointer',
+                    transition: 'background 150ms, border-color 150ms',
+                    minHeight: 60,
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}
+                  onMouseLeave={e => { e.currentTarget.style.background = n.read ? 'transparent' : 'rgba(0,229,255,0.06)' }}
+                >
+                  <span
+                    aria-hidden
+                    style={{
+                      width: 8, height: 8, marginTop: 6, flexShrink: 0,
+                      borderRadius: '50%',
+                      background: n.read ? 'transparent' : '#00E5FF',
+                      boxShadow: n.read ? 'none' : '0 0 8px rgba(0,229,255,0.6)',
+                    }}
+                  />
+                  <span style={{ flex: 1, minWidth: 0 }}>
+                    <span style={{
+                      display: 'block', fontSize: 13, fontWeight: n.read ? 500 : 700,
+                      color: '#E6EDF3', marginBottom: 2,
+                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                    }}>{n.title}</span>
+                    <span style={{
+                      display: 'block', fontSize: 12, color: '#94a3b8',
+                      marginBottom: 4,
+                    }}>{n.description}</span>
+                    <span style={{
+                      fontSize: 10, color: '#64748b',
+                      fontFamily: 'var(--font-mono)',
+                    }}>{fmtDateTime(n.created_at)}</span>
+                  </span>
+                </button>
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}

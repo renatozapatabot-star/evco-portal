@@ -49,7 +49,7 @@ export default function AduanaLayout({
       )}
       <main className={`aduana-main aduana-dark ${hideSidebar ? 'aduana-main--full' : ''}`}>
         <TopBar
-          showNotifications={false}
+          showNotifications={portalType === 'operator'}
           onMenuToggle={hideSidebar ? undefined : onMobileToggle}
           onLogout={onLogout}
           portalType={portalType}

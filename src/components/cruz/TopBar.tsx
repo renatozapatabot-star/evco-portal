@@ -2,9 +2,8 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Search, Bell, Menu, LogOut, ChevronLeft } from 'lucide-react';
-import { useNotificationBadge } from '@/hooks/use-notifications';
-import { AduanaMark } from '@/components/command-center/CruzMark';
+import { Search, Menu, LogOut, ChevronLeft } from 'lucide-react';
+import NotificationBell from '@/components/NotificationBell';
 
 interface TopBarProps {
   showNotifications?: boolean;
@@ -12,6 +11,7 @@ interface TopBarProps {
   onLogout?: () => void;
   portalType?: 'operator' | 'client';
   clientName?: string;
+  /** @deprecated kept for back-compat with AduanaLayout callers. */
   clientInitials?: string;
 }
 
@@ -25,11 +25,8 @@ export default function TopBar({
   onLogout,
   portalType = 'operator',
   clientName,
-  clientInitials,
 }: TopBarProps) {
   const pathname = usePathname();
-  const { unreadCount } = useNotificationBadge();
-  const badgeText = unreadCount === 0 ? null : unreadCount > 9 ? '9+' : String(unreadCount);
   const isClient = portalType === 'client';
   const isHome = pathname === '/';
 
@@ -141,19 +138,7 @@ export default function TopBar({
       </button>
 
       <div className="topbar-right">
-        {showNotifications && (
-          <button
-            className="topbar-bell-btn"
-            aria-label={`${unreadCount} notificaciones sin leer`}
-          >
-            <Bell size={16} />
-            {badgeText && (
-              <span className="topbar-bell-badge badge-bounce">
-                {badgeText}
-              </span>
-            )}
-          </button>
-        )}
+        {showNotifications && <NotificationBell />}
         {onLogout && (
           <button
             onClick={onLogout}

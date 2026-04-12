@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { ChevronDown, ChevronRight } from 'lucide-react'
-import { fmtRelativeTime } from '@/lib/format-utils'
+import { fmtDateTime } from '@/lib/format-utils'
 import type { PulseItem } from '@/hooks/use-activity-pulse'
 
 interface ActivityPulseSectionProps {
@@ -96,7 +96,7 @@ export function ActivityPulseSection({ pulse, loading, defaultCollapsed = false,
                     fontSize: 11, color: textMuted, flexShrink: 0,
                     fontFamily: 'var(--font-mono)',
                   }}>
-                    {fmtRelativeTime(item.timestamp)}
+                    {fmtDateTime(item.timestamp)}
                   </span>
                 </Link>
               ))}

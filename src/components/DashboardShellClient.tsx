@@ -9,6 +9,7 @@ import { useKeyboardShortcuts } from '@/hooks/use-shortcuts'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { usePullToRefresh } from '@/hooks/use-pull-refresh'
 import { SlideInNotification } from './notifications/SlideInNotification'
+import TelemetryProvider from './telemetry/TelemetryProvider'
 import { getCookieValue } from '@/lib/client-config'
 
 // Defer heavy components — not needed on first paint
@@ -161,6 +162,7 @@ export default function DashboardShellClient({ children }: Props) {
 
   return (
     <ToastProvider>
+      <TelemetryProvider>
       <CelebrationListener />
       <SlideInNotification />
       <a href="#main-content" className="skip-link">Ir al contenido</a>
@@ -269,6 +271,7 @@ export default function DashboardShellClient({ children }: Props) {
           <div style={{ fontSize: 13, color: '#94a3b8', marginBottom: 20 }}>Haz clic o toca para continuar</div>
         </div>
       )}
+      </TelemetryProvider>
     </ToastProvider>
   )
 }

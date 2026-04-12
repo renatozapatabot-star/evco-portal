@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { fmtUSDCompact, fmtRelativeTime } from '../shared/formatters'
+import { fmtUSDCompact, fmtDateTime } from '../shared/formatters'
 import type { AdminData } from '../shared/fetchCockpitData'
 
 interface Props {
@@ -80,7 +80,7 @@ export function ClientsTablePanel({ companies }: Props) {
                     padding: '10px 12px', fontSize: 12,
                     color: '#8B949E', textAlign: 'right',
                   }}>
-                    {c.last_activity ? fmtRelativeTime(c.last_activity) : '—'}
+                    {c.last_activity ? fmtDateTime(c.last_activity) : '—'}
                   </td>
                 </tr>
               ))}

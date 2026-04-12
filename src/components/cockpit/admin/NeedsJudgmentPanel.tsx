@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { fmtRelativeTime } from '../shared/formatters'
+import { fmtDateTime } from '../shared/formatters'
 import type { AdminData } from '../shared/fetchCockpitData'
 import { IfThenCard } from '../shared/IfThenCard'
 import { AduanaRecommendation } from '../shared/CruzRecommendation'
@@ -47,7 +47,7 @@ export function NeedsJudgmentPanel({ escalations }: Props) {
               }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 13, color: '#E6EDF3', marginBottom: 2 }}>{e.description}</div>
-                  <div style={{ fontSize: 11, color: '#6E7681' }}>{e.company} · {fmtRelativeTime(e.created_at)}</div>
+                  <div style={{ fontSize: 11, color: '#6E7681' }}>{e.company} · {fmtDateTime(e.created_at)}</div>
                 </div>
                 <Link href="/drafts" style={{
                   padding: '8px 16px', background: 'rgba(201,168,76,0.15)',

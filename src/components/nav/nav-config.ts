@@ -84,9 +84,10 @@ export const INTERNAL_GROUPS: NavGroup[] = [
     icon: Settings,
     roles: ['admin', 'broker'],
     children: [
-      { href: '/admin/shadow',   label: 'Shadow',          icon: Brain,    roles: ['admin', 'broker'] },
-      { href: '/admin/carriers', label: 'Transportistas',  icon: Truck,    roles: ['admin', 'broker'] },
-      { href: '/clientes',       label: 'Clientes',        icon: Users2,   roles: ['admin', 'broker'] },
+      { href: '/admin/shadow',             label: 'Shadow',            icon: Brain,           roles: ['admin', 'broker'] },
+      { href: '/admin/carriers',           label: 'Transportistas',    icon: Truck,           roles: ['admin', 'broker'] },
+      { href: '/admin/quickbooks-export',  label: 'Exportar QuickBooks', icon: FileSpreadsheet, roles: ['admin', 'broker'] },
+      { href: '/clientes',                 label: 'Clientes',          icon: Users2,          roles: ['admin', 'broker'] },
     ],
   },
 ]
@@ -159,7 +160,8 @@ export const CONTABILIDAD_NAV: NavTopLevel[] = [
   { href: '/facturacion',           label: 'Facturación',  icon: FileText },
   { href: '/cobranzas',             label: 'Cobranzas',    icon: DollarSign },
   { href: '/pagos',                 label: 'Pagos',        icon: DollarSign },
-  { href: '/contabilidad/exportar', label: 'Exportar',     icon: FileSpreadsheet },
+  { href: '/contabilidad/exportar',   label: 'Exportar',            icon: FileSpreadsheet },
+  { href: '/admin/quickbooks-export', label: 'Exportar QuickBooks', icon: FileSpreadsheet },
 ]
 
 export const CONTABILIDAD_GROUPS: NavGroup[] = []

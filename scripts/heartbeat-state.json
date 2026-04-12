@@ -1,9 +1,0 @@
-{
-  "script": "workflow-processor",
-  "status": "active",
-  "timestamp": "2026-04-12T02:46:55.686Z",
-  "pid": 89844,
-  "cycle_id": "885bbde3",
-  "events_processed": 20,
-  "elapsed_s": 19.2
-}

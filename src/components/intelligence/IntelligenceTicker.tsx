@@ -19,6 +19,7 @@ export interface TickerItem {
   label: string
   value: string
   trend?: TickerTrend
+  href?: string
 }
 
 function TrendGlyph({ trend }: { trend?: TickerTrend }) {
@@ -42,34 +43,41 @@ function TrendGlyph({ trend }: { trend?: TickerTrend }) {
 function TickerRow({ items }: { items: TickerItem[] }) {
   return (
     <>
-      {items.map((it, i) => (
-        <span
-          key={`${it.id}-${i}`}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 6,
-            paddingInline: 18,
-            whiteSpace: 'nowrap',
-            color: '#E8EAED',
-          }}
-        >
-          {it.icon ? <span style={{ opacity: 0.7 }}>{it.icon}</span> : null}
-          <span style={{ color: '#7A7E86', fontSize: 'inherit' }}>{it.label}</span>
-          <span
+      {items.map((it, i) => {
+        const Wrapper: 'a' | 'span' = it.href ? 'a' : 'span'
+        const wrapperProps = it.href ? { href: it.href } : {}
+        return (
+          <Wrapper
+            key={`${it.id}-${i}`}
+            {...wrapperProps}
             style={{
-              fontFamily: 'var(--font-jetbrains-mono), ui-monospace, monospace',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              paddingInline: 18,
+              whiteSpace: 'nowrap',
               color: '#E8EAED',
+              textDecoration: 'none',
+              cursor: it.href ? 'pointer' : 'default',
             }}
           >
-            {it.value}
-          </span>
-          <TrendGlyph trend={it.trend} />
-          <span aria-hidden style={{ color: 'rgba(192,197,206,0.28)', marginLeft: 10 }}>
-            &middot;
-          </span>
-        </span>
-      ))}
+            {it.icon ? <span style={{ opacity: 0.7 }}>{it.icon}</span> : null}
+            <span style={{ color: '#7A7E86', fontSize: 'inherit' }}>{it.label}</span>
+            <span
+              style={{
+                fontFamily: 'var(--font-jetbrains-mono), ui-monospace, monospace',
+                color: '#E8EAED',
+              }}
+            >
+              {it.value}
+            </span>
+            <TrendGlyph trend={it.trend} />
+            <span aria-hidden style={{ color: 'rgba(192,197,206,0.28)', marginLeft: 10 }}>
+              &middot;
+            </span>
+          </Wrapper>
+        )
+      })}
     </>
   )
 }

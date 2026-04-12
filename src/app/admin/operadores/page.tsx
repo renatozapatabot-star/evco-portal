@@ -7,6 +7,8 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { verifySession } from '@/lib/session'
+import { CockpitBrandHeader } from '@/components/brand/CockpitBrandHeader'
+import { BG_DEEP } from '@/lib/design-system'
 import { OperatorsMetricsClient } from './OperatorsMetricsClient'
 
 export const dynamic = 'force-dynamic'
@@ -20,5 +22,10 @@ export default async function OperadoresPage() {
   if (!session) redirect('/login')
   if (!['admin', 'broker'].includes(session.role)) redirect('/inicio')
 
-  return <OperatorsMetricsClient />
+  return (
+    <div style={{ background: BG_DEEP, minHeight: '100vh', padding: '24px 24px 48px' }}>
+      <CockpitBrandHeader subtitle="Operadores · Métricas" />
+      <OperatorsMetricsClient />
+    </div>
+  )
 }

@@ -10,6 +10,8 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
 import { verifySession } from '@/lib/session'
+import { CockpitBrandHeader } from '@/components/brand/CockpitBrandHeader'
+import { BG_DEEP } from '@/lib/design-system'
 import { QuickBooksExportClient } from './QuickBooksExportClient'
 
 export const dynamic = 'force-dynamic'
@@ -50,8 +52,11 @@ export default async function QuickBooksExportPage() {
     .limit(20)
 
   return (
-    <QuickBooksExportClient
-      recent={(recent ?? []) as ExportRow[]}
-    />
+    <div style={{ background: BG_DEEP, minHeight: '100vh', padding: '24px 24px 48px' }}>
+      <CockpitBrandHeader subtitle="QuickBooks · Exportación" />
+      <QuickBooksExportClient
+        recent={(recent ?? []) as ExportRow[]}
+      />
+    </div>
   )
 }

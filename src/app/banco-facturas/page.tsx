@@ -3,6 +3,8 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { verifySession } from '@/lib/session'
+import { CockpitBrandHeader } from '@/components/brand/CockpitBrandHeader'
+import { BG_DEEP } from '@/lib/design-system'
 import { BancoFacturasClient } from './BancoFacturasClient'
 
 export const dynamic = 'force-dynamic'
@@ -19,5 +21,10 @@ export default async function BancoFacturasPage() {
       ? session.companyId
       : (store.get('company_id')?.value || session.companyId)
 
-  return <BancoFacturasClient companyId={companyId} role={session.role} />
+  return (
+    <div style={{ background: BG_DEEP, minHeight: '100vh', padding: '24px 24px 48px' }}>
+      <CockpitBrandHeader subtitle="Banco · Facturas" />
+      <BancoFacturasClient companyId={companyId} role={session.role} />
+    </div>
+  )
 }

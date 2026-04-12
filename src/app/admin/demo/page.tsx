@@ -8,6 +8,8 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { verifySession } from '@/lib/session'
+import { CockpitBrandHeader } from '@/components/brand/CockpitBrandHeader'
+import { BG_DEEP } from '@/lib/design-system'
 import { DemoRunnerClient } from './DemoRunnerClient'
 
 export const dynamic = 'force-dynamic'
@@ -21,5 +23,10 @@ export default async function DemoPage() {
   if (!session) redirect('/login')
   if (!['admin', 'broker'].includes(session.role)) redirect('/inicio')
 
-  return <DemoRunnerClient />
+  return (
+    <div style={{ background: BG_DEEP, minHeight: '100vh', padding: '24px 24px 48px' }}>
+      <CockpitBrandHeader subtitle="Demo · Lifecycle sintético" />
+      <DemoRunnerClient />
+    </div>
+  )
 }

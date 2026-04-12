@@ -28,6 +28,7 @@ interface Item {
   label: string
   value: string
   trend?: Trend
+  href?: string
 }
 
 const nf = new Intl.NumberFormat('es-MX', { maximumFractionDigits: 2 })
@@ -332,7 +333,22 @@ export async function GET() {
 
   try {
     const raw = await itemsForRole(role, companyId)
-    const items = raw.slice(0, 8)
+    // Wire each item type to a canonical route so the ticker is clickable.
+    const withHref = raw.map((it): Item => {
+      if (it.href) return it
+      if (it.id === 'fx') return { ...it, href: '/reportes' }
+      if (it.id.startsWith('bridge') || it.id.startsWith('b-')) return { ...it, href: '/corredor' }
+      if (it.id.startsWith('dormant')) return { ...it, href: '/admin/clientes-dormidos' }
+      if (it.id === 'mve-crit') return { ...it, href: '/mve/alerts' }
+      if (it.id === 'ar-overdue') return { ...it, href: '/contabilidad' }
+      if (it.id === 'docs-pend') return { ...it, href: '/drafts' }
+      if (it.id === 'entr-24h' || it.id === 'yard') return { ...it, href: '/bodega/inicio' }
+      if (it.id === 'mine-active') return { ...it, href: '/traficos' }
+      if (it.id === 'last-cross') return { ...it, href: '/corredor' }
+      if (it.id === 'top-client') return { ...it, href: '/reportes' }
+      return it
+    })
+    const items = withHref.slice(0, 8)
     void trackFetched(companyId, role, items.length)
     return NextResponse.json(
       { data: { items }, error: null },

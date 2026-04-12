@@ -59,10 +59,47 @@ export default function PedimentosPage() {
     })
     if (!isInternal && companyId) params.set('company_id', companyId)
 
-    fetch(`/api/data?${params}`)
-      .then(r => r.json())
-      .then(data => setRows((data.data ?? data ?? []) as TraficoRow[]))
-      .catch((err) => console.error('[pedimentos] traficos fetch:', err.message))
+    // Retrofit B6a: prefer new `pedimentos` table; traficos query is fallback
+    // for rows not yet migrated. Merge by pedimento_number (new table wins).
+    const pedimentoParams = new URLSearchParams({
+      table: 'pedimentos', limit: '5000',
+      order_by: 'created_at', order_dir: 'desc',
+    })
+    if (!isInternal && companyId) pedimentoParams.set('company_id', companyId)
+
+    Promise.all([
+      fetch(`/api/data?${params}`).then(r => r.json()).catch((err: Error) => {
+        console.error('[pedimentos] traficos fetch:', err.message)
+        return { data: [] }
+      }),
+      fetch(`/api/data?${pedimentoParams}`).then(r => r.json()).catch(() => ({ data: [] })),
+    ])
+      .then(([traficoRes, pedimentoRes]) => {
+        const traficoRows = (traficoRes.data ?? traficoRes ?? []) as TraficoRow[]
+        const pedimentoRows = (pedimentoRes.data ?? []) as Array<{
+          pedimento_number: string | null
+          trafico_id: string
+          company_id: string
+          status: string | null
+          created_at: string
+        }>
+        const existingNumbers = new Set(traficoRows.map(r => r.pedimento).filter(Boolean))
+        const overlayRows: TraficoRow[] = pedimentoRows
+          .filter(p => p.pedimento_number && !existingNumbers.has(p.pedimento_number))
+          .map(p => ({
+            trafico: p.trafico_id,
+            pedimento: p.pedimento_number,
+            fecha_pago: null,
+            fecha_llegada: p.created_at,
+            importe_total: null,
+            estatus: p.status ?? null,
+            regimen: null,
+            proveedores: null,
+            descripcion_mercancia: null,
+            company_id: p.company_id,
+          }))
+        setRows([...traficoRows, ...overlayRows])
+      })
       .finally(() => setLoading(false))
 
     // Partida descriptions
@@ -197,7 +234,7 @@ export default function PedimentosPage() {
             {paged.map(g => (
               <Link
                 key={g.pedimento}
-                href={`/traficos/${encodeURIComponent(g.trafico)}`}
+                href={`/traficos/${encodeURIComponent(g.trafico)}/pedimento`}
                 style={{
                   textDecoration: 'none', color: 'inherit',
                   background: 'var(--bg-card)', border: '1px solid var(--border)',
@@ -243,7 +280,7 @@ export default function PedimentosPage() {
                   <tr
                     key={g.pedimento}
                     className={`clickable-row ${i % 2 === 0 ? 'row-even' : 'row-odd'}`}
-                    onClick={() => window.location.href = `/traficos/${encodeURIComponent(g.trafico)}`}
+                    onClick={() => { window.location.href = `/traficos/${encodeURIComponent(g.trafico)}/pedimento` }}
                     style={{ cursor: 'pointer' }}
                   >
                     <td>

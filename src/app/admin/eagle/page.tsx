@@ -10,15 +10,8 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
 import { verifySession } from '@/lib/session'
 import { computeARAging, computeAPAging } from '@/lib/contabilidad/aging'
-import { AguilaMark } from '@/components/brand/AguilaMark'
-import { AguilaWordmark } from '@/components/brand/AguilaWordmark'
-import { CoordinatesBadge } from '@/components/brand/CoordinatesBadge'
-import {
-  ACCENT_SILVER_BRIGHT,
-  BG_DEEP,
-  TEXT_MUTED,
-  TEXT_SECONDARY,
-} from '@/lib/design-system'
+import { CockpitBrandHeader } from '@/components/brand/CockpitBrandHeader'
+import { BG_DEEP } from '@/lib/design-system'
 import { TraficosDelDiaTile } from '@/components/eagle/TraficosDelDiaTile'
 import { ArApTile } from '@/components/eagle/ArApTile'
 import { ClientesDormidosTile } from '@/components/eagle/ClientesDormidosTile'
@@ -194,32 +187,12 @@ export default async function EaglePage() {
 
   return (
     <div style={{ background: BG_DEEP, minHeight: '100vh', padding: '32px 24px 48px' }}>
-      <header
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: 16,
-          flexWrap: 'wrap',
-          marginBottom: 24,
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <AguilaMark size={40} tone="silver" />
-          <div>
-            <AguilaWordmark />
-            <div style={{ fontSize: 12, color: TEXT_MUTED, marginTop: 4 }}>Vista Águila · Tito</div>
-          </div>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <CoordinatesBadge />
-          <div style={{ fontSize: 14, color: ACCENT_SILVER_BRIGHT, fontWeight: 600 }}>{greetingByHour()}</div>
-        </div>
-      </header>
-
-      <p style={{ fontSize: 13, color: TEXT_SECONDARY, margin: '0 0 20px' }}>
-        Una pantalla · seis señales · cero clics para decidir.
-      </p>
+      <CockpitBrandHeader
+        subtitle="Vista Águila · Tito"
+        greeting={greetingByHour()}
+        tagline="Una pantalla · seis señales · cero clics para decidir."
+        markSize={64}
+      />
 
       <section
         className="eagle-grid"

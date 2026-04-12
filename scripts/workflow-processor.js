@@ -34,6 +34,7 @@ const { handleEmailProcessed } = require('./lib/intake-handlers')
 const { handleDocumentAttached, handleSolicitationSent } = require('./lib/docs-handlers')
 const { handleDispatchReady } = require('./lib/crossing-handlers')
 const { handleReadyForApproval } = require('./lib/pedimento-handlers')
+const { handleOperationScored, handleOperationAccumulated, handleInvoiceReady } = require('./lib/invoice-handlers')
 
 const SCRIPT_NAME = 'workflow-processor'
 const DRY_RUN = process.argv.includes('--dry-run')
@@ -728,41 +729,11 @@ const HANDLERS = {
 
     return { success: true, result: `Post-op scored ${traficoId}: ${score}/100 (${transitDays ?? '?'} days transit)` }
   },
-  'post_op.operation_scored': async (event) => {
-    const score = event.payload?.score || 0
-    return { success: true, result: `Operation scored: ${score}/100` }
-  },
+  'post_op.operation_scored': handleOperationScored,
 
   // ── Workflow 7: Invoice ──
-  'invoice.operation_accumulated': async (event) => {
-    const traficoId = event.trigger_id || event.payload?.trafico_id
-    const companyId = event.company_id
-    const score = event.payload?.score || 0
-
-    // Log the accumulation — actual billing is a future feature
-    if (VERBOSE) console.log(`  Invoice accumulated: ${traficoId} (score ${score})`)
-
-    // Log to operational_decisions for Operational Brain
-    await logDecision({
-      trafico: traficoId,
-      company_id: companyId,
-      decision_type: 'invoice',
-      decision: 'operation_accumulated',
-      reasoning: `Tráfico ${traficoId} completed pipeline with score ${score}/100. Cost accumulated for monthly invoice.`,
-    }).catch(() => {})
-
-    return { success: true, result: `Operation accumulated for ${traficoId} (score ${score}/100) — end of pipeline` }
-  },
-  'invoice.invoice_ready': async (event) => {
-    await tg(
-      `💰 <b>Factura lista</b>\n` +
-      `${event.trigger_id}\n` +
-      `Empresa: ${event.company_id}\n` +
-      `Requiere aprobación de Tito\n` +
-      `— CRUZ Workflow`
-    )
-    return { success: true, result: 'Invoice ready for approval' }
-  },
+  'invoice.operation_accumulated': handleOperationAccumulated,
+  'invoice.invoice_ready': handleInvoiceReady,
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

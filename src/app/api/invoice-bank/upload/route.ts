@@ -18,6 +18,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { verifySession } from '@/lib/session'
 import { extractInvoiceFields } from '@/lib/invoice-bank'
 import { logDecision } from '@/lib/decision-logger'
+import { classifyDocumentWithVision } from '@/lib/vision/classify'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -47,6 +48,9 @@ interface UploadResult {
   supplierName: string | null
   amount: number | null
   currency: string | null
+  visionExtracted?: boolean
+  visionDocType?: string | null
+  visionClassificationId?: string | null
   error?: string
 }
 
@@ -205,6 +209,51 @@ export async function POST(request: NextRequest) {
       dataPoints: { invoice_id: row.id, file_name: file.name, classified },
     })
 
+    // F14 — richer Vision extraction (doc_type + line items). Non-
+    // fatal: if it fails or vision is not configured, the upload
+    // still succeeds and the invoice row keeps whatever fields the
+    // image extractor already produced above.
+    let visionExtracted = false
+    let visionDocType: string | null = null
+    let visionClassificationId: string | null = null
+    try {
+      const vision = await classifyDocumentWithVision({
+        fileUrl,
+        companyId,
+        linkToInvoiceBankId: row.id as string,
+        actor,
+      })
+      visionClassificationId = vision.id
+      if (vision.extraction) {
+        visionExtracted = true
+        visionDocType = vision.extraction.doc_type
+        // Prefill the invoice row with any fields the richer extractor
+        // captured that the simpler image extractor missed (PDF path).
+        const patch: Record<string, unknown> = {}
+        if (!invoiceNumber && vision.extraction.invoice_number) {
+          patch.invoice_number = vision.extraction.invoice_number
+          invoiceNumber = vision.extraction.invoice_number
+        }
+        if (!supplierName && vision.extraction.supplier) {
+          patch.supplier_name = vision.extraction.supplier
+          supplierName = vision.extraction.supplier
+        }
+        if (amount == null && vision.extraction.amount != null) {
+          patch.amount = vision.extraction.amount
+          amount = vision.extraction.amount
+        }
+        if (!currency && vision.extraction.currency) {
+          patch.currency = vision.extraction.currency
+          currency = vision.extraction.currency
+        }
+        if (Object.keys(patch).length > 0) {
+          await supabase.from('pedimento_facturas').update(patch).eq('id', row.id)
+        }
+      }
+    } catch {
+      // graceful — keep the row, surface via visionExtracted=false
+    }
+
     results.push({
       id: row.id as string,
       fileName: file.name,
@@ -215,6 +264,9 @@ export async function POST(request: NextRequest) {
       supplierName,
       amount,
       currency,
+      visionExtracted,
+      visionDocType,
+      visionClassificationId,
     })
   }
 

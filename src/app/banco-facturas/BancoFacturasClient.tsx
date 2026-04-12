@@ -116,12 +116,27 @@ export function BancoFacturasClient({ role }: Props) {
         method: 'POST', body: form, credentials: 'include',
       })
       const body = await res.json()
-      const count = body?.data?.results?.length ?? 0
-      setToast(`${count} factura${count === 1 ? '' : 's'} cargada${count === 1 ? '' : 's'}`)
-      trackEvent('click', 'invoice_uploaded', { count })
+      const results = body?.data?.results ?? []
+      const count = results.length
+      const visionCount = results.filter(
+        (r: { visionExtracted?: boolean }) => r.visionExtracted,
+      ).length
+      const tail =
+        visionCount > 0
+          ? ` · ${visionCount} extraída${visionCount === 1 ? '' : 's'} por AGUILA`
+          : ''
+      setToast(`${count} factura${count === 1 ? '' : 's'} cargada${count === 1 ? '' : 's'}${tail}`)
+      trackEvent('click', 'invoice_uploaded', { count, vision_extracted: visionCount })
       // Classification telemetry — one per classified row.
-      for (const r of body?.data?.results ?? []) {
+      for (const r of results) {
         if (r.classified) trackEvent('click', 'invoice_classified', { invoice_id: r.id })
+        if (r.visionExtracted) {
+          trackEvent('click', 'document_classified', {
+            invoice_id: r.id,
+            doc_type: r.visionDocType,
+            classification_id: r.visionClassificationId,
+          })
+        }
       }
       await load()
     } catch {
@@ -506,8 +521,62 @@ function BottomBar({ canAssign, canArchive, onAssignClick, onArchiveClick, onDel
   )
 }
 
+interface VisionChipState {
+  id: string | null
+  supplier: string | null
+  invoiceNumber: string | null
+  docType: string | null
+  confirmedAt: string | null
+  loaded: boolean
+}
+
 function RightRail({ row, onClose }: { row: InvoiceBankRow; onClose: () => void }) {
   const isPdf = row.file_url?.toLowerCase().endsWith('.pdf') ?? false
+  const [chip, setChip] = useState<VisionChipState>({
+    id: null, supplier: null, invoiceNumber: null, docType: null, confirmedAt: null, loaded: false,
+  })
+  const [confirming, setConfirming] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+    setChip({ id: null, supplier: null, invoiceNumber: null, docType: null, confirmedAt: null, loaded: false })
+    fetch(`/api/vision/classifications?invoiceBankId=${row.id}`, { credentials: 'include' })
+      .then((r) => r.json())
+      .then((body) => {
+        if (cancelled) return
+        const c = body?.data?.classification ?? null
+        setChip({
+          id: c?.id ?? null,
+          supplier: c?.supplier ?? null,
+          invoiceNumber: c?.invoice_number ?? null,
+          docType: c?.doc_type ?? null,
+          confirmedAt: c?.confirmed_at ?? null,
+          loaded: true,
+        })
+      })
+      .catch(() => setChip((s) => ({ ...s, loaded: true })))
+    return () => { cancelled = true }
+  }, [row.id])
+
+  const onConfirm = useCallback(async (match: boolean) => {
+    if (!chip.id) return
+    setConfirming(true)
+    try {
+      const res = await fetch(`/api/vision/classifications/${chip.id}/confirm`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ match }),
+        credentials: 'include',
+      })
+      const body = await res.json()
+      if (body?.data?.confirmed_at) {
+        setChip((s) => ({ ...s, confirmedAt: body.data.confirmed_at }))
+      }
+    } finally {
+      setConfirming(false)
+    }
+  }, [chip.id])
+
   return (
     <aside style={{
       background: BG_CARD, backdropFilter: 'blur(20px)',
@@ -546,6 +615,84 @@ function RightRail({ row, onClose }: { row: InvoiceBankRow; onClose: () => void 
           </>
         )}
       </div>
+      {chip.loaded && chip.id && (
+        <div
+          style={{
+            background: 'rgba(192,197,206,0.06)',
+            border: `1px solid ${BORDER_HAIRLINE}`,
+            borderRadius: 12,
+            padding: 10,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 8,
+            fontSize: 12,
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span
+              style={{
+                fontSize: 11,
+                fontWeight: 600,
+                color: ACCENT_SILVER_BRIGHT,
+                letterSpacing: '0.04em',
+                textTransform: 'uppercase',
+              }}
+            >
+              Extraído por AGUILA
+            </span>
+            {chip.docType && (
+              <span style={{ fontSize: 11, color: TEXT_MUTED, fontFamily: MONO }}>
+                · {chip.docType}
+              </span>
+            )}
+          </div>
+          {chip.confirmedAt ? (
+            <span style={{ color: GREEN, fontSize: 11 }}>
+              Confirmado {fmtDate(chip.confirmedAt)}
+            </span>
+          ) : (
+            <div style={{ display: 'flex', gap: 6 }}>
+              <button
+                type="button"
+                onClick={() => onConfirm(true)}
+                disabled={confirming}
+                style={{
+                  flex: 1,
+                  minHeight: 44,
+                  padding: '8px 12px',
+                  background: 'rgba(192,197,206,0.10)',
+                  border: `1px solid ${BORDER}`,
+                  borderRadius: 8,
+                  color: ACCENT_SILVER_BRIGHT,
+                  fontSize: 12,
+                  fontWeight: 600,
+                  cursor: confirming ? 'wait' : 'pointer',
+                }}
+              >
+                Confirmar extracción
+              </button>
+              <button
+                type="button"
+                onClick={() => onConfirm(false)}
+                disabled={confirming}
+                style={{
+                  minHeight: 44,
+                  padding: '8px 12px',
+                  background: 'transparent',
+                  border: `1px solid ${BORDER_HAIRLINE}`,
+                  borderRadius: 8,
+                  color: TEXT_MUTED,
+                  fontSize: 12,
+                  cursor: confirming ? 'wait' : 'pointer',
+                }}
+                title="Marcar como revisión manual necesaria"
+              >
+                Revisar
+              </button>
+            </div>
+          )}
+        </div>
+      )}
       {row.file_url ? (
         isPdf ? (
           <iframe

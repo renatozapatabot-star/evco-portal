@@ -1,6 +1,7 @@
-// AguilaMark — inline SVG eagle mark for the AGUILA brand (April 2026)
-// Geometric stylized eagle: head crest, spread wings, tail. Path data
-// adapted from scripts/lib/email-templates.js AGUILA_SVG.
+// AguilaMark — inline SVG eagle mark for the AGUILA brand (April 2026, rev E1)
+// Stylized hawk/eagle silhouette: head facing left with pointed beak and eye
+// cutout, angular body, swept-back wings with sharp triangular feather tips,
+// and a secondary swoosh stroke beneath. Silver chrome gradient by default.
 //
 // Tones:
 //   silver        — chrome gradient (default, linearGradient fill)
@@ -8,7 +9,7 @@
 //   gold          — legacy gold (for transitional surfaces during A2)
 //   mono          — currentColor (inherits text color)
 
-import type { CSSProperties } from 'react'
+import { useId, type CSSProperties } from 'react'
 
 export type AguilaMarkTone = 'silver' | 'silver-bright' | 'gold' | 'mono'
 
@@ -20,11 +21,30 @@ export interface AguilaMarkProps {
   'aria-label'?: string
 }
 
+// Aspect ratio is 200×160 (1.25:1 — wider than tall).
+// Head occupies the left third, wings sweep from lower-left to upper-right
+// with sharp triangular feather tips; lightning/swoosh runs under the body.
 const EAGLE_PATH =
-  'M36 12 L33 18 L30 16 L32 22 L26 20 L30 26 L22 26 L28 30 L18 32 L28 34 L20 40 L30 38 L24 46 L32 42 L30 52 L36 46 L42 52 L40 42 L48 46 L42 38 L52 40 L44 34 L54 32 L44 30 L50 26 L42 26 L46 20 L40 22 L42 16 L39 18 Z'
-const CREST_PATH = 'M34 16 L36 18 L38 16'
-const BODY_PATH = 'M36 46 L36 58'
-const TAIL_PATH = 'M32 58 L36 62 L40 58'
+  // Head: crown → back of head → beak tip (left) → under-beak → neck
+  'M72 30 L58 44 L38 54 L30 68 L44 70 L58 62 ' +
+  // Shoulder down to torso
+  'L70 66 L82 78 ' +
+  // Upper wing: swept up-and-right with three triangular feather tips
+  'L110 58 L118 76 L140 46 L150 74 L174 38 L182 72 ' +
+  // Wing trailing edge coming back down
+  'L176 84 L156 88 L150 100 L134 94 L128 108 L110 96 ' +
+  // Lower wing: two feather tips sweeping down-right
+  'L118 116 L96 108 L104 130 L82 118 ' +
+  // Tail / body base back to torso
+  'L78 100 Z'
+
+// Eye cutout (evenodd)
+const EYE_PATH = 'M54 52 m-3 0 a3 3 0 1 0 6 0 a3 3 0 1 0 -6 0 Z'
+
+// Lightning / swoosh underneath the body
+const SWOOSH_PATH =
+  'M38 122 L72 118 L94 134 L124 128 L150 142 L178 134 ' +
+  'L176 140 L150 150 L122 138 L94 144 L70 128 L38 132 Z'
 
 export function AguilaMark({
   size = 48,
@@ -33,30 +53,23 @@ export function AguilaMark({
   style,
   'aria-label': ariaLabel = 'AGUILA',
 }: AguilaMarkProps) {
-  const gradId = `aguila-chrome-${tone}`
+  const reactId = useId()
+  const gradId = `aguila-chrome-${reactId.replace(/:/g, '')}`
 
   let fill: string
-  let stroke: string
-  if (tone === 'silver') {
-    fill = `url(#${gradId})`
-    stroke = `url(#${gradId})`
-  } else if (tone === 'silver-bright') {
-    fill = '#E8EAED'
-    stroke = '#E8EAED'
-  } else if (tone === 'gold') {
-    fill = '#E8EAED'
-    stroke = '#E8EAED'
-  } else {
-    fill = 'currentColor'
-    stroke = 'currentColor'
-  }
+  if (tone === 'silver') fill = `url(#${gradId})`
+  else if (tone === 'silver-bright') fill = '#E8EAED'
+  else if (tone === 'gold') fill = '#E8EAED'
+  else fill = 'currentColor'
+
+  const height = (size * 160) / 200
 
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 72 72"
+      viewBox="0 0 200 160"
       width={size}
-      height={size}
+      height={height}
       role="img"
       aria-label={ariaLabel}
       className={className}
@@ -71,10 +84,15 @@ export function AguilaMark({
           </linearGradient>
         </defs>
       )}
-      <path d={EAGLE_PATH} fill={fill} stroke={stroke} strokeWidth={0.5} strokeLinejoin="round" />
-      <path d={CREST_PATH} fill="none" stroke={stroke} strokeWidth={1.2} strokeLinecap="round" />
-      <path d={BODY_PATH} fill="none" stroke={stroke} strokeWidth={1.4} strokeLinecap="round" />
-      <path d={TAIL_PATH} fill="none" stroke={stroke} strokeWidth={1.2} strokeLinecap="round" strokeLinejoin="round" />
+      <path
+        d={`${EAGLE_PATH} ${EYE_PATH}`}
+        fill={fill}
+        fillRule="evenodd"
+        stroke={fill}
+        strokeWidth={0.5}
+        strokeLinejoin="round"
+      />
+      <path d={SWOOSH_PATH} fill={fill} opacity={0.85} />
     </svg>
   )
 }

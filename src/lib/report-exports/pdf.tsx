@@ -2,7 +2,7 @@
  * Block 3 · Dynamic Report Builder — PDF exporter.
  *
  * @react-pdf/renderer template.
- *   - Header: "Portal" wordmark in gold #eab308 mono + "Renato Zapata & Co." subtitle
+ *   - Header: "AGUILA" wordmark in silver mono + "Renato Zapata & Co." subtitle
  *   - Footer (every page): "Patente 3596 · Aduana 240 · Nuevo Laredo" + page number
  *   - Data table: zebra rows, truncate cells to ~40 chars
  *   - Landscape A4 by default; portrait when ≤4 columns
@@ -18,7 +18,7 @@ import {
 } from '@react-pdf/renderer'
 import type { ColumnSpec } from '@/types/reports'
 
-const GOLD = '#eab308'
+const ACCENT_SILVER = '#C0C5CE'
 const TEXT_MUTED = '#64748b'
 const TEXT_PRIMARY = '#111827'
 const BORDER = '#e5e7eb'
@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
   brandTitle: {
     fontSize: 18,
     fontFamily: 'Courier-Bold',
-    color: GOLD,
+    color: ACCENT_SILVER,
     letterSpacing: 1,
   },
   brandSubtitle: { fontSize: 9, color: TEXT_MUTED, marginTop: 2 },
@@ -111,7 +111,7 @@ export async function buildPdf(
       <Page size="A4" orientation={orientation} style={styles.page}>
         <View style={styles.header} fixed>
           <View style={styles.brand}>
-            <Text style={styles.brandTitle}>Portal</Text>
+            <Text style={styles.brandTitle}>AGUILA</Text>
             <Text style={styles.brandSubtitle}>Renato Zapata &amp; Co.</Text>
           </View>
           <View style={styles.meta}>

@@ -11,7 +11,7 @@ interface TopBarProps {
   onLogout?: () => void;
   portalType?: 'operator' | 'client';
   clientName?: string;
-  /** @deprecated kept for back-compat with AduanaLayout callers. */
+  /** @deprecated kept for back-compat with AguilaLayout callers. */
   clientInitials?: string;
 }
 

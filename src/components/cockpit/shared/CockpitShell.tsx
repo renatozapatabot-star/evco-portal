@@ -16,7 +16,7 @@ export async function CockpitShell({ children }: CockpitShellProps) {
 
   return (
     <div
-      className="aduana-dark"
+      className="aguila-dark"
       style={{
         minHeight: '100vh',
         background: 'radial-gradient(ellipse at 50% 20%, rgba(0,229,255,0.08) 0%, transparent 50%), linear-gradient(180deg, #030508 0%, #0D1525 100%)',

@@ -390,7 +390,7 @@ export function Anexo24View() {
           </div>
         ) : (
           <div style={{ overflowX: 'auto' }}>
-            <table className="aduana-table" style={{ minWidth: 900 }}>
+            <table className="aguila-table" style={{ minWidth: 900 }}>
               <thead>
                 <tr>
                   <th style={{ width: 45 }}>#</th>

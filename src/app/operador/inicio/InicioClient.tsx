@@ -115,7 +115,7 @@ export function InicioClient(props: Props) {
 
   return (
     <div
-      className="aduana-dark"
+      className="aguila-dark"
       style={{
         minHeight: '100vh',
         background: `linear-gradient(180deg, ${BG_GRADIENT_START}, ${BG_GRADIENT_END})`,

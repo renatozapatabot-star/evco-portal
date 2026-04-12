@@ -22,7 +22,7 @@ const WORKFLOW_STEPS = [
   { key: 'invoice', label: 'Factura' },
 ]
 
-export function AduanaAutonomo({ opsCenter, agentDecisions24h, agentAccuracy, error }: Props) {
+export function AguilaAutonomo({ opsCenter, agentDecisions24h, agentAccuracy, error }: Props) {
   const isMobile = useIsMobile()
   const [expanded, setExpanded] = useState(!isMobile)
 
@@ -30,7 +30,7 @@ export function AduanaAutonomo({ opsCenter, agentDecisions24h, agentAccuracy, er
     return (
       <div className="god-section">
         <h2 className="god-section-title">
-          <Bot size={16} /> Pipeline Autónomo
+          <Bot size={16} /> AGUILA Autónomo
         </h2>
         <div className="god-empty">Sin datos del agente</div>
       </div>
@@ -49,7 +49,7 @@ export function AduanaAutonomo({ opsCenter, agentDecisions24h, agentAccuracy, er
       >
         <h2 className="god-section-title">
           <span className="god-pulse-dot" />
-          Pipeline Autónomo
+          AGUILA Autónomo
         </h2>
         <div className="god-autonomo-summary">
           <span className="font-mono god-autonomo-stat">

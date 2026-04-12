@@ -482,7 +482,7 @@ export default function ComunicacionesPage() {
               <EmptyState icon="📨" title="Sin comunicaciones" description="Los correos y solicitudes enviados aparecerán aquí" />
             ) : (
               <div style={{ overflowX: 'auto' }}>
-              <table className="aduana-table" aria-label="Bandeja de comunicaciones">
+              <table className="aguila-table" aria-label="Bandeja de comunicaciones">
                 <thead>
                   <tr>
                     <th style={{ width: 30 }}></th>

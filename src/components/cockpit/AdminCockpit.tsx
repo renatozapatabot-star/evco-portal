@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import type { AdminData } from './shared/fetchCockpitData'
-import { AduanaAutonomoPanel } from './admin/CruzAutonomoPanel'
+import { AguilaAutonomoPanel } from './admin/AguilaAutonomoPanel'
 import { NeedsJudgmentPanel } from './admin/NeedsJudgmentPanel'
 import { SmartQueuePanel } from './admin/SmartQueuePanel'
 import { TeamPanel } from './admin/TeamPanel'
@@ -246,7 +246,7 @@ export function AdminCockpit({ data, operatorName }: Props) {
           {/* Pipeline Funnel — shows items at each workflow stage */}
           <PipelineFunnel />
 
-          <AduanaAutonomoPanel
+          <AguilaAutonomoPanel
             decisions={data.agentDecisions24h}
             decisions30d={data.agentDecisions30d}
             decisionsAllTime={data.agentDecisionsAllTime}

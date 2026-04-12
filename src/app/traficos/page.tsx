@@ -445,7 +445,7 @@ function TraficosContent() {
         {/* Desktop table */}
         {!isMobile && (
           <div style={{ maxHeight: 'calc(100vh - 280px)', overflowY: 'auto', overflowX: 'auto' }}>
-            <table className="aduana-table" aria-label="Lista de tráficos" style={{ minWidth: 1300 }}>
+            <table className="aguila-table" aria-label="Lista de tráficos" style={{ minWidth: 1300 }}>
               <thead>
                 <tr>
                   <th scope="col" style={{ width: 150, cursor: 'pointer' }} onClick={() => toggleSort('trafico')}>Clave de Tráfico<SortArrow col="trafico" /></th>

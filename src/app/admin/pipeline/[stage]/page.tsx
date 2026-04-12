@@ -99,7 +99,7 @@ export default async function PipelineStagePage({ params }: PageProps) {
 
   return (
     <div
-      className="aduana-dark"
+      className="aguila-dark"
       style={{
         minHeight: '100vh',
         background: 'linear-gradient(180deg, #05070B 0%, #0B1220 100%)',

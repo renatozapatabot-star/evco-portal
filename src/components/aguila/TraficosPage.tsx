@@ -122,8 +122,8 @@ export default function TraficosPage({
       </div>
 
       {/* Table */}
-      <div className="aduana-table-wrap">
-        <div className="aduana-table-header">
+      <div className="aguila-table-wrap">
+        <div className="aguila-table-header">
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <span style={{ fontSize: 13, color: 'var(--slate-500)' }}>
               <strong style={{ color: 'var(--navy-800)', fontWeight: 600 }}>
@@ -155,7 +155,7 @@ export default function TraficosPage({
           </div>
         </div>
 
-        <table className="aduana-table">
+        <table className="aguila-table">
           <thead>
             <tr>
               <th>Tráfico</th>

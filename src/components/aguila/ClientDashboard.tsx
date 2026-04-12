@@ -125,8 +125,8 @@ export default function ClientDashboard({
           />
         </div>
       ) : (
-        <div className="aduana-table-wrap" style={{ marginBottom: 28 }}>
-          <table className="aduana-table">
+        <div className="aguila-table-wrap" style={{ marginBottom: 28 }}>
+          <table className="aguila-table">
             <thead>
               <tr>
                 <th>Tráfico</th>

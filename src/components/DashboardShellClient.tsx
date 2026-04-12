@@ -3,7 +3,7 @@
 import { usePathname } from 'next/navigation'
 import { useEffect, useState, useRef } from 'react'
 import dynamic from 'next/dynamic'
-import AduanaLayout from './cruz/CruzLayout'
+import AguilaLayout from './aguila/AguilaLayout'
 import { ToastProvider, useToast } from './Toast'
 import { useKeyboardShortcuts } from '@/hooks/use-shortcuts'
 import { useIsMobile } from '@/hooks/use-mobile'
@@ -15,7 +15,7 @@ import { getCookieValue } from '@/lib/client-config'
 // Defer heavy components — not needed on first paint
 const CommandPaletteProvider = dynamic(() => import('./CommandPaletteProvider').then(m => ({ default: m.CommandPaletteProvider })), { ssr: false })
 const ShortcutHelp = dynamic(() => import('./shortcut-help').then(m => ({ default: m.ShortcutHelp })), { ssr: false })
-const AduanaChatBubble = dynamic(() => import('./cruz-chat-bubble').then(m => ({ default: m.AduanaChatBubble })), { ssr: false })
+const AguilaChatBubble = dynamic(() => import('./aguila-chat-bubble').then(m => ({ default: m.AguilaChatBubble })), { ssr: false })
 
 interface Props { children: React.ReactNode }
 
@@ -200,7 +200,7 @@ export default function DashboardShellClient({ children }: Props) {
         </div>
       )}
 
-      <AduanaLayout
+      <AguilaLayout
         portalType={portalType}
         clientName={clientName}
         clientInitials={clientInitials}
@@ -213,7 +213,7 @@ export default function DashboardShellClient({ children }: Props) {
         <div id="main-content" ref={scrollRef}>
           {children}
         </div>
-      </AduanaLayout>
+      </AguilaLayout>
 
       <CommandPaletteProvider />
       {!isMobile && <ShortcutHelp />}
@@ -235,7 +235,7 @@ export default function DashboardShellClient({ children }: Props) {
       )}
 
       {/* Floating ADUANA AI chat bubble — desktop only (mobile uses TopBar AI link) */}
-      {!isMobile && <AduanaChatBubble />}
+      {!isMobile && <AguilaChatBubble />}
 
       {/* Welcome overlay removed — the launchpad IS the welcome */}
 

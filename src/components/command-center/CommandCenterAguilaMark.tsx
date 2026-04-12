@@ -99,7 +99,7 @@ export function AduanaMark({ size, className, bare }: AduanaMarkProps) {
 
   return (
     <div
-      className={`aduana-brand ${className || ''}`}
+      className={`aguila-brand ${className || ''}`}
       style={{
         width: size,
         height: size,
@@ -115,5 +115,5 @@ export function AduanaMark({ size, className, bare }: AduanaMarkProps) {
   )
 }
 
-// Backward compatibility
-export { AduanaMark as CruzMark }
+// Backward compatibility alias (internal command-center mark — not the brand AguilaMark)
+export { AduanaMark as CommandCenterAguilaMark }

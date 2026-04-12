@@ -75,7 +75,7 @@ export function InicioCockpit({ data }: { data: InicioData }) {
 
   return (
     <div
-      className="aduana-dark"
+      className="aguila-dark"
       style={{
         minHeight: '100vh',
         background: `linear-gradient(180deg, ${BG_GRADIENT_START} 0%, ${BG_GRADIENT_END} 100%)`,

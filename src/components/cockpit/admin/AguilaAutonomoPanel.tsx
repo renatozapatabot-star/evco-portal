@@ -24,7 +24,7 @@ interface Props {
   actions30d: AdminData['operatorActions30d']
 }
 
-export function AduanaAutonomoPanel({ decisions, decisions30d, decisionsAllTime, workflow, workflow30d, actions, actions30d }: Props) {
+export function AguilaAutonomoPanel({ decisions, decisions30d, decisionsAllTime, workflow, workflow30d, actions, actions30d }: Props) {
   // Use 30d metrics when 24h is zero for a less empty-looking dashboard
   const showDecisions = decisions.total > 0 ? decisions : decisions30d
   const showActions = actions.total > 0 ? actions : actions30d
@@ -53,7 +53,7 @@ export function AduanaAutonomoPanel({ decisions, decisions30d, decisionsAllTime,
           fontSize: 11, fontWeight: 600, textTransform: 'uppercase',
           letterSpacing: '0.05em', color: '#6E7681',
         }}>
-          Pipeline Autónomo
+          AGUILA Autónomo
         </span>
         <p style={{ fontSize: 13, color: '#8B949E', margin: '4px 0 0' }}>
           {decisions.total > 0

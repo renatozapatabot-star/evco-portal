@@ -3,7 +3,7 @@
 import { useActionState } from 'react'
 import { signupAction } from './actions'
 import Link from 'next/link'
-import { AduanaMark } from '@/components/command-center/CruzMark'
+import { AduanaMark } from '@/components/command-center/CommandCenterAguilaMark'
 
 const ADUANAS = ['Nuevo Laredo (240)', 'Colombia (240)', 'Reynosa (260)', 'Matamoros (210)', 'Ciudad Juárez (070)', 'Tijuana (070)', 'Mexicali (071)', 'Nogales (080)', 'Manzanillo (160)', 'Lázaro Cárdenas (470)', 'Veracruz (430)', 'Monterrey', 'Guadalajara', 'Otra']
 

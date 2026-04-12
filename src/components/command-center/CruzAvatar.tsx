@@ -1,7 +1,7 @@
 'use client'
 
 import type { Urgency } from '@/lib/card-urgency'
-import { AduanaMark } from './CruzMark'
+import { AduanaMark } from './CommandCenterAguilaMark'
 
 interface AduanaAvatarProps {
   size: 48 | 36 | 32

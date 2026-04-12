@@ -275,7 +275,7 @@ export default function EntradasPage() {
         {/* Desktop table */}
         {!loading && paged.length > 0 && !isMobile && (
           <div style={{ maxHeight: 'calc(100vh - 240px)', overflowY: 'auto', overflowX: 'auto' }}>
-            <table className="aduana-table" role="table" aria-label="Lista de entradas" style={{ minWidth: 1100 }}>
+            <table className="aguila-table" role="table" aria-label="Lista de entradas" style={{ minWidth: 1100 }}>
               <thead>
                 <tr>
                   <th style={{ cursor: 'pointer', width: 110 }} onClick={() => toggleSort('fecha_llegada_mercancia')}>Fecha<SortArrow col="fecha_llegada_mercancia" /></th>

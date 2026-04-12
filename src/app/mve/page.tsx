@@ -172,7 +172,7 @@ export default function MvePage() {
       {/* Table */}
       <div className="rounded-[10px] overflow-hidden" style={{ background: 'rgba(9,9,11,0.75)', border: '1px solid rgba(0,0,0,0.06)' }}>
         <div className="overflow-x-auto">
-          <table className="aduana-table" aria-label="Tráficos pendientes MVE">
+          <table className="aguila-table" aria-label="Tráficos pendientes MVE">
             <thead>
               <tr>
                 <th style={{ width: 160 }}>Tráfico</th>
@@ -238,7 +238,7 @@ export default function MvePage() {
           </div>
           <div className="rounded-[10px] overflow-hidden" style={{ background: 'rgba(9,9,11,0.75)', border: '1px solid rgba(0,0,0,0.06)' }}>
             <div className="overflow-x-auto" style={{ maxHeight: 300 }}>
-              <table className="aduana-table" aria-label="Tráficos cruzados con MVE">
+              <table className="aguila-table" aria-label="Tráficos cruzados con MVE">
                 <thead>
                   <tr>
                     <th>Tráfico</th>

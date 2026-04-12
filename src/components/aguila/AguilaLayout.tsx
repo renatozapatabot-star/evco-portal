@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import Sidebar from './Sidebar';
 import TopBar from './TopBar';
 
-interface AduanaLayoutProps {
+interface AguilaLayoutProps {
   children: ReactNode;
   portalType: 'operator' | 'client';
   clientName?: string;
@@ -17,7 +17,7 @@ interface AduanaLayoutProps {
   hideSidebar?: boolean;
 }
 
-export default function AduanaLayout({
+export default function AguilaLayout({
   children,
   portalType,
   clientName,
@@ -26,7 +26,7 @@ export default function AduanaLayout({
   mobileOpen = false,
   onMobileToggle,
   hideSidebar = false,
-}: AduanaLayoutProps) {
+}: AguilaLayoutProps) {
   return (
     <div className="aduana-layout">
       {/* Sidebar + backdrop — only for operator portal */}
@@ -47,7 +47,7 @@ export default function AduanaLayout({
           />
         </>
       )}
-      <main className={`aduana-main aduana-dark ${hideSidebar ? 'aduana-main--full' : ''}`}>
+      <main className={`aduana-main aguila-dark ${hideSidebar ? 'aduana-main--full' : ''}`}>
         <TopBar
           showNotifications={portalType === 'operator'}
           onMenuToggle={hideSidebar ? undefined : onMobileToggle}

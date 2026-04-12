@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { AduanaMark } from '@/components/command-center/CruzMark'
+import { AduanaMark } from '@/components/command-center/CommandCenterAguilaMark'
 import { Suspense } from 'react'
 
 function OnboardingContent() {

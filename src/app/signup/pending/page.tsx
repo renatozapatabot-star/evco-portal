@@ -1,4 +1,4 @@
-import { AduanaMark } from '@/components/command-center/CruzMark'
+import { AduanaMark } from '@/components/command-center/CommandCenterAguilaMark'
 import Link from 'next/link'
 
 export default function SignupPendingPage() {

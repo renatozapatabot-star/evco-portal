@@ -244,7 +244,7 @@ export default function CatalogoPage() {
             </div>
           ) : (
           <div style={{ overflowX: 'auto' }}>
-            <table className="aduana-table" aria-label="Tráficos recientes" style={{ minWidth: 700 }}>
+            <table className="aguila-table" aria-label="Tráficos recientes" style={{ minWidth: 700 }}>
               <thead>
                 <tr>
                   <th>Descripción</th>

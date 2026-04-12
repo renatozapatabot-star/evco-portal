@@ -3,7 +3,8 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { getCookieValue } from '@/lib/client-config'
-import { AduanaMark } from '@/components/command-center/CruzMark'
+import { AduanaMark } from '@/components/command-center/CommandCenterAguilaMark'
+import { AguilaWordmark } from '@/components/brand/AguilaWordmark'
 
 export default function LoginPage() {
   return (
@@ -70,8 +71,8 @@ function LoginContent() {
       {/* Subtle grid texture */}
       <div className="login-grid" />
 
-      {/* Portal watermark */}
-      <div className="login-watermark" aria-hidden="true">Portal</div>
+      {/* AGUILA watermark */}
+      <div className="login-watermark" aria-hidden="true">AGUILA</div>
 
       {/* Floating gold accent */}
       <div className="login-glow" />
@@ -106,11 +107,11 @@ function LoginContent() {
           {/* Brand */}
           <div className="login-brand">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 8 }}>
-              <div className="login-cruz-wordmark">Portal</div>
+              <div className="login-aguila-wordmark"><AguilaWordmark tone="silver" /></div>
             </div>
             <div className="login-cruz-accent" />
             <div className="login-brand-company">RENATO ZAPATA &amp; CO.</div>
-            <div className="login-brand-subtitle">Portal de Clientes</div>
+            <div className="login-brand-subtitle">AGUILA · Inteligencia aduanal</div>
           </div>
 
           <div className="login-divider" />
@@ -306,7 +307,7 @@ function LoginContent() {
         .login-brand {
           text-align: center;
         }
-        .login-cruz-wordmark {
+        .login-aguila-wordmark {
           font-family: var(--font-sans);
           font-size: 42px;
           font-weight: 700;
@@ -483,7 +484,7 @@ function LoginContent() {
         /* ── Mobile ── */
         @media (max-width: 480px) {
           .login-card { padding: 32px 24px; border-radius: 16px; }
-          .login-cruz-wordmark { font-size: 34px; letter-spacing: 0.18em; }
+          .login-aguila-wordmark { font-size: 34px; letter-spacing: 0.18em; }
         }
         @media (max-width: 375px) {
           .login-session-actions { gap: 8px; }

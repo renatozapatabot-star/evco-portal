@@ -44,7 +44,7 @@ export default async function AprobacionesPage() {
   }))
 
   return (
-    <div className="aduana-dark" style={{
+    <div className="aguila-dark" style={{
       minHeight: '100vh',
       background: 'linear-gradient(180deg, #05070B 0%, #0B1220 100%)',
       padding: '24px 16px',

@@ -7,9 +7,9 @@ import { GOLD_GRADIENT } from '@/lib/design-system'
 import { getCompanyIdCookie } from '@/lib/client-config'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { playSound } from '@/lib/sounds'
-import ChatMessageList, { Message, D } from '@/components/cruz/ChatMessageList'
-import ChatInputBar from '@/components/cruz/ChatInputBar'
-import ChatContextPanel from '@/components/cruz/ChatContextPanel'
+import ChatMessageList, { Message, D } from '@/components/aguila/ChatMessageList'
+import ChatInputBar from '@/components/aguila/ChatInputBar'
+import ChatContextPanel from '@/components/aguila/ChatContextPanel'
 
 export default function CruzChatPage() {
   const router = useRouter()

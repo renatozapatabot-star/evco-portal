@@ -3,7 +3,7 @@
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { LogOut } from 'lucide-react';
-import { AduanaMark } from '@/components/command-center/CruzMark';
+import { AduanaMark } from '@/components/command-center/CommandCenterAguilaMark';
 import type { ReactNode } from 'react';
 import { INTERNAL_GROUPS, CLIENT_NAV, CLIENT_GROUPS } from '@/components/nav/nav-config';
 import { ActivityStrip } from '@/components/ActivityStrip';

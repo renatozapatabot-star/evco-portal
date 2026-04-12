@@ -41,7 +41,7 @@ const D = {
   aiText: '#E6EDF3',
 }
 
-export function AduanaChatBubble() {
+export function AguilaChatBubble() {
   const router = useRouter()
   const pathname = usePathname()
   const isMobile = useIsMobile()
@@ -273,7 +273,7 @@ export function AduanaChatBubble() {
             background: D.surface, flexShrink: 0,
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div className="aduana-brand" style={{ width: 32, height: 32 }}>
+              <div className="aguila-brand" style={{ width: 32, height: 32 }}>
                 <svg viewBox="0 0 24 24" width={16} height={16} fill="none" xmlns="http://www.w3.org/2000/svg">
                   <line x1="12" y1="3" x2="12" y2="21" stroke="#0B1623" strokeWidth="2" strokeLinecap="round" />
                   <line x1="3" y1="12" x2="21" y2="12" stroke="#0B1623" strokeWidth="2" strokeLinecap="round" />
@@ -283,7 +283,7 @@ export function AduanaChatBubble() {
                 </svg>
               </div>
               <div>
-                <div style={{ fontSize: 15, fontWeight: 800, color: D.text, letterSpacing: '-0.02em' }}>Asistente Portal</div>
+                <div style={{ fontSize: 15, fontWeight: 800, color: D.text, letterSpacing: '-0.02em' }}>Asistente AGUILA</div>
                 <div style={{ fontSize: 11, color: D.textMuted }}>Asistente aduanal</div>
               </div>
             </div>
@@ -484,7 +484,7 @@ export function AduanaChatBubble() {
       {!open && !isMobile && (
         <button
           onClick={handleOpen}
-          aria-label="Abrir Asistente Portal"
+          aria-label="Abrir Asistente AGUILA"
           className="cruz-thought-bubble"
           style={{
             position: 'fixed',
@@ -504,7 +504,7 @@ export function AduanaChatBubble() {
           onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,229,255,0.15)' }}
         >
           <span style={{ fontSize: 16, lineHeight: 1, color: '#00E5FF' }}>&#10022;</span>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 800, color: '#00E5FF', letterSpacing: '0.06em' }}>Asistente Portal</span>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 800, color: '#00E5FF', letterSpacing: '0.06em' }}>Asistente AGUILA</span>
           {/* Unread indicator */}
           {hasUnread && (
             <div style={{

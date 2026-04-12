@@ -226,7 +226,7 @@ export default function PedimentosPage() {
         {/* Desktop table */}
         {!loading && paged.length > 0 && !isMobile && (
           <div style={{ maxHeight: 'calc(100vh - 200px)', overflowY: 'auto', overflowX: 'auto' }}>
-            <table className="aduana-table" role="table" aria-label="Lista de pedimentos" style={{ minWidth: 700 }}>
+            <table className="aguila-table" role="table" aria-label="Lista de pedimentos" style={{ minWidth: 700 }}>
               <thead>
                 <tr>
                   <th style={{ cursor: 'pointer', width: 160 }} onClick={() => toggleSort('pedimento')}>Pedimento<SortArrow col="pedimento" /></th>

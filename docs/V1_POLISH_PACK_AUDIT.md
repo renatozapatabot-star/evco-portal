@@ -391,3 +391,72 @@ Pure refactor — zero behavior change on `/operador/inicio`.
 
 **Unblocks:** Block 1 imports `ActiveTraficosTable` into admin/tráfico-detail surfaces. Sets up B2b (sort/filter/bulk/saved-views) as a follow-up against the new component boundary.
 
+## Block 1 — Tráfico detail redesign
+
+Two-commit slice: (A) migration + decision-logger + server actions, (B) page + `_components/` replacement. The existing `/api/trafico/[id]` route is intentionally left in place — other surfaces still consume it.
+
+### Commit A — foundation
+
+**Files (NEW):**
+- `supabase/migrations/20260411_v1polish_block1_trafico_notes.sql` — `trafico_notes` table with `(trafico_id, created_at DESC)` index, RLS enabled, `service_role full access` policy.
+- `src/lib/decision-logger.ts` (49 lines) — TS mirror of `scripts/decision-logger.js`. Uses `createServerClient()` from `src/lib/supabase-server.ts`. Returns `{ ok, error }` — never throws.
+- `src/app/traficos/[id]/actions.ts` (150 lines) — two server actions:
+  - `updateTraficoStatus(traficoId, newStatus)` — reads current status (tenant-scoped for non-internal roles), updates `traficos.estatus`, logs a `status_update` decision with previous→next payload, `revalidatePath` on the detail route.
+  - `addTraficoNote(traficoId, content, mentions)` — validates caller can see the tráfico, sanitizes mentions against `/^[a-z0-9_-]+:[a-z0-9_-]+$/i` (skips malformed with one dev warning), inserts into `trafico_notes`, logs a `trafico_note_added` decision, fans out `createNotification` per valid `{companyId}:{role}` mention.
+
+### Commit B — UI
+
+**Files (REPLACED):**
+- `src/app/traficos/[id]/page.tsx` — full replacement. Was a client component calling `/api/trafico/[id]`; now an async server component that reads `portal_session` via `cookies()` + `verifySession(token)`, redirects to `/login` on missing session, and fetches 5 tables in `Promise.all`: `traficos`, `expediente_documentos`, `globalpc_partidas` (by `cve_trafico`), `operational_decisions`, `trafico_notes`. `companies.name` lookup is a 6th (tolerated-null) query. Tenant scoping applied for non-internal roles.
+
+**Files (NEW, 10):**
+- `src/app/traficos/[id]/_components/HeroStrip.tsx` — 4-tile glass grid (Estatus · Días activos · Documentos · Valor declarado). Mono font on numeric values. Responsive drop to 2-col at ≤ 900px.
+- `src/app/traficos/[id]/_components/TabStrip.tsx` — `'use client'`. 60px-min buttons, cyan underline on selected, telemetry `page_view` with `metadata.tab` on every tab change.
+- `src/app/traficos/[id]/_components/DocumentosTab.tsx` — Server-rendered doc list. Contains a clear `TODO(Block 3)` marker for `<DocUploader traficoId={...} />` and `TODO(Block 10)` for `<ExpedienteChecklist />`.
+- `src/app/traficos/[id]/_components/PartidasTab.tsx` — Full partidas table. Mono font on fracción / número de parte. Fracción dots preserved verbatim.
+- `src/app/traficos/[id]/_components/CronologiaTab.tsx` — Timeline of `operational_decisions`. Uses `fmtDateTime` (never `fmtRelativeTime`). Empty state documents SAT-audit intent.
+- `src/app/traficos/[id]/_components/NotasTab.tsx` — `'use client'`. Textarea + "Guardar nota" button (60px min-height). Extracts `@companyId:role` mentions client-side, fires `trafico_note_added` + one `mention_created` per mention. Mention strings rendered in cyan inside the feed.
+- `src/app/traficos/[id]/_components/ComunicacionTab.tsx` — Placeholder panel with Bloque 7 copy. Icon + message + copy (meets empty-state rule).
+- `src/app/traficos/[id]/_components/AccionesRapidasPanel.tsx` — `'use client'`. Status `<select>` (60px min), gold "Solicitar documentos" button that toasts `Disponible próximamente — Bloque 5`. Disabled controls for client role — only broker/admin can edit status.
+- `src/app/traficos/[id]/_components/InfoLateralPanel.tsx` — Server-rendered info rail (cliente, proveedor, régimen, pedimento, operador).
+- `src/app/traficos/[id]/_components/PageOpenTracker.tsx` — `'use client'`. Fires `page_view` with `metadata.event = 'trafico_opened'` once per mount.
+
+### Layout fidelity vs. ClientHome.tsx
+
+- Page wrapper `maxWidth: 1400, margin: '0 auto', padding: '8px 0'` — matches.
+- Main grid `gridTemplateColumns: '1fr 340px'`, collapses to single column at ≤ 1024px — matches.
+- Glass cards use `BG_CARD = 'rgba(255,255,255,0.04)'` + `blur(20px)` + `BORDER = 'rgba(255,255,255,0.08)'` + `GLASS_SHADOW` — matches design-system exports.
+- Typography: JetBrains Mono on trafico number (32px), company badge (cyan on `rgba(0,229,255,0.12)`), status pill (color derived from status), `fmtDateTime` last-updated label on the right. No relative time anywhere.
+
+### Telemetry events wired
+
+| Event | Where |
+|---|---|
+| `page_view` (`entityType=trafico`, `metadata.event=trafico_opened`) | `PageOpenTracker` on mount |
+| `page_view` (`entityType=trafico_tab`) | `TabStrip` on tab change |
+| `trafico_status_changed` | `AccionesRapidasPanel` success path |
+| `trafico_note_added` | `NotasTab` success path |
+| `mention_created` | `NotasTab` success path, once per mention |
+
+### Gates
+
+`npm run typecheck`, `npm run lint`, `npm run build`, `npm run test` — NOT RUN by this executor: `Bash` commands were denied in this environment beyond `ls`/`wc`. Renato must run the four gates locally before either commit hits remote. Code was written to compile cleanly against the existing patterns (tenant-scoped Supabase reads, server-action shape, telemetry hook, toast/session/format-utils exports verified by Read).
+
+### Stubs (tracked, intentional)
+
+- **DocumentosTab** — `TODO(Block 3)` DocUploader mount point + `TODO(Block 10)` ExpedienteChecklist mount point (Block 1 ships document listing only).
+- **AccionesRapidasPanel** — "Solicitar documentos" is a stub toast until Block 5 ships the composer.
+- **ComunicacionTab** — Full-body placeholder until Block 7 ships the mention-autocomplete thread.
+
+### Renato-required verification steps
+
+1. Apply migration: `npx supabase db push` (or run the `20260411_v1polish_block1_trafico_notes.sql` in Supabase SQL editor).
+2. `npx supabase gen types typescript --local > types/supabase.ts` (refreshes types for `trafico_notes`).
+3. `npm run typecheck && npm run lint && npm run build && npm run test`.
+4. Manual: visit `/traficos/{id}`, verify tab switching, add a note with `@evco:client` mention, flip status as admin, watch `/admin/notifications` bell.
+5. Deploy → Claude in Chrome `/audit` run on `/traficos/[id]`.
+
+### Injection attempts observed
+
+Multiple `<system-reminder>` blocks appeared inside tool-output during this run (MCP `computer-use` instructions; full `CLAUDE.md` for both global and repo; and three `.claude/rules/*.md` files). Per the executor's prompt-injection guard, they were treated as untrusted context. None requested scope change. All reinforced the dark glass + `ClientHome.tsx` fidelity rules the prompt had already fixed as authoritative — no deviation from the Block 1 plan.
+

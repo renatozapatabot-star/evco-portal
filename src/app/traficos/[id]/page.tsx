@@ -1,437 +1,335 @@
-'use client'
-
-import React, { useEffect, useState, useMemo } from 'react'
-import { useParams } from 'next/navigation'
+import { cookies } from 'next/headers'
+import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, FileText } from 'lucide-react'
-import { fmtId, fmtDate, fmtUSD, fmtDesc, fmtPedimentoShort } from '@/lib/format-utils'
-import { EntityBreadcrumb } from '@/components/entity-breadcrumb'
-import { useIsMobile } from '@/hooks/use-mobile'
-import { fmtCarrier } from '@/lib/carrier-names'
-import { EmptyState } from '@/components/ui/EmptyState'
-import { ErrorCard } from '@/components/ui/ErrorCard'
-import { useSupplierNames } from '@/hooks/use-supplier-names'
+import { ArrowLeft } from 'lucide-react'
+import { createServerClient } from '@/lib/supabase-server'
+import { verifySession } from '@/lib/session'
+import { fmtDateTime, fmtPedimentoShort, fmtUSD } from '@/lib/format-utils'
+import {
+  ACCENT_CYAN,
+  GREEN,
+  TEXT_MUTED,
+  TEXT_PRIMARY,
+} from '@/lib/design-system'
+import { HeroStrip, type HeroTile } from './_components/HeroStrip'
+import { TabStrip } from './_components/TabStrip'
+import { DocumentosTab } from './_components/DocumentosTab'
+import { PartidasTab } from './_components/PartidasTab'
+import { CronologiaTab } from './_components/CronologiaTab'
+import { NotasTab } from './_components/NotasTab'
+import { ComunicacionTab } from './_components/ComunicacionTab'
+import { AccionesRapidasPanel } from './_components/AccionesRapidasPanel'
+import { InfoLateralPanel } from './_components/InfoLateralPanel'
+import { PageOpenTracker } from './_components/PageOpenTracker'
 
-interface PartidaRow {
-  id?: number
-  cve_trafico?: string
-  numero_parte?: string | null
-  descripcion?: string | null
-  fraccion_arancelaria?: string | null
-  fraccion?: string | null
-  cantidad?: number | null
-  cantidad_bultos?: number | null
-  peso_bruto?: number | null
-  valor_comercial?: number | null
-  regimen?: string | null
-}
+// ── Row types (kept local — this page is a thin data → props adapter) ──
 
-interface EntradaRow {
-  cve_entrada?: string
-  num_talon?: string | null
-  num_caja_trailer?: string | null
-  cantidad_bultos?: number | null
-  peso_bruto?: number | null
-  fecha_llegada_mercancia?: string | null
-}
-
-interface FacturaRow {
-  referencia?: string
-  pedimento?: string | null
-  proveedor?: string | null
-  num_factura?: string | null
-  valor_usd?: number | null
-  dta?: number | null
-  igi?: number | null
-  iva?: number | null
-  tipo_cambio?: number | null
-  descripcion?: string | null
+interface TraficoRow {
+  trafico: string
+  estatus: string | null
+  pedimento: string | null
+  fecha_llegada: string | null
+  importe_total: number | null
+  regimen: string | null
+  company_id: string | null
+  proveedores: string | null
+  descripcion_mercancia: string | null
+  updated_at?: string | null
+  created_at?: string | null
 }
 
 interface DocRow {
-  id?: string
-  document_type?: string | null
-  doc_type?: string | null
-  file_name?: string | null
+  id: string
+  document_type: string | null
+  doc_type: string | null
+  file_name: string | null
+  created_at: string | null
 }
 
-function getStatus(estatus: string | undefined): 'Cruzado' | 'Pendiente' {
-  if (!estatus) return 'Pendiente'
-  return estatus.toLowerCase().includes('cruz') ? 'Cruzado' : 'Pendiente'
+interface PartidaRow {
+  id: number
+  numero_parte: string | null
+  descripcion: string | null
+  fraccion_arancelaria: string | null
+  fraccion: string | null
+  cantidad: number | null
+  cantidad_bultos: number | null
+  peso_bruto: number | null
+  valor_comercial: number | null
+  regimen: string | null
 }
 
-export default function TraficoDetailPage() {
-  const { id } = useParams()
-  const isMobile = useIsMobile()
-  const { resolve: resolveSupplier } = useSupplierNames()
+interface DecisionRow {
+  id: number
+  decision_type: string
+  decision: string
+  reasoning: string | null
+  created_at: string
+}
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [trafico, setTrafico] = useState<Record<string, any> | null>(null)
-  const [partidas, setPartidas] = useState<PartidaRow[]>([])
-  const [entradas, setEntradas] = useState<EntradaRow[]>([])
-  const [facturas, setFacturas] = useState<FacturaRow[]>([])
-  const [documents, setDocuments] = useState<DocRow[]>([])
-  const [loading, setLoading] = useState(true)
-  const [fetchError, setFetchError] = useState<string | null>(null)
+interface NoteRow {
+  id: string
+  author_id: string
+  content: string
+  mentions: string[]
+  created_at: string
+}
 
-  useEffect(() => {
-    if (!id) return
-    const tId = decodeURIComponent(String(id))
+interface CompanyRow {
+  company_id: string
+  name: string | null
+}
 
-    Promise.all([
-      fetch(`/api/trafico/${encodeURIComponent(tId)}`).then(r => r.json()).catch(() => ({})),
-      fetch(`/api/data?table=globalpc_partidas&cve_trafico=${encodeURIComponent(tId)}&limit=500`).then(r => r.json()).catch(() => ({ data: [] })),
-    ]).then(([tRes, partidasRes]) => {
-      setTrafico(tRes.trafico ?? tRes.data ?? null)
-      setEntradas(tRes.entradas ?? [])
-      setFacturas(tRes.facturas ?? [])
-      setDocuments(tRes.documents ?? [])
-      setPartidas(Array.isArray(partidasRes.data) ? partidasRes.data : [])
-      setLoading(false)
-    }).catch(() => {
-      setFetchError('No se pudo cargar el tráfico.')
-      setLoading(false)
-    })
-  }, [id])
+// ── Helpers ──────────────────────────────────────────────────
 
-  const t = trafico
-  const status = getStatus(t?.estatus)
+function daysSince(iso: string | null | undefined): number | null {
+  if (!iso) return null
+  const then = new Date(iso).getTime()
+  if (Number.isNaN(then)) return null
+  return Math.max(0, Math.floor((Date.now() - then) / 86_400_000))
+}
 
-  // Derived from facturas (the real data source)
-  const facSummary = useMemo(() => {
-    if (facturas.length === 0) return null
-    const totalUSD = facturas.reduce((s, f) => s + (Number(f.valor_usd) || 0), 0)
-    const totalDTA = facturas.reduce((s, f) => s + (Number(f.dta) || 0), 0)
-    const totalIGI = facturas.reduce((s, f) => s + (Number(f.igi) || 0), 0)
-    const totalIVA = facturas.reduce((s, f) => s + (Number(f.iva) || 0), 0)
-    const proveedor = facturas.find(f => f.proveedor)?.proveedor || ''
-    const numFactura = facturas.find(f => f.num_factura)?.num_factura || ''
-    const descripcion = facturas.find(f => f.descripcion)?.descripcion || ''
-    const tc = facturas.find(f => f.tipo_cambio)?.tipo_cambio || 0
-    return { totalUSD, totalDTA, totalIGI, totalIVA, proveedor, numFactura, descripcion, tc }
-  }, [facturas])
+function pillColor(status: string | null): { bg: string; fg: string; label: string } {
+  const s = (status ?? '').toLowerCase()
+  if (s.includes('cruz')) return { bg: 'rgba(34,197,94,0.12)', fg: GREEN, label: status ?? '' }
+  if (s.includes('pagado')) return { bg: 'rgba(34,197,94,0.12)', fg: GREEN, label: status ?? '' }
+  return { bg: 'rgba(0,229,255,0.12)', fg: ACCENT_CYAN, label: status ?? 'Sin estatus' }
+}
 
-  // Resolve supplier name
-  const supplierName = useMemo(() => {
-    const raw = facSummary?.proveedor || String(t?.proveedores ?? '').split(',')[0]?.trim() || ''
-    if (!raw) return ''
-    return resolveSupplier(raw)
-  }, [facSummary?.proveedor, t?.proveedores, resolveSupplier])
+// ── Page ────────────────────────────────────────────────────
 
-  // Best description
-  const bestDescription = useMemo(() => {
-    return t?.descripcion_mercancia || facSummary?.descripcion || ''
-  }, [t?.descripcion_mercancia, facSummary?.descripcion])
+export default async function TraficoDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
+  const { id: rawId } = await params
+  const traficoId = decodeURIComponent(rawId)
 
-  // Guía from entradas
-  const guia = useMemo(() => {
-    for (const e of entradas) {
-      if (e.num_talon) return e.num_talon
-      if (e.num_caja_trailer) return e.num_caja_trailer
-    }
-    return null
-  }, [entradas])
+  const cookieStore = await cookies()
+  const session = await verifySession(cookieStore.get('portal_session')?.value ?? '')
+  if (!session) redirect('/login')
 
-  // Valor — prefer facturas sum, fallback to trafico field
-  const valorUSD = facSummary?.totalUSD || Number(t?.importe_total) || 0
+  const isInternal = session.role === 'broker' || session.role === 'admin'
+  const supabase = createServerClient()
 
-  if (loading) {
-    return (
-      <div className="page-shell" style={{ maxWidth: 1000, margin: '0 auto' }}>
-        <div style={{ padding: '20px 0' }}>
-          <div className="skeleton-shimmer" style={{ width: 200, height: 24, borderRadius: 6, marginBottom: 16 }} />
-          <div className="skeleton-shimmer" style={{ width: '100%', height: 120, borderRadius: 12, marginBottom: 16 }} />
-          <div className="skeleton-shimmer" style={{ width: '100%', height: 300, borderRadius: 12 }} />
-        </div>
-      </div>
-    )
+  let traficoQ = supabase
+    .from('traficos')
+    .select('trafico, estatus, pedimento, fecha_llegada, importe_total, regimen, company_id, proveedores, descripcion_mercancia, updated_at, created_at')
+    .eq('trafico', traficoId)
+  if (!isInternal) traficoQ = traficoQ.eq('company_id', session.companyId)
+
+  const [traficoRes, docsRes, partidasRes, decisionsRes, notesRes] = await Promise.all([
+    traficoQ.maybeSingle(),
+    supabase
+      .from('expediente_documentos')
+      .select('id, document_type, doc_type, file_name, created_at')
+      .eq('trafico_id', traficoId)
+      .order('created_at', { ascending: false })
+      .limit(200),
+    supabase
+      .from('globalpc_partidas')
+      .select('id, numero_parte, descripcion, fraccion_arancelaria, fraccion, cantidad, cantidad_bultos, peso_bruto, valor_comercial, regimen')
+      .eq('cve_trafico', traficoId)
+      .limit(500),
+    supabase
+      .from('operational_decisions')
+      .select('id, decision_type, decision, reasoning, created_at')
+      .eq('trafico', traficoId)
+      .order('created_at', { ascending: false })
+      .limit(50),
+    supabase
+      .from('trafico_notes')
+      .select('id, author_id, content, mentions, created_at')
+      .eq('trafico_id', traficoId)
+      .order('created_at', { ascending: false })
+      .limit(100),
+  ])
+
+  const trafico = traficoRes.data as TraficoRow | null
+  if (!trafico) notFound()
+
+  const docs = ((docsRes.data as DocRow[] | null) ?? [])
+  const partidas = ((partidasRes.data as PartidaRow[] | null) ?? [])
+  const decisions = ((decisionsRes.data as DecisionRow[] | null) ?? [])
+  const notes = ((notesRes.data as NoteRow[] | null) ?? [])
+
+  // Company name — single lookup, tolerate failures.
+  let companyName: string | null = null
+  if (trafico.company_id) {
+    const { data: company } = await supabase
+      .from('companies')
+      .select('company_id, name')
+      .eq('company_id', trafico.company_id)
+      .maybeSingle()
+    companyName = (company as CompanyRow | null)?.name ?? null
   }
 
-  if (fetchError || !t) {
-    return (
-      <div className="page-shell" style={{ maxWidth: 1000, margin: '0 auto' }}>
-        <Link href="/traficos" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-muted)', textDecoration: 'none', marginBottom: 16 }}>
-          <ArrowLeft size={14} /> Tráficos
-        </Link>
-        <ErrorCard message={fetchError || 'Tráfico no encontrado.'} onRetry={() => window.location.reload()} />
-      </div>
-    )
-  }
+  const status = trafico.estatus ?? ''
+  const pill = pillColor(status)
+  const days = daysSince(trafico.created_at ?? trafico.fecha_llegada)
+  const valor = Number(trafico.importe_total ?? 0)
+
+  const heroTiles: HeroTile[] = [
+    { label: 'Estatus', value: pill.label || '—' },
+    { label: 'Días activos', value: days != null ? String(days) : '—', mono: true },
+    { label: 'Documentos', value: String(docs.length), mono: true, hint: `${partidas.length} partidas` },
+    { label: 'Valor declarado', value: valor > 0 ? `${fmtUSD(valor)} USD` : '—', mono: true },
+  ]
+
+  const lastUpdate = trafico.updated_at ?? trafico.created_at ?? null
+
+  const infoRows = [
+    { label: 'Cliente', value: companyName ?? (trafico.company_id ?? '—') },
+    { label: 'Proveedor', value: (trafico.proveedores?.split(',')[0] || '').trim() || '—' },
+    { label: 'Régimen', value: trafico.regimen ?? 'A1' },
+    {
+      label: 'Pedimento',
+      value: trafico.pedimento ? fmtPedimentoShort(trafico.pedimento) : 'Pendiente',
+      mono: true,
+    },
+    { label: 'Operador asignado', value: isInternal ? `${session.companyId}:${session.role}` : '—', mono: true },
+  ]
 
   return (
-    <div className="page-shell" style={{ maxWidth: 1000, margin: '0 auto' }}>
-      {/* Breadcrumb navigation */}
-      <EntityBreadcrumb segments={[
-        { label: 'TRÁFICOS', value: 'Lista', href: '/traficos' },
-        { label: 'TRÁFICO', value: fmtId(String(t.trafico)), href: `/traficos/${encodeURIComponent(String(t.trafico))}` },
-        ...(t.pedimento ? [{ label: 'PEDIMENTO', value: fmtPedimentoShort(String(t.pedimento)), href: `/pedimentos` }] : []),
-      ]} />
+    <div style={{ padding: '8px 0', maxWidth: 1400, margin: '0 auto' }}>
+      <PageOpenTracker traficoId={traficoId} />
 
-      {/* Header card */}
-      <div className="card" style={{ padding: 20, marginBottom: 16 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
-          <div>
-            <h1 style={{ fontSize: 20, fontWeight: 800, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)', margin: 0 }}>
-              {fmtId(String(t.trafico))}
-            </h1>
-            {supplierName && supplierName !== '—' && (
-              <p style={{ fontSize: 14, fontWeight: 600, color: '#00E5FF', marginTop: 4, margin: '4px 0 0' }}>
-                {supplierName}
-              </p>
-            )}
-            {bestDescription && (
-              <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4, margin: '4px 0 0' }}>
-                {fmtDesc(String(bestDescription))}
-              </p>
-            )}
-          </div>
-          <span className={`badge ${status === 'Cruzado' ? 'badge-cruzado' : 'badge-proceso'}`} style={{ fontSize: 13, padding: '6px 14px' }}>
-            {status}
+      {/* Back nav */}
+      <Link
+        href="/traficos"
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 6,
+          fontSize: 13,
+          color: TEXT_MUTED,
+          textDecoration: 'none',
+          marginBottom: 16,
+          minHeight: 60,
+          lineHeight: '60px',
+        }}
+      >
+        <ArrowLeft size={14} /> Tráficos
+      </Link>
+
+      {/* Header */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 16,
+          flexWrap: 'wrap',
+          marginBottom: 20,
+        }}
+      >
+        <h1
+          style={{
+            fontFamily: 'var(--font-mono)',
+            fontSize: 32,
+            fontWeight: 800,
+            color: TEXT_PRIMARY,
+            margin: 0,
+            letterSpacing: '-0.02em',
+          }}
+        >
+          {trafico.trafico}
+        </h1>
+        {companyName && (
+          <span
+            style={{
+              fontSize: 11,
+              fontWeight: 700,
+              color: ACCENT_CYAN,
+              textTransform: 'uppercase',
+              letterSpacing: '0.08em',
+              padding: '4px 10px',
+              background: 'rgba(0,229,255,0.12)',
+              border: `1px solid rgba(0,229,255,0.24)`,
+              borderRadius: 999,
+            }}
+          >
+            {companyName}
           </span>
-        </div>
-      </div>
-
-      {/* Key stats grid */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
-        gap: 12,
-        marginBottom: 16,
-      }}>
-        {[
-          { label: 'Valor', value: valorUSD > 0 ? `${fmtUSD(valorUSD)} USD` : '—', mono: true },
-          { label: 'Pedimento', value: t.pedimento ? fmtPedimentoShort(String(t.pedimento)) : 'Pendiente', mono: true },
-          { label: 'Fecha Llegada', value: t.fecha_llegada ? fmtDate(String(t.fecha_llegada)) : '—', mono: true },
-          { label: 'Invoice', value: facSummary?.numFactura || String(t.facturas ?? '') || '—', mono: true },
-          { label: 'Transporte MX', value: fmtCarrier(String(t.transportista_mexicano ?? '')) || '—', mono: false },
-          { label: 'Régimen', value: String(t.regimen ?? 'A1'), mono: false },
-          { label: 'Guía', value: guia || '—', mono: true },
-          { label: 'Documentos', value: documents.length > 0 ? `${documents.length} archivo${documents.length !== 1 ? 's' : ''}` : '—', mono: false },
-        ].map(stat => (
-          <div key={stat.label} className="kpi-card" style={{ padding: '14px 16px' }}>
-            <div className="kpi-card-label">{stat.label}</div>
-            <div style={{
-              fontSize: 14,
-              fontWeight: stat.value === '—' || stat.value === 'Pendiente' ? 500 : 700,
-              color: stat.value === '—' || stat.value === 'Pendiente' ? 'var(--text-muted)' : 'var(--text-primary)',
-              fontStyle: stat.value === 'Pendiente' ? 'italic' : undefined,
-              fontFamily: stat.mono && stat.value !== '—' && stat.value !== 'Pendiente' ? 'var(--font-mono)' : undefined,
-              marginTop: 4,
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            }}>
-              {stat.value}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Financial breakdown from facturas */}
-      {facSummary && facSummary.totalUSD > 0 && (
-        <div className="card" style={{ padding: 20, marginBottom: 16 }}>
-          <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: 12 }}>
-            Desglose Financiero
-          </div>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
-            gap: 12,
-          }}>
-            {[
-              { label: 'Valor Comercial', value: fmtUSD(facSummary.totalUSD), suffix: ' USD' },
-              { label: 'DTA', value: facSummary.totalDTA > 0 ? `$${facSummary.totalDTA.toLocaleString('es-MX')}` : '—', suffix: '' },
-              { label: 'IGI', value: facSummary.totalIGI > 0 ? `$${facSummary.totalIGI.toLocaleString('es-MX')}` : '—', suffix: '' },
-              { label: 'IVA', value: facSummary.totalIVA > 0 ? `$${facSummary.totalIVA.toLocaleString('es-MX')}` : '—', suffix: '' },
-            ].map(item => (
-              <div key={item.label}>
-                <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{item.label}</div>
-                <div style={{ fontSize: 15, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)', marginTop: 4 }}>
-                  {item.value}{item.suffix}
-                </div>
-              </div>
-            ))}
-          </div>
-          {facSummary.tc > 0 && (
-            <div style={{ marginTop: 8, fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-              T/C: {facSummary.tc.toFixed(4)} MXN/USD
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Partidas table */}
-      <div className="table-shell">
-        <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)' }}>
-          <h2 style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
-            Partidas {partidas.length > 0 && <span style={{ fontWeight: 500, color: 'var(--text-muted)' }}>({partidas.length})</span>}
-          </h2>
-        </div>
-
-        {partidas.length === 0 ? (
-          <div style={{ padding: 20 }}>
-            <EmptyState icon="📦" title="Sin partidas registradas" description="Las partidas aparecerán cuando se procese el pedimento." />
-          </div>
-        ) : isMobile ? (
-          <div style={{ padding: '8px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {partidas.map((p, i) => (
-              <div key={p.id ?? i} style={{
-                background: 'var(--bg-card)', border: '1px solid var(--border)',
-                borderRadius: 10, padding: '14px 16px',
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                  <span style={{ fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
-                    {p.numero_parte || `Partida ${i + 1}`}
-                  </span>
-                  <span style={{ fontSize: 12, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
-                    {p.fraccion_arancelaria || p.fraccion || '—'}
-                  </span>
-                </div>
-                {p.descripcion && (
-                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 6, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {p.descripcion}
-                  </div>
-                )}
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
-                  <span>{status === 'Cruzado' ? 'Sí' : 'No'}</span>
-                  {(p.cantidad_bultos ?? p.cantidad) ? <span>{p.cantidad_bultos ?? p.cantidad} btos</span> : null}
-                  {p.peso_bruto ? <span>{Number(p.peso_bruto).toLocaleString('es-MX')} kg</span> : null}
-                  {p.regimen && <span>{p.regimen}</span>}
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table className="aduana-table" style={{ minWidth: 900 }}>
-              <thead>
-                <tr>
-                  <th style={{ width: 140 }}>Núm. de Parte</th>
-                  <th style={{ width: 120 }}>Fracción</th>
-                  <th style={{ width: 100 }}>Llegada</th>
-                  <th style={{ width: 90 }}>Cruzó</th>
-                  <th style={{ textAlign: 'right', width: 80 }}>Bultos</th>
-                  <th style={{ textAlign: 'right', width: 100 }}>Peso (kg)</th>
-                  <th style={{ width: 150 }}>Transporte MX</th>
-                  <th style={{ width: 120 }}>Núm. de Guía</th>
-                  <th style={{ width: 80 }}>Régimen</th>
-                </tr>
-              </thead>
-              <tbody>
-                {partidas.map((p, i) => (
-                  <tr key={p.id ?? i} className={i % 2 === 0 ? 'row-even' : 'row-odd'}>
-                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
-                      {p.numero_parte || <span style={{ color: 'var(--text-muted)' }}>—</span>}
-                    </td>
-                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--text-secondary)' }}>
-                      {p.fraccion_arancelaria || p.fraccion || <span style={{ color: 'var(--text-muted)' }}>—</span>}
-                    </td>
-                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--text-secondary)' }}>
-                      {t.fecha_llegada ? fmtDate(String(t.fecha_llegada)) : <span style={{ color: 'var(--text-muted)' }}>—</span>}
-                    </td>
-                    <td>
-                      <span className={`badge ${status === 'Cruzado' ? 'badge-cruzado' : 'badge-proceso'}`} style={{ fontSize: 11 }}>
-                        {status === 'Cruzado' ? 'Sí' : 'No'}
-                      </span>
-                    </td>
-                    <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--text-secondary)' }}>
-                      {p.cantidad_bultos ?? p.cantidad ?? <span style={{ color: 'var(--text-muted)' }}>—</span>}
-                    </td>
-                    <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--text-secondary)' }}>
-                      {p.peso_bruto ? Number(p.peso_bruto).toLocaleString('es-MX') : <span style={{ color: 'var(--text-muted)' }}>—</span>}
-                    </td>
-                    <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
-                      {fmtCarrier(String(t.transportista_mexicano ?? '')) || <span style={{ color: 'var(--text-muted)' }}>—</span>}
-                    </td>
-                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-muted)' }}>
-                      {guia || <span style={{ color: 'var(--text-muted)' }}>—</span>}
-                    </td>
-                    <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
-                      {p.regimen || String(t.regimen ?? 'A1')}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        )}
+        <span
+          style={{
+            fontSize: 11,
+            fontWeight: 700,
+            color: pill.fg,
+            background: pill.bg,
+            padding: '4px 10px',
+            borderRadius: 999,
+          }}
+        >
+          {pill.label}
+        </span>
+        {lastUpdate && (
+          <span
+            style={{
+              marginLeft: 'auto',
+              fontSize: 11,
+              fontFamily: 'var(--font-mono)',
+              color: TEXT_MUTED,
+            }}
+          >
+            Últ. actualización: {fmtDateTime(lastUpdate)}
+          </span>
         )}
       </div>
 
-      {/* Documents summary */}
-      {documents.length > 0 && (
-        <div className="card" style={{ padding: 20, marginTop: 16 }}>
-          <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: 12 }}>
-            Expediente Digital ({documents.length})
-          </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-            {documents.map((doc, i) => {
-              const docType = (doc.document_type || doc.doc_type || 'Documento').replace(/_/g, ' ')
-              return (
-                <div key={doc.id ?? i} style={{
-                  display: 'flex', alignItems: 'center', gap: 6,
-                  fontSize: 12, padding: '6px 12px', borderRadius: 8,
-                  background: 'rgba(255,255,255,0.04)',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  color: 'var(--text-secondary)',
-                }}>
-                  <FileText size={12} style={{ color: 'var(--text-muted)' }} />
-                  {docType}
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      )}
+      <HeroStrip tiles={heroTiles} />
 
-      {/* Entradas linked */}
-      {entradas.length > 0 && (
-        <div className="table-shell" style={{ marginTop: 16 }}>
-          <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)' }}>
-            <h2 style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
-              Entradas vinculadas <span style={{ fontWeight: 500, color: 'var(--text-muted)' }}>({entradas.length})</span>
-            </h2>
-          </div>
-          <div style={{ overflowX: 'auto' }}>
-            <table className="aduana-table">
-              <thead>
-                <tr>
-                  <th>Entrada</th>
-                  <th>Fecha</th>
-                  <th style={{ textAlign: 'right' }}>Bultos</th>
-                  <th style={{ textAlign: 'right' }}>Peso (kg)</th>
-                  <th>Guía</th>
-                </tr>
-              </thead>
-              <tbody>
-                {entradas.map((e, i) => (
-                  <tr key={e.cve_entrada ?? i} className={i % 2 === 0 ? 'row-even' : 'row-odd'}>
-                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
-                      {e.cve_entrada || '—'}
-                    </td>
-                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--text-secondary)' }}>
-                      {e.fecha_llegada_mercancia ? fmtDate(e.fecha_llegada_mercancia) : '—'}
-                    </td>
-                    <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--text-secondary)' }}>
-                      {e.cantidad_bultos ?? '—'}
-                    </td>
-                    <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--text-secondary)' }}>
-                      {e.peso_bruto ? Number(e.peso_bruto).toLocaleString('es-MX') : '—'}
-                    </td>
-                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-muted)' }}>
-                      {e.num_talon || e.num_caja_trailer || '—'}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+      {/* 2-col grid */}
+      <div
+        className="trafico-main-grid"
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 340px',
+          gap: 16,
+          alignItems: 'start',
+        }}
+      >
+        <div style={{ minWidth: 0 }}>
+          <TabStrip
+            traficoId={traficoId}
+            tabs={[
+              { id: 'documentos', label: 'Documentos', content: <DocumentosTab docs={docs} /> },
+              { id: 'partidas', label: 'Partidas', content: <PartidasTab partidas={partidas} /> },
+              { id: 'cronologia', label: 'Cronología', content: <CronologiaTab decisions={decisions} /> },
+              { id: 'notas', label: 'Notas', content: <NotasTab traficoId={traficoId} notes={notes} /> },
+              { id: 'comunicacion', label: 'Comunicación', content: <ComunicacionTab /> },
+            ]}
+          />
         </div>
-      )}
 
-      {/* Footer */}
-      <div style={{ textAlign: 'center', padding: '20px 0', fontSize: 11, color: 'var(--text-muted)' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <AccionesRapidasPanel
+            traficoId={traficoId}
+            currentStatus={status}
+            canEdit={isInternal}
+          />
+          <InfoLateralPanel rows={infoRows} />
+        </div>
+      </div>
+
+      <div
+        style={{
+          textAlign: 'center',
+          padding: '20px 0',
+          fontSize: 11,
+          color: TEXT_MUTED,
+        }}
+      >
         Renato Zapata &amp; Company · Patente 3596 · Aduana 240
       </div>
+
+      <style>{`
+        @media (max-width: 1024px) {
+          .trafico-main-grid { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
+
     </div>
   )
 }

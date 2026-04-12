@@ -1,7 +1,7 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, Suspense } from 'react'
 import dynamic from 'next/dynamic'
 import AguilaLayout from './aguila/AguilaLayout'
 import { ToastProvider, useToast } from './Toast'
@@ -16,6 +16,7 @@ import { getCookieValue } from '@/lib/client-config'
 const CommandPaletteProvider = dynamic(() => import('./CommandPaletteProvider').then(m => ({ default: m.CommandPaletteProvider })), { ssr: false })
 const ShortcutHelp = dynamic(() => import('./shortcut-help').then(m => ({ default: m.ShortcutHelp })), { ssr: false })
 const AguilaChatBubble = dynamic(() => import('./aguila-chat-bubble').then(m => ({ default: m.AguilaChatBubble })), { ssr: false })
+const IntelligenceTicker = dynamic(() => import('./intelligence/IntelligenceTicker'), { ssr: false, loading: () => null })
 
 interface Props { children: React.ReactNode }
 
@@ -210,6 +211,9 @@ export default function DashboardShellClient({ children }: Props) {
         hideSidebar={portalType === 'client'}
       >
         <LoadingBar />
+        <Suspense fallback={null}>
+          <IntelligenceTicker />
+        </Suspense>
         <div id="main-content" ref={scrollRef}>
           {children}
         </div>

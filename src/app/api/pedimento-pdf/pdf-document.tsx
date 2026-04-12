@@ -1,4 +1,5 @@
 import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
+import { AguilaPdfHeader } from '@/lib/pdf/brand'
 
 const C = {
   bg: '#0D1117', surface: '#161B22', border: '#30363D',
@@ -63,13 +64,10 @@ export function PedimentoPDF(props: PedimentoPDFProps) {
   return (
     <Document>
       <Page size="LETTER" style={s.page}>
-        {/* Header */}
+        {/* AGUILA brand header */}
+        <AguilaPdfHeader title="Pedimento Detallado" subtitle={`${props.clientName} · Patente ${props.patente} · Aduana ${props.aduana}`} />
         <View style={s.header} fixed>
-          <Text style={s.title}>Pedimento Detallado</Text>
-          <Text style={s.subtitle}>
-            {props.clientName} · Patente {props.patente} · Aduana {props.aduana} Nuevo Laredo
-          </Text>
-          <Text style={[s.subtitle, { marginTop: 2 }]}>Generado: {props.date}</Text>
+          <Text style={s.subtitle}>Generado: {props.date}</Text>
         </View>
 
         {/* Pedimento Info */}
@@ -160,7 +158,7 @@ export function PedimentoPDF(props: PedimentoPDFProps) {
 
         {/* Footer */}
         <View style={s.footer} fixed>
-          <Text style={s.footerText}>ADUANA — Inteligencia Aduanal · Patente {props.patente}</Text>
+          <Text style={s.footerText}>AGUILA · Inteligencia aduanal · Patente {props.patente}</Text>
           <Text style={s.footerText} render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`} />
         </View>
       </Page>

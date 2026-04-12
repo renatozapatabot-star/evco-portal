@@ -146,6 +146,12 @@ export function generateIIF(payload: IIFPayload): string {
   const out: string[] = []
   const { customers = [], vendors = [], invoices = [], bills = [] } = payload
 
+  // --- AGUILA brand header (IIF comments start with ;) ---
+  const company = customers[0]?.companyName ?? customers[0]?.name ?? ''
+  const today = new Date().toISOString().slice(0, 10)
+  out.push(`; AGUILA — Patente 3596 · ${company} · ${today}`)
+  out.push('; Generado por AGUILA · Inteligencia aduanal · Aduana 240 Nuevo Laredo')
+
   // --- Customers section ---
   if (customers.length > 0) {
     out.push(row('!CUST', 'NAME', 'REFNUM', 'TAXID', 'COMPANYNAME'))

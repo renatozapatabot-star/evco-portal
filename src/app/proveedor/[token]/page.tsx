@@ -32,6 +32,8 @@ import {
   X,
 } from 'lucide-react'
 import { fmtDate, fmtDateTime } from '@/lib/format-utils'
+import { AguilaMark } from '@/components/brand/AguilaMark'
+import { AguilaWordmark } from '@/components/brand/AguilaWordmark'
 import { categoryForDocCode, type DocCategory } from '@/lib/document-types'
 import { track } from '@/lib/telemetry/useTrack'
 
@@ -376,10 +378,14 @@ export default function ProveedorPage() {
   return (
     <div style={styles.page}>
       <div style={{ width: '100%', maxWidth: 780 }}>
-        {/* Logo / header chrome */}
-        <div style={{ textAlign: 'center', marginBottom: 20 }}>
-          <div style={styles.logo}>AGUILA</div>
-          <div style={styles.chromeSubtitle}>AGUILA · Proveedores</div>
+        {/* AGUILA brand header */}
+        <div style={{ textAlign: 'center', marginBottom: 28, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+          <AguilaMark size={72} tone="silver" />
+          <AguilaWordmark size={28} tone="silver" />
+          <div style={{ fontSize: 9, letterSpacing: '0.3em', color: '#7A7E86', textTransform: 'uppercase' }}>
+            TOTAL VISIBILIDAD. SIN FRONTERAS.
+          </div>
+          <div style={styles.chromeSubtitle}>Portal de proveedores</div>
         </div>
 
         {/* Header block */}

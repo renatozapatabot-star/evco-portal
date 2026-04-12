@@ -48,3 +48,8 @@ credentials/
 # Sandbox run results (JSON per run, local only)
 scripts/sandbox/results/
 !scripts/sandbox/results/.gitkeep
+
+# Runtime-generated audit + heartbeat files (do not commit)
+docs/SYSTEM_STATE.md
+docs/SYSTEM_STATE.previous.md
+scripts/heartbeat-state.json

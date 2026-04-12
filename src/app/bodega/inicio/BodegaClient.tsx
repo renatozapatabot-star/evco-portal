@@ -10,8 +10,7 @@
 import { useMemo } from 'react'
 import Link from 'next/link'
 import {
-  Package, Clock, Warehouse, Camera, CalendarDays,
-  Search, ListCheck, HelpCircle, UploadCloud,
+  Package, Warehouse, HelpCircle, UploadCloud,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { NavCardGrid, type NavCardGridItem } from '@/components/NavCardGrid'
@@ -51,14 +50,10 @@ interface BodegaTile {
   badgeKey?: keyof BodegaKpis
 }
 
+// V1 warehouse cockpit (Phase 4 cull) — only routes to V1-approved surfaces.
 const TILES: BodegaTile[] = [
-  { href: '/entradas?hoy=1',            label: 'Entradas de hoy', icon: Package,      description: 'Mercancía recibida hoy',     badgeKey: 'entradasToday' },
-  { href: '/entradas?estatus=esperado', label: 'Por arribar',     icon: Clock,        description: 'Tráficos que llegan pronto', badgeKey: 'proximasEntradas' },
-  { href: '/entradas?estatus=recibido', label: 'En bodega',       icon: Warehouse,    description: 'Pendientes de despacho',     badgeKey: 'enBodega' },
-  { href: '/bodega/subir',              label: 'Subir fotos',     icon: Camera,       description: 'Foto rápida del empaque' },
-  { href: '/entradas?rango=7d',         label: 'Últimos 7 días',  icon: CalendarDays, description: 'Historial reciente',          badgeKey: 'entradasWeek' },
-  { href: '/buscar',                    label: 'Buscar tráfico',  icon: Search,       description: 'Por número o BOL' },
-  { href: '/mi-dia',                    label: 'Mi día',          icon: ListCheck,    description: 'Pendientes personales' },
+  { href: '/bodega/recibir',            label: 'Recibir',         icon: Package,      description: 'Registrar mercancía entrante', badgeKey: 'entradasToday' },
+  { href: '/bodega/patio',              label: 'Patio',           icon: Warehouse,    description: 'Tráiler y ubicación en patio', badgeKey: 'enBodega' },
   { href: '/bodega/ayuda',              label: 'Ayuda',           icon: HelpCircle,   description: 'Cómo subir, qué llega hoy' },
 ]
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import {
-  Package, Truck, FileText, ClipboardList,
+  Truck, FileText,
   FileSpreadsheet, FolderOpen, BarChart3, TrendingUp,
   Activity, Clock, ChevronDown, ChevronUp,
 } from 'lucide-react'
@@ -25,15 +25,14 @@ interface NavTile {
   dataKey?: keyof ClientData | 'catalog'
 }
 
+// V1 client cockpit tiles (Phase 4 cull) — only routes to V1-approved surfaces.
 const TILES: NavTile[] = [
-  { href: '/entradas',    label: 'Entradas',              icon: Package,         description: 'Mercancía recibida',        dataKey: 'entradasThisMonth' },
-  { href: '/traficos',    label: 'Tráficos',              icon: Truck,           description: 'Operaciones activas',       dataKey: 'activeShipments' },
-  { href: '/pedimentos',  label: 'Pedimentos',            icon: FileText,        description: 'Declaraciones aduanales',   dataKey: 'pedimentosEnProceso' },
-  { href: '/catalogo',    label: 'Catálogo',              icon: ClipboardList,   description: 'Productos y fracciones',    dataKey: 'catalog' },
-  { href: '/anexo24',     label: 'Anexo 24',              icon: FileSpreadsheet, description: 'Control de inventarios' },
-  { href: '/expedientes', label: 'Expedientes Digitales', icon: FolderOpen,      description: 'Documentos por operación' },
-  { href: '/reportes',    label: 'Reportes',              icon: BarChart3,       description: 'Análisis y estadísticas' },
-  { href: '/kpis',        label: "KPI's",                 icon: TrendingUp,      description: 'Indicadores clave' },
+  { href: '/traficos',          label: 'Tráficos',     icon: Truck,           description: 'Operaciones activas',     dataKey: 'activeShipments' },
+  { href: '/pedimentos',        label: 'Pedimentos',   icon: FileText,        description: 'Declaraciones aduanales', dataKey: 'pedimentosEnProceso' },
+  { href: '/reportes/anexo-24', label: 'Anexo 24',     icon: FileSpreadsheet, description: 'Control de inventarios' },
+  { href: '/expedientes',       label: 'Expedientes',  icon: FolderOpen,      description: 'Documentos por operación' },
+  { href: '/reportes',          label: 'Reportes',     icon: BarChart3,       description: 'Análisis y estadísticas' },
+  { href: '/kpis',              label: "KPI's",        icon: TrendingUp,      description: 'Indicadores clave' },
 ]
 
 // ── Helpers ────────────────────────────────────────────────

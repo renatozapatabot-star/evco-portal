@@ -1,12 +1,9 @@
 import {
   LayoutDashboard, Truck, FileText, FolderOpen,
   BarChart3, DollarSign, Users2, BookOpen,
-  Shield, Calendar, Award,
-  Settings, Package,
-  History, Clock, ClipboardList,
-  Warehouse, Bot, Rocket, Tags, Layers, TrendingUp, Search,
-  Mail, FileEdit, Activity, Radio, Phone, Code, Briefcase, Mic, Brain,
-  FileSpreadsheet, Ship,
+  Shield, Settings, Package,
+  Warehouse, TrendingUp, Radio, Brain,
+  FileSpreadsheet,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -52,50 +49,24 @@ export interface NavTopLevel extends NavRoute {
 // ---------------------------------------------------------------------------
 
 export const INTERNAL_TOP: NavTopLevel[] = [
-  { href: '/', label: 'Inicio', icon: LayoutDashboard },
+  { href: '/admin/inicio', label: 'Inicio', icon: LayoutDashboard },
 ]
 
+// V1 nav (Phase 4 cull) — admin/broker see operator surfaces + admin-only extras.
+// Non-V1 routes (launchpad, war-room, agente, cerebro, clasificar, lotes, rentabilidad,
+// cuentas, financiero, fracciones, inteligencia, predicciones, acciones, cotizacion,
+// prospectos, comunicaciones, cruces, auditoria, riesgo-auditoria, usmca, ahorro, drafts,
+// catalogo, proveedores) are hidden from nav but remain reachable by direct URL.
 export const INTERNAL_GROUPS: NavGroup[] = [
   {
     key: 'operaciones',
     label: 'Operaciones',
     icon: Truck,
     children: [
-      { href: '/traficos',       label: 'Tráficos',       icon: Truck },
-      { href: '/entradas',       label: 'Entradas',       icon: Package },
-      { href: '/pedimentos',     label: 'Pedimentos',     icon: FileText },
-      { href: '/expedientes',    label: 'Expedientes',    icon: FolderOpen },
-      { href: '/bodega',         label: 'Inventario',     icon: Warehouse },
-      { href: '/drafts',         label: 'Borradores',     icon: FileEdit },
-      { href: '/lotes',          label: 'Lotes',          icon: Layers },
-    ],
-  },
-  {
-    key: 'finanzas',
-    label: 'Finanzas',
-    icon: DollarSign,
-    children: [
-      { href: '/cuentas',       label: 'Cuentas',       icon: DollarSign },
-      { href: '/financiero',    label: 'Contabilidad',  icon: DollarSign },
-      { href: '/reportes',      label: 'Reportes',      icon: BarChart3 },
-      { href: '/rentabilidad',  label: 'Rentabilidad',  icon: TrendingUp },
-      { href: '/facturacion',   label: 'Facturación',   icon: FileText },
-    ],
-  },
-  {
-    key: 'inteligencia',
-    label: 'Inteligencia',
-    icon: BarChart3,
-    children: [
-      { href: '/agente',        label: 'AGUILA Agent',     icon: Bot },
-      { href: '/cerebro',       label: 'Cerebro',        icon: Brain },
-      { href: '/clasificar',    label: 'Clasificar',     icon: Tags },
-      { href: '/fracciones',    label: 'Fracciones',     icon: Search },
-      { href: '/inteligencia',  label: 'Inteligencia',   icon: TrendingUp },
-      { href: '/predicciones',  label: 'Predicciones',   icon: BarChart3 },
-      { href: '/proveedores',   label: 'Proveedores',    icon: Users2 },
-      { href: '/catalogo',      label: 'Catálogo',       icon: ClipboardList },
-      { href: '/ahorro',        label: 'Ahorro T-MEC',   icon: DollarSign },
+      { href: '/traficos',        label: 'Tráficos',            icon: Truck },
+      { href: '/pedimentos',      label: 'Pedimentos',          icon: FileText },
+      { href: '/banco-facturas',  label: 'Banco de facturas',   icon: FileSpreadsheet },
+      { href: '/corredor',        label: 'Corredor',            icon: Radio },
     ],
   },
   {
@@ -103,39 +74,24 @@ export const INTERNAL_GROUPS: NavGroup[] = [
     label: 'Cumplimiento',
     icon: Shield,
     children: [
-      { href: '/mve',              label: 'MVE',          icon: Shield },
-      { href: '/usmca',            label: 'USMCA',        icon: Award },
-      { href: '/cruces',           label: 'Cruces',       icon: Clock },
-      { href: '/auditoria',        label: 'Auditoría',    icon: History },
-      { href: '/riesgo-auditoria', label: 'Riesgo SAT',   icon: Shield },
-      { href: '/anexo24',          label: 'Anexo 24',      icon: BookOpen },
+      { href: '/mve/alerts', label: 'MVE',      icon: Shield },
+      { href: '/reportes',   label: 'Reportes', icon: BarChart3 },
     ],
   },
   {
-    key: 'ventas',
-    label: 'Ventas',
-    icon: Briefcase,
+    key: 'administracion',
+    label: 'Administración',
+    icon: Settings,
+    roles: ['admin', 'broker'],
     children: [
-      { href: '/prospectos',   label: 'Prospectos',   icon: Users2 },
-      { href: '/cotizacion',   label: 'Cotización',   icon: DollarSign },
-    ],
-  },
-  {
-    key: 'centro',
-    label: 'Centro de Mando',
-    icon: Radio,
-    children: [
-      { href: '/launchpad',      label: 'Launchpad',      icon: Rocket },
-      { href: '/war-room',       label: 'War Room',       icon: Radio },
-      { href: '/comunicaciones', label: 'Comunicaciones',  icon: Mail },
-      { href: '/acciones',       label: 'Acciones',       icon: Activity },
-      { href: '/operador',       label: 'Operador',       icon: Users2 },
+      { href: '/admin/shadow',   label: 'Shadow',          icon: Brain,    roles: ['admin', 'broker'] },
+      { href: '/admin/carriers', label: 'Transportistas',  icon: Truck,    roles: ['admin', 'broker'] },
+      { href: '/clientes',       label: 'Clientes',        icon: Users2,   roles: ['admin', 'broker'] },
     ],
   },
 ]
 
 export const INTERNAL_BOTTOM: NavTopLevel[] = [
-  { href: '/voz',          label: 'Voz',          icon: Mic, roles: ['admin', 'broker'] },
   { href: '/admin',        label: 'Config',       icon: Settings, roles: ['admin', 'broker'] },
 ]
 
@@ -143,19 +99,16 @@ export const INTERNAL_BOTTOM: NavTopLevel[] = [
 // CLIENT NAV — client role (8 items visible to clients)
 // ---------------------------------------------------------------------------
 
+// V1 client nav (Phase 4 cull) — 7 items. Non-V1 (/entradas, /catalogo, /solicitar,
+// /clasificar-producto, /ahorro) remain reachable by direct URL.
 export const CLIENT_NAV: NavTopLevel[] = [
-  { href: '/',             label: 'Inicio',               icon: LayoutDashboard },
-  { href: '/entradas',     label: 'Entradas',             icon: Package },
-  { href: '/traficos',     label: 'Tráficos',             icon: Truck },
-  { href: '/pedimentos',   label: 'Pedimentos',           icon: FileText },
-  { href: '/catalogo',     label: 'Tráficos Recientes',   icon: ClipboardList },
-  { href: '/anexo24',      label: 'Anexo 24',             icon: FileSpreadsheet },
-  { href: '/expedientes',  label: 'Expedientes Digitales', icon: FolderOpen },
-  { href: '/reportes',     label: 'Reportes',             icon: BarChart3 },
-  { href: '/kpis',         label: "KPI's",                icon: TrendingUp },
-  { href: '/solicitar',    label: 'Solicitar Embarque',    icon: Ship },
-  { href: '/clasificar-producto', label: 'Clasificar Producto', icon: Tags },
-  { href: '/ahorro',       label: 'Ahorro',               icon: DollarSign },
+  { href: '/',                  label: 'Inicio',        icon: LayoutDashboard },
+  { href: '/traficos',          label: 'Tráficos',      icon: Truck },
+  { href: '/pedimentos',        label: 'Pedimentos',    icon: FileText },
+  { href: '/reportes',          label: 'Reportes',      icon: BarChart3 },
+  { href: '/reportes/anexo-24', label: 'Anexo 24',      icon: FileSpreadsheet },
+  { href: '/expedientes',       label: 'Expedientes',   icon: FolderOpen },
+  { href: '/kpis',              label: "KPI's",         icon: TrendingUp },
 ]
 
 // ---------------------------------------------------------------------------
@@ -168,14 +121,15 @@ export const CLIENT_GROUPS: NavGroup[] = []
 // OPERATOR NAV — slim workflow-focused nav (no financials)
 // ---------------------------------------------------------------------------
 
+// V1 operator nav (Phase 4 cull) — 7 items.
 export const OPERATOR_NAV: NavTopLevel[] = [
-  { href: '/',             label: 'Mi Turno',         icon: LayoutDashboard },
-  { href: '/traficos',     label: 'Tráficos',         icon: Truck },
-  { href: '/entradas',     label: 'Entradas',         icon: Package },
-  { href: '/pedimentos',   label: 'Pedimentos',       icon: FileText },
-  { href: '/expedientes',  label: 'Expedientes',      icon: FolderOpen },
-  { href: '/clasificar',   label: 'Clasificar',       icon: Tags },
-  { href: '/bodega',       label: 'Inventario',       icon: Warehouse },
+  { href: '/operador/inicio', label: 'Inicio',             icon: LayoutDashboard },
+  { href: '/traficos',        label: 'Tráficos',           icon: Truck },
+  { href: '/pedimentos',      label: 'Pedimentos',         icon: FileText },
+  { href: '/banco-facturas',  label: 'Banco de facturas',  icon: FileSpreadsheet },
+  { href: '/corredor',        label: 'Corredor',           icon: Radio },
+  { href: '/mve/alerts',      label: 'MVE',                icon: Shield },
+  { href: '/reportes',        label: 'Reportes',           icon: BarChart3 },
 ]
 
 export const OPERATOR_GROUPS: NavGroup[] = []
@@ -184,11 +138,12 @@ export const OPERATOR_GROUPS: NavGroup[] = []
 // WAREHOUSE NAV — warehouse role (Vicente). Cockpit pages added in later commits.
 // ---------------------------------------------------------------------------
 
+// V1 warehouse nav (Phase 4 cull) — 4 items.
 export const WAREHOUSE_NAV: NavTopLevel[] = [
   { href: '/bodega/inicio',  label: 'Inicio',   icon: LayoutDashboard },
-  { href: '/entradas',       label: 'Entradas', icon: Package },
-  { href: '/bodega/subir',   label: 'Subir',    icon: FileEdit },
-  { href: '/buscar',         label: 'Buscar',   icon: Search },
+  { href: '/bodega/recibir', label: 'Recibir',  icon: Package },
+  { href: '/bodega/patio',   label: 'Patio',    icon: Warehouse },
+  { href: '/bodega/ayuda',   label: 'Ayuda',    icon: BookOpen },
 ]
 
 export const WAREHOUSE_GROUPS: NavGroup[] = []
@@ -197,11 +152,13 @@ export const WAREHOUSE_GROUPS: NavGroup[] = []
 // CONTABILIDAD NAV — contabilidad role (Anabel). Cockpit pages added in later commits.
 // ---------------------------------------------------------------------------
 
+// V1 contabilidad nav (Phase 4 cull) — 5 items.
 export const CONTABILIDAD_NAV: NavTopLevel[] = [
-  { href: '/contabilidad/inicio', label: 'Inicio',       icon: LayoutDashboard },
-  { href: '/facturacion',         label: 'Facturación',  icon: FileText },
-  { href: '/cobranzas',           label: 'Cobranzas',    icon: DollarSign },
-  { href: '/pagos',               label: 'Pagos',        icon: DollarSign },
+  { href: '/contabilidad/inicio',   label: 'Inicio',       icon: LayoutDashboard },
+  { href: '/facturacion',           label: 'Facturación',  icon: FileText },
+  { href: '/cobranzas',             label: 'Cobranzas',    icon: DollarSign },
+  { href: '/pagos',                 label: 'Pagos',        icon: DollarSign },
+  { href: '/contabilidad/exportar', label: 'Exportar',     icon: FileSpreadsheet },
 ]
 
 export const CONTABILIDAD_GROUPS: NavGroup[] = []
@@ -219,18 +176,18 @@ export interface MobileTab {
 }
 
 export const MOBILE_INTERNAL_TABS: MobileTab[] = [
-  { href: '/',           label: 'Inicio',        icon: LayoutDashboard },
-  { href: '/traficos',   label: 'Operaciones',   icon: Truck },
-  { href: '/reportes',   label: 'Inteligencia',  icon: BarChart3 },
-  { href: '/mve',        label: 'Cumplimiento',  icon: Shield },
-  { href: '/admin',      label: 'Config',        icon: Settings },
+  { href: '/admin/inicio', label: 'Inicio',       icon: LayoutDashboard },
+  { href: '/traficos',     label: 'Tráficos',     icon: Truck },
+  { href: '/pedimentos',   label: 'Pedimentos',   icon: FileText },
+  { href: '/mve/alerts',   label: 'MVE',          icon: Shield },
+  { href: '/reportes',     label: 'Reportes',     icon: BarChart3 },
 ]
 
 export const MOBILE_CLIENT_TABS: MobileTab[] = [
-  { href: '/',           label: 'Inicio',        icon: LayoutDashboard },
-  { href: '/entradas',   label: 'Entradas',      icon: Package },
-  { href: '/traficos',   label: 'Tráficos',      icon: Truck },
-  { href: '/reportes',   label: 'Reportes',      icon: BarChart3 },
+  { href: '/',            label: 'Inicio',      icon: LayoutDashboard },
+  { href: '/traficos',    label: 'Tráficos',    icon: Truck },
+  { href: '/pedimentos',  label: 'Pedimentos',  icon: FileText },
+  { href: '/reportes',    label: 'Reportes',    icon: BarChart3 },
 ]
 
 // ---------------------------------------------------------------------------

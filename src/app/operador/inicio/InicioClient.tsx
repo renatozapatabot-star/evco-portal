@@ -2,7 +2,7 @@
 
 import { useEffect, useCallback, useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { Truck, AlertTriangle, FileText, Upload, Tags, Mail, Calendar, Users } from 'lucide-react'
+import { Truck, AlertTriangle, FileText, Upload, FileSpreadsheet, Radio, Shield, BarChart3 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { createClient as createBrowserSupabaseClient } from '@/lib/supabase/client'
 import {
@@ -19,18 +19,19 @@ import { RoleKPIBanner } from '@/components/RoleKPIBanner'
 import type { TraficoRow, DecisionRow, KPIs, SystemStatus } from './types'
 
 interface OperatorTile extends NavTile {
-  badgeKey?: 'personalActive' | 'excepcionesCount' | 'pedimentosPendientes' | 'clasificacionesPendientes' | 'solicitudesAbiertas'
+  badgeKey?: 'personalActive' | 'excepcionesCount' | 'pedimentosPendientes'
 }
 
+// V1 cockpit tiles (Phase 4 cull) — cards only route to V1-approved surfaces.
 const OPERATOR_TILES: OperatorTile[] = [
-  { href: '/traficos?mio=1',                 label: 'Mis tráficos',             icon: Truck as LucideIcon,          description: 'En proceso asignados',             badgeKey: 'personalActive' },
-  { href: '/operador/cola',                  label: 'Cola de excepciones',      icon: AlertTriangle as LucideIcon,  description: 'Pendientes de resolver',            badgeKey: 'excepcionesCount' },
-  { href: '/pedimentos?estatus=borrador',    label: 'Pedimentos pendientes',    icon: FileText as LucideIcon,       description: 'Borradores y revisión',             badgeKey: 'pedimentosPendientes' },
-  { href: '/operador/subir',                 label: 'Subir documentos',         icon: Upload as LucideIcon,         description: 'Arrastra PDFs / fotos' },
-  { href: '/clasificaciones',                label: 'Clasificaciones',          icon: Tags as LucideIcon,           description: 'Revisar y aprobar',                 badgeKey: 'clasificacionesPendientes' },
-  { href: '/solicitudes',                    label: 'Solicitudes enviadas',     icon: Mail as LucideIcon,           description: 'Documentos pedidos a proveedores',  badgeKey: 'solicitudesAbiertas' },
-  { href: '/mi-dia',                         label: 'Mi día',                   icon: Calendar as LucideIcon,       description: 'Plan de hoy' },
-  { href: '/equipo',                         label: 'Equipo',                   icon: Users as LucideIcon,          description: 'Actividad reciente' },
+  { href: '/traficos?mio=1',              label: 'Mis tráficos',          icon: Truck as LucideIcon,          description: 'En proceso asignados',        badgeKey: 'personalActive' },
+  { href: '/operador/cola',               label: 'Cola de excepciones',   icon: AlertTriangle as LucideIcon,  description: 'Pendientes de resolver',      badgeKey: 'excepcionesCount' },
+  { href: '/pedimentos?estatus=borrador', label: 'Pedimentos pendientes', icon: FileText as LucideIcon,       description: 'Borradores y revisión',       badgeKey: 'pedimentosPendientes' },
+  { href: '/operador/subir',              label: 'Subir documentos',      icon: Upload as LucideIcon,         description: 'Arrastra PDFs / fotos' },
+  { href: '/banco-facturas',              label: 'Banco de facturas',     icon: FileSpreadsheet as LucideIcon, description: 'Facturas indexadas y búsqueda' },
+  { href: '/corredor',                    label: 'Corredor',              icon: Radio as LucideIcon,          description: 'Estado del corredor en vivo' },
+  { href: '/mve/alerts',                  label: 'MVE',                   icon: Shield as LucideIcon,         description: 'Alertas de compliance' },
+  { href: '/reportes',                    label: 'Reportes',              icon: BarChart3 as LucideIcon,      description: 'Análisis y estadísticas' },
 ]
 
 interface Props {
@@ -169,8 +170,6 @@ export function InicioClient(props: Props) {
                 personalActive: props.personalAssigned,
                 excepcionesCount: props.colaCount,
                 pedimentosPendientes: props.kpis.pendientes,
-                clasificacionesPendientes: 0,
-                solicitudesAbiertas: 0,
               }
               const count = tile.badgeKey ? (badges[tile.badgeKey] ?? null) : null
               return {

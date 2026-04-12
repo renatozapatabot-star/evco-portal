@@ -9,8 +9,8 @@
 
 import { useMemo } from 'react'
 import {
-  FileText, DollarSign, CreditCard, AlertTriangle,
-  ScrollText, Calendar, Download, BarChart3,
+  FileText, DollarSign, CreditCard,
+  Calendar, Download,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { NavCardGrid, type NavCardGridItem } from '@/components/NavCardGrid'
@@ -41,15 +41,13 @@ interface ContabilidadTile {
   badgeKey?: keyof ContabilidadKpis
 }
 
+// V1 contabilidad cockpit (Phase 4 cull) — only routes to V1-approved surfaces.
 const TILES: ContabilidadTile[] = [
-  { href: '/facturacion?estatus=pendiente', label: 'Pendientes de facturar', icon: FileText,       description: 'Tráficos cruzados sin factura',  badgeKey: 'pendientesFacturar' },
-  { href: '/cobranzas',                     label: 'Cuentas por cobrar',     icon: DollarSign,     description: 'Facturas emitidas no pagadas',    badgeKey: 'cxCobrar' },
-  { href: '/pagos',                         label: 'Cuentas por pagar',      icon: CreditCard,     description: 'Proveedores + DTA/IGI/IVA',       badgeKey: 'cxPagar' },
-  { href: '/morosos',                       label: 'Clientes morosos',       icon: AlertTriangle,  description: '>30 días vencidos',               badgeKey: 'morososCount' },
-  { href: '/estados-cuenta',                label: 'Estados de cuenta',      icon: ScrollText,     description: 'Por cliente' },
-  { href: '/facturacion?mes=actual',        label: 'Facturas del mes',       icon: Calendar,       description: 'Emitidas este mes',               badgeKey: 'facturasMes' },
-  { href: '/contabilidad/exportar',         label: 'Exportar contabilidad',  icon: Download,       description: 'CSV / Excel' },
-  { href: '/contabilidad/kpis',             label: 'Indicadores',            icon: BarChart3,      description: 'Margen, DSO, cobranza promedio' },
+  { href: '/facturacion?estatus=pendiente', label: 'Pendientes de facturar', icon: FileText,    description: 'Tráficos cruzados sin factura',  badgeKey: 'pendientesFacturar' },
+  { href: '/cobranzas',                     label: 'Cuentas por cobrar',     icon: DollarSign,  description: 'Facturas emitidas no pagadas',    badgeKey: 'cxCobrar' },
+  { href: '/pagos',                         label: 'Cuentas por pagar',      icon: CreditCard,  description: 'Proveedores + DTA/IGI/IVA',       badgeKey: 'cxPagar' },
+  { href: '/facturacion?mes=actual',        label: 'Facturas del mes',       icon: Calendar,    description: 'Emitidas este mes',               badgeKey: 'facturasMes' },
+  { href: '/contabilidad/exportar',         label: 'Exportar contabilidad',  icon: Download,    description: 'CSV / Excel' },
 ]
 
 export function ContabilidadClient({ operatorName, kpis }: ContabilidadClientProps) {

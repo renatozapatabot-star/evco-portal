@@ -134,7 +134,7 @@ export const SEARCH_ENTITIES: readonly EntityConfig[] = [
     labelSingularEs: 'Operador',
     iconName: 'user',
     searchFields: ['name', 'email'],
-    listHref: '/operadores',
+    listHref: '/clientes',
     scope: 'internal',
     maxResultsPerGroup: 5,
   },

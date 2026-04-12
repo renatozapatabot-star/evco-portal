@@ -8,7 +8,7 @@ import { fmtDateTime, fmtUSDCompact } from '@/lib/format-utils'
 import {
   GREEN, AMBER, RED, TEXT_MUTED, TEXT_PRIMARY,
 } from '@/lib/design-system'
-import { HeroStrip, type HeroTile } from '@/app/traficos/[id]/_components/HeroStrip'
+import { HeroStrip, type HeroTile } from '@/app/traficos/[id]/legacy/_components/HeroStrip'
 import { ClienteTabStrip } from './_components/ClienteTabStrip'
 import { TraficosTab, type TraficoRow } from './_components/TraficosTab'
 import { FraccionesTab, type FraccionRow } from './_components/FraccionesTab'

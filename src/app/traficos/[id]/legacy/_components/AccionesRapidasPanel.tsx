@@ -15,7 +15,7 @@ import {
 import { useToast } from '@/components/Toast'
 import { useTrack } from '@/lib/telemetry/useTrack'
 import { updateTraficoStatus } from '../actions'
-import { SolicitarDocsModal } from './SolicitarDocsModal'
+import { SolicitarDocsModal } from '@/components/trafico/SolicitarDocsModal'
 import type { DocType } from '@/lib/doc-requirements'
 
 const STATUS_OPTIONS = [

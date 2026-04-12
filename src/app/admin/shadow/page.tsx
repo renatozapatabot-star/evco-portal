@@ -9,7 +9,7 @@ import {
   ACCENT_CYAN, BG_CARD, BORDER, GLASS_BLUR, GLASS_SHADOW,
   TEXT_MUTED, TEXT_PRIMARY,
 } from '@/lib/design-system'
-import { HeroStrip, type HeroTile } from '@/app/traficos/[id]/_components/HeroStrip'
+import { HeroStrip, type HeroTile } from '@/app/traficos/[id]/legacy/_components/HeroStrip'
 import { AgreementChart } from './_components/AgreementChart'
 import { PageOpenTracker } from './_components/PageOpenTracker'
 

@@ -1,5 +1,5 @@
-import { CommentThread, type TraficoNote } from './CommentThread'
-import type { AvailableUser } from './MentionAutocomplete'
+import { CommentThread, type TraficoNote } from '@/components/trafico/CommentThread'
+import type { AvailableUser } from '@/components/trafico/MentionAutocomplete'
 
 interface ComunicacionTabProps {
   traficoId: string

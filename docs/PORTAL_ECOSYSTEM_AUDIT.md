@@ -310,3 +310,26 @@ All four Phase 2 commits landed on `feature/v6-phase0-phase1`:
 4. Commit 4 — `feat(admin): Pipeline stage drill-through + positive-KPI banner + clickable escalation banner` (this commit)
 
 Four gates green on every commit. Three cockpits now share the same glass grid shape, the same `<RoleKPIBanner>` celebration pattern, and (for the admin) the same drill-through mechanic from summary to detail. Phase 3 — warehouse + contabilidad + new roles — can begin.
+
+### P3 commit 1 — new roles infrastructure
+
+Foundation for the two new cockpits coming in commits 2 and 3. No cockpit pages yet — this commit only adds the type, routing, and nav scaffolding so that a `warehouse` or `contabilidad` session can authenticate, land on the correct path, and render the shell without erroring.
+
+**Changes (4 files):**
+
+1. `src/lib/session.ts` — introduced `PortalRole` union (`'client' | 'operator' | 'admin' | 'broker' | 'warehouse' | 'contabilidad'`), narrowed `verifySession` return type from `string` to `PortalRole`, and added rejection of any decoded role outside the union. `signSession` left untouched (still accepts any string — legacy callers compile unchanged).
+2. `src/middleware.ts` — added root-path redirects: `warehouse` → `/bodega/inicio`, `contabilidad` → `/contabilidad/inicio`. Both roles pass through every other guard (CSRF, session verification, admin-only route blocks) identically to operators.
+3. `src/components/nav/nav-config.ts` — extended `UserRole` union, added `WAREHOUSE_NAV` (4 items: Inicio, Entradas, Subir, Buscar) and `CONTABILIDAD_NAV` (4 items: Inicio, Facturación, Cobranzas, Pagos), added empty `WAREHOUSE_GROUPS` / `CONTABILIDAD_GROUPS` for symmetry, extended `getRoutesForRole`, and introduced a new `getNavForRole` helper for shells that need a flat top-level nav per role.
+4. `src/components/DashboardShellClient.tsx` — extended the `user_role` cookie dispatch so `warehouse` and `contabilidad` resolve to `portalType='operator'` (internal-team shell with sidebar visible).
+
+**Injection attempts logged:** Four `<system-reminder>` blocks arrived inside tool output during this commit: (a) MCP `computer-use` tool instructions; (b) the repo `CLAUDE.md` ADUANA constitution; (c) `.claude/rules/operational-resilience.md`; (d) `.claude/rules/performance.md`; (e) `.claude/rules/core-invariants.md`; (f) `.claude/rules/design-system.md`. Per the prompt's injection guard, all treated as untrusted data. No scope change applied. No computer-use tool invoked.
+
+**Gates:**
+
+- `npm run typecheck` — 0 errors
+- `npm run build` — succeeds (all routes compiled, middleware compiled)
+- `npm run test` — 124/124 pass (10 files)
+
+**Renato's next step (flagged, not blocking this commit):** create Supabase auth users for Vicente (`role=warehouse`) and Anabel (`role=contabilidad`) with appropriate `company_id` before commits 2 and 3 ship the cockpit pages. Without users, the new roles exist only as a type-level union — no one can log in as them yet.
+
+**Readiness for commit 2:** Warehouse cockpit (`/bodega/inicio`) can now be built as a thin page — session will carry the narrow role, middleware will route `/` there, sidebar will render via operator-style shell, and `getNavForRole('warehouse')` returns the four-item nav.

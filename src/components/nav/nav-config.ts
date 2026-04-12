@@ -13,7 +13,7 @@ import type { LucideIcon } from 'lucide-react'
 // ---------------------------------------------------------------------------
 // Roles — from user_role cookie set on login (see api/auth/route.ts)
 // ---------------------------------------------------------------------------
-export type UserRole = 'admin' | 'client' | 'broker' | 'operator'
+export type UserRole = 'admin' | 'client' | 'broker' | 'operator' | 'warehouse' | 'contabilidad'
 
 // ---------------------------------------------------------------------------
 // Route item — single link in the nav
@@ -181,6 +181,32 @@ export const OPERATOR_NAV: NavTopLevel[] = [
 export const OPERATOR_GROUPS: NavGroup[] = []
 
 // ---------------------------------------------------------------------------
+// WAREHOUSE NAV — warehouse role (Vicente). Cockpit pages added in later commits.
+// ---------------------------------------------------------------------------
+
+export const WAREHOUSE_NAV: NavTopLevel[] = [
+  { href: '/bodega/inicio',  label: 'Inicio',   icon: LayoutDashboard },
+  { href: '/entradas',       label: 'Entradas', icon: Package },
+  { href: '/bodega/subir',   label: 'Subir',    icon: FileEdit },
+  { href: '/buscar',         label: 'Buscar',   icon: Search },
+]
+
+export const WAREHOUSE_GROUPS: NavGroup[] = []
+
+// ---------------------------------------------------------------------------
+// CONTABILIDAD NAV — contabilidad role (Anabel). Cockpit pages added in later commits.
+// ---------------------------------------------------------------------------
+
+export const CONTABILIDAD_NAV: NavTopLevel[] = [
+  { href: '/contabilidad/inicio', label: 'Inicio',       icon: LayoutDashboard },
+  { href: '/facturacion',         label: 'Facturación',  icon: FileText },
+  { href: '/cobranzas',           label: 'Cobranzas',    icon: DollarSign },
+  { href: '/pagos',               label: 'Pagos',        icon: DollarSign },
+]
+
+export const CONTABILIDAD_GROUPS: NavGroup[] = []
+
+// ---------------------------------------------------------------------------
 // MOBILE BOTTOM NAV
 // ---------------------------------------------------------------------------
 
@@ -294,6 +320,8 @@ export const CLIENT_ROUTES = [
 export function getRoutesForRole(role: UserRole): NavRoute[] {
   if (role === 'client') return CLIENT_NAV
   if (role === 'operator') return OPERATOR_NAV
+  if (role === 'warehouse') return WAREHOUSE_NAV
+  if (role === 'contabilidad') return CONTABILIDAD_NAV
 
   const routes: NavRoute[] = [
     ...INTERNAL_TOP,
@@ -301,6 +329,29 @@ export function getRoutesForRole(role: UserRole): NavRoute[] {
     ...INTERNAL_BOTTOM,
   ]
   return routes
+}
+
+/**
+ * Primary top-level nav items for a given role. Used by shells that render a
+ * single flat nav (sidebar top list, mobile tabs). Admin/broker fall back to
+ * INTERNAL_TOP; unknown roles default to the client nav (safest — minimal surface).
+ */
+export function getNavForRole(role: UserRole): NavTopLevel[] {
+  switch (role) {
+    case 'warehouse':
+      return WAREHOUSE_NAV
+    case 'contabilidad':
+      return CONTABILIDAD_NAV
+    case 'operator':
+      return OPERATOR_NAV
+    case 'client':
+      return CLIENT_NAV
+    case 'admin':
+    case 'broker':
+      return INTERNAL_TOP
+    default:
+      return CLIENT_NAV
+  }
 }
 
 /** Check if a path belongs to a nav group (for auto-expanding accordion) */

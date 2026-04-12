@@ -47,6 +47,17 @@ export async function middleware(request: NextRequest) {
   // Role is derived exclusively from the signed session — never from the manipulable user_role cookie
   const role = session.role
 
+  // Warehouse + contabilidad: internal-team roles with dedicated cockpit landing pages.
+  // They pass through the same auth/session guards as operators; only the root redirect differs.
+  if (pathname === '/') {
+    if (role === 'warehouse') {
+      return NextResponse.redirect(new URL('/bodega/inicio', request.url))
+    }
+    if (role === 'contabilidad') {
+      return NextResponse.redirect(new URL('/contabilidad/inicio', request.url))
+    }
+  }
+
   // Broker command center — only broker or admin
   if (pathname.startsWith('/broker')) {
     if (role !== 'broker' && role !== 'admin') {

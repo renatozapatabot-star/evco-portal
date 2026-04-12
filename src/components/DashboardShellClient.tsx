@@ -86,7 +86,9 @@ export default function DashboardShellClient({ children }: Props) {
 
   useEffect(() => {
     const role = getCookieValue('user_role')
-    if (role === 'broker' || role === 'admin') {
+    if (role === 'broker' || role === 'admin' || role === 'warehouse' || role === 'contabilidad') {
+      // Internal-team roles all use the operator-style shell (sidebar visible, internal chrome).
+      // Cockpit landing pages (/bodega/inicio, /contabilidad/inicio) arrive in later commits.
       setPortalType('operator')
     } else {
       setPortalType('client')

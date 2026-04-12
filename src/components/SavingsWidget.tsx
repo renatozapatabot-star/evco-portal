@@ -98,7 +98,7 @@ export function SavingsWidget() {
       <div style={{ fontSize: 10, fontWeight: 700,
         textTransform: 'uppercase', letterSpacing: '0.1em',
         color: 'var(--status-green, #22c55e)', marginBottom: 8 }}>
-        Ahorro con CRUZ — {data.period}
+        Ahorro con AGUILA — {data.period}
       </div>
 
       <div className="mono" style={{ fontSize: 28, fontWeight: 800,

@@ -74,7 +74,7 @@ export default function AgentePage() {
         <div>
           <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <Bot size={24} style={{ color: 'var(--gold)' }} />
-            CRUZ Agent
+            AGUILA Agent
           </h1>
           <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>
             {paused ? '⏸️ Pausado' : '🟢 Activo'} · Ciclo cada 5 min · Lun-Sáb 6 AM - 10 PM

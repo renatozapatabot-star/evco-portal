@@ -87,7 +87,7 @@ export function SubirClient({ traficos }: SubirClientProps) {
             fontWeight: 500,
           }}
         >
-          Arrastra PDFs o fotos — el clasificador de Portal los organiza automáticamente.
+          Arrastra PDFs o fotos — el clasificador de AGUILA los organiza automáticamente.
         </p>
       </div>
 

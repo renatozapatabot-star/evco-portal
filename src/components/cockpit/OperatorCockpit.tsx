@@ -79,7 +79,7 @@ export function OperatorCockpit({ data, operatorName, operatorId }: Props) {
           {greeting}, {operatorName || 'Operador'}
         </h1>
         <p style={{ fontSize: 13, color: '#6E7681', margin: '4px 0 0' }}>
-          Tu panel de trabajo — CRUZ
+          Tu panel de trabajo — AGUILA
         </p>
       </div>
 

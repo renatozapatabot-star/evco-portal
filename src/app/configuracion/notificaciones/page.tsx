@@ -37,7 +37,7 @@ export default function NotificacionesPage() {
   return (
     <div style={{ maxWidth: 700, margin: '0 auto', padding: '24px 16px' }}>
       <h1 style={{ fontSize: 20, fontWeight: 700, color: '#E6EDF3', marginBottom: 4 }}>Notificaciones</h1>
-      <p style={{ fontSize: 13, color: '#64748b', marginBottom: 24 }}>Elige cómo y cuándo recibir alertas de ADUANA.</p>
+      <p style={{ fontSize: 13, color: '#64748b', marginBottom: 24 }}>Elige cómo y cuándo recibir alertas de AGUILA.</p>
 
       <div className="cc-card" style={{ padding: 24, borderRadius: 20 }}>
         {/* Header row */}

@@ -87,7 +87,7 @@ export const INTERNAL_GROUPS: NavGroup[] = [
     label: 'Inteligencia',
     icon: BarChart3,
     children: [
-      { href: '/agente',        label: 'CRUZ Agent',     icon: Bot },
+      { href: '/agente',        label: 'AGUILA Agent',     icon: Bot },
       { href: '/cerebro',       label: 'Cerebro',        icon: Brain },
       { href: '/clasificar',    label: 'Clasificar',     icon: Tags },
       { href: '/fracciones',    label: 'Fracciones',     icon: Search },

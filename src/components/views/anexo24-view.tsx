@@ -59,7 +59,7 @@ function exportCSV(rows: EnrichedRow[], clave: string) {
     (r.proveedor).replace(/,/g, ';'), r.origen,
     r.tmec ? 'SI' : 'NO',
   ].join(','))
-  const blob = new Blob([['ADUANA — Reporte Anexo 24', `Clave: ${clave}`, `Exportado: ${fmtDate(new Date())}`, '', h.join(','), ...c].join('\n')], { type: 'text/csv' })
+  const blob = new Blob([['AGUILA — Reporte Anexo 24', `Clave: ${clave}`, `Exportado: ${fmtDate(new Date())}`, '', h.join(','), ...c].join('\n')], { type: 'text/csv' })
   const a = document.createElement('a')
   a.href = URL.createObjectURL(blob)
   a.download = `Anexo24_${clave}_${new Date().toISOString().split('T')[0]}.csv`

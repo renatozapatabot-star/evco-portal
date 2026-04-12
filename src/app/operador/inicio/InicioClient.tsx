@@ -161,7 +161,7 @@ export function InicioClient(props: Props) {
               lastWeek={props.personalCompletedLastWeek}
               metricLabel="Tráficos cruzados · últimos 7 días"
               celebrationTemplate={({ name, thisWeek, pct }) =>
-                `${name}, cerraste ${thisWeek} tráfico${thisWeek === 1 ? '' : 's'} esta semana (+${pct}% vs semana pasada). Portal te lo reconoce.`
+                `${name}, cerraste ${thisWeek} tráfico${thisWeek === 1 ? '' : 's'} esta semana (+${pct}% vs semana pasada). AGUILA te lo reconoce.`
               }
             />
             <NavCardGrid items={OPERATOR_TILES.map((tile): NavCardGridItem => {

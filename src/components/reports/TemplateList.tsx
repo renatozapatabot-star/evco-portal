@@ -88,7 +88,7 @@ export function TemplateList({
           onClick={() => setShowSeed((v) => !v)}
           className="mb-1 text-xs uppercase tracking-wider text-slate-400 hover:text-slate-200"
         >
-          {showSeed ? '▾' : '▸'} Plantillas de Portal ({seedTpls.length})
+          {showSeed ? '▾' : '▸'} Plantillas de AGUILA ({seedTpls.length})
         </button>
         {showSeed ? <Section title="" rows={seedTpls} deletable={false} onLoad={onLoad} /> : null}
       </div>

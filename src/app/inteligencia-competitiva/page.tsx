@@ -72,7 +72,7 @@ export default function IntelCompetitivaPage() {
         Inteligencia Competitiva
       </h1>
       <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24 }}>
-        Cambios regulatorios, tendencias de mercado, y oportunidades detectadas por ADUANA
+        Cambios regulatorios, tendencias de mercado, y oportunidades detectadas por AGUILA
       </p>
 
       {loading ? (

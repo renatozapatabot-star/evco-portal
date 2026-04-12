@@ -147,7 +147,7 @@ export function ConfirmAllButton({
     }}>
       <div>
         <div style={{ fontSize: 13, fontWeight: 600, color: '#eab308' }}>
-          CRUZ pre-llenó {prefillCount} de {totalFields} campos ({pct}%)
+          AGUILA pre-llenó {prefillCount} de {totalFields} campos ({pct}%)
         </div>
         <div style={{ fontSize: 11, color: '#8B949E', marginTop: 2 }}>
           Revisa los campos en dorado y confirma si todo es correcto

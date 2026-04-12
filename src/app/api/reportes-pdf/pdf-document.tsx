@@ -228,7 +228,7 @@ export function ReportesPDF(props: PDFProps) {
         <View style={s.header}>
           <View>
             <Text style={s.logoText}>
-              CRUZ<Text style={s.logoZ}> Z</Text>
+              AGUILA<Text style={s.logoZ}> Z</Text>
             </Text>
           </View>
           <View style={s.headerRight}>
@@ -321,7 +321,7 @@ export function ReportesPDF(props: PDFProps) {
 
         {/* Footer */}
         <View style={s.footer} fixed>
-          <Text style={s.footerText}>Generado por ADUANA · Confidencial</Text>
+          <Text style={s.footerText}>Generado por AGUILA · Confidencial</Text>
           <Text style={s.footerText}>Patente {patente} · Aduana {aduana} · {date}</Text>
         </View>
       </Page>

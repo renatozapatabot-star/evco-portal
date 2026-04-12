@@ -31,9 +31,9 @@ export default function MisReglasPage() {
   return (
     <div className="page-shell">
       <div style={{ marginBottom: 16 }}>
-        <h1 className="page-title">Lo que el Portal recuerda de ti</h1>
+        <h1 className="page-title">Lo que AGUILA recuerda de ti</h1>
         <p className="page-subtitle">
-          Cada vez que corriges al sistema, el Portal aprende y aplica tu regla automáticamente en el futuro.
+          Cada vez que corriges al sistema, AGUILA aprende y aplica tu regla automáticamente en el futuro.
         </p>
       </div>
 
@@ -45,7 +45,7 @@ export default function MisReglasPage() {
         <EmptyState
           icon="🧠"
           title="Aún no hay reglas guardadas"
-          description="Cuando corrijas una clasificación o ajustes un dato, el Portal recordará tu preferencia y la aplicará automáticamente la próxima vez."
+          description="Cuando corrijas una clasificación o ajustes un dato, AGUILA recordará tu preferencia y la aplicará automáticamente la próxima vez."
         />
       )}
 

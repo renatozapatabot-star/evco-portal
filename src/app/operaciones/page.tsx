@@ -75,7 +75,7 @@ export default async function OperacionesPage() {
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: 22, fontWeight: 800, margin: 0 }}>Operaciones Autónomas</h1>
         <p style={{ color: '#666', fontSize: 13, margin: '4px 0 0' }}>
-          CRUZ se observa solo &middot; {now} CST &middot;
+          AGUILA se observa solo &middot; {now} CST &middot;
           <span style={{ color: allHealthy ? 'var(--success)' : 'var(--danger-500)', fontWeight: 700, marginLeft: 6 }}>
             {allHealthy ? 'Todos los flujos activos' : 'Requiere atención'}
           </span>

@@ -157,7 +157,7 @@ export async function POST(request: NextRequest) {
     // Telegram notification
     sendTelegram(
       `📎 <b>${companyId}</b> subió <b>${docType}</b> para ${traficoId}\n` +
-      `Archivo: ${file.name}\n— CRUZ 🦀`
+      `Archivo: ${file.name}\n— AGUILA 🦀`
     )
 
     return NextResponse.json({

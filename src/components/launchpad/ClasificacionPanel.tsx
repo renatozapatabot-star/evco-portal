@@ -73,7 +73,7 @@ export function ClasificacionPanel({ detail, onComplete, loading }: Props) {
         }}
       >
         <div style={{ fontSize: 12, fontWeight: 600, color: '#9B9B9B', marginBottom: 8, textTransform: 'uppercase' }}>
-          CRUZ sugiere
+          AGUILA sugiere
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
           <span className="font-mono" style={{ fontSize: 18, fontWeight: 700, color: '#1A1A1A' }}>

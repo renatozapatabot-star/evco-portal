@@ -51,7 +51,7 @@ export function ContactosTab({ companyId, initial, onSaved }: ContactosTabProps)
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <TabHeader
         title="Contactos"
-        subtitle="Personas a quienes CRUZ escribe. Se requiere al menos un contacto con rol principal o facturación cuando hay RFC."
+        subtitle="Personas a quienes AGUILA escribe. Se requiere al menos un contacto con rol principal o facturación cuando hay RFC."
         badge={<SectionAutosaveBadge status={status} lastSaved={lastSaved} errorMessage={errorMessage} />}
       />
       {value.length === 0 && (

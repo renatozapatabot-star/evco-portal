@@ -37,7 +37,7 @@ export default function VoiceFAB() {
       {!isActive && (
         <button
           onClick={handleTap}
-          aria-label="Activar voz CRUZ"
+          aria-label="Activar voz AGUILA"
           style={{
             position: 'fixed',
             bottom: 24,

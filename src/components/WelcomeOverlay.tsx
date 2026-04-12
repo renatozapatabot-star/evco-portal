@@ -105,7 +105,7 @@ export function WelcomeOverlay() {
             }}>Z</span>
           </div>
           <h2 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
-            Bienvenido a CRUZ
+            Bienvenido a AGUILA
           </h2>
           <div style={{ fontSize: 14, color: 'var(--gold-600)', fontWeight: 600, marginTop: 4 }}>
             {data.companyName}
@@ -153,7 +153,7 @@ export function WelcomeOverlay() {
         </div>
 
         <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 12 }}>
-          Pregúntale a CRUZ para empezar:
+          Pregúntale a AGUILA para empezar:
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 20 }}>

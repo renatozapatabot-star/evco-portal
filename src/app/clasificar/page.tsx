@@ -142,7 +142,7 @@ export default function ClasificarPage() {
         <EmptyState
           icon="&#9989;"
           title="Clasificaciones al día"
-          description="No hay clasificaciones pendientes de revisión. CRUZ aprende con cada voto."
+          description="No hay clasificaciones pendientes de revisión. AGUILA aprende con cada voto."
         />
       </div>
     )
@@ -245,7 +245,7 @@ export default function ClasificarPage() {
         {/* CRUZ suggestion */}
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-            <p style={{ margin: 0, fontSize: 13, color: '#9B9B9B', fontWeight: 500 }}>CRUZ sugiere</p>
+            <p style={{ margin: 0, fontSize: 13, color: '#9B9B9B', fontWeight: 500 }}>AGUILA sugiere</p>
             <ConfidenceBadge value={current.confidence} />
           </div>
           <p className="font-mono" style={{ margin: 0, fontSize: 28, fontWeight: 700, color: 'rgba(255,255,255,0.03)' }}>

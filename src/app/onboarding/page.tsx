@@ -34,7 +34,7 @@ function OnboardingContent() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24, justifyContent: 'center' }}>
           <AduanaMark size={36} />
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: 18, fontWeight: 800, color: 'rgba(255,255,255,0.9)', letterSpacing: '0.08em' }}>
-            Portal
+            AGUILA
           </span>
         </div>
 
@@ -72,7 +72,7 @@ function OnboardingContent() {
               Datos de ejemplo
             </h2>
             <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 20 }}>
-              ¿Quieres ver el Portal con datos de ejemplo? Puedes eliminarlos después.
+              ¿Quieres ver AGUILA con datos de ejemplo? Puedes eliminarlos después.
             </p>
             <label style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 16px', borderRadius: 10, background: 'rgba(9,9,11,0.75)', border: '1px solid rgba(255,255,255,0.08)', cursor: 'pointer', marginBottom: 20 }}>
               <input type="checkbox" checked={seedSample} onChange={e => setSeedSample(e.target.checked)} style={{ width: 18, height: 18 }} />
@@ -108,7 +108,7 @@ function OnboardingContent() {
               Clasificación inteligente
             </h2>
             <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 20 }}>
-              Así es como el Portal clasifica productos automáticamente:
+              Así es como AGUILA clasifica productos automáticamente:
             </p>
             <div style={{
               padding: '16px 20px', borderRadius: 12,

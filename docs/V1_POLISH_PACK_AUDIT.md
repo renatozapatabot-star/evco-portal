@@ -377,3 +377,17 @@ Executing this atomically alongside B1 in one turn would have produced either (a
 
 Block 1 (tráfico detail redesign) depends on **Block 2's `ActiveTraficosTable`** being importable. Block 1 is **blocked until Slice B2 ships.** Block 6 Realtime (this slice) does not block Block 1.
 
+## Slice B2a — ActiveTraficosTable extraction (pure refactor)
+
+Pure refactor — zero behavior change on `/operador/inicio`.
+
+**Files:**
+- NEW `src/components/ActiveTraficosTable.tsx` — extracted `<details>` table + filters + row actions + toast from operator inicio
+- MOD `src/app/operador/inicio/ActiveTraficos.tsx` — now renders nav tiles + `<ActiveTraficosTable rows={rows} scope="operator" onRefresh={onRefresh} />`
+
+**Shape:** Props `{ rows: TraficoRow[]; scope: 'operator' | 'admin'; onRefresh?: () => void }`. Server actions (`markEntradaReceived`, `updateTraficoStatus`, `sendQuickEmail`) wired exactly as before. Toast moved alongside table (all trigger paths are inside).
+
+**Gates:** typecheck 0, build OK, tests 121/121.
+
+**Unblocks:** Block 1 imports `ActiveTraficosTable` into admin/tráfico-detail surfaces. Sets up B2b (sort/filter/bulk/saved-views) as a follow-up against the new component boundary.
+

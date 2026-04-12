@@ -147,3 +147,105 @@ is a single-file swap.
 ---
 
 *Block 1A audit — April 12, 2026. Patente 3596.*
+
+---
+
+## Commit B — new UI shipped
+
+Replaces the redirect stub `src/app/traficos/[id]/page.tsx` with the full
+recon-driven detail surface. `?legacy=1` still redirects to the legacy
+route; the main path now renders the new Header + 6-tile hero strip +
+2-col grid (tabs + RightRail) + BelowFold.
+
+### Files created (Commit B)
+
+| File | Lines |
+|---|---|
+| `src/app/traficos/[id]/page.tsx` (replaced) | 222 |
+| `src/app/traficos/[id]/TraficoDetail.tsx` | 350 |
+| `src/app/traficos/[id]/Header.tsx` | 180 |
+| `src/app/traficos/[id]/HeroStrip.tsx` | 166 |
+| `src/app/traficos/[id]/RightRail.tsx` | 378 |
+| `src/app/traficos/[id]/BelowFold.tsx` | 267 |
+| `src/app/traficos/[id]/actions.ts` | 191 |
+| `src/app/traficos/[id]/types.ts` | 100 |
+| `src/app/traficos/[id]/loading.tsx` | 78 |
+| `src/app/traficos/[id]/PageOpenTracker.tsx` | 22 |
+| `src/app/traficos/[id]/tabs/DocumentosTab.tsx` | 180 |
+| `src/app/traficos/[id]/tabs/PartidasTab.tsx` | 356 |
+| `src/app/traficos/[id]/tabs/CronologiaTab.tsx` | 448 |
+| `src/app/traficos/[id]/tabs/NotasTab.tsx` | 256 |
+| `src/app/traficos/[id]/tabs/ComunicacionTab.tsx` | 137 |
+| **Total** | **3,331** |
+
+### Gates
+
+```
+npm run typecheck    → 0 errors
+npm run build        → green; route manifest shows both
+                       ƒ /traficos/[id]
+                       ƒ /traficos/[id]/legacy
+npm run test         → 124 passed (10 files)
+npm run lint         → 0 new errors in Block 1B files
+                       (pre-existing 137 errors elsewhere untouched)
+```
+
+### Telemetry coverage (15 events, all fired via `useTrack`)
+
+All telemetry uses the locked 15-event `TelemetryEvent` union; new
+event vocabulary rides in `metadata.event` — matches the pattern the
+Polish Pack established in `PageOpenTracker`.
+
+| # | Event (metadata.event or type) | File |
+|---|---|---|
+| 1 | `trafico_opened` | `PageOpenTracker.tsx` |
+| 2 | `tab_switched` | `TraficoDetail.tsx` |
+| 3 | `hero_tile_clicked` | `HeroStrip.tsx` |
+| 4 | `action_fired` (rightrail buttons) | `RightRail.tsx` |
+| 5 | `action_fired` (assign_operator) | `RightRail.tsx` |
+| 6 | `cronologia_filter_changed` | `tabs/CronologiaTab.tsx` |
+| 7 | `cronologia_event_opened` | `tabs/CronologiaTab.tsx` |
+| 8 | `partida_opened` | `tabs/PartidasTab.tsx` |
+| 9 | `below_fold_section_expanded` | `BelowFold.tsx` |
+| 10 | `trafico_note_added` | `tabs/NotasTab.tsx` |
+| 11 | `mention_created` (per mention) | `tabs/NotasTab.tsx` |
+| 12 | `doc_uploaded` | `components/docs/DocUploader` (reused) |
+| 13 | `doc_type_corrected` | `components/docs/DocTypePill` (reused) |
+| 14 | `solicitation_sent` | `components/trafico/SolicitarDocsModal` (reused) |
+| 15 | `checklist_item_viewed` | `components/docs/ExpedienteChecklist` (reused) |
+
+### Hard-rules code scan
+
+```
+grep -rn "window.open"      src/app/traficos/[id]/ --exclude-dir=legacy → 0
+grep -rn ".catch(() =>"     src/app/traficos/[id]/ --exclude-dir=legacy → 0
+grep -rn ": any"            src/app/traficos/[id]/ --exclude-dir=legacy → 0
+grep -rn "fmtRelativeTime"  src/app/traficos/[id]/ --exclude-dir=legacy → 0
+grep -rn "console\.log"     src/app/traficos/[id]/ --exclude-dir=legacy → 0
+grep -rn "ADUANA\|CRUZ"     src/app/traficos/[id]/*.tsx tabs/*.tsx     → 0
+```
+
+All glass tokens from `src/lib/design-system.ts`; no new hex literals.
+`fmtDateTime` used throughout. 60px touch targets on every interactive
+element. Tenant-scoped via `verifySession`. All server actions log to
+`operational_decisions` and fire a `workflow_events` row with the
+category-mapped `workflow`.
+
+### Client View Test / No-Scroll Test
+
+Code-conforming: dark glass palette matches `ClientHome.tsx`; right
+rail uses exactly two panels totalling ~560px (Acciones + Información),
+fitting within the 900px viewport alongside the 92px hero strip and
+header. Browser verification is Renato's — run `?legacy=1` as the
+fallback if anything regresses under real data.
+
+### Readiness for next block
+
+- Block 1B unblocked; `/traficos/[id]` is the new default, legacy
+  preserved at `/traficos/[id]/legacy`.
+- Blocked on Renato: `npx supabase db push` (Block 1A migrations —
+  events_catalog, trafico_detail_columns, trafico_notes re-guard) then
+  `npx supabase gen types typescript --local > types/supabase.ts`.
+- Until migrations land, Cronología renders zero events (empty state
+  with next-expected hint) and BelowFold shows "Sin registro" for the
+  new columns — graceful, no errors.

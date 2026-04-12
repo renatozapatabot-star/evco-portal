@@ -874,10 +874,13 @@ async function buildSection9(currentData) {
     // ── Row count deltas ──
     const extractRowCounts = (content) => {
       const counts = {}
+      // Extract ONLY Section 2 to avoid picking up counts from Section 9 diff tables
+      const section2Match = content.match(/## Section 2 — Database State\n([\s\S]*?)(?=\n## Section 3)/)
+      const section2 = section2Match ? section2Match[1] : ''
       // Match rows in Section 2 table: | table_name | 1,234 | +5 |
       const tableRegex = /\|\s*(\w+)\s*\|\s*([\d,]+)\s*\|/g
       let match
-      while ((match = tableRegex.exec(content)) !== null) {
+      while ((match = tableRegex.exec(section2)) !== null) {
         const table = match[1]
         const count = parseInt(match[2].replace(/,/g, ''))
         if (!isNaN(count) && !['Table', 'Field', 'Metric', 'Source', 'Status', 'Period', 'Cost'].includes(table)) {

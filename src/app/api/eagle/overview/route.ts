@@ -17,6 +17,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { verifySession } from '@/lib/session'
 import { computeARAging, computeAPAging, type AgingResult } from '@/lib/contabilidad/aging'
+import { detectDormantClients } from '@/lib/dormant/detect'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -86,50 +87,13 @@ async function fetchTraficosByStatus(sb: SupabaseClient, companyId: string): Pro
 }
 
 async function fetchDormant(sb: SupabaseClient): Promise<DormantClient[]> {
-  const cutoff = new Date(Date.now() - DORMANT_DAYS * 86_400_000).toISOString()
-  const { data: recent } = await sb
-    .from('traficos')
-    .select('company_id, created_at')
-    .gte('created_at', cutoff)
-    .limit(5000)
-  const activeIds = new Set<string>()
-  for (const r of (recent ?? []) as { company_id: string | null }[]) {
-    if (r.company_id) activeIds.add(r.company_id)
-  }
-  const { data: companies } = await sb
-    .from('companies')
-    .select('company_id, razon_social, is_active')
-    .eq('is_active', true)
-    .limit(500)
-  const dormantIds = (companies ?? [])
-    .map((c) => c as { company_id: string; razon_social: string | null })
-    .filter((c) => !activeIds.has(c.company_id))
-    .slice(0, 3)
-
-  if (dormantIds.length === 0) return []
-
-  // Fetch last tráfico per dormant company for dias + importe
-  const results: DormantClient[] = []
-  for (const c of dormantIds) {
-    const { data: last } = await sb
-      .from('traficos')
-      .select('created_at, importe_total')
-      .eq('company_id', c.company_id)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle()
-    const lastRow = last as { created_at: string | null; importe_total: number | null } | null
-    const dias = lastRow?.created_at
-      ? Math.floor((Date.now() - new Date(lastRow.created_at).getTime()) / 86_400_000)
-      : 999
-    results.push({
-      companyId: c.company_id,
-      razonSocial: c.razon_social ?? c.company_id,
-      diasSinMovimiento: dias,
-      ultimoMonto: lastRow?.importe_total ?? null,
-    })
-  }
-  return results
+  const records = await detectDormantClients(sb, null, DORMANT_DAYS)
+  return records.slice(0, 3).map((r) => ({
+    companyId: r.clienteId,
+    razonSocial: r.clienteName,
+    diasSinMovimiento: r.diasSinMovimiento,
+    ultimoMonto: r.lastInvoiceAmount,
+  }))
 }
 
 async function fetchAtenciones(sb: SupabaseClient, companyId: string, dormant: DormantClient[]): Promise<AtencionItem[]> {

@@ -774,7 +774,7 @@ Nav surfaces — sidebars, command palette, cockpit cards — show ONLY these ro
 
 **Cockpits:** `/inicio` · `/operador/inicio` · `/admin/inicio` · `/admin/eagle` · `/bodega/inicio` · `/contabilidad/inicio`
 **Tráfico workflow:** `/traficos` · `/traficos/[id]` · `/traficos/[id]/pedimento` · `/traficos/[id]/pedimento/exportar` · `/traficos/[id]/pedimento/pago-pece` · `/traficos/[id]/clasificacion` · `/traficos/[id]/doda` · `/traficos/[id]/carta-porte`
-**Cross-domain:** `/clientes/[id]` · `/clientes/[id]/configuracion` · `/reportes` · `/reportes/anexo-24` · `/banco-facturas` · `/corredor` · `/mve/alerts` · `/admin/carriers` · `/admin/quickbooks-export`
+**Cross-domain:** `/clientes/[id]` · `/clientes/[id]/configuracion` · `/reportes` · `/reportes/anexo-24` · `/banco-facturas` · `/corredor` · `/mve/alerts` · `/admin/carriers` · `/admin/quickbooks-export` · `/admin/clientes-dormidos`
 **Warehouse:** `/bodega/recibir` · `/bodega/escanear` · `/bodega/patio` · `/bodega/[id]/avc`
 **Auth + supplier:** `/login` · `/proveedor/[token]`
 

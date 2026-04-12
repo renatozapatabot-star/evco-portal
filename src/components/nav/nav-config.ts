@@ -89,6 +89,7 @@ export const INTERNAL_GROUPS: NavGroup[] = [
       { href: '/admin/carriers',           label: 'Transportistas',    icon: Truck,           roles: ['admin', 'broker'] },
       { href: '/admin/quickbooks-export',  label: 'Exportar QuickBooks', icon: FileSpreadsheet, roles: ['admin', 'broker'] },
       { href: '/clientes',                 label: 'Clientes',          icon: Users2,          roles: ['admin', 'broker'] },
+      { href: '/admin/clientes-dormidos',  label: 'Clientes dormidos', icon: Users2,          roles: ['admin', 'broker'] },
     ],
   },
 ]

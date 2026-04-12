@@ -1,11 +1,11 @@
 {
-  "name": "Portal \u2014 Inteligencia Aduanal",
-  "short_name": "Portal",
-  "description": "Portal de inteligencia aduanal \u00b7 Renato Zapata & Company \u00b7 Patente 3596 \u00b7 Aduana 240",
+  "name": "AGUILA \u2014 Inteligencia aduanal",
+  "short_name": "AGUILA",
+  "description": "AGUILA \u00b7 Inteligencia aduanal \u00b7 Renato Zapata & Company \u00b7 Patente 3596 \u00b7 Aduana 240",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#FAFAF8",
-  "theme_color": "#C4963C",
+  "background_color": "#0A0A0C",
+  "theme_color": "#0A0A0C",
   "orientation": "portrait",
   "categories": [
     "business",

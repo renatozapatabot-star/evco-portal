@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="0 0 800 800">
+  <defs>
+    <pattern id="topo" x="0" y="0" width="800" height="800" patternUnits="userSpaceOnUse">
+      <g fill="none" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1">
+        <path d="M-20 180 C 120 120, 260 240, 400 180 S 680 120, 820 200" />
+        <path d="M-20 320 C 140 260, 280 380, 420 320 S 700 260, 820 340" />
+        <path d="M-20 460 C 160 400, 300 520, 440 460 S 720 400, 820 480" />
+        <path d="M-20 600 C 180 540, 320 660, 460 600 S 740 540, 820 620" />
+        <path d="M-20 60  C 100 20,  240 140, 380 80  S 660 20,  820 100" />
+        <path d="M-20 740 C 200 680, 340 800, 480 740 S 760 680, 820 760" />
+      </g>
+    </pattern>
+  </defs>
+  <rect width="800" height="800" fill="url(#topo)" />
+</svg>

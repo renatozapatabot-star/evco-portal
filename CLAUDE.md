@@ -1,7 +1,8 @@
-# ADUANA — Cross-Border Intelligence Platform
+# AGUILA — Cross-Border Intelligence Platform
 ## Principal Engineer Constitution + Execution Rules
 ### Renato Zapata & Company · Patente 3596 · Aduana 240 · Laredo TX · Est. 1941
 
+> "Visibilidad total. Sin fronteras."
 > "Built by two people. For a border their family has crossed since 1941."
 
 You are a principal engineer building the most capable cross-border intelligence
@@ -13,10 +14,18 @@ and get smarter every session. Every decision is evaluated against one question:
 
 ## IDENTITY
 
-**Platform:** ADUANA — Cross-Border Intelligence. Never "CRUD."
-The brand was renamed from CRUZ to ADUANA in April 2026. All user-facing text says "ADUANA".
-Internal code still has some "Cruz" in component names (CruzMark.tsx etc.) — this is fine.
-Search for "CRUD" before every deploy: `grep -r "CRUD" src/` → zero matches required.
+**Platform:** AGUILA — Cross-Border Intelligence. Never "CRUD."
+**Tagline:** *Visibilidad total. Sin fronteras.*
+
+**Rename history:** CRUZ → ADUANA (April 2026) → AGUILA (April 2026, slice A1).
+All user-visible surfaces say "AGUILA". Never "Portal", "ADUANA", or "CRUZ" in
+user-facing strings. Internal code symbols ("CruzMark", "cruz-ai.ts", etc.)
+remain temporarily — Slice A2 migrates them.
+
+Search for banned tokens before every deploy:
+- `grep -r "CRUD" src/` → 0 matches required
+- `grep -r "\"Portal\"\|\"ADUANA\"\|\"CRUZ\"" src/app src/components public scripts`
+  → 0 matches in user-visible strings (JSX text, metadata, copy)
 
 **Owner:** Renato Zapata III ("Tito") — Director General, both US + Mexican
 licenses, final authority on all operations and regulatory matters.
@@ -158,29 +167,46 @@ Business logic in `lib/`. Never in route handlers or components.
 
 ---
 
-## DESIGN SYSTEM — see DESIGN_SYSTEM.md (single source of truth)
+## DESIGN SYSTEM — AGUILA Monochrome Chrome (April 2026, Slice A1)
 
-Do not use any color, font, or component pattern not defined in DESIGN_SYSTEM.md.
+Do not use any color, font, or component pattern not defined in `src/lib/design-system.ts`.
 Read it before any frontend work. No exceptions.
 
-### CINEMATIC GLASS SYSTEM — THE STANDARD (April 2026)
+### AGUILA MONOCHROME — THE STANDARD
 
-Every authenticated page uses `.aduana-dark` class with full glassmorphism.
-Login uses the same glass theme (not a separate light theme).
+AGUILA is a monochrome chrome identity. Silver replaces cyan and gold. The
+glass system and blur remain; the accent palette narrows to one family.
 
-**Follow DESIGN_SYSTEM.md for all visual decisions. Key rules:**
+**Primary tokens (from `src/lib/design-system.ts`):**
 
-- Background: gradient `#030508 → #0D1525` + radial cyan glow at center
-- Cards: `rgba(9,9,11,0.75)` dark glass + `backdrop-filter: blur(20px)`
-- Borders: `rgba(34,211,238,0.3)` cyan tint
-- Shadows: multi-layer neon (`0 0 25px -8px rgb(34,211,238)`)
-- Gold `#eab308` — ONLY for CTA buttons. Never for borders/accents.
-- Cyan `#00E5FF` — intelligence, active states, data flow
-- Inter for text, JetBrains Mono for ALL data/numbers
-- Cards that need attention PULSE (`.needs-action`) — NO colored borders
-- 20px border-radius on all cards
+- `BG_DEEP = '#0A0A0C'` — deep canvas, app background
+- `ACCENT_SILVER = '#C0C5CE'` — the primary accent (replaces cyan + gold)
+- `ACCENT_SILVER_BRIGHT = '#E8EAED'` — hover/emphasis
+- `ACCENT_SILVER_DIM = '#7A7E86'` — muted chrome
+- `SILVER_GRADIENT` — `linear-gradient(135deg, #E8EAED 0%, #C0C5CE 50%, #7A7E86 100%)` for marks, CTAs
+- `GLOW_SILVER = 'rgba(192,197,206,0.18)'` — active / hover glow
+- `GLOW_SILVER_SUBTLE = 'rgba(192,197,206,0.08)'` — idle glow
+- `TOPO_PATTERN_URL = '/brand/topo-hairline.svg'` — decorative hairline contour texture
+
+**Deprecated tokens (still exported, @deprecated JSDoc, values unchanged):**
+`ACCENT_CYAN`, `ACCENT_BLUE`, `GOLD`, `GOLD_HOVER`, `GOLD_GRADIENT`, `GOLD_TEXT`,
+`GLOW_CYAN`, `GLOW_CYAN_SUBTLE`. Do NOT introduce new consumers. Slice A2 migrates
+the 73 existing consumers to the silver palette.
+
+**Glass system (unchanged):**
+
+- Cards: `rgba(9,9,11,0.75)` + `backdrop-filter: blur(20px)`
+- Borders: hairline `rgba(255,255,255,0.06)` or silver `rgba(192,197,206,0.18)`
+- Inter (body) + JetBrains Mono (all numbers/timestamps)
+- 20px border-radius on cards
 - framer-motion for gestures + layout animations
 - NO opaque backgrounds (#111111, #222222, #1A1A1A) on authenticated pages
+
+**Brand components:**
+
+- `<AguilaMark />` from `@/components/brand/AguilaMark` — the eagle mark
+- `<AguilaWordmark />` from `@/components/brand/AguilaWordmark` — "AGUILA" wordmark
+- Both accept `tone="silver" | "silver-bright"` (plus `gold` / `mono` on the mark for transitional use)
 ## DATE AND TIME — NON-NEGOTIABLE
 
 All dates are absolute. Relative time is banned from the portal.
@@ -391,6 +417,8 @@ ALL must pass before any task is done:
 10. JetBrains Mono on all financial/timestamp display
 11. `grep -r "CRUD" src/` → 0
 12. `grep -r "'9254'" src/` → 0 in query files
+12b. `grep -r "\"Portal\"\|\"ADUANA\"\|\"CRUZ\"" src/app src/components public scripts`
+     → 0 in user-visible strings (AGUILA rebrand Slice A1+)
 13. `grep -rn "toLocaleDateString" src/app/ | grep -v "es-MX"` → 0
 14. `grep -rn "hace\|timeAgo\|fromNow" src/app/` → 0
 15. `grep -rn "50 clientes\|754 tráficos\|Ollama\|GlobalPC MySQL" src/app/` → 0

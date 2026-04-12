@@ -18,9 +18,9 @@ self.addEventListener('activate', function(event) {
 
 // Push notifications
 self.addEventListener('push', function(event) {
-  var data = event.data ? event.data.json() : { title: 'Portal', body: 'Nueva actualización' }
+  var data = event.data ? event.data.json() : { title: 'AGUILA', body: 'Nueva actualización' }
   event.waitUntil(
-    self.registration.showNotification(data.title || 'Portal', {
+    self.registration.showNotification(data.title || 'AGUILA', {
       body: data.body || '',
       icon: '/icon-192.png',
       badge: '/icon-192.png',

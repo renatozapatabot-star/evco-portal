@@ -3,7 +3,7 @@ import {
   BarChart3, DollarSign, Users2, BookOpen,
   Shield, Settings, Package,
   Warehouse, TrendingUp, Radio, Brain,
-  FileSpreadsheet, ScanLine, Eye, Play,
+  FileSpreadsheet, ScanLine, Eye, Play, History,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -109,6 +109,7 @@ export const INTERNAL_GROUPS: NavGroup[] = [
     children: [
       { href: '/admin/demo', label: 'Demo orquestado', icon: Play, roles: ['admin', 'broker'] },
       { href: '/admin/notificaciones', label: 'Notificaciones', icon: Radio, roles: ['admin', 'broker'] },
+      { href: '/admin/auditoria', label: 'Auditoría', icon: History, roles: ['admin', 'broker'] },
     ],
   },
 ]

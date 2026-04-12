@@ -50,7 +50,8 @@ export interface NavTopLevel extends NavRoute {
 
 export const INTERNAL_TOP: NavTopLevel[] = [
   { href: '/admin/eagle', label: 'Vista Águila', icon: Eye, roles: ['admin', 'broker'] },
-  { href: '/admin/inicio', label: 'Inicio', icon: LayoutDashboard },
+  // V1.5 consolidation: /admin/inicio redirects to /admin/eagle. Nav uses the canonical path.
+  { href: '/admin/eagle', label: 'Inicio', icon: LayoutDashboard },
 ]
 
 // V1 nav (Phase 4 cull) — admin/broker see operator surfaces + admin-only extras.
@@ -201,7 +202,7 @@ export interface MobileTab {
 }
 
 export const MOBILE_INTERNAL_TABS: MobileTab[] = [
-  { href: '/admin/inicio', label: 'Inicio',       icon: LayoutDashboard },
+  { href: '/admin/eagle',  label: 'Inicio',       icon: LayoutDashboard },
   { href: '/traficos',     label: 'Tráficos',     icon: Truck },
   { href: '/pedimentos',   label: 'Pedimentos',   icon: FileText },
   { href: '/mve/alerts',   label: 'MVE',          icon: Shield },

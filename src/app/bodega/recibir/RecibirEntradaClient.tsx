@@ -2,10 +2,11 @@
 
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import { Camera, Loader2, ScanLine, CheckCircle2, AlertTriangle, PackageCheck } from 'lucide-react'
+import { Camera, Loader2, ScanLine, CheckCircle2, AlertTriangle, PackageCheck, Printer } from 'lucide-react'
 import { DOCK_OPTIONS } from '@/lib/warehouse-entries'
 
 type Status = 'idle' | 'submitting' | 'success' | 'error'
+type PrintStatus = 'idle' | 'submitting' | 'queued' | 'error'
 
 interface TraficoHit {
   id: string
@@ -35,6 +36,8 @@ export function RecibirEntradaClient() {
   const [errorMsg, setErrorMsg] = useState('')
   const [lastEntry, setLastEntry] = useState<{ entry_id: string; trafico_id: string; photo_count: number } | null>(null)
   const [supportsScanner, setSupportsScanner] = useState(false)
+  const [printStatus, setPrintStatus] = useState<PrintStatus>('idle')
+  const [printMsg, setPrintMsg] = useState<string>('')
 
   const photoInputRef = useRef<HTMLInputElement>(null)
 
@@ -97,6 +100,37 @@ export function RecibirEntradaClient() {
     setStatus('idle')
     setErrorMsg('')
     setLastEntry(null)
+    setPrintStatus('idle')
+    setPrintMsg('')
+  }
+
+  async function printLabel() {
+    if (!lastEntry) return
+    setPrintStatus('submitting')
+    setPrintMsg('')
+    try {
+      const res = await fetch('/api/labels/print', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ entradaId: lastEntry.entry_id, dockId: dock || null }),
+      })
+      const json = (await res.json()) as {
+        data?: { id: string; pdfUrl: string; qrCode: string }
+        error?: { message: string } | null
+      }
+      if (!res.ok || !json.data) {
+        throw new Error(json.error?.message ?? 'No se pudo encolar')
+      }
+      // Open PDF in a new tab — browser hands it to the print dialog.
+      if (typeof window !== 'undefined') {
+        window.open(json.data.pdfUrl, '_blank', 'noopener,noreferrer')
+      }
+      setPrintStatus('queued')
+      setPrintMsg('Etiqueta en cola')
+    } catch (e) {
+      setPrintStatus('error')
+      setPrintMsg(e instanceof Error ? e.message : 'Error al imprimir')
+    }
   }
 
   async function submit() {
@@ -193,7 +227,8 @@ export function RecibirEntradaClient() {
 
         <button
           type="button"
-          onClick={resetForm}
+          onClick={printLabel}
+          disabled={printStatus === 'submitting'}
           style={{
             minHeight: 60,
             width: '100%',
@@ -203,6 +238,71 @@ export function RecibirEntradaClient() {
             fontWeight: 700,
             fontSize: 16,
             border: 'none',
+            cursor: printStatus === 'submitting' ? 'wait' : 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 10,
+          }}
+        >
+          {printStatus === 'submitting' ? (
+            <>
+              <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} />
+              Encolando…
+            </>
+          ) : (
+            <>
+              <Printer size={18} />
+              Imprimir etiqueta
+            </>
+          )}
+        </button>
+
+        {printStatus === 'queued' && printMsg && (
+          <div
+            role="status"
+            style={{
+              padding: '10px 12px',
+              borderRadius: 12,
+              background: 'rgba(192,197,206,0.12)',
+              border: '1px solid rgba(192,197,206,0.35)',
+              color: '#C0C5CE',
+              fontSize: 13,
+              textAlign: 'center',
+            }}
+          >
+            {printMsg}
+          </div>
+        )}
+        {printStatus === 'error' && printMsg && (
+          <div
+            role="alert"
+            style={{
+              padding: '10px 12px',
+              borderRadius: 12,
+              background: 'rgba(220,38,38,0.12)',
+              border: '1px solid rgba(220,38,38,0.35)',
+              color: '#FCA5A5',
+              fontSize: 13,
+              textAlign: 'center',
+            }}
+          >
+            {printMsg}
+          </div>
+        )}
+
+        <button
+          type="button"
+          onClick={resetForm}
+          style={{
+            minHeight: 60,
+            width: '100%',
+            borderRadius: 14,
+            background: 'rgba(255,255,255,0.04)',
+            color: '#E6EDF3',
+            fontWeight: 600,
+            fontSize: 16,
+            border: '1px solid rgba(192,197,206,0.18)',
             cursor: 'pointer',
           }}
         >

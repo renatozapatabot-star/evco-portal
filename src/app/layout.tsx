@@ -69,7 +69,7 @@ export default function RootLayout({
           })();
         `}} />
       </head>
-      <body style={{ margin: 0 }}>
+      <body className="aguila-dark" style={{ margin: 0 }}>
         <QueryProvider>
           <DashboardShellClient>
             <TelemetryProvider>{children}</TelemetryProvider>

@@ -192,7 +192,7 @@ export default function ChainView({ data }: { data: ChainData }) {
                         href={doc.file_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline"
+                        className="text-zinc-200 hover:underline"
                       >
                         ver &rarr;
                       </a>

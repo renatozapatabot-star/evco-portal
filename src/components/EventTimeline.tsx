@@ -12,7 +12,7 @@ interface TimelineEvent {
 }
 
 const EVENT_CONFIG = {
-  arrival:    { icon: '🚛', color: 'var(--status-blue, #3b82f6)',    label: 'Llegada' },
+  arrival:    { icon: '🚛', color: 'var(--accent-silver-bright, #E8EAED)',    label: 'Llegada' },
   document:   { icon: '📄', color: 'var(--amber-600, #d97706)', label: 'Documentos' },
   semaforo:   { icon: '🚦', color: 'var(--amber-600, #d97706)', label: 'Semáforo' },
   inspection: { icon: '🔍', color: 'var(--status-red, #ef4444)',  label: 'Inspección' },

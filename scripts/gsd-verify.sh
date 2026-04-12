@@ -254,6 +254,18 @@ else
 fi
 
 # --------------------------------------------------------------------------
+# AGUILA palette guard — no blue/indigo/sky/cyan Tailwind classes outside
+# the semantic StatusBadge component.
+# --------------------------------------------------------------------------
+header "AGUILA palette"
+AGUILA_HITS=$(grep -rn "bg-blue-\|bg-indigo-\|bg-sky-\|bg-cyan-\|text-blue-\|text-indigo-\|text-sky-\|text-cyan-\|border-blue-\|border-indigo-\|border-sky-\|border-cyan-\|ring-blue-\|ring-cyan-" src/ --include="*.tsx" --include="*.ts" 2>/dev/null | grep -v "components/ui/StatusBadge.tsx" || true)
+if [ -n "$AGUILA_HITS" ]; then
+  fail "Forbidden blue/indigo/sky/cyan Tailwind classes found (outside StatusBadge)"
+else
+  pass "No forbidden blue/indigo/sky/cyan Tailwind classes"
+fi
+
+# --------------------------------------------------------------------------
 # Results
 # --------------------------------------------------------------------------
 echo ""

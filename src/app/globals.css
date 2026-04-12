@@ -187,12 +187,12 @@ html, body {
   --shadow-elevated: 0 12px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08);
   /* ── Semantic lighting — cyan = intelligence, gold = action ── */
   --accent-cyan: #C0C5CE;
-  --accent-blue: #3B82F6;
+  --accent-blue: #C0C5CE;
   --glow-cyan: rgba(192,197,206,0.25);
   --glow-cyan-subtle: rgba(192,197,206,0.1);
   --glow-cyan-active: rgba(192,197,206,0.35);
-  --glow-blue: rgba(59,130,246,0.25);
-  --glow-blue-subtle: rgba(59,130,246,0.12);
+  --glow-blue: rgba(192,197,206,0.25);
+  --glow-blue-subtle: rgba(192,197,206,0.12);
   /* ── Status semantic palette ── */
   --slate-50: rgba(255,255,255,0.02);
   --slate-100: rgba(255,255,255,0.04);
@@ -467,7 +467,7 @@ body {
   box-shadow:
     0 25px 50px -12px rgba(0,0,0,0.4),
     inset 0 2px 0 rgba(255,255,255,0.14),
-    0 0 25px -8px rgb(34,211,238);
+    0 0 25px -8px rgba(192,197,206,0.35);
 }
 .cc-card:hover {
   transform: scale(1.012) translateY(-2px);
@@ -475,7 +475,7 @@ body {
   box-shadow:
     0 25px 50px -12px rgba(0,0,0,0.5),
     inset 0 2px 0 rgba(255,255,255,0.15),
-    0 0 40px -5px rgb(34,211,238);
+    0 0 40px -5px rgba(192,197,206,0.45);
   border-color: rgba(192,197,206,0.45);
 }
 .cc-card:active {
@@ -2865,10 +2865,10 @@ tr.row-odd  { background: rgba(248,250,252,0.5); }
 /* ── Needs-action pulse — uniform cyan breathing for cards needing attention ── */
 @keyframes needsAction {
   0%, 100% {
-    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.4), inset 0 2px 0 rgba(255,255,255,0.1), 0 0 25px -8px rgb(34,211,238);
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.4), inset 0 2px 0 rgba(255,255,255,0.1), 0 0 25px -8px rgba(192,197,206,0.35);
   }
   50% {
-    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.4), inset 0 2px 0 rgba(255,255,255,0.1), 0 0 50px -5px rgb(34,211,238);
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.4), inset 0 2px 0 rgba(255,255,255,0.1), 0 0 50px -5px rgba(192,197,206,0.5);
   }
 }
 .needs-action {

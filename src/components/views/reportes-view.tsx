@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } from 'recharts'
 import { getCookieValue } from '@/lib/client-config'
-import { GOLD } from '@/lib/design-system'
+import { GOLD, ACCENT_SILVER, ACCENT_SILVER_DIM, ACCENT_SILVER_BRIGHT } from '@/lib/design-system'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { fmtDate } from '@/lib/format-utils'
@@ -13,17 +13,13 @@ import { DateInputES } from '@/components/ui/DateInputES'
 
 // Generate distinct color from name hash for provider avatars
 function avatarColor(name: string): { bg: string; text: string } {
+  // AGUILA silver palette (5 stops, monochrome)
   const PALETTE = [
-    { bg: 'rgba(217,119,6,0.15)', text: '#F59E0B' },   // amber
-    { bg: 'rgba(59,130,246,0.15)', text: '#60A5FA' },   // blue
-    { bg: 'rgba(22,163,74,0.15)', text: '#4ADE80' },    // green
-    { bg: 'rgba(139,92,246,0.15)', text: '#A78BFA' },   // purple
-    { bg: 'rgba(244,63,94,0.15)', text: '#FB7185' },    // rose
-    { bg: 'rgba(14,165,233,0.15)', text: '#38BDF8' },   // sky
-    { bg: 'rgba(201,168,76,0.15)', text: 'var(--gold)' }, // gold
-    { bg: 'rgba(16,185,129,0.15)', text: '#34D399' },   // emerald
-    { bg: 'rgba(236,72,153,0.15)', text: '#F472B6' },   // pink
-    { bg: 'rgba(13,148,136,0.15)', text: '#2DD4BF' },   // teal
+    { bg: 'rgba(232,234,237,0.12)', text: ACCENT_SILVER_BRIGHT },
+    { bg: 'rgba(208,213,222,0.12)', text: '#D0D5DE' },
+    { bg: 'rgba(192,197,206,0.12)', text: ACCENT_SILVER },
+    { bg: 'rgba(154,160,168,0.12)', text: '#9AA0A8' },
+    { bg: 'rgba(122,126,134,0.12)', text: ACCENT_SILVER_DIM },
   ]
   let hash = 0
   for (let i = 0; i < name.length; i++) hash = ((hash << 5) - hash + name.charCodeAt(i)) | 0

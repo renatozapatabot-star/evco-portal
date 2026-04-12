@@ -497,7 +497,7 @@ export default function ComunicacionesPage() {
                     <tr key={e.id || i}>
                       <td>
                         <span style={{ width: 8, height: 8, borderRadius: '50%', display: 'inline-block',
-                          background: e.is_urgent ? 'var(--status-red, #ef4444)' : (e.from_address || '').includes(getCompanyIdCookie()) ? '#3b82f6' : 'var(--green)' }} />
+                          background: e.is_urgent ? 'var(--status-red, #ef4444)' : (e.from_address || '').includes(getCompanyIdCookie()) ? '#C0C5CE' : 'var(--green)' }} />
                       </td>
                       <td style={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         <span style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{(e.from_address || '').substring(0, 35)}</span>

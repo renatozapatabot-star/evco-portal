@@ -16,7 +16,7 @@ import type { PedimentoChildrenData } from '../PedimentoLayout'
 const STATUS_COLORS: Record<string, { bg: string; fg: string; border: string }> = {
   borrador:  { bg: 'rgba(120,113,108,0.12)', fg: '#D6D3D1', border: 'rgba(120,113,108,0.35)' },
   validado:  { bg: 'rgba(13,148,136,0.12)',  fg: '#2DD4BF', border: 'rgba(13,148,136,0.35)' },
-  firmado:   { bg: 'rgba(59,130,246,0.12)',  fg: '#60A5FA', border: 'rgba(59,130,246,0.35)' },
+  firmado:   { bg: 'rgba(192,197,206,0.12)', fg: '#C0C5CE', border: 'rgba(192,197,206,0.35)' },
   pagado:    { bg: 'rgba(234,179,8,0.12)',   fg: '#FACC15', border: 'rgba(234,179,8,0.35)' },
   cruzado:   { bg: 'rgba(34,197,94,0.12)',   fg: '#4ADE80', border: 'rgba(34,197,94,0.35)' },
   cancelado: { bg: 'rgba(239,68,68,0.12)',   fg: '#F87171', border: 'rgba(239,68,68,0.35)' },

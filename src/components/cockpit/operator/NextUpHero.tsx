@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { Check } from 'lucide-react'
 import { fmtUSDCompact } from '../shared/formatters'
 import type { OperatorData } from '../shared/fetchCockpitData'
 import { IfThenCard } from '../shared/IfThenCard'
@@ -25,7 +26,16 @@ export function NextUpHero({ data, operatorName }: Props) {
         title="Mi turno"
         quietContent={
           <div style={{ textAlign: 'center', padding: '20px 0' }}>
-            <div style={{ fontSize: 32, marginBottom: 8 }}>✅</div>
+            <div style={{
+              margin: '0 auto 10px',
+              width: 44, height: 44, borderRadius: '50%',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: 'rgba(192,197,206,0.08)',
+              border: '1px solid rgba(192,197,206,0.3)',
+              color: '#E8EAED',
+            }}>
+              <Check size={22} strokeWidth={2.2} />
+            </div>
             <div style={{ fontSize: 18, fontWeight: 600, color: '#E6EDF3', marginBottom: 4 }}>
               Todo al corriente
             </div>

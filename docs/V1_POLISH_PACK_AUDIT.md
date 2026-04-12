@@ -511,3 +511,60 @@ Five `<system-reminder>` blocks surfaced inside tool output during this run: the
 3. Live smoke test: drag a JPG/PNG of a real factura into the uploader on `/traficos/{id}` → confirm row appears with `document_type='factura'` and `document_type_confidence` populated, toast shows the %.
 4. Click the type pill → pick a different type → verify `operational_decisions` row with `decision_type='doc_type_corrected'` and original type/confidence in `data_points_used`.
 5. PDF smoke test: drag a PDF → confirm toast says "clasificar manualmente" and row is `pending_manual`.
+
+---
+
+## Block 10 — Expediente checklist
+
+**Status:** SHIPPED.
+**Commit:** (see git log — Slice 1 of V1 Polish Pack)
+
+### Files
+
+| Path | Lines | Purpose |
+|---|---|---|
+| `src/lib/doc-requirements.ts` | 127 new | Consolidated `REQUIRED_DOCS_BY_REGIMEN` + `getRequiredDocs()` + `normalizeRegimen()` + `DocType` type + `DOC_TYPE_LABELS_ES` |
+| `src/components/docs/ExpedienteChecklist.tsx` | 211 new | Glass card with one row per required doc (✓/○/✕/−), click-missing → callback |
+| `src/app/traficos/[id]/_components/DocumentosTab.tsx` | +28 / −3 | Now a `'use client'` wrapper that mounts checklist above uploader, hoists `defaultDocType` state, scrolls + focuses uploader on missing-row click |
+| `src/app/traficos/[id]/page.tsx` | +1 / −1 | Passes `regimen={trafico.regimen}` through to DocumentosTab |
+
+### Behavior
+
+- Resolves required docs via `getRequiredDocs(trafico.regimen)`. Unknown régimen → empty list, UI renders a soft "Régimen sin lista configurada" banner (fail closed, never red).
+- Row states:
+  - `present` — green CheckCircle2 — doc present with confidence ≥ 0.75 or confidence=null
+  - `pending` — amber Circle — uploaded but < 0.75 confidence (Claude vision low-trust)
+  - `missing` — red XCircle — no matching doc_type in expediente_documentos
+  - `not_required` — gray MinusCircle (only appears if UI filter slips)
+- Click missing row → `onMissingDocClick(docType)` hoists default doc type into uploader, smooth-scrolls uploader into view, focuses the drop zone button.
+- Summary pill: `X / Y` present, plus `N pendientes` and `M faltantes` counters.
+- `checklist_item_viewed` telemetry fires on every click with `{docType, state}` metadata.
+
+### Régimen normalization
+
+Conservative map:
+- `A1`, `A3` → importacion_definitiva
+- `C1` → exportacion_definitiva
+- `IN`, `BA`, `BB` → importacion_temporal
+- `EX`, `H1` → exportacion_temporal
+- Plus canonical snake_case keys
+- Anything else → `null` → empty list
+
+### Gates
+
+- `npm run typecheck` — **0 errors**
+- `npm run build` — **succeeded** (no bundle-size regression on `/traficos/[id]`)
+- `npm run test` — **121/121 pass**
+- Pre-commit hooks: to be run by `git commit`
+
+### Judgment calls
+
+1. **Avoided cross-module client cycle.** First pass imported `DocRow` from `DocumentosTab.tsx`. Since both are `'use client'` modules and `DocumentosTab` now mounts `ExpedienteChecklist`, this would create a circular module dependency that Next.js tolerates but that TS resolves oddly for public `export type` re-exports. Fixed by introducing a local `ChecklistDocRow` shape in the checklist (only reads `document_type`, `document_type_confidence`, `doc_type`). Small duplication, clean boundary.
+2. **Fail-closed on unknown régimen.** The plan said "leave unknown régimens empty array, don't throw." I rendered a soft banner instead of silent nothing so operators understand why they don't see a checklist. No alarm color, just info.
+3. **Confidence threshold.** Set `CONFIDENCE_THRESHOLD = 0.75` to match the pending_manual cutoff referenced elsewhere. Threshold constant lives in the checklist itself for now; if Block 12 shadow dashboard wants to use the same cutoff, promote to `doc-requirements.ts`.
+4. **Did not touch `DocTypePill` or `DocUploader`.** Only surface changes are via the existing `defaultDocType` prop wired from the DocumentosTab. Scope discipline.
+
+### Renato-required follow-ups
+
+- None for Block 10 specifically — no migration, no env var.
+- Live smoke test on `/traficos/{id}`: verify checklist appears above uploader with correct state icons, clicking a "Faltante" row scrolls uploader into view + focuses it, summary pill counts match.

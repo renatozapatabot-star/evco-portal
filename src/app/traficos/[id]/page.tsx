@@ -295,7 +295,7 @@ export default async function TraficoDetailPage({
           <TabStrip
             traficoId={traficoId}
             tabs={[
-              { id: 'documentos', label: 'Documentos', content: <DocumentosTab docs={docs} traficoId={traficoId} /> },
+              { id: 'documentos', label: 'Documentos', content: <DocumentosTab docs={docs} traficoId={traficoId} regimen={trafico.regimen} /> },
               { id: 'partidas', label: 'Partidas', content: <PartidasTab partidas={partidas} /> },
               { id: 'cronologia', label: 'Cronología', content: <CronologiaTab decisions={decisions} /> },
               { id: 'notas', label: 'Notas', content: <NotasTab traficoId={traficoId} notes={notes} /> },

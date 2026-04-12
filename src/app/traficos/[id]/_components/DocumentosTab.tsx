@@ -1,8 +1,13 @@
+'use client'
+
+import { useRef, useState } from 'react'
 import { FileText } from 'lucide-react'
 import { BORDER, TEXT_MUTED, TEXT_PRIMARY, TEXT_SECONDARY } from '@/lib/design-system'
 import { fmtDateTime } from '@/lib/format-utils'
 import { DocUploader } from '@/components/docs/DocUploader'
 import { DocTypePill } from '@/components/docs/DocTypePill'
+import { ExpedienteChecklist } from '@/components/docs/ExpedienteChecklist'
+import { getRequiredDocs, type DocType } from '@/lib/doc-requirements'
 
 export interface DocRow {
   id?: string
@@ -13,11 +18,44 @@ export interface DocRow {
   created_at?: string | null
 }
 
-export function DocumentosTab({ docs, traficoId }: { docs: DocRow[]; traficoId: string }) {
-  // Block 10 (ExpedienteChecklist) will mount above the uploader later.
+export function DocumentosTab({
+  docs,
+  traficoId,
+  regimen,
+}: {
+  docs: DocRow[]
+  traficoId: string
+  regimen?: string | null
+}) {
+  const uploaderRef = useRef<HTMLDivElement | null>(null)
+  const [defaultDocType, setDefaultDocType] = useState<DocType | undefined>(undefined)
+
+  const requiredDocs = getRequiredDocs(regimen)
+
+  function handleMissingDocClick(docType: DocType) {
+    setDefaultDocType(docType)
+    // Smooth-scroll the uploader into view + focus it for the 3 AM Driver flow.
+    if (uploaderRef.current) {
+      uploaderRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      const button = uploaderRef.current.querySelector<HTMLElement>('[role="button"]')
+      if (button) {
+        // Defer focus so the scroll animation lands first.
+        window.setTimeout(() => button.focus(), 250)
+      }
+    }
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <DocUploader traficoId={traficoId} />
+      <ExpedienteChecklist
+        requiredDocs={requiredDocs}
+        uploadedDocs={docs}
+        onMissingDocClick={handleMissingDocClick}
+      />
+
+      <div ref={uploaderRef}>
+        <DocUploader traficoId={traficoId} defaultDocType={defaultDocType} />
+      </div>
 
       {docs.length === 0 ? (
         <div

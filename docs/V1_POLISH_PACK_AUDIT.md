@@ -636,3 +636,55 @@ Sender: `Renato Zapata & Company <sistema@renatozapata.com>` — requires Resend
 2. **`RESEND_API_KEY`** — already in `.env.local` and Vercel. Endpoint errors with `CONFIG_ERROR` if missing.
 3. **No new migration.** `documento_solicitudes` already has `doc_types`, `recipient_email`, `recipient_name`, `message`, `channel` from `20260330_build0_schema_prep.sql`. No DB push required.
 4. **Live smoke** — send a real email to a throwaway inbox; confirm `documento_solicitudes` rows appear with `status='solicitado'`, confirm `workflow_events` row with populated `missing_document_types`.
+
+---
+
+## Block 7 — Comments + @mentions
+
+**Status:** SHIPPED.
+**Commit:** (see git log — Slice 3 of V1 Polish Pack)
+
+### Files
+
+| Path | Lines | Purpose |
+|---|---|---|
+| `src/app/traficos/[id]/_components/CommentThread.tsx` | 261 new | Thread with initials avatar, JetBrains Mono author id, mention-as-cyan, composer that fires comment_added + mention_created telemetry |
+| `src/app/traficos/[id]/_components/MentionAutocomplete.tsx` | 220 new | Floating dark-glass listbox triggered on `@`, keyboard nav (↑↓/Enter/Esc/Tab), 60px rows, inserts composite `{companyId}:{role}` at caret |
+| `src/app/traficos/[id]/_components/ComunicacionTab.tsx` | rewritten | Thin wrapper that renders `<CommentThread>` with its four props |
+| `src/app/traficos/[id]/page.tsx` | +32 / −1 | Best-effort `users` table fetch (graceful fallback to `[]`); passes notes + currentUserId + availableUsers into ComunicacionTab |
+
+### Behavior
+
+- **Composer** — textarea with "Escribiendo como {companyId}:{role}" label. Inline MentionAutocomplete watches caret + value.
+- **Autocomplete trigger** — `@` at start-of-input or after whitespace, query is chars between `@` and caret. Whitespace in the query aborts the dropdown (typed a full mention already, move on).
+- **Keyboard** — ↑↓ navigate, Enter/Tab pick, Esc close. Mouse/touch also supported. Each row is 60px tall.
+- **Insertion** — `@{companyId}:{role} ` at caret; caret restored just after the trailing space. `onMentionSelected` records the id so the final submit knows what to pass as `mentions[]`.
+- **Submit** — merges autocomplete-captured mentions with anything typed manually (regex-parsed), filters to only those still present in the body, calls the existing `addTraficoNote` server action. `comment_added` telemetry fires on success; `mention_created` fires per mention with `source=autocomplete|typed`.
+- **Notifications** — `addTraficoNote` already fans out a `createNotification` per mention (Block 1a). No changes to that path — `{companyId}:{role}` format preserved end-to-end.
+- **Thread** — one row per note: 36px circular initials avatar (derived from composite id), JetBrains Mono author id, absolute `fmtDateTime` (never relative), mentions highlighted cyan `#00E5FF` inside the body text.
+- **Graceful fallback** — if the `users` table doesn't exist (current state) the page catches the error, sets `availableUsers=[]`, the autocomplete never opens, and a footer note in the composer says "sin directorio de usuarios (menciones en texto plano)". Plaintext `@companyId:role` still works because the regex parser + server action accept the composite format directly.
+
+### Telemetry
+
+`comment_added` + `mention_created` were already in the 15-event `TelemetryEvent` union (Block 0 front-loaded the list). No union widening needed. Metadata includes `length`, `mention_count`, `mentioned`, `source`.
+
+### Gates
+
+- `npm run typecheck` — **0 errors**
+- `npm run build` — **succeeded**
+- `npm run test` — **121/121 pass**
+
+### Judgment calls
+
+1. **No `users` table → best-effort fetch with try/catch.** The plan explicitly allowed this fallback. Implemented with a try/catch around the Supabase query + dev-only `console.warn`. When the `users` table lands later, this path lights up automatically without any component change.
+2. **Kept NotasTab intact.** The plan replaces the Comunicación stub, not the Notas tab. NotasTab and CommentThread both write through `addTraficoNote` with the same MENTION_RE regex, so behavior stays consistent across both surfaces. A future pass can consolidate once `users` exists.
+3. **Used `onMouseDown` not `onClick` on autocomplete rows.** `onClick` fires after textarea blur, which would dismiss the autocomplete before selection applies. `onMouseDown` + `preventDefault` keeps focus in the textarea.
+4. **Mention-in-body-only filter on submit.** If an operator types `@alice:admin` with autocomplete, then deletes the text manually, we drop the mention from `mentions[]`. Prevents ghost notifications for people no longer tagged.
+5. **Mentions match composite only.** `MENTION_RE = /@([a-z0-9_-]+:[a-z0-9_-]+)/gi` — plaintext `@alice` without the role suffix is NOT recognized as a mention, matching the server action's identity model. Consistency beats convenience here.
+
+### Renato-required follow-ups
+
+- **Create `users` table** (NOT in this slice): `{ id text PRIMARY KEY, full_name text, role text CHECK (role IN ('operator','admin','broker','client')), created_at timestamptz }`. Seed with 8 operator accounts + admin. Autocomplete goes live the moment rows exist.
+- **Live smoke test** (after `users` seeded): type `@ren` in a trafico's Comunicación tab → confirm dropdown appears filtered, Enter inserts `@renato-iv:admin `, submit → verify notification row with that `recipient_key`.
+- **Realtime** on `trafico_notes` for multi-operator live threads is NOT in this slice (Block 6 Realtime covers the bell, not the thread itself).
+

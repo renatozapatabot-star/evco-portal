@@ -156,6 +156,32 @@ export default async function TraficoDetailPage({
   const decisions = ((decisionsRes.data as DecisionRow[] | null) ?? [])
   const notes = ((notesRes.data as NoteRow[] | null) ?? [])
 
+  // Block 7 — best-effort users fetch for mention autocomplete.
+  // No `users` table exists yet; if/when it lands, this query starts
+  // returning rows. For now we gracefully fall back to [] and the
+  // autocomplete simply never opens (plaintext @text still works).
+  interface UserRow { id: string; full_name: string | null; role: string | null }
+  let availableUsers: { id: string; label: string }[] = []
+  try {
+    const { data: userRows, error: userErr } = await supabase
+      .from('users')
+      .select('id, full_name, role')
+      .in('role', ['operator', 'admin', 'broker'])
+      .limit(100)
+    if (!userErr && Array.isArray(userRows)) {
+      availableUsers = (userRows as UserRow[]).map((u) => ({
+        id: u.id,
+        label: u.full_name ? `${u.full_name} (${u.role ?? '—'})` : (u.role ?? u.id),
+      }))
+    }
+  } catch (e) {
+    // Table doesn't exist; ignore and keep the empty fallback.
+    if (process.env.NODE_ENV !== 'production') {
+      // eslint-disable-next-line no-console
+      console.warn('[trafico-detail] users table unavailable — mention autocomplete disabled', e)
+    }
+  }
+
   // Company name — single lookup, tolerate failures.
   let companyName: string | null = null
   if (trafico.company_id) {
@@ -308,7 +334,18 @@ export default async function TraficoDetailPage({
               { id: 'partidas', label: 'Partidas', content: <PartidasTab partidas={partidas} /> },
               { id: 'cronologia', label: 'Cronología', content: <CronologiaTab decisions={decisions} /> },
               { id: 'notas', label: 'Notas', content: <NotasTab traficoId={traficoId} notes={notes} /> },
-              { id: 'comunicacion', label: 'Comunicación', content: <ComunicacionTab /> },
+              {
+                id: 'comunicacion',
+                label: 'Comunicación',
+                content: (
+                  <ComunicacionTab
+                    traficoId={traficoId}
+                    notes={notes}
+                    currentUserId={`${session.companyId}:${session.role}`}
+                    availableUsers={availableUsers}
+                  />
+                ),
+              },
             ]}
           />
         </div>

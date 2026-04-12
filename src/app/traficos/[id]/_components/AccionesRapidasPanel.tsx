@@ -15,6 +15,8 @@ import {
 import { useToast } from '@/components/Toast'
 import { useTrack } from '@/lib/telemetry/useTrack'
 import { updateTraficoStatus } from '../actions'
+import { SolicitarDocsModal } from './SolicitarDocsModal'
+import type { DocType } from '@/lib/doc-requirements'
 
 const STATUS_OPTIONS = [
   'En Proceso',
@@ -28,13 +30,22 @@ export function AccionesRapidasPanel({
   traficoId,
   currentStatus,
   canEdit,
+  cliente,
+  proveedor,
+  missingDocs,
+  operatorName,
 }: {
   traficoId: string
   currentStatus: string
   canEdit: boolean
+  cliente: string
+  proveedor?: string | null
+  missingDocs: DocType[]
+  operatorName: string
 }) {
   const [status, setStatus] = useState(currentStatus)
   const [pending, startTransition] = useTransition()
+  const [modalOpen, setModalOpen] = useState(false)
   const { toast } = useToast()
   const track = useTrack()
 
@@ -60,9 +71,13 @@ export function AccionesRapidasPanel({
     track('page_view', {
       entityType: 'trafico_action',
       entityId: traficoId,
-      metadata: { action: 'solicitar_documentos_stub' },
+      metadata: { action: 'solicitar_documentos_open' },
     })
-    toast('Disponible próximamente — Bloque 5', 'info')
+    if (missingDocs.length === 0) {
+      toast('Expediente completo — no hay documentos que solicitar', 'info')
+      return
+    }
+    setModalOpen(true)
   }
 
   return (
@@ -169,9 +184,22 @@ export function AccionesRapidasPanel({
         Solicitar documentos
       </button>
       <div style={{ fontSize: 11, color: TEXT_MUTED, marginTop: 8, textAlign: 'center' }}>
-        Envío por correo con plantilla (Bloque 5)
+        {missingDocs.length > 0
+          ? `${missingDocs.length} doc${missingDocs.length === 1 ? '' : 's'} faltante${missingDocs.length === 1 ? '' : 's'} · envío por correo`
+          : 'Expediente completo'}
       </div>
       <style>{`@keyframes spin { from { transform: translateY(-50%) rotate(0deg); } to { transform: translateY(-50%) rotate(360deg); } }`}</style>
+
+      {modalOpen && (
+        <SolicitarDocsModal
+          traficoId={traficoId}
+          cliente={cliente}
+          proveedor={proveedor}
+          missingDocs={missingDocs}
+          operatorName={operatorName}
+          onClose={() => setModalOpen(false)}
+        />
+      )}
     </div>
   )
 }

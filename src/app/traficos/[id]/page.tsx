@@ -11,6 +11,7 @@ import {
   TEXT_MUTED,
   TEXT_PRIMARY,
 } from '@/lib/design-system'
+import { getRequiredDocs, type DocType } from '@/lib/doc-requirements'
 import { HeroStrip, type HeroTile } from './_components/HeroStrip'
 import { TabStrip } from './_components/TabStrip'
 import { DocumentosTab } from './_components/DocumentosTab'
@@ -180,6 +181,14 @@ export default async function TraficoDetailPage({
 
   const lastUpdate = trafico.updated_at ?? trafico.created_at ?? null
 
+  // Block 5 — derive missing doc types server-side so the Acciones
+  // rápidas panel can open the composer with the correct pre-check list.
+  const requiredDocs = getRequiredDocs(trafico.regimen)
+  const uploadedDocTypes = new Set(
+    docs.map((d) => (d.document_type ?? d.doc_type ?? '') as string).filter(Boolean),
+  )
+  const missingDocs: DocType[] = requiredDocs.filter((d) => !uploadedDocTypes.has(d))
+
   const infoRows = [
     { label: 'Cliente', value: companyName ?? (trafico.company_id ?? '—') },
     { label: 'Proveedor', value: (trafico.proveedores?.split(',')[0] || '').trim() || '—' },
@@ -309,6 +318,10 @@ export default async function TraficoDetailPage({
             traficoId={traficoId}
             currentStatus={status}
             canEdit={isInternal}
+            cliente={companyName ?? (trafico.company_id ?? '—')}
+            proveedor={(trafico.proveedores?.split(',')[0] || '').trim() || null}
+            missingDocs={missingDocs}
+            operatorName={`${session.companyId}:${session.role}`}
           />
           <InfoLateralPanel rows={infoRows} />
         </div>

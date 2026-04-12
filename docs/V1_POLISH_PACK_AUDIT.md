@@ -568,3 +568,71 @@ Conservative map:
 
 - None for Block 10 specifically — no migration, no env var.
 - Live smoke test on `/traficos/{id}`: verify checklist appears above uploader with correct state icons, clicking a "Faltante" row scrolls uploader into view + focuses it, summary pill counts match.
+
+---
+
+## Block 5 — Solicitation composer
+
+**Status:** SHIPPED.
+**Commit:** (see git log — Slice 2 of V1 Polish Pack)
+
+### Files
+
+| Path | Lines | Purpose |
+|---|---|---|
+| `src/app/traficos/[id]/_components/SolicitarDocsModal.tsx` | 339 new | Three-step modal (checklist → edit email → send) with dark glass styling matching ClientHome |
+| `src/app/api/solicitations/send/route.ts` | 153 new | POST endpoint: tenant-scope check → Resend send → upsert documento_solicitudes → emit workflow_events → log decision |
+| `src/app/traficos/[id]/_components/AccionesRapidasPanel.tsx` | +30 / −6 | Replaced "Disponible próximamente" toast with real modal open; now takes cliente/proveedor/missingDocs/operatorName props |
+| `src/app/traficos/[id]/page.tsx` | +10 / −0 | Server-side computes missingDocs from requiredDocs minus uploaded docs; passes to panel |
+
+### Behavior
+
+1. **Click Solicitar documentos** — if `missingDocs.length === 0` a neutral toast fires and the modal does not open. Otherwise the modal opens with all missing docs pre-checked.
+2. **Toggle checklist** — body auto-re-renders with the new doc list; subject and recipient survive edits.
+3. **Send** — validates email, at least one doc, non-empty subject/body. POST /api/solicitations/send.
+4. **Endpoint** — zod-validated schema, verifies tráfico ownership for non-internal roles, sends Resend email first (fail-fast: if provider rejects, zero DB writes), then upserts one `documento_solicitudes` row per doc type using the existing `UNIQUE(trafico_id, doc_type)` constraint for idempotency.
+5. **Workflow event** — inserts `workflow_events` row with workflow=`docs`, event_type=`docs.solicitation_sent`, payload containing a populated `missing_document_types` array. This is the upstream fix for the empty-array bug that previously broke the processor chain.
+6. **Decision log** — `decision_type='solicitation_sent'` to `operational_decisions` via `src/lib/decision-logger.ts`.
+
+### Email template (Spanish es-MX)
+
+```
+Estimado/a {proveedor},
+
+Le escribo en relación al tráfico {traficoId} del cliente {cliente}.
+
+Para completar el expediente, necesitamos los siguientes documentos:
+  • Factura comercial
+  • Lista de empaque
+  …
+
+Le agradecemos su envío a la brevedad.
+
+Saludos cordiales,
+{operator_name}
+Renato Zapata & Company
+Patente 3596 · Aduana 240 Nuevo Laredo
+```
+
+Sender: `Renato Zapata & Company <sistema@renatozapata.com>` — requires Resend domain verification.
+
+### Gates
+
+- `npm run typecheck` — **0 errors**
+- `npm run build` — **succeeded**
+- `npm run test` — **121/121 pass** (no regression)
+
+### Judgment calls
+
+1. **Recipient email comes from the operator, not proveedores table.** The plan mentions `proveedores.contacto_email` but no such column/table exists in this schema (grep returned zero hits). Rather than invent one, the modal surfaces a recipient-email text field with a placeholder and Zod validates it server-side. If `proveedores.contacto_email` is added later, pre-populate the field at mount.
+2. **Email-first, DB-second.** If email send succeeds but DB upsert fails, the endpoint returns 500 with `DB_WRITE_FAILED`. The email already went out — retrying would duplicate. Operator must check the supplier's inbox. This is better than sending no email at all on a transient DB hiccup.
+3. **`channel: ['email']` hardcoded.** Plan allows telegram/wa later; today email only. Matches existing `documento_solicitudes.channel` default `{portal}` shape.
+4. **operatorName passed as `{companyId}:{role}` composite.** Matches the identity convention used by addTraficoNote and the telemetry user_id. We don't have per-operator full names in session. Adequate signature for audit — Resend "From" header carries firm identity separately.
+5. **Kept the stub telemetry `page_view` event** renamed metadata from `solicitar_documentos_stub` → `_open`. No schema change; historical stub data still groups cleanly.
+
+### Env / Renato-required follow-ups
+
+1. **Resend domain verification** — `sistema@renatozapata.com` sender must have the domain verified in Resend's dashboard before mail actually lands. Until then Resend will return a sender-rejected error and the endpoint surfaces `EMAIL_ERROR` to the UI. No silent failure.
+2. **`RESEND_API_KEY`** — already in `.env.local` and Vercel. Endpoint errors with `CONFIG_ERROR` if missing.
+3. **No new migration.** `documento_solicitudes` already has `doc_types`, `recipient_email`, `recipient_name`, `message`, `channel` from `20260330_build0_schema_prep.sql`. No DB push required.
+4. **Live smoke** — send a real email to a throwaway inbox; confirm `documento_solicitudes` rows appear with `status='solicitado'`, confirm `workflow_events` row with populated `missing_document_types`.

@@ -33,6 +33,7 @@ const { getAllRates } = require('./lib/rates')
 const { handleEmailProcessed } = require('./lib/intake-handlers')
 const { handleDocumentAttached, handleSolicitationSent } = require('./lib/docs-handlers')
 const { handleDispatchReady } = require('./lib/crossing-handlers')
+const { handleReadyForApproval } = require('./lib/pedimento-handlers')
 
 const SCRIPT_NAME = 'workflow-processor'
 const DRY_RUN = process.argv.includes('--dry-run')
@@ -585,17 +586,7 @@ const HANDLERS = {
 
     return { success: true, result: `Duties verified for ${traficoId}: ready for approval` }
   },
-  'pedimento.ready_for_approval': async (event) => {
-    const score = event.payload?.score || 0
-    await tg(
-      `✅ <b>Pedimento listo para aprobación</b>\n` +
-      `Tráfico: ${event.trigger_id}\n` +
-      `Score: ${score}/100\n` +
-      `Responde /aprobar para transmitir\n` +
-      `— CRUZ Workflow`
-    )
-    return { success: true, result: `Approval requested, score: ${score}` }
-  },
+  'pedimento.ready_for_approval': handleReadyForApproval,
   'pedimento.approved': async (event) => {
     const traficoId = event.trigger_id || event.payload?.trafico_id
     const companyId = event.company_id

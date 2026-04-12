@@ -72,12 +72,6 @@ export function ContabilidadClient({ operatorName, kpis }: ContabilidadClientPro
   const greeting = getGreeting(operatorName)
   const { pendientesFacturar, cxCobrar, cxPagar, thisWeekOverdue, lastWeekOverdue } = kpis
 
-  // Banner fires when overdue count dropped this week vs. last week.
-  // RoleKPIBanner celebrates when thisWeek > lastWeek — invert by swapping args,
-  // so "lastWeek overdue" becomes the metric to beat.
-  const bannerThisWeek = Math.max(lastWeekOverdue - thisWeekOverdue, 0)
-  const bannerLastWeek = 0
-
   return (
     <div style={{ padding: '8px 0', maxWidth: 1200, margin: '0 auto', color: TEXT_PRIMARY }}>
       {/* Header */}
@@ -117,19 +111,19 @@ export function ContabilidadClient({ operatorName, kpis }: ContabilidadClientPro
         </p>
       </div>
 
-      {/* Positive KPI banner — only when overdue count dropped vs. last week */}
-      {thisWeekOverdue > 0 && bannerThisWeek > 0 && (
-        <RoleKPIBanner
-          role="contabilidad"
-          name={operatorName}
-          thisWeek={bannerThisWeek}
-          lastWeek={bannerLastWeek}
-          metricLabel="Morosos resueltos · últimos 7 días"
-          celebrationTemplate={({ name, thisWeek }) =>
-            `Cobranzas al día, ${name} — ${thisWeek} menos pendiente${thisWeek === 1 ? '' : 's'} vs. semana pasada.`
-          }
-        />
-      )}
+      {/* Positive KPI banner — celebrates reduction in overdue count week-over-week. */}
+      <RoleKPIBanner
+        role="contabilidad"
+        name={operatorName}
+        thisWeek={thisWeekOverdue}
+        lastWeek={lastWeekOverdue}
+        metricDirection="decrease"
+        metricLabel="Morosos resueltos · últimos 7 días"
+        celebrationTemplate={({ name, delta }) =>
+          `Cobranzas al día, ${name} — ${delta} menos pendiente${delta === 1 ? '' : 's'} vs. semana pasada.`
+        }
+      />
+
 
       {/* 8-card nav grid */}
       <NavCardGrid items={items} />

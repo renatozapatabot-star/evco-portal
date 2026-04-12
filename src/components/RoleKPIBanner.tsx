@@ -6,12 +6,20 @@ interface Props {
   thisWeek: number
   lastWeek: number
   metricLabel: string
-  celebrationTemplate: (args: { name: string; thisWeek: number; pct: number }) => string
+  celebrationTemplate: (args: { name: string; thisWeek: number; lastWeek: number; delta: number; pct: number }) => string
+  /**
+   * 'increase' — celebrate when thisWeek > lastWeek (default, backward compat).
+   *              Example: more documents classified, more traficos cleared.
+   * 'decrease' — celebrate when lastWeek > thisWeek && thisWeek >= 0.
+   *              Example: overdue count dropped, morosos resueltos.
+   */
+  metricDirection?: 'increase' | 'decrease'
 }
 
 /**
- * Positive-KPI banner — appears only when this week's count beats last week's.
- * Glass card, green tint, role-agnostic. Returns null when nothing to celebrate.
+ * Positive-KPI banner — appears only when the metric moved the right way
+ * for this role's job. Glass card, green tint, role-agnostic.
+ * Returns null when nothing to celebrate.
  */
 export function RoleKPIBanner({
   role: _role,
@@ -20,11 +28,27 @@ export function RoleKPIBanner({
   lastWeek,
   metricLabel,
   celebrationTemplate,
+  metricDirection = 'increase',
 }: Props) {
-  if (!(thisWeek >= 1 && thisWeek > lastWeek)) return null
+  let shouldShow = false
+  let delta = 0
+  let displayNumber = 0
 
-  const pct = Math.round(((thisWeek - lastWeek) / Math.max(lastWeek, 1)) * 100)
-  const message = celebrationTemplate({ name, thisWeek, pct })
+  if (metricDirection === 'increase') {
+    shouldShow = thisWeek >= 1 && thisWeek > lastWeek
+    delta = thisWeek - lastWeek
+    displayNumber = thisWeek
+  } else {
+    // 'decrease' — celebrate when the overdue/problem count dropped.
+    shouldShow = thisWeek >= 0 && lastWeek > thisWeek
+    delta = lastWeek - thisWeek
+    displayNumber = delta
+  }
+
+  if (!shouldShow) return null
+
+  const pct = Math.round((delta / Math.max(lastWeek, 1)) * 100)
+  const message = celebrationTemplate({ name, thisWeek, lastWeek, delta, pct })
 
   return (
     <div
@@ -55,7 +79,7 @@ export function RoleKPIBanner({
           flexShrink: 0,
         }}
       >
-        {thisWeek}
+        {displayNumber}
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div

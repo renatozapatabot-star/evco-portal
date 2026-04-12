@@ -98,26 +98,85 @@ export async function approveSolicitation(eventId: string): Promise<ActionResult
 
   if (!event) return { success: false, error: 'Evento no encontrado' }
 
+  const payload = (event.payload || {}) as Record<string, unknown>
+  const now = new Date().toISOString()
+
+  // Extract email fields from payload
+  const emailTo = (payload.supplier_email || payload.to || (payload.email as Record<string, unknown>)?.to) as string | undefined
+  const emailSubject = (payload.subject || (payload.email as Record<string, unknown>)?.subject || `Solicitud de documentación — Tráfico ${event.trigger_id}`) as string
+  const emailBody = (payload.body || payload.email_body || (payload.email as Record<string, unknown>)?.html || '') as string
+
+  // Mark completed with approval metadata
   const { error: updateErr } = await supabase
     .from('workflow_events')
     .update({
       status: 'completed',
-      completed_at: new Date().toISOString(),
+      completed_at: now,
       payload: {
-        ...((event.payload as Record<string, unknown>) || {}),
+        ...payload,
         approved_by: op.operatorId,
+        approved_at: now,
       },
     })
     .eq('id', eventId)
 
   if (updateErr) return { success: false, error: updateErr.message }
 
+  // Actually send the email via Resend if we have a recipient
+  if (emailTo) {
+    const RESEND_API_KEY = process.env.RESEND_API_KEY
+    if (RESEND_API_KEY) {
+      try {
+        const res = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            from: 'CRUZ — Renato Zapata & Co. <ai@renatozapata.com>',
+            to: [emailTo],
+            subject: emailSubject,
+            html: emailBody || `<p>Solicitud de documentación para tráfico ${event.trigger_id}</p>`,
+          }),
+        })
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}))
+          // Email failed — revert to failed status
+          await supabase.from('workflow_events').update({
+            status: 'failed',
+            error_message: `Email send failed: ${(errData as Record<string, unknown>).message || res.statusText}`,
+          }).eq('id', eventId)
+          return { success: false, error: `Error al enviar email: ${(errData as Record<string, unknown>).message || res.statusText}` }
+        }
+      } catch (err) {
+        await supabase.from('workflow_events').update({
+          status: 'failed',
+          error_message: `Email send error: ${(err as Error).message}`,
+        }).eq('id', eventId)
+        return { success: false, error: `Error de conexión: ${(err as Error).message}` }
+      }
+    }
+
+    // Emit docs.solicitation_sent event
+    await supabase.from('workflow_events').insert({
+      workflow: 'docs',
+      event_type: 'solicitation_sent',
+      trigger_id: event.trigger_id,
+      company_id: event.company_id,
+      payload: {
+        trafico_id: event.trigger_id,
+        supplier_email: emailTo,
+        sent_by: op.operatorId,
+        sent_at: now,
+      },
+      status: 'pending',
+    })
+  }
+
   await logDecision(
     event.trigger_id || '',
     event.company_id,
     'solicitation_approved',
-    'Solicitud de documentos aprobada',
-    'Operador aprobó envío de solicitud',
+    `Solicitud aprobada${emailTo ? ` y enviada a ${emailTo}` : ''}`,
+    `Operador aprobó envío de solicitud${emailTo ? ` — email enviado a ${emailTo}` : ' — sin email destino'}`,
     op.operatorId,
   )
 
@@ -234,6 +293,137 @@ export async function escalateEvent(
     `Operador escaló evento ${event.event_type} al broker`,
     op.operatorId,
   )
+
+  return { success: true }
+}
+
+export async function resolveCompleteness(
+  eventId: string,
+  resolution: 'confirmed' | 'not_required',
+  notes: string
+): Promise<ActionResult> {
+  const op = await getOperator()
+  if (!op) return { success: false, error: 'No autorizado' }
+
+  const { data: event } = await supabase
+    .from('workflow_events')
+    .select('*')
+    .eq('id', eventId)
+    .single()
+
+  if (!event) return { success: false, error: 'Evento no encontrado' }
+
+  const payload = (event.payload || {}) as Record<string, unknown>
+  const now = new Date().toISOString()
+
+  const { error: updateErr } = await supabase
+    .from('workflow_events')
+    .update({
+      status: 'completed',
+      completed_at: now,
+      payload: {
+        ...payload,
+        resolution,
+        resolution_notes: notes || null,
+        resolved_by: op.operatorId,
+        resolved_at: now,
+      },
+    })
+    .eq('id', eventId)
+
+  if (updateErr) return { success: false, error: updateErr.message }
+
+  // If documents confirmed received, emit expediente_complete
+  if (resolution === 'confirmed') {
+    await supabase.from('workflow_events').insert({
+      workflow: 'docs',
+      event_type: 'expediente_complete',
+      trigger_id: event.trigger_id,
+      company_id: event.company_id,
+      payload: {
+        trafico_id: event.trigger_id,
+        confirmed_by: op.operatorId,
+      },
+      status: 'pending',
+    })
+  }
+
+  await logDecision(
+    event.trigger_id || '',
+    event.company_id,
+    'completeness_resolution',
+    resolution === 'confirmed' ? 'Documentos confirmados' : 'Documentos no requeridos',
+    `Operador resolvió: ${resolution}${notes ? ` — ${notes}` : ''}`,
+    op.operatorId,
+  )
+
+  return { success: true }
+}
+
+export async function retrySolicitation(
+  eventId: string,
+  action: 'retry' | 'mark_manual'
+): Promise<ActionResult> {
+  const op = await getOperator()
+  if (!op) return { success: false, error: 'No autorizado' }
+
+  const { data: event } = await supabase
+    .from('workflow_events')
+    .select('*')
+    .eq('id', eventId)
+    .single()
+
+  if (!event) return { success: false, error: 'Evento no encontrado' }
+
+  const payload = (event.payload || {}) as Record<string, unknown>
+  const now = new Date().toISOString()
+
+  if (action === 'retry') {
+    const { error: updateErr } = await supabase
+      .from('workflow_events')
+      .update({
+        status: 'pending',
+        error_message: null,
+        attempt_count: ((event.attempt_count as number) || 0) + 1,
+      })
+      .eq('id', eventId)
+
+    if (updateErr) return { success: false, error: updateErr.message }
+
+    await logDecision(
+      event.trigger_id || '',
+      event.company_id,
+      'solicitation_retry',
+      'Reintento de solicitud fallida',
+      `Operador reintentó envío (intento ${((event.attempt_count as number) || 0) + 1})`,
+      op.operatorId,
+    )
+  } else {
+    const { error: updateErr } = await supabase
+      .from('workflow_events')
+      .update({
+        status: 'completed',
+        completed_at: now,
+        payload: {
+          ...payload,
+          manual_resolution: true,
+          resolved_by: op.operatorId,
+          resolved_at: now,
+        },
+      })
+      .eq('id', eventId)
+
+    if (updateErr) return { success: false, error: updateErr.message }
+
+    await logDecision(
+      event.trigger_id || '',
+      event.company_id,
+      'solicitation_manual',
+      'Solicitud resuelta manualmente',
+      'Operador marcó solicitud como resuelta manualmente (sin envío automático)',
+      op.operatorId,
+    )
+  }
 
   return { success: true }
 }

@@ -7,6 +7,8 @@ import {
   assignCarrier,
   retryEvent,
   escalateEvent,
+  resolveCompleteness,
+  retrySolicitation,
 } from './actions'
 import type { WorkflowEvent } from './ExceptionCard'
 
@@ -24,6 +26,7 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
   const [fraccion, setFraccion] = useState('')
   const [carrierName, setCarrierName] = useState('')
   const [escalateNote, setEscalateNote] = useState('')
+  const [completenessNotes, setCompletenessNotes] = useState('')
   const [view, setView] = useState<ModalView>('default')
 
   if (!event) return null
@@ -292,11 +295,24 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
 
   // ── Solicitation Approval ──
   if (eventType === 'docs.solicitation_needed') {
-    const subject = (payload.subject || '') as string
-    const body = (payload.body || payload.email_body || '') as string
+    const subject = (payload.subject || (payload.email as Record<string, unknown>)?.subject || '') as string
+    const body = (payload.body || payload.email_body || (payload.email as Record<string, unknown>)?.html || '') as string
+    const solicitedDocs = (payload.solicited_docs || payload.missing_document_types || []) as string[]
+    const supplierEmail = (payload.supplier_email || (payload.email as Record<string, unknown>)?.to || '') as string
 
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {supplierEmail && (
+          <div>
+            <label style={{ fontSize: 11, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+              Destinatario
+            </label>
+            <p style={{ fontSize: 14, fontFamily: 'var(--font-mono)', color: '#E6EDF3', margin: '4px 0 0' }}>
+              {supplierEmail}
+            </p>
+          </div>
+        )}
+
         {subject && (
           <div>
             <label style={{ fontSize: 11, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
@@ -308,7 +324,7 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
           </div>
         )}
 
-        {body && (
+        {body ? (
           <div
             style={{
               background: 'rgba(255,255,255,0.03)',
@@ -323,7 +339,20 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
               {body}
             </p>
           </div>
-        )}
+        ) : solicitedDocs.length > 0 ? (
+          <div>
+            <label style={{ fontSize: 11, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, display: 'block' }}>
+              Documentos solicitados
+            </label>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {solicitedDocs.map((doc, i) => (
+                <span key={i} style={{ fontSize: 13, color: '#E6EDF3', padding: '6px 0' }}>
+                  • {doc}
+                </span>
+              ))}
+            </div>
+          </div>
+        ) : null}
 
         {error && <p style={{ color: '#EF4444', fontSize: 13, margin: 0 }}>{error}</p>}
 
@@ -423,7 +452,150 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
     )
   }
 
-  // ── Fallback: docs.completeness_check and other unhandled types ──
+  // ── Document Completeness Check ──
+  if (eventType === 'docs.completeness_check') {
+    const missingDocs = (payload.missing_docs || payload.missing_critical || payload.missing_required || []) as string[]
+    const completeness = payload.completeness_pct as number | undefined
+
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {missingDocs.length > 0 && (
+          <div>
+            <label style={{ fontSize: 11, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, display: 'block' }}>
+              Documentos faltantes
+            </label>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {missingDocs.map((doc, i) => (
+                <div key={i} style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  padding: '8px 12px',
+                  background: 'rgba(251,191,36,0.06)',
+                  border: '1px solid rgba(251,191,36,0.15)',
+                  borderRadius: 8,
+                }}>
+                  <span style={{ fontSize: 13, color: '#E6EDF3' }}>{doc}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {completeness !== undefined && (
+          <p style={{ fontSize: 12, fontFamily: 'var(--font-mono)', color: '#64748b', margin: 0 }}>
+            Completitud: {completeness}%
+          </p>
+        )}
+
+        <div>
+          <label style={{ fontSize: 13, color: '#E6EDF3', fontWeight: 600, display: 'block', marginBottom: 6 }}>
+            Notas (opcional)
+          </label>
+          <textarea
+            value={completenessNotes}
+            onChange={(e) => setCompletenessNotes(e.target.value)}
+            placeholder="Observaciones sobre los documentos..."
+            rows={2}
+            style={{
+              width: '100%', padding: 12,
+              background: 'rgba(255,255,255,0.04)',
+              border: '1px solid rgba(255,255,255,0.12)',
+              borderRadius: 12, color: '#E6EDF3', fontSize: 14,
+              resize: 'vertical', outline: 'none', fontFamily: 'inherit',
+            }}
+          />
+        </div>
+
+        {error && <p style={{ color: '#EF4444', fontSize: 13, margin: 0 }}>{error}</p>}
+
+        <div style={{ display: 'flex', gap: 12 }}>
+          <button
+            onClick={() => handleAction(() => resolveCompleteness(event.id, 'not_required', completenessNotes))}
+            disabled={loading}
+            style={{
+              flex: 1, minHeight: 60, padding: '14px 20px',
+              background: 'transparent',
+              border: '1px solid rgba(255,255,255,0.12)',
+              borderRadius: 12, color: '#E6EDF3', fontSize: 14,
+              fontWeight: 600, cursor: 'pointer',
+            }}
+          >
+            {loading ? 'Procesando...' : 'No requeridos'}
+          </button>
+          <button
+            onClick={() => handleAction(() => resolveCompleteness(event.id, 'confirmed', completenessNotes))}
+            disabled={loading}
+            style={{
+              flex: 1, minHeight: 60, padding: '14px 20px',
+              background: loading ? '#64748b' : '#eab308',
+              border: 'none', borderRadius: 12,
+              color: '#0D0D0C', fontSize: 14, fontWeight: 700,
+              cursor: loading ? 'wait' : 'pointer',
+            }}
+          >
+            {loading ? 'Confirmando...' : 'Documentos recibidos'}
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // ── Solicitation Failed ──
+  if (eventType === 'docs.solicitation_failed') {
+    const failError = (payload.error || event.error_message || 'Error desconocido') as string
+
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div style={{
+          background: 'rgba(239,68,68,0.1)',
+          border: '1px solid rgba(239,68,68,0.2)',
+          borderRadius: 12, padding: 16,
+        }}>
+          <p style={{ fontSize: 12, fontFamily: 'var(--font-mono)', color: '#EF4444', margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+            {failError}
+          </p>
+        </div>
+
+        {event.attempt_count !== null && event.attempt_count > 0 && (
+          <p style={{ fontSize: 12, color: '#64748b', margin: 0, fontFamily: 'var(--font-mono)' }}>
+            Intentos: {event.attempt_count}
+          </p>
+        )}
+
+        {error && <p style={{ color: '#EF4444', fontSize: 13, margin: 0 }}>{error}</p>}
+
+        <div style={{ display: 'flex', gap: 12 }}>
+          <button
+            onClick={() => handleAction(() => retrySolicitation(event.id, 'mark_manual'))}
+            disabled={loading}
+            style={{
+              flex: 1, minHeight: 60, padding: '14px 20px',
+              background: 'transparent',
+              border: '1px solid rgba(255,255,255,0.12)',
+              borderRadius: 12, color: '#E6EDF3', fontSize: 14,
+              fontWeight: 600, cursor: 'pointer',
+            }}
+          >
+            Resolver manualmente
+          </button>
+          <button
+            onClick={() => handleAction(() => retrySolicitation(event.id, 'retry'))}
+            disabled={loading}
+            style={{
+              flex: 1, minHeight: 60, padding: '14px 20px',
+              background: loading ? '#64748b' : '#eab308',
+              border: 'none', borderRadius: 12,
+              color: '#0D0D0C', fontSize: 14, fontWeight: 700,
+              cursor: loading ? 'wait' : 'pointer',
+            }}
+          >
+            {loading ? 'Reintentando...' : 'Reintentar envío'}
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // ── Fallback: other unhandled types ──
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div>

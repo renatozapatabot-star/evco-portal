@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Search, Bell, Menu, LogOut, ChevronLeft, Zap } from 'lucide-react';
+import { Search, Bell, Menu, LogOut, ChevronLeft } from 'lucide-react';
 import { useNotificationBadge } from '@/hooks/use-notifications';
 import { AduanaMark } from '@/components/command-center/CruzMark';
 
@@ -86,15 +86,6 @@ export default function TopBar({
         >
           <Search size={18} />
         </button>
-
-        {/* ADUANA AI button (mobile only — navigates to full AI page) */}
-        <Link
-          href="/aduana"
-          className="topbar-ai-mobile"
-          aria-label="ADUANA AI"
-        >
-          <Zap size={16} />
-        </Link>
 
         {/* Right: company name + logout */}
         <div className="topbar-right">

@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Brain, ArrowRight, AlertTriangle, TrendingUp, Zap } from 'lucide-react'
+import { Brain, AlertTriangle, TrendingUp, Zap } from 'lucide-react'
 import type { ClientInsight } from '@/components/cockpit/shared/fetchCockpitData'
 
 interface Props {
@@ -24,6 +24,12 @@ const typeIcon: Record<ClientInsight['type'], typeof AlertTriangle> = {
 }
 
 export function IntelligencePanel({ computedInsights, activeShipments, cruzadosYTD, entradasThisMonth }: Props) {
+  // Contextual header based on most critical insight
+  const hasCritical = computedInsights.some(i => i.severity === 'critical')
+  const hasWarning = computedInsights.some(i => i.severity === 'warning')
+  const headerLabel = hasCritical ? 'Requiere atención' : hasWarning ? 'Pendientes' : 'Estado de operaciones'
+  const headerColor = hasCritical ? '#EF4444' : hasWarning ? '#FBBF24' : '#00E5FF'
+
   return (
     <div style={{
       background: 'rgba(255,255,255,0.04)',
@@ -34,16 +40,16 @@ export function IntelligencePanel({ computedInsights, activeShipments, cruzadosY
       padding: '20px',
       boxShadow: '0 10px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)',
     }}>
-      {/* Header */}
+      {/* Contextual header */}
       <div style={{
         display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16,
       }}>
-        <Brain size={16} color="#00E5FF" />
+        <Brain size={16} color={headerColor} />
         <span style={{
-          fontSize: 12, fontWeight: 700, color: '#00E5FF',
+          fontSize: 12, fontWeight: 700, color: headerColor,
           textTransform: 'uppercase', letterSpacing: '0.08em',
         }}>
-          ADUANA Inteligencia
+          {headerLabel}
         </span>
       </div>
 
@@ -104,19 +110,6 @@ export function IntelligencePanel({ computedInsights, activeShipments, cruzadosY
         </p>
       )}
 
-      {/* CTA */}
-      <Link href="/aduana" style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-        fontSize: 13, fontWeight: 600, color: '#eab308',
-        textDecoration: 'none',
-        padding: '10px 16px', borderRadius: 10,
-        background: 'rgba(234,179,8,0.1)',
-        border: '1px solid rgba(234,179,8,0.2)',
-        minHeight: 44,
-        transition: 'all 200ms ease',
-      }}>
-        Pregunta a ADUANA <ArrowRight size={14} />
-      </Link>
     </div>
   )
 }

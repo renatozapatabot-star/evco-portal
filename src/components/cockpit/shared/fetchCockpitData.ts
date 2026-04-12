@@ -960,14 +960,8 @@ async function fetchClientData(companyId: string): Promise<ClientData> {
       urgency: 'high',
     })
   }
-  if (pedimentosCount === 0 && activeCount > 0) {
-    suggestedActions.push({
-      label: 'Consultar con agente aduanal',
-      href: '/aduana',
-      reason: `${activeCount} tráfico${activeCount !== 1 ? 's' : ''} sin pedimento`,
-      urgency: 'medium',
-    })
-  }
+  // pedimentosCount === 0 anomaly is already shown in KPI strip + computed insights
+  // No standalone suggested action needed — floating Aduana AI handles questions
   if (faltantesCount > 0) {
     suggestedActions.push({
       label: `${faltantesCount} entrada${faltantesCount !== 1 ? 's' : ''} con faltantes`,

@@ -54,7 +54,7 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/bodega/inicio', request.url))
     }
     if (role === 'contabilidad') {
-      return NextResponse.redirect(new URL('/contabilidad/inicio', request.url))
+      return NextResponse.redirect(new URL('/contabilidad', request.url))
     }
   }
 

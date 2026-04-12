@@ -156,7 +156,7 @@ export const WAREHOUSE_GROUPS: NavGroup[] = []
 
 // V1 contabilidad nav (Phase 4 cull) — 5 items.
 export const CONTABILIDAD_NAV: NavTopLevel[] = [
-  { href: '/contabilidad/inicio',   label: 'Inicio',       icon: LayoutDashboard },
+  { href: '/contabilidad',          label: 'Inicio',       icon: LayoutDashboard },
   { href: '/facturacion',           label: 'Facturación',  icon: FileText },
   { href: '/cobranzas',             label: 'Cobranzas',    icon: DollarSign },
   { href: '/pagos',                 label: 'Pagos',        icon: DollarSign },

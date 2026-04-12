@@ -778,11 +778,26 @@ Nav surfaces — sidebars, command palette, cockpit cards — show ONLY these ro
 **Warehouse:** `/bodega/recibir` · `/bodega/escanear` · `/bodega/patio` · `/bodega/[id]/avc`
 **Auth + supplier:** `/login` · `/proveedor/[token]`
 
+### V1.5 approved routes (additions)
+
+V1.5 capstone shipped 2026-04-12. These routes join the V1 cockpit test and must pass all 10 points:
+
+- `/bodega/escanear` (F1 — QR warehouse scan)
+- `/admin/quickbooks-export` (F2 — Anabel's one-click IIF export)
+- `/contabilidad` (F3 — accounting cockpit landing)
+- `/admin/eagle` (F6 — Tito's morning 6-tile cockpit)
+- `/admin/clientes-dormidos` (F7 — dormant client detection)
+- `/traficos/[id]/trace` (F8 — end-to-end lifecycle timeline)
+- `/admin/demo` (F9 — one-click synthetic demo)
+- `/admin/operadores` + `/admin/operadores/[id]` (F10 — operator performance)
+- `/admin/notificaciones` (F12 — Telegram routing config)
+- `/admin/auditoria` (F16 — audit log viewer)
+
 ### Out-of-V1 routes
 
 Every other route (`/voz`, `/god-view`, `/launchpad`, `/aduana`, `/comunicaciones`, `/bienvenida`, `/demo*`, `/intelligence`, `/cruz*`, `/mis-reglas`, `/calls`, `/war-room`, `/acciones`, `/financiero`, `/rentabilidad`, etc.) stays reachable by direct URL but is hidden from nav. Candidates for delete or V2.
 
-### Brand status (post Phase 3 + 4 sweep)
+### Brand status (post Phase 3 + 4 sweep, V1.5 capstone shipped 2026-04-12)
 
 - User-visible `>Portal<` / `>CRUZ<` / `>ADUANA<` JSX text: **0 hits** in src/app + src/components
 - User-visible title/metadata brand refs: **0 hits**

@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <rect width="512" height="512" rx="108" fill="#141C26"/>
-  <text x="256" y="300" text-anchor="middle" font-family="monospace" font-weight="800" font-size="140" letter-spacing="12" fill="#C4963C">CRUZ</text>
+  <text x="256" y="300" text-anchor="middle" font-family="sans-serif" font-weight="800" font-size="110" letter-spacing="6" fill="#C4963C">Portal</text>
   <text x="256" y="380" text-anchor="middle" font-family="sans-serif" font-weight="500" font-size="36" fill="#6B6B6B">PATENTE 3596</text>
 </svg>

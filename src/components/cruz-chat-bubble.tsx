@@ -283,7 +283,7 @@ export function AduanaChatBubble() {
                 </svg>
               </div>
               <div>
-                <div style={{ fontSize: 15, fontWeight: 800, color: D.text, letterSpacing: '-0.02em' }}>CRUZ</div>
+                <div style={{ fontSize: 15, fontWeight: 800, color: D.text, letterSpacing: '-0.02em' }}>Asistente Portal</div>
                 <div style={{ fontSize: 11, color: D.textMuted }}>Asistente aduanal</div>
               </div>
             </div>
@@ -484,7 +484,7 @@ export function AduanaChatBubble() {
       {!open && !isMobile && (
         <button
           onClick={handleOpen}
-          aria-label="Abrir ADUANA AI"
+          aria-label="Abrir Asistente Portal"
           className="cruz-thought-bubble"
           style={{
             position: 'fixed',
@@ -504,7 +504,7 @@ export function AduanaChatBubble() {
           onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,229,255,0.15)' }}
         >
           <span style={{ fontSize: 16, lineHeight: 1, color: '#00E5FF' }}>&#10022;</span>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 800, color: '#00E5FF', letterSpacing: '0.06em' }}>ADUANA AI</span>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 800, color: '#00E5FF', letterSpacing: '0.06em' }}>Asistente Portal</span>
           {/* Unread indicator */}
           {hasUnread && (
             <div style={{

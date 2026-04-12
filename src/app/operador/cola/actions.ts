@@ -131,7 +131,7 @@ export async function approveSolicitation(eventId: string): Promise<ActionResult
           method: 'POST',
           headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            from: 'CRUZ — Renato Zapata & Co. <ai@renatozapata.com>',
+            from: 'Renato Zapata & Co. <ai@renatozapata.com>',
             to: [emailTo],
             subject: emailSubject,
             html: emailBody || `<p>Solicitud de documentación para tráfico ${event.trigger_id}</p>`,

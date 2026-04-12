@@ -22,7 +22,7 @@ const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN
 const TELEGRAM_CHAT = '-5085543275'
 const RESEND_API_KEY = process.env.RESEND_API_KEY
 const PORTAL_URL = 'https://evco-portal.vercel.app'
-const FROM_EMAIL = 'CRUZ — Renato Zapata & Co. <ai@renatozapata.com>'
+const FROM_EMAIL = 'Renato Zapata & Co. <ai@renatozapata.com>'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,

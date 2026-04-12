@@ -5,7 +5,7 @@ import { createClient } from '@supabase/supabase-js'
 import { logOperatorAction, getOperatorId } from '@/lib/operator-actions'
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY
-const FROM_EMAIL = 'CRUZ — Renato Zapata & Co. <ai@renatozapata.com>'
+const FROM_EMAIL = 'Renato Zapata & Co. <ai@renatozapata.com>'
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://evco-portal.vercel.app'
 
 export async function sendChaserEmail(formData: FormData): Promise<{ success?: boolean; error?: string; recipient?: string }> {

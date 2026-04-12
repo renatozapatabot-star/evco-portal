@@ -367,7 +367,7 @@ function renderHTML(metrics, subjectDate, pixelToken) {
     <tr><td align="center" style="padding: 40px 16px;">
       <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width: 560px;">
         <tr><td align="center" style="padding-bottom: 8px;">
-          <span style="font-size: 24px; font-weight: 900; letter-spacing: 0.15em; color: #eab308;">ADUANA</span>
+          <span style="font-size: 24px; font-weight: 900; letter-spacing: 0.15em; color: #eab308;">Portal</span>
         </td></tr>
         <tr><td align="center" style="padding-bottom: 24px;">
           <span style="font-size: 11px; color: #64748b; letter-spacing: 0.08em; text-transform: uppercase;">

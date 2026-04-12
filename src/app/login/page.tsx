@@ -70,8 +70,8 @@ function LoginContent() {
       {/* Subtle grid texture */}
       <div className="login-grid" />
 
-      {/* CRUZ watermark */}
-      <div className="login-watermark" aria-hidden="true">ADUANA</div>
+      {/* Portal watermark */}
+      <div className="login-watermark" aria-hidden="true">Portal</div>
 
       {/* Floating gold accent */}
       <div className="login-glow" />
@@ -106,7 +106,7 @@ function LoginContent() {
           {/* Brand */}
           <div className="login-brand">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 8 }}>
-              <div className="login-cruz-wordmark">ADUANA</div>
+              <div className="login-cruz-wordmark">Portal</div>
             </div>
             <div className="login-cruz-accent" />
             <div className="login-brand-company">RENATO ZAPATA &amp; CO.</div>

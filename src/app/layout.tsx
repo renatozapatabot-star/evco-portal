@@ -26,13 +26,13 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  title: "ADUANA · Inteligencia Aduanal",
+  title: "Portal · Inteligencia Aduanal",
   description: "Plataforma de inteligencia aduanal · Patente 3596 · Aduana 240 · Nuevo Laredo",
   icons: { icon: '/favicon.svg' },
   openGraph: {
-    title: 'ADUANA — Cross-Border Intelligence',
+    title: 'Portal — Cross-Border Intelligence',
     description: 'Renato Zapata & Company · Patente 3596 · Est. 1941',
-    siteName: 'ADUANA',
+    siteName: 'Portal',
   },
   appleWebApp: {
     capable: true,
@@ -53,7 +53,7 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="ADUANA" />
+        <meta name="apple-mobile-web-app-title" content="Portal" />
         <link rel="apple-touch-icon" href="/icon-192.png" />
         <link rel="preconnect" href="https://jkhpafacchjxawnscplf.supabase.co" />
         <link rel="dns-prefetch" href="https://jkhpafacchjxawnscplf.supabase.co" />

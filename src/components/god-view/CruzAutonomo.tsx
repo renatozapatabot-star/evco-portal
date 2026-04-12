@@ -30,7 +30,7 @@ export function AduanaAutonomo({ opsCenter, agentDecisions24h, agentAccuracy, er
     return (
       <div className="god-section">
         <h2 className="god-section-title">
-          <Bot size={16} /> ADUANA Autónomo
+          <Bot size={16} /> Pipeline Autónomo
         </h2>
         <div className="god-empty">Sin datos del agente</div>
       </div>
@@ -49,7 +49,7 @@ export function AduanaAutonomo({ opsCenter, agentDecisions24h, agentAccuracy, er
       >
         <h2 className="god-section-title">
           <span className="god-pulse-dot" />
-          ADUANA Autónomo
+          Pipeline Autónomo
         </h2>
         <div className="god-autonomo-summary">
           <span className="font-mono god-autonomo-stat">

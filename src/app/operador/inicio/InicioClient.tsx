@@ -2,6 +2,8 @@
 
 import { useEffect, useCallback, useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import { Truck, AlertTriangle, FileText, Upload, Tags, Mail, Calendar, Users } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { createClient as createBrowserSupabaseClient } from '@/lib/supabase/client'
 import {
   BG_GRADIENT_START, BG_GRADIENT_END,
@@ -12,7 +14,24 @@ import { HeroStrip } from './HeroStrip'
 import { QuickActions } from './QuickActions'
 import { ActiveTraficos } from './ActiveTraficos'
 import { RightRail } from './RightRail'
+import { NavCardGrid, type NavCardGridItem, type NavTile } from '@/components/NavCardGrid'
+import { RoleKPIBanner } from '@/components/RoleKPIBanner'
 import type { TraficoRow, DecisionRow, KPIs, SystemStatus } from './types'
+
+interface OperatorTile extends NavTile {
+  badgeKey?: 'personalActive' | 'excepcionesCount' | 'pedimentosPendientes' | 'clasificacionesPendientes' | 'solicitudesAbiertas'
+}
+
+const OPERATOR_TILES: OperatorTile[] = [
+  { href: '/traficos?mio=1',                 label: 'Mis tráficos',             icon: Truck as LucideIcon,          description: 'En proceso asignados',             badgeKey: 'personalActive' },
+  { href: '/operador/cola',                  label: 'Cola de excepciones',      icon: AlertTriangle as LucideIcon,  description: 'Pendientes de resolver',            badgeKey: 'excepcionesCount' },
+  { href: '/pedimentos?estatus=borrador',    label: 'Pedimentos pendientes',    icon: FileText as LucideIcon,       description: 'Borradores y revisión',             badgeKey: 'pedimentosPendientes' },
+  { href: '/operador/subir',                 label: 'Subir documentos',         icon: Upload as LucideIcon,         description: 'Arrastra PDFs / fotos' },
+  { href: '/clasificaciones',                label: 'Clasificaciones',          icon: Tags as LucideIcon,           description: 'Revisar y aprobar',                 badgeKey: 'clasificacionesPendientes' },
+  { href: '/solicitudes',                    label: 'Solicitudes enviadas',     icon: Mail as LucideIcon,           description: 'Documentos pedidos a proveedores',  badgeKey: 'solicitudesAbiertas' },
+  { href: '/mi-dia',                         label: 'Mi día',                   icon: Calendar as LucideIcon,       description: 'Plan de hoy' },
+  { href: '/equipo',                         label: 'Equipo',                   icon: Users as LucideIcon,          description: 'Actividad reciente' },
+]
 
 interface Props {
   operatorName: string
@@ -25,6 +44,8 @@ interface Props {
   colaCount: number
   systemStatus: SystemStatus
   summaryLine: string
+  personalCompletedThisWeek: number
+  personalCompletedLastWeek: number
 }
 
 function statusColor(s: SystemStatus): string {
@@ -133,6 +154,35 @@ export function InicioClient(props: Props) {
           `}</style>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16, minWidth: 0 }}>
             <HeroStrip kpis={props.kpis} />
+            <RoleKPIBanner
+              role="operator"
+              name={props.operatorName}
+              thisWeek={props.personalCompletedThisWeek}
+              lastWeek={props.personalCompletedLastWeek}
+              metricLabel="Tráficos cruzados · últimos 7 días"
+              celebrationTemplate={({ name, thisWeek, pct }) =>
+                `${name}, cerraste ${thisWeek} tráfico${thisWeek === 1 ? '' : 's'} esta semana (+${pct}% vs semana pasada). Portal te lo reconoce.`
+              }
+            />
+            <NavCardGrid items={OPERATOR_TILES.map((tile): NavCardGridItem => {
+              const badges: Record<string, number> = {
+                personalActive: props.personalAssigned,
+                excepcionesCount: props.colaCount,
+                pedimentosPendientes: props.kpis.pendientes,
+                clasificacionesPendientes: 0,
+                solicitudesAbiertas: 0,
+              }
+              const count = tile.badgeKey ? (badges[tile.badgeKey] ?? null) : null
+              return {
+                tile: {
+                  href: tile.href,
+                  label: tile.label,
+                  icon: tile.icon,
+                  description: tile.description,
+                },
+                count,
+              }
+            })} />
             <ActiveTraficos
               rows={props.traficos}
               onRefresh={refresh}

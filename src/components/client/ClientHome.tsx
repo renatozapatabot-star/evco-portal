@@ -12,8 +12,8 @@ import { fmtDateTime } from '@/lib/format-utils'
 import { PriorityZone } from './PriorityZone'
 import { SmartKPIStrip } from './SmartKPIStrip'
 import { IntelligencePanel } from './IntelligencePanel'
-import { SmartNavCard } from './SmartNavCard'
 import { SuggestedActions } from './SuggestedActions'
+import { NavCardGrid, type NavCardGridItem } from '../NavCardGrid'
 
 // ── Tile config ────────────────────────────────────────────
 
@@ -234,24 +234,23 @@ export function ClientHome({ companyName, data }: { companyName?: string; data: 
       <div className="client-main-grid" style={{ display: 'grid', gap: 16 }}>
 
         {/* Left: Nav Cards */}
-        <div className="nav-cards-grid" style={{ display: 'grid', gap: 12 }}>
-          {TILES.map((tile) => {
+        <NavCardGrid
+          items={TILES.map((tile): NavCardGridItem => {
             const count = tileCount(tile, data)
             const ms = tileMicroStatus(tile, data)
-            return (
-              <SmartNavCard
-                key={tile.href}
-                href={tile.href}
-                label={tile.label}
-                icon={tile.icon}
-                description={tile.description}
-                count={count}
-                microStatus={ms?.text}
-                microStatusWarning={ms?.warning}
-              />
-            )
+            return {
+              tile: {
+                href: tile.href,
+                label: tile.label,
+                icon: tile.icon,
+                description: tile.description,
+              },
+              count,
+              microStatus: ms?.text,
+              microStatusWarning: ms?.warning,
+            }
           })}
-        </div>
+        />
 
         {/* Right: Intelligence + Activity */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>

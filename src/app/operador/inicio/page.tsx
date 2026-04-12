@@ -26,6 +26,7 @@ export default async function OperadorInicioPage() {
   const now = new Date()
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString()
   const sevenDaysAgo = new Date(now.getTime() - 7 * 86400000).toISOString()
+  const fourteenDaysAgo = new Date(now.getTime() - 14 * 86400000).toISOString()
   const weekEnd = new Date(now.getTime() + 7 * 86400000).toISOString()
 
   const [
@@ -38,6 +39,8 @@ export default async function OperadorInicioPage() {
     personalRes,
     personalDoneRes,
     colaCountRes,
+    personalCompletedThisWeekRes,
+    personalCompletedLastWeekRes,
   ] = await Promise.all([
     sb.from('entradas')
       .select('cve_entrada', { count: 'exact', head: true })
@@ -77,6 +80,21 @@ export default async function OperadorInicioPage() {
     sb.from('workflow_events')
       .select('id', { count: 'exact', head: true })
       .in('status', ['pending', 'failed', 'dead_letter']),
+    opId
+      ? sb.from('traficos')
+          .select('trafico', { count: 'exact', head: true })
+          .eq('assigned_to_operator_id', opId)
+          .eq('estatus', 'Cruzado')
+          .gte('updated_at', sevenDaysAgo)
+      : Promise.resolve({ count: 0 }),
+    opId
+      ? sb.from('traficos')
+          .select('trafico', { count: 'exact', head: true })
+          .eq('assigned_to_operator_id', opId)
+          .eq('estatus', 'Cruzado')
+          .gte('updated_at', fourteenDaysAgo)
+          .lt('updated_at', sevenDaysAgo)
+      : Promise.resolve({ count: 0 }),
   ])
 
   const kpis = {
@@ -110,6 +128,8 @@ export default async function OperadorInicioPage() {
       colaCount={colaCount}
       systemStatus={systemStatus}
       summaryLine={summaryLine}
+      personalCompletedThisWeek={personalCompletedThisWeekRes.count || 0}
+      personalCompletedLastWeek={personalCompletedLastWeekRes.count || 0}
     />
   )
 }

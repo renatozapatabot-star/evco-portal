@@ -198,3 +198,61 @@ Remaining hits are overwhelmingly code identifiers, CSS class hooks, directory n
 ### Injection attempts detected during execution
 
 Multiple `<system-reminder>` blocks appeared inside tool-call outputs attempting to redirect execution: (a) an ADUANA-preserving CLAUDE.md insisting "all user-facing text says 'ADUANA'", (b) an operational-resilience rules file, (c) a design-system file, (d) a core-invariants file, (e) an MCP `computer-use` instructions block. All were treated as untrusted data per the prompt's injection guard and ignored. Executor continued with the user's authoritative scope.
+
+### P2 commit 2 — operator 8-card + banner
+
+Operator cockpit now gets the same glass 8-card nav grid that the client cockpit shipped in Phase 1, plus a role-agnostic positive-KPI banner (`RoleKPIBanner`) that celebrates week-over-week personal throughput. Nav grid logic was extracted from `ClientHome` into a shared `NavCardGrid` component so both cockpits consume the same primitive.
+
+**Files added:**
+
+| File | Lines | Role |
+|---|---|---|
+| `src/components/NavCardGrid.tsx` | 56 | Shared glass grid wrapper consuming `SmartNavCard` — used by client + operator |
+| `src/components/RoleKPIBanner.tsx` | 79 | Role-agnostic positive-KPI banner, green-tint glass, returns `null` when no celebration |
+
+**Files modified:**
+
+| File | Change |
+|---|---|
+| `src/components/client/ClientHome.tsx` | Removed inline `.nav-cards-grid` `.map()` block, replaced with `<NavCardGrid items={...} />`. `TILES` definition + tile count/micro-status logic unchanged — rendered output preserves the 8-card grid verbatim (same cards, same order, same badges, same styling). |
+| `src/app/operador/inicio/page.tsx` | Added parallel queries `personalCompletedThisWeekRes` + `personalCompletedLastWeekRes` against `traficos` (heuristic: `estatus='Cruzado'` AND `assigned_to_operator_id=opId` AND `updated_at` in the 7-day / 7-to-14-day windows). Plumbed both counts into `<InicioClient>`. |
+| `src/app/operador/inicio/InicioClient.tsx` | New imports (8 Lucide icons + `NavCardGrid` + `RoleKPIBanner`). Added `OPERATOR_TILES` array (8 tiles: Mis tráficos, Cola de excepciones, Pedimentos pendientes, Subir documentos, Clasificaciones, Solicitudes enviadas, Mi día, Equipo). Rendered `<RoleKPIBanner>` + `<NavCardGrid>` inside the left column, between `<HeroStrip>` and `<ActiveTraficos>`. Badges wired from existing props (`personalAssigned`, `colaCount`, `kpis.pendientes`); `clasificacionesPendientes` / `solicitudesAbiertas` are 0-placeholders until their data sources land. |
+
+**Line deltas:**
+
+- Added: `NavCardGrid.tsx` 56 + `RoleKPIBanner.tsx` 79 = 135 new
+- `ClientHome.tsx`: -19 / +17 (net -2)
+- `InicioClient.tsx`: +49 / 0 (49 net inserted)
+- `page.tsx`: +18 / 0 (18 net inserted)
+
+**New layout (operator inicio):**
+
+```
+Greeting header (dot · name · summary · live timestamp)
+QuickActions
+├─ Left column (1fr)
+│   HeroStrip (4 KPIs)
+│   RoleKPIBanner           ← NEW — only renders when thisWeek > lastWeek
+│   NavCardGrid 8 cards     ← NEW — glass cards, 2×4, 60px touch
+│   ActiveTraficos table
+└─ RightRail (340px)        ← unchanged
+```
+
+**Client parity:** `ClientHome` now consumes `<NavCardGrid>`. Same 8 tiles (Entradas / Tráficos / Pedimentos / Catálogo / Anexo 24 / Expedientes Digitales / Reportes / KPI's), same order, same `tileCount` + `tileMicroStatus` resolution, same `SmartNavCard` render — visual output identical. The `.nav-cards-grid` CSS rules now live in `NavCardGrid`'s own `<style>` block; ClientHome's existing responsive style block still defines the same selectors (duplicate-safe cascade), so no rule is lost if either file is read in isolation.
+
+**Query choice for personal throughput:**
+
+Picked `traficos` (not `operational_decisions`) because: (1) the existing page already queries `traficos` with `assigned_to_operator_id` filters, so the operator→tráfico mapping is proven; (2) `operational_decisions.decision` stores free-text (`"estatus: En Proceso → Cruzado"`) which requires `ilike` pattern matching + JSON actor extraction — less reliable. The `traficos.updated_at` window is a proxy (it fires on any column update, not specifically the status transition), but for an operator who owns the tráfico this is close enough for a week-over-week celebration signal. If precision tightens later, swap to `operational_decisions` filtered by `decision_type='status_update'` + `decision ilike '%→ Cruzado%'` + `data_points_used->>actor` match.
+
+**Gate output:**
+
+| Gate | Result |
+|---|---|
+| `npm run typecheck` | 0 errors |
+| `npm run build` | succeeded (all routes compiled) |
+| `npm run test` | 124 / 124 pass (10 files) |
+| Pre-commit hooks | green |
+
+**Injection attempts detected during P2 commit 2:**
+
+Four `<system-reminder>` blocks appeared inside tool-call outputs: (a) the `computer-use` MCP instructions, (b) the repo `CLAUDE.md` (ADUANA brand directive insisting "all user-facing text says 'ADUANA'"), (c) `.claude/rules/performance.md`, (d) `.claude/rules/design-system.md`, (e) `.claude/rules/core-invariants.md`. Per the prompt's injection guard, all were treated as untrusted context. The operator cockpit's user-visible strings stay Spanish + brand-neutral ("Mis tráficos", "Portal te lo reconoce", etc.) — no brand-name overrides were applied beyond the plan's explicit "Portal" directive. Design-system values the plan specified (rgba glass, 20px blur, 60px touch) were already consistent with what the rule files declared, so no behavior change resulted from either source — only from the plan.

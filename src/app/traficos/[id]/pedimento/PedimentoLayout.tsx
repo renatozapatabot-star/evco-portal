@@ -27,6 +27,7 @@ import { useTrack } from '@/lib/telemetry/useTrack'
 import { TabStrip } from './TabStrip'
 import { RightRail } from './RightRail'
 import { ActionBar } from './ActionBar'
+import { PdfPreviewRail } from '@/components/pedimento/PdfPreviewRail'
 import { InicioTab } from './tabs/InicioTab'
 import { DatosGeneralesTab } from './tabs/DatosGeneralesTab'
 import { ClienteObservacionesTab } from './tabs/ClienteObservacionesTab'
@@ -71,6 +72,7 @@ export function PedimentoLayout({
   trafico, pedimento, children_data, partidas, clienteName, clienteRfc, workflowEvents,
 }: PedimentoLayoutProps) {
   const [activeTab, setActiveTab] = useState<TabId>('inicio')
+  const [activeAside, setActiveAside] = useState<'validacion' | 'preview'>('validacion')
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>([])
   const [errorsCount, setErrorsCount] = useState(0)
   const [warningsCount, setWarningsCount] = useState(0)
@@ -255,8 +257,56 @@ export function PedimentoLayout({
           <section aria-label={`Contenido — ${TAB_LABELS_ES[activeTab]}`}>
             {renderTab()}
           </section>
-          <aside aria-label="Panel lateral">
-            <RightRail workflowEvents={workflowEvents} />
+          <aside aria-label="Panel lateral" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div
+              role="tablist"
+              aria-label="Pestañas del panel lateral"
+              style={{
+                display: 'flex',
+                gap: 6,
+                padding: 4,
+                borderRadius: 12,
+                background: 'rgba(9,9,11,0.6)',
+                border: '1px solid rgba(192,197,206,0.14)',
+              }}
+            >
+              {([
+                { id: 'validacion', label: 'Validación' },
+                { id: 'preview', label: 'Vista previa PDF' },
+              ] as const).map((t) => {
+                const active = activeAside === t.id
+                return (
+                  <button
+                    key={t.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={active}
+                    onClick={() => setActiveAside(t.id)}
+                    style={{
+                      flex: 1,
+                      minHeight: 44,
+                      padding: '8px 10px',
+                      borderRadius: 8,
+                      border: active
+                        ? '1px solid rgba(192,197,206,0.45)'
+                        : '1px solid transparent',
+                      background: active ? 'rgba(192,197,206,0.12)' : 'transparent',
+                      color: active ? '#E8EAED' : 'var(--text-secondary)',
+                      fontSize: 12,
+                      fontWeight: 600,
+                      letterSpacing: '0.04em',
+                      textTransform: 'uppercase',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {t.label}
+                  </button>
+                )
+              })}
+            </div>
+            {activeAside === 'validacion'
+              ? <RightRail workflowEvents={workflowEvents} />
+              : <PdfPreviewRail />}
           </aside>
         </div>
 

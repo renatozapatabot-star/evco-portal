@@ -928,9 +928,10 @@ async function fetchClientData(companyId: string): Promise<ClientData> {
   }
   if (pedimentosCount === 0 && activeCount > 0) {
     computedInsights.push({
-      type: 'anomaly',
-      text: 'No hay pedimentos en trámite — posible cuello de botella',
-      severity: 'warning',
+      type: 'action',
+      text: `${activeCount} tráfico${activeCount !== 1 ? 's' : ''} activo${activeCount !== 1 ? 's' : ''} sin pedimento — contacta a tu agente`,
+      severity: 'info',
+      entityLink: '/aduana',
     })
   }
   if (cruzadosYTD > cruzadosLastMonth && cruzadosLastMonth > 0) {
@@ -961,9 +962,9 @@ async function fetchClientData(companyId: string): Promise<ClientData> {
   }
   if (pedimentosCount === 0 && activeCount > 0) {
     suggestedActions.push({
-      label: 'Verificar estado de pedimentos',
-      href: '/pedimentos',
-      reason: 'Sin pedimentos activos',
+      label: 'Consultar con agente aduanal',
+      href: '/aduana',
+      reason: `${activeCount} tráfico${activeCount !== 1 ? 's' : ''} sin pedimento`,
       urgency: 'medium',
     })
   }

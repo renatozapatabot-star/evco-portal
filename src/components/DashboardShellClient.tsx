@@ -2,18 +2,19 @@
 
 import { usePathname } from 'next/navigation'
 import { useEffect, useState, useRef } from 'react'
+import dynamic from 'next/dynamic'
 import AduanaLayout from './cruz/CruzLayout'
-import { CommandPalette } from './command-palette'
-import { ShortcutHelp } from './shortcut-help'
 import { ToastProvider, useToast } from './Toast'
 import { useKeyboardShortcuts } from '@/hooks/use-shortcuts'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { usePullToRefresh } from '@/hooks/use-pull-refresh'
-// MobileBottomNav removed — navigation via topbar + floating CRUZ chat
-import { WelcomeOverlay } from './WelcomeOverlay'
-import { AduanaChatBubble } from './cruz-chat-bubble'
 import { SlideInNotification } from './notifications/SlideInNotification'
 import { getCookieValue } from '@/lib/client-config'
+
+// Defer heavy components — not needed on first paint
+const CommandPalette = dynamic(() => import('./command-palette').then(m => ({ default: m.CommandPalette })), { ssr: false })
+const ShortcutHelp = dynamic(() => import('./shortcut-help').then(m => ({ default: m.ShortcutHelp })), { ssr: false })
+const AduanaChatBubble = dynamic(() => import('./cruz-chat-bubble').then(m => ({ default: m.AduanaChatBubble })), { ssr: false })
 
 interface Props { children: React.ReactNode }
 

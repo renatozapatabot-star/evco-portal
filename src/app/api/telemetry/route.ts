@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import crypto from 'node:crypto'
 import { createClient } from '@supabase/supabase-js'
 import { verifySession } from '@/lib/session'
 
@@ -10,6 +11,82 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
+
+// 1x1 transparent PNG (GIF89a would also work; PNG avoids any AV false positives).
+const PIXEL_PNG = Buffer.from(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=',
+  'base64'
+)
+
+const PIXEL_HEADERS = {
+  'Content-Type': 'image/png',
+  'Content-Length': String(PIXEL_PNG.length),
+  'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+  'Pragma': 'no-cache',
+}
+
+function pixelResponse() {
+  return new NextResponse(PIXEL_PNG, { status: 200, headers: PIXEL_HEADERS })
+}
+
+/**
+ * GET — email tracking pixel.
+ * Block 8 briefing emails embed `<img src=".../api/telemetry?event=..&token=..">`
+ * where `token = payload.signature` and `payload = "briefing:<date>:<issued_at>"`
+ * signed with SESSION_SECRET (HMAC-SHA256). We log the open to interaction_events
+ * and always return a 1x1 PNG regardless of validation outcome (email clients
+ * must not see a broken image).
+ */
+export async function GET(request: NextRequest) {
+  const url = new URL(request.url)
+  const event = (url.searchParams.get('event') || '').slice(0, 64)
+  const token = url.searchParams.get('token') || ''
+
+  if (event !== 'briefing_email_opened' || !token) {
+    return pixelResponse()
+  }
+
+  const secret = process.env.SESSION_SECRET
+  if (!secret) return pixelResponse()
+
+  const dotIdx = token.lastIndexOf('.')
+  if (dotIdx < 0) return pixelResponse()
+  const payload = token.slice(0, dotIdx)
+  const sig = token.slice(dotIdx + 1)
+
+  let valid = false
+  try {
+    const expected = crypto.createHmac('sha256', secret).update(payload).digest('hex')
+    const a = Buffer.from(expected, 'hex')
+    const b = Buffer.from(sig, 'hex')
+    if (a.length === b.length) valid = crypto.timingSafeEqual(a, b)
+  } catch {
+    valid = false
+  }
+  if (!valid) return pixelResponse()
+
+  // Payload shape: "briefing:<subjectDate>:<issuedAtSec>"
+  const parts = payload.split(':')
+  if (parts[0] !== 'briefing') return pixelResponse()
+  const subjectDate = parts[1] || null
+  const issuedAt = Number(parts[2] || 0)
+  // 14-day TTL — beyond that we still serve the pixel but skip logging.
+  if (!issuedAt || Date.now() / 1000 - issuedAt > 14 * 86_400) return pixelResponse()
+
+  try {
+    await supabase.from('interaction_events').insert({
+      event_type: 'briefing_email_opened',
+      event_name: 'briefing_email_opened',
+      page_path: '/api/telemetry',
+      user_id: 'system:email-pixel',
+      payload: { subject_date: subjectDate, issued_at: issuedAt },
+      user_agent: request.headers.get('user-agent')?.substring(0, 300) || null,
+    })
+  } catch {
+    // Swallow — pixel must load even if DB write fails.
+  }
+  return pixelResponse()
+}
 
 // ── Legacy batch shape (pre-Polish-Pack) ──
 interface IncomingEvent {

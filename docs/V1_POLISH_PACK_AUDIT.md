@@ -911,3 +911,74 @@ Renders `glassCard` with `🛰️` emoji + "Recolectando datos de cruce" title +
 - Backfill `fecha_cruce_planeada` / `bridge` / `lane` / `semaforo` from `workflow_events` (out of scope; timeline renders empty state until data arrives)
 - Add `/cruce` to sidebar nav for operators (currently discoverable via direct URL only)
 
+
+---
+
+## Block 8 — Daily briefing email
+
+**Status:** SHIPPED (awaiting Renato for env + Resend domain + PM2 start).
+
+| Field | Value |
+|---|---|
+| Telemetry pixel | YES — HMAC-signed token via `SESSION_SECRET`, logs `briefing_email_opened` |
+| Fail-loud | YES — exit 1 on missing `TITO_EMAIL`, exit 2 on Resend/aggregation errors, Telegram alert on every failure path |
+| Decision row logged | YES — inserts `operational_decisions` with `decision_type='daily_briefing_sent'` |
+| PM2 mounted | YES — `ecosystem.config.js` entry `tito-daily-briefing`, `cron_restart: '30 6 * * *'` |
+| Resend domain fallback | YES — tries `sistema@renatozapata.com` first, falls back to `onboarding@resend.dev` on 403 |
+| shadow-analysis.ts reuse | INLINE PORT — see judgment call below |
+
+### Files
+
+| Path | Lines | Purpose |
+|---|---|---|
+| `scripts/tito-daily-briefing.js` | 360 | Aggregation + HTML render + Resend + pixel token + decision log |
+| `src/app/api/telemetry/route.ts` | +78 GET handler | 1x1 PNG pixel endpoint, HMAC validation, 14-day TTL, logs `briefing_email_opened` |
+| `ecosystem.config.js` | +15 | New PM2 entry `tito-daily-briefing` with 6:30 AM cron |
+
+### Aggregates rendered
+
+1. Active tráficos today vs 30-day avg
+2. Pedimentos filed yesterday vs 7-day avg
+3. EVCO on-time % this month (denominator excludes rows without `fecha_cruce_planeada`)
+4. Top 3 clients by YTD `aduanet_facturas.valor_usd`
+5. Overdue receivables (probed via `saldo_vencido` column — section skipped cleanly if absent)
+6. Yesterday's AI cost from `llm_calls.cost` (section skipped cleanly if table absent)
+7. Top 5 escalations (operational_decisions where decision_type=escalation AND outcome IS NULL)
+8. Shadow comparison yesterday — inline minimal port of `src/lib/shadow-analysis.ts` heuristic
+
+### Judgment call — shadow-analysis.ts reuse
+
+The plan allowed `require()`-ing the TS lib via ts-node or reimplementing a minimal version.
+Chose **inline reimplementation** because:
+
+- `ts-node` is not in `package.json` dependencies; adding it violates the "no new dependencies" rule
+- The heuristic (`reasoning.length >= 40` classifies row as human) is 4 lines
+- Duplicating 4 lines is cheaper than a runtime TS compile step at 6:30 AM
+- Both implementations will be replaced when Renato adds an `actor` column to `operational_decisions` (documented in Block 12 audit)
+
+Trade-off: if the heuristic changes in `src/lib/shadow-analysis.ts`, the script drifts.
+Mitigation: cross-file reference in header comment.
+
+### Judgment call — script name
+
+Existing `scripts/daily-briefing.js` is an ad-hoc Telegram notifier, not referenced from
+`ecosystem.config.js` or any crontab we control. Rather than clobber it, new script is
+named **`scripts/tito-daily-briefing.js`**. Old file left untouched.
+
+### Security — pixel token
+
+- `SESSION_SECRET`-signed HMAC-SHA256 via `crypto.timingSafeEqual`
+- Payload: `briefing:<subject-date>:<issued-at-sec>`
+- 14-day TTL; stale tokens still return the pixel (visual) but skip the log write
+- Invalid token → still returns the 1x1 PNG (email clients never see a broken image)
+- No PII in logged payload — only subject date and issue timestamp
+
+### Blocked on Renato (audit flags)
+
+- **`.env.local`:** add `TITO_EMAIL=<Tito's personal email>`
+- **Vercel env:** add `TITO_EMAIL` (for any future server-side reuse; script reads from `.env.local` only)
+- **Resend:** verify `renatozapata.com` domain so `sistema@renatozapata.com` sender works without fallback
+- **Throne:** `pm2 start ecosystem.config.js && pm2 save`
+- **First fire:** 6:30 AM CT next day after PM2 start
+- **Pixel test:** send test briefing to a test address, open in Gmail/Apple Mail, verify `briefing_email_opened` row lands in `interaction_events`
+

@@ -90,7 +90,7 @@ export function TopNav() {
             }}>
               <span style={{ color: '#FFF', fontWeight: 900, fontSize: 15, fontFamily: 'var(--font-geist-sans)', letterSpacing: '-0.02em', lineHeight: 1 }}>Z</span>
             </div>
-            <span style={{ fontSize: 14, fontWeight: 800, color: T.text }}>CRUZ</span>
+            <span style={{ fontSize: 14, fontWeight: 800, color: T.text }}>AGUILA</span>
           </Link>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             {isInternal && mveIsCritical() && (

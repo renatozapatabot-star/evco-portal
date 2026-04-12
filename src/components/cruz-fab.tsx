@@ -26,7 +26,7 @@ export function CruzFAB() {
       action: () => { document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true })) },
     },
     {
-      icon: MessageSquare, label: 'ADUANA AI',
+      icon: MessageSquare, label: 'AGUILA AI',
       color: 'var(--gold)',
       action: () => document.dispatchEvent(new CustomEvent('cruz:open-chat')),
     },
@@ -82,7 +82,7 @@ export function CruzFAB() {
         {open ? (
           <X size={22} style={{ color: 'var(--text-primary)' }} />
         ) : (
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '0.08em' }}>CRUZ</span>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '0.08em' }}>AGUILA</span>
         )}
       </button>
 

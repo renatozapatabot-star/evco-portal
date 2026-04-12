@@ -332,7 +332,7 @@ export default function ProveedorPage() {
     return (
       <div style={styles.page}>
         <div style={{ ...styles.cockpitCard, maxWidth: 420, padding: 28 }}>
-          <div style={styles.logo}>Portal</div>
+          <div style={styles.logo}>AGUILA</div>
           <div style={{ fontSize: 16, fontWeight: 700, color: '#EF4444', margin: '12px 0 8px' }}>
             Enlace no válido
           </div>
@@ -347,7 +347,7 @@ export default function ProveedorPage() {
     return (
       <div style={styles.page}>
         <div style={{ ...styles.cockpitCard, maxWidth: 520, padding: 28 }}>
-          <div style={styles.logo}>Portal</div>
+          <div style={styles.logo}>AGUILA</div>
           <div
             style={{
               height: 120,
@@ -374,8 +374,8 @@ export default function ProveedorPage() {
       <div style={{ width: '100%', maxWidth: 780 }}>
         {/* Logo / header chrome */}
         <div style={{ textAlign: 'center', marginBottom: 20 }}>
-          <div style={styles.logo}>Portal</div>
-          <div style={styles.chromeSubtitle}>Portal de Proveedores</div>
+          <div style={styles.logo}>AGUILA</div>
+          <div style={styles.chromeSubtitle}>AGUILA · Proveedores</div>
         </div>
 
         {/* Header block */}

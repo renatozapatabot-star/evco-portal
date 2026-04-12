@@ -58,8 +58,8 @@ export default function TopBar({
         )}
 
         {/* Logo */}
-        <Link href="/" className="topbar-logo" aria-label="Portal inicio">
-          <span className="topbar-logo-text">Portal</span>
+        <Link href="/" className="topbar-logo" aria-label="AGUILA inicio">
+          <span className="topbar-logo-text">AGUILA</span>
         </Link>
 
         {/* Wide search bar (desktop) */}

@@ -1,6 +1,6 @@
 'use client'
 /**
- * Block 3 — shared "Portal" report header (on-screen twin of PDF header).
+ * Block 3 — shared AGUILA report header (on-screen twin of PDF header).
  */
 import React from 'react'
 
@@ -16,9 +16,9 @@ export function ReportHeader({
       <div>
         <div
           className="font-mono text-2xl font-bold tracking-[0.08em]"
-          style={{ color: '#eab308' }}
+          style={{ color: '#C0C5CE' }}
         >
-          Portal
+          AGUILA
         </div>
         <div className="text-[11px] text-slate-400">Renato Zapata &amp; Co.</div>
       </div>

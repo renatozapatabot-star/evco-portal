@@ -35,12 +35,12 @@ export function MobileBottomNav() {
               type="button"
               className="mn-tab mn-center"
               onClick={() => document.dispatchEvent(new CustomEvent('cruz:open-chat'))}
-              aria-label="ADUANA AI"
+              aria-label="AGUILA AI"
             >
               <span className="mn-icon-wrap mn-center-ring">
                 <AduanaAvatar size={36} mood={mood} />
               </span>
-              <span className="mn-label">CRUZ</span>
+              <span className="mn-label">AGUILA</span>
             </button>
           )
         }

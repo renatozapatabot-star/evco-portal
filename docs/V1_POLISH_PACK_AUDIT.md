@@ -845,3 +845,69 @@ the zero bars themselves are useful context.
 - **Accumulated data:** `operational_decisions` currently has a handful of rows; dashboard will show the empty state until 100 comparisons accumulate. This is by design and documented in the empty state itself.
 - **Actor column decision:** Whether to add an explicit `actor text` (values: `human`, `script:<name>`, `workflow:<name>`) or `source text` column to `operational_decisions`. Until then, the reasoning-length heuristic stands. Recommend adding via `ALTER TABLE operational_decisions ADD COLUMN actor text;` + backfill from existing `reasoning` heuristic in a one-shot migration.
 - **Live non-admin gate test:** Log in as `operator` role and hit `/admin/shadow` directly — confirm redirect to `/`. Log in as `client` role, same test. Neither code path should expose cross-tenant decision data.
+
+---
+
+## Block 11 — Crossing schedule
+
+**Status:** SHIPPED.
+
+| Field | Value |
+|---|---|
+| Client View (ClientHome parity) | YES — dark glass tokens, `rgba(255,255,255,0.04)` + 20px blur, JetBrains Mono for all numbers, 20px border-radius |
+| No-Scroll Test | Passes at 1440×900 when ≤ 4 days have crossings; stacks naturally below fold for full 7-day + all 4 bridges |
+| telemetry-wired | YES — `page_view` fires with `entityType: 'cruce'` on mount |
+| Tenant-scoped | YES — client role filters by `company_id` from session; operator/admin/broker see all |
+| Touch targets | Bridge filter chips 40×60px min, blocks 40×64px min |
+
+### Files
+
+| Path | Lines | Purpose |
+|---|---|---|
+| `supabase/migrations/20260411_v1polish_block11_crossing_fields.sql` | 24 | ALTER `traficos` + 3 partial indexes |
+| `src/app/cruce/page.tsx` | 112 | Async server component — session + range query |
+| `src/app/cruce/CruceClient.tsx` | 505 | Timeline client component with bridge grouping, filters, empty state |
+
+### Migration SQL (Block 11)
+
+```sql
+ALTER TABLE traficos
+  ADD COLUMN IF NOT EXISTS fecha_cruce_planeada timestamptz,
+  ADD COLUMN IF NOT EXISTS fecha_cruce_estimada timestamptz,
+  ADD COLUMN IF NOT EXISTS bridge text,
+  ADD COLUMN IF NOT EXISTS lane text,
+  ADD COLUMN IF NOT EXISTS semaforo text;
+
+CREATE INDEX IF NOT EXISTS idx_traficos_cruce_planeada
+  ON traficos (fecha_cruce_planeada)
+  WHERE fecha_cruce_planeada IS NOT NULL;
+-- + idx_traficos_cruce_estimada, idx_traficos_bridge (same partial pattern)
+```
+
+### Status color logic
+
+| Condition | Status | Color |
+|---|---|---|
+| `semaforo = 'verde'` OR estatus contains `Cruzado` | crossed | `#22C55E` green |
+| `scheduled_at < now − 30 min` | delayed | `#EF4444` red |
+| `scheduled_at < now + 2h` | ready | `#eab308` gold |
+| otherwise | scheduled | `#00E5FF` cyan |
+
+### Bridge normalization
+
+`traficos.bridge` is plain text. Client normalizes by substring match on "IV" / "III" / "II" / "I"
+(case-insensitive) plus digits 1–4. Unmatched values default to Puente II (WTB default).
+Covers: `"Puente II"`, `"II"`, `"2"`, `"bridge 2"`, `"WTB"` → II fallback.
+
+### Empty state (ships today)
+
+Renders `glassCard` with `🛰️` emoji + "Recolectando datos de cruce" title + hint referencing
+`fecha_cruce_planeada`. Displays whenever range query returns zero rows OR filters eliminate all.
+
+### Blocked on Renato
+
+- `npx supabase db push` to apply the migration
+- `npx supabase gen types typescript --local > types/supabase.ts` to regenerate types
+- Backfill `fecha_cruce_planeada` / `bridge` / `lane` / `semaforo` from `workflow_events` (out of scope; timeline renders empty state until data arrives)
+- Add `/cruce` to sidebar nav for operators (currently discoverable via direct URL only)
+

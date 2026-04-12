@@ -32,6 +32,10 @@ export interface InicioData {
     dias_sin_rojo: number
   }
   clientHealth: ClientHealth[]
+  autonomy: {
+    thisWeekDecisions: number
+    lastWeekDecisions: number
+  }
   rightRail: {
     decisionesPendientes: number
     team: TeamActivity[]

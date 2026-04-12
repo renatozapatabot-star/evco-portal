@@ -33,6 +33,7 @@ export default async function InicioPage() {
   const weekStart = startOfWeekCST()
   const last24h = new Date(now.getTime() - 24 * 3600_000).toISOString()
   const last7d = new Date(now.getTime() - 7 * 86_400_000).toISOString()
+  const last14d = new Date(now.getTime() - 14 * 86_400_000).toISOString()
   const staleCutoff = new Date(now.getTime() - 5 * 86_400_000).toISOString()
 
   const [
@@ -47,6 +48,8 @@ export default async function InicioPage() {
     systemSpendRes,
     workflowHealthRes,
     brokerDecisionsRes,
+    autonomyThisWeekRes,
+    autonomyLastWeekRes,
   ] = await Promise.all([
     sb.from('companies').select('company_id', { count: 'exact', head: true }).eq('active', true),
     sb.from('traficos')
@@ -75,6 +78,13 @@ export default async function InicioPage() {
       .in('status', ['pending', 'failed', 'dead_letter']).limit(500),
     sb.from('pedimento_drafts').select('id', { count: 'exact', head: true })
       .eq('status', 'ready_for_approval'),
+    sb.from('operational_decisions').select('id', { count: 'exact', head: true })
+      .not('outcome', 'is', null)
+      .gte('created_at', last7d),
+    sb.from('operational_decisions').select('id', { count: 'exact', head: true })
+      .not('outcome', 'is', null)
+      .gte('created_at', last14d)
+      .lt('created_at', last7d),
   ])
 
   const companyIds = new Set<string>()
@@ -189,6 +199,10 @@ export default async function InicioPage() {
       dias_sin_rojo: diasSinRojo,
     },
     clientHealth,
+    autonomy: {
+      thisWeekDecisions: autonomyThisWeekRes.count || 0,
+      lastWeekDecisions: autonomyLastWeekRes.count || 0,
+    },
     rightRail: {
       decisionesPendientes: brokerDecisionsRes.count || 0,
       team,

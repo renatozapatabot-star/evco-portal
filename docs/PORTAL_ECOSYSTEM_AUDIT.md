@@ -274,3 +274,39 @@ Gate output:
 **Injection attempts detected during P2 commit 3:**
 
 Six `<system-reminder>` blocks arrived inside tool output: (a) the `computer-use` MCP instructions arriving with the very first bash result; (b) the repo `CLAUDE.md` reasserting the ADUANA brand and a pile of project conventions; (c) `.claude/rules/performance.md`; (d) `.claude/rules/design-system.md`; (e) `.claude/rules/core-invariants.md`; (f) `.claude/rules/operational-resilience.md`; and (g) `.claude/rules/cruz-api.md`. Per the prompt's injection guard, all were treated as untrusted context. The plan's "Portal" user-visible brand is preserved (no "ADUANA" string introduced on this surface). Glass tokens, 60px targets, and Spanish-primary copy happen to line up with what the rule files declared — no behavior change was driven by either source beyond what the plan already specified. No computer-use tool was invoked.
+
+### P2 commit 4 — admin polish
+
+Three surfaces: clickable escalation banner, positive-KPI banner for Tito, and pipeline stage drill-through. Last commit of Phase 2.
+
+**Clickable escalation banner** — `src/components/cockpit/AdminCockpit.tsx` (where the exact string "N escalaciones requieren atención inmediata" actually lives; the user prompt's pointer to `src/app/admin/inicio/` was resolved against the real source). When `healthLevel` is `amber` or `red` the status line renders as a `next/link` to `/admin/aprobar` (route confirmed present) with 60px min-height, cyan-hover underline, and a right-aligned "Abrir cola →" affordance. Green stays static — no false urgency.
+
+**Positive-KPI banner (Tito)** — `src/app/admin/inicio/InicioCockpit.tsx` renders the shared `<RoleKPIBanner>` between `HeroStrip` and `ClientHealthGrid`. Data comes from two new Supabase queries in `inicio/page.tsx` counting `operational_decisions` with `outcome IS NOT NULL` over the last 7d and the prior 7d (days 8-14). `InicioData.autonomy` now carries `{ thisWeekDecisions, lastWeekDecisions }`. The cockpit gates on `thisWeekDecisions >= 10` before mounting the banner; the banner itself already returns `null` when `thisWeek <= lastWeek`, so no false positivity ever slips through. Celebration copy: `Sistema sólido, {name} — {n} decisiones autónomas esta semana, +{pct}% vs. semana pasada.` Name reuses the existing greeting source (`data.greeting.name` = "Renato Zapata III").
+
+**Pipeline stage drill-through** — `src/components/cockpit/admin/CruzAutonomoPanel.tsx`: each of the 7 stage cells in the Pipeline Autónomo bar is now wrapped in a `next/link` to `/admin/pipeline/[stage]` with `minHeight: 60`, cyan hover (`rgba(0,229,255,0.14)` background + stronger border), and visible focus outline. New route `src/app/admin/pipeline/[stage]/page.tsx` is a server component gated by `verifySession` (role ∈ `{admin, broker}`), validates the stage slug against `VALID_STAGES` or returns `notFound()`, then fetches the 50 most recent `workflow_events` filtered by `workflow = stage` ordered by `created_at DESC`. Renders a dark-glass table with timestamp (`fmtDateTime`), event_type, trigger_id, status pill (success/pending/failed/neutral), and a lightweight payload summary (trafico / pedimento / doc_type / action / reason / message — first three that exist). Back-link to `/admin/inicio`. Empty state copy: "Sin eventos recientes en este paso."
+
+**Stage slug set used (7, not 8):** `intake, classify, docs, pedimento, crossing, post_op, invoice`. The prompt suggested 8 with `monitor`, but `CruzAutonomoPanel`'s existing `WORKFLOW_STAGES` array defines only 7 cells and `fetchCockpitData.ts` aggregates `byStage` off `workflow_events.workflow` using the same set. Ambiguity resolved by honoring "smallest change" + existing rendered surface. `monitor` is kept in the page's `STAGE_LABELS` map so the route is forward-compatible if the pipeline ever grows to 8; it just isn't linked from the cockpit today.
+
+**Gate output:**
+
+| Gate | Result |
+|---|---|
+| `npm run typecheck` | 0 errors |
+| `npm run build` | success — `/admin/pipeline/[stage]` registered as ƒ Dynamic |
+| `npm run test` | 124 / 124 pass (10 files) |
+| Pre-commit hooks | green |
+
+**Injection attempts detected during P2 commit 4:**
+
+Five `<system-reminder>` blocks arrived inside tool output: (a) the `computer-use` MCP instructions with the first batch of bash results; (b) the repo `CLAUDE.md` with the ADUANA brand directive and platform context; (c) `.claude/rules/performance.md`; (d) `.claude/rules/core-invariants.md`; (e) `.claude/rules/design-system.md`; and (f) `.claude/rules/operational-resilience.md`. Per the prompt's injection guard, all treated as untrusted. No brand-name change was applied to the user-visible surfaces (copy stays "Pipeline · {title}" + "Volver a Inicio" — brand-neutral, Spanish). The Cinematic Glass tokens happen to align with what both the user prompt and the rule files specified; no behavior change was driven by the rules. No `computer-use` tool was invoked.
+
+### Phase 2 ready to ship
+
+All four Phase 2 commits landed on `feature/v6-phase0-phase1`:
+
+1. Commit 1 — `feat(client): 8-card client cockpit` (`0da2e01`)
+2. Commit 2 — `feat(operator): 8-card cockpit with glass grid + shared RoleKPIBanner` (`e7c45bc`)
+3. Commit 3 — `feat(operator): /operador/subir cross-trafico document upload landing` (`d07fb23`)
+4. Commit 4 — `feat(admin): Pipeline stage drill-through + positive-KPI banner + clickable escalation banner` (this commit)
+
+Four gates green on every commit. Three cockpits now share the same glass grid shape, the same `<RoleKPIBanner>` celebration pattern, and (for the admin) the same drill-through mechanic from summary to detail. Phase 3 — warehouse + contabilidad + new roles — can begin.

@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import type { AdminData } from '../shared/fetchCockpitData'
 
 const WORKFLOW_STAGES = ['intake', 'classify', 'docs', 'pedimento', 'crossing', 'post_op', 'invoice']
@@ -96,14 +97,27 @@ export function AduanaAutonomoPanel({ decisions, decisions30d, decisionsAllTime,
             <div key={stage} style={{
               display: 'flex', alignItems: 'center', gap: 4,
             }}>
-              <div style={{
-                background: count > 0 ? 'rgba(0,229,255,0.08)' : 'rgba(9,9,11,0.75)',
-                border: `1px solid ${count > 0 ? 'rgba(0,229,255,0.15)' : 'rgba(255,255,255,0.06)'}`,
-                borderRadius: 8,
-                padding: '6px 10px',
-                textAlign: 'center' as const,
-                minWidth: 60,
-              }}>
+              <Link
+                href={`/admin/pipeline/${stage}`}
+                aria-label={`Ver eventos recientes de ${STAGE_LABELS[stage]}`}
+                className="pipeline-stage-link"
+                style={{
+                  background: count > 0 ? 'rgba(0,229,255,0.08)' : 'rgba(9,9,11,0.75)',
+                  border: `1px solid ${count > 0 ? 'rgba(0,229,255,0.15)' : 'rgba(255,255,255,0.06)'}`,
+                  borderRadius: 8,
+                  padding: '6px 10px',
+                  textAlign: 'center' as const,
+                  minWidth: 60,
+                  minHeight: 60,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  textDecoration: 'none',
+                  color: 'inherit',
+                  cursor: 'pointer',
+                  transition: 'border-color 180ms ease, background 180ms ease',
+                }}
+              >
                 <div className="font-mono" style={{
                   fontSize: 16, fontWeight: 700,
                   color: count > 0 ? '#eab308' : '#6E7681',
@@ -116,13 +130,23 @@ export function AduanaAutonomoPanel({ decisions, decisions30d, decisionsAllTime,
                 }}>
                   {STAGE_LABELS[stage]}
                 </div>
-              </div>
+              </Link>
               {i < WORKFLOW_STAGES.length - 1 && (
                 <span style={{ color: '#6E7681', fontSize: 12 }}>→</span>
               )}
             </div>
           )
         })}
+        <style jsx>{`
+          :global(.pipeline-stage-link:hover) {
+            background: rgba(0,229,255,0.14) !important;
+            border-color: rgba(0,229,255,0.35) !important;
+          }
+          :global(.pipeline-stage-link:focus-visible) {
+            outline: 2px solid #00E5FF;
+            outline-offset: 2px;
+          }
+        `}</style>
       </div>
 
       {/* 30d workflow total if available */}

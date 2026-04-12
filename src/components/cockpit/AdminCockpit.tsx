@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import Link from 'next/link'
 import type { AdminData } from './shared/fetchCockpitData'
 import { AduanaAutonomoPanel } from './admin/CruzAutonomoPanel'
 import { NeedsJudgmentPanel } from './admin/NeedsJudgmentPanel'
@@ -142,16 +143,56 @@ export function AdminCockpit({ data, operatorName }: Props) {
             borderTop: `3px solid ${healthColors[healthLevel].border}`,
             padding: 20,
           }}>
-            {/* Status line */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-              <span style={{
-                width: 10, height: 10, borderRadius: '50%',
-                background: healthColors[healthLevel].dot, display: 'inline-block',
-              }} />
-              <span style={{ fontSize: 14, color: '#E6EDF3', fontWeight: 500 }}>
-                {healthSentence}
-              </span>
-            </div>
+            {/* Status line — clickable when there are pendings/escalations */}
+            {healthLevel === 'green' ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16, minHeight: 24 }}>
+                <span style={{
+                  width: 10, height: 10, borderRadius: '50%',
+                  background: healthColors[healthLevel].dot, display: 'inline-block',
+                }} />
+                <span style={{ fontSize: 14, color: '#E6EDF3', fontWeight: 500 }}>
+                  {healthSentence}
+                </span>
+              </div>
+            ) : (
+              <Link
+                href="/admin/aprobar"
+                aria-label="Abrir cola de aprobaciones"
+                className="escalation-banner-link"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  marginBottom: 16,
+                  minHeight: 60,
+                  padding: '8px 4px',
+                  textDecoration: 'none',
+                  color: 'inherit',
+                  borderRadius: 8,
+                  cursor: 'pointer',
+                  transition: 'background 180ms ease',
+                }}
+              >
+                <span style={{
+                  width: 10, height: 10, borderRadius: '50%',
+                  background: healthColors[healthLevel].dot, display: 'inline-block',
+                }} />
+                <span style={{ fontSize: 14, color: '#E6EDF3', fontWeight: 500 }}>
+                  {healthSentence}
+                </span>
+                <span aria-hidden="true" style={{ fontSize: 14, color: '#8B949E', marginLeft: 'auto' }}>
+                  Abrir cola →
+                </span>
+                <style jsx>{`
+                  .escalation-banner-link:hover {
+                    background: rgba(255,255,255,0.04);
+                  }
+                  .escalation-banner-link:hover span:nth-child(2) {
+                    text-decoration: underline;
+                  }
+                `}</style>
+              </Link>
+            )}
 
             {/* KPI strip */}
             <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>

@@ -10,7 +10,10 @@ import {
 import { HeroStrip } from './HeroStrip'
 import { ClientHealthGrid } from './ClientHealthGrid'
 import { RightRail } from './RightRail'
+import { RoleKPIBanner } from '@/components/RoleKPIBanner'
 import type { InicioData, SystemStatus } from './types'
+
+const MIN_WEEKLY_DECISIONS_FOR_CELEBRATION = 10
 
 function statusColor(s: SystemStatus): string {
   if (s === 'critical') return RED
@@ -112,6 +115,18 @@ export function InicioCockpit({ data }: { data: InicioData }) {
         <div className="inicio-main-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 16 }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16, minWidth: 0 }}>
             <HeroStrip hero={data.hero} />
+            {data.autonomy.thisWeekDecisions >= MIN_WEEKLY_DECISIONS_FOR_CELEBRATION && (
+              <RoleKPIBanner
+                role="admin"
+                name={data.greeting.name}
+                thisWeek={data.autonomy.thisWeekDecisions}
+                lastWeek={data.autonomy.lastWeekDecisions}
+                metricLabel="Autonomía · decisiones esta semana"
+                celebrationTemplate={({ name, thisWeek, pct }) =>
+                  `Sistema sólido, ${name} — ${thisWeek} decisiones autónomas esta semana, +${pct}% vs. semana pasada.`
+                }
+              />
+            )}
             <ClientHealthGrid clients={data.clientHealth} />
           </div>
           <RightRail rail={data.rightRail} />

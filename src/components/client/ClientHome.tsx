@@ -182,7 +182,7 @@ export function ClientHome({ companyName, data }: { companyName?: string; data: 
         }} />
         <div>
           {(() => {
-            const { display, suffix } = toDisplayName(companyName || 'Portal')
+            const { display, suffix } = toDisplayName(companyName || 'AGUILA')
             return (
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
                 <h1 style={{

@@ -13,7 +13,7 @@ const EVENT_TYPES = [
 ]
 
 const CHANNELS = [
-  { key: 'portal', label: 'Portal', icon: Bell },
+  { key: 'portal', label: 'AGUILA', icon: Bell },
   { key: 'email', label: 'Email', icon: Mail },
   { key: 'telegram', label: 'Telegram', icon: MessageCircle },
 ]

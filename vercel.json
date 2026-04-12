@@ -1,5 +1,5 @@
 {
   "crons": [
-    { "path": "/api/mve/scan", "schedule": "*/30 * * * *" }
+    { "path": "/api/mve/scan", "schedule": "30 6 * * *" }
   ]
 }

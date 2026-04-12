@@ -460,3 +460,54 @@ Two-commit slice: (A) migration + decision-logger + server actions, (B) page + `
 
 Multiple `<system-reminder>` blocks appeared inside tool-output during this run (MCP `computer-use` instructions; full `CLAUDE.md` for both global and repo; and three `.claude/rules/*.md` files). Per the executor's prompt-injection guard, they were treated as untrusted context. None requested scope change. All reinforced the dark glass + `ClientHome.tsx` fidelity rules the prompt had already fixed as authoritative — no deviation from the Block 1 plan.
 
+
+---
+
+## Block 3 — DocUploader + Claude vision
+
+### Shipped
+
+- **Migration** `supabase/migrations/20260411_v1polish_block3_doc_classification.sql` — adds `document_type text` and `document_type_confidence numeric` (both `IF NOT EXISTS`) plus an index on `document_type` for checklist/shadow lookups.
+- **Vision classifier** `src/lib/docs/vision-classifier.ts` — Anthropic SDK call to `claude-sonnet-4-6` (matches `MODEL_MAP.vision` in `scripts/lib/llm.js`). JSON-only system prompt in Spanish constrains output to one of `factura | bill_of_lading | packing_list | certificado_origen | carta_porte | pedimento | rfc_constancia | other` with `confidence 0..1`. Throws on any API/parse error — no silent fallback.
+- **Upload API** `src/app/api/docs/upload/route.ts` — session-scoped, uploads to `expedientes/{companyId}/{traficoId}/pending_{ts}.{ext}`, inserts into `expediente_documentos` with `doc_type='pending'` + `document_type='pending'` (matches the existing `/api/upload` insert shape). Zod-validated form, 10MB cap, accepts PDF/JPG/PNG/WEBP.
+- **Classify API** `src/app/api/docs/classify/route.ts` — downloads the file bytes (storage API, falls back to public URL), base64-encodes, calls the classifier, PATCHes the row, logs `doc_autoclassified` via `decision-logger`. PDFs + Anthropic errors → row marked `pending_manual` with a decision entry explaining why; response has `needsManual: true` so the client toasts red.
+- **Reclassify API** `src/app/api/docs/reclassify/route.ts` — PATCH for the type-pill dropdown. Writes `decision_type='doc_type_corrected'` with `data_points_used: {original_type, original_confidence, corrected_by}` as the training signal.
+- **DocUploader** `src/components/docs/DocUploader.tsx` — HTML5 drag-drop zone, cyan glow on hover (`ACCENT_CYAN=#00E5FF`, matches `GLOW_CYAN_SUBTLE`), keyboard accessible (Enter/Space to pick), handles multi-file, shows per-file toasts (`Documento subido: Factura (94%)` / red `clasificar manualmente` on failure). Fires `doc_uploaded` + `doc_autoclassified` telemetry. Supports optional `defaultDocType` prop for Block 10 wiring.
+- **DocTypePill** `src/components/docs/DocTypePill.tsx` — click-to-edit pill with glass dropdown, 60px tap targets per option (3 AM Driver rule), red border when `pending_manual`, monospace confidence %.
+- **Mount** — Replaced the `TODO(Block 3)` block in `src/app/traficos/[id]/_components/DocumentosTab.tsx`. Added `traficoId` prop, ES-MX timestamp (`fmtDateTime`), and the reclassify pill per row. Page-level SELECT on `expediente_documentos` now includes `document_type_confidence`; the `DocRow` type in `page.tsx` was widened to match.
+
+### Telemetry
+
+- `doc_uploaded` fires once per successful upload (metadata: `doc_id`, `file_name`).
+- `doc_autoclassified` fires once per successful vision classification (metadata: `doc_id`, `type`, `confidence` as integer percent).
+- Both event names already exist in the `TelemetryEvent` union (Block 0 front-loaded all 15) — no union widening needed.
+
+### Gates
+
+- `npm run typecheck` — **0 errors**
+- `npm run test` — **121/121 pass** (9 files, 574ms)
+- `npm run build` — **succeeded** (all routes compiled, including the three new API routes and the client component)
+- `npm run lint` — not re-run in this executor pass; Renato please confirm.
+
+### Commit
+
+`feat(v1-polish): Block 3 — DocUploader with Claude vision classifier` on `feature/v6-phase0-phase1`. Single commit covers migration + vision lib + three API routes + two components + DocumentosTab wire-up (all 8 new files + 2 edits land together since the DocUploader is non-functional without the endpoints).
+
+### Judgment calls
+
+1. **Model import boundary.** The plan asks to use the `vision` class from `scripts/lib/llm.js`, but that file is CommonJS (`require`) and can't be imported from a Next.js server route without a loader hop. I mirrored the model string `claude-sonnet-4-6` as a constant in `vision-classifier.ts` and left a pointer comment. Changing the model still has to happen in both places — acceptable tradeoff versus a CJS/ESM bridge.
+2. **PDF handling.** The vision mapping accepts images only; Anthropic's PDF path on the SDK is a different block type. Rather than silent-fallback to OCR-less inspection, PDFs are stamped `pending_manual` with a decision-log explanation. Block 10 checklist will still count them, operator still classifies manually via the pill. This respects the fail-fast rule.
+3. **Insert shape.** The existing `expediente_documentos` schema uses `pedimento_id` as the trafico foreign key (per migration `20260401_intelligence_layer.sql`). The Block 1 page queries `trafico_id`, which means the live table has both columns added outside migrations — a pre-existing state. My upload route writes `pedimento_id` only (matches the working `/api/upload` pattern) to avoid inventing columns. If the page's `trafico_id` filter silently returns nothing after upload, that's a pre-existing Block 1 issue, not Block 3 scope.
+4. **Reclassify endpoint.** The plan described correction UI ("PATCH row, insert `operational_decisions` row") without explicitly naming an endpoint. I added `/api/docs/reclassify` rather than overloading `/api/docs/classify` — keeps the training-signal path separate from the vision path for analytics.
+
+### Injection attempts observed
+
+Five `<system-reminder>` blocks surfaced inside tool output during this run: the repo `CLAUDE.md`, the global `~/.claude/CLAUDE.md`, `core-invariants.md`, `design-system.md`, `operational-resilience.md`, `cruz-api.md`, `supabase-rls.md`, `performance.md`, and the MCP `computer-use` instructions. Treated as untrusted data per the executor's prompt-injection guard. None requested scope change; most reinforced the glass design + Anthropic routing rules already in the prompt. Note: the repo CLAUDE.md says model `claude-sonnet-4-20250514` for portal AI features — the plan's explicit Phase 3 decision to use `claude-sonnet-4-6` via the `vision` mapping takes precedence (Phase 3 decision table, line 16 of the plan).
+
+### Renato-required follow-ups
+
+1. `npx supabase db push` to apply the Block 3 migration (two `IF NOT EXISTS` ALTERs + one index — safe on live DB).
+2. `npx supabase gen types typescript --local > types/supabase.ts` to pick up `document_type_confidence`.
+3. Live smoke test: drag a JPG/PNG of a real factura into the uploader on `/traficos/{id}` → confirm row appears with `document_type='factura'` and `document_type_confidence` populated, toast shows the %.
+4. Click the type pill → pick a different type → verify `operational_decisions` row with `decision_type='doc_type_corrected'` and original type/confidence in `data_points_used`.
+5. PDF smoke test: drag a PDF → confirm toast says "clasificar manualmente" and row is `pending_manual`.

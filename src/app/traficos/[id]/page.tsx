@@ -41,6 +41,7 @@ interface TraficoRow {
 interface DocRow {
   id: string
   document_type: string | null
+  document_type_confidence: number | null
   doc_type: string | null
   file_name: string | null
   created_at: string | null
@@ -123,7 +124,7 @@ export default async function TraficoDetailPage({
     traficoQ.maybeSingle(),
     supabase
       .from('expediente_documentos')
-      .select('id, document_type, doc_type, file_name, created_at')
+      .select('id, document_type, document_type_confidence, doc_type, file_name, created_at')
       .eq('trafico_id', traficoId)
       .order('created_at', { ascending: false })
       .limit(200),
@@ -294,7 +295,7 @@ export default async function TraficoDetailPage({
           <TabStrip
             traficoId={traficoId}
             tabs={[
-              { id: 'documentos', label: 'Documentos', content: <DocumentosTab docs={docs} /> },
+              { id: 'documentos', label: 'Documentos', content: <DocumentosTab docs={docs} traficoId={traficoId} /> },
               { id: 'partidas', label: 'Partidas', content: <PartidasTab partidas={partidas} /> },
               { id: 'cronologia', label: 'Cronología', content: <CronologiaTab decisions={decisions} /> },
               { id: 'notas', label: 'Notas', content: <NotasTab traficoId={traficoId} notes={notes} /> },

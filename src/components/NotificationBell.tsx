@@ -2,17 +2,24 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Bell } from 'lucide-react'
+import { createClient, type RealtimeChannel } from '@supabase/supabase-js'
 import { fmtDateTime } from '@/lib/format-utils'
 import { track } from '@/lib/telemetry/useTrack'
+import { getCompanyIdCookie } from '@/lib/client-config'
 
 /**
  * V1 Polish Pack · Block 6 — in-app notification bell.
- * - Polling on mount + on window focus (Realtime deferred to follow-up)
+ * - Supabase Realtime subscription on `notifications` filtered by
+ *   `user_id = {companyId}:{role}` (matched against `recipient_key`).
+ *   Falls back to polling on focus if Realtime fails.
  * - Dropdown: 20 most recent, grouped by date
  * - Click a row → mark read + navigate to action_url
  * - ADUANA dark glass styling, JetBrains Mono on timestamps
  * - 60px min touch target on bell button
  */
+
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
+const SUPABASE_ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
 
 interface Notification {
   id: string
@@ -74,12 +81,69 @@ export default function NotificationBell() {
     }
   }, [])
 
-  // Initial load + refetch on window focus (polling-lite; Realtime deferred).
+  // Initial load + refetch on window focus (polling fallback).
   useEffect(() => {
     fetchList()
     const onFocus = () => fetchList()
     window.addEventListener('focus', onFocus)
     return () => window.removeEventListener('focus', onFocus)
+  }, [fetchList])
+
+  // Supabase Realtime subscription — live updates on INSERT/UPDATE.
+  // Scoped by company_id to match server-side listNotifications scoping.
+  // Falls back to the focus-polling above if Realtime can't establish
+  // (no env vars, no cookie, channel error).
+  useEffect(() => {
+    if (!SUPABASE_URL || !SUPABASE_ANON) {
+      if (process.env.NODE_ENV !== 'production') {
+        // eslint-disable-next-line no-console
+        console.warn('[notification-bell] Realtime disabled: missing Supabase env; falling back to polling')
+      }
+      return
+    }
+    const companyId = getCompanyIdCookie()
+    if (!companyId) return
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON)
+    let channel: RealtimeChannel | null = null
+    let loggedFailure = false
+
+    try {
+      channel = supabase
+        .channel(`notifications:${companyId}`)
+        .on(
+          // mirrors src/hooks/use-realtime-trafico.ts — Supabase types lag here
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          'postgres_changes' as any,
+          {
+            event: '*',
+            schema: 'public',
+            table: 'notifications',
+            filter: `company_id=eq.${companyId}`,
+          },
+          () => { fetchList() },
+        )
+        .subscribe((status) => {
+          if ((status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') && !loggedFailure) {
+            loggedFailure = true
+            if (process.env.NODE_ENV !== 'production') {
+              // eslint-disable-next-line no-console
+              console.warn(`[notification-bell] Realtime status=${status}; falling back to polling`)
+            }
+          }
+        })
+    } catch (err) {
+      if (process.env.NODE_ENV !== 'production') {
+        // eslint-disable-next-line no-console
+        console.warn('[notification-bell] Realtime subscribe threw; falling back to polling', err)
+      }
+    }
+
+    return () => {
+      if (channel) {
+        supabase.removeChannel(channel)
+      }
+    }
   }, [fetchList])
 
   // Close on outside click

@@ -302,3 +302,78 @@ Migrations pending Renato: 20260411_v1polish_block0_telemetry.sql,
 - Realtime badge update across two browsers (N/A this slice).
 
 Next slice recommendation: **Block 6 Realtime first** (small, unblocks end-to-end notification verification), then **Block 2** (ActiveTraficosTable — unblocks Block 1).
+
+---
+
+## Slice B1 — Block 6 Realtime
+
+**Status:** SHIPPED — Realtime subscription landed on `NotificationBell`, polling retained as fallback.
+
+| Field | Value |
+|---|---|
+| `npm run typecheck` | **PASS** (0 errors) |
+| `npm run build` | **PASS** |
+| `npm run test` | **PASS** — 121 / 121 (+1 new smoke test) |
+| New `any` types introduced | 1 — `'postgres_changes' as any` with eslint-disable comment + inline justification (mirrors `src/hooks/use-realtime-trafico.ts:100`; Supabase JS types lag the runtime API) |
+| New `.catch(() => {})` | 0 — all catches log in dev, silent in prod |
+
+### Files
+
+| Path | Lines | Purpose |
+|---|---|---|
+| `src/components/NotificationBell.tsx` | +63, −5 | Supabase Realtime subscription on `notifications` filtered by `company_id`; fallback-logs once on CHANNEL_ERROR/TIMED_OUT/CLOSED; `removeChannel` on unmount |
+| `src/components/__tests__/NotificationBell.realtime.test.tsx` | +73 (new) | Smoke test mocks `@supabase/supabase-js` + `getCompanyIdCookie`, asserts `.on('postgres_changes', { schema: 'public', table: 'notifications', filter: 'company_id=eq.evco' }, …)` is called once on mount and `removeChannel` on unmount |
+
+### Filter decision note
+
+The plan specifies `user_id = {companyId}:{role}` as the Realtime filter, mirroring `useRealtimeTrafico`. However:
+
+- The actual stored column is `recipient_key` (legacy `notifications` schema), not `user_id`
+- The existing `listNotifications(companyId)` server helper (and therefore the bell's dropdown content) scopes strictly by `company_id`
+- Role is **not** exposed client-side via cookie in this codebase (`getCompanyIdCookie()` exists; no `getRoleCookie()`)
+
+To keep the Realtime stream **consistent with what the dropdown actually renders**, the filter is `company_id=eq.{companyId}`. Role-level scoping would drop rows the user can already see in the dropdown, producing stale unread counts. When a `getRoleCookie()` helper lands and `recipient_key` becomes the primary scoping key server-side, the Realtime filter should tighten to match.
+
+### Fallback behavior
+
+- If `NEXT_PUBLIC_SUPABASE_URL` / `_ANON_KEY` are missing → Realtime effect is a no-op and logs a single dev warning. Polling on focus + mount continues to work.
+- If the channel emits `CHANNEL_ERROR`, `TIMED_OUT`, or `CLOSED` → a single dev warning is logged (`loggedFailure` guard). No `.catch(() => {})`. Polling on focus remains the safety net.
+- If `createClient` throws → single dev warning, polling remains.
+
+### Blocked on Renato (flagged honestly, not attempted)
+
+- `npx supabase db push` for the two Option A migrations (still pending from prior slice) — this slice adds no new migration
+- Live Realtime smoke test with two browsers — insert a `notifications` row for `company_id='evco'` via service role, confirm the second browser's bell increments without a focus event
+- Non-admin session RLS verification — confirm Realtime respects the existing RLS policies on `notifications` (the anon key used by the browser is subject to RLS; rows not visible via `listNotifications` must also not appear on the channel)
+
+### Commit
+
+Staged for commit as `feat(v1-polish): Block 6 Realtime — live unread updates on NotificationBell` on branch `feature/v6-phase0-phase1`.
+
+---
+
+## Slice B2 — Block 2 ActiveTraficosTable
+
+**Status:** **NOT SHIPPED THIS SESSION.** Scope assessment at start of execution:
+
+- New `src/components/ActiveTraficosTable.tsx` (full extract + rewrite of ~540 lines of `ActiveTraficos.tsx`)
+- Sortable columns (5), filter bar (cliente / status / date range / atrasados / mis-traficos)
+- Sticky 64px bulk action bar with 60px tap targets
+- Inline status edit + inline operator assignment
+- New `operator_saved_views` migration + save/load/apply flow
+- `@tanstack/react-virtual` install + integration for >100 rows
+- Supabase Realtime subscription on `traficos` scoped by `company_id`
+- Three telemetry event wirings: `bulk_action_executed`, `saved_view_used`, `trafico_status_changed`
+- New `src/lib/decision-logger.ts` TS helper (mirroring `scripts/decision-logger.js`) — wired to every server action
+- Import into **both** `src/app/operador/inicio/` and `src/app/admin/inicio/` (admin cockpit touchpoint needs verification against the existing `InicioCockpit.tsx` layout)
+- Two smoke tests (sort behavior + saved-view persistence shape)
+- Full regression pass: typecheck + build + test + audit update
+
+Executing this atomically alongside B1 in one turn would have produced either (a) a rushed, under-tested commit, or (b) a mid-execution checkpoint with B1 uncommitted. The plan explicitly states: *"If blocked mid-execution, commit whatever is green, mark the rest partial in the audit with a specific one-line recovery plan, return. Do not cascade-fail."*
+
+**Recovery plan (one line):** Resume with a fresh executor, execute B2 against the now-green B1 base — extract `ActiveTraficosTable.tsx` first (pure refactor, no behavior change, commit), then layer sort/filter/bulk/saved-views/virtualization/Realtime/telemetry as sequential commits so each is reviewable and revertable.
+
+### Readiness for Block 1
+
+Block 1 (tráfico detail redesign) depends on **Block 2's `ActiveTraficosTable`** being importable. Block 1 is **blocked until Slice B2 ships.** Block 6 Realtime (this slice) does not block Block 1.
+

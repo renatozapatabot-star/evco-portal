@@ -17,6 +17,7 @@ import type {
   ContribucionRow,
   PedimentoFacturaRow,
 } from '@/lib/pedimento-types'
+import type { PartidaRow } from '@/app/traficos/[id]/types'
 
 interface TraficoLite {
   trafico: string
@@ -80,6 +81,7 @@ export default async function PedimentoEditorPage({
   const [
     destinatarios, compensaciones, pagos, guias, transportistas,
     candados, descargas, cuentas, contribuciones, facturas,
+    partidasRes, companyRes, eventsRes,
   ] = await Promise.all([
     supabase.from('pedimento_destinatarios').select('*').eq('pedimento_id', pedimentoId),
     supabase.from('pedimento_compensaciones').select('*').eq('pedimento_id', pedimentoId),
@@ -91,6 +93,18 @@ export default async function PedimentoEditorPage({
     supabase.from('pedimento_cuentas_garantia').select('*').eq('pedimento_id', pedimentoId),
     supabase.from('pedimento_contribuciones').select('*').eq('pedimento_id', pedimentoId),
     supabase.from('pedimento_facturas').select('*').eq('pedimento_id', pedimentoId),
+    supabase.from('globalpc_partidas').select('*').eq('cve_trafico', traficoId).limit(2000),
+    supabase
+      .from('companies')
+      .select('name, rfc')
+      .eq('company_id', pedimento.cliente_id)
+      .maybeSingle<{ name: string | null; rfc: string | null }>(),
+    supabase
+      .from('workflow_events')
+      .select('event_type, created_at')
+      .eq('trafico_id', traficoId)
+      .order('created_at', { ascending: false })
+      .limit(50),
   ])
 
   return (
@@ -113,6 +127,10 @@ export default async function PedimentoEditorPage({
         contribuciones: (contribuciones.data as ContribucionRow[] | null) ?? [],
         facturas: (facturas.data as PedimentoFacturaRow[] | null) ?? [],
       }}
+      partidas={(partidasRes.data as PartidaRow[] | null) ?? []}
+      clienteName={companyRes.data?.name ?? null}
+      clienteRfc={companyRes.data?.rfc ?? null}
+      workflowEvents={(eventsRes.data as Array<{ event_type: string; created_at: string }> | null) ?? []}
     />
   )
 }

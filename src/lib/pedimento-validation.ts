@@ -81,6 +81,13 @@ function validateCliente(parent: PedimentoRow): ValidationError[] {
   if (parent.cliente_rfc && !RFC_RE.test(parent.cliente_rfc)) {
     out.push(err('cliente_observaciones','cliente_rfc','RFC con formato inválido'))
   }
+  const identifiers = parent.identifiers ?? {}
+  for (const key of Object.keys(identifiers)) {
+    if (key.trim().length === 0) {
+      out.push(err('cliente_observaciones','identifiers','Los identificadores deben tener nombre'))
+      break
+    }
+  }
   return out
 }
 

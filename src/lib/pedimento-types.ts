@@ -94,10 +94,46 @@ export interface PedimentoRow {
   sat_transaction_number: string | null
   bank_operation_number: string | null
   observations: string | null
+  identifiers: Record<string, string>
   status: PedimentoStatus
   created_at: string
   updated_at: string
 }
+
+/** SAT transport claves for entrada/salida/arribo selectors. */
+export const SAT_TRANSPORT_CLAVES: readonly { code: string; label: string }[] = [
+  { code: '1', label: '1 · Marítimo' },
+  { code: '2', label: '2 · Ferroviario' },
+  { code: '3', label: '3 · Carretero' },
+  { code: '4', label: '4 · Aéreo' },
+  { code: '5', label: '5 · Postal' },
+  { code: '6', label: '6 · Tubería' },
+  { code: '7', label: '7 · Líneas de conducción' },
+  { code: '8', label: '8 · Fluvial' },
+  { code: '9', label: '9 · Vía propia' },
+] as const
+
+export const DOCUMENT_TYPE_OPTIONS: readonly { code: DocumentType; label: string }[] = [
+  { code: 'IM', label: 'IM · Importación' },
+  { code: 'EX', label: 'EX · Exportación' },
+  { code: 'C1', label: 'C1 · Consolidado' },
+  { code: 'T1', label: 'T1 · Tránsito' },
+  { code: 'F4', label: 'F4 · Rectificación' },
+] as const
+
+export const REGIME_TYPE_OPTIONS: readonly { code: RegimeType; label: string }[] = [
+  { code: 'A1', label: 'A1 · Definitiva' },
+  { code: 'H1', label: 'H1 · Retorno' },
+  { code: 'IN', label: 'IN · Temporal IMMEX' },
+  { code: 'ITE', label: 'ITE · Temporal exportación' },
+  { code: 'ITR', label: 'ITR · Retorno IMMEX' },
+  { code: 'IMD', label: 'IMD · IMMEX Def.' },
+  { code: 'RT', label: 'RT · Retornos' },
+  { code: 'EX', label: 'EX · Def. exportación' },
+  { code: 'V1', label: 'V1 · Recinto fiscalizado' },
+  { code: 'F4', label: 'F4 · Rectificación' },
+  { code: 'T1', label: 'T1 · Tránsito' },
+] as const
 
 export interface DestinatarioRow {
   id: string

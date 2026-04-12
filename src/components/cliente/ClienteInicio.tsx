@@ -27,6 +27,7 @@ import type {
   ClienteDocumento,
   ClienteNotificacion,
 } from '@/lib/cliente/dashboard'
+import { CockpitBrandHeader } from '@/components/brand/CockpitBrandHeader'
 
 // ── Icon resolver ─────────────────────────────────────────────
 const ICONS: Record<ClienteEventLabel['icon'], LucideIcon> = {
@@ -87,6 +88,9 @@ export function ClienteInicio({
 
   return (
     <div style={{ padding: '8px 0', maxWidth: 1400, margin: '0 auto' }}>
+      {/* AGUILA brand trio */}
+      <CockpitBrandHeader subtitle={companyName ? `Inicio · ${companyName}` : 'Inicio'} />
+
       {/* Header */}
       <div style={{ marginBottom: 20 }}>
         <h1 style={{

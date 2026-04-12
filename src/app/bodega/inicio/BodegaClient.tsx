@@ -16,6 +16,7 @@ import type { LucideIcon } from 'lucide-react'
 import { NavCardGrid, type NavCardGridItem } from '@/components/NavCardGrid'
 import { RoleKPIBanner } from '@/components/RoleKPIBanner'
 import { getGreeting } from '@/lib/greeting'
+import { CockpitBrandHeader } from '@/components/brand/CockpitBrandHeader'
 import {
   ACCENT_CYAN,
   BORDER,
@@ -78,6 +79,9 @@ export function BodegaClient({ operatorName, kpis }: BodegaClientProps) {
 
   return (
     <div style={{ padding: '8px 0', maxWidth: 1200, margin: '0 auto', color: TEXT_PRIMARY }}>
+      {/* AGUILA brand trio */}
+      <CockpitBrandHeader subtitle={`Bodega · ${operatorName}`} />
+
       {/* Header */}
       <div style={{ marginBottom: 16 }}>
         <h1 style={{

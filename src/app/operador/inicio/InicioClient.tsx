@@ -11,6 +11,7 @@ import {
   TEXT_PRIMARY, TEXT_SECONDARY, TEXT_MUTED,
 } from '@/lib/design-system'
 import { HeroStrip } from './HeroStrip'
+import { CockpitBrandHeader } from '@/components/brand/CockpitBrandHeader'
 import { QuickActions } from './QuickActions'
 import { ActiveTraficos } from './ActiveTraficos'
 import { RightRail } from './RightRail'
@@ -125,6 +126,9 @@ export function InicioClient(props: Props) {
       }}
     >
       <div className="p-4 md:px-7 md:py-6" style={{ maxWidth: 1400, margin: '0 auto' }}>
+        {/* AGUILA brand trio */}
+        <CockpitBrandHeader subtitle={`Operador · ${props.operatorName}`} />
+
         {/* Greeting header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
           <div style={{

@@ -13,13 +13,9 @@ import {
   Text,
   View,
   StyleSheet,
-  Svg,
-  Path,
-  Defs,
-  LinearGradient,
-  Stop,
   renderToBuffer,
 } from '@react-pdf/renderer'
+import { AguilaPdfHeader, AguilaPdfFooter } from '@/lib/pdf/brand'
 import type {
   ClassificationSheetConfig,
   GeneratedSheet,
@@ -29,7 +25,6 @@ import type {
 
 const SILVER = '#C0C5CE'
 const SILVER_BRIGHT = '#E8EAED'
-const SILVER_DIM = '#7A7E86'
 const TEXT_MUTED = '#6B7280'
 const TEXT_PRIMARY = '#111827'
 const BORDER = '#E5E7EB'
@@ -43,36 +38,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Helvetica',
     color: TEXT_PRIMARY,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderBottomWidth: 1.5,
-    borderBottomColor: SILVER,
-    paddingBottom: 10,
-    marginBottom: 14,
-  },
-  headerLeft: { flexDirection: 'row', alignItems: 'center' },
-  wordmark: {
-    marginLeft: 10,
-    flexDirection: 'column',
-  },
-  brandName: {
-    fontSize: 22,
-    fontFamily: 'Helvetica-Bold',
-    color: SILVER_DIM,
-    letterSpacing: 3,
-  },
-  brandSubtitle: { fontSize: 8, color: TEXT_MUTED, marginTop: 2 },
-  headerRight: { flexDirection: 'column', alignItems: 'flex-end' },
-  sheetTitle: {
-    fontSize: 11,
-    fontFamily: 'Helvetica-Bold',
-    color: TEXT_PRIMARY,
-    letterSpacing: 1,
-  },
-  sheetDate: { fontSize: 8, color: TEXT_MUTED, marginTop: 2 },
-
   metaBlock: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -145,68 +110,7 @@ const styles = StyleSheet.create({
     marginBottom: 3,
   },
   warningItem: { fontSize: 7, color: '#92400E', marginBottom: 1 },
-
-  footer: {
-    position: 'absolute',
-    bottom: 16,
-    left: 28,
-    right: 28,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    fontSize: 7,
-    color: TEXT_MUTED,
-    borderTopWidth: 0.5,
-    borderTopColor: BORDER,
-    paddingTop: 6,
-  },
 })
-
-// Stylized geometric eagle — silhouette path. Silver gradient fill.
-// Kept intentionally simple so @react-pdf can render it reliably.
-const EAGLE_PATH =
-  'M20 2 L24 8 L30 6 L26 12 L34 14 L28 18 L36 22 L28 22 L30 30 L24 26 L20 34 L16 26 L10 30 L12 22 L4 22 L12 18 L6 14 L14 12 L10 6 L16 8 Z'
-
-function AguilaHeader({ meta }: { meta: GeneratedSheetMeta }) {
-  return (
-    <View style={styles.header} fixed>
-      <View style={styles.headerLeft}>
-        <Svg width={40} height={40} viewBox="0 0 40 36">
-          <Defs>
-            <LinearGradient id="silverGrad" x1="0" y1="0" x2="1" y2="1">
-              <Stop offset="0" stopColor={SILVER_BRIGHT} />
-              <Stop offset="0.5" stopColor={SILVER} />
-              <Stop offset="1" stopColor={SILVER_DIM} />
-            </LinearGradient>
-          </Defs>
-          <Path d={EAGLE_PATH} fill="url(#silverGrad)" stroke={SILVER_DIM} strokeWidth={0.5} />
-        </Svg>
-        <View style={styles.wordmark}>
-          <Text style={styles.brandName}>AGUILA</Text>
-          <Text style={styles.brandSubtitle}>
-            Inteligencia aduanal · Patente 3596
-          </Text>
-        </View>
-      </View>
-      <View style={styles.headerRight}>
-        <Text style={styles.sheetTitle}>HOJA DE CLASIFICACION</Text>
-        <Text style={styles.sheetDate}>Generada {meta.generated_at}</Text>
-      </View>
-    </View>
-  )
-}
-
-function AguilaFooter() {
-  return (
-    <View style={styles.footer} fixed>
-      <Text>AGUILA · Patente 3596 · Aduana 240 Nuevo Laredo · Año 85</Text>
-      <Text
-        render={({ pageNumber, totalPages }) =>
-          `Pagina ${pageNumber} / ${totalPages}`
-        }
-      />
-    </View>
-  )
-}
 
 function MetaBlock({ meta }: { meta: GeneratedSheetMeta }) {
   const items: Array<[string, string]> = [
@@ -332,7 +236,11 @@ function ClassificationDocument({
   return (
     <Document>
       <Page size="A4" orientation="landscape" style={styles.page}>
-        <AguilaHeader meta={meta} />
+        <AguilaPdfHeader
+          title="HOJA DE CLASIFICACION"
+          subtitle={`Generada ${meta.generated_at}`}
+          gradientId="silverGrad"
+        />
         <MetaBlock meta={meta} />
         <PartidasTable sheet={sheet} config={config} />
         <View style={styles.totals}>
@@ -355,7 +263,7 @@ function ClassificationDocument({
             ))}
           </View>
         )}
-        <AguilaFooter />
+        <AguilaPdfFooter label="AGUILA · Patente 3596 · Aduana 240 Nuevo Laredo · Año 85" />
       </Page>
     </Document>
   )

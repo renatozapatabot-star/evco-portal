@@ -1,0 +1,64 @@
+import { cookies } from 'next/headers'
+import Link from 'next/link'
+import { redirect, notFound } from 'next/navigation'
+import { createServerClient } from '@/lib/supabase-server'
+import { verifySession } from '@/lib/session'
+import { RegulatoryDocClient } from '../doda/RegulatoryDocClient'
+
+interface TraficoLite {
+  trafico: string
+  company_id: string | null
+  pedimento: string | null
+}
+
+export default async function CartaPortePage({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
+  const { id: rawId } = await params
+  const traficoId = decodeURIComponent(rawId)
+
+  const cookieStore = await cookies()
+  const session = await verifySession(cookieStore.get('portal_session')?.value ?? '')
+  if (!session) redirect('/login')
+
+  const supabase = createServerClient()
+  const isInternal = session.role === 'broker' || session.role === 'admin'
+
+  let q = supabase
+    .from('traficos')
+    .select('trafico, company_id, pedimento')
+    .eq('trafico', traficoId)
+  if (!isInternal) q = q.eq('company_id', session.companyId)
+  const { data: trafico } = await q.maybeSingle<TraficoLite>()
+  if (!trafico) notFound()
+
+  return (
+    <main className="min-h-screen aduana-dark px-6 py-8">
+      <div className="mx-auto max-w-3xl">
+        <nav className="mb-6 text-sm">
+          <Link
+            href={`/traficos/${encodeURIComponent(traficoId)}`}
+            className="text-slate-400 hover:text-slate-200 transition-colors"
+          >
+            ← Volver al tráfico
+          </Link>
+        </nav>
+
+        <header className="mb-6">
+          <h1 className="text-2xl font-semibold text-slate-100">Carta Porte</h1>
+          <p className="mt-2 text-sm text-slate-400">
+            CFDI 4.0 con Complemento Carta Porte · Tráfico{' '}
+            <span className="font-mono text-slate-200">{trafico.trafico}</span>
+          </p>
+        </header>
+
+        <RegulatoryDocClient
+          apiPath={`/api/regulatory/carta-porte/${encodeURIComponent(traficoId)}`}
+          docLabelEs="Carta Porte"
+        />
+      </div>
+    </main>
+  )
+}

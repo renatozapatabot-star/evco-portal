@@ -19,20 +19,17 @@ import {
   Text,
   View,
   StyleSheet,
-  Svg,
-  Path,
-  Defs,
-  LinearGradient,
-  Stop,
   renderToBuffer,
 } from '@react-pdf/renderer'
+import { AguilaPdfHeader, AguilaPdfFooter } from '@/lib/pdf/brand'
 
 // ---------------------------------------------------------------------------
-// Silver palette — mirrors Block 5. Block 16 will import from src/lib/pdf/brand.
+// Silver palette — mirrors Block 5. Shared brand tokens now live in
+// src/lib/pdf/brand.tsx; locals here are used only by the Anexo 24-specific
+// table/banner styles below.
 // ---------------------------------------------------------------------------
 const SILVER = '#C0C5CE'
 const SILVER_BRIGHT = '#E8EAED'
-const SILVER_DIM = '#7A7E86'
 const TEXT_MUTED = '#6B7280'
 const TEXT_PRIMARY = '#111827'
 const BORDER = '#E5E7EB'
@@ -155,33 +152,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Helvetica',
     color: TEXT_PRIMARY,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderBottomWidth: 1.5,
-    borderBottomColor: SILVER,
-    paddingBottom: 10,
-    marginBottom: 10,
-  },
-  headerLeft: { flexDirection: 'row', alignItems: 'center' },
-  wordmark: { marginLeft: 10, flexDirection: 'column' },
-  brandName: {
-    fontSize: 22,
-    fontFamily: 'Helvetica-Bold',
-    color: SILVER_DIM,
-    letterSpacing: 3,
-  },
-  brandSubtitle: { fontSize: 8, color: TEXT_MUTED, marginTop: 2 },
-  headerRight: { flexDirection: 'column', alignItems: 'flex-end' },
-  sheetTitle: {
-    fontSize: 11,
-    fontFamily: 'Helvetica-Bold',
-    color: TEXT_PRIMARY,
-    letterSpacing: 1,
-  },
-  sheetDate: { fontSize: 8, color: TEXT_MUTED, marginTop: 2 },
-
   banner: {
     marginBottom: 10,
     padding: 6,
@@ -232,67 +202,7 @@ const styles = StyleSheet.create({
   },
   rowZ: { backgroundColor: ZEBRA },
   td: { padding: 3, fontSize: 7, color: TEXT_PRIMARY },
-
-  footer: {
-    position: 'absolute',
-    bottom: 16,
-    left: 28,
-    right: 28,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    fontSize: 7,
-    color: TEXT_MUTED,
-    borderTopWidth: 0.5,
-    borderTopColor: BORDER,
-    paddingTop: 6,
-  },
 })
-
-// Inline-copied from Block 5 — Block 16 will extract into src/lib/pdf/brand.tsx.
-const EAGLE_PATH =
-  'M20 2 L24 8 L30 6 L26 12 L34 14 L28 18 L36 22 L28 22 L30 30 L24 26 L20 34 L16 26 L10 30 L12 22 L4 22 L12 18 L6 14 L14 12 L10 6 L16 8 Z'
-
-function AguilaHeader({ title, date }: { title: string; date: string }) {
-  return (
-    <View style={styles.header} fixed>
-      <View style={styles.headerLeft}>
-        <Svg width={40} height={40} viewBox="0 0 40 36">
-          <Defs>
-            <LinearGradient id="silverGradAnx" x1="0" y1="0" x2="1" y2="1">
-              <Stop offset="0" stopColor={SILVER_BRIGHT} />
-              <Stop offset="0.5" stopColor={SILVER} />
-              <Stop offset="1" stopColor={SILVER_DIM} />
-            </LinearGradient>
-          </Defs>
-          <Path d={EAGLE_PATH} fill="url(#silverGradAnx)" stroke={SILVER_DIM} strokeWidth={0.5} />
-        </Svg>
-        <View style={styles.wordmark}>
-          <Text style={styles.brandName}>AGUILA</Text>
-          <Text style={styles.brandSubtitle}>
-            Inteligencia aduanal · Patente 3596
-          </Text>
-        </View>
-      </View>
-      <View style={styles.headerRight}>
-        <Text style={styles.sheetTitle}>{title}</Text>
-        <Text style={styles.sheetDate}>Generada {date}</Text>
-      </View>
-    </View>
-  )
-}
-
-function AguilaFooter() {
-  return (
-    <View style={styles.footer} fixed>
-      <Text>AGUILA · Patente 3596 · Aduana 240 Nuevo Laredo</Text>
-      <Text
-        render={({ pageNumber, totalPages }) =>
-          `Pagina ${pageNumber} / ${totalPages}`
-        }
-      />
-    </View>
-  )
-}
 
 function MetaBlock({ meta }: { meta: Anexo24Meta }) {
   const items: Array<[string, string]> = [
@@ -362,13 +272,17 @@ function Anexo24Document({ data }: { data: Anexo24Data }) {
   return (
     <Document>
       <Page size="A4" orientation="landscape" style={styles.page}>
-        <AguilaHeader title="ANEXO 24 (PLACEHOLDER)" date={data.meta.generado_en} />
+        <AguilaPdfHeader
+          title="ANEXO 24 (PLACEHOLDER)"
+          subtitle={`Generada ${data.meta.generado_en}`}
+          gradientId="silverGradAnx"
+        />
         <View style={styles.banner}>
           <Text style={styles.bannerText}>{PLACEHOLDER_NOTICE_ES}</Text>
         </View>
         <MetaBlock meta={data.meta} />
         <RowsTable rows={data.rows} />
-        <AguilaFooter />
+        <AguilaPdfFooter />
       </Page>
     </Document>
   )

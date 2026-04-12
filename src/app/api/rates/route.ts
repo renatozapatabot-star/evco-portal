@@ -17,6 +17,8 @@ export async function GET() {
       dta: { amount: dtaA1.amount || 462, type: dtaA1.type || 'fixed' },
       iva: { rate: iva },
       tc: { rate: tc.rate, date: tc.date, source: tc.source },
+    }, {
+      headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=1800' },
     })
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Failed to fetch rates'

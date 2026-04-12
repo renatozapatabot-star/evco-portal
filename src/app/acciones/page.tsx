@@ -37,8 +37,8 @@ export default function AccionesPage() {
     }).catch((err: unknown) => console.error('[acciones] fetch failed:', (err as Error).message)).finally(() => setLoading(false))
   }, [])
 
+  const [now] = useState(() => Date.now())
   const actions = useMemo(() => {
-    const now = Date.now()
     interface ActionItem { id: string; icon: typeof AlertTriangle; color: string; label: string; sub: string; href: string }
     const urgent: ActionItem[] = []
     const today: ActionItem[] = []

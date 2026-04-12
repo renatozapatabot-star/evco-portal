@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { GOLD, GOLD_HOVER, GOLD_GRADIENT, GREEN, AMBER, RED } from '@/lib/design-system'
+import { GOLD, GOLD_GRADIENT, GREEN, AMBER, RED } from '@/lib/design-system'
 import { ChaserButton } from './ChaserButton'
 import { fmtDate, fmtDateTime } from '@/lib/format-utils'
 import { WORKFLOW_LABELS, WORKFLOW_ORDER } from '@/lib/workflow-events'
@@ -19,8 +19,9 @@ export default async function AdminPage() {
   const role = cookieStore.get('user_role')?.value
   if (role !== 'admin') redirect('/login')
 
-  // Parallel data fetch
-  const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+  // Parallel data fetch (server component — Date computed once per request)
+  const requestTime = new Date()
+  const since24h = new Date(requestTime.getTime() - 24 * 60 * 60 * 1000).toISOString()
 
   const [companiesRes, alertsRes, healthRes, workflowEventsRes, recentClassRes] = await Promise.all([
     supabase.from('companies').select('*').eq('active', true).order('traficos_count', { ascending: false, nullsFirst: false }),
@@ -60,7 +61,7 @@ export default async function AdminPage() {
   const wfEvents = workflowEventsRes.data || []
   const recentClassifications = recentClassRes.data || []
   const stuckThresholdMs = 10 * 60 * 1000
-  const now = Date.now()
+  const now = requestTime.getTime()
 
   const wfByStatus: Record<string, number> = {}
   const wfByType: Record<string, { total: number; completed: number; failed: number }> = {}
@@ -100,8 +101,8 @@ export default async function AdminPage() {
   const syncCoverage = syncCoverageResults.filter(s => s.total > 0)
 
   // ── Block 11D: Operator cross-fleet views ──
-  const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString()
-  const fortyEightHoursAgo = new Date(Date.now() - 48 * 3600000).toISOString()
+  const sevenDaysAgo = new Date(requestTime.getTime() - 7 * 86400000).toISOString()
+  const fortyEightHoursAgo = new Date(requestTime.getTime() - 48 * 3600000).toISOString()
 
   const [leaderboardRes, stuckRes, recentActionsRes, operatorsRes] = await Promise.all([
     supabase.from('operator_actions')
@@ -144,16 +145,7 @@ export default async function AdminPage() {
   const stuckTraficos = stuckRes.data || []
   const recentActions = recentActionsRes.data || []
 
-  function relTime(dateStr: string | null): string {
-    if (!dateStr) return ''
-    const diffMs = Date.now() - new Date(dateStr).getTime()
-    const mins = Math.floor(diffMs / 60000)
-    if (mins < 1) return 'ahora'
-    if (mins < 60) return `hace ${mins}m`
-    const hours = Math.floor(mins / 60)
-    if (hours < 24) return `hace ${hours}h`
-    return `hace ${Math.floor(hours / 24)}d`
-  }
+  /** relTime removed — all dates are absolute per portal rules. Use fmtDateTime() */
 
   const ACTION_LABELS: Record<string, string> = {
     view_page: 'vió página',
@@ -533,7 +525,7 @@ export default async function AdminPage() {
                 <td style={{ padding: '10px 14px', textAlign: 'center', fontFamily: 'var(--font-mono)', fontWeight: 700, color: T.gold }}>{op.totalActions}</td>
                 <td style={{ padding: '10px 14px', textAlign: 'center', fontFamily: 'var(--font-mono)' }}>{op.classifications}</td>
                 <td style={{ padding: '10px 14px', textAlign: 'center', fontFamily: 'var(--font-mono)' }}>{op.assignments}</td>
-                <td style={{ padding: '10px 14px', textAlign: 'right', color: T.sub, fontSize: 11 }}>{relTime(op.lastActiveAt)}</td>
+                <td style={{ padding: '10px 14px', textAlign: 'right', color: T.sub, fontSize: 11 }}>{fmtDateTime(op.lastActiveAt)}</td>
               </tr>
             ))}
           </tbody>
@@ -554,7 +546,7 @@ export default async function AdminPage() {
       ) : (
         <div style={{ padding: '8px 12px' }}>
           {stuckTraficos.map(t => {
-            const ageMs = Date.now() - new Date(t.created_at).getTime()
+            const ageMs = requestTime.getTime() - new Date(t.created_at).getTime()
             const isOld = ageMs > 72 * 3600000
             const assignedName = t.assigned_to_operator_id ? (opNames[t.assigned_to_operator_id] || 'Asignado') : 'Sin asignar'
             return (
@@ -573,7 +565,7 @@ export default async function AdminPage() {
                     ${Number(t.importe_total).toLocaleString()} USD
                   </span>
                 )}
-                <span style={{ fontSize: 10, color: T.muted, marginLeft: 'auto' }}>{relTime(t.created_at)}</span>
+                <span style={{ fontSize: 10, color: T.muted, marginLeft: 'auto' }}>{fmtDateTime(t.created_at)}</span>
                 <span style={{ fontSize: 10, color: T.sub }}>{assignedName}</span>
                 <span onClick={e => e.preventDefault()}>
                   <ChaserButton
@@ -617,7 +609,7 @@ export default async function AdminPage() {
                 fontSize: 12,
               }}>
                 <span style={{ color: T.muted, fontSize: 10, fontFamily: 'var(--font-mono)', width: 60, flexShrink: 0, textAlign: 'right' }}>
-                  {relTime(a.created_at)}
+                  {fmtDateTime(a.created_at)}
                 </span>
                 <span style={{ fontWeight: 600, minWidth: 100 }}>{name}</span>
                 <span style={{ color: T.gold }}>{label}</span>

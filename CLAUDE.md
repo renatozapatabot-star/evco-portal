@@ -465,10 +465,57 @@ Not a demo. A real pedimento. A real broker. A real clearance.
 
 ---
 
-## V1 PORTAL — CURRENT STATE (updated 2026-04-09, post-marathon)
+## PORTAL — CURRENT STATE (updated 2026-04-10, full audit)
 
 **Portal:** https://evco-portal.vercel.app
 **Demo:** https://evco-portal.vercel.app/demo/live (or password: demo2026)
+**Scale:** 98 pages, 116 API routes, 75+ Supabase tables, 326 scripts, 671 files, ~85k LOC
+
+### Overall Score: 7.2/10
+
+| Dimension | Score | Gap to 10 |
+|-----------|-------|-----------|
+| Data Foundation | 10/10 | -- |
+| Automation | 9/10 | Fixed: hardcoded rate fallbacks removed |
+| Multi-tenant | 9/10 | RLS solid, parameterized queries |
+| Workflow backend | 8/10 | 6 workflows defined and running |
+| Security | 8/10 | Fixed: 3 tables now have RLS |
+| Code quality | 7.5/10 | 143 ESLint errors remain (mostly any types, setState-in-effect) |
+| Portal UX | 7/10 | Fixed: relative times, QueryProvider caching |
+| Testing | 6/10 | 116 tests pass but only 6 test files |
+| Performance | 6/10 | Fixed: caching, slim shell. Remaining: 140 use-client, missing loading.tsx |
+| Intelligence surface | 4/10 | 11 intelligence products computed but not displayed |
+| Workflow UI | 0/10 | 6 workflows running blind — no monitoring page |
+
+### Performance Fixes Applied (April 10)
+- QueryProvider: staleTime 30s → 5min, refetchOnWindowFocus disabled, gcTime 10min
+- DashboardShellClient: PageTransition animation removed, 3 useEffects → 1
+- next.config.ts: image optimization added (avif/webp)
+
+### Hidden Gold (Built But Not Surfaced)
+- Anomaly baselines → stored daily, never visualized
+- Profitability by client → calculated nightly, not on financiero
+- Compliance predictions → generated on status change, not displayed
+- CAZA pipeline scores → 46 clients scored, page is stub
+- Cost optimization → computed on demand, not displayed
+- Bridge utilization patterns → stored hourly, no optimal window UI
+- API cost tracking → logged, no spend dashboard
+- Digital twin → library exists (`lib/digital-twin.ts`), never called
+- Workflow engine → 6 workflows, autonomy 0-3, **no UI to view/configure**
+- 30+ unused components in src/components/
+
+### Interconnection Gaps
+- Expedientes, pedimentos, entradas → no link back to tráfico
+- Proveedores → no link to traficos by supplier
+- Financiero → no drilldown to underlying traficos
+- Global search → only pedimento numbers (no supplier, fracción, description)
+
+### Next Milestone Priorities
+1. **Performance**: Add loading.tsx to 48 pages, cache headers on API routes, code-split recharts/leaflet
+2. **Interconnection**: Cross-link all entity pages, expand global search
+3. **Intelligence UI**: Workflow monitor page, anomaly dashboard, cost optimization widget
+4. **Code hygiene**: Fix remaining ESLint errors, archive dead components, deploy 3 pending migrations
+5. **Testing**: API route tests, RLS enforcement tests
 
 ### Marathon Results (April 8-9, 2026)
 - 80 commits, 266 files, 22,632 lines added

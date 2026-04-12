@@ -122,6 +122,21 @@ module.exports = {
       error_file: '/tmp/clearance-sandbox-error.log',
       out_file: '/tmp/clearance-sandbox-out.log',
       log_date_format: 'YYYY-MM-DD HH:mm:ss',
+    },
+    {
+      name: 'v2c-batch',
+      script: 'scripts/v2c-managed-agent/nightly-batch.js',
+      args: '--limit=50',
+      cwd,
+      cron_restart: '0 3 * * *',
+      autorestart: false,
+      watch: false,
+      max_memory_restart: '1G',
+      env: { NODE_ENV: 'production' },
+      error_file: '/tmp/v2c-batch-error.log',
+      out_file: '/tmp/v2c-batch-out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss',
+      max_size: '10M',
     }
   ]
 }

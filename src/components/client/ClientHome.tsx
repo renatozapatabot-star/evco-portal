@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Package, Truck, FileText, ClipboardList,
   FileSpreadsheet, FolderOpen, BarChart3, TrendingUp,
@@ -93,6 +93,76 @@ const statusIcons: Record<string, string> = {
   'Cruzado': '✅',
 }
 
+// ── Fix 3: Display name split ─────────────────────────────
+
+function toDisplayName(legalName: string): { display: string; suffix: string } {
+  const suffixPattern = /\s*(S\.?\s*DE\s*R\.?\s*L\.?\s*(DE\s*C\.?\s*V\.?)?|S\.?\s*A\.?\s*(DE\s*C\.?\s*V\.?)?|S\.?\s*C\.?|S\.?\s*A\.?\s*P\.?\s*I\.?(\s*DE\s*C\.?\s*V\.?)?)\.?\s*$/i
+  const match = legalName.match(suffixPattern)
+  if (match && match.index !== undefined) {
+    return {
+      display: legalName.slice(0, match.index).trim(),
+      suffix: match[0].trim(),
+    }
+  }
+  return { display: legalName, suffix: '' }
+}
+
+// ── Fix 4: Activity status pills ──────────────────────────
+
+const STATUS_PILL_CONFIG: Record<string, { bg: string; text: string; label: string }> = {
+  'En Proceso':       { bg: 'rgba(0,229,255,0.12)',  text: '#00E5FF', label: 'En proceso' },
+  'Documentacion':    { bg: 'rgba(148,163,184,0.12)', text: '#94a3b8', label: 'Documentación' },
+  'En Aduana':        { bg: 'rgba(148,163,184,0.12)', text: '#94a3b8', label: 'En aduana' },
+  'Pedimento Pagado': { bg: 'rgba(34,197,94,0.12)',   text: '#22C55E', label: 'Pagado' },
+  'Cruzado':          { bg: 'rgba(34,197,94,0.12)',   text: '#22C55E', label: 'Cruzado' },
+}
+
+function StatusPill({ status }: { status: string }) {
+  const c = STATUS_PILL_CONFIG[status] ?? { bg: 'rgba(148,163,184,0.1)', text: '#64748b', label: status }
+  return (
+    <span style={{
+      fontSize: 10, fontWeight: 600,
+      padding: '2px 8px', borderRadius: 20,
+      background: c.bg, color: c.text,
+      flexShrink: 0, whiteSpace: 'nowrap',
+    }}>
+      {c.label}
+    </span>
+  )
+}
+
+// ── Fix 7: Live timestamp ─────────────────────────────────
+
+function LiveTimestamp() {
+  const [now, setNow] = useState<Date | null>(null)
+
+  useEffect(() => {
+    setNow(new Date())
+    const id = setInterval(() => setNow(new Date()), 30_000)
+    return () => clearInterval(id)
+  }, [])
+
+  if (!now) return null
+
+  const dateStr = now.toLocaleDateString('es-MX', {
+    weekday: 'long', day: 'numeric', month: 'long',
+    timeZone: 'America/Chicago',
+  })
+  const timeStr = now.toLocaleTimeString('es-MX', {
+    hour: '2-digit', minute: '2-digit', hour12: false,
+    timeZone: 'America/Chicago',
+  })
+
+  return (
+    <div style={{
+      fontFamily: 'var(--font-mono)',
+      fontSize: 11, color: '#64748b', marginTop: 4,
+    }}>
+      {dateStr} · {timeStr} · Datos en vivo
+    </div>
+  )
+}
+
 // ── Component ──────────────────────────────────────────────
 
 export function ClientHome({ companyName, data }: { companyName?: string; data: ClientData }) {
@@ -112,17 +182,34 @@ export function ClientHome({ companyName, data }: { companyName?: string; data: 
           flexShrink: 0,
         }} />
         <div>
-          <h1 style={{
-            fontSize: 24, fontWeight: 800, color: '#E6EDF3',
-            margin: 0, letterSpacing: '-0.03em',
-          }}>
-            {companyName || 'Portal'}
-          </h1>
+          {(() => {
+            const { display, suffix } = toDisplayName(companyName || 'Portal')
+            return (
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
+                <h1 style={{
+                  fontSize: 24, fontWeight: 800, color: '#E6EDF3',
+                  margin: 0, letterSpacing: '-0.03em',
+                }}>
+                  {display}
+                </h1>
+                {suffix && (
+                  <span style={{
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: 10, color: '#64748b',
+                    textTransform: 'uppercase', letterSpacing: '0.04em',
+                  }}>
+                    {suffix}
+                  </span>
+                )}
+              </div>
+            )
+          })()}
           <p style={{
             fontSize: 14, color: '#94a3b8', marginTop: 2, fontWeight: 500,
           }}>
             {data.statusSentence}
           </p>
+          <LiveTimestamp />
         </div>
       </div>
 
@@ -216,42 +303,46 @@ export function ClientHome({ companyName, data }: { companyName?: string; data: 
             </button>
 
             {hasActivity ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 {visibleActivity.map((event, i) => (
                   <div key={`${event.trafico}-${i}`} style={{
-                    display: 'flex', alignItems: 'flex-start', gap: 10,
-                    padding: '8px 0',
+                    display: 'flex', flexDirection: 'column', gap: 4,
+                    padding: '10px 0',
                     borderBottom: i < visibleActivity.length - 1
                       ? '1px solid rgba(255,255,255,0.04)' : 'none',
                   }}>
-                    <span style={{ fontSize: 14, flexShrink: 0, marginTop: 1 }}>
-                      {statusIcons[event.estatus] || '📦'}
-                    </span>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    {/* Line 1: icon + trafico ← left ... timestamp ← right */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+                        <span style={{ fontSize: 12, flexShrink: 0 }}>
+                          {statusIcons[event.estatus] || '📦'}
+                        </span>
                         <span style={{
                           fontFamily: 'var(--font-mono)',
                           fontSize: 13, fontWeight: 600, color: '#E6EDF3',
+                          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                         }}>
                           {event.trafico}
                         </span>
-                        <span style={{ fontSize: 11, color: '#8b9ab5' }}>
-                          → {event.estatus}
-                        </span>
                       </div>
-                      <div style={{
-                        fontSize: 11, color: '#64748b', marginTop: 2,
-                        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                      <span style={{
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: 10, color: '#64748b', flexShrink: 0, whiteSpace: 'nowrap',
+                      }}>
+                        {fmtDateTime(event.updated_at)}
+                      </span>
+                    </div>
+                    {/* Line 2: description + status pill */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingLeft: 20 }}>
+                      <span style={{
+                        fontSize: 11, color: '#64748b',
+                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                        flex: 1, minWidth: 0,
                       }}>
                         {event.description}
-                      </div>
+                      </span>
+                      <StatusPill status={event.estatus} />
                     </div>
-                    <span style={{
-                      fontFamily: 'var(--font-mono)',
-                      fontSize: 10, color: '#64748b', flexShrink: 0, whiteSpace: 'nowrap',
-                    }}>
-                      {fmtDateTime(event.updated_at)}
-                    </span>
                   </div>
                 ))}
                 {!activityExpanded && data.recentActivity.length > 3 && (

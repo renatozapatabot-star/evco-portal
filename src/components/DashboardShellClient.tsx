@@ -25,29 +25,7 @@ function LoadingBar() {
   return <div className="load-bar" />
 }
 
-function PageTransition({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname()
-  const [visible, setVisible] = useState(true)
-  const [key, setKey] = useState(0)
-  useEffect(() => {
-    setVisible(false)
-    const t = setTimeout(() => { setVisible(true); setKey(k => k + 1) }, 30)
-    return () => clearTimeout(t)
-  }, [pathname])
-  return (
-    <div
-      key={key}
-      style={{
-        opacity: visible ? 1 : 0,
-        transform: visible ? 'translateY(0) scale(1)' : 'translateY(4px) scale(0.999)',
-        transition: 'opacity 160ms cubic-bezier(0.16, 1, 0.3, 1), transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1)',
-        willChange: visible ? 'auto' : 'opacity, transform',
-      }}
-    >
-      {children}
-    </div>
-  )
-}
+/** PageTransition removed — added 30ms+ delay to every navigation with minimal visual benefit */
 
 /** Listens for celebration events dispatched by use-notifications Realtime and triggers toasts. */
 function CelebrationListener() {
@@ -122,11 +100,18 @@ export default function DashboardShellClient({ children }: Props) {
   useKeyboardShortcuts()
   const { pulling, distance } = usePullToRefresh()
 
-  // Close mobile sidebar on route change
-  useEffect(() => { setMobileOpen(false) }, [pathname])
-
+  // Route change: close mobile sidebar, set data-page, read viewing_as cookie
   useEffect(() => {
+    setMobileOpen(false)
     document.body.setAttribute('data-page', pathname)
+    const vaMatch = document.cookie.match(/(^| )viewing_as=([^;]+)/)
+    const nameMatch = document.cookie.match(/(^| )company_name=([^;]+)/)
+    if (vaMatch) {
+      setViewingAs(vaMatch[2])
+      setViewingName(nameMatch ? decodeURIComponent(nameMatch[2]) : vaMatch[2])
+    } else {
+      setViewingAs(null)
+    }
     return () => { document.body.removeAttribute('data-page') }
   }, [pathname])
 
@@ -167,17 +152,9 @@ export default function DashboardShellClient({ children }: Props) {
     }
   }, [])
 
-  // Read viewing_as cookie for broker impersonation banner
+  // Broker impersonation state (read in pathname effect above)
   const [viewingAs, setViewingAs] = useState<string | null>(null)
   const [viewingName, setViewingName] = useState<string>('')
-  useEffect(() => {
-    const vaMatch = document.cookie.match(/(^| )viewing_as=([^;]+)/)
-    const nameMatch = document.cookie.match(/(^| )company_name=([^;]+)/)
-    if (vaMatch) {
-      setViewingAs(vaMatch[2])
-      setViewingName(nameMatch ? decodeURIComponent(nameMatch[2]) : vaMatch[2])
-    }
-  }, [pathname])
 
   if (pathname === '/login' || pathname.startsWith('/track') || pathname.startsWith('/upload') || pathname.startsWith('/proveedor') || pathname === '/war-room') return <>{children}</>
 
@@ -229,7 +206,7 @@ export default function DashboardShellClient({ children }: Props) {
       >
         <LoadingBar />
         <div id="main-content" ref={scrollRef}>
-          <PageTransition>{children}</PageTransition>
+          {children}
         </div>
       </AduanaLayout>
 

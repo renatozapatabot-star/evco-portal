@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useMemo } from 'react'
+import Link from 'next/link'
 import { Search, ChevronLeft, ChevronRight, Package } from 'lucide-react'
 import { getCompanyIdCookie, getCookieValue } from '@/lib/client-config'
 import { fmtDesc, fmtDate } from '@/lib/format-utils'
@@ -255,7 +256,11 @@ export default function EntradasPage() {
                     {fmtDesc(getDesc(r)) || '—'}
                   </div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
-                    <span>{r.trafico || 'Pendiente'}</span>
+                    {r.trafico ? (
+                      <Link href={`/traficos/${encodeURIComponent(r.trafico)}`} style={{ color: '#00E5FF', textDecoration: 'none' }}>{r.trafico}</Link>
+                    ) : (
+                      <span>Pendiente</span>
+                    )}
                     {transporte && <span>{transporte}</span>}
                     {(r.cantidad_bultos ?? 0) > 0 && <span>{r.cantidad_bultos} bto{r.cantidad_bultos !== 1 ? 's' : ''}</span>}
                     {(r.peso_bruto ?? 0) > 0 && <span>{Number(r.peso_bruto).toLocaleString('es-MX')} kg</span>}
@@ -303,9 +308,9 @@ export default function EntradasPage() {
                     </td>
                     <td>
                       {r.trafico ? (
-                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+                        <Link href={`/traficos/${encodeURIComponent(r.trafico)}`} style={{ fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 600, color: '#00E5FF', textDecoration: 'none' }}>
                           {r.trafico}
-                        </span>
+                        </Link>
                       ) : (
                         <span style={{ fontSize: 13, color: 'var(--text-muted)', fontStyle: 'italic' }}>Pendiente</span>
                       )}

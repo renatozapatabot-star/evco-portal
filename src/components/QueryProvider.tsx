@@ -6,9 +6,10 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient({
     defaultOptions: {
       queries: {
-        staleTime: 30000,
-        retry: 2,
-        refetchOnWindowFocus: true,
+        staleTime: 5 * 60 * 1000,   // 5 minutes — customs data changes hourly, not by the second
+        gcTime: 10 * 60 * 1000,     // 10 minutes — keep unused queries in cache longer
+        retry: 1,
+        refetchOnWindowFocus: false, // no refetch on tab switch — data is not real-time
       },
     },
   }))

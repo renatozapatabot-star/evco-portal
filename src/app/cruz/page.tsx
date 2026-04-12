@@ -161,8 +161,8 @@ export default function CruzChatPage() {
     const recognition = new SR()
     recognition.lang = 'es-MX'; recognition.interimResults = true; recognition.continuous = false
     recognitionRef.current = recognition
-    recognition.onresult = (event: any) => {
-      const transcript = Array.from(event.results).map((r: any) => r[0].transcript).join('')
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
+      const transcript = Array.from(event.results).map((r: SpeechRecognitionResult) => r[0].transcript).join('')
       setInput(transcript)
       if (event.results[0]?.isFinal) { recognition.stop(); setListening(false); sendMessage(transcript) }
     }

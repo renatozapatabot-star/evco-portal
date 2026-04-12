@@ -1,10 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Bot, Activity, CheckCircle, AlertTriangle, Pause, Play } from 'lucide-react'
+import { Bot, Pause, Play } from 'lucide-react'
 import { getCookieValue } from '@/lib/client-config'
 import { useIsMobile } from '@/hooks/use-mobile'
-import { fmtDateTime } from '@/lib/format-utils'
 import { WORKFLOWS, LEVEL_NAMES, LEVEL_ICONS } from '@/lib/agent-workflows'
 
 interface Decision {
@@ -30,16 +29,15 @@ interface AgentStats {
 
 export default function AgentePage() {
   const isMobile = useIsMobile()
-  const [decisions, setDecisions] = useState<Decision[]>([])
-  const [stats, setStats] = useState<AgentStats>({ total: 0, autonomous: 0, pending: 0, accuracy: 0 })
-  const [loading, setLoading] = useState(true)
-  const [paused, setPaused] = useState(false)
-
   const role = getCookieValue('user_role')
   const isAdmin = role === 'admin' || role === 'broker'
+  const [decisions, setDecisions] = useState<Decision[]>([])
+  const [stats, setStats] = useState<AgentStats>({ total: 0, autonomous: 0, pending: 0, accuracy: 0 })
+  const [loading, setLoading] = useState(!isAdmin ? false : true)
+  const [paused, setPaused] = useState(false)
 
   useEffect(() => {
-    if (!isAdmin) { setLoading(false); return }
+    if (!isAdmin) return
 
     fetch('/api/data?table=agent_decisions&limit=50&order_by=created_at&order_dir=desc')
       .then(r => r.json())

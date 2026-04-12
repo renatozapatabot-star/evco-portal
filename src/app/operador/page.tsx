@@ -52,15 +52,7 @@ async function liberarTrafico(formData: FormData) {
 
 // ── Helpers ──
 
-function relativeTime(dateStr: string | null): string {
-  if (!dateStr) return ''
-  const diffMs = Date.now() - new Date(dateStr).getTime()
-  const hours = Math.floor(diffMs / 3600000)
-  if (hours < 1) return 'hace menos de 1h'
-  if (hours < 24) return `hace ${hours}h`
-  const days = Math.floor(hours / 24)
-  return `hace ${days}d`
-}
+/** relativeTime removed — all dates are absolute per portal rules. Use fmtDateTime() */
 
 const SEMAFORO_COLORS: Record<string, string> = {
   verde: '#16A34A', green: '#16A34A',
@@ -270,7 +262,7 @@ export default async function OperadorPage() {
                         <div style={{ width: 8, height: 8, borderRadius: '50%', background: SEMAFORO_COLORS[String(t.semaforo).toLowerCase()] || '#888' }} />
                       )}
                       {t.fecha_llegada && (
-                        <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>{relativeTime(String(t.fecha_llegada))}</span>
+                        <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>{fmtDateTime(String(t.fecha_llegada))}</span>
                       )}
                       {t.predicted_fraccion && (
                         <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>
@@ -323,7 +315,7 @@ export default async function OperadorPage() {
                     <div style={{ width: 8, height: 8, borderRadius: '50%', background: SEMAFORO_COLORS[String(t.semaforo).toLowerCase()] || '#888' }} />
                   )}
                   {t.fecha_llegada && (
-                    <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>{relativeTime(String(t.fecha_llegada))}</span>
+                    <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>{fmtDateTime(String(t.fecha_llegada))}</span>
                   )}
                   {t.predicted_fraccion && (
                     <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>

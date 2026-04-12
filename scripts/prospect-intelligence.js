@@ -21,6 +21,7 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 )
+const { getExchangeRate } = require('./lib/rates')
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN
 const TELEGRAM_CHAT = '-5085543275'
 
@@ -82,8 +83,15 @@ function calculateOpportunityScore(profile) {
 }
 
 // Estimated annual fees
-function estimateAnnualFees(valorUSD, pedimentos) {
-  const valueFee = valorUSD * 0.003 * 17.5 // 0.3% of value in MXN
+let _cachedTC = null
+async function getCachedTC() {
+  if (!_cachedTC) { const { rate } = await getExchangeRate(); _cachedTC = rate }
+  return _cachedTC
+}
+
+async function estimateAnnualFees(valorUSD, pedimentos) {
+  const tc = await getCachedTC()
+  const valueFee = valorUSD * 0.003 * tc // 0.3% of value in MXN
   const pedFee = pedimentos * 2500 // avg per pedimento MXN
   return Math.round(valueFee + pedFee)
 }
@@ -164,7 +172,8 @@ async function main() {
 
     // T-MEC opportunity: if they paid IGI but could have used T-MEC
     // Estimate: 5% avg duty rate * value from US/CA suppliers
-    const tmecSavingsMXN = g.totalIGI > 0 ? g.totalIGI * 0.5 : g.totalValorUSD * 0.02 * 17.5
+    const tc = await getCachedTC()
+    const tmecSavingsMXN = g.totalIGI > 0 ? g.totalIGI * 0.5 : g.totalValorUSD * 0.02 * tc
 
     const profile = {
       rfc,
@@ -181,7 +190,7 @@ async function main() {
       likely_tmec_eligible: tmecSavingsMXN > 10000,
       tmec_savings_opportunity_mxn: Math.round(tmecSavingsMXN),
       estimated_annual_value_usd: Math.round(g.totalValorUSD),
-      estimated_annual_fees_mxn: estimateAnnualFees(g.totalValorUSD, pedCount),
+      estimated_annual_fees_mxn: await estimateAnnualFees(g.totalValorUSD, pedCount),
       high_value_importer: g.totalValorUSD > 1000000,
       is_current_client: isCurrentClient,
       current_client_clave: isCurrentClient ? g.clave : null,

@@ -45,12 +45,16 @@ export async function GET() {
 
     const recommended = bridges.filter(b => b.commercial !== null).sort((a, b) => (a.commercial || 999) - (b.commercial || 999))[0]?.id || null
 
-    return NextResponse.json({ bridges, recommended, fetched: new Date().toISOString() })
+    return NextResponse.json({ bridges, recommended, fetched: new Date().toISOString() }, {
+      headers: { 'Cache-Control': 'public, s-maxage=900, stale-while-revalidate=300' },
+    })
   } catch (e: unknown) {
     // Fallback with simulated data when CBP API is down
     return NextResponse.json({
       bridges: LAREDO_BRIDGES.map(b => ({ ...b, commercial: null, passenger: null, pedestrian: null, status: 'unknown', updated: null })),
       recommended: null, fetched: new Date().toISOString(), error: getErrorMessage(e),
+    }, {
+      headers: { 'Cache-Control': 'public, s-maxage=900, stale-while-revalidate=300' },
     })
   }
 }

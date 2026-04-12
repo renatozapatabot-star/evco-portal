@@ -291,11 +291,9 @@ async function main() {
   console.log(`💰 Cost Optimizer — ${DRY_RUN ? 'DRY RUN' : 'LIVE'}`)
   const startTime = Date.now()
 
-  let exchangeRate = 17.5
-  try {
-    const fxData = await getExchangeRate()
-    exchangeRate = fxData.rate
-  } catch { /* use default */ }
+  const fxData = await getExchangeRate()
+  if (!fxData?.rate) throw new Error('Exchange rate unavailable from system_config — refusing to calculate with stale data')
+  const exchangeRate = fxData.rate
 
   // Multi-client
   const { data: companies } = await supabase.from('companies')

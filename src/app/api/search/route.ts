@@ -96,7 +96,7 @@ export async function GET(request: NextRequest) {
   }
 
   const safe = sanitizeIlike(q)
-  const [trafRes, entRes, factRes] = await Promise.all([
+  const [trafRes, entRes, factRes, prodRes, provRes, partRes] = await Promise.all([
     supabase.from('traficos')
       .select('trafico, estatus, fecha_llegada, descripcion_mercancia')
       .eq('company_id', companyId)
@@ -113,6 +113,21 @@ export async function GET(request: NextRequest) {
       .eq('clave_cliente', clientClave)
       .or(`pedimento.ilike.%${safe}%,proveedor.ilike.%${safe}%,referencia.ilike.%${safe}%,num_factura.ilike.%${safe}%`)
       .limit(10),
+    // Phase 1A: Search products by description or fraccion
+    supabase.from('globalpc_productos')
+      .select('id, descripcion, fraccion, cve_producto')
+      .or(`descripcion.ilike.%${safe}%,fraccion.ilike.%${safe}%,cve_producto.ilike.%${safe}%`)
+      .limit(8),
+    // Phase 1A: Search suppliers by name or RFC
+    supabase.from('globalpc_proveedores')
+      .select('cve_proveedor, nombre, id_fiscal')
+      .or(`nombre.ilike.%${safe}%,cve_proveedor.ilike.%${safe}%,id_fiscal.ilike.%${safe}%`)
+      .limit(8),
+    // Phase 1A: Search partidas by description
+    supabase.from('globalpc_partidas')
+      .select('id, cve_trafico, descripcion, fraccion_arancelaria')
+      .or(`descripcion.ilike.%${safe}%,fraccion_arancelaria.ilike.%${safe}%,cve_trafico.ilike.%${safe}%`)
+      .limit(8),
   ])
 
   const results = [
@@ -130,6 +145,21 @@ export async function GET(request: NextRequest) {
       type: 'factura', id: f.referencia || f.pedimento, title: f.pedimento || f.referencia || '',
       sub: `${f.proveedor?.substring(0, 35) || ''} · $${Number(f.valor_usd || 0).toLocaleString('en-US', { maximumFractionDigits: 0 })}`,
       date: f.fecha_pago, view: 'pedimentos',
+    })),
+    ...(prodRes.data || []).map(p => ({
+      type: 'producto', id: String(p.id), title: p.cve_producto || String(p.id),
+      sub: `${p.descripcion?.substring(0, 40) || ''} · ${p.fraccion || 'Sin fracción'}`,
+      date: null, view: 'fracciones',
+    })),
+    ...(provRes.data || []).map(s => ({
+      type: 'proveedor', id: s.cve_proveedor, title: s.nombre || s.cve_proveedor,
+      sub: s.id_fiscal || s.cve_proveedor,
+      date: null, view: 'proveedores',
+    })),
+    ...(partRes.data || []).map(pt => ({
+      type: 'partida', id: pt.cve_trafico || String(pt.id), title: pt.cve_trafico || `Partida ${pt.id}`,
+      sub: `${pt.descripcion?.substring(0, 40) || ''} · ${pt.fraccion_arancelaria || ''}`,
+      date: null, view: 'traficos',
     })),
   ]
 

@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
 
     // Only fetch client data if we have a real company_id
     if (companyId && companyId !== 'admin' && companyId !== 'internal') {
-      const [trafRes, entRes, draftsRes] = await Promise.allSettled([
+      const [trafRes, entRes, draftsRes, docsRes] = await Promise.allSettled([
         supabase.from('traficos')
           .select('trafico, descripcion_mercancia, estatus, fecha_llegada, fecha_cruce, importe_total, pedimento, proveedores, regimen')
           .eq('company_id', companyId)
@@ -77,13 +77,18 @@ export async function POST(req: NextRequest) {
           .select('cve_entrada, descripcion_mercancia, fecha_llegada_mercancia, cantidad_bultos, peso_bruto, trafico')
           .eq('company_id', companyId)
           .order('fecha_llegada_mercancia', { ascending: false })
-          .limit(10),
+          .limit(15),
         supabase.from('pedimento_drafts')
           .select('id, trafico_id, status, created_at')
           .eq('company_id', companyId)
           .in('status', ['draft', 'pending'])
           .order('created_at', { ascending: false })
-          .limit(5),
+          .limit(10),
+        supabase.from('company_documents')
+          .select('document_type, document_name, status, category, expires_at')
+          .eq('company_id', companyId)
+          .order('created_at', { ascending: false })
+          .limit(10),
       ])
 
       if (trafRes.status === 'fulfilled' && trafRes.value.data?.length) {
@@ -116,6 +121,15 @@ export async function POST(req: NextRequest) {
         contextLines.push(`BORRADORES DE PEDIMENTO PENDIENTES (${draftsRes.value.data.length}):`)
         for (const d of draftsRes.value.data) {
           contextLines.push(`  • Borrador — tráfico ${d.trafico_id || 'sin asignar'} — estatus: ${d.status}`)
+        }
+        contextLines.push('')
+      }
+
+      if (docsRes.status === 'fulfilled' && docsRes.value.data?.length) {
+        contextLines.push(`DOCUMENTOS DE LA EMPRESA (${docsRes.value.data.length}):`)
+        for (const doc of docsRes.value.data) {
+          const expira = doc.expires_at ? ` — vence: ${doc.expires_at}` : ''
+          contextLines.push(`  • ${doc.document_type || 'sin tipo'} — ${doc.status || 'sin dato'} — ${doc.document_name || 'sin nombre'}${expira}`)
         }
         contextLines.push('')
       }

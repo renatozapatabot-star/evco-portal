@@ -28,6 +28,7 @@ export function SearchBar() {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [selected, setSelected] = useState(-1)
+  const [focused, setFocused] = useState(false)
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const router = useRouter()
 
@@ -78,13 +79,15 @@ export function SearchBar() {
         <input value={query}
           onChange={e => { setQuery(e.target.value); setSelected(-1) }}
           onKeyDown={handleKey}
-          onFocus={() => results.length > 0 && setOpen(true)}
-          onBlur={() => setTimeout(() => setOpen(false), 150)}
+          onFocus={() => { setFocused(true); results.length > 0 && setOpen(true) }}
+          onBlur={() => { setFocused(false); setTimeout(() => setOpen(false), 150) }}
           placeholder="Buscar tráfico, pedimento..."
           style={{ paddingLeft: 32, paddingRight: loading ? 32 : 12, height: 32,
-            border: `1px solid ${T.border}`, borderRadius: 7, background: T.surface,
+            border: `1px solid ${focused ? 'rgba(0,229,255,0.5)' : T.border}`, borderRadius: 7, background: T.surface,
             color: T.text, fontSize: 12, outline: 'none', width: '100%', fontFamily: 'inherit',
-            transition: 'border-color 0.15s' }} />
+            transition: 'border-color 0.15s, box-shadow 0.15s',
+            boxShadow: focused ? '0 0 0 2px rgba(0,229,255,0.1)' : 'none',
+          }} />
         {loading && (
           <div style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)',
             width: 12, height: 12, border: `2px solid #E6E3DC`, borderTopColor: T.navy,

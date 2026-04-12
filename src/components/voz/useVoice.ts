@@ -28,19 +28,19 @@ export function useVoice(): UseVoiceReturn {
   const [, setMicPermission] = useState<'granted' | 'denied' | 'unknown'>('unknown')
 
   // Refs
-  const recognitionRef = useRef<any>(null)
+  const recognitionRef = useRef<SpeechRecognition | null>(null)
   const synthRef = useRef<SpeechSynthesis | null>(null)
   const geoWatchRef = useRef<number | null>(null)
   const abortRef = useRef<AbortController | null>(null)
 
   // Speech Recognition constructor
-  const SpeechRecognition = typeof window !== 'undefined'
-    ? (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+  const SpeechRecognitionCtor = typeof window !== 'undefined'
+    ? window.SpeechRecognition || window.webkitSpeechRecognition
     : null
 
   // ---- Speech Recognition Setup ----
   useEffect(() => {
-    if (!SpeechRecognition) {
+    if (!SpeechRecognitionCtor) {
       setSupported(false)
       return
     }
@@ -143,8 +143,8 @@ export function useVoice(): UseVoiceReturn {
       ])
 
       speak(reply)
-    } catch (err: any) {
-      if (err.name === 'AbortError') return
+    } catch (err: unknown) {
+      if (err instanceof Error && err.name === 'AbortError') return
       setError('Error al comunicarse con CRUZ. Intenta de nuevo.')
       setVoiceState('IDLE')
     }
@@ -152,14 +152,14 @@ export function useVoice(): UseVoiceReturn {
 
   // ---- Start Listening ----
   const startListening = useCallback(() => {
-    if (!SpeechRecognition) return
+    if (!SpeechRecognitionCtor) return
 
     setError(null)
     setInterimText('')
     setFinalText('')
     setResponseText('')
 
-    const recognition = new SpeechRecognition()
+    const recognition = new SpeechRecognitionCtor()
     recognition.lang = 'es-MX'
     recognition.continuous = false
     recognition.interimResults = true
@@ -170,7 +170,7 @@ export function useVoice(): UseVoiceReturn {
       setMicPermission('granted')
     }
 
-    recognition.onresult = (event: any) => {
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
       let interim = ''
       let final = ''
 
@@ -196,7 +196,7 @@ export function useVoice(): UseVoiceReturn {
       recognitionRef.current = null
     }
 
-    recognition.onerror = (event: any) => {
+    recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
       recognitionRef.current = null
       if (event.error === 'not-allowed') {
         setMicPermission('denied')
@@ -217,7 +217,7 @@ export function useVoice(): UseVoiceReturn {
       setError('No se pudo iniciar el reconocimiento de voz.')
       setVoiceState('IDLE')
     }
-  }, [SpeechRecognition, sendToCruz])
+  }, [SpeechRecognitionCtor, sendToCruz])
 
   // ---- Stop Listening ----
   const stopListening = useCallback(() => {

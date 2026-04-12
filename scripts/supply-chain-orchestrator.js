@@ -25,7 +25,7 @@ const supabase = createClient(
 )
 
 const DRY_RUN = process.argv.includes('--dry-run')
-let exchangeRate = 17.5 // overwritten in main() from system_config
+let exchangeRate = null // MUST be set from system_config before use
 const TELEGRAM_CHAT = '-5085543275'
 
 const REQUIRED_DOCS = ['FACTURA', 'COVE', 'PEDIMENTO']

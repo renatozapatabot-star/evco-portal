@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { PORTAL_URL } from '@/lib/client-config'
 import { PORTAL_DATE_FROM } from '@/lib/data'
-import { getDTARates, getIVARate } from '@/lib/rates'
+import { getDTARates, getIVARate, getExchangeRate } from '@/lib/rates'
 import { verifySession } from '@/lib/session'
 import { sanitizeIlike, sanitizeFilter } from '@/lib/sanitize'
 import { cruzChatSchema } from '@/lib/api-schemas'
@@ -689,7 +689,8 @@ async function executeTool(name: string, input: Record<string, any>, clientCtx: 
       }
       case 'calculate_duties': {
         const value = input.value_usd || 0
-        const tc = input.exchange_rate || 17.50
+        const { rate: currentTC } = await getExchangeRate()
+        const tc = input.exchange_rate || currentTC
         const valueMXN = value * tc
         let dtaRates
         try { dtaRates = await getDTARates() } catch {
@@ -770,7 +771,7 @@ async function executeTool(name: string, input: Record<string, any>, clientCtx: 
         const tmecSavings = tmecOps.reduce((s: number, f) => s + (Number(f.valor_usd) || 0) * 0.05, 0)
         return JSON.stringify({
           tmec_operations: tmecOps.length, total_operations: facturas?.length || 0,
-          tmec_savings_mxn: Math.round(tmecSavings * 17.5), tmec_savings_usd: Math.round(tmecSavings),
+          tmec_savings_mxn: Math.round(tmecSavings * (await getExchangeRate()).rate), tmec_savings_usd: Math.round(tmecSavings),
           utilization_rate: facturas?.length ? `${((tmecOps.length / facturas.length) * 100).toFixed(1)}%` : '0%',
         })
       }

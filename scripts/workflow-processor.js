@@ -30,6 +30,9 @@ const { logDecision } = require('./decision-logger')
 const batcher = require('./lib/notification-batcher')
 const { calculateContributions, lookupTariffRate, lookupHistoricalDTA } = require('./lib/ghost-pipeline')
 const { getAllRates } = require('./lib/rates')
+const { handleEmailProcessed } = require('./lib/intake-handlers')
+const { handleDocumentAttached, handleSolicitationSent } = require('./lib/docs-handlers')
+const { handleDispatchReady } = require('./lib/crossing-handlers')
 
 const SCRIPT_NAME = 'workflow-processor'
 const DRY_RUN = process.argv.includes('--dry-run')
@@ -83,13 +86,8 @@ function writeHeartbeat(status, extra = {}) {
 
 const HANDLERS = {
   // ── Workflow 1: Intake ──
-  'intake.email_processed': async (event) => {
-    // Logged by email-intake.js after processing. Chain triggers classification.
-    return { success: true, result: `Intake processed for ${event.trigger_id}` }
-  },
-  'intake.document_attached': async (event) => {
-    return { success: true, result: `Document attached: ${event.payload?.docType || 'unknown'}` }
-  },
+  'intake.email_processed': handleEmailProcessed,
+  'intake.document_attached': handleDocumentAttached,
 
   // ── Workflow 2: Classification ──
   'classify.product_needs_classification': async (event) => {
@@ -511,12 +509,7 @@ const HANDLERS = {
     return { success: true, result: `Solicitation created for ${missingDocs.length} docs: ${missingDocs.join(', ')}` }
   },
 
-  'docs.solicitation_sent': async (event) => {
-    // Audit trail — solicitation was sent, log and continue
-    const traficoId = event.trigger_id || event.payload?.trafico_id
-    if (VERBOSE) console.log(`  Solicitation sent for ${traficoId}: ${(event.payload?.solicited_docs || []).join(', ')}`)
-    return { success: true, result: `Solicitation audit logged for ${traficoId}` }
-  },
+  'docs.solicitation_sent': handleSolicitationSent,
 
   // ── Workflow 4: Pedimento ──
   'pedimento.expediente_complete': async (event) => {
@@ -663,18 +656,7 @@ const HANDLERS = {
 
     return { success: true, result: `Crossing scheduled for ${traficoId} via ${bridgeName} (${waitMin ? waitMin + ' min wait' : 'unknown wait'})` }
   },
-  'crossing.dispatch_ready': async (event) => {
-    const carrier = event.payload?.carrier || 'TBD'
-    const bridge = event.payload?.bridge || 'World Trade'
-    await tg(
-      `🌉 <b>Despacho listo</b>\n` +
-      `Tráfico: ${event.trigger_id}\n` +
-      `Transportista: ${carrier}\n` +
-      `Puente: ${bridge}\n` +
-      `— CRUZ Workflow`
-    )
-    return { success: true, result: `Dispatch: ${carrier} via ${bridge}` }
-  },
+  'crossing.dispatch_ready': handleDispatchReady,
   'crossing.crossing_complete': async (event) => {
     const traficoId = event.trigger_id || event.payload?.trafico_id
     const companyId = event.company_id

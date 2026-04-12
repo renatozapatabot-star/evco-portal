@@ -34,12 +34,21 @@ export function TraficoDetail({ traficoId, onClose }: { traficoId: string; onClo
   const [data, setData] = useState<{ trafico?: TraficoData; facturas?: FacturaItem[]; entradas?: EntradaItem[]; documents?: DocItem[] } | null>(null)
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('overview')
+  const [partidaDesc, setPartidaDesc] = useState('')
 
   useEffect(() => {
     fetch(`/api/trafico/${traficoId}`)
       .then(r => r.json())
       .then(d => { setData(d); setLoading(false) })
       .catch(() => setLoading(false))
+
+    fetch(`/api/data?table=globalpc_partidas&cve_trafico=${encodeURIComponent(traficoId)}&select=descripcion&limit=1`)
+      .then(r => r.json())
+      .then(d => {
+        const arr = d.data ?? []
+        if (arr[0]?.descripcion) setPartidaDesc(arr[0].descripcion)
+      })
+      .catch(() => {})
   }, [traficoId])
 
   const t = data?.trafico
@@ -218,7 +227,7 @@ export function TraficoDetail({ traficoId, onClose }: { traficoId: string; onClo
                           <span style={{ color: T.textMuted, fontSize: 11 }}>{fmtDate(e.fecha_llegada_mercancia)}</span>
                         </div>
                         <div style={{ color: T.text, fontSize: 12, marginBottom: 4 }}>
-                          {e.descripcion_mercancia?.substring(0, 60) || ''}
+                          {(e.descripcion_mercancia || partidaDesc)?.substring(0, 60) || ''}
                         </div>
                         <div style={{ display: 'flex', gap: 12 }}>
                           <span style={{ color: T.textMuted, fontSize: 11 }}>{e.cantidad_bultos || '?'} {e.cantidad_bultos === 1 ? 'bulto' : 'bultos'}</span>

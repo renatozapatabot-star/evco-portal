@@ -492,23 +492,25 @@ export function AduanaChatBubble() {
             right: 24,
             zIndex: 60,
             width: 120, height: 64, borderRadius: 32,
-            background: GOLD_GRADIENT,
-            border: 'none', cursor: 'pointer',
+            background: 'rgba(0,229,255,0.08)',
+            border: '1px solid rgba(0,229,255,0.25)', cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-            boxShadow: '0 4px 20px rgba(196,150,60,0.4)',
+            boxShadow: '0 4px 20px rgba(0,229,255,0.15)',
             transition: 'transform 0.15s, box-shadow 0.15s',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
           }}
-          onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.06)'; e.currentTarget.style.boxShadow = '0 6px 28px rgba(196,150,60,0.5)' }}
-          onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(196,150,60,0.4)' }}
+          onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.06)'; e.currentTarget.style.boxShadow = '0 6px 28px rgba(0,229,255,0.25)' }}
+          onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,229,255,0.15)' }}
         >
-          <span style={{ fontSize: 16, lineHeight: 1 }}>&#10022;</span>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 800, color: D.text, letterSpacing: '0.06em' }}>ADUANA AI</span>
+          <span style={{ fontSize: 16, lineHeight: 1, color: '#00E5FF' }}>&#10022;</span>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 800, color: '#00E5FF', letterSpacing: '0.06em' }}>ADUANA AI</span>
           {/* Unread indicator */}
           {hasUnread && (
             <div style={{
               position: 'absolute', top: -2, right: -2,
               width: 12, height: 12, borderRadius: '50%',
-              background: '#DC2626', border: '2px solid #FFFFFF',
+              background: '#DC2626', border: '2px solid #0A0A0A',
             }} />
           )}
         </button>
@@ -528,8 +530,9 @@ export function AduanaChatBubble() {
           width: 14px;
           height: 14px;
           border-radius: 50%;
-          background: linear-gradient(135deg, #eab308, #8B6914);
-          box-shadow: 0 2px 8px rgba(196,150,60,0.25);
+          background: rgba(0,229,255,0.12);
+          border: 1px solid rgba(0,229,255,0.2);
+          box-shadow: 0 2px 8px rgba(0,229,255,0.1);
         }
         .cruz-thought-bubble::after {
           content: '';
@@ -539,8 +542,9 @@ export function AduanaChatBubble() {
           width: 8px;
           height: 8px;
           border-radius: 50%;
-          background: linear-gradient(135deg, #eab308, #8B6914);
-          box-shadow: 0 2px 6px rgba(196,150,60,0.2);
+          background: rgba(0,229,255,0.12);
+          border: 1px solid rgba(0,229,255,0.2);
+          box-shadow: 0 2px 6px rgba(0,229,255,0.08);
         }
       `}</style>
     </>

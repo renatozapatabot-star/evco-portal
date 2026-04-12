@@ -7,6 +7,9 @@ import { AduanaAutonomo } from './CruzAutonomo'
 import { OperationalKPIs } from './OperationalKPIs'
 import { ClientHealth } from './ClientHealth'
 import { BorderIntel } from './BorderIntel'
+import { WorkflowMonitor } from './WorkflowMonitor'
+import { BulkClassifier } from './BulkClassifier'
+import { AdminIntelligence } from './AdminIntelligence'
 
 export function GodView() {
   const data = useGodViewData()
@@ -95,6 +98,15 @@ export function GodView() {
           />
         </div>
       </div>
+
+      {/* G: Workflow Monitor — all 7 pipeline workflows */}
+      <WorkflowMonitor />
+
+      {/* H: Bulk Classification Tool */}
+      <BulkClassifier />
+
+      {/* I: Admin Intelligence — anomalies, risk, profitability, ghosts */}
+      <AdminIntelligence />
     </div>
   )
 }

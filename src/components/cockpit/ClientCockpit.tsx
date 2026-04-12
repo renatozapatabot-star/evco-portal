@@ -6,6 +6,7 @@ import { WeekAheadPanel } from './client/WeekAheadPanel'
 import { FinancialPanel } from './client/FinancialPanel'
 import { InventoryPanel } from './client/InventoryPanel'
 import { AduanaAskPanel } from './client/CruzAskPanel'
+import { DemandForecastCard, InventoryEstimateCard, CostInsightsCard, SupplierScoresCard } from './client/IntelligenceCards'
 
 interface Props {
   data: ClientData
@@ -39,6 +40,17 @@ export function ClientCockpit({ data, companyName }: Props) {
         <WeekAheadPanel weekAhead={data.weekAhead} />
         <FinancialPanel financial={data.financial} />
         <InventoryPanel inventory={data.inventory} />
+
+        {/* Phase 2: Intelligence products */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 12 }}>
+          <DemandForecastCard />
+          <CostInsightsCard />
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 12 }}>
+          <InventoryEstimateCard />
+          <SupplierScoresCard />
+        </div>
+
         <AduanaAskPanel />
       </div>
     </div>

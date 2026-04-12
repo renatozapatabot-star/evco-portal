@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from "next"
 import { Inter, JetBrains_Mono } from 'next/font/google'
 import DashboardShellClient from "@/components/DashboardShellClient"
 import { QueryProvider } from "@/components/QueryProvider"
+import { TelemetryProvider } from "@/components/TelemetryProvider"
 import "./globals.css"
 
 const inter = Inter({
@@ -71,7 +72,7 @@ export default function RootLayout({
       <body style={{ margin: 0 }}>
         <QueryProvider>
           <DashboardShellClient>
-            {children}
+            <TelemetryProvider>{children}</TelemetryProvider>
           </DashboardShellClient>
         </QueryProvider>
       <Analytics />

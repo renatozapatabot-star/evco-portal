@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { verifySession } from '@/lib/session'
+import { getExchangeRate } from '@/lib/rates'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -29,7 +30,7 @@ export async function POST(req: NextRequest) {
   ])
 
   const dtaRates = dtaRes.data?.value || { A1: { rate: 0.008 } }
-  const exchangeRate = tcRes.data?.value?.rate || 17.5
+  const exchangeRate = tcRes.data?.value?.rate || (await getExchangeRate()).rate
   const ivaRate = ivaRes.data?.value?.rate || 0.16
 
   const isTMEC = ['ITE', 'ITR', 'IMD'].includes(regimen.toUpperCase())

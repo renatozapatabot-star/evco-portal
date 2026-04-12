@@ -48,12 +48,12 @@ export default function ActividadPage() {
   const isMobile = useIsMobile()
   const [items, setItems] = useState<FeedItem[]>([])
   const [loading, setLoading] = useState(true)
-  const [lastSeen, setLastSeen] = useState<string>('')
-
-  useEffect(() => {
-    const saved = localStorage.getItem('cruz-feed-last-seen')
-    if (saved) setLastSeen(saved)
-  }, [])
+  const [lastSeen, setLastSeen] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('cruz-feed-last-seen') || ''
+    }
+    return ''
+  })
 
   useEffect(() => {
     const companyId = getCompanyIdCookie()

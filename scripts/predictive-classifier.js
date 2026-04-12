@@ -20,7 +20,7 @@ const supabase = createClient(
 )
 
 const DRY_RUN = process.argv.includes('--dry-run')
-let exchangeRate = 17.5 // overwritten in main() from system_config
+let exchangeRate = null // MUST be set from system_config before use
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN
 const TELEGRAM_CHAT = '-5085543275'
 

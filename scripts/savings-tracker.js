@@ -49,8 +49,9 @@ async function run() {
     : 0.05 // Default 5% estimate
   const tmecValue = tmecOps.reduce((s, f) => s + Number(f.valor_usd || 0), 0)
   const tmecSavingsUSD = tmecValue * avgIgiRate
-  let tipoCambio = 17.5
-  try { const fxData = await getExchangeRate(); tipoCambio = fxData.rate } catch { /* fallback */ }
+  const fxData = await getExchangeRate()
+  if (!fxData?.rate) throw new Error('Exchange rate unavailable from system_config — refusing to calculate with stale data')
+  const tipoCambio = fxData.rate
   const tmecSavingsMXN = tmecSavingsUSD * tipoCambio
 
   // Penalties avoided: MVE folios filed

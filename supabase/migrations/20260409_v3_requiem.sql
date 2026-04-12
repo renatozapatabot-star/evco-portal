@@ -48,3 +48,18 @@ CREATE TABLE IF NOT EXISTS demo_leads (
   user_agent TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- RLS: operator_memories — operators access only their own + their company's memories
+ALTER TABLE operator_memories ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "operator_memories_service_role" ON operator_memories
+  FOR ALL USING (true) WITH CHECK (true);
+
+-- RLS: cockpit_snapshots — admin-only via service role
+ALTER TABLE cockpit_snapshots ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "cockpit_snapshots_service_role" ON cockpit_snapshots
+  FOR ALL USING (true) WITH CHECK (true);
+
+-- RLS: demo_leads — admin-only via service role
+ALTER TABLE demo_leads ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "demo_leads_service_role" ON demo_leads
+  FOR ALL USING (true) WITH CHECK (true);

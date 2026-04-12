@@ -23,8 +23,9 @@ const supabase = createClient(
  */
 async function simulateCrossing(trafico) {
   const value = Number(trafico.importe_total) || 0
-  let tc = 17.5
-  try { const fxData = await getExchangeRate(); tc = fxData.rate } catch { /* fallback */ }
+  const fxData = await getExchangeRate()
+  if (!fxData?.rate) throw new Error('Exchange rate unavailable from system_config — refusing to calculate with stale data')
+  const tc = fxData.rate
 
   // Get learned patterns for crossing times
   const { data: crossingPatterns } = await supabase.from('learned_patterns')

@@ -153,6 +153,7 @@ export const CLIENT_NAV: NavTopLevel[] = [
   { href: '/expedientes',  label: 'Expedientes Digitales', icon: FolderOpen },
   { href: '/reportes',     label: 'Reportes',             icon: BarChart3 },
   { href: '/kpis',         label: "KPI's",                icon: TrendingUp },
+  { href: '/ahorro',       label: 'Ahorro',               icon: DollarSign },
 ]
 
 // ---------------------------------------------------------------------------

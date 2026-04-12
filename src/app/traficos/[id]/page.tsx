@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, FileText } from 'lucide-react'
 import { fmtId, fmtDate, fmtUSD, fmtDesc, fmtPedimentoShort } from '@/lib/format-utils'
+import { EntityBreadcrumb } from '@/components/entity-breadcrumb'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { fmtCarrier } from '@/lib/carrier-names'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -159,14 +160,12 @@ export default function TraficoDetailPage() {
 
   return (
     <div className="page-shell" style={{ maxWidth: 1000, margin: '0 auto' }}>
-      {/* Back */}
-      <Link href="/traficos" style={{
-        display: 'inline-flex', alignItems: 'center', gap: 6,
-        fontSize: 13, color: 'var(--text-muted)', textDecoration: 'none',
-        marginBottom: 16, minHeight: 44,
-      }}>
-        <ArrowLeft size={14} /> Tráficos
-      </Link>
+      {/* Breadcrumb navigation */}
+      <EntityBreadcrumb segments={[
+        { label: 'TRÁFICOS', value: 'Lista', href: '/traficos' },
+        { label: 'TRÁFICO', value: fmtId(String(t.trafico)), href: `/traficos/${encodeURIComponent(String(t.trafico))}` },
+        ...(t.pedimento ? [{ label: 'PEDIMENTO', value: fmtPedimentoShort(String(t.pedimento)), href: `/pedimentos` }] : []),
+      ]} />
 
       {/* Header card */}
       <div className="card" style={{ padding: 20, marginBottom: 16 }}>

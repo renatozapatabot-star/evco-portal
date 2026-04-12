@@ -40,6 +40,8 @@ export function validateCsrf(req: NextRequest): NextResponse | null {
   if (path.startsWith('/api/vapi')) return null
   if (path.startsWith('/api/webhook')) return null
   if (path.startsWith('/api/whatsapp/webhook')) return null
+  // Telemetry uses sendBeacon which cannot set custom headers
+  if (path.startsWith('/api/telemetry')) return null
   // Login sets the token — can't require it before it exists
   if (path === '/api/auth' && method === 'POST') return null
 

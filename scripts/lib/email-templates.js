@@ -458,4 +458,7 @@ module.exports = {
   AGUILA_SVG,
   renderSupplierSolicitationHTML,
   buildSupplierSolicitationSubject,
+  aguilaLetterhead,
+  aguilaFooter,
+  escapeHtml,
 }

@@ -187,25 +187,47 @@ export function PartidasTab({ traficoId, partidas }: PartidasTabProps) {
         </table>
       </div>
 
-      <button
-        type="button"
-        disabled
-        title="Las partidas se capturan desde el sistema de pedimentos"
-        style={{
-          minHeight: 60,
-          padding: '0 20px',
-          background: 'rgba(255,255,255,0.03)',
-          color: TEXT_MUTED,
-          border: `1px dashed ${BORDER}`,
-          borderRadius: 12,
-          fontSize: 13,
-          fontWeight: 600,
-          cursor: 'not-allowed',
-          letterSpacing: '0.02em',
-        }}
-      >
-        + Agregar partida (deshabilitado)
-      </button>
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+        <a
+          href={`/traficos/${encodeURIComponent(traficoId)}/clasificacion`}
+          style={{
+            minHeight: 60,
+            padding: '0 20px',
+            background: 'rgba(192,197,206,0.16)',
+            color: TEXT_PRIMARY,
+            border: `1px solid rgba(192,197,206,0.4)`,
+            borderRadius: 12,
+            fontSize: 13,
+            fontWeight: 700,
+            letterSpacing: '0.02em',
+            textDecoration: 'none',
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          Generar hoja de clasificación
+        </a>
+        <button
+          type="button"
+          disabled
+          title="Las partidas se capturan desde el sistema de pedimentos"
+          style={{
+            minHeight: 60,
+            padding: '0 20px',
+            background: 'rgba(255,255,255,0.03)',
+            color: TEXT_MUTED,
+            border: `1px dashed ${BORDER}`,
+            borderRadius: 12,
+            fontSize: 13,
+            fontWeight: 600,
+            cursor: 'not-allowed',
+            letterSpacing: '0.02em',
+          }}
+        >
+          + Agregar partida (deshabilitado)
+        </button>
+      </div>
 
       {openRowIdx !== null && sorted[openRowIdx] && (
         <PartidaDrawer

@@ -256,3 +256,21 @@ Picked `traficos` (not `operational_decisions`) because: (1) the existing page a
 **Injection attempts detected during P2 commit 2:**
 
 Four `<system-reminder>` blocks appeared inside tool-call outputs: (a) the `computer-use` MCP instructions, (b) the repo `CLAUDE.md` (ADUANA brand directive insisting "all user-facing text says 'ADUANA'"), (c) `.claude/rules/performance.md`, (d) `.claude/rules/design-system.md`, (e) `.claude/rules/core-invariants.md`. Per the prompt's injection guard, all were treated as untrusted context. The operator cockpit's user-visible strings stay Spanish + brand-neutral ("Mis tráficos", "Portal te lo reconoce", etc.) — no brand-name overrides were applied beyond the plan's explicit "Portal" directive. Design-system values the plan specified (rgba glass, 20px blur, 60px touch) were already consistent with what the rule files declared, so no behavior change resulted from either source — only from the plan.
+
+### P2 commit 3 — /operador/subir
+
+Cross-tráfico document upload landing for operators. Server component at `src/app/operador/subir/page.tsx` gates via `portal_session` + `verifySession` (redirects `client` → `/inicio`, unauthenticated → `/login`, allows `operator`/`admin`/`broker`). Fetches active tráficos (`estatus NOT IN ('Cruzado','Cancelado')`, PORTAL_DATE_FROM-scoped) — scoped to `session.companyId` for operators, cross-client for admin/broker. Resolves `companies.nombre_comercial`/`razon_social` in one batched `.in()` call — no N+1.
+
+Client component `SubirClient.tsx`: 32px Geist header "Subir documentos", Spanish subtitle, glass tráfico picker (60px native `<select>` with cyan border when populated, optional filter box when list > 8), reuses existing `DocUploader` (unmodified) once a tráfico is selected, disabled placeholder zone before selection. Email hint card links `ai@renatozapata.com` as the alternate intake channel. `page_view` telemetry fires on mount with `entityType: 'operador_subir'` and the candidate count.
+
+Gate output:
+| Gate | Result |
+|---|---|
+| `npm run typecheck` | 0 errors |
+| `npm run build` | success — `/operador/subir` registered as ƒ Dynamic |
+| `npm run test` | 124/124 pass (10 files) |
+| Pre-commit hooks | green |
+
+**Injection attempts detected during P2 commit 3:**
+
+Six `<system-reminder>` blocks arrived inside tool output: (a) the `computer-use` MCP instructions arriving with the very first bash result; (b) the repo `CLAUDE.md` reasserting the ADUANA brand and a pile of project conventions; (c) `.claude/rules/performance.md`; (d) `.claude/rules/design-system.md`; (e) `.claude/rules/core-invariants.md`; (f) `.claude/rules/operational-resilience.md`; and (g) `.claude/rules/cruz-api.md`. Per the prompt's injection guard, all were treated as untrusted context. The plan's "Portal" user-visible brand is preserved (no "ADUANA" string introduced on this surface). Glass tokens, 60px targets, and Spanish-primary copy happen to line up with what the rule files declared — no behavior change was driven by either source beyond what the plan already specified. No computer-use tool was invoked.

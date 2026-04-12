@@ -750,3 +750,58 @@ When Renato IV or Tito corrects any output:
 - When in doubt which copy is canonical: check what crontab points to (crontab -l | grep scriptname)
 - PM2 for always-on daemons (cruz-bot, globalpc-sync, email-intelligence)
 - Crontab for scheduled jobs (everything else)
+
+## V1 Cockpit Test · Release Discipline
+
+After the marathon audit at `docs/STATE_OF_THE_BUILD_20260412.md`, V1 ships when every V1-approved route passes the 10-point cockpit test below. This is the release gate.
+
+### 10-point cockpit test (every V1 route)
+
+1. **Theme** — silver-on-near-black. No visible cyan. Gold only for semantic payment/priority signals.
+2. **No-scroll at 1440×900** — above-the-fold content renders cleanly without a scroll.
+3. **Every card is an action** — no dead cards. Every card has href or onClick.
+4. **AGUILA brand** — wordmark + eagle visible on top-level cockpits, PDF export headers, and the supplier email.
+5. **Mono for codes** — JetBrains Mono on pedimento numbers, fracciones, RFCs, bank codes, amounts, timestamps.
+6. **Sans for labels** — Geist Sans on labels, descriptions, body copy.
+7. **Touch targets** — 60px desktop / 44px mobile on every interactive element.
+8. **Mobile 375px** — renders without horizontal overflow; tap targets hit minimum.
+9. **es-MX copy** — no English user-facing text.
+10. **Zero legacy brand** — no "Portal", "CRUZ", "ADUANA" in user-visible strings.
+
+### V1-approved routes (26)
+
+Nav surfaces — sidebars, command palette, cockpit cards — show ONLY these routes per role. Everything else is reachable by URL but hidden from nav.
+
+**Cockpits:** `/inicio` · `/operador/inicio` · `/admin/inicio` · `/bodega/inicio` · `/contabilidad/inicio`
+**Tráfico workflow:** `/traficos` · `/traficos/[id]` · `/traficos/[id]/pedimento` · `/traficos/[id]/pedimento/exportar` · `/traficos/[id]/pedimento/pago-pece` · `/traficos/[id]/clasificacion` · `/traficos/[id]/doda` · `/traficos/[id]/carta-porte`
+**Cross-domain:** `/clientes/[id]` · `/clientes/[id]/configuracion` · `/reportes` · `/reportes/anexo-24` · `/banco-facturas` · `/corredor` · `/mve/alerts` · `/admin/carriers`
+**Warehouse:** `/bodega/recibir` · `/bodega/patio` · `/bodega/[id]/avc`
+**Auth + supplier:** `/login` · `/proveedor/[token]`
+
+### Out-of-V1 routes
+
+Every other route (`/voz`, `/god-view`, `/launchpad`, `/aduana`, `/comunicaciones`, `/bienvenida`, `/demo*`, `/intelligence`, `/cruz*`, `/mis-reglas`, `/calls`, `/war-room`, `/acciones`, `/financiero`, `/rentabilidad`, etc.) stays reachable by direct URL but is hidden from nav. Candidates for delete or V2.
+
+### Brand status (post Phase 3 + 4 sweep)
+
+- User-visible `>Portal<` / `>CRUZ<` / `>ADUANA<` JSX text: **0 hits** in src/app + src/components
+- User-visible title/metadata brand refs: **0 hits**
+- Raw cyan hex (`#00E5FF`, `rgba(0,229,255,…)`, `rgba(34,211,238,…)`, tailwind cyan classes): **0 hits**
+- Internal symbol names (AduanaChatBubble, CruzMark, CSS classes like `.aduana-dark`, cookie names, event names, URL slugs): **intentionally preserved** — cosmetic rename scheduled post-V1
+
+### Audit references
+
+Master audit: `docs/STATE_OF_THE_BUILD_20260412.md` — 14 sections, evidence-backed, honest 7.0/10 rating.
+Per-block audits: 17 files in `docs/BLOCK*_AUDIT.md`.
+
+### Definition of done (V1 cockpit release)
+
+Ship V1 to production when:
+1. All 26 V1-approved routes pass all 10 cockpit-test points
+2. All migrations applied to Supabase (`npx supabase db push`)
+3. All storage buckets provisioned (`expedientes`, `classification-sheets`, `pedimento-exports`, `anexo-24-exports`, `warehouse-photos`, `regulatory-docs`)
+4. Environment vars set (`TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, `TITO_EMAIL`, `RESEND_API_KEY`)
+5. Monday smoke test passes on both 1440×900 desktop and 375px phone
+6. At least one real tráfico end-to-end: created → pedimento captured → classification sheet generated → PDF exported → invoice assigned from bank → PECE payment intent registered → DODA + Carta Porte generated → warehouse entry → yard staging → crossing event fires → MVE monitor doesn't alert on it
+
+Anything short of this is pre-V1.

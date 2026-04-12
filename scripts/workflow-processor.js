@@ -40,7 +40,7 @@ const SCRIPT_NAME = 'workflow-processor'
 const DRY_RUN = process.argv.includes('--dry-run')
 const ONCE = process.argv.includes('--once')
 const VERBOSE = process.argv.includes('--verbose')
-const POLL_INTERVAL_MS = 30_000
+const POLL_INTERVAL_MS = 10_000
 const MAX_RETRIES = 3
 const HEARTBEAT_PATH = path.join(__dirname, 'heartbeat-state.json')
 
@@ -866,7 +866,7 @@ async function pollCycle() {
     return 0
   }
 
-  const events = await fetchPendingEvents(20)
+  const events = await fetchPendingEvents(50)
 
   if (events.length === 0) {
     if (VERBOSE) console.log(`  [${cycleId}] No pending events`)

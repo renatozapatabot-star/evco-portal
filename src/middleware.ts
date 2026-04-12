@@ -56,6 +56,9 @@ export async function middleware(request: NextRequest) {
     if (role === 'contabilidad') {
       return NextResponse.redirect(new URL('/contabilidad', request.url))
     }
+    if (role === 'admin' || role === 'broker') {
+      return NextResponse.redirect(new URL('/admin/eagle', request.url))
+    }
   }
 
   // Broker command center — only broker or admin

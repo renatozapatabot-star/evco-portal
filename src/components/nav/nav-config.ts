@@ -3,7 +3,7 @@ import {
   BarChart3, DollarSign, Users2, BookOpen,
   Shield, Settings, Package,
   Warehouse, TrendingUp, Radio, Brain,
-  FileSpreadsheet, ScanLine,
+  FileSpreadsheet, ScanLine, Eye,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -49,6 +49,7 @@ export interface NavTopLevel extends NavRoute {
 // ---------------------------------------------------------------------------
 
 export const INTERNAL_TOP: NavTopLevel[] = [
+  { href: '/admin/eagle', label: 'Vista Águila', icon: Eye, roles: ['admin', 'broker'] },
   { href: '/admin/inicio', label: 'Inicio', icon: LayoutDashboard },
 ]
 

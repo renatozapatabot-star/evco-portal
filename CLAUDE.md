@@ -772,7 +772,7 @@ After the marathon audit at `docs/STATE_OF_THE_BUILD_20260412.md`, V1 ships when
 
 Nav surfaces — sidebars, command palette, cockpit cards — show ONLY these routes per role. Everything else is reachable by URL but hidden from nav.
 
-**Cockpits:** `/inicio` · `/operador/inicio` · `/admin/inicio` · `/bodega/inicio` · `/contabilidad/inicio`
+**Cockpits:** `/inicio` · `/operador/inicio` · `/admin/inicio` · `/admin/eagle` · `/bodega/inicio` · `/contabilidad/inicio`
 **Tráfico workflow:** `/traficos` · `/traficos/[id]` · `/traficos/[id]/pedimento` · `/traficos/[id]/pedimento/exportar` · `/traficos/[id]/pedimento/pago-pece` · `/traficos/[id]/clasificacion` · `/traficos/[id]/doda` · `/traficos/[id]/carta-porte`
 **Cross-domain:** `/clientes/[id]` · `/clientes/[id]/configuracion` · `/reportes` · `/reportes/anexo-24` · `/banco-facturas` · `/corredor` · `/mve/alerts` · `/admin/carriers` · `/admin/quickbooks-export`
 **Warehouse:** `/bodega/recibir` · `/bodega/escanear` · `/bodega/patio` · `/bodega/[id]/avc`

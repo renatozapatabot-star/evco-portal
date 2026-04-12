@@ -1,0 +1,47 @@
+'use client'
+
+import { ACCENT_SILVER_DIM, TEXT_MUTED, TEXT_PRIMARY } from '@/lib/design-system'
+import { TileShell, MONO } from './tile-shell'
+import type { DormantClient } from '@/app/api/eagle/overview/route'
+
+function mxn(n: number): string {
+  return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(n)
+}
+
+export function ClientesDormidosTile({ dormant }: { dormant: DormantClient[] }) {
+  return (
+    <TileShell title="Clientes dormidos" subtitle="14+ días" href="/admin/clientes-dormidos">
+      {dormant.length === 0 ? (
+        <div style={{ color: TEXT_MUTED, fontSize: 13 }}>Todos los clientes con movimiento reciente.</div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {dormant.map((d) => (
+            <div
+              key={d.companyId}
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'baseline',
+                gap: 8,
+                paddingBottom: 8,
+                borderBottom: '1px solid rgba(255,255,255,0.04)',
+              }}
+            >
+              <div style={{ overflow: 'hidden' }}>
+                <div style={{ fontSize: 13, color: TEXT_PRIMARY, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {d.razonSocial}
+                </div>
+                <div style={{ fontSize: 11, color: ACCENT_SILVER_DIM, fontFamily: MONO }}>
+                  {d.diasSinMovimiento}d sin movimiento
+                </div>
+              </div>
+              <div style={{ fontFamily: MONO, fontSize: 12, color: TEXT_MUTED, whiteSpace: 'nowrap' }}>
+                {d.ultimoMonto != null ? mxn(d.ultimoMonto) : '—'}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </TileShell>
+  )
+}

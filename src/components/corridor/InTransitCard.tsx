@@ -118,7 +118,7 @@ export function InTransitCard({ pulses, onRotate }: InTransitCardProps) {
           color: TEXT_TERTIARY,
         }}
       >
-        US-MX CORRIDOR · {minutesAgo} MIN · {fmtDateTime(current.updatedAt)}
+        ACTUALIZADO HACE {minutesAgo} MIN · {fmtDateTime(current.updatedAt)}
       </div>
     </div>
   )

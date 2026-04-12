@@ -70,7 +70,7 @@ export function CorridorPage({ landmarks, companyId, role }: CorridorPageProps) 
 
   // Telemetry: page_view once.
   useEffect(() => {
-    track('page_view', { metadata: { event: 'corridor_opened', role } })
+    track('page_view', { metadata: { event: 'corridor_viewed', role } })
   }, [track, role])
 
   // Initial fetch. Deferred via microtask so React isn't setting state

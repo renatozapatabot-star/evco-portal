@@ -23,7 +23,7 @@ export function CoordinatesHeader() {
           color: TEXT_TERTIARY,
         }}
       >
-        INTELLIGENCE AT EVERY BORDER
+        INTELIGENCIA EN CADA FRONTERA
       </div>
       <div
         className="aguila-corridor-coordinates"

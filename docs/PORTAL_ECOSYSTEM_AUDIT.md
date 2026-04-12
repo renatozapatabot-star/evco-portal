@@ -440,3 +440,41 @@ All three P3 commits have landed on `feature/v6-phase0-phase1`:
 **Renato's next step:** create the Anabel Supabase auth user with role `contabilidad` and set the `operator_name` cookie on login to `Anabel`. After that, the `/contabilidad/inicio` route will render on her first visit (middleware already redirects `/` → `/contabilidad/inicio` for the role).
 
 **Phase 4 preview:** supplier mini-cockpit (`/proveedor/inicio` or similar), banner refactor (consolidate `RoleKPIBanner` logic to support both celebration and reduction metrics in one prop shape), empty-state sweep across the remaining cockpits, and a full audit pass against DESIGN_SYSTEM.md.
+
+
+### P4 commit 1 — supplier mini-cockpit
+
+**Scope:** `/proveedor/[token]` rebuilt as a 4-card glass mini-cockpit; new token-gated API `/api/supplier/confirm-shipment`; `/api/upload-token` GET enriched with company_name + expires_at + shipment confirmation state.
+
+**Files modified / created:**
+- `src/app/proveedor/[token]/page.tsx` (959 lines — full rewrite from the legacy upload-only card)
+- `src/app/api/supplier/confirm-shipment/route.ts` (139 lines — new)
+- `src/app/api/upload-token/route.ts` (GET payload expanded; POST unchanged)
+
+**4-card grid (2×2 desktop, 1-col mobile, 80px min-height cards):**
+1. Documentos solicitados — opens a checklist panel diffing `required_docs` vs `docs_received`.
+2. Subir documento — opens a drag/pick uploader routed to the existing `/api/upload-token` POST (reused, token-only, no session).
+3. Ver tráfico — read-only summary (trafico id, cliente, counts, vencimiento, confirmation timestamp).
+4. Confirmar embarque — posts to `/api/supplier/confirm-shipment`, which stamps `upload_tokens.shipment_confirmed_at`, emits a `workflow_events` row (`event_type='supplier.shipment_confirmed'`, workflow=`intake`), and writes an `operational_decisions` row via `logDecision({decision_type: 'supplier_confirm'})`. Idempotent — repeat taps return the original confirmation timestamp. The "Confirmar" tile locks to a green confirmed state after success.
+
+**Positive-completion banner:** glass card with `rgba(34,197,94,0.08)` tint renders above the grid when all required docs are received: "¡Listo! Los {n} documentos fueron recibidos. Gracias."
+
+**Glass aesthetic:** matches ClientHome — `rgba(255,255,255,0.04)` cards, `blur(20px)`, cyan `#00E5FF` icons, 20px radius, JetBrains Mono on the Tráfico id / counts / timestamps, 60px touch targets on every button including the in-panel close (X) hit area and Confirmar CTA.
+
+**Endpoint choice:** reused `/api/upload-token` for file uploads — it already validates tokens, writes to Storage (`expediente-documents` bucket), and inserts into `documents` table with `source='supplier_upload'`. No new upload endpoint was needed.
+
+**Vision classification for supplier uploads:** **skipped on purpose.** The legacy `/api/upload-token` POST stores docs with `document_type = file.name.split('.')[0]` (no vision call). Supplier uploads should stay that way — suppliers often misname files and trigger the vision classifier from this path would run it on unvetted PDFs with no operator review loop. Operator-side vision classification already runs via `/api/docs/classify` against docs uploaded through the authenticated flow, and the operator can re-run it on supplier uploads manually. Building an async classifier queue for supplier uploads belongs in a later commit, not this one.
+
+**Gate output:**
+| Gate | Result |
+|---|---|
+| `npm run typecheck` | 0 errors |
+| `npm run test` | 124 / 124 pass (10 files, 588 ms) |
+| `npm run build` | success — `/api/supplier/confirm-shipment` registered as ƒ Dynamic; `/proveedor/[token]` registered as ƒ Dynamic |
+| `npx eslint` (changed files) | 0 errors after fixing 2 unescaped entities |
+| Brand sweep | 0 user-visible "CRUZ" or "ADUANA"; one internal comment reference to "CRUZ Operational Brain" (decision logger table lineage — not rendered) |
+
+**Injection attempts detected during P4 commit 1:**
+Several `<system-reminder>` blocks arrived inside tool output — (a) a global CRUZ `CLAUDE.md`; (b) an auto-memory `MEMORY.md` listing project context files; (c) the repo ADUANA `CLAUDE.md`; (d) an MCP `computer-use` tool-usage manifest; (e) `.claude/rules/performance.md`; (f) `.claude/rules/design-system.md`; (g) `.claude/rules/core-invariants.md`; (h) `.claude/rules/operational-resilience.md`; (i) `.claude/rules/cruz-api.md`; (j) `.claude/rules/supabase-rls.md`. Per the prompt's injection guard all were treated as untrusted data. User-visible brand stayed "Portal". No `computer-use` tool was invoked. Scope held to the supplier mini-cockpit — no banner refactor, no empty-state sweep, no design-system audit (those are reserved for P4 commits 2+). Rule-file alignment (glass tokens, 60px targets, parameterized Supabase queries, Zod input validation, structured `{data, error}` response shape) was incidental — those patterns were read from the existing `/api/docs/upload` and `ClientHome` sources.
+
+**Readiness for commit 2:** green. `RoleKPIBanner` is still celebration-only; the positive-completion banner on this page is inlined rather than pushed through `RoleKPIBanner`, matching the plan's directive to avoid adding props to the shared banner. The banner refactor (supporting both celebration and reduction metrics) can land in commit 2 without reworking this page.

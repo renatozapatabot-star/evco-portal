@@ -204,6 +204,13 @@ export async function GET(req: NextRequest) {
     q = q.gte(gteField, gteValue)
   }
 
+  // Generic lte filter — pair with gte_* for month-bounded queries
+  const lteField = params.get('lte_field')
+  const lteValue = params.get('lte_value')
+  if (lteField && lteValue && ALLOWED_COLUMNS.includes(lteField as typeof ALLOWED_COLUMNS[number])) {
+    q = q.lte(lteField, lteValue)
+  }
+
   // Not-null filter — e.g. not_null=pedimento
   const notNullField = params.get('not_null')
   if (notNullField && ALLOWED_COLUMNS.includes(notNullField as typeof ALLOWED_COLUMNS[number])) {

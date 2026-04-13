@@ -47,6 +47,8 @@ export const dataQuerySchema = z.object({
   order_dir: z.enum(['asc', 'desc']).optional(),
   gte_field: z.string().max(50).optional(),
   gte_value: z.string().max(50).optional(),
+  lte_field: z.string().max(50).optional(),
+  lte_value: z.string().max(50).optional(),
   not_null: z.string().max(50).optional(),
 })
 

@@ -3,7 +3,7 @@
 import { ACCENT_SILVER_BRIGHT, TEXT_MUTED, TEXT_SECONDARY, GOLD_GRADIENT } from '@/lib/design-system'
 import { fmtDate } from '@/lib/format-utils'
 
-export type CockpitRole = 'client' | 'operator' | 'owner'
+export type CockpitRole = 'client' | 'operator' | 'owner' | 'warehouse' | 'accounting'
 
 export interface MetaPill {
   label: string
@@ -27,9 +27,11 @@ interface Props {
  */
 export function CockpitBanner({ role, name, companyName, metaPills }: Props) {
   const subtitle =
-    role === 'client'   ? (companyName ? `Portal del cliente · ${companyName}` : 'Portal del cliente')
-    : role === 'owner'  ? `Vista Águila · ${name}`
-    :                     `Operaciones · ${name}`
+    role === 'client'     ? (companyName ? `Portal del cliente · ${companyName}` : 'Portal del cliente')
+    : role === 'owner'    ? `Vista Águila · ${name}`
+    : role === 'warehouse' ? `Bodega · ${name}`
+    : role === 'accounting' ? `Contabilidad · ${name}`
+    :                       `Operaciones · ${name}`
 
   const meta =
     role === 'client'   ? 'Renato Zapata & Company · Patente 3596'
@@ -74,7 +76,9 @@ export function CockpitBanner({ role, name, companyName, metaPills }: Props) {
         fontSize: 'var(--aguila-fs-meta, 11px)',
         color: TEXT_MUTED,
         letterSpacing: '0.02em',
-        fontFamily: role === 'operator' ? 'var(--font-jetbrains-mono), monospace' : undefined,
+        fontFamily: (role === 'operator' || role === 'warehouse' || role === 'accounting')
+          ? 'var(--font-jetbrains-mono), monospace'
+          : undefined,
       }}>
         {meta}
       </div>

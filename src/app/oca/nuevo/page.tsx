@@ -2,22 +2,22 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { verifySession } from '@/lib/session'
 import { PageShell } from '@/components/aguila'
-import { QuoteForm } from './QuoteForm'
+import { OcaForm } from './OcaForm'
 
 export const dynamic = 'force-dynamic'
 
-export default async function CotizacionPage() {
+export default async function OcaNuevoPage() {
   const token = (await cookies()).get('portal_session')?.value ?? ''
   const session = await verifySession(token)
   if (!session) redirect('/login')
+  if (!['admin', 'broker', 'operator'].includes(session.role)) redirect('/oca')
 
   return (
     <PageShell
-      title="Cotización de impuestos"
-      subtitle="DTA · IGI · IVA · PREV — base cascada desde system_config, nunca hardcodeada"
-      systemStatus="healthy"
+      title="Nueva Opinión OCA"
+      subtitle="Generada por Opus · revisada y firmada por Renato Zapata III"
     >
-      <QuoteForm />
+      <OcaForm />
     </PageShell>
   )
 }

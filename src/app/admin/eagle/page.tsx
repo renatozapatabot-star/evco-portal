@@ -8,6 +8,7 @@
 
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
+import { Suspense } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import { verifySession } from '@/lib/session'
 import { computeARAging, computeAPAging } from '@/lib/contabilidad/aging'
@@ -17,7 +18,7 @@ import { softCount, softData, softFirst } from '@/lib/cockpit/safe-query'
 import { auditLogAvailable } from '@/lib/cockpit/table-availability'
 import { auditRowToTimelineItem, type AuditRow } from '@/lib/cockpit/audit-format'
 import { fetchEscalatedThreads } from '@/lib/mensajeria/feed'
-import { CockpitInicio, PriorityThreadsPanel, TimelineFeed, type CockpitHeroKPI } from '@/components/aguila'
+import { CockpitInicio, PriorityThreadsPanel, TimelineFeed, CockpitSkeleton, type CockpitHeroKPI } from '@/components/aguila'
 import { TraficosDelDiaTile } from '@/components/eagle/TraficosDelDiaTile'
 import { ArApTile } from '@/components/eagle/ArApTile'
 import { ClientesDormidosTile } from '@/components/eagle/ClientesDormidosTile'
@@ -46,6 +47,13 @@ function daysSinceISO(iso: string): number {
   return Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000)
 }
 
+function withHardTimeout<T>(p: PromiseLike<T>, ms: number, fallback: T): Promise<T> {
+  return Promise.race([
+    Promise.resolve(p).catch(() => fallback),
+    new Promise<T>((resolve) => setTimeout(() => resolve(fallback), ms)),
+  ])
+}
+
 export default async function EaglePage() {
   const cookieStore = await cookies()
   const token = cookieStore.get('portal_session')?.value ?? ''
@@ -53,11 +61,32 @@ export default async function EaglePage() {
   if (!session) redirect('/login')
   if (!['admin', 'broker'].includes(session.role)) redirect('/')
 
+  const opName = cookieStore.get('operator_name')?.value || 'Tito'
+
+  return (
+    <Suspense fallback={<CockpitSkeleton />}>
+      <EagleContent opName={opName} />
+    </Suspense>
+  )
+}
+
+async function EagleContent({ opName }: { opName: string }) {
+  try {
+    return await renderEagle(opName)
+  } catch (err) {
+    return (
+      <div style={{ padding: 40, color: '#E6EDF3', fontFamily: 'ui-monospace, monospace', fontSize: 13 }}>
+        No se pudo cargar Eagle View: {err instanceof Error ? err.message : String(err)}
+      </div>
+    )
+  }
+}
+
+async function renderEagle(opName: string) {
   const sb = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
   )
-  const opName = cookieStore.get('operator_name')?.value || 'Tito'
 
   const now = new Date()
   const fourteenDaysAgoIso = daysAgo(14, now).toISOString()
@@ -91,15 +120,15 @@ export default async function EaglePage() {
     softData<{ estatus: string | null }>(
       sb.from('traficos').select('estatus').in('estatus', MOTION_STATUSES).limit(5000)
     ),
-    computeARAging(sb, null).catch(() => ({ total: 0, count: 0, byBucket: [], topDebtors: [], currency: 'MXN' as const })),
-    computeAPAging(sb, null).catch(() => ({ total: 0, count: 0, byBucket: [], topDebtors: [], currency: 'USD' as const, sourceMissing: true })),
+    withHardTimeout(computeARAging(sb, null), 3500, { total: 0, count: 0, byBucket: [], topDebtors: [], currency: 'MXN' as const }),
+    withHardTimeout(computeAPAging(sb, null), 3500, { total: 0, count: 0, byBucket: [], topDebtors: [], currency: 'USD' as const, sourceMissing: true }),
     softData<{ company_id: string | null; created_at: string }>(
       sb.from('traficos').select('company_id, created_at').gte('created_at', daysAgo(DORMANT_DAYS, now).toISOString()).limit(5000)
     ),
     softData<{ company_id: string; razon_social: string | null; is_active: boolean | null }>(
       sb.from('companies').select('company_id, razon_social, is_active').eq('is_active', true).limit(500)
     ),
-    auditLogAvailable(sb),
+    withHardTimeout(auditLogAvailable(sb), 2000, false),
     softData<{ updated_at: string }>(
       sb.from('traficos').select('updated_at').eq('estatus', 'En Proceso').gte('updated_at', fourteenDaysAgoIso).limit(2000)
     ),
@@ -131,7 +160,7 @@ export default async function EaglePage() {
     softData<{ id: string; title: string | null }>(
       sb.from('audit_suggestions').select('id, title').eq('status', 'pending').limit(10)
     ),
-    fetchEscalatedThreads(sb, 4),
+    withHardTimeout(fetchEscalatedThreads(sb, 4), 3000, []),
   ])
 
   // traficosByStatus

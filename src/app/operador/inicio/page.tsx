@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
+import { Suspense } from 'react'
 import { createServerClient } from '@/lib/supabase-server'
 import { logOperatorAction } from '@/lib/operator-actions'
 import { InicioClient } from './InicioClient'
@@ -7,11 +8,20 @@ import { bucketDailySeries, sumRange, startOfToday, daysAgo } from '@/lib/cockpi
 import { softCount, softData, softFirst } from '@/lib/cockpit/safe-query'
 import { auditLogAvailable } from '@/lib/cockpit/table-availability'
 import { fetchOperatorMensajeriaFeed, fetchEscalatedThreads } from '@/lib/mensajeria/feed'
+import { CockpitSkeleton } from '@/components/aguila'
 import type { TraficoRow, DecisionRow, SystemStatus } from './types'
 import type { AuditRow } from '@/lib/cockpit/audit-format'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
+
+/** Hard timeout race — every helper bounded so SSR never blocks past Vercel function limits. */
+function withHardTimeout<T>(p: PromiseLike<T>, ms: number, fallback: T): Promise<T> {
+  return Promise.race([
+    Promise.resolve(p).catch(() => fallback),
+    new Promise<T>((resolve) => setTimeout(() => resolve(fallback), ms)),
+  ])
+}
 
 export default async function OperadorInicioPage() {
   const cookieStore = await cookies()
@@ -24,8 +34,30 @@ export default async function OperadorInicioPage() {
   }
 
   if (opId) {
-    logOperatorAction({ operatorId: opId, actionType: 'view_page', targetId: '/operador/inicio' })
+    try {
+      logOperatorAction({ operatorId: opId, actionType: 'view_page', targetId: '/operador/inicio' })
+    } catch { /* telemetry never crashes the page */ }
   }
+
+  return (
+    <Suspense fallback={<CockpitSkeleton />}>
+      <OperatorCockpitContent role={role} opId={opId || ''} opName={opName} />
+    </Suspense>
+  )
+}
+
+async function OperatorCockpitContent({ role, opId, opName }: { role: string; opId: string; opName: string }) {
+  void role
+  return await loadOperatorCockpit(opId, opName).catch((err) => {
+    return (
+      <div style={{ padding: 40, color: '#E6EDF3', fontFamily: 'ui-monospace, monospace', fontSize: 13 }}>
+        No se pudo cargar el cockpit del operador: {err instanceof Error ? err.message : String(err)}
+      </div>
+    )
+  })
+}
+
+async function loadOperatorCockpit(opId: string, opName: string) {
 
   const sb = createServerClient()
   const now = new Date()
@@ -119,9 +151,9 @@ export default async function OperadorInicioPage() {
       sb.from('traficos').select('updated_at').not('pedimento', 'is', null).order('updated_at', { ascending: false }).limit(1)
     ),
     softCount(sb.from('entradas').select('id', { count: 'exact', head: true }).gte('fecha_llegada_mercancia', sevenDaysAgoIso)),
-    auditLogAvailable(sb),
-    fetchOperatorMensajeriaFeed(sb, 10),
-    fetchEscalatedThreads(sb, 3),
+    withHardTimeout(auditLogAvailable(sb), 2000, false),
+    withHardTimeout(fetchOperatorMensajeriaFeed(sb, 10), 3000, []),
+    withHardTimeout(fetchEscalatedThreads(sb, 3), 3000, []),
   ])
 
   const entradasSeries = bucketDailySeries(entradasSeriesRows as Array<Record<string, unknown>>, 'fecha_llegada_mercancia', 14, now)

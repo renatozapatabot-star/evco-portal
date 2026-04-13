@@ -3664,3 +3664,27 @@ input:focus, select:focus, textarea:focus {
   z-index: 0;
 }
 .aguila-dark > * { position: relative; z-index: 1; }
+
+/* ── Alive silver motion (Phase B) ─────────────────────────────────── */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes silver-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(192,197,206,0.18); }
+    50%      { box-shadow: 0 0 0 8px rgba(192,197,206,0); }
+  }
+  @keyframes silver-shimmer {
+    0%   { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+  @keyframes scan-line {
+    0%   { transform: translateY(-100%); opacity: 0; }
+    10%  { opacity: 0.08; }
+    90%  { opacity: 0.08; }
+    100% { transform: translateY(100%); opacity: 0; }
+  }
+  .silver-pulse { animation: silver-pulse 2s ease-in-out infinite; }
+  .silver-shimmer-bg {
+    background-image: linear-gradient(90deg, transparent, rgba(192,197,206,0.08), transparent);
+    background-size: 200% 100%;
+    animation: silver-shimmer 3s ease-in-out infinite;
+  }
+}

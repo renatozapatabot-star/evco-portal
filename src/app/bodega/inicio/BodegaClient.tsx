@@ -9,6 +9,7 @@
 
 import { useMemo } from 'react'
 import Link from 'next/link'
+import { useCountUp } from '@/hooks/useCountUp'
 import {
   Package, Warehouse, HelpCircle, UploadCloud,
 } from 'lucide-react'
@@ -59,6 +60,7 @@ const TILES: BodegaTile[] = [
 ]
 
 export function BodegaClient({ operatorName, kpis }: BodegaClientProps) {
+  const animatedThisWeek = useCountUp(kpis.entradasThisWeek)
   const items = useMemo<NavCardGridItem[]>(
     () => TILES.map((tile) => {
       const count = tile.badgeKey ? kpis[tile.badgeKey] : null
@@ -99,7 +101,7 @@ export function BodegaClient({ operatorName, kpis }: BodegaClientProps) {
             fontFamily: 'var(--font-jetbrains-mono), var(--font-mono), monospace',
             color: TEXT_PRIMARY, fontWeight: 700,
           }}>
-            {kpis.entradasThisWeek}
+            {animatedThisWeek}
           </span>
           {' '}entradas
         </p>

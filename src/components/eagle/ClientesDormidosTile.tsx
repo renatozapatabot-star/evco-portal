@@ -28,7 +28,12 @@ export function ClientesDormidosTile({ dormant }: { dormant: DormantClient[] }) 
               }}
             >
               <div style={{ overflow: 'hidden' }}>
-                <div style={{ fontSize: 13, color: TEXT_PRIMARY, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <div style={{ fontSize: 13, color: TEXT_PRIMARY, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span
+                    aria-hidden
+                    className={d.diasSinMovimiento >= 14 ? 'silver-pulse' : undefined}
+                    style={{ width: 5, height: 5, borderRadius: 999, background: ACCENT_SILVER_DIM, flexShrink: 0 }}
+                  />
                   {d.razonSocial}
                 </div>
                 <div style={{ fontSize: 11, color: ACCENT_SILVER_DIM, fontFamily: MONO }}>

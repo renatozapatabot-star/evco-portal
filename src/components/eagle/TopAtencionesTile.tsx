@@ -33,6 +33,7 @@ export function TopAtencionesTile({ items }: { items: AtencionItem[] }) {
             >
               <span
                 aria-hidden
+                className={it.kind === 'mve_critical' ? 'silver-pulse' : undefined}
                 style={{ width: 6, height: 6, borderRadius: 999, background: KIND_DOT[it.kind], flexShrink: 0 }}
               />
               <div style={{ flex: 1, overflow: 'hidden' }}>

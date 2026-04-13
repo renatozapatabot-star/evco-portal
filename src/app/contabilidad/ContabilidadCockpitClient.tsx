@@ -9,6 +9,7 @@
 
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
+import { useCountUp } from '@/hooks/useCountUp'
 import {
   ACCENT_SILVER,
   ACCENT_SILVER_BRIGHT,
@@ -124,6 +125,7 @@ function BucketBar({ buckets }: { buckets: { bucket: string; amount: number; cou
 // AR Tile
 // ---------------------------------------------------------------------------
 function ARAgingTile({ data }: { data: OverviewData['ar'] }) {
+  const animatedTotal = useCountUp(data.total)
   return (
     <CardShell
       title="Cuentas por cobrar"
@@ -132,7 +134,7 @@ function ARAgingTile({ data }: { data: OverviewData['ar'] }) {
     >
       <div>
         <div style={{ fontSize: 28, fontWeight: 700, fontFamily: MONO, color: TEXT_PRIMARY }}>
-          {formatAmount(data.total, data.currency)}
+          {formatAmount(animatedTotal, data.currency)}
         </div>
         <div style={{ fontSize: 11, color: TEXT_MUTED, marginTop: 2 }}>Total pendiente</div>
       </div>

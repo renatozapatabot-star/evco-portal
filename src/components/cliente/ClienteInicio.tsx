@@ -28,6 +28,7 @@ import type {
   ClienteNotificacion,
 } from '@/lib/cliente/dashboard'
 import { CockpitBrandHeader } from '@/components/brand/CockpitBrandHeader'
+import { GlassCard } from '@/components/aguila'
 
 // ── Icon resolver ─────────────────────────────────────────────
 const ICONS: Record<ClienteEventLabel['icon'], LucideIcon> = {
@@ -51,15 +52,7 @@ function statusPulse(estatus: string | null): string {
 }
 
 // ── Shared surface tokens ─────────────────────────────────────
-const GLASS: React.CSSProperties = {
-  background: 'rgba(255,255,255,0.04)',
-  backdropFilter: 'blur(20px)',
-  WebkitBackdropFilter: 'blur(20px)',
-  border: '1px solid rgba(255,255,255,0.08)',
-  borderRadius: 20,
-  boxShadow: '0 10px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)',
-}
-
+// Card chrome is unified through <GlassCard> per AGUILA v6 (core-invariants 26).
 const MONO: React.CSSProperties = { fontFamily: 'var(--font-mono)' }
 
 // ── Tab definitions ───────────────────────────────────────────
@@ -196,15 +189,11 @@ function TraficosPanel({ rows }: { rows: ClienteTraficoCard[] }) {
         const lastLabel = getClienteEventLabel(r.last_event_type)
         const Icon = ICONS[lastLabel.icon]
         return (
-          <Link
+          <GlassCard
             key={r.trafico}
             href={`/traficos/${encodeURIComponent(r.trafico)}/trace`}
-            style={{
-              ...GLASS,
-              display: 'flex', flexDirection: 'column', gap: 10,
-              padding: 16, textDecoration: 'none', color: 'inherit',
-              minHeight: 60,
-            }}
+            padding={16}
+            style={{ display: 'flex', flexDirection: 'column', gap: 10, minHeight: 60 }}
           >
             {/* Top row: ref + status dot */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
@@ -266,7 +255,7 @@ function TraficosPanel({ rows }: { rows: ClienteTraficoCard[] }) {
                 )}
               </div>
             )}
-          </Link>
+          </GlassCard>
         )
       })}
     </div>
@@ -298,7 +287,7 @@ function DocumentosPanel({ rows }: { rows: ClienteDocumento[] }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {Array.from(groups.entries()).map(([traficoRef, docs]) => (
-        <div key={traficoRef} style={{ ...GLASS, padding: 16 }}>
+        <GlassCard key={traficoRef} padding={16}>
           <div style={{
             display: 'flex', alignItems: 'center', gap: 8,
             marginBottom: 12,
@@ -369,7 +358,7 @@ function DocumentosPanel({ rows }: { rows: ClienteDocumento[] }) {
               </div>
             ))}
           </div>
-        </div>
+        </GlassCard>
       ))}
     </div>
   )
@@ -389,7 +378,7 @@ function NotificacionesPanel({ rows }: { rows: ClienteNotificacion[] }) {
   }
 
   return (
-    <div style={{ ...GLASS, padding: 8 }}>
+    <GlassCard padding={8}>
       {rows.map((n, i) => {
         const label = getClienteEventLabel(n.event_type)
         const Icon = ICONS[label.icon]
@@ -434,7 +423,7 @@ function NotificacionesPanel({ rows }: { rows: ClienteNotificacion[] }) {
           <div key={n.id}>{content}</div>
         )
       })}
-    </div>
+    </GlassCard>
   )
 }
 
@@ -444,17 +433,18 @@ function EmptyCard({
   icon, title, subtitle,
 }: { icon: React.ReactNode; title: string; subtitle: string }) {
   return (
-    <div style={{
-      ...GLASS,
-      padding: '40px 24px',
-      display: 'flex', flexDirection: 'column', alignItems: 'center',
-      justifyContent: 'center', gap: 10,
-    }}>
+    <GlassCard
+      padding="40px 24px"
+      style={{
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
+        justifyContent: 'center', gap: 10,
+      }}
+    >
       {icon}
       <div style={{ fontSize: 14, color: '#94a3b8', fontWeight: 600 }}>{title}</div>
       <div style={{ fontSize: 12, color: '#64748b', textAlign: 'center', maxWidth: 360 }}>
         {subtitle}
       </div>
-    </div>
+    </GlassCard>
   )
 }

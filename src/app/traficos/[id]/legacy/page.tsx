@@ -121,7 +121,7 @@ export default async function TraficoDetailPage({
     .eq('trafico', traficoId)
   if (!isInternal) traficoQ = traficoQ.eq('company_id', session.companyId)
 
-  const [traficoRes, docsRes, partidasRes, decisionsRes, notesRes] = await Promise.all([
+  const [traficoRes, docsRes, facturasRes, decisionsRes, notesRes] = await Promise.all([
     traficoQ.maybeSingle(),
     supabase
       .from('expediente_documentos')
@@ -129,11 +129,13 @@ export default async function TraficoDetailPage({
       .eq('trafico_id', traficoId)
       .order('created_at', { ascending: false })
       .limit(200),
+    // Step 1 of partidas chain: folios for this tráfico from globalpc_facturas.
+    // (globalpc_partidas has no cve_trafico column — must hop via folio.)
     supabase
-      .from('globalpc_partidas')
-      .select('id, numero_parte, descripcion, fraccion_arancelaria, fraccion, cantidad, cantidad_bultos, peso_bruto, valor_comercial, regimen')
+      .from('globalpc_facturas')
+      .select('folio')
       .eq('cve_trafico', traficoId)
-      .limit(500),
+      .limit(100),
     supabase
       .from('operational_decisions')
       .select('id, decision_type, decision, reasoning, created_at')
@@ -152,9 +154,70 @@ export default async function TraficoDetailPage({
   if (!trafico) notFound()
 
   const docs = ((docsRes.data as DocRow[] | null) ?? [])
-  const partidas = ((partidasRes.data as PartidaRow[] | null) ?? [])
   const decisions = ((decisionsRes.data as DecisionRow[] | null) ?? [])
   const notes = ((notesRes.data as NoteRow[] | null) ?? [])
+
+  // Step 2 of partidas chain: real columns from globalpc_partidas, then enrich
+  // descripcion + fraccion via globalpc_productos.
+  const folios = ((facturasRes.data as Array<{ folio: number | null }> | null) ?? [])
+    .map(f => f.folio)
+    .filter((f): f is number => f != null)
+
+  let partidas: PartidaRow[] = []
+  if (folios.length > 0) {
+    const { data: rawPartidas } = await supabase
+      .from('globalpc_partidas')
+      .select('id, folio, cve_producto, cve_cliente, cantidad, precio_unitario, peso, pais_origen')
+      .in('folio', folios)
+      .limit(500)
+    const partidaRows = (rawPartidas ?? []) as Array<{
+      id: number
+      folio: number | null
+      cve_producto: string | null
+      cve_cliente: string | null
+      cantidad: number | null
+      precio_unitario: number | null
+      peso: number | null
+      pais_origen: string | null
+    }>
+    const cves = Array.from(new Set(partidaRows.map(p => p.cve_producto).filter((c): c is string => !!c)))
+    const productMap = new Map<string, { descripcion: string | null; fraccion: string | null }>()
+    if (cves.length > 0) {
+      const { data: prods } = await supabase
+        .from('globalpc_productos')
+        .select('cve_producto, cve_cliente, descripcion, fraccion')
+        .in('cve_producto', cves)
+        .limit(2000)
+      for (const p of (prods ?? []) as Array<{
+        cve_producto: string | null
+        cve_cliente: string | null
+        descripcion: string | null
+        fraccion: string | null
+      }>) {
+        productMap.set(`${p.cve_cliente ?? ''}|${p.cve_producto ?? ''}`, {
+          descripcion: p.descripcion,
+          fraccion: p.fraccion,
+        })
+      }
+    }
+    partidas = partidaRows.map((p, i): PartidaRow => {
+      const enr = productMap.get(`${p.cve_cliente ?? ''}|${p.cve_producto ?? ''}`)
+      const cantidad = Number(p.cantidad) || 0
+      const precio = Number(p.precio_unitario) || 0
+      return {
+        id: Number(p.id ?? i),
+        numero_parte: p.cve_producto,
+        descripcion: enr?.descripcion ?? null,
+        fraccion_arancelaria: enr?.fraccion ?? null,
+        fraccion: enr?.fraccion ?? null,
+        cantidad,
+        cantidad_bultos: null,
+        peso_bruto: p.peso ?? null,
+        valor_comercial: cantidad * precio,
+        regimen: null,
+      }
+    })
+  }
 
   // Block 7 — best-effort users fetch for mention autocomplete.
   // No `users` table exists yet; if/when it lands, this query starts

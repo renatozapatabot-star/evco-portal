@@ -35,7 +35,7 @@ export function TimelineFeed({ items, max = 5, emptyLabel = 'Sin actividad regis
       {visible.map((item, i) => (
         <li key={item.id} style={{ position: 'relative', paddingLeft: 20, paddingTop: i === 0 ? 0 : 12, paddingBottom: 4 }}>
           <span
-            className={i === 0 ? 'aguila-timeline-dot-top' : ''}
+            className={i === 0 ? 'aguila-dot-pulse' : ''}
             aria-hidden
             style={{
               position: 'absolute',
@@ -50,16 +50,6 @@ export function TimelineFeed({ items, max = 5, emptyLabel = 'Sin actividad regis
           <Row item={item} />
         </li>
       ))}
-      <style jsx>{`
-        @keyframes aguila-dot-pulse {
-          0%, 100% { transform: scale(1);   opacity: 1; }
-          50%      { transform: scale(1.18); opacity: 0.72; }
-        }
-        .aguila-timeline-dot-top { animation: aguila-dot-pulse 2s ease-in-out infinite; }
-        @media (prefers-reduced-motion: reduce) {
-          .aguila-timeline-dot-top { animation: none; }
-        }
-      `}</style>
     </ol>
   )
 }

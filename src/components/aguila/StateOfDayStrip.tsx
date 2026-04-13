@@ -33,7 +33,7 @@ export function StateOfDayStrip({ status, timestamp, summary }: Props) {
     >
       <span
         aria-hidden
-        className="aguila-sod-dot"
+        className="aguila-dot-pulse"
         style={{
           width: 8, height: 8, borderRadius: '50%',
           background: color,
@@ -56,16 +56,6 @@ export function StateOfDayStrip({ status, timestamp, summary }: Props) {
       }}>
         {summary}
       </span>
-      <style jsx>{`
-        @keyframes aguila-sod-dot {
-          0%, 100% { opacity: 1;   transform: scale(1); }
-          50%      { opacity: 0.6; transform: scale(1.2); }
-        }
-        .aguila-sod-dot { animation: aguila-sod-dot 2.4s ease-in-out infinite; }
-        @media (prefers-reduced-motion: reduce) {
-          .aguila-sod-dot { animation: none; }
-        }
-      `}</style>
     </div>
   )
 }

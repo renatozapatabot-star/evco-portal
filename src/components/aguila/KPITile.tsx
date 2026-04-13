@@ -1,10 +1,9 @@
 'use client'
 
-import Link from 'next/link'
 import {
-  BG_CARD, BORDER, GLASS_BLUR, GLASS_SHADOW,
-  TEXT_PRIMARY, TEXT_MUTED, AMBER, RED, GLOW_SILVER,
+  TEXT_PRIMARY, TEXT_MUTED, AMBER, RED,
 } from '@/lib/design-system'
+import { GlassCard } from './GlassCard'
 import { Sparkline, type SparklineTone } from './Sparkline'
 import { DeltaIndicator } from './DeltaIndicator'
 
@@ -18,41 +17,42 @@ interface Props {
   tone?: SparklineTone
   urgent?: boolean
   inverted?: boolean
+  compact?: boolean
   ariaLabel?: string
 }
 
 export function KPITile({
   label, value, series, previous, current, href, tone = 'silver',
-  urgent = false, inverted = false, ariaLabel,
+  urgent = false, inverted = false, compact = false, ariaLabel,
 }: Props) {
   const numberColor = urgent ? RED : TEXT_PRIMARY
   const sparkSeries = series && series.length > 7 ? series.slice(-7) : series
   const numericValue = typeof value === 'number' ? value : current ?? 0
   const showDelta = previous !== undefined && (current !== undefined || typeof value === 'number')
+  const sparkHeight = compact ? 20 : 28
+  const numberSize = compact
+    ? 'var(--aguila-fs-kpi-compact, 32px)'
+    : 'var(--aguila-fs-kpi-hero, 48px)'
+  const minHeight = compact ? 108 : 140
 
-  const card = (
-    <div className="aguila-kpi-tile" style={{
-      background: BG_CARD,
-      backdropFilter: `blur(${GLASS_BLUR})`,
-      WebkitBackdropFilter: `blur(${GLASS_BLUR})`,
-      border: `1px solid ${BORDER}`,
-      borderRadius: 20,
-      padding: '18px',
-      boxShadow: GLASS_SHADOW,
-      minHeight: 140,
-      display: 'flex',
-      flexDirection: 'column',
-      gap: 10,
-      color: TEXT_PRIMARY,
-      transition: 'background 160ms ease, box-shadow 160ms ease, border-color 160ms ease',
-      cursor: href ? 'pointer' : 'default',
-      position: 'relative',
-      overflow: 'hidden',
-    }}>
+  return (
+    <GlassCard
+      href={href}
+      size={compact ? 'compact' : 'card'}
+      ariaLabel={ariaLabel || label}
+      style={{
+        minHeight,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 'var(--aguila-gap-stack, 12px)',
+      }}
+    >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
         <span style={{
-          fontSize: 10, fontWeight: 700,
-          textTransform: 'uppercase', letterSpacing: '0.08em',
+          fontSize: 'var(--aguila-fs-label, 10px)',
+          fontWeight: 700,
+          textTransform: 'uppercase',
+          letterSpacing: 'var(--aguila-ls-label, 0.08em)',
           color: TEXT_MUTED,
         }}>
           {label}
@@ -60,20 +60,20 @@ export function KPITile({
         {urgent && (
           <span style={{
             fontSize: 9, fontWeight: 800, color: AMBER,
-            textTransform: 'uppercase', letterSpacing: '0.08em',
+            textTransform: 'uppercase', letterSpacing: 'var(--aguila-ls-label, 0.08em)',
           }}>URGENTE</span>
         )}
       </div>
 
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8 }}>
         <span
-          className={urgent ? 'aguila-kpi-pulse' : ''}
+          className={urgent ? 'aguila-pulse' : ''}
           style={{
             fontFamily: 'var(--font-jetbrains-mono), JetBrains Mono, monospace',
-            fontSize: 44,
+            fontSize: `calc(${numberSize} * 0.92)`,
             fontWeight: 800,
             lineHeight: 1,
-            letterSpacing: '-0.03em',
+            letterSpacing: 'var(--aguila-ls-tight, -0.03em)',
             color: numberColor,
             fontVariantNumeric: 'tabular-nums',
           }}
@@ -85,40 +85,13 @@ export function KPITile({
         )}
       </div>
 
-      <div style={{ marginTop: 'auto', minHeight: 28 }}>
+      <div style={{ marginTop: 'auto', minHeight: sparkHeight }}>
         {sparkSeries && sparkSeries.length > 0 ? (
-          <Sparkline data={sparkSeries} tone={urgent ? 'red' : tone} ariaLabel={ariaLabel || `${label} 7 días`} />
+          <Sparkline data={sparkSeries} tone={urgent ? 'red' : tone} height={sparkHeight} ariaLabel={ariaLabel || `${label} 7 días`} />
         ) : (
-          <div style={{ height: 28 }} aria-hidden />
+          <div style={{ height: sparkHeight }} aria-hidden />
         )}
       </div>
-
-      <style jsx>{`
-        .aguila-kpi-tile:hover {
-          background: rgba(255,255,255,0.06);
-          border-color: rgba(192,197,206,0.2);
-          box-shadow: 0 12px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08), 0 0 30px ${GLOW_SILVER};
-        }
-        @keyframes aguila-kpi-pulse {
-          0%, 100% { opacity: 1; }
-          50%      { opacity: 0.72; }
-        }
-        .aguila-kpi-pulse { animation: aguila-kpi-pulse 2s ease-in-out infinite; }
-        @media (prefers-reduced-motion: reduce) {
-          .aguila-kpi-pulse { animation: none; }
-          .aguila-kpi-tile { transition: none; }
-        }
-        @media (max-width: 640px) {
-          .aguila-kpi-tile :global(span) { font-size: inherit; }
-        }
-      `}</style>
-    </div>
-  )
-
-  if (!href) return card
-  return (
-    <Link href={href} style={{ textDecoration: 'none', color: 'inherit', display: 'block' }} aria-label={ariaLabel || label}>
-      {card}
-    </Link>
+    </GlassCard>
   )
 }

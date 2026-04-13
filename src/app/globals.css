@@ -162,6 +162,45 @@ html, body {
 
   /* ── Sidebar ── */
   --sidebar-width: 240px;
+
+  /* ── AGUILA v6 Cockpit Scale — consumed by @/components/aguila/* ── */
+  --aguila-fs-kpi-hero:   48px;
+  --aguila-fs-kpi-large:  44px;
+  --aguila-fs-kpi-mid:    28px;
+  --aguila-fs-kpi-compact: 32px;
+  --aguila-fs-kpi-small:  18px;
+  --aguila-fs-title:      24px;
+  --aguila-fs-section:    14px;
+  --aguila-fs-body:       13px;
+  --aguila-fs-label:      10px;
+  --aguila-fs-meta:       11px;
+  --aguila-ls-label:      0.08em;
+  --aguila-ls-tight:      -0.03em;
+  --aguila-gap-section:   32px;
+  --aguila-gap-card:      16px;
+  --aguila-gap-stack:     12px;
+  --aguila-radius-card:   20px;
+  --aguila-radius-compact: 16px;
+}
+
+/* ── AGUILA v6 motion language ── */
+@keyframes aguila-stagger-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes aguila-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.72; }
+}
+@keyframes aguila-dot-pulse {
+  0%, 100% { transform: scale(1);    opacity: 1; }
+  50%      { transform: scale(1.18); opacity: 0.72; }
+}
+.aguila-stagger-in { animation: aguila-stagger-in 240ms var(--ease-enter, cubic-bezier(.2,0,0,1)) both; }
+.aguila-pulse      { animation: aguila-pulse 2s ease-in-out infinite; }
+.aguila-dot-pulse  { animation: aguila-dot-pulse 2s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .aguila-stagger-in, .aguila-pulse, .aguila-dot-pulse { animation: none; }
 }
 
 /* ── Aduana Cinematic Glass System — AI Control Tower Theme ── */

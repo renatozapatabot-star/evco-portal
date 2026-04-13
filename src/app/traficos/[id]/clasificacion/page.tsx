@@ -32,7 +32,7 @@ export default async function ClasificacionPage({
 
   let traficoQ = supabase
     .from('traficos')
-    .select('trafico, company_id, regimen, tipo_operacion, pedimento')
+    .select('trafico, company_id, regimen, pedimento')
     .eq('trafico', traficoId)
   if (!isInternal) traficoQ = traficoQ.eq('company_id', session.companyId)
   const { data: trafico } = await traficoQ.maybeSingle()
@@ -42,9 +42,8 @@ export default async function ClasificacionPage({
     trafico: string
     company_id: string | null
     regimen: string | null
-    tipo_operacion: string | null
     pedimento: string | null
-  }
+  } & { tipo_operacion?: string | null }
 
   const { data: partidasRaw } = await supabase
     .from('globalpc_partidas')
@@ -104,7 +103,7 @@ export default async function ClasificacionPage({
       traficoId={traficoId}
       clienteName={clienteName}
       regimen={typedTrafico.regimen}
-      tipoOperacion={typedTrafico.tipo_operacion}
+      tipoOperacion={typedTrafico.tipo_operacion ?? null}
       pedimento={typedTrafico.pedimento}
       productos={productos}
       initialConfig={initialConfig}

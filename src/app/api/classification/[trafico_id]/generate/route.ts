@@ -30,7 +30,9 @@ type TraficoRow = {
   trafico: string
   company_id: string | null
   regimen: string | null
-  tipo_operacion: string | null
+  // tipo_operacion is not in the live traficos schema — kept optional
+  // so existing downstream code can read undefined without throwing.
+  tipo_operacion?: string | null
 }
 
 type PartidaRow = {
@@ -85,7 +87,7 @@ export async function POST(
   // Resolve tráfico + company_id for tenant scoping.
   let scopeQ = supabase
     .from('traficos')
-    .select('trafico, company_id, regimen, tipo_operacion')
+    .select('trafico, company_id, regimen')
     .eq('trafico', traficoId)
   if (!isInternal) scopeQ = scopeQ.eq('company_id', session.companyId)
   const { data: scopeRaw, error: scopeErr } = await scopeQ.maybeSingle()
@@ -151,7 +153,7 @@ export async function POST(
     company_id: companyId,
     operator_name: `${session.companyId}:${session.role}`,
     regimen: trafico.regimen,
-    tipo_operacion: trafico.tipo_operacion,
+    tipo_operacion: trafico.tipo_operacion ?? null,
     generated_at: generatedAt,
   }
 

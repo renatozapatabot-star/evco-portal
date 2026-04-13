@@ -3,8 +3,9 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { createClient as createBrowserSupabaseClient } from '@/lib/supabase/client'
 import { fmtDate, fmtDateTime } from '@/lib/format-utils'
-import { GOLD_GRADIENT, TEXT_PRIMARY, TEXT_MUTED, BG_CARD, BORDER, TEXT_SECONDARY, GREEN, ACCENT_CYAN } from '@/lib/design-system'
+import { GOLD_GRADIENT, TEXT_PRIMARY, TEXT_MUTED, BORDER, TEXT_SECONDARY, GREEN, ACCENT_SILVER } from '@/lib/design-system'
 import { CollapsibleSection } from '@/components/ui/CollapsibleSection'
+import { PageShell } from '@/components/aguila'
 import { OperatorHeroStrip } from './OperatorHeroStrip'
 import { FlowCard } from './FlowCard'
 import { OperatorRightRail } from './OperatorRightRail'
@@ -97,25 +98,29 @@ export function OperatorCockpit(props: OperatorCockpitProps) {
     }
   }, [refreshData])
 
-  return (
-    <div style={{ fontFamily: 'var(--font-sans)', color: TEXT_PRIMARY, minHeight: '100vh' }} className="p-4 md:px-7 md:py-6">
-      {/* Header */}
-      <div style={{ marginBottom: 24 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4 }}>
-          <div style={{
-            width: 36, height: 36, background: GOLD_GRADIENT,
-            borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 16, fontWeight: 900, color: '#0D0D0C', fontFamily: 'Georgia, serif',
-          }}>Z</div>
-          <h1 style={{ fontSize: 22, fontWeight: 800, margin: 0, letterSpacing: '-0.02em' }}>
-            {props.operatorName}
-          </h1>
-        </div>
-        <p style={{ color: TEXT_MUTED, fontSize: 13, margin: '4px 0 0 48px' }}>
-          Operaciones · <span style={{ fontFamily: 'var(--font-mono)' }}>{fmtDate(new Date())}</span>
-        </p>
-      </div>
+  const brandHeader = (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+      <div style={{
+        width: 36, height: 36, background: GOLD_GRADIENT,
+        borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: 16, fontWeight: 900, color: '#0D0D0C', fontFamily: 'Georgia, serif',
+      }}>Z</div>
+      <span style={{
+        fontSize: 'var(--aguila-fs-section, 14px)',
+        fontWeight: 700,
+        letterSpacing: '0.18em',
+        color: TEXT_MUTED,
+        textTransform: 'uppercase',
+      }}>AGUILA</span>
+    </div>
+  )
 
+  return (
+    <PageShell
+      title={props.operatorName}
+      subtitle={`Operaciones · ${fmtDate(new Date())}`}
+      brandHeader={brandHeader}
+    >
       {/* Hero strip */}
       <OperatorHeroStrip
         urgentes={heroData.urgentCount}
@@ -176,7 +181,7 @@ export function OperatorCockpit(props: OperatorCockpitProps) {
               borderBottom: i < props.recentClassifications.length - 1 ? `1px solid ${BORDER}` : 'none',
               fontSize: 12,
             }}>
-              <span style={{ fontFamily: 'var(--font-mono)', color: ACCENT_CYAN, fontWeight: 700, flexShrink: 0 }}>
+              <span style={{ fontFamily: 'var(--font-mono)', color: ACCENT_SILVER, fontWeight: 700, flexShrink: 0 }}>
                 {c.fraccion || '\u2014'}
               </span>
               <span style={{ color: TEXT_SECONDARY, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
@@ -214,6 +219,6 @@ export function OperatorCockpit(props: OperatorCockpitProps) {
           ))}
         </div>
       </CollapsibleSection>
-    </div>
+    </PageShell>
   )
 }

@@ -141,3 +141,24 @@ caused a real regression, a compliance risk, or a silent failure in production.
     primitive must cascade to every cockpit at once.
     verify: `grep -rn "fontSize: 48\|fontSize: 44" src/app/` → matches resolve
     only through `@/components/aguila` or a documented exception
+
+26. **No inline glass card chrome outside `src/components/aguila/`.**
+    Every glass surface composes from `<GlassCard>`. Inline definitions
+    of `background: rgba(255,255,255,0.04)` + `backdrop-filter: blur(20px)`
+    drift the chrome over time and break unification.
+    verify: `grep -rn "background: *['\"]?rgba(255,255,255,0\.04)" src/app src/components | grep -v "components/aguila/" | grep -v ".test."` → 0 matches
+
+27. **Typography scale is centralized as CSS variables.** Hardcoded
+    `fontSize: NNN` values in `src/app/**` violate v6. Use the
+    `--aguila-fs-*` variables published in `globals.css`. Exceptions:
+    primitives inside `src/components/aguila/` (which define the scale),
+    and intentionally one-off display moments documented inline with `WHY:`.
+    verify: `grep -rn "fontSize: [0-9]" src/app | grep -v "components/aguila/" | grep -v "var(--aguila-fs-" | grep -v ".test."` → drift trends to 0
+
+28. **Same-origin iframes are allowed.** Cockpit composition reuses
+    pages via `<iframe src="/route?embed=1">`. `X-Frame-Options:
+    SAMEORIGIN` and CSP `frame-ancestors 'self'` are the operating
+    headers. Cross-origin iframing remains denied. The 2026-04-13
+    Corredor outage was caused by `DENY` + `frame-ancestors 'none'`
+    blocking same-origin embeds — never set those again.
+    verify: `grep -n "X-Frame-Options\|frame-ancestors" next.config.ts` → must show SAMEORIGIN + 'self'

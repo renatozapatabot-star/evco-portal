@@ -155,3 +155,79 @@ grep -rn "fontSize: 48" src/app/
 grep -rn "DeltaIndicator\|SeverityRibbon" src/app/cliente src/app/track src/app/share
 # → must return zero
 ```
+
+---
+
+## AGUILA v6 — Unified Cockpit Language (April 2026)
+
+After Wave A/B/C polished individual surfaces, screenshots showed three
+cockpits still drifted (Shipper / Owner Eagle / Operator-root looked like
+three different apps). v6 consolidates the chrome through a single
+primitive set so every authenticated cockpit reads as the same product.
+
+### Mandatory primitives
+
+Every authenticated page composes from these. Inline reimplementations
+violate core-invariants rules 26–27.
+
+| Pattern | Primitive | Notes |
+|---|---|---|
+| Page wrapper (canvas + header) | `<PageShell>` | Renders `aguila-dark` + `COCKPIT_CANVAS`; consistent greeting + LiveTimestamp slot |
+| Glass card chrome | `<GlassCard>` | THE one card — `BG_ELEVATED` + 20px blur + token border + glass shadow |
+| Section label | `<SectionHeader>` | 10px uppercase + count pill + optional action link |
+| KPI tile (number + sparkline + delta) | `<KPITile>` | Composes `<GlassCard>` |
+| Severity left-edge | `<SeverityRibbon>` | Composes inside `<GlassCard severity={...}>` |
+| Activity feed | `<TimelineFeed>` | Vertical dashed rail + pulsing top dot |
+| State of day strip | `<StateOfDayStrip>` | Above-hero status sentence |
+
+### Typography contract
+
+Hardcoded `fontSize: NNN` in `src/app/**` is banned. Use the CSS
+variables published in `globals.css`:
+
+```
+--aguila-fs-kpi-hero    48px   primary KPI number
+--aguila-fs-kpi-large   44px   secondary KPI counter
+--aguila-fs-kpi-mid     28px   tile total
+--aguila-fs-kpi-compact 32px   compact KPITile number
+--aguila-fs-kpi-small   18px   inline numeric refs
+--aguila-fs-title       24px   page greeting h1
+--aguila-fs-section     14px   section title
+--aguila-fs-body        13px   body copy
+--aguila-fs-label       10px   uppercase label
+--aguila-fs-meta        11px   timestamps / chips
+--aguila-ls-label       0.08em uppercase tracking
+--aguila-ls-tight       -0.03em display number tracking
+--aguila-gap-section    32px
+--aguila-gap-card       16px
+--aguila-gap-stack      12px
+--aguila-radius-card    20px
+--aguila-radius-compact 16px
+```
+
+### Motion contract
+
+Three named utility classes in `globals.css`. All gated by
+`prefers-reduced-motion: reduce`.
+
+- `.aguila-stagger-in` — entrance animation (240ms, `--ease-enter`)
+- `.aguila-pulse` — KPI urgent pulse (2s opacity)
+- `.aguila-dot-pulse` — status / timeline dot pulse (2s scale + opacity)
+
+Inline `@keyframes` definitions outside `@/components/aguila/` violate v6.
+
+### Surface differentiation by content, not chrome
+
+Same chrome everywhere. Surfaces differ in *content discipline*:
+
+- **Shipper** — sparse data, positive-direction sparklines only,
+  no `<DeltaIndicator>`, no `<SeverityRibbon>` (invariant 24)
+- **Owner Eagle** — dense data, severity ribbons OK, full delta + timeline
+- **Operator** — task-focused, "Todo al corriente" zero-states via
+  `<EmptyState tone="calm">`, all internal-tier signals allowed
+
+### New surfaces
+
+Any new authenticated page MUST start from `<PageShell>` and compose
+content from the listed primitives. A new chrome variant is added by
+extending `<GlassCard>` props, NOT by creating a parallel component.

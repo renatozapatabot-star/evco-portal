@@ -421,7 +421,18 @@ function TraficosContent() {
                   </div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
                     {valor > 0 && <span>{fmtUSDCompact(valor)}</span>}
-                    {r.pedimento ? <span>{fmtPedimentoShort(r.pedimento)}</span> : <span>Ped. pendiente</span>}
+                    {r.pedimento ? (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          window.open(`/api/pedimento-pdf?trafico=${encodeURIComponent(r.trafico)}`, '_blank')
+                        }}
+                        style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', font: 'inherit', color: 'inherit', textDecoration: 'underline', textUnderlineOffset: 3 }}
+                      >
+                        {fmtPedimentoShort(r.pedimento)}
+                      </button>
+                    ) : <span>Ped. pendiente</span>}
                     {r.fecha_llegada ? <span>{fmtDateShort(r.fecha_llegada)}</span> : null}
                   </div>
                 </div>
@@ -513,7 +524,18 @@ function TraficosContent() {
                       </td>
                       <td>
                         {r.pedimento ? (
-                          <span className="pedimento-num">{fmtPedimentoShort(r.pedimento)}</span>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              window.open(`/api/pedimento-pdf?trafico=${encodeURIComponent(r.trafico)}`, '_blank')
+                            }}
+                            title="Abrir PDF del pedimento"
+                            className="pedimento-num"
+                            style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', font: 'inherit', color: 'inherit', textDecoration: 'underline', textUnderlineOffset: 3 }}
+                          >
+                            {fmtPedimentoShort(r.pedimento)}
+                          </button>
                         ) : (
                           <span className="pedimento-pending">Pendiente</span>
                         )}

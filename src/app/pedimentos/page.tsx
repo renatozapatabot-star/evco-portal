@@ -234,14 +234,17 @@ export default function PedimentosPage() {
         {!loading && paged.length > 0 && isMobile && (
           <div style={{ padding: '8px 12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
             {paged.map(g => (
-              <Link
+              <button
                 key={g.pedimento}
-                href={`/traficos/${encodeURIComponent(g.trafico)}/pedimento`}
+                type="button"
+                onClick={() => window.open(`/api/pedimento-pdf?trafico=${encodeURIComponent(g.trafico)}`, '_blank')}
                 style={{
+                  textAlign: 'left', cursor: 'pointer', font: 'inherit',
                   textDecoration: 'none', color: 'inherit',
                   background: 'var(--bg-card)', border: '1px solid var(--border)',
                   borderLeft: `3px solid ${g.tmec ? 'var(--success)' : 'var(--gold, #E8EAED)'}`,
                   borderRadius: 10, padding: '14px 16px', display: 'block', minHeight: 60,
+                  width: '100%',
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
@@ -257,7 +260,7 @@ export default function PedimentosPage() {
                 <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {getDesc(g) || '—'}
                 </div>
-              </Link>
+              </button>
             ))}
           </div>
         )}
@@ -282,7 +285,7 @@ export default function PedimentosPage() {
                   <tr
                     key={g.pedimento}
                     className={`clickable-row ${i % 2 === 0 ? 'row-even' : 'row-odd'}`}
-                    onClick={() => { window.location.href = `/traficos/${encodeURIComponent(g.trafico)}/pedimento` }}
+                    onClick={() => window.open(`/api/pedimento-pdf?trafico=${encodeURIComponent(g.trafico)}`, '_blank')}
                     style={{ cursor: 'pointer' }}
                   >
                     <td>

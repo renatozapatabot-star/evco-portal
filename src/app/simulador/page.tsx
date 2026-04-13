@@ -2,27 +2,43 @@
 
 import { useEffect, useState, useMemo } from 'react'
 import { useIsMobile } from '@/hooks/use-mobile'
-import { Calculator, ChevronDown, Check } from 'lucide-react'
-import { getCookieValue, getCompanyIdCookie } from '@/lib/client-config'
-import { fmtUSD, fmtUSDCompact } from '@/lib/format-utils'
+import { Calculator } from 'lucide-react'
+import { getCookieValue } from '@/lib/client-config'
 import { createClient } from '@supabase/supabase-js'
-import { EmptyState } from '@/components/ui/EmptyState'
+import { GlassCard } from '@/components/aguila'
+import { FraccionInput } from '@/components/ui/FraccionInput'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
 const T = {
-  gold: 'var(--gold)',
-  goldDark: 'var(--gold-dark)',
-  text: 'var(--text-primary)',
-  textSec: 'var(--text-secondary)',
-  textMuted: 'var(--text-muted)',
-  border: 'var(--border)',
-  card: 'var(--bg-card)',
-  bg: 'var(--bg-main)',
-  success: 'var(--success)',
-  warning: 'var(--warning-500, #D97706)',
+  silver: 'var(--accent-silver, #C0C5CE)',
+  text: 'var(--text-primary, #E6EDF3)',
+  textSec: 'var(--text-secondary, #94a3b8)',
+  textMuted: 'var(--text-muted, #64748b)',
+  border: 'rgba(192,197,206,0.2)',
+  amber: '#FBBF24',
+  amberBg: 'rgba(251,191,36,0.12)',
+  green: '#22C55E',
+  greenBg: 'rgba(34,197,94,0.08)',
   mono: 'var(--font-mono)',
 }
+
+// T-MEC eligible régimenes — mirrors src/app/api/cost-savings/route.ts
+const TMEC_REGIMES = new Set(['ITE', 'ITR', 'IMD'])
+
+// Régimen options — union of DTA rates set (A1/IN/IT) and T-MEC set (ITE/ITR/IMD)
+const REGIMEN_OPTIONS: Array<{ code: string; label: string }> = [
+  { code: 'A1', label: 'A1 — Definitiva de importación' },
+  { code: 'IN', label: 'IN — Importación definitiva con franquicia' },
+  { code: 'IT', label: 'IT — Importación temporal' },
+  { code: 'ITE', label: 'ITE — Importación temporal IMMEX (T-MEC)' },
+  { code: 'ITR', label: 'ITR — Importación temporal retorno (T-MEC)' },
+  { code: 'IMD', label: 'IMD — Importación definitiva T-MEC' },
+]
+
+// Fallback IGI rate when fracción has no tariff_rates entry — matches
+// src/lib/customs/estimate-igi-iva.ts fallback behaviour (5%).
+const FALLBACK_IGI_RATE = 0.05
 
 interface TraficoOption {
   trafico: string
@@ -34,59 +50,66 @@ interface TraficoOption {
   fraccion_arancelaria: string | null
 }
 
-interface SimOption {
-  label: string
-  bridge: string
-  time: string
-  dta: number
-  igi: number
-  iva: number
-  totalDuties: number
-  landedCost: number
-  recoRate: number
-  crossingHours: number
-  confidence: number
+interface CalcResult {
+  valorUsd: number
+  fraccion: string
+  regimen: string
+  tc: number
+  valorAduanaMxn: number
+  dtaMxn: number
+  igiRate: number
+  igiRateKnown: boolean  // true when fracción hit tariff_rates; false → fallback
+  igiMxn: number
+  ivaMxn: number
+  totalMxn: number
+  totalUsd: number
+  tmecSavingsMxn: number | null  // null when not T-MEC régimen
+}
+
+function fmtMxn(n: number): string {
+  return n.toLocaleString('es-MX', { maximumFractionDigits: 0 })
+}
+
+function fmtUsd(n: number): string {
+  return n.toLocaleString('en-US', { maximumFractionDigits: 0 })
 }
 
 export default function SimuladorPage() {
   const isMobile = useIsMobile()
   const [pending, setPending] = useState<TraficoOption[]>([])
-  const [selected, setSelected] = useState<TraficoOption | null>(null)
-  const [manual, setManual] = useState(false)
   const [loading, setLoading] = useState(true)
-  const [simulating, setSimulating] = useState(false)
-  const [result, setResult] = useState<{ options: SimOption[]; bestIdx: number; savings: number } | null>(null)
-  const [sysRates, setSysRates] = useState<{ dta_amount: number; iva: number; tc: number } | null>(null)
+  const [sysRates, setSysRates] = useState<{ dta_amount: number; iva: number; tc: number; tcDate: string; tcSource: string } | null>(null)
   const [ratesError, setRatesError] = useState(false)
   const [tariffRates, setTariffRates] = useState<Map<string, number>>(new Map())
 
-  // Manual inputs
-  const [mDesc, setMDesc] = useState('')
-  const [mSupplier, setMSupplier] = useState('')
-  const [mValue, setMValue] = useState('')
-  const [mWeight, setMWeight] = useState('')
-  const [mTmec, setMTmec] = useState(true)
+  const [valorUsd, setValorUsd] = useState('')
+  const [fraccion, setFraccion] = useState('')
+  const [regimen, setRegimen] = useState('A1')
 
   const role = getCookieValue('user_role')
   const isAdmin = role === 'admin' || role === 'broker'
-  const companyId = getCompanyIdCookie()
 
   useEffect(() => {
     if (!isAdmin) { setLoading(false); return }
-    // Fetch live rates from system_config
+
     fetch('/api/rates').then(r => r.json()).then(d => {
       if (!d.error && d.iva?.rate && d.tc?.rate) {
-        setSysRates({ dta_amount: d.dta?.amount || 462, iva: d.iva.rate, tc: d.tc.rate })
+        setSysRates({
+          dta_amount: d.dta?.amount || 462,
+          iva: d.iva.rate,
+          tc: d.tc.rate,
+          tcDate: d.tc.date || '',
+          tcSource: d.tc.source || 'system_config',
+        })
       } else {
         setRatesError(true)
       }
     }).catch(() => setRatesError(true))
 
-    // Fetch per-fraccion tariff rates
     supabase.from('tariff_rates').select('fraccion, igi_rate').then(({ data }) => {
       if (data?.length) {
         const map = new Map<string, number>()
-        data.forEach((r: { fraccion: string; igi_rate: number }) => map.set(r.fraccion, r.igi_rate))
+        data.forEach((r: { fraccion: string; igi_rate: number }) => map.set(r.fraccion, Number(r.igi_rate) || 0))
         setTariffRates(map)
       }
     })
@@ -100,67 +123,64 @@ export default function SimuladorPage() {
         .order('fecha_llegada', { ascending: false })
         .limit(30)
     ).then(({ data }) => setPending(data || []))
-      .catch((err) => console.error('[simulador] fetch failed:', err.message))
+      .catch(() => {})
       .finally(() => setLoading(false))
   }, [isAdmin])
 
-  function simulate(t: TraficoOption | { descripcion_mercancia: string; proveedores: string; importe_total: number; peso_bruto: number; regimen: string }) {
-    if (!sysRates) return
-    setSimulating(true)
-    const value = Number(t.importe_total) || 0
+  // Reactive calculation — no button needed, recomputes on every input change.
+  const result: CalcResult | null = useMemo(() => {
+    if (!sysRates) return null
+    const v = parseFloat(valorUsd)
+    if (!Number.isFinite(v) || v <= 0) return null
+
     const tc = sysRates.tc
-    const valorMXN = value * tc
-    const regimen = (t.regimen || '').toUpperCase()
-    const isTmec = regimen === 'ITE' || regimen === 'ITR' || regimen === 'IMD'
+    const valorAduanaMxn = v * tc
+    const dtaMxn = sysRates.dta_amount
+    const isTmec = TMEC_REGIMES.has(regimen)
 
-    const dta = sysRates.dta_amount
-    // Look up per-fraccion IGI rate from tariff_rates, fallback to 5% estimate
-    const fraccion = 'fraccion_arancelaria' in t ? (t as TraficoOption).fraccion_arancelaria : null
-    const igiRate = isTmec ? 0 : (fraccion && tariffRates.has(fraccion) ? tariffRates.get(fraccion)! : 0.05)
-    const igi = Math.round(valorMXN * igiRate)
-    const iva = Math.round((valorMXN + dta + igi) * sysRates.iva)
+    // Fracción must match XXXX.XX.XX before we attempt tariff lookup.
+    const fraccionValid = /^\d{4}\.\d{2}\.\d{2}$/.test(fraccion)
+    const tariffHit = fraccionValid && tariffRates.has(fraccion)
+    const igiRateGeneral = tariffHit ? tariffRates.get(fraccion)! : FALLBACK_IGI_RATE
+    const igiRate = isTmec ? 0 : igiRateGeneral
+    const igiMxn = valorAduanaMxn * igiRate
 
-    const options: SimOption[] = [
-      {
-        label: 'A',
-        bridge: 'Colombia',
-        time: 'martes 6 AM',
-        dta: Math.round(dta / tc),
-        igi: Math.round(igi / tc),
-        iva: Math.round(iva / tc),
-        totalDuties: Math.round((dta + igi + iva) / tc),
-        landedCost: Math.round(value + (dta + igi + iva) / tc),
-        recoRate: 4,
-        crossingHours: 3.2,
-        confidence: 94,
-      },
-      {
-        label: 'B',
-        bridge: 'World Trade',
-        time: 'martes 8 AM',
-        dta: Math.round(dta / tc),
-        igi: Math.round(igi / tc),
-        iva: Math.round(iva / tc),
-        totalDuties: Math.round((dta + igi + iva) / tc),
-        landedCost: Math.round(value + (dta + igi + iva) / tc) + 380,
-        recoRate: 12,
-        crossingHours: 4.8,
-        confidence: 87,
-      },
-    ]
+    const ivaMxn = sysRates.iva * (valorAduanaMxn + dtaMxn + igiMxn)
 
-    const bestIdx = 0
-    const savings = options[1].landedCost - options[0].landedCost
+    const totalMxn = valorAduanaMxn + dtaMxn + igiMxn + ivaMxn
 
-    setResult({ options, bestIdx, savings })
-    setSimulating(false)
+    // T-MEC savings = IGI that would apply at general rate minus IGI at T-MEC.
+    const tmecSavingsMxn = isTmec ? valorAduanaMxn * igiRateGeneral : null
+
+    return {
+      valorUsd: v,
+      fraccion: fraccionValid ? fraccion : '',
+      regimen,
+      tc,
+      valorAduanaMxn,
+      dtaMxn,
+      igiRate,
+      igiRateKnown: tariffHit,
+      igiMxn,
+      ivaMxn,
+      totalMxn,
+      totalUsd: totalMxn / tc,
+      tmecSavingsMxn,
+    }
+  }, [sysRates, valorUsd, fraccion, regimen, tariffRates])
+
+  function hydrateFromTrafico(t: TraficoOption) {
+    if (t.importe_total != null) setValorUsd(String(t.importe_total))
+    if (t.fraccion_arancelaria) setFraccion(t.fraccion_arancelaria)
+    const code = (t.regimen || '').toUpperCase().trim()
+    if (code && REGIMEN_OPTIONS.some(r => r.code === code)) setRegimen(code)
   }
 
   if (!isAdmin) {
     return (
       <div className="page-shell" style={{ textAlign: 'center', padding: 60 }}>
         <Calculator size={48} style={{ color: T.textMuted, marginBottom: 16 }} />
-        <div style={{ fontSize: 16, fontWeight: 600, color: T.text }}>Acceso restringido</div>
+        <div style={{ fontSize: 'var(--aguila-fs-body, 13px)', color: T.text, fontWeight: 600 }}>Acceso restringido</div>
       </div>
     )
   }
@@ -168,195 +188,252 @@ export default function SimuladorPage() {
   if (ratesError) {
     return (
       <div className="page-shell" style={{ textAlign: 'center', padding: 60 }}>
-        <Calculator size={48} style={{ color: 'var(--danger-500, #DC2626)', marginBottom: 16 }} />
-        <div style={{ fontSize: 16, fontWeight: 600, color: T.text }}>Error cargando tasas</div>
-        <div style={{ fontSize: 13, color: T.textMuted, marginTop: 8 }}>No se pudieron obtener las tasas de DTA, IVA y tipo de cambio. Contacta al administrador.</div>
+        <Calculator size={48} style={{ color: '#EF4444', marginBottom: 16 }} />
+        <div style={{ fontSize: 'var(--aguila-fs-section, 14px)', color: T.text, fontWeight: 700 }}>Error cargando tasas</div>
+        <div style={{ fontSize: 'var(--aguila-fs-body, 13px)', color: T.textMuted, marginTop: 8, maxWidth: 420, marginInline: 'auto' }}>
+          No se pudieron obtener las tasas de DTA, IVA y tipo de cambio desde system_config. Contacta al administrador — el pipeline no calcula con tasas expiradas.
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="page-shell" style={{ maxWidth: 800 }}>
+    <div className="page-shell" style={{ maxWidth: 960 }}>
       <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-        <Calculator size={24} style={{ color: T.gold }} />
-        Simulador Pre-Filing
+        <Calculator size={24} style={{ color: T.silver }} />
+        Calculadora de aranceles
       </h1>
-      <p style={{ fontSize: 13, color: T.textMuted, marginBottom: 24 }}>
-        Predice el resultado antes de transmitir.
+      <p style={{ fontSize: 'var(--aguila-fs-body, 13px)', color: T.textMuted, marginBottom: 24 }}>
+        Estima valor en aduana, DTA, IGI e IVA antes de transmitir. Todas las cifras son estimadas — las tasas finales aplican al presentar el pedimento.
       </p>
 
-      {/* Mode toggle */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
-        <button onClick={() => { setManual(false); setResult(null) }} style={{
-          padding: '8px 16px', borderRadius: 8, fontSize: 13, fontWeight: manual ? 500 : 700,
-          background: !manual ? 'rgba(196,150,60,0.1)' : T.card,
-          border: `1px solid ${!manual ? T.gold : T.border}`,
-          color: !manual ? T.goldDark : T.textSec, cursor: 'pointer',
-        }}>
-          Seleccionar tráfico
-        </button>
-        <button onClick={() => { setManual(true); setResult(null) }} style={{
-          padding: '8px 16px', borderRadius: 8, fontSize: 13, fontWeight: manual ? 700 : 500,
-          background: manual ? 'rgba(196,150,60,0.1)' : T.card,
-          border: `1px solid ${manual ? T.gold : T.border}`,
-          color: manual ? T.goldDark : T.textSec, cursor: 'pointer',
-        }}>
-          Entrada manual
-        </button>
-      </div>
-
-      {/* Tráfico selector */}
-      {!manual && (
+      {/* Pending tráficos — optional prefill */}
+      {!loading && pending.length > 0 && (
         <div style={{ marginBottom: 20 }}>
-          {loading ? (
-            <div className="skeleton-shimmer" style={{ height: 48, borderRadius: 8 }} />
-          ) : pending.length === 0 ? (
-            <div style={{ fontSize: 13, color: T.textMuted }}>Sin tráficos pendientes.</div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {pending.slice(0, 8).map(t => (
-                <button key={t.trafico} onClick={() => { setSelected(t); simulate(t) }} style={{
-                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                  padding: '12px 16px', borderRadius: 10, textAlign: 'left',
-                  background: selected?.trafico === t.trafico ? 'rgba(196,150,60,0.06)' : T.card,
-                  border: `1px solid ${selected?.trafico === t.trafico ? T.gold : T.border}`,
-                  cursor: 'pointer', minHeight: 60,
-                }}>
-                  <div>
-                    <span style={{ fontSize: 13, fontWeight: 700, fontFamily: T.mono, color: T.text }}>{t.trafico}</span>
-                    <span style={{ fontSize: 12, color: T.textSec, marginLeft: 10 }}>{(t.descripcion_mercancia || '').substring(0, 30)}</span>
-                  </div>
-                  <span style={{ fontSize: 12, fontFamily: T.mono, color: T.goldDark }}>{fmtUSDCompact(t.importe_total || 0)}</span>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Manual input */}
-      {manual && (
-        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12, marginBottom: 20 }}>
-          {[
-            { label: 'Producto', value: mDesc, set: setMDesc, placeholder: 'ej: polipropileno virgen' },
-            { label: 'Proveedor', value: mSupplier, set: setMSupplier, placeholder: 'ej: Milacron' },
-            { label: 'Valor (USD)', value: mValue, set: setMValue, placeholder: 'ej: 48000' },
-            { label: 'Peso (kg)', value: mWeight, set: setMWeight, placeholder: 'ej: 12000' },
-          ].map(f => (
-            <div key={f.label}>
-              <label style={{ fontSize: 11, fontWeight: 700, color: T.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{f.label}</label>
-              <input
-                value={f.value} onChange={e => f.set(e.target.value)} placeholder={f.placeholder}
+          <div style={{ fontSize: 'var(--aguila-fs-label, 11px)', fontWeight: 700, color: T.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>
+            Pre-cargar de tráfico pendiente
+          </div>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            {pending.slice(0, 6).map(t => (
+              <button
+                key={t.trafico}
+                onClick={() => hydrateFromTrafico(t)}
                 style={{
-                  width: '100%', marginTop: 4, padding: '10px 12px', borderRadius: 8,
-                  border: `1px solid ${T.border}`, fontSize: 14, color: T.text, background: T.card,
-                  outline: 'none', minHeight: 60,
+                  padding: '8px 12px', borderRadius: 8,
+                  background: 'rgba(255,255,255,0.04)',
+                  border: `1px solid ${T.border}`,
+                  color: T.text, cursor: 'pointer',
+                  fontSize: 'var(--aguila-fs-meta, 11px)', fontFamily: T.mono,
+                  minHeight: 40,
                 }}
-              />
-            </div>
-          ))}
-          <div style={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <label style={{ fontSize: 13, color: T.text }}>
-              <input type="checkbox" checked={mTmec} onChange={e => setMTmec(e.target.checked)} style={{ marginRight: 6 }} />
-              T-MEC aplicable
-            </label>
-          </div>
-          <button onClick={() => simulate({
-            descripcion_mercancia: mDesc, proveedores: mSupplier,
-            importe_total: parseFloat(mValue) || 0, peso_bruto: parseFloat(mWeight) || 0,
-            regimen: mTmec ? 'IMD' : 'A1',
-          })} style={{
-            gridColumn: '1 / -1', padding: '12px 20px', borderRadius: 10,
-            background: T.gold, color: '#FFFFFF', border: 'none', cursor: 'pointer',
-            fontSize: 14, fontWeight: 700, minHeight: 60,
-          }}>
-            Simular
-          </button>
-        </div>
-      )}
-
-      {/* Results */}
-      {result && (
-        <div style={{ marginTop: 8 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: T.goldDark, marginBottom: 12 }}>
-            Simulación {selected ? `— ${selected.trafico}` : ''}
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {result.options.map((opt, idx) => (
-              <div key={opt.label} style={{
-                padding: '16px 20px', borderRadius: 12,
-                background: T.card,
-                border: `1.5px solid ${idx === result.bestIdx ? T.gold : T.border}`,
-                borderLeft: idx === result.bestIdx ? `4px solid var(--gold)` : undefined,
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                  <div style={{ fontSize: 15, fontWeight: 700, color: T.text }}>
-                    Opción {opt.label}: {opt.bridge} · {opt.time}
-                  </div>
-                  {idx === result.bestIdx && (
-                    <span style={{
-                      fontSize: 10, fontWeight: 800, padding: '2px 8px', borderRadius: 9999,
-                      background: 'rgba(196,150,60,0.1)', color: T.goldDark, border: `1px solid rgba(196,150,60,0.3)`,
-                    }}>
-                      RECOMENDADA
-                    </span>
-                  )}
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)', gap: 8, marginBottom: 10 }}>
-                  {[
-                    { label: 'DTA', value: `$${opt.dta.toLocaleString()}` },
-                    { label: 'IGI', value: opt.igi === 0 ? '$0 (T-MEC)' : `$${opt.igi.toLocaleString()}` },
-                    { label: 'IVA', value: `$${opt.iva.toLocaleString()}` },
-                    { label: 'Total aranceles', value: `$${opt.totalDuties.toLocaleString()}` },
-                  ].map(d => (
-                    <div key={d.label}>
-                      <div style={{ fontSize: 10, color: T.textMuted, textTransform: 'uppercase' }}>{d.label}</div>
-                      <div style={{ fontSize: 14, fontWeight: 700, fontFamily: T.mono, color: T.text }}>{d.value}</div>
-                    </div>
-                  ))}
-                </div>
-
-                <div style={{ display: 'flex', gap: isMobile ? 8 : 16, fontSize: 12, color: T.textSec, flexWrap: 'wrap' }}>
-                  <span>Reconocimiento: {opt.recoRate}%</span>
-                  <span>Tiempo: ~{opt.crossingHours}h</span>
-                  <span>Confianza: {opt.confidence}%</span>
-                  <span style={{ fontWeight: 700, color: T.goldDark }}>Costo total: ${opt.landedCost.toLocaleString()}</span>
-                </div>
-              </div>
+                title={t.descripcion_mercancia || ''}
+              >
+                {t.trafico}
+              </button>
             ))}
           </div>
-
-          {/* Savings callout */}
-          {result.savings > 0 && (
-            <div style={{
-              marginTop: 12, padding: '12px 16px', borderRadius: 10,
-              background: 'rgba(22,163,74,0.06)', border: '1px solid rgba(22,163,74,0.15)',
-              fontSize: 13, fontWeight: 600, color: 'var(--success)',
-            }}>
-              → Opción {result.options[result.bestIdx].label} ahorra ${result.savings.toLocaleString()} USD y {(result.options[1].crossingHours - result.options[0].crossingHours).toFixed(1)} horas
-            </div>
-          )}
-
-          {/* Action buttons */}
-          <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
-            <button style={{
-              padding: '12px 24px', borderRadius: 10, fontSize: 14, fontWeight: 700,
-              background: T.gold, color: '#FFFFFF', border: 'none', cursor: 'pointer', minHeight: 60,
-              display: 'flex', alignItems: 'center', gap: 8,
-            }}>
-              <Check size={16} /> Aprobar y transmitir
-            </button>
-            <button onClick={() => setResult(null)} style={{
-              padding: '12px 24px', borderRadius: 10, fontSize: 14, fontWeight: 600,
-              background: 'transparent', color: T.textSec, border: `1px solid ${T.border}`,
-              cursor: 'pointer', minHeight: 60,
-            }}>
-              Modificar
-            </button>
-          </div>
         </div>
+      )}
+
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 16 }}>
+        {/* Inputs */}
+        <GlassCard>
+          <div style={{ fontSize: 'var(--aguila-fs-label, 11px)', fontWeight: 700, color: T.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 12 }}>
+            Entradas
+          </div>
+
+          {/* Valor comercial */}
+          <div style={{ marginBottom: 14 }}>
+            <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--aguila-fs-meta, 11px)', color: T.textSec, marginBottom: 6, fontWeight: 600 }}>
+              <span>Valor comercial</span>
+              <span style={{ fontFamily: T.mono, color: T.silver }}>USD</span>
+            </label>
+            <input
+              type="number"
+              inputMode="decimal"
+              min="0"
+              step="0.01"
+              value={valorUsd}
+              onChange={e => setValorUsd(e.target.value)}
+              placeholder="48000"
+              style={{
+                width: '100%', padding: '10px 12px', borderRadius: 8,
+                background: 'rgba(9,9,11,0.75)',
+                border: `1.5px solid ${T.border}`,
+                color: T.text, fontFamily: T.mono,
+                fontSize: 'var(--aguila-fs-section, 14px)', fontWeight: 700,
+                outline: 'none', minHeight: 60,
+              }}
+            />
+          </div>
+
+          {/* Fracción arancelaria */}
+          <div style={{ marginBottom: 14 }}>
+            <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--aguila-fs-meta, 11px)', color: T.textSec, marginBottom: 6, fontWeight: 600 }}>
+              <span>Fracción arancelaria</span>
+              <span style={{ fontFamily: T.mono, color: T.silver }}>TIGIE</span>
+            </label>
+            <FraccionInput value={fraccion} onChange={setFraccion} placeholder="3907.40.01" />
+            {fraccion && /^\d{4}\.\d{2}\.\d{2}$/.test(fraccion) && (
+              <div style={{ fontSize: 'var(--aguila-fs-meta, 11px)', color: tariffRates.has(fraccion) ? T.green : T.amber, marginTop: 4 }}>
+                {tariffRates.has(fraccion)
+                  ? `IGI general: ${(tariffRates.get(fraccion)! * 100).toFixed(2)}%`
+                  : `Sin tarifa registrada — se estima ${(FALLBACK_IGI_RATE * 100).toFixed(0)}%`}
+              </div>
+            )}
+          </div>
+
+          {/* Régimen */}
+          <div style={{ marginBottom: 14 }}>
+            <label style={{ display: 'block', fontSize: 'var(--aguila-fs-meta, 11px)', color: T.textSec, marginBottom: 6, fontWeight: 600 }}>
+              Régimen
+            </label>
+            <select
+              value={regimen}
+              onChange={e => setRegimen(e.target.value)}
+              style={{
+                width: '100%', padding: '10px 12px', borderRadius: 8,
+                background: 'rgba(9,9,11,0.75)',
+                border: `1.5px solid ${T.border}`,
+                color: T.text, fontFamily: 'var(--font-geist-sans, inherit)',
+                fontSize: 'var(--aguila-fs-body, 13px)', fontWeight: 600,
+                outline: 'none', minHeight: 60, cursor: 'pointer',
+              }}
+            >
+              {REGIMEN_OPTIONS.map(r => (
+                <option key={r.code} value={r.code}>{r.label}</option>
+              ))}
+            </select>
+            {TMEC_REGIMES.has(regimen) && (
+              <div style={{ fontSize: 'var(--aguila-fs-meta, 11px)', color: T.green, marginTop: 4 }}>
+                T-MEC aplicable → IGI al 0%.
+              </div>
+            )}
+          </div>
+
+          {/* Tipo de cambio — read-only */}
+          <div>
+            <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--aguila-fs-meta, 11px)', color: T.textSec, marginBottom: 6, fontWeight: 600 }}>
+              <span>Tipo de cambio</span>
+              <span style={{ fontFamily: T.mono, color: T.silver }}>MXN / USD</span>
+            </label>
+            <div style={{
+              width: '100%', padding: '10px 12px', borderRadius: 8,
+              background: 'rgba(255,255,255,0.02)',
+              border: `1px solid ${T.border}`,
+              color: T.text, fontFamily: T.mono,
+              fontSize: 'var(--aguila-fs-section, 14px)', fontWeight: 700,
+              minHeight: 60, display: 'flex', alignItems: 'center',
+            }}>
+              {sysRates ? sysRates.tc.toFixed(4) : '—'}
+            </div>
+            {sysRates?.tcDate && (
+              <div style={{ fontSize: 'var(--aguila-fs-meta, 11px)', color: T.textMuted, marginTop: 4 }}>
+                {sysRates.tcSource || 'Banxico'} · {sysRates.tcDate}
+              </div>
+            )}
+          </div>
+        </GlassCard>
+
+        {/* Outputs */}
+        <GlassCard>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-label, 11px)', fontWeight: 700, color: T.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+              Resultados
+            </div>
+            <span style={{
+              fontSize: 'var(--aguila-fs-meta, 11px)', fontWeight: 800,
+              padding: '2px 8px', borderRadius: 9999,
+              background: T.amberBg, color: T.amber,
+              border: `1px solid ${T.amber}`,
+              letterSpacing: '0.06em',
+            }}>
+              ESTIMADO
+            </span>
+          </div>
+
+          {!result ? (
+            <div style={{ fontSize: 'var(--aguila-fs-body, 13px)', color: T.textMuted, padding: '40px 0', textAlign: 'center' }}>
+              Introduce valor y fracción para calcular.
+            </div>
+          ) : (
+            <>
+              {/* KPI grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
+                <ResultLine label="Valor en aduana" currency="MXN" value={fmtMxn(result.valorAduanaMxn)} />
+                <ResultLine label="DTA" currency="MXN" value={fmtMxn(result.dtaMxn)} />
+                <ResultLine
+                  label="IGI"
+                  currency="MXN"
+                  value={fmtMxn(result.igiMxn)}
+                  note={TMEC_REGIMES.has(result.regimen) ? 'T-MEC 0%' : !result.igiRateKnown ? 'Tarifa estimada' : undefined}
+                />
+                <ResultLine label="IVA" currency="MXN" value={fmtMxn(result.ivaMxn)} />
+              </div>
+
+              {/* T-MEC savings pill */}
+              {result.tmecSavingsMxn != null && result.tmecSavingsMxn > 0 && (
+                <div style={{
+                  padding: '10px 14px', borderRadius: 10,
+                  background: T.greenBg,
+                  border: `1px solid rgba(34,197,94,0.25)`,
+                  marginBottom: 14,
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12,
+                }}>
+                  <span style={{ fontSize: 'var(--aguila-fs-body, 13px)', color: T.green, fontWeight: 700 }}>
+                    Ahorro T-MEC (Estimado)
+                  </span>
+                  <span style={{ fontFamily: T.mono, fontSize: 'var(--aguila-fs-kpi-compact, 18px)', fontWeight: 800, color: T.green }}>
+                    <span style={{ fontSize: 'var(--aguila-fs-meta, 11px)', marginRight: 4, opacity: 0.7 }}>MXN</span>
+                    {fmtMxn(result.tmecSavingsMxn)}
+                  </span>
+                </div>
+              )}
+
+              {/* Total estimado */}
+              <div style={{
+                padding: '14px 16px', borderRadius: 12,
+                background: 'rgba(255,255,255,0.06)',
+                border: `1px solid rgba(192,197,206,0.25)`,
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 }}>
+                  <span style={{ fontSize: 'var(--aguila-fs-label, 11px)', color: T.silver, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                    Total estimado
+                  </span>
+                  <span style={{ fontSize: 'var(--aguila-fs-meta, 11px)', color: T.textMuted, fontFamily: T.mono }}>MXN</span>
+                </div>
+                <div style={{ fontFamily: T.mono, fontSize: 'var(--aguila-fs-kpi-hero, 28px)', fontWeight: 800, color: T.text, letterSpacing: '-0.02em' }}>
+                  {fmtMxn(result.totalMxn)}
+                </div>
+                <div style={{ fontSize: 'var(--aguila-fs-meta, 11px)', color: T.textMuted, marginTop: 6, fontFamily: T.mono }}>
+                  ≈ USD {fmtUsd(result.totalUsd)} · tc {result.tc.toFixed(4)}
+                </div>
+              </div>
+
+              <div style={{ fontSize: 'var(--aguila-fs-meta, 11px)', color: T.textMuted, marginTop: 12, lineHeight: 1.5 }}>
+                Base IVA = valor en aduana + DTA + IGI. No incluye honorarios de agencia. Tasas desde system_config ·
+                {sysRates?.tcDate ? ` ${sysRates.tcDate}` : ''}
+              </div>
+            </>
+          )}
+        </GlassCard>
+      </div>
+    </div>
+  )
+}
+
+function ResultLine({ label, currency, value, note }: { label: string; currency: 'MXN' | 'USD'; value: string; note?: string }) {
+  return (
+    <div>
+      <div style={{ fontSize: 'var(--aguila-fs-label, 10px)', color: 'var(--text-muted, #64748b)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 2 }}>
+        {label}
+      </div>
+      <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-kpi-compact, 18px)', fontWeight: 700, color: 'var(--text-primary, #E6EDF3)' }}>
+        <span style={{ fontSize: 'var(--aguila-fs-meta, 10px)', marginRight: 4, opacity: 0.6, fontWeight: 600 }}>{currency}</span>
+        {value}
+      </div>
+      {note && (
+        <div style={{ fontSize: 'var(--aguila-fs-meta, 10px)', color: '#FBBF24', marginTop: 2 }}>{note}</div>
       )}
     </div>
   )

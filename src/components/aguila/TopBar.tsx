@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { Search, Menu, LogOut, ChevronLeft } from 'lucide-react';
 import NotificationBell from '@/components/NotificationBell';
 import { AguilaMark } from '@/components/brand/AguilaMark';
+import { TopbarStatus } from './TopbarStatus';
 
 interface TopBarProps {
   showNotifications?: boolean;
@@ -85,8 +86,9 @@ export default function TopBar({
           <Search size={18} />
         </button>
 
-        {/* Right: company name + logout */}
+        {/* Right: status indicators + company name + logout */}
         <div className="topbar-right">
+          <TopbarStatus />
           {clientName && (
             <span className="topbar-client-name">{clientName}</span>
           )}
@@ -142,6 +144,7 @@ export default function TopBar({
       </button>
 
       <div className="topbar-right">
+        <TopbarStatus />
         {showNotifications && <NotificationBell />}
         {onLogout && (
           <button

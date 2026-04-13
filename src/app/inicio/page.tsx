@@ -7,6 +7,7 @@
 
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
+import { Suspense } from 'react'
 import { verifySession } from '@/lib/session'
 import { createServerClient } from '@/lib/supabase-server'
 import { logOperatorAction } from '@/lib/operator-actions'
@@ -16,7 +17,7 @@ import {
 } from '@/lib/cliente/dashboard'
 import { bucketDailySeries, daysAgo } from '@/lib/cockpit/fetch'
 import { softCount, softData, softFirst } from '@/lib/cockpit/safe-query'
-import { CockpitInicio, MensajeriaFeed, CockpitErrorCard, type CockpitHeroKPI } from '@/components/aguila'
+import { CockpitInicio, MensajeriaFeed, CockpitErrorCard, CockpitSkeleton, type CockpitHeroKPI } from '@/components/aguila'
 import { ClienteEstado } from '@/components/cliente/ClienteEstado'
 import { fetchClientMensajeriaFeed, mensajeriaClientEnabled } from '@/lib/mensajeria/feed'
 import type { NavCounts } from '@/lib/cockpit/nav-tiles'
@@ -39,6 +40,32 @@ export default async function InicioPage() {
   if (!session) redirect('/login')
   if (session.role !== 'client') redirect('/')
 
+  // Stream the diagnostic banner immediately so the user sees v9.6 reached
+  // the page handler, before any data fetch can hang. CockpitContent
+  // streams in once data is ready (or throws into the Suspense fallback).
+  const buildId = `v9.6-${new Date().toISOString().slice(0, 16)}`
+  return (
+    <>
+      <div style={{
+        background: '#16a34a',
+        color: '#FFFFFF',
+        padding: '12px 16px',
+        fontSize: 12,
+        fontFamily: 'ui-monospace, monospace',
+        position: 'sticky',
+        top: 0,
+        zIndex: 1000,
+      }}>
+        ✓ /inicio reached · {buildId} · session={session.role} · companyId={session.companyId}
+      </div>
+      <Suspense fallback={<CockpitSkeleton />}>
+        <CockpitContent session={session} cookieStore={cookieStore} />
+      </Suspense>
+    </>
+  )
+}
+
+async function CockpitContent({ session, cookieStore }: { session: SessionLike; cookieStore: CookieJar }) {
   try {
     return await renderClientCockpit(session, cookieStore)
   } catch (err) {
@@ -184,36 +211,22 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar)
     : 0
 
   return (
-    <>
-      <div style={{
-        background: '#16a34a',
-        color: '#FFFFFF',
-        padding: '12px 16px',
-        fontSize: 12,
-        fontFamily: 'ui-monospace, monospace',
-        position: 'sticky',
-        top: 0,
-        zIndex: 1000,
-      }}>
-        ✓ /inicio v9.4 rendered · company={companyId} · traficos={activeTraficos.length} · entradas7d={entradasSemanaCount} · pedimentosMes={pedimentosMonthCount}
-      </div>
-      <CockpitInicio
-        role="client"
-        name={companyName || 'Tu portal'}
-        companyName={companyName || 'Tu portal'}
-        heroKPIs={heroKPIs}
-        navCounts={navCounts}
-        estadoSections={estadoSections}
-        actividadSlot={actividadSlot}
-        summaryLine={summaryLine}
-        pulseSignal={activeTraficos.length > 0}
-        metaPills={[
-          { label: 'Activos', value: activeTraficos.length },
-          { label: 'Semana', value: entradasSemanaCount },
-          { label: 'Completos', value: `${expPct}%` },
-          { label: 'Mes', value: pedimentosMonthCount },
-        ]}
-      />
-    </>
+    <CockpitInicio
+      role="client"
+      name={companyName || 'Tu portal'}
+      companyName={companyName || 'Tu portal'}
+      heroKPIs={heroKPIs}
+      navCounts={navCounts}
+      estadoSections={estadoSections}
+      actividadSlot={actividadSlot}
+      summaryLine={summaryLine}
+      pulseSignal={activeTraficos.length > 0}
+      metaPills={[
+        { label: 'Activos', value: activeTraficos.length },
+        { label: 'Semana', value: entradasSemanaCount },
+        { label: 'Completos', value: `${expPct}%` },
+        { label: 'Mes', value: pedimentosMonthCount },
+      ]}
+    />
   )
 }

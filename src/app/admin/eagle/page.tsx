@@ -1,8 +1,9 @@
 /**
- * AGUILA · V1.5 F6 — Eagle View (Tito's morning view)
+ * AGUILA · V1.5 F6 → v7 — Eagle View (Tito's morning view).
  *
- * One screen, six glass tiles: tráficos by status, AR/AP, dormant clients,
- * top 5 attentions, live corridor, team activity. Role-gated to admin + broker.
+ * One cockpit, three role views (AGUILA v7): hero KPIs + 6 unified nav cards +
+ * existing eagle tiles as estadoSections. Role-gated to admin + broker.
+ * Actividad feed is unfiltered by company so the owner sees everything recent.
  */
 
 import { cookies } from 'next/headers'
@@ -10,16 +11,15 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
 import { verifySession } from '@/lib/session'
 import { computeARAging, computeAPAging } from '@/lib/contabilidad/aging'
-import { CockpitBrandHeader } from '@/components/brand/CockpitBrandHeader'
-import { CockpitBackdrop } from '@/components/cockpit/shared/CockpitBackdrop'
-import { COCKPIT_CANVAS } from '@/lib/design-system'
-import { AdminCompanyBanner } from '@/components/cockpit/admin/AdminCompanyBanner'
+import { fmtUSDCompact } from '@/lib/format-utils'
+import { bucketDailySeries, sumRange, daysAgo } from '@/lib/cockpit/fetch'
+import { CockpitInicio, type CockpitHeroKPI, type TimelineItem } from '@/components/aguila'
 import { TraficosDelDiaTile } from '@/components/eagle/TraficosDelDiaTile'
 import { ArApTile } from '@/components/eagle/ArApTile'
 import { ClientesDormidosTile } from '@/components/eagle/ClientesDormidosTile'
 import { TopAtencionesTile } from '@/components/eagle/TopAtencionesTile'
 import { CorredorTile } from '@/components/eagle/CorredorTile'
-import { TeamActivityTile } from '@/components/eagle/TeamActivityTile'
+import type { NavCounts } from '@/lib/cockpit/nav-tiles'
 import type {
   ActivityItem,
   AtencionItem,
@@ -33,29 +33,8 @@ export const revalidate = 0
 const MOTION_STATUSES = ['En Proceso', 'Documentacion', 'En Aduana', 'Pedimento Pagado', 'Cruzado']
 const DORMANT_DAYS = 14
 
-function getDormantCutoffISO(days: number): string {
-  return new Date(Date.now() - days * 86_400_000).toISOString()
-}
-
 function daysSinceISO(iso: string): number {
   return Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000)
-}
-
-function greetingByHour(): string {
-  const h = new Date().toLocaleString('en-US', { hour: 'numeric', hour12: false, timeZone: 'America/Chicago' })
-  const hour = parseInt(h, 10)
-  if (hour < 12) return 'Buenos días, Tito'
-  if (hour < 19) return 'Buenas tardes, Tito'
-  return 'Buenas noches, Tito'
-}
-
-interface EagleData {
-  traficosByStatus: TraficoStatusBucket[]
-  ar: Awaited<ReturnType<typeof computeARAging>>
-  ap: Awaited<ReturnType<typeof computeAPAging>>
-  dormant: DormantClient[]
-  atenciones: AtencionItem[]
-  recentActivity: ActivityItem[]
 }
 
 export default async function EaglePage() {
@@ -69,28 +48,82 @@ export default async function EaglePage() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
   )
+  const opName = cookieStore.get('operator_name')?.value || 'Tito'
 
-  const [traficosRes, ar, ap, recentForDormant, companiesRes, activityRes] = await Promise.all([
-    sb
-      .from('traficos')
+  const now = new Date()
+  const fourteenDaysAgoIso = daysAgo(14, now).toISOString()
+
+  const [
+    traficosRes,
+    ar,
+    ap,
+    recentForDormant,
+    companiesRes,
+    activityRes,
+    traficosActivosSeriesRes,
+    pedimentosSeriesRes,
+    expedientesSeriesRes,
+    expedientesCountRes,
+    entradasSeriesRes,
+    entradasHoyCountRes,
+    clasificacionesSeriesRes,
+    clasificacionesCountRes,
+    pedimentosPendientesCountRes,
+  ] = await Promise.all([
+    sb.from('traficos')
       .select('estatus')
       .eq('company_id', session.companyId)
       .in('estatus', MOTION_STATUSES)
       .limit(5000),
     computeARAging(sb, session.companyId),
     computeAPAging(sb, session.companyId),
-    sb
-      .from('traficos')
+    sb.from('traficos')
       .select('company_id, created_at')
-      .gte('created_at', getDormantCutoffISO(DORMANT_DAYS))
+      .gte('created_at', daysAgo(DORMANT_DAYS, now).toISOString())
       .limit(5000),
     sb.from('companies').select('company_id, razon_social, is_active').eq('is_active', true).limit(500),
-    sb
-      .from('workflow_events')
-      .select('id, workflow, event_type, trigger_id, created_at')
-      .eq('company_id', session.companyId)
+    // Unfiltered — owner sees EVERYTHING recent (plan rule).
+    sb.from('workflow_events')
+      .select('id, workflow, event_type, trigger_id, created_at, company_id')
       .order('created_at', { ascending: false })
       .limit(20),
+    sb.from('traficos')
+      .select('updated_at')
+      .eq('company_id', session.companyId)
+      .eq('estatus', 'En Proceso')
+      .gte('updated_at', fourteenDaysAgoIso)
+      .limit(2000),
+    sb.from('traficos')
+      .select('fecha_llegada')
+      .eq('company_id', session.companyId)
+      .is('pedimento', null)
+      .gte('fecha_llegada', fourteenDaysAgoIso)
+      .limit(2000),
+    sb.from('expediente_documentos')
+      .select('created_at')
+      .gte('created_at', fourteenDaysAgoIso)
+      .limit(2000),
+    sb.from('expediente_documentos')
+      .select('id', { count: 'exact', head: true }),
+    sb.from('entradas')
+      .select('fecha_llegada_mercancia')
+      .gte('fecha_llegada_mercancia', fourteenDaysAgoIso)
+      .limit(2000),
+    sb.from('entradas')
+      .select('id', { count: 'exact', head: true })
+      .gte('fecha_llegada_mercancia', new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString()),
+    sb.from('globalpc_productos')
+      .select('fraccion_classified_at')
+      .not('fraccion_classified_at', 'is', null)
+      .gte('fraccion_classified_at', fourteenDaysAgoIso)
+      .limit(2000),
+    sb.from('globalpc_productos')
+      .select('id', { count: 'exact', head: true })
+      .not('fraccion_classified_at', 'is', null),
+    sb.from('traficos')
+      .select('trafico', { count: 'exact', head: true })
+      .eq('company_id', session.companyId)
+      .is('pedimento', null),
   ])
 
   // traficosByStatus
@@ -100,6 +133,7 @@ export default async function EaglePage() {
     counts.set(s, (counts.get(s) ?? 0) + 1)
   }
   const traficosByStatus: TraficoStatusBucket[] = Array.from(counts.entries()).map(([status, count]) => ({ status, count }))
+  const activeTraficosTotal = traficosByStatus.reduce((s, b) => s + b.count, 0)
 
   // dormant (top 3)
   const activeIds = new Set<string>()
@@ -149,12 +183,12 @@ export default async function EaglePage() {
     })
   }
   try {
-    const { data: sugg, error: suggErr } = await sb
+    const { data: sugg } = await sb
       .from('audit_suggestions')
       .select('id, title, status')
       .eq('status', 'pending')
       .limit(10)
-    if (!suggErr && sugg) {
+    if (sugg) {
       for (const s of sugg as { id: string; title: string | null }[]) {
         atenciones.push({
           id: `sugg-${s.id}`,
@@ -184,55 +218,102 @@ export default async function EaglePage() {
 
   const recentActivity = ((activityRes.data ?? []) as ActivityItem[]) ?? []
 
-  const data: EagleData = {
-    traficosByStatus,
-    ar,
-    ap,
-    dormant,
-    atenciones: atencionesTop,
-    recentActivity,
+  // Series bucketing
+  const traficosActivosSeries   = bucketDailySeries(traficosActivosSeriesRes.data as Array<Record<string, unknown>> | null, 'updated_at', 14, now)
+  const pedimentosPendSeries    = bucketDailySeries(pedimentosSeriesRes.data as Array<Record<string, unknown>> | null, 'fecha_llegada', 14, now)
+  const expedientesSeries       = bucketDailySeries(expedientesSeriesRes.data as Array<Record<string, unknown>> | null, 'created_at', 14, now)
+  const entradasSeries          = bucketDailySeries(entradasSeriesRes.data as Array<Record<string, unknown>> | null, 'fecha_llegada_mercancia', 14, now)
+  const clasificacionesSeries   = bucketDailySeries(clasificacionesSeriesRes.data as Array<Record<string, unknown>> | null, 'fraccion_classified_at', 14, now)
+
+  // Hero KPIs for the owner — the business-owner at-a-glance four.
+  const activeClients = (companiesRes.data ?? []).length
+  const arTotal = ar.total ?? 0
+
+  const heroKPIs: CockpitHeroKPI[] = [
+    {
+      key: 'traficos',
+      label: 'Tráficos en proceso',
+      value: activeTraficosTotal,
+      series: traficosActivosSeries,
+      current: sumRange(traficosActivosSeries, 7, 14),
+      previous: sumRange(traficosActivosSeries, 0, 7),
+      href: '/traficos?estatus=En+Proceso',
+      tone: 'silver',
+    },
+    {
+      key: 'clientes',
+      label: 'Clientes activos',
+      value: activeClients,
+      tone: 'silver',
+    },
+    {
+      key: 'dormidos',
+      label: 'Clientes dormidos',
+      value: dormant.length,
+      tone: 'silver',
+      inverted: true,
+    },
+    {
+      key: 'ar',
+      label: 'CxC vencido',
+      value: fmtUSDCompact(arTotal) || '—',
+      tone: 'silver',
+      inverted: true,
+    },
+  ]
+
+  const navCounts: NavCounts = {
+    traficos:        { count: activeTraficosTotal,                 series: traficosActivosSeries },
+    pedimentos:      { count: pedimentosPendientesCountRes.count ?? 0, series: pedimentosPendSeries },
+    expedientes:     { count: expedientesCountRes.count ?? 0,      series: expedientesSeries },
+    catalogo:        { count: null,                                 series: [] },
+    entradas:        { count: entradasHoyCountRes.count ?? 0,      series: entradasSeries },
+    clasificaciones: { count: clasificacionesCountRes.count ?? 0,  series: clasificacionesSeries },
   }
 
-  return (
-    <div className="aguila-dark" style={{ position: 'relative', background: COCKPIT_CANVAS, minHeight: '100vh', padding: '32px 24px 48px', color: '#E6EDF3', overflow: 'hidden' }}>
-      <CockpitBackdrop />
-      <div style={{ position: 'relative', zIndex: 1 }}>
-      <CockpitBrandHeader
-        subtitle="Vista Águila · Tito"
-        greeting={greetingByHour()}
-        tagline="Una pantalla · seis señales · cero clics para decidir."
-        markSize={64}
-      />
+  const actividad: TimelineItem[] = recentActivity.slice(0, 12).map((a) => ({
+    id: String(a.id),
+    title: `${a.workflow} · ${a.event_type.replace(/_/g, ' ')}`,
+    subtitle: a.trigger_id ?? undefined,
+    timestamp: a.created_at,
+  }))
 
-      <AdminCompanyBanner
-        activeTraficosTotal={data.traficosByStatus.reduce((sum, b) => sum + b.count, 0)}
-        activeClients={(companiesRes.data ?? []).length}
-        dormantClients={data.dormant.length}
-        arPendingMxn={data.ar.total}
-      />
-
-      <section
-        className="eagle-grid"
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
-          gap: 16,
-        }}
-      >
-        <TraficosDelDiaTile buckets={data.traficosByStatus} />
-        <ArApTile ar={data.ar} ap={data.ap} />
-        <ClientesDormidosTile dormant={data.dormant} />
-        <TopAtencionesTile items={data.atenciones} />
-        <CorredorTile />
-        <TeamActivityTile initial={data.recentActivity} />
-      </section>
-
+  const estadoSections = (
+    <div className="eagle-estado-grid" style={{
+      display: 'grid',
+      gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+      gap: 'var(--aguila-gap-card, 16px)',
+    }}>
       <style>{`
         @media (max-width: 900px) {
-          .eagle-grid { grid-template-columns: 1fr !important; }
+          .eagle-estado-grid { grid-template-columns: 1fr !important; }
         }
       `}</style>
+      <TraficosDelDiaTile buckets={traficosByStatus} />
+      <ArApTile ar={ar} ap={ap} />
+      <ClientesDormidosTile dormant={dormant} />
+      <TopAtencionesTile items={atencionesTop} />
+      <div style={{ gridColumn: 'span 2' }}>
+        <CorredorTile />
       </div>
     </div>
+  )
+
+  const summaryLine = atencionesTop.length > 0
+    ? `${atencionesTop.length} atencion${atencionesTop.length === 1 ? '' : 'es'} pendiente${atencionesTop.length === 1 ? '' : 's'}.`
+    : 'Una pantalla · seis señales · cero clics para decidir.'
+
+  return (
+    <CockpitInicio
+      role="owner"
+      name={opName}
+      heroKPIs={heroKPIs}
+      navCounts={navCounts}
+      estadoSections={estadoSections}
+      actividad={actividad}
+      actividadEmptyLabel="Sin actividad reciente en toda la plataforma."
+      systemStatus={atencionesTop.length > 0 ? 'warning' : 'healthy'}
+      summaryLine={summaryLine}
+    />
   )
 }

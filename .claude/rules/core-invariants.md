@@ -162,3 +162,20 @@ caused a real regression, a compliance risk, or a silent failure in production.
     Corredor outage was caused by `DENY` + `frame-ancestors 'none'`
     blocking same-origin embeds — never set those again.
     verify: `grep -n "X-Frame-Options\|frame-ancestors" next.config.ts` → must show SAMEORIGIN + 'self'
+
+29. **Six cockpit nav cards, locked across `/inicio`, `/operador/inicio`,
+    `/admin/eagle`.** The six are Tráficos, Pedimentos, Expedientes,
+    Catálogo, Entradas, Clasificaciones. Order, labels, icons, and
+    descriptions are defined once in `src/lib/cockpit/nav-tiles.ts`
+    (`UNIFIED_NAV_TILES`). Role decides what *data* populates each card;
+    role does not decide which cards appear. Adding a 7th tile or
+    removing one requires explicit Tito + Renato IV sign-off — the
+    three-surface mental model is the load-bearing promise.
+    verify: `grep -rn "UNIFIED_NAV_TILES" src/app/inicio src/app/operador/inicio src/app/admin/eagle` → every cockpit route imports the constant
+
+30. **CockpitInicio is the canonical composition.** `/inicio`,
+    `/operador/inicio`, `/admin/eagle` compose from
+    `@/components/aguila/CockpitInicio`. Parallel implementations are
+    banned — a quality bump in the primitive must cascade to all three
+    surfaces automatically. Role-specific content enters via `heroKPIs`,
+    `navCounts`, `estadoSections`, `actividad` props.

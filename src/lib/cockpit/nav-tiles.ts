@@ -1,0 +1,53 @@
+import { Truck, FileText, FolderOpen, Book, Package, Tags } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
+
+export type NavTileKey =
+  | 'traficos'
+  | 'pedimentos'
+  | 'expedientes'
+  | 'catalogo'
+  | 'entradas'
+  | 'clasificaciones'
+
+export interface NavTileDef {
+  key: NavTileKey
+  href: string
+  label: string
+  icon: LucideIcon
+  description: string
+}
+
+/**
+ * AGUILA v7 — the six cockpit nav tiles, locked.
+ *
+ * Identical order, labels, icons, descriptions across /inicio,
+ * /operador/inicio, and /admin/eagle. Role decides what data
+ * populates each card; role does NOT decide which cards appear.
+ *
+ * Changing this list requires Tito + Renato IV sign-off
+ * (core-invariants rule 29).
+ */
+export const UNIFIED_NAV_TILES: readonly NavTileDef[] = [
+  { key: 'traficos',        href: '/traficos',   label: 'Tráficos',        icon: Truck,      description: 'Operaciones activas' },
+  { key: 'pedimentos',      href: '/pedimentos', label: 'Pedimentos',      icon: FileText,   description: 'Declaraciones aduanales' },
+  { key: 'expedientes',     href: '/expedientes',label: 'Expedientes',     icon: FolderOpen, description: 'Documentos por operación' },
+  { key: 'catalogo',        href: '/catalogo',   label: 'Catálogo',        icon: Book,       description: 'Partes e historial' },
+  { key: 'entradas',        href: '/entradas',   label: 'Entradas',        icon: Package,    description: 'Control de almacén' },
+  { key: 'clasificaciones', href: '/clasificar', label: 'Clasificaciones', icon: Tags,       description: 'Fracciones arancelarias' },
+] as const
+
+export interface NavCellData {
+  count: number | null
+  series: number[]
+}
+
+export type NavCounts = Record<NavTileKey, NavCellData>
+
+export const EMPTY_NAV_COUNTS: NavCounts = {
+  traficos:        { count: null, series: [] },
+  pedimentos:      { count: null, series: [] },
+  expedientes:     { count: null, series: [] },
+  catalogo:        { count: null, series: [] },
+  entradas:        { count: null, series: [] },
+  clasificaciones: { count: null, series: [] },
+}

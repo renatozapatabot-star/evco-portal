@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import type { LucideIcon } from 'lucide-react'
+import { Sparkline, type SparklineTone } from '@/components/aguila'
 
 interface Props {
   href: string
@@ -12,9 +13,14 @@ interface Props {
   count: number | null
   microStatus?: string
   microStatusWarning?: boolean
+  /** Optional 7-day sparkline. Render below label when provided. */
+  trendData?: number[]
+  /** Sparkline tone — defaults to silver. Client surfaces use silver/green only (invariant 24). */
+  trendTone?: SparklineTone
 }
 
-export function SmartNavCard({ href, label, icon: Icon, description, count, microStatus, microStatusWarning }: Props) {
+export function SmartNavCard({ href, label, icon: Icon, description, count, microStatus, microStatusWarning, trendData, trendTone = 'silver' }: Props) {
+  const hasTrend = Array.isArray(trendData) && trendData.length >= 2
   return (
     <Link href={href} style={{ textDecoration: 'none', color: 'inherit', display: 'flex' }}>
       <motion.div
@@ -68,6 +74,11 @@ export function SmartNavCard({ href, label, icon: Icon, description, count, micr
               {microStatus}
             </div>
           )}
+          {hasTrend && (
+            <div className="nav-card-trend" style={{ marginTop: 6, height: 20, opacity: 0.9 }}>
+              <Sparkline data={trendData!} tone={trendTone} height={20} ariaLabel={`${label} tendencia 7 días`} />
+            </div>
+          )}
         </div>
         {count !== null && (
           <div className="nav-card-count" style={{
@@ -105,6 +116,9 @@ export function SmartNavCard({ href, label, icon: Icon, description, count, micr
             display: none !important;
           }
           .nav-card-micro {
+            display: none !important;
+          }
+          .nav-card-trend {
             display: none !important;
           }
           .nav-card-count {

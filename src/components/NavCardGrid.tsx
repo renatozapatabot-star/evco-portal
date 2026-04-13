@@ -2,6 +2,7 @@
 
 import type { LucideIcon } from 'lucide-react'
 import { SmartNavCard } from './client/SmartNavCard'
+import type { SparklineTone } from '@/components/aguila'
 
 export interface NavTile {
   href: string
@@ -15,6 +16,8 @@ export interface NavCardGridItem {
   count: number | null
   microStatus?: string
   microStatusWarning?: boolean
+  trendData?: number[]
+  trendTone?: SparklineTone
 }
 
 interface Props {
@@ -22,13 +25,13 @@ interface Props {
 }
 
 /**
- * Shared glass nav card grid — used by both client cockpit and operator cockpit.
- * Produces byte-identical output to the previous inline grid in ClientHome.
+ * Shared glass nav card grid — used by every cockpit surface.
+ * Cards optionally render a 20px sparkline when trendData is provided.
  */
 export function NavCardGrid({ items }: Props) {
   return (
     <div className="nav-cards-grid" style={{ display: 'grid', gap: 12 }}>
-      {items.map(({ tile, count, microStatus, microStatusWarning }) => (
+      {items.map(({ tile, count, microStatus, microStatusWarning, trendData, trendTone }) => (
         <SmartNavCard
           key={tile.href}
           href={tile.href}
@@ -38,6 +41,8 @@ export function NavCardGrid({ items }: Props) {
           count={count}
           microStatus={microStatus}
           microStatusWarning={microStatusWarning}
+          trendData={trendData}
+          trendTone={trendTone}
         />
       ))}
       <style>{`

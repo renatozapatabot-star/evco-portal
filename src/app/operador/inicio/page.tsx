@@ -3,6 +3,7 @@ import { cookies } from 'next/headers'
 import { createServerClient } from '@/lib/supabase-server'
 import { logOperatorAction } from '@/lib/operator-actions'
 import { InicioClient } from './InicioClient'
+import { bucketDailySeries, sumRange, startOfToday, daysAgo } from '@/lib/cockpit/fetch'
 import type { TraficoRow, DecisionRow, SystemStatus } from './types'
 
 export const dynamic = 'force-dynamic'
@@ -24,10 +25,10 @@ export default async function OperadorInicioPage() {
 
   const sb = createServerClient()
   const now = new Date()
-  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString()
-  const sevenDaysAgo = new Date(now.getTime() - 7 * 86400000).toISOString()
-  const fourteenDaysAgo = new Date(now.getTime() - 14 * 86400000).toISOString()
-  const weekEnd = new Date(now.getTime() + 7 * 86400000).toISOString()
+  const todayStartIso = startOfToday(now).toISOString()
+  const sevenDaysAgoIso = daysAgo(7, now).toISOString()
+  const fourteenDaysAgoIso = daysAgo(14, now).toISOString()
+  const weekEndIso = new Date(now.getTime() + 7 * 86400000).toISOString()
 
   const [
     entradasHoyRes,
@@ -45,21 +46,25 @@ export default async function OperadorInicioPage() {
     activosSeriesRes,
     pendientesSeriesRes,
     atrasadosSeriesRes,
+    expedientesSeriesRes,
+    expedientesPendingRes,
+    clasificacionesSeriesRes,
+    clasificacionesTotalRes,
   ] = await Promise.all([
     sb.from('entradas')
       .select('cve_entrada', { count: 'exact', head: true })
-      .gte('fecha_llegada_mercancia', todayStart),
+      .gte('fecha_llegada_mercancia', todayStartIso),
     sb.from('traficos')
       .select('trafico', { count: 'exact', head: true })
       .eq('estatus', 'En Proceso'),
     sb.from('traficos')
       .select('trafico', { count: 'exact', head: true })
       .is('pedimento', null)
-      .lte('fecha_llegada', weekEnd),
+      .lte('fecha_llegada', weekEndIso),
     sb.from('traficos')
       .select('trafico', { count: 'exact', head: true })
       .eq('estatus', 'En Proceso')
-      .lte('updated_at', sevenDaysAgo),
+      .lte('updated_at', sevenDaysAgoIso),
     sb.from('traficos')
       .select('trafico, company_id, estatus, descripcion_mercancia, pedimento, fecha_llegada, updated_at, assigned_to_operator_id, proveedores')
       .eq('estatus', 'En Proceso')
@@ -79,7 +84,7 @@ export default async function OperadorInicioPage() {
       ? sb.from('operator_actions')
           .select('id', { count: 'exact', head: true })
           .eq('operator_id', opId)
-          .gte('created_at', todayStart)
+          .gte('created_at', todayStartIso)
       : Promise.resolve({ count: 0 }),
     sb.from('workflow_events')
       .select('id', { count: 'exact', head: true })
@@ -89,65 +94,58 @@ export default async function OperadorInicioPage() {
           .select('trafico', { count: 'exact', head: true })
           .eq('assigned_to_operator_id', opId)
           .eq('estatus', 'Cruzado')
-          .gte('updated_at', sevenDaysAgo)
+          .gte('updated_at', sevenDaysAgoIso)
       : Promise.resolve({ count: 0 }),
     opId
       ? sb.from('traficos')
           .select('trafico', { count: 'exact', head: true })
           .eq('assigned_to_operator_id', opId)
           .eq('estatus', 'Cruzado')
-          .gte('updated_at', fourteenDaysAgo)
-          .lt('updated_at', sevenDaysAgo)
+          .gte('updated_at', fourteenDaysAgoIso)
+          .lt('updated_at', sevenDaysAgoIso)
       : Promise.resolve({ count: 0 }),
-    // 14-day series — bounded pulls, bucketed in JS below. Limit 2000 rows covers
-    // EVCO volume comfortably; additional clients can graduate to an RPC if needed.
     sb.from('entradas')
       .select('fecha_llegada_mercancia')
-      .gte('fecha_llegada_mercancia', fourteenDaysAgo)
+      .gte('fecha_llegada_mercancia', fourteenDaysAgoIso)
       .limit(2000),
     sb.from('traficos')
       .select('updated_at')
       .eq('estatus', 'En Proceso')
-      .gte('updated_at', fourteenDaysAgo)
+      .gte('updated_at', fourteenDaysAgoIso)
       .limit(2000),
     sb.from('traficos')
       .select('fecha_llegada')
       .is('pedimento', null)
-      .gte('fecha_llegada', fourteenDaysAgo)
+      .gte('fecha_llegada', fourteenDaysAgoIso)
       .limit(2000),
     sb.from('traficos')
       .select('updated_at')
       .eq('estatus', 'En Proceso')
-      .gte('updated_at', fourteenDaysAgo)
-      .lte('updated_at', sevenDaysAgo)
+      .gte('updated_at', fourteenDaysAgoIso)
+      .lte('updated_at', sevenDaysAgoIso)
       .limit(2000),
+    sb.from('expediente_documentos')
+      .select('created_at')
+      .gte('created_at', fourteenDaysAgoIso)
+      .limit(2000),
+    sb.from('expediente_documentos')
+      .select('id', { count: 'exact', head: true }),
+    sb.from('globalpc_productos')
+      .select('fraccion_classified_at')
+      .not('fraccion_classified_at', 'is', null)
+      .gte('fraccion_classified_at', fourteenDaysAgoIso)
+      .limit(2000),
+    sb.from('globalpc_productos')
+      .select('id', { count: 'exact', head: true })
+      .not('fraccion_classified_at', 'is', null),
   ])
 
-  // Bucket timestamp rows into 14 daily counts (oldest → newest).
-  const bucketDailySeries = (
-    rows: Array<Record<string, unknown>> | null | undefined,
-    key: string,
-  ): number[] => {
-    const buckets = new Array(14).fill(0)
-    const dayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
-    for (const row of rows ?? []) {
-      const v = row?.[key]
-      if (typeof v !== 'string') continue
-      const t = new Date(v).getTime()
-      if (!Number.isFinite(t)) continue
-      const daysAgo = Math.floor((dayStart - t) / 86400000)
-      if (daysAgo < 0 || daysAgo > 13) continue
-      buckets[13 - daysAgo] += 1
-    }
-    return buckets
-  }
-  const sumRange = (arr: number[], from: number, to: number) =>
-    arr.slice(from, to).reduce((s, n) => s + n, 0)
-
-  const entradasSeries  = bucketDailySeries(entradasSeriesRes.data as Array<Record<string, unknown>> | null, 'fecha_llegada_mercancia')
-  const activosSeries   = bucketDailySeries(activosSeriesRes.data as Array<Record<string, unknown>> | null, 'updated_at')
-  const pendientesSeries = bucketDailySeries(pendientesSeriesRes.data as Array<Record<string, unknown>> | null, 'fecha_llegada')
-  const atrasadosSeries = bucketDailySeries(atrasadosSeriesRes.data as Array<Record<string, unknown>> | null, 'updated_at')
+  const entradasSeries     = bucketDailySeries(entradasSeriesRes.data as Array<Record<string, unknown>> | null, 'fecha_llegada_mercancia', 14, now)
+  const activosSeries      = bucketDailySeries(activosSeriesRes.data as Array<Record<string, unknown>> | null, 'updated_at', 14, now)
+  const pendientesSeries   = bucketDailySeries(pendientesSeriesRes.data as Array<Record<string, unknown>> | null, 'fecha_llegada', 14, now)
+  const atrasadosSeries    = bucketDailySeries(atrasadosSeriesRes.data as Array<Record<string, unknown>> | null, 'updated_at', 14, now)
+  const expedientesSeries  = bucketDailySeries(expedientesSeriesRes.data as Array<Record<string, unknown>> | null, 'created_at', 14, now)
+  const clasificacionesSeries = bucketDailySeries(clasificacionesSeriesRes.data as Array<Record<string, unknown>> | null, 'fraccion_classified_at', 14, now)
 
   const kpis = {
     entradasHoy: entradasHoyRes.count || 0,
@@ -180,6 +178,16 @@ export default async function OperadorInicioPage() {
     ? `${kpis.atrasados} tráfico${kpis.atrasados === 1 ? '' : 's'} atrasado${kpis.atrasados === 1 ? '' : 's'} >7 días`
     : 'Sin pendientes inmediatos.'
 
+  // Nav card data for the canonical 6 tiles.
+  const navCounts: import('@/lib/cockpit/nav-tiles').NavCounts = {
+    traficos:        { count: personalRes.count ?? 0,               series: activosSeries },
+    pedimentos:      { count: kpis.pendientes,                      series: pendientesSeries },
+    expedientes:     { count: expedientesPendingRes.count ?? 0,     series: expedientesSeries },
+    catalogo:        { count: null,                                  series: [] },
+    entradas:        { count: kpis.entradasHoy,                     series: entradasSeries },
+    clasificaciones: { count: clasificacionesTotalRes.count ?? 0,   series: clasificacionesSeries },
+  }
+
   return (
     <InicioClient
       operatorName={opName}
@@ -194,6 +202,7 @@ export default async function OperadorInicioPage() {
       summaryLine={summaryLine}
       personalCompletedThisWeek={personalCompletedThisWeekRes.count || 0}
       personalCompletedLastWeek={personalCompletedLastWeekRes.count || 0}
+      navCounts={navCounts}
     />
   )
 }

@@ -231,3 +231,72 @@ Same chrome everywhere. Surfaces differ in *content discipline*:
 Any new authenticated page MUST start from `<PageShell>` and compose
 content from the listed primitives. A new chrome variant is added by
 extending `<GlassCard>` props, NOT by creating a parallel component.
+
+---
+
+## AGUILA v7 — Unified Cockpit Composition (April 2026)
+
+v6 unified *chrome*. v7 unifies *layout and content architecture*.
+The three cockpits (`/inicio`, `/operador/inicio`, `/admin/eagle`)
+now compose from a single primitive — `<CockpitInicio>` — with
+role-specific data slots.
+
+### Layout contract (every cockpit, every role)
+
+```
+CockpitBanner (role-aware brand trio)
+──────────────────────────────────────
+Greeting h1 + summary line + LiveTimestamp
+──────────────────────────────────────
+HERO — 4 KPITile cards (role-shaped)
+──────────────────────────────────────
+NAV — 6 SmartNavCard tiles (UNIFIED_NAV_TILES, locked)
+      each with 20px sparkline
+──────────────────────────────────────
+2-COL MAIN
+┌─ estadoSections (role-specific) ───┬─ Actividad reciente (role-scoped)
+```
+
+Stacks single-column below 1024px.
+
+### Role-scoping table
+
+| Surface | Role gate | Nav counts | Activity feed source | Hero tone |
+|---|---|---|---|---|
+| `/inicio` | `role === 'client'` | `eq('company_id', session.companyId)` everywhere | `getClienteNotifications` (client-scoped) | silver only — no deltas, no severity |
+| `/operador/inicio` | `role ∈ {admin, broker, operator}` | ops-wide where relevant | `operational_decisions` last 10 | silver, deltas allowed, urgent pulse allowed |
+| `/admin/eagle` | `role ∈ {admin, broker}` | broker's patente scope | `workflow_events` last 20 **unfiltered** (owner sees everything) | silver, deltas allowed, severity allowed |
+
+### Six nav cards — icons locked
+
+| Key | Label | Route | Icon |
+|---|---|---|---|
+| traficos | Tráficos | /traficos | Truck |
+| pedimentos | Pedimentos | /pedimentos | FileText |
+| expedientes | Expedientes | /expedientes | FolderOpen |
+| catalogo | Catálogo | /catalogo | Book |
+| entradas | Entradas | /entradas | Package |
+| clasificaciones | Clasificaciones | /clasificar | Tags |
+
+Changing this list requires Tito + Renato IV sign-off
+(core-invariants rule 29).
+
+### Data fetch contract
+
+`src/lib/cockpit/fetch.ts` exports `bucketDailySeries`, `sumRange`,
+`startOfToday`, `daysAgo`. All three cockpit pages use these helpers
+so series shape is identical. Series queries cap at `.limit(2000)`
+rows — bucketing happens in JS. Replace with an RPC if a single
+client exceeds this cap.
+
+### Verification
+
+```bash
+# Every cockpit imports the composition and the nav constant:
+grep -rn "UNIFIED_NAV_TILES\|CockpitInicio" src/app/inicio src/app/operador/inicio src/app/admin/eagle
+# → expected 3+ matches per surface
+
+# Client surface never leaks internal-tier signals:
+grep -rn "DeltaIndicator\|SeverityRibbon\|tone=\"amber\"\|tone=\"red\"" src/app/inicio
+# → 0 matches
+```

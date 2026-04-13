@@ -31,9 +31,12 @@ function partOfDay(): string {
 function LiveTimestamp() {
   const [now, setNow] = useState<Date | null>(null)
   useEffect(() => {
-    setNow(new Date())
+    const initial = setTimeout(() => setNow(new Date()), 0)
     const id = setInterval(() => setNow(new Date()), 30_000)
-    return () => clearInterval(id)
+    return () => {
+      clearTimeout(initial)
+      clearInterval(id)
+    }
   }, [])
   if (!now) return null
   const dateStr = now.toLocaleDateString('es-MX', {

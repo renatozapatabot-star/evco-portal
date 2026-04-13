@@ -51,6 +51,10 @@ function healthBadge(score: number) {
   return { bg: 'rgba(220,38,38,0.15)', color: RED, border: 'rgba(220,38,38,0.3)' }
 }
 
+function ageMsSince(iso: string): number {
+  return Date.now() - new Date(iso).getTime()
+}
+
 function sourceBadge(source: string | null) {
   if (!source) return { bg: 'rgba(102,102,102,0.15)', color: TEXT_MUTED, label: '\u2014' }
   if (source === 'ai_auto_classifier') return { bg: 'rgba(192,197,206,0.15)', color: GOLD, label: 'AI' }
@@ -323,7 +327,7 @@ export function AdminCockpit(props: AdminCockpitProps) {
       <CollapsibleSection title="Traficos atascados (> 48h)" badge={props.stuckTraficos.length} hidden={props.stuckTraficos.length === 0}>
         <div style={{ padding: '8px 12px' }}>
           {props.stuckTraficos.map(t => {
-            const ageMs = Date.now() - new Date(t.created_at).getTime()
+            const ageMs = ageMsSince(t.created_at)
             const isOld = ageMs > 72 * 3600000
             const assignedName = t.assigned_to_operator_id ? (props.opNames[t.assigned_to_operator_id] || 'Asignado') : 'Sin asignar'
             return (

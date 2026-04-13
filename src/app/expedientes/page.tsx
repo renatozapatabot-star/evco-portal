@@ -6,7 +6,7 @@ import { Search, ChevronLeft, ChevronRight } from 'lucide-react'
 import { getCookieValue } from '@/lib/client-config'
 import { fmtId, fmtDesc, fmtDateShort, fmtPedimentoShort } from '@/lib/format-utils'
 import { useIsMobile } from '@/hooks/use-mobile'
-import { useSort } from '@/hooks/use-sort'
+import { useSort, type SortState } from '@/hooks/use-sort'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { ErrorCard } from '@/components/ui/ErrorCard'
 import { DocCompleteness } from '@/components/expedientes/DocCompleteness'
@@ -33,6 +33,11 @@ interface TraficoRow {
 }
 
 const PAGE_SIZE = 50
+
+function SortArrow({ col, sort }: { col: string; sort: SortState }) {
+  if (sort.column !== col) return null
+  return <span style={{ marginLeft: 4, fontSize: 10 }}>{sort.direction === 'asc' ? '↑' : '↓'}</span>
+}
 
 export default function ExpedientesPage() {
   const router = useRouter()
@@ -172,8 +177,6 @@ export default function ExpedientesPage() {
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE)
   const paged = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
 
-  const SortArrow = ({ col }: { col: string }) => sort.column === col ? <span style={{ marginLeft: 4, fontSize: 10 }}>{sort.direction === 'asc' ? '↑' : '↓'}</span> : null
-
   const withPedimento = useMemo(() => rows.filter(r => r.pedimento), [rows])
   const completeCount = useMemo(() => withPedimento.filter(r => r.pct === 100).length, [withPedimento])
 
@@ -242,11 +245,11 @@ export default function ExpedientesPage() {
               <thead>
                 <tr>
                   <th scope="col" style={{ width: 28 }}></th>
-                  <th scope="col" style={{ width: 160, cursor: 'pointer' }} onClick={() => toggleSort('trafico')}>Tráfico<SortArrow col="trafico" /></th>
+                  <th scope="col" style={{ width: 160, cursor: 'pointer' }} onClick={() => toggleSort('trafico')}>Tráfico<SortArrow col="trafico" sort={sort} /></th>
                   <th scope="col" style={{ width: 120 }}>Pedimento</th>
                   <th scope="col" style={{ width: 110 }}>Estado</th>
-                  <th scope="col" style={{ width: 100, cursor: 'pointer' }} onClick={() => toggleSort('fecha_llegada')}>Fecha<SortArrow col="fecha_llegada" /></th>
-                  <th scope="col" style={{ width: 120, cursor: 'pointer' }} onClick={() => toggleSort('pct')}>Documentos<SortArrow col="pct" /></th>
+                  <th scope="col" style={{ width: 100, cursor: 'pointer' }} onClick={() => toggleSort('fecha_llegada')}>Fecha<SortArrow col="fecha_llegada" sort={sort} /></th>
+                  <th scope="col" style={{ width: 120, cursor: 'pointer' }} onClick={() => toggleSort('pct')}>Documentos<SortArrow col="pct" sort={sort} /></th>
                   <th scope="col">Descripción</th>
                 </tr>
               </thead>

@@ -19,6 +19,10 @@ function pct(n: number): string {
   return `${Math.round(n * 100)}%`
 }
 
+function getWeekAgoISO(): string {
+  return new Date(Date.now() - 7 * 86_400_000).toISOString()
+}
+
 function GlassShell({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div
@@ -70,7 +74,7 @@ export default async function AdminShadowPage() {
   // Top disagreements this week — re-scan the same window with full detail.
   // Kept simple: pick rows without was_optimal resolution as a proxy for
   // "unresolved" until the `actor` column lands.
-  const sinceWeek = new Date(Date.now() - 7 * 86_400_000).toISOString()
+  const sinceWeek = getWeekAgoISO()
   const { data: weekRows } = await supabase
     .from('operational_decisions')
     .select('trafico, decision_type, decision, reasoning, created_at')

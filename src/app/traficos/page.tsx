@@ -5,7 +5,7 @@ import { Search, Download, ChevronLeft, ChevronRight, Truck } from 'lucide-react
 import { useRouter, useSearchParams } from 'next/navigation'
 import { getCookieValue } from '@/lib/client-config'
 import { fmtId, fmtDesc, fmtUSDCompact, fmtDate, fmtDateShort, fmtPedimentoShort } from '@/lib/format-utils'
-import { useSort } from '@/hooks/use-sort'
+import { useSort, type SortState } from '@/hooks/use-sort'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { ErrorBoundary } from '@/components/error-boundary'
 import { useSessionCache } from '@/hooks/use-session-cache'
@@ -86,6 +86,11 @@ function exportCSV(
   const b = new Blob([[...meta, h.join(','), ...c].join('\n')], { type: 'text/csv' })
   const fname = `${(companyId || 'export').toUpperCase()}_Traficos_${new Date().toISOString().split('T')[0]}.csv`
   const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = fname; a.click()
+}
+
+function SortArrow({ col, sort }: { col: string; sort: SortState }) {
+  if (sort.column !== col) return null
+  return <span style={{ marginLeft: 4, fontSize: 10 }}>{sort.direction === 'asc' ? '\u2191' : '\u2193'}</span>
 }
 
 export default function TraficosPage() {
@@ -338,9 +343,6 @@ function TraficosContent() {
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE)
   const paged = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
 
-  const SortArrow = ({ col }: { col: string }) =>
-    sort.column === col ? <span style={{ marginLeft: 4, fontSize: 10 }}>{sort.direction === 'asc' ? '\u2191' : '\u2193'}</span> : null
-
   return (
     <div className="page-shell">
       {/* Header — glass theme */}
@@ -448,14 +450,14 @@ function TraficosContent() {
             <table className="aguila-table" aria-label="Lista de tráficos" style={{ minWidth: 1300 }}>
               <thead>
                 <tr>
-                  <th scope="col" style={{ width: 150, cursor: 'pointer' }} onClick={() => toggleSort('trafico')}>Clave de Tráfico<SortArrow col="trafico" /></th>
+                  <th scope="col" style={{ width: 150, cursor: 'pointer' }} onClick={() => toggleSort('trafico')}>Clave de Tráfico<SortArrow col="trafico" sort={sort} /></th>
                   <th scope="col" style={{ width: 100 }}>Entrada</th>
                   <th scope="col" style={{ width: 160 }}>Proveedor</th>
                   <th scope="col" style={{ width: 120 }}>Invoice #</th>
                   <th scope="col" style={{ minWidth: 160 }}>Descripción</th>
-                  <th scope="col" style={{ width: 110, textAlign: 'right', cursor: 'pointer' }} onClick={() => toggleSort('importe_total')}>Valor USD<SortArrow col="importe_total" /></th>
+                  <th scope="col" style={{ width: 110, textAlign: 'right', cursor: 'pointer' }} onClick={() => toggleSort('importe_total')}>Valor USD<SortArrow col="importe_total" sort={sort} /></th>
                   <th scope="col" style={{ width: 120 }}>Pedimento</th>
-                  <th scope="col" style={{ width: 100, cursor: 'pointer' }} onClick={() => toggleSort('estatus')}>Status<SortArrow col="estatus" /></th>
+                  <th scope="col" style={{ width: 100, cursor: 'pointer' }} onClick={() => toggleSort('estatus')}>Status<SortArrow col="estatus" sort={sort} /></th>
                   <th scope="col" style={{ width: 100 }}>Fecha Cruce</th>
                   <th scope="col" style={{ width: 80 }}>Guía</th>
                 </tr>

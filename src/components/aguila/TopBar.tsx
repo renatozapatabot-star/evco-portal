@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Search, Menu, LogOut, ChevronLeft } from 'lucide-react';
 import NotificationBell from '@/components/NotificationBell';
+import { AguilaMark } from '@/components/brand/AguilaMark';
 
 interface TopBarProps {
   showNotifications?: boolean;
@@ -57,9 +58,9 @@ export default function TopBar({
           </Link>
         )}
 
-        {/* Logo */}
+        {/* Logo — eagle mark (wordmark is reserved for login + auth screens). */}
         <Link href="/" className="topbar-logo" aria-label="AGUILA inicio">
-          <span className="topbar-logo-text">AGUILA</span>
+          <AguilaMark size={28} tone="silver" />
         </Link>
 
         {/* Wide search bar (desktop) */}
@@ -119,7 +120,7 @@ export default function TopBar({
     );
   }
 
-  // ── OPERATOR PORTAL TOPBAR — unchanged ──
+  // ── OPERATOR PORTAL TOPBAR ──
   return (
     <header className="aduana-topbar">
       {onMenuToggle && (
@@ -127,6 +128,9 @@ export default function TopBar({
           <Menu size={20} />
         </button>
       )}
+      <Link href="/" className="topbar-logo" aria-label="AGUILA inicio">
+        <AguilaMark size={28} tone="silver" />
+      </Link>
       <div style={{ flex: 1 }} />
       <button
         className="topbar-search-btn"

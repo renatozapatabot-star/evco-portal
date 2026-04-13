@@ -55,6 +55,10 @@ function daysSince(dateStr: string | null): number {
   return Math.max(0, Math.floor((Date.now() - new Date(dateStr).getTime()) / 86400000))
 }
 
+function cutoffNinetyDaysAgo(): number {
+  return Date.now() - 90 * 86400000
+}
+
 function statusBadge(e: Entrada) {
   if (e.mercancia_danada) return { label: 'DAÑADO', bg: T.redBg, border: T.redBorder, color: T.red }
   if (e.tiene_faltantes) return { label: 'FALTANTES', bg: T.amberBg, border: T.amberBorder, color: T.amber }
@@ -132,7 +136,7 @@ export default function BodegaPage() {
   )
 
   const enBodega = useMemo(() => {
-    const cutoff = Date.now() - 90 * 86400000 // 90 days max — older entries are not in the warehouse
+    const cutoff = cutoffNinetyDaysAgo() // 90 days max — older entries are not in the warehouse
     return rows
       .filter(e => {
         if (!e.trafico || crossedSet.has(e.trafico)) return false

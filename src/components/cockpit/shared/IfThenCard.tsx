@@ -24,6 +24,12 @@ export interface IfThenCardProps {
   clearedBy?: string
   /** Show a "Marcar limpia" button when provided */
   onClear?: () => void
+  /**
+   * When true, the card renders with a premium glass rim: subtle outer cyan
+   * glow, inner highlight, and soft background gradient. Opt-in so existing
+   * callers don't shift visually without review.
+   */
+  rim?: boolean
 }
 
 const STATE_STYLES: Record<IfThenCardState | 'cleared', {
@@ -55,11 +61,17 @@ const STATE_STYLES: Record<IfThenCardState | 'cleared', {
   },
 }
 
+const RIM_SHADOW =
+  '0 0 0 1px rgba(255,255,255,0.04), 0 20px 60px rgba(0,0,0,0.6), 0 0 80px rgba(0,229,255,0.04), inset 0 1px 0 rgba(255,255,255,0.06)'
+const RIM_BACKGROUND =
+  'linear-gradient(135deg, rgba(255,255,255,0.02), rgba(255,255,255,0)), rgba(9,9,11,0.75)'
+
 export function IfThenCard({
   id, state, title, icon, quietContent,
   activeCondition, activeAction, urgentCondition, urgentAction,
   actionHref, onAction, footer,
   cleared, clearedAt, clearedBy, onClear,
+  rim = false,
 }: IfThenCardProps) {
   const effectiveState = cleared ? 'cleared' : state
   const s = STATE_STYLES[effectiveState]
@@ -138,13 +150,14 @@ export function IfThenCard({
       data-card-state={effectiveState}
       className={state === 'urgent' ? 'aduana-pulse-subtle' : undefined}
       style={{
-        background: 'rgba(9,9,11,0.75)',
+        background: rim ? RIM_BACKGROUND : 'rgba(9,9,11,0.75)',
         borderRadius: 14,
         border: s.border,
         borderTop: s.borderTop,
         padding: 16,
-        transition: 'border-color 200ms ease',
+        transition: 'border-color 200ms ease, box-shadow 200ms ease',
         position: 'relative',
+        ...(rim ? { boxShadow: RIM_SHADOW } : null),
       }}
     >
       {/* Header */}

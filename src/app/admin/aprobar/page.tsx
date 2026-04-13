@@ -9,6 +9,10 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
+function getYesterdayISO(): string {
+  return new Date(Date.now() - 86400000).toISOString()
+}
+
 interface DraftRow {
   id: string
   trafico_id: string | null
@@ -35,7 +39,7 @@ export default async function AprobarPage() {
     .limit(50)
 
   // Fetch recently approved/rejected (last 24h) for the activity feed
-  const yesterday = new Date(Date.now() - 86400000).toISOString()
+  const yesterday = getYesterdayISO()
   const { data: recentDrafts } = await supabase
     .from('pedimento_drafts')
     .select('*')

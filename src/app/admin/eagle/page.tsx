@@ -13,6 +13,7 @@ import { computeARAging, computeAPAging } from '@/lib/contabilidad/aging'
 import { CockpitBrandHeader } from '@/components/brand/CockpitBrandHeader'
 import { CockpitBackdrop } from '@/components/cockpit/shared/CockpitBackdrop'
 import { COCKPIT_CANVAS } from '@/lib/design-system'
+import { AdminCompanyBanner } from '@/components/cockpit/admin/AdminCompanyBanner'
 import { TraficosDelDiaTile } from '@/components/eagle/TraficosDelDiaTile'
 import { ArApTile } from '@/components/eagle/ArApTile'
 import { ClientesDormidosTile } from '@/components/eagle/ClientesDormidosTile'
@@ -31,6 +32,14 @@ export const revalidate = 0
 
 const MOTION_STATUSES = ['En Proceso', 'Documentacion', 'En Aduana', 'Pedimento Pagado', 'Cruzado']
 const DORMANT_DAYS = 14
+
+function getDormantCutoffISO(days: number): string {
+  return new Date(Date.now() - days * 86_400_000).toISOString()
+}
+
+function daysSinceISO(iso: string): number {
+  return Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000)
+}
 
 function greetingByHour(): string {
   const h = new Date().toLocaleString('en-US', { hour: 'numeric', hour12: false, timeZone: 'America/Chicago' })
@@ -73,7 +82,7 @@ export default async function EaglePage() {
     sb
       .from('traficos')
       .select('company_id, created_at')
-      .gte('created_at', new Date(Date.now() - DORMANT_DAYS * 86_400_000).toISOString())
+      .gte('created_at', getDormantCutoffISO(DORMANT_DAYS))
       .limit(5000),
     sb.from('companies').select('company_id, razon_social, is_active').eq('is_active', true).limit(500),
     sb
@@ -111,9 +120,7 @@ export default async function EaglePage() {
       .limit(1)
       .maybeSingle()
     const lastRow = last as { created_at: string | null; importe_total: number | null } | null
-    const dias = lastRow?.created_at
-      ? Math.floor((Date.now() - new Date(lastRow.created_at).getTime()) / 86_400_000)
-      : 999
+    const dias = lastRow?.created_at ? daysSinceISO(lastRow.created_at) : 999
     dormant.push({
       companyId: c.company_id,
       razonSocial: c.razon_social ?? c.company_id,
@@ -195,6 +202,13 @@ export default async function EaglePage() {
         greeting={greetingByHour()}
         tagline="Una pantalla · seis señales · cero clics para decidir."
         markSize={64}
+      />
+
+      <AdminCompanyBanner
+        activeTraficosTotal={data.traficosByStatus.reduce((sum, b) => sum + b.count, 0)}
+        activeClients={(companiesRes.data ?? []).length}
+        dormantClients={data.dormant.length}
+        arPendingMxn={data.ar.total}
       />
 
       <section

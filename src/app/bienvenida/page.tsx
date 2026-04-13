@@ -41,7 +41,9 @@ export default function BienvenidaPage() {
   useEffect(() => {
     const name = getClientNameCookie()
     const companyId = getCompanyIdCookie()
-    setCompanyName(name || companyId || 'cliente')
+    const t = setTimeout(() => setCompanyName(name || companyId || 'cliente'), 0)
+    // Cleanup is best-effort — if unmount beats the timer, skip the setState.
+    const cleanup = () => clearTimeout(t)
 
     // Fetch stats for the animated reveal
     Promise.all([
@@ -70,6 +72,7 @@ export default function BienvenidaPage() {
       })
       setLoaded(true)
     }).catch(() => setLoaded(true))
+    return cleanup
   }, [])
 
   function enterPortal() {

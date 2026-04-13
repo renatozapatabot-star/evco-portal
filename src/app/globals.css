@@ -1528,24 +1528,30 @@ button:active:not(:disabled), .btn:active:not(:disabled) {
 
 /* ═══ v2 Accessibility ═══ */
 
-/* Skip-to-content link */
+/* Skip-to-content link — dark cockpit pill (consolidated April 2026).
+   The duplicate declaration near globals.css:3313 remains as a dead block;
+   both cascade to identical rules, this one wins by specificity/order. */
 .skip-link {
-  position: absolute;
-  left: -9999px;
-  top: 0;
+  position: fixed;
+  left: 16px;
+  top: -40px;
   z-index: 9999;
-  padding: 12px 24px;
-  background: var(--gold-400);
-  color: var(--navy-900);
-  font-weight: 700;
-  font-size: 14px;
+  padding: 8px 14px;
+  background: rgba(9,9,11,0.95);
+  color: #E6EDF3;
+  border: 1px solid rgba(0,229,255,0.4);
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 600;
   text-decoration: none;
-  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  transition: top 200ms ease;
 }
 
 .skip-link:focus {
-  left: 50%;
-  transform: translateX(-50%);
+  top: 12px;
+  transform: none;
 }
 
 /* ═══ v2 Mobile Polish ═══ */
@@ -3309,23 +3315,8 @@ html {
   border-radius: 4px;
 }
 
-/* Skip to content link */
-.skip-link {
-  position: absolute;
-  top: -100%;
-  left: 16px;
-  z-index: 9999;
-  padding: 12px 24px;
-  background: var(--gold-400);
-  color: var(--navy-900);
-  font-weight: 700;
-  border-radius: 0 0 8px 8px;
-  text-decoration: none;
-  transition: top 200ms;
-}
-.skip-link:focus {
-  top: 0;
-}
+/* Skip-to-content link — canonical rule is at globals.css:1532.
+   This duplicate is intentionally empty to avoid cascade fights. */
 
 /* Prevent layout shift on images */
 img {

@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { Search, ChevronLeft, ChevronRight, Package } from 'lucide-react'
 import { getCompanyIdCookie, getCookieValue } from '@/lib/client-config'
 import { fmtDesc, fmtDate } from '@/lib/format-utils'
-import { useSort } from '@/hooks/use-sort'
+import { useSort, type SortState } from '@/hooks/use-sort'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { fmtCarrier } from '@/lib/carrier-names'
@@ -29,6 +29,11 @@ interface EntradaRow {
 }
 
 const PAGE_SIZE = 50
+
+function SortArrow({ col, sort }: { col: string; sort: SortState }) {
+  if (sort.column !== col) return null
+  return <span style={{ marginLeft: 4, fontSize: 10 }}>{sort.direction === 'asc' ? '\u2191' : '\u2193'}</span>
+}
 
 export default function EntradasPage() {
   const isMobile = useIsMobile()
@@ -131,9 +136,6 @@ export default function EntradasPage() {
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE)
   const paged = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
-
-  const SortArrow = ({ col }: { col: string }) =>
-    sort.column === col ? <span style={{ marginLeft: 4, fontSize: 10 }}>{sort.direction === 'asc' ? '\u2191' : '\u2193'}</span> : null
 
   const getTransporte = (r: EntradaRow): string => {
     if (r.trafico) {
@@ -278,14 +280,14 @@ export default function EntradasPage() {
             <table className="aguila-table" role="table" aria-label="Lista de entradas" style={{ minWidth: 1100 }}>
               <thead>
                 <tr>
-                  <th style={{ cursor: 'pointer', width: 110 }} onClick={() => toggleSort('fecha_llegada_mercancia')}>Fecha<SortArrow col="fecha_llegada_mercancia" /></th>
-                  <th style={{ cursor: 'pointer', width: 110 }} onClick={() => toggleSort('cve_entrada')}>Entrada<SortArrow col="cve_entrada" /></th>
+                  <th style={{ cursor: 'pointer', width: 110 }} onClick={() => toggleSort('fecha_llegada_mercancia')}>Fecha<SortArrow col="fecha_llegada_mercancia" sort={sort} /></th>
+                  <th style={{ cursor: 'pointer', width: 110 }} onClick={() => toggleSort('cve_entrada')}>Entrada<SortArrow col="cve_entrada" sort={sort} /></th>
                   <th style={{ width: 160 }}>Proveedor</th>
                   <th style={{ minWidth: 160 }}>Descripción</th>
                   <th style={{ width: 130 }}>Tráfico</th>
                   <th style={{ width: 120 }}>Transporte US</th>
-                  <th style={{ textAlign: 'right', cursor: 'pointer', width: 70 }} onClick={() => toggleSort('cantidad_bultos')}>Bultos<SortArrow col="cantidad_bultos" /></th>
-                  <th style={{ textAlign: 'right', cursor: 'pointer', width: 90 }} onClick={() => toggleSort('peso_bruto')}>Peso (kg)<SortArrow col="peso_bruto" /></th>
+                  <th style={{ textAlign: 'right', cursor: 'pointer', width: 70 }} onClick={() => toggleSort('cantidad_bultos')}>Bultos<SortArrow col="cantidad_bultos" sort={sort} /></th>
+                  <th style={{ textAlign: 'right', cursor: 'pointer', width: 90 }} onClick={() => toggleSort('peso_bruto')}>Peso (kg)<SortArrow col="peso_bruto" sort={sort} /></th>
                   <th style={{ width: 120 }}>Guía</th>
                 </tr>
               </thead>

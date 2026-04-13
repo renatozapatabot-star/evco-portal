@@ -33,7 +33,7 @@ export default async function TraficoDetailPage({
   searchParams: Promise<{ legacy?: string }>
 }) {
   const [{ id: rawId }, sp] = await Promise.all([params, searchParams])
-  const traficoId = decodeURIComponent(rawId)
+  const traficoId = decodeURIComponent(rawId).trim()
 
   if (sp?.legacy === '1') redirect(`/traficos/${encodeURIComponent(traficoId)}/legacy`)
 
@@ -44,12 +44,10 @@ export default async function TraficoDetailPage({
   const isInternal = session.role === 'broker' || session.role === 'admin'
   const supabase = createServerClient()
 
-  let traficoQ = supabase
-    .from('traficos')
-    .select(
-      'trafico, estatus, pedimento, fecha_llegada, importe_total, regimen, company_id, proveedores, descripcion_mercancia, patente, aduana, tipo_operacion, tipo_cambio, peso_bruto, fecha_cruce, semaforo, doda_status, u_level, peso_volumetrico, prevalidador, banco_operacion_numero, sat_transaccion_numero, assigned_to_operator_id, updated_at, created_at',
-    )
-    .eq('trafico', traficoId)
+  const TRAFICO_COLS =
+    'trafico, estatus, pedimento, fecha_llegada, importe_total, regimen, company_id, proveedores, descripcion_mercancia, patente, aduana, tipo_operacion, tipo_cambio, peso_bruto, fecha_cruce, semaforo, doda_status, u_level, peso_volumetrico, prevalidador, banco_operacion_numero, sat_transaccion_numero, assigned_to_operator_id, updated_at, created_at'
+
+  let traficoQ = supabase.from('traficos').select(TRAFICO_COLS).eq('trafico', traficoId)
   if (!isInternal) traficoQ = traficoQ.eq('company_id', session.companyId)
 
   const [traficoRes, eventsRes, docsRes, partidasRes, notesRes] = await Promise.all([
@@ -81,8 +79,42 @@ export default async function TraficoDetailPage({
       .limit(100),
   ])
 
-  const trafico = traficoRes.data as TraficoRow | null
-  if (!trafico) notFound()
+  let trafico = traficoRes.data as TraficoRow | null
+
+  // Silent 404 diagnostics: a miss can be (a) no such clave, (b) clave exists
+  // but belongs to a different company_id (stale session/cross-tenant), or
+  // (c) case/whitespace drift between the list and DB. Probe before surrendering.
+  if (!trafico) {
+    const { data: looseRows } = await supabase
+      .from('traficos')
+      .select('trafico, company_id')
+      .ilike('trafico', traficoId)
+      .limit(2)
+    const crossTenant = (looseRows ?? []).some(
+      (r) => !isInternal && r.company_id && r.company_id !== session.companyId,
+    )
+    console.info('[trafico-detail] miss', {
+      traficoId,
+      isInternal,
+      sessionCompanyId: session.companyId,
+      looseHits: looseRows?.length ?? 0,
+      crossTenant,
+    })
+    // Case/whitespace tolerance: if exactly one case-insensitive match and the
+    // caller is allowed to see it, re-query using that canonical value.
+    if (looseRows?.length === 1) {
+      const canonical = looseRows[0]?.trafico
+      const canonicalCompany = looseRows[0]?.company_id
+      const allowed = isInternal || canonicalCompany === session.companyId
+      if (canonical && allowed && canonical !== traficoId) {
+        let recoverQ = supabase.from('traficos').select(TRAFICO_COLS).eq('trafico', canonical)
+        if (!isInternal) recoverQ = recoverQ.eq('company_id', session.companyId)
+        const recovered = await recoverQ.maybeSingle()
+        trafico = (recovered.data as TraficoRow | null) ?? null
+      }
+    }
+    if (!trafico) notFound()
+  }
 
   const rawEvents =
     (eventsRes.data as Array<{

@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from 'react'
 import { Search, ChevronLeft, ChevronRight, Download } from 'lucide-react'
 import { getCompanyIdCookie, getCookieValue } from '@/lib/client-config'
 import { fmtUSDFull as fmtUSD, fmtDate, fmtPedimentoShort, fmtDesc, fmtId } from '@/lib/format-utils'
-import { useSort } from '@/hooks/use-sort'
+import { useSort, type SortState } from '@/hooks/use-sort'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { EmptyState } from '@/components/ui/EmptyState'
 import Link from 'next/link'
@@ -34,6 +34,11 @@ interface PedGroup {
 }
 
 const PAGE_SIZE = 50
+
+function SortArrow({ col, sort }: { col: string; sort: SortState }) {
+  if (sort.column !== col) return null
+  return <span style={{ marginLeft: 4, fontSize: 10 }}>{sort.direction === 'asc' ? '↑' : '↓'}</span>
+}
 
 export default function PedimentosPage() {
   const isMobile = useIsMobile()
@@ -180,9 +185,6 @@ export default function PedimentosPage() {
   const totalPages = Math.ceil(groups.length / PAGE_SIZE)
   const paged = groups.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
 
-  const SortArrow = ({ col }: { col: string }) =>
-    sort.column === col ? <span style={{ marginLeft: 4, fontSize: 10 }}>{sort.direction === 'asc' ? '↑' : '↓'}</span> : null
-
   const getDesc = (g: PedGroup) => {
     const partidaDesc = partidaDescMap.get(g.trafico)
     if (partidaDesc) return fmtDesc(partidaDesc)
@@ -266,12 +268,12 @@ export default function PedimentosPage() {
             <table className="aguila-table" role="table" aria-label="Lista de pedimentos" style={{ minWidth: 700 }}>
               <thead>
                 <tr>
-                  <th style={{ cursor: 'pointer', width: 160 }} onClick={() => toggleSort('pedimento')}>Pedimento<SortArrow col="pedimento" /></th>
-                  <th style={{ width: 140, cursor: 'pointer' }} onClick={() => toggleSort('trafico')}>Tráfico<SortArrow col="trafico" /></th>
-                  <th style={{ cursor: 'pointer', width: 110 }} onClick={() => toggleSort('fecha')}>Fecha<SortArrow col="fecha" /></th>
+                  <th style={{ cursor: 'pointer', width: 160 }} onClick={() => toggleSort('pedimento')}>Pedimento<SortArrow col="pedimento" sort={sort} /></th>
+                  <th style={{ width: 140, cursor: 'pointer' }} onClick={() => toggleSort('trafico')}>Tráfico<SortArrow col="trafico" sort={sort} /></th>
+                  <th style={{ cursor: 'pointer', width: 110 }} onClick={() => toggleSort('fecha')}>Fecha<SortArrow col="fecha" sort={sort} /></th>
                   <th>Mercancía</th>
-                  <th style={{ width: 100, cursor: 'pointer' }} onClick={() => toggleSort('regimen')}>Régimen<SortArrow col="regimen" /></th>
-                  <th style={{ textAlign: 'right', cursor: 'pointer', width: 130 }} onClick={() => toggleSort('importe')}>Valor USD<SortArrow col="importe" /></th>
+                  <th style={{ width: 100, cursor: 'pointer' }} onClick={() => toggleSort('regimen')}>Régimen<SortArrow col="regimen" sort={sort} /></th>
+                  <th style={{ textAlign: 'right', cursor: 'pointer', width: 130 }} onClick={() => toggleSort('importe')}>Valor USD<SortArrow col="importe" sort={sort} /></th>
                   <th style={{ width: 50, textAlign: 'center' }}>PDF</th>
                 </tr>
               </thead>

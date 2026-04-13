@@ -39,11 +39,18 @@ Run white-label dry-run (find every hardcoded "9254") BEFORE promising anything.
 
 ```
 Branch:         feature/v6-phase0-phase1
-Last commit:    7b4d387 (not pushed as of 2026-04-13)
+Last commit:    7b4d387
 Rating:         9.8/10 — code-side ceiling without real users
 Tests:          343/343 green
-Deploy:         Pending — Throne queue not yet executed
+Deploy:         IN PROGRESS — vercel --prod running as of 2026-04-13
+Supabase:       db push deferred — design runs in progress
+Storage:        7 buckets created via SQL (classification-sheets, pedimento-exports,
+                anexo-24-exports, warehouse-photos, regulatory-docs,
+                quickbooks-exports, mensajeria-attachments)
+Vercel env:     All 5 confirmed (ANTHROPIC_API_KEY, TELEGRAM_BOT_TOKEN,
+                TELEGRAM_CHAT_ID, TITO_EMAIL, RESEND_API_KEY)
 Marathon:       UX marathon is next (after deploy + Tito walkthrough)
+Tito ETA:       2-3 hours from 2026-04-13 session start
 Known debt:     3 legacy dark-theme PDFs in app/api/ (auditoria-pdf, reportes-pdf, anexo24-pdf)
 ```
 
@@ -65,7 +72,7 @@ Every feature belongs to exactly one surface. When in doubt, ask before building
 
 **Client portal rule (Shipper surface):** No MVE countdowns, compliance alerts, missing-document
 warnings, or internal operational urgency visible to the client. The client portal shows certainty, not anxiety.
-Operational urgency belongs in internal reports and Telegram only.
+Operational urgency belongs in internal reports only — not in any client-facing surface.
 
 ---
 
@@ -232,10 +239,18 @@ Any advice to add blue/gold/navy accents is wrong. Reject it.
 
 **Accent:**
 ```
---gold-500:   #C9A84C   (buttons, accents — NEVER text on light bg)
+--gold-500:   #C9A84C   (accents, active nav, branding — NEVER text on light bg)
 --gold-700:   #8B6914   (gold text on light — WCAG AA 5.2:1 ✅)
 --gold-hover: #B8933B
 --z-red:      #CC1B2F   (Z mark ONLY — nothing else uses this)
+```
+
+**Login screen button — intentional gray:**
+```
+Login ENTRAR button: gray (NOT gold) — deliberate.
+The login screen is monochromatic silver-on-black throughout.
+Gold is reserved for authenticated surfaces — it signals you're inside.
+Gray on login = neutral entry point. Do not change to gold.
 ```
 
 **Status colors:**
@@ -505,17 +520,70 @@ ALL must pass before any task is done:
 
 ---
 
-## MARATHON SEQUENCE (current plan)
+## MENSAJERÍA — INTERNAL COMMS LAYER
+
+Replaces Telegram and WhatsApp for all client-operator-owner communications.
+Full spec: see MENSAJERIA_SPEC.md
+
+**Core rules:**
+- Client → Operator first. Always. Client never initiates to Owner directly.
+- Operator escalates to Owner manually. On escalation: Sonnet generates ≤3-sentence summary for Tito.
+- Client always sees sender as "Renato Zapata & Company" — never internal user names.
+- No SLA promise shown to client. Internal SLA clock only.
+- Attachments: PDF, JPG, PNG, XLSX, DOCX, XML. 25MB max. Scan gate before download.
+- internal_only boolean on messages — operator↔operator notes never visible to client (RLS enforced).
+- 30s undo-send window on every message.
+- Retention lock: 5 years minimum. Append-only. FOR DELETE USING (false).
+
+**Telegram boundary — permanent:**
+Telegram stays for: pipeline health alerts, nightly sync reports, system failures.
+Telegram is NEVER used for client-facing communications. That boundary does not move.
+
+**Feature flags:**
+```
+NEXT_PUBLIC_MENSAJERIA_ENABLED      — global kill switch
+NEXT_PUBLIC_MENSAJERIA_CLIENT=false — client access off until Week 3 pilot
+mensajeria_enabled column on clients table — per-tenant control
+```
+
+**Rollout:**
+- Week 1–2: Operators + Owner only (internal_only mode)
+- Week 3–4: EVCO pilot (Ursula). Tito reviews first 20 threads.
+- Week 5+: Tier 1 clients after Tito's "está bien"
+
+**Storage bucket:** `mensajeria-attachments` — created ✅
+
+---
+
+## LOGIN SCREEN — DESIGN DECISIONS (LOCKED)
+
+Current rating: 9.2/10. Intentional decisions — do not "fix" these.
+
+- **Background:** `#0a0a0c` — near-black, not pure black
+- **Eagle mark:** silver-on-dark, glow behind it is earned (only gradient on this screen)
+- **ENTRAR button:** gray — intentional. Gray = neutral entry. Gold only appears once authenticated.
+  Do not change to gold. This is locked.
+- **Card container:** visible rounded rect border — current shipped state
+- **"CÓDIGO DE ACCESO" label:** present above input — current shipped state
+- **Footer:** `Patente 3596 · Aduana 240 · Laredo TX · Est. 1941` — do not touch
+
+---
 
 ```
 DONE:       V1 marathon (35 features) + V1.5 marathon (20 features) + hardening pass
 DONE:       9.8/10 rating · 343/343 tests green
-NOW:        Phase 0 deploy queue (Throne) → Tito walkthrough → "está bien"
+DONE:       7 Supabase storage buckets created
+DONE:       All Vercel env vars confirmed
+NOW:        vercel --prod deploying → Chrome audit → Tito walkthrough → "está bien"
 NEXT:       Marathon UX — navigation unification, interaction primitives,
             performance, empty states, mobile parity, first-30-seconds per role
+            Open tasks: skip-link restyle, eagle mark in TopBar, IfThenCard rim + footer,
+            AutoScrollActivityCard, admin redirect, consistency sweep, Chrome audit
 THEN:       3-credential recon (Arturo AduanaNet + Anabel eConta + Tito GlobalPC admin)
-THEN:       Marathon 1 — post-recon gap closure (M3 format, Anexo 24, amendment flow)
+THEN:       Marathon 1 — post-recon gap closure + Mensajería implementation
+            (operators use internally 2 weeks before EVCO gets access)
 THEN:       Marathon 2 — real production feedback absorption (7-10 days parallel ops)
+            Mensajería pilot: EVCO (Ursula) only, Tito reviews first 20 threads personally
 THEN:       Marathon 3 — admin completion + historical migration → GlobalPC uninstalled
 TARGET:     GlobalPC uninstalled: early-to-mid May 2026
 ```
@@ -534,10 +602,14 @@ TARGET:     GlobalPC uninstalled: early-to-mid May 2026
 **Top learned rules (inline — always active):**
 - Brand is AGUILA everywhere in UI. No exceptions.
 - Monochromatic silver-on-black. No decorative color. Reject any advice to add blue/gold/navy accents.
-- Features integrate into existing surfaces — they do not add new nav items.
+- Features integrate into existing surfaces — they do not add new nav items without Tito + Renato IV sign-off.
 - Client portal shows certainty only. Never compliance anxiety.
 - The 28,076-row mis-assignment incident: client isolation is enforced at architecture level, not just RLS.
 - `pm2 save` after every process change. Every time. Non-negotiable.
+- ENTRAR button on login is gray — intentional. Do not change to gold.
+- Telegram is for pipeline/infrastructure only. Never client-facing. Mensajería is the client comms layer.
+- "Renato Zapata & Company" is always the sender name to clients. Never expose internal user names.
+- Mensajería client access behind feature flag until Week 3 pilot — operators use it first.
 
 ---
 
@@ -571,6 +643,11 @@ TARGET:     GlobalPC uninstalled: early-to-mid May 2026
 - Modify `.claude/memory/learned-rules.md` without running `/evolve`
 - Promise MAFESA a portal before running the white-label dry-run
 - Show compliance countdowns, MVE alerts, or missing-doc warnings on the client-facing surface
+- Use Telegram for any client-facing communication — Mensajería is the client comms layer
+- Call `sendTelegram` from any file in `src/app/api/mensajeria/` or `src/lib/mensajeria/`
+- Expose internal user names to clients — always use "Renato Zapata & Company" as sender
+- Enable Mensajería client access before 2-week internal operator usage period
+- Delete any message or thread — retention lock is permanent, status flip only
 
 ---
 

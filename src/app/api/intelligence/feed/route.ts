@@ -15,6 +15,7 @@ import { cookies } from 'next/headers'
 import { createClient } from '@supabase/supabase-js'
 import { verifySession, type PortalRole } from '@/lib/session'
 import { getLatestBridgeWaits, refreshIfStale } from '@/lib/bridges/fetch'
+import { getExchangeRate } from '@/lib/rates'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -37,9 +38,25 @@ const mxn = (n: number) => `$${nf.format(Math.round(n))} MXN`
 
 // --- Placeholder fetchers (hardcoded; replace in F18) ----------------------
 
-function usdMxnItem(): Item {
-  // TODO(F18): wire Banxico fix_usd_mxn
-  return { id: 'fx', label: 'USD/MXN', value: '17.34', trend: 'up' }
+// Module-scoped cache so the ticker doesn't thrash system_config once per role
+// per refetch. Refreshes at most every 5 minutes — rate sources themselves
+// only update once daily, so finer granularity is waste.
+let fxCache: { rate: number; fetchedAt: number } | null = null
+
+async function usdMxnItem(): Promise<Item | null> {
+  try {
+    if (!fxCache || Date.now() - fxCache.fetchedAt > 5 * 60_000) {
+      const { rate } = await getExchangeRate()
+      fxCache = { rate, fetchedAt: Date.now() }
+    }
+    return {
+      id: 'fx',
+      label: 'USD/MXN',
+      value: fxCache.rate.toFixed(4),
+    }
+  } catch {
+    return null
+  }
 }
 
 async function solidarityWaitItem(): Promise<Item> {
@@ -273,13 +290,20 @@ async function yardOccupancyItem(): Promise<Item | null> {
 
 async function itemsForRole(role: PortalRole, companyId: string): Promise<Item[]> {
   if (role === 'admin' || role === 'broker') {
-    const [mom, dormant, mve, bridgeTop] = await Promise.all([
+    const [fx, mom, dormant, mve, bridgeTop] = await Promise.all([
+      usdMxnItem(),
       topClientMoMDelta(),
       dormantClientsItems(),
       mveCriticalCount(),
       solidarityWaitItem(),
     ])
-    return [usdMxnItem(), ...(mom ? [mom] : []), ...dormant, ...(mve ? [mve] : []), bridgeTop]
+    return [
+      ...(fx ? [fx] : []),
+      ...(mom ? [mom] : []),
+      ...dormant,
+      ...(mve ? [mve] : []),
+      bridgeTop,
+    ]
   }
   if (role === 'operator') {
     const [bridges, docs, mve] = await Promise.all([
@@ -290,19 +314,27 @@ async function itemsForRole(role: PortalRole, companyId: string): Promise<Item[]
     return [...bridges, ...(docs ? [docs] : []), ...(mve ? [mve] : [])]
   }
   if (role === 'contabilidad') {
-    const ar = await overdueARTotal()
-    return [usdMxnItem(), ...(ar ? [ar] : [])]
+    const [fx, ar] = await Promise.all([usdMxnItem(), overdueARTotal()])
+    return [...(fx ? [fx] : []), ...(ar ? [ar] : [])]
   }
   if (role === 'warehouse') {
     const [entradas, yard] = await Promise.all([entradasLast24hCount(), yardOccupancyItem()])
     return [...(entradas ? [entradas] : []), ...(yard ? [yard] : [])]
   }
-  // client
-  const [active, last] = await Promise.all([
+  // client — Holistic Integration Principle: no MVE, no compliance anxiety.
+  // Active shipments · last crossing · bridge wait · USD/MXN.
+  const [active, last, bridge, fx] = await Promise.all([
     clientActiveTraficos(companyId),
     clientLastCrossing(companyId),
+    solidarityWaitItem(),
+    usdMxnItem(),
   ])
-  return [...(active ? [active] : []), ...(last ? [last] : []), usdMxnItem()]
+  return [
+    ...(active ? [active] : []),
+    ...(last ? [last] : []),
+    bridge,
+    ...(fx ? [fx] : []),
+  ]
 }
 
 async function trackFetched(companyId: string, role: PortalRole, count: number) {

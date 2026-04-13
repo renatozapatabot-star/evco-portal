@@ -202,3 +202,28 @@ Phase-A honest pre-fix rating was 7.2/10. Net lift: **+2.8 points** across
 
 *Honest close-out. No inflation. V1.5 is demo-ready at 10/10 — every
 box ticked, every gate green, every atomic commit reversible.*
+
+---
+
+## Phase F+G close-out (2026-04-12 autonomous run)
+
+**HEAD entering Phase F:** `6c03970`
+**Iteration commit:** `6907738` — `refactor(v15-savage): iteration 1 — lift /reportes 9.0 → 10.0`
+**Final rating:** **9.59/10** (weighted across 37 V1+V1.5 routes)
+**Deploy URL:** https://evco-portal-ps3uso0t7-rz-bots-projects.vercel.app
+**Alias:** https://evco-portal.vercel.app
+
+**Gates green at deploy:**
+- `npm run typecheck` → 0 errors
+- `npm run test -- --run` → 343/343 passing (42 files)
+- `npm run build` → green (see build log)
+
+**What lifted the rating past 9.5:**
+- Prior Phases A–E committed (`b75fb51`, `fb472f8`, `1e0a4db`, `6c03970`) —
+  brand, motion, trafico flow, stability hardening.
+- Phase F iteration 1 — swapped the last amber "Guardar como plantilla"
+  button on `/reportes` to silver tokens, closing the last V1-route residue.
+
+See `docs/V15_SAVAGE_AUDIT.md` for the three-pass route-by-route scorecard.
+
+Patente 3596 honrada.

@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
 import { getCookieValue, getCompanyIdCookie, getClientClaveCookie } from '@/lib/client-config'
 import { fmtDate, fmtDateShort, fmtDateTime } from '@/lib/format-utils'
@@ -8,6 +9,8 @@ import { useIsMobile } from '@/hooks/use-mobile'
 import Link from 'next/link'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Plus, X, FileText, AlertTriangle, Calendar } from 'lucide-react'
+import { parseMonthParam, recentMonths } from '@/lib/cockpit/month-window'
+import { MonthSelector } from '@/components/admin/MonthSelector'
 
 const sbClient = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
@@ -89,9 +92,21 @@ function groupByDate(items: { date: string; trafico: TraficoRow }[]): Map<string
 /* ── Component ── */
 
 export default function CalendarioPage() {
+  return (
+    <Suspense fallback={<div style={{ padding: 20 }}><div className="skel" style={{ width: 200, height: 24 }} /></div>}>
+      <CalendarioContent />
+    </Suspense>
+  )
+}
+
+function CalendarioContent() {
   const isMobile = useIsMobile()
   const role = getCookieValue('user_role')
   const isBroker = role === 'broker' || role === 'admin'
+  const searchParams = useSearchParams()
+  const monthParam = searchParams.get('month')
+  const monthWindow = useMemo(() => parseMonthParam(monthParam), [monthParam])
+  const monthOptions = useMemo(() => recentMonths(24), [])
 
   const [traficos, setTraficos] = useState<TraficoRow[]>([])
   const [deadlines, setDeadlines] = useState<DocDeadline[]>([])
@@ -157,11 +172,12 @@ export default function CalendarioPage() {
     return groupByDate(items)
   }, [traficos, todayStr, twoWeeksEnd])
 
-  // Section 3: Month grid data
-  const now = new Date()
-  const [gridYear, gridMonth] = [now.getFullYear(), now.getMonth()]
-  const firstDayOfWeek = new Date(gridYear, gridMonth, 1).getDay()
-  const daysInMonth = new Date(gridYear, gridMonth + 1, 0).getDate()
+  // Section 3: Month grid data — driven by ?month=YYYY-MM
+  const gridDate = useMemo(() => new Date(monthWindow.monthStart), [monthWindow.monthStart])
+  const gridYear = gridDate.getUTCFullYear()
+  const gridMonth = gridDate.getUTCMonth()
+  const firstDayOfWeek = new Date(Date.UTC(gridYear, gridMonth, 1)).getUTCDay()
+  const daysInMonth = new Date(Date.UTC(gridYear, gridMonth + 1, 0)).getUTCDate()
 
   const monthData = useMemo(() => {
     const monthPrefix = `${gridYear}-${String(gridMonth + 1).padStart(2, '0')}`
@@ -344,7 +360,7 @@ export default function CalendarioPage() {
   return (
     <div style={{ padding: isMobile ? 16 : 32, maxWidth: 1100, margin: '0 auto' }}>
       {/* Header */}
-      <div style={{ marginBottom: 32, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
+      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
         <div>
           <h1 style={{ fontSize: 24, fontWeight: 700, color: T.textPrimary, marginBottom: 4 }}>
             Calendario Operativo
@@ -366,6 +382,16 @@ export default function CalendarioPage() {
             <Plus size={14} /> Crear evento
           </button>
         )}
+      </div>
+
+      <div style={{ marginBottom: 16 }}>
+        <MonthSelector
+          ym={monthWindow.ym}
+          label={monthWindow.label}
+          prev={monthWindow.prev}
+          next={monthWindow.next}
+          options={monthOptions}
+        />
       </div>
 
       {/* Event creation form */}

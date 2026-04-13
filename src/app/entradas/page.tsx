@@ -1,7 +1,8 @@
 'use client'
 
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, Suspense } from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { Search, ChevronLeft, ChevronRight, Package } from 'lucide-react'
 import { getCompanyIdCookie, getCookieValue } from '@/lib/client-config'
 import { fmtDesc, fmtDate } from '@/lib/format-utils'
@@ -11,6 +12,8 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { fmtCarrier } from '@/lib/carrier-names'
 import { ErrorCard } from '@/components/ui/ErrorCard'
 import { useSessionCache } from '@/hooks/use-session-cache'
+import { parseMonthParam, recentMonths } from '@/lib/cockpit/month-window'
+import { MonthSelector } from '@/components/admin/MonthSelector'
 
 interface EntradaRow {
   id: number
@@ -36,7 +39,19 @@ function SortArrow({ col, sort }: { col: string; sort: SortState }) {
 }
 
 export default function EntradasPage() {
+  return (
+    <Suspense fallback={<div className="page-shell" style={{ padding: 20 }}><div className="skel" style={{ width: 200, height: 24 }} /></div>}>
+      <EntradasContent />
+    </Suspense>
+  )
+}
+
+function EntradasContent() {
   const isMobile = useIsMobile()
+  const searchParams = useSearchParams()
+  const monthParam = searchParams.get('month')
+  const monthWindow = useMemo(() => parseMonthParam(monthParam), [monthParam])
+  const monthOptions = useMemo(() => recentMonths(24), [])
   const [rows, setRows] = useState<EntradaRow[]>([])
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState<string | null>(null)
@@ -55,12 +70,14 @@ export default function EntradasPage() {
     if (!isInternal && !companyId) { setLoading(false); return }
     setLoading(true)
     setFetchError(null)
-    const cached = getCached<EntradaRow[]>('entradas')
+    const cacheKey = `entradas:${monthWindow.ym}`
+    const cached = getCached<EntradaRow[]>(cacheKey)
     if (cached) setRows(cached)
     const params = new URLSearchParams({
       table: 'entradas', limit: '5000',
       order_by: 'fecha_llegada_mercancia', order_dir: 'desc',
-      gte_field: 'fecha_llegada_mercancia', gte_value: '2024-01-01',
+      gte_field: 'fecha_llegada_mercancia', gte_value: monthWindow.monthStart,
+      lte_field: 'fecha_llegada_mercancia', lte_value: monthWindow.monthEnd,
     })
     if (!isInternal && companyId) params.set('company_id', companyId)
     fetch(`/api/data?${params}`)
@@ -68,7 +85,7 @@ export default function EntradasPage() {
         if (!r.ok) throw new Error(r.status === 401 ? 'session_expired' : 'fetch_error')
         return r.json()
       })
-      .then(data => { const arr = data.data ?? data ?? []; setRows(arr); setCache('entradas', arr) })
+      .then(data => { const arr = data.data ?? data ?? []; setRows(arr); setCache(cacheKey, arr) })
       .catch(err => {
         if (err.message === 'session_expired') { window.location.href = '/login'; return }
         setFetchError('Error cargando entradas. Reintentar.')
@@ -111,7 +128,7 @@ export default function EntradasPage() {
         })
         setSupplierMap(map)
       }).catch(() => {})
-  }, [])
+  }, [monthWindow.monthStart, monthWindow.monthEnd])
 
   const filtered = useMemo(() => {
     let out = rows
@@ -175,6 +192,16 @@ export default function EntradasPage() {
         }}>
           Entradas
         </h1>
+      </div>
+
+      <div style={{ marginBottom: 16 }}>
+        <MonthSelector
+          ym={monthWindow.ym}
+          label={monthWindow.label}
+          prev={monthWindow.prev}
+          next={monthWindow.next}
+          options={monthOptions}
+        />
       </div>
 
       <div className="table-shell">

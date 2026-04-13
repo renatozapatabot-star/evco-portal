@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useState, useMemo } from 'react'
-import { useRouter } from 'next/navigation'
+import { useEffect, useState, useMemo, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Search, ChevronLeft, ChevronRight } from 'lucide-react'
 import { getCookieValue } from '@/lib/client-config'
 import { fmtId, fmtDesc, fmtDateShort, fmtPedimentoShort } from '@/lib/format-utils'
@@ -11,6 +11,8 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { ErrorCard } from '@/components/ui/ErrorCard'
 import { DocCompleteness } from '@/components/expedientes/DocCompleteness'
 import type { DocFile } from '@/components/expedientes/DocChecklist'
+import { parseMonthParam, recentMonths } from '@/lib/cockpit/month-window'
+import { MonthSelector } from '@/components/admin/MonthSelector'
 
 const REQUIRED_DOCS = [
   'factura_comercial', 'packing_list', 'pedimento_detallado',
@@ -40,8 +42,20 @@ function SortArrow({ col, sort }: { col: string; sort: SortState }) {
 }
 
 export default function ExpedientesPage() {
+  return (
+    <Suspense fallback={<div className="page-shell" style={{ padding: 20 }}><div className="skel" style={{ width: 200, height: 24 }} /></div>}>
+      <ExpedientesContent />
+    </Suspense>
+  )
+}
+
+function ExpedientesContent() {
   const router = useRouter()
   const isMobile = useIsMobile()
+  const searchParams = useSearchParams()
+  const monthParam = searchParams.get('month')
+  const monthWindow = useMemo(() => parseMonthParam(monthParam), [monthParam])
+  const monthOptions = useMemo(() => recentMonths(24), [])
   const [rows, setRows] = useState<TraficoRow[]>([])
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState<string | null>(null)
@@ -71,8 +85,9 @@ export default function ExpedientesPage() {
       return r.json()
     })
 
+    const monthQ = `&gte_field=fecha_llegada&gte_value=${encodeURIComponent(monthWindow.monthStart)}&lte_field=fecha_llegada&lte_value=${encodeURIComponent(monthWindow.monthEnd)}`
     Promise.all([
-      safeFetch(`/api/data?table=traficos&limit=5000&order_by=fecha_llegada&order_dir=desc${cf}`),
+      safeFetch(`/api/data?table=traficos&limit=5000&order_by=fecha_llegada&order_dir=desc${cf}${monthQ}`),
       safeFetch(`/api/data?table=expediente_documentos&limit=5000${cf}`),
       safeFetch(`/api/data?table=entradas&limit=5000${cf}`),
       safeFetch('/api/data?table=globalpc_partidas&limit=10000').catch(() => ({ data: [] })),
@@ -143,7 +158,7 @@ export default function ExpedientesPage() {
       if (err.message === 'session_expired') { window.location.href = '/login'; return }
       setFetchError('Error cargando expedientes. Reintentar →')
     }).finally(() => setLoading(false))
-  }, [cookiesReady, userRole])
+  }, [cookiesReady, userRole, monthWindow.monthStart, monthWindow.monthEnd])
 
   // Debounced search
   useEffect(() => {
@@ -187,6 +202,16 @@ export default function ExpedientesPage() {
         <p className="page-subtitle">
           {completeCount} de {withPedimento.length} expedientes completos
         </p>
+      </div>
+
+      <div style={{ marginBottom: 16 }}>
+        <MonthSelector
+          ym={monthWindow.ym}
+          label={monthWindow.label}
+          prev={monthWindow.prev}
+          next={monthWindow.next}
+          options={monthOptions}
+        />
       </div>
 
       {fetchError && <div style={{ marginBottom: 16 }}><ErrorCard message={fetchError} onRetry={() => window.location.reload()} /></div>}

@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, useMemo, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { CheckCircle } from 'lucide-react'
 import { GOLD } from '@/lib/design-system'
 import { useIsMobile } from '@/hooks/use-mobile'
@@ -9,6 +9,8 @@ import { formatAbsoluteETA, fmtUSD } from '@/lib/format-utils'
 import { getCompanyIdCookie } from '@/lib/client-config'
 import { createClient } from '@supabase/supabase-js'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { parseMonthParam, recentMonths } from '@/lib/cockpit/month-window'
+import { MonthSelector } from '@/components/admin/MonthSelector'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -31,8 +33,20 @@ function resolveStatus(draft: { status: string; updated_at: string }): string {
 }
 
 export default function DraftsPage() {
+  return (
+    <Suspense fallback={<div style={{ padding: 24 }}><div className="skel" style={{ width: 200, height: 24 }} /></div>}>
+      <DraftsContent />
+    </Suspense>
+  )
+}
+
+function DraftsContent() {
   const router = useRouter()
   const isMobile = useIsMobile()
+  const searchParams = useSearchParams()
+  const monthParam = searchParams.get('month')
+  const monthWindow = useMemo(() => parseMonthParam(monthParam), [monthParam])
+  const monthOptions = useMemo(() => recentMonths(24), [])
   const [filter, setFilter] = useState<'all' | 'pending' | 'approved'>('pending')
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase returns dynamic draft_data shapes
   const [drafts, setDrafts] = useState<any[]>([])
@@ -54,6 +68,8 @@ export default function DraftsPage() {
     let q = supabase.from('pedimento_drafts')
       .select('*')
       .eq('company_id', companyId)
+      .gte('created_at', monthWindow.monthStart)
+      .lt('created_at', monthWindow.monthEnd)
       .order('created_at', { ascending: false })
       .limit(50)
 
@@ -82,13 +98,13 @@ export default function DraftsPage() {
   useEffect(() => {
     setLoading(true)
     loadDrafts()
-  }, [filter])
+  }, [filter, monthWindow.monthStart, monthWindow.monthEnd])
 
   // Poll every 3 seconds for real-time status changes
   useEffect(() => {
     const interval = setInterval(loadDrafts, 3000)
     return () => clearInterval(interval)
-  }, [filter])
+  }, [filter, monthWindow.monthStart, monthWindow.monthEnd])
 
   return (
     <div style={{ padding: 24, maxWidth: 900, margin: '0 auto' }}>
@@ -97,6 +113,16 @@ export default function DraftsPage() {
           <h1 style={{ fontSize: 28, fontWeight: 900, color: 'var(--navy-900)', letterSpacing: '-0.02em', margin: 0 }}>Ghost Pedimentos</h1>
           <p style={{ fontSize: 13, color: 'var(--slate-400)', marginTop: 4 }}>{drafts.length} borrador{drafts.length !== 1 ? 'es' : ''} {filter === 'pending' ? 'pendientes' : filter === 'approved' ? 'aprobados' : 'totales'}</p>
         </div>
+      </div>
+
+      <div style={{ marginBottom: 16 }}>
+        <MonthSelector
+          ym={monthWindow.ym}
+          label={monthWindow.label}
+          prev={monthWindow.prev}
+          next={monthWindow.next}
+          options={monthOptions}
+        />
       </div>
 
       <div style={{ display: 'flex', gap: 4, marginBottom: 20, background: 'var(--slate-50)', borderRadius: 8, padding: 3, width: 'fit-content' }}>

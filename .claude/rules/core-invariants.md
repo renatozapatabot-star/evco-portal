@@ -206,3 +206,27 @@ caused a real regression, a compliance risk, or a silent failure in production.
     `src/app/operador/_components/` were deleted in v8 — any attempt to
     reintroduce them is a regression.
     verify: `grep -n "redirect" src/app/operador/page.tsx` → must show redirect to /operador/inicio
+
+34. **Cockpit SSR queries are soft-wrapped.** Every Supabase call on
+    `/inicio`, `/operador/inicio`, `/admin/eagle` goes through
+    `softCount`, `softData`, or `softFirst` (from `src/lib/cockpit/safe-query.ts`).
+    One bad column, a missing table, or a timeout never crashes the page —
+    it returns the safe default (0 / []) and the cockpit renders with
+    whichever signals succeeded. Raw `.select()` destructuring in a
+    `Promise.all` on these routes is banned.
+    verify: `grep -rn "softCount\|softData\|softFirst" src/app/inicio src/app/operador/inicio src/app/admin/eagle | wc -l` → ≥ 20
+
+35. **Client Mensajería feed is feature-flagged.** `/inicio` reads
+    `NEXT_PUBLIC_MENSAJERIA_CLIENT` via `mensajeriaClientEnabled()` from
+    `src/lib/mensajeria/feed.ts`. When `false`, the activity slot renders
+    "Mensajería próximamente" instead of the feed. Default-off until
+    operator-internal usage period completes (per CLAUDE.md Mensajería
+    rollout plan).
+    verify: `grep -n "NEXT_PUBLIC_MENSAJERIA_CLIENT\|mensajeriaClientEnabled" src/app/inicio/page.tsx` → must match
+
+36. **Every authenticated cockpit route has `error.tsx` + `loading.tsx`.**
+    If SSR throws despite soft wrappers, `error.tsx` renders a
+    `<CockpitErrorCard>` with a readable message + Reintentar button.
+    `loading.tsx` renders `<CockpitSkeleton>` so the user sees glass
+    chrome immediately while data hydrates — never an infinite spinner.
+    verify: `ls src/app/inicio/{error,loading}.tsx src/app/operador/inicio/{error,loading}.tsx src/app/admin/eagle/{error,loading}.tsx 2>&1 | grep -c tsx` → 6

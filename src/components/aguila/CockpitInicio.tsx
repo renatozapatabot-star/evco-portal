@@ -39,10 +39,12 @@ export interface CockpitInicioProps {
   navCounts: NavCounts
   /** Role-specific content rendered in the main column below the nav grid. */
   estadoSections?: ReactNode
-  /** Feed already filtered to the right scope by the caller. */
-  actividad: TimelineItem[]
-  /** Empty-state label for the actividad feed. */
+  /** Feed already filtered to the right scope by the caller. Deprecated — use actividadSlot. */
+  actividad?: TimelineItem[]
+  /** Empty-state label for the actividad feed. Deprecated — use actividadSlot. */
   actividadEmptyLabel?: string
+  /** Free-form activity renderer for the right rail. v9 canonical. */
+  actividadSlot?: ReactNode
   /** Optional system-wide status dot next to the greeting. */
   systemStatus?: SystemStatus
   /** True → status dot pulses (work in motion). False → solid (at rest). */
@@ -75,6 +77,7 @@ export function CockpitInicio({
   role, name, companyName,
   heroKPIs, navCounts, estadoSections, actividad,
   actividadEmptyLabel = 'Sin actividad reciente.',
+  actividadSlot,
   systemStatus, pulseSignal, summaryLine, liveTimestamp = true,
   metaPills,
 }: CockpitInicioProps) {
@@ -173,7 +176,7 @@ export function CockpitInicio({
             boxShadow: GLASS_SHADOW,
             padding: '16px 20px',
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: actividad.length > 0 ? 12 : 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
               <Activity size={14} color={ACCENT_SILVER} />
               <span style={{
                 fontSize: 'var(--aguila-fs-label, 10px)',
@@ -184,14 +187,16 @@ export function CockpitInicio({
               }}>
                 Actividad reciente
               </span>
-              {actividad.length > 0 && (
+              {actividad && actividad.length > 0 && (
                 <span aria-hidden style={{
                   width: 6, height: 6, borderRadius: '50%',
                   background: GREEN, boxShadow: `0 0 6px ${GREEN}`, marginLeft: 4,
                 }} />
               )}
             </div>
-            <TimelineFeed items={actividad} max={8} emptyLabel={actividadEmptyLabel} />
+            {actividadSlot ?? (
+              <TimelineFeed items={actividad ?? []} max={8} emptyLabel={actividadEmptyLabel} />
+            )}
           </section>
         </aside>
       </div>

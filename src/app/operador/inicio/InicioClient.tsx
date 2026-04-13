@@ -12,12 +12,14 @@ import {
 import {
   CockpitInicio,
   SeverityRibbon, severityFromCount,
+  OperatorActivityStack,
   type CockpitHeroKPI,
 } from '@/components/aguila'
 import { ActiveTraficos } from './ActiveTraficos'
 import { RoleKPIBanner } from '@/components/RoleKPIBanner'
 import type { NavCounts } from '@/lib/cockpit/nav-tiles'
 import { auditRowToTimelineItem, type AuditRow } from '@/lib/cockpit/audit-format'
+import type { MensajeriaMessage, MensajeriaThread } from '@/lib/mensajeria/feed'
 import type { TraficoRow, DecisionRow, KPIs, SystemStatus } from './types'
 
 interface Props {
@@ -35,6 +37,8 @@ interface Props {
   personalCompletedLastWeek: number
   navCounts: NavCounts
   auditRows: AuditRow[]
+  mensajeriaMessages: MensajeriaMessage[]
+  escalatedThreads: MensajeriaThread[]
   pulseSignal: boolean
 }
 
@@ -114,8 +118,16 @@ export function InicioClient(props: Props) {
     },
   ]
 
-  // Actividad reciente — audit_log ops-wide (AGUILA v8 canonical source).
-  const actividad = props.auditRows.slice(0, 8).map(auditRowToTimelineItem)
+  // Actividad reciente — audit_log + Mensajería merge, pinned escalations on top (v9).
+  const auditItems = props.auditRows.slice(0, 10).map(auditRowToTimelineItem)
+  const actividadSlot = (
+    <OperatorActivityStack
+      auditItems={auditItems}
+      messages={props.mensajeriaMessages}
+      pinnedThreads={props.escalatedThreads}
+      emptyLabel="Sin actividad reciente."
+    />
+  )
 
   // Estado de operaciones — operator-specific: celebration banner + cola excepciones + active tráficos
   const estadoSections = (
@@ -142,8 +154,7 @@ export function InicioClient(props: Props) {
       heroKPIs={heroKPIs}
       navCounts={props.navCounts}
       estadoSections={estadoSections}
-      actividad={actividad}
-      actividadEmptyLabel="Sin actividad reciente."
+      actividadSlot={actividadSlot}
       systemStatus={props.systemStatus}
       summaryLine={props.summaryLine}
       pulseSignal={props.pulseSignal}

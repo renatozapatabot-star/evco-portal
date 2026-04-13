@@ -1,37 +1,49 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { verifySession } from '@/lib/session'
-import { logOperatorAction } from '@/lib/operator-actions'
 import Anthropic from '@anthropic-ai/sdk'
+import { randomUUID } from 'crypto'
+import { verifySession, type PortalRole } from '@/lib/session'
+import { logOperatorAction } from '@/lib/operator-actions'
+import { TOOL_DEFINITIONS, runTool, type AguilaCtx, type ToolName } from '@/lib/aguila/tools'
+import { resolveMentions } from '@/lib/aguila/mentions'
+import { logShadow } from '@/lib/aguila/shadow-log'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
 )
 
-const SYSTEM_PROMPT = `Eres CRUZ, el asistente de inteligencia aduanal de Renato Zapata & Company (Patente 3596, Aduana 240 Nuevo Laredo). Cuarta generación de agentes aduanales.
+const MODEL_TOOL_LOOP = 'claude-haiku-4-5-20251001'
+const MODEL_SYNTHESIS = 'claude-sonnet-4-20250514'
+const MAX_TOOL_ROUNDS = 4
+const MAX_QUESTION_CHARS = 1000
+
+const SYSTEM_PROMPT = `Eres AGUILA, el asistente de inteligencia aduanal de Renato Zapata & Company (Patente 3596, Aduana 240 Nuevo Laredo).
 
 Reglas:
 - Responde SIEMPRE en español mexicano profesional
-- Máximo 3-4 oraciones — conciso y directo
+- Máximo 4 oraciones — conciso y directo
+- Usa las herramientas disponibles para obtener datos reales. No adivines.
+- Si una herramienta devuelve "forbidden", responde: "No tengo permiso para mostrarte esa información."
 - Cuando menciones cantidades, incluye la moneda (MXN o USD)
-- Cuando menciones tráficos, usa el ID exacto del contexto
-- Cuando menciones fechas, usa formato "20 mar 2026"
 - Pedimentos SIEMPRE con espacios: "26 24 3596 6500247"
-- Si la respuesta no está en el contexto, di honestamente "No tenemos esa información en este momento" y sugiere alternativa
+- Fracciones con puntos: "3901.20.01"
+- Si no hay datos suficientes, di "No tenemos esa información en este momento"
 - Usa "nosotros" — nunca "yo"
-- Después de responder, sugiere el siguiente paso lógico
-- NO inventes datos. NO menciones clientes que no sean el actual.
 - Tono: profesional, cálido, confiable. Como un agente aduanal senior de confianza.`
 
+const CLASSIFIER_PROMPT = `Clasifica el mensaje en UNA de estas etiquetas y responde solo con la etiqueta:
+estatus_trafico, pregunta_pedimento, duda_documento, pregunta_financiera, escalacion, saludo, otro`
+
 /**
- * ADUANA AI quick-ask endpoint — lightweight Q&A for the cockpit panel.
- * Uses Haiku for speed and cost. Context-scoped to the logged-in company.
+ * AGUILA AI ask endpoint with live Supabase tool calls.
  * POST { question: string } → { answer: string }
  */
 export async function POST(req: NextRequest) {
+  const started = Date.now()
+  const messageId = randomUUID()
+
   try {
-    // 1. Verify session
     const sessionToken = req.cookies.get('portal_session')?.value || ''
     const session = await verifySession(sessionToken)
     if (!session) {
@@ -41,9 +53,8 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // 2. Parse request
-    const body = await req.json()
-    const question = (body.question || '').toString().trim().slice(0, 1000)
+    const body = await req.json().catch(() => ({}))
+    const question = String(body.question || '').trim().slice(0, MAX_QUESTION_CHARS)
     if (!question) {
       return NextResponse.json(
         { answer: 'Por favor escribe una pregunta.' },
@@ -51,154 +62,214 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const companyId = session.companyId
-    const role = session.role
-
-    // For admin/broker with non-client company_id, allow but note it
-    const isInternal = role === 'admin' || role === 'broker'
-
-    // 3. Build company-scoped context — ALL queries filtered by company_id
-    const contextLines: string[] = []
-    contextLines.push(`Cliente: ${companyId}`)
-    contextLines.push(`Rol del usuario: ${role}`)
-    contextLines.push(`Fecha actual: ${new Date().toLocaleDateString('es-MX', { day: '2-digit', month: 'long', year: 'numeric', timeZone: 'America/Chicago' })}`)
-    contextLines.push('')
-
-    // Only fetch client data if we have a real company_id
-    if (companyId && companyId !== 'admin' && companyId !== 'internal') {
-      const [trafRes, entRes, draftsRes, docsRes] = await Promise.allSettled([
-        supabase.from('traficos')
-          .select('trafico, descripcion_mercancia, estatus, fecha_llegada, fecha_cruce, importe_total, pedimento, proveedores, regimen')
-          .eq('company_id', companyId)
-          .gte('fecha_llegada', '2024-01-01')
-          .order('fecha_llegada', { ascending: false })
-          .limit(20),
-        supabase.from('entradas')
-          .select('cve_entrada, descripcion_mercancia, fecha_llegada_mercancia, cantidad_bultos, peso_bruto, trafico')
-          .eq('company_id', companyId)
-          .order('fecha_llegada_mercancia', { ascending: false })
-          .limit(15),
-        supabase.from('pedimento_drafts')
-          .select('id, trafico_id, status, created_at')
-          .eq('company_id', companyId)
-          .in('status', ['draft', 'pending'])
-          .order('created_at', { ascending: false })
-          .limit(10),
-        supabase.from('company_documents')
-          .select('document_type, document_name, status, category, expires_at')
-          .eq('company_id', companyId)
-          .order('created_at', { ascending: false })
-          .limit(10),
-      ])
-
-      if (trafRes.status === 'fulfilled' && trafRes.value.data?.length) {
-        const traficos = trafRes.value.data
-        const enProceso = traficos.filter(t => t.estatus === 'En Proceso').length
-        const cruzados = traficos.filter(t => t.estatus === 'Cruzado').length
-        const pagados = traficos.filter(t => t.estatus === 'Pedimento Pagado').length
-
-        contextLines.push(`RESUMEN: ${traficos.length} tráficos recientes — ${enProceso} en proceso, ${pagados} pedimento pagado, ${cruzados} cruzados`)
-        contextLines.push('')
-        contextLines.push('TRÁFICOS RECIENTES:')
-        for (const t of traficos.slice(0, 12)) {
-          const valor = t.importe_total ? `$${Number(t.importe_total).toLocaleString('en-US', { minimumFractionDigits: 2 })} USD` : 'sin valor'
-          const fecha = t.fecha_cruce || t.fecha_llegada || 'sin fecha'
-          const ped = t.pedimento ? ` — pedimento: ${t.pedimento}` : ''
-          contextLines.push(`  • ${t.trafico} — ${t.estatus} — ${valor} — ${t.descripcion_mercancia || 'sin descripción'} — ${fecha}${ped}`)
-        }
-        contextLines.push('')
-      }
-
-      if (entRes.status === 'fulfilled' && entRes.value.data?.length) {
-        contextLines.push(`ENTRADAS RECIENTES (${entRes.value.data.length}):`)
-        for (const e of entRes.value.data.slice(0, 5)) {
-          contextLines.push(`  • ${e.cve_entrada} — ${e.descripcion_mercancia || 'sin descripción'} — ${e.cantidad_bultos || 0} bultos · ${e.peso_bruto || 0} kg — ${e.fecha_llegada_mercancia || 'sin fecha'}`)
-        }
-        contextLines.push('')
-      }
-
-      if (draftsRes.status === 'fulfilled' && draftsRes.value.data?.length) {
-        contextLines.push(`BORRADORES DE PEDIMENTO PENDIENTES (${draftsRes.value.data.length}):`)
-        for (const d of draftsRes.value.data) {
-          contextLines.push(`  • Borrador — tráfico ${d.trafico_id || 'sin asignar'} — estatus: ${d.status}`)
-        }
-        contextLines.push('')
-      }
-
-      if (docsRes.status === 'fulfilled' && docsRes.value.data?.length) {
-        contextLines.push(`DOCUMENTOS DE LA EMPRESA (${docsRes.value.data.length}):`)
-        for (const doc of docsRes.value.data) {
-          const expira = doc.expires_at ? ` — vence: ${doc.expires_at}` : ''
-          contextLines.push(`  • ${doc.document_type || 'sin tipo'} — ${doc.status || 'sin dato'} — ${doc.document_name || 'sin nombre'}${expira}`)
-        }
-        contextLines.push('')
-      }
-    } else if (isInternal) {
-      contextLines.push('(Sesión administrativa — sin datos de cliente específico. Responde preguntas generales sobre aduanas.)')
-    }
-
-    const contextBlock = contextLines.join('\n')
-
-    // 4. Call Anthropic Haiku
-    let answer = 'Lo siento, hubo un problema procesando tu pregunta. Por favor intenta de nuevo.'
-
     const apiKey = process.env.ANTHROPIC_API_KEY
     if (!apiKey) {
       return NextResponse.json({
-        answer: 'ADUANA AI no está disponible en este momento. Contacta a soporte.',
+        answer: 'AGUILA AI no está disponible en este momento. Contacta a soporte.',
       })
     }
 
+    const role = session.role as PortalRole
+    const companyId = session.companyId
+    const operatorId = req.cookies.get('operator_id')?.value || null
+    const ctx: AguilaCtx = { companyId, role, userId: operatorId, operatorId, supabase }
+
+    const anthropic = new Anthropic({ apiKey, timeout: 30_000 })
+
+    // ------------------------------------------------------------
+    // Pre-pass: parse @mentions + topic classification (parallel)
+    // ------------------------------------------------------------
+    const [mentionResult, topicClass] = await Promise.all([
+      resolveMentions(question, role),
+      classifyTopic(anthropic, question).catch(() => null),
+    ])
+
+    const recipientRole = mentionResult.recipients[0]?.role ?? 'operator'
+
+    // ------------------------------------------------------------
+    // Haiku tool-calling loop
+    // ------------------------------------------------------------
+    const messages: Anthropic.MessageParam[] = [
+      { role: 'user', content: buildUserTurn(question, role, companyId, mentionResult.rejected) },
+    ]
+
+    const toolsCalled: ToolName[] = []
+    let finalText = ''
+    let forbiddenHit = false
+
+    for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
+      const resp = await anthropic.messages.create({
+        model: MODEL_TOOL_LOOP,
+        max_tokens: 800,
+        system: SYSTEM_PROMPT,
+        tools: TOOL_DEFINITIONS,
+        messages,
+      })
+
+      messages.push({ role: 'assistant', content: resp.content })
+
+      if (resp.stop_reason !== 'tool_use') {
+        for (const block of resp.content) {
+          if (block.type === 'text') finalText = block.text.trim()
+        }
+        break
+      }
+
+      const toolResults: Anthropic.ToolResultBlockParam[] = []
+      for (const block of resp.content) {
+        if (block.type !== 'tool_use') continue
+        const toolName = block.name as ToolName
+        toolsCalled.push(toolName)
+        const result = await runTool(toolName, block.input, ctx)
+        if (result.forbidden) forbiddenHit = true
+        toolResults.push({
+          type: 'tool_result',
+          tool_use_id: block.id,
+          content: JSON.stringify(result.result).slice(0, 8000),
+          is_error: !!result.error,
+        })
+      }
+      messages.push({ role: 'user', content: toolResults })
+    }
+
+    // ------------------------------------------------------------
+    // Sonnet synthesis pass (polished Spanish answer)
+    // ------------------------------------------------------------
+    const toolTranscript = messages
+      .filter(m => m.role === 'user' || m.role === 'assistant')
+      .map(m => summarizeMessage(m))
+      .filter(Boolean)
+      .join('\n')
+
+    let answer = finalText || 'No pude generar una respuesta.'
     try {
-      const anthropic = new Anthropic({ apiKey })
-      const response = await anthropic.messages.create({
-        model: 'claude-haiku-4-5-20251001',
+      const synth = await anthropic.messages.create({
+        model: MODEL_SYNTHESIS,
         max_tokens: 400,
         system: SYSTEM_PROMPT,
-        messages: [
-          {
-            role: 'user',
-            content: `CONTEXTO DEL CLIENTE:\n\n${contextBlock}\n\nPREGUNTA:\n${question}\n\nResponde en español, máximo 3-4 oraciones, basándote ÚNICAMENTE en el contexto anterior.`,
-          },
-        ],
+        messages: [{
+          role: 'user',
+          content: `PREGUNTA DEL USUARIO: ${question}\n\nDATOS OBTENIDOS POR LAS HERRAMIENTAS:\n${toolTranscript}\n\nRespuesta preliminar de Haiku: "${finalText}"\n\nEscribe la respuesta final en español, máximo 4 oraciones, usando solo los datos obtenidos. Si alguna herramienta devolvió "forbidden", responde que no tienes permiso.`,
+        }],
       })
-
-      const block = response.content?.[0]
-      if (block && block.type === 'text') {
-        answer = block.text.trim()
+      const block = synth.content?.[0]
+      if (block && block.type === 'text') answer = block.text.trim()
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      if (msg.includes('credit balance') || msg.includes('billing')) {
+        answer = 'AGUILA AI no está disponible temporalmente — créditos de API agotados.'
+      } else if (msg.includes('rate_limit') || msg.includes('overloaded')) {
+        answer = 'AGUILA AI está ocupado. Intenta de nuevo en unos segundos.'
       }
-    } catch (llmError: unknown) {
-      const errMsg = llmError instanceof Error ? llmError.message : String(llmError)
-      console.error('[cruz-ai/ask] LLM error:', errMsg)
-
-      if (errMsg.includes('credit balance') || errMsg.includes('billing')) {
-        answer = 'ADUANA AI no está disponible temporalmente — créditos de API agotados. Tu pregunta fue registrada y será respondida cuando se restablezca el servicio.'
-      } else if (errMsg.includes('rate_limit') || errMsg.includes('overloaded')) {
-        answer = 'ADUANA AI está ocupado en este momento. Por favor intenta de nuevo en unos segundos.'
-      }
-      // For other errors, keep the default "hubo un problema" message
     }
 
-    // 5. Log the interaction
-    const operatorId = req.cookies.get('operator_id')?.value
-    logOperatorAction({
+    // ------------------------------------------------------------
+    // Audit + shadow log
+    // ------------------------------------------------------------
+    const responseTimeMs = Date.now() - started
+
+    void logOperatorAction({
       operatorId: operatorId || undefined,
-      actionType: 'cruz_ai_query',
+      actionType: 'aguila_ai_query',
       companyId,
       payload: {
+        message_id: messageId,
         question: question.slice(0, 500),
         answer: answer.slice(0, 500),
-        company_id: companyId,
         role,
+        tools_called: toolsCalled,
+        topic_class: topicClass,
       },
-    }).catch(() => {}) // fire-and-forget
+      durationMs: responseTimeMs,
+    })
+    if (toolsCalled.includes('query_financiero')) {
+      void logOperatorAction({
+        operatorId: operatorId || undefined,
+        actionType: 'aguila_financiero_read',
+        companyId,
+        payload: { message_id: messageId, role },
+      })
+    }
+
+    void logShadow({
+      messageId,
+      userId: operatorId,
+      operatorId,
+      senderRole: role,
+      recipientRole,
+      topicClass: forbiddenHit ? 'pregunta_financiera' : topicClass,
+      companyId,
+      toolsCalled,
+      responseTimeMs,
+      escalated: mentionResult.escalated,
+      resolved: !!finalText || !!answer,
+      questionExcerpt: question,
+      answerExcerpt: answer,
+      metadata: {
+        rejected_mentions: mentionResult.rejected,
+        recipients: mentionResult.recipients.map(r => r.handle),
+      },
+    })
 
     return NextResponse.json({ answer })
   } catch (err) {
-    console.error('[cruz-ai/ask] unexpected error:', err)
+    console.error('[aguila-ai/ask] error:', err)
+    void logShadow({
+      messageId,
+      senderRole: 'client',
+      topicClass: 'error',
+      responseTimeMs: Date.now() - started,
+      resolved: false,
+      metadata: { error: err instanceof Error ? err.message : String(err) },
+    })
     return NextResponse.json(
-      { answer: 'Lo siento, hubo un problema técnico. Por favor intenta de nuevo en un momento.' },
+      { answer: 'Lo siento, hubo un problema técnico. Por favor intenta de nuevo.' },
       { status: 500 },
     )
   }
+}
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function buildUserTurn(
+  question: string,
+  role: PortalRole,
+  companyId: string,
+  rejectedMentions: string[],
+): string {
+  const scopeLine = role === 'client' || role === 'warehouse'
+    ? `Alcance: solo company_id ${companyId}.`
+    : `Alcance: acceso multi-cliente (rol ${role}).`
+  const rejectedLine = rejectedMentions.length > 0
+    ? `\nMenciones rechazadas (el usuario no puede mencionar a otros clientes): ${rejectedMentions.join(', ')}`
+    : ''
+  return `${scopeLine}${rejectedLine}\n\nPregunta del usuario:\n${question}\n\nUsa las herramientas disponibles para obtener datos reales antes de responder.`
+}
+
+async function classifyTopic(anthropic: Anthropic, question: string): Promise<string | null> {
+  const resp = await anthropic.messages.create({
+    model: MODEL_TOOL_LOOP,
+    max_tokens: 20,
+    system: CLASSIFIER_PROMPT,
+    messages: [{ role: 'user', content: question }],
+  })
+  const block = resp.content?.[0]
+  if (block?.type === 'text') return block.text.trim().toLowerCase().split(/\s+/)[0] || null
+  return null
+}
+
+function summarizeMessage(m: Anthropic.MessageParam): string {
+  if (typeof m.content === 'string') return `[${m.role}] ${m.content.slice(0, 300)}`
+  const parts: string[] = []
+  for (const block of m.content) {
+    if (block.type === 'text') parts.push(block.text.slice(0, 300))
+    else if (block.type === 'tool_use') parts.push(`tool_call:${block.name}(${JSON.stringify(block.input).slice(0, 200)})`)
+    else if (block.type === 'tool_result') {
+      const c = typeof block.content === 'string' ? block.content : JSON.stringify(block.content)
+      parts.push(`tool_result: ${c.slice(0, 400)}`)
+    }
+  }
+  return parts.length ? `[${m.role}] ${parts.join(' | ')}` : ''
 }

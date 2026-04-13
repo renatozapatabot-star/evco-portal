@@ -43,10 +43,19 @@ export const GLOW_CYAN = GLOW_SILVER
 export const GLOW_CYAN_SUBTLE = GLOW_SILVER_SUBTLE
 
 // ── Glass backgrounds ──
-export const BG_GRADIENT_START = '#05070B'
-export const BG_GRADIENT_END = '#0B1220'
+export const BG_GRADIENT_START = '#030508'
+export const BG_GRADIENT_END = '#0D1525'
 export const BG_PRIMARY = '#05070B'
 export const BG_CARD = 'rgba(255,255,255,0.04)'
+
+/**
+ * Unified cockpit canvas — radial silver wash at 50% 20% over deep linear.
+ * Single source of truth: CockpitShell, /operador/inicio, /admin/eagle must
+ * all render on this exact backdrop. Do not inline alternative gradients.
+ */
+export const COCKPIT_CANVAS =
+  'radial-gradient(ellipse at 50% 20%, rgba(192,197,206,0.08) 0%, transparent 50%),' +
+  ` linear-gradient(180deg, ${BG_GRADIENT_START} 0%, ${BG_GRADIENT_END} 100%)`
 export const BG_ELEVATED = 'rgba(255,255,255,0.04)'
 export const BG_SURFACE = 'rgba(255,255,255,0.03)'
 export const BORDER = 'rgba(255,255,255,0.08)'

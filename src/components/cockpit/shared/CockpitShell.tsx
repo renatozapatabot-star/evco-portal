@@ -1,5 +1,7 @@
 import { cookies } from 'next/headers'
 import { type ReactNode } from 'react'
+import { COCKPIT_CANVAS } from '@/lib/design-system'
+import { CockpitBackdrop } from './CockpitBackdrop'
 
 interface CockpitShellProps {
   children: ReactNode
@@ -18,12 +20,17 @@ export async function CockpitShell({ children }: CockpitShellProps) {
     <div
       className="aguila-dark"
       style={{
+        position: 'relative',
         minHeight: '100vh',
-        background: 'radial-gradient(ellipse at 50% 20%, rgba(192,197,206,0.08) 0%, transparent 50%), linear-gradient(180deg, #030508 0%, #0D1525 100%)',
+        background: COCKPIT_CANVAS,
         color: '#E6EDF3',
+        overflow: 'hidden',
       }}
     >
+      <CockpitBackdrop />
       <div style={{
+        position: 'relative',
+        zIndex: 1,
         maxWidth: 1400,
         margin: '0 auto',
         padding: '24px 16px',

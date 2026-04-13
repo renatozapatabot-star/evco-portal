@@ -11,7 +11,8 @@ import { createClient } from '@supabase/supabase-js'
 import { verifySession } from '@/lib/session'
 import { computeARAging, computeAPAging } from '@/lib/contabilidad/aging'
 import { CockpitBrandHeader } from '@/components/brand/CockpitBrandHeader'
-import { BG_DEEP } from '@/lib/design-system'
+import { CockpitBackdrop } from '@/components/cockpit/shared/CockpitBackdrop'
+import { COCKPIT_CANVAS } from '@/lib/design-system'
 import { TraficosDelDiaTile } from '@/components/eagle/TraficosDelDiaTile'
 import { ArApTile } from '@/components/eagle/ArApTile'
 import { ClientesDormidosTile } from '@/components/eagle/ClientesDormidosTile'
@@ -186,7 +187,9 @@ export default async function EaglePage() {
   }
 
   return (
-    <div style={{ background: BG_DEEP, minHeight: '100vh', padding: '32px 24px 48px' }}>
+    <div className="aguila-dark" style={{ position: 'relative', background: COCKPIT_CANVAS, minHeight: '100vh', padding: '32px 24px 48px', color: '#E6EDF3', overflow: 'hidden' }}>
+      <CockpitBackdrop />
+      <div style={{ position: 'relative', zIndex: 1 }}>
       <CockpitBrandHeader
         subtitle="Vista Águila · Tito"
         greeting={greetingByHour()}
@@ -215,6 +218,7 @@ export default async function EaglePage() {
           .eagle-grid { grid-template-columns: 1fr !important; }
         }
       `}</style>
+      </div>
     </div>
   )
 }

@@ -6,12 +6,13 @@ import { Truck, AlertTriangle, FileText, Upload, FileSpreadsheet, Radio, Shield,
 import type { LucideIcon } from 'lucide-react'
 import { createClient as createBrowserSupabaseClient } from '@/lib/supabase/client'
 import {
-  BG_GRADIENT_START, BG_GRADIENT_END,
+  COCKPIT_CANVAS,
   GREEN, AMBER, RED,
   TEXT_PRIMARY, TEXT_SECONDARY, TEXT_MUTED,
 } from '@/lib/design-system'
 import { HeroStrip } from './HeroStrip'
 import { CockpitBrandHeader } from '@/components/brand/CockpitBrandHeader'
+import { CockpitBackdrop } from '@/components/cockpit/shared/CockpitBackdrop'
 import { QuickActions } from './QuickActions'
 import { ActiveTraficos } from './ActiveTraficos'
 import { RightRail } from './RightRail'
@@ -119,13 +120,16 @@ export function InicioClient(props: Props) {
     <div
       className="aguila-dark"
       style={{
+        position: 'relative',
         minHeight: '100vh',
-        background: `linear-gradient(180deg, ${BG_GRADIENT_START}, ${BG_GRADIENT_END})`,
+        background: COCKPIT_CANVAS,
         color: TEXT_PRIMARY,
         fontFamily: 'var(--font-sans)',
+        overflow: 'hidden',
       }}
     >
-      <div className="p-4 md:px-7 md:py-6" style={{ maxWidth: 1400, margin: '0 auto' }}>
+      <CockpitBackdrop />
+      <div className="p-4 md:px-7 md:py-6" style={{ position: 'relative', zIndex: 1, maxWidth: 1400, margin: '0 auto' }}>
         {/* AGUILA brand trio */}
         <CockpitBrandHeader subtitle={`Operador · ${props.operatorName}`} />
 

@@ -122,7 +122,7 @@ function TraficosContent() {
   // Lookup maps from aduanet_facturas, entradas, globalpc_partidas, globalpc_facturas, globalpc_proveedores
   const [facturasMap, setFacturasMap] = useState<Map<string, FacturaLookup>>(new Map())
   const [entradaMap, setEntradaMap] = useState<Map<string, string>>(new Map())
-  const [partidaDescMap, setPartidaDescMap] = useState<Map<string, string>>(new Map())
+  // partidaDescMap removed — see comment near former query at line ~221
   const [gpcFacturasMap, setGpcFacturasMap] = useState<Map<string, { cve_proveedor: string; numero: string; valor_comercial: number }>>(new Map())
   const [proveedorMap, setProveedorMap] = useState<Map<string, string>>(new Map())
 
@@ -218,18 +218,10 @@ function TraficosContent() {
       })
       .catch(() => {})
 
-    // GlobalPC partida descriptions for enrichment
-    fetch('/api/data?table=globalpc_partidas&select=cve_trafico,descripcion&limit=10000')
-      .then(r => r.json())
-      .then(d => {
-        const map = new Map<string, string>()
-        const arr = Array.isArray(d.data) ? d.data : []
-        for (const p of arr as { cve_trafico?: string; descripcion?: string }[]) {
-          if (p.cve_trafico && p.descripcion && !map.has(p.cve_trafico)) map.set(p.cve_trafico, p.descripcion)
-        }
-        setPartidaDescMap(map)
-      })
-      .catch(() => {})
+    // Description fallback chain via partidas was removed: globalpc_partidas has
+    // (folio, cve_producto), not (cve_trafico, descripcion). The previous query
+    // returned silently empty rows. To restore a partidas → product description
+    // join requires 3-table chain (facturas→partidas→productos) — deferred.
 
     // GlobalPC facturas — fallback for proveedor, invoice, valor when aduanet_facturas has no match
     fetch('/api/data?table=globalpc_facturas&limit=10000')
@@ -311,7 +303,7 @@ function TraficosContent() {
   const getDesc = (r: TraficoRow): string => {
     if (r.descripcion_mercancia) return r.descripcion_mercancia
     const fac = facturasMap.get(r.trafico)
-    return fac?.descripcion || partidaDescMap.get(r.trafico) || ''
+    return fac?.descripcion || ''
   }
 
   const getEntrada = (r: TraficoRow): string => entradaMap.get(r.trafico) || ''

@@ -154,6 +154,22 @@ module.exports = {
       max_size: '10M',
     },
     {
+      // Full GlobalPC sync (productos + proveedores + classification).
+      // Heavier than the delta — runs Sun/Wed/Sat at 01:00.
+      name: 'globalpc-sync',
+      script: 'scripts/globalpc-sync.js',
+      cwd,
+      cron_restart: '0 1 * * 0,3,6',
+      autorestart: false,
+      watch: false,
+      max_memory_restart: '2G',
+      env: { NODE_ENV: 'production' },
+      error_file: '/tmp/globalpc-sync-error.log',
+      out_file: '/tmp/globalpc-sync-out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss',
+      max_size: '10M',
+    },
+    {
       // Pulls GlobalPC MySQL deltas → globalpc_facturas/partidas/etc.
       // This is the primary source for the pedimento PDF and Anexo 24 views.
       // Ran manually before; now every 15 min with Telegram alerts on failure.

@@ -5,6 +5,7 @@ import { PATENTE, ADUANA } from '@/lib/client-config'
 import { PORTAL_DATE_FROM } from '@/lib/data'
 import { ReportesPDF } from './pdf-document'
 import { verifySession } from '@/lib/session'
+import { computeReportesKpis } from '@/lib/reportes/kpis'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -31,68 +32,16 @@ export async function GET(request: NextRequest) {
   const clientName = rawName ? decodeURIComponent(rawName) : ''
 
   try {
-    const prefix = `${clientClave}-%`
+    const kpis = await computeReportesKpis(supabase, clientClave, companyId)
+    const { totalTraficos: totalCount, totalValueUSD: totalValue, successRate, avgCrossingDays, tmecRate } = kpis
 
-    const [totals, cruzados, crossing, factRes, traficosWithSuppliers] = await Promise.all([
-      supabase
-        .from('traficos')
-        .select('importe_total', { count: 'exact' })
-        .ilike('trafico', prefix)
-        .gte('fecha_llegada', PORTAL_DATE_FROM),
-      supabase
-        .from('traficos')
-        .select('*', { count: 'exact', head: true })
-        .ilike('trafico', prefix)
-        .eq('estatus', 'Cruzado')
-        .gte('fecha_llegada', PORTAL_DATE_FROM),
-      supabase
-        .from('traficos')
-        .select('fecha_cruce, fecha_llegada')
-        .ilike('trafico', prefix)
-        .not('fecha_cruce', 'is', null)
-        .not('fecha_llegada', 'is', null)
-        .gte('fecha_llegada', PORTAL_DATE_FROM)
-        .limit(500),
-      supabase
-        .from('aduanet_facturas')
-        .select('igi, valor_usd', { count: 'exact' })
-        .eq('clave_cliente', clientClave),
-      supabase
-        .from('traficos')
-        .select('proveedores, estatus, fecha_llegada, fecha_cruce, regimen')
-        .eq('company_id', companyId)
-        .not('proveedores', 'is', null)
-        .gte('fecha_llegada', PORTAL_DATE_FROM),
-    ])
-
-    // KPIs
-    const totalCount = totals.count ?? 0
-    const cruzadosCount = cruzados.count ?? 0
-    const successRate = totalCount > 0
-      ? Math.round((cruzadosCount / totalCount) * 100)
-      : 0
-
-    const totalValue = (totals.data ?? []).reduce(
-      (s: number, t: Record<string, unknown>) => s + (Number(t.importe_total) || 0), 0
-    )
-
-    const crossingRows = crossing.data ?? []
-    const avgCrossingDays = crossingRows.length > 0
-      ? (crossingRows.reduce((sum: number, t: Record<string, unknown>) => {
-          const days = (new Date(t.fecha_cruce as string).getTime() -
-                       new Date(t.fecha_llegada as string).getTime()) / 86400000
-          return sum + days
-        }, 0) / crossingRows.length).toFixed(1)
-      : null
-
-    const tmecWithIGI = (factRes.data ?? []).filter(
-      (f: Record<string, unknown>) => f.igi !== null && Number(f.igi) > 0
-    ).length
-    const tmecRate = factRes.count
-      ? Math.round((tmecWithIGI / factRes.count) * 100)
-      : 0
-
-    // Supplier intelligence
+    // Supplier intelligence — kept inline since only the PDF surfaces it.
+    const traficosWithSuppliers = await supabase
+      .from('traficos')
+      .select('proveedores, estatus, fecha_llegada, fecha_cruce, regimen')
+      .eq('company_id', companyId)
+      .not('proveedores', 'is', null)
+      .gte('fecha_llegada', PORTAL_DATE_FROM)
     const supplierMap = new Map<string, { total: number; cruzado: number; crossDays: number[]; tmec: number }>()
     ;(traficosWithSuppliers.data ?? []).forEach((t: Record<string, unknown>) => {
       const provStr = t.proveedores as string | null

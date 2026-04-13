@@ -3,6 +3,7 @@
  * Legacy remains at /reportes/legacy. ?legacy=1 redirects there.
  */
 import { ReportBuilderPage } from './ReportBuilderPage'
+import { ReportesKpiStrip } from './ReportesKpiStrip'
 import { CockpitBrandHeader } from '@/components/brand/CockpitBrandHeader'
 import { BG_DEEP } from '@/lib/design-system'
 
@@ -17,6 +18,9 @@ export default async function Page({
   return (
     <div style={{ background: BG_DEEP, minHeight: '100vh', padding: '24px 24px 48px' }}>
       <CockpitBrandHeader subtitle="Reportes · Constructor" />
+      <div style={{ maxWidth: 1400, margin: '0 auto', padding: '0 16px' }}>
+        <ReportesKpiStrip />
+      </div>
       <ReportBuilderPage legacy={sp.legacy} />
     </div>
   )

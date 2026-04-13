@@ -18,9 +18,7 @@ const MODEL_SYNTHESIS = 'claude-sonnet-4-20250514'
 const MAX_TOOL_ROUNDS = 4
 const MAX_QUESTION_CHARS = 1000
 
-const SYSTEM_PROMPT = `Eres AGUILA, el asistente de inteligencia aduanal de Renato Zapata & Company (Patente 3596, Aduana 240 Nuevo Laredo).
-
-Reglas:
+const BASE_RULES = `Reglas:
 - Responde SIEMPRE en español mexicano profesional
 - Máximo 4 oraciones — conciso y directo
 - Usa las herramientas disponibles para obtener datos reales. No adivines.
@@ -30,7 +28,38 @@ Reglas:
 - Fracciones con puntos: "3901.20.01"
 - Si no hay datos suficientes, di "No tenemos esa información en este momento"
 - Usa "nosotros" — nunca "yo"
-- Tono: profesional, cálido, confiable. Como un agente aduanal senior de confianza.`
+- Tono: profesional, cálido, confiable.`
+
+const ROLE_PROMPTS: Record<PortalRole, string> = {
+  operator: `Eres AGUILA, asistente de operaciones aduanales.
+Ayudas a Claudia con tráficos activos, estatus de pedimentos,
+y cadena factura→entrada→pedimento. Responde en español.
+
+${BASE_RULES}`,
+  contabilidad: `Eres AGUILA, asistente de contabilidad aduanal.
+Ayudas a Anabel con cuentas por cobrar, facturas emitidas,
+pagos recibidos, y exportación QB. Responde en español.
+
+${BASE_RULES}`,
+  warehouse: `Eres AGUILA, asistente de almacén.
+Ayudas a Vicente con entradas, ubicaciones en bodega,
+recepción de mercancía, y despacho. Responde en español.
+
+${BASE_RULES}`,
+  client: `Eres AGUILA, el asistente de inteligencia aduanal de Renato Zapata & Company (Patente 3596, Aduana 240 Nuevo Laredo).
+
+${BASE_RULES}`,
+  admin: `Eres AGUILA, el asistente de inteligencia aduanal de Renato Zapata & Company (Patente 3596, Aduana 240 Nuevo Laredo). Acceso multi-cliente de administración.
+
+${BASE_RULES}`,
+  broker: `Eres AGUILA, el asistente de inteligencia aduanal de Renato Zapata & Company (Patente 3596, Aduana 240 Nuevo Laredo). Acceso de agente aduanal titular.
+
+${BASE_RULES}`,
+}
+
+function systemPromptFor(role: PortalRole): string {
+  return ROLE_PROMPTS[role] ?? ROLE_PROMPTS.client
+}
 
 const CLASSIFIER_PROMPT = `Clasifica el mensaje en UNA de estas etiquetas y responde solo con la etiqueta:
 estatus_trafico, pregunta_pedimento, duda_documento, pregunta_financiera, escalacion, saludo, otro`
@@ -73,6 +102,7 @@ export async function POST(req: NextRequest) {
     const companyId = session.companyId
     const operatorId = req.cookies.get('operator_id')?.value || null
     const ctx: AguilaCtx = { companyId, role, userId: operatorId, operatorId, supabase }
+    const systemPrompt = systemPromptFor(role)
 
     const anthropic = new Anthropic({ apiKey, timeout: 30_000 })
 
@@ -101,7 +131,7 @@ export async function POST(req: NextRequest) {
       const resp = await anthropic.messages.create({
         model: MODEL_TOOL_LOOP,
         max_tokens: 800,
-        system: SYSTEM_PROMPT,
+        system: systemPrompt,
         tools: TOOL_DEFINITIONS,
         messages,
       })
@@ -146,7 +176,7 @@ export async function POST(req: NextRequest) {
       const synth = await anthropic.messages.create({
         model: MODEL_SYNTHESIS,
         max_tokens: 400,
-        system: SYSTEM_PROMPT,
+        system: systemPrompt,
         messages: [{
           role: 'user',
           content: `PREGUNTA DEL USUARIO: ${question}\n\nDATOS OBTENIDOS POR LAS HERRAMIENTAS:\n${toolTranscript}\n\nRespuesta preliminar de Haiku: "${finalText}"\n\nEscribe la respuesta final en español, máximo 4 oraciones, usando solo los datos obtenidos. Si alguna herramienta devolvió "forbidden", responde que no tienes permiso.`,

@@ -85,7 +85,7 @@ export const SEARCH_ENTITIES: readonly EntityConfig[] = [
     iconName: 'list',
     searchFields: ['descripcion', 'cve_trafico', 'numero_parte'],
     listHref: '/fracciones',
-    scope: 'internal',
+    scope: 'company',
     maxResultsPerGroup: 5,
   },
   {
@@ -95,7 +95,7 @@ export const SEARCH_ENTITIES: readonly EntityConfig[] = [
     iconName: 'box',
     searchFields: ['cve_producto', 'descripcion', 'fraccion'],
     listHref: '/fracciones',
-    scope: 'internal',
+    scope: 'company',
     maxResultsPerGroup: 5,
   },
   {
@@ -105,7 +105,7 @@ export const SEARCH_ENTITIES: readonly EntityConfig[] = [
     iconName: 'hash',
     searchFields: ['fraccion_arancelaria'],
     listHref: '/fracciones',
-    scope: 'internal',
+    scope: 'company',
     maxResultsPerGroup: 5,
   },
   {
@@ -125,7 +125,7 @@ export const SEARCH_ENTITIES: readonly EntityConfig[] = [
     iconName: 'users',
     searchFields: ['nombre', 'cve_proveedor', 'id_fiscal'],
     listHref: '/proveedores',
-    scope: 'internal',
+    scope: 'company',
     maxResultsPerGroup: 5,
   },
   {

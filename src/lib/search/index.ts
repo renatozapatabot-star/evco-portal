@@ -103,11 +103,12 @@ async function searchFacturas(sb: SupabaseClient, safe: string, scope: Scope): P
 }
 
 async function searchProveedores(sb: SupabaseClient, safe: string, scope: Scope): Promise<UniversalSearchHit[]> {
-  if (!scope.isInternal) return []
-  const { data } = await sb.from('globalpc_proveedores')
+  let q = sb.from('globalpc_proveedores')
     .select('cve_proveedor, nombre, id_fiscal')
     .or(`nombre.ilike.%${safe}%,cve_proveedor.ilike.%${safe}%,id_fiscal.ilike.%${safe}%`)
     .limit(PER_GROUP)
+  if (!scope.isInternal) q = q.eq('company_id', scope.companyId)
+  const { data } = await q
   return ((data ?? []) as ProveedorRow[]).map(p => ({
     kind: 'proveedores',
     id: p.cve_proveedor ?? '',
@@ -118,11 +119,12 @@ async function searchProveedores(sb: SupabaseClient, safe: string, scope: Scope)
 }
 
 async function searchProductos(sb: SupabaseClient, safe: string, scope: Scope): Promise<UniversalSearchHit[]> {
-  if (!scope.isInternal) return []
-  const { data } = await sb.from('globalpc_productos')
+  let q = sb.from('globalpc_productos')
     .select('id, cve_producto, descripcion, fraccion')
     .or(`descripcion.ilike.%${safe}%,fraccion.ilike.%${safe}%,cve_producto.ilike.%${safe}%`)
     .limit(PER_GROUP)
+  if (!scope.isInternal) q = q.eq('company_id', scope.companyId)
+  const { data } = await q
   return ((data ?? []) as ProductoRow[]).map(p => ({
     kind: 'productos',
     id: String(p.id),
@@ -134,11 +136,12 @@ async function searchProductos(sb: SupabaseClient, safe: string, scope: Scope): 
 
 // Partidas: line items — backed by globalpc_productos (the part catalog).
 async function searchPartidas(sb: SupabaseClient, safe: string, scope: Scope): Promise<UniversalSearchHit[]> {
-  if (!scope.isInternal) return []
-  const { data } = await sb.from('globalpc_productos')
+  let q = sb.from('globalpc_productos')
     .select('id, cve_producto, descripcion, fraccion')
     .or(`descripcion.ilike.%${safe}%,cve_producto.ilike.%${safe}%`)
     .limit(PER_GROUP)
+  if (!scope.isInternal) q = q.eq('company_id', scope.companyId)
+  const { data } = await q
   return ((data ?? []) as PartidaRow[]).map(p => ({
     kind: 'partidas',
     id: String(p.id),
@@ -150,11 +153,12 @@ async function searchPartidas(sb: SupabaseClient, safe: string, scope: Scope): P
 
 // Fracciones: deduped HTS codes from globalpc_productos.
 async function searchFracciones(sb: SupabaseClient, safe: string, scope: Scope): Promise<UniversalSearchHit[]> {
-  if (!scope.isInternal) return []
-  const { data } = await sb.from('globalpc_productos')
+  let q = sb.from('globalpc_productos')
     .select('id, cve_producto, descripcion, fraccion')
     .ilike('fraccion', `%${safe}%`)
     .limit(PER_GROUP * 3)
+  if (!scope.isInternal) q = q.eq('company_id', scope.companyId)
+  const { data } = await q
   const seen = new Set<string>()
   const out: UniversalSearchHit[] = []
   for (const p of (data ?? []) as PartidaRow[]) {

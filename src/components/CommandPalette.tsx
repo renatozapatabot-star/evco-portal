@@ -14,6 +14,7 @@ import { AdvancedSearchModal } from './search/AdvancedSearchModal'
 import type { EntityId } from '@/types/search'
 
 const VISIBLE_PER_GROUP = 3
+const TOTAL_HIT_CAP = 15
 
 interface Props {
   open: boolean
@@ -70,7 +71,7 @@ export function CommandPalette({ open, onClose, initialMode = 'quick' }: Props) 
         })
         .catch(() => { /* aborted or network — ignore */ })
         .finally(() => { if (!ctrl.signal.aborted) setLoading(false) })
-    }, 150)
+    }, 300)
 
     // Settled-query telemetry: 500ms after stop typing, deduped per open session.
     const settleTimer = setTimeout(() => {
@@ -93,8 +94,9 @@ export function CommandPalette({ open, onClose, initialMode = 'quick' }: Props) 
       if (e.scope === 'stub') continue
       const rows = (results[e.id as keyof UniversalSearchResponse] as UniversalSearchHit[] | undefined) ?? []
       out.push(...rows.slice(0, VISIBLE_PER_GROUP))
+      if (out.length >= TOTAL_HIT_CAP) break
     }
-    return out
+    return out.slice(0, TOTAL_HIT_CAP)
   }, [results])
 
   const navigate = useCallback((hit: UniversalSearchHit) => {

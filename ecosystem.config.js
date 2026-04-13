@@ -152,6 +152,71 @@ module.exports = {
       out_file: '/tmp/v2c-batch-out.log',
       log_date_format: 'YYYY-MM-DD HH:mm:ss',
       max_size: '10M',
+    },
+    {
+      // Pulls GlobalPC MySQL deltas → globalpc_facturas/partidas/etc.
+      // This is the primary source for the pedimento PDF and Anexo 24 views.
+      // Ran manually before; now every 15 min with Telegram alerts on failure.
+      name: 'globalpc-delta-sync',
+      script: 'scripts/globalpc-delta-sync.js',
+      cwd,
+      cron_restart: '*/15 * * * *',
+      autorestart: false,
+      watch: false,
+      max_memory_restart: '1G',
+      env: { NODE_ENV: 'production' },
+      error_file: '/tmp/globalpc-delta-sync-error.log',
+      out_file: '/tmp/globalpc-delta-sync-out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss',
+      max_size: '10M',
+    },
+    {
+      // Weekly full GlobalPC → globalpc_facturas reconciliation.
+      // Safety net against delta drift. Sundays at 02:00.
+      name: 'full-sync-facturas',
+      script: 'scripts/full-sync-facturas.js',
+      cwd,
+      cron_restart: '0 2 * * 0',
+      autorestart: false,
+      watch: false,
+      max_memory_restart: '2G',
+      env: { NODE_ENV: 'production' },
+      error_file: '/tmp/full-sync-facturas-error.log',
+      out_file: '/tmp/full-sync-facturas-out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss',
+      max_size: '10M',
+    },
+    {
+      // IMMEX Anexo 24 reconciler — flags items approaching 18-month deadline.
+      // Runs on 1st and 15th of month at 03:00 per its own docstring.
+      name: 'anexo24-reconciler',
+      script: 'scripts/anexo24-reconciler.js',
+      cwd,
+      cron_restart: '0 3 1,15 * *',
+      autorestart: false,
+      watch: false,
+      max_memory_restart: '1G',
+      env: { NODE_ENV: 'production' },
+      error_file: '/tmp/anexo24-reconciler-error.log',
+      out_file: '/tmp/anexo24-reconciler-out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss',
+      max_size: '10M',
+    },
+    {
+      // Derives IGI rate inference per fraccion from historical facturas.
+      // Weekly after the full-sync completes, Sundays at 03:00.
+      name: 'seed-tariff-rates',
+      script: 'scripts/seed-tariff-rates.js',
+      cwd,
+      cron_restart: '0 3 * * 0',
+      autorestart: false,
+      watch: false,
+      max_memory_restart: '1G',
+      env: { NODE_ENV: 'production' },
+      error_file: '/tmp/seed-tariff-rates-error.log',
+      out_file: '/tmp/seed-tariff-rates-out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss',
+      max_size: '10M',
     }
   ]
 }

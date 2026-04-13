@@ -15,6 +15,7 @@ import {
 } from '@/lib/design-system'
 import { useTrack } from '@/lib/telemetry/useTrack'
 import { fmtUSDCompact } from '@/lib/format-utils'
+import { TraficoQuickActions } from '@/components/traficos/TraficoQuickActions'
 import { PageOpenTracker } from './PageOpenTracker'
 import { Header } from './Header'
 import { HeroStrip, type HeroTileSpec } from './HeroStrip'
@@ -218,6 +219,7 @@ export function TraficoDetail(props: TraficoDetailProps) {
 
   return (
     <div style={{ padding: '8px 0', maxWidth: 1400, margin: '0 auto' }}>
+      <TraficoQuickActions traficoId={props.traficoId} />
       <PageOpenTracker traficoId={props.traficoId} />
 
       <Header

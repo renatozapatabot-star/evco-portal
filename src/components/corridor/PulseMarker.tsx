@@ -4,7 +4,7 @@
 // Color derives from PulseSeverity. Multiple pulses at the same landmark
 // are fanned out via a deterministic hash of the traficoId (±0.0005°).
 
-import { Marker } from 'react-leaflet'
+import { Marker, Tooltip } from 'react-leaflet'
 import L from 'leaflet'
 import { memo, useMemo } from 'react'
 import type { ActiveTraficoPulse, PulseSeverity } from '@/types/corridor'
@@ -77,7 +77,11 @@ function PulseMarkerInner({ pulse, onClick }: PulseMarkerProps) {
       eventHandlers={{
         click: onClick ? () => onClick(pulse) : undefined,
       }}
-    />
+    >
+      <Tooltip direction="top" offset={[0, -8]} opacity={0.92}>
+        {pulse.traficoId}
+      </Tooltip>
+    </Marker>
   )
 }
 

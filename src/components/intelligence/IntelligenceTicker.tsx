@@ -94,7 +94,10 @@ export default function IntelligenceTicker() {
         const json = (await res.json()) as { data?: { items?: TickerItem[] } | null }
         if (cancelled) return
         const next = json?.data?.items ?? []
-        setItems(next.length > 0 ? next : null)
+        const unique = Array.from(
+          new Map(next.map((i) => [i.id ?? i.label, i])).values(),
+        )
+        setItems(unique.length > 0 ? unique : null)
       } catch {
         // Silent — no toast, ticker just hides.
       }

@@ -24,7 +24,10 @@ export interface DecisionRow {
 
 export interface KPIs {
   entradasHoy: number
+  /** Operator's own personal assignments (activos del operador). */
   activos: number
+  /** Ops-wide active count (tráficos en proceso en toda la empresa). */
+  activosAllCount?: number
   pendientes: number
   atrasados: number
   /** Last 14 daily counts per KPI — last 7 feed the sparkline, prior 7 feed the delta. */

@@ -17,8 +17,11 @@ import { bucketDailySeries, sumRange, daysAgo } from '@/lib/cockpit/fetch'
 import { softCount, softData, softFirst } from '@/lib/cockpit/safe-query'
 import { auditLogAvailable } from '@/lib/cockpit/table-availability'
 import { auditRowToTimelineItem, type AuditRow } from '@/lib/cockpit/audit-format'
+import { parseMonthParam, recentMonths } from '@/lib/cockpit/month-window'
 import { fetchEscalatedThreads } from '@/lib/mensajeria/feed'
-import { CockpitInicio, PriorityThreadsPanel, TimelineFeed, CockpitSkeleton, type CockpitHeroKPI } from '@/components/aguila'
+import { CockpitInicio, PriorityThreadsPanel, TimelineFeed, CockpitSkeleton, ActividadStrip, CapabilityCardGrid, type CockpitHeroKPI, type ActividadStripItem } from '@/components/aguila'
+import type { CapabilityCounts } from '@/lib/cockpit/capabilities'
+import { MonthSelector } from '@/components/admin/MonthSelector'
 import { TraficosDelDiaTile } from '@/components/eagle/TraficosDelDiaTile'
 import { ArApTile } from '@/components/eagle/ArApTile'
 import { ClientesDormidosTile } from '@/components/eagle/ClientesDormidosTile'
@@ -54,7 +57,11 @@ function withHardTimeout<T>(p: PromiseLike<T>, ms: number, fallback: T): Promise
   ])
 }
 
-export default async function EaglePage() {
+interface EaglePageProps {
+  searchParams?: Promise<{ month?: string | string[] }>
+}
+
+export default async function EaglePage({ searchParams }: EaglePageProps) {
   const cookieStore = await cookies()
   const token = cookieStore.get('portal_session')?.value ?? ''
   const session = await verifySession(token)
@@ -62,17 +69,19 @@ export default async function EaglePage() {
   if (!['admin', 'broker'].includes(session.role)) redirect('/')
 
   const opName = cookieStore.get('operator_name')?.value || 'Tito'
+  const resolved = (await searchParams) ?? {}
+  const rawMonth = Array.isArray(resolved.month) ? resolved.month[0] : resolved.month
 
   return (
     <Suspense fallback={<CockpitSkeleton />}>
-      <EagleContent opName={opName} />
+      <EagleContent opName={opName} rawMonth={rawMonth ?? null} />
     </Suspense>
   )
 }
 
-async function EagleContent({ opName }: { opName: string }) {
+async function EagleContent({ opName, rawMonth }: { opName: string; rawMonth: string | null }) {
   try {
-    return await renderEagle(opName)
+    return await renderEagle(opName, rawMonth)
   } catch (err) {
     return (
       <div style={{ padding: 40, color: '#E6EDF3', fontFamily: 'ui-monospace, monospace', fontSize: 13 }}>
@@ -82,16 +91,23 @@ async function EagleContent({ opName }: { opName: string }) {
   }
 }
 
-async function renderEagle(opName: string) {
+async function renderEagle(opName: string, rawMonth: string | null) {
   const sb = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
   )
 
   const now = new Date()
-  const fourteenDaysAgoIso = daysAgo(14, now).toISOString()
-  const sevenDaysAgoIso = daysAgo(7, now).toISOString()
-  const monthStartIso = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
+  const month = parseMonthParam(rawMonth, now)
+  const monthOptions = recentMonths(12, now)
+  // Prior month window for delta comparisons.
+  const prior = parseMonthParam(month.prev, now)
+  // Legacy sparkline windows — capped to 14 days but always ending at
+  // the end of the selected month so the KPITile trend lines stay
+  // coherent with the selected period.
+  const sparklineEnd = new Date(Math.min(new Date(month.monthEnd).getTime() - 1, now.getTime()))
+  const fourteenDaysAgoIso = daysAgo(14, sparklineEnd).toISOString()
+  const sevenDaysAgoIso = daysAgo(7, sparklineEnd).toISOString()
 
   const [
     traficosRows,
@@ -105,14 +121,14 @@ async function renderEagle(opName: string) {
     expedientesSeriesRows,
     expedientesCount,
     entradasSeriesRows,
-    entradasHoyCount,
+    entradasMesCount,
     clasificacionesSeriesRows,
     clasificacionesCount,
     pedimentosPendientesCount,
-    cruzados7dCount,
-    pedimentosMonthCount,
+    cruzadosMesCount,
+    pedimentosMesCount,
+    pedimentosPriorMesCount,
     lastPedimento,
-    entradas7dCount,
     mveRows,
     auditSuggestionsRows,
     escalatedThreads,
@@ -142,18 +158,18 @@ async function renderEagle(opName: string) {
     softData<{ fecha_llegada_mercancia: string }>(
       sb.from('entradas').select('fecha_llegada_mercancia').gte('fecha_llegada_mercancia', fourteenDaysAgoIso).limit(2000)
     ),
-    softCount(sb.from('entradas').select('id', { count: 'exact', head: true }).gte('fecha_llegada_mercancia', new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString())),
+    softCount(sb.from('entradas').select('id', { count: 'exact', head: true }).gte('fecha_llegada_mercancia', month.monthStart).lt('fecha_llegada_mercancia', month.monthEnd)),
     softData<{ fraccion_classified_at: string }>(
       sb.from('globalpc_productos').select('fraccion_classified_at').not('fraccion_classified_at', 'is', null).gte('fraccion_classified_at', fourteenDaysAgoIso).limit(2000)
     ),
     softCount(sb.from('globalpc_productos').select('id', { count: 'exact', head: true }).not('fraccion_classified_at', 'is', null)),
     softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).is('pedimento', null)),
-    softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).eq('estatus', 'Cruzado').gte('updated_at', sevenDaysAgoIso)),
-    softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).not('pedimento', 'is', null).gte('updated_at', monthStartIso)),
+    softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).eq('estatus', 'Cruzado').gte('updated_at', month.monthStart).lt('updated_at', month.monthEnd)),
+    softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).not('pedimento', 'is', null).gte('updated_at', month.monthStart).lt('updated_at', month.monthEnd)),
+    softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).not('pedimento', 'is', null).gte('updated_at', prior.monthStart).lt('updated_at', prior.monthEnd)),
     softFirst<{ updated_at: string }>(
       sb.from('traficos').select('updated_at').not('pedimento', 'is', null).order('updated_at', { ascending: false }).limit(1)
     ),
-    softCount(sb.from('entradas').select('id', { count: 'exact', head: true }).gte('fecha_llegada_mercancia', sevenDaysAgoIso)),
     softData<{ id: string; rule_code: string | null; trafico_id: string | null }>(
       sb.from('mve_alerts').select('id, rule_code, trafico_id').eq('severity', 'critical').eq('resolved', false).limit(10)
     ),
@@ -234,15 +250,17 @@ async function renderEagle(opName: string) {
   atenciones.sort((a, b) => a.severityRank - b.severityRank)
   const atencionesTop = atenciones.slice(0, 5)
 
-  // Audit escalations
+  // Audit escalations — scoped to the selected month.
   let auditRows: AuditRow[] = []
   if (auditAvailable) {
     auditRows = await softData<AuditRow>(
       sb.from('audit_log')
         .select('id, table_name, action, record_id, changed_at, company_id')
         .in('action', ESCALATION_ACTIONS)
+        .gte('changed_at', month.monthStart)
+        .lt('changed_at', month.monthEnd)
         .order('changed_at', { ascending: false })
-        .limit(8)
+        .limit(20)
     )
   }
   const actividadItems = auditRows.map(auditRowToTimelineItem)
@@ -255,6 +273,7 @@ async function renderEagle(opName: string) {
   const clasificacionesSeries = bucketDailySeries(clasificacionesSeriesRows as Array<Record<string, unknown>>, 'fraccion_classified_at', 14, now)
 
   const arTotal = ar.total ?? 0
+  const monthShort = month.label
 
   const heroKPIs: CockpitHeroKPI[] = [
     { key: 'traficos', label: 'Tráficos en proceso', value: activeTraficosTotal, series: traficosActivosSeries, current: sumRange(traficosActivosSeries, 7, 14), previous: sumRange(traficosActivosSeries, 0, 7), href: '/traficos?estatus=En+Proceso', tone: 'silver' },
@@ -271,10 +290,10 @@ async function renderEagle(opName: string) {
     traficos: {
       count: activeTraficosTotal,
       series: traficosActivosSeries,
-      microStatus: `${cruzados7dCount} cruzaron esta semana`,
+      microStatus: `${cruzadosMesCount} cruzaron en ${monthShort}`,
     },
     pedimentos: {
-      count: pedimentosMonthCount,
+      count: pedimentosMesCount,
       series: pedimentosPendSeries,
       microStatus: daysSinceLastPedimento != null
         ? `Último hace ${daysSinceLastPedimento} día${daysSinceLastPedimento === 1 ? '' : 's'}`
@@ -292,9 +311,9 @@ async function renderEagle(opName: string) {
       microStatus: '—',
     },
     entradas: {
-      count: entradasHoyCount,
+      count: entradasMesCount,
       series: entradasSeries,
-      microStatus: `${entradas7dCount} recibida${entradas7dCount === 1 ? '' : 's'} esta semana`,
+      microStatus: `${entradasMesCount} recibida${entradasMesCount === 1 ? '' : 's'} en ${monthShort}`,
     },
     clasificaciones: {
       count: clasificacionesCount,
@@ -305,6 +324,13 @@ async function renderEagle(opName: string) {
 
   const estadoSections = (
     <>
+      <MonthSelector
+        ym={month.ym}
+        label={month.label}
+        prev={month.prev}
+        next={month.next}
+        options={monthOptions}
+      />
       <PriorityThreadsPanel threads={escalatedThreads} />
       <div className="eagle-estado-grid" style={{
         display: 'grid',
@@ -328,14 +354,51 @@ async function renderEagle(opName: string) {
   )
 
   const summaryLine = atencionesTop.length > 0
-    ? `${atencionesTop.length} atencion${atencionesTop.length === 1 ? '' : 'es'} pendiente${atencionesTop.length === 1 ? '' : 's'}.`
-    : 'Una pantalla · seis señales · cero clics para decidir.'
+    ? `${atencionesTop.length} atencion${atencionesTop.length === 1 ? '' : 'es'} pendiente${atencionesTop.length === 1 ? '' : 's'} · vista ${month.label}.`
+    : `Vista de ${month.label} · ${activeClients} clientes activos.`
 
   const inTransitCount = traficosByStatus
     .filter(b => b.status !== 'Cruzado' && b.status !== 'Cerrado')
     .reduce((s, b) => s + b.count, 0)
 
-  const actividadSlot = <TimelineFeed items={actividadItems} max={8} emptyLabel="Sin escalaciones recientes." />
+  const actividadSlot = (
+    <TimelineFeed
+      items={actividadItems}
+      max={20}
+      emptyLabel={`Sin escalaciones en ${month.label}.`}
+    />
+  )
+
+  // v10 — ActividadStrip (owner: escalations + priority threads as chips)
+  const stripItems: ActividadStripItem[] = [
+    ...escalatedThreads.slice(0, 4).map((t) => ({
+      id: `thr-${t.id}`,
+      label: t.subject ?? 'Hilo escalado',
+      detail: t.last_message_preview ?? t.company_id ?? undefined,
+      timestamp: t.escalated_at ?? t.last_message_at ?? new Date().toISOString(),
+      href: `/mensajeria/${encodeURIComponent(t.id)}`,
+      tone: 'warning' as const,
+    })),
+    ...actividadItems.slice(0, 8).map((ti) => ({
+      id: ti.id,
+      label: ti.title,
+      detail: ti.subtitle,
+      timestamp: ti.timestamp,
+      href: ti.href,
+      tone: 'danger' as const,
+    })),
+  ]
+  const actividadStripSlot = (
+    <ActividadStrip items={stripItems} emptyLabel={`Sin actividad crítica en ${month.label}.`} title="Escalaciones + hilos" />
+  )
+
+  // v10 — Capability cards (owner scope)
+  const capabilityCounts: CapabilityCounts = {
+    checklist:    { count: pedimentosPendientesCount, microStatus: 'expedientes pendientes' },
+    clasificador: { count: clasificacionesCount, microStatus: 'Sube · auto-clasifica · TIGIE' },
+    mensajes:     { count: escalatedThreads.length, microStatus: escalatedThreads.length > 0 ? 'escalados' : '@ menciona a tu equipo' },
+  }
+  const capabilitySlot = <CapabilityCardGrid counts={capabilityCounts} />
 
   return (
     <CockpitInicio
@@ -345,15 +408,11 @@ async function renderEagle(opName: string) {
       navCounts={navCounts}
       estadoSections={estadoSections}
       actividadSlot={actividadSlot}
+      actividadStripSlot={actividadStripSlot}
+      capabilitySlot={capabilitySlot}
       systemStatus={atencionesTop.length > 0 ? 'warning' : 'healthy'}
       pulseSignal={inTransitCount > 0}
       summaryLine={summaryLine}
-      metaPills={[
-        { label: 'Activos', value: activeTraficosTotal },
-        { label: 'Clientes', value: activeClients },
-        { label: 'Dormidos', value: dormant.length, tone: dormant.length > 0 ? 'warning' : 'silver' },
-        { label: 'CxC', value: fmtUSDCompact(arTotal) || '$0' },
-      ]}
     />
   )
 }

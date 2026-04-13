@@ -17,10 +17,11 @@ import {
 } from '@/lib/cliente/dashboard'
 import { bucketDailySeries, daysAgo } from '@/lib/cockpit/fetch'
 import { softCount, softData, softFirst } from '@/lib/cockpit/safe-query'
-import { CockpitInicio, MensajeriaFeed, CockpitErrorCard, CockpitSkeleton, type CockpitHeroKPI } from '@/components/aguila'
+import { CockpitInicio, MensajeriaFeed, CockpitErrorCard, CockpitSkeleton, ActividadStrip, CapabilityCardGrid, type CockpitHeroKPI, type ActividadStripItem } from '@/components/aguila'
 import { ClienteEstado } from '@/components/cliente/ClienteEstado'
 import { fetchClientMensajeriaFeed, mensajeriaClientEnabled } from '@/lib/mensajeria/feed'
 import type { NavCounts } from '@/lib/cockpit/nav-tiles'
+import type { CapabilityCounts } from '@/lib/cockpit/capabilities'
 
 /** Wrap any Promise with a hard timeout so SSR can never exceed Vercel function limits. */
 function withHardTimeout<T>(p: PromiseLike<T>, ms: number, fallback: T): Promise<T> {
@@ -193,6 +194,31 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar)
     ? Math.min(100, Math.round((documentos.length / Math.max(activeTraficos.length * 3, 1)) * 100))
     : 0
 
+  // v10 — ActividadStrip: client sees Mensajería messages as chips at the top.
+  const actividadStripItems: ActividadStripItem[] = (mensajeriaEnabled ? mensajeriaMessages : []).slice(0, 10).map((m) => ({
+    id: m.id,
+    label: m.sender_display_name ?? 'Renato Zapata & Company',
+    detail: m.body.length > 60 ? `${m.body.slice(0, 57)}…` : m.body,
+    timestamp: m.created_at,
+    href: `/mensajes`,
+    tone: 'silver',
+  }))
+  const actividadStripSlot = (
+    <ActividadStrip
+      items={actividadStripItems}
+      emptyLabel="Tu operación está en calma · Todo en orden"
+      title="Últimos mensajes"
+    />
+  )
+
+  // v10 — Capability cards: Checklist, Clasificador, Mensajes (client scope).
+  const capabilityCounts: CapabilityCounts = {
+    checklist:    { count: Math.max(0, activeTraficos.length * 3 - documentos.length), microStatus: '61 tipos · auto-validado' },
+    clasificador: { count: clasificacionesCount, countSuffix: '', microStatus: 'Sube · auto-clasifica · TIGIE' },
+    mensajes:     { count: mensajeriaMessages.length, microStatus: mensajeriaMessages.length > 0 ? 'sin leer' : '@ menciona a tu equipo' },
+  }
+  const capabilitySlot = <CapabilityCardGrid counts={capabilityCounts} />
+
   return (
     <CockpitInicio
       role="client"
@@ -202,14 +228,10 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar)
       navCounts={navCounts}
       estadoSections={estadoSections}
       actividadSlot={actividadSlot}
+      actividadStripSlot={actividadStripSlot}
+      capabilitySlot={capabilitySlot}
       summaryLine={summaryLine}
       pulseSignal={activeTraficos.length > 0}
-      metaPills={[
-        { label: 'Activos', value: activeTraficos.length },
-        { label: 'Semana', value: entradasSemanaCount },
-        { label: 'Completos', value: `${expPct}%` },
-        { label: 'Mes', value: pedimentosMonthCount },
-      ]}
     />
   )
 }

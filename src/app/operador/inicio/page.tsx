@@ -165,7 +165,11 @@ async function loadOperatorCockpit(opId: string, opName: string) {
 
   const kpis = {
     entradasHoy: entradasHoyCount,
-    activos: activosCount,
+    // Hero "Tráficos activos" is the operator's own assignments — NOT ops-wide.
+    // The ops-wide count (activosCount) stays available for other purposes but
+    // would mislead Eduardo to see 176 when he has a few assigned.
+    activos: personalAssignedCount,
+    activosAllCount: activosCount, // kept for future ops-wide use
     pendientes: pendientesCount,
     atrasados: atrasadosCount,
     entradasSeries, activosSeries, pendientesSeries, atrasadosSeries,

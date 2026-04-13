@@ -13,11 +13,15 @@ import {
   CockpitInicio,
   SeverityRibbon, severityFromCount,
   OperatorActivityStack,
+  ActividadStrip,
+  CapabilityCardGrid,
   type CockpitHeroKPI,
+  type ActividadStripItem,
 } from '@/components/aguila'
 import { ActiveTraficos } from './ActiveTraficos'
 import { RoleKPIBanner } from '@/components/RoleKPIBanner'
 import type { NavCounts } from '@/lib/cockpit/nav-tiles'
+import type { CapabilityCounts } from '@/lib/cockpit/capabilities'
 import { auditRowToTimelineItem, type AuditRow } from '@/lib/cockpit/audit-format'
 import type { MensajeriaMessage, MensajeriaThread } from '@/lib/mensajeria/feed'
 import type { TraficoRow, DecisionRow, KPIs, SystemStatus } from './types'
@@ -136,6 +140,44 @@ export function InicioClient(props: Props) {
     </>
   )
 
+  // v10 — ActividadStrip (operator: audit + escalations as chips at top)
+  const stripItems: ActividadStripItem[] = [
+    ...props.escalatedThreads.slice(0, 3).map((t) => ({
+      id: `thr-${t.id}`,
+      label: t.subject ?? 'Hilo escalado',
+      detail: t.last_message_preview ?? t.company_id ?? undefined,
+      timestamp: t.escalated_at ?? t.last_message_at ?? new Date().toISOString(),
+      href: `/mensajeria/${encodeURIComponent(t.id)}`,
+      tone: 'warning' as const,
+    })),
+    ...props.auditRows.slice(0, 8).map((a) => {
+      const ti = auditRowToTimelineItem(a)
+      return {
+        id: ti.id,
+        label: ti.title,
+        detail: ti.subtitle,
+        timestamp: ti.timestamp,
+        href: ti.href,
+        tone: 'silver' as const,
+      }
+    }),
+  ]
+  const actividadStripSlot = (
+    <ActividadStrip
+      items={stripItems}
+      emptyLabel="Sin actividad reciente."
+      title="Actividad ops-wide"
+    />
+  )
+
+  // v10 — Capability cards (operator scope)
+  const capabilityCounts: CapabilityCounts = {
+    checklist:    { count: null, microStatus: '61 tipos · auto-validado' },
+    clasificador: { count: null, microStatus: 'Sube · auto-clasifica · TIGIE' },
+    mensajes:     { count: props.mensajeriaMessages.length, microStatus: props.mensajeriaMessages.length > 0 ? 'nuevos' : '@ menciona a tu equipo' },
+  }
+  const capabilitySlot = <CapabilityCardGrid counts={capabilityCounts} />
+
   return (
     <CockpitInicio
       role="operator"
@@ -144,15 +186,11 @@ export function InicioClient(props: Props) {
       navCounts={props.navCounts}
       estadoSections={estadoSections}
       actividadSlot={actividadSlot}
+      actividadStripSlot={actividadStripSlot}
+      capabilitySlot={capabilitySlot}
       systemStatus={props.systemStatus}
       summaryLine={props.summaryLine}
       pulseSignal={props.pulseSignal}
-      metaPills={[
-        { label: 'En cola', value: props.colaCount, tone: props.colaCount > 0 ? 'warning' : 'silver' },
-        { label: 'Atrasados', value: props.kpis.atrasados, tone: props.kpis.atrasados > 0 ? 'warning' : 'silver' },
-        { label: 'Hoy', value: props.personalDone },
-        { label: 'Asignados', value: props.personalAssigned },
-      ]}
     />
   )
 }

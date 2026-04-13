@@ -45,6 +45,10 @@ export interface CockpitInicioProps {
   actividadEmptyLabel?: string
   /** Free-form activity renderer for the right rail. v9 canonical. */
   actividadSlot?: ReactNode
+  /** v10 — horizontal activity strip rendered above the hero KPIs. */
+  actividadStripSlot?: ReactNode
+  /** v10 — capability cards row (Checklist / Clasificador / Mensajes) between nav and main. */
+  capabilitySlot?: ReactNode
   /** Optional system-wide status dot next to the greeting. */
   systemStatus?: SystemStatus
   /** True → status dot pulses (work in motion). False → solid (at rest). */
@@ -77,7 +81,7 @@ export function CockpitInicio({
   role, name, companyName,
   heroKPIs, navCounts, estadoSections, actividad,
   actividadEmptyLabel = 'Sin actividad reciente.',
-  actividadSlot,
+  actividadSlot, actividadStripSlot, capabilitySlot,
   systemStatus, pulseSignal, summaryLine, liveTimestamp = true,
   metaPills,
 }: CockpitInicioProps) {
@@ -112,6 +116,9 @@ export function CockpitInicio({
       liveTimestamp={liveTimestamp}
       brandHeader={<CockpitBanner role={role} name={name} companyName={companyName} metaPills={metaPills} />}
     >
+      {/* v10 — ActividadStrip rendered above hero when provided */}
+      {actividadStripSlot}
+
       {/* Hero KPI strip */}
       <div
         className="aguila-cockpit-hero"
@@ -147,6 +154,13 @@ export function CockpitInicio({
       <div style={{ marginBottom: 'var(--aguila-gap-card, 16px)' }}>
         <NavCardGrid items={navItems} />
       </div>
+
+      {/* v10 — Capability cards row (Checklist · Clasificador · Mensajes) */}
+      {capabilitySlot ? (
+        <div style={{ marginBottom: 'var(--aguila-gap-card, 16px)' }}>
+          {capabilitySlot}
+        </div>
+      ) : null}
 
       {/* 2-col main: estadoSections + actividad */}
       <div

@@ -5,6 +5,7 @@ import { verifySession } from '@/lib/session'
 import { getRequiredDocs, type DocType } from '@/lib/doc-requirements'
 import type { Category } from '@/lib/events-catalog'
 import { TraficoDetail } from './TraficoDetail'
+import { buildChain, type FacturaRow as ChainFacturaRow, type EntradaRow as ChainEntradaRow, type PedimentoRow as ChainPedimentoRow } from './buildChain'
 import type {
   AvailableUserLite,
   DocRow,
@@ -56,7 +57,7 @@ export default async function TraficoDetailPage({
   let traficoQ = supabase.from('traficos').select(TRAFICO_COLS).eq('trafico', traficoId)
   if (!isInternal) traficoQ = traficoQ.eq('company_id', session.companyId)
 
-  const [traficoRes, eventsRes, docsRes, facturasRes, notesRes] = await Promise.all([
+  const [traficoRes, eventsRes, docsRes, facturasRes, notesRes, pedimentoRes, entradasRes] = await Promise.all([
     traficoQ.maybeSingle(),
     supabase
       .from('workflow_events')
@@ -70,10 +71,10 @@ export default async function TraficoDetailPage({
       .eq('trafico_id', traficoId)
       .order('created_at', { ascending: false })
       .limit(200),
-    // Step 1 of the partidas chain: get folios for this tráfico from globalpc_facturas.
+    // Step 1 of the partidas chain: get folios + fecha_pago for this tráfico from globalpc_facturas.
     supabase
       .from('globalpc_facturas')
-      .select('folio')
+      .select('folio, fecha_pago')
       .eq('cve_trafico', traficoId)
       .limit(100),
     supabase
@@ -82,6 +83,19 @@ export default async function TraficoDetailPage({
       .eq('trafico_id', traficoId)
       .order('created_at', { ascending: false })
       .limit(100),
+    supabase
+      .from('pedimentos')
+      .select('id, pedimento_number, status, updated_at')
+      .eq('trafico_id', traficoId)
+      .order('updated_at', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from('entradas')
+      .select('id, fecha_ingreso, fecha_llegada_mercancia')
+      .eq('trafico', traficoId)
+      .order('fecha_ingreso', { ascending: false, nullsFirst: false })
+      .limit(50),
   ])
 
   // Hydrate trafico — coerce schema-absent legacy fields to null so the
@@ -206,7 +220,9 @@ export default async function TraficoDetailPage({
 
   // Step 2 of partidas chain: facturas → folios → partidas → product enrichment.
   // globalpc_partidas does NOT have cve_trafico; you must hop through facturas.
-  const folios = ((facturasRes.data as Array<{ folio: number | null }> | null) ?? [])
+  const facturasChainRows =
+    (facturasRes.data as Array<{ folio: number | null; fecha_pago: string | null }> | null) ?? []
+  const folios = facturasChainRows
     .map(f => f.folio)
     .filter((f): f is number => f != null)
 
@@ -324,6 +340,23 @@ export default async function TraficoDetailPage({
 
   const currentUserId = `${session.companyId}:${session.role}`
 
+  const pedimentoChainRow =
+    (pedimentoRes.data as ChainPedimentoRow | null) ?? null
+  const entradasChainRows =
+    (entradasRes.data as ChainEntradaRow[] | null) ?? []
+  const facturasForChain: ChainFacturaRow[] = facturasChainRows
+
+  const chain = buildChain({
+    traficoId,
+    fechaCruce: trafico.fecha_cruce,
+    facturas: facturasForChain,
+    entradas: entradasChainRows,
+    pedimento: pedimentoChainRow,
+    docCount: docs.length,
+    requiredDocsCount: requiredDocs.length,
+    uploadedRequiredCount,
+  })
+
   return (
     <TraficoDetail
       traficoId={traficoId}
@@ -340,6 +373,7 @@ export default async function TraficoDetailPage({
       missingDocs={missingDocs}
       requiredDocsCount={requiredDocs.length}
       uploadedRequiredCount={uploadedRequiredCount}
+      chain={chain}
     />
   )
 }

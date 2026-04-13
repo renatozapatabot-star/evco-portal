@@ -16,6 +16,7 @@ import {
 import { useTrack } from '@/lib/telemetry/useTrack'
 import { fmtUSDCompact } from '@/lib/format-utils'
 import { TraficoQuickActions } from '@/components/traficos/TraficoQuickActions'
+import { ChainView, type ChainNode } from '@/components/aguila'
 import { PageOpenTracker } from './PageOpenTracker'
 import { Header } from './Header'
 import { HeroStrip, type HeroTileSpec } from './HeroStrip'
@@ -51,6 +52,7 @@ interface TraficoDetailProps {
   missingDocs: DocType[]
   requiredDocsCount: number
   uploadedRequiredCount: number
+  chain: ChainNode[]
 }
 
 type TabId = 'documentos' | 'partidas' | 'cronologia' | 'notas' | 'comunicacion'
@@ -247,7 +249,11 @@ export function TraficoDetail(props: TraficoDetailProps) {
           alignItems: 'start',
         }}
       >
-        <div style={{ minWidth: 0 }}>
+        <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <ChainView
+            nodes={props.chain}
+            ariaLabel={`Cadena documental de ${props.traficoId}`}
+          />
           <div
             style={{
               background: BG_CARD,

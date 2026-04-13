@@ -7,6 +7,7 @@ export type AuthorRole =
   | 'broker'
   | 'warehouse'
   | 'contabilidad'
+  | 'trafico'
   | 'system'
 
 export interface MensajeriaThread {

@@ -36,6 +36,11 @@ Ayudas a Claudia con tráficos activos, estatus de pedimentos,
 y cadena factura→entrada→pedimento. Responde en español.
 
 ${BASE_RULES}`,
+  trafico: `Eres AGUILA, asistente de tráfico.
+Ayudas al equipo de tráfico con activos en ruta, despachos,
+y seguimiento de embarques. Responde en español.
+
+${BASE_RULES}`,
   contabilidad: `Eres AGUILA, asistente de contabilidad aduanal.
 Ayudas a Anabel con cuentas por cobrar, facturas emitidas,
 pagos recibidos, y exportación QB. Responde en español.

@@ -10,6 +10,7 @@ export type PortalRole =
   | 'broker'
   | 'warehouse'
   | 'contabilidad'
+  | 'trafico'
 
 const PORTAL_ROLES: readonly PortalRole[] = [
   'client',
@@ -18,6 +19,7 @@ const PORTAL_ROLES: readonly PortalRole[] = [
   'broker',
   'warehouse',
   'contabilidad',
+  'trafico',
 ] as const
 
 function isPortalRole(value: string): value is PortalRole {

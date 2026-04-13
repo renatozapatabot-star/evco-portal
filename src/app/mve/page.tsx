@@ -35,7 +35,8 @@ export default function MvePage() {
   const [rows, setRows] = useState<TraficoRow[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
-  const [compAlerts, setCompAlerts] = useState<any[]>([])
+  type CompAlert = { id?: string; title?: string; description?: string; due_date?: string; days_until?: number | null; severity?: string }
+  const [compAlerts, setCompAlerts] = useState<CompAlert[]>([])
   const [mveDeadline, setMveDeadline] = useState<Date | null>(null)
   const daysLeft = getDaysLeft(mveDeadline)
 

@@ -7,7 +7,7 @@ const supabase = createClient(
 
 export async function startScrapeRun(
   source: string,
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 ): Promise<string> {
   const { data } = await supabase
     .from('scrape_runs')

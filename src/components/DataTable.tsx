@@ -4,6 +4,7 @@ import { useState, useMemo, useCallback } from 'react'
 import { ChevronUp, ChevronDown, Download, Search, Layers, Save, BookOpen } from 'lucide-react'
 import { getCompanyIdCookie } from '@/lib/client-config'
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- generic data-table column must accept any row shape; callers narrow via type param
 export interface Column<T = any> {
   key: string
   label: string
@@ -25,6 +26,7 @@ interface SavedView {
   search: string
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- generic table props; T is narrowed by caller
 interface Props<T = any> {
   columns: Column<T>[]
   data: T[]
@@ -50,6 +52,7 @@ function fmtExportVal(v: unknown): string {
   return String(v).replace(/,/g, ' ')
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- row shape is arbitrary across callers; cell access is dynamic by design
 export default function DataTable<T extends Record<string, any>>({
   columns, data, loading, pageSize = 50, keyField = 'id',
   expandable, onRowClick, searchPlaceholder = 'Buscar...',

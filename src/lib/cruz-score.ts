@@ -64,7 +64,7 @@ export function calculateCruzScoreDetailed(input: ScoreInput): ScoreResult {
   else if (!input.hasFechaPago && !input.hasPedimento) { payScore = 50 }
 
   // PEDIMENTO (10%)
-  let pedScore = input.hasPedimento ? 100 : 0
+  const pedScore = input.hasPedimento ? 100 : 0
   if (!input.hasPedimento) reasons.push('Sin pedimento')
 
   // COMPLIANCE (5%)

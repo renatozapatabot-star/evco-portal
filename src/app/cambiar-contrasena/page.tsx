@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { Lock, Eye, EyeOff, CheckCircle, AlertCircle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { getCookieValue } from '@/lib/client-config'
@@ -251,12 +252,12 @@ export default function CambiarContrasena() {
         </button>
 
         <div style={{ textAlign: 'center', marginTop: 16 }}>
-          <a
+          <Link
             href="/"
             style={{ fontSize: 13, color: 'var(--text-secondary, #6B6B6B)', textDecoration: 'none' }}
           >
             Volver al inicio
-          </a>
+          </Link>
         </div>
       </form>
     </div>

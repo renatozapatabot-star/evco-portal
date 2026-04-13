@@ -294,6 +294,12 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
     if (network.wasOffline && network.isOnline) reload()
   }, [network.wasOffline, network.isOnline, reload])
 
+  // Auto-refresh every 30 minutes. Must run before any early return to preserve hook order.
+  useEffect(() => {
+    const timer = setInterval(() => { reload() }, 30 * 60 * 1000)
+    return () => clearInterval(timer)
+  }, [reload])
+
   if (error) {
     return (
       <div style={{ padding: 48 }}>
@@ -301,12 +307,6 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
       </div>
     )
   }
-
-  // Auto-refresh every 30 minutes
-  useEffect(() => {
-    const timer = setInterval(() => { reload() }, 30 * 60 * 1000)
-    return () => clearInterval(timer)
-  }, [reload])
 
   if (loading) return <DashboardSkeleton isMobile={isMobile} />
 

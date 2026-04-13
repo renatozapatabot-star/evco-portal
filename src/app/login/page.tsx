@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, Suspense } from 'react'
+import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { getCookieValue } from '@/lib/client-config'
 import { AguilaMark } from '@/components/brand/AguilaMark'
@@ -97,7 +98,7 @@ function LoginContent() {
             <p className="login-session-name">{session.name || session.role}</p>
             <p className="login-session-role">{roleLabel}</p>
             <div className="login-session-actions">
-              <a href="/" className="login-btn-silver">Ir al portal</a>
+              <Link href="/" className="login-btn-silver">Ir al portal</Link>
               <a href="/api/auth/logout" className="login-btn-outline">Cambiar cuenta</a>
             </div>
           </div>

@@ -94,6 +94,9 @@ export function useRealtimeTrafico() {
     const companyId = getCompanyIdCookie()
     companyIdRef.current = companyId
 
+    // supabase-js realtime overload types require the literal cast below;
+    // dropping the cast breaks generic inference on .on(). Tracked in supabase-js.
+    /* eslint-disable @typescript-eslint/no-explicit-any */
     const channel = supabase
       .channel('cruz-realtime')
       .on(
@@ -117,6 +120,7 @@ export function useRealtimeTrafico() {
         handleEntradaUpdate
       )
       .subscribe()
+    /* eslint-enable @typescript-eslint/no-explicit-any */
 
     setUpdatedAt(new Date())
 

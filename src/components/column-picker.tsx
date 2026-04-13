@@ -49,7 +49,7 @@ export function ColumnPicker({ columns, visible, onChange }: { columns: ColumnDe
   )
 }
 
-export function useColumnVisibility(columns: ColumnDef[], data: Record<string, any>[], storageKey?: string) {
+export function useColumnVisibility(columns: ColumnDef[], data: Record<string, unknown>[], storageKey?: string) {
   const [visible, setVisible] = useState<Set<string>>(() => {
     if (storageKey && typeof window !== 'undefined') {
       const saved = localStorage.getItem(`col-vis-${storageKey}`)

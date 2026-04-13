@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
   }
 
   // Search document_classifications (classifier output)
-  let classQuery = supabase
+  const classQuery = supabase
     .from('document_classifications')
     .select('id, filename, doc_type, confidence, source, classified_at, extracted_text')
     .or(`filename.ilike.%${safeQ}%,doc_type.ilike.%${safeQ}%,extracted_text.ilike.%${safeQ}%`)

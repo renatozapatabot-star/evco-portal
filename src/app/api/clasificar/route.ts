@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Writeback resolved fracción to globalpc_productos (closes human feedback loop)
-  let writebackResult: { matched: number; updated: number; error: string | null } = {
+  const writebackResult: { matched: number; updated: number; error: string | null } = {
     matched: 0,
     updated: 0,
     error: null,

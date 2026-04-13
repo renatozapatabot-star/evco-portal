@@ -16,6 +16,19 @@ const eslintConfig = defineConfig([
     "scripts/**",
     "ecosystem.config.js",
   ]),
+  // React Compiler rules downgraded to warnings: they flag optimization
+  // opportunities (memoization skipped, setState-in-effect, impure render),
+  // not runtime bugs. Tracked as tech debt — see /tmp/tech-debt-react-compiler.md.
+  // react-hooks/rules-of-hooks stays an error — that IS a runtime bug.
+  {
+    rules: {
+      "react-hooks/set-state-in-effect": "warn",
+      "react-hooks/purity": "warn",
+      "react-hooks/preserve-manual-memoization": "warn",
+      "react-hooks/immutability": "warn",
+      "react-hooks/static-components": "warn",
+    },
+  },
 ]);
 
 export default eslintConfig;

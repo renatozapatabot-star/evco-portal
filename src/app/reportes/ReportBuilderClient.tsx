@@ -365,7 +365,7 @@ export function ReportBuilderClient({
             type="button"
             onClick={saveTemplate}
             disabled={!config || !reportName.trim()}
-            className="h-[60px] w-full rounded-lg border border-amber-400/30 bg-amber-400/10 text-sm font-medium text-amber-200 hover:border-amber-400 disabled:opacity-40"
+            className="h-[60px] w-full rounded-lg border border-white/10 bg-white/[0.04] text-sm font-medium text-white/85 hover:border-[rgba(192,197,206,0.35)] hover:bg-white/[0.06] disabled:opacity-40"
           >
             Guardar como plantilla
           </button>

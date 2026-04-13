@@ -40,28 +40,11 @@ export default async function InicioPage() {
   if (!session) redirect('/login')
   if (session.role !== 'client') redirect('/')
 
-  // Stream the diagnostic banner immediately so the user sees v9.6 reached
-  // the page handler, before any data fetch can hang. CockpitContent
-  // streams in once data is ready (or throws into the Suspense fallback).
-  const buildId = `v9.6-${new Date().toISOString().slice(0, 16)}`
+  // Stream skeleton immediately while data fetches; CockpitContent streams in.
   return (
-    <>
-      <div style={{
-        background: '#16a34a',
-        color: '#FFFFFF',
-        padding: '12px 16px',
-        fontSize: 12,
-        fontFamily: 'ui-monospace, monospace',
-        position: 'sticky',
-        top: 0,
-        zIndex: 1000,
-      }}>
-        ✓ /inicio reached · {buildId} · session={session.role} · companyId={session.companyId}
-      </div>
-      <Suspense fallback={<CockpitSkeleton />}>
-        <CockpitContent session={session} cookieStore={cookieStore} />
-      </Suspense>
-    </>
+    <Suspense fallback={<CockpitSkeleton />}>
+      <CockpitContent session={session} cookieStore={cookieStore} />
+    </Suspense>
   )
 }
 

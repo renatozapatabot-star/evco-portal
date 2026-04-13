@@ -10,7 +10,10 @@ const nextConfig: NextConfig = {
       { source: '/docs', destination: '/documentos', permanent: true },
       { source: '/finance', destination: '/financiero', permanent: true },
       { source: '/tracking', destination: '/traficos', permanent: true },
-      { source: '/inicio', destination: '/', permanent: true },
+      // /inicio → / redirect REMOVED v9.7. /inicio is the canonical client cockpit
+      // (AGUILA v8.1+). The legacy redirect created an infinite loop:
+      //   / (role=client) → /inicio (next.config 308) → / → ...
+      // ClientHome was deprecated; CockpitInicio at /inicio is the destination.
       { source: '/suppliers', destination: '/proveedores', permanent: true },
     ]
   },

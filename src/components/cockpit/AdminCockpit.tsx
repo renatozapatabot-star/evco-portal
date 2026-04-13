@@ -20,8 +20,6 @@ import { SlideOver } from './shared/SlideOver'
 import { NewsBanner, buildAdminItems } from './shared/NewsBanner'
 import { Trend, computeDelta } from './shared/Trend'
 import { useCockpitRealtime } from '@/hooks/use-cockpit-realtime'
-import { NavCardGrid } from '@/components/NavCardGrid'
-import { buildAdminNavCards } from './shared/nav-cards'
 
 interface Props {
   data: AdminData
@@ -244,9 +242,6 @@ export function AdminCockpit({ data, operatorName }: Props) {
               )}
             </div>
           </div>
-
-          {/* Command center — six destinations Tito acts on */}
-          <NavCardGrid items={buildAdminNavCards(data)} />
 
           {/* Pipeline Funnel — shows items at each workflow stage */}
           <PipelineFunnel />

@@ -27,29 +27,33 @@ export function MensajeriaFeed({
 
   useEffect(() => {
     if (!realtime) return
+    let channel: ReturnType<ReturnType<typeof createBrowserSupabaseClient>['channel']> | null = null
     const sb = createBrowserSupabaseClient()
-    const channel = sb.channel(`mensajeria-feed${companyId ? `-${companyId}` : ''}`)
-    const scheduleRefresh = (payload: { new: unknown }) => {
-      if (debounceRef.current) clearTimeout(debounceRef.current)
-      debounceRef.current = setTimeout(() => {
-        const incoming = payload.new as MensajeriaMessage | undefined
-        if (!incoming) return
-        if (companyId && incoming.company_id !== companyId) return
-        if (incoming.internal_only) return
-        setItems((prev) => {
-          const next = [incoming, ...prev].slice(0, max)
-          return next
-        })
-      }, 200)
+    try {
+      channel = sb.channel(`mensajeria-feed${companyId ? `-${companyId}` : ''}`)
+      const scheduleRefresh = (payload: { new: unknown }) => {
+        if (debounceRef.current) clearTimeout(debounceRef.current)
+        debounceRef.current = setTimeout(() => {
+          const incoming = payload.new as MensajeriaMessage | undefined
+          if (!incoming) return
+          if (companyId && incoming.company_id !== companyId) return
+          if (incoming.internal_only) return
+          setItems((prev) => [incoming, ...prev].slice(0, max))
+        }, 200)
+      }
+      channel.on(
+        'postgres_changes' as 'system',
+        { event: 'INSERT', schema: 'public', table: 'mensajeria_messages' },
+        scheduleRefresh,
+      ).subscribe()
+    } catch {
+      // Realtime subscription failed — feed stays static, no crash.
     }
-    channel.on(
-      'postgres_changes' as 'system',
-      { event: 'INSERT', schema: 'public', table: 'mensajeria_messages' },
-      scheduleRefresh,
-    ).subscribe()
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current)
-      sb.removeChannel(channel)
+      if (channel) {
+        try { sb.removeChannel(channel) } catch { /* ignore */ }
+      }
     }
   }, [realtime, companyId, max])
 

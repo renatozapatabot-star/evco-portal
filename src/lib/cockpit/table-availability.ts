@@ -13,6 +13,8 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 const cache = new Map<string, boolean>()
 const inflight = new Map<string, Promise<boolean>>()
 
+const PROBE_TIMEOUT_MS = 1500
+
 async function probeOnce(sb: SupabaseClient, table: string): Promise<boolean> {
   if (cache.has(table)) return cache.get(table)!
   const existing = inflight.get(table)
@@ -20,8 +22,13 @@ async function probeOnce(sb: SupabaseClient, table: string): Promise<boolean> {
 
   const p = (async () => {
     try {
-      const { error } = await sb.from(table).select('*', { count: 'exact', head: true }).limit(1)
-      const present = !error
+      const result = await Promise.race([
+        sb.from(table).select('id', { count: 'exact', head: true }),
+        new Promise<{ error: string }>((resolve) =>
+          setTimeout(() => resolve({ error: 'probe-timeout' }), PROBE_TIMEOUT_MS),
+        ),
+      ]) as { error: unknown }
+      const present = !result?.error
       cache.set(table, present)
       return present
     } catch {

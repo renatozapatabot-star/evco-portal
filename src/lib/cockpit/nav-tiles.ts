@@ -39,6 +39,12 @@ export const UNIFIED_NAV_TILES: readonly NavTileDef[] = [
 export interface NavCellData {
   count: number | null
   series: number[]
+  /** Short secondary sentence rendered under the description (v8). */
+  microStatus?: string
+  /** Colors the microStatus amber when true — used for "N pendientes" signals. */
+  microStatusWarning?: boolean
+  /** Optional suffix appended to the primary count (e.g. "%"). */
+  countSuffix?: string
 }
 
 export type NavCounts = Record<NavTileKey, NavCellData>

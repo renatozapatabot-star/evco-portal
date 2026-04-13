@@ -11,6 +11,8 @@ interface Props {
   icon: LucideIcon
   description: string
   count: number | null
+  /** Appended to count (e.g. "%") when rendering the primary. */
+  countSuffix?: string
   microStatus?: string
   microStatusWarning?: boolean
   /** Optional 7-day sparkline. Render below label when provided. */
@@ -19,7 +21,7 @@ interface Props {
   trendTone?: SparklineTone
 }
 
-export function SmartNavCard({ href, label, icon: Icon, description, count, microStatus, microStatusWarning, trendData, trendTone = 'silver' }: Props) {
+export function SmartNavCard({ href, label, icon: Icon, description, count, countSuffix, microStatus, microStatusWarning, trendData, trendTone = 'silver' }: Props) {
   const hasTrend = Array.isArray(trendData) && trendData.length >= 2
   return (
     <Link href={href} style={{ textDecoration: 'none', color: 'inherit', display: 'flex' }}>
@@ -87,7 +89,7 @@ export function SmartNavCard({ href, label, icon: Icon, description, count, micr
             color: count > 0 ? '#E6EDF3' : '#475569',
             flexShrink: 0,
           }}>
-            {count}
+            {count}{countSuffix ? <span style={{ fontSize: 14, fontWeight: 700, color: '#94a3b8', marginLeft: 2 }}>{countSuffix}</span> : null}
           </div>
         )}
       </motion.div>

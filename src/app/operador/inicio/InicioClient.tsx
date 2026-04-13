@@ -13,11 +13,11 @@ import {
   CockpitInicio,
   SeverityRibbon, severityFromCount,
   type CockpitHeroKPI,
-  type TimelineItem,
 } from '@/components/aguila'
 import { ActiveTraficos } from './ActiveTraficos'
 import { RoleKPIBanner } from '@/components/RoleKPIBanner'
 import type { NavCounts } from '@/lib/cockpit/nav-tiles'
+import { auditRowToTimelineItem, type AuditRow } from '@/lib/cockpit/audit-format'
 import type { TraficoRow, DecisionRow, KPIs, SystemStatus } from './types'
 
 interface Props {
@@ -34,6 +34,8 @@ interface Props {
   personalCompletedThisWeek: number
   personalCompletedLastWeek: number
   navCounts: NavCounts
+  auditRows: AuditRow[]
+  pulseSignal: boolean
 }
 
 export function InicioClient(props: Props) {
@@ -112,15 +114,8 @@ export function InicioClient(props: Props) {
     },
   ]
 
-  // Actividad reciente — ops-wide decisions (not filtered by operator).
-  const actividad: TimelineItem[] = props.feed.slice(0, 8).map((f) => ({
-    id: String(f.id),
-    title: f.trafico || '—',
-    subtitle: f.decision ? truncate(f.decision, 72) : undefined,
-    timestamp: f.created_at,
-    href: f.trafico ? `/traficos/${encodeURIComponent(f.trafico)}` : undefined,
-    accessory: <DecisionPill label={f.decision_type} />,
-  }))
+  // Actividad reciente — audit_log ops-wide (AGUILA v8 canonical source).
+  const actividad = props.auditRows.slice(0, 8).map(auditRowToTimelineItem)
 
   // Estado de operaciones — operator-specific: celebration banner + cola excepciones + active tráficos
   const estadoSections = (
@@ -148,9 +143,16 @@ export function InicioClient(props: Props) {
       navCounts={props.navCounts}
       estadoSections={estadoSections}
       actividad={actividad}
-      actividadEmptyLabel="Aún no hay actividad registrada hoy."
+      actividadEmptyLabel="Sin actividad reciente."
       systemStatus={props.systemStatus}
       summaryLine={props.summaryLine}
+      pulseSignal={props.pulseSignal}
+      metaPills={[
+        { label: 'En cola', value: props.colaCount, tone: props.colaCount > 0 ? 'warning' : 'silver' },
+        { label: 'Atrasados', value: props.kpis.atrasados, tone: props.kpis.atrasados > 0 ? 'warning' : 'silver' },
+        { label: 'Hoy', value: props.personalDone },
+        { label: 'Asignados', value: props.personalAssigned },
+      ]}
     />
   )
 }

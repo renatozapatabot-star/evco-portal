@@ -44,6 +44,8 @@ export interface PageShellProps {
   title: string
   subtitle?: string
   systemStatus?: SystemStatus
+  /** When explicitly false, the status dot stays solid (no pulse). Defaults to pulse. */
+  pulseSignal?: boolean
   liveTimestamp?: boolean
   badges?: ReactNode
   children: ReactNode
@@ -59,10 +61,11 @@ export interface PageShellProps {
  * composes from this per AGUILA v6.
  */
 export function PageShell({
-  title, subtitle, systemStatus, liveTimestamp, badges, children, brandHeader,
+  title, subtitle, systemStatus, pulseSignal, liveTimestamp, badges, children, brandHeader,
   maxWidth = 1400,
 }: PageShellProps) {
   const dotColor = systemStatus ? statusColor(systemStatus) : null
+  const shouldPulse = pulseSignal ?? true
   return (
     <div
       className="aguila-dark"
@@ -88,7 +91,7 @@ export function PageShell({
             {dotColor ? (
               <span
                 aria-hidden
-                className="aguila-dot-pulse"
+                className={shouldPulse ? 'aguila-dot-pulse' : undefined}
                 style={{
                   width: 12, height: 12, borderRadius: '50%',
                   background: dotColor, boxShadow: `0 0 10px ${dotColor}`, flexShrink: 0,

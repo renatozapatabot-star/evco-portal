@@ -5,11 +5,19 @@ import { fmtDate } from '@/lib/format-utils'
 
 export type CockpitRole = 'client' | 'operator' | 'owner'
 
+export interface MetaPill {
+  label: string
+  value: string | number
+  tone?: 'silver' | 'warning'
+}
+
 interface Props {
   role: CockpitRole
   name: string
   /** Client only — company name. */
   companyName?: string
+  /** Role-aware live signal chips shown under the subtitle. */
+  metaPills?: MetaPill[]
 }
 
 /**
@@ -17,7 +25,7 @@ interface Props {
  * different meta line + subtitle per surface. Composed into PageShell via
  * its `brandHeader` slot.
  */
-export function CockpitBanner({ role, name, companyName }: Props) {
+export function CockpitBanner({ role, name, companyName, metaPills }: Props) {
   const subtitle =
     role === 'client'   ? (companyName ? `Portal del cliente · ${companyName}` : 'Portal del cliente')
     : role === 'owner'  ? `Vista Águila · ${name}`
@@ -70,6 +78,35 @@ export function CockpitBanner({ role, name, companyName }: Props) {
       }}>
         {meta}
       </div>
+      {metaPills && metaPills.length > 0 ? (
+        <div style={{
+          marginTop: 8,
+          marginLeft: 48,
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: 6,
+        }}>
+          {metaPills.map((p, i) => (
+            <span key={`${p.label}-${i}`} style={{
+              fontFamily: 'var(--font-jetbrains-mono), monospace',
+              fontSize: 'var(--aguila-fs-meta, 11px)',
+              fontWeight: 600,
+              color: p.tone === 'warning' ? '#FBBF24' : TEXT_SECONDARY,
+              padding: '3px 10px',
+              borderRadius: 999,
+              background: p.tone === 'warning' ? 'rgba(251,191,36,0.12)' : 'rgba(192,197,206,0.08)',
+              border: `1px solid ${p.tone === 'warning' ? 'rgba(251,191,36,0.25)' : 'rgba(192,197,206,0.15)'}`,
+              whiteSpace: 'nowrap',
+              letterSpacing: '0.01em',
+            }}>
+              <span style={{ color: TEXT_MUTED, marginRight: 6, textTransform: 'uppercase', fontSize: 9, letterSpacing: '0.08em' }}>
+                {p.label}
+              </span>
+              {p.value}
+            </span>
+          ))}
+        </div>
+      ) : null}
     </div>
   )
 }

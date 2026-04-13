@@ -57,14 +57,16 @@ function daysBetween(from: Date, to: Date): number {
  */
 export async function computeARAging(
   supabase: SupabaseClient,
-  companyId: string,
+  companyId: string | null,
 ): Promise<AgingResult> {
-  const { data, error } = await supabase
+  // companyId === null → broker aggregate (all tenants). Owner cockpit uses this.
+  let q = supabase
     .from('invoices')
     .select('id, invoice_number, total, currency, due_date, created_at, status, notes, company_id')
-    .eq('company_id', companyId)
     .in('status', ['draft', 'sent', 'viewed', 'overdue'])
     .limit(1000)
+  if (companyId) q = q.eq('company_id', companyId)
+  const { data, error } = await q
 
   if (error || !data) {
     return { total: 0, count: 0, byBucket: EMPTY_BUCKETS.map(b => ({ ...b })), topDebtors: [], currency: 'MXN' }
@@ -116,7 +118,7 @@ export async function computeARAging(
  */
 export async function computeAPAging(
   supabase: SupabaseClient,
-  companyId: string,
+  companyId: string | null,
 ): Promise<AgingResult> {
   const empty: AgingResult = {
     total: 0,
@@ -127,22 +129,27 @@ export async function computeAPAging(
     sourceMissing: true,
   }
 
-  const { data: company } = await supabase
-    .from('companies')
-    .select('clave_cliente')
-    .eq('company_id', companyId)
-    .maybeSingle()
+  // companyId === null → broker aggregate across all tenants.
+  let claveFilter: string | null = null
+  if (companyId) {
+    const { data: company } = await supabase
+      .from('companies')
+      .select('clave_cliente')
+      .eq('company_id', companyId)
+      .maybeSingle()
+    const clave = (company as { clave_cliente: string | null } | null)?.clave_cliente
+    if (!clave) return empty
+    claveFilter = clave
+  }
 
-  const clave = (company as { clave_cliente: string | null } | null)?.clave_cliente
-  if (!clave) return empty
-
-  const { data, error } = await supabase
+  let q = supabase
     .from('aduanet_facturas')
     .select('pedimento, referencia, valor_usd, fecha_factura, fecha_pago, proveedor')
-    .eq('clave_cliente', clave)
     .is('fecha_pago', null)
     .not('fecha_factura', 'is', null)
     .limit(1000)
+  if (claveFilter) q = q.eq('clave_cliente', claveFilter)
+  const { data, error } = await q
 
   if (error || !data || data.length === 0) {
     return { ...empty, sourceMissing: false }

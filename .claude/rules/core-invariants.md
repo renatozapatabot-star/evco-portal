@@ -179,3 +179,30 @@ caused a real regression, a compliance risk, or a silent failure in production.
     banned — a quality bump in the primitive must cascade to all three
     surfaces automatically. Role-specific content enters via `heroKPIs`,
     `navCounts`, `estadoSections`, `actividad` props.
+
+31. **Owner (/admin/eagle) aggregates across all clients.** Admin login
+    encodes `session.companyId='admin'` (broker encodes `'internal'`) —
+    these values do not match any `company_id` in data tables. Owner
+    queries MUST NOT filter by `session.companyId` because it guarantees
+    zero rows. Owner is the broker's view of every tenant under Patente 3596.
+    Client surfaces (`/inicio`) remain strictly scoped by `session.companyId`
+    (invariant 24 still governs); operator surfaces are ops-wide for
+    shared counts, personal for assignments.
+    verify: `grep -n "session.companyId" src/app/admin/eagle/page.tsx` → 0 matches
+
+32. **`audit_log` is the canonical activity-feed source.** All three
+    cockpits (`/inicio`, `/operador/inicio`, `/admin/eagle`) read Actividad
+    Reciente from `audit_log` via `src/lib/cockpit/audit-format.ts`. Client
+    filters by `company_id`; operator is unfiltered; owner filters to the
+    escalation allowlist (`draft_rejected`, `login_failed`, `oca_requested`,
+    `compliance_escalated`, `mve_critical`, `pedimento_rechazado`,
+    `data_exported`). `workflow_events` and `operational_decisions` are no
+    longer used for cockpit activity feeds.
+    verify: `grep -rn "from('audit_log')" src/app/inicio src/app/operador/inicio src/app/admin/eagle` → ≥3 matches
+
+33. **`/operador` root redirects to `/operador/inicio`.** A single canonical
+    operator cockpit. The legacy `OperatorCockpit` + `FlowCard` +
+    `OperatorHeroStrip` + `OperatorRightRail` under
+    `src/app/operador/_components/` were deleted in v8 — any attempt to
+    reintroduce them is a regression.
+    verify: `grep -n "redirect" src/app/operador/page.tsx` → must show redirect to /operador/inicio

@@ -45,10 +45,14 @@ export interface CockpitInicioProps {
   actividadEmptyLabel?: string
   /** Optional system-wide status dot next to the greeting. */
   systemStatus?: SystemStatus
+  /** True → status dot pulses (work in motion). False → solid (at rest). */
+  pulseSignal?: boolean
   /** Short summary line right under the h1 greeting. */
   summaryLine?: string
   /** Render a live timestamp under the summary line. Default: true. */
   liveTimestamp?: boolean
+  /** Role-aware meta pills rendered in CockpitBanner. */
+  metaPills?: Array<{ label: string; value: string | number; tone?: 'silver' | 'warning' }>
 }
 
 /**
@@ -71,7 +75,8 @@ export function CockpitInicio({
   role, name, companyName,
   heroKPIs, navCounts, estadoSections, actividad,
   actividadEmptyLabel = 'Sin actividad reciente.',
-  systemStatus, summaryLine, liveTimestamp = true,
+  systemStatus, pulseSignal, summaryLine, liveTimestamp = true,
+  metaPills,
 }: CockpitInicioProps) {
   const greetingTitle =
     role === 'client' ? (companyName || 'Portal del cliente')
@@ -87,6 +92,9 @@ export function CockpitInicio({
         description: tile.description,
       },
       count: cell?.count ?? null,
+      countSuffix: cell?.countSuffix,
+      microStatus: cell?.microStatus,
+      microStatusWarning: cell?.microStatusWarning,
       trendData: cell?.series && cell.series.length > 7 ? cell.series.slice(-7) : cell?.series,
       trendTone: 'silver',
     }
@@ -97,8 +105,9 @@ export function CockpitInicio({
       title={greetingTitle}
       subtitle={summaryLine}
       systemStatus={systemStatus}
+      pulseSignal={pulseSignal}
       liveTimestamp={liveTimestamp}
-      brandHeader={<CockpitBanner role={role} name={name} companyName={companyName} />}
+      brandHeader={<CockpitBanner role={role} name={name} companyName={companyName} metaPills={metaPills} />}
     >
       {/* Hero KPI strip */}
       <div

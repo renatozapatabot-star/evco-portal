@@ -4,6 +4,7 @@ import { createServerClient } from '@/lib/supabase-server'
 import { logOperatorAction } from '@/lib/operator-actions'
 import { InicioClient } from './InicioClient'
 import { bucketDailySeries, sumRange, startOfToday, daysAgo } from '@/lib/cockpit/fetch'
+import { fmtUSDCompact } from '@/lib/format-utils'
 import type { TraficoRow, DecisionRow, SystemStatus } from './types'
 
 export const dynamic = 'force-dynamic'
@@ -50,6 +51,15 @@ export default async function OperadorInicioPage() {
     expedientesPendingRes,
     clasificacionesSeriesRes,
     clasificacionesTotalRes,
+    cruzados7dRes,
+    pedimentosMonthRes,
+    lastPedimentoRes,
+    catalogoYtdRowsRes,
+    entradas7dRes,
+    tmecCountRes,
+    fraccionesRes,
+    expedientesRowsRes,
+    auditRes,
   ] = await Promise.all([
     sb.from('entradas')
       .select('cve_entrada', { count: 'exact', head: true })
@@ -138,6 +148,43 @@ export default async function OperadorInicioPage() {
     sb.from('globalpc_productos')
       .select('id', { count: 'exact', head: true })
       .not('fraccion_classified_at', 'is', null),
+    // v8 secondary signals (operator — ops-wide)
+    sb.from('traficos')
+      .select('trafico', { count: 'exact', head: true })
+      .eq('estatus', 'Cruzado')
+      .gte('updated_at', sevenDaysAgoIso),
+    sb.from('traficos')
+      .select('trafico', { count: 'exact', head: true })
+      .not('pedimento', 'is', null)
+      .gte('updated_at', new Date(now.getFullYear(), now.getMonth(), 1).toISOString()),
+    sb.from('traficos')
+      .select('updated_at')
+      .not('pedimento', 'is', null)
+      .order('updated_at', { ascending: false })
+      .limit(1),
+    sb.from('traficos')
+      .select('importe_total')
+      .gte('fecha_cruce', new Date(now.getFullYear(), 0, 1).toISOString())
+      .limit(5000),
+    sb.from('entradas')
+      .select('id', { count: 'exact', head: true })
+      .gte('fecha_llegada_mercancia', sevenDaysAgoIso),
+    sb.from('globalpc_productos')
+      .select('id', { count: 'exact', head: true })
+      .eq('tmec', true),
+    sb.from('globalpc_productos')
+      .select('fraccion')
+      .not('fraccion_classified_at', 'is', null)
+      .not('fraccion', 'is', null)
+      .limit(5000),
+    sb.from('expediente_documentos')
+      .select('trafico_id, doc_type')
+      .limit(5000),
+    // v8 audit feed — ops-wide for operator
+    sb.from('audit_log')
+      .select('id, table_name, action, record_id, changed_at, company_id')
+      .order('changed_at', { ascending: false })
+      .limit(8),
   ])
 
   const entradasSeries     = bucketDailySeries(entradasSeriesRes.data as Array<Record<string, unknown>> | null, 'fecha_llegada_mercancia', 14, now)
@@ -178,15 +225,80 @@ export default async function OperadorInicioPage() {
     ? `${kpis.atrasados} tráfico${kpis.atrasados === 1 ? '' : 's'} atrasado${kpis.atrasados === 1 ? '' : 's'} >7 días`
     : 'Sin pendientes inmediatos.'
 
-  // Nav card data for the canonical 6 tiles.
-  const navCounts: import('@/lib/cockpit/nav-tiles').NavCounts = {
-    traficos:        { count: personalRes.count ?? 0,               series: activosSeries },
-    pedimentos:      { count: kpis.pendientes,                      series: pendientesSeries },
-    expedientes:     { count: expedientesPendingRes.count ?? 0,     series: expedientesSeries },
-    catalogo:        { count: null,                                  series: [] },
-    entradas:        { count: kpis.entradasHoy,                     series: entradasSeries },
-    clasificaciones: { count: clasificacionesTotalRes.count ?? 0,   series: clasificacionesSeries },
+  // v8 secondary-signal derivations
+  const cruzados7d = cruzados7dRes.count ?? 0
+  const pedimentosMonth = pedimentosMonthRes.count ?? 0
+  const lastPedRow = (lastPedimentoRes.data ?? [])[0] as { updated_at: string | null } | undefined
+  const daysSinceLastPedimento = lastPedRow?.updated_at
+    ? Math.floor((Date.now() - new Date(lastPedRow.updated_at).getTime()) / 86400000)
+    : null
+  const catalogoYtdUsd = ((catalogoYtdRowsRes.data ?? []) as { importe_total: number | null }[])
+    .reduce((s, r) => s + (Number(r.importe_total) || 0), 0)
+  const entradas7d = entradas7dRes.count ?? 0
+  const tmecCount = tmecCountRes.count ?? 0
+  const uniqueFracciones = new Set(((fraccionesRes.data ?? []) as { fraccion: string | null }[])
+    .map(r => r.fraccion).filter(Boolean)).size
+  const expedientesRows = ((expedientesRowsRes.data ?? []) as { trafico_id: string | null; doc_type: string | null }[])
+  const expedientesByTrafico = new Map<string, Set<string>>()
+  for (const r of expedientesRows) {
+    if (!r.trafico_id) continue
+    const set = expedientesByTrafico.get(r.trafico_id) ?? new Set()
+    if (r.doc_type) set.add(r.doc_type)
+    expedientesByTrafico.set(r.trafico_id, set)
   }
+  const REQUIRED_DOCS = ['pedimento', 'factura', 'lista_de_empaque']
+  let expCompletos = 0
+  for (const set of expedientesByTrafico.values()) {
+    if (REQUIRED_DOCS.some(d => set.has(d))) expCompletos++
+  }
+  const expPct = expedientesByTrafico.size > 0
+    ? Math.round((expCompletos / expedientesByTrafico.size) * 100)
+    : 0
+  const expPendientes = Math.max(0, expedientesByTrafico.size - expCompletos)
+
+  // Nav card data for the canonical 6 tiles (operator — ops-wide with secondary signal).
+  const navCounts: import('@/lib/cockpit/nav-tiles').NavCounts = {
+    traficos: {
+      count: personalRes.count ?? 0,
+      series: activosSeries,
+      microStatus: `${cruzados7d} cruzaron esta semana`,
+    },
+    pedimentos: {
+      count: pedimentosMonth,
+      series: pendientesSeries,
+      microStatus: daysSinceLastPedimento != null
+        ? `Último hace ${daysSinceLastPedimento} día${daysSinceLastPedimento === 1 ? '' : 's'}`
+        : 'Sin pedimentos recientes',
+    },
+    expedientes: {
+      count: expPct,
+      countSuffix: '%',
+      series: expedientesSeries,
+      microStatus: `${expPendientes} pendiente${expPendientes === 1 ? '' : 's'} de documento`,
+      microStatusWarning: expPendientes > 0,
+    },
+    catalogo: {
+      count: expedientesPendingRes.count ?? 0,
+      series: [],
+      microStatus: `${fmtUSDCompact(catalogoYtdUsd) || '$0'} importado este año`,
+    },
+    entradas: {
+      count: kpis.entradasHoy,
+      series: entradasSeries,
+      microStatus: `${entradas7d} recibida${entradas7d === 1 ? '' : 's'} esta semana`,
+    },
+    clasificaciones: {
+      count: uniqueFracciones,
+      series: clasificacionesSeries,
+      microStatus: `${tmecCount} con T-MEC aplicado`,
+    },
+  }
+
+  // Audit rows for Actividad Reciente — ops-wide for operator
+  const auditRows = (auditRes.data ?? []) as import('@/lib/cockpit/audit-format').AuditRow[]
+
+  // pulseSignal — pulse when there's work in transit
+  const inTransit = kpis.activos > 0
 
   return (
     <InicioClient
@@ -203,6 +315,8 @@ export default async function OperadorInicioPage() {
       personalCompletedThisWeek={personalCompletedThisWeekRes.count || 0}
       personalCompletedLastWeek={personalCompletedLastWeekRes.count || 0}
       navCounts={navCounts}
+      auditRows={auditRows}
+      pulseSignal={inTransit}
     />
   )
 }

@@ -71,14 +71,11 @@ function LoginContent() {
       <div className="login-topo" aria-hidden="true" />
       {/* Subtle radial silver glow */}
       <div className="login-glow" />
+      {/* Ambient drifting aura behind eagle */}
+      <div className="login-aura" aria-hidden="true" />
 
       <div
-        className="login-container"
-        style={{
-          opacity: entering ? 0 : mounted ? 1 : 0,
-          transform: entering ? 'translateY(8px) scale(0.98)' : mounted ? 'translateY(0)' : 'translateY(12px)',
-          transition: 'opacity 500ms cubic-bezier(.2,0,0,1), transform 500ms cubic-bezier(.2,0,0,1)',
-        }}
+        className={`login-container${mounted && !entering ? ' is-entered' : ''}${entering ? ' is-exiting' : ''}`}
       >
         {/* Centered eagle */}
         <div className="login-eagle">
@@ -192,6 +189,25 @@ function LoginContent() {
           background: radial-gradient(circle, rgba(192,197,206,0.10) 0%, transparent 70%);
           pointer-events: none;
         }
+        .login-aura {
+          position: absolute;
+          top: 22%;
+          left: 50%;
+          width: 400px;
+          height: 400px;
+          transform: translate(-50%, -50%);
+          background: radial-gradient(circle, rgba(192,197,206,0.08) 0%, transparent 65%);
+          pointer-events: none;
+          z-index: 0;
+          will-change: transform;
+          animation: auraDrift 12s ease-in-out infinite;
+        }
+        @keyframes auraDrift {
+          0%, 100% { transform: translate(-50%, -50%) scale(1); }
+          25% { transform: translate(calc(-50% + 8px), calc(-50% - 6px)) scale(1.02); }
+          50% { transform: translate(calc(-50% - 6px), calc(-50% + 8px)) scale(1.04); }
+          75% { transform: translate(calc(-50% + 4px), calc(-50% + 4px)) scale(1.02); }
+        }
         .login-container {
           width: 100%;
           max-width: 420px;
@@ -200,6 +216,47 @@ function LoginContent() {
           display: flex;
           flex-direction: column;
           align-items: center;
+          transition: opacity 500ms cubic-bezier(.2,0,0,1), transform 500ms cubic-bezier(.2,0,0,1);
+        }
+        .login-container.is-exiting {
+          opacity: 0;
+          transform: translateY(8px) scale(0.98);
+        }
+        .login-eagle,
+        .login-wordmark,
+        .login-tagline,
+        .login-session-card,
+        .login-card,
+        .login-footer {
+          opacity: 0;
+        }
+        .login-container.is-entered .login-eagle {
+          animation: aguilaRise 600ms cubic-bezier(.2,0,0,1) 0ms both;
+        }
+        .login-container.is-entered .login-wordmark {
+          animation: aguilaRise 600ms cubic-bezier(.2,0,0,1) 180ms both;
+        }
+        .login-container.is-entered .login-tagline {
+          animation: aguilaFade 500ms cubic-bezier(.2,0,0,1) 340ms both;
+        }
+        .login-container.is-entered .login-session-card,
+        .login-container.is-entered .login-card {
+          animation: aguilaRiseCard 600ms cubic-bezier(.2,0,0,1) 480ms both;
+        }
+        .login-container.is-entered .login-footer {
+          animation: aguilaFade 500ms cubic-bezier(.2,0,0,1) 640ms both;
+        }
+        @keyframes aguilaRise {
+          from { opacity: 0; transform: translateY(8px) scale(0.96); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes aguilaRiseCard {
+          from { opacity: 0; transform: translateY(12px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes aguilaFade {
+          from { opacity: 0; }
+          to   { opacity: 1; }
         }
         .login-eagle {
           margin-bottom: 16px;
@@ -282,12 +339,17 @@ function LoginContent() {
           font-size: 16px; background: rgba(0,0,0,0.4);
           color: #E8EAED; outline: none;
           font-family: inherit; box-sizing: border-box;
-          transition: border-color 150ms ease, box-shadow 150ms ease;
+          transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
         }
-        .login-input::placeholder { color: #7A7E86; }
+        .login-input::placeholder {
+          color: #9AA0A8;
+          font-size: 15px;
+          letter-spacing: 0.02em;
+        }
         .login-input:focus {
-          border-color: rgba(192,197,206,0.5);
-          box-shadow: 0 0 0 3px rgba(192,197,206,0.12);
+          border-color: rgba(232,234,237,0.7);
+          background: rgba(0,0,0,0.55);
+          box-shadow: 0 0 0 3px rgba(192,197,206,0.18), 0 0 20px rgba(192,197,206,0.08);
         }
 
         .login-submit {
@@ -298,14 +360,19 @@ function LoginContent() {
           cursor: pointer; font-family: inherit;
           letter-spacing: 0.05em; text-transform: uppercase;
           display: flex; align-items: center; justify-content: center;
-          transition: transform 100ms ease, opacity 150ms ease, box-shadow 150ms ease;
+          box-shadow: 0 0 0 1px rgba(232,234,237,0.08), 0 8px 24px rgba(0,0,0,0.4);
+          transition: all 220ms cubic-bezier(.2,0,0,1);
         }
         .login-submit:hover:not(:disabled) {
+          background: linear-gradient(135deg, #F5F7FA 0%, #D8DCE3 50%, #8A8E96 100%);
           transform: translateY(-1px);
-          box-shadow: 0 6px 20px rgba(192,197,206,0.25);
+          box-shadow: 0 0 0 1px rgba(232,234,237,0.3), 0 12px 32px rgba(192,197,206,0.25), 0 0 24px rgba(192,197,206,0.2);
         }
-        .login-submit:active:not(:disabled) { transform: translateY(0); }
-        .login-submit:disabled { opacity: 0.4; cursor: default; }
+        .login-submit:active:not(:disabled) {
+          transform: translateY(0) scale(0.99);
+          box-shadow: 0 0 0 1px rgba(232,234,237,0.15), 0 4px 12px rgba(0,0,0,0.4);
+        }
+        .login-submit:disabled { opacity: 0.4; cursor: default; box-shadow: none; }
 
         .login-spinner {
           width: 16px; height: 16px;
@@ -318,9 +385,9 @@ function LoginContent() {
         @keyframes spin { to { transform: rotate(360deg); } }
 
         .login-footer {
-          margin-top: 32px;
-          font-size: 10px;
-          color: #7A7E86;
+          margin-top: 40px;
+          font-size: 9px;
+          color: rgba(122,126,134,0.55);
           letter-spacing: 0.12em;
           font-family: var(--font-mono);
           text-align: center;
@@ -329,6 +396,20 @@ function LoginContent() {
         @media (max-width: 480px) {
           .login-card { padding: 24px; border-radius: 16px; }
           .login-eagle svg { width: 110px; height: 110px; }
+          .login-aura { width: 280px; height: 280px; top: 18%; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .login-aura { animation: none; }
+          .login-container.is-entered .login-eagle,
+          .login-container.is-entered .login-wordmark,
+          .login-container.is-entered .login-tagline,
+          .login-container.is-entered .login-session-card,
+          .login-container.is-entered .login-card,
+          .login-container.is-entered .login-footer {
+            animation: aguilaFade 300ms ease both !important;
+            animation-delay: 0ms !important;
+          }
         }
       `}</style>
     </div>

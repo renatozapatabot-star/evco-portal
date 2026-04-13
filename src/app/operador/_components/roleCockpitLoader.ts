@@ -108,6 +108,8 @@ export async function loadRoleCockpit(roleTag: OperatorRoleTag): Promise<RoleCoc
       const abono = Number(r.rabono ?? 0)
       return sum + (cargo - abono)
     }, 0)
+    navCounts.facturas = { count: facturasMonth, series: [], microStatus: `${pagadasMonth} pagadas este mes` }
+    navCounts.cartera = { count: Math.round(cxcBalance / 1000), countSuffix: 'K', series: [], microStatus: 'CxC balance (MXN)' }
     heroKPIs = [
       { key: 'facturas',   label: 'Facturas este mes',  value: facturasMonth, href: '/banco-facturas' },
       { key: 'pagadas',    label: 'Pagadas este mes',   value: pagadasMonth,  href: '/banco-facturas?estado=pagada' },

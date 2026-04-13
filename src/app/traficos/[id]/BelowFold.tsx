@@ -32,6 +32,8 @@ interface RowDef {
   label: string
   value: string
   mono?: boolean
+  /** When set, renders the value as a button that opens this URL in a new tab. */
+  href?: string
 }
 
 /**
@@ -91,6 +93,9 @@ export function BelowFold({ traficoId, trafico, partidasCount }: BelowFoldProps)
       label: 'Pedimento',
       value: trafico.pedimento ? fmtPedimentoShort(trafico.pedimento) : 'Sin registro',
       mono: true,
+      href: trafico.pedimento
+        ? `/api/pedimento-pdf?trafico=${encodeURIComponent(traficoId)}`
+        : undefined,
     },
     { label: 'Prevalidador', value: val(trafico.prevalidador) },
     {
@@ -144,6 +149,9 @@ export function BelowFold({ traficoId, trafico, partidasCount }: BelowFoldProps)
     { label: 'Nivel U', value: val(trafico.u_level), mono: true },
     { label: 'COVE', value: 'Sin registro' },
   ]
+  // Hide the VUCEM section entirely while every value is "Sin registro" —
+  // an empty panel of empties is noise. Reappears as soon as one field syncs.
+  const vucemHasContent = vucemRows.some((r) => r.value !== 'Sin registro')
 
   return (
     <div
@@ -172,12 +180,14 @@ export function BelowFold({ traficoId, trafico, partidasCount }: BelowFoldProps)
         onToggle={() => toggle('cruce')}
         rows={cruceRows}
       />
-      <Section
-        title="VUCEM"
-        open={open.vucem}
-        onToggle={() => toggle('vucem')}
-        rows={vucemRows}
-      />
+      {vucemHasContent && (
+        <Section
+          title="VUCEM"
+          open={open.vucem}
+          onToggle={() => toggle('vucem')}
+          rows={vucemRows}
+        />
+      )}
     </div>
   )
 }
@@ -242,21 +252,48 @@ function Section({
                 }}
               >
                 <span style={{ fontSize: 11, color: TEXT_MUTED }}>{r.label}</span>
-                <span
-                  style={{
-                    fontSize: 13,
-                    color: r.value === 'Sin registro' ? TEXT_MUTED : TEXT_SECONDARY,
-                    fontFamily: r.mono ? 'var(--font-mono)' : undefined,
-                    fontWeight: 600,
-                    textAlign: 'right',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    maxWidth: '60%',
-                  }}
-                >
-                  {r.value}
-                </span>
+                {r.href ? (
+                  <button
+                    type="button"
+                    onClick={() => window.open(r.href!, '_blank')}
+                    title="Abrir PDF del pedimento"
+                    style={{
+                      fontSize: 13,
+                      color: TEXT_PRIMARY,
+                      fontFamily: r.mono ? 'var(--font-mono)' : undefined,
+                      fontWeight: 600,
+                      textAlign: 'right',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      maxWidth: '60%',
+                      background: 'none',
+                      border: 'none',
+                      padding: 0,
+                      cursor: 'pointer',
+                      textDecoration: 'underline',
+                      textUnderlineOffset: 3,
+                    }}
+                  >
+                    {r.value}
+                  </button>
+                ) : (
+                  <span
+                    style={{
+                      fontSize: 13,
+                      color: r.value === 'Sin registro' ? TEXT_MUTED : TEXT_SECONDARY,
+                      fontFamily: r.mono ? 'var(--font-mono)' : undefined,
+                      fontWeight: 600,
+                      textAlign: 'right',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      maxWidth: '60%',
+                    }}
+                  >
+                    {r.value}
+                  </span>
+                )}
               </div>
             ))}
           </div>

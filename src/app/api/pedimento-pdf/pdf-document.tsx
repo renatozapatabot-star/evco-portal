@@ -48,8 +48,8 @@ export interface PedimentoPDFProps {
   descripcion: string
   valorUSD: number
   dta: number
-  igi: number
-  iva: number
+  igi: number | null
+  iva: number | null
   tipoCambio: number
   partidas: Array<{
     fraccion: string
@@ -57,10 +57,16 @@ export interface PedimentoPDFProps {
     cantidad: number
     valorUSD: number
   }>
+  // 'cbp' = DTA/IGI/IVA from AduanaNet filing data.
+  // 'commercial-only' = only commercial invoice synced; customs payments pending.
+  dataSource: 'cbp' | 'commercial-only'
 }
 
 export function PedimentoPDF(props: PedimentoPDFProps) {
   const valorAduana = props.valorUSD * props.tipoCambio
+  const fmtOrDash = (n: number | null) => n == null ? '—' : fmtUSD(n)
+  const totalContrib = (props.dta || 0) + (props.igi || 0) + (props.iva || 0)
+  const hasAllContrib = props.igi != null && props.iva != null
   return (
     <Document>
       <Page size="LETTER" style={s.page}>
@@ -111,14 +117,17 @@ export function PedimentoPDF(props: PedimentoPDFProps) {
           <View style={s.kpiCard}>
             <Text style={s.kpiLabel}>DTA</Text>
             <Text style={s.kpiValue}>{fmtUSD(props.dta)}</Text>
+            {props.dataSource === 'commercial-only' && <Text style={s.kpiSub}>Calculado</Text>}
           </View>
           <View style={s.kpiCard}>
             <Text style={s.kpiLabel}>IGI</Text>
-            <Text style={s.kpiValue}>{fmtUSD(props.igi)}</Text>
+            <Text style={s.kpiValue}>{fmtOrDash(props.igi)}</Text>
+            {props.igi == null && <Text style={s.kpiSub}>Pendiente</Text>}
           </View>
           <View style={s.kpiCard}>
             <Text style={s.kpiLabel}>IVA</Text>
-            <Text style={s.kpiValue}>{fmtUSD(props.iva)}</Text>
+            <Text style={s.kpiValue}>{fmtOrDash(props.iva)}</Text>
+            {props.iva == null && <Text style={s.kpiSub}>Pendiente</Text>}
           </View>
         </View>
         <View style={[s.kpiRow, { marginBottom: 4 }]}>
@@ -129,7 +138,8 @@ export function PedimentoPDF(props: PedimentoPDFProps) {
           </View>
           <View style={s.kpiCard}>
             <Text style={s.kpiLabel}>Total Contribuciones</Text>
-            <Text style={[s.kpiValue, { color: C.amber }]}>{fmtUSD(props.dta + props.igi + props.iva)}</Text>
+            <Text style={[s.kpiValue, { color: C.amber }]}>{hasAllContrib ? fmtUSD(totalContrib) : '—'}</Text>
+            {!hasAllContrib && <Text style={s.kpiSub}>Pendiente sync</Text>}
           </View>
         </View>
 

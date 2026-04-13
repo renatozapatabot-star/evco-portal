@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useMemo } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { Search, Download, ArrowUpDown } from 'lucide-react'
 import { getCookieValue } from '@/lib/client-config'
@@ -36,9 +37,10 @@ interface TraficoRow {
 
 export default function ProveedoresPage() {
   const isMobile = useIsMobile()
+  const searchParams = useSearchParams()
   const [rows, setRows] = useState<TraficoRow[]>([])
   const [loading, setLoading] = useState(true)
-  const [search, setSearch] = useState('')
+  const [search, setSearch] = useState(() => searchParams?.get('q') ?? '')
   const [expandedSupplier, setExpandedSupplier] = useState<string | null>(null)
   const [clientFilter, setClientFilter] = useState<string>('all')
   const [sortBy, setSortBy] = useState<'value' | 'traficos' | 'name'>('value')

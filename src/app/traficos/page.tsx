@@ -12,6 +12,8 @@ import { useSessionCache } from '@/hooks/use-session-cache'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { ErrorCard } from '@/components/ui/ErrorCard'
 import { useSupplierNames } from '@/hooks/use-supplier-names'
+import { parseMonthParam, recentMonths } from '@/lib/cockpit/month-window'
+import { MonthSelector } from '@/components/admin/MonthSelector'
 
 interface TraficoRow {
   trafico: string
@@ -112,6 +114,9 @@ function TraficosContent() {
   const [search, setSearch] = useState(searchParams.get('q') || '')
   const sortParam = searchParams.get('sort')
   const orderParam = searchParams.get('order')
+  const monthParam = searchParams.get('month')
+  const monthWindow = useMemo(() => parseMonthParam(monthParam), [monthParam])
+  const monthOptions = useMemo(() => recentMonths(24), [])
   const [page, setPage] = useState(0)
   const [searchInput, setSearchInput] = useState(search)
   const { sort, toggleSort } = useSort('traficos', { column: 'fecha_llegada', direction: 'desc' })
@@ -145,13 +150,15 @@ function TraficosContent() {
     setLoading(true)
     setFetchError(null)
 
-    const cached = getCached<TraficoRow[]>('traficos')
+    const cacheKey = `traficos:${monthWindow.ym}`
+    const cached = getCached<TraficoRow[]>(cacheKey)
     if (cached) setRows(cached)
 
     const traficosParams = new URLSearchParams({
       table: 'traficos', limit: '5000',
       order_by: 'fecha_llegada', order_dir: 'desc',
-      gte_field: 'fecha_llegada', gte_value: '2024-01-01',
+      gte_field: 'fecha_llegada', gte_value: monthWindow.monthStart,
+      lte_field: 'fecha_llegada', lte_value: monthWindow.monthEnd,
     })
     if (!isInternal) traficosParams.set('company_id', companyId)
 
@@ -163,7 +170,7 @@ function TraficosContent() {
       .then(d => {
         const arr = Array.isArray(d.data ?? d) ? (d.data ?? d) : []
         setRows(arr)
-        setCache('traficos', arr)
+        setCache(cacheKey, arr)
       })
       .catch(err => {
         if (err.message === 'session_expired') { window.location.href = '/login'; return }
@@ -260,7 +267,7 @@ function TraficosContent() {
         setProveedorMap(map)
       })
       .catch(() => {})
-  }, [cookiesReady, companyId, clientClave, userRole])
+  }, [cookiesReady, companyId, clientClave, userRole, monthWindow.monthStart, monthWindow.monthEnd])
 
   // Debounced search
   useEffect(() => {
@@ -354,6 +361,16 @@ function TraficosContent() {
         }}>
           Tráficos
         </h1>
+      </div>
+
+      <div style={{ marginBottom: 16 }}>
+        <MonthSelector
+          ym={monthWindow.ym}
+          label={monthWindow.label}
+          prev={monthWindow.prev}
+          next={monthWindow.next}
+          options={monthOptions}
+        />
       </div>
 
       {fetchError && (

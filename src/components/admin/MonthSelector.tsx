@@ -1,6 +1,6 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useTransition } from 'react'
 import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react'
 import { GlassCard } from '@/components/aguila'
@@ -17,15 +17,22 @@ export interface MonthSelectorProps {
   next: string | null
   /** List of months to offer in the dropdown, newest first. */
   options: Array<{ ym: string; label: string }>
+  /** Optional override — otherwise the current pathname is used. */
+  basePath?: string
 }
 
-export function MonthSelector({ ym, label, prev, next, options }: MonthSelectorProps) {
+export function MonthSelector({ ym, label, prev, next, options, basePath }: MonthSelectorProps) {
   const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
   const [isPending, startTransition] = useTransition()
 
   const navigate = (target: string) => {
+    const params = new URLSearchParams(searchParams?.toString() ?? '')
+    params.set('month', target)
+    const path = basePath ?? pathname ?? '/admin/eagle'
     startTransition(() => {
-      router.push(`/admin/eagle?month=${target}`)
+      router.push(`${path}?${params.toString()}`)
     })
   }
 

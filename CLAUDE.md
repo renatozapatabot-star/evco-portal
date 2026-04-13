@@ -28,7 +28,8 @@ Direct interface for all system changes. Co-equal authority on technical decisio
 
 **Stack:** Next.js App Router · Supabase Pro · Vercel · Anthropic API · Tailwind · TypeScript
 
-**Live:** evco-portal.vercel.app · Primary client: EVCO Plastics de México (clave: 9254)
+**Live:** portal.renatozapata.com (canonical · CNAME → Vercel) · evco-portal.vercel.app (Vercel alias, backup)
+Primary client: EVCO Plastics de México (clave: 9254)
 
 **Next client:** MAFESA — get RFC + GlobalPC clave from Tito first.
 Run white-label dry-run (find every hardcoded "9254") BEFORE promising anything.
@@ -471,7 +472,7 @@ Deploy → **Claude in Chrome** → audit live portal. No screenshots.
 
 ```
 /audit 1 standard prompt:
-"Go to evco-portal.vercel.app, log in with evco2026, audit every page.
+"Go to portal.renatozapata.com, log in with evco2026, audit every page.
 Check: warm white background, AGUILA wordmark, nav items, JetBrains Mono
 on numbers, no relative times, gold text is #8B6914, status badge colors
 correct, no dark mode on light pages, empty states not blank,

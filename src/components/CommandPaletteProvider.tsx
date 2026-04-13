@@ -26,6 +26,7 @@ export function CommandPaletteProvider() {
       // Shift+⌘K / Shift+Ctrl+K — advanced mode.
       if (isMeta && e.shiftKey && (e.key === 'k' || e.key === 'K')) {
         e.preventDefault()
+        e.stopPropagation()
         setMode('advanced')
         setOpen(true)
         return
@@ -33,6 +34,7 @@ export function CommandPaletteProvider() {
       // ⌘K / Ctrl+K — quick mode.
       if (isMeta && !e.shiftKey && (e.key === 'k' || e.key === 'K')) {
         e.preventDefault()
+        e.stopPropagation()
         setMode('quick')
         setOpen(v => !v)
         return
@@ -43,8 +45,23 @@ export function CommandPaletteProvider() {
         setOpen(true)
       }
     }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
+    // WHY capture phase: downstream inputs (/proveedores search box, table filters)
+    // were swallowing Cmd+K. Capture phase guarantees the palette shortcut is
+    // heard first, regardless of focused child handlers.
+    window.addEventListener('keydown', onKey, true)
+
+    // TopBar search icon dispatches this. Keep it in sync with keyboard path.
+    const onOpenSearch = (e: Event) => {
+      const isAdvanced = (e as CustomEvent<{ mode?: string }>).detail?.mode === 'advanced'
+      setMode(isAdvanced ? 'advanced' : 'quick')
+      setOpen(true)
+    }
+    document.addEventListener('cruz:open-search', onOpenSearch)
+
+    return () => {
+      window.removeEventListener('keydown', onKey, true)
+      document.removeEventListener('cruz:open-search', onOpenSearch)
+    }
   }, [open])
 
   const onClose = useCallback(() => setOpen(false), [])

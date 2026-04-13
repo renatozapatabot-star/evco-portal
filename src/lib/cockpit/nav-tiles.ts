@@ -1,6 +1,12 @@
 import { Truck, FileText, FolderOpen, Book, Package, Tags } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
+/**
+ * UI nav-tile union. The six canonical tiles are locked by invariant 29
+ * (must be in UNIFIED_NAV_TILES, unchanged without Tito + Renato IV sign-off).
+ * Role-specific cockpits (trafico/bodega/contabilidad) populate extra counts
+ * via these additional keys — they are not rendered as top-level nav.
+ */
 export type NavTileKey =
   | 'traficos'
   | 'pedimentos'
@@ -8,6 +14,9 @@ export type NavTileKey =
   | 'catalogo'
   | 'entradas'
   | 'clasificaciones'
+  | 'facturas'
+  | 'cartera'
+  | 'bodega'
 
 export interface NavTileDef {
   key: NavTileKey
@@ -47,7 +56,7 @@ export interface NavCellData {
   countSuffix?: string
 }
 
-export type NavCounts = Record<NavTileKey, NavCellData>
+export type NavCounts = Partial<Record<NavTileKey, NavCellData>>
 
 export const EMPTY_NAV_COUNTS: NavCounts = {
   traficos:        { count: null, series: [] },

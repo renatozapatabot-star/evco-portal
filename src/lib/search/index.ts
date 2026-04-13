@@ -114,7 +114,7 @@ async function searchProveedores(sb: SupabaseClient, safe: string, scope: Scope)
     id: p.cve_proveedor ?? '',
     title: p.nombre ?? p.cve_proveedor ?? '',
     subtitle: p.id_fiscal ?? p.cve_proveedor ?? '',
-    href: '/proveedores',
+    href: `/proveedores?q=${encodeURIComponent(p.nombre ?? p.cve_proveedor ?? '')}`,
   }))
 }
 
@@ -130,7 +130,7 @@ async function searchProductos(sb: SupabaseClient, safe: string, scope: Scope): 
     id: String(p.id),
     title: p.cve_producto ?? `Producto ${p.id}`,
     subtitle: `${truncate(p.descripcion, 45)}${p.fraccion ? ` · ${p.fraccion}` : ''}`,
-    href: '/fracciones',
+    href: `/catalogo?q=${encodeURIComponent(p.cve_producto ?? p.descripcion ?? '')}`,
   }))
 }
 
@@ -147,7 +147,7 @@ async function searchPartidas(sb: SupabaseClient, safe: string, scope: Scope): P
     id: String(p.id),
     title: p.cve_producto ?? `Producto ${p.id}`,
     subtitle: `${truncate(p.descripcion, 45)}${p.fraccion ? ` · ${p.fraccion}` : ''}`,
-    href: '/fracciones',
+    href: `/catalogo?q=${encodeURIComponent(p.cve_producto ?? p.descripcion ?? '')}`,
   }))
 }
 
@@ -170,7 +170,7 @@ async function searchFracciones(sb: SupabaseClient, safe: string, scope: Scope):
       id: fr,
       title: fr,
       subtitle: truncate(p.descripcion, 60),
-      href: `/fracciones?q=${encodeURIComponent(fr)}`,
+      href: `/catalogo?q=${encodeURIComponent(fr)}`,
     })
     if (out.length >= PER_GROUP) break
   }

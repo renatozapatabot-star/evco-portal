@@ -1,12 +1,15 @@
 'use client'
 
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, Suspense } from 'react'
 import { Search, ChevronLeft, ChevronRight, Download } from 'lucide-react'
+import { useSearchParams } from 'next/navigation'
 import { getCompanyIdCookie, getCookieValue } from '@/lib/client-config'
 import { fmtUSDFull as fmtUSD, fmtDate, fmtPedimentoShort, fmtDesc, fmtId } from '@/lib/format-utils'
 import { useSort, type SortState } from '@/hooks/use-sort'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { parseMonthParam, recentMonths } from '@/lib/cockpit/month-window'
+import { MonthSelector } from '@/components/admin/MonthSelector'
 import Link from 'next/link'
 
 interface TraficoRow {
@@ -41,7 +44,19 @@ function SortArrow({ col, sort }: { col: string; sort: SortState }) {
 }
 
 export default function PedimentosPage() {
+  return (
+    <Suspense fallback={<div className="page-shell" style={{ padding: 20 }}><div className="skel" style={{ width: 200, height: 24 }} /></div>}>
+      <PedimentosContent />
+    </Suspense>
+  )
+}
+
+function PedimentosContent() {
   const isMobile = useIsMobile()
+  const searchParams = useSearchParams()
+  const monthParam = searchParams.get('month')
+  const monthWindow = useMemo(() => parseMonthParam(monthParam), [monthParam])
+  const monthOptions = useMemo(() => recentMonths(24), [])
   const [rows, setRows] = useState<TraficoRow[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -60,7 +75,8 @@ export default function PedimentosPage() {
       table: 'traficos', limit: '5000',
       order_by: 'fecha_pago', order_dir: 'desc',
       not_null: 'pedimento',
-      gte_field: 'fecha_llegada', gte_value: '2024-01-01',
+      gte_field: 'fecha_llegada', gte_value: monthWindow.monthStart,
+      lte_field: 'fecha_llegada', lte_value: monthWindow.monthEnd,
     })
     if (!isInternal && companyId) params.set('company_id', companyId)
 
@@ -131,7 +147,7 @@ export default function PedimentosPage() {
         })
         setAduanetValorMap(map)
       }).catch((err) => console.error('[pedimentos] aduanet fetch:', err.message))
-  }, [])
+  }, [monthWindow.monthStart, monthWindow.monthEnd])
 
   const groups: PedGroup[] = useMemo(() => {
     const today = new Date().toISOString().split('T')[0]
@@ -194,6 +210,16 @@ export default function PedimentosPage() {
 
   return (
     <div className="page-shell">
+
+      <div style={{ marginBottom: 16 }}>
+        <MonthSelector
+          ym={monthWindow.ym}
+          label={monthWindow.label}
+          prev={monthWindow.prev}
+          next={monthWindow.next}
+          options={monthOptions}
+        />
+      </div>
 
       <div className="table-shell">
         <div className="table-toolbar" style={{ justifyContent: 'flex-end' }}>

@@ -160,8 +160,8 @@ async function renderEagle(opName: string, rawMonth: string | null) {
     softData<{ company_id: string | null; created_at: string }>(
       sb.from('traficos').select('company_id, created_at').gte('created_at', month.monthStart).lt('created_at', month.monthEnd).limit(5000)
     ),
-    softData<{ company_id: string; razon_social: string | null; is_active: boolean | null }>(
-      sb.from('companies').select('company_id, razon_social, is_active').eq('is_active', true).limit(500)
+    softData<{ company_id: string; name: string | null; active: boolean | null }>(
+      sb.from('companies').select('company_id, name, active').eq('active', true).limit(500)
     ),
     softData<{ updated_at: string }>(
       sb.from('traficos').select('updated_at').eq('estatus', 'En Proceso').gte('updated_at', fourteenDaysAgoIso).limit(2000)
@@ -236,7 +236,7 @@ async function renderEagle(opName: string, rawMonth: string | null) {
     const last = dormantLasts[i]
     return {
       companyId: c.company_id,
-      razonSocial: c.razon_social ?? c.company_id,
+      razonSocial: c.name ?? c.company_id,
       diasSinMovimiento: last?.created_at ? daysSinceISO(last.created_at) : 999,
       ultimoMonto: last?.importe_total ?? null,
     }

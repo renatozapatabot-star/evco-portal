@@ -21,6 +21,25 @@ echo "    Project: CRUZ — Cross-Border Intelligence"
 echo "    Patente: 3596 · Aduana: 240"
 
 # --------------------------------------------------------------------------
+# 0. Clean working tree
+# `vercel --prod` uploads the working directory, not the git HEAD. An
+# uncommitted tracked file ships to production — which bit us on 2026-04-13
+# when an in-flight design-system rewrite tagged along with a Phase E deploy.
+# Skip with ALLOW_DIRTY_DEPLOY=1 for intentional dirty deploys.
+# --------------------------------------------------------------------------
+header "Working tree"
+if [ "${ALLOW_DIRTY_DEPLOY:-0}" = "1" ]; then
+  warn "Working tree check skipped (ALLOW_DIRTY_DEPLOY=1)"
+elif [ -n "$(git status --porcelain 2>/dev/null | grep -v '^??' || true)" ]; then
+  fail "Uncommitted tracked changes — 'vercel --prod' would ship them. Commit or stash first."
+  echo ""
+  git status --short | grep -v '^??' | head -10 | sed 's/^/      /'
+  echo ""
+else
+  pass "Working tree clean (no uncommitted tracked changes)"
+fi
+
+# --------------------------------------------------------------------------
 # 1. TypeScript Strict
 # --------------------------------------------------------------------------
 header "TypeScript"

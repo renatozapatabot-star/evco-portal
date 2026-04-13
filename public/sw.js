@@ -1,5 +1,5 @@
-var CACHE_NAME = 'aguila-v3-2026-04-13'
-var OFFLINE_URLS = ['/', '/traficos', '/entradas', '/pedimentos', '/financiero', '/cruz']
+var CACHE_NAME = 'aguila-v9.2-2026-04-13'
+var OFFLINE_URLS = []
 
 self.addEventListener('install', function(event) {
   event.waitUntil(caches.open(CACHE_NAME).then(function(cache) { return cache.addAll(OFFLINE_URLS) }))
@@ -37,16 +37,10 @@ self.addEventListener('notificationclick', function(event) {
   event.waitUntil(clients.openWindow(url))
 })
 
+// v9.2 — pass-through SW. Do not cache navigate responses; broken HTML
+// was sticking and loading stale chunks across deploys. Online-only for now.
 self.addEventListener('fetch', function(event) {
   if (event.request.method !== 'GET') return
   if (event.request.url.includes('/api/')) return
-  event.respondWith(
-    fetch(event.request).then(function(response) {
-      if (response.ok && event.request.mode === 'navigate') {
-        var clone = response.clone()
-        caches.open(CACHE_NAME).then(function(cache) { cache.put(event.request, clone) })
-      }
-      return response
-    }).catch(function() { return caches.match(event.request) })
-  )
+  event.respondWith(fetch(event.request))
 })

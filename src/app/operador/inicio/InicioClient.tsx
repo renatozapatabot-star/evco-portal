@@ -51,24 +51,13 @@ export function InicioClient(props: Props) {
     startTransition(() => router.refresh())
   }, [router])
 
+  // Realtime channel disabled in v9.2 — repeated WebSocket reconnects
+  // on tables whose schema/RLS state we haven't fully verified. Re-enable
+  // after table probes confirm operational_decisions + traficos are safe
+  // to subscribe to from the browser. User refreshes manually for now.
   useEffect(() => {
-    const sb = createBrowserSupabaseClient()
-    const channel = sb.channel('inicio-realtime')
-
-    const scheduleRefresh = () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current)
-      debounceRef.current = setTimeout(() => refresh(), 1000)
-    }
-
-    channel
-      .on('postgres_changes' as 'system', { event: 'INSERT', schema: 'public', table: 'operational_decisions' }, scheduleRefresh)
-      .on('postgres_changes' as 'system', { event: 'UPDATE', schema: 'public', table: 'traficos' }, scheduleRefresh)
-      .subscribe()
-
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current)
-      sb.removeChannel(channel)
-    }
+    void refresh
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
   }, [refresh])
 
   // Hero KPIs — 4 tiles, operator tone.

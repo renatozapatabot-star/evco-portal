@@ -25,37 +25,14 @@ export function MensajeriaFeed({
   const [items, setItems] = useState<MensajeriaMessage[]>(messages)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  // Realtime disabled in v9.2 — Supabase channel reconnects on missing/
+  // unauthorized table were causing WebSocket storms. Re-enable after schema
+  // + RLS are confirmed in production. See core-invariants rule 35.
   useEffect(() => {
-    if (!realtime) return
-    let channel: ReturnType<ReturnType<typeof createBrowserSupabaseClient>['channel']> | null = null
-    const sb = createBrowserSupabaseClient()
-    try {
-      channel = sb.channel(`mensajeria-feed${companyId ? `-${companyId}` : ''}`)
-      const scheduleRefresh = (payload: { new: unknown }) => {
-        if (debounceRef.current) clearTimeout(debounceRef.current)
-        debounceRef.current = setTimeout(() => {
-          const incoming = payload.new as MensajeriaMessage | undefined
-          if (!incoming) return
-          if (companyId && incoming.company_id !== companyId) return
-          if (incoming.internal_only) return
-          setItems((prev) => [incoming, ...prev].slice(0, max))
-        }, 200)
-      }
-      channel.on(
-        'postgres_changes' as 'system',
-        { event: 'INSERT', schema: 'public', table: 'mensajeria_messages' },
-        scheduleRefresh,
-      ).subscribe()
-    } catch {
-      // Realtime subscription failed — feed stays static, no crash.
-    }
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current)
-      if (channel) {
-        try { sb.removeChannel(channel) } catch { /* ignore */ }
-      }
-    }
-  }, [realtime, companyId, max])
+    if (debounceRef.current) return () => { /* noop cleanup */ }
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
+  }, [])
+  void realtime; void companyId; void max
 
   if (placeholder) {
     return (

@@ -8,6 +8,7 @@ import { bucketDailySeries, sumRange, startOfToday, daysAgo } from '@/lib/cockpi
 import { softCount, softData, softFirst } from '@/lib/cockpit/safe-query'
 import { auditLogAvailable } from '@/lib/cockpit/table-availability'
 import { fetchOperatorMensajeriaFeed, fetchEscalatedThreads } from '@/lib/mensajeria/feed'
+import { parseMonthParam } from '@/lib/cockpit/month-window'
 import { CockpitSkeleton } from '@/components/aguila'
 import type { TraficoRow, DecisionRow, SystemStatus } from './types'
 import type { AuditRow } from '@/lib/cockpit/audit-format'
@@ -23,7 +24,7 @@ function withHardTimeout<T>(p: PromiseLike<T>, ms: number, fallback: T): Promise
   ])
 }
 
-export default async function OperadorInicioPage() {
+export default async function OperadorInicioPage({ searchParams }: { searchParams?: Promise<{ month?: string }> }) {
   const cookieStore = await cookies()
   const role = cookieStore.get('user_role')?.value
   const opId = cookieStore.get('operator_id')?.value
@@ -33,6 +34,9 @@ export default async function OperadorInicioPage() {
     redirect('/')
   }
 
+  const sp = (await searchParams) ?? {}
+  const month = parseMonthParam(sp.month).ym
+
   if (opId) {
     try {
       logOperatorAction({ operatorId: opId, actionType: 'view_page', targetId: '/operador/inicio' })
@@ -41,14 +45,14 @@ export default async function OperadorInicioPage() {
 
   return (
     <Suspense fallback={<CockpitSkeleton />}>
-      <OperatorCockpitContent role={role} opId={opId || ''} opName={opName} />
+      <OperatorCockpitContent role={role} opId={opId || ''} opName={opName} month={month} />
     </Suspense>
   )
 }
 
-async function OperatorCockpitContent({ role, opId, opName }: { role: string; opId: string; opName: string }) {
+async function OperatorCockpitContent({ role, opId, opName, month }: { role: string; opId: string; opName: string; month: string }) {
   void role
-  return await loadOperatorCockpit(opId, opName).catch((err) => {
+  return await loadOperatorCockpit(opId, opName, month).catch((err) => {
     return (
       <div style={{ padding: 40, color: '#E6EDF3', fontFamily: 'ui-monospace, monospace', fontSize: 13 }}>
         No se pudo cargar el cockpit del operador: {err instanceof Error ? err.message : String(err)}
@@ -57,7 +61,7 @@ async function OperatorCockpitContent({ role, opId, opName }: { role: string; op
   })
 }
 
-async function loadOperatorCockpit(opId: string, opName: string) {
+async function loadOperatorCockpit(opId: string, opName: string, month: string) {
 
   const sb = createServerClient()
   const now = new Date()
@@ -262,6 +266,7 @@ async function loadOperatorCockpit(opId: string, opName: string) {
       mensajeriaMessages={mensajeriaMessages}
       escalatedThreads={escalatedThreads}
       pulseSignal={inTransit}
+      month={month}
     />
   )
 }

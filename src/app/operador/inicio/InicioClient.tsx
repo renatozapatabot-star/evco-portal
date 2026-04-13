@@ -44,6 +44,7 @@ interface Props {
   mensajeriaMessages: MensajeriaMessage[]
   escalatedThreads: MensajeriaThread[]
   pulseSignal: boolean
+  month?: string
 }
 
 export function InicioClient(props: Props) {
@@ -191,6 +192,7 @@ export function InicioClient(props: Props) {
       systemStatus={props.systemStatus}
       summaryLine={props.summaryLine}
       pulseSignal={props.pulseSignal}
+      month={props.month}
     />
   )
 }

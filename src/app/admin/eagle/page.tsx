@@ -437,6 +437,7 @@ async function renderEagle(opName: string, rawMonth: string | null) {
       systemStatus={atencionesTop.length > 0 ? 'warning' : 'healthy'}
       pulseSignal={inTransitCount > 0}
       summaryLine={summaryLine}
+      month={month.ym}
     />
   )
 }

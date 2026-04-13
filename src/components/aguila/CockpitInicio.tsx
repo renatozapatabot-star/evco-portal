@@ -59,6 +59,9 @@ export interface CockpitInicioProps {
   liveTimestamp?: boolean
   /** Role-aware meta pills rendered in CockpitBanner. */
   metaPills?: Array<{ label: string; value: string | number; tone?: 'silver' | 'warning' }>
+  /** YYYY-MM — when present, nav tile hrefs include ?month=YYYY-MM so drill-downs
+   *  inherit the dashboard's selected month. */
+  month?: string
 }
 
 /**
@@ -83,17 +86,23 @@ export function CockpitInicio({
   actividadEmptyLabel = 'Sin actividad reciente.',
   actividadSlot, actividadStripSlot, capabilitySlot,
   systemStatus, pulseSignal, summaryLine, liveTimestamp = true,
-  metaPills,
+  metaPills, month,
 }: CockpitInicioProps) {
   const greetingTitle =
     role === 'client' ? (companyName || 'Portal del cliente')
     : `${greetingFor(role)}, ${name}`
 
+  const monthQuery = month ? `?month=${encodeURIComponent(month)}` : ''
+  const withMonth = (href: string | undefined): string | undefined => {
+    if (!href) return href
+    if (!month) return href
+    return href.includes('?') ? `${href}&month=${encodeURIComponent(month)}` : `${href}?month=${encodeURIComponent(month)}`
+  }
   const navItems: NavCardGridItem[] = UNIFIED_NAV_TILES.map((tile) => {
     const cell = navCounts[tile.key as NavTileKey]
     return {
       tile: {
-        href: tile.href,
+        href: withMonth(tile.href) ?? tile.href,
         label: tile.label,
         icon: tile.icon,
         description: tile.description,
@@ -142,7 +151,7 @@ export function CockpitInicio({
             series={k.series}
             current={k.current}
             previous={k.previous}
-            href={k.href}
+            href={withMonth(k.href)}
             tone={k.tone ?? 'silver'}
             urgent={k.urgent}
             inverted={k.inverted}

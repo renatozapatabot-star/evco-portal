@@ -21,6 +21,7 @@ import { softCount, softData, softFirst } from '@/lib/cockpit/safe-query'
 import { CockpitInicio, MensajeriaFeed, CockpitErrorCard, CockpitSkeleton, ActividadStrip, CapabilityCardGrid, TimelineFeed, type CockpitHeroKPI, type ActividadStripItem } from '@/components/aguila'
 import { ClienteEstado } from '@/components/cliente/ClienteEstado'
 import { fetchClientMensajeriaFeed, mensajeriaClientEnabled } from '@/lib/mensajeria/feed'
+import { parseMonthParam } from '@/lib/cockpit/month-window'
 import type { NavCounts } from '@/lib/cockpit/nav-tiles'
 import type { CapabilityCounts } from '@/lib/cockpit/capabilities'
 
@@ -35,24 +36,27 @@ function withHardTimeout<T>(p: PromiseLike<T>, ms: number, fallback: T): Promise
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
-export default async function InicioPage() {
+export default async function InicioPage({ searchParams }: { searchParams?: Promise<{ month?: string }> }) {
   const cookieStore = await cookies()
   const token = cookieStore.get('portal_session')?.value ?? ''
   const session = await verifySession(token)
   if (!session) redirect('/login')
   if (session.role !== 'client') redirect('/')
 
+  const sp = (await searchParams) ?? {}
+  const month = parseMonthParam(sp.month).ym
+
   // Stream skeleton immediately while data fetches; CockpitContent streams in.
   return (
     <Suspense fallback={<CockpitSkeleton />}>
-      <CockpitContent session={session} cookieStore={cookieStore} />
+      <CockpitContent session={session} cookieStore={cookieStore} month={month} />
     </Suspense>
   )
 }
 
-async function CockpitContent({ session, cookieStore }: { session: SessionLike; cookieStore: CookieJar }) {
+async function CockpitContent({ session, cookieStore, month }: { session: SessionLike; cookieStore: CookieJar; month: string }) {
   try {
-    return await renderClientCockpit(session, cookieStore)
+    return await renderClientCockpit(session, cookieStore, month)
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
     return <CockpitErrorCard message={`No se pudo cargar el cockpit: ${msg}`} />
@@ -62,7 +66,7 @@ async function CockpitContent({ session, cookieStore }: { session: SessionLike; 
 type SessionLike = { companyId: string; role: string }
 type CookieJar = Awaited<ReturnType<typeof cookies>>
 
-async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar) {
+async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar, month: string) {
   const supabase = createServerClient()
   const companyId = session.companyId
   const now = new Date()
@@ -254,6 +258,7 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar)
       capabilitySlot={capabilitySlot}
       summaryLine={summaryLine}
       pulseSignal={activeTraficos.length > 0}
+      month={month}
     />
   )
 }

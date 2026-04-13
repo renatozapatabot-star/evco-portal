@@ -9,8 +9,8 @@ export const metadata = {
 export default function DocumentosAutoPage() {
   return (
     <PageShell
-      title="Sube un documento"
-      subtitle="Arrastra un PDF o imagen. AGUILA identifica el tipo, verifica que esté completo y lo enlaza al tráfico."
+      title="Sube o describe documentos"
+      subtitle="Arrastra un lote de PDFs o pega una descripción. AGUILA identifica cada tipo, revisa completitud y los enlaza al tráfico."
       systemStatus="healthy"
       liveTimestamp
     >
@@ -22,10 +22,11 @@ export default function DocumentosAutoPage() {
             ¿Cómo funciona?
           </div>
           <ul style={{ margin: 0, paddingLeft: 18, color: TEXT_SECONDARY, fontSize: 13, lineHeight: 1.6 }}>
-            <li>Se aceptan PDF, JPG y PNG hasta 10 MB.</li>
+            <li>Sube hasta varios PDFs/JPGs/PNGs (10 MB máx cada uno) o pega una descripción.</li>
             <li>Claude identifica el tipo (factura, packing list, certificado de origen, BL u otro).</li>
             <li>Se revisa que tenga proveedor, importe, moneda y fracción arancelaria.</li>
-            <li>Si el documento menciona un pedimento, se enlaza automáticamente al tráfico.</li>
+            <li>Si se menciona un pedimento, el documento se enlaza automáticamente al tráfico.</li>
+            <li>Al terminar el lote, verás un análisis AGUILA con totales, enlaces y atenciones.</li>
           </ul>
         </GlassCard>
       </div>

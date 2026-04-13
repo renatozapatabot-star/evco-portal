@@ -69,12 +69,17 @@ export async function POST(request: NextRequest) {
     const traficoId = formData.get('trafico_id') as string | null
     const docType = formData.get('doc_type') as string | null
 
-    if (!file || !traficoId || !docType) {
+    if (!file) {
       return NextResponse.json(
-        { data: null, error: { code: 'VALIDATION_ERROR', message: 'Missing file, trafico_id, or doc_type' } },
+        { data: null, error: { code: 'VALIDATION_ERROR', message: 'Falta el archivo' } },
         { status: 400 }
       )
     }
+
+    // Self-service /documentos/auto flow: trafico + docType are inferred
+    // from Claude Vision later. Require both only when the caller is
+    // uploading into a known expediente.
+    const isAutoFlow = !traficoId && !docType
 
     if (file.size > MAX_SIZE) {
       return NextResponse.json(
@@ -90,13 +95,18 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check filename relevance (warning only, not blocking)
-    const relevance = validateDocRelevance(file.name, docType)
+    // Check filename relevance (warning only, not blocking).
+    // Skip in auto-flow — we have no a-priori doc_type to compare against.
+    const relevance = isAutoFlow || !docType
+      ? { valid: true as const, warning: undefined }
+      : validateDocRelevance(file.name, docType)
 
-    // Build storage path: {company_id}/{trafico_id}/{doc_type}_{timestamp}.{ext}
+    // Build storage path. Auto-flow uses an `unassigned/` bucket until
+    // the classifier links the doc to a trafico.
     const ext = file.name.split('.').pop() ?? 'bin'
-    const safeDocType = docType.replace(/\s+/g, '_')
-    const storagePath = `${companyId}/${traficoId}/${safeDocType}_${Date.now()}.${ext}`
+    const safeDocType = (docType ?? 'auto').replace(/\s+/g, '_')
+    const traficoSegment = traficoId ?? 'unassigned'
+    const storagePath = `${companyId}/${traficoSegment}/${safeDocType}_${Date.now()}.${ext}`
 
     const buffer = await file.arrayBuffer()
     const bytes = new Uint8Array(buffer)
@@ -114,12 +124,13 @@ export async function POST(request: NextRequest) {
 
     const fileUrl = supabase.storage.from('expedientes').getPublicUrl(storagePath).data.publicUrl
 
-    // Insert record into expediente_documentos
+    // Insert record into expediente_documentos. In auto-flow pedimento_id
+    // stays null until /api/documentos/classify detects a pedimento ref.
     const { data: docRecord, error: dbError } = await supabase
       .from('expediente_documentos')
       .insert({
         pedimento_id: traficoId,
-        doc_type: docType,
+        doc_type: docType ?? 'pending_auto',
         file_name: file.name,
         file_url: fileUrl,
         uploaded_by: 'client_portal',
@@ -136,28 +147,32 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Mark any matching solicitation as received
-    await supabase
-      .from('documento_solicitudes')
-      .update({ status: 'recibido', recibido_at: new Date().toISOString() })
-      .eq('trafico_id', traficoId)
-      .eq('doc_type', docType)
-      .eq('status', 'solicitado')
-      .then(() => {}, (e) => console.error('[audit-log] upload solicitud:', e.message))
+    // Mark any matching solicitation as received (only when caller knew
+    // both trafico and doc_type up front — auto-flow doesn't).
+    if (traficoId && docType) {
+      await supabase
+        .from('documento_solicitudes')
+        .update({ status: 'recibido', recibido_at: new Date().toISOString() })
+        .eq('trafico_id', traficoId)
+        .eq('doc_type', docType)
+        .eq('status', 'solicitado')
+        .then(() => {}, (e) => console.error('[audit-log] upload solicitud:', e.message))
+    }
 
     // Audit log
     supabase.from('audit_log').insert({
       action: 'document_uploaded',
       resource: 'expediente_documentos',
-      resource_id: traficoId,
-      diff: { doc_type: docType, file_name: file.name, company_id: companyId },
+      resource_id: traficoId ?? docRecord?.id ?? 'unassigned',
+      diff: { doc_type: docType ?? 'pending_auto', file_name: file.name, company_id: companyId },
       created_at: new Date().toISOString(),
     }).then(() => {}, (e) => console.error('[audit-log] upload doc:', e.message))
 
     // Telegram notification
     sendTelegram(
-      `📎 <b>${companyId}</b> subió <b>${docType}</b> para ${traficoId}\n` +
-      `Archivo: ${file.name}\n— AGUILA 🦀`
+      traficoId && docType
+        ? `📎 <b>${companyId}</b> subió <b>${docType}</b> para ${traficoId}\nArchivo: ${file.name}\n— AGUILA`
+        : `📎 <b>${companyId}</b> subió <b>${file.name}</b> (auto-clasificar)\n— AGUILA`
     )
 
     return NextResponse.json({

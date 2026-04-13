@@ -66,6 +66,10 @@ const s = StyleSheet.create({
   fraccionDesc: { fontSize: 7.5, color: C.text, fontFamily: 'Helvetica-Bold', marginTop: 2 },
   fraccionSub: { fontSize: 7, color: C.textMuted, marginTop: 1 },
   fraccionValue: { fontSize: 8, color: C.green, fontFamily: 'Courier-Bold', marginTop: 4 },
+  // Data-gap banner (amber strip)
+  banner: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#2A1F0A', borderLeftWidth: 2, borderLeftColor: C.orange, paddingVertical: 6, paddingHorizontal: 10, marginTop: 10, borderRadius: 2 },
+  bannerLabel: { fontSize: 7, color: C.orange, fontFamily: 'Helvetica-Bold', textTransform: 'uppercase' as const, letterSpacing: 0.5, marginRight: 8 },
+  bannerText: { fontSize: 7.5, color: C.text, flex: 1 },
   // Footer
   footer: { position: 'absolute' as const, bottom: 20, left: 36, right: 36, flexDirection: 'row', justifyContent: 'space-between', borderTopWidth: 0.5, borderTopColor: C.border, paddingTop: 6 },
   footerText: { fontSize: 6, color: C.textMuted },
@@ -94,6 +98,7 @@ interface AuditData {
     dtaMXN: number; igiMXN: number; ivaMXN: number; totalGravamen: number; estatus: string
   }>
   totalDTA: number; totalIGI: number; totalIVA: number; totalGravamen: number
+  missingPagoCount?: number
   supplierDetail: Array<{
     pedimentoHeader: string
     rows: Array<{
@@ -127,6 +132,18 @@ export function AuditoriaPDF({ data }: { data: AuditData }) {
             <Text style={s.headerInfo}>Período: {fmtDateShort(d.from)} – {fmtDateShort(d.to)} · Emitido: {d.emittedDate}</Text>
           </View>
         </View>
+
+        {/* ── DATA GAP BANNER ── */}
+        {d.missingPagoCount && d.missingPagoCount > 0 ? (
+          <View style={s.banner}>
+            <Text style={s.bannerLabel}>AVISO</Text>
+            <Text style={s.bannerText}>
+              {d.missingPagoCount} tráfico{d.missingPagoCount === 1 ? '' : 's'} con estatus
+              {' '}Pedimento Pagado sin fecha_pago — no aparecen en este período. Fuente:
+              {' '}pipeline GlobalPC. Pendiente actualizar.
+            </Text>
+          </View>
+        ) : null}
 
         {/* ── KPI STRIP ── */}
         <View style={s.kpiRow}>

@@ -137,14 +137,14 @@ async function loadOperatorCockpit(opId: string, opName: string) {
     softData<{ updated_at: string }>(
       sb.from('traficos').select('updated_at').eq('estatus', 'En Proceso').gte('updated_at', fourteenDaysAgoIso).lte('updated_at', sevenDaysAgoIso).limit(2000)
     ),
-    softData<{ created_at: string }>(
-      sb.from('expediente_documentos').select('created_at').gte('created_at', fourteenDaysAgoIso).limit(2000)
+    softData<{ uploaded_at: string }>(
+      sb.from('expediente_documentos').select('uploaded_at').gte('uploaded_at', fourteenDaysAgoIso).limit(2000)
     ),
     softCount(sb.from('expediente_documentos').select('id', { count: 'exact', head: true })),
     softData<{ fraccion_classified_at: string }>(
       sb.from('globalpc_productos').select('fraccion_classified_at').not('fraccion_classified_at', 'is', null).gte('fraccion_classified_at', fourteenDaysAgoIso).limit(2000)
     ),
-    softCount(sb.from('globalpc_productos').select('id', { count: 'exact', head: true }).not('fraccion_classified_at', 'is', null)),
+    softCount(sb.from('globalpc_productos').select('id', { count: 'exact', head: true }).not('fraccion', 'is', null)),
     softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).eq('estatus', 'Cruzado').gte('updated_at', sevenDaysAgoIso)),
     softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).not('pedimento', 'is', null).gte('updated_at', monthStartIso)),
     softFirst<{ updated_at: string }>(
@@ -160,7 +160,7 @@ async function loadOperatorCockpit(opId: string, opName: string) {
   const activosSeries  = bucketDailySeries(activosSeriesRows  as Array<Record<string, unknown>>, 'updated_at', 14, now)
   const pendientesSeries = bucketDailySeries(pendientesSeriesRows as Array<Record<string, unknown>>, 'fecha_llegada', 14, now)
   const atrasadosSeries  = bucketDailySeries(atrasadosSeriesRows  as Array<Record<string, unknown>>, 'updated_at', 14, now)
-  const expedientesSeries = bucketDailySeries(expedientesSeriesRows as Array<Record<string, unknown>>, 'created_at', 14, now)
+  const expedientesSeries = bucketDailySeries(expedientesSeriesRows as Array<Record<string, unknown>>, 'uploaded_at', 14, now)
   const clasificacionesSeries = bucketDailySeries(clasificacionesSeriesRows as Array<Record<string, unknown>>, 'fraccion_classified_at', 14, now)
 
   const kpis = {

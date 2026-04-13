@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDTARates, getExchangeRate, getIVARate } from '@/lib/rates'
 import { createClient } from '@supabase/supabase-js'
+import { verifySession } from '@/lib/session'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -12,6 +13,14 @@ const TMEC_COUNTRIES = ['USA', 'US', 'UNITED STATES', 'ESTADOS UNIDOS', 'CANADA'
 
 export async function POST(req: NextRequest) {
   try {
+    const session = await verifySession(req.cookies.get('portal_session')?.value ?? '')
+    if (!session) {
+      return NextResponse.json({ data: null, error: { code: 'UNAUTHORIZED', message: 'Sesión inválida' } }, { status: 401 })
+    }
+    const companyId = session.role === 'client'
+      ? session.companyId
+      : req.cookies.get('company_id')?.value || session.companyId
+
     const body = await req.json()
     const { draftId, valorUSD, regimen, paisOrigen } = body
 
@@ -55,15 +64,18 @@ export async function POST(req: NextRequest) {
       currency_labels: { valor: 'USD', contribuciones: 'MXN' },
     }
 
-    // Update draft_data.contributions in Supabase
+    // Update draft_data.contributions in Supabase — tenant-guarded.
     const { data: draft, error: fetchErr } = await supabase
       .from('pedimento_drafts')
-      .select('draft_data')
+      .select('draft_data, company_id')
       .eq('id', draftId)
       .single()
 
     if (fetchErr || !draft) {
       return NextResponse.json({ data: null, error: { code: 'NOT_FOUND', message: 'Draft not found' } }, { status: 404 })
+    }
+    if (session.role === 'client' && draft.company_id && draft.company_id !== companyId) {
+      return NextResponse.json({ data: null, error: { code: 'FORBIDDEN', message: 'Acceso cruzado denegado' } }, { status: 403 })
     }
 
     const updatedDraftData = {

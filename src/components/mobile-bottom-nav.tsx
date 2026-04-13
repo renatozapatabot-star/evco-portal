@@ -3,19 +3,19 @@
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { MOBILE_INTERNAL_TABS, MOBILE_CLIENT_TABS, type UserRole } from '@/components/nav/nav-config'
-import { getCookieValue } from '@/lib/client-config'
 import { AduanaAvatar } from '@/components/command-center/CruzAvatar'
 import { useStatusSentence } from '@/hooks/use-status-sentence'
 import { getMoodFromCounts } from '@/components/command-center/MissionHeader'
 
-export function MobileBottomNav() {
+export interface MobileBottomNavProps {
+  /** Resolved by the server layout from the verified session. Never
+   *  read role from a client-side cookie — when the cookie is missing
+   *  on a fresh mobile session the user silently gets the wrong nav. */
+  role?: UserRole
+}
+
+export function MobileBottomNav({ role = 'client' }: MobileBottomNavProps) {
   const pathname = usePathname()
-  const role: UserRole = (() => {
-    if (typeof document === 'undefined') return 'client'
-    const r = getCookieValue('user_role')
-    if (r === 'admin' || r === 'broker') return r as UserRole
-    return 'client'
-  })()
   const status = useStatusSentence()
 
   const tabs = (role === 'admin' || role === 'broker') ? MOBILE_INTERNAL_TABS : MOBILE_CLIENT_TABS

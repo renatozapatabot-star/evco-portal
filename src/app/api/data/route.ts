@@ -31,18 +31,72 @@ const ALLOWED_TABLES = [
 
 // Tables that contain client-specific data and MUST be filtered by a client identifier.
 // Querying these without company_id, clave_cliente, or cve_cliente is a cross-client data leak risk.
+// Every table here has company_id OR cve_cliente. For client role, /api/data auto-injects
+// session.companyId (see below) — never trust a query param from the browser.
 const CLIENT_SCOPED_TABLES = new Set([
+  // Core operational
   'traficos',
   'entradas',
   'expedientes',
   'pedimentos',
   'expediente_documentos',
-  'globalpc_facturas',
-  'aduanet_facturas',
-  'econta_cartera',
-  'econta_ingresos',
   'pipeline_overview',
   'daily_performance',
+  // GlobalPC — every row belongs to one client
+  'globalpc_facturas',
+  'globalpc_productos',
+  'globalpc_partidas',
+  'globalpc_proveedores',
+  'globalpc_eventos',
+  // Aduanet — has company_id column
+  'aduanet_facturas',
+  // Intelligence tables — all have company_id
+  'product_intelligence',
+  'financial_intelligence',
+  'crossing_intelligence',
+  'warehouse_intelligence',
+  'pre_arrival_briefs',
+  'compliance_predictions',
+  'pedimento_risk_scores',
+  'anomaly_baselines',
+  'crossing_predictions',
+  'monthly_intelligence_reports',
+  'client_benchmarks',
+  'supplier_contacts',
+  'supplier_network',
+  'compliance_events',
+  'documents',
+])
+
+// Tables that do NOT have a tenant column and therefore cannot be safely
+// scoped to a client. Clients are forbidden from reading them directly —
+// broker/admin callers can still hit them (they aggregate across tenants).
+const CLIENT_FORBIDDEN_TABLES = new Set([
+  // Econta tables keyed only by cve_cliente — clients can't tamper with
+  // cve_cliente and the session doesn't carry it signed. Route through
+  // a dedicated endpoint that does server-side clave lookup instead.
+  'econta_facturas',
+  'econta_facturas_detalle',
+  'econta_aplicaciones',
+  'econta_polizas',
+  'econta_anticipos',
+  'econta_egresos',
+  'econta_cartera',
+  'econta_ingresos',
+  'globalpc_contenedores',
+  'globalpc_ordenes_carga',
+  'globalpc_bultos',
+  'document_metadata',
+  'communication_events',
+  'duplicates_detected',
+  'regulatory_alerts',
+  'trafico_completeness',
+  'oca_database',
+  'bridge_intelligence',
+  'trade_prospects',
+  'prospect_sightings',
+  'competitor_sightings',
+  'calendar_events',
 ])
 
 export async function GET(req: NextRequest) {
@@ -71,6 +125,15 @@ export async function GET(req: NextRequest) {
   }
   const cookieRole = session.role
   const isInternal = cookieRole === 'broker' || cookieRole === 'admin'
+
+  // Client role cannot read tables that have no tenant column — they'd
+  // see cross-tenant rows by construction. Broker/admin can (they aggregate).
+  if (!isInternal && CLIENT_FORBIDDEN_TABLES.has(table)) {
+    return NextResponse.json(
+      { error: 'Forbidden' },
+      { status: 403 }
+    )
+  }
 
   // For client role: company_id comes from the SIGNED session, not from cookies or query params.
   // This prevents cross-client data leaks via cookie/param manipulation.

@@ -56,15 +56,33 @@ export async function getClienteActiveTraficos(
 ): Promise<ClienteTraficoCard[]> {
   if (!companyId) return []
 
+  // "Active" = not closed. NULL estatus is treated as active (Postgres `NOT ILIKE` drops nulls silently).
   const { data: traficos } = await supabase
     .from('traficos')
     .select('trafico, estatus, fecha_llegada, pedimento, proveedor')
     .eq('company_id', companyId)
-    .not('estatus', 'ilike', 'cerrado')
+    .or('estatus.is.null,estatus.not.ilike.%cerrado%')
     .order('fecha_llegada', { ascending: false, nullsFirst: false })
     .limit(ACTIVE_LIMIT)
 
-  const rows = (traficos ?? []) as Array<Record<string, unknown>>
+  let rows = (traficos ?? []) as Array<Record<string, unknown>>
+
+  // WHY: EVCO has seasonal quiet periods where every tráfico really is closed.
+  // The cockpit still needs to show life — fall back to the most recent 90 days
+  // of tráficos regardless of estatus so Mis Tráficos Activos is never blank
+  // for a client that has real history.
+  if (rows.length === 0) {
+    const ninetyDaysAgo = new Date(Date.now() - 90 * 86400000).toISOString()
+    const { data: recent } = await supabase
+      .from('traficos')
+      .select('trafico, estatus, fecha_llegada, pedimento, proveedor')
+      .eq('company_id', companyId)
+      .gte('fecha_llegada', ninetyDaysAgo)
+      .order('fecha_llegada', { ascending: false, nullsFirst: false })
+      .limit(ACTIVE_LIMIT)
+    rows = (recent ?? []) as Array<Record<string, unknown>>
+  }
+
   if (rows.length === 0) return []
 
   const refs = rows.map(r => String(r.trafico)).filter(Boolean)

@@ -15,9 +15,10 @@ import {
   getClienteActiveTraficos,
   getClienteDocuments,
 } from '@/lib/cliente/dashboard'
+import { getClienteActivity } from '@/lib/cliente/activity'
 import { bucketDailySeries, daysAgo } from '@/lib/cockpit/fetch'
 import { softCount, softData, softFirst } from '@/lib/cockpit/safe-query'
-import { CockpitInicio, MensajeriaFeed, CockpitErrorCard, CockpitSkeleton, ActividadStrip, CapabilityCardGrid, type CockpitHeroKPI, type ActividadStripItem } from '@/components/aguila'
+import { CockpitInicio, MensajeriaFeed, CockpitErrorCard, CockpitSkeleton, ActividadStrip, CapabilityCardGrid, TimelineFeed, type CockpitHeroKPI, type ActividadStripItem } from '@/components/aguila'
 import { ClienteEstado } from '@/components/cliente/ClienteEstado'
 import { fetchClientMensajeriaFeed, mensajeriaClientEnabled } from '@/lib/mensajeria/feed'
 import type { NavCounts } from '@/lib/cockpit/nav-tiles'
@@ -89,6 +90,7 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar)
     pedimentosMonthCount,
     lastPedimento,
     mensajeriaMessages,
+    clienteActivity,
   ] = await Promise.all([
     withHardTimeout(getClienteActiveTraficos(supabase, companyId), 3500, []),
     withHardTimeout(getClienteDocuments(supabase, companyId), 3500, []),
@@ -101,14 +103,14 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar)
     softData<{ updated_at: string }>(
       supabase.from('traficos').select('updated_at').eq('company_id', companyId).not('pedimento', 'is', null).gte('updated_at', fourteenDaysAgoIso).limit(2000)
     ),
-    softData<{ created_at: string }>(
-      supabase.from('expediente_documentos').select('created_at').gte('created_at', fourteenDaysAgoIso).limit(2000)
+    softData<{ uploaded_at: string }>(
+      supabase.from('expediente_documentos').select('uploaded_at').eq('company_id', companyId).gte('uploaded_at', fourteenDaysAgoIso).limit(2000)
     ),
     softData<{ fecha_llegada_mercancia: string }>(
       supabase.from('entradas').select('fecha_llegada_mercancia').eq('company_id', companyId).gte('fecha_llegada_mercancia', fourteenDaysAgoIso).limit(2000)
     ),
     softData<{ fraccion_classified_at: string }>(
-      supabase.from('globalpc_productos').select('fraccion_classified_at').not('fraccion_classified_at', 'is', null).gte('fraccion_classified_at', fourteenDaysAgoIso).limit(2000)
+      supabase.from('globalpc_productos').select('fraccion_classified_at').eq('company_id', companyId).not('fraccion_classified_at', 'is', null).gte('fraccion_classified_at', fourteenDaysAgoIso).limit(2000)
     ),
     softData<{ updated_at: string }>(
       supabase.from('traficos').select('updated_at').eq('company_id', companyId).eq('estatus', 'Cruzado').gte('updated_at', fourteenDaysAgoIso).limit(2000)
@@ -116,13 +118,14 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar)
     softCount(supabase.from('traficos').select('trafico', { count: 'exact', head: true }).eq('company_id', companyId).eq('estatus', 'Cruzado').gte('updated_at', thirtyDaysAgoIso)),
     softCount(supabase.from('entradas').select('id', { count: 'exact', head: true }).eq('company_id', companyId).gte('fecha_llegada_mercancia', sevenDaysAgoIso)),
     softCount(supabase.from('traficos').select('trafico', { count: 'exact', head: true }).eq('company_id', companyId).not('pedimento', 'is', null)),
-    softCount(supabase.from('expediente_documentos').select('id', { count: 'exact', head: true })),
-    softCount(supabase.from('globalpc_productos').select('id', { count: 'exact', head: true })),
-    softCount(supabase.from('globalpc_productos').select('id', { count: 'exact', head: true }).not('fraccion_classified_at', 'is', null)),
+    softCount(supabase.from('expediente_documentos').select('id', { count: 'exact', head: true }).eq('company_id', companyId)),
+    softCount(supabase.from('globalpc_productos').select('id', { count: 'exact', head: true }).eq('company_id', companyId)),
+    softCount(supabase.from('globalpc_productos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).not('fraccion', 'is', null)),
     softCount(supabase.from('traficos').select('trafico', { count: 'exact', head: true }).eq('company_id', companyId).eq('estatus', 'Cruzado').gte('updated_at', sevenDaysAgoIso)),
     softCount(supabase.from('traficos').select('trafico', { count: 'exact', head: true }).eq('company_id', companyId).not('pedimento', 'is', null).gte('updated_at', new Date(now.getFullYear(), now.getMonth(), 1).toISOString())),
     softFirst<{ updated_at: string }>(supabase.from('traficos').select('updated_at').eq('company_id', companyId).not('pedimento', 'is', null).order('updated_at', { ascending: false }).limit(1)),
     withHardTimeout(fetchClientMensajeriaFeed(supabase, companyId, 10), 3000, []),
+    withHardTimeout(getClienteActivity(supabase, companyId, 12), 3000, []),
   ])
 
   const companyName = companyRow?.name ?? ''
@@ -145,7 +148,7 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar)
 
   const traficosActivosSeries  = bucketDailySeries(traficosActivosSeriesRows as Array<Record<string, unknown>>, 'updated_at', 14, now)
   const pedimentosListosSeries = bucketDailySeries(pedimentosListosSeriesRows as Array<Record<string, unknown>>, 'updated_at', 14, now)
-  const expedientesSeries      = bucketDailySeries(expedientesSeriesRows as Array<Record<string, unknown>>, 'created_at', 14, now)
+  const expedientesSeries      = bucketDailySeries(expedientesSeriesRows as Array<Record<string, unknown>>, 'uploaded_at', 14, now)
   const entradasSeries         = bucketDailySeries(entradasSeriesRows as Array<Record<string, unknown>>, 'fecha_llegada_mercancia', 14, now)
   const clasificacionesSeries  = bucketDailySeries(clasificacionesSeriesRows as Array<Record<string, unknown>>, 'fraccion_classified_at', 14, now)
   const cruzadosMesSeries      = bucketDailySeries(cruzadosMesSeriesRows as Array<Record<string, unknown>>, 'updated_at', 14, now)
@@ -179,15 +182,34 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar)
     : 'Sin tráficos activos. Tus próximas operaciones aparecerán aquí.'
 
   const mensajeriaEnabled = mensajeriaClientEnabled()
+  const activityHasContent = clienteActivity.length > 0
+  const mensajeriaHasContent = mensajeriaEnabled && mensajeriaMessages.length > 0
+
   const actividadSlot = (
-    <MensajeriaFeed
-      messages={mensajeriaEnabled ? mensajeriaMessages : []}
-      realtime={false}
-      companyId={companyId}
-      emptyLabel="Tu operación está en calma · Todo en orden"
-      placeholder={mensajeriaEnabled ? undefined : 'Mensajería próximamente'}
-      max={10}
-    />
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {(activityHasContent || !mensajeriaHasContent) && (
+        <TimelineFeed
+          items={clienteActivity}
+          max={10}
+          emptyLabel="Tu operación está en calma · Todo en orden"
+        />
+      )}
+      {mensajeriaEnabled ? (
+        mensajeriaHasContent ? (
+          <MensajeriaFeed
+            messages={mensajeriaMessages}
+            realtime={false}
+            companyId={companyId}
+            emptyLabel=""
+            max={10}
+          />
+        ) : null
+      ) : (
+        <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+          Mensajería próximamente
+        </div>
+      )}
+    </div>
   )
 
   const expPct = activeTraficos.length > 0

@@ -1,303 +1,36 @@
-'use client'
+import { cookies } from 'next/headers'
+import { redirect } from 'next/navigation'
+import { verifySession } from '@/lib/session'
+import { createServerClient } from '@/lib/supabase-server'
+import { getCatalogo } from '@/lib/catalogo/products'
+import { CatalogoTable } from './_components/CatalogoTable'
 
-import { useEffect, useState, useMemo } from 'react'
-import { useIsMobile } from '@/hooks/use-mobile'
-import { Search, ChevronRight, ArrowUpDown } from 'lucide-react'
-import { getCookieValue } from '@/lib/client-config'
-// format-utils imported if needed for future columns
-import { EmptyState } from '@/components/ui/EmptyState'
-import Link from 'next/link'
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
-interface TraficoRow {
-  trafico: string
-  descripcion_mercancia: string | null
-  importe_total: number | null
-  regimen: string | null
-  fraccion_arancelaria: string | null
-  [key: string]: unknown
+interface CatalogoPageProps {
+  searchParams: Promise<{ q?: string }>
 }
 
-interface ProductGroup {
-  descripcion: string
-  fraccion: string
-  count: number
-  totalValor: number
-  tmec: boolean
-  traficos: string[]
-}
+export default async function CatalogoPage({ searchParams }: CatalogoPageProps) {
+  const cookieStore = await cookies()
+  const token = cookieStore.get('portal_session')?.value ?? ''
+  const session = await verifySession(token)
+  if (!session) redirect('/login')
 
-type SortKey = 'count' | 'totalValor' | 'descripcion'
-
-export default function CatalogoPage() {
-  const isMobile = useIsMobile()
-  const [rows, setRows] = useState<TraficoRow[]>([])
-  const [loading, setLoading] = useState(true)
-  const [search, setSearch] = useState('')
-  const [sortBy, setSortBy] = useState<SortKey>('count')
-  const [companyId, setCompanyId] = useState('')
-  const [userRole, setUserRole] = useState('')
-  const [cookiesReady, setCookiesReady] = useState(false)
-  const [fraccionMap, setFraccionMap] = useState<Map<string, string>>(new Map())
-
-  useEffect(() => {
-    setCompanyId(getCookieValue('company_id') ?? '')
-    setUserRole(getCookieValue('user_role') ?? '')
-    setCookiesReady(true)
-  }, [])
-
-  useEffect(() => {
-    if (!cookiesReady) return
-    const isInternal = userRole === 'broker' || userRole === 'admin'
-    if (!isInternal && !companyId) { setLoading(false); return }
-
-    // Fetch traficos (without not_null filter — we'll enrich with GlobalPC)
-    const params = new URLSearchParams({
-      table: 'traficos', limit: '5000',
-      order_by: 'fecha_llegada', order_dir: 'desc',
-      gte_field: 'fecha_llegada', gte_value: '2024-01-01',
-    })
-    if (!isInternal && companyId) params.set('company_id', companyId)
-
-    // Fetch traficos + globalpc_partidas in parallel
-    const partidaParams = new URLSearchParams({
-      table: 'globalpc_partidas', limit: '10000',
-    })
-    if (!isInternal && companyId) partidaParams.set('company_id', companyId)
-
-    Promise.all([
-      fetch(`/api/data?${params}`).then(r => {
-        if (!r.ok) throw new Error(r.status === 401 ? 'session_expired' : 'fetch_error')
-        return r.json()
-      }),
-      fetch(`/api/data?${partidaParams}`).then(r => r.json()).catch(() => ({ data: [] })),
-    ])
-      .then(([trafData, partidaData]) => {
-        const traficos = Array.isArray(trafData.data) ? trafData.data : []
-        const partidas = Array.isArray(partidaData.data) ? partidaData.data : []
-
-        // Build partida description + fraccion map keyed by cve_trafico
-        const descMap = new Map<string, string>()
-        const fracMap = new Map<string, string>()
-        for (const p of partidas as { cve_trafico?: string; descripcion?: string; fraccion_arancelaria?: string; fraccion?: string }[]) {
-          if (p.cve_trafico) {
-            if (p.descripcion && !descMap.has(p.cve_trafico)) descMap.set(p.cve_trafico, p.descripcion)
-            const frac = p.fraccion_arancelaria || p.fraccion
-            if (frac && !fracMap.has(p.cve_trafico)) fracMap.set(p.cve_trafico, frac)
-          }
-        }
-        setFraccionMap(fracMap)
-
-        // Enrich traficos with GlobalPC descriptions
-        const enriched = traficos.map((t: Record<string, unknown>) => ({
-          ...t,
-          descripcion_mercancia: t.descripcion_mercancia || descMap.get(t.trafico as string) || null,
-        })).filter((t: Record<string, unknown>) => t.descripcion_mercancia)
-
-        setRows(enriched)
-      })
-      .catch(err => {
-        if (err.message === 'session_expired') { window.location.href = '/login'; return }
-        setRows([])
-      })
-      .finally(() => setLoading(false))
-  }, [cookiesReady, companyId, userRole])
-
-  const grouped = useMemo(() => {
-    const map = new Map<string, { fraccion: string; count: number; totalValor: number; hasTmec: boolean; traficos: string[] }>()
-    for (const r of rows) {
-      const raw = (r.descripcion_mercancia ?? '').trim()
-      if (!raw) continue
-      const key = raw.toUpperCase()
-      const valor = Number(r.importe_total ?? 0)
-      const reg = (r.regimen ?? '').toUpperCase()
-      const tmec = reg === 'ITE' || reg === 'ITR' || reg === 'IMD'
-      const fraccion = (r.fraccion_arancelaria || fraccionMap.get(r.trafico) || '') as string
-      const existing = map.get(key)
-      if (existing) {
-        existing.count++
-        existing.totalValor += valor
-        if (tmec) existing.hasTmec = true
-        if (!existing.fraccion && fraccion) existing.fraccion = fraccion
-        if (existing.traficos.length < 5) existing.traficos.push(r.trafico)
-      } else {
-        map.set(key, { fraccion, count: 1, totalValor: valor, hasTmec: tmec, traficos: [r.trafico] })
-      }
-    }
-
-    let result: ProductGroup[] = Array.from(map.entries())
-      .map(([key, data]) => ({
-        descripcion: key.charAt(0) + key.slice(1).toLowerCase(),
-        fraccion: data.fraccion,
-        count: data.count,
-        totalValor: data.totalValor,
-        tmec: data.hasTmec,
-        traficos: data.traficos,
-      }))
-
-    // Sort
-    if (sortBy === 'count') result.sort((a, b) => b.count - a.count)
-    else if (sortBy === 'totalValor') result.sort((a, b) => b.totalValor - a.totalValor)
-    else result.sort((a, b) => a.descripcion.localeCompare(b.descripcion))
-
-    // Search
-    if (search.trim()) {
-      const q = search.toLowerCase()
-      result = result.filter(g =>
-        g.descripcion.toLowerCase().includes(q) ||
-        g.fraccion.toLowerCase().includes(q)
-      )
-    }
-    return result
-  }, [rows, search, sortBy, fraccionMap])
-
-  const totalValue = useMemo(() => rows.reduce((s, r) => s + (Number(r.importe_total) || 0), 0), [rows])
+  const { q } = await searchParams
+  const supabase = createServerClient()
+  const rows = await getCatalogo(supabase, session.companyId, { q, limit: 100 })
 
   return (
-    <div className="page-shell">
-      <div className="section-header">
-        <div>
-          {/* Title removed — sidebar indicates current page */}
-        </div>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          {(['count', 'totalValor', 'descripcion'] as SortKey[]).map(key => (
-            <button key={key} onClick={() => setSortBy(key)}
-              style={{
-                fontSize: 11, fontWeight: 600, padding: '8px 14px', minHeight: 60, borderRadius: 6, cursor: 'pointer',
-                border: `1px solid ${sortBy === key ? 'var(--gold)' : 'var(--border-card)'}`,
-                background: sortBy === key ? 'rgba(196,150,60,0.08)' : 'transparent',
-                color: sortBy === key ? 'var(--gold-dark, #7A7E86)' : 'var(--slate-500)',
-              }}>
-              {key === 'count' ? `Frecuencia${sortBy === 'count' ? ' ↓' : ''}` : key === 'totalValor' ? `Valor${sortBy === 'totalValor' ? ' ↓' : ''}` : `A-Z${sortBy === 'descripcion' ? ' ↓' : ''}`}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Search */}
-      <div style={{
-        display: 'flex', alignItems: 'center', gap: 8,
-        background: 'var(--bg-card)', border: '1px solid var(--border-card)',
-        borderRadius: 8, padding: '0 12px', height: 40, marginBottom: 16, maxWidth: 400,
-      }}>
-        <Search size={14} style={{ color: 'var(--slate-400)', flexShrink: 0 }} />
-        <input placeholder="Buscar descripción o fracción..." value={search}
-          onChange={e => setSearch(e.target.value)}
-          aria-label="Buscar productos en catálogo"
-          style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: 13, color: 'var(--text-primary)' }} />
-      </div>
-
-      {/* Table */}
-      <div className="table-shell">
-        {loading ? (
-          <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="skeleton-shimmer" style={{ height: 44, borderRadius: 4 }} />
-            ))}
-          </div>
-        ) : grouped.length === 0 ? (
-          <div style={{ padding: 32 }}>
-            <EmptyState icon="📋" title="Sin tráficos recientes"
-              description="Los tráficos recientes con sus fracciones aparecerán aquí" />
-          </div>
-        ) : isMobile ? (
-            <div style={{ padding: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {grouped.map((g) => (
-                <div key={g.descripcion} style={{
-                  background: 'var(--bg-main)', border: '1px solid var(--border-card)',
-                  borderRadius: 8, padding: '12px 14px',
-                }}>
-                  <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 6, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {g.descripcion}
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                    <span className="font-mono" style={{
-                      fontWeight: 600, fontSize: 13,
-                      color: g.fraccion ? 'var(--gold-dark, #7A7E86)' : 'var(--slate-500)',
-                    }}>
-                      {g.fraccion || 'Pendiente'}
-                    </span>
-                    {g.tmec ? (
-                      <span style={{ fontSize: 11, color: 'var(--success)', fontWeight: 600, background: 'var(--success-bg)', padding: '2px 8px', borderRadius: 9999 }}>T-MEC</span>
-                    ) : (
-                      <span style={{ fontSize: 11, color: 'var(--slate-400)' }}>—</span>
-                    )}
-                  </div>
-                  <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                    {g.traficos.slice(0, 3).map(t => (
-                      <Link key={t} href={`/traficos/${encodeURIComponent(t)}`}
-                        onClick={e => e.stopPropagation()}
-                        title={t}
-                        className="font-mono" style={{
-                          fontSize: 10, fontWeight: 600, color: 'var(--info, #2563EB)',
-                          textDecoration: 'none', background: 'rgba(59,130,246,0.1)',
-                          padding: '1px 6px', borderRadius: 4,
-                        }}>
-                        {t.length > 15 ? t.slice(-8) : t}
-                      </Link>
-                    ))}
-                    {g.traficos.length > 3 && (
-                      <span style={{ fontSize: 10, color: 'var(--slate-400)' }}>+{g.traficos.length - 3}</span>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table className="aguila-table" aria-label="Tráficos recientes" style={{ minWidth: 700 }}>
-              <thead>
-                <tr>
-                  <th>Descripción</th>
-                  <th>Fracción</th>
-                  <th>T-MEC</th>
-                  <th>Tráficos</th>
-                </tr>
-              </thead>
-              <tbody>
-                {grouped.map((g, i) => (
-                  <tr key={g.descripcion} className={`clickable-row ${i % 2 === 0 ? 'row-even' : 'row-odd'}`}>
-                    <td style={{ maxWidth: 260, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 500 }}>
-                      {g.descripcion}
-                    </td>
-                    <td className="font-mono" style={{
-                      fontWeight: 600, fontSize: 13,
-                      color: g.fraccion ? 'var(--gold-dark, #7A7E86)' : 'var(--slate-500)',
-                    }}>
-                      {g.fraccion || 'Pendiente'}
-                    </td>
-                    <td>
-                      {g.tmec ? (
-                        <span style={{ fontSize: 11, color: 'var(--success)', fontWeight: 600, background: 'var(--success-bg)', padding: '2px 8px', borderRadius: 9999 }}>T-MEC</span>
-                      ) : (
-                        <span style={{ fontSize: 11, color: 'var(--slate-400)' }}>—</span>
-                      )}
-                    </td>
-                    <td>
-                      <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                        {g.traficos.slice(0, 3).map(t => (
-                          <Link key={t} href={`/traficos/${encodeURIComponent(t)}`}
-                            onClick={e => e.stopPropagation()}
-                            title={t}
-                            className="font-mono" style={{
-                              fontSize: 10, fontWeight: 600, color: 'var(--info, #2563EB)',
-                              textDecoration: 'none', background: 'rgba(59,130,246,0.1)',
-                              padding: '1px 6px', borderRadius: 4,
-                            }}>
-                            {t.length > 15 ? t.slice(-8) : t}
-                          </Link>
-                        ))}
-                        {g.traficos.length > 3 && (
-                          <span style={{ fontSize: 10, color: 'var(--slate-400)' }}>+{g.traficos.length - 3}</span>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          )}
-      </div>
+    <div style={{ maxWidth: 1100, margin: '0 auto', padding: '24px 16px' }}>
+      <h1 style={{ margin: '0 0 4px', fontSize: 24, fontWeight: 700, color: 'rgba(255,255,255,0.92)' }}>
+        Catálogo de productos
+      </h1>
+      <p style={{ margin: '0 0 20px', fontSize: 13, color: 'rgba(255,255,255,0.6)' }}>
+        Tu inventario de productos con fracción arancelaria y último tráfico.
+      </p>
+      <CatalogoTable rows={rows} query={q ?? ''} total={rows.length} />
     </div>
   )
 }

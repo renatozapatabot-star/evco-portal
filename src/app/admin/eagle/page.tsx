@@ -15,13 +15,13 @@ import { computeARAging, computeAPAging } from '@/lib/contabilidad/aging'
 import { fmtUSDCompact } from '@/lib/format-utils'
 import { bucketDailySeries, sumRange, daysAgo } from '@/lib/cockpit/fetch'
 import { softCount, softData, softFirst } from '@/lib/cockpit/safe-query'
-import { auditLogAvailable } from '@/lib/cockpit/table-availability'
-import { auditRowToTimelineItem, type AuditRow } from '@/lib/cockpit/audit-format'
+import type { TimelineItem } from '@/components/aguila'
 import { parseMonthParam, recentMonths } from '@/lib/cockpit/month-window'
 import { fetchEscalatedThreads } from '@/lib/mensajeria/feed'
 import { CockpitInicio, PriorityThreadsPanel, TimelineFeed, CockpitSkeleton, ActividadStrip, CapabilityCardGrid, type CockpitHeroKPI, type ActividadStripItem } from '@/components/aguila'
 import type { CapabilityCounts } from '@/lib/cockpit/capabilities'
 import { MonthSelector } from '@/components/admin/MonthSelector'
+import { AuditoriaShortcut } from '@/components/admin/AuditoriaShortcut'
 import { TraficosDelDiaTile } from '@/components/eagle/TraficosDelDiaTile'
 import { ArApTile } from '@/components/eagle/ArApTile'
 import { ClientesDormidosTile } from '@/components/eagle/ClientesDormidosTile'
@@ -38,13 +38,32 @@ export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
 const MOTION_STATUSES = ['En Proceso', 'Documentacion', 'En Aduana', 'Pedimento Pagado', 'Cruzado']
-const DORMANT_DAYS = 14
 
-const ESCALATION_ACTIONS = [
-  'draft_rejected', 'login_failed', 'oca_requested',
-  'compliance_escalated', 'mve_critical', 'pedimento_rechazado',
-  'data_exported',
-]
+// Human-readable labels for operational_decisions feed. Unknown
+// decision_types fall through to a humanized version of the raw value.
+const DECISION_LABELS: Record<string, string> = {
+  solicitation_overdue: 'Documento sin respuesta',
+  doc_autoclassified: 'Documento clasificado',
+  doc_classify_failed: 'Clasificación manual',
+  draft_approved: 'Borrador aprobado',
+  draft_rejected: 'Borrador rechazado',
+  draft_created: 'Borrador creado',
+  compliance_escalated: 'Compliance escalado',
+  mve_critical: 'MVE crítico',
+  pedimento_rechazado: 'Pedimento rechazado',
+  oca_requested: 'OCA solicitada',
+  data_exported: 'Datos exportados',
+  payment_applied: 'Pago aplicado',
+  payment_released: 'Pago liberado',
+  email_routed: 'Correo enrutado',
+  email_classified: 'Correo clasificado',
+}
+
+function humanizeDecision(decisionType: string | null, decision: string | null): string {
+  if (decisionType && DECISION_LABELS[decisionType]) return DECISION_LABELS[decisionType]
+  if (decisionType) return decisionType.replace(/_/g, ' ')
+  return decision ?? 'Evento'
+}
 
 function daysSinceISO(iso: string): number {
   return Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000)
@@ -107,7 +126,6 @@ async function renderEagle(opName: string, rawMonth: string | null) {
   // coherent with the selected period.
   const sparklineEnd = new Date(Math.min(new Date(month.monthEnd).getTime() - 1, now.getTime()))
   const fourteenDaysAgoIso = daysAgo(14, sparklineEnd).toISOString()
-  const sevenDaysAgoIso = daysAgo(7, sparklineEnd).toISOString()
 
   const [
     traficosRows,
@@ -115,7 +133,6 @@ async function renderEagle(opName: string, rawMonth: string | null) {
     ap,
     recentForDormantRows,
     companiesRows,
-    auditAvailable,
     traficosActivosSeriesRows,
     pedimentosSeriesRows,
     expedientesSeriesRows,
@@ -132,27 +149,31 @@ async function renderEagle(opName: string, rawMonth: string | null) {
     mveRows,
     auditSuggestionsRows,
     escalatedThreads,
+    decisionRows,
   ] = await Promise.all([
     softData<{ estatus: string | null }>(
       sb.from('traficos').select('estatus').in('estatus', MOTION_STATUSES).limit(5000)
     ),
     withHardTimeout(computeARAging(sb, null), 3500, { total: 0, count: 0, byBucket: [], topDebtors: [], currency: 'MXN' as const }),
     withHardTimeout(computeAPAging(sb, null), 3500, { total: 0, count: 0, byBucket: [], topDebtors: [], currency: 'USD' as const, sourceMissing: true }),
+    // Active-client scope = the selected month's window (not a rolling 14d).
     softData<{ company_id: string | null; created_at: string }>(
-      sb.from('traficos').select('company_id, created_at').gte('created_at', daysAgo(DORMANT_DAYS, now).toISOString()).limit(5000)
+      sb.from('traficos').select('company_id, created_at').gte('created_at', month.monthStart).lt('created_at', month.monthEnd).limit(5000)
     ),
     softData<{ company_id: string; razon_social: string | null; is_active: boolean | null }>(
       sb.from('companies').select('company_id, razon_social, is_active').eq('is_active', true).limit(500)
     ),
-    withHardTimeout(auditLogAvailable(sb), 2000, false),
     softData<{ updated_at: string }>(
       sb.from('traficos').select('updated_at').eq('estatus', 'En Proceso').gte('updated_at', fourteenDaysAgoIso).limit(2000)
     ),
-    softData<{ fecha_llegada: string }>(
-      sb.from('traficos').select('fecha_llegada').is('pedimento', null).gte('fecha_llegada', fourteenDaysAgoIso).limit(2000)
+    // Pedimento series — sparkline for the nav card. Use updated_at since
+    // fecha_llegada is sparsely populated on recent rows.
+    softData<{ updated_at: string }>(
+      sb.from('traficos').select('updated_at').is('pedimento', null).gte('updated_at', fourteenDaysAgoIso).limit(2000)
     ),
-    softData<{ created_at: string }>(
-      sb.from('expediente_documentos').select('created_at').gte('created_at', fourteenDaysAgoIso).limit(2000)
+    // expediente_documentos uses `uploaded_at`, not `created_at`.
+    softData<{ uploaded_at: string }>(
+      sb.from('expediente_documentos').select('uploaded_at').gte('uploaded_at', fourteenDaysAgoIso).limit(2000)
     ),
     softCount(sb.from('expediente_documentos').select('id', { count: 'exact', head: true })),
     softData<{ fecha_llegada_mercancia: string }>(
@@ -177,6 +198,12 @@ async function renderEagle(opName: string, rawMonth: string | null) {
       sb.from('audit_suggestions').select('id, title').eq('status', 'pending').limit(10)
     ),
     withHardTimeout(fetchEscalatedThreads(sb, 4), 3000, []),
+    // Activity feed — operational_decisions has fresh data across all
+    // tenants. `audit_log` is canonical in the rulebook but empty in prod
+    // right now, so the feed falls back to op_decisions for visibility.
+    softData<{ id: string; decision_type: string | null; decision: string | null; company_id: string | null; created_at: string; trafico: string | null; reasoning: string | null }>(
+      sb.from('operational_decisions').select('id, decision_type, decision, company_id, created_at, trafico, reasoning').gte('created_at', month.monthStart).lt('created_at', month.monthEnd).order('created_at', { ascending: false }).limit(20)
+    ),
   ])
 
   // traficosByStatus
@@ -250,25 +277,21 @@ async function renderEagle(opName: string, rawMonth: string | null) {
   atenciones.sort((a, b) => a.severityRank - b.severityRank)
   const atencionesTop = atenciones.slice(0, 5)
 
-  // Audit escalations — scoped to the selected month.
-  let auditRows: AuditRow[] = []
-  if (auditAvailable) {
-    auditRows = await softData<AuditRow>(
-      sb.from('audit_log')
-        .select('id, table_name, action, record_id, changed_at, company_id')
-        .in('action', ESCALATION_ACTIONS)
-        .gte('changed_at', month.monthStart)
-        .lt('changed_at', month.monthEnd)
-        .order('changed_at', { ascending: false })
-        .limit(20)
-    )
-  }
-  const actividadItems = auditRows.map(auditRowToTimelineItem)
+  // Activity feed from operational_decisions (month-scoped, cross-tenant).
+  const actividadItems: TimelineItem[] = decisionRows.map((r) => ({
+    id: String(r.id),
+    title: humanizeDecision(r.decision_type, r.decision),
+    subtitle: r.company_id
+      ? (r.trafico ? `${r.company_id} · ${r.trafico}` : r.company_id)
+      : (r.trafico ?? undefined),
+    timestamp: r.created_at,
+    href: r.trafico ? `/traficos/${encodeURIComponent(r.trafico)}` : undefined,
+  }))
 
   // Series bucketing
   const traficosActivosSeries = bucketDailySeries(traficosActivosSeriesRows as Array<Record<string, unknown>>, 'updated_at', 14, now)
-  const pedimentosPendSeries  = bucketDailySeries(pedimentosSeriesRows as Array<Record<string, unknown>>, 'fecha_llegada', 14, now)
-  const expedientesSeries     = bucketDailySeries(expedientesSeriesRows as Array<Record<string, unknown>>, 'created_at', 14, now)
+  const pedimentosPendSeries  = bucketDailySeries(pedimentosSeriesRows as Array<Record<string, unknown>>, 'updated_at', 14, now)
+  const expedientesSeries     = bucketDailySeries(expedientesSeriesRows as Array<Record<string, unknown>>, 'uploaded_at', 14, now)
   const entradasSeries        = bucketDailySeries(entradasSeriesRows as Array<Record<string, unknown>>, 'fecha_llegada_mercancia', 14, now)
   const clasificacionesSeries = bucketDailySeries(clasificacionesSeriesRows as Array<Record<string, unknown>>, 'fraccion_classified_at', 14, now)
 
@@ -331,6 +354,7 @@ async function renderEagle(opName: string, rawMonth: string | null) {
         next={month.next}
         options={monthOptions}
       />
+      <AuditoriaShortcut />
       <PriorityThreadsPanel threads={escalatedThreads} />
       <div className="eagle-estado-grid" style={{
         display: 'grid',

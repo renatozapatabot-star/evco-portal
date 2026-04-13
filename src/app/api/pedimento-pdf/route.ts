@@ -85,10 +85,33 @@ export async function GET(request: NextRequest) {
   const { data: partidas } = folios.length > 0
     ? await supabase
         .from('globalpc_partidas')
-        .select('folio, cve_producto, cantidad, precio_unitario, peso, pais_origen')
+        .select('folio, cve_producto, cve_cliente, cantidad, precio_unitario, peso, pais_origen')
         .in('folio', folios)
         .limit(1000)
     : { data: null }
+
+  // Enrich partidas with descripcion + fraccion from globalpc_productos.
+  const partidaArr = (partidas ?? []) as Array<{
+    folio: number | null
+    cve_producto: string | null
+    cve_cliente: string | null
+    cantidad: number | null
+    precio_unitario: number | null
+    peso: number | null
+    pais_origen: string | null
+  }>
+  const cves = Array.from(new Set(partidaArr.map(p => p.cve_producto).filter((c): c is string => !!c)))
+  const productMap = new Map<string, { descripcion: string | null; fraccion: string | null }>()
+  if (cves.length > 0) {
+    const { data: prods } = await supabase
+      .from('globalpc_productos')
+      .select('cve_producto, cve_cliente, descripcion, fraccion')
+      .in('cve_producto', cves)
+      .limit(2000)
+    for (const p of (prods ?? []) as Array<{ cve_producto: string | null; cve_cliente: string | null; descripcion: string | null; fraccion: string | null }>) {
+      productMap.set(`${p.cve_cliente ?? ''}|${p.cve_producto ?? ''}`, { descripcion: p.descripcion, fraccion: p.fraccion })
+    }
+  }
 
   // --- Financial aggregation ---
   // Valor Comercial USD from globalpc_facturas (authoritative commercial invoice).
@@ -102,27 +125,52 @@ export async function GET(request: NextRequest) {
     try { tipoCambio = (await getExchangeRate()).rate } catch { tipoCambio = 0 }
   }
 
-  // DTA: prefer aduanet; fall back to fixed rate per régimen from system_config.
+  // Three-way DTA/IGI/IVA strategy:
+  //   1. Real CBP data from aduanet_facturas if present (authoritative)
+  //   2. Fall back to estimator (DTA from régimen, IGI from per-fracción tariff_rates)
+  //   3. Otherwise show "Pendiente" labels in the PDF
+  const hasCbp = cbpArr.length > 0
   let dta = cbpArr.reduce((s, f) => s + (Number(f.dta) || 0), 0)
-  if (!dta && trafico.regimen) {
+  let igi: number | null = hasCbp ? cbpArr.reduce((s, f) => s + (Number(f.igi) || 0), 0) : null
+  let iva: number | null = hasCbp ? cbpArr.reduce((s, f) => s + (Number(f.iva) || 0), 0) : null
+  let dataSource: 'cbp' | 'commercial-only' | 'estimated' | 'estimated-partial' = hasCbp ? 'cbp' : 'commercial-only'
+
+  if (!hasCbp) {
+    // Estimator path: build per-partida MXN values and call the customs lib.
+    const valorAduanaMxn = valorUSD * tipoCambio
+    const partidasForEstimate = partidaArr.map(p => {
+      const enr = productMap.get(`${p.cve_cliente ?? ''}|${p.cve_producto ?? ''}`)
+      const valorPartidaUsd = (Number(p.precio_unitario) || 0) * (Number(p.cantidad) || 0)
+      return {
+        fraccion: enr?.fraccion ?? null,
+        valor_partida_mxn: valorPartidaUsd * tipoCambio,
+      }
+    })
     try {
-      const rates = await getDTARates()
-      const entry = rates[trafico.regimen] || rates['A1']
-      if (entry?.type === 'fixed') dta = entry.amount
-    } catch { /* leave 0 */ }
+      const { estimateIgiIva } = await import('@/lib/customs/estimate-igi-iva')
+      const est = await estimateIgiIva(supabase, {
+        regimen: trafico.regimen,
+        valor_aduana_mxn: valorAduanaMxn,
+        partidas: partidasForEstimate,
+      })
+      if (est.dta > 0) dta = est.dta
+      if (est.igi != null) igi = est.igi
+      if (est.iva != null) iva = est.iva
+      dataSource = est.source === 'unknown' ? 'commercial-only' : est.source
+    } catch {
+      // Estimator unavailable — leave as commercial-only.
+    }
   }
 
-  // IGI and IVA: only authoritative from aduanet_facturas. No silent fallback.
-  const hasCbp = cbpArr.length > 0
-  const igi = hasCbp ? cbpArr.reduce((s, f) => s + (Number(f.igi) || 0), 0) : null
-  const iva = hasCbp ? cbpArr.reduce((s, f) => s + (Number(f.iva) || 0), 0) : null
-
-  const partidasForPDF = (partidas ?? []).map(p => ({
-    fraccion: '',
-    descripcion: String(p.cve_producto || ''),
-    cantidad: Number(p.cantidad) || 0,
-    valorUSD: (Number(p.precio_unitario) || 0) * (Number(p.cantidad) || 0),
-  }))
+  const partidasForPDF = partidaArr.map(p => {
+    const enr = productMap.get(`${p.cve_cliente ?? ''}|${p.cve_producto ?? ''}`)
+    return {
+      fraccion: enr?.fraccion ?? '',
+      descripcion: enr?.descripcion ?? String(p.cve_producto || ''),
+      cantidad: Number(p.cantidad) || 0,
+      valorUSD: (Number(p.precio_unitario) || 0) * (Number(p.cantidad) || 0),
+    }
+  })
 
   const today = new Date().toLocaleDateString('es-MX', {
     day: '2-digit', month: 'long', year: 'numeric', timeZone: 'America/Chicago',
@@ -147,7 +195,7 @@ export async function GET(request: NextRequest) {
       iva,
       tipoCambio,
       partidas: partidasForPDF,
-      dataSource: hasCbp ? 'cbp' : 'commercial-only',
+      dataSource,
     })
   )
 

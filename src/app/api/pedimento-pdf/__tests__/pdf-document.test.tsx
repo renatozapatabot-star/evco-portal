@@ -50,4 +50,18 @@ describe('PedimentoPDF', () => {
     const buf = await renderToBuffer(PedimentoPDF(baseProps({ partidas: [] })))
     expect(buf.subarray(0, 5).toString('utf8')).toBe('%PDF-')
   }, 20000)
+
+  it('renders the estimated path with computed IGI/IVA labelled "Estimado"', async () => {
+    const buf = await renderToBuffer(
+      PedimentoPDF(baseProps({ igi: 1850.4, iva: 39520.7, dataSource: 'estimated' }))
+    )
+    expect(buf.subarray(0, 5).toString('utf8')).toBe('%PDF-')
+  }, 20000)
+
+  it('renders estimated-partial when only DTA was estimable', async () => {
+    const buf = await renderToBuffer(
+      PedimentoPDF(baseProps({ igi: null, iva: null, dataSource: 'estimated-partial' }))
+    )
+    expect(buf.subarray(0, 5).toString('utf8')).toBe('%PDF-')
+  }, 20000)
 })

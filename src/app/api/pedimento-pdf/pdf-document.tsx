@@ -57,9 +57,11 @@ export interface PedimentoPDFProps {
     cantidad: number
     valorUSD: number
   }>
-  // 'cbp' = DTA/IGI/IVA from AduanaNet filing data.
-  // 'commercial-only' = only commercial invoice synced; customs payments pending.
-  dataSource: 'cbp' | 'commercial-only'
+  // 'cbp'                 = DTA/IGI/IVA from AduanaNet filing data (authoritative)
+  // 'estimated'           = DTA + IGI + IVA all computed from tariff_rates + system_config
+  // 'estimated-partial'   = DTA computed; IGI/IVA insufficient fracción coverage
+  // 'commercial-only'     = only commercial invoice synced; nothing else estimable
+  dataSource: 'cbp' | 'commercial-only' | 'estimated' | 'estimated-partial'
 }
 
 export function PedimentoPDF(props: PedimentoPDFProps) {
@@ -117,16 +119,18 @@ export function PedimentoPDF(props: PedimentoPDFProps) {
           <View style={s.kpiCard}>
             <Text style={s.kpiLabel}>DTA</Text>
             <Text style={s.kpiValue}>{fmtUSD(props.dta)}</Text>
-            {props.dataSource === 'commercial-only' && <Text style={s.kpiSub}>Calculado</Text>}
+            {props.dataSource !== 'cbp' && <Text style={s.kpiSub}>Calculado</Text>}
           </View>
           <View style={s.kpiCard}>
             <Text style={s.kpiLabel}>IGI</Text>
             <Text style={s.kpiValue}>{fmtOrDash(props.igi)}</Text>
+            {props.igi != null && props.dataSource === 'estimated' && <Text style={s.kpiSub}>Estimado</Text>}
             {props.igi == null && <Text style={s.kpiSub}>Pendiente</Text>}
           </View>
           <View style={s.kpiCard}>
             <Text style={s.kpiLabel}>IVA</Text>
             <Text style={s.kpiValue}>{fmtOrDash(props.iva)}</Text>
+            {props.iva != null && props.dataSource === 'estimated' && <Text style={s.kpiSub}>Estimado</Text>}
             {props.iva == null && <Text style={s.kpiSub}>Pendiente</Text>}
           </View>
         </View>

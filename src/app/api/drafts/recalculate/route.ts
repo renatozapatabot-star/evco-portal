@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
     const regimeOK = TMEC_REGIMES.includes((regimen || '').toUpperCase())
     const countryOK = TMEC_COUNTRIES.includes((paisOrigen || '').toUpperCase().trim())
     const isTMEC = regimeOK || countryOK
-    const igiRate = isTMEC ? 0 : 0 // TODO: lookup from tariff_rates table
+    const igiRate = isTMEC ? 0 : 0 // TODO(v1.5): lookup from tariff_rates table
     const igiAmount = Math.round(valorAduanaMXN * igiRate * 100) / 100
 
     // IVA — cascading base

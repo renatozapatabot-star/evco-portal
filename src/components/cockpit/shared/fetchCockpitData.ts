@@ -369,7 +369,7 @@ async function fetchAdminData(): Promise<AdminData> {
       operator_id: op.id as string,
       name: op.full_name as string,
       assigned,
-      avgResponseMin: 0, // TODO: calculate from operator_actions
+      avgResponseMin: 0, // TODO(v1.5): calculate from operator_actions
     }
   })
 

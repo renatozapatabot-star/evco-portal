@@ -258,7 +258,7 @@ export function DocumentosView() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation()
-                          // TODO: Implement actual Supabase delete logic
+                          // TODO(v1.5): Implement actual Supabase delete logic
                           // 1. Show confirmation dialog
                           // 2. Delete from company_documents table
                           // 3. Delete file from Supabase Storage

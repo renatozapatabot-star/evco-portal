@@ -253,7 +253,7 @@ async function overdueARTotal(): Promise<Item | null> {
 
 async function yardOccupancyItem(): Promise<Item | null> {
   try {
-    // TODO: replace with real capacity; using simple occupied-row ratio for now.
+    // TODO(v1.5): replace with real capacity; using simple occupied-row ratio for now.
     const { count: occupied } = await supabase
       .from('yard_positions')
       .select('*', { count: 'exact', head: true })

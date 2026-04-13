@@ -90,3 +90,13 @@ export async function verifySession(token: string): Promise<{ companyId: string;
 
   return { companyId, role, expiresAt }
 }
+
+/**
+ * requireCompanyId — narrow guard for cockpit pages that cannot proceed
+ * without a tenant. Throws `no_company` so the caller can surface a 401
+ * or notFound() rather than scoping a query to `undefined`.
+ */
+export function requireCompanyId(session: { companyId?: string | null }): string {
+  if (!session?.companyId) throw new Error('no_company')
+  return session.companyId
+}

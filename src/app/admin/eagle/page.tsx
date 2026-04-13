@@ -20,6 +20,8 @@ import { ClientesDormidosTile } from '@/components/eagle/ClientesDormidosTile'
 import { TopAtencionesTile } from '@/components/eagle/TopAtencionesTile'
 import { CorredorTile } from '@/components/eagle/CorredorTile'
 import { TeamActivityTile } from '@/components/eagle/TeamActivityTile'
+import { NavCardGrid } from '@/components/NavCardGrid'
+import { buildEagleNavCards } from '@/components/cockpit/shared/nav-cards'
 import type {
   ActivityItem,
   AtencionItem,
@@ -211,6 +213,19 @@ export default async function EaglePage() {
         arPendingMxn={data.ar.total}
       />
 
+      {/* Command center — six destinations Tito acts on, mirrors the client view */}
+      <div style={{ marginBottom: 16 }}>
+        <NavCardGrid
+          items={buildEagleNavCards({
+            activeTraficos: data.traficosByStatus.reduce((sum, b) => sum + b.count, 0),
+            cruzadosThisMonth: data.traficosByStatus.find(b => b.status === 'Cruzado')?.count ?? 0,
+            pendingApprovals: data.atenciones.length,
+            unassignedCount: 0,
+            activeClients: (companiesRes.data ?? []).length,
+          })}
+        />
+      </div>
+
       <section
         className="eagle-grid"
         style={{
@@ -223,7 +238,8 @@ export default async function EaglePage() {
         <ArApTile ar={data.ar} ap={data.ap} />
         <ClientesDormidosTile dormant={data.dormant} />
         <TopAtencionesTile items={data.atenciones} />
-        <CorredorTile />
+        {/* CorredorTile gated behind beta flag — empty iframe in beta is dead space */}
+        {process.env.NEXT_PUBLIC_SHOW_BETA_STUBS === 'true' && <CorredorTile />}
         <TeamActivityTile initial={data.recentActivity} />
       </section>
 

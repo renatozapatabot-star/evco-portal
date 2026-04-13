@@ -17,6 +17,8 @@ import { DueloDelDia } from './operator/DueloDelDia'
 import { FlowMode } from './shared/FlowMode'
 import { useReviewerShortcuts, ReviewerShortcutHelp } from '@/hooks/use-reviewer-shortcuts'
 import { NewsBanner, buildOperatorItems } from './shared/NewsBanner'
+import { NavCardGrid } from '@/components/NavCardGrid'
+import { buildOperatorNavCards } from './shared/nav-cards'
 
 interface Props {
   data: OperatorData
@@ -104,6 +106,11 @@ export function OperatorCockpit({ data, operatorName, operatorId }: Props) {
 
       {/* Universal search */}
       <OperatorSearch />
+
+      {/* Command center — six destinations the operator works in */}
+      <div style={{ maxWidth: 800, marginBottom: 12 }}>
+        <NavCardGrid items={buildOperatorNavCards(data)} />
+      </div>
 
       {/* Cards grid */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 800 }}>

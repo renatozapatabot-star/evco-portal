@@ -176,22 +176,36 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar)
     : 0
 
   return (
-    <CockpitInicio
-      role="client"
-      name={companyName || 'Tu portal'}
-      companyName={companyName || 'Tu portal'}
-      heroKPIs={heroKPIs}
-      navCounts={navCounts}
-      estadoSections={estadoSections}
-      actividadSlot={actividadSlot}
-      summaryLine={summaryLine}
-      pulseSignal={activeTraficos.length > 0}
-      metaPills={[
-        { label: 'Activos', value: activeTraficos.length },
-        { label: 'Semana', value: entradasSemanaCount },
-        { label: 'Completos', value: `${expPct}%` },
-        { label: 'Mes', value: pedimentosMonthCount },
-      ]}
-    />
+    <>
+      <div style={{
+        background: '#16a34a',
+        color: '#FFFFFF',
+        padding: '12px 16px',
+        fontSize: 12,
+        fontFamily: 'ui-monospace, monospace',
+        position: 'sticky',
+        top: 0,
+        zIndex: 1000,
+      }}>
+        ✓ /inicio v9.4 rendered · company={companyId} · traficos={activeTraficos.length} · entradas7d={entradasSemanaCount} · pedimentosMes={pedimentosMonthCount}
+      </div>
+      <CockpitInicio
+        role="client"
+        name={companyName || 'Tu portal'}
+        companyName={companyName || 'Tu portal'}
+        heroKPIs={heroKPIs}
+        navCounts={navCounts}
+        estadoSections={estadoSections}
+        actividadSlot={actividadSlot}
+        summaryLine={summaryLine}
+        pulseSignal={activeTraficos.length > 0}
+        metaPills={[
+          { label: 'Activos', value: activeTraficos.length },
+          { label: 'Semana', value: entradasSemanaCount },
+          { label: 'Completos', value: `${expPct}%` },
+          { label: 'Mes', value: pedimentosMonthCount },
+        ]}
+      />
+    </>
   )
 }

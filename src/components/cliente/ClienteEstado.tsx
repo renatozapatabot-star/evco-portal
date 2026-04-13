@@ -81,7 +81,7 @@ export function ClienteEstado({ activeTraficos, documentos }: Props) {
             {activeTraficos.slice(0, 12).map((r) => {
               const pulse = statusPulse(r.estatus)
               const lastLabel = getClienteEventLabel(r.last_event_type)
-              const Icon = ICONS[lastLabel.icon]
+              const Icon = ICONS[lastLabel.icon] ?? Circle
               return (
                 <GlassCard
                   key={r.trafico}

@@ -79,27 +79,44 @@ interface HeaderProps {
   title: string
   subtitle?: string
   gradientId?: string
+  /**
+   * When the @react-pdf renderer's gradient serialization fails (or any
+   * downstream PDF viewer renders gradients poorly), set this true to render
+   * the eagle as a flat-fill silhouette. Default false preserves existing
+   * gradient behaviour for callers that look correct already.
+   */
+  solidFallback?: boolean
+  /**
+   * Eagle mark size in points. Default 56 — large enough to read on letter
+   * at standard zoom. Was 40 before; bumped because the gradient eagle was
+   * reported as nearly invisible in some viewers.
+   */
+  eagleSize?: number
 }
 
 export function AguilaPdfHeader({
   title,
   subtitle,
   gradientId = 'silverGrad',
+  solidFallback = false,
+  eagleSize = 56,
 }: HeaderProps) {
   return (
     <View style={headerStyles.header} fixed>
       <View style={headerStyles.headerLeft}>
-        <Svg width={40} height={40} viewBox="0 0 40 36">
-          <Defs>
-            <LinearGradient id={gradientId} x1="0" y1="0" x2="1" y2="1">
-              <Stop offset="0" stopColor={PDF_SILVER_BRIGHT} />
-              <Stop offset="0.5" stopColor={PDF_SILVER} />
-              <Stop offset="1" stopColor={PDF_SILVER_DIM} />
-            </LinearGradient>
-          </Defs>
+        <Svg width={eagleSize} height={eagleSize} viewBox="0 0 40 36">
+          {!solidFallback && (
+            <Defs>
+              <LinearGradient id={gradientId} x1="0" y1="0" x2="1" y2="1">
+                <Stop offset="0" stopColor={PDF_SILVER_BRIGHT} />
+                <Stop offset="0.5" stopColor={PDF_SILVER} />
+                <Stop offset="1" stopColor={PDF_SILVER_DIM} />
+              </LinearGradient>
+            </Defs>
+          )}
           <Path
             d={EAGLE_PATH}
-            fill={`url(#${gradientId})`}
+            fill={solidFallback ? PDF_SILVER : `url(#${gradientId})`}
             stroke={PDF_SILVER_DIM}
             strokeWidth={0.5}
           />

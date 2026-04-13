@@ -328,27 +328,64 @@ export async function deleteChildRow(
 }
 
 type LitePartidaRow = {
-  fraccion_arancelaria?: string | null
-  fraccion?: string | null
-  cantidad?: number | null
-  pais_origen?: string | null
-  valor_comercial?: number | null
+  cve_producto: string | null
+  cve_cliente: string | null
+  cantidad: number | null
+  precio_unitario: number | null
+  pais_origen: string | null
+}
+type LiteProductoRow = {
+  cve_producto: string | null
+  cve_cliente: string | null
+  fraccion: string | null
 }
 
 async function loadPartidasForTrafico(traficoId: string): Promise<PedimentoPartidaLite[]> {
   const supabase = createServerClient()
-  const { data } = await supabase
-    .from('globalpc_partidas')
-    .select('fraccion_arancelaria, fraccion, cantidad, pais_origen, valor_comercial')
+  // globalpc_partidas has no cve_trafico / fraccion / valor_comercial columns —
+  // the join chain is: facturas (by cve_trafico) → folios → partidas (by folio)
+  // → productos (by cve_producto) for fraction, with valor computed from
+  // cantidad * precio_unitario.
+  const { data: facturas } = await supabase
+    .from('globalpc_facturas')
+    .select('folio')
     .eq('cve_trafico', traficoId)
+    .limit(100)
+  const folios = (facturas ?? [])
+    .map((f: { folio: number | null }) => f.folio)
+    .filter((f): f is number => f != null)
+  if (folios.length === 0) return []
+
+  const { data: rawPartidas } = await supabase
+    .from('globalpc_partidas')
+    .select('cve_producto, cve_cliente, cantidad, precio_unitario, pais_origen')
+    .in('folio', folios)
     .limit(2000)
-  const rows = (data as LitePartidaRow[] | null) ?? []
-  return rows.map(p => ({
-    fraccion: p.fraccion_arancelaria ?? p.fraccion ?? null,
-    cantidad: p.cantidad ?? null,
-    pais_origen: p.pais_origen ?? null,
-    valor_comercial: p.valor_comercial ?? null,
-  }))
+  const rows = (rawPartidas as LitePartidaRow[] | null) ?? []
+
+  const cves = Array.from(new Set(rows.map(r => r.cve_producto).filter((c): c is string => !!c)))
+  const fraccionMap = new Map<string, string>()
+  if (cves.length > 0) {
+    const { data: prods } = await supabase
+      .from('globalpc_productos')
+      .select('cve_producto, cve_cliente, fraccion')
+      .in('cve_producto', cves)
+      .limit(2000)
+    for (const p of (prods as LiteProductoRow[] | null) ?? []) {
+      fraccionMap.set(`${p.cve_cliente ?? ''}|${p.cve_producto ?? ''}`, p.fraccion ?? '')
+    }
+  }
+
+  return rows.map(p => {
+    const cantidad = Number(p.cantidad) || 0
+    const precio = Number(p.precio_unitario) || 0
+    return {
+      fraccion: fraccionMap.get(`${p.cve_cliente ?? ''}|${p.cve_producto ?? ''}`) || null,
+      cantidad: p.cantidad ?? null,
+      pais_origen: p.pais_origen ?? null,
+      valor_comercial: cantidad * precio,
+    }
+  })
 }
 
 export async function validatePedimento(

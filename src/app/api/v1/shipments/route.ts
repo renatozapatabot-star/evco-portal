@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
   const offset = (page - 1) * limit
 
   let query = supabase.from('traficos')
-    .select('trafico, estatus, fecha_llegada, descripcion_mercancia, peso_bruto, importe_total, pedimento, transportista_extranjero, risk_score', { count: 'exact' })
+    .select('trafico, estatus, fecha_llegada, descripcion_mercancia, peso_bruto, importe_total, pedimento, transportista_extranjero', { count: 'exact' })
     .eq('company_id', auth.company_id)
     .gte('fecha_llegada', PORTAL_DATE_FROM)
 

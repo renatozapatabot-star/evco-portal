@@ -24,7 +24,10 @@ type EntradaRow = { cve_entrada: string | null; descripcion_mercancia: string | 
 type FacturaRow = { referencia: string | null; pedimento: string | null; proveedor: string | null; num_factura: string | null }
 type ProveedorRow = { cve_proveedor: string | null; nombre: string | null; id_fiscal: string | null }
 type ProductoRow = { id: number; cve_producto: string | null; descripcion: string | null; fraccion: string | null }
-type PartidaRow = { id: number; cve_trafico: string | null; descripcion: string | null; fraccion_arancelaria: string | null; numero_parte: string | null }
+// Partidas/fracciones search runs against globalpc_productos — globalpc_partidas
+// has no descripcion/fraccion/numero_parte columns. Productos has all three
+// (cve_producto = part #, descripcion = name, fraccion = HTS code).
+type PartidaRow = { id: number; cve_producto: string | null; descripcion: string | null; fraccion: string | null }
 type DocumentoRow = { id: string; nombre: string | null; doc_type: string | null; pedimento_id: string | null }
 type CompanyRow = { company_id: string | null; name: string | null; clave_cliente: string | null }
 type OperatorRow = { id: string | null; name: string | null; email: string | null; role: string | null }
@@ -129,33 +132,33 @@ async function searchProductos(sb: SupabaseClient, safe: string, scope: Scope): 
   }))
 }
 
-// Partidas: individual line items
+// Partidas: line items — backed by globalpc_productos (the part catalog).
 async function searchPartidas(sb: SupabaseClient, safe: string, scope: Scope): Promise<UniversalSearchHit[]> {
   if (!scope.isInternal) return []
-  const { data } = await sb.from('globalpc_partidas')
-    .select('id, cve_trafico, descripcion, fraccion_arancelaria, numero_parte')
-    .or(`descripcion.ilike.%${safe}%,cve_trafico.ilike.%${safe}%,numero_parte.ilike.%${safe}%`)
+  const { data } = await sb.from('globalpc_productos')
+    .select('id, cve_producto, descripcion, fraccion')
+    .or(`descripcion.ilike.%${safe}%,cve_producto.ilike.%${safe}%`)
     .limit(PER_GROUP)
   return ((data ?? []) as PartidaRow[]).map(p => ({
     kind: 'partidas',
     id: String(p.id),
-    title: p.numero_parte ?? p.cve_trafico ?? `Partida ${p.id}`,
-    subtitle: `${truncate(p.descripcion, 45)}${p.fraccion_arancelaria ? ` · ${p.fraccion_arancelaria}` : ''}`,
+    title: p.cve_producto ?? `Producto ${p.id}`,
+    subtitle: `${truncate(p.descripcion, 45)}${p.fraccion ? ` · ${p.fraccion}` : ''}`,
     href: '/fracciones',
   }))
 }
 
-// Fracciones: deduped fraccion_arancelaria
+// Fracciones: deduped HTS codes from globalpc_productos.
 async function searchFracciones(sb: SupabaseClient, safe: string, scope: Scope): Promise<UniversalSearchHit[]> {
   if (!scope.isInternal) return []
-  const { data } = await sb.from('globalpc_partidas')
-    .select('id, cve_trafico, descripcion, fraccion_arancelaria, numero_parte')
-    .ilike('fraccion_arancelaria', `%${safe}%`)
+  const { data } = await sb.from('globalpc_productos')
+    .select('id, cve_producto, descripcion, fraccion')
+    .ilike('fraccion', `%${safe}%`)
     .limit(PER_GROUP * 3)
   const seen = new Set<string>()
   const out: UniversalSearchHit[] = []
   for (const p of (data ?? []) as PartidaRow[]) {
-    const fr = p.fraccion_arancelaria
+    const fr = p.fraccion
     if (!fr || seen.has(fr)) continue
     seen.add(fr)
     out.push({

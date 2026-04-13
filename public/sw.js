@@ -1,4 +1,4 @@
-var CACHE_NAME = 'cruz-v2'
+var CACHE_NAME = 'aguila-v3-2026-04-13'
 var OFFLINE_URLS = ['/', '/traficos', '/entradas', '/pedimentos', '/financiero', '/cruz']
 
 self.addEventListener('install', function(event) {

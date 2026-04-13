@@ -21,6 +21,14 @@ import { ClienteEstado } from '@/components/cliente/ClienteEstado'
 import { fetchClientMensajeriaFeed, mensajeriaClientEnabled } from '@/lib/mensajeria/feed'
 import type { NavCounts } from '@/lib/cockpit/nav-tiles'
 
+/** Wrap any Promise with a hard timeout so SSR can never exceed Vercel function limits. */
+function withHardTimeout<T>(p: PromiseLike<T>, ms: number, fallback: T): Promise<T> {
+  return Promise.race([
+    Promise.resolve(p).catch(() => fallback),
+    new Promise<T>((resolve) => setTimeout(() => resolve(fallback), ms)),
+  ])
+}
+
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
@@ -71,8 +79,8 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar)
     lastPedimento,
     mensajeriaMessages,
   ] = await Promise.all([
-    Promise.resolve(getClienteActiveTraficos(supabase, companyId)).catch(() => []),
-    Promise.resolve(getClienteDocuments(supabase, companyId)).catch(() => []),
+    withHardTimeout(getClienteActiveTraficos(supabase, companyId), 3500, []),
+    withHardTimeout(getClienteDocuments(supabase, companyId), 3500, []),
     softFirst<{ name: string | null; clave_cliente?: string | null }>(
       supabase.from('companies').select('name, clave_cliente').eq('company_id', companyId).limit(1)
     ),
@@ -103,7 +111,7 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar)
     softCount(supabase.from('traficos').select('trafico', { count: 'exact', head: true }).eq('company_id', companyId).eq('estatus', 'Cruzado').gte('updated_at', sevenDaysAgoIso)),
     softCount(supabase.from('traficos').select('trafico', { count: 'exact', head: true }).eq('company_id', companyId).not('pedimento', 'is', null).gte('updated_at', new Date(now.getFullYear(), now.getMonth(), 1).toISOString())),
     softFirst<{ updated_at: string }>(supabase.from('traficos').select('updated_at').eq('company_id', companyId).not('pedimento', 'is', null).order('updated_at', { ascending: false }).limit(1)),
-    Promise.resolve(fetchClientMensajeriaFeed(supabase, companyId, 10)).catch(() => []),
+    withHardTimeout(fetchClientMensajeriaFeed(supabase, companyId, 10), 3000, []),
   ])
 
   const companyName = companyRow?.name ?? ''

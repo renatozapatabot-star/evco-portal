@@ -126,6 +126,9 @@ export function ConfigEditor({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       <div className="aguila-cfg-layout">
+        <aside className="aguila-cfg-sidenav">
+          <SideNav active={active} onSelect={setActive} completeness={completeness} />
+        </aside>
         <div className="aguila-cfg-main">
           <TabStrip active={active} onSelect={setActive} completeness={completeness} />
           <div style={{ padding: '20px 4px 4px' }}>
@@ -171,12 +174,14 @@ export function ConfigEditor({
       </div>
 
       <style>{`
+        /* Default (sm/md, < 1024px): stacked — sidenav hidden, horizontal tab strip + main + rail below */
         .aguila-cfg-layout {
           display: grid;
-          grid-template-columns: minmax(0, 1fr) 300px;
+          grid-template-columns: minmax(0, 1fr);
           gap: 20px;
           align-items: flex-start;
         }
+        .aguila-cfg-sidenav { display: none; }
         .aguila-cfg-main {
           background: rgba(9,9,11,0.75);
           border: 1px solid ${BORDER_SILVER};
@@ -185,13 +190,27 @@ export function ConfigEditor({
           -webkit-backdrop-filter: blur(20px);
           overflow: hidden;
         }
-        .aguila-cfg-rail {
-          position: sticky;
-          top: 16px;
+        .aguila-cfg-rail { position: static; }
+
+        /* md (>= 900px): show right rail beside main, keep horizontal tab strip in main */
+        @media (min-width: 900px) {
+          .aguila-cfg-layout {
+            grid-template-columns: minmax(0, 1fr) 300px;
+          }
+          .aguila-cfg-rail { position: sticky; top: 16px; }
         }
-        @media (max-width: 900px) {
-          .aguila-cfg-layout { grid-template-columns: 1fr; }
-          .aguila-cfg-rail { position: static; }
+
+        /* lg (>= 1024px): collapse horizontal tab strip into vertical side-nav on the left */
+        @media (min-width: 1024px) {
+          .aguila-cfg-layout {
+            grid-template-columns: 220px minmax(0, 1fr) 300px;
+          }
+          .aguila-cfg-sidenav {
+            display: block;
+            position: sticky;
+            top: 16px;
+          }
+          .aguila-cfg-tabs { display: none !important; }
         }
       `}</style>
     </div>
@@ -275,6 +294,87 @@ function TabStrip({
         }
       `}</style>
     </div>
+  )
+}
+
+/* -------------------------------------------------------------------------- */
+
+function SideNav({
+  active,
+  onSelect,
+  completeness,
+}: {
+  active: ClientConfigSectionId
+  onSelect: (id: ClientConfigSectionId) => void
+  completeness: SectionCompleteness[]
+}) {
+  return (
+    <nav
+      role="tablist"
+      aria-label="Secciones de configuración"
+      style={{
+        background: 'rgba(9,9,11,0.75)',
+        border: `1px solid ${BORDER_SILVER}`,
+        borderRadius: 20,
+        padding: 8,
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 2,
+      }}
+    >
+      {CLIENT_CONFIG_SECTIONS.map(meta => {
+        const selected = meta.id === active
+        const pct = completeness.find(c => c.section === meta.id)?.percent ?? 0
+        const complete = pct >= 100
+        return (
+          <button
+            key={meta.id}
+            role="tab"
+            aria-selected={selected}
+            onClick={() => onSelect(meta.id)}
+            style={{
+              minHeight: 44,
+              padding: '10px 12px',
+              background: selected ? 'rgba(192,197,206,0.10)' : 'transparent',
+              border: selected
+                ? `1px solid ${BORDER_SILVER}`
+                : '1px solid transparent',
+              borderLeft: selected
+                ? `2px solid ${ACCENT_SILVER}`
+                : '2px solid transparent',
+              color: selected ? TEXT_PRIMARY : TEXT_MUTED,
+              fontSize: 13,
+              fontWeight: selected ? 700 : 500,
+              cursor: 'pointer',
+              textAlign: 'left',
+              borderRadius: 10,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 8,
+              transition: 'background 120ms, color 120ms',
+            }}
+          >
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {meta.label}
+            </span>
+            <span
+              style={{
+                fontSize: 10,
+                fontWeight: 600,
+                color: complete ? GREEN : pct > 0 ? AMBER : ACCENT_SILVER_DIM,
+                fontFamily: 'var(--font-jetbrains-mono), monospace',
+                flexShrink: 0,
+              }}
+            >
+              {pct}%
+            </span>
+          </button>
+        )
+      })}
+    </nav>
   )
 }
 

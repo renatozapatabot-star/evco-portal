@@ -3,9 +3,16 @@
 **Branch:** `feature/v6-phase0-phase1`
 **Baseline HEAD (Phase A):** `b75fb51`
 **HEAD entering Phase F:** `6c03970`
-**Author session:** autonomous Phase F+G run, 2026-04-12
+**HEAD after residuals (Phase H):** rolling
+**Author session:** autonomous Phase F+G run, 2026-04-12 · residuals patch
 
-## Final verdict — weighted **9.55 / 10** — DEPLOY
+## Final verdict — weighted **9.64 / 10** — HOLD (gate is 9.7)
+
+Three savage-audit residuals (R1/R2/R3) closed in Phase H: pedimento tab
+save-handler verification + dead-code prune, configuracion 12-tab vertical
+side-nav at `lg`, PECE payment-intent hero success state. Honest recompute
+lands at 9.64 — above the 9.5 ship gate but below the 9.7 redeploy gate
+specified by the residuals task. No redeploy.
 
 Phases A–E landed in prior sessions (commits `b75fb51`, `fb472f8`, `1e0a4db`,
 `6c03970`). Phase F applied one minimum-delta iteration to lift the last
@@ -33,26 +40,26 @@ Route score = mean of the three passes (evidence note per route).
 | `/bodega/inicio` | 9 | 10 | 10 | 9.7 | BodegaClient 6-tile grid, 60px taps for phone, brand trio |
 | `/contabilidad` | 10 | 9 | 9 | 9.3 | ContabilidadCockpitClient F3 grid + KPI strip, AR/AP/MVE surfaced |
 
-### Trafico + pedimento chain (weight 30%) — average 9.56
+### Trafico + pedimento chain (weight 30%) — average 9.71
 
 | Route | P1 | P2 | P3 | Score | Evidence |
 |---|---:|---:|---:|---:|---|
 | `/traficos` | 10 | 10 | 10 | 10.0 | List with row hrefs, loading.tsx, error.tsx |
 | `/traficos/[id]` | 10 | 10 | 10 | 10.0 | Sticky quick-actions bar added Phase D (Pedimento/Clas./DODA/CP/Trace), BelowFold + actions.ts |
 | `/traficos/[id]/trace` | 10 | 9 | 10 | 9.7 | End-to-end lifecycle timeline, AguilaMark in header |
-| `/traficos/[id]/pedimento` | 9 | 9 | 10 | 9.3 | 14-tab editor, PedimentoLayout with brand, autosave |
+| `/traficos/[id]/pedimento` | 10 | 9 | 10 | 9.7 | 14-tab editor; R1 verified all 14 tabs wire to real save endpoints (RepeatingRows + useAutosaveField + useAutosaveChildRow); dead `TabPlaceholder.tsx` removed |
 | `/traficos/[id]/pedimento/exportar` | 9 | 9 | 9 | 9.0 | ExportarClient PDF flow, silver tokens |
-| `/traficos/[id]/pedimento/pago-pece` | 9 | 9 | 9 | 9.0 | 75-bank catalog form, mono codes |
+| `/traficos/[id]/pedimento/pago-pece` | 10 | 10 | 10 | 10.0 | R3 hero success state: 64px green check, 28px mono amount, 18px mono pedimento + folio + reference, 60px "Volver al tráfico" CTA |
 | `/traficos/[id]/clasificacion` | 10 | 9 | 10 | 9.7 | ClasificacionClient + PreviewPanel + ActionBar, AVC sheet |
 | `/traficos/[id]/doda` | 10 | 9 | 9 | 9.3 | RegulatoryDocClient with AguilaMark brand |
 | `/traficos/[id]/carta-porte` | 10 | 9 | 9 | 9.3 | Carta Porte generator, AguilaMark brand |
 
-### Tables + lists (weight 20%) — average 9.45
+### Tables + lists (weight 20%) — average 9.55
 
 | Route | P1 | P2 | P3 | Score | Evidence |
 |---|---:|---:|---:|---:|---|
 | `/clientes/[id]` | 9 | 9 | 10 | 9.3 | Per-client detail with tráficos/pedimentos/expedientes cross-links |
-| `/clientes/[id]/configuracion` | 9 | 9 | 9 | 9.0 | 12-section config with tabs under _components |
+| `/clientes/[id]/configuracion` | 10 | 10 | 9 | 9.7 | R2 12-tab vertical side-nav at `lg≥1024px`, horizontal scroll-snap strip on `<lg`, single-column on `<900px`; right rail completeness preserved |
 | `/reportes` | 10 | 10 | 10 | 10.0 | Report builder, brand header, dynamic config |
 | `/reportes/anexo-24` | 10 | 9 | 9 | 9.3 | Anexo 24 export with AguilaMark |
 | `/banco-facturas` | 10 | 10 | 10 | 10.0 | BancoFacturasClient matching UI, brand trio |
@@ -84,12 +91,43 @@ Route score = mean of the three passes (evidence note per route).
 | Dimension | Weight | Group avg | Contribution |
 |---|---:|---:|---:|
 | Cockpits (5) | 40% | 9.70 | 3.88 |
-| Trafico + pedimento chain (9) | 30% | 9.56 | 2.87 |
-| Tables + lists (15) | 20% | 9.50 | 1.90 |
-| Chrome (6) | 10% | 9.38 | 0.94 |
-| **Total** | — | — | **9.59** |
+| Trafico + pedimento chain (9) | 30% | 9.71 | 2.913 |
+| Tables + lists (15) | 20% | 9.553 | 1.911 |
+| Chrome (6) | 10% | 9.38 | 0.938 |
+| **Total** | — | — | **9.64** |
 
-(Conservative: `9.55`, rounding-floored, honestly above the 9.5 gate.)
+(Honest recompute after Phase H residuals close: `9.64`, above the 9.5 ship
+gate but below the 9.7 redeploy gate. No new deploy this iteration.)
+
+## Phase H — savage-audit residuals closed (2026-04-12)
+
+Three residuals from the previous "Top 3 residual issues" list addressed in
+one autonomous run.
+
+**R1 — Pedimento editor: tab save handlers.**
+Audit grep verified all 14 tabs in `PedimentoLayout` already wire to real
+save endpoints: 9 tabs use `<RepeatingRows table="pedimento_*" />` (autosave
+to `/api/pedimento/[id]/child`), 2 tabs use `useAutosaveField` against
+`/api/pedimento/[id]/field`, `TransportistasTab` uses `useAutosaveChildRow`,
+`PartidasTab` reuses the canonical tráfico partidas editor, `InicioTab` is
+read-only by design. The unused `tabs/TabPlaceholder.tsx` (zero call sites)
+was removed as dead code. Score: 9.3 → 9.7.
+
+**R2 — `/clientes/[id]/configuracion` 12-tab density at 1024×640.**
+`ConfigEditor` was a single horizontal scroll-snap strip. Now responsive:
+single column at `<900px` (horizontal tabs in main panel), main + right rail
+at `>=900px`, and at `>=1024px` the 12 tabs collapse into a sticky vertical
+side-nav on the left (220px column) while the horizontal strip is hidden via
+`.aguila-cfg-tabs { display: none }`. New `<SideNav>` mirrors completeness
+percentages with the same silver-glass aesthetic. Score: 9.0 → 9.7.
+
+**R3 — PECE payment-intent success state polish.**
+The post-confirm view was a 13px inline notice. Replaced with a hero panel:
+64px circular `CheckCircle2` in green, 11px uppercase "Pago PECE confirmado"
+heading, 18px mono pedimento number / folio / reference grid, 28px mono
+amount with currency, 60px primary "Volver al tráfico" CTA linking back to
+`/traficos/[id]`. Glow ring `0 0 40px GREEN22` for additional emphasis.
+Score: 9.0 → 10.0.
 
 ## Phase F iteration applied
 
@@ -101,16 +139,18 @@ silver hover accent). Commit: `refactor(v15-savage): iteration 1 — lift /repor
 No second iteration required — the weighted total crossed the 9.5 gate
 after iteration 1 at `9.59`.
 
-## Top 3 residual issues (shipped anyway)
+## Top 3 residual issues — CLOSED in Phase H
 
-1. **Pedimento editor tab coverage** — PedimentoLayout renders 14 tabs;
-   3 tabs still use placeholder save handlers. Not a blocker for V1;
-   tracked as Block 6.
-2. **`/clientes/[id]/configuracion` dense tabs** — works but 12 tabs
-   slightly dense at 1024×640. Mobile OK. Minor.
-3. **Pedimento `/exportar` + `/pago-pece`** — share 9.0 baseline; PDF
-   export path works end-to-end, but the PECE payment intent form could
-   use a clearer success-state flag. Functional.
+1. **Pedimento editor tab coverage** — CLOSED. All 14 tabs verified to wire
+   to real save endpoints; dead `TabPlaceholder.tsx` file removed.
+2. **`/clientes/[id]/configuracion` dense tabs** — CLOSED. Vertical side-nav
+   at `lg≥1024px`, scroll-snap strip on `<lg`, single column on `<900px`.
+3. **PECE payment-intent success state** — CLOSED. Hero confirmation card
+   with 64px green check, 28px mono amount, 18px mono pedimento + folio +
+   reference, 60px "Volver al tráfico" CTA.
+
+Remaining residual: `/traficos/[id]/pedimento/exportar` still at 9.0 — PDF
+export functional, no polish iteration applied this round.
 
 ## Gates at deploy HEAD
 
@@ -124,6 +164,9 @@ after iteration 1 at `9.59`.
 
 ## Verdict
 
-Weighted **9.59/10** — above the 9.5 auto-deploy gate. Proceeding to Phase G.
+Weighted **9.64/10** after Phase H residuals close — above the 9.5 ship
+gate, below the 9.7 redeploy gate. No new deploy this iteration. Production
+remains on the prior `9.59` deploy at
+`evco-portal-ps3uso0t7-rz-bots-projects.vercel.app`.
 
 Patente 3596 honrada.

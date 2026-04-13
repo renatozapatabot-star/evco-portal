@@ -1,7 +1,9 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { CheckCircle2 } from 'lucide-react'
 import { BankSelector } from '@/components/banks/BankSelector'
 import {
   ACCENT_SILVER,
@@ -18,6 +20,7 @@ type Status = 'intent' | 'submitted' | 'confirmed' | 'rejected'
 export interface PagoPeceClientProps {
   pedimentoId: string
   traficoId: string
+  pedimentoNumber: string | null
   existing: {
     id: string
     status: Status
@@ -32,6 +35,7 @@ export interface PagoPeceClientProps {
 export function PagoPeceClient({
   pedimentoId,
   traficoId,
+  pedimentoNumber,
   existing,
 }: PagoPeceClientProps) {
   const router = useRouter()
@@ -53,6 +57,20 @@ export function PagoPeceClient({
   const payment = existing
   const status: Status = payment?.status ?? 'intent'
   const hasIntent = payment !== null && status !== 'rejected'
+
+  // Hero success state — unmistakable confirmation when payment is registered.
+  if (status === 'confirmed' && payment) {
+    return (
+      <PaymentSuccessHero
+        traficoId={traficoId}
+        pedimentoNumber={pedimentoNumber}
+        confirmationNumber={payment.confirmation_number ?? ''}
+        reference={payment.reference}
+        amount={payment.amount}
+        bankCode={payment.bank_code}
+      />
+    )
+  }
 
   async function submitIntent() {
     setError(null)
@@ -147,25 +165,6 @@ export function PagoPeceClient({
           }}
         >
           {error}
-        </div>
-      )}
-
-      {status === 'confirmed' && (
-        <div
-          role="status"
-          style={{
-            padding: '12px 14px',
-            borderRadius: 10,
-            border: `1px solid ${GREEN}66`,
-            background: 'rgba(34,197,94,0.08)',
-            color: GREEN,
-            fontSize: 13,
-          }}
-        >
-          Pago confirmado. Folio:{' '}
-          <span style={{ fontFamily: 'var(--font-mono)' }}>
-            {payment?.confirmation_number}
-          </span>
         </div>
       )}
 
@@ -394,6 +393,182 @@ function primaryBtn(disabled: boolean): React.CSSProperties {
     cursor: disabled ? 'not-allowed' : 'pointer',
     opacity: disabled ? 0.6 : 1,
   }
+}
+
+function PaymentSuccessHero({
+  traficoId,
+  pedimentoNumber,
+  confirmationNumber,
+  reference,
+  amount,
+  bankCode,
+}: {
+  traficoId: string
+  pedimentoNumber: string | null
+  confirmationNumber: string
+  reference: string
+  amount: number
+  bankCode: string
+}) {
+  const fmtAmount = amount.toLocaleString('es-MX', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })
+
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 24,
+        padding: 32,
+        borderRadius: 20,
+        background: 'rgba(9,9,11,0.75)',
+        border: `1px solid ${GREEN}55`,
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        boxShadow: `0 0 40px ${GREEN}22`,
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 16,
+        }}
+      >
+        <div
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: 64,
+            height: 64,
+            borderRadius: '50%',
+            background: 'rgba(34,197,94,0.14)',
+            border: `1px solid ${GREEN}66`,
+            flexShrink: 0,
+          }}
+        >
+          <CheckCircle2 size={36} color={GREEN} strokeWidth={2.25} />
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <span
+            style={{
+              fontSize: 11,
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+              color: GREEN,
+              fontWeight: 700,
+            }}
+          >
+            Pago PECE confirmado
+          </span>
+          <span style={{ fontSize: 13, color: TEXT_MUTED }}>
+            La intención de pago quedó registrada en el sistema.
+          </span>
+        </div>
+      </div>
+
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+          gap: 20,
+          padding: '20px 0',
+          borderTop: `1px solid ${BORDER_SILVER}`,
+          borderBottom: `1px solid ${BORDER_SILVER}`,
+        }}
+      >
+        <HeroField label="Pedimento" value={pedimentoNumber ?? 'Sin asignar'} />
+        <HeroField label="Folio de confirmación" value={confirmationNumber || '—'} />
+        <HeroField label="Referencia bancaria" value={reference} />
+      </div>
+
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 16,
+          flexWrap: 'wrap',
+        }}
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <span
+            style={{
+              fontSize: 10,
+              color: TEXT_MUTED,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+            }}
+          >
+            Monto pagado · Banco {bankCode}
+          </span>
+          <span
+            style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: 28,
+              fontWeight: 700,
+              color: TEXT_PRIMARY,
+              letterSpacing: '-0.01em',
+            }}
+          >
+            {fmtAmount} <span style={{ fontSize: 16, color: TEXT_MUTED, fontWeight: 500 }}>MXN</span>
+          </span>
+        </div>
+        <Link
+          href={`/traficos/${encodeURIComponent(traficoId)}`}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minHeight: 60,
+            padding: '0 24px',
+            fontSize: 14,
+            fontWeight: 600,
+            color: '#0A0A0C',
+            background: ACCENT_SILVER,
+            border: 'none',
+            borderRadius: 10,
+            textDecoration: 'none',
+          }}
+        >
+          Volver al tráfico
+        </Link>
+      </div>
+    </div>
+  )
+}
+
+function HeroField({ label, value }: { label: string; value: string }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <span
+        style={{
+          fontSize: 10,
+          color: TEXT_MUTED,
+          letterSpacing: '0.08em',
+          textTransform: 'uppercase',
+        }}
+      >
+        {label}
+      </span>
+      <span
+        style={{
+          fontFamily: 'var(--font-mono)',
+          fontSize: 18,
+          fontWeight: 700,
+          color: TEXT_PRIMARY,
+          wordBreak: 'break-all',
+        }}
+      >
+        {value}
+      </span>
+    </div>
+  )
 }
 
 function secondaryBtn(disabled: boolean): React.CSSProperties {

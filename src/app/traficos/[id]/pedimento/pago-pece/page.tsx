@@ -100,6 +100,7 @@ export default async function PagoPecePage({
         <PagoPeceClient
           pedimentoId={pedimento.id}
           traficoId={traficoId}
+          pedimentoNumber={pedimento.pedimento_number ?? null}
           existing={existing ?? null}
         />
       </div>

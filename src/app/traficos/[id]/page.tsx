@@ -44,13 +44,19 @@ export default async function TraficoDetailPage({
   const isInternal = session.role === 'broker' || session.role === 'admin'
   const supabase = createServerClient()
 
+  // Only columns that actually exist on traficos. The 7 fields the legacy
+  // page expected (tipo_operacion, doda_status, u_level, peso_volumetrico,
+  // prevalidador, banco_operacion_numero, sat_transaccion_numero) are
+  // schema-absent — querying them returns "column does not exist" and
+  // collapses traficoRes.data to null, triggering a false 404. We coerce
+  // them to null below so the TraficoRow shape stays satisfied.
   const TRAFICO_COLS =
-    'trafico, estatus, pedimento, fecha_llegada, importe_total, regimen, company_id, proveedores, descripcion_mercancia, patente, aduana, tipo_operacion, tipo_cambio, peso_bruto, fecha_cruce, semaforo, doda_status, u_level, peso_volumetrico, prevalidador, banco_operacion_numero, sat_transaccion_numero, assigned_to_operator_id, updated_at, created_at'
+    'trafico, estatus, pedimento, fecha_llegada, importe_total, regimen, company_id, proveedores, descripcion_mercancia, patente, aduana, tipo_cambio, peso_bruto, fecha_cruce, semaforo, assigned_to_operator_id, updated_at, created_at'
 
   let traficoQ = supabase.from('traficos').select(TRAFICO_COLS).eq('trafico', traficoId)
   if (!isInternal) traficoQ = traficoQ.eq('company_id', session.companyId)
 
-  const [traficoRes, eventsRes, docsRes, partidasRes, notesRes] = await Promise.all([
+  const [traficoRes, eventsRes, docsRes, facturasRes, notesRes] = await Promise.all([
     traficoQ.maybeSingle(),
     supabase
       .from('workflow_events')
@@ -64,13 +70,12 @@ export default async function TraficoDetailPage({
       .eq('trafico_id', traficoId)
       .order('created_at', { ascending: false })
       .limit(200),
+    // Step 1 of the partidas chain: get folios for this tráfico from globalpc_facturas.
     supabase
-      .from('globalpc_partidas')
-      .select(
-        'id, numero_parte, descripcion, fraccion_arancelaria, fraccion, cantidad, cantidad_bultos, peso_bruto, valor_comercial, umc, pais_origen, regimen, tmec',
-      )
+      .from('globalpc_facturas')
+      .select('folio')
       .eq('cve_trafico', traficoId)
-      .limit(500),
+      .limit(100),
     supabase
       .from('trafico_notes')
       .select('id, author_id, content, mentions, created_at')
@@ -79,7 +84,23 @@ export default async function TraficoDetailPage({
       .limit(100),
   ])
 
-  let trafico = traficoRes.data as TraficoRow | null
+  // Hydrate trafico — coerce schema-absent legacy fields to null so the
+  // TraficoRow shape is satisfied without those columns existing in Postgres.
+  function hydrateTrafico(raw: Record<string, unknown> | null): TraficoRow | null {
+    if (!raw) return null
+    return {
+      ...(raw as Omit<TraficoRow, 'tipo_operacion' | 'doda_status' | 'u_level' | 'peso_volumetrico' | 'prevalidador' | 'banco_operacion_numero' | 'sat_transaccion_numero'>),
+      tipo_operacion: null,
+      doda_status: null,
+      u_level: null,
+      peso_volumetrico: null,
+      prevalidador: null,
+      banco_operacion_numero: null,
+      sat_transaccion_numero: null,
+    }
+  }
+
+  let trafico: TraficoRow | null = hydrateTrafico(traficoRes.data as Record<string, unknown> | null)
 
   // Silent 404 diagnostics: a miss can be (a) no such clave, (b) clave exists
   // but belongs to a different company_id (stale session/cross-tenant), or
@@ -110,7 +131,7 @@ export default async function TraficoDetailPage({
         let recoverQ = supabase.from('traficos').select(TRAFICO_COLS).eq('trafico', canonical)
         if (!isInternal) recoverQ = recoverQ.eq('company_id', session.companyId)
         const recovered = await recoverQ.maybeSingle()
-        trafico = (recovered.data as TraficoRow | null) ?? null
+        trafico = hydrateTrafico(recovered.data as Record<string, unknown> | null)
       }
     }
     if (!trafico) notFound()
@@ -181,8 +202,78 @@ export default async function TraficoDetailPage({
   })
 
   const docs = ((docsRes.data as DocRow[] | null) ?? [])
-  const partidas = ((partidasRes.data as PartidaRow[] | null) ?? [])
   const notes = ((notesRes.data as NoteRow[] | null) ?? [])
+
+  // Step 2 of partidas chain: facturas → folios → partidas → product enrichment.
+  // globalpc_partidas does NOT have cve_trafico; you must hop through facturas.
+  const folios = ((facturasRes.data as Array<{ folio: number | null }> | null) ?? [])
+    .map(f => f.folio)
+    .filter((f): f is number => f != null)
+
+  let partidas: PartidaRow[] = []
+  if (folios.length > 0) {
+    const { data: rawPartidas } = await supabase
+      .from('globalpc_partidas')
+      .select('id, folio, cve_producto, cve_cliente, cantidad, precio_unitario, peso, pais_origen')
+      .in('folio', folios)
+      .limit(500)
+    const partidaRows = (rawPartidas ?? []) as Array<{
+      id: number
+      folio: number | null
+      cve_producto: string | null
+      cve_cliente: string | null
+      cantidad: number | null
+      precio_unitario: number | null
+      peso: number | null
+      pais_origen: string | null
+    }>
+
+    // Enrich descriptions + fracciones from globalpc_productos (cve_producto, cve_cliente).
+    const productKeys = Array.from(
+      new Set(partidaRows.map(p => `${p.cve_cliente ?? ''}|${p.cve_producto ?? ''}`).filter(k => k !== '|'))
+    )
+    const productMap = new Map<string, { descripcion: string | null; fraccion: string | null }>()
+    if (productKeys.length > 0) {
+      const cves = Array.from(new Set(partidaRows.map(p => p.cve_producto).filter((c): c is string => !!c)))
+      const { data: prods } = await supabase
+        .from('globalpc_productos')
+        .select('cve_producto, cve_cliente, descripcion, fraccion')
+        .in('cve_producto', cves)
+        .limit(2000)
+      for (const p of (prods ?? []) as Array<{
+        cve_producto: string | null
+        cve_cliente: string | null
+        descripcion: string | null
+        fraccion: string | null
+      }>) {
+        productMap.set(`${p.cve_cliente ?? ''}|${p.cve_producto ?? ''}`, {
+          descripcion: p.descripcion,
+          fraccion: p.fraccion,
+        })
+      }
+    }
+
+    partidas = partidaRows.map((p, i): PartidaRow => {
+      const enr = productMap.get(`${p.cve_cliente ?? ''}|${p.cve_producto ?? ''}`)
+      const cantidad = Number(p.cantidad) || 0
+      const precio = Number(p.precio_unitario) || 0
+      return {
+        id: p.id ?? i,
+        numero_parte: p.cve_producto,
+        descripcion: enr?.descripcion ?? null,
+        fraccion_arancelaria: enr?.fraccion ?? null,
+        fraccion: enr?.fraccion ?? null,
+        cantidad,
+        cantidad_bultos: null,
+        peso_bruto: p.peso ?? null,
+        valor_comercial: cantidad * precio,
+        umc: null,
+        pais_origen: p.pais_origen,
+        regimen: null,
+        tmec: null,
+      }
+    })
+  }
 
   // Best-effort operator roster. The app has `client_users` only; we map
   // role IN (operator, admin, broker) into {companyId}:{role} composites

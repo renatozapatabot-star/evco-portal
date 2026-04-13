@@ -9,14 +9,29 @@ import { DateInputES } from '@/components/ui/DateInputES'
 import { CockpitPage } from '@/components/cockpit/CockpitPage'
 import { useIsMobile } from '@/hooks/use-mobile'
 
+// Real globalpc_partidas shape (no cve_trafico, no descripcion, no fraccion).
+// To get trafico context we hop via globalpc_facturas.folio. To get description
+// + fracción we hop via globalpc_productos.cve_producto.
 interface PartidaRow {
-  cve_trafico: string
-  fraccion_arancelaria?: string | null
-  fraccion?: string | null
-  descripcion?: string | null
-  cantidad?: number | null
-  precio_unitario?: number | null
-  [k: string]: unknown
+  folio: number | null
+  cve_producto: string | null
+  cve_cliente: string | null
+  cantidad: number | null
+  precio_unitario: number | null
+  peso: number | null
+  pais_origen: string | null
+}
+
+interface FacturaRow {
+  folio: number | null
+  cve_trafico: string | null
+}
+
+interface ProductoRow {
+  cve_producto: string | null
+  cve_cliente: string | null
+  descripcion: string | null
+  fraccion: string | null
 }
 
 interface TraficoContext {
@@ -95,6 +110,9 @@ export function Anexo24View() {
   const [page, setPage] = useState(0)
   const [generating, setGenerating] = useState(false)
 
+  const [folioToTrafico, setFolioToTrafico] = useState<Map<number, string>>(new Map())
+  const [productMap, setProductMap] = useState<Map<string, { descripcion: string | null; fraccion: string | null }>>(new Map())
+
   const [companyId, setCompanyId] = useState('')
   const [clientClave, setClientClave] = useState('')
   const [userRole, setUserRole] = useState('')
@@ -112,18 +130,25 @@ export function Anexo24View() {
     const isInternal = userRole === 'broker' || userRole === 'admin'
     if (!isInternal && !companyId) { setLoading(false); return }
 
-    const companyFilter = !isInternal && companyId ? `&company_id=${companyId}` : ''
+    // Important: traficos uses company_id; the globalpc_* tables use cve_cliente
+    // because the GlobalPC sync mislabels company_id (full-sync-facturas:55
+    // falls back to 'evco' when the clave isn't in companies, contaminating
+    // the row with other clients' data). cve_cliente is the source of truth.
+    const traficoFilter = !isInternal && companyId ? `&company_id=${companyId}` : ''
+    const claveFilter = !isInternal && clientClave ? `&cve_cliente=${clientClave}` : ''
 
     const safeFetch = (u: string) => fetch(u).then(r => {
       if (!r.ok) throw new Error(r.status === 401 ? 'session_expired' : 'fetch_error')
       return r.json()
     })
     Promise.all([
-      safeFetch(`/api/data?table=globalpc_partidas&limit=10000${companyFilter}`),
-      safeFetch(`/api/data?table=traficos&limit=5000&gte_field=fecha_llegada&gte_value=2024-01-01${companyFilter}`),
-      safeFetch(`/api/data?table=globalpc_proveedores&limit=5000${companyFilter}`),
+      safeFetch(`/api/data?table=globalpc_partidas&limit=10000${claveFilter}`),
+      safeFetch(`/api/data?table=traficos&limit=5000&gte_field=fecha_llegada&gte_value=2024-01-01${traficoFilter}`),
+      safeFetch(`/api/data?table=globalpc_proveedores&limit=5000${claveFilter}`),
+      safeFetch(`/api/data?table=globalpc_facturas&limit=10000${claveFilter}`),
+      safeFetch(`/api/data?table=globalpc_productos&limit=10000${claveFilter}`),
     ])
-      .then(([partidaData, traficoData, provData]) => {
+      .then(([partidaData, traficoData, provData, facturaData, productoData]) => {
         setPartidas(Array.isArray(partidaData.data) ? partidaData.data : [])
 
         const tMap = new Map<string, TraficoContext>()
@@ -149,6 +174,25 @@ export function Anexo24View() {
           if (p.cve_proveedor && p.nombre) sMap.set(p.cve_proveedor, p.nombre)
         })
         setSupplierLookup(sMap)
+
+        // folio → trafico (the join the previous code missed)
+        const fMap = new Map<number, string>()
+        const facs = Array.isArray(facturaData.data) ? facturaData.data : []
+        facs.forEach((f: FacturaRow) => {
+          if (f.folio != null && f.cve_trafico) fMap.set(f.folio, f.cve_trafico)
+        })
+        setFolioToTrafico(fMap)
+
+        // (cve_cliente|cve_producto) → { descripcion, fraccion }
+        const pMap = new Map<string, { descripcion: string | null; fraccion: string | null }>()
+        const prods = Array.isArray(productoData.data) ? productoData.data : []
+        prods.forEach((p: ProductoRow) => {
+          pMap.set(`${p.cve_cliente ?? ''}|${p.cve_producto ?? ''}`, {
+            descripcion: p.descripcion,
+            fraccion: p.fraccion,
+          })
+        })
+        setProductMap(pMap)
       })
       .catch(err => {
         if (err.message === 'session_expired') { window.location.href = '/login'; return }
@@ -165,27 +209,36 @@ export function Anexo24View() {
   const enriched: EnrichedRow[] = useMemo(() => {
     const rows: EnrichedRow[] = []
     let num = 0
-    const sorted = [...partidas].sort((a, b) => (a.cve_trafico || '').localeCompare(b.cve_trafico || ''))
+    // Sort by resolved trafico (via folio→trafico) so contiguous shipments group.
+    const sorted = [...partidas].sort((a, b) => {
+      const ta = a.folio != null ? folioToTrafico.get(a.folio) ?? '' : ''
+      const tb = b.folio != null ? folioToTrafico.get(b.folio) ?? '' : ''
+      return ta.localeCompare(tb)
+    })
 
     for (const p of sorted) {
-      const ctx = traficoMap.get(p.cve_trafico)
+      const trafico = p.folio != null ? folioToTrafico.get(p.folio) ?? '' : ''
+      const ctx = trafico ? traficoMap.get(trafico) : undefined
+      const prod = productMap.get(`${p.cve_cliente ?? ''}|${p.cve_producto ?? ''}`)
+      const cantidad = Number(p.cantidad) || 0
+      const precio = Number(p.precio_unitario) || 0
       num++
       rows.push({
         rowNum: num,
         pedimento: ctx?.pedimento || 'Pendiente',
         fecha: ctx?.fecha_pago || ctx?.fecha_llegada || null,
-        fraccion: p.fraccion_arancelaria || p.fraccion || '—',
-        descripcion: p.descripcion || '—',
-        cantidad: Number(p.cantidad) || 0,
-        valorUSD: Number(p.precio_unitario) || 0,
+        fraccion: prod?.fraccion || '—',
+        descripcion: prod?.descripcion || p.cve_producto || '—',
+        cantidad,
+        valorUSD: cantidad * precio,
         proveedor: resolveProvs(ctx?.proveedores || null),
-        origen: ctx?.pais_procedencia || '—',
+        origen: p.pais_origen || ctx?.pais_procedencia || '—',
         regimen: ctx?.regimen || '',
         tmec: isT(ctx?.regimen || null),
       })
     }
     return rows
-  }, [partidas, traficoMap, supplierLookup])
+  }, [partidas, traficoMap, supplierLookup, folioToTrafico, productMap])
 
   const filtered = useMemo(() => {
     let out = enriched
@@ -215,7 +268,9 @@ export function Anexo24View() {
     const uniqueProveedores = new Set(enriched.map(r => r.proveedor).filter(p => p !== '—')).size
     const tmecCount = enriched.filter(r => r.tmec).length
     const tmecPct = enriched.length > 0 ? Math.round((tmecCount / enriched.length) * 100) : 0
-    return { totalPartidas: enriched.length, totalValue, uniqueFracciones, uniqueProveedores, tmecCount, tmecPct }
+    // Orphans = partidas whose folio doesn't resolve to a tráfico (sync gap).
+    const pendientes = enriched.filter(r => r.pedimento === 'Pendiente').length
+    return { totalPartidas: enriched.length, totalValue, uniqueFracciones, uniqueProveedores, tmecCount, tmecPct, pendientes }
   }, [enriched])
 
   const handleGeneratePDF = () => {
@@ -269,7 +324,7 @@ export function Anexo24View() {
       {!loading && enriched.length > 0 && (
         <div style={{
           display: 'grid',
-          gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(5, 1fr)',
+          gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(6, 1fr)',
           gap: 12,
           marginBottom: 20,
         }}>
@@ -279,6 +334,7 @@ export function Anexo24View() {
             { label: 'Fracciones', value: String(kpis.uniqueFracciones), color: 'var(--text-primary, #E6EDF3)' },
             { label: 'T-MEC', value: `${kpis.tmecPct}%`, color: kpis.tmecPct >= 50 ? '#22C55E' : '#FBBF24' },
             { label: 'Proveedores', value: String(kpis.uniqueProveedores), color: 'var(--text-primary, #E6EDF3)' },
+            { label: 'Pendientes', value: kpis.pendientes.toLocaleString('es-MX'), color: kpis.pendientes > 0 ? '#FBBF24' : '#22C55E' },
           ].map(kpi => (
             <div key={kpi.label} style={{ ...glassCard, padding: 16, textAlign: 'center' }}>
               <div style={{
@@ -295,6 +351,30 @@ export function Anexo24View() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Orphan partidas warning — partidas whose folio doesn't map to a
+          tráfico (sync gap between globalpc_partidas and globalpc_facturas). */}
+      {!loading && kpis.pendientes > 0 && (
+        <div style={{
+          ...glassCard,
+          padding: '12px 16px',
+          marginBottom: 16,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12,
+          borderLeft: '3px solid #FBBF24',
+        }}>
+          <span style={{ fontSize: 16 }}>⚠️</span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: '#E6EDF3' }}>
+              {kpis.pendientes.toLocaleString('es-MX')} partidas sin pedimento asignado
+            </div>
+            <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>
+              Esperando próxima sincronización GlobalPC. Los renglones marcados &ldquo;Pendiente&rdquo; abajo se reconciliarán automáticamente.
+            </div>
+          </div>
         </div>
       )}
 

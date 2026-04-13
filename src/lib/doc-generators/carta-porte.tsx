@@ -63,7 +63,7 @@ export class CartaPorteValidationError extends Error {
 }
 
 function validate(input: CartaPorteInput): void {
-  if (!input.trafico_id) throw new CartaPorteValidationError('trafico_id', 'Tráfico requerido')
+  if (!input.trafico_id) throw new CartaPorteValidationError('trafico_id', 'Embarque requerido')
   if (!input.rfc_emisor) throw new CartaPorteValidationError('rfc_emisor', 'RFC emisor requerido')
   if (!input.rfc_receptor) throw new CartaPorteValidationError('rfc_receptor', 'RFC receptor requerido')
   if (!input.fecha_emision) throw new CartaPorteValidationError('fecha_emision', 'Fecha de emisión requerida')
@@ -186,7 +186,7 @@ function CartaPorteDocument({ input }: { input: CartaPorteInput }) {
           items={[
             ['RFC emisor', input.rfc_emisor],
             ['RFC receptor', input.rfc_receptor],
-            ['Tráfico', input.trafico_id],
+            ['Embarque', input.trafico_id],
             ['Pedimento', input.pedimento_number ?? '—'],
           ]}
         />

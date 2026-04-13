@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ data: null, error: { code: 'VALIDATION_ERROR', message: 'trafico_id required' } }, { status: 400 })
   }
 
-  // Fetch tráfico (client-isolated)
+  // Fetch embarque (client-isolated)
   const isInternal = session.role === 'broker' || session.role === 'admin'
   let query = supabase.from('traficos').select('*').eq('trafico', traficoId).limit(1)
   if (!isInternal) {
@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
 
   const { data: traficos, error: fetchError } = await query
   if (fetchError || !traficos || traficos.length === 0) {
-    return NextResponse.json({ data: null, error: { code: 'NOT_FOUND', message: 'Tráfico not found' } }, { status: 404 })
+    return NextResponse.json({ data: null, error: { code: 'NOT_FOUND', message: 'Embarque not found' } }, { status: 404 })
   }
 
   const trafico = traficos[0]

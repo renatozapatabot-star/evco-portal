@@ -48,7 +48,7 @@ export function generateTraficoProposal(trafico: Record<string, unknown>, docs: 
         proposal_label_es: `Pedir ${missing.length} documento${missing.length !== 1 ? 's' : ''} faltante${missing.length !== 1 ? 's' : ''} a ${proveedor}`,
         reasoning_bullets: [
           { text: `Faltan: ${missing.map(m => m.replace(/_/g, ' ')).join(', ')}` },
-          { text: `Tráfico ${traficoNum} en proceso — necesita expediente completo` },
+          { text: `Embarque ${traficoNum} en proceso — necesita expediente completo` },
         ],
         confidence: 0.92, confidence_source: 'rule',
         alternatives: [{ action: 'skip', label_es: 'Saltar por ahora', confidence: 0.1 }],
@@ -66,7 +66,7 @@ export function generateTraficoProposal(trafico: Record<string, unknown>, docs: 
       proposal_label_es: 'Generar borrador de pedimento',
       reasoning_bullets: [
         { text: 'Expediente completo — listo para declarar' },
-        { text: `Tráfico ${traficoNum} esperando pedimento` },
+        { text: `Embarque ${traficoNum} esperando pedimento` },
       ],
       confidence: 0.88, confidence_source: 'rule',
       alternatives: [], generator_version: 'v1.0',
@@ -95,7 +95,7 @@ export function generateTraficoProposal(trafico: Record<string, unknown>, docs: 
       subject_type: 'trafico', subject_id: id, company_id: companyId,
       proposal_action: 'monitor',
       proposal_action_payload: {},
-      proposal_label_es: 'Tráfico cruzado — sin acción requerida',
+      proposal_label_es: 'Embarque cruzado — sin acción requerida',
       reasoning_bullets: [{ text: 'Operación completada exitosamente' }],
       confidence: 0.99, confidence_source: 'rule',
       alternatives: [], generator_version: 'v1.0',
@@ -118,8 +118,8 @@ export function generateEntradaProposal(entrada: Record<string, unknown>): Propo
       subject_type: 'entrada', subject_id: id, company_id: companyId,
       proposal_action: 'assign_trafico',
       proposal_action_payload: {},
-      proposal_label_es: 'Asignar entrada a un tráfico',
-      reasoning_bullets: [{ text: 'Entrada sin tráfico vinculado — necesita asignación' }],
+      proposal_label_es: 'Asignar entrada a un embarque',
+      reasoning_bullets: [{ text: 'Entrada sin embarque vinculado — necesita asignación' }],
       confidence: 0.90, confidence_source: 'rule',
       alternatives: [], generator_version: 'v1.0',
     }
@@ -130,7 +130,7 @@ export function generateEntradaProposal(entrada: Record<string, unknown>): Propo
     proposal_action: 'monitor',
     proposal_action_payload: {},
     proposal_label_es: 'Entrada vinculada — sin acción requerida',
-    reasoning_bullets: [{ text: `Vinculada a tráfico ${trafico}` }],
+    reasoning_bullets: [{ text: `Vinculada a embarque ${trafico}` }],
     confidence: 0.95, confidence_source: 'rule',
     alternatives: [], generator_version: 'v1.0',
   }

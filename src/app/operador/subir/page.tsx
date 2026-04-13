@@ -26,7 +26,7 @@ export default async function OperadorSubirPage() {
 
   const isInternal = session.role === 'admin' || session.role === 'broker'
 
-  // Candidate tráficos — active only, scoped to operator's company unless internal.
+  // Candidate embarques — active only, scoped to operator's company unless internal.
   let query = sb
     .from('traficos')
     .select('id, trafico, estatus, company_id, fecha_llegada')

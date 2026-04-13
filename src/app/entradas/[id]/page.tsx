@@ -239,10 +239,10 @@ export default function EntradaDetailPage() {
             </div>
           )}
 
-          {/* Tráfico link */}
+          {/* Embarque link */}
           {entrada.trafico ? (
             <Link
-              href={`/traficos/${encodeURIComponent(fmtTrafico(entrada.trafico))}`}
+              href={`/embarques/${encodeURIComponent(fmtTrafico(entrada.trafico))}`}
               style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 padding: '14px 16px', borderRadius: 10,
@@ -253,7 +253,7 @@ export default function EntradaDetailPage() {
               onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
             >
               <div>
-                <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Tráfico</div>
+                <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Embarque</div>
                 <div style={{ fontSize: 15, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--gold-dark, #7A7E86)', marginTop: 2 }}>
                   {fmtTrafico(entrada.trafico)}
                 </div>
@@ -266,7 +266,7 @@ export default function EntradaDetailPage() {
               background: 'rgba(255,255,255,0.06)', textAlign: 'center',
             }}>
               <span style={{ fontSize: 13, color: 'var(--text-muted)', fontStyle: 'italic' }}>
-                Pendiente vinculación a tráfico
+                Pendiente vinculación a embarque
               </span>
             </div>
           )}

@@ -72,7 +72,7 @@ describe('operators/metrics', () => {
     expect(row.classificationAccuracy).toBeNull()
   })
 
-  it('computes avgCycleHours from workflow_events for assigned tráficos', async () => {
+  it('computes avgCycleHours from workflow_events for assigned embarques', async () => {
     const sb = makeStub({
       operators: [
         { id: 'op1', full_name: 'Claudia', role: 'operator', company_id: 'evco', active: true },

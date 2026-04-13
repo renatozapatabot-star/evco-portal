@@ -1,9 +1,9 @@
 'use client'
 
 /**
- * /operador/subir — cross-tráfico document upload landing.
+ * /operador/subir — cross-embarque document upload landing.
  *
- * Step 1: operator selects a tráfico from the active list.
+ * Step 1: operator selects a embarque from the active list.
  * Step 2: drag-drop PDFs/images into DocUploader — classifier routes them.
  * Also surfaces the ai@renatozapata.com email intake as a second channel.
  */
@@ -91,7 +91,7 @@ export function SubirClient({ traficos }: SubirClientProps) {
         </p>
       </div>
 
-      {/* Tráfico picker */}
+      {/* Embarque picker */}
       <div
         style={{
           background: 'rgba(255,255,255,0.04)',
@@ -117,7 +117,7 @@ export function SubirClient({ traficos }: SubirClientProps) {
             marginBottom: 8,
           }}
         >
-          Paso 1 · Selecciona tráfico
+          Paso 1 · Selecciona embarque
         </label>
 
         {/* Optional filter for long lists */}
@@ -139,7 +139,7 @@ export function SubirClient({ traficos }: SubirClientProps) {
             <input
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
-              placeholder="Filtrar por tráfico o cliente…"
+              placeholder="Filtrar por embarque o cliente…"
               style={{
                 flex: 1,
                 background: 'transparent',
@@ -177,7 +177,7 @@ export function SubirClient({ traficos }: SubirClientProps) {
             backgroundPosition: 'right 16px center',
           }}
         >
-          <option value="">— Selecciona tráfico —</option>
+          <option value="">— Selecciona embarque —</option>
           {filtered.map((t) => (
             <option key={t.id} value={t.id}>
               {`${t.trafico || '(sin número)'} · ${t.clienteName} · ${t.estatus}`}
@@ -194,7 +194,7 @@ export function SubirClient({ traficos }: SubirClientProps) {
               color: TEXT_MUTED,
             }}
           >
-            No hay tráficos activos. Crea uno desde la sección de tráficos antes de subir documentos.
+            No hay embarques activos. Crea uno desde la sección de embarques antes de subir documentos.
           </p>
         )}
       </div>
@@ -247,7 +247,7 @@ export function SubirClient({ traficos }: SubirClientProps) {
             }}
           >
             <div style={{ fontSize: 14, fontWeight: 600, color: TEXT_SECONDARY }}>
-              Selecciona un tráfico para habilitar la subida
+              Selecciona un embarque para habilitar la subida
             </div>
             <div style={{ fontSize: 12, color: TEXT_MUTED, textAlign: 'center' }}>
               PDF, JPG, PNG, WEBP · clasificación automática
@@ -312,7 +312,7 @@ export function SubirClient({ traficos }: SubirClientProps) {
           >
             ai@renatozapata.com
           </a>
-          {' '}— llegarán automáticamente al tráfico correcto.
+          {' '}— llegarán automáticamente al embarque correcto.
         </div>
       </div>
     </div>

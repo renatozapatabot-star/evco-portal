@@ -90,7 +90,7 @@ export function ClientHealth({ companies, pendientes, inactiveClients, error }: 
                   <span className="god-client-status god-client-status--warn">
                     {pend.solicitudes_vencidas > 0 && `${pend.solicitudes_vencidas} sol. vencida${pend.solicitudes_vencidas !== 1 ? 's' : ''}`}
                     {pend.solicitudes_vencidas > 0 && pend.entradas_sin_trafico > 0 && ' · '}
-                    {pend.entradas_sin_trafico > 0 && `${pend.entradas_sin_trafico} sin tráfico`}
+                    {pend.entradas_sin_trafico > 0 && `${pend.entradas_sin_trafico} sin embarque`}
                   </span>
                 ) : (
                   <span className="god-client-status god-client-status--ok">Activo</span>

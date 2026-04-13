@@ -1,8 +1,8 @@
 /**
- * AGUILA · V1.5 F15 — GET /api/traficos/suggest
+ * AGUILA · V1.5 F15 — GET /api/embarques/suggest
  *
  * Returns historical pattern suggestions for cliente names that match the
- * given prefix. Used by a silver-glass combobox on the new-tráfico form
+ * given prefix. Used by a silver-glass combobox on the new-embarque form
  * (form wiring deferred — form does not yet exist in the portal).
  *
  * Query params:
@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
     await supabase.from('interaction_events').insert({
       event_type: 'trafico_suggest_queried',
       event_name: 'trafico_suggest_queried',
-      page_path: '/api/traficos/suggest',
+      page_path: '/api/embarques/suggest',
       user_id: `${session.companyId}:${session.role}`,
       company_id: scopeCompanyId,
       payload: {

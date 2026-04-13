@@ -81,9 +81,9 @@ export function AdminCockpit({ data, operatorName }: Props) {
 
   const healthSentence =
     healthLevel === 'green'
-      ? `Patente 3596 al corriente. ${biz.activeTraficos} tráficos activos, ${biz.last30Days} en los últimos 30 días.`
+      ? `Patente 3596 al corriente. ${biz.activeTraficos} embarques activos, ${biz.last30Days} en los últimos 30 días.`
     : healthLevel === 'amber'
-      ? `${data.escalations.length} pendiente${data.escalations.length !== 1 ? 's' : ''} por atender. ${biz.activeTraficos} tráficos activos.`
+      ? `${data.escalations.length} pendiente${data.escalations.length !== 1 ? 's' : ''} por atender. ${biz.activeTraficos} embarques activos.`
     : `${data.escalations.length} escalaciones requieren atención inmediata.`
 
   // Month comparison
@@ -200,7 +200,7 @@ export function AdminCockpit({ data, operatorName }: Props) {
                 <div className="font-mono" style={{ fontSize: 24, fontWeight: 800, color: '#E6EDF3' }}>
                   {biz.totalTraficos.toLocaleString('es-MX')}
                 </div>
-                <div style={{ fontSize: 11, color: '#8B949E' }}>tráficos totales</div>
+                <div style={{ fontSize: 11, color: '#8B949E' }}>embarques totales</div>
               </div>
               <div>
                 <div className="font-mono" style={{ fontSize: 24, fontWeight: 800, color: '#E8EAED' }}>
@@ -267,7 +267,7 @@ export function AdminCockpit({ data, operatorName }: Props) {
             content: (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 <div>
-                  <div style={{ fontSize: 11, color: '#6E7681', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Tráfico</div>
+                  <div style={{ fontSize: 11, color: '#6E7681', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Embarque</div>
                   <div className="font-mono" style={{ fontSize: 20, fontWeight: 700, color: '#E8EAED' }}>{item.trafico}</div>
                 </div>
                 <div>
@@ -286,13 +286,13 @@ export function AdminCockpit({ data, operatorName }: Props) {
                   <div style={{ fontSize: 11, color: '#6E7681', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Estatus</div>
                   <div style={{ fontSize: 14, color: '#D97706' }}>{item.estatus} · {item.reason}</div>
                 </div>
-                <a href={'/traficos/' + encodeURIComponent(item.trafico)} style={{
+                <a href={'/embarques/' + encodeURIComponent(item.trafico)} style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   padding: '14px 20px', borderRadius: 10, marginTop: 12,
                   background: '#E8EAED', color: '#111', fontSize: 15, fontWeight: 700,
                   textDecoration: 'none', minHeight: 60,
                 }}>
-                  Abrir tráfico completo →
+                  Abrir embarque completo →
                 </a>
               </div>
             ),

@@ -9,7 +9,7 @@ import type { ReportTemplateSeed } from '@/types/reports'
 
 export const SEED_TEMPLATES: readonly ReportTemplateSeed[] = [
   {
-    name: 'Tráficos activos',
+    name: 'Embarques activos',
     source_entity: 'traficos',
     config: {
       sourceEntity: 'traficos',

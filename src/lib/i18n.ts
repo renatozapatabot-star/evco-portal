@@ -24,6 +24,6 @@ export const formatDate = (
 
 // Domain terms — never translate these
 export const DOMAIN_TERMS = [
-  'Tráfico', 'Pedimento', 'Expediente', 'Entrada',
+  'Embarque', 'Pedimento', 'Expediente', 'Entrada',
   'Fracción arancelaria', 'MVE', 'Aduana', 'Patente'
 ] as const

@@ -57,7 +57,7 @@ export async function GET(req: NextRequest) {
       title: 'Anomalía de Valor',
       body: `${a.metric_key?.split('::')[2] || 'Producto'} — valor fuera de rango histórico`,
       severity: 'warning',
-      action_url: `/traficos/${a.metric_key?.split('::')[0] || ''}`,
+      action_url: `/embarques/${a.metric_key?.split('::')[0] || ''}`,
       created_at: a.calculated_at,
       source: 'operational',
     })

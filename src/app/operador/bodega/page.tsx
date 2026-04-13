@@ -41,7 +41,7 @@ async function BodegaCockpitContent({ name }: { name: string }) {
 
   const estado = (
     <GlassCard size="card" ariaLabel="Recepción y ubicaciones">
-      <SectionHeader title="Tráficos con entrada pendiente" count={data.recentTraficos.length} action={{ label: 'Ir a bodega', href: '/bodega' }} />
+      <SectionHeader title="Embarques con entrada pendiente" count={data.recentTraficos.length} action={{ label: 'Ir a bodega', href: '/bodega' }} />
       {data.recentTraficos.length === 0 ? (
         <div style={{ color: TEXT_MUTED, fontSize: 'var(--aguila-fs-body, 13px)', padding: '12px 0' }}>
           Sin entradas pendientes.
@@ -53,7 +53,7 @@ async function BodegaCockpitContent({ name }: { name: string }) {
               { kind: 'entrada',   label: 'Entrada',   value: null,        date: null,         status: 'missing' },
               { kind: 'factura',   label: 'Factura',   value: null,        date: null,         status: 'missing' },
               { kind: 'pedimento', label: 'Pedimento', value: t.pedimento, date: t.updated_at, status: t.pedimento ? 'linked' : 'pending' },
-              { kind: 'trafico',   label: 'Tráfico',   value: t.trafico,   date: t.updated_at, status: 'linked', href: `/traficos/${t.id}` },
+              { kind: 'trafico',   label: 'Embarque',   value: t.trafico,   date: t.updated_at, status: 'linked', href: `/embarques/${t.id}` },
               { kind: 'expediente',label: 'Despacho',  value: null,        date: null,         status: 'pending' },
             ]
             return (
@@ -62,7 +62,7 @@ async function BodegaCockpitContent({ name }: { name: string }) {
                   display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
                   marginBottom: 6,
                 }}>
-                  <Link href={`/traficos/${t.id}`} style={{
+                  <Link href={`/embarques/${t.id}`} style={{
                     fontFamily: 'var(--font-jetbrains-mono), monospace',
                     fontWeight: 700,
                     color: TEXT_PRIMARY,

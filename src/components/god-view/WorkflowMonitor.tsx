@@ -272,7 +272,7 @@ export function WorkflowMonitor() {
           <div style={{ textAlign: 'center', padding: '24px 0' }}>
             <Activity size={32} style={{ color: '#64748b', marginBottom: 8 }} />
             <div style={{ color: '#94a3b8', fontSize: 13 }}>Sin eventos registrados</div>
-            <div style={mutedText}>Los workflows generarán eventos al procesar tráficos</div>
+            <div style={mutedText}>Los workflows generarán eventos al procesar embarques</div>
           </div>
         ) : (
           <div style={{ overflowX: 'auto' }}>

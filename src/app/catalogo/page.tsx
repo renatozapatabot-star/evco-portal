@@ -28,7 +28,7 @@ export default async function CatalogoPage({ searchParams }: CatalogoPageProps) 
         Catálogo de productos
       </h1>
       <p style={{ margin: '0 0 20px', fontSize: 13, color: 'rgba(255,255,255,0.6)' }}>
-        Tu inventario de productos con fracción arancelaria y último tráfico.
+        Tu inventario de productos con fracción arancelaria y último embarque.
       </p>
       <CatalogoTable rows={rows} query={q ?? ''} total={rows.length} />
     </div>

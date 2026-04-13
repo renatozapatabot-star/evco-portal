@@ -7,7 +7,7 @@ import { getCookieValue } from '@/lib/client-config'
 import { DateInputES } from '@/components/ui/DateInputES'
 
 const EXPORTS = [
-  { key: 'traficos', label: 'Tráficos', desc: 'Lista completa de embarques con estatus, pedimento y valor', icon: Table2 },
+  { key: 'traficos', label: 'Embarques', desc: 'Lista completa de embarques con estatus, pedimento y valor', icon: Table2 },
   { key: 'pedimentos', label: 'Pedimentos', desc: 'Facturas aduanales con DTA, IGI, IVA y valor', icon: FileText },
   { key: 'entradas', label: 'Entradas', desc: 'Entradas de almacén con bultos, peso y faltantes', icon: Package },
   { key: 'financiero', label: 'Financiero', desc: 'Resumen de pagos y contribuciones', icon: DollarSign },

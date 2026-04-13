@@ -200,13 +200,13 @@ export function BatchAnalysisCard({ summary, onReset }: Props) {
               textTransform: 'uppercase',
               color: TEXT_MUTED,
             }}>
-              Tráficos enlazados
+              Embarques enlazados
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
               {linkedTraficos.map((id) => (
                 <Link
                   key={id}
-                  href={`/traficos/${encodeURIComponent(id)}`}
+                  href={`/embarques/${encodeURIComponent(id)}`}
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',

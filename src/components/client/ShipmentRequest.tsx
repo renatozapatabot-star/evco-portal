@@ -166,7 +166,7 @@ export function ShipmentRequest() {
               Solicitud enviada
             </div>
             <div style={{ fontSize: 14, color: '#94a3b8', lineHeight: 1.6, maxWidth: 400 }}>
-              Tráfico preliminar creado. Su agente aduanal ha sido notificado
+              Embarque preliminar creado. Su agente aduanal ha sido notificado
               y se comunicará con usted para confirmar los detalles.
             </div>
           </div>

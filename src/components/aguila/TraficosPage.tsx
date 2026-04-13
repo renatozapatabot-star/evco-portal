@@ -85,7 +85,7 @@ export default function TraficosPage({
         }}
       >
         <div>
-          <h1 className="page-title">Tráficos</h1>
+          <h1 className="page-title">Embarques</h1>
           <p className="page-subtitle">
             {totalCount.toLocaleString()} embarques · Renato Zapata & Company
           </p>
@@ -158,7 +158,7 @@ export default function TraficosPage({
         <table className="aguila-table">
           <thead>
             <tr>
-              <th>Tráfico</th>
+              <th>Embarque</th>
               <th>Pedimento</th>
               <th>Estado</th>
               <th>Fecha</th>

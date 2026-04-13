@@ -2,7 +2,7 @@
  * AGUILA · V1.5 F9 — /admin/demo
  *
  * Admin-only one-click demo. Renato clicks "Iniciar demo" and AGUILA seeds
- * a synthetic DEMO EVCO PLASTICS tráfico that walks through 12 lifecycle
+ * a synthetic DEMO EVCO PLASTICS embarque that walks through 12 lifecycle
  * events in ~90 seconds. Silver glass, single-button UI.
  */
 import { cookies } from 'next/headers'

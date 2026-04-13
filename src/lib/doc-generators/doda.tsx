@@ -2,7 +2,7 @@
  * AGUILA · Block 16 — DODA (Documento de Operación para Despacho Aduanero).
  *
  * Pure generator: no I/O. Input is a pedimento-shaped record plus a minimal
- * tráfico context; output is { pdf: Buffer, xml: string }.
+ * embarque context; output is { pdf: Buffer, xml: string }.
  *
  * The XML follows SAT DODA spec conventions for the envelope, but because
  * we do not yet have the authoritative XSD handy in the repo, the emitted
@@ -59,7 +59,7 @@ function validate(input: DodaInput): void {
   if (!input.pedimento_number || !/^\d{2}\s\d{2}\s\d{4}\s\d{7}$/.test(input.pedimento_number)) {
     throw new DodaValidationError('pedimento_number', 'Número de pedimento inválido (formato DD AD PPPP SSSSSSS)')
   }
-  if (!input.trafico_id) throw new DodaValidationError('trafico_id', 'Tráfico requerido')
+  if (!input.trafico_id) throw new DodaValidationError('trafico_id', 'Embarque requerido')
   if (!input.rfc_importador) throw new DodaValidationError('rfc_importador', 'RFC del importador requerido')
   if (!input.rfc_agente) throw new DodaValidationError('rfc_agente', 'RFC del agente requerido')
   if (!input.patente) throw new DodaValidationError('patente', 'Patente requerida')
@@ -181,7 +181,7 @@ function DodaDocument({ input }: { input: DodaInput }) {
             ['Patente', input.patente],
             ['Aduana', input.aduana],
             ['Tipo operación', input.tipo_operacion],
-            ['Tráfico', input.trafico_id],
+            ['Embarque', input.trafico_id],
             ['Fecha pago', input.fecha_pago ?? '—'],
           ]}
         />

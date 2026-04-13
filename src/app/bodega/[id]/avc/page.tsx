@@ -5,7 +5,7 @@ import { createServerClient } from '@/lib/supabase-server'
 import { verifySession } from '@/lib/session'
 import { AguilaMark } from '@/components/brand/AguilaMark'
 import { AguilaWordmark } from '@/components/brand/AguilaWordmark'
-import { RegulatoryDocClient } from '@/app/traficos/[id]/doda/RegulatoryDocClient'
+import { RegulatoryDocClient } from '@/app/embarques/[id]/doda/RegulatoryDocClient'
 
 interface WarehouseEntryLite {
   id: string
@@ -58,7 +58,7 @@ export default async function AvcPage({
           <p className="mt-2 text-sm text-slate-400">
             Aviso de cruce · Caja{' '}
             <span className="font-mono text-slate-200">{entry.trailer_number}</span>
-            {' · Tráfico '}
+            {' · Embarque '}
             <span className="font-mono text-slate-200">{entry.trafico_id}</span>
           </p>
         </header>

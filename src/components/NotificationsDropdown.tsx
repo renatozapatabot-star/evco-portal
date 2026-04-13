@@ -36,7 +36,7 @@ export function NotificationsDropdown() {
         traf.filter((t: { trafico: string; estatus?: string | null; descripcion_mercancia?: string | null; fecha_llegada?: string | null }) => (t.estatus || '').toLowerCase().includes('hold') || (t.estatus || '').toLowerCase().includes('deten'))
           .slice(0, 5).forEach((t: { trafico: string; estatus?: string | null; descripcion_mercancia?: string | null; fecha_llegada?: string | null }) => notifs.push({
             id: `det-${t.trafico}`, type: 'alert', title: `Detenido: ${t.trafico}`,
-            sub: t.descripcion_mercancia?.substring(0, 40) || 'Tráfico detenido', time: t.fecha_llegada || '', read: false, color: '#EF4444',
+            sub: t.descripcion_mercancia?.substring(0, 40) || 'Embarque detenido', time: t.fecha_llegada || '', read: false, color: '#EF4444',
           }))
 
         // Faltantes

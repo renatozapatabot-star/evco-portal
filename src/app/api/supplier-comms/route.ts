@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
     channel: 'email',
     recipient: supplier,
     subject: `Solicitud de certificado USMCA — ${trafico || 'pendiente'}`,
-    body: `Estimado proveedor ${supplier}, solicitamos el certificado USMCA/T-MEC para el tráfico ${trafico}. Favor de enviarlo dentro de 48 horas.`,
+    body: `Estimado proveedor ${supplier}, solicitamos el certificado USMCA/T-MEC para el embarque ${trafico}. Favor de enviarlo dentro de 48 horas.`,
     status: 'pending',
   })
 

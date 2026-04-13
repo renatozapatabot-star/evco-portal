@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
   if (session.role === 'client') traficoQ = traficoQ.eq('company_id', session.companyId)
   const { data: traficoRow, error: traficoErr } = await traficoQ.maybeSingle()
   if (traficoErr) return NextResponse.json({ data: null, error: { code: 'DB_ERROR', message: traficoErr.message } }, { status: 500 })
-  if (!traficoRow) return NextResponse.json({ data: null, error: { code: 'NOT_FOUND', message: 'Tráfico no encontrado' } }, { status: 404 })
+  if (!traficoRow) return NextResponse.json({ data: null, error: { code: 'NOT_FOUND', message: 'Embarque no encontrado' } }, { status: 404 })
 
   const trafico = traficoRow as { trafico: string; regimen: string | null; company_id: string }
   const regimen = (trafico.regimen || '_default').toUpperCase()

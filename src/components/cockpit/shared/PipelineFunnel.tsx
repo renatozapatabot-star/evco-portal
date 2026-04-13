@@ -17,7 +17,7 @@ const STAGES: { workflow: string; label: string; href: string }[] = [
   { workflow: 'docs', label: 'DOCUMENTOS', href: '/expedientes' },
   { workflow: 'pedimento', label: 'PEDIMENTO', href: '/pedimentos' },
   { workflow: 'crossing', label: 'CRUCE', href: '/cruces' },
-  { workflow: 'post_op', label: 'POST-OP', href: '/traficos' },
+  { workflow: 'post_op', label: 'POST-OP', href: '/embarques' },
   { workflow: 'invoice', label: 'FACTURACIÓN', href: '/facturacion' },
 ]
 

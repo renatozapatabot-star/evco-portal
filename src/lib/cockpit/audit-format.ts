@@ -11,7 +11,7 @@ export interface AuditRow {
 }
 
 const TABLE_LABELS: Record<string, string> = {
-  traficos: 'Tráfico',
+  traficos: 'Embarque',
   pedimentos: 'Pedimento',
   partidas: 'Partida',
   clientes: 'Cliente',
@@ -67,7 +67,7 @@ function humanTitle(row: AuditRow): string {
 function hrefFor(row: AuditRow): string | undefined {
   if (!row.record_id) return undefined
   switch (row.table_name) {
-    case 'traficos':  return `/traficos/${encodeURIComponent(row.record_id)}`
+    case 'traficos':  return `/embarques/${encodeURIComponent(row.record_id)}`
     case 'pedimentos': return `/pedimentos?q=${encodeURIComponent(row.record_id)}`
     case 'expediente_documentos': return `/expedientes?doc=${encodeURIComponent(row.record_id)}`
     case 'entradas':  return `/entradas?q=${encodeURIComponent(row.record_id)}`

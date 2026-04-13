@@ -103,7 +103,7 @@ export async function PATCH(
       )
     }
 
-    // Verify tráfico exists + tenant-scope.
+    // Verify embarque exists + tenant-scope.
     const { data: trafRow, error: trafErr } = await supabase
       .from('traficos')
       .select('trafico, company_id')
@@ -112,7 +112,7 @@ export async function PATCH(
       .maybeSingle()
     if (trafErr || !trafRow) {
       return NextResponse.json(
-        { data: null, error: { code: 'NOT_FOUND', message: 'Tráfico no encontrado' } },
+        { data: null, error: { code: 'NOT_FOUND', message: 'Embarque no encontrado' } },
         { status: 404 },
       )
     }

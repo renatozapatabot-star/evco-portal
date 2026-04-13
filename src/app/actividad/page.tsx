@@ -60,7 +60,7 @@ export default function ActividadPage() {
     if (!companyId) return
 
     Promise.all([
-      // Recent tráfico status changes
+      // Recent embarque status changes
       supabase.from('traficos')
         .select('trafico, estatus, fecha_cruce, fecha_llegada, importe_total, updated_at')
         .eq('company_id', companyId)
@@ -89,8 +89,8 @@ export default function ActividadPage() {
             id: `cross-${t.trafico}`,
             type: 'crossing',
             icon: '✅',
-            text: `Tráfico ${t.trafico} cruzó`,
-            href: `/traficos/${encodeURIComponent(t.trafico)}`,
+            text: `Embarque ${t.trafico} cruzó`,
+            href: `/embarques/${encodeURIComponent(t.trafico)}`,
             timestamp: t.fecha_cruce,
             isNew: t.fecha_cruce > (lastSeen || ''),
           })
@@ -100,7 +100,7 @@ export default function ActividadPage() {
             type: 'status',
             icon: '📦',
             text: `${t.trafico}: ${t.estatus || 'En proceso'}`,
-            href: `/traficos/${encodeURIComponent(t.trafico)}`,
+            href: `/embarques/${encodeURIComponent(t.trafico)}`,
             timestamp: t.updated_at,
             isNew: t.updated_at > (lastSeen || ''),
           })
@@ -130,7 +130,7 @@ export default function ActividadPage() {
             type: 'solicitation',
             icon: '📩',
             text: `RZ solicitó ${displayDocType(s.doc_type)} para ${s.trafico_id}`,
-            href: `/traficos/${encodeURIComponent(s.trafico_id)}`,
+            href: `/embarques/${encodeURIComponent(s.trafico_id)}`,
             timestamp: s.solicitado_at,
             isNew: s.solicitado_at > (lastSeen || ''),
           })

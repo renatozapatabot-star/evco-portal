@@ -25,7 +25,7 @@ export function computeStatusHeroState(
     return {
       state: 'active',
       activeCondition: `${activeShipments} ${pl(activeShipments, 'envío', 'envíos')} en tránsito`,
-      activeAction: 'Ver tráficos',
+      activeAction: 'Ver embarques',
     }
   }
   return { state: 'quiet' }
@@ -109,7 +109,7 @@ export function computeQueueState(
   if (queueLength === 0) return { state: 'quiet' }
   return {
     state: 'active',
-    activeCondition: `${queueLength} ${pl(queueLength, 'tráfico', 'tráficos')} sin asignar`,
+    activeCondition: `${queueLength} ${pl(queueLength, 'embarque', 'embarques')} sin asignar`,
     activeAction: 'Asignar siguiente',
   }
 }
@@ -145,7 +145,7 @@ export function computeBlockedState(
   if (blockedCount === 0) return { state: 'quiet' }
   return {
     state: 'active',
-    activeCondition: `${blockedCount} ${pl(blockedCount, 'tráfico bloqueado', 'tráficos bloqueados')}`,
+    activeCondition: `${blockedCount} ${pl(blockedCount, 'embarque bloqueado', 'embarques bloqueados')}`,
     activeAction: 'Ver bloqueados',
   }
 }
@@ -158,7 +158,7 @@ export function computeMyDayState(
   if (inProgress > 0) {
     return {
       state: 'active',
-      activeCondition: `${inProgress} ${pl(inProgress, 'tráfico', 'tráficos')} en progreso`,
+      activeCondition: `${inProgress} ${pl(inProgress, 'embarque', 'embarques')} en progreso`,
       activeAction: 'Continuar',
     }
   }

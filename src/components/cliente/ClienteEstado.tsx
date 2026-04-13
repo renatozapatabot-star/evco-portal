@@ -4,7 +4,7 @@
  * ClienteEstado — Shipper surface "Estado de operaciones" panel.
  *
  * Distilled from the old 3-tab ClienteInicio: shows the client's active
- * tráficos as the primary deep-dive, plus a single summary card linking
+ * embarques as the primary deep-dive, plus a single summary card linking
  * to the full documentos view. Invariant 24 respected (no deltas, no
  * severity, silver tone only).
  */
@@ -57,12 +57,12 @@ export function ClienteEstado({ activeTraficos, documentos }: Props) {
     <>
       <GlassCard padding="16px 20px">
         <SectionHeader
-          title="Mis tráficos activos"
+          title="Mis embarques activos"
           count={activeTraficos.length}
         />
         {activeTraficos.length === 0 ? (
           <div style={{ padding: '24px 12px', textAlign: 'center', color: TEXT_MUTED, fontSize: 13 }}>
-            Sin tráficos activos. Tus operaciones en curso aparecerán aquí.
+            Sin embarques activos. Tus operaciones en curso aparecerán aquí.
           </div>
         ) : (
           <div
@@ -85,7 +85,7 @@ export function ClienteEstado({ activeTraficos, documentos }: Props) {
               return (
                 <GlassCard
                   key={r.trafico}
-                  href={`/traficos/${encodeURIComponent(r.trafico)}/trace`}
+                  href={`/embarques/${encodeURIComponent(r.trafico)}/trace`}
                   size="compact"
                   style={{ display: 'flex', flexDirection: 'column', gap: 10, minHeight: 60 }}
                 >

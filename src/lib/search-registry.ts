@@ -40,11 +40,11 @@ export interface EntityConfig {
 export const SEARCH_ENTITIES: readonly EntityConfig[] = [
   {
     id: 'traficos',
-    labelEs: 'Tráficos',
-    labelSingularEs: 'Tráfico',
+    labelEs: 'Embarques',
+    labelSingularEs: 'Embarque',
     iconName: 'truck',
     searchFields: ['trafico', 'descripcion_mercancia', 'pedimento'],
-    listHref: '/traficos',
+    listHref: '/embarques',
     scope: 'company',
     maxResultsPerGroup: 5,
   },
@@ -154,7 +154,7 @@ export const SEARCH_ENTITIES: readonly EntityConfig[] = [
     labelSingularEs: 'Orden de carga',
     iconName: 'truck',
     searchFields: [],
-    listHref: '/traficos',
+    listHref: '/embarques',
     scope: 'stub',
     maxResultsPerGroup: 0,
     emptyMessage: 'Por llegar — esperando sistema de cargas',
@@ -175,7 +175,7 @@ export interface AdvancedFieldConfig {
 }
 
 export const ADVANCED_SEARCH_FIELDS: readonly AdvancedFieldConfig[] = [
-  { id: 'traficoKey', labelEs: 'Clave de tráfico', kind: 'text', dataSource: 'traficos.trafico' },
+  { id: 'traficoKey', labelEs: 'Clave de embarque', kind: 'text', dataSource: 'traficos.trafico' },
   { id: 'pedimentoNumber', labelEs: 'Número de pedimento', kind: 'text', dataSource: 'traficos.pedimento' },
   { id: 'invoiceNumber', labelEs: 'Número de factura', kind: 'text', dataSource: 'aduanet_facturas.num_factura' },
   { id: 'productNumber', labelEs: 'Número de producto', kind: 'text', dataSource: 'globalpc_productos.cve_producto' },

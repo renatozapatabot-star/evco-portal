@@ -41,11 +41,11 @@ function buildActivityItem(
   const operatorName = getFirstName(operatorMap[raw.operator_id as string] || 'Sistema')
   const verb = labels?.verb || (actionType || '').replace(/_/g, ' ')
 
-  // Try to extract a tráfico reference from metadata
+  // Try to extract a embarque reference from metadata
   const meta = (raw.metadata || {}) as Record<string, unknown>
   const traficoId = (meta.trafico_id || meta.trafico || meta.entity_id || '') as string
   const entityRef = traficoId || ''
-  const entityHref = traficoId ? `/traficos/${encodeURIComponent(traficoId)}` : ''
+  const entityHref = traficoId ? `/embarques/${encodeURIComponent(traficoId)}` : ''
 
   return {
     id: raw.id as string,

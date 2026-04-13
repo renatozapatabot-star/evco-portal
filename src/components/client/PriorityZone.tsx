@@ -46,7 +46,7 @@ export function PriorityZone({ atRiskShipments }: Props) {
             Requieren atención ({atRiskShipments.length})
           </span>
         </div>
-        <Link href="/traficos" style={{
+        <Link href="/embarques" style={{
           fontSize: 12, color: '#94a3b8', textDecoration: 'none',
           display: 'flex', alignItems: 'center', gap: 4,
         }}>
@@ -59,7 +59,7 @@ export function PriorityZone({ atRiskShipments }: Props) {
         {atRiskShipments.map((s) => (
           <Link
             key={s.id}
-            href={`/traficos/${s.id}`}
+            href={`/embarques/${s.id}`}
             style={{ textDecoration: 'none', color: 'inherit' }}
           >
             <motion.div

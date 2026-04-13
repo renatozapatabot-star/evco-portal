@@ -1,7 +1,7 @@
 /**
  * CRUZ Achievement Engine
  *
- * Computes operational milestones from existing tráfico + entrada data.
+ * Computes operational milestones from existing embarque + entrada data.
  * Pure functions — no DB calls, no side effects.
  * All data comes from arrays already loaded on dashboard/logros page.
  */
@@ -76,10 +76,10 @@ export function computeAchievements(
     id: 'primer_despacho',
     icon: '🚀',
     title: 'Primer despacho',
-    description: 'Primer tráfico despachado con CRUZ',
+    description: 'Primer embarque despachado con CRUZ',
     earned: !!firstCrossing,
     earnedDate: firstCrossing?.fecha_cruce || undefined,
-    value: firstCrossing ? `Tráfico ${firstCrossing.trafico}` : undefined,
+    value: firstCrossing ? `Embarque ${firstCrossing.trafico}` : undefined,
     progress: cruzados.length > 0 ? 1 : 0,
     progressLabel: cruzados.length > 0 ? undefined : 'Sin despachos aún',
   }
@@ -92,10 +92,10 @@ export function computeAchievements(
     id: 'expediente_perfecto',
     icon: '📋',
     title: 'Expediente perfecto',
-    description: '100% documentos en un tráfico',
+    description: '100% documentos en un embarque',
     earned: !!perfectShipment,
     earnedDate: perfectShipment?.fecha_cruce || undefined,
-    value: perfectShipment ? `Tráfico ${perfectShipment.trafico}` : undefined,
+    value: perfectShipment ? `Embarque ${perfectShipment.trafico}` : undefined,
     progress: perfectShipment ? 1 : Math.min(0.8, cruzados.filter(t => t.pedimento).length / Math.max(cruzados.length, 1)),
     progressLabel: perfectShipment ? undefined : 'Pedimento + documentos sin anomalías',
   }
@@ -116,7 +116,7 @@ export function computeAchievements(
     earnedDate: consecutiveClean >= 10 ? recentCruzados[9]?.fecha_cruce || undefined : undefined,
     value: consecutiveClean >= 10 ? `${consecutiveClean} despachos consecutivos` : undefined,
     progress: Math.min(1, consecutiveClean / 10),
-    progressLabel: consecutiveClean < 10 ? `${consecutiveClean} de 10 tráficos` : undefined,
+    progressLabel: consecutiveClean < 10 ? `${consecutiveClean} de 10 embarques` : undefined,
   }
 
   // 4. T-MEC campeón — $50K+ savings
@@ -132,7 +132,7 @@ export function computeAchievements(
     progressLabel: savings < 50000 ? `${fmtUSDCompact(savings)} de $50K USD` : undefined,
   }
 
-  // 5. Velocidad récord — any tráfico ≤ 2 days dwell
+  // 5. Velocidad récord — any embarque ≤ 2 days dwell
   let fastest: { trafico: string; days: number; date: string } | null = null
   for (const t of cruzados) {
     const d = dwellDays(t)
@@ -149,7 +149,7 @@ export function computeAchievements(
     description: 'Despacho en 2 días o menos',
     earned: !!fastest,
     earnedDate: fastest?.date,
-    value: fastest ? `${fastest.days} días · Tráfico ${fastest.trafico}` : undefined,
+    value: fastest ? `${fastest.days} días · Embarque ${fastest.trafico}` : undefined,
     progress: fastest ? 1 : 0,
     progressLabel: fastest ? undefined : 'Despacho en ≤2 días',
   }

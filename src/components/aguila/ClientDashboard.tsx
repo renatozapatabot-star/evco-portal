@@ -129,7 +129,7 @@ export default function ClientDashboard({
           <table className="aguila-table">
             <thead>
               <tr>
-                <th>Tráfico</th>
+                <th>Embarque</th>
                 <th>Estado</th>
                 <th>Fecha</th>
                 <th>Descripción</th>

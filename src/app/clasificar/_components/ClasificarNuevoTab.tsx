@@ -168,7 +168,7 @@ export function ClasificarNuevoTab({ canInsert }: ClasificarNuevoTabProps) {
         return
       }
       setInsertState('inserted')
-      setInsertMessage(`Insertado en tráfico ${json.data.trafico_id}`)
+      setInsertMessage(`Insertado en embarque ${json.data.trafico_id}`)
     } catch (e) {
       setInsertState('error')
       setInsertMessage(e instanceof Error ? e.message : 'Error de red')
@@ -487,7 +487,7 @@ export function ClasificarNuevoTab({ canInsert }: ClasificarNuevoTabProps) {
                   htmlFor="cn-trafico"
                   style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.6)' }}
                 >
-                  Insertar en tráfico
+                  Insertar en embarque
                 </label>
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                   <input
@@ -495,7 +495,7 @@ export function ClasificarNuevoTab({ canInsert }: ClasificarNuevoTabProps) {
                     type="text"
                     value={traficoId}
                     onChange={(e) => setTraficoId(e.target.value)}
-                    placeholder="Número de tráfico"
+                    placeholder="Número de embarque"
                     className="font-mono"
                     style={{
                       flex: '1 1 200px',
@@ -525,7 +525,7 @@ export function ClasificarNuevoTab({ canInsert }: ClasificarNuevoTabProps) {
                       cursor: insertState === 'inserting' || !traficoId.trim() ? 'wait' : 'pointer',
                     }}
                   >
-                    {insertState === 'inserting' ? 'Insertando…' : 'Insertar en tráfico'}
+                    {insertState === 'inserting' ? 'Insertando…' : 'Insertar en embarque'}
                   </button>
                 </div>
               </div>

@@ -1,5 +1,5 @@
 /**
- * Computed-fallback estimator for DTA/IGI/IVA on tráficos that haven't
+ * Computed-fallback estimator for DTA/IGI/IVA on embarques that haven't
  * been synced from AduanaNet yet (the scraper window is rolling 30 days).
  * Used by the pedimento-pdf route when cbpFacturas is empty so the PDF
  * shows numbers labelled "Estimado" instead of bare "Pendiente".

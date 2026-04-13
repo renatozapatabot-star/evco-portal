@@ -8,7 +8,7 @@ import { fmtDateTime, fmtUSDCompact } from '@/lib/format-utils'
 import {
   GREEN, AMBER, RED, TEXT_MUTED, TEXT_PRIMARY,
 } from '@/lib/design-system'
-import { HeroStrip, type HeroTile } from '@/app/traficos/[id]/legacy/_components/HeroStrip'
+import { HeroStrip, type HeroTile } from '@/app/embarques/[id]/legacy/_components/HeroStrip'
 import { ClienteTabStrip } from './_components/ClienteTabStrip'
 import { TraficosTab, type TraficoRow } from './_components/TraficosTab'
 import { FraccionesTab, type FraccionRow } from './_components/FraccionesTab'
@@ -223,8 +223,8 @@ export default async function ClienteDetailPage({
   const dot = statusDot(lastActivity)
 
   const heroTiles: HeroTile[] = [
-    { label: 'Tráficos activos', value: String(activeCount), mono: true },
-    { label: 'Tráficos último mes', value: String(monthCount), mono: true },
+    { label: 'Embarques activos', value: String(activeCount), mono: true },
+    { label: 'Embarques último mes', value: String(monthCount), mono: true },
     { label: 'Valor YTD', value: ytdValue > 0 ? fmtUSDCompact(ytdValue) : '—', mono: true },
     { label: 'Cumplimiento', value: compliancePct, mono: true, hint: decisions.length < 10 ? 'Datos insuficientes' : null },
   ]
@@ -317,7 +317,7 @@ export default async function ClienteDetailPage({
           <ClienteTabStrip
             clienteId={clienteId}
             tabs={[
-              { id: 'traficos', label: 'Tráficos', content: <TraficosTab rows={traficoRows} /> },
+              { id: 'traficos', label: 'Embarques', content: <TraficosTab rows={traficoRows} /> },
               { id: 'proveedores', label: 'Proveedores', content: proveedoresContent },
               { id: 'fracciones', label: 'Fracciones usadas', content: <FraccionesTab rows={fracciones} /> },
               { id: 'cumplimiento', label: 'Cumplimiento', content: <Placeholder message={decisions.length < 10 ? 'Datos insuficientes para calcular cumplimiento.' : 'Disponible próximamente.'} /> },

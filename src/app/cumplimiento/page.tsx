@@ -175,7 +175,7 @@ function BrokerCumplimientoView() {
             <div style={{ fontSize: 13, color: T.textSecondary, marginTop: 8 }}>
               {semaforoRojo === 0
                 ? 'Sin inspecciones pendientes'
-                : `tráfico${semaforoRojo !== 1 ? 's' : ''} en revisión aduanera`}
+                : `embarque${semaforoRojo !== 1 ? 's' : ''} en revisión aduanera`}
             </div>
           </div>
 
@@ -203,8 +203,8 @@ function BrokerCumplimientoView() {
             </div>
             <div style={{ fontSize: 13, color: T.textSecondary, marginTop: 8 }}>
               {blockingDocs === 0
-                ? 'Todos los tráficos con documentación completa'
-                : `tráfico${blockingDocs !== 1 ? 's' : ''} sin pedimento asignado`}
+                ? 'Todos los embarques con documentación completa'
+                : `embarque${blockingDocs !== 1 ? 's' : ''} sin pedimento asignado`}
             </div>
           </div>
 

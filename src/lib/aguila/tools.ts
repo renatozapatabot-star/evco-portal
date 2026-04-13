@@ -33,7 +33,7 @@ export const TOOL_DEFINITIONS: Anthropic.Tool[] = [
   {
     name: 'query_traficos',
     description:
-      'Consulta tráficos (shipments). Usuarios internos pueden filtrar por clave de cliente; clientes solo ven los propios. Devuelve conteo, desglose de estatus y el último cruce.',
+      'Consulta embarques (shipments). Usuarios internos pueden filtrar por clave de cliente; clientes solo ven los propios. Devuelve conteo, desglose de estatus y el último cruce.',
     input_schema: {
       type: 'object',
       properties: {

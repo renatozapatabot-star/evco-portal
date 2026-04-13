@@ -88,7 +88,7 @@ export default function ArchivosPage() {
             Archivos
           </h1>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0 }}>
-            Busca cualquier documento por nombre, tipo, tráfico o contenido
+            Busca cualquier documento por nombre, tipo, embarque o contenido
           </p>
         </div>
         <Link
@@ -153,7 +153,7 @@ export default function ArchivosPage() {
         <EmptyState
           icon="📂"
           title="Busca documentos"
-          description="Escribe el nombre, tipo o tráfico del documento que necesitas"
+          description="Escribe el nombre, tipo o embarque del documento que necesitas"
         />
       )}
 
@@ -195,7 +195,7 @@ export default function ArchivosPage() {
                   </span>
                   {doc.traficoId && (
                     <Link
-                      href={`/traficos/${encodeURIComponent(doc.traficoId)}`}
+                      href={`/embarques/${encodeURIComponent(doc.traficoId)}`}
                       style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--gold-dark)', textDecoration: 'none' }}
                     >
                       {doc.traficoId}

@@ -181,7 +181,7 @@ export function EscanearClient() {
       setStatus('success')
       trackClick('qr_scan_resolved', { trafico_id: data.traficoId })
       window.setTimeout(() => {
-        router.push(`/traficos/${encodeURIComponent(data.traficoId)}`)
+        router.push(`/embarques/${encodeURIComponent(data.traficoId)}`)
       }, 1200)
     } catch (err) {
       setStatus('error')
@@ -240,7 +240,7 @@ export function EscanearClient() {
             <>
               <p style={{ fontSize: 14, color: ACCENT_SILVER, lineHeight: 1.55, margin: 0 }}>
                 Apunte la cámara a la etiqueta del remolque. Al leer el código, la entrada
-                queda registrada y el tráfico se abre automáticamente.
+                queda registrada y el embarque se abre automáticamente.
               </p>
               <button
                 type="button"
@@ -365,7 +365,7 @@ export function EscanearClient() {
                 </div>
               )}
               <div style={{ fontSize: 12, color: ACCENT_SILVER_DIM, marginTop: 10 }}>
-                Abriendo tráfico…
+                Abriendo embarque…
               </div>
             </div>
           )}

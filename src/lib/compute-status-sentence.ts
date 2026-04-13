@@ -25,7 +25,7 @@ export async function computeStatusSentence(
     .is('fecha_cruce', null)
   if (useCompanyId) semaforoQ = semaforoQ.eq('company_id', companyId!)
 
-  // Active tráficos count
+  // Active embarques count
   let activeQ = supabase
     .from('traficos')
     .select('id', { count: 'exact', head: true })
@@ -76,7 +76,7 @@ export async function computeStatusSentence(
   if (pendingEntradas > 10) {
     return {
       level: 'amber',
-      sentence: `${pendingEntradas} entradas sin tráfico asignado`,
+      sentence: `${pendingEntradas} entradas sin embarque asignado`,
       count: pendingEntradas,
     }
   }

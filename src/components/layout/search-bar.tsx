@@ -57,7 +57,7 @@ export function SearchBar() {
 
   function handleSelect(result: SearchResult) {
     const href = result.type === 'trafico'
-      ? `/traficos/${encodeURIComponent(result.id)}`
+      ? `/embarques/${encodeURIComponent(result.id)}`
       : result.type === 'entrada'
         ? `/entradas/${encodeURIComponent(result.id)}`
         : `/${result.view}`
@@ -81,7 +81,7 @@ export function SearchBar() {
           onKeyDown={handleKey}
           onFocus={() => { setFocused(true); results.length > 0 && setOpen(true) }}
           onBlur={() => { setFocused(false); setTimeout(() => setOpen(false), 150) }}
-          placeholder="Buscar tráfico, pedimento..."
+          placeholder="Buscar embarque, pedimento..."
           style={{ paddingLeft: 32, paddingRight: loading ? 32 : 12, height: 32,
             border: `1px solid ${focused ? 'rgba(192,197,206,0.5)' : T.border}`, borderRadius: 7, background: T.surface,
             color: T.text, fontSize: 12, outline: 'none', width: '100%', fontFamily: 'inherit',

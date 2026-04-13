@@ -72,7 +72,7 @@ export default function TopBar({
         >
           <Search size={16} style={{ opacity: 0.5, flexShrink: 0 }} />
           <span className="topbar-search-placeholder">
-            Buscar tráfico, entradas, pedimentos...
+            Buscar embarque, entradas, pedimentos...
           </span>
         </button>
 
@@ -140,7 +140,7 @@ export default function TopBar({
         aria-label="Buscar"
       >
         <Search size={16} />
-        <span className="topbar-search-label">Buscar tráfico, pedimento...</span>
+        <span className="topbar-search-label">Buscar embarque, pedimento...</span>
       </button>
 
       <div className="topbar-right">

@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
     .maybeSingle<TraficoOwnership>()
 
   if (trErr || !trafico) {
-    return errorResponse('NOT_FOUND', 'Tráfico no encontrado', 404)
+    return errorResponse('NOT_FOUND', 'Embarque no encontrado', 404)
   }
 
   const isInternal =
@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
   const traficoCompanyId = trafico.company_id ?? session.companyId
 
   if (!isInternal && traficoCompanyId !== session.companyId) {
-    return errorResponse('FORBIDDEN', 'Sin acceso al tráfico', 403)
+    return errorResponse('FORBIDDEN', 'Sin acceso al embarque', 403)
   }
 
   const actor = `${session.companyId}:${session.role}`

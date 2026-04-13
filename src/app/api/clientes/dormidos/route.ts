@@ -1,7 +1,7 @@
 /**
  * AGUILA · V1.5 F7 — GET /api/clientes/dormidos
  *
- * Returns dormant clientes (historical tráfico activity but no motion in the
+ * Returns dormant clientes (historical embarque activity but no motion in the
  * last `threshold` days, default 14). Role-gated to admin/broker. Emits
  * `dormant_list_viewed` telemetry via interaction_events.payload.event.
  */

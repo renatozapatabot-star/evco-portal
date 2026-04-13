@@ -33,16 +33,16 @@ export function ProximasAccionesCard({ data }: Props) {
     actions.push({
       label: `${b.trafico}: ${b.missingDocs.length > 0 ? b.missingDocs.slice(0, 2).join(', ') : b.reason}`,
       confidence: 80,
-      href: `/traficos/${encodeURIComponent(b.trafico)}`,
+      href: `/embarques/${encodeURIComponent(b.trafico)}`,
     })
   }
 
   // Pad with unassigned if needed
   if (actions.length < 3 && data.unassignedCount > 0) {
     actions.push({
-      label: `${data.unassignedCount} tráfico${data.unassignedCount !== 1 ? 's' : ''} sin asignar en cola`,
+      label: `${data.unassignedCount} embarque${data.unassignedCount !== 1 ? 's' : ''} sin asignar en cola`,
       confidence: 70,
-      href: '/traficos',
+      href: '/embarques',
     })
   }
 

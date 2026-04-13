@@ -477,7 +477,7 @@ function EmptyState({ status }: { status: InvoiceBankStatus }) {
     status === 'unassigned'
       ? 'Sin facturas por asignar. Carga un PDF o XML para empezar.'
       : status === 'assigned'
-      ? 'Aún no hay facturas asignadas a tráficos.'
+      ? 'Aún no hay facturas asignadas a embarques.'
       : 'Sin facturas archivadas.'
   return (
     <div style={{ padding: 48, textAlign: 'center', color: TEXT_MUTED, fontSize: 14 }}>
@@ -610,7 +610,7 @@ function RightRail({ row, onClose }: { row: InvoiceBankRow; onClose: () => void 
         </span>
         {row.assigned_to_trafico_id && (
           <>
-            <span style={{ color: TEXT_MUTED }}>Tráfico</span>
+            <span style={{ color: TEXT_MUTED }}>Embarque</span>
             <span style={{ fontFamily: MONO, color: TEXT_PRIMARY }}>{row.assigned_to_trafico_id}</span>
           </>
         )}
@@ -758,9 +758,9 @@ function AssignModal({ onClose, onAssign }: {
           width: 'min(520px, 92vw)', color: TEXT_PRIMARY,
         }}
       >
-        <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>Asignar a tráfico</h2>
+        <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>Asignar a embarque</h2>
         <p style={{ color: TEXT_MUTED, fontSize: 12, margin: '4px 0 12px' }}>
-          Busca por clave de tráfico, pedimento o descripción.
+          Busca por clave de embarque, pedimento o descripción.
         </p>
         <input
           autoFocus value={q} onChange={(e) => setQ(e.target.value)}
@@ -771,7 +771,7 @@ function AssignModal({ onClose, onAssign }: {
             color: TEXT_PRIMARY, fontFamily: MONO, fontSize: 14,
             padding: '10px 12px', minHeight: 44,
           }}
-          aria-label="Buscar tráfico"
+          aria-label="Buscar embarque"
         />
         <div style={{ marginTop: 12, maxHeight: 320, overflowY: 'auto' }}>
           {searching && <div style={{ color: TEXT_MUTED, fontSize: 13, padding: 8 }}>Buscando…</div>}

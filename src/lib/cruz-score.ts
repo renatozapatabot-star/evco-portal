@@ -1,6 +1,6 @@
 import type { Trafico } from '@/types/database'
 
-// Cruz Score: proprietary 0-100 health metric per tráfico.
+// Cruz Score: proprietary 0-100 health metric per embarque.
 // Weights: docs 40% + time 25% + payment 20% + pedimento 10% + compliance 5% = 100%
 
 interface ScoreInput {

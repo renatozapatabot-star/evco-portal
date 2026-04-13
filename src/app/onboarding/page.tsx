@@ -76,7 +76,7 @@ function OnboardingContent() {
             </p>
             <label style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 16px', borderRadius: 10, background: 'rgba(9,9,11,0.75)', border: '1px solid rgba(255,255,255,0.08)', cursor: 'pointer', marginBottom: 20 }}>
               <input type="checkbox" checked={seedSample} onChange={e => setSeedSample(e.target.checked)} style={{ width: 18, height: 18 }} />
-              <span style={{ fontSize: 14, color: '#FFFFFF' }}>Cargar 10 tráficos de ejemplo (MUESTRA)</span>
+              <span style={{ fontSize: 14, color: '#FFFFFF' }}>Cargar 10 embarques de ejemplo (MUESTRA)</span>
             </label>
             <button
               onClick={async () => {

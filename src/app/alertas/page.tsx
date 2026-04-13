@@ -72,7 +72,7 @@ export default function AlertasPage() {
             id: `score-${t.trafico}`, severity: 'critica', icon: 'shield',
             title: `Score ${score} — ${t.trafico}`,
             sub: 'Requiere atención inmediata',
-            href: `/traficos/${encodeURIComponent(t.trafico)}`,
+            href: `/embarques/${encodeURIComponent(t.trafico)}`,
             time: t.fecha_llegada || '',
             resolved: false,
           })
@@ -89,7 +89,7 @@ export default function AlertasPage() {
             id: `slow-${t.trafico}`, severity: 'atención', icon: 'clock',
             title: `${days}d en proceso — ${t.trafico}`,
             sub: t.descripcion_mercancia?.slice(0, 50) || 'Sin descripción',
-            href: `/traficos/${encodeURIComponent(t.trafico)}`,
+            href: `/embarques/${encodeURIComponent(t.trafico)}`,
             time: t.fecha_llegada || '',
             resolved: false,
           })
@@ -114,7 +114,7 @@ export default function AlertasPage() {
               id: `done-${t.trafico}`, severity: 'info', icon: 'package',
               title: `Cruzado — ${t.trafico}`,
               sub: t.descripcion_mercancia?.slice(0, 50) || 'Operación completada',
-              href: `/traficos/${encodeURIComponent(t.trafico)}`,
+              href: `/embarques/${encodeURIComponent(t.trafico)}`,
               time: t.fecha_cruce || t.fecha_llegada || '',
               resolved: true,
             })

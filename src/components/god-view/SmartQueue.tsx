@@ -30,7 +30,7 @@ export function SmartQueue({ queue, total, pendingDrafts, pendingEscalations, er
           Cola de Trabajo
           {total > 0 && <span className="god-badge">{total}</span>}
         </h2>
-        <Link href="/traficos?filter=blocking" className="god-link">Ver todo &rarr;</Link>
+        <Link href="/embarques?filter=blocking" className="god-link">Ver todo &rarr;</Link>
       </div>
 
       {queue.length === 0 ? (
@@ -40,7 +40,7 @@ export function SmartQueue({ queue, total, pendingDrafts, pendingEscalations, er
           {queue.map(item => (
             <Link
               key={item.trafico}
-              href={`/traficos/${encodeURIComponent(item.trafico)}`}
+              href={`/embarques/${encodeURIComponent(item.trafico)}`}
               className="god-queue-item"
             >
               <div className="god-queue-left">

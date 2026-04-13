@@ -10,7 +10,7 @@
  *
  * Conservative by design: unknown régimen codes return [] rather than
  * throwing. Failing closed prevents false "missing doc" reds on
- * tráficos whose régimen is not yet in the map.
+ * embarques whose régimen is not yet in the map.
  */
 
 /**
@@ -123,7 +123,7 @@ function normalizeRegimen(regimen: string | null | undefined): string | null {
 }
 
 /**
- * Resolve required docs for a tráfico's régimen. Never throws.
+ * Resolve required docs for a embarque's régimen. Never throws.
  * Unknown régimen → [] (UI renders an info message instead of a checklist).
  */
 export function getRequiredDocs(regimen: string | null | undefined): DocType[] {

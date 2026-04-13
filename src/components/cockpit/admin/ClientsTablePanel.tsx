@@ -25,20 +25,20 @@ export function ClientsTablePanel({ companies }: Props) {
           Cartera de clientes
         </span>
         <span style={{ fontSize: 11, color: '#6E7681' }}>
-          {companies.length} con tráficos activos
+          {companies.length} con embarques activos
         </span>
       </div>
 
       {companies.length === 0 ? (
         <div style={{ padding: '16px 0', textAlign: 'center', color: '#6E7681', fontSize: 13 }}>
-          Sin clientes con tráficos activos
+          Sin clientes con embarques activos
         </div>
       ) : (
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr>
-                {['Cliente', 'Tráficos', 'Valor USD', 'Última actividad'].map(h => (
+                {['Cliente', 'Embarques', 'Valor USD', 'Última actividad'].map(h => (
                   <th key={h} style={{
                     fontSize: 11, fontWeight: 600, textTransform: 'uppercase',
                     letterSpacing: '0.05em', color: '#6E7681',
@@ -58,7 +58,7 @@ export function ClientsTablePanel({ companies }: Props) {
                 }}>
                   <td style={{ padding: '10px 12px', fontSize: 13, color: '#E6EDF3' }}>
                     <Link
-                      href={`/traficos?company=${encodeURIComponent(c.company_id)}`}
+                      href={`/embarques?company=${encodeURIComponent(c.company_id)}`}
                       style={{ color: '#E6EDF3', textDecoration: 'none' }}
                     >
                       {c.name}

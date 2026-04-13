@@ -73,7 +73,7 @@ export function EventTimeline({ traficoId }: { traficoId: string }) {
 
   if (events.length === 0) return (
     <p style={{ color: 'var(--text-muted)', fontSize: 13, padding: '20px 0' }}>
-      Sin eventos registrados para este tráfico.
+      Sin eventos registrados para este embarque.
     </p>
   )
 

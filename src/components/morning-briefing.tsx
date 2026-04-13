@@ -36,7 +36,7 @@ export function MorningBriefing({ data }: { data: BriefingData }) {
             <div className="briefing-item">
               <div className="briefing-item-icon"><Truck size={14} style={{ color: 'var(--gold-500)' }} /></div>
               <div>
-                <div className="briefing-item-value">{data.traficosYesterday} tráficos ayer</div>
+                <div className="briefing-item-value">{data.traficosYesterday} embarques ayer</div>
                 <div className="briefing-item-context">{trend === 'arriba' ? '↑' : trend === 'abajo' ? '↓' : '→'} vs promedio semanal ({data.weeklyAvg})</div>
               </div>
             </div>
@@ -58,7 +58,7 @@ export function MorningBriefing({ data }: { data: BriefingData }) {
               <div className="briefing-item-icon"><AlertTriangle size={14} style={{ color: mveDays <= 7 ? 'var(--danger)' : 'var(--warning)' }} /></div>
               <div>
                 <div className="briefing-item-value">MVE: {mveDays}d restantes</div>
-                <div className="briefing-item-context">{data.mvePending} tráficos sin folio</div>
+                <div className="briefing-item-context">{data.mvePending} embarques sin folio</div>
               </div>
             </div>
           </div>

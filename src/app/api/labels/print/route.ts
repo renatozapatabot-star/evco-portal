@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
   const { entradaId, dockId } = parsed.data
   const supabase = svc()
 
-  // Load the warehouse entry + its tráfico ownership.
+  // Load the warehouse entry + its embarque ownership.
   const { data: entry, error: entryErr } = await supabase
     .from('warehouse_entries')
     .select('id, trafico_id, company_id, trailer_number, dock_assigned, received_at')

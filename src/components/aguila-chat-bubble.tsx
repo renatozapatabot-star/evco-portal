@@ -20,7 +20,7 @@ interface Message {
 }
 
 const SUGGESTIONS = [
-  '¿Cuántos tráficos en proceso?',
+  '¿Cuántos embarques en proceso?',
   '¿Qué puente me recomiendas?',
   'Resumen ejecutivo del día',
   'Calcula impuestos $50K USD',
@@ -166,7 +166,7 @@ export function AguilaChatBubble() {
     } catch (err: unknown) {
       if (err instanceof Error && err.name !== 'AbortError') {
         let suggestion = 'Intenta reformular tu pregunta.'
-        if (text.includes('Y') || /^\d{4}/.test(text)) suggestion = 'Verifica el número completo del tráfico.'
+        if (text.includes('Y') || /^\d{4}/.test(text)) suggestion = 'Verifica el número completo del embarque.'
         else if (text.length < 5) suggestion = 'Intenta con una pregunta más específica.'
         setMessages(prev => prev.map(m =>
           m.id === aiMsgId ? { ...m, content: `No pude procesar esa consulta. ${suggestion}` } : m
@@ -221,7 +221,7 @@ export function AguilaChatBubble() {
     const parts = text.split(traficoPattern)
     return parts.map((part, i) => {
       if (traficoTest.test(part))
-        return <Link key={i} href={`/traficos/${part}`} onClick={() => setOpen(false)} style={{ color: GOLD, fontWeight: 700, fontFamily: 'var(--font-data)', textDecoration: 'none', borderBottom: '1px solid rgba(192,197,206,0.4)' }}>{part}</Link>
+        return <Link key={i} href={`/embarques/${part}`} onClick={() => setOpen(false)} style={{ color: GOLD, fontWeight: 700, fontFamily: 'var(--font-data)', textDecoration: 'none', borderBottom: '1px solid rgba(192,197,206,0.4)' }}>{part}</Link>
       if (/^[67]\d{6}$/.test(part))
         return <Link key={i} href={`/pedimentos?search=${part}`} onClick={() => setOpen(false)} style={{ color: GOLD, fontWeight: 700, fontFamily: 'var(--font-data)', textDecoration: 'none' }}>{part}</Link>
       return <span key={i}>{part}</span>
@@ -318,7 +318,7 @@ export function AguilaChatBubble() {
             {messages.length === 0 && !loading && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingTop: 16, alignItems: 'center' }}>
                 <div style={{ fontSize: 13, color: D.textSub, textAlign: 'center', maxWidth: 280, lineHeight: 1.5 }}>
-                  Pregunta sobre tráficos, impuestos, puentes, documentos...
+                  Pregunta sobre embarques, impuestos, puentes, documentos...
                 </div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center', marginTop: 8 }}>
                   {SUGGESTIONS.map(s => (
@@ -440,7 +440,7 @@ export function AguilaChatBubble() {
                 value={input}
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Pregunta sobre tráficos, puentes, impuestos..."
+                placeholder="Pregunta sobre embarques, puentes, impuestos..."
                 rows={1}
                 disabled={loading}
                 style={{

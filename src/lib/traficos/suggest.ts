@@ -1,9 +1,9 @@
 /**
- * AGUILA · V1.5 F15 — Smart Tráfico Suggestions.
+ * AGUILA · V1.5 F15 — Smart Embarque Suggestions.
  *
- * Given a prefix typed into a "new tráfico" form, surface the cliente
+ * Given a prefix typed into a "new embarque" form, surface the cliente
  * records that match by name (or clave_cliente) and aggregate their
- * historical tráfico patterns so the operator can one-tap pre-fill the
+ * historical embarque patterns so the operator can one-tap pre-fill the
  * form with sensible defaults: typical fracción, supplier, UMC, operator,
  * and average factura value.
  *
@@ -151,7 +151,7 @@ export function clampLimit(raw: number | undefined): number {
 }
 
 /**
- * Suggest cliente pre-fill patterns for a new-tráfico form.
+ * Suggest cliente pre-fill patterns for a new-embarque form.
  */
 export async function suggestClientePatterns(
   supabase: AnyClient,
@@ -262,7 +262,7 @@ export async function suggestClientePatterns(
       const typicalUmc =
         mode(partidas.map((p) => p.umc)) ?? mode(partidas.map((p) => p.cve_umc))
 
-      // Operator aggregation — prefer assigned_to_operator_id on the tráfico
+      // Operator aggregation — prefer assigned_to_operator_id on the embarque
       // itself; workflow_events fallback not reliable without actor column.
       const operatorIds = traficos
         .map((t) => t.assigned_to_operator_id)

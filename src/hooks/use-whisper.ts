@@ -91,7 +91,7 @@ export function useWhisper(page: PageName): string | null {
             break
           }
           case 'documentos': {
-            setInsight('Tip: suba documentos desde su teléfono con el botón de cámara en cada tráfico')
+            setInsight('Tip: suba documentos desde su teléfono con el botón de cámara en cada embarque')
             break
           }
           case 'entradas': {
@@ -100,7 +100,7 @@ export function useWhisper(page: PageName): string | null {
               return s.includes('cruz')
             })
             const rate = Math.round((linked.length / traficos.length) * 100)
-            if (rate > 80) setInsight(`${rate}% de sus tráficos se completaron exitosamente`)
+            if (rate > 80) setInsight(`${rate}% de sus embarques se completaron exitosamente`)
             break
           }
         }

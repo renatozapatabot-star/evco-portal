@@ -31,7 +31,7 @@ function ItemCard({ item }: { item: TrackerItem }) {
   const alert = item.hasDamage || item.hasFaltantes
   return (
     <GlassCard
-      href={e.trafico_id ? `/traficos/${e.trafico_id}` : undefined}
+      href={e.trafico_id ? `/embarques/${e.trafico_id}` : undefined}
       severity={alert ? 'critical' : undefined}
     >
       <div style={{
@@ -89,7 +89,7 @@ function ItemCard({ item }: { item: TrackerItem }) {
         <div>
           <div style={{
             fontSize: 10, color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 2,
-          }}>Tráfico</div>
+          }}>Embarque</div>
           <div style={{
             fontFamily: 'var(--font-jetbrains-mono), monospace',
             fontSize: 13, color: TEXT_PRIMARY, fontWeight: 600,

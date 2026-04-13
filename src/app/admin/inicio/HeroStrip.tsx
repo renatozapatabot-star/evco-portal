@@ -15,7 +15,7 @@ interface HeroTile {
 export function HeroStrip({ hero }: { hero: InicioData['hero'] }) {
   const tiles: HeroTile[] = [
     { key: 'clientes', label: 'Clientes activos', value: String(hero.clientes_activos), color: TEXT_PRIMARY, mono: true },
-    { key: 'motion', label: 'Tráficos en motion', value: String(hero.traficos_motion), color: TEXT_PRIMARY, mono: true },
+    { key: 'motion', label: 'Embarques en motion', value: String(hero.traficos_motion), color: TEXT_PRIMARY, mono: true },
     { key: 'pedimentos', label: 'Pedimentos esta semana', value: String(hero.pedimentos_semana), color: TEXT_PRIMARY, mono: true },
     { key: 'valor', label: 'Valor en tránsito', value: fmtUSDCompact(hero.valor_transito_usd), color: GOLD, mono: true },
   ]

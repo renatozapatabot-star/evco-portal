@@ -268,7 +268,7 @@ export function Anexo24View() {
     const uniqueProveedores = new Set(enriched.map(r => r.proveedor).filter(p => p !== '—')).size
     const tmecCount = enriched.filter(r => r.tmec).length
     const tmecPct = enriched.length > 0 ? Math.round((tmecCount / enriched.length) * 100) : 0
-    // Orphans = partidas whose folio doesn't resolve to a tráfico (sync gap).
+    // Orphans = partidas whose folio doesn't resolve to a embarque (sync gap).
     const pendientes = enriched.filter(r => r.pedimento === 'Pendiente').length
     return { totalPartidas: enriched.length, totalValue, uniqueFracciones, uniqueProveedores, tmecCount, tmecPct, pendientes }
   }, [enriched])
@@ -355,7 +355,7 @@ export function Anexo24View() {
       )}
 
       {/* Orphan partidas warning — partidas whose folio doesn't map to a
-          tráfico (sync gap between globalpc_partidas and globalpc_facturas). */}
+          embarque (sync gap between globalpc_partidas and globalpc_facturas). */}
       {!loading && kpis.pendientes > 0 && (
         <div style={{
           ...glassCard,

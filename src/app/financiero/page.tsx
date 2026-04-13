@@ -171,7 +171,7 @@ export default function FinancieroPage() {
 
         {/* Empty state */}
         {!loading && traficos.length === 0 && facturas.length === 0 && (
-          <EmptyState icon="💰" title="Sin datos financieros" description="Los datos de tráficos y facturas aparecerán aquí cuando se registren operaciones." />
+          <EmptyState icon="💰" title="Sin datos financieros" description="Los datos de embarques y facturas aparecerán aquí cuando se registren operaciones." />
         )}
 
         {/* Summary Cards */}
@@ -209,7 +209,7 @@ export default function FinancieroPage() {
               <div style={{ fontSize: 24, fontWeight: 700, fontFamily: 'var(--font-mono)', color: D.text }}>
                 ${(summary.enProcesoUSD / 1000000).toFixed(1)}M USD
               </div>
-              <div style={{ fontSize: 11, color: D.textSec, marginTop: 4 }}>{summary.enProcesoCount} tráficos</div>
+              <div style={{ fontSize: 11, color: D.textSec, marginTop: 4 }}>{summary.enProcesoCount} embarques</div>
             </div>
           </div>
         )}

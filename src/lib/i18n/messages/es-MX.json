@@ -1,6 +1,6 @@
 {
   "nav.inicio": "Inicio",
-  "nav.traficos": "Tráficos",
+  "nav.traficos": "Embarques",
   "nav.entradas": "Entradas",
   "nav.expedientes": "Expedientes",
   "nav.pedimentos": "Pedimentos",
@@ -36,7 +36,7 @@
   "common.language": "Idioma",
 
   "header.inicio": "Resumen del día",
-  "header.traficos": "Tráficos activos",
+  "header.traficos": "Embarques activos",
   "header.operador": "Mi turno",
   "header.admin": "Centro de mando",
   "header.bodega": "Bodega y patio",

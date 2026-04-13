@@ -10,9 +10,9 @@ export function TraficosDelDiaTile({ buckets }: { buckets: TraficoStatusBucket[]
   const max = Math.max(1, ...buckets.map((b) => b.count))
   const animatedTotal = useCountUp(total)
   return (
-    <TileShell title="Tráficos del día" subtitle={`${animatedTotal} activos`} href="/traficos">
+    <TileShell title="Embarques del día" subtitle={`${animatedTotal} activos`} href="/embarques">
       {buckets.length === 0 ? (
-        <div style={{ color: TEXT_MUTED, fontSize: 13 }}>Sin tráficos en movimiento.</div>
+        <div style={{ color: TEXT_MUTED, fontSize: 13 }}>Sin embarques en movimiento.</div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {buckets.map((b) => {

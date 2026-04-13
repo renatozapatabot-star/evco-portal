@@ -20,7 +20,7 @@ import { useTrack } from '@/lib/telemetry/useTrack'
  * V1 Polish Pack · Block 11 — Crossing schedule client component.
  *
  * Renders a bridge-grouped horizontal timeline (6 AM → 10 PM Laredo CST)
- * with one block per tráfico. Blocks click through to /traficos/[id].
+ * with one block per embarque. Blocks click through to /embarques/[id].
  */
 
 export interface CruceRow {
@@ -596,7 +596,7 @@ function BridgeRow({
           return (
             <Link
               key={`${item.row.trafico}-${idx}`}
-              href={`/traficos/${encodeURIComponent(item.row.trafico)}`}
+              href={`/embarques/${encodeURIComponent(item.row.trafico)}`}
               style={{
                 position: 'absolute',
                 top: 8,
@@ -649,7 +649,7 @@ function BridgeRow({
             return (
               <Link
                 key={`m-${item.row.trafico}-${idx}`}
-                href={`/traficos/${encodeURIComponent(item.row.trafico)}`}
+                href={`/embarques/${encodeURIComponent(item.row.trafico)}`}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -721,7 +721,7 @@ function EmptyState() {
           marginRight: 'auto',
         }}
       >
-        Los tráficos aparecerán cuando <code style={{ fontFamily: 'var(--font-jetbrains-mono)', color: ACCENT_CYAN }}>fecha_cruce_planeada</code>{' '}
+        Los embarques aparecerán cuando <code style={{ fontFamily: 'var(--font-jetbrains-mono)', color: ACCENT_CYAN }}>fecha_cruce_planeada</code>{' '}
         esté poblada en la tabla traficos.
       </p>
     </div>

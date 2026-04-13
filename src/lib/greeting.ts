@@ -30,12 +30,12 @@ export function getContextBriefing(stats: {
   mvePending: number
   allCrossed: boolean
 }): string {
-  if (stats.allCrossed) return 'Todos los tráficos del día han cruzado.'
+  if (stats.allCrossed) return 'Todos los embarques del día han cruzado.'
   if (stats.mveDays <= 7 && stats.mvePending > 0) return `MVE obligatorio en ${stats.mveDays}d — ${stats.mvePending} operaciones pendientes.`
-  if (stats.urgentCount > 0) return `${stats.urgentCount} tráfico${stats.urgentCount !== 1 ? 's' : ''} necesita${stats.urgentCount !== 1 ? 'n' : ''} atención hoy.`
+  if (stats.urgentCount > 0) return `${stats.urgentCount} embarque${stats.urgentCount !== 1 ? 's' : ''} necesita${stats.urgentCount !== 1 ? 'n' : ''} atención hoy.`
 
   const day = getLaredoDay()
-  if (day === 1) return `Inicio de semana — ${stats.enProcesoCount} tráficos activos.`
+  if (day === 1) return `Inicio de semana — ${stats.enProcesoCount} embarques activos.`
   if (day === 5) return `Viernes — ${stats.enProcesoCount} operaciones en proceso.`
 
   if (stats.enProcesoCount === 0) return 'Sin operaciones activas.'
@@ -76,7 +76,7 @@ export function getSmartGreeting(name: string | undefined, stats: SmartGreetingI
   if (stats.daysSinceLastLogin && stats.daysSinceLastLogin >= 7) {
     const parts: string[] = ['¡Bienvenido de vuelta!']
     if (stats.crossed24h > 0 || stats.enProcesoCount > 0) {
-      parts.push(`Mientras tanto, ${stats.enProcesoCount + stats.crossed24h} tráficos se movieron`)
+      parts.push(`Mientras tanto, ${stats.enProcesoCount + stats.crossed24h} embarques se movieron`)
     }
     if (stats.tmecSavings >= 1000) {
       parts.push(`y su ahorro T-MEC creció $${Math.round(stats.tmecSavings / 1000)}K`)
@@ -91,7 +91,7 @@ export function getSmartGreeting(name: string | undefined, stats: SmartGreetingI
   }
   // Urgent issues
   else if (stats.urgentCount > 0) {
-    subtitle = `${stats.urgentCount} tráfico${stats.urgentCount !== 1 ? 's' : ''} necesita${stats.urgentCount !== 1 ? 'n' : ''} atención hoy.`
+    subtitle = `${stats.urgentCount} embarque${stats.urgentCount !== 1 ? 's' : ''} necesita${stats.urgentCount !== 1 ? 'n' : ''} atención hoy.`
   }
   // Evening with pending items
   else if (hour >= 18 && stats.pendingEntradas > 0) {

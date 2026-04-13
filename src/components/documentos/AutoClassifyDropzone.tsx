@@ -353,7 +353,7 @@ export function AutoClassifyDropzone() {
             }}
           >
             <Truck size={14} aria-hidden />
-            Vincular a tráfico (opcional)
+            Vincular a embarque (opcional)
           </label>
           <select
             id="documentos-auto-trafico"
@@ -387,7 +387,7 @@ export function AutoClassifyDropzone() {
           </select>
           <span style={{ fontSize: 11, color: TEXT_MUTED }}>
             {selectedOption
-              ? 'Los archivos subidos se enlazarán directo a este tráfico.'
+              ? 'Los archivos subidos se enlazarán directo a este embarque.'
               : 'Si no eliges, AGUILA detecta el pedimento en el documento y lo enlaza solo.'}
           </span>
         </div>
@@ -569,7 +569,7 @@ export function AutoClassifyDropzone() {
                       <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 6, color: GREEN, fontSize: 12 }}>
                         <Link2 size={14} aria-hidden />
                         <span>
-                          Enlazado al tráfico{' '}
+                          Enlazado al embarque{' '}
                           <span style={{ fontFamily: 'var(--font-jetbrains-mono), monospace' }}>
                             {it.linkedTraficoId}
                           </span>

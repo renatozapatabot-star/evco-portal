@@ -13,8 +13,8 @@ const EXCLUDED_ESTATUS = ['Cruzado', 'Cancelado']
 /**
  * /bodega/subir — warehouse-scoped document upload landing.
  *
- * Shares the operator SubirClient component (tráfico picker + DocUploader).
- * Warehouse role sees all active tráficos across clients — Vicente works the floor.
+ * Shares the operator SubirClient component (embarque picker + DocUploader).
+ * Warehouse role sees all active embarques across clients — Vicente works the floor.
  */
 export default async function BodegaSubirPage() {
   const cookieStore = await cookies()

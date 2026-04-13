@@ -37,7 +37,7 @@ export function OperatorSearch() {
             id: t.trafico || t.id,
             title: t.trafico || '',
             subtitle: `${t.estatus || ''} · ${t.descripcion_mercancia || ''} · ${t.company_id || ''}`.slice(0, 80),
-            href: `/traficos/${encodeURIComponent(t.trafico || t.id)}`,
+            href: `/embarques/${encodeURIComponent(t.trafico || t.id)}`,
           })
         }
       }
@@ -63,7 +63,7 @@ export function OperatorSearch() {
           id: pc.pedimento || '',
           title: `Pedimento: ${pc.pedimento || ''}`,
           subtitle: `${pc.trafico || ''} · ${pc.estatus || ''}`,
-          href: `/traficos/${encodeURIComponent(pc.trafico || '')}`,
+          href: `/embarques/${encodeURIComponent(pc.trafico || '')}`,
         })
       }
 
@@ -82,7 +82,7 @@ export function OperatorSearch() {
   }
 
   const typeLabels: Record<string, string> = {
-    trafico: 'Tráfico',
+    trafico: 'Embarque',
     entrada: 'Entrada',
     pedimento: 'Pedimento',
   }
@@ -103,7 +103,7 @@ export function OperatorSearch() {
           value={query}
           onChange={e => setQuery(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && doSearch()}
-          placeholder="Buscar tráfico, entrada, pedimento, proveedor..."
+          placeholder="Buscar embarque, entrada, pedimento, proveedor..."
           style={{
             flex: 1, background: 'transparent', border: 'none', outline: 'none',
             color: '#E6EDF3', fontSize: 13, padding: '10px 0',

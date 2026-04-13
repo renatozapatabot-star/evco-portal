@@ -1,7 +1,7 @@
 /**
  * Block 5 — POST /api/classification/:trafico_id/email
  *
- * Sends the most recent generated classification sheet for the tráfico to
+ * Sends the most recent generated classification sheet for the embarque to
  * the provided recipients (or the per-cliente default recipients). PDF +
  * Excel attached. AGUILA letterhead email body.
  */
@@ -62,12 +62,12 @@ export async function POST(
   const isInternal =
     session.role === 'broker' || session.role === 'admin' || session.role === 'operator'
 
-  // Tenant scope check on the tráfico.
+  // Tenant scope check on the embarque.
   let scopeQ = supabase.from('traficos').select('trafico, company_id').eq('trafico', traficoId)
   if (!isInternal) scopeQ = scopeQ.eq('company_id', session.companyId)
   const { data: scope, error: scopeErr } = await scopeQ.maybeSingle()
   if (scopeErr) return err('DB_ERROR', scopeErr.message, 500)
-  if (!scope) return err('NOT_FOUND', 'Tráfico no encontrado', 404)
+  if (!scope) return err('NOT_FOUND', 'Embarque no encontrado', 404)
 
   // Latest generated sheet.
   const { data: sheetRaw, error: sheetErr } = await supabase

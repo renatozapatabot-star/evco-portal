@@ -1,9 +1,9 @@
 /**
  * AGUILA · V1.5 F7 — Dormant client detection.
  *
- * Surface clientes who have historical tráfico activity but no recent tráfico
+ * Surface clientes who have historical embarque activity but no recent embarque
  * in the last `thresholdDays` days. Clients that never onboarded (zero lifetime
- * tráficos) are filtered out on purpose — we only follow up with clientes whose
+ * embarques) are filtered out on purpose — we only follow up with clientes whose
  * relationship cooled, not leads who never started.
  *
  * `generateFollowUpMessage` produces a warm, broker-voice Spanish message Tito
@@ -39,8 +39,8 @@ export function clampThreshold(value: number): number {
 /**
  * Fetch dormant clientes. Two-pass strategy to avoid expensive aggregates:
  *  1. Load active companies (+ RFC).
- *  2. For each, fetch the most recent tráfico + most recent invoice.
- *  3. Keep those with at least one historical tráfico and no motion in
+ *  2. For each, fetch the most recent embarque + most recent invoice.
+ *  3. Keep those with at least one historical embarque and no motion in
  *     the last `thresholdDays` days.
  */
 export async function detectDormantClients(
@@ -140,7 +140,7 @@ export function generateFollowUpMessage(cliente: DormantClienteRecord): FollowUp
   const lines = [
     `Estimado equipo de ${displayName}:`,
     '',
-    `Notamos que no hemos procesado un nuevo tráfico en ${dias} días y queríamos saludarlos. Valoramos la relación que el equipo de ${firstName} ha construido con nuestra firma y queremos confirmar que todo esté en orden con sus operaciones transfronterizas.`,
+    `Notamos que no hemos procesado un nuevo embarque en ${dias} días y queríamos saludarlos. Valoramos la relación que el equipo de ${firstName} ha construido con nuestra firma y queremos confirmar que todo esté en orden con sus operaciones transfronterizas.`,
     '',
     'Seguimos disponibles para apoyar con clasificación arancelaria, revisión de expedientes, pedimentos, cruces por Aduana 240 y cualquier consulta regulatoria que requieran. Si hay un embarque próximo o un proyecto nuevo, con gusto lo coordinamos.',
     '',

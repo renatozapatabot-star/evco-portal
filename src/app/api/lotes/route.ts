@@ -27,7 +27,7 @@ interface Batch {
   traficos: string[]
 }
 
-// GET — build intelligent batches from active tráficos
+// GET — build intelligent batches from active embarques
 export async function GET(request: NextRequest) {
   const sessionToken = request.cookies.get('portal_session')?.value || ''
   const session = await verifySession(sessionToken)

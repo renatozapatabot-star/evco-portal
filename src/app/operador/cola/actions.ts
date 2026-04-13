@@ -103,7 +103,7 @@ export async function approveSolicitation(eventId: string): Promise<ActionResult
 
   // Extract email fields from payload
   const emailTo = (payload.supplier_email || payload.to || (payload.email as Record<string, unknown>)?.to) as string | undefined
-  const emailSubject = (payload.subject || (payload.email as Record<string, unknown>)?.subject || `Solicitud de documentación — Tráfico ${event.trigger_id}`) as string
+  const emailSubject = (payload.subject || (payload.email as Record<string, unknown>)?.subject || `Solicitud de documentación — Embarque ${event.trigger_id}`) as string
   const emailBody = (payload.body || payload.email_body || (payload.email as Record<string, unknown>)?.html || '') as string
 
   // Mark completed with approval metadata
@@ -134,7 +134,7 @@ export async function approveSolicitation(eventId: string): Promise<ActionResult
             from: 'Renato Zapata & Co. <ai@renatozapata.com>',
             to: [emailTo],
             subject: emailSubject,
-            html: emailBody || `<p>Solicitud de documentación para tráfico ${event.trigger_id}</p>`,
+            html: emailBody || `<p>Solicitud de documentación para embarque ${event.trigger_id}</p>`,
           }),
         })
         if (!res.ok) {

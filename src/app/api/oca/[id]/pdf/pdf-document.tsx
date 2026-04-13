@@ -50,7 +50,7 @@ export function OcaPDF({ opinion, razonamiento }: OcaPDFProps) {
         <View style={s.row}><Text style={s.label}>Producto</Text><Text style={s.value}>{opinion.product_description}</Text></View>
         <View style={s.row}><Text style={s.label}>País de origen</Text><Text style={s.value}>{opinion.pais_origen}</Text></View>
         {opinion.uso_final && <View style={s.row}><Text style={s.label}>Uso final</Text><Text style={s.value}>{opinion.uso_final}</Text></View>}
-        {opinion.trafico_id && <View style={s.row}><Text style={s.label}>Tráfico</Text><Text style={[s.value, s.mono]}>{opinion.trafico_id}</Text></View>}
+        {opinion.trafico_id && <View style={s.row}><Text style={s.label}>Embarque</Text><Text style={[s.value, s.mono]}>{opinion.trafico_id}</Text></View>}
 
         <Text style={s.h2}>Fundamento legal</Text>
         <Text style={s.para}>{opinion.fundamento_legal || '—'}</Text>

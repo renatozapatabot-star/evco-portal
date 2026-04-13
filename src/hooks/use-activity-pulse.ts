@@ -76,7 +76,7 @@ export function useActivityPulse() {
         id: `we-${e.id}`,
         text: describeWorkflowEvent(e.workflow, e.event_type, e.payload || {}),
         timestamp: e.created_at,
-        href: e.trigger_id ? `/traficos/${encodeURIComponent(e.trigger_id)}` : '/traficos',
+        href: e.trigger_id ? `/embarques/${encodeURIComponent(e.trigger_id)}` : '/embarques',
         color: 'var(--success)',
       })
     }
@@ -86,7 +86,7 @@ export function useActivityPulse() {
         id: `ad-${d.id}`,
         text: describeAgentDecision(d.trigger_type, d.decision, d.action_taken || ''),
         timestamp: d.created_at,
-        href: '/traficos',
+        href: '/embarques',
         color: '#0D9488',
       })
     }
@@ -98,7 +98,7 @@ export function useActivityPulse() {
           id: `ds-r-${s.id}`,
           text: `Recibido: ${docName} de ${s.trafico_id}`,
           timestamp: s.recibido_at,
-          href: `/traficos/${encodeURIComponent(s.trafico_id)}`,
+          href: `/embarques/${encodeURIComponent(s.trafico_id)}`,
           color: 'var(--success)',
         })
       } else {
@@ -106,7 +106,7 @@ export function useActivityPulse() {
           id: `ds-${s.id}`,
           text: `RZ solicitó ${docName} para ${s.trafico_id}`,
           timestamp: s.solicitado_at,
-          href: `/traficos/${encodeURIComponent(s.trafico_id)}`,
+          href: `/embarques/${encodeURIComponent(s.trafico_id)}`,
           color: 'var(--gold)',
         })
       }

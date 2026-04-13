@@ -169,7 +169,7 @@ async function loadOperatorCockpit(opId: string, opName: string, month: string) 
 
   const kpis = {
     entradasHoy: entradasHoyCount,
-    // Hero "Tráficos activos" is the operator's own assignments — NOT ops-wide.
+    // Hero "Embarques activos" is the operator's own assignments — NOT ops-wide.
     // The ops-wide count (activosCount) stays available for other purposes but
     // would mislead Eduardo to see 176 when he has a few assigned.
     activos: personalAssignedCount,
@@ -192,7 +192,7 @@ async function loadOperatorCockpit(opId: string, opName: string, month: string) 
   const summaryLine = colaCount > 0
     ? `${colaCount} en cola${kpis.atrasados > 0 ? ` · ${kpis.atrasados} atrasados` : ''}`
     : kpis.atrasados > 0
-    ? `${kpis.atrasados} tráfico${kpis.atrasados === 1 ? '' : 's'} atrasado${kpis.atrasados === 1 ? '' : 's'} >7 días`
+    ? `${kpis.atrasados} embarque${kpis.atrasados === 1 ? '' : 's'} atrasado${kpis.atrasados === 1 ? '' : 's'} >7 días`
     : 'Sin pendientes inmediatos.'
 
   const daysSinceLastPedimento = lastPedimento?.updated_at

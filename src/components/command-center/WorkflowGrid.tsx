@@ -55,7 +55,7 @@ interface CardDef {
 
 // ── TIER 1: HERO ──
 const HERO_CARD: CardDef = {
-  key: 'traficos', href: '/traficos', label: 'Tráficos', Icon: Truck, tier: 'hero',
+  key: 'traficos', href: '/embarques', label: 'Embarques', Icon: Truck, tier: 'hero',
   getKpi: (p) => {
     if (p.enProceso > 0) return p.enProceso
     if ((p.cruzadosEsteMes ?? 0) > 0) return p.cruzadosEsteMes!
@@ -70,23 +70,23 @@ const HERO_CARD: CardDef = {
     return 'operaciones desde 2024'
   },
   getActions: (p, u) => {
-    if (p.viewMode === 'client') return [{ label: 'Ver todos', href: '/traficos', primary: true }]
+    if (p.viewMode === 'client') return [{ label: 'Ver todos', href: '/embarques', primary: true }]
     return u === 'green' || u === 'neutral'
-      ? [{ label: 'Ver todos', href: '/traficos', primary: true }]
-      : [{ label: 'Procesar', href: '/traficos?estatus=En+Proceso', primary: true }, { label: 'Ver todos', href: '/traficos' }]
+      ? [{ label: 'Ver todos', href: '/embarques', primary: true }]
+      : [{ label: 'Procesar', href: '/embarques?estatus=En+Proceso', primary: true }, { label: 'Ver todos', href: '/embarques' }]
   },
 }
 
 // ── TIER 2: KPI STRIP ──
 const KPI_CARDS: CardDef[] = [
   {
-    key: 'traficos' as CardKey, href: '/traficos', label: 'Operaciones', Icon: Truck, tier: 'kpi',
+    key: 'traficos' as CardKey, href: '/embarques', label: 'Operaciones', Icon: Truck, tier: 'kpi',
     getKpi: (p) => p.totalTraficos ?? 0,
     getSubtitle: (p) => {
       const nw = p.newThisWeek ?? 0
       return nw > 0 ? `+${nw} esta semana` : 'operaciones gestionadas · desde 2024'
     },
-    getActions: () => [{ label: 'Ver', href: '/traficos', primary: true }],
+    getActions: () => [{ label: 'Ver', href: '/embarques', primary: true }],
   },
   {
     key: 'contabilidad' as CardKey, href: '/financiero', label: 'T/C', Icon: DollarSign, tier: 'kpi',
@@ -95,16 +95,16 @@ const KPI_CARDS: CardDef[] = [
     getActions: () => [{ label: 'Ver', href: '/financiero', primary: true }],
   },
   {
-    key: 'ultimo_cruce' as CardKey, href: '/traficos', label: 'Cruzados', Icon: CheckCircle, tier: 'kpi',
+    key: 'ultimo_cruce' as CardKey, href: '/embarques', label: 'Cruzados', Icon: CheckCircle, tier: 'kpi',
     getKpi: (p) => {
       const mes = p.cruzadosEsteMes ?? 0
       return mes > 0 ? mes : (p.totalCruzados ?? 0) // fallback: total cruzados
     },
     getSubtitle: (p) => (p.cruzadosEsteMes ?? 0) > 0 ? 'este mes' : 'total desde 2024',
-    getActions: () => [{ label: 'Ver', href: '/traficos', primary: true }],
+    getActions: () => [{ label: 'Ver', href: '/embarques', primary: true }],
   },
   {
-    key: 'inventario' as CardKey, href: '/traficos', label: 'Sin Rojo', Icon: Shield, tier: 'kpi',
+    key: 'inventario' as CardKey, href: '/embarques', label: 'Sin Rojo', Icon: Shield, tier: 'kpi',
     getKpi: (p) => p.daysSinceRojo ?? 0,
     getSubtitle: (p) => {
       const d = p.daysSinceRojo ?? 0
@@ -120,7 +120,7 @@ const ACTION_CARDS: CardDef[] = [
     key: 'entradas', href: '/entradas', label: 'Entradas', Icon: Package, tier: 'action',
     getKpi: (p) => p.pendingEntradas,
     getSubtitle: (p, u) => {
-      if (p.viewMode === 'client') return u === 'green' || u === 'neutral' ? 'Todo al corriente' : `${p.pendingEntradas} sin tráfico asignado`
+      if (p.viewMode === 'client') return u === 'green' || u === 'neutral' ? 'Todo al corriente' : `${p.pendingEntradas} sin embarque asignado`
       return u === 'green' || u === 'neutral' ? 'Todo asignado — al corriente' : `${p.pendingEntradas} sin asignar`
     },
     getActions: (p, u) => {
@@ -241,8 +241,8 @@ export function WorkflowGrid(props: WorkflowGridProps) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: '100%' }}>
         {/* Hero always first */}
         <WorkflowCard
-          href="/traficos"
-          label="Tráficos"
+          href="/embarques"
+          label="Embarques"
           Icon={Truck}
           kpi={HERO_CARD.getKpi(props)}
           subtitle={HERO_CARD.getSubtitle(props, heroUrgency)}
@@ -340,8 +340,8 @@ export function WorkflowGrid(props: WorkflowGridProps) {
         transition={{ type: 'spring', stiffness: 400, damping: 30 }}
       >
         <WorkflowCard
-          href="/traficos"
-          label="Tráficos"
+          href="/embarques"
+          label="Embarques"
           Icon={Truck}
           kpi={HERO_CARD.getKpi(props)}
           subtitle={HERO_CARD.getSubtitle(props, heroUrgency)}

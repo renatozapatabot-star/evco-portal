@@ -220,7 +220,7 @@ export function CertForm() {
             <input id="blanket_to" name="blanket_to" type="date" style={monoInputStyle} />
           </div>
           <div>
-            <label htmlFor="trafico_id" style={labelStyle}>Tráfico vinculado</label>
+            <label htmlFor="trafico_id" style={labelStyle}>Embarque vinculado</label>
             <input id="trafico_id" name="trafico_id" style={monoInputStyle} />
           </div>
         </div>

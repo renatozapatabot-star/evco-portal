@@ -155,7 +155,7 @@ export function ExceptionCard({ event, onAction }: ExceptionCardProps) {
         {event.trigger_id && (
           <div style={{ marginBottom: 4 }}>
             <Link
-              href={`/traficos/${event.trigger_id}`}
+              href={`/embarques/${event.trigger_id}`}
               style={{
                 fontSize: 13,
                 fontFamily: 'var(--font-mono)',

@@ -27,11 +27,11 @@ interface OnboardingState {
 
 const HINTS: OnboardingHint[] = [
   // Week 1: Basic navigation
-  { id: 'trafico_detail', week: 1, target: 'trafico_card', text: 'Toque un tráfico para ver el detalle completo y el expediente de documentos.' },
-  { id: 'documents', week: 1, target: 'nav_documents', text: 'Vea todos los documentos de sus expedientes organizados por tráfico.' },
+  { id: 'trafico_detail', week: 1, target: 'trafico_card', text: 'Toque un embarque para ver el detalle completo y el expediente de documentos.' },
+  { id: 'documents', week: 1, target: 'nav_documents', text: 'Vea todos los documentos de sus expedientes organizados por embarque.' },
   // Week 2: Feature discovery
   { id: 'cruz_ai', week: 2, target: 'nav_cruz', text: '¿Sabía que puede preguntarle a CRUZ sobre cualquier operación?' },
-  { id: 'search', week: 2, target: 'search', text: 'Busque cualquier tráfico, pedimento o proveedor con el buscador global.' },
+  { id: 'search', week: 2, target: 'search', text: 'Busque cualquier embarque, pedimento o proveedor con el buscador global.' },
   // Week 3: Power features
   { id: 'financiero', week: 3, target: 'nav_financiero', text: 'Vea el resumen financiero de todas sus operaciones.' },
   { id: 'proveedores', week: 3, target: 'nav_proveedores', text: 'Compare el rendimiento de sus proveedores en una vista.' },
@@ -80,9 +80,9 @@ export function useOnboarding(): {
       '/documentos/subir': 'upload',
     }
 
-    // Check exact match first, then prefix match for /traficos/[id]
+    // Check exact match first, then prefix match for /embarques/[id]
     let feature = featureMap[pathname]
-    if (!feature && pathname.startsWith('/traficos/') && pathname !== '/traficos') {
+    if (!feature && pathname.startsWith('/embarques/') && pathname !== '/embarques') {
       feature = 'trafico_detail'
     }
 

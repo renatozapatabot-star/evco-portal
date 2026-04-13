@@ -101,7 +101,7 @@ export async function GET(req: NextRequest) {
         .select('company_id, name')
         .eq('active', true)
         .not('portal_password', 'is', null),
-      // Companies with recent tráficos (active in 7d)
+      // Companies with recent embarques (active in 7d)
       supabase.from('traficos')
         .select('company_id')
         .gte('updated_at', weekAgo.toISOString()),
@@ -160,7 +160,7 @@ export async function GET(req: NextRequest) {
     const ytdStart = new Date(new Date().getFullYear(), 0, 1).toISOString()
 
     for (const co of companiesRaw) {
-      // Tráficos count + valor YTD (batched per company — acceptable for small client count)
+      // Embarques count + valor YTD (batched per company — acceptable for small client count)
       const [traficoRes, valorRes] = await Promise.all([
         supabase
           .from('traficos')

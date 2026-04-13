@@ -25,7 +25,7 @@ describe('getCorridorPosition', () => {
     expect(pos.landmark_id).toBe('rz_office')
     expect(pos.severity).toBe('at_rest')
     expect(pos.lat).toBe(27.5078)
-    expect(pos.label).toBe('Tráfico creado')
+    expect(pos.label).toBe('Embarque creado')
   })
 
   it('warehouse_entry_received → rz_warehouse', () => {

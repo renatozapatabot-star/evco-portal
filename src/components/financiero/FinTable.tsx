@@ -182,7 +182,7 @@ export function FinTable({ facturas, facturasLoading, isMobile, companyFilter }:
                   <SortTh col="proveedor" label="Proveedor" sort={sort} onSort={toggleSort} />
                   <SortTh col="valor_usd" label="Valor USD" sort={sort} onSort={toggleSort} align="right" />
                   <SortTh col="fecha_pago" label="Fecha" sort={sort} onSort={toggleSort} />
-                  <SortTh col="referencia" label="Tráfico" sort={sort} onSort={toggleSort} />
+                  <SortTh col="referencia" label="Embarque" sort={sort} onSort={toggleSort} />
                 </tr>
               </thead>
               <tbody>

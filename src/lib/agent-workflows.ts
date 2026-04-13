@@ -30,11 +30,11 @@ export const WORKFLOWS: Workflow[] = [
     key: 'new_email_received',
     name: 'Email Recibido',
     trigger: 'shadow_classifications.created',
-    description: 'Nuevo email con documentos → clasificar → vincular a tráfico → verificar expediente',
+    description: 'Nuevo email con documentos → clasificar → vincular a embarque → verificar expediente',
     defaultAutonomy: 2,
     steps: [
       { name: 'classify', action: 'Clasificar tipo de documento', autonomy: 3 },
-      { name: 'match_trafico', action: 'Vincular a tráfico por proveedor + fecha + valor', autonomy: 2 },
+      { name: 'match_trafico', action: 'Vincular a embarque por proveedor + fecha + valor', autonomy: 2 },
       { name: 'update_expediente', action: 'Agregar a expediente, actualizar confidence', autonomy: 2 },
       { name: 'check_complete', action: 'Verificar si expediente está completo', autonomy: 3 },
       { name: 'notify_client', action: 'Notificar al cliente si expediente 100%', autonomy: 2 },
@@ -45,7 +45,7 @@ export const WORKFLOWS: Workflow[] = [
     key: 'trafico_status_changed',
     name: 'Cambio de Estado',
     trigger: 'traficos.estatus UPDATE',
-    description: 'Tráfico cambió de estado → validar → verificar zero-touch → notificar',
+    description: 'Embarque cambió de estado → validar → verificar zero-touch → notificar',
     defaultAutonomy: 1,
     steps: [
       { name: 'validate_pedimento', action: 'Ejecutar validador de pedimento (25 checks)', autonomy: 1 },
@@ -63,7 +63,7 @@ export const WORKFLOWS: Workflow[] = [
     defaultAutonomy: 2,
     steps: [
       { name: 'classify', action: 'Clasificar documento subido', autonomy: 3 },
-      { name: 'link_trafico', action: 'Vincular a tráfico correspondiente', autonomy: 2 },
+      { name: 'link_trafico', action: 'Vincular a embarque correspondiente', autonomy: 2 },
       { name: 'update_confidence', action: 'Recalcular score de confidence', autonomy: 3 },
       { name: 'resolve_solicitation', action: 'Marcar solicitud como recibida si aplica', autonomy: 2 },
       { name: 'check_complete', action: 'Verificar si expediente 100% → celebración', autonomy: 2 },
@@ -89,7 +89,7 @@ export const WORKFLOWS: Workflow[] = [
     description: 'Anomalía crítica → evaluar impacto → bloquear si necesario → alertar',
     defaultAutonomy: 0,
     steps: [
-      { name: 'assess_impact', action: 'Evaluar clientes y tráficos afectados', autonomy: 0 },
+      { name: 'assess_impact', action: 'Evaluar clientes y embarques afectados', autonomy: 0 },
       { name: 'block_if_needed', action: 'Bloquear operaciones afectadas si integridad', autonomy: 0 },
       { name: 'alert_tito', action: 'Telegram inmediato a Tito (bypass autonomy)', autonomy: 0 },
       { name: 'create_action', action: 'Crear item de acción con fix recomendado', autonomy: 1 },
@@ -99,13 +99,13 @@ export const WORKFLOWS: Workflow[] = [
     key: 'crossing_window_optimal',
     name: 'Ventana de Cruce Óptima',
     trigger: 'crossing_predictions shows optimal window tomorrow',
-    description: 'Ventana de cruce óptima mañana → buscar tráficos listos → recomendar',
+    description: 'Ventana de cruce óptima mañana → buscar embarques listos → recomendar',
     defaultAutonomy: 1,
     steps: [
-      { name: 'find_ready', action: 'Buscar tráficos listos para cruzar', autonomy: 3 },
+      { name: 'find_ready', action: 'Buscar embarques listos para cruzar', autonomy: 3 },
       { name: 'match_bridge', action: 'Asignar puente + horario óptimo', autonomy: 2 },
       { name: 'recommend_carrier', action: 'Recomendar transportista del scoreboard', autonomy: 1 },
-      { name: 'notify_tito', action: 'Telegram: ventana óptima + tráficos listos', autonomy: 1 },
+      { name: 'notify_tito', action: 'Telegram: ventana óptima + embarques listos', autonomy: 1 },
     ],
   },
 ]

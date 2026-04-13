@@ -1,7 +1,7 @@
 /**
  * AGUILA · Proveedor Intelligence — signal detection.
  *
- * Pure aggregation over recent tráficos. Fast (one cap-200 query + in-memory
+ * Pure aggregation over recent embarques. Fast (one cap-200 query + in-memory
  * grouping). Surfaces four categories of alerts:
  *
  *   NEW             — first appearance in the lookback window

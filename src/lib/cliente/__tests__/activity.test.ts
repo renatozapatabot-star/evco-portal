@@ -32,8 +32,8 @@ describe('getClienteActivity', () => {
     ])
     const items = await getClienteActivity(sb, '9254')
     expect(items).toHaveLength(2)
-    expect(items[0].title).toContain('Tráfico')
-    expect(items[0].href).toBe('/traficos/T-001')
+    expect(items[0].title).toContain('Embarque')
+    expect(items[0].href).toBe('/embarques/T-001')
     expect(items[1].title).toContain('Pedimento')
   })
 

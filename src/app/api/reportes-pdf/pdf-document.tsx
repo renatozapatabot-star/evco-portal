@@ -253,7 +253,7 @@ export function ReportesPDF(props: PDFProps) {
             <Text style={[s.kpiValue, { color: COLORS.gold }]}>
               {kpis.totalTraficos.toLocaleString()}
             </Text>
-            <Text style={s.kpiLabel}>Tráficos</Text>
+            <Text style={s.kpiLabel}>Embarques</Text>
           </View>
           <View style={s.kpiBox}>
             <Text style={[s.kpiValue, { color: COLORS.gold }]}>

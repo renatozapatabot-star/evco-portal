@@ -33,11 +33,11 @@ export function AlertsPanel() {
         const a: Alert[] = []
         if (mveDays <= 30) a.push({ id: 'mve', severity: mveDays <= 7 ? 'red' : 'yellow', label: `MVE: ${mveDays} días restantes`, count: mveDays, href: '/mve' })
         const rojo = traf.filter((t: { semaforo?: number | null }) => Number(t.semaforo) === 2)
-        if (rojo.length > 0) a.push({ id: 'rojo', severity: 'red', label: 'Semáforo Rojo', count: rojo.length, href: '/traficos' })
+        if (rojo.length > 0) a.push({ id: 'rojo', severity: 'red', label: 'Semáforo Rojo', count: rojo.length, href: '/embarques' })
         const damaged = ent.filter((e: { mercancia_danada?: boolean | null; fecha_llegada_mercancia?: string | null }) => e.mercancia_danada && e.fecha_llegada_mercancia && (now - new Date(e.fecha_llegada_mercancia).getTime()) < 30 * 86400000)
         if (damaged.length > 0) a.push({ id: 'danos', severity: 'yellow', label: 'Mercancía con daños', count: damaged.length, href: '/entradas' })
         const overdue = traf.filter((t: { fecha_llegada?: string | null; estatus?: string | null }) => t.fecha_llegada && !(t.estatus || '').toLowerCase().includes('cruz') && (now - new Date(t.fecha_llegada).getTime()) > 7 * 86400000)
-        if (overdue.length > 0) a.push({ id: 'overdue', severity: 'yellow', label: 'Overdue +7d', count: overdue.length, href: '/traficos' })
+        if (overdue.length > 0) a.push({ id: 'overdue', severity: 'yellow', label: 'Overdue +7d', count: overdue.length, href: '/embarques' })
         a.sort((x, y) => (x.severity === 'red' ? 0 : 1) - (y.severity === 'red' ? 0 : 1))
         setAlerts(a)
       } catch (e) { console.error('[alerts-panel] load failed:', (e as Error).message) } setLoading(false)

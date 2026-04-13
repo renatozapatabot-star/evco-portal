@@ -84,7 +84,7 @@ export async function POST(
   const supabase = createServerClient()
   const isInternal = session.role === 'broker' || session.role === 'admin' || session.role === 'operator'
 
-  // Resolve tráfico + company_id for tenant scoping.
+  // Resolve embarque + company_id for tenant scoping.
   let scopeQ = supabase
     .from('traficos')
     .select('trafico, company_id, regimen')
@@ -92,7 +92,7 @@ export async function POST(
   if (!isInternal) scopeQ = scopeQ.eq('company_id', session.companyId)
   const { data: scopeRaw, error: scopeErr } = await scopeQ.maybeSingle()
   if (scopeErr) return err('DB_ERROR', scopeErr.message, 500)
-  if (!scopeRaw) return err('NOT_FOUND', 'Tráfico no encontrado', 404)
+  if (!scopeRaw) return err('NOT_FOUND', 'Embarque no encontrado', 404)
   const trafico = scopeRaw as TraficoRow
   const companyId = trafico.company_id ?? session.companyId
 
@@ -113,7 +113,7 @@ export async function POST(
   const config = normalizeConfig(await request.json().catch(() => ({})))
 
   // Pull partidas/productos — globalpc_partidas is the de-facto productos
-  // list per tráfico.
+  // list per embarque.
   const { data: partidasRaw, error: partidasErr } = await supabase
     .from('globalpc_partidas')
     .select(

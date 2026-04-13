@@ -162,7 +162,7 @@ export function ApprovalsClient({ initialDrafts }: Props) {
                   {confidenceBadge(confTier, confAvg)}
                 </div>
 
-                {/* Row 2: tráfico ID */}
+                {/* Row 2: embarque ID */}
                 <div style={{
                   fontFamily: 'var(--font-mono)', fontSize: 15, fontWeight: 800,
                   color: '#E6EDF3', marginBottom: 6,

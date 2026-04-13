@@ -87,7 +87,7 @@ export const ANEXO_24_COLUMNS: readonly Anexo24Column[] = [
   { key: 'consecutivo', label: 'No.', width: '4%', xlsxWidth: 6, align: 'right' },
   { key: 'pedimento', label: 'Pedimento', width: '12%', xlsxWidth: 20 },
   { key: 'fecha', label: 'Fecha', width: '8%', xlsxWidth: 12 },
-  { key: 'trafico', label: 'Tráfico', width: '8%', xlsxWidth: 14 },
+  { key: 'trafico', label: 'Embarque', width: '8%', xlsxWidth: 14 },
   { key: 'fraccion', label: 'Fracción', width: '8%', xlsxWidth: 12 },
   { key: 'descripcion', label: 'Descripción', width: '20%', xlsxWidth: 40 },
   { key: 'cantidad', label: 'Cantidad', width: '7%', xlsxWidth: 12, align: 'right' },

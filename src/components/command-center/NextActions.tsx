@@ -25,13 +25,13 @@ export function NextActions({ pendingEntradas, activeTraficosList, docsPendiente
     })
   }
 
-  // Old active tráficos
+  // Old active embarques
   const oldOnes = activeTraficosList.filter(t => t.daysOld > 7)
   if (oldOnes.length > 0) {
     items.push({
       icon: Zap,
       text: `${oldOnes[0].trafico} — ${oldOnes[0].daysOld} días en proceso`,
-      href: '/traficos',
+      href: '/embarques',
       actionLabel: 'Ver',
       urgent: true,
     })
@@ -41,7 +41,7 @@ export function NextActions({ pendingEntradas, activeTraficosList, docsPendiente
   if (docsPendientes > 0) {
     items.push({
       icon: FileText,
-      text: `${docsPendientes} tráfico${docsPendientes !== 1 ? 's' : ''} sin pedimento`,
+      text: `${docsPendientes} embarque${docsPendientes !== 1 ? 's' : ''} sin pedimento`,
       href: '/expedientes',
       actionLabel: 'Revisar',
       urgent: false,

@@ -65,7 +65,7 @@ export default function CarriersPage() {
       <div className="mb-4">
         <h1 className="text-[18px] font-semibold" style={{ color: 'var(--text-primary)' }}>Carrier Performance</h1>
         <p className="text-[12.5px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
-          {carriers.length} transportistas &middot; {total.toLocaleString()} tráficos analizados
+          {carriers.length} transportistas &middot; {total.toLocaleString()} embarques analizados
         </p>
       </div>
 

@@ -74,7 +74,7 @@ export function KPIIntelligence() {
       isDanger: (data?.docs_pending?.count ?? 0) > 0,
     },
     {
-      label: 'Entradas sin tráfico',
+      label: 'Entradas sin embarque',
       value: data?.entradas_pending?.count ?? 0,
       sub: (data?.entradas_pending?.count ?? 0) === 0 ? 'Todo asignado' : 'En bodega',
       href: '/entradas?status=pending',
@@ -90,12 +90,12 @@ export function KPIIntelligence() {
       isWarn: (data?.near_deadline?.count ?? 0) > 0,
     },
     {
-      label: 'Tráficos en riesgo',
+      label: 'Embarques en riesgo',
       value: data?.at_risk?.count ?? 0,
       sub: (data?.at_risk?.critical ?? 0) > 0
         ? `${data?.at_risk?.critical} acción inmediata`
         : 'En ruta normal',
-      href: '/traficos?risk=true',
+      href: '/embarques?risk=true',
       isDanger: (data?.at_risk?.critical ?? 0) > 0,
     },
   ]

@@ -47,7 +47,7 @@ export async function generateMetadata(
   const t = await fetchPreview(id)
 
   if (!t) {
-    return { title: `Tráfico · AGUILA` }
+    return { title: `Embarque · AGUILA` }
   }
 
   const desc = [
@@ -57,10 +57,10 @@ export async function generateMetadata(
   ].filter(Boolean).join(' · ')
 
   return {
-    title: `Tráfico ${id} · AGUILA`,
+    title: `Embarque ${id} · AGUILA`,
     description: desc,
     openGraph: {
-      title: `Tráfico ${id} · AGUILA`,
+      title: `Embarque ${id} · AGUILA`,
       description: desc,
       siteName: 'AGUILA · Renato Zapata & Co.',
       type: 'website',
@@ -74,11 +74,11 @@ export default async function SharePage(
   const { trafico_id } = await params
   const id = decodeURIComponent(trafico_id)
 
-  // If already authenticated, redirect straight to tráfico detail
+  // If already authenticated, redirect straight to embarque detail
   const cookieStore = await cookies()
   const isAuth = cookieStore.get('portal_auth')?.value === 'authenticated'
   if (isAuth) {
-    redirect(`/traficos/${encodeURIComponent(id)}`)
+    redirect(`/embarques/${encodeURIComponent(id)}`)
   }
 
   // Fetch minimal preview (no auth required — only basic fields)
@@ -156,7 +156,7 @@ export default async function SharePage(
                   color: 'var(--text-muted)',
                   marginBottom: 6,
                 }}>
-                  Tráfico compartido
+                  Embarque compartido
                 </div>
                 <div style={{
                   fontSize: 20,
@@ -246,17 +246,17 @@ export default async function SharePage(
             <div style={{ textAlign: 'center', padding: '20px 0' }}>
               <div style={{ fontSize: 40, marginBottom: 12 }}>🔍</div>
               <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>
-                Tráfico no encontrado
+                Embarque no encontrado
               </div>
               <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-                El tráfico solicitado no existe o está fuera de rango.
+                El embarque solicitado no existe o está fuera de rango.
               </div>
             </div>
           )}
 
           {/* Login CTA */}
           <a
-            href={`/login?next=${encodeURIComponent(`/traficos/${encodeURIComponent(id)}`)}`}
+            href={`/login?next=${encodeURIComponent(`/embarques/${encodeURIComponent(id)}`)}`}
             style={{
               display: 'flex',
               alignItems: 'center',

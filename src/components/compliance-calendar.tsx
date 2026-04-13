@@ -64,10 +64,10 @@ export function ComplianceCalendar() {
           items.push({
             id: 'pending-ped',
             type: 'pedimento',
-            title: `${pendingPed.length} tráfico${pendingPed.length !== 1 ? 's' : ''} sin pedimento (> 5 días)`,
+            title: `${pendingPed.length} embarque${pendingPed.length !== 1 ? 's' : ''} sin pedimento (> 5 días)`,
             date: today,
             severity: pendingPed.length > 3 ? 'critical' : 'warning',
-            href: '/traficos?estatus=En Proceso',
+            href: '/embarques?estatus=En Proceso',
           })
         }
 

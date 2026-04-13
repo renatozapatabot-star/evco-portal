@@ -391,7 +391,7 @@ function ProfitabilityPanel() {
               </div>
 
               <div style={{ ...mutedText, marginTop: 4 }}>
-                <span style={{ fontFamily: 'var(--font-mono)' }}>{e.trafico_count}</span> tráficos
+                <span style={{ fontFamily: 'var(--font-mono)' }}>{e.trafico_count}</span> embarques
               </div>
             </div>
           ))}
@@ -401,7 +401,7 @@ function ProfitabilityPanel() {
   )
 }
 
-// ── Panel D: Tráficos Fantasma ──
+// ── Panel D: Embarques Fantasma ──
 
 function GhostPanel() {
   const [ghosts, setGhosts] = useState<GhostTrafico[]>([])
@@ -427,7 +427,7 @@ function GhostPanel() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h3 style={sectionTitle}>
           <Ghost size={16} style={{ color: '#C0C5CE' }} />
-          Tráficos Fantasma
+          Embarques Fantasma
           {ghosts.length > 0 && (
             <span style={{
               fontFamily: 'var(--font-mono)',
@@ -454,7 +454,7 @@ function GhostPanel() {
       {loading ? (
         <PanelLoading label="fantasmas" />
       ) : ghosts.length === 0 ? (
-        <PanelEmpty icon={Ghost} message="Sin tráficos fantasma detectados" />
+        <PanelEmpty icon={Ghost} message="Sin embarques fantasma detectados" />
       ) : (
         <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 6 }}>
           {ghosts.map(g => (

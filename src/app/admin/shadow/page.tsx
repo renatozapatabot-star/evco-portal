@@ -9,7 +9,7 @@ import {
   ACCENT_CYAN, BG_CARD, BORDER, GLASS_BLUR, GLASS_SHADOW,
   TEXT_MUTED, TEXT_PRIMARY,
 } from '@/lib/design-system'
-import { HeroStrip, type HeroTile } from '@/app/traficos/[id]/legacy/_components/HeroStrip'
+import { HeroStrip, type HeroTile } from '@/app/embarques/[id]/legacy/_components/HeroStrip'
 import { AgreementChart } from './_components/AgreementChart'
 import { PageOpenTracker } from './_components/PageOpenTracker'
 
@@ -228,7 +228,7 @@ export default async function AdminShadowPage() {
               {topDisagreements.map((d, i) => (
                 <Link
                   key={`${d.trafico}-${i}`}
-                  href={`/traficos/${encodeURIComponent(d.trafico)}`}
+                  href={`/embarques/${encodeURIComponent(d.trafico)}`}
                   style={{
                     display: 'grid',
                     gridTemplateColumns: '140px 1fr 1fr 120px',

@@ -13,7 +13,7 @@ async function getTraficoStatus(params: { trafico?: string; pedimento?: string }
   if (params.pedimento) q = q.ilike('pedimento', `%${params.pedimento}%`)
   const { data, error } = await q.gte('fecha_llegada', PORTAL_DATE_FROM).order('created_at', { ascending: false }).limit(5)
   if (error) return { error: error.message }
-  if (!data?.length) return { message: 'No se encontró ese tráfico.' }
+  if (!data?.length) return { message: 'No se encontró ese embarque.' }
   return data.map(t => ({
     trafico: t.trafico,
     pedimento: t.pedimento,

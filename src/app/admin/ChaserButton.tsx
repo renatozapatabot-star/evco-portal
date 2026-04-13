@@ -24,7 +24,7 @@ export function ChaserButton({ traficoId, traficoNum, operatorEmail, operatorNam
   }
 
   async function handleClick() {
-    if (!confirm(`¿Enviar recordatorio a ${operatorEmail}?\n\nTráfico: ${traficoNum}`)) return
+    if (!confirm(`¿Enviar recordatorio a ${operatorEmail}?\n\nEmbarque: ${traficoNum}`)) return
     setStatus('sending')
     setErrorMsg('')
 

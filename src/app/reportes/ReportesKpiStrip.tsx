@@ -60,7 +60,7 @@ export function ReportesKpiStrip() {
 
   const tiles: Array<{ label: string; value: string; href?: string }> = kpis
     ? [
-        { label: LABELS[0], value: kpis.totalTraficos.toLocaleString('es-MX'), href: '/traficos' },
+        { label: LABELS[0], value: kpis.totalTraficos.toLocaleString('es-MX'), href: '/embarques' },
         { label: LABELS[1], value: fmtUSDCompact(kpis.totalValueUSD) },
         { label: LABELS[2], value: `${kpis.despachoRapidoPct}%` },
         { label: LABELS[3], value: `${kpis.successRate}%` },

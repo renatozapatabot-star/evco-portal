@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
 
   const items = partidas || []
   if (items.length === 0) {
-    return NextResponse.json({ clean: true, anomalies: [], message: 'Sin partidas para este tráfico' })
+    return NextResponse.json({ clean: true, anomalies: [], message: 'Sin partidas para este embarque' })
   }
 
   // Get baselines from product_intelligence

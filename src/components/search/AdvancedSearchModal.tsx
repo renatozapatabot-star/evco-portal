@@ -92,7 +92,7 @@ export function AdvancedSearchModal({ open, onClose }: Props) {
 
   const openRow = (row: AdvancedSearchResultRow) => {
     onClose()
-    router.push(`/traficos/${encodeURIComponent(row.trafico)}`)
+    router.push(`/embarques/${encodeURIComponent(row.trafico)}`)
   }
 
   return (

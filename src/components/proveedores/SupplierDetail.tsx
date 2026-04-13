@@ -69,7 +69,7 @@ export function SupplierDetail({ supplier: s }: { supplier: SupplierAgg }) {
       {/* Stats row */}
       <div style={{ display: 'flex', gap: 24, marginBottom: 20, flexWrap: 'wrap' }}>
         {[
-          { label: 'Tráficos', value: String(s.traficoCount) },
+          { label: 'Embarques', value: String(s.traficoCount) },
           { label: 'Valor total', value: s.totalValue > 0 ? fmtUSD(s.totalValue) : '\u2014' },
           { label: 'Promedio por embarque', value: s.avgValue > 0 ? fmtUSD(s.avgValue) : '\u2014' },
           { label: 'País', value: s.country ? `${countryFlag(s.country)} ${s.country}` : '\uD83C\uDF10 Desconocido' },
@@ -125,7 +125,7 @@ export function SupplierDetail({ supplier: s }: { supplier: SupplierAgg }) {
       {/* Traficos list */}
       <div>
         <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.textMuted, marginBottom: 8 }}>
-          Tráficos ({s.traficos.length})
+          Embarques ({s.traficos.length})
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
           {s.traficos.slice(0, 20).map(t => {
@@ -133,7 +133,7 @@ export function SupplierDetail({ supplier: s }: { supplier: SupplierAgg }) {
             return (
               <Link
                 key={t.trafico}
-                href={`/traficos/${encodeURIComponent(t.trafico)}`}
+                href={`/embarques/${encodeURIComponent(t.trafico)}`}
                 style={{
                   display: 'grid',
                   gridTemplateColumns: '120px 100px 1fr 100px',

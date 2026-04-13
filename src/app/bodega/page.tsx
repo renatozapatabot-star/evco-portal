@@ -108,7 +108,7 @@ export default function BodegaPage() {
     ])
       .then(([entradaData, traficoData]) => {
         setRows(entradaData.data ?? [])
-        // Build set of tráficos that have already crossed or completed
+        // Build set of embarques that have already crossed or completed
         const crossed = new Set<string>()
         const traficos = Array.isArray(traficoData.data) ? traficoData.data : []
         traficos.forEach((t: { trafico?: string; fecha_cruce?: string; estatus?: string }) => {
@@ -267,7 +267,7 @@ export default function BodegaPage() {
             }}>
               <Search size={14} style={{ color: T.textMuted, flexShrink: 0 }} />
               <input
-                placeholder="Buscar entrada, tráfico..."
+                placeholder="Buscar entrada, embarque..."
                 value={bodegaSearch}
                 onChange={e => setBodegaSearch(e.target.value)}
                 style={{ border: 'none', outline: 'none', background: 'transparent', fontSize: 13, color: T.textPrimary, width: '100%' }}
@@ -279,7 +279,7 @@ export default function BodegaPage() {
           <table style={{ width: '100%', minWidth: 520, borderCollapse: 'collapse' }} aria-label="Llegadas de mercancía">
             <thead>
               <tr>
-                {['Fecha', 'Entrada', 'Tráfico', 'Bultos', 'Peso (kg)'].map(h => (
+                {['Fecha', 'Entrada', 'Embarque', 'Bultos', 'Peso (kg)'].map(h => (
                   <th key={h} style={{
                     textAlign: 'left', padding: '10px 12px',
                     fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
@@ -314,7 +314,7 @@ export default function BodegaPage() {
                     </td>
                     <td style={{ padding: '12px', fontSize: 13 }}>
                       {e.trafico ? (
-                        <Link href={`/traficos/${encodeURIComponent(e.trafico)}`} style={{
+                        <Link href={`/embarques/${encodeURIComponent(e.trafico)}`} style={{
                           color: T.gold, fontWeight: 600, textDecoration: 'none',
                           fontFamily: 'var(--font-jetbrains-mono)',
                         }}>
@@ -343,7 +343,7 @@ export default function BodegaPage() {
       {tab === 'bodega' && (
         enBodega.length === 0 ? (
           <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.radius }}>
-            <EmptyState icon="🏭" title="Sin mercancía en bodega" description="Las entradas con tráfico asignado aparecerán aquí" />
+            <EmptyState icon="🏭" title="Sin mercancía en bodega" description="Las entradas con embarque asignado aparecerán aquí" />
           </div>
         ) : (
           <div style={{
@@ -382,7 +382,7 @@ export default function BodegaPage() {
                     <span>{e.peso_bruto != null ? `${fmtKg(e.peso_bruto)} kg` : '—'}</span>
                   </div>
                   {e.trafico && (
-                    <Link href={`/traficos/${encodeURIComponent(e.trafico)}`} style={{
+                    <Link href={`/embarques/${encodeURIComponent(e.trafico)}`} style={{
                       display: 'inline-block', marginTop: 10,
                       fontSize: 12, fontWeight: 600, color: T.gold,
                       textDecoration: 'none', fontFamily: 'var(--font-jetbrains-mono)',

@@ -79,12 +79,12 @@ export function InicioClient(props: Props) {
     },
     {
       key: 'activos',
-      label: 'Tráficos activos',
+      label: 'Embarques activos',
       value: props.kpis.activos,
       series: props.kpis.activosSeries,
       current: props.kpis.activosCurr7,
       previous: props.kpis.activosPrev7,
-      href: '/traficos?estatus=En+Proceso',
+      href: '/embarques?estatus=En+Proceso',
       tone: 'silver',
     },
     {
@@ -105,7 +105,7 @@ export function InicioClient(props: Props) {
       series: props.kpis.atrasadosSeries,
       current: props.kpis.atrasadosCurr7,
       previous: props.kpis.atrasadosPrev7,
-      href: '/traficos?atrasados=7d',
+      href: '/embarques?atrasados=7d',
       tone: 'silver',
       urgent: props.kpis.atrasados > 0,
       inverted: true,
@@ -123,7 +123,7 @@ export function InicioClient(props: Props) {
     />
   )
 
-  // Estado de operaciones — operator-specific: celebration banner + cola excepciones + active tráficos
+  // Estado de operaciones — operator-specific: celebration banner + cola excepciones + active embarques
   const estadoSections = (
     <>
       <RoleKPIBanner
@@ -131,9 +131,9 @@ export function InicioClient(props: Props) {
         name={props.operatorName}
         thisWeek={props.personalCompletedThisWeek}
         lastWeek={props.personalCompletedLastWeek}
-        metricLabel="Tráficos cruzados · últimos 7 días"
+        metricLabel="Embarques cruzados · últimos 7 días"
         celebrationTemplate={({ name, thisWeek, pct }) =>
-          `${name}, cerraste ${thisWeek} tráfico${thisWeek === 1 ? '' : 's'} esta semana (+${pct}% vs semana pasada). AGUILA te lo reconoce.`
+          `${name}, cerraste ${thisWeek} embarque${thisWeek === 1 ? '' : 's'} esta semana (+${pct}% vs semana pasada). AGUILA te lo reconoce.`
         }
       />
       <ColaCard colaCount={props.colaCount} />

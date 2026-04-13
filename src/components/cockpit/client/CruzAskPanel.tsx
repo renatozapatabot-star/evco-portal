@@ -8,7 +8,7 @@ export function AduanaAskPanel() {
   const [loading, setLoading] = useState(false)
 
   const examples = [
-    '¿Cuál es el estatus de mi último tráfico?',
+    '¿Cuál es el estatus de mi último embarque?',
     '¿Cuántos pedimentos tengo este mes?',
     '¿Qué documentos me faltan?',
     '¿Cuánto pagué en aranceles este mes?',

@@ -207,11 +207,11 @@ export default function SimuladorPage() {
         Estima valor en aduana, DTA, IGI e IVA antes de transmitir. Todas las cifras son estimadas — las tasas finales aplican al presentar el pedimento.
       </p>
 
-      {/* Pending tráficos — optional prefill */}
+      {/* Pending embarques — optional prefill */}
       {!loading && pending.length > 0 && (
         <div style={{ marginBottom: 20 }}>
           <div style={{ fontSize: 'var(--aguila-fs-label, 11px)', fontWeight: 700, color: T.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>
-            Pre-cargar de tráfico pendiente
+            Pre-cargar de embarque pendiente
           </div>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
             {pending.slice(0, 6).map(t => (

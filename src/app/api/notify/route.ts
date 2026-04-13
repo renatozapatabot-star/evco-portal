@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
     documento: '📄 DOCUMENTO',
     general: '📢 NOTIFICACIÓN',
   }
-  const tgMessage = `${typeLabels[type]}\n<b>Tráfico:</b> ${trafico_id}\n<b>Cliente:</b> ${companyId}\n\n${message}\n\n— AGUILA`
+  const tgMessage = `${typeLabels[type]}\n<b>Embarque:</b> ${trafico_id}\n<b>Cliente:</b> ${companyId}\n\n${message}\n\n— AGUILA`
 
   // 4. Send
   const sent = await sendTG(tgMessage)

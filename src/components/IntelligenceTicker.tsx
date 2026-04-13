@@ -45,8 +45,8 @@ export function IntelligenceTicker() {
         if (bridgeItems.length > 0) {
           ticker.push({ text: `🌉 ${bridgeItems[0].name} — ${Math.round(bridgeItems[0].avg * 60)}min espera · RECOMENDADO`, href: '/soia' })
         }
-        ticker.push({ text: `🚚 ${enProceso} tráficos activos`, href: '/traficos' })
-        if (cruzadosHoy > 0) ticker.push({ text: `✅ ${cruzadosHoy} cruzados hoy`, href: '/traficos' })
+        ticker.push({ text: `🚚 ${enProceso} embarques activos`, href: '/embarques' })
+        if (cruzadosHoy > 0) ticker.push({ text: `✅ ${cruzadosHoy} cruzados hoy`, href: '/embarques' })
         ticker.push({ text: `💰 Valor en proceso: $${valor >= 1e6 ? (valor / 1e6).toFixed(1) + 'M' : Math.round(valor / 1000) + 'K'} USD`, href: '/cuentas' })
         if (daysToMVE > 0 && daysToMVE <= 30) {
           ticker.push({ text: `⏰ MVE E2: ${daysToMVE} días · ${mveCount} pendientes`, href: '/mve' })

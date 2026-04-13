@@ -1,7 +1,7 @@
 /**
  * CRUZ Knowledge Graph
  *
- * Builds an in-memory relationship graph from tráficos + facturas data.
+ * Builds an in-memory relationship graph from embarques + facturas data.
  * Enables ADUANA AI to answer "how are X and Y connected?" without
  * manually joining across multiple tables.
  *

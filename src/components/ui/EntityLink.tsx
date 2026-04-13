@@ -3,7 +3,7 @@ import Link from 'next/link'
 type EntityType = 'trafico' | 'expediente' | 'entrada' | 'pedimento'
 
 const ROUTES: Record<EntityType, (id: string) => string> = {
-  trafico:    id => `/traficos/${id}`,
+  trafico:    id => `/embarques/${id}`,
   expediente: id => `/expedientes/${id}`,
   entrada:    id => `/entradas/${id}`,
   pedimento:  id => `/pedimentos/${id}`,

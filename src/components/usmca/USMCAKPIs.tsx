@@ -37,7 +37,7 @@ export function USMCAKPIs({ loading, savingsMonth, countApplied, isMobile }: USM
       />
       <KPICard
         icon={<ShieldCheck size={20} />}
-        label="Tráficos con T-MEC aplicado"
+        label="Embarques con T-MEC aplicado"
         value={loading ? '...' : String(countApplied)}
         sub="Régimen IMD activo"
         accent="gold"

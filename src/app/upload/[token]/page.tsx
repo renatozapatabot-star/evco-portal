@@ -198,7 +198,7 @@ export default function UploadPage() {
             fontSize: 22, fontWeight: 800, color: 'var(--navy-900)', marginBottom: 4,
             fontFamily: 'var(--font-mono, "JetBrains Mono", monospace)',
           }}>
-            Tráfico {info.trafico_id}
+            Embarque {info.trafico_id}
           </div>
           <div style={{ fontSize: 13, color: '#64748B', marginBottom: 20 }}>
             {info.company_id}

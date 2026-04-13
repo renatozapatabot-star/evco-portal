@@ -66,7 +66,7 @@ export function BrokerClients({ companies, pendientes, isMobile, onViewAsClient 
               </div>
             </div>
             <div style={{ display: 'flex', gap: 16 }}>
-              <Stat label="Tráficos" value={c.trafico_count.toString()} />
+              <Stat label="Embarques" value={c.trafico_count.toString()} />
               <Stat label="Valor YTD" value={formatCurrency(c.valor_ytd)} mono />
             </div>
             <button

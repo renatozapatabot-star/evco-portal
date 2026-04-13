@@ -24,7 +24,7 @@ interface EntradaUpdate {
 }
 
 /**
- * Subscribe to real-time tráfico + entrada status changes for current company.
+ * Subscribe to real-time embarque + entrada status changes for current company.
  * Returns latest updates for both entity types.
  */
 export function useRealtimeTrafico() {
@@ -59,7 +59,7 @@ export function useRealtimeTrafico() {
             title: isCrossed ? `${traficoId} cruzado` : `${traficoId}: ${newEstatus}`,
             description: isCrossed ? 'Cruce exitoso — todo en orden' : `Cambio de estatus: ${oldEstatus} → ${newEstatus}`,
             severity: isCrossed ? 'success' : 'info',
-            href: `/traficos/${encodeURIComponent(traficoId)}`,
+            href: `/embarques/${encodeURIComponent(traficoId)}`,
           },
         }))
       }

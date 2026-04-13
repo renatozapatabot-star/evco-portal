@@ -194,10 +194,10 @@ describe('priorityClass', () => {
 
 describe('pluralize', () => {
   it('returns singular for 1', () => {
-    expect(pluralize(1, 'tráfico', 'tráficos')).toBe('tráfico')
+    expect(pluralize(1, 'embarque', 'embarques')).toBe('embarque')
   })
   it('returns plural for other counts', () => {
-    expect(pluralize(5, 'tráfico', 'tráficos')).toBe('tráficos')
-    expect(pluralize(0, 'tráfico', 'tráficos')).toBe('tráficos')
+    expect(pluralize(5, 'embarque', 'embarques')).toBe('embarques')
+    expect(pluralize(0, 'embarque', 'embarques')).toBe('embarques')
   })
 })

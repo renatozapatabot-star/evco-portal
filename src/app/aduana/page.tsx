@@ -77,7 +77,7 @@ export default function CruzChatPage() {
   // Trafico context injection
   useEffect(() => {
     if (traficoContext && messages.length === 0) {
-      const contextMsg = `Estoy viendo el tráfico ${traficoContext}. ¿Cuál es su estatus actual?`
+      const contextMsg = `Estoy viendo el embarque ${traficoContext}. ¿Cuál es su estatus actual?`
       sendMessage(contextMsg)
     }
   }, [traficoContext]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -99,7 +99,7 @@ export default function CruzChatPage() {
     try {
       const apiMessages = newMessages.map(m => ({ role: m.role, content: m.content }))
       const contextInfo = traficoContext
-        ? `User is asking about tráfico ${traficoContext}. Include specific data for this tráfico.`
+        ? `User is asking about embarque ${traficoContext}. Include specific data for this embarque.`
         : `User is in the AGUILA AI chat interface.`
 
       const res = await fetch('/api/cruz-chat', {
@@ -145,7 +145,7 @@ export default function CruzChatPage() {
     } catch (err: unknown) {
       if (err instanceof Error && err.name !== 'AbortError') {
         let suggestion = 'Intenta reformular tu pregunta.'
-        if (text.includes('Y') || /^\d{4}/.test(text)) suggestion = 'Verifica el número completo del tráfico.'
+        if (text.includes('Y') || /^\d{4}/.test(text)) suggestion = 'Verifica el número completo del embarque.'
         else if (text.length < 5) suggestion = 'Intenta con una pregunta más específica.'
         setMessages(prev => prev.map(m =>
           m.id === aiMsgId ? { ...m, content: `No pude procesar esa consulta. ${suggestion}` } : m

@@ -28,7 +28,7 @@ export function MyDayPanel({ myDay, teamStats, unassignedCount }: Props) {
         title="Mi día"
         activeCondition={cardState.activeCondition}
         activeAction={cardState.activeAction}
-        actionHref="/traficos"
+        actionHref="/embarques"
         quietContent={
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <StatRow label="Asignados" value={myDay.assigned} />
@@ -54,7 +54,7 @@ export function MyDayPanel({ myDay, teamStats, unassignedCount }: Props) {
         title="Equipo"
         activeCondition={unassignedCount > 0 ? `${unassignedCount} listos para asignar` : undefined}
         activeAction={unassignedCount > 0 ? 'Ver cola' : undefined}
-        actionHref="/traficos"
+        actionHref="/embarques"
         quietContent={
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {teamStats.map(op => (
@@ -74,7 +74,7 @@ export function MyDayPanel({ myDay, teamStats, unassignedCount }: Props) {
                 <span style={{ fontSize: 13, color: '#8B949E' }}>
                   Listos para asignar: {unassignedCount}
                 </span>
-                <Link href="/traficos" style={{
+                <Link href="/embarques" style={{
                   background: 'rgba(192,197,206,0.15)', color: '#E8EAED',
                   borderRadius: 8, padding: '8px 16px', fontSize: 12, fontWeight: 600,
                   textDecoration: 'none', minHeight: 36, display: 'flex', alignItems: 'center',

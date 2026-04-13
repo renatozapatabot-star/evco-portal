@@ -10,7 +10,7 @@ import {
 export type AsistenteRoleTag = 'trafico' | 'contabilidad' | 'warehouse' | 'operator' | 'client' | 'owner'
 
 const DEFAULT_HELLO: Record<AsistenteRoleTag, string> = {
-  trafico:      'Estoy con los tráficos activos. Puedo actualizar estatus, solicitar documentos, o vincular pedimentos. ¿Qué necesitas?',
+  trafico:      'Estoy con los embarques activos. Puedo actualizar estatus, solicitar documentos, o vincular pedimentos. ¿Qué necesitas?',
   contabilidad: 'Revisando econta y cartera. Puedo marcar pagos, exportar IIF, o rastrear CxC. ¿Qué hacemos?',
   warehouse:    'En bodega. Puedo recibir, asignar ubicación, subir foto, o autorizar salida. ¿Qué llegó?',
   operator:     'Listo para ayudar con el flujo operativo. ¿Qué necesitas?',

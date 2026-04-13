@@ -65,7 +65,7 @@ export const INTERNAL_GROUPS: NavGroup[] = [
     label: 'Operaciones',
     icon: Truck,
     children: [
-      { href: '/traficos',        label: 'Tráficos',            icon: Truck },
+      { href: '/embarques',        label: 'Embarques',            icon: Truck },
       { href: '/pedimentos',      label: 'Pedimentos',          icon: FileText },
       { href: '/banco-facturas',  label: 'Banco de facturas',   icon: FileSpreadsheet },
       { href: '/corredor',        label: 'Corredor',            icon: Radio },
@@ -127,7 +127,7 @@ export const INTERNAL_BOTTOM: NavTopLevel[] = [
 // /clasificar-producto, /ahorro) remain reachable by direct URL.
 export const CLIENT_NAV: NavTopLevel[] = [
   { href: '/',                  label: 'Inicio',        icon: LayoutDashboard },
-  { href: '/traficos',          label: 'Tráficos',      icon: Truck },
+  { href: '/embarques',          label: 'Embarques',      icon: Truck },
   { href: '/pedimentos',        label: 'Pedimentos',    icon: FileText },
   { href: '/reportes',          label: 'Reportes',      icon: BarChart3 },
   { href: '/reportes/anexo-24', label: 'Anexo 24',      icon: FileSpreadsheet },
@@ -148,7 +148,7 @@ export const CLIENT_GROUPS: NavGroup[] = []
 // V1 operator nav (Phase 4 cull) — 7 items.
 export const OPERATOR_NAV: NavTopLevel[] = [
   { href: '/operador/inicio', label: 'Inicio',             icon: LayoutDashboard },
-  { href: '/traficos',        label: 'Tráficos',           icon: Truck },
+  { href: '/embarques',        label: 'Embarques',           icon: Truck },
   { href: '/pedimentos',      label: 'Pedimentos',         icon: FileText },
   { href: '/banco-facturas',  label: 'Banco de facturas',  icon: FileSpreadsheet },
   { href: '/corredor',        label: 'Corredor',           icon: Radio },
@@ -203,7 +203,7 @@ export interface MobileTab {
 
 export const MOBILE_INTERNAL_TABS: MobileTab[] = [
   { href: '/admin/eagle',  label: 'Inicio',       icon: LayoutDashboard },
-  { href: '/traficos',     label: 'Tráficos',     icon: Truck },
+  { href: '/embarques',     label: 'Embarques',     icon: Truck },
   { href: '/pedimentos',   label: 'Pedimentos',   icon: FileText },
   { href: '/mve/alerts',   label: 'MVE',          icon: Shield },
   { href: '/reportes',     label: 'Reportes',     icon: BarChart3 },
@@ -211,7 +211,7 @@ export const MOBILE_INTERNAL_TABS: MobileTab[] = [
 
 export const MOBILE_CLIENT_TABS: MobileTab[] = [
   { href: '/',            label: 'Inicio',      icon: LayoutDashboard },
-  { href: '/traficos',    label: 'Tráficos',    icon: Truck },
+  { href: '/embarques',    label: 'Embarques',    icon: Truck },
   { href: '/pedimentos',  label: 'Pedimentos',  icon: FileText },
   { href: '/reportes',    label: 'Reportes',    icon: BarChart3 },
 ]
@@ -280,7 +280,7 @@ export const ADMIN_ONLY_ROUTES = [
 export const CLIENT_ROUTES = [
   '/',
   '/entradas',
-  '/traficos',
+  '/embarques',
   '/pedimentos',
   '/catalogo',
   '/anexo24',
@@ -353,7 +353,7 @@ export function getActiveGroup(pathname: string, groups?: NavGroup[]): string | 
 /** Routes accessible by operator role (no financials) */
 export const OPERATOR_ROUTES = [
   '/',
-  '/traficos',
+  '/embarques',
   '/entradas',
   '/pedimentos',
   '/expedientes',

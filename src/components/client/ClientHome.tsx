@@ -27,7 +27,7 @@ interface NavTile {
 
 // V1 client cockpit tiles (Phase 4 cull) — only routes to V1-approved surfaces.
 const TILES: NavTile[] = [
-  { href: '/traficos',          label: 'Tráficos',     icon: Truck,           description: 'Operaciones activas',     dataKey: 'activeShipments' },
+  { href: '/embarques',          label: 'Embarques',     icon: Truck,           description: 'Operaciones activas',     dataKey: 'activeShipments' },
   { href: '/pedimentos',        label: 'Pedimentos',   icon: FileText,        description: 'Declaraciones aduanales', dataKey: 'pedimentosEnProceso' },
   { href: '/reportes/anexo-24', label: 'Anexo 24',     icon: FileSpreadsheet, description: 'Control de inventarios' },
   { href: '/expedientes',       label: 'Expedientes',  icon: FolderOpen,      description: 'Documentos por operación' },
@@ -52,7 +52,7 @@ function tileCount(tile: NavTile, data: ClientData): number | null {
 function tileMicroStatus(tile: NavTile, data: ClientData): { text: string; warning: boolean } | null {
   const ms = data.navMicroStatus
   switch (tile.href) {
-    case '/traficos':
+    case '/embarques':
       if (ms.traficos.active === 0) return null
       return {
         text: `${ms.traficos.active} activos` +

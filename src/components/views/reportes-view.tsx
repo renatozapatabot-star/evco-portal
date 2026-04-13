@@ -118,7 +118,7 @@ function CustomTooltip({ active, payload, label }: { active?: boolean; payload?:
   return (
     <div style={TOOLTIP_STYLE}>
       <div style={{ color: GOLD, fontSize: 10, marginBottom: 4 }}>{label}</div>
-      <div style={{ color: 'white' }}>{payload[0].value.toLocaleString('es-MX')} tráficos</div>
+      <div style={{ color: 'white' }}>{payload[0].value.toLocaleString('es-MX')} embarques</div>
     </div>
   )
 }
@@ -133,7 +133,7 @@ function exportCSV(rows: TraficoRow[], clientClave: string) {
     `Total registros: ${rows.length}`,
     '',
   ]
-  const headers = ['Tráfico', 'Estatus', 'Fecha', 'Descripción', 'Peso_kg', 'Importe_USD', 'Pedimento', 'Proveedores']
+  const headers = ['Embarque', 'Estatus', 'Fecha', 'Descripción', 'Peso_kg', 'Importe_USD', 'Pedimento', 'Proveedores']
   const csvRows = rows.map(r => [
     r.trafico,
     r.estatus ?? '',
@@ -193,7 +193,7 @@ export function ReportesView() {
 
   const isInternal = userRole === 'broker' || userRole === 'admin'
 
-  // Fetch tráficos
+  // Fetch embarques
   useEffect(() => {
     if (!cookiesReady) return
     if (!isInternal && !companyId) { setLoading(false); return }
@@ -364,7 +364,7 @@ export function ReportesView() {
       <div className="section-header" style={{ marginBottom: 24 }}>
         <div>
           <h2 className="page-title">Reportes</h2>
-          <p className="page-subtitle">{totalFiltered.toLocaleString('es-MX')} tráficos</p>
+          <p className="page-subtitle">{totalFiltered.toLocaleString('es-MX')} embarques</p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           <DateInputES value={dateFrom} onChange={setDateFrom}
@@ -406,7 +406,7 @@ export function ReportesView() {
 
       {/* ─── SECTION 1: Resumen Mensual ──────────────── */}
       <Card style={{ padding: 20, marginBottom: 24 }}>
-        <SectionTitle title="Resumen Mensual" sub="Total de tráficos por mes — últimos 6 meses" />
+        <SectionTitle title="Resumen Mensual" sub="Total de embarques por mes — últimos 6 meses" />
         {monthlyData.length > 0 ? (
           <ResponsiveContainer width="100%" height={isMobile ? 220 : 280}>
             <BarChart data={monthlyData} barCategoryGap="20%">
@@ -429,14 +429,14 @@ export function ReportesView() {
                   const bucket = monthlyData[idx]
                   if (bucket?.month) {
                     const [y, m] = bucket.month.split('-')
-                    router.push(`/traficos?from=${y}-${m}-01&to=${y}-${m}-31`)
+                    router.push(`/embarques?from=${y}-${m}-01&to=${y}-${m}-31`)
                   }
                 }}
               />
             </BarChart>
           </ResponsiveContainer>
         ) : (
-          <EmptyState icon="📊" title="Sin datos para el período" description="Los tráficos aparecerán aquí cuando se registren" />
+          <EmptyState icon="📊" title="Sin datos para el período" description="Los embarques aparecerán aquí cuando se registren" />
         )}
       </Card>
 
@@ -445,7 +445,7 @@ export function ReportesView() {
         <div style={{ padding: '16px 20px', borderBottom: `1px solid ${T.border}` }}>
           <SectionTitle
             title="Top 10 Proveedores"
-            sub="Por cantidad de tráficos · Incluye valor total y cobertura T-MEC"
+            sub="Por cantidad de embarques · Incluye valor total y cobertura T-MEC"
           />
         </div>
         {supplierData.length > 0 ? (
@@ -472,7 +472,7 @@ export function ReportesView() {
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
                     <div>
-                      <div style={{ fontSize: 10, color: T.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Tráficos</div>
+                      <div style={{ fontSize: 10, color: T.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Embarques</div>
                       <div style={{ fontFamily: 'var(--font-mono)', fontSize: 16, fontWeight: 700, color: T.text }}>{s.count}</div>
                     </div>
                     <div>
@@ -494,7 +494,7 @@ export function ReportesView() {
                   <tr style={{ borderBottom: `1px solid ${T.border}` }}>
                     <th scope="col" style={{ padding: '10px 20px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>#</th>
                     <th scope="col" style={{ padding: '10px 16px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Proveedor</th>
-                    <th scope="col" style={{ padding: '10px 16px', textAlign: 'right', fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Tráficos</th>
+                    <th scope="col" style={{ padding: '10px 16px', textAlign: 'right', fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Embarques</th>
                     <th scope="col" style={{ padding: '10px 16px', textAlign: 'right', fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Valor Total</th>
                     <th scope="col" style={{ padding: '10px 20px', textAlign: 'right', fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>T-MEC %</th>
                   </tr>
@@ -539,7 +539,7 @@ export function ReportesView() {
             </div>
           )
         ) : (
-          <EmptyState icon="🏭" title="Sin datos de proveedores" description="Los proveedores aparecerán cuando se registren tráficos" />
+          <EmptyState icon="🏭" title="Sin datos de proveedores" description="Los proveedores aparecerán cuando se registren embarques" />
         )}
       </Card>
 

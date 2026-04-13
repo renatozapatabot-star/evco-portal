@@ -16,8 +16,8 @@ describe('track()', () => {
   it('POSTs to /api/telemetry with the expected payload shape', () => {
     track('page_view', {
       entityType: 'route',
-      entityId: '/traficos/26-24-3596-6500441',
-      metadata: { path: '/traficos/26-24-3596-6500441' },
+      entityId: '/embarques/26-24-3596-6500441',
+      metadata: { path: '/embarques/26-24-3596-6500441' },
     })
 
     expect(fetchMock).toHaveBeenCalledTimes(1)
@@ -28,8 +28,8 @@ describe('track()', () => {
     expect(body).toMatchObject({
       event: 'page_view',
       entityType: 'route',
-      entityId: '/traficos/26-24-3596-6500441',
-      metadata: { path: '/traficos/26-24-3596-6500441' },
+      entityId: '/embarques/26-24-3596-6500441',
+      metadata: { path: '/embarques/26-24-3596-6500441' },
     })
   })
 

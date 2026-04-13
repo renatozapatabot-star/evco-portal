@@ -209,7 +209,7 @@ function EntradasContent() {
           <div className="toolbar-search" style={{ minHeight: 60 }}>
             <Search size={12} style={{ color: 'var(--slate-400)', flexShrink: 0 }} />
             <input
-              placeholder="Entrada, tráfico, proveedor, descripción..."
+              placeholder="Entrada, embarque, proveedor, descripción..."
               value={search}
               onChange={e => { setSearch(e.target.value); setPage(0) }}
               aria-label="Buscar entradas"
@@ -286,7 +286,7 @@ function EntradasContent() {
                   </div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
                     {r.trafico ? (
-                      <Link href={`/traficos/${encodeURIComponent(r.trafico)}`} style={{ color: '#C0C5CE', textDecoration: 'none' }}>{r.trafico}</Link>
+                      <Link href={`/embarques/${encodeURIComponent(r.trafico)}`} style={{ color: '#C0C5CE', textDecoration: 'none' }}>{r.trafico}</Link>
                     ) : (
                       <span>Pendiente</span>
                     )}
@@ -311,7 +311,7 @@ function EntradasContent() {
                   <th style={{ cursor: 'pointer', width: 110 }} onClick={() => toggleSort('cve_entrada')}>Entrada<SortArrow col="cve_entrada" sort={sort} /></th>
                   <th style={{ width: 160 }}>Proveedor</th>
                   <th style={{ minWidth: 160 }}>Descripción</th>
-                  <th style={{ width: 130 }}>Tráfico</th>
+                  <th style={{ width: 130 }}>Embarque</th>
                   <th style={{ width: 120 }}>Transporte US</th>
                   <th style={{ textAlign: 'right', cursor: 'pointer', width: 70 }} onClick={() => toggleSort('cantidad_bultos')}>Bultos<SortArrow col="cantidad_bultos" sort={sort} /></th>
                   <th style={{ textAlign: 'right', cursor: 'pointer', width: 90 }} onClick={() => toggleSort('peso_bruto')}>Peso (kg)<SortArrow col="peso_bruto" sort={sort} /></th>
@@ -337,7 +337,7 @@ function EntradasContent() {
                     </td>
                     <td>
                       {r.trafico ? (
-                        <Link href={`/traficos/${encodeURIComponent(r.trafico)}`} style={{ fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 600, color: '#C0C5CE', textDecoration: 'none' }}>
+                        <Link href={`/embarques/${encodeURIComponent(r.trafico)}`} style={{ fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 600, color: '#C0C5CE', textDecoration: 'none' }}>
                           {r.trafico}
                         </Link>
                       ) : (

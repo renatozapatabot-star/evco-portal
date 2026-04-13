@@ -46,7 +46,7 @@ export function RightRail({ colaCount, feed }: Props) {
     title: f.trafico || '—',
     subtitle: f.decision ? truncate(f.decision, 72) : undefined,
     timestamp: f.created_at,
-    href: f.trafico ? `/traficos/${encodeURIComponent(f.trafico)}` : undefined,
+    href: f.trafico ? `/embarques/${encodeURIComponent(f.trafico)}` : undefined,
     accessory: <StatusPill label={f.decision_type} />,
   }))
 

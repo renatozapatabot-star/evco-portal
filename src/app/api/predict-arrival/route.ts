@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     .gte('fecha_llegada', PORTAL_DATE_FROM)
     .single()
 
-  if (!trafico) return NextResponse.json({ error: 'Tráfico not found' }, { status: 404 })
+  if (!trafico) return NextResponse.json({ error: 'Embarque not found' }, { status: 404 })
   if ((trafico.estatus || '').toLowerCase().includes('cruz')) {
     return NextResponse.json({ trafico_id, prediction: null, reason: 'Already crossed' })
   }

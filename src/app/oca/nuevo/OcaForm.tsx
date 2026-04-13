@@ -113,11 +113,11 @@ export function OcaForm() {
           </div>
 
           <div>
-            <label htmlFor="trafico_id" style={labelStyle}>Tráfico (opcional)</label>
+            <label htmlFor="trafico_id" style={labelStyle}>Embarque (opcional)</label>
             <input
               id="trafico_id"
               name="trafico_id"
-              placeholder="Vincular la opinión a un tráfico"
+              placeholder="Vincular la opinión a un embarque"
               style={{ ...inputStyle, fontFamily: 'var(--font-jetbrains-mono), monospace' }}
             />
           </div>

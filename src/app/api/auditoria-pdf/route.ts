@@ -79,7 +79,7 @@ export async function GET(request: NextRequest) {
 
   try {
     // 1. Traficos for the week. Anchor on fecha_pago (authoritative for
-    // "pagados esta semana"), but OR in tráficos that crossed in the
+    // "pagados esta semana"), but OR in embarques that crossed in the
     // window with no fecha_pago populated yet — those would otherwise
     // be invisible even though they're operationally closed.
     const toEnd = to + 'T23:59:59'
@@ -112,7 +112,7 @@ export async function GET(request: NextRequest) {
         return true
       })
 
-    // Count tráficos that belong to this broker + company in "Pedimento
+    // Count embarques that belong to this broker + company in "Pedimento
     // Pagado" status but have no fecha_pago at all — these never show up
     // in a weekly view. Surface the gap so Tito knows the report isn't
     // hiding work.

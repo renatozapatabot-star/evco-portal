@@ -4,7 +4,7 @@
  * Tito's morning view. Returns the six Eagle tiles:
  *   1. traficosByStatus  — count grouped by estatus (active motion statuses)
  *   2. ar / ap           — reuse F3 computeARAging / computeAPAging
- *   3. dormant           — top 3 companies with no tráfico in 14+ days
+ *   3. dormant           — top 3 companies with no embarque in 14+ days
  *   4. atenciones        — top 5 merged: MVE critical open + dormant (+ optional
  *                          audit_suggestions if the table exists)
  *   5. recentActivity    — last 20 workflow_events for the company

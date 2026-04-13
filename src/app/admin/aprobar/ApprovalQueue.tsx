@@ -315,7 +315,7 @@ export function ApprovalQueue({ initialPending, initialRecent, initialEscalation
                       </span>
                       {draft.trafico_id && (
                         <Link
-                          href={`/traficos/${encodeURIComponent(draft.trafico_id)}`}
+                          href={`/embarques/${encodeURIComponent(draft.trafico_id)}`}
                           style={{
                             fontSize: 13, fontFamily: 'var(--font-mono)', fontWeight: 600,
                             color: '#C0C5CE', textDecoration: 'none',

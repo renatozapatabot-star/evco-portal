@@ -1,6 +1,6 @@
 /**
- * Trace composer — merges every known lifecycle event for a tráfico into a
- * single chronologically-sorted timeline. Used by the /traficos/[id]/trace
+ * Trace composer — merges every known lifecycle event for a embarque into a
+ * single chronologically-sorted timeline. Used by the /embarques/[id]/trace
  * page to answer the SAT Audit standard: "show me the complete chain of
  * custody from entrada to bank reconciliation, in one view".
  *
@@ -81,10 +81,10 @@ function pickString(obj: Record<string, unknown>, keys: string[]): string | null
 }
 
 /**
- * Compose the end-to-end trace for a single tráfico.
+ * Compose the end-to-end trace for a single embarque.
  *
  * @param supabase  Server-side Supabase client (RLS-enforced).
- * @param traficoId The tráfico reference (e.g. "26-3596-1234").
+ * @param traficoId The embarque reference (e.g. "26-3596-1234").
  * @param companyId Optional extra filter — layered on top of RLS.
  */
 export async function composeTrace(
@@ -92,7 +92,7 @@ export async function composeTrace(
   traficoId: string,
   companyId: string | null,
 ): Promise<ComposedTrace> {
-  // 1) Tráfico row first — needed for pedimento-id lookups downstream.
+  // 1) Embarque row first — needed for pedimento-id lookups downstream.
   let traficoQ = supabase
     .from('traficos')
     .select('trafico, company_id, pedimento, estatus')

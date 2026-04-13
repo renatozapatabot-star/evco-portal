@@ -122,7 +122,7 @@ export async function createPedimento(
   if (!isInternal) traficoQ = traficoQ.eq('company_id', session.companyId)
   const { data: trafico } = await traficoQ.maybeSingle<{ trafico: string; company_id: string | null }>()
   if (!trafico || !trafico.company_id) {
-    return { data: null, error: { code: 'NOT_FOUND', message: 'Tráfico no encontrado' } }
+    return { data: null, error: { code: 'NOT_FOUND', message: 'Embarque no encontrado' } }
   }
 
   const { data: existing } = await supabase
@@ -153,7 +153,7 @@ export async function createPedimento(
     trafico: traficoId,
     company_id: trafico.company_id,
     decision_type: 'pedimento_created',
-    decision: `Pedimento ${created.id} creado para tráfico ${traficoId}`,
+    decision: `Pedimento ${created.id} creado para embarque ${traficoId}`,
   })
 
   // Cronología — fire only on first creation (above short-circuit returns if existing)
@@ -452,7 +452,7 @@ export async function linkPedimentoToTrafico(
   const isInternal = session.role === 'broker' || session.role === 'admin'
   if (!isInternal) traficoQ = traficoQ.eq('company_id', session.companyId)
   const { data: trafico } = await traficoQ.maybeSingle<{ trafico: string; company_id: string | null }>()
-  if (!trafico) return { data: null, error: { code: 'NOT_FOUND', message: 'Tráfico no encontrado' } }
+  if (!trafico) return { data: null, error: { code: 'NOT_FOUND', message: 'Embarque no encontrado' } }
 
   const { error } = await supabase
     .from('pedimentos')

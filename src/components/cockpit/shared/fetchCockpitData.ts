@@ -923,13 +923,13 @@ async function fetchClientData(companyId: string): Promise<ClientData> {
       type: 'anomaly',
       text: `${extremeRisk.trafico} lleva ${extremeRisk.daysActive} días activo`,
       severity: 'critical',
-      entityLink: `/traficos/${extremeRisk.id}`,
+      entityLink: `/embarques/${extremeRisk.id}`,
     })
   }
   if (pedimentosCount === 0 && activeCount > 0) {
     computedInsights.push({
       type: 'action',
-      text: `${activeCount} tráfico${activeCount !== 1 ? 's' : ''} activo${activeCount !== 1 ? 's' : ''} sin pedimento — contacta a tu agente`,
+      text: `${activeCount} embarque${activeCount !== 1 ? 's' : ''} activo${activeCount !== 1 ? 's' : ''} sin pedimento — contacta a tu agente`,
       severity: 'info',
       entityLink: '/aduana',
     })
@@ -944,9 +944,9 @@ async function fetchClientData(companyId: string): Promise<ClientData> {
   if (delayedCount > 0) {
     computedInsights.push({
       type: 'action',
-      text: `${delayedCount} tráfico${delayedCount !== 1 ? 's' : ''} con más de 14 días activo${delayedCount !== 1 ? 's' : ''}`,
+      text: `${delayedCount} embarque${delayedCount !== 1 ? 's' : ''} con más de 14 días activo${delayedCount !== 1 ? 's' : ''}`,
       severity: 'warning',
-      entityLink: '/traficos',
+      entityLink: '/embarques',
     })
   }
 
@@ -955,7 +955,7 @@ async function fetchClientData(companyId: string): Promise<ClientData> {
   if (atRiskMapped.length > 0) {
     suggestedActions.push({
       label: `Revisar ${atRiskMapped.length} operación${atRiskMapped.length > 1 ? 'es' : ''} en riesgo`,
-      href: `/traficos/${atRiskMapped[0].id}`,
+      href: `/embarques/${atRiskMapped[0].id}`,
       reason: `${atRiskMapped[0].daysActive} días activo`,
       urgency: 'high',
     })

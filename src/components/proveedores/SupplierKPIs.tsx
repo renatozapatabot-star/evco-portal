@@ -22,7 +22,7 @@ interface SupplierKPIsProps {
 export function SupplierKPIs({ supplierCount, traficoCount, totalValue, isMobile }: SupplierKPIsProps) {
   const kpis = [
     { label: 'Proveedores', value: String(supplierCount), color: T.gold },
-    { label: 'Tráficos con proveedor', value: String(traficoCount), color: T.text },
+    { label: 'Embarques con proveedor', value: String(traficoCount), color: T.text },
     { label: 'Valor total', value: fmtUSDCompact(totalValue), color: T.green },
     { label: 'Promedio por embarque', value: totalValue > 0 && supplierCount > 0 ? fmtUSDCompact(totalValue / traficoCount) : '\u2014', color: T.text },
   ]

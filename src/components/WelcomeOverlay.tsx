@@ -122,7 +122,7 @@ export function WelcomeOverlay() {
             background: 'var(--n-50)', border: '1px solid var(--border-light)',
             display: 'flex', justifyContent: 'space-between',
           }}>
-            <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Tráficos activos</span>
+            <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Embarques activos</span>
             <span style={{ fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-data)' }}>{data.activeTraficos}</span>
           </div>
           <div style={{
@@ -158,7 +158,7 @@ export function WelcomeOverlay() {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 20 }}>
           {[
-            '¿Cuáles son mis tráficos activos?',
+            '¿Cuáles son mis embarques activos?',
             '¿Cuál es mi score de cumplimiento?',
             '¿Dónde puedo ahorrar en aranceles?',
           ].map(q => (

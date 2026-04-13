@@ -43,7 +43,7 @@ export default function ImmexPage() {
     <div style={{ padding: 32 }}>
       <div style={{ marginBottom: 24 }}>
         <h1 className="pg-title">IMMEX — Importación Temporal</h1>
-        <p className="pg-meta">{immexData.length} tráficos temporales activos · Límite 18 meses · {getClientNameCookie() || 'Cliente'}</p>
+        <p className="pg-meta">{immexData.length} embarques temporales activos · Límite 18 meses · {getClientNameCookie() || 'Cliente'}</p>
       </div>
 
       {/* KPI strip */}
@@ -64,7 +64,7 @@ export default function ImmexPage() {
       {/* Critical alert */}
       {critical.length > 0 && (
         <div style={{ background: 'var(--red-bg)', border: '1px solid var(--red-b)', borderRadius: 8, padding: '12px 16px', marginBottom: 16 }}>
-          <div style={{ color: 'var(--red-text)', fontSize: 13, fontWeight: 700 }}>🚨 {critical.length} tráfico(s) dentro de 60 días del límite IMMEX</div>
+          <div style={{ color: 'var(--red-text)', fontSize: 13, fontWeight: 700 }}>🚨 {critical.length} embarque(s) dentro de 60 días del límite IMMEX</div>
           <div style={{ color: 'var(--red-text)', fontSize: 12, marginTop: 4 }}>Acción: Retorno o cambio de régimen requerido antes del vencimiento</div>
         </div>
       )}
@@ -76,15 +76,15 @@ export default function ImmexPage() {
         ) : immexData.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '60px 20px' }}>
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--n-300)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ margin: '0 auto 12px', display: 'block' }}><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
-            <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--n-700)', marginBottom: 4 }}>Sin tráficos temporales activos</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--n-700)', marginBottom: 4 }}>Sin embarques temporales activos</div>
             <div style={{ fontSize: 13, color: 'var(--n-400)' }}>Todo bajo control</div>
           </div>
         ) : (
           <div style={{ overflowX: 'auto' }}>
-            <table className="data-table" aria-label="Tráficos de importación temporal IMMEX">
+            <table className="data-table" aria-label="Embarques de importación temporal IMMEX">
             <thead>
               <tr>
-                <th>Tráfico</th>
+                <th>Embarque</th>
                 <th>Entrada</th>
                 <th>Límite 18m</th>
                 <th style={{ textAlign: 'right' }}>Días Restantes</th>

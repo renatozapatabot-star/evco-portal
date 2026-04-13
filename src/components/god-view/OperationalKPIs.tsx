@@ -22,19 +22,19 @@ interface KpiTile {
 export function OperationalKPIs({ enProceso, cruzadosHoy, listosDespacho, emailsHoy, tipoCambio, ahorroTmec }: Props) {
   const tiles: KpiTile[] = [
     {
-      href: '/traficos?estatus=En Proceso',
+      href: '/embarques?estatus=En Proceso',
       value: String(enProceso),
       label: 'En proceso',
       color: 'var(--warning-500, #D97706)',
     },
     {
-      href: '/traficos?estatus=Cruzado',
+      href: '/embarques?estatus=Cruzado',
       value: String(cruzadosHoy),
       label: 'Cruzados hoy',
       color: 'var(--success-500, #16A34A)',
     },
     {
-      href: '/traficos?pipeline_stage=ready_to_file',
+      href: '/embarques?pipeline_stage=ready_to_file',
       value: String(listosDespacho),
       label: 'Listos despacho',
       color: 'var(--gold, #E8EAED)',

@@ -268,14 +268,14 @@ export default function CalendarioPage() {
                 padding: '2px 8px', fontSize: 11, fontWeight: 700,
                 borderRadius: 9999, background: 'rgba(184,149,63,0.15)', color: T.gold,
               }}>
-                {items.length} tráfico{items.length !== 1 ? 's' : ''}
+                {items.length} embarque{items.length !== 1 ? 's' : ''}
               </span>
             </div>
-            {/* Tráfico list */}
+            {/* Embarque list */}
             {items.map(t => (
               <Link
                 key={t.trafico}
-                href={`/traficos/${encodeURIComponent(t.trafico)}`}
+                href={`/embarques/${encodeURIComponent(t.trafico)}`}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 12,
                   padding: '10px 20px', textDecoration: 'none',
@@ -599,7 +599,7 @@ export default function CalendarioPage() {
             {deadlinesByDate.get(selectedDate)!.map(d => (
               <Link
                 key={d.id}
-                href={`/traficos/${encodeURIComponent(d.trafico_id)}`}
+                href={`/embarques/${encodeURIComponent(d.trafico_id)}`}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 12,
                   padding: '10px 20px', textDecoration: 'none',
@@ -663,12 +663,12 @@ export default function CalendarioPage() {
               padding: '12px 20px', borderBottom: `1px solid ${T.border}`,
               fontSize: 14, fontWeight: 700, color: T.textPrimary,
             }}>
-              {dayLabel(selectedDate)} — {selectedTraficos.length} tráfico{selectedTraficos.length !== 1 ? 's' : ''}
+              {dayLabel(selectedDate)} — {selectedTraficos.length} embarque{selectedTraficos.length !== 1 ? 's' : ''}
             </div>
             {selectedTraficos.map(({ trafico: t, type }) => (
               <Link
                 key={`${t.trafico}-${type}`}
-                href={`/traficos/${encodeURIComponent(t.trafico)}`}
+                href={`/embarques/${encodeURIComponent(t.trafico)}`}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 12,
                   padding: '10px 20px', textDecoration: 'none',

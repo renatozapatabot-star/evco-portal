@@ -214,9 +214,9 @@ export default function EntradaDrawer({ entrada, onClose }: Props) {
             </div>
             <div className="grid grid-cols-2 gap-2">
               <DetailItem label="No. Entrada" value={entrada.cve_entrada} mono />
-              <DetailItem label="Tráfico" value={
+              <DetailItem label="Embarque" value={
                 entrada.trafico ? (
-                  <Link href="/traficos" className="mono font-semibold" style={{ color: '#1A6BFF', textDecoration: 'none' }}>
+                  <Link href="/embarques" className="mono font-semibold" style={{ color: '#1A6BFF', textDecoration: 'none' }}>
                     {fmtTrafico(entrada.trafico)}
                   </Link>
                 ) : ''
@@ -315,7 +315,7 @@ export default function EntradaDrawer({ entrada, onClose }: Props) {
             </div>
           )}
 
-          {/* Documents — from parent tráfico */}
+          {/* Documents — from parent embarque */}
           {entrada.trafico && <EntradaDocuments traficoId={entrada.trafico} />}
 
         </div>

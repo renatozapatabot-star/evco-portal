@@ -73,7 +73,7 @@ export default function LotesPage() {
     } else if (batch.action === 'aprobar') {
       window.location.href = '/drafts'
     } else {
-      window.location.href = '/traficos'
+      window.location.href = '/embarques'
     }
     setProcessing(null)
   }
@@ -102,7 +102,7 @@ export default function LotesPage() {
           Lotes
         </h1>
         <p style={{ margin: 0, fontSize: 14, color: '#6B6B6B' }}>
-          {totalTraficos} tráficos activos agrupados para procesamiento rápido
+          {totalTraficos} embarques activos agrupados para procesamiento rápido
         </p>
       </div>
 
@@ -129,7 +129,7 @@ export default function LotesPage() {
             <span className="font-mono" style={{ fontSize: 20, fontWeight: 700, color: 'rgba(255,255,255,0.03)' }}>
               {totalTraficos}
             </span>
-            <p style={{ margin: '2px 0 0', fontSize: 12, color: '#9B9B9B' }}>tráficos</p>
+            <p style={{ margin: '2px 0 0', fontSize: 12, color: '#9B9B9B' }}>embarques</p>
           </div>
           <div>
             <span className="font-mono" style={{ fontSize: 20, fontWeight: 700, color: 'var(--gold)' }}>
@@ -145,7 +145,7 @@ export default function LotesPage() {
         <EmptyState
           icon="&#128230;"
           title="Sin lotes disponibles"
-          description="No hay suficientes tráficos activos para agrupar. Los lotes aparecen cuando hay 2+ operaciones similares."
+          description="No hay suficientes embarques activos para agrupar. Los lotes aparecen cuando hay 2+ operaciones similares."
         />
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -174,7 +174,7 @@ export default function LotesPage() {
                 </div>
               </div>
 
-              {/* Tráfico chips (show first 5) */}
+              {/* Embarque chips (show first 5) */}
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                 {batch.traficos.slice(0, 5).map(t => (
                   <span

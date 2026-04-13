@@ -66,7 +66,7 @@ export default function BienvenidaPage() {
       }
       setStats({
         traficos: rows.length,
-        docs: rows.filter((r: Record<string, unknown>) => r.pedimento).length * 5, // Approximate: ~5 docs per tráfico
+        docs: rows.filter((r: Record<string, unknown>) => r.pedimento).length * 5, // Approximate: ~5 docs per embarque
         suppliers: supplierSet.size,
         value: Math.round(totalValue),
       })
@@ -110,7 +110,7 @@ export default function BienvenidaPage() {
         display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)', gap: 16,
         maxWidth: 480, width: '100%', marginBottom: isMobile ? 24 : 40,
       }}>
-        <AnimatedCounter target={stats.traficos} label="tráficos encontrados" delay={300} />
+        <AnimatedCounter target={stats.traficos} label="embarques encontrados" delay={300} />
         <AnimatedCounter target={stats.docs} label="documentos en expediente" delay={600} />
         <AnimatedCounter target={stats.suppliers} label="proveedores identificados" delay={900} />
         <AnimatedCounter target={stats.value} label="$ USD en operaciones" delay={1200} />

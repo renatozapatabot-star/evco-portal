@@ -26,7 +26,7 @@ export function useKeyboardShortcuts() {
       if (e.altKey) return
 
       const routes: Record<string, string> = {
-        '1':'/', '2':'/traficos', '3':'/entradas', '4':'/pedimentos',
+        '1':'/', '2':'/embarques', '3':'/entradas', '4':'/pedimentos',
         '5':'/expedientes', '6':'/reportes', '7':'/cuentas', '8':'/anexo24',
       }
       if (routes[e.key]) { e.preventDefault(); router.push(routes[e.key]); return }

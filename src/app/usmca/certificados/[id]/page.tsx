@@ -124,7 +124,7 @@ export default async function UsmcaCertDetailPage({ params }: { params: Promise<
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16, marginBottom: 20 }}>
             <Field label="País origen" value={cert.country_of_origin} mono />
             <Field label="Método RVC" value={cert.rvc_method ?? '—'} />
-            <Field label="Tráfico" value={cert.trafico_id ?? '—'} mono />
+            <Field label="Embarque" value={cert.trafico_id ?? '—'} mono />
           </div>
 
           <SectionHeader title="Bienes" />

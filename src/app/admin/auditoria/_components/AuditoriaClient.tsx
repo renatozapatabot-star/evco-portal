@@ -18,7 +18,7 @@ const GLASS: React.CSSProperties = {
 
 const TABLES = [
   { value: 'all', label: 'Todas' },
-  { value: 'traficos', label: 'Tráficos' },
+  { value: 'traficos', label: 'Embarques' },
   { value: 'partidas', label: 'Partidas' },
   { value: 'pedimentos', label: 'Pedimentos' },
   { value: 'clientes', label: 'Clientes' },

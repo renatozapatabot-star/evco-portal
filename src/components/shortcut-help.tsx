@@ -6,7 +6,7 @@ const SHORTCUTS = [
   { section: 'Navegación', items: [
     { keys: ['Ctrl','K'], desc: 'Abrir búsqueda global' },
     { keys: ['g','d'], desc: 'Ir a Dashboard' },
-    { keys: ['g','t'], desc: 'Ir a Tráficos' },
+    { keys: ['g','t'], desc: 'Ir a Embarques' },
     { keys: ['g','e'], desc: 'Ir a Entradas' },
     { keys: ['g','p'], desc: 'Ir a Pedimentos' },
     { keys: ['g','x'], desc: 'Ir a Expedientes' },

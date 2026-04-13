@@ -23,16 +23,16 @@ export function SmartQueuePanel({ queue, onItemClick }: Props) {
       title="Cola de trabajo"
       activeCondition={cardState.activeCondition}
       activeAction={cardState.activeAction}
-      actionHref={queue.length > 0 ? `/traficos/${encodeURIComponent(queue[0].trafico)}` : undefined}
+      actionHref={queue.length > 0 ? `/embarques/${encodeURIComponent(queue[0].trafico)}` : undefined}
       quietContent={
         queue.length === 0 ? (
           <div style={{ padding: '12px 0', textAlign: 'center', color: '#6E7681', fontSize: 13 }}>
-            Cola vacía — sin tráficos pendientes
+            Cola vacía — sin embarques pendientes
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {queue.map((item, i) => (
-              <div key={item.trafico} onClick={() => onItemClick ? onItemClick(item) : window.location.assign(`/traficos/${encodeURIComponent(item.trafico)}`)} style={{ cursor: 'pointer',
+              <div key={item.trafico} onClick={() => onItemClick ? onItemClick(item) : window.location.assign(`/embarques/${encodeURIComponent(item.trafico)}`)} style={{ cursor: 'pointer',
                 display: 'flex', alignItems: 'center', gap: 12,
                 padding: '10px 12px',
                 background: i === 0 ? 'rgba(192,197,206,0.06)' : 'rgba(255,255,255,0.02)',

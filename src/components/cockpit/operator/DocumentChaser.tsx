@@ -21,7 +21,7 @@ export function DocumentChaser({ blocked, operatorName }: Props) {
     const docList = item.missingDocs.map(d => `  • ${d}`).join('\n')
     const message = `Hola,
 
-Estamos preparando el tráfico ${item.trafico} y aún nos faltan los siguientes documentos:
+Estamos preparando el embarque ${item.trafico} y aún nos faltan los siguientes documentos:
 
 ${docList}
 
@@ -47,9 +47,9 @@ Patente 3596 · Aduana 240`
       id="operator-doc-chaser"
       state={withMissingDocs.length > 2 ? 'urgent' : 'active'}
       title="Documentos faltantes"
-      activeCondition={`${withMissingDocs.length} tráfico${withMissingDocs.length !== 1 ? 's' : ''} con documentos pendientes`}
+      activeCondition={`${withMissingDocs.length} embarque${withMissingDocs.length !== 1 ? 's' : ''} con documentos pendientes`}
       activeAction="Enviar recordatorio"
-      urgentCondition={withMissingDocs.length > 2 ? `${withMissingDocs.length} tráficos esperando documentos` : undefined}
+      urgentCondition={withMissingDocs.length > 2 ? `${withMissingDocs.length} embarques esperando documentos` : undefined}
       urgentAction={withMissingDocs.length > 2 ? 'Resolver ahora' : undefined}
       quietContent={
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -60,7 +60,7 @@ Patente 3596 · Aduana 240`
               borderRadius: 8, border: '1px solid rgba(9,9,11,0.75)', gap: 10,
             }}>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <Link href={`/traficos/${encodeURIComponent(item.trafico)}`} style={{
+                <Link href={`/embarques/${encodeURIComponent(item.trafico)}`} style={{
                   textDecoration: 'none',
                 }}>
                   <span className="font-mono" style={{ fontSize: 13, fontWeight: 600, color: '#E8EAED' }}>

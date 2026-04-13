@@ -226,7 +226,7 @@ function PedimentosContent() {
           <div className="toolbar-search" style={{ minHeight: 60 }}>
             <Search size={12} style={{ color: 'var(--slate-400)', flexShrink: 0 }} />
             <input
-              placeholder="Pedimento, tráfico, proveedor..."
+              placeholder="Pedimento, embarque, proveedor..."
               value={search}
               onChange={e => { setSearch(e.target.value); setPage(0) }}
               aria-label="Buscar pedimentos"
@@ -252,7 +252,7 @@ function PedimentosContent() {
               <button className="btn btn-outline btn-sm" style={{ marginTop: 12 }} onClick={() => { setSearch(''); setPage(0) }}>Limpiar búsqueda</button>
             </div>
           ) : (
-            <EmptyState icon="📋" title="Sin pedimentos registrados" description="Los pedimentos aparecerán aquí cuando se asignen a los tráficos." />
+            <EmptyState icon="📋" title="Sin pedimentos registrados" description="Los pedimentos aparecerán aquí cuando se asignen a los embarques." />
           )
         )}
 
@@ -298,7 +298,7 @@ function PedimentosContent() {
               <thead>
                 <tr>
                   <th style={{ cursor: 'pointer', width: 160 }} onClick={() => toggleSort('pedimento')}>Pedimento<SortArrow col="pedimento" sort={sort} /></th>
-                  <th style={{ width: 140, cursor: 'pointer' }} onClick={() => toggleSort('trafico')}>Tráfico<SortArrow col="trafico" sort={sort} /></th>
+                  <th style={{ width: 140, cursor: 'pointer' }} onClick={() => toggleSort('trafico')}>Embarque<SortArrow col="trafico" sort={sort} /></th>
                   <th style={{ cursor: 'pointer', width: 110 }} onClick={() => toggleSort('fecha')}>Fecha<SortArrow col="fecha" sort={sort} /></th>
                   <th>Mercancía</th>
                   <th style={{ width: 100, cursor: 'pointer' }} onClick={() => toggleSort('regimen')}>Régimen<SortArrow col="regimen" sort={sort} /></th>
@@ -321,7 +321,7 @@ function PedimentosContent() {
                     </td>
                     <td>
                       <Link
-                        href={`/traficos/${encodeURIComponent(g.trafico)}`}
+                        href={`/embarques/${encodeURIComponent(g.trafico)}`}
                         onClick={e => e.stopPropagation()}
                         style={{ fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 600, color: 'var(--gold-dark, #7A7E86)', textDecoration: 'none' }}
                       >

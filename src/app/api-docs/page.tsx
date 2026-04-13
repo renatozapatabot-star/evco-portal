@@ -6,7 +6,7 @@ import { useIsMobile } from '@/hooks/use-mobile'
 import { PORTAL_URL } from '@/lib/client-config'
 
 const ENDPOINTS = [
-  { method: 'GET', path: '/api/v1/intelligence?type=risk&id={trafico_id}', desc: 'Risk score for a tráfico', example: '?type=risk&id={trafico_id}' },
+  { method: 'GET', path: '/api/v1/intelligence?type=risk&id={trafico_id}', desc: 'Risk score for a embarque', example: '?type=risk&id={trafico_id}' },
   { method: 'GET', path: '/api/v1/intelligence?type=crossing&id={trafico_id}', desc: 'Crossing time prediction', example: '?type=crossing&id={trafico_id}' },
   { method: 'GET', path: '/api/v1/intelligence?type=supplier&id={name}', desc: 'Supplier intelligence profile', example: '?type=supplier&id=COVESTRO' },
   { method: 'GET', path: '/api/v1/intelligence?type=benchmark', desc: 'Client benchmarks vs industry', example: '?type=benchmark' },

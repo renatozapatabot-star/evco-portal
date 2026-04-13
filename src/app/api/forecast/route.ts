@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
     .maybeSingle()
 
   if (!data) {
-    // Generate on-the-fly from tráficos
+    // Generate on-the-fly from embarques
     const yearAgo = new Date(Date.now() - 365 * 86400000).toISOString().split('T')[0]
     const { data: traficos } = await supabase
       .from('traficos')

@@ -41,13 +41,13 @@ export function MorningSummary() {
       if (active.length === 0) {
         summaryItems.push({
           icon: 'check',
-          text: 'Sin tráficos pendientes — todas las operaciones están al día',
+          text: 'Sin embarques pendientes — todas las operaciones están al día',
         })
       } else {
         summaryItems.push({
           icon: 'alert',
-          text: `${active.length} tráfico${active.length !== 1 ? 's' : ''} en proceso`,
-          href: '/traficos?estatus=En Proceso',
+          text: `${active.length} embarque${active.length !== 1 ? 's' : ''} en proceso`,
+          href: '/embarques?estatus=En Proceso',
         })
       }
 
@@ -62,8 +62,8 @@ export function MorningSummary() {
       if (recentlyCrossed.length > 0) {
         summaryItems.push({
           icon: 'check',
-          text: `${recentlyCrossed.length} tráfico${recentlyCrossed.length !== 1 ? 's' : ''} cruzado${recentlyCrossed.length !== 1 ? 's' : ''} recientemente`,
-          href: '/traficos?estatus=Cruzado',
+          text: `${recentlyCrossed.length} embarque${recentlyCrossed.length !== 1 ? 's' : ''} cruzado${recentlyCrossed.length !== 1 ? 's' : ''} recientemente`,
+          href: '/embarques?estatus=Cruzado',
         })
       }
 

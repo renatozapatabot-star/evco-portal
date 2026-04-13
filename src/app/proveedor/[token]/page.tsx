@@ -10,7 +10,7 @@
  * Tiles:
  *   1. Documentos solicitados — checklist of missing / received docs.
  *   2. Subir documento — drag/pick uploader routed to /api/upload-token.
- *   3. Ver tráfico — read-only summary panel.
+ *   3. Ver embarque — read-only summary panel.
  *   4. Confirmar embarque — POSTs to /api/supplier/confirm-shipment,
  *      emits workflow_event. 5-second undo window would belong on the
  *      operator side; here the supplier needs a hard click + visible
@@ -412,7 +412,7 @@ export default function ProveedorPage() {
               fontFamily: 'var(--font-jetbrains-mono), var(--font-mono), monospace',
             }}
           >
-            Tráfico {info.trafico_id}
+            Embarque {info.trafico_id}
           </div>
           <div style={{ fontSize: 14, color: '#94a3b8', lineHeight: 1.5 }}>
             Cliente: <strong style={{ color: '#E6EDF3' }}>{clientName}</strong>
@@ -501,7 +501,7 @@ export default function ProveedorPage() {
           />
           <ActionCard
             icon={Eye}
-            label="Ver tráfico"
+            label="Ver embarque"
             description="Detalles del embarque"
             count={null}
             onClick={() => setPanel(panel === 'trafico' ? null : 'trafico')}
@@ -754,8 +754,8 @@ export default function ProveedorPage() {
         )}
 
         {panel === 'trafico' && (
-          <Panel title="Detalles del tráfico" onClose={() => setPanel(null)}>
-            <Row label="Tráfico" value={info.trafico_id} mono />
+          <Panel title="Detalles del embarque" onClose={() => setPanel(null)}>
+            <Row label="Embarque" value={info.trafico_id} mono />
             <Row label="Cliente" value={clientName} />
             <Row label="Documentos requeridos" value={String(info.required_docs?.length ?? 0)} mono />
             <Row

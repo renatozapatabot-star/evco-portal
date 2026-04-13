@@ -10,8 +10,8 @@ export function CruzFAB() {
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
 
-  // Context-aware: on tráfico detail, pre-fill upload
-  const isTraficoDetail = pathname.startsWith('/traficos/') && pathname !== '/traficos'
+  // Context-aware: on embarque detail, pre-fill upload
+  const isTraficoDetail = pathname.startsWith('/embarques/') && pathname !== '/embarques'
   const traficoId = isTraficoDetail ? decodeURIComponent(pathname.split('/')[2] || '') : ''
 
   const actions = [

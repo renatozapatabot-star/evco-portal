@@ -45,9 +45,9 @@ const DOCS_LIMIT = 100
 const NOTIF_LIMIT = 30
 
 /**
- * Active tráficos for the cliente, plus the most recent workflow event per row.
+ * Active embarques for the cliente, plus the most recent workflow event per row.
  *
- * Two-step batched fetch (N+1 avoided): pull tráficos, then pull all events
+ * Two-step batched fetch (N+1 avoided): pull embarques, then pull all events
  * for those trigger_ids in a single `in()` call.
  */
 export async function getClienteActiveTraficos(
@@ -67,9 +67,9 @@ export async function getClienteActiveTraficos(
 
   let rows = (traficos ?? []) as Array<Record<string, unknown>>
 
-  // WHY: EVCO has seasonal quiet periods where every tráfico really is closed.
+  // WHY: EVCO has seasonal quiet periods where every embarque really is closed.
   // The cockpit still needs to show life — fall back to the most recent 90 days
-  // of tráficos regardless of estatus so Mis Tráficos Activos is never blank
+  // of embarques regardless of estatus so Mis Embarques Activos is never blank
   // for a client that has real history.
   if (rows.length === 0) {
     const ninetyDaysAgo = new Date(Date.now() - 90 * 86400000).toISOString()
@@ -123,7 +123,7 @@ export async function getClienteActiveTraficos(
 }
 
 /**
- * All documents across the cliente's tráficos. Recent first, capped at 100.
+ * All documents across the cliente's embarques. Recent first, capped at 100.
  *
  * Scopes by joining through company_id — the expediente_documentos RLS policy
  * handles the hard wall, this filter is belt-and-suspenders.
@@ -134,7 +134,7 @@ export async function getClienteDocuments(
 ): Promise<ClienteDocumento[]> {
   if (!companyId) return []
 
-  // Pull cliente's tráfico refs first (cheap, company_id indexed).
+  // Pull cliente's embarque refs first (cheap, company_id indexed).
   const { data: traficos } = await supabase
     .from('traficos')
     .select('trafico')
@@ -165,7 +165,7 @@ export async function getClienteDocuments(
 }
 
 /**
- * Last 30 workflow events affecting the cliente's tráficos, reverse chrono.
+ * Last 30 workflow events affecting the cliente's embarques, reverse chrono.
  */
 export async function getClienteNotifications(
   supabase: AnyClient,

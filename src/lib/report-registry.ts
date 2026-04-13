@@ -36,12 +36,12 @@ export const REPORT_ENTITIES: readonly ReportEntity[] = [
   {
     id: 'traficos',
     table: 'traficos',
-    label: 'Tráficos',
+    label: 'Embarques',
     iconName: 'Truck',
     scope: 'company',
     primaryDateColumn: 'fecha_llegada',
     columns: [
-      col('trafico', 'Tráfico', 'text'),
+      col('trafico', 'Embarque', 'text'),
       col('pedimento', 'Pedimento', 'text'),
       col('estatus', 'Estatus', 'text'),
       col('descripcion_mercancia', 'Descripción', 'text'),
@@ -94,7 +94,7 @@ export const REPORT_ENTITIES: readonly ReportEntity[] = [
     iconName: 'ListOrdered',
     scope: 'internal',
     columns: [
-      col('cve_trafico', 'Tráfico', 'text'),
+      col('cve_trafico', 'Embarque', 'text'),
       col('numero_parte', 'Número de parte', 'text'),
       col('descripcion', 'Descripción', 'text'),
       col('fraccion_arancelaria', 'Fracción', 'text'),
@@ -126,7 +126,7 @@ export const REPORT_ENTITIES: readonly ReportEntity[] = [
     primaryDateColumn: 'fecha_entrada',
     columns: [
       col('cve_entrada', 'Entrada', 'text'),
-      col('trafico', 'Tráfico', 'text'),
+      col('trafico', 'Embarque', 'text'),
       col('descripcion_mercancia', 'Descripción', 'text'),
       col('fecha_entrada', 'Fecha entrada', 'date', { format: 'es-MX-date' }),
       col('bultos', 'Bultos', 'number'),
@@ -171,7 +171,7 @@ export const REPORT_ENTITIES: readonly ReportEntity[] = [
     columns: [
       col('event_type', 'Tipo de evento', 'text'),
       col('display_name_es', 'Descripción', 'text'),
-      col('trafico', 'Tráfico', 'text'),
+      col('trafico', 'Embarque', 'text'),
       col('category', 'Categoría', 'text'),
       col('author_id', 'Autor', 'text', { advanced: true }),
       col('created_at', 'Fecha', 'date', { format: 'es-MX-datetime' }),
@@ -189,7 +189,7 @@ export const REPORT_ENTITIES: readonly ReportEntity[] = [
       col('decision_type', 'Tipo', 'text'),
       col('decision', 'Decisión', 'text'),
       col('reasoning', 'Razonamiento', 'text'),
-      col('trafico', 'Tráfico', 'text'),
+      col('trafico', 'Embarque', 'text'),
       col('alternatives_considered', 'Alternativas', 'text', { advanced: true }),
       col('data_points_used', 'Datos utilizados', 'text', { advanced: true }),
       col('created_at', 'Fecha', 'date', { format: 'es-MX-datetime' }),

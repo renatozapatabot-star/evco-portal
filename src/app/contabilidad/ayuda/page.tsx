@@ -17,7 +17,7 @@ const SECTIONS: { title: string; body: string }[] = [
   {
     title: 'Cómo facturar',
     body:
-      'Abre "Pendientes de facturar" desde el cockpit. Cada renglón corresponde a un tráfico cruzado que aún no tiene factura emitida. Al seleccionarlo, Portal pre-llena concepto, importe y tipo de cambio desde el pedimento. Revisa, ajusta si hace falta, y emite.',
+      'Abre "Pendientes de facturar" desde el cockpit. Cada renglón corresponde a un embarque cruzado que aún no tiene factura emitida. Al seleccionarlo, Portal pre-llena concepto, importe y tipo de cambio desde el pedimento. Revisa, ajusta si hace falta, y emite.',
   },
   {
     title: 'Cómo registrar un pago',
@@ -27,7 +27,7 @@ const SECTIONS: { title: string; body: string }[] = [
   {
     title: 'Contacto',
     body:
-      'Para dudas fiscales o correcciones mayores, contacta a Renato IV por WhatsApp. Si un tráfico aparece en pendientes pero ya se facturó externamente, márcalo como "facturado fuera de sistema" para no ensuciar el conteo.',
+      'Para dudas fiscales o correcciones mayores, contacta a Renato IV por WhatsApp. Si un embarque aparece en pendientes pero ya se facturó externamente, márcalo como "facturado fuera de sistema" para no ensuciar el conteo.',
   },
 ]
 

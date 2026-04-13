@@ -51,7 +51,7 @@ export default async function ClasificadorPage() {
           Sube · auto-clasifica · valida contra TIGIE.
           La pantalla de subida + OCR + clasificación automática se libera en
           el siguiente build. Mientras tanto, el flujo de clasificación manual
-          sigue disponible desde el tráfico.
+          sigue disponible desde el embarque.
         </p>
         <div style={{ display: 'flex', gap: 12, marginTop: 24, flexWrap: 'wrap' }}>
           <Link href="/clasificar" style={{

@@ -52,7 +52,7 @@ export async function POST(request: Request) {
       // Log decision
       await supabase.from('operational_decisions').insert({
         decision_type: 'pedimento_approval',
-        description: `Pedimento aprobado vía Telegram para tráfico ${traficoId}`,
+        description: `Pedimento aprobado vía Telegram para embarque ${traficoId}`,
         trafico_id: traficoId,
         decided_by: 'tito',
       })

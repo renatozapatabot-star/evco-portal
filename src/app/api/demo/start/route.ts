@@ -2,7 +2,7 @@
  * AGUILA · V1.5 F9 — POST /api/demo/start
  *
  * Admin/broker only. Creates the synthetic DEMO EVCO PLASTICS company if
- * absent, inserts a fresh DEMO- tráfico, kicks off the 12-step orchestrator
+ * absent, inserts a fresh DEMO- embarque, kicks off the 12-step orchestrator
  * in the background, and returns `{ runId, traficoId }` so the UI can poll
  * /api/demo/status/[runId].
  */
@@ -69,7 +69,7 @@ export async function POST() {
         data: null,
         error: {
           code: 'INTERNAL_ERROR',
-          message: err instanceof Error ? err.message : 'Error creando tráfico',
+          message: err instanceof Error ? err.message : 'Error creando embarque',
         },
       },
       { status: 500 },

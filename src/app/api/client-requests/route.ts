@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
       await sendTelegram(
         `🔄 <b>Solicitud de cambio</b>\n` +
         `Cliente: ${session.companyId}\n` +
-        `Tráfico: ${trafico_id || 'General'}\n` +
+        `Embarque: ${trafico_id || 'General'}\n` +
         `Tipo: ${change_type}\n` +
         `${description}`
       )

@@ -265,7 +265,7 @@ export const ACTION_FILE_RECTIFICATION: SuggestedAction = {
   event_type: 'rectification_filed',
 }
 
-// Initial state — what an operator sees on a brand new tráfico.
+// Initial state — what an operator sees on a brand new embarque.
 export const STARTER_ACTIONS: SuggestedAction[] = [
   ACTION_MARK_RECEIVED,
   ACTION_CAPTURE_INITIAL,
@@ -340,7 +340,7 @@ export function getSuggestedActions(currentState: string | null): SuggestedActio
 /**
  * Derive the current lifecycle state from a list of workflow_events.
  * Assumes the caller sorts by `created_at DESC` (newest first). Returns
- * the most recent event_type, or null when the tráfico has no events yet.
+ * the most recent event_type, or null when the embarque has no events yet.
  */
 export function getCurrentState(
   events: Array<{ event_type: string; created_at: string }>,

@@ -280,7 +280,7 @@ export default function MveAlertsPage() {
                   className="text-[10px] uppercase tracking-[0.08em] mb-0.5"
                   style={{ color: ACCENT_SILVER_DIM }}
                 >
-                  Tráfico
+                  Embarque
                 </div>
                 <div className="text-[12.5px]" style={{ fontFamily: 'var(--font-mono)', color: '#E6EDF3' }}>
                   {a.trafico_id}
@@ -307,11 +307,11 @@ export default function MveAlertsPage() {
 
               <div className="flex items-center gap-2">
                 <a
-                  href={`/traficos/${encodeURIComponent(a.trafico_id)}`}
+                  href={`/embarques/${encodeURIComponent(a.trafico_id)}`}
                   className="text-[12.5px] font-medium"
                   style={{ color: ACCENT_SILVER, minHeight: 44, display: 'inline-flex', alignItems: 'center' }}
                 >
-                  Ver tráfico →
+                  Ver embarque →
                 </a>
                 {!a.resolved && (
                   <button

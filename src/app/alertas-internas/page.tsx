@@ -30,15 +30,15 @@ const SEVERITY_CONFIG: Record<string, { icon: string; color: string; bg: string;
 }
 
 const METRIC_LABELS: Record<string, string> = {
-  zombie_traficos: 'Tráficos zombie (>30 días)',
+  zombie_traficos: 'Embarques zombie (>30 días)',
   missing_tmec: 'T-MEC faltante',
   duplicate_descriptions: 'Posible doble entrada',
   duplicate_pedimentos: 'Pedimentos duplicados',
   high_value_outliers: 'Valores atípicos',
-  row_count_traficos: 'Conteo de tráficos',
+  row_count_traficos: 'Conteo de embarques',
   row_count_entradas: 'Conteo de entradas',
   expediente_coverage: 'Cobertura de expedientes',
-  stale_traficos: 'Tráficos sin pedimento',
+  stale_traficos: 'Embarques sin pedimento',
 }
 
 export default function AlertasInternasPage() {

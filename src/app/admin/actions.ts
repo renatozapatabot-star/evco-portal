@@ -33,17 +33,17 @@ export async function sendChaserEmail(formData: FormData): Promise<{ success?: b
     .eq('id', traficoId)
     .single()
 
-  if (!trafico) return { error: 'Tráfico no encontrado' }
+  if (!trafico) return { error: 'Embarque no encontrado' }
 
   const daysStuck = Math.floor((Date.now() - new Date(trafico.created_at).getTime()) / 86400000)
   const name = operatorName || 'colega'
 
-  const subject = `Seguimiento: tráfico ${trafico.trafico} — ${daysStuck} días sin avance`
+  const subject = `Seguimiento: embarque ${trafico.trafico} — ${daysStuck} días sin avance`
   const textBody = `Hola ${name},
 
-Este tráfico ha estado en proceso por ${daysStuck} días sin movimiento. ¿Puedes darme un status?
+Este embarque ha estado en proceso por ${daysStuck} días sin movimiento. ¿Puedes darme un status?
 
-Tráfico: ${trafico.trafico}
+Embarque: ${trafico.trafico}
 Descripción: ${trafico.descripcion_mercancia || 'Sin descripción'}
 Valor: $${Number(trafico.importe_total || 0).toLocaleString('es-MX')} USD
 Cliente: ${trafico.company_id || '—'}

@@ -324,7 +324,7 @@ export default function TraficoDrawer({ trafico, onClose }: Props) {
               Información del Embarque
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <DetailItem label="Tráfico"        value={fmtId(trafico.trafico)} mono />
+              <DetailItem label="Embarque"        value={fmtId(trafico.trafico)} mono />
               <DetailItem label="Pedimento"       value={trafico.pedimento ?? ''} mono />
               <DetailItem label="Fecha Llegada"   value={fmtDate(trafico.fecha_llegada)} />
               <DetailItem label="Peso Bruto"      value={fmtPeso(trafico.peso_bruto)} mono />

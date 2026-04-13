@@ -331,7 +331,7 @@ export function AdminCockpit(props: AdminCockpitProps) {
             const isOld = ageMs > 72 * 3600000
             const assignedName = t.assigned_to_operator_id ? (props.opNames[t.assigned_to_operator_id] || 'Asignado') : 'Sin asignar'
             return (
-              <Link key={t.id} href={`/traficos/${t.id}`} style={{
+              <Link key={t.id} href={`/embarques/${t.id}`} style={{
                 display: 'flex', alignItems: 'center', gap: 10,
                 padding: '10px 12px', borderRadius: 8, textDecoration: 'none', color: 'inherit',
                 borderLeft: `3px solid ${isOld ? RED : AMBER}`,

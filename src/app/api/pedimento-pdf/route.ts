@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
     .eq('company_id', companyId)
     .single()
 
-  if (!trafico) return NextResponse.json({ error: 'Tráfico no encontrado' }, { status: 404 })
+  if (!trafico) return NextResponse.json({ error: 'Embarque no encontrado' }, { status: 404 })
 
   // Primary: commercial invoices from GlobalPC (full history).
   const { data: globalFacturas } = await supabase
@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
 
   if ((!globalFacturas || globalFacturas.length === 0) && (!cbpFacturas || cbpFacturas.length === 0)) {
     return NextResponse.json(
-      { error: `Sin facturas sincronizadas para tráfico ${traficoId}. Verificar sync GlobalPC.` },
+      { error: `Sin facturas sincronizadas para embarque ${traficoId}. Verificar sync GlobalPC.` },
       { status: 422 }
     )
   }

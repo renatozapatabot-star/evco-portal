@@ -30,7 +30,7 @@ const TYPE_COLORS: Record<string, string> = {
 }
 
 const TYPE_LABELS: Record<string, string> = {
-  trafico: 'Tráfico',
+  trafico: 'Embarque',
   entrada: 'Entrada',
   pedimento: 'Pedimento',
   expediente: 'Expediente',

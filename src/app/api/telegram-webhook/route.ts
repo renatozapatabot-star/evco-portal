@@ -362,7 +362,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: true })
     }
 
-    // Handle /status command — quick tráfico summary
+    // Handle /status command — quick embarque summary
     if (text === '/status') {
       const supabase = createServerClient()
       const today = new Date().toISOString().slice(0, 10)
@@ -386,7 +386,7 @@ export async function POST(request: NextRequest) {
 
       await sendTelegramReply(
         chatId,
-        `📊 <b>Estado CRUZ</b>\n\n${activos} tráficos activos · ${cruzaron} cruzaron hoy · ${urgentes} urgentes`,
+        `📊 <b>Estado CRUZ</b>\n\n${activos} embarques activos · ${cruzaron} cruzaron hoy · ${urgentes} urgentes`,
         msg.message_id,
       )
       return NextResponse.json({ ok: true })

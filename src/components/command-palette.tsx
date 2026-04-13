@@ -12,7 +12,7 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'dashboard',   label: 'Dashboard',     sublabel: 'Inicio',        icon: LayoutDashboard, href: '/',            category: 'Navegación' },
   { id: 'cruz',        label: 'ADUANA AI',       sublabel: 'Asistente inteligente', icon: MessageSquare, href: '__cruz_chat__',       category: 'Navegación' },
   { id: 'voz',         label: 'Modo Voz',      sublabel: 'Control por voz', icon: Mic,           href: '/voz',         category: 'Navegación' },
-  { id: 'traficos',    label: 'Tráficos',      sublabel: 'Operaciones',   icon: Truck,           href: '/traficos',    category: 'Navegación' },
+  { id: 'traficos',    label: 'Embarques',      sublabel: 'Operaciones',   icon: Truck,           href: '/embarques',    category: 'Navegación' },
   { id: 'entradas',    label: 'Entradas',       sublabel: 'Remesas bodega',icon: Package,         href: '/entradas',    category: 'Navegación' },
   { id: 'pedimentos',  label: 'Pedimentos',     sublabel: 'Despachados',   icon: FileText,        href: '/pedimentos',  category: 'Navegación' },
   { id: 'expedientes', label: 'Expedientes',    sublabel: 'Documentos',    icon: FolderOpen,      href: '/expedientes', category: 'Navegación' },
@@ -65,7 +65,7 @@ export function CommandPalette() {
         if (controller.signal.aborted) return
         const results: NavItem[] = []
         ;((data.traficos || []) as Array<Record<string, string>>).slice(0, 5).forEach((t) => {
-          results.push({ id: `t-${t.trafico}`, label: t.trafico, sublabel: t.descripcion_mercancia?.slice(0, 40) || t.estatus || '', icon: Truck, href: `/traficos/${encodeURIComponent(t.trafico)}`, category: 'Tráficos' })
+          results.push({ id: `t-${t.trafico}`, label: t.trafico, sublabel: t.descripcion_mercancia?.slice(0, 40) || t.estatus || '', icon: Truck, href: `/embarques/${encodeURIComponent(t.trafico)}`, category: 'Embarques' })
         })
         ;((data.pedimentos || []) as Array<Record<string, string>>).slice(0, 3).forEach((p) => {
           results.push({ id: `p-${p.pedimento || p.referencia}`, label: p.pedimento || p.referencia, sublabel: p.proveedor || '', icon: FileText, href: '/pedimentos', category: 'Pedimentos' })
@@ -114,7 +114,7 @@ export function CommandPalette() {
       <div className="cmd-palette" role="dialog" aria-label="Buscar en CRUZ" aria-modal="true">
         <div className="cmd-search-row">
           <Search size={16} style={{ color: 'var(--n-400)', flexShrink: 0 }} />
-          <input ref={inputRef} className="cmd-input" placeholder="Buscar tráfico, pedimento, página..." value={query} onChange={e => { setQuery(e.target.value); setSelected(0) }} onKeyDown={handleKey} />
+          <input ref={inputRef} className="cmd-input" placeholder="Buscar embarque, pedimento, página..." value={query} onChange={e => { setQuery(e.target.value); setSelected(0) }} onKeyDown={handleKey} />
           {searching && <Loader2 size={14} style={{ color: 'var(--n-400)', animation: 'spin 0.7s linear infinite', flexShrink: 0 }} />}
           <kbd className="cmd-esc">ESC</kbd>
         </div>
@@ -143,7 +143,7 @@ export function CommandPalette() {
         </div>
         <div className="cmd-footer">
           <span>↑↓ navegar</span><span>↵ abrir</span><span>esc cerrar</span>
-          <span style={{ marginLeft: 'auto', opacity: 0.6 }}>g+t tráficos · g+e entradas</span>
+          <span style={{ marginLeft: 'auto', opacity: 0.6 }}>g+t embarques · g+e entradas</span>
         </div>
       </div>
     </>

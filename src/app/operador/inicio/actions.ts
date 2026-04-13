@@ -74,7 +74,7 @@ export async function markEntradaReceived(
 ): Promise<ActionResult> {
   const op = await getOperator()
   if (!op) return { success: false, error: 'No autorizado' }
-  if (!traficoId) return { success: false, error: 'Tráfico requerido' }
+  if (!traficoId) return { success: false, error: 'Embarque requerido' }
 
   const { data: entradas, error: fetchErr } = await supabase
     .from('entradas')
@@ -85,7 +85,7 @@ export async function markEntradaReceived(
 
   if (fetchErr) return { success: false, error: fetchErr.message }
   if (!entradas || entradas.length === 0) {
-    return { success: false, error: 'Sin entradas pendientes en este tráfico' }
+    return { success: false, error: 'Sin entradas pendientes en este embarque' }
   }
 
   const ids = entradas.map(e => e.cve_entrada)
@@ -183,7 +183,7 @@ export async function sendQuickEmail(
 ): Promise<ActionResult> {
   const op = await getOperator()
   if (!op) return { success: false, error: 'No autorizado' }
-  if (!traficoId) return { success: false, error: 'Tráfico requerido' }
+  if (!traficoId) return { success: false, error: 'Embarque requerido' }
 
   // V1: email is DRAFT-ONLY. Approval gate is absolute per CLAUDE.md.
   // We insert a pending workflow_event — the standard solicitation pipeline

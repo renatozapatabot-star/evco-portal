@@ -50,7 +50,7 @@ export function SmartSuggestions({ onPick, onSuggestionClick }: Props) {
   }, [])
 
   const staticHints = [
-    { label: 'Tráficos activos hoy', query: 'activo', type: 'active_today' },
+    { label: 'Embarques activos hoy', query: 'activo', type: 'active_today' },
     { label: 'Pedimento 3596', query: '3596', type: 'patente' },
     { label: 'Fracción 3901', query: '3901.', type: 'fraccion' },
   ]

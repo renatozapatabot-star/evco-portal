@@ -44,7 +44,7 @@ async function searchTraficos(sb: SupabaseClient, safe: string, scope: Scope): P
     id: t.trafico ?? '',
     title: t.trafico ?? '',
     subtitle: `${t.estatus ?? ''} · ${truncate(t.descripcion_mercancia, 50)}`,
-    href: `/traficos/${encodeURIComponent(t.trafico ?? '')}`,
+    href: `/embarques/${encodeURIComponent(t.trafico ?? '')}`,
   }))
 }
 
@@ -59,7 +59,7 @@ async function searchEntradas(sb: SupabaseClient, safe: string, scope: Scope): P
     kind: 'entradas',
     id: e.cve_entrada ?? '',
     title: e.cve_entrada ?? '',
-    subtitle: truncate(e.descripcion_mercancia, 60) || (e.trafico ? `Tráfico ${e.trafico}` : ''),
+    subtitle: truncate(e.descripcion_mercancia, 60) || (e.trafico ? `Embarque ${e.trafico}` : ''),
     href: `/entradas/${encodeURIComponent(e.cve_entrada ?? '')}`,
   }))
 }

@@ -1,7 +1,7 @@
 /**
  * AGUILA · V1.5 F7 — /admin/clientes-dormidos
  *
- * Tito/Renato IV review list of clientes without recent tráfico activity.
+ * Tito/Renato IV review list of clientes without recent embarque activity.
  * Every row can one-click generate a Spanish follow-up message for review
  * before dispatch. Silver glass, es-MX, role-gated to admin/broker.
  */
@@ -55,7 +55,7 @@ export default async function ClientesDormidosPage() {
         </div>
       </header>
       <p style={{ fontSize: 13, color: TEXT_SECONDARY, margin: '0 0 20px', maxWidth: 640 }}>
-        Clientes con historial operativo que no han registrado un nuevo tráfico
+        Clientes con historial operativo que no han registrado un nuevo embarque
         en el umbral elegido. Una acción — un mensaje listo para revisión.
       </p>
       <ClientesDormidosClient initial={initial} initialThreshold={14} />

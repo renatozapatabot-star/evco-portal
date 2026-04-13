@@ -25,7 +25,7 @@ import {
 } from '@/lib/design-system'
 import { useToast } from '@/components/Toast'
 import { useTrack } from '@/lib/telemetry/useTrack'
-import { addTraficoNote } from '@/app/traficos/[id]/legacy/actions'
+import { addTraficoNote } from '@/app/embarques/[id]/legacy/actions'
 import { MentionAutocomplete, type AvailableUser } from './MentionAutocomplete'
 
 export interface TraficoNote {

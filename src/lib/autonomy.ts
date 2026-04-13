@@ -51,14 +51,14 @@ export const DEMOTION_RULE = { maxErrors: 2, windowDays: 7 }
 
 /** Actions that NEVER go above MANUAL regardless of accuracy */
 export const ALWAYS_MANUAL_CONDITIONS = [
-  'value_2x_average',        // Tráfico value > 2x historical average
+  'value_2x_average',        // Embarque value > 2x historical average
   'new_supplier',            // Supplier with < 5 shipments
   'high_compliance_risk',    // Compliance risk > 50%
   'recent_regulatory_change', // Regulatory change in last 7 days
 ] as const
 
 /**
- * Check if a specific tráfico should be forced to MANUAL
+ * Check if a specific embarque should be forced to MANUAL
  * regardless of the action type's autonomy level.
  */
 export function shouldForceManual(trafico: Record<string, unknown>, avgValue: number): {
@@ -89,7 +89,7 @@ export function shouldForceManual(trafico: Record<string, unknown>, avgValue: nu
 }
 
 /**
- * Determine effective autonomy level for an action on a specific tráfico
+ * Determine effective autonomy level for an action on a specific embarque
  */
 export function getEffectiveLevel(
   actionType: ActionType,

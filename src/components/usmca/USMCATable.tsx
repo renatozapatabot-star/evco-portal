@@ -118,16 +118,16 @@ export function USMCATable({ imdTraficos, loading }: USMCATableProps) {
           gap: 12,
         }}>
           <h2 style={{ fontSize: 16, fontWeight: 600, margin: 0 }}>
-            Tráficos T-MEC
+            Embarques T-MEC
           </h2>
           <div style={{ position: 'relative' }}>
             <Search size={16} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: D.textMuted }} />
             <input
               type="text"
-              placeholder="Buscar tráfico, proveedor..."
+              placeholder="Buscar embarque, proveedor..."
               value={search}
               onChange={e => { setSearch(e.target.value); setPage(0) }}
-              aria-label="Buscar tráficos T-MEC"
+              aria-label="Buscar embarques T-MEC"
               style={{
                 background: D.bg,
                 border: `1px solid ${D.cardBorder}`,
@@ -152,16 +152,16 @@ export function USMCATable({ imdTraficos, loading }: USMCATableProps) {
           ))}
         </div>
       ) : filteredRows.length === 0 && imdTraficos.length === 0 ? (
-        <EmptyState icon="🛡️" title="Sin tráficos T-MEC registrados" description="Los tráficos con régimen IMD aparecerán aquí automáticamente" cta={{ label: 'Ver tráficos', href: '/traficos' }} />
+        <EmptyState icon="🛡️" title="Sin embarques T-MEC registrados" description="Los embarques con régimen IMD aparecerán aquí automáticamente" cta={{ label: 'Ver embarques', href: '/embarques' }} />
       ) : filteredRows.length === 0 ? (
         <EmptyState icon="🔍" title={`Sin resultados para "${search}"`} description="Intenta con otro término de búsqueda" />
       ) : (
         <>
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }} aria-label="Tráficos con tratado T-MEC">
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }} aria-label="Embarques con tratado T-MEC">
               <thead>
                 <tr style={{ borderBottom: `1px solid ${D.cardBorder}` }}>
-                  <SortTh col="trafico" label="Tráfico" sort={sort} onSort={toggleSort} />
+                  <SortTh col="trafico" label="Embarque" sort={sort} onSort={toggleSort} />
                   <SortTh col="proveedores" label="Proveedor" sort={sort} onSort={toggleSort} />
                   <SortTh col="importe_total" label="Valor USD" sort={sort} onSort={toggleSort} align="right" />
                   <th style={{ padding: '10px 20px', textAlign: 'left', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: D.textSec }}>
@@ -218,7 +218,7 @@ export function USMCATable({ imdTraficos, loading }: USMCATableProps) {
               color: D.textSec,
             }}>
               <span>
-                {filteredRows.length} tráficos T-MEC · Página {page + 1} de {totalPages}
+                {filteredRows.length} embarques T-MEC · Página {page + 1} de {totalPages}
               </span>
               <div style={{ display: 'flex', gap: 8 }}>
                 <button

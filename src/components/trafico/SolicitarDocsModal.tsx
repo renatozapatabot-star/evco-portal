@@ -107,7 +107,7 @@ function buildEmailBody(params: {
   return (
     `Estimado/a ${proveedor || 'proveedor'},\n\n` +
     `En representación de ${cliente}, solicitamos los siguientes documentos ` +
-    `para completar el despacho aduanero del tráfico ${traficoId}:\n\n` +
+    `para completar el despacho aduanero del embarque ${traficoId}:\n\n` +
     `${lines.join('\n')}\n\n` +
     `Puede cargar los documentos directamente en el enlace que le compartimos por correo.\n\n` +
     `Gracias por su apoyo.\n\n` +
@@ -117,7 +117,7 @@ function buildEmailBody(params: {
 }
 
 function buildSubject(traficoId: string, cliente: string): string {
-  return `Documentos requeridos · ${cliente} · Tráfico ${traficoId}`
+  return `Documentos requeridos · ${cliente} · Embarque ${traficoId}`
 }
 
 export function SolicitarDocsModal({
@@ -385,7 +385,7 @@ export function SolicitarDocsModal({
                 Solicitar documentos
               </div>
               <div style={{ fontSize: 11, color: TEXT_MUTED, fontFamily: 'var(--font-mono)' }}>
-                Tráfico {traficoId} · {cliente}
+                Embarque {traficoId} · {cliente}
               </div>
             </div>
           </div>

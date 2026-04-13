@@ -49,7 +49,7 @@ export async function POST(request: Request) {
       })
       .eq('id', dispatch.id)
 
-    // Cancel other dispatches for the same tráfico
+    // Cancel other dispatches for the same embarque
     await supabase
       .from('carrier_dispatches')
       .update({ status: 'cancelled' })
@@ -57,7 +57,7 @@ export async function POST(request: Request) {
       .neq('id', dispatch.id)
       .eq('status', 'dispatched')
 
-    // Update tráfico with carrier info
+    // Update embarque with carrier info
     await supabase
       .from('traficos')
       .update({ transportista_mexicano: dispatch.carrier_name })

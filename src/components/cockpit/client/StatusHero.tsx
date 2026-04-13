@@ -27,7 +27,7 @@ export function StatusHero({ statusLevel, statusSentence, entradasThisMonth, act
       activeAction={cardState.activeAction}
       urgentCondition={cardState.urgentCondition}
       urgentAction={cardState.urgentAction}
-      actionHref="/traficos"
+      actionHref="/embarques"
       quietContent={
         <>
           {/* Status dot + sentence */}
@@ -60,7 +60,7 @@ export function StatusHero({ statusLevel, statusSentence, entradasThisMonth, act
             recommendation={activeShipments === 1 ? 'AGUILA monitorea tu envío en tiempo real' : `AGUILA monitorea tus ${activeShipments} envíos`}
             confidence={95}
             approveLabel="Ver detalle"
-            approveHref="/traficos"
+            approveHref="/embarques"
           />
         ) : nextCrossing ? (
           <span style={{ color: '#E8EAED' }}>

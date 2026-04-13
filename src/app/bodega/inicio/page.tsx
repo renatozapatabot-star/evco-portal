@@ -176,7 +176,7 @@ async function renderBodegaCockpit(opName: string) {
       key: 'proximas',
       label: 'Próximas 7d',
       value: proximasCount,
-      href: '/traficos?estatus=En+Proceso',
+      href: '/embarques?estatus=En+Proceso',
       tone: 'silver',
     },
     {

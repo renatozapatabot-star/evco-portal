@@ -3,7 +3,7 @@
 /**
  * ClienteInicio — 3-tab cliente self-service cockpit (V1.5 F11).
  *
- * Tabs: Mis tráficos activos · Documentos · Notificaciones.
+ * Tabs: Mis embarques activos · Documentos · Notificaciones.
  * Mobile 375px: tab pills stack on top; cards collapse to single column.
  *
  * AGUILA silver-glass aesthetic, JetBrains Mono on refs/timestamps/filenames.
@@ -74,7 +74,7 @@ export function ClienteInicio({
   const [tab, setTab] = useState<TabKey>('traficos')
 
   const tabs: Array<{ key: TabKey; label: string; count: number; icon: LucideIcon }> = [
-    { key: 'traficos',       label: 'Mis tráficos activos', count: activeTraficos.length, icon: Truck },
+    { key: 'traficos',       label: 'Mis embarques activos', count: activeTraficos.length, icon: Truck },
     { key: 'documentos',     label: 'Documentos',           count: documentos.length,     icon: FolderOpen },
     { key: 'notificaciones', label: 'Notificaciones',       count: notificaciones.length, icon: Bell },
   ]
@@ -162,14 +162,14 @@ export function ClienteInicio({
   )
 }
 
-// ── Panel: tráficos activos ───────────────────────────────────
+// ── Panel: embarques activos ───────────────────────────────────
 
 function TraficosPanel({ rows }: { rows: ClienteTraficoCard[] }) {
   if (rows.length === 0) {
     return (
       <EmptyCard
         icon={<Truck size={24} color="#475569" />}
-        title="Sin tráficos activos"
+        title="Sin embarques activos"
         subtitle="Tus operaciones en curso aparecerán aquí."
       />
     )
@@ -191,7 +191,7 @@ function TraficosPanel({ rows }: { rows: ClienteTraficoCard[] }) {
         return (
           <GlassCard
             key={r.trafico}
-            href={`/traficos/${encodeURIComponent(r.trafico)}/trace`}
+            href={`/embarques/${encodeURIComponent(r.trafico)}/trace`}
             padding={16}
             style={{ display: 'flex', flexDirection: 'column', gap: 10, minHeight: 60 }}
           >
@@ -270,7 +270,7 @@ function DocumentosPanel({ rows }: { rows: ClienteDocumento[] }) {
       <EmptyCard
         icon={<FolderOpen size={24} color="#475569" />}
         title="Sin documentos"
-        subtitle="Los expedientes de tus tráficos aparecerán aquí a medida que se carguen."
+        subtitle="Los expedientes de tus embarques aparecerán aquí a medida que se carguen."
       />
     )
   }
@@ -294,7 +294,7 @@ function DocumentosPanel({ rows }: { rows: ClienteDocumento[] }) {
           }}>
             <Truck size={14} color="#C0C5CE" />
             <Link
-              href={`/traficos/${encodeURIComponent(traficoRef)}/trace`}
+              href={`/embarques/${encodeURIComponent(traficoRef)}/trace`}
               style={{
                 ...MONO,
                 fontSize: 13, fontWeight: 700, color: '#E6EDF3',
@@ -372,7 +372,7 @@ function NotificacionesPanel({ rows }: { rows: ClienteNotificacion[] }) {
       <EmptyCard
         icon={<Bell size={24} color="#475569" />}
         title="Sin notificaciones"
-        subtitle="Aquí verás las actualizaciones recientes de tus tráficos."
+        subtitle="Aquí verás las actualizaciones recientes de tus embarques."
       />
     )
   }
@@ -414,7 +414,7 @@ function NotificacionesPanel({ rows }: { rows: ClienteNotificacion[] }) {
         return n.trafico_id ? (
           <Link
             key={n.id}
-            href={`/traficos/${encodeURIComponent(n.trafico_id)}/trace`}
+            href={`/embarques/${encodeURIComponent(n.trafico_id)}/trace`}
             style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}
           >
             {content}

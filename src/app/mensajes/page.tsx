@@ -65,7 +65,7 @@ function getSuggestedReplies(lastInbound: string | null, traficoId: string | nul
   }
   if (lower.includes('status') || lower.includes('estatus') || lower.includes('cómo va')) {
     suggestions.push(traficoId
-      ? `El tráfico ${traficoId} está en proceso. Le avisamos cuando haya actualización.`
+      ? `El embarque ${traficoId} está en proceso. Le avisamos cuando haya actualización.`
       : 'Estamos revisando. Le avisamos en breve.')
   }
   if (lower.includes('hola') || lower.includes('buenos') || lower.includes('buenas')) {
@@ -277,7 +277,7 @@ export default function MensajesPage() {
           icon="💬"
           title="Sin conversaciones"
           description="Las conversaciones de WhatsApp con proveedores aparecerán aquí cuando se soliciten documentos."
-          cta={{ label: 'Ver tráficos', href: '/traficos' }}
+          cta={{ label: 'Ver embarques', href: '/embarques' }}
         />
       ) : (
         <div style={{ display: 'flex', gap: 16, height: 'calc(100% - 60px)', minHeight: 400 }}>

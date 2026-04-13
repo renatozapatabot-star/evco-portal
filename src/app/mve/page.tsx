@@ -69,7 +69,7 @@ export default function MvePage() {
       ? rows.filter(r => fmtId(r.trafico).toLowerCase().includes(search.toLowerCase()) ||
           (r.descripcion_mercancia ?? '').toLowerCase().includes(search.toLowerCase()))
       : rows
-    // Tráficos "En Proceso" without pedimento are MVE-pending
+    // Embarques "En Proceso" without pedimento are MVE-pending
     const pending = filtered.filter(r => (r.estatus ?? '').toLowerCase().includes('proceso'))
     const compliant = filtered.filter(r => (r.estatus ?? '').toLowerCase().includes('cruz'))
     return { pending, compliant }
@@ -98,7 +98,7 @@ export default function MvePage() {
               MVE Deadline{mveDeadline ? ` — ${fmtDate(mveDeadline.toISOString())}` : ' — Cargando...'}
             </div>
             <div className="text-[12px] mt-0.5" style={{ color: isUrgent ? 'var(--danger)' : 'var(--warning)' }}>
-              Todos los tráficos en proceso deben tener folio MVE (formato E2) antes de esta fecha
+              Todos los embarques en proceso deben tener folio MVE (formato E2) antes de esta fecha
             </div>
           </div>
         </div>
@@ -113,7 +113,7 @@ export default function MvePage() {
       {/* KPI Row */}
       <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-3'} gap-3 mb-5`}>
         <div className="rounded-[10px] p-4" style={{ background: 'rgba(9,9,11,0.75)', border: '1px solid rgba(0,0,0,0.07)' }}>
-          <div className="text-[10.5px] font-semibold uppercase tracking-[0.07em] mb-1.5" style={{ color: 'var(--text-secondary)' }}>Total Tráficos</div>
+          <div className="text-[10.5px] font-semibold uppercase tracking-[0.07em] mb-1.5" style={{ color: 'var(--text-secondary)' }}>Total Embarques</div>
           <div className="mono text-[22px] font-semibold" style={{ color: 'var(--text-primary)' }}>{rows.length.toLocaleString()}</div>
         </div>
         <div className="rounded-[10px] p-4" style={{ background: 'var(--danger-bg)', border: '1px solid rgba(239,68,68,0.15)' }}>
@@ -155,17 +155,17 @@ export default function MvePage() {
       {/* Header */}
       <div className={`flex ${isMobile ? 'flex-col gap-3' : 'items-start justify-between'} mb-4`}>
         <div>
-          <h1 className="text-[18px] font-semibold" style={{ color: 'var(--text-primary)' }}>Tráficos Pendientes MVE</h1>
+          <h1 className="text-[18px] font-semibold" style={{ color: 'var(--text-primary)' }}>Embarques Pendientes MVE</h1>
           <p className="text-[12.5px] mt-0.5" style={{ color: 'var(--text-secondary)' }}>
-            {pending.length} tráficos en proceso requieren folio MVE antes del 31/03/2026
+            {pending.length} embarques en proceso requieren folio MVE antes del 31/03/2026
           </p>
         </div>
         <div className="flex items-center gap-2 rounded-[7px] px-3 py-1.5"
           style={{ background: 'rgba(9,9,11,0.75)', border: '1px solid rgba(0,0,0,0.09)', width: isMobile ? '100%' : 260 }}>
           <Search size={13} strokeWidth={2} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
-          <input type="text" placeholder="Buscar tráfico..." value={search}
+          <input type="text" placeholder="Buscar embarque..." value={search}
             onChange={e => setSearch(e.target.value)}
-            aria-label="Buscar tráfico MVE"
+            aria-label="Buscar embarque MVE"
             className="flex-1 bg-transparent outline-none text-[12.5px]" style={{ color: 'var(--text-primary)' }} />
         </div>
       </div>
@@ -173,10 +173,10 @@ export default function MvePage() {
       {/* Table */}
       <div className="rounded-[10px] overflow-hidden" style={{ background: 'rgba(9,9,11,0.75)', border: '1px solid rgba(0,0,0,0.06)' }}>
         <div className="overflow-x-auto">
-          <table className="aguila-table" aria-label="Tráficos pendientes MVE">
+          <table className="aguila-table" aria-label="Embarques pendientes MVE">
             <thead>
               <tr>
-                <th style={{ width: 160 }}>Tráfico</th>
+                <th style={{ width: 160 }}>Embarque</th>
                 <th style={{ width: 130 }}>Estado</th>
                 <th style={{ width: 120 }}>Fecha Llegada</th>
                 <th>Descripción</th>
@@ -197,7 +197,7 @@ export default function MvePage() {
               ))}
               {!loading && pending.length === 0 && (
                 <tr><td colSpan={6}>
-                  <EmptyState icon="✅" title="Cumplimiento completo" description="Todos los tráficos cumplen con MVE" />
+                  <EmptyState icon="✅" title="Cumplimiento completo" description="Todos los embarques cumplen con MVE" />
                 </td></tr>
               )}
               {pending.map(r => (
@@ -234,15 +234,15 @@ export default function MvePage() {
           <div className="flex items-center gap-2 mb-3">
             <CheckCircle size={14} strokeWidth={2} style={{ color: 'var(--success)' }} />
             <span className="text-[13px] font-semibold" style={{ color: 'var(--success)' }}>
-              {compliant.length} tráficos cruzados
+              {compliant.length} embarques cruzados
             </span>
           </div>
           <div className="rounded-[10px] overflow-hidden" style={{ background: 'rgba(9,9,11,0.75)', border: '1px solid rgba(0,0,0,0.06)' }}>
             <div className="overflow-x-auto" style={{ maxHeight: 300 }}>
-              <table className="aguila-table" aria-label="Tráficos cruzados con MVE">
+              <table className="aguila-table" aria-label="Embarques cruzados con MVE">
                 <thead>
                   <tr>
-                    <th>Tráfico</th>
+                    <th>Embarque</th>
                     <th>Fecha</th>
                     <th>Pedimento</th>
                     <th style={{ textAlign: 'center' }}>MVE</th>

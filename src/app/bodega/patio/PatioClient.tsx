@@ -121,7 +121,7 @@ export function PatioClient() {
     void loadEntries()
   }, [loadEntries])
 
-  // Debounced tráfico search.
+  // Debounced embarque search.
   useEffect(() => {
     if (traficoQuery.length < 2) {
       setTraficoResults([])
@@ -214,7 +214,7 @@ export function PatioClient() {
 
   async function submit() {
     if (!traficoId) {
-      setErrorMsg('Selecciona un tráfico')
+      setErrorMsg('Selecciona un embarque')
       setStatus('error')
       return
     }
@@ -475,10 +475,10 @@ export function PatioClient() {
           Nueva entrada
         </h2>
 
-        {/* Tráfico */}
+        {/* Embarque */}
         <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           <span style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94a3b8' }}>
-            Tráfico
+            Embarque
           </span>
           <input
             type="text"
@@ -499,7 +499,7 @@ export function PatioClient() {
               fontSize: 16,
               fontFamily: 'var(--font-jetbrains-mono), monospace',
             }}
-            aria-label="Buscar tráfico"
+            aria-label="Buscar embarque"
           />
           {searchingTrafico && <span style={{ fontSize: 12, color: '#7A7E86' }}>Buscando…</span>}
           {traficoResults.length > 0 && !traficoId && (
@@ -546,7 +546,7 @@ export function PatioClient() {
           )}
           {traficoId && (
             <span style={{ fontSize: 12, color: '#22C55E' }}>
-              Tráfico seleccionado: {traficoId}
+              Embarque seleccionado: {traficoId}
             </span>
           )}
         </label>

@@ -25,7 +25,7 @@ export function EntradasCard() {
       id="operator-entradas"
       state={data.sinTrafico > 0 ? 'active' : 'quiet'}
       title="Entradas recientes"
-      activeCondition={data.sinTrafico > 0 ? `${data.sinTrafico} entrada${data.sinTrafico !== 1 ? 's' : ''} sin tráfico asignado` : undefined}
+      activeCondition={data.sinTrafico > 0 ? `${data.sinTrafico} entrada${data.sinTrafico !== 1 ? 's' : ''} sin embarque asignado` : undefined}
       activeAction={data.sinTrafico > 0 ? 'Asignar' : undefined}
       actionHref="/entradas"
       quietContent={
@@ -37,7 +37,7 @@ export function EntradasCard() {
           {data.sinTrafico > 0 && (
             <div>
               <span className="font-mono" style={{ fontSize: 18, fontWeight: 700, color: '#D97706' }}>{data.sinTrafico}</span>
-              <span style={{ fontSize: 12, color: '#8B949E', marginLeft: 6 }}>sin tráfico</span>
+              <span style={{ fontSize: 12, color: '#8B949E', marginLeft: 6 }}>sin embarque</span>
             </div>
           )}
         </div>

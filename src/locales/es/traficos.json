@@ -1,5 +1,5 @@
 {
-  "page_title": "Tráficos",
+  "page_title": "Embarques",
   "stat_activos": "Activos",
   "stat_en_proceso": "En Proceso",
   "stat_docs_faltantes": "Docs Faltantes",
@@ -8,13 +8,13 @@
   "status_en_proceso": "En Proceso",
   "status_cruzado": "Cruzado",
   "status_detenido": "Detenido",
-  "col_trafico": "Tráfico",
+  "col_trafico": "Embarque",
   "col_pedimento": "Pedimento",
   "col_descripcion": "Descripción",
   "col_estado": "Estado",
   "col_fecha": "Fecha",
   "col_importe": "Importe",
   "col_docs": "Docs",
-  "empty_state": "No hay tráficos que coincidan.",
-  "search_placeholder": "Buscar tráficos, pedimentos..."
+  "empty_state": "No hay embarques que coincidan.",
+  "search_placeholder": "Buscar embarques, pedimentos..."
 }

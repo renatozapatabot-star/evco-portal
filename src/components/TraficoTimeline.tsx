@@ -95,7 +95,7 @@ export function TraficoTimeline({ trafico, eventos }: TraficoTimelineProps) {
       background: 'var(--bg-elevated)', border: '1px solid var(--border-light)',
     }}>
       <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--n-400)', marginBottom: 12 }}>
-        Progreso del Tráfico
+        Progreso del Embarque
       </div>
       {TIMELINE_STAGES.map((stage, idx) => {
         const info = stageStatus[stage.key]

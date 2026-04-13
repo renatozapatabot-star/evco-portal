@@ -9,7 +9,7 @@ import {
 import { GlassCard } from './GlassCard'
 
 /**
- * Cadena documental: Factura → Entrada → Pedimento → Tráfico → Expediente.
+ * Cadena documental: Factura → Entrada → Pedimento → Embarque → Expediente.
  * Broken links render amber with a "Vincular" action; callers supply the
  * handler via `onVincular` so linking UX stays owned by the surface.
  */

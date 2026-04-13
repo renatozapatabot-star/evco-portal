@@ -30,7 +30,7 @@ export function StatusBadge({ status }: StatusBadgeProps) {
 // ── Docs Progress (5-dot bar) ──
 
 interface DocsProgressProps {
-  /** Total required docs for this tráfico */
+  /** Total required docs for this embarque */
   total: number;
   /** Number of docs uploaded/verified */
   filled: number;

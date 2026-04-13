@@ -178,7 +178,7 @@ export function EntradaLabelDocument({ input }: { input: EntradaLabelInput }) {
         </View>
 
         <View style={styles.infoBlock}>
-          <Text style={styles.labelKey}>Tráfico</Text>
+          <Text style={styles.labelKey}>Embarque</Text>
           <Text style={styles.traficoRef}>{input.traficoRef}</Text>
 
           <Text style={[styles.labelKey, { marginTop: 6 }]}>Cliente</Text>

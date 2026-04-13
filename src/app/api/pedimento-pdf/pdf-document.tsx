@@ -85,7 +85,7 @@ export function PedimentoPDF(props: PedimentoPDFProps) {
             <Text style={s.kpiValue}>{props.pedimento}</Text>
           </View>
           <View style={s.kpiCard}>
-            <Text style={s.kpiLabel}>Tráfico</Text>
+            <Text style={s.kpiLabel}>Embarque</Text>
             <Text style={s.kpiValue}>{props.trafico}</Text>
           </View>
           <View style={s.kpiCard}>

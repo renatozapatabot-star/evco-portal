@@ -27,10 +27,10 @@ export async function getContextData(query: string, companyId: string, clientCla
     supabase.from('entradas').select('*', { count: 'exact', head: true }).eq('company_id', companyId),
     supabase.from('aduanet_facturas').select('*', { count: 'exact', head: true }).eq('clave_cliente', clientClave),
   ])
-  ctx.push(`DB: ${tc.count} tráficos, ${ec.count} entradas, ${fc.count} facturas`)
+  ctx.push(`DB: ${tc.count} embarques, ${ec.count} entradas, ${fc.count} facturas`)
 
   const { count: activeCount } = await supabase.from('traficos').select('*', { count: 'exact', head: true }).eq('company_id', companyId).not('estatus', 'ilike', '%cruz%').gte('fecha_llegada', PORTAL_DATE_FROM)
-  ctx.push(`Tráficos activos (no cruzados): ${activeCount}`)
+  ctx.push(`Embarques activos (no cruzados): ${activeCount}`)
 
   if (q.includes('deteni') || q.includes('hold')) {
     const { data } = await supabase.from('traficos').select('trafico, fecha_llegada').eq('company_id', companyId).eq('estatus', 'Detenido').gte('fecha_llegada', PORTAL_DATE_FROM).limit(10)
@@ -52,11 +52,11 @@ export async function getContextData(query: string, companyId: string, clientCla
     ;(data || []).forEach((f: { proveedor?: string | null; valor_usd?: number | null }) => { if (f.proveedor) byP[f.proveedor] = (byP[f.proveedor] || 0) + (f.valor_usd || 0) })
     ctx.push(`Top proveedores: ${JSON.stringify(Object.entries(byP).sort((a, b) => (b[1] as number) - (a[1] as number)).slice(0, 5))}`)
   }
-  if (q.includes('tráfico') || q.includes('trafico') || q.includes('recent') || q.includes('último') || q.includes('transmit') || q.includes('listo')) {
+  if (q.includes('embarque') || q.includes('trafico') || q.includes('recent') || q.includes('último') || q.includes('transmit') || q.includes('listo')) {
     const { data } = await supabase.from('traficos').select('trafico, estatus, fecha_llegada, pedimento').eq('company_id', companyId).gte('fecha_llegada', PORTAL_DATE_FROM).order('fecha_llegada', { ascending: false }).limit(10)
-    ctx.push(`Últimos tráficos: ${JSON.stringify(data || [])}`)
+    ctx.push(`Últimos embarques: ${JSON.stringify(data || [])}`)
     const ready = (data || []).filter((t: { pedimento?: string | null; estatus?: string | null }) => t.pedimento && !(t.estatus || '').toLowerCase().includes('cruz'))
-    ctx.push(`Listos para transmitir: ${ready.length} tráficos con pedimento`)
+    ctx.push(`Listos para transmitir: ${ready.length} embarques con pedimento`)
   }
   if (q.includes('carrier') || q.includes('transportista') || q.includes('desempeño') || q.includes('performance')) {
     const { data } = await supabase.from('traficos').select('transportista_mexicano').eq('company_id', companyId).gte('fecha_llegada', PORTAL_DATE_FROM)

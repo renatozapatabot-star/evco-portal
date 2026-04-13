@@ -84,7 +84,7 @@ export async function POST(
   const trafico = (rows?.[0] ?? null) as TraficoRow | null
   if (!trafico) {
     return NextResponse.json(
-      { data: null, error: { code: 'NOT_FOUND', message: 'Tráfico no encontrado' } },
+      { data: null, error: { code: 'NOT_FOUND', message: 'Embarque no encontrado' } },
       { status: 404 },
     )
   }
@@ -176,7 +176,7 @@ export async function POST(
     trafico: trafico.trafico,
     company_id: companyId,
     decision_type: 'carta_porte_generated',
-    decision: `Carta Porte generada para tráfico ${trafico.trafico}`,
+    decision: `Carta Porte generada para embarque ${trafico.trafico}`,
     reasoning: 'Generación local AGUILA; pendiente de submisión a VUCEM/SAT en V2.',
     dataPoints: { pdf_url: pdfUrl, xml_url: xmlUrl, kind: parsed.data.kind, actor },
   })

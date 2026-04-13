@@ -145,7 +145,7 @@ async function clientActiveTraficos(companyId: string): Promise<Item | null> {
       .eq('company_id', companyId)
       .neq('status', 'cruzado')
     if (count == null) return null
-    return { id: 'mine-active', label: 'Mis tráficos activos', value: String(count) }
+    return { id: 'mine-active', label: 'Mis embarques activos', value: String(count) }
   } catch {
     return null
   }
@@ -375,7 +375,7 @@ export async function GET() {
       if (it.id === 'ar-overdue') return { ...it, href: '/contabilidad' }
       if (it.id === 'docs-pend') return { ...it, href: '/drafts' }
       if (it.id === 'entr-24h' || it.id === 'yard') return { ...it, href: '/bodega/inicio' }
-      if (it.id === 'mine-active') return { ...it, href: '/traficos' }
+      if (it.id === 'mine-active') return { ...it, href: '/embarques' }
       if (it.id === 'last-cross') return { ...it, href: '/corredor' }
       if (it.id === 'top-client') return { ...it, href: '/reportes' }
       return it

@@ -115,14 +115,14 @@ export async function POST(request: NextRequest) {
     .maybeSingle<TraficoOwnership>()
 
   if (trErr || !trafico) {
-    return errorResponse('NOT_FOUND', 'Tráfico no encontrado', 404)
+    return errorResponse('NOT_FOUND', 'Embarque no encontrado', 404)
   }
 
   const internal = isInternalRole(session.role)
   const traficoCompanyId = trafico.company_id ?? session.companyId
 
   if (!internal && traficoCompanyId !== session.companyId) {
-    return errorResponse('FORBIDDEN', 'Sin acceso al tráfico', 403)
+    return errorResponse('FORBIDDEN', 'Sin acceso al embarque', 403)
   }
 
   // Prevent collision — position already occupied (active entry).

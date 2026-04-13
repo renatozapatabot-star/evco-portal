@@ -285,7 +285,7 @@ async function renderEagle(opName: string, rawMonth: string | null) {
       ? (r.trafico ? `${r.company_id} · ${r.trafico}` : r.company_id)
       : (r.trafico ?? undefined),
     timestamp: r.created_at,
-    href: r.trafico ? `/traficos/${encodeURIComponent(r.trafico)}` : undefined,
+    href: r.trafico ? `/embarques/${encodeURIComponent(r.trafico)}` : undefined,
   }))
 
   // Series bucketing
@@ -299,7 +299,7 @@ async function renderEagle(opName: string, rawMonth: string | null) {
   const monthShort = month.label
 
   const heroKPIs: CockpitHeroKPI[] = [
-    { key: 'traficos', label: 'Tráficos en proceso', value: activeTraficosTotal, series: traficosActivosSeries, current: sumRange(traficosActivosSeries, 7, 14), previous: sumRange(traficosActivosSeries, 0, 7), href: '/traficos?estatus=En+Proceso', tone: 'silver' },
+    { key: 'traficos', label: 'Embarques en proceso', value: activeTraficosTotal, series: traficosActivosSeries, current: sumRange(traficosActivosSeries, 7, 14), previous: sumRange(traficosActivosSeries, 0, 7), href: '/embarques?estatus=En+Proceso', tone: 'silver' },
     { key: 'clientes', label: 'Clientes activos', value: activeClients, tone: 'silver' },
     { key: 'dormidos', label: 'Clientes dormidos', value: dormant.length, tone: 'silver', inverted: true },
     { key: 'ar', label: 'CxC vencido', value: fmtUSDCompact(arTotal) || '—', tone: 'silver', inverted: true },

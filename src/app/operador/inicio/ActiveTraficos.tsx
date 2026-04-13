@@ -43,8 +43,8 @@ export function ActiveTraficos({ rows, onRefresh }: Props) {
 
   const tiles: Tile[] = [
     {
-      href: '/traficos?estatus=En+Proceso',
-      label: 'Tráficos activos',
+      href: '/embarques?estatus=En+Proceso',
+      label: 'Embarques activos',
       description: 'En motion ahora',
       icon: Truck,
       count: rows.length,
@@ -59,7 +59,7 @@ export function ActiveTraficos({ rows, onRefresh }: Props) {
       tone: overdueCount > 0 ? 'overdue' : 'muted',
     },
     {
-      href: '/traficos?sin_pedimento=1',
+      href: '/embarques?sin_pedimento=1',
       label: 'Pedimentos pendientes',
       description: 'Sin pedimento',
       icon: FileText,

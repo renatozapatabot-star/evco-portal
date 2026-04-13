@@ -1,7 +1,7 @@
 // AdminCompanyBanner — company-scoped KPI strip above the Eagle grid.
 //
 // Static brand identity (patente, aduana, aduana code) anchors the view;
-// live KPIs (active tráficos, active clients, dormant, AR pending) summarise
+// live KPIs (active embarques, active clients, dormant, AR pending) summarise
 // operational state in JetBrains Mono at a glance. Part of the 11-PM-Executive
 // 3-second-certainty contract.
 
@@ -91,7 +91,7 @@ export function AdminCompanyBanner({
           flexWrap: 'wrap',
         }}
       >
-        <Kpi label="Tráficos activos" value={activeTraficosTotal.toLocaleString('es-MX')} />
+        <Kpi label="Embarques activos" value={activeTraficosTotal.toLocaleString('es-MX')} />
         <Kpi label="Clientes activos" value={activeClients.toLocaleString('es-MX')} />
         <Kpi
           label="Dormidos"

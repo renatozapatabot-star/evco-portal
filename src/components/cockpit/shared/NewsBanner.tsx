@@ -118,7 +118,7 @@ export function buildAdminItems(d: AdminBannerData): BannerItem[] {
   const arrow = trend > 0 ? '↑' : trend < 0 ? '↓' : '→'
   items.push({
     text: `${d.activeTraficos} activos · ${d.cruzadosThisMonth} cruzados este mes ${arrow}${Math.abs(trend)}%`,
-    href: '/traficos',
+    href: '/embarques',
   })
 
   // Escalations (only if any)
@@ -167,14 +167,14 @@ export function buildClientItems(d: ClientBannerData): BannerItem[] {
   if (d.activeShipments > 0) {
     items.push({
       text: `${d.activeShipments} envío${d.activeShipments !== 1 ? 's' : ''} en tránsito · ${d.cruzadosEsteMes} cruzado${d.cruzadosEsteMes !== 1 ? 's' : ''} este mes`,
-      href: '/traficos',
+      href: '/embarques',
     })
   }
 
   if (d.nextCrossing) {
     items.push({
       text: `Próximo cruce esperado: ${d.nextCrossing.trafico}`,
-      href: '/traficos',
+      href: '/embarques',
     })
   }
 
@@ -218,15 +218,15 @@ export function buildOperatorItems(d: OperatorBannerData): BannerItem[] {
 
   if (d.blockedCount > 0) {
     items.push({
-      text: `${d.blockedCount} tráfico${d.blockedCount !== 1 ? 's' : ''} bloqueado${d.blockedCount !== 1 ? 's' : ''} — esperando documentos`,
-      href: '/traficos?estatus=Documentacion',
+      text: `${d.blockedCount} embarque${d.blockedCount !== 1 ? 's' : ''} bloqueado${d.blockedCount !== 1 ? 's' : ''} — esperando documentos`,
+      href: '/embarques?estatus=Documentacion',
     })
   }
 
   if (d.unassignedCount > 0) {
     items.push({
       text: `${d.unassignedCount} sin asignar en cola`,
-      href: '/traficos',
+      href: '/embarques',
     })
   }
 

@@ -90,10 +90,10 @@ export function LlamarPanel({ detail, onComplete, loading }: Props) {
         </span>
       </div>
 
-      {/* Tráfico ID */}
+      {/* Embarque ID */}
       {detail.trafico_id && (
         <div style={{ fontSize: 13, color: '#9B9B9B' }}>
-          Tráfico: <span className="font-mono" style={{ color: '#1A1A1A' }}>{detail.trafico_id}</span>
+          Embarque: <span className="font-mono" style={{ color: '#1A1A1A' }}>{detail.trafico_id}</span>
         </div>
       )}
 

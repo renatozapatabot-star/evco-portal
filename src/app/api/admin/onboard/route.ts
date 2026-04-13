@@ -186,7 +186,7 @@ function buildWelcomeEmail(companyName: string, password: string): string {
       </h2>
       <p style="font-size: 14px; line-height: 1.6; color: #555;">
         Su portal de inteligencia aduanera está listo. Desde aquí podrá consultar
-        el estado de sus tráficos, documentos, y reportes en tiempo real.
+        el estado de sus embarques, documentos, y reportes en tiempo real.
       </p>
       <div style="background: #F5F4F0; border-radius: 8px; padding: 20px; margin: 24px 0;">
         <div style="margin-bottom: 12px;">

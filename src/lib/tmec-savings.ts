@@ -1,7 +1,7 @@
 /**
  * CRUZ T-MEC Savings Calculator
  *
- * For each tráfico with preferential regime (ITE/ITR/IMD),
+ * For each embarque with preferential regime (ITE/ITR/IMD),
  * calculates what IGI would have been at the general rate
  * vs what was actually paid (zero or reduced).
  *

@@ -30,15 +30,15 @@ export function SelectedTraficoRail({ pulse, onClose, onAction }: SelectedTrafic
   }
 
   const links: Array<{ action: Exclude<SelectedTraficoAction, 'close'>; label: string; href: string }> = [
-    { action: 'pedimento', label: 'Ver pedimento', href: `/traficos/${encodeURIComponent(pulse.traficoId)}/pedimento` },
-    { action: 'expediente', label: 'Ver expediente', href: `/traficos/${encodeURIComponent(pulse.traficoId)}#documentos` },
-    { action: 'cronologia', label: 'Ver cronología', href: `/traficos/${encodeURIComponent(pulse.traficoId)}#cronologia` },
+    { action: 'pedimento', label: 'Ver pedimento', href: `/embarques/${encodeURIComponent(pulse.traficoId)}/pedimento` },
+    { action: 'expediente', label: 'Ver expediente', href: `/embarques/${encodeURIComponent(pulse.traficoId)}#documentos` },
+    { action: 'cronologia', label: 'Ver cronología', href: `/embarques/${encodeURIComponent(pulse.traficoId)}#cronologia` },
   ]
 
   return (
     <aside
       className="aguila-corridor-rail"
-      aria-label={`Detalle de tráfico ${pulse.traficoId}`}
+      aria-label={`Detalle de embarque ${pulse.traficoId}`}
       style={{
         position: 'absolute',
         top: 16,

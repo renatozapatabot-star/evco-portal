@@ -157,7 +157,7 @@ export function SoiaView() {
               Historial de semáforo
             </span>
             <span style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-              {semaforoStats.total} tráficos
+              {semaforoStats.total} embarques
             </span>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: 16 }}>

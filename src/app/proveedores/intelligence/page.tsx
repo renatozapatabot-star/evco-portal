@@ -99,7 +99,7 @@ function AlertCard({ alert }: { alert: SupplierAlert }) {
             {fmtUSD(alert.latest_value_usd)}
           </div>
           <div style={{ fontSize: 10, color: TEXT_MUTED, marginTop: 2, letterSpacing: 0.4 }}>
-            USD · importe tráfico
+            USD · importe embarque
           </div>
           {alert.pedimento && (
             <div style={{
@@ -144,7 +144,7 @@ export default async function ProveedorIntelligencePage() {
         <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
           {(
             [
-              { k: 'Tráficos en ventana', v: intel.totalTraficos },
+              { k: 'Embarques en ventana', v: intel.totalTraficos },
               { k: 'Proveedores distintos', v: intel.distinctSuppliers },
               { k: 'Alertas totales', v: intel.alerts.length },
             ] as const

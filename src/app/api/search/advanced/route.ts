@@ -100,7 +100,7 @@ export async function POST(request: NextRequest) {
 
   const e = trim(criteria.warehouseEntryKey)
   if (e) {
-    // Link via entradas.trafico — tráfico rows that own an entrada matching the key.
+    // Link via entradas.trafico — embarque rows that own an entrada matching the key.
     const safeE = sanitizeIlike(e)
     const { data: ent } = await sb.from('entradas')
       .select('trafico').ilike('cve_entrada', `%${safeE}%`).limit(ADVANCED_LIMIT)

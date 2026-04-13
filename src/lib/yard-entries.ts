@@ -58,8 +58,8 @@ export const RegisterYardEntrySchema = z
   .object({
     trafico_id: z
       .string()
-      .min(1, 'Tráfico requerido')
-      .max(64, 'Tráfico demasiado largo')
+      .min(1, 'Embarque requerido')
+      .max(64, 'Embarque demasiado largo')
       .transform((v) => v.trim()),
     trailer_number: z
       .string()

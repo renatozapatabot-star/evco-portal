@@ -73,7 +73,7 @@ export function DailyBrief({
                 </div>
                 <div style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.5 }}>
                   {crossedYesterday > 0
-                    ? `${crossedYesterday} tráfico${crossedYesterday !== 1 ? 's' : ''} cruzaron (${fmtUSDCompact(valueYesterday)} valor)`
+                    ? `${crossedYesterday} embarque${crossedYesterday !== 1 ? 's' : ''} cruzaron (${fmtUSDCompact(valueYesterday)} valor)`
                     : 'Sin cruces'}
                 </div>
               </div>

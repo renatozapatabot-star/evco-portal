@@ -45,7 +45,7 @@ export function formatTraficoCompleted(payload: FormatterPayload): string {
   const operator = dash(payload.operator_name ?? payload.operator ?? payload.actor)
   const next = dash(payload.next_action ?? 'ninguna')
   return (
-    `✅ Tráfico ${trafico} (${cliente}) cruzó semáforo verde a las ${crossed}. ` +
+    `✅ Embarque ${trafico} (${cliente}) cruzó semáforo verde a las ${crossed}. ` +
     `Total: ${total}. Operador: ${operator}. Próxima acción: ${next}.`
   )
 }
@@ -74,7 +74,7 @@ export function formatSemaforoVerde(payload: FormatterPayload): string {
   const trafico = dash(payload.trafico_id ?? payload.trafico)
   const lane = dash(payload.lane ?? payload.carril)
   const bridge = dash(payload.bridge ?? payload.puente)
-  return `🟢 Semáforo verde · Tráfico ${trafico} · Puente ${bridge} · Carril ${lane}.`
+  return `🟢 Semáforo verde · Embarque ${trafico} · Puente ${bridge} · Carril ${lane}.`
 }
 
 export function formatMveAlertRaised(payload: FormatterPayload): string {
@@ -91,7 +91,7 @@ export function formatDefault(eventKind: string, payload: FormatterPayload): str
 }
 
 export const EVENT_KIND_LABELS: Record<string, string> = {
-  trafico_completed: 'Tráfico cruzó',
+  trafico_completed: 'Embarque cruzó',
   factura_issued: 'Factura emitida',
   pece_payment_confirmed: 'Pago PECE confirmado',
   dormant_client_detected: 'Cliente dormido',

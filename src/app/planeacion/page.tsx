@@ -282,7 +282,7 @@ export default function PlaneacionPage() {
           </h2>
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)', gap: 8 }}>
             {[
-              { href: '/traficos', label: 'Tráficos', icon: <Truck size={20} />, count: activeCount },
+              { href: '/embarques', label: 'Embarques', icon: <Truck size={20} />, count: activeCount },
               { href: '/bodega', label: 'Bodega', icon: <Package size={20} />, count: null },
               { href: '/reportes', label: 'Reportes', icon: <BarChart3 size={20} />, count: null },
             ].map(link => (

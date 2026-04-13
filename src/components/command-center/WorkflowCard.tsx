@@ -32,7 +32,7 @@ interface WorkflowCardProps {
   // Bento grid additions
   sparklineData?: number[]
   criticalItem?: string
-  /** For hero card: mini table of active tráficos */
+  /** For hero card: mini table of active embarques */
   activeItems?: { trafico: string; pedimento: string | null; estatus: string; daysOld: number }[]
   /** For hero: completion percentage */
   completionPct?: number
@@ -163,7 +163,7 @@ export function WorkflowCard({
             </div>
           </div>
 
-          {/* Right: Mini table of active tráficos */}
+          {/* Right: Mini table of active embarques */}
           <div style={{ flex: 1, minWidth: 0, borderLeft: '1px solid rgba(255,255,255,0.06)', paddingLeft: 24 }}>
             <div style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#6E7681', marginBottom: 8 }}>
               {hasActive ? 'En tránsito ahora' : 'Último cruce'}

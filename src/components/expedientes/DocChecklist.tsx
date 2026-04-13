@@ -166,16 +166,16 @@ export function DocChecklist({ trafico, pedimento, docs, entrada, proveedor, val
         padding: '10px 20px', borderTop: '1px solid var(--border-card, #E8E5E0)',
         display: 'flex', gap: 8, flexWrap: 'wrap',
       }}>
-        <Link href={`/traficos/${encodeURIComponent(trafico)}`}
+        <Link href={`/embarques/${encodeURIComponent(trafico)}`}
           style={{
             display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600,
             color: 'var(--gold-dark, #7A7E86)', background: 'none',
             border: '1px solid var(--border-card, #E8E5E0)', borderRadius: 8,
             padding: '8px 14px', textDecoration: 'none', minHeight: 60,
           }} onClick={e => e.stopPropagation()}>
-          <ExternalLink size={13} /> Ver tráfico
+          <ExternalLink size={13} /> Ver embarque
         </Link>
-        <button onClick={e => { e.stopPropagation(); window.open(`mailto:ai@renatozapata.com?subject=Solicitud de documento — Tráfico ${trafico}`, '_blank') }}
+        <button onClick={e => { e.stopPropagation(); window.open(`mailto:ai@renatozapata.com?subject=Solicitud de documento — Embarque ${trafico}`, '_blank') }}
           style={{
             display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600,
             color: 'var(--text-muted)', background: 'none',

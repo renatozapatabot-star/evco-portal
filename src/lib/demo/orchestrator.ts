@@ -1,7 +1,7 @@
 /**
  * AGUILA · V1.5 F9 — One-Click Demo Orchestrator
  *
- * Seeds a synthetic end-to-end tráfico and walks it through 12 lifecycle
+ * Seeds a synthetic end-to-end embarque and walks it through 12 lifecycle
  * events over ~90 seconds. Each step writes to Supabase (workflow_events +
  * a handful of domain tables) so the portal lights up as if a real shipment
  * were moving through the corridor.
@@ -96,7 +96,7 @@ export async function ensureDemoCompany(sb: SupabaseClient): Promise<void> {
 }
 
 /**
- * Refuse to start a new demo if a prior synthetic tráfico for this cliente
+ * Refuse to start a new demo if a prior synthetic embarque for this cliente
  * still exists. The UI surfaces the suggestion to reset first.
  */
 export async function assertNoExistingDemoTrafico(sb: SupabaseClient): Promise<void> {
@@ -107,7 +107,7 @@ export async function assertNoExistingDemoTrafico(sb: SupabaseClient): Promise<v
     .limit(1)
 
   if (data && data.length > 0) {
-    throw new Error('Ya existe un tráfico demo. Ejecuta reiniciar demo antes de volver a iniciar.')
+    throw new Error('Ya existe un embarque demo. Ejecuta reiniciar demo antes de volver a iniciar.')
   }
 }
 
@@ -123,7 +123,7 @@ export async function createDemoTrafico(sb: SupabaseClient): Promise<string> {
     aduana: '240',
     patente: '3596',
   })
-  if (error) throw new Error(`No se pudo crear tráfico demo: ${error.message}`)
+  if (error) throw new Error(`No se pudo crear embarque demo: ${error.message}`)
   return trafico
 }
 
@@ -253,7 +253,7 @@ const STEP_RUNNERS: Record<string, (ctx: StepContext) => Promise<string | undefi
       total: 5_568,
       currency: 'MXN',
       status: 'sent',
-      notes: 'Demo orquestado AGUILA · tráfico sintético',
+      notes: 'Demo orquestado AGUILA · embarque sintético',
     })
     if (error) {
       await fireEvent(sb, run.traficoId, 'invoice_issued', 'invoice')
@@ -335,7 +335,7 @@ export function buildInitialRun(runId: string, traficoId: string): DemoRun {
 }
 
 /**
- * Purge synthetic tráficos + child rows + QB + invoice rows.
+ * Purge synthetic embarques + child rows + QB + invoice rows.
  * Idempotent. Safe to call when nothing exists.
  */
 export async function resetDemo(sb: SupabaseClient): Promise<{ deleted: number }> {

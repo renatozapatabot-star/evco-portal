@@ -162,10 +162,10 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
     : null
 
   const heroKPIs: CockpitHeroKPI[] = [
-    { key: 'traficos',   label: 'Tráficos activos',     value: activeTraficos.length, series: traficosActivosSeries, href: '/traficos',                 tone: 'silver' },
+    { key: 'traficos',   label: 'Embarques activos',     value: activeTraficos.length, series: traficosActivosSeries, href: '/embarques',                 tone: 'silver' },
     { key: 'entradas',   label: 'Entradas esta semana', value: entradasSemanaCount,   series: entradasSeries,         href: '/entradas',                 tone: 'silver' },
     { key: 'pedimentos', label: 'Pedimentos listos',    value: pedimentosListosCount, series: pedimentosListosSeries, href: '/pedimentos',               tone: 'silver' },
-    { key: 'cruces',     label: 'Cruces este mes',      value: cruzadosMesCount,      series: cruzadosMesSeries,      href: '/traficos?estatus=Cruzado', tone: 'silver' },
+    { key: 'cruces',     label: 'Cruces este mes',      value: cruzadosMesCount,      series: cruzadosMesSeries,      href: '/embarques?estatus=Cruzado', tone: 'silver' },
   ]
 
   const navCounts: NavCounts = {
@@ -182,8 +182,8 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
   )
 
   const summaryLine = activeTraficos.length > 0
-    ? `${activeTraficos.length} tráfico${activeTraficos.length === 1 ? '' : 's'} en movimiento. Tu patente, en tiempo real.`
-    : 'Sin tráficos activos. Tus próximas operaciones aparecerán aquí.'
+    ? `${activeTraficos.length} embarque${activeTraficos.length === 1 ? '' : 's'} en movimiento. Tu patente, en tiempo real.`
+    : 'Sin embarques activos. Tus próximas operaciones aparecerán aquí.'
 
   const mensajeriaEnabled = mensajeriaClientEnabled()
   const activityHasContent = clienteActivity.length > 0

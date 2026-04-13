@@ -31,17 +31,17 @@ async function TraficoCockpitContent({ name }: { name: string }) {
   if (!data) {
     return (
       <div style={{ padding: 40, color: TEXT_PRIMARY, fontFamily: 'ui-monospace, monospace', fontSize: 13 }}>
-        No se pudo cargar el cockpit de tráfico.
+        No se pudo cargar el cockpit de embarque.
       </div>
     )
   }
 
   const estado = (
-    <GlassCard size="card" ariaLabel="Tráficos activos">
-      <SectionHeader title="Tráficos activos" count={data.recentTraficos.length} />
+    <GlassCard size="card" ariaLabel="Embarques activos">
+      <SectionHeader title="Embarques activos" count={data.recentTraficos.length} />
       {data.recentTraficos.length === 0 ? (
         <div style={{ color: TEXT_MUTED, fontSize: 'var(--aguila-fs-body, 13px)', padding: '12px 0' }}>
-          Sin tráficos activos asignados.
+          Sin embarques activos asignados.
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 8 }}>
@@ -50,7 +50,7 @@ async function TraficoCockpitContent({ name }: { name: string }) {
               { kind: 'factura',    label: 'Factura',    value: null,         date: null,            status: 'missing' },
               { kind: 'entrada',    label: 'Entrada',    value: null,         date: null,            status: 'missing' },
               { kind: 'pedimento',  label: 'Pedimento',  value: t.pedimento,  date: t.updated_at,    status: t.pedimento ? 'linked' : 'missing',  href: t.pedimento ? `/pedimentos/${encodeURIComponent(t.pedimento)}` : null },
-              { kind: 'trafico',    label: 'Tráfico',    value: t.trafico,    date: t.updated_at,    status: 'linked', href: `/traficos/${t.id}` },
+              { kind: 'trafico',    label: 'Embarque',    value: t.trafico,    date: t.updated_at,    status: 'linked', href: `/embarques/${t.id}` },
               { kind: 'expediente', label: 'Expediente', value: null,         date: null,            status: 'pending', href: `/expedientes?trafico=${t.id}` },
             ]
             return (
@@ -59,7 +59,7 @@ async function TraficoCockpitContent({ name }: { name: string }) {
                   display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
                   marginBottom: 6,
                 }}>
-                  <Link href={`/traficos/${t.id}`} style={{
+                  <Link href={`/embarques/${t.id}`} style={{
                     fontFamily: 'var(--font-jetbrains-mono), monospace',
                     fontWeight: 700,
                     color: TEXT_PRIMARY,
@@ -91,7 +91,7 @@ async function TraficoCockpitContent({ name }: { name: string }) {
         summaryLine={data.summaryLine}
         systemStatus={data.systemStatus}
         estadoSections={estado}
-        metaPills={[{ label: 'Rol', value: 'Tráfico', tone: 'silver' }]}
+        metaPills={[{ label: 'Rol', value: 'Embarque', tone: 'silver' }]}
       />
       <AsistenteButton roleTag="trafico" />
     </>

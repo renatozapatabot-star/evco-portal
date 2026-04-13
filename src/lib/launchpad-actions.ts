@@ -137,7 +137,7 @@ function mapWorkflowEvent(row: Record<string, unknown>): RawCandidate {
     estimated_minutes: 5,
     title: `Procesar evento: ${eventType}`,
     reason: `Pendiente desde ${fmtDate(row.created_at as string)}`,
-    href: '/traficos',
+    href: '/embarques',
   }
 }
 
@@ -174,9 +174,9 @@ function mapSolicitud(row: Record<string, unknown>): RawCandidate {
     estimated_minutes: 8,
     title: `Seguimiento: ${docType}`,
     reason: traficoId
-      ? `Tráfico ${traficoId} — solicitado ${fmtDate(row.solicitado_at as string)}, sin respuesta`
+      ? `Embarque ${traficoId} — solicitado ${fmtDate(row.solicitado_at as string)}, sin respuesta`
       : `Solicitado ${fmtDate(row.solicitado_at as string)}, sin respuesta`,
-    href: traficoId ? `/traficos/${traficoId}` : '/expedientes',
+    href: traficoId ? `/embarques/${traficoId}` : '/expedientes',
   }
 }
 
@@ -500,7 +500,7 @@ async function getLlamarDetail(
   }
 
   // Build call script
-  const script = `Hola, soy de Renato Zapata, llamamos por el ${docLabel} pendiente del tráfico ${traficoId}.`
+  const script = `Hola, soy de Renato Zapata, llamamos por el ${docLabel} pendiente del embarque ${traficoId}.`
 
   return {
     type: 'llamar',

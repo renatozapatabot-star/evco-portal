@@ -29,7 +29,7 @@ const METRICS: MetricConfig[] = [
   { key: 'avg_crossing_time_hours', label: 'Tiempo de Cruce',       unit: 'hrs',  lowerIsBetter: true,  max: 80 },
   { key: 'doc_completeness_pct',    label: 'Completitud Docs',      unit: '%',    lowerIsBetter: false, max: 100 },
   { key: 'compliance_score',        label: 'Score Cumplimiento',    unit: 'pts',  lowerIsBetter: false, max: 100 },
-  { key: 'active_traficos',         label: 'Tráficos Activos',      unit: '',     lowerIsBetter: false, max: 200 },
+  { key: 'active_traficos',         label: 'Embarques Activos',      unit: '',     lowerIsBetter: false, max: 200 },
 ]
 
 const GRAY   = '#555'

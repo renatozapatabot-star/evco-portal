@@ -63,7 +63,7 @@ export function WeeklyAuditPDF({ audit }: WeeklyAuditPDFProps) {
         <Text style={s.h2}>Resumen</Text>
         <View style={s.kpiGrid}>
           <View style={s.kpi}>
-            <Text style={s.kpiLabel}>Tráficos</Text>
+            <Text style={s.kpiLabel}>Embarques</Text>
             <Text style={s.kpiValue}>{audit.traficosTotal}</Text>
             <Text style={s.kpiSub}>semana</Text>
           </View>
@@ -84,9 +84,9 @@ export function WeeklyAuditPDF({ audit }: WeeklyAuditPDFProps) {
           </View>
         </View>
 
-        <Text style={s.h2}>Tráficos por estatus</Text>
+        <Text style={s.h2}>Embarques por estatus</Text>
         {audit.traficosByStatus.length === 0 ? (
-          <Text style={s.value}>Sin tráficos en la semana.</Text>
+          <Text style={s.value}>Sin embarques en la semana.</Text>
         ) : (
           <View style={s.table}>
             <View style={s.th}>
@@ -102,13 +102,13 @@ export function WeeklyAuditPDF({ audit }: WeeklyAuditPDFProps) {
           </View>
         )}
 
-        <Text style={s.h2}>Tráficos de la semana</Text>
+        <Text style={s.h2}>Embarques de la semana</Text>
         {audit.traficosRows.length === 0 ? (
           <Text style={s.value}>Sin movimientos.</Text>
         ) : (
           <View style={s.table}>
             <View style={s.th}>
-              <Text style={[s.cellHead, { flex: 1.3 }]}>Tráfico</Text>
+              <Text style={[s.cellHead, { flex: 1.3 }]}>Embarque</Text>
               <Text style={[s.cellHead, { flex: 1.8 }]}>Pedimento</Text>
               <Text style={[s.cellHead, { flex: 3 }]}>Descripción</Text>
               <Text style={[s.cellHead, { flex: 1 }]}>Estatus</Text>
@@ -125,7 +125,7 @@ export function WeeklyAuditPDF({ audit }: WeeklyAuditPDFProps) {
             ))}
             {audit.traficosRows.length > 20 && (
               <Text style={[s.cellHead, { marginTop: 4 }]}>
-                + {audit.traficosRows.length - 20} tráficos adicionales en anexo digital
+                + {audit.traficosRows.length - 20} embarques adicionales en anexo digital
               </Text>
             )}
           </View>

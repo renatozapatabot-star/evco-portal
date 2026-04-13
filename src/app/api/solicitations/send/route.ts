@@ -4,7 +4,7 @@
  * POST /api/solicitations/send
  *
  * Session-scoped (verifySession). Tenant-scoped writes.
- *   1. Validate tráfico ownership for non-internal roles
+ *   1. Validate embarque ownership for non-internal roles
  *   2. Send email via Resend (sistema@renatozapata.com — domain must be verified)
  *   3. Insert one documento_solicitudes row per doc type (upsert on UNIQUE(trafico_id, doc_type))
  *   4. Emit workflow_events row `docs.solicitation_sent` with populated
@@ -67,12 +67,12 @@ export async function POST(request: NextRequest): Promise<NextResponse<Ok | Err>
   const supabase = createServerClient()
   const isInternal = session.role === 'broker' || session.role === 'admin'
 
-  // Tenant scope check — non-internal callers can only request on their own tráficos.
+  // Tenant scope check — non-internal callers can only request on their own embarques.
   let scopeQ = supabase.from('traficos').select('trafico, company_id').eq('trafico', input.traficoId)
   if (!isInternal) scopeQ = scopeQ.eq('company_id', session.companyId)
   const { data: scopeRow, error: scopeErr } = await scopeQ.maybeSingle()
   if (scopeErr) return err('DB_ERROR', scopeErr.message, 500)
-  if (!scopeRow) return err('NOT_FOUND', 'Tráfico no encontrado', 404)
+  if (!scopeRow) return err('NOT_FOUND', 'Embarque no encontrado', 404)
   const companyId = (scopeRow.company_id as string | null) ?? session.companyId
 
   // Send the email first. If the provider rejects, abort before any DB
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<Ok | Err>
   }
 
   // Upsert one row per doc type. UNIQUE(trafico_id, doc_type) keeps
-  // re-sends idempotent on the same tráfico + doc pair.
+  // re-sends idempotent on the same embarque + doc pair.
   const actorId = `${session.companyId}:${session.role}`
   const nowIso = new Date().toISOString()
   const rows = input.docTypes.map((docType) => ({

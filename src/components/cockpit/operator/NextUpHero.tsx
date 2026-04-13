@@ -130,7 +130,7 @@ export function NextUpHero({ data, operatorName }: Props) {
                   if (!result.ok) { /* error handled by sound/haptic in AduanaRecommendation */ }
                 }}
                 reviewLabel="Revisar"
-                reviewHref={`/traficos/${encodeURIComponent(nextUp.trafico)}`}
+                reviewHref={`/embarques/${encodeURIComponent(nextUp.trafico)}`}
                 reasoning={[
                   `Fracción sugerida: ${nextUp.suggestion.fraccion}`,
                   `Basado en ${nextUp.suggestion.confidence >= 85 ? 'alta' : nextUp.suggestion.confidence >= 70 ? 'media' : 'baja'} similitud con clasificaciones previas`,

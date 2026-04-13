@@ -98,7 +98,7 @@ export const BORDER_EVENTS: BorderEvent[] = [
 
 /**
  * Event type → config lookup map for timeline rendering.
- * Merge with existing EVENT_CONFIG in tráfico detail page.
+ * Merge with existing EVENT_CONFIG in embarque detail page.
  */
 export const BORDER_EVENT_MAP: Record<string, { icon: string; color: string; bg: string }> =
   Object.fromEntries(BORDER_EVENTS.map(e => [e.type, { icon: e.icon, color: e.color, bg: e.bg }]))
@@ -128,11 +128,11 @@ export function getCompletedSequence(estatus: string, hasPedimento: boolean, has
   if (s.includes('rojo') || s.includes('reconocimiento')) return 5
   if (s.includes('pagado')) return 3
   if (hasPedimento) return 2
-  return 1 // at minimum, docs received if tráfico exists
+  return 1 // at minimum, docs received if embarque exists
 }
 
 /**
- * Build timeline steps for a tráfico with completed/current/pending states.
+ * Build timeline steps for a embarque with completed/current/pending states.
  */
 export function buildBorderTimeline(
   estatus: string,

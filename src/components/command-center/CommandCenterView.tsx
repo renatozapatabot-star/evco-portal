@@ -324,7 +324,7 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
 
   // Critical CTA href
   const criticalHref = urgentes > 0
-    ? '/traficos?estatus=En+Proceso'
+    ? '/embarques?estatus=En+Proceso'
     : pendingEntradas > 0
       ? '/entradas'
       : '/expedientes'

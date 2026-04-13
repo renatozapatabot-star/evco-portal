@@ -20,7 +20,7 @@ interface KPIData {
 
 function generateFallbackSentence(data: KPIData, clientName: string): string {
   const parts = [
-    `${data.totalTraficos.toLocaleString()} tráficos procesados`,
+    `${data.totalTraficos.toLocaleString()} embarques procesados`,
     data.totalValue > 0
       ? `$${(data.totalValue / 1e6).toFixed(1)}M USD importados`
       : null,
@@ -111,7 +111,7 @@ export async function GET(request: NextRequest) {
     }
 
     const prompt = `Genera un resumen ejecutivo de 2-3 oraciones en español para Renato Zapata & Company, Patente 3596.
-Datos reales: ${totalCount} tráficos activos, $${totalValue.toLocaleString()} USD en operación, ${successRate}% tasa de éxito${avgCrossingDays ? `, ${avgCrossingDays} días promedio de cruce` : ''}, ${tmecRate}% utilización T-MEC.
+Datos reales: ${totalCount} embarques activos, $${totalValue.toLocaleString()} USD en operación, ${successRate}% tasa de éxito${avgCrossingDays ? `, ${avgCrossingDays} días promedio de cruce` : ''}, ${tmecRate}% utilización T-MEC.
 Tono: profesional, directo, como un sistema de inteligencia aduanera reportando al director general.
 Máximo 50 palabras. Sin asteriscos ni markdown. Solo las oraciones.`
 

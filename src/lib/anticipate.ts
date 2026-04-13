@@ -63,12 +63,12 @@ export function anticipate(input: AnticipateInput): Suggestion | null {
         id: `weekend-${new Date().toISOString().split('T')[0]}`,
         icon: '📅',
         text: `El fin de semana: ${parts.join(', ')}.`,
-        action: { label: 'Ver tráficos', href: '/traficos' },
+        action: { label: 'Ver embarques', href: '/embarques' },
       }
     }
   }
 
-  // ── Priority 2: Tráfico crossed recently (last 60 min) ──
+  // ── Priority 2: Embarque crossed recently (last 60 min) ──
   const sixtyMinAgo = new Date(now - 60 * 60 * 1000).toISOString()
   const recentCrossing = traficos.find(t =>
     isCruzado(t) && t.fecha_cruce && t.fecha_cruce >= sixtyMinAgo
@@ -78,7 +78,7 @@ export function anticipate(input: AnticipateInput): Suggestion | null {
       id: `crossed-${recentCrossing.trafico}`,
       icon: '✅',
       text: `${recentCrossing.trafico} cruzó recientemente. 🦀`,
-      action: { label: 'Ver detalle', href: `/traficos/${encodeURIComponent(recentCrossing.trafico || '')}` },
+      action: { label: 'Ver detalle', href: `/embarques/${encodeURIComponent(recentCrossing.trafico || '')}` },
     }
   }
 
@@ -97,7 +97,7 @@ export function anticipate(input: AnticipateInput): Suggestion | null {
       id: `pending-doc-${pendingDoc.trafico}`,
       icon: '📄',
       text: `Pedimento pendiente de ${supplier} — ${days} días.`,
-      action: { label: 'Ver tráfico', href: `/traficos/${encodeURIComponent(pendingDoc.trafico || '')}` },
+      action: { label: 'Ver embarque', href: `/embarques/${encodeURIComponent(pendingDoc.trafico || '')}` },
     }
   }
 
@@ -132,7 +132,7 @@ export function anticipate(input: AnticipateInput): Suggestion | null {
         id: `comeback-${new Date().toISOString().split('T')[0]}`,
         icon: '👋',
         text: `Desde su última visita: ${crossed} cruzados, ${newOnes} nuevos, ${pending} pendientes.`,
-        action: { label: 'Ver resumen', href: '/traficos' },
+        action: { label: 'Ver resumen', href: '/embarques' },
       }
     }
   }

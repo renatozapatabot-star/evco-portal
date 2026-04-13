@@ -14,7 +14,7 @@ export function getMostActionableChips(state: {
   const chips: PriorityChip[] = []
 
   if (state.urgentCount > 0) {
-    chips.push({ label: `${state.urgentCount} tráficos urgentes`, query: `Tengo ${state.urgentCount} tráficos urgentes. ¿Cuál es el más crítico y qué debo hacer primero?`, urgency: 'critical' })
+    chips.push({ label: `${state.urgentCount} embarques urgentes`, query: `Tengo ${state.urgentCount} embarques urgentes. ¿Cuál es el más crítico y qué debo hacer primero?`, urgency: 'critical' })
   }
   if (state.pendingSolicitudes > 0) {
     chips.push({ label: `${state.pendingSolicitudes} solicitudes pendientes`, query: `Hay ${state.pendingSolicitudes} solicitudes de documentos sin respuesta. ¿Qué opciones tengo para acelerar?`, urgency: 'warning' })
@@ -23,7 +23,7 @@ export function getMostActionableChips(state: {
     chips.push({ label: `${state.congestedBridge} congestionado`, query: `El puente ${state.congestedBridge} tiene ${state.congestedMinutes} minutos de espera. ¿Qué puente recomiendas?`, urgency: 'warning' })
   }
   if (state.staleTraficos > 0) {
-    chips.push({ label: `${state.staleTraficos} sin movimiento`, query: `Tengo ${state.staleTraficos} tráficos sin movimiento por más de 14 días. ¿Qué opciones hay?`, urgency: 'warning' })
+    chips.push({ label: `${state.staleTraficos} sin movimiento`, query: `Tengo ${state.staleTraficos} embarques sin movimiento por más de 14 días. ¿Qué opciones hay?`, urgency: 'warning' })
   }
 
   // Always include at least one general chip

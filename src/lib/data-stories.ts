@@ -73,7 +73,7 @@ export function financialStory(input: {
   const parts: string[] = []
 
   if (valorTotal > 0) {
-    parts.push(`${fmtUSDCompact(valorTotal)} en ${activeCount} tráficos activos`)
+    parts.push(`${fmtUSDCompact(valorTotal)} en ${activeCount} embarques activos`)
   }
 
   if (valorCruzado > 0) {

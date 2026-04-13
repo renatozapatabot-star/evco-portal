@@ -1,5 +1,5 @@
 // src/app/api/po-predictions/route.ts
-// Broker-only API — returns PO predictions + staged tráficos
+// Broker-only API — returns PO predictions + staged embarques
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import { createClient } from '@supabase/supabase-js'

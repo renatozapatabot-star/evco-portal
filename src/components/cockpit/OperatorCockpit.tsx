@@ -157,7 +157,7 @@ export function OperatorCockpit({ data, operatorName, operatorId }: Props) {
             ...(data.nextUp ? [{
               id: 'mi-turno',
               label: `MI TURNO · ${data.nextUp.trafico}`,
-              recommendation: data.nextUp.suggestion ? `Clasificar como ${data.nextUp.suggestion.fraccion}` : 'Revisar tráfico',
+              recommendation: data.nextUp.suggestion ? `Clasificar como ${data.nextUp.suggestion.fraccion}` : 'Revisar embarque',
               confidence: data.nextUp.suggestion?.confidence ?? 80,
             }] : []),
             ...data.blocked.map(b => ({

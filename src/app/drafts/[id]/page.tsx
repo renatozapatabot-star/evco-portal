@@ -187,7 +187,7 @@ export default function DraftReviewPage() {
   const totalContrib = dta + igi + iva
 
   const AUTOMATION_STEPS = [
-    'Creando tráfico en GlobalPC',
+    'Creando embarque en GlobalPC',
     'Ingresando factura',
     'Ingresando productos',
     'Generando COVE → VUCEM',
@@ -277,10 +277,10 @@ export default function DraftReviewPage() {
     <div style={{ padding: 32, maxWidth: 500, margin: '80px auto', textAlign: 'center' }}>
       <Check size={48} style={{ color: 'var(--success)', margin: '0 auto 16px' }} />
       <h2 style={{ fontSize: 22, fontWeight: 900, color: 'var(--navy-900)', marginBottom: 8 }}>Pedimento transmitido</h2>
-      <p style={{ fontSize: 14, color: 'var(--slate-500)', marginBottom: 24 }}>Tráfico {draft.trafico} procesado exitosamente</p>
+      <p style={{ fontSize: 14, color: 'var(--slate-500)', marginBottom: 24 }}>Embarque {draft.trafico} procesado exitosamente</p>
       <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
-        <button onClick={() => router.push(`/traficos/${draft.trafico}`)} className="btn-gold" style={{ padding: '12px 24px', fontSize: 14, borderRadius: 8 }}>
-          Ver tráfico →
+        <button onClick={() => router.push(`/embarques/${draft.trafico}`)} className="btn-gold" style={{ padding: '12px 24px', fontSize: 14, borderRadius: 8 }}>
+          Ver embarque →
         </button>
         <button onClick={() => router.push('/drafts')} style={{ padding: '12px 24px', border: '1px solid var(--border-card)', borderRadius: 8, background: 'var(--bg-card)', cursor: 'pointer', fontSize: 14, fontWeight: 600 }}>
           Siguiente borrador

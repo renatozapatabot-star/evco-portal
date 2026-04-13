@@ -110,7 +110,7 @@ export const radii = {
   full: '9999px',
 } as const;
 
-// Badge status mapping for tráfico states
+// Badge status mapping for embarque states
 export const statusConfig = {
   en_proceso: {
     label: 'En proceso',

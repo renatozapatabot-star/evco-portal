@@ -1,7 +1,7 @@
 /**
  * CRUZ Shared Truth Layer — Multi-Perspective Data Projection
  *
- * Same tráfico, four views. Each perspective sees only what's
+ * Same embarque, four views. Each perspective sees only what's
  * relevant to their role. The data is ONE source of truth;
  * the projection determines what each party sees.
  *

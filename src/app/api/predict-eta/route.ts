@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
   if (!trafico?.fecha_llegada) {
     return NextResponse.json({
       prediction: null,
-      message: 'Tráfico sin fecha de llegada — no se puede predecir.',
+      message: 'Embarque sin fecha de llegada — no se puede predecir.',
     })
   }
 

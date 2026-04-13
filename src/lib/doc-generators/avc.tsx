@@ -48,7 +48,7 @@ export class AvcValidationError extends Error {
 
 function validate(input: AvcInput): void {
   if (!input.warehouse_entry_id) throw new AvcValidationError('warehouse_entry_id', 'ID de entrada requerido')
-  if (!input.trafico_id) throw new AvcValidationError('trafico_id', 'Tráfico requerido')
+  if (!input.trafico_id) throw new AvcValidationError('trafico_id', 'Embarque requerido')
   if (!input.trailer_number) throw new AvcValidationError('trailer_number', 'Número de caja requerido')
   if (!input.received_by) throw new AvcValidationError('received_by', 'Receptor requerido')
   if (!input.received_at) throw new AvcValidationError('received_at', 'Fecha de recepción requerida')
@@ -155,7 +155,7 @@ function AvcDocument({ input }: { input: AvcInput }) {
           title="Entrada de bodega"
           items={[
             ['ID entrada', input.warehouse_entry_id],
-            ['Tráfico', input.trafico_id],
+            ['Embarque', input.trafico_id],
             ['Caja', input.trailer_number],
             ['Dock', input.dock_assigned ?? '—'],
             ['Receptor', input.received_by],

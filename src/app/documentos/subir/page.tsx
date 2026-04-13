@@ -88,7 +88,7 @@ export default function SubirDocumentosPage() {
     setCookiesReady(true)
   }, [])
 
-  // Fetch active tráficos
+  // Fetch active embarques
   useEffect(() => {
     if (!cookiesReady) return
     const params = new URLSearchParams({ table: 'traficos', limit: '100', order_by: 'fecha_llegada', order_dir: 'desc' })
@@ -104,7 +104,7 @@ export default function SubirDocumentosPage() {
       .finally(() => setLoadingTraficos(false))
   }, [cookiesReady, companyId])
 
-  // Fetch completeness when tráfico changes
+  // Fetch completeness when embarque changes
   useEffect(() => {
     if (!selectedTrafico) { setBlockingDocs([]); return }
     const params = new URLSearchParams({ table: 'trafico_completeness', limit: '1' })
@@ -191,14 +191,14 @@ export default function SubirDocumentosPage() {
         </p>
       </div>
 
-      {/* ── SECTION 1: Tráfico Selector ── */}
+      {/* ── SECTION 1: Embarque Selector ── */}
       <div style={{ marginBottom: 24 }}>
         <label style={{
           display: 'block', fontSize: 11, fontWeight: 600,
           textTransform: 'uppercase', letterSpacing: '0.06em',
           color: 'var(--cruz-text-muted)', marginBottom: 8,
         }}>
-          Seleccionar Tráfico
+          Seleccionar Embarque
         </label>
         <select
           value={selectedTrafico}
@@ -217,7 +217,7 @@ export default function SubirDocumentosPage() {
           }}
           disabled={loadingTraficos}
         >
-          <option value="">{loadingTraficos ? 'Cargando tráficos...' : 'Seleccionar tráfico...'}</option>
+          <option value="">{loadingTraficos ? 'Cargando embarques...' : 'Seleccionar embarque...'}</option>
           {traficos.map(t => (
             <option key={t.trafico} value={t.trafico}>
               {fmtId(t.trafico)} — {t.descripcion_mercancia || 'Sin descripción'}
@@ -432,13 +432,13 @@ export default function SubirDocumentosPage() {
         </div>
       )}
 
-      {/* Empty state when no tráfico selected */}
+      {/* Empty state when no embarque selected */}
       {!selectedTrafico && !loadingTraficos && (
         <div style={{ marginTop: 24 }}>
           <EmptyState
             icon="📄"
-            title="Selecciona un tráfico"
-            description="Elige un tráfico activo para subir documentos"
+            title="Selecciona un embarque"
+            description="Elige un embarque activo para subir documentos"
           />
         </div>
       )}

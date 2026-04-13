@@ -47,7 +47,7 @@ export default function AccionesPage() {
     // MVE pending
     const mvePending = traficos.filter(t => (t.estatus || '').toLowerCase().includes('proceso') && !t.pedimento)
     if (mvePending.length > 0) {
-      urgent.push({ id: 'mve', icon: AlertTriangle, color: 'var(--danger)', label: `${mvePending.length} tráficos sin folio MVE`, sub: `Deadline: ${mveDays}d restantes`, href: '/mve' })
+      urgent.push({ id: 'mve', icon: AlertTriangle, color: 'var(--danger)', label: `${mvePending.length} embarques sin folio MVE`, sub: `Deadline: ${mveDays}d restantes`, href: '/mve' })
     }
 
     // Overdue >7d
@@ -56,7 +56,7 @@ export default function AccionesPage() {
       return (now - new Date(t.fecha_llegada).getTime()) / 86400000 > 7
     })
     if (overdue.length > 0) {
-      urgent.push({ id: 'overdue', icon: Clock, color: 'var(--warning)', label: `${overdue.length} tráficos vencidos +7d`, sub: 'Requieren seguimiento urgente', href: '/traficos' })
+      urgent.push({ id: 'overdue', icon: Clock, color: 'var(--warning)', label: `${overdue.length} embarques vencidos +7d`, sub: 'Requieren seguimiento urgente', href: '/embarques' })
     }
 
     // Damaged entries
@@ -72,13 +72,13 @@ export default function AccionesPage() {
       return daysAgo <= 1 && !(t.estatus ?? '').toLowerCase().includes('cruz')
     })
     recentArrivals.slice(0, 5).forEach(t => {
-      today.push({ id: `arr-${t.trafico}`, icon: Truck, color: 'var(--info)', label: fmtId(t.trafico), sub: `Llegada: ${formatAbsoluteETA(t.fecha_llegada)}`, href: `/traficos/${encodeURIComponent(t.trafico)}` })
+      today.push({ id: `arr-${t.trafico}`, icon: Truck, color: 'var(--info)', label: fmtId(t.trafico), sub: `Llegada: ${formatAbsoluteETA(t.fecha_llegada)}`, href: `/embarques/${encodeURIComponent(t.trafico)}` })
     })
 
     // Missing pedimentos (this week)
     const noPedimento = traficos.filter(t => !(t.estatus ?? '').toLowerCase().includes('cruz') && !t.pedimento).slice(0, 5)
     noPedimento.forEach(t => {
-      week.push({ id: `ped-${t.trafico}`, icon: FileText, color: 'var(--warning)', label: `${fmtId(t.trafico)} — sin pedimento`, sub: fmtDate(t.fecha_llegada), href: `/traficos/${encodeURIComponent(t.trafico)}` })
+      week.push({ id: `ped-${t.trafico}`, icon: FileText, color: 'var(--warning)', label: `${fmtId(t.trafico)} — sin pedimento`, sub: fmtDate(t.fecha_llegada), href: `/embarques/${encodeURIComponent(t.trafico)}` })
     })
 
     return { urgent, today, week }

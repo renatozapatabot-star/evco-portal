@@ -78,7 +78,7 @@ const SEVERITY_CONFIG = {
 const TYPE_LABELS: Record<string, string> = {
   delayed_crossing: 'Cruce demorado',
   overdue_document: 'Documento pendiente',
-  stuck_trafico: 'Tráfico detenido',
+  stuck_trafico: 'Embarque detenido',
   value_anomaly: 'Anomalía de valor',
   reconocimiento: 'Reconocimiento',
 }

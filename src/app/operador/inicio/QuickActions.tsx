@@ -84,7 +84,7 @@ export function QuickActions() {
             onChange={(e) => setQ(e.target.value)}
             onFocus={() => q.length >= 2 && setOpen(true)}
             onBlur={() => setTimeout(() => setOpen(false), 180)}
-            placeholder="Buscar tráfico, entrada, pedimento, proveedor, fracción…"
+            placeholder="Buscar embarque, entrada, pedimento, proveedor, fracción…"
             style={{
               width: '100%',
               height: 60,
@@ -171,7 +171,7 @@ export function QuickActions() {
           )}
         </div>
 
-        <QAButton href="/traficos?nuevo=1" icon={<Plus size={16} />} label="Nueva entrada" primary />
+        <QAButton href="/embarques?nuevo=1" icon={<Plus size={16} />} label="Nueva entrada" primary />
         <QAButton href="/operador/cola" icon={<FileText size={16} />} label="Solicitar documentos" />
         <QAButton href="/operador/inicio?nota=1" icon={<StickyNote size={16} />} label="Nota rápida" />
       </div>
@@ -180,7 +180,7 @@ export function QuickActions() {
 }
 
 function viewHref(r: SearchResult): string {
-  if (r.view === 'traficos') return `/traficos/${encodeURIComponent(r.id)}`
+  if (r.view === 'traficos') return `/embarques/${encodeURIComponent(r.id)}`
   if (r.view === 'entradas') return `/documentos?entrada=${encodeURIComponent(r.id)}`
   if (r.view === 'pedimentos') return `/pedimentos?ref=${encodeURIComponent(r.id)}`
   if (r.view === 'fracciones') return `/reportes?fraccion=${encodeURIComponent(r.id)}`

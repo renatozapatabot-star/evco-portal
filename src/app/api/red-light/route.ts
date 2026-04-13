@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
   const recommendation = probability === null ? 'Sin datos suficientes'
     : probability > 0.4 ? 'ALTO — Preparar documentación completa para reconocimiento'
     : probability > 0.2 ? 'MODERADO — Documentos en orden'
-    : 'BAJO — Tráfico normal'
+    : 'BAJO — Embarque normal'
 
   return NextResponse.json({
     trafico,

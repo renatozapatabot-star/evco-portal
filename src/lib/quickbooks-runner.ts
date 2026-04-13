@@ -94,7 +94,7 @@ function buildPayload(
       date: f.invoice_date!,
       customerName: f.supplier_name ?? 'Cliente sin nombre',
       currency: currency(f.currency),
-      memo: f.assigned_to_trafico_id ? `Tráfico ${f.assigned_to_trafico_id}` : null,
+      memo: f.assigned_to_trafico_id ? `Embarque ${f.assigned_to_trafico_id}` : null,
       lines: [{
         account: 'Ingresos:Servicios aduanales',
         amount: Number(f.amount ?? 0),

@@ -84,7 +84,7 @@ export function DemoRunnerClient() {
         setMessage(body.error.message)
       } else {
         const runId = body.data.runId as string
-        setMessage(`Tráfico sintético ${body.data.traficoId} creado.`)
+        setMessage(`Embarque sintético ${body.data.traficoId} creado.`)
         // seed an empty run view immediately
         setRun({
           runId,
@@ -117,7 +117,7 @@ export function DemoRunnerClient() {
       } else {
         stopPolling()
         setRun(null)
-        setMessage(`Demo reiniciado. ${body.data?.deleted ?? 0} tráfico(s) purgado(s).`)
+        setMessage(`Demo reiniciado. ${body.data?.deleted ?? 0} embarque(s) purgado(s).`)
       }
     } catch (err) {
       setMessage(err instanceof Error ? err.message : 'Error de red')
@@ -161,7 +161,7 @@ export function DemoRunnerClient() {
           Demo orquestado AGUILA
         </h1>
         <p style={{ fontSize: 14, color: TEXT_SECONDARY, marginTop: 6, marginBottom: 0 }}>
-          90 segundos. Un tráfico sintético{' '}
+          90 segundos. Un embarque sintético{' '}
           <code
             style={{
               fontFamily: 'var(--font-jetbrains-mono)',
@@ -207,7 +207,7 @@ export function DemoRunnerClient() {
           </h2>
 
           <p style={{ fontSize: 13, color: TEXT_SECONDARY, marginTop: 0 }}>
-            Al iniciar, AGUILA emite 12 eventos secuenciales que poblan tráficos,
+            Al iniciar, AGUILA emite 12 eventos secuenciales que poblan embarques,
             clasificación, corredor, PECE, MVE, factura y exportación QuickBooks.
             Todo con el cliente sintético <code style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>aguila-demo</code>.
           </p>
@@ -273,7 +273,7 @@ export function DemoRunnerClient() {
 
           {run?.traficoId && (
             <div style={{ marginTop: 16, fontSize: 12, color: TEXT_MUTED }}>
-              Tráfico:{' '}
+              Embarque:{' '}
               <code
                 style={{
                   fontFamily: 'var(--font-jetbrains-mono)',
@@ -441,7 +441,7 @@ export function DemoRunnerClient() {
                 color: ACCENT_SILVER_BRIGHT,
               }}
             >
-              Demo completado. Revisa /corredor y /traficos/{run?.traficoId}/trace.
+              Demo completado. Revisa /corredor y /embarques/{run?.traficoId}/trace.
             </p>
           )}
         </section>

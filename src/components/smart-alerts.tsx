@@ -74,7 +74,7 @@ export function SmartAlerts() {
       {visible.map(alert => (
         <Link
           key={alert.trafico}
-          href={`/traficos/${encodeURIComponent(alert.trafico)}`}
+          href={`/embarques/${encodeURIComponent(alert.trafico)}`}
           style={{ textDecoration: 'none', color: 'inherit' }}
         >
           <div style={{

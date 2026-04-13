@@ -10,7 +10,7 @@ export default function DocumentosAutoPage() {
   return (
     <PageShell
       title="Sube o describe documentos"
-      subtitle="Arrastra un lote de PDFs o pega una descripción. AGUILA identifica cada tipo, revisa completitud y los enlaza al tráfico."
+      subtitle="Arrastra un lote de PDFs o pega una descripción. AGUILA identifica cada tipo, revisa completitud y los enlaza al embarque."
       systemStatus="healthy"
       liveTimestamp
     >
@@ -25,7 +25,7 @@ export default function DocumentosAutoPage() {
             <li>Sube hasta varios PDFs/JPGs/PNGs (10 MB máx cada uno) o pega una descripción.</li>
             <li>Claude identifica el tipo (factura, packing list, certificado de origen, BL u otro).</li>
             <li>Se revisa que tenga proveedor, importe, moneda y fracción arancelaria.</li>
-            <li>Si se menciona un pedimento, el documento se enlaza automáticamente al tráfico.</li>
+            <li>Si se menciona un pedimento, el documento se enlaza automáticamente al embarque.</li>
             <li>Al terminar el lote, verás un análisis AGUILA con totales, enlaces y atenciones.</li>
           </ul>
         </GlassCard>

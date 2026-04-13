@@ -87,14 +87,14 @@ export async function loadRoleCockpit(roleTag: OperatorRoleTag): Promise<RoleCoc
 
   if (roleTag === 'trafico') {
     heroKPIs = [
-      { key: 'activos',    label: 'Tráficos activos',    value: activosCount,    series: activosSeries,  href: '/traficos', current: sumRange(activosSeries, 7, 14), previous: sumRange(activosSeries, 0, 7) },
+      { key: 'activos',    label: 'Embarques activos',    value: activosCount,    series: activosSeries,  href: '/embarques', current: sumRange(activosSeries, 7, 14), previous: sumRange(activosSeries, 0, 7) },
       { key: 'pendientes', label: 'Pedimentos pendientes', value: pendientesCount, href: '/pedimentos' },
       { key: 'atrasados',  label: 'Atrasados >7 días',   value: atrasadosCount,  urgent: atrasadosCount > 0, inverted: true },
-      { key: 'cruzados',   label: 'Cruzados 7 días',     value: cruzados7dCount, href: '/traficos?estatus=cruzado' },
+      { key: 'cruzados',   label: 'Cruzados 7 días',     value: cruzados7dCount, href: '/embarques?estatus=cruzado' },
     ]
     summaryLine = atrasadosCount > 0
-      ? `${atrasadosCount} tráfico${atrasadosCount === 1 ? '' : 's'} atrasado${atrasadosCount === 1 ? '' : 's'} · ${activosCount} activos`
-      : `${activosCount} tráfico${activosCount === 1 ? '' : 's'} en proceso`
+      ? `${atrasadosCount} embarque${atrasadosCount === 1 ? '' : 's'} atrasado${atrasadosCount === 1 ? '' : 's'} · ${activosCount} activos`
+      : `${activosCount} embarque${activosCount === 1 ? '' : 's'} en proceso`
   } else if (roleTag === 'contabilidad') {
     const [facturasMonth, pagadasMonth, cxcRows] = await Promise.all([
       softCount(sb.from('econta_facturas').select('dfactura', { count: 'exact', head: true }).gte('dfechahora', monthStartIso)),
@@ -114,7 +114,7 @@ export async function loadRoleCockpit(roleTag: OperatorRoleTag): Promise<RoleCoc
       { key: 'facturas',   label: 'Facturas este mes',  value: facturasMonth, href: '/banco-facturas' },
       { key: 'pagadas',    label: 'Pagadas este mes',   value: pagadasMonth,  href: '/banco-facturas?estado=pagada' },
       { key: 'cxc',        label: 'Cartera (MXN K)',    value: Math.round(cxcBalance / 1000).toLocaleString('es-MX'), href: '/cobranzas' },
-      { key: 'activos',    label: 'Tráficos activos',   value: activosCount,  series: activosSeries, href: '/traficos' },
+      { key: 'activos',    label: 'Embarques activos',   value: activosCount,  series: activosSeries, href: '/embarques' },
     ]
     summaryLine = `${facturasMonth - pagadasMonth} factura${facturasMonth - pagadasMonth === 1 ? '' : 's'} por cobrar este mes`
   } else {
@@ -127,7 +127,7 @@ export async function loadRoleCockpit(roleTag: OperatorRoleTag): Promise<RoleCoc
       { key: 'entradasHoy',    label: 'Entradas hoy',       value: entradasHoyCount, series: entradasSeries, href: '/entradas' },
       { key: 'entradasSemana', label: 'Entradas 7 días',    value: entradasSemana,   href: '/bodega' },
       { key: 'sinUbicacion',   label: 'Sin ubicación',      value: sinUbicacionCount, urgent: sinUbicacionCount > 0, inverted: true, href: '/bodega?filtro=sin-ubicacion' },
-      { key: 'activos',        label: 'Tráficos activos',   value: activosCount,     series: activosSeries,   href: '/traficos' },
+      { key: 'activos',        label: 'Embarques activos',   value: activosCount,     series: activosSeries,   href: '/embarques' },
     ]
     summaryLine = sinUbicacionCount > 0
       ? `${sinUbicacionCount} entrada${sinUbicacionCount === 1 ? '' : 's'} sin ubicación · ${entradasMes} este mes`

@@ -109,7 +109,7 @@ export function ActiveTraficosTable({ rows, scope: _scope, onRefresh }: Props) {
         <div className="inicio-mobile-cards" style={{ display: 'none', flexDirection: 'column', gap: 8, padding: '8px 12px' }}>
           {visible.length === 0 ? (
             <div style={{ padding: 24, textAlign: 'center', color: TEXT_MUTED, fontSize: 12 }}>
-              Sin tráficos que coincidan con el filtro
+              Sin embarques que coincidan con el filtro
             </div>
           ) : visible.map((r) => (
             <SwipeCard
@@ -135,7 +135,7 @@ export function ActiveTraficosTable({ rows, scope: _scope, onRefresh }: Props) {
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
             <thead>
               <tr style={{ color: TEXT_MUTED, textTransform: 'uppercase', fontSize: 9, letterSpacing: '0.08em' }}>
-                <Th>Tráfico</Th>
+                <Th>Embarque</Th>
                 <Th className="col-hide">Cliente</Th>
                 <Th className="col-hide">Proveedor</Th>
                 <Th>Descripción</Th>
@@ -149,7 +149,7 @@ export function ActiveTraficosTable({ rows, scope: _scope, onRefresh }: Props) {
               {visible.length === 0 ? (
                 <tr>
                   <td colSpan={8} style={{ padding: 32, textAlign: 'center', color: TEXT_MUTED }}>
-                    Sin tráficos que coincidan con el filtro
+                    Sin embarques que coincidan con el filtro
                   </td>
                 </tr>
               ) : visible.map((r) => {
@@ -161,7 +161,7 @@ export function ActiveTraficosTable({ rows, scope: _scope, onRefresh }: Props) {
                   <tr key={r.trafico} style={{ borderTop: `1px solid ${BORDER}` }}>
                     <Td>
                       <Link
-                        href={`/traficos/${encodeURIComponent(r.trafico)}`}
+                        href={`/embarques/${encodeURIComponent(r.trafico)}`}
                         style={{
                           fontFamily: 'var(--font-jetbrains-mono), monospace',
                           fontWeight: 700,
@@ -240,7 +240,7 @@ export function ActiveTraficosTable({ rows, scope: _scope, onRefresh }: Props) {
           <span style={{ fontSize: 11, color: TEXT_MUTED }}>
             {isPending ? 'Guardando…' : '\u00A0'}
           </span>
-          <Link href="/traficos" style={{ color: ACCENT_CYAN, fontSize: 12, fontWeight: 700, textDecoration: 'none' }}>
+          <Link href="/embarques" style={{ color: ACCENT_CYAN, fontSize: 12, fontWeight: 700, textDecoration: 'none' }}>
             Ver todos →
           </Link>
         </div>
@@ -362,7 +362,7 @@ function RowMenu({ trafico, onClose, onStatus, onReceive, onSendEmail }: {
         ))}
         <div style={{ borderTop: `1px solid ${BORDER}`, margin: '6px 0' }} />
         <Link
-          href={`/traficos/${encodeURIComponent(trafico.trafico)}`}
+          href={`/embarques/${encodeURIComponent(trafico.trafico)}`}
           style={{
             display: 'block',
             padding: '10px 12px',
@@ -412,7 +412,7 @@ function truncate(s: string | null, n: number): string {
  * Mobile swipe card for ActiveTraficosTable.
  * - Right swipe (≥ 80px): mark entrada recibida (with confirm toast via parent).
  * - Left swipe (≥ 80px): open doc request (sendQuickEmail via parent).
- * - Tap: navigate to /traficos/[id].
+ * - Tap: navigate to /embarques/[id].
  * Uses pointerdown/pointermove/pointerup for trackpad + touch parity.
  */
 function SwipeCard({
@@ -505,7 +505,7 @@ function SwipeCard({
       </div>
 
       <Link
-        href={`/traficos/${encodeURIComponent(row.trafico)}`}
+        href={`/embarques/${encodeURIComponent(row.trafico)}`}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}

@@ -220,7 +220,7 @@ function ExpedientesContent() {
         <div className="table-toolbar" style={{ justifyContent: 'flex-end' }}>
           <div className="toolbar-search" style={{ minHeight: 60 }}>
             <Search size={12} style={{ color: 'var(--slate-400)', flexShrink: 0 }} />
-            <input placeholder="Tráfico, pedimento..." value={searchInput}
+            <input placeholder="Embarque, pedimento..." value={searchInput}
               onChange={e => setSearchInput(e.target.value)} aria-label="Buscar expedientes" />
           </div>
         </div>
@@ -232,13 +232,13 @@ function ExpedientesContent() {
               <div key={`skel-${i}`} style={{ height: 80, borderRadius: 10, background: 'var(--bg-elevated)', animation: 'cruzShimmer 1.5s linear infinite' }} />
             ))}
             {!loading && paged.length === 0 && (
-              <EmptyState icon="📂" title="Sin expedientes" description="Los expedientes digitales de sus tráficos aparecerán aquí" cta={{ label: 'Ver tráficos', href: '/traficos' }} />
+              <EmptyState icon="📂" title="Sin expedientes" description="Los expedientes digitales de sus embarques aparecerán aquí" cta={{ label: 'Ver embarques', href: '/embarques' }} />
             )}
             {paged.map(r => {
               const isCruzado = (r.estatus || '').toLowerCase().includes('cruz')
               return (
                 <div key={r.trafico}>
-                  <button className="m-card" onClick={() => router.push(`/traficos/${r.trafico}`)}
+                  <button className="m-card" onClick={() => router.push(`/embarques/${r.trafico}`)}
                     style={{ width: '100%', textAlign: 'left' }}>
                     <div className="m-card-top">
                       <div className="m-card-id-group">
@@ -270,7 +270,7 @@ function ExpedientesContent() {
               <thead>
                 <tr>
                   <th scope="col" style={{ width: 28 }}></th>
-                  <th scope="col" style={{ width: 160, cursor: 'pointer' }} onClick={() => toggleSort('trafico')}>Tráfico<SortArrow col="trafico" sort={sort} /></th>
+                  <th scope="col" style={{ width: 160, cursor: 'pointer' }} onClick={() => toggleSort('trafico')}>Embarque<SortArrow col="trafico" sort={sort} /></th>
                   <th scope="col" style={{ width: 120 }}>Pedimento</th>
                   <th scope="col" style={{ width: 110 }}>Estado</th>
                   <th scope="col" style={{ width: 100, cursor: 'pointer' }} onClick={() => toggleSort('fecha_llegada')}>Fecha<SortArrow col="fecha_llegada" sort={sort} /></th>
@@ -299,7 +299,7 @@ function ExpedientesContent() {
                         <button className="btn btn-outline btn-sm" style={{ marginTop: 12 }} onClick={() => { setSearchInput(''); setSearch('') }}>Limpiar búsqueda</button>
                       </div>
                     ) : (
-                      <EmptyState icon="📂" title="Sin expedientes digitales" description="Los expedientes de cada tráfico aparecerán aquí" cta={{ label: 'Ver tráficos', href: '/traficos' }} />
+                      <EmptyState icon="📂" title="Sin expedientes digitales" description="Los expedientes de cada embarque aparecerán aquí" cta={{ label: 'Ver embarques', href: '/embarques' }} />
                     )}
                   </td></tr>
                 )}
@@ -311,7 +311,7 @@ function ExpedientesContent() {
                     <tr key={r.trafico}
                       className={`clickable-row ${idx % 2 === 0 ? 'row-even' : 'row-odd'}`}
                       style={{ cursor: 'pointer' }}
-                      onClick={() => router.push(`/traficos/${r.trafico}`)}>
+                      onClick={() => router.push(`/embarques/${r.trafico}`)}>
                       <td style={{ width: 28, paddingRight: 0 }}>
                         <span style={{
                           width: 7, height: 7, borderRadius: '50%', display: 'inline-block',

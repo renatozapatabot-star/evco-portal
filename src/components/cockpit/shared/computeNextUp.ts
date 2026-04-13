@@ -40,7 +40,7 @@ export function computeNextUp(data: OperatorData): NextUpCandidate | null {
           ? `Clasificación con ${confidence}% confianza — revisar`
           : `Asignado · llegó hace ${data.nextUp.arrived_ago}`,
       actionLabel: hasMissingDocs ? 'Revisar documentos' : 'Continuar trabajo',
-      actionHref: `/traficos/${encodeURIComponent(data.nextUp.trafico)}`,
+      actionHref: `/embarques/${encodeURIComponent(data.nextUp.trafico)}`,
       urgencyScore: hasMissingDocs ? 95 : confidence < 70 ? 90 : 70,
     })
   }
@@ -55,7 +55,7 @@ export function computeNextUp(data: OperatorData): NextUpCandidate | null {
         ? `Falta: ${b.missingDocs.slice(0, 3).join(', ')}`
         : b.reason,
       actionLabel: 'Resolver bloqueo',
-      actionHref: `/traficos/${encodeURIComponent(b.trafico)}`,
+      actionHref: `/embarques/${encodeURIComponent(b.trafico)}`,
       urgencyScore: 85,
     })
   }

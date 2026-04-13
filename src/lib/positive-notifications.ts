@@ -40,13 +40,13 @@ export function buildExpedienteComplete(
     title: `🦀 Expediente 100% completo`,
     description: `${supplier} subió todos los documentos para ${trafico}. Listo para despacho.`,
     channels: ['portal', 'telegram'],
-    action_url: `/traficos`,
+    action_url: `/embarques`,
     company_id: companyId,
     meta: { trafico, supplier },
   }
 }
 
-/** Tráfico crossed without reconocimiento (clean crossing) */
+/** Embarque crossed without reconocimiento (clean crossing) */
 export function buildCrossingClean(
   trafico: string,
   timeSavedMinutes: number,
@@ -61,9 +61,9 @@ export function buildCrossingClean(
     type: 'crossing_clean',
     severity: 'celebration',
     title: `🦀 Cruce limpio`,
-    description: `Tu tráfico ${trafico} pasó sin reconocimiento. Ahorraste ${timeSaved} vs el promedio.`,
+    description: `Tu embarque ${trafico} pasó sin reconocimiento. Ahorraste ${timeSaved} vs el promedio.`,
     channels: ['portal', 'push'],
-    action_url: `/traficos`,
+    action_url: `/embarques`,
     company_id: companyId,
     meta: { trafico, timeSavedMinutes },
   }
@@ -123,7 +123,7 @@ export function buildPatternInsight(
   }
 }
 
-/** Monthly milestone: N tráficos completed */
+/** Monthly milestone: N embarques completed */
 export function buildMilestoneReached(
   count: number,
   period: string,
@@ -133,7 +133,7 @@ export function buildMilestoneReached(
     type: 'milestone_reached',
     severity: 'celebration',
     title: `🦀 Hito alcanzado`,
-    description: `${count} tráficos completados en ${period}. ¡Bien hecho!`,
+    description: `${count} embarques completados en ${period}. ¡Bien hecho!`,
     channels: ['portal', 'push'],
     action_url: `/reportes`,
     company_id: companyId,

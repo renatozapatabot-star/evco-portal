@@ -31,20 +31,20 @@ IDENTIDAD:
 - Hablas como un agente aduanal senior con 20 años de experiencia en Aduana ${ctx.aduana} Nuevo Laredo
 - Eres directo, específico, orientado a la acción
 - Usas español como idioma principal (respondes en inglés solo si el usuario escribe en inglés)
-- Términos técnicos en español: pedimento, fracción, tráfico, COVE, MVE, IGI, DTA
+- Términos técnicos en español: pedimento, fracción, embarque, COVE, MVE, IGI, DTA
 - Siglas inglés aceptables: T-MEC, IMMEX, USMCA
 
 CLIENTE ACTUAL: ${ctx.clientName} (clave ${ctx.clientClave})
 - REGLA ABSOLUTA: Solo consultas y muestras datos de ${ctx.clientName}
 - Nunca menciones datos, nombres, cifras o estadísticas de otros clientes
-- Cuando busques tráficos, pedimentos o entradas, filtra SIEMPRE por este cliente
+- Cuando busques embarques, pedimentos o entradas, filtra SIEMPRE por este cliente
 - Si el usuario pide datos de otro cliente, responde: "Solo puedo consultar datos de ${ctx.clientName}"
 - No reveles la cantidad total de clientes del despacho ni datos internos del broker
 
 DATOS DEL SISTEMA:
 - FECHA DE HOY: ${new Date().toLocaleDateString('es-MX', { day: '2-digit', month: 'long', year: 'numeric', timeZone: 'America/Chicago' })}
 - HORA ACTUAL: ${new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Chicago' })} (hora de Laredo)
-- Historial completo de tráficos de ${ctx.clientName} disponible para consulta
+- Historial completo de embarques de ${ctx.clientName} disponible para consulta
 - MVE formato E2 obligatorio desde 31 marzo 2026
 - Patente ${ctx.patente}, Aduana ${ctx.aduana} Nuevo Laredo
 - Puentes comerciales: World Trade, Colombia, Juárez-Lincoln, Gateway
@@ -52,7 +52,7 @@ DATOS DEL SISTEMA:
 VOZ Y PERSONALIDAD:
 - Tono: profesional pero cálido. Como un asesor aduanal de confianza con 20 años de relación con el cliente.
 - SIEMPRE usa "nosotros" — nunca "yo". Ejemplo: "Revisamos su operación" no "Revisé su operación".
-- Celebra logros: "¡Excelente! Su tráfico cruzó sin incidencias. 🦀" / "Su ahorro T-MEC ya supera los $100K este año. 🦀"
+- Celebra logros: "¡Excelente! Su embarque cruzó sin incidencias. 🦀" / "Su ahorro T-MEC ya supera los $100K este año. 🦀"
 - Empatiza con problemas: "Entiendo la urgencia. Veamos cómo resolverlo." / "Sabemos que esto es crítico para su operación."
 - NUNCA respondas "No puedo" o "Lo siento, no tengo acceso" — siempre ofrece alternativa: "No tenemos ese dato en el sistema, pero podemos verificar con el equipo de despacho."
 - Humor: solo ligero y nunca sobre dinero, cumplimiento o plazos SAT.
@@ -61,7 +61,7 @@ VOZ Y PERSONALIDAD:
 - Termina mensajes importantes (resoluciones, confirmaciones, buenas noticias) con 🦀. No en cada mensaje — solo en momentos que lo merecen.
 
 EJEMPLOS DE VOZ CORRECTA:
-Bien: "Revisamos su tráfico ${ctx.clientClave}-Y4466 — tiene 3 documentos faltantes. Recomendamos solicitar el COVE al proveedor antes de las 2 PM. ¿Quiere que preparemos la solicitud?"
+Bien: "Revisamos su embarque ${ctx.clientClave}-Y4466 — tiene 3 documentos faltantes. Recomendamos solicitar el COVE al proveedor antes de las 2 PM. ¿Quiere que preparemos la solicitud?"
 Bien: "¡Su embarque cruzó World Trade a las 14:32 sin incidencias! Todo en orden. 🦀"
 Bien: "Entendemos la urgencia con este pedimento. Veamos las opciones: podemos solicitar rectificación antes de las 5 PM o esperar la confirmación del semáforo verde mañana."
 Mal: "Here are the missing documents for your traffic entry Y4466:"
@@ -84,7 +84,7 @@ ACCIONES (cuando el usuario pide que HAGAS algo, no solo que informes):
 
 EJEMPLO DE FLUJO DE ACCIÓN:
 Usuario: "Solicita el COVE a Milacron"
-CRUZ: "Vamos a generar un enlace de subida para Milacron y solicitar el COVE del tráfico Y4503. ¿Procedo?"
+CRUZ: "Vamos a generar un enlace de subida para Milacron y solicitar el COVE del embarque Y4503. ¿Procedo?"
 Usuario: "Sí"
 CRUZ: [usa request_documents] "Listo. Enlace enviado. Le avisamos cuando suban el documento. 🦀"
 
@@ -196,7 +196,7 @@ const TOOLS = [
   },
   {
     name: 'check_mve_compliance',
-    description: 'Verificar cumplimiento de MVE (Manifestación de Valor). Muestra tráficos que necesitan folios E2.',
+    description: 'Verificar cumplimiento de MVE (Manifestación de Valor). Muestra embarques que necesitan folios E2.',
     input_schema: {
       type: 'object' as const,
       properties: {
@@ -249,7 +249,7 @@ const TOOLS = [
     input_schema: {
       type: 'object' as const,
       properties: {
-        path: { type: 'string', description: 'Portal path like /traficos, /pedimentos, /entradas, /reportes, /cuentas, /anexo24' },
+        path: { type: 'string', description: 'Portal path like /embarques, /pedimentos, /entradas, /reportes, /cuentas, /anexo24' },
         label: { type: 'string', description: 'Human-readable description' },
       },
       required: ['path']
@@ -391,16 +391,16 @@ const TOOLS = [
   },
   {
     name: 'predict_arrival',
-    description: 'When will a tráfico cross? Predicts crossing window based on carrier, bridge conditions, historical patterns.',
+    description: 'When will a embarque cross? Predicts crossing window based on carrier, bridge conditions, historical patterns.',
     input_schema: { type: 'object' as const, properties: { trafico_id: { type: 'string' } }, required: ['trafico_id'] }
   },
   {
     name: 'send_whatsapp',
-    description: 'Send a WhatsApp message to a supplier requesting missing documents for a tráfico.',
+    description: 'Send a WhatsApp message to a supplier requesting missing documents for a embarque.',
     input_schema: {
       type: 'object' as const,
       properties: {
-        trafico_id: { type: 'string', description: 'The tráfico ID' },
+        trafico_id: { type: 'string', description: 'The embarque ID' },
         supplier_phone: { type: 'string', description: 'Supplier WhatsApp number with country code' },
         missing_docs: { type: 'array', items: { type: 'string' }, description: 'List of missing document names' },
       },
@@ -413,7 +413,7 @@ const TOOLS = [
     input_schema: {
       type: 'object' as const,
       properties: {
-        trafico_id: { type: 'string', description: 'The tráfico ID to generate tracking for' },
+        trafico_id: { type: 'string', description: 'The embarque ID to generate tracking for' },
       },
       required: ['trafico_id']
     }
@@ -470,7 +470,7 @@ const TOOLS = [
     input_schema: {
       type: 'object' as const,
       properties: {
-        trafico: { type: 'string', description: 'Tráfico ID to search decisions for' },
+        trafico: { type: 'string', description: 'Embarque ID to search decisions for' },
         decision_type: { type: 'string', description: 'Type: classification, crossing_choice, zero_touch, approval, solicitation, anomaly_resolution' },
         limit: { type: 'number', description: 'Max results (default 5)' },
       },
@@ -517,7 +517,7 @@ const TOOLS = [
     input_schema: {
       type: 'object' as const,
       properties: {
-        trafico_id: { type: 'string', description: 'Tráfico ID' },
+        trafico_id: { type: 'string', description: 'Embarque ID' },
         doc_types: { type: 'array', items: { type: 'string' }, description: 'Document types to request (COVE, FACTURA, etc.)' },
         notify_whatsapp: { type: 'boolean', description: 'Also send WhatsApp notification to supplier' },
       },
@@ -530,7 +530,7 @@ const TOOLS = [
     input_schema: {
       type: 'object' as const,
       properties: {
-        trafico_id: { type: 'string', description: 'Tráfico ID' },
+        trafico_id: { type: 'string', description: 'Embarque ID' },
         preferred_bridge: { type: 'string', description: 'Preferred bridge (Colombia, World Trade, etc.)' },
         preferred_time: { type: 'string', description: 'Preferred time window (6-8 AM, etc.)' },
       },
@@ -539,11 +539,11 @@ const TOOLS = [
   },
   {
     name: 'calculate_economics',
-    description: 'Calculate landed cost, T-MEC savings, and value created for a specific tráfico or aggregate for the entire client. Answers "how much did this shipment cost?" or "how much have we saved this year?"',
+    description: 'Calculate landed cost, T-MEC savings, and value created for a specific embarque or aggregate for the entire client. Answers "how much did this shipment cost?" or "how much have we saved this year?"',
     input_schema: {
       type: 'object' as const,
       properties: {
-        trafico_id: { type: 'string', description: 'Specific tráfico ID for per-shipment economics' },
+        trafico_id: { type: 'string', description: 'Specific embarque ID for per-shipment economics' },
         aggregate: { type: 'boolean', description: 'If true, calculate economics for all client operations' },
       },
     }
@@ -554,7 +554,7 @@ const TOOLS = [
     input_schema: {
       type: 'object' as const,
       properties: {
-        trafico_id: { type: 'string', description: 'Tráfico ID to assess (for existing shipments)' },
+        trafico_id: { type: 'string', description: 'Embarque ID to assess (for existing shipments)' },
         value_usd: { type: 'number', description: 'Commercial value in USD (for hypothetical)' },
         product: { type: 'string', description: 'Product description (for hypothetical)' },
         supplier: { type: 'string', description: 'Supplier name (for hypothetical)' },
@@ -924,7 +924,7 @@ async function executeTool(name: string, input: Record<string, any>, clientCtx: 
             body: JSON.stringify({ trafico_id: input.trafico_id, supplier_phone: input.supplier_phone, missing_docs: input.missing_docs }),
           })
           const result = await res.json()
-          if (result.success) return JSON.stringify({ success: true, message: `WhatsApp enviado al proveedor para tráfico ${input.trafico_id}` })
+          if (result.success) return JSON.stringify({ success: true, message: `WhatsApp enviado al proveedor para embarque ${input.trafico_id}` })
           return JSON.stringify({ error: result.error || 'Failed to send WhatsApp' })
         } catch (e: unknown) {
           return JSON.stringify({ error: getErrorMessage(e) })
@@ -967,7 +967,7 @@ async function executeTool(name: string, input: Record<string, any>, clientCtx: 
         const { data: mveIssues } = await supabase.from('traficos').select('trafico, estatus').is('mve_folio', null).gte('fecha_llegada', PORTAL_DATE_FROM).limit(20)
         const deadlines = [
           ...(predictions || []).map((p: { prediction_type: string; description: string; due_date: string; severity: string }) => ({ type: p.prediction_type, description: p.description, due_date: p.due_date, severity: p.severity })),
-          ...(mveIssues?.length ? [{ type: 'MVE', description: `${mveIssues.length} tráficos sin folio MVE`, due_date: '2026-03-31', severity: 'critical' }] : []),
+          ...(mveIssues?.length ? [{ type: 'MVE', description: `${mveIssues.length} embarques sin folio MVE`, due_date: '2026-03-31', severity: 'critical' }] : []),
         ]
         const MVE_PENALTY_MAX = 7190 // from system_config mve_penalty_max
         return JSON.stringify({ deadlines, total_exposure: deadlines.filter(d => d.severity === 'critical').length * MVE_PENALTY_MAX + ' MXN max', action: 'navigate', path: '/cumplimiento' })
@@ -1132,7 +1132,7 @@ async function executeTool(name: string, input: Record<string, any>, clientCtx: 
           const result = aggregateClientEconomics(facRes.data || [], trafRes.data || [])
           return JSON.stringify(result)
         }
-        // Per-tráfico economics
+        // Per-embarque economics
         const [trafData, facData] = await Promise.all([
           supabase.from('traficos')
             .select('trafico, pedimento, peso_bruto, regimen, score_reasons, fecha_llegada, fecha_cruce, importe_total')

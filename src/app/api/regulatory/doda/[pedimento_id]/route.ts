@@ -4,7 +4,7 @@
  * POST /api/regulatory/doda/[pedimento_id]
  *   body: { kind: 'pdf' | 'xml' | 'both' }
  *
- * `[pedimento_id]` carries the tráfico id (route segment preserved for plan
+ * `[pedimento_id]` carries the embarque id (route segment preserved for plan
  * compatibility). Pipeline: verifySession → fetch trafico → call pure
  * generateDODA → upload both to `regulatory-docs` → emit workflow_event →
  * log decision.
@@ -90,7 +90,7 @@ export async function POST(
   const trafico = (traficos?.[0] ?? null) as TraficoRow | null
   if (!trafico) {
     return NextResponse.json(
-      { data: null, error: { code: 'NOT_FOUND', message: 'Tráfico no encontrado' } },
+      { data: null, error: { code: 'NOT_FOUND', message: 'Embarque no encontrado' } },
       { status: 404 },
     )
   }
@@ -172,7 +172,7 @@ export async function POST(
     trafico: trafico.trafico,
     company_id: companyId,
     decision_type: 'doda_generated',
-    decision: `DODA generada para tráfico ${trafico.trafico}`,
+    decision: `DODA generada para embarque ${trafico.trafico}`,
     reasoning: 'Generación local AGUILA; pendiente de submisión a VUCEM/SAT en V2.',
     dataPoints: { pdf_url: pdfUrl, xml_url: xmlUrl, kind: parsed.data.kind, actor },
   })

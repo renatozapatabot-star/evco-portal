@@ -26,7 +26,7 @@ export interface KPIs {
   entradasHoy: number
   /** Operator's own personal assignments (activos del operador). */
   activos: number
-  /** Ops-wide active count (tráficos en proceso en toda la empresa). */
+  /** Ops-wide active count (embarques en proceso en toda la empresa). */
   activosAllCount?: number
   pendientes: number
   atrasados: number

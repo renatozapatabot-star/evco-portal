@@ -8,7 +8,7 @@
  *   - operator_actions          (actions authored by operator_id in range)
  *   - workflow_events           (trafico lifecycle events)
  *   - traficos                  (assigned_to_operator_id, for cycle + MVE grouping)
- *   - mve_alerts                (per-tráfico MVE exposure)
+ *   - mve_alerts                (per-embarque MVE exposure)
  *   - document_classifications  (F14-shaped table; graceful absent)
  *
  * Contract:
@@ -229,7 +229,7 @@ export async function computeOperatorMetrics(
 
     const errorRate = opActions.length > 0 ? errorCount / opActions.length : null
 
-    // avgCycleHours — average (end - start) across tráficos the operator is assigned to
+    // avgCycleHours — average (end - start) across embarques the operator is assigned to
     const assignedTraficos = traficosByOp.get(op.id) ?? []
     let cycleSum = 0
     let cycleCount = 0
@@ -244,7 +244,7 @@ export async function computeOperatorMetrics(
     }
     const avgCycleHours = cycleCount > 0 ? cycleSum / cycleCount / 3600000 : null
 
-    // mveComplianceRate — fraction of assigned tráficos WITHOUT mve_alerts in range
+    // mveComplianceRate — fraction of assigned embarques WITHOUT mve_alerts in range
     let mveClean = 0
     for (const tId of assignedTraficos) {
       if (!mveTraficos.has(tId)) mveClean += 1

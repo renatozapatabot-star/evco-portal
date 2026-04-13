@@ -286,7 +286,7 @@ export default function ProveedoresPage() {
             const csvData = filtered.map(s => ({
               Proveedor: s.name,
               'País': s.country ?? '',
-              'Tráficos': s.traficoCount,
+              'Embarques': s.traficoCount,
               'Valor USD': s.totalValue.toFixed(2),
               'T-MEC %': s.tmecRate,
               'Entrega Promedio': s.avgDeliveryDays,
@@ -311,7 +311,7 @@ export default function ProveedoresPage() {
       <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
         {([
           { key: 'value' as const, label: 'Valor' },
-          { key: 'traficos' as const, label: 'Tráficos' },
+          { key: 'traficos' as const, label: 'Embarques' },
           { key: 'name' as const, label: 'Nombre' },
         ]).map(opt => (
           <button

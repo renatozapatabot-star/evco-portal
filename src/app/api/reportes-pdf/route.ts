@@ -77,7 +77,7 @@ export async function GET(request: NextRequest) {
       .slice(0, 5)
 
     // Executive sentence — fetch from internal endpoint
-    let executiveSentence = `${clientName}: ${totalCount.toLocaleString()} tráficos procesados · $${(totalValue / 1e6).toFixed(1)}M USD importados · ${successRate}% tasa de éxito.`
+    let executiveSentence = `${clientName}: ${totalCount.toLocaleString()} embarques procesados · $${(totalValue / 1e6).toFixed(1)}M USD importados · ${successRate}% tasa de éxito.`
     try {
       const baseUrl = process.env.VERCEL_URL
         ? `https://${process.env.VERCEL_URL}`

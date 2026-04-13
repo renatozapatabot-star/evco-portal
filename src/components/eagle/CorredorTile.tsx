@@ -11,7 +11,7 @@ import { TileShell, MONO } from './tile-shell'
 
 export function CorredorTile() {
   return (
-    <TileShell title="Corredor en vivo" subtitle="tráficos activos" href="/corredor" span={2} fixedHeight={360}>
+    <TileShell title="Corredor en vivo" subtitle="embarques activos" href="/corredor" span={2} fixedHeight={360}>
       <div
         style={{
           flex: 1,

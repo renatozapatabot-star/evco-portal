@@ -122,7 +122,7 @@ async function scoreCurrency(supabase: SupabaseClient): Promise<MeshDimension> {
 }
 
 async function scoreDocuments(traficoId: string, supabase: SupabaseClient): Promise<MeshDimension> {
-  if (!traficoId) return { source: 'documents', score: 50, signal: 'Sin tráfico para verificar', data: {} }
+  if (!traficoId) return { source: 'documents', score: 50, signal: 'Sin embarque para verificar', data: {} }
 
   const { data } = await supabase
     .from('expediente_documentos')

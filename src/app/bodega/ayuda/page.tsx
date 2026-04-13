@@ -28,12 +28,12 @@ const SECTIONS: HelpSection[] = [
   {
     title: 'Cómo registrar una entrada nueva',
     body:
-      'Si llega mercancía sin tráfico previo, selecciona "Buscar tráfico" para confirmar que no exista ya. Si realmente es nueva, avisa al operador de turno por el chat interno y sube las fotos de inmediato — el tráfico se creará en el sistema y los documentos quedarán ligados.',
+      'Si llega mercancía sin embarque previo, selecciona "Buscar embarque" para confirmar que no exista ya. Si realmente es nueva, avisa al operador de turno por el chat interno y sube las fotos de inmediato — el embarque se creará en el sistema y los documentos quedarán ligados.',
   },
   {
     title: 'Enviar documentos por email',
     body:
-      'Si no tienes acceso al portal en este momento, reenvía los documentos a ai@renatozapata.com. El buzón está monitoreado 24/7 y el clasificador los enlazará al tráfico correspondiente.',
+      'Si no tienes acceso al portal en este momento, reenvía los documentos a ai@renatozapata.com. El buzón está monitoreado 24/7 y el clasificador los enlazará al embarque correspondiente.',
     mailto: { label: 'Abrir correo a ai@renatozapata.com', href: 'mailto:ai@renatozapata.com?subject=Documentos%20de%20bodega' },
   },
   {

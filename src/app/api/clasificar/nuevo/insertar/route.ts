@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
   const session = await verifySession(req.cookies.get('portal_session')?.value || '')
   if (!session) return err('UNAUTHORIZED', 'No autorizado', 401)
   if (!PRIVILEGED_ROLES.has(session.role)) {
-    return err('FORBIDDEN', 'Solo operadores y administradores pueden insertar en tráfico', 403)
+    return err('FORBIDDEN', 'Solo operadores y administradores pueden insertar en embarque', 403)
   }
 
   let body: unknown
@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
     return err('CONFIDENCE_TOO_LOW', 'Confianza insuficiente para insertar (requiere > 85)', 422)
   }
   if (log.inserted_into_trafico) {
-    return err('CONFLICT', `Ya se insertó en tráfico ${log.inserted_into_trafico}`, 409)
+    return err('CONFLICT', `Ya se insertó en embarque ${log.inserted_into_trafico}`, 409)
   }
 
   const { data: trafico, error: trafErr } = await supabase
@@ -69,9 +69,9 @@ export async function POST(req: NextRequest) {
     .maybeSingle()
 
   if (trafErr) return err('INTERNAL_ERROR', trafErr.message, 500)
-  if (!trafico) return err('NOT_FOUND', 'Tráfico no encontrado', 404)
+  if (!trafico) return err('NOT_FOUND', 'Embarque no encontrado', 404)
   if (trafico.company_id !== log.company_id) {
-    return err('FORBIDDEN', 'El tráfico pertenece a otro cliente', 403)
+    return err('FORBIDDEN', 'El embarque pertenece a otro cliente', 403)
   }
 
   const writeback: { product_inserted: boolean; product_error: string | null } = {

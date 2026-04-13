@@ -138,7 +138,7 @@ export function AuditoriaPDF({ data }: { data: AuditData }) {
           <View style={s.banner}>
             <Text style={s.bannerLabel}>AVISO</Text>
             <Text style={s.bannerText}>
-              {d.missingPagoCount} tráfico{d.missingPagoCount === 1 ? '' : 's'} con estatus
+              {d.missingPagoCount} embarque{d.missingPagoCount === 1 ? '' : 's'} con estatus
               {' '}Pedimento Pagado sin fecha_pago — no aparecen en este período. Fuente:
               {' '}pipeline GlobalPC. Pendiente actualizar.
             </Text>
@@ -153,7 +153,7 @@ export function AuditoriaPDF({ data }: { data: AuditData }) {
             <Text style={s.kpiSub}>{d.pedimentoCount} pedimentos</Text>
           </View>
           <View style={s.kpiCard}>
-            <Text style={s.kpiLabel}>Tráficos Cruzados</Text>
+            <Text style={s.kpiLabel}>Embarques Cruzados</Text>
             <Text style={s.kpiValue}>{d.pedimentoCount}</Text>
             <Text style={s.kpiSub}>{d.traficosListStr || '—'}</Text>
           </View>
@@ -173,7 +173,7 @@ export function AuditoriaPDF({ data }: { data: AuditData }) {
         <Text style={s.sectionTitle}>I. Resumen Financiero de Pedimentos</Text>
 
         <View style={s.tableHeader}>
-          <Text style={{ ...s.tableHeaderCell, width: 55 }}>Tráfico</Text>
+          <Text style={{ ...s.tableHeaderCell, width: 55 }}>Embarque</Text>
           <Text style={{ ...s.tableHeaderCell, width: 50 }}>Pedimento</Text>
           <Text style={{ ...s.tableHeaderCell, width: 30 }}>Clave</Text>
           <Text style={{ ...s.tableHeaderCell, width: 55 }}>Régimen</Text>
@@ -226,7 +226,7 @@ export function AuditoriaPDF({ data }: { data: AuditData }) {
               <Text style={s.pedGroupText}>{group.pedimentoHeader}</Text>
             </View>
             <View style={s.tableHeader}>
-              <Text style={{ ...s.tableHeaderCell, width: 55 }}>Tráfico</Text>
+              <Text style={{ ...s.tableHeaderCell, width: 55 }}>Embarque</Text>
               <Text style={{ ...s.tableHeaderCell, width: 50 }}>Pedimento</Text>
               <Text style={{ ...s.tableHeaderCell, width: 50 }}>Fecha Pago</Text>
               <Text style={{ ...s.tableHeaderCell, width: 50 }}>Fecha Cruce</Text>

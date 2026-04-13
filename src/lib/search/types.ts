@@ -30,7 +30,7 @@ export type UniversalSearchResponse = {
 export type GroupKey = Exclude<keyof UniversalSearchResponse, 'query' | 'took_ms'>
 
 export const GROUP_LABELS_ES: Record<GroupKey, string> = {
-  traficos: 'Tráficos',
+  traficos: 'Embarques',
   pedimentos: 'Pedimentos',
   entradas: 'Entradas',
   facturas: 'Facturas',
@@ -45,7 +45,7 @@ export const GROUP_LABELS_ES: Record<GroupKey, string> = {
 }
 
 export const GROUP_LIST_HREFS: Record<GroupKey, string> = {
-  traficos: '/traficos',
+  traficos: '/embarques',
   pedimentos: '/pedimentos',
   entradas: '/entradas',
   facturas: '/pedimentos',
@@ -56,5 +56,5 @@ export const GROUP_LIST_HREFS: Record<GroupKey, string> = {
   proveedores: '/proveedores',
   operadores: '/operadores',
   documentos: '/documentos',
-  ordenes_carga: '/traficos',
+  ordenes_carga: '/embarques',
 }

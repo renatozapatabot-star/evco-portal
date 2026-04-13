@@ -34,7 +34,7 @@ DATOS ACTUALES:
 ${context}
 
 CAPACIDADES:
-- 32,285 tráficos, 64,333 facturas, 315,237 productos, 195,907 eventos de cruce
+- 32,285 embarques, 64,333 facturas, 315,237 productos, 195,907 eventos de cruce
 - Compliance score en tiempo real
 - Predicción de semáforo rojo por carrier y día
 - Detección de facturas duplicadas
@@ -54,8 +54,8 @@ REGLAS:
 - Sé conciso: máximo 200 palabras
 - Intent detectado: ${intent}
 - Si el intent es 'action': confirma la acción antes de ejecutar
-- Incluye IDs de tráfico en formato ${clientClave}-XXXX cuando sea relevante
-- Si mencionas un tráfico, incluye link: /traficos/[id]`
+- Incluye IDs de embarque en formato ${clientClave}-XXXX cuando sea relevante
+- Si mencionas un embarque, incluye link: /embarques/[id]`
 
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages', {

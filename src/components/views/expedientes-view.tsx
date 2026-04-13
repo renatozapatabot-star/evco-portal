@@ -338,7 +338,7 @@ export function ExpedientesView() {
     }
 
     try {
-      // 1. Fetch active tráficos for the client using company_id
+      // 1. Fetch active embarques for the client using company_id
       let q = supabase
         .from('traficos')
         .select('id, trafico, estatus, fecha_llegada, importe_total, pedimento, proveedores, descripcion_mercancia', { count: 'exact' })
@@ -442,7 +442,7 @@ export function ExpedientesView() {
           const traficoId = record?.pedimento_id
           if (!traficoId) return
 
-          // Only refresh if this tráfico is in our current set
+          // Only refresh if this embarque is in our current set
           if (!rawTraficos.some((t) => t.trafico === traficoId)) return
 
           // Refresh just this row's documents — not the entire list
@@ -528,7 +528,7 @@ export function ExpedientesView() {
   const pageRows = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE)
 
-  const handleNavigate = (id: string) => router.push(`/traficos/${id}`)
+  const handleNavigate = (id: string) => router.push(`/embarques/${id}`)
 
   const handleSolicitarTodos = async () => {
     const incompleteRows = rawTraficos.filter((r) => r.missing.length > 0)
@@ -563,14 +563,14 @@ export function ExpedientesView() {
       <div className="section-header" style={{ marginBottom: 16 }}>
         <div>
           <h2 className="page-title" style={{ margin: 0 }}>Expedientes Digitales</h2>
-          <p className="page-subtitle">Control de documentos por tráfico</p>
+          <p className="page-subtitle">Control de documentos por embarque</p>
         </div>
         <div style={{ position: 'relative' }}>
           <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar tráfico..."
+            placeholder="Buscar embarque..."
             style={{
               paddingLeft: 32, paddingRight: 12, height: 36,
               border: '1px solid var(--border)', borderRadius: 8,
@@ -622,18 +622,18 @@ export function ExpedientesView() {
         <EmptyState
           icon="📁"
           title="No hay expedientes"
-          description="Los expedientes de sus tráficos aparecerán aquí"
-          cta={{ label: "Ver tráficos", href: "/traficos" }}
+          description="Los expedientes de sus embarques aparecerán aquí"
+          cta={{ label: "Ver embarques", href: "/embarques" }}
         />
       ) : rawTraficos.length > 0 && rawTraficos.every((r) => r.docs.length === 0) ? (
-        /* Tráficos found but no completeness data — join is broken. NEVER show "all complete" */
+        /* Embarques found but no completeness data — join is broken. NEVER show "all complete" */
         <div style={{ padding: 24, textAlign: 'center', color: 'var(--status-warning, #C47F17)' }}>
           <div style={{ fontSize: 24, marginBottom: 8 }}>⚠</div>
           <p style={{ fontSize: 14, fontWeight: 600 }}>
-            {rawTraficos.length} tráficos encontrados sin datos de documentos
+            {rawTraficos.length} embarques encontrados sin datos de documentos
           </p>
           <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4 }}>
-            Verificar relación entre tablas documentos → tráficos
+            Verificar relación entre tablas documentos → embarques
           </p>
         </div>
       ) : rawTraficos.length > 0 && rawTraficos.every((r) => r.pct >= 100) ? (
@@ -642,7 +642,7 @@ export function ExpedientesView() {
           <FileText size={32} strokeWidth={1.5} style={{ color: 'var(--success)', margin: '0 auto 12px' }} />
           <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--success)' }}>Todos los expedientes completos &#10003;</p>
           <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-            Los {rawTraficos.length} tráficos activos tienen todos sus documentos en orden.
+            Los {rawTraficos.length} embarques activos tienen todos sus documentos en orden.
           </p>
         </div>
       ) : (
@@ -693,7 +693,7 @@ export function ExpedientesView() {
                 {filter === 'completos' ? 'Sin expedientes completos' : 'Todos los expedientes completos ✓'}
               </p>
               <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                {filter === 'completos' ? 'Aún no hay tráficos con todos sus documentos.' : 'Todos los documentos están en orden.'}
+                {filter === 'completos' ? 'Aún no hay embarques con todos sus documentos.' : 'Todos los documentos están en orden.'}
               </p>
             </div>
           ) : isMobile ? (
@@ -709,7 +709,7 @@ export function ExpedientesView() {
               <table className="aguila-table">
                 <thead>
                   <tr>
-                    <th scope="col">Tráfico</th>
+                    <th scope="col">Embarque</th>
                     <th scope="col">Estado</th>
                     <th scope="col">Docs</th>
                     <th scope="col">Completitud</th>

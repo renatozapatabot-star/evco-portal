@@ -151,7 +151,7 @@ export function OperatorsMetricsClient() {
           Desempeño del equipo
         </h1>
         <p style={{ fontSize: 13, color: TEXT_SECONDARY, marginTop: 6, marginBottom: 16 }}>
-          Métricas por operador: tráficos atendidos, ciclo promedio, tasa de
+          Métricas por operador: embarques atendidos, ciclo promedio, tasa de
           error, precisión en clasificación y cumplimiento MVE.
         </p>
 
@@ -245,7 +245,7 @@ export function OperatorsMetricsClient() {
                 <tr>
                   {[
                     { k: 'name', label: 'Operador', align: 'left' as const },
-                    { k: 'traficosHandled', label: 'Tráficos', align: 'right' as const },
+                    { k: 'traficosHandled', label: 'Embarques', align: 'right' as const },
                     { k: 'avgCycleHours', label: 'Ciclo prom.', align: 'right' as const },
                     { k: 'errorRate', label: 'Error %', align: 'right' as const },
                     { k: 'classificationAccuracy', label: 'Clasificación %', align: 'right' as const },
@@ -340,7 +340,7 @@ export function OperatorsMetricsClient() {
                   {r.role}
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8, fontFamily: MONO, fontSize: 13 }}>
-                  <div><span style={{ color: TEXT_MUTED }}>Tráficos</span><br />{r.traficosHandled}</div>
+                  <div><span style={{ color: TEXT_MUTED }}>Embarques</span><br />{r.traficosHandled}</div>
                   <div><span style={{ color: TEXT_MUTED }}>Ciclo</span><br />{formatHours(r.avgCycleHours)}</div>
                   <div><span style={{ color: TEXT_MUTED }}>Error</span><br />{formatPct(r.errorRate)}</div>
                   <div><span style={{ color: TEXT_MUTED }}>MVE</span><br />{formatPct(r.mveComplianceRate)}</div>

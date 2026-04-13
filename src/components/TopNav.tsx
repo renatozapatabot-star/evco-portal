@@ -149,7 +149,7 @@ export function TopNav() {
           onClick={() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }))}
         >
           <Search size={14} style={{ color: '#9C9890', flexShrink: 0 }} />
-          <span style={{ fontSize: 12, color: '#9C9890' }}>Buscar tráfico, pedimento... &#8984;K</span>
+          <span style={{ fontSize: 12, color: '#9C9890' }}>Buscar embarque, pedimento... &#8984;K</span>
         </div>
 
         {/* Right icons */}

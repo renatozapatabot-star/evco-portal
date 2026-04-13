@@ -27,7 +27,7 @@ export function BlockedPanel({ blocked, operatorId, onClear }: Props) {
       activeAction={cardState.activeAction}
       urgentCondition={cardState.urgentCondition}
       urgentAction={cardState.urgentAction}
-      actionHref="/traficos?estatus=Documentacion"
+      actionHref="/embarques?estatus=Documentacion"
       onClear={onClear}
       quietContent={
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -43,14 +43,14 @@ export function BlockedPanel({ blocked, operatorId, onClear }: Props) {
                 </span>
                 <div style={{ fontSize: 12, color: '#8B949E', marginTop: 2 }}>{item.reason}</div>
               </div>
-              <Link href={`/traficos/${encodeURIComponent(item.trafico)}`} style={{
+              <Link href={`/embarques/${encodeURIComponent(item.trafico)}`} style={{
                 background: item.type === 'waiting_doc' ? 'rgba(192,197,206,0.15)' : 'rgba(220,38,38,0.1)',
                 color: item.type === 'waiting_doc' ? '#E8EAED' : '#DC2626',
                 borderRadius: 8, padding: '8px 16px', fontSize: 12, fontWeight: 600,
                 textDecoration: 'none', whiteSpace: 'nowrap', minHeight: 36,
                 display: 'flex', alignItems: 'center',
               }}>
-                {item.type === 'waiting_doc' ? 'Ver tráfico' : 'Escalar'}
+                {item.type === 'waiting_doc' ? 'Ver embarque' : 'Escalar'}
               </Link>
             </div>
           ))}

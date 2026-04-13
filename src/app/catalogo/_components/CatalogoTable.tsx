@@ -89,7 +89,7 @@ export function CatalogoTable({ rows, query, total }: Props) {
             title={query ? 'Sin coincidencias' : 'Sin productos en el catálogo'}
             description={query
               ? 'Prueba con otra descripción, fracción o clave de producto.'
-              : 'Los productos importados aparecerán aquí conforme lleguen tráficos nuevos.'}
+              : 'Los productos importados aparecerán aquí conforme lleguen embarques nuevos.'}
           />
         </GlassCard>
       ) : (
@@ -182,7 +182,7 @@ function CatalogoRowCard({ row }: { row: CatalogoRow }) {
 
           {row.ultimo_cve_trafico ? (
             <Link
-              href={`/traficos/${encodeURIComponent(row.ultimo_cve_trafico)}`}
+              href={`/embarques/${encodeURIComponent(row.ultimo_cve_trafico)}`}
               style={{
                 alignSelf: 'flex-start',
                 display: 'inline-flex',
@@ -206,7 +206,7 @@ function CatalogoRowCard({ row }: { row: CatalogoRow }) {
               <span aria-hidden>→</span>
             </Link>
           ) : (
-            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>Sin tráfico reciente</span>
+            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>Sin embarque reciente</span>
           )}
         </div>
 

@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
   const fastestDay = dayStats[0]?.name || 'N/A'
   const slowestDay = dayStats[dayStats.length - 1]?.name || 'N/A'
 
-  // Get active En Proceso tráficos and predict
+  // Get active En Proceso embarques and predict
   const { data: active } = await supabase.from('traficos')
     .select('trafico, transportista_extranjero, fecha_llegada, estatus')
     .eq('company_id', companyId).eq('estatus', 'En Proceso')

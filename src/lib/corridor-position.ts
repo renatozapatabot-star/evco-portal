@@ -19,7 +19,7 @@ type Mapping = {
 
 export const EVENT_TO_LANDMARK: Record<string, Mapping> = {
   // ── Office (lifecycle + pedimento prep) ──
-  trafico_created: { landmarkId: 'rz_office', severity: 'at_rest', label: 'Tráfico creado' },
+  trafico_created: { landmarkId: 'rz_office', severity: 'at_rest', label: 'Embarque creado' },
   initial_pedimento_data_captured: { landmarkId: 'rz_office', severity: 'inflight', label: 'Captura de pedimento' },
   pedimento_field_modified: { landmarkId: 'rz_office', severity: 'inflight', label: 'Edición de pedimento' },
   invoices_assigned: { landmarkId: 'rz_office', severity: 'inflight', label: 'Facturas asignadas' },

@@ -3,7 +3,7 @@
  *
  * When operators pick "Otro (especificar)" in SolicitarDocsModal, the custom
  * name is persisted to expediente_documentos.custom_doc_name. If the same
- * custom name recurs ≥ 3 times across tráficos, we surface it as an
+ * custom name recurs ≥ 3 times across embarques, we surface it as an
  * operational_decisions row with decision_type='audit_suggestion' — the
  * signal to promote it into the catalog.
  *

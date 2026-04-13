@@ -57,7 +57,7 @@ export function SolicitarModal({ traficoId, missingDocs, onClose, onSuccess }: P
     const selectedRecipient = RECIPIENTS.find(r => r.id === recipient)
 
     try {
-      // Duplicate check: if solicitud exists for this tráfico in last 24h
+      // Duplicate check: if solicitud exists for this embarque in last 24h
       const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString()
       const { data: existing } = await supabase
         .from('documento_solicitudes')
@@ -152,7 +152,7 @@ export function SolicitarModal({ traficoId, missingDocs, onClose, onSuccess }: P
               Solicitar documentos
             </h3>
             <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--text-secondary)' }}>
-              Tráfico {traficoId} · {selected.length} {selected.length === 1 ? 'documento' : 'documentos'}
+              Embarque {traficoId} · {selected.length} {selected.length === 1 ? 'documento' : 'documentos'}
             </p>
           </div>
           <button

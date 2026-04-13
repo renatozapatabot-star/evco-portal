@@ -9,7 +9,7 @@ const supabase = createClient(
 
 const PAGE_SIZE = 50
 
-/** Hide tráficos with fecha_llegada before this date from the portal */
+/** Hide embarques with fecha_llegada before this date from the portal */
 export const PORTAL_DATE_FROM = '2024-01-01'
 
 export type Trafico = {

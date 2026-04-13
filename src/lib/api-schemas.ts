@@ -54,7 +54,7 @@ export const dataQuerySchema = z.object({
 
 /** /api/pedimento-package — pedimento data bundle */
 export const pedimentoPackageSchema = z.object({
-  trafico: z.string().regex(/^[\w-]+$/, 'Formato de tráfico inválido').max(30),
+  trafico: z.string().regex(/^[\w-]+$/, 'Formato de embarque inválido').max(30),
 })
 
 /** /api/search — global search */

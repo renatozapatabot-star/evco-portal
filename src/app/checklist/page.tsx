@@ -51,7 +51,7 @@ export default async function ChecklistPage() {
           61 tipos de documento · validación automática por régimen aduanal.
           La pantalla completa del checklist se libera en un próximo build;
           mientras tanto el Asistente AGUILA ya puede correr el checklist por
-          tráfico.
+          embarque.
         </p>
         <div style={{ display: 'flex', gap: 12, marginTop: 24, flexWrap: 'wrap' }}>
           <Link href="/expedientes" style={{

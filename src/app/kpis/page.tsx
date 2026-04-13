@@ -319,7 +319,7 @@ export default function KPIsPage() {
 
         <KPICard icon={FileText} accent="#3B82F6"
           label="Pedimentos Asignados" value={`${Math.round(kpis.withPedimento / kpis.total * 100)}%`}
-          sub={`${kpis.withPedimento} de ${kpis.total} tráficos con pedimento`} />
+          sub={`${kpis.withPedimento} de ${kpis.total} embarques con pedimento`} />
       </div>
 
       {/* ── Volumen Mensual ──────────────────────────── */}

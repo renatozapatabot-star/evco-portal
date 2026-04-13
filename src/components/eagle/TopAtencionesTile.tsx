@@ -12,8 +12,13 @@ const KIND_DOT: Record<AtencionItem['kind'], string> = {
 }
 
 export function TopAtencionesTile({ items }: { items: AtencionItem[] }) {
+  const criticalCount = items.filter((i) => i.kind === 'mve_critical').length
+  const severity =
+    criticalCount >= 1 ? 'critical'
+    : items.length >= 3 ? 'warning'
+    : undefined
   return (
-    <TileShell title="Top 5 atenciones" subtitle={`${items.length}`}>
+    <TileShell title="Top 5 atenciones" subtitle={`${items.length}`} severity={severity}>
       {items.length === 0 ? (
         <div style={{ color: TEXT_MUTED, fontSize: 13 }}>Sin atenciones pendientes.</div>
       ) : (

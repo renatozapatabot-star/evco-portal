@@ -27,6 +27,21 @@ export interface KPIs {
   activos: number
   pendientes: number
   atrasados: number
+  /** Last 14 daily counts per KPI — last 7 feed the sparkline, prior 7 feed the delta. */
+  entradasSeries: number[]
+  activosSeries: number[]
+  pendientesSeries: number[]
+  atrasadosSeries: number[]
+  /** Prior-7-day totals for delta comparison. */
+  entradasPrev7: number
+  activosPrev7: number
+  pendientesPrev7: number
+  atrasadosPrev7: number
+  /** Current-7-day totals (paired with *Prev7 for delta math). */
+  entradasCurr7: number
+  activosCurr7: number
+  pendientesCurr7: number
+  atrasadosCurr7: number
 }
 
 export interface ActionResult {

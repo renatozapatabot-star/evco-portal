@@ -88,3 +88,70 @@ border-color: rgba(0,229,255,0.2);
 
 Use `<StatusBadge status={status} />` always. Never inline badge styles.
 Badges use semi-transparent backgrounds matching the glass system.
+
+---
+
+## AGUILA Cockpit Standard (April 2026)
+
+Every internal-facing cockpit (Operator, Owner, Admin) composes from the
+official primitives in `src/components/aguila/`. Local reimplementations
+of KPI cards, activity lists, or exception counts are banned going forward —
+the standard exists so a quality bump in one primitive cascades to every
+cockpit at once.
+
+### Required primitives
+
+| Pattern | Primitive | Import |
+|---|---|---|
+| Numeric KPI with trend | `<KPITile>` | `@/components/aguila` |
+| Mini 7-day trend chart | `<Sparkline>` (composed inside `KPITile`) | `@/components/aguila` |
+| % change vs prior period | `<DeltaIndicator>` (composed inside `KPITile`) | `@/components/aguila` |
+| Exception/queue count card | `<SeverityRibbon>` on a glass card | `@/components/aguila` |
+| Activity / audit feed | `<TimelineFeed>` | `@/components/aguila` |
+| "State of the day" header | Greeting + status dot + `LiveTimestamp` | inline pattern in `InicioClient` |
+
+### KPITile contract
+
+- Sparkline is 7 points (last 7 daily buckets from a 14-point series)
+- Delta pill compares `current` (last-7 total) vs `previous` (prior-7 total)
+- `inverted={true}` flips the tone for metrics where down is good
+  (atrasados, failed workflow events, aging A/R)
+- `urgent={true}` renders the number in RED + 2s opacity pulse (respects `prefers-reduced-motion`)
+- Every tile is clickable (`href` prop) and lands on a filtered destination
+  that already exists — cockpits do NOT invent drill-down routes
+
+### SeverityRibbon contract
+
+- 3px left-edge ribbon rendered as `position: absolute` inside a card that
+  is `position: relative` + `overflow: hidden`
+- Never renders as a card border — glass borders stay neutral per
+  core-invariants rule 2
+- Tones: `healthy` (green), `warning` (amber), `critical` (red).
+  Use `severityFromCount(n, { warn, crit })` helper for count-based thresholds
+
+### Client surface exclusion
+
+Client-facing surfaces (Shipper portal, `/track/[token]`, `/share/[trafico_id]`,
+`/cliente/**`) never render `<DeltaIndicator>` or `<SeverityRibbon>` — they
+show certainty, not anxiety. Sparklines on the Shipper surface are allowed
+only for confirmed-positive metrics (on-time rate, crossings completed).
+See core-invariants rule 24.
+
+### Monochrome discipline
+
+Sparklines default to `ACCENT_SILVER` (#C0C5CE). Semantic tones (green/amber/red)
+are reserved for status signals on numbers where direction has meaning.
+Cyan is deprecated — `ACCENT_CYAN` is a back-compat alias resolving to silver.
+Reject any advice to add blue/gold/navy decorative color.
+
+### Verification
+
+```bash
+# Local KPI re-implementations are banned after Wave D consolidation:
+grep -rn "fontSize: 48" src/app/
+# → every match must be inside src/components/aguila/ or an explicit exception
+
+# Client-surface anxiety leak:
+grep -rn "DeltaIndicator\|SeverityRibbon" src/app/cliente src/app/track src/app/share
+# → must return zero
+```

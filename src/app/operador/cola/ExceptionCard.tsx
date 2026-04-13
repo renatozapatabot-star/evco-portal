@@ -3,6 +3,7 @@
 import { Tags, FolderOpen, Truck, AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
 import { fmtDateTime } from '@/lib/format-utils'
+import { SeverityRibbon, type SeverityTone } from '@/components/aguila'
 
 interface WorkflowEvent {
   id: string
@@ -22,12 +23,11 @@ interface ExceptionCardProps {
   onAction: (event: WorkflowEvent) => void
 }
 
-function getUrgencyColor(createdAt: string): string {
-  const ageMs = Date.now() - new Date(createdAt).getTime()
-  const ageHours = ageMs / (1000 * 60 * 60)
-  if (ageHours > 6) return '#EF4444'
-  if (ageHours > 2) return '#FBBF24'
-  return '#22C55E'
+function getUrgencyTone(createdAt: string): SeverityTone {
+  const ageHours = (Date.now() - new Date(createdAt).getTime()) / 3_600_000
+  if (ageHours > 6) return 'critical'
+  if (ageHours > 2) return 'warning'
+  return 'healthy'
 }
 
 function getUrgencyOrder(createdAt: string): number {
@@ -100,7 +100,7 @@ export { getUrgencyOrder }
 export type { WorkflowEvent }
 
 export function ExceptionCard({ event, onAction }: ExceptionCardProps) {
-  const urgencyColor = getUrgencyColor(event.created_at)
+  const tone = getUrgencyTone(event.created_at)
 
   return (
     <div
@@ -111,26 +111,15 @@ export function ExceptionCard({ event, onAction }: ExceptionCardProps) {
         backdropFilter: 'blur(20px)',
         border: '1px solid rgba(255,255,255,0.08)',
         borderRadius: 20,
-        padding: 20,
+        padding: '20px 20px 20px 23px',
         position: 'relative',
         overflow: 'hidden',
       }}
     >
-      {/* Urgency strip */}
-      <div
-        style={{
-          position: 'absolute',
-          left: 0,
-          top: 0,
-          bottom: 0,
-          width: 4,
-          background: urgencyColor,
-          borderRadius: '20px 0 0 20px',
-        }}
-      />
+      <SeverityRibbon tone={tone} />
 
       {/* Content */}
-      <div style={{ flex: 1, marginLeft: 8 }}>
+      <div style={{ flex: 1 }}>
         {/* Top row: company badge + type */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
           <span

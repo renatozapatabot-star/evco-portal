@@ -6,6 +6,14 @@ import { Search, AlertTriangle, CheckCircle2, Clock, Shield, ChevronDown, Chevro
 import { getCookieValue } from '@/lib/client-config'
 import { fmtDate, fmtDateTime } from '@/lib/format-utils'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { SeverityRibbon, type SeverityTone } from '@/components/aguila'
+
+const SEVERITY_TONE: Record<ExceptionDiagnosis['severity'], SeverityTone> = {
+  critical: 'critical',
+  high: 'critical',
+  medium: 'warning',
+  low: 'healthy',
+}
 
 interface Hypothesis {
   rank: number
@@ -203,9 +211,10 @@ function ExceptionCard({ exception: ex, isMobile }: { exception: ExceptionDiagno
     <div style={{
       borderRadius: 10, overflow: 'hidden',
       border: `1px solid ${sev.border}`,
-      borderLeft: `3px solid ${sev.color}`,
       background: sev.bg,
+      position: 'relative',
     }}>
+      <SeverityRibbon tone={SEVERITY_TONE[ex.severity]} />
       {/* Main row */}
       <div
         style={{ padding: '14px 18px', cursor: 'pointer' }}

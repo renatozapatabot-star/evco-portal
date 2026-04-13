@@ -2,11 +2,14 @@
 
 import Link from 'next/link'
 import { Activity } from 'lucide-react'
-import { fmtDateTime } from '@/lib/format-utils'
 import {
   BG_CARD, BORDER, GLASS_BLUR, GLASS_SHADOW,
-  TEXT_PRIMARY, TEXT_SECONDARY, TEXT_MUTED, ACCENT_CYAN, GREEN, GOLD,
+  TEXT_SECONDARY, TEXT_MUTED, ACCENT_SILVER, GREEN, AMBER, GOLD,
 } from '@/lib/design-system'
+import {
+  SeverityRibbon, severityFromCount,
+  TimelineFeed, type TimelineItem,
+} from '@/components/aguila'
 import type { DecisionRow } from './types'
 
 interface Props {
@@ -15,11 +18,11 @@ interface Props {
 }
 
 const STATUS_PILL: Record<string, { bg: string; fg: string; label: string }> = {
-  'En Proceso':       { bg: 'rgba(192,197,206,0.12)',  fg: ACCENT_CYAN, label: 'En proceso' },
-  'Documentacion':    { bg: 'rgba(148,163,184,0.12)', fg: TEXT_SECONDARY, label: 'Documentación' },
-  'En Aduana':        { bg: 'rgba(148,163,184,0.12)', fg: TEXT_SECONDARY, label: 'En aduana' },
-  'Pedimento Pagado': { bg: 'rgba(34,197,94,0.12)',   fg: GREEN, label: 'Pagado' },
-  'Cruzado':          { bg: 'rgba(34,197,94,0.12)',   fg: GREEN, label: 'Cruzado' },
+  'En Proceso':       { bg: 'rgba(192,197,206,0.12)', fg: ACCENT_SILVER,   label: 'En proceso' },
+  'Documentacion':    { bg: 'rgba(148,163,184,0.12)', fg: TEXT_SECONDARY,  label: 'Documentación' },
+  'En Aduana':        { bg: 'rgba(148,163,184,0.12)', fg: TEXT_SECONDARY,  label: 'En aduana' },
+  'Pedimento Pagado': { bg: 'rgba(34,197,94,0.12)',   fg: GREEN,           label: 'Pagado' },
+  'Cruzado':          { bg: 'rgba(34,197,94,0.12)',   fg: GREEN,           label: 'Cruzado' },
 }
 
 function StatusPill({ label }: { label: string | null }) {
@@ -37,19 +40,31 @@ function StatusPill({ label }: { label: string | null }) {
 }
 
 export function RightRail({ colaCount, feed }: Props) {
-  const visible = feed.slice(0, 5)
+  const severity = severityFromCount(colaCount, { warn: 1, crit: 6 })
+  const items: TimelineItem[] = feed.slice(0, 5).map((f) => ({
+    id: String(f.id),
+    title: f.trafico || '—',
+    subtitle: f.decision ? truncate(f.decision, 72) : undefined,
+    timestamp: f.created_at,
+    href: f.trafico ? `/traficos/${encodeURIComponent(f.trafico)}` : undefined,
+    accessory: <StatusPill label={f.decision_type} />,
+  }))
+
   return (
     <aside style={{ display: 'flex', flexDirection: 'column', gap: 16, minWidth: 0 }}>
       {/* Cola de excepciones */}
       <section style={{
+        position: 'relative',
+        overflow: 'hidden',
         background: BG_CARD,
         backdropFilter: `blur(${GLASS_BLUR})`,
         WebkitBackdropFilter: `blur(${GLASS_BLUR})`,
         border: `1px solid ${BORDER}`,
         borderRadius: 20,
         boxShadow: GLASS_SHADOW,
-        padding: '20px',
+        padding: '20px 20px 20px 23px',
       }}>
+        {colaCount > 0 && <SeverityRibbon tone={severity} />}
         <div style={{
           fontSize: 10, fontWeight: 700,
           textTransform: 'uppercase', letterSpacing: '0.08em',
@@ -61,7 +76,7 @@ export function RightRail({ colaCount, feed }: Props) {
           fontFamily: 'var(--font-jetbrains-mono), monospace',
           fontSize: 44,
           fontWeight: 800,
-          color: colaCount > 0 ? GOLD : TEXT_MUTED,
+          color: colaCount > 0 ? (severity === 'critical' ? AMBER : GOLD) : TEXT_MUTED,
           margin: '8px 0 12px 0',
           lineHeight: 1,
           fontVariantNumeric: 'tabular-nums',
@@ -105,8 +120,8 @@ export function RightRail({ colaCount, feed }: Props) {
         boxShadow: GLASS_SHADOW,
         padding: '16px 20px',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: visible.length > 0 ? 12 : 0 }}>
-          <Activity size={14} color={ACCENT_CYAN} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: items.length > 0 ? 12 : 0 }}>
+          <Activity size={14} color={ACCENT_SILVER} />
           <span style={{
             fontSize: 10, fontWeight: 700,
             textTransform: 'uppercase', letterSpacing: '0.08em',
@@ -114,56 +129,14 @@ export function RightRail({ colaCount, feed }: Props) {
           }}>
             Actividad reciente
           </span>
-          {visible.length > 0 && (
+          {items.length > 0 && (
             <span style={{
               width: 6, height: 6, borderRadius: '50%',
               background: GREEN, boxShadow: `0 0 6px ${GREEN}`, marginLeft: 4,
             }} />
           )}
         </div>
-
-        {visible.length === 0 ? (
-          <div style={{ color: TEXT_MUTED, fontSize: 12, padding: '16px 0' }}>
-            Aún no hay actividad registrada hoy.
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {visible.map((f, i) => (
-              <div key={f.id} style={{
-                display: 'flex', flexDirection: 'column', gap: 4,
-                padding: '10px 0',
-                borderBottom: i < visible.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-                  <span style={{
-                    fontFamily: 'var(--font-jetbrains-mono), monospace',
-                    fontSize: 13, fontWeight: 700, color: ACCENT_CYAN,
-                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                    minWidth: 0,
-                  }}>
-                    {f.trafico || '—'}
-                  </span>
-                  <span style={{
-                    fontFamily: 'var(--font-jetbrains-mono), monospace',
-                    fontSize: 10, color: TEXT_MUTED, flexShrink: 0,
-                  }}>
-                    {fmtDateTime(f.created_at)}
-                  </span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{
-                    fontSize: 11, color: TEXT_SECONDARY,
-                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                    flex: 1, minWidth: 0,
-                  }}>
-                    {truncate(f.decision, 60)}
-                  </span>
-                  <StatusPill label={f.decision_type} />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        <TimelineFeed items={items} max={5} emptyLabel="Aún no hay actividad registrada hoy." />
       </section>
     </aside>
   )

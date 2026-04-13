@@ -41,6 +41,10 @@ export default async function OperadorInicioPage() {
     colaCountRes,
     personalCompletedThisWeekRes,
     personalCompletedLastWeekRes,
+    entradasSeriesRes,
+    activosSeriesRes,
+    pendientesSeriesRes,
+    atrasadosSeriesRes,
   ] = await Promise.all([
     sb.from('entradas')
       .select('cve_entrada', { count: 'exact', head: true })
@@ -95,13 +99,73 @@ export default async function OperadorInicioPage() {
           .gte('updated_at', fourteenDaysAgo)
           .lt('updated_at', sevenDaysAgo)
       : Promise.resolve({ count: 0 }),
+    // 14-day series — bounded pulls, bucketed in JS below. Limit 2000 rows covers
+    // EVCO volume comfortably; additional clients can graduate to an RPC if needed.
+    sb.from('entradas')
+      .select('fecha_llegada_mercancia')
+      .gte('fecha_llegada_mercancia', fourteenDaysAgo)
+      .limit(2000),
+    sb.from('traficos')
+      .select('updated_at')
+      .eq('estatus', 'En Proceso')
+      .gte('updated_at', fourteenDaysAgo)
+      .limit(2000),
+    sb.from('traficos')
+      .select('fecha_llegada')
+      .is('pedimento', null)
+      .gte('fecha_llegada', fourteenDaysAgo)
+      .limit(2000),
+    sb.from('traficos')
+      .select('updated_at')
+      .eq('estatus', 'En Proceso')
+      .gte('updated_at', fourteenDaysAgo)
+      .lte('updated_at', sevenDaysAgo)
+      .limit(2000),
   ])
+
+  // Bucket timestamp rows into 14 daily counts (oldest → newest).
+  const bucketDailySeries = (
+    rows: Array<Record<string, unknown>> | null | undefined,
+    key: string,
+  ): number[] => {
+    const buckets = new Array(14).fill(0)
+    const dayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
+    for (const row of rows ?? []) {
+      const v = row?.[key]
+      if (typeof v !== 'string') continue
+      const t = new Date(v).getTime()
+      if (!Number.isFinite(t)) continue
+      const daysAgo = Math.floor((dayStart - t) / 86400000)
+      if (daysAgo < 0 || daysAgo > 13) continue
+      buckets[13 - daysAgo] += 1
+    }
+    return buckets
+  }
+  const sumRange = (arr: number[], from: number, to: number) =>
+    arr.slice(from, to).reduce((s, n) => s + n, 0)
+
+  const entradasSeries  = bucketDailySeries(entradasSeriesRes.data as Array<Record<string, unknown>> | null, 'fecha_llegada_mercancia')
+  const activosSeries   = bucketDailySeries(activosSeriesRes.data as Array<Record<string, unknown>> | null, 'updated_at')
+  const pendientesSeries = bucketDailySeries(pendientesSeriesRes.data as Array<Record<string, unknown>> | null, 'fecha_llegada')
+  const atrasadosSeries = bucketDailySeries(atrasadosSeriesRes.data as Array<Record<string, unknown>> | null, 'updated_at')
 
   const kpis = {
     entradasHoy: entradasHoyRes.count || 0,
     activos: activosRes.count || 0,
     pendientes: pendientesRes.count || 0,
     atrasados: atrasadosRes.count || 0,
+    entradasSeries,
+    activosSeries,
+    pendientesSeries,
+    atrasadosSeries,
+    entradasCurr7: sumRange(entradasSeries, 7, 14),
+    entradasPrev7: sumRange(entradasSeries, 0, 7),
+    activosCurr7: sumRange(activosSeries, 7, 14),
+    activosPrev7: sumRange(activosSeries, 0, 7),
+    pendientesCurr7: sumRange(pendientesSeries, 7, 14),
+    pendientesPrev7: sumRange(pendientesSeries, 0, 7),
+    atrasadosCurr7: sumRange(atrasadosSeries, 7, 14),
+    atrasadosPrev7: sumRange(atrasadosSeries, 0, 7),
   }
 
   const traficos = (activeTraficosRes.data || []) as TraficoRow[]

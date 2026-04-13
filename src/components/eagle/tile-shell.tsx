@@ -15,6 +15,7 @@ import {
   TEXT_MUTED,
   TEXT_PRIMARY,
 } from '@/lib/design-system'
+import { SeverityRibbon, type SeverityTone } from '@/components/aguila'
 
 export const MONO = 'var(--font-mono)'
 
@@ -24,10 +25,11 @@ export interface TileShellProps {
   href?: string
   span?: 1 | 2
   fixedHeight?: number
+  severity?: SeverityTone
   children: ReactNode
 }
 
-export function TileShell({ title, subtitle, href, span = 1, fixedHeight, children }: TileShellProps) {
+export function TileShell({ title, subtitle, href, span = 1, fixedHeight, severity, children }: TileShellProps) {
   const gridStyle: CSSProperties = {
     gridColumn: span === 2 ? 'span 2' : 'span 1',
     height: fixedHeight ?? '100%',
@@ -36,12 +38,14 @@ export function TileShell({ title, subtitle, href, span = 1, fixedHeight, childr
   const body = (
     <div
       style={{
+        position: 'relative',
+        overflow: 'hidden',
         background: 'rgba(9,9,11,0.75)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
         border: `1px solid ${BORDER_HAIRLINE}`,
         borderRadius: 20,
-        padding: 20,
+        padding: severity ? '20px 20px 20px 23px' : 20,
         boxShadow: GLASS_SHADOW,
         height: '100%',
         display: 'flex',
@@ -50,6 +54,7 @@ export function TileShell({ title, subtitle, href, span = 1, fixedHeight, childr
         cursor: href ? 'pointer' : 'default',
       }}
     >
+      {severity ? <SeverityRibbon tone={severity} /> : null}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8 }}>
         <h2 style={{ fontSize: 14, fontWeight: 600, color: TEXT_PRIMARY, margin: 0, letterSpacing: '0.02em' }}>
           {title}

@@ -1,26 +1,61 @@
 'use client'
 
-import {
-  BG_CARD, BORDER, GLASS_BLUR, GLASS_SHADOW,
-  TEXT_PRIMARY, TEXT_MUTED, RED, AMBER,
-} from '@/lib/design-system'
+import { KPITile } from '@/components/aguila'
 import type { KPIs } from './types'
 
 interface Props {
   kpis: KPIs
 }
 
-const cards: Array<{
-  key: keyof KPIs
-  label: string
-}> = [
-  { key: 'entradasHoy', label: 'Entradas hoy' },
-  { key: 'activos',     label: 'Tráficos activos' },
-  { key: 'pendientes',  label: 'Pedimentos pendientes' },
-  { key: 'atrasados',   label: 'Atrasados >7d' },
-]
-
 export function HeroStrip({ kpis }: Props) {
+  const tiles = [
+    {
+      key: 'entradas',
+      label: 'Entradas hoy',
+      value: kpis.entradasHoy,
+      series: kpis.entradasSeries,
+      current: kpis.entradasCurr7,
+      previous: kpis.entradasPrev7,
+      href: '/operador/entradas?range=hoy',
+      tone: 'silver' as const,
+      inverted: false,
+    },
+    {
+      key: 'activos',
+      label: 'Tráficos activos',
+      value: kpis.activos,
+      series: kpis.activosSeries,
+      current: kpis.activosCurr7,
+      previous: kpis.activosPrev7,
+      href: '/traficos?estatus=En+Proceso',
+      tone: 'silver' as const,
+      inverted: false,
+    },
+    {
+      key: 'pendientes',
+      label: 'Pedimentos pendientes',
+      value: kpis.pendientes,
+      series: kpis.pendientesSeries,
+      current: kpis.pendientesCurr7,
+      previous: kpis.pendientesPrev7,
+      href: '/pedimentos?estatus=borrador',
+      tone: 'silver' as const,
+      inverted: true,
+    },
+    {
+      key: 'atrasados',
+      label: 'Atrasados >7d',
+      value: kpis.atrasados,
+      series: kpis.atrasadosSeries,
+      current: kpis.atrasadosCurr7,
+      previous: kpis.atrasadosPrev7,
+      href: '/traficos?atrasados=7d',
+      tone: 'silver' as const,
+      urgent: kpis.atrasados > 0,
+      inverted: true,
+    },
+  ]
+
   return (
     <div
       className="inicio-hero"
@@ -35,63 +70,20 @@ export function HeroStrip({ kpis }: Props) {
           .inicio-hero { grid-template-columns: repeat(2, 1fr) !important; }
         }
       `}</style>
-      {cards.map(({ key, label }) => {
-        const value = kpis[key]
-        const isAtrasado = key === 'atrasados'
-        const urgent = isAtrasado && value > 0
-        const numberColor = urgent ? RED : TEXT_PRIMARY
-        return (
-          <div
-            key={key}
-            style={{
-              background: BG_CARD,
-              backdropFilter: `blur(${GLASS_BLUR})`,
-              WebkitBackdropFilter: `blur(${GLASS_BLUR})`,
-              border: `1px solid ${BORDER}`,
-              borderRadius: 20,
-              padding: '20px 18px',
-              boxShadow: GLASS_SHADOW,
-              minHeight: 120,
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-              color: TEXT_PRIMARY,
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-              <span style={{
-                fontSize: 10,
-                fontWeight: 700,
-                textTransform: 'uppercase',
-                letterSpacing: '0.08em',
-                color: TEXT_MUTED,
-              }}>
-                {label}
-              </span>
-              {urgent && (
-                <span style={{
-                  fontSize: 9,
-                  fontWeight: 800,
-                  color: AMBER,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.08em',
-                }}>URGENTE</span>
-              )}
-            </div>
-            <div style={{
-              fontFamily: 'var(--font-jetbrains-mono), JetBrains Mono, monospace',
-              fontSize: 48,
-              fontWeight: 800,
-              lineHeight: 1,
-              letterSpacing: '-0.03em',
-              color: numberColor,
-              fontVariantNumeric: 'tabular-nums',
-            }}>
-              {value}
-            </div>
-          </div>
-        )
-      })}
+      {tiles.map((t) => (
+        <KPITile
+          key={t.key}
+          label={t.label}
+          value={t.value}
+          series={t.series}
+          current={t.current}
+          previous={t.previous}
+          href={t.href}
+          tone={t.tone}
+          urgent={t.urgent}
+          inverted={t.inverted}
+        />
+      ))}
     </div>
   )
 }

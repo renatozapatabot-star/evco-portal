@@ -123,3 +123,21 @@ caused a real regression, a compliance risk, or a silent failure in production.
 23. **Cross-link entities.** Tráficos link to pedimentos and expedientes.
     Pedimentos link back. Documents link to their parent entity.
     verify: tráfico detail page contains links to pedimento and expediente
+
+## COCKPIT STANDARD
+
+24. **Client surfaces show certainty, not anxiety.** `<DeltaIndicator>`,
+    `<SeverityRibbon>`, and amber/red-toned sparklines are internal-only.
+    Shipper portal, `/track/[token]`, `/share/[trafico_id]`, and `/cliente/**`
+    render positive-direction sparklines only (on-time rate, crossings
+    completed). Compliance countdowns, MVE deadlines, missing-doc warnings,
+    and crossing holds never appear on a client-facing surface.
+    verify: `grep -rn "DeltaIndicator\|SeverityRibbon" src/app/cliente src/app/track src/app/share` → 0 matches
+
+25. **Cockpit KPI primitives are centralized.** Every internal cockpit
+    composes from `src/components/aguila/` — `<KPITile>`, `<Sparkline>`,
+    `<DeltaIndicator>`, `<SeverityRibbon>`, `<TimelineFeed>`. Local
+    reimplementations of these patterns are banned — a quality bump in the
+    primitive must cascade to every cockpit at once.
+    verify: `grep -rn "fontSize: 48\|fontSize: 44" src/app/` → matches resolve
+    only through `@/components/aguila` or a documented exception

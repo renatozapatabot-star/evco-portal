@@ -6,6 +6,7 @@ import { getClientClaveCookie, getCompanyIdCookie } from '@/lib/client-config'
 import { fmtDate as fmtDateUtil, fmtPedimento } from '@/lib/format-utils'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { BG_ELEVATED } from '@/lib/design-system'
 
 interface TraficoRow {
   trafico: string
@@ -112,7 +113,7 @@ export default function MvePage() {
 
       {/* KPI Row */}
       <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-3'} gap-3 mb-5`}>
-        <div className="rounded-[10px] p-4" style={{ background: 'rgba(9,9,11,0.75)', border: '1px solid rgba(0,0,0,0.07)' }}>
+        <div className="rounded-[10px] p-4" style={{ background: BG_ELEVATED, border: '1px solid rgba(0,0,0,0.07)' }}>
           <div className="text-[10.5px] font-semibold uppercase tracking-[0.07em] mb-1.5" style={{ color: 'var(--text-secondary)' }}>Total Embarques</div>
           <div className="mono text-[22px] font-semibold" style={{ color: 'var(--text-primary)' }}>{rows.length.toLocaleString()}</div>
         </div>
@@ -161,7 +162,7 @@ export default function MvePage() {
           </p>
         </div>
         <div className="flex items-center gap-2 rounded-[7px] px-3 py-1.5"
-          style={{ background: 'rgba(9,9,11,0.75)', border: '1px solid rgba(0,0,0,0.09)', width: isMobile ? '100%' : 260 }}>
+          style={{ background: BG_ELEVATED, border: '1px solid rgba(0,0,0,0.09)', width: isMobile ? '100%' : 260 }}>
           <Search size={13} strokeWidth={2} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
           <input type="text" placeholder="Buscar embarque..." value={search}
             onChange={e => setSearch(e.target.value)}
@@ -171,7 +172,7 @@ export default function MvePage() {
       </div>
 
       {/* Table */}
-      <div className="rounded-[10px] overflow-hidden" style={{ background: 'rgba(9,9,11,0.75)', border: '1px solid rgba(0,0,0,0.06)' }}>
+      <div className="rounded-[10px] overflow-hidden" style={{ background: BG_ELEVATED, border: '1px solid rgba(0,0,0,0.06)' }}>
         <div className="overflow-x-auto">
           <table className="aguila-table" aria-label="Embarques pendientes MVE">
             <thead>
@@ -237,7 +238,7 @@ export default function MvePage() {
               {compliant.length} embarques cruzados
             </span>
           </div>
-          <div className="rounded-[10px] overflow-hidden" style={{ background: 'rgba(9,9,11,0.75)', border: '1px solid rgba(0,0,0,0.06)' }}>
+          <div className="rounded-[10px] overflow-hidden" style={{ background: BG_ELEVATED, border: '1px solid rgba(0,0,0,0.06)' }}>
             <div className="overflow-x-auto" style={{ maxHeight: 300 }}>
               <table className="aguila-table" aria-label="Embarques cruzados con MVE">
                 <thead>

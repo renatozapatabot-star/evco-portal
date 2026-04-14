@@ -9,7 +9,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { ACCENT_SILVER, ACCENT_SILVER_DIM, GLOW_SILVER } from '@/lib/design-system'
+import { ACCENT_SILVER, ACCENT_SILVER_DIM, GLOW_SILVER, BG_ELEVATED } from '@/lib/design-system'
 import { fmtDateTime } from '@/lib/format-utils'
 
 type Severity = 'info' | 'warning' | 'critical'
@@ -158,7 +158,7 @@ export default function MveAlertsPage() {
             className="rounded-[8px] px-4 py-2 text-[13px] font-medium"
             style={{
               minHeight: 44,
-              background: 'rgba(9,9,11,0.75)',
+              background: BG_ELEVATED,
               border: `1px solid ${ACCENT_SILVER_DIM}`,
               color: '#E6EDF3',
               boxShadow: `0 0 0 1px ${GLOW_SILVER}`,
@@ -175,7 +175,7 @@ export default function MveAlertsPage() {
         <div
           className="rounded-[10px] px-4 py-3 mb-4 text-[12.5px]"
           style={{
-            background: 'rgba(9,9,11,0.75)',
+            background: BG_ELEVATED,
             border: `1px solid ${ACCENT_SILVER_DIM}`,
             color: ACCENT_SILVER,
           }}
@@ -201,7 +201,7 @@ export default function MveAlertsPage() {
           onChange={(e) => setClientFilter(e.target.value)}
           className="rounded-[6px] px-3 py-1.5 text-[12.5px] outline-none"
           style={{
-            background: 'rgba(9,9,11,0.75)',
+            background: BG_ELEVATED,
             border: '1px solid rgba(255,255,255,0.08)',
             color: '#E6EDF3',
             minHeight: 36,
@@ -220,7 +220,7 @@ export default function MveAlertsPage() {
         <div
           className="rounded-[10px] p-10 text-center"
           style={{
-            background: 'rgba(9,9,11,0.75)',
+            background: BG_ELEVATED,
             border: '1px solid rgba(255,255,255,0.06)',
           }}
         >
@@ -242,7 +242,7 @@ export default function MveAlertsPage() {
               key={a.id}
               className="rounded-[16px] p-4"
               style={{
-                background: 'rgba(9,9,11,0.75)',
+                background: BG_ELEVATED,
                 border: `1px solid ${palette.border}`,
                 boxShadow: `0 6px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)`,
                 opacity: a.resolved ? 0.55 : 1,

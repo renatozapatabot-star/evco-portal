@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { Camera, Loader2, ScanLine, CheckCircle2, AlertTriangle, PackageCheck, Printer } from 'lucide-react'
 import { DOCK_OPTIONS } from '@/lib/warehouse-entries'
+import { BG_ELEVATED } from '@/lib/design-system'
 
 type Status = 'idle' | 'submitting' | 'success' | 'error'
 type PrintStatus = 'idle' | 'submitting' | 'queued' | 'error'
@@ -200,7 +201,7 @@ export function RecibirEntradaClient() {
             textAlign: 'center',
             padding: 24,
             borderRadius: 20,
-            background: 'rgba(9,9,11,0.75)',
+            background: BG_ELEVATED,
             backdropFilter: 'blur(20px)',
             border: '1px solid rgba(192,197,206,0.18)',
           }}
@@ -371,7 +372,7 @@ export function RecibirEntradaClient() {
             padding: '0 14px',
             borderRadius: 12,
             border: '1px solid rgba(192,197,206,0.18)',
-            background: 'rgba(9,9,11,0.75)',
+            background: BG_ELEVATED,
             color: '#E6EDF3',
             fontSize: 16,
             fontFamily: 'var(--font-jetbrains-mono), monospace',
@@ -447,7 +448,7 @@ export function RecibirEntradaClient() {
               padding: '0 14px',
               borderRadius: 12,
               border: '1px solid rgba(192,197,206,0.18)',
-              background: 'rgba(9,9,11,0.75)',
+              background: BG_ELEVATED,
               color: '#E6EDF3',
               fontSize: 18,
               fontFamily: 'var(--font-jetbrains-mono), monospace',
@@ -499,7 +500,7 @@ export function RecibirEntradaClient() {
             padding: '0 14px',
             borderRadius: 12,
             border: '1px solid rgba(192,197,206,0.18)',
-            background: 'rgba(9,9,11,0.75)',
+            background: BG_ELEVATED,
             color: '#E6EDF3',
             fontSize: 16,
             fontFamily: 'var(--font-jetbrains-mono), monospace',
@@ -596,7 +597,7 @@ export function RecibirEntradaClient() {
             padding: 12,
             borderRadius: 12,
             border: '1px solid rgba(192,197,206,0.18)',
-            background: 'rgba(9,9,11,0.75)',
+            background: BG_ELEVATED,
             color: '#E6EDF3',
             fontSize: 15,
             resize: 'vertical',

@@ -71,10 +71,22 @@ async function run() {
     return
   }
 
-  const { data: companies } = await supabase
+  const { data: companies, error: companiesErr } = await supabase
     .from('companies').select('company_id, clave_cliente').eq('active', true)
+  if (companiesErr || !companies || companies.length === 0) {
+    const reason = companiesErr?.message || 'companies query returned empty'
+    console.error('Sync aborted — cannot load claveMap:', reason)
+    await supabase.from('scrape_runs').insert({
+      source: 'globalpc_delta', started_at: startedAt,
+      completed_at: new Date().toISOString(),
+      status: 'error', error_message: `claveMap unavailable: ${reason}`
+    }).throwOnError().then(() => {}, () => {})
+    await tg(`🔴 <b>Delta sync ABORTED</b>\nclaveMap unavailable: ${reason}\nRefusing to skip tenants silently.\n— CRUZ 🦀`)
+    await conn.end()
+    return
+  }
   const claveMap = {}
-  ;(companies || []).forEach(c => { claveMap[c.clave_cliente] = c.company_id })
+  companies.forEach(c => { if (c.clave_cliente) claveMap[c.clave_cliente] = c.company_id })
 
   let totalFound = 0, totalNew = 0, totalUpdated = 0, statusChanges = 0
 

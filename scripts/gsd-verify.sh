@@ -277,7 +277,7 @@ fi
 # Baseline captured 2026-04-13 = 182 (inline rgba(9,9,11,0.75) etc).
 # Goal: number trends to 0. Fail only if count GROWS past baseline.
 # --------------------------------------------------------------------------
-INVARIANT_1_BASELINE=185
+INVARIANT_1_BASELINE=157
 header "Invariant 1 — Opaque glass ratchet"
 INV1_COUNT=$(grep -rnE "background.*'#(111111|222222|1A1A1A|1a2338)'|background.*rgba\(9,9,11" src/app src/components 2>/dev/null | grep -v "components/aguila/" | wc -l | tr -d ' ')
 if [ "$INV1_COUNT" -gt "$INVARIANT_1_BASELINE" ]; then

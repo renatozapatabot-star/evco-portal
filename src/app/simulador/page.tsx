@@ -6,6 +6,7 @@ import { Calculator } from 'lucide-react'
 import { getCookieValue } from '@/lib/client-config'
 import { createClient } from '@supabase/supabase-js'
 import { GlassCard } from '@/components/aguila'
+import { BG_ELEVATED } from '@/lib/design-system'
 import { FraccionInput } from '@/components/ui/FraccionInput'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
@@ -258,7 +259,7 @@ export default function SimuladorPage() {
               placeholder="48000"
               style={{
                 width: '100%', padding: '10px 12px', borderRadius: 8,
-                background: 'rgba(9,9,11,0.75)',
+                background: BG_ELEVATED,
                 border: `1.5px solid ${T.border}`,
                 color: T.text, fontFamily: T.mono,
                 fontSize: 'var(--aguila-fs-section, 14px)', fontWeight: 700,
@@ -293,7 +294,7 @@ export default function SimuladorPage() {
               onChange={e => setRegimen(e.target.value)}
               style={{
                 width: '100%', padding: '10px 12px', borderRadius: 8,
-                background: 'rgba(9,9,11,0.75)',
+                background: BG_ELEVATED,
                 border: `1.5px solid ${T.border}`,
                 color: T.text, fontFamily: 'var(--font-geist-sans, inherit)',
                 fontSize: 'var(--aguila-fs-body, 13px)', fontWeight: 600,

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { BG_ELEVATED } from '@/lib/design-system'
 
 interface Anexo24ClientProps {
   isInternal: boolean
@@ -56,7 +57,7 @@ export function Anexo24Client({ isInternal, companyId }: Anexo24ClientProps) {
     <div
       className="rounded-2xl border p-6"
       style={{
-        backgroundColor: 'rgba(9,9,11,0.75)',
+        backgroundColor: BG_ELEVATED,
         borderColor: 'rgba(255,255,255,0.08)',
         backdropFilter: 'blur(20px)',
       }}

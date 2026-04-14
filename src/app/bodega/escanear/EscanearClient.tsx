@@ -9,6 +9,7 @@ import {
   ACCENT_SILVER_BRIGHT,
   ACCENT_SILVER_DIM,
   BG_DEEP,
+  BG_ELEVATED,
 } from '@/lib/design-system'
 import { trackClick } from '@/lib/telemetry'
 
@@ -229,7 +230,7 @@ export function EscanearClient() {
           style={{
             borderRadius: 20,
             padding: 20,
-            background: 'rgba(9,9,11,0.75)',
+            background: BG_ELEVATED,
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
             border: '1px solid rgba(255,255,255,0.06)',
@@ -397,7 +398,7 @@ export function EscanearClient() {
             marginTop: 16,
             padding: 16,
             borderRadius: 20,
-            background: 'rgba(9,9,11,0.75)',
+            background: BG_ELEVATED,
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
             border: '1px solid rgba(255,255,255,0.06)',

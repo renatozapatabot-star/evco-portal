@@ -21,6 +21,7 @@ import {
   type GridCell,
   type WaitBucket,
 } from '@/lib/yard-entries'
+import { BG_ELEVATED } from '@/lib/design-system'
 
 type Status = 'idle' | 'submitting' | 'success' | 'error'
 
@@ -362,7 +363,7 @@ export function PatioClient() {
           gap: 10,
           padding: 14,
           borderRadius: 20,
-          background: 'rgba(9,9,11,0.75)',
+          background: BG_ELEVATED,
           backdropFilter: 'blur(20px)',
           border: '1px solid rgba(192,197,206,0.18)',
         }}
@@ -466,7 +467,7 @@ export function PatioClient() {
           gap: 12,
           padding: 14,
           borderRadius: 20,
-          background: 'rgba(9,9,11,0.75)',
+          background: BG_ELEVATED,
           backdropFilter: 'blur(20px)',
           border: '1px solid rgba(192,197,206,0.18)',
         }}
@@ -494,7 +495,7 @@ export function PatioClient() {
               padding: '0 14px',
               borderRadius: 12,
               border: '1px solid rgba(192,197,206,0.18)',
-              background: 'rgba(9,9,11,0.75)',
+              background: BG_ELEVATED,
               color: '#E6EDF3',
               fontSize: 16,
               fontFamily: 'var(--font-jetbrains-mono), monospace',
@@ -568,7 +569,7 @@ export function PatioClient() {
               padding: '0 14px',
               borderRadius: 12,
               border: '1px solid rgba(192,197,206,0.18)',
-              background: 'rgba(9,9,11,0.75)',
+              background: BG_ELEVATED,
               color: '#E6EDF3',
               fontSize: 18,
               fontFamily: 'var(--font-jetbrains-mono), monospace',
@@ -597,7 +598,7 @@ export function PatioClient() {
                 padding: '0 14px',
                 borderRadius: 12,
                 border: '1px solid rgba(192,197,206,0.18)',
-                background: 'rgba(9,9,11,0.75)',
+                background: BG_ELEVATED,
                 color: '#E6EDF3',
                 fontSize: 18,
                 fontFamily: 'var(--font-jetbrains-mono), monospace',
@@ -640,7 +641,7 @@ export function PatioClient() {
             padding: '12px 14px',
             borderRadius: 12,
             border: '1px solid rgba(192,197,206,0.18)',
-            background: 'rgba(9,9,11,0.75)',
+            background: BG_ELEVATED,
             minHeight: 60,
           }}
         >
@@ -676,7 +677,7 @@ export function PatioClient() {
                 padding: '0 14px',
                 borderRadius: 12,
                 border: '1px solid rgba(192,197,206,0.18)',
-                background: 'rgba(9,9,11,0.75)',
+                background: BG_ELEVATED,
                 color: '#E6EDF3',
                 fontSize: 18,
                 fontFamily: 'var(--font-jetbrains-mono), monospace',

@@ -273,6 +273,53 @@ else
 fi
 
 # --------------------------------------------------------------------------
+# Design invariant 1 — opaque glass cards outside components/aguila (ratchet)
+# Baseline captured 2026-04-13 = 182 (inline rgba(9,9,11,0.75) etc).
+# Goal: number trends to 0. Fail only if count GROWS past baseline.
+# --------------------------------------------------------------------------
+INVARIANT_1_BASELINE=185
+header "Invariant 1 — Opaque glass ratchet"
+INV1_COUNT=$(grep -rnE "background.*'#(111111|222222|1A1A1A|1a2338)'|background.*rgba\(9,9,11" src/app src/components 2>/dev/null | grep -v "components/aguila/" | wc -l | tr -d ' ')
+if [ "$INV1_COUNT" -gt "$INVARIANT_1_BASELINE" ]; then
+  fail "Opaque glass violations: $INV1_COUNT (baseline $INVARIANT_1_BASELINE). New drift introduced — compose from <GlassCard>."
+elif [ "$INV1_COUNT" -lt "$INVARIANT_1_BASELINE" ]; then
+  pass "Opaque glass violations: $INV1_COUNT (baseline $INVARIANT_1_BASELINE, improving ✓). Update INVARIANT_1_BASELINE in this script."
+else
+  warn "Opaque glass violations: $INV1_COUNT (at baseline, not regressing but cleanup pending)"
+fi
+
+# --------------------------------------------------------------------------
+# Design invariant 26 — inline glass chrome outside components/aguila (ratchet)
+# Baseline captured 2026-04-13 = 111 (inline rgba(255,255,255,0.04) + blur).
+# --------------------------------------------------------------------------
+INVARIANT_26_BASELINE=13
+header "Invariant 26 — Inline glass chrome ratchet"
+INV26_COUNT=$(grep -rnE "background: *['\"]\?rgba\(255,255,255,0\.04\b|backdrop-filter: *blur\(20" src/app src/components 2>/dev/null | grep -v "components/aguila/" | wc -l | tr -d ' ')
+if [ "$INV26_COUNT" -gt "$INVARIANT_26_BASELINE" ]; then
+  fail "Inline glass chrome violations: $INV26_COUNT (baseline $INVARIANT_26_BASELINE). New drift — compose from <GlassCard> in src/components/aguila/."
+elif [ "$INV26_COUNT" -lt "$INVARIANT_26_BASELINE" ]; then
+  pass "Inline glass chrome violations: $INV26_COUNT (baseline $INVARIANT_26_BASELINE, improving ✓). Update INVARIANT_26_BASELINE in this script."
+else
+  warn "Inline glass chrome violations: $INV26_COUNT (at baseline, not regressing but cleanup pending)"
+fi
+
+# --------------------------------------------------------------------------
+# Design invariant 27 — hardcoded fontSize in src/app (ratchet)
+# Baseline captured 2026-04-13 = 2552. Goal: trend toward 0 via --aguila-fs-*
+# CSS variables. Exceptions must be documented with `WHY:` inline.
+# --------------------------------------------------------------------------
+INVARIANT_27_BASELINE=2552
+header "Invariant 27 — Hardcoded fontSize ratchet"
+INV27_COUNT=$(grep -rn "fontSize: [0-9]" src/app 2>/dev/null | grep -v "var(--aguila-fs-" | grep -v ".test." | grep -v "WHY:" | wc -l | tr -d ' ')
+if [ "$INV27_COUNT" -gt "$INVARIANT_27_BASELINE" ]; then
+  fail "Hardcoded fontSize violations: $INV27_COUNT (baseline $INVARIANT_27_BASELINE). Use var(--aguila-fs-*) or add // WHY: comment."
+elif [ "$INV27_COUNT" -lt "$INVARIANT_27_BASELINE" ]; then
+  pass "Hardcoded fontSize violations: $INV27_COUNT (baseline $INVARIANT_27_BASELINE, improving ✓). Update INVARIANT_27_BASELINE in this script."
+else
+  warn "Hardcoded fontSize violations: $INV27_COUNT (at baseline, not regressing but cleanup pending)"
+fi
+
+# --------------------------------------------------------------------------
 # AGUILA palette guard — no blue/indigo/sky/cyan Tailwind classes outside
 # the semantic StatusBadge component.
 # --------------------------------------------------------------------------

@@ -753,7 +753,7 @@ function AssignModal({ onClose, onAssign }: {
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: 'rgba(9,9,11,0.92)', backdropFilter: 'blur(20px)',
+          background: 'rgba(255,255,255,0.045)', backdropFilter: 'blur(20px)',
           border: `1px solid ${BORDER}`, borderRadius: 20, padding: 20,
           width: 'min(520px, 92vw)', color: TEXT_PRIMARY,
         }}

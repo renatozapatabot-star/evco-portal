@@ -17,7 +17,7 @@ import {
 } from '@/lib/design-system'
 
 const BORDER_SILVER = 'rgba(192,197,206,0.22)'
-const BG_INPUT = 'rgba(9,9,11,0.55)'
+const BG_INPUT = 'rgba(255,255,255,0.045)'
 
 export const MONO_STACK = 'var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, monospace'
 
@@ -333,7 +333,7 @@ export function RowCard({ children }: { children: ReactNode }) {
     <div
       style={{
         padding: 16,
-        background: 'rgba(9,9,11,0.55)',
+        background: 'rgba(255,255,255,0.045)',
         border: `1px solid ${BORDER_SILVER}`,
         borderRadius: 16,
         display: 'flex',

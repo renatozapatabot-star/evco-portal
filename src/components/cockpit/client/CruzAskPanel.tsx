@@ -37,7 +37,7 @@ export function AduanaAskPanel() {
 
   return (
     <div style={{
-      background: 'rgba(9,9,11,0.75)', borderRadius: 14,
+      background: 'rgba(255,255,255,0.045)', borderRadius: 14,
       border: '1px solid rgba(255,255,255,0.08)',
       borderTop: '3px solid rgba(192,197,206,0.4)',
       padding: 16,
@@ -56,7 +56,7 @@ export function AduanaAskPanel() {
             key={ex}
             onClick={() => setQuestion(ex)}
             style={{
-              background: 'rgba(9,9,11,0.75)',
+              background: 'rgba(255,255,255,0.045)',
               border: '1px solid rgba(255,255,255,0.08)',
               borderRadius: 8,
               padding: '6px 12px',
@@ -79,7 +79,7 @@ export function AduanaAskPanel() {
           placeholder="Escribe tu pregunta..."
           style={{
             flex: 1,
-            background: 'rgba(9,9,11,0.75)',
+            background: 'rgba(255,255,255,0.045)',
             border: '1px solid rgba(255,255,255,0.08)',
             borderRadius: 10,
             padding: '14px 16px',

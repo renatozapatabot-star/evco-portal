@@ -122,7 +122,7 @@ export function ClientesDormidosClient({
       {/* Threshold control */}
       <div
         style={{
-          background: 'rgba(9,9,11,0.75)',
+          background: 'rgba(255,255,255,0.045)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
           border: `1px solid ${BORDER_HAIRLINE}`,
@@ -199,7 +199,7 @@ export function ClientesDormidosClient({
       {/* Table / empty */}
       <div
         style={{
-          background: 'rgba(9,9,11,0.75)',
+          background: 'rgba(255,255,255,0.045)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
           border: `1px solid ${BORDER_HAIRLINE}`,
@@ -313,7 +313,7 @@ export function ClientesDormidosClient({
           <div
             onClick={(e) => e.stopPropagation()}
             style={{
-              background: 'rgba(9,9,11,0.92)',
+              background: 'rgba(255,255,255,0.045)',
               backdropFilter: 'blur(20px)',
               WebkitBackdropFilter: 'blur(20px)',
               border: `1px solid ${BORDER_HAIRLINE}`,

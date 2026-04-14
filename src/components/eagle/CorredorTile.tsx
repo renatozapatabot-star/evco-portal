@@ -36,7 +36,7 @@ export function CorredorTile() {
             fontSize: 10,
             color: TEXT_MUTED,
             fontFamily: MONO,
-            background: 'rgba(9,9,11,0.8)',
+            background: 'rgba(255,255,255,0.045)',
             padding: '2px 6px',
             borderRadius: 4,
           }}

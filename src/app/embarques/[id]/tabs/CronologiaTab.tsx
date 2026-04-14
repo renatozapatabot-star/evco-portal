@@ -129,7 +129,7 @@ export function CronologiaTab({ traficoId, events, currentUserId }: CronologiaTa
           display: 'flex',
           gap: 6,
           padding: '8px 0',
-          background: 'rgba(9,9,11,0.65)',
+          background: 'rgba(255,255,255,0.045)',
           backdropFilter: 'blur(10px)',
           borderBottom: `1px solid ${BORDER}`,
         }}
@@ -356,7 +356,7 @@ function EventDrawer({ event, onClose }: { event: EventRow; onClose: () => void 
         style={{
           width: 'min(560px, 100vw)',
           height: '100%',
-          background: 'rgba(9,9,11,0.92)',
+          background: 'rgba(255,255,255,0.045)',
           borderLeft: `1px solid ${BORDER}`,
           padding: 24,
           overflowY: 'auto',

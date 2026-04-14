@@ -73,7 +73,7 @@ export function AutosaveField(props: AutosaveFieldProps) {
     padding: '10px 12px',
     width: '100%',
     minWidth,
-    background: 'rgba(9,9,11,0.55)',
+    background: 'rgba(255,255,255,0.045)',
     color: 'var(--text-primary)',
     border: `1px solid ${borderColor}`,
     borderRadius: 10,

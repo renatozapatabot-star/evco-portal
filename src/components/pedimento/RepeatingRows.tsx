@@ -160,7 +160,7 @@ export function RepeatingRows<R extends { id: string }>({
             padding: 32,
             textAlign: 'center',
             borderRadius: 20,
-            background: 'rgba(9,9,11,0.75)',
+            background: 'rgba(255,255,255,0.045)',
             border: `1px solid ${BORDER_SILVER}`,
             backdropFilter: 'blur(20px)',
             color: TEXT_MUTED,
@@ -243,7 +243,7 @@ function RowCard<R extends { id: string }>({
       style={{
         padding: 20,
         borderRadius: 20,
-        background: 'rgba(9,9,11,0.75)',
+        background: 'rgba(255,255,255,0.045)',
         border: `1px solid ${BORDER_SILVER}`,
         backdropFilter: 'blur(20px)',
       }}
@@ -333,7 +333,7 @@ function FieldCell<R>({ col, value, error, onChange, onBlur }: FieldCellProps<R>
     minHeight: 60,
     padding: '10px 12px',
     width: '100%',
-    background: 'rgba(9,9,11,0.55)',
+    background: 'rgba(255,255,255,0.045)',
     color: TEXT_PRIMARY,
     border: `1px solid ${borderColor}`,
     borderRadius: 10,

@@ -91,7 +91,7 @@ export function SwipeRow({ children, leftAction, rightAction, className, style }
           transition: swiping ? 'none' : 'background 200ms',
           opacity: revealRight ? 1 : 0,
         }}>
-          <span style={{ color: triggered ? 'rgba(9,9,11,0.75)' : rightAction.color, fontSize: 12, fontWeight: 600 }}>
+          <span style={{ color: triggered ? 'rgba(255,255,255,0.045)' : rightAction.color, fontSize: 12, fontWeight: 600 }}>
             {rightAction.icon} {rightAction.label}
           </span>
         </div>
@@ -106,7 +106,7 @@ export function SwipeRow({ children, leftAction, rightAction, className, style }
           transition: swiping ? 'none' : 'background 200ms',
           opacity: revealLeft ? 1 : 0,
         }}>
-          <span style={{ color: triggered ? 'rgba(9,9,11,0.75)' : leftAction.color, fontSize: 12, fontWeight: 600 }}>
+          <span style={{ color: triggered ? 'rgba(255,255,255,0.045)' : leftAction.color, fontSize: 12, fontWeight: 600 }}>
             {leftAction.label} {leftAction.icon}
           </span>
         </div>

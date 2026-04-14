@@ -101,7 +101,7 @@ export function ExportarClient({ pedimentoId }: ExportarClientProps) {
     <div
       className="rounded-2xl border p-6"
       style={{
-        backgroundColor: 'rgba(9,9,11,0.75)',
+        backgroundColor: 'rgba(255,255,255,0.045)',
         borderColor: 'rgba(255,255,255,0.08)',
         backdropFilter: 'blur(20px)',
       }}

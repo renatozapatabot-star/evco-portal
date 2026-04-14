@@ -9,6 +9,24 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
+/**
+ * Wrap a Supabase query so a DB outage can't hang the login response.
+ * The password has already been validated by the time we reach the DB —
+ * operator/company metadata is nice-to-have for action shadowing, not
+ * load-bearing for auth itself. Timeout returns null and login proceeds.
+ */
+async function softQuery<T>(p: PromiseLike<{ data: T | null }>, ms = 2500): Promise<T | null> {
+  try {
+    const r = await Promise.race([
+      Promise.resolve(p).then(v => ({ data: v?.data ?? null }), () => ({ data: null })),
+      new Promise<{ data: null }>(resolve => setTimeout(() => resolve({ data: null }), ms)),
+    ])
+    return r.data
+  } catch {
+    return null
+  }
+}
+
 /** Set auth + company cookies on a successful login response. */
 async function setAuthCookies(
   response: NextResponse,
@@ -74,9 +92,11 @@ export async function POST(request: NextRequest) {
 
   // Check admin password first
   if (password === process.env.ADMIN_PASSWORD) {
-    // Look up operator record for shadowing
-    const { data: adminOp } = await supabase.from('operators')
-      .select('id').eq('role', 'admin').eq('active', true).limit(1).maybeSingle()
+    // Look up operator record for shadowing (non-blocking — auth proceeds even if DB is slow)
+    const adminOp = await softQuery<{ id: string }>(
+      supabase.from('operators')
+        .select('id').eq('role', 'admin').eq('active', true).limit(1).maybeSingle()
+    )
 
     const response = NextResponse.json({
       success: true,
@@ -96,9 +116,11 @@ export async function POST(request: NextRequest) {
 
   // Check broker password — internal operator access to command center
   if (password === process.env.BROKER_PASSWORD) {
-    // Look up operator record for shadowing
-    const { data: brokerOp } = await supabase.from('operators')
-      .select('id').eq('email', 'renato@renatozapata.com').eq('active', true).maybeSingle()
+    // Look up operator record for shadowing (non-blocking)
+    const brokerOp = await softQuery<{ id: string }>(
+      supabase.from('operators')
+        .select('id').eq('email', 'renato@renatozapata.com').eq('active', true).maybeSingle()
+    )
 
     const response = NextResponse.json({
       success: true,
@@ -129,11 +151,13 @@ export async function POST(request: NextRequest) {
 
   const operatorEmail = OPERATOR_PASSWORDS[password]
   if (operatorEmail) {
-    const { data: operatorMatch } = await supabase.from('operators')
-      .select('id, full_name, email, role, company_id, active')
-      .eq('email', operatorEmail)
-      .eq('active', true)
-      .maybeSingle()
+    const operatorMatch = await softQuery<{ id: string; full_name: string; email: string; role: string; company_id: string; active: boolean }>(
+      supabase.from('operators')
+        .select('id, full_name, email, role, company_id, active')
+        .eq('email', operatorEmail)
+        .eq('active', true)
+        .maybeSingle()
+    )
 
     if (operatorMatch) {
       const response = NextResponse.json({
@@ -162,38 +186,45 @@ export async function POST(request: NextRequest) {
   }
 
   // Lookup by portal_password in companies table (covers all clients)
-  const { data: company } = await supabase
-    .from('companies')
-    .select('company_id, name, clave_cliente, rfc')
-    .eq('portal_password', password)
-    .eq('active', true)
-    .single()
+  // Bounded — if DB is down, fail fast with a 503 instead of hanging the spinner.
+  const company = await softQuery<{ company_id: string; name: string; clave_cliente: string | null; rfc: string | null }>(
+    supabase
+      .from('companies')
+      .select('company_id, name, clave_cliente, rfc')
+      .eq('portal_password', password)
+      .eq('active', true)
+      .single()
+  )
 
   if (company) {
-    // Look for or auto-create a client operator for action tracking
-    const { data: clientOp } = await supabase.from('operators')
-      .select('id, full_name')
-      .eq('company_id', company.company_id)
-      .eq('role', 'client')
-      .eq('active', true)
-      .limit(1)
-      .maybeSingle()
+    // Look for or auto-create a client operator for action tracking (non-blocking)
+    const clientOp = await softQuery<{ id: string; full_name: string }>(
+      supabase.from('operators')
+        .select('id, full_name')
+        .eq('company_id', company.company_id)
+        .eq('role', 'client')
+        .eq('active', true)
+        .limit(1)
+        .maybeSingle()
+    )
 
     let clientOperatorId = clientOp?.id
     let clientOperatorName = clientOp?.full_name
 
     if (!clientOp) {
-      const { data: newOp } = await supabase.from('operators')
-        .insert({
-          auth_user_id: null,
-          email: null,
-          full_name: company.name,
-          role: 'client',
-          company_id: company.company_id,
-          active: true,
-        })
-        .select('id, full_name')
-        .single()
+      const newOp = await softQuery<{ id: string; full_name: string }>(
+        supabase.from('operators')
+          .insert({
+            auth_user_id: null,
+            email: null,
+            full_name: company.name,
+            role: 'client',
+            company_id: company.company_id,
+            active: true,
+          })
+          .select('id, full_name')
+          .single()
+      )
 
       if (newOp) {
         clientOperatorId = newOp.id

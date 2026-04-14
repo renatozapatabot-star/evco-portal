@@ -16,7 +16,7 @@ import {
 } from '@/lib/carriers'
 
 const BORDER = 'rgba(192,197,206,0.22)'
-const CARD = 'rgba(9,9,11,0.75)'
+const CARD = 'rgba(255,255,255,0.045)'
 const SILVER = '#C0C5CE'
 
 interface Props {
@@ -62,7 +62,7 @@ export function AdminCarriersList({ initialCarriers }: Props) {
             flex: '1 1 240px',
             minHeight: 60,
             padding: '10px 14px',
-            background: 'rgba(9,9,11,0.55)',
+            background: 'rgba(255,255,255,0.045)',
             color: '#E6EDF3',
             border: `1px solid ${BORDER}`,
             borderRadius: 10,
@@ -76,7 +76,7 @@ export function AdminCarriersList({ initialCarriers }: Props) {
           style={{
             minHeight: 60,
             padding: '10px 14px',
-            background: 'rgba(9,9,11,0.55)',
+            background: 'rgba(255,255,255,0.045)',
             color: '#E6EDF3',
             border: `1px solid ${BORDER}`,
             borderRadius: 10,
@@ -280,7 +280,7 @@ function CarrierEditModal({ carrier, onClose, onSaved }: ModalProps) {
         style={{
           width: '100%',
           maxWidth: 520,
-          background: 'rgba(9,9,11,0.95)',
+          background: 'rgba(255,255,255,0.045)',
           border: `1px solid ${BORDER}`,
           borderRadius: 20,
           padding: 24,
@@ -438,7 +438,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 const input: React.CSSProperties = {
   minHeight: 44,
   padding: '8px 12px',
-  background: 'rgba(9,9,11,0.55)',
+  background: 'rgba(255,255,255,0.045)',
   color: '#E6EDF3',
   border: `1px solid ${BORDER}`,
   borderRadius: 8,

@@ -53,7 +53,7 @@ export default function MisReglasPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {memories.map(m => (
             <div key={m.id} style={{
-              background: 'rgba(9,9,11,0.75)', borderRadius: 14, padding: 16,
+              background: 'rgba(255,255,255,0.045)', borderRadius: 14, padding: 16,
               border: m.active ? '1px solid rgba(192,197,206,0.2)' : '1px solid rgba(255,255,255,0.06)',
               opacity: m.active ? 1 : 0.5,
             }}>

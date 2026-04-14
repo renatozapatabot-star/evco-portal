@@ -66,7 +66,7 @@ export function EntityRadar({ center, nodes }: Props) {
 
   return (
     <div style={{
-      background: 'rgba(9,9,11,0.75)', borderRadius: 14, padding: '16px 20px',
+      background: 'rgba(255,255,255,0.045)', borderRadius: 14, padding: '16px 20px',
       border: '1px solid rgba(255,255,255,0.06)', marginBottom: 16,
     }}>
       {/* Header */}
@@ -120,7 +120,7 @@ function NodeChip({ node }: { node: EntityNode }) {
     <div style={{
       display: 'inline-flex', alignItems: 'center', gap: 6,
       padding: '6px 10px', borderRadius: 6,
-      background: 'rgba(9,9,11,0.75)',
+      background: 'rgba(255,255,255,0.045)',
       border: `1px solid ${color}25`,
       cursor: node.href ? 'pointer' : 'default',
     }}>

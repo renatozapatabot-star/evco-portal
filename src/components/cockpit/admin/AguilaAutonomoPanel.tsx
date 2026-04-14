@@ -41,7 +41,7 @@ export function AguilaAutonomoPanel({ decisions, decisions30d, decisionsAllTime,
 
   return (
     <div style={{
-      background: 'rgba(9,9,11,0.75)',
+      background: 'rgba(255,255,255,0.045)',
       borderRadius: 14,
       border: '1px solid rgba(255,255,255,0.08)',
       borderTop: `3px solid ${urgencyColor}`,
@@ -102,7 +102,7 @@ export function AguilaAutonomoPanel({ decisions, decisions30d, decisionsAllTime,
                 aria-label={`Ver eventos recientes de ${STAGE_LABELS[stage]}`}
                 className="pipeline-stage-link"
                 style={{
-                  background: count > 0 ? 'rgba(192,197,206,0.08)' : 'rgba(9,9,11,0.75)',
+                  background: count > 0 ? 'rgba(192,197,206,0.08)' : 'rgba(255,255,255,0.045)',
                   border: `1px solid ${count > 0 ? 'rgba(192,197,206,0.15)' : 'rgba(255,255,255,0.06)'}`,
                   borderRadius: 8,
                   padding: '6px 10px',

@@ -15,7 +15,7 @@ type RoutingRow = {
 type TestState = Record<string, 'idle' | 'sending' | 'ok' | 'err'>
 
 const CARD: React.CSSProperties = {
-  background: 'rgba(9,9,11,0.75)',
+  background: 'rgba(255,255,255,0.045)',
   backdropFilter: 'blur(20px)',
   border: '1px solid rgba(192,197,206,0.18)',
   borderRadius: 20,

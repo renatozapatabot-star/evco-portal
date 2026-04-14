@@ -89,7 +89,7 @@ export function PipelineFunnel() {
                 style={{
                   padding: '10px 6px',
                   borderRadius: 12,
-                  background: hasItems ? 'rgba(192,197,206,0.06)' : 'rgba(9,9,11,0.75)',
+                  background: hasItems ? 'rgba(192,197,206,0.06)' : 'rgba(255,255,255,0.045)',
                   border: `1px solid ${hasItems ? 'rgba(192,197,206,0.3)' : 'rgba(255,255,255,0.06)'}`,
                   textAlign: 'center',
                   cursor: 'pointer',

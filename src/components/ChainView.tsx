@@ -86,7 +86,7 @@ export default function ChainView({ data }: { data: ChainData }) {
     <div
       className="rounded-lg border p-4 space-y-1 text-sm"
       style={{
-        background: 'var(--surface-primary, rgba(9,9,11,0.75))',
+        background: 'var(--surface-primary, rgba(255,255,255,0.045))',
         borderColor: 'var(--border)',
       }}
     >

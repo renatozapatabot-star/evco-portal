@@ -169,7 +169,7 @@ export function QuickBooksExportClient({ recent }: { recent: ExportRow[] }) {
       <div
         role="note"
         style={{
-          background: 'rgba(9,9,11,0.75)',
+          background: 'rgba(255,255,255,0.045)',
           backdropFilter: 'blur(20px)',
           border: `1px solid ${BORDER}`,
           borderRadius: 12,
@@ -188,7 +188,7 @@ export function QuickBooksExportClient({ recent }: { recent: ExportRow[] }) {
       {/* Form card */}
       <section
         style={{
-          background: 'rgba(9,9,11,0.75)',
+          background: 'rgba(255,255,255,0.045)',
           backdropFilter: 'blur(20px)',
           border: `1px solid ${BORDER}`,
           borderRadius: 20,
@@ -285,7 +285,7 @@ export function QuickBooksExportClient({ recent }: { recent: ExportRow[] }) {
       {/* Recent exports */}
       <section
         style={{
-          background: 'rgba(9,9,11,0.75)',
+          background: 'rgba(255,255,255,0.045)',
           backdropFilter: 'blur(20px)',
           border: `1px solid ${BORDER}`,
           borderRadius: 20,

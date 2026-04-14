@@ -74,7 +74,7 @@ function OnboardingContent() {
             <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 20 }}>
               ¿Quieres ver AGUILA con datos de ejemplo? Puedes eliminarlos después.
             </p>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 16px', borderRadius: 10, background: 'rgba(9,9,11,0.75)', border: '1px solid rgba(255,255,255,0.08)', cursor: 'pointer', marginBottom: 20 }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 16px', borderRadius: 10, background: 'rgba(255,255,255,0.045)', border: '1px solid rgba(255,255,255,0.08)', cursor: 'pointer', marginBottom: 20 }}>
               <input type="checkbox" checked={seedSample} onChange={e => setSeedSample(e.target.checked)} style={{ width: 18, height: 18 }} />
               <span style={{ fontSize: 14, color: '#FFFFFF' }}>Cargar 10 embarques de ejemplo (MUESTRA)</span>
             </label>
@@ -112,7 +112,7 @@ function OnboardingContent() {
             </p>
             <div style={{
               padding: '16px 20px', borderRadius: 12,
-              background: 'rgba(9,9,11,0.75)', border: '1px solid rgba(255,255,255,0.08)',
+              background: 'rgba(255,255,255,0.045)', border: '1px solid rgba(255,255,255,0.08)',
               marginBottom: 20,
             }}>
               <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginBottom: 6 }}>Producto</div>
@@ -172,7 +172,7 @@ const btnStyle: React.CSSProperties = {
 
 const demoField: React.CSSProperties = {
   padding: '8px 12px', borderRadius: 8,
-  background: 'rgba(9,9,11,0.75)',
+  background: 'rgba(255,255,255,0.045)',
   display: 'flex', flexDirection: 'column', gap: 2,
 }
 

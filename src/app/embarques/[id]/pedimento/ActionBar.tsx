@@ -48,7 +48,7 @@ export function ActionBar({ pedimentoId }: ActionBarProps) {
         display: 'flex',
         alignItems: 'center',
         gap: 12,
-        background: 'rgba(9,9,11,0.92)',
+        background: 'rgba(255,255,255,0.045)',
         borderTop: '1px solid rgba(255,255,255,0.06)',
         backdropFilter: 'blur(12px)',
         zIndex: 15,

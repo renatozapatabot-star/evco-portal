@@ -8,7 +8,7 @@ const MONO: React.CSSProperties = {
 }
 
 const GLASS: React.CSSProperties = {
-  background: 'rgba(9,9,11,0.75)',
+  background: 'rgba(255,255,255,0.045)',
   backdropFilter: 'blur(20px)',
   WebkitBackdropFilter: 'blur(20px)',
   border: '1px solid rgba(192,197,206,0.18)',
@@ -354,7 +354,7 @@ const inputStyle: React.CSSProperties = {
   minHeight: 44,
   borderRadius: 10,
   border: '1px solid rgba(192,197,206,0.18)',
-  background: 'rgba(9,9,11,0.5)',
+  background: 'rgba(255,255,255,0.045)',
   color: '#E6EDF3',
   fontSize: 13,
 }
@@ -372,7 +372,7 @@ const tdStyle: React.CSSProperties = {
 const preStyle: React.CSSProperties = {
   margin: 0,
   padding: 12,
-  background: 'rgba(9,9,11,0.5)',
+  background: 'rgba(255,255,255,0.045)',
   border: '1px solid rgba(192,197,206,0.08)',
   borderRadius: 8,
   color: '#C0C5CE',

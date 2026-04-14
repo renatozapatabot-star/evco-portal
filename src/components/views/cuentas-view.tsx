@@ -135,7 +135,7 @@ export function CuentasView() {
 
       {/* Monthly Revenue Chart (simple bar) */}
       {finIntel.length > 1 && (
-            <div className="rounded-[10px] p-5 mb-5" style={{ background: 'rgba(9,9,11,0.75)', border: '1px solid rgba(0,0,0,0.06)' }}>
+            <div className="rounded-[10px] p-5 mb-5" style={{ background: 'rgba(255,255,255,0.045)', border: '1px solid rgba(0,0,0,0.06)' }}>
               <div className="text-[13px] font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>Ingreso Mensual — Últimos 12 Meses</div>
               <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 120 }}>
                 {finIntel.slice(-12).map((m, i) => {
@@ -206,7 +206,7 @@ export function CuentasView() {
 
       {/* Recent movements */}
       <div className={`grid gap-4 ${egresos.length > 0 ? (isMobile ? 'grid-cols-1' : 'grid-cols-2') : 'grid-cols-1'}`}>
-            <div className="rounded-[10px] overflow-hidden" style={{ background: 'rgba(9,9,11,0.75)', border: '1px solid rgba(0,0,0,0.06)' }}>
+            <div className="rounded-[10px] overflow-hidden" style={{ background: 'rgba(255,255,255,0.045)', border: '1px solid rgba(0,0,0,0.06)' }}>
               <div className="px-5 py-3" style={{ borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
                 <div className="text-[13px] font-semibold" style={{ color: 'var(--text-primary)' }}>Últimos Ingresos</div>
               </div>
@@ -224,7 +224,7 @@ export function CuentasView() {
               </table>
             </div>
             {egresos.length > 0 && (
-              <div className="rounded-[10px] overflow-hidden" style={{ background: 'rgba(9,9,11,0.75)', border: '1px solid rgba(0,0,0,0.06)' }}>
+              <div className="rounded-[10px] overflow-hidden" style={{ background: 'rgba(255,255,255,0.045)', border: '1px solid rgba(0,0,0,0.06)' }}>
                 <div className="px-5 py-3" style={{ borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
                   <div className="text-[13px] font-semibold" style={{ color: 'var(--text-primary)' }}>Últimos Egresos</div>
                 </div>

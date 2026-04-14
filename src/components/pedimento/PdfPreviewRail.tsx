@@ -19,7 +19,7 @@ import { usePedimento } from './PedimentoContext'
 const PANEL_STYLE: React.CSSProperties = {
   padding: 16,
   borderRadius: 20,
-  background: 'rgba(9,9,11,0.75)',
+  background: 'rgba(255,255,255,0.045)',
   border: '1px solid rgba(192,197,206,0.18)',
   backdropFilter: 'blur(20px)',
   display: 'flex',

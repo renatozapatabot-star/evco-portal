@@ -58,7 +58,7 @@ export function DocChecklist({ trafico, pedimento, docs, entrada, proveedor, val
       {/* Header */}
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '14px 20px', background: 'var(--bg-main, rgba(9,9,11,0.75))',
+        padding: '14px 20px', background: 'var(--bg-main, rgba(255,255,255,0.045))',
         borderBottom: '1px solid var(--border-card, #E8E5E0)',
         flexWrap: 'wrap', gap: 8,
       }}>

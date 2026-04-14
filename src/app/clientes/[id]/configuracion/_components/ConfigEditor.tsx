@@ -183,7 +183,7 @@ export function ConfigEditor({
         }
         .aguila-cfg-sidenav { display: none; }
         .aguila-cfg-main {
-          background: rgba(9,9,11,0.75);
+          background: rgba(255,255,255,0.045);
           border: 1px solid ${BORDER_SILVER};
           border-radius: 20px;
           backdrop-filter: blur(20px);
@@ -313,7 +313,7 @@ function SideNav({
       role="tablist"
       aria-label="Secciones de configuración"
       style={{
-        background: 'rgba(9,9,11,0.75)',
+        background: 'rgba(255,255,255,0.045)',
         border: `1px solid ${BORDER_SILVER}`,
         borderRadius: 20,
         padding: 8,
@@ -447,7 +447,7 @@ function CompletenessRail({
   return (
     <div
       style={{
-        background: 'rgba(9,9,11,0.75)',
+        background: 'rgba(255,255,255,0.045)',
         border: `1px solid ${BORDER_SILVER}`,
         borderRadius: 20,
         padding: 16,

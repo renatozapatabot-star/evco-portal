@@ -25,7 +25,7 @@ export function PerformanceStrip({
 
   return (
     <div style={{
-      background: 'rgba(9,9,11,0.75)',
+      background: 'rgba(255,255,255,0.045)',
       borderRadius: 10,
       padding: '12px 16px',
       marginBottom: 12,

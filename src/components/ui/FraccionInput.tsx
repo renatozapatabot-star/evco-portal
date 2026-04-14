@@ -57,7 +57,7 @@ export function FraccionInput({ value, onChange, placeholder = '3907.40.01', cla
           width: '100%',
           padding: '8px 12px',
           borderRadius: 8,
-          background: 'rgba(9,9,11,0.75)',
+          background: 'rgba(255,255,255,0.045)',
           border: `1.5px solid ${error ? '#EF4444' : 'rgba(192,197,206,0.3)'}`,
           color: '#E6EDF3',
           fontFamily: 'var(--font-mono)',

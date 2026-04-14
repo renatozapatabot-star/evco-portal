@@ -26,7 +26,7 @@ export function AduanaProposalSection({ proposal, subjectLabel, onApprove, onRej
   if (!proposal) {
     return (
       <div style={{
-        background: 'rgba(9,9,11,0.75)', borderRadius: 14, padding: '16px 20px',
+        background: 'rgba(255,255,255,0.045)', borderRadius: 14, padding: '16px 20px',
         border: '1px solid rgba(255,255,255,0.06)', marginBottom: 16,
         display: 'flex', alignItems: 'center', gap: 10,
       }}>
@@ -96,7 +96,7 @@ export function AduanaProposalSection({ proposal, subjectLabel, onApprove, onRej
   return (
     <>
       <div style={{
-        background: 'rgba(9,9,11,0.75)', borderRadius: 14, padding: '24px',
+        background: 'rgba(255,255,255,0.045)', borderRadius: 14, padding: '24px',
         border: `1px solid ${proposal.confidence >= 0.85 ? 'rgba(192,197,206,0.3)' : 'rgba(255,255,255,0.08)'}`,
         borderTop: `3px solid ${confidenceColor}`,
         marginBottom: 16,
@@ -190,7 +190,7 @@ export function AduanaProposalSection({ proposal, subjectLabel, onApprove, onRej
           padding: 20,
         }} onClick={() => setShowRejectModal(false)}>
           <div style={{
-            background: 'rgba(9,9,11,0.75)', borderRadius: 16, padding: 24,
+            background: 'rgba(255,255,255,0.045)', borderRadius: 16, padding: 24,
             maxWidth: 400, width: '100%', border: '1px solid rgba(255,255,255,0.08)',
           }} onClick={e => e.stopPropagation()}>
             <div style={{ fontSize: 16, fontWeight: 700, color: '#E6EDF3', marginBottom: 16 }}>
@@ -203,7 +203,7 @@ export function AduanaProposalSection({ proposal, subjectLabel, onApprove, onRej
             ].map(opt => (
               <button key={opt.key} onClick={() => handleReject(opt.key)} style={{
                 display: 'block', width: '100%', padding: '12px 16px', marginBottom: 8,
-                borderRadius: 8, background: 'rgba(9,9,11,0.75)',
+                borderRadius: 8, background: 'rgba(255,255,255,0.045)',
                 border: '1px solid rgba(255,255,255,0.08)', color: '#E6EDF3',
                 fontSize: 14, textAlign: 'left', cursor: 'pointer', minHeight: 48,
               }}>

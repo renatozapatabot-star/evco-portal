@@ -68,7 +68,7 @@ export function InicioTab({
   const cardStyle: React.CSSProperties = {
     padding: 20,
     borderRadius: 20,
-    background: 'rgba(9,9,11,0.75)',
+    background: 'rgba(255,255,255,0.045)',
     border: '1px solid rgba(192,197,206,0.18)',
     backdropFilter: 'blur(20px)',
   }
@@ -169,7 +169,7 @@ export function InicioTab({
                   padding: '10px 12px',
                   borderRadius: 10,
                   border: `1px solid ${has ? 'rgba(34,197,94,0.28)' : 'rgba(192,197,206,0.18)'}`,
-                  background: has ? 'rgba(34,197,94,0.06)' : 'rgba(9,9,11,0.45)',
+                  background: has ? 'rgba(34,197,94,0.06)' : 'rgba(255,255,255,0.045)',
                   color: has ? '#86EFAC' : ACCENT_SILVER_DIM,
                   cursor: 'pointer',
                   display: 'flex',

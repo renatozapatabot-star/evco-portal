@@ -286,7 +286,7 @@ export default function OnboardPage() {
                 style={{
                   padding: '12px 28px',
                   background: loading ? '#333' : 'linear-gradient(135deg, #16A34A, #15803D)',
-                  border: 'none', borderRadius: 8, color: 'rgba(9,9,11,0.75)',
+                  border: 'none', borderRadius: 8, color: 'rgba(255,255,255,0.045)',
                   fontWeight: 700, fontSize: 14, cursor: loading ? 'wait' : 'pointer',
                   minHeight: 48,
                 }}>

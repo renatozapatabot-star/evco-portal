@@ -283,7 +283,7 @@ export default function SubirDocumentosPage() {
             <div key={`${u.fileName}-${i}`} style={{
               display: 'flex', alignItems: 'center', gap: 12,
               padding: '12px 20px',
-              borderBottom: i < uploads.length - 1 ? '1px solid var(--cruz-border-subtle, rgba(9,9,11,0.75))' : 'none',
+              borderBottom: i < uploads.length - 1 ? '1px solid var(--cruz-border-subtle, rgba(255,255,255,0.045))' : 'none',
             }}>
               {/* Status icon */}
               {u.status === 'uploading' && <Loader2 size={18} style={{ color: 'var(--cruz-amber)', animation: 'spin 1s linear infinite' }} />}
@@ -389,7 +389,7 @@ export default function SubirDocumentosPage() {
             <div key={doc.doc_type} style={{
               display: 'flex', alignItems: 'center', gap: 12,
               padding: '12px 20px',
-              borderBottom: '1px solid var(--cruz-border-subtle, rgba(9,9,11,0.75))',
+              borderBottom: '1px solid var(--cruz-border-subtle, rgba(255,255,255,0.045))',
             }}>
               {doc.present
                 ? <CheckCircle size={16} style={{ color: 'var(--cruz-green)', flexShrink: 0 }} />

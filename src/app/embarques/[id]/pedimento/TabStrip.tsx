@@ -20,7 +20,7 @@ export function TabStrip({ activeTab, onChange }: TabStripProps) {
         position: 'sticky',
         top: 0,
         zIndex: 20,
-        background: 'rgba(9,9,11,0.85)',
+        background: 'rgba(255,255,255,0.045)',
         backdropFilter: 'blur(12px)',
       }}
     >

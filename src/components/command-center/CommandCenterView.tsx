@@ -240,7 +240,7 @@ function PasswordResetBanner() {
     <div style={{
       padding: '10px 16px', borderRadius: 14, marginBottom: 12,
       borderLeft: '3px solid rgba(192,197,206,0.4)',
-      background: 'rgba(9,9,11,0.75)',
+      background: 'rgba(255,255,255,0.045)',
       backdropFilter: 'blur(20px)',
       border: '1px solid rgba(192,197,206,0.15)',
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -384,7 +384,7 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: isMobile ? '8px 12px' : '10px 16px',
           marginBottom: 12, borderRadius: 12,
-          background: 'var(--bg-elevated, rgba(9,9,11,0.75))',
+          background: 'var(--bg-elevated, rgba(255,255,255,0.045))',
           border: '1px solid var(--border-card, #334155)',
           flexWrap: 'wrap', gap: 8,
         }}>

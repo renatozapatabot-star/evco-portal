@@ -77,7 +77,7 @@ export function ClienteObservacionesTab({ pedimento, clienteName }: ClienteObser
         style={{
           padding: 20,
           borderRadius: 20,
-          background: 'rgba(9,9,11,0.75)',
+          background: 'rgba(255,255,255,0.045)',
           border: '1px solid rgba(192,197,206,0.18)',
           backdropFilter: 'blur(20px)',
           display: 'grid',
@@ -115,7 +115,7 @@ export function ClienteObservacionesTab({ pedimento, clienteName }: ClienteObser
             style={{
               minHeight: 60,
               padding: '10px 12px',
-              background: 'rgba(9,9,11,0.35)',
+              background: 'rgba(255,255,255,0.045)',
               border: '1px solid rgba(192,197,206,0.12)',
               borderRadius: 10,
               color: 'var(--text-primary)',
@@ -136,7 +136,7 @@ export function ClienteObservacionesTab({ pedimento, clienteName }: ClienteObser
         style={{
           padding: 20,
           borderRadius: 20,
-          background: 'rgba(9,9,11,0.75)',
+          background: 'rgba(255,255,255,0.045)',
           border: '1px solid rgba(192,197,206,0.18)',
           backdropFilter: 'blur(20px)',
         }}
@@ -161,7 +161,7 @@ export function ClienteObservacionesTab({ pedimento, clienteName }: ClienteObser
         style={{
           padding: 20,
           borderRadius: 20,
-          background: 'rgba(9,9,11,0.75)',
+          background: 'rgba(255,255,255,0.045)',
           border: '1px solid rgba(192,197,206,0.18)',
           backdropFilter: 'blur(20px)',
         }}
@@ -272,7 +272,7 @@ function inputStyle(mono: boolean, error: boolean): React.CSSProperties {
     flex: 1,
     minHeight: 60,
     padding: '10px 12px',
-    background: 'rgba(9,9,11,0.55)',
+    background: 'rgba(255,255,255,0.045)',
     color: 'var(--text-primary)',
     border: `1px solid ${error ? RED : 'rgba(192,197,206,0.22)'}`,
     borderRadius: 10,

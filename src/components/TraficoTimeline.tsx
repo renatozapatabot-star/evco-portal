@@ -112,7 +112,7 @@ export function TraficoTimeline({ trafico, eventos }: TraficoTimelineProps) {
                 width: 24, height: 24, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: 12, flexShrink: 0,
                 background: isCompleted ? 'var(--success)' : isCurrent ? 'var(--gold-600)' : isBlocked ? 'var(--danger)' : 'var(--n-100)',
-                color: isCompleted || isCurrent || isBlocked ? 'rgba(9,9,11,0.75)' : 'var(--n-400)',
+                color: isCompleted || isCurrent || isBlocked ? 'rgba(255,255,255,0.045)' : 'var(--n-400)',
                 border: isCurrent ? '2px solid var(--gold-400)' : 'none',
                 boxShadow: isCurrent ? '0 0 0 3px rgba(212,175,55,0.2)' : 'none',
               }}>

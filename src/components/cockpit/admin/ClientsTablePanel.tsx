@@ -11,7 +11,7 @@ interface Props {
 export function ClientsTablePanel({ companies }: Props) {
   return (
     <div style={{
-      background: 'rgba(9,9,11,0.75)',
+      background: 'rgba(255,255,255,0.045)',
       borderRadius: 14,
       border: '1px solid rgba(255,255,255,0.08)',
       borderTop: '3px solid rgba(192,197,206,0.4)',
@@ -54,7 +54,7 @@ export function ClientsTablePanel({ companies }: Props) {
             <tbody>
               {companies.map((c, i) => (
                 <tr key={c.company_id} style={{
-                  background: i % 2 === 0 ? 'rgba(9,9,11,0.75)' : 'rgba(255,255,255,0.02)',
+                  background: i % 2 === 0 ? 'rgba(255,255,255,0.045)' : 'rgba(255,255,255,0.02)',
                 }}>
                   <td style={{ padding: '10px 12px', fontSize: 13, color: '#E6EDF3' }}>
                     <Link

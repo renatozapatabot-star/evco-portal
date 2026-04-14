@@ -51,7 +51,7 @@ export function SlideOver({ open, onClose, title, children }: SlideOverProps) {
           bottom: 0,
           width: isMobile ? '100%' : 420,
           zIndex: 101,
-          background: 'rgba(9,9,11,0.75)',
+          background: 'rgba(255,255,255,0.045)',
           borderLeft: isMobile ? 'none' : '1px solid rgba(255,255,255,0.08)',
           display: 'flex',
           flexDirection: 'column',

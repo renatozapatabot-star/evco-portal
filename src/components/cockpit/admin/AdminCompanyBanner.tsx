@@ -33,7 +33,7 @@ export function AdminCompanyBanner({
     <section
       aria-label="Resumen de compañía"
       style={{
-        background: 'rgba(9,9,11,0.75)',
+        background: 'rgba(255,255,255,0.045)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
         border: '1px solid rgba(255,255,255,0.08)',

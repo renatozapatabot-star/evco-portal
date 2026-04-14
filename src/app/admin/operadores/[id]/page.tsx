@@ -115,7 +115,7 @@ export default async function OperatorDetailPage({ params }: { params: Promise<{
       <header
         style={{
           marginTop: 12,
-          background: 'rgba(9,9,11,0.75)',
+          background: 'rgba(255,255,255,0.045)',
           backdropFilter: 'blur(20px)',
           border: `1px solid ${BORDER}`,
           borderRadius: 20,
@@ -163,7 +163,7 @@ export default async function OperatorDetailPage({ params }: { params: Promise<{
         {/* Per-action-type counts */}
         <aside
           style={{
-            background: 'rgba(9,9,11,0.75)',
+            background: 'rgba(255,255,255,0.045)',
             backdropFilter: 'blur(20px)',
             border: `1px solid ${BORDER}`,
             borderRadius: 20,
@@ -215,7 +215,7 @@ export default async function OperatorDetailPage({ params }: { params: Promise<{
         {/* Recent action feed */}
         <div
           style={{
-            background: 'rgba(9,9,11,0.75)',
+            background: 'rgba(255,255,255,0.045)',
             backdropFilter: 'blur(20px)',
             border: `1px solid ${BORDER}`,
             borderRadius: 20,

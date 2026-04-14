@@ -184,7 +184,7 @@ export function DemoRunnerClient() {
         {/* Left — controls */}
         <section
           style={{
-            background: 'rgba(9,9,11,0.75)',
+            background: 'rgba(255,255,255,0.045)',
             backdropFilter: 'blur(20px)',
             border: `1px solid ${BORDER}`,
             borderRadius: 20,
@@ -301,7 +301,7 @@ export function DemoRunnerClient() {
         {/* Right — progress */}
         <section
           style={{
-            background: 'rgba(9,9,11,0.75)',
+            background: 'rgba(255,255,255,0.045)',
             backdropFilter: 'blur(20px)',
             border: `1px solid ${BORDER}`,
             borderRadius: 20,

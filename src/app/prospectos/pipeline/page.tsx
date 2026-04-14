@@ -145,7 +145,7 @@ export default function PipelinePage() {
                 </div>
                 <span style={{
                   width: 22, height: 22, borderRadius: '50%',
-                  background: col.color, color: 'rgba(9,9,11,0.75)', display: 'flex',
+                  background: col.color, color: 'rgba(255,255,255,0.045)', display: 'flex',
                   alignItems: 'center', justifyContent: 'center',
                   fontSize: 11, fontWeight: 700,
                 }}>

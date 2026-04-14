@@ -138,7 +138,7 @@ export function AdminCockpit({ data, operatorName }: Props) {
         }}>
           {/* HERO: Business Health */}
           <div style={{
-            background: 'rgba(9,9,11,0.75)', borderRadius: 14,
+            background: 'rgba(255,255,255,0.045)', borderRadius: 14,
             border: '1px solid rgba(255,255,255,0.08)',
             borderTop: `3px solid ${healthColors[healthLevel].border}`,
             padding: 20,

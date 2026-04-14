@@ -304,6 +304,23 @@ else
 fi
 
 # --------------------------------------------------------------------------
+# Design invariant 2 — gold decorative hex (#C9A84C / #eab308) ratchet
+# Baseline captured 2026-04-13 = 17 (down from 20; hooks cleaned up).
+# Gold is CTA-only per the rule; many historical sites still use it as
+# borders/backgrounds/accents. Ratchet down instead of big-bang refactor.
+# --------------------------------------------------------------------------
+INVARIANT_2_BASELINE=17
+header "Invariant 2 — Gold decorative ratchet"
+INV2_COUNT=$(grep -rn "#C9A84C\|#eab308" src/ --include="*.ts" --include="*.tsx" 2>/dev/null | grep -v node_modules | wc -l | tr -d ' ')
+if [ "$INV2_COUNT" -gt "$INVARIANT_2_BASELINE" ]; then
+  fail "Gold hex violations: $INV2_COUNT (baseline $INVARIANT_2_BASELINE). Gold is CTA-only — use silver tokens or design-system aliases."
+elif [ "$INV2_COUNT" -lt "$INVARIANT_2_BASELINE" ]; then
+  pass "Gold hex violations: $INV2_COUNT (baseline $INVARIANT_2_BASELINE, improving ✓). Update INVARIANT_2_BASELINE in this script."
+else
+  warn "Gold hex violations: $INV2_COUNT (at baseline, not regressing but cleanup pending)"
+fi
+
+# --------------------------------------------------------------------------
 # Design invariant 27 — hardcoded fontSize in src/app (ratchet)
 # Baseline captured 2026-04-13 = 2552. Goal: trend toward 0 via --aguila-fs-*
 # CSS variables. Exceptions must be documented with `WHY:` inline.

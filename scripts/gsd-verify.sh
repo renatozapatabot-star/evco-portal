@@ -304,6 +304,23 @@ else
 fi
 
 # --------------------------------------------------------------------------
+# Deprecated design-system token ratchet
+# ACCENT_CYAN / GOLD / GOLD_* / ACCENT_BLUE / GLOW_CYAN* still exported as
+# silver aliases for back-compat. 269 imports today. Goal: trend to 0, then
+# remove the aliases from design-system.ts so re-introduction is impossible.
+# --------------------------------------------------------------------------
+DEPRECATED_TOKEN_BASELINE=269
+header "Deprecated token ratchet"
+DEP_COUNT=$(grep -rnE "\bACCENT_CYAN\b|\bGOLD\b|\bGOLD_TEXT\b|\bGOLD_HOVER\b|\bGOLD_GRADIENT\b|\bACCENT_BLUE\b|\bGLOW_CYAN\b|\bGLOW_CYAN_SUBTLE\b" src/ --include="*.ts" --include="*.tsx" 2>/dev/null | grep -v node_modules | grep -v "design-system.ts" | wc -l | tr -d ' ')
+if [ "$DEP_COUNT" -gt "$DEPRECATED_TOKEN_BASELINE" ]; then
+  fail "Deprecated token imports: $DEP_COUNT (baseline $DEPRECATED_TOKEN_BASELINE). Use ACCENT_SILVER* directly."
+elif [ "$DEP_COUNT" -lt "$DEPRECATED_TOKEN_BASELINE" ]; then
+  pass "Deprecated token imports: $DEP_COUNT (baseline $DEPRECATED_TOKEN_BASELINE, improving ✓). Update DEPRECATED_TOKEN_BASELINE in this script."
+else
+  warn "Deprecated token imports: $DEP_COUNT (at baseline, not regressing but cleanup pending)"
+fi
+
+# --------------------------------------------------------------------------
 # Design invariant 2 — gold decorative hex (#C9A84C / #eab308) ratchet
 # Baseline captured 2026-04-13 = 17 (down from 20; hooks cleaned up).
 # Gold is CTA-only per the rule; many historical sites still use it as

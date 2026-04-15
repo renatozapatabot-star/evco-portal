@@ -79,8 +79,8 @@ export async function POST(request: NextRequest) {
       .in('estatus', MOTION_STATUSES)
       .limit(5000)
     const sema = { rojo: 0, amarillo: 0, verde: 0 }
-    for (const r of (semaRows ?? []) as Array<{ semaforo: string | null }>) {
-      const s = (r.semaforo ?? '').toLowerCase()
+    for (const r of (semaRows ?? []) as Array<{ semaforo: unknown }>) {
+      const s = typeof r.semaforo === 'string' ? r.semaforo.toLowerCase() : ''
       if (s.includes('rojo')) sema.rojo++
       else if (s.includes('amarillo') || s.includes('naranja')) sema.amarillo++
       else if (s.includes('verde')) sema.verde++

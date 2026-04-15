@@ -297,7 +297,7 @@ fi
 # --------------------------------------------------------------------------
 INVARIANT_1_BASELINE=0
 header "Invariant 1 — Opaque glass ratchet"
-INV1_COUNT=$(grep -rnE "background: *'#(111111|222222|1A1A1A|1a2338)'|background: *rgba\(9,9,11" src/app src/components 2>/dev/null | grep -v "components/aguila/" | wc -l | tr -d ' ')
+INV1_COUNT=$(set +eo pipefail;{ grep -rnE "background: *'#(111111|222222|1A1A1A|1a2338)'|background: *rgba\(9,9,11" src/app src/components 2>/dev/null || true; } | grep -v "components/aguila/" | wc -l | tr -d ' ')
 if [ "$INV1_COUNT" -gt "$INVARIANT_1_BASELINE" ]; then
   fail "Opaque glass violations: $INV1_COUNT (baseline $INVARIANT_1_BASELINE). New drift introduced — compose from <GlassCard>."
 elif [ "$INV1_COUNT" -lt "$INVARIANT_1_BASELINE" ]; then
@@ -312,7 +312,7 @@ fi
 # --------------------------------------------------------------------------
 INVARIANT_26_BASELINE=13
 header "Invariant 26 — Inline glass chrome ratchet"
-INV26_COUNT=$(grep -rnE "background: *['\"]\?rgba\(255,255,255,0\.04\b|backdrop-filter: *blur\(20" src/app src/components 2>/dev/null | grep -v "components/aguila/" | wc -l | tr -d ' ')
+INV26_COUNT=$(set +eo pipefail;{ grep -rnE "background: *['\"]\?rgba\(255,255,255,0\.04\b|backdrop-filter: *blur\(20" src/app src/components 2>/dev/null || true; } | grep -v "components/aguila/" | wc -l | tr -d ' ')
 if [ "$INV26_COUNT" -gt "$INVARIANT_26_BASELINE" ]; then
   fail "Inline glass chrome violations: $INV26_COUNT (baseline $INVARIANT_26_BASELINE). New drift — compose from <GlassCard> in src/components/aguila/."
 elif [ "$INV26_COUNT" -lt "$INVARIANT_26_BASELINE" ]; then
@@ -337,7 +337,7 @@ fi
 # --------------------------------------------------------------------------
 CONSOLE_ERR_BASELINE=169
 header "Console.error/warn ratchet"
-CONSOLE_COUNT=$(grep -rn "console\.error\|console\.warn" src/app --include="*.tsx" --include="*.ts" 2>/dev/null | grep -v ".test." | grep -v "// debug-ok" | wc -l | tr -d ' ')
+CONSOLE_COUNT=$(set +eo pipefail;{ grep -rn "console\.error\|console\.warn" src/app --include="*.tsx" --include="*.ts" 2>/dev/null || true; } | grep -v ".test." | grep -v "// debug-ok" | wc -l | tr -d ' ')
 if [ "$CONSOLE_COUNT" -gt "$CONSOLE_ERR_BASELINE" ]; then
   fail "console.error/warn calls: $CONSOLE_COUNT (baseline $CONSOLE_ERR_BASELINE). Use structured logger or remove."
 elif [ "$CONSOLE_COUNT" -lt "$CONSOLE_ERR_BASELINE" ]; then
@@ -353,7 +353,7 @@ fi
 # --------------------------------------------------------------------------
 ROLE_COOKIE_BASELINE=4
 header "Role-from-cookie ratchet"
-ROLE_COOKIE_COUNT=$(grep -rn "cookieStore\.get..user_role.\|cookies().get..user_role." src --include="*.ts" --include="*.tsx" 2>/dev/null | wc -l | tr -d ' ')
+ROLE_COOKIE_COUNT=$(set +eo pipefail;{ grep -rn "cookieStore\.get..user_role.\|cookies().get..user_role." src --include="*.ts" --include="*.tsx" 2>/dev/null || true; } | wc -l | tr -d ' ')
 if [ "$ROLE_COOKIE_COUNT" -gt "$ROLE_COOKIE_BASELINE" ]; then
   fail "Reading role from raw cookie: $ROLE_COOKIE_COUNT (baseline $ROLE_COOKIE_BASELINE). Use verifySession() to read signed role."
 elif [ "$ROLE_COOKIE_COUNT" -lt "$ROLE_COOKIE_BASELINE" ]; then
@@ -365,7 +365,7 @@ fi
 header "KPI honesty — no updated_at time-window filters"
 # anomaly-detector uses updated_at intentionally to scan recently-touched
 # rows for duplicate detection (not for display) — exempt that file.
-KPI_DRIFT=$(grep -rnE "gte\(\s*'updated_at'|gte\(\s*\"updated_at\"|lte\(\s*'updated_at'|lte\(\s*\"updated_at\"" src/app/inicio src/app/admin/eagle src/app/operador/inicio src/app/contabilidad/inicio src/app/bodega/inicio src/app/api/routines 2>/dev/null | grep -v 'anomaly-detector' | wc -l | tr -d ' ')
+KPI_DRIFT=$(set +eo pipefail; grep -rnE "gte\(\s*'updated_at'|gte\(\s*\"updated_at\"|lte\(\s*'updated_at'|lte\(\s*\"updated_at\"" src/app/inicio src/app/admin/eagle src/app/operador/inicio src/app/contabilidad/inicio src/app/bodega/inicio src/app/api/routines 2>/dev/null | grep -v 'anomaly-detector' | wc -l | tr -d ' ')
 if [ "$KPI_DRIFT" -gt 0 ]; then
   fail "Cockpit/routine KPIs filter by updated_at ($KPI_DRIFT hits) — use fecha_cruce / fecha_llegada / fecha_llegada_mercancia."
   grep -rnE "gte\(\s*'updated_at'|gte\(\s*\"updated_at\"|lte\(\s*'updated_at'|lte\(\s*\"updated_at\"" src/app/inicio src/app/admin/eagle src/app/operador/inicio src/app/contabilidad/inicio src/app/bodega/inicio src/app/api/routines 2>/dev/null | grep -v 'anomaly-detector' | head -5 | sed 's/^/      /'
@@ -381,7 +381,7 @@ fi
 # --------------------------------------------------------------------------
 DEPRECATED_TOKEN_BASELINE=263
 header "Deprecated token ratchet"
-DEP_COUNT=$(grep -rnE "\bACCENT_CYAN\b|\bGOLD\b|\bGOLD_TEXT\b|\bGOLD_HOVER\b|\bGOLD_GRADIENT\b|\bACCENT_BLUE\b|\bGLOW_CYAN\b|\bGLOW_CYAN_SUBTLE\b" src/ --include="*.ts" --include="*.tsx" 2>/dev/null | grep -v node_modules | grep -v "design-system.ts" | wc -l | tr -d ' ')
+DEP_COUNT=$(set +eo pipefail;{ grep -rnE "\bACCENT_CYAN\b|\bGOLD\b|\bGOLD_TEXT\b|\bGOLD_HOVER\b|\bGOLD_GRADIENT\b|\bACCENT_BLUE\b|\bGLOW_CYAN\b|\bGLOW_CYAN_SUBTLE\b" src/ --include="*.ts" --include="*.tsx" 2>/dev/null || true; } | grep -v node_modules | grep -v "design-system.ts" | wc -l | tr -d ' ')
 if [ "$DEP_COUNT" -gt "$DEPRECATED_TOKEN_BASELINE" ]; then
   fail "Deprecated token imports: $DEP_COUNT (baseline $DEPRECATED_TOKEN_BASELINE). Use ACCENT_SILVER* directly."
 elif [ "$DEP_COUNT" -lt "$DEPRECATED_TOKEN_BASELINE" ]; then
@@ -398,7 +398,7 @@ fi
 # --------------------------------------------------------------------------
 INVARIANT_2_BASELINE=17
 header "Invariant 2 — Gold decorative ratchet"
-INV2_COUNT=$(grep -rn "#C9A84C\|#eab308" src/ --include="*.ts" --include="*.tsx" 2>/dev/null | grep -v node_modules | wc -l | tr -d ' ')
+INV2_COUNT=$(set +eo pipefail;{ grep -rn "#C9A84C\|#eab308" src/ --include="*.ts" --include="*.tsx" 2>/dev/null || true; } | grep -v node_modules | wc -l | tr -d ' ')
 if [ "$INV2_COUNT" -gt "$INVARIANT_2_BASELINE" ]; then
   fail "Gold hex violations: $INV2_COUNT (baseline $INVARIANT_2_BASELINE). Gold is CTA-only — use silver tokens or design-system aliases."
 elif [ "$INV2_COUNT" -lt "$INVARIANT_2_BASELINE" ]; then
@@ -414,7 +414,7 @@ fi
 # --------------------------------------------------------------------------
 INVARIANT_27_BASELINE=2607
 header "Invariant 27 — Hardcoded fontSize ratchet"
-INV27_COUNT=$(grep -rn "fontSize: [0-9]" src/app 2>/dev/null | grep -v "var(--aguila-fs-" | grep -v ".test." | grep -v "WHY:" | wc -l | tr -d ' ')
+INV27_COUNT=$(set +eo pipefail;{ grep -rn "fontSize: [0-9]" src/app 2>/dev/null || true; } | grep -v "var(--aguila-fs-" | grep -v ".test." | grep -v "WHY:" | wc -l | tr -d ' ')
 if [ "$INV27_COUNT" -gt "$INVARIANT_27_BASELINE" ]; then
   fail "Hardcoded fontSize violations: $INV27_COUNT (baseline $INVARIANT_27_BASELINE). Use var(--aguila-fs-*) or add // WHY: comment."
 elif [ "$INV27_COUNT" -lt "$INVARIANT_27_BASELINE" ]; then

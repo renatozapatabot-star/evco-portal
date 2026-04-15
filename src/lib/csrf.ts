@@ -40,6 +40,9 @@ export function validateCsrf(req: NextRequest): NextResponse | null {
   if (path.startsWith('/api/vapi')) return null
   if (path.startsWith('/api/webhook')) return null
   if (path.startsWith('/api/whatsapp/webhook')) return null
+  // Claude Routines call from Anthropic cloud — they auth via x-routine-secret
+  // (src/lib/routines/auth.ts), not via session cookie. CSRF doesn't apply.
+  if (path.startsWith('/api/routines/')) return null
   // Telemetry uses sendBeacon which cannot set custom headers
   if (path.startsWith('/api/telemetry')) return null
   // Login sets the token — can't require it before it exists

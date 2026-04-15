@@ -1,6 +1,6 @@
-import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
 import { Suspense } from 'react'
+import { requireOperator } from '@/lib/route-guards'
 import { createServerClient } from '@/lib/supabase-server'
 import { logOperatorAction } from '@/lib/operator-actions'
 import { InicioClient } from './InicioClient'
@@ -26,14 +26,11 @@ function withHardTimeout<T>(p: PromiseLike<T>, ms: number, fallback: T): Promise
 }
 
 export default async function OperadorInicioPage({ searchParams }: { searchParams?: Promise<{ month?: string }> }) {
+  const session = await requireOperator()
+  const role = session.role
   const cookieStore = await cookies()
-  const role = cookieStore.get('user_role')?.value
   const opId = cookieStore.get('operator_id')?.value
   const opName = cookieStore.get('operator_name')?.value || 'Operador'
-
-  if (!role || !['admin', 'broker', 'operator'].includes(role)) {
-    redirect('/')
-  }
 
   const sp = (await searchParams) ?? {}
   const month = parseMonthParam(sp.month).ym

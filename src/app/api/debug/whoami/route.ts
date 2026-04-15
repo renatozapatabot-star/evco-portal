@@ -16,6 +16,8 @@ export async function GET() {
   const cookieStore = await cookies()
   const token = cookieStore.get('portal_session')?.value ?? ''
   const session = await verifySession(token).catch(() => null)
+  // debug-ok: this endpoint intentionally reports the raw user_role cookie
+  // alongside the signed session so discrepancies are visible.
   const userRole = cookieStore.get('user_role')?.value ?? null
   const companyIdCookie = cookieStore.get('company_id')?.value ?? null
 

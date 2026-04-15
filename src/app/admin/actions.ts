@@ -1,8 +1,9 @@
 'use server'
 
-import { cookies } from 'next/headers'
 import { createClient } from '@supabase/supabase-js'
 import { logOperatorAction, getOperatorId } from '@/lib/operator-actions'
+import { verifySession } from '@/lib/session'
+import { cookies } from 'next/headers'
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY
 const FROM_EMAIL = 'Renato Zapata & Co. <ai@renatozapata.com>'
@@ -10,8 +11,8 @@ const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://evco-portal.vercel.
 
 export async function sendChaserEmail(formData: FormData): Promise<{ success?: boolean; error?: string; recipient?: string }> {
   const cookieStore = await cookies()
-  const role = cookieStore.get('user_role')?.value
-  if (role !== 'admin') return { error: 'No autorizado' }
+  const session = await verifySession(cookieStore.get('portal_session')?.value ?? '')
+  if (session?.role !== 'admin') return { error: 'No autorizado' }
 
   const traficoId = formData.get('traficoId') as string
   const traficoNum = formData.get('traficoNum') as string

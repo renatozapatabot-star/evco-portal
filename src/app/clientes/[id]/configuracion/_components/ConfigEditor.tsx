@@ -17,6 +17,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AlertTriangle, CheckCircle2 } from 'lucide-react'
+import { GlassCard } from '@/components/aguila'
 import {
   ACCENT_SILVER,
   ACCENT_SILVER_DIM,
@@ -129,12 +130,12 @@ export function ConfigEditor({
         <aside className="aguila-cfg-sidenav">
           <SideNav active={active} onSelect={setActive} completeness={completeness} />
         </aside>
-        <div className="aguila-cfg-main">
+        <GlassCard className="aguila-cfg-main" padding="0">
           <TabStrip active={active} onSelect={setActive} completeness={completeness} />
           <div style={{ padding: '20px 4px 4px' }}>
             <ActiveTab section={active} companyId={companyId} initial={initial} onSaved={refresh} />
           </div>
-        </div>
+        </GlassCard>
         <aside className="aguila-cfg-rail">
           <CompletenessRail
             companyId={companyId}
@@ -182,14 +183,9 @@ export function ConfigEditor({
           align-items: flex-start;
         }
         .aguila-cfg-sidenav { display: none; }
-        .aguila-cfg-main {
-          background: rgba(255,255,255,0.045);
-          border: 1px solid ${BORDER_SILVER};
-          border-radius: 20px;
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-          overflow: hidden;
-        }
+        /* .aguila-cfg-main composes from <GlassCard tier="hero">; the layout
+           class no longer sets glass chrome — the primitive does. */
+        .aguila-cfg-main { overflow: hidden; }
         .aguila-cfg-rail { position: static; }
 
         /* md (>= 900px): show right rail beside main, keep horizontal tab strip in main */

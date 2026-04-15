@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useState, useEffect, useCallback } from 'react'
-import { Bell, Search } from 'lucide-react'
+import { Bell, Search, Plus } from 'lucide-react'
 import { getCookieValue } from '@/lib/client-config'
 import { daysUntilMVE, mveIsCritical } from '@/lib/compliance-dates'
 import { fmtDate } from '@/lib/format-utils'
@@ -10,6 +10,8 @@ import { useIsMobile } from '@/hooks/use-mobile'
 import { NightModeToggle } from '@/components/NightModeToggle'
 import { AguilaMark } from '@/components/brand/AguilaMark'
 import { NotificationPanel } from '@/components/NotificationPanel'
+import { LauncherTray } from '@/components/launcher/LauncherTray'
+import type { LauncherCounts, LauncherRole } from '@/lib/launcher-tools'
 import type { UserRole } from '@/components/nav/nav-config'
 import Link from 'next/link'
 
@@ -29,6 +31,8 @@ export function TopNav() {
   const [role, setRole] = useState<UserRole>('client')
   const [unreadCount, setUnreadCount] = useState(0)
   const [notifOpen, setNotifOpen] = useState(false)
+  const [launcherOpen, setLauncherOpen] = useState(false)
+  const [launcherCounts] = useState<LauncherCounts>({})
   const [companyId, setCompanyId] = useState('')
   const [syncLabel, setSyncLabel] = useState('')
   const [syncMins, setSyncMins] = useState<number | null>(null)
@@ -43,6 +47,11 @@ export function TopNav() {
 
   const handleEscape = useCallback((e: KeyboardEvent) => {
     if (e.key === 'Escape' && notifOpen) setNotifOpen(false)
+    // Cmd+J / Ctrl+J toggles the launcher tray
+    if ((e.metaKey || e.ctrlKey) && (e.key === 'j' || e.key === 'J')) {
+      e.preventDefault()
+      setLauncherOpen((v) => !v)
+    }
   }, [notifOpen])
   useEffect(() => {
     document.addEventListener('keydown', handleEscape)
@@ -103,6 +112,31 @@ export function TopNav() {
             )}
             <NightModeToggle />
             <button
+              style={{
+                background: 'transparent',
+                border: '1px solid rgba(192,197,206,0.25)',
+                borderRadius: 8, padding: '4px 8px',
+                cursor: 'pointer', color: '#F4D47A',
+                display: 'inline-flex', alignItems: 'center', gap: 4,
+                fontSize: 12, fontWeight: 700,
+                position: 'relative',
+              }}
+              onClick={() => setLauncherOpen(true)}
+              aria-label="Herramientas"
+              title="Herramientas (⌘J)"
+            >
+              <Plus size={14} />
+              <span>Tools</span>
+              {Object.values(launcherCounts).some(v => typeof v === 'number' && v > 0) && (
+                <span aria-hidden style={{
+                  position: 'absolute', top: -3, right: -3,
+                  width: 8, height: 8, borderRadius: '50%',
+                  background: 'var(--danger-500, #EF4444)',
+                  boxShadow: '0 0 6px rgba(239,68,68,0.6)',
+                }} />
+              )}
+            </button>
+            <button
               style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: T.textMuted }}
               onClick={() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }))}
               aria-label="Buscar"
@@ -130,6 +164,12 @@ export function TopNav() {
           </div>
         </nav>
         <NotificationPanel isOpen={notifOpen} onClose={() => setNotifOpen(false)} />
+        <LauncherTray
+          open={launcherOpen}
+          onClose={() => setLauncherOpen(false)}
+          role={(role as LauncherRole) || 'client'}
+          counts={launcherCounts}
+        />
       </>
     )
   }
@@ -178,6 +218,39 @@ export function TopNav() {
 
           <NightModeToggle />
 
+          {/*
+            Herramientas launcher tray. + icon, gold accent so it reads as a
+            primary affordance distinct from the silver utility icons. Cmd+J
+            opens it from anywhere; tooltip surfaces the shortcut.
+          */}
+          <button
+            type="button"
+            onClick={() => setLauncherOpen(true)}
+            aria-label="Herramientas (⌘J)"
+            title="Herramientas (⌘J)"
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 4,
+              padding: '4px 10px', borderRadius: 8,
+              background: 'transparent',
+              border: '1px solid rgba(192,197,206,0.22)',
+              color: '#F4D47A',
+              fontSize: 11, fontWeight: 700, cursor: 'pointer',
+              lineHeight: 1.2,
+              position: 'relative',
+            }}
+          >
+            <Plus size={13} />
+            <span>TOOLS</span>
+            {Object.values(launcherCounts).some(v => typeof v === 'number' && v > 0) && (
+              <span aria-hidden style={{
+                position: 'absolute', top: -3, right: -3,
+                width: 8, height: 8, borderRadius: '50%',
+                background: 'var(--danger-500, #EF4444)',
+                boxShadow: '0 0 6px rgba(239,68,68,0.6)',
+              }} />
+            )}
+          </button>
+
           <button
             className="tn-bell-bar"
             onClick={() => setNotifOpen(true)}
@@ -194,6 +267,12 @@ export function TopNav() {
       </nav>
 
       <NotificationPanel isOpen={notifOpen} onClose={() => setNotifOpen(false)} />
+      <LauncherTray
+        open={launcherOpen}
+        onClose={() => setLauncherOpen(false)}
+        role={(role as LauncherRole) || 'client'}
+        counts={launcherCounts}
+      />
     </>
   )
 }

@@ -285,13 +285,8 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
   // v10 — Capability cards: Checklist, Clasificador, Mensajes (client scope).
   // V1 fix — microStatus must be DYNAMIC info only; the static `subtitle`
   // already renders once from CAPABILITY_CARDS. Passing the same string as
-  // microStatus caused both to display → the screenshot-visible doubling.
-  const checklistPending = Math.max(0, activeTraficos.length * 3 - documentos.length)
-  const capabilityCounts: CapabilityCounts = {
-    checklist:    { count: checklistPending, microStatus: checklistPending > 0 ? `${checklistPending} pendiente${checklistPending === 1 ? '' : 's'}` : undefined },
-    clasificador: { count: clasificacionesCount, countSuffix: '', microStatus: clasificacionesCount > 0 ? `${clasificacionesCount} fracciones` : undefined },
-    // mensajes capability removed 2026-04-15
-  }
+  // Capability cards moved to LauncherTray (top-nav `+ TOOLS`).
+  const capabilityCounts: CapabilityCounts = {}
   const capabilitySlot = <CapabilityCardGrid counts={capabilityCounts} />
 
   const clientMetaPills: Array<{ label: string; value: string | number; tone?: 'silver' | 'warning' }> = [

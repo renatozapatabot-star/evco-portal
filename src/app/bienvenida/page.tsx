@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { getCompanyIdCookie, getClientNameCookie } from '@/lib/client-config'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { AguilaMark } from '@/components/brand/AguilaMark'
 
 function AnimatedCounter({ target, label, delay }: { target: number; label: string; delay: number }) {
   const [value, setValue] = useState(0)
@@ -87,15 +88,13 @@ export default function BienvenidaPage() {
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
       padding: isMobile ? '24px 16px' : '40px 24px', color: 'var(--text-primary)',
     }}>
-      {/* Z Mark */}
+      {/* Z Mark — canonical brand SVG */}
       <div style={{
-        width: 64, height: 64, borderRadius: 16,
-        background: 'linear-gradient(135deg, var(--gold), var(--gold-700))',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        boxShadow: '0 0 40px rgba(196,150,60,0.15)',
+        filter: 'drop-shadow(0 0 28px rgba(201,167,74,0.32))',
         marginBottom: 32,
       }}>
-        <span style={{ fontFamily: 'Georgia, serif', fontSize: 32, fontWeight: 700, color: 'var(--bg-card)' }}>Z</span>
+        <AguilaMark size={72} />
       </div>
 
       <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.02em', margin: '0 0 8px', textAlign: 'center' }}>

@@ -253,12 +253,8 @@ async function renderBodegaCockpit(opName: string) {
     </GlassCard>
   )
 
-  // V1 — microStatus is DYNAMIC only. Static subtitle lives in CAPABILITY_CARDS.
-  const capabilityCounts: CapabilityCounts = {
-    checklist:    { count: expedientesCount,     microStatus: expedientesCount > 0 ? `${expedientesCount} totales` : undefined },
-    clasificador: { count: clasificacionesCount, microStatus: clasificacionesCount > 0 ? `${clasificacionesCount} fracciones` : undefined },
-    // mensajes capability removed 2026-04-15
-  }
+  // Capability cards moved to LauncherTray (top-nav `+ TOOLS`).
+  const capabilityCounts: CapabilityCounts = {}
   const capabilitySlot = <CapabilityCardGrid counts={capabilityCounts} />
 
   const actividadSlot = (

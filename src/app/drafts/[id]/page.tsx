@@ -8,6 +8,7 @@ import { createClient } from '@supabase/supabase-js'
 import { GOLD, GOLD_GRADIENT, Z_RED } from '@/lib/design-system'
 import { getClientClaveCookie } from '@/lib/client-config'
 import { formatAbsoluteETA, fmtUSD, fmtMXNInt, fmtCurrency } from '@/lib/format-utils'
+import { AguilaMark } from '@/components/brand/AguilaMark'
 import type { DraftRow, DraftProduct, DraftData } from '@/types/database'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
@@ -223,14 +224,12 @@ export default function DraftReviewPage() {
   if (approvalState === 'blessing') return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 200, background: '#05070B', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{
-        width: 80, height: 80, borderRadius: 20,
-        background: GOLD_GRADIENT,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        boxShadow: '0 0 60px rgba(192,197,206,0.4)',
+        filter: 'drop-shadow(0 0 40px rgba(201,167,74,0.4))',
         animation: 'blessing-pulse 0.8s ease-in-out',
         marginBottom: 24,
       }}>
-        <span style={{ fontFamily: 'Georgia, serif', fontSize: 40, fontWeight: 700, color: 'var(--text-primary)' }}>Z</span>
+        <AguilaMark size={80} />
       </div>
       <div style={{ fontSize: 20, fontWeight: 800, color: '#F5F3EE', letterSpacing: '-0.02em', marginBottom: 8 }}>
         Patente 3596 honrada.

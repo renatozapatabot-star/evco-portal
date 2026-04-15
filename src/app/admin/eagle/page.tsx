@@ -501,11 +501,9 @@ async function renderEagle(opName: string, rawMonth: string | null) {
     <ActividadStrip items={stripItems} emptyLabel={`Sin actividad crítica en ${month.label}.`} title="Escalaciones + hilos" />
   )
 
-  // V1 — microStatus is DYNAMIC only. Static subtitle lives in CAPABILITY_CARDS.
-  const capabilityCounts: CapabilityCounts = {
-    checklist:    { count: pedimentosPendientesCount, microStatus: pedimentosPendientesCount > 0 ? `${pedimentosPendientesCount} pendientes` : undefined },
-    clasificador: { count: clasificacionesCount, microStatus: clasificacionesCount > 0 ? `${clasificacionesCount} fracciones` : undefined },
-  }
+  // Capability cards moved to LauncherTray (top-nav `+ TOOLS`). Cockpit
+  // stays focused on decisions + status. Empty counts → grid hides.
+  const capabilityCounts: CapabilityCounts = {}
   const capabilitySlot = <CapabilityCardGrid counts={capabilityCounts} />
 
   return (

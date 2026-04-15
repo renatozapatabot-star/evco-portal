@@ -299,11 +299,8 @@ async function renderContabilidadCockpit(opName: string, scopedCompanyId: string
     </div>
   )
 
-  // V1 — microStatus is DYNAMIC only. Static subtitle lives in CAPABILITY_CARDS.
-  const capabilityCounts: CapabilityCounts = {
-    checklist:    { count: closeOpen,              microStatus: closeOpen > 0 ? `${closeOpen} pendiente${closeOpen === 1 ? '' : 's'} del mes` : undefined, microStatusWarning: closeOpen > 3 },
-    clasificador: { count: clasificacionesCount,   microStatus: clasificacionesCount > 0 ? `${clasificacionesCount} fracciones` : undefined },
-  }
+  // Capability cards moved to LauncherTray (top-nav `+ TOOLS`).
+  const capabilityCounts: CapabilityCounts = {}
   const capabilitySlot = <CapabilityCardGrid counts={capabilityCounts} />
 
   const actividadSlot = (

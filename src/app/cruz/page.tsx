@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { X } from 'lucide-react'
-import { GOLD_GRADIENT } from '@/lib/design-system'
+import { AguilaMark } from '@/components/brand/AguilaMark'
 import { getCompanyIdCookie } from '@/lib/client-config'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { playSound } from '@/lib/sounds'
@@ -215,12 +215,10 @@ export default function CruzChatPage() {
       <div style={{ padding: '16px 24px', borderBottom: '1px solid rgba(255,255,255,0.06)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#05070B' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
           <div style={{
-            width: 40, height: 40, borderRadius: 10,
-            background: GOLD_GRADIENT,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 2px 8px rgba(192,197,206,0.35)',
+            filter: 'drop-shadow(0 0 12px rgba(201,167,74,0.35))',
           }}>
-            <span style={{ fontFamily: 'Georgia, serif', fontSize: 20, fontWeight: 700, color: '#05070B' }}>Z</span>
+            <AguilaMark size={40} />
           </div>
           <div>
             <h1 style={{ fontSize: 18, fontWeight: 800, color: '#E8E5DF', letterSpacing: '-0.02em', margin: 0 }}>ZAPATA AI</h1>

@@ -19,6 +19,7 @@ import type { TimelineItem } from '@/components/aguila'
 import { parseMonthParam, recentMonths } from '@/lib/cockpit/month-window'
 import { fetchEscalatedThreads } from '@/lib/mensajeria/feed'
 import { CockpitInicio, PriorityThreadsPanel, TimelineFeed, CockpitSkeleton, ActividadStrip, CapabilityCardGrid, type CockpitHeroKPI, type ActividadStripItem } from '@/components/aguila'
+import { AsistenteButton } from '@/components/aguila/AsistenteButton'
 import type { CapabilityCounts } from '@/lib/cockpit/capabilities'
 import { MonthSelector } from '@/components/admin/MonthSelector'
 import { AuditoriaShortcut } from '@/components/admin/AuditoriaShortcut'
@@ -425,19 +426,22 @@ async function renderEagle(opName: string, rawMonth: string | null) {
   const capabilitySlot = <CapabilityCardGrid counts={capabilityCounts} />
 
   return (
-    <CockpitInicio
-      role="owner"
-      name={opName}
-      heroKPIs={heroKPIs}
-      navCounts={navCounts}
-      estadoSections={estadoSections}
-      actividadSlot={actividadSlot}
-      actividadStripSlot={actividadStripSlot}
-      capabilitySlot={capabilitySlot}
-      systemStatus={atencionesTop.length > 0 ? 'warning' : 'healthy'}
-      pulseSignal={inTransitCount > 0}
-      summaryLine={summaryLine}
-      month={month.ym}
-    />
+    <>
+      <CockpitInicio
+        role="owner"
+        name={opName}
+        heroKPIs={heroKPIs}
+        navCounts={navCounts}
+        estadoSections={estadoSections}
+        actividadSlot={actividadSlot}
+        actividadStripSlot={actividadStripSlot}
+        capabilitySlot={capabilitySlot}
+        systemStatus={atencionesTop.length > 0 ? 'warning' : 'healthy'}
+        pulseSignal={inTransitCount > 0}
+        summaryLine={summaryLine}
+        month={month.ym}
+      />
+      <AsistenteButton roleTag="owner" />
+    </>
   )
 }

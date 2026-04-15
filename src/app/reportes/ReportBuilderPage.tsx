@@ -76,16 +76,12 @@ async function loadTemplates(companyId: string, userId: string) {
 }
 
 export interface ReportBuilderPageProps {
-  legacy?: string
   initialTemplateId?: string
 }
 
 export async function ReportBuilderPage({
-  legacy,
   initialTemplateId,
-}: ReportBuilderPageProps) {
-  if (legacy === '1') redirect('/reportes/legacy')
-
+}: ReportBuilderPageProps = {}) {
   const jar = await cookies()
   const token = jar.get('portal_session')?.value ?? ''
   const session = await verifySession(token)

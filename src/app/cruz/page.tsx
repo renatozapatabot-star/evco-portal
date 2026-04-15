@@ -15,6 +15,9 @@ export default function CruzChatPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const traficoContext = searchParams.get('trafico')
+  // V1 · role-aware greeting passed via AsistenteButton (ctx=role, hello=message)
+  const helloMessage = searchParams.get('hello')
+  const roleCtx = searchParams.get('ctx')
   const isMobile = useIsMobile()
   const [panelData, setPanelData] = useState<{ enProceso: { trafico_number?: string; id?: string; estatus?: string }[]; urgent: { trafico_number?: string; id?: string }[]; alertTitle: string | null }>({
     enProceso: [], urgent: [], alertTitle: null,
@@ -81,6 +84,22 @@ export default function CruzChatPage() {
       sendMessage(contextMsg)
     }
   }, [traficoContext]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // V1 · role-aware greeting: when the AsistenteButton sends a `hello`
+  // query param, render it as the assistant's opening message so every
+  // role (client/operator/owner/trafico/contabilidad/warehouse) gets a
+  // tailored first line. No API call — purely client-side seed.
+  useEffect(() => {
+    if (helloMessage && messages.length === 0 && !traficoContext) {
+      const greeting: Message = {
+        id: crypto.randomUUID(),
+        role: 'assistant',
+        content: helloMessage,
+      }
+      setMessages([greeting])
+    }
+  }, [helloMessage, traficoContext]) // eslint-disable-line react-hooks/exhaustive-deps
+  void roleCtx
 
   const sendMessage = useCallback(async (text: string) => {
     if (!text.trim() || loading) return

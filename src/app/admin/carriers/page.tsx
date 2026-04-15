@@ -12,7 +12,8 @@ export const runtime = 'nodejs'
 export default async function AdminCarriersPage() {
   const cookieStore = await cookies()
   const role = cookieStore.get('user_role')?.value ?? ''
-  if (!['admin', 'broker', 'operator'].includes(role)) redirect('/login')
+  // V1 · admin/broker only — operators don't manage carrier catalog
+  if (!['admin', 'broker'].includes(role)) redirect('/login')
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

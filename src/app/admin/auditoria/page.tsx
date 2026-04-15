@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
+import { verifySession } from '@/lib/session'
 import { AguilaMark } from '@/components/brand/AguilaMark'
 import { AguilaWordmark } from '@/components/brand/AguilaWordmark'
 import { AuditoriaClient } from './_components/AuditoriaClient'
@@ -8,10 +9,11 @@ export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
 export default async function AuditoriaPage() {
+  // V1 · use signed session (consistency with rest of admin surfaces)
   const c = await cookies()
-  const role = c.get('user_role')?.value ?? ''
-  if (!role) redirect('/login')
-  if (!['admin', 'broker'].includes(role)) redirect('/')
+  const session = await verifySession(c.get('portal_session')?.value ?? '')
+  if (!session) redirect('/login')
+  if (!['admin', 'broker'].includes(session.role)) redirect('/')
 
   return (
     <main

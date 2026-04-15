@@ -19,6 +19,7 @@ import { getClienteActivity } from '@/lib/cliente/activity'
 import { bucketDailySeries, daysAgo } from '@/lib/cockpit/fetch'
 import { softCount, softData, softFirst } from '@/lib/cockpit/safe-query'
 import { CockpitInicio, MensajeriaFeed, CockpitErrorCard, CockpitSkeleton, ActividadStrip, CapabilityCardGrid, TimelineFeed, type CockpitHeroKPI, type ActividadStripItem } from '@/components/aguila'
+import { AsistenteButton } from '@/components/aguila/AsistenteButton'
 import { ClienteEstado } from '@/components/cliente/ClienteEstado'
 import { fetchClientMensajeriaFeed, mensajeriaClientEnabled } from '@/lib/mensajeria/feed'
 import { parseMonthParam } from '@/lib/cockpit/month-window'
@@ -276,19 +277,23 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
   const capabilitySlot = <CapabilityCardGrid counts={capabilityCounts} />
 
   return (
-    <CockpitInicio
-      role="client"
-      name={companyName || 'Tu portal'}
-      companyName={companyName || 'Tu portal'}
-      heroKPIs={heroKPIs}
-      navCounts={navCounts}
-      estadoSections={estadoSections}
-      actividadSlot={actividadSlot}
-      actividadStripSlot={actividadStripSlot}
-      capabilitySlot={capabilitySlot}
-      summaryLine={summaryLine}
-      pulseSignal={pulseSignal}
-      month={month}
-    />
+    <>
+      <CockpitInicio
+        role="client"
+        name={companyName || 'Tu portal'}
+        companyName={companyName || 'Tu portal'}
+        heroKPIs={heroKPIs}
+        navCounts={navCounts}
+        estadoSections={estadoSections}
+        actividadSlot={actividadSlot}
+        actividadStripSlot={actividadStripSlot}
+        capabilitySlot={capabilitySlot}
+        summaryLine={summaryLine}
+        pulseSignal={pulseSignal}
+        month={month}
+      />
+      {/* V1 marathon — fixed-position Asistente on every cockpit */}
+      <AsistenteButton roleTag="client" />
+    </>
   )
 }

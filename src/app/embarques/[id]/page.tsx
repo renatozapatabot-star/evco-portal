@@ -22,21 +22,17 @@ import type {
  * (trafico, events, expediente, partidas, notes, users, company),
  * then passes props into the <TraficoDetail> client shell.
  *
- * Legacy escape hatch: `?legacy=1` redirects to
- * `/embarques/[id]/legacy` — bookmarkable fallback while operators
- * adopt the new surface.
+ * V1 — legacy escape-hatch removed (marathon batch 1). The new surface
+ * is the only surface. Pre-existing bookmarks with `?legacy=1` now render
+ * the standard detail page.
  */
 export default async function TraficoDetailPage({
   params,
-  searchParams,
 }: {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ legacy?: string }>
 }) {
-  const [{ id: rawId }, sp] = await Promise.all([params, searchParams])
+  const { id: rawId } = await params
   const traficoId = decodeURIComponent(rawId).trim()
-
-  if (sp?.legacy === '1') redirect(`/embarques/${encodeURIComponent(traficoId)}/legacy`)
 
   const cookieStore = await cookies()
   const session = await verifySession(cookieStore.get('portal_session')?.value ?? '')

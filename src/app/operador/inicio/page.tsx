@@ -10,6 +10,7 @@ import { auditLogAvailable } from '@/lib/cockpit/table-availability'
 import { fetchOperatorMensajeriaFeed, fetchEscalatedThreads } from '@/lib/mensajeria/feed'
 import { parseMonthParam } from '@/lib/cockpit/month-window'
 import { CockpitSkeleton } from '@/components/aguila'
+import { AsistenteButton } from '@/components/aguila/AsistenteButton'
 import type { TraficoRow, DecisionRow, SystemStatus } from './types'
 import type { AuditRow } from '@/lib/cockpit/audit-format'
 
@@ -277,6 +278,7 @@ async function loadOperatorCockpit(opId: string, opName: string, month: string) 
   const inTransit = kpis.activos > 0
 
   return (
+    <>
     <InicioClient
       operatorName={opName}
       operatorId={opId || ''}
@@ -309,5 +311,7 @@ async function loadOperatorCockpit(opId: string, opName: string, month: string) 
       pulseSignal={inTransit}
       month={month}
     />
+    <AsistenteButton roleTag="operator" />
+    </>
   )
 }

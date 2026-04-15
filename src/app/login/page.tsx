@@ -199,7 +199,7 @@ function LoginContent() {
           width: 400px;
           height: 400px;
           transform: translate(-50%, -50%);
-          background: radial-gradient(circle, rgba(201,167,74,0.14) 0%, transparent 65%);
+          background: radial-gradient(circle, rgba(192,197,206,0.14) 0%, transparent 65%);
           pointer-events: none;
           z-index: 0;
           will-change: transform;
@@ -263,7 +263,7 @@ function LoginContent() {
         }
         .login-eagle {
           margin-bottom: 16px;
-          filter: drop-shadow(0 0 28px rgba(201,167,74,0.32));
+          filter: drop-shadow(0 0 28px rgba(192,197,206,0.32));
         }
         .login-wordmark {
           margin-bottom: 12px;

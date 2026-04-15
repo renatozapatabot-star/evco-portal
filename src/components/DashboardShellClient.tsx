@@ -208,7 +208,7 @@ export default function DashboardShellClient({ children }: Props) {
         onLogout={() => { window.location.href = '/api/auth/logout' }}
         mobileOpen={mobileOpen}
         onMobileToggle={() => setMobileOpen(v => !v)}
-        hideSidebar={portalType === 'client'}
+        hideSidebar={true}
       >
         <LoadingBar />
         <Suspense fallback={null}>

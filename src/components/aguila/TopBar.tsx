@@ -2,9 +2,8 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Search, Menu, LogOut, ChevronLeft } from 'lucide-react';
+import { Search, Menu, LogOut, ChevronLeft, Home } from 'lucide-react';
 import NotificationBell from '@/components/NotificationBell';
-import { AguilaMark } from '@/components/brand/AguilaMark';
 import { TopbarStatus } from './TopbarStatus';
 
 interface TopBarProps {
@@ -59,9 +58,22 @@ export default function TopBar({
           </Link>
         )}
 
-        {/* Logo — eagle mark (wordmark is reserved for login + auth screens). */}
-        <Link href="/" className="topbar-logo" aria-label="ZAPATA AI inicio">
-          <AguilaMark size={28} tone="silver" />
+        {/* Home link — plain icon, no brand mark on authenticated surfaces.
+            Identity lives on the login hero only (per 2026-04-15 audit). */}
+        <Link
+          href="/"
+          className="topbar-logo"
+          aria-label="Inicio"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: 36, height: 36,
+            borderRadius: 10,
+            color: 'rgba(255,255,255,0.7)',
+          }}
+        >
+          <Home size={18} strokeWidth={1.8} />
         </Link>
 
         {/* Wide search bar (desktop) */}
@@ -130,8 +142,20 @@ export default function TopBar({
           <Menu size={20} />
         </button>
       )}
-      <Link href="/" className="topbar-logo" aria-label="ZAPATA AI inicio">
-        <AguilaMark size={28} tone="silver" />
+      <Link
+        href="/"
+        className="topbar-logo"
+        aria-label="Inicio"
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: 36, height: 36,
+          borderRadius: 10,
+          color: 'rgba(255,255,255,0.7)',
+        }}
+      >
+        <Home size={18} strokeWidth={1.8} />
       </Link>
       <div style={{ flex: 1 }} />
       <button

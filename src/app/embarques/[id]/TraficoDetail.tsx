@@ -16,7 +16,8 @@ import {
 import { useTrack } from '@/lib/telemetry/useTrack'
 import { fmtUSDCompact } from '@/lib/format-utils'
 import { TraficoQuickActions } from '@/components/traficos/TraficoQuickActions'
-import { ChainView, type ChainNode } from '@/components/aguila'
+import { ChainView, type ChainNode, type ChainNodeKind } from '@/components/aguila'
+import { ChainVincularModal } from '@/components/aguila/ChainVincularModal'
 import { PageOpenTracker } from './PageOpenTracker'
 import { Header } from './Header'
 import { HeroStrip, type HeroTileSpec } from './HeroStrip'
@@ -95,6 +96,17 @@ export function TraficoDetail(props: TraficoDetailProps) {
     : props.missingDocs.length > 0
       ? RED
       : TEXT_PRIMARY
+
+  // V1 · Chain tap-to-link state
+  const [vincularOpen, setVincularOpen] = useState(false)
+  const [vincularKind, setVincularKind] = useState<ChainNodeKind | null>(null)
+  // Each ChainNode in props.chain gets its handler wired at render time
+  const chainWithVincular: ChainNode[] = props.chain.map((node) => ({
+    ...node,
+    onVincular: node.status === 'missing' && node.kind !== 'trafico'
+      ? (kind) => { setVincularKind(kind); setVincularOpen(true) }
+      : undefined,
+  }))
 
   const [daysActive, setDaysActive] = useState<number | null>(null)
   useEffect(() => {
@@ -251,8 +263,19 @@ export function TraficoDetail(props: TraficoDetailProps) {
       >
         <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: 16 }}>
           <ChainView
-            nodes={props.chain}
+            nodes={chainWithVincular}
             ariaLabel={`Cadena documental de ${props.traficoId}`}
+          />
+          <ChainVincularModal
+            open={vincularOpen}
+            kind={vincularKind}
+            traficoId={props.traficoId}
+            onClose={() => setVincularOpen(false)}
+            onLinked={() => {
+              // Refresh chain by reloading — the simplest correct behavior.
+              // A future optimistic update can hydrate the node locally.
+              if (typeof window !== 'undefined') window.location.reload()
+            }}
           />
           <div
             style={{

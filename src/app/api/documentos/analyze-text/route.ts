@@ -12,8 +12,18 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import { createClient } from '@supabase/supabase-js'
 import { verifySession } from '@/lib/session'
 import { rateLimit } from '@/lib/rate-limit'
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+)
+
+// Sonnet 4.6 pricing — input $3/1M, output $15/1M (April 2026)
+const SONNET_IN_PER_K = 0.003
+const SONNET_OUT_PER_K = 0.015
 import {
   runCompleteness,
   labelForDocType,
@@ -182,6 +192,7 @@ export async function POST(request: NextRequest) {
 
   const client = new Anthropic({ apiKey })
   let extraction: VisionExtraction | null = null
+  const started = Date.now()
   try {
     const response = await client.messages.create({
       model: MODEL,
@@ -202,6 +213,16 @@ export async function POST(request: NextRequest) {
       .map((b) => b.text)
       .join('')
     extraction = parseExtraction(raw)
+    // V1 cost tracking — every Anthropic call logs
+    void supabase.from('api_cost_log').insert({
+      model: MODEL,
+      input_tokens: response.usage?.input_tokens ?? 0,
+      output_tokens: response.usage?.output_tokens ?? 0,
+      cost_usd: ((response.usage?.input_tokens ?? 0) * SONNET_IN_PER_K + (response.usage?.output_tokens ?? 0) * SONNET_OUT_PER_K) / 1000,
+      action: 'analyze_text',
+      client_code: session.companyId,
+      latency_ms: Date.now() - started,
+    }).then(() => {}, () => {})
   } catch {
     return NextResponse.json({
       data: {

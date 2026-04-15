@@ -284,7 +284,7 @@ function ColaCard({ colaCount }: { colaCount: number }) {
             background: GOLD,
             color: '#0D0D0C',
             fontWeight: 700,
-            fontSize: 13,
+            fontSize: 'var(--aguila-fs-body)',
             textDecoration: 'none',
             width: '100%',
           }}
@@ -292,7 +292,7 @@ function ColaCard({ colaCount }: { colaCount: number }) {
           Ver cola →
         </Link>
       ) : (
-        <p style={{ fontSize: 12, color: TEXT_SECONDARY, margin: 0 }}>
+        <p style={{ fontSize: 'var(--aguila-fs-body)', color: TEXT_SECONDARY, margin: 0 }}>
           Sin excepciones pendientes.
         </p>
       )}
@@ -335,7 +335,7 @@ function FacturasBancoCard({ enBanco, asignadasHoy }: { enBanco: number; asignad
           }}>
             {enBanco}
           </div>
-          <div style={{ fontSize: 11, color: TEXT_SECONDARY, marginTop: 4 }}>en banco</div>
+          <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_SECONDARY, marginTop: 4 }}>en banco</div>
         </div>
         <div style={{ width: 1, alignSelf: 'stretch', background: BORDER }} />
         <div>
@@ -349,7 +349,7 @@ function FacturasBancoCard({ enBanco, asignadasHoy }: { enBanco: number; asignad
           }}>
             {asignadasHoy}
           </div>
-          <div style={{ fontSize: 11, color: TEXT_SECONDARY, marginTop: 4 }}>asignadas hoy</div>
+          <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_SECONDARY, marginTop: 4 }}>asignadas hoy</div>
         </div>
       </div>
       <Link
@@ -364,7 +364,7 @@ function FacturasBancoCard({ enBanco, asignadasHoy }: { enBanco: number; asignad
           background: enBanco > 0 ? GOLD : 'rgba(148,163,184,0.12)',
           color: enBanco > 0 ? '#0D0D0C' : TEXT_SECONDARY,
           fontWeight: 700,
-          fontSize: 13,
+          fontSize: 'var(--aguila-fs-body)',
           textDecoration: 'none',
           width: '100%',
         }}
@@ -418,7 +418,7 @@ function MonitorCard({ activos, rojo }: { activos: number; rojo: number }) {
           }}>
             {activos}
           </div>
-          <div style={{ fontSize: 11, color: TEXT_SECONDARY, marginTop: 4 }}>activos</div>
+          <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_SECONDARY, marginTop: 4 }}>activos</div>
         </div>
         <div style={{ width: 1, alignSelf: 'stretch', background: BORDER }} />
         <div>
@@ -432,7 +432,7 @@ function MonitorCard({ activos, rojo }: { activos: number; rojo: number }) {
           }}>
             {rojo}
           </div>
-          <div style={{ fontSize: 11, color: TEXT_SECONDARY, marginTop: 4 }}>requieren atención</div>
+          <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_SECONDARY, marginTop: 4 }}>requieren atención</div>
         </div>
       </div>
       <Link
@@ -447,7 +447,7 @@ function MonitorCard({ activos, rojo }: { activos: number; rojo: number }) {
           background: rojo > 0 ? '#DC2626' : (activos > 0 ? GOLD : 'rgba(148,163,184,0.12)'),
           color: rojo > 0 || activos > 0 ? '#0D0D0C' : TEXT_SECONDARY,
           fontWeight: 700,
-          fontSize: 13,
+          fontSize: 'var(--aguila-fs-body)',
           textDecoration: 'none',
           width: '100%',
         }}
@@ -499,7 +499,7 @@ function ClasificacionesCard({ pendientes, aprobadasMes }: { pendientes: number;
           }}>
             {pendientes}
           </div>
-          <div style={{ fontSize: 11, color: TEXT_SECONDARY, marginTop: 4 }}>pendientes</div>
+          <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_SECONDARY, marginTop: 4 }}>pendientes</div>
         </div>
         <div style={{ width: 1, alignSelf: 'stretch', background: BORDER }} />
         <div>
@@ -513,7 +513,7 @@ function ClasificacionesCard({ pendientes, aprobadasMes }: { pendientes: number;
           }}>
             {aprobadasMes}
           </div>
-          <div style={{ fontSize: 11, color: TEXT_SECONDARY, marginTop: 4 }}>aprobadas este mes</div>
+          <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_SECONDARY, marginTop: 4 }}>aprobadas este mes</div>
         </div>
       </div>
       <Link
@@ -528,7 +528,7 @@ function ClasificacionesCard({ pendientes, aprobadasMes }: { pendientes: number;
           background: pendientes > 0 ? GOLD : 'rgba(148,163,184,0.12)',
           color: pendientes > 0 ? '#0D0D0C' : TEXT_SECONDARY,
           fontWeight: 700,
-          fontSize: 13,
+          fontSize: 'var(--aguila-fs-body)',
           textDecoration: 'none',
           width: '100%',
         }}
@@ -581,7 +581,7 @@ function CatalogoCard({ total, vencimientosPronto }: { total: number; vencimient
           }}>
             {total}
           </div>
-          <div style={{ fontSize: 11, color: TEXT_SECONDARY, marginTop: 4 }}>productos</div>
+          <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_SECONDARY, marginTop: 4 }}>productos</div>
         </div>
         <div style={{ width: 1, alignSelf: 'stretch', background: BORDER }} />
         <div>
@@ -595,7 +595,7 @@ function CatalogoCard({ total, vencimientosPronto }: { total: number; vencimient
           }}>
             {vencimientosPronto}
           </div>
-          <div style={{ fontSize: 11, color: TEXT_SECONDARY, marginTop: 4 }}>vencen ≤30d</div>
+          <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_SECONDARY, marginTop: 4 }}>vencen ≤30d</div>
         </div>
       </div>
       <Link
@@ -610,7 +610,7 @@ function CatalogoCard({ total, vencimientosPronto }: { total: number; vencimient
           background: vencimientosPronto > 0 ? '#DC2626' : (total > 0 ? GOLD : 'rgba(148,163,184,0.12)'),
           color: vencimientosPronto > 0 || total > 0 ? '#0D0D0C' : TEXT_SECONDARY,
           fontWeight: 700,
-          fontSize: 13,
+          fontSize: 'var(--aguila-fs-body)',
           textDecoration: 'none',
           width: '100%',
         }}
@@ -662,7 +662,7 @@ function TransportistasCard({ activos, top }: { activos: number; top: number }) 
           }}>
             {activos}
           </div>
-          <div style={{ fontSize: 11, color: TEXT_SECONDARY, marginTop: 4 }}>activos</div>
+          <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_SECONDARY, marginTop: 4 }}>activos</div>
         </div>
         <div style={{ width: 1, alignSelf: 'stretch', background: BORDER }} />
         <div>
@@ -676,7 +676,7 @@ function TransportistasCard({ activos, top }: { activos: number; top: number }) 
           }}>
             {top}
           </div>
-          <div style={{ fontSize: 11, color: TEXT_SECONDARY, marginTop: 4 }}>★★★★+</div>
+          <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_SECONDARY, marginTop: 4 }}>★★★★+</div>
         </div>
       </div>
       <Link
@@ -691,7 +691,7 @@ function TransportistasCard({ activos, top }: { activos: number; top: number }) 
           background: activos > 0 ? GOLD : 'rgba(148,163,184,0.12)',
           color: activos > 0 ? '#0D0D0C' : TEXT_SECONDARY,
           fontWeight: 700,
-          fontSize: 13,
+          fontSize: 'var(--aguila-fs-body)',
           textDecoration: 'none',
           width: '100%',
         }}
@@ -743,7 +743,7 @@ function ReportesEcontaCard({ pendientes, exportadasHoy }: { pendientes: number;
           }}>
             {pendientes}
           </div>
-          <div style={{ fontSize: 11, color: TEXT_SECONDARY, marginTop: 4 }}>por exportar</div>
+          <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_SECONDARY, marginTop: 4 }}>por exportar</div>
         </div>
         <div style={{ width: 1, alignSelf: 'stretch', background: BORDER }} />
         <div>
@@ -757,7 +757,7 @@ function ReportesEcontaCard({ pendientes, exportadasHoy }: { pendientes: number;
           }}>
             {exportadasHoy}
           </div>
-          <div style={{ fontSize: 11, color: TEXT_SECONDARY, marginTop: 4 }}>exportadas hoy</div>
+          <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_SECONDARY, marginTop: 4 }}>exportadas hoy</div>
         </div>
       </div>
       <Link
@@ -772,7 +772,7 @@ function ReportesEcontaCard({ pendientes, exportadasHoy }: { pendientes: number;
           background: GOLD,
           color: '#0D0D0C',
           fontWeight: 700,
-          fontSize: 13,
+          fontSize: 'var(--aguila-fs-body)',
           textDecoration: 'none',
           width: '100%',
         }}
@@ -801,7 +801,7 @@ function DecisionPill({ label }: { label: string | null }) {
   const c = (label && DECISION_PILL[label]) || { bg: 'rgba(148,163,184,0.1)', fg: TEXT_MUTED, label: label || '—' }
   return (
     <span style={{
-      fontSize: 10, fontWeight: 600,
+      fontSize: 'var(--aguila-fs-label)', fontWeight: 600,
       padding: '2px 8px', borderRadius: 20,
       background: c.bg, color: c.fg,
       flexShrink: 0, whiteSpace: 'nowrap',

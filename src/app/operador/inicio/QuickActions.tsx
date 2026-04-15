@@ -96,7 +96,7 @@ export function QuickActions() {
               border: `1px solid ${BORDER}`,
               borderRadius: 14,
               color: TEXT_PRIMARY,
-              fontSize: 14,
+              fontSize: 'var(--aguila-fs-section)',
               outline: 'none',
             }}
             onKeyDown={(e) => {
@@ -155,13 +155,13 @@ export function QuickActions() {
                         style={{
                           fontFamily: 'var(--font-mono)',
                           fontWeight: 700,
-                          fontSize: 13,
+                          fontSize: 'var(--aguila-fs-body)',
                         }}
                       >
                         {r.title}
                       </span>
                     </div>
-                    <div style={{ color: TEXT_SECONDARY, fontSize: 12, marginTop: 2, marginLeft: 82 }}>
+                    <div style={{ color: TEXT_SECONDARY, fontSize: 'var(--aguila-fs-body)', marginTop: 2, marginLeft: 82 }}>
                       {r.sub}
                     </div>
                   </a>
@@ -205,7 +205,7 @@ function QAButton({ href, icon, label, primary }: { href: string; icon: React.Re
         border: `1px solid ${primary ? GOLD : BORDER}`,
         color: primary ? '#0D0D0C' : TEXT_PRIMARY,
         fontWeight: 700,
-        fontSize: 13,
+        fontSize: 'var(--aguila-fs-body)',
         textDecoration: 'none',
         whiteSpace: 'nowrap',
       }}

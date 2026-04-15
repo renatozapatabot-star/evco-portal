@@ -177,6 +177,7 @@ export async function POST(req: NextRequest) {
       .join('\n')
 
     let answer = finalText || 'No pude generar una respuesta.'
+    const synthStarted = Date.now()
     try {
       const synth = await anthropic.messages.create({
         model: MODEL_SYNTHESIS,
@@ -189,6 +190,18 @@ export async function POST(req: NextRequest) {
       })
       const block = synth.content?.[0]
       if (block && block.type === 'text') answer = block.text.trim()
+      // V1 cost tracking — Sonnet synthesis is the dominant token spend per ask
+      const inT = synth.usage?.input_tokens ?? 0
+      const outT = synth.usage?.output_tokens ?? 0
+      void supabase.from('api_cost_log').insert({
+        model: MODEL_SYNTHESIS,
+        input_tokens: inT,
+        output_tokens: outT,
+        cost_usd: (inT * 0.003 + outT * 0.015) / 1000,
+        action: 'cruz_ai_synthesis',
+        client_code: session.companyId,
+        latency_ms: Date.now() - synthStarted,
+      }).then(() => {}, () => {})
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err)
       if (msg.includes('credit balance') || msg.includes('billing')) {

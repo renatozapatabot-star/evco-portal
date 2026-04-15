@@ -79,7 +79,7 @@ export default function ResultadosPage() {
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', background: 'var(--bg-main)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ fontSize: 14, color: 'var(--text-muted)' }}>Calculando resultados...</div>
+        <div style={{ fontSize: 'var(--aguila-fs-section)', color: 'var(--text-muted)' }}>Calculando resultados...</div>
       </div>
     )
   }
@@ -118,7 +118,7 @@ export default function ResultadosPage() {
       <div style={{ maxWidth: 800, margin: '0 auto', padding: isMobile ? '32px 16px' : '60px 24px' }}>
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: 48 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'var(--gold)', marginBottom: 16 }}>
+          <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'var(--gold)', marginBottom: 16 }}>
             Resultados verificados
           </div>
           <h1 style={{ fontSize: isMobile ? 26 : 36, fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1.2, margin: 0 }}>
@@ -144,7 +144,7 @@ export default function ResultadosPage() {
               <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-secondary)', marginTop: 8 }}>
                 {stat.label}
               </div>
-              <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 8, fontFamily: 'var(--font-mono)' }}>
+              <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-muted)', marginTop: 8, fontFamily: 'var(--font-mono)' }}>
                 {stat.detail}
               </div>
             </div>
@@ -166,10 +166,10 @@ export default function ResultadosPage() {
 
         {/* Footer */}
         <div style={{ textAlign: 'center', borderTop: '1px solid var(--border)', paddingTop: 24 }}>
-          <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>
+          <p style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-muted)' }}>
             Renato Zapata & Company · Patente 3596 · Aduana 240 · Est. 1941
           </p>
-          <p style={{ fontSize: 11, color: 'var(--text-disabled)' }}>
+          <p style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-disabled)' }}>
             Datos actualizados automáticamente · Última actualización: {new Date().toLocaleDateString('es-MX', { timeZone: 'America/Chicago' })}
           </p>
         </div>

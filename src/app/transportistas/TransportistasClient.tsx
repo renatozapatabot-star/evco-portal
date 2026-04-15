@@ -128,14 +128,14 @@ export function TransportistasClient({ initialRows }: { initialRows: CarrierRow[
               border: `1px solid ${tab === t.key ? '#C0C5CE' : BORDER}`,
               background: tab === t.key ? 'rgba(192,197,206,0.14)' : 'transparent',
               color: tab === t.key ? TEXT_PRIMARY : TEXT_SECONDARY,
-              fontSize: 13, fontWeight: 600, cursor: 'pointer',
+              fontSize: 'var(--aguila-fs-body)', fontWeight: 600, cursor: 'pointer',
             }}
           >
             {t.label}
             <span style={{
               marginLeft: 8, padding: '1px 8px', borderRadius: 999,
               background: 'rgba(255,255,255,0.08)', fontFamily: 'var(--font-jetbrains-mono), monospace',
-              fontSize: 11, color: TEXT_SECONDARY,
+              fontSize: 'var(--aguila-fs-meta)', color: TEXT_SECONDARY,
             }}>
               {counts[t.key]}
             </span>
@@ -148,7 +148,7 @@ export function TransportistasClient({ initialRows }: { initialRows: CarrierRow[
           onChange={(e) => setQuery(e.target.value)}
           style={{
             flex: '1 1 280px', minWidth: 200,
-            padding: '10px 14px', fontSize: 13,
+            padding: '10px 14px', fontSize: 'var(--aguila-fs-body)',
             borderRadius: 10, border: `1px solid ${BORDER}`,
             background: 'rgba(255,255,255,0.04)', color: TEXT_PRIMARY,
           }}
@@ -165,7 +165,7 @@ export function TransportistasClient({ initialRows }: { initialRows: CarrierRow[
             gridTemplateColumns: 'minmax(0, 2fr) 100px 100px 90px 60px',
             gap: 12, padding: '12px 16px',
             borderBottom: `1px solid ${BORDER}`,
-            fontSize: 10, fontWeight: 700, textTransform: 'uppercase',
+            fontSize: 'var(--aguila-fs-label)', fontWeight: 700, textTransform: 'uppercase',
             letterSpacing: '0.08em', color: TEXT_MUTED,
           }}>
             <div>Nombre</div>
@@ -175,7 +175,7 @@ export function TransportistasClient({ initialRows }: { initialRows: CarrierRow[
             <div style={{ textAlign: 'right' }}>—</div>
           </div>
           {filtered.length === 0 ? (
-            <div style={{ padding: 32, textAlign: 'center', color: TEXT_MUTED, fontSize: 13 }}>
+            <div style={{ padding: 32, textAlign: 'center', color: TEXT_MUTED, fontSize: 'var(--aguila-fs-body)' }}>
               Sin transportistas que coincidan.
             </div>
           ) : (
@@ -191,7 +191,7 @@ export function TransportistasClient({ initialRows }: { initialRows: CarrierRow[
                   background: selectedId === c.id ? 'rgba(192,197,206,0.08)' : 'transparent',
                   border: 'none',
                   borderLeft: selectedId === c.id ? '2px solid #C0C5CE' : '2px solid transparent',
-                  color: TEXT_PRIMARY, fontSize: 13, textAlign: 'left', cursor: 'pointer',
+                  color: TEXT_PRIMARY, fontSize: 'var(--aguila-fs-body)', textAlign: 'left', cursor: 'pointer',
                   alignItems: 'center', width: '100%',
                   opacity: c.active ? 1 : 0.5,
                 }}
@@ -201,23 +201,23 @@ export function TransportistasClient({ initialRows }: { initialRows: CarrierRow[
                     {c.name}
                   </div>
                   {c.area_servicio && (
-                    <div style={{ fontSize: 11, color: TEXT_SECONDARY, marginTop: 2 }}>
+                    <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_SECONDARY, marginTop: 2 }}>
                       {c.area_servicio}
                     </div>
                   )}
                 </div>
-                <div style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', fontSize: 11, color: TEXT_SECONDARY }}>
+                <div style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', fontSize: 'var(--aguila-fs-meta)', color: TEXT_SECONDARY }}>
                   {tab === 'foreign'
                     ? `${c.dot_number ?? '—'}${c.mc_number ? ` · MC${c.mc_number}` : ''}`
                     : `${c.rfc ?? '—'}`}
                 </div>
-                <div style={{ fontSize: 11, color: TEXT_SECONDARY }}>
+                <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_SECONDARY }}>
                   {(c.tipos_trailer ?? []).slice(0, 2).join(', ') || '—'}
                 </div>
                 <div>
                   <StarRating value={c.calificacion} />
                 </div>
-                <div style={{ textAlign: 'right', fontSize: 11, color: c.active ? '#86EFAC' : TEXT_MUTED }}>
+                <div style={{ textAlign: 'right', fontSize: 'var(--aguila-fs-meta)', color: c.active ? '#86EFAC' : TEXT_MUTED }}>
                   {c.active ? '●' : '○'}
                 </div>
               </button>
@@ -230,17 +230,17 @@ export function TransportistasClient({ initialRows }: { initialRows: CarrierRow[
           padding: 20, backdropFilter: `blur(${GLASS_BLUR})`, boxShadow: GLASS_SHADOW,
         }}>
           {!selectedId ? (
-            <div style={{ color: TEXT_MUTED, fontSize: 13 }}>
+            <div style={{ color: TEXT_MUTED, fontSize: 'var(--aguila-fs-body)' }}>
               Selecciona un transportista para ver su historial de 90 días.
             </div>
           ) : historyLoading ? (
-            <div style={{ color: TEXT_MUTED, fontSize: 13 }}>Cargando historial…</div>
+            <div style={{ color: TEXT_MUTED, fontSize: 'var(--aguila-fs-body)' }}>Cargando historial…</div>
           ) : !history ? (
-            <div style={{ color: TEXT_MUTED, fontSize: 13 }}>Sin historial disponible.</div>
+            <div style={{ color: TEXT_MUTED, fontSize: 'var(--aguila-fs-body)' }}>Sin historial disponible.</div>
           ) : (
             <>
               <div style={{
-                fontSize: 10, fontWeight: 700, textTransform: 'uppercase',
+                fontSize: 'var(--aguila-fs-label)', fontWeight: 700, textTransform: 'uppercase',
                 letterSpacing: '0.08em', color: TEXT_MUTED,
               }}>
                 Últimos 90 días
@@ -251,20 +251,20 @@ export function TransportistasClient({ initialRows }: { initialRows: CarrierRow[
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginBottom: 16 }}>
                 <div>
-                  <div style={{ fontSize: 11, color: TEXT_SECONDARY }}>Tráficos</div>
+                  <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_SECONDARY }}>Tráficos</div>
                   <div style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', fontSize: 22, fontWeight: 800, color: TEXT_PRIMARY }}>
                     {history.traficos_90d}
                   </div>
                 </div>
                 <div>
-                  <div style={{ fontSize: 11, color: TEXT_SECONDARY }}>Cruzados</div>
+                  <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_SECONDARY }}>Cruzados</div>
                   <div style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', fontSize: 22, fontWeight: 800, color: TEXT_PRIMARY }}>
                     {fmtPct(history.on_time_rate)}
                   </div>
                 </div>
               </div>
 
-              <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: TEXT_MUTED, marginBottom: 8 }}>
+              <div style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: TEXT_MUTED, marginBottom: 8 }}>
                 Tráficos recientes
               </div>
               {history.recent.length === 0 ? (

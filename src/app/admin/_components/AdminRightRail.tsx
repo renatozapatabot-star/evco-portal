@@ -40,7 +40,7 @@ export function AdminRightRail({ pipeline, activity, team, isLive }: AdminRightR
               padding: '6px 0',
             }}>
               <span style={{
-                fontSize: 11,
+                fontSize: 'var(--aguila-fs-meta)',
                 color: TEXT_SECONDARY,
                 width: 100,
                 flexShrink: 0,
@@ -66,7 +66,7 @@ export function AdminRightRail({ pipeline, activity, team, isLive }: AdminRightR
                 }} />
               </div>
               <span style={{
-                fontSize: 11,
+                fontSize: 'var(--aguila-fs-meta)',
                 fontFamily: 'var(--font-mono)',
                 color: TEXT_PRIMARY,
                 fontWeight: 700,
@@ -84,7 +84,7 @@ export function AdminRightRail({ pipeline, activity, team, isLive }: AdminRightR
       {/* Live activity */}
       <RailCard title="Actividad en vivo" dot={isLive}>
         {activity.length === 0 ? (
-          <div style={{ fontSize: 11, color: TEXT_MUTED, padding: '12px 0', textAlign: 'center' }}>
+          <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED, padding: '12px 0', textAlign: 'center' }}>
             Sin actividad reciente
           </div>
         ) : (
@@ -97,7 +97,7 @@ export function AdminRightRail({ pipeline, activity, team, isLive }: AdminRightR
               borderBottom: `1px solid ${BORDER}`,
             }}>
               <span style={{
-                fontSize: 10,
+                fontSize: 'var(--aguila-fs-label)',
                 fontFamily: 'var(--font-mono)',
                 color: TEXT_MUTED,
                 flexShrink: 0,
@@ -106,10 +106,10 @@ export function AdminRightRail({ pipeline, activity, team, isLive }: AdminRightR
                 {fmtDateTime(evt.created_at).split(', ')[1] || fmtDateTime(evt.created_at)}
               </span>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <span style={{ fontSize: 11, fontWeight: 600, color: TEXT_PRIMARY }}>
+                <span style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, color: TEXT_PRIMARY }}>
                   {evt.operator_name}
                 </span>
-                <span style={{ fontSize: 11, color: GOLD, marginLeft: 6 }}>
+                <span style={{ fontSize: 'var(--aguila-fs-meta)', color: GOLD, marginLeft: 6 }}>
                   {ACTION_LABELS[evt.action_type] || evt.action_type}
                 </span>
               </div>
@@ -121,7 +121,7 @@ export function AdminRightRail({ pipeline, activity, team, isLive }: AdminRightR
       {/* Active team */}
       <RailCard title="Equipo activo">
         {!hasTeam ? (
-          <div style={{ fontSize: 11, color: TEXT_MUTED, padding: '12px 0', textAlign: 'center' }}>
+          <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED, padding: '12px 0', textAlign: 'center' }}>
             Sin operadores conectados
           </div>
         ) : (
@@ -142,7 +142,7 @@ export function AdminRightRail({ pipeline, activity, team, isLive }: AdminRightR
               <span style={{ fontSize: 12, fontWeight: 600, color: TEXT_PRIMARY, flex: 1 }}>
                 {member.full_name}
               </span>
-              <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: TEXT_MUTED }}>
+              <span style={{ fontSize: 'var(--aguila-fs-label)', fontFamily: 'var(--font-mono)', color: TEXT_MUTED }}>
                 {member.actionsToday} hoy
               </span>
             </div>
@@ -179,7 +179,7 @@ function RailCard({ title, children, dot }: { title: string; children: React.Rea
           }} />
         )}
         <span style={{
-          fontSize: 10,
+          fontSize: 'var(--aguila-fs-label)',
           fontWeight: 700,
           textTransform: 'uppercase',
           letterSpacing: '0.08em',

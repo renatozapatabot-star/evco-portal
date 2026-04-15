@@ -62,10 +62,10 @@ export default function FacturacionPage() {
     <div style={{ padding: '24px 16px', maxWidth: 1000, margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
         <div>
-          <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
+          <h1 style={{ fontSize: 'var(--aguila-fs-title)', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
             {isBroker ? 'Facturación' : 'Mis Facturas'}
           </h1>
-          <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '4px 0 0' }}>
+          <p style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)', margin: '4px 0 0' }}>
             {invoices.length} factura{invoices.length !== 1 ? 's' : ''} · {pending.length > 0 ? `${fmtMXN(totalPending)} pendiente` : 'Todo al día'}
           </p>
         </div>
@@ -93,12 +93,12 @@ export default function FacturacionPage() {
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                   }}>
                   <div>
-                    <div style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>{inv.invoice_number}</div>
-                    <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2 }}>{inv.company_id} · {fmtDateTime(inv.created_at)}</div>
+                    <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>{inv.invoice_number}</div>
+                    <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-secondary)', marginTop: 2 }}>{inv.company_id} · {fmtDateTime(inv.created_at)}</div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontFamily: 'var(--font-mono)', fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{fmtMXN(inv.total)}</div>
-                    <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 4, background: st.bg, color: st.color }}>{st.label}</span>
+                    <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: 'var(--text-primary)' }}>{fmtMXN(inv.total)}</div>
+                    <span style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 700, padding: '2px 8px', borderRadius: 4, background: st.bg, color: st.color }}>{st.label}</span>
                   </div>
                 </div>
               )
@@ -109,7 +109,7 @@ export default function FacturacionPage() {
           {selected && (
             <div style={{ width: isMobile ? '100%' : 400, flexShrink: 0 }}>
               <div className="card" style={{ padding: 24, position: 'sticky', top: 24 }}>
-                <div style={{ fontSize: 18, fontWeight: 800, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)', marginBottom: 4 }}>{selected.invoice_number}</div>
+                <div style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 800, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)', marginBottom: 4 }}>{selected.invoice_number}</div>
                 <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 16 }}>{selected.company_id} · Vence {selected.due_date || '—'}</div>
 
                 {/* Line items */}
@@ -135,13 +135,13 @@ export default function FacturacionPage() {
                   <span>Total</span><span style={{ fontFamily: 'var(--font-mono)' }}>{fmtMXN(selected.total)}</span>
                 </div>
 
-                {selected.notes && <div style={{ marginTop: 12, fontSize: 11, color: 'var(--text-muted)' }}>{selected.notes}</div>}
+                {selected.notes && <div style={{ marginTop: 12, fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)' }}>{selected.notes}</div>}
 
                 {isBroker && selected.status !== 'paid' && (
                   <button onClick={() => markPaid(selected.id)} style={{
                     width: '100%', marginTop: 16, padding: '12px 0', borderRadius: 8,
                     background: 'var(--success)', border: 'none', color: 'var(--bg-card)',
-                    fontSize: 13, fontWeight: 700, cursor: 'pointer', minHeight: 48,
+                    fontSize: 'var(--aguila-fs-body)', fontWeight: 700, cursor: 'pointer', minHeight: 48,
                   }}>
                     Marcar como pagada
                   </button>

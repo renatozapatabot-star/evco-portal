@@ -262,7 +262,7 @@ function TabStrip({
                 ? `2px solid ${ACCENT_SILVER}`
                 : '2px solid transparent',
               color: selected ? TEXT_PRIMARY : TEXT_MUTED,
-              fontSize: 13,
+              fontSize: 'var(--aguila-fs-body)',
               fontWeight: selected ? 700 : 500,
               letterSpacing: '0.02em',
               cursor: 'pointer',
@@ -277,7 +277,7 @@ function TabStrip({
             {meta.label}
             <span
               style={{
-                fontSize: 10,
+                fontSize: 'var(--aguila-fs-label)',
                 fontWeight: 600,
                 color: complete ? GREEN : pct > 0 ? AMBER : ACCENT_SILVER_DIM,
                 fontFamily: 'var(--font-jetbrains-mono), monospace',
@@ -345,7 +345,7 @@ function SideNav({
                 ? `2px solid ${ACCENT_SILVER}`
                 : '2px solid transparent',
               color: selected ? TEXT_PRIMARY : TEXT_MUTED,
-              fontSize: 13,
+              fontSize: 'var(--aguila-fs-body)',
               fontWeight: selected ? 700 : 500,
               cursor: 'pointer',
               textAlign: 'left',
@@ -362,7 +362,7 @@ function SideNav({
             </span>
             <span
               style={{
-                fontSize: 10,
+                fontSize: 'var(--aguila-fs-label)',
                 fontWeight: 600,
                 color: complete ? GREEN : pct > 0 ? AMBER : ACCENT_SILVER_DIM,
                 fontFamily: 'var(--font-jetbrains-mono), monospace',
@@ -459,12 +459,12 @@ function CompletenessRail({
       }}
     >
       <div>
-        <div style={{ fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase', color: TEXT_MUTED }}>
+        <div style={{ fontSize: 'var(--aguila-fs-meta)', letterSpacing: '0.08em', textTransform: 'uppercase', color: TEXT_MUTED }}>
           Completitud general
         </div>
         <div
           style={{
-            fontSize: 32,
+            fontSize: 'var(--aguila-fs-kpi-compact)',
             fontWeight: 700,
             color: overall >= 100 ? GREEN : overall >= 60 ? ACCENT_SILVER : AMBER,
             fontFamily: 'var(--font-jetbrains-mono), monospace',
@@ -504,10 +504,10 @@ function CompletenessRail({
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontSize: 13, fontWeight: 600 }}>{meta.label}</span>
+                  <span style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600 }}>{meta.label}</span>
                   <span
                     style={{
-                      fontSize: 11,
+                      fontSize: 'var(--aguila-fs-meta)',
                       fontFamily: 'var(--font-jetbrains-mono), monospace',
                       color: complete ? GREEN : pct > 0 ? AMBER : ACCENT_SILVER_DIM,
                     }}
@@ -516,12 +516,12 @@ function CompletenessRail({
                   </span>
                 </div>
                 {missing.length > 0 && (
-                  <div style={{ fontSize: 11, color: '#fca5a5', display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#fca5a5', display: 'flex', alignItems: 'center', gap: 4 }}>
                     <AlertTriangle size={12} /> Faltan {missing.length} campo(s)
                   </div>
                 )}
                 {missing.length === 0 && pct >= 100 && (
-                  <div style={{ fontSize: 11, color: GREEN, display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <div style={{ fontSize: 'var(--aguila-fs-meta)', color: GREEN, display: 'flex', alignItems: 'center', gap: 4 }}>
                     <CheckCircle2 size={12} /> Completo
                   </div>
                 )}

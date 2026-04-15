@@ -84,10 +84,10 @@ export default function ArchivosPage() {
       {/* Header */}
       <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 4px' }}>
+          <h1 style={{ fontSize: 'var(--aguila-fs-title)', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 4px' }}>
             Archivos
           </h1>
-          <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0 }}>
+          <p style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)', margin: 0 }}>
             Busca cualquier documento por nombre, tipo, embarque o contenido
           </p>
         </div>
@@ -95,7 +95,7 @@ export default function ArchivosPage() {
           href="/documentos/subir"
           style={{
             display: 'flex', alignItems: 'center', gap: 6,
-            padding: '8px 16px', borderRadius: 8, fontSize: 13, fontWeight: 600,
+            padding: '8px 16px', borderRadius: 8, fontSize: 'var(--aguila-fs-body)', fontWeight: 600,
             background: 'var(--gold)', border: 'none', color: 'var(--bg-card)',
             textDecoration: 'none', minHeight: 40,
           }}
@@ -117,7 +117,7 @@ export default function ArchivosPage() {
           style={{
             width: '100%', padding: '12px 12px 12px 36px',
             border: '1px solid var(--border)', borderRadius: 8,
-            fontSize: 14, color: 'var(--text-primary)',
+            fontSize: 'var(--aguila-fs-section)', color: 'var(--text-primary)',
             background: 'var(--bg-card)', outline: 'none',
             fontFamily: 'inherit', boxSizing: 'border-box',
           }}
@@ -183,12 +183,12 @@ export default function ArchivosPage() {
             >
               <FileText size={18} style={{ color: 'var(--gold)', flexShrink: 0 }} />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {doc.fileName || 'Sin nombre'}
                 </div>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 2, flexWrap: 'wrap' }}>
                   <span style={{
-                    fontSize: 11, padding: '1px 8px', borderRadius: 9999,
+                    fontSize: 'var(--aguila-fs-meta)', padding: '1px 8px', borderRadius: 9999,
                     background: 'rgba(196,150,60,0.1)', color: 'var(--gold-dark)',
                   }}>
                     {formatDocType(doc.docType)}
@@ -196,13 +196,13 @@ export default function ArchivosPage() {
                   {doc.traficoId && (
                     <Link
                       href={`/embarques/${encodeURIComponent(doc.traficoId)}`}
-                      style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--gold-dark)', textDecoration: 'none' }}
+                      style={{ fontSize: 'var(--aguila-fs-meta)', fontFamily: 'var(--font-mono)', color: 'var(--gold-dark)', textDecoration: 'none' }}
                     >
                       {doc.traficoId}
                     </Link>
                   )}
                   {doc.uploadedAt && (
-                    <span style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                    <span style={{ fontSize: 'var(--aguila-fs-label)', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
                       {fmtDateTime(doc.uploadedAt)}
                     </span>
                   )}

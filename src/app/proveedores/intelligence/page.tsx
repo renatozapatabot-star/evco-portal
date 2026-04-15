@@ -66,22 +66,22 @@ function AlertCard({ alert }: { alert: SupplierAlert }) {
         <div style={{ minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6, flexWrap: 'wrap' }}>
             <span style={{
-              fontSize: 10, fontWeight: 700, letterSpacing: 0.8, textTransform: 'uppercase',
+              fontSize: 'var(--aguila-fs-label)', fontWeight: 700, letterSpacing: 0.8, textTransform: 'uppercase',
               padding: '2px 8px', borderRadius: 999,
               background: cfg.bg, color: cfg.fg, border: `1px solid ${cfg.border}`,
             }}>{cfg.label}</span>
             {alert.country && (
               <span style={{
-                fontSize: 10, color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: 0.8,
+                fontSize: 'var(--aguila-fs-label)', color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: 0.8,
                 fontFamily: 'var(--font-jetbrains-mono), monospace',
               }}>{alert.country}</span>
             )}
-            <span style={{ fontSize: 10, color: TEXT_MUTED, fontFamily: 'var(--font-jetbrains-mono), monospace' }}>
+            <span style={{ fontSize: 'var(--aguila-fs-label)', color: TEXT_MUTED, fontFamily: 'var(--font-jetbrains-mono), monospace' }}>
               {formatDate(alert.latest_date)}
             </span>
           </div>
           <div style={{
-            fontSize: 14, color: TEXT_PRIMARY, fontWeight: 600, marginBottom: 4,
+            fontSize: 'var(--aguila-fs-section)', color: TEXT_PRIMARY, fontWeight: 600, marginBottom: 4,
             overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           }}>
             {alert.supplier}
@@ -93,24 +93,24 @@ function AlertCard({ alert }: { alert: SupplierAlert }) {
         <div>
           <div style={{
             fontFamily: 'var(--font-jetbrains-mono), monospace',
-            fontSize: 18, fontWeight: 700, color: TEXT_PRIMARY,
+            fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: TEXT_PRIMARY,
             fontVariantNumeric: 'tabular-nums',
           }}>
             {fmtUSD(alert.latest_value_usd)}
           </div>
-          <div style={{ fontSize: 10, color: TEXT_MUTED, marginTop: 2, letterSpacing: 0.4 }}>
+          <div style={{ fontSize: 'var(--aguila-fs-label)', color: TEXT_MUTED, marginTop: 2, letterSpacing: 0.4 }}>
             USD · importe embarque
           </div>
           {alert.pedimento && (
             <div style={{
-              fontSize: 10, color: TEXT_MUTED, marginTop: 4,
+              fontSize: 'var(--aguila-fs-label)', color: TEXT_MUTED, marginTop: 4,
               fontFamily: 'var(--font-jetbrains-mono), monospace',
             }}>
               Ped. {alert.pedimento}
             </div>
           )}
         </div>
-        <span style={{ color: ACCENT_SILVER, fontSize: 18 }}>→</span>
+        <span style={{ color: ACCENT_SILVER, fontSize: 'var(--aguila-fs-kpi-small)' }}>→</span>
       </div>
     </GlassCard>
   )
@@ -151,12 +151,12 @@ export default async function ProveedorIntelligencePage() {
           ).map(x => (
             <GlassCard key={x.k} size="compact">
               <div style={{
-                fontSize: 10, fontWeight: 700, letterSpacing: 0.8,
+                fontSize: 'var(--aguila-fs-label)', fontWeight: 700, letterSpacing: 0.8,
                 textTransform: 'uppercase', color: TEXT_MUTED, marginBottom: 6,
               }}>{x.k}</div>
               <div style={{
                 fontFamily: 'var(--font-jetbrains-mono), monospace',
-                fontSize: 28, fontWeight: 800, color: TEXT_PRIMARY,
+                fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 800, color: TEXT_PRIMARY,
                 fontVariantNumeric: 'tabular-nums',
               }}>
                 {x.v}
@@ -167,14 +167,14 @@ export default async function ProveedorIntelligencePage() {
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
           <SectionHeader title="Alertas" count={intel.alerts.length} />
-          <div style={{ display: 'flex', gap: 16, fontSize: 11, color: TEXT_SECONDARY }}>
+          <div style={{ display: 'flex', gap: 16, fontSize: 'var(--aguila-fs-meta)', color: TEXT_SECONDARY }}>
             {(Object.keys(alertsByKind) as AlertKind[]).map(k => (
               <span key={k} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
                 <span style={{
                   width: 8, height: 8, borderRadius: 999,
                   background: ALERT_CONFIG[k].fg,
                 }} />
-                <span style={{ color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: 0.8, fontSize: 10 }}>
+                <span style={{ color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: 0.8, fontSize: 'var(--aguila-fs-label)' }}>
                   {ALERT_CONFIG[k].label}
                 </span>
                 <span style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', color: TEXT_PRIMARY, fontVariantNumeric: 'tabular-nums' }}>
@@ -188,8 +188,8 @@ export default async function ProveedorIntelligencePage() {
         {intel.alerts.length === 0 ? (
           <GlassCard>
             <div style={{ textAlign: 'center', padding: '32px 16px', color: TEXT_SECONDARY }}>
-              <div style={{ fontSize: 28, marginBottom: 12, color: ACCENT_SILVER }}>◎</div>
-              <p style={{ fontSize: 14, color: TEXT_PRIMARY, margin: '0 0 4px', fontWeight: 600 }}>
+              <div style={{ fontSize: 'var(--aguila-fs-kpi-mid)', marginBottom: 12, color: ACCENT_SILVER }}>◎</div>
+              <p style={{ fontSize: 'var(--aguila-fs-section)', color: TEXT_PRIMARY, margin: '0 0 4px', fontWeight: 600 }}>
                 Ningún proveedor fuera de lo normal
               </p>
               <p style={{ fontSize: 12, color: TEXT_MUTED, margin: 0 }}>
@@ -210,7 +210,7 @@ export default async function ProveedorIntelligencePage() {
           <Link
             href="/proveedores"
             style={{
-              fontSize: 11, color: ACCENT_SILVER, textDecoration: 'none',
+              fontSize: 'var(--aguila-fs-meta)', color: ACCENT_SILVER, textDecoration: 'none',
               textTransform: 'uppercase', letterSpacing: 0.8,
             }}
           >
@@ -220,7 +220,7 @@ export default async function ProveedorIntelligencePage() {
 
         {intel.topSuppliers.length === 0 ? (
           <GlassCard>
-            <p style={{ fontSize: 13, color: TEXT_MUTED, margin: 0 }}>
+            <p style={{ fontSize: 'var(--aguila-fs-body)', color: TEXT_MUTED, margin: 0 }}>
               Sin proveedores en la ventana histórica.
             </p>
           </GlassCard>
@@ -232,7 +232,7 @@ export default async function ProveedorIntelligencePage() {
                 gridTemplateColumns: 'minmax(0,2fr) 1fr 1fr 1fr auto',
                 gap: 16,
                 padding: '8px 0',
-                fontSize: 10, fontWeight: 700, letterSpacing: 0.8,
+                fontSize: 'var(--aguila-fs-label)', fontWeight: 700, letterSpacing: 0.8,
                 textTransform: 'uppercase', color: TEXT_MUTED,
                 borderBottom: '1px solid rgba(255,255,255,0.06)',
               }}>
@@ -256,7 +256,7 @@ export default async function ProveedorIntelligencePage() {
                     <span style={{ color: TEXT_PRIMARY }}>{s.supplier}</span>
                     {s.countries[0] && (
                       <span style={{
-                        marginLeft: 8, fontSize: 10, color: TEXT_MUTED,
+                        marginLeft: 8, fontSize: 'var(--aguila-fs-label)', color: TEXT_MUTED,
                         fontFamily: 'var(--font-jetbrains-mono), monospace',
                       }}>{s.countries[0]}</span>
                     )}
@@ -270,7 +270,7 @@ export default async function ProveedorIntelligencePage() {
                   <span style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', color: TEXT_PRIMARY, textAlign: 'right', fontVariantNumeric: 'tabular-nums', fontWeight: 600 }}>
                     {fmtUSD(s.total_value_usd)}
                   </span>
-                  <span style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', color: TEXT_MUTED, fontSize: 11 }}>
+                  <span style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', color: TEXT_MUTED, fontSize: 'var(--aguila-fs-meta)' }}>
                     {formatDate(s.last_seen)}
                   </span>
                 </div>

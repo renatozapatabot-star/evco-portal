@@ -24,7 +24,7 @@ const s = StyleSheet.create({
   page: { backgroundColor: C.bg, paddingTop: 30, paddingBottom: 40, paddingHorizontal: 36, fontFamily: 'Helvetica', fontSize: 8, color: C.text },
   // Header
   headerTitle: { fontSize: 22, fontFamily: 'Helvetica-Bold', color: C.gold, textAlign: 'center', letterSpacing: 3, textTransform: 'uppercase' as const },
-  headerDate: { fontSize: 10, color: C.textSub, textAlign: 'center', marginTop: 4, marginBottom: 16 },
+  headerDate: { fontSize: 'var(--aguila-fs-label)', color: C.textSub, textAlign: 'center', marginTop: 4, marginBottom: 16 },
   headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: C.border },
   headerLeft: {},
   headerRight: { alignItems: 'flex-end' },
@@ -62,7 +62,7 @@ const s = StyleSheet.create({
   entradaDayText: { fontSize: 7, color: C.orange, fontFamily: 'Helvetica-Bold' },
   // Fraccion card
   fraccionCard: { backgroundColor: C.surface, borderRadius: 4, padding: 10, marginBottom: 8, borderWidth: 1, borderColor: C.border },
-  fraccionTitle: { fontSize: 10, color: C.gold, fontFamily: 'Courier-Bold' },
+  fraccionTitle: { fontSize: 'var(--aguila-fs-label)', color: C.gold, fontFamily: 'Courier-Bold' },
   fraccionDesc: { fontSize: 7.5, color: C.text, fontFamily: 'Helvetica-Bold', marginTop: 2 },
   fraccionSub: { fontSize: 7, color: C.textMuted, marginTop: 1 },
   fraccionValue: { fontSize: 8, color: C.green, fontFamily: 'Courier-Bold', marginTop: 4 },
@@ -127,7 +127,7 @@ export function AuditoriaPDF({ data }: { data: AuditData }) {
             <Text style={s.headerSub}>Preparado por Grupo Aduanal Renato Zapata S.C. · Patente 3596 · Aduana 240 Nuevo Laredo</Text>
           </View>
           <View style={s.headerRight}>
-            <Text style={{ ...s.headerCompany, fontSize: 10 }}>{d.clientName}</Text>
+            <Text style={{ ...s.headerCompany, fontSize: 'var(--aguila-fs-label)' }}>{d.clientName}</Text>
             <Text style={s.headerInfo}>RFC: {d.clientRFC} · Clave: {d.clientClave}</Text>
             <Text style={s.headerInfo}>Período: {fmtDateShort(d.from)} – {fmtDateShort(d.to)} · Emitido: {d.emittedDate}</Text>
           </View>

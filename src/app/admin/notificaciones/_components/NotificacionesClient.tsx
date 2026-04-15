@@ -29,7 +29,7 @@ const INPUT: React.CSSProperties = {
   borderRadius: 10,
   padding: '0 12px',
   height: 44,
-  fontSize: 13,
+  fontSize: 'var(--aguila-fs-body)',
   fontFamily: 'var(--font-jetbrains-mono, monospace)',
   minWidth: 220,
 }
@@ -42,7 +42,7 @@ const BTN: React.CSSProperties = {
   height: 44,
   padding: '0 16px',
   fontWeight: 600,
-  fontSize: 13,
+  fontSize: 'var(--aguila-fs-body)',
   cursor: 'pointer',
   minHeight: 44,
 }
@@ -129,7 +129,7 @@ export function NotificacionesClient({ role }: { role: string }) {
       <div style={CARD}>
         <div
           style={{
-            fontSize: 10,
+            fontSize: 'var(--aguila-fs-label)',
             textTransform: 'uppercase',
             letterSpacing: '0.08em',
             color: '#7A7E86',
@@ -157,12 +157,12 @@ export function NotificacionesClient({ role }: { role: string }) {
                 }}
               >
                 <div>
-                  <div style={{ fontSize: 14, fontWeight: 600 }}>
+                  <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600 }}>
                     {EVENT_KIND_LABELS[kind] ?? kind}
                   </div>
                   <div
                     style={{
-                      fontSize: 11,
+                      fontSize: 'var(--aguila-fs-meta)',
                       color: '#7A7E86',
                       fontFamily: 'var(--font-jetbrains-mono, monospace)',
                     }}
@@ -219,7 +219,7 @@ export function NotificacionesClient({ role }: { role: string }) {
                 </button>
                 <div
                   style={{
-                    fontSize: 11,
+                    fontSize: 'var(--aguila-fs-meta)',
                     color: savingKind === kind ? '#C0C5CE' : 'transparent',
                     minWidth: 60,
                   }}

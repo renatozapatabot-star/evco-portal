@@ -56,7 +56,7 @@ export default async function MultiClienteReportsPage({
         <GlassCard>
           <SectionHeader title="Semana ISO" />
           <MultiClientPicker defaultWeek={defaultWeek} />
-          <p style={{ fontSize: 11, color: TEXT_MUTED, margin: '10px 0 0', lineHeight: 1.6 }}>
+          <p style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED, margin: '10px 0 0', lineHeight: 1.6 }}>
             Cambia la semana y los PDFs de abajo apuntan al periodo seleccionado.
             Formato ISO-8601: lunes 00:00 UTC → domingo 23:59:59 UTC.
           </p>
@@ -67,8 +67,8 @@ export default async function MultiClienteReportsPage({
         {companies.length === 0 ? (
           <GlassCard>
             <div style={{ textAlign: 'center', padding: '32px 16px', color: TEXT_SECONDARY }}>
-              <div style={{ fontSize: 28, marginBottom: 12, color: ACCENT_SILVER }}>⚑</div>
-              <p style={{ fontSize: 14, color: TEXT_PRIMARY, margin: '0 0 4px', fontWeight: 600 }}>
+              <div style={{ fontSize: 'var(--aguila-fs-kpi-mid)', marginBottom: 12, color: ACCENT_SILVER }}>⚑</div>
+              <p style={{ fontSize: 'var(--aguila-fs-section)', color: TEXT_PRIMARY, margin: '0 0 4px', fontWeight: 600 }}>
                 Aún no hay clientes en el catálogo
               </p>
               <p style={{ fontSize: 12, color: TEXT_MUTED, margin: 0 }}>
@@ -88,13 +88,13 @@ export default async function MultiClienteReportsPage({
                 }}>
                   <div style={{ minWidth: 0 }}>
                     <div style={{
-                      fontSize: 14, color: TEXT_PRIMARY, fontWeight: 600,
+                      fontSize: 'var(--aguila-fs-section)', color: TEXT_PRIMARY, fontWeight: 600,
                       marginBottom: 4,
                       overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                     }}>
                       {c.name}
                     </div>
-                    <div style={{ fontSize: 11, color: TEXT_MUTED, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                    <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
                       {c.clave_cliente && (
                         <span>
                           <span style={{ textTransform: 'uppercase', letterSpacing: 0.8, marginRight: 4 }}>Clave</span>
@@ -109,7 +109,7 @@ export default async function MultiClienteReportsPage({
                       )}
                     </div>
                   </div>
-                  <div style={{ fontSize: 11, color: TEXT_MUTED, fontFamily: 'var(--font-jetbrains-mono), monospace' }}>
+                  <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED, fontFamily: 'var(--font-jetbrains-mono), monospace' }}>
                     {defaultWeek}
                   </div>
                   <a

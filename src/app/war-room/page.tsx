@@ -65,7 +65,7 @@ export default function WarRoom() {
       <div style={{ flex: 1, display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gridTemplateRows: isMobile ? 'auto' : '1fr 1fr', gap: 1, background: 'var(--border)', overflowY: isMobile ? 'auto' : 'hidden', ...(isMobile ? { maxHeight: 'calc(100vh - 120px)' } : {}) }}>
         {/* Q1: Active Embarques */}
         <div style={{ background: 'var(--bg-card)', padding: 20, overflow: 'auto' }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>
+          <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>
             Embarques Activos
             <span style={{ float: 'right', color: GOLD }}>{data?.enProceso?.length || 0}</span>
           </div>
@@ -73,7 +73,7 @@ export default function WarRoom() {
             const days = t.fecha_llegada ? Math.floor((Date.now() - new Date(t.fecha_llegada).getTime()) / 86400000) : 0
             const color = days > 14 ? 'var(--danger-500)' : days > 7 ? 'var(--warning-500, #D97706)' : 'var(--success)'
             return (
-              <div key={t.trafico} style={{ padding: '6px 0', minHeight: 60, borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 13 }}>
+              <div key={t.trafico} style={{ padding: '6px 0', minHeight: 60, borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 'var(--aguila-fs-body)' }}>
                 <span style={{ fontFamily: 'var(--font-jetbrains-mono)', fontWeight: 600 }}>{t.trafico}</span>
                 <span style={{ color, fontWeight: 700 }}>{days}d</span>
               </div>
@@ -83,14 +83,14 @@ export default function WarRoom() {
 
         {/* Q2: Bridges */}
         <div style={{ background: 'var(--bg-card)', padding: 20 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>
+          <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>
             Puentes en Vivo
           </div>
           {(data?.bridgeSummary || []).map((b: { name: string; avg: number }, i: number) => {
             const pct = Math.min(100, (b.avg / 3) * 100)
             return (
               <div key={b.name} style={{ marginBottom: 16 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 4 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--aguila-fs-body)', marginBottom: 4 }}>
                   <span style={{ fontWeight: 600 }}>{b.name}{i === 0 ? ' ✅' : ''}</span>
                   <span style={{ fontFamily: 'var(--font-jetbrains-mono)', color: GOLD }}>{Math.round(b.avg * 60)}min</span>
                 </div>
@@ -100,12 +100,12 @@ export default function WarRoom() {
               </div>
             )
           })}
-          {(data?.bridgeSummary || []).length === 0 && <div style={{ padding: 24, textAlign: 'center' }}><div style={{ fontSize: 24, marginBottom: 4 }}>🌉</div><div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Sin datos de puentes disponibles</div></div>}
+          {(data?.bridgeSummary || []).length === 0 && <div style={{ padding: 24, textAlign: 'center' }}><div style={{ fontSize: 'var(--aguila-fs-title)', marginBottom: 4 }}>🌉</div><div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)' }}>Sin datos de puentes disponibles</div></div>}
         </div>
 
         {/* Q3: Action Items */}
         <div style={{ background: 'var(--bg-card)', padding: 20 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>
+          <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>
             Acción Inmediata
           </div>
           {[
@@ -115,7 +115,7 @@ export default function WarRoom() {
             { icon: '🔴', label: 'Riesgo alto', value: data?.risks?.length || 0, color: 'var(--warning)' },
           ].map(item => (
             <div key={item.label} style={{ padding: '10px 0', minHeight: 60, borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: 14 }}>{item.icon} {item.label}</span>
+              <span style={{ fontSize: 'var(--aguila-fs-section)' }}>{item.icon} {item.label}</span>
               <span style={{ fontSize: 22, fontWeight: 800, color: item.value > 0 ? item.color : 'var(--success)', fontFamily: 'var(--font-jetbrains-mono)' }}>{item.value}</span>
             </div>
           ))}
@@ -123,7 +123,7 @@ export default function WarRoom() {
 
         {/* Q4: Intelligence */}
         <div style={{ background: 'var(--bg-card)', padding: 20 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>
+          <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>
             Inteligencia
           </div>
           {[
@@ -132,7 +132,7 @@ export default function WarRoom() {
             { label: 'Total cartera', value: data?.total || 0 },
           ].map(item => (
             <div key={item.label} style={{ padding: '10px 0', minHeight: 60, borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: 14, color: 'var(--text-secondary)' }}>{item.label}</span>
+              <span style={{ fontSize: 'var(--aguila-fs-section)', color: 'var(--text-secondary)' }}>{item.label}</span>
               <span style={{ fontSize: 20, fontWeight: 800, fontFamily: 'var(--font-jetbrains-mono)' }}>{item.value}</span>
             </div>
           ))}

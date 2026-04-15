@@ -98,7 +98,7 @@ export default function CerebroPage() {
         <Brain size={24} style={{ color: T.gold }} />
         ZAPATA AI Operational Brain
       </h1>
-      <p style={{ fontSize: 13, color: T.textMuted, marginBottom: 24 }}>
+      <p style={{ fontSize: 'var(--aguila-fs-body)', color: T.textMuted, marginBottom: 24 }}>
         {patterns.length} patrones activos · {decisions.length} decisiones recientes · Score promedio: {avgScore}/100
       </p>
 
@@ -117,15 +117,15 @@ export default function CerebroPage() {
               { label: 'Supuestos flagged', value: flaggedAssumptions.length, color: flaggedAssumptions.length === 0 ? T.success : T.danger },
             ].map(s => (
               <div key={s.label} className="card" style={{ padding: 16, textAlign: 'center' }}>
-                <div style={{ fontSize: 28, fontWeight: 800, fontFamily: 'var(--font-mono)', color: s.color }}>{s.value}</div>
-                <div style={{ fontSize: 11, color: T.textMuted, marginTop: 4, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{s.label}</div>
+                <div style={{ fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 800, fontFamily: 'var(--font-mono)', color: s.color }}>{s.value}</div>
+                <div style={{ fontSize: 'var(--aguila-fs-meta)', color: T.textMuted, marginTop: 4, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{s.label}</div>
               </div>
             ))}
           </div>
 
           {/* Section 2 — Decision Timeline */}
           <div className="card" style={{ padding: '16px 20px', marginBottom: 24 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: T.textMuted, marginBottom: 12 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: T.textMuted, marginBottom: 12 }}>
               Decisiones Recientes
             </div>
             {decisions.length === 0 ? (
@@ -137,13 +137,13 @@ export default function CerebroPage() {
                     display: 'flex', alignItems: 'flex-start', gap: 10,
                     padding: '10px 12px', borderRadius: 8, background: 'var(--bg-main)',
                   }}>
-                    <span style={{ fontSize: 14, marginTop: 1 }}>
+                    <span style={{ fontSize: 'var(--aguila-fs-section)', marginTop: 1 }}>
                       {d.outcome === 'excellent' ? '✅' : d.outcome === 'needs_improvement' ? '⚠️' : '🔄'}
                     </span>
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: T.text }}>{d.decision}</div>
-                      {d.reasoning && <div style={{ fontSize: 11, color: T.textSec, marginTop: 2 }}>{d.reasoning.substring(0, 100)}</div>}
-                      <div style={{ fontSize: 10, color: T.textMuted, marginTop: 2 }}>
+                      <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: T.text }}>{d.decision}</div>
+                      {d.reasoning && <div style={{ fontSize: 'var(--aguila-fs-meta)', color: T.textSec, marginTop: 2 }}>{d.reasoning.substring(0, 100)}</div>}
+                      <div style={{ fontSize: 'var(--aguila-fs-label)', color: T.textMuted, marginTop: 2 }}>
                         {d.decision_type} · {d.company_id || '—'} · {d.trafico || '—'}
                       </div>
                     </div>
@@ -155,7 +155,7 @@ export default function CerebroPage() {
                         {d.outcome_score}
                       </span>
                     )}
-                    <span style={{ fontSize: 10, color: T.textMuted, fontFamily: 'var(--font-mono)', whiteSpace: 'nowrap' }}>
+                    <span style={{ fontSize: 'var(--aguila-fs-label)', color: T.textMuted, fontFamily: 'var(--font-mono)', whiteSpace: 'nowrap' }}>
                       {fmtDateTime(d.created_at)}
                     </span>
                   </div>
@@ -166,7 +166,7 @@ export default function CerebroPage() {
 
           {/* Section 3 — Active Patterns */}
           <div className="card" style={{ padding: '16px 20px', marginBottom: 24 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: T.textMuted, marginBottom: 12 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: T.textMuted, marginBottom: 12 }}>
               Patrones Aprendidos ({patterns.length})
             </div>
             {patterns.length === 0 ? (
@@ -179,10 +179,10 @@ export default function CerebroPage() {
                     padding: '8px 0', borderBottom: `1px solid ${T.border}`,
                   }}>
                     <div style={{ flex: 1 }}>
-                      <span style={{ fontSize: 13, color: T.text }}>{p.pattern_value}</span>
-                      <span style={{ fontSize: 10, color: T.textMuted, marginLeft: 8 }}>{p.pattern_type}</span>
+                      <span style={{ fontSize: 'var(--aguila-fs-body)', color: T.text }}>{p.pattern_value}</span>
+                      <span style={{ fontSize: 'var(--aguila-fs-label)', color: T.textMuted, marginLeft: 8 }}>{p.pattern_type}</span>
                     </div>
-                    <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: (p.confidence || 0) >= 0.9 ? T.success : T.warning }}>
+                    <span style={{ fontSize: 'var(--aguila-fs-meta)', fontFamily: 'var(--font-mono)', color: (p.confidence || 0) >= 0.9 ? T.success : T.warning }}>
                       {Math.round((p.confidence || 0) * 100)}% · {p.sample_size || 0}
                     </span>
                   </div>
@@ -194,7 +194,7 @@ export default function CerebroPage() {
           {/* Section 4 — Flagged Assumptions */}
           {flaggedAssumptions.length > 0 && (
             <div className="card" style={{ padding: '16px 20px' }}>
-              <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: T.danger, marginBottom: 12 }}>
+              <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: T.danger, marginBottom: 12 }}>
                 Supuestos Cuestionados ({flaggedAssumptions.length})
               </div>
               {flaggedAssumptions.map(a => (
@@ -202,9 +202,9 @@ export default function CerebroPage() {
                   padding: '10px 12px', borderRadius: 8, marginBottom: 8,
                   background: 'rgba(220,38,38,0.04)', border: '1px solid rgba(220,38,38,0.1)',
                 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: T.text }}>{a.assumption}</div>
+                  <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: T.text }}>{a.assumption}</div>
                   {a.recommendation && <div style={{ fontSize: 12, color: T.textSec, marginTop: 4 }}>→ {a.recommendation}</div>}
-                  <div style={{ fontSize: 10, color: T.textMuted, marginTop: 4 }}>{a.category} · {fmtDateTime(a.checked_at)}</div>
+                  <div style={{ fontSize: 'var(--aguila-fs-label)', color: T.textMuted, marginTop: 4 }}>{a.category} · {fmtDateTime(a.checked_at)}</div>
                 </div>
               ))}
             </div>

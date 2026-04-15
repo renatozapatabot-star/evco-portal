@@ -57,7 +57,7 @@ function ActionBadge({ action }: { action: AuditLogRow['action'] }) {
         display: 'inline-block',
         padding: '2px 8px',
         borderRadius: 6,
-        fontSize: 11,
+        fontSize: 'var(--aguila-fs-meta)',
         fontWeight: 600,
         letterSpacing: '0.04em',
         background: tone.bg,
@@ -127,7 +127,7 @@ export function AuditoriaClient() {
             gap: 12,
           }}
         >
-          <label style={{ fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+          <label style={{ fontSize: 'var(--aguila-fs-meta)', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
             Tabla
             <select
               value={table}
@@ -141,7 +141,7 @@ export function AuditoriaClient() {
               ))}
             </select>
           </label>
-          <label style={{ fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+          <label style={{ fontSize: 'var(--aguila-fs-meta)', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
             ID de registro
             <input
               type="text"
@@ -151,7 +151,7 @@ export function AuditoriaClient() {
               style={{ ...inputStyle, ...MONO }}
             />
           </label>
-          <label style={{ fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+          <label style={{ fontSize: 'var(--aguila-fs-meta)', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
             Usuario
             <select
               value={changedBy}
@@ -166,7 +166,7 @@ export function AuditoriaClient() {
               ))}
             </select>
           </label>
-          <label style={{ fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+          <label style={{ fontSize: 'var(--aguila-fs-meta)', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
             Desde
             <input
               type="date"
@@ -175,7 +175,7 @@ export function AuditoriaClient() {
               style={inputStyle}
             />
           </label>
-          <label style={{ fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+          <label style={{ fontSize: 'var(--aguila-fs-meta)', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
             Hasta
             <input
               type="date"
@@ -233,7 +233,7 @@ export function AuditoriaClient() {
             ...GLASS,
             borderColor: 'rgba(239,68,68,0.3)',
             color: '#fecaca',
-            fontSize: 13,
+            fontSize: 'var(--aguila-fs-body)',
           }}
         >
           {error}
@@ -244,13 +244,13 @@ export function AuditoriaClient() {
       <div style={GLASS}>
         {rows.length === 0 && !loading ? (
           <div style={{ textAlign: 'center', padding: 40, color: '#64748b' }}>
-            <div style={{ fontSize: 28, marginBottom: 8 }}>∅</div>
-            <div style={{ fontSize: 14 }}>Sin resultados para esos filtros.</div>
+            <div style={{ fontSize: 'var(--aguila-fs-kpi-mid)', marginBottom: 8 }}>∅</div>
+            <div style={{ fontSize: 'var(--aguila-fs-section)' }}>Sin resultados para esos filtros.</div>
           </div>
         ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--aguila-fs-body)' }}>
             <thead>
-              <tr style={{ textAlign: 'left', color: '#94a3b8', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+              <tr style={{ textAlign: 'left', color: '#94a3b8', fontSize: 'var(--aguila-fs-meta)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                 <th style={thStyle}>Cuándo</th>
                 <th style={thStyle}>Usuario</th>
                 <th style={thStyle}>Acción</th>
@@ -297,7 +297,7 @@ export function AuditoriaClient() {
                             ))
                         }
                         {diffs.length > 2 && (
-                          <span style={{ color: '#7A7E86', fontSize: 11 }}>
+                          <span style={{ color: '#7A7E86', fontSize: 'var(--aguila-fs-meta)' }}>
                             {' '}+{diffs.length - 2} más
                           </span>
                         )}
@@ -316,7 +316,7 @@ export function AuditoriaClient() {
                             }}
                           >
                             <div>
-                              <div style={{ color: '#7A7E86', fontSize: 11, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                              <div style={{ color: '#7A7E86', fontSize: 'var(--aguila-fs-meta)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                                 Antes
                               </div>
                               <pre style={preStyle}>
@@ -324,7 +324,7 @@ export function AuditoriaClient() {
                               </pre>
                             </div>
                             <div>
-                              <div style={{ color: '#E8EAED', fontSize: 11, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                              <div style={{ color: '#E8EAED', fontSize: 'var(--aguila-fs-meta)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                                 Después
                               </div>
                               <pre style={preStyle}>
@@ -356,7 +356,7 @@ const inputStyle: React.CSSProperties = {
   border: '1px solid rgba(192,197,206,0.18)',
   background: 'rgba(255,255,255,0.045)',
   color: '#E6EDF3',
-  fontSize: 13,
+  fontSize: 'var(--aguila-fs-body)',
 }
 
 const thStyle: React.CSSProperties = {

@@ -225,10 +225,10 @@ export default function ProveedoresPage() {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
         <div>
-          <h1 style={{ fontSize: 24, fontWeight: 800, color: T.text, margin: 0 }}>
+          <h1 style={{ fontSize: 'var(--aguila-fs-title)', fontWeight: 800, color: T.text, margin: 0 }}>
             Proveedores
           </h1>
-          <p style={{ fontSize: 13, color: T.textSecondary, marginTop: 4 }}>
+          <p style={{ fontSize: 'var(--aguila-fs-body)', color: T.textSecondary, marginTop: 4 }}>
             {suppliers.length} proveedores &middot; {fmtUSDCompact(totalValue)} valor total
           </p>
         </div>
@@ -259,7 +259,7 @@ export default function ProveedoresPage() {
             aria-label="Buscar proveedores"
             style={{
               flex: 1, background: 'transparent', border: 'none', outline: 'none',
-              color: T.text, fontSize: 13, fontFamily: 'var(--font-geist-sans)',
+              color: T.text, fontSize: 'var(--aguila-fs-body)', fontFamily: 'var(--font-geist-sans)',
             }}
           />
         </div>
@@ -270,7 +270,7 @@ export default function ProveedoresPage() {
             onChange={e => setClientFilter(e.target.value)}
             style={{
               background: T.surface, border: `1px solid ${T.border}`, borderRadius: 8,
-              padding: '0 12px', height: 60, color: T.text, fontSize: 13,
+              padding: '0 12px', height: 60, color: T.text, fontSize: 'var(--aguila-fs-body)',
               fontFamily: 'var(--font-geist-sans)', cursor: 'pointer', outline: 'none',
             }}
           >
@@ -296,7 +296,7 @@ export default function ProveedoresPage() {
           disabled={filtered.length === 0}
           style={{
             background: T.surface, border: `1px solid ${T.border}`, borderRadius: 8,
-            padding: '0 16px', height: 60, color: T.textSecondary, fontSize: 13,
+            padding: '0 16px', height: 60, color: T.textSecondary, fontSize: 'var(--aguila-fs-body)',
             fontFamily: 'var(--font-geist-sans)', cursor: filtered.length > 0 ? 'pointer' : 'default',
             display: 'flex', alignItems: 'center', gap: 6,
             opacity: filtered.length === 0 ? 0.5 : 1,

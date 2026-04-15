@@ -107,10 +107,10 @@ function BrokerCumplimientoView() {
     <div style={{ padding: isMobile ? 16 : 32, minHeight: '100vh' }}>
       <div style={{ maxWidth: 960, margin: '0 auto' }}>
         <div style={{ marginBottom: 32 }}>
-          <h1 style={{ fontSize: 24, fontWeight: 700, color: T.textPrimary, marginBottom: 4 }}>
+          <h1 style={{ fontSize: 'var(--aguila-fs-title)', fontWeight: 700, color: T.textPrimary, marginBottom: 4 }}>
             Cumplimiento — Panel Interno
           </h1>
-          <p style={{ fontSize: 14, color: T.textSecondary }}>
+          <p style={{ fontSize: 'var(--aguila-fs-section)', color: T.textSecondary }}>
             Estado regulatorio y alertas operativas
           </p>
         </div>
@@ -137,13 +137,13 @@ function BrokerCumplimientoView() {
               </span>
             </div>
             <div style={{
-              fontSize: 48, fontWeight: 900, lineHeight: 1,
+              fontSize: 'var(--aguila-fs-kpi-hero)', fontWeight: 900, lineHeight: 1,
               fontFamily: 'var(--font-mono)',
               color: mveUrgent ? T.red : T.textPrimary,
             }}>
               {mveDays}
             </div>
-            <div style={{ fontSize: 13, color: T.textSecondary, marginTop: 8 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-body)', color: T.textSecondary, marginTop: 8 }}>
               {mveDays === 0
                 ? 'Vence hoy — acción inmediata requerida'
                 : `día${mveDays !== 1 ? 's' : ''} para vencimiento`}
@@ -166,13 +166,13 @@ function BrokerCumplimientoView() {
               </span>
             </div>
             <div style={{
-              fontSize: 48, fontWeight: 900, lineHeight: 1,
+              fontSize: 'var(--aguila-fs-kpi-hero)', fontWeight: 900, lineHeight: 1,
               fontFamily: 'var(--font-mono)',
               color: semaforoRojo > 0 ? T.red : T.textMuted,
             }}>
               {semaforoRojo}
             </div>
-            <div style={{ fontSize: 13, color: T.textSecondary, marginTop: 8 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-body)', color: T.textSecondary, marginTop: 8 }}>
               {semaforoRojo === 0
                 ? 'Sin inspecciones pendientes'
                 : `embarque${semaforoRojo !== 1 ? 's' : ''} en revisión aduanera`}
@@ -195,13 +195,13 @@ function BrokerCumplimientoView() {
               </span>
             </div>
             <div style={{
-              fontSize: 48, fontWeight: 900, lineHeight: 1,
+              fontSize: 'var(--aguila-fs-kpi-hero)', fontWeight: 900, lineHeight: 1,
               fontFamily: 'var(--font-mono)',
               color: blockingDocs > 0 ? T.amber : T.textMuted,
             }}>
               {blockingDocs}
             </div>
-            <div style={{ fontSize: 13, color: T.textSecondary, marginTop: 8 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-body)', color: T.textSecondary, marginTop: 8 }}>
               {blockingDocs === 0
                 ? 'Todos los embarques con documentación completa'
                 : `embarque${blockingDocs !== 1 ? 's' : ''} sin pedimento asignado`}
@@ -226,24 +226,24 @@ function BrokerCumplimientoView() {
             {usmcaExpiring.length === 0 ? (
               <>
                 <div style={{
-                  fontSize: 48, fontWeight: 900, lineHeight: 1,
+                  fontSize: 'var(--aguila-fs-kpi-hero)', fontWeight: 900, lineHeight: 1,
                   fontFamily: 'var(--font-mono)', color: T.textMuted,
                 }}>
                   0
                 </div>
-                <div style={{ fontSize: 13, color: T.textSecondary, marginTop: 8 }}>
+                <div style={{ fontSize: 'var(--aguila-fs-body)', color: T.textSecondary, marginTop: 8 }}>
                   Sin vencimientos en los próximos 30 días
                 </div>
               </>
             ) : (
               <>
                 <div style={{
-                  fontSize: 48, fontWeight: 900, lineHeight: 1,
+                  fontSize: 'var(--aguila-fs-kpi-hero)', fontWeight: 900, lineHeight: 1,
                   fontFamily: 'var(--font-mono)', color: T.amber,
                 }}>
                   {usmcaExpiring.length}
                 </div>
-                <div style={{ fontSize: 13, color: T.textSecondary, marginTop: 8 }}>
+                <div style={{ fontSize: 'var(--aguila-fs-body)', color: T.textSecondary, marginTop: 8 }}>
                   certificado{usmcaExpiring.length !== 1 ? 's' : ''} por vencer en 30 días
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 12 }}>
@@ -253,7 +253,7 @@ function BrokerCumplimientoView() {
                       padding: '8px 12px', background: 'rgba(0,0,0,0.2)', borderRadius: 6,
                     }}>
                       <span style={{
-                        fontSize: 13, fontWeight: 700, color: T.gold,
+                        fontSize: 'var(--aguila-fs-body)', fontWeight: 700, color: T.gold,
                         fontFamily: 'var(--font-mono)',
                       }}>
                         {item.trafico}
@@ -319,10 +319,10 @@ function ClientCumplimientoView() {
   return (
     <div style={{ padding: isMobile ? 16 : 32, background: 'var(--bg-main)', minHeight: '100vh' }}>
       <div style={{ marginBottom: 32 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>
+        <h1 style={{ fontSize: 'var(--aguila-fs-title)', fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>
           Cumplimiento
         </h1>
-        <p style={{ fontSize: 14, color: 'var(--text-secondary)' }}>
+        <p style={{ fontSize: 'var(--aguila-fs-section)', color: 'var(--text-secondary)' }}>
           Resumen de obligaciones y documentos pendientes
         </p>
       </div>
@@ -337,14 +337,14 @@ function ClientCumplimientoView() {
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
               <Calendar size={20} style={{ color: 'var(--gold-dark)' }} />
-              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--gold-dark)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+              <span style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: 'var(--gold-dark)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                 Vencimientos esta semana
               </span>
             </div>
             <div className="mono" style={{ fontSize: 40, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1 }}>
               {deadlineCount}
             </div>
-            <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 8 }}>
+            <p style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)', marginTop: 8 }}>
               {deadlineCount === 0
                 ? 'Sin vencimientos programados esta semana.'
                 : `${deadlineCount} vencimiento${deadlineCount > 1 ? 's' : ''} próximo${deadlineCount > 1 ? 's' : ''} esta semana.`}
@@ -357,14 +357,14 @@ function ClientCumplimientoView() {
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
               <FileText size={20} style={{ color: 'var(--gold-dark)' }} />
-              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--gold-dark)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+              <span style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: 'var(--gold-dark)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                 Documentos pendientes
               </span>
             </div>
             <div className="mono" style={{ fontSize: 40, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1 }}>
               {pendingDocsCount}
             </div>
-            <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 8 }}>
+            <p style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)', marginTop: 8 }}>
               {pendingDocsCount === 0
                 ? 'Todos los documentos al corriente.'
                 : `${pendingDocsCount} operación${pendingDocsCount > 1 ? 'es' : ''} con documentación pendiente.`}
@@ -377,14 +377,14 @@ function ClientCumplimientoView() {
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
               <Phone size={20} style={{ color: 'var(--gold-dark)' }} />
-              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--gold-dark)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+              <span style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: 'var(--gold-dark)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                 Acción requerida
               </span>
             </div>
             <p style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.5 }}>
               Contacte a su agente aduanal
             </p>
-            <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 8 }}>
+            <p style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)', marginTop: 8 }}>
               Para cualquier duda sobre sus obligaciones de cumplimiento, comuníquese directamente con su agente.
             </p>
           </div>

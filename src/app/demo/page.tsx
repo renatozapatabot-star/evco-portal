@@ -29,17 +29,17 @@ export default function DemoPage() {
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 8 }}>
           <AguilaMark size={56} />
         </div>
-        <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24 }}>Inteligencia Aduanal · Patente 3596</div>
+        <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-muted)', marginBottom: 24 }}>Inteligencia Aduanal · Patente 3596</div>
 
         {/* Before/After strip */}
         <div style={{ display: 'flex', gap: 12, marginBottom: 24, textAlign: 'center' }}>
           <div style={{ flex: 1, padding: '16px 12px', borderRadius: 10, background: 'rgba(220,38,38,0.06)', border: '1px solid rgba(220,38,38,0.15)' }}>
-            <div style={{ fontSize: 28, fontWeight: 800, color: '#DC2626', fontFamily: 'var(--font-mono)' }}>22 min</div>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>Proceso manual</div>
+            <div style={{ fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 800, color: '#DC2626', fontFamily: 'var(--font-mono)' }}>22 min</div>
+            <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', marginTop: 4 }}>Proceso manual</div>
           </div>
           <div style={{ flex: 1, padding: '16px 12px', borderRadius: 10, background: 'rgba(22,163,74,0.06)', border: '1px solid rgba(22,163,74,0.15)' }}>
-            <div style={{ fontSize: 28, fontWeight: 800, color: '#16A34A', fontFamily: 'var(--font-mono)' }}>2 min</div>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>Con ZAPATA AI</div>
+            <div style={{ fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 800, color: '#16A34A', fontFamily: 'var(--font-mono)' }}>2 min</div>
+            <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', marginTop: 4 }}>Con ZAPATA AI</div>
           </div>
         </div>
 
@@ -53,10 +53,10 @@ export default function DemoPage() {
           Ver demo en vivo →
         </a>
 
-        <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.3, margin: '0 0 8px' }}>
+        <h1 style={{ fontSize: 'var(--aguila-fs-title)', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.3, margin: '0 0 8px' }}>
           ¿Ya tiene clave? Ingrese aquí.
         </h1>
-        <p style={{ fontSize: 14, color: 'var(--text-secondary)', margin: '0 0 24px', lineHeight: 1.6 }}>
+        <p style={{ fontSize: 'var(--aguila-fs-section)', color: 'var(--text-secondary)', margin: '0 0 24px', lineHeight: 1.6 }}>
           Si ya es cliente, ingrese su clave para acceder a su portal personalizado.
         </p>
         {!result && !notified && (
@@ -85,12 +85,12 @@ export default function DemoPage() {
         )}
         {notified && (
           <div className="card card-enter" style={{ padding: 32, marginTop: 24 }}>
-            <div style={{ fontSize: 32, marginBottom: 12 }}>✅</div>
+            <div style={{ fontSize: 'var(--aguila-fs-kpi-compact)', marginBottom: 12 }}>✅</div>
             <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--success)' }}>Solicitud enviada</div>
-            <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 8 }}>Nuestro equipo se comunicará en 24 horas.</div>
+            <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-muted)', marginTop: 8 }}>Nuestro equipo se comunicará en 24 horas.</div>
           </div>
         )}
-        <div style={{ marginTop: 48, fontSize: 11, color: 'var(--text-disabled)' }}>Renato Zapata & Company · Est. 1941</div>
+        <div style={{ marginTop: 48, fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-disabled)' }}>Renato Zapata & Company · Est. 1941</div>
       </div>
     </div>
   )

@@ -69,7 +69,7 @@ export function HeroStrip({ tiles, onEventosClick, traficoId }: HeroStripProps) 
           <>
             <div
               style={{
-                fontSize: 11,
+                fontSize: 'var(--aguila-fs-meta)',
                 fontWeight: 700,
                 color: TEXT_MUTED,
                 textTransform: 'uppercase',
@@ -80,7 +80,7 @@ export function HeroStrip({ tiles, onEventosClick, traficoId }: HeroStripProps) 
             </div>
             <div
               style={{
-                fontSize: 24,
+                fontSize: 'var(--aguila-fs-title)',
                 fontWeight: 800,
                 color,
                 fontFamily: t.mono ? 'var(--font-mono)' : undefined,
@@ -96,7 +96,7 @@ export function HeroStrip({ tiles, onEventosClick, traficoId }: HeroStripProps) 
             {t.hint && (
               <div
                 style={{
-                  fontSize: 11,
+                  fontSize: 'var(--aguila-fs-meta)',
                   color: TEXT_MUTED,
                   marginTop: 4,
                   fontFamily: 'var(--font-mono)',

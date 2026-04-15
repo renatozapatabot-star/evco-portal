@@ -94,7 +94,7 @@ export function AccionesRapidasPanel({
     >
       <div
         style={{
-          fontSize: 11,
+          fontSize: 'var(--aguila-fs-meta)',
           fontWeight: 800,
           color: TEXT_MUTED,
           textTransform: 'uppercase',
@@ -107,7 +107,7 @@ export function AccionesRapidasPanel({
 
       <label
         htmlFor="status-select"
-        style={{ display: 'block', fontSize: 11, color: TEXT_MUTED, marginBottom: 6 }}
+        style={{ display: 'block', fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED, marginBottom: 6 }}
       >
         Estatus
       </label>
@@ -129,7 +129,7 @@ export function AccionesRapidasPanel({
             color: TEXT_PRIMARY,
             border: `1px solid ${BORDER}`,
             borderRadius: 12,
-            fontSize: 13,
+            fontSize: 'var(--aguila-fs-body)',
             cursor: canEdit && !pending ? 'pointer' : 'not-allowed',
             opacity: canEdit ? 1 : 0.6,
             appearance: 'none',
@@ -170,7 +170,7 @@ export function AccionesRapidasPanel({
           color: '#0B1220',
           border: 'none',
           borderRadius: 12,
-          fontSize: 13,
+          fontSize: 'var(--aguila-fs-body)',
           fontWeight: 700,
           cursor: 'pointer',
           display: 'flex',
@@ -183,7 +183,7 @@ export function AccionesRapidasPanel({
         <Send size={14} />
         Solicitar documentos
       </button>
-      <div style={{ fontSize: 11, color: TEXT_MUTED, marginTop: 8, textAlign: 'center' }}>
+      <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED, marginTop: 8, textAlign: 'center' }}>
         {missingDocs.length > 0
           ? `${missingDocs.length} doc${missingDocs.length === 1 ? '' : 's'} faltante${missingDocs.length === 1 ? '' : 's'} · envío por correo`
           : 'Expediente completo'}

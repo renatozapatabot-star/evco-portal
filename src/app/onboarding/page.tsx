@@ -33,7 +33,7 @@ function OnboardingContent() {
         {/* Brand */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24, justifyContent: 'center' }}>
           <AduanaMark size={36} />
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 18, fontWeight: 800, color: 'rgba(255,255,255,0.9)', letterSpacing: '0.08em' }}>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 800, color: 'rgba(255,255,255,0.9)', letterSpacing: '0.08em' }}>
             ZAPATA AI
           </span>
         </div>
@@ -52,13 +52,13 @@ function OnboardingContent() {
         {/* Step 1: Confirm */}
         {step === 1 && (
           <div>
-            <h2 style={{ fontSize: 18, fontWeight: 700, color: '#FFFFFF', marginBottom: 8 }}>
+            <h2 style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: '#FFFFFF', marginBottom: 8 }}>
               Confirma los datos de tu agencia
             </h2>
-            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 20 }}>
+            <p style={{ fontSize: 'var(--aguila-fs-body)', color: 'rgba(255,255,255,0.5)', marginBottom: 20 }}>
               Agencia: <strong style={{ color: '#FFFFFF' }}>{slug}</strong>
             </p>
-            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', marginBottom: 24 }}>
+            <p style={{ fontSize: 'var(--aguila-fs-body)', color: 'rgba(255,255,255,0.4)', marginBottom: 24 }}>
               Tu cuenta ha sido creada. En el siguiente paso puedes cargar datos de ejemplo para explorar la plataforma.
             </p>
             <button onClick={() => setStep(2)} style={btnStyle}>Continuar →</button>
@@ -68,15 +68,15 @@ function OnboardingContent() {
         {/* Step 2: Sample data */}
         {step === 2 && (
           <div>
-            <h2 style={{ fontSize: 18, fontWeight: 700, color: '#FFFFFF', marginBottom: 8 }}>
+            <h2 style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: '#FFFFFF', marginBottom: 8 }}>
               Datos de ejemplo
             </h2>
-            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 20 }}>
+            <p style={{ fontSize: 'var(--aguila-fs-body)', color: 'rgba(255,255,255,0.5)', marginBottom: 20 }}>
               ¿Quieres ver ZAPATA AI con datos de ejemplo? Puedes eliminarlos después.
             </p>
             <label style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 16px', borderRadius: 10, background: 'rgba(255,255,255,0.045)', border: '1px solid rgba(255,255,255,0.08)', cursor: 'pointer', marginBottom: 20 }}>
               <input type="checkbox" checked={seedSample} onChange={e => setSeedSample(e.target.checked)} style={{ width: 18, height: 18 }} />
-              <span style={{ fontSize: 14, color: '#FFFFFF' }}>Cargar 10 embarques de ejemplo (MUESTRA)</span>
+              <span style={{ fontSize: 'var(--aguila-fs-section)', color: '#FFFFFF' }}>Cargar 10 embarques de ejemplo (MUESTRA)</span>
             </label>
             <button
               onClick={async () => {
@@ -104,10 +104,10 @@ function OnboardingContent() {
         {/* Step 3: Classification demo */}
         {step === 3 && (
           <div>
-            <h2 style={{ fontSize: 18, fontWeight: 700, color: '#FFFFFF', marginBottom: 8 }}>
+            <h2 style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: '#FFFFFF', marginBottom: 8 }}>
               Clasificación inteligente
             </h2>
-            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 20 }}>
+            <p style={{ fontSize: 'var(--aguila-fs-body)', color: 'rgba(255,255,255,0.5)', marginBottom: 20 }}>
               Así es como ZAPATA AI clasifica productos automáticamente:
             </p>
             <div style={{
@@ -116,25 +116,25 @@ function OnboardingContent() {
               marginBottom: 20,
             }}>
               <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginBottom: 6 }}>Producto</div>
-              <div style={{ fontSize: 14, fontWeight: 600, color: '#FFFFFF', marginBottom: 12 }}>
+              <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: '#FFFFFF', marginBottom: 12 }}>
                 RESINA DE POLIETILENO DE ALTA DENSIDAD EN PELLETS
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
                 <div style={demoField}>
-                  <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>Fracción</span>
-                  <span style={{ fontSize: 14, fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--gold)' }}>3901.20.01</span>
+                  <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'rgba(255,255,255,0.4)' }}>Fracción</span>
+                  <span style={{ fontSize: 'var(--aguila-fs-section)', fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--gold)' }}>3901.20.01</span>
                 </div>
                 <div style={demoField}>
-                  <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>IGI</span>
-                  <span style={{ fontSize: 14, fontFamily: 'var(--font-mono)', fontWeight: 700, color: '#16A34A' }}>0% (T-MEC)</span>
+                  <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'rgba(255,255,255,0.4)' }}>IGI</span>
+                  <span style={{ fontSize: 'var(--aguila-fs-section)', fontFamily: 'var(--font-mono)', fontWeight: 700, color: '#16A34A' }}>0% (T-MEC)</span>
                 </div>
                 <div style={demoField}>
-                  <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>DTA</span>
-                  <span style={{ fontSize: 14, fontFamily: 'var(--font-mono)', fontWeight: 700, color: '#FFFFFF' }}>$462 MXN</span>
+                  <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'rgba(255,255,255,0.4)' }}>DTA</span>
+                  <span style={{ fontSize: 'var(--aguila-fs-section)', fontFamily: 'var(--font-mono)', fontWeight: 700, color: '#FFFFFF' }}>$462 MXN</span>
                 </div>
                 <div style={demoField}>
-                  <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>Confianza</span>
-                  <span style={{ fontSize: 14, fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--gold)' }}>92%</span>
+                  <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'rgba(255,255,255,0.4)' }}>Confianza</span>
+                  <span style={{ fontSize: 'var(--aguila-fs-section)', fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--gold)' }}>92%</span>
                 </div>
               </div>
             </div>
@@ -145,13 +145,13 @@ function OnboardingContent() {
         {/* Step 4: Ready */}
         {step === 4 && (
           <div style={{ textAlign: 'center' }}>
-            <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(22,163,74,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: 28 }}>
+            <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(22,163,74,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: 'var(--aguila-fs-kpi-mid)' }}>
               🚀
             </div>
             <h2 style={{ fontSize: 20, fontWeight: 700, color: '#FFFFFF', marginBottom: 8 }}>
               ¡Listo!
             </h2>
-            <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)', marginBottom: 24 }}>
+            <p style={{ fontSize: 'var(--aguila-fs-section)', color: 'rgba(255,255,255,0.6)', marginBottom: 24 }}>
               Tu agencia está activada en el Portal. El panel de control te espera.
             </p>
             <button onClick={() => router.push('/login')} style={btnStyle}>

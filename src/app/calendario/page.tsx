@@ -277,11 +277,11 @@ function CalendarioContent() {
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               padding: '12px 20px', borderBottom: `1px solid ${T.border}`,
             }}>
-              <span style={{ fontSize: 14, fontWeight: 700, color: T.textPrimary }}>
+              <span style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: T.textPrimary }}>
                 {dayLabel(date)}
               </span>
               <span style={{
-                padding: '2px 8px', fontSize: 11, fontWeight: 700,
+                padding: '2px 8px', fontSize: 'var(--aguila-fs-meta)', fontWeight: 700,
                 borderRadius: 9999, background: 'rgba(184,149,63,0.15)', color: T.gold,
               }}>
                 {items.length} embarque{items.length !== 1 ? 's' : ''}
@@ -300,7 +300,7 @@ function CalendarioContent() {
                 }}
               >
                 <span style={{
-                  fontSize: 13, fontWeight: 700, color: T.gold,
+                  fontSize: 'var(--aguila-fs-body)', fontWeight: 700, color: T.gold,
                   fontFamily: 'var(--font-mono)', flexShrink: 0,
                 }}>
                   {t.trafico}
@@ -313,7 +313,7 @@ function CalendarioContent() {
                   {t.descripcion_mercancia || '—'}
                 </span>
                 {isBroker && t.company_id && (
-                  <span style={{ fontSize: 11, color: T.textMuted, flexShrink: 0 }}>
+                  <span style={{ fontSize: 'var(--aguila-fs-meta)', color: T.textMuted, flexShrink: 0 }}>
                     {t.company_id}
                   </span>
                 )}
@@ -362,10 +362,10 @@ function CalendarioContent() {
       {/* Header */}
       <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <h1 style={{ fontSize: 24, fontWeight: 700, color: T.textPrimary, marginBottom: 4 }}>
+          <h1 style={{ fontSize: 'var(--aguila-fs-title)', fontWeight: 700, color: T.textPrimary, marginBottom: 4 }}>
             Calendario Operativo
           </h1>
-          <p style={{ fontSize: 14, color: T.textSecondary, margin: 0 }}>
+          <p style={{ fontSize: 'var(--aguila-fs-section)', color: T.textSecondary, margin: 0 }}>
             Cruces, llegadas, vencimientos y eventos
           </p>
         </div>
@@ -374,7 +374,7 @@ function CalendarioContent() {
             onClick={() => { setShowEventForm(v => !v); setNewEventDate(selectedDate || toDateStr(new Date())) }}
             style={{
               display: 'flex', alignItems: 'center', gap: 6,
-              padding: '8px 16px', borderRadius: 8, fontSize: 13, fontWeight: 600,
+              padding: '8px 16px', borderRadius: 8, fontSize: 'var(--aguila-fs-body)', fontWeight: 600,
               background: 'var(--gold)', border: 'none', color: 'var(--bg-card)',
               cursor: 'pointer', minHeight: 60,
             }}
@@ -413,7 +413,7 @@ function CalendarioContent() {
               placeholder="Título del evento"
               style={{
                 border: `1px solid ${T.border}`, borderRadius: 8,
-                padding: '10px 12px', fontSize: 13, color: T.textPrimary,
+                padding: '10px 12px', fontSize: 'var(--aguila-fs-body)', color: T.textPrimary,
                 background: 'var(--bg-main)', outline: 'none', fontFamily: 'inherit',
               }}
             />
@@ -424,7 +424,7 @@ function CalendarioContent() {
                 onChange={e => setNewEventDate(e.target.value)}
                 style={{
                   border: `1px solid ${T.border}`, borderRadius: 8,
-                  padding: '10px 12px', fontSize: 13, color: T.textPrimary,
+                  padding: '10px 12px', fontSize: 'var(--aguila-fs-body)', color: T.textPrimary,
                   background: 'var(--bg-main)', outline: 'none', fontFamily: 'var(--font-mono)',
                   flex: 1, minWidth: 160,
                 }}
@@ -434,7 +434,7 @@ function CalendarioContent() {
                 onChange={e => setNewEventType(e.target.value as CalendarEvent['event_type'])}
                 style={{
                   border: `1px solid ${T.border}`, borderRadius: 8,
-                  padding: '10px 12px', fontSize: 13, color: T.textPrimary,
+                  padding: '10px 12px', fontSize: 'var(--aguila-fs-body)', color: T.textPrimary,
                   background: 'var(--bg-main)', outline: 'none', fontFamily: 'inherit',
                   flex: 1, minWidth: 140,
                 }}
@@ -449,7 +449,7 @@ function CalendarioContent() {
               onClick={handleCreateEvent}
               disabled={!newEventTitle.trim() || !newEventDate}
               style={{
-                padding: '10px 20px', borderRadius: 8, fontSize: 13, fontWeight: 700,
+                padding: '10px 20px', borderRadius: 8, fontSize: 'var(--aguila-fs-body)', fontWeight: 700,
                 background: newEventTitle.trim() && newEventDate ? 'var(--gold)' : 'var(--border)',
                 border: 'none', color: newEventTitle.trim() && newEventDate ? 'var(--bg-card)' : T.textMuted,
                 cursor: newEventTitle.trim() && newEventDate ? 'pointer' : 'default',
@@ -522,7 +522,7 @@ function CalendarioContent() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 2, marginBottom: 4 }}>
             {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map(d => (
               <div key={d} style={{
-                textAlign: 'center', fontSize: 10, fontWeight: 700,
+                textAlign: 'center', fontSize: 'var(--aguila-fs-label)', fontWeight: 700,
                 color: T.textMuted, padding: 4,
                 textTransform: 'uppercase', letterSpacing: '0.06em',
               }}>
@@ -567,7 +567,7 @@ function CalendarioContent() {
                   {cell && (
                     <>
                       <div style={{
-                        fontSize: 11, fontFamily: 'var(--font-mono)',
+                        fontSize: 'var(--aguila-fs-meta)', fontFamily: 'var(--font-mono)',
                         color: isToday ? T.gold : T.textSecondary,
                         fontWeight: isToday ? 700 : 400,
                       }}>
@@ -616,7 +616,7 @@ function CalendarioContent() {
           }}>
             <div style={{
               padding: '12px 20px', borderBottom: `1px solid ${T.border}`,
-              fontSize: 14, fontWeight: 700, color: T.textPrimary,
+              fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: T.textPrimary,
               display: 'flex', alignItems: 'center', gap: 8,
             }}>
               <AlertTriangle size={16} style={{ color: T.amber }} />
@@ -634,7 +634,7 @@ function CalendarioContent() {
                 }}
               >
                 <FileText size={14} style={{ color: T.amber, flexShrink: 0 }} />
-                <span style={{ fontSize: 13, fontWeight: 600, color: T.gold, fontFamily: 'var(--font-mono)', flexShrink: 0 }}>
+                <span style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: T.gold, fontFamily: 'var(--font-mono)', flexShrink: 0 }}>
                   {d.trafico_id}
                 </span>
                 <span style={{ fontSize: 12, color: T.textSecondary, flex: 1 }}>
@@ -653,7 +653,7 @@ function CalendarioContent() {
           }}>
             <div style={{
               padding: '12px 20px', borderBottom: `1px solid ${T.border}`,
-              fontSize: 14, fontWeight: 700, color: T.textPrimary,
+              fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: T.textPrimary,
               display: 'flex', alignItems: 'center', gap: 8,
             }}>
               <Calendar size={16} style={{ color: '#7E22CE' }} />
@@ -670,8 +670,8 @@ function CalendarioContent() {
                   width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
                   background: '#7E22CE',
                 }} />
-                <span style={{ fontSize: 13, color: T.textPrimary, flex: 1 }}>{e.title}</span>
-                <span style={{ fontSize: 10, color: T.textMuted, textTransform: 'capitalize' }}>
+                <span style={{ fontSize: 'var(--aguila-fs-body)', color: T.textPrimary, flex: 1 }}>{e.title}</span>
+                <span style={{ fontSize: 'var(--aguila-fs-label)', color: T.textMuted, textTransform: 'capitalize' }}>
                   {e.event_type === 'inspection' ? 'Inspección' : e.event_type === 'meeting' ? 'Reunión' : e.event_type === 'deadline' ? 'Fecha límite' : 'Nota'}
                 </span>
               </div>
@@ -687,7 +687,7 @@ function CalendarioContent() {
           }}>
             <div style={{
               padding: '12px 20px', borderBottom: `1px solid ${T.border}`,
-              fontSize: 14, fontWeight: 700, color: T.textPrimary,
+              fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: T.textPrimary,
             }}>
               {dayLabel(selectedDate)} — {selectedTraficos.length} embarque{selectedTraficos.length !== 1 ? 's' : ''}
             </div>
@@ -707,7 +707,7 @@ function CalendarioContent() {
                   background: type === 'crossing' ? T.greenDot : T.blue,
                 }} />
                 <span style={{
-                  fontSize: 13, fontWeight: 700, color: T.gold,
+                  fontSize: 'var(--aguila-fs-body)', fontWeight: 700, color: T.gold,
                   fontFamily: 'var(--font-mono)', flexShrink: 0,
                 }}>
                   {t.trafico}
@@ -716,7 +716,7 @@ function CalendarioContent() {
                   {type === 'crossing' ? 'Cruce' : 'Llegada'}
                 </span>
                 <span style={{
-                  fontSize: 11, color: T.textMuted,
+                  fontSize: 'var(--aguila-fs-meta)', color: T.textMuted,
                   overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                   maxWidth: 200,
                 }}>

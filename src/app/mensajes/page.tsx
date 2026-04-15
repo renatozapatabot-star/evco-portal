@@ -262,11 +262,11 @@ export default function MensajesPage() {
       {/* Header */}
       {(!showThread) && (
         <div style={{ marginBottom: 16 }}>
-          <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 4px' }}>
+          <h1 style={{ fontSize: 'var(--aguila-fs-title)', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 4px' }}>
             <MessageSquare size={20} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 8 }} />
             WhatsApp
           </h1>
-          <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0 }}>
+          <p style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)', margin: 0 }}>
             {contacts.length} conversación{contacts.length !== 1 ? 'es' : ''} · {isInternal ? 'Todos los clientes' : 'Proveedores'}
           </p>
         </div>
@@ -316,10 +316,10 @@ export default function MensajesPage() {
                     {/* Content */}
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+                        <span style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: 'var(--text-primary)' }}>
                           {contact.displayName}
                         </span>
-                        <span style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', whiteSpace: 'nowrap' }}>
+                        <span style={{ fontSize: 'var(--aguila-fs-label)', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', whiteSpace: 'nowrap' }}>
                           {fmtDateCompact(contact.lastTime)}
                         </span>
                       </div>
@@ -328,7 +328,7 @@ export default function MensajesPage() {
                       </div>
                       {contact.traficoId && contact.traficoId !== 'unknown' && (
                         <span style={{
-                          fontSize: 10, fontFamily: 'var(--font-mono)',
+                          fontSize: 'var(--aguila-fs-label)', fontFamily: 'var(--font-mono)',
                           color: 'var(--gold-dark)', marginTop: 2, display: 'inline-block',
                         }}>
                           {contact.traficoId}
@@ -340,7 +340,7 @@ export default function MensajesPage() {
                     {contact.unreadCount > 0 && (
                       <span style={{
                         background: 'var(--success)', color: 'rgba(255,255,255,0.045)',
-                        fontSize: 10, fontWeight: 700, borderRadius: 10,
+                        fontSize: 'var(--aguila-fs-label)', fontWeight: 700, borderRadius: 10,
                         padding: '2px 7px', alignSelf: 'center',
                       }}>
                         {contact.unreadCount}
@@ -378,10 +378,10 @@ export default function MensajesPage() {
                       <Phone size={16} style={{ color: 'var(--slate-400)' }} />
                     </div>
                     <div>
-                      <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>
+                      <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: 'var(--text-primary)' }}>
                         {selectedContact?.displayName}
                       </div>
-                      <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                      <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)' }}>
                         {selectedContact?.totalMessages} mensaje{(selectedContact?.totalMessages || 0) !== 1 ? 's' : ''}
                         {selectedContact?.traficoId && selectedContact.traficoId !== 'unknown'
                           ? ` · ${selectedContact.traficoId}`
@@ -406,7 +406,7 @@ export default function MensajesPage() {
                             border: `1px solid ${isOut ? 'rgba(196,150,60,0.2)' : 'var(--border)'}`,
                           }}
                         >
-                          <div style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
+                          <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-primary)', lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
                             {msg.message_body || '[sin contenido]'}
                           </div>
 
@@ -422,7 +422,7 @@ export default function MensajesPage() {
                                   style={{
                                     display: 'flex', alignItems: 'center', gap: 4,
                                     padding: '4px 8px', borderRadius: 6,
-                                    background: 'var(--slate-100)', fontSize: 11,
+                                    background: 'var(--slate-100)', fontSize: 'var(--aguila-fs-meta)',
                                     color: 'var(--text-secondary)', textDecoration: 'none',
                                   }}
                                 >
@@ -432,7 +432,7 @@ export default function MensajesPage() {
                             </div>
                           )}
 
-                          <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4, fontFamily: 'var(--font-mono)', textAlign: isOut ? 'right' : 'left' }}>
+                          <div style={{ fontSize: 'var(--aguila-fs-label)', color: 'var(--text-muted)', marginTop: 4, fontFamily: 'var(--font-mono)', textAlign: isOut ? 'right' : 'left' }}>
                             {fmtDateTime(msg.created_at)}
                             {isOut && msg.status && (
                               <span style={{ marginLeft: 6 }}>
@@ -485,7 +485,7 @@ export default function MensajesPage() {
                       rows={2}
                       style={{
                         flex: 1, border: '1px solid var(--border)', borderRadius: 8,
-                        padding: '10px 12px', fontSize: 13, color: 'var(--text-primary)',
+                        padding: '10px 12px', fontSize: 'var(--aguila-fs-body)', color: 'var(--text-primary)',
                         fontFamily: 'inherit', resize: 'none', outline: 'none',
                         background: 'var(--bg-main)', boxSizing: 'border-box',
                         minHeight: 44,
@@ -511,7 +511,7 @@ export default function MensajesPage() {
                   {/* Send status */}
                   {sendStatus !== 'idle' && (
                     <div style={{
-                      padding: '4px 12px', fontSize: 11,
+                      padding: '4px 12px', fontSize: 'var(--aguila-fs-meta)',
                       color: sendStatus === 'sent' ? 'var(--success)' : 'var(--danger-500)',
                       textAlign: 'center',
                     }}>

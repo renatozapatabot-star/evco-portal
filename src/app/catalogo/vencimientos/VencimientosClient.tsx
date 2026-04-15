@@ -77,19 +77,19 @@ export function VencimientosClient({ rows }: Props) {
                 cursor: 'pointer',
               }}
             >
-              <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: TEXT_MUTED, fontWeight: 700 }}>
+              <div style={{ fontSize: 'var(--aguila-fs-label)', textTransform: 'uppercase', letterSpacing: '0.08em', color: TEXT_MUTED, fontWeight: 700 }}>
                 {st.label}
               </div>
               <div style={{
                 fontFamily: 'var(--font-jetbrains-mono), monospace',
-                fontSize: 28, fontWeight: 800,
+                fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 800,
                 color: counts[s] > 0 ? st.fg : TEXT_MUTED,
                 marginTop: 8, lineHeight: 1,
                 fontVariantNumeric: 'tabular-nums',
               }}>
                 {counts[s]}
               </div>
-              <div style={{ fontSize: 11, color: TEXT_SECONDARY, marginTop: 4 }}>
+              <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_SECONDARY, marginTop: 4 }}>
                 permisos
               </div>
             </button>
@@ -102,7 +102,7 @@ export function VencimientosClient({ rows }: Props) {
         background: BG_CARD, border: `1px solid ${BORDER}`, borderRadius: 12,
         backdropFilter: `blur(${GLASS_BLUR})`,
       }}>
-        <span style={{ fontSize: 11, color: TEXT_MUTED, alignSelf: 'center', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+        <span style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED, alignSelf: 'center', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
           Tipo:
         </span>
         {(['all', 'nom', 'sedue', 'semarnat'] as const).map((k) => (
@@ -133,7 +133,7 @@ export function VencimientosClient({ rows }: Props) {
           gridTemplateColumns: '100px minmax(0, 2fr) 90px 120px 120px 110px',
           gap: 12, padding: '12px 16px',
           borderBottom: `1px solid ${BORDER}`,
-          fontSize: 10, fontWeight: 700, textTransform: 'uppercase',
+          fontSize: 'var(--aguila-fs-label)', fontWeight: 700, textTransform: 'uppercase',
           letterSpacing: '0.08em', color: TEXT_MUTED,
         }}>
           <div>Tipo</div>
@@ -144,7 +144,7 @@ export function VencimientosClient({ rows }: Props) {
           <div style={{ textAlign: 'right' }}>Restantes</div>
         </div>
         {filtered.length === 0 ? (
-          <div style={{ padding: 32, textAlign: 'center', color: TEXT_MUTED, fontSize: 13 }}>
+          <div style={{ padding: 32, textAlign: 'center', color: TEXT_MUTED, fontSize: 'var(--aguila-fs-body)' }}>
             Sin permisos en el rango seleccionado.
           </div>
         ) : (
@@ -160,14 +160,14 @@ export function VencimientosClient({ rows }: Props) {
                   gap: 12, padding: '12px 16px',
                   borderBottom: `1px solid ${BORDER}`,
                   color: TEXT_PRIMARY, textDecoration: 'none',
-                  fontSize: 13, alignItems: 'center',
+                  fontSize: 'var(--aguila-fs-body)', alignItems: 'center',
                 }}
               >
                 <div>
                   <span style={{
                     display: 'inline-block', padding: '2px 8px', borderRadius: 20,
                     background: 'rgba(192,197,206,0.12)', color: TEXT_PRIMARY,
-                    fontSize: 11, fontWeight: 700,
+                    fontSize: 'var(--aguila-fs-meta)', fontWeight: 700,
                   }}>
                     {PERMIT_LABEL[r.permit_kind]}
                   </span>
@@ -188,7 +188,7 @@ export function VencimientosClient({ rows }: Props) {
                   <span style={{
                     display: 'inline-block', padding: '2px 10px', borderRadius: 20,
                     background: st.bg, color: st.fg,
-                    fontSize: 11, fontWeight: 700,
+                    fontSize: 'var(--aguila-fs-meta)', fontWeight: 700,
                     fontFamily: 'var(--font-jetbrains-mono), monospace',
                     fontVariantNumeric: 'tabular-nums',
                   }}>

@@ -56,7 +56,7 @@ export function CatalogoTable({ rows, query, total }: Props) {
             border: '1px solid rgba(255,255,255,0.1)',
             borderRadius: 12,
             color: 'rgba(255,255,255,0.92)',
-            fontSize: 14,
+            fontSize: 'var(--aguila-fs-section)',
             outline: 'none',
           }}
         />
@@ -70,7 +70,7 @@ export function CatalogoTable({ rows, query, total }: Props) {
             background: '#eab308',
             color: '#0a0a0c',
             border: 'none',
-            fontSize: 14,
+            fontSize: 'var(--aguila-fs-section)',
             fontWeight: 700,
             cursor: pending ? 'wait' : 'pointer',
           }}
@@ -119,7 +119,7 @@ function CatalogoRowCard({ row }: { row: CatalogoRow }) {
             <p
               style={{
                 margin: 0,
-                fontSize: 14,
+                fontSize: 'var(--aguila-fs-section)',
                 fontWeight: 600,
                 color: 'rgba(255,255,255,0.92)',
                 lineHeight: 1.35,
@@ -134,7 +134,7 @@ function CatalogoRowCard({ row }: { row: CatalogoRow }) {
             {row.cve_producto && (
               <p
                 className="font-mono"
-                style={{ margin: '2px 0 0', fontSize: 11, color: 'rgba(255,255,255,0.45)' }}
+                style={{ margin: '2px 0 0', fontSize: 'var(--aguila-fs-meta)', color: 'rgba(255,255,255,0.45)' }}
               >
                 {row.cve_producto}
               </p>
@@ -144,7 +144,7 @@ function CatalogoRowCard({ row }: { row: CatalogoRow }) {
           <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: 12 }}>
             {row.proveedor_nombre && (
               <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-                <span style={{ color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', fontSize: 10, letterSpacing: '0.08em' }}>
+                <span style={{ color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', fontSize: 'var(--aguila-fs-label)', letterSpacing: '0.08em' }}>
                   Proveedor
                 </span>
                 <span style={{ color: 'rgba(255,255,255,0.85)', fontWeight: 500 }}>{row.proveedor_nombre}</span>
@@ -152,7 +152,7 @@ function CatalogoRowCard({ row }: { row: CatalogoRow }) {
             )}
             {row.pais_origen && (
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', fontSize: 10, letterSpacing: '0.08em' }}>
+                <span style={{ color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', fontSize: 'var(--aguila-fs-label)', letterSpacing: '0.08em' }}>
                   Origen
                 </span>
                 <span style={{ color: 'rgba(255,255,255,0.85)' }}>{row.pais_origen}</span>
@@ -160,7 +160,7 @@ function CatalogoRowCard({ row }: { row: CatalogoRow }) {
             )}
             {row.veces_importado > 0 && (
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', fontSize: 10, letterSpacing: '0.08em' }}>
+                <span style={{ color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', fontSize: 'var(--aguila-fs-label)', letterSpacing: '0.08em' }}>
                   Importado
                 </span>
                 <span className="font-mono" style={{ color: 'rgba(255,255,255,0.85)' }}>
@@ -170,7 +170,7 @@ function CatalogoRowCard({ row }: { row: CatalogoRow }) {
             )}
             {row.valor_ytd_usd != null && row.valor_ytd_usd > 0 && (
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', fontSize: 10, letterSpacing: '0.08em' }}>
+                <span style={{ color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', fontSize: 'var(--aguila-fs-label)', letterSpacing: '0.08em' }}>
                   Valor
                 </span>
                 <span className="font-mono" style={{ color: 'rgba(255,255,255,0.85)' }}>
@@ -206,12 +206,12 @@ function CatalogoRowCard({ row }: { row: CatalogoRow }) {
               <span aria-hidden>→</span>
             </Link>
           ) : (
-            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>Sin embarque reciente</span>
+            <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'rgba(255,255,255,0.4)' }}>Sin embarque reciente</span>
           )}
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
-          <p style={{ margin: 0, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.45)' }}>
+          <p style={{ margin: 0, fontSize: 'var(--aguila-fs-label)', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.45)' }}>
             Fracción
           </p>
           {row.fraccion ? (
@@ -250,7 +250,7 @@ function CatalogoRowCard({ row }: { row: CatalogoRow }) {
             </Link>
           )}
           {row.fraccion_source && (
-            <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', textAlign: 'right' }}>
+            <span style={{ fontSize: 'var(--aguila-fs-label)', color: 'rgba(255,255,255,0.4)', textAlign: 'right' }}>
               {row.fraccion_source.replace(/_/g, ' ')}
             </span>
           )}

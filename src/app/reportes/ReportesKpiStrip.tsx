@@ -42,7 +42,7 @@ export function ReportesKpiStrip() {
         borderRadius: 12,
         padding: '12px 16px',
         marginBottom: 16,
-        fontSize: 13,
+        fontSize: 'var(--aguila-fs-body)',
       }}>
         No se pudieron cargar los KPIs: {error}
       </div>

@@ -139,7 +139,7 @@ export default function MvePage() {
                 border: `1px solid ${isCritical ? 'var(--danger-b)' : 'var(--warning-b)'}`,
                 borderLeft: `4px solid ${isCritical ? 'var(--danger)' : 'var(--warning)'}`,
               }}>
-                <div style={{ fontSize: 13, fontWeight: 700, color: isCritical ? 'var(--danger-t)' : 'var(--warning-t)' }}>
+                <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 700, color: isCritical ? 'var(--danger-t)' : 'var(--warning-t)' }}>
                   {alert.title || alert.description}
                 </div>
                 {alert.due_date && (

@@ -248,9 +248,9 @@ async function renderContabilidadCockpit(opName: string, scopedCompanyId: string
     }}>
       <GlassCard padding={20} severity={closeSeverity}>
         <SectionHeader title="Cierre del mes" />
-        <div style={{ marginTop: 8, fontSize: 28, fontWeight: 800, fontFamily: 'var(--font-jetbrains-mono), monospace', color: '#E6EDF3' }}>
+        <div style={{ marginTop: 8, fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 800, fontFamily: 'var(--font-jetbrains-mono), monospace', color: '#E6EDF3' }}>
           {closeTotal - closeOpen}
-          <span style={{ fontSize: 14, fontWeight: 500, color: 'rgba(230,237,243,0.55)', marginLeft: 6 }}>/ {closeTotal}</span>
+          <span style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 500, color: 'rgba(230,237,243,0.55)', marginLeft: 6 }}>/ {closeTotal}</span>
         </div>
         <div style={{ fontSize: 12, color: 'rgba(230,237,243,0.55)', marginTop: 4 }}>
           {closeOpen === 0 ? 'Checklist completo' : `${closeOpen} pendiente${closeOpen === 1 ? '' : 's'}`}
@@ -259,7 +259,7 @@ async function renderContabilidadCockpit(opName: string, scopedCompanyId: string
 
       <GlassCard padding={20} severity={mveSeverity}>
         <SectionHeader title="MVE" />
-        <div style={{ marginTop: 8, fontSize: 28, fontWeight: 800, fontFamily: 'var(--font-jetbrains-mono), monospace', color: '#E6EDF3' }}>
+        <div style={{ marginTop: 8, fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 800, fontFamily: 'var(--font-jetbrains-mono), monospace', color: '#E6EDF3' }}>
           {mveOpen.length}
         </div>
         <div style={{ fontSize: 12, color: 'rgba(230,237,243,0.55)', marginTop: 4 }}>
@@ -273,7 +273,7 @@ async function renderContabilidadCockpit(opName: string, scopedCompanyId: string
         <div style={{ marginTop: 10, display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
           {ar.byBucket.map((b) => (
             <div key={b.bucket} style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 11, color: 'rgba(230,237,243,0.55)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{b.bucket}d</div>
+              <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'rgba(230,237,243,0.55)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{b.bucket}d</div>
               <div style={{ fontSize: 16, fontWeight: 700, fontFamily: 'var(--font-jetbrains-mono), monospace', color: b.bucket === '90+' && b.amount > 0 ? '#FBBF24' : '#E6EDF3', marginTop: 2 }}>
                 {fmtUSDCompact(b.amount) || '—'}
               </div>
@@ -284,11 +284,11 @@ async function renderContabilidadCockpit(opName: string, scopedCompanyId: string
 
       <GlassCard padding={20}>
         <SectionHeader title="Última exportación QB" />
-        <div style={{ marginTop: 10, fontSize: 13, color: '#E6EDF3', fontFamily: 'var(--font-jetbrains-mono), monospace' }}>
+        <div style={{ marginTop: 10, fontSize: 'var(--aguila-fs-body)', color: '#E6EDF3', fontFamily: 'var(--font-jetbrains-mono), monospace' }}>
           {qbLastLine}
         </div>
         {lastQb ? (
-          <div style={{ marginTop: 6, fontSize: 11, color: 'rgba(230,237,243,0.55)' }}>
+          <div style={{ marginTop: 6, fontSize: 'var(--aguila-fs-meta)', color: 'rgba(230,237,243,0.55)' }}>
             estado: {lastQb.status}
           </div>
         ) : null}

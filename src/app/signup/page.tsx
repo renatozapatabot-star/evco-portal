@@ -37,7 +37,7 @@ export default function SignupPage() {
         <h1 style={{ fontSize: 20, fontWeight: 700, color: '#FFFFFF', textAlign: 'center', marginBottom: 8 }}>
           Solicitar acceso
         </h1>
-        <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', textAlign: 'center', marginBottom: 28 }}>
+        <p style={{ fontSize: 'var(--aguila-fs-body)', color: 'rgba(255,255,255,0.5)', textAlign: 'center', marginBottom: 28 }}>
           Inteligencia aduanera para agentes de comercio exterior
         </p>
 
@@ -45,7 +45,7 @@ export default function SignupPage() {
           <div style={{
             padding: '10px 14px', borderRadius: 8, marginBottom: 16,
             background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.3)',
-            color: '#F87171', fontSize: 13,
+            color: '#F87171', fontSize: 'var(--aguila-fs-body)',
           }}>
             {state.error}
           </div>
@@ -63,7 +63,7 @@ export default function SignupPage() {
             <select name="aduana" required style={{
               width: '100%', padding: '10px 14px', borderRadius: 8,
               background: 'rgba(255,255,255,0.045)', border: '1px solid rgba(255,255,255,0.1)',
-              color: '#FFFFFF', fontSize: 14,
+              color: '#FFFFFF', fontSize: 'var(--aguila-fs-section)',
             }}>
               <option value="">Seleccionar...</option>
               {ADUANAS.map(a => <option key={a} value={a}>{a}</option>)}
@@ -103,7 +103,7 @@ function Input({ name, label, type = 'text', placeholder, required, maxLength }:
       <input name={name} type={type} placeholder={placeholder} required={required} maxLength={maxLength} style={{
         width: '100%', padding: '10px 14px', borderRadius: 8,
         background: 'rgba(255,255,255,0.045)', border: '1px solid rgba(255,255,255,0.1)',
-        color: '#FFFFFF', fontSize: 14,
+        color: '#FFFFFF', fontSize: 'var(--aguila-fs-section)',
       }} />
     </div>
   )

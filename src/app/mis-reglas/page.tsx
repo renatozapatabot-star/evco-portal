@@ -59,22 +59,22 @@ export default function MisReglasPage() {
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
                 <span style={{
-                  fontSize: 10, fontWeight: 600, textTransform: 'uppercase',
+                  fontSize: 'var(--aguila-fs-label)', fontWeight: 600, textTransform: 'uppercase',
                   letterSpacing: '0.05em', color: '#E8EAED',
                   background: 'rgba(192,197,206,0.1)', padding: '2px 8px', borderRadius: 4,
                 }}>
                   {m.memory_type.replace(/_/g, ' ')}
                 </span>
                 {m.applied_count > 0 && (
-                  <span className="font-mono" style={{ fontSize: 11, color: '#16A34A' }}>
+                  <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-meta)', color: '#16A34A' }}>
                     Aplicada {m.applied_count} {m.applied_count === 1 ? 'vez' : 'veces'}
                   </span>
                 )}
               </div>
-              <div style={{ fontSize: 14, color: '#E6EDF3', lineHeight: 1.5, marginBottom: 8 }}>
+              <div style={{ fontSize: 'var(--aguila-fs-section)', color: '#E6EDF3', lineHeight: 1.5, marginBottom: 8 }}>
                 {m.natural_language_description}
               </div>
-              <div style={{ fontSize: 11, color: '#6E7681' }}>
+              <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#6E7681' }}>
                 Creada: {new Date(m.created_at).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'America/Chicago' })}
                 {m.last_applied_at && ` · Última aplicación: ${new Date(m.last_applied_at).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', timeZone: 'America/Chicago' })}`}
               </div>

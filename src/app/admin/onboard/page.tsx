@@ -124,11 +124,11 @@ export default function OnboardPage() {
 
   const inputStyle: React.CSSProperties = {
     width: '100%', height: 44, border: `1px solid ${T.border}`, borderRadius: 8,
-    padding: '0 12px', fontSize: 14, background: '#05070B', color: T.text,
+    padding: '0 12px', fontSize: 'var(--aguila-fs-section)', background: '#05070B', color: T.text,
     outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box',
   }
   const labelStyle: React.CSSProperties = {
-    display: 'block', color: T.sub, fontSize: 11, fontWeight: 600,
+    display: 'block', color: T.sub, fontSize: 'var(--aguila-fs-meta)', fontWeight: 600,
     marginBottom: 4, letterSpacing: '0.04em', textTransform: 'uppercase',
   }
 
@@ -137,7 +137,7 @@ export default function OnboardPage() {
   return (
     <div style={{ padding: '24px 28px', fontFamily: 'var(--font-sans)', color: T.text, maxWidth: 640 }}>
       <h1 style={{ fontSize: 20, fontWeight: 800, margin: '0 0 4px' }}>Nuevo Cliente</h1>
-      <p style={{ color: T.muted, fontSize: 13, margin: '0 0 24px' }}>
+      <p style={{ color: T.muted, fontSize: 'var(--aguila-fs-body)', margin: '0 0 24px' }}>
         Paso {step} de 3 &middot; Onboarding
       </p>
 
@@ -155,7 +155,7 @@ export default function OnboardPage() {
       {error && (
         <div style={{
           background: 'rgba(220,38,38,0.1)', border: `1px solid ${T.red}30`,
-          borderRadius: 8, padding: '10px 14px', marginBottom: 16, color: T.red, fontSize: 13,
+          borderRadius: 8, padding: '10px 14px', marginBottom: 16, color: T.red, fontSize: 'var(--aguila-fs-body)',
         }}>
           {error}
         </div>
@@ -177,7 +177,7 @@ export default function OnboardPage() {
 
               <div>
                 <label style={labelStyle}>Company ID (auto)</label>
-                <input style={{ ...inputStyle, color: T.muted, fontFamily: 'var(--font-mono)', fontSize: 13 }}
+                <input style={{ ...inputStyle, color: T.muted, fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body)' }}
                   value={form.company_id}
                   onChange={e => setForm(prev => ({ ...prev, company_id: e.target.value }))}
                   placeholder="auto-generated-from-name" />
@@ -220,7 +220,7 @@ export default function OnboardPage() {
                     Regenerar
                   </button>
                 </div>
-                <p style={{ color: T.muted, fontSize: 11, margin: '4px 0 0' }}>
+                <p style={{ color: T.muted, fontSize: 'var(--aguila-fs-meta)', margin: '4px 0 0' }}>
                   Auto-generada si se deja vacía
                 </p>
               </div>
@@ -234,7 +234,7 @@ export default function OnboardPage() {
                 background: isStep1Valid ? T.gold : '#333',
                 border: 'none', borderRadius: 8,
                 color: isStep1Valid ? 'var(--text-primary)' : '#666',
-                fontWeight: 700, fontSize: 14,
+                fontWeight: 700, fontSize: 'var(--aguila-fs-section)',
                 cursor: isStep1Valid ? 'pointer' : 'not-allowed',
                 minHeight: 48,
               }}>
@@ -247,11 +247,11 @@ export default function OnboardPage() {
         {step === 2 && (
           <div>
             <h2 style={{ fontSize: 16, fontWeight: 700, margin: '0 0 20px' }}>Confirmar Activación</h2>
-            <p style={{ color: T.sub, fontSize: 13, margin: '0 0 16px' }}>
+            <p style={{ color: T.sub, fontSize: 'var(--aguila-fs-body)', margin: '0 0 16px' }}>
               Al activar se creará la empresa, plantillas de documentos, preferencias de notificación, y se enviará email de bienvenida.
             </p>
 
-            <div style={{ background: '#05070B', borderRadius: 8, padding: 16, fontSize: 13, lineHeight: 2.2 }}>
+            <div style={{ background: '#05070B', borderRadius: 8, padding: 16, fontSize: 'var(--aguila-fs-body)', lineHeight: 2.2 }}>
               <div><span style={{ color: T.muted }}>Empresa:</span> <strong>{form.company_name}</strong></div>
               <div><span style={{ color: T.muted }}>Company ID:</span> <code style={{ background: T.border, padding: '2px 8px', borderRadius: 4, fontFamily: 'var(--font-mono)', fontSize: 12 }}>{form.company_id}</code></div>
               <div><span style={{ color: T.muted }}>Clave:</span> <span style={{ fontFamily: 'var(--font-mono)' }}>{form.clave_cliente}</span></div>
@@ -277,7 +277,7 @@ export default function OnboardPage() {
               <button onClick={() => setStep(1)}
                 style={{
                   padding: '12px 20px', background: '#05070B', border: `1px solid ${T.border}`,
-                  borderRadius: 8, color: T.text, fontWeight: 600, fontSize: 13,
+                  borderRadius: 8, color: T.text, fontWeight: 600, fontSize: 'var(--aguila-fs-body)',
                   cursor: 'pointer', minHeight: 48,
                 }}>
                 Atrás
@@ -287,7 +287,7 @@ export default function OnboardPage() {
                   padding: '12px 28px',
                   background: loading ? '#333' : 'linear-gradient(135deg, #16A34A, #15803D)',
                   border: 'none', borderRadius: 8, color: 'rgba(255,255,255,0.045)',
-                  fontWeight: 700, fontSize: 14, cursor: loading ? 'wait' : 'pointer',
+                  fontWeight: 700, fontSize: 'var(--aguila-fs-section)', cursor: loading ? 'wait' : 'pointer',
                   minHeight: 48,
                 }}>
                 {loading ? 'Activando...' : 'Activar Cliente'}
@@ -300,9 +300,9 @@ export default function OnboardPage() {
         {step === 3 && result && (
           <div>
             <div style={{ textAlign: 'center', marginBottom: 24 }}>
-              <div style={{ fontSize: 48, marginBottom: 12 }}>&#x2705;</div>
-              <h2 style={{ fontSize: 18, fontWeight: 700, margin: '0 0 4px' }}>Cliente Activado</h2>
-              <p style={{ color: T.sub, fontSize: 14, margin: 0 }}>{result.company_name} ya tiene acceso</p>
+              <div style={{ fontSize: 'var(--aguila-fs-kpi-hero)', marginBottom: 12 }}>&#x2705;</div>
+              <h2 style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, margin: '0 0 4px' }}>Cliente Activado</h2>
+              <p style={{ color: T.sub, fontSize: 'var(--aguila-fs-section)', margin: 0 }}>{result.company_name} ya tiene acceso</p>
             </div>
 
             {/* Status chips */}
@@ -315,7 +315,7 @@ export default function OnboardPage() {
 
             {/* Credentials block */}
             <div style={{
-              background: '#05070B', borderRadius: 8, padding: 20, fontSize: 13, lineHeight: 2.2,
+              background: '#05070B', borderRadius: 8, padding: 20, fontSize: 'var(--aguila-fs-body)', lineHeight: 2.2,
             }}>
               <CopyRow label="Portal URL" value={result.portal_url} copied={copied} onCopy={copyToClipboard} />
               <CopyRow label="Company ID" value={result.company_id} copied={copied} onCopy={copyToClipboard} />
@@ -332,7 +332,7 @@ export default function OnboardPage() {
                   border: `1px solid ${syncDone ? T.green + '40' : T.border}`,
                   borderRadius: 8,
                   color: syncDone ? T.green : T.text,
-                  fontWeight: 600, fontSize: 13, cursor: syncDone ? 'default' : 'pointer',
+                  fontWeight: 600, fontSize: 'var(--aguila-fs-body)', cursor: syncDone ? 'default' : 'pointer',
                   minHeight: 48,
                 }}>
                 {syncDone ? 'Sync iniciado' : syncing ? 'Sincronizando...' : 'Sync GlobalPC Data'}
@@ -349,7 +349,7 @@ export default function OnboardPage() {
                 style={{
                   padding: '12px 20px', background: '#05070B',
                   border: `1px solid ${T.border}`, borderRadius: 8,
-                  color: T.text, fontWeight: 600, fontSize: 13, cursor: 'pointer',
+                  color: T.text, fontWeight: 600, fontSize: 'var(--aguila-fs-body)', cursor: 'pointer',
                   minHeight: 48,
                 }}>
                 {copied === 'all' ? 'Copiado!' : 'Copiar Todo'}
@@ -357,7 +357,7 @@ export default function OnboardPage() {
               <button onClick={() => router.push('/admin')}
                 style={{
                   padding: '12px 24px', background: T.gold, border: 'none',
-                  borderRadius: 8, color: 'var(--text-primary)', fontWeight: 700, fontSize: 14,
+                  borderRadius: 8, color: 'var(--text-primary)', fontWeight: 700, fontSize: 'var(--aguila-fs-section)',
                   cursor: 'pointer', minHeight: 48,
                 }}>
                 Volver al Admin

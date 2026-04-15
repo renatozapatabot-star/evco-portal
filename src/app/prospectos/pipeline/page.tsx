@@ -139,7 +139,7 @@ export default function PipelinePage() {
                   <div style={{ fontSize: 12, fontWeight: 700, color: col.color, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                     {col.label}
                   </div>
-                  <div style={{ fontSize: 11, color: 'var(--n-400)', marginTop: 2 }}>
+                  <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--n-400)', marginTop: 2 }}>
                     {stats.count} · <span style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtMXN(stats.value)}</span>/año
                   </div>
                 </div>
@@ -147,7 +147,7 @@ export default function PipelinePage() {
                   width: 22, height: 22, borderRadius: '50%',
                   background: col.color, color: 'rgba(255,255,255,0.045)', display: 'flex',
                   alignItems: 'center', justifyContent: 'center',
-                  fontSize: 11, fontWeight: 700,
+                  fontSize: 'var(--aguila-fs-meta)', fontWeight: 700,
                 }}>
                   {stats.count}
                 </span>
@@ -175,18 +175,18 @@ export default function PipelinePage() {
                       {(p.razon_social || p.rfc).substring(0, 25)}
                     </div>
                     <span style={{
-                      fontSize: 10, fontWeight: 700, color: p.opportunity_score >= 70 ? 'var(--gold-600)' : 'var(--n-400)',
+                      fontSize: 'var(--aguila-fs-label)', fontWeight: 700, color: p.opportunity_score >= 70 ? 'var(--gold-600)' : 'var(--n-400)',
                       fontFamily: 'var(--font-jetbrains-mono)',
                     }}>
                       {p.opportunity_score}
                     </span>
                   </div>
-                  <div style={{ fontSize: 11, color: 'var(--n-400)', display: 'flex', gap: 8 }}>
+                  <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--n-400)', display: 'flex', gap: 8 }}>
                     <span style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtUSD(p.total_valor_usd)} USD</span>
                     <span style={{ color: 'var(--success)', fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtMXN(p.estimated_annual_fees_mxn)}/yr</span>
                   </div>
                   {p.next_follow_up && (
-                    <div style={{ fontSize: 10, color: 'var(--warning)', marginTop: 4 }}>
+                    <div style={{ fontSize: 'var(--aguila-fs-label)', color: 'var(--warning)', marginTop: 4 }}>
                       Seguimiento: {p.next_follow_up}
                     </div>
                   )}
@@ -201,7 +201,7 @@ export default function PipelinePage() {
                             style={{
                               flex: 1, padding: '4px 0', borderRadius: 3,
                               border: '1px solid var(--border-light)',
-                              background: 'none', fontSize: 10, cursor: 'pointer',
+                              background: 'none', fontSize: 'var(--aguila-fs-label)', cursor: 'pointer',
                               color: nextCol.color,
                             }}>
                             → {nextCol.label}

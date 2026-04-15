@@ -55,7 +55,7 @@ async function OperatorCockpitContent({ role, opId, opName, month }: { role: str
   void role
   return await loadOperatorCockpit(opId, opName, month).catch((err) => {
     return (
-      <div style={{ padding: 40, color: '#E6EDF3', fontFamily: 'ui-monospace, monospace', fontSize: 13 }}>
+      <div style={{ padding: 40, color: '#E6EDF3', fontFamily: 'ui-monospace, monospace', fontSize: 'var(--aguila-fs-body)' }}>
         No se pudo cargar el cockpit del operador: {err instanceof Error ? err.message : String(err)}
       </div>
     )

@@ -80,7 +80,7 @@ export function ApproveActions({ opinionId, canApprove, status }: Props) {
             minHeight: 60, padding: '0 24px',
             background: 'rgba(255,255,255,0.06)', color: TEXT_PRIMARY,
             border: '1px solid rgba(255,255,255,0.1)',
-            borderRadius: 10, fontSize: 14, fontWeight: 600,
+            borderRadius: 10, fontSize: 'var(--aguila-fs-section)', fontWeight: 600,
             textDecoration: 'none',
           }}
         >
@@ -95,7 +95,7 @@ export function ApproveActions({ opinionId, canApprove, status }: Props) {
               minHeight: 60, padding: '0 28px',
               background: SILVER_GRADIENT, color: '#0A0A0C',
               border: 'none', borderRadius: 10,
-              fontSize: 14, fontWeight: 700,
+              fontSize: 'var(--aguila-fs-section)', fontWeight: 700,
               textTransform: 'uppercase', letterSpacing: 0.5,
               cursor: 'pointer',
             }}
@@ -113,7 +113,7 @@ export function ApproveActions({ opinionId, canApprove, status }: Props) {
               background: 'rgba(239,68,68,0.10)',
               color: '#ef4444',
               border: '1px solid rgba(239,68,68,0.3)',
-              borderRadius: 10, fontSize: 14, fontWeight: 700,
+              borderRadius: 10, fontSize: 'var(--aguila-fs-section)', fontWeight: 700,
               textTransform: 'uppercase', letterSpacing: 0.5,
               cursor: 'pointer',
               display: 'inline-flex', alignItems: 'center', gap: 10,
@@ -133,7 +133,7 @@ export function ApproveActions({ opinionId, canApprove, status }: Props) {
           <div style={{
             minHeight: 60, padding: '0 24px',
             display: 'inline-flex', alignItems: 'center',
-            color: ACCENT_SILVER, fontSize: 13,
+            color: ACCENT_SILVER, fontSize: 'var(--aguila-fs-body)',
           }}>Firmando…</div>
         )}
       </div>
@@ -146,7 +146,7 @@ export function ApproveActions({ opinionId, canApprove, status }: Props) {
       )}
 
       {err && (
-        <p style={{ fontSize: 13, color: '#ef4444', margin: 0 }}>{err}</p>
+        <p style={{ fontSize: 'var(--aguila-fs-body)', color: '#ef4444', margin: 0 }}>{err}</p>
       )}
     </div>
   )

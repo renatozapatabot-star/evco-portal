@@ -104,7 +104,7 @@ export default function EntradaDetailPage() {
 
   if (!entrada) return (
     <div className="page-shell" style={{ maxWidth: 600, textAlign: 'center', paddingTop: 60 }}>
-      <Link href="/entradas" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 13, color: 'var(--text-muted)', textDecoration: 'none', marginBottom: 24 }}>
+      <Link href="/entradas" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 'var(--aguila-fs-body)', color: 'var(--text-muted)', textDecoration: 'none', marginBottom: 24 }}>
         <ChevronLeft size={14} /> Entradas
       </Link>
       <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)' }}>Entrada no encontrada</h1>
@@ -124,7 +124,7 @@ export default function EntradaDetailPage() {
 
       {/* Back link */}
       <div style={{ width: '100%', maxWidth: 600, marginBottom: 16 }}>
-        <Link href="/entradas" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 13, color: 'var(--text-muted)', textDecoration: 'none' }}>
+        <Link href="/entradas" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 'var(--aguila-fs-body)', color: 'var(--text-muted)', textDecoration: 'none' }}>
           <ChevronLeft size={14} /> Entradas
         </Link>
       </div>
@@ -143,7 +143,7 @@ export default function EntradaDetailPage() {
             padding: '10px 24px', display: 'flex', alignItems: 'center', gap: 8,
           }}>
             <AlertTriangle size={14} style={{ color: 'var(--danger-500, #DC2626)', flexShrink: 0 }} />
-            <span style={{ fontSize: 13, color: 'var(--danger-500, #DC2626)', fontWeight: 600 }}>
+            <span style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--danger-500, #DC2626)', fontWeight: 600 }}>
               {damageNote}
             </span>
           </div>
@@ -167,7 +167,7 @@ export default function EntradaDetailPage() {
           </div>
 
           {/* Subtitle: date + proveedor */}
-          <p style={{ fontSize: 14, color: 'var(--text-secondary)', margin: '0 0 24px', paddingLeft: 20 }}>
+          <p style={{ fontSize: 'var(--aguila-fs-section)', color: 'var(--text-secondary)', margin: '0 0 24px', paddingLeft: 20 }}>
             {entrada.fecha_llegada_mercancia ? fmtDate(entrada.fecha_llegada_mercancia) : ''}
             {proveedorName ? ` · ${titleCase(proveedorName)}` : ''}
           </p>
@@ -181,7 +181,7 @@ export default function EntradaDetailPage() {
               <div style={{ fontSize: 22, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
                 {entrada.cantidad_bultos?.toLocaleString('es-MX') ?? '—'}
               </div>
-              <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 2 }}>
+              <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 2 }}>
                 Bultos
               </div>
             </div>
@@ -192,7 +192,7 @@ export default function EntradaDetailPage() {
               <div style={{ fontSize: 22, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
                 {entrada.peso_bruto ? Number(entrada.peso_bruto).toLocaleString('es-MX') : '—'}
               </div>
-              <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 2 }}>
+              <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 2 }}>
                 Peso (kg)
               </div>
             </div>
@@ -207,7 +207,7 @@ export default function EntradaDetailPage() {
               }}>
                 {guia ?? '—'}
               </div>
-              <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 2 }}>
+              <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 2 }}>
                 Guía
               </div>
             </div>
@@ -216,7 +216,7 @@ export default function EntradaDetailPage() {
           {/* Mercancía */}
           {description && (
             <div style={{ marginBottom: 20 }}>
-              <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>
+              <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>
                 Mercancía
               </div>
               <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.4 }}>
@@ -228,10 +228,10 @@ export default function EntradaDetailPage() {
           {/* Transporte */}
           {hasTransport && (
             <div style={{ marginBottom: 20 }}>
-              <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>
+              <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>
                 Transporte
               </div>
-              <div style={{ fontSize: 14, color: 'var(--text-secondary)' }}>
+              <div style={{ fontSize: 'var(--aguila-fs-section)', color: 'var(--text-secondary)' }}>
                 {usCarrier && <span>US: {usCarrier}</span>}
                 {usCarrier && mxCarrier && <span> · </span>}
                 {mxCarrier && <span>MX: {mxCarrier}</span>}
@@ -253,19 +253,19 @@ export default function EntradaDetailPage() {
               onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
             >
               <div>
-                <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Embarque</div>
+                <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Embarque</div>
                 <div style={{ fontSize: 15, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--gold-dark, #7A7E86)', marginTop: 2 }}>
                   {fmtTrafico(entrada.trafico)}
                 </div>
               </div>
-              <span style={{ fontSize: 14, color: 'var(--text-muted)' }}>→</span>
+              <span style={{ fontSize: 'var(--aguila-fs-section)', color: 'var(--text-muted)' }}>→</span>
             </Link>
           ) : (
             <div style={{
               padding: '14px 16px', borderRadius: 10,
               background: 'rgba(255,255,255,0.06)', textAlign: 'center',
             }}>
-              <span style={{ fontSize: 13, color: 'var(--text-muted)', fontStyle: 'italic' }}>
+              <span style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-muted)', fontStyle: 'italic' }}>
                 Pendiente vinculación a embarque
               </span>
             </div>
@@ -275,7 +275,7 @@ export default function EntradaDetailPage() {
 
       {/* Footer */}
       <div style={{ marginTop: 24, textAlign: 'center' }}>
-        <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+        <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)' }}>
           Renato Zapata & Company · Patente {PATENTE}
         </div>
       </div>

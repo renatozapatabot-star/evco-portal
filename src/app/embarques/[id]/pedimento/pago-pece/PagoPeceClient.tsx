@@ -161,7 +161,7 @@ export function PagoPeceClient({
             border: `1px solid ${RED}66`,
             background: 'rgba(239,68,68,0.08)',
             color: RED,
-            fontSize: 13,
+            fontSize: 'var(--aguila-fs-body)',
           }}
         >
           {error}
@@ -228,7 +228,7 @@ export function PagoPeceClient({
           <p
             style={{
               margin: 0,
-              fontSize: 13,
+              fontSize: 'var(--aguila-fs-body)',
               color: TEXT_MUTED,
               lineHeight: 1.5,
             }}
@@ -316,7 +316,7 @@ function SummaryItem({
     <div>
       <dt
         style={{
-          fontSize: 10,
+          fontSize: 'var(--aguila-fs-label)',
           color: TEXT_MUTED,
           textTransform: 'uppercase',
           letterSpacing: '0.08em',
@@ -327,7 +327,7 @@ function SummaryItem({
       <dd
         style={{
           margin: '4px 0 0',
-          fontSize: 14,
+          fontSize: 'var(--aguila-fs-section)',
           color: TEXT_PRIMARY,
           fontFamily: mono ? 'var(--font-mono)' : 'inherit',
         }}
@@ -349,7 +349,7 @@ function FieldBlock({
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
       <label
         style={{
-          fontSize: 11,
+          fontSize: 'var(--aguila-fs-meta)',
           color: TEXT_MUTED,
           textTransform: 'uppercase',
           letterSpacing: '0.06em',
@@ -371,7 +371,7 @@ function fieldStyle({ mono }: { mono?: boolean }): React.CSSProperties {
     color: TEXT_PRIMARY,
     border: `1px solid ${BORDER_SILVER}`,
     borderRadius: 10,
-    fontSize: 14,
+    fontSize: 'var(--aguila-fs-section)',
     fontFamily: mono ? 'var(--font-mono)' : 'inherit',
     outline: 'none',
   }
@@ -384,7 +384,7 @@ function primaryBtn(disabled: boolean): React.CSSProperties {
     justifyContent: 'center',
     minHeight: 60,
     padding: '0 20px',
-    fontSize: 14,
+    fontSize: 'var(--aguila-fs-section)',
     fontWeight: 600,
     color: '#0A0A0C',
     background: ACCENT_SILVER,
@@ -457,7 +457,7 @@ function PaymentSuccessHero({
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
           <span
             style={{
-              fontSize: 11,
+              fontSize: 'var(--aguila-fs-meta)',
               letterSpacing: '0.1em',
               textTransform: 'uppercase',
               color: GREEN,
@@ -466,7 +466,7 @@ function PaymentSuccessHero({
           >
             Pago PECE confirmado
           </span>
-          <span style={{ fontSize: 13, color: TEXT_MUTED }}>
+          <span style={{ fontSize: 'var(--aguila-fs-body)', color: TEXT_MUTED }}>
             La intención de pago quedó registrada en el sistema.
           </span>
         </div>
@@ -499,7 +499,7 @@ function PaymentSuccessHero({
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
           <span
             style={{
-              fontSize: 10,
+              fontSize: 'var(--aguila-fs-label)',
               color: TEXT_MUTED,
               letterSpacing: '0.08em',
               textTransform: 'uppercase',
@@ -510,7 +510,7 @@ function PaymentSuccessHero({
           <span
             style={{
               fontFamily: 'var(--font-mono)',
-              fontSize: 28,
+              fontSize: 'var(--aguila-fs-kpi-mid)',
               fontWeight: 700,
               color: TEXT_PRIMARY,
               letterSpacing: '-0.01em',
@@ -527,7 +527,7 @@ function PaymentSuccessHero({
             justifyContent: 'center',
             minHeight: 60,
             padding: '0 24px',
-            fontSize: 14,
+            fontSize: 'var(--aguila-fs-section)',
             fontWeight: 600,
             color: '#0A0A0C',
             background: ACCENT_SILVER,
@@ -548,7 +548,7 @@ function HeroField({ label, value }: { label: string; value: string }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
       <span
         style={{
-          fontSize: 10,
+          fontSize: 'var(--aguila-fs-label)',
           color: TEXT_MUTED,
           letterSpacing: '0.08em',
           textTransform: 'uppercase',
@@ -559,7 +559,7 @@ function HeroField({ label, value }: { label: string; value: string }) {
       <span
         style={{
           fontFamily: 'var(--font-mono)',
-          fontSize: 18,
+          fontSize: 'var(--aguila-fs-kpi-small)',
           fontWeight: 700,
           color: TEXT_PRIMARY,
           wordBreak: 'break-all',
@@ -578,7 +578,7 @@ function secondaryBtn(disabled: boolean): React.CSSProperties {
     justifyContent: 'center',
     minHeight: 60,
     padding: '0 20px',
-    fontSize: 14,
+    fontSize: 'var(--aguila-fs-section)',
     fontWeight: 600,
     color: ACCENT_SILVER,
     background: 'rgba(192,197,206,0.08)',

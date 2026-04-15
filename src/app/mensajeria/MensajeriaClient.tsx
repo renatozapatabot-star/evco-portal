@@ -255,7 +255,7 @@ export function MensajeriaClient({ role, companyId, companyName, operatorName }:
             padding: '10px 16px', borderRadius: 12,
             background: ACCENT_SILVER_BRIGHT, color: '#0A0A0C',
             border: 'none', cursor: 'pointer',
-            fontSize: 13, fontWeight: 700, letterSpacing: '0.02em',
+            fontSize: 'var(--aguila-fs-body)', fontWeight: 700, letterSpacing: '0.02em',
           }}
         >
           {composeOpen ? 'Cancelar' : '+ Nuevo hilo'}
@@ -266,7 +266,7 @@ export function MensajeriaClient({ role, companyId, companyName, operatorName }:
         <div style={{
           padding: '10px 14px', marginBottom: 16, borderRadius: 12,
           background: 'rgba(239,68,68,0.1)', border: `1px solid ${RED}`,
-          color: RED, fontSize: 13,
+          color: RED, fontSize: 'var(--aguila-fs-body)',
         }}>
           {errorMsg}
         </div>
@@ -320,7 +320,7 @@ export function MensajeriaClient({ role, companyId, companyName, operatorName }:
                   minHeight: 44, padding: '10px 20px', borderRadius: 12,
                   background: ACCENT_SILVER_BRIGHT, color: '#0A0A0C',
                   border: 'none', cursor: sending ? 'wait' : 'pointer',
-                  fontSize: 13, fontWeight: 700,
+                  fontSize: 'var(--aguila-fs-body)', fontWeight: 700,
                 }}
               >
                 {sending ? 'Enviando…' : 'Crear hilo'}
@@ -341,13 +341,13 @@ export function MensajeriaClient({ role, companyId, companyName, operatorName }:
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {loadingThreads ? (
             <GlassCard>
-              <div style={{ color: TEXT_MUTED, fontSize: 13 }}>Cargando…</div>
+              <div style={{ color: TEXT_MUTED, fontSize: 'var(--aguila-fs-body)' }}>Cargando…</div>
             </GlassCard>
           ) : threads.length === 0 ? (
             <GlassCard>
               <div style={{ textAlign: 'center', padding: 24 }}>
-                <div style={{ fontSize: 32, marginBottom: 8 }}>📨</div>
-                <div style={{ color: TEXT_PRIMARY, fontSize: 14, marginBottom: 4 }}>Sin hilos todavía</div>
+                <div style={{ fontSize: 'var(--aguila-fs-kpi-compact)', marginBottom: 8 }}>📨</div>
+                <div style={{ color: TEXT_PRIMARY, fontSize: 'var(--aguila-fs-section)', marginBottom: 4 }}>Sin hilos todavía</div>
                 <div style={{ color: TEXT_MUTED, fontSize: 12 }}>
                   Crea un hilo nuevo para empezar.
                 </div>
@@ -383,20 +383,20 @@ export function MensajeriaClient({ role, companyId, companyName, operatorName }:
                   ) : null}
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8 }}>
                     <span style={{
-                      fontSize: 13, fontWeight: 700, color: TEXT_PRIMARY,
+                      fontSize: 'var(--aguila-fs-body)', fontWeight: 700, color: TEXT_PRIMARY,
                       overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1,
                     }}>
                       {t.subject}
                     </span>
                     <span style={{
-                      fontSize: 10, color: TEXT_MUTED,
+                      fontSize: 'var(--aguila-fs-label)', color: TEXT_MUTED,
                       fontFamily: 'var(--font-jetbrains-mono, monospace)',
                     }}>
                       {fmtDate(t.last_message_at)}
                     </span>
                   </div>
                   <div style={{
-                    fontSize: 11, color: TEXT_SECONDARY,
+                    fontSize: 'var(--aguila-fs-meta)', color: TEXT_SECONDARY,
                     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                   }}>
                     {t.last_message_preview ?? '—'}
@@ -404,7 +404,7 @@ export function MensajeriaClient({ role, companyId, companyName, operatorName }:
                   <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                     {isInternal ? (
                       <span style={{
-                        fontSize: 10, color: TEXT_MUTED,
+                        fontSize: 'var(--aguila-fs-label)', color: TEXT_MUTED,
                         fontFamily: 'var(--font-jetbrains-mono, monospace)',
                       }}>
                         {t.company_id}
@@ -412,7 +412,7 @@ export function MensajeriaClient({ role, companyId, companyName, operatorName }:
                     ) : null}
                     {escalated ? (
                       <span style={{
-                        fontSize: 10, fontWeight: 700, color: AMBER,
+                        fontSize: 'var(--aguila-fs-label)', fontWeight: 700, color: AMBER,
                         padding: '1px 6px', borderRadius: 4,
                         background: 'rgba(251,191,36,0.1)', border: `1px solid ${AMBER}`,
                       }}>
@@ -422,7 +422,7 @@ export function MensajeriaClient({ role, companyId, companyName, operatorName }:
                     {t.unread_count > 0 ? (
                       <span style={{
                         marginLeft: 'auto',
-                        fontSize: 10, fontWeight: 700, color: '#0A0A0C',
+                        fontSize: 'var(--aguila-fs-label)', fontWeight: 700, color: '#0A0A0C',
                         background: GREEN, padding: '1px 7px', borderRadius: 10,
                         minWidth: 18, textAlign: 'center',
                       }}>
@@ -451,7 +451,7 @@ export function MensajeriaClient({ role, companyId, companyName, operatorName }:
                     {currentThread.subject}
                   </div>
                   <div style={{
-                    fontSize: 11, color: TEXT_MUTED, marginTop: 2,
+                    fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED, marginTop: 2,
                     fontFamily: 'var(--font-jetbrains-mono, monospace)',
                   }}>
                     {currentThread.company_id}
@@ -481,9 +481,9 @@ export function MensajeriaClient({ role, companyId, companyName, operatorName }:
                 maxHeight: '60vh',
               }}>
                 {loadingMessages ? (
-                  <div style={{ color: TEXT_MUTED, fontSize: 13 }}>Cargando mensajes…</div>
+                  <div style={{ color: TEXT_MUTED, fontSize: 'var(--aguila-fs-body)' }}>Cargando mensajes…</div>
                 ) : messages.length === 0 ? (
-                  <div style={{ color: TEXT_MUTED, fontSize: 13 }}>Sin mensajes.</div>
+                  <div style={{ color: TEXT_MUTED, fontSize: 'var(--aguila-fs-body)' }}>Sin mensajes.</div>
                 ) : (
                   messages.map(m => (
                     <MessageBubble
@@ -503,7 +503,7 @@ export function MensajeriaClient({ role, companyId, companyName, operatorName }:
                 display: 'flex', flexDirection: 'column', gap: 8,
               }}>
                 {isInternal ? (
-                  <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: TEXT_SECONDARY }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 'var(--aguila-fs-meta)', color: TEXT_SECONDARY }}>
                     <input
                       type="checkbox"
                       checked={replyInternalOnly}
@@ -542,13 +542,13 @@ export function MensajeriaClient({ role, companyId, companyName, operatorName }:
                       background: replyBody.trim() ? ACCENT_SILVER_BRIGHT : 'rgba(255,255,255,0.1)',
                       color: replyBody.trim() ? '#0A0A0C' : TEXT_MUTED,
                       border: 'none', cursor: replyBody.trim() && !sending ? 'pointer' : 'default',
-                      fontSize: 13, fontWeight: 700,
+                      fontSize: 'var(--aguila-fs-body)', fontWeight: 700,
                     }}
                   >
                     {sending ? '…' : 'Enviar'}
                   </button>
                 </div>
-                <div style={{ fontSize: 10, color: TEXT_MUTED, textAlign: 'right' }}>
+                <div style={{ fontSize: 'var(--aguila-fs-label)', color: TEXT_MUTED, textAlign: 'right' }}>
                   30 s para retirar tras enviar · Cmd+Enter para enviar
                 </div>
               </div>
@@ -558,9 +558,9 @@ export function MensajeriaClient({ role, companyId, companyName, operatorName }:
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               minHeight: 520, color: TEXT_MUTED, flexDirection: 'column', gap: 8,
             }}>
-              <div style={{ fontSize: 32 }}>💬</div>
-              <div style={{ fontSize: 13 }}>Selecciona un hilo para verlo</div>
-              <div style={{ fontSize: 11, color: TEXT_MUTED }}>
+              <div style={{ fontSize: 'var(--aguila-fs-kpi-compact)' }}>💬</div>
+              <div style={{ fontSize: 'var(--aguila-fs-body)' }}>Selecciona un hilo para verlo</div>
+              <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED }}>
                 {companyName || 'Chat interno'} · Phase 1
               </div>
             </div>
@@ -607,12 +607,12 @@ function MessageBubble({
       <div style={{
         padding: '10px 14px', borderRadius: 12,
         background: bg, border, color: TEXT_PRIMARY,
-        fontSize: 13, lineHeight: 1.5, whiteSpace: 'pre-wrap',
+        fontSize: 'var(--aguila-fs-body)', lineHeight: 1.5, whiteSpace: 'pre-wrap',
       }}>
         {message.body}
       </div>
       <div style={{
-        fontSize: 10, color: TEXT_MUTED, marginTop: 3,
+        fontSize: 'var(--aguila-fs-label)', color: TEXT_MUTED, marginTop: 3,
         fontFamily: 'var(--font-jetbrains-mono, monospace)',
         display: 'flex', gap: 6, alignItems: 'center',
       }}>
@@ -659,7 +659,7 @@ function fieldStyle(): React.CSSProperties {
     background: 'rgba(255,255,255,0.03)',
     color: TEXT_PRIMARY,
     fontFamily: 'inherit',
-    fontSize: 13,
+    fontSize: 'var(--aguila-fs-body)',
     outline: 'none',
     minHeight: 44,
   }

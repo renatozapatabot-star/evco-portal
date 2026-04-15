@@ -342,7 +342,7 @@ export default function ProveedorPage() {
           <div style={{ fontSize: 16, fontWeight: 700, color: '#EF4444', margin: '12px 0 8px' }}>
             Enlace no válido
           </div>
-          <p style={{ fontSize: 14, color: '#94a3b8', lineHeight: 1.6 }}>{msg}</p>
+          <p style={{ fontSize: 'var(--aguila-fs-section)', color: '#94a3b8', lineHeight: 1.6 }}>{msg}</p>
         </div>
       </div>
     )
@@ -392,7 +392,7 @@ export default function ProveedorPage() {
         <div style={{ ...styles.cockpitCard, padding: '20px 24px', marginBottom: 16 }}>
           <div
             style={{
-              fontSize: 11,
+              fontSize: 'var(--aguila-fs-meta)',
               fontWeight: 700,
               color: '#C0C5CE',
               textTransform: 'uppercase',
@@ -414,7 +414,7 @@ export default function ProveedorPage() {
           >
             Embarque {info.trafico_id}
           </div>
-          <div style={{ fontSize: 14, color: '#94a3b8', lineHeight: 1.5 }}>
+          <div style={{ fontSize: 'var(--aguila-fs-section)', color: '#94a3b8', lineHeight: 1.5 }}>
             Cliente: <strong style={{ color: '#E6EDF3' }}>{clientName}</strong>
             {' · '}
             Vencimiento:{' '}
@@ -430,7 +430,7 @@ export default function ProveedorPage() {
           {lastActivity && (
             <div
               style={{
-                fontSize: 11,
+                fontSize: 'var(--aguila-fs-meta)',
                 color: '#64748b',
                 marginTop: 8,
                 fontFamily: 'var(--font-jetbrains-mono), var(--font-mono), monospace',
@@ -463,7 +463,7 @@ export default function ProveedorPage() {
             <div style={{ flex: 1, minWidth: 0 }}>
               <div
                 style={{
-                  fontSize: 10,
+                  fontSize: 'var(--aguila-fs-label)',
                   fontWeight: 700,
                   color: '#22C55E',
                   textTransform: 'uppercase',
@@ -473,7 +473,7 @@ export default function ProveedorPage() {
               >
                 Expediente completo
               </div>
-              <div style={{ fontSize: 14, color: '#E6EDF3', fontWeight: 500, lineHeight: 1.35 }}>
+              <div style={{ fontSize: 'var(--aguila-fs-section)', color: '#E6EDF3', fontWeight: 500, lineHeight: 1.35 }}>
                 ¡Listo! Los {info.required_docs.length} documentos fueron recibidos. Gracias.
               </div>
             </div>
@@ -552,7 +552,7 @@ export default function ProveedorPage() {
                       <div key={cat} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                         <div
                           style={{
-                            fontSize: 10,
+                            fontSize: 'var(--aguila-fs-label)',
                             fontWeight: 800,
                             color: '#94a3b8',
                             textTransform: 'uppercase',
@@ -594,12 +594,12 @@ export default function ProveedorPage() {
                                   <FileText size={18} color="#94a3b8" />
                                 )}
                                 <div style={{ flex: 1, minWidth: 0 }}>
-                                  <div style={{ fontSize: 14, color: '#E6EDF3', fontWeight: 600 }}>
+                                  <div style={{ fontSize: 'var(--aguila-fs-section)', color: '#E6EDF3', fontWeight: 600 }}>
                                     {labelForDoc(doc)}
                                   </div>
                                   <div
                                     style={{
-                                      fontSize: 11,
+                                      fontSize: 'var(--aguila-fs-meta)',
                                       color: received ? '#22C55E' : '#64748b',
                                       marginTop: 2,
                                     }}
@@ -622,7 +622,7 @@ export default function ProveedorPage() {
                                     background: isUploading ? 'rgba(192,197,206,0.4)' : '#E8EAED',
                                     color: '#0B1220',
                                     border: 'none',
-                                    fontSize: 14,
+                                    fontSize: 'var(--aguila-fs-section)',
                                     fontWeight: 700,
                                     cursor: isUploading ? 'wait' : 'pointer',
                                     display: 'flex',
@@ -722,7 +722,7 @@ export default function ProveedorPage() {
                   <div
                     key={f}
                     style={{
-                      fontSize: 13,
+                      fontSize: 'var(--aguila-fs-body)',
                       color: '#22C55E',
                       display: 'flex',
                       alignItems: 'center',
@@ -739,7 +739,7 @@ export default function ProveedorPage() {
                 role="alert"
                 style={{
                   marginTop: 12,
-                  fontSize: 13,
+                  fontSize: 'var(--aguila-fs-body)',
                   color: '#EF4444',
                   padding: '10px 12px',
                   borderRadius: 10,
@@ -801,7 +801,7 @@ export default function ProveedorPage() {
               >
                 <CheckCircle2 size={24} color="#22C55E" />
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: '#E6EDF3' }}>
+                  <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: '#E6EDF3' }}>
                     Embarque ya confirmado
                   </div>
                   {info.shipment_confirmed_at && (
@@ -820,14 +820,14 @@ export default function ProveedorPage() {
               </div>
             ) : (
               <>
-                <p style={{ fontSize: 13, color: '#94a3b8', lineHeight: 1.5, marginBottom: 12 }}>
+                <p style={{ fontSize: 'var(--aguila-fs-body)', color: '#94a3b8', lineHeight: 1.5, marginBottom: 12 }}>
                   Al confirmar, el agente aduanal recibe aviso de que la mercancía está
                   lista para recoger.
                 </p>
                 <label
                   style={{
                     display: 'block',
-                    fontSize: 11,
+                    fontSize: 'var(--aguila-fs-meta)',
                     fontWeight: 700,
                     color: '#94a3b8',
                     textTransform: 'uppercase',
@@ -851,7 +851,7 @@ export default function ProveedorPage() {
                     background: 'rgba(255,255,255,0.03)',
                     border: '1px solid rgba(255,255,255,0.08)',
                     color: '#E6EDF3',
-                    fontSize: 14,
+                    fontSize: 'var(--aguila-fs-section)',
                     fontFamily: 'inherit',
                     resize: 'vertical',
                     marginBottom: 12,
@@ -897,7 +897,7 @@ export default function ProveedorPage() {
                 role="status"
                 style={{
                   marginTop: 12,
-                  fontSize: 13,
+                  fontSize: 'var(--aguila-fs-body)',
                   padding: '10px 12px',
                   borderRadius: 10,
                   background: 'rgba(192,197,206,0.06)',
@@ -922,7 +922,7 @@ export default function ProveedorPage() {
               >
                 <div
                   style={{
-                    fontSize: 11,
+                    fontSize: 'var(--aguila-fs-meta)',
                     letterSpacing: '0.08em',
                     textTransform: 'uppercase',
                     color: '#94a3b8',
@@ -940,7 +940,7 @@ export default function ProveedorPage() {
                 <div
                   style={{
                     fontFamily: 'var(--font-jetbrains-mono), ui-monospace, monospace',
-                    fontSize: 14,
+                    fontSize: 'var(--aguila-fs-section)',
                     letterSpacing: '0.12em',
                     color: '#E6EDF3',
                     marginTop: 8,
@@ -959,7 +959,7 @@ export default function ProveedorPage() {
                     border: '1px solid rgba(192,197,206,0.35)',
                     background: 'transparent',
                     color: '#E6EDF3',
-                    fontSize: 13,
+                    fontSize: 'var(--aguila-fs-body)',
                     cursor: 'pointer',
                   }}
                 >
@@ -972,8 +972,8 @@ export default function ProveedorPage() {
 
         {/* Footer */}
         <div style={{ textAlign: 'center', marginTop: 28, padding: '0 8px' }}>
-          <div style={{ fontSize: 11, color: '#64748b' }}>Renato Zapata & Co.</div>
-          <div style={{ fontSize: 10, color: '#475569', marginTop: 2 }}>
+          <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#64748b' }}>Renato Zapata & Co.</div>
+          <div style={{ fontSize: 'var(--aguila-fs-label)', color: '#475569', marginTop: 2 }}>
             Patente 3596 · Aduana 240 · Est. 1941
           </div>
         </div>
@@ -1081,7 +1081,7 @@ function ActionCard({
         <div
           style={{
             fontFamily: 'var(--font-jetbrains-mono), var(--font-mono), monospace',
-            fontSize: 24,
+            fontSize: 'var(--aguila-fs-title)',
             fontWeight: 800,
             color:
               count === 0
@@ -1128,7 +1128,7 @@ function Panel({
       >
         <div
           style={{
-            fontSize: 11,
+            fontSize: 'var(--aguila-fs-meta)',
             fontWeight: 700,
             color: '#C0C5CE',
             textTransform: 'uppercase',
@@ -1177,7 +1177,7 @@ function Row({ label, value, mono }: { label: string; value: string; mono?: bool
       <div style={{ fontSize: 12, color: '#94a3b8' }}>{label}</div>
       <div
         style={{
-          fontSize: 14,
+          fontSize: 'var(--aguila-fs-section)',
           color: '#E6EDF3',
           fontWeight: 600,
           textAlign: 'right',
@@ -1201,7 +1201,7 @@ function EmptyLine({ children }: { children: React.ReactNode }) {
         background: 'rgba(255,255,255,0.02)',
         border: '1px dashed rgba(255,255,255,0.08)',
         color: '#94a3b8',
-        fontSize: 13,
+        fontSize: 'var(--aguila-fs-body)',
         textAlign: 'center',
       }}
     >
@@ -1232,13 +1232,13 @@ const styles = {
       '0 10px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05), 0 0 1px rgba(192,197,206,0.12)',
   } as React.CSSProperties,
   logo: {
-    fontSize: 24,
+    fontSize: 'var(--aguila-fs-title)',
     fontWeight: 800,
     color: '#E8EAED',
     letterSpacing: '0.1em',
   } as React.CSSProperties,
   chromeSubtitle: {
-    fontSize: 11,
+    fontSize: 'var(--aguila-fs-meta)',
     color: '#64748b',
     letterSpacing: '0.08em',
     textTransform: 'uppercase' as const,

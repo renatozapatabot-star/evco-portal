@@ -23,7 +23,7 @@ const s = StyleSheet.create({
     paddingBottom: 60,
     paddingHorizontal: 40,
     fontFamily: 'Helvetica',
-    fontSize: 10,
+    fontSize: 'var(--aguila-fs-label)',
     color: COLORS.text,
   },
   // Header
@@ -37,7 +37,7 @@ const s = StyleSheet.create({
     borderBottomColor: COLORS.gold,
   },
   logoText: {
-    fontSize: 28,
+    fontSize: 'var(--aguila-fs-kpi-mid)',
     fontFamily: 'Helvetica-Bold',
     color: COLORS.text,
     letterSpacing: 4,
@@ -58,7 +58,7 @@ const s = StyleSheet.create({
     color: COLORS.textMuted,
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: 'var(--aguila-fs-section)',
     fontFamily: 'Helvetica-Bold',
     color: COLORS.text,
     marginBottom: 4,
@@ -79,7 +79,7 @@ const s = StyleSheet.create({
     marginBottom: 6,
   },
   execText: {
-    fontSize: 11,
+    fontSize: 'var(--aguila-fs-meta)',
     color: '#EAE6DC',
     lineHeight: 1.5,
   },
@@ -99,7 +99,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
   },
   kpiValue: {
-    fontSize: 18,
+    fontSize: 'var(--aguila-fs-kpi-small)',
     fontFamily: 'Helvetica-Bold',
     marginBottom: 2,
   },
@@ -111,7 +111,7 @@ const s = StyleSheet.create({
   },
   // Section
   sectionTitle: {
-    fontSize: 11,
+    fontSize: 'var(--aguila-fs-meta)',
     fontFamily: 'Helvetica-Bold',
     color: COLORS.textMuted,
     letterSpacing: 1,

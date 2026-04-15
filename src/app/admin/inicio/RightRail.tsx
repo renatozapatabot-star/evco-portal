@@ -19,7 +19,7 @@ const panelStyle: React.CSSProperties = {
 }
 
 const labelStyle: React.CSSProperties = {
-  fontSize: 10,
+  fontSize: 'var(--aguila-fs-label)',
   fontWeight: 700,
   letterSpacing: '0.08em',
   textTransform: 'uppercase',
@@ -47,7 +47,7 @@ export function RightRail({ rail }: { rail: InicioData['rightRail'] }) {
         <div
           style={{
             fontFamily: 'var(--font-jetbrains-mono), monospace',
-            fontSize: 44,
+            fontSize: 'var(--aguila-fs-kpi-large)',
             fontWeight: 800,
             color: rail.decisionesPendientes > 0 ? GOLD : TEXT_MUTED,
             margin: '8px 0 12px 0',
@@ -69,7 +69,7 @@ export function RightRail({ rail }: { rail: InicioData['rightRail'] }) {
               background: GOLD,
               color: '#0B0F1A',
               fontWeight: 700,
-              fontSize: 13,
+              fontSize: 'var(--aguila-fs-body)',
               textDecoration: 'none',
               width: '100%',
             }}
@@ -91,16 +91,16 @@ export function RightRail({ rail }: { rail: InicioData['rightRail'] }) {
             width: 8, height: 8, borderRadius: '50%',
             background: sysColor, boxShadow: `0 0 6px ${sysColor}`,
           }} />
-          <span style={{ fontSize: 13, color: TEXT_PRIMARY, fontWeight: 600 }}>
+          <span style={{ fontSize: 'var(--aguila-fs-body)', color: TEXT_PRIMARY, fontWeight: 600 }}>
             {sysLabel}
           </span>
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: topOperator ? 10 : 0 }}>
-          <span style={{ fontSize: 11, color: TEXT_MUTED }}>Costo IA hoy</span>
+          <span style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED }}>Costo IA hoy</span>
           <span
             style={{
               fontFamily: 'var(--font-jetbrains-mono), monospace',
-              fontSize: 13,
+              fontSize: 'var(--aguila-fs-body)',
               color: GOLD,
               fontVariantNumeric: 'tabular-nums',
             }}
@@ -110,7 +110,7 @@ export function RightRail({ rail }: { rail: InicioData['rightRail'] }) {
         </div>
         {topOperator && (
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: 11, color: TEXT_MUTED }}>Operador más activo</span>
+            <span style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED }}>Operador más activo</span>
             <span style={{ fontSize: 12, color: TEXT_PRIMARY, fontWeight: 600 }}>
               {topOperator.name} · {topOperator.actions}
             </span>

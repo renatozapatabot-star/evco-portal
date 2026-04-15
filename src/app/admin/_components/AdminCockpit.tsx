@@ -171,7 +171,7 @@ export function AdminCockpit(props: AdminCockpitProps) {
             Centro de Mando
           </h1>
         </div>
-        <p style={{ color: TEXT_MUTED, fontSize: 13, margin: '4px 0 0 48px' }}>
+        <p style={{ color: TEXT_MUTED, fontSize: 'var(--aguila-fs-body)', margin: '4px 0 0 48px' }}>
           Aduana 240 Nuevo Laredo · <span style={{ fontFamily: 'var(--font-mono)' }}>{fmtDate(new Date())}</span>
         </p>
       </div>
@@ -220,7 +220,7 @@ export function AdminCockpit(props: AdminCockpitProps) {
             <thead>
               <tr style={{ borderBottom: `1px solid ${BORDER}` }}>
                 {['Cliente', 'Clave', 'Traficos', 'Salud', 'Ult. Sync', 'Alertas', 'Acciones'].map(h => (
-                  <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: TEXT_MUTED, letterSpacing: '0.05em', textTransform: 'uppercase' }}>{h}</th>
+                  <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, color: TEXT_MUTED, letterSpacing: '0.05em', textTransform: 'uppercase' }}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -229,16 +229,16 @@ export function AdminCockpit(props: AdminCockpitProps) {
                 const badge = healthBadge(c.health_score)
                 return (
                   <tr key={c.company_id} style={{ borderBottom: `1px solid ${BORDER}` }}>
-                    <td style={{ padding: '10px 14px', fontSize: 13, fontWeight: 600 }}>{c.name}</td>
+                    <td style={{ padding: '10px 14px', fontSize: 'var(--aguila-fs-body)', fontWeight: 600 }}>{c.name}</td>
                     <td style={{ padding: '10px 14px', fontSize: 12, color: TEXT_SECONDARY, fontFamily: 'var(--font-mono)' }}>{c.clave_cliente || '\u2014'}</td>
-                    <td style={{ padding: '10px 14px', fontSize: 13, fontWeight: 600 }}>{c.traficos_count.toLocaleString()}</td>
+                    <td style={{ padding: '10px 14px', fontSize: 'var(--aguila-fs-body)', fontWeight: 600 }}>{c.traficos_count.toLocaleString()}</td>
                     <td style={{ padding: '10px 14px' }}>
                       <span style={{ background: badge.bg, color: badge.color, border: `1px solid ${badge.border}`, borderRadius: 20, padding: '3px 12px', fontSize: 12, fontWeight: 700 }}>{c.health_score}%</span>
                     </td>
-                    <td style={{ padding: '10px 14px', fontSize: 11, color: TEXT_MUTED, fontFamily: 'var(--font-mono)' }}>{c.last_sync ? fmtDateTime(c.last_sync) : '\u2014'}</td>
+                    <td style={{ padding: '10px 14px', fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED, fontFamily: 'var(--font-mono)' }}>{c.last_sync ? fmtDateTime(c.last_sync) : '\u2014'}</td>
                     <td style={{ padding: '10px 14px' }}>
                       {c.alerts > 0 ? (
-                        <span style={{ background: 'rgba(220,38,38,0.15)', color: RED, borderRadius: 20, padding: '2px 10px', fontSize: 11, fontWeight: 700 }}>{c.alerts}</span>
+                        <span style={{ background: 'rgba(220,38,38,0.15)', color: RED, borderRadius: 20, padding: '2px 10px', fontSize: 'var(--aguila-fs-meta)', fontWeight: 700 }}>{c.alerts}</span>
                       ) : (
                         <span style={{ color: GREEN, fontSize: 12 }}>0</span>
                       )}
@@ -256,15 +256,15 @@ export function AdminCockpit(props: AdminCockpitProps) {
 
       {/* Equipo */}
       <CollapsibleSection title="Equipo (7 dias)" badge={props.leaderboard.length} hidden={props.leaderboard.length === 0}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--aguila-fs-body)' }}>
           <thead>
             <tr style={{ borderBottom: `1px solid ${BORDER}` }}>
-              <th style={{ padding: '10px 14px', textAlign: 'left', color: TEXT_MUTED, fontWeight: 600, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Operador</th>
-              <th style={{ padding: '10px 14px', textAlign: 'center', color: TEXT_MUTED, fontWeight: 600, fontSize: 11, textTransform: 'uppercase' }}>Rol</th>
-              <th style={{ padding: '10px 14px', textAlign: 'center', color: TEXT_MUTED, fontWeight: 600, fontSize: 11, textTransform: 'uppercase' }}>Acciones</th>
-              <th style={{ padding: '10px 14px', textAlign: 'center', color: TEXT_MUTED, fontWeight: 600, fontSize: 11, textTransform: 'uppercase' }}>Votos</th>
-              <th style={{ padding: '10px 14px', textAlign: 'center', color: TEXT_MUTED, fontWeight: 600, fontSize: 11, textTransform: 'uppercase' }}>Asignaciones</th>
-              <th style={{ padding: '10px 14px', textAlign: 'right', color: TEXT_MUTED, fontWeight: 600, fontSize: 11, textTransform: 'uppercase' }}>Ult. activo</th>
+              <th style={{ padding: '10px 14px', textAlign: 'left', color: TEXT_MUTED, fontWeight: 600, fontSize: 'var(--aguila-fs-meta)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Operador</th>
+              <th style={{ padding: '10px 14px', textAlign: 'center', color: TEXT_MUTED, fontWeight: 600, fontSize: 'var(--aguila-fs-meta)', textTransform: 'uppercase' }}>Rol</th>
+              <th style={{ padding: '10px 14px', textAlign: 'center', color: TEXT_MUTED, fontWeight: 600, fontSize: 'var(--aguila-fs-meta)', textTransform: 'uppercase' }}>Acciones</th>
+              <th style={{ padding: '10px 14px', textAlign: 'center', color: TEXT_MUTED, fontWeight: 600, fontSize: 'var(--aguila-fs-meta)', textTransform: 'uppercase' }}>Votos</th>
+              <th style={{ padding: '10px 14px', textAlign: 'center', color: TEXT_MUTED, fontWeight: 600, fontSize: 'var(--aguila-fs-meta)', textTransform: 'uppercase' }}>Asignaciones</th>
+              <th style={{ padding: '10px 14px', textAlign: 'right', color: TEXT_MUTED, fontWeight: 600, fontSize: 'var(--aguila-fs-meta)', textTransform: 'uppercase' }}>Ult. activo</th>
             </tr>
           </thead>
           <tbody>
@@ -275,7 +275,7 @@ export function AdminCockpit(props: AdminCockpitProps) {
                 <td style={{ padding: '10px 14px', textAlign: 'center', fontFamily: 'var(--font-mono)', fontWeight: 700, color: GOLD }}>{op.totalActions}</td>
                 <td style={{ padding: '10px 14px', textAlign: 'center', fontFamily: 'var(--font-mono)' }}>{op.classifications}</td>
                 <td style={{ padding: '10px 14px', textAlign: 'center', fontFamily: 'var(--font-mono)' }}>{op.assignments}</td>
-                <td style={{ padding: '10px 14px', textAlign: 'right', color: TEXT_SECONDARY, fontSize: 11 }}>{op.lastActiveAt ? fmtDateTime(op.lastActiveAt) : '\u2014'}</td>
+                <td style={{ padding: '10px 14px', textAlign: 'right', color: TEXT_SECONDARY, fontSize: 'var(--aguila-fs-meta)' }}>{op.lastActiveAt ? fmtDateTime(op.lastActiveAt) : '\u2014'}</td>
               </tr>
             ))}
           </tbody>
@@ -285,7 +285,7 @@ export function AdminCockpit(props: AdminCockpitProps) {
       {/* Workflow e integraciones */}
       <CollapsibleSection title="Workflow 24h" badge={`${props.totalWfEvents} eventos`} hidden={props.totalWfEvents === 0}>
         {props.stuckCount > 0 && (
-          <div style={{ padding: '10px 16px', borderLeft: `4px solid ${RED}`, background: 'rgba(220,38,38,0.08)', fontSize: 13, fontWeight: 600, color: RED }}>
+          <div style={{ padding: '10px 16px', borderLeft: `4px solid ${RED}`, background: 'rgba(220,38,38,0.08)', fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: RED }}>
             {props.stuckCount} evento{props.stuckCount > 1 ? 's' : ''} atorado{props.stuckCount > 1 ? 's' : ''} — el mas antiguo tiene {props.oldestStuckMin} min
           </div>
         )}
@@ -294,7 +294,7 @@ export function AdminCockpit(props: AdminCockpitProps) {
             <thead>
               <tr style={{ borderBottom: `1px solid ${BORDER}` }}>
                 {['Workflow', 'Total', 'Completados', 'Fallidos', 'Pendientes', 'Tasa'].map(h => (
-                  <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: TEXT_MUTED, letterSpacing: '0.05em', textTransform: 'uppercase' }}>{h}</th>
+                  <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, color: TEXT_MUTED, letterSpacing: '0.05em', textTransform: 'uppercase' }}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -304,11 +304,11 @@ export function AdminCockpit(props: AdminCockpitProps) {
                 const badge = healthBadge(rate)
                 return (
                   <tr key={stats.workflow} style={{ borderBottom: `1px solid ${BORDER}` }}>
-                    <td style={{ padding: '10px 14px', fontSize: 13, fontWeight: 600 }}>{(WORKFLOW_LABELS as Record<string, string>)[stats.workflow] || stats.workflow}</td>
-                    <td style={{ padding: '10px 14px', fontSize: 13, fontFamily: 'var(--font-mono)' }}>{stats.total}</td>
-                    <td style={{ padding: '10px 14px', fontSize: 13, fontFamily: 'var(--font-mono)', color: GREEN }}>{stats.completed}</td>
-                    <td style={{ padding: '10px 14px', fontSize: 13, fontFamily: 'var(--font-mono)', color: stats.failed > 0 ? RED : TEXT_MUTED }}>{stats.failed}</td>
-                    <td style={{ padding: '10px 14px', fontSize: 13, fontFamily: 'var(--font-mono)' }}>{stats.total - stats.completed - stats.failed}</td>
+                    <td style={{ padding: '10px 14px', fontSize: 'var(--aguila-fs-body)', fontWeight: 600 }}>{(WORKFLOW_LABELS as Record<string, string>)[stats.workflow] || stats.workflow}</td>
+                    <td style={{ padding: '10px 14px', fontSize: 'var(--aguila-fs-body)', fontFamily: 'var(--font-mono)' }}>{stats.total}</td>
+                    <td style={{ padding: '10px 14px', fontSize: 'var(--aguila-fs-body)', fontFamily: 'var(--font-mono)', color: GREEN }}>{stats.completed}</td>
+                    <td style={{ padding: '10px 14px', fontSize: 'var(--aguila-fs-body)', fontFamily: 'var(--font-mono)', color: stats.failed > 0 ? RED : TEXT_MUTED }}>{stats.failed}</td>
+                    <td style={{ padding: '10px 14px', fontSize: 'var(--aguila-fs-body)', fontFamily: 'var(--font-mono)' }}>{stats.total - stats.completed - stats.failed}</td>
                     <td style={{ padding: '10px 14px' }}>
                       <span style={{ background: badge.bg, color: badge.color, border: `1px solid ${badge.border}`, borderRadius: 20, padding: '3px 12px', fontSize: 12, fontWeight: 700, fontFamily: 'var(--font-mono)' }}>{rate}%</span>
                     </td>
@@ -335,12 +335,12 @@ export function AdminCockpit(props: AdminCockpitProps) {
                 marginBottom: 6, background: 'rgba(255,255,255,0.02)',
               }}>
                 <span style={{ fontSize: 12, fontWeight: 700, fontFamily: 'var(--font-mono)', color: isOld ? RED : AMBER }}>{t.trafico}</span>
-                <span style={{ fontSize: 11, color: TEXT_SECONDARY }}>{t.company_id}</span>
+                <span style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_SECONDARY }}>{t.company_id}</span>
                 {t.importe_total && (
-                  <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: TEXT_SECONDARY }}>${Number(t.importe_total).toLocaleString()} USD</span>
+                  <span style={{ fontSize: 'var(--aguila-fs-meta)', fontFamily: 'var(--font-mono)', color: TEXT_SECONDARY }}>${Number(t.importe_total).toLocaleString()} USD</span>
                 )}
-                <span style={{ fontSize: 10, color: TEXT_MUTED, marginLeft: 'auto' }}>{fmtDateTime(t.created_at)}</span>
-                <span style={{ fontSize: 10, color: TEXT_SECONDARY }}>{assignedName}</span>
+                <span style={{ fontSize: 'var(--aguila-fs-label)', color: TEXT_MUTED, marginLeft: 'auto' }}>{fmtDateTime(t.created_at)}</span>
+                <span style={{ fontSize: 'var(--aguila-fs-label)', color: TEXT_SECONDARY }}>{assignedName}</span>
                 <span onClick={e => e.preventDefault()}>
                   <ChaserButton
                     traficoId={t.id}
@@ -363,7 +363,7 @@ export function AdminCockpit(props: AdminCockpitProps) {
             <thead>
               <tr style={{ borderBottom: `1px solid ${BORDER}` }}>
                 {['Cliente', 'Cve Producto', 'Fraccion', 'Fuente', 'Descripcion', 'Clasificado'].map(h => (
-                  <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: TEXT_MUTED, letterSpacing: '0.05em', textTransform: 'uppercase' }}>{h}</th>
+                  <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, color: TEXT_MUTED, letterSpacing: '0.05em', textTransform: 'uppercase' }}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -376,10 +376,10 @@ export function AdminCockpit(props: AdminCockpitProps) {
                     <td style={{ padding: '10px 14px', fontSize: 12, fontFamily: 'var(--font-mono)', color: TEXT_SECONDARY, maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.cve_producto || '\u2014'}</td>
                     <td style={{ padding: '10px 14px', fontSize: 12, fontFamily: 'var(--font-mono)', fontWeight: 700, color: GOLD }}>{p.fraccion}</td>
                     <td style={{ padding: '10px 14px' }}>
-                      <span style={{ background: sb.bg, color: sb.color, borderRadius: 20, padding: '2px 10px', fontSize: 11, fontWeight: 700 }}>{sb.label}</span>
+                      <span style={{ background: sb.bg, color: sb.color, borderRadius: 20, padding: '2px 10px', fontSize: 'var(--aguila-fs-meta)', fontWeight: 700 }}>{sb.label}</span>
                     </td>
                     <td style={{ padding: '10px 14px', fontSize: 12, color: TEXT_SECONDARY, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.descripcion || '\u2014'}</td>
-                    <td style={{ padding: '10px 14px', fontSize: 11, color: TEXT_MUTED, fontFamily: 'var(--font-mono)' }}>{p.fraccion_classified_at ? fmtDateTime(p.fraccion_classified_at) : '\u2014'}</td>
+                    <td style={{ padding: '10px 14px', fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED, fontFamily: 'var(--font-mono)' }}>{p.fraccion_classified_at ? fmtDateTime(p.fraccion_classified_at) : '\u2014'}</td>
                   </tr>
                 )
               })}
@@ -395,7 +395,7 @@ export function AdminCockpit(props: AdminCockpitProps) {
             <thead>
               <tr style={{ borderBottom: `1px solid ${BORDER}` }}>
                 {['Cliente', 'Total Productos', 'Con Fraccion', 'Con Descripcion', 'Cobertura'].map(h => (
-                  <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: TEXT_MUTED, letterSpacing: '0.05em', textTransform: 'uppercase' }}>{h}</th>
+                  <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, color: TEXT_MUTED, letterSpacing: '0.05em', textTransform: 'uppercase' }}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -405,10 +405,10 @@ export function AdminCockpit(props: AdminCockpitProps) {
                 const badge = healthBadge(coveragePct)
                 return (
                   <tr key={s.company_id} style={{ borderBottom: `1px solid ${BORDER}` }}>
-                    <td style={{ padding: '10px 14px', fontSize: 13, fontWeight: 600 }}>{s.name}</td>
-                    <td style={{ padding: '10px 14px', fontSize: 13, fontFamily: 'var(--font-mono)' }}>{s.total.toLocaleString()}</td>
-                    <td style={{ padding: '10px 14px', fontSize: 13, fontFamily: 'var(--font-mono)' }}>{s.withFraccion.toLocaleString()}</td>
-                    <td style={{ padding: '10px 14px', fontSize: 13, fontFamily: 'var(--font-mono)' }}>{s.withDescripcion.toLocaleString()}</td>
+                    <td style={{ padding: '10px 14px', fontSize: 'var(--aguila-fs-body)', fontWeight: 600 }}>{s.name}</td>
+                    <td style={{ padding: '10px 14px', fontSize: 'var(--aguila-fs-body)', fontFamily: 'var(--font-mono)' }}>{s.total.toLocaleString()}</td>
+                    <td style={{ padding: '10px 14px', fontSize: 'var(--aguila-fs-body)', fontFamily: 'var(--font-mono)' }}>{s.withFraccion.toLocaleString()}</td>
+                    <td style={{ padding: '10px 14px', fontSize: 'var(--aguila-fs-body)', fontFamily: 'var(--font-mono)' }}>{s.withDescripcion.toLocaleString()}</td>
                     <td style={{ padding: '10px 14px' }}>
                       <span style={{ background: badge.bg, color: badge.color, border: `1px solid ${badge.border}`, borderRadius: 20, padding: '3px 12px', fontSize: 12, fontWeight: 700, fontFamily: 'var(--font-mono)' }}>{coveragePct}% ({s.withFraccion.toLocaleString()} de {s.total.toLocaleString()})</span>
                     </td>

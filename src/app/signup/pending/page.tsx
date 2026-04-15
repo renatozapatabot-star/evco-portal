@@ -20,27 +20,27 @@ export default function SignupPendingPage() {
           </span>
         </div>
 
-        <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(22,163,74,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: 28 }}>
+        <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(22,163,74,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: 'var(--aguila-fs-kpi-mid)' }}>
           ✓
         </div>
 
         <h1 style={{ fontSize: 20, fontWeight: 700, color: '#FFFFFF', marginBottom: 12 }}>
           Solicitud recibida
         </h1>
-        <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)', lineHeight: 1.6, marginBottom: 24 }}>
+        <p style={{ fontSize: 'var(--aguila-fs-section)', color: 'rgba(255,255,255,0.6)', lineHeight: 1.6, marginBottom: 24 }}>
           Gracias. Tu solicitud fue recibida. Renato Zapata & Company revisará tu información en las próximas horas y te contactará por email.
         </p>
 
         <div style={{
           padding: '16px 20px', borderRadius: 12,
           background: 'rgba(255,255,255,0.045)', border: '1px solid rgba(255,255,255,0.06)',
-          fontSize: 13, color: 'rgba(255,255,255,0.5)', lineHeight: 1.6,
+          fontSize: 'var(--aguila-fs-body)', color: 'rgba(255,255,255,0.5)', lineHeight: 1.6,
         }}>
           Mientras tanto, puedes preparar tu información de GlobalPC y acceso al portal de ANAM — los necesitarás durante la configuración.
         </div>
 
         <Link href="/login" style={{
-          display: 'inline-block', marginTop: 24, fontSize: 13,
+          display: 'inline-block', marginTop: 24, fontSize: 'var(--aguila-fs-body)',
           color: 'var(--gold, #E8EAED)', textDecoration: 'none',
         }}>
           ← Volver al inicio

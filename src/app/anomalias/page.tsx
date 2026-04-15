@@ -42,15 +42,15 @@ function SeverityKpi({ label, value, sev, sub }: { label: string; value: number;
   return (
     <GlassCard size="compact" severity={cfg.systemStatus === 'critical' ? 'critical' : cfg.systemStatus === 'warning' ? 'warning' : undefined}>
       <div style={{
-        fontSize: 10, fontWeight: 700, letterSpacing: 0.8,
+        fontSize: 'var(--aguila-fs-label)', fontWeight: 700, letterSpacing: 0.8,
         textTransform: 'uppercase', color: TEXT_MUTED, marginBottom: 6,
       }}>{label}</div>
       <div style={{
         fontFamily: 'var(--font-jetbrains-mono), monospace',
-        fontSize: 28, fontWeight: 800, color: cfg.fg,
+        fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 800, color: cfg.fg,
         fontVariantNumeric: 'tabular-nums',
       }}>{value}</div>
-      {sub && <div style={{ fontSize: 10, color: TEXT_MUTED, marginTop: 4 }}>{sub}</div>}
+      {sub && <div style={{ fontSize: 'var(--aguila-fs-label)', color: TEXT_MUTED, marginTop: 4 }}>{sub}</div>}
     </GlassCard>
   )
 }
@@ -72,27 +72,27 @@ function AnomalyCard({ a }: { a: Anomaly }) {
         <div style={{ minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6, flexWrap: 'wrap' }}>
             <span style={{
-              fontSize: 10, fontWeight: 700, letterSpacing: 0.8, textTransform: 'uppercase',
+              fontSize: 'var(--aguila-fs-label)', fontWeight: 700, letterSpacing: 0.8, textTransform: 'uppercase',
               padding: '2px 8px', borderRadius: 999,
               background: sev.bg, color: sev.fg, border: `1px solid ${sev.border}`,
             }}>{sev.label}</span>
             <span style={{
-              fontSize: 10, fontWeight: 700, letterSpacing: 0.8, textTransform: 'uppercase',
+              fontSize: 'var(--aguila-fs-label)', fontWeight: 700, letterSpacing: 0.8, textTransform: 'uppercase',
               padding: '2px 8px', borderRadius: 999,
               background: 'rgba(192,197,206,0.08)', color: ACCENT_SILVER,
               border: '1px solid rgba(192,197,206,0.20)',
             }}>{KIND_LABEL[a.kind]}</span>
-            <span style={{ fontSize: 10, color: TEXT_MUTED, fontFamily: 'var(--font-jetbrains-mono), monospace' }}>
+            <span style={{ fontSize: 'var(--aguila-fs-label)', color: TEXT_MUTED, fontFamily: 'var(--font-jetbrains-mono), monospace' }}>
               {formatDate(a.fecha)}
             </span>
             {a.clave_cliente && (
-              <span style={{ fontSize: 10, color: TEXT_MUTED, fontFamily: 'var(--font-jetbrains-mono), monospace' }}>
+              <span style={{ fontSize: 'var(--aguila-fs-label)', color: TEXT_MUTED, fontFamily: 'var(--font-jetbrains-mono), monospace' }}>
                 Clave {a.clave_cliente}
               </span>
             )}
           </div>
           <div style={{
-            fontSize: 14, color: TEXT_PRIMARY, fontWeight: 600, marginBottom: 4,
+            fontSize: 'var(--aguila-fs-section)', color: TEXT_PRIMARY, fontWeight: 600, marginBottom: 4,
             overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           }}>
             {a.proveedor ?? '—'}
@@ -102,7 +102,7 @@ function AnomalyCard({ a }: { a: Anomaly }) {
           </p>
           <div style={{
             display: 'flex', gap: 16, marginTop: 8, flexWrap: 'wrap',
-            fontSize: 10, color: TEXT_MUTED,
+            fontSize: 'var(--aguila-fs-label)', color: TEXT_MUTED,
           }}>
             {a.referencia && (
               <span>
@@ -119,7 +119,7 @@ function AnomalyCard({ a }: { a: Anomaly }) {
           </div>
         </div>
         <div>
-          <div style={{ fontSize: 10, color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 2 }}>
+          <div style={{ fontSize: 'var(--aguila-fs-label)', color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 2 }}>
             Esperado
           </div>
           <div style={{ fontSize: 12, color: TEXT_SECONDARY, fontFamily: 'var(--font-jetbrains-mono), monospace' }}>
@@ -127,18 +127,18 @@ function AnomalyCard({ a }: { a: Anomaly }) {
           </div>
         </div>
         <div style={{ textAlign: 'right' }}>
-          <div style={{ fontSize: 10, color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 2 }}>
+          <div style={{ fontSize: 'var(--aguila-fs-label)', color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 2 }}>
             Encontrado
           </div>
           <div style={{
-            fontSize: 13, fontWeight: 700, color: TEXT_PRIMARY,
+            fontSize: 'var(--aguila-fs-body)', fontWeight: 700, color: TEXT_PRIMARY,
             fontFamily: 'var(--font-jetbrains-mono), monospace',
             fontVariantNumeric: 'tabular-nums',
           }}>
             {a.found}
           </div>
           <div style={{
-            fontSize: 11, marginTop: 4,
+            fontSize: 'var(--aguila-fs-meta)', marginTop: 4,
             color: upHigh ? '#ef4444' : '#4ade80',
             fontFamily: 'var(--font-jetbrains-mono), monospace',
             fontVariantNumeric: 'tabular-nums',
@@ -180,8 +180,8 @@ export default async function AnomaliasPage() {
         {report.anomalies.length === 0 ? (
           <GlassCard>
             <div style={{ textAlign: 'center', padding: '32px 16px', color: TEXT_SECONDARY }}>
-              <div style={{ fontSize: 28, marginBottom: 12, color: ACCENT_SILVER }}>◎</div>
-              <p style={{ fontSize: 14, color: TEXT_PRIMARY, margin: '0 0 4px', fontWeight: 600 }}>
+              <div style={{ fontSize: 'var(--aguila-fs-kpi-mid)', marginBottom: 12, color: ACCENT_SILVER }}>◎</div>
+              <p style={{ fontSize: 'var(--aguila-fs-section)', color: TEXT_PRIMARY, margin: '0 0 4px', fontWeight: 600 }}>
                 Sin anomalías en la ventana
               </p>
               <p style={{ fontSize: 12, color: TEXT_MUTED, margin: 0 }}>
@@ -198,7 +198,7 @@ export default async function AnomaliasPage() {
         )}
 
         <GlassCard>
-          <p style={{ fontSize: 11, color: TEXT_MUTED, margin: 0, lineHeight: 1.6 }}>
+          <p style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED, margin: 0, lineHeight: 1.6 }}>
             Detectores activos · <span style={{ color: TEXT_SECONDARY }}>Valor atípico</span> (≥2σ sobre media del proveedor) ·
             <span style={{ color: TEXT_SECONDARY }}> T-MEC faltante</span> (IGI pagado en proveedor que cruza USMCA ≥75% del tiempo) ·
             <span style={{ color: TEXT_SECONDARY }}> IVA cascada</span> (desviación ≥5% vs. valor_aduana + DTA + IGI × tasa de system_config).

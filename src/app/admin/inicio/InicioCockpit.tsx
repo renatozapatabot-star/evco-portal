@@ -46,7 +46,7 @@ function LiveTimestamp() {
     hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/Chicago',
   })
   return (
-    <div style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', fontSize: 11, color: TEXT_MUTED, marginTop: 4 }}>
+    <div style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED, marginTop: 4 }}>
       {dateStr} · {timeStr} · Datos en vivo
     </div>
   )
@@ -95,20 +95,20 @@ export function InicioCockpit({ data }: { data: InicioData }) {
           <div>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
               <h1 style={{
-                fontSize: 24, fontWeight: 800, color: TEXT_PRIMARY,
+                fontSize: 'var(--aguila-fs-title)', fontWeight: 800, color: TEXT_PRIMARY,
                 margin: 0, letterSpacing: '-0.03em',
               }}>
                 Buenas {partOfDay()}, {data.greeting.name}
               </h1>
               <span style={{
                 fontFamily: 'var(--font-jetbrains-mono), monospace',
-                fontSize: 10, color: TEXT_MUTED,
+                fontSize: 'var(--aguila-fs-label)', color: TEXT_MUTED,
                 textTransform: 'uppercase', letterSpacing: '0.04em',
               }}>
                 PATENTE 3596
               </span>
             </div>
-            <p style={{ fontSize: 14, color: TEXT_SECONDARY, marginTop: 2, marginBottom: 0, fontWeight: 500 }}>
+            <p style={{ fontSize: 'var(--aguila-fs-section)', color: TEXT_SECONDARY, marginTop: 2, marginBottom: 0, fontWeight: 500 }}>
               {data.greeting.summaryLine}
             </p>
             <LiveTimestamp />

@@ -96,12 +96,12 @@ function ProgressBar({ completed, total }: { completed: number; total: number })
           marginBottom: 8,
         }}
       >
-        <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,0.03)' }}>
+        <span style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: 'rgba(255,255,255,0.03)' }}>
           Progreso del día
         </span>
         <span
           className="font-mono"
-          style={{ fontSize: 14, color: '#6B6B6B' }}
+          style={{ fontSize: 'var(--aguila-fs-section)', color: '#6B6B6B' }}
         >
           {completed}/{total}
         </span>
@@ -193,7 +193,7 @@ function ActionCard({
           <p
             style={{
               margin: '4px 0 0',
-              fontSize: 14,
+              fontSize: 'var(--aguila-fs-section)',
               color: '#6B6B6B',
               lineHeight: 1.4,
             }}
@@ -205,7 +205,7 @@ function ActionCard({
             style={{
               display: 'inline-block',
               marginTop: 8,
-              fontSize: 13,
+              fontSize: 'var(--aguila-fs-body)',
               color: '#9B9B9B',
             }}
           >
@@ -246,7 +246,7 @@ function ActionCard({
           style={{
             background: 'none',
             border: 'none',
-            fontSize: 14,
+            fontSize: 'var(--aguila-fs-section)',
             color: '#9B9B9B',
             cursor: loading ? 'wait' : 'pointer',
             textDecoration: 'underline',
@@ -275,18 +275,18 @@ function CompletionCard() {
         border: '2px solid #eab308',
       }}
     >
-      <div style={{ fontSize: 48, marginBottom: 12 }}>&#10003;</div>
+      <div style={{ fontSize: 'var(--aguila-fs-kpi-hero)', marginBottom: 12 }}>&#10003;</div>
       <h2
         style={{
           margin: '0 0 8px',
-          fontSize: 24,
+          fontSize: 'var(--aguila-fs-title)',
           fontWeight: 700,
           color: 'rgba(255,255,255,0.03)',
         }}
       >
         Día completo
       </h2>
-      <p style={{ margin: 0, fontSize: 14, color: '#6B6B6B' }}>
+      <p style={{ margin: 0, fontSize: 'var(--aguila-fs-section)', color: '#6B6B6B' }}>
         Todas las acciones del día completadas.
       </p>
     </div>
@@ -347,7 +347,7 @@ function CruzAutoSection({
               &#10003;
             </span>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.03)' }}>
+              <span style={{ fontSize: 'var(--aguila-fs-section)', color: 'rgba(255,255,255,0.03)' }}>
                 {a.description}
               </span>
               <span
@@ -365,7 +365,7 @@ function CruzAutoSection({
           marginTop: 16,
           paddingTop: 12,
           borderTop: '1px solid #E8E5E0',
-          fontSize: 14,
+          fontSize: 'var(--aguila-fs-section)',
           fontWeight: 600,
           color: '#7A7E86',
         }}
@@ -499,7 +499,7 @@ export default function LaunchpadPage() {
         <h1
           style={{
             margin: '0 0 4px',
-            fontSize: 24,
+            fontSize: 'var(--aguila-fs-title)',
             fontWeight: 700,
             color: 'rgba(255,255,255,0.03)',
           }}
@@ -508,7 +508,7 @@ export default function LaunchpadPage() {
         </h1>
         <p
           className="font-mono"
-          style={{ margin: 0, fontSize: 14, color: '#9B9B9B' }}
+          style={{ margin: 0, fontSize: 'var(--aguila-fs-section)', color: '#9B9B9B' }}
         >
           {today}
         </p>

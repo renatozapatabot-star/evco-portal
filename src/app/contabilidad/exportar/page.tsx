@@ -26,11 +26,11 @@ export default async function ContabilidadExportarPage() {
       <div style={{ marginBottom: 20 }}>
         <h1 style={{
           fontFamily: 'var(--font-geist-sans)',
-          fontSize: 28, fontWeight: 800, letterSpacing: '-0.03em', margin: 0,
+          fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 800, letterSpacing: '-0.03em', margin: 0,
         }}>
           Exportar contabilidad
         </h1>
-        <p style={{ fontSize: 14, color: TEXT_SECONDARY, marginTop: 6, marginBottom: 0 }}>
+        <p style={{ fontSize: 'var(--aguila-fs-section)', color: TEXT_SECONDARY, marginTop: 6, marginBottom: 0 }}>
           CSV / Excel para conciliación externa.
         </p>
       </div>
@@ -47,12 +47,12 @@ export default async function ContabilidadExportarPage() {
         }}
       >
         <div style={{
-          fontSize: 10, fontWeight: 700, textTransform: 'uppercase',
+          fontSize: 'var(--aguila-fs-label)', fontWeight: 700, textTransform: 'uppercase',
           letterSpacing: '0.08em', color: TEXT_MUTED, marginBottom: 8,
         }}>
           Próximamente
         </div>
-        <p style={{ fontSize: 14, color: TEXT_SECONDARY, lineHeight: 1.55, margin: 0 }}>
+        <p style={{ fontSize: 'var(--aguila-fs-section)', color: TEXT_SECONDARY, lineHeight: 1.55, margin: 0 }}>
           Exportación masiva en construcción — contacta a Renato IV para generar un CSV manual de facturas,
           cartera o estados de cuenta mientras tanto.
         </p>

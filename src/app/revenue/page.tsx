@@ -36,28 +36,28 @@ export default async function RevenuePage() {
   return (
     <div style={{ fontFamily: 'var(--font-geist-sans)', color: 'var(--border)' }} className="p-4 md:px-7 md:py-6">
       <h1 style={{ fontSize: 22, fontWeight: 800, margin: '0 0 4px' }}>Motor de Ingresos</h1>
-      <p style={{ color: '#666', fontSize: 13, margin: '0 0 24px' }}>Visión ejecutiva del valor generado por ZAPATA AI</p>
+      <p style={{ color: '#666', fontSize: 'var(--aguila-fs-body)', margin: '0 0 24px' }}>Visión ejecutiva del valor generado por ZAPATA AI</p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
         {cards.map(c => (
           <div key={c.label} style={{ background: 'var(--navy-900)', border: '1px solid #2A2A2A', borderRadius: 12, padding: 20 }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: '#666', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>{c.label}</div>
-            <div style={{ fontSize: 32, fontWeight: 800, color: c.color }}>{c.value}</div>
+            <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, color: '#666', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>{c.label}</div>
+            <div style={{ fontSize: 'var(--aguila-fs-kpi-compact)', fontWeight: 800, color: c.color }}>{c.value}</div>
             <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>{c.sub}</div>
           </div>
         ))}
       </div>
 
       <div style={{ background: 'linear-gradient(135deg, rgba(192,197,206,0.1), rgba(168,122,34,0.05))', border: '1px solid rgba(192,197,206,0.3)', borderRadius: 12, padding: 24 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: GOLD, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>Valor Plataforma (modelo SaaS)</div>
+        <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, color: GOLD, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>Valor Plataforma (modelo SaaS)</div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 4 }}>50 clientes x $3,500 MXN/mes</div>
-            <div style={{ fontSize: 28, fontWeight: 800, color: GOLD }}>MX${saasMonthly}<span style={{ fontSize: 14, fontWeight: 400, color: '#666' }}>/mes</span></div>
+            <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-muted)', marginBottom: 4 }}>50 clientes x $3,500 MXN/mes</div>
+            <div style={{ fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 800, color: GOLD }}>MX${saasMonthly}<span style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 400, color: '#666' }}>/mes</span></div>
           </div>
           <div>
-            <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 4 }}>Valor anualizado</div>
-            <div style={{ fontSize: 28, fontWeight: 800, color: GOLD }}>MX${saasAnnual}<span style={{ fontSize: 14, fontWeight: 400, color: '#666' }}>/año</span></div>
+            <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-muted)', marginBottom: 4 }}>Valor anualizado</div>
+            <div style={{ fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 800, color: GOLD }}>MX${saasAnnual}<span style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 400, color: '#666' }}>/año</span></div>
           </div>
         </div>
       </div>

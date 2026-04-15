@@ -301,7 +301,7 @@ export default async function TraficoDetailPage({
           display: 'inline-flex',
           alignItems: 'center',
           gap: 6,
-          fontSize: 13,
+          fontSize: 'var(--aguila-fs-body)',
           color: TEXT_MUTED,
           textDecoration: 'none',
           marginBottom: 16,
@@ -325,7 +325,7 @@ export default async function TraficoDetailPage({
         <h1
           style={{
             fontFamily: 'var(--font-mono)',
-            fontSize: 32,
+            fontSize: 'var(--aguila-fs-kpi-compact)',
             fontWeight: 800,
             color: TEXT_PRIMARY,
             margin: 0,
@@ -337,7 +337,7 @@ export default async function TraficoDetailPage({
         {companyName && (
           <span
             style={{
-              fontSize: 11,
+              fontSize: 'var(--aguila-fs-meta)',
               fontWeight: 700,
               color: ACCENT_CYAN,
               textTransform: 'uppercase',
@@ -353,7 +353,7 @@ export default async function TraficoDetailPage({
         )}
         <span
           style={{
-            fontSize: 11,
+            fontSize: 'var(--aguila-fs-meta)',
             fontWeight: 700,
             color: pill.fg,
             background: pill.bg,
@@ -367,7 +367,7 @@ export default async function TraficoDetailPage({
           <span
             style={{
               marginLeft: 'auto',
-              fontSize: 11,
+              fontSize: 'var(--aguila-fs-meta)',
               fontFamily: 'var(--font-mono)',
               color: TEXT_MUTED,
             }}
@@ -431,7 +431,7 @@ export default async function TraficoDetailPage({
         style={{
           textAlign: 'center',
           padding: '20px 0',
-          fontSize: 11,
+          fontSize: 'var(--aguila-fs-meta)',
           color: TEXT_MUTED,
         }}
       >

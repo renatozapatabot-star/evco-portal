@@ -74,16 +74,16 @@ export default async function StatusPage() {
         </div>
 
         <div style={{ background: 'var(--navy-900)', border: '1px solid #2A2A2A', borderRadius: 12, padding: 20 }}>
-          <h2 style={{ fontSize: 13, fontWeight: 700, color: '#666', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 16 }}>Integraciones</h2>
+          <h2 style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 700, color: '#666', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 16 }}>Integraciones</h2>
           {systems.map((sys, i) => {
             const c = cfg[sys.status] || cfg.degraded
             return (
               <div key={sys.name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: i < systems.length - 1 ? '1px solid #2A2A2A' : 'none' }}>
                 <div>
-                  <div style={{ fontWeight: 600, fontSize: 14 }}>{sys.name}</div>
+                  <div style={{ fontWeight: 600, fontSize: 'var(--aguila-fs-section)' }}>{sys.name}</div>
                   <div style={{ color: '#666', fontSize: 12, marginTop: 2 }}>{sys.detail}</div>
                 </div>
-                <span style={{ background: c.bg, color: c.color, border: `1px solid ${c.color}30`, borderRadius: 20, padding: '3px 10px', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap' }}>
+                <span style={{ background: c.bg, color: c.color, border: `1px solid ${c.color}30`, borderRadius: 20, padding: '3px 10px', fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap' }}>
                   <span style={{ width: 6, height: 6, borderRadius: '50%', background: c.dot, display: 'inline-block' }} />
                   {c.label}
                 </span>
@@ -92,7 +92,7 @@ export default async function StatusPage() {
           })}
         </div>
 
-        <div style={{ textAlign: 'center', marginTop: 24, color: '#666', fontSize: 11 }}>
+        <div style={{ textAlign: 'center', marginTop: 24, color: '#666', fontSize: 'var(--aguila-fs-meta)' }}>
           <p>ZAPATA AI Intelligence Platform &middot; Patente 3596 &middot; Aduana 240 Nuevo Laredo</p>
           <p style={{ marginTop: 4 }}>Auto-refresh: every 60 seconds</p>
         </div>

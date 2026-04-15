@@ -65,7 +65,7 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
             </p>
           </div>
 
-          <label style={{ fontSize: 13, color: '#E6EDF3', fontWeight: 600 }}>
+          <label style={{ fontSize: 'var(--aguila-fs-body)', color: '#E6EDF3', fontWeight: 600 }}>
             Nota para el broker
           </label>
           <textarea
@@ -80,14 +80,14 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
               border: '1px solid rgba(255,255,255,0.12)',
               borderRadius: 12,
               color: '#E6EDF3',
-              fontSize: 14,
+              fontSize: 'var(--aguila-fs-section)',
               resize: 'vertical',
               outline: 'none',
               fontFamily: 'inherit',
             }}
           />
 
-          {error && <p style={{ color: '#EF4444', fontSize: 13, margin: 0 }}>{error}</p>}
+          {error && <p style={{ color: '#EF4444', fontSize: 'var(--aguila-fs-body)', margin: 0 }}>{error}</p>}
 
           <div style={{ display: 'flex', gap: 12 }}>
             <button
@@ -101,7 +101,7 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
                 border: '1px solid rgba(255,255,255,0.12)',
                 borderRadius: 12,
                 color: '#E6EDF3',
-                fontSize: 14,
+                fontSize: 'var(--aguila-fs-section)',
                 fontWeight: 600,
                 cursor: 'pointer',
               }}
@@ -119,7 +119,7 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
                 border: 'none',
                 borderRadius: 12,
                 color: '#0D0D0C',
-                fontSize: 14,
+                fontSize: 'var(--aguila-fs-section)',
                 fontWeight: 700,
                 cursor: loading ? 'wait' : 'pointer',
                 opacity: !escalateNote.trim() ? 0.5 : 1,
@@ -153,7 +153,7 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
           </p>
         )}
 
-        {error && <p style={{ color: '#EF4444', fontSize: 13, margin: 0 }}>{error}</p>}
+        {error && <p style={{ color: '#EF4444', fontSize: 'var(--aguila-fs-body)', margin: 0 }}>{error}</p>}
 
         <div style={{ display: 'flex', gap: 12 }}>
           <button
@@ -167,7 +167,7 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
               border: '1px solid rgba(255,255,255,0.12)',
               borderRadius: 12,
               color: '#E6EDF3',
-              fontSize: 14,
+              fontSize: 'var(--aguila-fs-section)',
               fontWeight: 600,
               cursor: 'pointer',
             }}
@@ -185,7 +185,7 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
               border: 'none',
               borderRadius: 12,
               color: '#0D0D0C',
-              fontSize: 14,
+              fontSize: 'var(--aguila-fs-section)',
               fontWeight: 700,
               cursor: loading ? 'wait' : 'pointer',
             }}
@@ -207,10 +207,10 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         {description && (
           <div>
-            <label style={{ fontSize: 11, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+            <label style={{ fontSize: 'var(--aguila-fs-meta)', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
               Producto
             </label>
-            <p style={{ fontSize: 14, color: '#E6EDF3', margin: '4px 0 0', lineHeight: 1.5 }}>
+            <p style={{ fontSize: 'var(--aguila-fs-section)', color: '#E6EDF3', margin: '4px 0 0', lineHeight: 1.5 }}>
               {description}
             </p>
           </div>
@@ -225,7 +225,7 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
               padding: 12,
             }}
           >
-            <span style={{ fontSize: 11, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+            <span style={{ fontSize: 'var(--aguila-fs-meta)', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
               Sugerencia IA
             </span>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginTop: 4 }}>
@@ -244,7 +244,7 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
         <div>
           <label
             htmlFor="fraccion-input"
-            style={{ fontSize: 13, color: '#E6EDF3', fontWeight: 600, display: 'block', marginBottom: 6 }}
+            style={{ fontSize: 'var(--aguila-fs-body)', color: '#E6EDF3', fontWeight: 600, display: 'block', marginBottom: 6 }}
           >
             Fraccion arancelaria
           </label>
@@ -269,7 +269,7 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
           />
         </div>
 
-        {error && <p style={{ color: '#EF4444', fontSize: 13, margin: 0 }}>{error}</p>}
+        {error && <p style={{ color: '#EF4444', fontSize: 'var(--aguila-fs-body)', margin: 0 }}>{error}</p>}
 
         <button
           onClick={() => handleAction(() => resolveClassification(event.id, fraccion, description))}
@@ -281,7 +281,7 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
             border: 'none',
             borderRadius: 12,
             color: '#0D0D0C',
-            fontSize: 14,
+            fontSize: 'var(--aguila-fs-section)',
             fontWeight: 700,
             cursor: loading ? 'wait' : 'pointer',
             opacity: !fraccion.match(/^\d{4}\.\d{2}\.\d{2}$/) ? 0.5 : 1,
@@ -304,10 +304,10 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         {supplierEmail && (
           <div>
-            <label style={{ fontSize: 11, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+            <label style={{ fontSize: 'var(--aguila-fs-meta)', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
               Destinatario
             </label>
-            <p style={{ fontSize: 14, fontFamily: 'var(--font-mono)', color: '#E6EDF3', margin: '4px 0 0' }}>
+            <p style={{ fontSize: 'var(--aguila-fs-section)', fontFamily: 'var(--font-mono)', color: '#E6EDF3', margin: '4px 0 0' }}>
               {supplierEmail}
             </p>
           </div>
@@ -315,10 +315,10 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
 
         {subject && (
           <div>
-            <label style={{ fontSize: 11, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+            <label style={{ fontSize: 'var(--aguila-fs-meta)', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
               Asunto
             </label>
-            <p style={{ fontSize: 14, color: '#E6EDF3', margin: '4px 0 0', fontWeight: 600 }}>
+            <p style={{ fontSize: 'var(--aguila-fs-section)', color: '#E6EDF3', margin: '4px 0 0', fontWeight: 600 }}>
               {subject}
             </p>
           </div>
@@ -335,18 +335,18 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
               overflow: 'auto',
             }}
           >
-            <p style={{ fontSize: 13, color: '#94a3b8', margin: 0, whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>
+            <p style={{ fontSize: 'var(--aguila-fs-body)', color: '#94a3b8', margin: 0, whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>
               {body}
             </p>
           </div>
         ) : solicitedDocs.length > 0 ? (
           <div>
-            <label style={{ fontSize: 11, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, display: 'block' }}>
+            <label style={{ fontSize: 'var(--aguila-fs-meta)', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, display: 'block' }}>
               Documentos solicitados
             </label>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {solicitedDocs.map((doc, i) => (
-                <span key={i} style={{ fontSize: 13, color: '#E6EDF3', padding: '6px 0' }}>
+                <span key={i} style={{ fontSize: 'var(--aguila-fs-body)', color: '#E6EDF3', padding: '6px 0' }}>
                   • {doc}
                 </span>
               ))}
@@ -354,7 +354,7 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
           </div>
         ) : null}
 
-        {error && <p style={{ color: '#EF4444', fontSize: 13, margin: 0 }}>{error}</p>}
+        {error && <p style={{ color: '#EF4444', fontSize: 'var(--aguila-fs-body)', margin: 0 }}>{error}</p>}
 
         <div style={{ display: 'flex', gap: 12 }}>
           <button
@@ -368,7 +368,7 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
               border: '1px solid rgba(255,255,255,0.12)',
               borderRadius: 12,
               color: '#E6EDF3',
-              fontSize: 14,
+              fontSize: 'var(--aguila-fs-section)',
               fontWeight: 600,
               cursor: 'pointer',
             }}
@@ -386,7 +386,7 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
               border: 'none',
               borderRadius: 12,
               color: '#0D0D0C',
-              fontSize: 14,
+              fontSize: 'var(--aguila-fs-section)',
               fontWeight: 700,
               cursor: loading ? 'wait' : 'pointer',
             }}
@@ -405,7 +405,7 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
         <div>
           <label
             htmlFor="carrier-input"
-            style={{ fontSize: 13, color: '#E6EDF3', fontWeight: 600, display: 'block', marginBottom: 6 }}
+            style={{ fontSize: 'var(--aguila-fs-body)', color: '#E6EDF3', fontWeight: 600, display: 'block', marginBottom: 6 }}
           >
             Nombre del transportista
           </label>
@@ -422,13 +422,13 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
               border: '1px solid rgba(255,255,255,0.12)',
               borderRadius: 12,
               color: '#E6EDF3',
-              fontSize: 14,
+              fontSize: 'var(--aguila-fs-section)',
               outline: 'none',
             }}
           />
         </div>
 
-        {error && <p style={{ color: '#EF4444', fontSize: 13, margin: 0 }}>{error}</p>}
+        {error && <p style={{ color: '#EF4444', fontSize: 'var(--aguila-fs-body)', margin: 0 }}>{error}</p>}
 
         <button
           onClick={() => handleAction(() => assignCarrier(event.id, carrierName))}
@@ -440,7 +440,7 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
             border: 'none',
             borderRadius: 12,
             color: '#0D0D0C',
-            fontSize: 14,
+            fontSize: 'var(--aguila-fs-section)',
             fontWeight: 700,
             cursor: loading ? 'wait' : 'pointer',
             opacity: !carrierName.trim() ? 0.5 : 1,
@@ -461,7 +461,7 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         {missingDocs.length > 0 && (
           <div>
-            <label style={{ fontSize: 11, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, display: 'block' }}>
+            <label style={{ fontSize: 'var(--aguila-fs-meta)', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, display: 'block' }}>
               Documentos faltantes
             </label>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -473,7 +473,7 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
                   border: '1px solid rgba(251,191,36,0.15)',
                   borderRadius: 8,
                 }}>
-                  <span style={{ fontSize: 13, color: '#E6EDF3' }}>{doc}</span>
+                  <span style={{ fontSize: 'var(--aguila-fs-body)', color: '#E6EDF3' }}>{doc}</span>
                 </div>
               ))}
             </div>
@@ -487,7 +487,7 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
         )}
 
         <div>
-          <label style={{ fontSize: 13, color: '#E6EDF3', fontWeight: 600, display: 'block', marginBottom: 6 }}>
+          <label style={{ fontSize: 'var(--aguila-fs-body)', color: '#E6EDF3', fontWeight: 600, display: 'block', marginBottom: 6 }}>
             Notas (opcional)
           </label>
           <textarea
@@ -499,13 +499,13 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
               width: '100%', padding: 12,
               background: 'rgba(255,255,255,0.04)',
               border: '1px solid rgba(255,255,255,0.12)',
-              borderRadius: 12, color: '#E6EDF3', fontSize: 14,
+              borderRadius: 12, color: '#E6EDF3', fontSize: 'var(--aguila-fs-section)',
               resize: 'vertical', outline: 'none', fontFamily: 'inherit',
             }}
           />
         </div>
 
-        {error && <p style={{ color: '#EF4444', fontSize: 13, margin: 0 }}>{error}</p>}
+        {error && <p style={{ color: '#EF4444', fontSize: 'var(--aguila-fs-body)', margin: 0 }}>{error}</p>}
 
         <div style={{ display: 'flex', gap: 12 }}>
           <button
@@ -515,7 +515,7 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
               flex: 1, minHeight: 60, padding: '14px 20px',
               background: 'transparent',
               border: '1px solid rgba(255,255,255,0.12)',
-              borderRadius: 12, color: '#E6EDF3', fontSize: 14,
+              borderRadius: 12, color: '#E6EDF3', fontSize: 'var(--aguila-fs-section)',
               fontWeight: 600, cursor: 'pointer',
             }}
           >
@@ -528,7 +528,7 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
               flex: 1, minHeight: 60, padding: '14px 20px',
               background: loading ? '#64748b' : '#E8EAED',
               border: 'none', borderRadius: 12,
-              color: '#0D0D0C', fontSize: 14, fontWeight: 700,
+              color: '#0D0D0C', fontSize: 'var(--aguila-fs-section)', fontWeight: 700,
               cursor: loading ? 'wait' : 'pointer',
             }}
           >
@@ -561,7 +561,7 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
           </p>
         )}
 
-        {error && <p style={{ color: '#EF4444', fontSize: 13, margin: 0 }}>{error}</p>}
+        {error && <p style={{ color: '#EF4444', fontSize: 'var(--aguila-fs-body)', margin: 0 }}>{error}</p>}
 
         <div style={{ display: 'flex', gap: 12 }}>
           <button
@@ -571,7 +571,7 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
               flex: 1, minHeight: 60, padding: '14px 20px',
               background: 'transparent',
               border: '1px solid rgba(255,255,255,0.12)',
-              borderRadius: 12, color: '#E6EDF3', fontSize: 14,
+              borderRadius: 12, color: '#E6EDF3', fontSize: 'var(--aguila-fs-section)',
               fontWeight: 600, cursor: 'pointer',
             }}
           >
@@ -584,7 +584,7 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
               flex: 1, minHeight: 60, padding: '14px 20px',
               background: loading ? '#64748b' : '#E8EAED',
               border: 'none', borderRadius: 12,
-              color: '#0D0D0C', fontSize: 14, fontWeight: 700,
+              color: '#0D0D0C', fontSize: 'var(--aguila-fs-section)', fontWeight: 700,
               cursor: loading ? 'wait' : 'pointer',
             }}
           >
@@ -599,10 +599,10 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div>
-        <label style={{ fontSize: 11, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+        <label style={{ fontSize: 'var(--aguila-fs-meta)', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
           Tipo de evento
         </label>
-        <p style={{ fontSize: 14, fontFamily: 'var(--font-mono)', color: '#E6EDF3', margin: '4px 0 0' }}>
+        <p style={{ fontSize: 'var(--aguila-fs-section)', fontFamily: 'var(--font-mono)', color: '#E6EDF3', margin: '4px 0 0' }}>
           {event.event_type}
         </p>
       </div>
@@ -618,13 +618,13 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
             overflow: 'auto',
           }}
         >
-          <pre style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: '#94a3b8', margin: 0, whiteSpace: 'pre-wrap' }}>
+          <pre style={{ fontSize: 'var(--aguila-fs-meta)', fontFamily: 'var(--font-mono)', color: '#94a3b8', margin: 0, whiteSpace: 'pre-wrap' }}>
             {JSON.stringify(payload, null, 2)}
           </pre>
         </div>
       )}
 
-      {error && <p style={{ color: '#EF4444', fontSize: 13, margin: 0 }}>{error}</p>}
+      {error && <p style={{ color: '#EF4444', fontSize: 'var(--aguila-fs-body)', margin: 0 }}>{error}</p>}
 
       <button
         onClick={() => handleAction(() => retryEvent(event.id))}
@@ -636,7 +636,7 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
           border: 'none',
           borderRadius: 12,
           color: '#0D0D0C',
-          fontSize: 14,
+          fontSize: 'var(--aguila-fs-section)',
           fontWeight: 700,
           cursor: loading ? 'wait' : 'pointer',
         }}

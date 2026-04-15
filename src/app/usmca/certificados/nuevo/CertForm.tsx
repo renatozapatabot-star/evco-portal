@@ -19,7 +19,7 @@ const inputStyle = {
   border: '1px solid rgba(255,255,255,0.08)',
   borderRadius: 10,
   color: TEXT_PRIMARY,
-  fontSize: 14,
+  fontSize: 'var(--aguila-fs-section)',
   fontFamily: 'inherit',
   outline: 'none',
 } as const
@@ -31,7 +31,7 @@ const monoInputStyle = {
 
 const labelStyle = {
   display: 'block',
-  fontSize: 10,
+  fontSize: 'var(--aguila-fs-label)',
   fontWeight: 700,
   color: TEXT_MUTED,
   textTransform: 'uppercase' as const,
@@ -232,7 +232,7 @@ export function CertForm() {
 
       {err && (
         <GlassCard>
-          <p style={{ color: '#EF4444', fontSize: 13, margin: 0 }}>{err}</p>
+          <p style={{ color: '#EF4444', fontSize: 'var(--aguila-fs-body)', margin: 0 }}>{err}</p>
         </GlassCard>
       )}
 
@@ -244,7 +244,7 @@ export function CertForm() {
             minHeight: 60, padding: '0 28px',
             background: SILVER_GRADIENT, color: '#0A0A0C',
             border: 'none', borderRadius: 10,
-            fontSize: 14, fontWeight: 700,
+            fontSize: 'var(--aguila-fs-section)', fontWeight: 700,
             textTransform: 'uppercase', letterSpacing: 0.5,
             cursor: loading ? 'wait' : 'pointer',
             opacity: loading ? 0.6 : 1,
@@ -252,7 +252,7 @@ export function CertForm() {
         >
           {loading ? 'Guardando borrador…' : 'Crear borrador'}
         </button>
-        <span style={{ fontSize: 11, color: TEXT_MUTED }}>
+        <span style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED }}>
           Firma final en pantalla de detalle · ventana visible de cancelación
         </span>
       </div>

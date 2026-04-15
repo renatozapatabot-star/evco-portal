@@ -21,7 +21,7 @@ export function InfoLateralPanel({ rows }: { rows: InfoRow[] }) {
     >
       <div
         style={{
-          fontSize: 11,
+          fontSize: 'var(--aguila-fs-meta)',
           fontWeight: 800,
           color: TEXT_MUTED,
           textTransform: 'uppercase',
@@ -34,10 +34,10 @@ export function InfoLateralPanel({ rows }: { rows: InfoRow[] }) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {rows.map((r) => (
           <div key={r.label} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <span style={{ fontSize: 11, color: TEXT_MUTED }}>{r.label}</span>
+            <span style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED }}>{r.label}</span>
             <span
               style={{
-                fontSize: 13,
+                fontSize: 'var(--aguila-fs-body)',
                 color: TEXT_PRIMARY,
                 fontFamily: r.mono ? 'var(--font-mono)' : undefined,
                 fontWeight: 600,

@@ -56,7 +56,7 @@ export default function HealthPage() {
       {!loading && jobs.length === 0 && (
         <div className="cc-card" style={{ padding: 40, textAlign: 'center', borderRadius: 20 }}>
           <Activity size={32} style={{ color: '#22C55E', margin: '0 auto 12px' }} />
-          <div style={{ color: '#22C55E', fontSize: 14, fontWeight: 600 }}>Sistema operativo — sin alertas</div>
+          <div style={{ color: '#22C55E', fontSize: 'var(--aguila-fs-section)', fontWeight: 600 }}>Sistema operativo — sin alertas</div>
           <div style={{ color: '#64748b', fontSize: 12, marginTop: 4 }}>Todos los procesos funcionan correctamente.</div>
         </div>
       )}
@@ -71,14 +71,14 @@ export default function HealthPage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <StatusDot minutes={job.minutes_since} status={job.status} />
                 <div>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: '#E6EDF3', fontFamily: 'var(--font-mono)' }}>{job.job_name}</div>
-                  <div style={{ fontSize: 11, color: '#64748b' }}>
+                  <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: '#E6EDF3', fontFamily: 'var(--font-mono)' }}>{job.job_name}</div>
+                  <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#64748b' }}>
                     {job.status} · {Math.round(job.minutes_since)}m ago · {job.rows_processed} rows
                   </div>
                 </div>
               </div>
               {job.error_message && (
-                <div style={{ fontSize: 11, color: '#EF4444', maxWidth: 300, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#EF4444', maxWidth: 300, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {job.error_message}
                 </div>
               )}

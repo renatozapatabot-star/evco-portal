@@ -217,7 +217,7 @@ export function BancoFacturasClient({ role }: Props) {
     }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16, minWidth: 0 }}>
         <header style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
-          <h1 style={{ fontSize: 24, fontWeight: 700, letterSpacing: '-0.01em', margin: 0 }}>
+          <h1 style={{ fontSize: 'var(--aguila-fs-title)', fontWeight: 700, letterSpacing: '-0.01em', margin: 0 }}>
             Banco de facturas
           </h1>
           <span style={{ fontFamily: MONO, fontSize: 12, color: TEXT_MUTED }}>
@@ -268,7 +268,7 @@ export function BancoFacturasClient({ role }: Props) {
             position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)',
             background: BG_CARD, backdropFilter: 'blur(20px)',
             border: `1px solid ${BORDER}`, borderRadius: 12,
-            padding: '12px 20px', color: TEXT_PRIMARY, fontSize: 14,
+            padding: '12px 20px', color: TEXT_PRIMARY, fontSize: 'var(--aguila-fs-section)',
             boxShadow: `0 0 20px ${GLOW_SILVER_SUBTLE}`,
           }}>
             {toast}
@@ -308,11 +308,11 @@ export function BancoFacturasClient({ role }: Props) {
 function FilterBar({ filter, onChange }: { filter: FilterState; onChange: (f: FilterState) => void }) {
   const inputStyle: React.CSSProperties = {
     background: 'rgba(255,255,255,0.03)', border: `1px solid ${BORDER_HAIRLINE}`,
-    borderRadius: 10, color: TEXT_PRIMARY, fontFamily: SANS, fontSize: 14,
+    borderRadius: 10, color: TEXT_PRIMARY, fontFamily: SANS, fontSize: 'var(--aguila-fs-section)',
     padding: '10px 12px', minHeight: 44, minWidth: 0,
   }
   const labelStyle: React.CSSProperties = {
-    fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase',
+    fontSize: 'var(--aguila-fs-label)', letterSpacing: '0.08em', textTransform: 'uppercase',
     color: TEXT_MUTED, marginBottom: 4,
   }
   return (
@@ -409,7 +409,7 @@ function DropZone({ busy, onFiles }: { busy: boolean; onFiles: (list: FileList |
         background: dragActive ? 'rgba(192,197,206,0.06)' : BG_CARD,
         backdropFilter: 'blur(20px)',
         borderRadius: 20, padding: 20, textAlign: 'center',
-        color: TEXT_SECONDARY, fontSize: 14,
+        color: TEXT_SECONDARY, fontSize: 'var(--aguila-fs-section)',
       }}
     >
       <input
@@ -430,7 +430,7 @@ function DropZone({ busy, onFiles }: { busy: boolean; onFiles: (list: FileList |
             style={{
               background: ACCENT_SILVER, color: '#0A0A0C',
               border: 'none', borderRadius: 10, padding: '10px 16px',
-              fontWeight: 600, fontSize: 14, cursor: 'pointer',
+              fontWeight: 600, fontSize: 'var(--aguila-fs-section)', cursor: 'pointer',
               minHeight: 44, minWidth: 44,
             }}
           >
@@ -463,13 +463,13 @@ function InvoiceRow({ row, active, onSelect }: {
         color: TEXT_PRIMARY,
       }}
     >
-      <span style={{ fontFamily: MONO, fontSize: 14, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+      <span style={{ fontFamily: MONO, fontSize: 'var(--aguila-fs-section)', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
         {row.invoice_number ?? 'Sin número'}
       </span>
-      <span style={{ fontSize: 14, color: TEXT_SECONDARY, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+      <span style={{ fontSize: 'var(--aguila-fs-section)', color: TEXT_SECONDARY, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
         {row.supplier_name ?? 'Proveedor pendiente'}
       </span>
-      <span style={{ fontFamily: MONO, fontSize: 14, color: TEXT_PRIMARY }}>
+      <span style={{ fontFamily: MONO, fontSize: 'var(--aguila-fs-section)', color: TEXT_PRIMARY }}>
         {fmtAmount(row.amount, row.currency)}
       </span>
       <span style={{ fontSize: 12, color: TEXT_MUTED, textAlign: 'right', whiteSpace: 'nowrap' }}>
@@ -487,8 +487,8 @@ function EmptyState({ status }: { status: InvoiceBankStatus }) {
       ? 'Aún no hay facturas asignadas a embarques.'
       : 'Sin facturas archivadas.'
   return (
-    <div style={{ padding: 48, textAlign: 'center', color: TEXT_MUTED, fontSize: 14 }}>
-      <div style={{ marginBottom: 8, fontSize: 28 }} aria-hidden>🗂️</div>
+    <div style={{ padding: 48, textAlign: 'center', color: TEXT_MUTED, fontSize: 'var(--aguila-fs-section)' }}>
+      <div style={{ marginBottom: 8, fontSize: 'var(--aguila-fs-kpi-mid)' }} aria-hidden>🗂️</div>
       <div>{msg}</div>
     </div>
   )
@@ -501,7 +501,7 @@ function BottomBar({ canAssign, canArchive, onAssignClick, onArchiveClick, onDel
   const btn = (color: string): React.CSSProperties => ({
     background: 'rgba(255,255,255,0.03)', color,
     border: `1px solid ${BORDER}`, borderRadius: 10,
-    padding: '12px 20px', fontWeight: 600, fontSize: 14,
+    padding: '12px 20px', fontWeight: 600, fontSize: 'var(--aguila-fs-section)',
     cursor: 'pointer', minHeight: 60, minWidth: 60,
   })
   return (
@@ -592,11 +592,11 @@ function RightRail({ row, onClose }: { row: InvoiceBankRow; onClose: () => void 
       height: 'calc(100vh - 48px)', position: 'sticky', top: 24,
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-        <h2 style={{ fontSize: 14, margin: 0, fontWeight: 600 }}>Vista previa</h2>
+        <h2 style={{ fontSize: 'var(--aguila-fs-section)', margin: 0, fontWeight: 600 }}>Vista previa</h2>
         <button type="button" onClick={onClose}
           style={{
             background: 'transparent', border: 'none', color: TEXT_MUTED,
-            cursor: 'pointer', minWidth: 44, minHeight: 44, fontSize: 14,
+            cursor: 'pointer', minWidth: 44, minHeight: 44, fontSize: 'var(--aguila-fs-section)',
           }}
           aria-label="Cerrar vista previa">
           Cerrar
@@ -638,7 +638,7 @@ function RightRail({ row, onClose }: { row: InvoiceBankRow; onClose: () => void 
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span
               style={{
-                fontSize: 11,
+                fontSize: 'var(--aguila-fs-meta)',
                 fontWeight: 600,
                 color: ACCENT_SILVER_BRIGHT,
                 letterSpacing: '0.04em',
@@ -648,13 +648,13 @@ function RightRail({ row, onClose }: { row: InvoiceBankRow; onClose: () => void 
               Extraído por ZAPATA AI
             </span>
             {chip.docType && (
-              <span style={{ fontSize: 11, color: TEXT_MUTED, fontFamily: MONO }}>
+              <span style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED, fontFamily: MONO }}>
                 · {chip.docType}
               </span>
             )}
           </div>
           {chip.confirmedAt ? (
-            <span style={{ color: GREEN, fontSize: 11 }}>
+            <span style={{ color: GREEN, fontSize: 'var(--aguila-fs-meta)' }}>
               Confirmado {fmtDate(chip.confirmedAt)}
             </span>
           ) : (
@@ -708,12 +708,12 @@ function RightRail({ row, onClose }: { row: InvoiceBankRow; onClose: () => void 
           />
         ) : (
           <a href={row.file_url} target="_blank" rel="noopener noreferrer"
-            style={{ color: ACCENT_SILVER_BRIGHT, fontSize: 13, textDecoration: 'underline' }}>
+            style={{ color: ACCENT_SILVER_BRIGHT, fontSize: 'var(--aguila-fs-body)', textDecoration: 'underline' }}>
             Abrir archivo
           </a>
         )
       ) : (
-        <div style={{ color: TEXT_MUTED, fontSize: 13 }}>Sin archivo adjunto</div>
+        <div style={{ color: TEXT_MUTED, fontSize: 'var(--aguila-fs-body)' }}>Sin archivo adjunto</div>
       )}
     </aside>
   )
@@ -775,15 +775,15 @@ function AssignModal({ onClose, onAssign }: {
           style={{
             width: '100%', background: 'rgba(255,255,255,0.03)',
             border: `1px solid ${BORDER_HAIRLINE}`, borderRadius: 10,
-            color: TEXT_PRIMARY, fontFamily: MONO, fontSize: 14,
+            color: TEXT_PRIMARY, fontFamily: MONO, fontSize: 'var(--aguila-fs-section)',
             padding: '10px 12px', minHeight: 44,
           }}
           aria-label="Buscar embarque"
         />
         <div style={{ marginTop: 12, maxHeight: 320, overflowY: 'auto' }}>
-          {searching && <div style={{ color: TEXT_MUTED, fontSize: 13, padding: 8 }}>Buscando…</div>}
+          {searching && <div style={{ color: TEXT_MUTED, fontSize: 'var(--aguila-fs-body)', padding: 8 }}>Buscando…</div>}
           {!searching && q.trim().length >= 2 && hits.length === 0 && (
-            <div style={{ color: TEXT_MUTED, fontSize: 13, padding: 8 }}>Sin coincidencias</div>
+            <div style={{ color: TEXT_MUTED, fontSize: 'var(--aguila-fs-body)', padding: 8 }}>Sin coincidencias</div>
           )}
           {hits.map((h) => (
             <button
@@ -800,7 +800,7 @@ function AssignModal({ onClose, onAssign }: {
               onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(192,197,206,0.08)' }}
               onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
             >
-              <span style={{ fontFamily: MONO, fontSize: 14, fontWeight: 600 }}>{h.title}</span>
+              <span style={{ fontFamily: MONO, fontSize: 'var(--aguila-fs-section)', fontWeight: 600 }}>{h.title}</span>
               {h.subtitle && <span style={{ fontSize: 12, color: TEXT_MUTED }}>{h.subtitle}</span>}
             </button>
           ))}
@@ -810,7 +810,7 @@ function AssignModal({ onClose, onAssign }: {
             style={{
               background: 'transparent', color: TEXT_SECONDARY, border: `1px solid ${BORDER}`,
               borderRadius: 10, padding: '10px 16px', cursor: 'pointer',
-              minHeight: 44, minWidth: 44, fontSize: 14,
+              minHeight: 44, minWidth: 44, fontSize: 'var(--aguila-fs-section)',
             }}>
             Cancelar
           </button>

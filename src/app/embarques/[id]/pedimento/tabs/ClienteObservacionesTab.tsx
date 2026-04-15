@@ -103,7 +103,7 @@ export function ClienteObservacionesTab({ pedimento, clienteName }: ClienteObser
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           <div
             style={{
-              fontSize: 11,
+              fontSize: 'var(--aguila-fs-meta)',
               color: 'var(--text-muted)',
               textTransform: 'uppercase',
               letterSpacing: '0.06em',
@@ -119,14 +119,14 @@ export function ClienteObservacionesTab({ pedimento, clienteName }: ClienteObser
               border: '1px solid rgba(192,197,206,0.12)',
               borderRadius: 10,
               color: 'var(--text-primary)',
-              fontSize: 14,
+              fontSize: 'var(--aguila-fs-section)',
               display: 'flex',
               alignItems: 'center',
             }}
           >
             {clienteName ?? 'Sin resolver'}
           </div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+          <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)' }}>
             Resuelto desde <code style={{ fontFamily: 'var(--font-mono)' }}>companies.name</code>.
           </div>
         </div>
@@ -169,7 +169,7 @@ export function ClienteObservacionesTab({ pedimento, clienteName }: ClienteObser
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
           <span
             style={{
-              fontSize: 11,
+              fontSize: 'var(--aguila-fs-meta)',
               color: 'var(--text-muted)',
               textTransform: 'uppercase',
               letterSpacing: '0.06em',
@@ -184,7 +184,7 @@ export function ClienteObservacionesTab({ pedimento, clienteName }: ClienteObser
             errorMessage={idAutosave.errorMessage}
           />
         </div>
-        <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>
+        <p style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', marginTop: 6 }}>
           Pares clave:valor libres (referencias SAT, números internos, etc.).
         </p>
 
@@ -248,7 +248,7 @@ export function ClienteObservacionesTab({ pedimento, clienteName }: ClienteObser
               color: ACCENT_SILVER,
               border: `1px solid ${ACCENT_SILVER}`,
               borderRadius: 10,
-              fontSize: 13,
+              fontSize: 'var(--aguila-fs-body)',
               fontWeight: 600,
               cursor: 'pointer',
             }}
@@ -258,7 +258,7 @@ export function ClienteObservacionesTab({ pedimento, clienteName }: ClienteObser
         </div>
 
         {identifiersError && (
-          <div role="alert" style={{ marginTop: 10, fontSize: 11, color: RED }}>
+          <div role="alert" style={{ marginTop: 10, fontSize: 'var(--aguila-fs-meta)', color: RED }}>
             {identifiersError}
           </div>
         )}
@@ -276,7 +276,7 @@ function inputStyle(mono: boolean, error: boolean): React.CSSProperties {
     color: 'var(--text-primary)',
     border: `1px solid ${error ? RED : 'rgba(192,197,206,0.22)'}`,
     borderRadius: 10,
-    fontSize: 14,
+    fontSize: 'var(--aguila-fs-section)',
     fontFamily: mono ? 'var(--font-mono)' : 'inherit',
     outline: 'none',
   }

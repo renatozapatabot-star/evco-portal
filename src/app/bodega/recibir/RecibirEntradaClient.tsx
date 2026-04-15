@@ -268,7 +268,7 @@ export function RecibirEntradaClient() {
               background: 'rgba(192,197,206,0.12)',
               border: '1px solid rgba(192,197,206,0.35)',
               color: '#C0C5CE',
-              fontSize: 13,
+              fontSize: 'var(--aguila-fs-body)',
               textAlign: 'center',
             }}
           >
@@ -284,7 +284,7 @@ export function RecibirEntradaClient() {
               background: 'rgba(220,38,38,0.12)',
               border: '1px solid rgba(220,38,38,0.35)',
               color: '#FCA5A5',
-              fontSize: 13,
+              fontSize: 'var(--aguila-fs-body)',
               textAlign: 'center',
             }}
           >
@@ -355,7 +355,7 @@ export function RecibirEntradaClient() {
 
       {/* Embarque picker */}
       <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        <span style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94a3b8' }}>
+        <span style={{ fontSize: 'var(--aguila-fs-meta)', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94a3b8' }}>
           Embarque
         </span>
         <input
@@ -431,7 +431,7 @@ export function RecibirEntradaClient() {
 
       {/* Trailer number */}
       <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        <span style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94a3b8' }}>
+        <span style={{ fontSize: 'var(--aguila-fs-meta)', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94a3b8' }}>
           Número de caja
         </span>
         <div style={{ display: 'flex', gap: 8 }}>
@@ -450,7 +450,7 @@ export function RecibirEntradaClient() {
               border: '1px solid rgba(192,197,206,0.18)',
               background: BG_ELEVATED,
               color: '#E6EDF3',
-              fontSize: 18,
+              fontSize: 'var(--aguila-fs-kpi-small)',
               fontFamily: 'var(--font-jetbrains-mono), monospace',
               letterSpacing: '0.04em',
             }}
@@ -489,7 +489,7 @@ export function RecibirEntradaClient() {
 
       {/* Dock */}
       <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        <span style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94a3b8' }}>
+        <span style={{ fontSize: 'var(--aguila-fs-meta)', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94a3b8' }}>
           Andén (opcional)
         </span>
         <select
@@ -518,7 +518,7 @@ export function RecibirEntradaClient() {
 
       {/* Photo capture */}
       <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        <span style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94a3b8' }}>
+        <span style={{ fontSize: 'var(--aguila-fs-meta)', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94a3b8' }}>
           Fotos ({photos.length}/8)
         </span>
         <input
@@ -569,7 +569,7 @@ export function RecibirEntradaClient() {
                 key={`${p.name}-${i}`}
                 style={{
                   fontFamily: 'var(--font-jetbrains-mono), monospace',
-                  fontSize: 11,
+                  fontSize: 'var(--aguila-fs-meta)',
                   color: '#C0C5CE',
                   padding: '4px 8px',
                   borderRadius: 8,
@@ -585,7 +585,7 @@ export function RecibirEntradaClient() {
 
       {/* Notes */}
       <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        <span style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94a3b8' }}>
+        <span style={{ fontSize: 'var(--aguila-fs-meta)', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94a3b8' }}>
           Notas (opcional)
         </span>
         <textarea
@@ -618,7 +618,7 @@ export function RecibirEntradaClient() {
             background: 'rgba(220,38,38,0.12)',
             border: '1px solid rgba(220,38,38,0.35)',
             color: '#FCA5A5',
-            fontSize: 14,
+            fontSize: 'var(--aguila-fs-section)',
           }}
         >
           <AlertTriangle size={18} />

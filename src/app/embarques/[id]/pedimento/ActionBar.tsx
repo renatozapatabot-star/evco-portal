@@ -71,7 +71,7 @@ export function ActionBar({ pedimentoId }: ActionBarProps) {
         style={{
           minHeight: 60,
           padding: '0 20px',
-          fontSize: 13,
+          fontSize: 'var(--aguila-fs-body)',
           fontWeight: 500,
           background: 'transparent',
           color: ACCENT_SILVER_DIM,
@@ -89,7 +89,7 @@ export function ActionBar({ pedimentoId }: ActionBarProps) {
         style={{
           minHeight: 60,
           padding: '0 20px',
-          fontSize: 13,
+          fontSize: 'var(--aguila-fs-body)',
           fontWeight: 600,
           background: 'transparent',
           color: ACCENT_SILVER,
@@ -107,7 +107,7 @@ export function ActionBar({ pedimentoId }: ActionBarProps) {
         style={{
           minHeight: 60,
           padding: '0 20px',
-          fontSize: 13,
+          fontSize: 'var(--aguila-fs-body)',
           fontWeight: 500,
           background: 'rgba(192,197,206,0.08)',
           color: ACCENT_SILVER_DIM,

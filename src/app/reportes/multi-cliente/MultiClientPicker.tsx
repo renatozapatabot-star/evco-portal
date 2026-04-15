@@ -16,7 +16,7 @@ const inputStyle = {
   border: '1px solid rgba(255,255,255,0.08)',
   borderRadius: 10,
   color: TEXT_PRIMARY,
-  fontSize: 14,
+  fontSize: 'var(--aguila-fs-section)',
   fontFamily: 'var(--font-jetbrains-mono), monospace',
   outline: 'none',
   fontVariantNumeric: 'tabular-nums' as const,
@@ -49,7 +49,7 @@ export function MultiClientPicker({ defaultWeek }: Props) {
   return (
     <div style={{ display: 'grid', gap: 10 }}>
       <label style={{
-        fontSize: 10, fontWeight: 700, letterSpacing: 0.8,
+        fontSize: 'var(--aguila-fs-label)', fontWeight: 700, letterSpacing: 0.8,
         textTransform: 'uppercase', color: TEXT_MUTED,
       }}>
         Semana (ISO-8601)
@@ -63,7 +63,7 @@ export function MultiClientPicker({ defaultWeek }: Props) {
           placeholder="2026-W13"
           style={{ ...inputStyle, maxWidth: 180 }}
         />
-        <span style={{ fontSize: 11, color: ACCENT_SILVER }}>
+        <span style={{ fontSize: 'var(--aguila-fs-meta)', color: ACCENT_SILVER }}>
           {pending ? 'Actualizando…' : 'Enter para aplicar'}
         </span>
       </div>

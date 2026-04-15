@@ -117,7 +117,7 @@ export default async function SharePage(
         {/* Header */}
         <div style={{ textAlign: 'center' }}>
           <div style={{
-            fontSize: 14,
+            fontSize: 'var(--aguila-fs-section)',
             fontWeight: 700,
             letterSpacing: '0.15em',
             color: 'var(--gold)',
@@ -149,7 +149,7 @@ export default async function SharePage(
             <>
               <div>
                 <div style={{
-                  fontSize: 11,
+                  fontSize: 'var(--aguila-fs-meta)',
                   fontWeight: 700,
                   textTransform: 'uppercase',
                   letterSpacing: '0.08em',
@@ -175,7 +175,7 @@ export default async function SharePage(
               }}>
                 <div>
                   <div style={{
-                    fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
+                    fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase',
                     letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: 4,
                   }}>
                     Estatus
@@ -195,7 +195,7 @@ export default async function SharePage(
                 </div>
                 <div>
                   <div style={{
-                    fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
+                    fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase',
                     letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: 4,
                   }}>
                     Valor
@@ -211,13 +211,13 @@ export default async function SharePage(
                 </div>
                 <div>
                   <div style={{
-                    fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
+                    fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase',
                     letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: 4,
                   }}>
                     Mercancía
                   </div>
                   <div style={{
-                    fontSize: 13,
+                    fontSize: 'var(--aguila-fs-body)',
                     color: 'var(--text-secondary)',
                     lineHeight: 1.5,
                   }}>
@@ -226,13 +226,13 @@ export default async function SharePage(
                 </div>
                 <div>
                   <div style={{
-                    fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
+                    fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase',
                     letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: 4,
                   }}>
                     Empresa
                   </div>
                   <div style={{
-                    fontSize: 13,
+                    fontSize: 'var(--aguila-fs-body)',
                     fontWeight: 600,
                     color: 'var(--text-primary)',
                     textTransform: 'uppercase',
@@ -245,10 +245,10 @@ export default async function SharePage(
           ) : (
             <div style={{ textAlign: 'center', padding: '20px 0' }}>
               <div style={{ fontSize: 40, marginBottom: 12 }}>🔍</div>
-              <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>
+              <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>
                 Embarque no encontrado
               </div>
-              <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+              <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)' }}>
                 El embarque solicitado no existe o está fuera de rango.
               </div>
             </div>
@@ -267,7 +267,7 @@ export default async function SharePage(
               borderRadius: 8,
               background: 'var(--gold)',
               color: 'var(--bg-card)',
-              fontSize: 14,
+              fontSize: 'var(--aguila-fs-section)',
               fontWeight: 700,
               textDecoration: 'none',
               cursor: 'pointer',
@@ -281,7 +281,7 @@ export default async function SharePage(
 
         {/* CRUZ CTA */}
         <div style={{ marginTop: 40, padding: '24px 20px', borderTop: '1px solid var(--border, #E8E5E0)', textAlign: 'center' }}>
-          <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 8 }}>
+          <p style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-muted)', marginBottom: 8 }}>
             ¿Quiere esta visibilidad para sus importaciones?
           </p>
           <p style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>

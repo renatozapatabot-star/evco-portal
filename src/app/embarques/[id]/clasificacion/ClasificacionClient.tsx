@@ -114,7 +114,7 @@ export function ClasificacionClient({
         <header style={{ marginBottom: 20 }}>
           <div
             style={{
-              fontSize: 11,
+              fontSize: 'var(--aguila-fs-meta)',
               color: TEXT_MUTED,
               textTransform: 'uppercase',
               letterSpacing: '0.08em',

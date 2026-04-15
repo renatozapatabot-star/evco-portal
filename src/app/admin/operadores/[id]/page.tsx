@@ -70,7 +70,7 @@ export default async function OperatorDetailPage({ params }: { params: Promise<{
   if (!operator) {
     return (
       <main className="aduana-dark" style={{ padding: 24, minHeight: '100vh', color: TEXT_PRIMARY }}>
-        <p style={{ fontSize: 14 }}>Operador no encontrado.</p>
+        <p style={{ fontSize: 'var(--aguila-fs-section)' }}>Operador no encontrado.</p>
         <Link href="/admin/operadores" style={{ color: ACCENT_SILVER_BRIGHT }}>
           ← Regresar
         </Link>
@@ -107,7 +107,7 @@ export default async function OperatorDetailPage({ params }: { params: Promise<{
     >
       <Link
         href="/admin/operadores"
-        style={{ fontSize: 13, color: TEXT_SECONDARY, textDecoration: 'none' }}
+        style={{ fontSize: 'var(--aguila-fs-body)', color: TEXT_SECONDARY, textDecoration: 'none' }}
       >
         ← Equipo
       </Link>
@@ -172,7 +172,7 @@ export default async function OperatorDetailPage({ params }: { params: Promise<{
           }}
         >
           <h2 style={{
-            fontSize: 10,
+            fontSize: 'var(--aguila-fs-label)',
             fontWeight: 700,
             textTransform: 'uppercase',
             letterSpacing: '0.1em',
@@ -183,7 +183,7 @@ export default async function OperatorDetailPage({ params }: { params: Promise<{
             Acciones por tipo (últimas 50)
           </h2>
           {countsSorted.length === 0 ? (
-            <p style={{ fontSize: 13, color: TEXT_SECONDARY, margin: 0 }}>
+            <p style={{ fontSize: 'var(--aguila-fs-body)', color: TEXT_SECONDARY, margin: 0 }}>
               Sin actividad reciente.
             </p>
           ) : (
@@ -200,10 +200,10 @@ export default async function OperatorDetailPage({ params }: { params: Promise<{
                     minHeight: 32,
                   }}
                 >
-                  <span style={{ fontSize: 13, color: TEXT_PRIMARY, fontFamily: SANS }}>
+                  <span style={{ fontSize: 'var(--aguila-fs-body)', color: TEXT_PRIMARY, fontFamily: SANS }}>
                     {type}
                   </span>
-                  <span style={{ fontFamily: MONO, color: ACCENT_SILVER_BRIGHT, fontSize: 13 }}>
+                  <span style={{ fontFamily: MONO, color: ACCENT_SILVER_BRIGHT, fontSize: 'var(--aguila-fs-body)' }}>
                     {count}
                   </span>
                 </li>
@@ -224,7 +224,7 @@ export default async function OperatorDetailPage({ params }: { params: Promise<{
           }}
         >
           <h2 style={{
-            fontSize: 10,
+            fontSize: 'var(--aguila-fs-label)',
             fontWeight: 700,
             textTransform: 'uppercase',
             letterSpacing: '0.1em',
@@ -235,7 +235,7 @@ export default async function OperatorDetailPage({ params }: { params: Promise<{
             Últimas 50 acciones
           </h2>
           {actions.length === 0 ? (
-            <p style={{ fontSize: 13, color: TEXT_SECONDARY, margin: 0 }}>
+            <p style={{ fontSize: 'var(--aguila-fs-body)', color: TEXT_SECONDARY, margin: 0 }}>
               Este operador no tiene acciones registradas.
             </p>
           ) : (
@@ -255,17 +255,17 @@ export default async function OperatorDetailPage({ params }: { params: Promise<{
                   }}
                 >
                   <div>
-                    <div style={{ fontFamily: SANS, fontSize: 13, fontWeight: 600, color: TEXT_PRIMARY }}>
+                    <div style={{ fontFamily: SANS, fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: TEXT_PRIMARY }}>
                       {a.action_type ?? '—'}
                     </div>
                     {a.target_table && (
-                      <div style={{ fontSize: 11, color: TEXT_SECONDARY, marginTop: 2, fontFamily: MONO }}>
+                      <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_SECONDARY, marginTop: 2, fontFamily: MONO }}>
                         {a.target_table}
                         {a.target_id ? ` · ${a.target_id}` : ''}
                       </div>
                     )}
                   </div>
-                  <div style={{ fontFamily: MONO, fontSize: 11, color: TEXT_MUTED }}>
+                  <div style={{ fontFamily: MONO, fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED }}>
                     {fmtDateTime(a.created_at)}
                   </div>
                 </li>

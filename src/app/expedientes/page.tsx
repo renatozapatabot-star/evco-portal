@@ -38,7 +38,7 @@ const PAGE_SIZE = 50
 
 function SortArrow({ col, sort }: { col: string; sort: SortState }) {
   if (sort.column !== col) return null
-  return <span style={{ marginLeft: 4, fontSize: 10 }}>{sort.direction === 'asc' ? '↑' : '↓'}</span>
+  return <span style={{ marginLeft: 4, fontSize: 'var(--aguila-fs-label)' }}>{sort.direction === 'asc' ? '↑' : '↓'}</span>
 }
 
 export default function ExpedientesPage() {
@@ -248,12 +248,12 @@ function ExpedientesContent() {
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         {isCruzado
                           ? <DocCompleteness present={REQUIRED_DOCS.length} />
-                          : <span style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic' }}>Pendiente</span>
+                          : <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', fontStyle: 'italic' }}>Pendiente</span>
                         }
                       </div>
                     </div>
                     <div className="m-card-bottom">
-                      {r.pedimento && <span className="ped-pill" style={{ fontSize: 11, padding: '2px 7px' }}>{fmtPedimentoShort(r.pedimento)}</span>}
+                      {r.pedimento && <span className="ped-pill" style={{ fontSize: 'var(--aguila-fs-meta)', padding: '2px 7px' }}>{fmtPedimentoShort(r.pedimento)}</span>}
                       <span className="m-card-meta" style={{ fontFamily: 'var(--font-jetbrains-mono, var(--font-mono))' }}>{r.fecha_llegada ? fmtDateShort(r.fecha_llegada) : '—'}</span>
                     </div>
                   </button>
@@ -297,7 +297,7 @@ function ExpedientesContent() {
                     {search.trim() ? (
                       <div className="empty-state">
                         <div className="empty-state-icon">🔍</div>
-                        <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--slate-600)' }}>Sin resultados para &ldquo;{search}&rdquo;</div>
+                        <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: 'var(--slate-600)' }}>Sin resultados para &ldquo;{search}&rdquo;</div>
                         <button className="btn btn-outline btn-sm" style={{ marginTop: 12 }} onClick={() => { setSearchInput(''); setSearch('') }}>Limpiar búsqueda</button>
                       </div>
                     ) : (
@@ -351,7 +351,7 @@ function ExpedientesContent() {
                             background: 'rgba(192,197,206,0.08)',
                             border: '1px solid rgba(192,197,206,0.2)',
                             color: '#E8EAED',
-                            fontSize: 11,
+                            fontSize: 'var(--aguila-fs-meta)',
                             fontWeight: 700,
                             letterSpacing: '0.08em',
                             textTransform: 'uppercase',

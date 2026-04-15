@@ -210,10 +210,10 @@ export default function BodegaPage() {
     <div className="page-shell" style={{ maxWidth: 1200 }}>
       {/* Header */}
       <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 700, color: T.textPrimary, marginBottom: 4 }}>
+        <h1 style={{ fontSize: 'var(--aguila-fs-title)', fontWeight: 700, color: T.textPrimary, marginBottom: 4 }}>
           Inventario
         </h1>
-        <p style={{ fontSize: 14, color: T.textSecondary }}>
+        <p style={{ fontSize: 'var(--aguila-fs-section)', color: T.textSecondary }}>
           Inteligencia de almacén · {rows.length} entradas
         </p>
       </div>
@@ -230,7 +230,7 @@ export default function BodegaPage() {
             onClick={() => setTab(t.key)}
             style={{
               padding: '10px 16px',
-              fontSize: 13, fontWeight: 600,
+              fontSize: 'var(--aguila-fs-body)', fontWeight: 600,
               color: tab === t.key ? T.gold : T.textSecondary,
               background: 'none', border: 'none', cursor: 'pointer',
               borderBottom: tab === t.key ? `2px solid ${T.gold}` : '2px solid transparent',
@@ -244,7 +244,7 @@ export default function BodegaPage() {
                 aria-label={`${t.badge} entradas en bodega`}
                 style={{
                   background: 'var(--teal, #0D9488)', color: '#FFFFFF',
-                  fontSize: 11, fontWeight: 700, padding: '2px 7px',
+                  fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, padding: '2px 7px',
                   borderRadius: 9999, lineHeight: 1.2,
                 }}
               >
@@ -270,7 +270,7 @@ export default function BodegaPage() {
                 placeholder="Buscar entrada, embarque..."
                 value={bodegaSearch}
                 onChange={e => setBodegaSearch(e.target.value)}
-                style={{ border: 'none', outline: 'none', background: 'transparent', fontSize: 13, color: T.textPrimary, width: '100%' }}
+                style={{ border: 'none', outline: 'none', background: 'transparent', fontSize: 'var(--aguila-fs-body)', color: T.textPrimary, width: '100%' }}
                 aria-label="Buscar en inventario"
               />
             </div>
@@ -282,7 +282,7 @@ export default function BodegaPage() {
                 {['Fecha', 'Entrada', 'Embarque', 'Bultos', 'Peso (kg)'].map(h => (
                   <th key={h} style={{
                     textAlign: 'left', padding: '10px 12px',
-                    fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
+                    fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase',
                     letterSpacing: '0.06em', color: T.textMuted,
                     borderBottom: `1px solid ${T.border}`,
                   }}>
@@ -306,13 +306,13 @@ export default function BodegaPage() {
                 const badge = statusBadge(e)
                 return (
                   <tr key={e.cve_entrada} style={{ borderBottom: `1px solid ${T.border}` }}>
-                    <td style={{ padding: '12px', fontSize: 13, color: T.textSecondary }}>
+                    <td style={{ padding: '12px', fontSize: 'var(--aguila-fs-body)', color: T.textSecondary }}>
                       {fmtDate(e.fecha_llegada_mercancia)}
                     </td>
-                    <td style={{ padding: '12px', fontSize: 13, fontWeight: 700, color: T.textPrimary, fontFamily: 'var(--font-jetbrains-mono)' }}>
+                    <td style={{ padding: '12px', fontSize: 'var(--aguila-fs-body)', fontWeight: 700, color: T.textPrimary, fontFamily: 'var(--font-jetbrains-mono)' }}>
                       {e.cve_entrada}
                     </td>
-                    <td style={{ padding: '12px', fontSize: 13 }}>
+                    <td style={{ padding: '12px', fontSize: 'var(--aguila-fs-body)' }}>
                       {e.trafico ? (
                         <Link href={`/embarques/${encodeURIComponent(e.trafico)}`} style={{
                           color: T.gold, fontWeight: 600, textDecoration: 'none',
@@ -324,10 +324,10 @@ export default function BodegaPage() {
                         <span style={{ color: T.textMuted }}>—</span>
                       )}
                     </td>
-                    <td style={{ padding: '12px', fontSize: 13, color: T.textPrimary, fontFamily: 'var(--font-jetbrains-mono)' }}>
+                    <td style={{ padding: '12px', fontSize: 'var(--aguila-fs-body)', color: T.textPrimary, fontFamily: 'var(--font-jetbrains-mono)' }}>
                       {e.cantidad_bultos ?? '—'}
                     </td>
-                    <td style={{ padding: '12px', fontSize: 13, color: T.textPrimary, fontFamily: 'var(--font-jetbrains-mono)' }}>
+                    <td style={{ padding: '12px', fontSize: 'var(--aguila-fs-body)', color: T.textPrimary, fontFamily: 'var(--font-jetbrains-mono)' }}>
                       {e.peso_bruto != null ? fmtKg(e.peso_bruto) : '—'}
                     </td>
                   </tr>
@@ -364,20 +364,20 @@ export default function BodegaPage() {
                 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
                     <div style={{
-                      fontSize: 14, fontWeight: 700, color: T.textPrimary,
+                      fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: T.textPrimary,
                       fontFamily: 'var(--font-jetbrains-mono)',
                     }}>
                       {e.cve_entrada}
                     </div>
                     <div style={{
-                      fontSize: 28, fontWeight: 900, lineHeight: 1,
+                      fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 900, lineHeight: 1,
                       fontFamily: 'var(--font-jetbrains-mono)',
                       color: textColor,
                     }}>
-                      {days}<span style={{ fontSize: 11, fontWeight: 600, color: T.textMuted }}>d</span>
+                      {days}<span style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, color: T.textMuted }}>d</span>
                     </div>
                   </div>
-                  <div style={{ display: 'flex', gap: 16, fontSize: 13, color: T.textSecondary }}>
+                  <div style={{ display: 'flex', gap: 16, fontSize: 'var(--aguila-fs-body)', color: T.textSecondary }}>
                     <span>{e.cantidad_bultos ?? 0} {(e.cantidad_bultos ?? 0) === 1 ? 'bulto' : 'bultos'}</span>
                     <span>{e.peso_bruto != null ? `${fmtKg(e.peso_bruto)} kg` : '—'}</span>
                   </div>
@@ -410,7 +410,7 @@ export default function BodegaPage() {
             borderRadius: T.radius, padding: 24,
           }}>
             <div style={{
-              fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
+              fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase',
               letterSpacing: '0.06em', color: T.textMuted, marginBottom: 8,
             }}>
               Permanencia promedio
@@ -433,7 +433,7 @@ export default function BodegaPage() {
             borderRadius: T.radius, padding: 24,
           }}>
             <div style={{
-              fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
+              fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase',
               letterSpacing: '0.06em', color: T.textMuted, marginBottom: 8,
             }}>
               Tasa de daño
@@ -456,7 +456,7 @@ export default function BodegaPage() {
             borderRadius: T.radius, padding: 24,
           }}>
             <div style={{
-              fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
+              fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase',
               letterSpacing: '0.06em', color: T.textMuted, marginBottom: 8,
             }}>
               Total bultos
@@ -479,7 +479,7 @@ export default function BodegaPage() {
             borderRadius: T.radius, padding: 24,
           }}>
             <div style={{
-              fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
+              fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase',
               letterSpacing: '0.06em', color: T.textMuted, marginBottom: 8,
             }}>
               Total peso

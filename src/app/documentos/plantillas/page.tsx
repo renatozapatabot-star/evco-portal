@@ -124,7 +124,7 @@ export default function PlantillasPage() {
   }
 
   const inputStyle = {
-    width: '100%', padding: '10px 12px', fontSize: 14,
+    width: '100%', padding: '10px 12px', fontSize: 'var(--aguila-fs-section)',
     background: T.card, border: `1px solid ${T.border}`,
     borderRadius: T.r, color: T.text,
     fontFamily: 'var(--font-sans)',
@@ -136,10 +136,10 @@ export default function PlantillasPage() {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
         <div>
-          <h1 style={{ fontSize: 24, fontWeight: 800, color: T.text, margin: 0 }}>
+          <h1 style={{ fontSize: 'var(--aguila-fs-title)', fontWeight: 800, color: T.text, margin: 0 }}>
             Plantillas de Documentos
           </h1>
-          <p style={{ fontSize: 14, color: T.textSec, margin: '4px 0 0' }}>
+          <p style={{ fontSize: 'var(--aguila-fs-section)', color: T.textSec, margin: '4px 0 0' }}>
             Documentos permanentes registrados por cliente
           </p>
         </div>
@@ -150,7 +150,7 @@ export default function PlantillasPage() {
               display: 'flex', alignItems: 'center', gap: 6,
               padding: '10px 20px', borderRadius: T.r,
               background: T.gold, color: '#1A1A18',
-              fontSize: 14, fontWeight: 700, border: 'none', cursor: 'pointer',
+              fontSize: 'var(--aguila-fs-section)', fontWeight: 700, border: 'none', cursor: 'pointer',
             }}
           >
             <Plus size={16} /> Agregar plantilla
@@ -185,13 +185,13 @@ export default function PlantillasPage() {
           <div style={{ padding: 48, textAlign: 'center' }}>
             <FileText size={28} style={{ color: T.textMuted, margin: '0 auto 12px', display: 'block' }} />
             <div style={{ fontSize: 15, fontWeight: 700, color: T.textSec }}>Sin plantillas registradas</div>
-            <div style={{ fontSize: 13, color: T.textMuted, marginTop: 4 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-body)', color: T.textMuted, marginTop: 4 }}>
               {isInternal ? 'Agrega documentos permanentes que aplican a cada cliente' : 'Tu agente aduanal registrará tus documentos permanentes aquí'}
             </div>
           </div>
         ) : (
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--aguila-fs-section)' }}>
               <thead>
                 <tr style={{ borderBottom: `1px solid ${T.border}` }}>
                   {[...(isInternal ? ['Cliente'] : []), 'Tipo', 'Nombre', 'Estado', 'Vencimiento', 'Archivo'].map(h => (
@@ -228,7 +228,7 @@ export default function PlantillasPage() {
                           {status.label}
                         </span>
                       </td>
-                      <td style={{ padding: '12px 16px', fontFamily: 'var(--font-mono)', color: T.textSec, fontSize: 13 }}>
+                      <td style={{ padding: '12px 16px', fontFamily: 'var(--font-mono)', color: T.textSec, fontSize: 'var(--aguila-fs-body)' }}>
                         {t.expiry_date ? fmtDate(t.expiry_date) : '\u2014'}
                       </td>
                       <td style={{ padding: '12px 16px' }}>
@@ -265,7 +265,7 @@ export default function PlantillasPage() {
             onClick={e => e.stopPropagation()}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
-              <h2 style={{ fontSize: 18, fontWeight: 800, color: T.text, margin: 0 }}>Agregar Plantilla</h2>
+              <h2 style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 800, color: T.text, margin: 0 }}>Agregar Plantilla</h2>
               <button onClick={() => setShowModal(false)} style={{ background: 'none', border: 'none', color: T.textMuted, cursor: 'pointer' }}>
                 <X size={20} />
               </button>
@@ -329,7 +329,7 @@ export default function PlantillasPage() {
                 <DateInputES
                   value={formExpiry}
                   onChange={v => setFormExpiry(v)}
-                  style={{ height: 40, padding: '0 12px', fontSize: 14, width: '100%', borderRadius: 8 }}
+                  style={{ height: 40, padding: '0 12px', fontSize: 'var(--aguila-fs-section)', width: '100%', borderRadius: 8 }}
                 />
               </div>
 
@@ -339,7 +339,7 @@ export default function PlantillasPage() {
                 style={{
                   padding: '12px 24px', borderRadius: T.r,
                   background: T.gold, color: '#1A1A18',
-                  fontSize: 14, fontWeight: 700, border: 'none', cursor: 'pointer',
+                  fontSize: 'var(--aguila-fs-section)', fontWeight: 700, border: 'none', cursor: 'pointer',
                   opacity: saving ? 0.6 : 1,
                   marginTop: 8,
                 }}

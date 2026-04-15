@@ -148,7 +148,7 @@ export function DemoRunnerClient() {
         <h1
           style={{
             fontFamily: 'var(--font-geist-sans)',
-            fontSize: 28,
+            fontSize: 'var(--aguila-fs-kpi-mid)',
             fontWeight: 800,
             letterSpacing: '-0.03em',
             margin: 0,
@@ -160,7 +160,7 @@ export function DemoRunnerClient() {
         >
           Demo orquestado ZAPATA AI
         </h1>
-        <p style={{ fontSize: 14, color: TEXT_SECONDARY, marginTop: 6, marginBottom: 0 }}>
+        <p style={{ fontSize: 'var(--aguila-fs-section)', color: TEXT_SECONDARY, marginTop: 6, marginBottom: 0 }}>
           90 segundos. Un embarque sintético{' '}
           <code
             style={{
@@ -194,7 +194,7 @@ export function DemoRunnerClient() {
         >
           <h2
             style={{
-              fontSize: 11,
+              fontSize: 'var(--aguila-fs-meta)',
               fontWeight: 700,
               letterSpacing: '0.1em',
               textTransform: 'uppercase',
@@ -206,7 +206,7 @@ export function DemoRunnerClient() {
             Control
           </h2>
 
-          <p style={{ fontSize: 13, color: TEXT_SECONDARY, marginTop: 0 }}>
+          <p style={{ fontSize: 'var(--aguila-fs-body)', color: TEXT_SECONDARY, marginTop: 0 }}>
             Al iniciar, ZAPATA AI emite 12 eventos secuenciales que poblan embarques,
             clasificación, corredor, PECE, MVE, factura y exportación QuickBooks.
             Todo con el cliente sintético <code style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>aguila-demo</code>.
@@ -248,7 +248,7 @@ export function DemoRunnerClient() {
                 background: 'transparent',
                 color: ACCENT_SILVER_BRIGHT,
                 fontFamily: 'var(--font-geist-sans)',
-                fontSize: 14,
+                fontSize: 'var(--aguila-fs-section)',
                 fontWeight: 600,
                 cursor: resetting ? 'not-allowed' : 'pointer',
                 opacity: resetting ? 0.6 : 1,
@@ -262,7 +262,7 @@ export function DemoRunnerClient() {
             <p
               style={{
                 marginTop: 16,
-                fontSize: 13,
+                fontSize: 'var(--aguila-fs-body)',
                 color: ACCENT_SILVER_BRIGHT,
                 fontFamily: 'var(--font-geist-sans)',
               }}
@@ -278,7 +278,7 @@ export function DemoRunnerClient() {
                 style={{
                   fontFamily: 'var(--font-jetbrains-mono)',
                   color: ACCENT_SILVER_BRIGHT,
-                  fontSize: 13,
+                  fontSize: 'var(--aguila-fs-body)',
                 }}
               >
                 {run.traficoId}
@@ -319,7 +319,7 @@ export function DemoRunnerClient() {
           >
             <h2
               style={{
-                fontSize: 11,
+                fontSize: 'var(--aguila-fs-meta)',
                 fontWeight: 700,
                 letterSpacing: '0.1em',
                 textTransform: 'uppercase',
@@ -333,7 +333,7 @@ export function DemoRunnerClient() {
               style={{
                 fontFamily: 'var(--font-jetbrains-mono)',
                 color: ACCENT_SILVER_BRIGHT,
-                fontSize: 13,
+                fontSize: 'var(--aguila-fs-body)',
               }}
             >
               {doneCount}/{totalCount}
@@ -341,7 +341,7 @@ export function DemoRunnerClient() {
           </div>
 
           {!run || run.steps.length === 0 ? (
-            <p style={{ fontSize: 13, color: TEXT_SECONDARY, margin: 0 }}>
+            <p style={{ fontSize: 'var(--aguila-fs-body)', color: TEXT_SECONDARY, margin: 0 }}>
               Sin demo activo. Presiona <strong>Iniciar demo</strong> para arrancar.
             </p>
           ) : (
@@ -395,7 +395,7 @@ export function DemoRunnerClient() {
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div
                       style={{
-                        fontSize: 14,
+                        fontSize: 'var(--aguila-fs-section)',
                         fontWeight: 600,
                         color: TEXT_PRIMARY,
                         fontFamily: 'var(--font-geist-sans)',
@@ -417,7 +417,7 @@ export function DemoRunnerClient() {
                     {step.at && (
                       <div
                         style={{
-                          fontSize: 11,
+                          fontSize: 'var(--aguila-fs-meta)',
                           color: TEXT_MUTED,
                           fontFamily: 'var(--font-jetbrains-mono)',
                           marginTop: 2,
@@ -436,7 +436,7 @@ export function DemoRunnerClient() {
             <p
               style={{
                 marginTop: 16,
-                fontSize: 13,
+                fontSize: 'var(--aguila-fs-body)',
                 fontWeight: 600,
                 color: ACCENT_SILVER_BRIGHT,
               }}

@@ -108,10 +108,10 @@ export default function CrucesPage() {
 
         {/* Header */}
         <div style={{ marginBottom: 24 }}>
-          <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
+          <h1 style={{ fontSize: 'var(--aguila-fs-title)', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
             Inteligencia de Cruces
           </h1>
-          <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '4px 0 0' }}>
+          <p style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)', margin: '4px 0 0' }}>
             Tiempos de puentes en tiempo real · Laredo, TX — Nuevo Laredo
             {lastUpdate && <span style={{ fontFamily: 'var(--font-mono)', marginLeft: 8 }}>Actualizado: {fmtDateTime(lastUpdate)}</span>}
           </p>
@@ -126,7 +126,7 @@ export default function CrucesPage() {
             marginBottom: 24, padding: '16px 20px', borderRadius: 8,
             background: 'rgba(22,163,74,0.08)', border: '1px solid rgba(22,163,74,0.2)',
           }}>
-            <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--success)', marginBottom: 4 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--success)', marginBottom: 4 }}>
               Mejor hora para cruzar hoy ({DAYS_ES[new Date().getDay()]})
             </div>
             <div style={{ fontSize: 22, fontWeight: 800, fontFamily: 'var(--font-mono)', color: 'var(--success)' }}>
@@ -156,20 +156,20 @@ export default function CrucesPage() {
                   border: `1px solid ${isFastest ? 'var(--success)' : 'var(--border)'}`,
                   borderLeft: `4px solid ${waitColor(b.commercial)}`,
                 }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 8 }}>
+                  <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 700, color: 'var(--text-primary)', marginBottom: 8 }}>
                     {b.nameEs}
-                    {isFastest && <span style={{ fontSize: 10, color: 'var(--success)', marginLeft: 6 }}>⚡ Más rápido</span>}
+                    {isFastest && <span style={{ fontSize: 'var(--aguila-fs-label)', color: 'var(--success)', marginLeft: 6 }}>⚡ Más rápido</span>}
                   </div>
-                  <div style={{ fontSize: 28, fontWeight: 800, fontFamily: 'var(--font-mono)', color: waitColor(b.commercial) }}>
-                    {b.commercial ?? '—'} <span style={{ fontSize: 14 }}>min</span>
+                  <div style={{ fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 800, fontFamily: 'var(--font-mono)', color: waitColor(b.commercial) }}>
+                    {b.commercial ?? '—'} <span style={{ fontSize: 'var(--aguila-fs-section)' }}>min</span>
                   </div>
                   {b.passenger != null && (
-                    <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 4 }}>
+                    <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-secondary)', marginTop: 4 }}>
                       Peatonal: {b.passenger} min
                     </div>
                   )}
                   {b.updated && (
-                    <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4, fontFamily: 'var(--font-mono)' }}>
+                    <div style={{ fontSize: 'var(--aguila-fs-label)', color: 'var(--text-muted)', marginTop: 4, fontFamily: 'var(--font-mono)' }}>
                       {fmtDateTime(b.updated)}
                     </div>
                   )}
@@ -187,12 +187,12 @@ export default function CrucesPage() {
             </h2>
             <div className="card" style={{ overflow: 'hidden' }}>
               <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }} aria-label="Promedios históricos de tiempos de cruce">
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--aguila-fs-body)' }} aria-label="Promedios históricos de tiempos de cruce">
                 <thead>
                   <tr style={{ borderBottom: '1px solid #E8E5E0' }}>
-                    <th style={{ padding: '10px 16px', textAlign: 'left', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)' }}>Puente</th>
-                    <th style={{ padding: '10px 16px', textAlign: 'right', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)' }}>Promedio</th>
-                    <th style={{ padding: '10px 16px', textAlign: 'right', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)' }}>Registros</th>
+                    <th style={{ padding: '10px 16px', textAlign: 'left', fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)' }}>Puente</th>
+                    <th style={{ padding: '10px 16px', textAlign: 'right', fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)' }}>Promedio</th>
+                    <th style={{ padding: '10px 16px', textAlign: 'right', fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)' }}>Registros</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -213,7 +213,7 @@ export default function CrucesPage() {
         )}
 
         {/* Footer */}
-        <div style={{ textAlign: 'center', padding: '16px 0', fontSize: 11, color: 'var(--text-muted)' }}>
+        <div style={{ textAlign: 'center', padding: '16px 0', fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)' }}>
           Datos de CBP (U.S. Customs and Border Protection) · Actualización cada 30 min
           <br />Patente 3596 · Aduana 240 · Nuevo Laredo
         </div>

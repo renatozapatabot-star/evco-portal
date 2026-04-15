@@ -19,7 +19,7 @@ export default function SolicitarPage() {
           <h1 style={{ fontSize: 22, fontWeight: 800, color: '#E6EDF3', margin: 0 }}>
             Solicitar Embarque
           </h1>
-          <p style={{ fontSize: 13, color: '#64748b', margin: '2px 0 0' }}>
+          <p style={{ fontSize: 'var(--aguila-fs-body)', color: '#64748b', margin: '2px 0 0' }}>
             Inicia una nueva operación de importación
           </p>
         </div>

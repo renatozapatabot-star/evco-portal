@@ -40,7 +40,7 @@ const PAGE_SIZE = 50
 
 function SortArrow({ col, sort }: { col: string; sort: SortState }) {
   if (sort.column !== col) return null
-  return <span style={{ marginLeft: 4, fontSize: 10 }}>{sort.direction === 'asc' ? '↑' : '↓'}</span>
+  return <span style={{ marginLeft: 4, fontSize: 'var(--aguila-fs-label)' }}>{sort.direction === 'asc' ? '↑' : '↓'}</span>
 }
 
 export default function PedimentosPage() {
@@ -252,8 +252,8 @@ function PedimentosContent() {
         {!loading && paged.length === 0 && (
           search.trim() ? (
             <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-              <div style={{ fontSize: 32, marginBottom: 8 }}>🔍</div>
-              <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-secondary)' }}>Sin resultados para &ldquo;{search}&rdquo;</div>
+              <div style={{ fontSize: 'var(--aguila-fs-kpi-compact)', marginBottom: 8 }}>🔍</div>
+              <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: 'var(--text-secondary)' }}>Sin resultados para &ldquo;{search}&rdquo;</div>
               <button className="btn btn-outline btn-sm" style={{ marginTop: 12 }} onClick={() => { setSearch(''); setPage(0) }}>Limpiar búsqueda</button>
             </div>
           ) : (
@@ -279,16 +279,16 @@ function PedimentosContent() {
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                  <span style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>{fmtPedimentoShort(g.pedimento)}</span>
+                  <span style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>{fmtPedimentoShort(g.pedimento)}</span>
                   {g.tmec && <span className="badge-tmec">T-MEC</span>}
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: 13, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>{g.fecha ? fmtDate(g.fecha) : ''}</span>
-                  <span style={{ fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 120 }}>
+                  <span style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>{g.fecha ? fmtDate(g.fecha) : ''}</span>
+                  <span style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 120 }}>
                     {g.importe > 0 ? fmtUSD(g.importe) : '—'}
                   </span>
                 </div>
-                <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)', marginTop: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {getDesc(g) || '—'}
                 </div>
               </button>
@@ -320,7 +320,7 @@ function PedimentosContent() {
                     style={{ cursor: 'pointer' }}
                   >
                     <td>
-                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: 'var(--text-primary)' }}>
                         {fmtPedimentoShort(g.pedimento)}
                       </span>
                     </td>
@@ -328,22 +328,22 @@ function PedimentosContent() {
                       <Link
                         href={`/embarques/${encodeURIComponent(g.trafico)}`}
                         onClick={e => e.stopPropagation()}
-                        style={{ fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 600, color: 'var(--gold-dark, #7A7E86)', textDecoration: 'none' }}
+                        style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: 'var(--gold-dark, #7A7E86)', textDecoration: 'none' }}
                       >
                         {fmtId(g.trafico)}
                       </Link>
                     </td>
-                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--text-secondary)' }}>
+                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)' }}>
                       {g.fecha ? fmtDate(g.fecha) : '—'}
                     </td>
-                    <td className="desc-text" style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+                    <td className="desc-text" style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)' }}>
                       {getDesc(g) || '—'}
                     </td>
-                    <td style={{ fontSize: 13, fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>
+                    <td style={{ fontSize: 'var(--aguila-fs-body)', fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>
                       {g.regimen || '—'}
-                      {g.tmec && <span style={{ marginLeft: 6, fontSize: 11, color: 'var(--success)', fontWeight: 600 }}>T-MEC</span>}
+                      {g.tmec && <span style={{ marginLeft: 6, fontSize: 'var(--aguila-fs-meta)', color: 'var(--success)', fontWeight: 600 }}>T-MEC</span>}
                     </td>
-                    <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--text-primary)', fontWeight: 600 }}>
+                    <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body)', color: 'var(--text-primary)', fontWeight: 600 }}>
                       {g.importe > 0 ? `${fmtUSD(g.importe)}` : '—'}
                     </td>
                     <td style={{ textAlign: 'center' }}>

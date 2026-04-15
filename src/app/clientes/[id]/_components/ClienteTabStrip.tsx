@@ -68,7 +68,7 @@ export function ClienteTabStrip({ tabs, clienteId, defaultTab }: {
                 border: 'none',
                 borderBottom: selected ? `2px solid ${ACCENT_CYAN}` : '2px solid transparent',
                 color: selected ? TEXT_PRIMARY : TEXT_MUTED,
-                fontSize: 13,
+                fontSize: 'var(--aguila-fs-body)',
                 fontWeight: selected ? 700 : 500,
                 letterSpacing: '0.02em',
                 cursor: 'pointer',

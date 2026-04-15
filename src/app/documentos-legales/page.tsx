@@ -56,7 +56,7 @@ function StatusBadge({ status, days }: { status: LegalDoc['status']; days: numbe
   const c = config[status]
   return (
     <span style={{
-      fontSize: 11, fontWeight: 700, padding: '3px 8px', borderRadius: 6,
+      fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, padding: '3px 8px', borderRadius: 6,
       color: c.color, background: c.bg, textTransform: 'uppercase',
     }}>
       {c.label}
@@ -117,7 +117,7 @@ export default function DocumentosLegalesPage() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <div>
           <h1 className="page-title">Documentos Legales</h1>
-          <p style={{ fontSize: 13, color: 'var(--n-400)', margin: '4px 0 0' }}>
+          <p style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--n-400)', margin: '4px 0 0' }}>
             Poderes notariales, encargos conferidos, e.firma y más
           </p>
         </div>
@@ -132,7 +132,7 @@ export default function DocumentosLegalesPage() {
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
             <AlertTriangle size={16} style={{ color: expired.length > 0 ? 'var(--danger)' : 'var(--warning)' }} />
-            <span style={{ fontSize: 14, fontWeight: 700, color: expired.length > 0 ? 'var(--danger)' : 'var(--warning)' }}>
+            <span style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: expired.length > 0 ? 'var(--danger)' : 'var(--warning)' }}>
               {expired.length > 0
                 ? `${expired.length} documento(s) expirado(s) — acción inmediata requerida`
                 : `${expiringSoon.length} documento(s) próximo(s) a vencer`}
@@ -156,7 +156,7 @@ export default function DocumentosLegalesPage() {
         <div style={{ textAlign: 'center', padding: '60px 20px' }}>
           <Shield size={32} style={{ color: 'var(--n-300)', margin: '0 auto 12px', display: 'block' }} />
           <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>Sin documentos legales registrados</div>
-          <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Contacte a su agente aduanal para registrar poderes, encargos y permisos</div>
+          <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)' }}>Contacte a su agente aduanal para registrar poderes, encargos y permisos</div>
         </div>
       )}
 
@@ -195,14 +195,14 @@ export default function DocumentosLegalesPage() {
                                 doc.status === 'expiring_30' ? 'rgba(239,68,68,0.02)' : undefined,
                   }}>
                     <td>
-                      <div style={{ fontWeight: 600, fontSize: 13 }}>{getDocLabel(doc.document_type)}</div>
-                      {doc.notes && <div style={{ fontSize: 11, color: 'var(--n-400)', marginTop: 2 }}>{doc.notes}</div>}
+                      <div style={{ fontWeight: 600, fontSize: 'var(--aguila-fs-body)' }}>{getDocLabel(doc.document_type)}</div>
+                      {doc.notes && <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--n-400)', marginTop: 2 }}>{doc.notes}</div>}
                     </td>
-                    <td style={{ fontSize: 13 }}>{doc.client_name}</td>
-                    <td style={{ fontSize: 13, color: 'var(--n-500)', fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtDate(doc.issued_date)}</td>
-                    <td style={{ fontSize: 13, fontWeight: doc.status !== 'valid' ? 600 : 400, fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtDate(doc.expiry_date)}</td>
+                    <td style={{ fontSize: 'var(--aguila-fs-body)' }}>{doc.client_name}</td>
+                    <td style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--n-500)', fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtDate(doc.issued_date)}</td>
+                    <td style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: doc.status !== 'valid' ? 600 : 400, fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtDate(doc.expiry_date)}</td>
                     <td><StatusBadge status={doc.status} days={days} /></td>
-                    <td style={{ fontSize: 13, color: 'var(--n-500)' }}>{doc.responsible || '—'}</td>
+                    <td style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--n-500)' }}>{doc.responsible || '—'}</td>
                     <td>
                       {doc.status === 'expired' && (
                         <span style={{ fontSize: 12, color: 'var(--danger)', fontWeight: 600, cursor: 'pointer' }}>Renovar</span>
@@ -227,7 +227,7 @@ export default function DocumentosLegalesPage() {
 
       {/* Alert schedule info */}
       <div style={{ marginTop: 20, padding: '16px 20px', background: 'var(--n-50)', borderRadius: 12, border: '1px solid var(--border-light)' }}>
-        <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8 }}>
+        <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 700, marginBottom: 8 }}>
           <Shield size={14} style={{ verticalAlign: 'middle', marginRight: 6 }} />
           Alertas Automáticas
         </div>
@@ -237,7 +237,7 @@ export default function DocumentosLegalesPage() {
           <div><AlertTriangle size={12} style={{ verticalAlign: 'middle', marginRight: 4 }} /> 30 días: Crítico</div>
           <div><AlertTriangle size={12} style={{ verticalAlign: 'middle', marginRight: 4 }} /> 7 días: Escalación</div>
         </div>
-        <div style={{ fontSize: 11, color: 'var(--n-400)', marginTop: 8 }}>
+        <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--n-400)', marginTop: 8 }}>
           Las alertas se envían por portal, email y Telegram al equipo de operaciones.
         </div>
       </div>

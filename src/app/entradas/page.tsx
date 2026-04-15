@@ -35,7 +35,7 @@ const PAGE_SIZE = 50
 
 function SortArrow({ col, sort }: { col: string; sort: SortState }) {
   if (sort.column !== col) return null
-  return <span style={{ marginLeft: 4, fontSize: 10 }}>{sort.direction === 'asc' ? '\u2191' : '\u2193'}</span>
+  return <span style={{ marginLeft: 4, fontSize: 'var(--aguila-fs-label)' }}>{sort.direction === 'asc' ? '\u2191' : '\u2193'}</span>
 }
 
 export default function EntradasPage() {
@@ -244,8 +244,8 @@ function EntradasContent() {
         {!loading && paged.length === 0 && (
           search.trim() ? (
             <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-              <div style={{ fontSize: 32, marginBottom: 8 }}>🔍</div>
-              <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-secondary)' }}>Sin resultados para &ldquo;{search}&rdquo;</div>
+              <div style={{ fontSize: 'var(--aguila-fs-kpi-compact)', marginBottom: 8 }}>🔍</div>
+              <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: 'var(--text-secondary)' }}>Sin resultados para &ldquo;{search}&rdquo;</div>
               <button className="btn btn-outline btn-sm" style={{ marginTop: 12 }} onClick={() => { setSearch(''); setPage(0) }}>Limpiar búsqueda</button>
             </div>
           ) : (
@@ -271,20 +271,20 @@ function EntradasContent() {
                   }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                    <span style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>{r.cve_entrada}</span>
+                    <span style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>{r.cve_entrada}</span>
                     <span style={{ fontSize: 12, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
                       {r.fecha_llegada_mercancia ? fmtDate(r.fecha_llegada_mercancia) : '—'}
                     </span>
                   </div>
                   {proveedor && (
-                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {proveedor}
                     </div>
                   )}
                   <div style={{ fontSize: 12, color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: 8 }}>
                     {fmtDesc(getDesc(r)) || '—'}
                   </div>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', fontSize: 'var(--aguila-fs-meta)', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
                     {r.trafico ? (
                       <Link href={`/embarques/${encodeURIComponent(r.trafico)}`} style={{ color: '#C0C5CE', textDecoration: 'none' }}>{r.trafico}</Link>
                     ) : (
@@ -321,36 +321,36 @@ function EntradasContent() {
               <tbody>
                 {paged.map((r, i) => (
                   <tr key={r.cve_entrada} className={i % 2 === 0 ? 'row-even' : 'row-odd'}>
-                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--text-secondary)' }}>
+                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)' }}>
                       {r.fecha_llegada_mercancia ? <time dateTime={r.fecha_llegada_mercancia.split('T')[0]}>{fmtDate(r.fecha_llegada_mercancia)}</time> : <span style={{ color: 'var(--text-muted)' }}>—</span>}
                     </td>
                     <td>
-                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: 'var(--text-primary)' }}>
                         {r.cve_entrada}
                       </span>
                     </td>
-                    <td style={{ fontSize: 13, color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 160 }}>
+                    <td style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 160 }}>
                       {getProveedor(r) || <span style={{ color: 'var(--text-muted)' }}>—</span>}
                     </td>
-                    <td className="desc-text" style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+                    <td className="desc-text" style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)' }}>
                       {fmtDesc(getDesc(r)) || <span style={{ color: 'var(--text-muted)' }}>—</span>}
                     </td>
                     <td>
                       {r.trafico ? (
-                        <Link href={`/embarques/${encodeURIComponent(r.trafico)}`} style={{ fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 600, color: '#C0C5CE', textDecoration: 'none' }}>
+                        <Link href={`/embarques/${encodeURIComponent(r.trafico)}`} style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: '#C0C5CE', textDecoration: 'none' }}>
                           {r.trafico}
                         </Link>
                       ) : (
-                        <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>—</span>
+                        <span style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-muted)' }}>—</span>
                       )}
                     </td>
                     <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
                       {getTransporte(r) || <span style={{ color: 'var(--text-muted)' }}>—</span>}
                     </td>
-                    <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--text-secondary)' }}>
+                    <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)' }}>
                       {r.cantidad_bultos ?? <span style={{ color: 'var(--text-muted)' }}>—</span>}
                     </td>
-                    <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--text-secondary)' }}>
+                    <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)' }}>
                       {r.peso_bruto ? Number(r.peso_bruto).toLocaleString('es-MX') : <span style={{ color: 'var(--text-muted)' }}>—</span>}
                     </td>
                     <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-muted)' }}>

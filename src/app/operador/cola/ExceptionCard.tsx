@@ -124,7 +124,7 @@ export function ExceptionCard({ event, onAction }: ExceptionCardProps) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
           <span
             style={{
-              fontSize: 10,
+              fontSize: 'var(--aguila-fs-label)',
               fontFamily: 'var(--font-mono)',
               color: '#94a3b8',
               background: 'rgba(255,255,255,0.06)',
@@ -157,7 +157,7 @@ export function ExceptionCard({ event, onAction }: ExceptionCardProps) {
             <Link
               href={`/embarques/${event.trigger_id}`}
               style={{
-                fontSize: 13,
+                fontSize: 'var(--aguila-fs-body)',
                 fontFamily: 'var(--font-mono)',
                 color: '#C0C5CE',
                 textDecoration: 'none',
@@ -171,7 +171,7 @@ export function ExceptionCard({ event, onAction }: ExceptionCardProps) {
         {/* Description */}
         <p
           style={{
-            fontSize: 13,
+            fontSize: 'var(--aguila-fs-body)',
             color: '#E6EDF3',
             margin: '0 0 8px',
             lineHeight: 1.4,
@@ -188,7 +188,7 @@ export function ExceptionCard({ event, onAction }: ExceptionCardProps) {
         {event.status === 'failed' && event.error_message && (
           <p
             style={{
-              fontSize: 11,
+              fontSize: 'var(--aguila-fs-meta)',
               color: '#EF4444',
               margin: '0 0 8px',
               fontFamily: 'var(--font-mono)',
@@ -206,7 +206,7 @@ export function ExceptionCard({ event, onAction }: ExceptionCardProps) {
         {/* Timestamp */}
         <span
           style={{
-            fontSize: 11,
+            fontSize: 'var(--aguila-fs-meta)',
             fontFamily: 'var(--font-mono)',
             color: '#64748b',
           }}
@@ -227,7 +227,7 @@ export function ExceptionCard({ event, onAction }: ExceptionCardProps) {
             color: '#0D0D0C',
             border: 'none',
             borderRadius: 12,
-            fontSize: 13,
+            fontSize: 'var(--aguila-fs-body)',
             fontWeight: 700,
             cursor: 'pointer',
             transition: 'background 150ms ease',

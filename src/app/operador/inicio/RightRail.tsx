@@ -29,7 +29,7 @@ function StatusPill({ label }: { label: string | null }) {
   const c = (label && STATUS_PILL[label]) || { bg: 'rgba(148,163,184,0.1)', fg: TEXT_MUTED, label: label || '—' }
   return (
     <span style={{
-      fontSize: 10, fontWeight: 600,
+      fontSize: 'var(--aguila-fs-label)', fontWeight: 600,
       padding: '2px 8px', borderRadius: 20,
       background: c.bg, color: c.fg,
       flexShrink: 0, whiteSpace: 'nowrap',
@@ -66,7 +66,7 @@ export function RightRail({ colaCount, feed }: Props) {
       }}>
         {colaCount > 0 && <SeverityRibbon tone={severity} />}
         <div style={{
-          fontSize: 10, fontWeight: 700,
+          fontSize: 'var(--aguila-fs-label)', fontWeight: 700,
           textTransform: 'uppercase', letterSpacing: '0.08em',
           color: TEXT_MUTED, margin: 0,
         }}>
@@ -74,7 +74,7 @@ export function RightRail({ colaCount, feed }: Props) {
         </div>
         <div style={{
           fontFamily: 'var(--font-jetbrains-mono), monospace',
-          fontSize: 44,
+          fontSize: 'var(--aguila-fs-kpi-large)',
           fontWeight: 800,
           color: colaCount > 0 ? (severity === 'critical' ? AMBER : GOLD) : TEXT_MUTED,
           margin: '8px 0 12px 0',
@@ -96,7 +96,7 @@ export function RightRail({ colaCount, feed }: Props) {
               background: GOLD,
               color: '#0D0D0C',
               fontWeight: 700,
-              fontSize: 13,
+              fontSize: 'var(--aguila-fs-body)',
               textDecoration: 'none',
               width: '100%',
             }}
@@ -123,7 +123,7 @@ export function RightRail({ colaCount, feed }: Props) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: items.length > 0 ? 12 : 0 }}>
           <Activity size={14} color={ACCENT_SILVER} />
           <span style={{
-            fontSize: 10, fontWeight: 700,
+            fontSize: 'var(--aguila-fs-label)', fontWeight: 700,
             textTransform: 'uppercase', letterSpacing: '0.08em',
             color: TEXT_MUTED,
           }}>

@@ -12,7 +12,7 @@ export interface DecisionRow {
 export function CronologiaTab({ decisions }: { decisions: DecisionRow[] }) {
   if (decisions.length === 0) {
     return (
-      <div style={{ padding: '24px 0', textAlign: 'center', color: TEXT_MUTED, fontSize: 13 }}>
+      <div style={{ padding: '24px 0', textAlign: 'center', color: TEXT_MUTED, fontSize: 'var(--aguila-fs-body)' }}>
         Sin decisiones registradas todavía. Cada cambio de estatus o nota
         quedará asentado aquí para la cadena de custodia SAT.
       </div>
@@ -55,7 +55,7 @@ export function CronologiaTab({ decisions }: { decisions: DecisionRow[] }) {
             >
               <div
                 style={{
-                  fontSize: 11,
+                  fontSize: 'var(--aguila-fs-meta)',
                   fontWeight: 700,
                   color: TEXT_MUTED,
                   textTransform: 'uppercase',
@@ -66,7 +66,7 @@ export function CronologiaTab({ decisions }: { decisions: DecisionRow[] }) {
               </div>
               <div
                 style={{
-                  fontSize: 11,
+                  fontSize: 'var(--aguila-fs-meta)',
                   color: TEXT_MUTED,
                   fontFamily: 'var(--font-mono)',
                   whiteSpace: 'nowrap',
@@ -75,7 +75,7 @@ export function CronologiaTab({ decisions }: { decisions: DecisionRow[] }) {
                 {fmtDateTime(d.created_at)}
               </div>
             </div>
-            <div style={{ fontSize: 13, color: TEXT_PRIMARY, marginTop: 4 }}>{d.decision}</div>
+            <div style={{ fontSize: 'var(--aguila-fs-body)', color: TEXT_PRIMARY, marginTop: 4 }}>{d.decision}</div>
             {d.reasoning && (
               <div style={{ fontSize: 12, color: TEXT_SECONDARY, marginTop: 2 }}>{d.reasoning}</div>
             )}

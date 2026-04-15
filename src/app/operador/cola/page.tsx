@@ -58,7 +58,7 @@ export default async function ColaPage() {
           Cola de Excepciones
         </h1>
       </div>
-      <p style={{ fontSize: 13, color: '#64748b', margin: '0 0 24px', paddingLeft: 52 }}>
+      <p style={{ fontSize: 'var(--aguila-fs-body)', color: '#64748b', margin: '0 0 24px', paddingLeft: 52 }}>
         Eventos que requieren intervencion manual del operador
       </p>
 

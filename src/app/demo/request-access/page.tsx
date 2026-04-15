@@ -32,11 +32,11 @@ export default function RequestAccessPage() {
     return (
       <div style={{ minHeight: '100vh', background: '#05070B', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
         <div style={{ maxWidth: 480, width: '100%', textAlign: 'center' }}>
-          <div style={{ fontSize: 48, marginBottom: 16 }}>🦀</div>
+          <div style={{ fontSize: 'var(--aguila-fs-kpi-hero)', marginBottom: 16 }}>🦀</div>
           <h1 style={{ fontSize: 22, fontWeight: 700, color: '#E6EDF3', marginBottom: 8 }}>
             Gracias por tu interés
           </h1>
-          <p style={{ fontSize: 14, color: '#8B949E', lineHeight: 1.6, marginBottom: 24 }}>
+          <p style={{ fontSize: 'var(--aguila-fs-section)', color: '#8B949E', lineHeight: 1.6, marginBottom: 24 }}>
             Renato Zapata IV te contactará dentro de 24 horas por WhatsApp para configurar tu portal.
           </p>
           <Link href="/demo/live" style={{
@@ -60,12 +60,12 @@ export default function RequestAccessPage() {
         <h1 style={{ fontSize: 20, fontWeight: 700, color: '#FFF', textAlign: 'center', marginBottom: 8 }}>
           Solicita acceso real
         </h1>
-        <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', textAlign: 'center', marginBottom: 28 }}>
+        <p style={{ fontSize: 'var(--aguila-fs-body)', color: 'rgba(255,255,255,0.5)', textAlign: 'center', marginBottom: 28 }}>
           Tu información ya está en nuestro sistema. Solo necesitamos verificar tu identidad.
         </p>
 
         {error && (
-          <div style={{ padding: '10px 14px', borderRadius: 8, marginBottom: 16, background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.3)', color: '#F87171', fontSize: 13 }}>
+          <div style={{ padding: '10px 14px', borderRadius: 8, marginBottom: 16, background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.3)', color: '#F87171', fontSize: 'var(--aguila-fs-body)' }}>
             {error}
           </div>
         )}
@@ -84,7 +84,7 @@ export default function RequestAccessPage() {
               value={form.notes}
               onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
               rows={3}
-              style={{ width: '100%', padding: '10px 14px', borderRadius: 8, background: '#222', border: '1px solid rgba(255,255,255,0.1)', color: '#FFF', fontSize: 14, resize: 'vertical', boxSizing: 'border-box' }}
+              style={{ width: '100%', padding: '10px 14px', borderRadius: 8, background: '#222', border: '1px solid rgba(255,255,255,0.1)', color: '#FFF', fontSize: 'var(--aguila-fs-section)', resize: 'vertical', boxSizing: 'border-box' }}
             />
           </div>
           <button type="submit" disabled={loading} style={{
@@ -116,7 +116,7 @@ function Field({ label, value, onChange, placeholder, type = 'text' }: {
       <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} style={{
         width: '100%', padding: '10px 14px', borderRadius: 8,
         background: '#222', border: '1px solid rgba(255,255,255,0.1)',
-        color: '#FFF', fontSize: 14, boxSizing: 'border-box',
+        color: '#FFF', fontSize: 'var(--aguila-fs-section)', boxSizing: 'border-box',
       }} />
     </div>
   )

@@ -165,8 +165,8 @@ export default function ActividadPage() {
 
   return (
     <div style={{ padding: isMobile ? '16px 12px' : '24px 16px', maxWidth: 600, margin: '0 auto' }}>
-      <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 4px' }}>Actividad</h1>
-      <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '0 0 24px' }}>
+      <h1 style={{ fontSize: 'var(--aguila-fs-title)', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 4px' }}>Actividad</h1>
+      <p style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)', margin: '0 0 24px' }}>
         {newCount > 0 ? `${newCount} nuevo${newCount !== 1 ? 's' : ''}` : 'Todo al día'}
       </p>
 
@@ -196,15 +196,15 @@ export default function ActividadPage() {
                 {item.isNew && <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--gold)' }} />}
               </div>
               {/* Icon */}
-              <span style={{ fontSize: 18, flexShrink: 0 }}>{item.icon}</span>
+              <span style={{ fontSize: 'var(--aguila-fs-kpi-small)', flexShrink: 0 }}>{item.icon}</span>
               {/* Content */}
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 13, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {item.text}
                 </div>
               </div>
               {/* Time */}
-              <span style={{ fontSize: 11, color: 'var(--text-muted)', flexShrink: 0, fontFamily: 'var(--font-mono)' }}>
+              <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', flexShrink: 0, fontFamily: 'var(--font-mono)' }}>
                 {fmtDateTime(item.timestamp)}
               </span>
             </Link>

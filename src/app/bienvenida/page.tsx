@@ -27,7 +27,7 @@ function AnimatedCounter({ target, label, delay }: { target: number; label: stri
       <div style={{ fontFamily: 'var(--font-mono)', fontSize: 36, fontWeight: 800, color: 'var(--gold)' }}>
         {label.includes('$') ? `$${value.toLocaleString('es-MX')}` : value.toLocaleString('es-MX')}
       </div>
-      <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4 }}>{label}</div>
+      <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)', marginTop: 4 }}>{label}</div>
     </div>
   )
 }
@@ -97,10 +97,10 @@ export default function BienvenidaPage() {
         <AguilaMark size={72} />
       </div>
 
-      <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.02em', margin: '0 0 8px', textAlign: 'center' }}>
+      <h1 style={{ fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 800, letterSpacing: '-0.02em', margin: '0 0 8px', textAlign: 'center' }}>
         Bienvenido a ZAPATA AI
       </h1>
-      <p style={{ fontSize: 18, color: 'var(--gold-700)', fontWeight: 600, margin: '0 0 40px' }}>
+      <p style={{ fontSize: 'var(--aguila-fs-kpi-small)', color: 'var(--gold-700)', fontWeight: 600, margin: '0 0 40px' }}>
         {companyName}
       </p>
 
@@ -133,7 +133,7 @@ export default function BienvenidaPage() {
         Entrar al portal →
       </button>
 
-      <div style={{ marginTop: 48, fontSize: 11, color: 'var(--text-muted)', textAlign: 'center' }}>
+      <div style={{ marginTop: 48, fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', textAlign: 'center' }}>
         Patente 3596 · Aduana 240 · Renato Zapata &amp; Company
       </div>
     </div>

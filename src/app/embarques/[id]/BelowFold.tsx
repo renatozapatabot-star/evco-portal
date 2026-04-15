@@ -251,7 +251,7 @@ function Section({
           alignItems: 'center',
           justifyContent: 'space-between',
           cursor: 'pointer',
-          fontSize: 13,
+          fontSize: 'var(--aguila-fs-body)',
           fontWeight: 700,
           letterSpacing: '0.02em',
         }}
@@ -272,14 +272,14 @@ function Section({
                   gap: 12,
                 }}
               >
-                <span style={{ fontSize: 11, color: TEXT_MUTED }}>{r.label}</span>
+                <span style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED }}>{r.label}</span>
                 {r.href ? (
                   <button
                     type="button"
                     onClick={() => window.open(r.href!, '_blank')}
                     title="Abrir PDF del pedimento"
                     style={{
-                      fontSize: 13,
+                      fontSize: 'var(--aguila-fs-body)',
                       color: TEXT_PRIMARY,
                       fontFamily: r.mono ? 'var(--font-mono)' : undefined,
                       fontWeight: 600,
@@ -305,7 +305,7 @@ function Section({
                 ) : (
                   <span
                     style={{
-                      fontSize: 13,
+                      fontSize: 'var(--aguila-fs-body)',
                       color: r.value === 'Sin registro' ? TEXT_MUTED : TEXT_SECONDARY,
                       fontFamily: r.mono ? 'var(--font-mono)' : undefined,
                       fontWeight: 600,

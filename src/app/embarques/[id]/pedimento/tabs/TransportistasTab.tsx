@@ -91,7 +91,7 @@ export function TransportistasTab({ rows }: TransportistasTabProps) {
         }}
       >
         <div>
-          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 600, color: TEXT_PRIMARY }}>
+          <h2 style={{ margin: 0, fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 600, color: TEXT_PRIMARY }}>
             Transportistas
           </h2>
           <p style={{ margin: '4px 0 0', fontSize: 12, color: TEXT_MUTED }}>
@@ -108,7 +108,7 @@ export function TransportistasTab({ rows }: TransportistasTabProps) {
             gap: 6,
             minHeight: 60,
             padding: '0 16px',
-            fontSize: 13,
+            fontSize: 'var(--aguila-fs-body)',
             fontWeight: 600,
             color: ACCENT_SILVER,
             background: 'rgba(192,197,206,0.08)',
@@ -131,7 +131,7 @@ export function TransportistasTab({ rows }: TransportistasTabProps) {
             border: `1px solid ${RED}66`,
             background: 'rgba(239,68,68,0.08)',
             color: RED,
-            fontSize: 13,
+            fontSize: 'var(--aguila-fs-body)',
           }}
         >
           {errorMessage}
@@ -148,7 +148,7 @@ export function TransportistasTab({ rows }: TransportistasTabProps) {
             border: `1px solid ${BORDER_SILVER}`,
             backdropFilter: 'blur(20px)',
             color: TEXT_MUTED,
-            fontSize: 13,
+            fontSize: 'var(--aguila-fs-body)',
           }}
         >
           Sin transportistas registrados.
@@ -234,7 +234,7 @@ function TransportistaRowCard({
       >
         <span
           style={{
-            fontSize: 11,
+            fontSize: 'var(--aguila-fs-meta)',
             fontFamily: 'var(--font-mono)',
             color: ACCENT_SILVER_DIM,
             textTransform: 'uppercase',
@@ -279,7 +279,7 @@ function TransportistaRowCard({
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           <label
             style={{
-              fontSize: 11,
+              fontSize: 'var(--aguila-fs-meta)',
               color: TEXT_MUTED,
               textTransform: 'uppercase',
               letterSpacing: '0.06em',
@@ -297,7 +297,7 @@ function TransportistaRowCard({
               color: TEXT_PRIMARY,
               border: `1px solid ${BORDER_SILVER}`,
               borderRadius: 10,
-              fontSize: 14,
+              fontSize: 'var(--aguila-fs-section)',
               outline: 'none',
             }}
           >
@@ -312,7 +312,7 @@ function TransportistaRowCard({
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           <label
             style={{
-              fontSize: 11,
+              fontSize: 'var(--aguila-fs-meta)',
               color: TEXT_MUTED,
               textTransform: 'uppercase',
               letterSpacing: '0.06em',

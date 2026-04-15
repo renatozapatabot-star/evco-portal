@@ -47,7 +47,7 @@ export default function ApiDocsPage() {
       </div>
 
       <div className="card" style={{ marginBottom: 24, padding: '16px 20px', background: 'var(--amber-100, #FFF8EB)' }}>
-        <div style={{ fontSize: 13, color: 'var(--amber-800, #633806)' }}>
+        <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--amber-800, #633806)' }}>
           <strong>Base URL:</strong> <code style={{ background: 'rgba(0,0,0,0.06)', padding: '2px 6px', borderRadius: 4 }}>https://{PORTAL_URL}</code>
         </div>
       </div>
@@ -56,19 +56,19 @@ export default function ApiDocsPage() {
         <div key={i} className="card" style={{ marginBottom: 12, overflow: 'hidden' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: isMobile ? '12px 14px' : '14px 20px', flexWrap: isMobile ? 'wrap' : 'nowrap' }}>
             <span style={{
-              fontSize: 11, fontWeight: 700, padding: '3px 8px', borderRadius: 4, fontFamily: 'var(--font-mono)',
+              fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, padding: '3px 8px', borderRadius: 4, fontFamily: 'var(--font-mono)',
               background: ep.method === 'GET' ? 'rgba(22,163,74,0.1)' : 'rgba(37,99,235,0.1)',
               color: ep.method === 'GET' ? 'var(--success)' : 'var(--info)',
             }}>{ep.method}</span>
             <code style={{ fontSize: isMobile ? 11 : 13, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)', flex: 1, overflowWrap: 'break-word', wordBreak: 'break-all' }}>{ep.path}</code>
             {ep.method === 'GET' && (
               <button onClick={() => tryEndpoint(ep)} disabled={trying === ep.path}
-                style={{ fontSize: 11, fontWeight: 600, padding: '4px 12px', borderRadius: 6, border: '1px solid var(--border-primary)', background: 'var(--bg-card)', cursor: 'pointer', color: 'var(--amber-700)' }}>
+                style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, padding: '4px 12px', borderRadius: 6, border: '1px solid var(--border-primary)', background: 'var(--bg-card)', cursor: 'pointer', color: 'var(--amber-700)' }}>
                 {trying === ep.path ? '...' : 'Try it'}
               </button>
             )}
           </div>
-          <div style={{ padding: '0 20px 14px', fontSize: 13, color: 'var(--text-secondary)' }}>{ep.desc}</div>
+          <div style={{ padding: '0 20px 14px', fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)' }}>{ep.desc}</div>
         </div>
       ))}
 

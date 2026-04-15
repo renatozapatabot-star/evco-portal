@@ -37,14 +37,14 @@ export default function NotificacionesPage() {
   return (
     <div style={{ maxWidth: 700, margin: '0 auto', padding: '24px 16px' }}>
       <h1 style={{ fontSize: 20, fontWeight: 700, color: '#E6EDF3', marginBottom: 4 }}>Notificaciones</h1>
-      <p style={{ fontSize: 13, color: '#64748b', marginBottom: 24 }}>Elige cómo y cuándo recibir alertas de ZAPATA AI.</p>
+      <p style={{ fontSize: 'var(--aguila-fs-body)', color: '#64748b', marginBottom: 24 }}>Elige cómo y cuándo recibir alertas de ZAPATA AI.</p>
 
       <div className="cc-card" style={{ padding: 24, borderRadius: 20 }}>
         {/* Header row */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr repeat(3, 80px)', gap: 8, marginBottom: 16, paddingBottom: 12, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
           <div style={{ fontSize: 12, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Evento</div>
           {CHANNELS.map(ch => (
-            <div key={ch.key} style={{ textAlign: 'center', fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>
+            <div key={ch.key} style={{ textAlign: 'center', fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>
               <ch.icon size={14} style={{ margin: '0 auto 2px', display: 'block', opacity: 0.6 }} />
               {ch.label}
             </div>
@@ -58,7 +58,7 @@ export default function NotificacionesPage() {
             padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.03)',
             alignItems: 'center',
           }}>
-            <span style={{ fontSize: 14, color: '#E6EDF3' }}>{event.label}</span>
+            <span style={{ fontSize: 'var(--aguila-fs-section)', color: '#E6EDF3' }}>{event.label}</span>
             {CHANNELS.map(ch => (
               <div key={ch.key} style={{ textAlign: 'center' }}>
                 <button
@@ -80,7 +80,7 @@ export default function NotificacionesPage() {
 
       <button style={{
         marginTop: 16, padding: '12px 24px', borderRadius: 12,
-        background: '#E8EAED', color: '#05070B', fontWeight: 700, fontSize: 14,
+        background: '#E8EAED', color: '#05070B', fontWeight: 700, fontSize: 'var(--aguila-fs-section)',
         border: 'none', cursor: 'pointer', minHeight: 48,
       }}>
         Guardar preferencias

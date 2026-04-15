@@ -55,7 +55,7 @@ export function ComunicacionTab({
         }}
       >
         <Mail size={24} style={{ color: TEXT_MUTED }} />
-        <div style={{ fontSize: 13, color: TEXT_SECONDARY }}>
+        <div style={{ fontSize: 'var(--aguila-fs-body)', color: TEXT_SECONDARY }}>
           Historial de comunicación con proveedores y cliente · Próximamente
         </div>
         <button
@@ -69,7 +69,7 @@ export function ComunicacionTab({
             color: TEXT_PRIMARY,
             border: `1px solid rgba(192,197,206,0.4)`,
             borderRadius: 12,
-            fontSize: 13,
+            fontSize: 'var(--aguila-fs-body)',
             fontWeight: 700,
             cursor: 'pointer',
             display: 'inline-flex',
@@ -82,7 +82,7 @@ export function ComunicacionTab({
       </div>
 
       <div style={{ overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--aguila-fs-body)' }}>
           <thead>
             <tr>
               {['Fecha', 'Destinatario', 'Asunto', 'Estado'].map((h) => (
@@ -90,7 +90,7 @@ export function ComunicacionTab({
                   key={h}
                   style={{
                     textAlign: 'left',
-                    fontSize: 11,
+                    fontSize: 'var(--aguila-fs-meta)',
                     fontWeight: 700,
                     color: TEXT_MUTED,
                     textTransform: 'uppercase',
@@ -111,7 +111,7 @@ export function ComunicacionTab({
                 style={{
                   padding: '20px 12px',
                   color: TEXT_MUTED,
-                  fontSize: 13,
+                  fontSize: 'var(--aguila-fs-body)',
                   textAlign: 'center',
                 }}
               >

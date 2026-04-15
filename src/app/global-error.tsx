@@ -29,16 +29,16 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
           flexDirection: 'column',
           gap: 16,
         }}>
-          <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.03em' }}>
+          <div style={{ fontSize: 'var(--aguila-fs-title)', fontWeight: 800, letterSpacing: '-0.03em' }}>
             ZAPATA AI no se cargó
           </div>
-          <div style={{ fontSize: 13, color: '#94a3b8', lineHeight: 1.5 }}>
+          <div style={{ fontSize: 'var(--aguila-fs-body)', color: '#94a3b8', lineHeight: 1.5 }}>
             Detectamos un problema inesperado. Tu sesión sigue activa.
           </div>
           {error?.message ? (
             <div style={{
               fontFamily: 'ui-monospace, monospace',
-              fontSize: 11,
+              fontSize: 'var(--aguila-fs-meta)',
               color: '#64748b',
               padding: '8px 10px',
               background: 'rgba(255,255,255,0.03)',
@@ -60,7 +60,7 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
                 background: '#E8EAED',
                 color: '#0D0D0C',
                 fontWeight: 700,
-                fontSize: 13,
+                fontSize: 'var(--aguila-fs-body)',
                 border: 'none',
                 cursor: 'pointer',
               }}
@@ -76,7 +76,7 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
                 background: 'rgba(255,255,255,0.06)',
                 color: '#E6EDF3',
                 fontWeight: 600,
-                fontSize: 13,
+                fontSize: 'var(--aguila-fs-body)',
                 textDecoration: 'none',
                 display: 'inline-flex',
                 alignItems: 'center',

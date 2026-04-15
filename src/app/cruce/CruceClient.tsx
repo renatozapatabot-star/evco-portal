@@ -221,7 +221,7 @@ export function CruceClient({
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, flexWrap: 'wrap' }}>
           <h1
             style={{
-              fontSize: 24,
+              fontSize: 'var(--aguila-fs-title)',
               fontWeight: 800,
               color: TEXT_PRIMARY,
               margin: 0,
@@ -233,14 +233,14 @@ export function CruceClient({
           <span
             style={{
               fontFamily: 'var(--font-jetbrains-mono)',
-              fontSize: 11,
+              fontSize: 'var(--aguila-fs-meta)',
               color: TEXT_MUTED,
             }}
           >
             Actualizado {lastUpdateLabel}
           </span>
         </div>
-        <p style={{ fontSize: 14, color: TEXT_SECONDARY, marginTop: 4 }}>
+        <p style={{ fontSize: 'var(--aguila-fs-section)', color: TEXT_SECONDARY, marginTop: 4 }}>
           Rango: hoy + 7 días · Zona America/Chicago
         </p>
       </div>
@@ -277,7 +277,7 @@ export function CruceClient({
               display: 'flex',
               flexDirection: 'column',
               gap: 4,
-              fontSize: 11,
+              fontSize: 'var(--aguila-fs-meta)',
               color: TEXT_MUTED,
               textTransform: 'uppercase',
               letterSpacing: '0.08em',
@@ -295,7 +295,7 @@ export function CruceClient({
                 border: `1px solid ${BORDER}`,
                 borderRadius: 10,
                 color: TEXT_PRIMARY,
-                fontSize: 13,
+                fontSize: 'var(--aguila-fs-body)',
                 fontFamily: 'var(--font-jetbrains-mono)',
               }}
             >
@@ -314,7 +314,7 @@ export function CruceClient({
             display: 'flex',
             flexDirection: 'column',
             gap: 4,
-            fontSize: 11,
+            fontSize: 'var(--aguila-fs-meta)',
             color: TEXT_MUTED,
             textTransform: 'uppercase',
             letterSpacing: '0.08em',
@@ -362,7 +362,7 @@ export function CruceClient({
           gap: 16,
           flexWrap: 'wrap',
           marginBottom: 12,
-          fontSize: 11,
+          fontSize: 'var(--aguila-fs-meta)',
           color: TEXT_MUTED,
         }}
       >
@@ -400,7 +400,7 @@ export function CruceClient({
                         borderRadius: 12,
                         background: 'rgba(192,197,206,0.12)',
                         color: ACCENT_CYAN,
-                        fontSize: 10,
+                        fontSize: 'var(--aguila-fs-label)',
                       }}
                     >
                       Hoy
@@ -450,7 +450,7 @@ function HeroTile({
     <div style={glassCard({ padding: 20 })}>
       <div
         style={{
-          fontSize: 11,
+          fontSize: 'var(--aguila-fs-meta)',
           color: TEXT_MUTED,
           textTransform: 'uppercase',
           letterSpacing: '0.08em',
@@ -463,7 +463,7 @@ function HeroTile({
       <div
         style={{
           fontFamily: 'var(--font-jetbrains-mono)',
-          fontSize: 32,
+          fontSize: 'var(--aguila-fs-kpi-compact)',
           fontWeight: 800,
           color,
           lineHeight: 1,
@@ -535,7 +535,7 @@ function BridgeRow({
         <span
           style={{
             fontFamily: 'var(--font-jetbrains-mono)',
-            fontSize: 10,
+            fontSize: 'var(--aguila-fs-label)',
             color: TEXT_MUTED,
           }}
         >
@@ -611,7 +611,7 @@ function BridgeRow({
                 boxShadow: `0 0 12px -4px ${color}`,
                 color: TEXT_PRIMARY,
                 fontFamily: 'var(--font-jetbrains-mono)',
-                fontSize: 10,
+                fontSize: 'var(--aguila-fs-label)',
                 fontWeight: 600,
                 textDecoration: 'none',
                 display: 'flex',
@@ -625,7 +625,7 @@ function BridgeRow({
                 item.scheduled.toISOString()
               )}${item.row.lane ? ` · Carril ${item.row.lane}` : ''}`}
             >
-              <span style={{ color, fontSize: 10 }}>{item.row.trafico}</span>
+              <span style={{ color, fontSize: 'var(--aguila-fs-label)' }}>{item.row.trafico}</span>
               {item.row.lane ? (
                 <span style={{ color: TEXT_MUTED, fontSize: 9 }}>
                   Carril {item.row.lane}
@@ -642,7 +642,7 @@ function BridgeRow({
         style={{ display: 'none', flexDirection: 'column', gap: 8, marginTop: 8 }}
       >
         {items.length === 0 ? (
-          <div style={{ fontSize: 11, color: TEXT_MUTED, padding: 8 }}>Sin cruces</div>
+          <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED, padding: 8 }}>Sin cruces</div>
         ) : (
           items.map((item, idx) => {
             const color = statusColor(item.status)
@@ -668,7 +668,7 @@ function BridgeRow({
                   <span style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 12, fontWeight: 700, color }}>
                     {item.row.trafico}
                   </span>
-                  <span style={{ fontSize: 10, color: TEXT_MUTED, fontFamily: 'var(--font-jetbrains-mono)' }}>
+                  <span style={{ fontSize: 'var(--aguila-fs-label)', color: TEXT_MUTED, fontFamily: 'var(--font-jetbrains-mono)' }}>
                     {fmtDateTime(item.scheduled.toISOString())}
                     {item.row.lane ? ` · Carril ${item.row.lane}` : ''}
                   </span>
@@ -700,7 +700,7 @@ function EmptyState() {
         textAlign: 'center',
       }}
     >
-      <div style={{ fontSize: 32, marginBottom: 12 }}>🛰️</div>
+      <div style={{ fontSize: 'var(--aguila-fs-kpi-compact)', marginBottom: 12 }}>🛰️</div>
       <h2
         style={{
           fontSize: 16,
@@ -713,7 +713,7 @@ function EmptyState() {
       </h2>
       <p
         style={{
-          fontSize: 13,
+          fontSize: 'var(--aguila-fs-body)',
           color: TEXT_SECONDARY,
           margin: 0,
           maxWidth: 520,

@@ -57,7 +57,7 @@ export function ContribucionesTab({ rows }: ContribucionesTabProps) {
       <h3
         style={{
           margin: 0,
-          fontSize: 11,
+          fontSize: 'var(--aguila-fs-meta)',
           textTransform: 'uppercase',
           letterSpacing: '0.08em',
           color: TEXT_MUTED,
@@ -75,7 +75,7 @@ export function ContribucionesTab({ rows }: ContribucionesTabProps) {
       >
         {Array.from(subtotals.entries()).map(([key, sum]) => (
           <div key={key} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <span style={{ fontSize: 11, color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+            <span style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
               {key}
             </span>
             <span
@@ -103,7 +103,7 @@ export function ContribucionesTab({ rows }: ContribucionesTabProps) {
           flexWrap: 'wrap',
         }}
       >
-        <span style={{ fontSize: 11, color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+        <span style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
           Total de contribuciones
         </span>
         <span

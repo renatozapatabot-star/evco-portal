@@ -77,11 +77,11 @@ export default function NuevoEmbarquePage() {
     return (
       <div className="page-shell" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
         <div style={{ textAlign: 'center', maxWidth: 400 }}>
-          <div style={{ fontSize: 48, marginBottom: 16 }}>🦀</div>
+          <div style={{ fontSize: 'var(--aguila-fs-kpi-hero)', marginBottom: 16 }}>🦀</div>
           <h1 style={{ fontSize: 22, fontWeight: 700, color: '#E6EDF3', marginBottom: 8 }}>
             ¡Embarque recibido!
           </h1>
-          <p style={{ fontSize: 14, color: '#8B949E', lineHeight: 1.6, marginBottom: 24 }}>
+          <p style={{ fontSize: 'var(--aguila-fs-section)', color: '#8B949E', lineHeight: 1.6, marginBottom: 24 }}>
             Tu despacho ya lo está revisando. Te notificamos cuando avance.
           </p>
           <button onClick={() => router.push('/')} style={{
@@ -105,7 +105,7 @@ export default function NuevoEmbarquePage() {
         </p>
 
         {error && (
-          <div style={{ padding: '10px 14px', borderRadius: 8, marginBottom: 16, background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.3)', color: '#F87171', fontSize: 13 }}>
+          <div style={{ padding: '10px 14px', borderRadius: 8, marginBottom: 16, background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.3)', color: '#F87171', fontSize: 'var(--aguila-fs-body)' }}>
             {error}
           </div>
         )}
@@ -128,7 +128,7 @@ export default function NuevoEmbarquePage() {
         />
 
         <div style={{ marginBottom: 14 }}>
-          <label style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#8B949E', display: 'block', marginBottom: 4 }}>
+          <label style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#8B949E', display: 'block', marginBottom: 4 }}>
             Tipo de mercancía
           </label>
           <select
@@ -137,7 +137,7 @@ export default function NuevoEmbarquePage() {
             style={{
               width: '100%', padding: '12px 14px', borderRadius: 8,
               background: '#222', border: '1px solid rgba(255,255,255,0.12)',
-              color: '#E6EDF3', fontSize: 14, minHeight: 48,
+              color: '#E6EDF3', fontSize: 'var(--aguila-fs-section)', minHeight: 48,
             }}
           >
             {TIPOS.map(t => <option key={t} value={t}>{t}</option>)}
@@ -154,7 +154,7 @@ export default function NuevoEmbarquePage() {
             onChange={v => setForm(f => ({ ...f, valor_estimado: v }))}
           />
           <div style={{ marginBottom: 14 }}>
-            <label style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#8B949E', display: 'block', marginBottom: 4 }}>
+            <label style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#8B949E', display: 'block', marginBottom: 4 }}>
               Moneda
             </label>
             <select
@@ -163,7 +163,7 @@ export default function NuevoEmbarquePage() {
               style={{
                 padding: '12px 14px', borderRadius: 8,
                 background: '#222', border: '1px solid rgba(255,255,255,0.12)',
-                color: '#E8EAED', fontSize: 14, fontWeight: 700, minHeight: 48,
+                color: '#E8EAED', fontSize: 'var(--aguila-fs-section)', fontWeight: 700, minHeight: 48,
                 fontFamily: 'var(--font-jetbrains-mono)',
               }}
             >
@@ -183,7 +183,7 @@ export default function NuevoEmbarquePage() {
 
         {/* Urgency */}
         <div style={{ marginBottom: 14 }}>
-          <label style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#8B949E', display: 'block', marginBottom: 8 }}>
+          <label style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#8B949E', display: 'block', marginBottom: 8 }}>
             Urgencia
           </label>
           <div style={{ display: 'flex', gap: 8 }}>
@@ -196,7 +196,7 @@ export default function NuevoEmbarquePage() {
                 fontSize: 12, fontWeight: 600, cursor: 'pointer', minHeight: 48,
               }}>
                 {u.label}
-                <div style={{ fontSize: 10, fontWeight: 400, marginTop: 2 }}>{u.desc}</div>
+                <div style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 400, marginTop: 2 }}>{u.desc}</div>
               </button>
             ))}
           </div>

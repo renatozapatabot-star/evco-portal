@@ -86,7 +86,7 @@ export function AdminHeroStrip({ criticos, urgentes, normales, decisionesHoy }: 
               />
             )}
             <div style={{
-              fontSize: 10,
+              fontSize: 'var(--aguila-fs-label)',
               fontWeight: 700,
               textTransform: 'uppercase',
               letterSpacing: '0.08em',

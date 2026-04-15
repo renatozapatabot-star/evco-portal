@@ -101,17 +101,17 @@ export default function UploadPage() {
       }}>
         <div style={{ textAlign: 'center', maxWidth: 400 }}>
           <span style={{
-            fontSize: 44, fontWeight: 800, color: 'var(--gold)',
+            fontSize: 'var(--aguila-fs-kpi-large)', fontWeight: 800, color: 'var(--gold)',
             fontFamily: 'var(--font-mono, "JetBrains Mono", monospace)',
           }}>Z</span>
           
-          <div style={{ fontSize: 18, fontWeight: 700, color: '#CBD5E1', marginTop: 24, marginBottom: 8 }}>
+          <div style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: '#CBD5E1', marginTop: 24, marginBottom: 8 }}>
             {error === 'expired' ? 'Enlace expirado' : error === 'not_found' ? 'Enlace no válido' : 'Ocurrió un error'}
           </div>
-          <div style={{ color: '#64748B', fontSize: 14, marginBottom: 8 }}>
+          <div style={{ color: '#64748B', fontSize: 'var(--aguila-fs-section)', marginBottom: 8 }}>
             Contacta a Renato Zapata &amp; Company para un nuevo enlace.
           </div>
-          <div style={{ color: '#64748B', fontSize: 14 }}>
+          <div style={{ color: '#64748B', fontSize: 'var(--aguila-fs-section)' }}>
             Contacto: ai@renatozapata.com
           </div>
         </div>
@@ -145,18 +145,18 @@ export default function UploadPage() {
             width: 64, height: 64, borderRadius: '50%',
             background: 'rgba(34, 197, 94, 0.15)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            margin: '0 auto 16px', fontSize: 32,
+            margin: '0 auto 16px', fontSize: 'var(--aguila-fs-kpi-compact)',
           }}>✅</div>
           <div style={{ fontSize: 20, fontWeight: 700, color: '#CBD5E1', marginBottom: 8 }}>
             Expediente completo
           </div>
-          <div style={{ color: '#64748B', fontSize: 14, marginBottom: 24 }}>
+          <div style={{ color: '#64748B', fontSize: 'var(--aguila-fs-section)', marginBottom: 24 }}>
             Todos los documentos solicitados han sido recibidos. Gracias.
           </div>
 
           {/* Referral prompt */}
           <div style={{ padding: '16px 20px', background: 'rgba(196,150,60,0.08)', border: '1px solid rgba(196,150,60,0.2)', borderRadius: 12, textAlign: 'left' }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--gold)', marginBottom: 8 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 700, color: 'var(--gold)', marginBottom: 8 }}>
               ¿Trabaja con otros importadores en México?
             </div>
             <div style={{ fontSize: 12, color: '#94A3B8', marginBottom: 12 }}>
@@ -180,7 +180,7 @@ export default function UploadPage() {
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: 24 }}>
           <span style={{
-            fontSize: 44, fontWeight: 800, color: 'var(--gold)',
+            fontSize: 'var(--aguila-fs-kpi-large)', fontWeight: 800, color: 'var(--gold)',
             fontFamily: 'var(--font-mono, "JetBrains Mono", monospace)',
           }}>Z</span>
           
@@ -191,7 +191,7 @@ export default function UploadPage() {
           background: 'var(--card-bg)', borderRadius: 16, padding: '28px 24px',
           boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
         }}>
-          <div style={{ fontSize: 11, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>
+          <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>
             Documentos solicitados para
           </div>
           <div style={{
@@ -200,7 +200,7 @@ export default function UploadPage() {
           }}>
             Embarque {info.trafico_id}
           </div>
-          <div style={{ fontSize: 13, color: '#64748B', marginBottom: 20 }}>
+          <div style={{ fontSize: 'var(--aguila-fs-body)', color: '#64748B', marginBottom: 20 }}>
             {info.company_id}
           </div>
 
@@ -212,12 +212,12 @@ export default function UploadPage() {
                 return (
                   <div key={doc} style={{
                     padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 10,
-                    fontSize: 14, color: isDone ? 'var(--success)' : '#475569',
+                    fontSize: 'var(--aguila-fs-section)', color: isDone ? 'var(--success)' : '#475569',
                     borderBottom: '1px solid #E2E8F0',
                   }}>
                     <span style={{ fontSize: 16 }}>{isDone ? '✅' : '☐'}</span>
                     <span style={{ fontWeight: isDone ? 600 : 400 }}>{doc}</span>
-                    {isDone && <span style={{ fontSize: 11, color: '#94A3B8', marginLeft: 'auto' }}>Recibido</span>}
+                    {isDone && <span style={{ fontSize: 'var(--aguila-fs-meta)', color: '#94A3B8', marginLeft: 'auto' }}>Recibido</span>}
                   </div>
                 )
               })}
@@ -229,7 +229,7 @@ export default function UploadPage() {
             <div className="shake-error" style={{
               background: 'rgba(214, 69, 69, 0.08)', border: '1px solid rgba(214, 69, 69, 0.2)',
               borderRadius: 8, padding: '10px 14px', marginBottom: 16,
-              fontSize: 13, color: 'var(--danger-text)',
+              fontSize: 'var(--aguila-fs-body)', color: 'var(--danger-text)',
             }}>
               {error}
             </div>
@@ -240,7 +240,7 @@ export default function UploadPage() {
             <div style={{
               background: 'rgba(34, 197, 94, 0.08)', border: '1px solid rgba(34, 197, 94, 0.2)',
               borderRadius: 8, padding: '10px 14px', marginBottom: 16,
-              fontSize: 13, color: 'var(--success)', fontWeight: 600,
+              fontSize: 'var(--aguila-fs-body)', color: 'var(--success)', fontWeight: 600,
             }}>
               ✅ {uploaded.length} documento{uploaded.length !== 1 ? 's' : ''} recibido{uploaded.length !== 1 ? 's' : ''}
             </div>
@@ -265,12 +265,12 @@ export default function UploadPage() {
             />
           </label>
 
-          <div style={{ textAlign: 'center', marginTop: 12, fontSize: 11, color: '#94A3B8' }}>
+          <div style={{ textAlign: 'center', marginTop: 12, fontSize: 'var(--aguila-fs-meta)', color: '#94A3B8' }}>
             PDF, JPG, PNG, XLSX · Máx 25MB por archivo
           </div>
         </div>
 
-        <div style={{ textAlign: 'center', marginTop: 16, fontSize: 11, color: '#475569' }}>
+        <div style={{ textAlign: 'center', marginTop: 16, fontSize: 'var(--aguila-fs-meta)', color: '#475569' }}>
           Enlace válido por 48 horas · Renato Zapata &amp; Company
         </div>
       </div>
@@ -298,11 +298,11 @@ function ReferralForm() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
       <input value={name} onChange={e => setName(e.target.value)} placeholder="Nombre de la empresa"
-        style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid rgba(196,150,60,0.3)', background: 'rgba(255,255,255,0.05)', color: '#E2E8F0', fontSize: 13, outline: 'none' }} />
+        style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid rgba(196,150,60,0.3)', background: 'rgba(255,255,255,0.05)', color: '#E2E8F0', fontSize: 'var(--aguila-fs-body)', outline: 'none' }} />
       <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Email de contacto (opcional)"
-        style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid rgba(196,150,60,0.3)', background: 'rgba(255,255,255,0.05)', color: '#E2E8F0', fontSize: 13, outline: 'none' }} />
+        style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid rgba(196,150,60,0.3)', background: 'rgba(255,255,255,0.05)', color: '#E2E8F0', fontSize: 'var(--aguila-fs-body)', outline: 'none' }} />
       <button onClick={submit} disabled={!name.trim()}
-        style={{ padding: '8px 16px', borderRadius: 8, border: 'none', background: name.trim() ? 'var(--gold)' : 'var(--text-primary)', color: name.trim() ? 'var(--text-primary)' : '#6B7280', fontSize: 13, fontWeight: 700, cursor: name.trim() ? 'pointer' : 'default' }}>
+        style={{ padding: '8px 16px', borderRadius: 8, border: 'none', background: name.trim() ? 'var(--gold)' : 'var(--text-primary)', color: name.trim() ? 'var(--text-primary)' : '#6B7280', fontSize: 'var(--aguila-fs-body)', fontWeight: 700, cursor: name.trim() ? 'pointer' : 'default' }}>
         Recomendar
       </button>
     </div>

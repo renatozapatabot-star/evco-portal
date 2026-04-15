@@ -77,7 +77,7 @@ export function ActionEngine({ draft, onActionComplete, totalPending }: ActionEn
       }}>
         <Sparkles size={18} color={GOLD} />
         <span style={{
-          fontSize: 13,
+          fontSize: 'var(--aguila-fs-body)',
           fontWeight: 700,
           textTransform: 'uppercase',
           letterSpacing: '0.08em',
@@ -88,7 +88,7 @@ export function ActionEngine({ draft, onActionComplete, totalPending }: ActionEn
         {totalPending > 1 && (
           <span style={{
             marginLeft: 'auto',
-            fontSize: 11,
+            fontSize: 'var(--aguila-fs-meta)',
             fontFamily: 'var(--font-mono)',
             color: TEXT_MUTED,
           }}>
@@ -132,7 +132,7 @@ export function ActionEngine({ draft, onActionComplete, totalPending }: ActionEn
             {draft.trafico_id && (
               <Link
                 href={`/embarques/${draft.trafico_id}`}
-                style={{ fontSize: 13, fontFamily: 'var(--font-mono)', color: '#C0C5CE', textDecoration: 'none' }}
+                style={{ fontSize: 'var(--aguila-fs-body)', fontFamily: 'var(--font-mono)', color: '#C0C5CE', textDecoration: 'none' }}
               >
                 {draft.trafico_id}
               </Link>
@@ -154,25 +154,25 @@ export function ActionEngine({ draft, onActionComplete, totalPending }: ActionEn
           }}>
             {valorUSD > 0 && (
               <div>
-                <div style={{ fontSize: 10, color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Valor USD</div>
-                <div style={{ fontSize: 18, fontWeight: 800, fontFamily: 'var(--font-mono)', color: TEXT_PRIMARY }}>
+                <div style={{ fontSize: 'var(--aguila-fs-label)', color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Valor USD</div>
+                <div style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 800, fontFamily: 'var(--font-mono)', color: TEXT_PRIMARY }}>
                   ${valorUSD.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                 </div>
               </div>
             )}
             {totalMXN > 0 && (
               <div>
-                <div style={{ fontSize: 10, color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Contribuciones MXN</div>
-                <div style={{ fontSize: 18, fontWeight: 800, fontFamily: 'var(--font-mono)', color: TEXT_PRIMARY }}>
+                <div style={{ fontSize: 'var(--aguila-fs-label)', color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Contribuciones MXN</div>
+                <div style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 800, fontFamily: 'var(--font-mono)', color: TEXT_PRIMARY }}>
                   ${totalMXN.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                 </div>
               </div>
             )}
             {confidence > 0 && (
               <div>
-                <div style={{ fontSize: 10, color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Confianza</div>
+                <div style={{ fontSize: 'var(--aguila-fs-label)', color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Confianza</div>
                 <div style={{
-                  fontSize: 14,
+                  fontSize: 'var(--aguila-fs-section)',
                   fontWeight: 700,
                   fontFamily: 'var(--font-mono)',
                   color: confidence >= 0.8 ? '#22C55E' : confidence >= 0.5 ? '#FBBF24' : '#EF4444',
@@ -192,12 +192,12 @@ export function ActionEngine({ draft, onActionComplete, totalPending }: ActionEn
               marginBottom: 20,
               border: `1px solid ${BORDER}`,
             }}>
-              <div style={{ fontSize: 10, color: TEXT_MUTED, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>
+              <div style={{ fontSize: 'var(--aguila-fs-label)', color: TEXT_MUTED, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>
                 Partidas ({products.length})
               </div>
               {products.slice(0, 3).map((p, i) => (
                 <div key={i} style={{
-                  fontSize: 11,
+                  fontSize: 'var(--aguila-fs-meta)',
                   color: TEXT_SECONDARY,
                   padding: '4px 0',
                   borderTop: i > 0 ? `1px solid ${BORDER}` : 'none',
@@ -217,7 +217,7 @@ export function ActionEngine({ draft, onActionComplete, totalPending }: ActionEn
           )}
 
           {/* Timestamp */}
-          <div style={{ fontSize: 10, color: TEXT_MUTED, fontFamily: 'var(--font-mono)', marginBottom: 16 }}>
+          <div style={{ fontSize: 'var(--aguila-fs-label)', color: TEXT_MUTED, fontFamily: 'var(--font-mono)', marginBottom: 16 }}>
             Creado: {fmtDateTime(draft.created_at)}
           </div>
 
@@ -236,7 +236,7 @@ export function ActionEngine({ draft, onActionComplete, totalPending }: ActionEn
                   borderRadius: 10,
                   padding: 12,
                   color: TEXT_PRIMARY,
-                  fontSize: 13,
+                  fontSize: 'var(--aguila-fs-body)',
                   resize: 'vertical',
                   fontFamily: 'inherit',
                 }}
@@ -248,7 +248,7 @@ export function ActionEngine({ draft, onActionComplete, totalPending }: ActionEn
                   style={{
                     padding: '10px 20px',
                     borderRadius: 10,
-                    fontSize: 13,
+                    fontSize: 'var(--aguila-fs-body)',
                     fontWeight: 700,
                     background: mode === 'reject' ? 'rgba(239,68,68,0.2)' : 'rgba(255,255,255,0.08)',
                     color: mode === 'reject' ? '#EF4444' : TEXT_PRIMARY,
@@ -269,7 +269,7 @@ export function ActionEngine({ draft, onActionComplete, totalPending }: ActionEn
                   style={{
                     padding: '10px 16px',
                     borderRadius: 10,
-                    fontSize: 13,
+                    fontSize: 'var(--aguila-fs-body)',
                     background: 'none',
                     color: TEXT_MUTED,
                     border: `1px solid ${BORDER}`,
@@ -295,7 +295,7 @@ export function ActionEngine({ draft, onActionComplete, totalPending }: ActionEn
                 style={{
                   padding: '14px 28px',
                   borderRadius: 12,
-                  fontSize: 14,
+                  fontSize: 'var(--aguila-fs-section)',
                   fontWeight: 700,
                   background: GOLD_GRADIENT,
                   color: '#0D0D0C',
@@ -313,7 +313,7 @@ export function ActionEngine({ draft, onActionComplete, totalPending }: ActionEn
                 style={{
                   padding: '14px 20px',
                   borderRadius: 12,
-                  fontSize: 13,
+                  fontSize: 'var(--aguila-fs-body)',
                   fontWeight: 600,
                   background: 'rgba(255,255,255,0.06)',
                   color: TEXT_PRIMARY,
@@ -329,7 +329,7 @@ export function ActionEngine({ draft, onActionComplete, totalPending }: ActionEn
                 style={{
                   padding: '14px 20px',
                   borderRadius: 12,
-                  fontSize: 13,
+                  fontSize: 'var(--aguila-fs-body)',
                   fontWeight: 600,
                   background: 'rgba(239,68,68,0.08)',
                   color: '#EF4444',

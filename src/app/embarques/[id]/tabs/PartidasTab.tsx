@@ -52,10 +52,10 @@ export function PartidasTab({ traficoId, partidas }: PartidasTabProps) {
         }}
       >
         <Layers size={24} />
-        <div style={{ fontSize: 13, color: TEXT_SECONDARY }}>Sin partidas capturadas</div>
+        <div style={{ fontSize: 'var(--aguila-fs-body)', color: TEXT_SECONDARY }}>Sin partidas capturadas</div>
         <div
           style={{
-            fontSize: 11,
+            fontSize: 'var(--aguila-fs-meta)',
             color: TEXT_MUTED,
             textAlign: 'center',
             maxWidth: 360,
@@ -77,7 +77,7 @@ export function PartidasTab({ traficoId, partidas }: PartidasTabProps) {
           gap: 12,
         }}
       >
-        <div style={{ fontSize: 11, color: TEXT_MUTED }}>
+        <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED }}>
           {partidas.length} partida{partidas.length === 1 ? '' : 's'}
         </div>
         <div style={{ display: 'flex', gap: 6 }}>
@@ -95,7 +95,7 @@ export function PartidasTab({ traficoId, partidas }: PartidasTabProps) {
       </div>
 
       <div style={{ overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--aguila-fs-body)' }}>
           <thead>
             <tr>
               {[
@@ -112,7 +112,7 @@ export function PartidasTab({ traficoId, partidas }: PartidasTabProps) {
                   key={h}
                   style={{
                     textAlign: 'left',
-                    fontSize: 11,
+                    fontSize: 'var(--aguila-fs-meta)',
                     fontWeight: 700,
                     color: TEXT_MUTED,
                     textTransform: 'uppercase',
@@ -159,7 +159,7 @@ export function PartidasTab({ traficoId, partidas }: PartidasTabProps) {
                     {p.tmec ? (
                       <span
                         style={{
-                          fontSize: 11,
+                          fontSize: 'var(--aguila-fs-meta)',
                           fontWeight: 700,
                           color: GOLD,
                           padding: '2px 8px',
@@ -197,7 +197,7 @@ export function PartidasTab({ traficoId, partidas }: PartidasTabProps) {
             color: TEXT_PRIMARY,
             border: `1px solid rgba(192,197,206,0.4)`,
             borderRadius: 12,
-            fontSize: 13,
+            fontSize: 'var(--aguila-fs-body)',
             fontWeight: 700,
             letterSpacing: '0.02em',
             textDecoration: 'none',
@@ -219,7 +219,7 @@ export function PartidasTab({ traficoId, partidas }: PartidasTabProps) {
             color: TEXT_MUTED,
             border: `1px dashed ${BORDER}`,
             borderRadius: 12,
-            fontSize: 13,
+            fontSize: 'var(--aguila-fs-body)',
             fontWeight: 600,
             cursor: 'not-allowed',
             letterSpacing: '0.02em',
@@ -259,7 +259,7 @@ function SortButton({
         color: active ? TEXT_PRIMARY : TEXT_MUTED,
         border: `1px solid ${active ? 'rgba(192,197,206,0.4)' : BORDER}`,
         borderRadius: 8,
-        fontSize: 11,
+        fontSize: 'var(--aguila-fs-meta)',
         fontWeight: 700,
         cursor: 'pointer',
         letterSpacing: '0.04em',
@@ -276,7 +276,7 @@ function cell(mono: boolean, align: 'left' | 'right' = 'left'): React.CSSPropert
     padding: '10px 12px',
     borderBottom: `1px solid ${BORDER}`,
     fontFamily: mono ? 'var(--font-mono)' : undefined,
-    fontSize: 13,
+    fontSize: 'var(--aguila-fs-body)',
     color: TEXT_SECONDARY,
     textAlign: align,
     whiteSpace: 'nowrap',
@@ -286,7 +286,7 @@ function cell(mono: boolean, align: 'left' | 'right' = 'left'): React.CSSPropert
 const cellDesc: React.CSSProperties = {
   padding: '10px 12px',
   borderBottom: `1px solid ${BORDER}`,
-  fontSize: 13,
+  fontSize: 'var(--aguila-fs-body)',
   color: TEXT_PRIMARY,
   maxWidth: 320,
   overflow: 'hidden',
@@ -329,7 +329,7 @@ function PartidaDrawer({
       >
         <div
           style={{
-            fontSize: 11,
+            fontSize: 'var(--aguila-fs-meta)',
             fontWeight: 800,
             color: TEXT_MUTED,
             textTransform: 'uppercase',
@@ -365,7 +365,7 @@ function PartidaDrawer({
             color: TEXT_PRIMARY,
             border: `1px solid ${BORDER}`,
             borderRadius: 12,
-            fontSize: 13,
+            fontSize: 'var(--aguila-fs-body)',
             fontWeight: 700,
             cursor: 'pointer',
           }}

@@ -16,7 +16,7 @@ const TAB_BTN_BASE: React.CSSProperties = {
   flex: 1,
   minHeight: 60,
   padding: '0 20px',
-  fontSize: 14,
+  fontSize: 'var(--aguila-fs-section)',
   fontWeight: 600,
   background: 'transparent',
   color: 'rgba(255,255,255,0.6)',
@@ -34,7 +34,7 @@ export function ClasificarShell({ canInsert, initialTab = 'pendientes' }: Clasif
       <h1
         style={{
           margin: '0 0 16px',
-          fontSize: 24,
+          fontSize: 'var(--aguila-fs-title)',
           fontWeight: 700,
           color: 'rgba(255,255,255,0.92)',
         }}

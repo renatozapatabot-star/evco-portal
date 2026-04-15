@@ -137,13 +137,13 @@ export function QuickBooksExportClient({ recent }: { recent: ExportRow[] }) {
     color: TEXT_PRIMARY,
     padding: '10px 12px',
     fontFamily: 'var(--font-geist-sans)',
-    fontSize: 14,
+    fontSize: 'var(--aguila-fs-section)',
     minHeight: 44,
     width: '100%',
   }
 
   const labelStyle: React.CSSProperties = {
-    fontSize: 11,
+    fontSize: 'var(--aguila-fs-meta)',
     fontWeight: 600,
     textTransform: 'uppercase',
     letterSpacing: '0.08em',
@@ -157,11 +157,11 @@ export function QuickBooksExportClient({ recent }: { recent: ExportRow[] }) {
       <header style={{ marginBottom: 20 }}>
         <h1 style={{
           fontFamily: 'var(--font-geist-sans)',
-          fontSize: 28, fontWeight: 800, letterSpacing: '-0.03em', margin: 0,
+          fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 800, letterSpacing: '-0.03em', margin: 0,
         }}>
           Exportar a QuickBooks
         </h1>
-        <p style={{ fontSize: 14, color: TEXT_SECONDARY, marginTop: 6, marginBottom: 0 }}>
+        <p style={{ fontSize: 'var(--aguila-fs-section)', color: TEXT_SECONDARY, marginTop: 6, marginBottom: 0 }}>
           Genera un archivo <code style={{ fontFamily: 'var(--font-jetbrains-mono)', color: ACCENT_SILVER_BRIGHT }}>.IIF</code> para importar en QuickBooks Desktop.
         </p>
       </header>
@@ -176,7 +176,7 @@ export function QuickBooksExportClient({ recent }: { recent: ExportRow[] }) {
           padding: '12px 16px',
           marginBottom: 20,
           color: TEXT_SECONDARY,
-          fontSize: 13,
+          fontSize: 'var(--aguila-fs-body)',
           minHeight: 60,
           display: 'flex',
           alignItems: 'center',
@@ -266,7 +266,7 @@ export function QuickBooksExportClient({ recent }: { recent: ExportRow[] }) {
             borderRadius: 12,
             padding: '14px 24px',
             fontFamily: 'var(--font-geist-sans)',
-            fontSize: 14,
+            fontSize: 'var(--aguila-fs-section)',
             fontWeight: 700,
             cursor: submitting ? 'not-allowed' : 'pointer',
             opacity: submitting ? 0.6 : 1,
@@ -278,7 +278,7 @@ export function QuickBooksExportClient({ recent }: { recent: ExportRow[] }) {
         </button>
 
         {message && (
-          <p style={{ marginTop: 16, fontSize: 13, color: TEXT_SECONDARY }}>{message}</p>
+          <p style={{ marginTop: 16, fontSize: 'var(--aguila-fs-body)', color: TEXT_SECONDARY }}>{message}</p>
         )}
       </section>
 
@@ -307,14 +307,14 @@ export function QuickBooksExportClient({ recent }: { recent: ExportRow[] }) {
             padding: '32px 16px',
             textAlign: 'center',
             color: TEXT_MUTED,
-            fontSize: 14,
+            fontSize: 'var(--aguila-fs-section)',
           }}>
             <div style={{ marginBottom: 8, color: ACCENT_SILVER_DIM }}>Sin exportaciones todavía</div>
-            <div style={{ fontSize: 13 }}>Genera la primera con el formulario de arriba.</div>
+            <div style={{ fontSize: 'var(--aguila-fs-body)' }}>Genera la primera con el formulario de arriba.</div>
           </div>
         ) : (
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--aguila-fs-body)' }}>
               <thead>
                 <tr style={{ background: 'rgba(255,255,255,0.04)' }}>
                   <th style={thStyle}>Fecha</th>
@@ -341,7 +341,7 @@ export function QuickBooksExportClient({ recent }: { recent: ExportRow[] }) {
                     <td style={{ ...tdStyle, color: statusColor(r.status), fontWeight: 600 }}>
                       {STATUS_LABELS[r.status] ?? r.status}
                       {r.error === 'bucket_missing' && (
-                        <div style={{ fontSize: 11, color: TEXT_MUTED, marginTop: 2 }}>
+                        <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED, marginTop: 2 }}>
                           Bucket sin provisionar
                         </div>
                       )}
@@ -385,7 +385,7 @@ export function QuickBooksExportClient({ recent }: { recent: ExportRow[] }) {
 const thStyle: React.CSSProperties = {
   textAlign: 'left',
   padding: '10px 12px',
-  fontSize: 11,
+  fontSize: 'var(--aguila-fs-meta)',
   fontWeight: 600,
   textTransform: 'uppercase',
   letterSpacing: '0.08em',

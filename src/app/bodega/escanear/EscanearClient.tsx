@@ -215,7 +215,7 @@ export function EscanearClient() {
           <AguilaMark size={40} tone="silver" aria-label="ZAPATA AI" />
           <div
             style={{
-              fontSize: 11,
+              fontSize: 'var(--aguila-fs-meta)',
               letterSpacing: '0.14em',
               textTransform: 'uppercase',
               color: ACCENT_SILVER_DIM,
@@ -239,7 +239,7 @@ export function EscanearClient() {
         >
           {status === 'idle' && (
             <>
-              <p style={{ fontSize: 14, color: ACCENT_SILVER, lineHeight: 1.55, margin: 0 }}>
+              <p style={{ fontSize: 'var(--aguila-fs-section)', color: ACCENT_SILVER, lineHeight: 1.55, margin: 0 }}>
                 Apunte la cámara a la etiqueta del remolque. Al leer el código, la entrada
                 queda registrada y el embarque se abre automáticamente.
               </p>
@@ -311,7 +311,7 @@ export function EscanearClient() {
                   justifyContent: 'center',
                   gap: 8,
                   color: ACCENT_SILVER,
-                  fontSize: 13,
+                  fontSize: 'var(--aguila-fs-body)',
                 }}
               >
                 <ScanLine size={16} aria-hidden /> Buscando código…
@@ -328,7 +328,7 @@ export function EscanearClient() {
                   border: `1px solid ${ACCENT_SILVER_DIM}`,
                   background: 'transparent',
                   color: ACCENT_SILVER,
-                  fontSize: 14,
+                  fontSize: 'var(--aguila-fs-section)',
                   cursor: 'pointer',
                 }}
               >
@@ -361,7 +361,7 @@ export function EscanearClient() {
                 {resolved.ref}
               </div>
               {resolved.cliente && (
-                <div style={{ fontSize: 13, color: ACCENT_SILVER_DIM, marginTop: 2 }}>
+                <div style={{ fontSize: 'var(--aguila-fs-body)', color: ACCENT_SILVER_DIM, marginTop: 2 }}>
                   {resolved.cliente}
                 </div>
               )}
@@ -379,7 +379,7 @@ export function EscanearClient() {
                 background: 'rgba(239,68,68,0.08)',
                 border: '1px solid rgba(239,68,68,0.35)',
                 color: '#FCA5A5',
-                fontSize: 13,
+                fontSize: 'var(--aguila-fs-body)',
                 display: 'flex',
                 gap: 8,
                 alignItems: 'flex-start',
@@ -407,7 +407,7 @@ export function EscanearClient() {
           <label
             htmlFor="manual-code"
             style={{
-              fontSize: 11,
+              fontSize: 'var(--aguila-fs-meta)',
               letterSpacing: '0.08em',
               textTransform: 'uppercase',
               color: ACCENT_SILVER_DIM,
@@ -435,7 +435,7 @@ export function EscanearClient() {
               background: 'rgba(0,0,0,0.4)',
               color: ACCENT_SILVER_BRIGHT,
               fontFamily: 'var(--font-jetbrains-mono), ui-monospace, monospace',
-              fontSize: 18,
+              fontSize: 'var(--aguila-fs-kpi-small)',
               letterSpacing: '0.12em',
             }}
           />

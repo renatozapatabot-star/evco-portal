@@ -47,7 +47,7 @@ export default async function ChecklistPage() {
         }}>
           Checklist Documental
         </h1>
-        <p style={{ fontSize: 13, color: TEXT_SECONDARY, marginTop: 8, lineHeight: 1.5 }}>
+        <p style={{ fontSize: 'var(--aguila-fs-body)', color: TEXT_SECONDARY, marginTop: 8, lineHeight: 1.5 }}>
           61 tipos de documento · validación automática por régimen aduanal.
           La pantalla completa del checklist se libera en un próximo build;
           mientras tanto el Asistente ZAPATA AI ya puede correr el checklist por
@@ -57,7 +57,7 @@ export default async function ChecklistPage() {
           <Link href="/expedientes" style={{
             minHeight: 44, padding: '10px 20px', borderRadius: 12,
             background: GOLD, color: '#0D0D0C',
-            fontWeight: 700, fontSize: 13, textDecoration: 'none',
+            fontWeight: 700, fontSize: 'var(--aguila-fs-body)', textDecoration: 'none',
             display: 'inline-flex', alignItems: 'center',
           }}>
             Ver expedientes →
@@ -65,14 +65,14 @@ export default async function ChecklistPage() {
           <Link href="/" style={{
             minHeight: 44, padding: '10px 20px', borderRadius: 12,
             background: 'rgba(255,255,255,0.06)', color: TEXT_PRIMARY,
-            fontWeight: 600, fontSize: 13, textDecoration: 'none',
+            fontWeight: 600, fontSize: 'var(--aguila-fs-body)', textDecoration: 'none',
             border: `1px solid ${BORDER}`, display: 'inline-flex', alignItems: 'center',
           }}>
             Volver al cockpit
           </Link>
         </div>
         <div style={{
-          marginTop: 32, fontSize: 11, color: TEXT_MUTED,
+          marginTop: 32, fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED,
           fontFamily: 'var(--font-jetbrains-mono), monospace',
         }}>
           {session.role} · {session.companyId}

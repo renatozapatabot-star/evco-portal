@@ -113,7 +113,7 @@ async function EagleContent({ opName, rawMonth }: { opName: string; rawMonth: st
     return await renderEagle(opName, rawMonth)
   } catch (err) {
     return (
-      <div style={{ padding: 40, color: '#E6EDF3', fontFamily: 'ui-monospace, monospace', fontSize: 13 }}>
+      <div style={{ padding: 40, color: '#E6EDF3', fontFamily: 'ui-monospace, monospace', fontSize: 'var(--aguila-fs-body)' }}>
         No se pudo cargar Eagle View: {err instanceof Error ? err.message : String(err)}
       </div>
     )

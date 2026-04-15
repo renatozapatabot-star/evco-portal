@@ -23,10 +23,10 @@ function KpiCard({ label, value, icon: Icon, sub }: { label: string; value: stri
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <Icon size={18} style={{ color: '#C0C5CE', opacity: 0.7 }} />
-        <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#64748b' }}>{label}</span>
+        <span style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#64748b' }}>{label}</span>
       </div>
-      <div style={{ fontFamily: 'var(--font-mono)', fontSize: 28, fontWeight: 800, color: '#E6EDF3' }}>{typeof value === 'number' ? value.toLocaleString() : value}</div>
-      {sub && <div style={{ fontSize: 11, color: '#64748b' }}>{sub}</div>}
+      <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 800, color: '#E6EDF3' }}>{typeof value === 'number' ? value.toLocaleString() : value}</div>
+      {sub && <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#64748b' }}>{sub}</div>}
     </div>
   )
 }
@@ -99,7 +99,7 @@ export default function InteligenciaPage() {
     return (
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 16px' }}>
         <div style={{ fontSize: 20, fontWeight: 700, color: '#E6EDF3', marginBottom: 24 }}>Inteligencia del Corredor</div>
-        <div style={{ color: '#64748b', fontSize: 14 }}>Cargando datos...</div>
+        <div style={{ color: '#64748b', fontSize: 'var(--aguila-fs-section)' }}>Cargando datos...</div>
       </div>
     )
   }
@@ -109,7 +109,7 @@ export default function InteligenciaPage() {
   return (
     <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 16px' }}>
       <h1 style={{ fontSize: 20, fontWeight: 700, color: '#E6EDF3', marginBottom: 4 }}>Inteligencia del Corredor</h1>
-      <p style={{ fontSize: 13, color: '#64748b', marginBottom: 24 }}>Laredo–Nuevo Laredo · Análisis agregado desde 2024</p>
+      <p style={{ fontSize: 'var(--aguila-fs-body)', color: '#64748b', marginBottom: 24 }}>Laredo–Nuevo Laredo · Análisis agregado desde 2024</p>
 
       {/* KPI Grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 24 }}>
@@ -121,7 +121,7 @@ export default function InteligenciaPage() {
 
       {/* Top Fracciones */}
       <div className="cc-card" style={{ padding: 24, borderRadius: 20, marginBottom: 24 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#64748b', marginBottom: 16 }}>
+        <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#64748b', marginBottom: 16 }}>
           Top 10 fracciones por volumen
         </div>
         {s.topFracciones.length > 0 ? (
@@ -132,8 +132,8 @@ export default function InteligenciaPage() {
                 padding: '8px 12px', borderRadius: 10, background: 'rgba(255,255,255,0.03)',
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <span style={{ fontSize: 11, fontWeight: 700, color: '#64748b', width: 20 }}>{i + 1}</span>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 14, fontWeight: 700, color: '#E6EDF3' }}>
+                  <span style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, color: '#64748b', width: 20 }}>{i + 1}</span>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: '#E6EDF3' }}>
                     {f.fraccion.includes('.') ? f.fraccion : f.fraccion.replace(/^(\d{4})(\d{2})(\d{2})(\d*)$/, '$1.$2.$3')}
                   </span>
                 </div>
@@ -155,13 +155,13 @@ export default function InteligenciaPage() {
             ))}
           </div>
         ) : (
-          <div style={{ color: '#64748b', fontSize: 13 }}>Sin datos de clasificación disponibles.</div>
+          <div style={{ color: '#64748b', fontSize: 'var(--aguila-fs-body)' }}>Sin datos de clasificación disponibles.</div>
         )}
       </div>
 
       {/* Monthly Volume */}
       <div className="cc-card" style={{ padding: 24, borderRadius: 20, marginBottom: 24 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#64748b', marginBottom: 16 }}>
+        <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#64748b', marginBottom: 16 }}>
           Volumen mensual de operaciones
         </div>
         {s.monthlyVolume.length > 0 ? (
@@ -183,7 +183,7 @@ export default function InteligenciaPage() {
             })}
           </div>
         ) : (
-          <div style={{ color: '#64748b', fontSize: 13 }}>Sin datos históricos disponibles.</div>
+          <div style={{ color: '#64748b', fontSize: 'var(--aguila-fs-body)' }}>Sin datos históricos disponibles.</div>
         )}
       </div>
 
@@ -191,9 +191,9 @@ export default function InteligenciaPage() {
       <div className="cc-card" style={{ padding: 24, borderRadius: 20, marginBottom: 24 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
           <AlertTriangle size={16} style={{ color: '#C0C5CE', opacity: 0.7 }} />
-          <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#64748b' }}>Rendimiento ZAPATA AI</span>
+          <span style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#64748b' }}>Rendimiento ZAPATA AI</span>
         </div>
-        <div style={{ fontSize: 13, color: '#94a3b8', lineHeight: 1.6 }}>
+        <div style={{ fontSize: 'var(--aguila-fs-body)', color: '#94a3b8', lineHeight: 1.6 }}>
           {s.totalClassified > 0 ? (
             <>
               ZAPATA AI ha clasificado <strong style={{ color: '#E6EDF3' }}>{s.totalClassified.toLocaleString()}</strong> productos con una confianza promedio de{' '}
@@ -208,12 +208,12 @@ export default function InteligenciaPage() {
 
       {/* Supplier Performance */}
       <div className="cc-card" style={{ padding: 24, borderRadius: 20 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#64748b', marginBottom: 16 }}>
+        <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#64748b', marginBottom: 16 }}>
           <Users2 size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6, color: '#C0C5CE', opacity: 0.7 }} />
           Rendimiento de proveedores
         </div>
         {s.topFracciones.length > 0 ? (
-          <div style={{ fontSize: 13, color: '#94a3b8', lineHeight: 1.6 }}>
+          <div style={{ fontSize: 'var(--aguila-fs-body)', color: '#94a3b8', lineHeight: 1.6 }}>
             <strong style={{ color: '#E6EDF3' }}>{s.topFracciones.length}</strong> fracciones activas de{' '}
             <strong style={{ color: '#E6EDF3' }}>{s.totalTraficos.toLocaleString()}</strong> operaciones.
             {s.totalCruzados > 0 && (
@@ -222,7 +222,7 @@ export default function InteligenciaPage() {
             {' '}Los datos de proveedores se enriquecerán automáticamente conforme se procesen más operaciones.
           </div>
         ) : (
-          <div style={{ fontSize: 13, color: '#64748b' }}>Los perfiles de proveedores aparecerán cuando haya suficientes operaciones procesadas.</div>
+          <div style={{ fontSize: 'var(--aguila-fs-body)', color: '#64748b' }}>Los perfiles de proveedores aparecerán cuando haya suficientes operaciones procesadas.</div>
         )}
       </div>
     </div>

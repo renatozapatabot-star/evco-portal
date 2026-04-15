@@ -50,7 +50,7 @@ function StatusPill({ status }: { status: Row['status'] }) {
     : { label: 'Reemplazado', bg: 'rgba(148,163,184,0.10)', fg: '#94a3b8', border: 'rgba(148,163,184,0.25)' }
   return (
     <span style={{
-      fontSize: 10, fontWeight: 700, letterSpacing: 0.8, textTransform: 'uppercase',
+      fontSize: 'var(--aguila-fs-label)', fontWeight: 700, letterSpacing: 0.8, textTransform: 'uppercase',
       padding: '2px 8px', borderRadius: 999,
       background: cfg.bg, color: cfg.fg, border: `1px solid ${cfg.border}`,
     }}>{cfg.label}</span>
@@ -77,12 +77,12 @@ export default async function UsmcaCertificatesPage() {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', gap: 24, fontSize: 12, color: TEXT_SECONDARY }}>
             <span>
-              <span style={{ color: TEXT_MUTED, textTransform: 'uppercase', fontSize: 10, letterSpacing: 0.8, marginRight: 6 }}>Firmados</span>
+              <span style={{ color: TEXT_MUTED, textTransform: 'uppercase', fontSize: 'var(--aguila-fs-label)', letterSpacing: 0.8, marginRight: 6 }}>Firmados</span>
               <span style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', color: TEXT_PRIMARY, fontVariantNumeric: 'tabular-nums' }}>{signed}</span>
             </span>
             {session.role !== 'client' && (
               <span>
-                <span style={{ color: TEXT_MUTED, textTransform: 'uppercase', fontSize: 10, letterSpacing: 0.8, marginRight: 6 }}>Borradores</span>
+                <span style={{ color: TEXT_MUTED, textTransform: 'uppercase', fontSize: 'var(--aguila-fs-label)', letterSpacing: 0.8, marginRight: 6 }}>Borradores</span>
                 <span style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', color: TEXT_PRIMARY, fontVariantNumeric: 'tabular-nums' }}>{drafts}</span>
               </span>
             )}
@@ -108,7 +108,7 @@ export default async function UsmcaCertificatesPage() {
                   display: 'inline-flex', alignItems: 'center',
                   minHeight: 44, padding: '0 20px',
                   background: SILVER_GRADIENT, color: '#0A0A0C',
-                  borderRadius: 10, fontSize: 13, fontWeight: 700,
+                  borderRadius: 10, fontSize: 'var(--aguila-fs-body)', fontWeight: 700,
                   textTransform: 'uppercase', letterSpacing: 0.5,
                   textDecoration: 'none',
                 }}
@@ -124,8 +124,8 @@ export default async function UsmcaCertificatesPage() {
         {certs.length === 0 ? (
           <GlassCard>
             <div style={{ textAlign: 'center', padding: '32px 16px', color: TEXT_SECONDARY }}>
-              <div style={{ fontSize: 28, marginBottom: 12, color: ACCENT_SILVER }}>◆</div>
-              <p style={{ fontSize: 14, color: TEXT_PRIMARY, margin: '0 0 4px', fontWeight: 600 }}>Aún no hay certificados</p>
+              <div style={{ fontSize: 'var(--aguila-fs-kpi-mid)', marginBottom: 12, color: ACCENT_SILVER }}>◆</div>
+              <p style={{ fontSize: 'var(--aguila-fs-section)', color: TEXT_PRIMARY, margin: '0 0 4px', fontWeight: 600 }}>Aún no hay certificados</p>
               <p style={{ fontSize: 12, color: TEXT_MUTED, margin: '0 0 16px' }}>
                 {canGenerate
                   ? 'Emite el primer certificado de origen USMCA — IGI 0% cuando aplica.'
@@ -139,7 +139,7 @@ export default async function UsmcaCertificatesPage() {
                     minHeight: 44, padding: '0 20px',
                     background: 'rgba(255,255,255,0.06)', color: TEXT_PRIMARY,
                     border: '1px solid rgba(255,255,255,0.1)',
-                    borderRadius: 10, fontSize: 13, fontWeight: 600,
+                    borderRadius: 10, fontSize: 'var(--aguila-fs-body)', fontWeight: 600,
                     textDecoration: 'none',
                   }}
                 >
@@ -162,13 +162,13 @@ export default async function UsmcaCertificatesPage() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6, flexWrap: 'wrap' }}>
                       <span style={{
                         fontFamily: 'var(--font-jetbrains-mono), monospace',
-                        fontSize: 11, color: TEXT_MUTED, letterSpacing: 0.6,
+                        fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED, letterSpacing: 0.6,
                       }}>
                         {c.certificate_number}
                       </span>
                       <StatusPill status={c.status} />
                       <span style={{
-                        fontSize: 10, fontWeight: 700, letterSpacing: 0.8,
+                        fontSize: 'var(--aguila-fs-label)', fontWeight: 700, letterSpacing: 0.8,
                         textTransform: 'uppercase',
                         padding: '2px 8px', borderRadius: 999,
                         background: 'rgba(192,197,206,0.08)', color: ACCENT_SILVER,
@@ -176,7 +176,7 @@ export default async function UsmcaCertificatesPage() {
                       }}>Criterio {c.origin_criterion}</span>
                     </div>
                     <p style={{
-                      fontSize: 13, color: TEXT_PRIMARY, margin: 0, lineHeight: 1.4,
+                      fontSize: 'var(--aguila-fs-body)', color: TEXT_PRIMARY, margin: 0, lineHeight: 1.4,
                       overflow: 'hidden', textOverflow: 'ellipsis',
                       display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
                     }}>
@@ -190,12 +190,12 @@ export default async function UsmcaCertificatesPage() {
                     }}>
                       {c.hs_code}
                     </div>
-                    <div style={{ fontSize: 11, color: TEXT_MUTED, marginTop: 2 }}>
+                    <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED, marginTop: 2 }}>
                       {c.country_of_origin} · {formatDate(c.approved_at ?? c.created_at)}
                       {c.blanket_to && <span> · vence {c.blanket_to}</span>}
                     </div>
                   </div>
-                  <span style={{ color: ACCENT_SILVER, fontSize: 18 }}>→</span>
+                  <span style={{ color: ACCENT_SILVER, fontSize: 'var(--aguila-fs-kpi-small)' }}>→</span>
                 </div>
               </GlassCard>
             ))}

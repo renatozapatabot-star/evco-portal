@@ -318,7 +318,7 @@ export function TraficoDetail(props: TraficoDetailProps) {
                         ? `2px solid ${ACCENT_CYAN}`
                         : '2px solid transparent',
                       color: selected ? TEXT_PRIMARY : TEXT_MUTED,
-                      fontSize: 13,
+                      fontSize: 'var(--aguila-fs-body)',
                       fontWeight: selected ? 700 : 500,
                       letterSpacing: '0.02em',
                       cursor: 'pointer',
@@ -364,7 +364,7 @@ export function TraficoDetail(props: TraficoDetailProps) {
         style={{
           textAlign: 'center',
           padding: '20px 0',
-          fontSize: 11,
+          fontSize: 'var(--aguila-fs-meta)',
           color: TEXT_MUTED,
         }}
       >

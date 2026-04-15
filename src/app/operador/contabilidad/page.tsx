@@ -33,7 +33,7 @@ async function ContabilidadCockpitContent({ name }: { name: string }) {
   const data = await loadRoleCockpit('contabilidad').catch(() => null)
   if (!data) {
     return (
-      <div style={{ padding: 40, color: TEXT_PRIMARY, fontFamily: 'ui-monospace, monospace', fontSize: 13 }}>
+      <div style={{ padding: 40, color: TEXT_PRIMARY, fontFamily: 'ui-monospace, monospace', fontSize: 'var(--aguila-fs-body)' }}>
         No se pudo cargar el cockpit de contabilidad.
       </div>
     )

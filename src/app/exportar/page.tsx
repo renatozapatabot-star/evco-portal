@@ -50,30 +50,30 @@ export default function ExportarPage() {
 
   return (
     <div style={{ padding: '24px 16px', maxWidth: 800, margin: '0 auto' }}>
-      <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 4px' }}>Exportar Datos</h1>
-      <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '0 0 24px' }}>
+      <h1 style={{ fontSize: 'var(--aguila-fs-title)', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 4px' }}>Exportar Datos</h1>
+      <p style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)', margin: '0 0 24px' }}>
         Descarga tus datos en formato CSV · Patente 3596
       </p>
 
       {/* Date range filter */}
       <div className="card" style={{ padding: '16px 20px', marginBottom: 24 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 12 }}>
+        <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 12 }}>
           Rango de fechas (opcional)
         </div>
         <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
-          <DateInputES value={dateFrom} onChange={v => setDateFrom(v)} style={{ height: 36, padding: '0 12px', fontSize: 13 }} />
+          <DateInputES value={dateFrom} onChange={v => setDateFrom(v)} style={{ height: 36, padding: '0 12px', fontSize: 'var(--aguila-fs-body)' }} />
           <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>a</span>
-          <DateInputES value={dateTo} onChange={v => setDateTo(v)} style={{ height: 36, padding: '0 12px', fontSize: 13 }} />
+          <DateInputES value={dateTo} onChange={v => setDateTo(v)} style={{ height: 36, padding: '0 12px', fontSize: 'var(--aguila-fs-body)' }} />
           {(dateFrom || dateTo) && (
             <button onClick={() => { setDateFrom(''); setDateTo('') }} style={{
-              fontSize: 11, color: 'var(--text-secondary)', background: 'none', border: 'none', cursor: 'pointer',
+              fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-secondary)', background: 'none', border: 'none', cursor: 'pointer',
             }}>Limpiar</button>
           )}
         </div>
       </div>
 
       {error && (
-        <div style={{ marginBottom: 16, padding: '10px 16px', background: 'rgba(239,68,68,0.1)', border: '1px solid #FECACA', borderRadius: 8, color: 'var(--danger-text, #991B1B)', fontSize: 13 }}>
+        <div style={{ marginBottom: 16, padding: '10px 16px', background: 'rgba(239,68,68,0.1)', border: '1px solid #FECACA', borderRadius: 8, color: 'var(--danger-text, #991B1B)', fontSize: 'var(--aguila-fs-body)' }}>
           {error}
         </div>
       )}
@@ -105,7 +105,7 @@ export default function ExportarPage() {
                 disabled={isDownloading}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 6,
-                  padding: '10px 20px', borderRadius: 8, fontSize: 13, fontWeight: 700,
+                  padding: '10px 20px', borderRadius: 8, fontSize: 'var(--aguila-fs-body)', fontWeight: 700,
                   background: isDownloading ? 'var(--border)' : 'var(--gold)', border: 'none',
                   color: isDownloading ? 'var(--text-muted)' : 'var(--bg-card)', cursor: isDownloading ? 'default' : 'pointer',
                   minHeight: 44, flexShrink: 0,
@@ -118,7 +118,7 @@ export default function ExportarPage() {
         })}
       </div>
 
-      <div style={{ marginTop: 24, textAlign: 'center', fontSize: 11, color: 'var(--text-muted)' }}>
+      <div style={{ marginTop: 24, textAlign: 'center', fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)' }}>
         Los datos exportados están limitados a su empresa · Patente 3596 · Aduana 240
       </div>
     </div>

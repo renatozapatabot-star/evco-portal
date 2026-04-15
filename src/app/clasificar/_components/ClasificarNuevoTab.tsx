@@ -51,10 +51,10 @@ function ConfidenceBar({ value }: { value: number }) {
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-        <span style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.6)' }}>
+        <span style={{ fontSize: 'var(--aguila-fs-meta)', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.6)' }}>
           Confianza
         </span>
-        <span className="font-mono" style={{ fontSize: 14, fontWeight: 700, color: tone }}>
+        <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: tone }}>
           {value}%
         </span>
       </div>
@@ -184,7 +184,7 @@ export function ClasificarNuevoTab({ canInsert }: ClasificarNuevoTabProps) {
               htmlFor="cn-desc"
               style={{
                 display: 'block',
-                fontSize: 11,
+                fontSize: 'var(--aguila-fs-meta)',
                 textTransform: 'uppercase',
                 letterSpacing: '0.08em',
                 color: 'rgba(255,255,255,0.6)',
@@ -208,14 +208,14 @@ export function ClasificarNuevoTab({ canInsert }: ClasificarNuevoTabProps) {
                 border: '1px solid rgba(255,255,255,0.08)',
                 borderRadius: 12,
                 padding: '12px 14px',
-                fontSize: 14,
+                fontSize: 'var(--aguila-fs-section)',
                 fontFamily: 'inherit',
                 resize: 'vertical',
                 outline: 'none',
               }}
             />
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 4 }}>
-              <span className="font-mono" style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)' }}>
+              <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-meta)', color: 'rgba(255,255,255,0.45)' }}>
                 {description.length}/2000
               </span>
             </div>
@@ -225,7 +225,7 @@ export function ClasificarNuevoTab({ canInsert }: ClasificarNuevoTabProps) {
             <label
               style={{
                 display: 'block',
-                fontSize: 11,
+                fontSize: 'var(--aguila-fs-meta)',
                 textTransform: 'uppercase',
                 letterSpacing: '0.08em',
                 color: 'rgba(255,255,255,0.6)',
@@ -252,7 +252,7 @@ export function ClasificarNuevoTab({ canInsert }: ClasificarNuevoTabProps) {
                   background: 'rgba(255,255,255,0.06)',
                   color: 'rgba(255,255,255,0.92)',
                   border: '1px solid rgba(255,255,255,0.12)',
-                  fontSize: 14,
+                  fontSize: 'var(--aguila-fs-section)',
                   fontWeight: 600,
                   cursor: 'pointer',
                 }}
@@ -274,7 +274,7 @@ export function ClasificarNuevoTab({ canInsert }: ClasificarNuevoTabProps) {
                       background: 'transparent',
                       color: 'rgba(255,255,255,0.6)',
                       border: '1px solid rgba(255,255,255,0.12)',
-                      fontSize: 13,
+                      fontSize: 'var(--aguila-fs-body)',
                       cursor: 'pointer',
                     }}
                   >
@@ -298,7 +298,7 @@ export function ClasificarNuevoTab({ canInsert }: ClasificarNuevoTabProps) {
                 />
               </div>
             )}
-            <p style={{ margin: '6px 0 0', fontSize: 11, color: 'rgba(255,255,255,0.45)' }}>
+            <p style={{ margin: '6px 0 0', fontSize: 'var(--aguila-fs-meta)', color: 'rgba(255,255,255,0.45)' }}>
               JPG, PNG o WebP · máximo 6 MB · habilita Claude Vision (Sonnet)
             </p>
           </div>
@@ -330,7 +330,7 @@ export function ClasificarNuevoTab({ canInsert }: ClasificarNuevoTabProps) {
                 background: 'rgba(239,68,68,0.1)',
                 border: '1px solid rgba(239,68,68,0.3)',
                 color: '#FCA5A5',
-                fontSize: 13,
+                fontSize: 'var(--aguila-fs-body)',
               }}
             >
               {error.message}
@@ -344,7 +344,7 @@ export function ClasificarNuevoTab({ canInsert }: ClasificarNuevoTabProps) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 12 }}>
               <div>
-                <p style={{ margin: '0 0 4px', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.6)' }}>
+                <p style={{ margin: '0 0 4px', fontSize: 'var(--aguila-fs-meta)', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.6)' }}>
                   Fracción arancelaria
                 </p>
                 <p
@@ -424,10 +424,10 @@ export function ClasificarNuevoTab({ canInsert }: ClasificarNuevoTabProps) {
 
             {result.justificacion && (
               <div>
-                <p style={{ margin: '0 0 6px', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.6)' }}>
+                <p style={{ margin: '0 0 6px', fontSize: 'var(--aguila-fs-meta)', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.6)' }}>
                   Justificación
                 </p>
-                <p style={{ margin: 0, fontSize: 14, lineHeight: 1.5, color: 'rgba(255,255,255,0.85)' }}>
+                <p style={{ margin: 0, fontSize: 'var(--aguila-fs-section)', lineHeight: 1.5, color: 'rgba(255,255,255,0.85)' }}>
                   {result.justificacion}
                 </p>
               </div>
@@ -435,7 +435,7 @@ export function ClasificarNuevoTab({ canInsert }: ClasificarNuevoTabProps) {
 
             {result.alternatives.length > 0 && (
               <details style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 12, padding: 12 }}>
-                <summary style={{ cursor: 'pointer', fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.85)' }}>
+                <summary style={{ cursor: 'pointer', fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: 'rgba(255,255,255,0.85)' }}>
                   Alternativas ({result.alternatives.length})
                 </summary>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 12 }}>
@@ -451,7 +451,7 @@ export function ClasificarNuevoTab({ canInsert }: ClasificarNuevoTabProps) {
                         borderRadius: 8,
                       }}
                     >
-                      <span className="font-mono" style={{ fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,0.92)' }}>
+                      <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: 'rgba(255,255,255,0.92)' }}>
                         {alt.fraccion}
                       </span>
                       <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', flex: 1 }}>
@@ -470,7 +470,7 @@ export function ClasificarNuevoTab({ canInsert }: ClasificarNuevoTabProps) {
               style={{
                 display: 'flex',
                 gap: 12,
-                fontSize: 11,
+                fontSize: 'var(--aguila-fs-meta)',
                 color: 'rgba(255,255,255,0.45)',
                 paddingTop: 8,
                 borderTop: '1px solid rgba(255,255,255,0.06)',
@@ -485,7 +485,7 @@ export function ClasificarNuevoTab({ canInsert }: ClasificarNuevoTabProps) {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingTop: 8 }}>
                 <label
                   htmlFor="cn-trafico"
-                  style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.6)' }}
+                  style={{ fontSize: 'var(--aguila-fs-meta)', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.6)' }}
                 >
                   Insertar en embarque
                 </label>
@@ -505,7 +505,7 @@ export function ClasificarNuevoTab({ canInsert }: ClasificarNuevoTabProps) {
                       border: '1px solid rgba(255,255,255,0.12)',
                       borderRadius: 12,
                       padding: '0 14px',
-                      fontSize: 14,
+                      fontSize: 'var(--aguila-fs-section)',
                       outline: 'none',
                     }}
                   />
@@ -520,7 +520,7 @@ export function ClasificarNuevoTab({ canInsert }: ClasificarNuevoTabProps) {
                       background: insertState === 'inserting' || !traficoId.trim() ? 'rgba(34,197,94,0.3)' : '#22C55E',
                       color: '#0a0a0c',
                       border: 'none',
-                      fontSize: 14,
+                      fontSize: 'var(--aguila-fs-section)',
                       fontWeight: 700,
                       cursor: insertState === 'inserting' || !traficoId.trim() ? 'wait' : 'pointer',
                     }}
@@ -546,7 +546,7 @@ export function ClasificarNuevoTab({ canInsert }: ClasificarNuevoTabProps) {
                       ? '1px solid rgba(34,197,94,0.3)'
                       : '1px solid rgba(239,68,68,0.3)',
                   color: insertState === 'inserted' ? '#86EFAC' : '#FCA5A5',
-                  fontSize: 13,
+                  fontSize: 'var(--aguila-fs-body)',
                 }}
               >
                 {insertMessage}
@@ -564,7 +564,7 @@ export function ClasificarNuevoTab({ canInsert }: ClasificarNuevoTabProps) {
                   color: 'rgba(255,255,255,0.6)',
                   border: '1px solid rgba(255,255,255,0.12)',
                   borderRadius: 12,
-                  fontSize: 13,
+                  fontSize: 'var(--aguila-fs-body)',
                   cursor: 'pointer',
                 }}
               >

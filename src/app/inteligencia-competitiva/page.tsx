@@ -71,7 +71,7 @@ export default function IntelCompetitivaPage() {
         <Eye size={24} style={{ color: 'var(--gold)' }} />
         Inteligencia Competitiva
       </h1>
-      <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24 }}>
+      <p style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-muted)', marginBottom: 24 }}>
         Cambios regulatorios, tendencias de mercado, y oportunidades detectadas por ZAPATA AI
       </p>
 
@@ -119,7 +119,7 @@ export default function IntelCompetitivaPage() {
                     <div style={{ flex: 1 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
                         <Icon size={14} style={{ color: config.color }} />
-                        <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 4, background: config.color, color: '#FFF', fontWeight: 600 }}>
+                        <span style={{ fontSize: 'var(--aguila-fs-label)', padding: '1px 6px', borderRadius: 4, background: config.color, color: '#FFF', fontWeight: 600 }}>
                           {config.label.toUpperCase()}
                         </span>
                         {item.actionable && (
@@ -128,7 +128,7 @@ export default function IntelCompetitivaPage() {
                           </span>
                         )}
                       </div>
-                      <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginTop: 6 }}>
+                      <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: 'var(--text-primary)', marginTop: 6 }}>
                         {item.title}
                       </div>
                       <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4 }}>
@@ -137,7 +137,7 @@ export default function IntelCompetitivaPage() {
                       {item.suggested_action && (
                         <div style={{
                           marginTop: 8, padding: '6px 10px', borderRadius: 6,
-                          background: 'rgba(255,255,255,0.6)', fontSize: 11, color: '#15803D',
+                          background: 'rgba(255,255,255,0.6)', fontSize: 'var(--aguila-fs-meta)', color: '#15803D',
                         }}>
                           <AlertTriangle size={10} style={{ display: 'inline', marginRight: 4 }} />
                           {item.suggested_action}
@@ -150,7 +150,7 @@ export default function IntelCompetitivaPage() {
                           {item.relevance_score}
                         </div>
                       )}
-                      <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>
+                      <div style={{ fontSize: 'var(--aguila-fs-label)', color: 'var(--text-muted)', marginTop: 2 }}>
                         {fmtDate(item.detected_at)}
                       </div>
                     </div>
@@ -168,7 +168,7 @@ export default function IntelCompetitivaPage() {
 function KPI({ label, value, color }: { label: string; value: number; color: string }) {
   return (
     <div style={{ padding: '12px 14px', borderRadius: 8, background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
-      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>{label}</div>
+      <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', marginBottom: 4 }}>{label}</div>
       <div style={{ fontSize: 20, fontWeight: 700, fontFamily: 'var(--font-mono)', color }}>{value}</div>
     </div>
   )
@@ -177,7 +177,7 @@ function KPI({ label, value, color }: { label: string; value: number; color: str
 function Pill({ active, onClick, label }: { active: boolean; onClick: () => void; label: string }) {
   return (
     <button onClick={onClick} style={{
-      padding: '4px 12px', borderRadius: 16, fontSize: 11, fontWeight: 600, cursor: 'pointer', minHeight: 32,
+      padding: '4px 12px', borderRadius: 16, fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, cursor: 'pointer', minHeight: 32,
       border: `1px solid ${active ? 'var(--gold)' : 'var(--border)'}`,
       background: active ? 'var(--gold)' : 'var(--bg-card)',
       color: active ? '#FFF' : 'var(--text-secondary)',

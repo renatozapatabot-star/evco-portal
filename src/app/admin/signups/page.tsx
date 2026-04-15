@@ -104,7 +104,7 @@ export default async function AdminSignupsPage() {
       </h1>
 
       {pending.length === 0 ? (
-        <div style={{ padding: 32, textAlign: 'center', color: 'var(--text-muted)', fontSize: 14, background: 'var(--bg-card)', borderRadius: 12, border: '1px solid var(--border)' }}>
+        <div style={{ padding: 32, textAlign: 'center', color: 'var(--text-muted)', fontSize: 'var(--aguila-fs-section)', background: 'var(--bg-card)', borderRadius: 12, border: '1px solid var(--border)' }}>
           Sin solicitudes pendientes
         </div>
       ) : (
@@ -116,9 +116,9 @@ export default async function AdminSignupsPage() {
               display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap',
             }}>
               <div style={{ flex: 1, minWidth: 200 }}>
-                <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{s.firm_name}</div>
+                <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: 'var(--text-primary)' }}>{s.firm_name}</div>
                 <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{s.full_name} · {s.email}</div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+                <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', marginTop: 2 }}>
                   Patente {s.patente} · {s.aduana} · {s.telefono || 'Sin teléfono'}
                 </div>
               </div>
@@ -174,14 +174,14 @@ export default async function AdminSignupsPage() {
               opacity: 0.6,
             }}>
               <span style={{
-                fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 4,
+                fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, padding: '2px 8px', borderRadius: 4,
                 background: s.status === 'approved' ? 'rgba(22,163,74,0.15)' : 'rgba(220,38,38,0.15)',
                 color: s.status === 'approved' ? '#16A34A' : '#DC2626',
               }}>
                 {s.status === 'approved' ? 'Aprobado' : 'Rechazado'}
               </span>
-              <span style={{ fontSize: 13, fontWeight: 600 }}>{s.firm_name}</span>
-              <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{s.email}</span>
+              <span style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600 }}>{s.firm_name}</span>
+              <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)' }}>{s.email}</span>
             </div>
           ))}
         </>

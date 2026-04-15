@@ -30,7 +30,7 @@ export function PartidasTab({ traficoId, partidas }: PartidasTabProps) {
       >
         <TraficoPartidasTab traficoId={traficoId} partidas={partidas} />
       </div>
-      <div style={{ fontSize: 11, color: ACCENT_SILVER_DIM }}>
+      <div style={{ fontSize: 'var(--aguila-fs-meta)', color: ACCENT_SILVER_DIM }}>
         Las partidas se gestionan al nivel del embarque.{' '}
         <Link
           href={`/embarques/${encodeURIComponent(traficoId)}#partidas`}

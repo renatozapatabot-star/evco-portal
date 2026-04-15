@@ -16,7 +16,7 @@ export interface PartidaRow {
 export function PartidasTab({ partidas }: { partidas: PartidaRow[] }) {
   if (partidas.length === 0) {
     return (
-      <div style={{ padding: '24px 0', textAlign: 'center', color: TEXT_MUTED, fontSize: 13 }}>
+      <div style={{ padding: '24px 0', textAlign: 'center', color: TEXT_MUTED, fontSize: 'var(--aguila-fs-body)' }}>
         Sin partidas registradas. Aparecerán cuando se procese el pedimento.
       </div>
     )
@@ -24,7 +24,7 @@ export function PartidasTab({ partidas }: { partidas: PartidaRow[] }) {
 
   return (
     <div style={{ overflowX: 'auto' }}>
-      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--aguila-fs-body)' }}>
         <thead>
           <tr>
             {['Núm. de Parte', 'Fracción', 'Descripción', 'Bultos', 'Peso (kg)', 'Régimen'].map((h) => (
@@ -32,7 +32,7 @@ export function PartidasTab({ partidas }: { partidas: PartidaRow[] }) {
                 key={h}
                 style={{
                   textAlign: 'left',
-                  fontSize: 11,
+                  fontSize: 'var(--aguila-fs-meta)',
                   fontWeight: 700,
                   color: TEXT_MUTED,
                   textTransform: 'uppercase',
@@ -71,7 +71,7 @@ function cell(mono: boolean, align: 'left' | 'right' = 'left'): React.CSSPropert
     padding: '10px 12px',
     borderBottom: `1px solid ${BORDER}`,
     fontFamily: mono ? 'var(--font-mono)' : undefined,
-    fontSize: 13,
+    fontSize: 'var(--aguila-fs-body)',
     color: TEXT_SECONDARY,
     textAlign: align,
     whiteSpace: 'nowrap',
@@ -81,7 +81,7 @@ function cell(mono: boolean, align: 'left' | 'right' = 'left'): React.CSSPropert
 const cellDesc: React.CSSProperties = {
   padding: '10px 12px',
   borderBottom: `1px solid ${BORDER}`,
-  fontSize: 13,
+  fontSize: 'var(--aguila-fs-body)',
   color: TEXT_PRIMARY,
   maxWidth: 320,
   overflow: 'hidden',

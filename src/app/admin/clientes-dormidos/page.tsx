@@ -54,7 +54,7 @@ export default async function ClientesDormidosPage() {
           </div>
         </div>
       </header>
-      <p style={{ fontSize: 13, color: TEXT_SECONDARY, margin: '0 0 20px', maxWidth: 640 }}>
+      <p style={{ fontSize: 'var(--aguila-fs-body)', color: TEXT_SECONDARY, margin: '0 0 20px', maxWidth: 640 }}>
         Clientes con historial operativo que no han registrado un nuevo embarque
         en el umbral elegido. Una acción — un mensaje listo para revisión.
       </p>

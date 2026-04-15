@@ -122,8 +122,8 @@ export default function AuditoriaPage() {
       {/* Header */}
       <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'stretch' : 'flex-start', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>Auditoría</h1>
-          <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '4px 0 0' }}>
+          <h1 style={{ fontSize: 'var(--aguila-fs-title)', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>Auditoría</h1>
+          <p style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)', margin: '4px 0 0' }}>
             {filtered.length} registros · Registro inmutable
           </p>
         </div>
@@ -131,7 +131,7 @@ export default function AuditoriaPage() {
           <div style={{
             display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px',
             background: 'rgba(13,148,136,0.08)', border: '1px solid rgba(13,148,136,0.2)',
-            borderRadius: 8, fontSize: 11, fontWeight: 700, color: '#0D9488',
+            borderRadius: 8, fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, color: '#0D9488',
           }}>
             <Shield size={12} /> SAT Compliant · Patente 3596 · Aduana 240
           </div>
@@ -157,7 +157,7 @@ export default function AuditoriaPage() {
             value={search}
             onChange={e => setSearch(e.target.value)}
             aria-label="Buscar en registros de auditoría"
-            style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: 13, color: 'var(--text-primary)' }}
+            style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: 'var(--aguila-fs-body)', color: 'var(--text-primary)' }}
           />
         </div>
         <select
@@ -190,14 +190,14 @@ export default function AuditoriaPage() {
       ) : (
         <div style={{ background: 'var(--bg-card)', border: '1px solid #E8E5E0', borderRadius: 8, overflow: 'hidden' }}>
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }} aria-label="Registro de auditoría">
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--aguila-fs-body)' }} aria-label="Registro de auditoría">
               <thead>
                 <tr style={{ borderBottom: '1px solid #E8E5E0' }}>
-                  <th style={{ padding: '10px 16px', textAlign: 'left', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)' }}>Fecha</th>
-                  <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)' }}>Acción</th>
-                  <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)' }}>Actor</th>
-                  <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)' }}>Recurso</th>
-                  <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)' }}>Detalles</th>
+                  <th style={{ padding: '10px 16px', textAlign: 'left', fontSize: 'var(--aguila-fs-label)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)' }}>Fecha</th>
+                  <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 'var(--aguila-fs-label)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)' }}>Acción</th>
+                  <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 'var(--aguila-fs-label)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)' }}>Actor</th>
+                  <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 'var(--aguila-fs-label)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)' }}>Recurso</th>
+                  <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 'var(--aguila-fs-label)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)' }}>Detalles</th>
                 </tr>
               </thead>
               <tbody>
@@ -208,12 +208,12 @@ export default function AuditoriaPage() {
                   const detailStr = details ? Object.entries(details).filter(([, v]) => v != null).map(([k, v]) => `${k}: ${typeof v === 'object' ? JSON.stringify(v) : v}`).slice(0, 3).join(' · ') : ''
                   return (
                     <tr key={r.id} style={{ borderBottom: '1px solid #E8E5E0' }}>
-                      <td style={{ padding: '10px 16px', fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
+                      <td style={{ padding: '10px 16px', fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
                         {fmtDateTime(r.timestamp || r.created_at)}
                       </td>
                       <td style={{ padding: '10px 12px' }}>
                         <span style={{
-                          fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 4,
+                          fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, padding: '2px 8px', borderRadius: 4,
                           background: `${color}15`, color,
                         }}>
                           {ACTION_LABELS[r.action] || r.action}
@@ -225,7 +225,7 @@ export default function AuditoriaPage() {
                       <td style={{ padding: '10px 12px', fontSize: 12, fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>
                         {r.resource_id ? `${r.resource || ''} ${String(r.resource_id).substring(0, 12)}` : '—'}
                       </td>
-                      <td style={{ padding: '10px 12px', fontSize: 11, color: 'var(--text-muted)', maxWidth: 300, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <td style={{ padding: '10px 12px', fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', maxWidth: 300, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {detailStr || '—'}
                       </td>
                     </tr>
@@ -243,7 +243,7 @@ export default function AuditoriaPage() {
       )}
 
       {/* Footer */}
-      <div style={{ marginTop: 24, textAlign: 'center', fontSize: 11, color: 'var(--text-muted)' }}>
+      <div style={{ marginTop: 24, textAlign: 'center', fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)' }}>
         Registro inmutable · Append-only · Sin edición ni eliminación
         <br />Patente 3596 · Aduana 240 · Renato Zapata &amp; Company
       </div>

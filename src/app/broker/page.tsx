@@ -147,7 +147,7 @@ export default function BrokerCommandCenter() {
           {opsMetrics ? buildSummary(staffConfig, opsMetrics) : 'Centro de Operaciones'}
         </h1>
         {opsMetrics && (
-          <p style={{ fontSize: 13, color: T.textSec, margin: 0 }}>
+          <p style={{ fontSize: 'var(--aguila-fs-body)', color: T.textSec, margin: 0 }}>
             {buildSubtitle(staffConfig, opsMetrics)}
           </p>
         )}

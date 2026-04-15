@@ -77,7 +77,7 @@ export function PatentesClient({ initialRows }: { initialRows: PatenteRow[] }) {
         <div style={{
           padding: 16, marginTop: 16, marginBottom: 16, borderRadius: 14,
           background: 'rgba(239,68,68,0.14)', border: '1px solid rgba(239,68,68,0.35)',
-          color: '#FCA5A5', fontSize: 13, fontWeight: 600,
+          color: '#FCA5A5', fontSize: 'var(--aguila-fs-body)', fontWeight: 600,
         }}>
           {criticalCount} certificado{criticalCount === 1 ? '' : 's'} vencido{criticalCount === 1 ? '' : 's'} o próximo{criticalCount === 1 ? '' : 's'} a vencer (≤30 días). Renovar urgente.
         </div>
@@ -101,17 +101,17 @@ export function PatentesClient({ initialRows }: { initialRows: PatenteRow[] }) {
             }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
                 <div>
-                  <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: TEXT_MUTED, fontWeight: 700 }}>
+                  <div style={{ fontSize: 'var(--aguila-fs-label)', textTransform: 'uppercase', letterSpacing: '0.08em', color: TEXT_MUTED, fontWeight: 700 }}>
                     Patente
                   </div>
                   <h2 style={{ margin: '4px 0 0 0', fontSize: 22, fontWeight: 700, color: TEXT_PRIMARY, fontFamily: 'var(--font-jetbrains-mono), monospace' }}>
                     {p.numero}
                   </h2>
-                  <p style={{ margin: '4px 0 0 0', fontSize: 13, color: TEXT_SECONDARY }}>
+                  <p style={{ margin: '4px 0 0 0', fontSize: 'var(--aguila-fs-body)', color: TEXT_SECONDARY }}>
                     {p.nombre}
                   </p>
                 </div>
-                <div style={{ fontSize: 11, color: TEXT_MUTED, textAlign: 'right' }}>
+                <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED, textAlign: 'right' }}>
                   {(p.authorized_offices ?? []).join(' · ') || 'Sin oficinas asignadas'}
                 </div>
               </div>
@@ -125,12 +125,12 @@ export function PatentesClient({ initialRows }: { initialRows: PatenteRow[] }) {
                       background: 'rgba(255,255,255,0.02)',
                       border: `1px solid ${BORDER}`,
                     }}>
-                      <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: TEXT_MUTED, fontWeight: 700 }}>
+                      <div style={{ fontSize: 'var(--aguila-fs-label)', textTransform: 'uppercase', letterSpacing: '0.08em', color: TEXT_MUTED, fontWeight: 700 }}>
                         {c.label}
                       </div>
                       <div style={{
                         fontFamily: 'var(--font-jetbrains-mono), monospace',
-                        fontSize: 14, fontWeight: 700, color: TEXT_PRIMARY,
+                        fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: TEXT_PRIMARY,
                         marginTop: 6,
                       }}>
                         {fmtDate(c.expiry)}
@@ -140,7 +140,7 @@ export function PatentesClient({ initialRows }: { initialRows: PatenteRow[] }) {
                         padding: '2px 10px', borderRadius: 20,
                         background: st.bg, color: st.fg,
                         fontFamily: 'var(--font-jetbrains-mono), monospace',
-                        fontSize: 11, fontWeight: 700,
+                        fontSize: 'var(--aguila-fs-meta)', fontWeight: 700,
                       }}>
                         {c.sev.label}
                       </span>
@@ -167,7 +167,7 @@ export function PatentesClient({ initialRows }: { initialRows: PatenteRow[] }) {
         })}
       </div>
 
-      <p style={{ marginTop: 20, fontSize: 11, color: TEXT_MUTED }}>
+      <p style={{ marginTop: 20, fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED }}>
         Alertas automáticas en Chat: 90 · 60 · 30 días · vencimiento.
       </p>
     </div>

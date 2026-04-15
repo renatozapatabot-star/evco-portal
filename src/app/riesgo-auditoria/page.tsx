@@ -87,7 +87,7 @@ export default function RiesgoAuditoriaPage() {
         <Shield size={24} style={{ color: 'var(--gold)' }} />
         Riesgo de Auditoría SAT
       </h1>
-      <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24 }}>
+      <p style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-muted)', marginBottom: 24 }}>
         Evaluación semanal de probabilidad de auditoría — 5 factores de riesgo
       </p>
 
@@ -108,7 +108,7 @@ export default function RiesgoAuditoriaPage() {
 
           {/* Factor breakdown */}
           <div style={{ marginTop: 24, marginBottom: 24 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--gold-dark)', marginBottom: 12 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--gold-dark)', marginBottom: 12 }}>
               Factores de Riesgo (cada uno 0-20)
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -123,7 +123,7 @@ export default function RiesgoAuditoriaPage() {
           {/* Recommendations */}
           {current.recommendations && current.recommendations.length > 0 && (
             <div style={{ marginBottom: 24 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--gold-dark)', marginBottom: 12 }}>
+              <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--gold-dark)', marginBottom: 12 }}>
                 Recomendaciones
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -133,10 +133,10 @@ export default function RiesgoAuditoriaPage() {
                     background: 'var(--bg-card)', border: '1px solid var(--border)',
                     borderLeft: `3px solid ${i === 0 ? 'var(--gold)' : 'var(--border)'}`,
                   }}>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+                    <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: 'var(--text-primary)' }}>
                       {r.action}
                     </div>
-                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+                    <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', marginTop: 2 }}>
                       {r.rationale}
                     </div>
                   </div>
@@ -148,7 +148,7 @@ export default function RiesgoAuditoriaPage() {
           {/* History trend */}
           {history.length > 1 && (
             <div>
-              <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 12 }}>
+              <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 12 }}>
                 Historial ({history.length} evaluaciones)
               </div>
               <div style={{ display: 'flex', gap: 6, alignItems: 'flex-end', height: 60, padding: '0 4px' }}>
@@ -197,7 +197,7 @@ function RiskGauge({ assessment: a, isMobile }: { assessment: Assessment; isMobi
             </span>
             <span style={{ fontSize: 16, color: 'var(--text-muted)' }}>/100</span>
             <span style={{
-              fontSize: 11, padding: '2px 10px', borderRadius: 4,
+              fontSize: 'var(--aguila-fs-meta)', padding: '2px 10px', borderRadius: 4,
               background: risk.color, color: '#FFF', fontWeight: 700,
             }}>
               {risk.label}
@@ -212,7 +212,7 @@ function RiskGauge({ assessment: a, isMobile }: { assessment: Assessment; isMobi
         {/* Probability + window */}
         <div style={{ textAlign: isMobile ? 'left' : 'right' }}>
           {a.estimated_audit_probability != null && (
-            <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+            <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)' }}>
               Probabilidad auditoría: <strong style={{ fontFamily: 'var(--font-mono)', color: risk.color }}>
                 {a.estimated_audit_probability}%
               </strong>
@@ -224,11 +224,11 @@ function RiskGauge({ assessment: a, isMobile }: { assessment: Assessment; isMobi
             </div>
           )}
           {a.estimated_penalty_range_high != null && a.estimated_penalty_range_high > 0 && (
-            <div style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', marginTop: 4 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-meta)', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', marginTop: 4 }}>
               Rango penalización: ${a.estimated_penalty_range_low?.toLocaleString('es-MX')} — ${a.estimated_penalty_range_high?.toLocaleString('es-MX')} MXN
             </div>
           )}
-          <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>
+          <div style={{ fontSize: 'var(--aguila-fs-label)', color: 'var(--text-muted)', marginTop: 4 }}>
             Evaluado: {fmtDate(a.assessment_date)}
           </div>
         </div>
@@ -249,14 +249,14 @@ function FactorBar({ label, factor }: { label: string; factor: FactorScore | nul
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
         <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{label}</span>
-        <span style={{ fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-mono)', color }}>
+        <span style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 700, fontFamily: 'var(--font-mono)', color }}>
           {factor.score}/20
         </span>
       </div>
       <div style={{ height: 6, borderRadius: 3, background: 'rgba(0,0,0,0.06)', overflow: 'hidden' }}>
         <div style={{ height: '100%', borderRadius: 3, background: color, width: `${pct}%`, transition: 'width 0.3s' }} />
       </div>
-      <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>
+      <div style={{ fontSize: 'var(--aguila-fs-label)', color: 'var(--text-muted)', marginTop: 4 }}>
         {factor.detail}
       </div>
     </div>

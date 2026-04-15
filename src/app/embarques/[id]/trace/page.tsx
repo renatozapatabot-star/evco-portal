@@ -85,7 +85,7 @@ export default async function TraceViewPage({
               display: 'inline-flex',
               alignItems: 'center',
               gap: 6,
-              fontSize: 13,
+              fontSize: 'var(--aguila-fs-body)',
               color: TEXT_MUTED,
               textDecoration: 'none',
               minHeight: 60,
@@ -109,7 +109,7 @@ export default async function TraceViewPage({
             <span
               style={{
                 fontFamily: 'var(--font-mono)',
-                fontSize: 28,
+                fontSize: 'var(--aguila-fs-kpi-mid)',
                 fontWeight: 800,
                 color: TEXT_PRIMARY,
                 letterSpacing: '-0.02em',
@@ -120,7 +120,7 @@ export default async function TraceViewPage({
             {trafico.estatus && (
               <span
                 style={{
-                  fontSize: 11,
+                  fontSize: 'var(--aguila-fs-meta)',
                   fontWeight: 700,
                   color: ACCENT_SILVER,
                   background: 'rgba(192,197,206,0.08)',
@@ -138,7 +138,7 @@ export default async function TraceViewPage({
 
           <div
             style={{
-              fontSize: 11,
+              fontSize: 'var(--aguila-fs-meta)',
               fontWeight: 700,
               color: ACCENT_SILVER_DIM,
               textTransform: 'uppercase',

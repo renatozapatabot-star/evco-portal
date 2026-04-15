@@ -35,7 +35,7 @@ export function TabStrip({ activeTab, onChange }: TabStripProps) {
             style={{
               padding: '14px 16px',
               minHeight: 60,
-              fontSize: 13,
+              fontSize: 'var(--aguila-fs-body)',
               fontWeight: isActive ? 600 : 500,
               color: isActive ? ACCENT_SILVER : 'var(--text-secondary)',
               background: 'transparent',

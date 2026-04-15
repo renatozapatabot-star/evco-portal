@@ -59,13 +59,13 @@ export default function GarantiaPage() {
               <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
                 <div style={{ flexShrink: 0, marginTop: 2 }}>{g.icon}</div>
                 <div>
-                  <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>
+                  <div style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>
                     {g.title}
                   </div>
                   <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--gold-dark)', marginBottom: 8 }}>
                     {g.detail}
                   </div>
-                  <div style={{ fontSize: 13, color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                  <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-muted)', fontStyle: 'italic' }}>
                     {g.proof}
                   </div>
                 </div>
@@ -87,7 +87,7 @@ export default function GarantiaPage() {
         </div>
 
         {/* Footer */}
-        <div style={{ textAlign: 'center', fontSize: 13, color: 'var(--text-muted)' }}>
+        <div style={{ textAlign: 'center', fontSize: 'var(--aguila-fs-body)', color: 'var(--text-muted)' }}>
           Renato Zapata & Company · Patente 3596 · Aduana 240 · Est. 1941
         </div>
       </div>

@@ -73,7 +73,7 @@ export function InicioTab({
     backdropFilter: 'blur(20px)',
   }
   const labelStyle: React.CSSProperties = {
-    fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase',
+    fontSize: 'var(--aguila-fs-label)', letterSpacing: '0.08em', textTransform: 'uppercase',
     color: 'var(--text-muted)', marginBottom: 6,
   }
 
@@ -114,11 +114,11 @@ export function InicioTab({
         </div>
         <div>
           <div style={labelStyle}>Cliente</div>
-          <div style={{ fontSize: 14, color: 'var(--text-primary)' }}>
+          <div style={{ fontSize: 'var(--aguila-fs-section)', color: 'var(--text-primary)' }}>
             {clienteName ?? pedimento.cliente_id}
           </div>
           {clienteRfc && (
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-muted)' }}>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)' }}>
               {clienteRfc}
             </div>
           )}
@@ -127,7 +127,7 @@ export function InicioTab({
           <div style={labelStyle}>Embarque</div>
           <Link
             href={`/embarques/${encodeURIComponent(trafico.trafico)}`}
-            style={{ fontFamily: 'var(--font-mono)', fontSize: 14, color: ACCENT_SILVER, textDecoration: 'none' }}
+            style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-section)', color: ACCENT_SILVER, textDecoration: 'none' }}
           >
             ← {trafico.trafico}
           </Link>
@@ -177,10 +177,10 @@ export function InicioTab({
                   gap: 4,
                 }}
               >
-                <span style={{ fontSize: 11, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                <span style={{ fontSize: 'var(--aguila-fs-meta)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
                   {has ? '• con datos' : '• vacío'}
                 </span>
-                <span style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 500 }}>
+                <span style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-primary)', fontWeight: 500 }}>
                   {TAB_LABELS_ES[t]}
                 </span>
               </button>

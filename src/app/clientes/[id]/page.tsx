@@ -231,9 +231,9 @@ export default async function ClienteDetailPage({
 
   const proveedoresContent = proveedores.length > 0 ? (
     <div style={{ overflowX: 'auto' }}>
-      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--aguila-fs-body)' }}>
         <thead>
-          <tr style={{ textAlign: 'left', color: TEXT_MUTED, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+          <tr style={{ textAlign: 'left', color: TEXT_MUTED, fontSize: 'var(--aguila-fs-meta)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
             <th style={{ padding: '8px 12px' }}>Proveedor</th>
             <th style={{ padding: '8px 12px' }}>RFC</th>
           </tr>
@@ -258,7 +258,7 @@ export default async function ClienteDetailPage({
         href="/"
         style={{
           display: 'inline-flex', alignItems: 'center', gap: 6,
-          fontSize: 13, color: TEXT_MUTED, textDecoration: 'none',
+          fontSize: 'var(--aguila-fs-body)', color: TEXT_MUTED, textDecoration: 'none',
           marginBottom: 16, minHeight: 60, lineHeight: '60px',
         }}
       >
@@ -272,21 +272,21 @@ export default async function ClienteDetailPage({
           flexShrink: 0,
         }} />
         <h1 style={{
-          fontSize: 32, fontWeight: 800, color: TEXT_PRIMARY,
+          fontSize: 'var(--aguila-fs-kpi-compact)', fontWeight: 800, color: TEXT_PRIMARY,
           margin: 0, letterSpacing: '-0.02em',
         }}>
           {company.name ?? clienteId}
         </h1>
         {company.rfc && (
           <span style={{
-            fontFamily: 'var(--font-mono)', fontSize: 11,
+            fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-meta)',
             color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: '0.04em',
           }}>
             {company.rfc}
           </span>
         )}
         <span style={{
-          fontSize: 11, fontWeight: 700, color: dot.color,
+          fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, color: dot.color,
           background: 'rgba(255,255,255,0.04)',
           padding: '4px 10px', borderRadius: 999,
         }}>
@@ -295,7 +295,7 @@ export default async function ClienteDetailPage({
         {lastActivity && (
           <span style={{
             marginLeft: 'auto',
-            fontSize: 11, fontFamily: 'var(--font-mono)', color: TEXT_MUTED,
+            fontSize: 'var(--aguila-fs-meta)', fontFamily: 'var(--font-mono)', color: TEXT_MUTED,
           }}>
             Últ. actividad: {fmtDateTime(lastActivity)}
           </span>
@@ -339,7 +339,7 @@ export default async function ClienteDetailPage({
 
       <div style={{
         textAlign: 'center', padding: '20px 0',
-        fontSize: 11, color: TEXT_MUTED,
+        fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED,
       }}>
         Renato Zapata &amp; Company · Patente 3596 · Aduana 240
       </div>

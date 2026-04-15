@@ -57,11 +57,11 @@ export default async function BodegaAyudaPage() {
       <div style={{ marginBottom: 20 }}>
         <h1 style={{
           fontFamily: 'var(--font-geist-sans)',
-          fontSize: 28, fontWeight: 800, letterSpacing: '-0.03em', margin: 0,
+          fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 800, letterSpacing: '-0.03em', margin: 0,
         }}>
           Ayuda
         </h1>
-        <p style={{ fontSize: 14, color: TEXT_SECONDARY, marginTop: 6, marginBottom: 0 }}>
+        <p style={{ fontSize: 'var(--aguila-fs-section)', color: TEXT_SECONDARY, marginTop: 6, marginBottom: 0 }}>
           Guía rápida para la bodega.
         </p>
       </div>
@@ -81,13 +81,13 @@ export default async function BodegaAyudaPage() {
             }}
           >
             <div style={{
-              fontSize: 10, fontWeight: 700, textTransform: 'uppercase',
+              fontSize: 'var(--aguila-fs-label)', fontWeight: 700, textTransform: 'uppercase',
               letterSpacing: '0.08em', color: TEXT_MUTED, marginBottom: 8,
             }}>
               {section.title}
             </div>
             <p style={{
-              fontSize: 14, color: TEXT_SECONDARY, lineHeight: 1.55, margin: 0,
+              fontSize: 'var(--aguila-fs-section)', color: TEXT_SECONDARY, lineHeight: 1.55, margin: 0,
             }}>
               {section.body}
             </p>
@@ -103,7 +103,7 @@ export default async function BodegaAyudaPage() {
                   borderRadius: 14,
                   background: '#E8EAED',
                   color: '#0D0D0C',
-                  fontSize: 14,
+                  fontSize: 'var(--aguila-fs-section)',
                   fontWeight: 700,
                   textDecoration: 'none',
                 }}

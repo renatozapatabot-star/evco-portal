@@ -135,7 +135,7 @@ export function ClientesDormidosClient({
           flexWrap: 'wrap',
         }}
       >
-        <label style={{ fontSize: 13, color: TEXT_SECONDARY, display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <label style={{ fontSize: 'var(--aguila-fs-body)', color: TEXT_SECONDARY, display: 'flex', flexDirection: 'column', gap: 6 }}>
           <span>Umbral (días sin movimiento)</span>
           <input
             type="number"
@@ -150,7 +150,7 @@ export function ClientesDormidosClient({
               padding: '10px 12px',
               color: TEXT_PRIMARY,
               fontFamily: MONO,
-              fontSize: 14,
+              fontSize: 'var(--aguila-fs-section)',
               width: 120,
               minHeight: 44,
             }}
@@ -170,7 +170,7 @@ export function ClientesDormidosClient({
             color: ACCENT_SILVER_BRIGHT,
             fontWeight: 600,
             cursor: loading ? 'wait' : 'pointer',
-            fontSize: 14,
+            fontSize: 'var(--aguila-fs-section)',
           }}
         >
           {loading ? 'Cargando…' : 'Aplicar umbral'}
@@ -189,7 +189,7 @@ export function ClientesDormidosClient({
             borderRadius: 12,
             padding: 12,
             color: '#FCA5A5',
-            fontSize: 13,
+            fontSize: 'var(--aguila-fs-body)',
           }}
         >
           {error}
@@ -221,7 +221,7 @@ export function ClientesDormidosClient({
                 alignItems: 'center',
                 justifyContent: 'center',
                 color: BG_DEEP,
-                fontSize: 24,
+                fontSize: 'var(--aguila-fs-title)',
                 fontWeight: 700,
               }}
             >
@@ -230,15 +230,15 @@ export function ClientesDormidosClient({
             <div style={{ fontSize: 16, color: TEXT_PRIMARY, fontWeight: 600 }}>
               Todos los clientes activos. Volar alto.
             </div>
-            <div style={{ fontSize: 13, color: TEXT_MUTED }}>
+            <div style={{ fontSize: 'var(--aguila-fs-body)', color: TEXT_MUTED }}>
               Ningún cliente supera el umbral de {threshold} días.
             </div>
           </div>
         ) : (
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--aguila-fs-body)' }}>
               <thead>
-                <tr style={{ textAlign: 'left', color: TEXT_MUTED, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                <tr style={{ textAlign: 'left', color: TEXT_MUTED, fontSize: 'var(--aguila-fs-meta)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                   <th style={{ padding: '14px 16px', borderBottom: `1px solid ${BORDER_HAIRLINE}` }}>Cliente</th>
                   <th style={{ padding: '14px 16px', borderBottom: `1px solid ${BORDER_HAIRLINE}` }}>RFC</th>
                   <th style={{ padding: '14px 16px', borderBottom: `1px solid ${BORDER_HAIRLINE}`, textAlign: 'right' }}>Días</th>
@@ -277,7 +277,7 @@ export function ClientesDormidosClient({
                           color: ACCENT_SILVER,
                           fontWeight: 600,
                           cursor: busyId === r.clienteId ? 'wait' : 'pointer',
-                          fontSize: 13,
+                          fontSize: 'var(--aguila-fs-body)',
                         }}
                       >
                         {busyId === r.clienteId ? 'Generando…' : 'Generar mensaje'}
@@ -331,7 +331,7 @@ export function ClientesDormidosClient({
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16 }}>
               <div>
-                <div style={{ fontSize: 11, color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                   Asunto
                 </div>
                 <div style={{ fontSize: 15, color: TEXT_PRIMARY, fontWeight: 600, marginTop: 4 }}>
@@ -353,7 +353,7 @@ export function ClientesDormidosClient({
                   borderRadius: 10,
                   color: TEXT_SECONDARY,
                   cursor: 'pointer',
-                  fontSize: 18,
+                  fontSize: 'var(--aguila-fs-kpi-small)',
                 }}
               >
                 ×
@@ -368,7 +368,7 @@ export function ClientesDormidosClient({
                 borderRadius: 12,
                 padding: 16,
                 fontFamily: 'var(--font-sans), system-ui, sans-serif',
-                fontSize: 14,
+                fontSize: 'var(--aguila-fs-section)',
                 color: TEXT_PRIMARY,
                 lineHeight: 1.55,
                 margin: 0,
@@ -388,7 +388,7 @@ export function ClientesDormidosClient({
                   borderRadius: 10,
                   color: TEXT_SECONDARY,
                   cursor: 'pointer',
-                  fontSize: 14,
+                  fontSize: 'var(--aguila-fs-section)',
                 }}
               >
                 Cerrar
@@ -405,7 +405,7 @@ export function ClientesDormidosClient({
                   color: ACCENT_SILVER_BRIGHT,
                   cursor: 'pointer',
                   fontWeight: 600,
-                  fontSize: 14,
+                  fontSize: 'var(--aguila-fs-section)',
                 }}
               >
                 {copied ? 'Copiado ✓' : 'Copiar al portapapeles'}

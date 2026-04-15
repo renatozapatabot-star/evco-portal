@@ -32,15 +32,15 @@ export default async function RadarPage() {
   return (
     <div style={{ fontFamily: 'var(--font-geist-sans)', color: 'var(--border)' }} className="p-4 md:px-7 md:py-6">
       <h1 style={{ fontSize: 22, fontWeight: 800, margin: '0 0 4px' }}>Radar de Riesgos</h1>
-      <p style={{ color: '#666', fontSize: 13, margin: '0 0 24px' }}>
+      <p style={{ color: '#666', fontSize: 'var(--aguila-fs-body)', margin: '0 0 24px' }}>
         Monitoreo de amenazas en tiempo real &middot; <span style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtDateTimeLocal(new Date()).split(' · ')[1] || fmtDateTimeLocal(new Date())}</span> CST
       </p>
 
       {(!signals || signals.length === 0) ? (
         <div style={{ background: 'rgba(22,163,74,0.1)', border: '1px solid rgba(22,163,74,0.3)', borderRadius: 12, padding: 24, textAlign: 'center' }}>
-          <div style={{ fontSize: 32, marginBottom: 8 }}>🟢</div>
+          <div style={{ fontSize: 'var(--aguila-fs-kpi-compact)', marginBottom: 8 }}>🟢</div>
           <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--success)' }}>Sin riesgos activos</div>
-          <div style={{ fontSize: 13, color: '#666', marginTop: 4 }}>Condiciones normales en todos los puentes y rutas</div>
+          <div style={{ fontSize: 'var(--aguila-fs-body)', color: '#666', marginTop: 4 }}>Condiciones normales en todos los puentes y rutas</div>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -51,13 +51,13 @@ export default async function RadarPage() {
               borderRadius: 12, padding: '16px 20px', borderLeft: `4px solid ${sevColor[s.severity || ''] || sevColor.low}`
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: sevColor[s.severity || ''] || '#666' }}>
+                <span style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: sevColor[s.severity || ''] || '#666' }}>
                   {s.severity === 'critical' ? '🔴' : s.severity === 'high' ? '🟡' : '🟢'} {s.category}
                 </span>
-                <span style={{ fontSize: 11, color: '#666' }}>{s.source}</span>
+                <span style={{ fontSize: 'var(--aguila-fs-meta)', color: '#666' }}>{s.source}</span>
               </div>
               <div style={{ fontSize: 15, fontWeight: 700 }}>{s.title}</div>
-              {s.description && <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4, lineHeight: 1.4 }}>{s.description}</div>}
+              {s.description && <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-muted)', marginTop: 4, lineHeight: 1.4 }}>{s.description}</div>}
             </div>
           ))}
         </div>
@@ -66,7 +66,7 @@ export default async function RadarPage() {
       {/* Bridge Summary */}
       {bridgeData && bridgeData.length > 0 && (
         <div style={{ background: 'var(--navy-900)', border: '1px solid #2A2A2A', borderRadius: 12, padding: 20, marginTop: 24 }}>
-          <h2 style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 16px' }}>Estado de Puentes</h2>
+          <h2 style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 16px' }}>Estado de Puentes</h2>
           {(() => {
             const bridgeMap: Record<string, number[]> = {}
             bridgeData.forEach((b: { bridge_name: string; crossing_hours: number }) => { if (!bridgeMap[b.bridge_name]) bridgeMap[b.bridge_name] = []; bridgeMap[b.bridge_name].push(b.crossing_hours) })
@@ -74,7 +74,7 @@ export default async function RadarPage() {
               const avg = hours.reduce((a, b) => a + b, 0) / hours.length
               return (
                 <div key={name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 0', minHeight: 60, borderBottom: '1px solid #2A2A2A' }}>
-                  <span style={{ fontSize: 14 }}>{name}</span>
+                  <span style={{ fontSize: 'var(--aguila-fs-section)' }}>{name}</span>
                   <span style={{ fontFamily: 'var(--font-jetbrains-mono)', color: avg > 2 ? 'var(--danger-500)' : avg > 1 ? 'var(--warning-500, #D97706)' : 'var(--success)', fontWeight: 700 }}>{Math.round(avg * 60)}min</span>
                 </div>
               )

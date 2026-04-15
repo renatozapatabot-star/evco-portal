@@ -49,7 +49,7 @@ export function TransportistasPreferidosTab({
         badge={<SectionAutosaveBadge status={status} lastSaved={lastSaved} errorMessage={errorMessage} />}
       />
       {value.length === 0 && (
-        <p style={{ margin: 0, color: TEXT_MUTED, fontSize: 13 }}>
+        <p style={{ margin: 0, color: TEXT_MUTED, fontSize: 'var(--aguila-fs-body)' }}>
           Sin transportistas preferidos.
         </p>
       )}

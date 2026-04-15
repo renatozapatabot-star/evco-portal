@@ -152,12 +152,12 @@ function NavTile({ tile }: { tile: Tile }) {
           <Icon size={18} color={TEXT_SECONDARY} />
           <div style={{ minWidth: 0 }}>
             <div style={{
-              fontSize: 14, fontWeight: 700, color: TEXT_PRIMARY,
+              fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: TEXT_PRIMARY,
               overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
             }}>
               {tile.label}
             </div>
-            <div style={{ fontSize: 11, color: TEXT_MUTED, marginTop: 2 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED, marginTop: 2 }}>
               {tile.description}
             </div>
           </div>

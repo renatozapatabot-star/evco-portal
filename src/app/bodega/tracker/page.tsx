@@ -43,13 +43,13 @@ function ItemCard({ item }: { item: TrackerItem }) {
         <div style={{ minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6, flexWrap: 'wrap' }}>
             <span style={{
-              fontSize: 10, fontWeight: 700, letterSpacing: 0.8, textTransform: 'uppercase',
+              fontSize: 'var(--aguila-fs-label)', fontWeight: 700, letterSpacing: 0.8, textTransform: 'uppercase',
               padding: '2px 8px', borderRadius: 999,
               background: cfg.bg, color: cfg.fg, border: `1px solid ${cfg.border}`,
             }}>{cfg.label}</span>
             {e.dock_assigned && (
               <span style={{
-                fontSize: 10, fontWeight: 700, letterSpacing: 0.8, textTransform: 'uppercase',
+                fontSize: 'var(--aguila-fs-label)', fontWeight: 700, letterSpacing: 0.8, textTransform: 'uppercase',
                 padding: '2px 8px', borderRadius: 999,
                 background: 'rgba(192,197,206,0.08)', color: ACCENT_SILVER,
                 border: '1px solid rgba(192,197,206,0.20)',
@@ -58,7 +58,7 @@ function ItemCard({ item }: { item: TrackerItem }) {
             )}
             {alert && (
               <span style={{
-                fontSize: 10, fontWeight: 700, letterSpacing: 0.8, textTransform: 'uppercase',
+                fontSize: 'var(--aguila-fs-label)', fontWeight: 700, letterSpacing: 0.8, textTransform: 'uppercase',
                 padding: '2px 8px', borderRadius: 999,
                 background: 'rgba(239,68,68,0.12)', color: '#ef4444',
                 border: '1px solid rgba(239,68,68,0.30)',
@@ -73,14 +73,14 @@ function ItemCard({ item }: { item: TrackerItem }) {
           }}>
             Caja {e.trailer_number}
           </div>
-          <div style={{ fontSize: 11, color: TEXT_MUTED, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
             <span>Recibido por <span style={{ color: TEXT_SECONDARY }}>{e.received_by}</span></span>
             <span>·</span>
             <span style={{ fontFamily: 'var(--font-jetbrains-mono), monospace' }}>{formatAge(e.received_at)} atrás</span>
           </div>
           {e.notes && (
             <p style={{
-              fontSize: 11, color: TEXT_SECONDARY, margin: '6px 0 0', lineHeight: 1.4,
+              fontSize: 'var(--aguila-fs-meta)', color: TEXT_SECONDARY, margin: '6px 0 0', lineHeight: 1.4,
               overflow: 'hidden', textOverflow: 'ellipsis',
               display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
             }}>{e.notes}</p>
@@ -88,37 +88,37 @@ function ItemCard({ item }: { item: TrackerItem }) {
         </div>
         <div>
           <div style={{
-            fontSize: 10, color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 2,
+            fontSize: 'var(--aguila-fs-label)', color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 2,
           }}>Embarque</div>
           <div style={{
             fontFamily: 'var(--font-jetbrains-mono), monospace',
-            fontSize: 13, color: TEXT_PRIMARY, fontWeight: 600,
+            fontSize: 'var(--aguila-fs-body)', color: TEXT_PRIMARY, fontWeight: 600,
           }}>{e.trafico_id}</div>
-          <div style={{ fontSize: 10, color: TEXT_MUTED, marginTop: 4 }}>
+          <div style={{ fontSize: 'var(--aguila-fs-label)', color: TEXT_MUTED, marginTop: 4 }}>
             {item.entradas > 0 ? `${item.entradas} entrada${item.entradas === 1 ? '' : 's'}` : 'Sin entradas ligadas'}
           </div>
         </div>
         <div style={{ textAlign: 'right' }}>
           <div style={{
             fontFamily: 'var(--font-jetbrains-mono), monospace',
-            fontSize: 18, fontWeight: 700, color: TEXT_PRIMARY,
+            fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: TEXT_PRIMARY,
             fontVariantNumeric: 'tabular-nums',
           }}>
             {item.bultosTotal ?? '—'}
           </div>
-          <div style={{ fontSize: 10, color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: 0.6 }}>
+          <div style={{ fontSize: 'var(--aguila-fs-label)', color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: 0.6 }}>
             Bultos · {fmtKg(item.pesoTotal)}
           </div>
           {e.photo_urls.length > 0 && (
             <div style={{
-              fontSize: 10, color: ACCENT_SILVER, marginTop: 4,
+              fontSize: 'var(--aguila-fs-label)', color: ACCENT_SILVER, marginTop: 4,
               fontFamily: 'var(--font-jetbrains-mono), monospace',
             }}>
               📷 {e.photo_urls.length}
             </div>
           )}
         </div>
-        <span style={{ color: ACCENT_SILVER, fontSize: 18 }}>→</span>
+        <span style={{ color: ACCENT_SILVER, fontSize: 'var(--aguila-fs-kpi-small)' }}>→</span>
       </div>
     </GlassCard>
   )
@@ -128,15 +128,15 @@ function Kpi({ label, value, sub }: { label: string; value: number | string; sub
   return (
     <GlassCard size="compact">
       <div style={{
-        fontSize: 10, fontWeight: 700, letterSpacing: 0.8,
+        fontSize: 'var(--aguila-fs-label)', fontWeight: 700, letterSpacing: 0.8,
         textTransform: 'uppercase', color: TEXT_MUTED, marginBottom: 6,
       }}>{label}</div>
       <div style={{
         fontFamily: 'var(--font-jetbrains-mono), monospace',
-        fontSize: 28, fontWeight: 800, color: TEXT_PRIMARY,
+        fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 800, color: TEXT_PRIMARY,
         fontVariantNumeric: 'tabular-nums',
       }}>{value}</div>
-      {sub && <div style={{ fontSize: 10, color: TEXT_MUTED, marginTop: 4 }}>{sub}</div>}
+      {sub && <div style={{ fontSize: 'var(--aguila-fs-label)', color: TEXT_MUTED, marginTop: 4 }}>{sub}</div>}
     </GlassCard>
   )
 }
@@ -176,8 +176,8 @@ export default async function WarehouseTrackerPage() {
         {tracker.items.length === 0 ? (
           <GlassCard>
             <div style={{ textAlign: 'center', padding: '32px 16px', color: TEXT_SECONDARY }}>
-              <div style={{ fontSize: 28, marginBottom: 12, color: ACCENT_SILVER }}>▤</div>
-              <p style={{ fontSize: 14, color: TEXT_PRIMARY, margin: '0 0 4px', fontWeight: 600 }}>
+              <div style={{ fontSize: 'var(--aguila-fs-kpi-mid)', marginBottom: 12, color: ACCENT_SILVER }}>▤</div>
+              <p style={{ fontSize: 'var(--aguila-fs-section)', color: TEXT_PRIMARY, margin: '0 0 4px', fontWeight: 600 }}>
                 Patio vacío
               </p>
               <p style={{ fontSize: 12, color: TEXT_MUTED, margin: '0 0 16px' }}>
@@ -191,7 +191,7 @@ export default async function WarehouseTrackerPage() {
                     minHeight: 44, padding: '0 20px',
                     background: 'rgba(255,255,255,0.06)', color: TEXT_PRIMARY,
                     border: '1px solid rgba(255,255,255,0.1)',
-                    borderRadius: 10, fontSize: 13, fontWeight: 600,
+                    borderRadius: 10, fontSize: 'var(--aguila-fs-body)', fontWeight: 600,
                     textDecoration: 'none',
                   }}
                 >

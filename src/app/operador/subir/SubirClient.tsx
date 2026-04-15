@@ -69,7 +69,7 @@ export function SubirClient({ traficos }: SubirClientProps) {
         <h1
           style={{
             fontFamily: 'var(--font-geist-sans)',
-            fontSize: 32,
+            fontSize: 'var(--aguila-fs-kpi-compact)',
             fontWeight: 800,
             letterSpacing: '-0.03em',
             margin: 0,
@@ -80,7 +80,7 @@ export function SubirClient({ traficos }: SubirClientProps) {
         </h1>
         <p
           style={{
-            fontSize: 14,
+            fontSize: 'var(--aguila-fs-section)',
             color: TEXT_SECONDARY,
             marginTop: 6,
             marginBottom: 0,
@@ -109,7 +109,7 @@ export function SubirClient({ traficos }: SubirClientProps) {
           htmlFor="subir-trafico"
           style={{
             display: 'block',
-            fontSize: 10,
+            fontSize: 'var(--aguila-fs-label)',
             fontWeight: 700,
             textTransform: 'uppercase',
             letterSpacing: '0.08em',
@@ -146,7 +146,7 @@ export function SubirClient({ traficos }: SubirClientProps) {
                 border: 'none',
                 outline: 'none',
                 color: TEXT_PRIMARY,
-                fontSize: 13,
+                fontSize: 'var(--aguila-fs-body)',
                 fontFamily: 'var(--font-geist-sans)',
               }}
             />
@@ -215,7 +215,7 @@ export function SubirClient({ traficos }: SubirClientProps) {
       >
         <div
           style={{
-            fontSize: 10,
+            fontSize: 'var(--aguila-fs-label)',
             fontWeight: 700,
             textTransform: 'uppercase',
             letterSpacing: '0.08em',
@@ -246,7 +246,7 @@ export function SubirClient({ traficos }: SubirClientProps) {
               cursor: 'not-allowed',
             }}
           >
-            <div style={{ fontSize: 14, fontWeight: 600, color: TEXT_SECONDARY }}>
+            <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: TEXT_SECONDARY }}>
               Selecciona un embarque para habilitar la subida
             </div>
             <div style={{ fontSize: 12, color: TEXT_MUTED, textAlign: 'center' }}>
@@ -299,7 +299,7 @@ export function SubirClient({ traficos }: SubirClientProps) {
         >
           <Mail size={16} color={ACCENT_CYAN} />
         </div>
-        <div style={{ fontSize: 13, color: TEXT_SECONDARY, lineHeight: 1.5 }}>
+        <div style={{ fontSize: 'var(--aguila-fs-body)', color: TEXT_SECONDARY, lineHeight: 1.5 }}>
           También puedes enviar archivos a{' '}
           <a
             href="mailto:ai@renatozapata.com"

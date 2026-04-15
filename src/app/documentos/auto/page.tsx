@@ -21,7 +21,7 @@ export default function DocumentosAutoPage() {
           <div style={{ fontSize: 'var(--aguila-fs-label, 10px)', letterSpacing: 'var(--aguila-ls-label, 0.08em)', textTransform: 'uppercase', color: TEXT_SECONDARY, marginBottom: 8 }}>
             ¿Cómo funciona?
           </div>
-          <ul style={{ margin: 0, paddingLeft: 18, color: TEXT_SECONDARY, fontSize: 13, lineHeight: 1.6 }}>
+          <ul style={{ margin: 0, paddingLeft: 18, color: TEXT_SECONDARY, fontSize: 'var(--aguila-fs-body)', lineHeight: 1.6 }}>
             <li>Sube hasta varios PDFs/JPGs/PNGs (10 MB máx cada uno) o pega una descripción.</li>
             <li>Claude identifica el tipo (factura, packing list, certificado de origen, BL u otro).</li>
             <li>Se revisa que tenga proveedor, importe, moneda y fracción arancelaria.</li>

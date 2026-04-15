@@ -2,8 +2,9 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Search, Menu, LogOut, ChevronLeft, Home } from 'lucide-react';
+import { Search, Menu, LogOut, ChevronLeft } from 'lucide-react';
 import NotificationBell from '@/components/NotificationBell';
+import { AguilaMark } from '@/components/brand/AguilaMark';
 import { TopbarStatus } from './TopbarStatus';
 
 interface TopBarProps {
@@ -69,11 +70,9 @@ export default function TopBar({
             alignItems: 'center',
             justifyContent: 'center',
             width: 36, height: 36,
-            borderRadius: 10,
-            color: 'rgba(255,255,255,0.7)',
           }}
         >
-          <Home size={18} strokeWidth={1.8} />
+          <AguilaMark size={28} />
         </Link>
 
         {/* Wide search bar (desktop) */}
@@ -151,11 +150,9 @@ export default function TopBar({
           alignItems: 'center',
           justifyContent: 'center',
           width: 36, height: 36,
-          borderRadius: 10,
-          color: 'rgba(255,255,255,0.7)',
         }}
       >
-        <Home size={18} strokeWidth={1.8} />
+        <AguilaMark size={28} />
       </Link>
       <div style={{ flex: 1 }} />
       <button

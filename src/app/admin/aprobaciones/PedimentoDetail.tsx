@@ -105,7 +105,7 @@ export function PedimentoDetail({ draft, onActionComplete }: Props) {
   } as const
 
   const labelStyle = {
-    fontSize: 10, fontWeight: 700, color: '#64748b',
+    fontSize: 'var(--aguila-fs-label)', fontWeight: 700, color: '#64748b',
     textTransform: 'uppercase' as const, letterSpacing: '0.08em',
     marginBottom: 4,
   }
@@ -122,7 +122,7 @@ export function PedimentoDetail({ draft, onActionComplete }: Props) {
             {draft.trafico_id || '—'}
           </span>
           <span style={{
-            fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 20,
+            fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, padding: '3px 10px', borderRadius: 20,
             background: `${tierColor}18`, color: tierColor,
             border: `1px solid ${tierColor}33`,
           }}>
@@ -132,19 +132,19 @@ export function PedimentoDetail({ draft, onActionComplete }: Props) {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 12 }}>
           <div>
             <div style={labelStyle}>Cliente</div>
-            <div style={{ fontSize: 14, color: '#E6EDF3', fontWeight: 600 }}>{draft.company_name || draft.company_id}</div>
+            <div style={{ fontSize: 'var(--aguila-fs-section)', color: '#E6EDF3', fontWeight: 600 }}>{draft.company_name || draft.company_id}</div>
           </div>
           <div>
             <div style={labelStyle}>Proveedor</div>
-            <div style={{ fontSize: 14, color: '#E6EDF3' }}>{supplier}</div>
+            <div style={{ fontSize: 'var(--aguila-fs-section)', color: '#E6EDF3' }}>{supplier}</div>
           </div>
           <div>
             <div style={labelStyle}>Régimen</div>
-            <div style={{ fontSize: 14, color: '#E6EDF3' }}>{regimen}</div>
+            <div style={{ fontSize: 'var(--aguila-fs-section)', color: '#E6EDF3' }}>{regimen}</div>
           </div>
           <div>
             <div style={labelStyle}>Recibido</div>
-            <div style={{ fontSize: 13, fontFamily: 'var(--font-mono)', color: '#94a3b8' }}>
+            <div style={{ fontSize: 'var(--aguila-fs-body)', fontFamily: 'var(--font-mono)', color: '#94a3b8' }}>
               {fmtDateTime(draft.created_at)}
             </div>
           </div>
@@ -188,7 +188,7 @@ export function PedimentoDetail({ draft, onActionComplete }: Props) {
             {missingDocs.map((doc, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0' }}>
                 <FileText size={14} color="#FBBF24" />
-                <span style={{ fontSize: 13, color: '#E6EDF3' }}>{doc}</span>
+                <span style={{ fontSize: 'var(--aguila-fs-body)', color: '#E6EDF3' }}>{doc}</span>
               </div>
             ))}
           </div>
@@ -232,7 +232,7 @@ export function PedimentoDetail({ draft, onActionComplete }: Props) {
               style={{
                 flex: 1, minHeight: 60, borderRadius: 14,
                 background: 'transparent', color: '#C0C5CE',
-                fontSize: 14, fontWeight: 700,
+                fontSize: 'var(--aguila-fs-section)', fontWeight: 700,
                 border: '1px solid rgba(192,197,206,0.3)',
                 cursor: 'pointer', display: 'flex', alignItems: 'center',
                 justifyContent: 'center', gap: 6,
@@ -245,7 +245,7 @@ export function PedimentoDetail({ draft, onActionComplete }: Props) {
               style={{
                 minHeight: 60, minWidth: 60, borderRadius: 14,
                 background: 'transparent', color: '#EF4444',
-                fontSize: 14, fontWeight: 600,
+                fontSize: 'var(--aguila-fs-section)', fontWeight: 600,
                 border: '1px solid rgba(239,68,68,0.2)',
                 cursor: 'pointer', display: 'flex', alignItems: 'center',
                 justifyContent: 'center',
@@ -265,7 +265,7 @@ export function PedimentoDetail({ draft, onActionComplete }: Props) {
               style={{
                 width: '100%', minHeight: 80, padding: 12, borderRadius: 12,
                 background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)',
-                color: '#E6EDF3', fontSize: 14, resize: 'vertical',
+                color: '#E6EDF3', fontSize: 'var(--aguila-fs-section)', resize: 'vertical',
               }}
             />
             <div style={{ display: 'flex', gap: 10 }}>
@@ -275,7 +275,7 @@ export function PedimentoDetail({ draft, onActionComplete }: Props) {
                 style={{
                   flex: 1, minHeight: 48, borderRadius: 10,
                   background: note.trim() ? '#C0C5CE' : 'rgba(192,197,206,0.2)',
-                  color: '#111', fontSize: 14, fontWeight: 700,
+                  color: '#111', fontSize: 'var(--aguila-fs-section)', fontWeight: 700,
                   border: 'none', cursor: note.trim() ? 'pointer' : 'not-allowed',
                 }}
               >
@@ -287,7 +287,7 @@ export function PedimentoDetail({ draft, onActionComplete }: Props) {
                   minHeight: 48, padding: '0 20px', borderRadius: 10,
                   background: 'transparent', color: '#94a3b8',
                   border: '1px solid rgba(255,255,255,0.1)',
-                  fontSize: 14, cursor: 'pointer',
+                  fontSize: 'var(--aguila-fs-section)', cursor: 'pointer',
                 }}
               >
                 Cancelar
@@ -305,7 +305,7 @@ export function PedimentoDetail({ draft, onActionComplete }: Props) {
               style={{
                 width: '100%', minHeight: 80, padding: 12, borderRadius: 12,
                 background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(239,68,68,0.15)',
-                color: '#E6EDF3', fontSize: 14, resize: 'vertical',
+                color: '#E6EDF3', fontSize: 'var(--aguila-fs-section)', resize: 'vertical',
               }}
             />
             <div style={{ display: 'flex', gap: 10 }}>
@@ -315,7 +315,7 @@ export function PedimentoDetail({ draft, onActionComplete }: Props) {
                 style={{
                   flex: 1, minHeight: 48, borderRadius: 10,
                   background: reason.trim() ? '#EF4444' : 'rgba(239,68,68,0.2)',
-                  color: '#FFF', fontSize: 14, fontWeight: 700,
+                  color: '#FFF', fontSize: 'var(--aguila-fs-section)', fontWeight: 700,
                   border: 'none', cursor: reason.trim() ? 'pointer' : 'not-allowed',
                 }}
               >
@@ -327,7 +327,7 @@ export function PedimentoDetail({ draft, onActionComplete }: Props) {
                   minHeight: 48, padding: '0 20px', borderRadius: 10,
                   background: 'transparent', color: '#94a3b8',
                   border: '1px solid rgba(255,255,255,0.1)',
-                  fontSize: 14, cursor: 'pointer',
+                  fontSize: 'var(--aguila-fs-section)', cursor: 'pointer',
                 }}
               >
                 Cancelar

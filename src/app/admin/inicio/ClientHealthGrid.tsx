@@ -28,7 +28,7 @@ export function ClientHealthGrid({ clients }: { clients: ClientHealth[] }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 14 }}>
         <h2
           style={{
-            fontSize: 10,
+            fontSize: 'var(--aguila-fs-label)',
             fontWeight: 700,
             letterSpacing: '0.08em',
             textTransform: 'uppercase',
@@ -106,7 +106,7 @@ function ClientCard({ client }: { client: ClientHealth }) {
             flexShrink: 0,
           }} />
           <span style={{
-            fontSize: 14, fontWeight: 700, color: TEXT_PRIMARY,
+            fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: TEXT_PRIMARY,
             overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           }}>
             {client.name}
@@ -119,7 +119,7 @@ function ClientCard({ client }: { client: ClientHealth }) {
           {client.traficos} · {fmtUSDCompact(client.value_usd)}
         </span>
       </div>
-      <div style={{ fontSize: 11, color: TEXT_MUTED, marginTop: 6, paddingLeft: 16 }}>
+      <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED, marginTop: 6, paddingLeft: 16 }}>
         {client.summary}
       </div>
     </Link>
@@ -128,7 +128,7 @@ function ClientCard({ client }: { client: ClientHealth }) {
 
 function EmptyState() {
   return (
-    <div style={{ padding: 28, textAlign: 'center', color: TEXT_MUTED, fontSize: 13 }}>
+    <div style={{ padding: 28, textAlign: 'center', color: TEXT_MUTED, fontSize: 'var(--aguila-fs-body)' }}>
       Sin actividad de clientes en los últimos 7 días.
     </div>
   )

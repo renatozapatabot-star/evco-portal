@@ -85,7 +85,7 @@ export function Header({
           display: 'inline-flex',
           alignItems: 'center',
           gap: 6,
-          fontSize: 13,
+          fontSize: 'var(--aguila-fs-body)',
           color: TEXT_MUTED,
           textDecoration: 'none',
           minHeight: 60,
@@ -107,7 +107,7 @@ export function Header({
         <h1
           style={{
             fontFamily: 'var(--font-mono)',
-            fontSize: 32,
+            fontSize: 'var(--aguila-fs-kpi-compact)',
             fontWeight: 800,
             color: TEXT_PRIMARY,
             margin: 0,
@@ -119,7 +119,7 @@ export function Header({
 
         <span
           style={{
-            fontSize: 11,
+            fontSize: 'var(--aguila-fs-meta)',
             fontWeight: 700,
             color: stateColor,
             background: 'rgba(255,255,255,0.05)',
@@ -134,7 +134,7 @@ export function Header({
         {days !== null && (
           <span
             style={{
-              fontSize: 11,
+              fontSize: 'var(--aguila-fs-meta)',
               fontWeight: 700,
               fontFamily: 'var(--font-mono)',
               color: daysFg,
@@ -147,7 +147,7 @@ export function Header({
         {latestTs && (
           <span
             style={{
-              fontSize: 11,
+              fontSize: 'var(--aguila-fs-meta)',
               fontFamily: 'var(--font-mono)',
               color: TEXT_MUTED,
             }}
@@ -165,7 +165,7 @@ export function Header({
             gap: 6,
             minHeight: 60,
             padding: '0 16px',
-            fontSize: 13,
+            fontSize: 'var(--aguila-fs-body)',
             fontWeight: 600,
             color: ACCENT_SILVER,
             background: 'rgba(192,197,206,0.08)',
@@ -184,7 +184,7 @@ export function Header({
             gap: 6,
             minHeight: 60,
             padding: '0 16px',
-            fontSize: 13,
+            fontSize: 'var(--aguila-fs-body)',
             fontWeight: 600,
             color: ACCENT_SILVER,
             background: 'rgba(192,197,206,0.08)',
@@ -200,7 +200,7 @@ export function Header({
       {subtitleParts.length > 0 && (
         <div
           style={{
-            fontSize: 11,
+            fontSize: 'var(--aguila-fs-meta)',
             fontWeight: 700,
             color: TEXT_MUTED,
             textTransform: 'uppercase',

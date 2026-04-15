@@ -66,7 +66,7 @@ export function AdminCarriersList({ initialCarriers }: Props) {
             color: '#E6EDF3',
             border: `1px solid ${BORDER}`,
             borderRadius: 10,
-            fontSize: 14,
+            fontSize: 'var(--aguila-fs-section)',
           }}
         />
         <select
@@ -80,7 +80,7 @@ export function AdminCarriersList({ initialCarriers }: Props) {
             color: '#E6EDF3',
             border: `1px solid ${BORDER}`,
             borderRadius: 10,
-            fontSize: 14,
+            fontSize: 'var(--aguila-fs-section)',
           }}
         >
           <option value="all">Todos los tipos</option>
@@ -103,7 +103,7 @@ export function AdminCarriersList({ initialCarriers }: Props) {
             color: SILVER,
             border: `1px solid ${BORDER}`,
             borderRadius: 10,
-            fontSize: 13,
+            fontSize: 'var(--aguila-fs-body)',
             fontWeight: 600,
             cursor: 'pointer',
           }}
@@ -120,7 +120,7 @@ export function AdminCarriersList({ initialCarriers }: Props) {
           overflow: 'hidden',
         }}
       >
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--aguila-fs-body)' }}>
           <thead>
             <tr style={{ background: 'rgba(192,197,206,0.06)' }}>
               <th style={th}>Nombre</th>
@@ -196,7 +196,7 @@ export function AdminCarriersList({ initialCarriers }: Props) {
 const th: React.CSSProperties = {
   padding: '10px 12px',
   textAlign: 'left',
-  fontSize: 11,
+  fontSize: 'var(--aguila-fs-meta)',
   fontWeight: 600,
   color: '#94a3b8',
   textTransform: 'uppercase',
@@ -288,7 +288,7 @@ function CarrierEditModal({ carrier, onClose, onSaved }: ModalProps) {
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-          <h2 style={{ margin: 0, fontSize: 18 }}>
+          <h2 style={{ margin: 0, fontSize: 'var(--aguila-fs-kpi-small)' }}>
             {carrier ? 'Editar transportista' : 'Nuevo transportista'}
           </h2>
           <button
@@ -364,7 +364,7 @@ function CarrierEditModal({ carrier, onClose, onSaved }: ModalProps) {
               style={{ ...input, minHeight: 80, resize: 'vertical' }}
             />
           </Field>
-          <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13 }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 'var(--aguila-fs-body)' }}>
             <input
               type="checkbox"
               checked={form.active}
@@ -383,7 +383,7 @@ function CarrierEditModal({ carrier, onClose, onSaved }: ModalProps) {
               borderRadius: 10,
               background: 'rgba(239,68,68,0.12)',
               color: '#EF4444',
-              fontSize: 13,
+              fontSize: 'var(--aguila-fs-body)',
             }}
           >
             {error}
@@ -422,7 +422,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
     <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
       <span
         style={{
-          fontSize: 11,
+          fontSize: 'var(--aguila-fs-meta)',
           color: '#94a3b8',
           textTransform: 'uppercase',
           letterSpacing: '0.06em',
@@ -442,7 +442,7 @@ const input: React.CSSProperties = {
   color: '#E6EDF3',
   border: `1px solid ${BORDER}`,
   borderRadius: 8,
-  fontSize: 14,
+  fontSize: 'var(--aguila-fs-section)',
   outline: 'none',
   width: '100%',
 }
@@ -452,7 +452,7 @@ const btn: React.CSSProperties = {
   padding: '0 18px',
   border: `1px solid ${BORDER}`,
   borderRadius: 10,
-  fontSize: 13,
+  fontSize: 'var(--aguila-fs-body)',
   fontWeight: 600,
   cursor: 'pointer',
 }

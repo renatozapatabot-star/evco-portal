@@ -278,21 +278,21 @@ export default function ComunicacionesPage() {
                 style={{
                   display: 'flex', alignItems: 'center', gap: 6,
                   background: 'none', border: 'none', cursor: 'pointer',
-                  fontSize: 13, color: 'var(--text-secondary)', marginBottom: 12,
+                  fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)', marginBottom: 12,
                   padding: '4px 0', minHeight: 44,
                 }}
               >
                 <ArrowLeft size={14} /> Volver a la bandeja
               </button>
               <div className="card" style={{ padding: 24 }}>
-                <h2 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 8 }}>
+                <h2 style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: 'var(--text-primary)', marginBottom: 8 }}>
                   {selectedEmail.subject || '(sin asunto)'}
                 </h2>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16, flexWrap: 'wrap', gap: 8 }}>
-                  <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+                  <span style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)' }}>
                     De: <strong>{selectedEmail.from}</strong>
                   </span>
-                  <span style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                  <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
                     {selectedEmail.date}
                   </span>
                 </div>
@@ -304,7 +304,7 @@ export default function ComunicacionesPage() {
                       <span key={i} style={{
                         display: 'flex', alignItems: 'center', gap: 4,
                         padding: '4px 10px', borderRadius: 6,
-                        background: 'var(--slate-100)', fontSize: 11, color: 'var(--text-secondary)',
+                        background: 'var(--slate-100)', fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-secondary)',
                       }}>
                         <Paperclip size={10} /> {a.filename} ({Math.round(a.size / 1024)}KB)
                       </span>
@@ -314,7 +314,7 @@ export default function ComunicacionesPage() {
 
                 {/* Body */}
                 <div style={{
-                  fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.6,
+                  fontSize: 'var(--aguila-fs-body)', color: 'var(--text-primary)', lineHeight: 1.6,
                   whiteSpace: 'pre-wrap', borderTop: '1px solid var(--border)',
                   paddingTop: 16, maxHeight: 500, overflowY: 'auto',
                 }}>
@@ -323,7 +323,7 @@ export default function ComunicacionesPage() {
 
                 {/* Reply */}
                 <div style={{ marginTop: 20, borderTop: '1px solid var(--border)', paddingTop: 16 }}>
-                  <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.07em', display: 'block', marginBottom: 6 }}>
+                  <label style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.07em', display: 'block', marginBottom: 6 }}>
                     Responder
                   </label>
                   <textarea
@@ -333,7 +333,7 @@ export default function ComunicacionesPage() {
                     rows={4}
                     style={{
                       width: '100%', border: '1px solid var(--border)', borderRadius: 8,
-                      padding: '10px 12px', fontSize: 13, color: 'var(--text-primary)',
+                      padding: '10px 12px', fontSize: 'var(--aguila-fs-body)', color: 'var(--text-primary)',
                       fontFamily: 'inherit', resize: 'vertical', outline: 'none',
                       background: 'var(--bg-main)', boxSizing: 'border-box',
                     }}
@@ -344,7 +344,7 @@ export default function ComunicacionesPage() {
                       disabled={!replyBody.trim() || replying}
                       style={{
                         display: 'flex', alignItems: 'center', gap: 6,
-                        padding: '8px 20px', borderRadius: 8, fontSize: 13, fontWeight: 700,
+                        padding: '8px 20px', borderRadius: 8, fontSize: 'var(--aguila-fs-body)', fontWeight: 700,
                         background: replyBody.trim() ? 'var(--gold)' : 'var(--border)',
                         border: 'none', color: replyBody.trim() ? 'var(--bg-card)' : 'var(--text-muted)',
                         cursor: replyBody.trim() ? 'pointer' : 'default', minHeight: 40,
@@ -368,7 +368,7 @@ export default function ComunicacionesPage() {
                   placeholder="Buscar en Gmail..."
                   style={{
                     flex: 1, border: '1px solid var(--border)', borderRadius: 8,
-                    padding: '10px 12px', fontSize: 13, color: 'var(--text-primary)',
+                    padding: '10px 12px', fontSize: 'var(--aguila-fs-body)', color: 'var(--text-primary)',
                     background: 'var(--bg-card)', outline: 'none', fontFamily: 'inherit',
                     minHeight: 40,
                   }}
@@ -417,20 +417,20 @@ export default function ComunicacionesPage() {
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
                           <span style={{
-                            fontSize: 13, fontWeight: msg.isUnread ? 700 : 400,
+                            fontSize: 'var(--aguila-fs-body)', fontWeight: msg.isUnread ? 700 : 400,
                             color: 'var(--text-primary)', overflow: 'hidden',
                             textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                           }}>
                             {msg.from.replace(/<.*>/, '').trim().substring(0, 40)}
                           </span>
-                          <span style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                          <span style={{ fontSize: 'var(--aguila-fs-label)', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', whiteSpace: 'nowrap', flexShrink: 0 }}>
                             {msg.date ? new Date(msg.date).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', timeZone: 'America/Chicago' }) : ''}
                           </span>
                         </div>
                         <div style={{ fontSize: 12, fontWeight: msg.isUnread ? 600 : 400, color: 'var(--text-primary)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {msg.subject || '(sin asunto)'}
                         </div>
-                        <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {msg.snippet}
                         </div>
                       </div>
@@ -477,7 +477,7 @@ export default function ComunicacionesPage() {
           )}
           <div className="card" style={{ overflow: 'hidden' }}>
             {loading ? (
-              <div style={{ padding: 48, textAlign: 'center', color: 'var(--slate-400)', fontSize: 13 }}>Cargando...</div>
+              <div style={{ padding: 48, textAlign: 'center', color: 'var(--slate-400)', fontSize: 'var(--aguila-fs-body)' }}>Cargando...</div>
             ) : filtered.length === 0 ? (
               <EmptyState icon="📨" title="Sin comunicaciones" description="Los correos y solicitudes enviados aparecerán aquí" />
             ) : (
@@ -506,7 +506,7 @@ export default function ComunicacionesPage() {
                       <td style={{ color: 'var(--slate-400)', fontSize: 12, whiteSpace: 'nowrap', fontFamily: 'var(--font-mono)' }}>{fmtDate(e.scanned_at || e.date)}</td>
                       <td>
                         {(e.urgent_keywords || []).map((k: string, j: number) => (
-                          <span key={j} style={{ background: 'var(--amber-100)', color: 'var(--amber-800)', borderRadius: 4, padding: '1px 6px', fontSize: 10, fontWeight: 600, marginRight: 4 }}>{k}</span>
+                          <span key={j} style={{ background: 'var(--amber-100)', color: 'var(--amber-800)', borderRadius: 4, padding: '1px 6px', fontSize: 'var(--aguila-fs-label)', fontWeight: 600, marginRight: 4 }}>{k}</span>
                         ))}
                       </td>
                     </tr>

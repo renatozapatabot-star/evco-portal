@@ -75,7 +75,7 @@ function KPICard({ icon: Icon, label, value, sub, accent }: {
           <Icon size={18} color={accent} strokeWidth={1.8} />
         </div>
         <span style={{
-          fontSize: 11, fontWeight: 700, color: '#8b9ab5',
+          fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, color: '#8b9ab5',
           textTransform: 'uppercase', letterSpacing: '0.08em',
         }}>
           {label}
@@ -92,7 +92,7 @@ function KPICard({ icon: Icon, label, value, sub, accent }: {
 
       {sub && (
         <div style={{
-          fontSize: 13, color: '#64748b', marginTop: 8, lineHeight: 1.4,
+          fontSize: 'var(--aguila-fs-body)', color: '#64748b', marginTop: 8, lineHeight: 1.4,
           position: 'relative',
         }}>
           {sub}
@@ -105,7 +105,7 @@ function KPICard({ icon: Icon, label, value, sub, accent }: {
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
     <h2 style={{
-      fontSize: 13, fontWeight: 700, color: '#94a3b8',
+      fontSize: 'var(--aguila-fs-body)', fontWeight: 700, color: '#94a3b8',
       textTransform: 'uppercase', letterSpacing: '0.1em',
       marginBottom: 12, marginTop: 32,
     }}>
@@ -284,7 +284,7 @@ export default function KPIsPage() {
         <p className="page-subtitle" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           Análisis completo de operaciones aduanales
           <span style={{
-            fontFamily: 'var(--font-mono)', fontSize: 11, color: '#64748b',
+            fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-meta)', color: '#64748b',
             background: 'rgba(255,255,255,0.04)', padding: '2px 8px', borderRadius: 6,
           }}>
             Datos desde ene 2024
@@ -332,7 +332,7 @@ export default function KPIsPage() {
             const label = new Date(Number(y), Number(m) - 1).toLocaleDateString('es-MX', { month: 'short' })
             return (
               <div key={month} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: '#E6EDF3', fontWeight: 700 }}>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-meta)', color: '#E6EDF3', fontWeight: 700 }}>
                   {count}
                 </span>
                 <div style={{
@@ -362,7 +362,7 @@ export default function KPIsPage() {
           return (
             <div key={reg} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <span style={{
-                fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 700,
+                fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body)', fontWeight: 700,
                 color: isTmec ? '#22C55E' : '#E6EDF3', minWidth: 44,
               }}>
                 {reg}
@@ -405,16 +405,16 @@ export default function KPIsPage() {
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <span style={{
-                    fontFamily: 'var(--font-mono)', fontSize: 11, color: '#475569',
+                    fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-meta)', color: '#475569',
                     minWidth: 20, textAlign: 'right',
                   }}>
                     {i + 1}
                   </span>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 14, fontWeight: 700, color: '#E8EAED' }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: '#E8EAED' }}>
                     {frac}
                   </span>
                 </div>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: '#8b9ab5' }}>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body)', color: '#8b9ab5' }}>
                   {count} operaciones
                 </span>
               </div>

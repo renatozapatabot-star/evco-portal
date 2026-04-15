@@ -18,7 +18,7 @@ export default function TraficoNotFound() {
         <h1 style={{ color: '#E6EDF3', fontSize: 22, fontWeight: 700, margin: 0, letterSpacing: '-0.01em' }}>
           Embarque no encontrado
         </h1>
-        <p style={{ color: '#94a3b8', fontSize: 14, margin: 0, maxWidth: 420 }}>
+        <p style={{ color: '#94a3b8', fontSize: 'var(--aguila-fs-section)', margin: 0, maxWidth: 420 }}>
           La clave solicitada no existe o no está disponible para tu cuenta.
         </p>
       </div>
@@ -29,7 +29,7 @@ export default function TraficoNotFound() {
         backdropFilter: 'blur(20px)',
         border: '1px solid rgba(0,229,255,0.3)',
         padding: '10px 18px', borderRadius: 10,
-        fontSize: 13, fontWeight: 600,
+        fontSize: 'var(--aguila-fs-body)', fontWeight: 600,
         textDecoration: 'none',
         minHeight: 44,
       }}>

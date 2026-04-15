@@ -32,11 +32,11 @@ function Field({ label, value, mono }: { label: string; value: string; mono?: bo
   return (
     <div>
       <div style={{
-        fontSize: 10, fontWeight: 700, letterSpacing: 0.8,
+        fontSize: 'var(--aguila-fs-label)', fontWeight: 700, letterSpacing: 0.8,
         textTransform: 'uppercase', color: TEXT_MUTED, marginBottom: 4,
       }}>{label}</div>
       <div style={{
-        fontSize: 13, color: TEXT_PRIMARY,
+        fontSize: 'var(--aguila-fs-body)', color: TEXT_PRIMARY,
         fontFamily: mono ? 'var(--font-jetbrains-mono), monospace' : 'inherit',
       }}>{value || '—'}</div>
     </div>
@@ -47,11 +47,11 @@ function Party({ title, name, address }: { title: string; name: string | null; a
   return (
     <div>
       <div style={{
-        fontSize: 10, fontWeight: 700, letterSpacing: 0.8,
+        fontSize: 'var(--aguila-fs-label)', fontWeight: 700, letterSpacing: 0.8,
         textTransform: 'uppercase', color: TEXT_MUTED, marginBottom: 4,
       }}>{title}</div>
-      <div style={{ fontSize: 13, color: TEXT_PRIMARY }}>{name || '—'}</div>
-      {address && <div style={{ fontSize: 11, color: TEXT_SECONDARY, marginTop: 2 }}>{address}</div>}
+      <div style={{ fontSize: 'var(--aguila-fs-body)', color: TEXT_PRIMARY }}>{name || '—'}</div>
+      {address && <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_SECONDARY, marginTop: 2 }}>{address}</div>}
     </div>
   )
 }
@@ -85,7 +85,7 @@ export default async function UsmcaCertDetailPage({ params }: { params: Promise<
       systemStatus={isDraft ? 'warning' : 'healthy'}
     >
       <div style={{ display: 'grid', gap: 20, maxWidth: 1000 }}>
-        <div style={{ fontSize: 13 }}>
+        <div style={{ fontSize: 'var(--aguila-fs-body)' }}>
           <Link href="/usmca/certificados" style={{ color: ACCENT_SILVER, textDecoration: 'none' }}>
             ← Todos los certificados
           </Link>
@@ -98,7 +98,7 @@ export default async function UsmcaCertDetailPage({ params }: { params: Promise<
           }}>
             <div>
               <div style={{
-                fontSize: 10, fontWeight: 700, letterSpacing: 0.8,
+                fontSize: 'var(--aguila-fs-label)', fontWeight: 700, letterSpacing: 0.8,
                 textTransform: 'uppercase', color: TEXT_MUTED, marginBottom: 6,
               }}>HS Code · Criterio {cert.origin_criterion}</div>
               <div style={{
@@ -110,7 +110,7 @@ export default async function UsmcaCertDetailPage({ params }: { params: Promise<
                 {ORIGIN_CRITERION_LABELS[cert.origin_criterion]}
               </div>
             </div>
-            <div style={{ textAlign: 'right', fontSize: 11, color: TEXT_MUTED, lineHeight: 1.6 }}>
+            <div style={{ textAlign: 'right', fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED, lineHeight: 1.6 }}>
               <div>Emitido · {formatDate(cert.created_at)}</div>
               {cert.approved_at && <div>Firmado · {formatDate(cert.approved_at)}</div>}
               {cert.blanket_from && cert.blanket_to && (
@@ -128,7 +128,7 @@ export default async function UsmcaCertDetailPage({ params }: { params: Promise<
           </div>
 
           <SectionHeader title="Bienes" />
-          <p style={{ fontSize: 13, color: TEXT_SECONDARY, lineHeight: 1.6, margin: '0 0 20px' }}>
+          <p style={{ fontSize: 'var(--aguila-fs-body)', color: TEXT_SECONDARY, lineHeight: 1.6, margin: '0 0 20px' }}>
             {cert.goods_description}
           </p>
 
@@ -152,7 +152,7 @@ export default async function UsmcaCertDetailPage({ params }: { params: Promise<
           {cert.notes && (
             <>
               <SectionHeader title="Notas internas" />
-              <p style={{ fontSize: 13, color: TEXT_SECONDARY, lineHeight: 1.6, margin: '0 0 20px' }}>
+              <p style={{ fontSize: 'var(--aguila-fs-body)', color: TEXT_SECONDARY, lineHeight: 1.6, margin: '0 0 20px' }}>
                 {cert.notes}
               </p>
             </>
@@ -161,7 +161,7 @@ export default async function UsmcaCertDetailPage({ params }: { params: Promise<
           <div style={{
             paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.08)',
             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-            fontSize: 11, color: TEXT_MUTED, flexWrap: 'wrap', gap: 8,
+            fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED, flexWrap: 'wrap', gap: 8,
           }}>
             <span>Firma autorizada · Renato Zapata III · Director General · Patente 3596</span>
             {cert.approved_by && (

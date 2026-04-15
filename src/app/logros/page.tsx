@@ -59,8 +59,8 @@ export default function LogrosPage() {
 
   return (
     <div className="page-shell" style={{ maxWidth: 800 }}>
-      <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 4px' }}>Logros</h1>
-      <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '0 0 24px' }}>
+      <h1 style={{ fontSize: 'var(--aguila-fs-title)', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 4px' }}>Logros</h1>
+      <p style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)', margin: '0 0 24px' }}>
         {loading ? 'Calculando...' : `${earned.length} de ${achievements.length} obtenidos`}
       </p>
 
@@ -77,7 +77,7 @@ export default function LogrosPage() {
           {/* Earned */}
           {earned.length > 0 && (
             <>
-              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--gold-dark)', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: 'var(--gold-dark)', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 Obtenidos
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : '1fr 1fr 1fr', gap: 12, marginBottom: 32 }}>
@@ -91,7 +91,7 @@ export default function LogrosPage() {
           {/* Locked */}
           {locked.length > 0 && (
             <>
-              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: 'var(--text-muted)', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 Por desbloquear
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : '1fr 1fr 1fr', gap: 12 }}>
@@ -126,7 +126,7 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
     >
       {/* Icon */}
       <div style={{
-        fontSize: 28,
+        fontSize: 'var(--aguila-fs-kpi-mid)',
         filter: earned ? 'none' : 'grayscale(1) opacity(0.4)',
         lineHeight: 1,
       }}>
@@ -135,7 +135,7 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
 
       {/* Title */}
       <div style={{
-        fontSize: 14,
+        fontSize: 'var(--aguila-fs-section)',
         fontWeight: 700,
         color: earned ? 'var(--text-primary)' : 'var(--text-muted)',
         lineHeight: 1.3,
@@ -155,7 +155,7 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
       {/* Value or progress */}
       {earned && value && (
         <div style={{
-          fontSize: 11,
+          fontSize: 'var(--aguila-fs-meta)',
           fontFamily: 'var(--font-mono)',
           color: 'var(--gold-dark)',
           marginTop: 'auto',
@@ -166,7 +166,7 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
 
       {earned && earnedDate && (
         <div style={{
-          fontSize: 10,
+          fontSize: 'var(--aguila-fs-label)',
           fontFamily: 'var(--font-mono)',
           color: 'var(--text-muted)',
         }}>
@@ -193,7 +193,7 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
             }} />
           </div>
           {progressLabel && (
-            <div style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+            <div style={{ fontSize: 'var(--aguila-fs-label)', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
               {progressLabel}
             </div>
           )}

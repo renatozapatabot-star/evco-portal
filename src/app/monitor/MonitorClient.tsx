@@ -183,7 +183,7 @@ export function MonitorClient({ initialRows, role, companyId, isInternal }: Prop
             ))}
           </select>
         )}
-        <div style={{ marginLeft: 'auto', fontSize: 11, color: TEXT_MUTED, fontFamily: 'var(--font-jetbrains-mono), monospace' }}>
+        <div style={{ marginLeft: 'auto', fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED, fontFamily: 'var(--font-jetbrains-mono), monospace' }}>
           {redCount > 0 ? (
             <span style={{ color: '#FCA5A5', fontWeight: 600 }}>
               {redCount} semáforo{redCount === 1 ? '' : 's'} rojo{redCount === 1 ? '' : 's'}
@@ -210,7 +210,7 @@ export function MonitorClient({ initialRows, role, companyId, isInternal }: Prop
           gap: 12,
           padding: '12px 16px',
           borderBottom: `1px solid ${BORDER}`,
-          fontSize: 10,
+          fontSize: 'var(--aguila-fs-label)',
           fontWeight: 700,
           textTransform: 'uppercase',
           letterSpacing: 'var(--aguila-ls-label, 0.08em)',
@@ -225,7 +225,7 @@ export function MonitorClient({ initialRows, role, companyId, isInternal }: Prop
           <div style={{ textAlign: 'right' }}>Act.</div>
         </div>
         {filtered.length === 0 ? (
-          <div style={{ padding: 32, textAlign: 'center', color: TEXT_MUTED, fontSize: 13 }}>
+          <div style={{ padding: 32, textAlign: 'center', color: TEXT_MUTED, fontSize: 'var(--aguila-fs-body)' }}>
             Sin tráficos activos con los filtros seleccionados.
           </div>
         ) : (
@@ -243,7 +243,7 @@ export function MonitorClient({ initialRows, role, companyId, isInternal }: Prop
                   borderBottom: `1px solid ${BORDER}`,
                   color: TEXT_PRIMARY,
                   textDecoration: 'none',
-                  fontSize: 13,
+                  fontSize: 'var(--aguila-fs-body)',
                   alignItems: 'center',
                 }}
               >
@@ -261,17 +261,17 @@ export function MonitorClient({ initialRows, role, companyId, isInternal }: Prop
                     borderRadius: 20,
                     background: sem.bg,
                     color: sem.fg,
-                    fontSize: 11,
+                    fontSize: 'var(--aguila-fs-meta)',
                     fontWeight: 600,
                   }}>
                     {sem.label}
                   </span>
                 </div>
                 <div style={{ color: TEXT_SECONDARY, fontSize: 12 }}>{r.estatus ?? '—'}</div>
-                <div style={{ color: r.pedimento ? GREEN : TEXT_MUTED, fontSize: 11 }}>
+                <div style={{ color: r.pedimento ? GREEN : TEXT_MUTED, fontSize: 'var(--aguila-fs-meta)' }}>
                   {r.pedimento ? 'sí' : '—'}
                 </div>
-                <div style={{ textAlign: 'right', color: TEXT_MUTED, fontSize: 11, fontFamily: 'var(--font-jetbrains-mono), monospace' }}>
+                <div style={{ textAlign: 'right', color: TEXT_MUTED, fontSize: 'var(--aguila-fs-meta)', fontFamily: 'var(--font-jetbrains-mono), monospace' }}>
                   {elapsedSince(r.updated_at)}
                 </div>
               </Link>

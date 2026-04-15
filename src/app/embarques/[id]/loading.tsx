@@ -67,7 +67,7 @@ export default function Loading() {
         style={{
           textAlign: 'center',
           padding: '20px 0',
-          fontSize: 11,
+          fontSize: 'var(--aguila-fs-meta)',
           color: TEXT_MUTED,
         }}
       >

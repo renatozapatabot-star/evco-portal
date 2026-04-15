@@ -63,7 +63,7 @@ export default function AgentePage() {
       <div className="page-shell" style={{ textAlign: 'center', padding: 60 }}>
         <Bot size={48} style={{ color: 'var(--text-muted)', marginBottom: 16 }} />
         <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>Acceso restringido</div>
-        <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>Panel de agente disponible solo para operadores.</div>
+        <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-muted)', marginTop: 4 }}>Panel de agente disponible solo para operadores.</div>
       </div>
     )
   }
@@ -76,7 +76,7 @@ export default function AgentePage() {
             <Bot size={24} style={{ color: 'var(--gold)' }} />
             ZAPATA AI Agent
           </h1>
-          <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>
+          <p style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-muted)', marginTop: 4 }}>
             {paused ? '⏸️ Pausado' : '🟢 Activo'} · Ciclo cada 5 min · Lun-Sáb 6 AM - 10 PM
           </p>
         </div>
@@ -88,7 +88,7 @@ export default function AgentePage() {
             padding: '10px 18px', minHeight: 44, borderRadius: 10,
             background: paused ? 'var(--success)' : 'var(--warning-500)',
             color: 'var(--bg-card)', border: 'none', cursor: 'pointer',
-            fontSize: 13, fontWeight: 600,
+            fontSize: 'var(--aguila-fs-body)', fontWeight: 600,
           }}
         >
           {paused ? <Play size={16} /> : <Pause size={16} />}
@@ -105,10 +105,10 @@ export default function AgentePage() {
           { label: 'Precisión', value: stats.accuracy + '%', color: 'var(--info)' },
         ].map(s => (
           <div key={s.label} className="card" style={{ padding: 16, textAlign: 'center' }}>
-            <div style={{ fontSize: 28, fontWeight: 800, fontFamily: 'var(--font-mono)', color: s.color }}>
+            <div style={{ fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 800, fontFamily: 'var(--font-mono)', color: s.color }}>
               {s.value}
             </div>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+            <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', marginTop: 4, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
               {s.label}
             </div>
           </div>
@@ -117,13 +117,13 @@ export default function AgentePage() {
 
       {/* Workflow autonomy levels */}
       <div className="card" style={{ padding: '16px 20px', marginBottom: 24 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 12 }}>
+        <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 12 }}>
           Nivel de Autonomía por Workflow
         </div>
         {WORKFLOWS.map(w => (
           <div key={w.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
             <div>
-              <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{w.name}</span>
+              <span style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: 'var(--text-primary)' }}>{w.name}</span>
               <span style={{ fontSize: 12, color: 'var(--text-muted)', marginLeft: 8 }}>{w.trigger}</span>
             </div>
             <span style={{ fontSize: 12, fontWeight: 600 }}>
@@ -135,7 +135,7 @@ export default function AgentePage() {
 
       {/* Recent decisions */}
       <div className="card" style={{ padding: '16px 20px' }}>
-        <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 12 }}>
+        <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 12 }}>
           Decisiones Recientes
         </div>
         {loading ? (
@@ -154,23 +154,23 @@ export default function AgentePage() {
                 padding: '10px 12px', borderRadius: 8,
                 background: d.was_correct === false ? 'rgba(220,38,38,0.04)' : 'var(--bg-main)',
               }}>
-                <span style={{ fontSize: 14, marginTop: 1 }}>
+                <span style={{ fontSize: 'var(--aguila-fs-section)', marginTop: 1 }}>
                   {d.autonomy_level >= 2 ? '🟢' : d.autonomy_level === 1 ? '🟡' : '⬜'}
                 </span>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+                  <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: 'var(--text-primary)' }}>
                     {d.decision.replace(/_/g, ' ')}
                   </div>
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+                  <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', marginTop: 2 }}>
                     {d.trigger_type} · {d.company_id || '—'} · {d.confidence !== null ? d.confidence + '% conf' : '—'}
                   </div>
                   {d.action_taken && (
-                    <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2 }}>
+                    <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-secondary)', marginTop: 2 }}>
                       → {d.action_taken}
                     </div>
                   )}
                 </div>
-                <span style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', whiteSpace: 'nowrap' }}>
+                <span style={{ fontSize: 'var(--aguila-fs-label)', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', whiteSpace: 'nowrap' }}>
                   {new Date(d.created_at).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
                 </span>
               </div>

@@ -85,7 +85,7 @@ export function DocumentosTab({
             color: '#0B1220',
             border: 'none',
             borderRadius: 12,
-            fontSize: 13,
+            fontSize: 'var(--aguila-fs-body)',
             fontWeight: 700,
             cursor: 'pointer',
             display: 'flex',
@@ -113,10 +113,10 @@ export function DocumentosTab({
           }}
         >
           <FileText size={24} />
-          <div style={{ fontSize: 13, color: TEXT_SECONDARY }}>Sin documentos en el expediente</div>
+          <div style={{ fontSize: 'var(--aguila-fs-body)', color: TEXT_SECONDARY }}>Sin documentos en el expediente</div>
           <div
             style={{
-              fontSize: 11,
+              fontSize: 'var(--aguila-fs-meta)',
               color: TEXT_MUTED,
               textAlign: 'center',
               maxWidth: 320,
@@ -147,7 +147,7 @@ export function DocumentosTab({
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div
                     style={{
-                      fontSize: 13,
+                      fontSize: 'var(--aguila-fs-body)',
                       color: TEXT_PRIMARY,
                       fontWeight: 600,
                       overflow: 'hidden',
@@ -160,7 +160,7 @@ export function DocumentosTab({
                   {d.created_at && (
                     <div
                       style={{
-                        fontSize: 11,
+                        fontSize: 'var(--aguila-fs-meta)',
                         color: TEXT_MUTED,
                         marginTop: 2,
                         fontFamily: 'var(--font-jetbrains-mono)',

@@ -29,7 +29,7 @@ export function PreviewPanel({ sheet, isRefreshing, config }: Props) {
       >
         <div
           style={{
-            fontSize: 11,
+            fontSize: 'var(--aguila-fs-meta)',
             color: TEXT_MUTED,
             textTransform: 'uppercase',
             letterSpacing: '0.08em',
@@ -58,7 +58,7 @@ export function PreviewPanel({ sheet, isRefreshing, config }: Props) {
         >
           <div
             style={{
-              fontSize: 11,
+              fontSize: 'var(--aguila-fs-meta)',
               fontWeight: 700,
               color: AMBER,
               marginBottom: 4,
@@ -100,7 +100,7 @@ export function PreviewPanel({ sheet, isRefreshing, config }: Props) {
                     padding: '32px 16px',
                     textAlign: 'center',
                     color: TEXT_MUTED,
-                    fontSize: 13,
+                    fontSize: 'var(--aguila-fs-body)',
                   }}
                 >
                   No hay partidas que mostrar con la configuración actual.
@@ -173,7 +173,7 @@ function Th({
       style={{
         textAlign: align,
         padding: '10px 12px',
-        fontSize: 11,
+        fontSize: 'var(--aguila-fs-meta)',
         fontWeight: 700,
         color: TEXT_MUTED,
         textTransform: 'uppercase',
@@ -217,7 +217,7 @@ function Stat({ label, value }: { label: string; value: string }) {
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
       <div
         style={{
-          fontSize: 10,
+          fontSize: 'var(--aguila-fs-label)',
           color: TEXT_MUTED,
           textTransform: 'uppercase',
           letterSpacing: '0.08em',

@@ -26,11 +26,11 @@ function Field({ label, value, mono }: { label: string; value: string; mono?: bo
   return (
     <div>
       <div style={{
-        fontSize: 10, fontWeight: 700, letterSpacing: 0.8,
+        fontSize: 'var(--aguila-fs-label)', fontWeight: 700, letterSpacing: 0.8,
         textTransform: 'uppercase', color: TEXT_MUTED, marginBottom: 4,
       }}>{label}</div>
       <div style={{
-        fontSize: 13, color: TEXT_PRIMARY,
+        fontSize: 'var(--aguila-fs-body)', color: TEXT_PRIMARY,
         fontFamily: mono ? 'var(--font-jetbrains-mono), monospace' : 'inherit',
       }}>{value || '—'}</div>
     </div>
@@ -66,7 +66,7 @@ export default async function OcaDetailPage({ params }: { params: Promise<{ id: 
       systemStatus={isDraft ? 'warning' : 'healthy'}
     >
       <div style={{ display: 'grid', gap: 20, maxWidth: 900 }}>
-        <div style={{ fontSize: 13 }}>
+        <div style={{ fontSize: 'var(--aguila-fs-body)' }}>
           <Link href="/oca" style={{ color: ACCENT_SILVER, textDecoration: 'none' }}>
             ← Todas las opiniones
           </Link>
@@ -79,7 +79,7 @@ export default async function OcaDetailPage({ params }: { params: Promise<{ id: 
           }}>
             <div>
               <div style={{
-                fontSize: 10, fontWeight: 700, letterSpacing: 0.8,
+                fontSize: 'var(--aguila-fs-label)', fontWeight: 700, letterSpacing: 0.8,
                 textTransform: 'uppercase', color: TEXT_MUTED, marginBottom: 6,
               }}>Fracción recomendada</div>
               <div style={{
@@ -88,7 +88,7 @@ export default async function OcaDetailPage({ params }: { params: Promise<{ id: 
                 letterSpacing: 0.5,
               }}>{opinion.fraccion_recomendada}</div>
             </div>
-            <div style={{ textAlign: 'right', fontSize: 11, color: TEXT_MUTED, lineHeight: 1.6 }}>
+            <div style={{ textAlign: 'right', fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED, lineHeight: 1.6 }}>
               <div>Generada · {formatDate(opinion.created_at)}</div>
               {opinion.approved_at && <div>Aprobada · {formatDate(opinion.approved_at)}</div>}
               {opinion.vigencia_hasta && (
@@ -107,19 +107,19 @@ export default async function OcaDetailPage({ params }: { params: Promise<{ id: 
           </div>
 
           <SectionHeader title="Producto" />
-          <p style={{ fontSize: 13, color: TEXT_SECONDARY, lineHeight: 1.6, margin: '0 0 20px' }}>
+          <p style={{ fontSize: 'var(--aguila-fs-body)', color: TEXT_SECONDARY, lineHeight: 1.6, margin: '0 0 20px' }}>
             {opinion.product_description}
           </p>
 
           <SectionHeader title="Fundamento legal" />
-          <p style={{ fontSize: 13, color: TEXT_SECONDARY, lineHeight: 1.6, margin: '0 0 20px' }}>
+          <p style={{ fontSize: 'var(--aguila-fs-body)', color: TEXT_SECONDARY, lineHeight: 1.6, margin: '0 0 20px' }}>
             {opinion.fundamento_legal}
           </p>
 
           <div style={{
             paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.08)',
             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-            fontSize: 11, color: TEXT_MUTED, flexWrap: 'wrap', gap: 8,
+            fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED, flexWrap: 'wrap', gap: 8,
           }}>
             <span>Firmada por Renato Zapata III · Director General · Patente 3596</span>
             {opinion.approved_by && (

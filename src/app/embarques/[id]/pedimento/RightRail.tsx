@@ -28,7 +28,7 @@ const PANEL_STYLE: React.CSSProperties = {
 }
 
 const LABEL_STYLE: React.CSSProperties = {
-  fontSize: 10,
+  fontSize: 'var(--aguila-fs-label)',
   letterSpacing: '0.08em',
   textTransform: 'uppercase',
   color: 'var(--text-muted)',
@@ -68,14 +68,14 @@ export function RightRail({ workflowEvents }: RightRailProps) {
               background: 'rgba(34,197,94,0.08)',
               border: '1px solid rgba(34,197,94,0.3)',
               color: GREEN,
-              fontSize: 13,
+              fontSize: 'var(--aguila-fs-body)',
               fontWeight: 600,
             }}
           >
             Listo para validar
           </div>
         ) : (
-          <div style={{ fontSize: 13, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>
+          <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>
             <span style={{ color: RED }}>{errorsCount} errores</span>
             <span style={{ color: 'var(--text-muted)' }}> · </span>
             <span style={{ color: AMBER }}>{warningsCount} advertencias</span>
@@ -130,7 +130,7 @@ export function RightRail({ workflowEvents }: RightRailProps) {
                     >
                       <span
                         style={{
-                          fontSize: 10,
+                          fontSize: 'var(--aguila-fs-label)',
                           letterSpacing: '0.06em',
                           textTransform: 'uppercase',
                           color: err.severity === 'error' ? RED : AMBER,
@@ -165,7 +165,7 @@ export function RightRail({ workflowEvents }: RightRailProps) {
                 color: ACCENT_SILVER,
                 border: '1px solid rgba(192,197,206,0.18)',
                 borderRadius: 12,
-                fontSize: 13,
+                fontSize: 'var(--aguila-fs-body)',
                 fontWeight: 500,
                 cursor: 'not-allowed',
               }}
@@ -174,7 +174,7 @@ export function RightRail({ workflowEvents }: RightRailProps) {
             </button>
           ))}
         </div>
-        <div style={{ marginTop: 10, fontSize: 10, color: ACCENT_SILVER_DIM }}>
+        <div style={{ marginTop: 10, fontSize: 'var(--aguila-fs-label)', color: ACCENT_SILVER_DIM }}>
           {currentState
             ? `Último evento: ${currentState}`
             : 'Sin eventos todavía'}

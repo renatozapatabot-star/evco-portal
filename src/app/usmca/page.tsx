@@ -95,10 +95,10 @@ export default function USMCAPage() {
         {/* Header */}
         <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'flex-start' : 'center', justifyContent: 'space-between', marginBottom: 32, gap: 16 }}>
           <div>
-            <h1 style={{ fontSize: 24, fontWeight: 600, margin: 0, letterSpacing: '-0.02em' }}>
+            <h1 style={{ fontSize: 'var(--aguila-fs-title)', fontWeight: 600, margin: 0, letterSpacing: '-0.02em' }}>
               T-MEC / USMCA Intelligence
             </h1>
-            <p style={{ color: D.textSec, fontSize: 14, margin: '4px 0 0' }}>
+            <p style={{ color: D.textSec, fontSize: 'var(--aguila-fs-section)', margin: '4px 0 0' }}>
               Ahorros y trazabilidad de tratado · Patente 3596
             </p>
           </div>
@@ -113,7 +113,7 @@ export default function USMCAPage() {
                 borderRadius: D.r,
                 color: D.text,
                 padding: '8px 12px',
-                fontSize: 14,
+                fontSize: 'var(--aguila-fs-section)',
                 fontFamily: D.sans,
                 minHeight: 60,
               }}

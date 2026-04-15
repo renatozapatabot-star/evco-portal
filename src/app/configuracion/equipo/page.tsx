@@ -30,14 +30,14 @@ export default function EquipoPage() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
         <div>
           <h1 style={{ fontSize: 20, fontWeight: 700, color: '#E6EDF3', marginBottom: 4 }}>Equipo</h1>
-          <p style={{ fontSize: 13, color: '#64748b' }}>Gestiona quién tiene acceso al portal de tu empresa.</p>
+          <p style={{ fontSize: 'var(--aguila-fs-body)', color: '#64748b' }}>Gestiona quién tiene acceso al portal de tu empresa.</p>
         </div>
         <button
           onClick={() => setShowInvite(!showInvite)}
           style={{
             display: 'flex', alignItems: 'center', gap: 6,
             padding: '10px 20px', borderRadius: 12,
-            background: '#E8EAED', color: '#05070B', fontWeight: 700, fontSize: 13,
+            background: '#E8EAED', color: '#05070B', fontWeight: 700, fontSize: 'var(--aguila-fs-body)',
             border: 'none', cursor: 'pointer', minHeight: 44,
           }}
         >
@@ -47,7 +47,7 @@ export default function EquipoPage() {
 
       {showInvite && (
         <div className="cc-card" style={{ padding: 20, borderRadius: 16, marginBottom: 16 }}>
-          <div style={{ fontSize: 14, fontWeight: 600, color: '#E6EDF3', marginBottom: 12 }}>Invitar nuevo usuario</div>
+          <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: '#E6EDF3', marginBottom: 12 }}>Invitar nuevo usuario</div>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             <input
               type="email"
@@ -57,7 +57,7 @@ export default function EquipoPage() {
               style={{
                 flex: 1, minWidth: 200, padding: '10px 14px', borderRadius: 8,
                 background: 'rgba(255,255,255,0.045)', border: '1px solid rgba(192,197,206,0.3)',
-                color: '#E6EDF3', fontSize: 14, outline: 'none',
+                color: '#E6EDF3', fontSize: 'var(--aguila-fs-section)', outline: 'none',
               }}
             />
             <select
@@ -66,7 +66,7 @@ export default function EquipoPage() {
               style={{
                 padding: '10px 14px', borderRadius: 8,
                 background: 'rgba(255,255,255,0.045)', border: '1px solid rgba(192,197,206,0.3)',
-                color: '#E6EDF3', fontSize: 14,
+                color: '#E6EDF3', fontSize: 'var(--aguila-fs-section)',
               }}
             >
               <option value="viewer">Solo lectura</option>
@@ -74,7 +74,7 @@ export default function EquipoPage() {
             </select>
             <button style={{
               padding: '10px 20px', borderRadius: 8,
-              background: '#E8EAED', color: '#05070B', fontWeight: 700, fontSize: 13,
+              background: '#E8EAED', color: '#05070B', fontWeight: 700, fontSize: 'var(--aguila-fs-body)',
               border: 'none', cursor: 'pointer', minHeight: 44,
             }}>
               <Mail size={14} style={{ marginRight: 4 }} /> Enviar invitación
@@ -94,24 +94,24 @@ export default function EquipoPage() {
                 width: 36, height: 36, borderRadius: '50%',
                 background: 'rgba(192,197,206,0.15)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontWeight: 700, color: '#C0C5CE', fontSize: 14,
+                fontWeight: 700, color: '#C0C5CE', fontSize: 'var(--aguila-fs-section)',
               }}>
                 {member.name.charAt(0)}
               </div>
               <div>
-                <div style={{ fontSize: 14, fontWeight: 600, color: '#E6EDF3' }}>{member.name}</div>
+                <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: '#E6EDF3' }}>{member.name}</div>
                 <div style={{ fontSize: 12, color: '#64748b' }}>{member.email}</div>
               </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <span style={{
-                fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 6,
+                fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, padding: '4px 10px', borderRadius: 6,
                 background: member.role === 'admin' ? 'rgba(192,197,206,0.1)' : 'rgba(255,255,255,0.04)',
                 color: member.role === 'admin' ? '#C0C5CE' : '#94a3b8',
               }}>
                 {ROLE_LABELS[member.role]}
               </span>
-              <span style={{ fontSize: 11, color: '#475569' }}>
+              <span style={{ fontSize: 'var(--aguila-fs-meta)', color: '#475569' }}>
                 {member.status === 'invited' ? 'Pendiente' : member.lastLogin ? `Último: ${member.lastLogin}` : ''}
               </span>
             </div>

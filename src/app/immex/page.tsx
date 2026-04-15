@@ -55,8 +55,8 @@ export default function ImmexPage() {
           { label: 'Valor Temporal', value: `$${(totalValor / 1000).toFixed(0)}K`, color: 'var(--amber-600)' },
         ].map(k => (
           <div key={k.label} className="card" style={{ padding: '14px 18px' }}>
-            <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: 6 }}>{k.label}</div>
-            <div className="mono" style={{ fontSize: 24, fontWeight: 600, color: k.color }}>{k.value}</div>
+            <div style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: 6 }}>{k.label}</div>
+            <div className="mono" style={{ fontSize: 'var(--aguila-fs-title)', fontWeight: 600, color: k.color }}>{k.value}</div>
           </div>
         ))}
       </div>
@@ -64,7 +64,7 @@ export default function ImmexPage() {
       {/* Critical alert */}
       {critical.length > 0 && (
         <div style={{ background: 'var(--red-bg)', border: '1px solid var(--red-b)', borderRadius: 8, padding: '12px 16px', marginBottom: 16 }}>
-          <div style={{ color: 'var(--red-text)', fontSize: 13, fontWeight: 700 }}>🚨 {critical.length} embarque(s) dentro de 60 días del límite IMMEX</div>
+          <div style={{ color: 'var(--red-text)', fontSize: 'var(--aguila-fs-body)', fontWeight: 700 }}>🚨 {critical.length} embarque(s) dentro de 60 días del límite IMMEX</div>
           <div style={{ color: 'var(--red-text)', fontSize: 12, marginTop: 4 }}>Acción: Retorno o cambio de régimen requerido antes del vencimiento</div>
         </div>
       )}
@@ -72,12 +72,12 @@ export default function ImmexPage() {
       {/* Table */}
       <div className="card" style={{ overflow: 'hidden' }}>
         {loading ? (
-          <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>Cargando datos IMMEX...</div>
+          <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)', fontSize: 'var(--aguila-fs-body)' }}>Cargando datos IMMEX...</div>
         ) : immexData.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '60px 20px' }}>
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--n-300)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ margin: '0 auto 12px', display: 'block' }}><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
             <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--n-700)', marginBottom: 4 }}>Sin embarques temporales activos</div>
-            <div style={{ fontSize: 13, color: 'var(--n-400)' }}>Todo bajo control</div>
+            <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--n-400)' }}>Todo bajo control</div>
           </div>
         ) : (
           <div style={{ overflowX: 'auto' }}>
@@ -105,12 +105,12 @@ export default function ImmexPage() {
                       <div style={{ flex: 1, height: 6, background: 'var(--bg-elevated)', borderRadius: 99, overflow: 'hidden' }}>
                         <div style={{ width: `${d.pctUsed}%`, height: '100%', background: barColor(d.daysRemaining), borderRadius: 99, transition: 'width 0.3s' }} />
                       </div>
-                      <span className="mono" style={{ fontSize: 10, color: barColor(d.daysRemaining), fontWeight: 700, minWidth: 32 }}>{d.pctUsed}%</span>
+                      <span className="mono" style={{ fontSize: 'var(--aguila-fs-label)', color: barColor(d.daysRemaining), fontWeight: 700, minWidth: 32 }}>{d.pctUsed}%</span>
                     </div>
                   </td>
                   <td style={{ fontSize: 12, color: 'var(--text-secondary)', maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.descripcion_mercancia || ''}</td>
                   <td style={{ textAlign: 'center' }}>
-                    <span style={{ background: d.daysRemaining <= 60 ? 'var(--red-bg)' : d.daysRemaining <= 180 ? 'var(--amber-bg)' : 'var(--green-bg)', color: d.daysRemaining <= 60 ? 'var(--red-text)' : d.daysRemaining <= 180 ? 'var(--amber-text)' : 'var(--green-text)', borderRadius: 4, padding: '2px 8px', fontSize: 10, fontWeight: 700 }}>
+                    <span style={{ background: d.daysRemaining <= 60 ? 'var(--red-bg)' : d.daysRemaining <= 180 ? 'var(--amber-bg)' : 'var(--green-bg)', color: d.daysRemaining <= 60 ? 'var(--red-text)' : d.daysRemaining <= 180 ? 'var(--amber-text)' : 'var(--green-text)', borderRadius: 4, padding: '2px 8px', fontSize: 'var(--aguila-fs-label)', fontWeight: 700 }}>
                       {d.daysRemaining <= 60 ? 'CRÍTICO' : d.daysRemaining <= 180 ? 'ATENCIÓN' : 'OK'}
                     </span>
                   </td>

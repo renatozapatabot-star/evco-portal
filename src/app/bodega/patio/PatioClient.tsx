@@ -321,7 +321,7 @@ export function PatioClient() {
         style={{
           display: 'flex',
           gap: 8,
-          fontSize: 11,
+          fontSize: 'var(--aguila-fs-meta)',
           color: '#94a3b8',
           flexWrap: 'wrap',
         }}
@@ -368,7 +368,7 @@ export function PatioClient() {
           border: '1px solid rgba(192,197,206,0.18)',
         }}
       >
-        <h2 style={{ fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94a3b8', margin: 0 }}>
+        <h2 style={{ fontSize: 'var(--aguila-fs-body)', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94a3b8', margin: 0 }}>
           Activas
         </h2>
         {loading ? (
@@ -377,7 +377,7 @@ export function PatioClient() {
             Cargando…
           </div>
         ) : entries.length === 0 ? (
-          <div style={{ color: '#7A7E86', fontSize: 13 }}>
+          <div style={{ color: '#7A7E86', fontSize: 'var(--aguila-fs-body)' }}>
             Patio vacío. Registra la primera entrada abajo.
           </div>
         ) : (
@@ -432,7 +432,7 @@ export function PatioClient() {
                     <div
                       style={{
                         fontFamily: 'var(--font-jetbrains-mono), monospace',
-                        fontSize: 13,
+                        fontSize: 'var(--aguila-fs-body)',
                         color: '#C0C5CE',
                       }}
                     >
@@ -441,7 +441,7 @@ export function PatioClient() {
                     <div
                       style={{
                         fontFamily: 'var(--font-jetbrains-mono), monospace',
-                        fontSize: 11,
+                        fontSize: 'var(--aguila-fs-meta)',
                         color: '#94a3b8',
                       }}
                     >
@@ -472,13 +472,13 @@ export function PatioClient() {
           border: '1px solid rgba(192,197,206,0.18)',
         }}
       >
-        <h2 style={{ fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94a3b8', margin: 0 }}>
+        <h2 style={{ fontSize: 'var(--aguila-fs-body)', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94a3b8', margin: 0 }}>
           Nueva entrada
         </h2>
 
         {/* Embarque */}
         <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <span style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94a3b8' }}>
+          <span style={{ fontSize: 'var(--aguila-fs-meta)', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94a3b8' }}>
             Embarque
           </span>
           <input
@@ -554,7 +554,7 @@ export function PatioClient() {
 
         {/* Trailer */}
         <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <span style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94a3b8' }}>
+          <span style={{ fontSize: 'var(--aguila-fs-meta)', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94a3b8' }}>
             Número de caja
           </span>
           <input
@@ -571,7 +571,7 @@ export function PatioClient() {
               border: '1px solid rgba(192,197,206,0.18)',
               background: BG_ELEVATED,
               color: '#E6EDF3',
-              fontSize: 18,
+              fontSize: 'var(--aguila-fs-kpi-small)',
               fontFamily: 'var(--font-jetbrains-mono), monospace',
               letterSpacing: '0.04em',
             }}
@@ -581,7 +581,7 @@ export function PatioClient() {
 
         {/* Position */}
         <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <span style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94a3b8' }}>
+          <span style={{ fontSize: 'var(--aguila-fs-meta)', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94a3b8' }}>
             Posición (A1–Z9)
           </span>
           <div style={{ display: 'flex', gap: 8 }}>
@@ -600,7 +600,7 @@ export function PatioClient() {
                 border: '1px solid rgba(192,197,206,0.18)',
                 background: BG_ELEVATED,
                 color: '#E6EDF3',
-                fontSize: 18,
+                fontSize: 'var(--aguila-fs-kpi-small)',
                 fontFamily: 'var(--font-jetbrains-mono), monospace',
                 letterSpacing: '0.08em',
               }}
@@ -660,7 +660,7 @@ export function PatioClient() {
 
         {refrigerated && (
           <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <span style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94a3b8' }}>
+            <span style={{ fontSize: 'var(--aguila-fs-meta)', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94a3b8' }}>
               Temperatura (°C)
             </span>
             <input
@@ -679,7 +679,7 @@ export function PatioClient() {
                 border: '1px solid rgba(192,197,206,0.18)',
                 background: BG_ELEVATED,
                 color: '#E6EDF3',
-                fontSize: 18,
+                fontSize: 'var(--aguila-fs-kpi-small)',
                 fontFamily: 'var(--font-jetbrains-mono), monospace',
               }}
               aria-label="Temperatura en grados Celsius"
@@ -699,7 +699,7 @@ export function PatioClient() {
               background: 'rgba(220,38,38,0.12)',
               border: '1px solid rgba(220,38,38,0.35)',
               color: '#FCA5A5',
-              fontSize: 14,
+              fontSize: 'var(--aguila-fs-section)',
             }}
           >
             <AlertTriangle size={18} />
@@ -719,7 +719,7 @@ export function PatioClient() {
               background: 'rgba(34,197,94,0.12)',
               border: '1px solid rgba(34,197,94,0.35)',
               color: '#86EFAC',
-              fontSize: 14,
+              fontSize: 'var(--aguila-fs-section)',
             }}
           >
             <CheckCircle2 size={18} />
@@ -818,7 +818,7 @@ export function PatioClient() {
                 <X size={22} />
               </button>
             </div>
-            <div style={{ fontSize: 11, color: '#7A7E86' }}>
+            <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#7A7E86' }}>
               Flechas mueven · Enter selecciona · Esc cierra
             </div>
             <div
@@ -854,7 +854,7 @@ export function PatioClient() {
                         minWidth: 28,
                         borderRadius: 6,
                         fontFamily: 'var(--font-jetbrains-mono), monospace',
-                        fontSize: 10,
+                        fontSize: 'var(--aguila-fs-label)',
                         fontWeight: 600,
                         border: isFocus
                           ? '2px solid #E8EAED'
@@ -912,10 +912,10 @@ export function PatioClient() {
               gap: 14,
             }}
           >
-            <h3 style={{ margin: 0, color: '#E6EDF3', fontSize: 18, fontWeight: 700 }}>
+            <h3 style={{ margin: 0, color: '#E6EDF3', fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700 }}>
               ¿Marcar salida?
             </h3>
-            <p style={{ margin: 0, color: '#C0C5CE', fontSize: 14 }}>
+            <p style={{ margin: 0, color: '#C0C5CE', fontSize: 'var(--aguila-fs-section)' }}>
               Caja{' '}
               <span style={{ fontFamily: 'var(--font-jetbrains-mono), monospace' }}>
                 {confirmExit.trailer_number}

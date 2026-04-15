@@ -50,7 +50,7 @@ export function HeroStrip({ hero }: { hero: InicioData['hero'] }) {
         >
           <span
             style={{
-              fontSize: 10,
+              fontSize: 'var(--aguila-fs-label)',
               fontWeight: 700,
               letterSpacing: '0.08em',
               textTransform: 'uppercase',
@@ -62,7 +62,7 @@ export function HeroStrip({ hero }: { hero: InicioData['hero'] }) {
           <div
             style={{
               fontFamily: t.mono ? 'var(--font-jetbrains-mono), JetBrains Mono, monospace' : 'inherit',
-              fontSize: 48,
+              fontSize: 'var(--aguila-fs-kpi-hero)',
               lineHeight: 1,
               fontWeight: 800,
               color: t.color,

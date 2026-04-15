@@ -34,7 +34,7 @@ export function SectionAutosaveBadge({ status, lastSaved, errorMessage }: Sectio
     <span
       role="status"
       aria-live="polite"
-      style={{ fontSize: 11, letterSpacing: '0.04em', color, whiteSpace: 'nowrap' }}
+      style={{ fontSize: 'var(--aguila-fs-meta)', letterSpacing: '0.04em', color, whiteSpace: 'nowrap' }}
     >
       {label}
     </span>

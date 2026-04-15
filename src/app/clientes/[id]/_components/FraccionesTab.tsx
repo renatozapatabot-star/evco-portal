@@ -9,16 +9,16 @@ export interface FraccionRow {
 export function FraccionesTab({ rows }: { rows: FraccionRow[] }) {
   if (rows.length === 0) {
     return (
-      <div style={{ textAlign: 'center', padding: '32px 16px', color: TEXT_MUTED, fontSize: 13 }}>
+      <div style={{ textAlign: 'center', padding: '32px 16px', color: TEXT_MUTED, fontSize: 'var(--aguila-fs-body)' }}>
         Sin fracciones arancelarias registradas.
       </div>
     )
   }
   return (
     <div style={{ overflowX: 'auto' }}>
-      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--aguila-fs-body)' }}>
         <thead>
-          <tr style={{ textAlign: 'left', color: TEXT_MUTED, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+          <tr style={{ textAlign: 'left', color: TEXT_MUTED, fontSize: 'var(--aguila-fs-meta)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
             <th style={{ padding: '8px 12px', borderBottom: `1px solid ${BORDER}` }}>Fracción</th>
             <th style={{ padding: '8px 12px', borderBottom: `1px solid ${BORDER}` }}>Descripción</th>
             <th style={{ padding: '8px 12px', borderBottom: `1px solid ${BORDER}`, textAlign: 'right' }}>Partidas</th>

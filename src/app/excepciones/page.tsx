@@ -115,7 +115,7 @@ export default function ExcepcionesPage() {
         <Search size={24} style={{ color: 'var(--gold)' }} />
         Inteligencia de Excepciones
       </h1>
-      <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 20 }}>
+      <p style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-muted)', marginBottom: 20 }}>
         Diagnóstico automático de anomalías con hipótesis y acciones recomendadas
       </p>
 
@@ -147,7 +147,7 @@ export default function ExcepcionesPage() {
           {/* Open exceptions */}
           {data.open.length > 0 && (
             <>
-              <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--gold-dark)', marginBottom: 12 }}>
+              <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--gold-dark)', marginBottom: 12 }}>
                 Excepciones abiertas ({data.open.length})
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 32 }}>
@@ -159,7 +159,7 @@ export default function ExcepcionesPage() {
           {/* Resolved */}
           {data.resolved.length > 0 && (
             <>
-              <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 12 }}>
+              <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 12 }}>
                 Resueltas recientes ({data.resolved.length})
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -173,7 +173,7 @@ export default function ExcepcionesPage() {
                         <CheckCircle2 size={12} style={{ color: '#16A34A', display: 'inline', marginRight: 4 }} />
                         {r.trafico || '—'} · {TYPE_LABELS[r.exception_type] || r.exception_type}
                       </div>
-                      <div style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
+                      <div style={{ fontSize: 'var(--aguila-fs-meta)', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
                         {r.resolved_at ? fmtDate(r.resolved_at) : '—'}
                         {r.hypothesis_correct !== null && (
                           <span style={{ marginLeft: 8, color: r.hypothesis_correct ? '#16A34A' : '#DC2626' }}>
@@ -196,7 +196,7 @@ export default function ExcepcionesPage() {
 function KPICard({ label, value, color }: { label: string; value: string | number; color: string }) {
   return (
     <div style={{ padding: '12px 14px', borderRadius: 8, background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
-      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>{label}</div>
+      <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', marginBottom: 4 }}>{label}</div>
       <div style={{ fontSize: 20, fontWeight: 700, fontFamily: 'var(--font-mono)', color }}>{value}</div>
     </div>
   )
@@ -224,7 +224,7 @@ function ExceptionCard({ exception: ex, isMobile }: { exception: ExceptionDiagno
           <div style={{ flex: 1 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
               <AlertTriangle size={14} style={{ color: sev.color }} />
-              <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>
+              <span style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 700, color: 'var(--text-primary)' }}>
                 {TYPE_LABELS[ex.exception_type] || ex.exception_type}
               </span>
               <span style={{
@@ -234,7 +234,7 @@ function ExceptionCard({ exception: ex, isMobile }: { exception: ExceptionDiagno
                 {sev.label}
               </span>
               {ex.trafico && (
-                <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
+                <span style={{ fontSize: 'var(--aguila-fs-meta)', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
                   {ex.trafico}
                 </span>
               )}
@@ -247,7 +247,7 @@ function ExceptionCard({ exception: ex, isMobile }: { exception: ExceptionDiagno
             <div style={{ fontSize: 16, fontWeight: 700, fontFamily: 'var(--font-mono)', color: sev.color }}>
               {Math.round(ex.primary_confidence * 100)}%
             </div>
-            <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>
+            <div style={{ fontSize: 'var(--aguila-fs-label)', color: 'var(--text-muted)' }}>
               {hoursSince}h
             </div>
             {expanded ? <ChevronUp size={14} style={{ color: 'var(--text-muted)', marginTop: 4 }} /> : <ChevronDown size={14} style={{ color: 'var(--text-muted)', marginTop: 4 }} />}
@@ -258,7 +258,7 @@ function ExceptionCard({ exception: ex, isMobile }: { exception: ExceptionDiagno
         {ex.recommended_action && (
           <div style={{
             marginTop: 8, padding: '6px 10px', borderRadius: 6,
-            background: 'rgba(255,255,255,0.6)', fontSize: 11, color: 'var(--text-secondary)',
+            background: 'rgba(255,255,255,0.6)', fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-secondary)',
           }}>
             <Clock size={10} style={{ display: 'inline', marginRight: 4 }} />
             {ex.recommended_action}
@@ -277,7 +277,7 @@ function ExceptionCard({ exception: ex, isMobile }: { exception: ExceptionDiagno
           {/* All hypotheses */}
           {ex.hypotheses.length > 1 && (
             <div style={{ marginTop: 12 }}>
-              <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>
+              <div style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>
                 Hipótesis ({ex.hypotheses.length})
               </div>
               {ex.hypotheses.map((h, i) => (
@@ -285,7 +285,7 @@ function ExceptionCard({ exception: ex, isMobile }: { exception: ExceptionDiagno
                   padding: '6px 10px', borderRadius: 6, marginBottom: 4,
                   background: i === 0 ? 'rgba(255,255,255,0.8)' : 'transparent',
                   border: i === 0 ? `1px solid ${sev.border}` : 'none',
-                  fontSize: 11,
+                  fontSize: 'var(--aguila-fs-meta)',
                 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                     <span style={{ color: 'var(--text-primary)', fontWeight: i === 0 ? 600 : 400 }}>
@@ -295,7 +295,7 @@ function ExceptionCard({ exception: ex, isMobile }: { exception: ExceptionDiagno
                       {Math.round(h.confidence * 100)}%
                     </span>
                   </div>
-                  <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>
+                  <div style={{ fontSize: 'var(--aguila-fs-label)', color: 'var(--text-muted)', marginTop: 2 }}>
                     Evidencia: {h.evidence}
                   </div>
                 </div>
@@ -305,7 +305,7 @@ function ExceptionCard({ exception: ex, isMobile }: { exception: ExceptionDiagno
 
           {/* Context */}
           {ex.context && Object.keys(ex.context).length > 0 && (
-            <div style={{ marginTop: 10, fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
+            <div style={{ marginTop: 10, fontSize: 'var(--aguila-fs-meta)', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
               {Object.entries(ex.context).map(([k, v]) => (
                 <span key={k} style={{ marginRight: 12 }}>{k}: {String(v)}</span>
               ))}
@@ -313,7 +313,7 @@ function ExceptionCard({ exception: ex, isMobile }: { exception: ExceptionDiagno
           )}
 
           {/* Detected time */}
-          <div style={{ marginTop: 8, fontSize: 10, color: 'var(--text-muted)' }}>
+          <div style={{ marginTop: 8, fontSize: 'var(--aguila-fs-label)', color: 'var(--text-muted)' }}>
             Detectado: {fmtDateTime(ex.detected_at)}
           </div>
         </div>

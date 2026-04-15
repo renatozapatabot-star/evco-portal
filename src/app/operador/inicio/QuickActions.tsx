@@ -124,7 +124,7 @@ export function QuickActions() {
               }}
             >
               {loading && results.length === 0 ? (
-                <div style={{ padding: 16, color: TEXT_MUTED, fontSize: 13 }}>Buscando…</div>
+                <div style={{ padding: 16, color: TEXT_MUTED, fontSize: 'var(--aguila-fs-body)' }}>Buscando…</div>
               ) : (
                 results.map((r, i) => (
                   <a

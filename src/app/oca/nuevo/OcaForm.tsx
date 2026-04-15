@@ -19,14 +19,14 @@ const inputStyle = {
   border: '1px solid rgba(255,255,255,0.08)',
   borderRadius: 10,
   color: TEXT_PRIMARY,
-  fontSize: 14,
+  fontSize: 'var(--aguila-fs-section)',
   fontFamily: 'inherit',
   outline: 'none',
 } as const
 
 const labelStyle = {
   display: 'block',
-  fontSize: 11,
+  fontSize: 'var(--aguila-fs-meta)',
   fontWeight: 700,
   color: TEXT_MUTED,
   textTransform: 'uppercase' as const,
@@ -126,7 +126,7 @@ export function OcaForm() {
 
       {err && (
         <GlassCard>
-          <p style={{ color: '#EF4444', fontSize: 13, margin: 0 }}>{err}</p>
+          <p style={{ color: '#EF4444', fontSize: 'var(--aguila-fs-body)', margin: 0 }}>{err}</p>
         </GlassCard>
       )}
 
@@ -141,7 +141,7 @@ export function OcaForm() {
             color: '#0A0A0C',
             border: 'none',
             borderRadius: 10,
-            fontSize: 14,
+            fontSize: 'var(--aguila-fs-section)',
             fontWeight: 700,
             textTransform: 'uppercase',
             letterSpacing: 0.5,
@@ -151,7 +151,7 @@ export function OcaForm() {
         >
           {loading ? 'Consultando Opus…' : 'Generar opinión'}
         </button>
-        <span style={{ fontSize: 11, color: TEXT_MUTED }}>
+        <span style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED }}>
           Opus evaluará LIGIE, TIGIE y GRI · ~30-60s
         </span>
       </div>

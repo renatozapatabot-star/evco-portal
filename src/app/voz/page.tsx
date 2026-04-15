@@ -100,7 +100,7 @@ export default function VozPage() {
             {interimText && (
               <p style={{
                 color: COLORS.gray,
-                fontSize: 18,
+                fontSize: 'var(--aguila-fs-kpi-small)',
                 textAlign: 'center',
                 margin: 0,
                 fontStyle: 'italic',
@@ -112,7 +112,7 @@ export default function VozPage() {
             {finalText && !interimText && (
               <p style={{
                 color: COLORS.white,
-                fontSize: 18,
+                fontSize: 'var(--aguila-fs-kpi-small)',
                 textAlign: 'center',
                 margin: 0,
                 animation: 'fadeIn 0.3s ease',
@@ -150,7 +150,7 @@ export default function VozPage() {
           {error && (
             <p style={{
               color: COLORS.red,
-              fontSize: 13,
+              fontSize: 'var(--aguila-fs-body)',
               textAlign: 'center',
               margin: 0,
               padding: '8px 16px',
@@ -176,7 +176,7 @@ export default function VozPage() {
         }}>
           <p style={{
             color: COLORS.gold,
-            fontSize: 13,
+            fontSize: 'var(--aguila-fs-body)',
             fontWeight: 600,
             letterSpacing: 1,
             margin: 0,
@@ -201,7 +201,7 @@ export default function VozPage() {
               color: COLORS.grayLight,
               border: `1px solid ${COLORS.grayDark}`,
               borderRadius: 8,
-              fontSize: 13,
+              fontSize: 'var(--aguila-fs-body)',
               cursor: 'pointer',
               transition: 'all 0.2s ease',
             }}

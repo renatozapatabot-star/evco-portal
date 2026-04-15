@@ -121,7 +121,7 @@ export const NotasTab = forwardRef<NotasTabHandle, NotasTabProps>(function Notas
           htmlFor="nota-textarea"
           style={{
             display: 'block',
-            fontSize: 11,
+            fontSize: 'var(--aguila-fs-meta)',
             fontWeight: 700,
             color: TEXT_MUTED,
             textTransform: 'uppercase',
@@ -147,7 +147,7 @@ export const NotasTab = forwardRef<NotasTabHandle, NotasTabProps>(function Notas
             color: TEXT_PRIMARY,
             border: `1px solid ${BORDER}`,
             borderRadius: 12,
-            fontSize: 13,
+            fontSize: 'var(--aguila-fs-body)',
             fontFamily: 'inherit',
             resize: 'vertical',
             outline: 'none',
@@ -167,7 +167,7 @@ export const NotasTab = forwardRef<NotasTabHandle, NotasTabProps>(function Notas
             alignItems: 'center',
           }}
         >
-          <span style={{ fontSize: 11, color: TEXT_MUTED }}>{draft.length} / 4000</span>
+          <span style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED }}>{draft.length} / 4000</span>
           <button
             type="button"
             onClick={submit}
@@ -180,7 +180,7 @@ export const NotasTab = forwardRef<NotasTabHandle, NotasTabProps>(function Notas
               color: '#0B1220',
               border: 'none',
               borderRadius: 12,
-              fontSize: 13,
+              fontSize: 'var(--aguila-fs-body)',
               fontWeight: 700,
               cursor: pending || !draft.trim() ? 'not-allowed' : 'pointer',
               letterSpacing: '0.02em',
@@ -193,7 +193,7 @@ export const NotasTab = forwardRef<NotasTabHandle, NotasTabProps>(function Notas
 
       <div>
         {notes.length === 0 ? (
-          <div style={{ padding: '20px 0', textAlign: 'center', color: TEXT_MUTED, fontSize: 13 }}>
+          <div style={{ padding: '20px 0', textAlign: 'center', color: TEXT_MUTED, fontSize: 'var(--aguila-fs-body)' }}>
             Sin notas todavía. Sé el primero en documentar algo.
           </div>
         ) : (
@@ -217,7 +217,7 @@ export const NotasTab = forwardRef<NotasTabHandle, NotasTabProps>(function Notas
                   <span
                     style={{
                       fontFamily: 'var(--font-mono)',
-                      fontSize: 11,
+                      fontSize: 'var(--aguila-fs-meta)',
                       fontWeight: 700,
                       color: ACCENT_CYAN,
                       letterSpacing: '0.02em',
@@ -228,7 +228,7 @@ export const NotasTab = forwardRef<NotasTabHandle, NotasTabProps>(function Notas
                   <span
                     style={{
                       fontFamily: 'var(--font-mono)',
-                      fontSize: 11,
+                      fontSize: 'var(--aguila-fs-meta)',
                       color: TEXT_MUTED,
                       whiteSpace: 'nowrap',
                     }}
@@ -238,7 +238,7 @@ export const NotasTab = forwardRef<NotasTabHandle, NotasTabProps>(function Notas
                 </div>
                 <div
                   style={{
-                    fontSize: 13,
+                    fontSize: 'var(--aguila-fs-body)',
                     color: TEXT_SECONDARY,
                     marginTop: 6,
                     whiteSpace: 'pre-wrap',

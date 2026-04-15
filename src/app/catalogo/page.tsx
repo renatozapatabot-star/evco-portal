@@ -24,10 +24,10 @@ export default async function CatalogoPage({ searchParams }: CatalogoPageProps) 
 
   return (
     <div style={{ maxWidth: 1100, margin: '0 auto', padding: '24px 16px' }}>
-      <h1 style={{ margin: '0 0 4px', fontSize: 24, fontWeight: 700, color: 'rgba(255,255,255,0.92)' }}>
+      <h1 style={{ margin: '0 0 4px', fontSize: 'var(--aguila-fs-title)', fontWeight: 700, color: 'rgba(255,255,255,0.92)' }}>
         Catálogo de productos
       </h1>
-      <p style={{ margin: '0 0 20px', fontSize: 13, color: 'rgba(255,255,255,0.6)' }}>
+      <p style={{ margin: '0 0 20px', fontSize: 'var(--aguila-fs-body)', color: 'rgba(255,255,255,0.6)' }}>
         Tu inventario de productos con fracción arancelaria y último embarque.
       </p>
       <CatalogoTable rows={rows} query={q ?? ''} total={rows.length} />

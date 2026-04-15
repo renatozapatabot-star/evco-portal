@@ -84,10 +84,10 @@ export function SyncHealthClient() {
       {/* Refresh + last-poll header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
-          <div style={{ fontSize: 11, color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>
+          <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>
             Última lectura
           </div>
-          <div style={{ fontSize: 13, color: TEXT_SECONDARY, fontFamily: 'var(--font-mono)' }}>
+          <div style={{ fontSize: 'var(--aguila-fs-body)', color: TEXT_SECONDARY, fontFamily: 'var(--font-mono)' }}>
             {snap?.generated_at ? new Date(snap.generated_at).toLocaleString('es-MX', { timeZone: 'America/Chicago' }) : '—'}
           </div>
         </div>
@@ -112,7 +112,7 @@ export function SyncHealthClient() {
 
       {/* Tables grid */}
       <section>
-        <div style={{ fontSize: 11, color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>
+        <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>
           Tablas — frescura por fuente
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
@@ -120,10 +120,10 @@ export function SyncHealthClient() {
             <GlassCard key={t.name} size="card" style={{ minHeight: 110, padding: 16 }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: TEXT_PRIMARY, fontFamily: 'var(--font-mono)' }}>
+                  <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 700, color: TEXT_PRIMARY, fontFamily: 'var(--font-mono)' }}>
                     {t.name}
                   </div>
-                  <div style={{ fontSize: 11, color: TEXT_MUTED, marginTop: 2 }}>
+                  <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED, marginTop: 2 }}>
                     {fmtCount(t.row_count)} filas
                   </div>
                 </div>
@@ -141,7 +141,7 @@ export function SyncHealthClient() {
                 <span style={{ fontSize: 22, fontWeight: 800, color: TEXT_PRIMARY, fontFamily: 'var(--font-mono)' }}>
                   {fmtAge(t.age_minutes)}
                 </span>
-                <span style={{ fontSize: 10, color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                <span style={{ fontSize: 'var(--aguila-fs-label)', color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                   desde el último update
                 </span>
               </div>
@@ -152,7 +152,7 @@ export function SyncHealthClient() {
 
       {/* Scripts grid */}
       <section>
-        <div style={{ fontSize: 11, color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>
+        <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>
           Scripts — última corrida (7 días)
         </div>
         {(snap?.scripts ?? []).length === 0 ? (
@@ -165,10 +165,10 @@ export function SyncHealthClient() {
               <GlassCard key={s.step} size="card" style={{ minHeight: 100, padding: 16 }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: TEXT_PRIMARY, fontFamily: 'var(--font-mono)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 700, color: TEXT_PRIMARY, fontFamily: 'var(--font-mono)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {s.step}
                     </div>
-                    <div style={{ fontSize: 11, color: TEXT_MUTED, marginTop: 2, fontFamily: 'var(--font-mono)' }}>
+                    <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED, marginTop: 2, fontFamily: 'var(--font-mono)' }}>
                       hace {fmtAge(s.age_minutes)}
                       {s.duration_ms != null && ` · ${(s.duration_ms / 1000).toFixed(1)}s`}
                     </div>
@@ -184,12 +184,12 @@ export function SyncHealthClient() {
                   />
                 </div>
                 {s.status && (
-                  <div style={{ fontSize: 11, color: s.status === 'success' ? '#22C55E' : s.status === 'failed' ? '#EF4444' : TEXT_MUTED, marginTop: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  <div style={{ fontSize: 'var(--aguila-fs-meta)', color: s.status === 'success' ? '#22C55E' : s.status === 'failed' ? '#EF4444' : TEXT_MUTED, marginTop: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                     {s.status}
                   </div>
                 )}
                 {s.error_message && (
-                  <div style={{ fontSize: 11, color: '#FCA5A5', marginTop: 6, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#FCA5A5', marginTop: 6, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {s.error_message}
                   </div>
                 )}

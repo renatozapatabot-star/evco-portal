@@ -111,8 +111,8 @@ function DraftsContent() {
     <div style={{ padding: 24, maxWidth: 900, margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
         <div>
-          <h1 style={{ fontSize: 28, fontWeight: 900, color: 'var(--navy-900)', letterSpacing: '-0.02em', margin: 0 }}>Ghost Pedimentos</h1>
-          <p style={{ fontSize: 13, color: 'var(--slate-400)', marginTop: 4 }}>{drafts.length} borrador{drafts.length !== 1 ? 'es' : ''} {filter === 'pending' ? 'pendientes' : filter === 'approved' ? 'aprobados' : 'totales'}</p>
+          <h1 style={{ fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 900, color: 'var(--navy-900)', letterSpacing: '-0.02em', margin: 0 }}>Ghost Pedimentos</h1>
+          <p style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--slate-400)', marginTop: 4 }}>{drafts.length} borrador{drafts.length !== 1 ? 'es' : ''} {filter === 'pending' ? 'pendientes' : filter === 'approved' ? 'aprobados' : 'totales'}</p>
         </div>
       </div>
 
@@ -129,7 +129,7 @@ function DraftsContent() {
       <div style={{ display: 'flex', gap: 4, marginBottom: 20, background: 'var(--slate-50)', borderRadius: 8, padding: 3, width: 'fit-content' }}>
         {(['pending', 'approved', 'all'] as const).map(f => (
           <button key={f} onClick={() => setFilter(f)} style={{
-            padding: '10px 16px', borderRadius: 6, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer', minHeight: 60,
+            padding: '10px 16px', borderRadius: 6, fontSize: 'var(--aguila-fs-body)', fontWeight: 600, border: 'none', cursor: 'pointer', minHeight: 60,
             background: filter === f ? 'rgba(192,197,206,0.15)' : 'transparent', color: filter === f ? '#E6EDF3' : 'var(--slate-400)',
             boxShadow: filter === f ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
           }}>
@@ -172,21 +172,21 @@ function DraftsContent() {
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
                     <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 800, fontSize: 15, color: 'var(--navy-900)' }}>{trafico}</span>
-                    <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 4, background: tier.bg, color: tier.color, border: `1px solid ${tier.border}` }}>
+                    <span style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, padding: '2px 8px', borderRadius: 4, background: tier.bg, color: tier.color, border: `1px solid ${tier.border}` }}>
                       {confianza === 'alta' ? '✅ Alta' : confianza === 'media' ? '⚠️ Media' : '🔴 Baja'}
                     </span>
                     {isTMEC && (
-                      <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 4, background: '#F0FDFA', color: '#0D9488', border: '1px solid #99F6E4' }}>
+                      <span style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, padding: '2px 8px', borderRadius: 4, background: '#F0FDFA', color: '#0D9488', border: '1px solid #99F6E4' }}>
                         T-MEC
                       </span>
                     )}
                     {flagsCount > 0 && (
-                      <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 4, background: '#FEF3C7', color: '#92400E', border: '1px solid #FDE68A' }}>
+                      <span style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, padding: '2px 8px', borderRadius: 4, background: '#FEF3C7', color: '#92400E', border: '1px solid #FDE68A' }}>
                         🚩 {flagsCount}
                       </span>
                     )}
                   </div>
-                  <div style={{ fontSize: 13, color: 'var(--slate-600)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{supplier} · {product}</div>
+                  <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--slate-600)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{supplier} · {product}</div>
                   <div style={{ fontSize: 12, color: 'var(--slate-400)', marginTop: 2, fontFamily: 'var(--font-mono)', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                     <span>{formatAbsoluteETA(d.created_at)}</span>
                     {valorUSD > 0 && <span>{fmtUSD(Number(valorUSD))} USD</span>}
@@ -194,8 +194,8 @@ function DraftsContent() {
                   </div>
                 </div>
                 <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                  <div style={{ fontSize: 24, fontWeight: 900, fontFamily: 'var(--font-mono)', color: tier.color }}>{confidence}%</div>
-                  <div style={{ fontSize: 11, color: 'var(--slate-400)' }}>confianza</div>
+                  <div style={{ fontSize: 'var(--aguila-fs-title)', fontWeight: 900, fontFamily: 'var(--font-mono)', color: tier.color }}>{confidence}%</div>
+                  <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--slate-400)' }}>confianza</div>
                 </div>
               </div>
             )
@@ -218,13 +218,13 @@ function DraftsContent() {
           }}>
             <AguilaMark size={120} />
           </div>
-          <div style={{ color: '#E8E5DF', fontSize: 24, fontWeight: 800, marginTop: 24, letterSpacing: '-0.02em' }}>
+          <div style={{ color: '#E8E5DF', fontSize: 'var(--aguila-fs-title)', fontWeight: 800, marginTop: 24, letterSpacing: '-0.02em' }}>
             Patente 3596 honrada
           </div>
           <div style={{ color: 'var(--text-muted)', fontSize: 16, marginTop: 8 }}>
             Gracias, Tito.
           </div>
-          <div style={{ fontSize: 32, marginTop: 16 }}>🦀</div>
+          <div style={{ fontSize: 'var(--aguila-fs-kpi-compact)', marginTop: 16 }}>🦀</div>
         </div>
       )}
     </div>

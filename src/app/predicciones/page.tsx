@@ -123,7 +123,7 @@ export default function PrediccionesPage() {
         <TrendingUp size={24} style={{ color: 'var(--gold)' }} />
         Predicciones de Demanda
       </h1>
-      <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24 }}>
+      <p style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-muted)', marginBottom: 24 }}>
         {predictions.length} predicciones · {upcoming.length} próximas · {activePO.length} PO activas
       </p>
 
@@ -138,7 +138,7 @@ export default function PrediccionesPage() {
             <>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
                 <Target size={14} style={{ color: 'var(--gold)' }} />
-                <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--gold-dark)' }}>
+                <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--gold-dark)' }}>
                   Predicciones de Orden de Compra ({activePO.length})
                 </div>
               </div>
@@ -148,7 +148,7 @@ export default function PrediccionesPage() {
                 <div style={{
                   display: 'flex', gap: isMobile ? 12 : 24, marginBottom: 16, padding: '10px 16px',
                   background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8,
-                  fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)', flexWrap: 'wrap',
+                  fontSize: 'var(--aguila-fs-meta)', fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)', flexWrap: 'wrap',
                 }}>
                   <span>Precisión: <strong style={{ color: 'var(--text-primary)' }}>{poData.accuracy.avg_score}%</strong></span>
                   <span>Confirmados: <strong style={{ color: 'var(--text-primary)' }}>{poData.accuracy.total_matched}</strong></span>
@@ -169,7 +169,7 @@ export default function PrediccionesPage() {
             <>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
                 <CheckCircle2 size={14} style={{ color: '#16A34A' }} />
-                <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#16A34A' }}>
+                <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#16A34A' }}>
                   PO Confirmados ({matchedPO.length})
                 </div>
               </div>
@@ -186,7 +186,7 @@ export default function PrediccionesPage() {
             <>
               {upcoming.length > 0 && (
                 <>
-                  <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--gold-dark)', marginBottom: 12 }}>
+                  <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--gold-dark)', marginBottom: 12 }}>
                     Próximos envíos esperados
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 32 }}>
@@ -196,7 +196,7 @@ export default function PrediccionesPage() {
               )}
               {past.length > 0 && (
                 <>
-                  <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 12 }}>
+                  <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 12 }}>
                     Predicciones pasadas
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -237,11 +237,11 @@ function POPredictionCard({ prediction: p }: { prediction: POPrediction }) {
         <div style={{ flex: 1 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <StatusIcon size={14} style={{ color: statusColor }} />
-            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>
+            <span style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: 'var(--text-primary)' }}>
               {p.supplier}
             </span>
             {isMatched && (
-              <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 4, background: '#DCFCE7', color: '#15803D', fontWeight: 600 }}>
+              <span style={{ fontSize: 'var(--aguila-fs-label)', padding: '1px 6px', borderRadius: 4, background: '#DCFCE7', color: '#15803D', fontWeight: 600 }}>
                 CONFIRMADO
               </span>
             )}
@@ -251,16 +251,16 @@ function POPredictionCard({ prediction: p }: { prediction: POPrediction }) {
           </div>
         </div>
         <div style={{ textAlign: 'right' }}>
-          <div style={{ fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-mono)', color: isMatched ? '#15803D' : 'var(--gold-dark)' }}>
+          <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 700, fontFamily: 'var(--font-mono)', color: isMatched ? '#15803D' : 'var(--gold-dark)' }}>
             {fmtDate(p.predicted_date)}
           </div>
           {!isMatched && daysUntil >= 0 && (
-            <div style={{ fontSize: 11, color: daysUntil <= 3 ? '#D97706' : 'var(--text-muted)' }}>
+            <div style={{ fontSize: 'var(--aguila-fs-meta)', color: daysUntil <= 3 ? '#D97706' : 'var(--text-muted)' }}>
               {daysUntil === 0 ? 'Hoy' : daysUntil === 1 ? 'Mañana' : `en ${daysUntil} días`}
             </div>
           )}
           {isMatched && p.timing_error_days != null && (
-            <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+            <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)' }}>
               error: ±{p.timing_error_days}d
             </div>
           )}
@@ -268,7 +268,7 @@ function POPredictionCard({ prediction: p }: { prediction: POPrediction }) {
       </div>
 
       {/* Metrics row */}
-      <div style={{ display: 'flex', gap: 16, marginTop: 10, fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: 16, marginTop: 10, fontSize: 'var(--aguila-fs-meta)', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', flexWrap: 'wrap' }}>
         <span style={{ color: p.confidence >= 85 ? 'var(--gold-dark)' : undefined }}>
           {p.confidence}% conf
         </span>
@@ -289,7 +289,7 @@ function POPredictionCard({ prediction: p }: { prediction: POPrediction }) {
       {(p.estimated_duties || p.optimal_crossing) && (
         <div style={{
           display: 'flex', gap: 16, marginTop: 8, padding: '6px 10px',
-          background: 'var(--bg-main)', borderRadius: 6, fontSize: 11,
+          background: 'var(--bg-main)', borderRadius: 6, fontSize: 'var(--aguila-fs-meta)',
           fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)', flexWrap: 'wrap',
         }}>
           {p.estimated_duties && (
@@ -332,7 +332,7 @@ function DemandCard({ prediction: p, past }: { prediction: Prediction; past?: bo
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
-          <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>
+          <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: 'var(--text-primary)' }}>
             {p.company_id}/{d.supplier || '—'}
           </div>
           <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>
@@ -340,17 +340,17 @@ function DemandCard({ prediction: p, past }: { prediction: Prediction; past?: bo
           </div>
         </div>
         <div style={{ textAlign: 'right' }}>
-          <div style={{ fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-mono)', color: past ? 'var(--text-muted)' : 'var(--gold-dark)' }}>
+          <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 700, fontFamily: 'var(--font-mono)', color: past ? 'var(--text-muted)' : 'var(--gold-dark)' }}>
             {fmtDate(date)}
           </div>
           {!past && (
-            <div style={{ fontSize: 11, color: daysUntil <= 7 ? 'var(--warning-500, #D97706)' : 'var(--text-muted)' }}>
+            <div style={{ fontSize: 'var(--aguila-fs-meta)', color: daysUntil <= 7 ? 'var(--warning-500, #D97706)' : 'var(--text-muted)' }}>
               {daysUntil === 0 ? 'Hoy' : daysUntil === 1 ? 'Mañana' : `en ${daysUntil} días`}
             </div>
           )}
         </div>
       </div>
-      <div style={{ display: 'flex', gap: 16, marginTop: 8, fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: 16, marginTop: 8, fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', flexWrap: 'wrap' }}>
         <span>{d.confidence || 0}% conf</span>
         <span>cada {d.avg_frequency_days || '?'}d</span>
         <span>~{fmtUSDCompact(d.avg_value || 0)}</span>

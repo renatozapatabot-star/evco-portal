@@ -101,8 +101,8 @@ export default function AnalyticsPage() {
 
   return (
     <div style={{ padding: '24px 16px', maxWidth: 900, margin: '0 auto' }}>
-      <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 4px' }}>Analytics</h1>
-      <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '0 0 24px' }}>
+      <h1 style={{ fontSize: 'var(--aguila-fs-title)', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 4px' }}>Analytics</h1>
+      <p style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)', margin: '0 0 24px' }}>
         {rows.length.toLocaleString()} embarques · ene 2024–presente
       </p>
 
@@ -110,7 +110,7 @@ export default function AnalyticsPage() {
       <div style={{ display: 'flex', gap: 4, marginBottom: 24, overflowX: 'auto' }}>
         {reports.map(r => (
           <button key={r.key} onClick={() => setActiveReport(r.key)} style={{
-            padding: '8px 16px', borderRadius: 8, fontSize: 13, fontWeight: activeReport === r.key ? 700 : 500,
+            padding: '8px 16px', borderRadius: 8, fontSize: 'var(--aguila-fs-body)', fontWeight: activeReport === r.key ? 700 : 500,
             background: activeReport === r.key ? 'rgba(196,150,60,0.1)' : 'var(--bg-card)',
             border: `1px solid ${activeReport === r.key ? GOLD : 'var(--border)'}`,
             color: activeReport === r.key ? GOLD : 'var(--text-secondary)', cursor: 'pointer', whiteSpace: 'nowrap',

@@ -72,7 +72,7 @@ export default function RentabilidadPage() {
       <div className="page-shell" style={{ textAlign: 'center', padding: 60 }}>
         <DollarSign size={48} style={{ color: 'var(--text-muted)', marginBottom: 16 }} />
         <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>Solo Tito</div>
-        <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>Esta página es exclusiva para administración</div>
+        <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-muted)', marginTop: 4 }}>Esta página es exclusiva para administración</div>
       </div>
     )
   }
@@ -83,7 +83,7 @@ export default function RentabilidadPage() {
         <DollarSign size={24} style={{ color: 'var(--gold)' }} />
         Rentabilidad por Cliente
       </h1>
-      <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24 }}>
+      <p style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-muted)', marginBottom: 24 }}>
         Análisis de ganancia real por cliente — ingresos, costos, margen
       </p>
 
@@ -112,7 +112,7 @@ export default function RentabilidadPage() {
             display: 'flex', gap: 12, marginBottom: 24,
             padding: '12px 16px', borderRadius: 8,
             background: 'var(--bg-card)', border: '1px solid var(--border)',
-            fontSize: 13, fontFamily: 'var(--font-mono)',
+            fontSize: 'var(--aguila-fs-body)', fontFamily: 'var(--font-mono)',
           }}>
             <span style={{ color: '#16A34A' }}>
               {data.summary.profitable} rentable{data.summary.profitable !== 1 ? 's' : ''}
@@ -138,7 +138,7 @@ export default function RentabilidadPage() {
 function KPICard({ label, value, color }: { label: string; value: string | number; color: string }) {
   return (
     <div style={{ padding: '14px 16px', borderRadius: 8, background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
-      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>{label}</div>
+      <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', marginBottom: 4 }}>{label}</div>
       <div style={{ fontSize: 20, fontWeight: 700, fontFamily: 'var(--font-mono)', color }}>{value}</div>
     </div>
   )
@@ -173,18 +173,18 @@ function ClientCard({ client: c, isMobile }: { client: ClientProfit; isMobile: b
             </span>
             <GrowthIcon size={14} style={{ color: growthColor }} />
           </div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+          <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', marginTop: 2 }}>
             {c.operations_count} operaciones · {fmtDate(c.month)}
           </div>
         </div>
         <div style={{ textAlign: 'right' }}>
           <div style={{
-            fontSize: 24, fontWeight: 800, fontFamily: 'var(--font-mono)',
+            fontSize: 'var(--aguila-fs-title)', fontWeight: 800, fontFamily: 'var(--font-mono)',
             color: isProfitable ? '#16A34A' : '#DC2626',
           }}>
             {fmtUSDCompact(c.net_profit_usd)}
           </div>
-          <div style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
+          <div style={{ fontSize: 'var(--aguila-fs-meta)', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
             {c.margin_pct}% margen
           </div>
         </div>
@@ -194,7 +194,7 @@ function ClientCard({ client: c, isMobile }: { client: ClientProfit; isMobile: b
       <div style={{
         display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)',
         gap: 8, marginTop: 12, padding: '10px 12px', borderRadius: 6,
-        background: 'rgba(255,255,255,0.6)', fontSize: 11, fontFamily: 'var(--font-mono)',
+        background: 'rgba(255,255,255,0.6)', fontSize: 'var(--aguila-fs-meta)', fontFamily: 'var(--font-mono)',
       }}>
         <div>
           <div style={{ color: 'var(--text-muted)', fontSize: 9, fontWeight: 600 }}>INGRESO</div>
@@ -217,7 +217,7 @@ function ClientCard({ client: c, isMobile }: { client: ClientProfit; isMobile: b
       {/* Cost detail */}
       <div style={{
         display: 'flex', gap: isMobile ? 8 : 16, marginTop: 8,
-        fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)',
+        fontSize: 'var(--aguila-fs-label)', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)',
       }}>
         <span>Staff: {c.staff_time_hours}h ({fmtUSDCompact(c.staff_cost_usd)})</span>
         <span>AI: {fmtUSDCompact(c.ai_cost_usd)}</span>
@@ -228,7 +228,7 @@ function ClientCard({ client: c, isMobile }: { client: ClientProfit; isMobile: b
       {c.insights?.recommendation && (
         <div style={{
           marginTop: 10, padding: '6px 10px', borderRadius: 6,
-          background: 'rgba(255,255,255,0.5)', fontSize: 11, color: 'var(--text-secondary)',
+          background: 'rgba(255,255,255,0.5)', fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-secondary)',
           borderLeft: `2px solid ${tier.color}`,
         }}>
           {c.insights.recommendation}

@@ -34,7 +34,7 @@ const inputStyle = {
   border: '1px solid rgba(255,255,255,0.08)',
   borderRadius: 10,
   color: TEXT_PRIMARY,
-  fontSize: 14,
+  fontSize: 'var(--aguila-fs-section)',
   fontFamily: 'inherit',
   outline: 'none',
 } as const
@@ -47,7 +47,7 @@ const monoInputStyle = {
 
 const labelStyle = {
   display: 'block',
-  fontSize: 10,
+  fontSize: 'var(--aguila-fs-label)',
   fontWeight: 700,
   color: TEXT_MUTED,
   textTransform: 'uppercase' as const,
@@ -77,8 +77,8 @@ function Line({ label, amount, currency, note, emphasis }: {
       borderBottom: '1px solid rgba(255,255,255,0.06)',
     }}>
       <div>
-        <div style={{ fontSize: 13, color: emphasis ? TEXT_PRIMARY : TEXT_SECONDARY, fontWeight: emphasis ? 600 : 400 }}>{label}</div>
-        {note && <div style={{ fontSize: 10, color: TEXT_MUTED, marginTop: 2, letterSpacing: 0.4 }}>{note}</div>}
+        <div style={{ fontSize: 'var(--aguila-fs-body)', color: emphasis ? TEXT_PRIMARY : TEXT_SECONDARY, fontWeight: emphasis ? 600 : 400 }}>{label}</div>
+        {note && <div style={{ fontSize: 'var(--aguila-fs-label)', color: TEXT_MUTED, marginTop: 2, letterSpacing: 0.4 }}>{note}</div>}
       </div>
       <div style={{ textAlign: 'right' }}>
         <span style={{
@@ -90,7 +90,7 @@ function Line({ label, amount, currency, note, emphasis }: {
         }}>
           {currency === 'MXN' ? fmtMXN(amount) : fmtUSD(amount)}
         </span>
-        <span style={{ fontSize: 10, color: TEXT_MUTED, marginLeft: 6, letterSpacing: 0.6 }}>{currency}</span>
+        <span style={{ fontSize: 'var(--aguila-fs-label)', color: TEXT_MUTED, marginLeft: 6, letterSpacing: 0.6 }}>{currency}</span>
       </div>
     </div>
   )
@@ -201,7 +201,7 @@ export function QuoteForm() {
               background: 'rgba(255,255,255,0.03)',
               border: '1px solid rgba(255,255,255,0.08)',
               borderRadius: 10, cursor: 'pointer',
-              fontSize: 13, color: TEXT_SECONDARY,
+              fontSize: 'var(--aguila-fs-body)', color: TEXT_SECONDARY,
             }}>
               <input type="checkbox" name="tmec" defaultChecked style={{ width: 18, height: 18, accentColor: ACCENT_SILVER_BRIGHT }} />
               Certificado T-MEC / USMCA (IGI 0%)
@@ -211,7 +211,7 @@ export function QuoteForm() {
 
         {err && (
           <GlassCard>
-            <p style={{ color: '#EF4444', fontSize: 13, margin: 0 }}>{err}</p>
+            <p style={{ color: '#EF4444', fontSize: 'var(--aguila-fs-body)', margin: 0 }}>{err}</p>
           </GlassCard>
         )}
 
@@ -223,7 +223,7 @@ export function QuoteForm() {
               minHeight: 60, padding: '0 28px',
               background: SILVER_GRADIENT, color: '#0A0A0C',
               border: 'none', borderRadius: 10,
-              fontSize: 14, fontWeight: 700,
+              fontSize: 'var(--aguila-fs-section)', fontWeight: 700,
               textTransform: 'uppercase', letterSpacing: 0.5,
               cursor: loading ? 'wait' : 'pointer',
               opacity: loading ? 0.6 : 1,
@@ -231,7 +231,7 @@ export function QuoteForm() {
           >
             {loading ? 'Calculando…' : 'Calcular cotización'}
           </button>
-          <span style={{ fontSize: 11, color: TEXT_MUTED }}>
+          <span style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED }}>
             Tipo de cambio + DTA + IVA desde system_config
           </span>
         </div>
@@ -247,16 +247,16 @@ export function QuoteForm() {
             }}>
               <div>
                 <div style={{
-                  fontSize: 10, fontWeight: 700, letterSpacing: 0.8,
+                  fontSize: 'var(--aguila-fs-label)', fontWeight: 700, letterSpacing: 0.8,
                   textTransform: 'uppercase', color: TEXT_MUTED,
                 }}>Total contribuciones</div>
                 <div style={{
                   fontFamily: 'var(--font-jetbrains-mono), monospace',
-                  fontSize: 32, fontWeight: 800, color: TEXT_PRIMARY,
+                  fontSize: 'var(--aguila-fs-kpi-compact)', fontWeight: 800, color: TEXT_PRIMARY,
                   fontVariantNumeric: 'tabular-nums',
                   marginTop: 4,
                 }}>{fmtMXN(quote.total_contribuciones_mxn)}</div>
-                <div style={{ fontSize: 11, color: TEXT_MUTED, marginTop: 2, letterSpacing: 0.6 }}>
+                <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED, marginTop: 2, letterSpacing: 0.6 }}>
                   MXN · tipo de cambio {quote.tipo_cambio.toFixed(4)}
                 </div>
               </div>
@@ -268,12 +268,12 @@ export function QuoteForm() {
                   borderRadius: 10,
                   padding: '8px 12px',
                 }}>
-                  <div style={{ fontSize: 10, color: '#4ade80', textTransform: 'uppercase', letterSpacing: 0.8, fontWeight: 700 }}>
+                  <div style={{ fontSize: 'var(--aguila-fs-label)', color: '#4ade80', textTransform: 'uppercase', letterSpacing: 0.8, fontWeight: 700 }}>
                     Ahorro T-MEC
                   </div>
                   <div style={{
                     fontFamily: 'var(--font-jetbrains-mono), monospace',
-                    fontSize: 14, fontWeight: 700, color: '#4ade80',
+                    fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: '#4ade80',
                     fontVariantNumeric: 'tabular-nums',
                   }}>
                     {fmtMXN(quote.tmec_savings_mxn)}
@@ -299,10 +299,10 @@ export function QuoteForm() {
           </GlassCard>
 
           <GlassCard>
-            <p style={{ fontSize: 11, color: TEXT_MUTED, margin: 0, lineHeight: 1.6 }}>
+            <p style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED, margin: 0, lineHeight: 1.6 }}>
               {quote.disclaimer}
             </p>
-            <p style={{ fontSize: 11, color: ACCENT_SILVER, margin: '8px 0 0', letterSpacing: 0.4 }}>
+            <p style={{ fontSize: 'var(--aguila-fs-meta)', color: ACCENT_SILVER, margin: '8px 0 0', letterSpacing: 0.4 }}>
               Base IVA = valor aduana + DTA + IGI (nunca factura × 0.16 plano)
             </p>
           </GlassCard>

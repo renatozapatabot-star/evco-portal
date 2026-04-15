@@ -204,7 +204,7 @@ export function BulkTab({ canInsert }: { canInsert: boolean }) {
             flex: '1 1 240px',
             minWidth: 200,
             padding: '10px 14px',
-            fontSize: 13,
+            fontSize: 'var(--aguila-fs-body)',
             borderRadius: 10,
             border: '1px solid rgba(255,255,255,0.12)',
             background: 'rgba(255,255,255,0.04)',
@@ -220,7 +220,7 @@ export function BulkTab({ canInsert }: { canInsert: boolean }) {
             border: '1px solid rgba(255,255,255,0.12)',
             background: 'transparent',
             color: 'rgba(255,255,255,0.92)',
-            fontSize: 13,
+            fontSize: 'var(--aguila-fs-body)',
             fontWeight: 600,
             cursor: loading ? 'wait' : 'pointer',
           }}
@@ -236,7 +236,7 @@ export function BulkTab({ canInsert }: { canInsert: boolean }) {
             border: 'none',
             background: selectedCount === 0 || classifying ? 'rgba(148,163,184,0.2)' : '#eab308',
             color: selectedCount === 0 || classifying ? 'rgba(255,255,255,0.5)' : '#0D0D0C',
-            fontSize: 13,
+            fontSize: 'var(--aguila-fs-body)',
             fontWeight: 700,
             cursor: selectedCount === 0 || classifying ? 'not-allowed' : 'pointer',
             minHeight: 44,
@@ -246,7 +246,7 @@ export function BulkTab({ canInsert }: { canInsert: boolean }) {
         </button>
       </div>
 
-      <div style={{ display: 'flex', gap: 12, marginBottom: 12, fontSize: 11, color: 'rgba(255,255,255,0.6)', fontFamily: 'var(--font-jetbrains-mono), monospace' }}>
+      <div style={{ display: 'flex', gap: 12, marginBottom: 12, fontSize: 'var(--aguila-fs-meta)', color: 'rgba(255,255,255,0.6)', fontFamily: 'var(--font-jetbrains-mono), monospace' }}>
         <span>Sin clasificar: {summary.pending}</span>
         <span>Con propuesta: {summary.classified}</span>
         <span style={{ color: '#86EFAC' }}>Aplicadas: {summary.applied}</span>
@@ -257,7 +257,7 @@ export function BulkTab({ canInsert }: { canInsert: boolean }) {
         <div style={{
           padding: 12, marginBottom: 12, borderRadius: 10,
           background: 'rgba(239,68,68,0.12)', color: '#FCA5A5',
-          border: '1px solid rgba(239,68,68,0.24)', fontSize: 13,
+          border: '1px solid rgba(239,68,68,0.24)', fontSize: 'var(--aguila-fs-body)',
         }}>
           {error}
         </div>
@@ -273,7 +273,7 @@ export function BulkTab({ canInsert }: { canInsert: boolean }) {
           display: 'flex', alignItems: 'center', gap: 12,
           padding: '10px 16px',
           borderBottom: '1px solid rgba(255,255,255,0.08)',
-          fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
+          fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase',
           letterSpacing: '0.08em', color: 'rgba(255,255,255,0.5)',
         }}>
           <label style={{ display: 'inline-flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
@@ -287,7 +287,7 @@ export function BulkTab({ canInsert }: { canInsert: boolean }) {
         </div>
 
         {rows.length === 0 ? (
-          <div style={{ padding: 24, color: 'rgba(255,255,255,0.5)', fontSize: 13, textAlign: 'center' }}>
+          <div style={{ padding: 24, color: 'rgba(255,255,255,0.5)', fontSize: 'var(--aguila-fs-body)', textAlign: 'center' }}>
             {loading ? 'Cargando…' : 'Sin productos pendientes de clasificar.'}
           </div>
         ) : (
@@ -315,14 +315,14 @@ export function BulkTab({ canInsert }: { canInsert: boolean }) {
                   onChange={() => toggleOne(row.producto.id)}
                 />
                 <div style={{ minWidth: 0 }}>
-                  <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.92)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'rgba(255,255,255,0.92)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {row.producto.descripcion ?? row.producto.descripcion_ingles ?? row.producto.cve_producto ?? '—'}
                   </div>
-                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', marginTop: 2 }}>
+                  <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'rgba(255,255,255,0.5)', marginTop: 2 }}>
                     {row.producto.cve_trafico ?? '—'} · {row.producto.pais_origen ?? '—'}
                   </div>
                   {r?.justificacion && row.ui !== 'applied' && (
-                    <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', marginTop: 4, fontStyle: 'italic' }}>
+                    <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'rgba(255,255,255,0.6)', marginTop: 4, fontStyle: 'italic' }}>
                       {r.justificacion}
                     </div>
                   )}
@@ -340,7 +340,7 @@ export function BulkTab({ canInsert }: { canInsert: boolean }) {
                       placeholder="XXXX.XX.XX"
                       style={{
                         fontFamily: 'var(--font-jetbrains-mono), monospace',
-                        fontSize: 13,
+                        fontSize: 'var(--aguila-fs-body)',
                         width: '100%',
                         padding: '6px 10px',
                         borderRadius: 8,
@@ -350,7 +350,7 @@ export function BulkTab({ canInsert }: { canInsert: boolean }) {
                       }}
                     />
                   ) : r?.fraccion ? (
-                    <span style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', fontSize: 13, color: 'rgba(255,255,255,0.92)' }}>
+                    <span style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', fontSize: 'var(--aguila-fs-body)', color: 'rgba(255,255,255,0.92)' }}>
                       {r.fraccion}
                     </span>
                   ) : (
@@ -361,7 +361,7 @@ export function BulkTab({ canInsert }: { canInsert: boolean }) {
                       display: 'inline-block', marginLeft: 6,
                       padding: '1px 6px', borderRadius: 6,
                       background: 'rgba(201,168,76,0.16)', color: '#FDE68A',
-                      fontSize: 10, fontWeight: 700,
+                      fontSize: 'var(--aguila-fs-label)', fontWeight: 700,
                     }}>
                       T-MEC
                     </span>
@@ -371,7 +371,7 @@ export function BulkTab({ canInsert }: { canInsert: boolean }) {
                       display: 'inline-block', marginLeft: 6,
                       padding: '1px 6px', borderRadius: 6,
                       background: 'rgba(251,191,36,0.12)', color: '#FDE68A',
-                      fontSize: 10, fontWeight: 700,
+                      fontSize: 'var(--aguila-fs-label)', fontWeight: 700,
                     }}>
                       NOM ({r.nom_required.length})
                     </span>
@@ -382,13 +382,13 @@ export function BulkTab({ canInsert }: { canInsert: boolean }) {
                     <span style={{
                       fontFamily: 'var(--font-jetbrains-mono), monospace',
                       padding: '2px 8px', borderRadius: 12,
-                      fontSize: 11, fontWeight: 700,
+                      fontSize: 'var(--aguila-fs-meta)', fontWeight: 700,
                       background: col.bg, color: col.fg,
                     }}>
                       {conf}%
                     </span>
                   ) : (
-                    <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>
+                    <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'rgba(255,255,255,0.4)' }}>
                       {STATUS_LABEL[row.ui]}
                     </span>
                   )}
@@ -421,13 +421,13 @@ export function BulkTab({ canInsert }: { canInsert: boolean }) {
                     </>
                   )}
                   {row.ui === 'applied' && (
-                    <span style={{ fontSize: 11, color: '#86EFAC', fontWeight: 600 }}>✓ Aplicada</span>
+                    <span style={{ fontSize: 'var(--aguila-fs-meta)', color: '#86EFAC', fontWeight: 600 }}>✓ Aplicada</span>
                   )}
                   {row.ui === 'rejected' && (
-                    <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>Rechazada</span>
+                    <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'rgba(255,255,255,0.4)' }}>Rechazada</span>
                   )}
                   {row.ui === 'error' && (
-                    <span style={{ fontSize: 11, color: '#FCA5A5' }}>{r?.error_code ?? 'error'}</span>
+                    <span style={{ fontSize: 'var(--aguila-fs-meta)', color: '#FCA5A5' }}>{r?.error_code ?? 'error'}</span>
                   )}
                 </div>
               </div>

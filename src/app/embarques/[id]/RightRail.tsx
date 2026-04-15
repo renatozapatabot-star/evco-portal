@@ -146,7 +146,7 @@ function AccionesRapidas({
                 border: `1px solid ${categoryColor}33`,
                 borderRadius: 12,
                 color: TEXT_PRIMARY,
-                fontSize: 13,
+                fontSize: 'var(--aguila-fs-body)',
                 fontWeight: 600,
                 cursor: isBusy ? 'wait' : 'pointer',
                 textAlign: 'left',
@@ -173,7 +173,7 @@ function AccionesRapidas({
       {!isInternal && (
         <div
           style={{
-            fontSize: 11,
+            fontSize: 'var(--aguila-fs-meta)',
             color: TEXT_MUTED,
             marginTop: 10,
             textAlign: 'center',
@@ -239,7 +239,7 @@ function InformacionLateral({
         <InfoField label="Proveedor principal" value={proveedorName ?? 'Sin proveedor principal'} />
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <span style={{ fontSize: 11, color: TEXT_MUTED }}>Operador asignado</span>
+          <span style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED }}>Operador asignado</span>
           {isInternal && availableOperators.length > 0 ? (
             <select
               value={operator}
@@ -252,7 +252,7 @@ function InformacionLateral({
                 color: TEXT_PRIMARY,
                 border: `1px solid ${BORDER}`,
                 borderRadius: 12,
-                fontSize: 13,
+                fontSize: 'var(--aguila-fs-body)',
                 cursor: pending ? 'wait' : 'pointer',
               }}
             >
@@ -275,7 +275,7 @@ function InformacionLateral({
         />
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <span style={{ fontSize: 11, color: TEXT_MUTED }}>Expediente</span>
+          <span style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED }}>Expediente</span>
           <div
             aria-label={`Expediente ${expedienteProgressPct}% completo`}
             style={{
@@ -295,7 +295,7 @@ function InformacionLateral({
           </div>
           <span
             style={{
-              fontSize: 11,
+              fontSize: 'var(--aguila-fs-meta)',
               color: TEXT_SECONDARY,
               fontFamily: 'var(--font-mono)',
               textAlign: 'right',
@@ -327,7 +327,7 @@ function PanelTitle({ children }: { children: React.ReactNode }) {
   return (
     <div
       style={{
-        fontSize: 11,
+        fontSize: 'var(--aguila-fs-meta)',
         fontWeight: 800,
         color: TEXT_MUTED,
         textTransform: 'uppercase',
@@ -342,7 +342,7 @@ function PanelTitle({ children }: { children: React.ReactNode }) {
 
 function valueStyle(mono: boolean): React.CSSProperties {
   return {
-    fontSize: 13,
+    fontSize: 'var(--aguila-fs-body)',
     color: TEXT_PRIMARY,
     fontFamily: mono ? 'var(--font-mono)' : undefined,
     fontWeight: 600,
@@ -355,7 +355,7 @@ function valueStyle(mono: boolean): React.CSSProperties {
 function InfoField({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      <span style={{ fontSize: 11, color: TEXT_MUTED }}>{label}</span>
+      <span style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED }}>{label}</span>
       <span style={valueStyle(Boolean(mono))}>{value}</span>
     </div>
   )

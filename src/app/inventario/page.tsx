@@ -100,7 +100,7 @@ export default function InventarioPage() {
         <Package size={24} style={{ color: 'var(--gold)' }} />
         Inventario Inteligente
       </h1>
-      <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 20 }}>
+      <p style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-muted)', marginBottom: 20 }}>
         Estimación de inventario por inferencia de importaciones — sin contar cajas
       </p>
 
@@ -182,7 +182,7 @@ export default function InventarioPage() {
                 {data.alerts.length} alerta(s) de reorden pendiente(s)
               </div>
               {data.alerts.slice(0, 2).map(a => (
-                <div key={a.id} style={{ fontSize: 11, color: '#78350F', marginTop: 4 }}>
+                <div key={a.id} style={{ fontSize: 'var(--aguila-fs-meta)', color: '#78350F', marginTop: 4 }}>
                   {a.product_description.substring(0, 40)} — {a.days_of_cover} días cobertura
                 </div>
               ))}
@@ -218,7 +218,7 @@ function KPICard({ label, value, icon, color }: {
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
         <span style={{ color: color || 'var(--gold)' }}>{icon}</span>
-        <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 500 }}>{label}</span>
+        <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', fontWeight: 500 }}>{label}</span>
       </div>
       <div style={{
         fontSize: 22, fontWeight: 700,
@@ -257,7 +257,7 @@ function InventoryCard({ estimate: e, isMobile }: { estimate: InventoryEstimate;
         <div style={{ flex: 1 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <RiskIcon size={14} style={{ color: risk.color }} />
-            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>
+            <span style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 700, color: 'var(--text-primary)' }}>
               {e.product_description}
             </span>
             <span style={{
@@ -268,7 +268,7 @@ function InventoryCard({ estimate: e, isMobile }: { estimate: InventoryEstimate;
             </span>
           </div>
           {e.primary_supplier && (
-            <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-secondary)', marginTop: 2 }}>
               {e.primary_supplier} · lead time ~{e.supplier_lead_time_days}d
             </div>
           )}
@@ -280,7 +280,7 @@ function InventoryCard({ estimate: e, isMobile }: { estimate: InventoryEstimate;
           }}>
             {e.days_of_cover ?? '?'}d
           </div>
-          <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>cobertura</div>
+          <div style={{ fontSize: 'var(--aguila-fs-label)', color: 'var(--text-muted)' }}>cobertura</div>
         </div>
       </div>
 
@@ -301,7 +301,7 @@ function InventoryCard({ estimate: e, isMobile }: { estimate: InventoryEstimate;
       {/* Metrics */}
       <div style={{
         display: 'flex', gap: isMobile ? 10 : 20, marginTop: 10,
-        fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', flexWrap: 'wrap',
+        fontSize: 'var(--aguila-fs-meta)', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', flexWrap: 'wrap',
       }}>
         <span>Restante: ~{fmtKg(e.estimated_remaining_kg)}</span>
         <span>Consumo: ~{fmtKg(e.avg_monthly_kg)}/mes</span>
@@ -314,7 +314,7 @@ function InventoryCard({ estimate: e, isMobile }: { estimate: InventoryEstimate;
       {(e.reorder_date || e.depletion_date) && (
         <div style={{
           display: 'flex', gap: isMobile ? 10 : 20, marginTop: 6,
-          fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)',
+          fontSize: 'var(--aguila-fs-meta)', fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)',
         }}>
           {e.last_shipment_date && (
             <span>Último envío: {fmtDate(e.last_shipment_date)}</span>

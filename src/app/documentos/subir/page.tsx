@@ -186,7 +186,7 @@ export default function SubirDocumentosPage() {
         <h1 className="page-title" style={{ color: 'var(--cruz-text)', marginBottom: 6 }}>
           Subir Documentos
         </h1>
-        <p style={{ fontSize: 14, color: 'var(--cruz-text-muted)', lineHeight: 1.5 }}>
+        <p style={{ fontSize: 'var(--aguila-fs-section)', color: 'var(--cruz-text-muted)', lineHeight: 1.5 }}>
           Sus documentos serán clasificados automáticamente por ZAPATA AI
         </p>
       </div>
@@ -194,7 +194,7 @@ export default function SubirDocumentosPage() {
       {/* ── SECTION 1: Embarque Selector ── */}
       <div style={{ marginBottom: 24 }}>
         <label style={{
-          display: 'block', fontSize: 11, fontWeight: 600,
+          display: 'block', fontSize: 'var(--aguila-fs-meta)', fontWeight: 600,
           textTransform: 'uppercase', letterSpacing: '0.06em',
           color: 'var(--cruz-text-muted)', marginBottom: 8,
         }}>
@@ -274,7 +274,7 @@ export default function SubirDocumentosPage() {
           <div style={{
             padding: '14px 20px',
             borderBottom: '1px solid var(--cruz-border)',
-            fontSize: 13, fontWeight: 700,
+            fontSize: 'var(--aguila-fs-body)', fontWeight: 700,
             color: 'var(--cruz-text)',
           }}>
             Documentos subidos esta sesión
@@ -294,12 +294,12 @@ export default function SubirDocumentosPage() {
               {/* File info */}
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{
-                  fontSize: 13, fontWeight: 600, color: 'var(--cruz-text)',
+                  fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: 'var(--cruz-text)',
                   overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                 }}>
                   {u.fileName}
                 </div>
-                <div style={{ fontSize: 11, color: 'var(--cruz-text-ghost)', marginTop: 2 }}>
+                <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--cruz-text-ghost)', marginTop: 2 }}>
                   {fmtBytes(u.size)}
                   {u.status === 'uploading' && ' · Subiendo...'}
                   {u.status === 'error' && ` · ${u.errorMsg}`}
@@ -309,7 +309,7 @@ export default function SubirDocumentosPage() {
               {/* Classification badge */}
               {u.status === 'classified' && (
                 <span style={{
-                  fontSize: 11, fontWeight: 600,
+                  fontSize: 'var(--aguila-fs-meta)', fontWeight: 600,
                   padding: '4px 10px', borderRadius: 6,
                   background: 'var(--cruz-green-dim)',
                   color: 'var(--cruz-green)',
@@ -321,7 +321,7 @@ export default function SubirDocumentosPage() {
               )}
               {u.status === 'unclassified' && (
                 <span style={{
-                  fontSize: 11, fontWeight: 600,
+                  fontSize: 'var(--aguila-fs-meta)', fontWeight: 600,
                   padding: '4px 10px', borderRadius: 6,
                   background: 'var(--cruz-amber-dim)',
                   color: 'var(--cruz-amber)',
@@ -333,7 +333,7 @@ export default function SubirDocumentosPage() {
               )}
               {u.status === 'error' && (
                 <span style={{
-                  fontSize: 11, fontWeight: 600,
+                  fontSize: 'var(--aguila-fs-meta)', fontWeight: 600,
                   padding: '4px 10px', borderRadius: 6,
                   background: 'var(--cruz-red-dim)',
                   color: 'var(--cruz-red)',
@@ -354,7 +354,7 @@ export default function SubirDocumentosPage() {
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                 padding: '14px 20px',
                 borderTop: '1px solid var(--cruz-border)',
-                fontSize: 13, fontWeight: 600,
+                fontSize: 'var(--aguila-fs-body)', fontWeight: 600,
                 color: 'var(--cruz-gold)',
                 textDecoration: 'none',
                 transition: 'background 0.1s ease',
@@ -380,7 +380,7 @@ export default function SubirDocumentosPage() {
           <div style={{
             padding: '14px 20px',
             borderBottom: '1px solid var(--cruz-border)',
-            fontSize: 13, fontWeight: 700,
+            fontSize: 'var(--aguila-fs-body)', fontWeight: 700,
             color: 'var(--cruz-text)',
           }}>
             Documentos requeridos
@@ -396,7 +396,7 @@ export default function SubirDocumentosPage() {
                 : <div style={{ width: 16, height: 16, borderRadius: 4, border: '1.5px solid var(--cruz-text-ghost)', flexShrink: 0 }} />
               }
               <span style={{
-                flex: 1, fontSize: 14, fontWeight: 500,
+                flex: 1, fontSize: 'var(--aguila-fs-section)', fontWeight: 500,
                 color: doc.present ? 'var(--cruz-text-muted)' : 'var(--cruz-text)',
                 textDecoration: doc.present ? 'line-through' : 'none',
               }}>

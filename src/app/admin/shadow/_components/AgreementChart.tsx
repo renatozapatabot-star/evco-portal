@@ -87,7 +87,7 @@ export function AgreementChart({ rows }: { rows: ShadowByDay[] }) {
           )
         })}
       </svg>
-      <div style={{ display: 'flex', gap: 16, marginTop: 8, fontSize: 11 }}>
+      <div style={{ display: 'flex', gap: 16, marginTop: 8, fontSize: 'var(--aguila-fs-meta)' }}>
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: TEXT_PRIMARY }}>
           <span style={{ width: 10, height: 10, background: ACCENT_CYAN, borderRadius: 2 }} /> Concuerdan
         </span>

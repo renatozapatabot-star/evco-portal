@@ -81,7 +81,7 @@ export default function PlantillasDocPage() {
         <FileText size={24} style={{ color: 'var(--gold)' }} />
         Red de Documentos
       </h1>
-      <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24 }}>
+      <p style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-muted)', marginBottom: 24 }}>
         Plantillas aprendidas de operaciones completadas — cada documento enseña a la red
       </p>
 
@@ -128,20 +128,20 @@ export default function PlantillasDocPage() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 4, background: 'var(--gold)', color: '#FFF', fontWeight: 600 }}>
+                      <span style={{ fontSize: 'var(--aguila-fs-label)', padding: '1px 6px', borderRadius: 4, background: 'var(--gold)', color: '#FFF', fontWeight: 600 }}>
                         {DOC_LABELS[t.doc_type] || t.doc_type}
                       </span>
                       <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>
                         {t.supplier_key.replace(/_/g, ' ')}
                       </span>
                       {t.product_key !== '_general' && (
-                        <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                        <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)' }}>
                           · {t.product_key.replace(/_/g, ' ')}
                         </span>
                       )}
                     </div>
                   </div>
-                  <div style={{ display: 'flex', gap: 12, fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
+                  <div style={{ display: 'flex', gap: 12, fontSize: 'var(--aguila-fs-meta)', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
                     <span>{t.times_used} usos</span>
                     <span>{t.clients_served} cliente{t.clients_served !== 1 ? 's' : ''}</span>
                     {t.typical_turnaround_hours && <span>~{t.typical_turnaround_hours}h</span>}
@@ -161,7 +161,7 @@ function KPI({ icon, label, value }: { icon: React.ReactNode; label: string; val
     <div style={{ padding: '14px 16px', borderRadius: 8, background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
         <span style={{ color: 'var(--gold)' }}>{icon}</span>
-        <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{label}</span>
+        <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)' }}>{label}</span>
       </div>
       <div style={{ fontSize: 20, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>{value}</div>
     </div>
@@ -171,7 +171,7 @@ function KPI({ icon, label, value }: { icon: React.ReactNode; label: string; val
 function FilterPill({ active, onClick, label }: { active: boolean; onClick: () => void; label: string }) {
   return (
     <button onClick={onClick} style={{
-      padding: '4px 12px', borderRadius: 16, fontSize: 11, fontWeight: 600, cursor: 'pointer', minHeight: 32,
+      padding: '4px 12px', borderRadius: 16, fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, cursor: 'pointer', minHeight: 32,
       border: `1px solid ${active ? 'var(--gold)' : 'var(--border)'}`,
       background: active ? 'var(--gold)' : 'var(--bg-card)',
       color: active ? '#FFF' : 'var(--text-secondary)',

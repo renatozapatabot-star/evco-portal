@@ -240,13 +240,13 @@ async function renderBodegaCockpit(opName: string) {
               background: 'rgba(255,255,255,0.02)',
               textDecoration: 'none',
               color: '#E6EDF3',
-              fontSize: 13,
+              fontSize: 'var(--aguila-fs-body)',
               fontWeight: 600,
               minHeight: 60,
             }}
           >
             <div>{a.label}</div>
-            <div style={{ fontSize: 11, color: 'rgba(230,237,243,0.55)', marginTop: 2, fontWeight: 400 }}>{a.sub}</div>
+            <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'rgba(230,237,243,0.55)', marginTop: 2, fontWeight: 400 }}>{a.sub}</div>
           </a>
         ))}
       </div>

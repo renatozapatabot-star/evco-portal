@@ -16,11 +16,11 @@ export function ChaserButton({ traficoId, traficoNum, operatorEmail, operatorNam
   const [errorMsg, setErrorMsg] = useState('')
 
   if (!operatorEmail) {
-    return <span style={{ fontSize: 10, color: '#6B7280', fontStyle: 'italic' }}>Sin email</span>
+    return <span style={{ fontSize: 'var(--aguila-fs-label)', color: '#6B7280', fontStyle: 'italic' }}>Sin email</span>
   }
 
   if (status === 'sent') {
-    return <span style={{ fontSize: 10, color: '#16A34A', fontWeight: 600 }}>Enviado</span>
+    return <span style={{ fontSize: 'var(--aguila-fs-label)', color: '#16A34A', fontWeight: 600 }}>Enviado</span>
   }
 
   async function handleClick() {
@@ -50,7 +50,7 @@ export function ChaserButton({ traficoId, traficoNum, operatorEmail, operatorNam
       disabled={status === 'sending'}
       title={status === 'error' ? errorMsg : `Enviar a ${operatorEmail}`}
       style={{
-        fontSize: 10,
+        fontSize: 'var(--aguila-fs-label)',
         padding: '3px 8px',
         background: 'transparent',
         border: '1px solid rgba(196, 150, 60, 0.35)',

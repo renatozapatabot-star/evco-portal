@@ -78,7 +78,7 @@ function StatusPill({ status }: { status: string }) {
   const c = config[status] || config.prospect
   return (
     <span style={{
-      padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 600,
+      padding: '2px 8px', borderRadius: 4, fontSize: 'var(--aguila-fs-meta)', fontWeight: 600,
       color: c.color, background: c.bg,
     }}>
       {c.label}
@@ -143,7 +143,7 @@ export default function ProspectosPage() {
           <p className="pg-meta">Empresas cruzando Aduana 240 · Inteligencia comercial</p>
         </div>
         <Link href="/prospectos/pipeline" style={{
-          padding: '8px 16px', borderRadius: 6, fontSize: 13, fontWeight: 600,
+          padding: '8px 16px', borderRadius: 6, fontSize: 'var(--aguila-fs-body)', fontWeight: 600,
           background: 'rgba(192,197,206,0.1)', border: '1px solid rgba(192,197,206,0.3)',
           color: 'var(--gold-600)', textDecoration: 'none',
           display: 'flex', alignItems: 'center', gap: 6,
@@ -164,7 +164,7 @@ export default function ProspectosPage() {
             <div className="kpi-label" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
               <kpi.icon size={13} /> {kpi.label}
             </div>
-            <div className="kpi-value" style={{ fontSize: 24, color: kpi.color }}>
+            <div className="kpi-value" style={{ fontSize: 'var(--aguila-fs-title)', color: kpi.color }}>
               {typeof kpi.value === 'number' ? kpi.value.toLocaleString() : kpi.value}
             </div>
           </div>
@@ -207,7 +207,7 @@ export default function ProspectosPage() {
           {!loading && filtered.length === 0 && (
             <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '48px 0', color: 'var(--n-400)' }}>
               <Target size={24} style={{ margin: '0 auto 8px', display: 'block', opacity: 0.4 }} />
-              <div style={{ fontSize: 14, fontWeight: 600 }}>Sin prospectos con estos filtros</div>
+              <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600 }}>Sin prospectos con estos filtros</div>
             </div>
           )}
 
@@ -223,10 +223,10 @@ export default function ProspectosPage() {
               {/* Card header */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {p.razon_social || p.rfc}
                   </div>
-                  <div style={{ fontSize: 11, color: 'var(--n-400)', fontFamily: 'var(--font-jetbrains-mono)', marginTop: 2 }}>{p.rfc}</div>
+                  <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--n-400)', fontFamily: 'var(--font-jetbrains-mono)', marginTop: 2 }}>{p.rfc}</div>
                 </div>
                 <ScoreBadge score={p.opportunity_score} />
               </div>
@@ -242,19 +242,19 @@ export default function ProspectosPage() {
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
                 <StatusPill status={p.status} />
                 {p.likely_tmec_eligible && (
-                  <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 3, background: 'rgba(22,163,74,0.08)', color: 'var(--success)', fontWeight: 600 }}>
+                  <span style={{ fontSize: 'var(--aguila-fs-label)', padding: '2px 6px', borderRadius: 3, background: 'rgba(22,163,74,0.08)', color: 'var(--success)', fontWeight: 600 }}>
                     T-MEC <span style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtMXN(p.tmec_savings_opportunity_mxn)}</span>/año
                   </span>
                 )}
                 {p.high_value_importer && (
-                  <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 3, background: 'rgba(192,197,206,0.1)', color: 'var(--gold-600)', fontWeight: 600 }}>
+                  <span style={{ fontSize: 'var(--aguila-fs-label)', padding: '2px 6px', borderRadius: 3, background: 'rgba(192,197,206,0.1)', color: 'var(--gold-600)', fontWeight: 600 }}>
                     Alto valor
                   </span>
                 )}
               </div>
 
               {/* Est. fees */}
-              <div style={{ marginTop: 8, fontSize: 11, color: 'var(--n-400)', display: 'flex', justifyContent: 'space-between' }}>
+              <div style={{ marginTop: 8, fontSize: 'var(--aguila-fs-meta)', color: 'var(--n-400)', display: 'flex', justifyContent: 'space-between' }}>
                 <span>Est. honorarios: <strong style={{ color: 'var(--success)', fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtMXN(p.estimated_annual_fees_mxn)}/año</strong></span>
                 <span>{p.top_proveedores?.length || 0} proveedores</span>
               </div>

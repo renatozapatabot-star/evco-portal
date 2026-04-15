@@ -71,7 +71,7 @@ export default function NegociacionPage() {
         <Users2 size={24} style={{ color: 'var(--gold)' }} />
         Negociación con Proveedores
       </h1>
-      <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24 }}>
+      <p style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-muted)', marginBottom: 24 }}>
         Briefs de negociación con datos de mercado, alternativas, y mensajes sugeridos
       </p>
 
@@ -106,7 +106,7 @@ export default function NegociacionPage() {
 function KPI({ label, value, color }: { label: string; value: string | number; color: string }) {
   return (
     <div style={{ padding: '14px 16px', borderRadius: 8, background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
-      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>{label}</div>
+      <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', marginBottom: 4 }}>{label}</div>
       <div style={{ fontSize: 20, fontWeight: 700, fontFamily: 'var(--font-mono)', color }}>{value}</div>
     </div>
   )
@@ -127,7 +127,7 @@ function BriefCard({ brief: b, isMobile }: { brief: Brief; isMobile: boolean }) 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div style={{ flex: 1 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{b.supplier}</span>
+              <span style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: 'var(--text-primary)' }}>{b.supplier}</span>
               {aboveMarket && (
                 <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 4, background: 'rgba(192,197,206,0.08)', color: '#92400E', fontWeight: 600 }}>
                   +{b.price_vs_market_pct}% vs mercado
@@ -137,16 +137,16 @@ function BriefCard({ brief: b, isMobile }: { brief: Brief; isMobile: boolean }) 
             <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4 }}>{b.negotiation_angle}</div>
           </div>
           <div style={{ textAlign: 'right', minWidth: 80 }}>
-            <div style={{ fontSize: 18, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--gold-dark)' }}>
+            <div style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--gold-dark)' }}>
               {fmtUSDCompact(b.potential_savings_usd)}
             </div>
-            <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>USD/mes</div>
+            <div style={{ fontSize: 'var(--aguila-fs-label)', color: 'var(--text-muted)' }}>USD/mes</div>
             {expanded ? <ChevronUp size={14} style={{ marginTop: 4, color: 'var(--text-muted)' }} /> : <ChevronDown size={14} style={{ marginTop: 4, color: 'var(--text-muted)' }} />}
           </div>
         </div>
 
         {/* Quick stats */}
-        <div style={{ display: 'flex', gap: isMobile ? 8 : 16, marginTop: 8, fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: isMobile ? 8 : 16, marginTop: 8, fontSize: 'var(--aguila-fs-label)', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', flexWrap: 'wrap' }}>
           <span>{b.total_operations} ops</span>
           <span>{fmtUSDCompact(b.total_value_usd)} total</span>
           <span>{b.relationship_months} meses</span>
@@ -160,7 +160,7 @@ function BriefCard({ brief: b, isMobile }: { brief: Brief; isMobile: boolean }) 
           {/* Leverage + Performance */}
           <div style={{
             display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 12,
-            padding: '10px 12px', borderRadius: 6, background: 'var(--bg-main)', fontSize: 11,
+            padding: '10px 12px', borderRadius: 6, background: 'var(--bg-main)', fontSize: 'var(--aguila-fs-meta)',
           }}>
             <div>
               <div style={{ fontSize: 9, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 4 }}>SU LEVERAGE</div>
@@ -175,7 +175,7 @@ function BriefCard({ brief: b, isMobile }: { brief: Brief; isMobile: boolean }) 
           </div>
 
           {/* Pricing context */}
-          <div style={{ marginTop: 10, padding: '8px 12px', borderRadius: 6, background: 'var(--bg-main)', fontSize: 11 }}>
+          <div style={{ marginTop: 10, padding: '8px 12px', borderRadius: 6, background: 'var(--bg-main)', fontSize: 'var(--aguila-fs-meta)' }}>
             <div style={{ fontSize: 9, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 4 }}>CONTEXTO DE MERCADO</div>
             <div style={{ fontFamily: 'var(--font-mono)' }}>
               Proveedor: {fmtUSDCompact(b.supplier_avg_price_usd)} USD/op ·
@@ -186,7 +186,7 @@ function BriefCard({ brief: b, isMobile }: { brief: Brief; isMobile: boolean }) 
 
           {/* Alternatives */}
           {b.alternative_suppliers && b.alternative_suppliers.length > 0 && (
-            <div style={{ marginTop: 10, fontSize: 11 }}>
+            <div style={{ marginTop: 10, fontSize: 'var(--aguila-fs-meta)' }}>
               <div style={{ fontSize: 9, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 4 }}>ALTERNATIVAS</div>
               {b.alternative_suppliers.map((alt, i) => (
                 <div key={i} style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>
@@ -197,7 +197,7 @@ function BriefCard({ brief: b, isMobile }: { brief: Brief; isMobile: boolean }) 
           )}
 
           {/* Risk */}
-          <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 6, fontSize: 11 }}>
+          <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 6, fontSize: 'var(--aguila-fs-meta)' }}>
             <Shield size={12} style={{ color: '#16A34A' }} />
             <span style={{ color: 'var(--text-secondary)' }}>Riesgo: {b.risk_assessment}</span>
           </div>
@@ -207,7 +207,7 @@ function BriefCard({ brief: b, isMobile }: { brief: Brief; isMobile: boolean }) 
             <div style={{
               marginTop: 12, padding: '10px 14px', borderRadius: 8,
               background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)',
-              fontSize: 11, color: 'var(--text-secondary)', whiteSpace: 'pre-wrap',
+              fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-secondary)', whiteSpace: 'pre-wrap',
               lineHeight: 1.5,
             }}>
               <div style={{ fontSize: 9, fontWeight: 700, color: 'var(--gold-dark)', marginBottom: 6 }}>MENSAJE SUGERIDO</div>

@@ -43,7 +43,7 @@ export default function FraccionesPage() {
       <h1 style={{ fontSize: 20, fontWeight: 700, color: '#E6EDF3', marginBottom: 4 }}>
         Búsqueda de Fracciones
       </h1>
-      <p style={{ fontSize: 13, color: '#64748b', marginBottom: 24 }}>
+      <p style={{ fontSize: 'var(--aguila-fs-body)', color: '#64748b', marginBottom: 24 }}>
         Describe un producto y ZAPATA AI sugerirá la fracción arancelaria más probable.
       </p>
 
@@ -65,7 +65,7 @@ export default function FraccionesPage() {
             placeholder="Ej: vacuum loader hose, plastic container, steel bolt..."
             style={{
               flex: 1, background: 'transparent', border: 'none', outline: 'none',
-              color: '#E6EDF3', fontSize: 14, fontFamily: 'inherit',
+              color: '#E6EDF3', fontSize: 'var(--aguila-fs-section)', fontFamily: 'inherit',
             }}
           />
         </div>
@@ -74,7 +74,7 @@ export default function FraccionesPage() {
           disabled={loading || !query.trim()}
           style={{
             padding: '0 24px', height: 52, borderRadius: 14,
-            background: '#E8EAED', color: '#05070B', fontWeight: 700, fontSize: 14,
+            background: '#E8EAED', color: '#05070B', fontWeight: 700, fontSize: 'var(--aguila-fs-section)',
             border: 'none', cursor: 'pointer',
             opacity: loading || !query.trim() ? 0.5 : 1,
             transition: 'opacity 150ms, box-shadow 150ms',
@@ -101,7 +101,7 @@ export default function FraccionesPage() {
           backdropFilter: 'blur(20px)',
         }}>
           <Tag size={32} style={{ color: '#64748b', margin: '0 auto 12px' }} />
-          <div style={{ fontSize: 14, color: '#94a3b8', marginBottom: 4 }}>Sin sugerencias</div>
+          <div style={{ fontSize: 'var(--aguila-fs-section)', color: '#94a3b8', marginBottom: 4 }}>Sin sugerencias</div>
           <div style={{ fontSize: 12, color: '#64748b' }}>Intenta con una descripción más detallada del producto.</div>
         </div>
       )}
@@ -117,15 +117,15 @@ export default function FraccionesPage() {
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             }}>
               <div>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 18, fontWeight: 700, color: '#E6EDF3' }}>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: '#E6EDF3' }}>
                   {r.fraccion}
                 </span>
-                <div style={{ fontSize: 13, color: '#94a3b8', marginTop: 4 }}>{r.description}</div>
+                <div style={{ fontSize: 'var(--aguila-fs-body)', color: '#94a3b8', marginTop: 4 }}>{r.description}</div>
               </div>
               <div style={{
                 padding: '6px 14px', borderRadius: 10,
                 background: 'rgba(192,197,206,0.08)',
-                fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 700,
+                fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body)', fontWeight: 700,
                 color: '#C0C5CE',
               }}>
                 {Math.round(r.confidence * 100)}%
@@ -137,7 +137,7 @@ export default function FraccionesPage() {
 
       {/* Hint when not yet searched */}
       {!searched && (
-        <div style={{ textAlign: 'center', padding: 40, color: '#64748b', fontSize: 13 }}>
+        <div style={{ textAlign: 'center', padding: 40, color: '#64748b', fontSize: 'var(--aguila-fs-body)' }}>
           Escribe la descripción de un producto para obtener sugerencias de fracción arancelaria.
         </div>
       )}

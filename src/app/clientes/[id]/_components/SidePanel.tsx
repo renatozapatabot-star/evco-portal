@@ -33,7 +33,7 @@ function Shell({ title, children }: { title: string; children: React.ReactNode }
     >
       <div
         style={{
-          fontSize: 11, fontWeight: 700, color: TEXT_MUTED,
+          fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, color: TEXT_MUTED,
           textTransform: 'uppercase', letterSpacing: '0.08em',
           marginBottom: 12,
         }}
@@ -57,7 +57,7 @@ export function ContactoPanel({ info }: { info: ContactoInfo }) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {rows.map(([label, value, mono]) => (
           <div key={label} style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
-            <span style={{ fontSize: 11, color: TEXT_MUTED }}>{label}</span>
+            <span style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED }}>{label}</span>
             <span style={{
               fontSize: 12,
               color: TEXT_PRIMARY,
@@ -92,12 +92,12 @@ export function AlertasPanel({ rows }: { rows: AlertaRow[] }) {
                 {r.decision_type}
               </span>
               <span style={{
-                fontSize: 11, color: TEXT_MUTED,
+                fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED,
                 overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
               }}>
                 {r.decision}
               </span>
-              <span style={{ fontSize: 10, color: TEXT_MUTED, fontFamily: 'var(--font-mono)' }}>
+              <span style={{ fontSize: 'var(--aguila-fs-label)', color: TEXT_MUTED, fontFamily: 'var(--font-mono)' }}>
                 {fmtDateTime(r.created_at)}
               </span>
             </div>

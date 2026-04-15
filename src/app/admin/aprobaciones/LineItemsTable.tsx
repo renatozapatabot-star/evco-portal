@@ -43,7 +43,7 @@ function sourceBadge(source: string) {
   const c = config[source] || config.manual
   return (
     <span style={{
-      fontSize: 10, fontWeight: 600,
+      fontSize: 'var(--aguila-fs-label)', fontWeight: 600,
       padding: '2px 6px', borderRadius: 4,
       background: c.bg, color: c.text,
     }}>
@@ -57,7 +57,7 @@ export function LineItemsTable({ products }: Props) {
     return (
       <div style={{
         textAlign: 'center', padding: '24px 16px',
-        color: '#64748b', fontSize: 13,
+        color: '#64748b', fontSize: 'var(--aguila-fs-body)',
       }}>
         Sin líneas de producto
       </div>
@@ -68,14 +68,14 @@ export function LineItemsTable({ products }: Props) {
     <div style={{ overflowX: 'auto', scrollbarWidth: 'thin' }}>
       <table style={{
         width: '100%', borderCollapse: 'collapse',
-        fontSize: 13, color: '#E6EDF3',
+        fontSize: 'var(--aguila-fs-body)', color: '#E6EDF3',
       }}>
         <thead>
           <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
             {['#', 'Descripción', 'Cant.', 'Valor USD', 'Fracción', 'IGI%', 'Confianza', 'Fuente'].map(h => (
               <th key={h} style={{
                 padding: '8px 10px', textAlign: 'left',
-                fontSize: 10, fontWeight: 700, color: '#64748b',
+                fontSize: 'var(--aguila-fs-label)', fontWeight: 700, color: '#64748b',
                 textTransform: 'uppercase', letterSpacing: '0.08em',
                 whiteSpace: 'nowrap',
               }}>

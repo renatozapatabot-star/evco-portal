@@ -19,7 +19,7 @@ export default function ClasificarProductoPage() {
           <h1 style={{ fontSize: 22, fontWeight: 800, color: '#E6EDF3', margin: 0 }}>
             Clasificar Producto
           </h1>
-          <p style={{ fontSize: 13, color: '#64748b', margin: '2px 0 0' }}>
+          <p style={{ fontSize: 'var(--aguila-fs-body)', color: '#64748b', margin: '2px 0 0' }}>
             Solicita la fracción arancelaria de un producto nuevo
           </p>
         </div>

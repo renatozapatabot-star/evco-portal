@@ -105,7 +105,7 @@ export default async function ClienteConfiguracionPage({
             alignItems: 'center',
             gap: 6,
             minHeight: 44,
-            fontSize: 13,
+            fontSize: 'var(--aguila-fs-body)',
             color: ACCENT_SILVER_DIM,
             textDecoration: 'none',
           }}
@@ -116,7 +116,7 @@ export default async function ClienteConfiguracionPage({
       <header style={{ marginBottom: 20 }}>
         <div
           style={{
-            fontSize: 11,
+            fontSize: 'var(--aguila-fs-meta)',
             letterSpacing: '0.1em',
             textTransform: 'uppercase',
             color: ACCENT_SILVER,

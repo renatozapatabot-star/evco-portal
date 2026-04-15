@@ -150,13 +150,13 @@ export function OperatorsMetricsClient() {
         >
           Desempeño del equipo
         </h1>
-        <p style={{ fontSize: 13, color: TEXT_SECONDARY, marginTop: 6, marginBottom: 16 }}>
+        <p style={{ fontSize: 'var(--aguila-fs-body)', color: TEXT_SECONDARY, marginTop: 6, marginBottom: 16 }}>
           Métricas por operador: embarques atendidos, ciclo promedio, tasa de
           error, precisión en clasificación y cumplimiento MVE.
         </p>
 
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'flex-end' }}>
-          <label style={{ fontSize: 11, color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+          <label style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
             Desde
             <input
               type="date"
@@ -172,11 +172,11 @@ export function OperatorsMetricsClient() {
                 borderRadius: 10,
                 color: TEXT_PRIMARY,
                 fontFamily: MONO,
-                fontSize: 13,
+                fontSize: 'var(--aguila-fs-body)',
               }}
             />
           </label>
-          <label style={{ fontSize: 11, color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+          <label style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
             Hasta
             <input
               type="date"
@@ -192,7 +192,7 @@ export function OperatorsMetricsClient() {
                 borderRadius: 10,
                 color: TEXT_PRIMARY,
                 fontFamily: MONO,
-                fontSize: 13,
+                fontSize: 'var(--aguila-fs-body)',
               }}
             />
           </label>
@@ -209,7 +209,7 @@ export function OperatorsMetricsClient() {
               background: SILVER_GRADIENT,
               color: '#0A0A0C',
               fontFamily: SANS,
-              fontSize: 14,
+              fontSize: 'var(--aguila-fs-section)',
               fontWeight: 700,
               cursor: loading ? 'not-allowed' : 'pointer',
               opacity: loading ? 0.6 : 1,
@@ -222,7 +222,7 @@ export function OperatorsMetricsClient() {
           </div>
         </div>
         {error && (
-          <p style={{ marginTop: 12, fontSize: 13, color: '#EF4444' }}>{error}</p>
+          <p style={{ marginTop: 12, fontSize: 'var(--aguila-fs-body)', color: '#EF4444' }}>{error}</p>
         )}
       </header>
 
@@ -257,7 +257,7 @@ export function OperatorsMetricsClient() {
                       onClick={() => toggleSort(col.k as SortKey)}
                       style={{
                         textAlign: col.align,
-                        fontSize: 10,
+                        fontSize: 'var(--aguila-fs-label)',
                         fontWeight: 700,
                         letterSpacing: '0.08em',
                         textTransform: 'uppercase',
@@ -285,8 +285,8 @@ export function OperatorsMetricsClient() {
                     }}
                   >
                     <td style={{ padding: '10px 14px', fontFamily: SANS }}>
-                      <div style={{ fontWeight: 600, color: TEXT_PRIMARY, fontSize: 14 }}>{r.name}</div>
-                      <div style={{ fontSize: 11, color: ACCENT_SILVER, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                      <div style={{ fontWeight: 600, color: TEXT_PRIMARY, fontSize: 'var(--aguila-fs-section)' }}>{r.name}</div>
+                      <div style={{ fontSize: 'var(--aguila-fs-meta)', color: ACCENT_SILVER, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                         {r.role}
                       </div>
                     </td>
@@ -336,10 +336,10 @@ export function OperatorsMetricsClient() {
                 }}
               >
                 <div style={{ fontFamily: SANS, fontWeight: 700, fontSize: 16 }}>{r.name}</div>
-                <div style={{ fontSize: 11, color: ACCENT_SILVER, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
+                <div style={{ fontSize: 'var(--aguila-fs-meta)', color: ACCENT_SILVER, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
                   {r.role}
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8, fontFamily: MONO, fontSize: 13 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8, fontFamily: MONO, fontSize: 'var(--aguila-fs-body)' }}>
                   <div><span style={{ color: TEXT_MUTED }}>Embarques</span><br />{r.traficosHandled}</div>
                   <div><span style={{ color: TEXT_MUTED }}>Ciclo</span><br />{formatHours(r.avgCycleHours)}</div>
                   <div><span style={{ color: TEXT_MUTED }}>Error</span><br />{formatPct(r.errorRate)}</div>
@@ -358,7 +358,7 @@ function cellMono(align: 'left' | 'right'): React.CSSProperties {
   return {
     padding: '10px 14px',
     fontFamily: MONO,
-    fontSize: 13,
+    fontSize: 'var(--aguila-fs-body)',
     color: ACCENT_SILVER_BRIGHT,
     textAlign: align,
     whiteSpace: 'nowrap',
@@ -378,11 +378,11 @@ function EmptyState() {
         textAlign: 'center',
       }}
     >
-      <div style={{ fontSize: 44, marginBottom: 12, opacity: 0.5 }}>○</div>
-      <h2 style={{ fontFamily: SANS, fontSize: 18, fontWeight: 700, margin: 0 }}>
+      <div style={{ fontSize: 'var(--aguila-fs-kpi-large)', marginBottom: 12, opacity: 0.5 }}>○</div>
+      <h2 style={{ fontFamily: SANS, fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, margin: 0 }}>
         Sin actividad en el rango seleccionado.
       </h2>
-      <p style={{ color: TEXT_SECONDARY, fontSize: 13, marginTop: 8 }}>
+      <p style={{ color: TEXT_SECONDARY, fontSize: 'var(--aguila-fs-body)', marginTop: 8 }}>
         Ajusta las fechas o verifica que tu equipo esté registrando acciones.
       </p>
     </section>

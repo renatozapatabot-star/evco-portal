@@ -202,7 +202,7 @@ export function ConfigForm({ traficoId: _traficoId, config, onChange }: Props) {
         <div key={section.title} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
           <div
             style={{
-              fontSize: 10,
+              fontSize: 'var(--aguila-fs-label)',
               color: TEXT_MUTED,
               textTransform: 'uppercase',
               letterSpacing: '0.08em',
@@ -222,7 +222,7 @@ export function ConfigForm({ traficoId: _traficoId, config, onChange }: Props) {
                 padding: '0 8px',
                 cursor: 'pointer',
                 color: TEXT_SECONDARY,
-                fontSize: 13,
+                fontSize: 'var(--aguila-fs-body)',
               }}
             >
               <input
@@ -251,7 +251,7 @@ export function ConfigForm({ traficoId: _traficoId, config, onChange }: Props) {
           fontSize: 12,
         }}
       />
-      <div style={{ fontSize: 11, color: TEXT_MUTED }}>
+      <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED }}>
         Separa múltiples correos con coma o espacio.
       </div>
     </div>
@@ -262,7 +262,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <div
       style={{
-        fontSize: 11,
+        fontSize: 'var(--aguila-fs-meta)',
         fontWeight: 700,
         color: TEXT_MUTED,
         textTransform: 'uppercase',
@@ -296,7 +296,7 @@ function RadioRow({
         padding: '0 8px',
         cursor: 'pointer',
         color: TEXT_PRIMARY,
-        fontSize: 13,
+        fontSize: 'var(--aguila-fs-body)',
       }}
     >
       <input
@@ -318,7 +318,7 @@ const selectStyle: React.CSSProperties = {
   color: TEXT_PRIMARY,
   border: `1px solid ${BORDER_HAIRLINE}`,
   borderRadius: 10,
-  fontSize: 13,
+  fontSize: 'var(--aguila-fs-body)',
   outline: 'none',
 }
 

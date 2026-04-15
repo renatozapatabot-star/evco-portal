@@ -126,7 +126,7 @@ export function QueueClient({ initialEvents }: QueueClientProps) {
             borderRadius: 12,
             padding: '12px 24px',
             color: '#22C55E',
-            fontSize: 14,
+            fontSize: 'var(--aguila-fs-section)',
             fontWeight: 600,
             zIndex: 1000,
             backdropFilter: 'blur(12px)',
@@ -166,7 +166,7 @@ export function QueueClient({ initialEvents }: QueueClientProps) {
                 border: `1px solid ${isActive ? 'rgba(192,197,206,0.3)' : 'rgba(255,255,255,0.08)'}`,
                 borderRadius: 20,
                 color: isActive ? '#C0C5CE' : '#94a3b8',
-                fontSize: 13,
+                fontSize: 'var(--aguila-fs-body)',
                 fontWeight: 600,
                 cursor: 'pointer',
                 whiteSpace: 'nowrap',
@@ -177,7 +177,7 @@ export function QueueClient({ initialEvents }: QueueClientProps) {
               {count > 0 && (
                 <span
                   style={{
-                    fontSize: 11,
+                    fontSize: 'var(--aguila-fs-meta)',
                     fontFamily: 'var(--font-mono)',
                     background: isActive ? 'rgba(192,197,206,0.2)' : 'rgba(255,255,255,0.06)',
                     borderRadius: 10,

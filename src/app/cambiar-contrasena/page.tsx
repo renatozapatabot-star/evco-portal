@@ -79,10 +79,10 @@ export default function CambiarContrasena() {
           borderRadius: 12, padding: 32,
         }}>
           <CheckCircle size={48} style={{ color: 'var(--success-500, #16A34A)', margin: '0 auto 16px' }} />
-          <h2 style={{ fontSize: 18, fontWeight: 600, color: '#E6EDF3', marginBottom: 8 }}>
+          <h2 style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 600, color: '#E6EDF3', marginBottom: 8 }}>
             Contraseña actualizada
           </h2>
-          <p style={{ fontSize: 14, color: 'var(--text-secondary, #6B6B6B)' }}>
+          <p style={{ fontSize: 'var(--aguila-fs-section)', color: 'var(--text-secondary, #6B6B6B)' }}>
             Redirigiendo al inicio de sesión...
           </p>
         </div>
@@ -106,7 +106,7 @@ export default function CambiarContrasena() {
             Cambiar contraseña
           </h1>
           {companyName && (
-            <p style={{ fontSize: 13, color: 'var(--text-secondary, #6B6B6B)' }}>{companyName}</p>
+            <p style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary, #6B6B6B)' }}>{companyName}</p>
           )}
         </div>
 
@@ -114,7 +114,7 @@ export default function CambiarContrasena() {
           <div style={{
             display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px',
             background: 'var(--red-50, rgba(239,68,68,0.1))', border: '1px solid var(--red-200, #FECACA)',
-            borderRadius: 8, marginBottom: 16, fontSize: 13, color: 'var(--red-700, #B91C1C)',
+            borderRadius: 8, marginBottom: 16, fontSize: 'var(--aguila-fs-body)', color: 'var(--red-700, #B91C1C)',
           }}>
             <AlertCircle size={16} style={{ flexShrink: 0 }} />
             {error}
@@ -123,7 +123,7 @@ export default function CambiarContrasena() {
 
         {/* Current password */}
         <label style={{ display: 'block', marginBottom: 16 }}>
-          <span style={{ fontSize: 13, fontWeight: 500, color: '#E6EDF3', display: 'block', marginBottom: 6 }}>
+          <span style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 500, color: '#E6EDF3', display: 'block', marginBottom: 6 }}>
             Contraseña actual
           </span>
           <div style={{ position: 'relative' }}>
@@ -158,7 +158,7 @@ export default function CambiarContrasena() {
 
         {/* New password */}
         <label style={{ display: 'block', marginBottom: 16 }}>
-          <span style={{ fontSize: 13, fontWeight: 500, color: '#E6EDF3', display: 'block', marginBottom: 6 }}>
+          <span style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 500, color: '#E6EDF3', display: 'block', marginBottom: 6 }}>
             Nueva contraseña
           </span>
           <div style={{ position: 'relative' }}>
@@ -199,7 +199,7 @@ export default function CambiarContrasena() {
 
         {/* Confirm password */}
         <label style={{ display: 'block', marginBottom: 24 }}>
-          <span style={{ fontSize: 13, fontWeight: 500, color: '#E6EDF3', display: 'block', marginBottom: 6 }}>
+          <span style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 500, color: '#E6EDF3', display: 'block', marginBottom: 6 }}>
             Confirmar nueva contraseña
           </span>
           <div style={{ position: 'relative' }}>
@@ -255,7 +255,7 @@ export default function CambiarContrasena() {
         <div style={{ textAlign: 'center', marginTop: 16 }}>
           <Link
             href="/"
-            style={{ fontSize: 13, color: 'var(--text-secondary, #6B6B6B)', textDecoration: 'none' }}
+            style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary, #6B6B6B)', textDecoration: 'none' }}
           >
             Volver al inicio
           </Link>

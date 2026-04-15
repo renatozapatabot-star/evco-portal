@@ -63,8 +63,8 @@ function mapDraftRow(row: DraftRow) {
 
 /** Verification badge — shows if a field was AI-extracted and needs human review */
 function VerifyBadge({ present, label }: { present: boolean; label?: string }) {
-  if (present) return <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--success)', marginLeft: 6 }}>✓ AI</span>
-  return <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--danger-500)', background: 'rgba(239,68,68,0.1)', padding: '1px 6px', borderRadius: 4, marginLeft: 6 }}>{label || '⚠ Verificar'}</span>
+  if (present) return <span style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 600, color: 'var(--success)', marginLeft: 6 }}>✓ AI</span>
+  return <span style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 700, color: 'var(--danger-500)', background: 'rgba(239,68,68,0.1)', padding: '1px 6px', borderRadius: 4, marginLeft: 6 }}>{label || '⚠ Verificar'}</span>
 }
 
 export default function DraftReviewPage() {
@@ -171,7 +171,7 @@ export default function DraftReviewPage() {
 
   if (!draft) return (
     <div style={{ padding: 24 }}>
-      <button onClick={() => router.push('/drafts')} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--slate-400)', fontSize: 13, marginBottom: 20 }}>
+      <button onClick={() => router.push('/drafts')} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--slate-400)', fontSize: 'var(--aguila-fs-body)', marginBottom: 20 }}>
         <ArrowLeft size={14} /> Borradores
       </button>
       <p style={{ color: 'var(--slate-400)' }}>Borrador no encontrado.</p>
@@ -206,7 +206,7 @@ export default function DraftReviewPage() {
             strokeDasharray={339.29} strokeDashoffset={339.29 * (countdown / 5)}
             transform="rotate(-90 60 60)" style={{ transition: 'stroke-dashoffset 1s linear' }} />
         </svg>
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 48, fontWeight: 900, fontFamily: 'var(--font-mono)' }}>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 'var(--aguila-fs-kpi-hero)', fontWeight: 900, fontFamily: 'var(--font-mono)' }}>
           {countdown}
         </div>
       </div>
@@ -214,7 +214,7 @@ export default function DraftReviewPage() {
         style={{ padding: '16px 40px', borderRadius: 12, border: '2px solid var(--danger-500)', background: 'transparent', color: 'var(--danger-500)', fontSize: 16, fontWeight: 800, cursor: 'pointer', minHeight: 60 }}>
         CANCELAR — esto no enviará nada
       </button>
-      <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', marginTop: 12 }}>
+      <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'rgba(255,255,255,0.4)', marginTop: 12 }}>
         Se enviará automáticamente en {countdown} segundo{countdown !== 1 ? 's' : ''}
       </div>
     </div>
@@ -258,13 +258,13 @@ export default function DraftReviewPage() {
               background: i < automationStep ? 'var(--success)' : i === automationStep ? GOLD : 'var(--slate-100)',
               color: i <= automationStep ? 'white' : 'var(--slate-400)',
             }}>
-              {i < automationStep ? <Check size={14} /> : <span style={{ fontSize: 11, fontWeight: 700 }}>{i + 1}</span>}
+              {i < automationStep ? <Check size={14} /> : <span style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700 }}>{i + 1}</span>}
             </div>
-            <span style={{ fontSize: 14, fontWeight: i === automationStep ? 700 : 500, color: i <= automationStep ? 'var(--navy-900)' : 'var(--slate-400)' }}>
+            <span style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: i === automationStep ? 700 : 500, color: i <= automationStep ? 'var(--navy-900)' : 'var(--slate-400)' }}>
               {step}
             </span>
-            {i === automationStep && <span style={{ marginLeft: 'auto', fontSize: 11, color: GOLD, fontWeight: 700 }}>En proceso...</span>}
-            {i < automationStep && <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--success)', fontFamily: 'var(--font-mono)' }}>✓</span>}
+            {i === automationStep && <span style={{ marginLeft: 'auto', fontSize: 'var(--aguila-fs-meta)', color: GOLD, fontWeight: 700 }}>En proceso...</span>}
+            {i < automationStep && <span style={{ marginLeft: 'auto', fontSize: 'var(--aguila-fs-meta)', color: 'var(--success)', fontFamily: 'var(--font-mono)' }}>✓</span>}
           </div>
         ))}
       </div>
@@ -276,12 +276,12 @@ export default function DraftReviewPage() {
     <div style={{ padding: 32, maxWidth: 500, margin: '80px auto', textAlign: 'center' }}>
       <Check size={48} style={{ color: 'var(--success)', margin: '0 auto 16px' }} />
       <h2 style={{ fontSize: 22, fontWeight: 900, color: 'var(--navy-900)', marginBottom: 8 }}>Pedimento transmitido</h2>
-      <p style={{ fontSize: 14, color: 'var(--slate-500)', marginBottom: 24 }}>Embarque {draft.trafico} procesado exitosamente</p>
+      <p style={{ fontSize: 'var(--aguila-fs-section)', color: 'var(--slate-500)', marginBottom: 24 }}>Embarque {draft.trafico} procesado exitosamente</p>
       <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
-        <button onClick={() => router.push(`/embarques/${draft.trafico}`)} className="btn-gold" style={{ padding: '12px 24px', fontSize: 14, borderRadius: 8 }}>
+        <button onClick={() => router.push(`/embarques/${draft.trafico}`)} className="btn-gold" style={{ padding: '12px 24px', fontSize: 'var(--aguila-fs-section)', borderRadius: 8 }}>
           Ver embarque →
         </button>
-        <button onClick={() => router.push('/drafts')} style={{ padding: '12px 24px', border: '1px solid var(--border-card)', borderRadius: 8, background: 'var(--bg-card)', cursor: 'pointer', fontSize: 14, fontWeight: 600 }}>
+        <button onClick={() => router.push('/drafts')} style={{ padding: '12px 24px', border: '1px solid var(--border-card)', borderRadius: 8, background: 'var(--bg-card)', cursor: 'pointer', fontSize: 'var(--aguila-fs-section)', fontWeight: 600 }}>
           Siguiente borrador
         </button>
       </div>
@@ -293,8 +293,8 @@ export default function DraftReviewPage() {
     <div style={{ padding: 32, maxWidth: 500, margin: '80px auto', textAlign: 'center' }}>
       <X size={48} style={{ color: 'var(--danger-500)', margin: '0 auto 16px' }} />
       <h2 style={{ fontSize: 22, fontWeight: 900, color: 'var(--navy-900)', marginBottom: 8 }}>Borrador rechazado</h2>
-      <p style={{ fontSize: 14, color: 'var(--slate-500)', marginBottom: 24 }}>Motivo: {rejectReason || 'Sin motivo especificado'}</p>
-      <button onClick={() => router.push('/drafts')} style={{ padding: '12px 24px', border: '1px solid var(--border-card)', borderRadius: 8, background: 'var(--bg-card)', cursor: 'pointer', fontSize: 14, fontWeight: 600 }}>
+      <p style={{ fontSize: 'var(--aguila-fs-section)', color: 'var(--slate-500)', marginBottom: 24 }}>Motivo: {rejectReason || 'Sin motivo especificado'}</p>
+      <button onClick={() => router.push('/drafts')} style={{ padding: '12px 24px', border: '1px solid var(--border-card)', borderRadius: 8, background: 'var(--bg-card)', cursor: 'pointer', fontSize: 'var(--aguila-fs-section)', fontWeight: 600 }}>
         Volver a borradores
       </button>
     </div>
@@ -311,29 +311,29 @@ export default function DraftReviewPage() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20, gap: 16, flexWrap: 'wrap' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, flexWrap: 'wrap' }}>
-            <span style={{ fontSize: 11, fontWeight: 800, padding: '3px 10px', borderRadius: 4, background: tier.bg, color: tier.color, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+            <span style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 800, padding: '3px 10px', borderRadius: 4, background: tier.bg, color: tier.color, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
               {draft.confianza === 'alta' ? '✅ Alta' : draft.confianza === 'media' ? '⚠️ Media' : '🔴 Baja'}
             </span>
             {draft.isTMEC && (
-              <span style={{ fontSize: 11, fontWeight: 800, padding: '3px 10px', borderRadius: 4, background: '#F0FDFA', color: '#0D9488', border: '1px solid #99F6E4' }}>
+              <span style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 800, padding: '3px 10px', borderRadius: 4, background: '#F0FDFA', color: '#0D9488', border: '1px solid #99F6E4' }}>
                 T-MEC
               </span>
             )}
             {draft.source === 'ghost_pedimento' && (
-              <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 4, background: '#F0F0FF', color: '#6366F1', border: '1px solid #C7D2FE' }}>
+              <span style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, padding: '3px 10px', borderRadius: 4, background: '#F0F0FF', color: '#6366F1', border: '1px solid #C7D2FE' }}>
                 🤖 Ghost Pedimento
               </span>
             )}
             <span style={{ fontSize: 12, color: 'var(--slate-400)' }}>{tier.time}</span>
           </div>
-          <h1 style={{ fontFamily: 'var(--font-mono)', fontSize: 24, fontWeight: 900, color: 'var(--navy-900)', margin: 0 }}>{draft.trafico || draft.id.substring(0, 8)}</h1>
-          <div style={{ fontSize: 13, color: 'var(--slate-500)', marginTop: 4 }}>
+          <h1 style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-title)', fontWeight: 900, color: 'var(--navy-900)', margin: 0 }}>{draft.trafico || draft.id.substring(0, 8)}</h1>
+          <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--slate-500)', marginTop: 4 }}>
             {draft.supplier} · {draft.country} · Recibido {formatAbsoluteETA(draft.created_at)}
           </div>
         </div>
         <div style={{ textAlign: 'right' }}>
           <div style={{ fontSize: 36, fontWeight: 900, fontFamily: 'var(--font-mono)', color: tier.color }}>{draft.confidence}%</div>
-          <div style={{ fontSize: 11, color: 'var(--slate-400)' }}>confianza ZAPATA AI</div>
+          <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--slate-400)' }}>confianza ZAPATA AI</div>
         </div>
       </div>
 
@@ -342,11 +342,11 @@ export default function DraftReviewPage() {
         <div style={{ marginBottom: 20, padding: '12px 16px', background: '#FEF3C7', border: '1px solid #FDE68A', borderRadius: 8 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
             <AlertTriangle size={16} style={{ color: '#92400E' }} />
-            <span style={{ fontSize: 13, fontWeight: 700, color: '#92400E' }}>Requiere revisión ({draft.flags.length})</span>
+            <span style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 700, color: '#92400E' }}>Requiere revisión ({draft.flags.length})</span>
           </div>
           <ul style={{ margin: 0, paddingLeft: 20 }}>
             {draft.flags.map((flag, i) => (
-              <li key={i} style={{ fontSize: 13, color: '#92400E', marginBottom: 2 }}>{flag}</li>
+              <li key={i} style={{ fontSize: 'var(--aguila-fs-body)', color: '#92400E', marginBottom: 2 }}>{flag}</li>
             ))}
           </ul>
         </div>
@@ -362,7 +362,7 @@ export default function DraftReviewPage() {
           <button key={tab.key} onClick={() => setActiveTab(tab.key)} style={{
             padding: '8px 16px', background: 'none', border: 'none',
             borderBottom: activeTab === tab.key ? `2px solid ${GOLD}` : '2px solid transparent',
-            cursor: 'pointer', fontSize: 13, fontWeight: activeTab === tab.key ? 700 : 500,
+            cursor: 'pointer', fontSize: 'var(--aguila-fs-body)', fontWeight: activeTab === tab.key ? 700 : 500,
             color: activeTab === tab.key ? 'var(--navy-900)' : 'var(--slate-400)', marginBottom: -1,
           }}>
             {tab.label}
@@ -375,37 +375,37 @@ export default function DraftReviewPage() {
         <div>
           {/* Extraction metadata — what Sonnet found */}
           <div className="card" style={{ marginBottom: 16, padding: 16 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--slate-400)', marginBottom: 12 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--slate-400)', marginBottom: 12 }}>
               Datos extraídos por ZAPATA AI
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12 }}>
               <div>
-                <div style={{ fontSize: 11, color: 'var(--slate-400)' }}>Proveedor <VerifyBadge present={!!draft.supplier} /></div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--navy-900)' }}>{draft.supplier || '—'}</div>
+                <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--slate-400)' }}>Proveedor <VerifyBadge present={!!draft.supplier} /></div>
+                <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: 'var(--navy-900)' }}>{draft.supplier || '—'}</div>
               </div>
               <div>
-                <div style={{ fontSize: 11, color: 'var(--slate-400)' }}>País <VerifyBadge present={!!draft.country} /></div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--navy-900)' }}>{draft.country || '—'}</div>
+                <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--slate-400)' }}>País <VerifyBadge present={!!draft.country} /></div>
+                <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: 'var(--navy-900)' }}>{draft.country || '—'}</div>
               </div>
               <div>
-                <div style={{ fontSize: 11, color: 'var(--slate-400)' }}>Factura <VerifyBadge present={!!draft.invoice_number} label="Falta" /></div>
-                <div style={{ fontSize: 14, fontWeight: 600, fontFamily: 'var(--font-mono)', color: 'var(--navy-900)' }}>{draft.invoice_number || '—'}</div>
+                <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--slate-400)' }}>Factura <VerifyBadge present={!!draft.invoice_number} label="Falta" /></div>
+                <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, fontFamily: 'var(--font-mono)', color: 'var(--navy-900)' }}>{draft.invoice_number || '—'}</div>
               </div>
               <div>
-                <div style={{ fontSize: 11, color: 'var(--slate-400)' }}>Incoterm <VerifyBadge present={!!draft.incoterm} label="Falta" /></div>
-                <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--navy-900)' }}>{draft.incoterm || '—'}</div>
+                <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--slate-400)' }}>Incoterm <VerifyBadge present={!!draft.incoterm} label="Falta" /></div>
+                <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: 'var(--navy-900)' }}>{draft.incoterm || '—'}</div>
               </div>
               <div>
-                <div style={{ fontSize: 11, color: 'var(--slate-400)' }}>Moneda <VerifyBadge present={!!draft.currency} /></div>
-                <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--navy-900)' }}>{draft.currency}</div>
+                <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--slate-400)' }}>Moneda <VerifyBadge present={!!draft.currency} /></div>
+                <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: 'var(--navy-900)' }}>{draft.currency}</div>
               </div>
               <div>
-                <div style={{ fontSize: 11, color: 'var(--slate-400)' }}>Régimen <VerifyBadge present={!!draft.regimen} /></div>
-                <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--navy-900)' }}>{draft.regimen}</div>
+                <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--slate-400)' }}>Régimen <VerifyBadge present={!!draft.regimen} /></div>
+                <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: 'var(--navy-900)' }}>{draft.regimen}</div>
               </div>
             </div>
             {(draft.source === 'ghost_pedimento' || draft.source === 'email_intake') && draft.email && (
-              <div style={{ marginTop: 12, padding: '8px 12px', background: 'var(--slate-50)', borderRadius: 6, fontSize: 11, color: 'var(--slate-500)' }}>
+              <div style={{ marginTop: 12, padding: '8px 12px', background: 'var(--slate-50)', borderRadius: 6, fontSize: 'var(--aguila-fs-meta)', color: 'var(--slate-500)' }}>
                 Fuente: Ghost Pedimento · {draft.email.sender || 'Email'} · {draft.email.subject ? draft.email.subject.substring(0, 60) : ''}
               </div>
             )}
@@ -413,7 +413,7 @@ export default function DraftReviewPage() {
 
           {/* Financial calculations */}
           <div className="card" style={{ marginBottom: 16 }}>
-            <table className="data-table" style={{ fontSize: 13 }}>
+            <table className="data-table" style={{ fontSize: 'var(--aguila-fs-body)' }}>
               <thead><tr><th scope="col">Campo</th><th scope="col" style={{ textAlign: 'right' }}>Valor</th><th scope="col" style={{ textAlign: 'center', width: 80 }}>Estado</th></tr></thead>
               <tbody>
                 {[
@@ -429,7 +429,7 @@ export default function DraftReviewPage() {
                   <tr key={r.label}>
                     <td style={{ color: 'var(--slate-700)' }}>
                       {r.label}
-                      {(r as { note?: string }).note && <span style={{ fontSize: 10, color: 'var(--slate-400)', marginLeft: 6 }}>({(r as { note?: string }).note})</span>}
+                      {(r as { note?: string }).note && <span style={{ fontSize: 'var(--aguila-fs-label)', color: 'var(--slate-400)', marginLeft: 6 }}>({(r as { note?: string }).note})</span>}
                     </td>
                     <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontWeight: (r as { bold?: boolean }).bold ? 800 : 600, color: (r as { bold?: boolean }).bold ? GOLD : 'var(--navy-900)' }}>{r.value}</td>
                     <td style={{ textAlign: 'center' }}>
@@ -440,7 +440,7 @@ export default function DraftReviewPage() {
               </tbody>
             </table>
           </div>
-          <div style={{ fontSize: 11, color: 'var(--slate-400)', marginBottom: 16 }}>
+          <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--slate-400)', marginBottom: 16 }}>
             Base IVA = Valor aduana + DTA + IGI (cálculo cascada, no 16% flat sobre factura)
           </div>
         </div>
@@ -450,7 +450,7 @@ export default function DraftReviewPage() {
       {activeTab === 'products' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {draft.products.length === 0 && (
-            <div style={{ padding: 40, textAlign: 'center', color: 'var(--slate-400)', fontSize: 13 }}>
+            <div style={{ padding: 40, textAlign: 'center', color: 'var(--slate-400)', fontSize: 'var(--aguila-fs-body)' }}>
               Sin productos extraídos — verificación manual requerida
             </div>
           )}
@@ -467,7 +467,7 @@ export default function DraftReviewPage() {
             return (
               <div key={i} style={{ padding: '16px 20px', background: 'var(--bg-card)', border: `1px solid var(--border-card)`, borderLeft: `4px solid ${borderColor}`, borderRadius: 'var(--radius-md)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                  <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--navy-900)' }}>
+                  <span style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: 'var(--navy-900)' }}>
                     {desc || <span style={{ color: 'var(--danger-500)' }}>⚠ Sin descripción</span>}
                   </span>
                   <span style={{ fontSize: 12, fontWeight: 700, color: borderColor, fontFamily: 'var(--font-mono)' }}>
@@ -485,7 +485,7 @@ export default function DraftReviewPage() {
                   {!origin && <span style={{ color: 'var(--danger-500)' }}>⚠ Sin país origen</span>}
                 </div>
                 {pRec.reasoning && (
-                  <div style={{ fontSize: 11, color: 'var(--slate-400)', marginTop: 6, fontStyle: 'italic' }}>
+                  <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--slate-400)', marginTop: 6, fontStyle: 'italic' }}>
                     {String(pRec.reasoning).substring(0, 120)}
                   </div>
                 )}
@@ -503,7 +503,7 @@ export default function DraftReviewPage() {
               {c.status === 'ok' && <Check size={16} style={{ color: 'var(--success)', flexShrink: 0 }} />}
               {c.status === 'warning' && <AlertTriangle size={16} style={{ color: 'var(--warning)', flexShrink: 0 }} />}
               {c.status === 'error' && <X size={16} style={{ color: 'var(--danger-500)', flexShrink: 0 }} />}
-              <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--navy-800)', flex: 1 }}>{c.label}</span>
+              <span style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: 'var(--navy-800)', flex: 1 }}>{c.label}</span>
               {c.detail && <span style={{ fontSize: 12, color: c.status === 'ok' ? 'var(--slate-400)' : c.status === 'warning' ? 'var(--amber-text, #92400E)' : 'var(--danger-text, #991B1B)' }}>{c.detail}</span>}
             </div>
           ))}
@@ -525,7 +525,7 @@ export default function DraftReviewPage() {
             if (note && note.length >= 20) { setCorrectionNote(note); setApprovalState('countdown') }
             else if (note) toast('La nota debe tener al menos 20 caracteres.', 'error')
           }}
-            style={{ flex: 1, padding: '14px 16px', border: '1px solid var(--border-card)', borderRadius: 10, background: 'var(--bg-card)', cursor: 'pointer', fontSize: 13, fontWeight: 700, color: 'var(--slate-700)', minHeight: 60 }}>
+            style={{ flex: 1, padding: '14px 16px', border: '1px solid var(--border-card)', borderRadius: 10, background: 'var(--bg-card)', cursor: 'pointer', fontSize: 'var(--aguila-fs-body)', fontWeight: 700, color: 'var(--slate-700)', minHeight: 60 }}>
             Con correcciones
           </button>
 
@@ -547,7 +547,7 @@ export default function DraftReviewPage() {
               setApprovalState('rejected')
             }
           }}
-            style={{ padding: '14px 16px', border: '1px solid rgba(220,38,38,0.3)', borderRadius: 10, background: 'rgba(220,38,38,0.05)', cursor: 'pointer', fontSize: 13, fontWeight: 700, color: 'var(--danger-500)', minHeight: 60 }}>
+            style={{ padding: '14px 16px', border: '1px solid rgba(220,38,38,0.3)', borderRadius: 10, background: 'rgba(220,38,38,0.05)', cursor: 'pointer', fontSize: 'var(--aguila-fs-body)', fontWeight: 700, color: 'var(--danger-500)', minHeight: 60 }}>
             Rechazar
           </button>
         </div>

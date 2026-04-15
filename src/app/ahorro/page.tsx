@@ -77,7 +77,7 @@ export default function AhorroPage() {
         <TrendingDown size={24} style={{ color: 'var(--gold)' }} />
         Optimización de Costos
       </h1>
-      <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24 }}>
+      <p style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-muted)', marginBottom: 24 }}>
         Oportunidades de ahorro detectadas por ZAPATA AI en cada operación
       </p>
 
@@ -128,7 +128,7 @@ export default function AhorroPage() {
               background: 'var(--bg-card)', border: '1px solid var(--border)',
               marginBottom: 24,
             }}>
-              <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 10 }}>
+              <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 10 }}>
                 Ahorro mensual estimado
               </div>
               <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end', height: 50 }}>
@@ -154,7 +154,7 @@ export default function AhorroPage() {
           )}
 
           {/* Insights list */}
-          <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--gold-dark)', marginBottom: 12 }}>
+          <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--gold-dark)', marginBottom: 12 }}>
             Oportunidades de ahorro ({data.insights.length})
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -171,7 +171,7 @@ export default function AhorroPage() {
 function KPICard({ label, value, color }: { label: string; value: string | number; color: string }) {
   return (
     <div style={{ padding: '14px 16px', borderRadius: 8, background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
-      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>{label}</div>
+      <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', marginBottom: 4 }}>{label}</div>
       <div style={{ fontSize: 20, fontWeight: 700, fontFamily: 'var(--font-mono)', color }}>{value}</div>
     </div>
   )
@@ -192,7 +192,7 @@ function InsightCard({ insight: ins, isMobile }: { insight: CostInsight; isMobil
         <div style={{ flex: 1 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
             <TypeIcon size={14} style={{ color: typeConfig.color }} />
-            <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 4, background: typeConfig.color, color: '#FFF', fontWeight: 600 }}>
+            <span style={{ fontSize: 'var(--aguila-fs-label)', padding: '1px 6px', borderRadius: 4, background: typeConfig.color, color: '#FFF', fontWeight: 600 }}>
               {typeConfig.label.toUpperCase()}
             </span>
             <span style={{
@@ -202,7 +202,7 @@ function InsightCard({ insight: ins, isMobile }: { insight: CostInsight; isMobil
               {statusConfig.label}
             </span>
             {ins.supplier && (
-              <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{ins.supplier}</span>
+              <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)' }}>{ins.supplier}</span>
             )}
           </div>
           <div style={{ fontSize: 12, color: 'var(--text-primary)', marginTop: 6, fontWeight: 500 }}>
@@ -210,10 +210,10 @@ function InsightCard({ insight: ins, isMobile }: { insight: CostInsight; isMobil
           </div>
         </div>
         <div style={{ textAlign: 'right', minWidth: 80 }}>
-          <div style={{ fontSize: 18, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--gold-dark)' }}>
+          <div style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--gold-dark)' }}>
             {fmtUSDCompact(ins.estimated_savings_usd)}
           </div>
-          <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>USD/mes</div>
+          <div style={{ fontSize: 'var(--aguila-fs-label)', color: 'var(--text-muted)' }}>USD/mes</div>
         </div>
       </div>
 
@@ -222,7 +222,7 @@ function InsightCard({ insight: ins, isMobile }: { insight: CostInsight; isMobil
         <div style={{
           display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 10,
           padding: '8px 10px', borderRadius: 6, background: 'var(--bg-main)',
-          fontSize: 11,
+          fontSize: 'var(--aguila-fs-meta)',
         }}>
           {ins.current_value && (
             <div>
@@ -239,7 +239,7 @@ function InsightCard({ insight: ins, isMobile }: { insight: CostInsight; isMobil
         </div>
       )}
 
-      <div style={{ display: 'flex', gap: 12, marginTop: 8, fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
+      <div style={{ display: 'flex', gap: 12, marginTop: 8, fontSize: 'var(--aguila-fs-label)', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
         <span>{ins.confidence}% conf</span>
         {ins.estimated_savings_mxn && <span>~{fmtUSDCompact(ins.estimated_savings_mxn)} MXN</span>}
         <span>{fmtDate(ins.created_at)}</span>

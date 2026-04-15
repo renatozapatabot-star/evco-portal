@@ -210,7 +210,7 @@ export function ApprovalQueue({ initialPending, initialRecent, initialEscalation
             }}>
               Patente 3596 honrada.
             </div>
-            <div style={{ fontSize: 14, color: '#94a3b8', marginTop: 8 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-section)', color: '#94a3b8', marginTop: 8 }}>
               Gracias, Tito.
             </div>
           </div>
@@ -231,7 +231,7 @@ export function ApprovalQueue({ initialPending, initialRecent, initialEscalation
           <h1 style={{ fontSize: 22, fontWeight: 800, color: '#E6EDF3', margin: 0 }}>
             Aprobaciones
           </h1>
-          <p style={{ fontSize: 13, color: '#64748b', margin: '2px 0 0' }}>
+          <p style={{ fontSize: 'var(--aguila-fs-body)', color: '#64748b', margin: '2px 0 0' }}>
             {pendingCount > 0 ? `${pendingCount} pendiente${pendingCount !== 1 ? 's' : ''}` : 'Todo aprobado'}
           </p>
         </div>
@@ -249,7 +249,7 @@ export function ApprovalQueue({ initialPending, initialRecent, initialEscalation
             onClick={() => setActiveTab(tab.key)}
             style={{
               padding: '10px 16px', borderRadius: 20, border: 'none',
-              fontSize: 13, fontWeight: 600, cursor: 'pointer',
+              fontSize: 'var(--aguila-fs-body)', fontWeight: 600, cursor: 'pointer',
               minHeight: 44,
               background: activeTab === tab.key ? 'rgba(192,197,206,0.12)' : 'rgba(255,255,255,0.04)',
               color: activeTab === tab.key ? '#C0C5CE' : '#94a3b8',
@@ -258,7 +258,7 @@ export function ApprovalQueue({ initialPending, initialRecent, initialEscalation
           >
             {tab.label} {tab.count > 0 && (
               <span style={{
-                marginLeft: 6, fontSize: 11, fontWeight: 700,
+                marginLeft: 6, fontSize: 'var(--aguila-fs-meta)', fontWeight: 700,
                 padding: '2px 8px', borderRadius: 10,
                 background: activeTab === tab.key ? 'rgba(192,197,206,0.2)' : 'rgba(255,255,255,0.06)',
               }}>
@@ -307,7 +307,7 @@ export function ApprovalQueue({ initialPending, initialRecent, initialEscalation
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <span style={{
-                        fontSize: 10, fontWeight: 700, textTransform: 'uppercase',
+                        fontSize: 'var(--aguila-fs-label)', fontWeight: 700, textTransform: 'uppercase',
                         padding: '2px 8px', borderRadius: 10,
                         background: 'rgba(192,197,206,0.08)', color: '#C0C5CE',
                       }}>
@@ -317,7 +317,7 @@ export function ApprovalQueue({ initialPending, initialRecent, initialEscalation
                         <Link
                           href={`/embarques/${encodeURIComponent(draft.trafico_id)}`}
                           style={{
-                            fontSize: 13, fontFamily: 'var(--font-mono)', fontWeight: 600,
+                            fontSize: 'var(--aguila-fs-body)', fontFamily: 'var(--font-mono)', fontWeight: 600,
                             color: '#C0C5CE', textDecoration: 'none',
                           }}
                         >
@@ -327,7 +327,7 @@ export function ApprovalQueue({ initialPending, initialRecent, initialEscalation
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                       <span style={{
-                        fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 10,
+                        fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, padding: '2px 8px', borderRadius: 10,
                         background: `${confidenceColor(confidence)}15`,
                         color: confidenceColor(confidence),
                       }}>
@@ -341,7 +341,7 @@ export function ApprovalQueue({ initialPending, initialRecent, initialEscalation
                     <div style={{ fontSize: 15, fontWeight: 700, color: '#E6EDF3' }}>
                       {supplier}
                     </div>
-                    <div style={{ display: 'flex', gap: 12, marginTop: 4, fontSize: 13, color: '#94a3b8' }}>
+                    <div style={{ display: 'flex', gap: 12, marginTop: 4, fontSize: 'var(--aguila-fs-body)', color: '#94a3b8' }}>
                       {valor > 0 && (
                         <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
                           {fmtUSD(valor)} USD
@@ -361,7 +361,7 @@ export function ApprovalQueue({ initialPending, initialRecent, initialEscalation
                     <div style={{ display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' }}>
                       {flags.map(f => (
                         <span key={f} style={{
-                          fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 10,
+                          fontSize: 'var(--aguila-fs-label)', fontWeight: 600, padding: '2px 8px', borderRadius: 10,
                           background: 'rgba(239,68,68,0.1)', color: '#EF4444',
                         }}>
                           🚩 {f.replace(/_/g, ' ')}
@@ -372,7 +372,7 @@ export function ApprovalQueue({ initialPending, initialRecent, initialEscalation
 
                   {/* Timestamp */}
                   <div style={{
-                    fontSize: 11, fontFamily: 'var(--font-mono)', color: '#64748b',
+                    fontSize: 'var(--aguila-fs-meta)', fontFamily: 'var(--font-mono)', color: '#64748b',
                     marginBottom: 16,
                   }}>
                     {fmtDateTime(draft.created_at)}
@@ -389,7 +389,7 @@ export function ApprovalQueue({ initialPending, initialRecent, initialEscalation
                     }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <Clock size={16} color="#E8EAED" />
-                        <span style={{ fontSize: 13, color: '#E8EAED', fontWeight: 600 }}>
+                        <span style={{ fontSize: 'var(--aguila-fs-body)', color: '#E8EAED', fontWeight: 600 }}>
                           Aprobando... {countdown !== undefined ? `${countdown}s` : ''}
                         </span>
                       </div>
@@ -399,7 +399,7 @@ export function ApprovalQueue({ initialPending, initialRecent, initialEscalation
                         style={{
                           padding: '8px 16px', borderRadius: 10, border: '1px solid rgba(239,68,68,0.3)',
                           background: 'rgba(239,68,68,0.1)', color: '#EF4444',
-                          fontSize: 13, fontWeight: 600, cursor: 'pointer', minHeight: 44,
+                          fontSize: 'var(--aguila-fs-body)', fontWeight: 600, cursor: 'pointer', minHeight: 44,
                         }}
                       >
                         <Undo2 size={14} style={{ marginRight: 4, verticalAlign: 'middle' }} />
@@ -431,7 +431,7 @@ export function ApprovalQueue({ initialPending, initialRecent, initialEscalation
                           padding: '12px 16px', borderRadius: 12, minHeight: 60,
                           border: '1px solid rgba(255,255,255,0.1)',
                           background: 'rgba(255,255,255,0.04)',
-                          color: '#94a3b8', fontSize: 13, fontWeight: 600,
+                          color: '#94a3b8', fontSize: 'var(--aguila-fs-body)', fontWeight: 600,
                           cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
                         }}
                       >
@@ -443,7 +443,7 @@ export function ApprovalQueue({ initialPending, initialRecent, initialEscalation
                           padding: '12px 16px', borderRadius: 12, minHeight: 60,
                           border: '1px solid rgba(239,68,68,0.15)',
                           background: 'rgba(239,68,68,0.06)',
-                          color: '#EF4444', fontSize: 13, fontWeight: 600,
+                          color: '#EF4444', fontSize: 'var(--aguila-fs-body)', fontWeight: 600,
                           cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
                         }}
                       >
@@ -482,17 +482,17 @@ export function ApprovalQueue({ initialPending, initialRecent, initialEscalation
                   background: 'rgba(255,255,255,0.02)',
                   border: '1px solid rgba(255,255,255,0.05)',
                 }}>
-                  <span style={{ fontSize: 18 }}>{sc.icon}</span>
+                  <span style={{ fontSize: 'var(--aguila-fs-kpi-small)' }}>{sc.icon}</span>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: '#E6EDF3', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: '#E6EDF3', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {supplier}
                     </div>
-                    <div style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: '#64748b' }}>
+                    <div style={{ fontSize: 'var(--aguila-fs-meta)', fontFamily: 'var(--font-mono)', color: '#64748b' }}>
                       {fmtDateTime(draft.updated_at)}
                     </div>
                   </div>
                   <span style={{
-                    fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 10,
+                    fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, padding: '3px 10px', borderRadius: 10,
                     background: `${sc.color}15`, color: sc.color,
                   }}>
                     {sc.label}
@@ -519,18 +519,18 @@ export function ApprovalQueue({ initialPending, initialRecent, initialEscalation
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <AlertTriangle size={14} color="#EF4444" />
-                    <span style={{ fontSize: 13, fontWeight: 600, color: '#E6EDF3' }}>
+                    <span style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: '#E6EDF3' }}>
                       {String(esc.event_type || '').replace(/\./g, ' → ')}
                     </span>
                   </div>
-                  <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 10, background: 'rgba(192,197,206,0.08)', color: '#C0C5CE' }}>
+                  <span style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 700, padding: '2px 8px', borderRadius: 10, background: 'rgba(192,197,206,0.08)', color: '#C0C5CE' }}>
                     {esc.company_id}
                   </span>
                 </div>
                 <div style={{ fontSize: 12, color: '#EF4444', marginBottom: 4, fontFamily: 'var(--font-mono)' }}>
                   {esc.error_message || 'Sin detalle'}
                 </div>
-                <div style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: '#64748b' }}>
+                <div style={{ fontSize: 'var(--aguila-fs-meta)', fontFamily: 'var(--font-mono)', color: '#64748b' }}>
                   {fmtDateTime(String(esc.created_at))}
                 </div>
               </div>
@@ -547,7 +547,7 @@ export function ApprovalQueue({ initialPending, initialRecent, initialEscalation
       >
         {actionModal && (
           <div>
-            <div style={{ fontSize: 13, color: '#94a3b8', marginBottom: 16 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-body)', color: '#94a3b8', marginBottom: 16 }}>
               {actionModal.type === 'reject'
                 ? `Rechazar borrador de ${((actionModal.draft.draft_data || {}) as DraftData).supplier || 'proveedor'}. Escribe el motivo:`
                 : `Aprobar con corrección para ${((actionModal.draft.draft_data || {}) as DraftData).supplier || 'proveedor'}. Escribe la nota:`
@@ -562,7 +562,7 @@ export function ApprovalQueue({ initialPending, initialRecent, initialEscalation
                 width: '100%', padding: '12px 14px', borderRadius: 12,
                 border: '1px solid rgba(255,255,255,0.1)',
                 background: 'rgba(255,255,255,0.04)',
-                color: '#E6EDF3', fontSize: 14, resize: 'none',
+                color: '#E6EDF3', fontSize: 'var(--aguila-fs-section)', resize: 'none',
                 fontFamily: 'inherit',
               }}
             />
@@ -586,7 +586,7 @@ export function ApprovalQueue({ initialPending, initialRecent, initialEscalation
                   padding: '14px 20px', borderRadius: 12,
                   border: '1px solid rgba(255,255,255,0.1)',
                   background: 'transparent', color: '#94a3b8',
-                  fontSize: 14, fontWeight: 600, cursor: 'pointer', minHeight: 60,
+                  fontSize: 'var(--aguila-fs-section)', fontWeight: 600, cursor: 'pointer', minHeight: 60,
                 }}
               >
                 Cancelar

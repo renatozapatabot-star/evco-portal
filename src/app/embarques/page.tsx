@@ -92,7 +92,7 @@ function exportCSV(
 
 function SortArrow({ col, sort }: { col: string; sort: SortState }) {
   if (sort.column !== col) return null
-  return <span style={{ marginLeft: 4, fontSize: 10 }}>{sort.direction === 'asc' ? '\u2191' : '\u2193'}</span>
+  return <span style={{ marginLeft: 4, fontSize: 'var(--aguila-fs-label)' }}>{sort.direction === 'asc' ? '\u2191' : '\u2193'}</span>
 }
 
 export default function TraficosPage() {
@@ -415,20 +415,20 @@ function TraficosContent() {
                   }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                    <span style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>{fmtId(r.trafico)}</span>
-                    <span className={`badge ${status === 'Cruzado' ? 'badge-cruzado' : 'badge-proceso'}`} style={{ fontSize: 11 }}>
+                    <span style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>{fmtId(r.trafico)}</span>
+                    <span className={`badge ${status === 'Cruzado' ? 'badge-cruzado' : 'badge-proceso'}`} style={{ fontSize: 'var(--aguila-fs-meta)' }}>
                       {status}
                     </span>
                   </div>
                   {prov && prov !== '—' && (
-                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {prov}
                     </div>
                   )}
                   <div style={{ fontSize: 12, color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: 8 }}>
                     {fmtDesc(getDesc(r)) || '—'}
                   </div>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, fontSize: 'var(--aguila-fs-meta)', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
                     {valor > 0 && <span>{fmtUSDCompact(valor)}</span>}
                     {r.pedimento ? (
                       <button
@@ -454,8 +454,8 @@ function TraficosContent() {
           <div style={{ padding: 16 }}>
             {search.trim() ? (
               <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-                <div style={{ fontSize: 32, marginBottom: 8 }}>🔍</div>
-                <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-secondary)' }}>Sin resultados para &ldquo;{search}&rdquo;</div>
+                <div style={{ fontSize: 'var(--aguila-fs-kpi-compact)', marginBottom: 8 }}>🔍</div>
+                <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: 'var(--text-secondary)' }}>Sin resultados para &ldquo;{search}&rdquo;</div>
                 <button className="btn btn-outline btn-sm" style={{ marginTop: 12 }} onClick={() => { setSearchInput(''); setSearch('') }}>Limpiar búsqueda</button>
               </div>
             ) : (
@@ -490,7 +490,7 @@ function TraficosContent() {
                     {search.trim() ? (
                       <div className="empty-state">
                         <div className="empty-state-icon">🔍</div>
-                        <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--slate-600)' }}>Sin resultados para &ldquo;{search}&rdquo;</div>
+                        <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: 'var(--slate-600)' }}>Sin resultados para &ldquo;{search}&rdquo;</div>
                         <button className="btn btn-outline btn-sm" style={{ marginTop: 12 }} onClick={() => { setSearchInput(''); setSearch('') }}>Limpiar filtros</button>
                       </div>
                     ) : (
@@ -509,7 +509,7 @@ function TraficosContent() {
                       <td>
                         <span className="trafico-id">{fmtId(r.trafico)}</span>
                       </td>
-                      <td className="desc-text" style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+                      <td className="desc-text" style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)' }}>
                         {fmtDesc(getDesc(r)) || <span style={{ color: 'var(--text-muted)' }}>—</span>}
                       </td>
                       <td>

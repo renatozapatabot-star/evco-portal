@@ -17,7 +17,7 @@ export function ComplianceFlags({ flags }: Props) {
         borderRadius: 12,
       }}>
         <CheckCircle size={16} color="#22C55E" />
-        <span style={{ fontSize: 13, color: '#22C55E', fontWeight: 600 }}>
+        <span style={{ fontSize: 'var(--aguila-fs-body)', color: '#22C55E', fontWeight: 600 }}>
           Sin alertas de cumplimiento
         </span>
       </div>
@@ -35,7 +35,7 @@ export function ComplianceFlags({ flags }: Props) {
           borderRadius: '0 8px 8px 0',
         }}>
           <AlertTriangle size={14} color="#FBBF24" style={{ flexShrink: 0, marginTop: 1 }} />
-          <span style={{ fontSize: 13, color: '#E6EDF3', lineHeight: 1.5 }}>
+          <span style={{ fontSize: 'var(--aguila-fs-body)', color: '#E6EDF3', lineHeight: 1.5 }}>
             {flag}
           </span>
         </div>

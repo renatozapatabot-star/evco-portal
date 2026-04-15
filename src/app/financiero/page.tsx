@@ -148,8 +148,8 @@ export default function FinancieroPage() {
 
         {/* Header */}
         <div style={{ marginBottom: 24 }}>
-          <h1 style={{ fontSize: 24, fontWeight: 700, margin: 0 }}>Contabilidad</h1>
-          <p style={{ color: D.textSec, fontSize: 13, margin: '4px 0 0' }}>
+          <h1 style={{ fontSize: 'var(--aguila-fs-title)', fontWeight: 700, margin: 0 }}>Contabilidad</h1>
+          <p style={{ color: D.textSec, fontSize: 'var(--aguila-fs-body)', margin: '4px 0 0' }}>
             {filteredCount} factura{filteredCount !== 1 ? 's' : ''}
           </p>
 
@@ -160,7 +160,7 @@ export default function FinancieroPage() {
               onChange={e => { setCompanyFilter(e.target.value) }}
               style={{
                 background: D.card, border: `1px solid ${D.cardBorder}`, borderRadius: D.r,
-                color: D.text, padding: '8px 12px', fontSize: 14, fontFamily: D.sans, minHeight: 44, marginTop: 12,
+                color: D.text, padding: '8px 12px', fontSize: 'var(--aguila-fs-section)', fontFamily: D.sans, minHeight: 44, marginTop: 12,
               }}
             >
               <option value="">Todos los clientes</option>
@@ -180,12 +180,12 @@ export default function FinancieroPage() {
             <div style={{ background: D.card, border: `1px solid ${D.cardBorder}`, borderRadius: D.r, padding: 20 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                 <DollarSign size={16} style={{ color: 'var(--gold)' }} />
-                <span style={{ fontSize: 11, fontWeight: 600, color: D.textSec, textTransform: 'uppercase', letterSpacing: '0.07em' }}>Total importado</span>
+                <span style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, color: D.textSec, textTransform: 'uppercase', letterSpacing: '0.07em' }}>Total importado</span>
               </div>
-              <div style={{ fontSize: 24, fontWeight: 700, fontFamily: 'var(--font-mono)', color: D.text }}>
+              <div style={{ fontSize: 'var(--aguila-fs-title)', fontWeight: 700, fontFamily: 'var(--font-mono)', color: D.text }}>
                 ${(summary.totalUSD / 1000000).toFixed(1)}M USD
               </div>
-              <div style={{ fontSize: 11, color: D.textSec, marginTop: 4 }}>
+              <div style={{ fontSize: 'var(--aguila-fs-meta)', color: D.textSec, marginTop: 4 }}>
                 {summary.cruzadoCount} cruzados · {summary.enProcesoCount} en proceso
               </div>
             </div>
@@ -193,23 +193,23 @@ export default function FinancieroPage() {
             <div style={{ background: D.card, border: `1px solid ${D.cardBorder}`, borderRadius: D.r, padding: 20 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                 <TrendingUp size={16} style={{ color: 'var(--success)' }} />
-                <span style={{ fontSize: 11, fontWeight: 600, color: D.textSec, textTransform: 'uppercase', letterSpacing: '0.07em' }}>Cruzados</span>
+                <span style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, color: D.textSec, textTransform: 'uppercase', letterSpacing: '0.07em' }}>Cruzados</span>
               </div>
-              <div style={{ fontSize: 24, fontWeight: 700, fontFamily: 'var(--font-mono)', color: D.text }}>
+              <div style={{ fontSize: 'var(--aguila-fs-title)', fontWeight: 700, fontFamily: 'var(--font-mono)', color: D.text }}>
                 ${(summary.cruzadoUSD / 1000000).toFixed(1)}M USD
               </div>
-              <div style={{ fontSize: 11, color: D.textSec, marginTop: 4 }}>{summary.cruzadoCount} operaciones</div>
+              <div style={{ fontSize: 'var(--aguila-fs-meta)', color: D.textSec, marginTop: 4 }}>{summary.cruzadoCount} operaciones</div>
             </div>
 
             <div style={{ background: D.card, border: `1px solid ${D.cardBorder}`, borderRadius: D.r, padding: 20 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                 <Clock size={16} style={{ color: 'var(--warning)' }} />
-                <span style={{ fontSize: 11, fontWeight: 600, color: D.textSec, textTransform: 'uppercase', letterSpacing: '0.07em' }}>En proceso</span>
+                <span style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, color: D.textSec, textTransform: 'uppercase', letterSpacing: '0.07em' }}>En proceso</span>
               </div>
-              <div style={{ fontSize: 24, fontWeight: 700, fontFamily: 'var(--font-mono)', color: D.text }}>
+              <div style={{ fontSize: 'var(--aguila-fs-title)', fontWeight: 700, fontFamily: 'var(--font-mono)', color: D.text }}>
                 ${(summary.enProcesoUSD / 1000000).toFixed(1)}M USD
               </div>
-              <div style={{ fontSize: 11, color: D.textSec, marginTop: 4 }}>{summary.enProcesoCount} embarques</div>
+              <div style={{ fontSize: 'var(--aguila-fs-meta)', color: D.textSec, marginTop: 4 }}>{summary.enProcesoCount} embarques</div>
             </div>
           </div>
         )}
@@ -232,8 +232,8 @@ export default function FinancieroPage() {
                   padding: 12, borderRadius: 8, background: 'var(--bg-main)',
                   border: `1px solid ${D.cardBorder}`,
                 }}>
-                  <div style={{ fontSize: 11, color: D.textSec, marginBottom: 4 }}>{b.label}</div>
-                  <div style={{ fontSize: 18, fontWeight: 700, fontFamily: 'var(--font-mono)', color: b.color }}>
+                  <div style={{ fontSize: 'var(--aguila-fs-meta)', color: D.textSec, marginBottom: 4 }}>{b.label}</div>
+                  <div style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, fontFamily: 'var(--font-mono)', color: b.color }}>
                     ${(b.value / 1000).toFixed(0)}K USD
                   </div>
                   <div style={{ marginTop: 6, height: 4, borderRadius: 2, background: 'var(--border)' }}>
@@ -261,7 +261,7 @@ export default function FinancieroPage() {
                 const pct = (m.amount / maxAmt) * 100
                 return (
                   <div key={m.month} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-                    <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: D.textSec }}>
+                    <span style={{ fontSize: 'var(--aguila-fs-label)', fontFamily: 'var(--font-mono)', color: D.textSec }}>
                       ${(m.amount / 1000000).toFixed(1)}M USD
                     </span>
                     <div style={{
@@ -269,7 +269,7 @@ export default function FinancieroPage() {
                       background: 'var(--gold)', borderRadius: '4px 4px 0 0',
                       transition: 'height 300ms',
                     }} />
-                    <span style={{ fontSize: 10, color: D.textSec }}>{m.month}</span>
+                    <span style={{ fontSize: 'var(--aguila-fs-label)', color: D.textSec }}>{m.month}</span>
                   </div>
                 )
               })}

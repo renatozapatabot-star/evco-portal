@@ -227,7 +227,7 @@ function Btn({
         color: primary ? '#0A0A0C' : TEXT_PRIMARY,
         border: `1px solid ${primary ? ACCENT_SILVER_BRIGHT : BORDER_HAIRLINE}`,
         borderRadius: 12,
-        fontSize: 13,
+        fontSize: 'var(--aguila-fs-body)',
         fontWeight: 700,
         cursor: disabled ? 'not-allowed' : 'pointer',
         letterSpacing: '0.02em',

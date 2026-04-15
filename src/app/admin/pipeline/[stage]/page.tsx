@@ -44,7 +44,7 @@ function pillStyle(kind: StatusPillKind): React.CSSProperties {
     display: 'inline-block',
     padding: '2px 8px',
     borderRadius: 999,
-    fontSize: 10,
+    fontSize: 'var(--aguila-fs-label)',
     fontWeight: 600,
     textTransform: 'uppercase',
     letterSpacing: '0.06em',
@@ -127,7 +127,7 @@ export default async function PipelineStagePage({ params }: PageProps) {
         <div style={{ marginBottom: 20 }}>
           <div
             style={{
-              fontSize: 10,
+              fontSize: 'var(--aguila-fs-label)',
               fontWeight: 700,
               letterSpacing: '0.08em',
               textTransform: 'uppercase',
@@ -139,7 +139,7 @@ export default async function PipelineStagePage({ params }: PageProps) {
           </div>
           <h1
             style={{
-              fontSize: 28,
+              fontSize: 'var(--aguila-fs-kpi-mid)',
               fontWeight: 800,
               color: '#E6EDF3',
               margin: 0,
@@ -148,7 +148,7 @@ export default async function PipelineStagePage({ params }: PageProps) {
           >
             Pipeline · {title}
           </h1>
-          <p style={{ fontSize: 13, color: '#8B949E', margin: '4px 0 0' }}>
+          <p style={{ fontSize: 'var(--aguila-fs-body)', color: '#8B949E', margin: '4px 0 0' }}>
             Últimos {rows.length} evento{rows.length === 1 ? '' : 's'} — ordenados por fecha descendente.
           </p>
         </div>
@@ -165,11 +165,11 @@ export default async function PipelineStagePage({ params }: PageProps) {
           }}
         >
           {rows.length === 0 ? (
-            <div style={{ padding: 40, textAlign: 'center', color: '#8B949E', fontSize: 14 }}>
+            <div style={{ padding: 40, textAlign: 'center', color: '#8B949E', fontSize: 'var(--aguila-fs-section)' }}>
               Sin eventos recientes en este paso.
             </div>
           ) : (
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--aguila-fs-body)' }}>
               <thead>
                 <tr style={{ background: 'rgba(255,255,255,0.03)' }}>
                   <th style={thStyle}>Fecha</th>
@@ -230,7 +230,7 @@ export default async function PipelineStagePage({ params }: PageProps) {
 const thStyle: React.CSSProperties = {
   textAlign: 'left',
   padding: '12px 16px',
-  fontSize: 10,
+  fontSize: 'var(--aguila-fs-label)',
   fontWeight: 700,
   letterSpacing: '0.08em',
   textTransform: 'uppercase',

@@ -40,8 +40,8 @@ export default function NoticiasPage() {
 
   return (
     <div style={{ padding: '24px 16px', maxWidth: 800, margin: '0 auto' }}>
-      <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 4px' }}>Noticias Regulatorias</h1>
-      <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '0 0 24px' }}>
+      <h1 style={{ fontSize: 'var(--aguila-fs-title)', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 4px' }}>Noticias Regulatorias</h1>
+      <p style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)', margin: '0 0 24px' }}>
         Actualizaciones del DOF, SAT, y CBP que afectan sus operaciones
       </p>
 
@@ -77,27 +77,27 @@ export default function NoticiasPage() {
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, flexDirection: isMobile ? 'column' : 'row' }}>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>{alert.title}</div>
+                  <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>{alert.title}</div>
                   {alert.description && (
                     <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: 8 }}>
                       {alert.description.substring(0, 200)}{alert.description.length > 200 ? '...' : ''}
                     </div>
                   )}
                   <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>{fmtDate(alert.published_at || alert.created_at)}</span>
-                    {alert.source && <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 4, background: '#F5F4F0', color: 'var(--text-secondary)' }}>{alert.source}</span>}
-                    <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 4, background: alert.relevance === 'high' ? 'rgba(239,68,68,0.1)' : 'rgba(192,197,206,0.08)', color: alert.relevance === 'high' ? 'var(--danger-500)' : 'var(--warning-500)' }}>
+                    <span style={{ fontSize: 'var(--aguila-fs-label)', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>{fmtDate(alert.published_at || alert.created_at)}</span>
+                    {alert.source && <span style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 700, padding: '1px 6px', borderRadius: 4, background: '#F5F4F0', color: 'var(--text-secondary)' }}>{alert.source}</span>}
+                    <span style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 700, padding: '1px 6px', borderRadius: 4, background: alert.relevance === 'high' ? 'rgba(239,68,68,0.1)' : 'rgba(192,197,206,0.08)', color: alert.relevance === 'high' ? 'var(--danger-500)' : 'var(--warning-500)' }}>
                       {alert.relevance === 'high' ? 'Alta' : 'Media'}
                     </span>
                   </div>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flexShrink: 0 }}>
                   {alert.url && (
-                    <a href={alert.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: 11, color: 'var(--gold)', fontWeight: 600, textDecoration: 'none' }}>
+                    <a href={alert.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--gold)', fontWeight: 600, textDecoration: 'none' }}>
                       Ver fuente →
                     </a>
                   )}
-                  <Link href={`/cruz?q=${encodeURIComponent('¿Cómo me afecta: ' + alert.title.substring(0, 40))}`} style={{ fontSize: 11, color: '#0D9488', fontWeight: 600, textDecoration: 'none' }}>
+                  <Link href={`/cruz?q=${encodeURIComponent('¿Cómo me afecta: ' + alert.title.substring(0, 40))}`} style={{ fontSize: 'var(--aguila-fs-meta)', color: '#0D9488', fontWeight: 600, textDecoration: 'none' }}>
                     ¿Cómo me afecta?
                   </Link>
                 </div>
@@ -107,7 +107,7 @@ export default function NoticiasPage() {
         </div>
       )}
 
-      <div style={{ marginTop: 24, textAlign: 'center', fontSize: 11, color: 'var(--text-muted)' }}>
+      <div style={{ marginTop: 24, textAlign: 'center', fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)' }}>
         Fuentes: Diario Oficial de la Federación · SAT · CBP
       </div>
     </div>

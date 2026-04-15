@@ -144,7 +144,7 @@ export default function AlertasPage() {
       <div style={{ display: 'flex', gap: 4, marginBottom: 16, background: 'var(--n-50)', borderRadius: 8, padding: 3, width: 'fit-content' }}>
         {(['pendientes', 'resueltas'] as const).map(t => (
           <button key={t} onClick={() => setTab(t)} style={{
-            padding: '6px 16px', borderRadius: 6, fontSize: 13, fontWeight: 600,
+            padding: '6px 16px', borderRadius: 6, fontSize: 'var(--aguila-fs-body)', fontWeight: 600,
             border: 'none', cursor: 'pointer', fontFamily: 'inherit',
             background: tab === t ? 'rgba(192,197,206,0.15)' : 'transparent',
             color: tab === t ? 'var(--n-900)' : 'var(--n-400)',
@@ -163,7 +163,7 @@ export default function AlertasPage() {
         <div className="card" style={{ padding: 40, textAlign: 'center' }}>
           <CheckCircle size={40} style={{ color: 'var(--success)', marginBottom: 12 }} />
           <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--success)' }}>Todo en orden</div>
-          <div style={{ fontSize: 13, color: 'var(--n-400)', marginTop: 4 }}>Últimos 15 días</div>
+          <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--n-400)', marginTop: 4 }}>Últimos 15 días</div>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -181,8 +181,8 @@ export default function AlertasPage() {
                 <Icon size={16} style={{ color: sStyle.dot, marginTop: 2, flexShrink: 0 }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'center', gap: isMobile ? 4 : 0 }}>
-                    <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--n-900)' }}>{a.title}</span>
-                    <span style={{ fontSize: 10, color: 'var(--n-400)', flexShrink: 0, fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtTime(a.time)}</span>
+                    <span style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 700, color: 'var(--n-900)' }}>{a.title}</span>
+                    <span style={{ fontSize: 'var(--aguila-fs-label)', color: 'var(--n-400)', flexShrink: 0, fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtTime(a.time)}</span>
                   </div>
                   <div style={{ fontSize: 12, color: 'var(--n-500)', marginTop: 2 }}>{a.sub}</div>
                 </div>

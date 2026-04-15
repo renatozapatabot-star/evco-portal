@@ -26,7 +26,7 @@ export function Label({ children, required }: { children: ReactNode; required?: 
     <label
       style={{
         display: 'block',
-        fontSize: 11,
+        fontSize: 'var(--aguila-fs-meta)',
         fontWeight: 600,
         letterSpacing: '0.08em',
         textTransform: 'uppercase',
@@ -86,7 +86,7 @@ export function TextField({
           border: `1px solid ${BORDER_SILVER}`,
           borderRadius: 10,
           color: TEXT_PRIMARY,
-          fontSize: 14,
+          fontSize: 'var(--aguila-fs-section)',
           fontFamily: mono ? MONO_STACK : 'inherit',
           outline: 'none',
         }}
@@ -140,7 +140,7 @@ export function NumberField({
           border: `1px solid ${BORDER_SILVER}`,
           borderRadius: 10,
           color: TEXT_PRIMARY,
-          fontSize: 14,
+          fontSize: 'var(--aguila-fs-section)',
           fontFamily: MONO_STACK,
           outline: 'none',
         }}
@@ -188,7 +188,7 @@ export function SelectField<T extends string>({
           border: `1px solid ${BORDER_SILVER}`,
           borderRadius: 10,
           color: TEXT_PRIMARY,
-          fontSize: 14,
+          fontSize: 'var(--aguila-fs-section)',
           outline: 'none',
         }}
       >
@@ -238,7 +238,7 @@ export function TextAreaField({
           border: `1px solid ${BORDER_SILVER}`,
           borderRadius: 10,
           color: TEXT_PRIMARY,
-          fontSize: 14,
+          fontSize: 'var(--aguila-fs-section)',
           lineHeight: 1.5,
           resize: 'vertical',
           outline: 'none',
@@ -309,7 +309,7 @@ export function ActionButton({
       style={{
         minHeight: 60,
         padding: '0 16px',
-        fontSize: 13,
+        fontSize: 'var(--aguila-fs-body)',
         fontWeight: 600,
         color,
         background: bg,

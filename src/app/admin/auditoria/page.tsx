@@ -36,7 +36,7 @@ export default async function AuditoriaPage() {
         <h1 style={{ margin: 0, fontSize: 22, fontWeight: 600 }}>
           Registro de auditoría
         </h1>
-        <p style={{ margin: '6px 0 0', fontSize: 13, color: '#94a3b8' }}>
+        <p style={{ margin: '6px 0 0', fontSize: 'var(--aguila-fs-body)', color: '#94a3b8' }}>
           Cada cambio en embarques, partidas, pedimentos y clientes — append-only,
           con usuario, timestamp y diff completo.
         </p>

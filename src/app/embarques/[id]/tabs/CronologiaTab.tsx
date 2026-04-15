@@ -108,10 +108,10 @@ export function CronologiaTab({ traficoId, events, currentUserId }: CronologiaTa
         }}
       >
         <Activity size={28} />
-        <div style={{ fontSize: 13, color: TEXT_SECONDARY, textAlign: 'center', maxWidth: 420 }}>
+        <div style={{ fontSize: 'var(--aguila-fs-body)', color: TEXT_SECONDARY, textAlign: 'center', maxWidth: 420 }}>
           Sin eventos registrados. Los eventos aparecerán automáticamente cuando el embarque avance por el sistema.
         </div>
-        <div style={{ fontSize: 11, color: TEXT_MUTED, marginTop: 4 }}>
+        <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED, marginTop: 4 }}>
           Último evento esperado: <strong style={{ color: TEXT_SECONDARY }}>{nextExpected}</strong>
         </div>
       </div>
@@ -173,7 +173,7 @@ export function CronologiaTab({ traficoId, events, currentUserId }: CronologiaTa
       </div>
 
       {filtered.length === 0 ? (
-        <div style={{ padding: '24px 0', textAlign: 'center', color: TEXT_MUTED, fontSize: 13 }}>
+        <div style={{ padding: '24px 0', textAlign: 'center', color: TEXT_MUTED, fontSize: 'var(--aguila-fs-body)' }}>
           Sin eventos que coincidan con el filtro.
         </div>
       ) : (
@@ -230,7 +230,7 @@ export function CronologiaTab({ traficoId, events, currentUserId }: CronologiaTa
                   >
                     <span
                       style={{
-                        fontSize: 13,
+                        fontSize: 'var(--aguila-fs-body)',
                         fontWeight: 700,
                         color: TEXT_PRIMARY,
                       }}
@@ -239,7 +239,7 @@ export function CronologiaTab({ traficoId, events, currentUserId }: CronologiaTa
                     </span>
                     <span
                       style={{
-                        fontSize: 11,
+                        fontSize: 'var(--aguila-fs-meta)',
                         color: TEXT_MUTED,
                         fontFamily: 'var(--font-mono)',
                         whiteSpace: 'nowrap',
@@ -259,7 +259,7 @@ export function CronologiaTab({ traficoId, events, currentUserId }: CronologiaTa
                       gap: 8,
                       alignItems: 'center',
                       marginTop: 6,
-                      fontSize: 11,
+                      fontSize: 'var(--aguila-fs-meta)',
                       color: TEXT_MUTED,
                     }}
                   >
@@ -287,7 +287,7 @@ export function CronologiaTab({ traficoId, events, currentUserId }: CronologiaTa
           style={{
             textAlign: 'center',
             padding: '16px 0 4px',
-            fontSize: 11,
+            fontSize: 'var(--aguila-fs-meta)',
             color: TEXT_MUTED,
             fontFamily: 'var(--font-mono)',
           }}
@@ -364,7 +364,7 @@ function EventDrawer({ event, onClose }: { event: EventRow; onClose: () => void 
       >
         <div
           style={{
-            fontSize: 11,
+            fontSize: 'var(--aguila-fs-meta)',
             fontWeight: 800,
             color: TEXT_MUTED,
             textTransform: 'uppercase',
@@ -375,8 +375,8 @@ function EventDrawer({ event, onClose }: { event: EventRow; onClose: () => void 
           {event.display_name_es ?? event.event_type}
         </div>
 
-        <div style={{ fontSize: 13, color: TEXT_SECONDARY, marginBottom: 12 }}>
-          <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: TEXT_MUTED }}>
+        <div style={{ fontSize: 'var(--aguila-fs-body)', color: TEXT_SECONDARY, marginBottom: 12 }}>
+          <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED }}>
             {fmtDateTime(event.created_at)} · workflow {event.workflow ?? '—'}
           </div>
           {event.description_es && <p style={{ marginTop: 8 }}>{event.description_es}</p>}
@@ -384,7 +384,7 @@ function EventDrawer({ event, onClose }: { event: EventRow; onClose: () => void 
 
         <div
           style={{
-            fontSize: 11,
+            fontSize: 'var(--aguila-fs-meta)',
             fontWeight: 700,
             color: TEXT_MUTED,
             textTransform: 'uppercase',
@@ -422,7 +422,7 @@ function EventDrawer({ event, onClose }: { event: EventRow; onClose: () => void 
             color: TEXT_PRIMARY,
             border: `1px solid ${BORDER}`,
             borderRadius: 12,
-            fontSize: 13,
+            fontSize: 'var(--aguila-fs-body)',
             fontWeight: 700,
             cursor: 'pointer',
           }}

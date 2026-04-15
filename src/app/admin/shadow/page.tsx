@@ -38,7 +38,7 @@ function GlassShell({ title, children }: { title: string; children: React.ReactN
     >
       <div
         style={{
-          fontSize: 11, fontWeight: 700, color: TEXT_MUTED,
+          fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, color: TEXT_MUTED,
           textTransform: 'uppercase', letterSpacing: '0.08em',
           marginBottom: 12,
         }}
@@ -125,7 +125,7 @@ export default async function AdminShadowPage() {
         href="/admin"
         style={{
           display: 'inline-flex', alignItems: 'center', gap: 6,
-          fontSize: 13, color: TEXT_MUTED, textDecoration: 'none',
+          fontSize: 'var(--aguila-fs-body)', color: TEXT_MUTED, textDecoration: 'none',
           marginBottom: 16, minHeight: 60, lineHeight: '60px',
         }}
       >
@@ -134,12 +134,12 @@ export default async function AdminShadowPage() {
 
       <div style={{ marginBottom: 20 }}>
         <h1 style={{
-          fontSize: 28, fontWeight: 800, color: TEXT_PRIMARY,
+          fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 800, color: TEXT_PRIMARY,
           margin: 0, letterSpacing: '-0.02em',
         }}>
           Inteligencia del Sistema
         </h1>
-        <p style={{ fontSize: 13, color: TEXT_MUTED, marginTop: 6 }}>
+        <p style={{ fontSize: 'var(--aguila-fs-body)', color: TEXT_MUTED, marginTop: 6 }}>
           Estado de ZAPATA AI vs Operadores · ventana de 7 días para titulares, 30 días para la serie
         </p>
       </div>
@@ -156,15 +156,15 @@ export default async function AdminShadowPage() {
           textAlign: 'center',
         }}>
           <div style={{
-            fontSize: 11, fontWeight: 700, color: ACCENT_CYAN,
+            fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, color: ACCENT_CYAN,
             textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8,
           }}>
             Recolectando datos
           </div>
-          <div style={{ fontSize: 18, color: TEXT_PRIMARY, fontWeight: 600, marginBottom: 8 }}>
+          <div style={{ fontSize: 'var(--aguila-fs-kpi-small)', color: TEXT_PRIMARY, fontWeight: 600, marginBottom: 8 }}>
             Necesitamos 100+ comparaciones para empezar a publicar métricas
           </div>
-          <div style={{ fontSize: 13, color: TEXT_MUTED, fontFamily: 'var(--font-mono)' }}>
+          <div style={{ fontSize: 'var(--aguila-fs-body)', color: TEXT_MUTED, fontFamily: 'var(--font-mono)' }}>
             Actual: {stats7.progress}/100
           </div>
         </div>
@@ -194,7 +194,7 @@ export default async function AdminShadowPage() {
           ) : (
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
               <thead>
-                <tr style={{ textAlign: 'left', color: TEXT_MUTED, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                <tr style={{ textAlign: 'left', color: TEXT_MUTED, fontSize: 'var(--aguila-fs-label)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                   <th style={{ padding: '6px 4px' }}>Tipo</th>
                   <th style={{ padding: '6px 4px', textAlign: 'right' }}>Tasa</th>
                   <th style={{ padding: '6px 4px', textAlign: 'right' }}>n</th>
@@ -245,14 +245,14 @@ export default async function AdminShadowPage() {
                     {d.trafico}
                   </span>
                   <span style={{ fontSize: 12, color: TEXT_PRIMARY, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    <span style={{ color: TEXT_MUTED, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', marginRight: 6 }}>Operador:</span>
+                    <span style={{ color: TEXT_MUTED, fontSize: 'var(--aguila-fs-label)', textTransform: 'uppercase', letterSpacing: '0.08em', marginRight: 6 }}>Operador:</span>
                     {d.human}
                   </span>
                   <span style={{ fontSize: 12, color: TEXT_PRIMARY, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    <span style={{ color: TEXT_MUTED, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', marginRight: 6 }}>Portal:</span>
+                    <span style={{ color: TEXT_MUTED, fontSize: 'var(--aguila-fs-label)', textTransform: 'uppercase', letterSpacing: '0.08em', marginRight: 6 }}>Portal:</span>
                     {d.system}
                   </span>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: TEXT_MUTED, textAlign: 'right' }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-label)', color: TEXT_MUTED, textAlign: 'right' }}>
                     {d.decision_type}
                   </span>
                 </Link>
@@ -264,7 +264,7 @@ export default async function AdminShadowPage() {
 
       <div style={{
         textAlign: 'center', padding: '20px 0',
-        fontSize: 11, color: TEXT_MUTED,
+        fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED,
       }}>
         Renato Zapata &amp; Company · Patente 3596 · Aduana 240
       </div>

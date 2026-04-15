@@ -412,7 +412,7 @@ fi
 # Baseline captured 2026-04-13 = 2552. Goal: trend toward 0 via --aguila-fs-*
 # CSS variables. Exceptions must be documented with `WHY:` inline.
 # --------------------------------------------------------------------------
-INVARIANT_27_BASELINE=2607
+INVARIANT_27_BASELINE=702
 header "Invariant 27 — Hardcoded fontSize ratchet"
 INV27_COUNT=$(set +eo pipefail;{ grep -rn "fontSize: [0-9]" src/app 2>/dev/null || true; } | grep -v "var(--aguila-fs-" | grep -v ".test." | grep -v "WHY:" | wc -l | tr -d ' ')
 if [ "$INV27_COUNT" -gt "$INVARIANT_27_BASELINE" ]; then

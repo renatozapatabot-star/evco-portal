@@ -8,6 +8,7 @@ import { daysUntilMVE, mveIsCritical } from '@/lib/compliance-dates'
 import { fmtDate } from '@/lib/format-utils'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { NightModeToggle } from '@/components/NightModeToggle'
+import { AguilaMark } from '@/components/brand/AguilaMark'
 import { NotificationPanel } from '@/components/NotificationPanel'
 import type { UserRole } from '@/components/nav/nav-config'
 import Link from 'next/link'
@@ -84,12 +85,7 @@ export function TopNav() {
           }}
         >
           <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}>
-            <div style={{
-              width: 28, height: 28, borderRadius: 6, background: '#CC1B2F',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-            }}>
-              <span style={{ color: '#FFF', fontWeight: 900, fontSize: 15, fontFamily: 'var(--font-geist-sans)', letterSpacing: '-0.02em', lineHeight: 1 }}>Z</span>
-            </div>
+            <AguilaMark size={28} />
             <span style={{ fontSize: 14, fontWeight: 800, color: T.text }}>ZAPATA AI</span>
           </Link>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>

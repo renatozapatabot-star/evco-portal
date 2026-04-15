@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { CheckCircle } from 'lucide-react'
 import { GOLD } from '@/lib/design-system'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { AguilaMark } from '@/components/brand/AguilaMark'
 import { formatAbsoluteETA, fmtUSD } from '@/lib/format-utils'
 import { getCompanyIdCookie } from '@/lib/client-config'
 import { createClient } from '@supabase/supabase-js'
@@ -211,14 +212,12 @@ function DraftsContent() {
           animation: 'fadeIn 0.5s ease',
         }}>
           <div style={{
-            width: 120, height: 120,
-            background: 'linear-gradient(135deg, #eab308 0%, #D4B05C 50%, #8B6914 100%)',
-            borderRadius: 28,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 64, fontWeight: 900, color: 'var(--text-primary)',
-            fontFamily: 'Georgia, serif',
             animation: 'scaleIn 0.6s cubic-bezier(0.2, 0.9, 0.4, 1.1)',
-          }}>Z</div>
+            filter: 'drop-shadow(0 0 24px rgba(244,212,122,0.45))',
+          }}>
+            <AguilaMark size={120} />
+          </div>
           <div style={{ color: '#E8E5DF', fontSize: 24, fontWeight: 800, marginTop: 24, letterSpacing: '-0.02em' }}>
             Patente 3596 honrada
           </div>

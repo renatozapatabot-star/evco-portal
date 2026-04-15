@@ -8,6 +8,7 @@ import { GOLD, GOLD_GRADIENT, GREEN, AMBER, RED, BG_CARD, BORDER, TEXT_PRIMARY, 
 import { WORKFLOW_LABELS, WORKFLOW_ORDER } from '@/lib/workflow-events'
 import { ChaserButton } from '../ChaserButton'
 import { CollapsibleSection } from '@/components/ui/CollapsibleSection'
+import { AguilaMark } from '@/components/brand/AguilaMark'
 import { AdminHeroStrip } from './AdminHeroStrip'
 import { ActionEngine } from './ActionEngine'
 import { AdminRightRail } from './AdminRightRail'
@@ -165,11 +166,7 @@ export function AdminCockpit(props: AdminCockpitProps) {
       {/* Header */}
       <div style={{ marginBottom: 24 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4 }}>
-          <div style={{
-            width: 36, height: 36, background: GOLD_GRADIENT,
-            borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 16, fontWeight: 900, color: '#0D0D0C', fontFamily: 'Georgia, serif',
-          }}>Z</div>
+          <AguilaMark size={36} />
           <h1 style={{ fontSize: 22, fontWeight: 800, margin: 0, letterSpacing: '-0.02em' }}>
             Centro de Mando
           </h1>

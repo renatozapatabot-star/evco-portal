@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
-import { GOLD_GRADIENT } from '@/lib/design-system'
 import { fmtDateTime } from '@/lib/format-utils'
+import { AguilaMark } from '@/components/brand/AguilaMark'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -56,7 +56,7 @@ export default async function StatusPage() {
     <div style={{ fontFamily: 'var(--font-geist-sans)', background: 'var(--bg-dark)', color: 'var(--border)', minHeight: '100vh' }} className="px-4 py-6 md:px-5 md:py-10">
       <div style={{ maxWidth: 640, margin: '0 auto' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 32 }}>
-          <div style={{ width: 40, height: 40, background: GOLD_GRADIENT, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-primary)', fontWeight: 900, fontSize: 18, fontFamily: 'Georgia, serif' }}>Z</div>
+          <AguilaMark size={40} />
           <div>
             <h1 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>Estado del Sistema</h1>
             <p style={{ color: '#666', fontSize: 12, margin: 0 }}>ZAPATA AI Intelligence Platform</p>

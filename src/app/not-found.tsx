@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { GOLD } from '@/lib/design-system'
+import { AguilaMark } from '@/components/brand/AguilaMark'
 
 export default function NotFound() {
   return (
@@ -8,11 +9,7 @@ export default function NotFound() {
       display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center', gap: 24,
     }}>
-      <div style={{
-        width: 64, height: 64, borderRadius: 16, display: 'flex',
-        alignItems: 'center', justifyContent: 'center',
-        fontSize: 28, fontWeight: 700, fontFamily: 'Georgia, serif', color: 'var(--text-primary)',
-      }} className="z-mark-coin">Z</div>
+      <AguilaMark size={64} />
       <h1 style={{ color: GOLD, fontFamily: 'var(--font-mono, monospace)', fontSize: 48, fontWeight: 800, margin: 0 }}>
         404
       </h1>

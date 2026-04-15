@@ -109,14 +109,26 @@ export function DecisionesPanel({ items }: Props) {
               }}
               className="aguila-decision-card"
             >
-              <span aria-hidden style={{
-                width: 36, height: 36, borderRadius: 10,
-                background: 'rgba(255,255,255,0.04)',
-                border: `1px solid ${tone}33`,
-                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                flexShrink: 0,
-              }}>
+              <span
+                aria-hidden
+                className={i.tone === 'red' || i.tone === 'amber' ? 'aguila-pulse' : ''}
+                style={{
+                  width: 36, height: 36, borderRadius: 10,
+                  background: 'rgba(255,255,255,0.04)',
+                  border: `1px solid ${tone}33`,
+                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                  flexShrink: 0,
+                  position: 'relative',
+                }}
+              >
                 <Icon size={16} color={tone} />
+                {(i.tone === 'red' || i.tone === 'amber') && (
+                  <span aria-hidden style={{
+                    position: 'absolute', top: -2, right: -2,
+                    width: 8, height: 8, borderRadius: '50%',
+                    background: tone, boxShadow: `0 0 8px ${tone}`,
+                  }} className="aguila-dot-pulse" />
+                )}
               </span>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{

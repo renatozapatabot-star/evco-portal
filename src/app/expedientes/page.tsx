@@ -276,6 +276,7 @@ function ExpedientesContent() {
                   <th scope="col" style={{ width: 100, cursor: 'pointer' }} onClick={() => toggleSort('fecha_llegada')}>Fecha<SortArrow col="fecha_llegada" sort={sort} /></th>
                   <th scope="col" style={{ width: 120, cursor: 'pointer' }} onClick={() => toggleSort('pct')}>Documentos<SortArrow col="pct" sort={sort} /></th>
                   <th scope="col">Descripción</th>
+                  <th scope="col" style={{ width: 80, textAlign: 'center' }}>PDF</th>
                 </tr>
               </thead>
               <tbody>
@@ -291,7 +292,7 @@ function ExpedientesContent() {
                   </tr>
                 ))}
                 {!loading && paged.length === 0 && (
-                  <tr><td colSpan={7}>
+                  <tr><td colSpan={8}>
                     {search.trim() ? (
                       <div className="empty-state">
                         <div className="empty-state-icon">🔍</div>
@@ -334,6 +335,31 @@ function ExpedientesContent() {
                         }
                       </td>
                       <td className="desc-text">{fmtDesc(r.descripcion_mercancia) || '—'}</td>
+                      <td style={{ textAlign: 'center' }}>
+                        <button
+                          type="button"
+                          aria-label={`Abrir PDF del expediente ${r.trafico}`}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            window.open(`/api/pedimento-pdf?trafico=${encodeURIComponent(r.trafico)}`, '_blank')
+                          }}
+                          style={{
+                            minHeight: 36,
+                            padding: '4px 10px',
+                            borderRadius: 8,
+                            background: 'rgba(201,167,74,0.14)',
+                            border: '1px solid rgba(201,167,74,0.3)',
+                            color: '#F4D47A',
+                            fontSize: 11,
+                            fontWeight: 700,
+                            letterSpacing: '0.08em',
+                            textTransform: 'uppercase',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          Ver
+                        </button>
+                      </td>
                     </tr>
                   )
                 })}

@@ -164,8 +164,10 @@ caused a real regression, a compliance risk, or a silent failure in production.
     verify: `grep -n "X-Frame-Options\|frame-ancestors" next.config.ts` → must show SAMEORIGIN + 'self'
 
 29. **Six cockpit nav cards, locked across `/inicio`, `/operador/inicio`,
-    `/admin/eagle`.** The six are Tráficos, Pedimentos, Expedientes,
-    Catálogo, Entradas, Clasificaciones. Order, labels, icons, and
+    `/admin/eagle`.** The six are **Embarques, Pedimentos, Expedientes,
+    Catálogo, Entradas, Reportes** (Reportes replaced Clasificaciones on
+    2026-04-15 per Tito + Renato IV audit — Clasificaciones folded into
+    the Asistente/Clasificador surface). Order, labels, icons, and
     descriptions are defined once in `src/lib/cockpit/nav-tiles.ts`
     (`UNIFIED_NAV_TILES`). Role decides what *data* populates each card;
     role does not decide which cards appear. Adding a 7th tile or

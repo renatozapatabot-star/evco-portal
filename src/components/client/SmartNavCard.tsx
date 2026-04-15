@@ -23,6 +23,7 @@ interface Props {
 
 export function SmartNavCard({ href, label, icon: Icon, description, count, countSuffix, microStatus, microStatusWarning, trendData, trendTone = 'silver' }: Props) {
   const hasTrend = Array.isArray(trendData) && trendData.length >= 2
+  const isLive = typeof count === 'number' && count > 0
   return (
     <Link href={href} style={{ textDecoration: 'none', color: 'inherit', display: 'flex' }}>
       <motion.div
@@ -31,10 +32,10 @@ export function SmartNavCard({ href, label, icon: Icon, description, count, coun
         transition={{ type: 'spring', stiffness: 400, damping: 25 }}
         className="smart-nav-card"
         style={{
-          background: 'rgba(255,255,255,0.04)',
+          background: 'rgba(0,0,0,0.4)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255,255,255,0.08)',
+          border: '1px solid rgba(192,197,206,0.18)',
           borderRadius: 20,
           padding: '16px 20px',
           cursor: 'pointer',
@@ -43,10 +44,11 @@ export function SmartNavCard({ href, label, icon: Icon, description, count, coun
           gap: 12,
           width: '100%',
           minHeight: 60,
-          boxShadow: '0 10px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)',
+          boxShadow: '0 10px 30px rgba(0,0,0,0.6), 0 0 20px rgba(192,197,206,0.08)',
         }}
       >
         <div className="nav-card-icon" style={{
+          position: 'relative',
           width: 40, height: 40, borderRadius: 12,
           background: 'rgba(192,197,206,0.08)',
           border: '1px solid rgba(192,197,206,0.15)',
@@ -54,6 +56,22 @@ export function SmartNavCard({ href, label, icon: Icon, description, count, coun
           flexShrink: 0,
         }}>
           <Icon className="nav-card-icon-svg" size={18} color="#C0C5CE" strokeWidth={1.8} />
+          {isLive && (
+            <span
+              aria-hidden
+              className="nav-card-live-dot"
+              style={{
+                position: 'absolute',
+                top: -3,
+                right: -3,
+                width: 8,
+                height: 8,
+                borderRadius: '50%',
+                background: '#22C55E',
+                boxShadow: '0 0 8px rgba(34,197,94,0.8)',
+              }}
+            />
+          )}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div className="nav-card-label" style={{
@@ -95,6 +113,16 @@ export function SmartNavCard({ href, label, icon: Icon, description, count, coun
       </motion.div>
 
       <style>{`
+        @keyframes nav-card-live-pulse {
+          0%, 100% { box-shadow: 0 0 4px rgba(34,197,94,0.6); opacity: 0.9; }
+          50%      { box-shadow: 0 0 12px rgba(34,197,94,0.95); opacity: 1; }
+        }
+        .nav-card-live-dot {
+          animation: nav-card-live-pulse 2s ease-in-out infinite;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .nav-card-live-dot { animation: none; }
+        }
         @media (max-width: 640px) {
           .smart-nav-card {
             padding: 12px !important;

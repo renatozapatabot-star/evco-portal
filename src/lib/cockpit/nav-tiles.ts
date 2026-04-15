@@ -1,4 +1,4 @@
-import { Truck, FileText, FolderOpen, Book, Package, Tags } from 'lucide-react'
+import { Truck, FileText, FolderOpen, Book, Package, BarChart3 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
 /**
@@ -13,6 +13,7 @@ export type NavTileKey =
   | 'expedientes'
   | 'catalogo'
   | 'entradas'
+  | 'reportes'
   | 'clasificaciones'
   | 'facturas'
   | 'cartera'
@@ -37,12 +38,12 @@ export interface NavTileDef {
  * (core-invariants rule 29).
  */
 export const UNIFIED_NAV_TILES: readonly NavTileDef[] = [
-  { key: 'traficos',        href: '/embarques',   label: 'Embarques',        icon: Truck,      description: 'Operaciones activas' },
-  { key: 'pedimentos',      href: '/pedimentos', label: 'Pedimentos',      icon: FileText,   description: 'Declaraciones aduanales' },
-  { key: 'expedientes',     href: '/expedientes',label: 'Expedientes',     icon: FolderOpen, description: 'Documentos por operación' },
-  { key: 'catalogo',        href: '/catalogo',   label: 'Catálogo',        icon: Book,       description: 'Partes e historial' },
-  { key: 'entradas',        href: '/entradas',   label: 'Entradas',        icon: Package,    description: 'Control de almacén' },
-  { key: 'clasificaciones', href: '/clasificar', label: 'Clasificaciones', icon: Tags,       description: 'Fracciones arancelarias' },
+  { key: 'traficos',    href: '/embarques',   label: 'Embarques',    icon: Truck,      description: 'Operaciones activas' },
+  { key: 'pedimentos',  href: '/pedimentos',  label: 'Pedimentos',   icon: FileText,   description: 'Declaraciones aduanales' },
+  { key: 'expedientes', href: '/expedientes', label: 'Expedientes',  icon: FolderOpen, description: 'Documentos por operación' },
+  { key: 'catalogo',    href: '/catalogo',    label: 'Catálogo',     icon: Book,       description: 'Partes e historial' },
+  { key: 'entradas',    href: '/entradas',    label: 'Entradas',     icon: Package,    description: 'Control de almacén' },
+  { key: 'reportes',    href: '/reportes',    label: 'Reportes',     icon: BarChart3,  description: 'Analítica y descargas' },
 ] as const
 
 export interface NavCellData {
@@ -59,10 +60,10 @@ export interface NavCellData {
 export type NavCounts = Partial<Record<NavTileKey, NavCellData>>
 
 export const EMPTY_NAV_COUNTS: NavCounts = {
-  traficos:        { count: null, series: [] },
-  pedimentos:      { count: null, series: [] },
-  expedientes:     { count: null, series: [] },
-  catalogo:        { count: null, series: [] },
-  entradas:        { count: null, series: [] },
-  clasificaciones: { count: null, series: [] },
+  traficos:    { count: null, series: [] },
+  pedimentos:  { count: null, series: [] },
+  expedientes: { count: null, series: [] },
+  catalogo:    { count: null, series: [] },
+  entradas:    { count: null, series: [] },
+  reportes:    { count: null, series: [] },
 }

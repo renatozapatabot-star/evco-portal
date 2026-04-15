@@ -216,7 +216,7 @@ async function renderContabilidadCockpit(opName: string, scopedCompanyId: string
     traficos:        { count: activosCount,         series: activosSeries,         microStatus: `${cruzados7dCount} cruzaron esta semana` },
     pedimentos:      { count: pedimentosMesCount,   series: pedimentosSeries,      microStatus: daysSinceLastCruce != null ? `Último cruce hace ${daysSinceLastCruce} día${daysSinceLastCruce === 1 ? '' : 's'}` : 'Sin cruces recientes' },
     expedientes:     { count: expedientesCount,     series: expedientesSeries,     microStatus: 'Documentos totales' },
-    catalogo:        { count: catalogoCount,        series: [],                    microStatus: '—' },
+    catalogo:        { count: catalogoCount,        series: [],                    microStatus: clasificacionesCount > 0 ? `${clasificacionesCount.toLocaleString('es-MX')} fracciones clasificadas` : 'Sin clasificar' },
     entradas:        { count: entradasMesCount,     series: entradasSeries,        microStatus: `${entradasMesCount} en ${now.toLocaleString('es-MX', { month: 'short', timeZone: 'America/Chicago' })}` },
     clasificaciones: { count: clasificacionesCount, series: clasificacionesSeries, microStatus: `${clasificacionesCount} fracciones clasificadas` },
   }
@@ -303,7 +303,6 @@ async function renderContabilidadCockpit(opName: string, scopedCompanyId: string
   const capabilityCounts: CapabilityCounts = {
     checklist:    { count: closeOpen,              microStatus: closeOpen > 0 ? `${closeOpen} pendiente${closeOpen === 1 ? '' : 's'} del mes` : undefined, microStatusWarning: closeOpen > 3 },
     clasificador: { count: clasificacionesCount,   microStatus: clasificacionesCount > 0 ? `${clasificacionesCount} fracciones` : undefined },
-    mensajes:     { count: null },
   }
   const capabilitySlot = <CapabilityCardGrid counts={capabilityCounts} />
 

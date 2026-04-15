@@ -94,7 +94,10 @@ export default async function EaglePage({ searchParams }: EaglePageProps) {
   if (!session) redirect('/login')
   if (!['admin', 'broker'].includes(session.role)) redirect('/')
 
-  const opName = cookieStore.get('operator_name')?.value || 'Tito'
+  // TITO in caps per audit 2026-04-15. Owner gets the uppercase wordmark
+  // treatment in the greeting; other roles continue with given casing.
+  const rawName = cookieStore.get('operator_name')?.value || 'Tito'
+  const opName = rawName.toUpperCase()
   const resolved = (await searchParams) ?? {}
   const rawMonth = Array.isArray(resolved.month) ? resolved.month[0] : resolved.month
 
@@ -344,11 +347,13 @@ async function renderEagle(opName: string, rawMonth: string | null) {
       microStatus: `${cruzadosMesCount} cruzaron en ${monthShort}`,
     },
     pedimentos: {
-      count: pedimentosMesCount,
+      // Show actionable count (pedimentos awaiting cruce) — that's what
+      // moves the needle. Cruces-este-mes is the hero KPI separately.
+      count: pedimentosPendientesCount,
       series: pedimentosPendSeries,
       microStatus: daysSinceLastCruce != null
-        ? `Último cruce hace ${daysSinceLastCruce} día${daysSinceLastCruce === 1 ? '' : 's'}`
-        : 'Sin cruces recientes',
+        ? `${pedimentosMesCount} cruzaron en ${monthShort} · último hace ${daysSinceLastCruce}d`
+        : `${pedimentosMesCount} cruzaron en ${monthShort}`,
     },
     expedientes: {
       count: expedientesCount,
@@ -357,19 +362,19 @@ async function renderEagle(opName: string, rawMonth: string | null) {
       microStatusWarning: pedimentosPendientesCount > 0,
     },
     catalogo: {
-      count: null,
+      count: clasificacionesCount,
       series: [],
-      microStatus: '—',
+      microStatus: clasificacionesCount > 0 ? `${clasificacionesCount.toLocaleString('es-MX')} fracciones clasificadas` : 'Sin clasificar',
     },
     entradas: {
       count: entradasMesCount,
       series: entradasSeries,
       microStatus: `${entradasMesCount} recibida${entradasMesCount === 1 ? '' : 's'} en ${monthShort}`,
     },
-    clasificaciones: {
-      count: clasificacionesCount,
+    reportes: {
+      count: null,
       series: clasificacionesSeries,
-      microStatus: `${clasificacionesCount} fracciones clasificadas`,
+      microStatus: 'Analítica multi-cliente · descargas',
     },
   }
 
@@ -497,7 +502,6 @@ async function renderEagle(opName: string, rawMonth: string | null) {
   const capabilityCounts: CapabilityCounts = {
     checklist:    { count: pedimentosPendientesCount, microStatus: pedimentosPendientesCount > 0 ? `${pedimentosPendientesCount} pendientes` : undefined },
     clasificador: { count: clasificacionesCount, microStatus: clasificacionesCount > 0 ? `${clasificacionesCount} fracciones` : undefined },
-    mensajes:     { count: escalatedThreads.length, microStatus: escalatedThreads.length > 0 ? `${escalatedThreads.length} escalados` : undefined, microStatusWarning: escalatedThreads.length > 0 },
   }
   const capabilitySlot = <CapabilityCardGrid counts={capabilityCounts} />
 

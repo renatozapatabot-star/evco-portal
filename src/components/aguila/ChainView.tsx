@@ -69,9 +69,10 @@ function nextStepLabel(kind: ChainNodeKind): string {
 }
 
 export function ChainView({ nodes, compact = false, ariaLabel }: ChainViewProps) {
-  // V1 · "¿Qué sigue?" — surfaces the first missing node as the next
-  // primary action above the chain. Calm guidance, not alarm.
-  const firstMissing = nodes.find((n) => n.status === 'missing' && n.kind !== 'trafico')
+  // V1 · "¿Qué sigue?" affordance retired 2026-04-15 per audit — the chain
+  // itself makes missing nodes visible; an extra header card was redundant
+  // noise. The Vincular CTAs still live on each chain node.
+  const firstMissing = null as null | (typeof nodes)[number]
 
   return (
     <GlassCard

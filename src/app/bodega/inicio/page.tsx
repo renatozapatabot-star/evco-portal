@@ -197,7 +197,7 @@ async function renderBodegaCockpit(opName: string) {
     traficos:        { count: activosCount,         series: activosSeries,        microStatus: `${cruzados7dCount} cruzaron esta semana` },
     pedimentos:      { count: pedimentosMesCount,   series: pedimentosSeries,     microStatus: 'Este mes' },
     expedientes:     { count: expedientesCount,     series: expedientesSeries,    microStatus: 'Documentos totales' },
-    catalogo:        { count: catalogoCount,        series: [],                   microStatus: '—' },
+    catalogo:        { count: catalogoCount,        series: [],                   microStatus: clasificacionesCount > 0 ? `${clasificacionesCount.toLocaleString('es-MX')} fracciones clasificadas` : 'Sin clasificar' },
     entradas:        { count: entradasHoyCount,     series: entradasSeries,       microStatus: `${entradas7dCount} recibida${entradas7dCount === 1 ? '' : 's'} esta semana` },
     clasificaciones: { count: clasificacionesCount, series: clasificacionesSeries, microStatus: `${clasificacionesCount} fracciones clasificadas` },
   }
@@ -257,7 +257,7 @@ async function renderBodegaCockpit(opName: string) {
   const capabilityCounts: CapabilityCounts = {
     checklist:    { count: expedientesCount,     microStatus: expedientesCount > 0 ? `${expedientesCount} totales` : undefined },
     clasificador: { count: clasificacionesCount, microStatus: clasificacionesCount > 0 ? `${clasificacionesCount} fracciones` : undefined },
-    mensajes:     { count: null },
+    // mensajes capability removed 2026-04-15
   }
   const capabilitySlot = <CapabilityCardGrid counts={capabilityCounts} />
 

@@ -214,7 +214,7 @@ export function InicioClient(props: Props) {
   const capabilityCounts: CapabilityCounts = {
     checklist:    { count: null },
     clasificador: { count: null },
-    mensajes:     { count: props.mensajeriaMessages.length, microStatus: props.mensajeriaMessages.length > 0 ? `${props.mensajeriaMessages.length} nuevos` : undefined },
+    // mensajes capability removed 2026-04-15
   }
   const capabilitySlot = <CapabilityCardGrid counts={capabilityCounts} />
 

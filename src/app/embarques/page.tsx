@@ -467,31 +467,26 @@ function TraficosContent() {
         {/* Desktop table */}
         {!isMobile && (
           <div style={{ maxHeight: 'calc(100vh - 280px)', overflowY: 'auto', overflowX: 'auto' }}>
-            <table className="aguila-table" aria-label="Lista de embarques" style={{ minWidth: 1300 }}>
+            <table className="aguila-table" aria-label="Lista de embarques" style={{ minWidth: 720 }}>
               <thead>
                 <tr>
                   <th scope="col" style={{ width: 150, cursor: 'pointer' }} onClick={() => toggleSort('trafico')}>Clave de Embarque<SortArrow col="trafico" sort={sort} /></th>
-                  <th scope="col" style={{ width: 100 }}>Entrada</th>
-                  <th scope="col" style={{ width: 160 }}>Proveedor</th>
-                  <th scope="col" style={{ width: 120 }}>Invoice #</th>
-                  <th scope="col" style={{ minWidth: 160 }}>Descripción</th>
-                  <th scope="col" style={{ width: 110, textAlign: 'right', cursor: 'pointer' }} onClick={() => toggleSort('importe_total')}>Valor USD<SortArrow col="importe_total" sort={sort} /></th>
-                  <th scope="col" style={{ width: 120 }}>Pedimento</th>
-                  <th scope="col" style={{ width: 100, cursor: 'pointer' }} onClick={() => toggleSort('estatus')}>Status<SortArrow col="estatus" sort={sort} /></th>
-                  <th scope="col" style={{ width: 100 }}>Fecha Cruce</th>
+                  <th scope="col" style={{ minWidth: 220 }}>Descripción</th>
+                  <th scope="col" style={{ width: 140 }}>Pedimento</th>
+                  <th scope="col" style={{ width: 110 }}>Fecha Cruce</th>
                   <th scope="col" style={{ width: 80 }}>Guía</th>
                 </tr>
               </thead>
               <tbody>
                 {loading && Array.from({ length: 8 }).map((_, i) => (
                   <tr key={`s-${i}`}>
-                    {Array.from({ length: 10 }).map((_, j) => (
-                      <td key={j}><div className="skeleton-shimmer" style={{ width: j === 4 ? 140 : 80, height: 13 }} /></td>
+                    {Array.from({ length: 5 }).map((_, j) => (
+                      <td key={j}><div className="skeleton-shimmer" style={{ width: j === 1 ? 200 : 80, height: 13 }} /></td>
                     ))}
                   </tr>
                 ))}
                 {!loading && paged.length === 0 && (
-                  <tr><td colSpan={10}>
+                  <tr><td colSpan={5}>
                     {search.trim() ? (
                       <div className="empty-state">
                         <div className="empty-state-icon">🔍</div>
@@ -504,8 +499,6 @@ function TraficosContent() {
                   </td></tr>
                 )}
                 {paged.map((r, idx) => {
-                  const status = getStatus(r.estatus)
-                  const valor = getValor(r)
                   return (
                     <tr
                       key={r.trafico}
@@ -516,20 +509,8 @@ function TraficosContent() {
                       <td>
                         <span className="trafico-id">{fmtId(r.trafico)}</span>
                       </td>
-                      <td style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--text-secondary)' }}>
-                        {getEntrada(r) || <span style={{ color: 'var(--text-muted)' }}>—</span>}
-                      </td>
-                      <td style={{ fontSize: 13, color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 160 }}>
-                        {(() => { const p = getProveedor(r); return p && p !== '—' ? p : <span style={{ color: 'var(--text-muted)' }}>—</span> })()}
-                      </td>
-                      <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 120 }}>
-                        {getInvoice(r) || <span style={{ color: 'var(--text-muted)' }}>—</span>}
-                      </td>
                       <td className="desc-text" style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
                         {fmtDesc(getDesc(r)) || <span style={{ color: 'var(--text-muted)' }}>—</span>}
-                      </td>
-                      <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--text-primary)', fontWeight: 600 }}>
-                        {valor > 0 ? fmtUSDCompact(valor) : <span style={{ color: 'var(--text-muted)' }}>—</span>}
                       </td>
                       <td>
                         {r.pedimento ? (
@@ -548,11 +529,6 @@ function TraficosContent() {
                         ) : (
                           <span className="pedimento-pending">Pendiente</span>
                         )}
-                      </td>
-                      <td>
-                        <span className={`badge ${status === 'Cruzado' ? 'badge-cruzado' : 'badge-proceso'}`}>
-                          {status}
-                        </span>
                       </td>
                       <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-secondary)' }}>
                         {r.fecha_cruce ? fmtDate(r.fecha_cruce) : <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Pendiente</span>}

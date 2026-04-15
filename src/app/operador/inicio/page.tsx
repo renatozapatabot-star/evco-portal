@@ -255,19 +255,19 @@ async function loadOperatorCockpit(opId: string, opName: string, month: string) 
       microStatus: `${expedientesTotalCount} documento${expedientesTotalCount === 1 ? '' : 's'} totales`,
     },
     catalogo: {
-      count: null,
+      count: clasificacionesTotalCount,
       series: [],
-      microStatus: '—',
+      microStatus: clasificacionesTotalCount > 0 ? `${clasificacionesTotalCount.toLocaleString('es-MX')} fracciones clasificadas` : 'Sin clasificar',
     },
     entradas: {
       count: kpis.entradasHoy,
       series: entradasSeries,
       microStatus: `${entradas7dCount} recibida${entradas7dCount === 1 ? '' : 's'} esta semana`,
     },
-    clasificaciones: {
-      count: clasificacionesTotalCount,
+    reportes: {
+      count: null,
       series: clasificacionesSeries,
-      microStatus: `${clasificacionesTotalCount} fracciones clasificadas`,
+      microStatus: 'Analítica operativa · descargas',
     },
   }
 

@@ -15,7 +15,6 @@ import {
 } from '@/lib/design-system'
 import { useTrack } from '@/lib/telemetry/useTrack'
 import { fmtUSDCompact } from '@/lib/format-utils'
-import { TraficoQuickActions } from '@/components/traficos/TraficoQuickActions'
 import { ChainView, type ChainNode, type ChainNodeKind } from '@/components/aguila'
 import { ChainVincularModal } from '@/components/aguila/ChainVincularModal'
 import { PageOpenTracker } from './PageOpenTracker'
@@ -233,7 +232,8 @@ export function TraficoDetail(props: TraficoDetailProps) {
 
   return (
     <div style={{ padding: '8px 0', maxWidth: 1400, margin: '0 auto' }}>
-      <TraficoQuickActions traficoId={props.traficoId} />
+      {/* TraficoQuickActions chip strip retired 2026-04-15 per audit —
+          Pedimento/DODA/Carta Porte are reachable from the detail tabs + chain. */}
       <PageOpenTracker traficoId={props.traficoId} />
 
       <Header

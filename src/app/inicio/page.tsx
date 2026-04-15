@@ -191,9 +191,9 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
     traficos:        { count: activeTraficosCount,    series: activosSeries,          microStatus: `${cruzadosLast7Count} cruzaron esta semana` },
     pedimentos:      { count: pedimentosListosCount,  series: pedimentosListosSeries, microStatus: daysSinceLastCruce != null ? `Último cruce hace ${daysSinceLastCruce} día${daysSinceLastCruce === 1 ? '' : 's'}` : 'Sin cruces recientes' },
     expedientes:     { count: expedientesCount,       series: expedientesSeries,      microStatus: `${documentos.length} documento${documentos.length === 1 ? '' : 's'} en tu expediente` },
-    catalogo:        { count: catalogoCount,          series: [],                     microStatus: '—' },
+    catalogo:        { count: catalogoCount,          series: [],                     microStatus: clasificacionesCount > 0 ? `${clasificacionesCount.toLocaleString('es-MX')} fracciones clasificadas` : 'Sin clasificar' },
     entradas:        { count: entradasSemanaCount,    series: entradasSeries,         microStatus: `${entradasSemanaCount} recibida${entradasSemanaCount === 1 ? '' : 's'} esta semana` },
-    clasificaciones: { count: clasificacionesCount,   series: clasificacionesSeries,  microStatus: `${clasificacionesCount} fracciones clasificadas` },
+    reportes:        { count: null,                   series: clasificacionesSeries,  microStatus: 'Analítica y descargas' },
   }
 
   const estadoSections = (
@@ -290,7 +290,7 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
   const capabilityCounts: CapabilityCounts = {
     checklist:    { count: checklistPending, microStatus: checklistPending > 0 ? `${checklistPending} pendiente${checklistPending === 1 ? '' : 's'}` : undefined },
     clasificador: { count: clasificacionesCount, countSuffix: '', microStatus: clasificacionesCount > 0 ? `${clasificacionesCount} fracciones` : undefined },
-    mensajes:     { count: mensajeriaMessages.length, microStatus: mensajeriaMessages.length > 0 ? `${mensajeriaMessages.length} sin leer` : undefined },
+    // mensajes capability removed 2026-04-15
   }
   const capabilitySlot = <CapabilityCardGrid counts={capabilityCounts} />
 

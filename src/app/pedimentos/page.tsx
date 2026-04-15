@@ -123,8 +123,13 @@ function PedimentosContent() {
       })
       .finally(() => setLoading(false))
 
-    // Partida descriptions
+    // Partida descriptions — scope by company to avoid cross-client description bleed.
+    // For client role, /api/data auto-injects the signed session company_id. For
+    // broker/admin, we pass the currently-viewed company_id explicitly (or skip
+    // the fetch entirely when broker is aggregating across all clients).
     const partidaParams = new URLSearchParams({ table: 'globalpc_partidas', select: 'cve_trafico,descripcion', limit: '5000' })
+    if (!isInternal && companyId) partidaParams.set('company_id', companyId)
+    else if (isInternal && companyId) partidaParams.set('company_id', companyId)
     fetch(`/api/data?${partidaParams}`)
       .then(r => r.json()).then(d => {
         const map = new Map<string, string>()

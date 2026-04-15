@@ -13,10 +13,10 @@ interface Props {
 }
 
 /**
- * ZAPATA AI v10 — 3-card capability row. Icon left, title/subtitle center,
- * count right. Same glass chrome as SmartNavCard but semantically distinct
- * (action, not destination). Rendered inside CockpitInicio between the
- * nav grid and the main estado grid.
+ * ZAPATA AI v11 — 2-card capability row (was 3 before mensajes was pulled).
+ * Icon left, title/subtitle center, count right. Cards are now wider /
+ * more visually substantial so the row feels deliberate, not cramped.
+ * Rendered inside CockpitInicio between the nav grid and the main estado grid.
  */
 export function CapabilityCardGrid({ counts }: Props) {
   return (
@@ -24,12 +24,12 @@ export function CapabilityCardGrid({ counts }: Props) {
       className="aguila-capability-grid"
       style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(3, 1fr)',
+        gridTemplateColumns: 'repeat(2, 1fr)',
         gap: 'var(--aguila-gap-card, 16px)',
       }}
     >
       <style>{`
-        @media (max-width: 1024px) {
+        @media (max-width: 768px) {
           .aguila-capability-grid { grid-template-columns: 1fr !important; }
         }
       `}</style>

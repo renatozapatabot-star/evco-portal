@@ -65,6 +65,7 @@ export function DocumentosTab({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {/* 1. What's already in the expediente — the first thing the user wants to see. */}
       <ExpedienteChecklist
         requiredDocs={requiredDocCodes}
         uploadedDocs={docs}
@@ -72,37 +73,34 @@ export function DocumentosTab({
         grouped
       />
 
-      <div ref={uploaderRef}>
-        <DocUploader traficoId={traficoId} defaultDocType={defaultDocType} />
-      </div>
+      {/* 2. Request-missing CTA — only when there are actually missing docs. */}
+      {missingDocs.length > 0 && (
+        <button
+          type="button"
+          onClick={() => setModalOpen(true)}
+          style={{
+            minHeight: 60,
+            padding: '0 20px',
+            background: GOLD,
+            color: '#0B1220',
+            border: 'none',
+            borderRadius: 12,
+            fontSize: 13,
+            fontWeight: 700,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 8,
+            letterSpacing: '0.02em',
+          }}
+        >
+          <MailPlus size={14} />
+          {`Solicitar ${missingDocs.length} documento${missingDocs.length === 1 ? '' : 's'} faltante${missingDocs.length === 1 ? '' : 's'}`}
+        </button>
+      )}
 
-      <button
-        type="button"
-        onClick={() => setModalOpen(true)}
-        disabled={missingDocs.length === 0}
-        style={{
-          minHeight: 60,
-          padding: '0 20px',
-          background: missingDocs.length === 0 ? 'rgba(192,197,206,0.35)' : GOLD,
-          color: '#0B1220',
-          border: 'none',
-          borderRadius: 12,
-          fontSize: 13,
-          fontWeight: 700,
-          cursor: missingDocs.length === 0 ? 'not-allowed' : 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 8,
-          letterSpacing: '0.02em',
-        }}
-      >
-        <MailPlus size={14} />
-        {missingDocs.length === 0
-          ? 'Expediente completo'
-          : `Solicitar ${missingDocs.length} documento${missingDocs.length === 1 ? '' : 's'} faltante${missingDocs.length === 1 ? '' : 's'}`}
-      </button>
-
+      {/* 3. Docs already uploaded. */}
       {docs.length === 0 ? (
         <div
           style={{
@@ -124,7 +122,7 @@ export function DocumentosTab({
               maxWidth: 320,
             }}
           >
-            Arrastra una factura, packing list o certificado de origen arriba para iniciar el expediente.
+            Arrastra una factura, packing list o certificado de origen abajo para iniciar el expediente.
           </div>
         </div>
       ) : (
@@ -184,6 +182,11 @@ export function DocumentosTab({
           })}
         </div>
       )}
+
+      {/* 4. Single upload surface — pinned to the bottom of the tab. */}
+      <div ref={uploaderRef} style={{ marginTop: 4 }}>
+        <DocUploader traficoId={traficoId} defaultDocType={defaultDocType} />
+      </div>
 
       {modalOpen && (
         <SolicitarDocsModal

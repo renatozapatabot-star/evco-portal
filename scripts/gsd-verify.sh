@@ -304,6 +304,23 @@ else
 fi
 
 # --------------------------------------------------------------------------
+# KPI honesty — never use updated_at as a time-window filter on cockpits.
+# updated_at fires on every sync; "this month" becomes "everything synced
+# this month." Real timestamps: fecha_cruce, fecha_llegada,
+# fecha_llegada_mercancia, fraccion_classified_at, uploaded_at, etc.
+# Discovered via EVCO screenshot 2026-04-15 — Cruces este mes showed
+# 2,541 when reality was 3.
+# --------------------------------------------------------------------------
+header "KPI honesty — no updated_at time-window filters"
+KPI_DRIFT=$(grep -rnE "gte\(\s*'updated_at'|gte\(\s*\"updated_at\"|lte\(\s*'updated_at'|lte\(\s*\"updated_at\"" src/app/inicio src/app/admin/eagle src/app/operador/inicio src/app/contabilidad/inicio src/app/bodega/inicio src/app/api/routines 2>/dev/null | wc -l | tr -d ' ')
+if [ "$KPI_DRIFT" -gt 0 ]; then
+  fail "Cockpit/routine KPIs filter by updated_at ($KPI_DRIFT hits) — use fecha_cruce / fecha_llegada / fecha_llegada_mercancia."
+  grep -rnE "gte\(\s*'updated_at'|gte\(\s*\"updated_at\"|lte\(\s*'updated_at'|lte\(\s*\"updated_at\"" src/app/inicio src/app/admin/eagle src/app/operador/inicio src/app/contabilidad/inicio src/app/bodega/inicio src/app/api/routines 2>/dev/null | head -5 | sed 's/^/      /'
+else
+  pass "No updated_at time-window filters on cockpits or routines"
+fi
+
+# --------------------------------------------------------------------------
 # Deprecated design-system token ratchet
 # ACCENT_CYAN / GOLD / GOLD_* / ACCENT_BLUE / GLOW_CYAN* still exported as
 # silver aliases for back-compat. 269 imports today. Goal: trend to 0, then

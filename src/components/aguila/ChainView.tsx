@@ -60,13 +60,83 @@ function formatDate(iso?: string | null): string {
   })
 }
 
+function nextStepLabel(kind: ChainNodeKind): string {
+  if (kind === 'factura') return 'vincular factura del proveedor'
+  if (kind === 'entrada') return 'registrar entrada en bodega'
+  if (kind === 'pedimento') return 'capturar número de pedimento'
+  if (kind === 'expediente') return 'subir documentos del expediente'
+  return 'completar información del embarque'
+}
+
 export function ChainView({ nodes, compact = false, ariaLabel }: ChainViewProps) {
+  // V1 · "¿Qué sigue?" — surfaces the first missing node as the next
+  // primary action above the chain. Calm guidance, not alarm.
+  const firstMissing = nodes.find((n) => n.status === 'missing' && n.kind !== 'trafico')
+
   return (
     <GlassCard
       size={compact ? 'compact' : 'card'}
       ariaLabel={ariaLabel || 'Cadena documental'}
       style={{ padding: compact ? '12px 14px' : '16px 20px' }}
     >
+      {firstMissing && !compact && (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            marginBottom: 12,
+            paddingBottom: 12,
+            borderBottom: `1px solid ${BORDER_HAIRLINE}`,
+          }}
+        >
+          <span
+            style={{
+              fontSize: 'var(--aguila-fs-label, 10px)',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: 'var(--aguila-ls-dramatic, 0.15em)',
+              color: TEXT_MUTED,
+            }}
+          >
+            ¿Qué sigue?
+          </span>
+          <span
+            style={{
+              fontSize: 'var(--aguila-fs-body, 13px)',
+              color: TEXT_SECONDARY,
+              flex: 1,
+            }}
+          >
+            {nextStepLabel(firstMissing.kind)}
+          </span>
+          {firstMissing.onVincular && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                firstMissing.onVincular?.(firstMissing.kind)
+              }}
+              style={{
+                minHeight: 36,
+                padding: '0 14px',
+                border: 'none',
+                borderRadius: 10,
+                background: 'linear-gradient(135deg, #E8EAED 0%, #C0C5CE 50%, #7A7E86 100%)',
+                color: '#0A0A0C',
+                fontSize: 'var(--aguila-fs-meta, 11px)',
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: 'var(--aguila-ls-label, 0.08em)',
+                cursor: 'pointer',
+              }}
+            >
+              Vincular {firstMissing.label.toLowerCase()}
+            </button>
+          )}
+        </div>
+      )}
       <div
         style={{
           display: 'flex',

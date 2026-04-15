@@ -186,6 +186,51 @@ export async function createThread(input: CreateThreadInput): Promise<Result<Men
   return { data: thread, error: null }
 }
 
+export interface FindOrCreateByTraficoInput {
+  companyId: string
+  traficoId: string
+  subject: string
+  role: AuthorRole
+  authorName: string
+  firstMessageBody: string
+  internalOnly?: boolean
+}
+
+/**
+ * Deterministic thread resolver for workflow-triggered notifications.
+ * One open thread per (company_id, trafico_id). If none exists, creates one.
+ * Matches 'open' or 'escalated' — only 'resolved' threads spawn a new one.
+ */
+export async function findOrCreateThreadByTrafico(
+  input: FindOrCreateByTraficoInput,
+): Promise<Result<MensajeriaThread>> {
+  const supabase = createServerClient()
+
+  const { data: existing } = await supabase
+    .from('mensajeria_threads')
+    .select('*')
+    .eq('company_id', input.companyId)
+    .eq('trafico_id', input.traficoId)
+    .in('status', ['open', 'escalated'])
+    .order('last_message_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  if (existing) {
+    return { data: existing as MensajeriaThread, error: null }
+  }
+
+  return createThread({
+    companyId: input.companyId,
+    subject: input.subject,
+    role: input.role,
+    authorName: input.authorName,
+    firstMessageBody: input.firstMessageBody,
+    traficoId: input.traficoId,
+    internalOnly: input.internalOnly,
+  })
+}
+
 export interface EscalateThreadInput {
   threadId: string
   role: AuthorRole

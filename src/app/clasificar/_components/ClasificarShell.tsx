@@ -3,8 +3,9 @@
 import { useState } from 'react'
 import { PendientesTab } from './PendientesTab'
 import { ClasificarNuevoTab } from './ClasificarNuevoTab'
+import { BulkTab } from './BulkTab'
 
-type Tab = 'pendientes' | 'nuevo'
+type Tab = 'pendientes' | 'bulk' | 'nuevo'
 
 interface ClasificarShellProps {
   canInsert: boolean
@@ -29,7 +30,7 @@ export function ClasificarShell({ canInsert, initialTab = 'pendientes' }: Clasif
   const [tab, setTab] = useState<Tab>(initialTab)
 
   return (
-    <div style={{ maxWidth: 720, margin: '0 auto', padding: '24px 16px' }}>
+    <div style={{ maxWidth: 960, margin: '0 auto', padding: '24px 16px' }}>
       <h1
         style={{
           margin: '0 0 16px',
@@ -68,6 +69,18 @@ export function ClasificarShell({ canInsert, initialTab = 'pendientes' }: Clasif
         </button>
         <button
           role="tab"
+          aria-selected={tab === 'bulk'}
+          onClick={() => setTab('bulk')}
+          style={{
+            ...TAB_BTN_BASE,
+            background: tab === 'bulk' ? 'rgba(255,255,255,0.08)' : 'transparent',
+            color: tab === 'bulk' ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.6)',
+          }}
+        >
+          Bulk
+        </button>
+        <button
+          role="tab"
           aria-selected={tab === 'nuevo'}
           onClick={() => setTab('nuevo')}
           style={{
@@ -81,7 +94,13 @@ export function ClasificarShell({ canInsert, initialTab = 'pendientes' }: Clasif
       </div>
 
       <div role="tabpanel">
-        {tab === 'pendientes' ? <PendientesTab /> : <ClasificarNuevoTab canInsert={canInsert} />}
+        {tab === 'pendientes' ? (
+          <PendientesTab />
+        ) : tab === 'bulk' ? (
+          <BulkTab canInsert={canInsert} />
+        ) : (
+          <ClasificarNuevoTab canInsert={canInsert} />
+        )}
       </div>
     </div>
   )

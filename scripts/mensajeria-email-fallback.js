@@ -29,7 +29,10 @@ const OPERATOR_EMAIL = process.env.OPERATOR_EMAIL || process.env.TITO_EMAIL
 const TITO_EMAIL = process.env.TITO_EMAIL
 const FROM_EMAIL = process.env.MENSAJERIA_FROM_EMAIL || 'mensajeria@renatozapata.com'
 
-const UNREAD_WINDOW_MS = 30 * 60 * 1000
+const CLIENT_UNREAD_WINDOW_MS = 30 * 60 * 1000
+const INTERNAL_UNREAD_WINDOW_MS = 24 * 60 * 60 * 1000
+const MAX_PER_RUN = 200
+const MAX_PER_RECIPIENT_PER_HOUR = 5
 
 async function main() {
   if (!SUPABASE_URL || !SUPABASE_KEY) throw new Error('Missing Supabase env vars')
@@ -38,19 +41,34 @@ async function main() {
   const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
   const resend = new Resend(RESEND_KEY)
 
-  const cutoff = new Date(Date.now() - UNREAD_WINDOW_MS).toISOString()
+  const clientCutoff = new Date(Date.now() - CLIENT_UNREAD_WINDOW_MS).toISOString()
+  const internalCutoff = new Date(Date.now() - INTERNAL_UNREAD_WINDOW_MS).toISOString()
 
-  // 1) Client messages older than 30 min, not yet read by operator role
-  const { data: msgs, error } = await supabase
+  // 1) Client messages older than 30 min (existing behavior) AND
+  //    internal_only workflow messages older than 24h unread by any internal reader.
+  const { data: clientMsgs, error: clientErr } = await supabase
     .from('mensajeria_messages')
     .select('id, thread_id, company_id, author_role, author_name, body, created_at, internal_only, undone')
     .eq('internal_only', false)
     .eq('undone', false)
     .eq('author_role', 'client')
-    .lte('created_at', cutoff)
+    .lte('created_at', clientCutoff)
     .order('created_at', { ascending: false })
-    .limit(200)
-  if (error) throw error
+    .limit(MAX_PER_RUN)
+  if (clientErr) throw clientErr
+
+  const { data: internalMsgs, error: internalErr } = await supabase
+    .from('mensajeria_messages')
+    .select('id, thread_id, company_id, author_role, author_name, body, created_at, internal_only, undone')
+    .eq('internal_only', true)
+    .eq('undone', false)
+    .neq('author_role', 'system')
+    .lte('created_at', internalCutoff)
+    .order('created_at', { ascending: true })
+    .limit(MAX_PER_RUN)
+  if (internalErr) throw internalErr
+
+  const msgs = [...(clientMsgs || []), ...(internalMsgs || [])].slice(0, MAX_PER_RUN)
 
   const { data: alreadySent } = await supabase
     .from('mensajeria_email_notifications')
@@ -83,6 +101,17 @@ async function main() {
     .in('id', threadIds)
   const threadById = new Map((threads || []).map(t => [t.id, t]))
 
+  // Per-recipient rate cap — look back 1h in the notifications table
+  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
+  const { data: recent } = await supabase
+    .from('mensajeria_email_notifications')
+    .select('recipient_email, sent_at')
+    .gte('sent_at', oneHourAgo)
+  const recentByRecipient = new Map()
+  for (const r of recent || []) {
+    recentByRecipient.set(r.recipient_email, (recentByRecipient.get(r.recipient_email) || 0) + 1)
+  }
+
   let sentCount = 0
   for (const m of pending) {
     const threadRead = readsByThread.get(m.thread_id)
@@ -94,27 +123,40 @@ async function main() {
     const recipient = thread.status === 'escalated' ? (TITO_EMAIL || OPERATOR_EMAIL) : OPERATOR_EMAIL
     if (!recipient) continue
 
+    const usedThisHour = recentByRecipient.get(recipient) || 0
+    if (usedThisHour >= MAX_PER_RECIPIENT_PER_HOUR) continue
+
+    const appUrl = (process.env.NEXT_PUBLIC_APP_URL || 'https://portal.renatozapata.com').replace(/\/$/, '')
+    const threadLink = `${appUrl}/mensajeria?thread=${thread.id}`
+    const isInternal = m.internal_only === true
+    const lead = isInternal
+      ? `Notificación de sistema sin revisar:`
+      : `Mensaje sin leer del cliente:`
+    const footer = isInternal
+      ? `Enviado automáticamente porque la notificación ha estado sin leer 24 horas.`
+      : `Enviado automáticamente porque el mensaje ha estado sin leer 30 minutos.`
+
     try {
       await resend.emails.send({
         from: FROM_EMAIL,
         to: recipient,
         subject: `[Mensajería] ${thread.subject} · ${thread.company_id}`,
         html: `
-          <p>Mensaje sin leer del cliente:</p>
+          <p>${lead}</p>
           <blockquote style="border-left:3px solid #C9A84C;padding-left:12px;margin-left:0;">
             ${escapeHtml(m.body).slice(0, 2000)}
           </blockquote>
           <p>Hilo: <strong>${escapeHtml(thread.subject)}</strong></p>
           <p>Cliente: <code>${escapeHtml(thread.company_id)}</code></p>
-          <p style="color:#666;font-size:12px;">
-            Enviado automáticamente porque el mensaje ha estado sin leer 30 minutos.
-          </p>
+          <p><a href="${threadLink}" style="color:#C9A84C;">Abrir en AGUILA →</a></p>
+          <p style="color:#666;font-size:12px;">${footer}</p>
         `,
       })
       await supabase.from('mensajeria_email_notifications').insert({
         message_id: m.id,
         recipient_email: recipient,
       })
+      recentByRecipient.set(recipient, usedThisHour + 1)
       sentCount++
     } catch (err) {
       console.error(`[mensajeria-email-fallback] Resend failed for ${m.id}:`, err.message)

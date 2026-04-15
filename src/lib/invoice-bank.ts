@@ -74,6 +74,8 @@ function normalizeMediaType(mime: string): SupportedMediaType {
   return 'image/jpeg'
 }
 
+export type ExtractionKind = 'image' | 'pdf'
+
 /**
  * Parse the JSON string returned by Claude into structured invoice
  * fields. Exposed so tests can run without hitting the API.
@@ -124,38 +126,56 @@ export function parseInvoiceExtraction(rawText: string): InvoiceExtractedFields 
 }
 
 /**
- * Call Claude Sonnet Vision to extract invoice fields. Throws on any
- * API/parse error so the caller marks the row for manual review.
+ * Call Claude Sonnet to extract invoice fields from an image OR a PDF.
+ * Images flow through the `image` content block; PDFs use Sonnet 4.6's
+ * native `document` block (base64). Throws on any API/parse error so the
+ * caller marks the row for manual review.
  */
 export async function extractInvoiceFields(params: {
-  base64Image: string
+  base64Image?: string
+  base64Pdf?: string
   mediaType: string
 }): Promise<InvoiceExtractedFields> {
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) throw new Error('ANTHROPIC_API_KEY missing — invoice extractor cannot run')
   const client = new Anthropic({ apiKey })
 
+  const isPdf = params.mediaType === 'application/pdf' || Boolean(params.base64Pdf)
+  const sourceData = isPdf ? params.base64Pdf : params.base64Image
+  if (!sourceData) {
+    throw new Error('extractInvoiceFields: falta base64Image o base64Pdf')
+  }
+
+  const content: Anthropic.ContentBlockParam[] = isPdf
+    ? [
+        {
+          type: 'document',
+          source: {
+            type: 'base64',
+            media_type: 'application/pdf',
+            data: sourceData,
+          },
+        },
+        { type: 'text', text: 'Extrae los campos. Responde solo JSON.' },
+      ]
+    : [
+        {
+          type: 'image',
+          source: {
+            type: 'base64',
+            media_type: normalizeMediaType(params.mediaType),
+            data: sourceData,
+          },
+        },
+        { type: 'text', text: 'Extrae los campos. Responde solo JSON.' },
+      ]
+
   const response = await client.messages.create({
     model: VISION_MODEL,
     max_tokens: 400,
     temperature: 0,
     system: INVOICE_VISION_PROMPT,
-    messages: [
-      {
-        role: 'user',
-        content: [
-          {
-            type: 'image',
-            source: {
-              type: 'base64',
-              media_type: normalizeMediaType(params.mediaType),
-              data: params.base64Image,
-            },
-          },
-          { type: 'text', text: 'Extrae los campos. Responde solo JSON.' },
-        ],
-      },
-    ],
+    messages: [{ role: 'user', content }],
   })
 
   const rawText = response.content

@@ -2,6 +2,13 @@
 
 // Block 8 · Invoice Bank — client surface.
 //
+// CLICK COUNT: cockpit → upload & classify & assign = 3 clicks
+//   1. Open Banco de Facturas from nav
+//   2. Drag file(s) onto drop zone (CFDI XML parse OR Sonnet PDF / Vision image)
+//   3. Pick tráfico from assignment modal
+// GLOBALPC EQUIVALENT: 6 clicks (Añadir Factura → upload → save → open tráfico → Asignar → confirm)
+// AGUILA ADVANTAGE: 3 clicks saved per operation
+//
 // List + filter bar (status, supplier, currency, date range, amount range),
 // bulk upload (drag-drop), right-rail PDF preview, bottom bar
 // (Asignar · Archivar · Eliminar). Assignment modal reuses the universal

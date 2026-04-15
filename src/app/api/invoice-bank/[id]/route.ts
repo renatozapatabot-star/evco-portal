@@ -25,6 +25,7 @@ import {
   type InvoiceBankStatus,
 } from '@/lib/invoice-bank'
 import { logDecision } from '@/lib/decision-logger'
+import { notifyMensajeria } from '@/lib/mensajeria/notify'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -147,6 +148,17 @@ export async function PATCH(
       decision: `factura ${row.invoice_number ?? id} asignada a ${traficoId}`,
       reasoning: `Asignación manual por ${actor}`,
       dataPoints: { invoice_id: id, trafico_id: traficoId },
+    })
+    const amount = row.amount as number | null
+    const currency = (row.currency as string | null) ?? ''
+    const amountLabel = amount != null ? ` · ${amount.toLocaleString('es-MX')} ${currency}` : ''
+    await notifyMensajeria({
+      companyId,
+      subject: `Factura asignada · ${traficoId}`,
+      body: `Factura ${row.invoice_number ?? id}${amountLabel} asignada al tráfico ${traficoId}.`,
+      traficoId,
+      internalOnly: true,
+      actor: { role: session.role, name: actor },
     })
     return NextResponse.json({ data: { id, status: 'assigned', assignedAt }, error: null })
   }

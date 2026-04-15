@@ -98,6 +98,16 @@ async function loadOperatorCockpit(opId: string, opName: string, month: string) 
     auditAvailable,
     mensajeriaMessages,
     escalatedThreads,
+    facturasEnBancoCount,
+    facturasAsignadasHoyCount,
+    monitorActivosCount,
+    monitorRojoCount,
+    clasificacionesPendientesCount,
+    clasificacionesAprobadasMesCount,
+    catalogoTotalCount,
+    vencimientosPronto30Count,
+    transportistasActivosCount,
+    transportistasTopCount,
   ] = await Promise.all([
     softCount(sb.from('entradas').select('cve_entrada', { count: 'exact', head: true }).gte('fecha_llegada_mercancia', todayStartIso)),
     softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).eq('estatus', 'En Proceso')),
@@ -158,6 +168,21 @@ async function loadOperatorCockpit(opId: string, opName: string, month: string) 
     withHardTimeout(auditLogAvailable(sb), 2000, false),
     withHardTimeout(fetchOperatorMensajeriaFeed(sb, 10), 3000, []),
     withHardTimeout(fetchEscalatedThreads(sb, 3), 3000, []),
+    softCount(sb.from('pedimento_facturas').select('id', { count: 'exact', head: true }).eq('status', 'unassigned')),
+    softCount(sb.from('pedimento_facturas').select('id', { count: 'exact', head: true }).eq('status', 'assigned').gte('assigned_at', todayStartIso)),
+    softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).in('estatus', ['En Proceso', 'Documentacion', 'En Aduana', 'Pedimento Pagado'])),
+    softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).eq('semaforo', 2).in('estatus', ['En Proceso', 'Documentacion', 'En Aduana', 'Pedimento Pagado'])),
+    softCount(sb.from('globalpc_productos').select('id', { count: 'exact', head: true }).or('fraccion.is.null,fraccion.eq.')),
+    softCount(sb.from('classification_log').select('id', { count: 'exact', head: true }).not('fraccion', 'is', null).gte('created_at', monthStartIso)),
+    softCount(sb.from('globalpc_productos').select('id', { count: 'exact', head: true })),
+    softCount(
+      sb.from('globalpc_productos').select('id', { count: 'exact', head: true })
+        .or(
+          `nom_expiry.lte.${new Date(now.getTime() + 30 * 86400000).toISOString().slice(0, 10)},sedue_expiry.lte.${new Date(now.getTime() + 30 * 86400000).toISOString().slice(0, 10)},semarnat_expiry.lte.${new Date(now.getTime() + 30 * 86400000).toISOString().slice(0, 10)}`,
+        ),
+    ),
+    softCount(sb.from('carriers').select('id', { count: 'exact', head: true }).eq('active', true)),
+    softCount(sb.from('carriers').select('id', { count: 'exact', head: true }).eq('active', true).gte('calificacion', 4)),
   ])
 
   const entradasSeries = bucketDailySeries(entradasSeriesRows as Array<Record<string, unknown>>, 'fecha_llegada_mercancia', 14, now)
@@ -265,6 +290,16 @@ async function loadOperatorCockpit(opId: string, opName: string, month: string) 
       auditRows={auditRows}
       mensajeriaMessages={mensajeriaMessages}
       escalatedThreads={escalatedThreads}
+      facturasEnBanco={facturasEnBancoCount}
+      facturasAsignadasHoy={facturasAsignadasHoyCount}
+      monitorActivos={monitorActivosCount}
+      monitorRojo={monitorRojoCount}
+      clasificacionesPendientes={clasificacionesPendientesCount}
+      clasificacionesAprobadasMes={clasificacionesAprobadasMesCount}
+      catalogoTotal={catalogoTotalCount}
+      vencimientosPronto={vencimientosPronto30Count}
+      transportistasActivos={transportistasActivosCount}
+      transportistasTop={transportistasTopCount}
       pulseSignal={inTransit}
       month={month}
     />

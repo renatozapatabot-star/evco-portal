@@ -17,8 +17,10 @@ import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 import { verifySession } from '@/lib/session'
 import { extractInvoiceFields } from '@/lib/invoice-bank'
+import { parseCFDI, isCFDIFile } from '@/lib/cfdi/parser'
 import { logDecision } from '@/lib/decision-logger'
 import { classifyDocumentWithVision } from '@/lib/vision/classify'
+import { notifyMensajeria } from '@/lib/mensajeria/notify'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -134,15 +136,41 @@ export async function POST(request: NextRequest) {
 
     const fileUrl = supabase.storage.from('expedientes').getPublicUrl(storagePath).data.publicUrl
 
-    // Vision extraction for images only. PDFs/XML skipped here — the
-    // list view flags them as "pendiente de clasificar" so an operator
-    // can still reconcile manually.
+    // Extraction routing:
+    //   · CFDI XML → structured parse (no LLM, authoritative fields)
+    //   · PDF       → Sonnet 4.6 native document block
+    //   · image     → Sonnet vision
     let invoiceNumber: string | null = null
     let supplierName: string | null = null
     let amount: number | null = null
     let currency: string | null = null
     let classified = false
-    if (file.type.startsWith('image/')) {
+
+    if (isCFDIFile(file.name, file.type)) {
+      try {
+        const xmlText = Buffer.from(buffer).toString('utf-8')
+        const cfdi = parseCFDI(xmlText)
+        invoiceNumber = cfdi.invoice_number
+        supplierName = cfdi.supplier_name
+        amount = cfdi.amount
+        currency = cfdi.currency
+        classified = true
+      } catch {
+        classified = false
+      }
+    } else if (file.type === 'application/pdf') {
+      try {
+        const b64 = Buffer.from(buffer).toString('base64')
+        const extracted = await extractInvoiceFields({ base64Pdf: b64, mediaType: 'application/pdf' })
+        invoiceNumber = extracted.invoice_number
+        supplierName = extracted.supplier_name
+        amount = extracted.amount
+        currency = extracted.currency
+        classified = true
+      } catch {
+        classified = false
+      }
+    } else if (file.type.startsWith('image/')) {
       try {
         const b64 = Buffer.from(buffer).toString('base64')
         const extracted = await extractInvoiceFields({ base64Image: b64, mediaType: file.type })
@@ -152,7 +180,6 @@ export async function POST(request: NextRequest) {
         currency = extracted.currency
         classified = true
       } catch {
-        // Surface through the row — operator can correct manually.
         classified = false
       }
     }
@@ -267,6 +294,21 @@ export async function POST(request: NextRequest) {
       visionExtracted,
       visionDocType,
       visionClassificationId,
+    })
+  }
+
+  const succeeded = results.filter((r) => !r.error && r.id).length
+  if (succeeded > 0) {
+    const skipped = results.length - succeeded
+    const summary = skipped > 0
+      ? `${succeeded} facturas cargadas al banco (${skipped} con errores).`
+      : `${succeeded} factura${succeeded === 1 ? '' : 's'} cargada${succeeded === 1 ? '' : 's'} al banco.`
+    await notifyMensajeria({
+      companyId,
+      subject: `Facturas recibidas · ${succeeded}`,
+      body: summary,
+      internalOnly: true,
+      actor: { role: session.role, name: actor },
     })
   }
 

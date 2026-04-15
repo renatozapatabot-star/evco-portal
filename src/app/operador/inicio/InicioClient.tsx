@@ -15,6 +15,7 @@ import {
   OperatorActivityStack,
   ActividadStrip,
   CapabilityCardGrid,
+  FallbackLink,
   type CockpitHeroKPI,
   type ActividadStripItem,
 } from '@/components/aguila'
@@ -43,6 +44,16 @@ interface Props {
   auditRows: AuditRow[]
   mensajeriaMessages: MensajeriaMessage[]
   escalatedThreads: MensajeriaThread[]
+  facturasEnBanco: number
+  facturasAsignadasHoy: number
+  monitorActivos: number
+  monitorRojo: number
+  clasificacionesPendientes: number
+  clasificacionesAprobadasMes: number
+  catalogoTotal: number
+  vencimientosPronto: number
+  transportistasActivos: number
+  transportistasTop: number
   pulseSignal: boolean
   month?: string
 }
@@ -137,6 +148,26 @@ export function InicioClient(props: Props) {
         }
       />
       <ColaCard colaCount={props.colaCount} />
+      <FacturasBancoCard
+        enBanco={props.facturasEnBanco}
+        asignadasHoy={props.facturasAsignadasHoy}
+      />
+      <MonitorCard
+        activos={props.monitorActivos}
+        rojo={props.monitorRojo}
+      />
+      <ClasificacionesCard
+        pendientes={props.clasificacionesPendientes}
+        aprobadasMes={props.clasificacionesAprobadasMes}
+      />
+      <CatalogoCard
+        total={props.catalogoTotal}
+        vencimientosPronto={props.vencimientosPronto}
+      />
+      <TransportistasCard
+        activos={props.transportistasActivos}
+        top={props.transportistasTop}
+      />
       <ActiveTraficos rows={props.traficos} onRefresh={refresh} />
     </>
   )
@@ -257,6 +288,414 @@ function ColaCard({ colaCount }: { colaCount: number }) {
           Sin excepciones pendientes.
         </p>
       )}
+    </section>
+  )
+}
+
+function FacturasBancoCard({ enBanco, asignadasHoy }: { enBanco: number; asignadasHoy: number }) {
+  const isIncomplete = enBanco === 0 && asignadasHoy === 0
+  return (
+    <section style={{
+      position: 'relative',
+      overflow: 'hidden',
+      background: BG_CARD,
+      backdropFilter: `blur(${GLASS_BLUR})`,
+      WebkitBackdropFilter: `blur(${GLASS_BLUR})`,
+      border: `1px solid ${BORDER}`,
+      borderRadius: 'var(--aguila-radius-card, 20px)',
+      boxShadow: GLASS_SHADOW,
+      padding: '20px',
+    }}>
+      <div style={{
+        fontSize: 'var(--aguila-fs-label, 10px)',
+        fontWeight: 700,
+        textTransform: 'uppercase',
+        letterSpacing: 'var(--aguila-ls-label, 0.08em)',
+        color: TEXT_MUTED,
+      }}>
+        Banco de facturas
+      </div>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 16, margin: '12px 0' }}>
+        <div>
+          <div style={{
+            fontFamily: 'var(--font-jetbrains-mono), monospace',
+            fontSize: 'var(--aguila-fs-kpi-mid, 28px)',
+            fontWeight: 800,
+            color: enBanco > 0 ? ACCENT_SILVER : TEXT_MUTED,
+            lineHeight: 1,
+            fontVariantNumeric: 'tabular-nums',
+          }}>
+            {enBanco}
+          </div>
+          <div style={{ fontSize: 11, color: TEXT_SECONDARY, marginTop: 4 }}>en banco</div>
+        </div>
+        <div style={{ width: 1, alignSelf: 'stretch', background: BORDER }} />
+        <div>
+          <div style={{
+            fontFamily: 'var(--font-jetbrains-mono), monospace',
+            fontSize: 'var(--aguila-fs-kpi-mid, 28px)',
+            fontWeight: 800,
+            color: asignadasHoy > 0 ? '#22C55E' : TEXT_MUTED,
+            lineHeight: 1,
+            fontVariantNumeric: 'tabular-nums',
+          }}>
+            {asignadasHoy}
+          </div>
+          <div style={{ fontSize: 11, color: TEXT_SECONDARY, marginTop: 4 }}>asignadas hoy</div>
+        </div>
+      </div>
+      <Link
+        href="/banco-facturas"
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: 40,
+          padding: '8px 16px',
+          borderRadius: 12,
+          background: enBanco > 0 ? GOLD : 'rgba(148,163,184,0.12)',
+          color: enBanco > 0 ? '#0D0D0C' : TEXT_SECONDARY,
+          fontWeight: 700,
+          fontSize: 13,
+          textDecoration: 'none',
+          width: '100%',
+        }}
+      >
+        {enBanco > 0 ? 'Revisar facturas →' : 'Abrir banco'}
+      </Link>
+      <FallbackLink
+        href="https://trafico1web.globalpc.net/facturas/banco"
+        label="facturas"
+        isIncomplete={isIncomplete}
+        message="Sin facturas en AGUILA todavía — el banco de GlobalPC tiene el histórico."
+      />
+    </section>
+  )
+}
+
+function MonitorCard({ activos, rojo }: { activos: number; rojo: number }) {
+  const severity = rojo > 0 ? 'critical' : 'healthy'
+  const isIncomplete = activos === 0
+  return (
+    <section style={{
+      position: 'relative',
+      overflow: 'hidden',
+      background: BG_CARD,
+      backdropFilter: `blur(${GLASS_BLUR})`,
+      WebkitBackdropFilter: `blur(${GLASS_BLUR})`,
+      border: `1px solid ${BORDER}`,
+      borderRadius: 'var(--aguila-radius-card, 20px)',
+      boxShadow: GLASS_SHADOW,
+      padding: '20px 20px 20px 23px',
+    }}>
+      {rojo > 0 && <SeverityRibbon tone={severity} />}
+      <div style={{
+        fontSize: 'var(--aguila-fs-label, 10px)',
+        fontWeight: 700,
+        textTransform: 'uppercase',
+        letterSpacing: 'var(--aguila-ls-label, 0.08em)',
+        color: TEXT_MUTED,
+      }}>
+        Monitor en vivo
+      </div>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 16, margin: '12px 0' }}>
+        <div>
+          <div style={{
+            fontFamily: 'var(--font-jetbrains-mono), monospace',
+            fontSize: 'var(--aguila-fs-kpi-mid, 28px)',
+            fontWeight: 800,
+            color: activos > 0 ? ACCENT_SILVER : TEXT_MUTED,
+            lineHeight: 1,
+            fontVariantNumeric: 'tabular-nums',
+          }}>
+            {activos}
+          </div>
+          <div style={{ fontSize: 11, color: TEXT_SECONDARY, marginTop: 4 }}>activos</div>
+        </div>
+        <div style={{ width: 1, alignSelf: 'stretch', background: BORDER }} />
+        <div>
+          <div style={{
+            fontFamily: 'var(--font-jetbrains-mono), monospace',
+            fontSize: 'var(--aguila-fs-kpi-mid, 28px)',
+            fontWeight: 800,
+            color: rojo > 0 ? '#FCA5A5' : TEXT_MUTED,
+            lineHeight: 1,
+            fontVariantNumeric: 'tabular-nums',
+          }}>
+            {rojo}
+          </div>
+          <div style={{ fontSize: 11, color: TEXT_SECONDARY, marginTop: 4 }}>requieren atención</div>
+        </div>
+      </div>
+      <Link
+        href="/monitor"
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: 40,
+          padding: '8px 16px',
+          borderRadius: 12,
+          background: rojo > 0 ? '#DC2626' : (activos > 0 ? GOLD : 'rgba(148,163,184,0.12)'),
+          color: rojo > 0 || activos > 0 ? '#0D0D0C' : TEXT_SECONDARY,
+          fontWeight: 700,
+          fontSize: 13,
+          textDecoration: 'none',
+          width: '100%',
+        }}
+      >
+        {rojo > 0 ? 'Revisar rojos →' : (activos > 0 ? 'Abrir monitor' : 'Sin tráficos activos')}
+      </Link>
+      <FallbackLink
+        href="https://trafico1web.globalpc.net/utilerias/monitor"
+        label="Monitor"
+        isIncomplete={isIncomplete}
+        message="Sin tráficos activos en AGUILA — el monitor de GlobalPC tiene el histórico."
+      />
+    </section>
+  )
+}
+
+function ClasificacionesCard({ pendientes, aprobadasMes }: { pendientes: number; aprobadasMes: number }) {
+  const isIncomplete = pendientes === 0 && aprobadasMes === 0
+  return (
+    <section style={{
+      position: 'relative',
+      overflow: 'hidden',
+      background: BG_CARD,
+      backdropFilter: `blur(${GLASS_BLUR})`,
+      WebkitBackdropFilter: `blur(${GLASS_BLUR})`,
+      border: `1px solid ${BORDER}`,
+      borderRadius: 'var(--aguila-radius-card, 20px)',
+      boxShadow: GLASS_SHADOW,
+      padding: '20px',
+    }}>
+      <div style={{
+        fontSize: 'var(--aguila-fs-label, 10px)',
+        fontWeight: 700,
+        textTransform: 'uppercase',
+        letterSpacing: 'var(--aguila-ls-label, 0.08em)',
+        color: TEXT_MUTED,
+      }}>
+        Clasificaciones
+      </div>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 16, margin: '12px 0' }}>
+        <div>
+          <div style={{
+            fontFamily: 'var(--font-jetbrains-mono), monospace',
+            fontSize: 'var(--aguila-fs-kpi-mid, 28px)',
+            fontWeight: 800,
+            color: pendientes > 0 ? AMBER : TEXT_MUTED,
+            lineHeight: 1,
+            fontVariantNumeric: 'tabular-nums',
+          }}>
+            {pendientes}
+          </div>
+          <div style={{ fontSize: 11, color: TEXT_SECONDARY, marginTop: 4 }}>pendientes</div>
+        </div>
+        <div style={{ width: 1, alignSelf: 'stretch', background: BORDER }} />
+        <div>
+          <div style={{
+            fontFamily: 'var(--font-jetbrains-mono), monospace',
+            fontSize: 'var(--aguila-fs-kpi-mid, 28px)',
+            fontWeight: 800,
+            color: aprobadasMes > 0 ? '#86EFAC' : TEXT_MUTED,
+            lineHeight: 1,
+            fontVariantNumeric: 'tabular-nums',
+          }}>
+            {aprobadasMes}
+          </div>
+          <div style={{ fontSize: 11, color: TEXT_SECONDARY, marginTop: 4 }}>aprobadas este mes</div>
+        </div>
+      </div>
+      <Link
+        href="/clasificar"
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: 40,
+          padding: '8px 16px',
+          borderRadius: 12,
+          background: pendientes > 0 ? GOLD : 'rgba(148,163,184,0.12)',
+          color: pendientes > 0 ? '#0D0D0C' : TEXT_SECONDARY,
+          fontWeight: 700,
+          fontSize: 13,
+          textDecoration: 'none',
+          width: '100%',
+        }}
+      >
+        {pendientes > 0 ? 'Clasificar en bloque →' : 'Abrir clasificaciones'}
+      </Link>
+      <FallbackLink
+        href="https://trafico1web.globalpc.net/clasificacion"
+        label="Clasificación"
+        isIncomplete={isIncomplete}
+        message="Sin productos por clasificar en AGUILA — consulta el histórico en GlobalPC."
+      />
+    </section>
+  )
+}
+
+function CatalogoCard({ total, vencimientosPronto }: { total: number; vencimientosPronto: number }) {
+  const isIncomplete = total === 0
+  return (
+    <section style={{
+      position: 'relative',
+      overflow: 'hidden',
+      background: BG_CARD,
+      backdropFilter: `blur(${GLASS_BLUR})`,
+      WebkitBackdropFilter: `blur(${GLASS_BLUR})`,
+      border: `1px solid ${BORDER}`,
+      borderRadius: 'var(--aguila-radius-card, 20px)',
+      boxShadow: GLASS_SHADOW,
+      padding: '20px 20px 20px 23px',
+    }}>
+      {vencimientosPronto > 0 && <SeverityRibbon tone="critical" />}
+      <div style={{
+        fontSize: 'var(--aguila-fs-label, 10px)',
+        fontWeight: 700,
+        textTransform: 'uppercase',
+        letterSpacing: 'var(--aguila-ls-label, 0.08em)',
+        color: TEXT_MUTED,
+      }}>
+        Catálogo
+      </div>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 16, margin: '12px 0' }}>
+        <div>
+          <div style={{
+            fontFamily: 'var(--font-jetbrains-mono), monospace',
+            fontSize: 'var(--aguila-fs-kpi-mid, 28px)',
+            fontWeight: 800,
+            color: total > 0 ? ACCENT_SILVER : TEXT_MUTED,
+            lineHeight: 1,
+            fontVariantNumeric: 'tabular-nums',
+          }}>
+            {total}
+          </div>
+          <div style={{ fontSize: 11, color: TEXT_SECONDARY, marginTop: 4 }}>productos</div>
+        </div>
+        <div style={{ width: 1, alignSelf: 'stretch', background: BORDER }} />
+        <div>
+          <div style={{
+            fontFamily: 'var(--font-jetbrains-mono), monospace',
+            fontSize: 'var(--aguila-fs-kpi-mid, 28px)',
+            fontWeight: 800,
+            color: vencimientosPronto > 0 ? '#FCA5A5' : TEXT_MUTED,
+            lineHeight: 1,
+            fontVariantNumeric: 'tabular-nums',
+          }}>
+            {vencimientosPronto}
+          </div>
+          <div style={{ fontSize: 11, color: TEXT_SECONDARY, marginTop: 4 }}>vencen ≤30d</div>
+        </div>
+      </div>
+      <Link
+        href={vencimientosPronto > 0 ? '/catalogo/vencimientos' : '/catalogo'}
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: 40,
+          padding: '8px 16px',
+          borderRadius: 12,
+          background: vencimientosPronto > 0 ? '#DC2626' : (total > 0 ? GOLD : 'rgba(148,163,184,0.12)'),
+          color: vencimientosPronto > 0 || total > 0 ? '#0D0D0C' : TEXT_SECONDARY,
+          fontWeight: 700,
+          fontSize: 13,
+          textDecoration: 'none',
+          width: '100%',
+        }}
+      >
+        {vencimientosPronto > 0 ? 'Revisar vencimientos →' : (total > 0 ? 'Abrir catálogo' : 'Sin productos')}
+      </Link>
+      <FallbackLink
+        href="https://trafico1web.globalpc.net/catalogos/productos"
+        label="Catálogo"
+        isIncomplete={isIncomplete}
+        message="Sin productos en AGUILA — consulta el catálogo en GlobalPC."
+      />
+    </section>
+  )
+}
+
+function TransportistasCard({ activos, top }: { activos: number; top: number }) {
+  const isIncomplete = activos === 0
+  return (
+    <section style={{
+      position: 'relative',
+      overflow: 'hidden',
+      background: BG_CARD,
+      backdropFilter: `blur(${GLASS_BLUR})`,
+      WebkitBackdropFilter: `blur(${GLASS_BLUR})`,
+      border: `1px solid ${BORDER}`,
+      borderRadius: 'var(--aguila-radius-card, 20px)',
+      boxShadow: GLASS_SHADOW,
+      padding: '20px',
+    }}>
+      <div style={{
+        fontSize: 'var(--aguila-fs-label, 10px)',
+        fontWeight: 700,
+        textTransform: 'uppercase',
+        letterSpacing: 'var(--aguila-ls-label, 0.08em)',
+        color: TEXT_MUTED,
+      }}>
+        Transportistas
+      </div>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 16, margin: '12px 0' }}>
+        <div>
+          <div style={{
+            fontFamily: 'var(--font-jetbrains-mono), monospace',
+            fontSize: 'var(--aguila-fs-kpi-mid, 28px)',
+            fontWeight: 800,
+            color: activos > 0 ? ACCENT_SILVER : TEXT_MUTED,
+            lineHeight: 1,
+            fontVariantNumeric: 'tabular-nums',
+          }}>
+            {activos}
+          </div>
+          <div style={{ fontSize: 11, color: TEXT_SECONDARY, marginTop: 4 }}>activos</div>
+        </div>
+        <div style={{ width: 1, alignSelf: 'stretch', background: BORDER }} />
+        <div>
+          <div style={{
+            fontFamily: 'var(--font-jetbrains-mono), monospace',
+            fontSize: 'var(--aguila-fs-kpi-mid, 28px)',
+            fontWeight: 800,
+            color: top > 0 ? '#FDE68A' : TEXT_MUTED,
+            lineHeight: 1,
+            fontVariantNumeric: 'tabular-nums',
+          }}>
+            {top}
+          </div>
+          <div style={{ fontSize: 11, color: TEXT_SECONDARY, marginTop: 4 }}>★★★★+</div>
+        </div>
+      </div>
+      <Link
+        href="/transportistas"
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: 40,
+          padding: '8px 16px',
+          borderRadius: 12,
+          background: activos > 0 ? GOLD : 'rgba(148,163,184,0.12)',
+          color: activos > 0 ? '#0D0D0C' : TEXT_SECONDARY,
+          fontWeight: 700,
+          fontSize: 13,
+          textDecoration: 'none',
+          width: '100%',
+        }}
+      >
+        {activos > 0 ? 'Abrir directorio' : 'Sin transportistas'}
+      </Link>
+      <FallbackLink
+        href="https://trafico1web.globalpc.net/catalogos/transportistas"
+        label="Transportistas"
+        isIncomplete={isIncomplete}
+        message="Sin transportistas capturados en AGUILA — consulta el catálogo de GlobalPC."
+      />
     </section>
   )
 }

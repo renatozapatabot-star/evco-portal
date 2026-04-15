@@ -159,7 +159,7 @@ function ModeTab({ label, active, onClick, disabled }: { label: string; active: 
         minHeight: 44, padding: '0 14px', border: 'none', borderRadius: 10,
         background: active ? 'rgba(192,197,206,0.14)' : 'transparent',
         color: active ? '#E8EAED' : 'rgba(255,255,255,0.5)',
-        fontSize: 12, fontWeight: 700, letterSpacing: '0.04em',
+        fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, letterSpacing: '0.04em',
         cursor: disabled ? 'wait' : 'pointer', textTransform: 'uppercase',
       }}
     >
@@ -172,11 +172,11 @@ function SummaryStat({ label, value, tone, hint }: { label: string; value: strin
   const color = tone === 'amber' ? '#FBBF24' : '#E8EAED'
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.45)' }}>
+      <span style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.45)' }}>
         {label}
       </span>
       <span className="font-mono" style={{ fontSize: 22, fontWeight: 800, color, lineHeight: 1.2 }}>{value}</span>
-      {hint && <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>{hint}</span>}
+      {hint && <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'rgba(255,255,255,0.5)' }}>{hint}</span>}
     </div>
   )
 }
@@ -204,21 +204,21 @@ function FraccionGroupCard({ group }: { group: CatalogoFraccionGroup }) {
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
               {topSuppliers.map((s) => (
                 <span key={s} title={s} style={{
-                  fontSize: 11, padding: '3px 10px', borderRadius: 999,
+                  fontSize: 'var(--aguila-fs-meta)', padding: '3px 10px', borderRadius: 999,
                   background: 'rgba(192,197,206,0.08)', border: '1px solid rgba(192,197,206,0.18)',
                   color: 'rgba(255,255,255,0.8)', maxWidth: 220,
                   overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                 }}>{s}</span>
               ))}
-              {extra > 0 && <span style={{ fontSize: 11, padding: '3px 10px', color: 'rgba(255,255,255,0.5)' }}>+{extra} proveedor{extra === 1 ? '' : 'es'}</span>}
+              {extra > 0 && <span style={{ fontSize: 'var(--aguila-fs-meta)', padding: '3px 10px', color: 'rgba(255,255,255,0.5)' }}>+{extra} proveedor{extra === 1 ? '' : 'es'}</span>}
             </div>
           )}
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
           <p style={{ margin: 0, fontSize: 'var(--aguila-fs-label)', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.45)' }}>Fracción</p>
-          <p className="font-mono" style={{ margin: 0, fontSize: 20, fontWeight: 800, letterSpacing: '-0.01em', color: '#E6EDF3', textAlign: 'right' }}>{group.fraccion}</p>
+          <p className="font-mono" style={{ margin: 0, fontSize: 'var(--aguila-fs-headline)', fontWeight: 800, letterSpacing: '-0.01em', color: '#E6EDF3', textAlign: 'right' }}>{group.fraccion}</p>
           {group.variant_count >= 5 && (
-            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', color: '#FBBF24', textTransform: 'uppercase' }}>Consolidar</span>
+            <span style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 700, letterSpacing: '0.08em', color: '#FBBF24', textTransform: 'uppercase' }}>Consolidar</span>
           )}
         </div>
       </div>

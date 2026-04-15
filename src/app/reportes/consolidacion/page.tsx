@@ -28,7 +28,7 @@ export default async function ConsolidacionReportPage() {
 
   return (
     <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 16px' }}>
-      <Link href="/reportes" style={{ color: 'rgba(255,255,255,0.6)', textDecoration: 'none', fontSize: 13 }}>
+      <Link href="/reportes" style={{ color: 'rgba(255,255,255,0.6)', textDecoration: 'none', fontSize: 'var(--aguila-fs-body)' }}>
         ← Reportes
       </Link>
       <h1 style={{ margin: '12px 0 4px', fontSize: 'var(--aguila-fs-title)', fontWeight: 700, color: 'rgba(255,255,255,0.92)' }}>
@@ -95,7 +95,7 @@ function Th({ children, align = 'left' }: { children?: React.ReactNode; align?: 
     <th style={{
       textAlign: align,
       padding: '12px 16px',
-      fontSize: 10,
+      fontSize: 'var(--aguila-fs-label)',
       fontWeight: 700,
       letterSpacing: '0.08em',
       textTransform: 'uppercase',
@@ -114,11 +114,11 @@ function ReportRow({ row }: { row: Row }) {
   return (
     <tr style={{ borderBottom: '1px solid rgba(192,197,206,0.06)' }}>
       <td style={{ padding: '12px 16px' }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.92)' }}>
+        <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: 'rgba(255,255,255,0.92)' }}>
           {row.company_name}
         </div>
         {row.company_clave && (
-          <div className="font-mono" style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)' }}>
+          <div className="font-mono" style={{ fontSize: 'var(--aguila-fs-meta)', color: 'rgba(255,255,255,0.45)' }}>
             {row.company_clave}
           </div>
         )}
@@ -140,7 +140,7 @@ function ReportRow({ row }: { row: Row }) {
           style={{
             display: 'inline-block',
             padding: '4px 12px',
-            fontSize: 11,
+            fontSize: 'var(--aguila-fs-meta)',
             fontWeight: 700,
             letterSpacing: '0.08em',
             textTransform: 'uppercase',
@@ -183,7 +183,7 @@ function Td({
 function TotalStat({ label, value, tone }: { label: string; value: string; tone?: 'amber' }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-      <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.45)' }}>
+      <span style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.45)' }}>
         {label}
       </span>
       <span className="font-mono" style={{ fontSize: 22, fontWeight: 800, color: tone === 'amber' ? '#FBBF24' : '#E8EAED' }}>

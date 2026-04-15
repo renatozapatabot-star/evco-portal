@@ -523,6 +523,14 @@ async function renderEagle(opName: string, rawMonth: string | null) {
         pulseSignal={inTransitCount > 0}
         summaryLine={summaryLine}
         month={month.ym}
+        metaPills={[
+          ...(escalatedThreads.length > 0
+            ? [{ label: 'ESCALADOS', value: escalatedThreads.length, tone: 'warning' as const }]
+            : []),
+          { label: 'CRUCES MES', value: cruzadosMesCount, tone: 'silver' },
+          { label: 'PEND. PEDIMENTO', value: pedimentosPendientesCount, tone: pedimentosPendientesCount > 0 ? 'warning' : 'silver' },
+          { label: 'EN TRÁNSITO', value: inTransitCount, tone: 'silver' },
+        ]}
       />
       <AsistenteButton roleTag="owner" />
     </>

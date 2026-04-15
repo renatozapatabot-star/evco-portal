@@ -288,7 +288,7 @@ function EntradasContent() {
                     {r.trafico ? (
                       <Link href={`/embarques/${encodeURIComponent(r.trafico)}`} style={{ color: '#C0C5CE', textDecoration: 'none' }}>{r.trafico}</Link>
                     ) : (
-                      <span>Pendiente</span>
+                      <span style={{ color: 'var(--text-muted)' }}>—</span>
                     )}
                     {transporte && <span>{transporte}</span>}
                     {(r.cantidad_bultos ?? 0) > 0 && <span>{r.cantidad_bultos} bto{r.cantidad_bultos !== 1 ? 's' : ''}</span>}
@@ -341,7 +341,7 @@ function EntradasContent() {
                           {r.trafico}
                         </Link>
                       ) : (
-                        <span style={{ fontSize: 13, color: 'var(--text-muted)', fontStyle: 'italic' }}>Pendiente</span>
+                        <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>—</span>
                       )}
                     </td>
                     <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>

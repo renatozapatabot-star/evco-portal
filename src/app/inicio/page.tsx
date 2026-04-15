@@ -294,6 +294,14 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
   }
   const capabilitySlot = <CapabilityCardGrid counts={capabilityCounts} />
 
+  const clientMetaPills: Array<{ label: string; value: string | number; tone?: 'silver' | 'warning' }> = [
+    { label: 'ACTIVOS', value: activeTraficosCount, tone: 'silver' },
+    { label: 'CRUCES 7D', value: cruzadosLast7Count, tone: 'silver' },
+    ...(daysSinceLastCruce != null
+      ? [{ label: 'ÚLT. CRUCE', value: daysSinceLastCruce === 0 ? 'hoy' : `hace ${daysSinceLastCruce}d`, tone: 'silver' as const }]
+      : []),
+  ]
+
   return (
     <>
       <CockpitInicio
@@ -309,6 +317,7 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
         summaryLine={summaryLine}
         pulseSignal={pulseSignal}
         month={month}
+        metaPills={clientMetaPills}
       />
       {/* V1 marathon — fixed-position Asistente on every cockpit */}
       <AsistenteButton roleTag="client" />

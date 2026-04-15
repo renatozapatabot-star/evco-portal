@@ -233,6 +233,11 @@ export function InicioClient(props: Props) {
       summaryLine={props.summaryLine}
       pulseSignal={props.pulseSignal}
       month={props.month}
+      metaPills={[
+        { label: 'ACTIVOS', value: props.kpis.activos, tone: 'silver' },
+        { label: 'PENDIENTES', value: props.kpis.pendientes, tone: props.kpis.pendientes > 3 ? 'warning' : 'silver' },
+        { label: 'ENTRADAS HOY', value: props.kpis.entradasHoy, tone: 'silver' },
+      ]}
     />
   )
 }

@@ -121,7 +121,7 @@ export function SlideInNotification() {
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{
-                    fontSize: 13,
+                    fontSize: 'var(--aguila-fs-body)',
                     fontWeight: 700,
                     color: 'var(--text-primary, #1A1A1A)',
                     lineHeight: 1.3,
@@ -129,7 +129,7 @@ export function SlideInNotification() {
                     {notif.title}
                   </div>
                   <div style={{
-                    fontSize: 12,
+                    fontSize: 'var(--aguila-fs-compact)',
                     color: 'var(--text-secondary, #6B6B6B)',
                     marginTop: 2,
                     lineHeight: 1.4,

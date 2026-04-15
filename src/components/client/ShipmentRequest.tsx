@@ -44,14 +44,14 @@ const inputStyle: React.CSSProperties = {
   border: '1px solid rgba(255,255,255,0.08)',
   borderRadius: 12,
   color: '#E6EDF3',
-  fontSize: 14,
+  fontSize: 'var(--aguila-fs-section)',
   fontFamily: 'inherit',
   outline: 'none',
   transition: 'border-color 0.2s',
 }
 
 const labelStyle: React.CSSProperties = {
-  fontSize: 12,
+  fontSize: 'var(--aguila-fs-compact)',
   fontWeight: 600,
   color: '#94a3b8',
   textTransform: 'uppercase',
@@ -162,10 +162,10 @@ export function ShipmentRequest() {
             <CheckCircle size={32} color="#22C55E" />
           </div>
           <div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: '#E6EDF3', marginBottom: 8 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: '#E6EDF3', marginBottom: 8 }}>
               Solicitud enviada
             </div>
-            <div style={{ fontSize: 14, color: '#94a3b8', lineHeight: 1.6, maxWidth: 400 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-section)', color: '#94a3b8', lineHeight: 1.6, maxWidth: 400 }}>
               Embarque preliminar creado. Su agente aduanal ha sido notificado
               y se comunicará con usted para confirmar los detalles.
             </div>
@@ -180,7 +180,7 @@ export function ShipmentRequest() {
               border: '1px solid rgba(255,255,255,0.12)',
               background: 'rgba(255,255,255,0.04)',
               color: '#E6EDF3',
-              fontSize: 14,
+              fontSize: 'var(--aguila-fs-section)',
               fontWeight: 600,
               cursor: 'pointer',
               display: 'flex',
@@ -203,7 +203,7 @@ export function ShipmentRequest() {
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         <Truck size={18} color="#C0C5CE" />
         <span style={{
-          fontSize: 14, fontWeight: 700, color: '#C0C5CE',
+          fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: '#C0C5CE',
           textTransform: 'uppercase', letterSpacing: '0.08em',
         }}>
           Nueva Solicitud de Embarque
@@ -294,7 +294,7 @@ export function ShipmentRequest() {
                         border: `1px solid ${isActive ? 'rgba(192,197,206,0.3)' : 'rgba(255,255,255,0.08)'}`,
                         background: isActive ? 'rgba(192,197,206,0.08)' : 'rgba(255,255,255,0.04)',
                         color: isActive ? '#C0C5CE' : '#94a3b8',
-                        fontSize: 12,
+                        fontSize: 'var(--aguila-fs-compact)',
                         fontWeight: 600,
                         cursor: 'pointer',
                         display: 'flex',
@@ -330,7 +330,7 @@ export function ShipmentRequest() {
                 cursor: 'pointer',
                 borderStyle: 'dashed',
                 color: '#64748b',
-                fontSize: 13,
+                fontSize: 'var(--aguila-fs-body)',
                 gap: 8,
               }}
             >
@@ -355,14 +355,14 @@ export function ShipmentRequest() {
                     padding: '8px 12px',
                     background: 'rgba(255,255,255,0.03)',
                     borderRadius: 8,
-                    fontSize: 13,
+                    fontSize: 'var(--aguila-fs-body)',
                     color: '#94a3b8',
                   }}>
                     <FileUp size={14} color="#C0C5CE" />
                     <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {file.name}
                     </span>
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: '#64748b' }}>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-meta)', color: '#64748b' }}>
                       {(file.size / 1024).toFixed(0)} KB
                     </span>
                     <button
@@ -407,7 +407,7 @@ export function ShipmentRequest() {
               border: '1px solid rgba(239,68,68,0.2)',
             }}>
               <XCircle size={16} color="#EF4444" />
-              <span style={{ fontSize: 13, color: '#EF4444' }}>{errorMsg}</span>
+              <span style={{ fontSize: 'var(--aguila-fs-body)', color: '#EF4444' }}>{errorMsg}</span>
             </div>
           )}
 

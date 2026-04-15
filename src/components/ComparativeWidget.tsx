@@ -106,8 +106,8 @@ function MetricBar({ config, clientRow, fleetRow }: {
     <div style={{ marginBottom: 18 }}>
       {/* Label row */}
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-        <span style={{ color: TEXT, fontSize: 13, fontWeight: 500 }}>{config.label}</span>
-        <span style={{ color: deltaColor, fontSize: 12, fontWeight: 600 }}>{deltaText}</span>
+        <span style={{ color: TEXT, fontSize: 'var(--aguila-fs-body)', fontWeight: 500 }}>{config.label}</span>
+        <span style={{ color: deltaColor, fontSize: 'var(--aguila-fs-compact)', fontWeight: 600 }}>{deltaText}</span>
       </div>
 
       {/* Client bar */}
@@ -121,7 +121,7 @@ function MetricBar({ config, clientRow, fleetRow }: {
         }} />
         <span style={{
           position: 'absolute', right: 6, top: 1,
-          fontSize: 11, color: TEXT, fontWeight: 600,
+          fontSize: 'var(--aguila-fs-meta)', color: TEXT, fontWeight: 600,
         }}>
           {clientVal.toFixed(config.unit === '%' ? 1 : 0)} {config.unit}
         </span>
@@ -210,18 +210,18 @@ export default function ComparativeWidget() {
     }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-        <span style={{ fontSize: 20 }}>&#x1F4CA;</span>
+        <span style={{ fontSize: 'var(--aguila-fs-headline)' }}>&#x1F4CA;</span>
         <div>
           <h3 style={{ margin: 0, color: GOLD, fontSize: 15, fontWeight: 700, letterSpacing: 0.5 }}>
             ¿CÓMO TE COMPARAS?
           </h3>
-          <span style={{ fontSize: 11, color: MUTED }}>{getClientNameCookie().split(' ')[0]} vs. Portafolio Completo</span>
+          <span style={{ fontSize: 'var(--aguila-fs-meta)', color: MUTED }}>{getClientNameCookie().split(' ')[0]} vs. Portafolio Completo</span>
         </div>
       </div>
 
       {/* Loading state */}
       {loading && (
-        <div style={{ textAlign: 'center', padding: 24, color: MUTED, fontSize: 13 }}>
+        <div style={{ textAlign: 'center', padding: 24, color: MUTED, fontSize: 'var(--aguila-fs-body)' }}>
           Cargando benchmarks...
         </div>
       )}
@@ -245,12 +245,12 @@ export default function ComparativeWidget() {
           borderRadius: 8,
           borderLeft: `3px solid ${GOLD}`,
         }}>
-          <div style={{ fontSize: 11, color: GOLD, fontWeight: 600, marginBottom: 6 }}>
+          <div style={{ fontSize: 'var(--aguila-fs-meta)', color: GOLD, fontWeight: 600, marginBottom: 6 }}>
             INSIGHTS
           </div>
           {insights.map((tip, i) => (
             <div key={i} style={{
-              fontSize: 12,
+              fontSize: 'var(--aguila-fs-compact)',
               color: TEXT,
               marginBottom: i < insights.length - 1 ? 6 : 0,
               lineHeight: 1.4,
@@ -264,7 +264,7 @@ export default function ComparativeWidget() {
       {/* Legend */}
       <div style={{
         display: 'flex', gap: 16, marginTop: 14,
-        fontSize: 10, color: MUTED,
+        fontSize: 'var(--aguila-fs-label)', color: MUTED,
       }}>
         <span><span style={{ display: 'inline-block', width: 10, height: 10, background: GOLD, borderRadius: 2, marginRight: 4, verticalAlign: 'middle' }} />{getClientNameCookie().split(' ')[0]}</span>
         <span><span style={{ display: 'inline-block', width: 10, height: 10, background: GRAY, borderRadius: 2, marginRight: 4, verticalAlign: 'middle' }} />Flota</span>

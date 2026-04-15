@@ -46,9 +46,9 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             }}>
               {Icon
                 ? <Icon size={16} style={{ color: colors[t.type], flexShrink: 0, marginTop: 2 }} />
-                : <span style={{ fontSize: 16, flexShrink: 0, marginTop: 1, lineHeight: 1 }}>🦀</span>
+                : <span style={{ fontSize: 'var(--aguila-fs-body-lg)', flexShrink: 0, marginTop: 1, lineHeight: 1 }}>🦀</span>
               }
-              <span style={{ flex: 1, fontSize: 14, color: 'var(--text-primary)', lineHeight: 1.4 }}>{t.message}</span>
+              <span style={{ flex: 1, fontSize: 'var(--aguila-fs-section)', color: 'var(--text-primary)', lineHeight: 1.4 }}>{t.message}</span>
               <button onClick={() => dismiss(t.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-dim)', padding: 0 }}>
                 <X size={14} />
               </button>

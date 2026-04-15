@@ -117,7 +117,7 @@ export function USMCATable({ imdTraficos, loading }: USMCATableProps) {
           flexWrap: 'wrap',
           gap: 12,
         }}>
-          <h2 style={{ fontSize: 16, fontWeight: 600, margin: 0 }}>
+          <h2 style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 600, margin: 0 }}>
             Embarques T-MEC
           </h2>
           <div style={{ position: 'relative' }}>
@@ -134,7 +134,7 @@ export function USMCATable({ imdTraficos, loading }: USMCATableProps) {
                 borderRadius: D.r,
                 color: D.text,
                 padding: '8px 12px 8px 34px',
-                fontSize: 14,
+                fontSize: 'var(--aguila-fs-section)',
                 width: '100%', maxWidth: 280,
                 fontFamily: D.sans,
                 minHeight: 60,
@@ -158,13 +158,13 @@ export function USMCATable({ imdTraficos, loading }: USMCATableProps) {
       ) : (
         <>
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }} aria-label="Embarques con tratado T-MEC">
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--aguila-fs-section)' }} aria-label="Embarques con tratado T-MEC">
               <thead>
                 <tr style={{ borderBottom: `1px solid ${D.cardBorder}` }}>
                   <SortTh col="trafico" label="Embarque" sort={sort} onSort={toggleSort} />
                   <SortTh col="proveedores" label="Proveedor" sort={sort} onSort={toggleSort} />
                   <SortTh col="importe_total" label="Valor USD" sort={sort} onSort={toggleSort} align="right" />
-                  <th style={{ padding: '10px 20px', textAlign: 'left', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: D.textSec }}>
+                  <th style={{ padding: '10px 20px', textAlign: 'left', fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: D.textSec }}>
                     Fracción
                   </th>
                   <SortTh col="fecha_llegada" label="Fecha" sort={sort} onSort={toggleSort} />
@@ -181,22 +181,22 @@ export function USMCATable({ imdTraficos, loading }: USMCATableProps) {
                       onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.03)')}
                       onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                     >
-                      <td style={{ padding: '10px 20px', fontFamily: D.mono, fontSize: 13, color: D.gold }}>
+                      <td style={{ padding: '10px 20px', fontFamily: D.mono, fontSize: 'var(--aguila-fs-body)', color: D.gold }}>
                         {t.trafico}
                       </td>
                       <td style={{ padding: '10px 12px', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {t.proveedores || '\u2014'}
                       </td>
-                      <td style={{ padding: '10px 20px', textAlign: 'right', fontFamily: D.mono, fontSize: 13 }}>
+                      <td style={{ padding: '10px 20px', textAlign: 'right', fontFamily: D.mono, fontSize: 'var(--aguila-fs-body)' }}>
                         {t.importe_total != null ? fmtUSD(Number(t.importe_total)) : '\u2014'}
                       </td>
-                      <td style={{ padding: '10px 20px', fontFamily: D.mono, fontSize: 13, color: D.textSec }}>
+                      <td style={{ padding: '10px 20px', fontFamily: D.mono, fontSize: 'var(--aguila-fs-body)', color: D.textSec }}>
                         {t.descripcion_mercancia ? '\u2014' : '\u2014'}
                       </td>
-                      <td style={{ padding: '10px 12px', fontFamily: D.mono, fontSize: 13, color: D.textSec }}>
+                      <td style={{ padding: '10px 12px', fontFamily: D.mono, fontSize: 'var(--aguila-fs-body)', color: D.textSec }}>
                         {fmtDate(t.fecha_llegada || t.fecha_cruce)}
                       </td>
-                      <td style={{ padding: '10px 20px', textAlign: 'right', fontFamily: D.mono, fontSize: 13, color: D.green }}>
+                      <td style={{ padding: '10px 20px', textAlign: 'right', fontFamily: D.mono, fontSize: 'var(--aguila-fs-body)', color: D.green }}>
                         {savings > 0 ? fmtUSD(savings) : '\u2014'}
                       </td>
                     </tr>
@@ -214,7 +214,7 @@ export function USMCATable({ imdTraficos, loading }: USMCATableProps) {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              fontSize: 13,
+              fontSize: 'var(--aguila-fs-body)',
               color: D.textSec,
             }}>
               <span>
@@ -277,7 +277,7 @@ function SortTh({ col, label, sort, onSort, align }: {
       style={{
         padding: '10px 20px',
         textAlign: align || 'left',
-        fontSize: 11,
+        fontSize: 'var(--aguila-fs-meta)',
         fontWeight: 600,
         textTransform: 'uppercase',
         letterSpacing: '0.06em',

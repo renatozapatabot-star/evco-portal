@@ -39,7 +39,7 @@ export function TraceTimeline({ events }: { events: TraceEvent[] }) {
           padding: 32,
           textAlign: 'center',
           color: TEXT_MUTED,
-          fontSize: 13,
+          fontSize: 'var(--aguila-fs-body)',
           border: `1px dashed ${ACCENT_SILVER_DIM}44`,
           borderRadius: 20,
           background: 'rgba(255,255,255,0.02)',
@@ -65,7 +65,7 @@ export function TraceTimeline({ events }: { events: TraceEvent[] }) {
               padding: '6px 0',
               background: 'rgba(10,10,12,0.85)',
               backdropFilter: 'blur(8px)',
-              fontSize: 10,
+              fontSize: 'var(--aguila-fs-label)',
               fontWeight: 700,
               letterSpacing: '0.12em',
               textTransform: 'uppercase',
@@ -134,7 +134,7 @@ export function TraceTimeline({ events }: { events: TraceEvent[] }) {
                         display: 'flex',
                         alignItems: 'center',
                         gap: 8,
-                        fontSize: 13,
+                        fontSize: 'var(--aguila-fs-body)',
                         fontWeight: 600,
                         color: TEXT_PRIMARY,
                       }}
@@ -147,7 +147,7 @@ export function TraceTimeline({ events }: { events: TraceEvent[] }) {
                     {ev.subtitle && (
                       <div
                         style={{
-                          fontSize: 12,
+                          fontSize: 'var(--aguila-fs-compact)',
                           color: TEXT_MUTED,
                           marginTop: 2,
                         }}
@@ -158,7 +158,7 @@ export function TraceTimeline({ events }: { events: TraceEvent[] }) {
                     {ev.actor && (
                       <div
                         style={{
-                          fontSize: 11,
+                          fontSize: 'var(--aguila-fs-meta)',
                           color: ACCENT_SILVER_DIM,
                           marginTop: 2,
                         }}
@@ -175,7 +175,7 @@ export function TraceTimeline({ events }: { events: TraceEvent[] }) {
                       alignItems: 'center',
                       gap: 12,
                       fontFamily: 'var(--font-mono)',
-                      fontSize: 11,
+                      fontSize: 'var(--aguila-fs-meta)',
                       color: ACCENT_SILVER_DIM,
                       whiteSpace: 'nowrap',
                     }}

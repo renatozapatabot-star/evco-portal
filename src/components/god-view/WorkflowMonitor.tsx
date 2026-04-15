@@ -93,7 +93,7 @@ const glassCard: React.CSSProperties = {
 
 const sectionTitle: React.CSSProperties = {
   color: '#E6EDF3',
-  fontSize: 16,
+  fontSize: 'var(--aguila-fs-body-lg)',
   fontWeight: 600,
   display: 'flex',
   alignItems: 'center',
@@ -103,12 +103,12 @@ const sectionTitle: React.CSSProperties = {
 
 const mutedText: React.CSSProperties = {
   color: '#64748b',
-  fontSize: 11,
+  fontSize: 'var(--aguila-fs-meta)',
 }
 
 const secondaryText: React.CSSProperties = {
   color: '#94a3b8',
-  fontSize: 13,
+  fontSize: 'var(--aguila-fs-body)',
 }
 
 // ── Component ──
@@ -221,7 +221,7 @@ export function WorkflowMonitor() {
                     }}
                   >
                     {hasPending ? (
-                      <span style={{ color: '#C0C5CE', fontSize: 12, fontWeight: 700, fontFamily: 'var(--font-mono)' }}>
+                      <span style={{ color: '#C0C5CE', fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, fontFamily: 'var(--font-mono)' }}>
                         {stats.pending}
                       </span>
                     ) : (
@@ -230,16 +230,16 @@ export function WorkflowMonitor() {
                   </div>
 
                   {/* Label */}
-                  <span style={{ color: hasPending ? '#E6EDF3' : '#64748b', fontSize: 11, fontWeight: 500, textAlign: 'center' }}>
+                  <span style={{ color: hasPending ? '#E6EDF3' : '#64748b', fontSize: 'var(--aguila-fs-meta)', fontWeight: 500, textAlign: 'center' }}>
                     {stage.label}
                   </span>
 
                   {/* Stats */}
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: '#22C55E' }}>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-label)', color: '#22C55E' }}>
                       {stats.completedToday} hoy
                     </span>
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: '#64748b' }}>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-label)', color: '#64748b' }}>
                       {stats.successRate}%
                     </span>
                   </div>
@@ -271,7 +271,7 @@ export function WorkflowMonitor() {
         {events.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '24px 0' }}>
             <Activity size={32} style={{ color: '#64748b', marginBottom: 8 }} />
-            <div style={{ color: '#94a3b8', fontSize: 13 }}>Sin eventos registrados</div>
+            <div style={{ color: '#94a3b8', fontSize: 'var(--aguila-fs-body)' }}>Sin eventos registrados</div>
             <div style={mutedText}>Los workflows generarán eventos al procesar embarques</div>
           </div>
         ) : (
@@ -313,7 +313,7 @@ export function WorkflowMonitor() {
                       <span
                         style={{
                           fontFamily: 'var(--font-mono)',
-                          fontSize: 11,
+                          fontSize: 'var(--aguila-fs-meta)',
                           fontWeight: 600,
                           color: STATUS_COLORS[ev.status] ?? '#94a3b8',
                           background: `${STATUS_COLORS[ev.status] ?? '#94a3b8'}18`,
@@ -324,10 +324,10 @@ export function WorkflowMonitor() {
                         {ev.status}
                       </span>
                     </td>
-                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: '#94a3b8', padding: '8px 8px 8px 0' }}>
+                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-compact)', color: '#94a3b8', padding: '8px 8px 8px 0' }}>
                       {getAge(ev.created_at)}
                     </td>
-                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: '#64748b', padding: '8px 8px 8px 0', maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-meta)', color: '#64748b', padding: '8px 8px 8px 0', maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {ev.trigger_id ?? '—'}
                     </td>
                   </tr>

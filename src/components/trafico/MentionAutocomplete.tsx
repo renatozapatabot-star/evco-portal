@@ -214,7 +214,7 @@ export function MentionAutocomplete({
             <span
               style={{
                 fontFamily: 'var(--font-mono)',
-                fontSize: 12,
+                fontSize: 'var(--aguila-fs-compact)',
                 fontWeight: 700,
                 color: ACCENT_SILVER,
                 letterSpacing: '0.02em',
@@ -222,14 +222,14 @@ export function MentionAutocomplete({
             >
               @{user.id}
             </span>
-            <span style={{ fontSize: 12, color: TEXT_SECONDARY }}>{user.label}</span>
+            <span style={{ fontSize: 'var(--aguila-fs-compact)', color: TEXT_SECONDARY }}>{user.label}</span>
           </button>
         )
       })}
       <div
         style={{
           padding: '8px 14px',
-          fontSize: 10,
+          fontSize: 'var(--aguila-fs-label)',
           color: TEXT_MUTED,
           borderTop: `1px solid ${BORDER}`,
           background: 'rgba(0,0,0,0.2)',

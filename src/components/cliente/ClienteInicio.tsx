@@ -87,12 +87,12 @@ export function ClienteInicio({
       {/* Header */}
       <div style={{ marginBottom: 20 }}>
         <h1 style={{
-          fontSize: 24, fontWeight: 800, color: '#E6EDF3',
+          fontSize: 'var(--aguila-fs-title)', fontWeight: 800, color: '#E6EDF3',
           margin: 0, letterSpacing: '-0.03em',
         }}>
           {companyName || 'Mi portal'}
         </h1>
-        <p style={{ fontSize: 13, color: '#94a3b8', margin: '4px 0 0' }}>
+        <p style={{ fontSize: 'var(--aguila-fs-body)', color: '#94a3b8', margin: '4px 0 0' }}>
           Estado en tiempo real de tus operaciones
         </p>
       </div>
@@ -122,7 +122,7 @@ export function ClienteInicio({
                 background: active ? 'rgba(192,197,206,0.12)' : 'rgba(255,255,255,0.04)',
                 color: active ? '#E8EAED' : '#94a3b8',
                 cursor: 'pointer',
-                fontSize: 13, fontWeight: 600,
+                fontSize: 'var(--aguila-fs-body)', fontWeight: 600,
                 backdropFilter: 'blur(12px)',
                 WebkitBackdropFilter: 'blur(12px)',
                 transition: 'all 120ms ease',
@@ -133,7 +133,7 @@ export function ClienteInicio({
               <span>{t.label}</span>
               <span style={{
                 ...MONO,
-                fontSize: 11,
+                fontSize: 'var(--aguila-fs-meta)',
                 padding: '2px 8px',
                 borderRadius: 999,
                 background: 'rgba(0,0,0,0.35)',
@@ -199,7 +199,7 @@ function TraficosPanel({ rows }: { rows: ClienteTraficoCard[] }) {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
               <div style={{
                 ...MONO,
-                fontSize: 18, fontWeight: 700, color: '#E6EDF3',
+                fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: '#E6EDF3',
                 overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
               }}>
                 {r.trafico}
@@ -218,7 +218,7 @@ function TraficosPanel({ rows }: { rows: ClienteTraficoCard[] }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
               {r.estatus && (
                 <span style={{
-                  fontSize: 11, fontWeight: 600,
+                  fontSize: 'var(--aguila-fs-meta)', fontWeight: 600,
                   padding: '3px 10px', borderRadius: 999,
                   background: 'rgba(192,197,206,0.12)',
                   color: '#C0C5CE',
@@ -227,7 +227,7 @@ function TraficosPanel({ rows }: { rows: ClienteTraficoCard[] }) {
                 </span>
               )}
               {r.fecha_llegada && (
-                <span style={{ ...MONO, fontSize: 11, color: '#64748b' }}>
+                <span style={{ ...MONO, fontSize: 'var(--aguila-fs-meta)', color: '#64748b' }}>
                   ETA {fmtDate(r.fecha_llegada)}
                 </span>
               )}
@@ -242,14 +242,14 @@ function TraficosPanel({ rows }: { rows: ClienteTraficoCard[] }) {
               }}>
                 <Icon size={14} color="#C0C5CE" />
                 <span style={{
-                  fontSize: 12, color: '#94a3b8',
+                  fontSize: 'var(--aguila-fs-compact)', color: '#94a3b8',
                   overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                   flex: 1, minWidth: 0,
                 }}>
                   {lastLabel.label}
                 </span>
                 {r.last_event_at && (
-                  <span style={{ ...MONO, fontSize: 10, color: '#64748b', flexShrink: 0 }}>
+                  <span style={{ ...MONO, fontSize: 'var(--aguila-fs-label)', color: '#64748b', flexShrink: 0 }}>
                     {fmtDateTime(r.last_event_at)}
                   </span>
                 )}
@@ -297,13 +297,13 @@ function DocumentosPanel({ rows }: { rows: ClienteDocumento[] }) {
               href={`/embarques/${encodeURIComponent(traficoRef)}/trace`}
               style={{
                 ...MONO,
-                fontSize: 13, fontWeight: 700, color: '#E6EDF3',
+                fontSize: 'var(--aguila-fs-body)', fontWeight: 700, color: '#E6EDF3',
                 textDecoration: 'none',
               }}
             >
               {traficoRef}
             </Link>
-            <span style={{ ...MONO, fontSize: 11, color: '#64748b', marginLeft: 'auto' }}>
+            <span style={{ ...MONO, fontSize: 'var(--aguila-fs-meta)', color: '#64748b', marginLeft: 'auto' }}>
               {docs.length} {docs.length === 1 ? 'documento' : 'documentos'}
             </span>
           </div>
@@ -320,12 +320,12 @@ function DocumentosPanel({ rows }: { rows: ClienteDocumento[] }) {
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{
                     ...MONO,
-                    fontSize: 12, color: '#E6EDF3',
+                    fontSize: 'var(--aguila-fs-compact)', color: '#E6EDF3',
                     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                   }}>
                     {d.nombre ?? 'Sin nombre'}
                   </div>
-                  <div style={{ fontSize: 10, color: '#64748b', marginTop: 2 }}>
+                  <div style={{ fontSize: 'var(--aguila-fs-label)', color: '#64748b', marginTop: 2 }}>
                     {d.doc_type ?? 'Documento'}
                     {d.created_at && (
                       <>
@@ -346,7 +346,7 @@ function DocumentosPanel({ rows }: { rows: ClienteDocumento[] }) {
                       borderRadius: 10,
                       background: 'rgba(192,197,206,0.12)',
                       color: '#C0C5CE',
-                      fontSize: 11, fontWeight: 600,
+                      fontSize: 'var(--aguila-fs-meta)', fontWeight: 600,
                       textDecoration: 'none',
                       flexShrink: 0,
                     }}
@@ -393,19 +393,19 @@ function NotificacionesPanel({ rows }: { rows: ClienteNotificacion[] }) {
             <Icon size={16} color="#C0C5CE" style={{ flexShrink: 0 }} />
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{
-                fontSize: 13, color: '#E6EDF3', fontWeight: 500,
+                fontSize: 'var(--aguila-fs-body)', color: '#E6EDF3', fontWeight: 500,
                 overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
               }}>
                 {label.label}
               </div>
               {n.trafico_id && (
-                <div style={{ ...MONO, fontSize: 10, color: '#64748b', marginTop: 2 }}>
+                <div style={{ ...MONO, fontSize: 'var(--aguila-fs-label)', color: '#64748b', marginTop: 2 }}>
                   {n.trafico_id}
                 </div>
               )}
             </div>
             {n.created_at && (
-              <span style={{ ...MONO, fontSize: 11, color: '#64748b', flexShrink: 0 }}>
+              <span style={{ ...MONO, fontSize: 'var(--aguila-fs-meta)', color: '#64748b', flexShrink: 0 }}>
                 {fmtDateTime(n.created_at)}
               </span>
             )}
@@ -441,8 +441,8 @@ function EmptyCard({
       }}
     >
       {icon}
-      <div style={{ fontSize: 14, color: '#94a3b8', fontWeight: 600 }}>{title}</div>
-      <div style={{ fontSize: 12, color: '#64748b', textAlign: 'center', maxWidth: 360 }}>
+      <div style={{ fontSize: 'var(--aguila-fs-section)', color: '#94a3b8', fontWeight: 600 }}>{title}</div>
+      <div style={{ fontSize: 'var(--aguila-fs-compact)', color: '#64748b', textAlign: 'center', maxWidth: 360 }}>
         {subtitle}
       </div>
     </GlassCard>

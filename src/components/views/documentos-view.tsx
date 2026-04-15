@@ -143,7 +143,7 @@ export function DocumentosView() {
           border: `1px solid ${completedRequired === requiredDocs.length ? 'rgba(22,163,74,0.25)' : 'rgba(217,119,6,0.25)'}`,
           borderRadius: 10, padding: '14px 16px',
         }}>
-          <div style={{ fontSize: 14, fontWeight: 700, color: completedRequired === requiredDocs.length ? 'var(--success, #16A34A)' : 'var(--gold-dark, #7A7E86)' }}>
+          <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: completedRequired === requiredDocs.length ? 'var(--success, #16A34A)' : 'var(--gold-dark, #7A7E86)' }}>
             {completedRequired} de {requiredDocs.length} documentos completos
           </div>
           {/* Progress bar */}
@@ -157,7 +157,7 @@ export function DocumentosView() {
             }} />
           </div>
           {pendingRequired > 0 && (
-            <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 6 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-secondary)', marginTop: 6 }}>
               Documentos requeridos pendientes para cumplimiento SAT
             </div>
           )}
@@ -174,9 +174,9 @@ export function DocumentosView() {
             background: 'var(--bg-card)', border: '1px solid var(--border, #E8E5E0)',
             borderRadius: 10,
           }}>
-            <div style={{ fontSize: 32, marginBottom: 8 }}>📄</div>
-            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>Sin documentos</div>
-            <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4 }}>Suba sus documentos para comenzar.</div>
+            <div style={{ fontSize: 'var(--aguila-fs-kpi-compact)', marginBottom: 8 }}>📄</div>
+            <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: 'var(--text-primary)' }}>Sin documentos</div>
+            <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-secondary)', marginTop: 4 }}>Suba sus documentos para comenzar.</div>
           </div>
         )}
         {loading ? (
@@ -215,7 +215,7 @@ export function DocumentosView() {
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                       <span style={{
-                        fontSize: 14, fontWeight: 600,
+                        fontSize: 'var(--aguila-fs-section)', fontWeight: 600,
                         color: complete ? 'var(--text-secondary)' : 'var(--text-primary)',
                       }}>
                         {doc.label}
@@ -225,13 +225,13 @@ export function DocumentosView() {
                           aria-label="Documento requerido"
                           style={{
                           background: 'rgba(0,0,0,0.05)', color: 'var(--text-muted, #9B9B9B)',
-                          borderRadius: 4, padding: '1px 5px', fontSize: 10, fontWeight: 700,
+                          borderRadius: 4, padding: '1px 5px', fontSize: 'var(--aguila-fs-label)', fontWeight: 700,
                         }}>
                           REQ
                         </span>
                       )}
                     </div>
-                    <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
+                    <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-muted)', marginTop: 2 }}>
                       {up ? `Recibido: ${up.name}` : doc.desc}
                     </div>
                   </div>
@@ -284,7 +284,7 @@ export function DocumentosView() {
                       </button>
                     )}
                     <span style={{
-                      fontSize: 12, fontWeight: 600,
+                      fontSize: 'var(--aguila-fs-compact)', fontWeight: 600,
                       color: complete ? 'var(--success, #16A34A)' : 'var(--text-muted, #9B9B9B)',
                     }}>
                       {complete ? (up ? 'Recibido' : 'Vigente') : 'Pendiente'}
@@ -314,8 +314,8 @@ export function DocumentosView() {
             }}
           >
             <Upload size={24} style={{ color: 'var(--text-muted)' }} />
-            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>Subir documento</div>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>PDF, imagen o Word</div>
+            <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: 'var(--text-primary)' }}>Subir documento</div>
+            <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)' }}>PDF, imagen o Word</div>
             <input
               ref={fileInputRef}
               type="file"
@@ -330,7 +330,7 @@ export function DocumentosView() {
             borderRadius: 12, padding: '16px',
             background: 'var(--bg-card)',
           }}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 10, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            <div style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, color: 'var(--text-primary)', marginBottom: 10, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {uploadFile.name}
             </div>
             {uploading ? (
@@ -338,13 +338,13 @@ export function DocumentosView() {
                 <div style={{ height: 6, background: 'var(--border, #E8E5E0)', borderRadius: 3 }}>
                   <div style={{ width: `${uploadProgress}%`, height: '100%', background: 'var(--gold, #E8EAED)', borderRadius: 3, transition: 'width 80ms linear' }} />
                 </div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4, textAlign: 'center' }}>{uploadProgress}%</div>
+                <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', marginTop: 4, textAlign: 'center' }}>{uploadProgress}%</div>
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <div style={{ position: 'relative' }}>
                   <select value={uploadDocType} onChange={e => setUploadDocType(e.target.value)}
-                    style={{ width: '100%', padding: '10px 28px 10px 10px', fontSize: 12, fontFamily: 'var(--font-mono)', border: '1px solid var(--border)', borderRadius: 8, background: 'var(--bg-card)', color: 'var(--text-primary)', appearance: 'none', cursor: 'pointer', minHeight: 60 }}>
+                    style={{ width: '100%', padding: '10px 28px 10px 10px', fontSize: 'var(--aguila-fs-compact)', fontFamily: 'var(--font-mono)', border: '1px solid var(--border)', borderRadius: 8, background: 'var(--bg-card)', color: 'var(--text-primary)', appearance: 'none', cursor: 'pointer', minHeight: 60 }}>
                     <option value="">Tipo...</option>
                     {LEGAL_DOCS.map(d => <option key={d.id} value={d.id}>{d.label}</option>)}
                     <option value="otro">Otro</option>
@@ -353,11 +353,11 @@ export function DocumentosView() {
                 </div>
                 <div style={{ display: 'flex', gap: 6 }}>
                   <button onClick={confirmUpload} disabled={!uploadDocType}
-                    style={{ flex: 1, background: uploadDocType ? 'var(--gold)' : 'var(--border)', color: uploadDocType ? '#FFF' : 'var(--text-muted)', border: 'none', borderRadius: 8, padding: '10px', fontSize: 12, fontWeight: 700, cursor: uploadDocType ? 'pointer' : 'default', minHeight: 60 }}>
+                    style={{ flex: 1, background: uploadDocType ? 'var(--gold)' : 'var(--border)', color: uploadDocType ? '#FFF' : 'var(--text-muted)', border: 'none', borderRadius: 8, padding: '10px', fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, cursor: uploadDocType ? 'pointer' : 'default', minHeight: 60 }}>
                     Subir
                   </button>
                   <button onClick={() => { setUploadFile(null); setUploadDocType('') }}
-                    style={{ background: 'transparent', border: 'none', fontSize: 12, color: 'var(--text-muted)', cursor: 'pointer', padding: '10px 6px', minHeight: 60 }}>
+                    style={{ background: 'transparent', border: 'none', fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-muted)', cursor: 'pointer', padding: '10px 6px', minHeight: 60 }}>
                     ✕
                   </button>
                 </div>

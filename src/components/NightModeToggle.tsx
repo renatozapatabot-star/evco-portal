@@ -42,7 +42,7 @@ export function NightModeToggle() {
         background: 'none',
         border: 'none',
         cursor: 'pointer',
-        fontSize: 18,
+        fontSize: 'var(--aguila-fs-kpi-small)',
         padding: 8,
         borderRadius: 8,
         color: isDark ? 'var(--gold)' : 'var(--text-secondary)',

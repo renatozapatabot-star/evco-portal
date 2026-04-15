@@ -284,7 +284,7 @@ export function AguilaChatBubble() {
               </div>
               <div>
                 <div style={{ fontSize: 15, fontWeight: 800, color: D.text, letterSpacing: '-0.02em' }}>Asistente ZAPATA AI</div>
-                <div style={{ fontSize: 11, color: D.textMuted }}>Asistente aduanal</div>
+                <div style={{ fontSize: 'var(--aguila-fs-meta)', color: D.textMuted }}>Asistente aduanal</div>
               </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -299,7 +299,7 @@ export function AguilaChatBubble() {
               ))}
               <button onClick={() => { setMessages([]); localStorage.removeItem('cruz-chat-history') }}
                 title="Nueva conversación"
-                style={{ width: 32, height: 32, borderRadius: 8, border: 'none', background: 'transparent', cursor: 'pointer', color: D.textMuted, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>
+                style={{ width: 32, height: 32, borderRadius: 8, border: 'none', background: 'transparent', cursor: 'pointer', color: D.textMuted, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 'var(--aguila-fs-section)' }}>
                 +
               </button>
               <button onClick={() => setOpen(false)} style={{
@@ -317,7 +317,7 @@ export function AguilaChatBubble() {
             {/* Suggestions when empty */}
             {messages.length === 0 && !loading && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingTop: 16, alignItems: 'center' }}>
-                <div style={{ fontSize: 13, color: D.textSub, textAlign: 'center', maxWidth: 280, lineHeight: 1.5 }}>
+                <div style={{ fontSize: 'var(--aguila-fs-body)', color: D.textSub, textAlign: 'center', maxWidth: 280, lineHeight: 1.5 }}>
                   Pregunta sobre embarques, impuestos, puentes, documentos...
                 </div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center', marginTop: 8 }}>
@@ -325,7 +325,7 @@ export function AguilaChatBubble() {
                     <button key={s} onClick={() => sendMessage(s)} style={{
                       padding: '7px 12px', borderRadius: 9999,
                       border: `1px solid ${D.border}`, background: D.surface,
-                      fontSize: 12, fontWeight: 500, color: D.textSub,
+                      fontSize: 'var(--aguila-fs-compact)', fontWeight: 500, color: D.textSub,
                       cursor: 'pointer', whiteSpace: 'nowrap',
                     }}>
                       {s}
@@ -347,12 +347,12 @@ export function AguilaChatBubble() {
                   borderRadius: msg.role === 'user' ? '14px 14px 2px 14px' : '2px 14px 14px 14px',
                   background: msg.role === 'user' ? D.userBubble : D.aiBubble,
                   border: `1px solid ${msg.role === 'user' ? D.userBorder : D.aiBorder}`,
-                  fontSize: 13, lineHeight: 1.6,
+                  fontSize: 'var(--aguila-fs-body)', lineHeight: 1.6,
                   fontWeight: msg.role === 'user' ? 600 : 400,
                   color: msg.role === 'user' ? D.text : D.aiText,
                 }}>
                   {msg.role === 'user' ? msg.content : (
-                    <div style={{ fontSize: 13, lineHeight: 1.6, color: D.aiText }}>
+                    <div style={{ fontSize: 'var(--aguila-fs-body)', lineHeight: 1.6, color: D.aiText }}>
                       <ReactMarkdown
                         components={{
                           h2: ({ children }) => <h2 style={{ fontSize: '0.95em', fontWeight: 700, color: 'inherit', marginBottom: 4, marginTop: 8 }}>{children}</h2>,
@@ -372,7 +372,7 @@ export function AguilaChatBubble() {
                     <div onClick={() => { router.push(msg.navigate!); setOpen(false) }} style={{
                       display: 'flex', alignItems: 'center', gap: 6, marginTop: 6, padding: '6px 10px',
                       background: 'rgba(196,150,60,0.08)', border: '1px solid rgba(196,150,60,0.2)',
-                      borderRadius: 6, cursor: 'pointer', fontSize: 12, fontWeight: 600, color: GOLD,
+                      borderRadius: 6, cursor: 'pointer', fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, color: GOLD,
                     }}>
                       <ArrowRight size={12} /> Ir a {msg.navigate}
                     </div>
@@ -382,7 +382,7 @@ export function AguilaChatBubble() {
                     <button
                       onClick={() => { const lastUser = messages.filter(m => m.role === 'user').pop(); if (lastUser) sendMessage(lastUser.content) }}
                       style={{
-                        marginTop: 6, padding: '4px 12px', borderRadius: 6, fontSize: 11, fontWeight: 600,
+                        marginTop: 6, padding: '4px 12px', borderRadius: 6, fontSize: 'var(--aguila-fs-meta)', fontWeight: 600,
                         background: 'transparent', border: `1px solid ${D.border}`, color: D.textMuted, cursor: 'pointer',
                       }}
                     >
@@ -393,11 +393,11 @@ export function AguilaChatBubble() {
                   {msg.role === 'assistant' && !loading && (msg.content.includes('¿Procedo?') || msg.content.includes('¿Procedemos?') || msg.content.includes('¿Confirma?')) && (
                     <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
                       <button onClick={() => sendMessage('Sí, procede')} style={{
-                        padding: '6px 14px', borderRadius: 6, fontSize: 12, fontWeight: 700,
+                        padding: '6px 14px', borderRadius: 6, fontSize: 'var(--aguila-fs-compact)', fontWeight: 700,
                         background: GOLD, color: D.surface, border: 'none', cursor: 'pointer', minHeight: 32,
                       }}>Proceder</button>
                       <button onClick={() => sendMessage('No, cancelar')} style={{
-                        padding: '6px 14px', borderRadius: 6, fontSize: 12, fontWeight: 600,
+                        padding: '6px 14px', borderRadius: 6, fontSize: 'var(--aguila-fs-compact)', fontWeight: 600,
                         background: 'transparent', color: D.textMuted, border: `1px solid ${D.border}`, cursor: 'pointer', minHeight: 32,
                       }}>Cancelar</button>
                     </div>
@@ -423,7 +423,7 @@ export function AguilaChatBubble() {
                   ))}
                 </div>
                 <button onClick={() => { abortRef.current?.abort(); setLoading(false) }}
-                  style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 10px', border: `1px solid ${D.border}`, borderRadius: 6, background: 'transparent', fontSize: 10, fontWeight: 600, color: D.textMuted, cursor: 'pointer' }}>
+                  style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 10px', border: `1px solid ${D.border}`, borderRadius: 6, background: 'transparent', fontSize: 'var(--aguila-fs-label)', fontWeight: 600, color: D.textMuted, cursor: 'pointer' }}>
                   <Square size={7} fill="currentColor" /> Detener
                 </button>
               </div>
@@ -433,7 +433,7 @@ export function AguilaChatBubble() {
 
           {/* Input bar */}
           <div style={{ padding: '10px 16px 14px', borderTop: `1px solid ${D.border}`, flexShrink: 0, background: D.surface }}>
-            {listening && <div style={{ fontSize: 11, color: GOLD, fontWeight: 600, textAlign: 'center', marginBottom: 4 }}>Escuchando...</div>}
+            {listening && <div style={{ fontSize: 'var(--aguila-fs-meta)', color: GOLD, fontWeight: 600, textAlign: 'center', marginBottom: 4 }}>Escuchando...</div>}
             <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8 }}>
               <textarea
                 ref={inputRef}
@@ -446,7 +446,7 @@ export function AguilaChatBubble() {
                 style={{
                   flex: 1, minHeight: 42, maxHeight: 100, padding: '10px 14px',
                   border: `1px solid ${D.border}`, borderRadius: 12,
-                  fontSize: 14, fontFamily: 'var(--font-ui)', fontWeight: 450,
+                  fontSize: 'var(--aguila-fs-section)', fontFamily: 'var(--font-ui)', fontWeight: 450,
                   color: D.text, resize: 'none', outline: 'none',
                   background: D.bg, lineHeight: 1.5,
                 }}
@@ -503,8 +503,8 @@ export function AguilaChatBubble() {
           onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.06)'; e.currentTarget.style.boxShadow = '0 6px 28px rgba(192,197,206,0.25)' }}
           onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(192,197,206,0.15)' }}
         >
-          <span style={{ fontSize: 16, lineHeight: 1, color: '#C0C5CE' }}>&#10022;</span>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 800, color: '#C0C5CE', letterSpacing: '0.06em' }}>Asistente ZAPATA AI</span>
+          <span style={{ fontSize: 'var(--aguila-fs-body-lg)', lineHeight: 1, color: '#C0C5CE' }}>&#10022;</span>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body)', fontWeight: 800, color: '#C0C5CE', letterSpacing: '0.06em' }}>Asistente ZAPATA AI</span>
           {/* Unread indicator */}
           {hasUnread && (
             <div style={{

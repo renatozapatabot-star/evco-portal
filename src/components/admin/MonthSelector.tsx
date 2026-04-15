@@ -83,7 +83,7 @@ export function MonthSelector({ ym, label, prev, next, options, basePath }: Mont
               background: 'rgba(255,255,255,0.04)',
               border: `1px solid ${BORDER_HAIRLINE}`,
               color: TEXT_PRIMARY,
-              fontSize: 14,
+              fontSize: 'var(--aguila-fs-section)',
               fontWeight: 600,
               fontFamily: 'var(--font-jetbrains-mono), monospace',
               letterSpacing: '0.02em',
@@ -101,7 +101,7 @@ export function MonthSelector({ ym, label, prev, next, options, basePath }: Mont
             right: 16,
             color: TEXT_SECONDARY,
             pointerEvents: 'none',
-            fontSize: 12,
+            fontSize: 'var(--aguila-fs-compact)',
           }}>
             ▾
           </span>
@@ -120,7 +120,7 @@ export function MonthSelector({ ym, label, prev, next, options, basePath }: Mont
         <div style={{
           marginLeft: 'auto',
           color: TEXT_SECONDARY,
-          fontSize: 12,
+          fontSize: 'var(--aguila-fs-compact)',
           fontFamily: 'var(--font-jetbrains-mono), monospace',
         }}>
           {label}

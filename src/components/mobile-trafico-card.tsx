@@ -33,14 +33,14 @@ export const MobileTraficoCard = memo(function MobileTraficoCard({ trafico: r, o
           <span className="m-card-id">{fmtId(r.trafico)}</span>
         </div>
         <div className="m-card-right">
-          <span className={`badge ${badgeClass}`} style={{ height: 20, fontSize: 11 }}>
+          <span className={`badge ${badgeClass}`} style={{ height: 20, fontSize: 'var(--aguila-fs-meta)' }}>
             <span className="badge-dot" /><span className="sr-only">Estado: </span>{urgency.label}
           </span>
         </div>
       </div>
       {r.descripcion_mercancia && <div className="m-card-desc">{fmtDesc(r.descripcion_mercancia)}</div>}
       <div className="m-card-bottom">
-        {r.pedimento && <span className="ped-pill" style={{ fontSize: 11, padding: '2px 7px' }}>{r.pedimento}</span>}
+        {r.pedimento && <span className="ped-pill" style={{ fontSize: 'var(--aguila-fs-meta)', padding: '2px 7px' }}>{r.pedimento}</span>}
         <span className="m-card-meta">{fmtDate(r.fecha_llegada)}</span>
         {r.peso_bruto && <span className="m-card-meta">{fmtKg(r.peso_bruto)} kg</span>}
         {r.importe_total && <span className="m-card-meta" style={{ marginLeft: 'auto', fontWeight: 600, color: 'var(--n-800)' }}>{fmtUSD(r.importe_total)}</span>}

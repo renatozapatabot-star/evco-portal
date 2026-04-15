@@ -61,7 +61,7 @@ export function PullRefreshIndicator({ pullDistance, isRefreshing, progress }: P
         />
       </svg>
       <span style={{
-        fontSize: 13,
+        fontSize: 'var(--aguila-fs-body)',
         fontWeight: 600,
         color: 'var(--gold-dark, #7A7E86)',
       }}>

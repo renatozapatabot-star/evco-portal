@@ -93,7 +93,7 @@ export function InTransitCard({ pulses, onRotate }: InTransitCardProps) {
       <div
         style={{
           fontFamily: 'var(--font-jetbrains-mono), monospace',
-          fontSize: 14,
+          fontSize: 'var(--aguila-fs-section)',
           color: ACCENT_SILVER,
           marginBottom: 4,
         }}
@@ -103,7 +103,7 @@ export function InTransitCard({ pulses, onRotate }: InTransitCardProps) {
       <div
         style={{
           fontFamily: 'var(--font-geist-sans), system-ui, sans-serif',
-          fontSize: 12,
+          fontSize: 'var(--aguila-fs-compact)',
           color: ACCENT_SILVER_DIM,
           marginBottom: 12,
         }}
@@ -113,7 +113,7 @@ export function InTransitCard({ pulses, onRotate }: InTransitCardProps) {
       <div
         style={{
           fontFamily: 'var(--font-jetbrains-mono), monospace',
-          fontSize: 10,
+          fontSize: 'var(--aguila-fs-label)',
           letterSpacing: '0.08em',
           color: TEXT_TERTIARY,
         }}

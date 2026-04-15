@@ -77,10 +77,10 @@ export function SupplierDetail({ supplier: s }: { supplier: SupplierAgg }) {
           { label: 'Último embarque', value: s.lastDate ? fmtDate(s.lastDate) : '\u2014' },
         ].map(stat => (
           <div key={stat.label}>
-            <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.textMuted, marginBottom: 4 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.textMuted, marginBottom: 4 }}>
               {stat.label}
             </div>
-            <div style={{ fontSize: 14, fontWeight: 700, fontFamily: T.mono, color: T.text }}>
+            <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, fontFamily: T.mono, color: T.text }}>
               {stat.value}
             </div>
           </div>
@@ -89,7 +89,7 @@ export function SupplierDetail({ supplier: s }: { supplier: SupplierAgg }) {
 
       {/* Supplier narrative */}
       <p style={{
-        fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6,
+        fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)', lineHeight: 1.6,
         fontStyle: 'italic', maxWidth: 600, margin: '0 0 16px',
       }}>
         {supplierStory({
@@ -104,13 +104,13 @@ export function SupplierDetail({ supplier: s }: { supplier: SupplierAgg }) {
       {/* Common descriptions */}
       {descFreq.length > 0 && (
         <div style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.textMuted, marginBottom: 8 }}>
+          <div style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.textMuted, marginBottom: 8 }}>
             Mercancías frecuentes
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
             {descFreq.map(([desc, count]) => (
               <span key={desc} style={{
-                fontSize: 11, fontWeight: 500, padding: '4px 10px', borderRadius: 6,
+                fontSize: 'var(--aguila-fs-meta)', fontWeight: 500, padding: '4px 10px', borderRadius: 6,
                 background: 'rgba(255,255,255,0.045)', border: `1px solid ${T.border}`,
                 color: T.textSecondary, maxWidth: 280,
                 overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
@@ -124,7 +124,7 @@ export function SupplierDetail({ supplier: s }: { supplier: SupplierAgg }) {
 
       {/* Traficos list */}
       <div>
-        <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.textMuted, marginBottom: 8 }}>
+        <div style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.textMuted, marginBottom: 8 }}>
           Embarques ({s.traficos.length})
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -146,11 +146,11 @@ export function SupplierDetail({ supplier: s }: { supplier: SupplierAgg }) {
                 onMouseEnter={e => (e.currentTarget.style.background = T.surfaceHover)}
                 onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.02)')}
               >
-                <span style={{ fontFamily: T.mono, fontSize: 13, fontWeight: 700, color: T.gold }}>
+                <span style={{ fontFamily: T.mono, fontSize: 'var(--aguila-fs-body)', fontWeight: 700, color: T.gold }}>
                   {fmtId(t.trafico)}
                 </span>
                 <span style={{
-                  fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 9999,
+                  fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, padding: '2px 8px', borderRadius: 9999,
                   background: isCruzado ? 'rgba(45,133,64,0.15)' : 'rgba(196,127,23,0.15)',
                   color: isCruzado ? T.green : '#C47F17',
                   border: `1px solid ${isCruzado ? 'rgba(45,133,64,0.25)' : 'rgba(196,127,23,0.25)'}`,
@@ -158,17 +158,17 @@ export function SupplierDetail({ supplier: s }: { supplier: SupplierAgg }) {
                 }}>
                   {isCruzado ? 'Cruzado' : 'En Proceso'}
                 </span>
-                <span style={{ fontSize: 12, color: T.textSecondary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <span style={{ fontSize: 'var(--aguila-fs-compact)', color: T.textSecondary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {t.descripcion_mercancia ?? '\u2014'}
                 </span>
-                <span style={{ fontFamily: T.mono, fontSize: 12, color: T.text, textAlign: 'right' }}>
+                <span style={{ fontFamily: T.mono, fontSize: 'var(--aguila-fs-compact)', color: T.text, textAlign: 'right' }}>
                   {t.importe_total && Number(t.importe_total) > 0 ? fmtUSD(Number(t.importe_total)) : '\u2014'}
                 </span>
               </Link>
             )
           })}
           {s.traficos.length > 20 && (
-            <div style={{ fontSize: 12, color: T.textMuted, padding: '8px 12px' }}>
+            <div style={{ fontSize: 'var(--aguila-fs-compact)', color: T.textMuted, padding: '8px 12px' }}>
               +{s.traficos.length - 20} traficos mas
             </div>
           )}

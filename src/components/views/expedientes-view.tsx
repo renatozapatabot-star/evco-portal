@@ -104,7 +104,7 @@ function SummaryCard({
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
         <div style={{ flex: 1, minWidth: 200 }}>
-          <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--body-text)', margin: 0 }}>
+          <p style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: 'var(--body-text)', margin: 0 }}>
             {total - incompletos} de {total} expedientes completos
           </p>
           {/* Progress bar */}
@@ -122,12 +122,12 @@ function SummaryCard({
             </div>
             <span
               className="font-mono"
-              style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', minWidth: 48, textAlign: 'right' }}
+              style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 700, color: 'var(--text-primary)', minWidth: 48, textAlign: 'right' }}
             >
               {globalPct}%
             </span>
           </div>
-          <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: '6px 0 0' }}>
+          <p style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', margin: '6px 0 0' }}>
             Completitud global de documentos
           </p>
         </div>
@@ -143,7 +143,7 @@ function SummaryCard({
             color: 'var(--bg-card)',
             border: 'none',
             borderRadius: 8,
-            fontSize: 13,
+            fontSize: 'var(--aguila-fs-body)',
             fontWeight: 600,
             cursor: soliciting || totalMissingDocs === 0 ? 'default' : 'pointer',
             minHeight: 60,
@@ -205,7 +205,7 @@ function ProgressBar({ pct: p }: { pct: number }) {
       <div style={{ flex: 1, height: 5, background: 'var(--border)', borderRadius: 9999, overflow: 'hidden' }}>
         <div style={{ width: `${p}%`, height: '100%', background: color, borderRadius: 9999 }} />
       </div>
-      <span className="font-mono" style={{ color, fontSize: 11, fontWeight: 700, minWidth: 32 }}>{p}%</span>
+      <span className="font-mono" style={{ color, fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, minWidth: 32 }}>{p}%</span>
     </div>
   )
 }
@@ -231,7 +231,7 @@ function MobileCard({ row, onNavigate }: { row: TraficoRow; onNavigate: (id: str
     >
       {/* Header line */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-        <span className="trafico-id" style={{ fontSize: 14, fontWeight: 700 }}>{fmtId(row.trafico)}</span>
+        <span className="trafico-id" style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700 }}>{fmtId(row.trafico)}</span>
         <span
           className={`badge ${row.estatus === 'Cruzado' ? 'badge-cruzado' : row.estatus === 'Detenido' ? 'badge-hold' : 'badge-proceso'}`}
         >
@@ -248,20 +248,20 @@ function MobileCard({ row, onNavigate }: { row: TraficoRow; onNavigate: (id: str
           borderRadius: 6, padding: '4px 10px', marginBottom: 8, width: 'fit-content',
         }}>
           <AlertTriangle size={12} style={{ color: 'var(--danger)' }} />
-          <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--danger-text)' }}>Sin pedimento</span>
+          <span style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, color: 'var(--danger-text)' }}>Sin pedimento</span>
         </div>
       )}
 
       {/* Urgency label */}
       {urgency.label && row.missing.length > 0 && (
-        <div style={{ fontSize: 11, fontWeight: 600, color: urgency.color, marginBottom: 6, fontFamily: 'var(--font-mono)' }}>
+        <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, color: urgency.color, marginBottom: 6, fontFamily: 'var(--font-mono)' }}>
           {urgency.label}
         </div>
       )}
 
       {/* Docs + progress */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-        <span className="font-mono" style={{ fontSize: 13 }}>
+        <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-body)' }}>
           {row.docCount}/{REQUIRED_DOCS.length} docs
         </span>
         <div style={{ flex: 1 }}>
@@ -271,7 +271,7 @@ function MobileCard({ row, onNavigate }: { row: TraficoRow; onNavigate: (id: str
 
       {/* Missing docs */}
       {row.missing.length > 0 && (
-        <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: '0 0 10px' }}>
+        <p style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-secondary)', margin: '0 0 10px' }}>
           Faltan:{' '}
           {row.missing.slice(0, 3).map(getDocLabel).join(', ')}
           {row.missing.length > 3 && `, +${row.missing.length - 3}`}
@@ -285,7 +285,7 @@ function MobileCard({ row, onNavigate }: { row: TraficoRow; onNavigate: (id: str
             style={{
               display: 'flex', alignItems: 'center', gap: 4,
               padding: '8px 14px', background: 'var(--gold)', color: 'var(--bg-card)',
-              border: 'none', borderRadius: 6, fontSize: 12, fontWeight: 600,
+              border: 'none', borderRadius: 6, fontSize: 'var(--aguila-fs-compact)', fontWeight: 600,
               cursor: 'pointer', minHeight: 60, fontFamily: 'inherit',
             }}
           >
@@ -298,7 +298,7 @@ function MobileCard({ row, onNavigate }: { row: TraficoRow; onNavigate: (id: str
             display: 'flex', alignItems: 'center', gap: 4,
             padding: '8px 14px', background: 'var(--card-bg)',
             border: '1px solid var(--border)', color: 'var(--text-primary)',
-            borderRadius: 6, fontSize: 12, fontWeight: 600,
+            borderRadius: 6, fontSize: 'var(--aguila-fs-compact)', fontWeight: 600,
             cursor: 'pointer', minHeight: 60, fontFamily: 'inherit',
           }}
         >
@@ -574,7 +574,7 @@ export function ExpedientesView() {
             style={{
               paddingLeft: 32, paddingRight: 12, height: 36,
               border: '1px solid var(--border)', borderRadius: 8,
-              background: 'var(--card-bg)', color: 'var(--text-primary)', fontSize: 13,
+              background: 'var(--card-bg)', color: 'var(--text-primary)', fontSize: 'var(--aguila-fs-body)',
               outline: 'none', width: 200, fontFamily: 'inherit',
             }}
           />
@@ -588,10 +588,10 @@ export function ExpedientesView() {
           borderRadius: 8, marginTop: 16,
         }}>
           <AlertTriangle size={32} style={{ color: 'var(--danger)', margin: '0 auto 12px', display: 'block' }} />
-          <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 6 }}>
+          <div style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, color: 'var(--text-primary)', marginBottom: 6 }}>
             No se pudieron cargar los expedientes
           </div>
-          <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>
+          <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-muted)', marginBottom: 16 }}>
             Error temporal · reintentando automáticamente
           </div>
           <button
@@ -600,7 +600,7 @@ export function ExpedientesView() {
             style={{
               padding: '10px 24px', borderRadius: 8,
               border: 'none', background: 'var(--gold)', color: 'var(--bg-card)',
-              fontSize: 14, fontWeight: 700, cursor: retrying ? 'default' : 'pointer',
+              fontSize: 'var(--aguila-fs-section)', fontWeight: 700, cursor: retrying ? 'default' : 'pointer',
               minHeight: 60, fontFamily: 'inherit',
               opacity: retrying ? 0.7 : 1,
             }}
@@ -628,11 +628,11 @@ export function ExpedientesView() {
       ) : rawTraficos.length > 0 && rawTraficos.every((r) => r.docs.length === 0) ? (
         /* Embarques found but no completeness data — join is broken. NEVER show "all complete" */
         <div style={{ padding: 24, textAlign: 'center', color: 'var(--status-warning, #C47F17)' }}>
-          <div style={{ fontSize: 24, marginBottom: 8 }}>⚠</div>
-          <p style={{ fontSize: 14, fontWeight: 600 }}>
+          <div style={{ fontSize: 'var(--aguila-fs-title)', marginBottom: 8 }}>⚠</div>
+          <p style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600 }}>
             {rawTraficos.length} embarques encontrados sin datos de documentos
           </p>
-          <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4 }}>
+          <p style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-secondary)', marginTop: 4 }}>
             Verificar relación entre tablas documentos → embarques
           </p>
         </div>
@@ -640,8 +640,8 @@ export function ExpedientesView() {
         /* All expedientes complete */
         <div className="card" style={{ padding: '60px 20px', textAlign: 'center' }}>
           <FileText size={32} strokeWidth={1.5} style={{ color: 'var(--success)', margin: '0 auto 12px' }} />
-          <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--success)' }}>Todos los expedientes completos &#10003;</p>
-          <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+          <p style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: 'var(--success)' }}>Todos los expedientes completos &#10003;</p>
+          <p style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-muted)' }}>
             Los {rawTraficos.length} embarques activos tienen todos sus documentos en orden.
           </p>
         </div>
@@ -661,7 +661,7 @@ export function ExpedientesView() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
             <FilterTabs active={filter} counts={counts} onChange={setFilter} />
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 12, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>Ordenar:</span>
+              <span style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>Ordenar:</span>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as SortOption)}
@@ -671,7 +671,7 @@ export function ExpedientesView() {
                   borderRadius: 8,
                   background: 'var(--card-bg)',
                   color: 'var(--text-primary)',
-                  fontSize: 13,
+                  fontSize: 'var(--aguila-fs-body)',
                   fontFamily: 'inherit',
                   cursor: 'pointer',
                   outline: 'none',
@@ -689,10 +689,10 @@ export function ExpedientesView() {
           {pageRows.length === 0 ? (
             <div className="card" style={{ padding: '60px 20px', textAlign: 'center' }}>
               <FileText size={28} strokeWidth={1.5} style={{ color: 'var(--text-muted)', margin: '0 auto 12px' }} />
-              <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>
+              <p style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: 'var(--text-primary)' }}>
                 {filter === 'completos' ? 'Sin expedientes completos' : 'Todos los expedientes completos ✓'}
               </p>
-              <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+              <p style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-muted)' }}>
                 {filter === 'completos' ? 'Aún no hay embarques con todos sus documentos.' : 'Todos los documentos están en orden.'}
               </p>
             </div>
@@ -739,7 +739,7 @@ export function ExpedientesView() {
                         <td>
                           <span className="trafico-id">{fmtId(row.trafico)}</span>
                           {row.fecha_llegada && (
-                            <div style={{ color: 'var(--text-muted)', fontSize: 11, marginTop: 2 }}>
+                            <div style={{ color: 'var(--text-muted)', fontSize: 'var(--aguila-fs-meta)', marginTop: 2 }}>
                               {fmtDateCompact(row.fecha_llegada)}
                             </div>
                           )}
@@ -759,7 +759,7 @@ export function ExpedientesView() {
                                 display: 'inline-flex', alignItems: 'center', gap: 4,
                                 background: 'var(--danger-bg)', border: '1px solid #FECACA',
                                 borderRadius: 9999, padding: '2px 10px',
-                                fontSize: 10, fontWeight: 700, color: 'var(--danger-text)',
+                                fontSize: 'var(--aguila-fs-label)', fontWeight: 700, color: 'var(--danger-text)',
                                 width: 'fit-content',
                               }}>
                                 <AlertTriangle size={10} />
@@ -771,7 +771,7 @@ export function ExpedientesView() {
 
                         {/* DOCS count */}
                         <td>
-                          <span className="font-mono" style={{ fontSize: 13 }}>
+                          <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-body)' }}>
                             {row.docCount}
                             <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>/{REQUIRED_DOCS.length}</span>
                           </span>
@@ -791,7 +791,7 @@ export function ExpedientesView() {
                                   <span
                                     key={m}
                                     style={{
-                                      fontSize: 10, fontWeight: 600,
+                                      fontSize: 'var(--aguila-fs-label)', fontWeight: 600,
                                       padding: '2px 8px', borderRadius: 4,
                                       background: 'var(--border, #F5F4F0)', border: '1px solid var(--border, #E8E5E0)',
                                       color: 'var(--text-secondary, #6B6B6B)', whiteSpace: 'nowrap',
@@ -801,17 +801,17 @@ export function ExpedientesView() {
                                   </span>
                                 ))}
                                 {row.missing.length > 3 && (
-                                  <span style={{ fontSize: 10, color: 'var(--text-muted)', padding: '2px 4px', fontWeight: 600 }}>
+                                  <span style={{ fontSize: 'var(--aguila-fs-label)', color: 'var(--text-muted)', padding: '2px 4px', fontWeight: 600 }}>
                                     +{row.missing.length - 3}
                                   </span>
                                 )}
                               </div>
                               {rowUrgency.label && (
-                                <div style={{ fontSize: 11, color: rowUrgency.color, fontWeight: 600, marginTop: 4 }}>{rowUrgency.label}</div>
+                                <div style={{ fontSize: 'var(--aguila-fs-meta)', color: rowUrgency.color, fontWeight: 600, marginTop: 4 }}>{rowUrgency.label}</div>
                               )}
                             </div>
                           ) : (
-                            <span style={{ fontSize: 11, color: 'var(--success)', fontWeight: 600 }}>Completo</span>
+                            <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--success)', fontWeight: 600 }}>Completo</span>
                           )}
                         </td>
 
@@ -827,7 +827,7 @@ export function ExpedientesView() {
                               style={{
                                 display: 'inline-flex', alignItems: 'center', gap: 4,
                                 padding: '6px 14px', background: 'var(--gold)', color: 'var(--bg-card)',
-                                border: 'none', borderRadius: 6, fontSize: 12,
+                                border: 'none', borderRadius: 6, fontSize: 'var(--aguila-fs-compact)',
                                 fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
                               }}
                             >
@@ -843,7 +843,7 @@ export function ExpedientesView() {
                                 display: 'inline-flex', alignItems: 'center', gap: 4,
                                 padding: '6px 14px', background: 'var(--card-bg)',
                                 border: '1px solid var(--border)', color: 'var(--text-primary)',
-                                borderRadius: 6, fontSize: 12, fontWeight: 600,
+                                borderRadius: 6, fontSize: 'var(--aguila-fs-compact)', fontWeight: 600,
                                 cursor: 'pointer', fontFamily: 'inherit',
                               }}
                             >

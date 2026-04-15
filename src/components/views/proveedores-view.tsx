@@ -104,11 +104,11 @@ export function ProveedoresView() {
           <h1 className="page-title">Proveedores</h1>
         </div>
         <div style={{ textAlign: 'center', padding: 60, color: 'var(--text-muted)' }}>
-          <div style={{ fontSize: 32, marginBottom: 12 }}>📦</div>
+          <div style={{ fontSize: 'var(--aguila-fs-kpi-compact)', marginBottom: 12 }}>📦</div>
           <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 4 }}>
             Sin proveedores registrados
           </div>
-          <div style={{ fontSize: 13 }}>
+          <div style={{ fontSize: 'var(--aguila-fs-body)' }}>
             Ejecuta la sincronizacion de supplier_network para ver el scoreboard.
           </div>
         </div>
@@ -142,11 +142,11 @@ export function ProveedoresView() {
             background: 'linear-gradient(135deg, rgba(196,150,60,0.1) 0%, rgba(196,150,60,0.02) 100%)',
             border: '2px solid rgba(196,150,60,0.3)',
           }}>
-            <div style={{ fontSize: 28 }}>🥇</div>
-            <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-primary)', marginTop: 4 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-kpi-mid)' }}>🥇</div>
+            <div style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 800, color: 'var(--text-primary)', marginTop: 4 }}>
               {top3[0].name}
             </div>
-            <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4, fontFamily: 'var(--font-mono)' }}>
+            <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-muted)', marginTop: 4, fontFamily: 'var(--font-mono)' }}>
               {top3[0].avgDays > 0 ? `Docs en ${top3[0].avgDays} dias` : 'Sin datos de cruce'} · {top3[0].compliance}% completos
             </div>
           </div>
@@ -159,9 +159,9 @@ export function ProveedoresView() {
                   padding: 16, borderRadius: 14,
                   background: 'var(--bg-card)', border: '1px solid var(--border-card)',
                 }}>
-                  <div style={{ fontSize: 20 }}>{i === 0 ? '🥈' : '🥉'}</div>
-                  <div style={{ fontSize: 14, fontWeight: 700, marginTop: 4, color: 'var(--text-primary)' }}>{s.name}</div>
-                  <div style={{ fontSize: 12, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', marginTop: 2 }}>
+                  <div style={{ fontSize: 'var(--aguila-fs-headline)' }}>{i === 0 ? '🥈' : '🥉'}</div>
+                  <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, marginTop: 4, color: 'var(--text-primary)' }}>{s.name}</div>
+                  <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', marginTop: 2 }}>
                     {s.avgDays > 0 ? `${s.avgDays} dias` : '—'} · {s.compliance}%
                   </div>
                 </div>
@@ -181,25 +181,25 @@ export function ProveedoresView() {
             border: `1px solid ${rowBorder(supplier.compliance)}`,
           }}>
             <span style={{
-              fontSize: 14, fontWeight: 800, fontFamily: 'var(--font-mono)',
+              fontSize: 'var(--aguila-fs-section)', fontWeight: 800, fontFamily: 'var(--font-mono)',
               color: 'var(--text-muted)', width: 32, flexShrink: 0,
             }}>
               #{i + 1}
             </span>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{
-                fontSize: 14, fontWeight: 600, color: 'var(--text-primary)',
+                fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: 'var(--text-primary)',
                 overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
               }}>
                 {supplier.name}
               </div>
-              <div style={{ fontSize: 12, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+              <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
                 {supplier.avgDays > 0 ? `${supplier.avgDays} dias` : '—'} · {supplier.operations} ops · {supplier.compliance}%
               </div>
             </div>
             {supplier.tmec && (
               <span style={{
-                fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 9999,
+                fontSize: 'var(--aguila-fs-label)', fontWeight: 700, padding: '3px 8px', borderRadius: 9999,
                 background: 'rgba(22,163,74,0.1)', color: 'var(--success)', flexShrink: 0,
               }}>
                 T-MEC

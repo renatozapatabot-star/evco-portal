@@ -106,7 +106,7 @@ export function OperatorSearch() {
           placeholder="Buscar embarque, entrada, pedimento, proveedor..."
           style={{
             flex: 1, background: 'transparent', border: 'none', outline: 'none',
-            color: '#E6EDF3', fontSize: 13, padding: '10px 0',
+            color: '#E6EDF3', fontSize: 'var(--aguila-fs-body)', padding: '10px 0',
             fontFamily: 'var(--font-jetbrains-mono)',
           }}
         />
@@ -116,7 +116,7 @@ export function OperatorSearch() {
           style={{
             background: 'rgba(192,197,206,0.15)', color: '#E8EAED',
             border: 'none', borderRadius: 8, padding: '8px 16px',
-            fontSize: 12, fontWeight: 600, cursor: 'pointer',
+            fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, cursor: 'pointer',
             minHeight: 36, opacity: loading || query.trim().length < 2 ? 0.5 : 1,
           }}
         >
@@ -144,11 +144,11 @@ export function OperatorSearch() {
               }}>
                 {typeLabels[r.type]}
               </span>
-              <span className="font-mono" style={{ fontSize: 13, fontWeight: 600, color: '#E6EDF3', flexShrink: 0 }}>
+              <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: '#E6EDF3', flexShrink: 0 }}>
                 {r.id}
               </span>
               <span style={{
-                fontSize: 12, color: '#8B949E', flex: 1,
+                fontSize: 'var(--aguila-fs-compact)', color: '#8B949E', flex: 1,
                 overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
               }}>
                 {r.subtitle}
@@ -162,7 +162,7 @@ export function OperatorSearch() {
         <div style={{
           marginTop: 8, padding: '12px 14px', borderRadius: 10,
           background: 'rgba(255,255,255,0.045)', border: '1px solid rgba(255,255,255,0.08)',
-          fontSize: 13, color: '#6E7681', textAlign: 'center',
+          fontSize: 'var(--aguila-fs-body)', color: '#6E7681', textAlign: 'center',
         }}>
           Sin resultados para &quot;{query}&quot;
         </div>

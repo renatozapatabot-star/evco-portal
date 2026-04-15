@@ -80,13 +80,13 @@ export function SmartNavCard({ href, label, icon: Icon, description, count, coun
             {label}
           </div>
           <div className="nav-card-desc" style={{
-            fontSize: 12, color: '#8b9ab5', marginTop: 2, lineHeight: 1.4,
+            fontSize: 'var(--aguila-fs-compact)', color: '#8b9ab5', marginTop: 2, lineHeight: 1.4,
           }}>
             {description}
           </div>
           {microStatus && (
             <div className="nav-card-micro" style={{
-              fontSize: 11, marginTop: 4, lineHeight: 1.3,
+              fontSize: 'var(--aguila-fs-meta)', marginTop: 4, lineHeight: 1.3,
               fontFamily: 'var(--font-mono)',
               color: microStatusWarning ? '#FBBF24' : '#64748b',
               fontWeight: microStatusWarning ? 600 : 400,
@@ -103,11 +103,11 @@ export function SmartNavCard({ href, label, icon: Icon, description, count, coun
         {count !== null && (
           <div className="nav-card-count" style={{
             fontFamily: 'var(--font-mono)',
-            fontSize: 24, fontWeight: 800,
+            fontSize: 'var(--aguila-fs-title)', fontWeight: 800,
             color: count > 0 ? '#E6EDF3' : '#475569',
             flexShrink: 0,
           }}>
-            {count}{countSuffix ? <span style={{ fontSize: 14, fontWeight: 700, color: '#94a3b8', marginLeft: 2 }}>{countSuffix}</span> : null}
+            {count}{countSuffix ? <span style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: '#94a3b8', marginLeft: 2 }}>{countSuffix}</span> : null}
           </div>
         )}
       </motion.div>

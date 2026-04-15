@@ -97,20 +97,20 @@ export function IfThenCard({
         }}
       >
         {/* Checkmark */}
-        <div style={{ position: 'absolute', top: 12, right: 14, fontSize: 16, color: '#16A34A' }}>✓</div>
+        <div style={{ position: 'absolute', top: 12, right: 14, fontSize: 'var(--aguila-fs-body-lg)', color: '#16A34A' }}>✓</div>
 
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8,
         }}>
-          <span style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#16A34A' }}>
+          <span style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#16A34A' }}>
             {title} — limpiada
           </span>
         </div>
-        <div style={{ color: '#6E7681', fontSize: 12 }}>
+        <div style={{ color: '#6E7681', fontSize: 'var(--aguila-fs-compact)' }}>
           {quietContent}
         </div>
         {(clearedBy || clearedAt) && (
-          <div style={{ marginTop: 6, fontSize: 11, color: '#6E7681' }}>
+          <div style={{ marginTop: 6, fontSize: 'var(--aguila-fs-meta)', color: '#6E7681' }}>
             {clearedBy && <span>{clearedBy}</span>}
             {clearedAt && <span> · {clearedAt}</span>}
           </div>
@@ -125,7 +125,7 @@ export function IfThenCard({
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         padding: '10px 16px', borderRadius: 8,
         background: s.actionBg, color: s.conditionColor,
-        fontSize: 13, fontWeight: 600, textDecoration: 'none',
+        fontSize: 'var(--aguila-fs-body)', fontWeight: 600, textDecoration: 'none',
         minHeight: 44, marginTop: 8,
         border: `1px solid rgba(192,197,206,0.2)`,
       }}>
@@ -136,7 +136,7 @@ export function IfThenCard({
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         width: '100%', padding: '10px 16px', borderRadius: 8,
         background: s.actionBg, color: s.conditionColor,
-        fontSize: 13, fontWeight: 600, cursor: 'pointer',
+        fontSize: 'var(--aguila-fs-body)', fontWeight: 600, cursor: 'pointer',
         minHeight: 44, marginTop: 8, border: `1px solid rgba(192,197,206,0.2)`,
       }}>
         {action} →
@@ -166,7 +166,7 @@ export function IfThenCard({
         marginBottom: condition && state !== 'quiet' ? 8 : 12,
       }}>
         <span style={{
-          fontSize: 11, fontWeight: 600, textTransform: 'uppercase',
+          fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, textTransform: 'uppercase',
           letterSpacing: '0.05em',
           color: state === 'quiet' ? '#6E7681' : s.conditionColor,
         }}>
@@ -176,7 +176,7 @@ export function IfThenCard({
           {/* Clear button for operators */}
           {onClear && state !== 'quiet' && (
             <button onClick={onClear} style={{
-              fontSize: 10, fontWeight: 600, color: '#16A34A',
+              fontSize: 'var(--aguila-fs-label)', fontWeight: 600, color: '#16A34A',
               background: 'rgba(22,163,74,0.1)', border: '1px solid rgba(22,163,74,0.2)',
               borderRadius: 4, padding: '3px 8px', cursor: 'pointer',
               textTransform: 'uppercase', letterSpacing: '0.05em',
@@ -191,7 +191,7 @@ export function IfThenCard({
       {/* Condition line */}
       {isActionable && (
         <div style={{
-          fontSize: 14, fontWeight: 600, color: s.conditionColor,
+          fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: s.conditionColor,
           marginBottom: 6, lineHeight: 1.4,
         }}>
           {condition}
@@ -211,7 +211,7 @@ export function IfThenCard({
 
       {/* Footer */}
       {footer && (
-        <div style={{ marginTop: 8, fontSize: 11, color: '#6E7681' }}>
+        <div style={{ marginTop: 8, fontSize: 'var(--aguila-fs-meta)', color: '#6E7681' }}>
           {footer}
         </div>
       )}

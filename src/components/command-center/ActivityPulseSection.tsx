@@ -50,7 +50,7 @@ export function ActivityPulseSection({ pulse, loading, defaultCollapsed = false,
           animation: 'cruzPulse 2s ease-in-out infinite',
           flexShrink: 0,
         }} />
-        <div style={{ fontSize: 13, fontWeight: 700, color: textSub, flex: 1, textAlign: 'left' }}>
+        <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 700, color: textSub, flex: 1, textAlign: 'left' }}>
           Actividad reciente{pulse.length > 0 ? ` (${pulse.length})` : ''}
         </div>
         {collapsed ? (
@@ -87,13 +87,13 @@ export function ActivityPulseSection({ pulse, loading, defaultCollapsed = false,
                     background: item.color,
                   }} />
                   <div style={{
-                    flex: 1, minWidth: 0, fontSize: 13, color: textColor,
+                    flex: 1, minWidth: 0, fontSize: 'var(--aguila-fs-body)', color: textColor,
                     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                   }}>
                     {item.text}
                   </div>
                   <span style={{
-                    fontSize: 11, color: textMuted, flexShrink: 0,
+                    fontSize: 'var(--aguila-fs-meta)', color: textMuted, flexShrink: 0,
                     fontFamily: 'var(--font-mono)',
                   }}>
                     {fmtDateTime(item.timestamp)}
@@ -103,7 +103,7 @@ export function ActivityPulseSection({ pulse, loading, defaultCollapsed = false,
               <Link
                 href="/actividad"
                 style={{
-                  fontSize: 13, color: linkColor,
+                  fontSize: 'var(--aguila-fs-body)', color: linkColor,
                   fontWeight: 600, padding: '8px 12px', textDecoration: 'none',
                 }}
               >

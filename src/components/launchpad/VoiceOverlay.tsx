@@ -82,7 +82,7 @@ export default function VoiceOverlay({ status, transcripts, onClose }: VoiceOver
           background: 'rgba(255,255,255,0.1)',
           border: 'none',
           color: '#FFFFFF',
-          fontSize: 20,
+          fontSize: 'var(--aguila-fs-headline)',
           cursor: 'pointer',
           display: 'flex',
           alignItems: 'center',
@@ -93,7 +93,7 @@ export default function VoiceOverlay({ status, transcripts, onClose }: VoiceOver
       </button>
 
       {/* Status label */}
-      <p style={{ color: COLORS.grayLight, fontSize: 14, marginBottom: 24, letterSpacing: 1 }}>
+      <p style={{ color: COLORS.grayLight, fontSize: 'var(--aguila-fs-section)', marginBottom: 24, letterSpacing: 1 }}>
         {STATUS_LABELS[voiceState]}
       </p>
 
@@ -147,7 +147,7 @@ export default function VoiceOverlay({ status, transcripts, onClose }: VoiceOver
             borderRadius: 12,
             background: COLORS.gold,
             color: '#05070B',
-            fontSize: 16,
+            fontSize: 'var(--aguila-fs-body-lg)',
             fontWeight: 600,
             textDecoration: 'none',
             minHeight: 60,
@@ -161,7 +161,7 @@ export default function VoiceOverlay({ status, transcripts, onClose }: VoiceOver
       )}
 
       {/* Instruction */}
-      <p style={{ position: 'absolute', bottom: 32, color: COLORS.grayLight, fontSize: 13, opacity: 0.6 }}>
+      <p style={{ position: 'absolute', bottom: 32, color: COLORS.grayLight, fontSize: 'var(--aguila-fs-body)', opacity: 0.6 }}>
         Toca el orbe para terminar
       </p>
     </div>

@@ -38,7 +38,7 @@ export function MyDayPanel({ myDay, teamStats, unassignedCount }: Props) {
               <div style={{
                 padding: '8px 12px', background: 'rgba(217,119,6,0.06)',
                 borderRadius: 8, border: '1px solid rgba(217,119,6,0.15)',
-                fontSize: 12, color: '#D97706',
+                fontSize: 'var(--aguila-fs-compact)', color: '#D97706',
               }}>
                 Próximo vencimiento: {myDay.nextDeadline.trafico}
               </div>
@@ -61,8 +61,8 @@ export function MyDayPanel({ myDay, teamStats, unassignedCount }: Props) {
               <div key={op.name} style={{
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0',
               }}>
-                <span style={{ fontSize: 13, color: '#E6EDF3' }}>{op.name}</span>
-                <span className="font-mono" style={{ fontSize: 13, color: '#8B949E' }}>{op.assigned}</span>
+                <span style={{ fontSize: 'var(--aguila-fs-body)', color: '#E6EDF3' }}>{op.name}</span>
+                <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-body)', color: '#8B949E' }}>{op.assigned}</span>
               </div>
             ))}
             {unassignedCount > 0 && (
@@ -71,12 +71,12 @@ export function MyDayPanel({ myDay, teamStats, unassignedCount }: Props) {
                 padding: '6px 0', borderTop: '1px solid rgba(255,255,255,0.06)',
                 marginTop: 4, paddingTop: 10,
               }}>
-                <span style={{ fontSize: 13, color: '#8B949E' }}>
+                <span style={{ fontSize: 'var(--aguila-fs-body)', color: '#8B949E' }}>
                   Listos para asignar: {unassignedCount}
                 </span>
                 <Link href="/embarques" style={{
                   background: 'rgba(192,197,206,0.15)', color: '#E8EAED',
-                  borderRadius: 8, padding: '8px 16px', fontSize: 12, fontWeight: 600,
+                  borderRadius: 8, padding: '8px 16px', fontSize: 'var(--aguila-fs-compact)', fontWeight: 600,
                   textDecoration: 'none', minHeight: 36, display: 'flex', alignItems: 'center',
                 }}>
                   Ver cola
@@ -95,8 +95,8 @@ function StatRow({ label, value, color }: { label: string; value: number; color?
     <div style={{
       display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0',
     }}>
-      <span style={{ fontSize: 13, color: '#E6EDF3' }}>{label}</span>
-      <span className="font-mono" style={{ fontSize: 16, fontWeight: 700, color: color || '#E6EDF3' }}>
+      <span style={{ fontSize: 'var(--aguila-fs-body)', color: '#E6EDF3' }}>{label}</span>
+      <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, color: color || '#E6EDF3' }}>
         {value}
       </span>
     </div>

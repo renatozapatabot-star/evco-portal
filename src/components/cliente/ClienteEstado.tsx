@@ -60,7 +60,7 @@ export function ClienteEstado({ activeTraficos, documentos }: Props) {
           count={activeTraficos.length}
         />
         {activeTraficos.length === 0 ? (
-          <div style={{ padding: '24px 12px', textAlign: 'center', color: TEXT_MUTED, fontSize: 13 }}>
+          <div style={{ padding: '24px 12px', textAlign: 'center', color: TEXT_MUTED, fontSize: 'var(--aguila-fs-body)' }}>
             Sin embarques activos. Tus operaciones en curso aparecerán aquí.
           </div>
         ) : (
@@ -111,7 +111,7 @@ export function ClienteEstado({ activeTraficos, documentos }: Props) {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                     {r.estatus && (
                       <span style={{
-                        fontSize: 11, fontWeight: 600,
+                        fontSize: 'var(--aguila-fs-meta)', fontWeight: 600,
                         padding: '3px 10px', borderRadius: 999,
                         background: 'rgba(192,197,206,0.12)',
                         color: ACCENT_SILVER,
@@ -120,7 +120,7 @@ export function ClienteEstado({ activeTraficos, documentos }: Props) {
                       </span>
                     )}
                     {r.fecha_llegada && (
-                      <span style={{ ...MONO, fontSize: 11, color: TEXT_MUTED }}>
+                      <span style={{ ...MONO, fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED }}>
                         ETA {fmtDate(r.fecha_llegada)}
                       </span>
                     )}
@@ -133,14 +133,14 @@ export function ClienteEstado({ activeTraficos, documentos }: Props) {
                     }}>
                       <Icon size={14} color={ACCENT_SILVER} />
                       <span style={{
-                        fontSize: 12, color: TEXT_SECONDARY,
+                        fontSize: 'var(--aguila-fs-compact)', color: TEXT_SECONDARY,
                         overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                         flex: 1, minWidth: 0,
                       }}>
                         {lastLabel.label}
                       </span>
                       {r.last_event_at && (
-                        <span style={{ ...MONO, fontSize: 10, color: TEXT_MUTED, flexShrink: 0 }}>
+                        <span style={{ ...MONO, fontSize: 'var(--aguila-fs-label)', color: TEXT_MUTED, flexShrink: 0 }}>
                           {fmtDateTime(r.last_event_at)}
                         </span>
                       )}

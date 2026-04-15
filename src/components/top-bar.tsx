@@ -62,7 +62,7 @@ export default function TopBar() {
         <LiveClock />
         {lastSync && (
           <span style={{
-            fontSize: 10, fontFamily: 'var(--font-mono)',
+            fontSize: 'var(--aguila-fs-label)', fontFamily: 'var(--font-mono)',
             color: lastSync.includes('d') ? 'var(--danger)' : 'var(--n-400)',
           }}>
             sync {lastSync}

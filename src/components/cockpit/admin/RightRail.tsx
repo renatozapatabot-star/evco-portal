@@ -80,13 +80,13 @@ export function RightRail() {
         border: '1px solid rgba(255,255,255,0.08)', padding: 16,
       }}>
         <div style={{
-          fontSize: 11, fontWeight: 600, textTransform: 'uppercase',
+          fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, textTransform: 'uppercase',
           letterSpacing: '0.05em', color: '#6E7681', marginBottom: 12,
         }}>
           Frontera
         </div>
         {bridges.length === 0 ? (
-          <div style={{ fontSize: 12, color: '#6E7681' }}>Cargando puentes...</div>
+          <div style={{ fontSize: 'var(--aguila-fs-compact)', color: '#6E7681' }}>Cargando puentes...</div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {bridges.filter(b => b.commercial !== null).map(b => (
@@ -98,9 +98,9 @@ export function RightRail() {
                     width: 8, height: 8, borderRadius: '50%',
                     background: statusDot(b.status), display: 'inline-block',
                   }} />
-                  <span style={{ fontSize: 13, color: '#E6EDF3' }}>{b.nameEs}</span>
+                  <span style={{ fontSize: 'var(--aguila-fs-body)', color: '#E6EDF3' }}>{b.nameEs}</span>
                 </div>
-                <span className="font-mono" style={{ fontSize: 13, color: '#8B949E' }}>
+                <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-body)', color: '#8B949E' }}>
                   {b.commercial}m
                 </span>
               </div>
@@ -115,18 +115,18 @@ export function RightRail() {
         border: '1px solid rgba(255,255,255,0.08)', padding: 16,
       }}>
         <div style={{
-          fontSize: 11, fontWeight: 600, textTransform: 'uppercase',
+          fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, textTransform: 'uppercase',
           letterSpacing: '0.05em', color: '#6E7681', marginBottom: 12,
         }}>
           Alertas
         </div>
         {intel.length === 0 ? (
-          <div style={{ fontSize: 12, color: '#6E7681' }}>Sin alertas</div>
+          <div style={{ fontSize: 'var(--aguila-fs-compact)', color: '#6E7681' }}>Sin alertas</div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {intel.map(item => (
               <div key={item.id} style={{
-                fontSize: 12, color: '#E6EDF3',
+                fontSize: 'var(--aguila-fs-compact)', color: '#E6EDF3',
                 paddingLeft: 12,
                 borderLeft: `2px solid ${severityColor(item.severity)}`,
               }}>
@@ -143,7 +143,7 @@ export function RightRail() {
         border: '1px solid rgba(255,255,255,0.08)', padding: 16,
       }}>
         <div style={{
-          fontSize: 11, fontWeight: 600, textTransform: 'uppercase',
+          fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, textTransform: 'uppercase',
           letterSpacing: '0.05em', color: '#6E7681', marginBottom: 12,
         }}>
           Sistema
@@ -156,7 +156,7 @@ export function RightRail() {
                   width: 8, height: 8, borderRadius: '50%',
                   background: '#6E7681', display: 'inline-block',
                 }} />
-                <span style={{ fontSize: 12, color: '#8B949E' }}>{s}</span>
+                <span style={{ fontSize: 'var(--aguila-fs-compact)', color: '#8B949E' }}>{s}</span>
               </div>
             ))}
           </div>
@@ -172,10 +172,10 @@ export function RightRail() {
                     background: s.healthy ? '#16A34A' : '#DC2626',
                     display: 'inline-block',
                   }} />
-                  <span style={{ fontSize: 12, color: '#E6EDF3' }}>{s.source}</span>
+                  <span style={{ fontSize: 'var(--aguila-fs-compact)', color: '#E6EDF3' }}>{s.source}</span>
                 </div>
                 {s.minutesAgo !== null && (
-                  <span className="font-mono" style={{ fontSize: 11, color: '#6E7681' }}>
+                  <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-meta)', color: '#6E7681' }}>
                     {s.minutesAgo}m
                   </span>
                 )}

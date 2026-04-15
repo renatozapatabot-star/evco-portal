@@ -104,7 +104,7 @@ export function BottomSheet({ open, onClose, title, children }: BottomSheetProps
             padding: '0 20px 12px',
             borderBottom: '1px solid var(--border, #E8E5E0)',
           }}>
-            <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>{title}</span>
+            <span style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, color: 'var(--text-primary)' }}>{title}</span>
             <button
               onClick={onClose}
               aria-label="Cerrar"

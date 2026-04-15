@@ -43,7 +43,7 @@ export function AduanaAskPanel() {
       padding: 16,
     }}>
       <div style={{
-        fontSize: 11, fontWeight: 600, textTransform: 'uppercase',
+        fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, textTransform: 'uppercase',
         letterSpacing: '0.05em', color: '#6E7681', marginBottom: 12,
       }}>
         Pregúntale a CRUZ
@@ -60,7 +60,7 @@ export function AduanaAskPanel() {
               border: '1px solid rgba(255,255,255,0.08)',
               borderRadius: 8,
               padding: '6px 12px',
-              fontSize: 12,
+              fontSize: 'var(--aguila-fs-compact)',
               color: '#8B949E',
               cursor: 'pointer',
             }}
@@ -83,7 +83,7 @@ export function AduanaAskPanel() {
             border: '1px solid rgba(255,255,255,0.08)',
             borderRadius: 10,
             padding: '14px 16px',
-            fontSize: 14,
+            fontSize: 'var(--aguila-fs-section)',
             color: '#E6EDF3',
             outline: 'none',
             minHeight: 48,
@@ -98,7 +98,7 @@ export function AduanaAskPanel() {
             border: 'none',
             borderRadius: 10,
             padding: '0 20px',
-            fontSize: 14,
+            fontSize: 'var(--aguila-fs-section)',
             fontWeight: 700,
             cursor: loading ? 'wait' : 'pointer',
             opacity: loading || !question.trim() ? 0.5 : 1,
@@ -118,7 +118,7 @@ export function AduanaAskPanel() {
           background: 'rgba(192,197,206,0.06)',
           borderRadius: 10,
           border: '1px solid rgba(192,197,206,0.15)',
-          fontSize: 14,
+          fontSize: 'var(--aguila-fs-section)',
           color: '#E6EDF3',
           lineHeight: 1.5,
         }}>

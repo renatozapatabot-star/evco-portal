@@ -80,7 +80,7 @@ export function StickyActionBar({
             </span>
             {valueUSD && (
               <span style={{
-                fontSize: 14, color: 'var(--bg-card)',
+                fontSize: 'var(--aguila-fs-section)', color: 'var(--bg-card)',
                 fontFamily: 'var(--font-mono)',
                 fontVariantNumeric: 'tabular-nums',
               }}>
@@ -97,7 +97,7 @@ export function StickyActionBar({
                 border: 'none',
                 borderRadius: 'var(--radius-md)',
                 padding: '8px 16px',
-                fontSize: 13,
+                fontSize: 'var(--aguila-fs-body)',
                 fontWeight: 700,
                 cursor: 'pointer',
                 fontFamily: 'var(--font-sans)',

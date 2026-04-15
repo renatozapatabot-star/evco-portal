@@ -223,13 +223,13 @@ export function DocUploader({ traficoId, defaultDocType, onUploaded }: DocUpload
         <FileText size={24} style={{ color: TEXT_MUTED }} />
       )}
 
-      <div style={{ fontSize: 14, color: TEXT_PRIMARY, fontWeight: 600 }}>
+      <div style={{ fontSize: 'var(--aguila-fs-section)', color: TEXT_PRIMARY, fontWeight: 600 }}>
         {busyCount > 0 ? `Subiendo ${busyCount} archivo${busyCount === 1 ? '' : 's'}…` : 'Arrastra documentos aquí'}
       </div>
-      <div style={{ fontSize: 12, color: TEXT_SECONDARY, textAlign: 'center' }}>
+      <div style={{ fontSize: 'var(--aguila-fs-compact)', color: TEXT_SECONDARY, textAlign: 'center' }}>
         PDF, JPG, PNG, WEBP · máximo 10 MB · clasificación automática
       </div>
-      <div style={{ fontSize: 11, color: TEXT_MUTED }}>
+      <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED }}>
         o haz clic para seleccionar
       </div>
 

@@ -94,7 +94,7 @@ export function TraficoTimeline({ trafico, eventos }: TraficoTimelineProps) {
       padding: '16px 20px', marginBottom: 16, borderRadius: 12,
       background: 'var(--bg-elevated)', border: '1px solid var(--border-light)',
     }}>
-      <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--n-400)', marginBottom: 12 }}>
+      <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--n-400)', marginBottom: 12 }}>
         Progreso del Embarque
       </div>
       {TIMELINE_STAGES.map((stage, idx) => {
@@ -110,7 +110,7 @@ export function TraficoTimeline({ trafico, eventos }: TraficoTimelineProps) {
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 24 }}>
               <div style={{
                 width: 24, height: 24, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 12, flexShrink: 0,
+                fontSize: 'var(--aguila-fs-compact)', flexShrink: 0,
                 background: isCompleted ? 'var(--success)' : isCurrent ? 'var(--gold-600)' : isBlocked ? 'var(--danger)' : 'var(--n-100)',
                 color: isCompleted || isCurrent || isBlocked ? 'rgba(255,255,255,0.045)' : 'var(--n-400)',
                 border: isCurrent ? '2px solid var(--gold-400)' : 'none',
@@ -129,17 +129,17 @@ export function TraficoTimeline({ trafico, eventos }: TraficoTimelineProps) {
             {/* Content */}
             <div style={{ flex: 1, paddingBottom: isLast ? 0 : 8, minHeight: 36 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
-                <span style={{ fontSize: 14 }}>{stage.icon}</span>
+                <span style={{ fontSize: 'var(--aguila-fs-section)' }}>{stage.icon}</span>
                 <span style={{
-                  fontSize: 13, fontWeight: isCompleted || isCurrent ? 600 : 400,
+                  fontSize: 'var(--aguila-fs-body)', fontWeight: isCompleted || isCurrent ? 600 : 400,
                   color: isCompleted ? 'var(--text-primary)' : isCurrent ? 'var(--gold-600)' : isBlocked ? 'var(--danger)' : 'var(--n-400)',
                 }}>
                   {stage.label}
                 </span>
-                {isBlocked && <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--danger)', background: 'var(--danger-bg)', padding: '1px 6px', borderRadius: 4 }}>PENDIENTE</span>}
+                {isBlocked && <span style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 700, color: 'var(--danger)', background: 'var(--danger-bg)', padding: '1px 6px', borderRadius: 4 }}>PENDIENTE</span>}
               </div>
               {info.date && (
-                <div style={{ fontSize: 11, color: 'var(--n-400)', marginTop: 2, marginLeft: 20 }}>
+                <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--n-400)', marginTop: 2, marginLeft: 20 }}>
                   {fmtDateTime(info.date)}
                 </div>
               )}

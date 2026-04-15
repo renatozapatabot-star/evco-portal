@@ -56,7 +56,7 @@ export function CockpitTable<T>({
         color: 'var(--text-muted, #6E7681)',
       }}>
         {emptyIcon && <div style={{ marginBottom: 12 }}>{emptyIcon}</div>}
-        <p style={{ fontSize: 14, fontWeight: 500 }}>{emptyMessage}</p>
+        <p style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 500 }}>{emptyMessage}</p>
       </div>
     )
   }
@@ -66,7 +66,7 @@ export function CockpitTable<T>({
       <table className="aguila-table" style={{
         width: '100%',
         borderCollapse: 'collapse',
-        fontSize: 13,
+        fontSize: 'var(--aguila-fs-body)',
       }}>
         <thead>
           <tr>
@@ -77,7 +77,7 @@ export function CockpitTable<T>({
                 style={{
                   padding: '10px 12px',
                   textAlign: col.align || 'left',
-                  fontSize: 11,
+                  fontSize: 'var(--aguila-fs-meta)',
                   fontWeight: 500,
                   textTransform: 'uppercase',
                   letterSpacing: '0.06em',

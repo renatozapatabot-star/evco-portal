@@ -26,7 +26,7 @@ export function SmartQueuePanel({ queue, onItemClick }: Props) {
       actionHref={queue.length > 0 ? `/embarques/${encodeURIComponent(queue[0].trafico)}` : undefined}
       quietContent={
         queue.length === 0 ? (
-          <div style={{ padding: '12px 0', textAlign: 'center', color: '#6E7681', fontSize: 13 }}>
+          <div style={{ padding: '12px 0', textAlign: 'center', color: '#6E7681', fontSize: 'var(--aguila-fs-body)' }}>
             Cola vacía — sin embarques pendientes
           </div>
         ) : (
@@ -39,13 +39,13 @@ export function SmartQueuePanel({ queue, onItemClick }: Props) {
                 borderRadius: 8, border: '1px solid rgba(255,255,255,0.045)',
                 textDecoration: 'none',
               }}>
-                <span className="font-mono" style={{ fontSize: 13, fontWeight: 600, color: '#E8EAED', flexShrink: 0 }}>
+                <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: '#E8EAED', flexShrink: 0 }}>
                   {item.trafico}
                 </span>
-                <span style={{ fontSize: 12, color: '#8B949E', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <span style={{ fontSize: 'var(--aguila-fs-compact)', color: '#8B949E', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {item.company_id} · {item.descripcion || item.reason}
                 </span>
-                <span className="font-mono" style={{ fontSize: 12, color: '#6E7681', flexShrink: 0 }}>
+                <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-compact)', color: '#6E7681', flexShrink: 0 }}>
                   {fmtUSDCompact(item.valor_usd)}
                 </span>
               </div>

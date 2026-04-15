@@ -175,7 +175,7 @@ export function NotificationPanel({
             <span style={{ fontWeight: 700, fontSize: 15 }}>Notificaciones</span>
             {badgeText && (
               <span style={{
-                fontSize: 10, fontWeight: 700, fontFamily: 'var(--font-jetbrains-mono)',
+                fontSize: 'var(--aguila-fs-label)', fontWeight: 700, fontFamily: 'var(--font-jetbrains-mono)',
                 background: '#C23B22', color: 'var(--bg-card)',
                 borderRadius: 9999, padding: '1px 6px', lineHeight: '16px', minWidth: 20, textAlign: 'center',
               }}>{badgeText}</span>
@@ -212,8 +212,8 @@ export function NotificationPanel({
                 size={24}
                 style={{ margin: '0 auto 8px', display: 'block' }}
               />
-              <div style={{ fontSize: 14, fontWeight: 600 }}>Sin alertas</div>
-              <div style={{ fontSize: 12, marginTop: 4 }}>
+              <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600 }}>Sin alertas</div>
+              <div style={{ fontSize: 'var(--aguila-fs-compact)', marginTop: 4 }}>
                 Monitoreando en tiempo real
               </div>
             </div>
@@ -242,19 +242,19 @@ export function NotificationPanel({
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                         <GroupIcon size={16} style={{ color: unreadInGroup > 0 ? '#C47F17' : '#9C9890', flexShrink: 0 }} />
-                        <span style={{ fontSize: 13, fontWeight: unreadInGroup > 0 ? 700 : 500, color: '#1A1A18' }}>
+                        <span style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: unreadInGroup > 0 ? 700 : 500, color: '#1A1A18' }}>
                           {config?.label(items.length) || `${items.length} ${type}`}
                         </span>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         {unreadInGroup > 0 && (
                           <span style={{
-                            fontSize: 10, fontWeight: 700, fontFamily: 'var(--font-jetbrains-mono)',
+                            fontSize: 'var(--aguila-fs-label)', fontWeight: 700, fontFamily: 'var(--font-jetbrains-mono)',
                             background: '#C47F17', color: 'var(--bg-card)',
                             borderRadius: 9999, padding: '1px 6px', lineHeight: '16px', minWidth: 18, textAlign: 'center',
                           }}>{unreadInGroup >= 10 ? '9+' : unreadInGroup}</span>
                         )}
-                        <span style={{ fontSize: 11, color: '#9C9890', transform: isExpanded ? 'rotate(90deg)' : 'none', transition: 'transform 150ms' }}>&#9654;</span>
+                        <span style={{ fontSize: 'var(--aguila-fs-meta)', color: '#9C9890', transform: isExpanded ? 'rotate(90deg)' : 'none', transition: 'transform 150ms' }}>&#9654;</span>
                       </div>
                     </div>
 
@@ -265,7 +265,7 @@ export function NotificationPanel({
                             onClick={(e) => { e.stopPropagation(); markGroupRead(type) }}
                             style={{
                               display: 'block', width: '100%', padding: '6px 20px',
-                              fontSize: 11, fontWeight: 600, color: 'var(--gold)',
+                              fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, color: 'var(--gold)',
                               background: 'none', border: 'none', borderBottom: '1px solid #F0ECE4',
                               cursor: 'pointer', textAlign: 'left',
                             }}
@@ -290,8 +290,8 @@ export function NotificationPanel({
                               <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
                                 <Icon size={12} style={{ color, flexShrink: 0, marginTop: 3 }} />
                                 <div style={{ flex: 1 }}>
-                                  <div style={{ fontSize: 12, fontWeight: n.read ? 500 : 700, color: '#1A1A18' }}>{n.title}</div>
-                                  <div style={{ fontSize: 10, color: '#9C9890', marginTop: 2, fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtDateTime(n.created_at)}</div>
+                                  <div style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: n.read ? 500 : 700, color: '#1A1A18' }}>{n.title}</div>
+                                  <div style={{ fontSize: 'var(--aguila-fs-label)', color: '#9C9890', marginTop: 2, fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtDateTime(n.created_at)}</div>
                                 </div>
                               </div>
                             </div>
@@ -328,7 +328,7 @@ export function NotificationPanel({
                       <div style={{ flex: 1 }}>
                         <div
                           style={{
-                            fontSize: 13,
+                            fontSize: 'var(--aguila-fs-body)',
                             fontWeight: n.read ? 500 : 700,
                             color: '#1A1A18',
                           }}
@@ -338,7 +338,7 @@ export function NotificationPanel({
                         {n.description && (
                           <div
                             style={{
-                              fontSize: 12,
+                              fontSize: 'var(--aguila-fs-compact)',
                               color: 'var(--text-secondary)',
                               marginTop: 2,
                             }}
@@ -348,7 +348,7 @@ export function NotificationPanel({
                         )}
                         <div
                           style={{
-                            fontSize: 11,
+                            fontSize: 'var(--aguila-fs-meta)',
                             color: '#9C9890',
                             marginTop: 4,
                             fontFamily: 'var(--font-jetbrains-mono)',
@@ -363,7 +363,7 @@ export function NotificationPanel({
                         href={n.action_url}
                         onClick={onClose}
                         style={{
-                          fontSize: 12,
+                          fontSize: 'var(--aguila-fs-compact)',
                           color: 'var(--gold)',
                           fontWeight: 600,
                           textDecoration: 'none',

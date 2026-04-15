@@ -39,21 +39,21 @@ export function FinExchange({ tc, isMobile }: FinExchangeProps) {
       gap: 16,
     }}>
       <div>
-        <p style={{ color: D.textSec, fontSize: 13, margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+        <p style={{ color: D.textSec, fontSize: 'var(--aguila-fs-body)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
           Tipo de Cambio USD/MXN
         </p>
-        <p style={{ fontSize: 32, fontWeight: 700, fontFamily: D.mono, margin: 0, color: D.gold }}>
+        <p style={{ fontSize: 'var(--aguila-fs-kpi-compact)', fontWeight: 700, fontFamily: D.mono, margin: 0, color: D.gold }}>
           {tc ? `$${tc.tc.toFixed(4)}` : '...'}
         </p>
       </div>
       <div style={{ textAlign: isMobile ? 'left' : 'right' }}>
-        <p style={{ color: D.textSec, fontSize: 13, margin: '0 0 4px' }}>
+        <p style={{ color: D.textSec, fontSize: 'var(--aguila-fs-body)', margin: '0 0 4px' }}>
           Última actualización
         </p>
-        <p style={{ fontFamily: D.mono, fontSize: 14, margin: '0 0 4px' }}>
+        <p style={{ fontFamily: D.mono, fontSize: 'var(--aguila-fs-section)', margin: '0 0 4px' }}>
           {tc?.fecha ? fmtDate(tc.fecha) : '\u2014'}
         </p>
-        <p style={{ color: D.textMuted, fontSize: 12, margin: 0 }}>
+        <p style={{ color: D.textMuted, fontSize: 'var(--aguila-fs-compact)', margin: 0 }}>
           Fuente: {tc?.source || '\u2014'}
         </p>
       </div>

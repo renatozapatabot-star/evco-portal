@@ -28,7 +28,7 @@ const PANEL_STYLE: React.CSSProperties = {
 }
 
 const LABEL_STYLE: React.CSSProperties = {
-  fontSize: 10,
+  fontSize: 'var(--aguila-fs-label)',
   letterSpacing: '0.08em',
   textTransform: 'uppercase',
   color: 'var(--text-muted)',
@@ -133,7 +133,7 @@ export function PdfPreviewRail() {
         <span style={LABEL_STYLE}>Vista previa PDF</span>
         <span
           style={{
-            fontSize: 10,
+            fontSize: 'var(--aguila-fs-label)',
             color: loading ? '#C0C5CE' : 'var(--text-muted)',
             fontFamily: 'var(--font-mono)',
           }}
@@ -169,7 +169,7 @@ export function PdfPreviewRail() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: 12,
+              fontSize: 'var(--aguila-fs-compact)',
               color: '#C0C5CE',
               background:
                 'linear-gradient(135deg, rgba(192,197,206,0.08), rgba(192,197,206,0.02))',
@@ -188,13 +188,13 @@ export function PdfPreviewRail() {
               justifyContent: 'center',
               padding: 16,
               textAlign: 'center',
-              fontSize: 12,
+              fontSize: 'var(--aguila-fs-compact)',
               color: '#C0C5CE',
             }}
           >
             No se pudo generar vista previa — corrige errores
             <br />
-            <span style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 6 }}>
+            <span style={{ fontSize: 'var(--aguila-fs-label)', color: 'var(--text-muted)', marginTop: 6 }}>
               {error}
             </span>
           </div>
@@ -222,7 +222,7 @@ export function PdfPreviewRail() {
               borderRadius: 999,
               background: 'rgba(192,197,206,0.18)',
               color: '#E8EAED',
-              fontSize: 10,
+              fontSize: 'var(--aguila-fs-label)',
               letterSpacing: '0.04em',
               textTransform: 'uppercase',
             }}
@@ -234,7 +234,7 @@ export function PdfPreviewRail() {
 
       <p
         style={{
-          fontSize: 10,
+          fontSize: 'var(--aguila-fs-label)',
           color: 'var(--text-muted)',
           lineHeight: 1.5,
         }}

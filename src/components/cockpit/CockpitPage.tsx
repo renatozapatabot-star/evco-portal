@@ -41,7 +41,7 @@ export function CockpitPage({ title, subtitle, headerActions, children }: Cockpi
         >
           <div>
             <h1 style={{
-              fontSize: 18,
+              fontSize: 'var(--aguila-fs-kpi-small)',
               fontWeight: 600,
               color: 'var(--text-primary, #E6EDF3)',
               margin: 0,
@@ -51,7 +51,7 @@ export function CockpitPage({ title, subtitle, headerActions, children }: Cockpi
             </h1>
             {subtitle && (
               <p style={{
-                fontSize: 13,
+                fontSize: 'var(--aguila-fs-body)',
                 color: 'var(--text-muted, #6E7681)',
                 margin: '4px 0 0',
                 lineHeight: 1.4,

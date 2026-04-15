@@ -18,7 +18,7 @@ export function TeamPanel({ team, unassigned }: Props) {
     }}>
       <div style={{ marginBottom: 12 }}>
         <span style={{
-          fontSize: 11, fontWeight: 600, textTransform: 'uppercase',
+          fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, textTransform: 'uppercase',
           letterSpacing: '0.05em', color: '#6E7681',
         }}>
           Equipo
@@ -26,7 +26,7 @@ export function TeamPanel({ team, unassigned }: Props) {
       </div>
 
       {team.length === 0 ? (
-        <div style={{ padding: '16px 0', textAlign: 'center', color: '#6E7681', fontSize: 13 }}>
+        <div style={{ padding: '16px 0', textAlign: 'center', color: '#6E7681', fontSize: 'var(--aguila-fs-body)' }}>
           Sin operadores activos
         </div>
       ) : (
@@ -38,8 +38,8 @@ export function TeamPanel({ team, unassigned }: Props) {
               background: 'rgba(255,255,255,0.02)',
               borderRadius: 8,
             }}>
-              <span style={{ fontSize: 13, color: '#E6EDF3' }}>{op.name}</span>
-              <span className="font-mono" style={{ fontSize: 13, color: '#8B949E' }}>
+              <span style={{ fontSize: 'var(--aguila-fs-body)', color: '#E6EDF3' }}>{op.name}</span>
+              <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-body)', color: '#8B949E' }}>
                 {op.assigned} asignados
               </span>
             </div>
@@ -53,8 +53,8 @@ export function TeamPanel({ team, unassigned }: Props) {
               borderRadius: 8,
               border: '1px solid rgba(217,119,6,0.15)',
             }}>
-              <span style={{ fontSize: 13, color: '#D97706' }}>Sin asignar</span>
-              <span className="font-mono" style={{ fontSize: 13, color: '#D97706', fontWeight: 600 }}>
+              <span style={{ fontSize: 'var(--aguila-fs-body)', color: '#D97706' }}>Sin asignar</span>
+              <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-body)', color: '#D97706', fontWeight: 600 }}>
                 {unassigned}
               </span>
             </div>

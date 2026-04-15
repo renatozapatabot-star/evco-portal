@@ -14,7 +14,7 @@ export default function LocaleToggle() {
   const baseBtn: React.CSSProperties = {
     padding: '4px 10px',
     fontFamily: 'var(--font-jetbrains-mono, monospace)',
-    fontSize: 11,
+    fontSize: 'var(--aguila-fs-meta)',
     fontWeight: 700,
     letterSpacing: '0.08em',
     background: 'transparent',
@@ -55,7 +55,7 @@ export default function LocaleToggle() {
       >
         ES
       </button>
-      <span aria-hidden="true" style={{ color: 'rgba(255,255,255,0.15)', fontSize: 10 }}>|</span>
+      <span aria-hidden="true" style={{ color: 'rgba(255,255,255,0.15)', fontSize: 'var(--aguila-fs-label)' }}>|</span>
       <button
         type="button"
         aria-pressed={active === 'en'}

@@ -40,7 +40,7 @@ function LiveIndicator({ lastFetchTime }: { lastFetchTime: number | null }) {
     <div style={{
       display: 'flex', alignItems: 'center', gap: 6,
       padding: '6px 0', marginBottom: 8,
-      fontSize: 11, fontWeight: 600, color: '#6E7681',
+      fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, color: '#6E7681',
     }}>
       <span style={{
         width: 6, height: 6, borderRadius: '50%', background: color,
@@ -115,7 +115,7 @@ function ProgressRing({ pct, size = 56, animate = false }: { pct: number; size?:
         strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round"
         style={{ transition: animate ? 'none' : 'stroke-dashoffset 600ms ease', transform: 'rotate(-90deg)', transformOrigin: '50% 50%' }} />
       <text x="50%" y="50%" textAnchor="middle" dy="0.35em"
-        style={{ fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-mono)', fill: 'var(--text-primary, #E6EDF3)' }}>
+        style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 700, fontFamily: 'var(--font-mono)', fill: 'var(--text-primary, #E6EDF3)' }}>
         {displayPct}%
       </text>
     </svg>
@@ -155,15 +155,15 @@ function CommandStrip({ urgentes, criticalCount, mood, isMobile, criticosOpen, s
           cursor: criticalCount > 0 ? 'pointer' : 'default',
         }}
       >
-        <span style={{ fontSize: 13, fontWeight: 700, color: bc.text }}>
+        <span style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 700, color: bc.text }}>
           {bannerText}
           {criticalCount > 0 && (
-            <span style={{ fontSize: 11, marginLeft: 6, color: 'var(--text-muted)' }}>{criticosOpen ? '▲' : '▼'}</span>
+            <span style={{ fontSize: 'var(--aguila-fs-meta)', marginLeft: 6, color: 'var(--text-muted)' }}>{criticosOpen ? '▲' : '▼'}</span>
           )}
         </span>
         {criticalCount > 0 && (
           <Link href={criticalHref} onClick={e => e.stopPropagation()} style={{
-            padding: '6px 14px', borderRadius: 6, fontSize: 12, fontWeight: 700,
+            padding: '6px 14px', borderRadius: 6, fontSize: 'var(--aguila-fs-compact)', fontWeight: 700,
             background: bc.btn, color: '#FFFFFF', textDecoration: 'none',
           }}>
             {bannerLevel === 'red' ? 'Resolver ahora' : 'Ver pendientes'}
@@ -180,15 +180,15 @@ function CommandStrip({ urgentes, criticalCount, mood, isMobile, criticosOpen, s
               textDecoration: 'none', color: 'inherit',
             }}>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <span style={{ fontSize: 12, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
+                <span style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
                   {e.cve_entrada}
                 </span>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {e.descripcion_mercancia || 'Sin descripción'}
                 </div>
               </div>
               <span style={{
-                fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 4,
+                fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, padding: '4px 10px', borderRadius: 4,
                 background: 'var(--gold, #E8EAED)', color: '#FFFFFF', flexShrink: 0,
               }}>
                 Resolver
@@ -197,7 +197,7 @@ function CommandStrip({ urgentes, criticalCount, mood, isMobile, criticosOpen, s
           ))}
           {criticalCount > 3 && (
             <Link href={criticalHref} style={{
-              fontSize: 11, fontWeight: 600, color: 'var(--gold, #E8EAED)',
+              fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, color: 'var(--gold, #E8EAED)',
               textDecoration: 'none', textAlign: 'center', padding: '4px 0',
             }}>
               Ver {criticalCount - 3} más →
@@ -246,12 +246,12 @@ function PasswordResetBanner() {
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       flexWrap: 'wrap', gap: 8,
     }}>
-      <span style={{ fontSize: 13, fontWeight: 600, color: '#E6EDF3' }}>
+      <span style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: '#E6EDF3' }}>
         Te recomendamos cambiar tu contraseña temporal
       </span>
       <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
         <Link href="/cambiar-contrasena" style={{
-          padding: '6px 14px', borderRadius: 6, fontSize: 12, fontWeight: 700,
+          padding: '6px 14px', borderRadius: 6, fontSize: 'var(--aguila-fs-compact)', fontWeight: 700,
           background: 'var(--gold, #E8EAED)', color: '#FFFFFF', textDecoration: 'none',
           minHeight: 44, display: 'inline-flex', alignItems: 'center',
         }}>
@@ -260,7 +260,7 @@ function PasswordResetBanner() {
         <button
           onClick={() => { setDismissed(true); sessionStorage.setItem('cruz-pw-banner-dismissed', '1') }}
           style={{
-            background: 'none', border: 'none', cursor: 'pointer', fontSize: 12,
+            background: 'none', border: 'none', cursor: 'pointer', fontSize: 'var(--aguila-fs-compact)',
             color: 'var(--text-muted, #9B9B9B)', padding: 8, minHeight: 44, minWidth: 44,
           }}
           aria-label="Descartar"
@@ -336,14 +336,14 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
       background: 'var(--bg-card)', border: '1px solid var(--border)',
       borderLeft: '3px solid #0D9488', marginBottom: 12,
     }}>
-      <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#0D9488', marginBottom: 4 }}>
+      <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#0D9488', marginBottom: 4 }}>
         Mientras estuvo fuera
       </div>
-      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.4 }}>
+      <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.4 }}>
         {awaySummary.total} acción{awaySummary.total !== 1 ? 'es' : ''} procesada{awaySummary.total !== 1 ? 's' : ''}
       </div>
       <button onClick={dismissAway} style={{
-        marginTop: 4, fontSize: 11, fontWeight: 600,
+        marginTop: 4, fontSize: 'var(--aguila-fs-meta)', fontWeight: 600,
         color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer', padding: 0,
       }}>
         Entendido
@@ -372,7 +372,7 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
         const rawName = typeof document !== 'undefined' ? getCookieValue('company_name') || getCookieValue('operator_name') || '' : ''
         const name = rawName.length > 30 ? rawName.slice(0, 30) + '…' : rawName
         return (
-          <div style={{ fontSize: 14, fontWeight: 600, color: '#E6EDF3', marginBottom: 8, opacity: 0.8 }}>
+          <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: '#E6EDF3', marginBottom: 8, opacity: 0.8 }}>
             {greeting}{name ? `, ${name}` : ''}
           </div>
         )
@@ -390,7 +390,7 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             {data.facturacionMes > 0 && (
-              <span style={{ fontSize: 12, color: 'var(--text-secondary, #94a3b8)' }}>
+              <span style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-secondary, #94a3b8)' }}>
                 Facturado este mes: <strong style={{ color: '#E8EAED', fontFamily: 'var(--font-mono)' }}>
                   ${data.facturacionMes > 1000 ? `${Math.round(data.facturacionMes / 1000)}K` : data.facturacionMes.toFixed(0)} MXN
                 </strong>
@@ -417,7 +417,7 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
       {realtimeToast && (
         <div className="cc-toast-fixed" style={{
           padding: '10px 16px', borderRadius: 10,
-          background: '#0D9488', color: '#FFFFFF', fontSize: 13, fontWeight: 600,
+          background: '#0D9488', color: '#FFFFFF', fontSize: 'var(--aguila-fs-body)', fontWeight: 600,
           animation: 'fadeInUp 200ms ease',
         }}>
           {realtimeToast}
@@ -463,13 +463,13 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
           <ProgressRing pct={completionPct} size={isMobile ? 52 : 56} animate={!prefersReduced} />
         </div>
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: completionPct >= 100 ? '#16A34A' : 'var(--text-primary, #1A1A1A)' }}>
+          <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 700, color: completionPct >= 100 ? '#16A34A' : 'var(--text-primary, #1A1A1A)' }}>
             {totalActions > 0
               ? `Faltan ${totalActions} acción${totalActions !== 1 ? 'es' : ''}`
               : 'Día perfecto'
             }
           </div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted, #9B9B9B)', marginTop: 2 }}>
+          <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted, #9B9B9B)', marginTop: 2 }}>
             {completionPct >= 100 ? 'Todo completado — sin pendientes'
               : completionPct >= 80 ? 'Casi listo'
               : completionPct >= 50 ? 'Buen ritmo'

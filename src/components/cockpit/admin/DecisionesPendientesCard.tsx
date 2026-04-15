@@ -52,7 +52,7 @@ export function DecisionesPendientesCard({ escalations, queue }: Props) {
       actionHref="/drafts"
       quietContent={
         decisions.length === 0 ? (
-          <div style={{ padding: '8px 0', color: '#6E7681', fontSize: 13, textAlign: 'center' }}>
+          <div style={{ padding: '8px 0', color: '#6E7681', fontSize: 'var(--aguila-fs-body)', textAlign: 'center' }}>
             Sin decisiones pendientes — todo aprobado
           </div>
         ) : (

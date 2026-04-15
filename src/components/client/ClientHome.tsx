@@ -120,7 +120,7 @@ function StatusPill({ status }: { status: string }) {
   const c = STATUS_PILL_CONFIG[status] ?? { bg: 'rgba(148,163,184,0.1)', text: '#64748b', label: status }
   return (
     <span style={{
-      fontSize: 10, fontWeight: 600,
+      fontSize: 'var(--aguila-fs-label)', fontWeight: 600,
       padding: '2px 8px', borderRadius: 20,
       background: c.bg, color: c.text,
       flexShrink: 0, whiteSpace: 'nowrap',
@@ -155,7 +155,7 @@ function LiveTimestamp() {
   return (
     <div style={{
       fontFamily: 'var(--font-mono)',
-      fontSize: 11, color: '#64748b', marginTop: 4,
+      fontSize: 'var(--aguila-fs-meta)', color: '#64748b', marginTop: 4,
     }}>
       {dateStr} · {timeStr} · Datos en vivo
     </div>
@@ -186,7 +186,7 @@ export function ClientHome({ companyName, data }: { companyName?: string; data: 
             return (
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
                 <h1 style={{
-                  fontSize: 24, fontWeight: 800, color: '#E6EDF3',
+                  fontSize: 'var(--aguila-fs-title)', fontWeight: 800, color: '#E6EDF3',
                   margin: 0, letterSpacing: '-0.03em',
                 }}>
                   {display}
@@ -194,7 +194,7 @@ export function ClientHome({ companyName, data }: { companyName?: string; data: 
                 {suffix && (
                   <span style={{
                     fontFamily: 'var(--font-mono)',
-                    fontSize: 10, color: '#64748b',
+                    fontSize: 'var(--aguila-fs-label)', color: '#64748b',
                     textTransform: 'uppercase', letterSpacing: '0.04em',
                   }}>
                     {suffix}
@@ -204,7 +204,7 @@ export function ClientHome({ companyName, data }: { companyName?: string; data: 
             )
           })()}
           <p style={{
-            fontSize: 14, color: '#94a3b8', marginTop: 2, fontWeight: 500,
+            fontSize: 'var(--aguila-fs-section)', color: '#94a3b8', marginTop: 2, fontWeight: 500,
           }}>
             {data.statusSentence}
           </p>
@@ -280,7 +280,7 @@ export function ClientHome({ companyName, data }: { companyName?: string; data: 
             >
               <Activity size={14} color="#C0C5CE" />
               <span style={{
-                fontSize: 11, fontWeight: 700, color: '#94a3b8',
+                fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, color: '#94a3b8',
                 textTransform: 'uppercase', letterSpacing: '0.08em',
               }}>
                 Actividad reciente
@@ -312,12 +312,12 @@ export function ClientHome({ companyName, data }: { companyName?: string; data: 
                     {/* Line 1: icon + trafico ← left ... timestamp ← right */}
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
-                        <span style={{ fontSize: 12, flexShrink: 0 }}>
+                        <span style={{ fontSize: 'var(--aguila-fs-compact)', flexShrink: 0 }}>
                           {statusIcons[event.estatus] || '📦'}
                         </span>
                         <span style={{
                           fontFamily: 'var(--font-mono)',
-                          fontSize: 13, fontWeight: 600, color: '#E6EDF3',
+                          fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: '#E6EDF3',
                           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                         }}>
                           {event.trafico}
@@ -325,7 +325,7 @@ export function ClientHome({ companyName, data }: { companyName?: string; data: 
                       </div>
                       <span style={{
                         fontFamily: 'var(--font-mono)',
-                        fontSize: 10, color: '#64748b', flexShrink: 0, whiteSpace: 'nowrap',
+                        fontSize: 'var(--aguila-fs-label)', color: '#64748b', flexShrink: 0, whiteSpace: 'nowrap',
                       }}>
                         {fmtDateTime(event.updated_at)}
                       </span>
@@ -333,7 +333,7 @@ export function ClientHome({ companyName, data }: { companyName?: string; data: 
                     {/* Line 2: description + status pill */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingLeft: 20 }}>
                       <span style={{
-                        fontSize: 11, color: '#64748b',
+                        fontSize: 'var(--aguila-fs-meta)', color: '#64748b',
                         overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                         flex: 1, minWidth: 0,
                       }}>
@@ -348,7 +348,7 @@ export function ClientHome({ companyName, data }: { companyName?: string; data: 
                     onClick={() => setActivityExpanded(true)}
                     style={{
                       background: 'none', border: 'none', cursor: 'pointer',
-                      fontSize: 12, color: '#C0C5CE', fontWeight: 600,
+                      fontSize: 'var(--aguila-fs-compact)', color: '#C0C5CE', fontWeight: 600,
                       padding: '6px 0', textAlign: 'left',
                     }}
                   >
@@ -362,10 +362,10 @@ export function ClientHome({ companyName, data }: { companyName?: string; data: 
                 justifyContent: 'center', padding: '24px 16px', gap: 8,
               }}>
                 <Clock size={24} color="#475569" />
-                <span style={{ fontSize: 13, color: '#64748b', textAlign: 'center' }}>
+                <span style={{ fontSize: 'var(--aguila-fs-body)', color: '#64748b', textAlign: 'center' }}>
                   Sin actividad reciente
                 </span>
-                <span style={{ fontSize: 11, color: '#475569', textAlign: 'center' }}>
+                <span style={{ fontSize: 'var(--aguila-fs-meta)', color: '#475569', textAlign: 'center' }}>
                   Las actualizaciones de sus operaciones aparecerán aquí
                 </span>
               </div>

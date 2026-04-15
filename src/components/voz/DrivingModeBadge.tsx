@@ -22,7 +22,7 @@ export default function DrivingModeBadge() {
         <circle cx="7.5" cy="17" r="1.5" />
         <circle cx="16.5" cy="17" r="1.5" />
       </svg>
-      <span style={{ color: COLORS.green, fontSize: 12, fontWeight: 600 }}>
+      <span style={{ color: COLORS.green, fontSize: 'var(--aguila-fs-compact)', fontWeight: 600 }}>
         Modo Conducci&oacute;n
       </span>
     </div>

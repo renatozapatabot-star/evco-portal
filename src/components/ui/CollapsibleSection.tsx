@@ -43,7 +43,7 @@ export function CollapsibleSection({ title, defaultOpen = false, children, badge
         }}
       >
         <span style={{
-          fontSize: 11,
+          fontSize: 'var(--aguila-fs-meta)',
           fontWeight: 700,
           textTransform: 'uppercase',
           letterSpacing: '0.08em',
@@ -52,7 +52,7 @@ export function CollapsibleSection({ title, defaultOpen = false, children, badge
           {badge !== undefined && (
             <span style={{
               marginLeft: 8,
-              fontSize: 11,
+              fontSize: 'var(--aguila-fs-meta)',
               fontFamily: 'var(--font-mono)',
               color: '#94a3b8',
             }}>

@@ -23,7 +23,7 @@ function ConfidenceBadge({ value }: { value: number }) {
         display: 'inline-block',
         padding: '2px 8px',
         borderRadius: 6,
-        fontSize: 13,
+        fontSize: 'var(--aguila-fs-body)',
         fontWeight: 600,
         color,
         background: bg,
@@ -37,10 +37,10 @@ function ConfidenceBadge({ value }: { value: number }) {
 function InfoRow({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0' }}>
-      <span style={{ fontSize: 14, color: '#6B6B6B' }}>{label}</span>
+      <span style={{ fontSize: 'var(--aguila-fs-section)', color: '#6B6B6B' }}>{label}</span>
       <span
         className={mono ? 'font-mono' : undefined}
-        style={{ fontSize: 14, fontWeight: 600, color: '#1A1A1A' }}
+        style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: '#1A1A1A' }}
       >
         {value}
       </span>
@@ -107,7 +107,7 @@ export function BorradorPanel({ detail, onComplete, loading }: Props) {
           <text
             x={40} y={44}
             textAnchor="middle"
-            style={{ fontSize: 24, fontWeight: 700, fill: '#E8EAED', fontFamily: 'var(--font-jetbrains-mono)' }}
+            style={{ fontSize: 'var(--aguila-fs-title)', fontWeight: 700, fill: '#E8EAED', fontFamily: 'var(--font-jetbrains-mono)' }}
           >
             {countdown}
           </text>
@@ -123,14 +123,14 @@ export function BorradorPanel({ detail, onComplete, loading }: Props) {
             background: 'rgba(255,255,255,0.045)',
             color: '#DC2626',
             border: '1px solid #DC2626',
-            fontSize: 16,
+            fontSize: 'var(--aguila-fs-body-lg)',
             fontWeight: 600,
             cursor: 'pointer',
           }}
         >
           Cancelar
         </button>
-        <p style={{ margin: '12px 0 0', fontSize: 14, color: '#6B6B6B' }}>
+        <p style={{ margin: '12px 0 0', fontSize: 'var(--aguila-fs-section)', color: '#6B6B6B' }}>
           Se aprobará en {countdown} segundo{countdown !== 1 ? 's' : ''}
         </p>
       </div>
@@ -141,11 +141,11 @@ export function BorradorPanel({ detail, onComplete, loading }: Props) {
   if (state === 'blessing') {
     return (
       <div style={{ textAlign: 'center', padding: 32 }}>
-        <div style={{ fontSize: 48, marginBottom: 12, color: '#E8EAED' }}>&#10003;</div>
-        <p style={{ fontSize: 16, fontWeight: 600, color: '#1A1A1A', margin: 0 }}>
+        <div style={{ fontSize: 'var(--aguila-fs-kpi-hero)', marginBottom: 12, color: '#E8EAED' }}>&#10003;</div>
+        <p style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 600, color: '#1A1A1A', margin: 0 }}>
           Patente 3596 honrada.
         </p>
-        <p style={{ fontSize: 14, color: '#6B6B6B', margin: '4px 0 0' }}>
+        <p style={{ fontSize: 'var(--aguila-fs-section)', color: '#6B6B6B', margin: '4px 0 0' }}>
           Gracias, Tito.
         </p>
       </div>
@@ -156,8 +156,8 @@ export function BorradorPanel({ detail, onComplete, loading }: Props) {
   if (state === 'done') {
     return (
       <div style={{ textAlign: 'center', padding: 24 }}>
-        <div style={{ fontSize: 32, color: '#16A34A', marginBottom: 8 }}>&#10003;</div>
-        <p style={{ fontSize: 16, fontWeight: 600, color: '#1A1A1A', margin: 0 }}>
+        <div style={{ fontSize: 'var(--aguila-fs-kpi-compact)', color: '#16A34A', marginBottom: 8 }}>&#10003;</div>
+        <p style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 600, color: '#1A1A1A', margin: 0 }}>
           Borrador aprobado
         </p>
       </div>
@@ -172,7 +172,7 @@ export function BorradorPanel({ detail, onComplete, loading }: Props) {
         <span
           className="font-mono"
           style={{
-            fontSize: 12,
+            fontSize: 'var(--aguila-fs-compact)',
             padding: '2px 8px',
             borderRadius: 6,
             background: '#F5F4F0',
@@ -213,7 +213,7 @@ export function BorradorPanel({ detail, onComplete, loading }: Props) {
             background: '#E8EAED',
             color: '#FFFFFF',
             border: 'none',
-            fontSize: 16,
+            fontSize: 'var(--aguila-fs-body-lg)',
             fontWeight: 600,
             cursor: loading ? 'wait' : 'pointer',
           }}
@@ -230,7 +230,7 @@ export function BorradorPanel({ detail, onComplete, loading }: Props) {
             background: 'rgba(255,255,255,0.045)',
             color: '#1A1A1A',
             border: '1px solid #E8E5E0',
-            fontSize: 16,
+            fontSize: 'var(--aguila-fs-body-lg)',
             fontWeight: 600,
             cursor: loading ? 'wait' : 'pointer',
           }}

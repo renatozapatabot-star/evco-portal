@@ -21,7 +21,7 @@ export function EntityBreadcrumb({ segments }: EntityBreadcrumbProps) {
       display: 'flex',
       alignItems: 'center',
       gap: 6,
-      fontSize: 12,
+      fontSize: 'var(--aguila-fs-compact)',
       marginBottom: 16,
       flexWrap: 'wrap',
     }}>
@@ -39,7 +39,7 @@ export function EntityBreadcrumb({ segments }: EntityBreadcrumbProps) {
               fontWeight: i === segments.length - 1 ? 600 : 500,
             }}
           >
-            <span style={{ fontSize: 11, color: 'var(--text-muted, #9B9B9B)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+            <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted, #9B9B9B)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
               {seg.label}
             </span>
             <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600 }}>

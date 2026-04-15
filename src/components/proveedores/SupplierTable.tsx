@@ -107,10 +107,10 @@ function MobileCards({ filtered, expandedSupplier, onToggleExpand }: {
                 }}>
                   <Building2 size={14} style={{ color: T.gold }} />
                 </div>
-                <span style={{ fontSize: 13, fontWeight: 600, color: T.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
+                <span style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: T.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
                   {s.name}
                 </span>
-                {s.country && <span style={{ fontSize: 16 }}>{countryFlag(s.country)}</span>}
+                {s.country && <span style={{ fontSize: 'var(--aguila-fs-body-lg)' }}>{countryFlag(s.country)}</span>}
                 {idx < 3 && (
                   <span style={{ fontSize: 9, fontWeight: 800, padding: '2px 6px', borderRadius: 9999, background: T.goldSubtle, color: T.gold, border: `1px solid ${T.goldBorder}`, flexShrink: 0 }}>
                     TOP {idx + 1}
@@ -119,15 +119,15 @@ function MobileCards({ filtered, expandedSupplier, onToggleExpand }: {
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginLeft: 22 }}>
                 <div>
-                  <div style={{ fontSize: 10, color: T.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Embarques</div>
-                  <div style={{ fontFamily: T.mono, fontSize: 14, fontWeight: 700, color: T.text }}>{s.traficoCount}</div>
+                  <div style={{ fontSize: 'var(--aguila-fs-label)', color: T.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Embarques</div>
+                  <div style={{ fontFamily: T.mono, fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: T.text }}>{s.traficoCount}</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: 10, color: T.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Valor</div>
-                  <div style={{ fontFamily: T.mono, fontSize: 14, fontWeight: 700, color: T.green }}>{s.totalValue > 0 ? fmtUSDCompact(s.totalValue) : '\u2014'}</div>
+                  <div style={{ fontSize: 'var(--aguila-fs-label)', color: T.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Valor</div>
+                  <div style={{ fontFamily: T.mono, fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: T.green }}>{s.totalValue > 0 ? fmtUSDCompact(s.totalValue) : '\u2014'}</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: 10, color: T.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Riesgo</div>
+                  <div style={{ fontSize: 'var(--aguila-fs-label)', color: T.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Riesgo</div>
                   <RiskBadge level={s.riskLevel} />
                 </div>
               </div>
@@ -153,7 +153,7 @@ function DesktopTable({ filtered, expandedSupplier, onToggleExpand }: {
         gridTemplateColumns: '32px 1fr 80px 120px 70px 60px 60px 50px',
         padding: '10px 16px',
         borderBottom: `1px solid ${T.border}`,
-        fontSize: 10, fontWeight: 700, textTransform: 'uppercase',
+        fontSize: 'var(--aguila-fs-label)', fontWeight: 700, textTransform: 'uppercase',
         letterSpacing: '0.08em', color: T.textMuted,
       }}>
         <span />
@@ -198,7 +198,7 @@ function DesktopTable({ filtered, expandedSupplier, onToggleExpand }: {
                   <Building2 size={14} style={{ color: T.gold }} />
                 </div>
                 <span title={s.name} style={{
-                  fontSize: 13, fontWeight: 600, color: T.text,
+                  fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: T.text,
                   overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                 }}>
                   {s.name}
@@ -213,22 +213,22 @@ function DesktopTable({ filtered, expandedSupplier, onToggleExpand }: {
                   </span>
                 )}
               </div>
-              <span style={{ textAlign: 'right', fontFamily: T.mono, fontSize: 13, fontWeight: 700, color: T.text }}>
+              <span style={{ textAlign: 'right', fontFamily: T.mono, fontSize: 'var(--aguila-fs-body)', fontWeight: 700, color: T.text }}>
                 {s.traficoCount}
               </span>
-              <span style={{ textAlign: 'right', fontFamily: T.mono, fontSize: 12, fontWeight: 600, color: T.green }}>
+              <span style={{ textAlign: 'right', fontFamily: T.mono, fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, color: T.green }}>
                 {s.totalValue > 0 ? fmtUSDCompact(s.totalValue) : <span style={{ color: T.textMuted }}>{'\u2014'}</span>}
               </span>
-              <span style={{ textAlign: 'right', fontFamily: T.mono, fontSize: 12, fontWeight: 600, color: s.docCompliance >= 90 ? T.green : s.docCompliance >= 70 ? 'var(--warning-500, #D97706)' : T.red }}>
+              <span style={{ textAlign: 'right', fontFamily: T.mono, fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, color: s.docCompliance >= 90 ? T.green : s.docCompliance >= 70 ? 'var(--warning-500, #D97706)' : T.red }}>
                 {s.docCompliance}%
               </span>
-              <span style={{ textAlign: 'right', fontFamily: T.mono, fontSize: 12, color: s.tmecRate > 0 ? T.green : T.textMuted }}>
+              <span style={{ textAlign: 'right', fontFamily: T.mono, fontSize: 'var(--aguila-fs-compact)', color: s.tmecRate > 0 ? T.green : T.textMuted }}>
                 {s.tmecRate > 0 ? `${s.tmecRate}%` : '\u2014'}
               </span>
               <span style={{ textAlign: 'center' }}>
                 <RiskBadge level={s.riskLevel} />
               </span>
-              <span style={{ textAlign: 'center', fontSize: 16 }}>
+              <span style={{ textAlign: 'center', fontSize: 'var(--aguila-fs-body-lg)' }}>
                 {s.country ? countryFlag(s.country) : '\uD83C\uDF10'}
               </span>
             </div>

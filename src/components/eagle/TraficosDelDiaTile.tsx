@@ -12,14 +12,14 @@ export function TraficosDelDiaTile({ buckets }: { buckets: TraficoStatusBucket[]
   return (
     <TileShell title="Embarques del día" subtitle={`${animatedTotal} activos`} href="/embarques">
       {buckets.length === 0 ? (
-        <div style={{ color: TEXT_MUTED, fontSize: 13 }}>Sin embarques en movimiento.</div>
+        <div style={{ color: TEXT_MUTED, fontSize: 'var(--aguila-fs-body)' }}>Sin embarques en movimiento.</div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {buckets.map((b) => {
             const isActive = b.status === 'En Proceso' || b.status === 'En Aduana'
             return (
             <div key={b.status} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{ width: 110, fontSize: 12, color: TEXT_PRIMARY, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{ width: 110, fontSize: 'var(--aguila-fs-compact)', color: TEXT_PRIMARY, display: 'flex', alignItems: 'center', gap: 6 }}>
                 <span
                   aria-hidden
                   className={isActive ? 'silver-pulse' : undefined}
@@ -44,7 +44,7 @@ export function TraficosDelDiaTile({ buckets }: { buckets: TraficoStatusBucket[]
                   }}
                 />
               </div>
-              <div style={{ width: 36, textAlign: 'right', fontFamily: MONO, color: ACCENT_SILVER_DIM, fontSize: 12 }}>
+              <div style={{ width: 36, textAlign: 'right', fontFamily: MONO, color: ACCENT_SILVER_DIM, fontSize: 'var(--aguila-fs-compact)' }}>
                 {b.count}
               </div>
             </div>

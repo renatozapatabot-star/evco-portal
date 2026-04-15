@@ -37,12 +37,12 @@ export function PerformanceStrip({
           {/* Today count */}
           <div>
             <span className="font-mono" style={{
-              fontSize: 28, fontWeight: 800,
+              fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 800,
               color: isRecord ? '#E8EAED' : todayCount > 0 ? '#E6EDF3' : '#6E7681',
             }}>
               {todayCount}
             </span>
-            <span style={{ fontSize: 11, color: '#8B949E', marginLeft: 6 }}>
+            <span style={{ fontSize: 'var(--aguila-fs-meta)', color: '#8B949E', marginLeft: 6 }}>
               acción{todayCount !== 1 ? 'es' : ''} hoy
             </span>
           </div>
@@ -50,7 +50,7 @@ export function PerformanceStrip({
           {/* Delta vs yesterday */}
           {yesterdayCount > 0 && (
             <span className="font-mono" style={{
-              fontSize: 14, fontWeight: 600,
+              fontSize: 'var(--aguila-fs-section)', fontWeight: 600,
               color: delta >= 0 ? '#16A34A' : '#DC2626',
             }}>
               {delta >= 0 ? '↑' : '↓'}{Math.abs(delta)} vs ayer
@@ -60,7 +60,7 @@ export function PerformanceStrip({
           {/* Record badge */}
           {isRecord && (
             <span style={{
-              fontSize: 11, fontWeight: 700, color: '#E8EAED',
+              fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, color: '#E8EAED',
               background: 'rgba(192,197,206,0.15)',
               padding: '2px 8px', borderRadius: 4,
             }}>
@@ -72,11 +72,11 @@ export function PerformanceStrip({
         {/* Right: streak + rank */}
         <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
           {currentStreak > 1 && (
-            <span className="font-mono" style={{ fontSize: 13, color: '#E8EAED' }}>
+            <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-body)', color: '#E8EAED' }}>
               🔥 {currentStreak}d racha
             </span>
           )}
-          <span className="font-mono" style={{ fontSize: 13, color: '#8B949E' }}>
+          <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-body)', color: '#8B949E' }}>
             {teamRank}º de {teamSize}
           </span>
         </div>
@@ -92,17 +92,17 @@ export function PerformanceStrip({
             transition: 'width 500ms ease',
           }} />
         </div>
-        <span style={{ fontSize: 10, color: '#6E7681', flexShrink: 0 }}>
+        <span style={{ fontSize: 'var(--aguila-fs-label)', color: '#6E7681', flexShrink: 0 }}>
           meta: {nextMilestone}
         </span>
       </div>
 
       {/* Bottom: week + month */}
       <div style={{ display: 'flex', gap: 16, marginTop: 8 }}>
-        <span style={{ fontSize: 11, color: '#6E7681' }}>
+        <span style={{ fontSize: 'var(--aguila-fs-meta)', color: '#6E7681' }}>
           Semana: <span className="font-mono" style={{ color: '#8B949E', fontWeight: 600 }}>{weekCount}</span>
         </span>
-        <span style={{ fontSize: 11, color: '#6E7681' }}>
+        <span style={{ fontSize: 'var(--aguila-fs-meta)', color: '#6E7681' }}>
           Mes: <span className="font-mono" style={{ color: '#8B949E', fontWeight: 600 }}>{monthCount}</span>
         </span>
       </div>

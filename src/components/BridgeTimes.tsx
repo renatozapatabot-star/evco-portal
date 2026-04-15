@@ -21,7 +21,7 @@ export function BridgeTimes() {
     return () => clearInterval(interval)
   }, [])
 
-  if (loading) return <div style={{ padding: 20, textAlign: 'center', color: 'var(--text-muted)', fontSize: 12 }}>Cargando tiempos de puentes...</div>
+  if (loading) return <div style={{ padding: 20, textAlign: 'center', color: 'var(--text-muted)', fontSize: 'var(--aguila-fs-compact)' }}>Cargando tiempos de puentes...</div>
 
   const allBridges = data?.bridges || []
   const withData = allBridges.filter(b => b.commercial !== null)
@@ -34,11 +34,11 @@ export function BridgeTimes() {
   return (
     <div className="card" style={{ marginBottom: 24, padding: '16px 20px' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-        <div style={{ color: 'var(--text-muted)', fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+        <div style={{ color: 'var(--text-muted)', fontSize: 'var(--aguila-fs-label)', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
           Tiempos de Puentes — Laredo
         </div>
         {fastest && (
-          <div style={{ fontSize: 11, fontWeight: 700, color: '#2D8540' }}>
+          <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, color: '#2D8540' }}>
             Más rápido: {fastest.nameEs} · {fastest.commercial} min
           </div>
         )}
@@ -58,20 +58,20 @@ export function BridgeTimes() {
                 <span style={{ position: 'absolute', top: 8, right: 8, background: '#DCFCE7', color: 'var(--success-dark, #166534)',
                   borderRadius: 4, padding: '1px 6px', fontSize: 9, fontWeight: 700 }}>MÁS RÁPIDO</span>
               )}
-              <div style={{ color: 'var(--text-primary)', fontSize: 12, fontWeight: 700, marginBottom: 2 }}>{b.nameEs}</div>
-              <div style={{ color: 'var(--text-muted)', fontSize: 10, marginBottom: 8 }}>{b.name}</div>
+              <div style={{ color: 'var(--text-primary)', fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, marginBottom: 2 }}>{b.nameEs}</div>
+              <div style={{ color: 'var(--text-muted)', fontSize: 'var(--aguila-fs-label)', marginBottom: 8 }}>{b.name}</div>
 
               <div style={{ display: 'flex', gap: 12 }}>
                 <div>
                   <div style={{ color: 'var(--text-muted)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Comercial</div>
-                  <div style={{ color: statusColor(b.status), fontSize: 18, fontWeight: 800, fontFamily: 'var(--font-jetbrains-mono)' }}>
+                  <div style={{ color: statusColor(b.status), fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 800, fontFamily: 'var(--font-jetbrains-mono)' }}>
                     {b.commercial} min
                   </div>
                 </div>
                 {b.passenger !== null && (
                   <div>
                     <div style={{ color: 'var(--text-muted)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Pasajero</div>
-                    <div style={{ color: 'var(--text-secondary)', fontSize: 14, fontWeight: 600, fontFamily: 'var(--font-jetbrains-mono)' }}>
+                    <div style={{ color: 'var(--text-secondary)', fontSize: 'var(--aguila-fs-section)', fontWeight: 600, fontFamily: 'var(--font-jetbrains-mono)' }}>
                       {b.passenger} min
                     </div>
                   </div>
@@ -81,7 +81,7 @@ export function BridgeTimes() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 }}>
                 <span style={{ width: 6, height: 6, borderRadius: '50%', background: statusColor(b.status),
                   ...(b.status === 'red' ? { animation: 'pulse 1.5s infinite' } : {}) }} />
-                <span style={{ color: 'var(--text-muted)', fontSize: 10 }}>
+                <span style={{ color: 'var(--text-muted)', fontSize: 'var(--aguila-fs-label)' }}>
                   {b.status === 'green' ? 'Flujo normal' : b.status === 'amber' ? 'Demora moderada' : b.status === 'red' ? 'Congestión alta' : 'Actualizando'}
                 </span>
                 {b.updated && (

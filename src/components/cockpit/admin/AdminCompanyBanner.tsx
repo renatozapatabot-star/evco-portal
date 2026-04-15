@@ -52,7 +52,7 @@ export function AdminCompanyBanner({
       <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <div
           style={{
-            fontSize: 10,
+            fontSize: 'var(--aguila-fs-label)',
             letterSpacing: '0.12em',
             textTransform: 'uppercase',
             color: TEXT_MUTED,
@@ -73,7 +73,7 @@ export function AdminCompanyBanner({
         </div>
         <div
           style={{
-            fontSize: 11,
+            fontSize: 'var(--aguila-fs-meta)',
             color: TEXT_MUTED,
             letterSpacing: '0.04em',
           }}
@@ -117,7 +117,7 @@ function Kpi({
     <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 96 }}>
       <div
         style={{
-          fontSize: 10,
+          fontSize: 'var(--aguila-fs-label)',
           letterSpacing: '0.08em',
           textTransform: 'uppercase',
           color: TEXT_MUTED,
@@ -128,7 +128,7 @@ function Kpi({
       <div
         style={{
           fontFamily: MONO,
-          fontSize: 20,
+          fontSize: 'var(--aguila-fs-headline)',
           fontWeight: 800,
           color: tone === 'warn' ? '#FBBF24' : ACCENT_SILVER_BRIGHT,
           lineHeight: 1.1,

@@ -95,15 +95,15 @@ export function SavingsWidget() {
       borderRadius: 12,
       padding: '16px 20px',
     }}>
-      <div style={{ fontSize: 10, fontWeight: 700,
+      <div style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 700,
         textTransform: 'uppercase', letterSpacing: '0.1em',
         color: 'var(--status-green, #22c55e)', marginBottom: 8 }}>
         Ahorro con ZAPATA AI — {data.period}
       </div>
 
-      <div className="mono" style={{ fontSize: 28, fontWeight: 800,
+      <div className="mono" style={{ fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 800,
         color: 'var(--text-primary)', fontVariantNumeric: 'tabular-nums' }}>
-        {fmtMXN(data.total_mxn)} <span style={{ fontSize: 12, fontWeight: 400, color: 'var(--text-muted)' }}>MXN</span>
+        {fmtMXN(data.total_mxn)} <span style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 400, color: 'var(--text-muted)' }}>MXN</span>
       </div>
 
       <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -114,7 +114,7 @@ export function SavingsWidget() {
         ].map(item => (
           <div key={item.label} style={{
             display: 'flex', justifyContent: 'space-between',
-            fontSize: 12, color: 'var(--text-secondary)',
+            fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-secondary)',
           }}>
             <span>{item.label}{item.extra ? ` (${item.extra})` : ''}</span>
             <span style={{ fontFamily: 'var(--font-data)', fontWeight: 500 }}>
@@ -127,7 +127,7 @@ export function SavingsWidget() {
       <div style={{
         marginTop: 12, paddingTop: 12,
         borderTop: '1px solid var(--status-green-border, rgba(34,197,94,0.2))',
-        display: 'flex', justifyContent: 'space-between', fontSize: 12,
+        display: 'flex', justifyContent: 'space-between', fontSize: 'var(--aguila-fs-compact)',
       }}>
         <span style={{ color: 'var(--text-muted)' }}>ROI vs costo $3,500/mes</span>
         <span className="mono" style={{ fontWeight: 700, color: 'var(--status-green, #22c55e)' }}>

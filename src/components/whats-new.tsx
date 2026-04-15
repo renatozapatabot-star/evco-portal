@@ -26,11 +26,11 @@ export function WhatsNew() {
       marginBottom: 16, display: 'flex', alignItems: 'flex-start', gap: 12,
     }}>
       <div style={{ flex: 1 }}>
-        <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--n-900)', marginBottom: 6 }}>
+        <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 800, color: 'var(--n-900)', marginBottom: 6 }}>
           Novedades en ZAPATA AI
         </div>
         {UPDATES.slice(0, 4).map((u, i) => (
-          <div key={i} style={{ fontSize: 12, color: 'var(--n-600)', marginTop: 3, lineHeight: 1.5 }}>
+          <div key={i} style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--n-600)', marginTop: 3, lineHeight: 1.5 }}>
             - {u.text}
           </div>
         ))}
@@ -38,7 +38,7 @@ export function WhatsNew() {
       <button onClick={() => {
         setDismissed(true)
         localStorage.setItem(VERSION, 'true')
-      }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--n-400)', fontSize: 14, padding: 4 }}>
+      }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--n-400)', fontSize: 'var(--aguila-fs-section)', padding: 4 }}>
         x
       </button>
     </div>

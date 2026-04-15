@@ -38,15 +38,15 @@ export function BlockedPanel({ blocked, operatorId, onClear }: Props) {
               borderRadius: 8, border: '1px solid rgba(255,255,255,0.045)', gap: 12,
             }}>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <span className="font-mono" style={{ fontSize: 13, fontWeight: 600, color: '#E8EAED' }}>
+                <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: '#E8EAED' }}>
                   {item.trafico}
                 </span>
-                <div style={{ fontSize: 12, color: '#8B949E', marginTop: 2 }}>{item.reason}</div>
+                <div style={{ fontSize: 'var(--aguila-fs-compact)', color: '#8B949E', marginTop: 2 }}>{item.reason}</div>
               </div>
               <Link href={`/embarques/${encodeURIComponent(item.trafico)}`} style={{
                 background: item.type === 'waiting_doc' ? 'rgba(192,197,206,0.15)' : 'rgba(220,38,38,0.1)',
                 color: item.type === 'waiting_doc' ? '#E8EAED' : '#DC2626',
-                borderRadius: 8, padding: '8px 16px', fontSize: 12, fontWeight: 600,
+                borderRadius: 8, padding: '8px 16px', fontSize: 'var(--aguila-fs-compact)', fontWeight: 600,
                 textDecoration: 'none', whiteSpace: 'nowrap', minHeight: 36,
                 display: 'flex', alignItems: 'center',
               }}>

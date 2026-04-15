@@ -32,13 +32,13 @@ export function DocumentGuard({ traficoId }: { traficoId: string }) {
       marginBottom: 16,
     }}>
       <div style={{
-        fontSize: 13, fontWeight: 700,
+        fontSize: 'var(--aguila-fs-body)', fontWeight: 700,
         color: canTransmit ? 'var(--status-green, #22c55e)' : 'var(--status-red, #ef4444)',
         marginBottom: 12,
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
       }}>
         <span>{canTransmit ? 'Listo para transmitir' : 'No transmitir — documentos faltantes'}</span>
-        <span style={{ fontSize: 12, fontWeight: 600, fontFamily: 'var(--font-data)' }}>{data.score}%</span>
+        <span style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, fontFamily: 'var(--font-data)' }}>{data.score}%</span>
       </div>
 
       {data.required.map(doc => (
@@ -48,16 +48,16 @@ export function DocumentGuard({ traficoId }: { traficoId: string }) {
           borderBottom: '1px solid var(--border-light)',
         }}>
           <span style={{
-            fontSize: 13,
+            fontSize: 'var(--aguila-fs-body)',
             color: doc.present ? 'var(--status-green, #22c55e)' :
                    doc.critical ? 'var(--status-red, #ef4444)' : 'var(--text-muted)'
           }}>
             {doc.present ? '\u2705' : doc.critical ? '\u274C' : '\u2B1C'}
           </span>
-          <span style={{ flex: 1, fontSize: 13, color: 'var(--text-primary)' }}>{doc.label}</span>
+          <span style={{ flex: 1, fontSize: 'var(--aguila-fs-body)', color: 'var(--text-primary)' }}>{doc.label}</span>
           {!doc.present && doc.critical && (
             <span style={{
-              fontSize: 10, fontWeight: 600,
+              fontSize: 'var(--aguila-fs-label)', fontWeight: 600,
               color: 'var(--amber-600, #d97706)',
               background: 'rgba(217,119,6,0.1)',
               border: '1px solid rgba(217,119,6,0.2)',
@@ -73,7 +73,7 @@ export function DocumentGuard({ traficoId }: { traficoId: string }) {
         <div style={{
           marginTop: 8, padding: '8px 12px',
           background: 'rgba(239,68,68,0.08)',
-          borderRadius: 6, fontSize: 12,
+          borderRadius: 6, fontSize: 'var(--aguila-fs-compact)',
           color: 'var(--status-red, #ef4444)', fontWeight: 600,
         }}>
           {data.duplicates} posible(s) factura(s) duplicada(s) detectada(s)
@@ -81,7 +81,7 @@ export function DocumentGuard({ traficoId }: { traficoId: string }) {
       )}
 
       {data.blockers.length > 0 && (
-        <div style={{ marginTop: 8, fontSize: 11, color: 'var(--text-muted)' }}>
+        <div style={{ marginTop: 8, fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)' }}>
           {data.blockers.join(' · ')}
         </div>
       )}

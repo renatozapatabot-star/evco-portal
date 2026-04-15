@@ -100,7 +100,7 @@ export function AdminCockpit({ data, operatorName }: Props) {
         <div style={{
           padding: '8px 16px', borderRadius: 8, marginBottom: 8,
           background: 'rgba(192,197,206,0.1)', border: '1px solid rgba(192,197,206,0.2)',
-          fontSize: 12, color: '#E8EAED', animation: 'fadeIn 300ms ease',
+          fontSize: 'var(--aguila-fs-compact)', color: '#E8EAED', animation: 'fadeIn 300ms ease',
         }}>
           ● {realtimeToast}
         </div>
@@ -112,11 +112,11 @@ export function AdminCockpit({ data, operatorName }: Props) {
       {/* Header */}
       <div style={{ marginBottom: 20 }}>
         <h1 style={{
-          fontSize: 18, fontWeight: 600, color: '#E6EDF3', margin: 0,
+          fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 600, color: '#E6EDF3', margin: 0,
         }}>
           {greeting}, {operatorName || 'Administrador'}
         </h1>
-        <p style={{ fontSize: 13, color: '#6E7681', margin: '4px 0 0' }}>
+        <p style={{ fontSize: 'var(--aguila-fs-body)', color: '#6E7681', margin: '4px 0 0' }}>
           Patente 3596 · Aduana 240 Nuevo Laredo
           {isLive && <span style={{ color: '#16A34A', marginLeft: 8 }}>● En vivo</span>}
         </p>
@@ -150,7 +150,7 @@ export function AdminCockpit({ data, operatorName }: Props) {
                   width: 10, height: 10, borderRadius: '50%',
                   background: healthColors[healthLevel].dot, display: 'inline-block',
                 }} />
-                <span style={{ fontSize: 14, color: '#E6EDF3', fontWeight: 500 }}>
+                <span style={{ fontSize: 'var(--aguila-fs-section)', color: '#E6EDF3', fontWeight: 500 }}>
                   {healthSentence}
                 </span>
               </div>
@@ -177,10 +177,10 @@ export function AdminCockpit({ data, operatorName }: Props) {
                   width: 10, height: 10, borderRadius: '50%',
                   background: healthColors[healthLevel].dot, display: 'inline-block',
                 }} />
-                <span style={{ fontSize: 14, color: '#E6EDF3', fontWeight: 500 }}>
+                <span style={{ fontSize: 'var(--aguila-fs-section)', color: '#E6EDF3', fontWeight: 500 }}>
                   {healthSentence}
                 </span>
-                <span aria-hidden="true" style={{ fontSize: 14, color: '#8B949E', marginLeft: 'auto' }}>
+                <span aria-hidden="true" style={{ fontSize: 'var(--aguila-fs-section)', color: '#8B949E', marginLeft: 'auto' }}>
                   Abrir cola →
                 </span>
                 <style jsx>{`
@@ -197,47 +197,47 @@ export function AdminCockpit({ data, operatorName }: Props) {
             {/* KPI strip */}
             <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
               <div>
-                <div className="font-mono" style={{ fontSize: 24, fontWeight: 800, color: '#E6EDF3' }}>
+                <div className="font-mono" style={{ fontSize: 'var(--aguila-fs-title)', fontWeight: 800, color: '#E6EDF3' }}>
                   {biz.totalTraficos.toLocaleString('es-MX')}
                 </div>
-                <div style={{ fontSize: 11, color: '#8B949E' }}>embarques totales</div>
+                <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#8B949E' }}>embarques totales</div>
               </div>
               <div>
-                <div className="font-mono" style={{ fontSize: 24, fontWeight: 800, color: '#E8EAED' }}>
+                <div className="font-mono" style={{ fontSize: 'var(--aguila-fs-title)', fontWeight: 800, color: '#E8EAED' }}>
                   {biz.activeTraficos}
                 </div>
-                <div style={{ fontSize: 11, color: '#8B949E' }}>en proceso</div>
+                <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#8B949E' }}>en proceso</div>
               </div>
               <div>
-                <div className="font-mono" style={{ fontSize: 24, fontWeight: 800, color: '#E6EDF3' }}>
+                <div className="font-mono" style={{ fontSize: 'var(--aguila-fs-title)', fontWeight: 800, color: '#E6EDF3' }}>
                   {biz.cruzadosThisMonth}
-                  <span style={{ fontSize: 14, fontWeight: 600, color: trendColor, marginLeft: 6 }}>
+                  <span style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: trendColor, marginLeft: 6 }}>
                     {trendArrow}{Math.abs(monthTrend)}%
                   </span>
                 </div>
-                <div style={{ fontSize: 11, color: '#8B949E' }}>cruzados este mes</div>
+                <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#8B949E' }}>cruzados este mes</div>
               </div>
               <div>
-                <div className="font-mono" style={{ fontSize: 24, fontWeight: 800, color: '#E6EDF3' }}>
-                  {fmtUSD(biz.valorYtdUsd)} <span style={{ fontSize: 12, fontWeight: 400, color: '#8B949E' }}>USD</span>
+                <div className="font-mono" style={{ fontSize: 'var(--aguila-fs-title)', fontWeight: 800, color: '#E6EDF3' }}>
+                  {fmtUSD(biz.valorYtdUsd)} <span style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 400, color: '#8B949E' }}>USD</span>
                 </div>
-                <div style={{ fontSize: 11, color: '#8B949E' }}>valor YTD</div>
+                <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#8B949E' }}>valor YTD</div>
               </div>
               <div>
-                <div className="font-mono" style={{ fontSize: 24, fontWeight: 800, color: '#E6EDF3' }}>
+                <div className="font-mono" style={{ fontSize: 'var(--aguila-fs-title)', fontWeight: 800, color: '#E6EDF3' }}>
                   {biz.activeClients}
                 </div>
-                <div style={{ fontSize: 11, color: '#8B949E' }}>clientes activos</div>
+                <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#8B949E' }}>clientes activos</div>
               </div>
               {biz.oldestActiveAgeDays !== null && biz.oldestActiveAgeDays > 0 && (
                 <div>
                   <div className="font-mono" style={{
-                    fontSize: 24, fontWeight: 800,
+                    fontSize: 'var(--aguila-fs-title)', fontWeight: 800,
                     color: biz.oldestActiveAgeDays > 30 ? '#DC2626' : biz.oldestActiveAgeDays > 14 ? '#D97706' : '#E6EDF3',
                   }}>
                     {biz.oldestActiveAgeDays}d
                   </div>
-                  <div style={{ fontSize: 11, color: '#8B949E' }}>más antiguo activo</div>
+                  <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#8B949E' }}>más antiguo activo</div>
                 </div>
               )}
             </div>
@@ -267,24 +267,24 @@ export function AdminCockpit({ data, operatorName }: Props) {
             content: (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 <div>
-                  <div style={{ fontSize: 11, color: '#6E7681', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Embarque</div>
-                  <div className="font-mono" style={{ fontSize: 20, fontWeight: 700, color: '#E8EAED' }}>{item.trafico}</div>
+                  <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#6E7681', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Embarque</div>
+                  <div className="font-mono" style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, color: '#E8EAED' }}>{item.trafico}</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: 11, color: '#6E7681', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Cliente</div>
-                  <div style={{ fontSize: 14, color: '#E6EDF3' }}>{item.company_id}</div>
+                  <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#6E7681', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Cliente</div>
+                  <div style={{ fontSize: 'var(--aguila-fs-section)', color: '#E6EDF3' }}>{item.company_id}</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: 11, color: '#6E7681', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Descripción</div>
-                  <div style={{ fontSize: 14, color: '#E6EDF3' }}>{item.descripcion || 'Sin descripción'}</div>
+                  <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#6E7681', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Descripción</div>
+                  <div style={{ fontSize: 'var(--aguila-fs-section)', color: '#E6EDF3' }}>{item.descripcion || 'Sin descripción'}</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: 11, color: '#6E7681', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Valor</div>
-                  <div className="font-mono" style={{ fontSize: 18, fontWeight: 700, color: '#E6EDF3' }}>{fmtUSD(item.valor_usd)} USD</div>
+                  <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#6E7681', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Valor</div>
+                  <div className="font-mono" style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: '#E6EDF3' }}>{fmtUSD(item.valor_usd)} USD</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: 11, color: '#6E7681', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Estatus</div>
-                  <div style={{ fontSize: 14, color: '#D97706' }}>{item.estatus} · {item.reason}</div>
+                  <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#6E7681', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Estatus</div>
+                  <div style={{ fontSize: 'var(--aguila-fs-section)', color: '#D97706' }}>{item.estatus} · {item.reason}</div>
                 </div>
                 <a href={'/embarques/' + encodeURIComponent(item.trafico)} style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'center',

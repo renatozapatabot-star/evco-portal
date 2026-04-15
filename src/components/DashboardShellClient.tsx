@@ -51,7 +51,7 @@ function ViewingAsBanner({ companyName, onExit }: { companyName: string; onExit:
       position: 'fixed', top: 0, left: 0, right: 0, zIndex: 9999,
       background: 'var(--gold)', color: 'var(--bg-card)', height: 36,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      gap: 12, fontSize: 13, fontWeight: 600,
+      gap: 12, fontSize: 'var(--aguila-fs-body)', fontWeight: 600,
     }}>
       <span>Viendo como: {companyName}</span>
       <button
@@ -59,7 +59,7 @@ function ViewingAsBanner({ companyName, onExit }: { companyName: string; onExit:
         style={{
           background: 'rgba(255,255,255,0.2)', border: '1px solid rgba(255,255,255,0.4)',
           borderRadius: 4, color: 'var(--bg-card)', padding: '2px 10px',
-          fontSize: 12, fontWeight: 600, cursor: 'pointer',
+          fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, cursor: 'pointer',
         }}
       >
         Salir
@@ -194,7 +194,7 @@ export default function DashboardShellClient({ children }: Props) {
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             transform: `rotate(${pulling ? 180 : (distance / 80) * 180}deg)`,
             transition: pulling ? 'none' : 'transform 200ms ease',
-            fontSize: 16,
+            fontSize: 'var(--aguila-fs-body-lg)',
           }}>
             ↓
           </div>
@@ -230,10 +230,10 @@ export default function DashboardShellClient({ children }: Props) {
           position: 'fixed', bottom: 20, left: '50%', transform: 'translateX(-50%)',
           zIndex: 9998, background: 'var(--navy-900)', color: 'var(--bg-card)',
           padding: '10px 24px', borderRadius: 'var(--radius-lg)',
-          fontSize: 13, fontWeight: 600, boxShadow: '0 4px 24px rgba(0,0,0,0.3)',
+          fontSize: 'var(--aguila-fs-body)', fontWeight: 600, boxShadow: '0 4px 24px rgba(0,0,0,0.3)',
           display: 'flex', alignItems: 'center', gap: 8,
         }}>
-          <span style={{ fontSize: 16 }}>📡</span>
+          <span style={{ fontSize: 'var(--aguila-fs-body-lg)' }}>📡</span>
           Sin conexión — mostrando datos previos
         </div>
       )}
@@ -257,7 +257,7 @@ export default function DashboardShellClient({ children }: Props) {
             color: '#E8EAED',
             border: '1px solid rgba(192,197,206,0.18)',
             cursor: 'pointer',
-            fontSize: 16, fontWeight: 700,
+            fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700,
             boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             transition: 'opacity 200ms',
@@ -277,9 +277,9 @@ export default function DashboardShellClient({ children }: Props) {
       {/* Session idle overlay */}
       {idle && (
         <div className="idle-overlay" onClick={() => { setIdle(false); setShowWarning(false) }}>
-          <div style={{ fontSize: 48, marginBottom: 16 }}>&#128274;</div>
-          <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 8 }}>Sesión bloqueada</div>
-          <div style={{ fontSize: 13, color: '#94a3b8', marginBottom: 20 }}>Haz clic o toca para continuar</div>
+          <div style={{ fontSize: 'var(--aguila-fs-kpi-hero)', marginBottom: 16 }}>&#128274;</div>
+          <div style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 800, marginBottom: 8 }}>Sesión bloqueada</div>
+          <div style={{ fontSize: 'var(--aguila-fs-body)', color: '#94a3b8', marginBottom: 20 }}>Haz clic o toca para continuar</div>
         </div>
       )}
       </TelemetryProvider>

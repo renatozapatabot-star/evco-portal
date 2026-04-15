@@ -49,7 +49,7 @@ export function ShortcutHelp() {
                     {item.keys.map((k, i) => (
                       <span key={i}>
                         <kbd className="shortcut-key">{k}</kbd>
-                        {i < item.keys.length-1 && <span style={{margin:'0 3px',color:'var(--n-300)',fontSize:10}}>+</span>}
+                        {i < item.keys.length-1 && <span style={{margin:'0 3px',color:'var(--n-300)',fontSize: 'var(--aguila-fs-label)'}}>+</span>}
                       </span>
                     ))}
                   </div>

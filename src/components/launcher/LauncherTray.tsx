@@ -104,13 +104,13 @@ export function LauncherTray({ open, onClose, role, counts = {} }: Props) {
         }}>
           <div>
             <div style={{
-              fontSize: 11, fontWeight: 700,
+              fontSize: 'var(--aguila-fs-meta)', fontWeight: 700,
               textTransform: 'uppercase', letterSpacing: '0.08em',
               color: TEXT_MUTED,
             }}>
               ZAPATA AI
             </div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: TEXT_PRIMARY, marginTop: 2 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: TEXT_PRIMARY, marginTop: 2 }}>
               Herramientas
             </div>
           </div>
@@ -196,14 +196,14 @@ export function LauncherTray({ open, onClose, role, counts = {} }: Props) {
                 </span>
                 <div>
                   <div style={{
-                    fontSize: 13, fontWeight: 700,
+                    fontSize: 'var(--aguila-fs-body)', fontWeight: 700,
                     color: disabled ? ACCENT_SILVER_DIM : TEXT_PRIMARY,
                     letterSpacing: '0.005em',
                   }}>
                     {t.label}
                     {showDot ? (
                       <span style={{
-                        marginLeft: 6, fontSize: 11,
+                        marginLeft: 6, fontSize: 'var(--aguila-fs-meta)',
                         fontFamily: 'var(--font-jetbrains-mono), monospace',
                         color: RED,
                       }}>
@@ -211,7 +211,7 @@ export function LauncherTray({ open, onClose, role, counts = {} }: Props) {
                       </span>
                     ) : null}
                   </div>
-                  <div style={{ fontSize: 11, color: TEXT_SECONDARY, marginTop: 2, lineHeight: 1.35 }}>
+                  <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_SECONDARY, marginTop: 2, lineHeight: 1.35 }}>
                     {t.description}
                   </div>
                 </div>
@@ -223,7 +223,7 @@ export function LauncherTray({ open, onClose, role, counts = {} }: Props) {
         <footer style={{
           padding: '12px 20px',
           borderTop: `1px solid ${BORDER_HAIRLINE}`,
-          fontSize: 11, color: TEXT_MUTED,
+          fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED,
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         }}>
           <span>{tools.filter(t => t.enabled).length} disponibles · {tools.filter(t => !t.enabled).length} bloqueadas</span>

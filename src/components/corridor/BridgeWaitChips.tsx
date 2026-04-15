@@ -101,7 +101,7 @@ export function BridgeWaitChips() {
           <span
             style={{
               fontFamily: 'var(--font-geist-sans), system-ui, sans-serif',
-              fontSize: 10,
+              fontSize: 'var(--aguila-fs-label)',
               letterSpacing: '0.14em',
               textTransform: 'uppercase',
               color: ACCENT_SILVER_BRIGHT,
@@ -109,13 +109,13 @@ export function BridgeWaitChips() {
           >
             {r.bridge_name}
           </span>
-          <span style={{ color: ACCENT_SILVER_DIM, fontSize: 11 }} aria-hidden="true">
+          <span style={{ color: ACCENT_SILVER_DIM, fontSize: 'var(--aguila-fs-meta)' }} aria-hidden="true">
             {r.direction === 'northbound' ? '↑' : '↓'}
           </span>
           <span
             style={{
               fontFamily: 'var(--font-jetbrains-mono), monospace',
-              fontSize: 13,
+              fontSize: 'var(--aguila-fs-body)',
               fontWeight: 600,
               color: ACCENT_SILVER,
             }}

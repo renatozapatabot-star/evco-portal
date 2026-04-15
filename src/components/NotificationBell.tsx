@@ -223,7 +223,7 @@ export default function NotificationBell() {
               position: 'absolute', top: 10, right: 10,
               minWidth: 18, height: 18, padding: '0 5px',
               borderRadius: 9, background: '#E8EAED', color: '#0B1220',
-              fontSize: 10, fontWeight: 800,
+              fontSize: 'var(--aguila-fs-label)', fontWeight: 800,
               display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
               fontFamily: 'var(--font-mono)',
             }}
@@ -254,8 +254,8 @@ export default function NotificationBell() {
             padding: '4px 8px 12px',
             borderBottom: '1px solid rgba(255,255,255,0.06)',
           }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: '#E6EDF3' }}>Notificaciones</div>
-            <div style={{ fontSize: 11, color: '#94a3b8', fontFamily: 'var(--font-mono)' }}>
+            <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 700, color: '#E6EDF3' }}>Notificaciones</div>
+            <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#94a3b8', fontFamily: 'var(--font-mono)' }}>
               {loading ? 'Cargando…' : unread > 0 ? `${unread} sin leer` : 'Al día'}
             </div>
           </div>
@@ -263,8 +263,8 @@ export default function NotificationBell() {
           {items.length === 0 && !loading && (
             <div style={{ padding: '32px 16px', textAlign: 'center' }}>
               <Bell size={24} style={{ opacity: 0.4, marginBottom: 8 }} />
-              <div style={{ fontSize: 13, color: '#94a3b8' }}>Sin notificaciones recientes</div>
-              <div style={{ fontSize: 11, color: '#64748b', marginTop: 4 }}>
+              <div style={{ fontSize: 'var(--aguila-fs-body)', color: '#94a3b8' }}>Sin notificaciones recientes</div>
+              <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#64748b', marginTop: 4 }}>
                 Las menciones y alertas del sistema aparecerán aquí.
               </div>
             </div>
@@ -273,7 +273,7 @@ export default function NotificationBell() {
           {groups.map(group => (
             <div key={group.label} style={{ marginTop: 8 }}>
               <div style={{
-                fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em',
+                fontSize: 'var(--aguila-fs-label)', textTransform: 'uppercase', letterSpacing: '0.08em',
                 color: '#64748b', padding: '4px 8px',
               }}>
                 {group.label}
@@ -307,16 +307,16 @@ export default function NotificationBell() {
                   />
                   <span style={{ flex: 1, minWidth: 0 }}>
                     <span style={{
-                      display: 'block', fontSize: 13, fontWeight: n.read ? 500 : 700,
+                      display: 'block', fontSize: 'var(--aguila-fs-body)', fontWeight: n.read ? 500 : 700,
                       color: '#E6EDF3', marginBottom: 2,
                       overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                     }}>{n.title}</span>
                     <span style={{
-                      display: 'block', fontSize: 12, color: '#94a3b8',
+                      display: 'block', fontSize: 'var(--aguila-fs-compact)', color: '#94a3b8',
                       marginBottom: 4,
                     }}>{n.description}</span>
                     <span style={{
-                      fontSize: 10, color: '#64748b',
+                      fontSize: 'var(--aguila-fs-label)', color: '#64748b',
                       fontFamily: 'var(--font-mono)',
                     }}>{fmtDateTime(n.created_at)}</span>
                   </span>

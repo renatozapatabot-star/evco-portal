@@ -48,7 +48,7 @@ const TOOLTIP_STYLE: React.CSSProperties = {
   border: 'none',
   borderRadius: 10,
   color: 'white',
-  fontSize: 12,
+  fontSize: 'var(--aguila-fs-compact)',
   fontWeight: 600,
   padding: '8px 12px',
   boxShadow: '0 10px 15px -3px rgba(0,0,0,0.15)',
@@ -107,8 +107,8 @@ function Card({ children, style = {} }: { children: React.ReactNode; style?: Rea
 function SectionTitle({ title, sub }: { title: string; sub?: string }) {
   return (
     <div style={{ marginBottom: 16 }}>
-      <h3 style={{ color: T.text, fontSize: 14, fontWeight: 700, margin: 0 }}>{title}</h3>
-      {sub && <p style={{ color: T.textMuted, fontSize: 11, margin: '3px 0 0' }}>{sub}</p>}
+      <h3 style={{ color: T.text, fontSize: 'var(--aguila-fs-section)', fontWeight: 700, margin: 0 }}>{title}</h3>
+      {sub && <p style={{ color: T.textMuted, fontSize: 'var(--aguila-fs-meta)', margin: '3px 0 0' }}>{sub}</p>}
     </div>
   )
 }
@@ -117,7 +117,7 @@ function CustomTooltip({ active, payload, label }: { active?: boolean; payload?:
   if (!active || !payload?.length) return null
   return (
     <div style={TOOLTIP_STYLE}>
-      <div style={{ color: GOLD, fontSize: 10, marginBottom: 4 }}>{label}</div>
+      <div style={{ color: GOLD, fontSize: 'var(--aguila-fs-label)', marginBottom: 4 }}>{label}</div>
       <div style={{ color: 'white' }}>{payload[0].value.toLocaleString('es-MX')} embarques</div>
     </div>
   )
@@ -368,13 +368,13 @@ export function ReportesView() {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           <DateInputES value={dateFrom} onChange={setDateFrom}
-            style={{ height: 60, border: `1px solid ${T.border}`, borderRadius: 6, padding: '0 12px', fontSize: 13, color: T.textSub, background: T.surfaceAlt }} />
-          <span style={{ color: T.textMuted, fontSize: 11 }}>—</span>
+            style={{ height: 60, border: `1px solid ${T.border}`, borderRadius: 6, padding: '0 12px', fontSize: 'var(--aguila-fs-body)', color: T.textSub, background: T.surfaceAlt }} />
+          <span style={{ color: T.textMuted, fontSize: 'var(--aguila-fs-meta)' }}>—</span>
           <DateInputES value={dateTo} onChange={setDateTo}
-            style={{ height: 60, border: `1px solid ${T.border}`, borderRadius: 6, padding: '0 12px', fontSize: 13, color: T.textSub, background: T.surfaceAlt }} />
+            style={{ height: 60, border: `1px solid ${T.border}`, borderRadius: 6, padding: '0 12px', fontSize: 'var(--aguila-fs-body)', color: T.textSub, background: T.surfaceAlt }} />
           {(dateFrom || dateTo) && (
             <button onClick={() => { setDateFrom(''); setDateTo('') }}
-              style={{ fontSize: 13, fontWeight: 600, color: T.red, border: `1px solid ${T.red}33`, background: 'var(--danger-bg)', borderRadius: 6, padding: '0 12px', minWidth: 40, minHeight: 40, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
+              style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: T.red, border: `1px solid ${T.red}33`, background: 'var(--danger-bg)', borderRadius: 6, padding: '0 12px', minWidth: 40, minHeight: 40, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
           )}
         </div>
 
@@ -389,7 +389,7 @@ export function ReportesView() {
               border: `1px solid ${T.border}`,
               background: T.surface,
               color: T.text,
-              fontSize: 13,
+              fontSize: 'var(--aguila-fs-body)',
               fontWeight: 500,
               cursor: 'pointer',
               minHeight: 60,
@@ -413,18 +413,18 @@ export function ReportesView() {
               <CartesianGrid strokeDasharray="3 3" stroke={T.border} vertical={false} />
               <XAxis
                 dataKey="label"
-                tick={{ fill: T.textMuted, fontSize: 11 }}
+                tick={{ fill: T.textMuted, fontSize: 'var(--aguila-fs-meta)' }}
                 axisLine={false}
                 tickLine={false}
               />
               <YAxis
-                tick={{ fill: T.textMuted, fontSize: 10, fontFamily: 'var(--font-mono)' }}
+                tick={{ fill: T.textMuted, fontSize: 'var(--aguila-fs-label)', fontFamily: 'var(--font-mono)' }}
                 axisLine={false}
                 tickLine={false}
                 allowDecimals={false}
               />
               <Tooltip content={<CustomTooltip />} />
-              <Bar dataKey="count" fill={T.gold} radius={[4, 4, 0, 0]} cursor="pointer" label={{ position: 'top', fill: T.textMuted, fontSize: 11, fontFamily: 'var(--font-mono)' }}
+              <Bar dataKey="count" fill={T.gold} radius={[4, 4, 0, 0]} cursor="pointer" label={{ position: 'top', fill: T.textMuted, fontSize: 'var(--aguila-fs-meta)', fontFamily: 'var(--font-mono)' }}
                 onClick={(_data: unknown, idx: number) => {
                   const bucket = monthlyData[idx]
                   if (bucket?.month) {
@@ -464,24 +464,24 @@ export function ReportesView() {
                     <div style={{
                       width: 28, height: 28, borderRadius: '50%',
                       background: avatarColor(s.name).bg, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: 10, fontWeight: 700, color: avatarColor(s.name).text, flexShrink: 0,
+                      fontSize: 'var(--aguila-fs-label)', fontWeight: 700, color: avatarColor(s.name).text, flexShrink: 0,
                     }}>
                       {s.name.split(' ').slice(0, 2).map(w => w[0] || '').join('').toUpperCase().slice(0, 2)}
                     </div>
-                    <span style={{ fontWeight: 700, fontSize: 13, color: T.text }}>{s.name}</span>
+                    <span style={{ fontWeight: 700, fontSize: 'var(--aguila-fs-body)', color: T.text }}>{s.name}</span>
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
                     <div>
-                      <div style={{ fontSize: 10, color: T.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Embarques</div>
-                      <div style={{ fontFamily: 'var(--font-mono)', fontSize: 16, fontWeight: 700, color: T.text }}>{s.count}</div>
+                      <div style={{ fontSize: 'var(--aguila-fs-label)', color: T.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Embarques</div>
+                      <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, color: T.text }}>{s.count}</div>
                     </div>
                     <div>
-                      <div style={{ fontSize: 10, color: T.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Valor</div>
-                      <div style={{ fontFamily: 'var(--font-mono)', fontSize: 16, fontWeight: 700, color: T.text }}>{fmtUSDShort(s.totalValue)}</div>
+                      <div style={{ fontSize: 'var(--aguila-fs-label)', color: T.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Valor</div>
+                      <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, color: T.text }}>{fmtUSDShort(s.totalValue)}</div>
                     </div>
                     <div>
-                      <div style={{ fontSize: 10, color: T.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em' }}>T-MEC</div>
-                      <div style={{ fontFamily: 'var(--font-mono)', fontSize: 16, fontWeight: 700, color: s.tmecPct >= 50 ? T.green : T.amber }}>{s.tmecPct}%</div>
+                      <div style={{ fontSize: 'var(--aguila-fs-label)', color: T.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em' }}>T-MEC</div>
+                      <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, color: s.tmecPct >= 50 ? T.green : T.amber }}>{s.tmecPct}%</div>
                     </div>
                   </div>
                 </div>
@@ -489,14 +489,14 @@ export function ReportesView() {
             </div>
           ) : (
             <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--aguila-fs-body)' }}>
                 <thead>
                   <tr style={{ borderBottom: `1px solid ${T.border}` }}>
-                    <th scope="col" style={{ padding: '10px 20px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>#</th>
-                    <th scope="col" style={{ padding: '10px 16px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Proveedor</th>
-                    <th scope="col" style={{ padding: '10px 16px', textAlign: 'right', fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Embarques</th>
-                    <th scope="col" style={{ padding: '10px 16px', textAlign: 'right', fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Valor Total</th>
-                    <th scope="col" style={{ padding: '10px 20px', textAlign: 'right', fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>T-MEC %</th>
+                    <th scope="col" style={{ padding: '10px 20px', textAlign: 'left', fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>#</th>
+                    <th scope="col" style={{ padding: '10px 16px', textAlign: 'left', fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Proveedor</th>
+                    <th scope="col" style={{ padding: '10px 16px', textAlign: 'right', fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Embarques</th>
+                    <th scope="col" style={{ padding: '10px 16px', textAlign: 'right', fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Valor Total</th>
+                    <th scope="col" style={{ padding: '10px 20px', textAlign: 'right', fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>T-MEC %</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -508,13 +508,13 @@ export function ReportesView() {
                         background: i === 0 ? T.goldBg : s.tmecPct === 0 ? 'var(--amber-50)' : 'transparent',
                       }}
                     >
-                      <td style={{ padding: '12px 20px', fontFamily: 'var(--font-mono)', fontSize: 12, color: T.textMuted }}>{i + 1}</td>
+                      <td style={{ padding: '12px 20px', fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-compact)', color: T.textMuted }}>{i + 1}</td>
                       <td style={{ padding: '12px 16px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                           <div style={{
                             width: 28, height: 28, borderRadius: '50%',
                             background: avatarColor(s.name).bg, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontSize: 10, fontWeight: 700, color: avatarColor(s.name).text, flexShrink: 0,
+                            fontSize: 'var(--aguila-fs-label)', fontWeight: 700, color: avatarColor(s.name).text, flexShrink: 0,
                           }}>
                             {s.name.split(' ').slice(0, 2).map(w => w[0] || '').join('').toUpperCase().slice(0, 2)}
                           </div>
@@ -559,10 +559,10 @@ export function ReportesView() {
               background: T.surfaceAlt, borderRadius: 8, padding: '12px 16px',
               border: `1px solid ${T.border}`,
             }}>
-              <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>
+              <div style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 700, color: T.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>
                 {kpi.label}
               </div>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 20, fontWeight: 800, color: T.text }}>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-headline)', fontWeight: 800, color: T.text }}>
                 {kpi.value}
               </div>
             </div>
@@ -581,7 +581,7 @@ export function ReportesView() {
               return (
                 <div key={reg} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                   <span style={{
-                    fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 700,
+                    fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body)', fontWeight: 700,
                     color: isTmec ? T.green : T.text, minWidth: 40,
                   }}>
                     {reg}
@@ -593,7 +593,7 @@ export function ReportesView() {
                       borderRadius: 4,
                     }} />
                   </div>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: T.textMuted, minWidth: 70, textAlign: 'right' }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-compact)', color: T.textMuted, minWidth: 70, textAlign: 'right' }}>
                     {count} ({pct}%)
                   </span>
                 </div>
@@ -616,7 +616,7 @@ export function ReportesView() {
               border: `1px solid ${T.border}`,
               borderRadius: 8,
               background: T.surface,
-              fontSize: 13,
+              fontSize: 'var(--aguila-fs-body)',
               fontWeight: 600,
               color: filteredRows.length === 0 ? T.textMuted : T.text,
               cursor: filteredRows.length === 0 ? 'not-allowed' : 'pointer',
@@ -632,7 +632,7 @@ export function ReportesView() {
             </svg>
             <div style={{ textAlign: 'left' }}>
               <div>Exportar CSV</div>
-              <div style={{ fontSize: 11, color: T.textMuted, fontWeight: 400, marginTop: 2 }}>
+              <div style={{ fontSize: 'var(--aguila-fs-meta)', color: T.textMuted, fontWeight: 400, marginTop: 2 }}>
                 {fmtNum(filteredRows.length)} registros
               </div>
             </div>
@@ -647,7 +647,7 @@ export function ReportesView() {
               border: `1px solid ${T.border}`,
               borderRadius: 8,
               background: filteredRows.length === 0 ? 'transparent' : T.surface,
-              fontSize: 13,
+              fontSize: 'var(--aguila-fs-body)',
               fontWeight: 600,
               color: filteredRows.length === 0 ? T.textMuted : T.text,
               cursor: filteredRows.length === 0 ? 'not-allowed' : 'pointer',
@@ -663,7 +663,7 @@ export function ReportesView() {
             </svg>
             <div style={{ textAlign: 'left' }}>
               <div>Generar PDF</div>
-              <div style={{ fontSize: 11, color: T.textMuted, fontWeight: 400, marginTop: 2 }}>
+              <div style={{ fontSize: 'var(--aguila-fs-meta)', color: T.textMuted, fontWeight: 400, marginTop: 2 }}>
                 Reporte completo
               </div>
             </div>
@@ -671,7 +671,7 @@ export function ReportesView() {
         </div>
       </Card>
 
-      <p style={{ fontSize: 10, color: T.textMuted, marginTop: 20, fontStyle: 'italic', textAlign: 'center' }}>
+      <p style={{ fontSize: 'var(--aguila-fs-label)', color: T.textMuted, marginTop: 20, fontStyle: 'italic', textAlign: 'center' }}>
         Renato Zapata & Co. · Patente 3596 · Aduana 240, Nuevo Laredo
       </p>
     </div>

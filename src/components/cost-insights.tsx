@@ -113,7 +113,7 @@ export function CostInsights() {
     <div className="card card-enter" style={{ padding: '16px 20px', marginBottom: 20 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
         <DollarSign size={16} style={{ color: 'var(--gold)' }} />
-        <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)' }}>
+        <span style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)' }}>
           Inteligencia Financiera
         </span>
       </div>
@@ -131,10 +131,10 @@ export function CostInsights() {
             >
               {iconMap[insight.type]}
               <div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.4 }}>
+                <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.4 }}>
                   {insight.title}
                 </div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 1 }}>
+                <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', marginTop: 1 }}>
                   {insight.detail}
                 </div>
               </div>

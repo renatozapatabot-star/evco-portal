@@ -45,23 +45,23 @@ export function AduanaRecommendation({
         background: 'rgba(192,197,206,0.06)',
         border: '1px solid rgba(192,197,206,0.12)',
       }}>
-        <span style={{ fontSize: 11, color: '#E8EAED', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <span style={{ fontSize: 'var(--aguila-fs-meta)', color: '#E8EAED', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {recommendation}
         </span>
-        <span className="font-mono" style={{ fontSize: 10, color: confidenceColor, flexShrink: 0 }}>
+        <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-label)', color: confidenceColor, flexShrink: 0 }}>
           {confidence}%
         </span>
         {(approveHref || onApprove) && (
           approveHref ? (
             <Link href={approveHref} onClick={handleApprove} style={{
-              fontSize: 10, fontWeight: 700, color: '#111', background: '#E8EAED',
+              fontSize: 'var(--aguila-fs-label)', fontWeight: 700, color: '#111', background: '#E8EAED',
               padding: '3px 10px', borderRadius: 4, textDecoration: 'none', flexShrink: 0,
             }}>
               {approveLabel}
             </Link>
           ) : (
             <button onClick={handleApprove} style={{
-              fontSize: 10, fontWeight: 700, color: '#111', background: '#E8EAED',
+              fontSize: 'var(--aguila-fs-label)', fontWeight: 700, color: '#111', background: '#E8EAED',
               padding: '3px 10px', borderRadius: 4, border: 'none', cursor: 'pointer', flexShrink: 0,
             }}>
               {approveLabel}
@@ -80,18 +80,18 @@ export function AduanaRecommendation({
     }}>
       {/* Memory badge */}
       {memoryBadge && (
-        <div style={{ fontSize: 10, color: '#E8EAED', marginBottom: 6, fontWeight: 600 }}>
+        <div style={{ fontSize: 'var(--aguila-fs-label)', color: '#E8EAED', marginBottom: 6, fontWeight: 600 }}>
           🧠 {memoryBadge}
         </div>
       )}
 
       {/* Recommendation line */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: reasoning ? 6 : 8 }}>
-        <span style={{ fontSize: 13, fontWeight: 600, color: '#E6EDF3', flex: 1 }}>
+        <span style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: '#E6EDF3', flex: 1 }}>
           {recommendation}
         </span>
         <span className="font-mono" style={{
-          fontSize: 12, fontWeight: 700, color: confidenceColor,
+          fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, color: confidenceColor,
           background: `${confidenceColor}15`, padding: '2px 8px', borderRadius: 4,
           flexShrink: 0,
         }}>
@@ -103,7 +103,7 @@ export function AduanaRecommendation({
       {reasoning && reasoning.length > 0 && (
         <div style={{ marginBottom: 8, paddingLeft: 8 }}>
           {reasoning.map((r, i) => (
-            <div key={i} style={{ fontSize: 11, color: '#8B949E', lineHeight: 1.5 }}>
+            <div key={i} style={{ fontSize: 'var(--aguila-fs-meta)', color: '#8B949E', lineHeight: 1.5 }}>
               · {r}
             </div>
           ))}
@@ -117,7 +117,7 @@ export function AduanaRecommendation({
             <Link href={approveHref} onClick={handleApprove} style={{
               flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
               padding: '10px 16px', borderRadius: 8, minHeight: 44,
-              background: '#E8EAED', color: '#111', fontSize: 13, fontWeight: 700,
+              background: '#E8EAED', color: '#111', fontSize: 'var(--aguila-fs-body)', fontWeight: 700,
               textDecoration: 'none',
             }}>
               {approveLabel} →
@@ -125,7 +125,7 @@ export function AduanaRecommendation({
           ) : (
             <button onClick={handleApprove} style={{
               flex: 1, padding: '10px 16px', borderRadius: 8, minHeight: 44,
-              background: '#E8EAED', color: '#111', fontSize: 13, fontWeight: 700,
+              background: '#E8EAED', color: '#111', fontSize: 'var(--aguila-fs-body)', fontWeight: 700,
               border: 'none', cursor: 'pointer',
             }}>
               {approveLabel} →
@@ -136,7 +136,7 @@ export function AduanaRecommendation({
           <Link href={reviewHref} style={{
             padding: '10px 16px', borderRadius: 8, minHeight: 44,
             background: 'rgba(255,255,255,0.06)', color: '#8B949E',
-            fontSize: 13, fontWeight: 600, textDecoration: 'none',
+            fontSize: 'var(--aguila-fs-body)', fontWeight: 600, textDecoration: 'none',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             border: '1px solid rgba(255,255,255,0.08)',
           }}>

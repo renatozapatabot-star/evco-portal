@@ -384,7 +384,7 @@ export function SolicitarDocsModal({
               <div style={{ fontSize: 15, fontWeight: 700, color: TEXT_PRIMARY }}>
                 Solicitar documentos
               </div>
-              <div style={{ fontSize: 11, color: TEXT_MUTED, fontFamily: 'var(--font-mono)' }}>
+              <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED, fontFamily: 'var(--font-mono)' }}>
                 Embarque {traficoId} · {cliente}
               </div>
             </div>
@@ -421,7 +421,7 @@ export function SolicitarDocsModal({
               cursor: 'pointer',
               padding: '10px 14px',
               minHeight: 44,
-              fontSize: 12,
+              fontSize: 'var(--aguila-fs-compact)',
               fontWeight: 700,
               color: GOLD,
               border: `1px solid ${GOLD}`,
@@ -431,7 +431,7 @@ export function SolicitarDocsModal({
           >
             Seleccionar requeridos
           </button>
-          <div style={{ display: 'flex', alignItems: 'center', fontSize: 11, color: TEXT_MUTED }}>
+          <div style={{ display: 'flex', alignItems: 'center', fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED }}>
             {totalSelected} seleccionado{totalSelected === 1 ? '' : 's'}
           </div>
         </div>
@@ -475,7 +475,7 @@ export function SolicitarDocsModal({
               onChange={handleOtroToggle}
               style={{ width: 18, height: 18, accentColor: ACCENT_SILVER, cursor: 'pointer' }}
             />
-            <span style={{ fontSize: 13, color: TEXT_PRIMARY, fontWeight: 600 }}>
+            <span style={{ fontSize: 'var(--aguila-fs-body)', color: TEXT_PRIMARY, fontWeight: 600 }}>
               Otro (especificar)
             </span>
           </label>
@@ -510,7 +510,7 @@ export function SolicitarDocsModal({
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: 6,
-                  fontSize: 12,
+                  fontSize: 'var(--aguila-fs-compact)',
                   color: ACCENT_SILVER,
                   padding: 8,
                 }}
@@ -568,7 +568,7 @@ export function SolicitarDocsModal({
 
         {/* Actions */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginTop: 14 }}>
-          <span style={{ fontSize: 11, color: TEXT_MUTED }}>
+          <span style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED }}>
             Remitente: <span style={{ color: TEXT_SECONDARY }}>ai@renatozapata.com</span>
           </span>
           <div style={{ display: 'flex', gap: 8 }}>
@@ -584,7 +584,7 @@ export function SolicitarDocsModal({
                 color: TEXT_SECONDARY,
                 border: `1px solid ${BORDER}`,
                 borderRadius: 12,
-                fontSize: 13,
+                fontSize: 'var(--aguila-fs-body)',
                 fontWeight: 600,
                 cursor: sending ? 'not-allowed' : 'pointer',
               }}
@@ -603,7 +603,7 @@ export function SolicitarDocsModal({
                 color: '#0B1220',
                 border: 'none',
                 borderRadius: 12,
-                fontSize: 13,
+                fontSize: 'var(--aguila-fs-body)',
                 fontWeight: 700,
                 cursor: sending || totalSelected === 0 ? 'not-allowed' : 'pointer',
                 display: 'flex',
@@ -636,7 +636,7 @@ export function SolicitarDocsModal({
               border: `1px solid ${BORDER}`,
               borderRadius: 12,
               color: TEXT_SECONDARY,
-              fontSize: 12,
+              fontSize: 'var(--aguila-fs-compact)',
               display: 'flex',
               alignItems: 'center',
               gap: 8,
@@ -692,7 +692,7 @@ function CategorySection({
           {expanded ? <ChevronDown size={16} color={TEXT_MUTED} /> : <ChevronRight size={16} color={TEXT_MUTED} />}
           <span
             style={{
-              fontSize: 11,
+              fontSize: 'var(--aguila-fs-meta)',
               fontWeight: 800,
               color: TEXT_PRIMARY,
               textTransform: 'uppercase',
@@ -705,7 +705,7 @@ function CategorySection({
         {countSel > 0 && (
           <span
             style={{
-              fontSize: 11,
+              fontSize: 'var(--aguila-fs-meta)',
               fontWeight: 700,
               color: ACCENT_SILVER,
               fontFamily: 'var(--font-mono)',
@@ -747,13 +747,13 @@ function CategorySection({
                 />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: 13, color: TEXT_PRIMARY, fontWeight: 600 }}>
+                    <span style={{ fontSize: 'var(--aguila-fs-body)', color: TEXT_PRIMARY, fontWeight: 600 }}>
                       {entry.name_es}
                     </span>
                     {entry.required && (
                       <span
                         style={{
-                          fontSize: 10,
+                          fontSize: 'var(--aguila-fs-label)',
                           fontWeight: 800,
                           color: '#0B1220',
                           background: GOLD,
@@ -767,7 +767,7 @@ function CategorySection({
                     )}
                   </div>
                   {entry.desc && (
-                    <div style={{ fontSize: 11, color: TEXT_MUTED, marginTop: 2 }}>
+                    <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED, marginTop: 2 }}>
                       {entry.desc}
                     </div>
                   )}
@@ -801,7 +801,7 @@ function SummaryCard({ selected, customsCount }: { selected: Set<string>; custom
     >
       <div
         style={{
-          fontSize: 10,
+          fontSize: 'var(--aguila-fs-label)',
           fontWeight: 800,
           color: TEXT_MUTED,
           textTransform: 'uppercase',
@@ -812,14 +812,14 @@ function SummaryCard({ selected, customsCount }: { selected: Set<string>; custom
         Resumen ({total} documento{total === 1 ? '' : 's'})
       </div>
       {rows.length === 0 && customsCount === 0 ? (
-        <div style={{ fontSize: 12, color: TEXT_MUTED }}>Nada seleccionado aún.</div>
+        <div style={{ fontSize: 'var(--aguila-fs-compact)', color: TEXT_MUTED }}>Nada seleccionado aún.</div>
       ) : (
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
           {rows.map(([cat, count]) => (
             <span
               key={cat}
               style={{
-                fontSize: 11,
+                fontSize: 'var(--aguila-fs-meta)',
                 color: TEXT_SECONDARY,
                 fontFamily: 'var(--font-mono)',
               }}
@@ -828,7 +828,7 @@ function SummaryCard({ selected, customsCount }: { selected: Set<string>; custom
             </span>
           ))}
           {customsCount > 0 && (
-            <span style={{ fontSize: 11, color: ACCENT_SILVER, fontFamily: 'var(--font-mono)' }}>
+            <span style={{ fontSize: 'var(--aguila-fs-meta)', color: ACCENT_SILVER, fontFamily: 'var(--font-mono)' }}>
               Otros: <strong>{customsCount}</strong>
             </span>
           )}
@@ -840,7 +840,7 @@ function SummaryCard({ selected, customsCount }: { selected: Set<string>; custom
 
 const labelStyle: React.CSSProperties = {
   display: 'block',
-  fontSize: 11,
+  fontSize: 'var(--aguila-fs-meta)',
   fontWeight: 700,
   color: TEXT_MUTED,
   textTransform: 'uppercase',
@@ -856,7 +856,7 @@ const inputStyle: React.CSSProperties = {
   color: TEXT_PRIMARY,
   border: `1px solid ${BORDER}`,
   borderRadius: 12,
-  fontSize: 13,
+  fontSize: 'var(--aguila-fs-body)',
   outline: 'none',
   boxSizing: 'border-box',
 }

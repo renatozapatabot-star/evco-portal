@@ -174,7 +174,7 @@ export function ClickToCall({ phone, contactName, traficoId, companyId, compact 
                 <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>
                   {contactName || 'Contacto'}
                 </div>
-                <div style={{ fontSize: 12, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
                   {phone}
                 </div>
               </div>
@@ -190,7 +190,7 @@ export function ClickToCall({ phone, contactName, traficoId, companyId, compact 
           {/* Pre-call context */}
           {callStatus === 'idle' && context && (
             <div style={{ marginBottom: 16 }}>
-              <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>
+              <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>
                 Contexto
               </div>
 
@@ -198,8 +198,8 @@ export function ClickToCall({ phone, contactName, traficoId, companyId, compact 
                 <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start', marginBottom: 8, padding: '8px 10px', borderRadius: 6, background: 'var(--slate-100)' }}>
                   <MessageSquare size={12} style={{ color: 'var(--text-muted)', marginTop: 2, flexShrink: 0 }} />
                   <div>
-                    <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Último WhatsApp: {fmtDateTime(context.lastWhatsApp.created_at)}</div>
-                    <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>
+                    <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)' }}>Último WhatsApp: {fmtDateTime(context.lastWhatsApp.created_at)}</div>
+                    <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-secondary)', marginTop: 2 }}>
                       {(context.lastWhatsApp.message_body || '').substring(0, 80)}
                     </div>
                   </div>
@@ -210,7 +210,7 @@ export function ClickToCall({ phone, contactName, traficoId, companyId, compact 
                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
                   {context.recentTraficos.map(t => (
                     <span key={t.trafico} style={{
-                      padding: '3px 8px', borderRadius: 4, fontSize: 11,
+                      padding: '3px 8px', borderRadius: 4, fontSize: 'var(--aguila-fs-meta)',
                       fontFamily: 'var(--font-mono)', background: 'rgba(196,150,60,0.1)',
                       color: 'var(--gold-dark)',
                     }}>
@@ -221,7 +221,7 @@ export function ClickToCall({ phone, contactName, traficoId, companyId, compact 
               )}
 
               {context.pendingDocs > 0 && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--warning)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 'var(--aguila-fs-compact)', color: 'var(--warning)' }}>
                   <FileText size={12} /> {context.pendingDocs} documento{context.pendingDocs !== 1 ? 's' : ''} pendiente{context.pendingDocs !== 1 ? 's' : ''}
                 </div>
               )}
@@ -237,7 +237,7 @@ export function ClickToCall({ phone, contactName, traficoId, companyId, compact 
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                 width: '100%', padding: '12px 24px', borderRadius: 8,
                 background: 'var(--success)', border: 'none', color: 'rgba(255,255,255,0.045)',
-                fontSize: 14, fontWeight: 700, cursor: 'pointer', minHeight: 48,
+                fontSize: 'var(--aguila-fs-section)', fontWeight: 700, cursor: 'pointer', minHeight: 48,
               }}
             >
               <Phone size={16} /> Llamar ahora
@@ -255,13 +255,13 @@ export function ClickToCall({ phone, contactName, traficoId, companyId, compact 
               }}>
                 <Phone size={24} style={{ color: 'rgba(255,255,255,0.045)' }} />
               </div>
-              <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>
+              <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: 'var(--text-primary)' }}>
                 {callStatus === 'ringing' ? 'Llamando...' : 'En llamada'}
               </div>
 
               {/* Post-call buttons */}
               <div style={{ marginTop: 20 }}>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8 }}>¿Cómo fue la llamada?</div>
+                <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', marginBottom: 8 }}>¿Cómo fue la llamada?</div>
                 <div style={{ display: 'flex', gap: 6, justifyContent: 'center', flexWrap: 'wrap' }}>
                   {['Lo envían hoy', 'Lo envían mañana', 'No contestó', 'Otro'].map(opt => (
                     <button
@@ -270,7 +270,7 @@ export function ClickToCall({ phone, contactName, traficoId, companyId, compact 
                       style={{
                         padding: '8px 14px', borderRadius: 8,
                         border: '1px solid var(--border)', background: 'var(--bg-card)',
-                        fontSize: 12, color: 'var(--text-primary)', cursor: 'pointer',
+                        fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-primary)', cursor: 'pointer',
                         minHeight: 36,
                       }}
                     >
@@ -285,7 +285,7 @@ export function ClickToCall({ phone, contactName, traficoId, companyId, compact 
           {/* Post-call logging */}
           {callStatus === 'ended' && (
             <div>
-              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--success)', marginBottom: 12, textAlign: 'center' }}>
+              <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: 'var(--success)', marginBottom: 12, textAlign: 'center' }}>
                 ✅ Resultado: {postCallResult}
               </div>
               <textarea
@@ -295,7 +295,7 @@ export function ClickToCall({ phone, contactName, traficoId, companyId, compact 
                 rows={3}
                 style={{
                   width: '100%', border: '1px solid var(--border)', borderRadius: 8,
-                  padding: '10px 12px', fontSize: 13, color: 'var(--text-primary)',
+                  padding: '10px 12px', fontSize: 'var(--aguila-fs-body)', color: 'var(--text-primary)',
                   fontFamily: 'inherit', resize: 'none', outline: 'none',
                   background: 'var(--bg-main)', boxSizing: 'border-box', marginBottom: 12,
                 }}
@@ -306,7 +306,7 @@ export function ClickToCall({ phone, contactName, traficoId, companyId, compact 
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                   width: '100%', padding: '10px 24px', borderRadius: 8,
                   background: 'var(--gold)', border: 'none', color: 'var(--bg-card)',
-                  fontSize: 13, fontWeight: 700, cursor: 'pointer', minHeight: 44,
+                  fontSize: 'var(--aguila-fs-body)', fontWeight: 700, cursor: 'pointer', minHeight: 44,
                 }}
               >
                 Guardar y cerrar
@@ -315,7 +315,7 @@ export function ClickToCall({ phone, contactName, traficoId, companyId, compact 
           )}
 
           {callStatus === 'error' && (
-            <div style={{ textAlign: 'center', padding: '12px 0', color: 'var(--danger-500)', fontSize: 13 }}>
+            <div style={{ textAlign: 'center', padding: '12px 0', color: 'var(--danger-500)', fontSize: 'var(--aguila-fs-body)' }}>
               ❌ Error al conectar la llamada. Verifica el número e intenta de nuevo.
             </div>
           )}
@@ -330,7 +330,7 @@ export function ClickToCall({ phone, contactName, traficoId, companyId, compact 
         onClick={() => setShowBrief(true)}
         style={{
           display: 'flex', alignItems: 'center', gap: 6,
-          padding: '8px 16px', borderRadius: 8, fontSize: 13, fontWeight: 600,
+          padding: '8px 16px', borderRadius: 8, fontSize: 'var(--aguila-fs-body)', fontWeight: 600,
           background: 'rgba(22,163,74,0.1)', border: '1px solid rgba(22,163,74,0.2)',
           color: 'var(--success)', cursor: 'pointer', minHeight: 40,
         }}

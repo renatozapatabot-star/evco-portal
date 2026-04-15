@@ -84,7 +84,7 @@ export function SelectedTraficoRail({ pulse, onClose, onAction }: SelectedTrafic
             borderRadius: 10,
             color: ACCENT_SILVER_DIM,
             fontFamily: 'var(--font-geist-sans), system-ui, sans-serif',
-            fontSize: 12,
+            fontSize: 'var(--aguila-fs-compact)',
             cursor: 'pointer',
           }}
         >
@@ -96,7 +96,7 @@ export function SelectedTraficoRail({ pulse, onClose, onAction }: SelectedTrafic
         <div
           style={{
             fontFamily: 'var(--font-jetbrains-mono), monospace',
-            fontSize: 16,
+            fontSize: 'var(--aguila-fs-body-lg)',
             color: ACCENT_SILVER,
           }}
         >
@@ -105,7 +105,7 @@ export function SelectedTraficoRail({ pulse, onClose, onAction }: SelectedTrafic
         <div
           style={{
             fontFamily: 'var(--font-geist-sans), system-ui, sans-serif',
-            fontSize: 13,
+            fontSize: 'var(--aguila-fs-body)',
             color: ACCENT_SILVER_DIM,
             marginTop: 2,
           }}
@@ -115,13 +115,13 @@ export function SelectedTraficoRail({ pulse, onClose, onAction }: SelectedTrafic
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-        <span style={{ fontSize: 10, letterSpacing: '0.14em', color: TEXT_TERTIARY }}>
+        <span style={{ fontSize: 'var(--aguila-fs-label)', letterSpacing: '0.14em', color: TEXT_TERTIARY }}>
           ESTADO
         </span>
         <span
           style={{
             fontFamily: 'var(--font-geist-sans), system-ui, sans-serif',
-            fontSize: 13,
+            fontSize: 'var(--aguila-fs-body)',
             color: ACCENT_SILVER,
           }}
         >
@@ -130,7 +130,7 @@ export function SelectedTraficoRail({ pulse, onClose, onAction }: SelectedTrafic
         <span
           style={{
             fontFamily: 'var(--font-jetbrains-mono), monospace',
-            fontSize: 11,
+            fontSize: 'var(--aguila-fs-meta)',
             color: TEXT_TERTIARY,
           }}
         >
@@ -140,11 +140,11 @@ export function SelectedTraficoRail({ pulse, onClose, onAction }: SelectedTrafic
 
       {pulse.operatorId && (
         <div>
-          <span style={{ fontSize: 10, letterSpacing: '0.14em', color: TEXT_TERTIARY }}>OPERADOR</span>
+          <span style={{ fontSize: 'var(--aguila-fs-label)', letterSpacing: '0.14em', color: TEXT_TERTIARY }}>OPERADOR</span>
           <div
             style={{
               fontFamily: 'var(--font-jetbrains-mono), monospace',
-              fontSize: 12,
+              fontSize: 'var(--aguila-fs-compact)',
               color: ACCENT_SILVER_DIM,
               marginTop: 2,
             }}
@@ -171,7 +171,7 @@ export function SelectedTraficoRail({ pulse, onClose, onAction }: SelectedTrafic
               borderRadius: 12,
               color: ACCENT_SILVER,
               fontFamily: 'var(--font-geist-sans), system-ui, sans-serif',
-              fontSize: 13,
+              fontSize: 'var(--aguila-fs-body)',
               textDecoration: 'none',
             }}
           >

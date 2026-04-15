@@ -65,14 +65,14 @@ function KPICard({ icon, label, value, accent, subtitle }: KPICardProps) {
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         {icon}
         <span style={{
-          fontSize: 10, fontWeight: 700, color: '#64748b',
+          fontSize: 'var(--aguila-fs-label)', fontWeight: 700, color: '#64748b',
           textTransform: 'uppercase', letterSpacing: '0.08em',
         }}>
           {label}
         </span>
       </div>
       <div style={{
-        fontSize: 28,
+        fontSize: 'var(--aguila-fs-kpi-mid)',
         fontWeight: 800,
         fontFamily: 'var(--font-mono)',
         color: accent,
@@ -81,7 +81,7 @@ function KPICard({ icon, label, value, accent, subtitle }: KPICardProps) {
         {value}
       </div>
       {subtitle && (
-        <div style={{ fontSize: 12, color: '#64748b', marginTop: -4 }}>
+        <div style={{ fontSize: 'var(--aguila-fs-compact)', color: '#64748b', marginTop: -4 }}>
           {subtitle}
         </div>
       )}
@@ -99,7 +99,7 @@ function SavingsBar({ categories, maxAmount }: { categories: SavingsCategory[]; 
         gap: 8, padding: '24px 0', color: '#64748b',
       }}>
         <BarChart3 size={24} color="#64748b" />
-        <span style={{ fontSize: 13 }}>Sin datos de ahorro por categoría</span>
+        <span style={{ fontSize: 'var(--aguila-fs-body)' }}>Sin datos de ahorro por categoría</span>
       </div>
     )
   }
@@ -114,11 +114,11 @@ function SavingsBar({ categories, maxAmount }: { categories: SavingsCategory[]; 
               display: 'flex', justifyContent: 'space-between', alignItems: 'center',
               marginBottom: 6,
             }}>
-              <span style={{ fontSize: 13, color: '#E6EDF3', fontWeight: 500 }}>
+              <span style={{ fontSize: 'var(--aguila-fs-body)', color: '#E6EDF3', fontWeight: 500 }}>
                 {cat.category}
               </span>
               <span style={{
-                fontSize: 13, fontWeight: 700,
+                fontSize: 'var(--aguila-fs-body)', fontWeight: 700,
                 fontFamily: 'var(--font-mono)',
                 color: cat.color,
               }}>
@@ -206,7 +206,7 @@ export function SavingsDashboard() {
         gap: 12, minHeight: 200,
       }}>
         <Loader2 size={20} color="#C0C5CE" style={{ animation: 'spin 1s linear infinite' }} />
-        <span style={{ fontSize: 14, color: '#94a3b8' }}>Cargando indicadores...</span>
+        <span style={{ fontSize: 'var(--aguila-fs-section)', color: '#94a3b8' }}>Cargando indicadores...</span>
         <style>{`
           @keyframes spin {
             from { transform: rotate(0deg); }
@@ -226,10 +226,10 @@ export function SavingsDashboard() {
           gap: 12, padding: '24px 0', textAlign: 'center',
         }}>
           <AlertTriangle size={28} color="#EF4444" />
-          <div style={{ fontSize: 14, color: '#EF4444', fontWeight: 600 }}>
+          <div style={{ fontSize: 'var(--aguila-fs-section)', color: '#EF4444', fontWeight: 600 }}>
             Error al cargar indicadores
           </div>
-          <div style={{ fontSize: 13, color: '#64748b' }}>{errorMsg}</div>
+          <div style={{ fontSize: 'var(--aguila-fs-body)', color: '#64748b' }}>{errorMsg}</div>
           <button
             type="button"
             onClick={fetchData}
@@ -240,7 +240,7 @@ export function SavingsDashboard() {
               border: '1px solid rgba(255,255,255,0.12)',
               background: 'rgba(255,255,255,0.04)',
               color: '#E6EDF3',
-              fontSize: 13,
+              fontSize: 'var(--aguila-fs-body)',
               fontWeight: 600,
               cursor: 'pointer',
               display: 'flex',
@@ -278,7 +278,7 @@ export function SavingsDashboard() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <TrendingUp size={18} color="#C0C5CE" />
           <span style={{
-            fontSize: 14, fontWeight: 700, color: '#C0C5CE',
+            fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: '#C0C5CE',
             textTransform: 'uppercase', letterSpacing: '0.08em',
           }}>
             Valor Generado
@@ -305,10 +305,10 @@ export function SavingsDashboard() {
             gap: 12, padding: '32px 16px', textAlign: 'center',
           }}>
             <TrendingUp size={32} color="#64748b" />
-            <div style={{ fontSize: 16, fontWeight: 600, color: '#E6EDF3' }}>
+            <div style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 600, color: '#E6EDF3' }}>
               Sin datos de ahorro disponibles
             </div>
-            <div style={{ fontSize: 13, color: '#64748b', maxWidth: 360, lineHeight: 1.5 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-body)', color: '#64748b', maxWidth: 360, lineHeight: 1.5 }}>
               Los indicadores de valor se calcularán automáticamente conforme
               se procesen operaciones a través de ADUANA.
             </div>
@@ -358,7 +358,7 @@ export function SavingsDashboard() {
               }}>
                 <ShieldCheck size={16} color="#22C55E" />
                 <span style={{
-                  fontSize: 12, fontWeight: 700, color: '#22C55E',
+                  fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, color: '#22C55E',
                   textTransform: 'uppercase', letterSpacing: '0.08em',
                 }}>
                   Desglose de Ahorro

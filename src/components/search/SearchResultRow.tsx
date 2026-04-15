@@ -38,14 +38,14 @@ export function SearchResultRow({ hit, active, entityLabel, onMouseEnter, onClic
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
         <span style={{
           fontFamily: isCode ? 'var(--font-jetbrains-mono), JetBrains Mono, monospace' : 'var(--font-geist-sans), Inter, system-ui, sans-serif',
-          fontSize: 14, fontWeight: 600,
+          fontSize: 'var(--aguila-fs-section)', fontWeight: 600,
           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
         }}>
           {hit.title || '—'}
         </span>
         {hit.subtitle && (
           <span style={{
-            fontSize: 12, color: ZAPATA.TEXT_TERTIARY,
+            fontSize: 'var(--aguila-fs-compact)', color: ZAPATA.TEXT_TERTIARY,
             overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           }}>
             {hit.subtitle}
@@ -53,7 +53,7 @@ export function SearchResultRow({ hit, active, entityLabel, onMouseEnter, onClic
         )}
       </div>
       <span style={{
-        fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase',
+        fontSize: 'var(--aguila-fs-label)', letterSpacing: '0.08em', textTransform: 'uppercase',
         color: ZAPATA.TEXT_TERTIARY, flexShrink: 0,
       }}>
         {entityLabel}

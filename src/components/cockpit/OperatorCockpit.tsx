@@ -74,11 +74,11 @@ export function OperatorCockpit({ data, operatorName, operatorId }: Props) {
       {/* Header */}
       <div style={{ marginBottom: 12 }}>
         <h1 style={{
-          fontSize: 18, fontWeight: 600, color: '#E6EDF3', margin: 0,
+          fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 600, color: '#E6EDF3', margin: 0,
         }}>
           {greeting}, {operatorName || 'Operador'}
         </h1>
-        <p style={{ fontSize: 13, color: '#6E7681', margin: '4px 0 0' }}>
+        <p style={{ fontSize: 'var(--aguila-fs-body)', color: '#6E7681', margin: '4px 0 0' }}>
           Tu panel de trabajo — ZAPATA AI
         </p>
       </div>
@@ -142,7 +142,7 @@ export function OperatorCockpit({ data, operatorName, operatorId }: Props) {
           style={{
             width: '100%', padding: '14px 20px', borderRadius: 10, marginTop: 8,
             background: 'rgba(192,197,206,0.08)', border: '1px solid rgba(192,197,206,0.2)',
-            color: '#E8EAED', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+            color: '#E8EAED', fontSize: 'var(--aguila-fs-section)', fontWeight: 600, cursor: 'pointer',
             minHeight: 60, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
           }}
         >

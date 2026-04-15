@@ -64,17 +64,17 @@ export function DocChecklist({ trafico, pedimento, docs, entrada, proveedor, val
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
           <FolderOpen size={16} style={{ color: 'var(--gold)' }} />
-          <span style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-mono)' }}>
+          <span style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, fontFamily: 'var(--font-mono)' }}>
             {fmtId(trafico)}
           </span>
           {pedimento && (
-            <span style={{ fontSize: 12, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+            <span style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
               · {fmtPedimentoShort(pedimento)}
             </span>
           )}
         </div>
         <button onClick={onClose} style={{
-          fontSize: 12, color: 'var(--text-muted)', background: 'none',
+          fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-muted)', background: 'none',
           border: 'none', cursor: 'pointer', padding: '4px 8px',
         }}>Cerrar ✕</button>
       </div>
@@ -82,7 +82,7 @@ export function DocChecklist({ trafico, pedimento, docs, entrada, proveedor, val
       {/* Quick info row */}
       {(proveedor || valor || entrada) && (
         <div style={{
-          display: 'flex', gap: 16, padding: '10px 20px', fontSize: 12,
+          display: 'flex', gap: 16, padding: '10px 20px', fontSize: 'var(--aguila-fs-compact)',
           color: 'var(--text-secondary)', borderBottom: '1px solid var(--border-card, #E8E5E0)',
           flexWrap: 'wrap',
         }}>
@@ -110,13 +110,13 @@ export function DocChecklist({ trafico, pedimento, docs, entrada, proveedor, val
               )}
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{
-                  fontSize: 13, fontWeight: 600,
+                  fontSize: 'var(--aguila-fs-body)', fontWeight: 600,
                   color: isPresent ? 'var(--text-primary)' : 'var(--text-muted)',
                 }}>
                   {getLabel(reqType)}
                 </div>
                 {found?.uploaded_at && (
-                  <div style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                  <div style={{ fontSize: 'var(--aguila-fs-label)', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
                     {fmtDateCompact(found.uploaded_at)}
                   </div>
                 )}
@@ -124,7 +124,7 @@ export function DocChecklist({ trafico, pedimento, docs, entrada, proveedor, val
               {found?.file_url && onViewDoc && (
                 <button onClick={e => { e.stopPropagation(); onViewDoc(docs.filter(d => d.file_url), docs.filter(d => d.file_url).indexOf(found)) }}
                   style={{
-                    fontSize: 12, fontWeight: 600, color: 'var(--gold)',
+                    fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, color: 'var(--gold)',
                     background: 'rgba(196,150,60,0.06)', border: '1px solid rgba(196,150,60,0.15)',
                     borderRadius: 6, cursor: 'pointer', padding: '6px 12px', flexShrink: 0, minHeight: 32,
                   }}>
@@ -143,14 +143,14 @@ export function DocChecklist({ trafico, pedimento, docs, entrada, proveedor, val
           }}>
             <Minus size={14} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)' }}>
+              <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 500, color: 'var(--text-secondary)' }}>
                 {getLabel(doc.doc_type || 'otro')}
               </div>
             </div>
             {doc.file_url && onViewDoc && (
               <button onClick={e => { e.stopPropagation(); onViewDoc(docs.filter(d => d.file_url), docs.filter(d => d.file_url).indexOf(doc)) }}
                 style={{
-                  fontSize: 12, fontWeight: 600, color: 'var(--gold)',
+                  fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, color: 'var(--gold)',
                   background: 'rgba(196,150,60,0.06)', border: '1px solid rgba(196,150,60,0.15)',
                   borderRadius: 6, cursor: 'pointer', padding: '6px 12px', flexShrink: 0, minHeight: 32,
                 }}>
@@ -168,7 +168,7 @@ export function DocChecklist({ trafico, pedimento, docs, entrada, proveedor, val
       }}>
         <Link href={`/embarques/${encodeURIComponent(trafico)}`}
           style={{
-            display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600,
+            display: 'flex', alignItems: 'center', gap: 6, fontSize: 'var(--aguila-fs-compact)', fontWeight: 600,
             color: 'var(--gold-dark, #7A7E86)', background: 'none',
             border: '1px solid var(--border-card, #E8E5E0)', borderRadius: 8,
             padding: '8px 14px', textDecoration: 'none', minHeight: 60,
@@ -177,7 +177,7 @@ export function DocChecklist({ trafico, pedimento, docs, entrada, proveedor, val
         </Link>
         <button onClick={e => { e.stopPropagation(); window.open(`mailto:ai@renatozapata.com?subject=Solicitud de documento — Embarque ${trafico}`, '_blank') }}
           style={{
-            display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600,
+            display: 'flex', alignItems: 'center', gap: 6, fontSize: 'var(--aguila-fs-compact)', fontWeight: 600,
             color: 'var(--text-muted)', background: 'none',
             border: '1px solid var(--border-card, #E8E5E0)', borderRadius: 8,
             padding: '8px 14px', cursor: 'pointer', minHeight: 60,

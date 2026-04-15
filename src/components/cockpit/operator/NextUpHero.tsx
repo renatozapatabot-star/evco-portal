@@ -36,10 +36,10 @@ export function NextUpHero({ data, operatorName }: Props) {
             }}>
               <Check size={22} strokeWidth={2.2} />
             </div>
-            <div style={{ fontSize: 18, fontWeight: 600, color: '#E6EDF3', marginBottom: 4 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 600, color: '#E6EDF3', marginBottom: 4 }}>
               Todo al corriente
             </div>
-            <div style={{ fontSize: 13, color: '#8B949E' }}>
+            <div style={{ fontSize: 'var(--aguila-fs-body)', color: '#8B949E' }}>
               No hay pendientes para ti, {operatorName.split(' ')[0]}. Buen trabajo.
             </div>
           </div>
@@ -79,10 +79,10 @@ export function NextUpHero({ data, operatorName }: Props) {
                 <span className="font-mono" style={{ fontSize: 22, fontWeight: 700, color: '#E8EAED' }}>
                   {nextUp.trafico}
                 </span>
-                <span style={{ fontSize: 13, color: '#8B949E' }}>· {nextUp.company}</span>
+                <span style={{ fontSize: 'var(--aguila-fs-body)', color: '#8B949E' }}>· {nextUp.company}</span>
               </div>
-              <div style={{ fontSize: 14, color: '#E6EDF3', marginBottom: 4 }}>{nextUp.description}</div>
-              <div style={{ display: 'flex', gap: 16, fontSize: 13, color: '#8B949E' }}>
+              <div style={{ fontSize: 'var(--aguila-fs-section)', color: '#E6EDF3', marginBottom: 4 }}>{nextUp.description}</div>
+              <div style={{ display: 'flex', gap: 16, fontSize: 'var(--aguila-fs-body)', color: '#8B949E' }}>
                 <span className="font-mono">{fmtUSDCompact(nextUp.valor_usd)}</span>
                 <span>llegó hace {nextUp.arrived_ago}</span>
               </div>
@@ -96,9 +96,9 @@ export function NextUpHero({ data, operatorName }: Props) {
                 marginBottom: 8,
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                  <span style={{ fontSize: 11, color: '#8B949E' }}>Documentos:</span>
+                  <span style={{ fontSize: 'var(--aguila-fs-meta)', color: '#8B949E' }}>Documentos:</span>
                   <span className="font-mono" style={{
-                    fontSize: 12, fontWeight: 600,
+                    fontSize: 'var(--aguila-fs-compact)', fontWeight: 600,
                     color: nextUp.docs.present === nextUp.docs.total ? '#16A34A' : nextUp.docs.missing.length > 2 ? '#DC2626' : '#D97706',
                   }}>
                     {nextUp.docs.present}/{nextUp.docs.total}
@@ -112,7 +112,7 @@ export function NextUpHero({ data, operatorName }: Props) {
                   </div>
                 </div>
                 {nextUp.docs.missing.length > 0 && (
-                  <div style={{ fontSize: 11, color: '#D97706' }}>
+                  <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#D97706' }}>
                     Falta: {nextUp.docs.missing.join(', ')}
                   </div>
                 )}
@@ -139,7 +139,7 @@ export function NextUpHero({ data, operatorName }: Props) {
             )}
           </>
         ) : (
-          <div style={{ fontSize: 14, color: '#E6EDF3' }}>
+          <div style={{ fontSize: 'var(--aguila-fs-section)', color: '#E6EDF3' }}>
             {nextAction.description || nextAction.urgencyReason}
           </div>
         )

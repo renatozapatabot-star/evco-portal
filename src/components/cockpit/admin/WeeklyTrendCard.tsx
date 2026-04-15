@@ -22,7 +22,7 @@ export function WeeklyTrendCard({ trend }: Props) {
       actionHref="/acciones"
       quietContent={
         trend.length === 0 ? (
-          <div style={{ padding: '8px 0', color: '#6E7681', fontSize: 13 }}>
+          <div style={{ padding: '8px 0', color: '#6E7681', fontSize: 'var(--aguila-fs-body)' }}>
             Sin actividad registrada
           </div>
         ) : (

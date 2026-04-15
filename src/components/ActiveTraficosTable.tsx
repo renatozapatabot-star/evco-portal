@@ -87,7 +87,7 @@ export function ActiveTraficosTable({ rows, scope: _scope, onRefresh }: Props) {
         <summary style={{
           cursor: 'pointer',
           padding: '14px 20px',
-          fontSize: 12,
+          fontSize: 'var(--aguila-fs-compact)',
           fontWeight: 700,
           color: ACCENT_SILVER,
           listStyle: 'none',
@@ -96,7 +96,7 @@ export function ActiveTraficosTable({ rows, scope: _scope, onRefresh }: Props) {
         </summary>
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px', gap: 12, flexWrap: 'wrap', borderTop: `1px solid ${BORDER}` }}>
-          <div style={{ fontSize: 11, color: TEXT_MUTED }}>
+          <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED }}>
             {visible.length} de {rows.length} · orden por última actualización
           </div>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
@@ -108,7 +108,7 @@ export function ActiveTraficosTable({ rows, scope: _scope, onRefresh }: Props) {
         {/* Mobile card list with swipe gestures (< 600px) */}
         <div className="inicio-mobile-cards" style={{ display: 'none', flexDirection: 'column', gap: 8, padding: '8px 12px' }}>
           {visible.length === 0 ? (
-            <div style={{ padding: 24, textAlign: 'center', color: TEXT_MUTED, fontSize: 12 }}>
+            <div style={{ padding: 24, textAlign: 'center', color: TEXT_MUTED, fontSize: 'var(--aguila-fs-compact)' }}>
               Sin embarques que coincidan con el filtro
             </div>
           ) : visible.map((r) => (
@@ -132,7 +132,7 @@ export function ActiveTraficosTable({ rows, scope: _scope, onRefresh }: Props) {
               .inicio-mobile-cards { display: flex !important; }
             }
           `}</style>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--aguila-fs-compact)' }}>
             <thead>
               <tr style={{ color: TEXT_MUTED, textTransform: 'uppercase', fontSize: 9, letterSpacing: '0.08em' }}>
                 <Th>Embarque</Th>
@@ -191,7 +191,7 @@ export function ActiveTraficosTable({ rows, scope: _scope, onRefresh }: Props) {
                       <EstatusChip estatus={r.estatus} />
                     </Td>
                     <Td className="col-hide">
-                      <span style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', color: TEXT_MUTED, fontSize: 11 }}>
+                      <span style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', color: TEXT_MUTED, fontSize: 'var(--aguila-fs-meta)' }}>
                         {fmtDateTime(r.updated_at)}
                       </span>
                     </Td>
@@ -237,10 +237,10 @@ export function ActiveTraficosTable({ rows, scope: _scope, onRefresh }: Props) {
         </div>
 
         <div style={{ padding: '12px 20px', borderTop: `1px solid ${BORDER}`, display: 'flex', justifyContent: 'space-between' }}>
-          <span style={{ fontSize: 11, color: TEXT_MUTED }}>
+          <span style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED }}>
             {isPending ? 'Guardando…' : '\u00A0'}
           </span>
-          <Link href="/embarques" style={{ color: ACCENT_SILVER, fontSize: 12, fontWeight: 700, textDecoration: 'none' }}>
+          <Link href="/embarques" style={{ color: ACCENT_SILVER, fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, textDecoration: 'none' }}>
             Ver todos →
           </Link>
         </div>
@@ -256,7 +256,7 @@ export function ActiveTraficosTable({ rows, scope: _scope, onRefresh }: Props) {
           borderRadius: 12,
           padding: '12px 18px',
           color: TEXT_PRIMARY,
-          fontSize: 13,
+          fontSize: 'var(--aguila-fs-body)',
           fontWeight: 600,
           boxShadow: GLASS_SHADOW,
           zIndex: 100,
@@ -289,7 +289,7 @@ function FilterSelect({ value, onChange, options, placeholder }: {
         borderRadius: 10,
         color: TEXT_PRIMARY,
         padding: '8px 12px',
-        fontSize: 12,
+        fontSize: 'var(--aguila-fs-compact)',
         height: 40,
         minWidth: 140,
         outline: 'none',
@@ -312,7 +312,7 @@ function EstatusChip({ estatus }: { estatus: string | null }) {
       gap: 6,
       padding: '4px 10px',
       borderRadius: 999,
-      fontSize: 11,
+      fontSize: 'var(--aguila-fs-meta)',
       fontWeight: 700,
       color,
       background: `${color}1A`,
@@ -354,7 +354,7 @@ function RowMenu({ trafico, onClose, onStatus, onReceive, onSendEmail }: {
         <MenuItem onClick={onReceive} label="Marcar entrada recibida" />
         <MenuItem onClick={onSendEmail} label="Solicitar documentos" />
         <div style={{ borderTop: `1px solid ${BORDER}`, margin: '6px 0' }} />
-        <div style={{ padding: '6px 12px', fontSize: 10, color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+        <div style={{ padding: '6px 12px', fontSize: 'var(--aguila-fs-label)', color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
           Cambiar estatus
         </div>
         {STATUS_OPTIONS.filter(s => s !== trafico.estatus).map(s => (
@@ -366,7 +366,7 @@ function RowMenu({ trafico, onClose, onStatus, onReceive, onSendEmail }: {
           style={{
             display: 'block',
             padding: '10px 12px',
-            fontSize: 12,
+            fontSize: 'var(--aguila-fs-compact)',
             color: ACCENT_SILVER,
             textDecoration: 'none',
           }}
@@ -391,7 +391,7 @@ function MenuItem({ onClick, label }: { onClick: () => void; label: string }) {
         background: 'transparent',
         border: 'none',
         color: TEXT_PRIMARY,
-        fontSize: 12,
+        fontSize: 'var(--aguila-fs-compact)',
         cursor: 'pointer',
         borderRadius: 8,
       }}
@@ -494,7 +494,7 @@ function SwipeCard({
           padding: '0 16px',
           borderRadius: 14,
           background: dx > 0 ? rightBg : dx < 0 ? leftBg : 'transparent',
-          fontSize: 11,
+          fontSize: 'var(--aguila-fs-meta)',
           fontWeight: 700,
           color: dx > 0 ? GREEN : GOLD,
           letterSpacing: '0.04em',
@@ -537,7 +537,7 @@ function SwipeCard({
           <span
             style={{
               fontFamily: 'var(--font-jetbrains-mono), monospace',
-              fontSize: 13,
+              fontSize: 'var(--aguila-fs-body)',
               fontWeight: 700,
               color: ACCENT_SILVER,
             }}
@@ -546,10 +546,10 @@ function SwipeCard({
           </span>
           <EstatusChip estatus={row.estatus} />
         </div>
-        <div style={{ fontSize: 12, color: TEXT_SECONDARY, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <div style={{ fontSize: 'var(--aguila-fs-compact)', color: TEXT_SECONDARY, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {truncate(row.descripcion_mercancia, 64) || '—'}
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: TEXT_MUTED, fontFamily: 'var(--font-jetbrains-mono), monospace' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--aguila-fs-label)', color: TEXT_MUTED, fontFamily: 'var(--font-jetbrains-mono), monospace' }}>
           <span>{row.company_id || '—'}</span>
           <span style={{ color: daysColor, fontWeight: 700 }}>{daysActive}d</span>
         </div>

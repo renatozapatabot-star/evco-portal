@@ -53,7 +53,7 @@ export function CockpitKPIStrip({ items }: CockpitKPIStripProps) {
               {typeof kpi.value === 'number' ? kpi.value.toLocaleString() : kpi.value}
             </div>
             <div style={{
-              fontSize: 11,
+              fontSize: 'var(--aguila-fs-meta)',
               fontWeight: 500,
               textTransform: 'uppercase',
               letterSpacing: '0.06em',

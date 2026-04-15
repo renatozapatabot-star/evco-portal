@@ -29,7 +29,7 @@ export function PipelineFinanceCard({ pipeline }: Props) {
       actionHref="/cuentas"
       quietContent={
         carteraTotal === 0 ? (
-          <div style={{ padding: '8px 0', color: '#6E7681', fontSize: 13 }}>
+          <div style={{ padding: '8px 0', color: '#6E7681', fontSize: 'var(--aguila-fs-body)' }}>
             Sin datos de cartera disponibles
           </div>
         ) : (
@@ -55,10 +55,10 @@ export function PipelineFinanceCard({ pipeline }: Props) {
 function AgingBucket({ label, value, color }: { label: string; value: number; color: string }) {
   return (
     <div>
-      <div className="font-mono" style={{ fontSize: 16, fontWeight: 700, color, lineHeight: 1 }}>
+      <div className="font-mono" style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, color, lineHeight: 1 }}>
         {fmtMXN(value)}
       </div>
-      <div style={{ fontSize: 10, color: '#8B949E', marginTop: 2, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</div>
+      <div style={{ fontSize: 'var(--aguila-fs-label)', color: '#8B949E', marginTop: 2, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</div>
     </div>
   )
 }

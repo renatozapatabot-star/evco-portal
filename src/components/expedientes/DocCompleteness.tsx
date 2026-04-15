@@ -27,7 +27,7 @@ export function DocCompleteness({ present, total = TOTAL_REQUIRED }: Props) {
         }} />
       </div>
       <span style={{
-        fontSize: 11, fontWeight: 700, fontFamily: 'var(--font-mono)',
+        fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, fontFamily: 'var(--font-mono)',
         color, minWidth: 28, textAlign: 'right',
       }}>
         {present}/{total}

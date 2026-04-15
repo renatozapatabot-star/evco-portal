@@ -16,14 +16,14 @@ export function WeekAheadPanel({ weekAhead }: Props) {
       padding: 16,
     }}>
       <div style={{
-        fontSize: 11, fontWeight: 600, textTransform: 'uppercase',
+        fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, textTransform: 'uppercase',
         letterSpacing: '0.05em', color: '#6E7681', marginBottom: 12,
       }}>
         Esta semana — que esperar
       </div>
 
       {weekAhead.length === 0 ? (
-        <div style={{ padding: '16px 0', textAlign: 'center', color: '#6E7681', fontSize: 13 }}>
+        <div style={{ padding: '16px 0', textAlign: 'center', color: '#6E7681', fontSize: 'var(--aguila-fs-body)' }}>
           Sin envios programados esta semana
         </div>
       ) : (
@@ -33,7 +33,7 @@ export function WeekAheadPanel({ weekAhead }: Props) {
               <tr>
                 {['', 'Embarque', 'Descripción', 'Valor', 'Estado'].map(h => (
                   <th key={h} style={{
-                    fontSize: 11, fontWeight: 600, textTransform: 'uppercase',
+                    fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, textTransform: 'uppercase',
                     letterSpacing: '0.05em', color: '#6E7681',
                     textAlign: 'left',
                     padding: '8px 10px',
@@ -49,27 +49,27 @@ export function WeekAheadPanel({ weekAhead }: Props) {
                 <tr key={item.trafico} style={{
                   background: i % 2 === 0 ? 'rgba(255,255,255,0.045)' : 'rgba(255,255,255,0.02)',
                 }}>
-                  <td style={{ padding: '10px', fontSize: 16, textAlign: 'center' }}>
+                  <td style={{ padding: '10px', fontSize: 'var(--aguila-fs-body-lg)', textAlign: 'center' }}>
                     {item.statusIcon}
                   </td>
                   <td className="font-mono" style={{
-                    padding: '10px', fontSize: 13, fontWeight: 600, color: '#E8EAED',
+                    padding: '10px', fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: '#E8EAED',
                   }}>
                     {item.trafico}
                   </td>
                   <td style={{
-                    padding: '10px', fontSize: 12, color: '#E6EDF3',
+                    padding: '10px', fontSize: 'var(--aguila-fs-compact)', color: '#E6EDF3',
                     maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                   }}>
                     {item.description}
                   </td>
                   <td className="font-mono" style={{
-                    padding: '10px', fontSize: 12, color: '#8B949E',
+                    padding: '10px', fontSize: 'var(--aguila-fs-compact)', color: '#8B949E',
                   }}>
                     {fmtUSDCompact(item.valor_usd)}
                   </td>
                   <td style={{
-                    padding: '10px', fontSize: 12, color: '#8B949E',
+                    padding: '10px', fontSize: 'var(--aguila-fs-compact)', color: '#8B949E',
                   }}>
                     {item.status}
                   </td>

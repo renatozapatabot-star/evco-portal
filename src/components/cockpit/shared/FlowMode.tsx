@@ -79,16 +79,16 @@ export function FlowMode({ items, onClose, operatorName }: Props) {
         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
         padding: 24,
       }}>
-        <div style={{ fontSize: 48, marginBottom: 16 }}>🦀</div>
-        <div style={{ fontSize: 24, fontWeight: 700, color: '#E6EDF3', marginBottom: 8 }}>
+        <div style={{ fontSize: 'var(--aguila-fs-kpi-hero)', marginBottom: 16 }}>🦀</div>
+        <div style={{ fontSize: 'var(--aguila-fs-title)', fontWeight: 700, color: '#E6EDF3', marginBottom: 8 }}>
           ¡{approved.size} aprobaciones completadas!
         </div>
-        <div style={{ fontSize: 14, color: '#8B949E', marginBottom: 24 }}>
+        <div style={{ fontSize: 'var(--aguila-fs-section)', color: '#8B949E', marginBottom: 24 }}>
           Buen trabajo, {operatorName.split(' ')[0]}. Cola despejada.
         </div>
         <button onClick={onClose} style={{
           padding: '14px 32px', borderRadius: 10,
-          background: '#E8EAED', color: '#111', fontSize: 16, fontWeight: 700,
+          background: '#E8EAED', color: '#111', fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700,
           border: 'none', cursor: 'pointer', minHeight: 60,
         }}>
           Volver al cockpit →
@@ -114,17 +114,17 @@ export function FlowMode({ items, onClose, operatorName }: Props) {
         marginBottom: 24,
       }}>
         <div>
-          <span style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#E8EAED' }}>
+          <span style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#E8EAED' }}>
             Modo flujo
           </span>
-          <span className="font-mono" style={{ fontSize: 13, color: '#8B949E', marginLeft: 12 }}>
+          <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-body)', color: '#8B949E', marginLeft: 12 }}>
             {currentIndex + 1} de {items.length}
           </span>
         </div>
         <button onClick={onClose} style={{
           background: 'none', border: '1px solid rgba(255,255,255,0.1)',
           color: '#8B949E', borderRadius: 6, padding: '6px 14px',
-          fontSize: 12, cursor: 'pointer', minHeight: 36,
+          fontSize: 'var(--aguila-fs-compact)', cursor: 'pointer', minHeight: 36,
         }}>
           Salir (Esc)
         </button>
@@ -142,7 +142,7 @@ export function FlowMode({ items, onClose, operatorName }: Props) {
       {/* Current proposal — centered */}
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ maxWidth: 500, width: '100%' }}>
-          <div style={{ fontSize: 13, color: '#6E7681', marginBottom: 8 }}>
+          <div style={{ fontSize: 'var(--aguila-fs-body)', color: '#6E7681', marginBottom: 8 }}>
             {current.label}
           </div>
           <AduanaRecommendation
@@ -152,7 +152,7 @@ export function FlowMode({ items, onClose, operatorName }: Props) {
             onApprove={handleApprove}
             reasoning={current.reasoning}
           />
-          <div style={{ marginTop: 16, textAlign: 'center', fontSize: 11, color: '#6E7681' }}>
+          <div style={{ marginTop: 16, textAlign: 'center', fontSize: 'var(--aguila-fs-meta)', color: '#6E7681' }}>
             Espacio para aprobar · J/K para navegar · Esc para salir
           </div>
         </div>
@@ -164,10 +164,10 @@ export function FlowMode({ items, onClose, operatorName }: Props) {
         background: 'rgba(255,255,255,0.045)', borderRadius: 10, padding: '10px 20px',
         border: '1px solid rgba(192,197,206,0.2)',
       }}>
-        <span className="font-mono" style={{ fontSize: 20, fontWeight: 800, color: '#E8EAED' }}>
+        <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 800, color: '#E8EAED' }}>
           {approved.size}
         </span>
-        <span style={{ fontSize: 12, color: '#8B949E', marginLeft: 8 }}>
+        <span style={{ fontSize: 'var(--aguila-fs-compact)', color: '#8B949E', marginLeft: 8 }}>
           aprobada{approved.size !== 1 ? 's' : ''}
         </span>
       </div>

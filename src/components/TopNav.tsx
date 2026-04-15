@@ -114,7 +114,7 @@ export function TopNav() {
             {isInternal && mveIsCritical() && (
               <div
                 style={{
-                  padding: '3px 8px', borderRadius: 9999, fontSize: 10, fontWeight: 700,
+                  padding: '3px 8px', borderRadius: 9999, fontSize: 'var(--aguila-fs-label)', fontWeight: 700,
                   background: 'rgba(192,122,24,0.15)', color: '#D4A244',
                   border: '1px solid rgba(192,122,24,0.25)', cursor: 'pointer',
                 }}
@@ -131,7 +131,7 @@ export function TopNav() {
                 borderRadius: 8, padding: '4px 8px',
                 cursor: 'pointer', color: '#F4D47A',
                 display: 'inline-flex', alignItems: 'center', gap: 4,
-                fontSize: 12, fontWeight: 700,
+                fontSize: 'var(--aguila-fs-compact)', fontWeight: 700,
                 position: 'relative',
               }}
               onClick={() => setLauncherOpen(true)}
@@ -198,7 +198,7 @@ export function TopNav() {
           onClick={() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }))}
         >
           <Search size={14} style={{ color: '#9C9890', flexShrink: 0 }} />
-          <span style={{ fontSize: 12, color: '#9C9890' }}>Buscar embarque, pedimento... &#8984;K</span>
+          <span style={{ fontSize: 'var(--aguila-fs-compact)', color: '#9C9890' }}>Buscar embarque, pedimento... &#8984;K</span>
         </div>
 
         {/* Right icons */}
@@ -247,7 +247,7 @@ export function TopNav() {
               background: 'transparent',
               border: '1px solid rgba(192,197,206,0.22)',
               color: '#F4D47A',
-              fontSize: 11, fontWeight: 700, cursor: 'pointer',
+              fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, cursor: 'pointer',
               lineHeight: 1.2,
               position: 'relative',
             }}

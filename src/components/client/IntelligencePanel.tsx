@@ -46,7 +46,7 @@ export function IntelligencePanel({ computedInsights, activeShipments, cruzadosY
       }}>
         <Brain size={16} color={headerColor} />
         <span style={{
-          fontSize: 12, fontWeight: 700, color: headerColor,
+          fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, color: headerColor,
           textTransform: 'uppercase', letterSpacing: '0.08em',
         }}>
           {headerLabel}
@@ -72,7 +72,7 @@ export function IntelligencePanel({ computedInsights, activeShipments, cruzadosY
               >
                 <Icon size={14} color={accentColor} style={{ flexShrink: 0, marginTop: 1 }} />
                 <span style={{
-                  fontSize: 13, color: '#E6EDF3', lineHeight: 1.5,
+                  fontSize: 'var(--aguila-fs-body)', color: '#E6EDF3', lineHeight: 1.5,
                   fontWeight: insight.severity === 'critical' ? 600 : 400,
                 }}>
                   {insight.text}
@@ -91,7 +91,7 @@ export function IntelligencePanel({ computedInsights, activeShipments, cruzadosY
         </div>
       ) : (
         <p style={{
-          fontSize: 13, color: '#94a3b8', lineHeight: 1.6, margin: '0 0 16px',
+          fontSize: 'var(--aguila-fs-body)', color: '#94a3b8', lineHeight: 1.6, margin: '0 0 16px',
         }}>
           {activeShipments > 0 ? (
             <>

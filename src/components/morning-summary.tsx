@@ -110,7 +110,7 @@ export function MorningSummary() {
     <div className="card" style={{ marginBottom: 20, padding: '16px 20px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
         <Sunrise size={16} style={{ color: 'var(--gold)' }} />
-        <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)' }}>
+        <span style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)' }}>
           Resumen · {fmtDate(new Date())}
         </span>
       </div>
@@ -121,7 +121,7 @@ export function MorningSummary() {
               key={i}
               style={{
                 display: 'flex', alignItems: 'flex-start', gap: 10,
-                fontSize: 14, color: 'var(--text-primary)', lineHeight: 1.5,
+                fontSize: 'var(--aguila-fs-section)', color: 'var(--text-primary)', lineHeight: 1.5,
                 padding: item.href ? '8px 12px' : undefined,
                 borderRadius: item.href ? 8 : undefined,
                 transition: item.href ? 'background 150ms' : undefined,

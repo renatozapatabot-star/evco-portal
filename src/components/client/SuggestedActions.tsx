@@ -57,10 +57,10 @@ export function SuggestedActions({ suggestedActions }: Props) {
             >
               <Icon size={14} color={style.iconColor} style={{ flexShrink: 0 }} />
               <div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: '#E6EDF3', whiteSpace: 'nowrap' }}>
+                <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: '#E6EDF3', whiteSpace: 'nowrap' }}>
                   {action.label}
                 </div>
-                <div style={{ fontSize: 11, color: '#64748b', whiteSpace: 'nowrap' }}>
+                <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#64748b', whiteSpace: 'nowrap' }}>
                   {action.reason}
                 </div>
               </div>

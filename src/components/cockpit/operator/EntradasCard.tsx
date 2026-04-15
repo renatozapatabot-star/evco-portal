@@ -31,13 +31,13 @@ export function EntradasCard() {
       quietContent={
         <div style={{ display: 'flex', gap: 16 }}>
           <div>
-            <span className="font-mono" style={{ fontSize: 18, fontWeight: 700, color: '#E6EDF3' }}>{data.total}</span>
-            <span style={{ fontSize: 12, color: '#8B949E', marginLeft: 6 }}>esta semana</span>
+            <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: '#E6EDF3' }}>{data.total}</span>
+            <span style={{ fontSize: 'var(--aguila-fs-compact)', color: '#8B949E', marginLeft: 6 }}>esta semana</span>
           </div>
           {data.sinTrafico > 0 && (
             <div>
-              <span className="font-mono" style={{ fontSize: 18, fontWeight: 700, color: '#D97706' }}>{data.sinTrafico}</span>
-              <span style={{ fontSize: 12, color: '#8B949E', marginLeft: 6 }}>sin embarque</span>
+              <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: '#D97706' }}>{data.sinTrafico}</span>
+              <span style={{ fontSize: 'var(--aguila-fs-compact)', color: '#8B949E', marginLeft: 6 }}>sin embarque</span>
             </div>
           )}
         </div>

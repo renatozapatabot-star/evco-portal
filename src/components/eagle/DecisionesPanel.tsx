@@ -53,10 +53,10 @@ export function DecisionesPanel({ items }: Props) {
             boxShadow: '0 0 8px rgba(34,197,94,0.6)',
           }} />
           <div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: TEXT_PRIMARY }}>
+            <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: TEXT_PRIMARY }}>
               Todo al corriente
             </div>
-            <div style={{ fontSize: 12, color: TEXT_SECONDARY, marginTop: 2 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-compact)', color: TEXT_SECONDARY, marginTop: 2 }}>
               Sin decisiones pendientes hoy. Sigue el ritmo.
             </div>
           </div>
@@ -79,7 +79,7 @@ export function DecisionesPanel({ items }: Props) {
         </span>
         <span style={{
           marginLeft: 'auto',
-          fontSize: 11,
+          fontSize: 'var(--aguila-fs-meta)',
           color: TEXT_MUTED,
           fontFamily: 'var(--font-jetbrains-mono), monospace',
         }}>
@@ -139,10 +139,10 @@ export function DecisionesPanel({ items }: Props) {
                 }}>
                   {i.count}
                 </div>
-                <div style={{ fontSize: 12, fontWeight: 600, color: TEXT_PRIMARY, marginTop: 4 }}>
+                <div style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, color: TEXT_PRIMARY, marginTop: 4 }}>
                   {i.label}
                 </div>
-                <div style={{ fontSize: 11, color: TEXT_SECONDARY, marginTop: 1 }}>
+                <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_SECONDARY, marginTop: 1 }}>
                   {i.sublabel}
                 </div>
               </div>

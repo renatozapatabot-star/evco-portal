@@ -58,7 +58,7 @@ export function BrokerClients({ companies, pendientes, isMobile, onViewAsClient 
               <div>
                 <div style={{ fontSize: 15, fontWeight: 700, color: T.text }}>{c.name}</div>
                 <div style={{
-                  fontSize: 11, fontFamily: 'var(--font-jetbrains-mono)',
+                  fontSize: 'var(--aguila-fs-meta)', fontFamily: 'var(--font-jetbrains-mono)',
                   color: T.textMuted, marginTop: 2,
                 }}>
                   Clave: {c.clave_cliente}
@@ -74,7 +74,7 @@ export function BrokerClients({ companies, pendientes, isMobile, onViewAsClient 
               style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                 padding: '10px 16px', borderRadius: 6, border: 'none',
-                background: T.gold, color: 'var(--bg-card)', fontSize: 13, fontWeight: 600,
+                background: T.gold, color: 'var(--bg-card)', fontSize: 'var(--aguila-fs-body)', fontWeight: 600,
                 cursor: 'pointer', minHeight: 44,
               }}
             >
@@ -106,9 +106,9 @@ export function BrokerClients({ companies, pendientes, isMobile, onViewAsClient 
                 borderRadius: 6,
               }}>
                 <div>
-                  <span style={{ fontSize: 14, fontWeight: 600, color: T.text }}>{p.company_name}</span>
+                  <span style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: T.text }}>{p.company_name}</span>
                 </div>
-                <div style={{ display: 'flex', gap: 16, fontSize: 12 }}>
+                <div style={{ display: 'flex', gap: 16, fontSize: 'var(--aguila-fs-compact)' }}>
                   {p.solicitudes_vencidas > 0 && (
                     <span style={{ color: T.red }}>
                       <FileText size={12} style={{ display: 'inline', verticalAlign: -1, marginRight: 4 }} />
@@ -137,10 +137,10 @@ function SectionHeader({ icon: Icon, title, count }: { icon: typeof Building2; t
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
       <Icon size={18} style={{ color: 'var(--gold)' }} />
-      <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>{title}</h2>
+      <h2 style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>{title}</h2>
       {count !== undefined && (
         <span style={{
-          fontSize: 11, fontWeight: 600, color: 'var(--gold)',
+          fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, color: 'var(--gold)',
           background: '#F5F0E4', padding: '2px 8px', borderRadius: 9999,
         }}>
           {count}
@@ -153,9 +153,9 @@ function SectionHeader({ icon: Icon, title, count }: { icon: typeof Building2; t
 function Stat({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
   return (
     <div>
-      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 2 }}>{label}</div>
+      <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', marginBottom: 2 }}>{label}</div>
       <div style={{
-        fontSize: 18, fontWeight: 700, color: 'var(--text-primary)',
+        fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: 'var(--text-primary)',
         fontFamily: mono ? 'var(--font-jetbrains-mono)' : undefined,
       }}>
         {value}
@@ -171,7 +171,7 @@ function EmptyCard({ icon: Icon, message }: { icon: typeof Building2; message: s
       padding: 32, textAlign: 'center', gridColumn: '1 / -1',
     }}>
       <Icon size={24} style={{ color: 'var(--text-muted)', marginBottom: 8 }} />
-      <p style={{ color: 'var(--text-muted)', fontSize: 13, margin: 0 }}>{message}</p>
+      <p style={{ color: 'var(--text-muted)', fontSize: 'var(--aguila-fs-body)', margin: 0 }}>{message}</p>
     </div>
   )
 }
@@ -182,7 +182,7 @@ function EmptyInline({ icon: Icon, message, color }: {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0' }}>
       <Icon size={16} style={{ color }} />
-      <span style={{ fontSize: 13, color }}>{message}</span>
+      <span style={{ fontSize: 'var(--aguila-fs-body)', color }}>{message}</span>
     </div>
   )
 }

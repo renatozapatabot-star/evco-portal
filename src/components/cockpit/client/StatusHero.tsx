@@ -36,19 +36,19 @@ export function StatusHero({ statusLevel, statusSentence, entradasThisMonth, act
               width: 10, height: 10, borderRadius: '50%',
               background: dotColor, display: 'inline-block', flexShrink: 0,
             }} />
-            <span style={{ fontSize: 16, fontWeight: 600, color: '#E6EDF3' }}>
+            <span style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 600, color: '#E6EDF3' }}>
               {statusLevel === 'green' ? 'Todo en orden' : statusLevel === 'amber' ? 'Atención' : 'Acción requerida'}
             </span>
           </div>
-          <div style={{ fontSize: 13, color: '#8B949E', marginBottom: 10 }}>{statusSentence}</div>
+          <div style={{ fontSize: 'var(--aguila-fs-body)', color: '#8B949E', marginBottom: 10 }}>{statusSentence}</div>
           <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
             <div>
-              <span className="font-mono" style={{ fontSize: 18, fontWeight: 700, color: '#E6EDF3' }}>{entradasThisMonth}</span>
-              <span style={{ fontSize: 12, color: '#8B949E', marginLeft: 6 }}>entrada{entradasThisMonth !== 1 ? 's' : ''} este mes</span>
+              <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: '#E6EDF3' }}>{entradasThisMonth}</span>
+              <span style={{ fontSize: 'var(--aguila-fs-compact)', color: '#8B949E', marginLeft: 6 }}>entrada{entradasThisMonth !== 1 ? 's' : ''} este mes</span>
             </div>
             <div>
-              <span className="font-mono" style={{ fontSize: 18, fontWeight: 700, color: '#E6EDF3' }}>{activeShipments}</span>
-              <span style={{ fontSize: 12, color: '#8B949E', marginLeft: 6 }}>envío{activeShipments !== 1 ? 's' : ''} en tránsito</span>
+              <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: '#E6EDF3' }}>{activeShipments}</span>
+              <span style={{ fontSize: 'var(--aguila-fs-compact)', color: '#8B949E', marginLeft: 6 }}>envío{activeShipments !== 1 ? 's' : ''} en tránsito</span>
             </div>
           </div>
         </>

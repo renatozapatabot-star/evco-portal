@@ -32,7 +32,7 @@ export function NeedsJudgmentPanel({ escalations }: Props) {
       actionHref="/drafts"
       quietContent={
         escalations.length === 0 ? (
-          <div style={{ padding: '12px 0', textAlign: 'center', color: '#6E7681', fontSize: 13 }}>
+          <div style={{ padding: '12px 0', textAlign: 'center', color: '#6E7681', fontSize: 'var(--aguila-fs-body)' }}>
             Sin escalaciones pendientes
           </div>
         ) : (
@@ -46,12 +46,12 @@ export function NeedsJudgmentPanel({ escalations }: Props) {
                 border: '1px solid rgba(255,255,255,0.045)',
               }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 13, color: '#E6EDF3', marginBottom: 2 }}>{e.description}</div>
-                  <div style={{ fontSize: 11, color: '#6E7681' }}>{e.company} · {fmtDateTime(e.created_at)}</div>
+                  <div style={{ fontSize: 'var(--aguila-fs-body)', color: '#E6EDF3', marginBottom: 2 }}>{e.description}</div>
+                  <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#6E7681' }}>{e.company} · {fmtDateTime(e.created_at)}</div>
                 </div>
                 <Link href="/drafts" style={{
                   padding: '8px 16px', background: 'rgba(192,197,206,0.15)',
-                  color: '#E8EAED', borderRadius: 8, fontSize: 12, fontWeight: 600,
+                  color: '#E8EAED', borderRadius: 8, fontSize: 'var(--aguila-fs-compact)', fontWeight: 600,
                   textDecoration: 'none', flexShrink: 0, minHeight: 36,
                   display: 'flex', alignItems: 'center',
                 }}>

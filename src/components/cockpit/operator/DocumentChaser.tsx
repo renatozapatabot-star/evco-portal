@@ -63,11 +63,11 @@ Patente 3596 · Aduana 240`
                 <Link href={`/embarques/${encodeURIComponent(item.trafico)}`} style={{
                   textDecoration: 'none',
                 }}>
-                  <span className="font-mono" style={{ fontSize: 13, fontWeight: 600, color: '#E8EAED' }}>
+                  <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: '#E8EAED' }}>
                     {item.trafico}
                   </span>
                 </Link>
-                <div style={{ fontSize: 11, color: '#D97706', marginTop: 2 }}>
+                <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#D97706', marginTop: 2 }}>
                   Falta: {item.missingDocs.slice(0, 3).join(', ')}
                   {item.missingDocs.length > 3 && ` +${item.missingDocs.length - 3} más`}
                 </div>
@@ -78,7 +78,7 @@ Patente 3596 · Aduana 240`
                   background: copiedId === item.id ? 'rgba(22,163,74,0.15)' : 'rgba(192,197,206,0.15)',
                   color: copiedId === item.id ? '#16A34A' : '#E8EAED',
                   border: 'none', borderRadius: 8, padding: '8px 14px',
-                  fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                  fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, cursor: 'pointer',
                   whiteSpace: 'nowrap', minHeight: 36,
                   display: 'flex', alignItems: 'center',
                 }}

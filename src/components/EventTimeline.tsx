@@ -72,7 +72,7 @@ export function EventTimeline({ traficoId }: { traficoId: string }) {
   )
 
   if (events.length === 0) return (
-    <p style={{ color: 'var(--text-muted)', fontSize: 13, padding: '20px 0' }}>
+    <p style={{ color: 'var(--text-muted)', fontSize: 'var(--aguila-fs-body)', padding: '20px 0' }}>
       Sin eventos registrados para este embarque.
     </p>
   )
@@ -88,7 +88,7 @@ export function EventTimeline({ traficoId }: { traficoId: string }) {
           marginBottom: 16,
           border: '1px solid var(--border-light)',
         }}>
-          <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Tiempo total:</span>
+          <span style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-muted)' }}>Tiempo total:</span>
           <span style={{
             fontSize: 15, fontWeight: 700,
             color: totalHours > 48 ? 'var(--status-red, #ef4444)' : totalHours > 24 ? 'var(--amber-600, #d97706)' : 'var(--status-green, #22c55e)',
@@ -96,7 +96,7 @@ export function EventTimeline({ traficoId }: { traficoId: string }) {
           }}>
             {totalHours}h
           </span>
-          <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+          <span style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-muted)' }}>
             ({events.length} eventos)
           </span>
         </div>
@@ -131,7 +131,7 @@ export function EventTimeline({ traficoId }: { traficoId: string }) {
 
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{
-                  fontSize: 13, fontWeight: 500,
+                  fontSize: 'var(--aguila-fs-body)', fontWeight: 500,
                   color: 'var(--text-primary)',
                   display: 'flex', alignItems: 'center', gap: 6,
                 }}>

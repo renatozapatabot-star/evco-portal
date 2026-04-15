@@ -96,7 +96,7 @@ export function StreakBadge() {
         <div key={i} style={{
           display: 'flex', alignItems: 'center', gap: 6,
           padding: '6px 12px', borderRadius: 9999,
-          background: b.bg, fontSize: 12, fontWeight: 600,
+          background: b.bg, fontSize: 'var(--aguila-fs-compact)', fontWeight: 600,
           color: b.color, animation: 'countUp 300ms cubic-bezier(0.2, 0, 0, 1)',
         }}>
           {b.icon}

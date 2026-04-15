@@ -24,7 +24,7 @@ export function AutosaveIndicator({ status, lastSaved, errorMessage }: AutosaveI
       <span
         role="status"
         aria-live="polite"
-        style={{ fontSize: 11, color: ACCENT_SILVER_DIM, fontFamily: 'var(--font-mono)' }}
+        style={{ fontSize: 'var(--aguila-fs-meta)', color: ACCENT_SILVER_DIM, fontFamily: 'var(--font-mono)' }}
       >
         Guardando…
       </span>
@@ -35,7 +35,7 @@ export function AutosaveIndicator({ status, lastSaved, errorMessage }: AutosaveI
       <span
         role="status"
         aria-live="polite"
-        style={{ fontSize: 11, color: ACCENT_SILVER, fontFamily: 'var(--font-mono)' }}
+        style={{ fontSize: 'var(--aguila-fs-meta)', color: ACCENT_SILVER, fontFamily: 'var(--font-mono)' }}
       >
         Guardado · {fmtDateTime(lastSaved)}
       </span>
@@ -46,7 +46,7 @@ export function AutosaveIndicator({ status, lastSaved, errorMessage }: AutosaveI
       <span
         role="alert"
         title={errorMessage ?? 'Error al guardar'}
-        style={{ fontSize: 11, color: RED, fontFamily: 'var(--font-mono)' }}
+        style={{ fontSize: 'var(--aguila-fs-meta)', color: RED, fontFamily: 'var(--font-mono)' }}
       >
         Error
       </span>
@@ -54,7 +54,7 @@ export function AutosaveIndicator({ status, lastSaved, errorMessage }: AutosaveI
   }
   if (lastSaved) {
     return (
-      <span style={{ fontSize: 11, color: ACCENT_SILVER_DIM, fontFamily: 'var(--font-mono)' }}>
+      <span style={{ fontSize: 'var(--aguila-fs-meta)', color: ACCENT_SILVER_DIM, fontFamily: 'var(--font-mono)' }}>
         Guardado · {fmtDateTime(lastSaved)}
       </span>
     )

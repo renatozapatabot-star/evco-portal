@@ -72,7 +72,7 @@ export function RoleKPIBanner({
       <div
         style={{
           fontFamily: 'var(--font-jetbrains-mono), var(--font-mono), monospace',
-          fontSize: 28,
+          fontSize: 'var(--aguila-fs-kpi-mid)',
           fontWeight: 800,
           color: '#22C55E',
           lineHeight: 1,
@@ -84,7 +84,7 @@ export function RoleKPIBanner({
       <div style={{ flex: 1, minWidth: 0 }}>
         <div
           style={{
-            fontSize: 10,
+            fontSize: 'var(--aguila-fs-label)',
             fontWeight: 700,
             color: '#22C55E',
             textTransform: 'uppercase',
@@ -94,7 +94,7 @@ export function RoleKPIBanner({
         >
           {metricLabel}
         </div>
-        <div style={{ fontSize: 14, color: '#E6EDF3', fontWeight: 500, lineHeight: 1.35 }}>
+        <div style={{ fontSize: 'var(--aguila-fs-section)', color: '#E6EDF3', fontWeight: 500, lineHeight: 1.35 }}>
           {message}
         </div>
       </div>

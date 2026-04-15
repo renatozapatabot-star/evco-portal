@@ -57,7 +57,7 @@ export function ShipmentLocationStrip({ estatus }: Props) {
                 boxShadow: isCurrent ? `0 0 8px ${color}40` : 'none',
               }} />
               <div style={{
-                fontSize: 10, fontWeight: isCurrent ? 700 : 500,
+                fontSize: 'var(--aguila-fs-label)', fontWeight: isCurrent ? 700 : 500,
                 color, textAlign: 'center',
                 overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                 width: '100%',

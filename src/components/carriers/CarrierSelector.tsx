@@ -151,7 +151,7 @@ export function CarrierSelector({
           color: TEXT_PRIMARY,
           border: `1px solid ${open ? BORDER_FOCUS : BORDER_SILVER}`,
           borderRadius: 10,
-          fontSize: 14,
+          fontSize: 'var(--aguila-fs-section)',
           cursor: disabled ? 'not-allowed' : 'pointer',
           opacity: disabled ? 0.6 : 1,
           textAlign: 'left',
@@ -200,7 +200,7 @@ export function CarrierSelector({
                 color: TEXT_PRIMARY,
                 border: `1px solid ${BORDER_SILVER}`,
                 borderRadius: 8,
-                fontSize: 14,
+                fontSize: 'var(--aguila-fs-section)',
                 outline: 'none',
               }}
             />
@@ -211,7 +211,7 @@ export function CarrierSelector({
                 padding: 20,
                 textAlign: 'center',
                 color: TEXT_MUTED,
-                fontSize: 13,
+                fontSize: 'var(--aguila-fs-body)',
               }}
             >
               {query
@@ -248,7 +248,7 @@ export function CarrierSelector({
                         color: TEXT_PRIMARY,
                         border: 'none',
                         borderRadius: 8,
-                        fontSize: 13,
+                        fontSize: 'var(--aguila-fs-body)',
                         cursor: 'pointer',
                         textAlign: 'left',
                       }}
@@ -261,7 +261,7 @@ export function CarrierSelector({
                         <span
                           style={{
                             fontFamily: 'var(--font-mono)',
-                            fontSize: 11,
+                            fontSize: 'var(--aguila-fs-meta)',
                             color: ACCENT_SILVER,
                           }}
                         >
@@ -279,7 +279,7 @@ export function CarrierSelector({
             style={{
               padding: '6px 12px',
               borderTop: `1px solid ${BORDER_SILVER}`,
-              fontSize: 10,
+              fontSize: 'var(--aguila-fs-label)',
               color: TEXT_MUTED,
               fontFamily: 'var(--font-mono)',
               textTransform: 'uppercase',

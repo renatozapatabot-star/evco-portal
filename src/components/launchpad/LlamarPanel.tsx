@@ -14,11 +14,11 @@ export function LlamarPanel({ detail, onComplete, loading }: Props) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {/* Supplier info */}
       <div>
-        <h3 style={{ margin: '0 0 4px', fontSize: 18, fontWeight: 700, color: '#1A1A1A' }}>
+        <h3 style={{ margin: '0 0 4px', fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: '#1A1A1A' }}>
           {detail.supplier_name || 'Proveedor desconocido'}
         </h3>
         {detail.contact_name && (
-          <p style={{ margin: 0, fontSize: 14, color: '#6B6B6B' }}>
+          <p style={{ margin: 0, fontSize: 'var(--aguila-fs-section)', color: '#6B6B6B' }}>
             {detail.contact_name}
           </p>
         )}
@@ -38,7 +38,7 @@ export function LlamarPanel({ detail, onComplete, loading }: Props) {
             border: '2px solid #eab308',
             background: 'rgba(192,197,206,0.08)',
             color: '#1A1A1A',
-            fontSize: 18,
+            fontSize: 'var(--aguila-fs-kpi-small)',
             fontWeight: 700,
             textDecoration: 'none',
             cursor: 'pointer',
@@ -58,7 +58,7 @@ export function LlamarPanel({ detail, onComplete, loading }: Props) {
             border: '1px solid #E8E5E0',
             background: 'rgba(255,255,255,0.06)',
             color: '#9B9B9B',
-            fontSize: 14,
+            fontSize: 'var(--aguila-fs-section)',
           }}
         >
           Sin teléfono registrado
@@ -74,16 +74,16 @@ export function LlamarPanel({ detail, onComplete, loading }: Props) {
           border: '1px solid #E8E5E0',
         }}
       >
-        <div style={{ fontSize: 12, fontWeight: 600, color: '#9B9B9B', marginBottom: 8, textTransform: 'uppercase' }}>
+        <div style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, color: '#9B9B9B', marginBottom: 8, textTransform: 'uppercase' }}>
           Guión
         </div>
-        <p style={{ margin: 0, fontSize: 14, color: '#1A1A1A', fontStyle: 'italic', lineHeight: 1.5 }}>
+        <p style={{ margin: 0, fontSize: 'var(--aguila-fs-section)', color: '#1A1A1A', fontStyle: 'italic', lineHeight: 1.5 }}>
           &ldquo;{detail.script}&rdquo;
         </p>
       </div>
 
       {/* Context */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#9B9B9B' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--aguila-fs-body)', color: '#9B9B9B' }}>
         <span>Documento: {detail.doc_label}</span>
         <span>
           Solicitado: <span className="font-mono">{fmtDate(detail.solicitado_at)}</span>
@@ -92,7 +92,7 @@ export function LlamarPanel({ detail, onComplete, loading }: Props) {
 
       {/* Embarque ID */}
       {detail.trafico_id && (
-        <div style={{ fontSize: 13, color: '#9B9B9B' }}>
+        <div style={{ fontSize: 'var(--aguila-fs-body)', color: '#9B9B9B' }}>
           Embarque: <span className="font-mono" style={{ color: '#1A1A1A' }}>{detail.trafico_id}</span>
         </div>
       )}
@@ -107,7 +107,7 @@ export function LlamarPanel({ detail, onComplete, loading }: Props) {
           background: '#E8EAED',
           color: '#FFFFFF',
           border: 'none',
-          fontSize: 16,
+          fontSize: 'var(--aguila-fs-body-lg)',
           fontWeight: 600,
           cursor: loading ? 'wait' : 'pointer',
           marginTop: 8,

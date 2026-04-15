@@ -58,7 +58,7 @@ export function NewsBanner({ items, interval = 5000 }: NewsBannerProps) {
 
       {/* Item text with fade */}
       <span style={{
-        fontSize: 12, fontWeight: 500,
+        fontSize: 'var(--aguila-fs-compact)', fontWeight: 500,
         color: '#E8EAED',
         fontFamily: 'var(--font-jetbrains-mono)',
         transition: prefersReduced ? 'none' : 'opacity 300ms ease',

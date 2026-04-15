@@ -94,7 +94,7 @@ export function SwipeableActionCard({ item, onResolve }: SwipeableActionCardProp
         </motion.div>
         <motion.span
           style={{
-            fontSize: 14,
+            fontSize: 'var(--aguila-fs-section)',
             fontWeight: 700,
             color: 'var(--success, #16A34A)',
             opacity: checkOpacity,
@@ -140,7 +140,7 @@ export function SwipeableActionCard({ item, onResolve }: SwipeableActionCardProp
             }}
             style={{
               padding: '6px 14px',
-              fontSize: 12,
+              fontSize: 'var(--aguila-fs-compact)',
               fontWeight: 700,
               color: 'var(--success, #16A34A)',
               background: 'rgba(22,163,74,0.1)',

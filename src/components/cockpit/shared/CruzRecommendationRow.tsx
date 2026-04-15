@@ -28,7 +28,7 @@ export function AduanaRecommendationRow({ proposal, onApprove, onReview }: Props
         display: 'flex', alignItems: 'center', gap: 6, padding: '4px 8px',
         background: 'rgba(22,163,74,0.06)', borderRadius: 4, marginTop: 4,
       }}>
-        <span style={{ fontSize: 11, color: '#16A34A' }}>✓ Aprobado</span>
+        <span style={{ fontSize: 'var(--aguila-fs-meta)', color: '#16A34A' }}>✓ Aprobado</span>
       </div>
     )
   }
@@ -65,7 +65,7 @@ export function AduanaRecommendationRow({ proposal, onApprove, onReview }: Props
 
       {/* Proposal text */}
       <span style={{
-        fontSize: 11, color: '#E8EAED', flex: 1,
+        fontSize: 'var(--aguila-fs-meta)', color: '#E8EAED', flex: 1,
         overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
       }}>
         {proposal.proposal_label_es}
@@ -77,7 +77,7 @@ export function AduanaRecommendationRow({ proposal, onApprove, onReview }: Props
           onClick={handleApprove}
           disabled={loading}
           style={{
-            fontSize: 10, fontWeight: 700, color: '#111',
+            fontSize: 'var(--aguila-fs-label)', fontWeight: 700, color: '#111',
             background: '#E8EAED', border: 'none',
             padding: '4px 12px', borderRadius: 4,
             cursor: loading ? 'wait' : 'pointer',
@@ -94,7 +94,7 @@ export function AduanaRecommendationRow({ proposal, onApprove, onReview }: Props
         <button
           onClick={onReview}
           style={{
-            fontSize: 10, fontWeight: 600, color: '#8B949E',
+            fontSize: 'var(--aguila-fs-label)', fontWeight: 600, color: '#8B949E',
             background: 'none', border: '1px solid rgba(255,255,255,0.08)',
             padding: '4px 10px', borderRadius: 4,
             cursor: 'pointer', flexShrink: 0, minHeight: 24,

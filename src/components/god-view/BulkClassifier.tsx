@@ -32,7 +32,7 @@ const glassCard: React.CSSProperties = {
 
 const sectionTitle: React.CSSProperties = {
   color: '#E6EDF3',
-  fontSize: 16,
+  fontSize: 'var(--aguila-fs-body-lg)',
   fontWeight: 600,
   display: 'flex',
   alignItems: 'center',
@@ -42,12 +42,12 @@ const sectionTitle: React.CSSProperties = {
 
 const mutedText: React.CSSProperties = {
   color: '#64748b',
-  fontSize: 11,
+  fontSize: 'var(--aguila-fs-meta)',
 }
 
 const secondaryText: React.CSSProperties = {
   color: '#94a3b8',
-  fontSize: 13,
+  fontSize: 'var(--aguila-fs-body)',
 }
 
 const goldButton: React.CSSProperties = {
@@ -57,7 +57,7 @@ const goldButton: React.CSSProperties = {
   borderRadius: 10,
   padding: '10px 20px',
   fontWeight: 700,
-  fontSize: 13,
+  fontSize: 'var(--aguila-fs-body)',
   cursor: 'pointer',
   display: 'flex',
   alignItems: 'center',
@@ -228,7 +228,7 @@ export function BulkClassifier() {
       {productos.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '32px 0' }}>
           <Package size={40} style={{ color: '#64748b', marginBottom: 12 }} />
-          <div style={{ color: '#94a3b8', fontSize: 14 }}>Todos los productos tienen fracción asignada</div>
+          <div style={{ color: '#94a3b8', fontSize: 'var(--aguila-fs-section)' }}>Todos los productos tienen fracción asignada</div>
           <div style={mutedText}>No hay productos pendientes de clasificación</div>
         </div>
       ) : (
@@ -299,12 +299,12 @@ export function BulkClassifier() {
                     </td>
 
                     {/* Proveedor */}
-                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: '#94a3b8', padding: '8px 8px 8px 0' }}>
+                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-compact)', color: '#94a3b8', padding: '8px 8px 8px 0' }}>
                       {p.cve_proveedor || '—'}
                     </td>
 
                     {/* Fraccion sugerida */}
-                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 13, padding: '8px 8px 8px 0' }}>
+                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body)', padding: '8px 8px 8px 0' }}>
                       {result ? (
                         <span style={{ color: '#E6EDF3', fontWeight: 600 }}>{result.fraccion}</span>
                       ) : (
@@ -332,7 +332,7 @@ export function BulkClassifier() {
                           </div>
                           <span style={{
                             fontFamily: 'var(--font-mono)',
-                            fontSize: 11,
+                            fontSize: 'var(--aguila-fs-meta)',
                             color: confidenceColor(result.confianza),
                             fontWeight: 600,
                           }}>
@@ -340,7 +340,7 @@ export function BulkClassifier() {
                           </span>
                         </div>
                       ) : (
-                        <span style={{ color: '#64748b', fontSize: 11 }}>—</span>
+                        <span style={{ color: '#64748b', fontSize: 'var(--aguila-fs-meta)' }}>—</span>
                       )}
                     </td>
                   </tr>

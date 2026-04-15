@@ -179,7 +179,7 @@ export function CommandPalette({ open, onClose, initialMode = 'quick' }: Props) 
           padding: '16px 20px',
           borderBottom: `1px solid ${ZAPATA.BORDER_HAIRLINE}`,
         }}>
-          <span aria-hidden style={{ color: ZAPATA.ACCENT_SILVER, fontSize: 18 }}>⌕</span>
+          <span aria-hidden style={{ color: ZAPATA.ACCENT_SILVER, fontSize: 'var(--aguila-fs-kpi-small)' }}>⌕</span>
           <input
             ref={inputRef}
             value={query}
@@ -189,12 +189,12 @@ export function CommandPalette({ open, onClose, initialMode = 'quick' }: Props) 
             style={{
               flex: 1, minWidth: 0, minHeight: 32,
               background: 'transparent', border: 'none', outline: 'none',
-              color: '#E6EDF3', fontSize: 16,
+              color: '#E6EDF3', fontSize: 'var(--aguila-fs-body-lg)',
               fontFamily: 'var(--font-geist-sans), Inter, system-ui, sans-serif',
             }}
           />
           <kbd style={{
-            fontFamily: 'var(--font-jetbrains-mono), JetBrains Mono, monospace', fontSize: 11,
+            fontFamily: 'var(--font-jetbrains-mono), JetBrains Mono, monospace', fontSize: 'var(--aguila-fs-meta)',
             color: ZAPATA.TEXT_TERTIARY, border: `1px solid ${ZAPATA.BORDER_HAIRLINE}`,
             borderRadius: 6, padding: '2px 8px',
           }}>Esc</kbd>
@@ -202,7 +202,7 @@ export function CommandPalette({ open, onClose, initialMode = 'quick' }: Props) 
 
         <div style={{ overflowY: 'auto', padding: '8px 0', flex: 1 }}>
           {loading && (
-            <div style={{ padding: '20px', color: ZAPATA.TEXT_TERTIARY, fontSize: 13 }}>Cargando…</div>
+            <div style={{ padding: '20px', color: ZAPATA.TEXT_TERTIARY, fontSize: 'var(--aguila-fs-body)' }}>Cargando…</div>
           )}
           {!loading && query.trim().length < 2 && (
             <SmartSuggestions
@@ -218,7 +218,7 @@ export function CommandPalette({ open, onClose, initialMode = 'quick' }: Props) 
             />
           )}
           {!loading && query.trim().length >= 2 && totalHits === 0 && (
-            <div style={{ padding: '24px 20px', color: ZAPATA.TEXT_TERTIARY, fontSize: 13 }}>
+            <div style={{ padding: '24px 20px', color: ZAPATA.TEXT_TERTIARY, fontSize: 'var(--aguila-fs-body)' }}>
               Sin resultados para &ldquo;{query.trim()}&rdquo;.
             </div>
           )}
@@ -254,7 +254,7 @@ export function CommandPalette({ open, onClose, initialMode = 'quick' }: Props) 
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           gap: 8, padding: '10px 20px',
           borderTop: `1px solid ${ZAPATA.BORDER_HAIRLINE}`,
-          fontSize: 11, color: ZAPATA.TEXT_TERTIARY,
+          fontSize: 'var(--aguila-fs-meta)', color: ZAPATA.TEXT_TERTIARY,
           fontFamily: 'var(--font-jetbrains-mono), JetBrains Mono, monospace',
         }}>
           <span>↑↓ navegar · ⏎ abrir · esc cerrar</span>
@@ -264,7 +264,7 @@ export function CommandPalette({ open, onClose, initialMode = 'quick' }: Props) 
             style={{
               background: 'transparent', border: 'none',
               color: ZAPATA.TEXT_TERTIARY, cursor: 'pointer',
-              fontFamily: 'inherit', fontSize: 11, padding: 0,
+              fontFamily: 'inherit', fontSize: 'var(--aguila-fs-meta)', padding: 0,
             }}
           >
             Búsqueda avanzada · Shift+⌘K

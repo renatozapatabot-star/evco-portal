@@ -26,7 +26,7 @@ export function EmptyState({ icon, title, description, cta }: EmptyStateProps) {
         width: 48, height: 48, borderRadius: '50%',
         background: 'var(--slate-100)', display: 'flex',
         alignItems: 'center', justifyContent: 'center',
-        fontSize: 24, marginBottom: 16, color: 'var(--slate-400)',
+        fontSize: 'var(--aguila-fs-title)', marginBottom: 16, color: 'var(--slate-400)',
       }}>
         {icon}
       </div>
@@ -58,7 +58,7 @@ export function EmptyState({ icon, title, description, cta }: EmptyStateProps) {
             color: 'var(--navy-900)',
             borderRadius: 'var(--radius-md)',
             padding: '10px 20px',
-            fontSize: 14,
+            fontSize: 'var(--aguila-fs-section)',
             fontWeight: 600,
             textDecoration: 'none',
           }}

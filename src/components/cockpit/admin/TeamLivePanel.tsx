@@ -58,11 +58,11 @@ export function TeamLivePanel() {
       actionHref="/acciones"
       quietContent={
         loading ? (
-          <div style={{ padding: '12px 0', textAlign: 'center', color: '#6E7681', fontSize: 13 }}>
+          <div style={{ padding: '12px 0', textAlign: 'center', color: '#6E7681', fontSize: 'var(--aguila-fs-body)' }}>
             Cargando equipo...
           </div>
         ) : operators.length === 0 ? (
-          <div style={{ padding: '12px 0', textAlign: 'center', color: '#6E7681', fontSize: 13 }}>
+          <div style={{ padding: '12px 0', textAlign: 'center', color: '#6E7681', fontSize: 'var(--aguila-fs-body)' }}>
             Sin operadores registrados
           </div>
         ) : (
@@ -85,18 +85,18 @@ export function TeamLivePanel() {
                       background: isActive ? '#16A34A' : '#6E7681',
                       display: 'inline-block',
                     }} />
-                    <span style={{ fontSize: 13, color: '#E6EDF3', fontWeight: isActive ? 600 : 400 }}>
+                    <span style={{ fontSize: 'var(--aguila-fs-body)', color: '#E6EDF3', fontWeight: isActive ? 600 : 400 }}>
                       {op.name}
                     </span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     {op.actionsToday > 0 && (
-                      <span className="font-mono" style={{ fontSize: 12, color: '#E8EAED', fontWeight: 600 }}>
+                      <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-compact)', color: '#E8EAED', fontWeight: 600 }}>
                         {op.actionsToday}
                       </span>
                     )}
                     {lastTime && (
-                      <span className="font-mono" style={{ fontSize: 11, color: '#6E7681' }}>
+                      <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-meta)', color: '#6E7681' }}>
                         {lastTime}
                       </span>
                     )}

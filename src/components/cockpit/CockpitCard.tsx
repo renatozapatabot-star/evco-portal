@@ -115,7 +115,7 @@ export function CockpitCard({
               </span>
               {subtitle && (
                 <span style={{
-                  fontSize: 12, fontWeight: 500,
+                  fontSize: 'var(--aguila-fs-compact)', fontWeight: 500,
                   color: 'rgba(255,255,255,0.5)', marginLeft: 8,
                 }}>
                   {isUSD ? subtitle.replace('USD ', '') : subtitle}
@@ -124,7 +124,7 @@ export function CockpitCard({
             </>
           ) : subtitle ? (
             <span style={{
-              fontSize: 13,
+              fontSize: 'var(--aguila-fs-body)',
               color: isGood ? 'rgba(22,163,74,0.7)' : 'rgba(255,255,255,0.4)',
               fontWeight: 600,
             }}>
@@ -151,7 +151,7 @@ export function CockpitCard({
               style={{
                 padding: '8px 16px',
                 borderRadius: 8,
-                fontSize: 12,
+                fontSize: 'var(--aguila-fs-compact)',
                 fontWeight: 700,
                 textDecoration: 'none',
                 minHeight: 44,

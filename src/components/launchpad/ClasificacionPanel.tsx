@@ -19,7 +19,7 @@ function ConfidenceBadge({ value }: { value: number }) {
         display: 'inline-block',
         padding: '2px 8px',
         borderRadius: 6,
-        fontSize: 13,
+        fontSize: 'var(--aguila-fs-body)',
         fontWeight: 600,
         color,
         background: bg,
@@ -52,12 +52,12 @@ export function ClasificacionPanel({ detail, onComplete, loading }: Props) {
             display: 'flex',
             alignItems: 'center',
             gap: 8,
-            fontSize: 14,
+            fontSize: 'var(--aguila-fs-section)',
             color: '#6B6B6B',
           }}
         >
-          <span style={{ fontSize: 18 }}>&#128196;</span>
-          <span className="font-mono" style={{ fontSize: 13 }}>
+          <span style={{ fontSize: 'var(--aguila-fs-kpi-small)' }}>&#128196;</span>
+          <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-body)' }}>
             {detail.filename}
           </span>
         </div>
@@ -72,16 +72,16 @@ export function ClasificacionPanel({ detail, onComplete, loading }: Props) {
           border: '1px solid #E8E5E0',
         }}
       >
-        <div style={{ fontSize: 12, fontWeight: 600, color: '#9B9B9B', marginBottom: 8, textTransform: 'uppercase' }}>
+        <div style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, color: '#9B9B9B', marginBottom: 8, textTransform: 'uppercase' }}>
           ZAPATA AI sugiere
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-          <span className="font-mono" style={{ fontSize: 18, fontWeight: 700, color: '#1A1A1A' }}>
+          <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: '#1A1A1A' }}>
             {detail.suggested_classification}
           </span>
           <ConfidenceBadge value={detail.confidence} />
         </div>
-        <p style={{ margin: 0, fontSize: 14, color: '#6B6B6B' }}>
+        <p style={{ margin: 0, fontSize: 'var(--aguila-fs-section)', color: '#6B6B6B' }}>
           {detail.product_description}
         </p>
       </div>
@@ -89,7 +89,7 @@ export function ClasificacionPanel({ detail, onComplete, loading }: Props) {
       {/* Alternatives (shown when correcting) */}
       {correcting && detail.alternatives.length > 0 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: '#6B6B6B' }}>
+          <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: '#6B6B6B' }}>
             Alternativas:
           </div>
           {detail.alternatives.map((alt) => (
@@ -115,10 +115,10 @@ export function ClasificacionPanel({ detail, onComplete, loading }: Props) {
                 onChange={() => setSelected(alt.fraccion)}
                 style={{ accentColor: '#E8EAED' }}
               />
-              <span className="font-mono" style={{ fontSize: 14, fontWeight: 600 }}>
+              <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600 }}>
                 {alt.fraccion}
               </span>
-              <span style={{ fontSize: 13, color: '#6B6B6B', flex: 1 }}>
+              <span style={{ fontSize: 'var(--aguila-fs-body)', color: '#6B6B6B', flex: 1 }}>
                 {alt.description}
               </span>
               <ConfidenceBadge value={alt.confidence} />
@@ -128,7 +128,7 @@ export function ClasificacionPanel({ detail, onComplete, loading }: Props) {
       )}
 
       {correcting && detail.alternatives.length === 0 && (
-        <p style={{ fontSize: 14, color: '#9B9B9B', fontStyle: 'italic' }}>
+        <p style={{ fontSize: 'var(--aguila-fs-section)', color: '#9B9B9B', fontStyle: 'italic' }}>
           Sin alternativas disponibles. Ingrese la fracción correcta manualmente en la página de clasificación.
         </p>
       )}
@@ -147,7 +147,7 @@ export function ClasificacionPanel({ detail, onComplete, loading }: Props) {
                 background: '#E8EAED',
                 color: 'rgba(255,255,255,0.045)',
                 border: 'none',
-                fontSize: 16,
+                fontSize: 'var(--aguila-fs-body-lg)',
                 fontWeight: 600,
                 cursor: loading ? 'wait' : 'pointer',
               }}
@@ -164,7 +164,7 @@ export function ClasificacionPanel({ detail, onComplete, loading }: Props) {
                 background: 'rgba(255,255,255,0.045)',
                 color: '#1A1A1A',
                 border: '1px solid #E8E5E0',
-                fontSize: 16,
+                fontSize: 'var(--aguila-fs-body-lg)',
                 fontWeight: 600,
                 cursor: loading ? 'wait' : 'pointer',
               }}
@@ -183,7 +183,7 @@ export function ClasificacionPanel({ detail, onComplete, loading }: Props) {
               background: selected ? '#E8EAED' : '#E8E5E0',
               color: selected ? '#FFFFFF' : '#9B9B9B',
               border: 'none',
-              fontSize: 16,
+              fontSize: 'var(--aguila-fs-body-lg)',
               fontWeight: 600,
               cursor: loading || !selected ? 'default' : 'pointer',
             }}

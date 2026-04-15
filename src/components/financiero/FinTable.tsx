@@ -109,7 +109,7 @@ export function FinTable({ facturas, facturasLoading, isMobile, companyFilter }:
         flexWrap: 'wrap',
         gap: 12,
       }}>
-        <h2 style={{ fontSize: 16, fontWeight: 600, margin: 0 }}>
+        <h2 style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 600, margin: 0 }}>
           Facturas Aduanales
         </h2>
         <div style={{ position: 'relative' }}>
@@ -126,7 +126,7 @@ export function FinTable({ facturas, facturasLoading, isMobile, companyFilter }:
               borderRadius: D.r,
               color: D.text,
               padding: '8px 12px 8px 34px',
-              fontSize: 14,
+              fontSize: 'var(--aguila-fs-section)',
               width: '100%', maxWidth: 300,
               fontFamily: D.sans,
               minHeight: 60,
@@ -156,17 +156,17 @@ export function FinTable({ facturas, facturasLoading, isMobile, companyFilter }:
                   padding: '12px 14px',
                 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                    <span style={{ fontFamily: D.mono, fontSize: 13, fontWeight: 600 }}>
+                    <span style={{ fontFamily: D.mono, fontSize: 'var(--aguila-fs-body)', fontWeight: 600 }}>
                       {f.factura || fmtPedimento(f.pedimento) || '\u2014'}
                     </span>
-                    <span style={{ fontFamily: D.mono, fontSize: 13, fontWeight: 700, color: D.gold }}>
+                    <span style={{ fontFamily: D.mono, fontSize: 'var(--aguila-fs-body)', fontWeight: 700, color: D.gold }}>
                       {f.valor_usd != null ? `${fmtUSD(Number(f.valor_usd))} USD` : '\u2014'}
                     </span>
                   </div>
-                  <div style={{ fontSize: 13, color: D.text, marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <div style={{ fontSize: 'var(--aguila-fs-body)', color: D.text, marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {f.proveedor || '\u2014'}
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: D.textSec }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--aguila-fs-compact)', color: D.textSec }}>
                     <span style={{ fontFamily: D.mono }}>{f.fecha_pago ? fmtDate(f.fecha_pago) : '\u2014'}</span>
                     <span style={{ fontFamily: D.mono, color: D.gold }}>{f.referencia || '\u2014'}</span>
                   </div>
@@ -175,7 +175,7 @@ export function FinTable({ facturas, facturasLoading, isMobile, companyFilter }:
             </div>
           ) : (
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }} aria-label="Lista de facturas aduanales">
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--aguila-fs-section)' }} aria-label="Lista de facturas aduanales">
               <thead>
                 <tr style={{ borderBottom: `1px solid ${D.cardBorder}` }}>
                   <SortTh col="factura" label="Factura" sort={sort} onSort={toggleSort} />
@@ -196,19 +196,19 @@ export function FinTable({ facturas, facturasLoading, isMobile, companyFilter }:
                     onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.03)')}
                     onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                   >
-                    <td style={{ padding: '10px 20px', fontFamily: D.mono, fontSize: 13 }}>
+                    <td style={{ padding: '10px 20px', fontFamily: D.mono, fontSize: 'var(--aguila-fs-body)' }}>
                       {f.factura || fmtPedimento(f.pedimento) || '\u2014'}
                     </td>
                     <td style={{ padding: '10px 12px', maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {f.proveedor || '\u2014'}
                     </td>
-                    <td style={{ padding: '10px 20px', textAlign: 'right', fontFamily: D.mono, fontSize: 13 }}>
+                    <td style={{ padding: '10px 20px', textAlign: 'right', fontFamily: D.mono, fontSize: 'var(--aguila-fs-body)' }}>
                       {f.valor_usd != null ? `${fmtUSD(Number(f.valor_usd))} USD` : '\u2014'}
                     </td>
-                    <td style={{ padding: '10px 12px', fontFamily: D.mono, fontSize: 13, color: D.textSec }}>
+                    <td style={{ padding: '10px 12px', fontFamily: D.mono, fontSize: 'var(--aguila-fs-body)', color: D.textSec }}>
                       {f.fecha_pago ? fmtDate(f.fecha_pago) : '\u2014'}
                     </td>
-                    <td style={{ padding: '10px 12px', fontFamily: D.mono, fontSize: 13, color: D.gold }}>
+                    <td style={{ padding: '10px 12px', fontFamily: D.mono, fontSize: 'var(--aguila-fs-body)', color: D.gold }}>
                       {f.referencia || '\u2014'}
                     </td>
                   </tr>
@@ -226,7 +226,7 @@ export function FinTable({ facturas, facturasLoading, isMobile, companyFilter }:
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              fontSize: 13,
+              fontSize: 'var(--aguila-fs-body)',
               color: D.textSec,
             }}>
               <span>
@@ -293,7 +293,7 @@ function SortTh({ col, label, sort, onSort, align }: {
       style={{
         padding: '10px 20px',
         textAlign: align || 'left',
-        fontSize: 11,
+        fontSize: 'var(--aguila-fs-meta)',
         fontWeight: 600,
         textTransform: 'uppercase',
         letterSpacing: '0.06em',

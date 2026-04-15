@@ -71,7 +71,7 @@ export function EntityRadar({ center, nodes }: Props) {
     }}>
       {/* Header */}
       <div style={{
-        fontSize: 10, fontWeight: 700, textTransform: 'uppercase',
+        fontSize: 'var(--aguila-fs-label)', fontWeight: 700, textTransform: 'uppercase',
         letterSpacing: '0.08em', color: '#E8EAED', marginBottom: 12,
       }}>
         Radar de entidades
@@ -83,10 +83,10 @@ export function EntityRadar({ center, nodes }: Props) {
         background: 'rgba(192,197,206,0.08)', borderRadius: 10,
         border: '1px solid rgba(192,197,206,0.15)',
       }}>
-        <div style={{ fontSize: 10, color: '#E8EAED', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>
+        <div style={{ fontSize: 'var(--aguila-fs-label)', color: '#E8EAED', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>
           {center.type}
         </div>
-        <div className="font-mono" style={{ fontSize: 18, fontWeight: 700, color: '#E6EDF3' }}>
+        <div className="font-mono" style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: '#E6EDF3' }}>
           {center.label}
         </div>
       </div>
@@ -96,7 +96,7 @@ export function EntityRadar({ center, nodes }: Props) {
         {Array.from(groups.entries()).map(([type, items]) => (
           <div key={type}>
             <div style={{
-              fontSize: 10, fontWeight: 600, textTransform: 'uppercase',
+              fontSize: 'var(--aguila-fs-label)', fontWeight: 600, textTransform: 'uppercase',
               letterSpacing: '0.05em', color: TYPE_COLORS[type] || '#8B949E',
               marginBottom: 4,
             }}>
@@ -131,14 +131,14 @@ function NodeChip({ node }: { node: EntityNode }) {
           flexShrink: 0,
         }} />
       )}
-      <span className="font-mono" style={{ fontSize: 12, fontWeight: 600, color }}>
+      <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, color }}>
         {node.label}
       </span>
       {node.sublabel && (
-        <span style={{ fontSize: 10, color: '#6E7681' }}>{node.sublabel}</span>
+        <span style={{ fontSize: 'var(--aguila-fs-label)', color: '#6E7681' }}>{node.sublabel}</span>
       )}
       {node.count !== undefined && (
-        <span className="font-mono" style={{ fontSize: 10, color: '#6E7681' }}>
+        <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-label)', color: '#6E7681' }}>
           ×{node.count}
         </span>
       )}

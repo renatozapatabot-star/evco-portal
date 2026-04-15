@@ -61,7 +61,7 @@ export function FraccionInput({ value, onChange, placeholder = '3907.40.01', cla
           border: `1.5px solid ${error ? '#EF4444' : 'rgba(192,197,206,0.3)'}`,
           color: '#E6EDF3',
           fontFamily: 'var(--font-mono)',
-          fontSize: 14,
+          fontSize: 'var(--aguila-fs-section)',
           fontWeight: 700,
           outline: 'none',
           transition: 'border-color 150ms',
@@ -70,7 +70,7 @@ export function FraccionInput({ value, onChange, placeholder = '3907.40.01', cla
         onBlur={e => { e.currentTarget.style.borderColor = error ? '#EF4444' : 'rgba(192,197,206,0.3)'; e.currentTarget.style.boxShadow = 'none' }}
       />
       {error && (
-        <div style={{ fontSize: 11, color: '#EF4444', marginTop: 4 }}>{error}</div>
+        <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#EF4444', marginTop: 4 }}>{error}</div>
       )}
     </div>
   )

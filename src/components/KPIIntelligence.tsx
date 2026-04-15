@@ -32,7 +32,7 @@ export function KPIIntelligence() {
       <div style={{
         background: 'var(--bg-surface)', border: '1px solid var(--color-danger)',
         borderRadius: 10, padding: '12px 16px',
-        marginBottom: 24, fontSize: 13,
+        marginBottom: 24, fontSize: 'var(--aguila-fs-body)',
         color: 'var(--color-danger)', textAlign: 'center',
       }}>
         Sesión no válida — vuelve a iniciar sesión
@@ -45,7 +45,7 @@ export function KPIIntelligence() {
       <div style={{
         background: 'var(--bg-surface)', border: '1px solid var(--border-default)',
         borderRadius: 10, padding: '12px 16px',
-        marginBottom: 24, fontSize: 12,
+        marginBottom: 24, fontSize: 'var(--aguila-fs-compact)',
         color: 'var(--text-tertiary)', textAlign: 'center',
       }}>
         Datos de inteligencia temporalmente no disponibles
@@ -129,7 +129,7 @@ export function KPIIntelligence() {
                 {m.label}
               </div>
               <div style={{
-                fontSize: 28, fontWeight: 700,
+                fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 700,
                 fontFamily: 'var(--font-data)',
                 color, letterSpacing: '-0.03em', lineHeight: 1,
               }}>
@@ -142,7 +142,7 @@ export function KPIIntelligence() {
           )
         })}
       </div>
-      <div style={{ fontSize: 10, color: 'var(--text-disabled)', textAlign: 'right', marginBottom: 16 }}>
+      <div style={{ fontSize: 'var(--aguila-fs-label)', color: 'var(--text-disabled)', textAlign: 'right', marginBottom: 16 }}>
         Actualizado{' '}
         {data?.updated_at
           ? new Date((data as Record<string, unknown>).updated_at as string).toLocaleTimeString('es-MX', {

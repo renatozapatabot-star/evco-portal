@@ -93,8 +93,8 @@ export function DocumentViewer({ documents, initialIndex, onClose, traficoId }: 
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         }}>
           <div>
-            <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>{label}</div>
-            <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, color: 'var(--text-primary)' }}>{label}</div>
+            <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-secondary)', marginTop: 2 }}>
               {name}
               {traficoId && <> · <span style={{ fontFamily: 'var(--font-mono)' }}>{traficoId}</span></>}
               {doc.source && <> · {doc.source}</>}
@@ -110,7 +110,7 @@ export function DocumentViewer({ documents, initialIndex, onClose, traficoId }: 
                   display: 'flex', alignItems: 'center', gap: 4,
                   padding: '6px 12px', borderRadius: 6,
                   background: 'var(--gold)', color: 'var(--bg-card)',
-                  fontSize: 12, fontWeight: 600, textDecoration: 'none',
+                  fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, textDecoration: 'none',
                 }}
               >
                 <Download size={14} /> Descargar
@@ -141,13 +141,13 @@ export function DocumentViewer({ documents, initialIndex, onClose, traficoId }: 
               <div style={{ padding: 20, background: 'var(--bg-main)', borderRadius: 8, border: '1px solid #E8E5E0' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
                   <FileText size={20} style={{ color: 'var(--gold)' }} />
-                  <span style={{ fontSize: 14, fontWeight: 600 }}>Documento XML</span>
+                  <span style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600 }}>Documento XML</span>
                 </div>
                 <a
                   href={doc.file_url!}
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ fontSize: 13, color: 'var(--gold)', display: 'flex', alignItems: 'center', gap: 4 }}
+                  style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--gold)', display: 'flex', alignItems: 'center', gap: 4 }}
                 >
                   Abrir en nueva pestaña <ExternalLink size={12} />
                 </a>
@@ -159,7 +159,7 @@ export function DocumentViewer({ documents, initialIndex, onClose, traficoId }: 
               <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>
                 Documento no disponible para vista previa
               </div>
-              <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+              <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)' }}>
                 {doc.file_url?.startsWith('globalpc://')
                   ? 'Este documento está almacenado en GlobalPC y no tiene vista previa directa'
                   : 'El archivo no está disponible en este momento'}
@@ -179,7 +179,7 @@ export function DocumentViewer({ documents, initialIndex, onClose, traficoId }: 
               disabled={index === 0}
               style={{
                 display: 'flex', alignItems: 'center', gap: 4,
-                padding: '8px 16px', borderRadius: 6, fontSize: 13, fontWeight: 600,
+                padding: '8px 16px', borderRadius: 6, fontSize: 'var(--aguila-fs-body)', fontWeight: 600,
                 background: index === 0 ? 'var(--bg-hover, #F5F4F0)' : 'var(--bg-card)',
                 border: '1px solid #E8E5E0', cursor: index === 0 ? 'default' : 'pointer',
                 color: index === 0 ? 'var(--text-muted)' : 'var(--text-primary)',
@@ -188,7 +188,7 @@ export function DocumentViewer({ documents, initialIndex, onClose, traficoId }: 
             >
               <ChevronLeft size={14} /> Anterior
             </button>
-            <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>
+            <span style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>
               {index + 1} / {documents.length}
             </span>
             <button
@@ -196,7 +196,7 @@ export function DocumentViewer({ documents, initialIndex, onClose, traficoId }: 
               disabled={index === documents.length - 1}
               style={{
                 display: 'flex', alignItems: 'center', gap: 4,
-                padding: '8px 16px', borderRadius: 6, fontSize: 13, fontWeight: 600,
+                padding: '8px 16px', borderRadius: 6, fontSize: 'var(--aguila-fs-body)', fontWeight: 600,
                 background: index === documents.length - 1 ? 'var(--bg-hover, #F5F4F0)' : 'var(--bg-card)',
                 border: '1px solid #E8E5E0', cursor: index === documents.length - 1 ? 'default' : 'pointer',
                 color: index === documents.length - 1 ? 'var(--text-muted)' : 'var(--text-primary)',

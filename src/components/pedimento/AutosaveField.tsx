@@ -77,7 +77,7 @@ export function AutosaveField(props: AutosaveFieldProps) {
     color: 'var(--text-primary)',
     border: `1px solid ${borderColor}`,
     borderRadius: 10,
-    fontSize: 14,
+    fontSize: 'var(--aguila-fs-section)',
     fontFamily: mono ? 'var(--font-mono)' : 'inherit',
     outline: 'none',
   }
@@ -96,7 +96,7 @@ export function AutosaveField(props: AutosaveFieldProps) {
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, flexWrap: 'wrap' }}>
         <label
           htmlFor={id}
-          style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}
+          style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}
         >
           {label}
         </label>
@@ -149,12 +149,12 @@ export function AutosaveField(props: AutosaveFieldProps) {
       )}
 
       {validationError && (
-        <div role="alert" style={{ fontSize: 11, color: RED }}>
+        <div role="alert" style={{ fontSize: 'var(--aguila-fs-meta)', color: RED }}>
           {validationError}
         </div>
       )}
       {!validationError && helpText && (
-        <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{helpText}</div>
+        <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)' }}>{helpText}</div>
       )}
     </div>
   )

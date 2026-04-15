@@ -131,7 +131,7 @@ export function AdvancedSearchModal({ open, onClose }: Props) {
         }}>
           <span style={{ fontSize: 15, fontWeight: 600 }}>Búsqueda avanzada</span>
           <kbd style={{
-            fontFamily: 'var(--font-jetbrains-mono), JetBrains Mono, monospace', fontSize: 11,
+            fontFamily: 'var(--font-jetbrains-mono), JetBrains Mono, monospace', fontSize: 'var(--aguila-fs-meta)',
             color: ZAPATA.TEXT_TERTIARY, border: `1px solid ${ZAPATA.BORDER_HAIRLINE}`,
             borderRadius: 6, padding: '2px 8px',
           }}>Esc</kbd>
@@ -149,7 +149,7 @@ export function AdvancedSearchModal({ open, onClose }: Props) {
                 // require populated source data which lands in a follow-up block.
                 return (
                   <label key={f.id} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                    <span style={{ fontSize: 11, color: ZAPATA.TEXT_TERTIARY }}>
+                    <span style={{ fontSize: 'var(--aguila-fs-meta)', color: ZAPATA.TEXT_TERTIARY }}>
                       {f.labelEs}{f.flag ? ` · ${f.flag}` : ''}
                     </span>
                     <input
@@ -171,7 +171,7 @@ export function AdvancedSearchModal({ open, onClose }: Props) {
               const kind = f.kind === 'date_from' || f.kind === 'date_to' ? 'date' : 'text'
               return (
                 <label key={f.id} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                  <span style={{ fontSize: 11, color: ZAPATA.TEXT_TERTIARY }}>
+                  <span style={{ fontSize: 'var(--aguila-fs-meta)', color: ZAPATA.TEXT_TERTIARY }}>
                     {f.labelEs}{f.flag ? ` · ${f.flag}` : ''}
                   </span>
                   <input
@@ -193,7 +193,7 @@ export function AdvancedSearchModal({ open, onClose }: Props) {
                   padding: '12px', marginBottom: 12,
                   background: 'rgba(251,191,36,0.1)',
                   border: '1px solid rgba(251,191,36,0.3)',
-                  borderRadius: 12, color: '#FBBF24', fontSize: 13,
+                  borderRadius: 12, color: '#FBBF24', fontSize: 'var(--aguila-fs-body)',
                 }}>
                   {response.message}
                 </div>
@@ -201,7 +201,7 @@ export function AdvancedSearchModal({ open, onClose }: Props) {
               {response.results.length > 0 && (
                 <div>
                   <div style={{
-                    fontSize: 11, color: ZAPATA.TEXT_TERTIARY,
+                    fontSize: 'var(--aguila-fs-meta)', color: ZAPATA.TEXT_TERTIARY,
                     padding: '6px 0', fontWeight: 600, letterSpacing: '0.08em',
                     textTransform: 'uppercase',
                   }}>
@@ -224,9 +224,9 @@ export function AdvancedSearchModal({ open, onClose }: Props) {
                     >
                       <span style={{
                         fontFamily: 'var(--font-jetbrains-mono), JetBrains Mono, monospace',
-                        fontSize: 13, fontWeight: 600,
+                        fontSize: 'var(--aguila-fs-body)', fontWeight: 600,
                       }}>{row.trafico}</span>
-                      <span style={{ fontSize: 12, color: ZAPATA.TEXT_TERTIARY }}>
+                      <span style={{ fontSize: 'var(--aguila-fs-compact)', color: ZAPATA.TEXT_TERTIARY }}>
                         {[row.estatus, row.pedimento].filter(Boolean).join(' · ')}
                       </span>
                     </button>
@@ -248,7 +248,7 @@ export function AdvancedSearchModal({ open, onClose }: Props) {
             style={{
               minHeight: 44, padding: '8px 16px',
               background: 'transparent', border: `1px solid ${ZAPATA.BORDER_HAIRLINE}`,
-              borderRadius: 10, color: '#E6EDF3', fontSize: 13, cursor: 'pointer',
+              borderRadius: 10, color: '#E6EDF3', fontSize: 'var(--aguila-fs-body)', cursor: 'pointer',
             }}
           >
             Limpiar
@@ -262,7 +262,7 @@ export function AdvancedSearchModal({ open, onClose }: Props) {
               background: canSubmit ? '#E8EAED' : 'rgba(192,197,206,0.3)',
               border: 'none', borderRadius: 10,
               color: canSubmit ? '#05070B' : '#94a3b8',
-              fontSize: 13, fontWeight: 600,
+              fontSize: 'var(--aguila-fs-body)', fontWeight: 600,
               cursor: canSubmit ? 'pointer' : 'not-allowed',
             }}
           >
@@ -281,7 +281,7 @@ const inputStyle: React.CSSProperties = {
   border: `1px solid ${ZAPATA.BORDER_HAIRLINE}`,
   borderRadius: 10,
   color: '#E6EDF3',
-  fontSize: 13,
+  fontSize: 'var(--aguila-fs-body)',
   outline: 'none',
   fontFamily: 'var(--font-geist-sans), Inter, system-ui, sans-serif',
 }

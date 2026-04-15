@@ -139,7 +139,7 @@ export function ExpedienteChecklist({
           alignItems: 'center',
           gap: 10,
           color: TEXT_MUTED,
-          fontSize: 12,
+          fontSize: 'var(--aguila-fs-compact)',
         }}
       >
         <Info size={14} />
@@ -205,7 +205,7 @@ export function ExpedienteChecklist({
       >
         <div
           style={{
-            fontSize: 11,
+            fontSize: 'var(--aguila-fs-meta)',
             fontWeight: 800,
             color: TEXT_MUTED,
             textTransform: 'uppercase',
@@ -217,7 +217,7 @@ export function ExpedienteChecklist({
         <div
           style={{
             fontFamily: 'var(--font-mono)',
-            fontSize: 11,
+            fontSize: 'var(--aguila-fs-meta)',
             color: TEXT_SECONDARY,
           }}
         >
@@ -274,7 +274,7 @@ function GroupedRows({
         <div key={cat}>
           <div
             style={{
-              fontSize: 10,
+              fontSize: 'var(--aguila-fs-label)',
               fontWeight: 800,
               color: TEXT_MUTED,
               textTransform: 'uppercase',
@@ -339,7 +339,7 @@ function FlatRows({
             <div style={{ flex: 1, minWidth: 0 }}>
               <div
                 style={{
-                  fontSize: 13,
+                  fontSize: 'var(--aguila-fs-body)',
                   color:
                     row.state === 'missing' && row.required
                       ? TEXT_PRIMARY
@@ -354,14 +354,14 @@ function FlatRows({
               >
                 {row.label}
               </div>
-              <div style={{ fontSize: 11, color: TEXT_MUTED, marginTop: 2 }}>
+              <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED, marginTop: 2 }}>
                 {stateLabel(row.state, row.required)}
               </div>
             </div>
             {isInteractive && (
               <span
                 style={{
-                  fontSize: 11,
+                  fontSize: 'var(--aguila-fs-meta)',
                   fontWeight: 700,
                   color: ACCENT_SILVER,
                   textTransform: 'uppercase',

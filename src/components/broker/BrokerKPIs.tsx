@@ -57,18 +57,18 @@ export function BrokerKPIs({ staffConfig, opsMetrics }: BrokerKPIsProps) {
           background: T.card, border: `1px solid ${T.border}`, borderRadius: 8,
           padding: 20, marginBottom: 32,
         }}>
-          <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: T.textMuted, marginBottom: 12 }}>
+          <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: T.textMuted, marginBottom: 12 }}>
             Lo que ZAPATA AI aprendió esta semana
           </div>
           {opsMetrics.recentLearnings.map((l, i) => (
             <div key={i} style={{
               padding: '8px 0', borderBottom: i < opsMetrics.recentLearnings.length - 1 ? `1px solid ${T.border}` : 'none',
-              fontSize: 13, color: T.text,
+              fontSize: 'var(--aguila-fs-body)', color: T.text,
             }}>
               <span style={{ color: T.red, textDecoration: 'line-through' }}>{l.original}</span>
               {' \u2192 '}
               <span style={{ color: T.green, fontWeight: 600 }}>{l.corrected}</span>
-              <span style={{ fontSize: 11, color: T.textMuted, marginLeft: 8, fontFamily: 'var(--font-jetbrains-mono)' }}>
+              <span style={{ fontSize: 'var(--aguila-fs-meta)', color: T.textMuted, marginLeft: 8, fontFamily: 'var(--font-jetbrains-mono)' }}>
                 {fmtDateCompact(l.date)}
               </span>
             </div>
@@ -82,7 +82,7 @@ export function BrokerKPIs({ staffConfig, opsMetrics }: BrokerKPIsProps) {
           background: T.card, border: `1px solid ${T.border}`, borderRadius: 8,
           padding: 20, marginBottom: 32,
         }}>
-          <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: T.textMuted, marginBottom: 12 }}>
+          <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: T.textMuted, marginBottom: 12 }}>
             Clientes sin actividad (7+ dias)
           </div>
           {opsMetrics.inactiveClients.map(c => (
@@ -90,8 +90,8 @@ export function BrokerKPIs({ staffConfig, opsMetrics }: BrokerKPIsProps) {
               display: 'flex', justifyContent: 'space-between', alignItems: 'center',
               padding: '8px 0', borderBottom: `1px solid ${T.border}`,
             }}>
-              <span style={{ fontSize: 13, fontWeight: 600, color: T.text }}>{c.name}</span>
-              <span style={{ fontSize: 11, color: T.amber, fontFamily: 'var(--font-jetbrains-mono)' }}>
+              <span style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: T.text }}>{c.name}</span>
+              <span style={{ fontSize: 'var(--aguila-fs-meta)', color: T.amber, fontFamily: 'var(--font-jetbrains-mono)' }}>
                 {c.daysSinceActivity}+ dias
               </span>
             </div>
@@ -108,13 +108,13 @@ function OpsCard({ title, value, sub, accent }: { title: string; value: string; 
       background: 'var(--card-bg)', border: `1px solid var(--border)`, borderRadius: 8,
       borderTop: `3px solid ${accent}`, padding: 16,
     }}>
-      <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 4 }}>
+      <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 4 }}>
         {title}
       </div>
-      <div style={{ fontSize: 28, fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'var(--font-jetbrains-mono)' }}>
+      <div style={{ fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'var(--font-jetbrains-mono)' }}>
         {value}
       </div>
-      <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2 }}>{sub}</div>
+      <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-secondary)', marginTop: 2 }}>{sub}</div>
     </div>
   )
 }

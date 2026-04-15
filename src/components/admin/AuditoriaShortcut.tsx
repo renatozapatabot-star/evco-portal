@@ -30,10 +30,10 @@ export function AuditoriaShortcut() {
             <FileDown size={18} color={ACCENT_SILVER} />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 14, fontWeight: 700, color: TEXT_PRIMARY, letterSpacing: '0.01em' }}>
+            <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: TEXT_PRIMARY, letterSpacing: '0.01em' }}>
               Generar auditoría semanal
             </div>
-            <div style={{ fontSize: 12, color: TEXT_SECONDARY, marginTop: 2 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-compact)', color: TEXT_SECONDARY, marginTop: 2 }}>
               Elige cliente + semana · descarga el PDF dark-theme
             </div>
           </div>

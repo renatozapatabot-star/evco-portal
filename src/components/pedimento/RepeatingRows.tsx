@@ -107,10 +107,10 @@ export function RepeatingRows<R extends { id: string }>({
         }}
       >
         <div>
-          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 600, color: TEXT_PRIMARY }}>
+          <h2 style={{ margin: 0, fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 600, color: TEXT_PRIMARY }}>
             {title}
           </h2>
-          <p style={{ margin: '4px 0 0', fontSize: 12, color: TEXT_MUTED }}>
+          <p style={{ margin: '4px 0 0', fontSize: 'var(--aguila-fs-compact)', color: TEXT_MUTED }}>
             {rows.length} {rows.length === 1 ? 'fila' : 'filas'}
           </p>
         </div>
@@ -124,7 +124,7 @@ export function RepeatingRows<R extends { id: string }>({
             gap: 6,
             minHeight: 60,
             padding: '0 16px',
-            fontSize: 13,
+            fontSize: 'var(--aguila-fs-body)',
             fontWeight: 600,
             color: ACCENT_SILVER,
             background: 'rgba(192,197,206,0.08)',
@@ -147,7 +147,7 @@ export function RepeatingRows<R extends { id: string }>({
             border: `1px solid ${RED}66`,
             background: 'rgba(239,68,68,0.08)',
             color: RED,
-            fontSize: 13,
+            fontSize: 'var(--aguila-fs-body)',
           }}
         >
           {errorMessage}
@@ -164,7 +164,7 @@ export function RepeatingRows<R extends { id: string }>({
             border: `1px solid ${BORDER_SILVER}`,
             backdropFilter: 'blur(20px)',
             color: TEXT_MUTED,
-            fontSize: 13,
+            fontSize: 'var(--aguila-fs-body)',
           }}
         >
           {emptyMessage}
@@ -258,7 +258,7 @@ function RowCard<R extends { id: string }>({
       >
         <span
           style={{
-            fontSize: 11,
+            fontSize: 'var(--aguila-fs-meta)',
             fontFamily: 'var(--font-mono)',
             color: ACCENT_SILVER_DIM,
             textTransform: 'uppercase',
@@ -337,7 +337,7 @@ function FieldCell<R>({ col, value, error, onChange, onBlur }: FieldCellProps<R>
     color: TEXT_PRIMARY,
     border: `1px solid ${borderColor}`,
     borderRadius: 10,
-    fontSize: 14,
+    fontSize: 'var(--aguila-fs-section)',
     fontFamily: col.mono ? 'var(--font-mono)' : 'inherit',
     outline: 'none',
   }
@@ -353,7 +353,7 @@ function FieldCell<R>({ col, value, error, onChange, onBlur }: FieldCellProps<R>
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
       <label
         style={{
-          fontSize: 11,
+          fontSize: 'var(--aguila-fs-meta)',
           color: TEXT_MUTED,
           textTransform: 'uppercase',
           letterSpacing: '0.06em',
@@ -411,11 +411,11 @@ function FieldCell<R>({ col, value, error, onChange, onBlur }: FieldCellProps<R>
         />
       )}
       {error ? (
-        <div role="alert" style={{ fontSize: 11, color: RED }}>
+        <div role="alert" style={{ fontSize: 'var(--aguila-fs-meta)', color: RED }}>
           {error}
         </div>
       ) : col.helpText ? (
-        <div style={{ fontSize: 11, color: TEXT_MUTED }}>{col.helpText}</div>
+        <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED }}>{col.helpText}</div>
       ) : null}
     </div>
   )

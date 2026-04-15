@@ -83,7 +83,7 @@ export function CockpitBrandHeader({
             {subtitle && (
               <div
                 style={{
-                  fontSize: 12,
+                  fontSize: 'var(--aguila-fs-compact)',
                   color: TEXT_MUTED,
                   marginTop: 4,
                   letterSpacing: '0.02em',
@@ -106,7 +106,7 @@ export function CockpitBrandHeader({
           {greeting && (
             <h1
               style={{
-                fontSize: 28,
+                fontSize: 'var(--aguila-fs-kpi-mid)',
                 fontWeight: 700,
                 color: ACCENT_SILVER_BRIGHT,
                 letterSpacing: '-0.01em',
@@ -120,7 +120,7 @@ export function CockpitBrandHeader({
           {tagline && (
             <p
               style={{
-                fontSize: 12,
+                fontSize: 'var(--aguila-fs-compact)',
                 color: ACCENT_SILVER_DIM,
                 textTransform: 'uppercase',
                 letterSpacing: '0.08em',

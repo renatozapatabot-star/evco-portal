@@ -42,7 +42,7 @@ export function WorkflowPanel({ open, onClose, title, children }: WorkflowPanelP
           marginBottom: 16,
         }}
       >
-        <span style={{ fontSize: 16, fontWeight: 700, color: '#1A1A1A' }}>
+        <span style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, color: '#1A1A1A' }}>
           {title}
         </span>
         <button
@@ -58,7 +58,7 @@ export function WorkflowPanel({ open, onClose, title, children }: WorkflowPanelP
             alignItems: 'center',
             justifyContent: 'center',
             cursor: 'pointer',
-            fontSize: 16,
+            fontSize: 'var(--aguila-fs-body-lg)',
             color: '#6B6B6B',
           }}
         >

@@ -40,7 +40,7 @@ export function OperationsTrend({ traficos }: Props) {
 
   return (
     <div className="card card-enter" style={{ padding: '16px 20px', marginBottom: 20 }}>
-      <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 12 }}>
+      <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 12 }}>
         Operaciones — últimos 12 meses
       </div>
       <ResponsiveContainer width="100%" height={160}>
@@ -55,10 +55,10 @@ export function OperationsTrend({ traficos }: Props) {
               <stop offset="100%" stopColor="#16A34A" stopOpacity={0.02} />
             </linearGradient>
           </defs>
-          <XAxis dataKey="month" tick={{ fontSize: 10, fill: '#9B9B9B' }} axisLine={false} tickLine={false} />
-          <YAxis tick={{ fontSize: 10, fill: '#9B9B9B' }} axisLine={false} tickLine={false} />
+          <XAxis dataKey="month" tick={{ fontSize: 'var(--aguila-fs-label)', fill: '#9B9B9B' }} axisLine={false} tickLine={false} />
+          <YAxis tick={{ fontSize: 'var(--aguila-fs-label)', fill: '#9B9B9B' }} axisLine={false} tickLine={false} />
           <Tooltip
-            contentStyle={{ background: 'rgba(255,255,255,0.95)', border: '1px solid #E8E5E0', borderRadius: 8, fontSize: 12, backdropFilter: 'blur(8px)' }}
+            contentStyle={{ background: 'rgba(255,255,255,0.95)', border: '1px solid #E8E5E0', borderRadius: 8, fontSize: 'var(--aguila-fs-compact)', backdropFilter: 'blur(8px)' }}
             formatter={(value) => [String(value)]}
           />
           <Area type="monotone" dataKey="total" stroke="#E8EAED" strokeWidth={2} fill="url(#goldGrad)" />

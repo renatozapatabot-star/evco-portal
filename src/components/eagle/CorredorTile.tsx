@@ -33,7 +33,7 @@ export function CorredorTile() {
             position: 'absolute',
             bottom: 8,
             right: 12,
-            fontSize: 10,
+            fontSize: 'var(--aguila-fs-label)',
             color: TEXT_MUTED,
             fontFamily: MONO,
             background: 'rgba(255,255,255,0.045)',

@@ -32,10 +32,10 @@ export default function UnsupportedBrowser() {
           <line x1="8" y1="23" x2="16" y2="23" />
         </svg>
       </div>
-      <p style={{ color: COLORS.white, fontSize: 18, textAlign: 'center', marginBottom: 8 }}>
+      <p style={{ color: COLORS.white, fontSize: 'var(--aguila-fs-kpi-small)', textAlign: 'center', marginBottom: 8 }}>
         Modo Voz no disponible
       </p>
-      <p style={{ color: COLORS.gray, fontSize: 14, textAlign: 'center', maxWidth: 300, lineHeight: 1.5 }}>
+      <p style={{ color: COLORS.gray, fontSize: 'var(--aguila-fs-section)', textAlign: 'center', maxWidth: 300, lineHeight: 1.5 }}>
         Tu navegador no soporta reconocimiento de voz. Usa Chrome o Safari.
       </p>
       <button
@@ -47,7 +47,7 @@ export default function UnsupportedBrowser() {
           color: COLORS.gold,
           border: `1px solid ${COLORS.goldDark}`,
           borderRadius: 8,
-          fontSize: 14,
+          fontSize: 'var(--aguila-fs-section)',
           cursor: 'pointer',
         }}
       >

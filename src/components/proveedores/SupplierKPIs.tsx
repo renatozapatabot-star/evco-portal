@@ -34,10 +34,10 @@ export function SupplierKPIs({ supplierCount, traficoCount, totalValue, isMobile
           background: T.surface, border: `1px solid ${T.border}`, borderRadius: 8,
           padding: '16px 20px',
         }}>
-          <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.textMuted, marginBottom: 6 }}>
+          <div style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.textMuted, marginBottom: 6 }}>
             {kpi.label}
           </div>
-          <div style={{ fontSize: 20, fontWeight: 800, fontFamily: T.mono, color: kpi.color }}>
+          <div style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 800, fontFamily: T.mono, color: kpi.color }}>
             {kpi.value}
           </div>
         </div>

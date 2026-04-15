@@ -23,28 +23,28 @@ export function ArApTile({ ar, ap }: { ar: AgingResult; ap: AgingResult }) {
     <TileShell title="AR / AP resumen" subtitle="vencido" href="/contabilidad">
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         <div>
-          <div style={{ fontSize: 11, color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+          <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
             Cuentas por cobrar
           </div>
           <div style={{ fontFamily: MONO, fontSize: 22, color: ACCENT_SILVER_BRIGHT, fontWeight: 700 }}>
             {formatAmount(arOverdue, ar.currency)}
           </div>
-          <div style={{ fontSize: 11, color: TEXT_MUTED, fontFamily: MONO }}>
+          <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED, fontFamily: MONO }}>
             {ar.count} facturas · {ar.currency}
           </div>
         </div>
         <div>
-          <div style={{ fontSize: 11, color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+          <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
             Cuentas por pagar
           </div>
           <div style={{ fontFamily: MONO, fontSize: 22, color: ACCENT_SILVER_BRIGHT, fontWeight: 700 }}>
             {ap.sourceMissing ? '—' : formatAmount(apOverdue, ap.currency)}
           </div>
-          <div style={{ fontSize: 11, color: TEXT_MUTED, fontFamily: MONO }}>
+          <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED, fontFamily: MONO }}>
             {ap.sourceMissing ? 'Datos pendientes' : `${ap.count} facturas · ${ap.currency}`}
           </div>
         </div>
-        <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 8, fontSize: 12, color: TEXT_PRIMARY }}>
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 8, fontSize: 'var(--aguila-fs-compact)', color: TEXT_PRIMARY }}>
           Neto: <span style={{ fontFamily: MONO }}>{formatAmount(arOverdue - apOverdue, ar.currency)}</span>
         </div>
       </div>

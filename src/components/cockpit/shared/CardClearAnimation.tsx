@@ -47,7 +47,7 @@ export function CardClearAnimation({ show, variant = 'small', onComplete }: Prop
     return (
       <div style={{
         position: 'absolute', top: 8, right: 8,
-        fontSize: 16, color: '#16A34A', zIndex: 30, pointerEvents: 'none',
+        fontSize: 'var(--aguila-fs-body-lg)', color: '#16A34A', zIndex: 30, pointerEvents: 'none',
       }}>
         ✓
       </div>
@@ -61,7 +61,7 @@ export function CardClearAnimation({ show, variant = 'small', onComplete }: Prop
   if (variant === 'celebration') {
     return (
       <div style={{ ...baseStyle, inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ fontSize: 48, animation: 'cruzBounce 600ms ease' }}>🎉</span>
+        <span style={{ fontSize: 'var(--aguila-fs-kpi-hero)', animation: 'cruzBounce 600ms ease' }}>🎉</span>
       </div>
     )
   }
@@ -77,14 +77,14 @@ export function CardClearAnimation({ show, variant = 'small', onComplete }: Prop
   if (variant === 'medium') {
     return (
       <div style={{ ...baseStyle, top: 8, right: 8 }}>
-        <span style={{ fontSize: 24, color: '#16A34A', animation: 'cruzPulseSubtle 400ms ease' }}>✓</span>
+        <span style={{ fontSize: 'var(--aguila-fs-title)', color: '#16A34A', animation: 'cruzPulseSubtle 400ms ease' }}>✓</span>
       </div>
     )
   }
 
   return (
     <div style={{ ...baseStyle, top: 8, right: 8 }}>
-      <span style={{ fontSize: 16, color: '#16A34A' }}>✓</span>
+      <span style={{ fontSize: 'var(--aguila-fs-body-lg)', color: '#16A34A' }}>✓</span>
     </div>
   )
 }

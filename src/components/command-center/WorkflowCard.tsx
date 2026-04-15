@@ -118,19 +118,19 @@ export function WorkflowCard({
           <div style={{ flex: '0 0 auto', minWidth: 180 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
               <Icon size={24} strokeWidth={1.5} style={{ color: U_ICON[u] }} />
-              <span style={{ fontSize: 18, fontWeight: 700, color: '#FFFFFF' }}>{label}</span>
+              <span style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: '#FFFFFF' }}>{label}</span>
             </div>
 
             <div style={{ marginBottom: 8 }}>
               {kpi !== null && kpi > 0 ? (
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
                   <AnimatedKpi value={kpi} size={48} isUSD={subtitle.includes('USD')} />
-                  <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)', fontWeight: 500 }}>
+                  <span style={{ fontSize: 'var(--aguila-fs-section)', color: 'rgba(255,255,255,0.5)', fontWeight: 500 }}>
                     {subtitle.includes('USD') ? subtitle.replace('USD ', '') : subtitle}
                   </span>
                 </div>
               ) : (
-                <span style={{ fontSize: 16, color: 'rgba(22,163,74,0.7)', fontWeight: 600 }}>
+                <span style={{ fontSize: 'var(--aguila-fs-body-lg)', color: 'rgba(22,163,74,0.7)', fontWeight: 600 }}>
                   {subtitle}
                 </span>
               )}
@@ -139,7 +139,7 @@ export function WorkflowCard({
             {/* Trend arrow */}
             {trendDelta !== undefined && trendDelta !== 0 && (
               <span className="font-mono" style={{
-                fontSize: 12, fontWeight: 600,
+                fontSize: 'var(--aguila-fs-compact)', fontWeight: 600,
                 color: trendDelta > 0 ? '#16A34A' : '#DC2626',
               }}>
                 {trendDelta > 0 ? '↑' : '↓'}{Math.abs(Math.round(trendDelta))}%
@@ -151,7 +151,7 @@ export function WorkflowCard({
             <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
               {actions.map(action => (
                 <Link key={action.label} href={action.href} style={{
-                  padding: '8px 16px', borderRadius: 8, fontSize: 12, fontWeight: 700,
+                  padding: '8px 16px', borderRadius: 8, fontSize: 'var(--aguila-fs-compact)', fontWeight: 700,
                   textDecoration: 'none', minHeight: 44, display: 'inline-flex', alignItems: 'center',
                   ...(action.primary
                     ? { background: 'var(--gold, #E8EAED)', color: '#1A1A1A' }
@@ -165,7 +165,7 @@ export function WorkflowCard({
 
           {/* Right: Mini table of active embarques */}
           <div style={{ flex: 1, minWidth: 0, borderLeft: '1px solid rgba(255,255,255,0.06)', paddingLeft: 24 }}>
-            <div style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#6E7681', marginBottom: 8 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#6E7681', marginBottom: 8 }}>
               {hasActive ? 'En tránsito ahora' : 'Último cruce'}
             </div>
             {hasActive ? (
@@ -177,13 +177,13 @@ export function WorkflowCard({
                     background: 'rgba(255,255,255,0.03)',
                     border: '1px solid rgba(255,255,255,0.045)',
                   }}>
-                    <span style={{ fontSize: 12, fontFamily: 'var(--font-mono)', fontWeight: 600, color: '#E6EDF3' }}>
+                    <span style={{ fontSize: 'var(--aguila-fs-compact)', fontFamily: 'var(--font-mono)', fontWeight: 600, color: '#E6EDF3' }}>
                       {item.pedimento || item.trafico}
                     </span>
                     <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                      <span style={{ fontSize: 11, color: '#8B949E' }}>{item.estatus}</span>
+                      <span style={{ fontSize: 'var(--aguila-fs-meta)', color: '#8B949E' }}>{item.estatus}</span>
                       <span style={{
-                        fontSize: 12, fontFamily: 'var(--font-mono)', fontWeight: 700, padding: '2px 6px', borderRadius: 4,
+                        fontSize: 'var(--aguila-fs-compact)', fontFamily: 'var(--font-mono)', fontWeight: 700, padding: '2px 6px', borderRadius: 4,
                         background: item.daysOld > 5 ? 'rgba(220,38,38,0.15)' : item.daysOld > 2 ? 'rgba(217,119,6,0.12)' : 'rgba(255,255,255,0.06)',
                         color: item.daysOld > 5 ? '#DC2626' : item.daysOld > 2 ? '#D97706' : '#8B949E',
                       }}>
@@ -197,22 +197,22 @@ export function WorkflowCard({
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <CheckCircle2 size={16} style={{ color: '#0D9488' }} />
-                  <span style={{ fontSize: 14, fontWeight: 600, color: '#0D9488' }}>Todo al corriente</span>
+                  <span style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: '#0D9488' }}>Todo al corriente</span>
                 </div>
                 {(totalTraficos ?? 0) > 0 && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                    <span style={{ fontSize: 12, color: '#8B949E' }}>
+                    <span style={{ fontSize: 'var(--aguila-fs-compact)', color: '#8B949E' }}>
                       <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, color: '#E6EDF3' }}>{totalTraficos?.toLocaleString()}</span> operaciones desde 2024
                     </span>
                     {(totalCruzados ?? 0) > 0 && (
-                      <span style={{ fontSize: 12, color: '#8B949E' }}>
+                      <span style={{ fontSize: 'var(--aguila-fs-compact)', color: '#8B949E' }}>
                         <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, color: '#E6EDF3' }}>{totalCruzados?.toLocaleString()}</span> cruces completados
                       </span>
                     )}
                   </div>
                 )}
                 {lastCrossingInfo && (
-                  <div style={{ fontSize: 11, color: '#6E7681', marginTop: 4 }}>
+                  <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#6E7681', marginTop: 4 }}>
                     Último: <span style={{ fontFamily: 'var(--font-mono)', color: '#8B949E' }}>{lastCrossingInfo.trafico}</span>
                   </div>
                 )}
@@ -272,25 +272,25 @@ export function WorkflowCard({
           }}
         >
           <div>
-            <div style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#6E7681', marginBottom: 4 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#6E7681', marginBottom: 4 }}>
               {label}
             </div>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
               {kpi !== null && kpi > 0 ? (
                 <AnimatedKpi value={kpi} size={22} isUSD={isUSD} decimals={isDecimal ? 2 : 0} />
               ) : (
-                <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,0.4)' }}>N/D</span>
+                <span style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: 'rgba(255,255,255,0.4)' }}>N/D</span>
               )}
               {trendDelta !== undefined && trendDelta !== 0 && (
                 <span className="font-mono" style={{
-                  fontSize: 12, fontWeight: 700,
+                  fontSize: 'var(--aguila-fs-compact)', fontWeight: 700,
                   color: trendDelta > 0 ? '#16A34A' : '#DC2626',
                 }}>
                   {trendDelta > 0 ? '↑' : '↓'}{Math.abs(Math.round(trendDelta))}%
                 </span>
               )}
             </div>
-            <div style={{ fontSize: 12, color: '#6E7681', marginTop: 2 }}>{subtitle}</div>
+            <div style={{ fontSize: 'var(--aguila-fs-compact)', color: '#6E7681', marginTop: 2 }}>{subtitle}</div>
           </div>
           {/* Blue gradient progress bar at bottom */}
           <div style={{
@@ -337,8 +337,8 @@ export function WorkflowCard({
         >
           <Icon size={18} strokeWidth={1.5} style={{ color: 'rgba(255,255,255,0.4)', flexShrink: 0 }} />
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: '#E6EDF3' }}>{label}</div>
-            <div style={{ fontSize: 12, color: '#6E7681', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{subtitle}</div>
+            <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: '#E6EDF3' }}>{label}</div>
+            <div style={{ fontSize: 'var(--aguila-fs-compact)', color: '#6E7681', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{subtitle}</div>
           </div>
         </motion.div>
       </Link>
@@ -392,7 +392,7 @@ export function WorkflowCard({
                 strokeLinecap="round"
                 style={{ transform: 'rotate(-90deg)', transformOrigin: '50% 50%', transition: 'stroke-dashoffset 800ms ease' }} />
               <text x="50%" y="50%" textAnchor="middle" dy="0.35em"
-                style={{ fontSize: 10, fontWeight: 700, fontFamily: 'var(--font-mono)', fill: '#E6EDF3' }}>
+                style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 700, fontFamily: 'var(--font-mono)', fill: '#E6EDF3' }}>
                 {completionRing}%
               </text>
             </svg>
@@ -405,20 +405,20 @@ export function WorkflowCard({
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
           <Icon size={22} strokeWidth={1.5} style={{ color: U_ICON[u] }} />
-          <span style={{ fontSize: 16, fontWeight: 700, color: '#FFFFFF' }}>{label}</span>
+          <span style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, color: '#FFFFFF' }}>{label}</span>
         </div>
 
         <div style={{ marginBottom: criticalItem ? 4 : 16, minHeight: 40 }}>
           {hasData ? (
             <>
               <AnimatedKpi value={kpi} size={isFormatUSD ? 26 : 32} isUSD={isFormatUSD} />
-              <span style={{ fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,0.5)', marginLeft: 8 }}>
+              <span style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 500, color: 'rgba(255,255,255,0.5)', marginLeft: 8 }}>
                 {isFormatUSD ? subtitle.replace('USD ', '') : subtitle}
               </span>
             </>
           ) : (
             <span style={{
-              fontSize: 14,
+              fontSize: 'var(--aguila-fs-section)',
               color: isGood ? 'rgba(22,163,74,0.7)' : 'rgba(255,255,255,0.4)',
               fontWeight: 600,
             }}>
@@ -430,7 +430,7 @@ export function WorkflowCard({
         {/* Critical item — info scent */}
         {criticalItem && (
           <div style={{
-            fontSize: 11, color: '#6E7681', fontFamily: 'var(--font-mono)',
+            fontSize: 'var(--aguila-fs-meta)', color: '#6E7681', fontFamily: 'var(--font-mono)',
             marginBottom: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           }}>
             {criticalItem}
@@ -440,7 +440,7 @@ export function WorkflowCard({
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 'auto' }}>
           {actions.map(action => (
             <Link key={action.label} href={action.href} style={{
-              padding: '8px 16px', borderRadius: 8, fontSize: 12, fontWeight: 700,
+              padding: '8px 16px', borderRadius: 8, fontSize: 'var(--aguila-fs-compact)', fontWeight: 700,
               textDecoration: 'none', minHeight: 44, display: 'inline-flex', alignItems: 'center',
               ...(action.primary
                 ? { background: 'var(--gold, #E8EAED)', color: '#1A1A1A', border: 'none' }
@@ -467,16 +467,16 @@ export function WorkflowCard({
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
           <Icon size={24} strokeWidth={1.5} style={{ color: 'rgba(255,255,255,0.6)' }} />
-          <span style={{ fontSize: 18, fontWeight: 700, color: '#FFFFFF' }}>{label}</span>
+          <span style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: '#FFFFFF' }}>{label}</span>
         </div>
         <div style={{ marginBottom: 20 }}>
           <span style={{ fontSize: 40, fontWeight: 800, fontFamily: 'var(--font-mono)', color: '#FFFFFF', lineHeight: 1 }}>{kpi ?? 0}</span>
-          <span style={{ fontSize: 16, fontWeight: 500, color: 'rgba(255,255,255,0.6)', marginLeft: 10 }}>{subtitle}</span>
+          <span style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 500, color: 'rgba(255,255,255,0.6)', marginLeft: 10 }}>{subtitle}</span>
         </div>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
           {actions.map(a => (
             <Link key={a.label} href={a.href} className="cc-card" style={{
-              padding: '10px 20px', borderRadius: 8, fontSize: 13, fontWeight: 600,
+              padding: '10px 20px', borderRadius: 8, fontSize: 'var(--aguila-fs-body)', fontWeight: 600,
               textDecoration: 'none', minHeight: 44, display: 'inline-flex', alignItems: 'center',
               ...(a.primary ? { background: 'var(--gold, #E8EAED)', color: '#1A1A1A' } : { background: 'transparent', color: '#FFFFFF', border: '1px solid rgba(255,255,255,0.25)' }),
             }}>{a.label}</Link>
@@ -498,12 +498,12 @@ export function WorkflowCard({
           <Icon size={24} strokeWidth={1.5} style={{ color: '#6B6B6B' }} />
           <span style={{ fontSize: 15, fontWeight: 700, color: '#1A1A1A' }}>{label}</span>
         </div>
-        <div style={{ fontSize: 13, color: '#6B6B6B', display: 'flex', alignItems: 'center', gap: 4, marginTop: 8 }}>
+        <div style={{ fontSize: 'var(--aguila-fs-body)', color: '#6B6B6B', display: 'flex', alignItems: 'center', gap: 4, marginTop: 8 }}>
           {kpi !== null && kpi > 0 && <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600 }}>{kpi} </span>}
           <span>{subtitle}</span>
         </div>
         {actions[0] && (
-          <span style={{ display: 'inline-flex', alignItems: 'center', padding: '8px 16px', borderRadius: 8, background: 'var(--gold, #E8EAED)', color: '#1A1A1A', fontSize: 12, fontWeight: 700, marginTop: 'auto', alignSelf: 'flex-start' }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', padding: '8px 16px', borderRadius: 8, background: 'var(--gold, #E8EAED)', color: '#1A1A1A', fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, marginTop: 'auto', alignSelf: 'flex-start' }}>
             {actions[0].label}
           </span>
         )}

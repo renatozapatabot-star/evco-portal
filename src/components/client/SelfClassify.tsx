@@ -46,14 +46,14 @@ const inputStyle: React.CSSProperties = {
   border: '1px solid rgba(255,255,255,0.08)',
   borderRadius: 12,
   color: '#E6EDF3',
-  fontSize: 14,
+  fontSize: 'var(--aguila-fs-section)',
   fontFamily: 'inherit',
   outline: 'none',
   transition: 'border-color 0.2s',
 }
 
 const labelStyle: React.CSSProperties = {
-  fontSize: 12,
+  fontSize: 'var(--aguila-fs-compact)',
   fontWeight: 600,
   color: '#94a3b8',
   textTransform: 'uppercase',
@@ -136,7 +136,7 @@ export function SelfClassify() {
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         <Search size={18} color="#C0C5CE" />
         <span style={{
-          fontSize: 14, fontWeight: 700, color: '#C0C5CE',
+          fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: '#C0C5CE',
           textTransform: 'uppercase', letterSpacing: '0.08em',
         }}>
           Clasificar Producto
@@ -283,10 +283,10 @@ export function SelfClassify() {
         }}>
           <XCircle size={20} color="#EF4444" />
           <div>
-            <div style={{ fontSize: 14, fontWeight: 600, color: '#EF4444' }}>
+            <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: '#EF4444' }}>
               Error en clasificación
             </div>
-            <div style={{ fontSize: 13, color: '#94a3b8', marginTop: 4 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-body)', color: '#94a3b8', marginTop: 4 }}>
               {errorMsg}
             </div>
           </div>
@@ -301,7 +301,7 @@ export function SelfClassify() {
           boxShadow: '0 10px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05), 0 0 25px -8px rgba(192,197,206,0.15)',
         }}>
           <div style={{
-            fontSize: 11, fontWeight: 700, color: '#C0C5CE',
+            fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, color: '#C0C5CE',
             textTransform: 'uppercase', letterSpacing: '0.08em',
             marginBottom: 16,
           }}>
@@ -311,11 +311,11 @@ export function SelfClassify() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {/* Fraccion */}
             <div>
-              <div style={{ fontSize: 11, color: '#64748b', fontWeight: 600, marginBottom: 4 }}>
+              <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#64748b', fontWeight: 600, marginBottom: 4 }}>
                 Fracción sugerida
               </div>
               <div style={{
-                fontSize: 28,
+                fontSize: 'var(--aguila-fs-kpi-mid)',
                 fontWeight: 800,
                 fontFamily: 'var(--font-mono)',
                 color: '#C0C5CE',
@@ -324,7 +324,7 @@ export function SelfClassify() {
                 {result.fraccion}
               </div>
               {result.description && (
-                <div style={{ fontSize: 13, color: '#94a3b8', marginTop: 4 }}>
+                <div style={{ fontSize: 'var(--aguila-fs-body)', color: '#94a3b8', marginTop: 4 }}>
                   {result.description}
                 </div>
               )}
@@ -342,12 +342,12 @@ export function SelfClassify() {
                 borderRadius: 12,
                 padding: 16,
               }}>
-                <div style={{ fontSize: 11, color: '#64748b', fontWeight: 600, marginBottom: 6 }}>
+                <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#64748b', fontWeight: 600, marginBottom: 6 }}>
                   Confianza
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <span style={{
-                    fontSize: 24,
+                    fontSize: 'var(--aguila-fs-title)',
                     fontWeight: 800,
                     fontFamily: 'var(--font-mono)',
                     color: confidenceColor(result.confidence),
@@ -355,7 +355,7 @@ export function SelfClassify() {
                     {result.confidence}%
                   </span>
                   <span style={{
-                    fontSize: 11,
+                    fontSize: 'var(--aguila-fs-meta)',
                     fontWeight: 600,
                     color: confidenceColor(result.confidence),
                     textTransform: 'uppercase',
@@ -387,21 +387,21 @@ export function SelfClassify() {
                 borderRadius: 12,
                 padding: 16,
               }}>
-                <div style={{ fontSize: 11, color: '#64748b', fontWeight: 600, marginBottom: 6 }}>
+                <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#64748b', fontWeight: 600, marginBottom: 6 }}>
                   T-MEC elegible
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   {result.tmec_eligible ? (
                     <>
                       <CheckCircle size={22} color="#22C55E" />
-                      <span style={{ fontSize: 18, fontWeight: 700, color: '#22C55E' }}>
+                      <span style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: '#22C55E' }}>
                         Sí
                       </span>
                     </>
                   ) : (
                     <>
                       <XCircle size={22} color="#EF4444" />
-                      <span style={{ fontSize: 18, fontWeight: 700, color: '#EF4444' }}>
+                      <span style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: '#EF4444' }}>
                         No
                       </span>
                     </>
@@ -413,7 +413,7 @@ export function SelfClassify() {
             {/* Notes */}
             {result.notes && (
               <div style={{
-                fontSize: 13,
+                fontSize: 'var(--aguila-fs-body)',
                 color: '#94a3b8',
                 lineHeight: 1.5,
                 borderTop: '1px solid rgba(255,255,255,0.06)',
@@ -441,7 +441,7 @@ export function SelfClassify() {
                   border: 'none',
                   background: '#E8EAED',
                   color: '#000',
-                  fontSize: 14,
+                  fontSize: 'var(--aguila-fs-section)',
                   fontWeight: 700,
                   cursor: 'pointer',
                   display: 'flex',
@@ -464,7 +464,7 @@ export function SelfClassify() {
                   border: '1px solid rgba(255,255,255,0.12)',
                   background: 'rgba(255,255,255,0.04)',
                   color: '#94a3b8',
-                  fontSize: 14,
+                  fontSize: 'var(--aguila-fs-section)',
                   fontWeight: 600,
                   cursor: 'pointer',
                   display: 'flex',

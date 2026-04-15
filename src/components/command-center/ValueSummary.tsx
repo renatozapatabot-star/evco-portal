@@ -19,12 +19,12 @@ export function ValueSummary({ pedimentosThisMonth, daysSinceRojo, totalClassifi
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
         <Brain size={14} style={{ color: '#C0C5CE', flexShrink: 0 }} />
-        <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#64748b' }}>
+        <span style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#64748b' }}>
           ZAPATA AI trabaja para ti
         </span>
       </div>
 
-      <div style={{ flex: 1, fontSize: 13, color: '#94a3b8', lineHeight: 1.5 }}>
+      <div style={{ flex: 1, fontSize: 'var(--aguila-fs-body)', color: '#94a3b8', lineHeight: 1.5 }}>
         {pedimentosThisMonth > 0 && (
           <span>
             <strong style={{ color: '#E6EDF3', fontFamily: 'var(--font-mono)' }}>{pedimentosThisMonth}</strong> pedimentos este mes

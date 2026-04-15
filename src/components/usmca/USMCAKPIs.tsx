@@ -81,10 +81,10 @@ function KPICard({ icon, label, value, sub, accent }: {
         }}>
           {icon}
         </div>
-        <span style={{ fontSize: 13, color: D.textSec }}>{label}</span>
+        <span style={{ fontSize: 'var(--aguila-fs-body)', color: D.textSec }}>{label}</span>
       </div>
       <p style={{
-        fontSize: 28,
+        fontSize: 'var(--aguila-fs-kpi-mid)',
         fontWeight: 700,
         fontFamily: D.mono,
         margin: '0 0 4px',
@@ -93,7 +93,7 @@ function KPICard({ icon, label, value, sub, accent }: {
       }}>
         {value}
       </p>
-      <p style={{ fontSize: 12, color: D.textMuted, margin: 0 }}>{sub}</p>
+      <p style={{ fontSize: 'var(--aguila-fs-compact)', color: D.textMuted, margin: 0 }}>{sub}</p>
     </div>
   )
 }

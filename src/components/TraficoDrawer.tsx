@@ -210,7 +210,7 @@ function RealDocuments({ traficoId }: { traficoId: string }) {
     load()
   }, [traficoId])
 
-  if (loading) return <div style={{ color: '#6b7280', fontSize: 12, padding: '8px 0' }}>Cargando documentos...</div>
+  if (loading) return <div style={{ color: '#6b7280', fontSize: 'var(--aguila-fs-compact)', padding: '8px 0' }}>Cargando documentos...</div>
 
   return (
     <div>
@@ -218,23 +218,23 @@ function RealDocuments({ traficoId }: { traficoId: string }) {
         Documentos ({docs.length})
       </div>
       {docs.length === 0 ? (
-        <div style={{ color: '#6b7280', fontSize: 12, padding: '8px 0' }}>Sin documentos — sync en progreso</div>
+        <div style={{ color: '#6b7280', fontSize: 'var(--aguila-fs-compact)', padding: '8px 0' }}>Sin documentos — sync en progreso</div>
       ) : (
         <div className="flex flex-col gap-1">
           {docs.map((d, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0', borderBottom: '1px solid var(--border-subtle, rgba(255,255,255,0.06))' }}>
               <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', flexShrink: 0 }} />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-primary, #e5e7eb)' }}>
+                <div style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 500, color: 'var(--text-primary, #e5e7eb)' }}>
                   {d.type.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
                 </div>
-                <div style={{ fontSize: 10, color: 'var(--text-muted, #6b7280)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div style={{ fontSize: 'var(--aguila-fs-label)', color: 'var(--text-muted, #6b7280)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {d.name}
                 </div>
               </div>
               {d.url && d.url.startsWith('http') && (
                 <a href={d.url} target="_blank" rel="noopener noreferrer"
-                  style={{ fontSize: 10, color: GOLD, textDecoration: 'none', fontWeight: 600, flexShrink: 0 }}
+                  style={{ fontSize: 'var(--aguila-fs-label)', color: GOLD, textDecoration: 'none', fontWeight: 600, flexShrink: 0 }}
                   onClick={e => e.stopPropagation()}>
                   Ver ↗
                 </a>

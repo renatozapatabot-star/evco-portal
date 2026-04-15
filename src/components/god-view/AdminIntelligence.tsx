@@ -70,12 +70,12 @@ const sectionTitle: React.CSSProperties = {
 
 const mutedText: React.CSSProperties = {
   color: '#64748b',
-  fontSize: 11,
+  fontSize: 'var(--aguila-fs-meta)',
 }
 
 const secondaryText: React.CSSProperties = {
   color: '#94a3b8',
-  fontSize: 13,
+  fontSize: 'var(--aguila-fs-body)',
 }
 
 // ── Severity helpers ──
@@ -121,7 +121,7 @@ function PanelEmpty({ icon: Icon, message }: { icon: typeof AlertTriangle; messa
   return (
     <div style={{ textAlign: 'center', padding: '20px 0' }}>
       <Icon size={28} style={{ color: '#64748b', marginBottom: 8 }} />
-      <div style={{ color: '#94a3b8', fontSize: 12 }}>{message}</div>
+      <div style={{ color: '#94a3b8', fontSize: 'var(--aguila-fs-compact)' }}>{message}</div>
     </div>
   )
 }
@@ -156,7 +156,7 @@ function AnomalyPanel() {
           {anomalies.length > 0 && (
             <span style={{
               fontFamily: 'var(--font-mono)',
-              fontSize: 11,
+              fontSize: 'var(--aguila-fs-meta)',
               background: 'rgba(239,68,68,0.15)',
               color: '#EF4444',
               padding: '2px 8px',
@@ -205,7 +205,7 @@ function AnomalyPanel() {
               </div>
               <span style={{
                 fontFamily: 'var(--font-mono)',
-                fontSize: 10,
+                fontSize: 'var(--aguila-fs-label)',
                 color: SEVERITY_COLORS[a.severity] ?? '#64748b',
                 fontWeight: 600,
                 textTransform: 'uppercase' as const,
@@ -295,7 +295,7 @@ function RiskMatrixPanel() {
 
                 <span style={{
                   fontFamily: 'var(--font-mono)',
-                  fontSize: 11,
+                  fontSize: 'var(--aguila-fs-meta)',
                   color: RISK_COLORS[r.risk_level] ?? '#64748b',
                   fontWeight: 600,
                   minWidth: 50,
@@ -360,12 +360,12 @@ function ProfitabilityPanel() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                 <span style={{ ...secondaryText, fontWeight: 500 }}>{e.company_name}</span>
                 <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: '#E6EDF3', fontWeight: 600 }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-compact)', color: '#E6EDF3', fontWeight: 600 }}>
                     ${(e.revenue / 1000).toFixed(1)}K USD
                   </span>
                   <span style={{
                     fontFamily: 'var(--font-mono)',
-                    fontSize: 11,
+                    fontSize: 'var(--aguila-fs-meta)',
                     color: e.margin >= 30 ? '#22C55E' : e.margin >= 15 ? '#FBBF24' : '#EF4444',
                     fontWeight: 600,
                   }}>
@@ -431,7 +431,7 @@ function GhostPanel() {
           {ghosts.length > 0 && (
             <span style={{
               fontFamily: 'var(--font-mono)',
-              fontSize: 11,
+              fontSize: 'var(--aguila-fs-meta)',
               background: 'rgba(192,197,206,0.12)',
               color: '#C0C5CE',
               padding: '2px 8px',
@@ -470,7 +470,7 @@ function GhostPanel() {
               }}
             >
               <div>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: '#E6EDF3', fontWeight: 500 }}>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body)', color: '#E6EDF3', fontWeight: 500 }}>
                   {g.trafico_number}
                 </span>
                 <div style={mutedText}>
@@ -480,7 +480,7 @@ function GhostPanel() {
               </div>
               <span style={{
                 fontFamily: 'var(--font-mono)',
-                fontSize: 12,
+                fontSize: 'var(--aguila-fs-compact)',
                 color: g.days_stuck > 30 ? '#EF4444' : g.days_stuck > 14 ? '#FBBF24' : '#94a3b8',
                 fontWeight: 600,
               }}>

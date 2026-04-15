@@ -50,7 +50,7 @@ function CardShell({ title, icon: Icon, children, loading }: {
         }}>
           <Icon size={16} color="#C0C5CE" strokeWidth={1.8} />
         </div>
-        <span style={{ fontSize: 13, fontWeight: 700, color: '#E6EDF3' }}>{title}</span>
+        <span style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 700, color: '#E6EDF3' }}>{title}</span>
       </div>
       {loading ? (
         <div className="skeleton-shimmer" style={{ height: 40, borderRadius: 8 }} />
@@ -72,7 +72,7 @@ export function DemandForecastCard() {
           {forecasts.map((f, i) => (
             <div key={i} style={{
               display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              fontSize: 13, color: '#94a3b8',
+              fontSize: 'var(--aguila-fs-body)', color: '#94a3b8',
             }}>
               <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '60%' }}>
                 {String(f.description || f.supplier || f.product || `Pronóstico ${i + 1}`)}
@@ -85,7 +85,7 @@ export function DemandForecastCard() {
           ))}
         </div>
       ) : (
-        <p style={{ fontSize: 12, color: '#64748b', margin: 0 }}>
+        <p style={{ fontSize: 'var(--aguila-fs-compact)', color: '#64748b', margin: 0 }}>
           Los pronósticos se generan con datos históricos de embarques.
         </p>
       )}
@@ -106,7 +106,7 @@ export function InventoryEstimateCard() {
           {estimates.map((e, i) => (
             <div key={i} style={{
               display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              fontSize: 13, color: '#94a3b8',
+              fontSize: 'var(--aguila-fs-body)', color: '#94a3b8',
             }}>
               <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '60%' }}>
                 {String(e.product || e.fraccion || e.location || `Estimado ${i + 1}`)}
@@ -119,7 +119,7 @@ export function InventoryEstimateCard() {
           ))}
         </div>
       ) : (
-        <p style={{ fontSize: 12, color: '#64748b', margin: 0 }}>
+        <p style={{ fontSize: 'var(--aguila-fs-compact)', color: '#64748b', margin: 0 }}>
           Los estimados de inventario se calculan con datos de entradas y salidas.
         </p>
       )}
@@ -140,7 +140,7 @@ export function CostInsightsCard() {
           {insights.map((c, i) => (
             <div key={i} style={{
               display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              fontSize: 13, color: '#94a3b8',
+              fontSize: 'var(--aguila-fs-body)', color: '#94a3b8',
             }}>
               <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '60%' }}>
                 {String(c.insight_type || c.category || c.description || `Insight ${i + 1}`)}
@@ -156,7 +156,7 @@ export function CostInsightsCard() {
           ))}
         </div>
       ) : (
-        <p style={{ fontSize: 12, color: '#64748b', margin: 0 }}>
+        <p style={{ fontSize: 'var(--aguila-fs-compact)', color: '#64748b', margin: 0 }}>
           ZAPATA AI monitorea oportunidades de ahorro en cada operación.
         </p>
       )}
@@ -186,13 +186,13 @@ export function SupplierScoresCard() {
             return (
               <div key={i} style={{
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                fontSize: 13, color: '#94a3b8',
+                fontSize: 'var(--aguila-fs-body)', color: '#94a3b8',
               }}>
                 <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '60%' }}>
                   {String(s.supplier_name || s.nombre || s.cve_proveedor || `Proveedor ${i + 1}`)}
                 </span>
                 <span style={{
-                  fontSize: 11, fontWeight: 700, padding: '2px 10px', borderRadius: 20,
+                  fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, padding: '2px 10px', borderRadius: 20,
                   background: `${color}15`, color,
                 }}>
                   {text}
@@ -202,7 +202,7 @@ export function SupplierScoresCard() {
           })}
         </div>
       ) : (
-        <p style={{ fontSize: 12, color: '#64748b', margin: 0 }}>
+        <p style={{ fontSize: 'var(--aguila-fs-compact)', color: '#64748b', margin: 0 }}>
           Las calificaciones de proveedores se construyen con historial de operaciones.
         </p>
       )}

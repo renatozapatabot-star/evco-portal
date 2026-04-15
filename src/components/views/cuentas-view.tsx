@@ -194,8 +194,8 @@ export function CuentasView() {
                   { label: '90+ días', value: aging.d90plus, color: 'var(--danger-500)' },
                 ].map(b => (
                   <div key={b.label}>
-                    <div style={{ fontSize: 11, fontWeight: 800, color: b.color, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{b.label}</div>
-                    <div style={{ fontSize: 18, fontWeight: 900, color: 'var(--n-900)', marginTop: 4, fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtMXN(b.value)}</div>
+                    <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 800, color: b.color, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{b.label}</div>
+                    <div style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 900, color: 'var(--n-900)', marginTop: 4, fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtMXN(b.value)}</div>
                   </div>
                 ))}
               </div>

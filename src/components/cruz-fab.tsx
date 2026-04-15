@@ -63,7 +63,7 @@ export function CruzFAB() {
                 animation: `fabSlideUp 150ms ease ${i * 50}ms both`,
               }}
             >
-              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{a.label}</span>
+              <span style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: 'var(--text-primary)' }}>{a.label}</span>
               <div style={{ width: 36, height: 36, borderRadius: '50%', background: a.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <a.icon size={18} style={{ color: 'var(--bg-card)' }} />
               </div>
@@ -82,7 +82,7 @@ export function CruzFAB() {
         {open ? (
           <X size={22} style={{ color: 'var(--text-primary)' }} />
         ) : (
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '0.08em' }}>ZAPATA AI</span>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body)', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '0.08em' }}>ZAPATA AI</span>
         )}
       </button>
 

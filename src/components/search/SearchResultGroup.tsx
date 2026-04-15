@@ -30,13 +30,13 @@ export function SearchResultGroup({
       <div style={{ padding: '6px 0' }}>
         <div style={{
           padding: '6px 20px',
-          fontSize: 10, fontWeight: 600, letterSpacing: '0.08em',
+          fontSize: 'var(--aguila-fs-label)', fontWeight: 600, letterSpacing: '0.08em',
           textTransform: 'uppercase', color: ZAPATA.TEXT_TERTIARY,
         }}>
           {config.labelEs}
         </div>
         <div style={{
-          padding: '12px 20px', fontSize: 12, color: ZAPATA.TEXT_TERTIARY, fontStyle: 'italic',
+          padding: '12px 20px', fontSize: 'var(--aguila-fs-compact)', color: ZAPATA.TEXT_TERTIARY, fontStyle: 'italic',
         }}>
           {config.emptyMessage ?? 'Sin datos todavía'}
         </div>
@@ -52,7 +52,7 @@ export function SearchResultGroup({
     <div style={{ padding: '6px 0' }}>
       <div style={{
         padding: '6px 20px',
-        fontSize: 10, fontWeight: 600, letterSpacing: '0.08em',
+        fontSize: 'var(--aguila-fs-label)', fontWeight: 600, letterSpacing: '0.08em',
         textTransform: 'uppercase', color: ZAPATA.TEXT_TERTIARY,
       }}>
         {config.labelEs}
@@ -78,7 +78,7 @@ export function SearchResultGroup({
             width: '100%', textAlign: 'left',
             padding: '8px 20px', minHeight: 36,
             background: 'transparent', border: 'none',
-            color: '#C0C5CE', fontSize: 12, cursor: 'pointer',
+            color: '#C0C5CE', fontSize: 'var(--aguila-fs-compact)', cursor: 'pointer',
           }}
         >
           Ver más en {config.labelEs} →

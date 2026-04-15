@@ -25,7 +25,7 @@ export function DateInputES({ value, onChange, style }: DateInputESProps) {
           border: '1px solid var(--border-card, #E8E5E0)',
           borderRadius: 6,
           padding: '0 8px',
-          fontSize: 11,
+          fontSize: 'var(--aguila-fs-meta)',
           color: 'transparent',
           background: 'var(--bg-card, #FFFFFF)',
           fontFamily: 'var(--font-mono)',
@@ -37,7 +37,7 @@ export function DateInputES({ value, onChange, style }: DateInputESProps) {
         style={{
           position: 'absolute',
           left: 10,
-          fontSize: 12,
+          fontSize: 'var(--aguila-fs-compact)',
           fontFamily: 'var(--font-mono)',
           color: value ? 'var(--text-primary, #1A1A1A)' : 'var(--text-muted, #9B9B9B)',
           pointerEvents: 'none',

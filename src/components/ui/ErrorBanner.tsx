@@ -21,7 +21,7 @@ export function ErrorBanner({ message, onRetry }: ErrorBannerProps) {
       borderLeft: '3px solid var(--color-danger)',
       borderRadius: 'var(--radius-md)',
       marginBottom: 12,
-      fontSize: 13,
+      fontSize: 'var(--aguila-fs-body)',
     }}>
       <AlertTriangle size={16} style={{ color: 'var(--color-danger)', flexShrink: 0 }} />
       <span style={{ flex: 1, color: 'var(--text-primary)' }}>{message}</span>
@@ -30,7 +30,7 @@ export function ErrorBanner({ message, onRetry }: ErrorBannerProps) {
           onClick={onRetry}
           style={{
             display: 'inline-flex', alignItems: 'center', gap: 4,
-            padding: '5px 10px', fontSize: 12, fontWeight: 600,
+            padding: '5px 10px', fontSize: 'var(--aguila-fs-compact)', fontWeight: 600,
             background: 'var(--color-danger)', color: 'var(--text-on-accent)',
             border: 'none', borderRadius: 'var(--radius-sm)',
             cursor: 'pointer', flexShrink: 0,

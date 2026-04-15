@@ -71,7 +71,7 @@ export function MissionHeader({ mood, sentence, quickAction, onAvatarClick, load
             borderRadius: 24,
             background: 'var(--gold, #E8EAED)',
             color: '#1A1A1A',
-            fontSize: 13,
+            fontSize: 'var(--aguila-fs-body)',
             fontWeight: 700,
             textDecoration: 'none',
             flexShrink: 0,

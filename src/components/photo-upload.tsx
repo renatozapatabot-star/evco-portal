@@ -92,7 +92,7 @@ export function PhotoUpload({ traficoId, onClassified }: PhotoUploadProps) {
           background: status === 'done' ? 'rgba(22,163,74,0.06)' : status === 'error' ? 'rgba(220,38,38,0.06)' : 'var(--bg-main)',
           color: status === 'done' ? 'var(--success)' : status === 'error' ? 'var(--danger-500)' : 'var(--text-secondary)',
           cursor: status === 'uploading' || status === 'classifying' ? 'wait' : 'pointer',
-          fontSize: 14, fontWeight: 600,
+          fontSize: 'var(--aguila-fs-section)', fontWeight: 600,
           transition: 'all 200ms ease',
         }}
       >

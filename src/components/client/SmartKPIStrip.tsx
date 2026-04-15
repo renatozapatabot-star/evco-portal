@@ -26,7 +26,7 @@ function DeltaBadge({ delta, label, anomaly, isUrgency }: {
     return (
       <span style={{
         display: 'inline-flex', alignItems: 'center', gap: 3,
-        fontSize: 11, color: '#FBBF24', fontWeight: 600,
+        fontSize: 'var(--aguila-fs-meta)', color: '#FBBF24', fontWeight: 600,
       }}>
         <AlertTriangle size={10} /> anormal
       </span>
@@ -34,7 +34,7 @@ function DeltaBadge({ delta, label, anomaly, isUrgency }: {
   }
   if (delta === 0) {
     return (
-      <span style={{ fontSize: 11, color: '#64748b', fontWeight: 500 }}>
+      <span style={{ fontSize: 'var(--aguila-fs-meta)', color: '#64748b', fontWeight: 500 }}>
         → sin cambio
       </span>
     )
@@ -57,7 +57,7 @@ function DeltaBadge({ delta, label, anomaly, isUrgency }: {
 
   return (
     <span style={{
-      fontSize: 11, fontWeight: 600,
+      fontSize: 'var(--aguila-fs-meta)', fontWeight: 600,
       fontFamily: 'var(--font-mono)',
       color,
     }}>
@@ -147,21 +147,21 @@ export function SmartKPIStrip(props: Props) {
                     <Check size={24} color="#C0C5CE" strokeWidth={2.5} />
                   </div>
                   <div className="kpi-label-full" style={{
-                    fontSize: 10, fontWeight: 700, color: '#8b9ab5',
+                    fontSize: 'var(--aguila-fs-label)', fontWeight: 700, color: '#8b9ab5',
                     textTransform: 'uppercase', letterSpacing: '0.08em',
                     marginTop: 4, marginBottom: 4,
                   }}>
                     {kpi.label}
                   </div>
                   <div className="kpi-label-short" style={{
-                    fontSize: 10, fontWeight: 700, color: '#8b9ab5',
+                    fontSize: 'var(--aguila-fs-label)', fontWeight: 700, color: '#8b9ab5',
                     textTransform: 'uppercase', letterSpacing: '0.08em',
                     marginTop: 4, marginBottom: 2,
                     display: 'none',
                   }}>
                     {kpi.shortLabel}
                   </div>
-                  <span style={{ fontSize: 11, color: '#64748b', fontWeight: 500 }}>
+                  <span style={{ fontSize: 'var(--aguila-fs-meta)', color: '#64748b', fontWeight: 500 }}>
                     {kpi.calmLabel}
                   </span>
                 </>
@@ -179,14 +179,14 @@ export function SmartKPIStrip(props: Props) {
                     }}
                   />
                   <div className="kpi-label-full" style={{
-                    fontSize: 10, fontWeight: 700, color: '#8b9ab5',
+                    fontSize: 'var(--aguila-fs-label)', fontWeight: 700, color: '#8b9ab5',
                     textTransform: 'uppercase', letterSpacing: '0.08em',
                     marginTop: 6, marginBottom: 4,
                   }}>
                     {kpi.label}
                   </div>
                   <div className="kpi-label-short" style={{
-                    fontSize: 10, fontWeight: 700, color: '#8b9ab5',
+                    fontSize: 'var(--aguila-fs-label)', fontWeight: 700, color: '#8b9ab5',
                     textTransform: 'uppercase', letterSpacing: '0.08em',
                     marginTop: 4, marginBottom: 2,
                     display: 'none',

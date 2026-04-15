@@ -138,7 +138,7 @@ export function ActivityStrip() {
           animation: hasNew ? 'activityPulse 1.5s ease-in-out infinite' : 'none',
         }} />
         <span style={{
-          fontSize: 11,
+          fontSize: 'var(--aguila-fs-meta)',
           fontWeight: 600,
           color: '#94a3b8',
           textTransform: 'uppercase',
@@ -149,7 +149,7 @@ export function ActivityStrip() {
           Actividad
         </span>
         <span style={{
-          fontSize: 10,
+          fontSize: 'var(--aguila-fs-label)',
           color: '#64748b',
           transform: collapsed ? 'rotate(-90deg)' : 'rotate(0deg)',
           transition: 'transform 200ms',
@@ -166,11 +166,11 @@ export function ActivityStrip() {
           gap: 2,
         }}>
           {loading ? (
-            <div style={{ fontSize: 11, color: '#64748b', padding: '8px 0', textAlign: 'center' }}>
+            <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#64748b', padding: '8px 0', textAlign: 'center' }}>
               Cargando...
             </div>
           ) : items.length === 0 ? (
-            <div style={{ fontSize: 11, color: '#64748b', padding: '8px 0', textAlign: 'center' }}>
+            <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#64748b', padding: '8px 0', textAlign: 'center' }}>
               Sin actividad reciente
             </div>
           ) : (
@@ -180,7 +180,7 @@ export function ActivityStrip() {
               }}>
                 {/* Action line */}
                 <div style={{
-                  fontSize: 12,
+                  fontSize: 'var(--aguila-fs-compact)',
                   lineHeight: '16px',
                   color: '#E6EDF3',
                   overflow: 'hidden',
@@ -199,7 +199,7 @@ export function ActivityStrip() {
                           color: '#C0C5CE',
                           textDecoration: 'none',
                           fontFamily: 'var(--font-mono)',
-                          fontSize: 11,
+                          fontSize: 'var(--aguila-fs-meta)',
                         }}
                       >
                         {item.entityRef}
@@ -209,7 +209,7 @@ export function ActivityStrip() {
                 </div>
                 {/* Timestamp */}
                 <div style={{
-                  fontSize: 10,
+                  fontSize: 'var(--aguila-fs-label)',
                   color: '#64748b',
                   fontFamily: 'var(--font-mono)',
                   marginTop: 1,

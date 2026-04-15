@@ -122,7 +122,7 @@ export function ComplianceCalendar() {
     <div className="card card-enter" style={{ padding: '16px 20px', marginBottom: 20 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
         <Calendar size={16} style={{ color: 'var(--gold)' }} />
-        <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)' }}>
+        <span style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)' }}>
           Calendario de Cumplimiento
         </span>
       </div>
@@ -146,10 +146,10 @@ export function ComplianceCalendar() {
             >
               <Icon size={16} style={{ color: style.color, flexShrink: 0, marginTop: 1 }} />
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.4 }}>
+                <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.4 }}>
                   {d.title}
                 </div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2, fontFamily: 'var(--font-mono)' }}>
+                <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', marginTop: 2, fontFamily: 'var(--font-mono)' }}>
                   {TYPE_LABELS[d.type]} · {fmtDate(d.date)}
                 </div>
               </div>

@@ -61,7 +61,7 @@ export function SmartSuggestions({ onPick, onSuggestionClick }: Props) {
         <div style={{ padding: '6px 0' }}>
           <div style={{
             padding: '6px 20px',
-            fontSize: 10, fontWeight: 600, letterSpacing: '0.08em',
+            fontSize: 'var(--aguila-fs-label)', fontWeight: 600, letterSpacing: '0.08em',
             textTransform: 'uppercase', color: ZAPATA.TEXT_TERTIARY,
           }}>
             Búsquedas recientes
@@ -79,7 +79,7 @@ export function SmartSuggestions({ onPick, onSuggestionClick }: Props) {
                 minHeight: 44,
                 padding: '10px 20px',
                 background: 'transparent', border: 'none', cursor: 'pointer',
-                color: '#E6EDF3', fontSize: 13,
+                color: '#E6EDF3', fontSize: 'var(--aguila-fs-body)',
                 fontFamily: 'var(--font-geist-sans), Inter, system-ui, sans-serif',
               }}
             >
@@ -91,7 +91,7 @@ export function SmartSuggestions({ onPick, onSuggestionClick }: Props) {
       <div style={{ padding: '6px 0' }}>
         <div style={{
           padding: '6px 20px',
-          fontSize: 10, fontWeight: 600, letterSpacing: '0.08em',
+          fontSize: 'var(--aguila-fs-label)', fontWeight: 600, letterSpacing: '0.08em',
           textTransform: 'uppercase', color: ZAPATA.TEXT_TERTIARY,
         }}>
           Sugerencias
@@ -109,7 +109,7 @@ export function SmartSuggestions({ onPick, onSuggestionClick }: Props) {
               minHeight: 44,
               padding: '10px 20px',
               background: 'transparent', border: 'none', cursor: 'pointer',
-              color: '#E6EDF3', fontSize: 13,
+              color: '#E6EDF3', fontSize: 'var(--aguila-fs-body)',
               fontFamily: 'var(--font-geist-sans), Inter, system-ui, sans-serif',
             }}
           >

@@ -367,7 +367,7 @@ export function AutoClassifyDropzone() {
               background: 'rgba(255,255,255,0.04)',
               border: `1px solid ${BORDER_HAIRLINE}`,
               color: TEXT_PRIMARY,
-              fontSize: 14,
+              fontSize: 'var(--aguila-fs-section)',
               fontFamily: 'var(--font-jetbrains-mono), monospace',
               fontWeight: 500,
               appearance: 'none',
@@ -385,7 +385,7 @@ export function AutoClassifyDropzone() {
               </option>
             ))}
           </select>
-          <span style={{ fontSize: 11, color: TEXT_MUTED }}>
+          <span style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED }}>
             {selectedOption
               ? 'Los archivos subidos se enlazarán directo a este embarque.'
               : 'Si no eliges, ZAPATA AI detecta el pedimento en el documento y lo enlaza solo.'}
@@ -427,10 +427,10 @@ export function AutoClassifyDropzone() {
             }}
           >
             <Upload size={32} color={TEXT_SECONDARY} aria-hidden />
-            <div style={{ marginTop: 12, color: TEXT_PRIMARY, fontSize: 16, fontWeight: 600 }}>
+            <div style={{ marginTop: 12, color: TEXT_PRIMARY, fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 600 }}>
               Arrastra uno o varios documentos
             </div>
-            <div style={{ marginTop: 4, color: TEXT_MUTED, fontSize: 13 }}>
+            <div style={{ marginTop: 4, color: TEXT_MUTED, fontSize: 'var(--aguila-fs-body)' }}>
               PDF, JPG o PNG · 10 MB máx. · hasta 3 en paralelo
             </div>
             <div style={{
@@ -443,7 +443,7 @@ export function AutoClassifyDropzone() {
               borderRadius: 12,
               background: 'rgba(255,255,255,0.04)',
               color: TEXT_PRIMARY,
-              fontSize: 14,
+              fontSize: 'var(--aguila-fs-section)',
               fontWeight: 600,
             }}>
               Elegir archivos
@@ -486,7 +486,7 @@ export function AutoClassifyDropzone() {
                 background: 'rgba(255,255,255,0.04)',
                 border: `1px solid ${BORDER_HAIRLINE}`,
                 color: TEXT_PRIMARY,
-                fontSize: 14,
+                fontSize: 'var(--aguila-fs-section)',
                 lineHeight: 1.5,
                 fontFamily: 'inherit',
                 resize: 'vertical',
@@ -494,7 +494,7 @@ export function AutoClassifyDropzone() {
               }}
             />
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <span style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', fontSize: 11, color: TEXT_MUTED }}>
+              <span style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED }}>
                 {textInput.length} / 8000
               </span>
               <button
@@ -511,7 +511,7 @@ export function AutoClassifyDropzone() {
                     : 'rgba(234,179,8,0.9)',
                   border: '1px solid rgba(234,179,8,0.3)',
                   color: textSubmitting || textInput.trim().length < 10 ? TEXT_MUTED : '#0a0a0c',
-                  fontSize: 14,
+                  fontSize: 'var(--aguila-fs-section)',
                   fontWeight: 700,
                   cursor: textSubmitting || textInput.trim().length < 10 ? 'not-allowed' : 'pointer',
                   transition: 'background 160ms ease',
@@ -540,7 +540,7 @@ export function AutoClassifyDropzone() {
                   </div>
                   <div style={{ minWidth: 0, flex: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                      <span style={{ color: TEXT_PRIMARY, fontSize: 14, fontWeight: 600, wordBreak: 'break-word' }}>
+                      <span style={{ color: TEXT_PRIMARY, fontSize: 'var(--aguila-fs-section)', fontWeight: 600, wordBreak: 'break-word' }}>
                         {it.source === 'text' ? `"${it.fileName}"` : it.fileName}
                       </span>
                       <span style={{
@@ -554,7 +554,7 @@ export function AutoClassifyDropzone() {
                       </span>
                     </div>
                     {it.typeLabel ? (
-                      <div style={{ marginTop: 2, color: TEXT_SECONDARY, fontSize: 13 }}>
+                      <div style={{ marginTop: 2, color: TEXT_SECONDARY, fontSize: 'var(--aguila-fs-body)' }}>
                         {it.typeLabel}
                         {it.supplier ? ` · ${it.supplier}` : ''}
                         {amountLabel ? (
@@ -566,7 +566,7 @@ export function AutoClassifyDropzone() {
                     ) : null}
 
                     {it.linkedTraficoId ? (
-                      <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 6, color: GREEN, fontSize: 12 }}>
+                      <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 6, color: GREEN, fontSize: 'var(--aguila-fs-compact)' }}>
                         <Link2 size={14} aria-hidden />
                         <span>
                           Enlazado al embarque{' '}
@@ -578,7 +578,7 @@ export function AutoClassifyDropzone() {
                     ) : null}
 
                     {it.issues && it.issues.length > 0 ? (
-                      <ul style={{ marginTop: 8, marginBottom: 0, paddingLeft: 18, color: TEXT_SECONDARY, fontSize: 12, lineHeight: 1.5 }}>
+                      <ul style={{ marginTop: 8, marginBottom: 0, paddingLeft: 18, color: TEXT_SECONDARY, fontSize: 'var(--aguila-fs-compact)', lineHeight: 1.5 }}>
                         {it.issues.map((msg, idx) => (
                           <li key={idx}>{msg}</li>
                         ))}
@@ -586,7 +586,7 @@ export function AutoClassifyDropzone() {
                     ) : null}
 
                     {it.errorMessage ? (
-                      <div style={{ marginTop: 6, color: RED, fontSize: 12 }}>
+                      <div style={{ marginTop: 6, color: RED, fontSize: 'var(--aguila-fs-compact)' }}>
                         {it.errorMessage}
                       </div>
                     ) : null}
@@ -642,7 +642,7 @@ function ModeButton({
         background: active ? 'rgba(255,255,255,0.08)' : 'transparent',
         border: active ? '1px solid rgba(255,255,255,0.12)' : '1px solid transparent',
         color: active ? TEXT_PRIMARY : TEXT_SECONDARY,
-        fontSize: 13,
+        fontSize: 'var(--aguila-fs-body)',
         fontWeight: 600,
         cursor: 'pointer',
         transition: 'background 160ms ease, color 160ms ease',

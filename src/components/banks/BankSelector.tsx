@@ -113,7 +113,7 @@ export function BankSelector({
           color: TEXT_PRIMARY,
           border: `1px solid ${open ? BORDER_FOCUS : BORDER_SILVER}`,
           borderRadius: 10,
-          fontSize: 14,
+          fontSize: 'var(--aguila-fs-section)',
           cursor: disabled ? 'not-allowed' : 'pointer',
           opacity: disabled ? 0.6 : 1,
           textAlign: 'left',
@@ -124,7 +124,7 @@ export function BankSelector({
             <span
               style={{
                 fontFamily: 'var(--font-mono)',
-                fontSize: 13,
+                fontSize: 'var(--aguila-fs-body)',
                 color: ACCENT_SILVER,
               }}
             >
@@ -173,7 +173,7 @@ export function BankSelector({
                 color: TEXT_PRIMARY,
                 border: `1px solid ${BORDER_SILVER}`,
                 borderRadius: 8,
-                fontSize: 14,
+                fontSize: 'var(--aguila-fs-section)',
                 outline: 'none',
               }}
             />
@@ -184,7 +184,7 @@ export function BankSelector({
                 padding: 20,
                 textAlign: 'center',
                 color: TEXT_MUTED,
-                fontSize: 13,
+                fontSize: 'var(--aguila-fs-body)',
               }}
             >
               Sin resultados para “{query}”.
@@ -218,7 +218,7 @@ export function BankSelector({
                         color: TEXT_PRIMARY,
                         border: 'none',
                         borderRadius: 8,
-                        fontSize: 13,
+                        fontSize: 'var(--aguila-fs-body)',
                         cursor: 'pointer',
                         textAlign: 'left',
                       }}
@@ -237,7 +237,7 @@ export function BankSelector({
                       {!bank.accepts_pece && (
                         <span
                           style={{
-                            fontSize: 10,
+                            fontSize: 'var(--aguila-fs-label)',
                             color: TEXT_MUTED,
                             textTransform: 'uppercase',
                             letterSpacing: '0.06em',
@@ -257,7 +257,7 @@ export function BankSelector({
             style={{
               padding: '6px 12px',
               borderTop: `1px solid ${BORDER_SILVER}`,
-              fontSize: 10,
+              fontSize: 'var(--aguila-fs-label)',
               color: TEXT_MUTED,
               fontFamily: 'var(--font-mono)',
               textTransform: 'uppercase',

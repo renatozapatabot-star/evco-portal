@@ -39,10 +39,10 @@ export function USMCACerts({ isMobile }: USMCACertsProps) {
         <FileText size={28} />
       </div>
       <div>
-        <h3 style={{ fontSize: 16, fontWeight: 600, margin: '0 0 6px' }}>
+        <h3 style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 600, margin: '0 0 6px' }}>
           Gestión de certificados USMCA próximamente
         </h3>
-        <p style={{ color: D.textSec, fontSize: 14, margin: 0, lineHeight: 1.5 }}>
+        <p style={{ color: D.textSec, fontSize: 'var(--aguila-fs-section)', margin: 0, lineHeight: 1.5 }}>
           Generación, seguimiento y validación de certificados de origen T-MEC.
           Criterios A, B, C, D con análisis automático por fracción arancelaria.
         </p>

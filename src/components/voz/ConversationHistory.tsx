@@ -27,10 +27,10 @@ export default function ConversationHistory({ history }: ConversationHistoryProp
           borderRadius: 8,
           borderLeft: `2px solid ${COLORS.goldDark}`,
         }}>
-          <p style={{ color: COLORS.grayLight, fontSize: 12, margin: '0 0 4px' }}>
+          <p style={{ color: COLORS.grayLight, fontSize: 'var(--aguila-fs-compact)', margin: '0 0 4px' }}>
             {entry.userText}
           </p>
-          <p style={{ color: COLORS.gold, fontSize: 13, margin: 0, opacity: 0.8 }}>
+          <p style={{ color: COLORS.gold, fontSize: 'var(--aguila-fs-body)', margin: 0, opacity: 0.8 }}>
             {entry.assistantText.length > 100
               ? entry.assistantText.slice(0, 100) + '...'
               : entry.assistantText}

@@ -67,7 +67,7 @@ export function LiveFlowPanel({ shipments, knownPositions, totalPositions }: Liv
             <span
               style={{
                 fontFamily: 'var(--font-geist-sans), system-ui, sans-serif',
-                fontSize: 10,
+                fontSize: 'var(--aguila-fs-label)',
                 letterSpacing: '0.14em',
                 color: ACCENT_SILVER_DIM,
               }}
@@ -77,7 +77,7 @@ export function LiveFlowPanel({ shipments, knownPositions, totalPositions }: Liv
             <span
               style={{
                 fontFamily: 'var(--font-jetbrains-mono), monospace',
-                fontSize: 24,
+                fontSize: 'var(--aguila-fs-title)',
                 fontWeight: 600,
                 color: ACCENT_SILVER,
               }}

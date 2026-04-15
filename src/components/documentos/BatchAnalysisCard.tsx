@@ -131,7 +131,7 @@ export function BatchAnalysisCard({ summary, onReset }: Props) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {byType.map((t) => (
                 <div key={t.label} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ width: 150, minWidth: 0, fontSize: 12, color: TEXT_PRIMARY, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <div style={{ width: 150, minWidth: 0, fontSize: 'var(--aguila-fs-compact)', color: TEXT_PRIMARY, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     <FileText size={12} style={{ display: 'inline-block', marginRight: 6, verticalAlign: 'middle', color: ACCENT_SILVER_DIM }} />
                     {t.label}
                   </div>
@@ -148,7 +148,7 @@ export function BatchAnalysisCard({ summary, onReset }: Props) {
                       background: ACCENT_SILVER,
                     }} />
                   </div>
-                  <div style={{ width: 40, textAlign: 'right', fontFamily: MONO, color: ACCENT_SILVER_DIM, fontSize: 12 }}>
+                  <div style={{ width: 40, textAlign: 'right', fontFamily: MONO, color: ACCENT_SILVER_DIM, fontSize: 'var(--aguila-fs-compact)' }}>
                     {t.count}
                   </div>
                 </div>
@@ -180,7 +180,7 @@ export function BatchAnalysisCard({ summary, onReset }: Props) {
                     background: 'rgba(255,255,255,0.04)',
                     border: '1px solid rgba(255,255,255,0.06)',
                     fontFamily: MONO,
-                    fontSize: 13,
+                    fontSize: 'var(--aguila-fs-body)',
                     color: TEXT_PRIMARY,
                   }}
                 >
@@ -217,7 +217,7 @@ export function BatchAnalysisCard({ summary, onReset }: Props) {
                     background: 'rgba(34,197,94,0.08)',
                     border: '1px solid rgba(34,197,94,0.22)',
                     color: GREEN,
-                    fontSize: 12,
+                    fontSize: 'var(--aguila-fs-compact)',
                     fontFamily: MONO,
                     textDecoration: 'none',
                   }}
@@ -245,7 +245,7 @@ export function BatchAnalysisCard({ summary, onReset }: Props) {
               margin: 0,
               paddingLeft: 18,
               color: TEXT_SECONDARY,
-              fontSize: 13,
+              fontSize: 'var(--aguila-fs-body)',
               lineHeight: 1.6,
             }}>
               {topIssues.map((it, idx) => (
@@ -275,7 +275,7 @@ export function BatchAnalysisCard({ summary, onReset }: Props) {
                 background: 'rgba(255,255,255,0.06)',
                 border: '1px solid rgba(255,255,255,0.08)',
                 color: TEXT_PRIMARY,
-                fontSize: 13,
+                fontSize: 'var(--aguila-fs-body)',
                 fontWeight: 600,
                 cursor: 'pointer',
               }}

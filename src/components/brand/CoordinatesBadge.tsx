@@ -35,7 +35,7 @@ export function CoordinatesBadge({
         alignItems: 'flex-start',
         gap: 2,
         fontFamily: 'var(--font-mono)',
-        fontSize: 10,
+        fontSize: 'var(--aguila-fs-label)',
         letterSpacing: '0.06em',
         lineHeight: 1.1,
         color,

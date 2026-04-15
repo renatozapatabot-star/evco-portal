@@ -59,10 +59,10 @@ export function DueloDelDia() {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         marginBottom: 10,
       }}>
-        <span style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#E8EAED' }}>
+        <span style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#E8EAED' }}>
           Duelo del día
         </span>
-        <span style={{ fontSize: 10, color: '#6E7681' }}>{stake}</span>
+        <span style={{ fontSize: 'var(--aguila-fs-label)', color: '#6E7681' }}>{stake}</span>
       </div>
 
       <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
@@ -72,12 +72,12 @@ export function DueloDelDia() {
             background: i === 0 ? 'rgba(192,197,206,0.08)' : 'transparent',
             borderRadius: 8,
           }}>
-            <div style={{ fontSize: 20, marginBottom: 4 }}>{MEDALS[i]}</div>
-            <div style={{ fontSize: 13, fontWeight: 600, color: i === 0 ? '#E8EAED' : '#E6EDF3' }}>
+            <div style={{ fontSize: 'var(--aguila-fs-headline)', marginBottom: 4 }}>{MEDALS[i]}</div>
+            <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: i === 0 ? '#E8EAED' : '#E6EDF3' }}>
               {l.name}
             </div>
             <div className="font-mono" style={{
-              fontSize: 18, fontWeight: 800,
+              fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 800,
               color: i === 0 ? '#E8EAED' : '#8B949E',
             }}>
               {l.count}

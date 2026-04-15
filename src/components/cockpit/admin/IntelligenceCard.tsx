@@ -54,10 +54,10 @@ export function IntelligenceCard({ intelligence }: Props) {
 function Stat({ value, label, color }: { value: number | string; label: string; color?: string }) {
   return (
     <div>
-      <div className="font-mono" style={{ fontSize: 18, fontWeight: 700, color: color || '#E6EDF3', lineHeight: 1 }}>
+      <div className="font-mono" style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: color || '#E6EDF3', lineHeight: 1 }}>
         {value}
       </div>
-      <div style={{ fontSize: 11, color: '#8B949E', marginTop: 2 }}>{label}</div>
+      <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#8B949E', marginTop: 2 }}>{label}</div>
     </div>
   )
 }

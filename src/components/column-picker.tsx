@@ -29,7 +29,7 @@ export function ColumnPicker({ columns, visible, onChange }: { columns: ColumnDe
         <SlidersHorizontal size={13} />
         Columnas
         {hiddenCount > 0 && (
-          <span style={{ fontSize:10, fontFamily:'var(--font-mono)', background:'var(--gold-50)', color:'var(--gold-700)', padding:'1px 5px', borderRadius:'var(--r-pill)', border:'1px solid var(--gold-200)' }}>+{hiddenCount}</span>
+          <span style={{ fontSize: 'var(--aguila-fs-label)', fontFamily:'var(--font-mono)', background:'var(--gold-50)', color:'var(--gold-700)', padding:'1px 5px', borderRadius:'var(--r-pill)', border:'1px solid var(--gold-200)' }}>+{hiddenCount}</span>
         )}
       </button>
       {open && (

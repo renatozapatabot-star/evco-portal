@@ -28,7 +28,7 @@ function StatusBadge({ value }: { value: string }) {
   const isBlue = v.includes('CUMPLIDO')
   const bg = isGreen ? 'rgba(34,197,94,0.15)' : isBlue ? 'rgba(59,130,246,0.15)' : 'rgba(192,197,206,0.15)'
   const color = isGreen ? 'var(--status-green)' : isBlue ? 'var(--status-blue)' : 'var(--status-yellow)'
-  return <span style={{ background: bg, color, fontSize: 12, fontWeight: 600, padding: '4px 8px', borderRadius: 4, textTransform: 'uppercase', letterSpacing: '0.03em' }}>{v || '-'}</span>
+  return <span style={{ background: bg, color, fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, padding: '4px 8px', borderRadius: 4, textTransform: 'uppercase', letterSpacing: '0.03em' }}>{v || '-'}</span>
 }
 
 export function SoiaView() {
@@ -124,7 +124,7 @@ export function SoiaView() {
               Recomendado Hoy — {['domingo','lunes','martes','miércoles','jueves','viernes','sábado'][new Date().getDay()]}
             </div>
             <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--n-900)' }}>{bridgeRec.name}</div>
-            <div style={{ fontSize: 12, color: 'var(--n-400)', marginTop: 2 }}>Promedio hoy: {bridgeRec.avg.toFixed(1)}h · basado en historial real</div>
+            <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--n-400)', marginTop: 2 }}>Promedio hoy: {bridgeRec.avg.toFixed(1)}h · basado en historial real</div>
           </div>
           <div style={{ width: 10, height: 10, borderRadius: '50%', background: 'var(--success)', boxShadow: '0 0 0 4px var(--success-bg)' }} />
         </div>
@@ -139,9 +139,9 @@ export function SoiaView() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <div style={{ width: 10, height: 10, borderRadius: '50%', background: 'var(--green, #16A34A)', boxShadow: '0 0 0 3px var(--green-bg, rgba(22,163,74,0.08))' }} />
               <div>
-                <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--green, #16A34A)', marginBottom: 2 }}>Cruce Recomendado</div>
-                <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{best.name} — {best.sub}</div>
-                <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>Semáforo verde &middot; Comercial disponible</div>
+                <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--green, #16A34A)', marginBottom: 2 }}>Cruce Recomendado</div>
+                <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: 'var(--text-primary)' }}>{best.name} — {best.sub}</div>
+                <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-secondary)', marginTop: 2 }}>Semáforo verde &middot; Comercial disponible</div>
               </div>
             </div>
           </div>
@@ -156,22 +156,22 @@ export function SoiaView() {
             <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>
               Historial de semáforo
             </span>
-            <span style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+            <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
               {semaforoStats.total} embarques
             </span>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: 16 }}>
             <div style={{ textAlign: 'center', padding: 12 }}>
-              <div className="mono" style={{ fontSize: 28, fontWeight: 700, color: 'var(--status-green)' }}>{semaforoStats.verde}</div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>Verde</div>
+              <div className="mono" style={{ fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 700, color: 'var(--status-green)' }}>{semaforoStats.verde}</div>
+              <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', marginTop: 4 }}>Verde</div>
             </div>
             <div style={{ textAlign: 'center', padding: 12 }}>
-              <div className="mono" style={{ fontSize: 28, fontWeight: 700, color: 'var(--status-red, #DC2626)' }}>{semaforoStats.rojo}</div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>Rojo</div>
+              <div className="mono" style={{ fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 700, color: 'var(--status-red, #DC2626)' }}>{semaforoStats.rojo}</div>
+              <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', marginTop: 4 }}>Rojo</div>
             </div>
             <div style={{ textAlign: 'center', padding: 12 }}>
-              <div className="mono" style={{ fontSize: 28, fontWeight: 700, color: 'var(--status-green)' }}>{semaforoStats.verdeRate.toFixed(1)}%</div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>Tasa verde</div>
+              <div className="mono" style={{ fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 700, color: 'var(--status-green)' }}>{semaforoStats.verdeRate.toFixed(1)}%</div>
+              <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', marginTop: 4 }}>Tasa verde</div>
             </div>
           </div>
           {/* Verde bar */}
@@ -181,7 +181,7 @@ export function SoiaView() {
               width: `${semaforoStats.verdeRate}%`, transition: 'width 300ms',
             }} />
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4, fontSize: 10, color: 'var(--text-muted)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4, fontSize: 'var(--aguila-fs-label)', color: 'var(--text-muted)' }}>
             <span>Verde: {semaforoStats.verde}</span>
             <span>Rojo: {semaforoStats.rojo}</span>
           </div>
@@ -192,16 +192,16 @@ export function SoiaView() {
       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)', gap: 16, marginBottom: 24 }}>
         {BRIDGES.map(b => (
           <div key={b.name} style={{ background: 'var(--bg-card)', border: '1px solid var(--border-primary)', borderRadius: 8, padding: 24 }}>
-            <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>{b.name}</div>
-            <div style={{ fontSize: 14, color: 'var(--amber-700)', marginBottom: 16 }}>{b.sub}</div>
+            <div style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>{b.name}</div>
+            <div style={{ fontSize: 'var(--aguila-fs-section)', color: 'var(--amber-700)', marginBottom: 16 }}>{b.sub}</div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <div style={{ width: 12, height: 12, borderRadius: '50%', background: b.status === 'green' ? 'var(--status-green)' : b.status === 'yellow' ? 'var(--status-yellow)' : 'var(--status-red)' }} />
-                <span style={{ fontSize: 14, color: 'var(--text-primary)' }}>{b.type}</span>
+                <span style={{ fontSize: 'var(--aguila-fs-section)', color: 'var(--text-primary)' }}>{b.type}</span>
               </div>
-              <div className="mono" style={{ fontSize: 28, fontWeight: 600, color: 'var(--text-primary)' }}>{b.wait}</div>
+              <div className="mono" style={{ fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 600, color: 'var(--text-primary)' }}>{b.wait}</div>
             </div>
-            <div style={{ fontSize: 12, color: 'var(--text-tertiary)', marginTop: 12 }}>Actualizado: {new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}</div>
+            <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-tertiary)', marginTop: 12 }}>Actualizado: {new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}</div>
           </div>
         ))}
       </div>
@@ -209,12 +209,12 @@ export function SoiaView() {
       {/* Summary KPIs */}
       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 16, marginBottom: 24 }}>
         <div style={{ background: 'var(--bg-card)', borderRadius: 8, padding: isMobile ? 16 : 24, textAlign: 'center' }}>
-          <div className="mono" style={{ fontSize: 32, fontWeight: 600, color: 'var(--status-green)' }}>{desaduanado}</div>
-          <div style={{ fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--amber-700)', marginTop: 4 }}>Desaduanado</div>
+          <div className="mono" style={{ fontSize: 'var(--aguila-fs-kpi-compact)', fontWeight: 600, color: 'var(--status-green)' }}>{desaduanado}</div>
+          <div style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--amber-700)', marginTop: 4 }}>Desaduanado</div>
         </div>
         <div style={{ background: 'var(--bg-card)', borderRadius: 8, padding: 24, textAlign: 'center' }}>
-          <div className="mono" style={{ fontSize: 32, fontWeight: 600, color: 'var(--status-blue)' }}>{cumplido}</div>
-          <div style={{ fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--amber-700)', marginTop: 4 }}>Cumplido</div>
+          <div className="mono" style={{ fontSize: 'var(--aguila-fs-kpi-compact)', fontWeight: 600, color: 'var(--status-blue)' }}>{cumplido}</div>
+          <div style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--amber-700)', marginTop: 4 }}>Cumplido</div>
         </div>
       </div>
 

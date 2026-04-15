@@ -79,7 +79,7 @@ export function IntelligenceTicker() {
       }}>
         {doubled.map((item, i) => (
           <a key={i} href={item.href} style={{
-            padding: '0 24px', fontSize: 12, fontWeight: 500,
+            padding: '0 24px', fontSize: 'var(--aguila-fs-compact)', fontWeight: 500,
             color: GOLD, textDecoration: 'none',
             fontFamily: 'var(--font-jetbrains-mono)',
             letterSpacing: '0.02em'

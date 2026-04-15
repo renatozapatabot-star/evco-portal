@@ -139,7 +139,7 @@ export function AuditoriaGenerator({ clients }: Props) {
                 background: 'rgba(255,255,255,0.04)',
                 border: `1px solid ${BORDER_HAIRLINE}`,
                 color: TEXT_PRIMARY,
-                fontSize: 14,
+                fontSize: 'var(--aguila-fs-section)',
                 fontWeight: 600,
                 appearance: 'none',
                 WebkitAppearance: 'none',
@@ -220,10 +220,10 @@ export function AuditoriaGenerator({ clients }: Props) {
           }}>
             <Calendar size={16} color={TEXT_SECONDARY} aria-hidden />
             <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
-              <span style={{ fontSize: 12, color: TEXT_MUTED }}>
+              <span style={{ fontSize: 'var(--aguila-fs-compact)', color: TEXT_MUTED }}>
                 Se generará
               </span>
-              <span style={{ fontSize: 13, color: TEXT_PRIMARY, fontWeight: 600 }}>
+              <span style={{ fontSize: 'var(--aguila-fs-body)', color: TEXT_PRIMARY, fontWeight: 600 }}>
                 {selectedClient?.name ?? 'Cliente'}
                 {activeRange ? ' · ' : ''}
                 {activeRange ? (
@@ -248,7 +248,7 @@ export function AuditoriaGenerator({ clients }: Props) {
                 background: canGenerate ? 'rgba(234,179,8,0.9)' : 'rgba(255,255,255,0.04)',
                 border: canGenerate ? '1px solid rgba(234,179,8,0.3)' : `1px solid ${BORDER_HAIRLINE}`,
                 color: canGenerate ? '#0a0a0c' : TEXT_MUTED,
-                fontSize: 14,
+                fontSize: 'var(--aguila-fs-section)',
                 fontWeight: 700,
                 cursor: canGenerate ? 'pointer' : 'not-allowed',
                 transition: 'background 160ms ease',
@@ -267,7 +267,7 @@ export function AuditoriaGenerator({ clients }: Props) {
               background: 'rgba(239,68,68,0.1)',
               border: '1px solid rgba(239,68,68,0.25)',
               color: '#FCA5A5',
-              fontSize: 12,
+              fontSize: 'var(--aguila-fs-compact)',
             }}>
               {error}
             </div>
@@ -285,7 +285,7 @@ export function AuditoriaGenerator({ clients }: Props) {
         }}>
           Qué incluye el PDF
         </div>
-        <ul style={{ margin: 0, paddingLeft: 18, color: TEXT_SECONDARY, fontSize: 13, lineHeight: 1.6 }}>
+        <ul style={{ margin: 0, paddingLeft: 18, color: TEXT_SECONDARY, fontSize: 'var(--aguila-fs-body)', lineHeight: 1.6 }}>
           <li>Resumen financiero de pedimentos — valor total, DTA, IGI, IVA, total gravamen.</li>
           <li>Detalle de pedimentos por proveedor con factura, COVE y estatus.</li>
           <li>Remesas cruzadas agrupadas por día con bultos, peso y valor.</li>
@@ -334,7 +334,7 @@ function PresetButton({
         background: active ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.03)',
         border: active ? '1px solid rgba(255,255,255,0.16)' : `1px solid ${BORDER_HAIRLINE}`,
         color: active ? TEXT_PRIMARY : TEXT_SECONDARY,
-        fontSize: 13,
+        fontSize: 'var(--aguila-fs-body)',
         fontWeight: 600,
         cursor: 'pointer',
         minWidth: 180,
@@ -342,7 +342,7 @@ function PresetButton({
       }}
     >
       <span>{label}</span>
-      <span style={{ fontSize: 11, color: TEXT_MUTED, fontWeight: 500 }}>{detail}</span>
+      <span style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED, fontWeight: 500 }}>{detail}</span>
     </button>
   )
 }
@@ -380,7 +380,7 @@ function DateField({
           background: 'rgba(255,255,255,0.04)',
           border: `1px solid ${BORDER_HAIRLINE}`,
           color: TEXT_PRIMARY,
-          fontSize: 14,
+          fontSize: 'var(--aguila-fs-section)',
           fontFamily: MONO,
           colorScheme: 'dark',
         }}

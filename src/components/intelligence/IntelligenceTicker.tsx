@@ -30,7 +30,7 @@ function TrendGlyph({ trend }: { trend?: TickerTrend }) {
       aria-hidden
       style={{
         marginLeft: 4,
-        fontSize: 10,
+        fontSize: 'var(--aguila-fs-label)',
         color: isUp ? '#E8EAED' : '#D4952A',
         fontFamily: 'var(--font-jetbrains-mono), ui-monospace, monospace',
       }}
@@ -124,7 +124,7 @@ export default function IntelligenceTicker() {
         WebkitBackdropFilter: 'blur(20px)',
         borderBottom: '1px solid rgba(192,197,206,0.18)',
         fontFamily: 'var(--font-geist-sans), system-ui, sans-serif',
-        fontSize: 12,
+        fontSize: 'var(--aguila-fs-compact)',
         lineHeight: '32px',
       }}
     >

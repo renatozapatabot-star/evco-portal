@@ -298,7 +298,7 @@ export function Anexo24View() {
             style={{
               display: 'flex', alignItems: 'center', gap: 6, height: 40, padding: '0 14px',
               borderRadius: 12, border: '1px solid rgba(255,255,255,0.12)', background: 'transparent',
-              cursor: 'pointer', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary, #94a3b8)',
+              cursor: 'pointer', fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, color: 'var(--text-secondary, #94a3b8)',
               minWidth: 60, justifyContent: 'center',
             }}
           >
@@ -310,7 +310,7 @@ export function Anexo24View() {
             style={{
               display: 'flex', alignItems: 'center', gap: 8, minHeight: 60, padding: '0 20px',
               borderRadius: 12, border: 'none', background: '#E8EAED', cursor: generating ? 'wait' : 'pointer',
-              fontSize: 13, fontWeight: 700, color: '#000', opacity: generating ? 0.7 : 1,
+              fontSize: 'var(--aguila-fs-body)', fontWeight: 700, color: '#000', opacity: generating ? 0.7 : 1,
               transition: 'opacity 0.2s',
             }}
           >
@@ -338,13 +338,13 @@ export function Anexo24View() {
           ].map(kpi => (
             <div key={kpi.label} style={{ ...glassCard, padding: 16, textAlign: 'center' }}>
               <div style={{
-                fontFamily: 'var(--font-mono)', fontSize: 24, fontWeight: 800,
+                fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-title)', fontWeight: 800,
                 color: kpi.color, lineHeight: 1.2, marginBottom: 4,
               }}>
                 {kpi.value}
               </div>
               <div style={{
-                fontSize: 10, fontWeight: 600, textTransform: 'uppercase',
+                fontSize: 'var(--aguila-fs-label)', fontWeight: 600, textTransform: 'uppercase',
                 letterSpacing: '0.08em', color: 'var(--text-muted, #64748b)',
               }}>
                 {kpi.label}
@@ -366,12 +366,12 @@ export function Anexo24View() {
           gap: 12,
           borderLeft: '3px solid #FBBF24',
         }}>
-          <span style={{ fontSize: 16 }}>⚠️</span>
+          <span style={{ fontSize: 'var(--aguila-fs-body-lg)' }}>⚠️</span>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: '#E6EDF3' }}>
+            <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 700, color: '#E6EDF3' }}>
               {kpis.pendientes.toLocaleString('es-MX')} partidas sin pedimento asignado
             </div>
-            <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#94a3b8', marginTop: 2 }}>
               Esperando próxima sincronización GlobalPC. Los renglones marcados &ldquo;Pendiente&rdquo; abajo se reconciliarán automáticamente.
             </div>
           </div>
@@ -392,14 +392,14 @@ export function Anexo24View() {
             onChange={e => { setSearch(e.target.value); setPage(0) }}
             style={{
               flex: 1, background: 'transparent', border: 'none', outline: 'none',
-              fontSize: 13, color: 'var(--text-primary, #E6EDF3)',
+              fontSize: 'var(--aguila-fs-body)', color: 'var(--text-primary, #E6EDF3)',
             }}
           />
         </div>
         {(['all', 'si', 'no'] as const).map(v => (
           <button key={v} onClick={() => { setTmecFilter(v); setPage(0) }}
             style={{
-              fontSize: 11, fontWeight: 600, padding: '6px 12px', borderRadius: 8, cursor: 'pointer',
+              fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, padding: '6px 12px', borderRadius: 8, cursor: 'pointer',
               minHeight: 40,
               border: `1px solid ${tmecFilter === v ? 'rgba(192,197,206,0.3)' : 'rgba(255,255,255,0.08)'}`,
               background: tmecFilter === v ? 'rgba(192,197,206,0.08)' : 'transparent',
@@ -410,12 +410,12 @@ export function Anexo24View() {
           </button>
         ))}
         <DateInputES value={dateFrom} onChange={v => { setDateFrom(v); setPage(0) }} />
-        <span style={{ color: 'var(--text-muted, #64748b)', fontSize: 11 }}>—</span>
+        <span style={{ color: 'var(--text-muted, #64748b)', fontSize: 'var(--aguila-fs-meta)' }}>—</span>
         <DateInputES value={dateTo} onChange={v => { setDateTo(v); setPage(0) }} />
         {(dateFrom || dateTo) && (
           <button onClick={() => { setDateFrom(''); setDateTo(''); setPage(0) }}
             style={{
-              fontSize: 13, color: '#EF4444', border: '1px solid rgba(239,68,68,0.3)',
+              fontSize: 'var(--aguila-fs-body)', color: '#EF4444', border: '1px solid rgba(239,68,68,0.3)',
               background: 'rgba(239,68,68,0.08)', borderRadius: 8, padding: '0 12px',
               minWidth: 40, minHeight: 40, cursor: 'pointer', display: 'flex',
               alignItems: 'center', justifyContent: 'center',
@@ -443,25 +443,25 @@ export function Anexo24View() {
                 borderRadius: 12, padding: '12px 14px',
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, fontSize: 13, color: 'var(--text-primary, #E6EDF3)' }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, fontSize: 'var(--aguila-fs-body)', color: 'var(--text-primary, #E6EDF3)' }}>
                     {fmtPedimentoShort(r.pedimento)}
                   </span>
                   {r.tmec ? (
-                    <span style={{ fontSize: 10, fontWeight: 700, color: '#22C55E', background: 'rgba(34,197,94,0.12)', padding: '2px 8px', borderRadius: 9999 }}>T-MEC</span>
+                    <span style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 700, color: '#22C55E', background: 'rgba(34,197,94,0.12)', padding: '2px 8px', borderRadius: 9999 }}>T-MEC</span>
                   ) : null}
                 </div>
-                <div style={{ fontSize: 12, color: 'var(--text-secondary, #94a3b8)', marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-secondary, #94a3b8)', marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {r.descripcion}
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: '#E8EAED', fontWeight: 600 }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-compact)', color: '#E8EAED', fontWeight: 600 }}>
                     {r.fraccion}
                   </span>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 500, color: 'var(--text-primary, #E6EDF3)' }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-compact)', fontWeight: 500, color: 'var(--text-primary, #E6EDF3)' }}>
                     {r.valorUSD > 0 ? fmtUSD(r.valorUSD) : '—'}
                   </span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--text-muted, #64748b)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted, #64748b)' }}>
                   <span style={{ fontFamily: 'var(--font-mono)' }}>{fmtDate(r.fecha)}</span>
                   <span>{r.origen}</span>
                 </div>
@@ -488,36 +488,36 @@ export function Anexo24View() {
               <tbody>
                 {paged.map((r, i) => (
                   <tr key={`${r.pedimento}-${r.rowNum}`} className={`${i % 2 === 0 ? 'row-even' : 'row-odd'}`}>
-                    <td style={{ fontSize: 11, color: 'var(--text-muted, #64748b)', fontFamily: 'var(--font-mono)' }}>
+                    <td style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted, #64748b)', fontFamily: 'var(--font-mono)' }}>
                       {r.rowNum}
                     </td>
-                    <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, fontSize: 13, whiteSpace: 'nowrap', color: 'var(--text-primary, #E6EDF3)' }}>
+                    <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, fontSize: 'var(--aguila-fs-body)', whiteSpace: 'nowrap', color: 'var(--text-primary, #E6EDF3)' }}>
                       {fmtPedimentoShort(r.pedimento)}
                     </td>
-                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-secondary, #94a3b8)' }}>
+                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-secondary, #94a3b8)' }}>
                       {fmtDate(r.fecha)}
                     </td>
-                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: '#E8EAED', fontWeight: 600 }}>
+                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-compact)', color: '#E8EAED', fontWeight: 600 }}>
                       {r.fraccion}
                     </td>
-                    <td style={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 12, color: 'var(--text-secondary, #94a3b8)' }}>
+                    <td style={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-secondary, #94a3b8)' }}>
                       {r.descripcion}
                     </td>
-                    <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-primary, #E6EDF3)' }}>
+                    <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-primary, #E6EDF3)' }}>
                       {r.cantidad > 0 ? r.cantidad.toLocaleString('es-MX') : '—'}
                     </td>
-                    <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 500, color: 'var(--text-primary, #E6EDF3)' }}>
+                    <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-compact)', fontWeight: 500, color: 'var(--text-primary, #E6EDF3)' }}>
                       {r.valorUSD > 0 ? fmtUSD(r.valorUSD) : '—'}
                     </td>
-                    <td style={{ maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 12, color: 'var(--text-secondary, #94a3b8)' }}>
+                    <td style={{ maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-secondary, #94a3b8)' }}>
                       {r.proveedor}
                     </td>
-                    <td style={{ fontSize: 12, color: 'var(--text-secondary, #94a3b8)' }}>{r.origen}</td>
+                    <td style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-secondary, #94a3b8)' }}>{r.origen}</td>
                     <td>
                       {r.tmec ? (
-                        <span style={{ fontSize: 10, fontWeight: 700, color: '#22C55E', background: 'rgba(34,197,94,0.12)', padding: '2px 8px', borderRadius: 9999 }}>T-MEC</span>
+                        <span style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 700, color: '#22C55E', background: 'rgba(34,197,94,0.12)', padding: '2px 8px', borderRadius: 9999 }}>T-MEC</span>
                       ) : (
-                        <span style={{ fontSize: 10, color: 'var(--text-muted, #64748b)' }}>—</span>
+                        <span style={{ fontSize: 'var(--aguila-fs-label)', color: 'var(--text-muted, #64748b)' }}>—</span>
                       )}
                     </td>
                   </tr>
@@ -534,7 +534,7 @@ export function Anexo24View() {
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           marginTop: 16, padding: '12px 16px', ...glassCard, borderRadius: 12,
         }}>
-          <span style={{ fontSize: 12, color: 'var(--text-muted, #64748b)', fontFamily: 'var(--font-mono)' }}>
+          <span style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-muted, #64748b)', fontFamily: 'var(--font-mono)' }}>
             Página {page + 1} de {totalPages}
           </span>
           <div style={{ display: 'flex', gap: 4 }}>
@@ -554,7 +554,7 @@ export function Anexo24View() {
             <div style={{
               minWidth: 40, height: 40, borderRadius: 8, border: '1px solid rgba(192,197,206,0.3)',
               background: 'rgba(192,197,206,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 600, color: '#C0C5CE',
+              fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: '#C0C5CE',
             }}>
               {page + 1}
             </div>

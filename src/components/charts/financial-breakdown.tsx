@@ -42,15 +42,15 @@ export function FinancialBreakdown({ facturas }: Props) {
 
   return (
     <div className="card card-enter" style={{ padding: '16px 20px', marginBottom: 20 }}>
-      <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 12 }}>
+      <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 12 }}>
         Contribuciones — últimos 6 meses
       </div>
       <ResponsiveContainer width="100%" height={180}>
         <BarChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
-          <XAxis dataKey="month" tick={{ fontSize: 10, fill: '#9B9B9B' }} axisLine={false} tickLine={false} />
-          <YAxis tick={{ fontSize: 10, fill: '#9B9B9B' }} axisLine={false} tickLine={false} tickFormatter={v => `$${(v/1000).toFixed(0)}k`} />
+          <XAxis dataKey="month" tick={{ fontSize: 'var(--aguila-fs-label)', fill: '#9B9B9B' }} axisLine={false} tickLine={false} />
+          <YAxis tick={{ fontSize: 'var(--aguila-fs-label)', fill: '#9B9B9B' }} axisLine={false} tickLine={false} tickFormatter={v => `$${(v/1000).toFixed(0)}k`} />
           <Tooltip
-            contentStyle={{ background: 'rgba(255,255,255,0.95)', border: '1px solid #E8E5E0', borderRadius: 8, fontSize: 12 }}
+            contentStyle={{ background: 'rgba(255,255,255,0.95)', border: '1px solid #E8E5E0', borderRadius: 8, fontSize: 'var(--aguila-fs-compact)' }}
             formatter={(value) => [`$${Math.round(Number(value)).toLocaleString()}`]}
           />
           <Bar dataKey="dta" stackId="a" fill="#E8EAED" radius={[0, 0, 0, 0]} />
@@ -60,7 +60,7 @@ export function FinancialBreakdown({ facturas }: Props) {
       </ResponsiveContainer>
       <div style={{ display: 'flex', gap: 16, justifyContent: 'center', marginTop: 8 }}>
         {[{ label: 'DTA', color: '#E8EAED' }, { label: 'IGI', color: '#2563EB' }, { label: 'IVA', color: '#16A34A' }].map(l => (
-          <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--text-muted)' }}>
+          <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)' }}>
             <div style={{ width: 8, height: 8, borderRadius: 2, background: l.color }} />
             {l.label}
           </div>

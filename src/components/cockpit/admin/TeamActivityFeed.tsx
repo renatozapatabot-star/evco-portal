@@ -77,7 +77,7 @@ export function TeamActivityFeed() {
       activeCondition={isLive ? 'Conectado en tiempo real' : undefined}
       quietContent={
         feed.length === 0 ? (
-          <div style={{ padding: '12px 0', textAlign: 'center', color: '#6E7681', fontSize: 13 }}>
+          <div style={{ padding: '12px 0', textAlign: 'center', color: '#6E7681', fontSize: 'var(--aguila-fs-body)' }}>
             Sin actividad reciente
           </div>
         ) : (
@@ -89,14 +89,14 @@ export function TeamActivityFeed() {
                 background: i === 0 ? 'rgba(192,197,206,0.04)' : 'transparent',
                 animation: i === 0 ? 'fadeIn 300ms ease' : undefined,
               }}>
-                <span style={{ fontSize: 14, flexShrink: 0, width: 20, textAlign: 'center' }}>{item.icon}</span>
-                <span style={{ fontSize: 12, color: '#E8EAED', fontWeight: 600, flexShrink: 0 }}>
+                <span style={{ fontSize: 'var(--aguila-fs-section)', flexShrink: 0, width: 20, textAlign: 'center' }}>{item.icon}</span>
+                <span style={{ fontSize: 'var(--aguila-fs-compact)', color: '#E8EAED', fontWeight: 600, flexShrink: 0 }}>
                   {item.operatorName.split(' ')[0]}
                 </span>
-                <span style={{ fontSize: 12, color: '#8B949E', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <span style={{ fontSize: 'var(--aguila-fs-compact)', color: '#8B949E', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {item.actionType}
                 </span>
-                <span className="font-mono" style={{ fontSize: 10, color: '#6E7681', flexShrink: 0 }}>
+                <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-label)', color: '#6E7681', flexShrink: 0 }}>
                   {item.time}
                 </span>
               </div>

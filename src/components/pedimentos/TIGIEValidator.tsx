@@ -113,13 +113,13 @@ export function TIGIEValidator({ initialFraccion, onValidated }: TIGIEValidatorP
           style={{
             width: '100%', padding: '10px 12px 10px 34px',
             border: `1px solid ${error ? 'var(--danger-500)' : result ? 'var(--success)' : 'var(--border)'}`,
-            borderRadius: 8, fontSize: 14, color: 'var(--text-primary)',
+            borderRadius: 8, fontSize: 'var(--aguila-fs-section)', color: 'var(--text-primary)',
             fontFamily: 'var(--font-mono)', outline: 'none',
             background: 'var(--bg-card)', boxSizing: 'border-box',
           }}
         />
         {loading && (
-          <span style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', fontSize: 12, color: 'var(--text-muted)' }}>
+          <span style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-muted)' }}>
             Validando...
           </span>
         )}
@@ -129,7 +129,7 @@ export function TIGIEValidator({ initialFraccion, onValidated }: TIGIEValidatorP
       {error && (
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6, marginTop: 8, padding: '8px 12px', borderRadius: 6, background: 'rgba(220,38,38,0.06)', border: '1px solid rgba(220,38,38,0.15)' }}>
           <AlertTriangle size={14} style={{ color: 'var(--danger-500)', marginTop: 1, flexShrink: 0 }} />
-          <span style={{ fontSize: 12, color: 'var(--danger-500)' }}>{error}</span>
+          <span style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--danger-500)' }}>{error}</span>
         </div>
       )}
 
@@ -138,30 +138,30 @@ export function TIGIEValidator({ initialFraccion, onValidated }: TIGIEValidatorP
         <div style={{ marginTop: 8, padding: '12px 16px', borderRadius: 8, background: 'rgba(22,163,74,0.04)', border: '1px solid rgba(22,163,74,0.15)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
             <CheckCircle size={14} style={{ color: 'var(--success)' }} />
-            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--success)' }}>Fracción válida</span>
+            <span style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 700, color: 'var(--success)' }}>Fracción válida</span>
           </div>
 
-          <div style={{ fontSize: 13, color: 'var(--text-primary)', marginBottom: 8 }}>
+          <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-primary)', marginBottom: 8 }}>
             {result.descripcion || 'Sin descripción'}
           </div>
 
           <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
             <div>
-              <span style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase' }}>IGI General</span>
-              <div style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
+              <span style={{ fontSize: 'var(--aguila-fs-label)', color: 'var(--text-muted)', textTransform: 'uppercase' }}>IGI General</span>
+              <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
                 {result.igi_general != null ? `${result.igi_general}%` : 'N/A'}
               </div>
             </div>
             <div>
-              <span style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase' }}>IGI T-MEC</span>
-              <div style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--success)' }}>
+              <span style={{ fontSize: 'var(--aguila-fs-label)', color: 'var(--text-muted)', textTransform: 'uppercase' }}>IGI T-MEC</span>
+              <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--success)' }}>
                 {result.igi_tmec != null ? `${result.igi_tmec}%` : 'Exento'}
               </div>
             </div>
             {result.unidad && (
               <div>
-                <span style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Unidad</span>
-                <div style={{ fontSize: 14, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
+                <span style={{ fontSize: 'var(--aguila-fs-label)', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Unidad</span>
+                <div style={{ fontSize: 'var(--aguila-fs-section)', fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
                   {result.unidad}
                 </div>
               </div>
@@ -171,7 +171,7 @@ export function TIGIEValidator({ initialFraccion, onValidated }: TIGIEValidatorP
           {result.notas && (
             <div style={{ marginTop: 8, display: 'flex', alignItems: 'flex-start', gap: 6 }}>
               <Info size={12} style={{ color: 'var(--text-muted)', marginTop: 2, flexShrink: 0 }} />
-              <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{result.notas}</span>
+              <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)' }}>{result.notas}</span>
             </div>
           )}
         </div>

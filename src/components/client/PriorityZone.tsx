@@ -40,14 +40,14 @@ export function PriorityZone({ atRiskShipments }: Props) {
             background: '#FBBF24',
           }} />
           <span style={{
-            fontSize: 12, fontWeight: 700, color: '#FBBF24',
+            fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, color: '#FBBF24',
             textTransform: 'uppercase', letterSpacing: '0.08em',
           }}>
             Requieren atención ({atRiskShipments.length})
           </span>
         </div>
         <Link href="/embarques" style={{
-          fontSize: 12, color: '#94a3b8', textDecoration: 'none',
+          fontSize: 'var(--aguila-fs-compact)', color: '#94a3b8', textDecoration: 'none',
           display: 'flex', alignItems: 'center', gap: 4,
         }}>
           Ver todos <ArrowRight size={12} />
@@ -79,27 +79,27 @@ export function PriorityZone({ atRiskShipments }: Props) {
             >
               <span style={{
                 fontFamily: 'var(--font-mono)',
-                fontSize: 14, fontWeight: 700, color: '#E6EDF3',
+                fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: '#E6EDF3',
                 flexShrink: 0, minWidth: 110,
               }}>
                 {s.trafico}
               </span>
               <span style={{
                 fontFamily: 'var(--font-mono)',
-                fontSize: 12, color: '#FBBF24', flexShrink: 0,
+                fontSize: 'var(--aguila-fs-compact)', color: '#FBBF24', flexShrink: 0,
                 fontWeight: 600,
               }}>
                 {s.daysActive}d
               </span>
               <span style={{
-                fontSize: 12, color: '#8b9ab5',
+                fontSize: 'var(--aguila-fs-compact)', color: '#8b9ab5',
                 flex: 1, minWidth: 0,
                 whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
               }}>
                 {s.description || s.status}
               </span>
               <span style={{
-                fontSize: 12, fontWeight: 600, color: '#E8EAED',
+                fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, color: '#E8EAED',
                 flexShrink: 0, display: 'flex', alignItems: 'center', gap: 4,
               }}>
                 Revisar <ArrowRight size={12} />

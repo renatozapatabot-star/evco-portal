@@ -177,7 +177,7 @@ export default function DataTable<T extends Record<string, any>>({
               value={groupBy || ''}
               onChange={e => { setGroupBy(e.target.value || null); setPage(0) }}
               className="act-btn"
-              style={{ fontSize: 12, padding: '4px 8px', border: '1px solid var(--border)', borderRadius: 6, background: 'var(--bg-card)', color: 'var(--text-primary)', cursor: 'pointer', minHeight: 32 }}
+              style={{ fontSize: 'var(--aguila-fs-compact)', padding: '4px 8px', border: '1px solid var(--border)', borderRadius: 6, background: 'var(--bg-card)', color: 'var(--text-primary)', cursor: 'pointer', minHeight: 32 }}
             >
               <option value="">Agrupar por...</option>
               {groupableColumns.map(c => <option key={c.key} value={c.key}>{c.label}</option>)}
@@ -189,7 +189,7 @@ export default function DataTable<T extends Record<string, any>>({
                 <select
                   onChange={e => { const v = savedViews.find(sv => sv.name === e.target.value); if (v) loadView(v) }}
                   className="act-btn"
-                  style={{ fontSize: 12, padding: '4px 8px', border: '1px solid var(--border)', borderRadius: 6, background: 'var(--bg-card)', color: 'var(--text-primary)', cursor: 'pointer', minHeight: 32 }}
+                  style={{ fontSize: 'var(--aguila-fs-compact)', padding: '4px 8px', border: '1px solid var(--border)', borderRadius: 6, background: 'var(--bg-card)', color: 'var(--text-primary)', cursor: 'pointer', minHeight: 32 }}
                   defaultValue=""
                 >
                   <option value="" disabled>Vistas guardadas</option>
@@ -216,10 +216,10 @@ export default function DataTable<T extends Record<string, any>>({
             value={viewName}
             onChange={e => setViewName(e.target.value)}
             placeholder="Nombre de la vista..."
-            style={{ flex: 1, border: '1px solid var(--border)', borderRadius: 6, padding: '6px 10px', fontSize: 12, outline: 'none', color: 'var(--text-primary)', background: 'var(--bg-main)' }}
+            style={{ flex: 1, border: '1px solid var(--border)', borderRadius: 6, padding: '6px 10px', fontSize: 'var(--aguila-fs-compact)', outline: 'none', color: 'var(--text-primary)', background: 'var(--bg-main)' }}
             onKeyDown={e => e.key === 'Enter' && saveView()}
           />
-          <button onClick={saveView} disabled={!viewName.trim()} className="act-btn" style={{ fontSize: 12, padding: '4px 12px' }}>
+          <button onClick={saveView} disabled={!viewName.trim()} className="act-btn" style={{ fontSize: 'var(--aguila-fs-compact)', padding: '4px 12px' }}>
             Guardar
           </button>
         </div>
@@ -238,8 +238,8 @@ export default function DataTable<T extends Record<string, any>>({
                   borderRadius: '8px 8px 0 0', borderBottom: '1px solid var(--border)',
                 }}>
                   <Layers size={12} style={{ color: 'var(--gold)' }} />
-                  <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>{groupKey}</span>
-                  <span style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>{groupRows.length}</span>
+                  <span style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 700, color: 'var(--text-primary)' }}>{groupKey}</span>
+                  <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>{groupRows.length}</span>
                 </div>
                 <table className="data-table">
                   <thead>

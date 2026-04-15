@@ -31,7 +31,7 @@ export function BridgeCard() {
       actionHref="/cruces"
       quietContent={
         bridges.length === 0 ? (
-          <div style={{ fontSize: 13, color: '#6E7681' }}>Cargando puentes...</div>
+          <div style={{ fontSize: 'var(--aguila-fs-body)', color: '#6E7681' }}>Cargando puentes...</div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {bridges.slice(0, 4).map(b => (
@@ -41,13 +41,13 @@ export function BridgeCard() {
                     width: 6, height: 6, borderRadius: '50%', display: 'inline-block',
                     background: (b.commercial ?? 0) <= 30 ? '#16A34A' : (b.commercial ?? 0) <= 60 ? '#D97706' : '#DC2626',
                   }} />
-                  <span style={{ fontSize: 12, color: '#E6EDF3' }}>{b.nameEs || b.name}</span>
+                  <span style={{ fontSize: 'var(--aguila-fs-compact)', color: '#E6EDF3' }}>{b.nameEs || b.name}</span>
                 </div>
-                <span className="font-mono" style={{ fontSize: 12, color: '#8B949E' }}>{b.commercial}m</span>
+                <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-compact)', color: '#8B949E' }}>{b.commercial}m</span>
               </div>
             ))}
             {best && (
-              <div style={{ fontSize: 11, color: '#E8EAED', marginTop: 4 }}>
+              <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#E8EAED', marginTop: 4 }}>
                 Recomendado: {best.nameEs || best.name} ({best.commercial}m)
               </div>
             )}

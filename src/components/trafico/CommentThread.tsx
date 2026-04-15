@@ -145,7 +145,7 @@ export function CommentThread({ traficoId, notes, currentUserId, availableUsers 
           htmlFor="comment-textarea"
           style={{
             display: 'block',
-            fontSize: 11,
+            fontSize: 'var(--aguila-fs-meta)',
             fontWeight: 700,
             color: TEXT_MUTED,
             textTransform: 'uppercase',
@@ -178,7 +178,7 @@ export function CommentThread({ traficoId, notes, currentUserId, availableUsers 
             color: TEXT_PRIMARY,
             border: `1px solid ${BORDER}`,
             borderRadius: 12,
-            fontSize: 13,
+            fontSize: 'var(--aguila-fs-body)',
             fontFamily: 'inherit',
             resize: 'vertical',
             outline: 'none',
@@ -193,7 +193,7 @@ export function CommentThread({ traficoId, notes, currentUserId, availableUsers 
           availableUsers={availableUsers}
         />
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8, alignItems: 'center' }}>
-          <span style={{ fontSize: 11, color: TEXT_MUTED }}>
+          <span style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED }}>
             {draft.length} / 4000
             {availableUsers.length === 0 && (
               <span style={{ marginLeft: 8, color: TEXT_MUTED }}>
@@ -213,7 +213,7 @@ export function CommentThread({ traficoId, notes, currentUserId, availableUsers 
               color: '#0B1220',
               border: 'none',
               borderRadius: 12,
-              fontSize: 13,
+              fontSize: 'var(--aguila-fs-body)',
               fontWeight: 700,
               cursor: pending || !draft.trim() ? 'not-allowed' : 'pointer',
               letterSpacing: '0.02em',
@@ -227,7 +227,7 @@ export function CommentThread({ traficoId, notes, currentUserId, availableUsers 
       {/* Thread */}
       <div>
         {notes.length === 0 ? (
-          <div style={{ padding: '20px 0', textAlign: 'center', color: TEXT_MUTED, fontSize: 13 }}>
+          <div style={{ padding: '20px 0', textAlign: 'center', color: TEXT_MUTED, fontSize: 'var(--aguila-fs-body)' }}>
             Sin comentarios todavía. Inicia la conversación.
           </div>
         ) : (
@@ -256,7 +256,7 @@ export function CommentThread({ traficoId, notes, currentUserId, availableUsers 
                     alignItems: 'center',
                     justifyContent: 'center',
                     fontFamily: 'var(--font-mono)',
-                    fontSize: 12,
+                    fontSize: 'var(--aguila-fs-compact)',
                     fontWeight: 700,
                     letterSpacing: '0.05em',
                   }}
@@ -275,7 +275,7 @@ export function CommentThread({ traficoId, notes, currentUserId, availableUsers 
                     <span
                       style={{
                         fontFamily: 'var(--font-mono)',
-                        fontSize: 12,
+                        fontSize: 'var(--aguila-fs-compact)',
                         fontWeight: 700,
                         color: TEXT_PRIMARY,
                         letterSpacing: '0.02em',
@@ -286,7 +286,7 @@ export function CommentThread({ traficoId, notes, currentUserId, availableUsers 
                     <span
                       style={{
                         fontFamily: 'var(--font-mono)',
-                        fontSize: 11,
+                        fontSize: 'var(--aguila-fs-meta)',
                         color: TEXT_MUTED,
                         whiteSpace: 'nowrap',
                       }}
@@ -294,7 +294,7 @@ export function CommentThread({ traficoId, notes, currentUserId, availableUsers 
                       {fmtDateTime(n.created_at)}
                     </span>
                   </div>
-                  <div style={{ fontSize: 13, color: TEXT_SECONDARY, marginTop: 6, whiteSpace: 'pre-wrap' }}>
+                  <div style={{ fontSize: 'var(--aguila-fs-body)', color: TEXT_SECONDARY, marginTop: 6, whiteSpace: 'pre-wrap' }}>
                     {renderWithMentions(n.content)}
                   </div>
                 </div>

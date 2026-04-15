@@ -50,12 +50,12 @@ export function AguilaAutonomoPanel({ decisions, decisions30d, decisionsAllTime,
       {/* Header */}
       <div style={{ marginBottom: 12 }}>
         <span style={{
-          fontSize: 11, fontWeight: 600, textTransform: 'uppercase',
+          fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, textTransform: 'uppercase',
           letterSpacing: '0.05em', color: '#6E7681',
         }}>
           ZAPATA AI Autónomo
         </span>
-        <p style={{ fontSize: 13, color: '#8B949E', margin: '4px 0 0' }}>
+        <p style={{ fontSize: 'var(--aguila-fs-body)', color: '#8B949E', margin: '4px 0 0' }}>
           {decisions.total > 0
             ? 'La IA está trabajando'
             : decisionsAllTime.total > 0
@@ -119,20 +119,20 @@ export function AguilaAutonomoPanel({ decisions, decisions30d, decisionsAllTime,
                 }}
               >
                 <div className="font-mono" style={{
-                  fontSize: 16, fontWeight: 700,
+                  fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700,
                   color: count > 0 ? '#E8EAED' : '#6E7681',
                 }}>
                   {count}
                 </div>
                 <div style={{
-                  fontSize: 10, color: '#8B949E',
+                  fontSize: 'var(--aguila-fs-label)', color: '#8B949E',
                   textTransform: 'uppercase', letterSpacing: '0.03em',
                 }}>
                   {STAGE_LABELS[stage]}
                 </div>
               </Link>
               {i < WORKFLOW_STAGES.length - 1 && (
-                <span style={{ color: '#6E7681', fontSize: 12 }}>→</span>
+                <span style={{ color: '#6E7681', fontSize: 'var(--aguila-fs-compact)' }}>→</span>
               )}
             </div>
           )
@@ -151,7 +151,7 @@ export function AguilaAutonomoPanel({ decisions, decisions30d, decisionsAllTime,
 
       {/* 30d workflow total if available */}
       {workflow30d.total > 0 && (
-        <div style={{ fontSize: 11, color: '#6E7681', textAlign: 'right', marginTop: 4 }}>
+        <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#6E7681', textAlign: 'right', marginTop: 4 }}>
           {workflow30d.total.toLocaleString('es-MX')} eventos en 30 días
         </div>
       )}
@@ -163,12 +163,12 @@ function KPI({ value, label, sub }: { value: number | string; label: string; sub
   return (
     <div>
       <div className="font-mono" style={{
-        fontSize: 28, fontWeight: 800, color: '#E6EDF3', lineHeight: 1,
+        fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 800, color: '#E6EDF3', lineHeight: 1,
       }}>
         {value}
       </div>
-      <div style={{ fontSize: 12, color: '#8B949E', marginTop: 2 }}>{label}</div>
-      {sub && <div style={{ fontSize: 11, color: '#6E7681', marginTop: 1 }}>{sub}</div>}
+      <div style={{ fontSize: 'var(--aguila-fs-compact)', color: '#8B949E', marginTop: 2 }}>{label}</div>
+      {sub && <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#6E7681', marginTop: 1 }}>{sub}</div>}
     </div>
   )
 }

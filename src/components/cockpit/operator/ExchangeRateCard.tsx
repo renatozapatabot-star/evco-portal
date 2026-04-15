@@ -22,15 +22,15 @@ export function ExchangeRateCard() {
       quietContent={
         tc ? (
           <div>
-            <div className="font-mono" style={{ fontSize: 24, fontWeight: 800, color: '#E8EAED', lineHeight: 1 }}>
+            <div className="font-mono" style={{ fontSize: 'var(--aguila-fs-title)', fontWeight: 800, color: '#E8EAED', lineHeight: 1 }}>
               ${tc.tc.toFixed(4)}
             </div>
-            <div style={{ fontSize: 11, color: '#8B949E', marginTop: 4 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#8B949E', marginTop: 4 }}>
               MXN/USD · {tc.fecha ? fmtDate(tc.fecha) : '—'} · {tc.source}
             </div>
           </div>
         ) : (
-          <div style={{ fontSize: 13, color: '#6E7681' }}>Cargando...</div>
+          <div style={{ fontSize: 'var(--aguila-fs-body)', color: '#6E7681' }}>Cargando...</div>
         )
       }
     />

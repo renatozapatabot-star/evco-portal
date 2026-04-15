@@ -65,7 +65,7 @@ export function BrokerTools({ heartbeat, intelligence, isMobile }: BrokerToolsPr
             style={{
               padding: '14px 16px', borderRadius: 6,
               background: T.goldSubtle, border: `1px solid ${T.goldBorder}`,
-              color: T.gold, fontSize: 13, fontWeight: 600,
+              color: T.gold, fontSize: 'var(--aguila-fs-body)', fontWeight: 600,
               cursor: 'pointer', textAlign: 'left', minHeight: 44,
             }}
           >
@@ -105,11 +105,11 @@ export function BrokerTools({ heartbeat, intelligence, isMobile }: BrokerToolsPr
                 width: 10, height: 10, borderRadius: '50%',
                 background: heartbeat.all_ok ? T.green : 'var(--status-red)',
               }} />
-              <span style={{ fontSize: 14, fontWeight: 600, color: T.text }}>
+              <span style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: T.text }}>
                 {heartbeat.all_ok ? 'Todo operativo' : 'Problemas detectados'}
               </span>
               <span style={{
-                fontSize: 11, color: T.textMuted, fontFamily: 'var(--font-jetbrains-mono)',
+                fontSize: 'var(--aguila-fs-meta)', color: T.textMuted, fontFamily: 'var(--font-jetbrains-mono)',
                 marginLeft: 'auto',
               }}>
                 {fmtDateTime(new Date(heartbeat.created_at))}
@@ -139,7 +139,7 @@ function SectionHeader({ icon: Icon, title }: { icon: typeof Wrench; title: stri
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
       <Icon size={18} style={{ color: 'var(--gold)' }} />
-      <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>{title}</h2>
+      <h2 style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>{title}</h2>
     </div>
   )
 }
@@ -147,8 +147,8 @@ function SectionHeader({ icon: Icon, title }: { icon: typeof Wrench; title: stri
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 2 }}>{label}</div>
-      <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>{value}</div>
+      <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', marginBottom: 2 }}>{label}</div>
+      <div style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: 'var(--text-primary)' }}>{value}</div>
     </div>
   )
 }
@@ -165,10 +165,10 @@ function HealthCheck({ icon: Icon, label, ok, detail }: {
     }}>
       <Icon size={16} style={{ color: ok ? '#2D8540' : '#C23B22', flexShrink: 0 }} />
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{label}</div>
+        <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: 'var(--text-primary)' }}>{label}</div>
         {detail && (
           <div style={{
-            fontSize: 11, color: 'var(--text-secondary)', overflow: 'hidden',
+            fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-secondary)', overflow: 'hidden',
             textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           }}>
             {detail}
@@ -186,7 +186,7 @@ function EmptyInline({ icon: Icon, message, color }: {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0' }}>
       <Icon size={16} style={{ color }} />
-      <span style={{ fontSize: 13, color }}>{message}</span>
+      <span style={{ fontSize: 'var(--aguila-fs-body)', color }}>{message}</span>
     </div>
   )
 }

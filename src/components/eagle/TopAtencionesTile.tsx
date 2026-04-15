@@ -20,7 +20,7 @@ export function TopAtencionesTile({ items }: { items: AtencionItem[] }) {
   return (
     <TileShell title="Top 5 atenciones" subtitle={`${items.length}`} severity={severity}>
       {items.length === 0 ? (
-        <div style={{ color: TEXT_MUTED, fontSize: 13 }}>Sin atenciones pendientes.</div>
+        <div style={{ color: TEXT_MUTED, fontSize: 'var(--aguila-fs-body)' }}>Sin atenciones pendientes.</div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {items.map((it) => (
@@ -42,10 +42,10 @@ export function TopAtencionesTile({ items }: { items: AtencionItem[] }) {
                 style={{ width: 6, height: 6, borderRadius: 999, background: KIND_DOT[it.kind], flexShrink: 0 }}
               />
               <div style={{ flex: 1, overflow: 'hidden' }}>
-                <div style={{ fontSize: 12, color: TEXT_PRIMARY, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <div style={{ fontSize: 'var(--aguila-fs-compact)', color: TEXT_PRIMARY, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {it.label}
                 </div>
-                <div style={{ fontSize: 11, color: TEXT_MUTED, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {it.detail}
                 </div>
               </div>

@@ -706,6 +706,87 @@ function TransportistasCard({ activos, top }: { activos: number; top: number }) 
   )
 }
 
+function ReportesEcontaCard({ pendientes, exportadasHoy }: { pendientes: number; exportadasHoy: number }) {
+  return (
+    <section style={{
+      position: 'relative',
+      overflow: 'hidden',
+      background: BG_CARD,
+      backdropFilter: `blur(${GLASS_BLUR})`,
+      WebkitBackdropFilter: `blur(${GLASS_BLUR})`,
+      border: `1px solid ${BORDER}`,
+      borderRadius: 'var(--aguila-radius-card, 20px)',
+      boxShadow: GLASS_SHADOW,
+      padding: '20px 20px 20px 23px',
+    }}>
+      {pendientes > 5 && <SeverityRibbon tone="warning" />}
+      <div style={{
+        fontSize: 'var(--aguila-fs-label, 10px)',
+        fontWeight: 700,
+        textTransform: 'uppercase',
+        letterSpacing: 'var(--aguila-ls-label, 0.08em)',
+        color: TEXT_MUTED,
+      }}>
+        Reportes · eCONTA
+      </div>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 16, margin: '12px 0' }}>
+        <div>
+          <div style={{
+            fontFamily: 'var(--font-jetbrains-mono), monospace',
+            fontSize: 'var(--aguila-fs-kpi-mid, 28px)',
+            fontWeight: 800,
+            color: pendientes > 0 ? AMBER : TEXT_MUTED,
+            lineHeight: 1,
+            fontVariantNumeric: 'tabular-nums',
+          }}>
+            {pendientes}
+          </div>
+          <div style={{ fontSize: 11, color: TEXT_SECONDARY, marginTop: 4 }}>por exportar</div>
+        </div>
+        <div style={{ width: 1, alignSelf: 'stretch', background: BORDER }} />
+        <div>
+          <div style={{
+            fontFamily: 'var(--font-jetbrains-mono), monospace',
+            fontSize: 'var(--aguila-fs-kpi-mid, 28px)',
+            fontWeight: 800,
+            color: exportadasHoy > 0 ? '#86EFAC' : TEXT_MUTED,
+            lineHeight: 1,
+            fontVariantNumeric: 'tabular-nums',
+          }}>
+            {exportadasHoy}
+          </div>
+          <div style={{ fontSize: 11, color: TEXT_SECONDARY, marginTop: 4 }}>exportadas hoy</div>
+        </div>
+      </div>
+      <Link
+        href="/reportes"
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: 40,
+          padding: '8px 16px',
+          borderRadius: 12,
+          background: GOLD,
+          color: '#0D0D0C',
+          fontWeight: 700,
+          fontSize: 13,
+          textDecoration: 'none',
+          width: '100%',
+        }}
+      >
+        Abrir reportes →
+      </Link>
+      <FallbackLink
+        href="https://trafico1web.globalpc.net/reportes"
+        label="Reportes"
+        isIncomplete={false}
+        cta="Reportes legacy en GlobalPC"
+      />
+    </section>
+  )
+}
+
 const DECISION_PILL: Record<string, { bg: string; fg: string; label: string }> = {
   'En Proceso':       { bg: 'rgba(192,197,206,0.12)', fg: ACCENT_SILVER,   label: 'En proceso' },
   'Documentacion':    { bg: 'rgba(148,163,184,0.12)', fg: '#94a3b8',       label: 'Documentación' },

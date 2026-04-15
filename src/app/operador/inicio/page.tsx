@@ -113,9 +113,13 @@ async function loadOperatorCockpit(opId: string, opName: string, month: string) 
     econtaExportadasHoyCount,
   ] = await Promise.all([
     softCount(sb.from('entradas').select('cve_entrada', { count: 'exact', head: true }).gte('fecha_llegada_mercancia', todayStartIso)),
-    softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).eq('estatus', 'En Proceso')),
+    // Activos = pending cruce. Was eq('estatus','En Proceso') which excluded
+    // Documentacion / En Aduana / Pedimento Pagado states.
+    softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).is('fecha_cruce', null)),
     softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).is('pedimento', null).lte('fecha_llegada', weekEndIso)),
-    softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).eq('estatus', 'En Proceso').lte('updated_at', sevenDaysAgoIso)),
+    // Atrasados = arrived 7+ days ago, still not crossed. Was using
+    // updated_at, which gets bumped by every sync (never "stale").
+    softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).is('fecha_cruce', null).lte('fecha_llegada', sevenDaysAgoIso)),
     softData<TraficoRow>(
       sb.from('traficos')
         .select('trafico, company_id, estatus, descripcion_mercancia, pedimento, fecha_llegada, updated_at, assigned_to_operator_id, proveedores')
@@ -130,29 +134,31 @@ async function loadOperatorCockpit(opId: string, opName: string, month: string) 
         .limit(10)
     ),
     opId
-      ? softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).eq('assigned_to_operator_id', opId).eq('estatus', 'En Proceso'))
+      ? softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).eq('assigned_to_operator_id', opId).is('fecha_cruce', null))
       : Promise.resolve(0),
     opId
       ? softCount(sb.from('operator_actions').select('id', { count: 'exact', head: true }).eq('operator_id', opId).gte('created_at', todayStartIso))
       : Promise.resolve(0),
     softCount(sb.from('workflow_events').select('id', { count: 'exact', head: true }).in('status', ['pending', 'failed', 'dead_letter'])),
     opId
-      ? softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).eq('assigned_to_operator_id', opId).eq('estatus', 'Cruzado').gte('updated_at', sevenDaysAgoIso))
+      ? softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).eq('assigned_to_operator_id', opId).gte('fecha_cruce', sevenDaysAgoIso))
       : Promise.resolve(0),
     opId
-      ? softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).eq('assigned_to_operator_id', opId).eq('estatus', 'Cruzado').gte('updated_at', fourteenDaysAgoIso).lt('updated_at', sevenDaysAgoIso))
+      ? softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).eq('assigned_to_operator_id', opId).gte('fecha_cruce', fourteenDaysAgoIso).lt('fecha_cruce', sevenDaysAgoIso))
       : Promise.resolve(0),
     softData<{ fecha_llegada_mercancia: string }>(
       sb.from('entradas').select('fecha_llegada_mercancia').gte('fecha_llegada_mercancia', fourteenDaysAgoIso).limit(2000)
     ),
-    softData<{ updated_at: string }>(
-      sb.from('traficos').select('updated_at').eq('estatus', 'En Proceso').gte('updated_at', fourteenDaysAgoIso).limit(2000)
+    // Sparkline series — bucket by fecha_llegada (real arrival), not updated_at.
+    softData<{ fecha_llegada: string }>(
+      sb.from('traficos').select('fecha_llegada').is('fecha_cruce', null).gte('fecha_llegada', fourteenDaysAgoIso).limit(2000)
     ),
     softData<{ fecha_llegada: string }>(
       sb.from('traficos').select('fecha_llegada').is('pedimento', null).gte('fecha_llegada', fourteenDaysAgoIso).limit(2000)
     ),
-    softData<{ updated_at: string }>(
-      sb.from('traficos').select('updated_at').eq('estatus', 'En Proceso').gte('updated_at', fourteenDaysAgoIso).lte('updated_at', sevenDaysAgoIso).limit(2000)
+    // Atrasados sparkline — arrived in 7-14d window, still no cruce.
+    softData<{ fecha_llegada: string }>(
+      sb.from('traficos').select('fecha_llegada').is('fecha_cruce', null).gte('fecha_llegada', fourteenDaysAgoIso).lte('fecha_llegada', sevenDaysAgoIso).limit(2000)
     ),
     softData<{ uploaded_at: string }>(
       sb.from('expediente_documentos').select('uploaded_at').gte('uploaded_at', fourteenDaysAgoIso).limit(2000)
@@ -162,10 +168,10 @@ async function loadOperatorCockpit(opId: string, opName: string, month: string) 
       sb.from('globalpc_productos').select('fraccion_classified_at').not('fraccion_classified_at', 'is', null).gte('fraccion_classified_at', fourteenDaysAgoIso).limit(2000)
     ),
     softCount(sb.from('globalpc_productos').select('id', { count: 'exact', head: true }).not('fraccion', 'is', null)),
-    softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).eq('estatus', 'Cruzado').gte('updated_at', sevenDaysAgoIso)),
-    softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).not('pedimento', 'is', null).gte('updated_at', monthStartIso)),
-    softFirst<{ updated_at: string }>(
-      sb.from('traficos').select('updated_at').not('pedimento', 'is', null).order('updated_at', { ascending: false }).limit(1)
+    softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).gte('fecha_cruce', sevenDaysAgoIso)),
+    softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).gte('fecha_cruce', monthStartIso)),
+    softFirst<{ fecha_cruce: string }>(
+      sb.from('traficos').select('fecha_cruce').not('fecha_cruce', 'is', null).order('fecha_cruce', { ascending: false }).limit(1)
     ),
     softCount(sb.from('entradas').select('id', { count: 'exact', head: true }).gte('fecha_llegada_mercancia', sevenDaysAgoIso)),
     withHardTimeout(auditLogAvailable(sb), 2000, false),
@@ -191,9 +197,9 @@ async function loadOperatorCockpit(opId: string, opName: string, month: string) 
   ])
 
   const entradasSeries = bucketDailySeries(entradasSeriesRows as Array<Record<string, unknown>>, 'fecha_llegada_mercancia', 14, now)
-  const activosSeries  = bucketDailySeries(activosSeriesRows  as Array<Record<string, unknown>>, 'updated_at', 14, now)
+  const activosSeries  = bucketDailySeries(activosSeriesRows  as Array<Record<string, unknown>>, 'fecha_llegada', 14, now)
   const pendientesSeries = bucketDailySeries(pendientesSeriesRows as Array<Record<string, unknown>>, 'fecha_llegada', 14, now)
-  const atrasadosSeries  = bucketDailySeries(atrasadosSeriesRows  as Array<Record<string, unknown>>, 'updated_at', 14, now)
+  const atrasadosSeries  = bucketDailySeries(atrasadosSeriesRows  as Array<Record<string, unknown>>, 'fecha_llegada', 14, now)
   const expedientesSeries = bucketDailySeries(expedientesSeriesRows as Array<Record<string, unknown>>, 'uploaded_at', 14, now)
   const clasificacionesSeries = bucketDailySeries(clasificacionesSeriesRows as Array<Record<string, unknown>>, 'fraccion_classified_at', 14, now)
 
@@ -225,8 +231,8 @@ async function loadOperatorCockpit(opId: string, opName: string, month: string) 
     ? `${kpis.atrasados} embarque${kpis.atrasados === 1 ? '' : 's'} atrasado${kpis.atrasados === 1 ? '' : 's'} >7 días`
     : 'Sin pendientes inmediatos.'
 
-  const daysSinceLastPedimento = lastPedimento?.updated_at
-    ? Math.floor((Date.now() - new Date(lastPedimento.updated_at).getTime()) / 86400000)
+  const daysSinceLastCruce = lastPedimento?.fecha_cruce
+    ? Math.floor((Date.now() - new Date(lastPedimento.fecha_cruce).getTime()) / 86400000)
     : null
 
   const navCounts: import('@/lib/cockpit/nav-tiles').NavCounts = {
@@ -238,9 +244,9 @@ async function loadOperatorCockpit(opId: string, opName: string, month: string) 
     pedimentos: {
       count: pedimentosMonthCount,
       series: pendientesSeries,
-      microStatus: daysSinceLastPedimento != null
-        ? `Último hace ${daysSinceLastPedimento} día${daysSinceLastPedimento === 1 ? '' : 's'}`
-        : 'Sin pedimentos recientes',
+      microStatus: daysSinceLastCruce != null
+        ? `Último cruce hace ${daysSinceLastCruce} día${daysSinceLastCruce === 1 ? '' : 's'}`
+        : 'Sin cruces recientes',
     },
     expedientes: {
       count: expedientesTotalCount,

@@ -19,7 +19,10 @@ import { computeARAging } from '@/lib/contabilidad/aging'
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
+// Reserved for downstream classification — active state now defined via
+// is('fecha_cruce', null), see queries below.
 const MOTION_STATUSES = ['En Proceso', 'Documentacion', 'En Aduana', 'Pedimento Pagado']
+void MOTION_STATUSES
 
 interface BriefingPayload {
   generatedAt: string
@@ -58,7 +61,9 @@ export async function POST(request: NextRequest) {
       entradasRecent,
       arResult,
     ] = await Promise.all([
-      sb.from('traficos').select('estatus').in('estatus', MOTION_STATUSES).limit(5000),
+      // Activos = pending cruce. Was filtering by MOTION_STATUSES which
+      // misses NULL status and includes Cruzado.
+      sb.from('traficos').select('estatus').is('fecha_cruce', null).limit(5000),
       sb.from('expediente_documentos').select('id', { count: 'exact', head: true }).eq('is_required', true).is('storage_path', null).limit(1),
       sb.from('mve_alerts').select('severity').eq('resolved', false).lte('deadline_at', weekEndIso).limit(500),
       sb.from('entradas').select('id', { count: 'exact', head: true }).gte('fecha_llegada_mercancia', last24hIso).limit(1),
@@ -72,11 +77,11 @@ export async function POST(request: NextRequest) {
     }
     const activeTotal = Array.from(byStatus.values()).reduce((a, b) => a + b, 0)
 
-    // Semáforo: derive from traficos rows if carrier column exists; otherwise placeholder
+    // Semáforo: only count among traficos that haven't crossed yet.
     const { data: semaRows } = await sb
       .from('traficos')
       .select('semaforo')
-      .in('estatus', MOTION_STATUSES)
+      .is('fecha_cruce', null)
       .limit(5000)
     const sema = { rojo: 0, amarillo: 0, verde: 0 }
     for (const r of (semaRows ?? []) as Array<{ semaforo: unknown }>) {

@@ -149,7 +149,8 @@ async function renderContabilidadCockpit(opName: string, scopedCompanyId: string
         : sb.from('quickbooks_export_jobs').select('id, status, row_count, entity, format, created_at, completed_at')
       ).order('created_at', { ascending: false }).limit(1)
     ),
-    softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).eq('estatus', 'Cruzado').gte('updated_at', monthStartIso)),
+    // Cruces este mes — real fecha_cruce, not updated_at.
+    softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).gte('fecha_cruce', monthStartIso)),
     softCount(sb.from('entradas').select('cve_entrada', { count: 'exact', head: true }).gte('fecha_llegada_mercancia', monthStartIso)),
     softData<{ fecha_llegada_mercancia: string }>(
       sb.from('entradas').select('fecha_llegada_mercancia').gte('fecha_llegada_mercancia', fourteenDaysAgoIso).limit(2000)
@@ -158,31 +159,33 @@ async function renderContabilidadCockpit(opName: string, scopedCompanyId: string
     softData<{ uploaded_at: string }>(
       sb.from('expediente_documentos').select('uploaded_at').gte('uploaded_at', fourteenDaysAgoIso).limit(2000)
     ),
-    softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).not('pedimento', 'is', null).gte('updated_at', monthStartIso)),
-    softData<{ updated_at: string }>(
-      sb.from('traficos').select('updated_at').not('pedimento', 'is', null).gte('updated_at', fourteenDaysAgoIso).limit(2000)
+    // Pedimentos generados este mes — use fecha_cruce as the milestone.
+    softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).not('pedimento', 'is', null).gte('fecha_cruce', monthStartIso)),
+    softData<{ fecha_cruce: string }>(
+      sb.from('traficos').select('fecha_cruce').not('pedimento', 'is', null).gte('fecha_cruce', fourteenDaysAgoIso).limit(2000)
     ),
     softCount(sb.from('globalpc_productos').select('id', { count: 'exact', head: true })),
     softCount(sb.from('globalpc_productos').select('id', { count: 'exact', head: true }).not('fraccion', 'is', null)),
     softData<{ fraccion_classified_at: string }>(
       sb.from('globalpc_productos').select('fraccion_classified_at').not('fraccion_classified_at', 'is', null).gte('fraccion_classified_at', fourteenDaysAgoIso).limit(2000)
     ),
-    softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).eq('estatus', 'En Proceso')),
-    softData<{ updated_at: string }>(
-      sb.from('traficos').select('updated_at').eq('estatus', 'En Proceso').gte('updated_at', fourteenDaysAgoIso).limit(2000)
+    // Activos = pending cruce.
+    softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).is('fecha_cruce', null)),
+    softData<{ fecha_llegada: string }>(
+      sb.from('traficos').select('fecha_llegada').is('fecha_cruce', null).gte('fecha_llegada', fourteenDaysAgoIso).limit(2000)
     ),
-    softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).eq('estatus', 'Cruzado').gte('updated_at', sevenDaysAgoIso)),
-    softFirst<{ updated_at: string }>(
-      sb.from('traficos').select('updated_at').not('pedimento', 'is', null).order('updated_at', { ascending: false }).limit(1)
+    softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).gte('fecha_cruce', sevenDaysAgoIso)),
+    softFirst<{ fecha_cruce: string }>(
+      sb.from('traficos').select('fecha_cruce').not('fecha_cruce', 'is', null).order('fecha_cruce', { ascending: false }).limit(1)
     ),
     withHardTimeout(auditLogAvailable(sb), 2000, false),
   ])
 
   const entradasSeries        = bucketDailySeries(entradasSeriesRows       as Array<Record<string, unknown>>, 'fecha_llegada_mercancia', 14, now)
   const expedientesSeries     = bucketDailySeries(expedientesSeriesRows    as Array<Record<string, unknown>>, 'uploaded_at', 14, now)
-  const pedimentosSeries      = bucketDailySeries(pedimentosSeriesRows     as Array<Record<string, unknown>>, 'updated_at', 14, now)
+  const pedimentosSeries      = bucketDailySeries(pedimentosSeriesRows     as Array<Record<string, unknown>>, 'fecha_cruce', 14, now)
   const clasificacionesSeries = bucketDailySeries(clasificacionesSeriesRows as Array<Record<string, unknown>>, 'fraccion_classified_at', 14, now)
-  const activosSeries         = bucketDailySeries(activosSeriesRows        as Array<Record<string, unknown>>, 'updated_at', 14, now)
+  const activosSeries         = bucketDailySeries(activosSeriesRows        as Array<Record<string, unknown>>, 'fecha_llegada', 14, now)
   const facturasSeries        = bucketDailySeries(facturasSeriesRows       as Array<Record<string, unknown>>, 'created_at', 14, now)
 
   const mveOpen = mveRows
@@ -204,13 +207,13 @@ async function renderContabilidadCockpit(opName: string, scopedCompanyId: string
     { key: 'facturas', label: 'Facturas listas', value: facturasReady.length, series: facturasSeries, current: sumRange(facturasSeries, 7, 14), previous: sumRange(facturasSeries, 0, 7), tone: 'silver', href: '/contabilidad/exportar' },
   ]
 
-  const daysSinceLastPedimento = lastPedimento?.updated_at
-    ? Math.floor((Date.now() - new Date(lastPedimento.updated_at).getTime()) / 86_400_000)
+  const daysSinceLastCruce = lastPedimento?.fecha_cruce
+    ? Math.floor((Date.now() - new Date(lastPedimento.fecha_cruce).getTime()) / 86_400_000)
     : null
 
   const navCounts: NavCounts = {
     traficos:        { count: activosCount,         series: activosSeries,         microStatus: `${cruzados7dCount} cruzaron esta semana` },
-    pedimentos:      { count: pedimentosMesCount,   series: pedimentosSeries,      microStatus: daysSinceLastPedimento != null ? `Último hace ${daysSinceLastPedimento} día${daysSinceLastPedimento === 1 ? '' : 's'}` : 'Sin pedimentos recientes' },
+    pedimentos:      { count: pedimentosMesCount,   series: pedimentosSeries,      microStatus: daysSinceLastCruce != null ? `Último cruce hace ${daysSinceLastCruce} día${daysSinceLastCruce === 1 ? '' : 's'}` : 'Sin cruces recientes' },
     expedientes:     { count: expedientesCount,     series: expedientesSeries,     microStatus: 'Documentos totales' },
     catalogo:        { count: catalogoCount,        series: [],                    microStatus: '—' },
     entradas:        { count: entradasMesCount,     series: entradasSeries,        microStatus: `${entradasMesCount} en ${now.toLocaleString('es-MX', { month: 'short', timeZone: 'America/Chicago' })}` },

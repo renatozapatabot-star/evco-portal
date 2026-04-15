@@ -38,7 +38,12 @@ import type {
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
+// "Active" was previously defined as estatus ∈ MOTION_STATUSES but that
+// included Cruzado (already crossed) and missed embarques with NULL status.
+// Replaced 2026-04-15: active = fecha_cruce IS NULL. Constant kept as
+// reference for downstream tiles that still want a status-distribution view.
 const MOTION_STATUSES = ['En Proceso', 'Documentacion', 'En Aduana', 'Pedimento Pagado', 'Cruzado']
+void MOTION_STATUSES
 
 // Human-readable labels for operational_decisions feed. Unknown
 // decision_types fall through to a humanized version of the raw value.
@@ -152,8 +157,11 @@ async function renderEagle(opName: string, rawMonth: string | null) {
     escalatedThreads,
     decisionRows,
   ] = await Promise.all([
+    // traficosRows feeds the status-distribution tile; cap at 5k.
+    // headline activeTraficosTotal is computed below as a true count via the
+    // dedicated query, NOT the length of this row sample.
     softData<{ estatus: string | null }>(
-      sb.from('traficos').select('estatus').in('estatus', MOTION_STATUSES).limit(5000)
+      sb.from('traficos').select('estatus').is('fecha_cruce', null).limit(5000)
     ),
     withHardTimeout(computeARAging(sb, null), 3500, { total: 0, count: 0, byBucket: [], topDebtors: [], currency: 'MXN' as const }),
     withHardTimeout(computeAPAging(sb, null), 3500, { total: 0, count: 0, byBucket: [], topDebtors: [], currency: 'USD' as const, sourceMissing: true }),
@@ -164,13 +172,15 @@ async function renderEagle(opName: string, rawMonth: string | null) {
     softData<{ company_id: string; name: string | null; active: boolean | null }>(
       sb.from('companies').select('company_id, name, active').eq('active', true).limit(500)
     ),
-    softData<{ updated_at: string }>(
-      sb.from('traficos').select('updated_at').eq('estatus', 'En Proceso').gte('updated_at', fourteenDaysAgoIso).limit(2000)
+    // Activos sparkline — bucket by fecha_llegada (real arrival), not updated_at
+    // (sync touches every row, would inflate every bucket).
+    softData<{ fecha_llegada: string }>(
+      sb.from('traficos').select('fecha_llegada').is('fecha_cruce', null).gte('fecha_llegada', fourteenDaysAgoIso).limit(2000)
     ),
-    // Pedimento series — sparkline for the nav card. Use updated_at since
-    // fecha_llegada is sparsely populated on recent rows.
-    softData<{ updated_at: string }>(
-      sb.from('traficos').select('updated_at').is('pedimento', null).gte('updated_at', fourteenDaysAgoIso).limit(2000)
+    // Pedimentos-pendientes sparkline — same window but for embarques whose
+    // pedimento is set and awaiting cruce.
+    softData<{ fecha_llegada: string }>(
+      sb.from('traficos').select('fecha_llegada').not('pedimento', 'is', null).is('fecha_cruce', null).gte('fecha_llegada', fourteenDaysAgoIso).limit(2000)
     ),
     // expediente_documentos uses `uploaded_at`, not `created_at`.
     softData<{ uploaded_at: string }>(
@@ -185,12 +195,15 @@ async function renderEagle(opName: string, rawMonth: string | null) {
       sb.from('globalpc_productos').select('fraccion_classified_at').not('fraccion_classified_at', 'is', null).gte('fraccion_classified_at', fourteenDaysAgoIso).limit(2000)
     ),
     softCount(sb.from('globalpc_productos').select('id', { count: 'exact', head: true }).not('fraccion_classified_at', 'is', null)),
-    softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).is('pedimento', null)),
-    softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).eq('estatus', 'Cruzado').gte('updated_at', month.monthStart).lt('updated_at', month.monthEnd)),
-    softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).not('pedimento', 'is', null).gte('updated_at', month.monthStart).lt('updated_at', month.monthEnd)),
-    softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).not('pedimento', 'is', null).gte('updated_at', prior.monthStart).lt('updated_at', prior.monthEnd)),
-    softFirst<{ updated_at: string }>(
-      sb.from('traficos').select('updated_at').not('pedimento', 'is', null).order('updated_at', { ascending: false }).limit(1)
+    // Pedimentos pendientes = pedimento set, no cruce yet (real "stuck waiting").
+    softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).not('pedimento', 'is', null).is('fecha_cruce', null)),
+    // Cruces este mes = real fecha_cruce in selected month (NOT updated_at).
+    softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).gte('fecha_cruce', month.monthStart).lt('fecha_cruce', month.monthEnd)),
+    // "Pedimentos del mes" reinterpreted as cruces del mes (same source) for delta math.
+    softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).gte('fecha_cruce', month.monthStart).lt('fecha_cruce', month.monthEnd)),
+    softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).gte('fecha_cruce', prior.monthStart).lt('fecha_cruce', prior.monthEnd)),
+    softFirst<{ fecha_cruce: string }>(
+      sb.from('traficos').select('fecha_cruce').not('fecha_cruce', 'is', null).order('fecha_cruce', { ascending: false }).limit(1)
     ),
     softData<{ id: string; rule_code: string | null; trafico_id: string | null }>(
       sb.from('mve_alerts').select('id, rule_code, trafico_id').eq('severity', 'critical').eq('resolved', false).limit(10)
@@ -207,14 +220,17 @@ async function renderEagle(opName: string, rawMonth: string | null) {
     ),
   ])
 
-  // traficosByStatus
+  // traficosByStatus tile feeds from the row sample (capped 5000).
   const counts = new Map<string, number>()
   for (const r of traficosRows) {
     const s = r.estatus ?? 'Sin estado'
     counts.set(s, (counts.get(s) ?? 0) + 1)
   }
   const traficosByStatus: TraficoStatusBucket[] = Array.from(counts.entries()).map(([status, count]) => ({ status, count }))
-  const activeTraficosTotal = traficosByStatus.reduce((s, b) => s + b.count, 0)
+  // Headline number: real count of pending-cruce embarques (separate query
+  // so we don't lie when the sample hits the 5000 cap).
+  const { count: activeCountRaw } = await sb.from('traficos').select('id', { count: 'exact', head: true }).is('fecha_cruce', null)
+  const activeTraficosTotal = activeCountRaw ?? traficosByStatus.reduce((s, b) => s + b.count, 0)
 
   // dormant (top 3) + activeClients
   const activeIds = new Set<string>()
@@ -289,9 +305,10 @@ async function renderEagle(opName: string, rawMonth: string | null) {
     href: r.trafico ? `/embarques/${encodeURIComponent(r.trafico)}` : undefined,
   }))
 
-  // Series bucketing
-  const traficosActivosSeries = bucketDailySeries(traficosActivosSeriesRows as Array<Record<string, unknown>>, 'updated_at', 14, now)
-  const pedimentosPendSeries  = bucketDailySeries(pedimentosSeriesRows as Array<Record<string, unknown>>, 'updated_at', 14, now)
+  // Series bucketing — use real timestamps (fecha_llegada / fecha_cruce),
+  // never updated_at (which fires every sync).
+  const traficosActivosSeries = bucketDailySeries(traficosActivosSeriesRows as Array<Record<string, unknown>>, 'fecha_llegada', 14, now)
+  const pedimentosPendSeries  = bucketDailySeries(pedimentosSeriesRows as Array<Record<string, unknown>>, 'fecha_llegada', 14, now)
   const expedientesSeries     = bucketDailySeries(expedientesSeriesRows as Array<Record<string, unknown>>, 'uploaded_at', 14, now)
   const entradasSeries        = bucketDailySeries(entradasSeriesRows as Array<Record<string, unknown>>, 'fecha_llegada_mercancia', 14, now)
   const clasificacionesSeries = bucketDailySeries(clasificacionesSeriesRows as Array<Record<string, unknown>>, 'fraccion_classified_at', 14, now)
@@ -306,8 +323,8 @@ async function renderEagle(opName: string, rawMonth: string | null) {
     { key: 'ar', label: 'CxC vencido', value: fmtUSDCompact(arTotal) || '—', tone: 'silver', inverted: true },
   ]
 
-  const daysSinceLastPedimento = lastPedimento?.updated_at
-    ? Math.floor((Date.now() - new Date(lastPedimento.updated_at).getTime()) / 86400000)
+  const daysSinceLastCruce = lastPedimento?.fecha_cruce
+    ? Math.floor((Date.now() - new Date(lastPedimento.fecha_cruce).getTime()) / 86400000)
     : null
 
   const navCounts: NavCounts = {
@@ -319,9 +336,9 @@ async function renderEagle(opName: string, rawMonth: string | null) {
     pedimentos: {
       count: pedimentosMesCount,
       series: pedimentosPendSeries,
-      microStatus: daysSinceLastPedimento != null
-        ? `Último hace ${daysSinceLastPedimento} día${daysSinceLastPedimento === 1 ? '' : 's'}`
-        : 'Sin pedimentos recientes',
+      microStatus: daysSinceLastCruce != null
+        ? `Último cruce hace ${daysSinceLastCruce} día${daysSinceLastCruce === 1 ? '' : 's'}`
+        : 'Sin cruces recientes',
     },
     expedientes: {
       count: expedientesCount,

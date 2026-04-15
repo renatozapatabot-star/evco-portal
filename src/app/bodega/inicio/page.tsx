@@ -119,19 +119,21 @@ async function renderBodegaCockpit(opName: string) {
     softData<{ trafico: string | null }>(
       sb.from('traficos').select('trafico').in('estatus', CROSSED_ESTATUS).gte('fecha_llegada', ninetyDaysAgoIso).limit(5000)
     ),
-    softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).eq('estatus', 'En Proceso')),
-    softData<{ updated_at: string }>(
-      sb.from('traficos').select('updated_at').eq('estatus', 'En Proceso').gte('updated_at', fourteenDaysAgoIso).limit(2000)
+    // Activos = pending cruce.
+    softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).is('fecha_cruce', null)),
+    softData<{ fecha_llegada: string }>(
+      sb.from('traficos').select('fecha_llegada').is('fecha_cruce', null).gte('fecha_llegada', fourteenDaysAgoIso).limit(2000)
     ),
     softCount(sb.from('expediente_documentos').select('id', { count: 'exact', head: true })),
     softData<{ uploaded_at: string }>(
       sb.from('expediente_documentos').select('uploaded_at').gte('uploaded_at', fourteenDaysAgoIso).limit(2000)
     ),
-    softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).not('pedimento', 'is', null).gte('updated_at', monthStartIso)),
-    softData<{ updated_at: string }>(
-      sb.from('traficos').select('updated_at').not('pedimento', 'is', null).gte('updated_at', fourteenDaysAgoIso).limit(2000)
+    // Pedimentos generados este mes — milestone = fecha_cruce.
+    softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).not('pedimento', 'is', null).gte('fecha_cruce', monthStartIso)),
+    softData<{ fecha_cruce: string }>(
+      sb.from('traficos').select('fecha_cruce').not('pedimento', 'is', null).gte('fecha_cruce', fourteenDaysAgoIso).limit(2000)
     ),
-    softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).eq('estatus', 'Cruzado').gte('updated_at', sevenDaysAgoIso)),
+    softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).gte('fecha_cruce', sevenDaysAgoIso)),
     softCount(sb.from('globalpc_productos').select('id', { count: 'exact', head: true }).not('fraccion', 'is', null)),
     softData<{ fraccion_classified_at: string }>(
       sb.from('globalpc_productos').select('fraccion_classified_at').not('fraccion_classified_at', 'is', null).gte('fraccion_classified_at', fourteenDaysAgoIso).limit(2000)
@@ -149,9 +151,9 @@ async function renderBodegaCockpit(opName: string) {
   }, 0)
 
   const entradasSeries       = bucketDailySeries(entradasSeriesRows as Array<Record<string, unknown>>, 'fecha_llegada_mercancia', 14, now)
-  const activosSeries        = bucketDailySeries(activosSeriesRows  as Array<Record<string, unknown>>, 'updated_at', 14, now)
+  const activosSeries        = bucketDailySeries(activosSeriesRows  as Array<Record<string, unknown>>, 'fecha_llegada', 14, now)
   const expedientesSeries    = bucketDailySeries(expedientesSeriesRows as Array<Record<string, unknown>>, 'uploaded_at', 14, now)
-  const pedimentosSeries     = bucketDailySeries(pedimentosSeriesRows as Array<Record<string, unknown>>, 'updated_at', 14, now)
+  const pedimentosSeries     = bucketDailySeries(pedimentosSeriesRows as Array<Record<string, unknown>>, 'fecha_cruce', 14, now)
   const clasificacionesSeries = bucketDailySeries(clasificacionesSeriesRows as Array<Record<string, unknown>>, 'fraccion_classified_at', 14, now)
 
   const heroKPIs: CockpitHeroKPI[] = [

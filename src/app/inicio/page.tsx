@@ -73,27 +73,35 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
   const now = new Date()
   const sevenDaysAgoIso = daysAgo(7, now).toISOString()
   const fourteenDaysAgoIso = daysAgo(14, now).toISOString()
-  const thirtyDaysAgoIso = daysAgo(30, now).toISOString()
+  const ninetyDaysAgoIso = daysAgo(90, now).toISOString()
+  const monthStartIso = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
 
+  // KPI accuracy contract (added 2026-04-15 after audit):
+  //   - "Embarques activos"  → fecha_cruce IS NULL AND fecha_llegada >= last 90d
+  //   - "Entradas esta semana" → entradas.fecha_llegada_mercancia >= last 7d
+  //   - "Pedimentos listos"  → pedimento set AND fecha_cruce IS NULL
+  //   - "Cruces este mes"    → fecha_cruce >= start-of-current-month
+  // NEVER use updated_at for time-window KPIs — sync touches every row,
+  // making "this month" mean "everything that was synced this month".
   const [
     activeTraficos,
     documentos,
     companyRow,
-    traficosActivosSeriesRows,
+    activeTraficosCount,
+    pedimentosListosCount,
+    cruzadosMesCount,
+    cruzadosLast7Count,
+    entradasSemanaCount,
+    expedientesCount,
+    catalogoCount,
+    clasificacionesCount,
+    activosSeriesRows,
     pedimentosListosSeriesRows,
     expedientesSeriesRows,
     entradasSeriesRows,
     clasificacionesSeriesRows,
-    cruzadosMesSeriesRows,
-    cruzadosMesCount,
-    entradasSemanaCount,
-    pedimentosListosCount,
-    expedientesCount,
-    catalogoCount,
-    clasificacionesCount,
-    cruzados7dCount,
-    pedimentosMonthCount,
-    lastPedimento,
+    crucesSeriesRows,
+    lastCruce,
     mensajeriaMessages,
     clienteActivity,
   ] = await Promise.all([
@@ -102,11 +110,26 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
     softFirst<{ name: string | null; clave_cliente?: string | null }>(
       supabase.from('companies').select('name, clave_cliente').eq('company_id', companyId).limit(1)
     ),
-    softData<{ updated_at: string }>(
-      supabase.from('traficos').select('updated_at').eq('company_id', companyId).eq('estatus', 'En Proceso').gte('updated_at', fourteenDaysAgoIso).limit(2000)
+    // Embarques activos: not crossed yet, with recent arrival activity (90d window).
+    softCount(supabase.from('traficos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).is('fecha_cruce', null).gte('fecha_llegada', ninetyDaysAgoIso)),
+    // Pedimentos listos: pedimento assigned, awaiting cruce.
+    softCount(supabase.from('traficos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).not('pedimento', 'is', null).is('fecha_cruce', null)),
+    // Cruces este mes: real fecha_cruce >= start-of-month.
+    softCount(supabase.from('traficos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).gte('fecha_cruce', monthStartIso)),
+    // Cruces last 7d for nav microStatus.
+    softCount(supabase.from('traficos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).gte('fecha_cruce', sevenDaysAgoIso)),
+    // Entradas esta semana — entradas.fecha_llegada_mercancia is the truth source.
+    softCount(supabase.from('entradas').select('id', { count: 'exact', head: true }).eq('company_id', companyId).gte('fecha_llegada_mercancia', sevenDaysAgoIso)),
+    softCount(supabase.from('expediente_documentos').select('id', { count: 'exact', head: true }).eq('company_id', companyId)),
+    softCount(supabase.from('globalpc_productos').select('id', { count: 'exact', head: true }).eq('company_id', companyId)),
+    softCount(supabase.from('globalpc_productos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).not('fraccion', 'is', null)),
+    // Sparkline series — bucket by the SAME field the headline KPI uses.
+    softData<{ fecha_llegada: string }>(
+      supabase.from('traficos').select('fecha_llegada').eq('company_id', companyId).is('fecha_cruce', null).gte('fecha_llegada', fourteenDaysAgoIso).limit(2000)
     ),
-    softData<{ updated_at: string }>(
-      supabase.from('traficos').select('updated_at').eq('company_id', companyId).not('pedimento', 'is', null).gte('updated_at', fourteenDaysAgoIso).limit(2000)
+    softData<{ fecha_llegada: string }>(
+      // Pedimentos-listos sparkline = arrivals trend among pending-cruce embarques.
+      supabase.from('traficos').select('fecha_llegada').eq('company_id', companyId).not('pedimento', 'is', null).is('fecha_cruce', null).gte('fecha_llegada', fourteenDaysAgoIso).limit(2000)
     ),
     softData<{ uploaded_at: string }>(
       supabase.from('expediente_documentos').select('uploaded_at').eq('company_id', companyId).gte('uploaded_at', fourteenDaysAgoIso).limit(2000)
@@ -117,18 +140,10 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
     softData<{ fraccion_classified_at: string }>(
       supabase.from('globalpc_productos').select('fraccion_classified_at').eq('company_id', companyId).not('fraccion_classified_at', 'is', null).gte('fraccion_classified_at', fourteenDaysAgoIso).limit(2000)
     ),
-    softData<{ updated_at: string }>(
-      supabase.from('traficos').select('updated_at').eq('company_id', companyId).eq('estatus', 'Cruzado').gte('updated_at', fourteenDaysAgoIso).limit(2000)
+    softData<{ fecha_cruce: string }>(
+      supabase.from('traficos').select('fecha_cruce').eq('company_id', companyId).gte('fecha_cruce', fourteenDaysAgoIso).limit(2000)
     ),
-    softCount(supabase.from('traficos').select('trafico', { count: 'exact', head: true }).eq('company_id', companyId).eq('estatus', 'Cruzado').gte('updated_at', thirtyDaysAgoIso)),
-    softCount(supabase.from('entradas').select('id', { count: 'exact', head: true }).eq('company_id', companyId).gte('fecha_llegada_mercancia', sevenDaysAgoIso)),
-    softCount(supabase.from('traficos').select('trafico', { count: 'exact', head: true }).eq('company_id', companyId).not('pedimento', 'is', null)),
-    softCount(supabase.from('expediente_documentos').select('id', { count: 'exact', head: true }).eq('company_id', companyId)),
-    softCount(supabase.from('globalpc_productos').select('id', { count: 'exact', head: true }).eq('company_id', companyId)),
-    softCount(supabase.from('globalpc_productos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).not('fraccion', 'is', null)),
-    softCount(supabase.from('traficos').select('trafico', { count: 'exact', head: true }).eq('company_id', companyId).eq('estatus', 'Cruzado').gte('updated_at', sevenDaysAgoIso)),
-    softCount(supabase.from('traficos').select('trafico', { count: 'exact', head: true }).eq('company_id', companyId).not('pedimento', 'is', null).gte('updated_at', new Date(now.getFullYear(), now.getMonth(), 1).toISOString())),
-    softFirst<{ updated_at: string }>(supabase.from('traficos').select('updated_at').eq('company_id', companyId).not('pedimento', 'is', null).order('updated_at', { ascending: false }).limit(1)),
+    softFirst<{ fecha_cruce: string }>(supabase.from('traficos').select('fecha_cruce').eq('company_id', companyId).not('fecha_cruce', 'is', null).order('fecha_cruce', { ascending: false }).limit(1)),
     withHardTimeout(fetchClientMensajeriaFeed(supabase, companyId, 10), 3000, []),
     withHardTimeout(getClienteActivity(supabase, companyId, 12), 3000, []),
   ])
@@ -151,27 +166,27 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
     })
   } catch { /* telemetry should never crash the page */ }
 
-  const traficosActivosSeries  = bucketDailySeries(traficosActivosSeriesRows as Array<Record<string, unknown>>, 'updated_at', 14, now)
-  const pedimentosListosSeries = bucketDailySeries(pedimentosListosSeriesRows as Array<Record<string, unknown>>, 'updated_at', 14, now)
+  const activosSeries          = bucketDailySeries(activosSeriesRows as Array<Record<string, unknown>>, 'fecha_llegada', 14, now)
+  const pedimentosListosSeries = bucketDailySeries(pedimentosListosSeriesRows as Array<Record<string, unknown>>, 'fecha_llegada', 14, now)
   const expedientesSeries      = bucketDailySeries(expedientesSeriesRows as Array<Record<string, unknown>>, 'uploaded_at', 14, now)
   const entradasSeries         = bucketDailySeries(entradasSeriesRows as Array<Record<string, unknown>>, 'fecha_llegada_mercancia', 14, now)
   const clasificacionesSeries  = bucketDailySeries(clasificacionesSeriesRows as Array<Record<string, unknown>>, 'fraccion_classified_at', 14, now)
-  const cruzadosMesSeries      = bucketDailySeries(cruzadosMesSeriesRows as Array<Record<string, unknown>>, 'updated_at', 14, now)
+  const crucesSeries           = bucketDailySeries(crucesSeriesRows as Array<Record<string, unknown>>, 'fecha_cruce', 14, now)
 
-  const daysSinceLastPedimento = lastPedimento?.updated_at
-    ? Math.floor((Date.now() - new Date(lastPedimento.updated_at).getTime()) / 86400000)
+  const daysSinceLastCruce = lastCruce?.fecha_cruce
+    ? Math.floor((Date.now() - new Date(lastCruce.fecha_cruce).getTime()) / 86400000)
     : null
 
   const heroKPIs: CockpitHeroKPI[] = [
-    { key: 'traficos',   label: 'Embarques activos',     value: activeTraficos.length, series: traficosActivosSeries, href: '/embarques',                 tone: 'silver' },
-    { key: 'entradas',   label: 'Entradas esta semana', value: entradasSemanaCount,   series: entradasSeries,         href: '/entradas',                 tone: 'silver' },
-    { key: 'pedimentos', label: 'Pedimentos listos',    value: pedimentosListosCount, series: pedimentosListosSeries, href: '/pedimentos',               tone: 'silver' },
-    { key: 'cruces',     label: 'Cruces este mes',      value: cruzadosMesCount,      series: cruzadosMesSeries,      href: '/embarques?estatus=Cruzado', tone: 'silver' },
+    { key: 'traficos',   label: 'Embarques activos',     value: activeTraficosCount,    series: activosSeries,          href: '/embarques',                 tone: 'silver' },
+    { key: 'entradas',   label: 'Entradas esta semana', value: entradasSemanaCount,    series: entradasSeries,         href: '/entradas',                 tone: 'silver' },
+    { key: 'pedimentos', label: 'Pedimentos listos',    value: pedimentosListosCount,  series: pedimentosListosSeries, href: '/pedimentos',               tone: 'silver' },
+    { key: 'cruces',     label: 'Cruces este mes',      value: cruzadosMesCount,       series: crucesSeries,           href: '/embarques?estatus=Cruzado', tone: 'silver' },
   ]
 
   const navCounts: NavCounts = {
-    traficos:        { count: activeTraficos.length,  series: traficosActivosSeries,  microStatus: `${cruzados7dCount} cruzaron esta semana` },
-    pedimentos:      { count: pedimentosMonthCount,   series: pedimentosListosSeries, microStatus: daysSinceLastPedimento != null ? `Último hace ${daysSinceLastPedimento} día${daysSinceLastPedimento === 1 ? '' : 's'}` : 'Sin pedimentos recientes' },
+    traficos:        { count: activeTraficosCount,    series: activosSeries,          microStatus: `${cruzadosLast7Count} cruzaron esta semana` },
+    pedimentos:      { count: pedimentosListosCount,  series: pedimentosListosSeries, microStatus: daysSinceLastCruce != null ? `Último cruce hace ${daysSinceLastCruce} día${daysSinceLastCruce === 1 ? '' : 's'}` : 'Sin cruces recientes' },
     expedientes:     { count: expedientesCount,       series: expedientesSeries,      microStatus: `${documentos.length} documento${documentos.length === 1 ? '' : 's'} en tu expediente` },
     catalogo:        { count: catalogoCount,          series: [],                     microStatus: '—' },
     entradas:        { count: entradasSemanaCount,    series: entradasSeries,         microStatus: `${entradasSemanaCount} recibida${entradasSemanaCount === 1 ? '' : 's'} esta semana` },

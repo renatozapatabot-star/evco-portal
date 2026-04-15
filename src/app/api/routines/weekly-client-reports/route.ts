@@ -111,8 +111,10 @@ export async function POST(request: NextRequest) {
         arResult,
       ] = await Promise.all([
         sb.from('traficos').select('id', { count: 'exact', head: true }).eq('company_id', c.company_id).gte('created_at', sevenDaysAgoIso).limit(1),
-        sb.from('traficos').select('id', { count: 'exact', head: true }).eq('company_id', c.company_id).not('pedimento', 'is', null).gte('updated_at', sevenDaysAgoIso).limit(1),
-        sb.from('traficos').select('id', { count: 'exact', head: true }).eq('company_id', c.company_id).eq('estatus', 'Cruzado').gte('updated_at', sevenDaysAgoIso).limit(1),
+        // Pedimentos listos = pedimento set, awaiting cruce. Cruces last 7d
+        // = real fecha_cruce in last 7d (NOT updated_at — sync touches every row).
+        sb.from('traficos').select('id', { count: 'exact', head: true }).eq('company_id', c.company_id).not('pedimento', 'is', null).is('fecha_cruce', null).limit(1),
+        sb.from('traficos').select('id', { count: 'exact', head: true }).eq('company_id', c.company_id).gte('fecha_cruce', sevenDaysAgoIso).limit(1),
         sb.from('expediente_documentos').select('id', { count: 'exact', head: true }).eq('company_id', c.company_id).eq('is_required', true).is('storage_path', null).limit(1),
         sb.from('globalpc_productos').select('id', { count: 'exact', head: true }).eq('company_id', c.company_id).eq('pais_origen', 'USA').limit(1),
         computeARAging(sb, c.company_id),

@@ -181,9 +181,35 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
     <ClienteEstado activeTraficos={activeTraficos} documentos={documentos} />
   )
 
+  // Dynamic zero-state — when no active tráficos, show the most-recent
+  // crossed embarque instead of a blank "nothing happening" line.
+  const { data: lastCruzadoRow } = await supabase
+    .from('traficos')
+    .select('trafico, fecha_cruce, updated_at')
+    .eq('company_id', companyId)
+    .eq('estatus', 'Cruzado')
+    .order('fecha_cruce', { ascending: false, nullsFirst: false })
+    .limit(1)
+    .maybeSingle()
+
+  function daysAgoLabel(iso: string | null): string {
+    if (!iso) return '—'
+    const days = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000))
+    if (days === 0) return 'hoy'
+    if (days === 1) return 'hace 1 día'
+    return `hace ${days} días`
+  }
+
   const summaryLine = activeTraficos.length > 0
-    ? `${activeTraficos.length} embarque${activeTraficos.length === 1 ? '' : 's'} en movimiento. Tu patente, en tiempo real.`
-    : 'Sin embarques activos. Tus próximas operaciones aparecerán aquí.'
+    ? `${activeTraficos.length} embarque${activeTraficos.length === 1 ? '' : 's'} en tránsito · Patente en movimiento`
+    : lastCruzadoRow
+      ? `Último embarque · ${(lastCruzadoRow as { trafico: string }).trafico} · cruzó ${daysAgoLabel((lastCruzadoRow as { fecha_cruce: string | null }).fecha_cruce ?? (lastCruzadoRow as { updated_at: string | null }).updated_at)}`
+      : 'Sin embarques activos. Tus próximas operaciones aparecerán aquí.'
+
+  // Pulse the status dot when work is in motion (≥1 active embarque).
+  // Solid dot = calm. Real-time subscription on traficos lives inside
+  // CockpitInicio via CockpitBanner; this flag drives the CSS pulse.
+  const pulseSignal = activeTraficos.length > 0
 
   const mensajeriaEnabled = mensajeriaClientEnabled()
   const activityHasContent = clienteActivity.length > 0
@@ -210,7 +236,7 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
         ) : null
       ) : (
         <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-          Mensajería próximamente
+          Chat disponible próximamente
         </div>
       )}
     </div>
@@ -257,7 +283,7 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
       actividadStripSlot={actividadStripSlot}
       capabilitySlot={capabilitySlot}
       summaryLine={summaryLine}
-      pulseSignal={activeTraficos.length > 0}
+      pulseSignal={pulseSignal}
       month={month}
     />
   )

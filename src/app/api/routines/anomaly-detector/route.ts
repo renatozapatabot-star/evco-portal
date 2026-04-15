@@ -144,14 +144,18 @@ export async function POST(request: NextRequest) {
     const topAnomalies = priceAnomalies.slice(0, 25)
 
     // 2. Duplicate pedimentos — same pedimento on different tráficos.
+    // Empty-string pedimentos are unassigned (sync quirk — writes '' instead
+    // of NULL). Filter them out; a pedimento isn't a duplicate of nothing.
     const { data: pedRows } = await sb
       .from('traficos')
       .select('trafico, pedimento, company_id')
       .not('pedimento', 'is', null)
+      .neq('pedimento', '')
       .gte('updated_at', ninetyDaysAgoIso)
       .limit(10000)
     const dupMap = new Map<string, { traficos: Set<string>; companies: Set<string> }>()
     for (const r of (pedRows ?? []) as Array<{ trafico: string; pedimento: string; company_id: string | null }>) {
+      if (!r.pedimento || r.pedimento.trim() === '') continue
       const entry = dupMap.get(r.pedimento) ?? { traficos: new Set(), companies: new Set() }
       entry.traficos.add(r.trafico)
       if (r.company_id) entry.companies.add(r.company_id)

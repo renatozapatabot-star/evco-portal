@@ -17,7 +17,7 @@ export async function POST(
 ) {
   if (!isMensajeriaEnabled()) {
     return NextResponse.json(
-      { data: null, error: { code: 'DISABLED', message: 'Mensajería no está activa' } },
+      { data: null, error: { code: 'DISABLED', message: 'Chat no está activo' } },
       { status: 403 },
     )
   }

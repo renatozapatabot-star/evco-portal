@@ -56,7 +56,7 @@ export async function POST(
   ctx: { params: Promise<{ id: string }> },
 ) {
   if (!isMensajeriaEnabled()) {
-    return err('DISABLED', 'Mensajería no está activa', 403)
+    return err('DISABLED', 'Chat no está activo', 403)
   }
 
   const session = await verifySession(request.cookies.get('portal_session')?.value ?? '')

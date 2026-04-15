@@ -22,7 +22,7 @@ export interface CapabilityCardDef {
 export const CAPABILITY_CARDS: readonly CapabilityCardDef[] = [
   { key: 'checklist',    href: '/checklist',    icon: ClipboardCheck, label: 'Checklist Documental', subtitle: '61 tipos · auto-validado' },
   { key: 'clasificador', href: '/clasificador', icon: ScanLine,       label: 'Clasificador',         subtitle: 'Sube · auto-clasifica · TIGIE' },
-  { key: 'mensajes',     href: '/mensajes',     icon: AtSign,         label: 'Mensajes',             subtitle: '@ menciona a tu equipo' },
+  { key: 'mensajes',     href: '/mensajeria',   icon: AtSign,         label: 'Chat',                 subtitle: '@ menciona a tu equipo' },
 ] as const
 
 export interface CapabilityCell {

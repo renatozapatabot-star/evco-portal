@@ -239,7 +239,7 @@ export function MensajeriaClient({ role, companyId, companyName, operatorName }:
 
   return (
     <PageShell
-      title="Mensajería"
+      title="Chat"
       subtitle={
         isOwner
           ? `${escalatedCount} escalado${escalatedCount === 1 ? '' : 's'} · ${threads.length} hilo${threads.length === 1 ? '' : 's'}`
@@ -561,7 +561,7 @@ export function MensajeriaClient({ role, companyId, companyName, operatorName }:
               <div style={{ fontSize: 32 }}>💬</div>
               <div style={{ fontSize: 13 }}>Selecciona un hilo para verlo</div>
               <div style={{ fontSize: 11, color: TEXT_MUTED }}>
-                {companyName || 'Mensajería interna'} · Phase 1
+                {companyName || 'Chat interno'} · Phase 1
               </div>
             </div>
           )}

@@ -29,7 +29,7 @@ function userKeyFor(role: string, companyId: string): string {
 export async function POST(request: NextRequest) {
   if (!isMensajeriaEnabled()) {
     return NextResponse.json(
-      { data: null, error: { code: 'DISABLED', message: 'Mensajería no está activa' } },
+      { data: null, error: { code: 'DISABLED', message: 'Chat no está activo' } },
       { status: 403 },
     )
   }
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   if (!isMensajeriaEnabled()) {
     return NextResponse.json(
-      { data: null, error: { code: 'DISABLED', message: 'Mensajería no está activa' } },
+      { data: null, error: { code: 'DISABLED', message: 'Chat no está activo' } },
       { status: 403 },
     )
   }

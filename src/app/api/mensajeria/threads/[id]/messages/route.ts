@@ -45,7 +45,7 @@ export async function GET(
 ) {
   if (!isMensajeriaEnabled()) {
     return NextResponse.json(
-      { data: null, error: { code: 'DISABLED', message: 'Mensajería no está activa' } },
+      { data: null, error: { code: 'DISABLED', message: 'Chat no está activo' } },
       { status: 403 },
     )
   }
@@ -54,7 +54,7 @@ export async function GET(
   if (!session) return unauthorized()
   if (session.role === 'client' && process.env.NEXT_PUBLIC_MENSAJERIA_CLIENT !== 'true') {
     return NextResponse.json(
-      { data: null, error: { code: 'FORBIDDEN', message: 'Mensajería no disponible' } },
+      { data: null, error: { code: 'FORBIDDEN', message: 'Chat no disponible' } },
       { status: 403 },
     )
   }
@@ -89,7 +89,7 @@ export async function POST(
 ) {
   if (!isMensajeriaEnabled()) {
     return NextResponse.json(
-      { data: null, error: { code: 'DISABLED', message: 'Mensajería no está activa' } },
+      { data: null, error: { code: 'DISABLED', message: 'Chat no está activo' } },
       { status: 403 },
     )
   }
@@ -98,7 +98,7 @@ export async function POST(
   if (!session) return unauthorized()
   if (session.role === 'client' && process.env.NEXT_PUBLIC_MENSAJERIA_CLIENT !== 'true') {
     return NextResponse.json(
-      { data: null, error: { code: 'FORBIDDEN', message: 'Mensajería no disponible' } },
+      { data: null, error: { code: 'FORBIDDEN', message: 'Chat no disponible' } },
       { status: 403 },
     )
   }

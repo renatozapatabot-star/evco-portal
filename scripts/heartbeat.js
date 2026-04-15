@@ -107,8 +107,9 @@ async function checkSync() {
 
     return { ok: false, error: 'No sync_log and no tráficos found' };
   } catch (err) {
-    // sync_log table might not exist — not fatal
-    return { ok: true, hoursSince: '?', rows: '?', source: 'check skipped: ' + err.message };
+    // Don't mask sync failures as ok — that's the silent-failure pattern
+    // that kept us blind for 10 days. Surface it.
+    return { ok: false, error: 'sync check crashed: ' + err.message, hoursSince: null };
   }
 }
 
@@ -124,13 +125,36 @@ async function main() {
 
   const allOk = pm2.ok && supa.ok && vercel.ok && sync.ok;
 
-  // Log to heartbeat_log (best-effort, table might not exist yet)
-  try {
-    await supabase.from('heartbeat_log').insert({
-      checked_at: ts, all_ok: allOk,
-      results_json: { pm2, supabase: supa, vercel, sync }
-    });
-  } catch (_) { /* table may not exist yet */ }
+  // Log to heartbeat_log with the schema the app actually reads from.
+  // R2 (nightly-sync-audit routine) queries: checked_at, pm2_ok, supabase_ok,
+  // vercel_ok, sync_ok, sync_age_hours, all_ok, details.
+  // If this insert fails we want it LOUD — silent failures got us here.
+  const syncHours = typeof sync.hoursSince === 'number' ? sync.hoursSince : null;
+  const { error: logErr } = await supabase.from('heartbeat_log').insert({
+    checked_at: ts,
+    pm2_ok: pm2.ok,
+    supabase_ok: supa.ok,
+    vercel_ok: vercel.ok,
+    sync_ok: sync.ok,
+    sync_age_hours: syncHours,
+    all_ok: allOk,
+    details: {
+      pm2: pm2.issues?.join('; ') || `${pm2.online}/${pm2.total} online`,
+      supabase: supa.error || `${supa.latency}ms response`,
+      vercel: vercel.error || `HTTP ${vercel.status} · ${vercel.latency}ms`,
+      sync: sync.error || `${sync.hoursSince}h since last sync`,
+      ...(sync.source ? { source: sync.source } : {}),
+    },
+  });
+  if (logErr) {
+    console.error('heartbeat_log insert FAILED:', logErr.message);
+    await sendTelegram(
+      `🚨 <b>Heartbeat log write failed</b>\n\n` +
+      `${logErr.message}\n\n` +
+      `Heartbeat itself ran, but persistence is broken. ` +
+      `R2 (nightly-sync-audit) will report the system as dead starting tomorrow 4 AM.`
+    );
+  }
 
   if (allOk) {
     console.log('✅ All systems OK');

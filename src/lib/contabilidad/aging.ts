@@ -51,21 +51,44 @@ function daysBetween(from: Date, to: Date): number {
 }
 
 /**
- * AR aging from `invoices` for the given company. Open statuses are
- * draft | sent | viewed | overdue. Uses due_date when present, falls back
- * to created_at + 30d as a reasonable default.
+ * AR aging from `econta_cartera` — the live cartera synced from
+ * econta. Sources were confirmed 2026-04-15: the legacy `invoices`
+ * table is empty; real data is in (econta_cartera, econta_facturas).
+ *
+ * econta_cartera joins via `cve_cliente` (the 4-digit clave), so when
+ * a `companyId` slug is passed we first resolve companies → clave_cliente,
+ * then filter by that. companyId === null → broker aggregate across
+ * every cve_cliente.
+ *
+ * Aging bucket = today − fecha_vencimiento (fallback: fecha + 30d).
+ * Only rows with `saldo > 0` are counted as outstanding.
  */
 export async function computeARAging(
   supabase: SupabaseClient,
   companyId: string | null,
 ): Promise<AgingResult> {
-  // companyId === null → broker aggregate (all tenants). Owner cockpit uses this.
+  // Resolve companyId slug → clave_cliente if a specific tenant is requested.
+  let claveFilter: string | null = null
+  if (companyId) {
+    const { data: co } = await supabase
+      .from('companies')
+      .select('clave_cliente')
+      .eq('company_id', companyId)
+      .maybeSingle()
+    const clave = (co as { clave_cliente: string | null } | null)?.clave_cliente
+    if (!clave) {
+      // No clave on this company — no AR data available.
+      return { total: 0, count: 0, byBucket: EMPTY_BUCKETS.map(b => ({ ...b })), topDebtors: [], currency: 'MXN' }
+    }
+    claveFilter = clave
+  }
+
   let q = supabase
-    .from('invoices')
-    .select('id, invoice_number, total, currency, due_date, created_at, status, notes, company_id')
-    .in('status', ['draft', 'sent', 'viewed', 'overdue'])
-    .limit(1000)
-  if (companyId) q = q.eq('company_id', companyId)
+    .from('econta_cartera')
+    .select('id, consecutivo, referencia, fecha, fecha_vencimiento, importe, saldo, moneda, cve_cliente, tipo')
+    .gt('saldo', 0)
+    .limit(10000)
+  if (claveFilter) q = q.eq('cve_cliente', claveFilter)
   const { data, error } = await q
 
   if (error || !data) {
@@ -76,16 +99,29 @@ export async function computeARAging(
   const buckets = EMPTY_BUCKETS.map(b => ({ ...b }))
   let total = 0
 
-  const rows = data.map((row) => {
-    const total_n = Number(row.total) || 0
-    const anchor = row.due_date
-      ? new Date(row.due_date)
-      : new Date(new Date(row.created_at as string).getTime() + 30 * 86_400_000)
+  const rows = (data as Array<{
+    id: string | number
+    consecutivo: string | null
+    referencia: string | null
+    fecha: string | null
+    fecha_vencimiento: string | null
+    importe: number | null
+    saldo: number | null
+    moneda: string | null
+    cve_cliente: string | null
+    tipo: string | null
+  }>).map((row) => {
+    const saldo = Number(row.saldo) || 0
+    const anchor = row.fecha_vencimiento
+      ? new Date(row.fecha_vencimiento)
+      : row.fecha
+        ? new Date(new Date(row.fecha).getTime() + 30 * 86_400_000)
+        : now
     const days = daysBetween(anchor, now)
     return {
       id: String(row.id),
-      label: row.invoice_number || `#${row.id}`,
-      amount: total_n,
+      label: row.referencia || row.consecutivo || `#${row.id}`,
+      amount: saldo,
       days,
     }
   })

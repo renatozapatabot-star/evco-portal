@@ -168,7 +168,7 @@ export function PatentesClient({ initialRows }: { initialRows: PatenteRow[] }) {
       </div>
 
       <p style={{ marginTop: 20, fontSize: 11, color: TEXT_MUTED }}>
-        Alertas automáticas en Mensajería: 90 · 60 · 30 días · vencimiento.
+        Alertas automáticas en Chat: 90 · 60 · 30 días · vencimiento.
       </p>
     </div>
   )

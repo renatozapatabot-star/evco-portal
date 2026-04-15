@@ -21,7 +21,7 @@ export default async function MensajeriaPage() {
   if (!isMensajeriaEnabled()) {
     return (
       <main style={{ padding: 48, color: '#94a3b8', textAlign: 'center' }}>
-        Mensajería no está activa.
+        Chat no está activo.
       </main>
     )
   }

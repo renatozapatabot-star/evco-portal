@@ -26,7 +26,7 @@ function unauthorized() {
 
 function disabled() {
   return NextResponse.json(
-    { data: null, error: { code: 'DISABLED', message: 'Mensajería no está activa' } },
+    { data: null, error: { code: 'DISABLED', message: 'Chat no está activo' } },
     { status: 403 },
   )
 }
@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
   // Phase 1: block client role entirely until flag flipped
   if (session.role === 'client' && process.env.NEXT_PUBLIC_MENSAJERIA_CLIENT !== 'true') {
     return NextResponse.json(
-      { data: null, error: { code: 'FORBIDDEN', message: 'Mensajería no disponible' } },
+      { data: null, error: { code: 'FORBIDDEN', message: 'Chat no disponible' } },
       { status: 403 },
     )
   }
@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
 
   if (session.role === 'client' && process.env.NEXT_PUBLIC_MENSAJERIA_CLIENT !== 'true') {
     return NextResponse.json(
-      { data: null, error: { code: 'FORBIDDEN', message: 'Mensajería no disponible' } },
+      { data: null, error: { code: 'FORBIDDEN', message: 'Chat no disponible' } },
       { status: 403 },
     )
   }

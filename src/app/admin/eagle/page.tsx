@@ -28,6 +28,7 @@ import { ArApTile } from '@/components/eagle/ArApTile'
 import { ClientesDormidosTile } from '@/components/eagle/ClientesDormidosTile'
 import { TopAtencionesTile } from '@/components/eagle/TopAtencionesTile'
 import { CorredorTile } from '@/components/eagle/CorredorTile'
+import { DecisionesPanel, type DecisionItem } from '@/components/eagle/DecisionesPanel'
 import type { NavCounts } from '@/lib/cockpit/nav-tiles'
 import type {
   AtencionItem,
@@ -156,6 +157,8 @@ async function renderEagle(opName: string, rawMonth: string | null) {
     mveRows,
     auditSuggestionsRows,
     escalatedThreads,
+    decisionDraftsCount,
+    decisionRojoCount,
     decisionRows,
   ] = await Promise.all([
     // traficosRows feeds the status-distribution tile; cap at 5k.
@@ -215,6 +218,9 @@ async function renderEagle(opName: string, rawMonth: string | null) {
       sb.from('audit_suggestions').select('id, title').eq('status', 'pending').limit(10)
     ),
     withHardTimeout(fetchEscalatedThreads(sb, 4), 3000, []),
+    // Decisiones counts for top-of-page action panel
+    softCount(sb.from('drafts').select('id', { count: 'exact', head: true }).in('status', ['draft', 'pending', 'review'])),
+    softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).is('fecha_cruce', null).gte('fecha_llegada', ninetyDaysAgoIso).ilike('semaforo', '%rojo%')),
     // Activity feed — operational_decisions has fresh data across all
     // tenants. `audit_log` is canonical in the rulebook but empty in prod
     // right now, so the feed falls back to op_decisions for visibility.
@@ -367,8 +373,57 @@ async function renderEagle(opName: string, rawMonth: string | null) {
     },
   }
 
+  const decisionItems: DecisionItem[] = [
+    {
+      key: 'drafts',
+      count: decisionDraftsCount,
+      label: 'Borradores por aprobar',
+      sublabel: 'Aprueba o rechaza · 1 click',
+      href: '/drafts',
+      icon: 'draft',
+      tone: 'silver',
+    },
+    {
+      key: 'mve',
+      count: mveRows.length,
+      label: 'MVE crítico',
+      sublabel: 'Compliance vence pronto',
+      href: '/mve/alerts',
+      icon: 'mve',
+      tone: 'red',
+    },
+    {
+      key: 'rojo',
+      count: decisionRojoCount,
+      label: 'Semáforo rojo',
+      sublabel: 'Embarques con incidencia',
+      href: '/embarques?semaforo=rojo',
+      icon: 'atrasado',
+      tone: 'red',
+    },
+    {
+      key: 'mensajeria',
+      count: escalatedThreads.length,
+      label: 'Hilos escalados',
+      sublabel: 'Operador pidió tu opinión',
+      href: '/mensajeria?status=escalated',
+      icon: 'mensajeria',
+      tone: 'amber',
+    },
+    {
+      key: 'pedimentos',
+      count: pedimentosPendientesCount,
+      label: 'Pedimentos esperando cruce',
+      sublabel: 'Pagados, sin cruzar',
+      href: '/pedimentos?estatus=Pedimento+Pagado',
+      icon: 'draft',
+      tone: 'silver',
+    },
+  ]
+
   const estadoSections = (
     <>
+      <DecisionesPanel items={decisionItems} />
       <MonthSelector
         ym={month.ym}
         label={month.label}

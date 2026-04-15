@@ -1,9 +1,8 @@
 import { createClient } from '@supabase/supabase-js'
-import { cookies } from 'next/headers'
-import { redirect } from 'next/navigation'
 import { GOLD } from '@/lib/design-system'
 import { fmtDateTime, fmtDateTimeLocal } from '@/lib/format-utils'
 import { PORTAL_DATE_FROM } from '@/lib/data'
+import { requireRole } from '@/lib/route-guards'
 
 export const dynamic = 'force-dynamic'
 
@@ -20,9 +19,7 @@ const SOURCES = [
 ]
 
 export default async function OperacionesPage() {
-  const cookieStore = await cookies()
-  const role = cookieStore.get('user_role')?.value
-  if (role !== 'admin') redirect('/login')
+  await requireRole(['admin'])
 
   // Get last runs per source
   const sourceData = await Promise.all(

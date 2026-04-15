@@ -1,8 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
-import { cookies } from 'next/headers'
-import { redirect } from 'next/navigation'
 import { AlertTriangle } from 'lucide-react'
 import { QueueClient } from './QueueClient'
+import { requireOperator } from '@/lib/route-guards'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -21,13 +20,7 @@ interface WorkflowEvent {
 }
 
 export default async function ColaPage() {
-  const cookieStore = await cookies()
-  const role = cookieStore.get('user_role')?.value
-
-  // Gate: operator, admin, or broker only
-  if (!role || !['admin', 'broker', 'operator'].includes(role)) {
-    redirect('/')
-  }
+  await requireOperator()
 
   const sb = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

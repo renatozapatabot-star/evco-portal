@@ -1,7 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
-import { cookies } from 'next/headers'
-import { redirect } from 'next/navigation'
 import { GOLD } from '@/lib/design-system'
+import { requireRole } from '@/lib/route-guards'
 
 export const dynamic = 'force-dynamic'
 
@@ -11,9 +10,7 @@ const supabase = createClient(
 )
 
 export default async function RevenuePage() {
-  const cookieStore = await cookies()
-  const role = cookieStore.get('user_role')?.value
-  if (role !== 'admin') redirect('/login')
+  await requireRole(['admin'])
 
   const { data: rev } = await supabase
     .from('financial_intelligence')

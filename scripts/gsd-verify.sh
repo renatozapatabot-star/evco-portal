@@ -333,7 +333,7 @@ fi
 # trivially forgeable — verifySession() reads from the signed portal_session
 # token. Ratchet down to 0.
 # --------------------------------------------------------------------------
-ROLE_COOKIE_BASELINE=7
+ROLE_COOKIE_BASELINE=4
 header "Role-from-cookie ratchet"
 ROLE_COOKIE_COUNT=$(grep -rn "cookieStore\.get..user_role.\|cookies().get..user_role." src --include="*.ts" --include="*.tsx" 2>/dev/null | wc -l | tr -d ' ')
 if [ "$ROLE_COOKIE_COUNT" -gt "$ROLE_COOKIE_BASELINE" ]; then

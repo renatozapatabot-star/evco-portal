@@ -1,19 +1,17 @@
 import { createClient } from '@supabase/supabase-js'
-import { cookies } from 'next/headers'
-import { redirect } from 'next/navigation'
 import type { CarrierFull } from '@/lib/carriers'
 import { AguilaMark } from '@/components/brand/AguilaMark'
 import { AguilaWordmark } from '@/components/brand/AguilaWordmark'
 import { AdminCarriersList } from './_components/AdminCarriersList'
+import { requireOwner } from '@/lib/route-guards'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
 export default async function AdminCarriersPage() {
-  const cookieStore = await cookies()
-  const role = cookieStore.get('user_role')?.value ?? ''
-  // V1 · admin/broker only — operators don't manage carrier catalog
-  if (!['admin', 'broker'].includes(role)) redirect('/login')
+  // V1 · admin/broker only. Was reading raw user_role cookie (forgeable);
+  // requireOwner reads the signed portal_session token via verifySession.
+  await requireOwner()
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

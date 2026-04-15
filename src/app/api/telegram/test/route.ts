@@ -22,7 +22,7 @@ const BodySchema = z.object({
 const SAMPLE_PAYLOADS: Record<string, Record<string, unknown>> = {
   trafico_completed: {
     trafico_id: 'TR-2284',
-    client_name: 'EVCO',
+    client_name: 'EVCO', // test-fixture
     crossed_at: new Date().toISOString(),
     total_amount: 47200,
     currency: 'USD',
@@ -31,7 +31,7 @@ const SAMPLE_PAYLOADS: Record<string, Record<string, unknown>> = {
   },
   factura_issued: {
     invoice_number: 'F-9128',
-    client_name: 'EVCO',
+    client_name: 'EVCO', // test-fixture
     amount: 12500,
     currency: 'MXN',
   },

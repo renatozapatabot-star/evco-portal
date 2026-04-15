@@ -34,6 +34,8 @@ interface PriceAnomaly {
 
 interface DuplicatePedimento {
   pedimento: string
+  patente: string | null
+  aduana: string | null
   traficos: string[]
   companies: string[]
   count: number
@@ -143,28 +145,35 @@ export async function POST(request: NextRequest) {
     priceAnomalies.sort((a, b) => Math.abs(b.deviationPct) - Math.abs(a.deviationPct))
     const topAnomalies = priceAnomalies.slice(0, 25)
 
-    // 2. Duplicate pedimentos — same pedimento on different tráficos.
-    // Empty-string pedimentos are unassigned (sync quirk — writes '' instead
-    // of NULL). Filter them out; a pedimento isn't a duplicate of nothing.
+    // 2. Duplicate pedimentos — same pedimento serial on different tráficos
+    //    UNDER THE SAME (patente, aduana). Pedimento numbers are unique per
+    //    (DD AD PPPP, SSSSSSS) tuple, NOT per serial alone. Same 7-digit
+    //    serial across different patentes is legal and not a duplicate.
+    //    Also skip stub rows (patente NULL = orphaned trafico, never
+    //    executed, can't legally be a duplicate of anything).
     const { data: pedRows } = await sb
       .from('traficos')
-      .select('trafico, pedimento, company_id')
+      .select('trafico, pedimento, company_id, aduana, patente')
       .not('pedimento', 'is', null)
       .neq('pedimento', '')
+      .not('patente', 'is', null)
       .gte('updated_at', ninetyDaysAgoIso)
       .limit(10000)
-    const dupMap = new Map<string, { traficos: Set<string>; companies: Set<string> }>()
-    for (const r of (pedRows ?? []) as Array<{ trafico: string; pedimento: string; company_id: string | null }>) {
+    const dupMap = new Map<string, { pedimento: string; patente: string | null; aduana: string | null; traficos: Set<string>; companies: Set<string> }>()
+    for (const r of (pedRows ?? []) as Array<{ trafico: string; pedimento: string; company_id: string | null; aduana: string | null; patente: string | null }>) {
       if (!r.pedimento || r.pedimento.trim() === '') continue
-      const entry = dupMap.get(r.pedimento) ?? { traficos: new Set(), companies: new Set() }
+      const key = `${r.patente ?? '-'}::${r.aduana ?? '-'}::${r.pedimento}`
+      const entry = dupMap.get(key) ?? { pedimento: r.pedimento, patente: r.patente, aduana: r.aduana, traficos: new Set(), companies: new Set() }
       entry.traficos.add(r.trafico)
       if (r.company_id) entry.companies.add(r.company_id)
-      dupMap.set(r.pedimento, entry)
+      dupMap.set(key, entry)
     }
-    const duplicatePedimentos: DuplicatePedimento[] = Array.from(dupMap.entries())
-      .filter(([, v]) => v.traficos.size > 1)
-      .map(([pedimento, v]) => ({
-        pedimento,
+    const duplicatePedimentos: DuplicatePedimento[] = Array.from(dupMap.values())
+      .filter(v => v.traficos.size > 1)
+      .map(v => ({
+        pedimento: v.pedimento,
+        patente: v.patente,
+        aduana: v.aduana,
         traficos: Array.from(v.traficos),
         companies: Array.from(v.companies),
         count: v.traficos.size,

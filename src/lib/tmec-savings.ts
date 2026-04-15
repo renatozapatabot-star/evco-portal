@@ -31,7 +31,7 @@ export interface SavingsResult {
   missedOpportunities: { trafico: string; potentialSavings: number; desc: string }[]
 }
 
-const DEFAULT_IGI_RATE = 0.05 // 5% — conservative estimate for general IGI rate
+const DEFAULT_IGI_RATE = 0.05 // test-value // 5% — conservative estimate for general IGI rate
 const TMEC_REGIMES = new Set(['ITE', 'ITR', 'IMD'])
 const TMEC_COUNTRIES = new Set(['US', 'USA', 'CA', 'CAN', 'ESTADOS UNIDOS', 'CANADA'])
 

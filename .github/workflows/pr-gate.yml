@@ -1,11 +1,11 @@
-name: AGUILA PR Gate
+name: ZAPATA AI PR Gate
 
 on:
   pull_request:
     types: [opened, synchronize, reopened]
 
-# Matches the invariants in .claude/rules/core-invariants.md.
-# Fails the PR (blocking) for critical violations; posts a summary comment otherwise.
+# Single source of truth: scripts/gsd-verify.sh --ratchets-only.
+# Adding a new ratchet there auto-flows here. No duplication.
 
 permissions:
   contents: read
@@ -13,161 +13,22 @@ permissions:
   issues: write
 
 jobs:
-  gate:
+  ratchets:
     runs-on: ubuntu-latest
+    name: Invariant ratchets (gsd-verify --ratchets-only)
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Diff against base
-        id: diff
+      - name: Run all ratchet gates
+        id: ratchets
         run: |
-          git diff --name-only origin/${{ github.base_ref }}...HEAD > /tmp/changed.txt
-          cat /tmp/changed.txt
-
-      - name: Invariant 13 — no hardcoded client identifiers
-        id: inv13
-        run: |
-          FAILS=$(grep -rnE "'9254'|\"9254\"|'EVCO'|\"EVCO\"" src/ --include="*.ts" --include="*.tsx" 2>/dev/null \
-            | grep -v node_modules \
-            | grep -v "\.test\." \
-            | grep -v __tests__ \
-            | grep -v "client-config" \
-            | grep -v "// test-fixture" \
-            || true)
-          if [ -n "$FAILS" ]; then
-            echo "❌ Hardcoded client identifiers in production code:" | tee -a /tmp/summary.md
-            echo '```' | tee -a /tmp/summary.md
-            echo "$FAILS" | tee -a /tmp/summary.md
-            echo '```' | tee -a /tmp/summary.md
-            echo "inv13=fail" >> $GITHUB_OUTPUT
-          else
-            echo "inv13=pass" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Invariant 21 — no "CRUD" string (CRUZ, never CRUD)
-        id: inv21
-        run: |
-          FAILS=$(grep -rn "CRUD" src/ scripts/ --include="*.ts" --include="*.tsx" --include="*.js" 2>/dev/null \
-            | grep -v node_modules \
-            || true)
-          if [ -n "$FAILS" ]; then
-            echo "❌ 'CRUD' found — use 'CRUZ':" | tee -a /tmp/summary.md
-            echo '```' | tee -a /tmp/summary.md
-            echo "$FAILS" | head -10 | tee -a /tmp/summary.md
-            echo '```' | tee -a /tmp/summary.md
-            echo "inv21=fail" >> $GITHUB_OUTPUT
-          else
-            echo "inv21=pass" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Invariant 12 — RLS on every new table
-        id: inv12
-        run: |
-          # For each migration file in the PR diff, check it contains ENABLE ROW LEVEL SECURITY
-          MIGRATIONS=$(grep "^supabase/migrations/" /tmp/changed.txt || true)
-          if [ -z "$MIGRATIONS" ]; then
-            echo "inv12=pass" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-          FAILS=""
-          for m in $MIGRATIONS; do
-            if [ -f "$m" ] && grep -q "CREATE TABLE" "$m"; then
-              if ! grep -q "ENABLE ROW LEVEL SECURITY" "$m"; then
-                FAILS="$FAILS\n$m"
-              fi
-            fi
-          done
-          if [ -n "$FAILS" ]; then
-            echo "❌ Migrations create tables without RLS:" | tee -a /tmp/summary.md
-            echo '```' | tee -a /tmp/summary.md
-            printf "$FAILS" | tee -a /tmp/summary.md
-            echo '```' | tee -a /tmp/summary.md
-            echo "inv12=fail" >> $GITHUB_OUTPUT
-          else
-            echo "inv12=pass" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Invariant 27 — no new hardcoded fontSize in src/app
-        id: inv27
-        run: |
-          # Count current fontSize hits against baseline. Allow reductions,
-          # fail increases.
-          CURRENT=$(grep -rn "fontSize: [0-9]" src/app 2>/dev/null \
-            | grep -v "var(--aguila-fs-" \
-            | grep -v "\.test\." \
-            | grep -v "WHY:" \
-            | wc -l | tr -d ' ')
-          BASELINE=$(grep -E "^INVARIANT_27_BASELINE=" scripts/gsd-verify.sh | head -1 | sed -E 's/.*=([0-9]+)$/\1/')
-          if [ -z "$BASELINE" ]; then BASELINE=2552; fi
-          echo "current=$CURRENT baseline=$BASELINE"
-          if [ "$CURRENT" -gt "$BASELINE" ]; then
-            echo "❌ Hardcoded fontSize: $CURRENT (baseline $BASELINE). Use var(--aguila-fs-*) or add // WHY: comment." | tee -a /tmp/summary.md
-            echo "inv27=fail" >> $GITHUB_OUTPUT
-          else
-            echo "inv27=pass" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Spanish-primary check (new UI strings)
-        id: lang
-        run: |
-          # On new .tsx files in src/app/, check for at least one Spanish-only
-          # string (character with acute accent or ñ). Crude heuristic; skip if
-          # no new .tsx files.
-          NEW_TSX=$(grep "^src/app/.*\.tsx$" /tmp/changed.txt | grep -v "\.test\." || true)
-          if [ -z "$NEW_TSX" ]; then
-            echo "lang=pass" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-          MISSING=""
-          for f in $NEW_TSX; do
-            if [ -f "$f" ]; then
-              # Is there any Spanish-looking string? (accents, ñ, or common ES words)
-              if ! grep -qE "[áéíóúñÁÉÍÓÚÑ]|\"[^\"]*\b(hola|gracias|por favor|enviar|ver|guardar|cancelar|cerrar|aceptar|buscar|filtrar|seleccionar|continuar)\b" "$f"; then
-                # Heuristic: also skip if the file doesn't contain user-facing strings at all
-                if grep -qE "<h[1-6]|<p|<span|<button|aria-label" "$f"; then
-                  MISSING="$MISSING\n$f"
-                fi
-              fi
-            fi
-          done
-          if [ -n "$MISSING" ]; then
-            echo "⚠ UI files may be missing Spanish primary:" | tee -a /tmp/summary.md
-            echo '```' | tee -a /tmp/summary.md
-            printf "$MISSING" | tee -a /tmp/summary.md
-            echo '```' | tee -a /tmp/summary.md
-            echo "_This is a WARNING not a block — override by adding a // lang:ok comment._" | tee -a /tmp/summary.md
-            echo "lang=warn" >> $GITHUB_OUTPUT
-          else
-            echo "lang=pass" >> $GITHUB_OUTPUT
-          fi
-
-      - name: JetBrains Mono on financial figures
-        id: mono
-        run: |
-          # On new/modified files under src/app/{contabilidad,reportes,cotizacion,traficos/[id]/pedimento,cuentas,facturacion},
-          # check they use font-jetbrains-mono or JetBrains Mono at least once.
-          FIN_FILES=$(grep -E "^src/app/(contabilidad|reportes|cotizacion|cuentas|facturacion|traficos/\[id\]/pedimento)/" /tmp/changed.txt | grep "\.tsx$" | grep -v "\.test\." || true)
-          if [ -z "$FIN_FILES" ]; then
-            echo "mono=pass" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-          MISSING=""
-          for f in $FIN_FILES; do
-            if [ -f "$f" ] && ! grep -qE "font-jetbrains-mono|JetBrains Mono|font-mono" "$f"; then
-              MISSING="$MISSING\n$f"
-            fi
-          done
-          if [ -n "$MISSING" ]; then
-            echo "⚠ Financial pages may be missing JetBrains Mono:" | tee -a /tmp/summary.md
-            echo '```' | tee -a /tmp/summary.md
-            printf "$MISSING" | tee -a /tmp/summary.md
-            echo '```' | tee -a /tmp/summary.md
-            echo "mono=warn" >> $GITHUB_OUTPUT
-          else
-            echo "mono=pass" >> $GITHUB_OUTPUT
-          fi
+          set +e
+          bash scripts/gsd-verify.sh --ratchets-only > /tmp/ratchet-output.txt 2>&1
+          EXIT=$?
+          cat /tmp/ratchet-output.txt
+          echo "exit=$EXIT" >> $GITHUB_OUTPUT
 
       - name: Comment summary on PR
         if: always()
@@ -175,19 +36,19 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-            let body = '## AGUILA PR Gate\n\n';
-            try {
-              body += fs.readFileSync('/tmp/summary.md', 'utf8');
-            } catch {
-              body += '✓ All gates pass.\n';
-            }
-            body += '\n\n---\n';
-            body += '- Invariant 12 (RLS): ${{ steps.inv12.outputs.inv12 }}\n';
-            body += '- Invariant 13 (hardcoded client): ${{ steps.inv13.outputs.inv13 }}\n';
-            body += '- Invariant 21 (CRUD/CRUZ): ${{ steps.inv21.outputs.inv21 }}\n';
-            body += '- Invariant 27 (fontSize baseline): ${{ steps.inv27.outputs.inv27 }}\n';
-            body += '- Spanish primary: ${{ steps.lang.outputs.lang }}\n';
-            body += '- JetBrains Mono on financials: ${{ steps.mono.outputs.mono }}\n';
+            const raw = fs.readFileSync('/tmp/ratchet-output.txt', 'utf8');
+            // Strip ANSI codes, keep just the result lines
+            const clean = raw
+              .replace(/\u001b\[[0-9;]*m/g, '')
+              .split('\n')
+              .filter(l => l.match(/PASS|FAIL|WARN|^\[/))
+              .slice(0, 80)
+              .join('\n');
+            const exit = '${{ steps.ratchets.outputs.exit }}';
+            const verdict = exit === '0'
+              ? '✓ All ratchet gates pass.'
+              : '❌ One or more ratchet gates failed — see details below.';
+            const body = `## ZAPATA AI PR Gate — Ratchets\n\n${verdict}\n\n\`\`\`\n${clean}\n\`\`\`\n\nFull suite (typecheck/lint/build/test) runs locally via \`bash scripts/gsd-verify.sh\` before deploy.`;
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -195,15 +56,8 @@ jobs:
               body,
             });
 
-      - name: Fail on blocking violations
+      - name: Block merge on failure
+        if: steps.ratchets.outputs.exit != '0'
         run: |
-          FAIL=0
-          [ "${{ steps.inv13.outputs.inv13 }}" = "fail" ] && FAIL=1
-          [ "${{ steps.inv21.outputs.inv21 }}" = "fail" ] && FAIL=1
-          [ "${{ steps.inv12.outputs.inv12 }}" = "fail" ] && FAIL=1
-          [ "${{ steps.inv27.outputs.inv27 }}" = "fail" ] && FAIL=1
-          if [ "$FAIL" = "1" ]; then
-            echo "Blocking invariant failures detected"
-            exit 1
-          fi
-          echo "All blocking gates pass"
+          echo "Ratchet gates failed — see PR comment for details"
+          exit 1

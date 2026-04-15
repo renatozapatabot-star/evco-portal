@@ -15,7 +15,7 @@ function slugify(name: string): string {
 async function notifyTelegram(msg: string) {
   const token = process.env.TELEGRAM_BOT_TOKEN
   const chatId = process.env.RZ_OPS_CHAT_ID || '-5085543275'
-  if (!token) { console.log('[signup] telegram skip:', msg); return }
+  if (!token) { console.log('[signup] telegram skip:', msg); return } // debug-ok
   try {
     await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: 'POST',

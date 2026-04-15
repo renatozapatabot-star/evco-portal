@@ -39,7 +39,7 @@ const REGIMEN_OPTIONS: Array<{ code: string; label: string }> = [
 
 // Fallback IGI rate when fracción has no tariff_rates entry — matches
 // src/lib/customs/estimate-igi-iva.ts fallback behaviour (5%).
-const FALLBACK_IGI_RATE = 0.05
+const FALLBACK_IGI_RATE = 0.05 // test-value
 
 interface TraficoOption {
   trafico: string

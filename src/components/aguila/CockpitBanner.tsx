@@ -1,8 +1,7 @@
 'use client'
 
-import { TEXT_MUTED, TEXT_SECONDARY, ZAPATA_GOLD_BRIGHT, ZAPATA_GOLD_BASE, ZAPATA_GOLD_DIM } from '@/lib/design-system'
+import { TEXT_MUTED, TEXT_SECONDARY } from '@/lib/design-system'
 import { fmtDate } from '@/lib/format-utils'
-import { AguilaMark } from '@/components/brand/AguilaMark'
 
 export type CockpitRole = 'client' | 'operator' | 'owner' | 'warehouse' | 'accounting'
 
@@ -41,26 +40,10 @@ export function CockpitBanner({ role, name, companyName, metaPills }: Props) {
 
   return (
     <div style={{ marginBottom: 12 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        {/* Chrome Z mark — matches cockpit card hairlines + KPI silver.
-            The "ZAPATA AI" wordmark beside it carries the gold heritage
-            beat; mark itself stays instrument-grade silver so it blends. */}
-        <div
-          aria-hidden
-          style={{
-            position: 'relative',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: 40,
-            height: 40,
-            flexShrink: 0,
-            filter: 'drop-shadow(0 0 10px rgba(192,197,206,0.18))',
-          }}
-        >
-          <AguilaMark size={36} />
-        </div>
-        {/* Wordmark removed 2026-04-15 per Tito audit — Z mark stands alone. */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+        {/* Z mark retired from the cockpit banner 2026-04-15 — the topbar
+            logo already carries brand identity. Second Z below it was
+            redundant. Banner now leads with the live signal + subtitle. */}
         {/* Live signal pulse — ambient liveness indicator on every cockpit banner. */}
         <span
           aria-label="Sistema en vivo"
@@ -106,7 +89,6 @@ export function CockpitBanner({ role, name, companyName, metaPills }: Props) {
       </div>
       <div style={{
         marginTop: 4,
-        marginLeft: 52,
         fontSize: 'var(--aguila-fs-meta, 11px)',
         color: TEXT_MUTED,
         letterSpacing: '0.02em',
@@ -119,7 +101,6 @@ export function CockpitBanner({ role, name, companyName, metaPills }: Props) {
       {metaPills && metaPills.length > 0 ? (
         <div style={{
           marginTop: 8,
-          marginLeft: 52,
           display: 'flex',
           flexWrap: 'wrap',
           gap: 6,

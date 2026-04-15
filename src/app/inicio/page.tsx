@@ -151,6 +151,15 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
     withHardTimeout(getClienteActivity(supabase, companyId, 12), 3000, []),
   ])
 
+  // Stale-session self-heal: if the session encodes a companyId that no
+  // longer maps to any companies row (schema migration / slug rename), the
+  // user is sitting on an invalidated session. Bounce them back to /login
+  // with a stale=1 marker so they re-authenticate cleanly. Beats rotating
+  // SESSION_SECRET portal-wide.
+  if (!companyRow) {
+    redirect('/login?stale=1')
+  }
+
   const companyName = companyRow?.name ?? ''
 
   // Telemetry (fire-and-forget, guarded)

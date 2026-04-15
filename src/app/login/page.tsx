@@ -30,8 +30,13 @@ function LoginContent() {
     if (role) {
       setSession({ role, name: getCookieValue('company_name') ?? '' })
     }
+    // Self-heal banner — when /inicio bounces a user with ?stale=1 because
+    // their session.companyId no longer maps to a companies row.
+    if (searchParams.get('stale') === '1') {
+      setError('Tu sesión venció con un cambio de configuración. Vuelve a iniciar sesión.')
+    }
     requestAnimationFrame(() => setMounted(true))
-  }, [])
+  }, [searchParams])
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()

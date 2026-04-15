@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { FallbackLink } from '@/components/aguila'
 
 interface GenerationResult {
   pdf_url: string
@@ -11,13 +12,22 @@ interface GenerationResult {
 interface RegulatoryDocClientProps {
   apiPath: string
   docLabelEs: string
+  /** GlobalPC fallback URL for this document type. */
+  fallbackHref?: string
+  /** Human label for the fallback link (e.g. "DODA", "Carta Porte", "AVC"). */
+  fallbackLabel?: string
 }
 
 /**
  * Shared client component for Block 16 regulatory doc pages (DODA, Carta
  * Porte, AVC). Single screen: AMBER banner + three buttons.
  */
-export function RegulatoryDocClient({ apiPath, docLabelEs }: RegulatoryDocClientProps) {
+export function RegulatoryDocClient({
+  apiPath,
+  docLabelEs,
+  fallbackHref,
+  fallbackLabel,
+}: RegulatoryDocClientProps) {
   const [generating, setGenerating] = useState<false | 'pdf' | 'xml' | 'both'>(false)
   const [result, setResult] = useState<GenerationResult | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -158,6 +168,16 @@ export function RegulatoryDocClient({ apiPath, docLabelEs }: RegulatoryDocClient
             </a>
           </div>
         </section>
+      )}
+
+      {fallbackHref && fallbackLabel && (
+        <FallbackLink
+          href={fallbackHref}
+          label={fallbackLabel}
+          isIncomplete={Boolean(error)}
+          message={error ? `No se pudo generar en AGUILA — usa GlobalPC como respaldo.` : undefined}
+          cta={`Abrir ${fallbackLabel} en GlobalPC`}
+        />
       )}
     </div>
   )

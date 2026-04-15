@@ -54,6 +54,8 @@ interface Props {
   vencimientosPronto: number
   transportistasActivos: number
   transportistasTop: number
+  econtaPendientes: number
+  econtaExportadasHoy: number
   pulseSignal: boolean
   month?: string
 }
@@ -167,6 +169,10 @@ export function InicioClient(props: Props) {
       <TransportistasCard
         activos={props.transportistasActivos}
         top={props.transportistasTop}
+      />
+      <ReportesEcontaCard
+        pendientes={props.econtaPendientes}
+        exportadasHoy={props.econtaExportadasHoy}
       />
       <ActiveTraficos rows={props.traficos} onRefresh={refresh} />
     </>

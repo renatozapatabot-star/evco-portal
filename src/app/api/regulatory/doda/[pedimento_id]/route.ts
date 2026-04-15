@@ -16,6 +16,7 @@ import { verifySession } from '@/lib/session'
 import { logDecision } from '@/lib/decision-logger'
 import { PATENTE, ADUANA } from '@/lib/client-config'
 import { generateDODA, DodaValidationError, type DodaInput } from '@/lib/doc-generators/doda'
+import { notifyMensajeria } from '@/lib/mensajeria/notify'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -175,6 +176,15 @@ export async function POST(
     decision: `DODA generada para embarque ${trafico.trafico}`,
     reasoning: 'Generación local AGUILA; pendiente de submisión a VUCEM/SAT en V2.',
     dataPoints: { pdf_url: pdfUrl, xml_url: xmlUrl, kind: parsed.data.kind, actor },
+  })
+
+  await notifyMensajeria({
+    companyId,
+    subject: `DODA generado · ${trafico.trafico}`,
+    body: `DODA generado para tráfico ${trafico.trafico}${trafico.pedimento ? ` · pedimento ${trafico.pedimento}` : ''}. Revisión disponible en AGUILA.`,
+    traficoId: trafico.trafico,
+    internalOnly: true,
+    actor: { role: session.role, name: actor },
   })
 
   return NextResponse.json({

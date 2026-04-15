@@ -108,6 +108,8 @@ async function loadOperatorCockpit(opId: string, opName: string, month: string) 
     vencimientosPronto30Count,
     transportistasActivosCount,
     transportistasTopCount,
+    econtaPendientesCount,
+    econtaExportadasHoyCount,
   ] = await Promise.all([
     softCount(sb.from('entradas').select('cve_entrada', { count: 'exact', head: true }).gte('fecha_llegada_mercancia', todayStartIso)),
     softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).eq('estatus', 'En Proceso')),
@@ -183,6 +185,8 @@ async function loadOperatorCockpit(opId: string, opName: string, month: string) 
     ),
     softCount(sb.from('carriers').select('id', { count: 'exact', head: true }).eq('active', true)),
     softCount(sb.from('carriers').select('id', { count: 'exact', head: true }).eq('active', true).gte('calificacion', 4)),
+    softCount(sb.from('trafico_econta_exports').select('id', { count: 'exact', head: true }).eq('status', 'pending')),
+    softCount(sb.from('trafico_econta_exports').select('id', { count: 'exact', head: true }).eq('status', 'exported').gte('exported_at', todayStartIso)),
   ])
 
   const entradasSeries = bucketDailySeries(entradasSeriesRows as Array<Record<string, unknown>>, 'fecha_llegada_mercancia', 14, now)
@@ -300,6 +304,8 @@ async function loadOperatorCockpit(opId: string, opName: string, month: string) 
       vencimientosPronto={vencimientosPronto30Count}
       transportistasActivos={transportistasActivosCount}
       transportistasTop={transportistasTopCount}
+      econtaPendientes={econtaPendientesCount}
+      econtaExportadasHoy={econtaExportadasHoyCount}
       pulseSignal={inTransit}
       month={month}
     />

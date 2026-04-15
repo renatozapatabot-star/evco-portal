@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { createClient } from '@supabase/supabase-js'
 import { verifySession } from '@/lib/session'
 import { logDecision } from '@/lib/decision-logger'
+import { notifyMensajeria } from '@/lib/mensajeria/notify'
 import { PATENTE, ADUANA } from '@/lib/client-config'
 import { generateAVC, AvcValidationError, type AvcInput } from '@/lib/doc-generators/avc'
 
@@ -162,6 +163,15 @@ export async function POST(
     decision: `AVC generado para entrada ${entry.id}`,
     reasoning: 'Generación local AGUILA; pendiente de submisión a VUCEM/SAT en V2.',
     dataPoints: { pdf_url: pdfUrl, xml_url: xmlUrl, entry_id: entry.id, kind: parsed.data.kind, actor },
+  })
+
+  await notifyMensajeria({
+    companyId,
+    subject: `AVC generado · ${entry.trafico_id}`,
+    body: `Aviso de Cruce generado para tráfico ${entry.trafico_id} (trailer ${entry.trailer_number}).`,
+    traficoId: entry.trafico_id,
+    internalOnly: true,
+    actor: { role: session.role, name: actor },
   })
 
   return NextResponse.json({

@@ -66,6 +66,8 @@ export default async function AvcPage({
         <RegulatoryDocClient
           apiPath={`/api/regulatory/avc/${encodeURIComponent(entryId)}`}
           docLabelEs="AVC"
+          fallbackHref="https://trafico1web.globalpc.net/traficos/avc"
+          fallbackLabel="AVC"
         />
       </div>
     </main>

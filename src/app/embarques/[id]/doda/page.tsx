@@ -69,6 +69,8 @@ export default async function DodaPage({
         <RegulatoryDocClient
           apiPath={`/api/regulatory/doda/${encodeURIComponent(traficoId)}`}
           docLabelEs="DODA"
+          fallbackHref="https://trafico1web.globalpc.net/traficos/doda"
+          fallbackLabel="DODA"
         />
       </div>
     </main>

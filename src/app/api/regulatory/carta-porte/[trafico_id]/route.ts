@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { createClient } from '@supabase/supabase-js'
 import { verifySession } from '@/lib/session'
 import { logDecision } from '@/lib/decision-logger'
+import { notifyMensajeria } from '@/lib/mensajeria/notify'
 import {
   generateCartaPorte,
   CartaPorteValidationError,
@@ -179,6 +180,15 @@ export async function POST(
     decision: `Carta Porte generada para embarque ${trafico.trafico}`,
     reasoning: 'Generación local AGUILA; pendiente de submisión a VUCEM/SAT en V2.',
     dataPoints: { pdf_url: pdfUrl, xml_url: xmlUrl, kind: parsed.data.kind, actor },
+  })
+
+  await notifyMensajeria({
+    companyId,
+    subject: `Carta Porte generada · ${trafico.trafico}`,
+    body: `Carta Porte generada para tráfico ${trafico.trafico}. XML complemento listo para adjuntar a CFDI.`,
+    traficoId: trafico.trafico,
+    internalOnly: true,
+    actor: { role: session.role, name: actor },
   })
 
   return NextResponse.json({

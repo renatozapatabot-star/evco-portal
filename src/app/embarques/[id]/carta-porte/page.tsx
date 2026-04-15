@@ -63,6 +63,8 @@ export default async function CartaPortePage({
         <RegulatoryDocClient
           apiPath={`/api/regulatory/carta-porte/${encodeURIComponent(traficoId)}`}
           docLabelEs="Carta Porte"
+          fallbackHref="https://trafico1web.globalpc.net/traficos/carta-porte"
+          fallbackLabel="Carta Porte"
         />
       </div>
     </main>

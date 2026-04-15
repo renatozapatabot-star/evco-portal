@@ -32,13 +32,13 @@ Response shape:
 ```json
 {
   "data": {
-    "scripts": [
-      {"script":"full-sync-econta","status":"success","lastRunAt":"...","errorMessage":null},
-      {"script":"globalpc-delta-sync","status":"failed","lastRunAt":"...","errorMessage":"timeout"},
-      {"script":"regression-guard","status":"missing","lastRunAt":null,"errorMessage":null}
-    ],
-    "failedScripts": ["globalpc-delta-sync"],
-    "missingScripts": ["regression-guard"],
+    "latestHeartbeat": {
+      "checkedAt":"2026-04-15T05:30:00Z", "pm2Ok":true, "supabaseOk":true,
+      "vercelOk":true, "syncOk":false, "syncAgeHours":28.5, "allOk":false,
+      "details":{"sync":"No sync records found","pm2":"2 processes online"}
+    },
+    "heartbeatsLast24h": 48,
+    "heartbeatFailures24h": {"pm2":0, "supabase":0, "vercel":0, "sync":4},
     "regressions": [
       {"companyId":"evco","field":"expediente_coverage","yesterdayPct":94.2,"todayPct":87.5,"deltaPct":-6.7}
     ],
@@ -50,16 +50,30 @@ Response shape:
 }
 ```
 
+Heartbeat semantics (from Throne's `scripts/heartbeat-check.js` — runs every
+30 min):
+- `pm2Ok` — all expected PM2 processes online
+- `supabaseOk` — Supabase round-trip responded under threshold
+- `vercelOk` — prod portal responded under threshold
+- `syncOk` — most-recent sync row age is within window
+- `syncAgeHours` — how stale the newest sync record is
+- `details` — freeform context strings per check
+
 **Step 2 — Compose the audit card** (Spanish primary, ≤250 words):
 
 - **Si `critical: true`** → start with `⚠ ATENCIÓN:` and list specifics first.
-  Otherwise lead with a green `✓ Todo en orden`.
-- Section **Scripts**: list any failed / missing with timestamp (none if all clean).
+  Otherwise lead with `✓ Todo en orden`.
+- Section **Salud del sistema**: from `latestHeartbeat`, call out any component
+  where `*_Ok = false`. If `syncAgeHours > 24`, flag it explicitly.
+- Section **Heartbeats 24h**: `heartbeatsLast24h` count vs expected ~48 (every 30m).
+  If significantly under, flag it — heartbeat script itself may have died.
+- Section **Fallos 24h**: if any `heartbeatFailures24h.*` > 0, list it.
 - Section **Regresiones**: list any coverage drop >2% as `company · campo · -X.X%`.
-  Highlight drops >5% with bold or `❗`.
+  Drops >5% get `❗` prefix.
 - Section **Freshness**: aduanet_facturas freshest date, count last 24h.
 - Section **Econta**: healthy ✓ or unhealthy ✗.
-- Close with a one-line recommendation if critical (e.g., "revisar PM2 en Throne y reiniciar regression-guard").
+- Close with a one-line recommendation if critical (e.g., "revisar PM2 en
+  Throne" or "verificar cron de full-sync-econta").
 
 Numbers in JetBrains Mono (Markdown backticks). No emojis except the leading
 ⚠ or ✓.

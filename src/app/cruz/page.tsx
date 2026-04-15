@@ -216,7 +216,7 @@ export default function CruzChatPage() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
           <div style={{
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            filter: 'drop-shadow(0 0 12px rgba(201,167,74,0.35))',
+            filter: 'drop-shadow(0 0 10px rgba(192,197,206,0.2))',
           }}>
             <AguilaMark size={40} />
           </div>

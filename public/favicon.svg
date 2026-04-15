@@ -1,13 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
   <defs>
-    <linearGradient id="fav-gold" x1="0" y1="4" x2="0" y2="28" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#F4D47A" />
-      <stop offset="0.5" stop-color="#C9A74A" />
-      <stop offset="1" stop-color="#8F7628" />
+    <linearGradient id="fav-chrome" x1="0" y1="4" x2="0" y2="28" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#E8EAED" />
+      <stop offset="0.5" stop-color="#C0C5CE" />
+      <stop offset="1" stop-color="#7A7E86" />
     </linearGradient>
   </defs>
   <rect width="32" height="32" rx="7" fill="#0A0A0C"/>
-  <g fill="url(#fav-gold)">
+  <g fill="url(#fav-chrome)">
     <polygon points="7,8 25,8 25,12 7,12" />
     <polygon points="25,12 21,12 7,21 11,21" />
     <polygon points="7,21 25,21 25,25 7,25" />

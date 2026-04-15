@@ -3,8 +3,7 @@
 import Link from 'next/link'
 import { MessageSquare, Tags } from 'lucide-react'
 import {
-  ACCENT_SILVER_DIM, GLASS_BLUR, TEXT_PRIMARY, TEXT_SECONDARY,
-  ZAPATA_GOLD_BRIGHT, ZAPATA_GOLD_GLOW,
+  ACCENT_SILVER, ACCENT_SILVER_DIM, GLASS_BLUR, TEXT_PRIMARY, TEXT_SECONDARY,
 } from '@/lib/design-system'
 
 export type AsistenteRoleTag = 'trafico' | 'contabilidad' | 'warehouse' | 'operator' | 'client' | 'owner'
@@ -110,7 +109,7 @@ export function AsistenteButton({
         WebkitBackdropFilter: `blur(${GLASS_BLUR})`,
         border: '1px solid rgba(192,197,206,0.18)',
         borderRadius: 30,
-        boxShadow: `0 10px 30px rgba(0,0,0,0.6), 0 0 24px ${ZAPATA_GOLD_GLOW}`,
+        boxShadow: '0 10px 30px rgba(0,0,0,0.6), 0 0 20px rgba(192,197,206,0.08)',
         color: TEXT_PRIMARY,
         fontSize: 'var(--aguila-fs-body, 13px)',
         fontWeight: 600,
@@ -119,7 +118,7 @@ export function AsistenteButton({
         transition: 'transform 150ms ease, box-shadow 200ms ease, border-color 200ms ease',
       }}
     >
-      <MessageSquare size={18} color={ZAPATA_GOLD_BRIGHT} aria-hidden />
+      <MessageSquare size={18} color={ACCENT_SILVER} aria-hidden />
       <span>{label}</span>
       <span
         aria-hidden

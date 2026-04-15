@@ -1,6 +1,6 @@
 'use client'
 
-import { TEXT_MUTED, TEXT_SECONDARY, ZAPATA_GOLD_BRIGHT, ZAPATA_GOLD_BASE, ZAPATA_GOLD_DIM, ZAPATA_GOLD_GLOW } from '@/lib/design-system'
+import { TEXT_MUTED, TEXT_SECONDARY, ZAPATA_GOLD_BRIGHT, ZAPATA_GOLD_BASE, ZAPATA_GOLD_DIM } from '@/lib/design-system'
 import { fmtDate } from '@/lib/format-utils'
 import { AguilaMark } from '@/components/brand/AguilaMark'
 
@@ -42,7 +42,9 @@ export function CockpitBanner({ role, name, companyName, metaPills }: Props) {
   return (
     <div style={{ marginBottom: 12 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        {/* Gold Z mark with circuit traces — login parity */}
+        {/* Chrome Z mark — matches cockpit card hairlines + KPI silver.
+            The "ZAPATA AI" wordmark beside it carries the gold heritage
+            beat; mark itself stays instrument-grade silver so it blends. */}
         <div
           aria-hidden
           style={{
@@ -53,7 +55,7 @@ export function CockpitBanner({ role, name, companyName, metaPills }: Props) {
             width: 40,
             height: 40,
             flexShrink: 0,
-            filter: `drop-shadow(0 0 12px ${ZAPATA_GOLD_GLOW})`,
+            filter: 'drop-shadow(0 0 10px rgba(192,197,206,0.18))',
           }}
         >
           <AguilaMark size={36} />

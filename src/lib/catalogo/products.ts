@@ -83,6 +83,100 @@ export function mergeCatalogoRows(
     })
 }
 
+export interface CatalogoFraccionGroup {
+  fraccion: string
+  primary_descripcion: string
+  variant_count: number
+  total_imports: number
+  valor_ytd_usd: number | null
+  supplier_names: string[]
+  last_trafico: string | null
+  last_fecha: string | null
+  variants: CatalogoRow[]
+}
+
+export function groupCatalogoByFraccion(rows: CatalogoRow[]): CatalogoFraccionGroup[] {
+  const byFrac = new Map<string, CatalogoRow[]>()
+  for (const r of rows) {
+    const frac = (r.fraccion ?? '').trim()
+    if (!frac) continue
+    if (!byFrac.has(frac)) byFrac.set(frac, [])
+    byFrac.get(frac)!.push(r)
+  }
+  const groups: CatalogoFraccionGroup[] = []
+  for (const [fraccion, variants] of byFrac) {
+    const suppliers = new Set<string>()
+    let totalImports = 0
+    let totalValor = 0
+    let hasValor = false
+    let lastTrafico: string | null = null
+    let lastFecha: string | null = null
+    for (const v of variants) {
+      if (v.proveedor_nombre) suppliers.add(v.proveedor_nombre)
+      totalImports += v.veces_importado
+      if (v.valor_ytd_usd != null) {
+        totalValor += v.valor_ytd_usd
+        hasValor = true
+      }
+      if (v.ultima_fecha_llegada && (!lastFecha || v.ultima_fecha_llegada > lastFecha)) {
+        lastFecha = v.ultima_fecha_llegada
+        lastTrafico = v.ultimo_cve_trafico
+      }
+    }
+    const primary = [...variants].sort((a, b) => {
+      if (b.veces_importado !== a.veces_importado) return b.veces_importado - a.veces_importado
+      return b.descripcion.length - a.descripcion.length
+    })[0]
+    groups.push({
+      fraccion,
+      primary_descripcion: primary?.descripcion ?? variants[0]?.descripcion ?? '',
+      variant_count: variants.length,
+      total_imports: totalImports,
+      valor_ytd_usd: hasValor ? totalValor : null,
+      supplier_names: Array.from(suppliers).sort(),
+      last_trafico: lastTrafico,
+      last_fecha: lastFecha,
+      variants,
+    })
+  }
+  groups.sort((a, b) => {
+    if (b.variant_count !== a.variant_count) return b.variant_count - a.variant_count
+    return b.total_imports - a.total_imports
+  })
+  return groups
+}
+
+export interface CatalogoSummary {
+  total_products: number
+  classified_count: number
+  unclassified_count: number
+  fraccion_count: number
+  consolidation_candidates: number
+  dedup_pool: number
+}
+
+export function summarizeCatalogo(
+  rows: CatalogoRow[],
+  groups: CatalogoFraccionGroup[],
+): CatalogoSummary {
+  let classified = 0
+  for (const r of rows) if (r.fraccion) classified += 1
+  let candidates = 0
+  let dedup = 0
+  for (const g of groups) {
+    if (g.variant_count >= 5) candidates += 1
+    if (g.variant_count >= 2) dedup += g.variant_count - 1
+  }
+  return {
+    total_products: rows.length,
+    classified_count: classified,
+    unclassified_count: rows.length - classified,
+    fraccion_count: groups.length,
+    consolidation_candidates: candidates,
+    dedup_pool: dedup,
+  }
+}
+
 export async function getCatalogo(
   supabase: AnyClient,
   companyId: string,

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useMemo, Suspense } from 'react'
+import Link from 'next/link'
 import { Search, Download, ChevronLeft, ChevronRight, Truck } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { getCookieValue } from '@/lib/client-config'
@@ -425,7 +426,7 @@ function TraficosContent() {
                       {prov}
                     </div>
                   )}
-                  <div style={{ fontSize: 12, color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: 8 }}>
+                  <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: 8 }}>
                     {fmtDesc(getDesc(r)) || '—'}
                   </div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, fontSize: 'var(--aguila-fs-meta)', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
@@ -510,7 +511,20 @@ function TraficosContent() {
                         <span className="trafico-id">{fmtId(r.trafico)}</span>
                       </td>
                       <td className="desc-text" style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)' }}>
-                        {fmtDesc(getDesc(r)) || <span style={{ color: 'var(--text-muted)' }}>—</span>}
+                        {(() => {
+                          const d = fmtDesc(getDesc(r))
+                          if (!d) return <span style={{ color: 'var(--text-muted)' }}>—</span>
+                          return (
+                            <Link
+                              href={`/catalogo?q=${encodeURIComponent(d)}`}
+                              onClick={(e: React.MouseEvent) => e.stopPropagation()}
+                              style={{ color: 'var(--text-secondary)', textDecoration: 'none', borderBottom: '1px dashed rgba(192,197,206,0.25)' }}
+                              title="Ver en catálogo / fracción"
+                            >
+                              {d}
+                            </Link>
+                          )
+                        })()}
                       </td>
                       <td>
                         {r.pedimento ? (
@@ -530,10 +544,10 @@ function TraficosContent() {
                           <span className="pedimento-pending">Pendiente</span>
                         )}
                       </td>
-                      <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-secondary)' }}>
+                      <td style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-secondary)' }}>
                         {r.fecha_cruce ? fmtDate(r.fecha_cruce) : <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Pendiente</span>}
                       </td>
-                      <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-secondary)' }}>
+                      <td style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-secondary)' }}>
                         {computeGuia(r.fecha_llegada) || <span style={{ color: 'var(--text-muted)' }}>—</span>}
                       </td>
                     </tr>

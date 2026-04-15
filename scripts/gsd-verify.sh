@@ -375,13 +375,15 @@ fi
 
 # --------------------------------------------------------------------------
 # Deprecated design-system token ratchet
-# ACCENT_CYAN / GOLD / GOLD_* / ACCENT_BLUE / GLOW_CYAN* still exported as
-# silver aliases for back-compat. 269 imports today. Goal: trend to 0, then
-# remove the aliases from design-system.ts so re-introduction is impossible.
+# ACCENT_CYAN / ACCENT_BLUE / GLOW_CYAN* still exported as silver aliases
+# for back-compat. GOLD/GOLD_HOVER/GOLD_GRADIENT/GOLD_TEXT were restored
+# to real brand gold and are no longer deprecated. Goal: trend the
+# remaining cyan/blue aliases to 0, then remove them from design-system.ts
+# so re-introduction is impossible.
 # --------------------------------------------------------------------------
-DEPRECATED_TOKEN_BASELINE=263
+DEPRECATED_TOKEN_BASELINE=0
 header "Deprecated token ratchet"
-DEP_COUNT=$(set +eo pipefail;{ grep -rnE "\bACCENT_CYAN\b|\bGOLD\b|\bGOLD_TEXT\b|\bGOLD_HOVER\b|\bGOLD_GRADIENT\b|\bACCENT_BLUE\b|\bGLOW_CYAN\b|\bGLOW_CYAN_SUBTLE\b" src/ --include="*.ts" --include="*.tsx" 2>/dev/null || true; } | grep -v node_modules | grep -v "design-system.ts" | wc -l | tr -d ' ')
+DEP_COUNT=$(set +eo pipefail;{ grep -rnE "\bACCENT_CYAN\b|\bACCENT_BLUE\b|\bGLOW_CYAN\b|\bGLOW_CYAN_SUBTLE\b" src/ --include="*.ts" --include="*.tsx" 2>/dev/null || true; } | grep -v node_modules | grep -v "design-system.ts" | wc -l | tr -d ' ')
 if [ "$DEP_COUNT" -gt "$DEPRECATED_TOKEN_BASELINE" ]; then
   fail "Deprecated token imports: $DEP_COUNT (baseline $DEPRECATED_TOKEN_BASELINE). Use ACCENT_SILVER* directly."
 elif [ "$DEP_COUNT" -lt "$DEPRECATED_TOKEN_BASELINE" ]; then

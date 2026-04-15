@@ -43,16 +43,6 @@ export const GOLD_TEXT = ZAPATA_GOLD_BRIGHT
 export const GLOW_GOLD = ZAPATA_GOLD_GLOW
 export const GLOW_GOLD_SUBTLE = ZAPATA_GOLD_GLOW_SUBTLE
 
-// ── Legacy cyan/blue aliases — still silver (data chrome stays silver) ──
-/** @deprecated — use ACCENT_SILVER. */
-export const ACCENT_CYAN = ACCENT_SILVER
-/** @deprecated — use ACCENT_SILVER_DIM. */
-export const ACCENT_BLUE = ACCENT_SILVER_DIM
-/** @deprecated — use GLOW_SILVER. */
-export const GLOW_CYAN = GLOW_SILVER
-/** @deprecated — use GLOW_SILVER_SUBTLE. */
-export const GLOW_CYAN_SUBTLE = GLOW_SILVER_SUBTLE
-
 // ── Glass backgrounds ──
 export const BG_GRADIENT_START = '#030508'
 export const BG_GRADIENT_END = '#0D1525'

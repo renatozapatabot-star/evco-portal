@@ -16,6 +16,12 @@
  *   node scripts/tenant-validation.js                 # all active
  *   node scripts/tenant-validation.js --tier=1        # only Tier-1
  *   node scripts/tenant-validation.js --company=evco  # one tenant
+ *   node scripts/tenant-validation.js --tier=1 --telegram  # alert on red
+ *
+ * --telegram mode fires a red Telegram alert if any Tier-1 tenant has
+ * RED issues. Intended to run nightly via PM2 so the April-10-style
+ * silent disappearance of EVCO fires a loud alert instead of a blank
+ * cockpit the client notices first.
  */
 
 require('dotenv').config({ path: require('path').resolve(__dirname, '..', '.env.local') })
@@ -48,6 +54,26 @@ const tierFlag = args.find(a => a.startsWith('--tier='))
 const companyFlag = args.find(a => a.startsWith('--company='))
 const onlyTier1 = tierFlag === '--tier=1'
 const onlyCompany = companyFlag ? companyFlag.split('=')[1] : null
+const telegramAlert = args.includes('--telegram')
+
+async function notifyTelegram(msg) {
+  const token = process.env.TELEGRAM_BOT_TOKEN
+  const chatId = process.env.RZ_OPS_CHAT_ID || process.env.TELEGRAM_CHAT_ID
+  if (!token || !chatId) {
+    console.error('[telegram] skipped — TELEGRAM_BOT_TOKEN or RZ_OPS_CHAT_ID missing')
+    return
+  }
+  try {
+    const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId, text: msg, parse_mode: 'Markdown', disable_web_page_preview: true }),
+    })
+    if (!res.ok) console.error('[telegram]', res.status, await res.text())
+  } catch (err) {
+    console.error('[telegram]', err.message)
+  }
+}
 
 function color(code, str) { return `\x1b[${code}m${str}\x1b[0m` }
 const RED = (s) => color(31, s)
@@ -186,6 +212,18 @@ async function checkOne(co) {
   }
 
   console.log(`\n${BOLD('Summary:')} ${RED(byRed.length + ' red')} · ${YELLOW(byYellow.length + ' yellow')} · ${GREEN(byGreen.length + ' green')}\n`)
+
+  if (telegramAlert && byRed.length > 0) {
+    const scope = onlyTier1 ? 'Tier-1' : onlyCompany ? onlyCompany : 'portal-wide'
+    const lines = byRed.flatMap(r =>
+      [`*${r.name}* _(${r.clave_cliente ?? 'no-clave'})_`,
+       ...r.issues.filter(i => i.severity === 'red').map(i => `  • ${i.msg}`)]
+    )
+    await notifyTelegram(
+      `🔴 *Tenant validation — ${scope} RED*\n\n${lines.join('\n')}\n\n_Run: node scripts/tenant-validation.js${onlyTier1 ? ' --tier=1' : ''}_`
+    )
+  }
+
   process.exit(byRed.length > 0 ? 1 : 0)
 })().catch(err => {
   console.error(RED('FATAL: ' + err.message))

@@ -245,7 +245,12 @@ html, body {
   height: 900px;
   background: radial-gradient(circle, rgba(192,197,206,0.10) 0%, transparent 70%);
 }
-/* Drifting aura — ambient life signal, 12s breath */
+/* Drifting aura — ambient life signal, 12s breath.
+   Selector specificity bumped so it wins against the
+   `.aguila-canvas > * { position: relative }` rule below — otherwise
+   the aura collapses into normal flow as a 500x500 block and pushes
+   all cockpit content down by ~600px. */
+.aguila-canvas > .aguila-aura,
 .aguila-aura {
   position: fixed;
   top: 14%;

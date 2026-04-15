@@ -90,7 +90,7 @@ export function MonitorClient({ initialRows, role, companyId, isInternal }: Prop
     const channel = sb
       .channel('monitor-live')
       .on(
-        'postgres_changes' as any,
+        'postgres_changes' as any, // any-ok: supabase-js realtime event name type lacks string literals
         { event: 'UPDATE', schema: 'public', table: 'traficos', ...(filter ? { filter } : {}) },
         (payload: { new: Record<string, unknown> }) => {
           const next = payload.new as Partial<MonitorRow> & { trafico?: string }

@@ -11,7 +11,7 @@ export function useConfetti() {
   const fire = useCallback(async () => {
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic import, no types available
-      const confetti = (await import('canvas-confetti' as any)).default
+      const confetti = (await import('canvas-confetti' as any)).default // any-ok: canvas-confetti has no TS types
       const gold = 'var(--gold)'
       const white = 'var(--bg-main)'
 

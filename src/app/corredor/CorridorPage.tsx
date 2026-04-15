@@ -100,7 +100,7 @@ export function CorridorPage({ landmarks, companyId, role }: CorridorPageProps) 
       channel = base
         .on(
           // eslint-disable-next-line @typescript-eslint/no-explicit-any -- supabase-js type lag on postgres_changes payload
-          'postgres_changes' as any,
+          'postgres_changes' as any, // any-ok: supabase-js realtime event name type lacks string literals
           {
             event: 'INSERT',
             schema: 'public',

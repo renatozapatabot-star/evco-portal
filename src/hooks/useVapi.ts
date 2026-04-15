@@ -54,7 +54,7 @@ export function useVapi(): UseVapiReturn {
     const onSpeechStart = () => setStatus('listening')
     const onSpeechEnd = () => setStatus('processing')
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const onMessage = (msg: any) => {
+    const onMessage = (msg: any) => { // any-ok: @vapi-ai/web event payload has no exported type
       if (msg.type === 'transcript') {
         if (msg.transcriptType === 'final') {
           setTranscripts(prev => [...prev, { role: msg.role, text: msg.transcript }])
@@ -68,7 +68,7 @@ export function useVapi(): UseVapiReturn {
       }
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const onError = (err: any) => {
+    const onError = (err: any) => { // any-ok: @vapi-ai/web event payload has no exported type
       console.error('CRUZ Voice error:', err)
       setStatus('idle')
     }

@@ -262,6 +262,7 @@ ANY_TYPES=$(grep -rn ': any\b\|as any\b' src/ \
   | grep -v 'node_modules' \
   | grep -v '\.test\.\|__tests__' \
   | grep -v '// any-ok:' \
+  | grep -vE ':\s*[0-9]+:\s*(\*|//)' \
   || true)
 if [ -n "$ANY_TYPES" ]; then
   ANY_COUNT=$(echo "$ANY_TYPES" | wc -l)

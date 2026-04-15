@@ -114,7 +114,7 @@ export default function NotificationBell() {
         .on(
           // mirrors src/hooks/use-realtime-trafico.ts — Supabase types lag here
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          'postgres_changes' as any,
+          'postgres_changes' as any, // any-ok: supabase-js realtime event name type lacks string literals
           {
             event: '*',
             schema: 'public',

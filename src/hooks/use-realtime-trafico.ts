@@ -100,7 +100,7 @@ export function useRealtimeTrafico() {
     const channel = supabase
       .channel('cruz-realtime')
       .on(
-        'postgres_changes' as any,
+        'postgres_changes' as any, // any-ok: supabase-js realtime event name type lacks string literals
         {
           event: 'UPDATE',
           schema: 'public',
@@ -110,7 +110,7 @@ export function useRealtimeTrafico() {
         handleTraficoUpdate
       )
       .on(
-        'postgres_changes' as any,
+        'postgres_changes' as any, // any-ok: supabase-js realtime event name type lacks string literals
         {
           event: '*',
           schema: 'public',

@@ -240,7 +240,6 @@ export default async function TraficoDetailPage({
   } catch (e) {
     // Table doesn't exist; ignore and keep the empty fallback.
     if (process.env.NODE_ENV !== 'production') {
-      // eslint-disable-next-line no-console
       console.warn('[trafico-detail] users table unavailable — mention autocomplete disabled', e)
     }
   }

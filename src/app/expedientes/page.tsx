@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useMemo, Suspense } from 'react'
+import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Search, ChevronLeft, ChevronRight } from 'lucide-react'
 import { getCookieValue } from '@/lib/client-config'
@@ -335,7 +336,22 @@ function ExpedientesContent() {
                           : <span style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-muted)', fontStyle: 'italic' }}>Pendiente</span>
                         }
                       </td>
-                      <td className="desc-text">{fmtDesc(r.descripcion_mercancia) || '—'}</td>
+                      <td className="desc-text">
+                        {(() => {
+                          const d = fmtDesc(r.descripcion_mercancia)
+                          if (!d) return '—'
+                          return (
+                            <Link
+                              href={`/catalogo?q=${encodeURIComponent(d)}`}
+                              onClick={(e: React.MouseEvent) => e.stopPropagation()}
+                              style={{ color: 'inherit', textDecoration: 'none', borderBottom: '1px dashed rgba(192,197,206,0.25)' }}
+                              title="Ver en catálogo / fracción"
+                            >
+                              {d}
+                            </Link>
+                          )
+                        })()}
+                      </td>
                       <td style={{ textAlign: 'center' }}>
                         <button
                           type="button"

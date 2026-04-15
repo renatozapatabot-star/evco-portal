@@ -46,7 +46,6 @@ export function track(event: TelemetryEvent, payload: TrackPayload = {}): void {
     keepalive: true,
   }).catch((err: unknown) => {
     if (process.env.NODE_ENV !== 'production') {
-      // eslint-disable-next-line no-console
       console.warn('[telemetry] track failed', err)
     }
   })

@@ -337,7 +337,20 @@ function PedimentosContent() {
                       {g.fecha ? fmtDate(g.fecha) : '—'}
                     </td>
                     <td className="desc-text" style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)' }}>
-                      {getDesc(g) || '—'}
+                      {(() => {
+                        const d = getDesc(g)
+                        if (!d) return '—'
+                        return (
+                          <Link
+                            href={`/catalogo?q=${encodeURIComponent(d)}`}
+                            onClick={(e: React.MouseEvent) => e.stopPropagation()}
+                            style={{ color: 'var(--text-secondary)', textDecoration: 'none', borderBottom: '1px dashed rgba(192,197,206,0.25)' }}
+                            title="Ver en catálogo / fracción"
+                          >
+                            {d}
+                          </Link>
+                        )
+                      })()}
                     </td>
                     <td style={{ fontSize: 'var(--aguila-fs-body)', fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>
                       {g.regimen || '—'}

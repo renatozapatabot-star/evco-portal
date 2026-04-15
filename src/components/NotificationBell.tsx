@@ -73,7 +73,6 @@ export default function NotificationBell() {
       }
     } catch (err) {
       if (process.env.NODE_ENV !== 'production') {
-        // eslint-disable-next-line no-console
         console.warn('[notification-bell] list failed', err)
       }
     } finally {
@@ -96,7 +95,6 @@ export default function NotificationBell() {
   useEffect(() => {
     if (!SUPABASE_URL || !SUPABASE_ANON) {
       if (process.env.NODE_ENV !== 'production') {
-        // eslint-disable-next-line no-console
         console.warn('[notification-bell] Realtime disabled: missing Supabase env; falling back to polling')
       }
       return
@@ -127,14 +125,12 @@ export default function NotificationBell() {
           if ((status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') && !loggedFailure) {
             loggedFailure = true
             if (process.env.NODE_ENV !== 'production') {
-              // eslint-disable-next-line no-console
               console.warn(`[notification-bell] Realtime status=${status}; falling back to polling`)
             }
           }
         })
     } catch (err) {
       if (process.env.NODE_ENV !== 'production') {
-        // eslint-disable-next-line no-console
         console.warn('[notification-bell] Realtime subscribe threw; falling back to polling', err)
       }
     }
@@ -178,7 +174,6 @@ export default function NotificationBell() {
         setUnread(u => Math.max(0, u - 1))
       } catch (err) {
         if (process.env.NODE_ENV !== 'production') {
-          // eslint-disable-next-line no-console
           console.warn('[notification-bell] mark-read failed', err)
         }
       }

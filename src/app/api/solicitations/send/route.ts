@@ -49,7 +49,6 @@ export async function POST(request: NextRequest): Promise<NextResponse<Ok | Err>
 
   const raw = await request.json().catch((e: unknown) => {
     if (process.env.NODE_ENV !== 'production') {
-      // eslint-disable-next-line no-console
       console.warn('[solicitations/send] bad JSON', e)
     }
     return null
@@ -121,7 +120,6 @@ export async function POST(request: NextRequest): Promise<NextResponse<Ok | Err>
     // Email sent but DB write failed. Flag this loudly — dev only warn,
     // prod gets the error response; caller won't retry email from the UI.
     if (process.env.NODE_ENV !== 'production') {
-      // eslint-disable-next-line no-console
       console.error('[solicitations/send] upsert failed after email sent', upsertErr)
     }
     return err('DB_WRITE_FAILED', upsertErr.message, 500)
@@ -145,7 +143,6 @@ export async function POST(request: NextRequest): Promise<NextResponse<Ok | Err>
     },
   })
   if (eventErr && process.env.NODE_ENV !== 'production') {
-    // eslint-disable-next-line no-console
     console.warn('[solicitations/send] workflow_events insert failed', eventErr)
   }
 

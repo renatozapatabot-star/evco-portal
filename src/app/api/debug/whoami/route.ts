@@ -10,12 +10,22 @@ export const dynamic = 'force-dynamic'
  * probe per cockpit-critical table so we can see exactly what's missing
  * for the logged-in user's scope.
  *
- * Returns: { ok, session, probes }. Safe to expose: no PII.
+ * Gated to admin + broker — the probe counts + cookie state are a
+ * low-severity info leak (row totals per table) that non-privileged
+ * users and unauthenticated visitors do not need to see.
+ *
+ * Returns: { ok, session, probes }. No PII.
  */
 export async function GET() {
   const cookieStore = await cookies()
   const token = cookieStore.get('portal_session')?.value ?? ''
   const session = await verifySession(token).catch(() => null)
+  if (!session || !['admin', 'broker'].includes(session.role)) {
+    return NextResponse.json(
+      { data: null, error: { code: 'FORBIDDEN', message: 'Diagnostic endpoint requires admin or broker session' } },
+      { status: 403 },
+    )
+  }
   // debug-ok: this endpoint intentionally reports the raw user_role cookie
   // alongside the signed session so discrepancies are visible.
   const userRole = cookieStore.get('user_role')?.value ?? null

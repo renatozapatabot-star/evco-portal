@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { renderToBuffer } from '@react-pdf/renderer'
+import { loadPdfRenderer } from '@/lib/pdf/lazy'
 import { PATENTE, ADUANA } from '@/lib/client-config'
 import { PORTAL_DATE_FROM } from '@/lib/data'
 import { ReportesPDF } from './pdf-document'
@@ -101,6 +101,7 @@ export async function GET(request: NextRequest) {
       timeZone: 'America/Chicago',
     })
 
+    const { renderToBuffer } = await loadPdfRenderer()
     const pdfBuffer = await renderToBuffer(
       ReportesPDF({
         clientName: clientName,

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { renderToBuffer } from '@react-pdf/renderer'
+import { loadPdfRenderer } from '@/lib/pdf/lazy'
 import { verifySession } from '@/lib/session'
 import { UsmcaPDF } from './pdf-document'
 import type { UsmcaCertRow } from '@/lib/usmca/types'
@@ -35,6 +35,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
     }
   }
 
+  const { renderToBuffer } = await loadPdfRenderer()
   const buffer = await renderToBuffer(UsmcaPDF({ cert }))
 
   return new NextResponse(new Uint8Array(buffer), {

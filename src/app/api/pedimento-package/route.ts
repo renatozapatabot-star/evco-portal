@@ -23,15 +23,26 @@ export async function GET(request: NextRequest) {
   const safe = sanitizeFilter(trafico)
   const safeSuffix = trafico.includes('-') ? sanitizeFilter(trafico.split('-').slice(1).join('-')) : safe
 
-  // Parallel fetches
+  // V1 tenant gate — clients are pinned to their session.companyId.
+  // Internal roles (operator/admin/broker) can read any tenant via the
+  // `company_id` cookie (same pattern as other internal-wide endpoints).
+  const isInternal = session.role === 'admin' || session.role === 'broker' || session.role === 'operator'
+  const scopedCompanyId =
+    session.role === 'client'
+      ? session.companyId
+      : (request.cookies.get('company_id')?.value || session.companyId)
+
+  // Parallel fetches — every query carries company_id scope.
   const [trafRes, factRes, partRes, provRes, docRes, riskRes, scRes, tcRes] = await Promise.all([
-    supabase.from('traficos').select('*').eq('trafico', safe).gte('fecha_llegada', PORTAL_DATE_FROM).single(),
-    supabase.from('globalpc_facturas').select('*').eq('cve_trafico', safe),
-    supabase.from('globalpc_partidas').select('*').eq('cve_trafico', safe),
-    supabase.from('globalpc_proveedores').select('*').limit(100),
-    supabase.from('expediente_documentos').select('doc_type, file_url, nombre').or(`pedimento_id.eq.${safe},pedimento_id.eq.${safeSuffix}`),
-    supabase.from('pedimento_risk_scores').select('score, risk_factors').eq('trafico_id', trafico).single(),
-    supabase.from('supplier_contacts').select('supplier_name, usmca_eligible').limit(200),
+    isInternal && !scopedCompanyId
+      ? supabase.from('traficos').select('*').eq('trafico', safe).gte('fecha_llegada', PORTAL_DATE_FROM).single()
+      : supabase.from('traficos').select('*').eq('trafico', safe).eq('company_id', scopedCompanyId).gte('fecha_llegada', PORTAL_DATE_FROM).single(),
+    supabase.from('globalpc_facturas').select('*').eq('cve_trafico', safe).eq('company_id', scopedCompanyId),
+    supabase.from('globalpc_partidas').select('*').eq('cve_trafico', safe).eq('company_id', scopedCompanyId),
+    supabase.from('globalpc_proveedores').select('*').eq('company_id', scopedCompanyId).limit(100),
+    supabase.from('expediente_documentos').select('doc_type, file_url, nombre').eq('company_id', scopedCompanyId).or(`pedimento_id.eq.${safe},pedimento_id.eq.${safeSuffix}`),
+    supabase.from('pedimento_risk_scores').select('score, risk_factors').eq('trafico_id', trafico).eq('company_id', scopedCompanyId).single(),
+    supabase.from('supplier_contacts').select('supplier_name, usmca_eligible').eq('company_id', scopedCompanyId).limit(200),
     fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL?.replace('.supabase.co', '.supabase.co')}/rest/v1/`, { headers: {} }).catch(() => null),
   ])
 

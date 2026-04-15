@@ -25,20 +25,23 @@ export async function GET(req: NextRequest) {
   const id = req.nextUrl.searchParams.get('id')
 
   if (type === 'risk' && id) {
+    // V1 tenant scope — risk scores are tenant data
     const { data } = await supabase.from('pedimento_risk_scores')
-      .select('*').eq('trafico_id', id).single()
+      .select('*').eq('trafico_id', id).eq('company_id', companyId).single()
     return NextResponse.json(envelope(data))
   }
 
   if (type === 'crossing' && id) {
+    // V1 tenant scope — crossing predictions linked to tenant tráfico
     const { data } = await supabase.from('crossing_predictions')
-      .select('*').eq('trafico_id', id).single()
+      .select('*').eq('trafico_id', id).eq('company_id', companyId).single()
     return NextResponse.json(envelope(data))
   }
 
   if (type === 'supplier' && id) {
+    // V1 tenant scope — supplier_network per tenant
     const { data } = await supabase.from('supplier_network')
-      .select('*').ilike('supplier_name', `%${id}%`).limit(5)
+      .select('*').eq('company_id', companyId).ilike('supplier_name', `%${id}%`).limit(5)
     return NextResponse.json(envelope(data))
   }
 
@@ -58,8 +61,10 @@ export async function GET(req: NextRequest) {
   }
 
   if (type === 'regulatory') {
+    // V1 tenant scope — regulatory_alerts table has company_id column.
+    // Was previously unscoped → cross-tenant alert leak.
     const { data } = await supabase.from('regulatory_alerts')
-      .select('*').order('created_at', { ascending: false }).limit(10)
+      .select('*').eq('company_id', companyId).order('created_at', { ascending: false }).limit(10)
     return NextResponse.json(envelope(data))
   }
 
@@ -72,9 +77,11 @@ export async function GET(req: NextRequest) {
 
   // Summary
   const [risk, comp, bench, bridge] = await Promise.all([
-    supabase.from('pedimento_risk_scores').select('overall_score', { count: 'exact', head: false }).limit(5).order('overall_score', { ascending: false }),
-    supabase.from('compliance_predictions').select('severity', { count: 'exact' }).eq('resolved', false),
+    // V1 tenant scope — was previously unscoped on risk + compliance.
+    supabase.from('pedimento_risk_scores').select('overall_score', { count: 'exact', head: false }).eq('company_id', companyId).limit(5).order('overall_score', { ascending: false }),
+    supabase.from('compliance_predictions').select('severity', { count: 'exact' }).eq('company_id', companyId).eq('resolved', false),
     supabase.from('client_benchmarks').select('metric_name, client_value, industry_avg').eq('company_id', companyId),
+    // bridge_intelligence is shared reference data — no tenant scope needed
     supabase.from('bridge_intelligence').select('*', { count: 'exact', head: true }),
   ])
 

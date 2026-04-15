@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { renderToBuffer } from '@react-pdf/renderer'
+import { loadPdfRenderer } from '@/lib/pdf/lazy'
 import { verifySession } from '@/lib/session'
 import { getDTARates, getExchangeRate, getIVARate } from '@/lib/rates'
 import { AuditoriaPDF } from './pdf-document'
@@ -472,6 +472,7 @@ export async function GET(request: NextRequest) {
       fracciones,
     }
 
+    const { renderToBuffer } = await loadPdfRenderer()
     const buffer = await renderToBuffer(AuditoriaPDF({ data }))
     const uint8 = new Uint8Array(buffer)
 

@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || 'cruz-webhook-2026'
+// V1 security fix — hardcoded fallback removed. If WEBHOOK_SECRET isn't
+// configured on the environment, the endpoint rejects every request rather
+// than leaking a predictable default.
+const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET
 
 const ALLOWED_SCRIPTS = [
   'morning-report', 'entradas-anomaly', 'proveedor-intelligence',
@@ -9,6 +12,9 @@ const ALLOWED_SCRIPTS = [
 ]
 
 export async function POST(request: NextRequest) {
+  if (!WEBHOOK_SECRET) {
+    return NextResponse.json({ error: 'Webhook not configured' }, { status: 503 })
+  }
   const secret = request.headers.get('x-webhook-secret')
   if (secret !== WEBHOOK_SECRET) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 

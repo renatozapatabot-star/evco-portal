@@ -12,8 +12,11 @@ import {
   TEXT_PRIMARY,
   TEXT_SECONDARY,
 } from '@/lib/design-system'
-import { fmtDateTime, fmtKg, fmtPedimentoShort } from '@/lib/format-utils'
+import { fmtDateTime, fmtKg } from '@/lib/format-utils'
+import { formatPedimento } from '@/lib/format/pedimento'
 import type { TraficoRow } from './types'
+import type { SemaforoValue } from '@/components/aguila/SemaforoPill'
+import { SemaforoPill } from '@/components/aguila/SemaforoPill'
 
 type SectionId = 'pedimento' | 'peso' | 'cruce' | 'vucem'
 
@@ -34,6 +37,8 @@ interface RowDef {
   mono?: boolean
   /** When set, renders the value as a button that opens this URL in a new tab. */
   href?: string
+  /** V1 — optional ReactNode renderer for complex values (pills, chips, etc.) */
+  valueNode?: React.ReactNode
 }
 
 /**
@@ -91,7 +96,7 @@ export function BelowFold({ traficoId, trafico, partidasCount }: BelowFoldProps)
   const pedimentoRows: RowDef[] = [
     {
       label: 'Pedimento',
-      value: trafico.pedimento ? fmtPedimentoShort(trafico.pedimento) : 'Sin registro',
+      value: trafico.pedimento ? formatPedimento(trafico.pedimento, 'Sin registro') : 'Sin registro',
       mono: true,
       href: trafico.pedimento
         ? `/api/pedimento-pdf?trafico=${encodeURIComponent(traficoId)}`
@@ -134,8 +139,24 @@ export function BelowFold({ traficoId, trafico, partidasCount }: BelowFoldProps)
     },
   ]
 
+  // traficos.semaforo can come in as string ("0"|"1"|"2") from sync or
+  // number from Supabase typed reads. Coerce defensively.
+  const semaforoRaw = trafico.semaforo
+  const semaforoInt =
+    typeof semaforoRaw === 'number' ? semaforoRaw
+    : typeof semaforoRaw === 'string' ? Number.parseInt(semaforoRaw, 10)
+    : NaN
+  const semaforoValue: SemaforoValue =
+    semaforoInt === 0 || semaforoInt === 1 || semaforoInt === 2
+      ? (semaforoInt as SemaforoValue)
+      : null
   const cruceRows: RowDef[] = [
-    { label: 'Semáforo', value: val(trafico.semaforo) },
+    {
+      label: 'Semáforo',
+      // V1 — raw int was leaking as "0" on screen. Pill renders colored dot + label.
+      valueNode: <SemaforoPill value={semaforoValue} size="compact" />,
+      value: '',
+    },
     {
       label: 'Fecha de cruce',
       value: trafico.fecha_cruce ? fmtDateTime(trafico.fecha_cruce) : 'Sin registro',
@@ -277,6 +298,10 @@ function Section({
                   >
                     {r.value}
                   </button>
+                ) : r.valueNode ? (
+                  <div style={{ maxWidth: '60%', display: 'flex', justifyContent: 'flex-end' }}>
+                    {r.valueNode}
+                  </div>
                 ) : (
                   <span
                     style={{

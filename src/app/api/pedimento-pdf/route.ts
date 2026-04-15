@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { renderToBuffer } from '@react-pdf/renderer'
+import { loadPdfRenderer } from '@/lib/pdf/lazy'
 import { PATENTE, ADUANA } from '@/lib/client-config'
 import { verifySession } from '@/lib/session'
 import { getDTARates, getExchangeRate } from '@/lib/rates'
@@ -176,6 +176,7 @@ export async function GET(request: NextRequest) {
     day: '2-digit', month: 'long', year: 'numeric', timeZone: 'America/Chicago',
   })
 
+  const { renderToBuffer } = await loadPdfRenderer()
   const buffer = await renderToBuffer(
     PedimentoPDF({
       clientName,

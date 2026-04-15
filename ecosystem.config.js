@@ -233,6 +233,66 @@ module.exports = {
       out_file: '/tmp/seed-tariff-rates-out.log',
       log_date_format: 'YYYY-MM-DD HH:mm:ss',
       max_size: '10M',
+    },
+
+    // ─── V1 April 2026 · watcher scripts ───
+    // Every watcher reports health via sendTelegram on non-2xx response
+    // and logs success via its own PM2 out_file. All gated on CRON_SECRET.
+
+    {
+      name: 'heartbeat',
+      script: 'scripts/heartbeat.js',
+      cwd,
+      cron_restart: '*/15 * * * *',
+      autorestart: false, watch: false, max_memory_restart: '256M',
+      env: { NODE_ENV: 'production' },
+      error_file: '/tmp/heartbeat-error.log',
+      out_file: '/tmp/heartbeat-out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss', max_size: '10M',
+    },
+    {
+      name: 'semaforo-watch',
+      script: 'scripts/semaforo-watch.js',
+      cwd,
+      cron_restart: '*/5 * * * *',
+      autorestart: false, watch: false, max_memory_restart: '256M',
+      env: { NODE_ENV: 'production' },
+      error_file: '/tmp/semaforo-watch-error.log',
+      out_file: '/tmp/semaforo-watch-out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss', max_size: '10M',
+    },
+    {
+      name: 'vencimientos-watch',
+      script: 'scripts/vencimientos-watch.js',
+      cwd,
+      cron_restart: '0 9 * * *',
+      autorestart: false, watch: false, max_memory_restart: '256M',
+      env: { NODE_ENV: 'production' },
+      error_file: '/tmp/vencimientos-watch-error.log',
+      out_file: '/tmp/vencimientos-watch-out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss', max_size: '10M',
+    },
+    {
+      name: 'patentes-watch',
+      script: 'scripts/patentes-watch.js',
+      cwd,
+      cron_restart: '0 8 * * *',
+      autorestart: false, watch: false, max_memory_restart: '256M',
+      env: { NODE_ENV: 'production' },
+      error_file: '/tmp/patentes-watch-error.log',
+      out_file: '/tmp/patentes-watch-out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss', max_size: '10M',
+    },
+    {
+      name: 'mensajeria-email-fallback',
+      script: 'scripts/mensajeria-email-fallback.js',
+      cwd,
+      cron_restart: '*/10 * * * *',
+      autorestart: false, watch: false, max_memory_restart: '256M',
+      env: { NODE_ENV: 'production' },
+      error_file: '/tmp/mensajeria-email-fallback-error.log',
+      out_file: '/tmp/mensajeria-email-fallback-out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss', max_size: '10M',
     }
   ]
 }

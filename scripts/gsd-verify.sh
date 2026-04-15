@@ -416,13 +416,15 @@ else
 fi
 
 # --------------------------------------------------------------------------
-# Design invariant 27 — hardcoded fontSize in src/app (ratchet)
-# Baseline captured 2026-04-13 = 2552. Goal: trend toward 0 via --aguila-fs-*
-# CSS variables. Exceptions must be documented with `WHY:` inline.
+# Design invariant 27 — hardcoded fontSize in src/app + src/components (ratchet)
+# Baseline captured 2026-04-13 = 2552 (src/app only). Extended 2026-04-15 to
+# also cover src/components (excluding the primitive source at
+# src/components/aguila/). Goal: trend toward 0 via --aguila-fs-* CSS
+# variables. Exceptions must be documented with `WHY:` inline.
 # --------------------------------------------------------------------------
-INVARIANT_27_BASELINE=235
+INVARIANT_27_BASELINE=301
 header "Invariant 27 — Hardcoded fontSize ratchet"
-INV27_COUNT=$(set +eo pipefail;{ grep -rn "fontSize: [0-9]" src/app 2>/dev/null || true; } | grep -v "var(--aguila-fs-" | grep -v ".test." | grep -v "WHY:" | wc -l | tr -d ' ')
+INV27_COUNT=$(set +eo pipefail;{ grep -rn "fontSize: [0-9]" src/app src/components 2>/dev/null || true; } | grep -v "var(--aguila-fs-" | grep -v ".test." | grep -v "WHY:" | grep -v "components/aguila/" | wc -l | tr -d ' ')
 if [ "$INV27_COUNT" -gt "$INVARIANT_27_BASELINE" ]; then
   fail "Hardcoded fontSize violations: $INV27_COUNT (baseline $INVARIANT_27_BASELINE). Use var(--aguila-fs-*) or add // WHY: comment."
 elif [ "$INV27_COUNT" -lt "$INVARIANT_27_BASELINE" ]; then

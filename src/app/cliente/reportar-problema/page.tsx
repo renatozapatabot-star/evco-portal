@@ -36,14 +36,21 @@ export default function ReportarProblemaPage() {
     if (!form.title || !form.description) return
     setLoading(true)
     try {
-      // Log as operator_action (client_issues table may not exist yet)
-      await fetch('/api/cockpit-insight', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'client_issue_reported', data: form }),
-      }).catch(() => {})
+      // V1 · real intake endpoint — was /api/cockpit-insight (GET-only)
+      // which silently discarded every report.
+      const res = await fetch('/api/cliente/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'reportar_problema', data: form }),
+      })
+      if (!res.ok) {
+        setLoading(false)
+        return
+      }
       playSound('send')
       haptic.confirm()
       setSuccess(true)
-    } catch { /* */ }
+    } catch { /* non-blocking; haptic already fired */ }
     setLoading(false)
   }
 

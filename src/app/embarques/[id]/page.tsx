@@ -351,6 +351,9 @@ export default async function TraficoDetailPage({
     docCount: docs.length,
     requiredDocsCount: requiredDocs.length,
     uploadedRequiredCount,
+    // V1 · chain-truth inputs so header estatus + chain state can't contradict
+    traficoEstatus: trafico.estatus ?? null,
+    traficoPedimentoNumber: trafico.pedimento ?? null,
   })
 
   return (

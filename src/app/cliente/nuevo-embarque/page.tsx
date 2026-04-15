@@ -43,21 +43,27 @@ export default function NuevoEmbarquePage() {
     setError('')
 
     try {
-      // Log to operator_actions as intake (tables may not exist for entradas insert)
-      await fetch('/api/data?table=operator_actions', { method: 'GET' }) // ping to verify session
-
-      const operatorId = getCookieValue('operator_id') || 'client'
-      const res = await fetch('/api/cockpit-insight', {
+      // V1 · post to dedicated cliente intake endpoint. Previously hit
+      // /api/cockpit-insight (GET-only) and data was silently discarded.
+      const res = await fetch('/api/cliente/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          action: 'client_shipment_intake',
-          company_id: companyId,
-          data: { ...form, valor_estimado: Number(form.valor_estimado), submitted_at: new Date().toISOString() },
+          action: 'nuevo_embarque',
+          data: {
+            ...form,
+            valor_estimado: Number(form.valor_estimado),
+            submitted_at: new Date().toISOString(),
+          },
         }),
       })
+      if (!res.ok) {
+        const json = await res.json().catch(() => null)
+        setError(json?.error?.message ?? 'Error al enviar. Intenta de nuevo.')
+        setLoading(false)
+        return
+      }
 
-      // Even if the API doesn't have a handler for this, log it
       playSound('achievement')
       haptic.celebrate()
       setSuccess(true)

@@ -27,7 +27,19 @@ export interface TraficoChainInput {
   docCount: number
   requiredDocsCount: number
   uploadedRequiredCount: number
+  /** V1 — trafico.estatus used as fallback so "Pedimento Pagado" header
+   *  + "Sin pedimento" chain contradiction can't happen. If the trafico
+   *  status indicates pedimento exists, node shows linked even without
+   *  a pedimentos-table row. */
+  traficoEstatus?: string | null
+  /** V1 — bare pedimento string from traficos.pedimento used when the
+   *  pedimentos table row is absent but the number is already in traficos. */
+  traficoPedimentoNumber?: string | null
 }
+
+const TRAFICO_ESTATUS_IMPLIES_PEDIMENTO = [
+  'pedimento pagado', 'pagado', 'cruzado', 'liberado', 'entregado', 'firmado',
+]
 
 function pedimentoStatus(status: string | null): ChainNodeStatus {
   if (!status) return 'missing'
@@ -47,6 +59,7 @@ export function buildChain(input: TraficoChainInput): ChainNode[] {
   const {
     traficoId, fechaCruce, facturas, entradas, pedimento,
     docCount, requiredDocsCount, uploadedRequiredCount,
+    traficoEstatus, traficoPedimentoNumber,
   } = input
 
   const paidFactura = facturas.find(f => f.fecha_pago)
@@ -94,14 +107,34 @@ export function buildChain(input: TraficoChainInput): ChainNode[] {
       href: latestEntrada?.id != null ? `/entradas/${latestEntrada.id}` : null,
       status: entradaStatus,
     },
-    {
-      kind: 'pedimento',
-      label: 'Pedimento',
-      value: pedimento?.pedimento_number ?? 'Sin pedimento',
-      date: pedimento?.updated_at ?? null,
-      href: pedimento ? `/embarques/${encodeURIComponent(traficoId)}/pedimento` : null,
-      status: pedimentoStatus(pedimento?.status ?? null),
-    },
+    (() => {
+      // V1 · chain-truth: if the pedimentos row is absent BUT the
+      // trafico.estatus says the pedimento exists (Pagado/Cruzado/etc)
+      // OR traficos.pedimento carries a number, treat the node as linked
+      // so the chain never contradicts the header.
+      const normalizedEstatus = (traficoEstatus ?? '').trim().toLowerCase()
+      const estatusImpliesPedimento = TRAFICO_ESTATUS_IMPLIES_PEDIMENTO
+        .some((s) => normalizedEstatus.includes(s))
+      const hasPedimentoRow = pedimento != null
+      const hasPedimentoNumber = Boolean(
+        pedimento?.pedimento_number ?? traficoPedimentoNumber,
+      )
+      const derivedStatus = hasPedimentoRow
+        ? pedimentoStatus(pedimento?.status ?? null)
+        : (hasPedimentoNumber || estatusImpliesPedimento ? 'linked' : 'missing')
+      const derivedValue =
+        pedimento?.pedimento_number
+        ?? traficoPedimentoNumber
+        ?? (estatusImpliesPedimento ? (traficoEstatus ?? 'Pagado') : 'Sin pedimento')
+      return {
+        kind: 'pedimento' as const,
+        label: 'Pedimento',
+        value: derivedValue,
+        date: pedimento?.updated_at ?? null,
+        href: hasPedimentoRow ? `/embarques/${encodeURIComponent(traficoId)}/pedimento` : null,
+        status: derivedStatus,
+      }
+    })(),
     {
       kind: 'trafico',
       label: 'Embarque',

@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
 import { PORTAL_DATE_FROM } from '@/lib/data'
+import { verifySession } from '@/lib/session'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -9,6 +10,18 @@ const supabase = createClient(
 )
 
 export async function POST(request: NextRequest) {
+  // Operator-tier gate. Tracking tokens grant 30-day read access to a
+  // trafico's details; any caller who could mint one for an arbitrary
+  // trafico_id could enumerate the portal's shipments by guessing ids.
+  const sessionToken = request.cookies.get('portal_session')?.value ?? ''
+  const session = await verifySession(sessionToken).catch(() => null)
+  if (!session || !['admin', 'broker', 'operator'].includes(session.role)) {
+    return NextResponse.json(
+      { error: 'Solo operadores pueden generar enlaces de rastreo' },
+      { status: 401 },
+    )
+  }
+
   try {
     const body = await request.json()
     const { trafico_id } = body
@@ -20,13 +33,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Verify trafico exists
-    const { data: trafico, error: trafError } = await supabase
-      .from('traficos')
-      .select('trafico')
+    // Verify trafico exists AND is in the caller's tenant (unless
+    // admin/broker). Clients can't mint tokens for other tenants' traficos.
+    let q = supabase.from('traficos').select('trafico, company_id')
       .eq('trafico', trafico_id)
       .gte('fecha_llegada', PORTAL_DATE_FROM)
-      .single()
+    if (!['admin', 'broker'].includes(session.role)) {
+      q = q.eq('company_id', session.companyId)
+    }
+    const { data: trafico, error: trafError } = await q.single()
 
     if (trafError || !trafico) {
       return NextResponse.json(

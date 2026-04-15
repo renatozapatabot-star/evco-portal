@@ -97,22 +97,43 @@ export async function GET(request: NextRequest) {
 
   const safe = sanitizeIlike(q)
   const [trafRes, entRes, factRes, prodRes, provRes, partRes] = await Promise.all([
-    supabase.from('traficos')
-      .select('trafico, estatus, fecha_llegada, descripcion_mercancia')
-      .eq('company_id', companyId)
-      .or(`trafico.ilike.%${safe}%,descripcion_mercancia.ilike.%${safe}%,pedimento.ilike.%${safe}%`)
-      .gte('fecha_llegada', PORTAL_DATE_FROM)
-      .limit(10),
-    supabase.from('entradas')
-      .select('cve_entrada, descripcion_mercancia, fecha_llegada_mercancia, trafico')
-      .eq('company_id', companyId)
-      .or(`cve_entrada.ilike.%${safe}%,descripcion_mercancia.ilike.%${safe}%,trafico.ilike.%${safe}%`)
-      .limit(10),
-    supabase.from('aduanet_facturas')
-      .select('referencia, pedimento, proveedor, valor_usd, fecha_pago')
-      .eq('clave_cliente', clientClave)
-      .or(`pedimento.ilike.%${safe}%,proveedor.ilike.%${safe}%,referencia.ilike.%${safe}%,num_factura.ilike.%${safe}%`)
-      .limit(10),
+    // Invariant 31 — admin/broker (isInternal) sees all tenants. companyId is
+    // '' for those roles, so .eq('company_id', '') would return zero rows.
+    (isInternal
+      ? supabase.from('traficos')
+          .select('trafico, estatus, fecha_llegada, descripcion_mercancia')
+          .or(`trafico.ilike.%${safe}%,descripcion_mercancia.ilike.%${safe}%,pedimento.ilike.%${safe}%`)
+          .gte('fecha_llegada', PORTAL_DATE_FROM)
+          .limit(10)
+      : supabase.from('traficos')
+          .select('trafico, estatus, fecha_llegada, descripcion_mercancia')
+          .eq('company_id', companyId)
+          .or(`trafico.ilike.%${safe}%,descripcion_mercancia.ilike.%${safe}%,pedimento.ilike.%${safe}%`)
+          .gte('fecha_llegada', PORTAL_DATE_FROM)
+          .limit(10)
+    ),
+    (isInternal
+      ? supabase.from('entradas')
+          .select('cve_entrada, descripcion_mercancia, fecha_llegada_mercancia, trafico')
+          .or(`cve_entrada.ilike.%${safe}%,descripcion_mercancia.ilike.%${safe}%,trafico.ilike.%${safe}%`)
+          .limit(10)
+      : supabase.from('entradas')
+          .select('cve_entrada, descripcion_mercancia, fecha_llegada_mercancia, trafico')
+          .eq('company_id', companyId)
+          .or(`cve_entrada.ilike.%${safe}%,descripcion_mercancia.ilike.%${safe}%,trafico.ilike.%${safe}%`)
+          .limit(10)
+    ),
+    (isInternal
+      ? supabase.from('aduanet_facturas')
+          .select('referencia, pedimento, proveedor, valor_usd, fecha_pago')
+          .or(`pedimento.ilike.%${safe}%,proveedor.ilike.%${safe}%,referencia.ilike.%${safe}%,num_factura.ilike.%${safe}%`)
+          .limit(10)
+      : supabase.from('aduanet_facturas')
+          .select('referencia, pedimento, proveedor, valor_usd, fecha_pago')
+          .eq('clave_cliente', clientClave)
+          .or(`pedimento.ilike.%${safe}%,proveedor.ilike.%${safe}%,referencia.ilike.%${safe}%,num_factura.ilike.%${safe}%`)
+          .limit(10)
+    ),
     // Phase 1A: Search products by description or fraccion
     supabase.from('globalpc_productos')
       .select('id, descripcion, fraccion, cve_producto')

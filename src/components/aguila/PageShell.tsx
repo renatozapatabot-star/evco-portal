@@ -84,6 +84,24 @@ export function PageShell({
           defined in globals.css so every authenticated surface inherits the
           same depth without per-page wiring. */}
       <div className="aguila-aura" aria-hidden="true" />
+      {/* Gold ambient glow — subtle warm halo at the top of cockpit
+          surfaces that echoes the gold halo behind the login Z mark.
+          Position: fixed; non-interactive; ignored under reduced-motion. */}
+      <div
+        aria-hidden="true"
+        className="zapata-gold-halo"
+        style={{
+          position: 'fixed',
+          top: '-10%',
+          left: '50%',
+          width: 720,
+          height: 720,
+          transform: 'translateX(-50%)',
+          background: 'radial-gradient(circle, rgba(201,167,74,0.07) 0%, transparent 65%)',
+          pointerEvents: 'none',
+          zIndex: 0,
+        }}
+      />
       <div className="p-4 md:px-7 md:py-6" style={{ position: 'relative', zIndex: 1, maxWidth, margin: '0 auto' }}>
         {brandHeader}
         <header style={{

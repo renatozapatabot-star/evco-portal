@@ -1,7 +1,8 @@
 'use client'
 
-import { ACCENT_SILVER_BRIGHT, TEXT_MUTED, TEXT_SECONDARY, GOLD_GRADIENT } from '@/lib/design-system'
+import { TEXT_MUTED, TEXT_SECONDARY, ZAPATA_GOLD_BRIGHT, ZAPATA_GOLD_BASE, ZAPATA_GOLD_DIM, ZAPATA_GOLD_GLOW } from '@/lib/design-system'
 import { fmtDate } from '@/lib/format-utils'
+import { AguilaMark } from '@/components/brand/AguilaMark'
 
 export type CockpitRole = 'client' | 'operator' | 'owner' | 'warehouse' | 'accounting'
 
@@ -41,21 +42,30 @@ export function CockpitBanner({ role, name, companyName, metaPills }: Props) {
   return (
     <div style={{ marginBottom: 12 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        {/* Gold Z mark with circuit traces — login parity */}
         <div
           aria-hidden
           style={{
-            width: 36, height: 36, background: GOLD_GRADIENT,
-            borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 16, fontWeight: 900, color: '#0D0D0C', fontFamily: 'Georgia, serif',
+            position: 'relative',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: 40,
+            height: 40,
+            flexShrink: 0,
+            filter: `drop-shadow(0 0 12px ${ZAPATA_GOLD_GLOW})`,
           }}
         >
-          Z
+          <AguilaMark size={36} />
         </div>
         <span style={{
           fontSize: 'var(--aguila-fs-section, 14px)',
           fontWeight: 700,
           letterSpacing: '0.18em',
-          color: ACCENT_SILVER_BRIGHT,
+          background: `linear-gradient(135deg, ${ZAPATA_GOLD_BRIGHT} 0%, ${ZAPATA_GOLD_BASE} 50%, ${ZAPATA_GOLD_DIM} 100%)`,
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          backgroundClip: 'text',
           textTransform: 'uppercase',
         }}>
           ZAPATA AI
@@ -72,7 +82,7 @@ export function CockpitBanner({ role, name, companyName, metaPills }: Props) {
       </div>
       <div style={{
         marginTop: 4,
-        marginLeft: 48,
+        marginLeft: 52,
         fontSize: 'var(--aguila-fs-meta, 11px)',
         color: TEXT_MUTED,
         letterSpacing: '0.02em',
@@ -85,7 +95,7 @@ export function CockpitBanner({ role, name, companyName, metaPills }: Props) {
       {metaPills && metaPills.length > 0 ? (
         <div style={{
           marginTop: 8,
-          marginLeft: 48,
+          marginLeft: 52,
           display: 'flex',
           flexWrap: 'wrap',
           gap: 6,

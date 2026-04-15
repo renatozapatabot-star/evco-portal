@@ -3,8 +3,8 @@
 import Link from 'next/link'
 import { MessageSquare } from 'lucide-react'
 import {
-  ACCENT_SILVER, ACCENT_SILVER_DIM, BG_ELEVATED, BORDER_HAIRLINE,
-  GLASS_BLUR, GLASS_SHADOW, TEXT_PRIMARY,
+  ACCENT_SILVER_DIM, GLASS_BLUR, TEXT_PRIMARY,
+  ZAPATA_GOLD_BRIGHT, ZAPATA_GOLD_GLOW,
 } from '@/lib/design-system'
 
 export type AsistenteRoleTag = 'trafico' | 'contabilidad' | 'warehouse' | 'operator' | 'client' | 'owner'
@@ -50,6 +50,7 @@ export function AsistenteButton({
     <Link
       href={target}
       aria-label={`${label} — contexto ${roleTag}`}
+      className="zapata-asistente-btn"
       style={{
         position: 'fixed',
         right: 20,
@@ -59,21 +60,22 @@ export function AsistenteButton({
         alignItems: 'center',
         gap: 10,
         minHeight: 60,
-        padding: '0 20px',
-        background: BG_ELEVATED,
+        padding: '0 22px',
+        background: 'rgba(0,0,0,0.4)',
         backdropFilter: `blur(${GLASS_BLUR})`,
         WebkitBackdropFilter: `blur(${GLASS_BLUR})`,
-        border: `1px solid ${BORDER_HAIRLINE}`,
+        border: '1px solid rgba(192,197,206,0.18)',
         borderRadius: 30,
-        boxShadow: GLASS_SHADOW,
+        boxShadow: `0 10px 30px rgba(0,0,0,0.6), 0 0 24px ${ZAPATA_GOLD_GLOW}`,
         color: TEXT_PRIMARY,
         fontSize: 'var(--aguila-fs-body, 13px)',
         fontWeight: 600,
         textDecoration: 'none',
         whiteSpace: 'nowrap',
+        transition: 'transform 150ms ease, box-shadow 200ms ease, border-color 200ms ease',
       }}
     >
-      <MessageSquare size={18} color={ACCENT_SILVER} aria-hidden />
+      <MessageSquare size={18} color={ZAPATA_GOLD_BRIGHT} aria-hidden />
       <span>{label}</span>
       <span
         aria-hidden
@@ -87,6 +89,13 @@ export function AsistenteButton({
       >
         {roleTag}
       </span>
+      <style>{`
+        .zapata-asistente-btn:hover {
+          transform: translateY(-1px);
+          border-color: rgba(244,212,122,0.45) !important;
+          box-shadow: 0 14px 40px rgba(0,0,0,0.7), 0 0 32px rgba(244,212,122,0.32) !important;
+        }
+      `}</style>
     </Link>
   )
 }

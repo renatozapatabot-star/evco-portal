@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Search, ArrowRight } from 'lucide-react'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { AguilaMark } from '@/components/brand/AguilaMark'
 
 export default function DemoPage() {
   const isMobile = useIsMobile()
@@ -25,7 +26,9 @@ export default function DemoPage() {
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-main)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: isMobile ? 16 : 24 }}>
       <div style={{ maxWidth: 480, width: '100%', textAlign: 'center' }}>
-        <div style={{ fontFamily: 'var(--font-mono)', fontSize: 28, fontWeight: 800, color: 'var(--gold)', letterSpacing: '0.15em', marginBottom: 8 }}>ZAPATA AI</div>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 8 }}>
+          <AguilaMark size={56} />
+        </div>
         <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24 }}>Inteligencia Aduanal · Patente 3596</div>
 
         {/* Before/After strip */}

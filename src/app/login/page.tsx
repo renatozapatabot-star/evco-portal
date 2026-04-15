@@ -83,10 +83,7 @@ function LoginContent() {
           <AguilaMark size={140} />
         </div>
 
-        {/* Wordmark — ZAPATA AI in gold */}
-        <div className="login-wordmark">
-          <AguilaWordmark size={40} tone="gold" />
-        </div>
+        {/* Wordmark removed 2026-04-15 per Tito audit — Z mark stands alone. */}
 
         {/* Tagline */}
         <p className="login-tagline">TOTAL VISIBILIDAD. SIN FRONTERAS.</p>

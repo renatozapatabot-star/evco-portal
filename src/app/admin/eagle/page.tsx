@@ -377,7 +377,6 @@ async function renderEagle(opName: string, rawMonth: string | null) {
     reportes: {
       count: null,
       series: clasificacionesSeries,
-      microStatus: 'Analítica multi-cliente · descargas',
     },
   }
 

@@ -107,9 +107,8 @@ export function TopNav() {
             display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px',
           }}
         >
-          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}>
+          <Link href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }} aria-label="ZAPATA AI">
             <AguilaMark size={28} />
-            <span style={{ fontSize: 14, fontWeight: 800, color: T.text }}>ZAPATA AI</span>
           </Link>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             {isInternal && mveIsCritical() && (

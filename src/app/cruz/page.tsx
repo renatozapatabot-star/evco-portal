@@ -221,7 +221,6 @@ export default function CruzChatPage() {
             <AguilaMark size={40} />
           </div>
           <div>
-            <h1 style={{ fontSize: 18, fontWeight: 800, color: '#E8E5DF', letterSpacing: '-0.02em', margin: 0 }}>ZAPATA AI</h1>
             <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)' }}>
               {traficoContext ? `Contexto: ${traficoContext}` : 'Asistente aduanal'}
             </div>

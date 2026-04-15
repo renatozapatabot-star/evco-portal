@@ -193,7 +193,7 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
     expedientes:     { count: expedientesCount,       series: expedientesSeries,      microStatus: `${documentos.length} documento${documentos.length === 1 ? '' : 's'} en tu expediente` },
     catalogo:        { count: catalogoCount,          series: [],                     microStatus: clasificacionesCount > 0 ? `${clasificacionesCount.toLocaleString('es-MX')} fracciones clasificadas` : 'Sin clasificar' },
     entradas:        { count: entradasSemanaCount,    series: entradasSeries,         microStatus: `${entradasSemanaCount} recibida${entradasSemanaCount === 1 ? '' : 's'} esta semana` },
-    reportes:        { count: null,                   series: clasificacionesSeries,  microStatus: 'Analítica y descargas' },
+    reportes:        { count: null,                   series: clasificacionesSeries },
   }
 
   const estadoSections = (
@@ -253,11 +253,7 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
             max={10}
           />
         ) : null
-      ) : (
-        <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'rgba(255,255,255,0.5)', paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-          Chat disponible próximamente
-        </div>
-      )}
+      ) : null}
     </div>
   )
 

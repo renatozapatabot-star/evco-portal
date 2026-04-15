@@ -60,18 +60,7 @@ export function CockpitBanner({ role, name, companyName, metaPills }: Props) {
         >
           <AguilaMark size={36} />
         </div>
-        <span style={{
-          fontSize: 'var(--aguila-fs-section, 14px)',
-          fontWeight: 700,
-          letterSpacing: '0.18em',
-          background: `linear-gradient(135deg, ${ZAPATA_GOLD_BRIGHT} 0%, ${ZAPATA_GOLD_BASE} 50%, ${ZAPATA_GOLD_DIM} 100%)`,
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          backgroundClip: 'text',
-          textTransform: 'uppercase',
-        }}>
-          ZAPATA AI
-        </span>
+        {/* Wordmark removed 2026-04-15 per Tito audit — Z mark stands alone. */}
         {/* Live signal pulse — ambient liveness indicator on every cockpit banner. */}
         <span
           aria-label="Sistema en vivo"

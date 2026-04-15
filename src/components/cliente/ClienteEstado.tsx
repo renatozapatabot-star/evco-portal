@@ -11,7 +11,6 @@
 
 import {
   Truck, FileText, Package, CheckCircle, AlertCircle, MapPin, Flag, Circle,
-  FolderOpen,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { fmtDate, fmtDateTime } from '@/lib/format-utils'
@@ -154,27 +153,6 @@ export function ClienteEstado({ activeTraficos, documentos }: Props) {
         )}
       </GlassCard>
 
-      <GlassCard href="/expedientes" padding="16px 20px">
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{
-            width: 40, height: 40, borderRadius: 12,
-            background: 'rgba(192,197,206,0.08)',
-            border: '1px solid rgba(192,197,206,0.15)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            flexShrink: 0,
-          }}>
-            <FolderOpen size={18} color={ACCENT_SILVER} strokeWidth={1.8} />
-          </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 15, fontWeight: 700, color: TEXT_PRIMARY, lineHeight: 1.3 }}>
-              Expedientes completos
-            </div>
-            <div style={{ fontSize: 12, color: TEXT_SECONDARY, marginTop: 2 }}>
-              {documentos.length} documento{documentos.length === 1 ? '' : 's'} archivado{documentos.length === 1 ? '' : 's'} a la fecha · ver todos →
-            </div>
-          </div>
-        </div>
-      </GlassCard>
     </>
   )
 }

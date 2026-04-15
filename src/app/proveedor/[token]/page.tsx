@@ -338,7 +338,7 @@ export default function ProveedorPage() {
     return (
       <div style={styles.page}>
         <div style={{ ...styles.cockpitCard, maxWidth: 420, padding: 28 }}>
-          <div style={styles.logo}>ZAPATA AI</div>
+          <AguilaMark size={36} />
           <div style={{ fontSize: 16, fontWeight: 700, color: '#EF4444', margin: '12px 0 8px' }}>
             Enlace no válido
           </div>
@@ -353,7 +353,7 @@ export default function ProveedorPage() {
     return (
       <div style={styles.page}>
         <div style={{ ...styles.cockpitCard, maxWidth: 520, padding: 28 }}>
-          <div style={styles.logo}>ZAPATA AI</div>
+          <AguilaMark size={36} />
           <div
             style={{
               height: 120,

@@ -267,7 +267,6 @@ async function loadOperatorCockpit(opId: string, opName: string, month: string) 
     reportes: {
       count: null,
       series: clasificacionesSeries,
-      microStatus: 'Analítica operativa · descargas',
     },
   }
 

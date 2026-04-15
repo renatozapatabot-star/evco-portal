@@ -203,6 +203,88 @@ html, body {
   .aguila-stagger-in, .aguila-pulse, .aguila-dot-pulse { animation: none; }
 }
 
+/* ─────────────────────────────────────────────────────────
+   AGUILA V1 · ATMOSPHERIC CANVAS (April 2026)
+   Ports the login's visual DNA to every authenticated surface.
+   Four stacked layers:
+     1. Pure #0A0A0C canvas
+     2. Topo hairline SVG — 15% opacity, top-right
+     3. Central radial silver halo — 800×800
+     4. Drifting aura — 400×400, 12s ease-in-out breath
+   Choreographed entrance: .aguila-reveal staggers content in.
+   ───────────────────────────────────────────────────────── */
+.aguila-canvas {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: #0A0A0C;
+  overflow: hidden;
+}
+.aguila-canvas::before,
+.aguila-canvas::after {
+  content: '';
+  position: fixed;
+  pointer-events: none;
+  z-index: 0;
+}
+/* Topo hairline — top-right, does not compete with content */
+.aguila-canvas::before {
+  top: -10%;
+  right: -10%;
+  width: 60%;
+  height: 60%;
+  background: url('/brand/topo-hairline.svg') no-repeat top right / cover;
+  opacity: 0.12;
+}
+/* Central halo — fills the composition like a skylight */
+.aguila-canvas::after {
+  top: -15%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 900px;
+  height: 900px;
+  background: radial-gradient(circle, rgba(192,197,206,0.10) 0%, transparent 70%);
+}
+/* Drifting aura — ambient life signal, 12s breath */
+.aguila-aura {
+  position: fixed;
+  top: 14%;
+  left: 50%;
+  width: 500px;
+  height: 500px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(192,197,206,0.08) 0%, transparent 65%);
+  pointer-events: none;
+  z-index: 0;
+  will-change: transform;
+  animation: aguilaAuraDrift 12s ease-in-out infinite;
+}
+@keyframes aguilaAuraDrift {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  25%      { transform: translate(calc(-50% + 10px), calc(-50% - 8px)) scale(1.02); }
+  50%      { transform: translate(calc(-50% - 8px), calc(-50% + 10px)) scale(1.04); }
+  75%      { transform: translate(calc(-50% + 6px), calc(-50% + 4px)) scale(1.02); }
+}
+/* Ensure content floats above the atmosphere */
+.aguila-canvas > * { position: relative; z-index: 1; }
+
+/* ── V1 Reveal: 4-step cockpit entrance mirroring login ── */
+@keyframes aguilaReveal {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.aguila-reveal         { animation: aguilaReveal 500ms cubic-bezier(.2,0,0,1) 0ms both; }
+.aguila-reveal-delay-1 { animation: aguilaReveal 500ms cubic-bezier(.2,0,0,1) 120ms both; }
+.aguila-reveal-delay-2 { animation: aguilaReveal 500ms cubic-bezier(.2,0,0,1) 280ms both; }
+.aguila-reveal-delay-3 { animation: aguilaReveal 500ms cubic-bezier(.2,0,0,1) 440ms both; }
+@media (prefers-reduced-motion: reduce) {
+  .aguila-aura { animation: none; }
+  .aguila-reveal,
+  .aguila-reveal-delay-1,
+  .aguila-reveal-delay-2,
+  .aguila-reveal-delay-3 { animation: aguilaReveal 240ms ease both; animation-delay: 0ms; }
+}
+
 /* ── Aduana Cinematic Glass System — AI Control Tower Theme ── */
 .aguila-dark {
   /* ── Backgrounds — gradient with visible depth ── */

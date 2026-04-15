@@ -6,6 +6,7 @@ import {
   COCKPIT_CANVAS, GREEN, AMBER, RED,
   TEXT_PRIMARY, TEXT_SECONDARY, TEXT_MUTED,
 } from '@/lib/design-system'
+import { AguilaFooter } from './AguilaFooter'
 
 type SystemStatus = 'healthy' | 'warning' | 'critical'
 
@@ -68,7 +69,7 @@ export function PageShell({
   const shouldPulse = pulseSignal ?? true
   return (
     <div
-      className="aguila-dark"
+      className="aguila-dark aguila-canvas"
       style={{
         position: 'relative',
         minHeight: '100vh',
@@ -78,6 +79,11 @@ export function PageShell({
         overflow: 'hidden',
       }}
     >
+      {/* V1 atmospheric layer — drifting aura mirrors login's 12s breath.
+          Topo hairline + central halo come from .aguila-canvas pseudo-elements
+          defined in globals.css so every authenticated surface inherits the
+          same depth without per-page wiring. */}
+      <div className="aguila-aura" aria-hidden="true" />
       <div className="p-4 md:px-7 md:py-6" style={{ position: 'relative', zIndex: 1, maxWidth, margin: '0 auto' }}>
         {brandHeader}
         <header style={{
@@ -127,6 +133,7 @@ export function PageShell({
           ) : null}
         </header>
         {children}
+        <AguilaFooter />
       </div>
     </div>
   )

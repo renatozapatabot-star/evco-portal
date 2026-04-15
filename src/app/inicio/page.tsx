@@ -264,10 +264,14 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
   )
 
   // v10 — Capability cards: Checklist, Clasificador, Mensajes (client scope).
+  // V1 fix — microStatus must be DYNAMIC info only; the static `subtitle`
+  // already renders once from CAPABILITY_CARDS. Passing the same string as
+  // microStatus caused both to display → the screenshot-visible doubling.
+  const checklistPending = Math.max(0, activeTraficos.length * 3 - documentos.length)
   const capabilityCounts: CapabilityCounts = {
-    checklist:    { count: Math.max(0, activeTraficos.length * 3 - documentos.length), microStatus: '61 tipos · auto-validado' },
-    clasificador: { count: clasificacionesCount, countSuffix: '', microStatus: 'Sube · auto-clasifica · TIGIE' },
-    mensajes:     { count: mensajeriaMessages.length, microStatus: mensajeriaMessages.length > 0 ? 'sin leer' : '@ menciona a tu equipo' },
+    checklist:    { count: checklistPending, microStatus: checklistPending > 0 ? `${checklistPending} pendiente${checklistPending === 1 ? '' : 's'}` : undefined },
+    clasificador: { count: clasificacionesCount, countSuffix: '', microStatus: clasificacionesCount > 0 ? `${clasificacionesCount} fracciones` : undefined },
+    mensajes:     { count: mensajeriaMessages.length, microStatus: mensajeriaMessages.length > 0 ? `${mensajeriaMessages.length} sin leer` : undefined },
   }
   const capabilitySlot = <CapabilityCardGrid counts={capabilityCounts} />
 

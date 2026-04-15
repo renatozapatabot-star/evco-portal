@@ -1392,7 +1392,7 @@ export async function POST(req: NextRequest) {
 
   // Check API key before proceeding
   if (!ANTHROPIC_API_KEY) {
-    return NextResponse.json({ message: 'ADUANA AI no está configurado. Contacte al administrador.' }, { status: 503 })
+    return NextResponse.json({ message: 'Asistente AGUILA no está configurado. Contacta a soporte.' }, { status: 503 })
   }
 
   const companyId = req.cookies.get('company_id')?.value ?? ''
@@ -1483,10 +1483,10 @@ export async function POST(req: NextRequest) {
 
       // Surface a clear message for common API issues
       if (apiMsg.includes('credit balance') || apiMsg.includes('billing')) {
-        return NextResponse.json({ message: 'ADUANA AI no está disponible en este momento — créditos de API agotados. Contacta a soporte.', navigate: null }, { status: 503 })
+        return NextResponse.json({ message: 'Asistente en pausa. Inténtalo de nuevo en unos minutos o envía tu pregunta a tu operador.', navigate: null }, { status: 503 })
       }
       if (apiMsg.includes('rate_limit') || apiMsg.includes('overloaded')) {
-        return NextResponse.json({ message: 'ADUANA AI está ocupado. Intenta de nuevo en unos segundos.', navigate: null }, { status: 503 })
+        return NextResponse.json({ message: 'Asistente ocupado. Intenta de nuevo en unos segundos.', navigate: null }, { status: 503 })
       }
       return NextResponse.json({ message: `Error de API: ${apiMsg || 'Error desconocido'}`, navigate: null }, { status: 500 })
     }

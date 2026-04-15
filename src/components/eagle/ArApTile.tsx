@@ -5,8 +5,11 @@ import { TileShell, MONO } from './tile-shell'
 import type { AgingResult } from '@/lib/contabilidad/aging'
 
 function formatAmount(amount: number, currency: 'MXN' | 'USD'): string {
-  const locale = currency === 'USD' ? 'en-US' : 'es-MX'
-  return new Intl.NumberFormat(locale, { style: 'currency', currency, maximumFractionDigits: 0 }).format(amount)
+  // V1 guard — force MXN default. Missing/undefined currency on some edge
+  // cases was rendering `¥` because the locale fallback resolved to JPY.
+  const safeCurrency: 'MXN' | 'USD' = currency || 'MXN'
+  const locale = safeCurrency === 'USD' ? 'en-US' : 'es-MX'
+  return new Intl.NumberFormat(locale, { style: 'currency', currency: safeCurrency, maximumFractionDigits: 0 }).format(amount)
 }
 
 function overdueTotal(r: AgingResult): number {

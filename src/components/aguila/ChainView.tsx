@@ -137,9 +137,12 @@ function ChainNodeCell({
         style={{
           fontFamily: 'var(--font-jetbrains-mono), JetBrains Mono, monospace',
           fontSize: compact ? 'var(--aguila-fs-body, 13px)' : 'var(--aguila-fs-kpi-small, 18px)',
-          fontWeight: 700,
+          fontWeight: broken ? 500 : 700,
           lineHeight: 1.1,
-          color: broken ? AMBER : TEXT_PRIMARY,
+          // V1: missing nodes render in muted + amber DOT to the left so the
+          // chain breathes calm (amber = actionable, not alarm). Previously
+          // bold full-amber text read as red-orange on some displays.
+          color: broken ? TEXT_SECONDARY : TEXT_PRIMARY,
           fontVariantNumeric: 'tabular-nums',
         }}
       >

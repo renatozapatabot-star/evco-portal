@@ -208,11 +208,13 @@ export function InicioClient(props: Props) {
     />
   )
 
-  // v10 — Capability cards (operator scope)
+  // V1 fix — microStatus is DYNAMIC info only. Static description lives in
+  // CAPABILITY_CARDS.subtitle (renders once). Passing the same string here
+  // was causing doubled labels on the client cockpit.
   const capabilityCounts: CapabilityCounts = {
-    checklist:    { count: null, microStatus: '61 tipos · auto-validado' },
-    clasificador: { count: null, microStatus: 'Sube · auto-clasifica · TIGIE' },
-    mensajes:     { count: props.mensajeriaMessages.length, microStatus: props.mensajeriaMessages.length > 0 ? 'nuevos' : '@ menciona a tu equipo' },
+    checklist:    { count: null },
+    clasificador: { count: null },
+    mensajes:     { count: props.mensajeriaMessages.length, microStatus: props.mensajeriaMessages.length > 0 ? `${props.mensajeriaMessages.length} nuevos` : undefined },
   }
   const capabilitySlot = <CapabilityCardGrid counts={capabilityCounts} />
 

@@ -64,6 +64,38 @@ export const BORDER = 'rgba(255,255,255,0.08)'
 export const GLASS_BLUR = '20px'
 export const GLASS_SHADOW = '0 10px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)'
 
+// ── V1 Glass tiers (April 2026) ──
+// Login is the visual North Star. Cockpit glass now matches login's weightier
+// chemistry: opaque-black bg with a visible silver border and a silver halo
+// shadow. Three tiers let the composition breathe without sacrificing depth.
+//   · hero       — rgba(0,0,0,0.4)   — KPI tiles, primary nav cards, asistente
+//   · secondary  — rgba(0,0,0,0.25)  — section cards, info panels
+//   · tertiary   — rgba(0,0,0,0.12)  — chips, inline containers, drawer interiors
+export const GLASS_HERO = 'rgba(0,0,0,0.4)'
+export const GLASS_SECONDARY = 'rgba(0,0,0,0.25)'
+export const GLASS_TERTIARY = 'rgba(0,0,0,0.12)'
+
+export const BORDER_SILVER = 'rgba(192,197,206,0.18)'
+export const BORDER_SILVER_HOVER = 'rgba(192,197,206,0.4)'
+
+/** Login-parity shadow: weighty drop + silver halo accent */
+export const SHADOW_HERO =
+  '0 10px 30px rgba(0,0,0,0.6), 0 0 20px rgba(192,197,206,0.08)'
+/** Hover lift: brighter halo, deeper drop */
+export const SHADOW_HERO_HOVER =
+  '0 14px 40px rgba(0,0,0,0.7), 0 0 28px rgba(192,197,206,0.14)'
+
+// ── Atmospheric layers (mirror login's topo + halo + aura) ──
+export const ATMOSPHERE_HALO =
+  'radial-gradient(circle, rgba(192,197,206,0.10) 0%, transparent 70%)'
+export const ATMOSPHERE_AURA =
+  'radial-gradient(circle, rgba(192,197,206,0.08) 0%, transparent 65%)'
+
+// ── Typography tracking (match login's severity) ──
+export const LS_TAGLINE = '0.3em'       // one-word ceremonial captions
+export const LS_DRAMATIC = '0.15em'     // section labels, CÓDIGO DE ACCESO scale
+export const LS_FOOTER = '0.12em'       // identity footer monospace
+
 // ── Text ──
 export const TEXT_PRIMARY = '#E6EDF3'
 export const TEXT_SECONDARY = '#94a3b8'

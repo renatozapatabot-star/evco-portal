@@ -251,10 +251,11 @@ async function renderBodegaCockpit(opName: string) {
     </GlassCard>
   )
 
+  // V1 — microStatus is DYNAMIC only. Static subtitle lives in CAPABILITY_CARDS.
   const capabilityCounts: CapabilityCounts = {
-    checklist:    { count: expedientesCount,     microStatus: 'expedientes totales' },
-    clasificador: { count: clasificacionesCount, microStatus: 'Sube · auto-clasifica · TIGIE' },
-    mensajes:     { count: null,                 microStatus: '@ menciona a tu equipo' },
+    checklist:    { count: expedientesCount,     microStatus: expedientesCount > 0 ? `${expedientesCount} totales` : undefined },
+    clasificador: { count: clasificacionesCount, microStatus: clasificacionesCount > 0 ? `${clasificacionesCount} fracciones` : undefined },
+    mensajes:     { count: null },
   }
   const capabilitySlot = <CapabilityCardGrid counts={capabilityCounts} />
 

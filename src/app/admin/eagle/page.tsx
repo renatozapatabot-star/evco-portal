@@ -416,11 +416,11 @@ async function renderEagle(opName: string, rawMonth: string | null) {
     <ActividadStrip items={stripItems} emptyLabel={`Sin actividad crítica en ${month.label}.`} title="Escalaciones + hilos" />
   )
 
-  // v10 — Capability cards (owner scope)
+  // V1 — microStatus is DYNAMIC only. Static subtitle lives in CAPABILITY_CARDS.
   const capabilityCounts: CapabilityCounts = {
-    checklist:    { count: pedimentosPendientesCount, microStatus: 'expedientes pendientes' },
-    clasificador: { count: clasificacionesCount, microStatus: 'Sube · auto-clasifica · TIGIE' },
-    mensajes:     { count: escalatedThreads.length, microStatus: escalatedThreads.length > 0 ? 'escalados' : '@ menciona a tu equipo' },
+    checklist:    { count: pedimentosPendientesCount, microStatus: pedimentosPendientesCount > 0 ? `${pedimentosPendientesCount} pendientes` : undefined },
+    clasificador: { count: clasificacionesCount, microStatus: clasificacionesCount > 0 ? `${clasificacionesCount} fracciones` : undefined },
+    mensajes:     { count: escalatedThreads.length, microStatus: escalatedThreads.length > 0 ? `${escalatedThreads.length} escalados` : undefined, microStatusWarning: escalatedThreads.length > 0 },
   }
   const capabilitySlot = <CapabilityCardGrid counts={capabilityCounts} />
 

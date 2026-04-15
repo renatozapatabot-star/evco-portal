@@ -242,8 +242,12 @@ async function renderEagle(opName: string, rawMonth: string | null) {
   // Headline number: real count of pending-cruce embarques with recency
   // filter (90d). Without it, count includes historical rows whose
   // fecha_cruce was never backfilled by sync — not actually "in motion."
-  const { count: activeCountRaw } = await sb.from('traficos').select('id', { count: 'exact', head: true }).is('fecha_cruce', null).gte('fecha_llegada', ninetyDaysAgoIso)
-  const activeTraficosTotal = activeCountRaw ?? traficosByStatus.reduce((s, b) => s + b.count, 0)
+  // softCount-wrapped so a schema hiccup can't crash the owner cockpit;
+  // falls back to the status-bucket sample count when the exact query errors.
+  const activeCountRaw = await softCount(
+    sb.from('traficos').select('id', { count: 'exact', head: true }).is('fecha_cruce', null).gte('fecha_llegada', ninetyDaysAgoIso)
+  )
+  const activeTraficosTotal = activeCountRaw || traficosByStatus.reduce((s, b) => s + b.count, 0)
 
   // dormant (top 3) + activeClients
   const activeIds = new Set<string>()

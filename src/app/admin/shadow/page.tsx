@@ -68,7 +68,7 @@ export default async function AdminShadowPage() {
     { label: 'Decisiones comparadas', value: String(stats7.totalCompared), mono: true, hint: 'últimos 7 días' },
     { label: 'Tasa de acuerdo', value: stats7.totalCompared > 0 ? pct(stats7.agreementRate) : '—', mono: true },
     { label: 'Operadores acertaron', value: String(stats7.humanWinsWhenDisagree), mono: true, hint: 'cuando discreparon' },
-    { label: 'AGUILA acertó', value: String(stats7.systemWinsWhenDisagree), mono: true, hint: 'cuando discrepó' },
+    { label: 'ZAPATA AI acertó', value: String(stats7.systemWinsWhenDisagree), mono: true, hint: 'cuando discrepó' },
   ]
 
   // Top disagreements this week — re-scan the same window with full detail.
@@ -140,7 +140,7 @@ export default async function AdminShadowPage() {
           Inteligencia del Sistema
         </h1>
         <p style={{ fontSize: 13, color: TEXT_MUTED, marginTop: 6 }}>
-          Estado de AGUILA vs Operadores · ventana de 7 días para titulares, 30 días para la serie
+          Estado de ZAPATA AI vs Operadores · ventana de 7 días para titulares, 30 días para la serie
         </p>
       </div>
 

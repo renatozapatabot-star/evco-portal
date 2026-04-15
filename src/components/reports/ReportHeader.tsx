@@ -1,6 +1,6 @@
 'use client'
 /**
- * Block 3 — shared AGUILA report header (on-screen twin of PDF header).
+ * Block 3 — shared ZAPATA AI report header (on-screen twin of PDF header).
  */
 import React from 'react'
 
@@ -18,7 +18,7 @@ export function ReportHeader({
           className="font-mono text-2xl font-bold tracking-[0.08em]"
           style={{ color: '#C0C5CE' }}
         >
-          AGUILA
+          ZAPATA AI
         </div>
         <div className="text-[11px] text-slate-400">Renato Zapata &amp; Co.</div>
       </div>

@@ -119,7 +119,7 @@ export default function CruzChatPage() {
       const apiMessages = newMessages.map(m => ({ role: m.role, content: m.content }))
       const contextInfo = traficoContext
         ? `User is asking about embarque ${traficoContext}. Include specific data for this embarque.`
-        : `User is in the AGUILA AI chat interface.`
+        : `User is in the ZAPATA AI chat interface.`
 
       const res = await fetch('/api/cruz-chat', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -223,7 +223,7 @@ export default function CruzChatPage() {
             <span style={{ fontFamily: 'Georgia, serif', fontSize: 20, fontWeight: 700, color: '#05070B' }}>Z</span>
           </div>
           <div>
-            <h1 style={{ fontSize: 18, fontWeight: 800, color: '#E8E5DF', letterSpacing: '-0.02em', margin: 0 }}>AGUILA AI</h1>
+            <h1 style={{ fontSize: 18, fontWeight: 800, color: '#E8E5DF', letterSpacing: '-0.02em', margin: 0 }}>ZAPATA AI</h1>
             <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)' }}>
               {traficoContext ? `Contexto: ${traficoContext}` : 'Asistente aduanal'}
             </div>

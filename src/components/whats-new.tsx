@@ -2,7 +2,7 @@
 import { useState } from 'react'
 
 const UPDATES = [
-  { text: 'AGUILA AI con 17 herramientas, voz, y memoria de sesión' },
+  { text: 'ZAPATA AI con 17 herramientas, voz, y memoria de sesión' },
   { text: 'Cruz Score con documentos (40%), tiempo, pagos, cumplimiento' },
   { text: 'Alertas en tiempo real — score < 50, overdue, incidencias' },
   { text: 'T-MEC savings calculator en pedimentos' },
@@ -27,7 +27,7 @@ export function WhatsNew() {
     }}>
       <div style={{ flex: 1 }}>
         <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--n-900)', marginBottom: 6 }}>
-          Novedades en AGUILA
+          Novedades en ZAPATA AI
         </div>
         {UPDATES.slice(0, 4).map((u, i) => (
           <div key={i} style={{ fontSize: 12, color: 'var(--n-600)', marginTop: 3, lineHeight: 1.5 }}>

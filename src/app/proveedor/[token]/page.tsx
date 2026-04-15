@@ -338,7 +338,7 @@ export default function ProveedorPage() {
     return (
       <div style={styles.page}>
         <div style={{ ...styles.cockpitCard, maxWidth: 420, padding: 28 }}>
-          <div style={styles.logo}>AGUILA</div>
+          <div style={styles.logo}>ZAPATA AI</div>
           <div style={{ fontSize: 16, fontWeight: 700, color: '#EF4444', margin: '12px 0 8px' }}>
             Enlace no válido
           </div>
@@ -353,7 +353,7 @@ export default function ProveedorPage() {
     return (
       <div style={styles.page}>
         <div style={{ ...styles.cockpitCard, maxWidth: 520, padding: 28 }}>
-          <div style={styles.logo}>AGUILA</div>
+          <div style={styles.logo}>ZAPATA AI</div>
           <div
             style={{
               height: 120,
@@ -378,7 +378,7 @@ export default function ProveedorPage() {
   return (
     <div style={styles.page}>
       <div style={{ width: '100%', maxWidth: 780 }}>
-        {/* AGUILA brand header */}
+        {/* ZAPATA AI brand header */}
         <div style={{ textAlign: 'center', marginBottom: 28, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
           <AguilaMark size={72} tone="silver" />
           <AguilaWordmark size={28} tone="silver" />

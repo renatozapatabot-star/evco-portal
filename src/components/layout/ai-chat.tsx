@@ -15,7 +15,7 @@ export function AIChat() {
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  useEffect(() => { if (open) { setTimeout(() => inputRef.current?.focus(), 100); if (messages.length === 0) setMessages([{ role: 'assistant', content: `Hola, soy AGUILA. Puedo consultar datos ${getClientNameCookie().split(' ')[0]} en tiempo real. ¿Qué necesitas?`, ts: new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }) }]) } }, [open])
+  useEffect(() => { if (open) { setTimeout(() => inputRef.current?.focus(), 100); if (messages.length === 0) setMessages([{ role: 'assistant', content: `Hola, soy ZAPATA. Puedo consultar datos ${getClientNameCookie().split(' ')[0]} en tiempo real. ¿Qué necesitas?`, ts: new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }) }]) } }, [open])
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
 
   async function sendMessage(text?: string) {
@@ -41,8 +41,8 @@ export function AIChat() {
       {/* Z Button */}
       <button
         onClick={() => setOpen(o => !o)}
-        title="AGUILA Intelligence"
-        aria-label="Abrir AGUILA AI"
+        title="ZAPATA AI Intelligence"
+        aria-label="Abrir ZAPATA AI"
         style={{
           position: 'fixed', bottom: 24, right: 24, width: 48, height: 48,
           background: 'var(--amber-600, #BA7517)', border: 'none',
@@ -68,7 +68,7 @@ export function AIChat() {
           <div style={{ background: 'var(--amber-600, #BA7517)', padding: '14px 16px', flexShrink: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.045)" strokeWidth="2" strokeLinecap="round"><path d="M12 2L13.5 8.5L20 10L13.5 11.5L12 18L10.5 11.5L4 10L10.5 8.5L12 2Z"/></svg>
-              <div><div style={{ color: 'rgba(255,255,255,0.045)', fontSize: 14, fontWeight: 700 }}>AGUILA Intelligence</div><div style={{ color: 'rgba(255,255,255,0.7)', fontSize: 11 }}>{getClientNameCookie().split(' ')[0]} Plastics &middot; Patente {PATENTE}</div></div>
+              <div><div style={{ color: 'rgba(255,255,255,0.045)', fontSize: 14, fontWeight: 700 }}>ZAPATA AI Intelligence</div><div style={{ color: 'rgba(255,255,255,0.7)', fontSize: 11 }}>{getClientNameCookie().split(' ')[0]} Plastics &middot; Patente {PATENTE}</div></div>
             </div>
           </div>
           <div style={{ flex: 1, overflowY: 'auto', padding: 14, display: 'flex', flexDirection: 'column', gap: 10 }}>

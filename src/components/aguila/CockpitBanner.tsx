@@ -21,7 +21,7 @@ interface Props {
 }
 
 /**
- * Role-aware brand trio. One visual language (Z-mark + AGUILA wordmark),
+ * Role-aware brand trio. One visual language (Z-mark + ZAPATA AI wordmark),
  * different meta line + subtitle per surface. Composed into PageShell via
  * its `brandHeader` slot.
  */
@@ -58,7 +58,7 @@ export function CockpitBanner({ role, name, companyName, metaPills }: Props) {
           color: ACCENT_SILVER_BRIGHT,
           textTransform: 'uppercase',
         }}>
-          AGUILA
+          ZAPATA AI
         </span>
         <span aria-hidden style={{ color: TEXT_MUTED }}>·</span>
         <span style={{

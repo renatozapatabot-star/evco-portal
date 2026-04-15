@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { AGUILA } from '@/lib/search-registry'
+import { ZAPATA } from '@/lib/search-registry'
 
 const RECENT_KEY = 'aduana.search.recent'
 const MAX_RECENT = 5
@@ -62,7 +62,7 @@ export function SmartSuggestions({ onPick, onSuggestionClick }: Props) {
           <div style={{
             padding: '6px 20px',
             fontSize: 10, fontWeight: 600, letterSpacing: '0.08em',
-            textTransform: 'uppercase', color: AGUILA.TEXT_TERTIARY,
+            textTransform: 'uppercase', color: ZAPATA.TEXT_TERTIARY,
           }}>
             Búsquedas recientes
           </div>
@@ -92,7 +92,7 @@ export function SmartSuggestions({ onPick, onSuggestionClick }: Props) {
         <div style={{
           padding: '6px 20px',
           fontSize: 10, fontWeight: 600, letterSpacing: '0.08em',
-          textTransform: 'uppercase', color: AGUILA.TEXT_TERTIARY,
+          textTransform: 'uppercase', color: ZAPATA.TEXT_TERTIARY,
         }}>
           Sugerencias
         </div>

@@ -163,7 +163,7 @@ export async function GET(request: NextRequest) {
       subject: `Permiso vence en ${c.tripwire} días · ${PERMIT_COLS[c.kind].label}`,
       body,
       internalOnly: true,
-      actor: { role: 'system', name: 'AGUILA Catálogo' },
+      actor: { role: 'system', name: 'ZAPATA AI Catálogo' },
     })
     if (res.error) continue
 

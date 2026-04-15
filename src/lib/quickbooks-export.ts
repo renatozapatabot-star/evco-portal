@@ -1,5 +1,5 @@
 /**
- * AGUILA · V1.5 F2 — QuickBooks IIF generator.
+ * ZAPATA AI · V1.5 F2 — QuickBooks IIF generator.
  *
  * Pure functions, no I/O. Produces a minimal but correct Intuit Interchange
  * Format (.IIF) file: tab-separated, CRLF line endings, UTF-8. Anabel drags
@@ -146,11 +146,11 @@ export function generateIIF(payload: IIFPayload): string {
   const out: string[] = []
   const { customers = [], vendors = [], invoices = [], bills = [] } = payload
 
-  // --- AGUILA brand header (IIF comments start with ;) ---
+  // --- ZAPATA AI brand header (IIF comments start with ;) ---
   const company = customers[0]?.companyName ?? customers[0]?.name ?? ''
   const today = new Date().toISOString().slice(0, 10)
-  out.push(`; AGUILA — Patente 3596 · ${company} · ${today}`)
-  out.push('; Generado por AGUILA · Inteligencia aduanal · Aduana 240 Nuevo Laredo')
+  out.push(`; ZAPATA AI — Patente 3596 · ${company} · ${today}`)
+  out.push('; Generado por ZAPATA AI · Inteligencia aduanal · Aduana 240 Nuevo Laredo')
 
   // --- Customers section ---
   if (customers.length > 0) {

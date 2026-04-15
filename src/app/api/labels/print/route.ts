@@ -1,5 +1,5 @@
 /**
- * AGUILA · V1.5 F19 — POST /api/labels/print
+ * ZAPATA AI · V1.5 F19 — POST /api/labels/print
  *
  * Vicente taps "Imprimir etiqueta" on the entrada form. We queue the job,
  * ensure a QR short code exists (F1), and return a `pdfUrl` the mobile UI

@@ -60,7 +60,7 @@ export default function TopBar({
         )}
 
         {/* Logo — eagle mark (wordmark is reserved for login + auth screens). */}
-        <Link href="/" className="topbar-logo" aria-label="AGUILA inicio">
+        <Link href="/" className="topbar-logo" aria-label="ZAPATA AI inicio">
           <AguilaMark size={28} tone="silver" />
         </Link>
 
@@ -130,7 +130,7 @@ export default function TopBar({
           <Menu size={20} />
         </button>
       )}
-      <Link href="/" className="topbar-logo" aria-label="AGUILA inicio">
+      <Link href="/" className="topbar-logo" aria-label="ZAPATA AI inicio">
         <AguilaMark size={28} tone="silver" />
       </Link>
       <div style={{ flex: 1 }} />

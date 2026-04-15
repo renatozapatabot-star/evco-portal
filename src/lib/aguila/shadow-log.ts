@@ -24,7 +24,7 @@ export interface ShadowEntry {
 }
 
 /**
- * Write an AGUILA AI telemetry row.
+ * Write an ZAPATA AI telemetry row.
  * Silent on failure — never breaks the request. Service-role only; RLS denies
  * every authenticated read by design.
  */

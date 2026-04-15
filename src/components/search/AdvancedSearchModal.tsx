@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useTrack } from '@/lib/telemetry/useTrack'
 import {
   ADVANCED_SEARCH_FIELDS,
-  AGUILA,
+  ZAPATA,
   validateAdvancedCriteria,
 } from '@/lib/search-registry'
 import type {
@@ -115,8 +115,8 @@ export function AdvancedSearchModal({ open, onClose }: Props) {
           width: 'min(640px, calc(100vw - 24px))',
           maxHeight: 'min(84vh, 720px)',
           display: 'flex', flexDirection: 'column',
-          background: AGUILA.BG_ELEVATED,
-          border: `1px solid ${AGUILA.BORDER_HAIRLINE}`,
+          background: ZAPATA.BG_ELEVATED,
+          border: `1px solid ${ZAPATA.BORDER_HAIRLINE}`,
           borderRadius: 20,
           boxShadow: '0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)',
           overflow: 'hidden',
@@ -127,12 +127,12 @@ export function AdvancedSearchModal({ open, onClose }: Props) {
         <header style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '16px 20px',
-          borderBottom: `1px solid ${AGUILA.BORDER_HAIRLINE}`,
+          borderBottom: `1px solid ${ZAPATA.BORDER_HAIRLINE}`,
         }}>
           <span style={{ fontSize: 15, fontWeight: 600 }}>Búsqueda avanzada</span>
           <kbd style={{
             fontFamily: 'var(--font-jetbrains-mono), JetBrains Mono, monospace', fontSize: 11,
-            color: AGUILA.TEXT_TERTIARY, border: `1px solid ${AGUILA.BORDER_HAIRLINE}`,
+            color: ZAPATA.TEXT_TERTIARY, border: `1px solid ${ZAPATA.BORDER_HAIRLINE}`,
             borderRadius: 6, padding: '2px 8px',
           }}>Esc</kbd>
         </header>
@@ -149,7 +149,7 @@ export function AdvancedSearchModal({ open, onClose }: Props) {
                 // require populated source data which lands in a follow-up block.
                 return (
                   <label key={f.id} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                    <span style={{ fontSize: 11, color: AGUILA.TEXT_TERTIARY }}>
+                    <span style={{ fontSize: 11, color: ZAPATA.TEXT_TERTIARY }}>
                       {f.labelEs}{f.flag ? ` · ${f.flag}` : ''}
                     </span>
                     <input
@@ -171,7 +171,7 @@ export function AdvancedSearchModal({ open, onClose }: Props) {
               const kind = f.kind === 'date_from' || f.kind === 'date_to' ? 'date' : 'text'
               return (
                 <label key={f.id} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                  <span style={{ fontSize: 11, color: AGUILA.TEXT_TERTIARY }}>
+                  <span style={{ fontSize: 11, color: ZAPATA.TEXT_TERTIARY }}>
                     {f.labelEs}{f.flag ? ` · ${f.flag}` : ''}
                   </span>
                   <input
@@ -201,7 +201,7 @@ export function AdvancedSearchModal({ open, onClose }: Props) {
               {response.results.length > 0 && (
                 <div>
                   <div style={{
-                    fontSize: 11, color: AGUILA.TEXT_TERTIARY,
+                    fontSize: 11, color: ZAPATA.TEXT_TERTIARY,
                     padding: '6px 0', fontWeight: 600, letterSpacing: '0.08em',
                     textTransform: 'uppercase',
                   }}>
@@ -217,7 +217,7 @@ export function AdvancedSearchModal({ open, onClose }: Props) {
                         display: 'flex', flexDirection: 'column', gap: 2,
                         width: '100%', textAlign: 'left',
                         minHeight: 60, padding: '10px 12px',
-                        background: 'transparent', border: `1px solid ${AGUILA.BORDER_HAIRLINE}`,
+                        background: 'transparent', border: `1px solid ${ZAPATA.BORDER_HAIRLINE}`,
                         borderRadius: 12, marginBottom: 6,
                         color: '#E6EDF3', cursor: 'pointer',
                       }}
@@ -226,7 +226,7 @@ export function AdvancedSearchModal({ open, onClose }: Props) {
                         fontFamily: 'var(--font-jetbrains-mono), JetBrains Mono, monospace',
                         fontSize: 13, fontWeight: 600,
                       }}>{row.trafico}</span>
-                      <span style={{ fontSize: 12, color: AGUILA.TEXT_TERTIARY }}>
+                      <span style={{ fontSize: 12, color: ZAPATA.TEXT_TERTIARY }}>
                         {[row.estatus, row.pedimento].filter(Boolean).join(' · ')}
                       </span>
                     </button>
@@ -240,14 +240,14 @@ export function AdvancedSearchModal({ open, onClose }: Props) {
         <footer style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '12px 20px',
-          borderTop: `1px solid ${AGUILA.BORDER_HAIRLINE}`,
+          borderTop: `1px solid ${ZAPATA.BORDER_HAIRLINE}`,
         }}>
           <button
             type="button"
             onClick={onClear}
             style={{
               minHeight: 44, padding: '8px 16px',
-              background: 'transparent', border: `1px solid ${AGUILA.BORDER_HAIRLINE}`,
+              background: 'transparent', border: `1px solid ${ZAPATA.BORDER_HAIRLINE}`,
               borderRadius: 10, color: '#E6EDF3', fontSize: 13, cursor: 'pointer',
             }}
           >
@@ -278,7 +278,7 @@ const inputStyle: React.CSSProperties = {
   minHeight: 44,
   padding: '8px 12px',
   background: 'rgba(255,255,255,0.04)',
-  border: `1px solid ${AGUILA.BORDER_HAIRLINE}`,
+  border: `1px solid ${ZAPATA.BORDER_HAIRLINE}`,
   borderRadius: 10,
   color: '#E6EDF3',
   fontSize: 13,

@@ -1,5 +1,5 @@
 /**
- * AGUILA · Block 16 — Carta Porte generation API.
+ * ZAPATA AI · Block 16 — Carta Porte generation API.
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
@@ -178,7 +178,7 @@ export async function POST(
     company_id: companyId,
     decision_type: 'carta_porte_generated',
     decision: `Carta Porte generada para embarque ${trafico.trafico}`,
-    reasoning: 'Generación local AGUILA; pendiente de submisión a VUCEM/SAT en V2.',
+    reasoning: 'Generación local ZAPATA AI; pendiente de submisión a VUCEM/SAT en V2.',
     dataPoints: { pdf_url: pdfUrl, xml_url: xmlUrl, kind: parsed.data.kind, actor },
   })
 

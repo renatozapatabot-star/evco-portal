@@ -6,7 +6,7 @@ import { createServerClient } from '@/lib/supabase-server'
 export const dynamic = 'force-dynamic'
 
 /**
- * AGUILA v10 skill — document-checklist-validator.
+ * ZAPATA AI v10 skill — document-checklist-validator.
  *
  * Given a trafico_id, returns { required, present, missing, complete_pct }.
  * Client-scoped (respects session.companyId for client role; admin/broker

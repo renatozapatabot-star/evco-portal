@@ -1,9 +1,9 @@
 /**
- * AGUILA V1.5 · F14 — GET /api/vision/classifications
+ * ZAPATA AI V1.5 · F14 — GET /api/vision/classifications
  *
  * Returns the most recent classification row for a given invoice bank
  * entry (or expediente document). Used by the banco-facturas right
- * rail to render the "Extraído por AGUILA" chip + confirm button.
+ * rail to render the "Extraído por ZAPATA AI" chip + confirm button.
  */
 
 import { NextRequest, NextResponse } from 'next/server'

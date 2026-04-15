@@ -1,5 +1,5 @@
 /**
- * AGUILA · V1.5 F17 — Pedimento PDF pure render tests.
+ * ZAPATA AI · V1.5 F17 — Pedimento PDF pure render tests.
  *
  * Validates the pure render pipeline:
  *  1. renderPedimentoPdf returns a PDF buffer (starts with %PDF-).

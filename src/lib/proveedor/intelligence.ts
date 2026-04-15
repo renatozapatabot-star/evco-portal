@@ -1,5 +1,5 @@
 /**
- * AGUILA · Proveedor Intelligence — signal detection.
+ * ZAPATA AI · Proveedor Intelligence — signal detection.
  *
  * Pure aggregation over recent embarques. Fast (one cap-200 query + in-memory
  * grouping). Surfaces four categories of alerts:

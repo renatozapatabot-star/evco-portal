@@ -1,5 +1,5 @@
 /**
- * AGUILA · V1.5 F10 — Operator metrics unit tests.
+ * ZAPATA AI · V1.5 F10 — Operator metrics unit tests.
  *
  * In-memory Supabase double serves table rows per-call. We assert the pure
  * reducer math (cycle avg, error rate, MVE compliance, classification accuracy,

@@ -1392,7 +1392,7 @@ export async function POST(req: NextRequest) {
 
   // Check API key before proceeding
   if (!ANTHROPIC_API_KEY) {
-    return NextResponse.json({ message: 'Asistente AGUILA no está configurado. Contacta a soporte.' }, { status: 503 })
+    return NextResponse.json({ message: 'Asistente ZAPATA AI no está configurado. Contacta a soporte.' }, { status: 503 })
   }
 
   const companyId = req.cookies.get('company_id')?.value ?? ''

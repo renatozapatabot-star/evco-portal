@@ -1,13 +1,13 @@
 // PLACEHOLDER Anexo 24 column structure. Verify against GlobalPC output before official use.
 //
-// AGUILA · Block 10 — Anexo 24 Export (structure only).
+// ZAPATA AI · Block 10 — Anexo 24 Export (structure only).
 // Pure function: no I/O. Produces BOTH a PDF and an Excel Buffer from a
 // single input shape. API route (`/api/reports/anexo-24/generate`) is the
 // only place where storage + operational_decisions writes happen — that
 // keeps this module hot-swappable when a real GlobalPC Anexo 24 sample is
 // in hand.
 //
-// Shared AGUILA PDF header: Block 16 extracts `AguilaPdfHeader` into
+// Shared ZAPATA AI PDF header: Block 16 extracts `AguilaPdfHeader` into
 // `src/lib/pdf/brand.tsx`. Until then, the header is inline-copied from
 // Block 5 (`src/lib/classification-pdf.tsx`) and will be DRY'd in B16.
 
@@ -121,7 +121,7 @@ function buildXlsxBuffer(data: Anexo24Data): Buffer {
   // Insert meta block rows above the table so operators see the same
   // context in both artifacts.
   const metaRows: (string | number)[][] = [
-    ['AGUILA · Anexo 24 (placeholder)'],
+    ['ZAPATA AI · Anexo 24 (placeholder)'],
     [PLACEHOLDER_NOTICE_ES],
     ['Cliente', data.meta.cliente_nombre],
     ['Patente', data.meta.patente, 'Aduana', data.meta.aduana],

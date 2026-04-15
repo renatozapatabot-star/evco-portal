@@ -1,5 +1,5 @@
 /**
- * AGUILA · V1.5 F3 — GET /api/contabilidad/overview
+ * ZAPATA AI · V1.5 F3 — GET /api/contabilidad/overview
  *
  * Returns the six tiles Anabel needs on open: AR aging, AP aging, monthly
  * close checklist, MVE open-alert counts, facturas ready queue, last

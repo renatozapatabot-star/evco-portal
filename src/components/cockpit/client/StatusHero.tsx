@@ -57,7 +57,7 @@ export function StatusHero({ statusLevel, statusSentence, entradasThisMonth, act
         activeShipments > 0 ? (
           <AduanaRecommendation
             compact
-            recommendation={activeShipments === 1 ? 'AGUILA monitorea tu envío en tiempo real' : `AGUILA monitorea tus ${activeShipments} envíos`}
+            recommendation={activeShipments === 1 ? 'ZAPATA AI monitorea tu envío en tiempo real' : `ZAPATA AI monitorea tus ${activeShipments} envíos`}
             confidence={95}
             approveLabel="Ver detalle"
             approveHref="/embarques"

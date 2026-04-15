@@ -1,5 +1,5 @@
 /**
- * AGUILA · Block 10 — Anexo 24 generator API.
+ * ZAPATA AI · Block 10 — Anexo 24 generator API.
  *
  * POST /api/reports/anexo-24/generate
  *   body: { date_from?: string|null, date_to?: string|null, company_id?: string|null }

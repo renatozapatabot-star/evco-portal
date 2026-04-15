@@ -24,7 +24,7 @@ export interface AsistenteButtonProps {
   firstMessage?: string
   /** Route override. Default: `/mensajeria`. */
   href?: string
-  /** Visible label on the button. Default: 'Asistente AGUILA'. */
+  /** Visible label on the button. Default: 'Asistente ZAPATA AI'. */
   label?: string
 }
 
@@ -40,7 +40,7 @@ export function AsistenteButton({
   roleTag,
   firstMessage,
   href = '/mensajeria',
-  label = 'Asistente AGUILA',
+  label = 'Asistente ZAPATA AI',
 }: AsistenteButtonProps) {
   const hello = firstMessage ?? DEFAULT_HELLO[roleTag]
   const params = new URLSearchParams({ ctx: roleTag, hello })

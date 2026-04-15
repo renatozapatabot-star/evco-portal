@@ -1,5 +1,5 @@
 /**
- * AGUILA · V1.5 F9 — POST /api/demo/reset
+ * ZAPATA AI · V1.5 F9 — POST /api/demo/reset
  *
  * Admin/broker only. Purges synthetic embarques + workflow_events +
  * classification_sheets + invoices + quickbooks_export_jobs + mve_alerts

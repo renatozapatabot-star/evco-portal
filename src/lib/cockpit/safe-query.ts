@@ -1,5 +1,5 @@
 /**
- * AGUILA v9 — cockpit SSR queries are resilient by construction.
+ * ZAPATA AI v9 — cockpit SSR queries are resilient by construction.
  *
  * Two failure modes handled:
  * 1. PostgREST error (bad column, missing table) → `{ data: null, error }` returned

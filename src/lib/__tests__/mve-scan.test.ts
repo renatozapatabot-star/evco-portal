@@ -1,5 +1,5 @@
 /**
- * AGUILA · Block 17 — MVE scan tests.
+ * ZAPATA AI · Block 17 — MVE scan tests.
  *
  * Five unit tests covering pure-logic helpers + orchestration:
  *  1. Scan detects a pedimento approaching deadline.

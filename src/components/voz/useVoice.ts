@@ -145,7 +145,7 @@ export function useVoice(): UseVoiceReturn {
       speak(reply)
     } catch (err: unknown) {
       if (err instanceof Error && err.name === 'AbortError') return
-      setError('Error al comunicarse con AGUILA. Intenta de nuevo.')
+      setError('Error al comunicarse con ZAPATA AI. Intenta de nuevo.')
       setVoiceState('IDLE')
     }
   }, [speak])

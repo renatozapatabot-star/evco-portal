@@ -1,5 +1,5 @@
 /**
- * AGUILA · Block 11 — POST /api/pece/create-intent
+ * ZAPATA AI · Block 11 — POST /api/pece/create-intent
  *
  * Validates pedimento ownership, inserts a pece_payments row with
  * status='intent', fires the `pece_payment_intent` workflow_event.

@@ -16,7 +16,7 @@ import type {
   EntityScope,
 } from '@/types/search'
 import {
-  AGUILA_BG_ELEVATED,
+  ZAPATA_BG_ELEVATED,
   ACCENT_SILVER,
   BORDER_HAIRLINE,
   TEXT_TERTIARY,
@@ -225,9 +225,9 @@ export function getEntityConfig(id: EntityId): EntityConfig {
   return match
 }
 
-// ── AGUILA re-exports (scoped to search surface) ──
-export const AGUILA = {
-  BG_ELEVATED: AGUILA_BG_ELEVATED,
+// ── ZAPATA AI re-exports (scoped to search surface) ──
+export const ZAPATA = {
+  BG_ELEVATED: ZAPATA_BG_ELEVATED,
   BORDER_HAIRLINE,
   ACCENT_SILVER,
   TEXT_TERTIARY,

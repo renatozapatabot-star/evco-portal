@@ -1,5 +1,5 @@
 /**
- * AGUILA · V1.5 F17 — Pedimento PDF live preview.
+ * ZAPATA AI · V1.5 F17 — Pedimento PDF live preview.
  *
  * GET /api/pedimento/[id]/preview
  *   → application/pdf bytes of the current pedimento snapshot.

@@ -1,5 +1,5 @@
 /**
- * AGUILA · Block 6a — Pedimento validation engine.
+ * ZAPATA AI · Block 6a — Pedimento validation engine.
  *
  * Pure function. No I/O, no zod. Returns `ValidationError[]` grouped by tab.
  * Tests land in Slice B6c. Rules are recon-informed (docs/recon/V2_GLOBALPC_RECON.md)

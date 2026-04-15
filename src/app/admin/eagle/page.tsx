@@ -1,5 +1,5 @@
 /**
- * AGUILA · Eagle View (Tito) — v9 resilient aggregate cockpit.
+ * ZAPATA AI · Eagle View (Tito) — v9 resilient aggregate cockpit.
  *
  * Every query soft-wrapped. Owner aggregates across ALL tenants (invariant 31).
  * Actividad reciente = escalation-only audit_log feed.

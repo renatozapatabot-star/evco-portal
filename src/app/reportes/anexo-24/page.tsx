@@ -1,5 +1,5 @@
 /**
- * AGUILA · Block 10 — Anexo 24 generator page.
+ * ZAPATA AI · Block 10 — Anexo 24 generator page.
  *
  * Date range picker, optional cliente filter (broker/admin only),
  * "Generar Anexo 24" button. AMBER banner warns that the column structure

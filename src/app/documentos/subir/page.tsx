@@ -187,7 +187,7 @@ export default function SubirDocumentosPage() {
           Subir Documentos
         </h1>
         <p style={{ fontSize: 14, color: 'var(--cruz-text-muted)', lineHeight: 1.5 }}>
-          Sus documentos serán clasificados automáticamente por AGUILA
+          Sus documentos serán clasificados automáticamente por ZAPATA AI
         </p>
       </div>
 

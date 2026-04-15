@@ -171,8 +171,8 @@ export async function POST(request: NextRequest) {
     // Telegram notification
     sendTelegram(
       traficoId && docType
-        ? `📎 <b>${companyId}</b> subió <b>${docType}</b> para ${traficoId}\nArchivo: ${file.name}\n— AGUILA`
-        : `📎 <b>${companyId}</b> subió <b>${file.name}</b> (auto-clasificar)\n— AGUILA`
+        ? `📎 <b>${companyId}</b> subió <b>${docType}</b> para ${traficoId}\nArchivo: ${file.name}\n— ZAPATA AI`
+        : `📎 <b>${companyId}</b> subió <b>${file.name}</b> (auto-clasificar)\n— ZAPATA AI`
     )
 
     return NextResponse.json({

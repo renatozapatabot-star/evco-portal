@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * AGUILA · Block 12 — localStorage wrapper for CarrierSelector MRU cache.
+ * ZAPATA AI · Block 12 — localStorage wrapper for CarrierSelector MRU cache.
  *
  * Isolated from lib/carriers.ts so the pure helpers stay trivially testable
  * in node. This module touches `window` and is client-only.

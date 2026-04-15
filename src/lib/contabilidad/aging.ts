@@ -1,5 +1,5 @@
 /**
- * AGUILA · V1.5 F3 — AR/AP aging calculations.
+ * ZAPATA AI · V1.5 F3 — AR/AP aging calculations.
  *
  * AR source  = `invoices` (company_id scoped, status not paid/cancelled).
  * AP source  = `aduanet_facturas` (legacy table, scoped via companies.clave_cliente).

@@ -1,5 +1,5 @@
 /**
- * AGUILA · V1.5 F3 — Monthly close checklist helpers.
+ * ZAPATA AI · V1.5 F3 — Monthly close checklist helpers.
  *
  * Idempotent seed + single-item toggle. The 8 standard items are the
  * minimum Anabel verifies before calling a month closed for Patente 3596.

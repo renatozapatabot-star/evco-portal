@@ -72,7 +72,7 @@ export function PedimentoPDF(props: PedimentoPDFProps) {
   return (
     <Document>
       <Page size="LETTER" style={s.page}>
-        {/* AGUILA brand header */}
+        {/* ZAPATA AI brand header */}
         <AguilaPdfHeader title="Pedimento Detallado" subtitle={`${props.clientName} · Patente ${props.patente} · Aduana ${props.aduana}`} />
         <View style={s.header} fixed>
           <Text style={s.subtitle}>Generado: {props.date}</Text>
@@ -172,7 +172,7 @@ export function PedimentoPDF(props: PedimentoPDFProps) {
 
         {/* Footer */}
         <View style={s.footer} fixed>
-          <Text style={s.footerText}>AGUILA · Inteligencia aduanal · Patente {props.patente}</Text>
+          <Text style={s.footerText}>ZAPATA AI · Inteligencia aduanal · Patente {props.patente}</Text>
           <Text style={s.footerText} render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`} />
         </View>
       </Page>

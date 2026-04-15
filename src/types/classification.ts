@@ -3,7 +3,7 @@
  *
  * 9 grouping modes × 4 ordering modes × 12 print toggles — matches the
  * GlobalPC "Hoja de clasificación" config surface so existing operators
- * recognise every knob when they open the generator in AGUILA.
+ * recognise every knob when they open the generator in ZAPATA.
  */
 
 export type GroupingMode =

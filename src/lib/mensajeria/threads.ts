@@ -275,7 +275,7 @@ export async function escalateThread(input: EscalateThreadInput): Promise<Result
     thread_id: input.threadId,
     company_id: (existing as MensajeriaThread).company_id,
     author_role: 'system',
-    author_name: 'AGUILA',
+    author_name: 'ZAPATA AI',
     body: `Escalado a Dirección por ${input.authorName}${summary ? `\n\nResumen: ${summary}` : ''}`,
     internal_only: true,
   })

@@ -1,5 +1,5 @@
 /**
- * AGUILA · Routine R5 — Weekly Client Reports
+ * ZAPATA AI · Routine R5 — Weekly Client Reports
  *
  * Called Monday 6:00 AM Central. Iterates every active client, generates
  * a weekly summary per tenant, POSTs each summary to that client's

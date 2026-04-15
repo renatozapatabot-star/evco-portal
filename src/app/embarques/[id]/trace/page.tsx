@@ -104,7 +104,7 @@ export default async function TraceViewPage({
               flexWrap: 'wrap',
             }}
           >
-            <AguilaMark size={36} tone="silver" aria-label="AGUILA" />
+            <AguilaMark size={36} tone="silver" aria-label="ZAPATA AI" />
             <AguilaWordmark size={22} tone="silver" />
             <span
               style={{

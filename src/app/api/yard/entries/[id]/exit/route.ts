@@ -1,5 +1,5 @@
 /**
- * AGUILA · Block 14 — PATCH /api/yard/entries/[id]/exit
+ * ZAPATA AI · Block 14 — PATCH /api/yard/entries/[id]/exit
  *
  * Marks a yard entry as exited (sets exited_at = now()) and emits
  * `yard_exited` onto workflow_events. Tenant-scoped via verifySession.

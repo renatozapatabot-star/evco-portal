@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * AGUILA · Block 6b — Partidas tab wrapper.
+ * ZAPATA AI · Block 6b — Partidas tab wrapper.
  * Reuses Block 1's canonical PartidasTab from the embarque detail view.
  * Partidas are managed at the embarque level; no autosave here.
  */

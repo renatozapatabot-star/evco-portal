@@ -310,7 +310,7 @@ function CruzAutoSection({
         <EmptyState
           icon="&#129302;"
           title="Sin acciones automáticas hoy"
-          description="AGUILA activará automatizaciones conforme aumente la confianza."
+          description="ZAPATA AI activará automatizaciones conforme aumente la confianza."
         />
       </div>
     )
@@ -330,7 +330,7 @@ function CruzAutoSection({
         }}
       >
         <span style={{ fontSize: 20 }}>&#9889;</span>
-        AGUILA ya hizo hoy:
+        ZAPATA AI ya hizo hoy:
       </h2>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {autoActions.map((a) => (
@@ -547,7 +547,7 @@ export default function LaunchpadPage() {
         <EmptyState
           icon="&#129302;"
           title="Sin acciones pendientes"
-          description="AGUILA está aprendiendo. Las acciones aparecerán conforme el agente procese operaciones."
+          description="ZAPATA AI está aprendiendo. Las acciones aparecerán conforme el agente procese operaciones."
         />
       )}
 

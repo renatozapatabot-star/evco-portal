@@ -47,7 +47,7 @@ export function CorridorMap({ landmarks, pulses, onPulseClick, onLandmarkHover }
           <PulseMarker key={p.traficoId} pulse={p} onClick={onPulseClick} />
         ))}
       </MapContainer>
-      {/* 3-5% opacity topographic hairline overlay — AGUILA canonical texture. */}
+      {/* 3-5% opacity topographic hairline overlay — ZAPATA AI canonical texture. */}
       <div
         aria-hidden="true"
         style={{

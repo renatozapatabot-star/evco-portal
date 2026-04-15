@@ -22,7 +22,7 @@ const ACTION_LABELS: Record<string, { verb: string; entityPrefix: string }> = {
   operator_card_cleared: { verb: 'completó', entityPrefix: '' },
   operator_mi_turno_clicked: { verb: 'avanzó en', entityPrefix: '' },
   operator_kanban_card_clicked: { verb: 'revisó', entityPrefix: '' },
-  cruz_ai_query: { verb: 'consultó Asistente AGUILA', entityPrefix: '' },
+  cruz_ai_query: { verb: 'consultó Asistente ZAPATA AI', entityPrefix: '' },
   demo_lead_captured: { verb: 'capturó lead', entityPrefix: '' },
 }
 

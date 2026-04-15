@@ -1,9 +1,9 @@
 'use client'
 
 /**
- * AGUILA · Block 15 — Field primitives for the client config editor.
+ * ZAPATA AI · Block 15 — Field primitives for the client config editor.
  *
- * Thin wrappers around <input>/<select>/<textarea> with AGUILA silver
+ * Thin wrappers around <input>/<select>/<textarea> with ZAPATA AI silver
  * styling, 60px desktop touch targets, and onBlur wiring to the section
  * autosave hook. Kept self-contained so each tab file reads cleanly.
  */

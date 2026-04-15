@@ -78,14 +78,14 @@ function LoginContent() {
       <div
         className={`login-container${mounted && !entering ? ' is-entered' : ''}${entering ? ' is-exiting' : ''}`}
       >
-        {/* Centered eagle */}
+        {/* Centered mark — gold Z */}
         <div className="login-eagle">
-          <AguilaMark size={140} tone="silver" />
+          <AguilaMark size={140} />
         </div>
 
-        {/* Wordmark */}
+        {/* Wordmark — ZAPATA AI in gold */}
         <div className="login-wordmark">
-          <AguilaWordmark size={40} tone="silver" />
+          <AguilaWordmark size={40} tone="gold" />
         </div>
 
         {/* Tagline */}
@@ -197,7 +197,7 @@ function LoginContent() {
           width: 400px;
           height: 400px;
           transform: translate(-50%, -50%);
-          background: radial-gradient(circle, rgba(192,197,206,0.08) 0%, transparent 65%);
+          background: radial-gradient(circle, rgba(201,167,74,0.14) 0%, transparent 65%);
           pointer-events: none;
           z-index: 0;
           will-change: transform;
@@ -261,7 +261,7 @@ function LoginContent() {
         }
         .login-eagle {
           margin-bottom: 16px;
-          filter: drop-shadow(0 0 24px rgba(192,197,206,0.18));
+          filter: drop-shadow(0 0 28px rgba(201,167,74,0.32));
         }
         .login-wordmark {
           margin-bottom: 12px;

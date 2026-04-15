@@ -1,5 +1,5 @@
 /**
- * AGUILA · V1.5 F10 — /admin/operadores
+ * ZAPATA AI · V1.5 F10 — /admin/operadores
  *
  * Admin-only per-operator performance dashboard. Silver glass header, date
  * range picker, sortable table, row click → /admin/operadores/[id].

@@ -309,7 +309,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({
         id: `chatcmpl-${Date.now()}`,
         object: 'chat.completion',
-        choices: [{ index: 0, message: { role: 'assistant', content: 'Hola Tito. Soy AGUILA. ¿En qué te ayudo?' }, finish_reason: 'stop' }],
+        choices: [{ index: 0, message: { role: 'assistant', content: 'Hola Tito. Soy ZAPATA AI. ¿En qué te ayudo?' }, finish_reason: 'stop' }],
       })
     }
 

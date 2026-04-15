@@ -6,7 +6,7 @@
  *
  * CLICK COUNT: cockpit → monitor → tráfico detail = 2 clicks
  * GLOBALPC EQUIVALENT: Utilerías → Monitor → manual refresh → open tráfico = 4 clicks
- * AGUILA ADVANTAGE: realtime push + 2 clicks saved per operation
+ * ZAPATA AI ADVANTAGE: realtime push + 2 clicks saved per operation
  */
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'

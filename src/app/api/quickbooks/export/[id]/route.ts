@@ -1,5 +1,5 @@
 /**
- * AGUILA · V1.5 F2 — GET /api/quickbooks/export/[id]
+ * ZAPATA AI · V1.5 F2 — GET /api/quickbooks/export/[id]
  *
  * Polls the status of a QuickBooks export job. Returns a signed download URL
  * (10-minute TTL) when the job is `ready`.

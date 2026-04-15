@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * AGUILA · Block 12 — Transportistas tab backed by the master carrier catalog.
+ * ZAPATA AI · Block 12 — Transportistas tab backed by the master carrier catalog.
  *
  * Swaps the Block 6c freetext field for `<CarrierSelector>`. Row shape on
  * the server is unchanged (carrier_id + carrier_name); selecting a carrier

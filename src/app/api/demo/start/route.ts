@@ -1,5 +1,5 @@
 /**
- * AGUILA · V1.5 F9 — POST /api/demo/start
+ * ZAPATA AI · V1.5 F9 — POST /api/demo/start
  *
  * Admin/broker only. Creates the synthetic DEMO EVCO PLASTICS company if
  * absent, inserts a fresh DEMO- embarque, kicks off the 12-step orchestrator

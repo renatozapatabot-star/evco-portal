@@ -3,7 +3,7 @@
  *
  * Sends the most recent generated classification sheet for the embarque to
  * the provided recipients (or the per-cliente default recipients). PDF +
- * Excel attached. AGUILA letterhead email body.
+ * Excel attached. ZAPATA AI letterhead email body.
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
@@ -17,7 +17,7 @@ import {
 } from '../../../../../../scripts/lib/email-templates/classification-sheet.js'
 
 const SENDER =
-  process.env.RESEND_FROM_ADDRESS || 'AGUILA <sistema@renatozapata.com>'
+  process.env.RESEND_FROM_ADDRESS || 'ZAPATA AI <sistema@renatozapata.com>'
 
 function err(code: string, message: string, status: number) {
   return NextResponse.json({ data: null, error: { code, message } }, { status })

@@ -82,7 +82,7 @@ export default function TrackingPage() {
             fontSize: 14, fontWeight: 800, color: DARK,
           }}>C</div>
           <div>
-            <div style={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.05em' }}>AGUILA Tracking</div>
+            <div style={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.05em' }}>ZAPATA AI Tracking</div>
             <div style={{ fontSize: 11, color: MUTED }}>Renato Zapata & Company</div>
           </div>
         </div>

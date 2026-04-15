@@ -7,7 +7,7 @@ import { computeARAging, computeAPAging } from '@/lib/contabilidad/aging'
 export const dynamic = 'force-dynamic'
 
 /**
- * AGUILA v10 skill — financial-summary.
+ * ZAPATA AI v10 skill — financial-summary.
  *
  * Returns AR/AP totals + aging buckets. Client-scoped for client role;
  * admin/broker see aggregate across tenants (null companyId per invariant 31).

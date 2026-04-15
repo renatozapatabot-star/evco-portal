@@ -1,5 +1,5 @@
 /**
- * AGUILA · Block 11 — Mexican bank catalog (Banxico bank codes).
+ * ZAPATA AI · Block 11 — Mexican bank catalog (Banxico bank codes).
  *
  * Static inline copy of the `mexican_banks` seed rows so the BankSelector
  * ships <100ms without a round-trip. Server-side validation still goes

@@ -1,8 +1,8 @@
 /**
  * FallbackLink — escape hatch to the legacy GlobalPC system.
  *
- * Every AGUILA feature card that maps to a GlobalPC workflow carries one of
- * these. Operators keep trust in AGUILA precisely because they always know
+ * Every ZAPATA AI feature card that maps to a GlobalPC workflow carries one of
+ * these. Operators keep trust in ZAPATA AI precisely because they always know
  * where to go when the new system is missing data.
  *
  * Two visual modes, one component:
@@ -65,7 +65,7 @@ export function FallbackLink({
               lineHeight: 1.4,
             }}
           >
-            {message ?? `Datos incompletos en AGUILA — consulta ${label} para detalles.`}
+            {message ?? `Datos incompletos en ZAPATA AI — consulta ${label} para detalles.`}
           </div>
         </div>
         <Link

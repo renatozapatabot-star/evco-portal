@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * AGUILA · V1.5 F6 — Eagle tile shell.
+ * ZAPATA AI · V1.5 F6 — Eagle tile shell.
  *
  * Composes from the unified <GlassCard> primitive. Title/subtitle row uses
  * the centralized typography scale.

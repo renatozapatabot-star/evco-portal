@@ -1,5 +1,5 @@
 /**
- * AGUILA · V1.5 F19 — Entrada label template tests.
+ * ZAPATA AI · V1.5 F19 — Entrada label template tests.
  *
  * The actual PDF rendering is exercised by @react-pdf/renderer in CI; here
  * we lock the input shape + QR-data-URL fallback so a future edit to the

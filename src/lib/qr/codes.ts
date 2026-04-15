@@ -1,5 +1,5 @@
 /**
- * AGUILA · V1.5 F1 — Entrada QR codes.
+ * ZAPATA AI · V1.5 F1 — Entrada QR codes.
  *
  * Short-code generation + QR rendering + scan resolution. A QR label is
  * created when the supplier confirms shipment (Block 4) and printed by

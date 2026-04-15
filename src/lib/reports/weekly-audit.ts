@@ -1,5 +1,5 @@
 /**
- * AGUILA · Multi-Client Weekly Audit — data assembly.
+ * ZAPATA AI · Multi-Client Weekly Audit — data assembly.
  *
  * Pulls the minimum data needed for a weekly branded PDF audit per client.
  * One company per call; admin/broker iterates over companies for a

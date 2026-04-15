@@ -1,5 +1,5 @@
 /**
- * AGUILA · Block 15 — Client Master Config validator.
+ * ZAPATA AI · Block 15 — Client Master Config validator.
  *
  * Pure function. Takes the full companies row (as read from Supabase with
  * all 12 JSONB columns) and returns every validation error found. Powers

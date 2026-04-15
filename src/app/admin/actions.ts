@@ -51,10 +51,10 @@ Cliente: ${trafico.company_id || '—'}
 Si hay un bloqueo, avísame qué necesitamos para destrabar.
 
 Gracias,
-Admin AGUILA
+Admin ZAPATA AI
 
 ---
-Este recordatorio fue generado desde AGUILA: ${BASE_URL}/admin`
+Este recordatorio fue generado desde ZAPATA AI: ${BASE_URL}/admin`
 
   const htmlBody = `<div style="font-family:'DM Sans',Geist,system-ui,sans-serif;font-size:14px;line-height:1.6;color:#1A1A1A;">
 ${textBody.replace(/\n/g, '<br>')}

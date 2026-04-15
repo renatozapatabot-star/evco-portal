@@ -1,5 +1,5 @@
 /**
- * AGUILA · V1.5 F12 — Telegram formatter tests.
+ * ZAPATA AI · V1.5 F12 — Telegram formatter tests.
  */
 
 import { describe, it, expect } from 'vitest'

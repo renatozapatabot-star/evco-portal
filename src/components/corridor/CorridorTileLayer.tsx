@@ -1,7 +1,7 @@
 'use client'
 
 // Block 7 · Corridor Map — CartoDB Dark Matter tile wrapper.
-// No API key required. Closest free tile set to the AGUILA canonical.
+// No API key required. Closest free tile set to the ZAPATA AI canonical.
 // See https://github.com/CartoDB/basemap-styles for attribution terms.
 
 import { TileLayer } from 'react-leaflet'

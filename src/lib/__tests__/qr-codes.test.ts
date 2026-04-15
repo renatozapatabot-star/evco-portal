@@ -1,5 +1,5 @@
 /**
- * AGUILA · V1.5 F1 — QR entrada code tests.
+ * ZAPATA AI · V1.5 F1 — QR entrada code tests.
  */
 
 import { describe, it, expect, vi } from 'vitest'

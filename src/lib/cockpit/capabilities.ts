@@ -12,7 +12,7 @@ export interface CapabilityCardDef {
 }
 
 /**
- * AGUILA v10 — three capability cards shown on every role cockpit,
+ * ZAPATA AI v10 — three capability cards shown on every role cockpit,
  * between the 6 nav cards and the main estado grid. Actions, not
  * destinations — distinct semantics from UNIFIED_NAV_TILES.
  *

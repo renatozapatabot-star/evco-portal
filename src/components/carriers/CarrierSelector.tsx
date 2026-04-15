@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * AGUILA · Block 12 — Type-ahead carrier selector over the master catalog.
+ * ZAPATA AI · Block 12 — Type-ahead carrier selector over the master catalog.
  *
  * 150ms debounce, top 5 results from `/api/carriers/search`, keyboard nav
  * (↑↓ Enter Esc), MRU cache keyed by operator + carrier_type surfaces at

@@ -20,13 +20,13 @@ export default async function StatusPage() {
 
   // Client-friendly label mapping — hide internal service names
   const friendlyName: Record<string, string> = {
-    'Portal CRUZ': 'AGUILA Web',
+    'Portal CRUZ': 'ZAPATA AI Web',
     'Base de Datos': 'Sincronización de Datos',
     'GlobalPC MySQL': 'Sincronización de Datos',
     'Supabase': 'Sincronización de Datos',
-    'ADUANA Intelligence': 'AGUILA AI',
+    'ADUANA Intelligence': 'ZAPATA AI',
     'Telegram Bot': 'Notificaciones',
-    'Ollama': 'AGUILA AI',
+    'Ollama': 'ZAPATA AI',
   }
 
   // If no integration_health data, show defaults
@@ -37,9 +37,9 @@ export default async function StatusPage() {
         detail: i.status === 'healthy' ? 'Activo' : 'Sin conexión',
       }))
     : [
-        { name: 'AGUILA Web', status: 'operational', detail: 'Activo' },
+        { name: 'ZAPATA AI Web', status: 'operational', detail: 'Activo' },
         { name: 'Sincronización de Datos', status: 'operational', detail: 'Activo' },
-        { name: 'AGUILA AI', status: 'operational', detail: 'Activo' },
+        { name: 'ZAPATA AI', status: 'operational', detail: 'Activo' },
       ]
 
   const cfg: Record<string, { color: string; bg: string; label: string; dot: string }> = {
@@ -59,7 +59,7 @@ export default async function StatusPage() {
           <div style={{ width: 40, height: 40, background: GOLD_GRADIENT, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-primary)', fontWeight: 900, fontSize: 18, fontFamily: 'Georgia, serif' }}>Z</div>
           <div>
             <h1 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>Estado del Sistema</h1>
-            <p style={{ color: '#666', fontSize: 12, margin: 0 }}>AGUILA Intelligence Platform</p>
+            <p style={{ color: '#666', fontSize: 12, margin: 0 }}>ZAPATA AI Intelligence Platform</p>
           </div>
         </div>
 
@@ -93,7 +93,7 @@ export default async function StatusPage() {
         </div>
 
         <div style={{ textAlign: 'center', marginTop: 24, color: '#666', fontSize: 11 }}>
-          <p>AGUILA Intelligence Platform &middot; Patente 3596 &middot; Aduana 240 Nuevo Laredo</p>
+          <p>ZAPATA AI Intelligence Platform &middot; Patente 3596 &middot; Aduana 240 Nuevo Laredo</p>
           <p style={{ marginTop: 4 }}>Auto-refresh: every 60 seconds</p>
         </div>
       </div>

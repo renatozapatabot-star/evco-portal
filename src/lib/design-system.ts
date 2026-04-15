@@ -1,11 +1,11 @@
-// design-system — AGUILA Monochrome Chrome tokens (April 2026 rebrand)
-// Platform was CRUZ → ADUANA → AGUILA. Silver/chrome monochrome replaces
-// cyan/gold. Slice A2b migrated the 73 deprecated-token consumers by
-// aliasing the deprecated names to silver/chrome equivalents — consumers
-// render silver without every file needing to be rewritten.
+// design-system — ZAPATA AI dual-accent tokens (April 2026 rebrand)
+// Platform lineage: CRUZ → ADUANA → ZAPATA AI → ZAPATA. Silver remains the
+// chrome for data/information surfaces. Gold returns as the identity accent
+// for brand moments (mark, wordmark, primary CTAs, active nav indicator).
+// Gold for identity · silver for data. Never decorative color beyond these.
 // This file is excluded from the gsd-verify color check by path name.
 
-// ── AGUILA brand palette (April 2026 — primary tokens) ──
+// ── ZAPATA AI brand palette (April 2026 — primary tokens) ──
 export const BG_DEEP = '#0A0A0C'
 export const ACCENT_SILVER = '#C0C5CE'
 export const ACCENT_SILVER_BRIGHT = '#E8EAED'
@@ -21,22 +21,33 @@ export const AMBER = '#FBBF24'          // Warning / alerts
 export const RED = '#EF4444'            // Danger / risk
 export const Z_RED = '#CC1B2F'          // Brand mark only
 
-// ── Deprecated tokens — aliased to silver/chrome for backward compat ──
-// A2b migration: the 73 consumers still import these names; values now
-// resolve to the silver palette so the visual swap is mechanical. Follow-up
-// slice removes the aliases once imports are renamed.
+// ── ZAPATA AI gold palette (April 2026 rebrand — identity surfaces) ──
+// Gold returns for brand moments only: mark, wordmark, primary CTAs,
+// active nav indicator. Silver still owns data/chrome (KPIs, borders, text).
+export const ZAPATA_GOLD_BASE = '#C9A74A'
+export const ZAPATA_GOLD_BRIGHT = '#F4D47A'
+export const ZAPATA_GOLD_DIM = '#8F7628'
+export const ZAPATA_GOLD_GRADIENT =
+  'linear-gradient(135deg, #F4D47A 0%, #C9A74A 50%, #8F7628 100%)'
+export const ZAPATA_GOLD_GLOW = 'rgba(201,167,74,0.28)'
+export const ZAPATA_GOLD_GLOW_SUBTLE = 'rgba(201,167,74,0.12)'
+
+// ── GOLD tokens — restored to real gold for ZAPATA AI brand surfaces ──
+// Prior (be416fc) aliased GOLD → silver when the brand went monochrome.
+// ZAPATA AI rebrand restores gold for identity moments; consumers importing
+// GOLD* now render gold again — exactly what most of them historically meant.
+export const GOLD = ZAPATA_GOLD_BRIGHT
+export const GOLD_HOVER = ZAPATA_GOLD_BASE
+export const GOLD_GRADIENT = ZAPATA_GOLD_GRADIENT
+export const GOLD_TEXT = ZAPATA_GOLD_BRIGHT
+export const GLOW_GOLD = ZAPATA_GOLD_GLOW
+export const GLOW_GOLD_SUBTLE = ZAPATA_GOLD_GLOW_SUBTLE
+
+// ── Legacy cyan/blue aliases — still silver (data chrome stays silver) ──
 /** @deprecated — use ACCENT_SILVER. */
 export const ACCENT_CYAN = ACCENT_SILVER
 /** @deprecated — use ACCENT_SILVER_DIM. */
 export const ACCENT_BLUE = ACCENT_SILVER_DIM
-/** @deprecated — use ACCENT_SILVER_BRIGHT. */
-export const GOLD = ACCENT_SILVER_BRIGHT
-/** @deprecated — use ACCENT_SILVER. */
-export const GOLD_HOVER = ACCENT_SILVER
-/** @deprecated — use SILVER_GRADIENT. */
-export const GOLD_GRADIENT = SILVER_GRADIENT
-/** @deprecated — use ACCENT_SILVER. */
-export const GOLD_TEXT = ACCENT_SILVER
 /** @deprecated — use GLOW_SILVER. */
 export const GLOW_CYAN = GLOW_SILVER
 /** @deprecated — use GLOW_SILVER_SUBTLE. */
@@ -101,8 +112,8 @@ export const TEXT_PRIMARY = '#E6EDF3'
 export const TEXT_SECONDARY = '#94a3b8'
 export const TEXT_MUTED = '#64748b'
 
-// ── AGUILA tokens (Block 2 · Unified Search, retained) ──
+// ── ZAPATA AI tokens (Block 2 · Unified Search, retained) ──
 // TEXT_TERTIARY is a semantic alias of TEXT_SECONDARY.
-export const AGUILA_BG_ELEVATED = '#1c1c22'
+export const ZAPATA_BG_ELEVATED = '#1c1c22'
 export const BORDER_HAIRLINE = 'rgba(255,255,255,0.06)'
 export const TEXT_TERTIARY = '#94a3b8'

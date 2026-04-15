@@ -93,7 +93,7 @@ export async function GET(request: NextRequest) {
       body,
       traficoId: trafico,
       internalOnly: true,
-      actor: { role: 'system', name: 'AGUILA Monitor' },
+      actor: { role: 'system', name: 'ZAPATA AI Monitor' },
     })
     if (res.error) {
       // Do not mark as notified so a later run retries.

@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * AGUILA · Block 15 — JSONB section autosave hook.
+ * ZAPATA AI · Block 15 — JSONB section autosave hook.
  *
  * Unlike `useAutosaveField` (scoped to a single scalar inside a pedimento tab),
  * this hook saves an entire JSONB section column on `companies` atomically.

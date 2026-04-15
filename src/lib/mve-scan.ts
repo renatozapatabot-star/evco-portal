@@ -1,5 +1,5 @@
 /**
- * AGUILA · Block 17 — MVE scan pure logic.
+ * ZAPATA AI · Block 17 — MVE scan pure logic.
  *
  * Splits the scan into pure (testable) helpers + orchestration. Route handler
  * wires Supabase + Telegram around these.

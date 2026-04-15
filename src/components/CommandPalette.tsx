@@ -6,7 +6,7 @@ import {
   UniversalSearchHit,
   UniversalSearchResponse,
 } from '@/lib/search/types'
-import { SEARCH_ENTITIES, AGUILA } from '@/lib/search-registry'
+import { SEARCH_ENTITIES, ZAPATA } from '@/lib/search-registry'
 import { useTrack } from '@/lib/telemetry/useTrack'
 import { SearchResultGroup } from './search/SearchResultGroup'
 import { SmartSuggestions, pushRecent } from './search/SmartSuggestions'
@@ -165,8 +165,8 @@ export function CommandPalette({ open, onClose, initialMode = 'quick' }: Props) 
           width: 'min(680px, calc(100vw - 24px))',
           maxHeight: 'min(70vh, 640px)',
           display: 'flex', flexDirection: 'column',
-          background: AGUILA.BG_ELEVATED,
-          border: `1px solid ${AGUILA.BORDER_HAIRLINE}`,
+          background: ZAPATA.BG_ELEVATED,
+          border: `1px solid ${ZAPATA.BORDER_HAIRLINE}`,
           borderRadius: 20,
           boxShadow: '0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)',
           overflow: 'hidden',
@@ -177,9 +177,9 @@ export function CommandPalette({ open, onClose, initialMode = 'quick' }: Props) 
         <div style={{
           display: 'flex', alignItems: 'center', gap: 12,
           padding: '16px 20px',
-          borderBottom: `1px solid ${AGUILA.BORDER_HAIRLINE}`,
+          borderBottom: `1px solid ${ZAPATA.BORDER_HAIRLINE}`,
         }}>
-          <span aria-hidden style={{ color: AGUILA.ACCENT_SILVER, fontSize: 18 }}>⌕</span>
+          <span aria-hidden style={{ color: ZAPATA.ACCENT_SILVER, fontSize: 18 }}>⌕</span>
           <input
             ref={inputRef}
             value={query}
@@ -195,14 +195,14 @@ export function CommandPalette({ open, onClose, initialMode = 'quick' }: Props) 
           />
           <kbd style={{
             fontFamily: 'var(--font-jetbrains-mono), JetBrains Mono, monospace', fontSize: 11,
-            color: AGUILA.TEXT_TERTIARY, border: `1px solid ${AGUILA.BORDER_HAIRLINE}`,
+            color: ZAPATA.TEXT_TERTIARY, border: `1px solid ${ZAPATA.BORDER_HAIRLINE}`,
             borderRadius: 6, padding: '2px 8px',
           }}>Esc</kbd>
         </div>
 
         <div style={{ overflowY: 'auto', padding: '8px 0', flex: 1 }}>
           {loading && (
-            <div style={{ padding: '20px', color: AGUILA.TEXT_TERTIARY, fontSize: 13 }}>Cargando…</div>
+            <div style={{ padding: '20px', color: ZAPATA.TEXT_TERTIARY, fontSize: 13 }}>Cargando…</div>
           )}
           {!loading && query.trim().length < 2 && (
             <SmartSuggestions
@@ -218,7 +218,7 @@ export function CommandPalette({ open, onClose, initialMode = 'quick' }: Props) 
             />
           )}
           {!loading && query.trim().length >= 2 && totalHits === 0 && (
-            <div style={{ padding: '24px 20px', color: AGUILA.TEXT_TERTIARY, fontSize: 13 }}>
+            <div style={{ padding: '24px 20px', color: ZAPATA.TEXT_TERTIARY, fontSize: 13 }}>
               Sin resultados para &ldquo;{query.trim()}&rdquo;.
             </div>
           )}
@@ -253,8 +253,8 @@ export function CommandPalette({ open, onClose, initialMode = 'quick' }: Props) 
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           gap: 8, padding: '10px 20px',
-          borderTop: `1px solid ${AGUILA.BORDER_HAIRLINE}`,
-          fontSize: 11, color: AGUILA.TEXT_TERTIARY,
+          borderTop: `1px solid ${ZAPATA.BORDER_HAIRLINE}`,
+          fontSize: 11, color: ZAPATA.TEXT_TERTIARY,
           fontFamily: 'var(--font-jetbrains-mono), JetBrains Mono, monospace',
         }}>
           <span>↑↓ navegar · ⏎ abrir · esc cerrar</span>
@@ -263,7 +263,7 @@ export function CommandPalette({ open, onClose, initialMode = 'quick' }: Props) 
             onClick={() => setAdvancedOpen(true)}
             style={{
               background: 'transparent', border: 'none',
-              color: AGUILA.TEXT_TERTIARY, cursor: 'pointer',
+              color: ZAPATA.TEXT_TERTIARY, cursor: 'pointer',
               fontFamily: 'inherit', fontSize: 11, padding: 0,
             }}
           >

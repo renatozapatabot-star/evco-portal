@@ -1,5 +1,5 @@
 /**
- * AGUILA · Block 6c — Pedimento validation engine tests.
+ * ZAPATA AI · Block 6c — Pedimento validation engine tests.
  *
  * 14 tests cover the matrix called out in the plan:
  *   patente / aduana format, regime+document_type consistency, RFC,

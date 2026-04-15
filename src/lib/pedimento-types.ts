@@ -1,5 +1,5 @@
 /**
- * AGUILA · Block 6a — Pedimento types.
+ * ZAPATA AI · Block 6a — Pedimento types.
  *
  * Shapes for the 14-tab pedimento editor. FK convention:
  * `trafico_id` is TEXT matching `traficos.trafico`; `pedimento_id` is UUID.

@@ -1,5 +1,5 @@
 /**
- * AGUILA · OCA — generate a draft classification opinion via Opus.
+ * ZAPATA AI · OCA — generate a draft classification opinion via Opus.
  *
  * Server-only. Opus is reserved for complex regulatory reasoning per
  * CLAUDE.md model routing. Never call this from the browser.

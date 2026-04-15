@@ -146,7 +146,7 @@ export function InicioClient(props: Props) {
         lastWeek={props.personalCompletedLastWeek}
         metricLabel="Embarques cruzados · últimos 7 días"
         celebrationTemplate={({ name, thisWeek, pct }) =>
-          `${name}, cerraste ${thisWeek} embarque${thisWeek === 1 ? '' : 's'} esta semana (+${pct}% vs semana pasada). AGUILA te lo reconoce.`
+          `${name}, cerraste ${thisWeek} embarque${thisWeek === 1 ? '' : 's'} esta semana (+${pct}% vs semana pasada). ZAPATA AI te lo reconoce.`
         }
       />
       <ColaCard colaCount={props.colaCount} />
@@ -375,7 +375,7 @@ function FacturasBancoCard({ enBanco, asignadasHoy }: { enBanco: number; asignad
         href="https://trafico1web.globalpc.net/facturas/banco"
         label="facturas"
         isIncomplete={isIncomplete}
-        message="Sin facturas en AGUILA todavía — el banco de GlobalPC tiene el histórico."
+        message="Sin facturas en ZAPATA AI todavía — el banco de GlobalPC tiene el histórico."
       />
     </section>
   )
@@ -458,7 +458,7 @@ function MonitorCard({ activos, rojo }: { activos: number; rojo: number }) {
         href="https://trafico1web.globalpc.net/utilerias/monitor"
         label="Monitor"
         isIncomplete={isIncomplete}
-        message="Sin tráficos activos en AGUILA — el monitor de GlobalPC tiene el histórico."
+        message="Sin tráficos activos en ZAPATA AI — el monitor de GlobalPC tiene el histórico."
       />
     </section>
   )
@@ -539,7 +539,7 @@ function ClasificacionesCard({ pendientes, aprobadasMes }: { pendientes: number;
         href="https://trafico1web.globalpc.net/clasificacion"
         label="Clasificación"
         isIncomplete={isIncomplete}
-        message="Sin productos por clasificar en AGUILA — consulta el histórico en GlobalPC."
+        message="Sin productos por clasificar en ZAPATA AI — consulta el histórico en GlobalPC."
       />
     </section>
   )
@@ -621,7 +621,7 @@ function CatalogoCard({ total, vencimientosPronto }: { total: number; vencimient
         href="https://trafico1web.globalpc.net/catalogos/productos"
         label="Catálogo"
         isIncomplete={isIncomplete}
-        message="Sin productos en AGUILA — consulta el catálogo en GlobalPC."
+        message="Sin productos en ZAPATA AI — consulta el catálogo en GlobalPC."
       />
     </section>
   )
@@ -702,7 +702,7 @@ function TransportistasCard({ activos, top }: { activos: number; top: number }) 
         href="https://trafico1web.globalpc.net/catalogos/transportistas"
         label="Transportistas"
         isIncomplete={isIncomplete}
-        message="Sin transportistas capturados en AGUILA — consulta el catálogo de GlobalPC."
+        message="Sin transportistas capturados en ZAPATA AI — consulta el catálogo de GlobalPC."
       />
     </section>
   )

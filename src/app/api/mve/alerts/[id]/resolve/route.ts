@@ -1,5 +1,5 @@
 /**
- * AGUILA · Block 17 — Resolve MVE alert.
+ * ZAPATA AI · Block 17 — Resolve MVE alert.
  * PATCH /api/mve/alerts/[id]/resolve
  * Marks the alert resolved; records resolver as `${companyId}:${role}`.
  */

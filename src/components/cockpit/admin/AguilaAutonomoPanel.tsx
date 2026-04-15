@@ -53,7 +53,7 @@ export function AguilaAutonomoPanel({ decisions, decisions30d, decisionsAllTime,
           fontSize: 11, fontWeight: 600, textTransform: 'uppercase',
           letterSpacing: '0.05em', color: '#6E7681',
         }}>
-          AGUILA Autónomo
+          ZAPATA AI Autónomo
         </span>
         <p style={{ fontSize: 13, color: '#8B949E', margin: '4px 0 0' }}>
           {decisions.total > 0

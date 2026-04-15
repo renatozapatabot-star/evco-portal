@@ -1,5 +1,5 @@
 /**
- * AGUILA · Block 17 — Shared Telegram helper.
+ * ZAPATA AI · Block 17 — Shared Telegram helper.
  *
  * Non-fatal: if `TELEGRAM_BOT_TOKEN` or `TELEGRAM_CHAT_ID` env is missing,
  * logs once and returns silently. Never throws — callers always `await` this

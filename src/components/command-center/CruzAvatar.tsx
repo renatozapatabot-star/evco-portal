@@ -26,7 +26,7 @@ export function AduanaAvatar({ size, mood, onClick, className }: AduanaAvatarPro
       onClick={onClick}
       disabled={!interactive}
       className={className}
-      aria-label="Asistente AGUILA"
+      aria-label="Asistente ZAPATA AI"
       style={{
         width: size,
         height: size,

@@ -1,5 +1,5 @@
 /**
- * AGUILA · Block 16 — DODA generation API.
+ * ZAPATA AI · Block 16 — DODA generation API.
  *
  * POST /api/regulatory/doda/[pedimento_id]
  *   body: { kind: 'pdf' | 'xml' | 'both' }
@@ -174,14 +174,14 @@ export async function POST(
     company_id: companyId,
     decision_type: 'doda_generated',
     decision: `DODA generada para embarque ${trafico.trafico}`,
-    reasoning: 'Generación local AGUILA; pendiente de submisión a VUCEM/SAT en V2.',
+    reasoning: 'Generación local ZAPATA AI; pendiente de submisión a VUCEM/SAT en V2.',
     dataPoints: { pdf_url: pdfUrl, xml_url: xmlUrl, kind: parsed.data.kind, actor },
   })
 
   await notifyMensajeria({
     companyId,
     subject: `DODA generado · ${trafico.trafico}`,
-    body: `DODA generado para tráfico ${trafico.trafico}${trafico.pedimento ? ` · pedimento ${trafico.pedimento}` : ''}. Revisión disponible en AGUILA.`,
+    body: `DODA generado para tráfico ${trafico.trafico}${trafico.pedimento ? ` · pedimento ${trafico.pedimento}` : ''}. Revisión disponible en ZAPATA.`,
     traficoId: trafico.trafico,
     internalOnly: true,
     actor: { role: session.role, name: actor },

@@ -1,6 +1,6 @@
 'use client'
 
-import { AGUILA } from '@/lib/search-registry'
+import { ZAPATA } from '@/lib/search-registry'
 import type { EntityConfig } from '@/lib/search-registry'
 import type { UniversalSearchHit } from '@/lib/search/types'
 import { SearchResultRow } from './SearchResultRow'
@@ -31,12 +31,12 @@ export function SearchResultGroup({
         <div style={{
           padding: '6px 20px',
           fontSize: 10, fontWeight: 600, letterSpacing: '0.08em',
-          textTransform: 'uppercase', color: AGUILA.TEXT_TERTIARY,
+          textTransform: 'uppercase', color: ZAPATA.TEXT_TERTIARY,
         }}>
           {config.labelEs}
         </div>
         <div style={{
-          padding: '12px 20px', fontSize: 12, color: AGUILA.TEXT_TERTIARY, fontStyle: 'italic',
+          padding: '12px 20px', fontSize: 12, color: ZAPATA.TEXT_TERTIARY, fontStyle: 'italic',
         }}>
           {config.emptyMessage ?? 'Sin datos todavía'}
         </div>
@@ -53,7 +53,7 @@ export function SearchResultGroup({
       <div style={{
         padding: '6px 20px',
         fontSize: 10, fontWeight: 600, letterSpacing: '0.08em',
-        textTransform: 'uppercase', color: AGUILA.TEXT_TERTIARY,
+        textTransform: 'uppercase', color: ZAPATA.TEXT_TERTIARY,
       }}>
         {config.labelEs}
       </div>

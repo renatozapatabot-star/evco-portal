@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * AGUILA · Block 6b — Cliente / Observaciones / Identificadores tab.
+ * ZAPATA AI · Block 6b — Cliente / Observaciones / Identificadores tab.
  */
 
 import { useState } from 'react'

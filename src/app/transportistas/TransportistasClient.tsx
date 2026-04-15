@@ -294,7 +294,7 @@ export function TransportistasClient({ initialRows }: { initialRows: CarrierRow[
         href="https://trafico1web.globalpc.net/catalogos/transportistas"
         label="Transportistas"
         isIncomplete={rows.length === 0}
-        message="Sin transportistas en AGUILA — consulta el catálogo de GlobalPC."
+        message="Sin transportistas en ZAPATA AI — consulta el catálogo de GlobalPC."
       />
     </div>
   )

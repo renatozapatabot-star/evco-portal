@@ -1,5 +1,5 @@
 /**
- * AGUILA v9 — Mensajería read helpers for cockpit activity feeds.
+ * ZAPATA AI v9 — Mensajería read helpers for cockpit activity feeds.
  *
  * Every helper uses soft* wrappers so missing tables / RLS misses return
  * empty arrays, never crash the cockpit SSR. When the Mensajería schema

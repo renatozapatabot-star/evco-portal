@@ -1,5 +1,5 @@
 /**
- * AGUILA · Block 13 — POST /api/warehouse/register
+ * ZAPATA AI · Block 13 — POST /api/warehouse/register
  *
  * Receives a multipart form from Vicente's phone. Inserts a warehouse_entries
  * row, uploads any attached photos to the `warehouse-photos` bucket, fires

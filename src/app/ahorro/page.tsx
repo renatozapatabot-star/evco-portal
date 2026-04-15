@@ -78,7 +78,7 @@ export default function AhorroPage() {
         Optimización de Costos
       </h1>
       <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24 }}>
-        Oportunidades de ahorro detectadas por AGUILA en cada operación
+        Oportunidades de ahorro detectadas por ZAPATA AI en cada operación
       </p>
 
       {loading ? (

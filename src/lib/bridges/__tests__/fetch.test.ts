@@ -3,7 +3,7 @@ import { _internal } from '../fetch'
 
 const { placeholderWaits, parseCbpJson, BRIDGE_NAMES } = _internal
 
-describe('AGUILA V1.5 F18 · bridge wait fetchers', () => {
+describe('ZAPATA AI V1.5 F18 · bridge wait fetchers', () => {
   it('placeholderWaits returns all four Laredo bridges, northbound', () => {
     const rows = placeholderWaits()
     const codes = new Set(rows.map(r => r.bridge_code))

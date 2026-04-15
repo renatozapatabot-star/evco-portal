@@ -59,7 +59,7 @@ export function BlockedPanel({ blocked, operatorId, onClear }: Props) {
       footer={blocked.length > 0 ? (
         <AduanaRecommendation
           compact
-          recommendation={`AGUILA recomienda escalar ${blocked.length} bloqueo${blocked.length !== 1 ? 's' : ''}`}
+          recommendation={`ZAPATA AI recomienda escalar ${blocked.length} bloqueo${blocked.length !== 1 ? 's' : ''}`}
           confidence={80}
           approveLabel="Escalar"
           onApprove={async () => {

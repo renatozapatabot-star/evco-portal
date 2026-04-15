@@ -13,7 +13,7 @@ interface Props {
 }
 
 /**
- * AGUILA v10 — 3-card capability row. Icon left, title/subtitle center,
+ * ZAPATA AI v10 — 3-card capability row. Icon left, title/subtitle center,
  * count right. Same glass chrome as SmartNavCard but semantically distinct
  * (action, not destination). Rendered inside CockpitInicio between the
  * nav grid and the main estado grid.

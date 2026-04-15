@@ -152,7 +152,7 @@ export async function GET(request: NextRequest) {
       subject,
       body,
       internalOnly: true,
-      actor: { role: 'system', name: 'AGUILA Patentes' },
+      actor: { role: 'system', name: 'ZAPATA AI Patentes' },
     })
     if (res.error) continue
 

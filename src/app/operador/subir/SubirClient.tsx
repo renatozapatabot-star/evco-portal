@@ -87,7 +87,7 @@ export function SubirClient({ traficos }: SubirClientProps) {
             fontWeight: 500,
           }}
         >
-          Arrastra PDFs o fotos — el clasificador de AGUILA los organiza automáticamente.
+          Arrastra PDFs o fotos — el clasificador de ZAPATA AI los organiza automáticamente.
         </p>
       </div>
 

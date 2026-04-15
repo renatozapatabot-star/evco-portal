@@ -13,7 +13,7 @@ import { DateInputES } from '@/components/ui/DateInputES'
 
 // Generate distinct color from name hash for provider avatars
 function avatarColor(name: string): { bg: string; text: string } {
-  // AGUILA silver palette (5 stops, monochrome)
+  // ZAPATA AI silver palette (5 stops, monochrome)
   const PALETTE = [
     { bg: 'rgba(232,234,237,0.12)', text: ACCENT_SILVER_BRIGHT },
     { bg: 'rgba(208,213,222,0.12)', text: '#D0D5DE' },

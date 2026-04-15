@@ -1,5 +1,5 @@
 /**
- * AGUILA V1.5 F16 — GET /api/admin/auditoria
+ * ZAPATA AI V1.5 F16 — GET /api/admin/auditoria
  *
  * Admin/broker only. Returns audit_log rows for the session's
  * company_id with filter support. Emits `audit_log_queried` telemetry.

@@ -1,7 +1,7 @@
 /**
  * Block 5 — Classification sheet PDF (hoja de clasificación).
  *
- * @react-pdf/renderer template. AGUILA silver header with stylized
+ * @react-pdf/renderer template. ZAPATA AI silver header with stylized
  * geometric eagle SVG path + wordmark. Table columns are dynamic based
  * on the config's print_toggles. Footer on every page carries the
  * Patente 3596 identity + page numbers.
@@ -263,7 +263,7 @@ function ClassificationDocument({
             ))}
           </View>
         )}
-        <AguilaPdfFooter label="AGUILA · Patente 3596 · Aduana 240 Nuevo Laredo · Año 85" />
+        <AguilaPdfFooter label="ZAPATA AI · Patente 3596 · Aduana 240 Nuevo Laredo · Año 85" />
       </Page>
     </Document>
   )

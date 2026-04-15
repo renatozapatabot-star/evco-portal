@@ -1,5 +1,5 @@
 /**
- * AGUILA · Block 11 — PECE workflow + bank catalog tests.
+ * ZAPATA AI · Block 11 — PECE workflow + bank catalog tests.
  *
  * Five tests: catalog size, name/code filter, full state transition chain,
  * cronología event type mapping, invalid amount rejection.

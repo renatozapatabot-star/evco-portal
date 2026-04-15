@@ -1,5 +1,5 @@
 /**
- * AGUILA · Cockpit brand header (rev E3)
+ * ZAPATA AI · Cockpit brand header (rev E3)
  *
  * Layout (consistent across /inicio, /operador/inicio, /admin/eagle,
  * /bodega/inicio, /contabilidad):

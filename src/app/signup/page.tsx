@@ -30,7 +30,7 @@ export default function SignupPage() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 32, justifyContent: 'center' }}>
           <AduanaMark size={40} />
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: 22, fontWeight: 800, color: 'rgba(255,255,255,0.9)', letterSpacing: '0.08em' }}>
-            AGUILA
+            ZAPATA AI
           </span>
         </div>
 

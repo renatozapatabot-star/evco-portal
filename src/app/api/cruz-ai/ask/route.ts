@@ -31,33 +31,33 @@ const BASE_RULES = `Reglas:
 - Tono: profesional, cálido, confiable.`
 
 const ROLE_PROMPTS: Record<PortalRole, string> = {
-  operator: `Eres AGUILA, asistente de operaciones aduanales.
+  operator: `Eres ZAPATA AI, asistente de operaciones aduanales.
 Ayudas a Claudia con embarques activos, estatus de pedimentos,
 y cadena factura→entrada→pedimento. Responde en español.
 
 ${BASE_RULES}`,
-  trafico: `Eres AGUILA, asistente de embarque.
+  trafico: `Eres ZAPATA AI, asistente de embarque.
 Ayudas al equipo de embarque con activos en ruta, despachos,
 y seguimiento de embarques. Responde en español.
 
 ${BASE_RULES}`,
-  contabilidad: `Eres AGUILA, asistente de contabilidad aduanal.
+  contabilidad: `Eres ZAPATA AI, asistente de contabilidad aduanal.
 Ayudas a Anabel con cuentas por cobrar, facturas emitidas,
 pagos recibidos, y exportación QB. Responde en español.
 
 ${BASE_RULES}`,
-  warehouse: `Eres AGUILA, asistente de almacén.
+  warehouse: `Eres ZAPATA AI, asistente de almacén.
 Ayudas a Vicente con entradas, ubicaciones en bodega,
 recepción de mercancía, y despacho. Responde en español.
 
 ${BASE_RULES}`,
-  client: `Eres AGUILA, el asistente de inteligencia aduanal de Renato Zapata & Company (Patente 3596, Aduana 240 Nuevo Laredo).
+  client: `Eres ZAPATA AI, el asistente de inteligencia aduanal de Renato Zapata & Company (Patente 3596, Aduana 240 Nuevo Laredo).
 
 ${BASE_RULES}`,
-  admin: `Eres AGUILA, el asistente de inteligencia aduanal de Renato Zapata & Company (Patente 3596, Aduana 240 Nuevo Laredo). Acceso multi-cliente de administración.
+  admin: `Eres ZAPATA AI, el asistente de inteligencia aduanal de Renato Zapata & Company (Patente 3596, Aduana 240 Nuevo Laredo). Acceso multi-cliente de administración.
 
 ${BASE_RULES}`,
-  broker: `Eres AGUILA, el asistente de inteligencia aduanal de Renato Zapata & Company (Patente 3596, Aduana 240 Nuevo Laredo). Acceso de agente aduanal titular.
+  broker: `Eres ZAPATA AI, el asistente de inteligencia aduanal de Renato Zapata & Company (Patente 3596, Aduana 240 Nuevo Laredo). Acceso de agente aduanal titular.
 
 ${BASE_RULES}`,
 }
@@ -70,7 +70,7 @@ const CLASSIFIER_PROMPT = `Clasifica el mensaje en UNA de estas etiquetas y resp
 estatus_trafico, pregunta_pedimento, duda_documento, pregunta_financiera, escalacion, saludo, otro`
 
 /**
- * AGUILA AI ask endpoint with live Supabase tool calls.
+ * ZAPATA AI ask endpoint with live Supabase tool calls.
  * POST { question: string } → { answer: string }
  */
 export async function POST(req: NextRequest) {
@@ -99,7 +99,7 @@ export async function POST(req: NextRequest) {
     const apiKey = process.env.ANTHROPIC_API_KEY
     if (!apiKey) {
       return NextResponse.json({
-        answer: 'AGUILA AI no está disponible en este momento. Contacta a soporte.',
+        answer: 'ZAPATA AI no está disponible en este momento. Contacta a soporte.',
       })
     }
 
@@ -205,9 +205,9 @@ export async function POST(req: NextRequest) {
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err)
       if (msg.includes('credit balance') || msg.includes('billing')) {
-        answer = 'AGUILA AI no está disponible temporalmente — créditos de API agotados.'
+        answer = 'ZAPATA AI no está disponible temporalmente — créditos de API agotados.'
       } else if (msg.includes('rate_limit') || msg.includes('overloaded')) {
-        answer = 'AGUILA AI está ocupado. Intenta de nuevo en unos segundos.'
+        answer = 'ZAPATA AI está ocupado. Intenta de nuevo en unos segundos.'
       }
     }
 

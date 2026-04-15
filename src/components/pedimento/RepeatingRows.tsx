@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * AGUILA · Block 6c — Generic repeating-rows form for pedimento child tables.
+ * ZAPATA AI · Block 6c — Generic repeating-rows form for pedimento child tables.
  *
  * Renders a list of rows (one card per row) with per-field inputs that
  * autosave via `useAutosaveChildRow`. Handles Add / Remove via the child API.

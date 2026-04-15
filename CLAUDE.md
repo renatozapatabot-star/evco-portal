@@ -1,6 +1,11 @@
-# AGUILA — Cross-Border Intelligence Platform
+# ZAPATA AI — Cross-Border Intelligence Platform
 ## Principal Engineer Constitution + Execution Rules
 ### Renato Zapata & Company · Patente 3596 · Aduana 240 · Laredo TX · Est. 1941
+
+> **Brand lineage:** CRUZ (pre-April 2026) → ADUANA → AGUILA → **ZAPATA AI** (current, April 15 2026).
+> The logo is a gold Z with circuit-trace accents on black. Wordmark: "ZAPATA AI" in gold caps.
+> Internal component/CSS namespaces (`AguilaMark`, `.aguila-canvas`, `--aguila-fs-*`) are
+> preserved for code stability — they're identifiers, not brand surfaces.
 
 > "Built by two people. For a border their family has crossed since 1941."
 
@@ -13,9 +18,10 @@ and get smarter every session. Every decision is evaluated against one question:
 
 ## IDENTITY
 
-**Platform:** AGUILA — Cross-Border Intelligence. Never "CRUD." Never "Portal." Never "CRUZ" in UI.
+**Platform:** ZAPATA AI — Cross-Border Intelligence. Never "CRUD." Never "Portal." Never "CRUZ" or "AGUILA" in rendered UI text.
 Search for "CRUD" before every deploy: `grep -r "CRUD" src/` → zero matches required.
-Search for stale brand: `grep -r "CRUZ" src/` → only allowed in internal config keys, never in UI text.
+Search for stale brand: `grep -rn "AGUILA\|CRUZ" src/app src/components` → matches acceptable only in comments,
+component/type/identifier names (`AguilaMark`, `AguilaCtx`, `.aguila-canvas`), never in user-visible strings.
 
 **Tagline:** TOTAL VISIBILITY · ZERO BORDERS / Total visibilidad. Sin fronteras.
 
@@ -601,8 +607,9 @@ TARGET:     GlobalPC uninstalled: early-to-mid May 2026
 5. **Evolve.** Run `/evolve` weekly to promote/prune rules.
 
 **Top learned rules (inline — always active):**
-- Brand is AGUILA everywhere in UI. No exceptions.
-- Monochromatic silver-on-black. No decorative color. Reject any advice to add blue/gold/navy accents.
+- Brand is ZAPATA AI everywhere in user-visible UI. Internal component/CSS namespaces stay (`Aguila*`, `.aguila-*`, `--aguila-*`) for code stability.
+- **Dual-accent palette:** gold for identity (mark, wordmark, primary CTAs, active nav), silver for data/chrome (KPIs, borders, body text). Two colors per screen + one semantic — nothing more.
+- Reject decorative blue/cyan/navy. Gold and silver are the only brand surfaces.
 - Features integrate into existing surfaces — they do not add new nav items without Tito + Renato IV sign-off.
 - Client portal shows certainty only. Never compliance anxiety.
 - The 28,076-row mis-assignment incident: client isolation is enforced at architecture level, not just RLS.
@@ -634,7 +641,7 @@ TARGET:     GlobalPC uninstalled: early-to-mid May 2026
 - Store monetary amounts without explicit MXN or USD label
 
 **Platform:**
-- Write "CRUD" or "Portal" or "CRUZ" in any UI-facing string
+- Write "CRUD" or "Portal" or "CRUZ" or "AGUILA" in any user-visible UI string
 - Add a nav item without Tito + Renato IV sign-off
 - Build a feature that announces itself instead of integrating
 - Send anything to clients without Tito or Renato IV approval

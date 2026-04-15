@@ -1,5 +1,5 @@
 /**
- * AGUILA · Routine R4 — Anomaly Detector
+ * ZAPATA AI · Routine R4 — Anomaly Detector
  *
  * Called weekly (Sunday evening Central). Scans the last 90 days of
  * partidas for:
@@ -192,7 +192,7 @@ export async function POST(request: NextRequest) {
         subject: `Anomalías semanales · ${dateStr}${criticalCount > 0 ? ' · ⚠' : ''}`,
         firstMessageBody: summary,
         role: 'system',
-        authorName: 'AGUILA Routines',
+        authorName: 'ZAPATA AI Routines',
         internalOnly: true,
       })
       if (threadRes.data) {

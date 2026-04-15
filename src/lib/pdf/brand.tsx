@@ -1,5 +1,5 @@
 /**
- * AGUILA · Shared PDF brand components.
+ * ZAPATA AI · Shared PDF brand components.
  *
  * Extracted from Block 5's `classification-pdf.tsx` so every PDF surface
  * (hoja de clasificación, Anexo 24, DODA, Carta Porte, AVC) renders the same
@@ -122,7 +122,7 @@ export function AguilaPdfHeader({
           />
         </Svg>
         <View style={headerStyles.wordmark}>
-          <Text style={headerStyles.brandName}>AGUILA</Text>
+          <Text style={headerStyles.brandName}>ZAPATA AI</Text>
           <Text style={headerStyles.brandSubtitle}>
             Inteligencia aduanal · Patente 3596
           </Text>
@@ -143,7 +143,7 @@ interface FooterProps {
 }
 
 export function AguilaPdfFooter({
-  label = 'AGUILA · Patente 3596 · Aduana 240 Nuevo Laredo',
+  label = 'ZAPATA AI · Patente 3596 · Aduana 240 Nuevo Laredo',
 }: FooterProps) {
   return (
     <View style={footerStyles.footer} fixed>

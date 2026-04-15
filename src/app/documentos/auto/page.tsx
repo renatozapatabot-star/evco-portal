@@ -3,14 +3,14 @@ import { PageShell, GlassCard } from '@/components/aguila'
 import { TEXT_SECONDARY } from '@/lib/design-system'
 
 export const metadata = {
-  title: 'Documentos · Auto-clasificación · AGUILA',
+  title: 'Documentos · Auto-clasificación · ZAPATA AI',
 }
 
 export default function DocumentosAutoPage() {
   return (
     <PageShell
       title="Sube o describe documentos"
-      subtitle="Arrastra un lote de PDFs o pega una descripción. AGUILA identifica cada tipo, revisa completitud y los enlaza al embarque."
+      subtitle="Arrastra un lote de PDFs o pega una descripción. ZAPATA AI identifica cada tipo, revisa completitud y los enlaza al embarque."
       systemStatus="healthy"
       liveTimestamp
     >
@@ -26,7 +26,7 @@ export default function DocumentosAutoPage() {
             <li>Claude identifica el tipo (factura, packing list, certificado de origen, BL u otro).</li>
             <li>Se revisa que tenga proveedor, importe, moneda y fracción arancelaria.</li>
             <li>Si se menciona un pedimento, el documento se enlaza automáticamente al embarque.</li>
-            <li>Al terminar el lote, verás un análisis AGUILA con totales, enlaces y atenciones.</li>
+            <li>Al terminar el lote, verás un análisis ZAPATA AI con totales, enlaces y atenciones.</li>
           </ul>
         </GlassCard>
       </div>

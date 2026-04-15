@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * AGUILA · Block 6b — Inline autosave status badge.
+ * ZAPATA AI · Block 6b — Inline autosave status badge.
  * Three states: saving, saved (with timestamp), error. Silver palette +
  * red for errors. Tiny, mono for timestamp, 11px to sit next to form fields.
  */

@@ -1,5 +1,5 @@
 /**
- * AGUILA · Block 13 — Warehouse entry workflow tests.
+ * ZAPATA AI · Block 13 — Warehouse entry workflow tests.
  *
  * Five tests: event shape, photo path shape, trailer validation, dock optional,
  * corridor position routes `warehouse_entry_received` → `rz_warehouse`.

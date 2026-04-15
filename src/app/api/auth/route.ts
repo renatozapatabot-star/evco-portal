@@ -101,11 +101,11 @@ export async function POST(request: NextRequest) {
     const response = NextResponse.json({
       success: true,
       role: 'admin',
-      company: { company_id: 'admin', name: 'AGUILA Admin' }
+      company: { company_id: 'admin', name: 'ZAPATA AI Admin' }
     })
     await setAuthCookies(response, {
       companyId: 'admin',
-      companyName: 'AGUILA Admin',
+      companyName: 'ZAPATA AI Admin',
       companyClave: '',
       role: 'admin',
       operatorName: 'tito',

@@ -24,7 +24,7 @@ interface Props {
 }
 
 /**
- * AGUILA v10 — horizontal activity ticker that sits ABOVE the hero KPIs.
+ * ZAPATA AI v10 — horizontal activity ticker that sits ABOVE the hero KPIs.
  * Role-scoped content: each cockpit page passes role-appropriate items
  * (audit_log events, Mensajería messages, escalations, etc.). Read-only;
  * deeper context lives in the right-rail actividadSlot.

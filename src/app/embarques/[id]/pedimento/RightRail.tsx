@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * AGUILA · Block 6b — Live Validación + Acciones rápidas right rail.
+ * ZAPATA AI · Block 6b — Live Validación + Acciones rápidas right rail.
  */
 
 import { useMemo } from 'react'

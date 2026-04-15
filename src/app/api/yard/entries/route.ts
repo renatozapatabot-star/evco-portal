@@ -1,5 +1,5 @@
 /**
- * AGUILA · Block 14 — /api/yard/entries
+ * ZAPATA AI · Block 14 — /api/yard/entries
  *
  * GET: list active yard entries (exited_at IS NULL) for the session company.
  * POST: register a new yard entry.

@@ -27,7 +27,7 @@ export interface NavTileDef {
 }
 
 /**
- * AGUILA v7 — the six cockpit nav tiles, locked.
+ * ZAPATA AI v7 — the six cockpit nav tiles, locked.
  *
  * Identical order, labels, icons, descriptions across /inicio,
  * /operador/inicio, and /admin/eagle. Role decides what data

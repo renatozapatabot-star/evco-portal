@@ -99,7 +99,7 @@ export function PhotoUpload({ traficoId, onClassified }: PhotoUploadProps) {
         {status === 'idle' && (
           <>
             <Upload size={20} />
-            <span>Subir documento — AGUILA clasifica automáticamente</span>
+            <span>Subir documento — ZAPATA AI clasifica automáticamente</span>
           </>
         )}
         {status === 'uploading' && (
@@ -111,7 +111,7 @@ export function PhotoUpload({ traficoId, onClassified }: PhotoUploadProps) {
         {status === 'classifying' && (
           <>
             <Loader2 size={20} style={{ animation: 'spin 1s linear infinite' }} />
-            <span>Clasificando con AGUILA AI...</span>
+            <span>Clasificando con ZAPATA AI...</span>
           </>
         )}
         {status === 'done' && result && (

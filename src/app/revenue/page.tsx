@@ -25,12 +25,12 @@ export default async function RevenuePage() {
   const m = rev?.details || {}
 
   const cards = [
-    { label: 'Clientes Activos', value: m.active_clients || 50, sub: 'Plataforma AGUILA', color: GOLD },
+    { label: 'Clientes Activos', value: m.active_clients || 50, sub: 'Plataforma ZAPATA AI', color: GOLD },
     { label: 'Pedimentos', value: (m.pedimentos_processed || 0).toLocaleString(), sub: 'Procesados', color: 'var(--border)' },
     { label: 'Ahorro T-MEC', value: `$${((m.tmec_savings_usd || 0) / 1000).toFixed(0)}K`, sub: 'USD ahorrado', color: 'var(--success)' },
     { label: 'Documentos', value: (m.documents_processed || 0).toLocaleString(), sub: 'Auto-procesados', color: 'var(--border)' },
     { label: 'Horas Ahorradas', value: m.estimated_hours_saved || 0, sub: 'Automatización', color: GOLD },
-    { label: 'Conversaciones AI', value: m.ai_conversations || 0, sub: 'AGUILA AI queries', color: 'var(--border)' },
+    { label: 'Conversaciones AI', value: m.ai_conversations || 0, sub: 'ZAPATA AI queries', color: 'var(--border)' },
   ]
 
   const saasMonthly = (m.saas_value_monthly_mxn || 175000).toLocaleString()
@@ -39,7 +39,7 @@ export default async function RevenuePage() {
   return (
     <div style={{ fontFamily: 'var(--font-geist-sans)', color: 'var(--border)' }} className="p-4 md:px-7 md:py-6">
       <h1 style={{ fontSize: 22, fontWeight: 800, margin: '0 0 4px' }}>Motor de Ingresos</h1>
-      <p style={{ color: '#666', fontSize: 13, margin: '0 0 24px' }}>Visión ejecutiva del valor generado por AGUILA</p>
+      <p style={{ color: '#666', fontSize: 13, margin: '0 0 24px' }}>Visión ejecutiva del valor generado por ZAPATA AI</p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
         {cards.map(c => (

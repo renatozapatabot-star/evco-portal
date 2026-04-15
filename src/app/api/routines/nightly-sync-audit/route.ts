@@ -1,5 +1,5 @@
 /**
- * AGUILA · Routine R2 — Nightly Sync Audit
+ * ZAPATA AI · Routine R2 — Nightly Sync Audit
  *
  * Called ~4:00 AM Central by Claude Routines. Pulls last 24h sync state:
  *   - heartbeat_log: which scripts ran, which failed, timing
@@ -152,7 +152,7 @@ export async function POST(request: NextRequest) {
         subject: `Auditoría nocturna · ${dateStr}${critical ? ' · ⚠ ATENCIÓN' : ''}`,
         firstMessageBody: summary,
         role: 'system',
-        authorName: 'AGUILA Routines',
+        authorName: 'ZAPATA AI Routines',
         internalOnly: true,
       })
       if (threadRes.data) {

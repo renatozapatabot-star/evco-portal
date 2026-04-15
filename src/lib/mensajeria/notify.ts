@@ -2,7 +2,7 @@
  * Mensajería · notify() — single entry point for workflow-triggered messages.
  *
  * MENSAJERÍA LAW: every alert, notification, and client-facing comm stays
- * inside AGUILA. Workflow handlers (invoice upload, semáforo rojo, permit
+ * inside ZAPATA. Workflow handlers (invoice upload, semáforo rojo, permit
  * expiry, anomaly) call notifyMensajeria() — never sendTelegram.
  *
  * Thread strategy:

@@ -1,6 +1,6 @@
 'use client'
 
-import { AGUILA } from '@/lib/search-registry'
+import { ZAPATA } from '@/lib/search-registry'
 import type { EntityId } from '@/types/search'
 import type { UniversalSearchHit } from '@/lib/search/types'
 
@@ -30,7 +30,7 @@ export function SearchResultRow({ hit, active, entityLabel, onMouseEnter, onClic
         width: '100%', minHeight: 60, textAlign: 'left',
         padding: '10px 20px',
         background: active ? 'rgba(192,197,206,0.08)' : 'transparent',
-        borderLeft: active ? `2px solid ${AGUILA.ACCENT_SILVER}` : '2px solid transparent',
+        borderLeft: active ? `2px solid ${ZAPATA.ACCENT_SILVER}` : '2px solid transparent',
         border: 'none', borderRadius: 0, cursor: 'pointer',
         color: '#E6EDF3',
       }}
@@ -45,7 +45,7 @@ export function SearchResultRow({ hit, active, entityLabel, onMouseEnter, onClic
         </span>
         {hit.subtitle && (
           <span style={{
-            fontSize: 12, color: AGUILA.TEXT_TERTIARY,
+            fontSize: 12, color: ZAPATA.TEXT_TERTIARY,
             overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           }}>
             {hit.subtitle}
@@ -54,7 +54,7 @@ export function SearchResultRow({ hit, active, entityLabel, onMouseEnter, onClic
       </div>
       <span style={{
         fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase',
-        color: AGUILA.TEXT_TERTIARY, flexShrink: 0,
+        color: ZAPATA.TEXT_TERTIARY, flexShrink: 0,
       }}>
         {entityLabel}
       </span>

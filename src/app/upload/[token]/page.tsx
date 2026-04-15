@@ -104,7 +104,7 @@ export default function UploadPage() {
             fontSize: 44, fontWeight: 800, color: 'var(--gold)',
             fontFamily: 'var(--font-mono, "JetBrains Mono", monospace)',
           }}>Z</span>
-          <div style={{ fontSize: 11, color: '#64748B', letterSpacing: '0.2em', marginTop: 4 }}>AGUILA</div>
+          <div style={{ fontSize: 11, color: '#64748B', letterSpacing: '0.2em', marginTop: 4 }}>ZAPATA AI</div>
           <div style={{ fontSize: 18, fontWeight: 700, color: '#CBD5E1', marginTop: 24, marginBottom: 8 }}>
             {error === 'expired' ? 'Enlace expirado' : error === 'not_found' ? 'Enlace no válido' : 'Ocurrió un error'}
           </div>
@@ -160,7 +160,7 @@ export default function UploadPage() {
               ¿Trabaja con otros importadores en México?
             </div>
             <div style={{ fontSize: 12, color: '#94A3B8', marginBottom: 12 }}>
-              AGUILA puede simplificar su proceso con todos ellos.
+              ZAPATA AI puede simplificar su proceso con todos ellos.
             </div>
             <ReferralForm />
           </div>
@@ -183,7 +183,7 @@ export default function UploadPage() {
             fontSize: 44, fontWeight: 800, color: 'var(--gold)',
             fontFamily: 'var(--font-mono, "JetBrains Mono", monospace)',
           }}>Z</span>
-          <div style={{ fontSize: 11, color: '#64748B', letterSpacing: '0.2em', marginTop: 4 }}>AGUILA</div>
+          <div style={{ fontSize: 11, color: '#64748B', letterSpacing: '0.2em', marginTop: 4 }}>ZAPATA AI</div>
         </div>
 
         {/* Upload card */}

@@ -1,5 +1,5 @@
 /**
- * AGUILA · V1.5 F7 — Dormant client detection.
+ * ZAPATA AI · V1.5 F7 — Dormant client detection.
  *
  * Surface clientes who have historical embarque activity but no recent embarque
  * in the last `thresholdDays` days. Clients that never onboarded (zero lifetime

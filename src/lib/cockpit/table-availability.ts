@@ -1,5 +1,5 @@
 /**
- * AGUILA v9 — memoized schema probes.
+ * ZAPATA AI v9 — memoized schema probes.
  *
  * Some tables (audit_log, mensajeria_*) may or may not exist in production
  * depending on migration-history state. Instead of crashing a cockpit SSR

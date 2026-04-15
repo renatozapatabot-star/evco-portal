@@ -116,7 +116,7 @@ export async function GET(req: NextRequest) {
   }
 
   const todayStr = fmtDate(new Date())
-  const subject = `AGUILA -- Resumen diario para ${companyName}`
+  const subject = `ZAPATA AI -- Resumen diario para ${companyName}`
 
   // Build plain text
   const textParts = [
@@ -156,7 +156,7 @@ export async function GET(req: NextRequest) {
 
   <!-- Header -->
   <tr><td style="background:#1A1A1A;padding:24px 32px;">
-    <div style="font-size:18px;font-weight:700;color:#eab308;letter-spacing:0.05em;">AGUILA</div>
+    <div style="font-size:18px;font-weight:700;color:#eab308;letter-spacing:0.05em;">ZAPATA AI</div>
     <div style="font-size:13px;color:#9B9B9B;margin-top:4px;">Resumen diario &middot; ${todayStr}</div>
   </td></tr>
 

@@ -1,5 +1,5 @@
 /**
- * AGUILA · Cockpit decorative backdrop.
+ * ZAPATA AI · Cockpit decorative backdrop.
  *
  * Absolute-positioned, pointer-events:none, low opacity. Layers a simplified
  * US–MX corridor illustration over the cockpit canvas so the dashboard feels

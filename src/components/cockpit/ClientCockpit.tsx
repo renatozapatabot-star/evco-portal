@@ -24,7 +24,7 @@ export function ClientCockpit({ data, companyName }: Props) {
           {companyName}
         </h1>
         <p style={{ fontSize: 13, color: '#6E7681', margin: '4px 0 0' }}>
-          AGUILA · Cliente
+          ZAPATA AI · Cliente
         </p>
       </div>
 

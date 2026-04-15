@@ -30,7 +30,7 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
           gap: 16,
         }}>
           <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.03em' }}>
-            AGUILA no se cargó
+            ZAPATA AI no se cargó
           </div>
           <div style={{ fontSize: 13, color: '#94a3b8', lineHeight: 1.5 }}>
             Detectamos un problema inesperado. Tu sesión sigue activa.

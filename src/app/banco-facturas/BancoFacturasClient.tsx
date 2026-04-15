@@ -7,7 +7,7 @@
 //   2. Drag file(s) onto drop zone (CFDI XML parse OR Sonnet PDF / Vision image)
 //   3. Pick tráfico from assignment modal
 // GLOBALPC EQUIVALENT: 6 clicks (Añadir Factura → upload → save → open tráfico → Asignar → confirm)
-// AGUILA ADVANTAGE: 3 clicks saved per operation
+// ZAPATA AI ADVANTAGE: 3 clicks saved per operation
 //
 // List + filter bar (status, supplier, currency, date range, amount range),
 // bulk upload (drag-drop), right-rail PDF preview, bottom bar
@@ -130,7 +130,7 @@ export function BancoFacturasClient({ role }: Props) {
       ).length
       const tail =
         visionCount > 0
-          ? ` · ${visionCount} extraída${visionCount === 1 ? '' : 's'} por AGUILA`
+          ? ` · ${visionCount} extraída${visionCount === 1 ? '' : 's'} por ZAPATA AI`
           : ''
       setToast(`${count} factura${count === 1 ? '' : 's'} cargada${count === 1 ? '' : 's'}${tail}`)
       trackEvent('click', 'invoice_uploaded', { count, vision_extracted: visionCount })
@@ -645,7 +645,7 @@ function RightRail({ row, onClose }: { row: InvoiceBankRow; onClose: () => void 
                 textTransform: 'uppercase',
               }}
             >
-              Extraído por AGUILA
+              Extraído por ZAPATA AI
             </span>
             {chip.docType && (
               <span style={{ fontSize: 11, color: TEXT_MUTED, fontFamily: MONO }}>

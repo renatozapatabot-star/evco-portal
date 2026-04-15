@@ -4,7 +4,7 @@ import { verifySession } from '@/lib/session'
 import { logOperatorAction } from '@/lib/operator-actions'
 
 /**
- * AGUILA v8.1 — `/` is now a role-aware redirect to the canonical cockpit.
+ * ZAPATA AI v8.1 — `/` is now a role-aware redirect to the canonical cockpit.
  *
  *  - client   → /inicio            (CockpitInicio client view)
  *  - operator → /operador/inicio   (CockpitInicio operator view)

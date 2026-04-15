@@ -283,7 +283,7 @@ export function AguilaChatBubble() {
                 </svg>
               </div>
               <div>
-                <div style={{ fontSize: 15, fontWeight: 800, color: D.text, letterSpacing: '-0.02em' }}>Asistente AGUILA</div>
+                <div style={{ fontSize: 15, fontWeight: 800, color: D.text, letterSpacing: '-0.02em' }}>Asistente ZAPATA AI</div>
                 <div style={{ fontSize: 11, color: D.textMuted }}>Asistente aduanal</div>
               </div>
             </div>
@@ -484,7 +484,7 @@ export function AguilaChatBubble() {
       {!open && !isMobile && (
         <button
           onClick={handleOpen}
-          aria-label="Abrir Asistente AGUILA"
+          aria-label="Abrir Asistente ZAPATA AI"
           className="cruz-thought-bubble"
           style={{
             position: 'fixed',
@@ -504,7 +504,7 @@ export function AguilaChatBubble() {
           onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(192,197,206,0.15)' }}
         >
           <span style={{ fontSize: 16, lineHeight: 1, color: '#C0C5CE' }}>&#10022;</span>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 800, color: '#C0C5CE', letterSpacing: '0.06em' }}>Asistente AGUILA</span>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 800, color: '#C0C5CE', letterSpacing: '0.06em' }}>Asistente ZAPATA AI</span>
           {/* Unread indicator */}
           {hasUnread && (
             <div style={{

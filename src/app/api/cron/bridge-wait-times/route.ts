@@ -1,4 +1,4 @@
-// AGUILA V1.5 · F18 — Bridge wait times cron endpoint.
+// ZAPATA AI V1.5 · F18 — Bridge wait times cron endpoint.
 //
 // Vercel Hobby tier caps crons at daily granularity, so this handler
 // doubles as:

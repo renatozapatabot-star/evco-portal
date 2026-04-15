@@ -1,5 +1,5 @@
 /**
- * AGUILA · V1.5 F9 — One-Click Demo Orchestrator
+ * ZAPATA AI · V1.5 F9 — One-Click Demo Orchestrator
  *
  * Seeds a synthetic end-to-end embarque and walks it through 12 lifecycle
  * events over ~90 seconds. Each step writes to Supabase (workflow_events +
@@ -253,7 +253,7 @@ const STEP_RUNNERS: Record<string, (ctx: StepContext) => Promise<string | undefi
       total: 5_568,
       currency: 'MXN',
       status: 'sent',
-      notes: 'Demo orquestado AGUILA · embarque sintético',
+      notes: 'Demo orquestado ZAPATA AI · embarque sintético',
     })
     if (error) {
       await fireEvent(sb, run.traficoId, 'invoice_issued', 'invoice')

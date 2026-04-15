@@ -1,5 +1,5 @@
 /**
- * AGUILA · V1.5 F3 — POST /api/contabilidad/checklist/[id]/toggle
+ * ZAPATA AI · V1.5 F3 — POST /api/contabilidad/checklist/[id]/toggle
  *
  * Flips a single monthly-close checklist item. Scoped by session.companyId.
  */

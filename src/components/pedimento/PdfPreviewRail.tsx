@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * AGUILA · V1.5 F17 — Pedimento PDF live preview rail.
+ * ZAPATA AI · V1.5 F17 — Pedimento PDF live preview rail.
  *
  * Right-rail tab that fetches /api/pedimento/[id]/preview and renders the
  * returned PDF bytes inline via a blob URL iframe. Refresh is debounced to

@@ -37,7 +37,7 @@ export default async function ConocimientoPage() {
     <div style={{ fontFamily: 'var(--font-geist-sans)', color: 'var(--border)' }} className="p-4 md:px-7 md:py-6">
       <h1 style={{ fontSize: 22, fontWeight: 800, margin: '0 0 4px' }}>Base de Conocimiento</h1>
       <p style={{ color: '#666', fontSize: 13, margin: '0 0 24px' }}>
-        Memoria institucional de AGUILA &middot; {(knowledge || []).length} precedentes
+        Memoria institucional de ZAPATA AI &middot; {(knowledge || []).length} precedentes
       </p>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>

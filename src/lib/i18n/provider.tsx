@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * Lightweight i18n provider for AGUILA.
+ * Lightweight i18n provider for ZAPATA.
  *
  * WHY custom (not next-intl): keeps blast radius contained, zero new deps,
  * no server-boundary plumbing. Authenticated shell is fully client-rendered

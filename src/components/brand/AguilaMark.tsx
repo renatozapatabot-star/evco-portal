@@ -34,7 +34,14 @@ export function AguilaMark({
       width={size}
       height={size}
       className={className}
-      style={{ display: 'block', height: 'auto', ...style }}
+      style={{
+        display: 'block',
+        width: `${size}px`,
+        height: `${size}px`,
+        flexShrink: 0,
+        maxWidth: 'none',
+        ...style,
+      }}
     />
   )
 }

@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import Link from 'next/link'
 import { Layers } from 'lucide-react'
 import {
   BORDER,
@@ -149,8 +150,30 @@ export function PartidasTab({ traficoId, partidas }: PartidasTabProps) {
                   style={{ cursor: 'pointer' }}
                 >
                   <td style={cell(true)}>{p.numero_parte ?? '—'}</td>
-                  <td style={cell(true)}>{fraccion}</td>
-                  <td style={cellDesc}>{p.descripcion ?? '—'}</td>
+                  <td style={cell(true)}>
+                    {fraccion && fraccion !== '—' ? (
+                      <Link
+                        href={`/catalogo/fraccion/${encodeURIComponent(fraccion)}`}
+                        onClick={(e: React.MouseEvent) => e.stopPropagation()}
+                        style={{ color: 'inherit', textDecoration: 'none', borderBottom: '1px dashed rgba(192,197,206,0.25)' }}
+                        title="Ver fracción en catálogo"
+                      >
+                        {fraccion}
+                      </Link>
+                    ) : fraccion}
+                  </td>
+                  <td style={cellDesc}>
+                    {p.descripcion ? (
+                      <Link
+                        href={`/catalogo?q=${encodeURIComponent(p.descripcion)}`}
+                        onClick={(e: React.MouseEvent) => e.stopPropagation()}
+                        style={{ color: 'inherit', textDecoration: 'none', borderBottom: '1px dashed rgba(192,197,206,0.25)' }}
+                        title="Ver en catálogo"
+                      >
+                        {p.descripcion}
+                      </Link>
+                    ) : '—'}
+                  </td>
                   <td style={cell(true, 'right')}>
                     {cantidad !== null ? `${cantidad}${p.umc ? ` ${p.umc}` : ''}` : '—'}
                   </td>

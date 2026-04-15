@@ -333,8 +333,11 @@ async function renderEagle(opName: string, rawMonth: string | null) {
     { key: 'traficos', label: 'Embarques en proceso', value: activeTraficosTotal, series: traficosActivosSeries, current: sumRange(traficosActivosSeries, 7, 14), previous: sumRange(traficosActivosSeries, 0, 7), href: '/embarques?estatus=En+Proceso', tone: 'silver' },
     { key: 'clientes', label: 'Clientes activos', value: activeClients, tone: 'silver' },
     { key: 'dormidos', label: 'Clientes dormidos', value: dormant.length, tone: 'silver', inverted: true },
-    { key: 'ar', label: 'CxC vencido', value: fmtUSDCompact(arTotal) || '—', tone: 'silver', inverted: true },
+    // Swapped 2026-04-15 per Tito audit: CxC vencido moved to ArApTile in
+    // estado grid; hero now shows actionable cruces este mes.
+    { key: 'cruces', label: 'Cruces este mes', value: cruzadosMesCount, series: pedimentosPendSeries, current: cruzadosMesCount, previous: pedimentosPriorMesCount, href: '/embarques?cruzadoEn=mes', tone: 'silver' },
   ]
+  void arTotal
 
   const daysSinceLastCruce = lastPedimento?.fecha_cruce
     ? Math.floor((Date.now() - new Date(lastPedimento.fecha_cruce).getTime()) / 86400000)

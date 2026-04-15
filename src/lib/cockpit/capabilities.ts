@@ -34,7 +34,14 @@ export interface CapabilityCell {
   microStatusWarning?: boolean
 }
 
-export type CapabilityCounts = Record<CapabilityKey, CapabilityCell>
+/**
+ * Counts for capability cards. Each key is optional so surfaces can opt
+ * out of specific cards — CapabilityCardGrid hides any card whose key
+ * isn't present in the counts map (per 2026-04-15 operator audit: the
+ * operator cockpit drops the Clasificador card entirely; Clasificación
+ * now lives only on the Asistente/Clasificador fab).
+ */
+export type CapabilityCounts = Partial<Record<CapabilityKey, CapabilityCell>>
 
 export const EMPTY_CAPABILITY_COUNTS: CapabilityCounts = {
   checklist:    { count: null },

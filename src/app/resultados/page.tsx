@@ -96,7 +96,7 @@ export default function ResultadosPage() {
     {
       icon: <TrendingUp size={32} style={{ color: 'var(--success)' }} />,
       value: `${claims.docCompleteness}%`,
-      label: 'completitud documental',
+      label: 'completitud de documentos',
       detail: `vs ${claims.industryDocRate}% estándar de la industria`,
     },
     {

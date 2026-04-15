@@ -77,7 +77,7 @@ export function ChainView({ nodes, compact = false, ariaLabel }: ChainViewProps)
   return (
     <GlassCard
       size={compact ? 'compact' : 'card'}
-      ariaLabel={ariaLabel || 'Cadena documental'}
+      ariaLabel={ariaLabel || 'Cadena de documentos'}
       style={{ padding: compact ? '12px 14px' : '16px 20px' }}
     >
       {firstMissing && !compact && (

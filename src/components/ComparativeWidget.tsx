@@ -58,7 +58,7 @@ function generateInsights(client: Record<string, BenchmarkRow>, fleet: Record<st
   const docs      = client['doc_completeness_pct']
   const fleetDocs = fleet['doc_completeness_pct']
   if (docs && fleetDocs?.top_quartile && docs.metric_value < fleetDocs.top_quartile) {
-    tips.push('Subir completitud documental al top 25% reduciría demoras en aduana')
+    tips.push('Subir completitud de documentos al top 25% reduciría demoras en aduana')
   }
 
   const compliance      = client['compliance_score']

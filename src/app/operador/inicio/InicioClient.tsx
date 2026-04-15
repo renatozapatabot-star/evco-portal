@@ -211,10 +211,11 @@ export function InicioClient(props: Props) {
   // V1 fix — microStatus is DYNAMIC info only. Static description lives in
   // CAPABILITY_CARDS.subtitle (renders once). Passing the same string here
   // was causing doubled labels on the client cockpit.
+  // Operator cockpit (2026-04-15 audit): Clasificador fully retired from
+  // this surface — clasificación lives in the Asistente/Clasificador fab
+  // now, not a cockpit capability card. Leaving only Checklist here.
   const capabilityCounts: CapabilityCounts = {
-    checklist:    { count: null },
-    clasificador: { count: null },
-    // mensajes capability removed 2026-04-15
+    checklist: { count: null },
   }
   const capabilitySlot = <CapabilityCardGrid counts={capabilityCounts} />
 

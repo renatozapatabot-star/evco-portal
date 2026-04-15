@@ -19,12 +19,18 @@ interface Props {
  * Rendered inside CockpitInicio between the nav grid and the main estado grid.
  */
 export function CapabilityCardGrid({ counts }: Props) {
+  // Surfaces opt in per-capability by supplying a count entry — unset keys
+  // are hidden. This lets /operador/inicio drop Clasificador without
+  // rebuilding the whole capability layer.
+  const visible = CAPABILITY_CARDS.filter((c) => counts[c.key] !== undefined)
+  if (visible.length === 0) return null
+  const columns = visible.length === 1 ? '1fr' : 'repeat(2, 1fr)'
   return (
     <div
       className="aguila-capability-grid"
       style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(2, 1fr)',
+        gridTemplateColumns: columns,
         gap: 'var(--aguila-gap-card, 16px)',
       }}
     >
@@ -33,7 +39,7 @@ export function CapabilityCardGrid({ counts }: Props) {
           .aguila-capability-grid { grid-template-columns: 1fr !important; }
         }
       `}</style>
-      {CAPABILITY_CARDS.map((c) => {
+      {visible.map((c) => {
         const cell = counts[c.key]
         return (
           <CapabilityCard

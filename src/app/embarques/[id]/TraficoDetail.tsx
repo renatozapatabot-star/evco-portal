@@ -264,7 +264,7 @@ export function TraficoDetail(props: TraficoDetailProps) {
         <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: 16 }}>
           <ChainView
             nodes={chainWithVincular}
-            ariaLabel={`Cadena documental de ${props.traficoId}`}
+            ariaLabel={`Cadena de documentos de ${props.traficoId}`}
           />
           <ChainVincularModal
             open={vincularOpen}

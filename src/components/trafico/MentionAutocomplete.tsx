@@ -18,7 +18,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import type { RefObject } from 'react'
 import {
-  ACCENT_CYAN,
+  ACCENT_SILVER,
   BG_CARD,
   BORDER,
   GLASS_BLUR,
@@ -216,7 +216,7 @@ export function MentionAutocomplete({
                 fontFamily: 'var(--font-mono)',
                 fontSize: 12,
                 fontWeight: 700,
-                color: ACCENT_CYAN,
+                color: ACCENT_SILVER,
                 letterSpacing: '0.02em',
               }}
             >

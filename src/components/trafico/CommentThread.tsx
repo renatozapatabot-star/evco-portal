@@ -16,7 +16,7 @@
 import { useRef, useState, useTransition } from 'react'
 import { fmtDateTime } from '@/lib/format-utils'
 import {
-  ACCENT_CYAN,
+  ACCENT_SILVER,
   BORDER,
   GOLD,
   TEXT_MUTED,
@@ -62,7 +62,7 @@ function renderWithMentions(body: string): React.ReactNode[] {
     const start = m.index ?? 0
     if (start > lastIdx) parts.push(body.slice(lastIdx, start))
     parts.push(
-      <span key={`m-${key++}`} style={{ color: ACCENT_CYAN, fontWeight: 600 }}>
+      <span key={`m-${key++}`} style={{ color: ACCENT_SILVER, fontWeight: 600 }}>
         @{m[1]}
       </span>,
     )
@@ -154,7 +154,7 @@ export function CommentThread({ traficoId, notes, currentUserId, availableUsers 
           }}
         >
           Escribiendo como{' '}
-          <span style={{ color: ACCENT_CYAN, fontFamily: 'var(--font-mono)', letterSpacing: 0 }}>
+          <span style={{ color: ACCENT_SILVER, fontFamily: 'var(--font-mono)', letterSpacing: 0 }}>
             {currentUserId}
           </span>
         </label>
@@ -250,8 +250,8 @@ export function CommentThread({ traficoId, notes, currentUserId, availableUsers 
                     height: 36,
                     borderRadius: '50%',
                     background: 'rgba(192,197,206,0.1)',
-                    border: `1px solid ${ACCENT_CYAN}`,
-                    color: ACCENT_CYAN,
+                    border: `1px solid ${ACCENT_SILVER}`,
+                    color: ACCENT_SILVER,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',

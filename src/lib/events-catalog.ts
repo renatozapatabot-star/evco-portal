@@ -10,7 +10,7 @@
  */
 
 import {
-  ACCENT_CYAN,
+  ACCENT_SILVER,
   GOLD,
   GREEN,
   RED,
@@ -65,14 +65,14 @@ export type SuggestedAction = {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const EVENT_CATEGORY_COLORS: Record<Category, string> = {
-  lifecycle: ACCENT_CYAN,
+  lifecycle: ACCENT_SILVER,
   payment: GOLD,
-  inspection: ACCENT_CYAN, // row-level override: green vs red by event_type
+  inspection: ACCENT_SILVER, // row-level override: green vs red by event_type
   exception: RED,
-  export: ACCENT_CYAN,
-  load_order: ACCENT_CYAN,
-  vucem: ACCENT_CYAN,
-  document: ACCENT_CYAN,
+  export: ACCENT_SILVER,
+  load_order: ACCENT_SILVER,
+  vucem: ACCENT_SILVER,
+  document: ACCENT_SILVER,
   manual: TEXT_MUTED,
 }
 
@@ -100,8 +100,8 @@ export function resolveEventColor(row: Pick<EventCatalogRow, 'category' | 'color
       return RED
     case 'GOLD':
       return GOLD
-    case 'ACCENT_CYAN':
-      return ACCENT_CYAN
+    case 'ACCENT_SILVER':
+      return ACCENT_SILVER
     case 'TEXT_MUTED':
       return TEXT_MUTED
     default:

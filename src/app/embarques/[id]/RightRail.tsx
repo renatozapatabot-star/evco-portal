@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import * as LucideIcons from 'lucide-react'
 import {
-  ACCENT_CYAN,
+  ACCENT_SILVER,
   BG_CARD,
   BORDER,
   GLASS_BLUR,
@@ -289,7 +289,7 @@ function InformacionLateral({
               style={{
                 width: `${Math.min(100, Math.max(0, expedienteProgressPct))}%`,
                 height: '100%',
-                background: expedienteProgressPct >= 100 ? GOLD : ACCENT_CYAN,
+                background: expedienteProgressPct >= 100 ? GOLD : ACCENT_SILVER,
               }}
             />
           </div>

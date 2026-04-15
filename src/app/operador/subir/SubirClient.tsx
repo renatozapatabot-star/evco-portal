@@ -12,7 +12,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Mail, Search } from 'lucide-react'
 import { DocUploader } from '@/components/docs/DocUploader'
 import {
-  ACCENT_CYAN,
+  ACCENT_SILVER,
   BG_CARD,
   BORDER,
   GLASS_BLUR,
@@ -162,7 +162,7 @@ export function SubirClient({ traficos }: SubirClientProps) {
             minHeight: 60,
             padding: '0 16px',
             borderRadius: 12,
-            border: `1px solid ${selectedId ? ACCENT_CYAN : BORDER}`,
+            border: `1px solid ${selectedId ? ACCENT_SILVER : BORDER}`,
             background: BG_CARD,
             color: TEXT_PRIMARY,
             fontSize: 15,
@@ -297,14 +297,14 @@ export function SubirClient({ traficos }: SubirClientProps) {
             flexShrink: 0,
           }}
         >
-          <Mail size={16} color={ACCENT_CYAN} />
+          <Mail size={16} color={ACCENT_SILVER} />
         </div>
         <div style={{ fontSize: 'var(--aguila-fs-body)', color: TEXT_SECONDARY, lineHeight: 1.5 }}>
           También puedes enviar archivos a{' '}
           <a
             href="mailto:ai@renatozapata.com"
             style={{
-              color: ACCENT_CYAN,
+              color: ACCENT_SILVER,
               textDecoration: 'none',
               fontWeight: 600,
               fontFamily: 'var(--font-mono)',

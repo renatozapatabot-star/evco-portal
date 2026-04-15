@@ -2,7 +2,7 @@
 
 import { forwardRef, useImperativeHandle, useRef, useState, useTransition } from 'react'
 import {
-  ACCENT_CYAN,
+  ACCENT_SILVER,
   BORDER,
   GOLD,
   TEXT_MUTED,
@@ -38,7 +38,7 @@ function renderContent(body: string): React.ReactNode[] {
     const start = m.index ?? 0
     if (start > lastIdx) parts.push(body.slice(lastIdx, start))
     parts.push(
-      <span key={`m-${key++}`} style={{ color: ACCENT_CYAN, fontWeight: 600 }}>
+      <span key={`m-${key++}`} style={{ color: ACCENT_SILVER, fontWeight: 600 }}>
         @{m[1]}
       </span>,
     )
@@ -219,7 +219,7 @@ export const NotasTab = forwardRef<NotasTabHandle, NotasTabProps>(function Notas
                       fontFamily: 'var(--font-mono)',
                       fontSize: 'var(--aguila-fs-meta)',
                       fontWeight: 700,
-                      color: ACCENT_CYAN,
+                      color: ACCENT_SILVER,
                       letterSpacing: '0.02em',
                     }}
                   >

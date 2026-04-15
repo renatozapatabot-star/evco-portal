@@ -2,7 +2,6 @@ import Link from 'next/link'
 import { ArrowLeft, FileText, Workflow } from 'lucide-react'
 import { fmtDateTime } from '@/lib/format-utils'
 import {
-  ACCENT_CYAN,
   ACCENT_SILVER,
   AMBER,
   RED,
@@ -63,7 +62,7 @@ export function Header({
   const stateLabel = currentEvent?.display_name_es ?? 'Sin eventos'
   const stateColor = currentEvent?.category
     ? EVENT_CATEGORY_COLORS[currentEvent.category]
-    : ACCENT_CYAN
+    : ACCENT_SILVER
 
   const days = daysBetween(createdAt)
   const daysFg = daysColor(days)

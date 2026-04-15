@@ -2,7 +2,7 @@
 
 import { useTrack } from '@/lib/telemetry/useTrack'
 import {
-  ACCENT_CYAN,
+  ACCENT_SILVER,
   AMBER,
   BG_CARD,
   BORDER,
@@ -34,7 +34,7 @@ interface HeroStripProps {
 
 // Exported so parent callers can build tiles with the same vocabulary.
 export const HERO_COLOR = {
-  cyan: ACCENT_CYAN,
+  cyan: ACCENT_SILVER,
   amber: AMBER,
   red: RED,
   green: GREEN,

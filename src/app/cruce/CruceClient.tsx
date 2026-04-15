@@ -3,7 +3,7 @@
 import { useMemo, useState, useEffect } from 'react'
 import Link from 'next/link'
 import {
-  ACCENT_CYAN,
+  ACCENT_SILVER,
   BORDER,
   GLASS_SHADOW,
   GOLD,
@@ -94,7 +94,7 @@ function statusColor(s: BlockStatus): string {
       return GOLD
     case 'scheduled':
     default:
-      return ACCENT_CYAN
+      return ACCENT_SILVER
   }
 }
 
@@ -255,7 +255,7 @@ export function CruceClient({
           marginBottom: 20,
         }}
       >
-        <HeroTile label="Cruces hoy" value={metrics.hoy} color={ACCENT_CYAN} />
+        <HeroTile label="Cruces hoy" value={metrics.hoy} color={ACCENT_SILVER} />
         <HeroTile label="Listos esperando" value={metrics.listos} color={GOLD} />
         <HeroTile label="Atrasados" value={metrics.atrasados} color={RED} />
         <HeroTile label="Total semana" value={metrics.semana} color={TEXT_PRIMARY} />
@@ -340,7 +340,7 @@ export function CruceClient({
                   border: `1px solid ${
                     bridgeFilter[b] ? 'rgba(192,197,206,0.35)' : BORDER
                   }`,
-                  color: bridgeFilter[b] ? ACCENT_CYAN : TEXT_SECONDARY,
+                  color: bridgeFilter[b] ? ACCENT_SILVER : TEXT_SECONDARY,
                   fontSize: 12,
                   fontWeight: 600,
                   cursor: 'pointer',
@@ -366,7 +366,7 @@ export function CruceClient({
           color: TEXT_MUTED,
         }}
       >
-        <LegendDot color={ACCENT_CYAN} label="Programado" />
+        <LegendDot color={ACCENT_SILVER} label="Programado" />
         <LegendDot color={GOLD} label="Listo esperando" />
         <LegendDot color={RED} label="Atrasado" />
         <LegendDot color={GREEN} label="Cruzado" />
@@ -399,7 +399,7 @@ export function CruceClient({
                         padding: '2px 8px',
                         borderRadius: 12,
                         background: 'rgba(192,197,206,0.12)',
-                        color: ACCENT_CYAN,
+                        color: ACCENT_SILVER,
                         fontSize: 'var(--aguila-fs-label)',
                       }}
                     >
@@ -721,7 +721,7 @@ function EmptyState() {
           marginRight: 'auto',
         }}
       >
-        Los embarques aparecerán cuando <code style={{ fontFamily: 'var(--font-jetbrains-mono)', color: ACCENT_CYAN }}>fecha_cruce_planeada</code>{' '}
+        Los embarques aparecerán cuando <code style={{ fontFamily: 'var(--font-jetbrains-mono)', color: ACCENT_SILVER }}>fecha_cruce_planeada</code>{' '}
         esté poblada en la tabla traficos.
       </p>
     </div>

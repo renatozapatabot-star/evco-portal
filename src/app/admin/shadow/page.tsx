@@ -6,7 +6,7 @@ import { createServerClient } from '@/lib/supabase-server'
 import { verifySession } from '@/lib/session'
 import { computeAgreementStats } from '@/lib/shadow-analysis'
 import {
-  ACCENT_CYAN, BG_CARD, BORDER, GLASS_BLUR, GLASS_SHADOW,
+  ACCENT_SILVER, BG_CARD, BORDER, GLASS_BLUR, GLASS_SHADOW,
   TEXT_MUTED, TEXT_PRIMARY,
 } from '@/lib/design-system'
 import { HeroStrip, type HeroTile } from '@/app/embarques/[id]/legacy/_components/HeroStrip'
@@ -156,7 +156,7 @@ export default async function AdminShadowPage() {
           textAlign: 'center',
         }}>
           <div style={{
-            fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, color: ACCENT_CYAN,
+            fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, color: ACCENT_SILVER,
             textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8,
           }}>
             Recolectando datos
@@ -241,7 +241,7 @@ export default async function AdminShadowPage() {
                     alignItems: 'center',
                   }}
                 >
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: ACCENT_CYAN }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: ACCENT_SILVER }}>
                     {d.trafico}
                   </span>
                   <span style={{ fontSize: 12, color: TEXT_PRIMARY, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>

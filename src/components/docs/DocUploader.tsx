@@ -16,11 +16,11 @@ import { useCallback, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { UploadCloud, FileText, Loader2 } from 'lucide-react'
 import {
-  ACCENT_CYAN,
+  ACCENT_SILVER,
   BG_CARD,
   BORDER,
   GLASS_BLUR,
-  GLOW_CYAN_SUBTLE,
+  GLOW_SILVER_SUBTLE,
   TEXT_MUTED,
   TEXT_PRIMARY,
   TEXT_SECONDARY,
@@ -171,7 +171,7 @@ export function DocUploader({ traficoId, defaultDocType, onUploaded }: DocUpload
     [handleFiles]
   )
 
-  const borderColor = isDragging ? ACCENT_CYAN : BORDER
+  const borderColor = isDragging ? ACCENT_SILVER : BORDER
   const bg = isDragging ? `${BG_CARD}` : 'rgba(255,255,255,0.02)'
 
   return (
@@ -204,7 +204,7 @@ export function DocUploader({ traficoId, defaultDocType, onUploaded }: DocUpload
         gap: 10,
         cursor: 'pointer',
         transition: 'border-color 150ms ease, background 150ms ease, box-shadow 150ms ease',
-        boxShadow: isDragging ? `0 0 0 1px ${ACCENT_CYAN}, 0 0 24px ${GLOW_CYAN_SUBTLE}` : 'none',
+        boxShadow: isDragging ? `0 0 0 1px ${ACCENT_SILVER}, 0 0 24px ${GLOW_SILVER_SUBTLE}` : 'none',
       }}
     >
       <input
@@ -216,9 +216,9 @@ export function DocUploader({ traficoId, defaultDocType, onUploaded }: DocUpload
         style={{ display: 'none' }}
       />
       {busyCount > 0 ? (
-        <Loader2 size={24} style={{ color: ACCENT_CYAN, animation: 'spin 1.2s linear infinite' }} />
+        <Loader2 size={24} style={{ color: ACCENT_SILVER, animation: 'spin 1.2s linear infinite' }} />
       ) : isDragging ? (
-        <UploadCloud size={28} style={{ color: ACCENT_CYAN }} />
+        <UploadCloud size={28} style={{ color: ACCENT_SILVER }} />
       ) : (
         <FileText size={24} style={{ color: TEXT_MUTED }} />
       )}

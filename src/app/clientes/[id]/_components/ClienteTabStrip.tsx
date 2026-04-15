@@ -2,7 +2,7 @@
 
 import { useState, type ReactNode } from 'react'
 import {
-  ACCENT_CYAN, BG_CARD, BORDER, GLASS_BLUR, GLASS_SHADOW,
+  ACCENT_SILVER, BG_CARD, BORDER, GLASS_BLUR, GLASS_SHADOW,
   TEXT_MUTED, TEXT_PRIMARY,
 } from '@/lib/design-system'
 import { useTrack } from '@/lib/telemetry/useTrack'
@@ -66,7 +66,7 @@ export function ClienteTabStrip({ tabs, clienteId, defaultTab }: {
                 padding: '14px 18px',
                 background: 'transparent',
                 border: 'none',
-                borderBottom: selected ? `2px solid ${ACCENT_CYAN}` : '2px solid transparent',
+                borderBottom: selected ? `2px solid ${ACCENT_SILVER}` : '2px solid transparent',
                 color: selected ? TEXT_PRIMARY : TEXT_MUTED,
                 fontSize: 'var(--aguila-fs-body)',
                 fontWeight: selected ? 700 : 500,

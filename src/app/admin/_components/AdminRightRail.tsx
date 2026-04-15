@@ -1,6 +1,6 @@
 'use client'
 
-import { BG_CARD, BORDER, GLASS_BLUR, TEXT_PRIMARY, TEXT_SECONDARY, TEXT_MUTED, GREEN, GOLD, ACCENT_CYAN } from '@/lib/design-system'
+import { BG_CARD, BORDER, GLASS_BLUR, TEXT_PRIMARY, TEXT_SECONDARY, TEXT_MUTED, GREEN, GOLD, ACCENT_SILVER } from '@/lib/design-system'
 import { fmtDateTime } from '@/lib/format-utils'
 import type { PipelineStage, ActivityEvent, TeamMember } from '@/types/cockpit'
 
@@ -60,7 +60,7 @@ export function AdminRightRail({ pipeline, activity, team, isLive }: AdminRightR
                 <div style={{
                   width: `${(stage.count / maxCount) * 100}%`,
                   height: '100%',
-                  background: ACCENT_CYAN,
+                  background: ACCENT_SILVER,
                   borderRadius: 4,
                   opacity: 0.6,
                 }} />

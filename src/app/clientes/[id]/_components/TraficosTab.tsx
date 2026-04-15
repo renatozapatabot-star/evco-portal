@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ACCENT_CYAN, BORDER, TEXT_MUTED, TEXT_PRIMARY } from '@/lib/design-system'
+import { ACCENT_SILVER, BORDER, TEXT_MUTED, TEXT_PRIMARY } from '@/lib/design-system'
 import { fmtDateTime, fmtUSD } from '@/lib/format-utils'
 
 export interface TraficoRow {
@@ -34,7 +34,7 @@ export function TraficosTab({ rows }: { rows: TraficoRow[] }) {
           {rows.slice(0, 100).map((r) => (
             <tr key={r.trafico}>
               <td style={{ padding: '10px 12px', borderBottom: `1px solid ${BORDER}`, fontFamily: 'var(--font-mono)' }}>
-                <Link href={`/embarques/${encodeURIComponent(r.trafico)}`} style={{ color: ACCENT_CYAN, textDecoration: 'none' }}>
+                <Link href={`/embarques/${encodeURIComponent(r.trafico)}`} style={{ color: ACCENT_SILVER, textDecoration: 'none' }}>
                   {r.trafico}
                 </Link>
               </td>

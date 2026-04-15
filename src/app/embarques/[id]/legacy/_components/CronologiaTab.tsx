@@ -1,5 +1,5 @@
 import { fmtDateTime } from '@/lib/format-utils'
-import { ACCENT_CYAN, BORDER, TEXT_MUTED, TEXT_PRIMARY, TEXT_SECONDARY } from '@/lib/design-system'
+import { ACCENT_SILVER, BORDER, TEXT_MUTED, TEXT_PRIMARY, TEXT_SECONDARY } from '@/lib/design-system'
 
 export interface DecisionRow {
   id: number
@@ -36,8 +36,8 @@ export function CronologiaTab({ decisions }: { decisions: DecisionRow[] }) {
               width: 6,
               height: 6,
               borderRadius: 999,
-              background: ACCENT_CYAN,
-              boxShadow: `0 0 8px ${ACCENT_CYAN}`,
+              background: ACCENT_SILVER,
+              boxShadow: `0 0 8px ${ACCENT_SILVER}`,
               marginTop: 8,
               flexShrink: 0,
             }}

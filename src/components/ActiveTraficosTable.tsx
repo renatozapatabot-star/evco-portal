@@ -6,7 +6,7 @@ import { MoreVertical } from 'lucide-react'
 import { fmtDateTime } from '@/lib/format-utils'
 import {
   BG_CARD, BORDER, GLASS_BLUR, GLASS_SHADOW,
-  TEXT_PRIMARY, TEXT_SECONDARY, TEXT_MUTED, ACCENT_CYAN, RED, GREEN, GOLD,
+  TEXT_PRIMARY, TEXT_SECONDARY, TEXT_MUTED, ACCENT_SILVER, RED, GREEN, GOLD,
 } from '@/lib/design-system'
 import type { TraficoRow } from '@/app/operador/inicio/types'
 import {
@@ -89,7 +89,7 @@ export function ActiveTraficosTable({ rows, scope: _scope, onRefresh }: Props) {
           padding: '14px 20px',
           fontSize: 12,
           fontWeight: 700,
-          color: ACCENT_CYAN,
+          color: ACCENT_SILVER,
           listStyle: 'none',
         }}>
           Ver tabla completa ({rows.length}) →
@@ -165,7 +165,7 @@ export function ActiveTraficosTable({ rows, scope: _scope, onRefresh }: Props) {
                         style={{
                           fontFamily: 'var(--font-jetbrains-mono), monospace',
                           fontWeight: 700,
-                          color: ACCENT_CYAN,
+                          color: ACCENT_SILVER,
                           textDecoration: 'none',
                         }}
                       >
@@ -240,7 +240,7 @@ export function ActiveTraficosTable({ rows, scope: _scope, onRefresh }: Props) {
           <span style={{ fontSize: 11, color: TEXT_MUTED }}>
             {isPending ? 'Guardando…' : '\u00A0'}
           </span>
-          <Link href="/embarques" style={{ color: ACCENT_CYAN, fontSize: 12, fontWeight: 700, textDecoration: 'none' }}>
+          <Link href="/embarques" style={{ color: ACCENT_SILVER, fontSize: 12, fontWeight: 700, textDecoration: 'none' }}>
             Ver todos →
           </Link>
         </div>
@@ -252,7 +252,7 @@ export function ActiveTraficosTable({ rows, scope: _scope, onRefresh }: Props) {
           bottom: 24,
           right: 24,
           background: 'rgba(10,14,22,0.95)',
-          border: `1px solid ${ACCENT_CYAN}`,
+          border: `1px solid ${ACCENT_SILVER}`,
           borderRadius: 12,
           padding: '12px 18px',
           color: TEXT_PRIMARY,
@@ -367,7 +367,7 @@ function RowMenu({ trafico, onClose, onStatus, onReceive, onSendEmail }: {
             display: 'block',
             padding: '10px 12px',
             fontSize: 12,
-            color: ACCENT_CYAN,
+            color: ACCENT_SILVER,
             textDecoration: 'none',
           }}
         >
@@ -539,7 +539,7 @@ function SwipeCard({
               fontFamily: 'var(--font-jetbrains-mono), monospace',
               fontSize: 13,
               fontWeight: 700,
-              color: ACCENT_CYAN,
+              color: ACCENT_SILVER,
             }}
           >
             {row.trafico}

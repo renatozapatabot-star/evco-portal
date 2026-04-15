@@ -16,7 +16,7 @@
 
 import { CheckCircle2, Circle, XCircle, MinusCircle, Info } from 'lucide-react'
 import {
-  ACCENT_CYAN,
+  ACCENT_SILVER,
   AMBER,
   BG_CARD,
   BORDER,
@@ -83,8 +83,8 @@ function stateForCode(code: string, uploaded: ChecklistDocRow[]): RowState {
 
 function StateIcon({ state, required }: { state: RowState; required: boolean }) {
   const common = { size: 18, strokeWidth: 2 }
-  if (state === 'verified') return <CheckCircle2 {...common} style={{ color: ACCENT_CYAN }} aria-label="Verificado" />
-  if (state === 'received') return <CheckCircle2 {...common} style={{ color: ACCENT_CYAN }} aria-label="Recibido" />
+  if (state === 'verified') return <CheckCircle2 {...common} style={{ color: ACCENT_SILVER }} aria-label="Verificado" />
+  if (state === 'received') return <CheckCircle2 {...common} style={{ color: ACCENT_SILVER }} aria-label="Recibido" />
   if (state === 'pending') return <Circle {...common} style={{ color: AMBER }} aria-label="Pendiente de revisión" />
   if (state === 'missing')
     return required ? (
@@ -363,7 +363,7 @@ function FlatRows({
                 style={{
                   fontSize: 11,
                   fontWeight: 700,
-                  color: ACCENT_CYAN,
+                  color: ACCENT_SILVER,
                   textTransform: 'uppercase',
                   letterSpacing: '0.06em',
                 }}

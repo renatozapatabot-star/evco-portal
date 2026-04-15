@@ -6,7 +6,7 @@ import { createServerClient } from '@/lib/supabase-server'
 import { verifySession } from '@/lib/session'
 import { fmtDateTime, fmtPedimentoShort, fmtUSD } from '@/lib/format-utils'
 import {
-  ACCENT_CYAN,
+  ACCENT_SILVER,
   GREEN,
   TEXT_MUTED,
   TEXT_PRIMARY,
@@ -95,7 +95,7 @@ function pillColor(status: string | null): { bg: string; fg: string; label: stri
   const s = (status ?? '').toLowerCase()
   if (s.includes('cruz')) return { bg: 'rgba(34,197,94,0.12)', fg: GREEN, label: status ?? '' }
   if (s.includes('pagado')) return { bg: 'rgba(34,197,94,0.12)', fg: GREEN, label: status ?? '' }
-  return { bg: 'rgba(192,197,206,0.12)', fg: ACCENT_CYAN, label: status ?? 'Sin estatus' }
+  return { bg: 'rgba(192,197,206,0.12)', fg: ACCENT_SILVER, label: status ?? 'Sin estatus' }
 }
 
 // ── Page ────────────────────────────────────────────────────
@@ -339,7 +339,7 @@ export default async function TraficoDetailPage({
             style={{
               fontSize: 'var(--aguila-fs-meta)',
               fontWeight: 700,
-              color: ACCENT_CYAN,
+              color: ACCENT_SILVER,
               textTransform: 'uppercase',
               letterSpacing: '0.08em',
               padding: '4px 10px',

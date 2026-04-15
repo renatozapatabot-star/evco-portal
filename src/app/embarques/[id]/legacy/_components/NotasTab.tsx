@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { fmtDateTime } from '@/lib/format-utils'
-import { ACCENT_CYAN, BORDER, GOLD, TEXT_MUTED, TEXT_PRIMARY, TEXT_SECONDARY } from '@/lib/design-system'
+import { ACCENT_SILVER, BORDER, GOLD, TEXT_MUTED, TEXT_PRIMARY, TEXT_SECONDARY } from '@/lib/design-system'
 import { useToast } from '@/components/Toast'
 import { useTrack } from '@/lib/telemetry/useTrack'
 import { addTraficoNote } from '../actions'
@@ -34,7 +34,7 @@ function renderContent(body: string): React.ReactNode[] {
     const start = m.index ?? 0
     if (start > lastIdx) parts.push(body.slice(lastIdx, start))
     parts.push(
-      <span key={`m-${key++}`} style={{ color: ACCENT_CYAN, fontWeight: 600 }}>
+      <span key={`m-${key++}`} style={{ color: ACCENT_SILVER, fontWeight: 600 }}>
         @{m[1]}
       </span>,
     )
@@ -171,7 +171,7 @@ export function NotasTab({ traficoId, notes }: { traficoId: string; notes: NoteR
                       fontFamily: 'var(--font-mono)',
                       fontSize: 'var(--aguila-fs-meta)',
                       fontWeight: 700,
-                      color: ACCENT_CYAN,
+                      color: ACCENT_SILVER,
                       letterSpacing: '0.02em',
                     }}
                   >

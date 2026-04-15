@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import {
-  ACCENT_CYAN,
+  ACCENT_SILVER,
   BG_CARD,
   BORDER,
   GLASS_BLUR,
@@ -177,7 +177,7 @@ export function TraficoDetail(props: TraficoDetailProps) {
       label: 'Eventos',
       value: String(props.events.length),
       mono: true,
-      color: ACCENT_CYAN,
+      color: ACCENT_SILVER,
       clickable: true,
       hint: props.events.length === 0 ? 'Ninguno aún' : null,
     },
@@ -315,7 +315,7 @@ export function TraficoDetail(props: TraficoDetailProps) {
                       background: 'transparent',
                       border: 'none',
                       borderBottom: selected
-                        ? `2px solid ${ACCENT_CYAN}`
+                        ? `2px solid ${ACCENT_SILVER}`
                         : '2px solid transparent',
                       color: selected ? TEXT_PRIMARY : TEXT_MUTED,
                       fontSize: 'var(--aguila-fs-body)',

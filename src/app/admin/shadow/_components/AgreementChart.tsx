@@ -1,4 +1,4 @@
-import { ACCENT_CYAN, RED, TEXT_MUTED, TEXT_PRIMARY } from '@/lib/design-system'
+import { ACCENT_SILVER, RED, TEXT_MUTED, TEXT_PRIMARY } from '@/lib/design-system'
 import type { ShadowByDay } from '@/lib/shadow-analysis'
 
 /**
@@ -61,7 +61,7 @@ export function AgreementChart({ rows }: { rows: ShadowByDay[] }) {
                   y={yAgreed}
                   width={barW}
                   height={hAgreed}
-                  fill={ACCENT_CYAN}
+                  fill={ACCENT_SILVER}
                   opacity={0.85}
                 />
               )}
@@ -89,7 +89,7 @@ export function AgreementChart({ rows }: { rows: ShadowByDay[] }) {
       </svg>
       <div style={{ display: 'flex', gap: 16, marginTop: 8, fontSize: 'var(--aguila-fs-meta)' }}>
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: TEXT_PRIMARY }}>
-          <span style={{ width: 10, height: 10, background: ACCENT_CYAN, borderRadius: 2 }} /> Concuerdan
+          <span style={{ width: 10, height: 10, background: ACCENT_SILVER, borderRadius: 2 }} /> Concuerdan
         </span>
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: TEXT_PRIMARY }}>
           <span style={{ width: 10, height: 10, background: RED, borderRadius: 2 }} /> Discrepan

@@ -17,7 +17,7 @@
 import { useMemo, useState } from 'react'
 import { X, Send, Loader2, Check, Mail, ChevronDown, ChevronRight, Plus } from 'lucide-react'
 import {
-  ACCENT_CYAN,
+  ACCENT_SILVER,
   BG_CARD,
   BORDER,
   GLASS_BLUR,
@@ -379,7 +379,7 @@ export function SolicitarDocsModal({
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Mail size={18} style={{ color: ACCENT_CYAN }} />
+            <Mail size={18} style={{ color: ACCENT_SILVER }} />
             <div>
               <div style={{ fontSize: 15, fontWeight: 700, color: TEXT_PRIMARY }}>
                 Solicitar documentos
@@ -473,7 +473,7 @@ export function SolicitarDocsModal({
               type="checkbox"
               checked={otroEnabled}
               onChange={handleOtroToggle}
-              style={{ width: 18, height: 18, accentColor: ACCENT_CYAN, cursor: 'pointer' }}
+              style={{ width: 18, height: 18, accentColor: ACCENT_SILVER, cursor: 'pointer' }}
             />
             <span style={{ fontSize: 13, color: TEXT_PRIMARY, fontWeight: 600 }}>
               Otro (especificar)
@@ -511,7 +511,7 @@ export function SolicitarDocsModal({
                   alignItems: 'center',
                   gap: 6,
                   fontSize: 12,
-                  color: ACCENT_CYAN,
+                  color: ACCENT_SILVER,
                   padding: 8,
                 }}
               >
@@ -642,7 +642,7 @@ export function SolicitarDocsModal({
               gap: 8,
             }}
           >
-            <Check size={14} style={{ color: ACCENT_CYAN }} />
+            <Check size={14} style={{ color: ACCENT_SILVER }} />
             Selecciona al menos un documento para enviar la solicitud.
           </div>
         )}
@@ -707,7 +707,7 @@ function CategorySection({
             style={{
               fontSize: 11,
               fontWeight: 700,
-              color: ACCENT_CYAN,
+              color: ACCENT_SILVER,
               fontFamily: 'var(--font-mono)',
             }}
           >
@@ -739,7 +739,7 @@ function CategorySection({
                   style={{
                     width: 18,
                     height: 18,
-                    accentColor: ACCENT_CYAN,
+                    accentColor: ACCENT_SILVER,
                     cursor: 'pointer',
                     marginTop: 2,
                   }}
@@ -828,7 +828,7 @@ function SummaryCard({ selected, customsCount }: { selected: Set<string>; custom
             </span>
           ))}
           {customsCount > 0 && (
-            <span style={{ fontSize: 11, color: ACCENT_CYAN, fontFamily: 'var(--font-mono)' }}>
+            <span style={{ fontSize: 11, color: ACCENT_SILVER, fontFamily: 'var(--font-mono)' }}>
               Otros: <strong>{customsCount}</strong>
             </span>
           )}

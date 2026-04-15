@@ -428,6 +428,11 @@ async function renderEagle(opName: string, rawMonth: string | null) {
     },
   ]
 
+  // Owner cockpit (2026-04-15 audit): dad's home shows only decisions +
+  // month context + priority threads. "Generar auditoría semanal",
+  // "Embarques del día", "AR/AP resumen", "Clientes dormidos",
+  // "Top 5 atenciones" and the Corredor tile are all reachable via the
+  // 6 nav tiles + Reportes + command palette — they cluttered the glance.
   const estadoSections = (
     <>
       <DecisionesPanel items={decisionItems} />
@@ -438,26 +443,7 @@ async function renderEagle(opName: string, rawMonth: string | null) {
         next={month.next}
         options={monthOptions}
       />
-      <AuditoriaShortcut />
       <PriorityThreadsPanel threads={escalatedThreads} />
-      <div className="eagle-estado-grid" style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-        gap: 'var(--aguila-gap-card, 16px)',
-      }}>
-        <style>{`
-          @media (max-width: 900px) {
-            .eagle-estado-grid { grid-template-columns: 1fr !important; }
-          }
-        `}</style>
-        <TraficosDelDiaTile buckets={traficosByStatus} />
-        <ArApTile ar={ar} ap={ap} />
-        <ClientesDormidosTile dormant={dormant} />
-        <TopAtencionesTile items={atencionesTop} />
-        <div style={{ gridColumn: 'span 2' }}>
-          <CorredorTile />
-        </div>
-      </div>
     </>
   )
 

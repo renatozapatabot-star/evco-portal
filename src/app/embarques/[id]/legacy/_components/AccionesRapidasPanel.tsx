@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import { Send, RefreshCw } from 'lucide-react'
 import {
-  ACCENT_CYAN,
+  ACCENT_SILVER,
   BG_CARD,
   BORDER,
   GLASS_BLUR,
@@ -152,7 +152,7 @@ export function AccionesRapidasPanel({
               right: 14,
               top: '50%',
               transform: 'translateY(-50%)',
-              color: ACCENT_CYAN,
+              color: ACCENT_SILVER,
               animation: 'spin 1s linear infinite',
             }}
           />

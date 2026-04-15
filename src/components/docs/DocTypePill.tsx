@@ -12,7 +12,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ChevronDown, Check } from 'lucide-react'
 import {
-  ACCENT_CYAN,
+  ACCENT_SILVER,
   BG_CARD,
   BORDER,
   GLASS_BLUR,
@@ -192,7 +192,7 @@ export function DocTypePill({ documentId, currentType, confidence }: DocTypePill
                 }}
               >
                 <span>{label(t)}</span>
-                {selected && <Check size={14} style={{ color: ACCENT_CYAN }} />}
+                {selected && <Check size={14} style={{ color: ACCENT_SILVER }} />}
               </button>
             )
           })}

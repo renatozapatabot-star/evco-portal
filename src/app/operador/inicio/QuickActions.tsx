@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { Search, Plus, FileText, StickyNote } from 'lucide-react'
 import {
   BG_CARD, BORDER, GLASS_BLUR, GLASS_SHADOW,
-  TEXT_PRIMARY, TEXT_MUTED, TEXT_SECONDARY, ACCENT_CYAN, GOLD,
+  TEXT_PRIMARY, TEXT_MUTED, TEXT_SECONDARY, ACCENT_SILVER, GOLD,
 } from '@/lib/design-system'
 
 interface SearchResult {
@@ -145,7 +145,7 @@ export function QuickActions() {
                           fontWeight: 800,
                           textTransform: 'uppercase',
                           letterSpacing: '0.08em',
-                          color: ACCENT_CYAN,
+                          color: ACCENT_SILVER,
                           minWidth: 72,
                         }}
                       >

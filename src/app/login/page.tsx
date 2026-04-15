@@ -52,8 +52,24 @@ function LoginContent() {
         setEntering(true)
         if (typeof sessionStorage !== 'undefined') sessionStorage.setItem('cruz_just_entered', '1')
         const next = searchParams.get('next')
+        // Role-aware landing — jump straight to the correct cockpit so
+        // admin/broker don't flash through / before the role redirect.
+        let landing = '/'
+        if (!next || !next.startsWith('/')) {
+          try {
+            const body = await res.clone().json()
+            const role: string | undefined = body?.role
+            if (role === 'admin' || role === 'broker') landing = '/admin/eagle'
+            else if (role === 'operator') landing = '/operador/inicio'
+            else landing = '/inicio'
+          } catch {
+            landing = '/'
+          }
+        } else {
+          landing = next
+        }
         await new Promise(resolve => setTimeout(resolve, 300))
-        router.push(next && next.startsWith('/') ? next : '/')
+        router.push(landing)
         router.refresh()
       } else {
         setError('Contraseña incorrecta. Contacta a Renato Zapata & Company.')

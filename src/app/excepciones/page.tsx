@@ -104,7 +104,7 @@ export default function ExcepcionesPage() {
     return (
       <div className="page-shell" style={{ textAlign: 'center', padding: 60 }}>
         <Shield size={48} style={{ color: 'var(--text-muted)', marginBottom: 16 }} />
-        <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>Acceso restringido</div>
+        <div style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 600, color: 'var(--text-primary)' }}>Acceso restringido</div>
       </div>
     )
   }
@@ -169,7 +169,7 @@ export default function ExcepcionesPage() {
                     background: 'var(--bg-main)', border: '1px solid var(--border)', opacity: 0.7,
                   }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+                      <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-secondary)' }}>
                         <CheckCircle2 size={12} style={{ color: '#16A34A', display: 'inline', marginRight: 4 }} />
                         {r.trafico || '—'} · {TYPE_LABELS[r.exception_type] || r.exception_type}
                       </div>
@@ -197,7 +197,7 @@ function KPICard({ label, value, color }: { label: string; value: string | numbe
   return (
     <div style={{ padding: '12px 14px', borderRadius: 8, background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
       <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', marginBottom: 4 }}>{label}</div>
-      <div style={{ fontSize: 20, fontWeight: 700, fontFamily: 'var(--font-mono)', color }}>{value}</div>
+      <div style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, fontFamily: 'var(--font-mono)', color }}>{value}</div>
     </div>
   )
 }
@@ -239,12 +239,12 @@ function ExceptionCard({ exception: ex, isMobile }: { exception: ExceptionDiagno
                 </span>
               )}
             </div>
-            <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-secondary)', marginTop: 4 }}>
               {ex.primary_hypothesis}
             </div>
           </div>
           <div style={{ textAlign: 'right', minWidth: 70 }}>
-            <div style={{ fontSize: 16, fontWeight: 700, fontFamily: 'var(--font-mono)', color: sev.color }}>
+            <div style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, fontFamily: 'var(--font-mono)', color: sev.color }}>
               {Math.round(ex.primary_confidence * 100)}%
             </div>
             <div style={{ fontSize: 'var(--aguila-fs-label)', color: 'var(--text-muted)' }}>

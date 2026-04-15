@@ -185,7 +185,7 @@ export function NotificacionesClient({ role }: { role: string }) {
                     display: 'flex',
                     alignItems: 'center',
                     gap: 6,
-                    fontSize: 12,
+                    fontSize: 'var(--aguila-fs-compact)',
                     color: '#94a3b8',
                     minHeight: 44,
                   }}
@@ -232,7 +232,7 @@ export function NotificacionesClient({ role }: { role: string }) {
         </div>
       </div>
       {isAdmin && (
-        <div style={{ ...CARD, fontSize: 12, color: '#94a3b8' }}>
+        <div style={{ ...CARD, fontSize: 'var(--aguila-fs-compact)', color: '#94a3b8' }}>
           Como admin puedes editar tus propias reglas aquí. Para configurar las de
           otros miembros del equipo, usa <code>POST /api/telegram/routing</code> con{' '}
           <code>user_id</code> objetivo.

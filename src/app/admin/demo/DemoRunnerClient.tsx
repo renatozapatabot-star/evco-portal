@@ -224,7 +224,7 @@ export function DemoRunnerClient() {
               background: SILVER_GRADIENT,
               color: '#0A0A0C',
               fontFamily: 'var(--font-geist-sans)',
-              fontSize: 16,
+              fontSize: 'var(--aguila-fs-body-lg)',
               fontWeight: 700,
               letterSpacing: '-0.01em',
               cursor: starting || running ? 'not-allowed' : 'pointer',
@@ -272,7 +272,7 @@ export function DemoRunnerClient() {
           )}
 
           {run?.traficoId && (
-            <div style={{ marginTop: 16, fontSize: 12, color: TEXT_MUTED }}>
+            <div style={{ marginTop: 16, fontSize: 'var(--aguila-fs-compact)', color: TEXT_MUTED }}>
               Embarque:{' '}
               <code
                 style={{
@@ -289,7 +289,7 @@ export function DemoRunnerClient() {
                 style={{
                   fontFamily: 'var(--font-jetbrains-mono)',
                   color: TEXT_SECONDARY,
-                  fontSize: 12,
+                  fontSize: 'var(--aguila-fs-compact)',
                 }}
               >
                 {fmtDateTime(run.startedAt)}
@@ -406,7 +406,7 @@ export function DemoRunnerClient() {
                     {step.detail && (
                       <div
                         style={{
-                          fontSize: 12,
+                          fontSize: 'var(--aguila-fs-compact)',
                           color: TEXT_SECONDARY,
                           marginTop: 2,
                         }}

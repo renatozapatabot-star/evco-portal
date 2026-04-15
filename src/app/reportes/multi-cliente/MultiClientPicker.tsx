@@ -67,7 +67,7 @@ export function MultiClientPicker({ defaultWeek }: Props) {
           {pending ? 'Actualizando…' : 'Enter para aplicar'}
         </span>
       </div>
-      {err && <p style={{ fontSize: 12, color: '#EF4444', margin: 0 }}>{err}</p>}
+      {err && <p style={{ fontSize: 'var(--aguila-fs-compact)', color: '#EF4444', margin: 0 }}>{err}</p>}
     </div>
   )
 }

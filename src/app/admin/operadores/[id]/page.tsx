@@ -139,7 +139,7 @@ export default async function OperatorDetailPage({ params }: { params: Promise<{
         >
           {operator.full_name ?? '—'}
         </h1>
-        <div style={{ marginTop: 6, display: 'flex', gap: 14, flexWrap: 'wrap', fontSize: 12 }}>
+        <div style={{ marginTop: 6, display: 'flex', gap: 14, flexWrap: 'wrap', fontSize: 'var(--aguila-fs-compact)' }}>
           <span style={{ color: ACCENT_SILVER, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
             {operator.role ?? 'operator'}
           </span>

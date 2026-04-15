@@ -111,7 +111,7 @@ export default function TrackingPage() {
             textAlign: 'center', padding: '80px 20px',
           }}>
             <div style={{ fontSize: 'var(--aguila-fs-kpi-hero)', marginBottom: 16 }}>&#128722;</div>
-            <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 8 }}>Enlace no disponible</div>
+            <div style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, marginBottom: 8 }}>Enlace no disponible</div>
             <div style={{ fontSize: 'var(--aguila-fs-body)', color: MUTED, lineHeight: 1.6 }}>{error}</div>
           </div>
         )}

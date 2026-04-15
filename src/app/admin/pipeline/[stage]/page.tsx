@@ -114,7 +114,7 @@ export default async function PipelineStagePage({ params }: PageProps) {
             display: 'inline-flex',
             alignItems: 'center',
             gap: 6,
-            fontSize: 12,
+            fontSize: 'var(--aguila-fs-compact)',
             color: '#8B949E',
             textDecoration: 'none',
             marginBottom: 12,
@@ -212,7 +212,7 @@ export default async function PipelineStagePage({ params }: PageProps) {
                       <td style={tdStyle}>
                         <span style={pillStyle(kind)}>{(r.status as string) || 'n/a'}</span>
                       </td>
-                      <td style={{ ...tdStyle, color: '#8B949E', fontSize: 12 }}>
+                      <td style={{ ...tdStyle, color: '#8B949E', fontSize: 'var(--aguila-fs-compact)' }}>
                         {summarizePayload(r.payload) || '—'}
                       </td>
                     </tr>

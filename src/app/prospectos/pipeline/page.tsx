@@ -136,7 +136,7 @@ export default function PipelinePage() {
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center',
               }}>
                 <div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: col.color, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  <div style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, color: col.color, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                     {col.label}
                   </div>
                   <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--n-400)', marginTop: 2 }}>
@@ -171,7 +171,7 @@ export default function PipelinePage() {
                     transition: 'opacity 0.15s, box-shadow 0.15s',
                   }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.3 }}>
+                    <div style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.3 }}>
                       {(p.razon_social || p.rfc).substring(0, 25)}
                     </div>
                     <span style={{
@@ -216,7 +216,7 @@ export default function PipelinePage() {
               {!loading && colProspects.length === 0 && (
                 <div style={{
                   textAlign: 'center', padding: '24px 12px',
-                  color: 'var(--n-300)', fontSize: 12,
+                  color: 'var(--n-300)', fontSize: 'var(--aguila-fs-compact)',
                   border: '1px dashed var(--border-light)',
                   borderRadius: 6,
                 }}>

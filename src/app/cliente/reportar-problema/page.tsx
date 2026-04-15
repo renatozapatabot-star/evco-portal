@@ -144,7 +144,7 @@ export default function ReportarProblemaPage() {
 
         <button onClick={handleSubmit} disabled={loading || !form.title || !form.description} style={{
           width: '100%', padding: '16px 24px', borderRadius: 10,
-          background: '#E8EAED', color: '#111', fontSize: 16, fontWeight: 700,
+          background: '#E8EAED', color: '#111', fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700,
           border: 'none', cursor: loading ? 'wait' : 'pointer',
           opacity: (loading || !form.title || !form.description) ? 0.5 : 1, minHeight: 60,
         }}>

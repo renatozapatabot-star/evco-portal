@@ -139,7 +139,7 @@ export function AdminRightRail({ pipeline, activity, team, isLive }: AdminRightR
                 background: GREEN,
                 boxShadow: `0 0 6px ${GREEN}`,
               }} />
-              <span style={{ fontSize: 12, fontWeight: 600, color: TEXT_PRIMARY, flex: 1 }}>
+              <span style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, color: TEXT_PRIMARY, flex: 1 }}>
                 {member.full_name}
               </span>
               <span style={{ fontSize: 'var(--aguila-fs-label)', fontFamily: 'var(--font-mono)', color: TEXT_MUTED }}>

@@ -29,7 +29,7 @@ export default function EquipoPage() {
     <div style={{ maxWidth: 700, margin: '0 auto', padding: '24px 16px' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
         <div>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: '#E6EDF3', marginBottom: 4 }}>Equipo</h1>
+          <h1 style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, color: '#E6EDF3', marginBottom: 4 }}>Equipo</h1>
           <p style={{ fontSize: 'var(--aguila-fs-body)', color: '#64748b' }}>Gestiona quién tiene acceso al portal de tu empresa.</p>
         </div>
         <button
@@ -100,7 +100,7 @@ export default function EquipoPage() {
               </div>
               <div>
                 <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: '#E6EDF3' }}>{member.name}</div>
-                <div style={{ fontSize: 12, color: '#64748b' }}>{member.email}</div>
+                <div style={{ fontSize: 'var(--aguila-fs-compact)', color: '#64748b' }}>{member.email}</div>
               </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>

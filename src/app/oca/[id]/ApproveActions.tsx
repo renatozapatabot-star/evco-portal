@@ -139,7 +139,7 @@ export function ApproveActions({ opinionId, canApprove, status }: Props) {
       </div>
 
       {phase === 'countdown' && (
-        <p style={{ fontSize: 12, color: TEXT_MUTED, margin: 0 }}>
+        <p style={{ fontSize: 'var(--aguila-fs-compact)', color: TEXT_MUTED, margin: 0 }}>
           Tienes {CANCEL_WINDOW_SECONDS} segundos para cancelar antes de que la opinión se firme
           y se añada al expediente. La automatización siempre deja una ventana visible para detenerse.
         </p>

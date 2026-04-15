@@ -57,7 +57,7 @@ export default function RequestAccessPage() {
         <div style={{ fontFamily: 'var(--font-mono)', fontSize: 22, fontWeight: 800, color: '#E8EAED', letterSpacing: '0.08em', textAlign: 'center', marginBottom: 8 }}>
           ZAPATA AI
         </div>
-        <h1 style={{ fontSize: 20, fontWeight: 700, color: '#FFF', textAlign: 'center', marginBottom: 8 }}>
+        <h1 style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, color: '#FFF', textAlign: 'center', marginBottom: 8 }}>
           Solicita acceso real
         </h1>
         <p style={{ fontSize: 'var(--aguila-fs-body)', color: 'rgba(255,255,255,0.5)', textAlign: 'center', marginBottom: 28 }}>
@@ -77,7 +77,7 @@ export default function RequestAccessPage() {
           <Field label="WhatsApp *" value={form.phone} onChange={v => setForm(f => ({ ...f, phone: v }))} placeholder="+52 956 123 4567" type="tel" />
           <Field label="Correo electrónico (opcional)" value={form.email} onChange={v => setForm(f => ({ ...f, email: v }))} type="email" />
           <div>
-            <label style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.6)', display: 'block', marginBottom: 4 }}>
+            <label style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, color: 'rgba(255,255,255,0.6)', display: 'block', marginBottom: 4 }}>
               ¿Qué te interesó del Portal? (opcional)
             </label>
             <textarea
@@ -89,7 +89,7 @@ export default function RequestAccessPage() {
           </div>
           <button type="submit" disabled={loading} style={{
             marginTop: 8, padding: '16px 20px', borderRadius: 10,
-            background: '#E8EAED', color: 'rgba(255,255,255,0.03)', fontSize: 16, fontWeight: 700,
+            background: '#E8EAED', color: 'rgba(255,255,255,0.03)', fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700,
             border: 'none', cursor: loading ? 'wait' : 'pointer',
             opacity: loading ? 0.6 : 1, minHeight: 60,
           }}>
@@ -97,7 +97,7 @@ export default function RequestAccessPage() {
           </button>
         </form>
 
-        <p style={{ marginTop: 20, fontSize: 12, color: 'rgba(255,255,255,0.3)', textAlign: 'center' }}>
+        <p style={{ marginTop: 20, fontSize: 'var(--aguila-fs-compact)', color: 'rgba(255,255,255,0.3)', textAlign: 'center' }}>
           <Link href="/demo/live" style={{ color: '#E8EAED', textDecoration: 'none' }}>
             ← Volver al demo
           </Link>
@@ -112,7 +112,7 @@ function Field({ label, value, onChange, placeholder, type = 'text' }: {
 }) {
   return (
     <div>
-      <label style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.6)', display: 'block', marginBottom: 4 }}>{label}</label>
+      <label style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, color: 'rgba(255,255,255,0.6)', display: 'block', marginBottom: 4 }}>{label}</label>
       <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} style={{
         width: '100%', padding: '10px 14px', borderRadius: 8,
         background: '#222', border: '1px solid rgba(255,255,255,0.1)',

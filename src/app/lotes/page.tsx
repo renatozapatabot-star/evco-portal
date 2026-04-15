@@ -120,22 +120,22 @@ export default function LotesPage() {
           }}
         >
           <div>
-            <span className="font-mono" style={{ fontSize: 20, fontWeight: 700, color: 'rgba(255,255,255,0.03)' }}>
+            <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, color: 'rgba(255,255,255,0.03)' }}>
               {batches.length}
             </span>
-            <p style={{ margin: '2px 0 0', fontSize: 12, color: '#9B9B9B' }}>lotes</p>
+            <p style={{ margin: '2px 0 0', fontSize: 'var(--aguila-fs-compact)', color: '#9B9B9B' }}>lotes</p>
           </div>
           <div>
-            <span className="font-mono" style={{ fontSize: 20, fontWeight: 700, color: 'rgba(255,255,255,0.03)' }}>
+            <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, color: 'rgba(255,255,255,0.03)' }}>
               {totalTraficos}
             </span>
-            <p style={{ margin: '2px 0 0', fontSize: 12, color: '#9B9B9B' }}>embarques</p>
+            <p style={{ margin: '2px 0 0', fontSize: 'var(--aguila-fs-compact)', color: '#9B9B9B' }}>embarques</p>
           </div>
           <div>
-            <span className="font-mono" style={{ fontSize: 20, fontWeight: 700, color: 'var(--gold)' }}>
+            <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, color: 'var(--gold)' }}>
               ~{totalTime} min
             </span>
-            <p style={{ margin: '2px 0 0', fontSize: 12, color: '#9B9B9B' }}>tiempo estimado</p>
+            <p style={{ margin: '2px 0 0', fontSize: 'var(--aguila-fs-compact)', color: '#9B9B9B' }}>tiempo estimado</p>
           </div>
         </div>
       )}
@@ -162,7 +162,7 @@ export default function LotesPage() {
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
                 <span style={{ fontSize: 'var(--aguila-fs-title)' }}>{ACTION_ICONS[batch.action] || '📦'}</span>
                 <div style={{ flex: 1 }}>
-                  <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: 'rgba(255,255,255,0.03)' }}>
+                  <h3 style={{ margin: 0, fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, color: 'rgba(255,255,255,0.03)' }}>
                     {batch.title}
                   </h3>
                   <p style={{ margin: '4px 0 0', fontSize: 'var(--aguila-fs-section)', color: '#6B6B6B' }}>
@@ -183,7 +183,7 @@ export default function LotesPage() {
                     style={{
                       padding: '2px 8px',
                       borderRadius: 6,
-                      fontSize: 12,
+                      fontSize: 'var(--aguila-fs-compact)',
                       background: 'rgba(255,255,255,0.06)',
                       border: '1px solid #E8E5E0',
                       color: '#6B6B6B',
@@ -193,7 +193,7 @@ export default function LotesPage() {
                   </span>
                 ))}
                 {batch.traficos.length > 5 && (
-                  <span style={{ padding: '2px 8px', fontSize: 12, color: '#9B9B9B' }}>
+                  <span style={{ padding: '2px 8px', fontSize: 'var(--aguila-fs-compact)', color: '#9B9B9B' }}>
                     +{batch.traficos.length - 5} más
                   </span>
                 )}

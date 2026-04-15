@@ -190,7 +190,7 @@ export function SubirClient({ traficos }: SubirClientProps) {
             style={{
               marginTop: 10,
               marginBottom: 0,
-              fontSize: 12,
+              fontSize: 'var(--aguila-fs-compact)',
               color: TEXT_MUTED,
             }}
           >
@@ -249,7 +249,7 @@ export function SubirClient({ traficos }: SubirClientProps) {
             <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: TEXT_SECONDARY }}>
               Selecciona un embarque para habilitar la subida
             </div>
-            <div style={{ fontSize: 12, color: TEXT_MUTED, textAlign: 'center' }}>
+            <div style={{ fontSize: 'var(--aguila-fs-compact)', color: TEXT_MUTED, textAlign: 'center' }}>
               PDF, JPG, PNG, WEBP · clasificación automática
             </div>
           </div>
@@ -259,7 +259,7 @@ export function SubirClient({ traficos }: SubirClientProps) {
           <div
             style={{
               marginTop: 12,
-              fontSize: 12,
+              fontSize: 'var(--aguila-fs-compact)',
               color: TEXT_MUTED,
               fontFamily: 'var(--font-mono)',
             }}

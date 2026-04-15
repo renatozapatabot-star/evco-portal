@@ -352,7 +352,7 @@ export default function ComunicacionesPage() {
                     >
                       <Send size={14} /> {replying ? 'Enviando...' : 'Enviar respuesta'}
                     </button>
-                    {replyStatus && <span style={{ fontSize: 12, color: replyStatus.startsWith('✅') ? 'var(--green)' : 'var(--status-red)' }}>{replyStatus}</span>}
+                    {replyStatus && <span style={{ fontSize: 'var(--aguila-fs-compact)', color: replyStatus.startsWith('✅') ? 'var(--green)' : 'var(--status-red)' }}>{replyStatus}</span>}
                   </div>
                 </div>
               </div>
@@ -427,7 +427,7 @@ export default function ComunicacionesPage() {
                             {msg.date ? new Date(msg.date).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', timeZone: 'America/Chicago' }) : ''}
                           </span>
                         </div>
-                        <div style={{ fontSize: 12, fontWeight: msg.isUnread ? 600 : 400, color: 'var(--text-primary)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        <div style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: msg.isUnread ? 600 : 400, color: 'var(--text-primary)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {msg.subject || '(sin asunto)'}
                         </div>
                         <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -503,7 +503,7 @@ export default function ComunicacionesPage() {
                         <span style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{(e.from_address || '').substring(0, 35)}</span>
                       </td>
                       <td style={{ maxWidth: 280, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.subject || ''}</td>
-                      <td style={{ color: 'var(--slate-400)', fontSize: 12, whiteSpace: 'nowrap', fontFamily: 'var(--font-mono)' }}>{fmtDate(e.scanned_at || e.date)}</td>
+                      <td style={{ color: 'var(--slate-400)', fontSize: 'var(--aguila-fs-compact)', whiteSpace: 'nowrap', fontFamily: 'var(--font-mono)' }}>{fmtDate(e.scanned_at || e.date)}</td>
                       <td>
                         {(e.urgent_keywords || []).map((k: string, j: number) => (
                           <span key={j} style={{ background: 'var(--amber-100)', color: 'var(--amber-800)', borderRadius: 4, padding: '1px 6px', fontSize: 'var(--aguila-fs-label)', fontWeight: 600, marginRight: 4 }}>{k}</span>
@@ -520,7 +520,7 @@ export default function ComunicacionesPage() {
       )}
 
       <div style={{ marginTop: 16, padding: '12px 16px', background: 'var(--slate-50)', border: '1px solid var(--border-card)', borderRadius: 8 }}>
-        <p style={{ color: 'var(--slate-400)', fontSize: 12, margin: 0 }}>
+        <p style={{ color: 'var(--slate-400)', fontSize: 'var(--aguila-fs-compact)', margin: 0 }}>
           Gmail scanner: cada 30 min en dias habiles · Envios requieren aprobacion via Telegram
         </p>
       </div>

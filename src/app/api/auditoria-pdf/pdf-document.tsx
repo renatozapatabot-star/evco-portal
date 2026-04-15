@@ -29,14 +29,14 @@ const s = StyleSheet.create({
   headerLeft: {},
   headerRight: { alignItems: 'flex-end' },
   headerLabel: { fontSize: 7, color: C.orange, fontFamily: 'Helvetica-Bold', letterSpacing: 1, textTransform: 'uppercase' as const, marginBottom: 4 },
-  headerCompany: { fontSize: 12, fontFamily: 'Helvetica-Bold', color: C.text },
+  headerCompany: { fontSize: 'var(--aguila-fs-compact)', fontFamily: 'Helvetica-Bold', color: C.text },
   headerSub: { fontSize: 8, color: C.textSub, marginTop: 2 },
   headerInfo: { fontSize: 7, color: C.textMuted, marginTop: 1 },
   // KPI strip
   kpiRow: { flexDirection: 'row', gap: 8, marginBottom: 20 },
   kpiCard: { flex: 1, backgroundColor: C.surface, borderRadius: 4, padding: 12, borderWidth: 1, borderColor: C.border },
   kpiLabel: { fontSize: 7, color: C.textMuted, textTransform: 'uppercase' as const, letterSpacing: 0.5 },
-  kpiValue: { fontSize: 16, fontFamily: 'Helvetica-Bold', color: C.text, marginTop: 4 },
+  kpiValue: { fontSize: 'var(--aguila-fs-body-lg)', fontFamily: 'Helvetica-Bold', color: C.text, marginTop: 4 },
   kpiSub: { fontSize: 7, color: C.textSub, marginTop: 2 },
   // Section headers
   sectionTitle: { fontSize: 9, color: C.orange, fontFamily: 'Helvetica-Bold', letterSpacing: 1, textTransform: 'uppercase' as const, marginTop: 16, marginBottom: 8 },

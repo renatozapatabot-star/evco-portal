@@ -354,7 +354,7 @@ export function BulkTab({ canInsert }: { canInsert: boolean }) {
                       {r.fraccion}
                     </span>
                   ) : (
-                    <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)' }}>—</span>
+                    <span style={{ fontSize: 'var(--aguila-fs-compact)', color: 'rgba(255,255,255,0.4)' }}>—</span>
                   )}
                   {r?.tmec_eligible === true && (
                     <span style={{
@@ -401,7 +401,7 @@ export function BulkTab({ canInsert }: { canInsert: boolean }) {
                         style={{
                           padding: '6px 12px', borderRadius: 8,
                           border: 'none', background: '#22C55E',
-                          color: '#0D0D0C', fontSize: 12, fontWeight: 700,
+                          color: '#0D0D0C', fontSize: 'var(--aguila-fs-compact)', fontWeight: 700,
                           cursor: 'pointer', minHeight: 32,
                         }}
                       >
@@ -413,7 +413,7 @@ export function BulkTab({ canInsert }: { canInsert: boolean }) {
                           padding: '6px 10px', borderRadius: 8,
                           border: '1px solid rgba(255,255,255,0.15)',
                           background: 'transparent', color: 'rgba(255,255,255,0.7)',
-                          fontSize: 12, cursor: 'pointer', minHeight: 32,
+                          fontSize: 'var(--aguila-fs-compact)', cursor: 'pointer', minHeight: 32,
                         }}
                       >
                         ✕

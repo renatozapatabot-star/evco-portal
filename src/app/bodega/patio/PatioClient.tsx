@@ -308,10 +308,10 @@ export function PatioClient() {
     >
       <header style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         <ParkingSquare size={22} color="#C0C5CE" />
-        <h1 style={{ fontSize: 20, fontWeight: 700, color: '#E6EDF3', margin: 0 }}>
+        <h1 style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, color: '#E6EDF3', margin: 0 }}>
           Patio
         </h1>
-        <span style={{ marginLeft: 'auto', fontSize: 12, color: '#7A7E86', fontFamily: 'var(--font-jetbrains-mono), monospace' }}>
+        <span style={{ marginLeft: 'auto', fontSize: 'var(--aguila-fs-compact)', color: '#7A7E86', fontFamily: 'var(--font-jetbrains-mono), monospace' }}>
           {entries.length} activas
         </span>
       </header>
@@ -419,7 +419,7 @@ export function PatioClient() {
                       <span
                         style={{
                           fontFamily: 'var(--font-jetbrains-mono), monospace',
-                          fontSize: 16,
+                          fontSize: 'var(--aguila-fs-body-lg)',
                           fontWeight: 700,
                         }}
                       >
@@ -497,12 +497,12 @@ export function PatioClient() {
               border: '1px solid rgba(192,197,206,0.18)',
               background: BG_ELEVATED,
               color: '#E6EDF3',
-              fontSize: 16,
+              fontSize: 'var(--aguila-fs-body-lg)',
               fontFamily: 'var(--font-jetbrains-mono), monospace',
             }}
             aria-label="Buscar embarque"
           />
-          {searchingTrafico && <span style={{ fontSize: 12, color: '#7A7E86' }}>Buscando…</span>}
+          {searchingTrafico && <span style={{ fontSize: 'var(--aguila-fs-compact)', color: '#7A7E86' }}>Buscando…</span>}
           {traficoResults.length > 0 && !traficoId && (
             <ul
               style={{
@@ -546,7 +546,7 @@ export function PatioClient() {
             </ul>
           )}
           {traficoId && (
-            <span style={{ fontSize: 12, color: '#22C55E' }}>
+            <span style={{ fontSize: 'var(--aguila-fs-compact)', color: '#22C55E' }}>
               Embarque seleccionado: {traficoId}
             </span>
           )}

@@ -272,7 +272,7 @@ function EntradasContent() {
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                     <span style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>{r.cve_entrada}</span>
-                    <span style={{ fontSize: 12, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
+                    <span style={{ fontSize: 'var(--aguila-fs-compact)', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
                       {r.fecha_llegada_mercancia ? fmtDate(r.fecha_llegada_mercancia) : '—'}
                     </span>
                   </div>
@@ -281,7 +281,7 @@ function EntradasContent() {
                       {proveedor}
                     </div>
                   )}
-                  <div style={{ fontSize: 12, color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: 8 }}>
+                  <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: 8 }}>
                     {fmtDesc(getDesc(r)) || '—'}
                   </div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', fontSize: 'var(--aguila-fs-meta)', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
@@ -344,7 +344,7 @@ function EntradasContent() {
                         <span style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-muted)' }}>—</span>
                       )}
                     </td>
-                    <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+                    <td style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-secondary)' }}>
                       {getTransporte(r) || <span style={{ color: 'var(--text-muted)' }}>—</span>}
                     </td>
                     <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)' }}>
@@ -353,7 +353,7 @@ function EntradasContent() {
                     <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)' }}>
                       {r.peso_bruto ? Number(r.peso_bruto).toLocaleString('es-MX') : <span style={{ color: 'var(--text-muted)' }}>—</span>}
                     </td>
-                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-muted)' }}>
+                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-muted)' }}>
                       {getGuia(r) || <span style={{ color: 'var(--text-muted)' }}>—</span>}
                     </td>
                   </tr>

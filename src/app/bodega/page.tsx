@@ -384,7 +384,7 @@ export default function BodegaPage() {
                   {e.trafico && (
                     <Link href={`/embarques/${encodeURIComponent(e.trafico)}`} style={{
                       display: 'inline-block', marginTop: 10,
-                      fontSize: 12, fontWeight: 600, color: T.gold,
+                      fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, color: T.gold,
                       textDecoration: 'none', fontFamily: 'var(--font-jetbrains-mono)',
                     }}>
                       {e.trafico} →
@@ -420,9 +420,9 @@ export default function BodegaPage() {
               fontFamily: 'var(--font-jetbrains-mono)',
               color: T.textPrimary,
             }}>
-              {kpis.avgDwell}<span style={{ fontSize: 16, color: T.textMuted }}>d</span>
+              {kpis.avgDwell}<span style={{ fontSize: 'var(--aguila-fs-body-lg)', color: T.textMuted }}>d</span>
             </div>
-            <div style={{ fontSize: 12, color: T.textSecondary, marginTop: 6 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-compact)', color: T.textSecondary, marginTop: 6 }}>
               este mes
             </div>
           </div>
@@ -443,9 +443,9 @@ export default function BodegaPage() {
               fontFamily: 'var(--font-jetbrains-mono)',
               color: Number(kpis.damageRate) > 5 ? T.red : T.textPrimary,
             }}>
-              {kpis.damageRate}<span style={{ fontSize: 16, color: T.textMuted }}>%</span>
+              {kpis.damageRate}<span style={{ fontSize: 'var(--aguila-fs-body-lg)', color: T.textMuted }}>%</span>
             </div>
-            <div style={{ fontSize: 12, color: T.textSecondary, marginTop: 6 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-compact)', color: T.textSecondary, marginTop: 6 }}>
               {monthlyRows.filter(e => e.mercancia_danada || e.tiene_faltantes).length} de {monthlyRows.length} entradas
             </div>
           </div>
@@ -468,7 +468,7 @@ export default function BodegaPage() {
             }}>
               {kpis.totalBultos.toLocaleString('es-MX')}
             </div>
-            <div style={{ fontSize: 12, color: T.textSecondary, marginTop: 6 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-compact)', color: T.textSecondary, marginTop: 6 }}>
               recibidos este mes
             </div>
           </div>
@@ -491,7 +491,7 @@ export default function BodegaPage() {
             }}>
               {fmtKg(kpis.totalPeso)}
             </div>
-            <div style={{ fontSize: 12, color: T.textSecondary, marginTop: 6 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-compact)', color: T.textSecondary, marginTop: 6 }}>
               kg este mes
             </div>
           </div>

@@ -59,7 +59,7 @@ export function ContactoPanel({ info }: { info: ContactoInfo }) {
           <div key={label} style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
             <span style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED }}>{label}</span>
             <span style={{
-              fontSize: 12,
+              fontSize: 'var(--aguila-fs-compact)',
               color: TEXT_PRIMARY,
               fontFamily: mono ? 'var(--font-mono)' : undefined,
               textAlign: 'right',
@@ -81,14 +81,14 @@ export function AlertasPanel({ rows }: { rows: AlertaRow[] }) {
   return (
     <Shell title="Alertas recientes">
       {rows.length === 0 ? (
-        <div style={{ fontSize: 12, color: TEXT_MUTED }}>
+        <div style={{ fontSize: 'var(--aguila-fs-compact)', color: TEXT_MUTED }}>
           Sin alertas recientes.
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {rows.slice(0, 5).map((r) => (
             <div key={r.id} style={{ display: 'flex', flexDirection: 'column', gap: 2, paddingBottom: 8, borderBottom: `1px solid ${BORDER}` }}>
-              <span style={{ fontSize: 12, color: TEXT_PRIMARY, fontWeight: 600 }}>
+              <span style={{ fontSize: 'var(--aguila-fs-compact)', color: TEXT_PRIMARY, fontWeight: 600 }}>
                 {r.decision_type}
               </span>
               <span style={{

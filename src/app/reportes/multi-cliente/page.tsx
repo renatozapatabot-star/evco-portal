@@ -71,7 +71,7 @@ export default async function MultiClienteReportsPage({
               <p style={{ fontSize: 'var(--aguila-fs-section)', color: TEXT_PRIMARY, margin: '0 0 4px', fontWeight: 600 }}>
                 Aún no hay clientes en el catálogo
               </p>
-              <p style={{ fontSize: 12, color: TEXT_MUTED, margin: 0 }}>
+              <p style={{ fontSize: 'var(--aguila-fs-compact)', color: TEXT_MUTED, margin: 0 }}>
                 Agrega compañías al registro antes de generar auditorías semanales.
               </p>
             </div>
@@ -120,7 +120,7 @@ export default async function MultiClienteReportsPage({
                       display: 'inline-flex', alignItems: 'center',
                       minHeight: 44, padding: '0 18px',
                       background: SILVER_GRADIENT, color: '#0A0A0C',
-                      borderRadius: 10, fontSize: 12, fontWeight: 700,
+                      borderRadius: 10, fontSize: 'var(--aguila-fs-compact)', fontWeight: 700,
                       textTransform: 'uppercase', letterSpacing: 0.5,
                       textDecoration: 'none',
                     }}

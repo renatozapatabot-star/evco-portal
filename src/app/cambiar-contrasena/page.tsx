@@ -102,7 +102,7 @@ export default function CambiarContrasena() {
       }}>
         <div style={{ textAlign: 'center', marginBottom: 24 }}>
           <Lock size={32} style={{ color: 'var(--gold, #E8EAED)', margin: '0 auto 12px' }} />
-          <h1 style={{ fontSize: 20, fontWeight: 600, color: '#E6EDF3', marginBottom: 4 }}>
+          <h1 style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 600, color: '#E6EDF3', marginBottom: 4 }}>
             Cambiar contraseña
           </h1>
           {companyName && (
@@ -191,7 +191,7 @@ export default function CambiarContrasena() {
             </button>
           </div>
           {newPw.length > 0 && newPw.length < 6 && (
-            <span style={{ fontSize: 12, color: 'var(--amber-text, #92400E)', marginTop: 4, display: 'block' }}>
+            <span style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--amber-text, #92400E)', marginTop: 4, display: 'block' }}>
               Mínimo 6 caracteres
             </span>
           )}
@@ -224,7 +224,7 @@ export default function CambiarContrasena() {
             </button>
           </div>
           {confirmPw && confirmPw !== newPw && (
-            <span style={{ fontSize: 12, color: 'var(--red-text, #991B1B)', marginTop: 4, display: 'block' }}>
+            <span style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--red-text, #991B1B)', marginTop: 4, display: 'block' }}>
               Las contraseñas no coinciden
             </span>
           )}
@@ -232,7 +232,7 @@ export default function CambiarContrasena() {
 
         {currentPw === newPw && newPw.length > 0 && (
           <div style={{
-            fontSize: 12, color: 'var(--amber-text, #92400E)', marginBottom: 16,
+            fontSize: 'var(--aguila-fs-compact)', color: 'var(--amber-text, #92400E)', marginBottom: 16,
           }}>
             La nueva contraseña debe ser diferente a la actual
           </div>

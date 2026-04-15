@@ -97,7 +97,7 @@ function AnomalyCard({ a }: { a: Anomaly }) {
           }}>
             {a.proveedor ?? '—'}
           </div>
-          <p style={{ fontSize: 12, color: TEXT_SECONDARY, margin: 0, lineHeight: 1.5 }}>
+          <p style={{ fontSize: 'var(--aguila-fs-compact)', color: TEXT_SECONDARY, margin: 0, lineHeight: 1.5 }}>
             {a.detail}
           </p>
           <div style={{
@@ -122,7 +122,7 @@ function AnomalyCard({ a }: { a: Anomaly }) {
           <div style={{ fontSize: 'var(--aguila-fs-label)', color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 2 }}>
             Esperado
           </div>
-          <div style={{ fontSize: 12, color: TEXT_SECONDARY, fontFamily: 'var(--font-jetbrains-mono), monospace' }}>
+          <div style={{ fontSize: 'var(--aguila-fs-compact)', color: TEXT_SECONDARY, fontFamily: 'var(--font-jetbrains-mono), monospace' }}>
             {a.expected}
           </div>
         </div>
@@ -184,7 +184,7 @@ export default async function AnomaliasPage() {
               <p style={{ fontSize: 'var(--aguila-fs-section)', color: TEXT_PRIMARY, margin: '0 0 4px', fontWeight: 600 }}>
                 Sin anomalías en la ventana
               </p>
-              <p style={{ fontSize: 12, color: TEXT_MUTED, margin: 0 }}>
+              <p style={{ fontSize: 'var(--aguila-fs-compact)', color: TEXT_MUTED, margin: 0 }}>
                 Valor, clasificación T-MEC y base de IVA dentro de rangos esperados.
               </p>
             </div>

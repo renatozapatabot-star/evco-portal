@@ -145,7 +145,7 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
 
       {/* Description */}
       <div style={{
-        fontSize: 12,
+        fontSize: 'var(--aguila-fs-compact)',
         color: earned ? 'var(--text-secondary)' : '#C4C4C4',
         lineHeight: 1.4,
       }}>

@@ -255,7 +255,7 @@ export function EscanearClient() {
                   border: `1px solid ${ACCENT_SILVER}`,
                   background: 'linear-gradient(135deg, #E8EAED 0%, #C0C5CE 50%, #7A7E86 100%)',
                   color: BG_DEEP,
-                  fontSize: 16,
+                  fontSize: 'var(--aguila-fs-body-lg)',
                   fontWeight: 700,
                   display: 'flex',
                   alignItems: 'center',
@@ -365,7 +365,7 @@ export function EscanearClient() {
                   {resolved.cliente}
                 </div>
               )}
-              <div style={{ fontSize: 12, color: ACCENT_SILVER_DIM, marginTop: 10 }}>
+              <div style={{ fontSize: 'var(--aguila-fs-compact)', color: ACCENT_SILVER_DIM, marginTop: 10 }}>
                 Abriendo embarque…
               </div>
             </div>

@@ -56,7 +56,7 @@ export default function IntelCompetitivaPage() {
     return (
       <div className="page-shell" style={{ textAlign: 'center', padding: 60 }}>
         <Eye size={48} style={{ color: 'var(--text-muted)', marginBottom: 16 }} />
-        <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>Acceso restringido</div>
+        <div style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 600, color: 'var(--text-primary)' }}>Acceso restringido</div>
       </div>
     )
   }
@@ -131,7 +131,7 @@ export default function IntelCompetitivaPage() {
                       <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: 'var(--text-primary)', marginTop: 6 }}>
                         {item.title}
                       </div>
-                      <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4 }}>
+                      <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-secondary)', marginTop: 4 }}>
                         {item.summary}
                       </div>
                       {item.suggested_action && (
@@ -146,7 +146,7 @@ export default function IntelCompetitivaPage() {
                     </div>
                     <div style={{ textAlign: 'right', minWidth: 60 }}>
                       {item.relevance_score && (
-                        <div style={{ fontSize: 16, fontWeight: 700, fontFamily: 'var(--font-mono)', color: config.color }}>
+                        <div style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, fontFamily: 'var(--font-mono)', color: config.color }}>
                           {item.relevance_score}
                         </div>
                       )}
@@ -169,7 +169,7 @@ function KPI({ label, value, color }: { label: string; value: number; color: str
   return (
     <div style={{ padding: '12px 14px', borderRadius: 8, background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
       <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', marginBottom: 4 }}>{label}</div>
-      <div style={{ fontSize: 20, fontWeight: 700, fontFamily: 'var(--font-mono)', color }}>{value}</div>
+      <div style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, fontFamily: 'var(--font-mono)', color }}>{value}</div>
     </div>
   )
 }

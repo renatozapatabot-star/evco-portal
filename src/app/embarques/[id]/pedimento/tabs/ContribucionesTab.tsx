@@ -81,7 +81,7 @@ export function ContribucionesTab({ rows }: ContribucionesTabProps) {
             <span
               style={{
                 fontFamily: 'var(--font-mono)',
-                fontSize: 16,
+                fontSize: 'var(--aguila-fs-body-lg)',
                 fontWeight: 700,
                 color: TEXT_PRIMARY,
               }}
@@ -125,7 +125,7 @@ export function ContribucionesTab({ rows }: ContribucionesTabProps) {
             borderRadius: 10,
             background: 'rgba(192,197,206,0.08)',
             border: '1px solid rgba(192,197,206,0.22)',
-            fontSize: 12,
+            fontSize: 'var(--aguila-fs-compact)',
             color: ACCENT_SILVER,
           }}
         >

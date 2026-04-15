@@ -139,7 +139,7 @@ export default function ArchivosPage() {
             style={{
               padding: '6px 14px', borderRadius: 16,
               border: '1px solid var(--border)', background: query === f ? 'rgba(196,150,60,0.1)' : 'var(--bg-card)',
-              fontSize: 12, color: 'var(--text-secondary)', cursor: 'pointer',
+              fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-secondary)', cursor: 'pointer',
               minHeight: 32,
             }}
           >
@@ -168,7 +168,7 @@ export default function ArchivosPage() {
 
       {results.length > 0 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 4 }}>
+          <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-muted)', marginBottom: 4 }}>
             {results.length} resultado{results.length !== 1 ? 's' : ''}
           </div>
           {results.map(doc => (

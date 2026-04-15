@@ -24,7 +24,7 @@ export default function AnalyticsCharts({ activeReport, monthlyData, supplierDat
       {/* Volumen mensual */}
       {activeReport === 'volumen' && (
         <>
-          <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>Traficos por mes</div>
+          <div style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, marginBottom: 16 }}>Traficos por mes</div>
           <ResponsiveContainer width="100%" height={isMobile ? 250 : 350}>
             <BarChart data={monthlyData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#E8E5E0" />
@@ -40,7 +40,7 @@ export default function AnalyticsCharts({ activeReport, monthlyData, supplierDat
       {/* Proveedores */}
       {activeReport === 'proveedores' && (
         <>
-          <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>Top proveedores por valor</div>
+          <div style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, marginBottom: 16 }}>Top proveedores por valor</div>
           <ResponsiveContainer width="100%" height={isMobile ? 250 : 350}>
             <PieChart>
               <Pie data={supplierData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={isMobile ? 80 : 120} label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}>
@@ -55,7 +55,7 @@ export default function AnalyticsCharts({ activeReport, monthlyData, supplierDat
       {/* T-MEC savings */}
       {activeReport === 'tmec' && (
         <>
-          <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>Ahorro T-MEC acumulado</div>
+          <div style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, marginBottom: 16 }}>Ahorro T-MEC acumulado</div>
           <ResponsiveContainer width="100%" height={isMobile ? 250 : 350}>
             <LineChart data={tmecData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#E8E5E0" />
@@ -71,7 +71,7 @@ export default function AnalyticsCharts({ activeReport, monthlyData, supplierDat
       {/* Despacho */}
       {activeReport === 'despacho' && (
         <>
-          <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>Distribucion de tiempo de despacho (dias)</div>
+          <div style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, marginBottom: 16 }}>Distribucion de tiempo de despacho (dias)</div>
           <ResponsiveContainer width="100%" height={isMobile ? 250 : 350}>
             <BarChart data={despachoData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#E8E5E0" />

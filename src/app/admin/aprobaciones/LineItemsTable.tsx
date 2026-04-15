@@ -27,7 +27,7 @@ function confidenceDot(confidence: number) {
         width: 8, height: 8, borderRadius: '50%',
         background: color, flexShrink: 0,
       }} />
-      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: '#94a3b8' }}>
+      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-compact)', color: '#94a3b8' }}>
         {confidence}%
       </span>
     </span>

@@ -132,7 +132,7 @@ export default function CrucesPage() {
             <div style={{ fontSize: 22, fontWeight: 800, fontFamily: 'var(--font-mono)', color: 'var(--success)' }}>
               {bestHour.hour}:00 — {bestHour.hour + 1}:00
             </div>
-            <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-secondary)', marginTop: 2 }}>
               Promedio histórico: {bestHour.avgHours}h · Basado en {historical.filter(r => r.day_of_week === new Date().getDay()).length} registros
             </div>
           </div>
@@ -182,7 +182,7 @@ export default function CrucesPage() {
         {/* Historical averages */}
         {bridgeAverages.length > 0 && (
           <div style={{ marginBottom: 32 }}>
-            <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 12 }}>
+            <h2 style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, color: 'var(--text-primary)', marginBottom: 12 }}>
               Promedios Históricos
             </h2>
             <div className="card" style={{ overflow: 'hidden' }}>

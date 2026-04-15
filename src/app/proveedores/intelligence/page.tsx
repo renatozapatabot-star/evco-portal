@@ -86,7 +86,7 @@ function AlertCard({ alert }: { alert: SupplierAlert }) {
           }}>
             {alert.supplier}
           </div>
-          <p style={{ fontSize: 12, color: TEXT_SECONDARY, margin: 0, lineHeight: 1.4 }}>
+          <p style={{ fontSize: 'var(--aguila-fs-compact)', color: TEXT_SECONDARY, margin: 0, lineHeight: 1.4 }}>
             {alert.detail}
           </p>
         </div>
@@ -192,7 +192,7 @@ export default async function ProveedorIntelligencePage() {
               <p style={{ fontSize: 'var(--aguila-fs-section)', color: TEXT_PRIMARY, margin: '0 0 4px', fontWeight: 600 }}>
                 Ningún proveedor fuera de lo normal
               </p>
-              <p style={{ fontSize: 12, color: TEXT_MUTED, margin: 0 }}>
+              <p style={{ fontSize: 'var(--aguila-fs-compact)', color: TEXT_MUTED, margin: 0 }}>
                 Historial limpio en los últimos {intel.lookbackDays} días.
               </p>
             </div>
@@ -248,7 +248,7 @@ export default async function ProveedorIntelligencePage() {
                   gridTemplateColumns: 'minmax(0,2fr) 1fr 1fr 1fr auto',
                   gap: 16,
                   padding: '10px 0',
-                  fontSize: 12,
+                  fontSize: 'var(--aguila-fs-compact)',
                   borderBottom: '1px solid rgba(255,255,255,0.04)',
                   alignItems: 'center',
                 }}>

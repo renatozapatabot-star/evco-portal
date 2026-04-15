@@ -115,7 +115,7 @@ export function VencimientosClient({ rows }: Props) {
               border: `1px solid ${kindFilter === k ? '#C0C5CE' : BORDER}`,
               background: kindFilter === k ? 'rgba(192,197,206,0.14)' : 'transparent',
               color: kindFilter === k ? TEXT_PRIMARY : TEXT_SECONDARY,
-              fontSize: 12, fontWeight: 600, cursor: 'pointer',
+              fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, cursor: 'pointer',
             }}
           >
             {k === 'all' ? 'Todos' : PERMIT_LABEL[k as PermitKind]}
@@ -175,13 +175,13 @@ export function VencimientosClient({ rows }: Props) {
                 <div style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: TEXT_SECONDARY }}>
                   {r.descripcion ?? r.cve_producto ?? '—'}
                 </div>
-                <div style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', fontSize: 12, color: TEXT_SECONDARY }}>
+                <div style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', fontSize: 'var(--aguila-fs-compact)', color: TEXT_SECONDARY }}>
                   {r.fraccion ?? '—'}
                 </div>
-                <div style={{ fontSize: 12, color: TEXT_SECONDARY }}>
+                <div style={{ fontSize: 'var(--aguila-fs-compact)', color: TEXT_SECONDARY }}>
                   {r.permit_value}
                 </div>
-                <div style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', fontSize: 12, color: TEXT_SECONDARY }}>
+                <div style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', fontSize: 'var(--aguila-fs-compact)', color: TEXT_SECONDARY }}>
                   {fmtDate(r.expiry_date)}
                 </div>
                 <div style={{ textAlign: 'right' }}>

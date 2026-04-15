@@ -15,7 +15,7 @@ const s = StyleSheet.create({
   para: { fontSize: 'var(--aguila-fs-label)', lineHeight: 1.5, marginTop: 4, textAlign: 'justify' },
   ruling: { marginTop: 10, padding: 12, borderWidth: 0.5, borderColor: PDF_BORDER, backgroundColor: '#FAFAF8' },
   rulingLabel: { fontSize: 8, color: PDF_TEXT_MUTED, textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 4 },
-  rulingValue: { fontSize: 16, fontFamily: 'Courier-Bold', color: PDF_TEXT_PRIMARY, letterSpacing: 1 },
+  rulingValue: { fontSize: 'var(--aguila-fs-body-lg)', fontFamily: 'Courier-Bold', color: PDF_TEXT_PRIMARY, letterSpacing: 1 },
   sig: { marginTop: 28, paddingTop: 10, borderTopWidth: 0.5, borderTopColor: PDF_BORDER },
   sigName: { fontSize: 'var(--aguila-fs-meta)', fontFamily: 'Helvetica-Bold', color: PDF_TEXT_PRIMARY, marginTop: 6 },
   sigTitle: { fontSize: 9, color: PDF_TEXT_MUTED, marginTop: 2 },

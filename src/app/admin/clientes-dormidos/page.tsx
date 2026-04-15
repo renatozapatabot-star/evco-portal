@@ -48,7 +48,7 @@ export default async function ClientesDormidosPage() {
           <AguilaMark size={36} tone="silver" />
           <div>
             <AguilaWordmark />
-            <div style={{ fontSize: 12, color: TEXT_MUTED, marginTop: 4 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-compact)', color: TEXT_MUTED, marginTop: 4 }}>
               Clientes sin movimiento
             </div>
           </div>

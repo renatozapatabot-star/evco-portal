@@ -175,7 +175,7 @@ export function ClientesDormidosClient({
         >
           {loading ? 'Cargando…' : 'Aplicar umbral'}
         </button>
-        <span style={{ fontSize: 12, color: TEXT_MUTED, fontFamily: MONO }}>
+        <span style={{ fontSize: 'var(--aguila-fs-compact)', color: TEXT_MUTED, fontFamily: MONO }}>
           {rows.length} de 50 máx · rango 7–60 días
         </span>
       </div>
@@ -227,7 +227,7 @@ export function ClientesDormidosClient({
             >
               A
             </div>
-            <div style={{ fontSize: 16, color: TEXT_PRIMARY, fontWeight: 600 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-body-lg)', color: TEXT_PRIMARY, fontWeight: 600 }}>
               Todos los clientes activos. Volar alto.
             </div>
             <div style={{ fontSize: 'var(--aguila-fs-body)', color: TEXT_MUTED }}>
@@ -337,7 +337,7 @@ export function ClientesDormidosClient({
                 <div style={{ fontSize: 15, color: TEXT_PRIMARY, fontWeight: 600, marginTop: 4 }}>
                   {modal.subject}
                 </div>
-                <div style={{ fontSize: 12, color: TEXT_MUTED, marginTop: 6, fontFamily: MONO }}>
+                <div style={{ fontSize: 'var(--aguila-fs-compact)', color: TEXT_MUTED, marginTop: 6, fontFamily: MONO }}>
                   {modal.cliente.clienteName} · {modal.cliente.diasSinMovimiento} días
                 </div>
               </div>

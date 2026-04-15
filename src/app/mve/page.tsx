@@ -143,7 +143,7 @@ export default function MvePage() {
                   {alert.title || alert.description}
                 </div>
                 {alert.due_date && (
-                  <div style={{ fontSize: 12, color: 'var(--slate-400)', marginTop: 4 }}>
+                  <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--slate-400)', marginTop: 4 }}>
                     Fecha límite: <span style={{ fontFamily: 'var(--font-mono)' }}>{fmtDate(alert.due_date)}</span> · {alert.days_until != null ? <span style={{ fontFamily: 'var(--font-mono)' }}>{alert.days_until} días</span> : ''}
                   </div>
                 )}

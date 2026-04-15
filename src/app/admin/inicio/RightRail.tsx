@@ -77,7 +77,7 @@ export function RightRail({ rail }: { rail: InicioData['rightRail'] }) {
             Ver cola →
           </Link>
         ) : (
-          <p style={{ fontSize: 12, color: TEXT_SECONDARY, margin: 0 }}>
+          <p style={{ fontSize: 'var(--aguila-fs-compact)', color: TEXT_SECONDARY, margin: 0 }}>
             Sin decisiones pendientes de broker.
           </p>
         )}
@@ -111,7 +111,7 @@ export function RightRail({ rail }: { rail: InicioData['rightRail'] }) {
         {topOperator && (
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED }}>Operador más activo</span>
-            <span style={{ fontSize: 12, color: TEXT_PRIMARY, fontWeight: 600 }}>
+            <span style={{ fontSize: 'var(--aguila-fs-compact)', color: TEXT_PRIMARY, fontWeight: 600 }}>
               {topOperator.name} · {topOperator.actions}
             </span>
           </div>

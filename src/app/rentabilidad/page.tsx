@@ -71,7 +71,7 @@ export default function RentabilidadPage() {
     return (
       <div className="page-shell" style={{ textAlign: 'center', padding: 60 }}>
         <DollarSign size={48} style={{ color: 'var(--text-muted)', marginBottom: 16 }} />
-        <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>Solo Tito</div>
+        <div style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 600, color: 'var(--text-primary)' }}>Solo Tito</div>
         <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-muted)', marginTop: 4 }}>Esta página es exclusiva para administración</div>
       </div>
     )
@@ -139,7 +139,7 @@ function KPICard({ label, value, color }: { label: string; value: string | numbe
   return (
     <div style={{ padding: '14px 16px', borderRadius: 8, background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
       <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', marginBottom: 4 }}>{label}</div>
-      <div style={{ fontSize: 20, fontWeight: 700, fontFamily: 'var(--font-mono)', color }}>{value}</div>
+      <div style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, fontFamily: 'var(--font-mono)', color }}>{value}</div>
     </div>
   )
 }
@@ -162,7 +162,7 @@ function ClientCard({ client: c, isMobile }: { client: ClientProfit; isMobile: b
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase' }}>
+            <span style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase' }}>
               {c.company_id}
             </span>
             <span style={{

@@ -152,7 +152,7 @@ export default function AlertasInternasPage() {
                 opacity: isResolved ? 0.6 : 1,
                 display: 'flex', alignItems: 'center', gap: 12,
               }}>
-                <span style={{ fontSize: 16, flexShrink: 0 }}>{isResolved ? '✓' : sev.icon}</span>
+                <span style={{ fontSize: 'var(--aguila-fs-body-lg)', flexShrink: 0 }}>{isResolved ? '✓' : sev.icon}</span>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: 'var(--text-primary)' }}>
                     {METRIC_LABELS[a.metric] || a.metric}
@@ -169,7 +169,7 @@ export default function AlertasInternasPage() {
                     onClick={() => resolve(a.id)}
                     disabled={resolving === a.id}
                     style={{
-                      padding: '6px 14px', borderRadius: 6, fontSize: 12, fontWeight: 700,
+                      padding: '6px 14px', borderRadius: 6, fontSize: 'var(--aguila-fs-compact)', fontWeight: 700,
                       background: 'var(--bg-card)', border: '1px solid #E8E5E0',
                       cursor: 'pointer', color: 'var(--text-primary)', flexShrink: 0,
                       minHeight: 36,

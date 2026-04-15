@@ -34,7 +34,7 @@ export default function SignupPage() {
           </span>
         </div>
 
-        <h1 style={{ fontSize: 20, fontWeight: 700, color: '#FFFFFF', textAlign: 'center', marginBottom: 8 }}>
+        <h1 style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, color: '#FFFFFF', textAlign: 'center', marginBottom: 8 }}>
           Solicitar acceso
         </h1>
         <p style={{ fontSize: 'var(--aguila-fs-body)', color: 'rgba(255,255,255,0.5)', textAlign: 'center', marginBottom: 28 }}>
@@ -57,7 +57,7 @@ export default function SignupPage() {
           <Input name="firm_name" label="Nombre de la agencia" placeholder="Agencia Aduanal García" required />
           <Input name="patente" label="Patente aduanal" placeholder="3596" required maxLength={5} />
           <div>
-            <label style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.6)', marginBottom: 4, display: 'block' }}>
+            <label style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, color: 'rgba(255,255,255,0.6)', marginBottom: 4, display: 'block' }}>
               Aduana principal
             </label>
             <select name="aduana" required style={{
@@ -81,7 +81,7 @@ export default function SignupPage() {
           </button>
         </form>
 
-        <p style={{ marginTop: 20, fontSize: 12, color: 'rgba(255,255,255,0.3)', textAlign: 'center' }}>
+        <p style={{ marginTop: 20, fontSize: 'var(--aguila-fs-compact)', color: 'rgba(255,255,255,0.3)', textAlign: 'center' }}>
           ¿Ya tienes acceso?{' '}
           <Link href="/login" style={{ color: 'var(--gold, #E8EAED)', textDecoration: 'none' }}>
             Iniciar sesión
@@ -97,7 +97,7 @@ function Input({ name, label, type = 'text', placeholder, required, maxLength }:
 }) {
   return (
     <div>
-      <label style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.6)', marginBottom: 4, display: 'block' }}>
+      <label style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, color: 'rgba(255,255,255,0.6)', marginBottom: 4, display: 'block' }}>
         {label}
       </label>
       <input name={name} type={type} placeholder={placeholder} required={required} maxLength={maxLength} style={{

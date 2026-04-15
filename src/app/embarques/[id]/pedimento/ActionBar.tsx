@@ -56,7 +56,7 @@ export function ActionBar({ pedimentoId }: ActionBarProps) {
     >
       <span
         style={{
-          fontSize: 12,
+          fontSize: 'var(--aguila-fs-compact)',
           color: 'var(--text-secondary)',
           fontFamily: 'var(--font-mono)',
         }}

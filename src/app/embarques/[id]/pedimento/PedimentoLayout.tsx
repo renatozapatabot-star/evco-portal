@@ -225,7 +225,7 @@ export function PedimentoLayout({
           <AguilaWordmark size={18} tone="silver" />
           <CoordinatesBadge tone="silver-dim" />
           <div style={{ flex: 1 }} />
-          <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+          <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-secondary)' }}>
             <Link
               href={`/embarques/${encodeURIComponent(trafico.trafico)}`}
               style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}
@@ -292,7 +292,7 @@ export function PedimentoLayout({
                         : '1px solid transparent',
                       background: active ? 'rgba(192,197,206,0.12)' : 'transparent',
                       color: active ? '#E8EAED' : 'var(--text-secondary)',
-                      fontSize: 12,
+                      fontSize: 'var(--aguila-fs-compact)',
                       fontWeight: 600,
                       letterSpacing: '0.04em',
                       textTransform: 'uppercase',

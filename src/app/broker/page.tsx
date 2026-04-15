@@ -130,7 +130,7 @@ export default function BrokerCommandCenter() {
               key={s.id}
               onClick={() => setActiveStaff(s.id)}
               style={{
-                padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: activeStaff === s.id ? 700 : 500,
+                padding: '6px 14px', borderRadius: 20, fontSize: 'var(--aguila-fs-compact)', fontWeight: activeStaff === s.id ? 700 : 500,
                 background: activeStaff === s.id ? 'rgba(196,150,60,0.1)' : 'var(--bg-card)',
                 border: `1px solid ${activeStaff === s.id ? T.gold : T.border}`,
                 color: activeStaff === s.id ? T.gold : T.textSec,
@@ -143,7 +143,7 @@ export default function BrokerCommandCenter() {
         </div>
 
         {/* Summary */}
-        <h1 style={{ fontSize: 20, fontWeight: 700, color: T.text, margin: '0 0 4px' }}>
+        <h1 style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, color: T.text, margin: '0 0 4px' }}>
           {opsMetrics ? buildSummary(staffConfig, opsMetrics) : 'Centro de Operaciones'}
         </h1>
         {opsMetrics && (

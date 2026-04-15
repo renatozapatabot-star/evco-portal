@@ -136,7 +136,7 @@ export default function OnboardPage() {
 
   return (
     <div style={{ padding: '24px 28px', fontFamily: 'var(--font-sans)', color: T.text, maxWidth: 640 }}>
-      <h1 style={{ fontSize: 20, fontWeight: 800, margin: '0 0 4px' }}>Nuevo Cliente</h1>
+      <h1 style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 800, margin: '0 0 4px' }}>Nuevo Cliente</h1>
       <p style={{ color: T.muted, fontSize: 'var(--aguila-fs-body)', margin: '0 0 24px' }}>
         Paso {step} de 3 &middot; Onboarding
       </p>
@@ -166,7 +166,7 @@ export default function OnboardPage() {
         {/* ─── STEP 1: Client Info ─────────────────── */}
         {step === 1 && (
           <div>
-            <h2 style={{ fontSize: 16, fontWeight: 700, margin: '0 0 20px' }}>Información del Cliente</h2>
+            <h2 style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, margin: '0 0 20px' }}>Información del Cliente</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div>
                 <label style={labelStyle}>Razón Social *</label>
@@ -214,7 +214,7 @@ export default function OnboardPage() {
                   <button onClick={() => set('portal_password', generatePassword())}
                     style={{
                       padding: '0 14px', background: '#05070B', border: `1px solid ${T.border}`,
-                      borderRadius: 8, color: T.sub, fontSize: 12, cursor: 'pointer',
+                      borderRadius: 8, color: T.sub, fontSize: 'var(--aguila-fs-compact)', cursor: 'pointer',
                       whiteSpace: 'nowrap', minHeight: 44,
                     }}>
                     Regenerar
@@ -246,23 +246,23 @@ export default function OnboardPage() {
         {/* ─── STEP 2: Review & Confirm ────────────── */}
         {step === 2 && (
           <div>
-            <h2 style={{ fontSize: 16, fontWeight: 700, margin: '0 0 20px' }}>Confirmar Activación</h2>
+            <h2 style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, margin: '0 0 20px' }}>Confirmar Activación</h2>
             <p style={{ color: T.sub, fontSize: 'var(--aguila-fs-body)', margin: '0 0 16px' }}>
               Al activar se creará la empresa, plantillas de documentos, preferencias de notificación, y se enviará email de bienvenida.
             </p>
 
             <div style={{ background: '#05070B', borderRadius: 8, padding: 16, fontSize: 'var(--aguila-fs-body)', lineHeight: 2.2 }}>
               <div><span style={{ color: T.muted }}>Empresa:</span> <strong>{form.company_name}</strong></div>
-              <div><span style={{ color: T.muted }}>Company ID:</span> <code style={{ background: T.border, padding: '2px 8px', borderRadius: 4, fontFamily: 'var(--font-mono)', fontSize: 12 }}>{form.company_id}</code></div>
+              <div><span style={{ color: T.muted }}>Company ID:</span> <code style={{ background: T.border, padding: '2px 8px', borderRadius: 4, fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-compact)' }}>{form.company_id}</code></div>
               <div><span style={{ color: T.muted }}>Clave:</span> <span style={{ fontFamily: 'var(--font-mono)' }}>{form.clave_cliente}</span></div>
               <div><span style={{ color: T.muted }}>RFC:</span> <span style={{ fontFamily: 'var(--font-mono)' }}>{form.rfc}</span></div>
               <div><span style={{ color: T.muted }}>Email:</span> {form.primary_email}</div>
-              <div><span style={{ color: T.muted }}>Password:</span> <code style={{ background: T.border, padding: '2px 8px', borderRadius: 4, fontFamily: 'var(--font-mono)', fontSize: 12 }}>{form.portal_password}</code></div>
+              <div><span style={{ color: T.muted }}>Password:</span> <code style={{ background: T.border, padding: '2px 8px', borderRadius: 4, fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-compact)' }}>{form.portal_password}</code></div>
             </div>
 
             <div style={{
               marginTop: 16, background: 'rgba(186,117,23,0.08)', border: `1px solid ${T.gold}30`,
-              borderRadius: 8, padding: '12px 16px', fontSize: 12, color: T.sub,
+              borderRadius: 8, padding: '12px 16px', fontSize: 'var(--aguila-fs-compact)', color: T.sub,
             }}>
               <strong style={{ color: T.gold }}>Se creará automáticamente:</strong>
               <ul style={{ margin: '8px 0 0', paddingLeft: 18, lineHeight: 1.8 }}>
@@ -376,7 +376,7 @@ function StatusChip({ ok, label, error: errorMsg }: { ok: boolean; label: string
       title={errorMsg || undefined}
       style={{
         display: 'inline-flex', alignItems: 'center', gap: 6,
-        padding: '4px 12px', borderRadius: 9999, fontSize: 12, fontWeight: 600,
+        padding: '4px 12px', borderRadius: 9999, fontSize: 'var(--aguila-fs-compact)', fontWeight: 600,
         background: ok ? 'rgba(22,163,74,0.12)' : 'rgba(220,38,38,0.12)',
         color: ok ? 'var(--success)' : 'var(--danger-500)',
         border: `1px solid ${ok ? 'rgba(22,163,74,0.25)' : 'rgba(220,38,38,0.25)'}`,
@@ -404,7 +404,7 @@ function CopyRow({ label, value, copied, onCopy, mono }: {
         onClick={() => onCopy(value, label)}
         style={{
           background: 'none', border: 'none', color: copied === label ? 'var(--success)' : '#666',
-          cursor: 'pointer', fontSize: 12, padding: '4px 8px', minWidth: 60, minHeight: 32,
+          cursor: 'pointer', fontSize: 'var(--aguila-fs-compact)', padding: '4px 8px', minWidth: 60, minHeight: 32,
         }}
       >
         {copied === label ? 'Copiado' : 'Copiar'}

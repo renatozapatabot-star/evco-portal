@@ -56,7 +56,7 @@ function ScoreBadge({ score }: { score: number }) {
   return (
     <span style={{
       display: 'inline-flex', alignItems: 'center', gap: 4,
-      padding: '3px 8px', borderRadius: 6, fontSize: 12, fontWeight: 700,
+      padding: '3px 8px', borderRadius: 6, fontSize: 'var(--aguila-fs-compact)', fontWeight: 700,
       color, background: bg, fontFamily: 'var(--font-jetbrains-mono)',
     }}>
       <Target size={11} /> {score}
@@ -232,7 +232,7 @@ export default function ProspectosPage() {
               </div>
 
               {/* Stats row */}
-              <div style={{ display: 'flex', gap: 12, fontSize: 12, color: 'var(--n-500)', marginBottom: 8 }}>
+              <div style={{ display: 'flex', gap: 12, fontSize: 'var(--aguila-fs-compact)', color: 'var(--n-500)', marginBottom: 8 }}>
                 <span><strong style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtUSD(p.total_valor_usd)}</strong> USD</span>
                 <span><strong style={{ color: 'var(--text-primary)' }}>{p.total_pedimentos}</strong> pedimentos</span>
                 {p.uses_immex && <span style={{ color: 'var(--info)' }}>IMMEX</span>}
@@ -262,7 +262,7 @@ export default function ProspectosPage() {
               {/* Expanded detail */}
               {selectedRFC === p.rfc && (
                 <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--border-light)' }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: 12 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: 'var(--aguila-fs-compact)' }}>
                     {p.first_seen_date && (
                       <div><span style={{ color: 'var(--n-400)' }}>Primera operación:</span><br />{p.first_seen_date}</div>
                     )}
@@ -275,7 +275,7 @@ export default function ProspectosPage() {
                     <div><span style={{ color: 'var(--n-400)' }}>Valor promedio:</span><br /><span style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtUSD(p.avg_valor_por_pedimento)}</span> USD/ped</div>
                   </div>
                   {p.top_proveedores && p.top_proveedores.length > 0 && (
-                    <div style={{ marginTop: 8, fontSize: 12 }}>
+                    <div style={{ marginTop: 8, fontSize: 'var(--aguila-fs-compact)' }}>
                       <span style={{ color: 'var(--n-400)' }}>Proveedores:</span>
                       <div style={{ color: 'var(--text-primary)', marginTop: 2 }}>
                         {p.top_proveedores.map(s => s.name).join(', ')}
@@ -285,13 +285,13 @@ export default function ProspectosPage() {
                   <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
                     {!p.is_current_client && p.status === 'prospect' && (
                       <button onClick={(e) => { e.stopPropagation(); updateStatus(p.rfc, 'contacted') }}
-                        style={{ flex: 1, padding: '8px 0', borderRadius: 4, border: 'none', background: 'var(--gold-600)', color: '#000', fontWeight: 600, fontSize: 12, cursor: 'pointer' }}>
+                        style={{ flex: 1, padding: '8px 0', borderRadius: 4, border: 'none', background: 'var(--gold-600)', color: '#000', fontWeight: 600, fontSize: 'var(--aguila-fs-compact)', cursor: 'pointer' }}>
                         Marcar contactado
                       </button>
                     )}
                     {p.contact_email && (
                       <a href={`mailto:${p.contact_email}`} onClick={e => e.stopPropagation()}
-                        style={{ flex: 1, padding: '8px 0', borderRadius: 4, border: '1px solid var(--border-default)', textAlign: 'center', fontSize: 12, textDecoration: 'none', color: 'var(--text-secondary)' }}>
+                        style={{ flex: 1, padding: '8px 0', borderRadius: 4, border: '1px solid var(--border-default)', textAlign: 'center', fontSize: 'var(--aguila-fs-compact)', textDecoration: 'none', color: 'var(--text-secondary)' }}>
                         Email
                       </a>
                     )}

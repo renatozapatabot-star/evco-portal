@@ -137,7 +137,7 @@ export default function AuditoriaPage() {
           </div>
           <button onClick={exportCSV} aria-label="Exportar registros de auditoría a CSV" style={{
             display: 'flex', alignItems: 'center', gap: 4, padding: '8px 16px',
-            borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer',
+            borderRadius: 8, fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, cursor: 'pointer',
             background: 'var(--gold)', border: 'none', color: 'var(--bg-card)', minHeight: 36,
           }}>
             <Download size={14} /> Exportar CSV
@@ -164,7 +164,7 @@ export default function AuditoriaPage() {
           value={actionFilter}
           onChange={e => setActionFilter(e.target.value)}
           aria-label="Filtrar por tipo de acción"
-          style={{ height: 40, padding: '0 12px', borderRadius: 8, border: '1px solid #E8E5E0', fontSize: 12, color: 'var(--text-primary)', cursor: 'pointer', background: 'var(--bg-card)' }}
+          style={{ height: 40, padding: '0 12px', borderRadius: 8, border: '1px solid #E8E5E0', fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-primary)', cursor: 'pointer', background: 'var(--bg-card)' }}
         >
           <option value="">Todas las acciones</option>
           {actions.map(a => <option key={a} value={a}>{ACTION_LABELS[a] || a}</option>)}
@@ -173,7 +173,7 @@ export default function AuditoriaPage() {
           value={actorFilter}
           onChange={e => setActorFilter(e.target.value)}
           aria-label="Filtrar por actor"
-          style={{ height: 40, padding: '0 12px', borderRadius: 8, border: '1px solid #E8E5E0', fontSize: 12, color: 'var(--text-primary)', cursor: 'pointer', background: 'var(--bg-card)' }}
+          style={{ height: 40, padding: '0 12px', borderRadius: 8, border: '1px solid #E8E5E0', fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-primary)', cursor: 'pointer', background: 'var(--bg-card)' }}
         >
           <option value="">Todos los actores</option>
           {actors.map(a => <option key={a} value={a}>{a}</option>)}
@@ -219,10 +219,10 @@ export default function AuditoriaPage() {
                           {ACTION_LABELS[r.action] || r.action}
                         </span>
                       </td>
-                      <td style={{ padding: '10px 12px', fontSize: 12, color: 'var(--text-primary)', fontWeight: 500 }}>
+                      <td style={{ padding: '10px 12px', fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-primary)', fontWeight: 500 }}>
                         {actor}
                       </td>
-                      <td style={{ padding: '10px 12px', fontSize: 12, fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>
+                      <td style={{ padding: '10px 12px', fontSize: 'var(--aguila-fs-compact)', fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>
                         {r.resource_id ? `${r.resource || ''} ${String(r.resource_id).substring(0, 12)}` : '—'}
                       </td>
                       <td style={{ padding: '10px 12px', fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', maxWidth: 300, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -235,7 +235,7 @@ export default function AuditoriaPage() {
             </table>
           </div>
           {filtered.length > 100 && (
-            <div style={{ padding: '12px 16px', borderTop: '1px solid #E8E5E0', fontSize: 12, color: 'var(--text-muted)', textAlign: 'center' }}>
+            <div style={{ padding: '12px 16px', borderTop: '1px solid #E8E5E0', fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-muted)', textAlign: 'center' }}>
               Mostrando 100 de {filtered.length} · Exporta CSV para ver todos
             </div>
           )}

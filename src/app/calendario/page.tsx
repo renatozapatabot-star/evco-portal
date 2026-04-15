@@ -306,7 +306,7 @@ function CalendarioContent() {
                   {t.trafico}
                 </span>
                 <span style={{
-                  fontSize: 12, color: T.textSecondary,
+                  fontSize: 'var(--aguila-fs-compact)', color: T.textSecondary,
                   overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                   flex: 1,
                 }}>
@@ -465,7 +465,7 @@ function CalendarioContent() {
       {/* ═══ SECTION 1 — This week's crossings ═══ */}
       <div style={{ marginBottom: 32 }}>
         <div style={{
-          fontSize: 16, fontWeight: 700, color: T.textPrimary, marginBottom: 12,
+          fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, color: T.textPrimary, marginBottom: 12,
           display: 'flex', alignItems: 'center', gap: 8,
         }}>
           <span style={{ width: 10, height: 10, borderRadius: '50%', background: T.greenDot }} />
@@ -477,7 +477,7 @@ function CalendarioContent() {
       {/* ═══ SECTION 2 — Upcoming arrivals ═══ */}
       <div style={{ marginBottom: 32 }}>
         <div style={{
-          fontSize: 16, fontWeight: 700, color: T.textPrimary, marginBottom: 12,
+          fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, color: T.textPrimary, marginBottom: 12,
           display: 'flex', alignItems: 'center', gap: 8,
         }}>
           <span style={{ width: 10, height: 10, borderRadius: '50%', background: T.blue }} />
@@ -489,26 +489,26 @@ function CalendarioContent() {
       {/* ═══ SECTION 3 — Month grid ═══ */}
       <div style={{ marginBottom: 32 }}>
         <div style={{
-          fontSize: 16, fontWeight: 700, color: T.textPrimary, marginBottom: 16,
+          fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, color: T.textPrimary, marginBottom: 16,
         }}>
           {monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1)}
         </div>
 
         {/* Legend */}
         <div style={{ display: 'flex', gap: 16, marginBottom: 12, flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: T.textSecondary }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 'var(--aguila-fs-compact)', color: T.textSecondary }}>
             <span style={{ width: 8, height: 8, borderRadius: '50%', background: T.blue }} />
             Llegada
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: T.textSecondary }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 'var(--aguila-fs-compact)', color: T.textSecondary }}>
             <span style={{ width: 8, height: 8, borderRadius: '50%', background: T.greenDot }} />
             Cruce
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: T.textSecondary }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 'var(--aguila-fs-compact)', color: T.textSecondary }}>
             <span style={{ width: 8, height: 8, borderRadius: '50%', background: T.amber }} />
             Vencimiento
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: T.textSecondary }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 'var(--aguila-fs-compact)', color: T.textSecondary }}>
             <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#7E22CE' }} />
             Evento
           </div>
@@ -637,7 +637,7 @@ function CalendarioContent() {
                 <span style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: T.gold, fontFamily: 'var(--font-mono)', flexShrink: 0 }}>
                   {d.trafico_id}
                 </span>
-                <span style={{ fontSize: 12, color: T.textSecondary, flex: 1 }}>
+                <span style={{ fontSize: 'var(--aguila-fs-compact)', color: T.textSecondary, flex: 1 }}>
                   {d.doc_type.replace(/_/g, ' ')}
                 </span>
               </Link>
@@ -712,7 +712,7 @@ function CalendarioContent() {
                 }}>
                   {t.trafico}
                 </span>
-                <span style={{ fontSize: 12, color: T.textSecondary, flex: 1 }}>
+                <span style={{ fontSize: 'var(--aguila-fs-compact)', color: T.textSecondary, flex: 1 }}>
                   {type === 'crossing' ? 'Cruce' : 'Llegada'}
                 </span>
                 <span style={{

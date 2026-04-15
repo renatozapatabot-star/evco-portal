@@ -134,7 +134,7 @@ export function ClasificacionClient({
             Hoja de clasificación
           </h1>
           <div
-            style={{ fontSize: 12, color: TEXT_SECONDARY, marginTop: 4 }}
+            style={{ fontSize: 'var(--aguila-fs-compact)', color: TEXT_SECONDARY, marginTop: 4 }}
           >
             {regimen ?? '—'} · {tipoOperacion ?? '—'}
             {pedimento ? ` · Pedimento ${pedimento}` : ''}

@@ -171,7 +171,7 @@ function ActionCard({
             alignItems: 'center',
             justifyContent: 'center',
             fontWeight: 700,
-            fontSize: 16,
+            fontSize: 'var(--aguila-fs-body-lg)',
             flexShrink: 0,
           }}
           className="font-mono"
@@ -182,7 +182,7 @@ function ActionCard({
           <h3
             style={{
               margin: 0,
-              fontSize: 16,
+              fontSize: 'var(--aguila-fs-body-lg)',
               fontWeight: 600,
               color: 'rgba(255,255,255,0.03)',
               lineHeight: 1.3,
@@ -226,7 +226,7 @@ function ActionCard({
             background: '#E8EAED',
             color: '#FFFFFF',
             border: 'none',
-            fontSize: 16,
+            fontSize: 'var(--aguila-fs-body-lg)',
             fontWeight: 600,
             cursor: loading ? 'wait' : 'pointer',
             transition: 'background 150ms',
@@ -320,7 +320,7 @@ function CruzAutoSection({
     <div style={{ marginTop: 32 }}>
       <h2
         style={{
-          fontSize: 16,
+          fontSize: 'var(--aguila-fs-body-lg)',
           fontWeight: 600,
           color: 'rgba(255,255,255,0.03)',
           margin: '0 0 16px',
@@ -329,7 +329,7 @@ function CruzAutoSection({
           gap: 8,
         }}
       >
-        <span style={{ fontSize: 20 }}>&#9889;</span>
+        <span style={{ fontSize: 'var(--aguila-fs-headline)' }}>&#9889;</span>
         ZAPATA AI ya hizo hoy:
       </h2>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -343,7 +343,7 @@ function CruzAutoSection({
               padding: '8px 0',
             }}
           >
-            <span style={{ color: '#16A34A', fontSize: 16, flexShrink: 0 }}>
+            <span style={{ color: '#16A34A', fontSize: 'var(--aguila-fs-body-lg)', flexShrink: 0 }}>
               &#10003;
             </span>
             <div style={{ flex: 1, minWidth: 0 }}>
@@ -352,7 +352,7 @@ function CruzAutoSection({
               </span>
               <span
                 className="font-mono"
-                style={{ fontSize: 12, color: '#9B9B9B', marginLeft: 8 }}
+                style={{ fontSize: 'var(--aguila-fs-compact)', color: '#9B9B9B', marginLeft: 8 }}
               >
                 ~{a.time_saved_minutes} min ahorrados
               </span>

@@ -312,7 +312,7 @@ export function AuditoriaClient() {
                               gridTemplateColumns: '1fr 1fr',
                               gap: 16,
                               ...MONO,
-                              fontSize: 12,
+                              fontSize: 'var(--aguila-fs-compact)',
                             }}
                           >
                             <div>

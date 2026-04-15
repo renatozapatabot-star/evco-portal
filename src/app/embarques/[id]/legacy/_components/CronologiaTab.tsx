@@ -77,7 +77,7 @@ export function CronologiaTab({ decisions }: { decisions: DecisionRow[] }) {
             </div>
             <div style={{ fontSize: 'var(--aguila-fs-body)', color: TEXT_PRIMARY, marginTop: 4 }}>{d.decision}</div>
             {d.reasoning && (
-              <div style={{ fontSize: 12, color: TEXT_SECONDARY, marginTop: 2 }}>{d.reasoning}</div>
+              <div style={{ fontSize: 'var(--aguila-fs-compact)', color: TEXT_SECONDARY, marginTop: 2 }}>{d.reasoning}</div>
             )}
           </div>
         </div>

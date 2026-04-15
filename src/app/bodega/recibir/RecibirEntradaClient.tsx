@@ -216,7 +216,7 @@ export function RecibirEntradaClient() {
           <p
             style={{
               fontFamily: 'var(--font-jetbrains-mono), monospace',
-              fontSize: 12,
+              fontSize: 'var(--aguila-fs-compact)',
               color: '#7A7E86',
               margin: 0,
               wordBreak: 'break-all',
@@ -237,7 +237,7 @@ export function RecibirEntradaClient() {
             background: 'linear-gradient(135deg, #E8EAED 0%, #C0C5CE 50%, #7A7E86 100%)',
             color: '#0A0A0C',
             fontWeight: 700,
-            fontSize: 16,
+            fontSize: 'var(--aguila-fs-body-lg)',
             border: 'none',
             cursor: printStatus === 'submitting' ? 'wait' : 'pointer',
             display: 'flex',
@@ -302,7 +302,7 @@ export function RecibirEntradaClient() {
             background: 'rgba(255,255,255,0.04)',
             color: '#E6EDF3',
             fontWeight: 600,
-            fontSize: 16,
+            fontSize: 'var(--aguila-fs-body-lg)',
             border: '1px solid rgba(192,197,206,0.18)',
             cursor: 'pointer',
           }}
@@ -319,7 +319,7 @@ export function RecibirEntradaClient() {
             background: 'rgba(255,255,255,0.04)',
             color: '#E6EDF3',
             fontWeight: 600,
-            fontSize: 16,
+            fontSize: 'var(--aguila-fs-body-lg)',
             border: '1px solid rgba(192,197,206,0.18)',
             display: 'flex',
             alignItems: 'center',
@@ -348,7 +348,7 @@ export function RecibirEntradaClient() {
     >
       <header style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         <PackageCheck size={22} color="#C0C5CE" />
-        <h1 style={{ fontSize: 20, fontWeight: 700, color: '#E6EDF3', margin: 0 }}>
+        <h1 style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, color: '#E6EDF3', margin: 0 }}>
           Recepción en bodega
         </h1>
       </header>
@@ -374,12 +374,12 @@ export function RecibirEntradaClient() {
             border: '1px solid rgba(192,197,206,0.18)',
             background: BG_ELEVATED,
             color: '#E6EDF3',
-            fontSize: 16,
+            fontSize: 'var(--aguila-fs-body-lg)',
             fontFamily: 'var(--font-jetbrains-mono), monospace',
           }}
           aria-label="Buscar embarque"
         />
-        {searchingTrafico && <span style={{ fontSize: 12, color: '#7A7E86' }}>Buscando…</span>}
+        {searchingTrafico && <span style={{ fontSize: 'var(--aguila-fs-compact)', color: '#7A7E86' }}>Buscando…</span>}
         {traficoResults.length > 0 && !traficoId && (
           <ul
             style={{
@@ -423,7 +423,7 @@ export function RecibirEntradaClient() {
           </ul>
         )}
         {traficoId && (
-          <span style={{ fontSize: 12, color: '#22C55E' }}>
+          <span style={{ fontSize: 'var(--aguila-fs-compact)', color: '#22C55E' }}>
             Embarque seleccionado: {traficoId}
           </span>
         )}
@@ -502,7 +502,7 @@ export function RecibirEntradaClient() {
             border: '1px solid rgba(192,197,206,0.18)',
             background: BG_ELEVATED,
             color: '#E6EDF3',
-            fontSize: 16,
+            fontSize: 'var(--aguila-fs-body-lg)',
             fontFamily: 'var(--font-jetbrains-mono), monospace',
           }}
           aria-label="Andén asignado"

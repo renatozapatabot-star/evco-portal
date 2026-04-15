@@ -77,7 +77,7 @@ export function CatalogoTable({ rows, query, total }: Props) {
         >
           {pending ? 'Buscando…' : 'Buscar'}
         </button>
-        <span className="font-mono" style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginLeft: 'auto' }}>
+        <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-compact)', color: 'rgba(255,255,255,0.5)', marginLeft: 'auto' }}>
           {total} producto{total === 1 ? '' : 's'}
         </span>
       </form>
@@ -141,7 +141,7 @@ function CatalogoRowCard({ row }: { row: CatalogoRow }) {
             )}
           </div>
 
-          <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: 12 }}>
+          <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: 'var(--aguila-fs-compact)' }}>
             {row.proveedor_nombre && (
               <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
                 <span style={{ color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', fontSize: 'var(--aguila-fs-label)', letterSpacing: '0.08em' }}>
@@ -194,7 +194,7 @@ function CatalogoRowCard({ row }: { row: CatalogoRow }) {
                 border: '1px solid rgba(234,179,8,0.3)',
                 borderRadius: 999,
                 color: '#FACC15',
-                fontSize: 12,
+                fontSize: 'var(--aguila-fs-compact)',
                 fontWeight: 600,
                 textDecoration: 'none',
               }}
@@ -219,7 +219,7 @@ function CatalogoRowCard({ row }: { row: CatalogoRow }) {
               className="font-mono"
               style={{
                 margin: 0,
-                fontSize: 20,
+                fontSize: 'var(--aguila-fs-headline)',
                 fontWeight: 800,
                 letterSpacing: '-0.01em',
                 color: '#E6EDF3',
@@ -241,7 +241,7 @@ function CatalogoRowCard({ row }: { row: CatalogoRow }) {
                 border: '1px dashed rgba(255,255,255,0.2)',
                 borderRadius: 10,
                 color: 'rgba(255,255,255,0.7)',
-                fontSize: 12,
+                fontSize: 'var(--aguila-fs-compact)',
                 fontWeight: 600,
                 textDecoration: 'none',
               }}

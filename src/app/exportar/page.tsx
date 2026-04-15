@@ -62,7 +62,7 @@ export default function ExportarPage() {
         </div>
         <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
           <DateInputES value={dateFrom} onChange={v => setDateFrom(v)} style={{ height: 36, padding: '0 12px', fontSize: 'var(--aguila-fs-body)' }} />
-          <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>a</span>
+          <span style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-muted)' }}>a</span>
           <DateInputES value={dateTo} onChange={v => setDateTo(v)} style={{ height: 36, padding: '0 12px', fontSize: 'var(--aguila-fs-body)' }} />
           {(dateFrom || dateTo) && (
             <button onClick={() => { setDateFrom(''); setDateTo('') }} style={{
@@ -97,7 +97,7 @@ export default function ExportarPage() {
                 </div>
                 <div>
                   <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>{exp.label}</div>
-                  <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>{exp.desc}</div>
+                  <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-secondary)', marginTop: 2 }}>{exp.desc}</div>
                 </div>
               </div>
               <button

@@ -76,7 +76,7 @@ export default function RiesgoAuditoriaPage() {
     return (
       <div className="page-shell" style={{ textAlign: 'center', padding: 60 }}>
         <Shield size={48} style={{ color: 'var(--text-muted)', marginBottom: 16 }} />
-        <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>Acceso restringido</div>
+        <div style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 600, color: 'var(--text-primary)' }}>Acceso restringido</div>
       </div>
     )
   }
@@ -195,7 +195,7 @@ function RiskGauge({ assessment: a, isMobile }: { assessment: Assessment; isMobi
             <span style={{ fontSize: 42, fontWeight: 800, fontFamily: 'var(--font-mono)', color: risk.color }}>
               {a.risk_score}
             </span>
-            <span style={{ fontSize: 16, color: 'var(--text-muted)' }}>/100</span>
+            <span style={{ fontSize: 'var(--aguila-fs-body-lg)', color: 'var(--text-muted)' }}>/100</span>
             <span style={{
               fontSize: 'var(--aguila-fs-meta)', padding: '2px 10px', borderRadius: 4,
               background: risk.color, color: '#FFF', fontWeight: 700,
@@ -205,7 +205,7 @@ function RiskGauge({ assessment: a, isMobile }: { assessment: Assessment; isMobi
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 4 }}>
             <TrendIcon size={14} style={{ color: trend.color }} />
-            <span style={{ fontSize: 12, color: trend.color, fontWeight: 500 }}>{trend.label}</span>
+            <span style={{ fontSize: 'var(--aguila-fs-compact)', color: trend.color, fontWeight: 500 }}>{trend.label}</span>
           </div>
         </div>
 
@@ -219,7 +219,7 @@ function RiskGauge({ assessment: a, isMobile }: { assessment: Assessment; isMobi
             </div>
           )}
           {a.predicted_audit_window && (
-            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-muted)', marginTop: 2 }}>
               {a.predicted_audit_window}
             </div>
           )}
@@ -248,7 +248,7 @@ function FactorBar({ label, factor }: { label: string; factor: FactorScore | nul
       background: 'var(--bg-card)', border: '1px solid var(--border)',
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-        <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{label}</span>
+        <span style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, color: 'var(--text-primary)' }}>{label}</span>
         <span style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 700, fontFamily: 'var(--font-mono)', color }}>
           {factor.score}/20
         </span>

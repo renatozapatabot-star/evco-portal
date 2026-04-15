@@ -252,7 +252,7 @@ async function renderContabilidadCockpit(opName: string, scopedCompanyId: string
           {closeTotal - closeOpen}
           <span style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 500, color: 'rgba(230,237,243,0.55)', marginLeft: 6 }}>/ {closeTotal}</span>
         </div>
-        <div style={{ fontSize: 12, color: 'rgba(230,237,243,0.55)', marginTop: 4 }}>
+        <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'rgba(230,237,243,0.55)', marginTop: 4 }}>
           {closeOpen === 0 ? 'Checklist completo' : `${closeOpen} pendiente${closeOpen === 1 ? '' : 's'}`}
         </div>
       </GlassCard>
@@ -262,7 +262,7 @@ async function renderContabilidadCockpit(opName: string, scopedCompanyId: string
         <div style={{ marginTop: 8, fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 800, fontFamily: 'var(--font-jetbrains-mono), monospace', color: '#E6EDF3' }}>
           {mveOpen.length}
         </div>
-        <div style={{ fontSize: 12, color: 'rgba(230,237,243,0.55)', marginTop: 4 }}>
+        <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'rgba(230,237,243,0.55)', marginTop: 4 }}>
           {mveCritical > 0 ? `${mveCritical} crítico${mveCritical === 1 ? '' : 's'} · ` : ''}
           {mveWarning} advertencia{mveWarning === 1 ? '' : 's'}
         </div>
@@ -274,7 +274,7 @@ async function renderContabilidadCockpit(opName: string, scopedCompanyId: string
           {ar.byBucket.map((b) => (
             <div key={b.bucket} style={{ textAlign: 'center' }}>
               <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'rgba(230,237,243,0.55)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{b.bucket}d</div>
-              <div style={{ fontSize: 16, fontWeight: 700, fontFamily: 'var(--font-jetbrains-mono), monospace', color: b.bucket === '90+' && b.amount > 0 ? '#FBBF24' : '#E6EDF3', marginTop: 2 }}>
+              <div style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, fontFamily: 'var(--font-jetbrains-mono), monospace', color: b.bucket === '90+' && b.amount > 0 ? '#FBBF24' : '#E6EDF3', marginTop: 2 }}>
                 {fmtUSDCompact(b.amount) || '—'}
               </div>
             </div>
@@ -292,7 +292,7 @@ async function renderContabilidadCockpit(opName: string, scopedCompanyId: string
             estado: {lastQb.status}
           </div>
         ) : null}
-        <a href="/contabilidad/exportar" style={{ display: 'inline-block', marginTop: 12, fontSize: 12, color: '#E8EAED', textDecoration: 'none', fontWeight: 600 }}>
+        <a href="/contabilidad/exportar" style={{ display: 'inline-block', marginTop: 12, fontSize: 'var(--aguila-fs-compact)', color: '#E8EAED', textDecoration: 'none', fontWeight: 600 }}>
           Exportar → QuickBooks
         </a>
       </GlassCard>

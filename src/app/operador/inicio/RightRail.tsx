@@ -104,7 +104,7 @@ export function RightRail({ colaCount, feed }: Props) {
             Ver cola →
           </Link>
         ) : (
-          <p style={{ fontSize: 12, color: TEXT_SECONDARY, margin: 0 }}>
+          <p style={{ fontSize: 'var(--aguila-fs-compact)', color: TEXT_SECONDARY, margin: 0 }}>
             Sin excepciones pendientes.
           </p>
         )}

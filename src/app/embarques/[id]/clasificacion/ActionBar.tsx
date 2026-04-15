@@ -167,7 +167,7 @@ export function ActionBar({ traficoId, config, onConfigReplace: _onConfigReplace
       {status.kind !== 'idle' && (
         <div
           style={{
-            fontSize: 12,
+            fontSize: 'var(--aguila-fs-compact)',
             color: status.kind === 'ok' ? GREEN : RED,
             marginRight: 12,
           }}

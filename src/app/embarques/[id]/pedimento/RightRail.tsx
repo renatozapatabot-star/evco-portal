@@ -88,7 +88,7 @@ export function RightRail({ workflowEvents }: RightRailProps) {
               <summary
                 style={{
                   cursor: 'pointer',
-                  fontSize: 12,
+                  fontSize: 'var(--aguila-fs-compact)',
                   color: 'var(--text-secondary)',
                   textTransform: 'uppercase',
                   letterSpacing: '0.06em',
@@ -122,7 +122,7 @@ export function RightRail({ workflowEvents }: RightRailProps) {
                         background: err.severity === 'error' ? 'rgba(239,68,68,0.06)' : 'rgba(245,158,11,0.06)',
                         color: 'var(--text-primary)',
                         cursor: 'pointer',
-                        fontSize: 12,
+                        fontSize: 'var(--aguila-fs-compact)',
                         display: 'flex',
                         flexDirection: 'column',
                         gap: 2,

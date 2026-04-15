@@ -180,7 +180,7 @@ export default async function WarehouseTrackerPage() {
               <p style={{ fontSize: 'var(--aguila-fs-section)', color: TEXT_PRIMARY, margin: '0 0 4px', fontWeight: 600 }}>
                 Patio vacío
               </p>
-              <p style={{ fontSize: 12, color: TEXT_MUTED, margin: '0 0 16px' }}>
+              <p style={{ fontSize: 'var(--aguila-fs-compact)', color: TEXT_MUTED, margin: '0 0 16px' }}>
                 Ninguna recepción registrada en warehouse_entries.
               </p>
               {isInternal && (

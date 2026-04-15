@@ -47,7 +47,7 @@ export default function HealthPage() {
     <div style={{ maxWidth: 900, margin: '0 auto', padding: '24px 16px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24 }}>
         <Activity size={24} style={{ color: '#C0C5CE' }} />
-        <h1 style={{ fontSize: 20, fontWeight: 700, color: '#E6EDF3', margin: 0 }}>Estado del Sistema</h1>
+        <h1 style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, color: '#E6EDF3', margin: 0 }}>Estado del Sistema</h1>
       </div>
 
       {loading && <div style={{ color: '#64748b' }}>Cargando estado...</div>}
@@ -57,7 +57,7 @@ export default function HealthPage() {
         <div className="cc-card" style={{ padding: 40, textAlign: 'center', borderRadius: 20 }}>
           <Activity size={32} style={{ color: '#22C55E', margin: '0 auto 12px' }} />
           <div style={{ color: '#22C55E', fontSize: 'var(--aguila-fs-section)', fontWeight: 600 }}>Sistema operativo — sin alertas</div>
-          <div style={{ color: '#64748b', fontSize: 12, marginTop: 4 }}>Todos los procesos funcionan correctamente.</div>
+          <div style={{ color: '#64748b', fontSize: 'var(--aguila-fs-compact)', marginTop: 4 }}>Todos los procesos funcionan correctamente.</div>
         </div>
       )}
 

@@ -188,11 +188,11 @@ export default async function AdminShadowPage() {
 
         <GlassShell title="Tasa de acuerdo por tipo">
           {Object.keys(stats30.byAction).length === 0 ? (
-            <div style={{ fontSize: 12, color: TEXT_MUTED }}>
+            <div style={{ fontSize: 'var(--aguila-fs-compact)', color: TEXT_MUTED }}>
               Sin comparaciones registradas en este período.
             </div>
           ) : (
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--aguila-fs-compact)' }}>
               <thead>
                 <tr style={{ textAlign: 'left', color: TEXT_MUTED, fontSize: 'var(--aguila-fs-label)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                   <th style={{ padding: '6px 4px' }}>Tipo</th>
@@ -220,7 +220,7 @@ export default async function AdminShadowPage() {
       <div style={{ marginTop: 16 }}>
         <GlassShell title="Principales discrepancias esta semana">
           {topDisagreements.length === 0 ? (
-            <div style={{ fontSize: 12, color: TEXT_MUTED }}>
+            <div style={{ fontSize: 'var(--aguila-fs-compact)', color: TEXT_MUTED }}>
               Sin discrepancias registradas esta semana.
             </div>
           ) : (
@@ -241,14 +241,14 @@ export default async function AdminShadowPage() {
                     alignItems: 'center',
                   }}
                 >
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: ACCENT_SILVER }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-compact)', color: ACCENT_SILVER }}>
                     {d.trafico}
                   </span>
-                  <span style={{ fontSize: 12, color: TEXT_PRIMARY, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <span style={{ fontSize: 'var(--aguila-fs-compact)', color: TEXT_PRIMARY, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     <span style={{ color: TEXT_MUTED, fontSize: 'var(--aguila-fs-label)', textTransform: 'uppercase', letterSpacing: '0.08em', marginRight: 6 }}>Operador:</span>
                     {d.human}
                   </span>
-                  <span style={{ fontSize: 12, color: TEXT_PRIMARY, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <span style={{ fontSize: 'var(--aguila-fs-compact)', color: TEXT_PRIMARY, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     <span style={{ color: TEXT_MUTED, fontSize: 'var(--aguila-fs-label)', textTransform: 'uppercase', letterSpacing: '0.08em', marginRight: 6 }}>Portal:</span>
                     {d.system}
                   </span>

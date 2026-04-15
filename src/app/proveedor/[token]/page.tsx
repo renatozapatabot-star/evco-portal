@@ -339,7 +339,7 @@ export default function ProveedorPage() {
       <div style={styles.page}>
         <div style={{ ...styles.cockpitCard, maxWidth: 420, padding: 28 }}>
           <AguilaMark size={36} />
-          <div style={{ fontSize: 16, fontWeight: 700, color: '#EF4444', margin: '12px 0 8px' }}>
+          <div style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, color: '#EF4444', margin: '12px 0 8px' }}>
             Enlace no válido
           </div>
           <p style={{ fontSize: 'var(--aguila-fs-section)', color: '#94a3b8', lineHeight: 1.6 }}>{msg}</p>
@@ -647,7 +647,7 @@ export default function ProveedorPage() {
                                 <div
                                   role="alert"
                                   style={{
-                                    fontSize: 12,
+                                    fontSize: 'var(--aguila-fs-compact)',
                                     color: '#EF4444',
                                     padding: 6,
                                   }}
@@ -691,7 +691,7 @@ export default function ProveedorPage() {
                 background: uploading ? 'rgba(192,197,206,0.4)' : '#E8EAED',
                 color: '#0B1220',
                 border: 'none',
-                fontSize: 16,
+                fontSize: 'var(--aguila-fs-body-lg)',
                 fontWeight: 800,
                 cursor: uploading ? 'wait' : 'pointer',
                 display: 'flex',
@@ -713,7 +713,7 @@ export default function ProveedorPage() {
               )}
             </button>
             <style>{`@keyframes spin { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }`}</style>
-            <p style={{ fontSize: 12, color: '#64748b', textAlign: 'center', marginTop: 10 }}>
+            <p style={{ fontSize: 'var(--aguila-fs-compact)', color: '#64748b', textAlign: 'center', marginTop: 10 }}>
               PDF, JPG, PNG o XLSX · máximo 25 MB
             </p>
             {uploaded.length > 0 && (
@@ -773,7 +773,7 @@ export default function ProveedorPage() {
             )}
             <p
               style={{
-                fontSize: 12,
+                fontSize: 'var(--aguila-fs-compact)',
                 color: '#64748b',
                 marginTop: 14,
                 lineHeight: 1.5,
@@ -807,7 +807,7 @@ export default function ProveedorPage() {
                   {info.shipment_confirmed_at && (
                     <div
                       style={{
-                        fontSize: 12,
+                        fontSize: 'var(--aguila-fs-compact)',
                         color: '#94a3b8',
                         marginTop: 2,
                         fontFamily: 'var(--font-jetbrains-mono), var(--font-mono), monospace',
@@ -869,7 +869,7 @@ export default function ProveedorPage() {
                     background: confirming ? 'rgba(34,197,94,0.4)' : '#22C55E',
                     color: '#0B1220',
                     border: 'none',
-                    fontSize: 16,
+                    fontSize: 'var(--aguila-fs-body-lg)',
                     fontWeight: 800,
                     cursor: confirming ? 'wait' : 'pointer',
                     display: 'flex',
@@ -1073,7 +1073,7 @@ function ActionCard({
         <div style={{ fontSize: 15, fontWeight: 700, color: '#E6EDF3', lineHeight: 1.3 }}>
           {label}
         </div>
-        <div style={{ fontSize: 12, color: '#8b9ab5', marginTop: 2, lineHeight: 1.4 }}>
+        <div style={{ fontSize: 'var(--aguila-fs-compact)', color: '#8b9ab5', marginTop: 2, lineHeight: 1.4 }}>
           {description}
         </div>
       </div>
@@ -1174,7 +1174,7 @@ function Row({ label, value, mono }: { label: string; value: string; mono?: bool
         gap: 12,
       }}
     >
-      <div style={{ fontSize: 12, color: '#94a3b8' }}>{label}</div>
+      <div style={{ fontSize: 'var(--aguila-fs-compact)', color: '#94a3b8' }}>{label}</div>
       <div
         style={{
           fontSize: 'var(--aguila-fs-section)',

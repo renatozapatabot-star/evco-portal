@@ -87,7 +87,7 @@ export default async function OperacionesPage() {
             padding: 16, borderTop: `3px solid ${statusColor(src.last?.status)}`
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-              <span style={{ fontSize: 20 }}>{src.icon}</span>
+              <span style={{ fontSize: 'var(--aguila-fs-headline)' }}>{src.icon}</span>
               <span style={{
                 width: 8, height: 8, borderRadius: '50%',
                 background: statusColor(src.last?.status)
@@ -167,7 +167,7 @@ export default async function OperacionesPage() {
               <div key={i} style={{ padding: '10px 16px', borderBottom: '1px solid #2A2A2A', display: 'flex', justifyContent: 'space-between' }}>
                 <div>
                   <span style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, fontFamily: 'var(--font-jetbrains-mono)' }}>{c.trafico}</span>
-                  <span style={{ fontSize: 12, marginLeft: 8,
+                  <span style={{ fontSize: 'var(--aguila-fs-compact)', marginLeft: 8,
                     color: c.estatus === 'Cruzado' ? 'var(--success)' : c.estatus === 'Detenido' ? 'var(--danger-500)' : 'var(--warning-500, #D97706)'
                   }}>{c.estatus}</span>
                 </div>

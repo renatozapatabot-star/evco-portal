@@ -11,7 +11,7 @@ const C = {
 const s = StyleSheet.create({
   page: { backgroundColor: C.bg, padding: 30, fontFamily: 'Helvetica', color: C.text, fontSize: 9 },
   header: { borderBottom: `1px solid ${C.border}`, paddingBottom: 12, marginBottom: 16 },
-  title: { fontSize: 16, fontWeight: 'bold', color: C.gold, marginBottom: 4 },
+  title: { fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 'bold', color: C.gold, marginBottom: 4 },
   subtitle: { fontSize: 9, color: C.muted },
   kpiRow: { flexDirection: 'row', gap: 8, marginBottom: 16 },
   kpiCard: { flex: 1, backgroundColor: C.surface, borderRadius: 4, padding: 8, border: `0.5px solid ${C.border}` },

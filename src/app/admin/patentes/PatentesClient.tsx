@@ -150,7 +150,7 @@ export function PatentesClient({ initialRows }: { initialRows: PatenteRow[] }) {
               </div>
 
               {p.certificate_file_url && (
-                <div style={{ marginTop: 16, fontSize: 12 }}>
+                <div style={{ marginTop: 16, fontSize: 'var(--aguila-fs-compact)' }}>
                   <a href={p.certificate_file_url} target="_blank" rel="noopener noreferrer" style={{ color: '#C0C5CE' }}>
                     Ver certificado actual →
                   </a>
@@ -158,7 +158,7 @@ export function PatentesClient({ initialRows }: { initialRows: PatenteRow[] }) {
               )}
 
               {p.notes && (
-                <div style={{ marginTop: 12, fontSize: 12, color: TEXT_SECONDARY, fontStyle: 'italic' }}>
+                <div style={{ marginTop: 12, fontSize: 'var(--aguila-fs-compact)', color: TEXT_SECONDARY, fontStyle: 'italic' }}>
                   {p.notes}
                 </div>
               )}

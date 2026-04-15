@@ -193,7 +193,7 @@ export default function NuevoEmbarquePage() {
                 background: form.urgencia === u.value ? 'rgba(192,197,206,0.15)' : '#222',
                 border: `1px solid ${form.urgencia === u.value ? 'rgba(192,197,206,0.3)' : 'rgba(255,255,255,0.08)'}`,
                 color: form.urgencia === u.value ? '#E8EAED' : '#8B949E',
-                fontSize: 12, fontWeight: 600, cursor: 'pointer', minHeight: 48,
+                fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, cursor: 'pointer', minHeight: 48,
               }}>
                 {u.label}
                 <div style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 400, marginTop: 2 }}>{u.desc}</div>
@@ -215,7 +215,7 @@ export default function NuevoEmbarquePage() {
           disabled={loading}
           style={{
             width: '100%', padding: '16px 24px', borderRadius: 10, marginTop: 8,
-            background: '#E8EAED', color: '#111', fontSize: 16, fontWeight: 700,
+            background: '#E8EAED', color: '#111', fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700,
             border: 'none', cursor: loading ? 'wait' : 'pointer',
             opacity: loading ? 0.6 : 1, minHeight: 60,
           }}

@@ -322,7 +322,7 @@ export default function ProveedoresPage() {
               color: sortBy === opt.key ? '#FFFFFF' : T.textSecondary,
               border: `1px solid ${sortBy === opt.key ? 'var(--gold, #E8EAED)' : T.border}`,
               borderRadius: 8, padding: '0 14px', height: 36,
-              fontSize: 12, fontWeight: 600, cursor: 'pointer',
+              fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, cursor: 'pointer',
               display: 'flex', alignItems: 'center', gap: 4,
               fontFamily: 'var(--font-geist-sans)',
             }}

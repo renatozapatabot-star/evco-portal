@@ -36,13 +36,13 @@ export default function NotificacionesPage() {
 
   return (
     <div style={{ maxWidth: 700, margin: '0 auto', padding: '24px 16px' }}>
-      <h1 style={{ fontSize: 20, fontWeight: 700, color: '#E6EDF3', marginBottom: 4 }}>Notificaciones</h1>
+      <h1 style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, color: '#E6EDF3', marginBottom: 4 }}>Notificaciones</h1>
       <p style={{ fontSize: 'var(--aguila-fs-body)', color: '#64748b', marginBottom: 24 }}>Elige cómo y cuándo recibir alertas de ZAPATA AI.</p>
 
       <div className="cc-card" style={{ padding: 24, borderRadius: 20 }}>
         {/* Header row */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr repeat(3, 80px)', gap: 8, marginBottom: 16, paddingBottom: 12, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Evento</div>
+          <div style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Evento</div>
           {CHANNELS.map(ch => (
             <div key={ch.key} style={{ textAlign: 'center', fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>
               <ch.icon size={14} style={{ margin: '0 auto 2px', display: 'block', opacity: 0.6 }} />
@@ -67,7 +67,7 @@ export default function NotificacionesPage() {
                     width: 36, height: 36, borderRadius: 8, border: 'none', cursor: 'pointer',
                     background: prefs[event.key]?.[ch.key] ? 'rgba(192,197,206,0.15)' : 'rgba(255,255,255,0.04)',
                     color: prefs[event.key]?.[ch.key] ? '#C0C5CE' : '#475569',
-                    fontSize: 16, transition: 'all 150ms',
+                    fontSize: 'var(--aguila-fs-body-lg)', transition: 'all 150ms',
                   }}
                 >
                   {prefs[event.key]?.[ch.key] ? '✓' : '·'}

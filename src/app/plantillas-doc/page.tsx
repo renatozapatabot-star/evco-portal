@@ -64,7 +64,7 @@ export default function PlantillasDocPage() {
     return (
       <div className="page-shell" style={{ textAlign: 'center', padding: 60 }}>
         <FileText size={48} style={{ color: 'var(--text-muted)', marginBottom: 16 }} />
-        <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>Acceso restringido</div>
+        <div style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 600, color: 'var(--text-primary)' }}>Acceso restringido</div>
       </div>
     )
   }
@@ -131,7 +131,7 @@ export default function PlantillasDocPage() {
                       <span style={{ fontSize: 'var(--aguila-fs-label)', padding: '1px 6px', borderRadius: 4, background: 'var(--gold)', color: '#FFF', fontWeight: 600 }}>
                         {DOC_LABELS[t.doc_type] || t.doc_type}
                       </span>
-                      <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>
+                      <span style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, color: 'var(--text-primary)' }}>
                         {t.supplier_key.replace(/_/g, ' ')}
                       </span>
                       {t.product_key !== '_general' && (
@@ -163,7 +163,7 @@ function KPI({ icon, label, value }: { icon: React.ReactNode; label: string; val
         <span style={{ color: 'var(--gold)' }}>{icon}</span>
         <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)' }}>{label}</span>
       </div>
-      <div style={{ fontSize: 20, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>{value}</div>
+      <div style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>{value}</div>
     </div>
   )
 }

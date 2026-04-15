@@ -75,7 +75,7 @@ export default function ApiDocsPage() {
       {tryResult && (
         <div className="card" style={{ marginTop: 16 }}>
           <div className="card-head"><span className="card-title">Response</span></div>
-          <pre style={{ padding: 20, fontSize: 12, overflow: 'auto', maxHeight: 400, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)', background: 'var(--bg-elevated)', margin: 0 }}>
+          <pre style={{ padding: 20, fontSize: 'var(--aguila-fs-compact)', overflow: 'auto', maxHeight: 400, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)', background: 'var(--bg-elevated)', margin: 0 }}>
             {tryResult}
           </pre>
         </div>

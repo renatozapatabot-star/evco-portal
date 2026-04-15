@@ -60,7 +60,7 @@ export default function NegociacionPage() {
     return (
       <div className="page-shell" style={{ textAlign: 'center', padding: 60 }}>
         <Users2 size={48} style={{ color: 'var(--text-muted)', marginBottom: 16 }} />
-        <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>Acceso restringido</div>
+        <div style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 600, color: 'var(--text-primary)' }}>Acceso restringido</div>
       </div>
     )
   }
@@ -107,7 +107,7 @@ function KPI({ label, value, color }: { label: string; value: string | number; c
   return (
     <div style={{ padding: '14px 16px', borderRadius: 8, background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
       <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', marginBottom: 4 }}>{label}</div>
-      <div style={{ fontSize: 20, fontWeight: 700, fontFamily: 'var(--font-mono)', color }}>{value}</div>
+      <div style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, fontFamily: 'var(--font-mono)', color }}>{value}</div>
     </div>
   )
 }
@@ -134,7 +134,7 @@ function BriefCard({ brief: b, isMobile }: { brief: Brief; isMobile: boolean }) 
                 </span>
               )}
             </div>
-            <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4 }}>{b.negotiation_angle}</div>
+            <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-secondary)', marginTop: 4 }}>{b.negotiation_angle}</div>
           </div>
           <div style={{ textAlign: 'right', minWidth: 80 }}>
             <div style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--gold-dark)' }}>

@@ -249,7 +249,7 @@ export default function SubirDocumentosPage() {
         <p style={{ fontSize: 15, color: 'var(--cruz-text-secondary)', fontWeight: 500, marginBottom: 4 }}>
           Arrastra documentos aquí o haz clic para seleccionar
         </p>
-        <p style={{ fontSize: 12, color: 'var(--cruz-text-ghost)' }}>
+        <p style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--cruz-text-ghost)' }}>
           PDF, JPG, PNG, DOCX
         </p>
         <input
@@ -408,7 +408,7 @@ export default function SubirDocumentosPage() {
                   style={{
                     display: 'inline-flex', alignItems: 'center', gap: 6,
                     padding: '8px 16px', minHeight: 60,
-                    fontSize: 12, fontWeight: 600,
+                    fontSize: 'var(--aguila-fs-compact)', fontWeight: 600,
                     background: 'rgba(196,162,78,0.10)',
                     color: 'var(--cruz-gold)',
                     border: '1px solid var(--cruz-border-gold)',

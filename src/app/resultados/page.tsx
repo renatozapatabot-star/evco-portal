@@ -124,7 +124,7 @@ export default function ResultadosPage() {
           <h1 style={{ fontSize: isMobile ? 26 : 36, fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1.2, margin: 0 }}>
             La diferencia se mide en datos.
           </h1>
-          <p style={{ fontSize: 16, color: 'var(--text-secondary)', marginTop: 16, lineHeight: 1.6 }}>
+          <p style={{ fontSize: 'var(--aguila-fs-body-lg)', color: 'var(--text-secondary)', marginTop: 16, lineHeight: 1.6 }}>
             Cada cifra es computada automáticamente desde operaciones reales.
             <br />Sin estimaciones. Sin promesas. Solo datos.
           </p>
@@ -141,7 +141,7 @@ export default function ResultadosPage() {
               <div style={{ fontSize: isMobile ? 36 : 48, fontWeight: 800, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)', lineHeight: 1 }}>
                 {stat.value}
               </div>
-              <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-secondary)', marginTop: 8 }}>
+              <div style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 600, color: 'var(--text-secondary)', marginTop: 8 }}>
                 {stat.label}
               </div>
               <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-muted)', marginTop: 8, fontFamily: 'var(--font-mono)' }}>
@@ -157,7 +157,7 @@ export default function ResultadosPage() {
             display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
             padding: '16px 40px', minHeight: 60, borderRadius: 14,
             background: 'var(--gold)', color: 'var(--bg-card)',
-            fontSize: 16, fontWeight: 700, textDecoration: 'none',
+            fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, textDecoration: 'none',
             transition: 'transform 150ms, box-shadow 150ms',
           }}>
             Acceder al portal

@@ -342,7 +342,7 @@ function PartidaDrawer({
         <pre
           style={{
             fontFamily: 'var(--font-mono)',
-            fontSize: 12,
+            fontSize: 'var(--aguila-fs-compact)',
             color: TEXT_SECONDARY,
             whiteSpace: 'pre-wrap',
             wordBreak: 'break-word',

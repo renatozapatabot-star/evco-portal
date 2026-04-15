@@ -302,7 +302,7 @@ export function MensajeriaClient({ role, companyId, companyName, operatorName }:
               maxLength={10_000}
             />
             {isInternal ? (
-              <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: TEXT_SECONDARY }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 'var(--aguila-fs-compact)', color: TEXT_SECONDARY }}>
                 <input
                   type="checkbox"
                   checked={newInternalOnly}
@@ -348,7 +348,7 @@ export function MensajeriaClient({ role, companyId, companyName, operatorName }:
               <div style={{ textAlign: 'center', padding: 24 }}>
                 <div style={{ fontSize: 'var(--aguila-fs-kpi-compact)', marginBottom: 8 }}>📨</div>
                 <div style={{ color: TEXT_PRIMARY, fontSize: 'var(--aguila-fs-section)', marginBottom: 4 }}>Sin hilos todavía</div>
-                <div style={{ color: TEXT_MUTED, fontSize: 12 }}>
+                <div style={{ color: TEXT_MUTED, fontSize: 'var(--aguila-fs-compact)' }}>
                   Crea un hilo nuevo para empezar.
                 </div>
               </div>
@@ -466,7 +466,7 @@ export function MensajeriaClient({ role, companyId, companyName, operatorName }:
                     style={{
                       minHeight: 44, padding: '8px 14px', borderRadius: 10,
                       border: `1px solid ${AMBER}`, background: 'rgba(251,191,36,0.08)',
-                      color: AMBER, fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                      color: AMBER, fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, cursor: 'pointer',
                     }}
                   >
                     Escalar a Dirección

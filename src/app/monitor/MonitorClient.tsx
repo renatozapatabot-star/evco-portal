@@ -156,7 +156,7 @@ export function MonitorClient({ initialRows, role, companyId, isInternal }: Prop
                 border: `1px solid ${statusFilter === opt.key ? ACCENT_SILVER : BORDER}`,
                 background: statusFilter === opt.key ? 'rgba(192,197,206,0.14)' : 'transparent',
                 color: statusFilter === opt.key ? TEXT_PRIMARY : TEXT_SECONDARY,
-                fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, cursor: 'pointer',
               }}
             >
               {opt.label}
@@ -173,7 +173,7 @@ export function MonitorClient({ initialRows, role, companyId, isInternal }: Prop
               border: `1px solid ${BORDER}`,
               background: 'rgba(255,255,255,0.04)',
               color: TEXT_PRIMARY,
-              fontSize: 12,
+              fontSize: 'var(--aguila-fs-compact)',
             }}
           >
             {clientOptions.map((c) => (
@@ -250,8 +250,8 @@ export function MonitorClient({ initialRows, role, companyId, isInternal }: Prop
                 <div style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', fontWeight: 600 }}>
                   {r.trafico}
                 </div>
-                <div style={{ color: TEXT_SECONDARY, fontSize: 12 }}>{r.company_id ?? '—'}</div>
-                <div style={{ color: TEXT_SECONDARY, fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div style={{ color: TEXT_SECONDARY, fontSize: 'var(--aguila-fs-compact)' }}>{r.company_id ?? '—'}</div>
+                <div style={{ color: TEXT_SECONDARY, fontSize: 'var(--aguila-fs-compact)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {r.descripcion_mercancia ?? '—'}
                 </div>
                 <div>
@@ -267,7 +267,7 @@ export function MonitorClient({ initialRows, role, companyId, isInternal }: Prop
                     {sem.label}
                   </span>
                 </div>
-                <div style={{ color: TEXT_SECONDARY, fontSize: 12 }}>{r.estatus ?? '—'}</div>
+                <div style={{ color: TEXT_SECONDARY, fontSize: 'var(--aguila-fs-compact)' }}>{r.estatus ?? '—'}</div>
                 <div style={{ color: r.pedimento ? GREEN : TEXT_MUTED, fontSize: 'var(--aguila-fs-meta)' }}>
                   {r.pedimento ? 'sí' : '—'}
                 </div>

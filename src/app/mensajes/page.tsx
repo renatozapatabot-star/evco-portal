@@ -323,7 +323,7 @@ export default function MensajesPage() {
                           {fmtDateCompact(contact.lastTime)}
                         </span>
                       </div>
-                      <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-secondary)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {truncate(contact.lastMessage, 50)}
                       </div>
                       {contact.traficoId && contact.traficoId !== 'unknown' && (
@@ -456,7 +456,7 @@ export default function MensajesPage() {
                           style={{
                             padding: '6px 12px', borderRadius: 16,
                             border: '1px solid var(--border)', background: 'var(--bg-card)',
-                            fontSize: 12, color: 'var(--text-secondary)', cursor: 'pointer',
+                            fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-secondary)', cursor: 'pointer',
                             transition: 'border-color 150ms',
                             minHeight: 32,
                           }}

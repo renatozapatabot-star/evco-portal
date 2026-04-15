@@ -294,7 +294,7 @@ export function QuickBooksExportClient({ recent }: { recent: ExportRow[] }) {
         }}
       >
         <h2 style={{
-          fontSize: 16,
+          fontSize: 'var(--aguila-fs-body-lg)',
           fontWeight: 700,
           margin: '0 0 16px 0',
           color: TEXT_PRIMARY,
@@ -359,7 +359,7 @@ export function QuickBooksExportClient({ recent }: { recent: ExportRow[] }) {
                             border: `1px solid ${ACCENT_SILVER}`,
                             borderRadius: 8,
                             padding: '6px 12px',
-                            fontSize: 12,
+                            fontSize: 'var(--aguila-fs-compact)',
                             fontWeight: 600,
                             cursor: 'pointer',
                             minHeight: 44,

@@ -99,7 +99,7 @@ export default async function AdminSignupsPage() {
 
   return (
     <div style={{ padding: '24px 48px', maxWidth: 900 }}>
-      <h1 style={{ fontSize: 20, fontWeight: 700, marginBottom: 20, color: 'var(--text-primary)' }}>
+      <h1 style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, marginBottom: 20, color: 'var(--text-primary)' }}>
         Solicitudes de acceso
       </h1>
 
@@ -117,7 +117,7 @@ export default async function AdminSignupsPage() {
             }}>
               <div style={{ flex: 1, minWidth: 200 }}>
                 <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: 'var(--text-primary)' }}>{s.firm_name}</div>
-                <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{s.full_name} · {s.email}</div>
+                <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-secondary)' }}>{s.full_name} · {s.email}</div>
                 <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', marginTop: 2 }}>
                   Patente {s.patente} · {s.aduana} · {s.telefono || 'Sin teléfono'}
                 </div>
@@ -128,7 +128,7 @@ export default async function AdminSignupsPage() {
                   name="role"
                   defaultValue="client"
                   style={{
-                    padding: '6px 10px', borderRadius: 6, fontSize: 12,
+                    padding: '6px 10px', borderRadius: 6, fontSize: 'var(--aguila-fs-compact)',
                     background: 'var(--bg-card)', color: 'var(--text-primary)',
                     border: '1px solid var(--border)', cursor: 'pointer',
                     minHeight: 32,
@@ -142,7 +142,7 @@ export default async function AdminSignupsPage() {
                   <option value="trafico">Tráfico</option>
                 </select>
                 <button type="submit" style={{
-                  padding: '8px 16px', borderRadius: 8, fontSize: 12, fontWeight: 700,
+                  padding: '8px 16px', borderRadius: 8, fontSize: 'var(--aguila-fs-compact)', fontWeight: 700,
                   background: 'var(--gold, #E8EAED)', color: '#0a0a0c', border: 'none', cursor: 'pointer',
                   minHeight: 32,
                 }}>
@@ -152,7 +152,7 @@ export default async function AdminSignupsPage() {
               <form action={rejectSignup} style={{ display: 'inline' }}>
                 <input type="hidden" name="id" value={s.id} />
                 <button type="submit" style={{
-                  padding: '8px 16px', borderRadius: 8, fontSize: 12, fontWeight: 700,
+                  padding: '8px 16px', borderRadius: 8, fontSize: 'var(--aguila-fs-compact)', fontWeight: 700,
                   background: 'transparent', color: 'var(--text-muted)', border: '1px solid var(--border)', cursor: 'pointer',
                 }}>
                   Rechazar
@@ -165,7 +165,7 @@ export default async function AdminSignupsPage() {
 
       {resolved.length > 0 && (
         <>
-          <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 12 }}>Historial</h2>
+          <h2 style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 12 }}>Historial</h2>
           {resolved.map((s: Record<string, string>) => (
             <div key={s.id} style={{
               padding: '12px 16px', borderRadius: 10,

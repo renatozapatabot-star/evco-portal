@@ -159,7 +159,7 @@ export function ConfigEditor({
           flexWrap: 'wrap',
         }}
       >
-        <div style={{ fontSize: 12, color: TEXT_MUTED }}>
+        <div style={{ fontSize: 'var(--aguila-fs-compact)', color: TEXT_MUTED }}>
           {errorCount === 0 ? (
             <span style={{ color: GREEN }}>Sin errores de validación.</span>
           ) : (

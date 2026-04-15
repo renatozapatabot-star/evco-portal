@@ -248,7 +248,7 @@ export function ConfigForm({ traficoId: _traficoId, config, onChange }: Props) {
           resize: 'vertical',
           minHeight: 60,
           fontFamily: 'var(--font-mono)',
-          fontSize: 12,
+          fontSize: 'var(--aguila-fs-compact)',
         }}
       />
       <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED }}>

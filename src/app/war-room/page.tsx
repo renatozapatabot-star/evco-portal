@@ -56,8 +56,8 @@ export default function WarRoom() {
           <span style={{ fontSize: isMobile ? 13 : 16, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase' }}>WAR ROOM — ZAPATA AI</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtDateTimeLocal(new Date()).split(' · ')[1] || fmtDateTimeLocal(new Date())}</span>
-          <button onClick={() => router.back()} style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 6, color: 'var(--text-secondary)', padding: '4px 12px', fontSize: 12, cursor: 'pointer' }}>ESC</button>
+          <span style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-secondary)', fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtDateTimeLocal(new Date()).split(' · ')[1] || fmtDateTimeLocal(new Date())}</span>
+          <button onClick={() => router.back()} style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 6, color: 'var(--text-secondary)', padding: '4px 12px', fontSize: 'var(--aguila-fs-compact)', cursor: 'pointer' }}>ESC</button>
         </div>
       </div>
 
@@ -133,7 +133,7 @@ export default function WarRoom() {
           ].map(item => (
             <div key={item.label} style={{ padding: '10px 0', minHeight: 60, borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ fontSize: 'var(--aguila-fs-section)', color: 'var(--text-secondary)' }}>{item.label}</span>
-              <span style={{ fontSize: 20, fontWeight: 800, fontFamily: 'var(--font-jetbrains-mono)' }}>{item.value}</span>
+              <span style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 800, fontFamily: 'var(--font-jetbrains-mono)' }}>{item.value}</span>
             </div>
           ))}
         </div>

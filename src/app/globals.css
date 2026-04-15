@@ -174,6 +174,9 @@ html, body {
   --aguila-fs-body:       13px;
   --aguila-fs-label:      10px;
   --aguila-fs-meta:       11px;
+  --aguila-fs-compact:    12px;  /* dense list rows / condensed data tables */
+  --aguila-fs-body-lg:    16px;  /* form inputs, primary reading copy */
+  --aguila-fs-headline:   20px;  /* sub-hero / between kpi-small 18 and title 24 */
   --aguila-ls-label:      0.08em;
   --aguila-ls-tight:      -0.03em;
   --aguila-gap-section:   32px;

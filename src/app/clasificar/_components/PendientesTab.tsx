@@ -137,7 +137,7 @@ export function PendientesTab() {
         <h2 style={{ margin: '0 0 8px', fontSize: 'var(--aguila-fs-title)', fontWeight: 700, color: 'rgba(255,255,255,0.92)' }}>
           ¡Listo!
         </h2>
-        <p style={{ margin: '0 0 24px', fontSize: 16, color: '#6B6B6B' }}>
+        <p style={{ margin: '0 0 24px', fontSize: 'var(--aguila-fs-body-lg)', color: '#6B6B6B' }}>
           {stats.confirmed + stats.corrected} clasificaciones revisadas
         </p>
         <div style={{ display: 'flex', justifyContent: 'center', gap: 24 }}>
@@ -200,13 +200,13 @@ export function PendientesTab() {
         <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
           {p.supplier && (
             <div>
-              <p style={{ margin: '0 0 2px', fontSize: 12, color: '#9B9B9B' }}>Proveedor</p>
+              <p style={{ margin: '0 0 2px', fontSize: 'var(--aguila-fs-compact)', color: '#9B9B9B' }}>Proveedor</p>
               <p style={{ margin: 0, fontSize: 'var(--aguila-fs-section)', color: 'rgba(255,255,255,0.92)' }}>{p.supplier}</p>
             </div>
           )}
           {p.value_usd != null && (
             <div>
-              <p style={{ margin: '0 0 2px', fontSize: 12, color: '#9B9B9B' }}>Valor</p>
+              <p style={{ margin: '0 0 2px', fontSize: 'var(--aguila-fs-compact)', color: '#9B9B9B' }}>Valor</p>
               <p className="font-mono" style={{ margin: 0, fontSize: 'var(--aguila-fs-section)', color: 'rgba(255,255,255,0.92)' }}>
                 ${p.value_usd.toLocaleString('en-US', { minimumFractionDigits: 2 })} USD
               </p>
@@ -249,8 +249,8 @@ export function PendientesTab() {
 
         {p.alternatives && p.alternatives.length > 0 && !showCorrection && (
           <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: 8, padding: 12 }}>
-            <p style={{ margin: '0 0 4px', fontSize: 12, color: '#9B9B9B' }}>Alternativa</p>
-            <span className="font-mono" style={{ fontSize: 16, color: 'rgba(255,255,255,0.85)' }}>
+            <p style={{ margin: '0 0 4px', fontSize: 'var(--aguila-fs-compact)', color: '#9B9B9B' }}>Alternativa</p>
+            <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-body-lg)', color: 'rgba(255,255,255,0.85)' }}>
               {p.alternatives[0].fraccion}
             </span>
             <span style={{ fontSize: 'var(--aguila-fs-body)', color: '#9B9B9B', marginLeft: 8 }}>
@@ -289,7 +289,7 @@ export function PendientesTab() {
                   onChange={() => setSelectedAlt(alt.fraccion)}
                   style={{ accentColor: '#E8EAED' }}
                 />
-                <span className="font-mono" style={{ fontSize: 16, fontWeight: 600 }}>{alt.fraccion}</span>
+                <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 600 }}>{alt.fraccion}</span>
                 <span style={{ fontSize: 'var(--aguila-fs-body)', color: 'rgba(255,255,255,0.7)', flex: 1 }}>{alt.description}</span>
                 <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-body)', color: '#9B9B9B' }}>
                   {Math.round(alt.confidence * 100)}%
@@ -375,7 +375,7 @@ export function PendientesTab() {
         )}
 
         {!showCorrection && (
-          <p style={{ margin: 0, textAlign: 'center', fontSize: 12, color: '#9B9B9B' }}>
+          <p style={{ margin: 0, textAlign: 'center', fontSize: 'var(--aguila-fs-compact)', color: '#9B9B9B' }}>
             ← rechazar · → aprobar
           </p>
         )}

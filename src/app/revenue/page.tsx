@@ -43,7 +43,7 @@ export default async function RevenuePage() {
           <div key={c.label} style={{ background: 'var(--navy-900)', border: '1px solid #2A2A2A', borderRadius: 12, padding: 20 }}>
             <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, color: '#666', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>{c.label}</div>
             <div style={{ fontSize: 'var(--aguila-fs-kpi-compact)', fontWeight: 800, color: c.color }}>{c.value}</div>
-            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>{c.sub}</div>
+            <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-muted)', marginTop: 4 }}>{c.sub}</div>
           </div>
         ))}
       </div>

@@ -23,7 +23,7 @@ export function TabHeader({ title, subtitle, badge }: {
           {title}
         </h2>
         {subtitle && (
-          <p style={{ margin: '4px 0 0', fontSize: 12, color: TEXT_MUTED, maxWidth: 640 }}>
+          <p style={{ margin: '4px 0 0', fontSize: 'var(--aguila-fs-compact)', color: TEXT_MUTED, maxWidth: 640 }}>
             {subtitle}
           </p>
         )}

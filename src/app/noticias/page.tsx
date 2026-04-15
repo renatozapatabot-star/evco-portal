@@ -52,7 +52,7 @@ export default function NoticiasPage() {
           { key: 'medium' as const, label: 'Media' },
         ].map(f => (
           <button key={f.key} onClick={() => setFilter(f.key)} style={{
-            padding: '6px 14px', borderRadius: 6, fontSize: 12, fontWeight: filter === f.key ? 700 : 500,
+            padding: '6px 14px', borderRadius: 6, fontSize: 'var(--aguila-fs-compact)', fontWeight: filter === f.key ? 700 : 500,
             background: filter === f.key ? 'rgba(196,150,60,0.1)' : 'var(--bg-card)',
             border: `1px solid ${filter === f.key ? 'var(--gold)' : 'var(--border)'}`,
             color: filter === f.key ? 'var(--gold)' : 'var(--text-secondary)', cursor: 'pointer',
@@ -79,7 +79,7 @@ export default function NoticiasPage() {
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>{alert.title}</div>
                   {alert.description && (
-                    <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: 8 }}>
+                    <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: 8 }}>
                       {alert.description.substring(0, 200)}{alert.description.length > 200 ? '...' : ''}
                     </div>
                   )}

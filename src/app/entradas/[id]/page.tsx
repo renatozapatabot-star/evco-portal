@@ -107,7 +107,7 @@ export default function EntradaDetailPage() {
       <Link href="/entradas" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 'var(--aguila-fs-body)', color: 'var(--text-muted)', textDecoration: 'none', marginBottom: 24 }}>
         <ChevronLeft size={14} /> Entradas
       </Link>
-      <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)' }}>Entrada no encontrada</h1>
+      <h1 style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, color: 'var(--text-primary)' }}>Entrada no encontrada</h1>
     </div>
   )
 

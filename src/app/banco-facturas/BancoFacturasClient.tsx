@@ -220,7 +220,7 @@ export function BancoFacturasClient({ role }: Props) {
           <h1 style={{ fontSize: 'var(--aguila-fs-title)', fontWeight: 700, letterSpacing: '-0.01em', margin: 0 }}>
             Banco de facturas
           </h1>
-          <span style={{ fontFamily: MONO, fontSize: 12, color: TEXT_MUTED }}>
+          <span style={{ fontFamily: MONO, fontSize: 'var(--aguila-fs-compact)', color: TEXT_MUTED }}>
             {total} {total === 1 ? 'factura' : 'facturas'}
           </span>
         </header>
@@ -277,7 +277,7 @@ export function BancoFacturasClient({ role }: Props) {
               onClick={() => setToast(null)}
               style={{
                 marginLeft: 12, background: 'transparent', border: 'none',
-                color: ACCENT_SILVER_DIM, cursor: 'pointer', fontSize: 12,
+                color: ACCENT_SILVER_DIM, cursor: 'pointer', fontSize: 'var(--aguila-fs-compact)',
                 minWidth: 44, minHeight: 44,
               }}
               aria-label="Cerrar aviso"
@@ -472,7 +472,7 @@ function InvoiceRow({ row, active, onSelect }: {
       <span style={{ fontFamily: MONO, fontSize: 'var(--aguila-fs-section)', color: TEXT_PRIMARY }}>
         {fmtAmount(row.amount, row.currency)}
       </span>
-      <span style={{ fontSize: 12, color: TEXT_MUTED, textAlign: 'right', whiteSpace: 'nowrap' }}>
+      <span style={{ fontSize: 'var(--aguila-fs-compact)', color: TEXT_MUTED, textAlign: 'right', whiteSpace: 'nowrap' }}>
         {fmtDate(row.received_at)}
       </span>
     </button>
@@ -602,7 +602,7 @@ function RightRail({ row, onClose }: { row: InvoiceBankRow; onClose: () => void 
           Cerrar
         </button>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '90px 1fr', gap: 6, fontSize: 12 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '90px 1fr', gap: 6, fontSize: 'var(--aguila-fs-compact)' }}>
         <span style={{ color: TEXT_MUTED }}>Folio</span>
         <span style={{ fontFamily: MONO, color: TEXT_PRIMARY }}>{row.invoice_number ?? '—'}</span>
         <span style={{ color: TEXT_MUTED }}>Proveedor</span>
@@ -632,7 +632,7 @@ function RightRail({ row, onClose }: { row: InvoiceBankRow; onClose: () => void 
             display: 'flex',
             flexDirection: 'column',
             gap: 8,
-            fontSize: 12,
+            fontSize: 'var(--aguila-fs-compact)',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -671,7 +671,7 @@ function RightRail({ row, onClose }: { row: InvoiceBankRow; onClose: () => void 
                   border: `1px solid ${BORDER}`,
                   borderRadius: 8,
                   color: ACCENT_SILVER_BRIGHT,
-                  fontSize: 12,
+                  fontSize: 'var(--aguila-fs-compact)',
                   fontWeight: 600,
                   cursor: confirming ? 'wait' : 'pointer',
                 }}
@@ -689,7 +689,7 @@ function RightRail({ row, onClose }: { row: InvoiceBankRow; onClose: () => void 
                   border: `1px solid ${BORDER_HAIRLINE}`,
                   borderRadius: 8,
                   color: TEXT_MUTED,
-                  fontSize: 12,
+                  fontSize: 'var(--aguila-fs-compact)',
                   cursor: confirming ? 'wait' : 'pointer',
                 }}
                 title="Marcar como revisión manual necesaria"
@@ -765,8 +765,8 @@ function AssignModal({ onClose, onAssign }: {
           width: 'min(520px, 92vw)', color: TEXT_PRIMARY,
         }}
       >
-        <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>Asignar a embarque</h2>
-        <p style={{ color: TEXT_MUTED, fontSize: 12, margin: '4px 0 12px' }}>
+        <h2 style={{ margin: 0, fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700 }}>Asignar a embarque</h2>
+        <p style={{ color: TEXT_MUTED, fontSize: 'var(--aguila-fs-compact)', margin: '4px 0 12px' }}>
           Busca por clave de embarque, pedimento o descripción.
         </p>
         <input
@@ -801,7 +801,7 @@ function AssignModal({ onClose, onAssign }: {
               onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
             >
               <span style={{ fontFamily: MONO, fontSize: 'var(--aguila-fs-section)', fontWeight: 600 }}>{h.title}</span>
-              {h.subtitle && <span style={{ fontSize: 12, color: TEXT_MUTED }}>{h.subtitle}</span>}
+              {h.subtitle && <span style={{ fontSize: 'var(--aguila-fs-compact)', color: TEXT_MUTED }}>{h.subtitle}</span>}
             </button>
           ))}
         </div>

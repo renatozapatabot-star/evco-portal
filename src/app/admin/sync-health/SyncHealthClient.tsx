@@ -99,7 +99,7 @@ export function SyncHealthClient() {
             padding: '8px 14px', borderRadius: 10,
             background: 'rgba(255,255,255,0.05)',
             border: '1px solid rgba(255,255,255,0.1)',
-            color: TEXT_PRIMARY, fontSize: 12, fontWeight: 600,
+            color: TEXT_PRIMARY, fontSize: 'var(--aguila-fs-compact)', fontWeight: 600,
             cursor: loading ? 'wait' : 'pointer',
             opacity: loading ? 0.6 : 1,
             minHeight: 40,

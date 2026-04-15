@@ -125,7 +125,7 @@ export default function BienvenidaPage() {
         style={{
           padding: '16px 48px', borderRadius: 12, border: 'none',
           background: 'linear-gradient(135deg, var(--gold), var(--gold-700))',
-          color: 'var(--bg-card)', fontSize: 16, fontWeight: 800,
+          color: 'var(--bg-card)', fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 800,
           cursor: 'pointer', minHeight: 60,
           boxShadow: '0 4px 24px rgba(196,150,60,0.2)',
         }}

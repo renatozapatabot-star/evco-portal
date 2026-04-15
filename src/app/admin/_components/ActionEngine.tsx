@@ -115,7 +115,7 @@ export function ActionEngine({ draft, onActionComplete, totalPending }: ActionEn
           <div style={{ fontSize: 15, fontWeight: 700, color: TEXT_PRIMARY, marginBottom: 4 }}>
             Sin decisiones pendientes
           </div>
-          <div style={{ fontSize: 12, color: TEXT_MUTED }}>
+          <div style={{ fontSize: 'var(--aguila-fs-compact)', color: TEXT_MUTED }}>
             Todos los pedimentos estan al corriente
           </div>
         </div>
@@ -126,7 +126,7 @@ export function ActionEngine({ draft, onActionComplete, totalPending }: ActionEn
         <>
           {/* Client + trafico */}
           <div style={{ marginBottom: 16 }}>
-            <div style={{ fontSize: 16, fontWeight: 700, color: TEXT_PRIMARY, marginBottom: 4 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, color: TEXT_PRIMARY, marginBottom: 4 }}>
               {draft.company_name}
             </div>
             {draft.trafico_id && (
@@ -141,7 +141,7 @@ export function ActionEngine({ draft, onActionComplete, totalPending }: ActionEn
 
           {/* Supplier + values */}
           {supplier && (
-            <div style={{ fontSize: 12, color: TEXT_SECONDARY, marginBottom: 8 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-compact)', color: TEXT_SECONDARY, marginBottom: 8 }}>
               Proveedor: {supplier}
             </div>
           )}
@@ -349,7 +349,7 @@ export function ActionEngine({ draft, onActionComplete, totalPending }: ActionEn
               <Link
                 href="/admin/aprobaciones"
                 style={{
-                  fontSize: 12,
+                  fontSize: 'var(--aguila-fs-compact)',
                   fontWeight: 600,
                   color: GOLD,
                   textDecoration: 'none',

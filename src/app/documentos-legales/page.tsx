@@ -139,12 +139,12 @@ export default function DocumentosLegalesPage() {
             </span>
           </div>
           {expired.map(d => (
-            <div key={d.id} style={{ fontSize: 12, color: 'var(--danger)', marginLeft: 24, marginTop: 4 }}>
+            <div key={d.id} style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--danger)', marginLeft: 24, marginTop: 4 }}>
               {d.client_name} — {getDocLabel(d.document_type)} — Expirado <span style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtDate(d.expiry_date)}</span>
             </div>
           ))}
           {expiringSoon.map(d => (
-            <div key={d.id} style={{ fontSize: 12, color: 'var(--warning)', marginLeft: 24, marginTop: 4 }}>
+            <div key={d.id} style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--warning)', marginLeft: 24, marginTop: 4 }}>
               {d.client_name} — {getDocLabel(d.document_type)} — Vence <span style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtDate(d.expiry_date)}</span> (<span style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>{daysUntilExpiry(d.expiry_date)}d</span>)
             </div>
           ))}
@@ -205,16 +205,16 @@ export default function DocumentosLegalesPage() {
                     <td style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--n-500)' }}>{doc.responsible || '—'}</td>
                     <td>
                       {doc.status === 'expired' && (
-                        <span style={{ fontSize: 12, color: 'var(--danger)', fontWeight: 600, cursor: 'pointer' }}>Renovar</span>
+                        <span style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--danger)', fontWeight: 600, cursor: 'pointer' }}>Renovar</span>
                       )}
                       {(doc.status === 'expiring_30' || doc.status === 'expiring_90') && (
-                        <span style={{ fontSize: 12, color: 'var(--warning)', fontWeight: 600, cursor: 'pointer' }}>Programar</span>
+                        <span style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--warning)', fontWeight: 600, cursor: 'pointer' }}>Programar</span>
                       )}
                       {doc.status === 'verify' && (
-                        <span style={{ fontSize: 12, color: 'var(--gold-600)', fontWeight: 600, cursor: 'pointer' }}>Verificar</span>
+                        <span style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--gold-600)', fontWeight: 600, cursor: 'pointer' }}>Verificar</span>
                       )}
                       {doc.status === 'valid' && (
-                        <span style={{ fontSize: 12, color: 'var(--n-300)' }}>—</span>
+                        <span style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--n-300)' }}>—</span>
                       )}
                     </td>
                   </tr>
@@ -231,7 +231,7 @@ export default function DocumentosLegalesPage() {
           <Shield size={14} style={{ verticalAlign: 'middle', marginRight: 6 }} />
           Alertas Automáticas
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: 12, fontSize: 12, color: 'var(--n-500)' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: 12, fontSize: 'var(--aguila-fs-compact)', color: 'var(--n-500)' }}>
           <div><Clock size={12} style={{ verticalAlign: 'middle', marginRight: 4 }} /> 90 días: Advertencia</div>
           <div><Clock size={12} style={{ verticalAlign: 'middle', marginRight: 4 }} /> 60 días: Recordatorio</div>
           <div><AlertTriangle size={12} style={{ verticalAlign: 'middle', marginRight: 4 }} /> 30 días: Crítico</div>

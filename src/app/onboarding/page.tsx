@@ -115,7 +115,7 @@ function OnboardingContent() {
               background: 'rgba(255,255,255,0.045)', border: '1px solid rgba(255,255,255,0.08)',
               marginBottom: 20,
             }}>
-              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginBottom: 6 }}>Producto</div>
+              <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'rgba(255,255,255,0.4)', marginBottom: 6 }}>Producto</div>
               <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: '#FFFFFF', marginBottom: 12 }}>
                 RESINA DE POLIETILENO DE ALTA DENSIDAD EN PELLETS
               </div>
@@ -148,7 +148,7 @@ function OnboardingContent() {
             <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(22,163,74,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: 'var(--aguila-fs-kpi-mid)' }}>
               🚀
             </div>
-            <h2 style={{ fontSize: 20, fontWeight: 700, color: '#FFFFFF', marginBottom: 8 }}>
+            <h2 style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, color: '#FFFFFF', marginBottom: 8 }}>
               ¡Listo!
             </h2>
             <p style={{ fontSize: 'var(--aguila-fs-section)', color: 'rgba(255,255,255,0.6)', marginBottom: 24 }}>

@@ -60,7 +60,7 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
               padding: 16,
             }}
           >
-            <p style={{ fontSize: 12, fontFamily: 'var(--font-mono)', color: '#EF4444', margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+            <p style={{ fontSize: 'var(--aguila-fs-compact)', fontFamily: 'var(--font-mono)', color: '#EF4444', margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
               {event.error_message || 'Sin mensaje de error'}
             </p>
           </div>
@@ -142,13 +142,13 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
             padding: 16,
           }}
         >
-          <p style={{ fontSize: 12, fontFamily: 'var(--font-mono)', color: '#EF4444', margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+          <p style={{ fontSize: 'var(--aguila-fs-compact)', fontFamily: 'var(--font-mono)', color: '#EF4444', margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
             {event.error_message || 'Sin mensaje de error'}
           </p>
         </div>
 
         {event.attempt_count !== null && event.attempt_count > 0 && (
-          <p style={{ fontSize: 12, color: '#64748b', margin: 0, fontFamily: 'var(--font-mono)' }}>
+          <p style={{ fontSize: 'var(--aguila-fs-compact)', color: '#64748b', margin: 0, fontFamily: 'var(--font-mono)' }}>
             Intentos: {event.attempt_count}
           </p>
         )}
@@ -229,11 +229,11 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
               Sugerencia IA
             </span>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginTop: 4 }}>
-              <span style={{ fontSize: 16, fontFamily: 'var(--font-mono)', color: '#C0C5CE', fontWeight: 700 }}>
+              <span style={{ fontSize: 'var(--aguila-fs-body-lg)', fontFamily: 'var(--font-mono)', color: '#C0C5CE', fontWeight: 700 }}>
                 {suggestedFraccion}
               </span>
               {confidence !== undefined && (
-                <span style={{ fontSize: 12, fontFamily: 'var(--font-mono)', color: '#64748b' }}>
+                <span style={{ fontSize: 'var(--aguila-fs-compact)', fontFamily: 'var(--font-mono)', color: '#64748b' }}>
                   {Math.round(confidence * 100)}%
                 </span>
               )}
@@ -262,7 +262,7 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
               border: '1px solid rgba(255,255,255,0.12)',
               borderRadius: 12,
               color: '#E6EDF3',
-              fontSize: 16,
+              fontSize: 'var(--aguila-fs-body-lg)',
               fontFamily: 'var(--font-mono)',
               outline: 'none',
             }}
@@ -481,7 +481,7 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
         )}
 
         {completeness !== undefined && (
-          <p style={{ fontSize: 12, fontFamily: 'var(--font-mono)', color: '#64748b', margin: 0 }}>
+          <p style={{ fontSize: 'var(--aguila-fs-compact)', fontFamily: 'var(--font-mono)', color: '#64748b', margin: 0 }}>
             Completitud: {completeness}%
           </p>
         )}
@@ -550,13 +550,13 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
           border: '1px solid rgba(239,68,68,0.2)',
           borderRadius: 12, padding: 16,
         }}>
-          <p style={{ fontSize: 12, fontFamily: 'var(--font-mono)', color: '#EF4444', margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+          <p style={{ fontSize: 'var(--aguila-fs-compact)', fontFamily: 'var(--font-mono)', color: '#EF4444', margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
             {failError}
           </p>
         </div>
 
         {event.attempt_count !== null && event.attempt_count > 0 && (
-          <p style={{ fontSize: 12, color: '#64748b', margin: 0, fontFamily: 'var(--font-mono)' }}>
+          <p style={{ fontSize: 'var(--aguila-fs-compact)', color: '#64748b', margin: 0, fontFamily: 'var(--font-mono)' }}>
             Intentos: {event.attempt_count}
           </p>
         )}

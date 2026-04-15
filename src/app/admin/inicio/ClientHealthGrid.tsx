@@ -40,7 +40,7 @@ export function ClientHealthGrid({ clients }: { clients: ClientHealth[] }) {
         </h2>
         <Link
           href="/admin"
-          style={{ fontSize: 12, color: TEXT_SECONDARY, textDecoration: 'none' }}
+          style={{ fontSize: 'var(--aguila-fs-compact)', color: TEXT_SECONDARY, textDecoration: 'none' }}
         >
           Ver todos →
         </Link>
@@ -114,7 +114,7 @@ function ClientCard({ client }: { client: ClientHealth }) {
         </div>
         <span style={{
           fontFamily: 'var(--font-jetbrains-mono), monospace',
-          fontSize: 12, color: TEXT_SECONDARY, flexShrink: 0,
+          fontSize: 'var(--aguila-fs-compact)', color: TEXT_SECONDARY, flexShrink: 0,
         }}>
           {client.traficos} · {fmtUSDCompact(client.value_usd)}
         </span>

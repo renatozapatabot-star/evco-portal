@@ -37,7 +37,7 @@ export function PreviewPanel({ sheet, isRefreshing, config }: Props) {
         >
           Vista previa {isRefreshing ? '· actualizando…' : ''}
         </div>
-        <div style={{ fontSize: 12, color: TEXT_SECONDARY }}>
+        <div style={{ fontSize: 'var(--aguila-fs-compact)', color: TEXT_SECONDARY }}>
           {sheet.summary.partidas_count} partida
           {sheet.summary.partidas_count === 1 ? '' : 's'} ·{' '}
           {sheet.summary.products_count} producto
@@ -52,7 +52,7 @@ export function PreviewPanel({ sheet, isRefreshing, config }: Props) {
             background: 'rgba(251,191,36,0.12)',
             border: `1px solid ${AMBER}44`,
             borderRadius: 8,
-            fontSize: 12,
+            fontSize: 'var(--aguila-fs-compact)',
             color: TEXT_PRIMARY,
           }}
         >
@@ -75,7 +75,7 @@ export function PreviewPanel({ sheet, isRefreshing, config }: Props) {
       )}
 
       <div style={{ overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--aguila-fs-compact)' }}>
           <thead>
             <tr>
               {t.print_fraction && <Th>Fracción</Th>}

@@ -162,7 +162,7 @@ export default function AlertasPage() {
       ) : filtered.length === 0 ? (
         <div className="card" style={{ padding: 40, textAlign: 'center' }}>
           <CheckCircle size={40} style={{ color: 'var(--success)', marginBottom: 12 }} />
-          <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--success)' }}>Todo en orden</div>
+          <div style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, color: 'var(--success)' }}>Todo en orden</div>
           <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--n-400)', marginTop: 4 }}>Últimos 15 días</div>
         </div>
       ) : (
@@ -184,7 +184,7 @@ export default function AlertasPage() {
                     <span style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 700, color: 'var(--n-900)' }}>{a.title}</span>
                     <span style={{ fontSize: 'var(--aguila-fs-label)', color: 'var(--n-400)', flexShrink: 0, fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtTime(a.time)}</span>
                   </div>
-                  <div style={{ fontSize: 12, color: 'var(--n-500)', marginTop: 2 }}>{a.sub}</div>
+                  <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--n-500)', marginTop: 2 }}>{a.sub}</div>
                 </div>
               </div>
             )

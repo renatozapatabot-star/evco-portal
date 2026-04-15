@@ -246,7 +246,7 @@ export default function PlaneacionPage() {
               <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: T.textSec, marginBottom: 6 }}>
                 Día pico
               </div>
-              <div style={{ fontSize: 16, fontWeight: 800, color: T.text }}>
+              <div style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 800, color: T.text }}>
                 {busiestDay.day}
               </div>
               {busiestDay.count > 0 && (
@@ -261,7 +261,7 @@ export default function PlaneacionPage() {
               </div>
               {fastestBridge ? (
                 <>
-                  <div style={{ fontSize: 16, fontWeight: 800, color: T.green }}>
+                  <div style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 800, color: T.green }}>
                     {fastestBridge.nameEs}
                   </div>
                   <div style={{ fontSize: 'var(--aguila-fs-meta)', color: T.gray, fontFamily: 'var(--font-jetbrains-mono)', marginTop: 2 }}>
@@ -303,7 +303,7 @@ export default function PlaneacionPage() {
                 </div>
                 {link.count !== null && (
                   <span style={{
-                    fontSize: 12, fontWeight: 700, fontFamily: 'var(--font-jetbrains-mono)',
+                    fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, fontFamily: 'var(--font-jetbrains-mono)',
                     color: T.gold,
                   }}>
                     {link.count}

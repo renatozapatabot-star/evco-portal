@@ -130,7 +130,7 @@ export default async function ClienteConfiguracionPage({
         <div
           style={{
             marginTop: 4,
-            fontSize: 12,
+            fontSize: 'var(--aguila-fs-compact)',
             color: TEXT_MUTED,
             fontFamily: 'var(--font-jetbrains-mono), monospace',
           }}

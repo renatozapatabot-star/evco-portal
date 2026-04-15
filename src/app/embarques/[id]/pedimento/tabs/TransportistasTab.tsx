@@ -94,7 +94,7 @@ export function TransportistasTab({ rows }: TransportistasTabProps) {
           <h2 style={{ margin: 0, fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 600, color: TEXT_PRIMARY }}>
             Transportistas
           </h2>
-          <p style={{ margin: '4px 0 0', fontSize: 12, color: TEXT_MUTED }}>
+          <p style={{ margin: '4px 0 0', fontSize: 'var(--aguila-fs-compact)', color: TEXT_MUTED }}>
             {rows.length} {rows.length === 1 ? 'fila' : 'filas'} · catálogo v1
           </p>
         </div>

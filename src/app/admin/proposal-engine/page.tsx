@@ -101,17 +101,17 @@ export default function ProposalEnginePage() {
             <tbody>
               {logs.map((l, i) => (
                 <tr key={l.id} style={{ background: i % 2 === 0 ? 'rgba(255,255,255,0.03)' : 'transparent' }}>
-                  <td className="font-mono" style={{ padding: '8px 12px', fontSize: 12, color: '#E6EDF3' }}>
+                  <td className="font-mono" style={{ padding: '8px 12px', fontSize: 'var(--aguila-fs-compact)', color: '#E6EDF3' }}>
                     {new Date(l.run_at).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'America/Chicago' })}
                   </td>
-                  <td className="font-mono" style={{ padding: '8px 12px', fontSize: 12, color: '#8B949E' }}>{l.duration_ms}ms</td>
-                  <td className="font-mono" style={{ padding: '8px 12px', fontSize: 12, color: '#E8EAED', fontWeight: 600 }}>{l.proposals_generated}</td>
-                  <td className="font-mono" style={{ padding: '8px 12px', fontSize: 12, color: '#16A34A' }}>{l.rule_based_count}</td>
-                  <td className="font-mono" style={{ padding: '8px 12px', fontSize: 12, color: '#D97706' }}>{l.llm_based_count}</td>
-                  <td className="font-mono" style={{ padding: '8px 12px', fontSize: 12, color: '#8B949E' }}>${(l.llm_cost_usd || 0).toFixed(4)}</td>
-                  <td className="font-mono" style={{ padding: '8px 12px', fontSize: 12, color: '#8B949E' }}>{l.confidence_p50?.toFixed(2) ?? '—'}</td>
-                  <td className="font-mono" style={{ padding: '8px 12px', fontSize: 12, color: '#8B949E' }}>{l.confidence_p90?.toFixed(2) ?? '—'}</td>
-                  <td style={{ padding: '8px 12px', fontSize: 12, color: (l.errors?.length || 0) > 0 ? '#DC2626' : '#16A34A' }}>
+                  <td className="font-mono" style={{ padding: '8px 12px', fontSize: 'var(--aguila-fs-compact)', color: '#8B949E' }}>{l.duration_ms}ms</td>
+                  <td className="font-mono" style={{ padding: '8px 12px', fontSize: 'var(--aguila-fs-compact)', color: '#E8EAED', fontWeight: 600 }}>{l.proposals_generated}</td>
+                  <td className="font-mono" style={{ padding: '8px 12px', fontSize: 'var(--aguila-fs-compact)', color: '#16A34A' }}>{l.rule_based_count}</td>
+                  <td className="font-mono" style={{ padding: '8px 12px', fontSize: 'var(--aguila-fs-compact)', color: '#D97706' }}>{l.llm_based_count}</td>
+                  <td className="font-mono" style={{ padding: '8px 12px', fontSize: 'var(--aguila-fs-compact)', color: '#8B949E' }}>${(l.llm_cost_usd || 0).toFixed(4)}</td>
+                  <td className="font-mono" style={{ padding: '8px 12px', fontSize: 'var(--aguila-fs-compact)', color: '#8B949E' }}>{l.confidence_p50?.toFixed(2) ?? '—'}</td>
+                  <td className="font-mono" style={{ padding: '8px 12px', fontSize: 'var(--aguila-fs-compact)', color: '#8B949E' }}>{l.confidence_p90?.toFixed(2) ?? '—'}</td>
+                  <td style={{ padding: '8px 12px', fontSize: 'var(--aguila-fs-compact)', color: (l.errors?.length || 0) > 0 ? '#DC2626' : '#16A34A' }}>
                     {(l.errors?.length || 0) > 0 ? `${l.errors.length} error${l.errors.length !== 1 ? 'es' : ''}` : '✓'}
                   </td>
                 </tr>
@@ -128,7 +128,7 @@ function KPI({ label, value, color }: { label: string; value: string; color?: st
   return (
     <div style={{ background: 'rgba(255,255,255,0.045)', borderRadius: 10, padding: '12px 16px', border: '1px solid rgba(255,255,255,0.06)' }}>
       <div style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#6E7681', marginBottom: 4 }}>{label}</div>
-      <div className="font-mono" style={{ fontSize: 20, fontWeight: 700, color: color || '#E6EDF3' }}>{value}</div>
+      <div className="font-mono" style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, color: color || '#E6EDF3' }}>{value}</div>
     </div>
   )
 }

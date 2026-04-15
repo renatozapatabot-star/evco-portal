@@ -100,7 +100,7 @@ export default function PrediccionesPage() {
     return (
       <div className="page-shell" style={{ textAlign: 'center', padding: 60 }}>
         <Package size={48} style={{ color: 'var(--text-muted)', marginBottom: 16 }} />
-        <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>Acceso restringido</div>
+        <div style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 600, color: 'var(--text-primary)' }}>Acceso restringido</div>
       </div>
     )
   }
@@ -246,7 +246,7 @@ function POPredictionCard({ prediction: p }: { prediction: POPrediction }) {
               </span>
             )}
           </div>
-          <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>
+          <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-secondary)', marginTop: 2 }}>
             {topProduct}
           </div>
         </div>
@@ -335,7 +335,7 @@ function DemandCard({ prediction: p, past }: { prediction: Prediction; past?: bo
           <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: 'var(--text-primary)' }}>
             {p.company_id}/{d.supplier || '—'}
           </div>
-          <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>
+          <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-secondary)', marginTop: 2 }}>
             {d.product || '—'}
           </div>
         </div>

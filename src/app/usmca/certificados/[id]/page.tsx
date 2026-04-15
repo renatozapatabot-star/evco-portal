@@ -106,7 +106,7 @@ export default async function UsmcaCertDetailPage({ params }: { params: Promise<
                 fontSize: 36, fontWeight: 800, color: TEXT_PRIMARY,
                 letterSpacing: 0.5,
               }}>{cert.hs_code}</div>
-              <div style={{ fontSize: 12, color: TEXT_SECONDARY, marginTop: 6, maxWidth: 480 }}>
+              <div style={{ fontSize: 'var(--aguila-fs-compact)', color: TEXT_SECONDARY, marginTop: 6, maxWidth: 480 }}>
                 {ORIGIN_CRITERION_LABELS[cert.origin_criterion]}
               </div>
             </div>

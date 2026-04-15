@@ -130,7 +130,7 @@ function BrokerCumplimientoView() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
               <Shield size={20} style={{ color: mveUrgent ? T.red : T.gold }} />
               <span style={{
-                fontSize: 12, fontWeight: 700, textTransform: 'uppercase',
+                fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, textTransform: 'uppercase',
                 letterSpacing: '0.06em', color: mveUrgent ? T.red : T.gold,
               }}>
                 MVE Formato E2
@@ -159,7 +159,7 @@ function BrokerCumplimientoView() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
               <AlertTriangle size={20} style={{ color: semaforoRojo > 0 ? T.red : T.gold }} />
               <span style={{
-                fontSize: 12, fontWeight: 700, textTransform: 'uppercase',
+                fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, textTransform: 'uppercase',
                 letterSpacing: '0.06em', color: semaforoRojo > 0 ? T.red : T.gold,
               }}>
                 Semáforo Rojo
@@ -188,7 +188,7 @@ function BrokerCumplimientoView() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
               <FileText size={20} style={{ color: blockingDocs > 0 ? T.amber : T.gold }} />
               <span style={{
-                fontSize: 12, fontWeight: 700, textTransform: 'uppercase',
+                fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, textTransform: 'uppercase',
                 letterSpacing: '0.06em', color: blockingDocs > 0 ? T.amber : T.gold,
               }}>
                 Documentos Bloqueantes
@@ -217,7 +217,7 @@ function BrokerCumplimientoView() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
               <FileCheck size={20} style={{ color: usmcaExpiring.length > 0 ? T.amber : T.gold }} />
               <span style={{
-                fontSize: 12, fontWeight: 700, textTransform: 'uppercase',
+                fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, textTransform: 'uppercase',
                 letterSpacing: '0.06em', color: usmcaExpiring.length > 0 ? T.amber : T.gold,
               }}>
                 Certificados USMCA
@@ -259,7 +259,7 @@ function BrokerCumplimientoView() {
                         {item.trafico}
                       </span>
                       <span style={{
-                        fontSize: 12, color: T.textSecondary,
+                        fontSize: 'var(--aguila-fs-compact)', color: T.textSecondary,
                         fontFamily: 'var(--font-mono)',
                       }}>
                         {fmtDate(item.fecha)}

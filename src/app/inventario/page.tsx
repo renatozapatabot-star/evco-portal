@@ -84,7 +84,7 @@ export default function InventarioPage() {
     return (
       <div className="page-shell" style={{ textAlign: 'center', padding: 60 }}>
         <Package size={48} style={{ color: 'var(--text-muted)', marginBottom: 16 }} />
-        <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>Acceso restringido</div>
+        <div style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 600, color: 'var(--text-primary)' }}>Acceso restringido</div>
       </div>
     )
   }
@@ -160,7 +160,7 @@ export default function InventarioPage() {
                     border: `1px solid ${filter === f ? 'var(--gold)' : 'var(--border)'}`,
                     background: filter === f ? 'var(--gold)' : 'var(--bg-card)',
                     color: filter === f ? '#FFFFFF' : 'var(--text-secondary)',
-                    fontSize: 12,
+                    fontSize: 'var(--aguila-fs-compact)',
                     fontWeight: 600,
                     cursor: 'pointer',
                     minHeight: 36,
@@ -178,7 +178,7 @@ export default function InventarioPage() {
               padding: '12px 16px', borderRadius: 8, marginBottom: 16,
               background: 'rgba(192,197,206,0.08)', border: '1px solid #FDE68A',
             }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: '#92400E', marginBottom: 4 }}>
+              <div style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, color: '#92400E', marginBottom: 4 }}>
                 {data.alerts.length} alerta(s) de reorden pendiente(s)
               </div>
               {data.alerts.slice(0, 2).map(a => (
@@ -275,7 +275,7 @@ function InventoryCard({ estimate: e, isMobile }: { estimate: InventoryEstimate;
         </div>
         <div style={{ textAlign: 'right' }}>
           <div style={{
-            fontSize: 20, fontWeight: 700, fontFamily: 'var(--font-mono)',
+            fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, fontFamily: 'var(--font-mono)',
             color: risk.color,
           }}>
             {e.days_of_cover ?? '?'}d

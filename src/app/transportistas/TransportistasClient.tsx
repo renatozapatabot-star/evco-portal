@@ -45,7 +45,7 @@ const TYPE_TABS = [
 function StarRating({ value }: { value: number | null }) {
   const v = value ?? 0
   return (
-    <span style={{ color: v > 0 ? '#FDE68A' : 'rgba(255,255,255,0.2)', fontSize: 12, fontFamily: 'var(--font-jetbrains-mono), monospace' }}>
+    <span style={{ color: v > 0 ? '#FDE68A' : 'rgba(255,255,255,0.2)', fontSize: 'var(--aguila-fs-compact)', fontFamily: 'var(--font-jetbrains-mono), monospace' }}>
       {'★'.repeat(v)}{'☆'.repeat(5 - v)}
     </span>
   )
@@ -245,7 +245,7 @@ export function TransportistasClient({ initialRows }: { initialRows: CarrierRow[
               }}>
                 Últimos 90 días
               </div>
-              <div style={{ fontSize: 16, fontWeight: 700, color: TEXT_PRIMARY, margin: '8px 0 16px 0' }}>
+              <div style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, color: TEXT_PRIMARY, margin: '8px 0 16px 0' }}>
                 {history.carrier.name}
               </div>
 
@@ -268,13 +268,13 @@ export function TransportistasClient({ initialRows }: { initialRows: CarrierRow[
                 Tráficos recientes
               </div>
               {history.recent.length === 0 ? (
-                <div style={{ fontSize: 12, color: TEXT_MUTED }}>Sin movimientos en 90 días.</div>
+                <div style={{ fontSize: 'var(--aguila-fs-compact)', color: TEXT_MUTED }}>Sin movimientos en 90 días.</div>
               ) : (
                 history.recent.map((r) => (
                   <div key={r.trafico} style={{
                     display: 'flex', gap: 8, justifyContent: 'space-between',
                     padding: '6px 0', borderBottom: `1px solid ${BORDER}`,
-                    fontSize: 12,
+                    fontSize: 'var(--aguila-fs-compact)',
                   }}>
                     <span style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', color: TEXT_PRIMARY }}>
                       {r.trafico}

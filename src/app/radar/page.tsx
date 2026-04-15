@@ -39,7 +39,7 @@ export default async function RadarPage() {
       {(!signals || signals.length === 0) ? (
         <div style={{ background: 'rgba(22,163,74,0.1)', border: '1px solid rgba(22,163,74,0.3)', borderRadius: 12, padding: 24, textAlign: 'center' }}>
           <div style={{ fontSize: 'var(--aguila-fs-kpi-compact)', marginBottom: 8 }}>🟢</div>
-          <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--success)' }}>Sin riesgos activos</div>
+          <div style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, color: 'var(--success)' }}>Sin riesgos activos</div>
           <div style={{ fontSize: 'var(--aguila-fs-body)', color: '#666', marginTop: 4 }}>Condiciones normales en todos los puentes y rutas</div>
         </div>
       ) : (

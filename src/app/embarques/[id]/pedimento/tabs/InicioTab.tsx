@@ -97,7 +97,7 @@ export function InicioTab({
               background: sc.bg,
               color: sc.fg,
               border: `1px solid ${sc.border}`,
-              fontSize: 12,
+              fontSize: 'var(--aguila-fs-compact)',
               fontWeight: 600,
               textTransform: 'uppercase',
               letterSpacing: '0.05em',
@@ -140,7 +140,7 @@ export function InicioTab({
         </div>
         <div>
           <div style={labelStyle}>Última modificación</div>
-          <div style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: ACCENT_SILVER_DIM }}>
+          <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-compact)', color: ACCENT_SILVER_DIM }}>
             {fmtDateTime(pedimento.updated_at)}
           </div>
         </div>

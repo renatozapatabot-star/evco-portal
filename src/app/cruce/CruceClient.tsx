@@ -341,7 +341,7 @@ export function CruceClient({
                     bridgeFilter[b] ? 'rgba(192,197,206,0.35)' : BORDER
                   }`,
                   color: bridgeFilter[b] ? ACCENT_SILVER : TEXT_SECONDARY,
-                  fontSize: 12,
+                  fontSize: 'var(--aguila-fs-compact)',
                   fontWeight: 600,
                   cursor: 'pointer',
                   textTransform: 'none',
@@ -383,7 +383,7 @@ export function CruceClient({
               <div key={dk}>
                 <div
                   style={{
-                    fontSize: 12,
+                    fontSize: 'var(--aguila-fs-compact)',
                     fontWeight: 700,
                     color: TEXT_SECONDARY,
                     textTransform: 'uppercase',
@@ -524,7 +524,7 @@ function BridgeRow({
       >
         <span
           style={{
-            fontSize: 12,
+            fontSize: 'var(--aguila-fs-compact)',
             fontWeight: 700,
             color: TEXT_PRIMARY,
             minWidth: 90,
@@ -665,7 +665,7 @@ function BridgeRow({
                 }}
               >
                 <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-                  <span style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 12, fontWeight: 700, color }}>
+                  <span style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, color }}>
                     {item.row.trafico}
                   </span>
                   <span style={{ fontSize: 'var(--aguila-fs-label)', color: TEXT_MUTED, fontFamily: 'var(--font-jetbrains-mono)' }}>
@@ -703,7 +703,7 @@ function EmptyState() {
       <div style={{ fontSize: 'var(--aguila-fs-kpi-compact)', marginBottom: 12 }}>🛰️</div>
       <h2
         style={{
-          fontSize: 16,
+          fontSize: 'var(--aguila-fs-body-lg)',
           fontWeight: 700,
           color: TEXT_PRIMARY,
           margin: '0 0 8px',

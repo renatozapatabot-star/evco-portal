@@ -78,7 +78,7 @@ export default function VozPage() {
             )}
             <p style={{
               color: voiceState === 'LISTENING' ? COLORS.gold : COLORS.grayLight,
-              fontSize: 16,
+              fontSize: 'var(--aguila-fs-body-lg)',
               fontWeight: voiceState === 'LISTENING' || voiceState === 'PROCESSING' ? 600 : 400,
               letterSpacing: 0.5,
               margin: 0,
@@ -136,7 +136,7 @@ export default function VozPage() {
             }}>
               <p style={{
                 color: COLORS.gold,
-                fontSize: 16,
+                fontSize: 'var(--aguila-fs-body-lg)',
                 textAlign: 'center',
                 margin: 0,
                 lineHeight: 1.6,
@@ -186,7 +186,7 @@ export default function VozPage() {
           </p>
           <p style={{
             color: COLORS.gray,
-            fontSize: 12,
+            fontSize: 'var(--aguila-fs-compact)',
             margin: 0,
           }}>
             Toca el orbe o di &ldquo;Oye Cruz&rdquo;

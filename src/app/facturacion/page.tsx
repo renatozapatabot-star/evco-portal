@@ -110,12 +110,12 @@ export default function FacturacionPage() {
             <div style={{ width: isMobile ? '100%' : 400, flexShrink: 0 }}>
               <div className="card" style={{ padding: 24, position: 'sticky', top: 24 }}>
                 <div style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 800, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)', marginBottom: 4 }}>{selected.invoice_number}</div>
-                <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 16 }}>{selected.company_id} · Vence {selected.due_date || '—'}</div>
+                <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-secondary)', marginBottom: 16 }}>{selected.company_id} · Vence {selected.due_date || '—'}</div>
 
                 {/* Line items */}
                 <div style={{ marginBottom: 16 }}>
                   {selected.line_items.map((li, i) => (
-                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #E8E5E0', fontSize: 12 }}>
+                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #E8E5E0', fontSize: 'var(--aguila-fs-compact)' }}>
                       <div>
                         <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{li.concept}</div>
                         <div style={{ color: 'var(--text-secondary)' }}>{li.qty} × {fmtMXN(li.unit_price)}</div>
@@ -125,13 +125,13 @@ export default function FacturacionPage() {
                   ))}
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-secondary)', marginBottom: 4 }}>
                   <span>Subtotal</span><span style={{ fontFamily: 'var(--font-mono)' }}>{fmtMXN(selected.subtotal)}</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 8 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-secondary)', marginBottom: 8 }}>
                   <span>IVA 16%</span><span style={{ fontFamily: 'var(--font-mono)' }}>{fmtMXN(selected.iva)}</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 16, fontWeight: 800, color: 'var(--gold)', borderTop: '2px solid #E8E5E0', paddingTop: 8 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 800, color: 'var(--gold)', borderTop: '2px solid #E8E5E0', paddingTop: 8 }}>
                   <span>Total</span><span style={{ fontFamily: 'var(--font-mono)' }}>{fmtMXN(selected.total)}</span>
                 </div>
 

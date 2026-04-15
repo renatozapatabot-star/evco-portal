@@ -58,8 +58,8 @@ export default async function StatusPage() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 32 }}>
           <AguilaMark size={40} />
           <div>
-            <h1 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>Estado del Sistema</h1>
-            <p style={{ color: '#666', fontSize: 12, margin: 0 }}>ZAPATA AI Intelligence Platform</p>
+            <h1 style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, margin: 0 }}>Estado del Sistema</h1>
+            <p style={{ color: '#666', fontSize: 'var(--aguila-fs-compact)', margin: 0 }}>ZAPATA AI Intelligence Platform</p>
           </div>
         </div>
 
@@ -67,8 +67,8 @@ export default async function StatusPage() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <span style={{ width: 12, height: 12, borderRadius: '50%', background: allOp ? 'var(--success)' : 'var(--warning-500, #D97706)', display: 'inline-block' }} />
             <div>
-              <div style={{ fontWeight: 700, fontSize: 16 }}>{allOp ? 'Todos los sistemas operacionales' : 'Algunos sistemas requieren atención'}</div>
-              <div style={{ color: '#666', fontSize: 12, marginTop: 2 }}>Actualizado: <span style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>{now}</span> CST</div>
+              <div style={{ fontWeight: 700, fontSize: 'var(--aguila-fs-body-lg)' }}>{allOp ? 'Todos los sistemas operacionales' : 'Algunos sistemas requieren atención'}</div>
+              <div style={{ color: '#666', fontSize: 'var(--aguila-fs-compact)', marginTop: 2 }}>Actualizado: <span style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>{now}</span> CST</div>
             </div>
           </div>
         </div>
@@ -81,7 +81,7 @@ export default async function StatusPage() {
               <div key={sys.name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: i < systems.length - 1 ? '1px solid #2A2A2A' : 'none' }}>
                 <div>
                   <div style={{ fontWeight: 600, fontSize: 'var(--aguila-fs-section)' }}>{sys.name}</div>
-                  <div style={{ color: '#666', fontSize: 12, marginTop: 2 }}>{sys.detail}</div>
+                  <div style={{ color: '#666', fontSize: 'var(--aguila-fs-compact)', marginTop: 2 }}>{sys.detail}</div>
                 </div>
                 <span style={{ background: c.bg, color: c.color, border: `1px solid ${c.color}30`, borderRadius: 20, padding: '3px 10px', fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap' }}>
                   <span style={{ width: 6, height: 6, borderRadius: '50%', background: c.dot, display: 'inline-block' }} />

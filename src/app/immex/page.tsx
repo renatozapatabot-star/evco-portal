@@ -65,7 +65,7 @@ export default function ImmexPage() {
       {critical.length > 0 && (
         <div style={{ background: 'var(--red-bg)', border: '1px solid var(--red-b)', borderRadius: 8, padding: '12px 16px', marginBottom: 16 }}>
           <div style={{ color: 'var(--red-text)', fontSize: 'var(--aguila-fs-body)', fontWeight: 700 }}>🚨 {critical.length} embarque(s) dentro de 60 días del límite IMMEX</div>
-          <div style={{ color: 'var(--red-text)', fontSize: 12, marginTop: 4 }}>Acción: Retorno o cambio de régimen requerido antes del vencimiento</div>
+          <div style={{ color: 'var(--red-text)', fontSize: 'var(--aguila-fs-compact)', marginTop: 4 }}>Acción: Retorno o cambio de régimen requerido antes del vencimiento</div>
         </div>
       )}
 
@@ -97,8 +97,8 @@ export default function ImmexPage() {
               {immexData.map(d => (
                 <tr key={d.trafico}>
                   <td><span className="mono" style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{d.trafico}</span></td>
-                  <td style={{ color: 'var(--text-secondary)', fontSize: 12, fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtDate(d.fecha_llegada)}</td>
-                  <td style={{ color: 'var(--text-secondary)', fontSize: 12, fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtDate(d.limit18m)}</td>
+                  <td style={{ color: 'var(--text-secondary)', fontSize: 'var(--aguila-fs-compact)', fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtDate(d.fecha_llegada)}</td>
+                  <td style={{ color: 'var(--text-secondary)', fontSize: 'var(--aguila-fs-compact)', fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtDate(d.limit18m)}</td>
                   <td className="mono" style={{ textAlign: 'right', fontWeight: 600, color: barColor(d.daysRemaining) }}>{d.daysRemaining}d</td>
                   <td>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -108,7 +108,7 @@ export default function ImmexPage() {
                       <span className="mono" style={{ fontSize: 'var(--aguila-fs-label)', color: barColor(d.daysRemaining), fontWeight: 700, minWidth: 32 }}>{d.pctUsed}%</span>
                     </div>
                   </td>
-                  <td style={{ fontSize: 12, color: 'var(--text-secondary)', maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.descripcion_mercancia || ''}</td>
+                  <td style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-secondary)', maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.descripcion_mercancia || ''}</td>
                   <td style={{ textAlign: 'center' }}>
                     <span style={{ background: d.daysRemaining <= 60 ? 'var(--red-bg)' : d.daysRemaining <= 180 ? 'var(--amber-bg)' : 'var(--green-bg)', color: d.daysRemaining <= 60 ? 'var(--red-text)' : d.daysRemaining <= 180 ? 'var(--amber-text)' : 'var(--green-text)', borderRadius: 4, padding: '2px 8px', fontSize: 'var(--aguila-fs-label)', fontWeight: 700 }}>
                       {d.daysRemaining <= 60 ? 'CRÍTICO' : d.daysRemaining <= 180 ? 'ATENCIÓN' : 'OK'}

@@ -75,7 +75,7 @@ export default async function UsmcaCertificatesPage() {
     >
       <div style={{ display: 'grid', gap: 20, maxWidth: 1100 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', gap: 24, fontSize: 12, color: TEXT_SECONDARY }}>
+          <div style={{ display: 'flex', gap: 24, fontSize: 'var(--aguila-fs-compact)', color: TEXT_SECONDARY }}>
             <span>
               <span style={{ color: TEXT_MUTED, textTransform: 'uppercase', fontSize: 'var(--aguila-fs-label)', letterSpacing: 0.8, marginRight: 6 }}>Firmados</span>
               <span style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', color: TEXT_PRIMARY, fontVariantNumeric: 'tabular-nums' }}>{signed}</span>
@@ -95,7 +95,7 @@ export default async function UsmcaCertificatesPage() {
                 minHeight: 44, padding: '0 16px',
                 background: 'rgba(255,255,255,0.04)', color: ACCENT_SILVER,
                 border: '1px solid rgba(255,255,255,0.08)',
-                borderRadius: 10, fontSize: 12, fontWeight: 600,
+                borderRadius: 10, fontSize: 'var(--aguila-fs-compact)', fontWeight: 600,
                 textDecoration: 'none',
               }}
             >
@@ -126,7 +126,7 @@ export default async function UsmcaCertificatesPage() {
             <div style={{ textAlign: 'center', padding: '32px 16px', color: TEXT_SECONDARY }}>
               <div style={{ fontSize: 'var(--aguila-fs-kpi-mid)', marginBottom: 12, color: ACCENT_SILVER }}>◆</div>
               <p style={{ fontSize: 'var(--aguila-fs-section)', color: TEXT_PRIMARY, margin: '0 0 4px', fontWeight: 600 }}>Aún no hay certificados</p>
-              <p style={{ fontSize: 12, color: TEXT_MUTED, margin: '0 0 16px' }}>
+              <p style={{ fontSize: 'var(--aguila-fs-compact)', color: TEXT_MUTED, margin: '0 0 16px' }}>
                 {canGenerate
                   ? 'Emite el primer certificado de origen USMCA — IGI 0% cuando aplica.'
                   : 'Los certificados firmados aparecerán aquí cuando estén listos.'}
@@ -186,7 +186,7 @@ export default async function UsmcaCertificatesPage() {
                   <div>
                     <div style={{
                       fontFamily: 'var(--font-jetbrains-mono), monospace',
-                      fontSize: 20, fontWeight: 700, color: TEXT_PRIMARY, letterSpacing: 0.5,
+                      fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, color: TEXT_PRIMARY, letterSpacing: 0.5,
                     }}>
                       {c.hs_code}
                     </div>

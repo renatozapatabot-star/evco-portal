@@ -172,7 +172,7 @@ function KPICard({ label, value, color }: { label: string; value: string | numbe
   return (
     <div style={{ padding: '14px 16px', borderRadius: 8, background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
       <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', marginBottom: 4 }}>{label}</div>
-      <div style={{ fontSize: 20, fontWeight: 700, fontFamily: 'var(--font-mono)', color }}>{value}</div>
+      <div style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, fontFamily: 'var(--font-mono)', color }}>{value}</div>
     </div>
   )
 }
@@ -205,7 +205,7 @@ function InsightCard({ insight: ins, isMobile }: { insight: CostInsight; isMobil
               <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)' }}>{ins.supplier}</span>
             )}
           </div>
-          <div style={{ fontSize: 12, color: 'var(--text-primary)', marginTop: 6, fontWeight: 500 }}>
+          <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-primary)', marginTop: 6, fontWeight: 500 }}>
             {ins.savings_basis}
           </div>
         </div>

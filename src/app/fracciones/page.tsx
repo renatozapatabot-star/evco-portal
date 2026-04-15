@@ -40,7 +40,7 @@ export default function FraccionesPage() {
 
   return (
     <div style={{ maxWidth: 800, margin: '0 auto', padding: '24px 16px' }}>
-      <h1 style={{ fontSize: 20, fontWeight: 700, color: '#E6EDF3', marginBottom: 4 }}>
+      <h1 style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, color: '#E6EDF3', marginBottom: 4 }}>
         Búsqueda de Fracciones
       </h1>
       <p style={{ fontSize: 'var(--aguila-fs-body)', color: '#64748b', marginBottom: 24 }}>
@@ -102,7 +102,7 @@ export default function FraccionesPage() {
         }}>
           <Tag size={32} style={{ color: '#64748b', margin: '0 auto 12px' }} />
           <div style={{ fontSize: 'var(--aguila-fs-section)', color: '#94a3b8', marginBottom: 4 }}>Sin sugerencias</div>
-          <div style={{ fontSize: 12, color: '#64748b' }}>Intenta con una descripción más detallada del producto.</div>
+          <div style={{ fontSize: 'var(--aguila-fs-compact)', color: '#64748b' }}>Intenta con una descripción más detallada del producto.</div>
         </div>
       )}
 

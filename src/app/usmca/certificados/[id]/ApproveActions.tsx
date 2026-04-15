@@ -139,7 +139,7 @@ export function ApproveActions({ certId, canApprove, status }: Props) {
       </div>
 
       {phase === 'countdown' && (
-        <p style={{ fontSize: 12, color: TEXT_MUTED, margin: 0 }}>
+        <p style={{ fontSize: 'var(--aguila-fs-compact)', color: TEXT_MUTED, margin: 0 }}>
           Tienes {CANCEL_WINDOW_SECONDS} segundos para cancelar antes de firmar.
           Al firmar, el certificado se adjunta al expediente y queda en el archivo
           retención de 5 años.

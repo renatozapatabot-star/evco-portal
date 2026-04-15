@@ -249,7 +249,7 @@ export function CronologiaTab({ traficoId, events, currentUserId }: CronologiaTa
                     </span>
                   </div>
                   {e.description_es && (
-                    <div style={{ fontSize: 12, color: TEXT_SECONDARY, marginTop: 4 }}>
+                    <div style={{ fontSize: 'var(--aguila-fs-compact)', color: TEXT_SECONDARY, marginTop: 4 }}>
                       {e.description_es}
                     </div>
                   )}
@@ -323,7 +323,7 @@ function FilterButton({
         color: active ? TEXT_PRIMARY : TEXT_MUTED,
         border: `1px solid ${active ? 'rgba(192,197,206,0.4)' : BORDER}`,
         borderRadius: 12,
-        fontSize: 12,
+        fontSize: 'var(--aguila-fs-compact)',
         fontWeight: 700,
         cursor: 'pointer',
         letterSpacing: '0.02em',
@@ -398,7 +398,7 @@ function EventDrawer({ event, onClose }: { event: EventRow; onClose: () => void 
         <pre
           style={{
             fontFamily: 'var(--font-mono)',
-            fontSize: 12,
+            fontSize: 'var(--aguila-fs-compact)',
             color: TEXT_SECONDARY,
             whiteSpace: 'pre-wrap',
             wordBreak: 'break-word',

@@ -117,7 +117,7 @@ export function PedimentoDetail({ draft, onActionComplete }: Props) {
       <div style={sectionStyle}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
           <span style={{
-            fontFamily: 'var(--font-mono)', fontSize: 20, fontWeight: 800, color: '#E6EDF3',
+            fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-headline)', fontWeight: 800, color: '#E6EDF3',
           }}>
             {draft.trafico_id || '—'}
           </span>
@@ -164,7 +164,7 @@ export function PedimentoDetail({ draft, onActionComplete }: Props) {
           ].map(item => (
             <div key={item.label}>
               <div style={labelStyle}>{item.label}</div>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 16, fontWeight: 700, color: '#E6EDF3' }}>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, color: '#E6EDF3' }}>
                 {item.value}
               </div>
             </div>
@@ -220,7 +220,7 @@ export function PedimentoDetail({ draft, onActionComplete }: Props) {
               style={{
                 flex: 2, minHeight: 60, borderRadius: 14,
                 background: '#E8EAED', color: '#111',
-                fontSize: 16, fontWeight: 800, border: 'none',
+                fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 800, border: 'none',
                 cursor: 'pointer', display: 'flex', alignItems: 'center',
                 justifyContent: 'center', gap: 8,
               }}
@@ -339,7 +339,7 @@ export function PedimentoDetail({ draft, onActionComplete }: Props) {
         {actionState === 'approving' && (
           <div style={{
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            minHeight: 60, color: '#E8EAED', fontSize: 16, fontWeight: 700,
+            minHeight: 60, color: '#E8EAED', fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700,
           }}>
             Aprobando...
           </div>

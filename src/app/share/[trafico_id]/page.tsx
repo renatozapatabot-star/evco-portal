@@ -127,7 +127,7 @@ export default async function SharePage(
             ZAPATA AI
           </div>
           <div style={{
-            fontSize: 12,
+            fontSize: 'var(--aguila-fs-compact)',
             color: '#94A3B8',
             fontWeight: 500,
           }}>
@@ -159,7 +159,7 @@ export default async function SharePage(
                   Embarque compartido
                 </div>
                 <div style={{
-                  fontSize: 20,
+                  fontSize: 'var(--aguila-fs-headline)',
                   fontWeight: 700,
                   color: 'var(--text-primary)',
                   fontFamily: 'var(--font-mono, "JetBrains Mono", monospace)',
@@ -184,7 +184,7 @@ export default async function SharePage(
                     display: 'inline-block',
                     padding: '4px 10px',
                     borderRadius: 6,
-                    fontSize: 12,
+                    fontSize: 'var(--aguila-fs-compact)',
                     fontWeight: 600,
                     background: 'rgba(192,197,206,0.06)',
                     color: '#B45309',
@@ -201,7 +201,7 @@ export default async function SharePage(
                     Valor
                   </div>
                   <div style={{
-                    fontSize: 16,
+                    fontSize: 'var(--aguila-fs-body-lg)',
                     fontWeight: 700,
                     color: 'var(--text-primary)',
                     fontFamily: 'var(--font-mono, "JetBrains Mono", monospace)',
@@ -275,7 +275,7 @@ export default async function SharePage(
             }}
           >
             Iniciar sesión para ver detalles
-            <span style={{ fontSize: 16 }}>→</span>
+            <span style={{ fontSize: 'var(--aguila-fs-body-lg)' }}>→</span>
           </a>
         </div>
 
@@ -284,10 +284,10 @@ export default async function SharePage(
           <p style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-muted)', marginBottom: 8 }}>
             ¿Quiere esta visibilidad para sus importaciones?
           </p>
-          <p style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>
+          <p style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, color: 'var(--text-primary)' }}>
             Portal — Inteligencia aduanal en tiempo real
           </p>
-          <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
+          <p style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-muted)', marginTop: 4 }}>
             Renato Zapata &amp; Company · Patente 3596
           </p>
         </div>

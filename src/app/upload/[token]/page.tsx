@@ -147,7 +147,7 @@ export default function UploadPage() {
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             margin: '0 auto 16px', fontSize: 'var(--aguila-fs-kpi-compact)',
           }}>✅</div>
-          <div style={{ fontSize: 20, fontWeight: 700, color: '#CBD5E1', marginBottom: 8 }}>
+          <div style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, color: '#CBD5E1', marginBottom: 8 }}>
             Expediente completo
           </div>
           <div style={{ color: '#64748B', fontSize: 'var(--aguila-fs-section)', marginBottom: 24 }}>
@@ -159,7 +159,7 @@ export default function UploadPage() {
             <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 700, color: 'var(--gold)', marginBottom: 8 }}>
               ¿Trabaja con otros importadores en México?
             </div>
-            <div style={{ fontSize: 12, color: '#94A3B8', marginBottom: 12 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-compact)', color: '#94A3B8', marginBottom: 12 }}>
               ZAPATA AI puede simplificar su proceso con todos ellos.
             </div>
             <ReferralForm />
@@ -215,7 +215,7 @@ export default function UploadPage() {
                     fontSize: 'var(--aguila-fs-section)', color: isDone ? 'var(--success)' : '#475569',
                     borderBottom: '1px solid #E2E8F0',
                   }}>
-                    <span style={{ fontSize: 16 }}>{isDone ? '✅' : '☐'}</span>
+                    <span style={{ fontSize: 'var(--aguila-fs-body-lg)' }}>{isDone ? '✅' : '☐'}</span>
                     <span style={{ fontWeight: isDone ? 600 : 400 }}>{doc}</span>
                     {isDone && <span style={{ fontSize: 'var(--aguila-fs-meta)', color: '#94A3B8', marginLeft: 'auto' }}>Recibido</span>}
                   </div>
@@ -293,7 +293,7 @@ function ReferralForm() {
     setSent(true)
   }
 
-  if (sent) return <div style={{ fontSize: 12, color: 'var(--success)', fontWeight: 600 }}>✅ Gracias por la recomendación</div>
+  if (sent) return <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--success)', fontWeight: 600 }}>✅ Gracias por la recomendación</div>
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>

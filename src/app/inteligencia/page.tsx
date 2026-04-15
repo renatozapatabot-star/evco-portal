@@ -98,7 +98,7 @@ export default function InteligenciaPage() {
   if (loading) {
     return (
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 16px' }}>
-        <div style={{ fontSize: 20, fontWeight: 700, color: '#E6EDF3', marginBottom: 24 }}>Inteligencia del Corredor</div>
+        <div style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, color: '#E6EDF3', marginBottom: 24 }}>Inteligencia del Corredor</div>
         <div style={{ color: '#64748b', fontSize: 'var(--aguila-fs-section)' }}>Cargando datos...</div>
       </div>
     )
@@ -108,7 +108,7 @@ export default function InteligenciaPage() {
 
   return (
     <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 16px' }}>
-      <h1 style={{ fontSize: 20, fontWeight: 700, color: '#E6EDF3', marginBottom: 4 }}>Inteligencia del Corredor</h1>
+      <h1 style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, color: '#E6EDF3', marginBottom: 4 }}>Inteligencia del Corredor</h1>
       <p style={{ fontSize: 'var(--aguila-fs-body)', color: '#64748b', marginBottom: 24 }}>Laredo–Nuevo Laredo · Análisis agregado desde 2024</p>
 
       {/* KPI Grid */}
@@ -149,7 +149,7 @@ export default function InteligenciaPage() {
                       opacity: 0.6,
                     }} />
                   </div>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: '#94a3b8', minWidth: 40, textAlign: 'right' }}>{f.count}</span>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-compact)', color: '#94a3b8', minWidth: 40, textAlign: 'right' }}>{f.count}</span>
                 </div>
               </div>
             ))}

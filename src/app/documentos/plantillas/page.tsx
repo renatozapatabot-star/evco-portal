@@ -197,7 +197,7 @@ export default function PlantillasPage() {
                   {[...(isInternal ? ['Cliente'] : []), 'Tipo', 'Nombre', 'Estado', 'Vencimiento', 'Archivo'].map(h => (
                     <th key={h} style={{
                       padding: '12px 16px', textAlign: 'left',
-                      fontSize: 12, fontWeight: 700, color: T.textSec,
+                      fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, color: T.textSec,
                       textTransform: 'uppercase', letterSpacing: '0.06em',
                     }}>
                       {h}
@@ -212,7 +212,7 @@ export default function PlantillasPage() {
                     <tr key={t.id} style={{ borderBottom: `1px solid ${T.border}` }}>
                       {isInternal && (
                         <td style={{ padding: '12px 16px' }}>
-                          <span style={{ fontSize: 12, fontWeight: 700, color: T.textSec, background: 'rgba(255,255,255,0.06)', borderRadius: 4, padding: '2px 8px' }}>
+                          <span style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, color: T.textSec, background: 'rgba(255,255,255,0.06)', borderRadius: 4, padding: '2px 8px' }}>
                             {t.company_id}
                           </span>
                         </td>
@@ -224,7 +224,7 @@ export default function PlantillasPage() {
                         {t.document_name}
                       </td>
                       <td style={{ padding: '12px 16px' }}>
-                        <span style={{ fontSize: 12, fontWeight: 700, color: status.color, background: status.bg, borderRadius: 4, padding: '2px 8px' }}>
+                        <span style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, color: status.color, background: status.bg, borderRadius: 4, padding: '2px 8px' }}>
                           {status.label}
                         </span>
                       </td>
@@ -273,7 +273,7 @@ export default function PlantillasPage() {
 
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div>
-                <label style={{ fontSize: 12, fontWeight: 700, color: T.textSec, display: 'block', marginBottom: 6 }}>Cliente (company_id)</label>
+                <label style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, color: T.textSec, display: 'block', marginBottom: 6 }}>Cliente (company_id)</label>
                 <input
                   value={formCompanyId}
                   onChange={e => setFormCompanyId(e.target.value)}
@@ -284,7 +284,7 @@ export default function PlantillasPage() {
               </div>
 
               <div>
-                <label style={{ fontSize: 12, fontWeight: 700, color: T.textSec, display: 'block', marginBottom: 6 }}>Tipo de documento</label>
+                <label style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, color: T.textSec, display: 'block', marginBottom: 6 }}>Tipo de documento</label>
                 <select
                   value={formDocType}
                   onChange={e => setFormDocType(e.target.value)}
@@ -304,7 +304,7 @@ export default function PlantillasPage() {
               </div>
 
               <div>
-                <label style={{ fontSize: 12, fontWeight: 700, color: T.textSec, display: 'block', marginBottom: 6 }}>Nombre del documento</label>
+                <label style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, color: T.textSec, display: 'block', marginBottom: 6 }}>Nombre del documento</label>
                 <input
                   value={formDocName}
                   onChange={e => setFormDocName(e.target.value)}
@@ -315,7 +315,7 @@ export default function PlantillasPage() {
               </div>
 
               <div>
-                <label style={{ fontSize: 12, fontWeight: 700, color: T.textSec, display: 'block', marginBottom: 6 }}>URL del archivo (opcional)</label>
+                <label style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, color: T.textSec, display: 'block', marginBottom: 6 }}>URL del archivo (opcional)</label>
                 <input
                   value={formFileUrl}
                   onChange={e => setFormFileUrl(e.target.value)}
@@ -325,7 +325,7 @@ export default function PlantillasPage() {
               </div>
 
               <div>
-                <label style={{ fontSize: 12, fontWeight: 700, color: T.textSec, display: 'block', marginBottom: 6 }}>Fecha de vencimiento (dejar vacío = permanente)</label>
+                <label style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, color: T.textSec, display: 'block', marginBottom: 6 }}>Fecha de vencimiento (dejar vacío = permanente)</label>
                 <DateInputES
                   value={formExpiry}
                   onChange={v => setFormExpiry(v)}

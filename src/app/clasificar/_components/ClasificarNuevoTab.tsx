@@ -261,7 +261,7 @@ export function ClasificarNuevoTab({ canInsert }: ClasificarNuevoTabProps) {
               </button>
               {imageFile && (
                 <>
-                  <span className="font-mono" style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)' }}>
+                  <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-compact)', color: 'rgba(255,255,255,0.6)' }}>
                     {imageFile.name} · {(imageFile.size / 1024).toFixed(0)} KB
                   </span>
                   <button
@@ -312,7 +312,7 @@ export function ClasificarNuevoTab({ canInsert }: ClasificarNuevoTabProps) {
               background: pending || description.trim().length < 3 ? 'rgba(234,179,8,0.3)' : '#eab308',
               color: '#0a0a0c',
               border: 'none',
-              fontSize: 16,
+              fontSize: 'var(--aguila-fs-body-lg)',
               fontWeight: 700,
               cursor: pending || description.trim().length < 3 ? 'wait' : 'pointer',
               transition: 'background 150ms',
@@ -378,7 +378,7 @@ export function ClasificarNuevoTab({ canInsert }: ClasificarNuevoTabProps) {
                       background: 'rgba(234,179,8,0.15)',
                       border: '1px solid rgba(234,179,8,0.4)',
                       color: '#FACC15',
-                      fontSize: 12,
+                      fontSize: 'var(--aguila-fs-compact)',
                       fontWeight: 600,
                     }}
                   >
@@ -394,7 +394,7 @@ export function ClasificarNuevoTab({ canInsert }: ClasificarNuevoTabProps) {
                       background: 'rgba(255,255,255,0.06)',
                       border: '1px solid rgba(255,255,255,0.12)',
                       color: 'rgba(255,255,255,0.7)',
-                      fontSize: 12,
+                      fontSize: 'var(--aguila-fs-compact)',
                       fontWeight: 600,
                     }}
                   >
@@ -412,7 +412,7 @@ export function ClasificarNuevoTab({ canInsert }: ClasificarNuevoTabProps) {
                       background: 'rgba(126,34,206,0.15)',
                       border: '1px solid rgba(126,34,206,0.4)',
                       color: '#D8B4FE',
-                      fontSize: 12,
+                      fontSize: 'var(--aguila-fs-compact)',
                       fontWeight: 600,
                     }}
                   >
@@ -454,10 +454,10 @@ export function ClasificarNuevoTab({ canInsert }: ClasificarNuevoTabProps) {
                       <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: 'rgba(255,255,255,0.92)' }}>
                         {alt.fraccion}
                       </span>
-                      <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', flex: 1 }}>
+                      <span style={{ fontSize: 'var(--aguila-fs-compact)', color: 'rgba(255,255,255,0.6)', flex: 1 }}>
                         {alt.descripcion}
                       </span>
-                      <span className="font-mono" style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)' }}>
+                      <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-compact)', color: 'rgba(255,255,255,0.6)' }}>
                         {alt.confidence}%
                       </span>
                     </div>

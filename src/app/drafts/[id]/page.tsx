@@ -211,7 +211,7 @@ export default function DraftReviewPage() {
         </div>
       </div>
       <button onClick={() => { clearInterval(countdownRef.current); setApprovalState('idle') }}
-        style={{ padding: '16px 40px', borderRadius: 12, border: '2px solid var(--danger-500)', background: 'transparent', color: 'var(--danger-500)', fontSize: 16, fontWeight: 800, cursor: 'pointer', minHeight: 60 }}>
+        style={{ padding: '16px 40px', borderRadius: 12, border: '2px solid var(--danger-500)', background: 'transparent', color: 'var(--danger-500)', fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 800, cursor: 'pointer', minHeight: 60 }}>
         CANCELAR — esto no enviará nada
       </button>
       <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'rgba(255,255,255,0.4)', marginTop: 12 }}>
@@ -231,10 +231,10 @@ export default function DraftReviewPage() {
       }}>
         <AguilaMark size={80} />
       </div>
-      <div style={{ fontSize: 20, fontWeight: 800, color: '#F5F3EE', letterSpacing: '-0.02em', marginBottom: 8 }}>
+      <div style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 800, color: '#F5F3EE', letterSpacing: '-0.02em', marginBottom: 8 }}>
         Patente 3596 honrada.
       </div>
-      <div style={{ fontSize: 16, color: GOLD, fontWeight: 600 }}>
+      <div style={{ fontSize: 'var(--aguila-fs-body-lg)', color: GOLD, fontWeight: 600 }}>
         Gracias, Tito.
       </div>
       <style>{`
@@ -250,7 +250,7 @@ export default function DraftReviewPage() {
   // ═══ AUTOMATION PROGRESS ═══
   if (approvalState === 'automating') return (
     <div style={{ padding: 32, maxWidth: 600, margin: '60px auto' }}>
-      <h2 style={{ fontSize: 20, fontWeight: 800, color: 'var(--navy-900)', marginBottom: 24 }}>Automatización en curso</h2>
+      <h2 style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 800, color: 'var(--navy-900)', marginBottom: 24 }}>Automatización en curso</h2>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {AUTOMATION_STEPS.map((step, i) => (
           <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: 'var(--bg-card)', border: '1px solid var(--border-card)', borderRadius: 'var(--radius-md)' }}>
@@ -303,7 +303,7 @@ export default function DraftReviewPage() {
   // ═══ MAIN REVIEW INTERFACE ═══
   return (
     <div style={{ padding: 24, maxWidth: 1000, margin: '0 auto' }}>
-      <button onClick={() => router.push('/drafts')} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--slate-400)', fontSize: 12, marginBottom: 20 }}>
+      <button onClick={() => router.push('/drafts')} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--slate-400)', fontSize: 'var(--aguila-fs-compact)', marginBottom: 20 }}>
         <ArrowLeft size={13} /> Borradores → {draft.id}
       </button>
 
@@ -324,7 +324,7 @@ export default function DraftReviewPage() {
                 🤖 Ghost Pedimento
               </span>
             )}
-            <span style={{ fontSize: 12, color: 'var(--slate-400)' }}>{tier.time}</span>
+            <span style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--slate-400)' }}>{tier.time}</span>
           </div>
           <h1 style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-title)', fontWeight: 900, color: 'var(--navy-900)', margin: 0 }}>{draft.trafico || draft.id.substring(0, 8)}</h1>
           <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--slate-500)', marginTop: 4 }}>
@@ -470,11 +470,11 @@ export default function DraftReviewPage() {
                   <span style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: 'var(--navy-900)' }}>
                     {desc || <span style={{ color: 'var(--danger-500)' }}>⚠ Sin descripción</span>}
                   </span>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: borderColor, fontFamily: 'var(--font-mono)' }}>
+                  <span style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, color: borderColor, fontFamily: 'var(--font-mono)' }}>
                     {conf > 0 ? `${conf}%` : '—'}
                   </span>
                 </div>
-                <div style={{ display: 'flex', gap: 16, fontSize: 12, color: 'var(--slate-500)', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: 16, fontSize: 'var(--aguila-fs-compact)', color: 'var(--slate-500)', flexWrap: 'wrap' }}>
                   <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
                     {fraccion || <span style={{ color: 'var(--danger-500)' }}>⚠ Sin fracción</span>}
                     {fraccion && <VerifyBadge present={conf >= 75} label="Revisar" />}
@@ -504,7 +504,7 @@ export default function DraftReviewPage() {
               {c.status === 'warning' && <AlertTriangle size={16} style={{ color: 'var(--warning)', flexShrink: 0 }} />}
               {c.status === 'error' && <X size={16} style={{ color: 'var(--danger-500)', flexShrink: 0 }} />}
               <span style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: 'var(--navy-800)', flex: 1 }}>{c.label}</span>
-              {c.detail && <span style={{ fontSize: 12, color: c.status === 'ok' ? 'var(--slate-400)' : c.status === 'warning' ? 'var(--amber-text, #92400E)' : 'var(--danger-text, #991B1B)' }}>{c.detail}</span>}
+              {c.detail && <span style={{ fontSize: 'var(--aguila-fs-compact)', color: c.status === 'ok' ? 'var(--slate-400)' : c.status === 'warning' ? 'var(--amber-text, #92400E)' : 'var(--danger-text, #991B1B)' }}>{c.detail}</span>}
             </div>
           ))}
         </div>

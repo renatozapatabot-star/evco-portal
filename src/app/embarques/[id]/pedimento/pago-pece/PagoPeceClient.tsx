@@ -516,7 +516,7 @@ function PaymentSuccessHero({
               letterSpacing: '-0.01em',
             }}
           >
-            {fmtAmount} <span style={{ fontSize: 16, color: TEXT_MUTED, fontWeight: 500 }}>MXN</span>
+            {fmtAmount} <span style={{ fontSize: 'var(--aguila-fs-body-lg)', color: TEXT_MUTED, fontWeight: 500 }}>MXN</span>
           </span>
         </div>
         <Link

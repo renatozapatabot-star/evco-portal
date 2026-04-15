@@ -173,7 +173,7 @@ export function ApprovalsClient({ initialDrafts }: Props) {
                 {/* Row 3: value + line count + timestamp */}
                 <div style={{
                   display: 'flex', alignItems: 'center', gap: 12,
-                  fontSize: 12, color: '#94a3b8', flexWrap: 'wrap',
+                  fontSize: 'var(--aguila-fs-compact)', color: '#94a3b8', flexWrap: 'wrap',
                 }}>
                   {valorUSD > 0 && (
                     <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600 }}>

@@ -142,7 +142,7 @@ export function ExceptionCard({ event, onAction }: ExceptionCardProps) {
               display: 'flex',
               alignItems: 'center',
               gap: 4,
-              fontSize: 12,
+              fontSize: 'var(--aguila-fs-compact)',
               color: '#94a3b8',
             }}
           >

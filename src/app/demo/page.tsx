@@ -46,7 +46,7 @@ export default function DemoPage() {
         {/* Live demo CTA */}
         <a href="/demo/live" style={{
           display: 'block', padding: '16px 24px', borderRadius: 12, marginBottom: 24,
-          background: 'var(--gold)', color: '#111', fontSize: 16, fontWeight: 700,
+          background: 'var(--gold)', color: '#111', fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700,
           textDecoration: 'none', textAlign: 'center', minHeight: 60,
           lineHeight: '28px',
         }}>
@@ -76,7 +76,7 @@ export default function DemoPage() {
         )}
         {result && !notified && (
           <div className="card card-enter" style={{ padding: 32, marginTop: 24 }}>
-            <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 24 }}>Sus datos están disponibles.</div>
+            <div style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 600, marginBottom: 24 }}>Sus datos están disponibles.</div>
             <button onClick={() => setNotified(true)} className="spring-press" style={{
               width: '100%', padding: '14px 24px', minHeight: 60, borderRadius: 12, border: 'none',
               background: 'var(--gold)', color: 'var(--bg-card)', fontSize: 15, fontWeight: 700, cursor: 'pointer',
@@ -86,7 +86,7 @@ export default function DemoPage() {
         {notified && (
           <div className="card card-enter" style={{ padding: 32, marginTop: 24 }}>
             <div style={{ fontSize: 'var(--aguila-fs-kpi-compact)', marginBottom: 12 }}>✅</div>
-            <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--success)' }}>Solicitud enviada</div>
+            <div style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 600, color: 'var(--success)' }}>Solicitud enviada</div>
             <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-muted)', marginTop: 8 }}>Nuestro equipo se comunicará en 24 horas.</div>
           </div>
         )}

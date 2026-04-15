@@ -81,7 +81,7 @@ export default function CerebroPage() {
     return (
       <div className="page-shell" style={{ textAlign: 'center', padding: 60 }}>
         <Brain size={48} style={{ color: T.textMuted, marginBottom: 16 }} />
-        <div style={{ fontSize: 16, fontWeight: 600, color: T.text }}>Acceso restringido</div>
+        <div style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 600, color: T.text }}>Acceso restringido</div>
       </div>
     )
   }
@@ -149,7 +149,7 @@ export default function CerebroPage() {
                     </div>
                     {d.outcome_score !== null && (
                       <span style={{
-                        fontSize: 12, fontWeight: 700, fontFamily: 'var(--font-mono)',
+                        fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, fontFamily: 'var(--font-mono)',
                         color: d.outcome_score >= 80 ? T.success : d.outcome_score >= 60 ? T.warning : T.danger,
                       }}>
                         {d.outcome_score}
@@ -203,7 +203,7 @@ export default function CerebroPage() {
                   background: 'rgba(220,38,38,0.04)', border: '1px solid rgba(220,38,38,0.1)',
                 }}>
                   <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: T.text }}>{a.assumption}</div>
-                  {a.recommendation && <div style={{ fontSize: 12, color: T.textSec, marginTop: 4 }}>→ {a.recommendation}</div>}
+                  {a.recommendation && <div style={{ fontSize: 'var(--aguila-fs-compact)', color: T.textSec, marginTop: 4 }}>→ {a.recommendation}</div>}
                   <div style={{ fontSize: 'var(--aguila-fs-label)', color: T.textMuted, marginTop: 4 }}>{a.category} · {fmtDateTime(a.checked_at)}</div>
                 </div>
               ))}

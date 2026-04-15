@@ -205,7 +205,7 @@ export function ApprovalQueue({ initialPending, initialRecent, initialEscalation
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontSize: 64, marginBottom: 16 }}>🦀</div>
             <div style={{
-              fontSize: 20, fontWeight: 800, color: '#E8EAED',
+              fontSize: 'var(--aguila-fs-headline)', fontWeight: 800, color: '#E8EAED',
               letterSpacing: '-0.02em',
             }}>
               Patente 3596 honrada.
@@ -527,7 +527,7 @@ export function ApprovalQueue({ initialPending, initialRecent, initialEscalation
                     {esc.company_id}
                   </span>
                 </div>
-                <div style={{ fontSize: 12, color: '#EF4444', marginBottom: 4, fontFamily: 'var(--font-mono)' }}>
+                <div style={{ fontSize: 'var(--aguila-fs-compact)', color: '#EF4444', marginBottom: 4, fontFamily: 'var(--font-mono)' }}>
                   {esc.error_message || 'Sin detalle'}
                 </div>
                 <div style={{ fontSize: 'var(--aguila-fs-meta)', fontFamily: 'var(--font-mono)', color: '#64748b' }}>

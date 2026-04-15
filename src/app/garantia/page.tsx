@@ -43,7 +43,7 @@ export default function GarantiaPage() {
           <h1 style={{ fontSize: isMobile ? 24 : 32, fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1.2, margin: '0 0 12px' }}>
             Garantía ZAPATA AI
           </h1>
-          <p style={{ fontSize: 16, color: 'var(--text-secondary)', lineHeight: 1.6, maxWidth: 480, margin: '0 auto' }}>
+          <p style={{ fontSize: 'var(--aguila-fs-body-lg)', color: 'var(--text-secondary)', lineHeight: 1.6, maxWidth: 480, margin: '0 auto' }}>
             Respaldada por 80 años de operación y datos verificados de Patente 3596.
           </p>
         </div>
@@ -80,7 +80,7 @@ export default function GarantiaPage() {
             display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
             padding: '16px 40px', minHeight: 60, borderRadius: 14,
             background: 'var(--gold)', color: 'var(--bg-card)',
-            fontSize: 16, fontWeight: 700, textDecoration: 'none',
+            fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, textDecoration: 'none',
           }}>
             Ver resultados verificados →
           </Link>

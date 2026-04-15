@@ -332,7 +332,7 @@ function ExpedientesContent() {
                       <td>
                         {isCruzado
                           ? <DocCompleteness present={REQUIRED_DOCS.length} />
-                          : <span style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic' }}>Pendiente</span>
+                          : <span style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-muted)', fontStyle: 'italic' }}>Pendiente</span>
                         }
                       </td>
                       <td className="desc-text">{fmtDesc(r.descripcion_mercancia) || '—'}</td>

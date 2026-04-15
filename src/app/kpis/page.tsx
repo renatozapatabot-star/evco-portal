@@ -380,7 +380,7 @@ export default function KPIsPage() {
                 }} />
               </div>
               <span style={{
-                fontFamily: 'var(--font-mono)', fontSize: 12, color: '#8b9ab5',
+                fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-compact)', color: '#8b9ab5',
                 minWidth: 70, textAlign: 'right',
               }}>
                 {count} ({pct}%)

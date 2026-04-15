@@ -75,7 +75,7 @@ export default async function OcaListPage() {
     >
       <div style={{ display: 'grid', gap: 20, maxWidth: 1100 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', gap: 24, fontSize: 12, color: TEXT_SECONDARY }}>
+          <div style={{ display: 'flex', gap: 24, fontSize: 'var(--aguila-fs-compact)', color: TEXT_SECONDARY }}>
             <span>
               <span style={{ color: TEXT_MUTED, textTransform: 'uppercase', fontSize: 'var(--aguila-fs-label)', letterSpacing: 0.8, marginRight: 6 }}>Aprobadas</span>
               <span style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', color: TEXT_PRIMARY, fontVariantNumeric: 'tabular-nums' }}>{approved}</span>
@@ -111,7 +111,7 @@ export default async function OcaListPage() {
             <div style={{ textAlign: 'center', padding: '32px 16px', color: TEXT_SECONDARY }}>
               <div style={{ fontSize: 'var(--aguila-fs-kpi-mid)', marginBottom: 12, color: ACCENT_SILVER }}>⚖</div>
               <p style={{ fontSize: 'var(--aguila-fs-section)', color: TEXT_PRIMARY, margin: '0 0 4px', fontWeight: 600 }}>Aún no hay opiniones</p>
-              <p style={{ fontSize: 12, color: TEXT_MUTED, margin: '0 0 16px' }}>
+              <p style={{ fontSize: 'var(--aguila-fs-compact)', color: TEXT_MUTED, margin: '0 0 16px' }}>
                 {canGenerate
                   ? 'Genera la primera opinión de clasificación arancelaria con Opus.'
                   : 'Las opiniones aprobadas aparecerán aquí cuando estén listas.'}
@@ -173,7 +173,7 @@ export default async function OcaListPage() {
                   <div>
                     <div style={{
                       fontFamily: 'var(--font-jetbrains-mono), monospace',
-                      fontSize: 20, fontWeight: 700, color: TEXT_PRIMARY, letterSpacing: 0.5,
+                      fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, color: TEXT_PRIMARY, letterSpacing: 0.5,
                     }}>
                       {o.fraccion_recomendada}
                     </div>

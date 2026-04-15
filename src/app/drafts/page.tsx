@@ -187,7 +187,7 @@ function DraftsContent() {
                     )}
                   </div>
                   <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--slate-600)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{supplier} · {product}</div>
-                  <div style={{ fontSize: 12, color: 'var(--slate-400)', marginTop: 2, fontFamily: 'var(--font-mono)', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--slate-400)', marginTop: 2, fontFamily: 'var(--font-mono)', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                     <span>{formatAbsoluteETA(d.created_at)}</span>
                     {valorUSD > 0 && <span>{fmtUSD(Number(valorUSD))} USD</span>}
                     {fraccion && <span>{fraccion}</span>}
@@ -221,7 +221,7 @@ function DraftsContent() {
           <div style={{ color: '#E8E5DF', fontSize: 'var(--aguila-fs-title)', fontWeight: 800, marginTop: 24, letterSpacing: '-0.02em' }}>
             Patente 3596 honrada
           </div>
-          <div style={{ color: 'var(--text-muted)', fontSize: 16, marginTop: 8 }}>
+          <div style={{ color: 'var(--text-muted)', fontSize: 'var(--aguila-fs-body-lg)', marginTop: 8 }}>
             Gracias, Tito.
           </div>
           <div style={{ fontSize: 'var(--aguila-fs-kpi-compact)', marginTop: 16 }}>🦀</div>

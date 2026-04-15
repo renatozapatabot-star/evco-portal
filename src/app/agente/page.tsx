@@ -62,7 +62,7 @@ export default function AgentePage() {
     return (
       <div className="page-shell" style={{ textAlign: 'center', padding: 60 }}>
         <Bot size={48} style={{ color: 'var(--text-muted)', marginBottom: 16 }} />
-        <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>Acceso restringido</div>
+        <div style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 600, color: 'var(--text-primary)' }}>Acceso restringido</div>
         <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-muted)', marginTop: 4 }}>Panel de agente disponible solo para operadores.</div>
       </div>
     )
@@ -124,9 +124,9 @@ export default function AgentePage() {
           <div key={w.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
             <div>
               <span style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: 'var(--text-primary)' }}>{w.name}</span>
-              <span style={{ fontSize: 12, color: 'var(--text-muted)', marginLeft: 8 }}>{w.trigger}</span>
+              <span style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-muted)', marginLeft: 8 }}>{w.trigger}</span>
             </div>
-            <span style={{ fontSize: 12, fontWeight: 600 }}>
+            <span style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 600 }}>
               {LEVEL_ICONS[w.defaultAutonomy]} {LEVEL_NAMES[w.defaultAutonomy]}
             </span>
           </div>
@@ -144,7 +144,7 @@ export default function AgentePage() {
           <div style={{ padding: 20, textAlign: 'center', color: 'var(--text-muted)' }}>
             <Bot size={32} style={{ marginBottom: 8, opacity: 0.5 }} />
             <div>Sin decisiones registradas aún</div>
-            <div style={{ fontSize: 12, marginTop: 4 }}>El agente empezará a registrar cuando se active el cron.</div>
+            <div style={{ fontSize: 'var(--aguila-fs-compact)', marginTop: 4 }}>El agente empezará a registrar cuando se active el cron.</div>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>

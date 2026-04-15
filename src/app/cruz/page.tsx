@@ -221,14 +221,14 @@ export default function CruzChatPage() {
             <AguilaMark size={40} />
           </div>
           <div>
-            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)' }}>
+            <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'rgba(255,255,255,0.45)' }}>
               {traficoContext ? `Contexto: ${traficoContext}` : 'Asistente aduanal'}
             </div>
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <button onClick={() => { setMessages([]); localStorage.removeItem('cruz-chat-history') }}
-            style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', background: 'none', border: 'none', cursor: 'pointer', padding: 8 }}>
+            style={{ fontSize: 'var(--aguila-fs-compact)', color: 'rgba(255,255,255,0.45)', background: 'none', border: 'none', cursor: 'pointer', padding: 8 }}>
             Nueva conversación
           </button>
           <button onClick={() => router.back()} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.45)', padding: 8 }}>

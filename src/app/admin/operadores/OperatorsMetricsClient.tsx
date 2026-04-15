@@ -217,7 +217,7 @@ export function OperatorsMetricsClient() {
           >
             {loading ? 'Cargando…' : 'Actualizar'}
           </button>
-          <div style={{ fontSize: 12, color: TEXT_MUTED, marginLeft: 'auto', fontFamily: MONO }}>
+          <div style={{ fontSize: 'var(--aguila-fs-compact)', color: TEXT_MUTED, marginLeft: 'auto', fontFamily: MONO }}>
             {sorted.length} operador{sorted.length === 1 ? '' : 'es'}
           </div>
         </div>
@@ -335,7 +335,7 @@ export function OperatorsMetricsClient() {
                   cursor: 'pointer',
                 }}
               >
-                <div style={{ fontFamily: SANS, fontWeight: 700, fontSize: 16 }}>{r.name}</div>
+                <div style={{ fontFamily: SANS, fontWeight: 700, fontSize: 'var(--aguila-fs-body-lg)' }}>{r.name}</div>
                 <div style={{ fontSize: 'var(--aguila-fs-meta)', color: ACCENT_SILVER, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
                   {r.role}
                 </div>

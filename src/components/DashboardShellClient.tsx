@@ -243,17 +243,22 @@ export default function DashboardShellClient({ children }: Props) {
 
       {/* Welcome overlay removed — the launchpad IS the welcome */}
 
-      {/* Scroll to top */}
+      {/* Scroll to top — sits above the persistent AsistenteButton (60px tall + 20px bottom inset). */}
       {showScrollTop && (
         <button
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           aria-label="Volver arriba"
           style={{
-            position: 'fixed', bottom: 24, right: 20, zIndex: 40,
+            position: 'fixed', bottom: 96, right: 20, zIndex: 40,
             width: 40, height: 40, borderRadius: '50%',
-            background: 'var(--navy-900)', color: 'var(--bg-card)',
-            border: 'none', cursor: 'pointer', fontSize: 16,
-            boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+            background: 'rgba(0,0,0,0.55)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            color: '#E8EAED',
+            border: '1px solid rgba(192,197,206,0.18)',
+            cursor: 'pointer',
+            fontSize: 16, fontWeight: 700,
+            boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             transition: 'opacity 200ms',
           }}

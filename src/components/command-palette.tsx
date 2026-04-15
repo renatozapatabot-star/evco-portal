@@ -63,16 +63,58 @@ export function CommandPalette() {
         const res = await fetch(`/api/search?q=${encodeURIComponent(deferredQuery)}`, { signal: controller.signal })
         const data = await res.json()
         if (controller.signal.aborted) return
+
+        // /api/search returns one of two shapes:
+        //   - 7-digit pedimento → { type: 'pedimento_chain', pedimento, trafico, entradas, docs }
+        //   - general          → { type: 'search_results', results: [{ type, id, title, sub, view }] }
         const results: NavItem[] = []
-        ;((data.traficos || []) as Array<Record<string, string>>).slice(0, 5).forEach((t) => {
-          results.push({ id: `t-${t.trafico}`, label: t.trafico, sublabel: t.descripcion_mercancia?.slice(0, 40) || t.estatus || '', icon: Truck, href: `/embarques/${encodeURIComponent(t.trafico)}`, category: 'Embarques' })
-        })
-        ;((data.pedimentos || []) as Array<Record<string, string>>).slice(0, 3).forEach((p) => {
-          results.push({ id: `p-${p.pedimento || p.referencia}`, label: p.pedimento || p.referencia, sublabel: p.proveedor || '', icon: FileText, href: '/pedimentos', category: 'Pedimentos' })
-        })
-        ;((data.proveedores || []) as Array<Record<string, string>>).slice(0, 3).forEach((s) => {
-          results.push({ id: `s-${s.nombre || s.proveedor}`, label: s.nombre || s.proveedor, sublabel: s.pais || '', icon: Building2, href: '/proveedores', category: 'Proveedores' })
-        })
+
+        if (data?.type === 'pedimento_chain') {
+          if (data.trafico?.trafico_id) {
+            results.push({
+              id: `t-${data.trafico.trafico_id}`,
+              label: data.trafico.trafico_id,
+              sublabel: data.trafico.descripcion?.slice(0, 40) || data.trafico.estatus || '',
+              icon: Truck,
+              href: `/embarques/${encodeURIComponent(data.trafico.trafico_id)}`,
+              category: 'Cadena',
+            })
+          }
+          if (data.pedimento?.num) {
+            results.push({
+              id: `p-${data.pedimento.num}`,
+              label: data.pedimento.num,
+              sublabel: data.pedimento.proveedor?.slice(0, 40) || '',
+              icon: FileText,
+              href: '/pedimentos',
+              category: 'Cadena',
+            })
+          }
+        } else if (Array.isArray(data?.results)) {
+          for (const r of data.results as Array<{ type: string; id: string; title: string; sub?: string; view?: string }>) {
+            if (!r.id || !r.title) continue
+            const cat =
+              r.type === 'trafico'   ? 'Embarques' :
+              r.type === 'entrada'   ? 'Entradas' :
+              r.type === 'factura'   ? 'Pedimentos' :
+              r.type === 'producto'  ? 'Productos' :
+              r.type === 'proveedor' ? 'Proveedores' :
+              r.type === 'partida'   ? 'Partidas' :
+              'Resultados'
+            const icon =
+              r.type === 'trafico'   ? Truck :
+              r.type === 'proveedor' ? Building2 :
+              FileText
+            const href =
+              r.type === 'trafico'   ? `/embarques/${encodeURIComponent(r.id)}` :
+              r.type === 'entrada'   ? `/entradas?q=${encodeURIComponent(r.id)}` :
+              r.type === 'factura'   ? `/pedimentos?q=${encodeURIComponent(r.id)}` :
+              r.type === 'producto'  ? `/catalogo?q=${encodeURIComponent(r.id)}` :
+              r.type === 'proveedor' ? `/proveedores?q=${encodeURIComponent(r.id)}` :
+              `/${r.view ?? 'embarques'}`
+            results.push({ id: `${r.type}-${r.id}`, label: r.title, sublabel: r.sub ?? '', icon, href, category: cat })
+          }
+        }
         setSearchResults(results)
       } catch { /* aborted */ }
       setSearching(false)

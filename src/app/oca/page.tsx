@@ -47,7 +47,7 @@ function StatusPill({ status }: { status: Row['status'] }) {
     ? { label: 'Aprobada', bg: 'rgba(34,197,94,0.12)', fg: '#4ade80', border: 'rgba(34,197,94,0.25)' }
     : status === 'draft'
     ? { label: 'Borrador', bg: 'rgba(251,191,36,0.10)', fg: '#fbbf24', border: 'rgba(251,191,36,0.25)' }
-    : { label: 'Reemplazada', bg: 'rgba(148,163,184,0.10)', fg: '#94a3b8', border: 'rgba(148,163,184,0.25)' }
+    : { label: 'Reemplazada', bg: 'rgba(148,163,184,0.10)', fg: TEXT_SECONDARY, border: 'rgba(148,163,184,0.25)' }
   return (
     <span style={{
       fontSize: 'var(--aguila-fs-label)', fontWeight: 700, letterSpacing: 0.8, textTransform: 'uppercase',

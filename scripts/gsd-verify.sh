@@ -121,7 +121,7 @@ fi
 # inline hex. Add `// allowed-color` or `// design-token` comments to opt out
 # of a specific line.
 # --------------------------------------------------------------------------
-INVARIANT_HEX_BASELINE=2638
+INVARIANT_HEX_BASELINE=2630
 header "Design System — Colors ratchet"
 HEX_COUNT=$(grep -rn '#[0-9A-Fa-f]\{6\}' src/ \
   --include="*.tsx" --include="*.ts" 2>/dev/null \

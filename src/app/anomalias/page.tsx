@@ -27,7 +27,7 @@ const KIND_LABEL: Record<AnomalyKind, string> = {
 const SEV_CFG: Record<Severity, { label: string; fg: string; bg: string; border: string; systemStatus: 'healthy' | 'warning' | 'critical' }> = {
   alta: { label: 'Alta', fg: '#ef4444', bg: 'rgba(239,68,68,0.10)', border: 'rgba(239,68,68,0.30)', systemStatus: 'critical' },
   media: { label: 'Media', fg: '#FBBF24', bg: 'rgba(251,191,36,0.12)', border: 'rgba(251,191,36,0.25)', systemStatus: 'warning' },
-  baja: { label: 'Baja', fg: '#94a3b8', bg: 'rgba(148,163,184,0.12)', border: 'rgba(148,163,184,0.25)', systemStatus: 'healthy' },
+  baja: { label: 'Baja', fg: TEXT_SECONDARY, bg: 'rgba(148,163,184,0.12)', border: 'rgba(148,163,184,0.25)', systemStatus: 'healthy' },
 }
 
 function formatDate(iso: string | null): string {

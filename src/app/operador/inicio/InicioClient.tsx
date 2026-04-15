@@ -793,8 +793,8 @@ function ReportesEcontaCard({ pendientes, exportadasHoy }: { pendientes: number;
 
 const DECISION_PILL: Record<string, { bg: string; fg: string; label: string }> = {
   'En Proceso':       { bg: 'rgba(192,197,206,0.12)', fg: ACCENT_SILVER,   label: 'En proceso' },
-  'Documentacion':    { bg: 'rgba(148,163,184,0.12)', fg: '#94a3b8',       label: 'Documentación' },
-  'En Aduana':        { bg: 'rgba(148,163,184,0.12)', fg: '#94a3b8',       label: 'En aduana' },
+  'Documentacion':    { bg: 'rgba(148,163,184,0.12)', fg: TEXT_SECONDARY,       label: 'Documentación' },
+  'En Aduana':        { bg: 'rgba(148,163,184,0.12)', fg: TEXT_SECONDARY,       label: 'En aduana' },
   'Pedimento Pagado': { bg: 'rgba(34,197,94,0.12)',   fg: '#22C55E',       label: 'Pagado' },
   'Cruzado':          { bg: 'rgba(34,197,94,0.12)',   fg: '#22C55E',       label: 'Cruzado' },
 }

@@ -31,7 +31,7 @@ const TONE_COLOR: Record<TableRow['freshness'], string> = {
   green: '#22C55E',
   amber: '#FBBF24',
   red: '#EF4444',
-  unknown: '#64748B',
+  unknown: TEXT_MUTED,
 }
 
 function fmtAge(min: number | null): string {

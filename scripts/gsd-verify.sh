@@ -337,11 +337,14 @@ fi
 # Console.error / console.warn ratchet
 # Production code shouldn't log to the browser console. Each is either a
 # real error that needs structured logging or a debugging artifact.
-# Baseline 2026-04-15 = 168 (after signups page strip). Trend down over time.
+# Excludes error.tsx files (Next.js error-boundary convention — the
+# console.error is load-bearing for Next's dev overlay) and lines marked
+# `// debug-ok`.
+# Baseline 2026-04-15 = 118 (after error.tsx exclusion).
 # --------------------------------------------------------------------------
-CONSOLE_ERR_BASELINE=169
+CONSOLE_ERR_BASELINE=118
 header "Console.error/warn ratchet"
-CONSOLE_COUNT=$(set +eo pipefail;{ grep -rn "console\.error\|console\.warn" src/app --include="*.tsx" --include="*.ts" 2>/dev/null || true; } | grep -v ".test." | grep -v "// debug-ok" | wc -l | tr -d ' ')
+CONSOLE_COUNT=$(set +eo pipefail;{ grep -rn "console\.error\|console\.warn" src/app --include="*.tsx" --include="*.ts" 2>/dev/null || true; } | grep -v ".test." | grep -v "// debug-ok" | grep -v "/error\.tsx:" | wc -l | tr -d ' ')
 if [ "$CONSOLE_COUNT" -gt "$CONSOLE_ERR_BASELINE" ]; then
   fail "console.error/warn calls: $CONSOLE_COUNT (baseline $CONSOLE_ERR_BASELINE). Use structured logger or remove."
 elif [ "$CONSOLE_COUNT" -lt "$CONSOLE_ERR_BASELINE" ]; then

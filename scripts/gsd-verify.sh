@@ -311,6 +311,39 @@ fi
 # Discovered via EVCO screenshot 2026-04-15 — Cruces este mes showed
 # 2,541 when reality was 3.
 # --------------------------------------------------------------------------
+# --------------------------------------------------------------------------
+# Console.error / console.warn ratchet
+# Production code shouldn't log to the browser console. Each is either a
+# real error that needs structured logging or a debugging artifact.
+# Baseline 2026-04-15 = 168 (after signups page strip). Trend down over time.
+# --------------------------------------------------------------------------
+CONSOLE_ERR_BASELINE=168
+header "Console.error/warn ratchet"
+CONSOLE_COUNT=$(grep -rn "console\.error\|console\.warn" src/app --include="*.tsx" --include="*.ts" 2>/dev/null | grep -v ".test." | grep -v "// debug-ok" | wc -l | tr -d ' ')
+if [ "$CONSOLE_COUNT" -gt "$CONSOLE_ERR_BASELINE" ]; then
+  fail "console.error/warn calls: $CONSOLE_COUNT (baseline $CONSOLE_ERR_BASELINE). Use structured logger or remove."
+elif [ "$CONSOLE_COUNT" -lt "$CONSOLE_ERR_BASELINE" ]; then
+  pass "console.error/warn calls: $CONSOLE_COUNT (baseline $CONSOLE_ERR_BASELINE, improving ✓). Update CONSOLE_ERR_BASELINE in this script."
+else
+  warn "console.error/warn calls: $CONSOLE_COUNT (at baseline)"
+fi
+
+# --------------------------------------------------------------------------
+# Role from session, never raw cookie. user_role cookie is unsigned and
+# trivially forgeable — verifySession() reads from the signed portal_session
+# token. Ratchet down to 0.
+# --------------------------------------------------------------------------
+ROLE_COOKIE_BASELINE=7
+header "Role-from-cookie ratchet"
+ROLE_COOKIE_COUNT=$(grep -rn "cookieStore\.get..user_role.\|cookies().get..user_role." src --include="*.ts" --include="*.tsx" 2>/dev/null | wc -l | tr -d ' ')
+if [ "$ROLE_COOKIE_COUNT" -gt "$ROLE_COOKIE_BASELINE" ]; then
+  fail "Reading role from raw cookie: $ROLE_COOKIE_COUNT (baseline $ROLE_COOKIE_BASELINE). Use verifySession() to read signed role."
+elif [ "$ROLE_COOKIE_COUNT" -lt "$ROLE_COOKIE_BASELINE" ]; then
+  pass "Role-from-cookie reads: $ROLE_COOKIE_COUNT (baseline $ROLE_COOKIE_BASELINE, improving ✓). Update ROLE_COOKIE_BASELINE."
+else
+  warn "Role-from-cookie reads: $ROLE_COOKIE_COUNT (at baseline)"
+fi
+
 header "KPI honesty — no updated_at time-window filters"
 KPI_DRIFT=$(grep -rnE "gte\(\s*'updated_at'|gte\(\s*\"updated_at\"|lte\(\s*'updated_at'|lte\(\s*\"updated_at\"" src/app/inicio src/app/admin/eagle src/app/operador/inicio src/app/contabilidad/inicio src/app/bodega/inicio src/app/api/routines 2>/dev/null | wc -l | tr -d ' ')
 if [ "$KPI_DRIFT" -gt 0 ]; then

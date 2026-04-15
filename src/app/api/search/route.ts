@@ -26,18 +26,30 @@ export async function GET(request: NextRequest) {
 
   // Detect pedimento format: 7 digits → return full chain instead of search results
   if (/^\d{7}$/.test(q)) {
+    // Invariant 31 — admin/broker queries don't filter by company.
     const [pedRes, trafRes] = await Promise.all([
-      supabase.from('aduanet_facturas')
-        .select('referencia, pedimento, proveedor, valor_usd, dta, igi, iva, fecha_pago, cove, moneda')
-        .eq('clave_cliente', clientClave)
-        .ilike('pedimento', `%${sanitizeIlike(q)}%`)
-        .limit(1),
-      supabase.from('traficos')
-        .select('trafico, estatus, fecha_llegada, fecha_cruce, importe_total, pedimento, descripcion_mercancia')
-        .eq('company_id', companyId)
-        .ilike('pedimento', `%${sanitizeIlike(q)}%`)
-        .gte('fecha_llegada', PORTAL_DATE_FROM)
-        .limit(1),
+      isInternal
+        ? supabase.from('aduanet_facturas')
+            .select('referencia, pedimento, proveedor, valor_usd, dta, igi, iva, fecha_pago, cove, moneda')
+            .ilike('pedimento', `%${sanitizeIlike(q)}%`)
+            .limit(1)
+        : supabase.from('aduanet_facturas')
+            .select('referencia, pedimento, proveedor, valor_usd, dta, igi, iva, fecha_pago, cove, moneda')
+            .eq('clave_cliente', clientClave)
+            .ilike('pedimento', `%${sanitizeIlike(q)}%`)
+            .limit(1),
+      isInternal
+        ? supabase.from('traficos')
+            .select('trafico, estatus, fecha_llegada, fecha_cruce, importe_total, pedimento, descripcion_mercancia')
+            .ilike('pedimento', `%${sanitizeIlike(q)}%`)
+            .gte('fecha_llegada', PORTAL_DATE_FROM)
+            .limit(1)
+        : supabase.from('traficos')
+            .select('trafico, estatus, fecha_llegada, fecha_cruce, importe_total, pedimento, descripcion_mercancia')
+            .eq('company_id', companyId)
+            .ilike('pedimento', `%${sanitizeIlike(q)}%`)
+            .gte('fecha_llegada', PORTAL_DATE_FROM)
+            .limit(1),
     ])
 
     const pedimento = pedRes.data?.[0]
@@ -49,7 +61,6 @@ export async function GET(request: NextRequest) {
         supabase.from('entradas')
           .select('cve_entrada, descripcion_mercancia, peso_bruto, fecha_llegada_mercancia, tiene_faltantes, mercancia_danada')
           .eq('trafico', traficoId)
-          .eq('company_id', companyId)
           .limit(50),
         supabase.from('expediente_documentos')
           .select('doc_type, file_url, uploaded_at, nombre')

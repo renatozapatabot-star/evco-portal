@@ -44,14 +44,26 @@ export default function CallsPage() {
   const [completedActions, setCompletedActions] = useState<Set<string>>(new Set())
 
   useEffect(() => {
+    if (!companyId) {
+      setCalls([])
+      setLoading(false)
+      return
+    }
+    let cancelled = false
+    setLoading(true)
     supabase.from('call_transcripts')
       .select('*')
       .eq('company_id', companyId)
       .order('transcribed_at', { ascending: false })
       .limit(100)
-      .then(({ data }) => { setCalls(data || []); setLoading(false) })
-      .then(undefined, () => setLoading(false))
-  }, [])
+      .then(({ data }) => {
+        if (cancelled) return
+        setCalls(data || [])
+        setLoading(false)
+      })
+      .then(undefined, () => { if (!cancelled) setLoading(false) })
+    return () => { cancelled = true }
+  }, [companyId])
 
   const toggleAction = async (callId: string, idx: number) => {
     const key = `${callId}-${idx}`

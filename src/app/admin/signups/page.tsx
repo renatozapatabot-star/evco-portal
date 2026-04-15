@@ -2,13 +2,28 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
 import { revalidatePath } from 'next/cache'
+import { verifySession } from '@/lib/session'
 
 export const dynamic = 'force-dynamic'
+
+// Whitelist of roles an admin can grant via the signup approval flow.
+// 'admin' / 'broker' are NOT here — those are bestowed manually via SQL by
+// Tito himself, never via UI auto-approval. Any new signup defaults to the
+// least-privilege client role; the approver picks something stronger only
+// if the form explicitly requests it.
+const APPROVABLE_ROLES = new Set(['client', 'operator', 'warehouse', 'contabilidad', 'trafico'])
+const DEFAULT_APPROVED_ROLE = 'client'
 
 async function approveSignup(formData: FormData) {
   'use server'
   const id = formData.get('id') as string
   if (!id) return
+
+  // Role picked by the admin in the form. Default least-privilege if absent
+  // or invalid. Was hard-coded to 'admin' before 2026-04-15 — every approval
+  // minted a full admin, which was a critical privilege-escalation bug.
+  const requestedRole = (formData.get('role') as string | null) ?? DEFAULT_APPROVED_ROLE
+  const role = APPROVABLE_ROLES.has(requestedRole) ? requestedRole : DEFAULT_APPROVED_ROLE
 
   const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
   const { data: signup } = await sb.from('pending_signups').select('*').eq('id', id).single()
@@ -28,10 +43,10 @@ async function approveSignup(formData: FormData) {
   })
   if (coErr) { await sb.auth.admin.deleteUser(authData.user.id); return }
 
-  // Create operator
+  // Create operator with the role chosen by the approver (default: client).
   const { error: opErr } = await sb.from('operators').insert({
     auth_user_id: authData.user.id, email: signup.email,
-    full_name: signup.full_name, role: 'admin',
+    full_name: signup.full_name, role,
     company_id: signup.firm_slug, active: true,
   })
   if (opErr) {
@@ -63,9 +78,15 @@ async function rejectSignup(formData: FormData) {
 }
 
 export default async function AdminSignupsPage() {
+  // Read role from the SIGNED session cookie, not the user_role cookie
+  // (which is unsigned and trivially forgeable). Was using cookie before
+  // 2026-04-15, allowing role escalation by anyone who could set their own
+  // browser cookie.
   const cookieStore = await cookies()
-  const role = cookieStore.get('user_role')?.value
-  if (role !== 'admin') redirect('/login')
+  const session = await verifySession(cookieStore.get('portal_session')?.value ?? '')
+  if (!session || (session.role !== 'admin' && session.role !== 'broker')) {
+    redirect('/login')
+  }
 
   const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
   const { data: signups } = await sb.from('pending_signups')
@@ -101,11 +122,29 @@ export default async function AdminSignupsPage() {
                   Patente {s.patente} · {s.aduana} · {s.telefono || 'Sin teléfono'}
                 </div>
               </div>
-              <form action={approveSignup} style={{ display: 'inline' }}>
+              <form action={approveSignup} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                 <input type="hidden" name="id" value={s.id} />
+                <select
+                  name="role"
+                  defaultValue="client"
+                  style={{
+                    padding: '6px 10px', borderRadius: 6, fontSize: 12,
+                    background: 'var(--bg-card)', color: 'var(--text-primary)',
+                    border: '1px solid var(--border)', cursor: 'pointer',
+                    minHeight: 32,
+                  }}
+                  aria-label={`Rol para ${s.firm_name}`}
+                >
+                  <option value="client">Cliente (predeterminado)</option>
+                  <option value="operator">Operador</option>
+                  <option value="warehouse">Bodega</option>
+                  <option value="contabilidad">Contabilidad</option>
+                  <option value="trafico">Tráfico</option>
+                </select>
                 <button type="submit" style={{
                   padding: '8px 16px', borderRadius: 8, fontSize: 12, fontWeight: 700,
-                  background: 'var(--gold, #E8EAED)', color: 'rgba(255,255,255,0.03)', border: 'none', cursor: 'pointer',
+                  background: 'var(--gold, #E8EAED)', color: '#0a0a0c', border: 'none', cursor: 'pointer',
+                  minHeight: 32,
                 }}>
                   Aprobar
                 </button>

@@ -65,6 +65,7 @@ export async function POST(request: NextRequest) {
 
   const now = new Date()
   const sevenDaysAgoIso = new Date(now.getTime() - 7 * 86_400_000).toISOString()
+  const ninetyDaysAgoIso = new Date(now.getTime() - 90 * 86_400_000).toISOString()
 
   try {
     if (mode === 'post') {
@@ -111,9 +112,10 @@ export async function POST(request: NextRequest) {
         arResult,
       ] = await Promise.all([
         sb.from('traficos').select('id', { count: 'exact', head: true }).eq('company_id', c.company_id).gte('created_at', sevenDaysAgoIso).limit(1),
-        // Pedimentos listos = pedimento set, awaiting cruce. Cruces last 7d
-        // = real fecha_cruce in last 7d (NOT updated_at — sync touches every row).
-        sb.from('traficos').select('id', { count: 'exact', head: true }).eq('company_id', c.company_id).not('pedimento', 'is', null).is('fecha_cruce', null).limit(1),
+        // Pedimentos listos = paid pedimento, awaiting cruce, recent arrival
+        // (90d). Recency excludes historical ghosts where sync never
+        // backfilled fecha_cruce. Cruces last 7d = real fecha_cruce.
+        sb.from('traficos').select('id', { count: 'exact', head: true }).eq('company_id', c.company_id).eq('estatus', 'Pedimento Pagado').is('fecha_cruce', null).gte('fecha_llegada', ninetyDaysAgoIso).limit(1),
         sb.from('traficos').select('id', { count: 'exact', head: true }).eq('company_id', c.company_id).gte('fecha_cruce', sevenDaysAgoIso).limit(1),
         sb.from('expediente_documentos').select('id', { count: 'exact', head: true }).eq('company_id', c.company_id).eq('is_required', true).is('storage_path', null).limit(1),
         sb.from('globalpc_productos').select('id', { count: 'exact', head: true }).eq('company_id', c.company_id).eq('pais_origen', 'USA').limit(1),

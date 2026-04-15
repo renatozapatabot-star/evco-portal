@@ -47,6 +47,7 @@ export async function POST(request: NextRequest) {
   const now = new Date()
   const weekEndIso = new Date(now.getTime() + 7 * 86_400_000).toISOString()
   const last24hIso = new Date(now.getTime() - 86_400_000).toISOString()
+  const ninetyDaysAgoIso = new Date(now.getTime() - 90 * 86_400_000).toISOString()
 
   const body = await request.json().catch(() => ({}))
   const postToThread: boolean = body?.postToThread !== false
@@ -61,9 +62,9 @@ export async function POST(request: NextRequest) {
       entradasRecent,
       arResult,
     ] = await Promise.all([
-      // Activos = pending cruce. Was filtering by MOTION_STATUSES which
-      // misses NULL status and includes Cruzado.
-      sb.from('traficos').select('estatus').is('fecha_cruce', null).limit(5000),
+      // Activos = pending cruce + recent arrival (excludes historical ghosts
+      // where sync never backfilled fecha_cruce).
+      sb.from('traficos').select('estatus').is('fecha_cruce', null).gte('fecha_llegada', ninetyDaysAgoIso).limit(5000),
       sb.from('expediente_documentos').select('id', { count: 'exact', head: true }).eq('is_required', true).is('storage_path', null).limit(1),
       sb.from('mve_alerts').select('severity').eq('resolved', false).lte('deadline_at', weekEndIso).limit(500),
       sb.from('entradas').select('id', { count: 'exact', head: true }).gte('fecha_llegada_mercancia', last24hIso).limit(1),
@@ -77,11 +78,13 @@ export async function POST(request: NextRequest) {
     }
     const activeTotal = Array.from(byStatus.values()).reduce((a, b) => a + b, 0)
 
-    // Semáforo: only count among traficos that haven't crossed yet.
+    // Semáforo: only count among recently-arrived embarques that haven't
+    // crossed yet (otherwise historical ghosts inflate the buckets).
     const { data: semaRows } = await sb
       .from('traficos')
       .select('semaforo')
       .is('fecha_cruce', null)
+      .gte('fecha_llegada', ninetyDaysAgoIso)
       .limit(5000)
     const sema = { rojo: 0, amarillo: 0, verde: 0 }
     for (const r of (semaRows ?? []) as Array<{ semaforo: unknown }>) {

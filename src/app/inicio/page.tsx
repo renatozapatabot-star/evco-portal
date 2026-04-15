@@ -112,8 +112,11 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
     ),
     // Embarques activos: not crossed yet, with recent arrival activity (90d window).
     softCount(supabase.from('traficos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).is('fecha_cruce', null).gte('fecha_llegada', ninetyDaysAgoIso)),
-    // Pedimentos listos: pedimento assigned, awaiting cruce.
-    softCount(supabase.from('traficos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).not('pedimento', 'is', null).is('fecha_cruce', null)),
+    // Pedimentos listos: estatus=Pedimento Pagado, awaiting actual cruce,
+    // with recency filter (90d) to exclude historical ghosts where the sync
+    // never populated fecha_cruce. Without recency, EVCO has 900 hits but
+    // only 18 represent real "waiting to cross right now."
+    softCount(supabase.from('traficos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).eq('estatus', 'Pedimento Pagado').is('fecha_cruce', null).gte('fecha_llegada', ninetyDaysAgoIso)),
     // Cruces este mes: real fecha_cruce >= start-of-month.
     softCount(supabase.from('traficos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).gte('fecha_cruce', monthStartIso)),
     // Cruces last 7d for nav microStatus.
@@ -128,8 +131,8 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
       supabase.from('traficos').select('fecha_llegada').eq('company_id', companyId).is('fecha_cruce', null).gte('fecha_llegada', fourteenDaysAgoIso).limit(2000)
     ),
     softData<{ fecha_llegada: string }>(
-      // Pedimentos-listos sparkline = arrivals trend among pending-cruce embarques.
-      supabase.from('traficos').select('fecha_llegada').eq('company_id', companyId).not('pedimento', 'is', null).is('fecha_cruce', null).gte('fecha_llegada', fourteenDaysAgoIso).limit(2000)
+      // Pedimentos-listos sparkline = arrivals trend among Pagado-but-pending-cruce embarques.
+      supabase.from('traficos').select('fecha_llegada').eq('company_id', companyId).eq('estatus', 'Pedimento Pagado').is('fecha_cruce', null).gte('fecha_llegada', fourteenDaysAgoIso).limit(2000)
     ),
     softData<{ uploaded_at: string }>(
       supabase.from('expediente_documentos').select('uploaded_at').eq('company_id', companyId).gte('uploaded_at', fourteenDaysAgoIso).limit(2000)

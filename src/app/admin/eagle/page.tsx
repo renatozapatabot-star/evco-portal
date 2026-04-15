@@ -132,6 +132,7 @@ async function renderEagle(opName: string, rawMonth: string | null) {
   // coherent with the selected period.
   const sparklineEnd = new Date(Math.min(new Date(month.monthEnd).getTime() - 1, now.getTime()))
   const fourteenDaysAgoIso = daysAgo(14, sparklineEnd).toISOString()
+  const ninetyDaysAgoIso = daysAgo(90, now).toISOString()
 
   const [
     traficosRows,
@@ -195,8 +196,10 @@ async function renderEagle(opName: string, rawMonth: string | null) {
       sb.from('globalpc_productos').select('fraccion_classified_at').not('fraccion_classified_at', 'is', null).gte('fraccion_classified_at', fourteenDaysAgoIso).limit(2000)
     ),
     softCount(sb.from('globalpc_productos').select('id', { count: 'exact', head: true }).not('fraccion_classified_at', 'is', null)),
-    // Pedimentos pendientes = pedimento set, no cruce yet (real "stuck waiting").
-    softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).not('pedimento', 'is', null).is('fecha_cruce', null)),
+    // Pedimentos pendientes = estatus=Pedimento Pagado, no cruce, recent
+    // arrival (90d). Without recency, includes ~thousands of historical
+    // ghosts whose fecha_cruce was never backfilled by sync.
+    softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).eq('estatus', 'Pedimento Pagado').is('fecha_cruce', null).gte('fecha_llegada', ninetyDaysAgoIso)),
     // Cruces este mes = real fecha_cruce in selected month (NOT updated_at).
     softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).gte('fecha_cruce', month.monthStart).lt('fecha_cruce', month.monthEnd)),
     // "Pedimentos del mes" reinterpreted as cruces del mes (same source) for delta math.
@@ -227,9 +230,10 @@ async function renderEagle(opName: string, rawMonth: string | null) {
     counts.set(s, (counts.get(s) ?? 0) + 1)
   }
   const traficosByStatus: TraficoStatusBucket[] = Array.from(counts.entries()).map(([status, count]) => ({ status, count }))
-  // Headline number: real count of pending-cruce embarques (separate query
-  // so we don't lie when the sample hits the 5000 cap).
-  const { count: activeCountRaw } = await sb.from('traficos').select('id', { count: 'exact', head: true }).is('fecha_cruce', null)
+  // Headline number: real count of pending-cruce embarques with recency
+  // filter (90d). Without it, count includes historical rows whose
+  // fecha_cruce was never backfilled by sync — not actually "in motion."
+  const { count: activeCountRaw } = await sb.from('traficos').select('id', { count: 'exact', head: true }).is('fecha_cruce', null).gte('fecha_llegada', ninetyDaysAgoIso)
   const activeTraficosTotal = activeCountRaw ?? traficosByStatus.reduce((s, b) => s + b.count, 0)
 
   // dormant (top 3) + activeClients

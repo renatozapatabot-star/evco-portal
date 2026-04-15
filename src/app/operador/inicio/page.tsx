@@ -69,6 +69,7 @@ async function loadOperatorCockpit(opId: string, opName: string, month: string) 
   const todayStartIso = startOfToday(now).toISOString()
   const sevenDaysAgoIso = daysAgo(7, now).toISOString()
   const fourteenDaysAgoIso = daysAgo(14, now).toISOString()
+  const ninetyDaysAgoIso = daysAgo(90, now).toISOString()
   const weekEndIso = new Date(now.getTime() + 7 * 86400000).toISOString()
   const monthStartIso = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
 
@@ -113,9 +114,9 @@ async function loadOperatorCockpit(opId: string, opName: string, month: string) 
     econtaExportadasHoyCount,
   ] = await Promise.all([
     softCount(sb.from('entradas').select('cve_entrada', { count: 'exact', head: true }).gte('fecha_llegada_mercancia', todayStartIso)),
-    // Activos = pending cruce. Was eq('estatus','En Proceso') which excluded
-    // Documentacion / En Aduana / Pedimento Pagado states.
-    softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).is('fecha_cruce', null)),
+    // Activos = pending cruce, recent arrival only. Recency filter excludes
+    // historical ghosts (rows where sync never backfilled fecha_cruce).
+    softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).is('fecha_cruce', null).gte('fecha_llegada', ninetyDaysAgoIso)),
     softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).is('pedimento', null).lte('fecha_llegada', weekEndIso)),
     // Atrasados = arrived 7+ days ago, still not crossed. Was using
     // updated_at, which gets bumped by every sync (never "stale").

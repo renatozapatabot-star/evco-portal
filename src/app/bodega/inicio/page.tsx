@@ -119,8 +119,8 @@ async function renderBodegaCockpit(opName: string) {
     softData<{ trafico: string | null }>(
       sb.from('traficos').select('trafico').in('estatus', CROSSED_ESTATUS).gte('fecha_llegada', ninetyDaysAgoIso).limit(5000)
     ),
-    // Activos = pending cruce.
-    softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).is('fecha_cruce', null)),
+    // Activos = pending cruce, recent arrival only (excludes historical ghosts).
+    softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).is('fecha_cruce', null).gte('fecha_llegada', ninetyDaysAgoIso)),
     softData<{ fecha_llegada: string }>(
       sb.from('traficos').select('fecha_llegada').is('fecha_cruce', null).gte('fecha_llegada', fourteenDaysAgoIso).limit(2000)
     ),

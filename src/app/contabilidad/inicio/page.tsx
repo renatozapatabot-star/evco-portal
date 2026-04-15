@@ -87,6 +87,7 @@ async function renderContabilidadCockpit(opName: string, scopedCompanyId: string
   const month = monthAnchor()
   const sevenDaysAgoIso = daysAgo(7, now).toISOString()
   const fourteenDaysAgoIso = daysAgo(14, now).toISOString()
+  const ninetyDaysAgoIso = daysAgo(90, now).toISOString()
   const monthStartIso = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
 
   // Resolve a concrete companyId for the checklist helper — it requires a
@@ -169,8 +170,8 @@ async function renderContabilidadCockpit(opName: string, scopedCompanyId: string
     softData<{ fraccion_classified_at: string }>(
       sb.from('globalpc_productos').select('fraccion_classified_at').not('fraccion_classified_at', 'is', null).gte('fraccion_classified_at', fourteenDaysAgoIso).limit(2000)
     ),
-    // Activos = pending cruce.
-    softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).is('fecha_cruce', null)),
+    // Activos = pending cruce, recent arrival only (excludes historical ghosts).
+    softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).is('fecha_cruce', null).gte('fecha_llegada', ninetyDaysAgoIso)),
     softData<{ fecha_llegada: string }>(
       sb.from('traficos').select('fecha_llegada').is('fecha_cruce', null).gte('fecha_llegada', fourteenDaysAgoIso).limit(2000)
     ),

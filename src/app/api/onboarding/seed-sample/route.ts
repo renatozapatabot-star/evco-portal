@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { verifySession } from '@/lib/session'
 
 const SAMPLE_TRAFICOS = [
   { suffix: 'DEMO-001', estatus: 'En Proceso', descripcion: 'RESINA POLIETILENO (MUESTRA)', importe: 45000, semaforo: 'verde' },
@@ -15,9 +16,27 @@ const SAMPLE_TRAFICOS = [
 ]
 
 export async function POST(request: NextRequest) {
+  // Seed-sample writes DEMO traficos into the caller's tenant. Gate on
+  // a verified session — without this, any visitor could POST { slug:
+  // '<any-company>' } and pollute real tenants with demo rows.
+  const token = request.cookies.get('portal_session')?.value ?? ''
+  const session = await verifySession(token).catch(() => null)
+  if (!session) {
+    return NextResponse.json({ error: 'UNAUTHORIZED' }, { status: 401 })
+  }
+
   const body = await request.json()
   const slug = body.slug as string
   if (!slug) return NextResponse.json({ error: 'slug required' }, { status: 400 })
+
+  // Only allow seeding into the caller's own company (or admin/broker
+  // seeding for any tenant, e.g. onboarding a new client).
+  if (slug !== session.companyId && !['admin', 'broker'].includes(session.role)) {
+    return NextResponse.json(
+      { error: 'Forbidden — cannot seed into another tenant' },
+      { status: 403 },
+    )
+  }
 
   const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 

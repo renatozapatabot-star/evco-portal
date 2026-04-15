@@ -60,6 +60,15 @@ const functionHandlers: Record<string, (params: Record<string, string>) => Promi
 }
 
 export async function POST(request: NextRequest) {
+  // Vapi server-to-server — shared-secret auth matches /api/vapi-llm.
+  // Prevents any visitor from querying traficos via a crafted function-call
+  // payload (endpoint queries cross-tenant, so the leak is portal-wide).
+  const vapiSecret = request.headers.get('x-vapi-secret') || ''
+  const expected = process.env.VAPI_PRIVATE_KEY || ''
+  if (!expected || vapiSecret !== expected) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   const body = await request.json()
   const { message } = body
 

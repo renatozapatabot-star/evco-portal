@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { z } from 'zod'
+import { verifySession } from '@/lib/session'
 
 /**
  * POST /api/settings/locale
@@ -22,6 +23,17 @@ const localeSchema = z.object({
 })
 
 export async function POST(req: NextRequest) {
+  // Require a verified session — previously read identity from unsigned
+  // cookies which let any visitor write locale for arbitrary operator_ids.
+  const token = req.cookies.get('portal_session')?.value ?? ''
+  const session = await verifySession(token).catch(() => null)
+  if (!session) {
+    return NextResponse.json(
+      { data: null, error: { code: 'UNAUTHORIZED', message: 'Session required' } },
+      { status: 401 },
+    )
+  }
+
   let body: unknown
   try { body = await req.json() } catch {
     return NextResponse.json(
@@ -39,9 +51,8 @@ export async function POST(req: NextRequest) {
   }
   const { locale } = parsed.data
 
-  // Identity is cookie-based in this codebase (operator_id / company_id).
   const operatorId = req.cookies.get('operator_id')?.value
-  const companyId = req.cookies.get('company_id')?.value
+  const companyId = session.companyId
 
   // Best-effort upsert. Treat as ok if user_preferences isn't wired up yet —
   // client still works via localStorage + cookie.

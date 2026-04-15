@@ -32,7 +32,7 @@ export function TopNav() {
   const [unreadCount, setUnreadCount] = useState(0)
   const [notifOpen, setNotifOpen] = useState(false)
   const [launcherOpen, setLauncherOpen] = useState(false)
-  const [launcherCounts] = useState<LauncherCounts>({})
+  const [launcherCounts, setLauncherCounts] = useState<LauncherCounts>({})
   const [companyId, setCompanyId] = useState('')
   const [syncLabel, setSyncLabel] = useState('')
   const [syncMins, setSyncMins] = useState<number | null>(null)
@@ -65,6 +65,20 @@ export function TopNav() {
       .then(d => setUnreadCount(d.count ?? (d.data?.length ?? 0)))
       .catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
   }, [companyId])
+
+  // Launcher tray counts — fetched once per session, populates the red-dot
+  // badges on each tool tile and aggregates onto the `+ TOOLS` button.
+  useEffect(() => {
+    let cancelled = false
+    fetch('/api/launcher/counts', { credentials: 'include', cache: 'no-store' })
+      .then(r => r.ok ? r.json() : null)
+      .then(j => {
+        if (cancelled || !j?.data) return
+        setLauncherCounts(j.data as LauncherCounts)
+      })
+      .catch(() => { /* fail-soft — empty counts just means no badges */ })
+    return () => { cancelled = true }
+  }, [])
 
   useEffect(() => {
     if (!companyId) return

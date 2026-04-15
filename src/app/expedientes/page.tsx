@@ -289,6 +289,7 @@ function ExpedientesContent() {
                     <td><div className="skeleton-shimmer" style={{ width: 60, height: 13 }} /></td>
                     <td><div className="skeleton-shimmer" style={{ width: 80, height: 13 }} /></td>
                     <td><div className="skeleton-shimmer" style={{ width: 140, height: 13 }} /></td>
+                    <td><div className="skeleton-shimmer" style={{ width: 40, height: 24, borderRadius: 8, margin: '0 auto' }} /></td>
                   </tr>
                 ))}
                 {!loading && paged.length === 0 && (

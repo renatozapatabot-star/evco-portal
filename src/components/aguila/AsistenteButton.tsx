@@ -1,9 +1,9 @@
 'use client'
 
 import Link from 'next/link'
-import { MessageSquare } from 'lucide-react'
+import { MessageSquare, Tags } from 'lucide-react'
 import {
-  ACCENT_SILVER_DIM, GLASS_BLUR, TEXT_PRIMARY,
+  ACCENT_SILVER_DIM, GLASS_BLUR, TEXT_PRIMARY, TEXT_SECONDARY,
   ZAPATA_GOLD_BRIGHT, ZAPATA_GOLD_GLOW,
 } from '@/lib/design-system'
 
@@ -47,6 +47,50 @@ export function AsistenteButton({
   const target = `${href}?${params.toString()}`
 
   return (
+    <>
+    {/* Clasificador companion — sibling fab. Hidden on very small screens so it
+        doesn't crowd the primary Asistente pill. */}
+    <Link
+      href="/clasificar"
+      aria-label="Abrir clasificador arancelario"
+      className="zapata-clasificador-btn"
+      style={{
+        position: 'fixed',
+        right: 280,
+        bottom: 20,
+        zIndex: 49,
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 8,
+        minHeight: 60,
+        padding: '0 18px',
+        background: 'rgba(0,0,0,0.4)',
+        backdropFilter: `blur(${GLASS_BLUR})`,
+        WebkitBackdropFilter: `blur(${GLASS_BLUR})`,
+        border: '1px solid rgba(192,197,206,0.18)',
+        borderRadius: 30,
+        boxShadow: '0 10px 30px rgba(0,0,0,0.6)',
+        color: TEXT_SECONDARY,
+        fontSize: 'var(--aguila-fs-body, 13px)',
+        fontWeight: 600,
+        textDecoration: 'none',
+        whiteSpace: 'nowrap',
+        transition: 'transform 150ms ease, box-shadow 200ms ease, border-color 200ms ease, color 200ms ease',
+      }}
+    >
+      <Tags size={16} aria-hidden />
+      <span>Clasificador</span>
+      <style>{`
+        .zapata-clasificador-btn:hover {
+          transform: translateY(-1px);
+          color: #E8EAED !important;
+          border-color: rgba(244,212,122,0.35) !important;
+        }
+        @media (max-width: 720px) {
+          .zapata-clasificador-btn { display: none !important; }
+        }
+      `}</style>
+    </Link>
     <Link
       href={target}
       aria-label={`${label} — contexto ${roleTag}`}
@@ -97,5 +141,6 @@ export function AsistenteButton({
         }
       `}</style>
     </Link>
+    </>
   )
 }

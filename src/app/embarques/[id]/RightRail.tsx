@@ -31,6 +31,10 @@ interface RightRailProps {
   traficoId: string
   events: EventRow[]
   isInternal: boolean
+  /** Role of the signed-in session. Client surfaces suppress the entire
+   *  Acciones rápidas panel; operator/admin/broker keep it with
+   *  existing isInternal-driven enable/disable. */
+  role: string
   clientName: string
   clientRfc: string | null
   clientAduana: string | null
@@ -51,7 +55,11 @@ interface RightRailProps {
 export function RightRail(props: RightRailProps) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <AccionesRapidas {...props} />
+      {/* Acciones rápidas is hidden for client role (invariant #24 — the
+          absence of the panel IS the read-only signal; no disclaimer
+          needed). Operator/admin/broker still see it; enable/disable
+          of individual buttons is driven by isInternal (existing). */}
+      {props.role !== 'client' && <AccionesRapidas {...props} />}
       <InformacionLateral {...props} />
     </div>
   )
@@ -170,18 +178,10 @@ function AccionesRapidas({
         })}
       </div>
 
-      {!isInternal && (
-        <div
-          style={{
-            fontSize: 'var(--aguila-fs-meta)',
-            color: TEXT_MUTED,
-            marginTop: 10,
-            textAlign: 'center',
-          }}
-        >
-          Vista solo lectura para clientes
-        </div>
-      )}
+      {/* "Vista solo lectura para clientes" subtitle removed — the whole
+          AccionesRapidas panel no longer renders for clients (outer
+          gate in RightRail), so the disclaimer would never be seen
+          anyway. Its presence was a code smell that invited regressions. */}
     </div>
   )
 }

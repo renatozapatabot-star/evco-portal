@@ -368,6 +368,7 @@ export default async function TraficoDetailPage({
       clientName={clientName}
       clientRfc={clientRfc}
       isInternal={isInternal}
+      role={session.role}
       currentUserId={currentUserId}
       missingDocs={missingDocs}
       requiredDocsCount={requiredDocs.length}

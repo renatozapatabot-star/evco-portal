@@ -17,6 +17,7 @@ import { useTrack } from '@/lib/telemetry/useTrack'
 import { fmtUSDCompact } from '@/lib/format-utils'
 import { ChainView, type ChainNode, type ChainNodeKind } from '@/components/aguila'
 import { ChainVincularModal } from '@/components/aguila/ChainVincularModal'
+import { translateEstatus } from '@/lib/estatus-translator'
 import { PageOpenTracker } from './PageOpenTracker'
 import { Header } from './Header'
 import { HeroStrip, type HeroTileSpec } from './HeroStrip'
@@ -48,6 +49,9 @@ interface TraficoDetailProps {
   clientName: string
   clientRfc: string | null
   isInternal: boolean
+  /** Session role — forwarded to RightRail to suppress the Acciones
+   *  rápidas panel entirely on client surfaces (invariant #24). */
+  role: string
   currentUserId: string
   missingDocs: DocType[]
   requiredDocsCount: number
@@ -99,10 +103,13 @@ export function TraficoDetail(props: TraficoDetailProps) {
   // V1 · Chain tap-to-link state
   const [vincularOpen, setVincularOpen] = useState(false)
   const [vincularKind, setVincularKind] = useState<ChainNodeKind | null>(null)
-  // Each ChainNode in props.chain gets its handler wired at render time
+  // Each ChainNode in props.chain gets its handler wired at render time.
+  // Vincular is an operator/owner action — the client never sees the
+  // "Vincular" CTA on a missing chain node (invariant #24: client
+  // surface is read-only by construction, not by disclaimer).
   const chainWithVincular: ChainNode[] = props.chain.map((node) => ({
     ...node,
-    onVincular: node.status === 'missing' && node.kind !== 'trafico'
+    onVincular: props.isInternal && node.status === 'missing' && node.kind !== 'trafico'
       ? (kind) => { setVincularKind(kind); setVincularOpen(true) }
       : undefined,
   }))
@@ -136,11 +143,19 @@ export function TraficoDetail(props: TraficoDetailProps) {
 
   const estadoEvent = props.events[0] ?? null
 
+  // Estado actual value priority:
+  //   1. estadoEvent.display_name_es  (richest Spanish phrase, pre-computed)
+  //   2. translateEstatus(trafico.estatus).label  (canonical estatus → Spanish,
+  //      e.g. "E1" → "Entregado" — raw GlobalPC codes must never leak)
+  //   3. "Sin estatus"  (fallback for genuinely null rows)
+  const estadoActualValue = estadoEvent?.display_name_es
+    ?? (props.trafico.estatus ? translateEstatus(props.trafico.estatus).label : 'Sin estatus')
+
   const heroTiles: HeroTileSpec[] = [
     {
       id: 'estado',
       label: 'Estado actual',
-      value: estadoEvent?.display_name_es ?? (props.trafico.estatus ?? 'Sin estatus'),
+      value: estadoActualValue,
     },
     {
       id: 'dias',
@@ -341,6 +356,7 @@ export function TraficoDetail(props: TraficoDetailProps) {
           traficoId={props.traficoId}
           events={props.events}
           isInternal={props.isInternal}
+          role={props.role}
           clientName={props.clientName}
           clientRfc={props.clientRfc}
           clientAduana={props.trafico.aduana}

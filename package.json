@@ -10,6 +10,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
+    "check:sync": "bash scripts/check-safe-writes.sh",
     "telegram-bot": "node scripts/telegram-bot.js",
     "tipo-cambio": "node scripts/tipo-cambio-monitor.js",
     "entradas-anomaly": "node scripts/entradas-anomaly.js",

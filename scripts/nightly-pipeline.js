@@ -14,6 +14,7 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 )
+const { safeUpsert, safeInsert } = require('./lib/safe-write')
 
 const fs = require('fs')
 fs.writeFileSync('/tmp/nightly-pipeline.pid', String(process.pid))
@@ -113,9 +114,9 @@ async function syncClientTraficos(conn, company) {
       descripcion_mercancia: r.descripcion_mercancia,
       updated_at: new Date().toISOString()
     }))
-    await supabase.from('traficos').upsert(mapped, {
+    await safeUpsert(supabase, 'traficos', mapped, {
       onConflict: 'trafico',
-      ignoreDuplicates: false
+      scriptName: 'nightly-pipeline',
     })
     synced += mapped.length
   }
@@ -154,9 +155,9 @@ async function syncClientEntradas(conn, company) {
       company_id: company.company_id,
       cve_cliente: clave
     }))
-    await supabase.from('entradas').upsert(mapped, {
+    await safeUpsert(supabase, 'entradas', mapped, {
       onConflict: 'entrada_id',
-      ignoreDuplicates: false
+      scriptName: 'nightly-pipeline',
     })
     synced += mapped.length
   }
@@ -195,9 +196,9 @@ async function syncClientFacturas(conn, company) {
       company_id: company.company_id,
       clave_cliente: clave
     }))
-    await supabase.from('globalpc_facturas').upsert(mapped, {
+    await safeUpsert(supabase, 'globalpc_facturas', mapped, {
       onConflict: 'factura_id',
-      ignoreDuplicates: false
+      scriptName: 'nightly-pipeline',
     })
     synced += mapped.length
   }
@@ -230,9 +231,9 @@ async function syncClientEventos(conn, company) {
       ...r,
       company_id: company.company_id
     }))
-    await supabase.from('globalpc_eventos').upsert(mapped, {
+    await safeUpsert(supabase, 'globalpc_eventos', mapped, {
       onConflict: 'evento_id',
-      ignoreDuplicates: false
+      scriptName: 'nightly-pipeline',
     })
     synced += mapped.length
   }
@@ -264,9 +265,9 @@ async function syncClientProducts(conn, company) {
       company_id: company.company_id,
       clave_cliente: clave
     }))
-    await supabase.from('globalpc_productos').upsert(mapped, {
+    await safeUpsert(supabase, 'globalpc_productos', mapped, {
       onConflict: 'producto_id',
-      ignoreDuplicates: false
+      scriptName: 'nightly-pipeline',
     })
     synced += mapped.length
   }
@@ -307,8 +308,10 @@ async function calculateClientIntelligence(company) {
     })
 
     for (const batch of chunk(scores, 100)) {
-      await supabase.from('pedimento_risk_scores')
-        .upsert(batch, { onConflict: 'trafico_id' })
+      await safeUpsert(supabase, 'pedimento_risk_scores', batch, {
+        onConflict: 'trafico_id',
+        scriptName: 'nightly-pipeline',
+      })
     }
   }
 
@@ -368,12 +371,15 @@ async function generateClientBrief(company) {
     generated_at: new Date().toISOString()
   }
 
-  await supabase.from('daily_briefs').upsert({
+  await safeUpsert(supabase, 'daily_briefs', [{
     company_id,
     brief_data: brief,
     date: brief.date,
     created_at: new Date().toISOString()
-  }, { onConflict: 'company_id,date' })
+  }], {
+    onConflict: 'company_id,date',
+    scriptName: 'nightly-pipeline',
+  })
 
   return brief
 }
@@ -538,20 +544,23 @@ async function run() {
   console.log('\n' + '═'.repeat(50))
   console.log(`✅ Pipeline complete: ${companies.length} clients, ${totalTraficos} traficos, ${elapsed} min`)
 
-  // Log completion to heartbeat_log
-  await supabase.from('heartbeat_log').insert({
-    script: 'nightly-pipeline',
-    status: 'success',
-    details: {
-      clients: companies.length,
-      traficos: totalTraficos,
-      entradas: totalEntradas,
-      facturas: totalFacturas,
-      elapsed_min: elapsed,
-      critical_alerts: criticalClients.length,
-      sunday_shadow: dayOfWeek === 0,
-    },
-  }).then(() => {}, () => {})
+  // Log completion to heartbeat_log — telemetry, don't kill the pipeline
+  // if it fails (safeInsert will already have alerted via Telegram).
+  try {
+    await safeInsert(supabase, 'heartbeat_log', {
+      script: 'nightly-pipeline',
+      status: 'success',
+      details: {
+        clients: companies.length,
+        traficos: totalTraficos,
+        entradas: totalEntradas,
+        facturas: totalFacturas,
+        elapsed_min: elapsed,
+        critical_alerts: criticalClients.length,
+        sunday_shadow: dayOfWeek === 0,
+      },
+    }, { scriptName: 'nightly-pipeline' })
+  } catch { /* telemetry — safeInsert already alerted */ }
 
   // Cleanup PID file
   try { fs.unlinkSync('/tmp/nightly-pipeline.pid') } catch {}

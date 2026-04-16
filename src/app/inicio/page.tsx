@@ -60,18 +60,25 @@ async function CockpitContent({ session, cookieStore, month }: { session: Sessio
   try {
     return await renderClientCockpit(session, cookieStore, month)
   } catch (err) {
-    // Next.js signals redirects by throwing an error with a digest
-    // starting "NEXT_REDIRECT". Re-throw so the server actually
-    // redirects instead of rendering an error card that shows the
-    // word NEXT_REDIRECT to the user — which is what shipped before
-    // this fix. Same treatment for notFound() (digest "NEXT_NOT_FOUND").
+    // Next.js signals redirects by throwing. Depending on version /
+    // minifier, the marker shows up as either:
+    //   · err.digest starting with "NEXT_REDIRECT" / equal to "NEXT_NOT_FOUND"
+    //   · err.message equal to "NEXT_REDIRECT" / "NEXT_NOT_FOUND"
+    // Either way, re-throw so Next's page handler actually redirects.
+    // Otherwise the user sees the error card with the word "NEXT_REDIRECT"
+    // in it (this is the prod bug surfaced by the Block 1 dry-run).
+    const msg = err instanceof Error ? err.message : String(err)
     const digest = typeof err === 'object' && err !== null && 'digest' in err
       ? String((err as { digest?: unknown }).digest ?? '')
       : ''
-    if (digest.startsWith('NEXT_REDIRECT') || digest === 'NEXT_NOT_FOUND') {
+    if (
+      digest.startsWith('NEXT_REDIRECT')
+      || digest === 'NEXT_NOT_FOUND'
+      || msg === 'NEXT_REDIRECT'
+      || msg === 'NEXT_NOT_FOUND'
+    ) {
       throw err
     }
-    const msg = err instanceof Error ? err.message : String(err)
     return <CockpitErrorCard message={`No se pudo cargar el cockpit: ${msg}`} />
   }
 }

@@ -23,6 +23,7 @@ require('dotenv').config({ path: require('path').join(__dirname, '..', '.env.loc
 const { createClient } = require('@supabase/supabase-js')
 const Anthropic = require('@anthropic-ai/sdk')
 const { safeInsert } = require('./lib/safe-write')
+const { sendTelegram } = require('./lib/telegram')
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -185,12 +186,25 @@ async function runForCompany(companyId, targetDate) {
   console.log(`\n🌅 Morning briefing generator — ${companyIds.length} companies · date ${today}`)
 
   let ok = 0, skipped = 0, failed = 0
+  let anthropicDry = false
   for (const cid of companyIds) {
     try {
       await runForCompany(cid, today)
       ok++
     } catch (e) {
-      console.error(`  ✗ ${cid}: ${e.message}`)
+      const msg = e.message || String(e)
+      console.error(`  ✗ ${cid}: ${msg}`)
+      // Anthropic credit-balance failure: one alert for the whole run,
+      // not one per company. Credit issues are a single operational
+      // event — don't spam Tito's Telegram.
+      if (!anthropicDry && (msg.includes('credit') || msg.includes('billing') || msg.includes('402'))) {
+        anthropicDry = true
+        try {
+          await sendTelegram(
+            `⚠ Morning briefing: Anthropic credit balance insufficient. ${companyIds.length} briefing(s) skipped for ${today}. Topup and re-run: node scripts/generate-client-briefing.js --date ${today} --force`,
+          )
+        } catch {}
+      }
       failed++
     }
   }

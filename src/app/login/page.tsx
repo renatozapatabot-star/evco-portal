@@ -108,7 +108,10 @@ function LoginContent() {
           <AguilaMark size={140} />
         </div>
 
-        {/* Wordmark removed 2026-04-15 per Tito audit — Z mark stands alone. */}
+        {/* CRUZ wordmark — reinstated 2026-04-17. Sits directly under the
+            Z, thin weight + wide tracking, same silver palette so the
+            monogram + wordmark read as one lockup. */}
+        <p className="login-wordmark" aria-label="CRUZ">CRUZ</p>
 
         {/* Tagline */}
         <p className="login-tagline">TOTAL VISIBILIDAD. SIN FRONTERAS.</p>
@@ -286,7 +289,24 @@ function LoginContent() {
           filter: drop-shadow(0 0 28px rgba(192,197,206,0.32));
         }
         .login-wordmark {
-          margin-bottom: 12px;
+          margin: 12px 0 18px;
+          text-align: center;
+          font-size: 24px;
+          font-weight: 300;
+          letter-spacing: 0.3em;
+          /* Silver gradient — mirrors the monogram's highlight-to-shadow
+             pass, flattened horizontally so the wordmark reads as a
+             metallic nameplate under the Z. */
+          background: linear-gradient(135deg, #E8EAED 0%, #C0C5CE 50%, #7A7E86 100%);
+          -webkit-background-clip: text;
+          background-clip: text;
+          -webkit-text-fill-color: transparent;
+          color: #C0C5CE; /* fallback for clients without background-clip */
+          text-transform: uppercase;
+          line-height: 1;
+        }
+        @media (min-width: 720px) {
+          .login-wordmark { font-size: 32px; }
         }
         .login-tagline {
           font-size: 10px;

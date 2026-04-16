@@ -8,6 +8,7 @@ import { fmtUSDFull as fmtUSD, fmtDate, fmtPedimentoShort, fmtDesc, fmtId } from
 import { useSort, type SortState } from '@/hooks/use-sort'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { CalmEmptyState } from '@/components/cockpit/client/CalmEmptyState'
 import { parseMonthParam, recentMonths } from '@/lib/cockpit/month-window'
 import { MonthSelector } from '@/components/admin/MonthSelector'
 import Link from 'next/link'
@@ -257,7 +258,11 @@ function PedimentosContent() {
               <button className="btn btn-outline btn-sm" style={{ marginTop: 12 }} onClick={() => { setSearch(''); setPage(0) }}>Limpiar búsqueda</button>
             </div>
           ) : (
-            <EmptyState icon="📋" title="Sin pedimentos registrados" description="Los pedimentos aparecerán aquí cuando se asignen a los embarques." />
+            <CalmEmptyState
+              icon="document"
+              title="Sin pedimentos en este período"
+              message="Los pedimentos aparecerán aquí cuando se asignen a tus embarques."
+            />
           )
         )}
 

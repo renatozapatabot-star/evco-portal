@@ -9,6 +9,7 @@ import { fmtDesc, fmtDate } from '@/lib/format-utils'
 import { useSort, type SortState } from '@/hooks/use-sort'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { CalmEmptyState } from '@/components/cockpit/client/CalmEmptyState'
 import { fmtCarrier } from '@/lib/carrier-names'
 import { ErrorCard } from '@/components/ui/ErrorCard'
 import { useSessionCache } from '@/hooks/use-session-cache'
@@ -249,7 +250,11 @@ function EntradasContent() {
               <button className="btn btn-outline btn-sm" style={{ marginTop: 12 }} onClick={() => { setSearch(''); setPage(0) }}>Limpiar búsqueda</button>
             </div>
           ) : (
-            <EmptyState icon="🏭" title="No hay entradas registradas" description="Las entradas aparecerán aquí cuando se registren." />
+            <CalmEmptyState
+              icon="package"
+              title="Sin entradas en este período"
+              message="Las recepciones de almacén aparecerán aquí."
+            />
           )
         )}
 

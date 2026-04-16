@@ -5,6 +5,7 @@ import { useState, useTransition } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { GlassCard } from '@/components/aguila/GlassCard'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { CalmEmptyState } from '@/components/cockpit/client/CalmEmptyState'
 import type { CatalogoRow, CatalogoFraccionGroup, CatalogoSummary } from '@/lib/catalogo/products'
 
 interface Props {
@@ -105,15 +106,13 @@ export function CatalogoTable({ rows, groups, summary, query, mode }: Props) {
 
       {mode === 'fracciones' ? (
         groups.length === 0 ? (
-          <GlassCard>
-            <EmptyState
-              icon="📦"
-              title={query ? 'Sin coincidencias' : 'Sin productos clasificados'}
-              description={query
-                ? 'Prueba con otra descripción, fracción o clave.'
-                : 'Los productos con fracción arancelaria se agruparán aquí.'}
-            />
-          </GlassCard>
+          <CalmEmptyState
+            icon="package"
+            title={query ? 'Sin coincidencias' : 'Tu catálogo aparecerá aquí'}
+            message={query
+              ? 'Prueba con otra descripción, fracción o clave.'
+              : 'Una vez clasifiquemos tus productos, podrás ver el historial completo.'}
+          />
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {groups.map((g) => <FraccionGroupCard key={g.fraccion} group={g} />)}
@@ -121,15 +120,13 @@ export function CatalogoTable({ rows, groups, summary, query, mode }: Props) {
         )
       ) : (
         rows.length === 0 ? (
-          <GlassCard>
-            <EmptyState
-              icon="📦"
-              title={query ? 'Sin coincidencias' : 'Sin productos en el catálogo'}
-              description={query
-                ? 'Prueba con otra descripción, fracción o clave.'
-                : 'Los productos importados aparecerán aquí conforme lleguen embarques nuevos.'}
-            />
-          </GlassCard>
+          <CalmEmptyState
+            icon="package"
+            title={query ? 'Sin coincidencias' : 'Tu catálogo aparecerá aquí'}
+            message={query
+              ? 'Prueba con otra descripción, fracción o clave.'
+              : 'Los productos aparecerán conforme clasifiquemos tus embarques.'}
+          />
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {rows.map((r) => <CatalogoRowCard key={r.id} row={r} />)}

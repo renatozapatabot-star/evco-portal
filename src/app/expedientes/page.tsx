@@ -9,6 +9,7 @@ import { fmtId, fmtDesc, fmtDateShort, fmtPedimentoShort } from '@/lib/format-ut
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useSort, type SortState } from '@/hooks/use-sort'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { CalmEmptyState } from '@/components/cockpit/client/CalmEmptyState'
 import { ErrorCard } from '@/components/ui/ErrorCard'
 import { DocCompleteness } from '@/components/expedientes/DocCompleteness'
 import type { DocFile } from '@/components/expedientes/DocChecklist'
@@ -233,7 +234,12 @@ function ExpedientesContent() {
               <div key={`skel-${i}`} style={{ height: 80, borderRadius: 10, background: 'var(--bg-elevated)', animation: 'cruzShimmer 1.5s linear infinite' }} />
             ))}
             {!loading && paged.length === 0 && (
-              <EmptyState icon="📂" title="Sin expedientes" description="Los expedientes digitales de sus embarques aparecerán aquí" cta={{ label: 'Ver embarques', href: '/embarques' }} />
+              <CalmEmptyState
+                icon="document"
+                title="No hay documentos"
+                message="Los documentos aparecerán aquí cuando iniciemos nuevas operaciones."
+                action={{ label: 'Ver embarques', href: '/embarques' }}
+              />
             )}
             {paged.map(r => {
               const isCruzado = (r.estatus || '').toLowerCase().includes('cruz')
@@ -302,7 +308,12 @@ function ExpedientesContent() {
                         <button className="btn btn-outline btn-sm" style={{ marginTop: 12 }} onClick={() => { setSearchInput(''); setSearch('') }}>Limpiar búsqueda</button>
                       </div>
                     ) : (
-                      <EmptyState icon="📂" title="Sin expedientes digitales" description="Los expedientes de cada embarque aparecerán aquí" cta={{ label: 'Ver embarques', href: '/embarques' }} />
+                      <CalmEmptyState
+                        icon="document"
+                        title="No hay documentos"
+                        message="Los expedientes aparecerán aquí cuando iniciemos nuevas operaciones."
+                        action={{ label: 'Ver embarques', href: '/embarques' }}
+                      />
                     )}
                   </td></tr>
                 )}

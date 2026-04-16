@@ -11,6 +11,7 @@ import { useIsMobile } from '@/hooks/use-mobile'
 import { ErrorBoundary } from '@/components/error-boundary'
 import { useSessionCache } from '@/hooks/use-session-cache'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { CalmEmptyState } from '@/components/cockpit/client/CalmEmptyState'
 import { ErrorCard } from '@/components/ui/ErrorCard'
 import { useSupplierNames } from '@/hooks/use-supplier-names'
 import { parseMonthParam, recentMonths } from '@/lib/cockpit/month-window'
@@ -460,7 +461,11 @@ function TraficosContent() {
                 <button className="btn btn-outline btn-sm" style={{ marginTop: 12 }} onClick={() => { setSearchInput(''); setSearch('') }}>Limpiar búsqueda</button>
               </div>
             ) : (
-              <EmptyState icon="🚛" title="Sin operaciones activas" description="Sus embarques activos aparecerán aquí." />
+              <CalmEmptyState
+                icon="package"
+                title="Tu operación está en calma"
+                message="No hay embarques activos en este período."
+              />
             )}
           </div>
         )}
@@ -495,7 +500,11 @@ function TraficosContent() {
                         <button className="btn btn-outline btn-sm" style={{ marginTop: 12 }} onClick={() => { setSearchInput(''); setSearch('') }}>Limpiar filtros</button>
                       </div>
                     ) : (
-                      <EmptyState icon="🚛" title="No hay embarques activos" description="Sus embarques activos aparecerán aquí." />
+                      <CalmEmptyState
+                        icon="package"
+                        title="Tu operación está en calma"
+                        message="No hay embarques activos en este período."
+                      />
                     )}
                   </td></tr>
                 )}

@@ -71,6 +71,16 @@ async function run() {
     return
   }
 
+  // FIX 2026-04-16: traficos has NOT NULL tenant_id (broker-level UUID,
+  // Patente 3596). Source it from an existing row rather than hardcoding.
+  const { data: tenantSample } = await supabase.from('traficos').select('tenant_id').not('tenant_id','is',null).limit(1).maybeSingle()
+  const BROKER_TENANT_ID = tenantSample?.tenant_id
+  if (!BROKER_TENANT_ID) {
+    await tg(`🔴 <b>Delta sync ABORTED</b>\nCannot determine broker tenant_id from traficos.\n— ZAPATA AI 🦅`)
+    await conn.end()
+    return
+  }
+
   const { data: companies, error: companiesErr } = await supabase
     .from('companies').select('company_id, clave_cliente').eq('active', true)
   if (companiesErr || !companies || companies.length === 0) {
@@ -137,10 +147,17 @@ async function run() {
             changes.push({ trafico: r.trafico, from: prev.estatus, to: r.estatus })
           }
           if (!prev) totalNew++; else totalUpdated++
+          // FIX 2026-04-16: traficos has no `clave_cliente` column — canonical FK is
+          // `company_id` (invariant #14). Including clave_cliente made PGRST204 fail
+          // every upsert silently; the script has been reporting success since the
+          // schema drift while zero rows were written. Discovered during overnight
+          // Phase 1 sync audit.
+          const company_id = claveMap[r.clave_cliente]
           return {
             trafico: r.trafico,
-            clave_cliente: r.clave_cliente,
-            company_id: claveMap[r.clave_cliente],
+            company_id,
+            tenant_id: BROKER_TENANT_ID,
+            tenant_slug: company_id,
             fecha_llegada: r.fecha_llegada,
             fecha_cruce: r.fecha_cruce,
             fecha_pago: r.fecha_pago,
@@ -154,7 +171,8 @@ async function run() {
             updated_at: new Date().toISOString()
           }
         })
-        await supabase.from('traficos').upsert(batch, { onConflict: 'trafico', ignoreDuplicates: false })
+        const { error: upErr } = await supabase.from('traficos').upsert(batch, { onConflict: 'trafico', ignoreDuplicates: false })
+        if (upErr) throw new Error(`traficos upsert failed: ${upErr.message}`)
       }
 
       totalFound = trafRows.length
@@ -199,6 +217,8 @@ async function run() {
           cve_entrada: r.cve_entrada,
           cve_cliente: r.cve_cliente,
           company_id: claveMap[r.cve_cliente],
+          tenant_id: BROKER_TENANT_ID,
+          tenant_slug: claveMap[r.cve_cliente],
           fecha_llegada_mercancia: r.fecha_llegada_mercancia,
           cantidad_bultos: r.cantidad_bultos,
           peso_bruto: r.peso_bruto,
@@ -211,8 +231,8 @@ async function run() {
           num_caja_trailer: r.num_caja_trailer || null,
           updated_at: new Date().toISOString()
         }))
-        await supabase.from('entradas').upsert(batch, { onConflict: 'cve_entrada', ignoreDuplicates: false })
-
+        const { error: entErr } = await supabase.from('entradas').upsert(batch, { onConflict: 'cve_entrada', ignoreDuplicates: false })
+        if (entErr) throw new Error(`entradas upsert failed: ${entErr.message}`)
       }
       totalFound += entRows.length
     }

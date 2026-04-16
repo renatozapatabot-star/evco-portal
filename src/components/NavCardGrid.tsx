@@ -17,6 +17,7 @@ export interface NavCardGridItem {
   countSuffix?: string
   microStatus?: string
   microStatusWarning?: boolean
+  historicMicrocopy?: string
   trendData?: number[]
   trendTone?: SparklineTone
 }
@@ -32,7 +33,7 @@ interface Props {
 export function NavCardGrid({ items }: Props) {
   return (
     <div className="nav-cards-grid" style={{ display: 'grid', gap: 12 }}>
-      {items.map(({ tile, count, countSuffix, microStatus, microStatusWarning, trendData, trendTone }) => (
+      {items.map(({ tile, count, countSuffix, microStatus, microStatusWarning, historicMicrocopy, trendData, trendTone }) => (
         <SmartNavCard
           key={tile.href}
           href={tile.href}
@@ -43,6 +44,7 @@ export function NavCardGrid({ items }: Props) {
           countSuffix={countSuffix}
           microStatus={microStatus}
           microStatusWarning={microStatusWarning}
+          historicMicrocopy={historicMicrocopy}
           trendData={trendData}
           trendTone={trendTone}
         />

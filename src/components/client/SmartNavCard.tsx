@@ -15,13 +15,19 @@ interface Props {
   countSuffix?: string
   microStatus?: string
   microStatusWarning?: boolean
+  /** Tiny parenthetical for lifetime totals that used to dominate the
+   *  subtitle (e.g. "(+214K en histórico)"). Renders below microStatus
+   *  in a muted color and very small font so the this-month metric
+   *  keeps the headline position. Invariant #24 — the client cockpit
+   *  headline is the LIVE metric, not the archival total. */
+  historicMicrocopy?: string
   /** Optional 7-day sparkline. Render below label when provided. */
   trendData?: number[]
   /** Sparkline tone — defaults to silver. Client surfaces use silver/green only (invariant 24). */
   trendTone?: SparklineTone
 }
 
-export function SmartNavCard({ href, label, icon: Icon, description, count, countSuffix, microStatus, microStatusWarning, trendData, trendTone = 'silver' }: Props) {
+export function SmartNavCard({ href, label, icon: Icon, description, count, countSuffix, microStatus, microStatusWarning, historicMicrocopy, trendData, trendTone = 'silver' }: Props) {
   const hasTrend = Array.isArray(trendData) && trendData.length >= 2
   const isLive = typeof count === 'number' && count > 0
   return (
@@ -92,6 +98,20 @@ export function SmartNavCard({ href, label, icon: Icon, description, count, coun
               fontWeight: microStatusWarning ? 600 : 400,
             }}>
               {microStatus}
+            </div>
+          )}
+          {historicMicrocopy && (
+            <div className="nav-card-historic" style={{
+              fontSize: 10, marginTop: 2, lineHeight: 1.2,
+              fontFamily: 'var(--font-mono)',
+              color: 'rgba(100,116,139,0.65)',
+              fontWeight: 400,
+              fontVariantNumeric: 'tabular-nums',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}>
+              {historicMicrocopy}
             </div>
           )}
           {hasTrend && (

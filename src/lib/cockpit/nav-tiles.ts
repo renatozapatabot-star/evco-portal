@@ -53,6 +53,10 @@ export interface NavCellData {
   microStatus?: string
   /** Colors the microStatus amber when true — used for "N pendientes" signals. */
   microStatusWarning?: boolean
+  /** Tiny muted parenthetical for lifetime/historical totals so the
+   *  this-month metric keeps the headline position. Example:
+   *  "(+214K en histórico)" on the Expedientes card. */
+  historicMicrocopy?: string
   /** Optional suffix appended to the primary count (e.g. "%"). */
   countSuffix?: string
 }

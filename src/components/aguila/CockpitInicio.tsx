@@ -123,6 +123,7 @@ export function CockpitInicio({
       countSuffix: cell?.countSuffix,
       microStatus: cell?.microStatus,
       microStatusWarning: cell?.microStatusWarning,
+      historicMicrocopy: cell?.historicMicrocopy,
       trendData: cell?.series && cell.series.length > 7 ? cell.series.slice(-7) : cell?.series,
       trendTone: 'silver',
     }

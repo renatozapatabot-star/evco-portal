@@ -215,23 +215,42 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
   // heroKPIs assembled below — requires imminentShipment and lastCruzadoRow
   // which are fetched a few lines down. Declaration hoisted there.
 
-  // Catálogo sad-zero: when nothing was classified this month,
-  // "0 este mes · 0 en catálogo" reads as "broken" even though the
-  // client may have a healthy history. Fallbacks, in order:
-  //   · month=0 AND total>0 → "N partes en catálogo"
-  //   · month=0 AND total=0 → "Tu catálogo aparecerá…"
-  //   · month>0             → the normal month microStatus
+  // Nav-card microcopy ranks after 1.3 demotion:
+  //   Headline (huge): this-month count  (rendered by SmartNavCard.count)
+  //   Subtitle:        contextual description (from UNIFIED_NAV_TILES — static)
+  //   microStatus:     "this month · last action" — THE LIVE signal
+  //   historicMicrocopy (tiny, muted): "(+214K en histórico)" — the lifetime total
+  // Before 1.3, lifetime totals were inside microStatus and read as the primary
+  // number. Now they're explicitly a footnote.
+  function compactK(n: number): string {
+    if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1).replace(/\.0$/, '')}M`
+    if (n >= 1_000) return `${Math.round(n / 1_000)}K`
+    return n.toLocaleString('es-MX')
+  }
+
+  // Catálogo sad-zero logic split from the historical-footnote logic so the
+  // microStatus is a live signal and the lifetime total sits in the microcopy.
   const catalogoMicroStatus = catalogoMesCount > 0
-    ? `Partes usadas este mes · ${catalogoCount.toLocaleString('es-MX')} en catálogo`
+    ? `${catalogoMesCount.toLocaleString('es-MX')} clasificada${catalogoMesCount === 1 ? '' : 's'} este mes`
     : catalogoCount > 0
-      ? `${catalogoCount.toLocaleString('es-MX')} partes en catálogo`
+      ? 'Catálogo disponible — sin movimiento este mes'
       : 'Tu catálogo aparecerá cuando clasifiquemos tus productos'
+  const catalogoHistoricMicrocopy = catalogoCount > 0
+    ? `(+${compactK(catalogoCount)} en catálogo)`
+    : undefined
+
+  const expedientesMicroStatus = expedientesMesCount > 0
+    ? `${expedientesMesCount.toLocaleString('es-MX')} documento${expedientesMesCount === 1 ? '' : 's'} este mes`
+    : 'Sin documentos nuevos este mes'
+  const expedientesHistoricMicrocopy = expedientesCount > 0
+    ? `(+${compactK(expedientesCount)} en histórico)`
+    : undefined
 
   const navCounts: NavCounts = {
     traficos:        { count: activeTraficosCount,    series: activosSeries,          microStatus: `${cruzadosLast7Count} cruzaron esta semana` },
     pedimentos:      { count: pedimentosListosCount,  series: pedimentosListosSeries, microStatus: daysSinceLastCruce != null ? `Último cruce hace ${daysSinceLastCruce} día${daysSinceLastCruce === 1 ? '' : 's'}` : 'Sin cruces recientes' },
-    expedientes:     { count: expedientesMesCount,    series: expedientesSeries,      microStatus: `Documentos este mes · ${expedientesCount.toLocaleString('es-MX')} en total` },
-    catalogo:        { count: catalogoMesCount,       series: [],                     microStatus: catalogoMicroStatus },
+    expedientes:     { count: expedientesMesCount,    series: expedientesSeries,      microStatus: expedientesMicroStatus, historicMicrocopy: expedientesHistoricMicrocopy },
+    catalogo:        { count: catalogoMesCount,       series: [],                     microStatus: catalogoMicroStatus,    historicMicrocopy: catalogoHistoricMicrocopy },
     entradas:        { count: entradasSemanaCount,    series: entradasSeries,         microStatus: `${entradasSemanaCount} recibida${entradasSemanaCount === 1 ? '' : 's'} esta semana` },
     reportes:        { count: null,                   series: clasificacionesSeries },
   }

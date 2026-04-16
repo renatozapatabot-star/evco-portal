@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 import { signSession } from '@/lib/session'
 import { generateCsrfToken } from '@/lib/csrf'
 import { authSchema } from '@/lib/api-schemas'
+import { rateLimit } from '@/lib/rate-limit'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -83,6 +84,19 @@ async function setAuthCookies(
 }
 
 export async function POST(request: NextRequest) {
+  // Rate limit: 5 failed attempts per minute per IP. Using per-IP bucket
+  // (not per-password) so a single IP brute-forcing slows to one attempt
+  // every ~12 seconds after the 5th. Successful logins still count —
+  // that's fine: a legit user re-trying after a typo won't exceed 5/min.
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
+  const rl = rateLimit(`auth:${ip}`, 5, 60000)
+  if (!rl.success) {
+    return NextResponse.json(
+      { error: 'Demasiados intentos. Espera un minuto e intenta de nuevo.' },
+      { status: 429, headers: { 'Retry-After': String(Math.ceil(rl.resetIn / 1000)) } },
+    )
+  }
+
   const body = await request.json()
   const parsed = authSchema.safeParse(body)
   if (!parsed.success) {
@@ -268,7 +282,7 @@ export async function POST(request: NextRequest) {
     created_at: new Date().toISOString(),
   }).then(() => {}, (e) => console.error('[audit-log] login failed:', e.message))
 
-  return NextResponse.json({ error: 'Invalid password' }, { status: 401 })
+  return NextResponse.json({ error: 'Contraseña incorrecta' }, { status: 401 })
 }
 
 export async function DELETE() {

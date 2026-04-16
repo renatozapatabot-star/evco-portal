@@ -71,6 +71,10 @@ function LoginContent() {
         await new Promise(resolve => setTimeout(resolve, 300))
         router.push(landing)
         router.refresh()
+      } else if (res.status === 429) {
+        // Rate limited — don't suggest "wrong password"; be honest.
+        setError('Demasiados intentos. Espera un minuto antes de intentar de nuevo.')
+        setPassword('')
       } else {
         setError('Contraseña incorrecta. Contacta a Renato Zapata & Company.')
         setPassword('')

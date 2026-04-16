@@ -439,6 +439,29 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
   // When quiet-season is active, the builder emits the reassuring prose
   // line — override the standard computed summary with it. Otherwise keep
   // the existing behavior (N embarques / Último embarque · ref / default).
+  // Morning briefing — soft-wrapped; if the `client_briefings` table
+  // doesn't exist yet (pre-migration) the query silently returns null
+  // and the component renders nothing. Zero load-bearing failure mode.
+  type BriefingRow = {
+    id: string
+    briefing_text: string
+    action_item: string | null
+    action_url: string | null
+  }
+  let morningBriefing: BriefingRow | null = null
+  try {
+    const { data: briefingData } = await supabase
+      .from('client_briefings')
+      .select('id, briefing_text, action_item, action_url')
+      .eq('company_id', companyId)
+      .is('dismissed_at', null)
+      .gt('generated_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+      .order('generated_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+    morningBriefing = briefingData as BriefingRow | null
+  } catch { /* table missing or RLS denied — briefing feature dormant */ }
+
   const computedSummary = activeTraficos.length > 0
     ? `${activeTraficos.length} embarque${activeTraficos.length === 1 ? '' : 's'} en tránsito · Patente en movimiento`
     : lastCruzadoRow
@@ -496,6 +519,10 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
       month={month}
       metaPills={clientMetaPills}
       imminentShipment={imminentShipment}
+      morningBriefing={morningBriefing ? {
+        ...morningBriefing,
+        greeting_name: (companyName || 'Tu portal').split(' ')[0] || 'Equipo',
+      } : null}
     />
   )
 }

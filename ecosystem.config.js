@@ -251,6 +251,21 @@ module.exports = {
       log_date_format: 'YYYY-MM-DD HH:mm:ss', max_size: '10M',
     },
     {
+      // Daily CRUZ morning briefing — Sonnet generates 3 Spanish
+      // sentences per active company, stored in client_briefings.
+      // Rendered at the top of /inicio via MorningBriefing component.
+      // Requires the 20260417_client_briefings.sql migration applied.
+      name: 'client-briefing-generator',
+      script: 'scripts/generate-client-briefing.js',
+      cwd,
+      cron_restart: '0 7 * * 1-5',
+      autorestart: false, watch: false, max_memory_restart: '512M',
+      env: { NODE_ENV: 'production' },
+      error_file: '/tmp/client-briefing-error.log',
+      out_file: '/tmp/client-briefing-out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss', max_size: '10M',
+    },
+    {
       name: 'semaforo-watch',
       script: 'scripts/semaforo-watch.js',
       cwd,

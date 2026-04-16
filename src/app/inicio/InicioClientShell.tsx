@@ -9,6 +9,7 @@ import {
   type ActividadStripItem,
 } from '@/components/aguila'
 import { TimelineModal } from '@/components/cockpit/client/TimelineModal'
+import { MorningBriefing, type MorningBriefingData } from '@/components/cockpit/client/MorningBriefing'
 import type { ActiveShipment } from '@/components/cockpit/client/ActiveShipmentTimeline'
 import type { NavCounts } from '@/lib/cockpit/nav-tiles'
 import type { CapabilityCounts } from '@/lib/cockpit/capabilities'
@@ -37,13 +38,16 @@ export interface InicioClientShellProps {
   /** Server pre-fetched most-imminent tráfico. null = no active shipment → KPI
    *  renders as "Último cruce" variant (non-tappable) and modal never opens. */
   imminentShipment: ActiveShipment | null
+  /** Daily CRUZ briefing row. null = no briefing for today (feature
+   *  dormant pre-migration, or user dismissed, or cron hasn't fired). */
+  morningBriefing: MorningBriefingData | null
 }
 
 export function InicioClientShell({
   role, name, companyName,
   heroKPIs, navCounts, actividadStripItems, capabilityCounts,
   summaryLine, pulseSignal, month, metaPills,
-  imminentShipment,
+  imminentShipment, morningBriefing,
 }: InicioClientShellProps) {
   const [modalOpen, setModalOpen] = useState(false)
   const kpiButtonRef = useRef<HTMLButtonElement | null>(null)
@@ -70,11 +74,17 @@ export function InicioClientShell({
         heroKPIs={wiredHeroKPIs}
         navCounts={navCounts}
         actividadStripSlot={
-          <ActividadStrip
-            items={actividadStripItems}
-            emptyLabel="Tu operación está en calma · Todo en orden"
-            title="Últimos mensajes"
-          />
+          <>
+            {/* Morning briefing renders ONLY when the server pre-fetched
+                one for today. Otherwise this fragment contributes nothing
+                and the ActividadStrip flows up to its usual position. */}
+            <MorningBriefing briefing={morningBriefing} />
+            <ActividadStrip
+              items={actividadStripItems}
+              emptyLabel="Tu operación está en calma · Todo en orden"
+              title="Últimos mensajes"
+            />
+          </>
         }
         capabilitySlot={<CapabilityCardGrid counts={capabilityCounts} />}
         summaryLine={summaryLine}

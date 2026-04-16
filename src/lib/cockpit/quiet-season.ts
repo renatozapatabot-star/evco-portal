@@ -133,14 +133,16 @@ export function buildClientHeroTiles(input: ClientHeroInputs): ClientHeroOutput 
     ariaLabel: `${days} días sin incidencias`,
   })
 
-  // Tile 2 — Último cruce (relative + absolute in one string for the value
-  // position; JetBrains Mono will render it all in mono via KPITile's number
-  // slot, which is acceptable for this composite string).
+  // Tile 2 — Último cruce. Splits relative + absolute into value +
+  // sublabel so KPITile can render them on two lines (fix 2026-04-16
+  // prod screenshot — the concatenated "hace 36 días · 10 mar 2026"
+  // wrapped badly at mobile widths and drifted at desktop).
   if (input.lastCruceIso) {
     tiles.push({
       key: 'ultimo-cruce',
       label: 'Último cruce exitoso',
-      value: `${daysAgoLabel(input.lastCruceIso)} · ${formatDateAbs(input.lastCruceIso)}`,
+      value: daysAgoLabel(input.lastCruceIso),
+      sublabel: formatDateAbs(input.lastCruceIso),
       tone: 'slate' as QuietTone as CockpitHeroKPI['tone'],
     })
   } else {

@@ -197,11 +197,23 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
   // heroKPIs assembled below — requires imminentShipment and lastCruzadoRow
   // which are fetched a few lines down. Declaration hoisted there.
 
+  // Catálogo sad-zero: when nothing was classified this month,
+  // "0 este mes · 0 en catálogo" reads as "broken" even though the
+  // client may have a healthy history. Fallbacks, in order:
+  //   · month=0 AND total>0 → "N partes en catálogo"
+  //   · month=0 AND total=0 → "Tu catálogo aparecerá…"
+  //   · month>0             → the normal month microStatus
+  const catalogoMicroStatus = catalogoMesCount > 0
+    ? `Partes usadas este mes · ${catalogoCount.toLocaleString('es-MX')} en catálogo`
+    : catalogoCount > 0
+      ? `${catalogoCount.toLocaleString('es-MX')} partes en catálogo`
+      : 'Tu catálogo aparecerá cuando clasifiquemos tus productos'
+
   const navCounts: NavCounts = {
     traficos:        { count: activeTraficosCount,    series: activosSeries,          microStatus: `${cruzadosLast7Count} cruzaron esta semana` },
     pedimentos:      { count: pedimentosListosCount,  series: pedimentosListosSeries, microStatus: daysSinceLastCruce != null ? `Último cruce hace ${daysSinceLastCruce} día${daysSinceLastCruce === 1 ? '' : 's'}` : 'Sin cruces recientes' },
     expedientes:     { count: expedientesMesCount,    series: expedientesSeries,      microStatus: `Documentos este mes · ${expedientesCount.toLocaleString('es-MX')} en total` },
-    catalogo:        { count: catalogoMesCount,       series: [],                     microStatus: `Partes usadas este mes · ${catalogoCount.toLocaleString('es-MX')} en catálogo` },
+    catalogo:        { count: catalogoMesCount,       series: [],                     microStatus: catalogoMicroStatus },
     entradas:        { count: entradasSemanaCount,    series: entradasSeries,         microStatus: `${entradasSemanaCount} recibida${entradasSemanaCount === 1 ? '' : 's'} esta semana` },
     reportes:        { count: null,                   series: clasificacionesSeries },
   }
@@ -406,9 +418,12 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
   // Capability cards — empty counts today; shell builds the grid client-side.
   const capabilityCounts: CapabilityCounts = {}
 
+  // CRUCES 7D meta pill removed 2026-04-16 — it duplicated the hero
+  // "Cruces este mes" / quiet-season "Volumen del mes" tile and added
+  // header noise. ACTIVOS + ÚLT. CRUCE remain because they pair with
+  // the dynamic first-KPI ("Próximo cruce" / "Último cruce").
   const clientMetaPills: Array<{ label: string; value: string | number; tone?: 'silver' | 'warning' }> = [
     { label: 'ACTIVOS', value: activeTraficosCount, tone: 'silver' },
-    { label: 'CRUCES 7D', value: cruzadosLast7Count, tone: 'silver' },
     ...(daysSinceLastCruce != null
       ? [{ label: 'ÚLT. CRUCE', value: daysSinceLastCruce === 0 ? 'hoy' : `hace ${daysSinceLastCruce}d`, tone: 'silver' as const }]
       : []),

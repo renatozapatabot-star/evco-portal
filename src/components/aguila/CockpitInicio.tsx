@@ -20,6 +20,12 @@ export interface CockpitHeroKPI {
   key: string
   label: string
   value: number | string
+  /** Small secondary line rendered below `value`. Use for companion
+   *  data that shouldn't compete with the headline — e.g. an absolute
+   *  date under a relative "hace N días" (quiet-season Último cruce
+   *  tile), a total beneath a month count, etc. Renders muted,
+   *  JetBrains Mono, single-line with ellipsis. */
+  sublabel?: string
   series?: number[]
   current?: number
   previous?: number
@@ -154,6 +160,7 @@ export function CockpitInicio({
             key={k.key}
             label={k.label}
             value={k.value}
+            sublabel={k.sublabel}
             series={k.series}
             current={k.current}
             previous={k.previous}

@@ -42,6 +42,12 @@ describe('buildClientHeroTiles (quiet-season)', () => {
     const operacion = out.heroKPIs[0]
     expect(operacion.label).toBe('Días sin incidencias')
     expect(operacion.value).toBe(45)
+    // Último cruce tile now splits into value (relative) + sublabel (absolute)
+    const ultimo = out.heroKPIs[1]
+    expect(typeof ultimo.value).toBe('string')
+    expect(String(ultimo.value)).toMatch(/^hace \d+ días?$|^hoy$/)
+    expect(typeof ultimo.sublabel).toBe('string')
+    expect(ultimo.sublabel?.length ?? 0).toBeGreaterThan(0)
     const tmec = out.heroKPIs[3]
     expect(String(tmec.value)).toMatch(/^\$12,500 USD$/)
     expect(out.summaryLine).toMatch(/al corriente/)
@@ -73,7 +79,7 @@ describe('buildClientHeroTiles (quiet-season)', () => {
     expect(out.heroKPIs.length).toBe(3)
   })
 
-  it('quiet-season with no cruce history shows "Sin cruces aún" tile', () => {
+  it('quiet-season with no cruce history shows "Sin cruces aún" tile + no sublabel', () => {
     const out = buildClientHeroTiles({
       activeCount: 0,
       standardTiles,
@@ -84,6 +90,7 @@ describe('buildClientHeroTiles (quiet-season)', () => {
     })
     const ultimo = out.heroKPIs.find(t => t.key === 'ultimo-cruce')
     expect(ultimo?.value).toBe('Sin cruces aún')
+    expect(ultimo?.sublabel).toBeUndefined()
   })
 
   it('sad-zero nav replacement: pedimentosMonthCount=0 + lastPedimentoIso → override string', () => {

@@ -10,6 +10,11 @@ import { DeltaIndicator } from './DeltaIndicator'
 interface Props {
   label: string
   value: number | string
+  /** Small secondary line rendered under `value`. Muted, mono,
+   *  single-line with ellipsis. Use for companion context that
+   *  shouldn't compete with the headline (e.g. absolute date under
+   *  a relative "hace N días"). */
+  sublabel?: string
   series?: number[]
   previous?: number
   current?: number
@@ -28,7 +33,7 @@ interface Props {
 }
 
 export function KPITile({
-  label, value, series, previous, current, href, onClick, buttonRef, tone = 'silver',
+  label, value, sublabel, series, previous, current, href, onClick, buttonRef, tone = 'silver',
   urgent = false, inverted = false, compact = false, ariaLabel,
 }: Props) {
   const numberColor = urgent ? RED : TEXT_PRIMARY
@@ -94,6 +99,25 @@ export function KPITile({
           <DeltaIndicator current={current ?? numericValue} previous={previous} inverted={inverted} />
         )}
       </div>
+
+      {sublabel && (
+        <div
+          style={{
+            fontFamily: 'var(--font-jetbrains-mono), JetBrains Mono, monospace',
+            fontSize: 'var(--aguila-fs-meta, 11px)',
+            color: 'rgba(148,163,184,0.7)',
+            lineHeight: 1.2,
+            marginTop: 2,
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            fontVariantNumeric: 'tabular-nums',
+          }}
+          title={sublabel}
+        >
+          {sublabel}
+        </div>
+      )}
 
       <div style={{ marginTop: 'auto', minHeight: sparkHeight }}>
         {sparkSeries && sparkSeries.length > 0 ? (

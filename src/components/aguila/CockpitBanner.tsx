@@ -26,8 +26,12 @@ interface Props {
  * its `brandHeader` slot.
  */
 export function CockpitBanner({ role, name, companyName, metaPills }: Props) {
+  // Client surface drops the "Portal del cliente · <company>" subtitle
+  // — it duplicates the H1 company name shown below. Operator / owner
+  // / warehouse / accounting still get their role-scoped subtitle
+  // because it adds real context those surfaces need.
   const subtitle =
-    role === 'client'     ? (companyName ? `Portal del cliente · ${companyName}` : 'Portal del cliente')
+    role === 'client'     ? null
     : role === 'owner'    ? `Vista Águila · ${name}`
     : role === 'warehouse' ? `Bodega · ${name}`
     : role === 'accounting' ? `Contabilidad · ${name}`
@@ -77,15 +81,19 @@ export function CockpitBanner({ role, name, companyName, metaPills }: Props) {
           />
           EN VIVO
         </span>
-        <span aria-hidden style={{ color: TEXT_MUTED }}>·</span>
-        <span style={{
-          fontSize: 'var(--aguila-fs-body, 13px)',
-          color: TEXT_SECONDARY,
-          fontWeight: 500,
-          letterSpacing: '0.01em',
-        }}>
-          {subtitle}
-        </span>
+        {subtitle && (
+          <>
+            <span aria-hidden style={{ color: TEXT_MUTED }}>·</span>
+            <span style={{
+              fontSize: 'var(--aguila-fs-body, 13px)',
+              color: TEXT_SECONDARY,
+              fontWeight: 500,
+              letterSpacing: '0.01em',
+            }}>
+              {subtitle}
+            </span>
+          </>
+        )}
       </div>
       <div style={{
         marginTop: 4,

@@ -136,20 +136,27 @@ export async function POST(request: NextRequest) {
     const referer = request.headers.get('referer') || ''
     const routePath = route || (() => { try { return new URL(referer).pathname } catch { return '/' } })()
 
-    const { error } = await supabase.from('interaction_events').insert({
-      event_type: event,
-      event_name: event,
-      page_path: routePath,
-      user_id: userId,
-      company_id: session.companyId,
-      operator_id: operatorId,
-      entity_type: entityType ?? null,
-      entity_id: entityId ?? null,
-      payload: metadata ?? {},
-      user_agent: ua,
-    })
-    if (error) {
-      return NextResponse.json({ data: null, error: { code: 'INTERNAL_ERROR', message: error.message } }, { status: 500 })
+    // Fire-and-forget: telemetry failure (schema drift, service blip) must
+    // never break the client page. We log the error server-side so Vercel
+    // picks it up but always return 200 to the caller.
+    try {
+      const { error } = await supabase.from('interaction_events').insert({
+        event_type: event,
+        event_name: event,
+        page_path: routePath,
+        user_id: userId,
+        company_id: session.companyId,
+        operator_id: operatorId,
+        entity_type: entityType ?? null,
+        entity_id: entityId ?? null,
+        payload: metadata ?? {},
+        user_agent: ua,
+      })
+      if (error) {
+        console.error('[telemetry] insert failed:', error.message)
+      }
+    } catch (e) {
+      console.error('[telemetry] insert threw:', e instanceof Error ? e.message : String(e))
     }
     return NextResponse.json({ data: { ok: true }, error: null })
   }
@@ -178,9 +185,15 @@ export async function POST(request: NextRequest) {
     created_at: e.timestamp || new Date().toISOString(),
   }))
 
-  const { error } = await supabase.from('interaction_events').insert(rows)
-  if (error) {
-    return NextResponse.json({ ok: false, error: error.message }, { status: 500 })
+  // Legacy batch path: same fire-and-forget contract — dropped telemetry is
+  // better than a broken page.
+  try {
+    const { error } = await supabase.from('interaction_events').insert(rows)
+    if (error) {
+      console.error('[telemetry] batch insert failed:', error.message)
+    }
+  } catch (e) {
+    console.error('[telemetry] batch insert threw:', e instanceof Error ? e.message : String(e))
   }
   return NextResponse.json({ ok: true })
 }

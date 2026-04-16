@@ -110,11 +110,32 @@ export default function IntelligenceTicker() {
     }
   }, [])
 
+  // Dev-mode regression guard — warn if something ever mounts this
+  // ticker twice (layout + page, hydration duplicate, etc). Ships
+  // stripped in production builds.
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'production') return
+    const count = document.querySelectorAll('[data-ticker-root]').length
+    if (count > 1) {
+      // eslint-disable-next-line no-console
+      console.warn(`[CRUZ] Duplicate IntelligenceTicker detected: ${count} mounted`)
+    }
+  }, [])
+
   if (!items || items.length === 0) return null
+
+  // Static mode: when there are fewer items than the marquee needs to
+  // fill the viewport, the "seamless loop" renders BOTH copies visible
+  // on screen at once (Renato's 2026-04-16 screenshot showed
+  // "Puente líder · USD/MXN · Puente líder · USD/MXN"). Render the row
+  // once and skip the animation instead.
+  const sparseContent = items.length <= 2
 
   return (
     <div
+      data-ticker-root
       aria-label="Inteligencia en vivo"
+      className="aguila-ticker-root"
       style={{
         position: 'relative',
         height: 32,
@@ -129,15 +150,15 @@ export default function IntelligenceTicker() {
       }}
     >
       <div
-        className="aguila-ticker-track"
+        className={sparseContent ? 'aguila-ticker-static' : 'aguila-ticker-track'}
         style={{
           display: 'inline-flex',
           whiteSpace: 'nowrap',
-          willChange: 'transform',
+          willChange: sparseContent ? undefined : 'transform',
         }}
       >
         <TickerRow items={items} />
-        <TickerRow items={items} />
+        {!sparseContent && <TickerRow items={items} />}
       </div>
       <style jsx>{`
         @keyframes aguila-ticker-scroll {
@@ -148,8 +169,11 @@ export default function IntelligenceTicker() {
           animation: aguila-ticker-scroll 60s linear infinite;
         }
         @media (max-width: 480px) {
-          .aguila-ticker-track {
-            animation-duration: 90s;
+          /* Client cockpit stays calm on mobile — ticker is hidden
+             rather than scrolled. "Nice to have, not mission critical
+             for clients" (Block 1.2 design note). Reappears at ≥ 481px. */
+          :global(.aguila-ticker-root) {
+            display: none !important;
           }
         }
         @media (prefers-reduced-motion: reduce) {

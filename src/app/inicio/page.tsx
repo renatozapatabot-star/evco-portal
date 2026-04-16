@@ -60,6 +60,17 @@ async function CockpitContent({ session, cookieStore, month }: { session: Sessio
   try {
     return await renderClientCockpit(session, cookieStore, month)
   } catch (err) {
+    // Next.js signals redirects by throwing an error with a digest
+    // starting "NEXT_REDIRECT". Re-throw so the server actually
+    // redirects instead of rendering an error card that shows the
+    // word NEXT_REDIRECT to the user — which is what shipped before
+    // this fix. Same treatment for notFound() (digest "NEXT_NOT_FOUND").
+    const digest = typeof err === 'object' && err !== null && 'digest' in err
+      ? String((err as { digest?: unknown }).digest ?? '')
+      : ''
+    if (digest.startsWith('NEXT_REDIRECT') || digest === 'NEXT_NOT_FOUND') {
+      throw err
+    }
     const msg = err instanceof Error ? err.message : String(err)
     return <CockpitErrorCard message={`No se pudo cargar el cockpit: ${msg}`} />
   }

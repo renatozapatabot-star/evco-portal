@@ -143,6 +143,18 @@ function findEnglishViolations(text) {
     await page.goto(URL_BASE + '/inicio', { waitUntil: 'networkidle' })
   }
 
+  // Wait for React hydration — /inicio wraps content in <Suspense
+  // fallback={<CockpitSkeleton />}> so `networkidle` only confirms the
+  // SKELETON is up. The nav grid is the latest-hydrating element on
+  // the client cockpit; once it's visible, the hero + other sections
+  // are almost certainly rendered too. Bounded at 15s so a broken
+  // deploy still fails fast instead of hanging.
+  try {
+    await page.locator('.nav-cards-grid').first().waitFor({ state: 'visible', timeout: 15000 })
+  } catch {
+    console.log(`  ⚠️  .nav-cards-grid did not appear within 15s — DEBUG dump will show what rendered`)
+  }
+
   // Screenshot /inicio
   try { await page.screenshot({ path: '/tmp/ursula-inicio.png', fullPage: true }) } catch {}
 
@@ -401,7 +413,14 @@ function findEnglishViolations(text) {
     if (!targetLocator) {
       throw new Error('no Embarques link found via any of 4 fallback strategies')
     }
-    await targetLocator.click()
+    // Click + wait for the URL transition + idle in parallel. Next.js
+    // Link uses client-side routing; a naive .click() can return before
+    // the URL updates, so we assert the URL change explicitly with a
+    // generous timeout.
+    await Promise.all([
+      page.waitForURL(/\/embarques(\?|\/|$)/, { timeout: 10000 }).catch(() => {/* fall through to explicit check below */}),
+      targetLocator.click(),
+    ])
     await page.waitForLoadState('networkidle', { timeout: 10000 })
     const current = page.url()
     if (!/\/embarques(\?|\/|$)/.test(current)) {

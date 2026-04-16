@@ -7,6 +7,7 @@ import { logOperatorAction } from '@/lib/operator-actions'
 import { TOOL_DEFINITIONS, runTool, type AguilaCtx, type ToolName } from '@/lib/aguila/tools'
 import { resolveMentions } from '@/lib/aguila/mentions'
 import { logShadow } from '@/lib/aguila/shadow-log'
+import { buildClientAIContext, formatClientAIContextPreamble } from '@/lib/ai/client-context'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -107,7 +108,23 @@ export async function POST(req: NextRequest) {
     const companyId = session.companyId
     const operatorId = req.cookies.get('operator_id')?.value || null
     const ctx: AguilaCtx = { companyId, role, userId: operatorId, operatorId, supabase }
-    const systemPrompt = systemPromptFor(role)
+    // Client role gets personalized context prepended to the system
+    // prompt (company name, active shipments, recent pedimentos,
+    // incomplete expedientes) — so Ursula's questions are answered
+    // against HER data, not a generic response. Other roles already
+    // have tool-use to fetch context on demand; clients benefit from
+    // having the shape up-front.
+    let systemPrompt = systemPromptFor(role)
+    if (role === 'client') {
+      try {
+        const clientCtx = await buildClientAIContext(supabase, companyId)
+        systemPrompt = `${formatClientAIContextPreamble(clientCtx)}\n\n${systemPrompt}`
+      } catch {
+        // Context build failure is non-fatal — AI still responds with
+        // the generic client prompt. Logged server-side via standard
+        // error handling.
+      }
+    }
 
     const anthropic = new Anthropic({ apiKey, timeout: 30_000 })
 

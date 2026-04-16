@@ -9,6 +9,7 @@ import {
 import type { LucideIcon } from 'lucide-react'
 import type { ClientData } from '@/components/cockpit/shared/fetchCockpitData'
 import { fmtDateTime } from '@/lib/format-utils'
+import { translateEstatus, type EstatusTone } from '@/lib/estatus-translator'
 import { PriorityZone } from './PriorityZone'
 import { SmartKPIStrip } from './SmartKPIStrip'
 import { IntelligencePanel } from './IntelligencePanel'
@@ -108,16 +109,16 @@ function toDisplayName(legalName: string): { display: string; suffix: string } {
 
 // ── Fix 4: Activity status pills ──────────────────────────
 
-const STATUS_PILL_CONFIG: Record<string, { bg: string; text: string; label: string }> = {
-  'En Proceso':       { bg: 'rgba(192,197,206,0.12)',  text: '#C0C5CE', label: 'En proceso' },
-  'Documentacion':    { bg: 'rgba(148,163,184,0.12)', text: '#94a3b8', label: 'Documentación' },
-  'En Aduana':        { bg: 'rgba(148,163,184,0.12)', text: '#94a3b8', label: 'En aduana' },
-  'Pedimento Pagado': { bg: 'rgba(34,197,94,0.12)',   text: '#22C55E', label: 'Pagado' },
-  'Cruzado':          { bg: 'rgba(34,197,94,0.12)',   text: '#22C55E', label: 'Cruzado' },
+const TONE_STYLES: Record<EstatusTone, { bg: string; text: string }> = {
+  positive:  { bg: 'rgba(34,197,94,0.12)',   text: '#22C55E' },
+  in_flight: { bg: 'rgba(192,197,206,0.12)', text: '#C0C5CE' },
+  neutral:   { bg: 'rgba(148,163,184,0.12)', text: '#94a3b8' },
+  unknown:   { bg: 'rgba(148,163,184,0.10)', text: '#64748b' },
 }
 
 function StatusPill({ status }: { status: string }) {
-  const c = STATUS_PILL_CONFIG[status] ?? { bg: 'rgba(148,163,184,0.1)', text: '#64748b', label: status }
+  const { label, tone } = translateEstatus(status)
+  const c = TONE_STYLES[tone]
   return (
     <span style={{
       fontSize: 'var(--aguila-fs-label)', fontWeight: 600,
@@ -125,7 +126,7 @@ function StatusPill({ status }: { status: string }) {
       background: c.bg, color: c.text,
       flexShrink: 0, whiteSpace: 'nowrap',
     }}>
-      {c.label}
+      {label}
     </span>
   )
 }

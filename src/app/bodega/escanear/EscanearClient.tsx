@@ -212,7 +212,7 @@ export function EscanearClient() {
     >
       <div style={{ width: '100%', maxWidth: 420 }}>
         <div style={{ textAlign: 'center', marginBottom: 20, marginTop: 8 }}>
-          <AguilaMark size={40} tone="silver" aria-label="ZAPATA AI" />
+          <AguilaMark size={40} tone="silver" aria-label="CRUZ" />
           <div
             style={{
               fontSize: 'var(--aguila-fs-meta)',

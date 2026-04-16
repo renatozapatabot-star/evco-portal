@@ -1,5 +1,5 @@
 /**
- * ZAPATA AI · Block 12 — GET/PATCH/DELETE /api/carriers/catalog/[id]
+ * CRUZ · Block 12 — GET/PATCH/DELETE /api/carriers/catalog/[id]
  *
  * Per-carrier admin ops. Internal roles only.
  */

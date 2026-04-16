@@ -27,13 +27,13 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  title: "ZAPATA AI — Inteligencia aduanal",
-  description: "ZAPATA AI · Inteligencia aduanal · Patente 3596 · Aduana 240 · Nuevo Laredo",
+  title: "CRUZ — Inteligencia aduanal",
+  description: "CRUZ · Inteligencia aduanal · Patente 3596 · Aduana 240 · Nuevo Laredo",
   icons: { icon: '/favicon.svg' },
   openGraph: {
-    title: 'ZAPATA AI — Inteligencia aduanal',
+    title: 'CRUZ — Inteligencia aduanal',
     description: 'Renato Zapata & Company · Patente 3596 · Est. 1941',
-    siteName: 'ZAPATA AI',
+    siteName: 'CRUZ',
   },
   appleWebApp: {
     capable: true,
@@ -54,7 +54,7 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="ZAPATA AI" />
+        <meta name="apple-mobile-web-app-title" content="CRUZ" />
         <link rel="apple-touch-icon" href="/icon-192.png" />
         <link rel="preconnect" href="https://jkhpafacchjxawnscplf.supabase.co" />
         <link rel="dns-prefetch" href="https://jkhpafacchjxawnscplf.supabase.co" />

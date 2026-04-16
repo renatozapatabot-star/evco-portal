@@ -1,7 +1,7 @@
 // PLACEHOLDER AduanaNet M3 format. Replace this function body when a real M3
 // sample is available. Spec: docs/recon/V2_ADUANET_RECON.md.
 //
-// ZAPATA AI · Block 9 — Pedimento Interface Export (structure only).
+// CRUZ · Block 9 — Pedimento Interface Export (structure only).
 // Pure function. Serializes a FullPedimento into a JSON string with es-MX
 // field names. No I/O. The API route is the only place storage/DB writes
 // happen; this module stays hot-swappable.

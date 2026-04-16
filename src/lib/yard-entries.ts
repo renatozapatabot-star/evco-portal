@@ -1,5 +1,5 @@
 /**
- * ZAPATA AI · Block 14 — Yard / patio entries.
+ * CRUZ · Block 14 — Yard / patio entries.
  *
  * Pure logic: validation (Zod), grid geometry (A1..Z9), waiting-time color
  * bucketing, workflow_events shaping. Route handlers in
@@ -33,7 +33,7 @@ export const WAIT_BUCKET_RED_MS = 6 * 60 * 60 * 1000 // 6h
 export type WaitBucket = 'silver' | 'gold' | 'red'
 
 /**
- * Map a waiting duration (ms) to the ZAPATA AI color bucket.
+ * Map a waiting duration (ms) to the CRUZ color bucket.
  *  - silver:  < 2h
  *  - gold:    2h – 6h
  *  - red:     > 6h

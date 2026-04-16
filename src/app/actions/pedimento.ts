@@ -1,7 +1,7 @@
 'use server'
 
 /**
- * ZAPATA AI · Block 6a — Pedimento server actions.
+ * CRUZ · Block 6a — Pedimento server actions.
  *
  * Every action: verifySession → company-scope check → mutation → sampled
  * decision log → return. Logging is sampled (≤1 per minute per pedimento)

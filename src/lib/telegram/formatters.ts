@@ -1,5 +1,5 @@
 /**
- * ZAPATA AI · V1.5 F12 — Telegram message formatters (es-MX).
+ * CRUZ · V1.5 F12 — Telegram message formatters (es-MX).
  *
  * One formatter per routable event kind. Pure functions: given a payload,
  * return a fully formatted Spanish string with emoji. No Supabase, no I/O.

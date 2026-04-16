@@ -1,5 +1,5 @@
 /**
- * ZAPATA AI · V1.5 F1 — POST /api/qr/resolve
+ * CRUZ · V1.5 F1 — POST /api/qr/resolve
  *
  * Vicente taps "Escanear QR" at the warehouse gate. This endpoint looks up
  * the short code, scopes to the session's company_id, stamps scan metadata,

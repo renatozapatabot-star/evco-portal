@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * ZAPATA AI · V1.5 F9 — Demo orchestrator UI.
+ * CRUZ · V1.5 F9 — Demo orchestrator UI.
  *
  * Silver glass. Single button. Live progress panel polls /status every 3s.
  * Reset purges synthetic data. No blue/cyan/gold. Mono on amounts + codes.
@@ -158,7 +158,7 @@ export function DemoRunnerClient() {
             backgroundClip: 'text',
           }}
         >
-          Demo orquestado ZAPATA AI
+          Demo orquestado CRUZ
         </h1>
         <p style={{ fontSize: 'var(--aguila-fs-section)', color: TEXT_SECONDARY, marginTop: 6, marginBottom: 0 }}>
           90 segundos. Un embarque sintético{' '}
@@ -207,7 +207,7 @@ export function DemoRunnerClient() {
           </h2>
 
           <p style={{ fontSize: 'var(--aguila-fs-body)', color: TEXT_SECONDARY, marginTop: 0 }}>
-            Al iniciar, ZAPATA AI emite 12 eventos secuenciales que poblan embarques,
+            Al iniciar, CRUZ emite 12 eventos secuenciales que poblan embarques,
             clasificación, corredor, PECE, MVE, factura y exportación QuickBooks.
             Todo con el cliente sintético <code style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>aguila-demo</code>.
           </p>

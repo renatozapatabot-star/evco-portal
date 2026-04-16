@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * ZAPATA AI · Block 11 — Searchable bank selector over the 87-bank catalog.
+ * CRUZ · Block 11 — Searchable bank selector over the 87-bank catalog.
  *
  * Filter by name OR bank_code. Keyboard nav: ↑↓ Enter Esc. Mono font on
  * codes. 60px min touch target on the trigger. All data inline (no round-trip).

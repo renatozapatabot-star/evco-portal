@@ -1,5 +1,5 @@
 /**
- * ZAPATA AI · Block 17 — Resolve MVE alert.
+ * CRUZ · Block 17 — Resolve MVE alert.
  * PATCH /api/mve/alerts/[id]/resolve
  * Marks the alert resolved; records resolver as `${companyId}:${role}`.
  */

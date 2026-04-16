@@ -56,7 +56,7 @@ export function FinancialPanel({ financial }: Props) {
       footer={financial.facturadoThisMonth > 0 ? (
         <AduanaRecommendation
           compact
-          recommendation="ZAPATA AI monitorea tus costos y detecta oportunidades de ahorro"
+          recommendation="CRUZ monitorea tus costos y detecta oportunidades de ahorro"
           confidence={92}
           approveLabel="Ver detalle"
           approveHref="/financiero"

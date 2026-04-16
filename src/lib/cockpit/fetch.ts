@@ -1,5 +1,5 @@
 /**
- * Shared cockpit data-fetch helpers (ZAPATA AI v7).
+ * Shared cockpit data-fetch helpers (CRUZ v7).
  * Used by /inicio, /operador/inicio, /admin/eagle to ensure the same
  * series-bucketing logic produces the same trend shape across surfaces.
  */

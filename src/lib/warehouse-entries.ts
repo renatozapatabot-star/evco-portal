@@ -1,5 +1,5 @@
 /**
- * ZAPATA AI · Block 13 — Warehouse entries (Vicente's dock workflow).
+ * CRUZ · Block 13 — Warehouse entries (Vicente's dock workflow).
  *
  * Pure logic + validation. Route handlers in src/app/api/warehouse/** call
  * these helpers. Cronología event `warehouse_entry_received` is already in

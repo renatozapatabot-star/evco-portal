@@ -1,5 +1,5 @@
 /**
- * ZAPATA AI · Block 15 — Client config validator tests.
+ * CRUZ · Block 15 — Client config validator tests.
  *
  * Twelve section tests + cross-section RFC consistency + completeness.
  */

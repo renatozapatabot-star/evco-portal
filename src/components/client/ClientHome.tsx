@@ -183,7 +183,7 @@ export function ClientHome({ companyName, data }: { companyName?: string; data: 
         }} />
         <div>
           {(() => {
-            const { display, suffix } = toDisplayName(companyName || 'ZAPATA AI')
+            const { display, suffix } = toDisplayName(companyName || 'CRUZ')
             return (
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
                 <h1 style={{

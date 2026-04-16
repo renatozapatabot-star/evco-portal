@@ -2,7 +2,7 @@
 
 /**
  * Silver pill toggle for es-MX / en-US. Uses initials "ES | EN" in JetBrains
- * Mono — matches ZAPATA AI monochrome chrome and avoids emoji-filter brittleness.
+ * Mono — matches CRUZ monochrome chrome and avoids emoji-filter brittleness.
  */
 
 import { useI18n } from '@/lib/i18n/provider'

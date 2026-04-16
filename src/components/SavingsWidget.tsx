@@ -98,7 +98,7 @@ export function SavingsWidget() {
       <div style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 700,
         textTransform: 'uppercase', letterSpacing: '0.1em',
         color: 'var(--status-green, #22c55e)', marginBottom: 8 }}>
-        Ahorro con ZAPATA AI — {data.period}
+        Ahorro con CRUZ — {data.period}
       </div>
 
       <div className="mono" style={{ fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 800,

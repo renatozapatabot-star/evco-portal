@@ -1,5 +1,5 @@
 /**
- * ZAPATA AI · Block 11 — POST /api/pece/confirm
+ * CRUZ · Block 11 — POST /api/pece/confirm
  *
  * Transitions a pece_payments row along intent → submitted → confirmed
  * (or → rejected). Fires `pece_payment_confirmed` on final confirmation.

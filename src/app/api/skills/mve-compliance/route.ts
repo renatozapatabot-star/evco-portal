@@ -6,7 +6,7 @@ import { createServerClient } from '@/lib/supabase-server'
 export const dynamic = 'force-dynamic'
 
 /**
- * ZAPATA AI v10 skill — mve-compliance.
+ * CRUZ v10 skill — mve-compliance.
  *
  * Returns MVE alert counts + recent items for the requested scope.
  * Client sees own company only; operator/admin can optionally pass

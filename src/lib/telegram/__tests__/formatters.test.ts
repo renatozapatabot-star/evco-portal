@@ -1,5 +1,5 @@
 /**
- * ZAPATA AI · V1.5 F12 — Telegram formatter tests.
+ * CRUZ · V1.5 F12 — Telegram formatter tests.
  */
 
 import { describe, it, expect } from 'vitest'

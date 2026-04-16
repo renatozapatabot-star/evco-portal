@@ -1,5 +1,5 @@
 /**
- * ZAPATA AI · Block 16 — AVC generation API.
+ * CRUZ · Block 16 — AVC generation API.
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
@@ -161,7 +161,7 @@ export async function POST(
     company_id: companyId,
     decision_type: 'avc_generated',
     decision: `AVC generado para entrada ${entry.id}`,
-    reasoning: 'Generación local ZAPATA AI; pendiente de submisión a VUCEM/SAT en V2.',
+    reasoning: 'Generación local CRUZ; pendiente de submisión a VUCEM/SAT en V2.',
     dataPoints: { pdf_url: pdfUrl, xml_url: xmlUrl, entry_id: entry.id, kind: parsed.data.kind, actor },
   })
 

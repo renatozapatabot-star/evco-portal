@@ -16,7 +16,7 @@ export interface CapabilityCardDef {
 }
 
 /**
- * ZAPATA AI v10 — capability cards shown on every role cockpit, between
+ * CRUZ v10 — capability cards shown on every role cockpit, between
  * the 6 nav cards and the main estado grid. Actions, not destinations.
  *
  * Hrefs are flat (role-scoping happens inside the target page by

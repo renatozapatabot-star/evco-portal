@@ -1,5 +1,5 @@
 /**
- * ZAPATA AI V1.5 · F16 — audit log query helpers.
+ * CRUZ V1.5 · F16 — audit log query helpers.
  *
  * Thin layer over the `audit_log` table. The API route is the only
  * call-site in the portal; tests exercise `diffBeforeAfter` directly.

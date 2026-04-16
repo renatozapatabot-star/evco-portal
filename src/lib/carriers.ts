@@ -1,5 +1,5 @@
 /**
- * ZAPATA AI · Block 12 — Carriers master catalog library.
+ * CRUZ · Block 12 — Carriers master catalog library.
  *
  * Pure types + zod schemas + MRU cache helpers. UI components and API
  * routes import from here; no IO lives at this layer.

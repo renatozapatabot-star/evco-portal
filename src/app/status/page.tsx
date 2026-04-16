@@ -20,13 +20,13 @@ export default async function StatusPage() {
 
   // Client-friendly label mapping — hide internal service names
   const friendlyName: Record<string, string> = {
-    'Portal CRUZ': 'ZAPATA AI Web',
+    'Portal CRUZ': 'CRUZ Web',
     'Base de Datos': 'Sincronización de Datos',
     'GlobalPC MySQL': 'Sincronización de Datos',
     'Supabase': 'Sincronización de Datos',
-    'ADUANA Intelligence': 'ZAPATA AI',
+    'ADUANA Intelligence': 'CRUZ',
     'Telegram Bot': 'Notificaciones',
-    'Ollama': 'ZAPATA AI',
+    'Ollama': 'CRUZ',
   }
 
   // If no integration_health data, show defaults
@@ -37,9 +37,9 @@ export default async function StatusPage() {
         detail: i.status === 'healthy' ? 'Activo' : 'Sin conexión',
       }))
     : [
-        { name: 'ZAPATA AI Web', status: 'operational', detail: 'Activo' },
+        { name: 'CRUZ Web', status: 'operational', detail: 'Activo' },
         { name: 'Sincronización de Datos', status: 'operational', detail: 'Activo' },
-        { name: 'ZAPATA AI', status: 'operational', detail: 'Activo' },
+        { name: 'CRUZ', status: 'operational', detail: 'Activo' },
       ]
 
   const cfg: Record<string, { color: string; bg: string; label: string; dot: string }> = {
@@ -59,7 +59,7 @@ export default async function StatusPage() {
           <AguilaMark size={40} />
           <div>
             <h1 style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, margin: 0 }}>Estado del Sistema</h1>
-            <p style={{ color: '#666', fontSize: 'var(--aguila-fs-compact)', margin: 0 }}>ZAPATA AI Intelligence Platform</p>
+            <p style={{ color: '#666', fontSize: 'var(--aguila-fs-compact)', margin: 0 }}>CRUZ Intelligence Platform</p>
           </div>
         </div>
 
@@ -93,7 +93,7 @@ export default async function StatusPage() {
         </div>
 
         <div style={{ textAlign: 'center', marginTop: 24, color: '#666', fontSize: 'var(--aguila-fs-meta)' }}>
-          <p>ZAPATA AI Intelligence Platform &middot; Patente 3596 &middot; Aduana 240 Nuevo Laredo</p>
+          <p>CRUZ Intelligence Platform &middot; Patente 3596 &middot; Aduana 240 Nuevo Laredo</p>
           <p style={{ marginTop: 4 }}>Auto-refresh: every 60 seconds</p>
         </div>
       </div>

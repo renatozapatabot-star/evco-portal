@@ -53,7 +53,7 @@ export default function WarRoom() {
       <div style={{ padding: isMobile ? '10px 16px' : '12px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', flexWrap: isMobile ? 'wrap' : 'nowrap', gap: isMobile ? 8 : 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <div style={{ width: 10, height: 10, borderRadius: '50%', background: urgentes > 5 ? 'var(--danger-500)' : 'var(--success)', animation: 'pulse 2s infinite' }} />
-          <span style={{ fontSize: isMobile ? 13 : 16, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase' }}>WAR ROOM — ZAPATA AI</span>
+          <span style={{ fontSize: isMobile ? 13 : 16, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase' }}>WAR ROOM — CRUZ</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <span style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-secondary)', fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtDateTimeLocal(new Date()).split(' · ')[1] || fmtDateTimeLocal(new Date())}</span>

@@ -119,7 +119,7 @@ export default function CruzChatPage() {
       const apiMessages = newMessages.map(m => ({ role: m.role, content: m.content }))
       const contextInfo = traficoContext
         ? `User is asking about embarque ${traficoContext}. Include specific data for this embarque.`
-        : `User is in the ZAPATA AI chat interface.`
+        : `User is in the CRUZ chat interface.`
 
       const res = await fetch('/api/cruz-chat', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },

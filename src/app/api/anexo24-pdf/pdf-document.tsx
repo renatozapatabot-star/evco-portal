@@ -223,7 +223,7 @@ export function Anexo24PDF(props: Anexo24PDFProps) {
         <View style={s.header} fixed>
           <View>
             <Text style={s.logoText}>
-              ZAPATA AI<Text style={s.logoZ}> Z</Text>
+              CRUZ<Text style={s.logoZ}> Z</Text>
             </Text>
           </View>
           <View style={s.headerRight}>
@@ -320,7 +320,7 @@ export function Anexo24PDF(props: Anexo24PDFProps) {
 
         {/* Footer */}
         <View style={s.footer} fixed>
-          <Text style={s.footerText}>Generado por ZAPATA AI · Confidencial</Text>
+          <Text style={s.footerText}>Generado por CRUZ · Confidencial</Text>
           <Text style={s.footerText} render={({ pageNumber, totalPages }) => `Patente ${patente} · Aduana ${aduana} · ${date} · Pág. ${pageNumber}/${totalPages}`} />
         </View>
       </Page>

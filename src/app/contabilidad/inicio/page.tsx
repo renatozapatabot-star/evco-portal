@@ -1,5 +1,5 @@
 /**
- * ZAPATA AI · /contabilidad/inicio — accounting cockpit (Anabel).
+ * CRUZ · /contabilidad/inicio — accounting cockpit (Anabel).
  *
  * v7+ canonical composition via CockpitInicio. All queries soft-wrapped
  * (invariant 34). Same 6 nav cards (invariant 29). Hero KPIs: CxC vencido,

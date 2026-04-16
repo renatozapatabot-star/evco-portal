@@ -1,5 +1,5 @@
 /**
- * ZAPATA AI · Block 17 — MVE Alerts list (broker/admin/operator only).
+ * CRUZ · Block 17 — MVE Alerts list (broker/admin/operator only).
  *
  * Kept separate from `/mve` (client-facing) per core-invariant #6:
  * compliance alerts do not render on the client dashboard. This page shows

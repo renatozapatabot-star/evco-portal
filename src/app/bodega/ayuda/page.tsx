@@ -23,7 +23,7 @@ const SECTIONS: HelpSection[] = [
   {
     title: 'Cómo subir documentos',
     body:
-      'Entra a "Subir fotos" desde el cockpit o arrastra archivos al recuadro grande de la pantalla de inicio. El clasificador de ZAPATA AI detecta factura, lista de empaque, BOL y certificado de origen automáticamente. Si un archivo no se reconoce, aparece en rojo para clasificación manual.',
+      'Entra a "Subir fotos" desde el cockpit o arrastra archivos al recuadro grande de la pantalla de inicio. El clasificador de CRUZ detecta factura, lista de empaque, BOL y certificado de origen automáticamente. Si un archivo no se reconoce, aparece en rojo para clasificación manual.',
   },
   {
     title: 'Cómo registrar una entrada nueva',

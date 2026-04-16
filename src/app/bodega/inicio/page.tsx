@@ -1,5 +1,5 @@
 /**
- * ZAPATA AI · /bodega/inicio — warehouse cockpit (Vicente).
+ * CRUZ · /bodega/inicio — warehouse cockpit (Vicente).
  *
  * v7+ canonical composition via CockpitInicio. All queries soft-wrapped
  * (invariant 34). Same 6 nav cards (invariant 29). audit_log feed filtered

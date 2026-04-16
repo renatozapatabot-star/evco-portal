@@ -44,7 +44,7 @@ export default function FraccionesPage() {
         Búsqueda de Fracciones
       </h1>
       <p style={{ fontSize: 'var(--aguila-fs-body)', color: '#64748b', marginBottom: 24 }}>
-        Describe un producto y ZAPATA AI sugerirá la fracción arancelaria más probable.
+        Describe un producto y CRUZ sugerirá la fracción arancelaria más probable.
       </p>
 
       {/* Search input */}
@@ -90,7 +90,7 @@ export default function FraccionesPage() {
       {loading && (
         <div style={{ textAlign: 'center', padding: 40, color: '#64748b' }}>
           <Loader2 size={24} className="animate-spin" style={{ margin: '0 auto 12px' }} />
-          <div>Clasificando con ZAPATA AI...</div>
+          <div>Clasificando con CRUZ...</div>
         </div>
       )}
 

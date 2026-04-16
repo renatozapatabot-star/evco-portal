@@ -206,7 +206,7 @@ export default function OnboardPage() {
               </div>
 
               <div>
-                <label style={labelStyle}>Contraseña de ZAPATA AI</label>
+                <label style={labelStyle}>Contraseña de CRUZ</label>
                 <div style={{ display: 'flex', gap: 8 }}>
                   <input style={{ ...inputStyle, fontFamily: 'var(--font-mono)', letterSpacing: '0.05em' }}
                     value={form.portal_password}

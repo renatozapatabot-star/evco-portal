@@ -1,5 +1,5 @@
 /**
- * ZAPATA AI · Block 14 — Yard / patio entry tests.
+ * CRUZ · Block 14 — Yard / patio entry tests.
  *
  * Four tests:
  *   1. Entry shapes a `yard_entered` workflow_event.

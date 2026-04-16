@@ -1,5 +1,5 @@
 /**
- * ZAPATA AI · V1.5 F17 — Pedimento PDF render (pure).
+ * CRUZ · V1.5 F17 — Pedimento PDF render (pure).
  *
  * Extracted so both the export route (persisted) and the preview route
  * (ephemeral, no side-effects) share one render pipeline. No I/O here.

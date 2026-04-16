@@ -1,5 +1,5 @@
 /**
- * ZAPATA AI · V1.5 F1 — /bodega/escanear
+ * CRUZ · V1.5 F1 — /bodega/escanear
  *
  * Vicente's mobile-first QR scanner. Taps "Escanear QR" on his phone, points
  * the camera at a trailer label, `/api/qr/resolve` fires

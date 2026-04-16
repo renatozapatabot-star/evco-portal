@@ -82,7 +82,7 @@ export default function TrackingPage() {
             fontSize: 'var(--aguila-fs-section)', fontWeight: 800, color: DARK,
           }}>C</div>
           <div>
-            <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, letterSpacing: '0.05em' }}>ZAPATA AI Tracking</div>
+            <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, letterSpacing: '0.05em' }}>CRUZ Tracking</div>
             <div style={{ fontSize: 'var(--aguila-fs-meta)', color: MUTED }}>Renato Zapata & Company</div>
           </div>
         </div>

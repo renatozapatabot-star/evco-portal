@@ -1,5 +1,5 @@
 /**
- * ZAPATA AI V1.5 · F14 — Document auto-classification via Claude Vision.
+ * CRUZ V1.5 · F14 — Document auto-classification via Claude Vision.
  *
  * Given a file in Supabase Storage, this module:
  *  1. Downloads the bytes (tries storage API first, then public URL).

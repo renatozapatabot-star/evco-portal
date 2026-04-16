@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * LauncherTray — slide-in panel listing every ZAPATA AI tool.
+ * LauncherTray — slide-in panel listing every CRUZ tool.
  *
  * Triggered by the `+` button in TopNav (or Cmd+J anywhere). Renders as a
  * right-side sheet on desktop, full-screen on mobile. Every tool is a
@@ -82,7 +82,7 @@ export function LauncherTray({ open, onClose, role, counts = {} }: Props) {
       <aside
         ref={rootRef}
         role="dialog"
-        aria-label="Herramientas ZAPATA AI"
+        aria-label="Herramientas CRUZ"
         aria-modal="true"
         className="launcher-tray"
         style={{
@@ -108,7 +108,7 @@ export function LauncherTray({ open, onClose, role, counts = {} }: Props) {
               textTransform: 'uppercase', letterSpacing: '0.08em',
               color: TEXT_MUTED,
             }}>
-              ZAPATA AI
+              CRUZ
             </div>
             <div style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: TEXT_PRIMARY, marginTop: 2 }}>
               Herramientas

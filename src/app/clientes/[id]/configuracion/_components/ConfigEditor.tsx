@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * ZAPATA AI · Block 15 — Client Master Config Editor (client shell).
+ * CRUZ · Block 15 — Client Master Config Editor (client shell).
  *
  * Layout:
  *   [ tab strip — 12 tabs, horizontal, scroll-snap on mobile ]

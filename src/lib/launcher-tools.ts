@@ -1,5 +1,5 @@
 /**
- * ZAPATA AI Launcher Tray — single source of truth for "tools" surfaced in
+ * CRUZ Launcher Tray — single source of truth for "tools" surfaced in
  * the top-nav `+` button. NOT navigation destinations (those live in
  * UNIFIED_NAV_TILES). These are actions: Subir, Clasificar, Exportar, etc.
  *

@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 
 /**
- * ZAPATA AI v8 — `/operador` canonicalizes to `/operador/inicio`.
+ * CRUZ v8 — `/operador` canonicalizes to `/operador/inicio`.
  *
  * The old OperatorCockpit ("Todo al corriente" check-card surface) is retired.
  * /operador/inicio is now THE operator cockpit (v7 CockpitInicio composition).

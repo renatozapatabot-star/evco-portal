@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * ZAPATA AI · V1.5 F10 — Operator performance dashboard UI.
+ * CRUZ · V1.5 F10 — Operator performance dashboard UI.
  *
  * Silver glass header, date-range picker (defaults to current month), sortable
  * table with mono on numeric columns. Row click → /admin/operadores/[id].

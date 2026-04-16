@@ -96,7 +96,7 @@ export default function CerebroPage() {
     <div className="page-shell">
       <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
         <Brain size={24} style={{ color: T.gold }} />
-        ZAPATA AI Operational Brain
+        CRUZ Operational Brain
       </h1>
       <p style={{ fontSize: 'var(--aguila-fs-body)', color: T.textMuted, marginBottom: 24 }}>
         {patterns.length} patrones activos · {decisions.length} decisiones recientes · Score promedio: {avgScore}/100
@@ -170,7 +170,7 @@ export default function CerebroPage() {
               Patrones Aprendidos ({patterns.length})
             </div>
             {patterns.length === 0 ? (
-              <EmptyState icon="📊" title="Sin patrones" description="ZAPATA AI aprenderá patrones conforme opere." />
+              <EmptyState icon="📊" title="Sin patrones" description="CRUZ aprenderá patrones conforme opere." />
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 400, overflowY: 'auto' }}>
                 {patterns.map(p => (

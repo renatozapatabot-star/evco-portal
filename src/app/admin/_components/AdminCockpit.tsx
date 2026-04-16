@@ -244,7 +244,7 @@ export function AdminCockpit(props: AdminCockpitProps) {
                       )}
                     </td>
                     <td style={{ padding: '10px 14px' }}>
-                      <Link href={`/?company=${c.company_id}`} style={{ color: GOLD, fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, textDecoration: 'none' }}>Ver ZAPATA AI</Link>
+                      <Link href={`/?company=${c.company_id}`} style={{ color: GOLD, fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, textDecoration: 'none' }}>Ver CRUZ</Link>
                     </td>
                   </tr>
                 )

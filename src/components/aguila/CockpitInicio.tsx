@@ -71,7 +71,7 @@ export interface CockpitInicioProps {
 }
 
 /**
- * ZAPATA AI v7 — the canonical cockpit composition. Three role views, one layout.
+ * CRUZ v7 — the canonical cockpit composition. Three role views, one layout.
  *
  * Renders (top → bottom):
  *  - PageShell (dark cockpit canvas)

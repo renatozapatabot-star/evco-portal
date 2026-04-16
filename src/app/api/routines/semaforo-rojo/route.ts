@@ -1,5 +1,5 @@
 /**
- * ZAPATA AI · Routine R3 — Semáforo Rojo Webhook
+ * CRUZ · Routine R3 — Semáforo Rojo Webhook
  *
  * Event-triggered, NOT scheduled. Called when GlobalPC sync detects a
  * tráfico's estatus flipping to semáforo rojo. Creates / updates the
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
       traficoId: tr.trafico,
       subject,
       role: 'system',
-      authorName: 'ZAPATA AI Routines',
+      authorName: 'CRUZ Routines',
       firstMessageBody: body.message,
       internalOnly: true,
     })

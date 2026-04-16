@@ -1,5 +1,5 @@
 /**
- * ZAPATA AI · V1.5 F2 — /admin/quickbooks-export
+ * CRUZ · V1.5 F2 — /admin/quickbooks-export
  *
  * Anabel's one-click accounting handoff: pick date range + entity + format,
  * generate an IIF (or CSV), drag it into QuickBooks Desktop. Bottom section

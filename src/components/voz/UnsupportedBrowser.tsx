@@ -51,7 +51,7 @@ export default function UnsupportedBrowser() {
           cursor: 'pointer',
         }}
       >
-        Ir al chat de ZAPATA AI
+        Ir al chat de CRUZ
       </button>
     </div>
   )

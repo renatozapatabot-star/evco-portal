@@ -88,7 +88,7 @@ export function OcaPDF({ opinion, razonamiento }: OcaPDFProps) {
           )}
         </View>
 
-        <AguilaPdfFooter label={`ZAPATA AI · ${opinion.opinion_number} · Patente 3596`} />
+        <AguilaPdfFooter label={`CRUZ · ${opinion.opinion_number} · Patente 3596`} />
       </Page>
     </Document>
   )

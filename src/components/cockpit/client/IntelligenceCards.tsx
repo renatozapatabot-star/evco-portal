@@ -157,7 +157,7 @@ export function CostInsightsCard() {
         </div>
       ) : (
         <p style={{ fontSize: 'var(--aguila-fs-compact)', color: '#64748b', margin: 0 }}>
-          ZAPATA AI monitorea oportunidades de ahorro en cada operación.
+          CRUZ monitorea oportunidades de ahorro en cada operación.
         </p>
       )}
     </CardShell>

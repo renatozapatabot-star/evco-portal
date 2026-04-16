@@ -28,7 +28,7 @@ export interface NavTileDef {
 }
 
 /**
- * ZAPATA AI v7 — the six cockpit nav tiles, locked.
+ * CRUZ v7 — the six cockpit nav tiles, locked.
  *
  * Identical order, labels, icons, descriptions across /inicio,
  * /operador/inicio, and /admin/eagle. Role decides what data

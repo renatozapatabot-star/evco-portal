@@ -47,7 +47,7 @@ export async function generateMetadata(
   const t = await fetchPreview(id)
 
   if (!t) {
-    return { title: `Embarque · ZAPATA AI` }
+    return { title: `Embarque · CRUZ` }
   }
 
   const desc = [
@@ -57,12 +57,12 @@ export async function generateMetadata(
   ].filter(Boolean).join(' · ')
 
   return {
-    title: `Embarque ${id} · ZAPATA AI`,
+    title: `Embarque ${id} · CRUZ`,
     description: desc,
     openGraph: {
-      title: `Embarque ${id} · ZAPATA AI`,
+      title: `Embarque ${id} · CRUZ`,
       description: desc,
-      siteName: 'ZAPATA AI · Renato Zapata & Co.',
+      siteName: 'CRUZ · Renato Zapata & Co.',
       type: 'website',
     },
   }
@@ -124,7 +124,7 @@ export default async function SharePage(
             textTransform: 'uppercase',
             marginBottom: 4,
           }}>
-            ZAPATA AI
+            CRUZ
           </div>
           <div style={{
             fontSize: 'var(--aguila-fs-compact)',

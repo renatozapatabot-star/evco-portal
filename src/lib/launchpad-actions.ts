@@ -153,7 +153,7 @@ function mapAgentDecision(row: Record<string, unknown>): RawCandidate {
     estimated_minutes: 3,
     title: `Revisar decisión: ${decision}`,
     reason: confidence
-      ? `ZAPATA AI sugirió con ${confidence}% confianza`
+      ? `CRUZ sugirió con ${confidence}% confianza`
       : 'Requiere revisión humana',
     href: '/agente',
   }

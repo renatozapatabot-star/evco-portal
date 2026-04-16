@@ -1,5 +1,5 @@
 /**
- * ZAPATA AI · Block 16 — DODA generation API.
+ * CRUZ · Block 16 — DODA generation API.
  *
  * POST /api/regulatory/doda/[pedimento_id]
  *   body: { kind: 'pdf' | 'xml' | 'both' }
@@ -174,7 +174,7 @@ export async function POST(
     company_id: companyId,
     decision_type: 'doda_generated',
     decision: `DODA generada para embarque ${trafico.trafico}`,
-    reasoning: 'Generación local ZAPATA AI; pendiente de submisión a VUCEM/SAT en V2.',
+    reasoning: 'Generación local CRUZ; pendiente de submisión a VUCEM/SAT en V2.',
     dataPoints: { pdf_url: pdfUrl, xml_url: xmlUrl, kind: parsed.data.kind, actor },
   })
 

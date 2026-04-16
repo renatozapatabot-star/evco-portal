@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * ZAPATA AI · Block 6b — Shared pedimento context.
+ * CRUZ · Block 6b — Shared pedimento context.
  * Exposes live validation state + refresh trigger so every tab can surface
  * inline errors and the right rail can re-read after each autosave.
  */

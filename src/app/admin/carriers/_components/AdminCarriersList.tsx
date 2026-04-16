@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * ZAPATA AI · Block 12 — Admin carrier list with inline create + edit modal.
+ * CRUZ · Block 12 — Admin carrier list with inline create + edit modal.
  *
  * Keeps the edit surface minimal: search filter, type filter, active toggle,
  * new row form, edit modal. Reads from `/api/carriers/catalog`.

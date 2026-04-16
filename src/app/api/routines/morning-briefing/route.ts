@@ -1,5 +1,5 @@
 /**
- * ZAPATA AI · Routine R1 — Morning Briefing
+ * CRUZ · Routine R1 — Morning Briefing
  *
  * Called daily ~6:45 AM Central by Claude Routines (see
  * `.routines/01-morning-briefing.md`). Pulls Tito's executive state
@@ -128,7 +128,7 @@ export async function POST(request: NextRequest) {
         subject: `Briefing matutino · ${dateStr}`,
         firstMessageBody: summary,
         role: 'system',
-        authorName: 'ZAPATA AI Routines',
+        authorName: 'CRUZ Routines',
         internalOnly: true,
       })
       if (threadRes.data) {

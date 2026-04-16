@@ -1,5 +1,5 @@
 /**
- * ZAPATA AI · Warehouse Dock Tracker — data assembly.
+ * CRUZ · Warehouse Dock Tracker — data assembly.
  *
  * Joins warehouse_entries (dock receipt) with entradas (goods metadata)
  * in memory, since Supabase RLS on joined queries is unreliable.

@@ -1,5 +1,5 @@
 /**
- * ZAPATA AI · Block 10 — Anexo 24 export tests.
+ * CRUZ · Block 10 — Anexo 24 export tests.
  *
  * Three tests: Excel structure, PDF structure, date range filter surfaces in meta.
  */

@@ -1,5 +1,5 @@
 /**
- * ZAPATA AI · V1.5 F12 — Telegram routing read/write.
+ * CRUZ · V1.5 F12 — Telegram routing read/write.
  *
  * Admin + self: authenticated user can manage their own routes. Admins
  * can additionally create/update rows on behalf of team members (still

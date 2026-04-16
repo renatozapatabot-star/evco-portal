@@ -7,7 +7,7 @@
 //   2. "Clasificar N seleccionados" (Haiku × CONCURRENCY)
 //   3. Per-row "Aplicar" on high-confidence results (or "Editar" for low)
 // GLOBALPC EQUIVALENT: 5+ clicks per product (open → edit → type fracción → save × N)
-// ZAPATA AI ADVANTAGE: parallel classify across entire batch
+// CRUZ ADVANTAGE: parallel classify across entire batch
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { FallbackLink } from '@/components/aguila'
@@ -440,7 +440,7 @@ export function BulkTab({ canInsert }: { canInsert: boolean }) {
         href="https://trafico1web.globalpc.net/clasificacion"
         label="Clasificación"
         isIncomplete={rows.length === 0 && !loading}
-        message="Sin productos pendientes en ZAPATA AI — clasifica histórico en GlobalPC."
+        message="Sin productos pendientes en CRUZ — clasifica histórico en GlobalPC."
       />
     </div>
   )

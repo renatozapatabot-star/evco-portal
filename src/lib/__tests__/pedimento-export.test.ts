@@ -1,5 +1,5 @@
 /**
- * ZAPATA AI · Block 9 — Pedimento export structure tests.
+ * CRUZ · Block 9 — Pedimento export structure tests.
  *
  * Four tests: envelope shape, missing-required rejection via validation,
  * storage path convention, placeholder marker + JSON round-trip.

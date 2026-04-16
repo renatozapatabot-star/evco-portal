@@ -1,5 +1,5 @@
 /**
- * ZAPATA AI · Block 12 — GET/POST /api/carriers/catalog
+ * CRUZ · Block 12 — GET/POST /api/carriers/catalog
  *
  * Admin list + create for the master carrier catalog. Internal roles only
  * (admin / broker / operator). GET paginates; POST validates against

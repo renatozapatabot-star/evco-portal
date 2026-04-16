@@ -388,7 +388,7 @@ export function AutoClassifyDropzone() {
           <span style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED }}>
             {selectedOption
               ? 'Los archivos subidos se enlazarán directo a este embarque.'
-              : 'Si no eliges, ZAPATA AI detecta el pedimento en el documento y lo enlaza solo.'}
+              : 'Si no eliges, CRUZ detecta el pedimento en el documento y lo enlaza solo.'}
           </span>
         </div>
       </GlassCard>

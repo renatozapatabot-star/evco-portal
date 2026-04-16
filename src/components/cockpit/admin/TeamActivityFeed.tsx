@@ -21,7 +21,7 @@ const ACTION_LABELS: Record<string, { icon: string; label: string }> = {
   operator_card_cleared: { icon: '🎯', label: 'limpió una tarjeta' },
   operator_mi_turno_clicked: { icon: '▶', label: 'avanzó en MI TURNO' },
   operator_kanban_card_clicked: { icon: '📦', label: 'revisó un embarque' },
-  cruz_ai_query: { icon: '🤖', label: 'preguntó a Asistente ZAPATA AI' },
+  cruz_ai_query: { icon: '🤖', label: 'preguntó a Asistente CRUZ' },
   demo_lead_captured: { icon: '🎯', label: 'nuevo lead del demo' },
 }
 

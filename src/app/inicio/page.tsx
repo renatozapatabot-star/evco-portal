@@ -1,4 +1,4 @@
-// ZAPATA AI · /inicio — cliente cockpit (v9.3 — defensive).
+// CRUZ · /inicio — cliente cockpit (v9.3 — defensive).
 //
 // Every query soft-wrapped. Whole render wrapped in try/catch so even a
 // catastrophic failure shows the glass error card instead of a blank page.

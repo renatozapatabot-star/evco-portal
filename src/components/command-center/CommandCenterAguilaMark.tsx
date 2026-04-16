@@ -1,5 +1,5 @@
 /**
- * AduanaMark — backward-compatible wrapper that renders the ZAPATA AI eagle
+ * AduanaMark — backward-compatible wrapper that renders the CRUZ eagle
  * from `@/components/brand/AguilaMark`. Preserves the `bare` contract:
  * `bare` → eagle only; otherwise eagle wrapped in a silver radial glow.
  *

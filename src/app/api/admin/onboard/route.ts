@@ -126,7 +126,7 @@ export async function POST(request: NextRequest) {
       await resend.emails.send({
         from: 'onboarding@resend.dev',
         to: primary_email,
-        subject: 'Bienvenido a ZAPATA AI — Renato Zapata & Company',
+        subject: 'Bienvenido a CRUZ — Renato Zapata & Company',
         html: buildWelcomeEmail(company_name, password),
       })
       emailSent = true
@@ -175,7 +175,7 @@ function buildWelcomeEmail(companyName: string, password: string): string {
     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 560px; margin: 0 auto; padding: 32px 24px; color: #1A1A1A;">
       <div style="text-align: center; margin-bottom: 32px;">
         <h1 style="font-size: 24px; font-weight: 800; margin: 0; color: #1A1A1A;">
-          ZAPATA AI
+          CRUZ
         </h1>
         <p style="font-size: 12px; color: #999; margin: 4px 0 0; letter-spacing: 0.05em;">
           Cross-Border Intelligence
@@ -190,7 +190,7 @@ function buildWelcomeEmail(companyName: string, password: string): string {
       </p>
       <div style="background: #F5F4F0; border-radius: 8px; padding: 20px; margin: 24px 0;">
         <div style="margin-bottom: 12px;">
-          <span style="font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 0.05em;">ZAPATA AI</span>
+          <span style="font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 0.05em;">CRUZ</span>
           <div style="font-size: 14px; font-weight: 600;">
             <a href="https://${PORTAL_URL}" style="color: #eab308; text-decoration: none;">
               https://${PORTAL_URL}

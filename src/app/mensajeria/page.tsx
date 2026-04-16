@@ -1,4 +1,4 @@
-// ZAPATA AI · /mensajeria — internal comms layer (Phase 1).
+// CRUZ · /mensajeria — internal comms layer (Phase 1).
 //
 // Operators + owner only. Client surface is gated by NEXT_PUBLIC_MENSAJERIA_CLIENT.
 // Owners see escalated threads pinned at top; operators see all threads.

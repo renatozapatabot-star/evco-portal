@@ -1,5 +1,5 @@
 /**
- * ZAPATA AI · Block 12 — GET /api/carriers/search
+ * CRUZ · Block 12 — GET /api/carriers/search
  *
  * Type-ahead search over the `carriers` master catalog. FTS on name and alias
  * via to_tsvector('spanish'), falling back to ilike for <3-char queries. Top

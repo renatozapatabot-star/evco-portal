@@ -124,7 +124,7 @@ export function PendientesTab() {
         <EmptyState
           icon="&#9989;"
           title="Clasificaciones al día"
-          description="No hay clasificaciones pendientes de revisión. ZAPATA AI aprende con cada voto."
+          description="No hay clasificaciones pendientes de revisión. CRUZ aprende con cada voto."
         />
       </div>
     )
@@ -218,7 +218,7 @@ export function PendientesTab() {
 
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-            <p style={{ margin: 0, fontSize: 'var(--aguila-fs-body)', color: '#9B9B9B', fontWeight: 500 }}>ZAPATA AI sugiere</p>
+            <p style={{ margin: 0, fontSize: 'var(--aguila-fs-body)', color: '#9B9B9B', fontWeight: 500 }}>CRUZ sugiere</p>
             <ConfidenceBadge value={current.confidence} />
           </div>
           <p className="font-mono" style={{ margin: 0, fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 700, color: 'rgba(255,255,255,0.92)' }}>

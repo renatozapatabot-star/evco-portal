@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
   }).select().single()
 
   if (!error) {
-    await sendTG(`🔔 <b>NUEVA SOLICITUD</b>\nTipo: ${request_type}\n${description ? `Detalle: ${description.substring(0, 200)}` : ''}\nCliente: ${companyId}\n— ZAPATA AI`)
+    await sendTG(`🔔 <b>NUEVA SOLICITUD</b>\nTipo: ${request_type}\n${description ? `Detalle: ${description.substring(0, 200)}` : ''}\nCliente: ${companyId}\n— CRUZ`)
   }
 
   return NextResponse.json({ success: !error, id: data?.id })

@@ -1,10 +1,10 @@
-# ZAPATA AI — Cross-Border Intelligence Platform
+# CRUZ — Cross-Border Intelligence Platform
 ## Principal Engineer Constitution + Execution Rules
 ### Renato Zapata & Company · Patente 3596 · Aduana 240 · Laredo TX · Est. 1941
 
-> **Brand lineage:** CRUZ (pre-April 2026) → ADUANA → AGUILA → **ZAPATA AI** (current, April 15 2026).
-> The logo is a gold Z with circuit-trace accents on black. Wordmark: "ZAPATA AI" in gold caps.
-> Internal component/CSS namespaces (`AguilaMark`, `.aguila-canvas`, `--aguila-fs-*`) are
+> **Brand lineage:** CRUZ (pre-April 2026) → ADUANA → AGUILA → ZAPATA AI → **CRUZ** (current, April 16 2026 — reverted).
+> Wordmark: "CRUZ" in the established palette. Internal component/CSS
+> namespaces (`AguilaMark`, `.aguila-canvas`, `--aguila-fs-*`) are
 > preserved for code stability — they're identifiers, not brand surfaces.
 
 > "Built by two people. For a border their family has crossed since 1941."
@@ -18,9 +18,9 @@ and get smarter every session. Every decision is evaluated against one question:
 
 ## IDENTITY
 
-**Platform:** ZAPATA AI — Cross-Border Intelligence. Never "CRUD." Never "Portal." Never "CRUZ" or "AGUILA" in rendered UI text.
+**Platform:** CRUZ — Cross-Border Intelligence. Never "CRUD." Never "Portal." Never "ZAPATA AI" or "AGUILA" in rendered UI text.
 Search for "CRUD" before every deploy: `grep -r "CRUD" src/` → zero matches required.
-Search for stale brand: `grep -rn "AGUILA\|CRUZ" src/app src/components` → matches acceptable only in comments,
+Search for stale brand: `grep -rn "ZAPATA AI\|AGUILA" src/app src/components` → matches acceptable only in comments,
 component/type/identifier names (`AguilaMark`, `AguilaCtx`, `.aguila-canvas`), never in user-visible strings.
 
 **Tagline:** TOTAL VISIBILITY · ZERO BORDERS / Total visibilidad. Sin fronteras.
@@ -101,7 +101,7 @@ plan rides on these constraints.
 - Classification layer: Qwen (local Ollama on Throne) writes
   `globalpc_productos.fraccion_classified_at` after each sync
 - **READ-ONLY by contract.** Mario Ramos (GlobalPC support) must not
-  perceive ZAPATA AI as competition — the platform is a quiet successor,
+  perceive CRUZ as competition — the platform is a quiet successor,
   not a replacement product. No writes back to GlobalPC. Ever.
 - WSDL document-pull script exists (`wsdl-document-pull.js`) but is NOT
   in active cron. Ship-decision pending audit.
@@ -122,7 +122,7 @@ plan rides on these constraints.
 
 ### Approval gates that ride on these systems
 
-- **Tito's pedimento approval** today happens in GlobalPC. ZAPATA AI
+- **Tito's pedimento approval** today happens in GlobalPC. CRUZ
   cannot replace that flow end-to-end without the workflow audit.
 - **Anabel's monthly close** still touches eConta directly. The Monday
   reconciliation cron reports drift; it does not resolve it.
@@ -258,7 +258,7 @@ src/
       drafts/          # Draft review + approval (Owner)
       eagle-view/      # Executive overview (Owner)
       contabilidad/    # Accounting cockpit (Owner)
-      aguila-ai/       # AGUILA AI full-screen interface (Operator + Owner)
+      aguila-ai/       # CRUZ AI full-screen interface (Operator + Owner)
   components/
     ui/                # shadcn primitives only
   lib/
@@ -293,7 +293,7 @@ Any advice to add blue/gold/navy accents is wrong. Reject it.
 **Canvas:**
 ```
 --bg-primary: #FAFAF8   (warm white — EVERY portal page)
---bg-dark:    #0D0D0C   (login + AGUILA AI screens ONLY — nowhere else)
+--bg-dark:    #0D0D0C   (login + CRUZ AI screens ONLY — nowhere else)
 --bg-card:    #FFFFFF
 --border:     #E8E5E0
 ```
@@ -377,7 +377,7 @@ and sends Telegram alert. No silent fallback. Ever.
 ## MODEL ROUTING — NEVER DEVIATE
 
 ```
-Sonnet  → invoice extraction, AGUILA AI responses, document analysis
+Sonnet  → invoice extraction, CRUZ AI responses, document analysis
 Haiku   → product classification, semantic matching (cheap + fast)
 Opus    → OCA opinions, complex regulatory (rare, expensive)
 Qwen    → bulk processing, privacy-sensitive (local Ollama on Throne)
@@ -458,7 +458,7 @@ Automation that cannot be stopped is automation that cannot be trusted.
 - Functions: max 30 lines, max 3 nesting levels, max 4 params.
 - Comments: WHY, never WHAT. Delete dead code.
 - **Spanish primary, English secondary.** All user-facing strings, error messages,
-  empty states, toast notifications, AGUILA AI responses. English is never the default.
+  empty states, toast notifications, CRUZ AI responses. English is never the default.
 - Mobile-first: 375px minimum. Touch targets ≥ 60px.
 
 **Git commits:** `type(scope): description`
@@ -550,7 +550,7 @@ Full audit prompt library in `.claude/commands/audit.md`.
 
 ---
 
-## AGUILA AI + AUDIT LOGGING
+## CRUZ AI + AUDIT LOGGING
 
 Every interaction logged:
 ```typescript
@@ -666,7 +666,7 @@ TARGET:     GlobalPC uninstalled: early-to-mid May 2026
 5. **Evolve.** Run `/evolve` weekly to promote/prune rules.
 
 **Top learned rules (inline — always active):**
-- Brand is ZAPATA AI everywhere in user-visible UI. Internal component/CSS namespaces stay (`Aguila*`, `.aguila-*`, `--aguila-*`) for code stability.
+- Brand is CRUZ everywhere in user-visible UI. Internal component/CSS namespaces stay (`Aguila*`, `.aguila-*`, `--aguila-*`) for code stability (they predate the lineage and renaming them is a separate refactor).
 - **Dual-accent palette:** gold for identity (mark, wordmark, primary CTAs, active nav), silver for data/chrome (KPIs, borders, body text). Two colors per screen + one semantic — nothing more.
 - Reject decorative blue/cyan/navy. Gold and silver are the only brand surfaces.
 - Features integrate into existing surfaces — they do not add new nav items without Tito + Renato IV sign-off.
@@ -677,7 +677,7 @@ TARGET:     GlobalPC uninstalled: early-to-mid May 2026
 - Telegram is for pipeline/infrastructure only. Never client-facing. Mensajería is the client comms layer.
 - "Renato Zapata & Company" is always the sender name to clients. Never expose internal user names.
 - Mensajería client access behind feature flag until Week 3 pilot — operators use it first.
-- GlobalPC is read-only forever. Mario Ramos must not perceive ZAPATA AI as competition. Two-way sync is banned by contract, not just by code.
+- GlobalPC is read-only forever. Mario Ramos must not perceive CRUZ as competition. Two-way sync is banned by contract, not just by code.
 - eConta cockpit at `/contabilidad/inicio` is Anabel's system today; the QB IIF writer to eConta MySQL is deferred until her credential recon. Don't ship features that assume the writer exists.
 - Client cockpit at `/inicio` shows monthly activity, not lifetime totals. The 214K product count was a regression — Expedientes/Catálogo tiles now show this-month counts with totals demoted to microStatus.
 

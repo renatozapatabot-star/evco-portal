@@ -1,4 +1,4 @@
-// ZAPATA AI V1.5 · F18 — GET /api/bridges/current
+// CRUZ V1.5 · F18 — GET /api/bridges/current
 //
 // Returns the latest bridge-wait snapshot per (bridge, direction, lane).
 // If the most recent row is older than 6 min, triggers an in-place

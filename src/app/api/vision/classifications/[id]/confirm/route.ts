@@ -1,5 +1,5 @@
 /**
- * ZAPATA AI V1.5 · F14 — POST /api/vision/classifications/[id]/confirm
+ * CRUZ V1.5 · F14 — POST /api/vision/classifications/[id]/confirm
  *
  * Stamps confirmed_by / confirmed_at / confirmed_match on a vision
  * classification row. Operator can either accept the extraction as-is

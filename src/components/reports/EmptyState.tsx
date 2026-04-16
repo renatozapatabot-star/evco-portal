@@ -11,7 +11,7 @@ export function ReportsEmptyState({ message }: { message?: string }) {
         className="font-mono text-4xl tracking-[0.08em]"
         style={{ color: '#E8EAED' }}
       >
-        ZAPATA AI
+        CRUZ
       </div>
       <div className="text-xs text-slate-400">Renato Zapata &amp; Co.</div>
       <div className="mt-3 text-sm text-slate-300">

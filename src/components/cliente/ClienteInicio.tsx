@@ -6,7 +6,7 @@
  * Tabs: Mis embarques activos · Documentos · Notificaciones.
  * Mobile 375px: tab pills stack on top; cards collapse to single column.
  *
- * ZAPATA AI silver-glass aesthetic, JetBrains Mono on refs/timestamps/filenames.
+ * CRUZ silver-glass aesthetic, JetBrains Mono on refs/timestamps/filenames.
  * Zero relative times — always fmtDateTime / fmtDate via format-utils.
  */
 
@@ -52,7 +52,7 @@ function statusPulse(estatus: string | null): string {
 }
 
 // ── Shared surface tokens ─────────────────────────────────────
-// Card chrome is unified through <GlassCard> per ZAPATA AI v6 (core-invariants 26).
+// Card chrome is unified through <GlassCard> per CRUZ v6 (core-invariants 26).
 const MONO: React.CSSProperties = { fontFamily: 'var(--font-mono)' }
 
 // ── Tab definitions ───────────────────────────────────────────
@@ -81,7 +81,7 @@ export function ClienteInicio({
 
   return (
     <div style={{ padding: '8px 0', maxWidth: 1400, margin: '0 auto' }}>
-      {/* ZAPATA AI brand trio */}
+      {/* CRUZ brand trio */}
       <CockpitBrandHeader subtitle={companyName ? `Inicio · ${companyName}` : 'Inicio'} />
 
       {/* Header */}

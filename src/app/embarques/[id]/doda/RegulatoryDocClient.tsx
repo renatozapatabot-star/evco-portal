@@ -175,7 +175,7 @@ export function RegulatoryDocClient({
           href={fallbackHref}
           label={fallbackLabel}
           isIncomplete={Boolean(error)}
-          message={error ? `No se pudo generar en ZAPATA AI — usa GlobalPC como respaldo.` : undefined}
+          message={error ? `No se pudo generar en CRUZ — usa GlobalPC como respaldo.` : undefined}
           cta={`Abrir ${fallbackLabel} en GlobalPC`}
         />
       )}

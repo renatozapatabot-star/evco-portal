@@ -1,5 +1,5 @@
 /**
- * ZAPATA AI · V1.5 F12 — Telegram dispatch.
+ * CRUZ · V1.5 F12 — Telegram dispatch.
  *
  * Looks up enabled routes in `telegram_routing` for a given event kind,
  * formats a message per-event via `formatters.ts`, and sends via

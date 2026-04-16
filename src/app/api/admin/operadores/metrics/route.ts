@@ -1,5 +1,5 @@
 /**
- * ZAPATA AI · V1.5 F10 — GET /api/admin/operadores/metrics
+ * CRUZ · V1.5 F10 — GET /api/admin/operadores/metrics
  *
  * Admin/broker-only. Returns per-operator metrics for the authenticated
  * session's company_id, constrained to [from, to].

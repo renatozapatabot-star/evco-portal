@@ -1,5 +1,5 @@
 /**
- * ZAPATA AI · V1.5 F12 — Telegram test send.
+ * CRUZ · V1.5 F12 — Telegram test send.
  *
  * Lets a user verify their routing config without waiting for a real
  * event. Sends a canned sample message per event kind to the supplied

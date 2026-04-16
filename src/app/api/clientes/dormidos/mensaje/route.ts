@@ -1,5 +1,5 @@
 /**
- * ZAPATA AI · V1.5 F7 — POST /api/clientes/dormidos/mensaje
+ * CRUZ · V1.5 F7 — POST /api/clientes/dormidos/mensaje
  *
  * Given a `clienteId`, re-detect its dormant state (single-company) and return
  * a generated Spanish follow-up message. Emits `dormant_message_generated`

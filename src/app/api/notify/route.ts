@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
     documento: '📄 DOCUMENTO',
     general: '📢 NOTIFICACIÓN',
   }
-  const tgMessage = `${typeLabels[type]}\n<b>Embarque:</b> ${trafico_id}\n<b>Cliente:</b> ${companyId}\n\n${message}\n\n— ZAPATA AI`
+  const tgMessage = `${typeLabels[type]}\n<b>Embarque:</b> ${trafico_id}\n<b>Cliente:</b> ${companyId}\n\n${message}\n\n— CRUZ`
 
   // 4. Send
   const sent = await sendTG(tgMessage)

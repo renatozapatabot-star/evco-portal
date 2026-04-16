@@ -5,7 +5,7 @@ import { verifySession } from '@/lib/session'
 export const dynamic = 'force-dynamic'
 
 /**
- * ZAPATA AI v10 — /asistente is the canonical full-page assistant route.
+ * CRUZ v10 — /asistente is the canonical full-page assistant route.
  * Currently redirects to /cruz (existing chat implementation). When the
  * role-scoped Claude tool-calling build lands, this route gets the full
  * upgrade; /cruz stays as a legacy alias.

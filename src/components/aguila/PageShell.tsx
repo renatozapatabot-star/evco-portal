@@ -59,7 +59,7 @@ export interface PageShellProps {
 /**
  * Unified page shell — dark cockpit canvas, consistent greeting rhythm,
  * optional live timestamp + status dot. Every authenticated cockpit
- * composes from this per ZAPATA AI v6.
+ * composes from this per CRUZ v6.
  */
 export function PageShell({
   title, subtitle, systemStatus, pulseSignal, liveTimestamp, badges, children, brandHeader,

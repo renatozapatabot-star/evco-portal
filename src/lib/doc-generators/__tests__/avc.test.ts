@@ -1,5 +1,5 @@
 /**
- * ZAPATA AI · Block 16 — AVC generator tests.
+ * CRUZ · Block 16 — AVC generator tests.
  */
 import { describe, it, expect } from 'vitest'
 import { generateAVC, AvcValidationError, type AvcInput } from '@/lib/doc-generators/avc'

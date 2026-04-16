@@ -20,7 +20,7 @@ export function ValueSummary({ pedimentosThisMonth, daysSinceRojo, totalClassifi
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
         <Brain size={14} style={{ color: '#C0C5CE', flexShrink: 0 }} />
         <span style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#64748b' }}>
-          ZAPATA AI trabaja para ti
+          CRUZ trabaja para ti
         </span>
       </div>
 

@@ -1,5 +1,5 @@
 /**
- * ZAPATA AI · V1.5 F19 — GET /api/labels/[id]/pdf
+ * CRUZ · V1.5 F19 — GET /api/labels/[id]/pdf
  *
  * Re-renders the entrada 4×6" label from the print_queue payload so any
  * device can open + print it. Streaming not needed at 4×6 — buffer is ~30KB.

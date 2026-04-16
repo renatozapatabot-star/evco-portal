@@ -107,7 +107,7 @@ export async function PATCH(
   }
   if (existing.data.scope === 'seed') {
     return NextResponse.json(
-      { data: null, error: { code: 'FORBIDDEN', message: 'Las plantillas de ZAPATA AI no son editables' } },
+      { data: null, error: { code: 'FORBIDDEN', message: 'Las plantillas de CRUZ no son editables' } },
       { status: 403 },
     )
   }
@@ -189,7 +189,7 @@ export async function DELETE(
   }
   if (existing.data.scope === 'seed') {
     return NextResponse.json(
-      { data: null, error: { code: 'FORBIDDEN', message: 'Las plantillas de ZAPATA AI no se eliminan' } },
+      { data: null, error: { code: 'FORBIDDEN', message: 'Las plantillas de CRUZ no se eliminan' } },
       { status: 403 },
     )
   }

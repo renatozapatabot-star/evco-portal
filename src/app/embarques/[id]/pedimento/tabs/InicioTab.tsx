@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * ZAPATA AI · Block 6b — Inicio (dashboard) tab.
+ * CRUZ · Block 6b — Inicio (dashboard) tab.
  * Read-only summary: status badge, pedimento number, cliente, trafico link,
  * days active, last modified, per-tab completion grid. No form fields.
  */

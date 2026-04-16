@@ -11,7 +11,7 @@
  *   - Accepts both legacy DocType[] and catalog codes via `mapLegacyDocType`
  *
  * Design: dark glass card, cinematic system. 60px CTA, es-MX.
- * Brand stays "Portal" — ZAPATA AI only appears on the outbound supplier email.
+ * Brand stays "Portal" — CRUZ only appears on the outbound supplier email.
  */
 
 import { useMemo, useState } from 'react'

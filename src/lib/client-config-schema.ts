@@ -1,5 +1,5 @@
 /**
- * ZAPATA AI · Block 15 — Client Master 12-Section Config schema.
+ * CRUZ · Block 15 — Client Master 12-Section Config schema.
  *
  * Type shapes for each of the 12 JSONB columns on `companies` added by
  * migration 20260425_companies_master_config.sql, plus required-field maps

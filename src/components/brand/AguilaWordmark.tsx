@@ -1,5 +1,5 @@
-// AguilaWordmark — inline SVG "ZAPATA AI" wordmark (April 2026 rebrand)
-// Filename preserved for import stability; renders the new ZAPATA AI brand.
+// AguilaWordmark — inline SVG "CRUZ" wordmark (April 2026 rebrand)
+// Filename preserved for import stability; renders the new CRUZ brand.
 // Gold gradient for identity surfaces; silver tones kept for chrome contexts.
 
 import type { CSSProperties } from 'react'
@@ -14,19 +14,19 @@ export interface AguilaWordmarkProps {
   'aria-label'?: string
 }
 
-const WORDMARK_TEXT = 'ZAPATA AI'
+const WORDMARK_TEXT = 'CRUZ'
 
 export function AguilaWordmark({
   size = 24,
   tone = 'gold',
   className,
   style,
-  'aria-label': ariaLabel = 'ZAPATA AI',
+  'aria-label': ariaLabel = 'CRUZ',
 }: AguilaWordmarkProps) {
   const gradId = `zapata-wordmark-${tone}`
   const fill =
     tone === 'silver-bright' ? '#E8EAED' : `url(#${gradId})`
-  // Aspect: "ZAPATA AI" is 9 chars (incl. space) at fontSize 28, ls 6
+  // Aspect: "CRUZ" is 9 chars (incl. space) at fontSize 28, ls 6
   // → ~260 wide, 40 tall → ratio 6.5
   const viewW = 260
   const viewH = 40

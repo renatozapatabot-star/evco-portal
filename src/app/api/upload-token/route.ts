@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         chat_id: '-5085543275',
-        text: `📄 Doc recibido — ${traficoId}\nArchivo: ${file.name}\nVía: Supplier Upload\n— ZAPATA AI 🦀`
+        text: `📄 Doc recibido — ${traficoId}\nArchivo: ${file.name}\nVía: Supplier Upload\n— CRUZ 🦀`
       })
     }).catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
   }

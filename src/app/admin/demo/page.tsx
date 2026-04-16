@@ -1,7 +1,7 @@
 /**
- * ZAPATA AI · V1.5 F9 — /admin/demo
+ * CRUZ · V1.5 F9 — /admin/demo
  *
- * Admin-only one-click demo. Renato clicks "Iniciar demo" and ZAPATA AI seeds
+ * Admin-only one-click demo. Renato clicks "Iniciar demo" and CRUZ seeds
  * a synthetic DEMO EVCO PLASTICS embarque that walks through 12 lifecycle
  * events in ~90 seconds. Silver glass, single-button UI.
  */

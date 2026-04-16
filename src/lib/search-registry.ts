@@ -225,7 +225,7 @@ export function getEntityConfig(id: EntityId): EntityConfig {
   return match
 }
 
-// ── ZAPATA AI re-exports (scoped to search surface) ──
+// ── CRUZ re-exports (scoped to search surface) ──
 export const ZAPATA = {
   BG_ELEVATED: ZAPATA_BG_ELEVATED,
   BORDER_HAIRLINE,

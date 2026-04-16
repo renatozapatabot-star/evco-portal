@@ -1,5 +1,5 @@
 /**
- * ZAPATA AI · V1.5 F2 — QuickBooks export runner (server-only).
+ * CRUZ · V1.5 F2 — QuickBooks export runner (server-only).
  *
  * Loads a `quickbooks_export_jobs` row, pulls the scoped facturas from
  * `pedimento_facturas`, renders IIF/CSV via `quickbooks-export.ts`, uploads

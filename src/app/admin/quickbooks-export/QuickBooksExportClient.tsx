@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * ZAPATA AI · V1.5 F2 — QuickBooks export client UI.
+ * CRUZ · V1.5 F2 — QuickBooks export client UI.
  *
  * Silver glass form + recent exports table. No blue/cyan/gold. Mono on amounts
  * and timestamps. es-MX copy.

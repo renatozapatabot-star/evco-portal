@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * ZAPATA AI · Block 6b — Cliente / Observaciones / Identificadores tab.
+ * CRUZ · Block 6b — Cliente / Observaciones / Identificadores tab.
  */
 
 import { useState } from 'react'

@@ -1,5 +1,5 @@
 /**
- * ZAPATA AI · V1.5 F10 — /admin/operadores/[id]
+ * CRUZ · V1.5 F10 — /admin/operadores/[id]
  *
  * Operator detail — header, last 50 authored actions + per-action-type counts.
  * Admin/broker only.

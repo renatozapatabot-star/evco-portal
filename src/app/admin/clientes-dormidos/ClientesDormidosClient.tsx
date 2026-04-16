@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * ZAPATA AI · V1.5 F7 — Clientes dormidos client UI.
+ * CRUZ · V1.5 F7 — Clientes dormidos client UI.
  *
  * Silver glass table with threshold input (7–60, default 14). Every row can
  * open a modal with the generated Spanish follow-up message + copy button.

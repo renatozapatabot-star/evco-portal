@@ -66,7 +66,7 @@ function exportCSV(
   entMap: Map<string, string>,
 ) {
   const meta = [
-    'ZAPATA AI — Renato Zapata & Company',
+    'CRUZ — Renato Zapata & Company',
     `Clave: ${clientClave}`,
     `Exportado: ${fmtDate(new Date())}`,
     `Total registros: ${rows.length}`,

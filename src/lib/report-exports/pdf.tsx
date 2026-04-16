@@ -2,7 +2,7 @@
  * Block 3 · Dynamic Report Builder — PDF exporter.
  *
  * @react-pdf/renderer template.
- *   - Header: "ZAPATA AI" wordmark in silver mono + "Renato Zapata & Co." subtitle
+ *   - Header: "CRUZ" wordmark in silver mono + "Renato Zapata & Co." subtitle
  *   - Footer (every page): "Patente 3596 · Aduana 240 · Nuevo Laredo" + page number
  *   - Data table: zebra rows, truncate cells to ~40 chars
  *   - Landscape A4 by default; portrait when ≤4 columns
@@ -111,7 +111,7 @@ export async function buildPdf(
       <Page size="A4" orientation={orientation} style={styles.page}>
         <View style={styles.header} fixed>
           <View style={styles.brand}>
-            <Text style={styles.brandTitle}>ZAPATA AI</Text>
+            <Text style={styles.brandTitle}>CRUZ</Text>
             <Text style={styles.brandSubtitle}>Renato Zapata &amp; Co.</Text>
           </View>
           <View style={styles.meta}>

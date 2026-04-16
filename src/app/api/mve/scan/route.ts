@@ -1,5 +1,5 @@
 /**
- * ZAPATA AI · Block 17 — MVE scan endpoint.
+ * CRUZ · Block 17 — MVE scan endpoint.
  *
  * Vercel cron calls GET `/api/mve/scan` every 30 min (see vercel.json). Scans
  * pedimentos approaching their 15-day MVE deadline, upserts rows into

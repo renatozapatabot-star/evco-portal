@@ -147,7 +147,7 @@ export function ConfirmAllButton({
     }}>
       <div>
         <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: '#E8EAED' }}>
-          ZAPATA AI pre-llenó {prefillCount} de {totalFields} campos ({pct}%)
+          CRUZ pre-llenó {prefillCount} de {totalFields} campos ({pct}%)
         </div>
         <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#8B949E', marginTop: 2 }}>
           Revisa los campos en dorado y confirma si todo es correcto

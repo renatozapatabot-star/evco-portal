@@ -1,6 +1,6 @@
 'use client'
 
-// ZAPATA AI V1.5 · F18 — BridgeWaitChips
+// CRUZ V1.5 · F18 — BridgeWaitChips
 // Silver chip row shown above the LIVE FLOW panel: one chip per Laredo
 // bridge with commercial northbound wait minutes (mono), direction arrow
 // silver-dim. Fetches /api/bridges/current on mount; that endpoint auto-

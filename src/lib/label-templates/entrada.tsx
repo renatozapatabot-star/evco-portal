@@ -1,5 +1,5 @@
 /**
- * ZAPATA AI · V1.5 F19 — Entrada 4×6" thermal label template.
+ * CRUZ · V1.5 F19 — Entrada 4×6" thermal label template.
  *
  * Rendered to PDF via @react-pdf/renderer so Vicente's phone can open the
  * file and hand it to the browser's print dialog (which then talks to his
@@ -7,7 +7,7 @@
  * is deferred — browser print is the common denominator.
  *
  * Output surface: 4×6 inches = 288×432 pt at 72dpi. White background is
- * correct (thermal printers need white — the ZAPATA AI dark cockpit ends at
+ * correct (thermal printers need white — the CRUZ dark cockpit ends at
  * the label boundary). Silver + black ink.
  *
  * Pairs with F1 QR codes: `createEntradaQrCode()` is called first if the
@@ -164,7 +164,7 @@ export function EntradaLabelDocument({ input }: { input: EntradaLabelInput }) {
     <PdfDoc>
       <Page size={[LABEL_WIDTH_PT, LABEL_HEIGHT_PT]} style={styles.page}>
         <View style={styles.header}>
-          <Text style={styles.brand}>ZAPATA AI</Text>
+          <Text style={styles.brand}>CRUZ</Text>
           <Text style={styles.brandTag}>Patente 3596 · Aduana 240</Text>
         </View>
 
@@ -200,7 +200,7 @@ export function EntradaLabelDocument({ input }: { input: EntradaLabelInput }) {
         </View>
 
         <Text style={styles.footer}>
-          ZAPATA AI · Inteligencia aduanal · Patente 3596
+          CRUZ · Inteligencia aduanal · Patente 3596
         </Text>
       </Page>
     </PdfDoc>

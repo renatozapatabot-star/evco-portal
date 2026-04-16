@@ -1,5 +1,5 @@
 /**
- * ZAPATA AI · V1.5 F9 — GET /api/demo/status/[runId]
+ * CRUZ · V1.5 F9 — GET /api/demo/status/[runId]
  *
  * Admin/broker polls every ~3s. Returns the in-memory run state: which
  * step is currently running, which are done, and whether the run finished.

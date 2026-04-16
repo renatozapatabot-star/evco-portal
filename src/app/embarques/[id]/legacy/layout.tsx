@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (!t) {
     return {
-      title: `Embarque ${traficoId} · ZAPATA AI`,
+      title: `Embarque ${traficoId} · CRUZ`,
       description: 'Embarque no encontrado',
     }
   }
@@ -38,12 +38,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const description = descParts.join(' · ')
 
   return {
-    title: `Embarque ${traficoId} · ZAPATA AI`,
+    title: `Embarque ${traficoId} · CRUZ`,
     description,
     openGraph: {
-      title: `Embarque ${traficoId} · ZAPATA AI`,
+      title: `Embarque ${traficoId} · CRUZ`,
       description,
-      siteName: 'ZAPATA AI — Cross-Border Intelligence',
+      siteName: 'CRUZ — Cross-Border Intelligence',
     },
   }
 }

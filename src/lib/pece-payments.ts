@@ -1,5 +1,5 @@
 /**
- * ZAPATA AI · Block 11 — PECE payment workflow pure logic.
+ * CRUZ · Block 11 — PECE payment workflow pure logic.
  *
  * State machine: intent → submitted → confirmed. Rejections allowed from
  * intent or submitted. The API routes call these helpers; tests exercise

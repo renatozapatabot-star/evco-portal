@@ -1,5 +1,5 @@
 /**
- * ZAPATA AI · Block 15 — /clientes/[id]/configuracion
+ * CRUZ · Block 15 — /clientes/[id]/configuracion
  *
  * Server component. Reads the full companies row (all 12 JSONB columns +
  * notas_internas + company_id), computes initial completeness + errors,

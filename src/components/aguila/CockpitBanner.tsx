@@ -21,7 +21,7 @@ interface Props {
 }
 
 /**
- * Role-aware brand trio. One visual language (Z-mark + ZAPATA AI wordmark),
+ * Role-aware brand trio. One visual language (Z-mark + CRUZ wordmark),
  * different meta line + subtitle per surface. Composed into PageShell via
  * its `brandHeader` slot.
  */

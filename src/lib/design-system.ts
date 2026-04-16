@@ -1,11 +1,11 @@
-// design-system — ZAPATA AI dual-accent tokens (April 2026 rebrand)
-// Platform lineage: CRUZ → ADUANA → ZAPATA AI → ZAPATA. Silver remains the
+// design-system — CRUZ dual-accent tokens (April 2026 rebrand)
+// Platform lineage: CRUZ → ADUANA → CRUZ → ZAPATA. Silver remains the
 // chrome for data/information surfaces. Gold returns as the identity accent
 // for brand moments (mark, wordmark, primary CTAs, active nav indicator).
 // Gold for identity · silver for data. Never decorative color beyond these.
 // This file is excluded from the gsd-verify color check by path name.
 
-// ── ZAPATA AI brand palette (April 2026 — primary tokens) ──
+// ── CRUZ brand palette (April 2026 — primary tokens) ──
 export const BG_DEEP = '#0A0A0C'
 export const ACCENT_SILVER = '#C0C5CE'
 export const ACCENT_SILVER_BRIGHT = '#E8EAED'
@@ -21,7 +21,7 @@ export const AMBER = '#FBBF24'          // Warning / alerts
 export const RED = '#EF4444'            // Danger / risk
 export const Z_RED = '#CC1B2F'          // Brand mark only
 
-// ── ZAPATA AI gold palette (April 2026 rebrand — identity surfaces) ──
+// ── CRUZ gold palette (April 2026 rebrand — identity surfaces) ──
 // Gold returns for brand moments only: mark, wordmark, primary CTAs,
 // active nav indicator. Silver still owns data/chrome (KPIs, borders, text).
 export const ZAPATA_GOLD_BASE = '#C9A74A'
@@ -32,9 +32,9 @@ export const ZAPATA_GOLD_GRADIENT =
 export const ZAPATA_GOLD_GLOW = 'rgba(201,167,74,0.28)'
 export const ZAPATA_GOLD_GLOW_SUBTLE = 'rgba(201,167,74,0.12)'
 
-// ── GOLD tokens — restored to real gold for ZAPATA AI brand surfaces ──
+// ── GOLD tokens — restored to real gold for CRUZ brand surfaces ──
 // Prior (be416fc) aliased GOLD → silver when the brand went monochrome.
-// ZAPATA AI rebrand restores gold for identity moments; consumers importing
+// CRUZ rebrand restores gold for identity moments; consumers importing
 // GOLD* now render gold again — exactly what most of them historically meant.
 export const GOLD = ZAPATA_GOLD_BRIGHT
 export const GOLD_HOVER = ZAPATA_GOLD_BASE
@@ -102,7 +102,7 @@ export const TEXT_PRIMARY = '#E6EDF3'
 export const TEXT_SECONDARY = '#94a3b8'
 export const TEXT_MUTED = '#64748b'
 
-// ── ZAPATA AI tokens (Block 2 · Unified Search, retained) ──
+// ── CRUZ tokens (Block 2 · Unified Search, retained) ──
 // TEXT_TERTIARY is a semantic alias of TEXT_SECONDARY.
 export const ZAPATA_BG_ELEVATED = '#1c1c22'
 export const BORDER_HAIRLINE = 'rgba(255,255,255,0.06)'

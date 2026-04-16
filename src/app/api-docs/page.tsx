@@ -17,7 +17,7 @@ const ENDPOINTS = [
   { method: 'GET', path: '/api/data?table={name}', desc: 'Raw data query (28 tables)', example: '?table=traficos&limit=10' },
   { method: 'POST', path: '/api/webhooks', desc: 'Subscribe to events', example: '{"action":"subscribe","url":"...","events":["shipment.crossed"]}' },
   { method: 'POST', path: '/api/supplier-comms', desc: 'Queue supplier communication', example: '{"supplier":"COVESTRO","trafico":"{trafico_id}"}' },
-  { method: 'POST', path: '/api/chat', desc: 'ZAPATA AI chat query', example: '{"messages":[{"role":"user","content":"..."}]}' },
+  { method: 'POST', path: '/api/chat', desc: 'CRUZ chat query', example: '{"messages":[{"role":"user","content":"..."}]}' },
 ]
 
 export default function ApiDocsPage() {

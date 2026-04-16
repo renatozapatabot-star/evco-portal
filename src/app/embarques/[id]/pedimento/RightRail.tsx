@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * ZAPATA AI · Block 6b — Live Validación + Acciones rápidas right rail.
+ * CRUZ · Block 6b — Live Validación + Acciones rápidas right rail.
  */
 
 import { useMemo } from 'react'

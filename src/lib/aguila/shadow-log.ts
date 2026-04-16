@@ -24,7 +24,7 @@ export interface ShadowEntry {
 }
 
 /**
- * Write an ZAPATA AI telemetry row.
+ * Write an CRUZ telemetry row.
  * Silent on failure — never breaks the request. Service-role only; RLS denies
  * every authenticated read by design.
  */

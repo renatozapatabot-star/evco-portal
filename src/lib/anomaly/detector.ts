@@ -1,5 +1,5 @@
 /**
- * ZAPATA AI · Anomaly Detector — in-memory checks over recent facturas.
+ * CRUZ · Anomaly Detector — in-memory checks over recent facturas.
  *
  * Three detectors mirror the skill definition (anomaly-detector.md):
  *

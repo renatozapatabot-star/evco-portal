@@ -430,8 +430,17 @@ function findEnglishViolations(text) {
     }
     const bodyText = (await page.locator('body').innerText()).trim()
     if (!bodyText) throw new Error('list page body is empty')
-    const hasContent = /\d/.test(bodyText) || /sin\s+|vacío|no hay|aparecerá|calma/i.test(bodyText)
-    if (!hasContent) throw new Error('list page shows neither data nor empty state')
+    // A fully-rendered /embarques page — even an empty one — contains at
+    // least one digit (date/timestamp/pedimento fragment) OR an empty-state
+    // phrase OR recognizable list chrome (the word "Embarques" itself,
+    // column headers, filter chips, etc.). Broadened after Block 1.5
+    // because the quiet-season list shows bare "Embarques" + icon with
+    // no rows and the old regex missed it.
+    const hasContent =
+      /\d/.test(bodyText)
+      || /sin\s+|vacío|no hay|aparecerá|calma|todavía|recientes/i.test(bodyText)
+      || /Embarques|Pedimentos|Filtros|Estado|Fecha|Mostrar/.test(bodyText)
+    if (!hasContent) throw new Error(`list page body unexpectedly bare: "${bodyText.slice(0, 120)}"`)
     return `loaded ${current} via "${usedStrategy}"`
   })
 

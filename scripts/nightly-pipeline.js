@@ -569,10 +569,15 @@ async function run() {
 run().catch(async e => {
   console.error('Pipeline failed:', e)
   await tg(`❌ NIGHTLY PIPELINE FAILED\n${e.message}\n— CRUZ 🦀`)
-  await supabase.from('heartbeat_log').insert({
-    script: 'nightly-pipeline',
-    status: 'failed',
-    details: { error: e.message },
-  }).then(() => {}, () => {})
+  // Telemetry — pipeline already failed; don't block the exit path on
+  // a heartbeat write that might also fail (safeInsert will Telegram-alert
+  // on its own if the write fails).
+  try {
+    await safeInsert(supabase, 'heartbeat_log', {
+      script: 'nightly-pipeline',
+      status: 'failed',
+      details: { error: e.message },
+    }, { scriptName: 'nightly-pipeline' })
+  } catch { /* telemetry — safeInsert already alerted */ }
   process.exit(1)
 })

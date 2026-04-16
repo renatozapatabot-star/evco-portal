@@ -1,4 +1,10 @@
 #!/usr/bin/env node
+// FIX 2026-04-16: env loading was missing — PM2 cron_restart invoked this
+// script without .env.local injection so SUPABASE_URL/SUPABASE_KEY were
+// undefined and main() threw "Missing Supabase env vars" on every 5-min
+// tick (59 restarts observed in overnight audit).
+require('dotenv').config({ path: require('path').join(__dirname, '..', '.env.local') })
+
 /**
  * Mensajería · email fallback via Resend.
  *

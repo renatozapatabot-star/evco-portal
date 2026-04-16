@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation'
 import { useEffect, useState, useRef, Suspense } from 'react'
 import dynamic from 'next/dynamic'
 import AguilaLayout from './aguila/AguilaLayout'
+import { AguilaFooterShellFallback } from './aguila/AguilaFooter'
 import { ToastProvider, useToast } from './Toast'
 import { useKeyboardShortcuts } from '@/hooks/use-shortcuts'
 import { useIsMobile } from '@/hooks/use-mobile'
@@ -216,6 +217,12 @@ export default function DashboardShellClient({ children }: Props) {
         </Suspense>
         <div id="main-content" ref={scrollRef}>
           {children}
+          {/* Shell-level identity footer — renders on every authenticated
+              page. PageShell also renders an AguilaFooter for pages that
+              compose through it (e.g. /inicio). Dedupe guard in the
+              AguilaFooter component itself: if another [data-identity-footer]
+              is already on the page, this one returns null. */}
+          <AguilaFooterShellFallback />
         </div>
       </AguilaLayout>
 

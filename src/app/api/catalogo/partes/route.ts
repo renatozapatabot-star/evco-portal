@@ -152,7 +152,11 @@ export async function GET(req: NextRequest) {
 
   const tmecFraccions = new Set<string>((tmecRows || []).map((t: any) => t.fraccion).filter(Boolean))
 
-  // Step 4: productos with filters
+  // Step 4: productos with filters + sort.
+  // For most_used we need to prioritize parts that actually have
+  // partidas in the 24mo window — otherwise a random slice of 148K+
+  // productos will almost always be all zero-usage. Pre-rank from the
+  // partidas aggregate.
   let q = supabase.from('globalpc_productos').select('*', { count: 'exact' }).eq('company_id', companyId)
 
   if (search && search.trim()) {
@@ -170,18 +174,34 @@ export async function GET(req: NextRequest) {
     q = q.is('fraccion', null)
   }
 
-  // Sort
-  if (sort === 'recent') {
+  // When the caller asks for most_used, restrict the productos query to
+  // the set of cve_productos seen in partidas (ranked by usage desc).
+  // This collapses 148K rows → ~700 for EVCO. If there's no usage at
+  // all, fall through to the generic sort so we still return *something*.
+  if (sort === 'most_used' && partidasByCve.size > 0) {
+    const ranked = Array.from(partidasByCve.entries())
+      .sort(([, a], [, b]) => b.uses - a.uses)
+      .map(([cve]) => cve)
+    const pageCves = ranked.slice(offset, offset + limit)
+    if (pageCves.length > 0) {
+      // Exactly this page — keep Postgres from re-sorting the server-side
+      // DB response; we preserve the by-usage order in JS below.
+      q = q.in('cve_producto', pageCves)
+    } else {
+      // Offset past the rank list → nothing to return
+      q = q.range(0, 0).eq('cve_producto', '__NO_SUCH_CVE__')
+    }
+  } else if (sort === 'recent') {
     q = q.order('created_at', { ascending: false, nullsFirst: false })
+    q = q.range(offset, offset + limit - 1)
   } else if (sort === 'alpha') {
     q = q.order('descripcion', { ascending: true, nullsFirst: false })
+    q = q.range(offset, offset + limit - 1)
   } else {
-    // most_used sort is done client-side after annotation — fall back to
-    // fraccion_classified_at as a stable DB sort so pagination still works
+    // most_used fallback when there's no partidas aggregate — stable order
     q = q.order('fraccion_classified_at', { ascending: false, nullsFirst: false })
+    q = q.range(offset, offset + limit - 1)
   }
-
-  q = q.range(offset, offset + limit - 1)
 
   const { data: productos, count, error } = await q
   if (error) {
@@ -234,6 +254,9 @@ export async function GET(req: NextRequest) {
   }
 
   if (sort === 'most_used') {
+    // The DB query for most_used already restricted to ranked cve_productos,
+    // but Postgres doesn't guarantee the `.in(…)` clause returns in the
+    // order we passed — re-apply the rank here.
     partes = partes.slice().sort((a, b) => b.times_used_24mo - a.times_used_24mo)
   }
 

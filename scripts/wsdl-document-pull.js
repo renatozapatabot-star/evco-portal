@@ -17,6 +17,7 @@ const { createClient } = require('@supabase/supabase-js')
 const fs = require('fs')
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
+const { safeInsert } = require('./lib/safe-write')
 const TG = process.env.TELEGRAM_BOT_TOKEN
 const CHAT = '-5085543275'
 const CHECKPOINT = '/tmp/wsdl-doc-pull-checkpoint.json'
@@ -355,24 +356,30 @@ async function insertDocs(docs, trafico) {
 
 run().then(async () => {
   console.log('Run complete. Sleeping until next PM2 cron restart...')
-  await supabase.from('operational_decisions').insert({
-    decision_type: 'script_completed',
-    script_name: 'wsdl-document-pull',
-    details: { status: 'success', message: 'Batch complete, sleeping until next cron' },
-    created_at: new Date().toISOString()
-  }).then(() => {}, () => {})
+  // Telemetry write — surface failures via safeInsert's internal alert,
+  // but keep this fire-and-forget at the call site (don't abort the sleep).
+  try {
+    await safeInsert(supabase, 'operational_decisions', {
+      decision_type: 'script_completed',
+      script_name: 'wsdl-document-pull',
+      details: { status: 'success', message: 'Batch complete, sleeping until next cron' },
+      created_at: new Date().toISOString()
+    }, { scriptName: 'wsdl-document-pull' })
+  } catch { /* telemetry — safeInsert already alerted via Telegram */ }
   // Keep process alive — PM2 cron "0 3 * * *" will kill and restart
   // setInterval keeps the event loop active so Node doesn't exit
   // This prevents the autorestart crash loop (was 104,000+ restarts)
   setInterval(() => {}, 2_147_483_647)
 }).catch(async (e) => {
   console.error('Fatal:', e)
-  await supabase.from('operational_decisions').insert({
-    decision_type: 'script_failed',
-    script_name: 'wsdl-document-pull',
-    details: { status: 'fatal', error: e.message },
-    created_at: new Date().toISOString()
-  }).then(() => {}, () => {})
+  try {
+    await safeInsert(supabase, 'operational_decisions', {
+      decision_type: 'script_failed',
+      script_name: 'wsdl-document-pull',
+      details: { status: 'fatal', error: e.message },
+      created_at: new Date().toISOString()
+    }, { scriptName: 'wsdl-document-pull' })
+  } catch { /* telemetry — safeInsert already alerted via Telegram */ }
   await tg(`\uD83D\uDD34 <b>WSDL doc pull v2 FATAL</b>\n${e.message}\n\u2014 CRUZ \uD83E\uDD80`)
   process.exit(1)
 })

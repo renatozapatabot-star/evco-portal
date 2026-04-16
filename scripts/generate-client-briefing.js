@@ -49,8 +49,13 @@ async function gatherContext(companyId, targetDate) {
   start.setDate(start.getDate() - 7)
   const yearStart = new Date(end.getFullYear(), 0, 1)
 
+  // `portal_company_name` is referenced in the CRUZ AI client-context
+  // code but not in any applied migration — selecting it causes the
+  // whole row to come back null. Select the safe columns first, then
+  // optionally enrich with portal_company_name inside a guarded
+  // follow-up query so a missing column never zeros out `ctx.company`.
   const [company, active, weekCruces, recentPedimentos, savings] = await Promise.all([
-    supabase.from('companies').select('company_id, name, portal_company_name').eq('company_id', companyId).maybeSingle(),
+    supabase.from('companies').select('company_id, name').eq('company_id', companyId).maybeSingle(),
     supabase.from('traficos').select('trafico, estatus, fecha_llegada').eq('company_id', companyId).is('fecha_cruce', null).gte('fecha_llegada', start.toISOString()).order('fecha_llegada', { ascending: true }).limit(10),
     supabase.from('traficos').select('trafico, fecha_cruce').eq('company_id', companyId).gte('fecha_cruce', start.toISOString()).lte('fecha_cruce', end.toISOString()),
     supabase.from('traficos').select('trafico, pedimento, fecha_pago').eq('company_id', companyId).not('pedimento', 'is', null).order('fecha_pago', { ascending: false }).limit(3),

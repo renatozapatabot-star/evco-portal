@@ -39,8 +39,11 @@ export async function buildClientAIContext(
   // typeerror / etc can still throw.
   const [company, activeShipments, recentPedimentos, expedientesStatus] =
     await Promise.all([
+      // portal_company_name is an optional override that isn't in any
+      // applied migration yet — request only the guaranteed columns so
+      // the whole row doesn't null out on a missing-column error.
       Promise.resolve(
-        supabase.from('companies').select('name, rfc, portal_company_name').eq('company_id', companyId).maybeSingle()
+        supabase.from('companies').select('name, rfc').eq('company_id', companyId).maybeSingle()
       ).then((r: any) => r?.data ?? null).catch(() => null),
       Promise.resolve(
         supabase.from('traficos').select('trafico, fecha_llegada, estatus').eq('company_id', companyId)

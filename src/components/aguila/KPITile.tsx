@@ -32,6 +32,25 @@ interface Props {
   ariaLabel?: string
 }
 
+/**
+ * Value-content detector: true when the value is numeric/currency/
+ * percentage/dash-only content that reads best in JetBrains Mono.
+ * False for prose ("hace 36 días", "Sin cruces aún", status labels,
+ * etc.) which should render in Geist sans to avoid line-wrap at
+ * display size.
+ *
+ * CLAUDE.md design system: mono is for financial figures and
+ * timestamps. Relative-time phrases ARE prose. Splitting font
+ * per value type lets the quiet-season "Último cruce" tile show
+ * "hace 36 días" on a single line without shrinking the tile.
+ */
+export function isNumericValue(value: number | string): boolean {
+  if (typeof value === 'number') return true
+  const s = String(value).trim()
+  if (s.length === 0) return true
+  return /^[\d.,$\s€£¥%—\-+:]+$/.test(s)
+}
+
 export function KPITile({
   label, value, sublabel, series, previous, current, href, onClick, buttonRef, tone = 'silver',
   urgent = false, inverted = false, compact = false, ariaLabel,
@@ -45,6 +64,10 @@ export function KPITile({
     ? 'var(--aguila-fs-kpi-compact, 32px)'
     : 'var(--aguila-fs-kpi-hero, 48px)'
   const minHeight = compact ? 108 : 140
+  const valueIsNumeric = isNumericValue(value)
+  const valueFontFamily = valueIsNumeric
+    ? 'var(--font-jetbrains-mono), JetBrains Mono, monospace'
+    : 'var(--font-geist-sans), Geist, system-ui, sans-serif'
 
   // onClick takes precedence — when set, render the tile as a button (no href
   // to GlassCard so it stays a plain div). Preserves the 60px+ tap target by
@@ -82,15 +105,32 @@ export function KPITile({
 
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8 }}>
         <span
+          data-value-font={valueIsNumeric ? 'mono' : 'sans'}
           className={urgent ? 'aguila-pulse' : ''}
           style={{
-            fontFamily: 'var(--font-jetbrains-mono), JetBrains Mono, monospace',
-            fontSize: `calc(${numberSize} * 0.92)`,
-            fontWeight: 800,
-            lineHeight: 1,
-            letterSpacing: 'var(--aguila-ls-tight, -0.03em)',
+            fontFamily: valueFontFamily,
+            // Sans-serif prose ("hace 36 días") is naturally narrower than
+            // mono display digits — shrink it a touch so it fits on one
+            // line in the tile without dwarfing adjacent numeric tiles.
+            fontSize: valueIsNumeric
+              ? `calc(${numberSize} * 0.92)`
+              : `calc(${numberSize} * 0.62)`,
+            fontWeight: valueIsNumeric ? 800 : 600,
+            lineHeight: 1.05,
+            letterSpacing: valueIsNumeric
+              ? 'var(--aguila-ls-tight, -0.03em)'
+              : '-0.01em',
             color: numberColor,
-            fontVariantNumeric: 'tabular-nums',
+            fontVariantNumeric: valueIsNumeric ? 'tabular-nums' : 'normal',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            // Reserve the same visual row height regardless of font
+            // so mixed rows (numeric + prose) line up baseline-wise.
+            minHeight: `calc(${numberSize} * 1)`,
+            display: 'inline-flex',
+            alignItems: 'center',
+            maxWidth: '100%',
           }}
         >
           {value}

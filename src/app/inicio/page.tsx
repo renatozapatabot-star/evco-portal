@@ -26,9 +26,14 @@ import { fetchClientMensajeriaFeed, mensajeriaClientEnabled } from '@/lib/mensaj
 import { parseMonthParam } from '@/lib/cockpit/month-window'
 import type { NavCounts } from '@/lib/cockpit/nav-tiles'
 import type { CapabilityCounts } from '@/lib/cockpit/capabilities'
+import { withHardTimeout } from '@/lib/timeouts'
 
-/** Wrap any Promise with a hard timeout so SSR can never exceed Vercel function limits. */
-function withHardTimeout<T>(p: PromiseLike<T>, ms: number, fallback: T): Promise<T> {
+/** Aggregate-query timeout wrapper — returns caller-supplied fallback
+ *  on timeout or error. Used inside Promise.all for data that can
+ *  degrade gracefully (hero numbers, activity feeds). Session-validity
+ *  gates use the shared `withHardTimeout` from @/lib/timeouts which
+ *  returns null on timeout so the caller can redirect cleanly. */
+function withFallbackTimeout<T>(p: PromiseLike<T>, ms: number, fallback: T): Promise<T> {
   return Promise.race([
     Promise.resolve(p).catch(() => fallback),
     new Promise<T>((resolve) => setTimeout(() => resolve(fallback), ms)),
@@ -95,6 +100,27 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
   const ninetyDaysAgoIso = daysAgo(90, now).toISOString()
   const monthStartIso = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
 
+  // Session-validity gate — own 8 s budget, separate from the cockpit
+  // aggregate queries below. Pre-2026-04-18 this query shared the
+  // Promise.all's 3 s softFirst budget and intermittently timed out on
+  // serverless cold start, triggering a false `redirect('/login?stale=1')`
+  // that landed Ursula on the login screen instead of her cockpit. Cold
+  // start hardening per Block 1.
+  type CompanyRow = { name: string | null; clave_cliente?: string | null }
+  const companyRowResult = await withHardTimeout<{ data: CompanyRow[] | null }>(
+    Promise.resolve(
+      supabase.from('companies').select('name, clave_cliente').eq('company_id', companyId).limit(1)
+    ) as unknown as Promise<{ data: CompanyRow[] | null }>,
+    8000,
+    'companyRow',
+  )
+  const companyRow: CompanyRow | null = companyRowResult?.data?.[0] ?? null
+  if (!companyRow) {
+    // Genuine session-invalidation (companyId not in table) OR 8 s
+    // timeout exceeded. Both warrant a clean re-authentication.
+    redirect('/login?stale=1')
+  }
+
   // KPI accuracy contract (added 2026-04-15 after audit):
   //   - "Embarques activos"  → fecha_cruce IS NULL AND fecha_llegada >= last 90d
   //   - "Entradas esta semana" → entradas.fecha_llegada_mercancia >= last 7d
@@ -105,7 +131,6 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
   const [
     activeTraficos,
     documentos,
-    companyRow,
     activeTraficosCount,
     pedimentosListosCount,
     cruzadosMesCount,
@@ -126,11 +151,8 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
     mensajeriaMessages,
     clienteActivity,
   ] = await Promise.all([
-    withHardTimeout(getClienteActiveTraficos(supabase, companyId), 3500, []),
-    withHardTimeout(getClienteDocuments(supabase, companyId), 3500, []),
-    softFirst<{ name: string | null; clave_cliente?: string | null }>(
-      supabase.from('companies').select('name, clave_cliente').eq('company_id', companyId).limit(1)
-    ),
+    withFallbackTimeout(getClienteActiveTraficos(supabase, companyId), 3500, []),
+    withFallbackTimeout(getClienteDocuments(supabase, companyId), 3500, []),
     // Embarques activos: not crossed yet, with recent arrival activity (90d window).
     softCount(supabase.from('traficos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).is('fecha_cruce', null).gte('fecha_llegada', ninetyDaysAgoIso)),
     // Pedimentos listos: estatus=Pedimento Pagado, awaiting actual cruce,
@@ -170,20 +192,14 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
       supabase.from('traficos').select('fecha_cruce').eq('company_id', companyId).gte('fecha_cruce', fourteenDaysAgoIso).limit(2000)
     ),
     softFirst<{ fecha_cruce: string }>(supabase.from('traficos').select('fecha_cruce').eq('company_id', companyId).not('fecha_cruce', 'is', null).order('fecha_cruce', { ascending: false }).limit(1)),
-    withHardTimeout(fetchClientMensajeriaFeed(supabase, companyId, 10), 3000, []),
-    withHardTimeout(getClienteActivity(supabase, companyId, 12), 3000, []),
+    withFallbackTimeout(fetchClientMensajeriaFeed(supabase, companyId, 10), 3000, []),
+    withFallbackTimeout(getClienteActivity(supabase, companyId, 12), 3000, []),
   ])
 
   // Stale-session self-heal: if the session encodes a companyId that no
-  // longer maps to any companies row (schema migration / slug rename), the
-  // user is sitting on an invalidated session. Bounce them back to /login
-  // with a stale=1 marker so they re-authenticate cleanly. Beats rotating
-  // SESSION_SECRET portal-wide.
-  if (!companyRow) {
-    redirect('/login?stale=1')
-  }
-
-  const companyName = companyRow?.name ?? ''
+  // companyRow invariant: validated + redirect handled in the
+  // dedicated 8 s gate above. After this point it's guaranteed non-null.
+  const companyName = companyRow.name ?? ''
 
   // Telemetry (fire-and-forget, guarded)
   try {

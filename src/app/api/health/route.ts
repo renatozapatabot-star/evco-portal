@@ -6,8 +6,28 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
+// Module-level timestamp — set once when this serverless instance boots.
+// instance_age_ms = now - moduleStart tells the dry-run whether it hit
+// a cold start (module just booted) or a warm instance.
+const moduleStartTime = Date.now()
+
 export async function GET() {
-  const checks: Record<string, { ok: boolean; ms?: number }> = {}
+  const now = Date.now()
+  const instanceAgeMs = now - moduleStartTime
+  // Heuristic: anything under 2 s since module boot is treated as a
+  // cold start. Warm requests on a reused instance typically come
+  // minutes later.
+  const coldStart = instanceAgeMs < 2000
+
+  const checks: {
+    supabase?: { ok: boolean; ms?: number }
+    sync?: { ok: boolean; ms?: number }
+    cold_start: boolean
+    instance_age_ms: number
+  } = {
+    cold_start: coldStart,
+    instance_age_ms: instanceAgeMs,
+  }
 
   try {
     const start = Date.now()
@@ -23,5 +43,7 @@ export async function GET() {
     checks.sync = { ok: minsAgo !== null && minsAgo < 240, ms: minsAgo ?? undefined }
   } catch { checks.sync = { ok: false } }
 
-  return NextResponse.json(checks, { headers: { 'Cache-Control': 's-maxage=60' } })
+  // Don't cache cold-start telemetry — each request should reflect
+  // the instance state at request time.
+  return NextResponse.json(checks, { headers: { 'Cache-Control': 'no-store' } })
 }

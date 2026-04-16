@@ -301,19 +301,29 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
       }
     } catch { /* soft — keep default 30 */ }
 
-    // T-MEC YTD savings — column not guaranteed in this schema; soft-wrap
-    // with a catch and default null so the tile is dropped gracefully.
+    // T-MEC YTD savings — uses the same source as /ahorro
+    // (src/app/api/cost-insights/route.ts: operations_savings table).
+    // Soft-wrap so a schema drift / missing table drops the tile gracefully.
     try {
-      const yearStart = new Date(new Date().getFullYear(), 0, 1).toISOString()
-      const { data: tmecRow } = await supabase
-        .from('pedimento_savings')
-        .select('realized_savings_usd')
+      const yearPrefix = String(new Date().getFullYear()) // e.g. "2026"
+      // Fetch the most-recent 24 rows; filter client-side to rows whose
+      // `month` string starts with the current year. Handles both
+      // "2026-04" and "2026-04-01" month formats without depending on
+      // a specific collation.
+      const { data: savingsRows } = await supabase
+        .from('operations_savings')
+        .select('month, realized_savings_usd')
         .eq('company_id', companyId)
-        .gte('period_start', yearStart)
-      if (tmecRow && tmecRow.length > 0) {
-        tmecYtdUsd = (tmecRow as Array<{ realized_savings_usd: number | null }>).reduce(
-          (acc, r) => acc + (r.realized_savings_usd ?? 0), 0,
-        )
+        .order('month', { ascending: false })
+        .limit(24)
+      if (savingsRows && savingsRows.length > 0) {
+        const ytdRows = (savingsRows as Array<{ month: string | null; realized_savings_usd: number | null }>)
+          .filter(r => typeof r.month === 'string' && r.month.startsWith(yearPrefix))
+        if (ytdRows.length > 0) {
+          tmecYtdUsd = ytdRows.reduce((acc, r) => acc + (r.realized_savings_usd ?? 0), 0)
+        } else {
+          tmecYtdUsd = 0 // table exists, no rows this year → explicit zero → tile drops
+        }
       }
     } catch { /* soft — leave null so the tile is dropped per spec */ }
 

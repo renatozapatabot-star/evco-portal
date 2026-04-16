@@ -42,6 +42,8 @@ describe('buildClientHeroTiles (quiet-season)', () => {
     const operacion = out.heroKPIs[0]
     expect(operacion.label).toBe('Días sin incidencias')
     expect(operacion.value).toBe(45)
+    // 1.4.A — Días sin incidencias now has a "desde {fecha}" sublabel
+    expect(operacion.sublabel).toMatch(/^desde \d+ \w+/)
     // Último cruce tile now splits into value (relative) + sublabel (absolute)
     const ultimo = out.heroKPIs[1]
     expect(typeof ultimo.value).toBe('string')

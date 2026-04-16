@@ -123,12 +123,20 @@ export function buildClientHeroTiles(input: ClientHeroInputs): ClientHeroOutput 
   // Quiet-season mode.
   const tiles: CockpitHeroKPI[] = []
 
-  // Tile 1 — Operación estable
+  // Tile 1 — Operación estable. Sublabel gives the start date so
+  // "30 días" has a reference point ("desde 17 mar") in small mono
+  // under the headline. Matches the Último cruce tile shape: value
+  // is the readable headline, sublabel is the absolute anchor.
   const days = Math.max(0, input.daysSinceLastIncident)
+  const since = new Date(Date.now() - days * 86_400_000)
+  const sinceLabel = !isNaN(since.getTime())
+    ? since.toLocaleDateString(LOCALE, { timeZone: TZ, day: 'numeric', month: 'short' })
+    : null
   tiles.push({
     key: 'operacion-estable',
     label: 'Días sin incidencias',
     value: days,
+    sublabel: sinceLabel ? `desde ${sinceLabel}` : undefined,
     tone: 'teal' as QuietTone as CockpitHeroKPI['tone'],
     ariaLabel: `${days} días sin incidencias`,
   })

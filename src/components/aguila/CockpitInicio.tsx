@@ -171,7 +171,9 @@ export function CockpitInicio({
         </div>
       ) : null}
 
-      {/* 2-col main: estadoSections + actividad */}
+      {/* 2-col main: estadoSections + actividad. Skipped entirely when the
+          caller omits both — client surface uses this to stay calm. */}
+      {(estadoSections || actividadSlot || (actividad && actividad.length > 0)) && (
       <div
         className="aguila-cockpit-main"
         style={{
@@ -223,6 +225,7 @@ export function CockpitInicio({
           </section>
         </aside>
       </div>
+      )}
     </PageShell>
   )
 }

@@ -18,9 +18,7 @@ import {
 import { getClienteActivity } from '@/lib/cliente/activity'
 import { bucketDailySeries, daysAgo } from '@/lib/cockpit/fetch'
 import { softCount, softData, softFirst } from '@/lib/cockpit/safe-query'
-import { CockpitInicio, MensajeriaFeed, CockpitErrorCard, CockpitSkeleton, ActividadStrip, CapabilityCardGrid, TimelineFeed, type CockpitHeroKPI, type ActividadStripItem } from '@/components/aguila'
-import { AsistenteButton } from '@/components/aguila/AsistenteButton'
-import { ClienteEstado } from '@/components/cliente/ClienteEstado'
+import { CockpitInicio, CockpitErrorCard, CockpitSkeleton, ActividadStrip, CapabilityCardGrid, type CockpitHeroKPI, type ActividadStripItem } from '@/components/aguila'
 import { fetchClientMensajeriaFeed, mensajeriaClientEnabled } from '@/lib/mensajeria/feed'
 import { parseMonthParam } from '@/lib/cockpit/month-window'
 import type { NavCounts } from '@/lib/cockpit/nav-tiles'
@@ -93,7 +91,9 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
     cruzadosLast7Count,
     entradasSemanaCount,
     expedientesCount,
+    expedientesMesCount,
     catalogoCount,
+    catalogoMesCount,
     clasificacionesCount,
     activosSeriesRows,
     pedimentosListosSeriesRows,
@@ -124,7 +124,9 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
     // Entradas esta semana — entradas.fecha_llegada_mercancia is the truth source.
     softCount(supabase.from('entradas').select('id', { count: 'exact', head: true }).eq('company_id', companyId).gte('fecha_llegada_mercancia', sevenDaysAgoIso)),
     softCount(supabase.from('expediente_documentos').select('id', { count: 'exact', head: true }).eq('company_id', companyId)),
+    softCount(supabase.from('expediente_documentos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).gte('uploaded_at', monthStartIso)),
     softCount(supabase.from('globalpc_productos').select('id', { count: 'exact', head: true }).eq('company_id', companyId)),
+    softCount(supabase.from('globalpc_productos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).gte('fraccion_classified_at', monthStartIso)),
     softCount(supabase.from('globalpc_productos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).not('fraccion', 'is', null)),
     // Sparkline series — bucket by the SAME field the headline KPI uses.
     softData<{ fecha_llegada: string }>(
@@ -199,15 +201,11 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
   const navCounts: NavCounts = {
     traficos:        { count: activeTraficosCount,    series: activosSeries,          microStatus: `${cruzadosLast7Count} cruzaron esta semana` },
     pedimentos:      { count: pedimentosListosCount,  series: pedimentosListosSeries, microStatus: daysSinceLastCruce != null ? `Último cruce hace ${daysSinceLastCruce} día${daysSinceLastCruce === 1 ? '' : 's'}` : 'Sin cruces recientes' },
-    expedientes:     { count: expedientesCount,       series: expedientesSeries,      microStatus: `${documentos.length} documento${documentos.length === 1 ? '' : 's'} en tu expediente` },
-    catalogo:        { count: catalogoCount,          series: [],                     microStatus: clasificacionesCount > 0 ? `${clasificacionesCount.toLocaleString('es-MX')} fracciones clasificadas` : 'Sin clasificar' },
+    expedientes:     { count: expedientesMesCount,    series: expedientesSeries,      microStatus: `Documentos este mes · ${expedientesCount.toLocaleString('es-MX')} en total` },
+    catalogo:        { count: catalogoMesCount,       series: [],                     microStatus: `Partes usadas este mes · ${catalogoCount.toLocaleString('es-MX')} en catálogo` },
     entradas:        { count: entradasSemanaCount,    series: entradasSeries,         microStatus: `${entradasSemanaCount} recibida${entradasSemanaCount === 1 ? '' : 's'} esta semana` },
     reportes:        { count: null,                   series: clasificacionesSeries },
   }
-
-  const estadoSections = (
-    <ClienteEstado activeTraficos={activeTraficos} documentos={documentos} />
-  )
 
   // Dynamic zero-state — when no active tráficos, show the most-recent
   // crossed embarque instead of a blank "nothing happening" line.
@@ -240,31 +238,6 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
   const pulseSignal = activeTraficos.length > 0
 
   const mensajeriaEnabled = mensajeriaClientEnabled()
-  const activityHasContent = clienteActivity.length > 0
-  const mensajeriaHasContent = mensajeriaEnabled && mensajeriaMessages.length > 0
-
-  const actividadSlot = (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      {(activityHasContent || !mensajeriaHasContent) && (
-        <TimelineFeed
-          items={clienteActivity}
-          max={10}
-          emptyLabel="Tu operación está en calma · Todo en orden"
-        />
-      )}
-      {mensajeriaEnabled ? (
-        mensajeriaHasContent ? (
-          <MensajeriaFeed
-            messages={mensajeriaMessages}
-            realtime={false}
-            companyId={companyId}
-            emptyLabel=""
-            max={10}
-          />
-        ) : null
-      ) : null}
-    </div>
-  )
 
   const expPct = activeTraficos.length > 0
     ? Math.min(100, Math.round((documentos.length / Math.max(activeTraficos.length * 3, 1)) * 100))
@@ -310,8 +283,6 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
         companyName={companyName || 'Tu portal'}
         heroKPIs={heroKPIs}
         navCounts={navCounts}
-        estadoSections={estadoSections}
-        actividadSlot={actividadSlot}
         actividadStripSlot={actividadStripSlot}
         capabilitySlot={capabilitySlot}
         summaryLine={summaryLine}
@@ -319,8 +290,6 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
         month={month}
         metaPills={clientMetaPills}
       />
-      {/* V1 marathon — fixed-position Asistente on every cockpit */}
-      <AsistenteButton roleTag="client" />
     </>
   )
 }

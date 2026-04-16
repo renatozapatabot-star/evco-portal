@@ -45,20 +45,23 @@ Run white-label dry-run (find every hardcoded "9254") BEFORE promising anything.
 ## BUILD STATE (update this section at session start)
 
 ```
-Branch:         feature/v6-phase0-phase1
-Last commit:    7b4d387
+Branch:         feature/embarques-rename-month-scope
+Last commit:    11ad6d2 chore(eagle): soft-wrap owner active-count query
 Rating:         9.8/10 — code-side ceiling without real users
 Tests:          343/343 green
-Deploy:         IN PROGRESS — vercel --prod running as of 2026-04-13
-Supabase:       db push deferred — design runs in progress
-Storage:        7 buckets created via SQL (classification-sheets, pedimento-exports,
+Deploy:         LIVE — evco-portal.vercel.app + portal.renatozapata.com
+                (last prod push 2026-04-16 — client cockpit polish)
+Supabase:       db push current; 8 globalpc_* + 4 econta_* tables synced
+Storage:        7 buckets live (classification-sheets, pedimento-exports,
                 anexo-24-exports, warehouse-photos, regulatory-docs,
                 quickbooks-exports, mensajeria-attachments)
 Vercel env:     All 5 confirmed (ANTHROPIC_API_KEY, TELEGRAM_BOT_TOKEN,
                 TELEGRAM_CHAT_ID, TITO_EMAIL, RESEND_API_KEY)
-Marathon:       UX marathon is next (after deploy + Tito walkthrough)
-Tito ETA:       2-3 hours from 2026-04-13 session start
+Active focus:   GlobalPC + eConta workflow audit pending Renato delivery
+Tito ETA:       awaiting walkthrough
 Known debt:     3 legacy dark-theme PDFs in app/api/ (auditoria-pdf, reportes-pdf, anexo24-pdf)
+                eConta MySQL writer (PM2) deferred until Anabel recon
+                WSDL document pull script exists, not in active cron
 ```
 
 Run `/boot` at session start. Read `.claude/memory/learned-rules.md`. Fix all violations before building.
@@ -80,6 +83,57 @@ Every feature belongs to exactly one surface. When in doubt, ask before building
 **Client portal rule (Shipper surface):** No MVE countdowns, compliance alerts, missing-document
 warnings, or internal operational urgency visible to the client. The client portal shows certainty, not anxiety.
 Operational urgency belongs in internal reports only — not in any client-facing surface.
+
+---
+
+## INTEGRATION STATE — GlobalPC + eConta
+
+Read this section before touching either system. The whole Marathon 3
+plan rides on these constraints.
+
+### GlobalPC (read-only mirror, mature)
+
+- 8 `globalpc_*` tables in Supabase: `productos` (315K+ rows), `partidas`,
+  `facturas`, `eventos`, `contenedores`, `ordenes_carga`, `bultos`, `proveedores`
+- Source: MySQL `bd_demo_38` @ `216.251.68.5:33033` (Throne IP `50.84.32.162` whitelisted)
+- Sync: `scripts/globalpc-sync.js`, nightly 1 AM via `nightly-pipeline.js`,
+  checkpoint-resumable
+- Classification layer: Qwen (local Ollama on Throne) writes
+  `globalpc_productos.fraccion_classified_at` after each sync
+- **READ-ONLY by contract.** Mario Ramos (GlobalPC support) must not
+  perceive ZAPATA AI as competition — the platform is a quiet successor,
+  not a replacement product. No writes back to GlobalPC. Ever.
+- WSDL document-pull script exists (`wsdl-document-pull.js`) but is NOT
+  in active cron. Ship-decision pending audit.
+
+### eConta (partial — cockpit live, writer deferred)
+
+- 4 `econta_*` tables: `facturas`, `cartera`, `ingresos`, `egresos`
+- Source: MySQL `bd_econta_rz` @ `:33035` (user `rep_rz`)
+- Sync: `scripts/full-sync-econta.js` + Monday-4-AM `econta-reconciler.js`
+- Anabel cockpit at `/contabilidad/inicio` is **real**, not placeholder —
+  CxC aging 30/60/90+, CxP, MVE, QB export job status
+- Operator view at `/operador/contabilidad` reads the same tables
+- QB IIF generator at `src/lib/quickbooks-export.ts` is working
+- `/api/econta/export` queues writes to `trafico_econta_exports` — the
+  PM2 script that pushes from queue into eConta MySQL is **NOT deployed**
+- `/contabilidad/exportar` and `/contabilidad/kpis` are placeholders
+- Client A/R visibility is a known gap (broker-internal by design)
+
+### Approval gates that ride on these systems
+
+- **Tito's pedimento approval** today happens in GlobalPC. ZAPATA AI
+  cannot replace that flow end-to-end without the workflow audit.
+- **Anabel's monthly close** still touches eConta directly. The Monday
+  reconciliation cron reports drift; it does not resolve it.
+
+### Why this matters
+
+Marathon 3 (May 2026) target is to retire GlobalPC quietly. The
+**3-credential recon** (Arturo AduanaNet + Anabel eConta + Tito GlobalPC
+admin) is the gate before Marathon 3 can be scoped. Renato has signaled
+a full workflow audit is coming. When it arrives, capture each workflow
+using the framework in `.planning/HANDOFF_2026_04_16.md`.
 
 ---
 
@@ -470,6 +524,11 @@ GATE 5 — /audit in Claude in Chrome
 Three focused passes beat ten unfocused ones.
 Ship at 9.5+. Never ship at 8.5 when one more pass reaches 9.5.
 
+**Session handoff cadence:** every session that ships material work ends
+by writing or updating `.planning/HANDOFF_YYYY_MM_DD.md`. Don't
+summarize the diff (git already does that) — capture what's RUNNING,
+what's BLOCKED, and what the next session should attempt first.
+
 ---
 
 ## POST-BUILD AUDIT WORKFLOW
@@ -618,6 +677,9 @@ TARGET:     GlobalPC uninstalled: early-to-mid May 2026
 - Telegram is for pipeline/infrastructure only. Never client-facing. Mensajería is the client comms layer.
 - "Renato Zapata & Company" is always the sender name to clients. Never expose internal user names.
 - Mensajería client access behind feature flag until Week 3 pilot — operators use it first.
+- GlobalPC is read-only forever. Mario Ramos must not perceive ZAPATA AI as competition. Two-way sync is banned by contract, not just by code.
+- eConta cockpit at `/contabilidad/inicio` is Anabel's system today; the QB IIF writer to eConta MySQL is deferred until her credential recon. Don't ship features that assume the writer exists.
+- Client cockpit at `/inicio` shows monthly activity, not lifetime totals. The 214K product count was a regression — Expedientes/Catálogo tiles now show this-month counts with totals demoted to microStatus.
 
 ---
 
@@ -656,6 +718,10 @@ TARGET:     GlobalPC uninstalled: early-to-mid May 2026
 - Expose internal user names to clients — always use "Renato Zapata & Company" as sender
 - Enable Mensajería client access before 2-week internal operator usage period
 - Delete any message or thread — retention lock is permanent, status flip only
+- Write back to GlobalPC MySQL or call any GlobalPC API for mutations — pure read-only mirror
+- Promise the eConta MySQL writer works before Anabel's credential recon completes
+- Render lifetime catalog/expediente totals as the headline number on any client surface — use this-month counts with totals as microStatus context
+- Re-add `<ClienteEstado>` (Mis embarques activos) or the Actividad Reciente right rail to `/inicio` without explicit re-approval — both were intentionally removed 2026-04-16 to keep the client surface calm
 
 ---
 

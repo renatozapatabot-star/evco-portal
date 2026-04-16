@@ -11,7 +11,7 @@ const supabase = createClient(
 )
 
 const ALLOWED_TABLES = [
-  'traficos', 'aduanet_facturas', 'entradas', 'documents', 'soia_cruces', 'soia_payment_status',
+  'traficos', 'pedimentos', 'aduanet_facturas', 'entradas', 'documents', 'soia_cruces', 'soia_payment_status',
   'globalpc_facturas', 'globalpc_partidas', 'globalpc_eventos', 'globalpc_contenedores',
   'globalpc_ordenes_carga', 'globalpc_proveedores', 'globalpc_productos', 'globalpc_bultos',
   'econta_facturas', 'econta_facturas_detalle', 'econta_cartera', 'econta_aplicaciones',

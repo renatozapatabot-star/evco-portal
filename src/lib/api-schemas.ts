@@ -21,7 +21,7 @@ export const cruzChatSchema = z.object({
 
 /** /api/data — generic data query */
 const ALLOWED_TABLES = [
-  'traficos', 'aduanet_facturas', 'entradas', 'documents', 'soia_cruces', 'soia_payment_status',
+  'traficos', 'pedimentos', 'aduanet_facturas', 'entradas', 'documents', 'soia_cruces', 'soia_payment_status',
   'globalpc_facturas', 'globalpc_partidas', 'globalpc_eventos', 'globalpc_contenedores',
   'globalpc_ordenes_carga', 'globalpc_proveedores', 'globalpc_productos', 'globalpc_bultos',
   'econta_facturas', 'econta_facturas_detalle', 'econta_cartera', 'econta_aplicaciones',
@@ -37,7 +37,11 @@ const ALLOWED_TABLES = [
 
 export const dataQuerySchema = z.object({
   table: z.enum(ALLOWED_TABLES),
-  limit: z.coerce.number().int().min(1).max(5000).default(50),
+  // Cap at 10000: a few client pages (embarques / expedientes / entradas)
+  // fan out into globalpc_partidas which has ~500 rows per active shipment,
+  // so 10000 covers ~20 concurrent embarques for a mid-size client. Going
+  // higher invites pagination work the client pages don't do yet.
+  limit: z.coerce.number().int().min(1).max(10000).default(50),
   company_id: z.string().max(50).optional(),
   clave_cliente: z.string().max(20).optional(),
   cve_cliente: z.string().max(20).optional(),

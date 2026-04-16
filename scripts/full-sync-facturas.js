@@ -4,6 +4,7 @@ const { createClient } = require('@supabase/supabase-js')
 const mysql = require('mysql2/promise')
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
+const { safeUpsert } = require('./lib/safe-write')
 const TG = process.env.TELEGRAM_BOT_TOKEN
 const CHAT = '-5085543275'
 async function tg(msg) { if (!TG) return; await fetch(`https://api.telegram.org/bot${TG}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: CHAT, text: msg, parse_mode: 'HTML' }) }).catch(() => {}) }
@@ -57,11 +58,10 @@ async function run() {
     }))
 
     for (let i = 0; i < batch.length; i += 500) {
-      const { error } = await supabase.from('globalpc_facturas').upsert(
-        batch.slice(i, i + 500),
-        { onConflict: 'folio', ignoreDuplicates: false }
-      )
-      if (error) console.error('\n  Upsert error at', total + i, ':', error.message.substring(0, 80))
+      await safeUpsert(supabase, 'globalpc_facturas', batch.slice(i, i + 500), {
+        onConflict: 'folio',
+        scriptName: 'full-sync-facturas',
+      })
     }
 
     total += rows.length

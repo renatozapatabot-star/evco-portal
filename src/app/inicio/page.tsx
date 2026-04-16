@@ -18,7 +18,9 @@ import {
 import { getClienteActivity } from '@/lib/cliente/activity'
 import { bucketDailySeries, daysAgo } from '@/lib/cockpit/fetch'
 import { softCount, softData, softFirst } from '@/lib/cockpit/safe-query'
-import { CockpitInicio, CockpitErrorCard, CockpitSkeleton, ActividadStrip, CapabilityCardGrid, type CockpitHeroKPI, type ActividadStripItem } from '@/components/aguila'
+import { CockpitErrorCard, CockpitSkeleton, type CockpitHeroKPI, type ActividadStripItem } from '@/components/aguila'
+import { InicioClientShell } from './InicioClientShell'
+import type { ActiveShipment } from '@/components/cockpit/client/ActiveShipmentTimeline'
 import { fetchClientMensajeriaFeed, mensajeriaClientEnabled } from '@/lib/mensajeria/feed'
 import { parseMonthParam } from '@/lib/cockpit/month-window'
 import type { NavCounts } from '@/lib/cockpit/nav-tiles'
@@ -191,12 +193,8 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
     ? Math.floor((Date.now() - new Date(lastCruce.fecha_cruce).getTime()) / 86400000)
     : null
 
-  const heroKPIs: CockpitHeroKPI[] = [
-    { key: 'traficos',   label: 'Embarques activos',     value: activeTraficosCount,    series: activosSeries,          href: '/embarques',                 tone: 'silver' },
-    { key: 'entradas',   label: 'Entradas esta semana', value: entradasSemanaCount,    series: entradasSeries,         href: '/entradas',                 tone: 'silver' },
-    { key: 'pedimentos', label: 'Pedimentos listos',    value: pedimentosListosCount,  series: pedimentosListosSeries, href: '/pedimentos',               tone: 'silver' },
-    { key: 'cruces',     label: 'Cruces este mes',      value: cruzadosMesCount,       series: crucesSeries,           href: '/embarques?estatus=Cruzado', tone: 'silver' },
-  ]
+  // heroKPIs assembled below — requires imminentShipment and lastCruzadoRow
+  // which are fetched a few lines down. Declaration hoisted there.
 
   const navCounts: NavCounts = {
     traficos:        { count: activeTraficosCount,    series: activosSeries,          microStatus: `${cruzadosLast7Count} cruzaron esta semana` },
@@ -217,6 +215,62 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
     .order('fecha_cruce', { ascending: false, nullsFirst: false })
     .limit(1)
     .maybeSingle()
+
+  // Most-imminent tráfico for the "Próximo cruce" hero KPI + modal. Uses
+  // actual estatus values (Cruzado/E1 are terminal; Pedimento Pagado +
+  // En Proceso are in-flight). Sorted by fecha_llegada ascending → earliest
+  // upcoming arrival first.
+  const { data: imminentRow } = await supabase
+    .from('traficos')
+    .select('trafico, estatus, fecha_llegada, pedimento')
+    .eq('company_id', companyId)
+    .not('estatus', 'in', '("Cruzado","E1","Entregado","Cancelado")')
+    .order('fecha_llegada', { ascending: true, nullsFirst: false })
+    .limit(1)
+    .maybeSingle()
+
+  const imminentShipment: ActiveShipment | null = imminentRow
+    ? {
+        trafico: String((imminentRow as { trafico: string }).trafico),
+        estatus: (imminentRow as { estatus: string | null }).estatus ?? null,
+        fechaLlegada: (imminentRow as { fecha_llegada: string | null }).fecha_llegada ?? null,
+        pedimento: (imminentRow as { pedimento: string | null }).pedimento ?? null,
+      }
+    : null
+
+  // Format helper for the Próximo/Último cruce date — es-MX short form,
+  // Laredo timezone. JetBrains Mono is applied by KPITile's number slot.
+  function formatCruceDate(iso: string | null): string {
+    if (!iso) return '—'
+    const d = new Date(iso)
+    if (isNaN(d.getTime())) return '—'
+    return d.toLocaleDateString('es-MX', {
+      timeZone: 'America/Chicago',
+      day: '2-digit',
+      month: 'short',
+    })
+  }
+
+  // heroKPIs[0] is dynamic: "Próximo cruce · [fecha]" when there is an
+  // active embarque (InicioClientShell wires the onClick → TimelineModal),
+  // else "Último cruce · [fecha]" static (no onClick → not tappable).
+  const firstKPI: CockpitHeroKPI = {
+    key: 'proximo-cruce',
+    label: imminentShipment ? 'Próximo cruce' : 'Último cruce',
+    value: imminentShipment
+      ? formatCruceDate(imminentShipment.fechaLlegada)
+      : formatCruceDate(lastCruzadoRow ? (lastCruzadoRow as { fecha_cruce: string | null }).fecha_cruce ?? null : null),
+    series: activosSeries,
+    tone: 'silver',
+    ariaLabel: imminentShipment ? 'Ver línea de tiempo del próximo embarque' : undefined,
+  }
+
+  const heroKPIs: CockpitHeroKPI[] = [
+    firstKPI,
+    { key: 'entradas',   label: 'Entradas esta semana', value: entradasSemanaCount,    series: entradasSeries,         href: '/entradas',                 tone: 'silver' },
+    { key: 'pedimentos', label: 'Pedimentos listos',    value: pedimentosListosCount,  series: pedimentosListosSeries, href: '/pedimentos',               tone: 'silver' },
+    { key: 'cruces',     label: 'Cruces este mes',      value: cruzadosMesCount,       series: crucesSeries,           href: '/embarques?estatus=Cruzado', tone: 'silver' },
+  ]
 
   function daysAgoLabel(iso: string | null): string {
     if (!iso) return '—'
@@ -244,6 +298,7 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
     : 0
 
   // v10 — ActividadStrip: client sees Mensajería messages as chips at the top.
+  // Items are primitive-serializable so they cross to InicioClientShell cleanly.
   const actividadStripItems: ActividadStripItem[] = (mensajeriaEnabled ? mensajeriaMessages : []).slice(0, 10).map((m) => ({
     id: m.id,
     label: m.sender_display_name ?? 'Renato Zapata & Company',
@@ -252,20 +307,9 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
     href: `/mensajes`,
     tone: 'silver',
   }))
-  const actividadStripSlot = (
-    <ActividadStrip
-      items={actividadStripItems}
-      emptyLabel="Tu operación está en calma · Todo en orden"
-      title="Últimos mensajes"
-    />
-  )
 
-  // v10 — Capability cards: Checklist, Clasificador, Mensajes (client scope).
-  // V1 fix — microStatus must be DYNAMIC info only; the static `subtitle`
-  // already renders once from CAPABILITY_CARDS. Passing the same string as
-  // Capability cards moved to LauncherTray (top-nav `+ TOOLS`).
+  // Capability cards — empty counts today; shell builds the grid client-side.
   const capabilityCounts: CapabilityCounts = {}
-  const capabilitySlot = <CapabilityCardGrid counts={capabilityCounts} />
 
   const clientMetaPills: Array<{ label: string; value: string | number; tone?: 'silver' | 'warning' }> = [
     { label: 'ACTIVOS', value: activeTraficosCount, tone: 'silver' },
@@ -276,20 +320,19 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
   ]
 
   return (
-    <>
-      <CockpitInicio
-        role="client"
-        name={companyName || 'Tu portal'}
-        companyName={companyName || 'Tu portal'}
-        heroKPIs={heroKPIs}
-        navCounts={navCounts}
-        actividadStripSlot={actividadStripSlot}
-        capabilitySlot={capabilitySlot}
-        summaryLine={summaryLine}
-        pulseSignal={pulseSignal}
-        month={month}
-        metaPills={clientMetaPills}
-      />
-    </>
+    <InicioClientShell
+      role="client"
+      name={companyName || 'Tu portal'}
+      companyName={companyName || 'Tu portal'}
+      heroKPIs={heroKPIs}
+      navCounts={navCounts}
+      actividadStripItems={actividadStripItems}
+      capabilityCounts={capabilityCounts}
+      summaryLine={summaryLine}
+      pulseSignal={pulseSignal}
+      month={month}
+      metaPills={clientMetaPills}
+      imminentShipment={imminentShipment}
+    />
   )
 }

@@ -14,6 +14,12 @@ interface Props {
   previous?: number
   current?: number
   href?: string
+  /** Click handler — renders tile as a button instead of a link. Takes precedence
+   *  over `href` if both are provided. Use for tiles that open modals or dispatch
+   *  client-side actions (e.g. the "Próximo cruce" timeline modal). */
+  onClick?: () => void
+  /** Forwarded to the button so the opener can restore focus after close. */
+  buttonRef?: React.RefObject<HTMLButtonElement | null>
   tone?: SparklineTone
   urgent?: boolean
   inverted?: boolean
@@ -22,7 +28,7 @@ interface Props {
 }
 
 export function KPITile({
-  label, value, series, previous, current, href, tone = 'silver',
+  label, value, series, previous, current, href, onClick, buttonRef, tone = 'silver',
   urgent = false, inverted = false, compact = false, ariaLabel,
 }: Props) {
   const numberColor = urgent ? RED : TEXT_PRIMARY
@@ -35,9 +41,13 @@ export function KPITile({
     : 'var(--aguila-fs-kpi-hero, 48px)'
   const minHeight = compact ? 108 : 140
 
-  return (
+  // onClick takes precedence — when set, render the tile as a button (no href
+  // to GlassCard so it stays a plain div). Preserves the 60px+ tap target by
+  // stretching the button to fill the tile and sharing the glass chrome.
+  const card = (
     <GlassCard
-      href={href}
+      href={onClick ? undefined : href}
+      hover={onClick ? true : undefined}
       size={compact ? 'compact' : 'card'}
       ariaLabel={ariaLabel || label}
       style={{
@@ -94,4 +104,43 @@ export function KPITile({
       </div>
     </GlassCard>
   )
+
+  if (onClick) {
+    return (
+      <button
+        ref={buttonRef}
+        type="button"
+        onClick={onClick}
+        aria-label={ariaLabel || label}
+        style={{
+          display: 'block',
+          width: '100%',
+          minHeight: 60,
+          padding: 0,
+          margin: 0,
+          background: 'transparent',
+          border: 'none',
+          cursor: 'pointer',
+          textAlign: 'left',
+          font: 'inherit',
+          color: 'inherit',
+        }}
+        className="aguila-kpi-tap"
+      >
+        {card}
+        <style jsx>{`
+          .aguila-kpi-tap:focus-visible {
+            outline: 2px solid rgba(201,168,76,0.6);
+            outline-offset: 2px;
+            border-radius: var(--aguila-radius-card);
+          }
+          @media (hover: none) {
+            .aguila-kpi-tap:active { transform: scale(0.97); transition: transform 80ms ease; }
+          }
+        `}</style>
+      </button>
+    )
+  }
+
+  return card
 }

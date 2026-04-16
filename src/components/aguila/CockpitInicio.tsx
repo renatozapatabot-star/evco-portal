@@ -24,6 +24,12 @@ export interface CockpitHeroKPI {
   current?: number
   previous?: number
   href?: string
+  /** Click handler — tile renders as a button when set (takes precedence over href). */
+  onClick?: () => void
+  /** Forwarded ref for focus-return after a modal closes. */
+  buttonRef?: React.RefObject<HTMLButtonElement | null>
+  /** Overrides the default aria-label (defaults to `label`). */
+  ariaLabel?: string
   tone?: SparklineTone
   urgent?: boolean
   inverted?: boolean
@@ -151,7 +157,10 @@ export function CockpitInicio({
             series={k.series}
             current={k.current}
             previous={k.previous}
-            href={withMonth(k.href)}
+            href={k.onClick ? undefined : withMonth(k.href)}
+            onClick={k.onClick}
+            buttonRef={k.buttonRef}
+            ariaLabel={k.ariaLabel}
             tone={k.tone ?? 'silver'}
             urgent={k.urgent}
             inverted={k.inverted}

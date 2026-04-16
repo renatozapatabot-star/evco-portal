@@ -226,6 +226,11 @@ function FraccionGroupCard({ group }: { group: CatalogoFraccionGroup }) {
 }
 
 function CatalogoRowCard({ row }: { row: CatalogoRow }) {
+  // Right-edge "Ver ficha →" chip drills into /catalogo/partes/[cve].
+  // We don't wrap the whole card because the card already has nested
+  // Links (embarque chip, "Sin clasificar") that'd create invalid HTML
+  // as anchor-in-anchor. Per the drilldown requirement: a dedicated
+  // 60px tap target on the row.
   return (
     <GlassCard>
       <div
@@ -375,6 +380,31 @@ function CatalogoRowCard({ row }: { row: CatalogoRow }) {
             <span style={{ fontSize: 'var(--aguila-fs-label)', color: 'rgba(255,255,255,0.4)', textAlign: 'right' }}>
               {row.fraccion_source.replace(/_/g, ' ')}
             </span>
+          )}
+          {row.cve_producto && (
+            <Link
+              href={`/catalogo/partes/${encodeURIComponent(row.cve_producto)}`}
+              aria-label={`Ver ficha de ${row.descripcion}`}
+              style={{
+                marginTop: 4,
+                minHeight: 60,
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 6,
+                padding: '0 16px',
+                borderRadius: 12,
+                background: 'rgba(192,197,206,0.08)',
+                border: '1px solid rgba(192,197,206,0.22)',
+                color: '#E6EDF3',
+                fontSize: 'var(--aguila-fs-compact)',
+                fontWeight: 600,
+                textDecoration: 'none',
+                letterSpacing: '0.02em',
+              }}
+            >
+              Ver ficha <span aria-hidden>→</span>
+            </Link>
           )}
         </div>
       </div>

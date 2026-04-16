@@ -374,6 +374,7 @@ export function TraficoDetail(props: TraficoDetailProps) {
         traficoId={props.traficoId}
         trafico={props.trafico}
         partidasCount={props.partidas.length}
+        role={props.role}
       />
 
       <div

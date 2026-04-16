@@ -24,6 +24,10 @@ interface BelowFoldProps {
   traficoId: string
   trafico: TraficoRow
   partidasCount: number
+  /** Session role — client surfaces only show semáforo when verde (0);
+   *  rojo/amarillo/null hide the entire row. Operator/admin/broker see
+   *  everything regardless of color. Invariant #24. */
+  role: string
 }
 
 function val(v: string | number | null | undefined): string {
@@ -46,7 +50,7 @@ interface RowDef {
  * State persists to localStorage per-operator (scoped to `traficoId`
  * so switching embarques doesn't bleed expansion state).
  */
-export function BelowFold({ traficoId, trafico, partidasCount }: BelowFoldProps) {
+export function BelowFold({ traficoId, trafico, partidasCount, role }: BelowFoldProps) {
   const storageKey = `trafico.${traficoId}.belowfold.v1`
   const [open, setOpen] = useState<Record<SectionId, boolean>>({
     pedimento: false,
@@ -150,13 +154,21 @@ export function BelowFold({ traficoId, trafico, partidasCount }: BelowFoldProps)
     semaforoInt === 0 || semaforoInt === 1 || semaforoInt === 2
       ? (semaforoInt as SemaforoValue)
       : null
+  // Semáforo disclosure for client role:
+  //   · verde (0)           → show
+  //   · amarillo/rojo/null  → hide entire row (no label, no pill, no "Sin revisión" placeholder).
+  // "Nothing" is important — a muted placeholder would signal to the
+  // client that something is being withheld (invariant #24).
+  // Operator/admin/broker see all semáforo states.
+  const hideSemaforoForClient = role === 'client' && semaforoValue !== 0
+
   const cruceRows: RowDef[] = [
-    {
+    ...(hideSemaforoForClient ? [] : [{
       label: 'Semáforo',
       // V1 — raw int was leaking as "0" on screen. Pill renders colored dot + label.
       valueNode: <SemaforoPill value={semaforoValue} size="compact" />,
       value: '',
-    },
+    } as RowDef]),
     {
       label: 'Fecha de cruce',
       value: trafico.fecha_cruce ? fmtDateTime(trafico.fecha_cruce) : 'Sin registro',

@@ -21,7 +21,9 @@ export const cruzChatSchema = z.object({
 
 /** /api/data — generic data query */
 const ALLOWED_TABLES = [
-  'traficos', 'pedimentos', 'aduanet_facturas', 'entradas', 'documents', 'soia_cruces', 'soia_payment_status',
+  // 'pedimentos' gated on migration 20260417_pedimento_data.sql being
+  // applied in prod (see /api/data/route.ts for the rationale).
+  'traficos', 'aduanet_facturas', 'entradas', 'documents', 'soia_cruces', 'soia_payment_status',
   'globalpc_facturas', 'globalpc_partidas', 'globalpc_eventos', 'globalpc_contenedores',
   'globalpc_ordenes_carga', 'globalpc_proveedores', 'globalpc_productos', 'globalpc_bultos',
   'econta_facturas', 'econta_facturas_detalle', 'econta_cartera', 'econta_aplicaciones',

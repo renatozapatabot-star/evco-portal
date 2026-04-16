@@ -11,7 +11,13 @@ const supabase = createClient(
 )
 
 const ALLOWED_TABLES = [
-  'traficos', 'pedimentos', 'aduanet_facturas', 'entradas', 'documents', 'soia_cruces', 'soia_payment_status',
+  // 'pedimentos' is intentionally NOT in this list until the
+  // 20260417_pedimento_data.sql migration lands in prod. The caller in
+  // /pedimentos/page.tsx already has `.catch(() => ({ data: [] }))` on
+  // this branch, so a 400 falls through cleanly — re-adding here
+  // before the table exists causes a Postgres "relation does not
+  // exist" 500 instead of the cleaner 400.
+  'traficos', 'aduanet_facturas', 'entradas', 'documents', 'soia_cruces', 'soia_payment_status',
   'globalpc_facturas', 'globalpc_partidas', 'globalpc_eventos', 'globalpc_contenedores',
   'globalpc_ordenes_carga', 'globalpc_proveedores', 'globalpc_productos', 'globalpc_bultos',
   'econta_facturas', 'econta_facturas_detalle', 'econta_cartera', 'econta_aplicaciones',

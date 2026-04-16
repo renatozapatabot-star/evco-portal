@@ -523,7 +523,14 @@ body {
   border: none;
   color: rgba(255,255,255,0.5);
   cursor: pointer;
-  padding: 8px;
+  /* 60 × 60 tap target on mobile (CLAUDE.md rule). Icon stays 18 × 18
+     visually via the padding absorbing the extra surface. */
+  width: 60px;
+  height: 60px;
+  padding: 21px;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
 }
 .topbar-mobile-spacer { display: none; }
 .topbar-ai-mobile {

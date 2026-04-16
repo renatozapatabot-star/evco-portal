@@ -156,7 +156,9 @@ function ModeTab({ label, active, onClick, disabled }: { label: string; active: 
   return (
     <button type="button" role="tab" aria-selected={active} onClick={onClick} disabled={disabled}
       style={{
-        minHeight: 44, padding: '0 14px', border: 'none', borderRadius: 10,
+        // 60 px minimum tap target (CLAUDE.md mobile rule). Horizontal
+        // padding kept proportional so the label doesn't feel cramped.
+        minHeight: 60, minWidth: 88, padding: '0 20px', border: 'none', borderRadius: 10,
         background: active ? 'rgba(192,197,206,0.14)' : 'transparent',
         color: active ? '#E8EAED' : 'rgba(255,255,255,0.5)',
         fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, letterSpacing: '0.04em',

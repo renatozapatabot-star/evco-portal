@@ -45,8 +45,13 @@ export default function TopBar({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              width: 36,
-              height: 36,
+              // 60 × 60 tap target (CLAUDE.md mobile rule). Visual icon
+              // stays 20 × 20; padding absorbs the extra surface so the
+              // hit box is the full 60px without enlarging the glyph.
+              width: 60,
+              height: 60,
+              padding: 20,
+              boxSizing: 'border-box',
               borderRadius: 8,
               color: 'rgba(255,255,255,0.6)',
               transition: 'color 150ms, background 150ms',
@@ -69,7 +74,11 @@ export default function TopBar({
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',
-            width: 36, height: 36,
+            // 60 × 60 tap target; 28 × 28 AguilaMark centered via padding.
+            width: 60,
+            height: 60,
+            padding: 16,
+            boxSizing: 'border-box',
           }}
         >
           <AguilaMark size={28} />
@@ -149,7 +158,11 @@ export default function TopBar({
           display: 'inline-flex',
           alignItems: 'center',
           justifyContent: 'center',
-          width: 36, height: 36,
+          // Operator topbar — 60 × 60 tap target parity with client topbar.
+          width: 60,
+          height: 60,
+          padding: 16,
+          boxSizing: 'border-box',
         }}
       >
         <AguilaMark size={28} />

@@ -21,6 +21,7 @@ import { softCount, softData, softFirst } from '@/lib/cockpit/safe-query'
 import { CockpitErrorCard, CockpitSkeleton, type CockpitHeroKPI, type ActividadStripItem } from '@/components/aguila'
 import { InicioClientShell } from './InicioClientShell'
 import type { ActiveShipment } from '@/components/cockpit/client/ActiveShipmentTimeline'
+import { buildClientHeroTiles } from '@/lib/cockpit/quiet-season'
 import { fetchClientMensajeriaFeed, mensajeriaClientEnabled } from '@/lib/mensajeria/feed'
 import { parseMonthParam } from '@/lib/cockpit/month-window'
 import type { NavCounts } from '@/lib/cockpit/nav-tiles'
@@ -204,6 +205,8 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
     entradas:        { count: entradasSemanaCount,    series: entradasSeries,         microStatus: `${entradasSemanaCount} recibida${entradasSemanaCount === 1 ? '' : 's'} esta semana` },
     reportes:        { count: null,                   series: clasificacionesSeries },
   }
+  // Sad-zero replacement on the Pedimentos nav card happens AFTER
+  // heroBuild is computed — see below, once lastPedimentoIso is known.
 
   // Dynamic zero-state — when no active tráficos, show the most-recent
   // crossed embarque instead of a blank "nothing happening" line.
@@ -265,12 +268,90 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
     ariaLabel: imminentShipment ? 'Ver línea de tiempo del próximo embarque' : undefined,
   }
 
-  const heroKPIs: CockpitHeroKPI[] = [
+  const standardHeroKPIs: CockpitHeroKPI[] = [
     firstKPI,
     { key: 'entradas',   label: 'Entradas esta semana', value: entradasSemanaCount,    series: entradasSeries,         href: '/entradas',                 tone: 'silver' },
     { key: 'pedimentos', label: 'Pedimentos listos',    value: pedimentosListosCount,  series: pedimentosListosSeries, href: '/pedimentos',               tone: 'silver' },
     { key: 'cruces',     label: 'Cruces este mes',      value: cruzadosMesCount,       series: crucesSeries,           href: '/embarques?estatus=Cruzado', tone: 'silver' },
   ]
+
+  // ── Quiet-season support data (only computed when no active embarques) ──
+  // Prevents an empty-looking cockpit during seasonal lulls (invariant #24 —
+  // the client surface should feel calm and confident, not sad).
+  const activeCount = activeTraficos.length
+  let daysSinceLastIncident = 30
+  let tmecYtdUsd: number | null = null
+  let lastPedimentoIso: string | null = null
+  if (activeCount === 0) {
+    // Most-recent tráfico with a non-happy terminal state (rejected/detained
+    // proxies via estatus codes). soft-wrap all queries — nothing here is
+    // load-bearing; on failure the UI simply shows the 30-day cap.
+    try {
+      const { data: lastIncident } = await supabase
+        .from('traficos')
+        .select('updated_at')
+        .eq('company_id', companyId)
+        .in('estatus', ['E2', 'E3', 'Rechazado', 'Detenido'])
+        .order('updated_at', { ascending: false, nullsFirst: false })
+        .limit(1)
+        .maybeSingle()
+      if (lastIncident?.updated_at) {
+        const days = Math.floor((Date.now() - new Date(lastIncident.updated_at as string).getTime()) / 86_400_000)
+        daysSinceLastIncident = Math.max(0, Math.min(days, 365))
+      }
+    } catch { /* soft — keep default 30 */ }
+
+    // T-MEC YTD savings — column not guaranteed in this schema; soft-wrap
+    // with a catch and default null so the tile is dropped gracefully.
+    try {
+      const yearStart = new Date(new Date().getFullYear(), 0, 1).toISOString()
+      const { data: tmecRow } = await supabase
+        .from('pedimento_savings')
+        .select('realized_savings_usd')
+        .eq('company_id', companyId)
+        .gte('period_start', yearStart)
+      if (tmecRow && tmecRow.length > 0) {
+        tmecYtdUsd = (tmecRow as Array<{ realized_savings_usd: number | null }>).reduce(
+          (acc, r) => acc + (r.realized_savings_usd ?? 0), 0,
+        )
+      }
+    } catch { /* soft — leave null so the tile is dropped per spec */ }
+
+    // Most-recent pedimento date for the nav-card sad-zero swap.
+    try {
+      const { data: lastPed } = await supabase
+        .from('pedimentos')
+        .select('fecha_pago, created_at')
+        .eq('company_id', companyId)
+        .order('fecha_pago', { ascending: false, nullsFirst: false })
+        .limit(1)
+        .maybeSingle()
+      const iso = (lastPed as { fecha_pago: string | null; created_at: string | null } | null)
+      lastPedimentoIso = iso?.fecha_pago ?? iso?.created_at ?? null
+    } catch { /* soft — override just won't fire */ }
+  }
+
+  const heroBuild = buildClientHeroTiles({
+    activeCount,
+    standardTiles: standardHeroKPIs,
+    daysSinceLastIncident,
+    lastCruceIso: (lastCruzadoRow as { fecha_cruce: string | null } | null)?.fecha_cruce ?? null,
+    crucesThisMonth: cruzadosMesCount,
+    tmecYtdUsd,
+    lastPedimentoIso,
+    pedimentosMonthCount: pedimentosListosCount,
+  })
+  const heroKPIs: CockpitHeroKPI[] = heroBuild.heroKPIs
+
+  // Sad-zero replacement on the Pedimentos nav card (quiet-season only).
+  // Requires navCounts.pedimentos to already exist (defined earlier).
+  if (heroBuild.pedimentoMicroStatusOverride && navCounts.pedimentos) {
+    navCounts.pedimentos = {
+      count: navCounts.pedimentos.count,
+      series: navCounts.pedimentos.series,
+      microStatus: heroBuild.pedimentoMicroStatusOverride,
+    }
+  }
 
   function daysAgoLabel(iso: string | null): string {
     if (!iso) return '—'
@@ -280,11 +361,15 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
     return `hace ${days} días`
   }
 
-  const summaryLine = activeTraficos.length > 0
+  // When quiet-season is active, the builder emits the reassuring prose
+  // line — override the standard computed summary with it. Otherwise keep
+  // the existing behavior (N embarques / Último embarque · ref / default).
+  const computedSummary = activeTraficos.length > 0
     ? `${activeTraficos.length} embarque${activeTraficos.length === 1 ? '' : 's'} en tránsito · Patente en movimiento`
     : lastCruzadoRow
       ? `Último embarque · ${(lastCruzadoRow as { trafico: string }).trafico} · cruzó ${daysAgoLabel((lastCruzadoRow as { fecha_cruce: string | null }).fecha_cruce ?? (lastCruzadoRow as { updated_at: string | null }).updated_at)}`
       : 'Sin embarques activos. Tus próximas operaciones aparecerán aquí.'
+  const summaryLine = heroBuild.summaryLine ?? computedSummary
 
   // Pulse the status dot when work is in motion (≥1 active embarque).
   // Solid dot = calm. Real-time subscription on traficos lives inside

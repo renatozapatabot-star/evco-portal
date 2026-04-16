@@ -42,13 +42,17 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ cveProducto
   const paramCompany = req.nextUrl.searchParams.get('company_id') || undefined
   const companyId = isInternal && paramCompany ? paramCompany : session.companyId
 
-  // Ownership check: if cveProducto doesn't belong to this tenant → 404.
-  const { data: parteRow, error: parteErr } = await supabase
+  // Ownership check. globalpc_productos can have duplicate rows for
+  // the same (cve_producto, company_id) — legacy sync data — so
+  // maybeSingle() would 500 with "multiple rows". Take the newest row
+  // instead (order by created_at desc, limit 1).
+  const { data: parteRows, error: parteErr } = await supabase
     .from('globalpc_productos')
     .select('*')
     .eq('cve_producto', cveProducto)
     .eq('company_id', companyId)
-    .maybeSingle()
+    .order('created_at', { ascending: false, nullsFirst: false })
+    .limit(1)
 
   if (parteErr) {
     return NextResponse.json(
@@ -56,6 +60,7 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ cveProducto
       { status: 500 },
     )
   }
+  const parteRow = parteRows?.[0]
   if (!parteRow) {
     return NextResponse.json(
       { data: null, error: { code: 'NOT_FOUND', message: 'Parte no encontrada' } },
@@ -96,7 +101,7 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ cveProducto
           .from('tariff_rates')
           .select('fraccion, preferential_rate_tmec')
           .eq('fraccion', fraccion)
-          .maybeSingle()
+          .limit(1)
       : Promise.resolve({ data: null, error: null }),
     supabase
       .from('classification_log')
@@ -204,7 +209,9 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ cveProducto
     total: supertitoRes.count ?? supertitoRows.length,
   }
 
-  const tmecEligible = !!(tmecRes.data && (tmecRes.data as any).preferential_rate_tmec === 0)
+  // tmecRes.data is now an array (.limit(1)) or null (empty branch)
+  const tmecRow = Array.isArray(tmecRes.data) ? tmecRes.data[0] : tmecRes.data
+  const tmecEligible = !!(tmecRow && (tmecRow as any).preferential_rate_tmec === 0)
 
   return NextResponse.json(
     {

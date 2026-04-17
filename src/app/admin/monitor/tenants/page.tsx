@@ -139,7 +139,7 @@ export default async function TenantsMonitorPage() {
           ].map((t) => (
             <div key={t.label} style={{ padding: 10 }}>
               <div className="portal-eyebrow" style={{ color: 'var(--portal-fg-4)' }}>{t.label}</div>
-              <div className="portal-num" style={{ fontSize: 20, fontWeight: 500 }}>{fmt(t.value)}</div>
+              <div className="portal-num" style={{ fontSize: 'var(--portal-fs-lg)', fontWeight: 500 }}>{fmt(t.value)}</div>
             </div>
           ))}
         </div>
@@ -150,7 +150,7 @@ export default async function TenantsMonitorPage() {
           <h2 className="portal-eyebrow" style={{ color: 'var(--portal-amber, #fbbf24)', marginBottom: 12 }}>
             Orphan rows · onboarding gaps
           </h2>
-          <p style={{ color: 'var(--portal-fg-3)', fontSize: 13, margin: '0 0 12px' }}>
+          <p style={{ color: 'var(--portal-fg-3)', fontSize: 'var(--portal-fs-sm)', margin: '0 0 12px' }}>
             Rows con <code>company_id</code> empezando en <code>orphan-</code> — su <code>cve_cliente</code> no está en la tabla <code>companies</code>.
             No aparecen en ningún cockpit de cliente pero permanecen auditables.
           </p>

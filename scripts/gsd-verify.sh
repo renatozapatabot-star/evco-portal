@@ -497,7 +497,14 @@ fi
 #   scale and would break fidelity if forced. Tokenization in a follow-up
 #   design-audit block after the reference port lands in prod.)
 # --------------------------------------------------------------------------
-INVARIANT_27_BASELINE=415
+# Baseline 2026-04-17 evening = 419 (Phase A/B port: PortalLoginLiveWire
+#   (+1 for ticker micro label), PortalLoginBackgroundLineMap (+3 SVG
+#   fontSize attrs — 5px territory labels), PortalDetailHero (+3 hero
+#   fontSize values: 64px giant pedimento number, 8px stage spine label,
+#   20px stat-cell value). All handoff-specific values driving literal
+#   reference fidelity; tokenization deferred with the other reference
+#   pixels in a post-parity cleanup block.)
+INVARIANT_27_BASELINE=419
 header "Invariant 27 — Hardcoded fontSize ratchet"
 INV27_COUNT=$(set +eo pipefail;{ grep -rn "fontSize: [0-9]" src/app src/components 2>/dev/null || true; } | grep -v "var(--aguila-fs-" | grep -v ".test." | grep -v "WHY:" | grep -v "components/aguila/" | wc -l | tr -d ' ')
 if [ "$INV27_COUNT" -gt "$INVARIANT_27_BASELINE" ]; then

@@ -52,33 +52,14 @@ export function CockpitBanner({ role, name, companyName, metaPills }: Props) {
         <span
           aria-label="Sistema en vivo"
           title="Datos en vivo"
+          className="portal-badge portal-badge--live"
           style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 6,
-            padding: '2px 8px 2px 6px',
-            borderRadius: 999,
-            background: 'rgba(34,197,94,0.08)',
-            border: '1px solid rgba(34,197,94,0.25)',
             fontSize: 9,
             fontWeight: 700,
             letterSpacing: '0.12em',
-            textTransform: 'uppercase',
-            color: '#22C55E',
-            fontFamily: 'var(--font-jetbrains-mono), monospace',
           }}
         >
-          <span
-            aria-hidden
-            className="aguila-dot-pulse"
-            style={{
-              width: 6,
-              height: 6,
-              borderRadius: '50%',
-              background: '#22C55E',
-              boxShadow: '0 0 8px rgba(34,197,94,0.8)',
-            }}
-          />
+          <span className="portal-pulse" aria-hidden />
           EN VIVO
         </span>
         {subtitle && (

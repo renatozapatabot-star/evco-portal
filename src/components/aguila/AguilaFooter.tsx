@@ -23,9 +23,10 @@ export function AguilaFooter() {
       style={{
         margin: '32px 0 0',
         fontSize: 9,
-        color: 'rgba(122,126,134,0.55)',
+        color: 'var(--portal-fg-5)',
         letterSpacing: LS_FOOTER,
-        fontFamily: 'var(--font-mono), var(--font-jetbrains-mono), monospace',
+        fontFamily: 'var(--portal-font-mono), monospace',
+        opacity: 0.85,
         textAlign: 'center',
         textTransform: 'none',
       }}

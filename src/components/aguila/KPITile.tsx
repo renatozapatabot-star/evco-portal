@@ -1,29 +1,18 @@
 'use client'
 
-import {
-  TEXT_PRIMARY, TEXT_MUTED, AMBER, RED,
-} from '@/lib/design-system'
-import { GlassCard } from './GlassCard'
+import { PortalCard } from '@/components/portal/PortalCard'
 import { Sparkline, type SparklineTone } from './Sparkline'
 import { DeltaIndicator } from './DeltaIndicator'
 
 interface Props {
   label: string
   value: number | string
-  /** Small secondary line rendered under `value`. Muted, mono,
-   *  single-line with ellipsis. Use for companion context that
-   *  shouldn't compete with the headline (e.g. absolute date under
-   *  a relative "hace N días"). */
   sublabel?: string
   series?: number[]
   previous?: number
   current?: number
   href?: string
-  /** Click handler — renders tile as a button instead of a link. Takes precedence
-   *  over `href` if both are provided. Use for tiles that open modals or dispatch
-   *  client-side actions (e.g. the "Próximo cruce" timeline modal). */
   onClick?: () => void
-  /** Forwarded to the button so the opener can restore focus after close. */
   buttonRef?: React.RefObject<HTMLButtonElement | null>
   tone?: SparklineTone
   urgent?: boolean
@@ -33,16 +22,9 @@ interface Props {
 }
 
 /**
- * Value-content detector: true when the value is numeric/currency/
- * percentage/dash-only content that reads best in JetBrains Mono.
- * False for prose ("hace 36 días", "Sin cruces aún", status labels,
- * etc.) which should render in Geist sans to avoid line-wrap at
- * display size.
- *
- * CLAUDE.md design system: mono is for financial figures and
- * timestamps. Relative-time phrases ARE prose. Splitting font
- * per value type lets the quiet-season "Último cruce" tile show
- * "hace 36 días" on a single line without shrinking the tile.
+ * Value-content detector: true when the value reads best in Geist Mono
+ * (numeric / currency / percentage / dash-only). False for prose
+ * ("hace 36 días", "Sin cruces aún", status labels).
  */
 export function isNumericValue(value: number | string): boolean {
   if (typeof value === 'number') return true
@@ -51,11 +33,18 @@ export function isNumericValue(value: number | string): boolean {
   return /^[\d.,$\s€£¥%—\-+:]+$/.test(s)
 }
 
+/**
+ * KPI tile — composes `<PortalCard tier="hero">` with an emerald radial
+ * halo (live/healthy signal) + label + big display number + optional
+ * delta indicator + optional sparkline. The core numeric-vs-prose
+ * font logic is preserved from v6 — relative-time phrases render in
+ * Geist sans to avoid line-wrap at display size, real numbers render
+ * in Geist Mono tabular-nums.
+ */
 export function KPITile({
   label, value, sublabel, series, previous, current, href, onClick, buttonRef, tone = 'silver',
   urgent = false, inverted = false, compact = false, ariaLabel,
 }: Props) {
-  const numberColor = urgent ? RED : TEXT_PRIMARY
   const sparkSeries = series && series.length > 7 ? series.slice(-7) : series
   const numericValue = typeof value === 'number' ? value : current ?? 0
   const showDelta = previous !== undefined && (current !== undefined || typeof value === 'number')
@@ -66,67 +55,64 @@ export function KPITile({
   const minHeight = compact ? 108 : 140
   const valueIsNumeric = isNumericValue(value)
   const valueFontFamily = valueIsNumeric
-    ? 'var(--font-jetbrains-mono), JetBrains Mono, monospace'
-    : 'var(--font-geist-sans), Geist, system-ui, sans-serif'
+    ? 'var(--portal-font-mono)'
+    : 'var(--portal-font-sans)'
+  const numberColor = urgent ? 'var(--portal-red)' : 'var(--portal-fg-1)'
 
-  // onClick takes precedence — when set, render the tile as a button (no href
-  // to GlassCard so it stays a plain div). Preserves the 60px+ tap target by
-  // stretching the button to fill the tile and sharing the glass chrome.
   const card = (
-    <GlassCard
+    <PortalCard
+      tier="hero"
       href={onClick ? undefined : href}
-      hover={onClick ? true : undefined}
-      size={compact ? 'compact' : 'card'}
       ariaLabel={ariaLabel || label}
       style={{
         minHeight,
         display: 'flex',
         flexDirection: 'column',
-        gap: 'var(--aguila-gap-stack, 12px)',
+        gap: 'var(--portal-s-3)',
       }}
+      compact={compact}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
-        <span style={{
-          fontSize: 'var(--aguila-fs-label, 10px)',
-          fontWeight: 700,
-          textTransform: 'uppercase',
-          letterSpacing: 'var(--aguila-ls-label, 0.08em)',
-          color: TEXT_MUTED,
-        }}>
+        <span
+          className="portal-metric__label"
+          style={{
+            fontSize: 'var(--portal-fs-micro)',
+            letterSpacing: '0.22em',
+          }}
+        >
           {label}
         </span>
         {urgent && (
-          <span style={{
-            fontSize: 9, fontWeight: 800, color: AMBER,
-            textTransform: 'uppercase', letterSpacing: 'var(--aguila-ls-label, 0.08em)',
-          }}>URGENTE</span>
+          <span
+            style={{
+              fontSize: 9,
+              fontWeight: 800,
+              color: 'var(--portal-amber)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.1em',
+              fontFamily: 'var(--portal-font-mono)',
+            }}
+          >URGENTE</span>
         )}
       </div>
 
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8 }}>
         <span
           data-value-font={valueIsNumeric ? 'mono' : 'sans'}
-          className={urgent ? 'aguila-pulse' : ''}
+          className={urgent ? 'portal-pulse' : undefined}
           style={{
             fontFamily: valueFontFamily,
-            // Sans-serif prose ("hace 36 días") is naturally narrower than
-            // mono display digits — shrink it a touch so it fits on one
-            // line in the tile without dwarfing adjacent numeric tiles.
             fontSize: valueIsNumeric
               ? `calc(${numberSize} * 0.92)`
               : `calc(${numberSize} * 0.62)`,
-            fontWeight: valueIsNumeric ? 800 : 600,
+            fontWeight: valueIsNumeric ? 600 : 500,
             lineHeight: 1.05,
-            letterSpacing: valueIsNumeric
-              ? 'var(--aguila-ls-tight, -0.03em)'
-              : '-0.01em',
+            letterSpacing: valueIsNumeric ? '-0.03em' : '-0.01em',
             color: numberColor,
-            fontVariantNumeric: valueIsNumeric ? 'tabular-nums' : 'normal',
+            fontVariantNumeric: valueIsNumeric ? 'tabular-nums lining-nums' : 'normal',
             whiteSpace: 'nowrap',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
-            // Reserve the same visual row height regardless of font
-            // so mixed rows (numeric + prose) line up baseline-wise.
             minHeight: `calc(${numberSize} * 1)`,
             display: 'inline-flex',
             alignItems: 'center',
@@ -142,16 +128,12 @@ export function KPITile({
 
       {sublabel && (
         <div
+          className="portal-meta"
           style={{
-            fontFamily: 'var(--font-jetbrains-mono), JetBrains Mono, monospace',
-            fontSize: 'var(--aguila-fs-meta, 11px)',
-            color: 'rgba(148,163,184,0.7)',
-            lineHeight: 1.2,
             marginTop: 2,
             whiteSpace: 'nowrap',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
-            fontVariantNumeric: 'tabular-nums',
           }}
           title={sublabel}
         >
@@ -166,7 +148,7 @@ export function KPITile({
           <div style={{ height: sparkHeight }} aria-hidden />
         )}
       </div>
-    </GlassCard>
+    </PortalCard>
   )
 
   if (onClick) {
@@ -189,19 +171,8 @@ export function KPITile({
           font: 'inherit',
           color: 'inherit',
         }}
-        className="aguila-kpi-tap"
       >
         {card}
-        <style jsx>{`
-          .aguila-kpi-tap:focus-visible {
-            outline: 2px solid rgba(201,168,76,0.6);
-            outline-offset: 2px;
-            border-radius: var(--aguila-radius-card);
-          }
-          @media (hover: none) {
-            .aguila-kpi-tap:active { transform: scale(0.97); transition: transform 80ms ease; }
-          }
-        `}</style>
       </button>
     )
   }

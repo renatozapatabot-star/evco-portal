@@ -5,6 +5,7 @@ import { useState } from 'react'
 export function AduanaAskPanel() {
   const [question, setQuestion] = useState('')
   const [answer, setAnswer] = useState<string | null>(null)
+  const [isFallback, setIsFallback] = useState(false)
   const [loading, setLoading] = useState(false)
 
   const examples = [
@@ -20,6 +21,7 @@ export function AduanaAskPanel() {
 
     setLoading(true)
     setAnswer(null)
+    setIsFallback(false)
     try {
       const res = await fetch('/api/cruz-ai/ask', {
         method: 'POST',
@@ -27,9 +29,15 @@ export function AduanaAskPanel() {
         body: JSON.stringify({ question: question.trim() }),
       })
       const data = await res.json()
-      setAnswer(data.answer || data.error || 'Sin respuesta')
+      setAnswer(data.answer || 'Sin respuesta')
+      setIsFallback(Boolean(data.is_fallback))
     } catch {
-      setAnswer('Error de conexión. Intenta de nuevo.')
+      // Network failure — same calm muted card contract as upstream 5xx.
+      setAnswer(
+        'El asistente CRUZ estará disponible muy pronto. Mientras tanto, tu operación sigue al corriente. ' +
+        'Para preguntas urgentes, contacta a tu agente aduanal.'
+      )
+      setIsFallback(true)
     } finally {
       setLoading(false)
     }
@@ -112,17 +120,27 @@ export function AduanaAskPanel() {
 
       {/* Answer */}
       {answer && (
-        <div style={{
-          marginTop: 12,
-          padding: '12px 16px',
-          background: 'rgba(192,197,206,0.06)',
-          borderRadius: 10,
-          border: '1px solid rgba(192,197,206,0.15)',
-          fontSize: 'var(--aguila-fs-section)',
-          color: '#E6EDF3',
-          lineHeight: 1.5,
-        }}>
-          {answer}
+        <div
+          role="status"
+          aria-live="polite"
+          style={{
+            marginTop: 12,
+            padding: '12px 16px',
+            background: isFallback ? 'rgba(251,191,36,0.06)' : 'rgba(192,197,206,0.06)',
+            borderRadius: 10,
+            border: `1px solid ${isFallback ? 'rgba(251,191,36,0.25)' : 'rgba(192,197,206,0.15)'}`,
+            fontSize: 'var(--aguila-fs-section)',
+            color: '#E6EDF3',
+            lineHeight: 1.5,
+            display: 'flex',
+            gap: 10,
+            alignItems: 'flex-start',
+          }}
+        >
+          {isFallback && (
+            <span aria-hidden style={{ fontSize: 16, lineHeight: '20px', opacity: 0.9 }}>⏳</span>
+          )}
+          <span style={{ flex: 1 }}>{answer}</span>
         </div>
       )}
     </div>

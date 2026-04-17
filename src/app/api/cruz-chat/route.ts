@@ -24,6 +24,14 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
+// Single calm fallback shown to clients whenever any Anthropic upstream
+// failure occurs (billing, rate limit, overloaded, timeout, unknown).
+// The `is_fallback: true` flag lets chat UIs render a muted card instead
+// of the default answer bubble. Never leak upstream error strings.
+const CRUZ_CHAT_FALLBACK =
+  'El asistente CRUZ estará disponible muy pronto. Mientras tanto, tu operación sigue al corriente. ' +
+  'Para preguntas urgentes, contacta a tu agente aduanal.'
+
 function buildSystemPrompt(ctx: { clientName: string; companyId: string; clientClave: string; patente: string; aduana: string }): string {
   return `Eres CRUZ, el sistema de inteligencia aduanal de Renato Zapata & Company, Laredo, Texas.
 
@@ -1392,7 +1400,7 @@ export async function POST(req: NextRequest) {
 
   // Check API key before proceeding
   if (!ANTHROPIC_API_KEY) {
-    return NextResponse.json({ message: 'Asistente CRUZ no está configurado. Contacta a soporte.' }, { status: 503 })
+    return NextResponse.json({ message: CRUZ_CHAT_FALLBACK, is_fallback: true }, { status: 503 })
   }
 
   const companyId = req.cookies.get('company_id')?.value ?? ''
@@ -1476,19 +1484,12 @@ export async function POST(req: NextRequest) {
 
     let data = await response.json()
 
-    // Check for API errors
+    // Check for API errors — never leak upstream error strings. All
+    // upstream failures collapse to one calm fallback message with
+    // is_fallback: true so the client can render a muted card.
     if (data.error || data.type === 'error') {
-      const apiMsg = data.error?.message || ''
-      console.error('Anthropic API error:', JSON.stringify(data))
-
-      // Surface a clear message for common API issues
-      if (apiMsg.includes('credit balance') || apiMsg.includes('billing')) {
-        return NextResponse.json({ message: 'Asistente en pausa. Inténtalo de nuevo en unos minutos o envía tu pregunta a tu operador.', navigate: null }, { status: 503 })
-      }
-      if (apiMsg.includes('rate_limit') || apiMsg.includes('overloaded')) {
-        return NextResponse.json({ message: 'Asistente ocupado. Intenta de nuevo en unos segundos.', navigate: null }, { status: 503 })
-      }
-      return NextResponse.json({ message: `Error de API: ${apiMsg || 'Error desconocido'}`, navigate: null }, { status: 500 })
+      console.error('[cruz-chat] Anthropic upstream error:', JSON.stringify(data).slice(0, 500))
+      return NextResponse.json({ message: CRUZ_CHAT_FALLBACK, navigate: null, is_fallback: true }, { status: 503 })
     }
 
     // Handle tool use loop
@@ -1529,8 +1530,8 @@ export async function POST(req: NextRequest) {
       })
       data = await response.json()
       if (data.error || data.type === 'error') {
-        console.error('Anthropic API error in tool loop:', JSON.stringify(data))
-        return NextResponse.json({ message: `Error de API: ${data.error?.message || 'unknown'}`, navigate: null }, { status: 500 })
+        console.error('[cruz-chat] Anthropic tool-loop upstream error:', JSON.stringify(data).slice(0, 500))
+        return NextResponse.json({ message: CRUZ_CHAT_FALLBACK, navigate: null, is_fallback: true }, { status: 503 })
       }
     }
 
@@ -1611,7 +1612,7 @@ export async function POST(req: NextRequest) {
       }
     })
   } catch (err: unknown) {
-    console.error('CRUZ Chat error:', err)
-    return NextResponse.json({ message: 'Error al procesar tu solicitud. Intenta de nuevo.', error: getErrorMessage(err) }, { status: 500 })
+    console.error('[cruz-chat] error:', err)
+    return NextResponse.json({ message: CRUZ_CHAT_FALLBACK, navigate: null, is_fallback: true }, { status: 500 })
   }
 }

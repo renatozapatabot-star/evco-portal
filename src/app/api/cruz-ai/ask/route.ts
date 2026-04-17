@@ -19,6 +19,23 @@ const MODEL_SYNTHESIS = 'claude-sonnet-4-20250514'
 const MAX_TOOL_ROUNDS = 4
 const MAX_QUESTION_CHARS = 1000
 
+// Shown to clients whenever any Anthropic upstream fails (402/429/500/529,
+// billing, timeout, unknown). Calm, reassuring, no system blame. Paired
+// with `is_fallback: true` so the UI can render a muted card instead of
+// the default answer bubble.
+const FALLBACK_ANSWER =
+  'El asistente CRUZ estará disponible muy pronto. Mientras tanto, tu operación sigue al corriente. ' +
+  'Para preguntas urgentes, contacta a tu agente aduanal.'
+
+function isUpstreamFailure(err: unknown): boolean {
+  if (!err) return false
+  const e = err as { status?: number; name?: string; message?: string }
+  if (typeof e.status === 'number' && [402, 408, 429, 500, 502, 503, 504, 529].includes(e.status)) return true
+  if (e.name === 'APIError' || e.name === 'AnthropicError' || e.name === 'TimeoutError') return true
+  const msg = (e.message || '').toLowerCase()
+  return /credit|billing|rate[_ ]?limit|overloaded|timeout|socket|econn|fetch failed|aborted/.test(msg)
+}
+
 const BASE_RULES = `Reglas:
 - Responde SIEMPRE en español mexicano profesional
 - Máximo 4 oraciones — conciso y directo
@@ -99,9 +116,7 @@ export async function POST(req: NextRequest) {
 
     const apiKey = process.env.ANTHROPIC_API_KEY
     if (!apiKey) {
-      return NextResponse.json({
-        answer: 'CRUZ no está disponible en este momento. Contacta a soporte.',
-      })
+      return NextResponse.json({ answer: FALLBACK_ANSWER, is_fallback: true })
     }
 
     const role = session.role as PortalRole
@@ -220,11 +235,18 @@ export async function POST(req: NextRequest) {
         latency_ms: Date.now() - synthStarted,
       }).then(() => {}, () => {})
     } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err)
-      if (msg.includes('credit balance') || msg.includes('billing')) {
-        answer = 'CRUZ no está disponible temporalmente — créditos de API agotados.'
-      } else if (msg.includes('rate_limit') || msg.includes('overloaded')) {
-        answer = 'CRUZ está ocupado. Intenta de nuevo en unos segundos.'
+      if (isUpstreamFailure(err)) {
+        console.error('[cruz-ai] synthesis upstream failure', {
+          status: (err as { status?: number })?.status,
+          name: (err as { name?: string })?.name,
+          message: err instanceof Error ? err.message : String(err),
+        })
+        // If Haiku already produced preliminary text, keep it and let the
+        // caller render normally. If not, fall through to outer catch
+        // by re-throwing so the client gets the calm fallback card.
+        if (!finalText) throw err
+      } else {
+        throw err
       }
     }
 
@@ -278,7 +300,15 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ answer })
   } catch (err) {
-    console.error('[aguila-ai/ask] error:', err)
+    // Log full error server-side for diagnosis; return a calm 200 so the
+    // client UI treats this as a soft fallback (muted card, no error
+    // bubble, no retry button). Matches the contract documented in
+    // CLAUDE.md: "Users never see a hanging spinner or English stack trace."
+    console.error('[cruz-ai/ask] error', {
+      status: (err as { status?: number })?.status,
+      name: (err as { name?: string })?.name,
+      message: err instanceof Error ? err.message : String(err),
+    })
     void logShadow({
       messageId,
       senderRole: 'client',
@@ -287,10 +317,7 @@ export async function POST(req: NextRequest) {
       resolved: false,
       metadata: { error: err instanceof Error ? err.message : String(err) },
     })
-    return NextResponse.json(
-      { answer: 'Lo siento, hubo un problema técnico. Por favor intenta de nuevo.' },
-      { status: 500 },
-    )
+    return NextResponse.json({ answer: FALLBACK_ANSWER, is_fallback: true }, { status: 200 })
   }
 }
 

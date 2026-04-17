@@ -146,7 +146,7 @@ fi
 #   degraded states. All variants of the same canonical green signal;
 #   tokenization deferred with the rest of the v3 chrome.)
 # --------------------------------------------------------------------------
-INVARIANT_HEX_BASELINE=2728
+INVARIANT_HEX_BASELINE=2722
 header "Design System — Colors ratchet"
 HEX_COUNT=$(grep -rn '#[0-9A-Fa-f]\{6\}' src/ \
   --include="*.tsx" --include="*.ts" 2>/dev/null \

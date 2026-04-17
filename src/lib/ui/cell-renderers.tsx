@@ -19,14 +19,14 @@ import type { ReactNode } from 'react'
 import { formatPedimento } from '@/lib/format/pedimento'
 import { formatFraccion } from '@/lib/format/fraccion'
 
-const MUTED_STYLE = { color: 'var(--portal-fg-4, #7b7f8a)' } as const
+const MUTED_STYLE = { color: 'var(--portal-fg-4, #7b7f8a)' } as const  // design-token
 const PENDING_STYLE = {
   fontStyle: 'italic' as const,
-  color: 'var(--portal-amber, #fbbf24)',
+  color: 'var(--portal-amber, #fbbf24)',  // design-token
 } as const
 const ZERO_STYLE = {
   fontFamily: 'var(--portal-font-mono, "Geist Mono", monospace)',
-  color: 'var(--portal-fg-4, #7b7f8a)',
+  color: 'var(--portal-fg-4, #7b7f8a)',  // design-token
   fontVariantNumeric: 'tabular-nums' as const,
 } as const
 const MONO_STYLE = {

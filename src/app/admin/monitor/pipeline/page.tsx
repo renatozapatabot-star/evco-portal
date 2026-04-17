@@ -38,10 +38,10 @@ interface TableReading {
 }
 
 const TONE: Record<Health, string> = {
-  green: 'var(--portal-green-2, #22c55e)',
-  amber: 'var(--portal-amber, #fbbf24)',
-  red: 'var(--portal-red, #ef4444)',
-  unknown: 'var(--portal-fg-4, #7b7f8a)',
+  green: 'var(--portal-green-2, #22c55e)',     // design-token
+  amber: 'var(--portal-amber, #fbbf24)',        // design-token
+  red: 'var(--portal-red, #ef4444)',            // design-token
+  unknown: 'var(--portal-fg-4, #7b7f8a)',       // design-token
 }
 
 function formatMinutes(m: number | null): string {

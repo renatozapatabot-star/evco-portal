@@ -2,10 +2,13 @@ import { describe, it, expect } from 'vitest'
 import { translateEstatus } from '../estatus-translator'
 
 describe('translateEstatus', () => {
-  it('maps known GlobalPC codes to client Spanish labels', () => {
+  it('maps known upstream codes to client Spanish labels', () => {
     expect(translateEstatus('Pedimento Pagado')).toEqual({ label: 'Pagado', tone: 'positive' })
-    expect(translateEstatus('Cruzado')).toEqual({ label: 'Cruzó', tone: 'positive' })
-    expect(translateEstatus('E1')).toEqual({ label: 'Entregado', tone: 'positive' })
+    // All three terminal states collapse to "Cruzado" — CRUZ's scope
+    // ends at the border crossing, not final delivery.
+    expect(translateEstatus('Cruzado')).toEqual({ label: 'Cruzado', tone: 'positive' })
+    expect(translateEstatus('E1')).toEqual({ label: 'Cruzado', tone: 'positive' })
+    expect(translateEstatus('Entregado')).toEqual({ label: 'Cruzado', tone: 'positive' })
     expect(translateEstatus('En Proceso')).toEqual({ label: 'En proceso', tone: 'in_flight' })
     expect(translateEstatus('En Aduana')).toEqual({ label: 'En aduana', tone: 'in_flight' })
   })

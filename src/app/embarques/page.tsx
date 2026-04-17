@@ -53,9 +53,16 @@ interface FacturaLookup {
 
 const PAGE_SIZE = 50
 
-/** Binary status: Cruzado or Pendiente */
+/** Binary status: Cruzado or Pendiente.
+ *  GlobalPC uses 'Cruzado'; SAT uses 'E1'; manual entries sometimes
+ *  say 'Entregado'. All three are post-cross terminal states in CRUZ's
+ *  scope. Without this alignment the list would show E1/Entregado rows
+ *  as "Pendiente" while their detail page shows "Cruzado". */
+const CRUZADO_ESTATUS = new Set(['Cruzado', 'E1', 'Entregado'])
 function getStatus(estatus: string | undefined): 'Cruzado' | 'Pendiente' {
   if (!estatus) return 'Pendiente'
+  if (CRUZADO_ESTATUS.has(estatus)) return 'Cruzado'
+  // Defensive: historical data sometimes has casing variants.
   return estatus.toLowerCase().includes('cruz') ? 'Cruzado' : 'Pendiente'
 }
 

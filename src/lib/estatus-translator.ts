@@ -17,15 +17,21 @@ export interface EstatusDisplay {
   tone: EstatusTone
 }
 
+// CRUZ's scope ends at border crossing — we don't track delivery to the
+// final consignee. All three terminal estatus values (GlobalPC's 'Cruzado',
+// SAT's 'E1', and the manual 'Entregado') now render as the same single
+// word "Cruzado" so the client never sees a list vs. detail mismatch
+// where the same embarque appeared as "Cruzado" on one screen and
+// "Entregado" on the next.
 const MAP: Record<string, EstatusDisplay> = {
   'En Proceso':       { label: 'En proceso',      tone: 'in_flight' },
   'Documentacion':    { label: 'Documentación',   tone: 'in_flight' },
   'Documentación':    { label: 'Documentación',   tone: 'in_flight' },
   'En Aduana':        { label: 'En aduana',       tone: 'in_flight' },
   'Pedimento Pagado': { label: 'Pagado',          tone: 'positive'  },
-  'Cruzado':          { label: 'Cruzó',           tone: 'positive'  },
-  'E1':               { label: 'Entregado',       tone: 'positive'  },
-  'Entregado':        { label: 'Entregado',       tone: 'positive'  },
+  'Cruzado':          { label: 'Cruzado',         tone: 'positive'  },
+  'E1':               { label: 'Cruzado',         tone: 'positive'  },
+  'Entregado':        { label: 'Cruzado',         tone: 'positive'  },
 }
 
 export function translateEstatus(raw: string | null | undefined): EstatusDisplay {

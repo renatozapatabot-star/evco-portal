@@ -92,6 +92,12 @@ interface HeaderProps {
    * reported as nearly invisible in some viewers.
    */
   eagleSize?: number
+  /**
+   * Hide the eagle mark entirely — wordmark-only header. Used on surfaces
+   * where the icon competes with dense content (Anexo 24 tabular export).
+   * Default false preserves existing hero-PDF behavior.
+   */
+  hideEagle?: boolean
 }
 
 export function AguilaPdfHeader({
@@ -100,28 +106,31 @@ export function AguilaPdfHeader({
   gradientId = 'silverGrad',
   solidFallback = false,
   eagleSize = 56,
+  hideEagle = false,
 }: HeaderProps) {
   return (
     <View style={headerStyles.header} fixed>
       <View style={headerStyles.headerLeft}>
-        <Svg width={eagleSize} height={eagleSize} viewBox="0 0 40 36">
-          {!solidFallback && (
-            <Defs>
-              <LinearGradient id={gradientId} x1="0" y1="0" x2="1" y2="1">
-                <Stop offset="0" stopColor={PDF_SILVER_BRIGHT} />
-                <Stop offset="0.5" stopColor={PDF_SILVER} />
-                <Stop offset="1" stopColor={PDF_SILVER_DIM} />
-              </LinearGradient>
-            </Defs>
-          )}
-          <Path
-            d={EAGLE_PATH}
-            fill={solidFallback ? PDF_SILVER : `url(#${gradientId})`}
-            stroke={PDF_SILVER_DIM}
-            strokeWidth={0.5}
-          />
-        </Svg>
-        <View style={headerStyles.wordmark}>
+        {!hideEagle && (
+          <Svg width={eagleSize} height={eagleSize} viewBox="0 0 40 36">
+            {!solidFallback && (
+              <Defs>
+                <LinearGradient id={gradientId} x1="0" y1="0" x2="1" y2="1">
+                  <Stop offset="0" stopColor={PDF_SILVER_BRIGHT} />
+                  <Stop offset="0.5" stopColor={PDF_SILVER} />
+                  <Stop offset="1" stopColor={PDF_SILVER_DIM} />
+                </LinearGradient>
+              </Defs>
+            )}
+            <Path
+              d={EAGLE_PATH}
+              fill={solidFallback ? PDF_SILVER : `url(#${gradientId})`}
+              stroke={PDF_SILVER_DIM}
+              strokeWidth={0.5}
+            />
+          </Svg>
+        )}
+        <View style={hideEagle ? undefined : headerStyles.wordmark}>
           <Text style={headerStyles.brandName}>CRUZ</Text>
           <Text style={headerStyles.brandSubtitle}>
             Inteligencia aduanal · Patente 3596

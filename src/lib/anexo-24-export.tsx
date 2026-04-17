@@ -273,9 +273,10 @@ function Anexo24Document({ data }: { data: Anexo24Data }) {
     <Document>
       <Page size="A4" orientation="landscape" style={styles.page}>
         <AguilaPdfHeader
-          title="ANEXO 24 (PLACEHOLDER)"
-          subtitle={`Generada ${data.meta.generado_en}`}
+          title="ANEXO 24 · FORMATO 53"
+          subtitle={`Generado ${data.meta.generado_en}`}
           gradientId="silverGradAnx"
+          hideEagle
         />
         <View style={styles.banner}>
           <Text style={styles.bannerText}>{PLACEHOLDER_NOTICE_ES}</Text>

@@ -50,19 +50,19 @@ Run white-label dry-run (find every hardcoded "9254") BEFORE promising anything.
 
 ```
 Branch:         overnight/ursula-ready
-Last commit:    9d169c2 docs(baseline): refresh after anexo24_partidas resolver fix + env flag flip
-Rating:         Block DD IN PROGRESS — PORTAL rebrand + design-system baseline +
-                legacy alias layer shipped (Phase 1, 2, 5, partial 6). Phase 3
-                (screen migration), 4 (sync retrofit), 7 (ship) pending.
-Tests:          586 prior + 51 new (36 cell-renderers + 15 portal/theme) = 637
-                target surfaces green. Full suite not yet re-run this block.
-                Typecheck clean throughout. Ratchets not yet rebaselined.
+Last commit:    3ef4dca feat(tenant-purge): build-as-tool · defer destructive execution
+Rating:         Blocks DD + EE both shipped (2026-04-17). PORTAL rebrand live,
+                303,656 rows retagged to true tenant owner, sync hardened
+                against re-contamination. /catalogo no longer leaks cross-tenant
+                parts. 10/10 Block DD phases + 10/10 Block EE phases closed.
+Tests:          667/667 green · typecheck clean · ratchets clean (hex 2722,
+                fontSize 356, inline-glass 0 outside primitive, CRUZ string 218
+                all at baseline). 30/30 data-integrity checks pass post-retag.
 Deploy:         LIVE — portal.renatozapata.com + evco-portal.vercel.app
-                last prod push 2026-04-17 after Block CC ship (eca0c2a)
+                last prod push 2026-04-17 after Block EE ship (3ef4dca)
 Supabase:       8 globalpc_* + 4 econta_* + anexo24_partidas (1793 EVCO rows live) +
-                proveedor_rfc_cache (new, empty)
-                Migrations 20260418_* pending apply via dashboard when ready —
-                live code already targets anexo24_partidas so no blocker today.
+                proveedor_rfc_cache. Every tenant-scoped table now carries
+                correct company_id per row (Block EE retag 2026-04-17).
 Storage:        7 buckets live
 Vercel env:     USE_ANEXO24_CANONICAL=true (Block CC · 2026-04-17) —
                 /catalogo overlay fetches from anexo24_partidas, renders
@@ -70,21 +70,12 @@ Vercel env:     USE_ANEXO24_CANONICAL=true (Block CC · 2026-04-17) —
                 coincide / Nombre difiere) per row.
                 All other env vars stable.
                 ⚠ ANTHROPIC credit topup still needed for CRUZ AI.
-Active focus:   Block DD marathon (2026-04-17). PORTAL rebrand + design-system
-                baseline + no-null-stages discipline. Landed so far:
-                · src/app/portal-tokens.css (OKLCH tokens + legacy alias layer)
-                · src/app/portal-components.css (.portal-btn/card/badge/table/ticker/metric)
-                · src/lib/portal/theme.ts + /api/portal/theme + ThemeSwitcher
-                · layout.tsx wires fonts + portal-grain + cookie → data attrs
-                · AguilaWordmark = "PORTAL" in Instrument Serif 0.24em
-                · Login hero, manifest, apple title, welcome email → PORTAL
-                · Cockpits (client/operator/admin) + AI system prompts → "Eres PORTAL"
-                · src/lib/ui/cell-renderers.tsx (11 helpers · 36 tests green)
-                · .claude/rules/portal-design-system.md + block-discipline extension
-                Remaining: Phase 3 screen migration (ticker/hero/modules on /inicio,
-                theater animation on /embarques/[id]), Phase 4 sync retrofit
-                (~50 scripts), Phase 5 freshness-banner wiring on more surfaces,
-                Phase 7 ship.
+Active focus:   Ursula credential hand-off Monday 2026-04-20 on
+                portal.renatozapata.com. PORTAL wordmark live, cockpit shows
+                only her verified parts (no Tornillo / cross-tenant leakage).
+                Tenant-isolation contract codified in
+                .claude/rules/tenant-isolation.md — read this before touching
+                any sync script or tenant-scoped table.
 Ship command:   `npm run ship` runs six gates including block-audit.sh
                 (plan completeness gate). Baseline auto-writes on green.
 Discipline:     .claude/rules/block-discipline.md codifies the six-gate
@@ -112,7 +103,9 @@ Known debt:     - /pedimentos/nuevo operator page queries globalpc_partidas
 
 Run `/boot` at session start. Read `.claude/memory/learned-rules.md`.
 Read `.claude/rules/block-discipline.md` before starting a new polish cycle.
-Fix all violations before building.
+**Read `.claude/rules/tenant-isolation.md` before touching any sync script,
+tenant-scoped table, or cockpit query.** The Block EE contamination
+incident is not permitted to recur. Fix all violations before building.
 
 ---
 

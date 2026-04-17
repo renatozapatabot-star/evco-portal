@@ -285,7 +285,7 @@ export function MonitorClient({ initialRows, role, companyId, isInternal }: Prop
         href="https://trafico1web.globalpc.net/utilerias/monitor"
         label="Monitor"
         isIncomplete={rows.length === 0}
-        message="Sin tráficos activos en CRUZ — consulta el Monitor de GlobalPC."
+        message="Sin tráficos activos en PORTAL — consulta el Monitor de GlobalPC."
       />
 
       {/* Reserved: colors map to red/amber/green/silver without relying on decorative imports */}

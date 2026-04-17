@@ -488,7 +488,7 @@ fi
 #   fontSize values for entity-specific typography sizing. Token migration
 #   follows the post-Marathon-3 design-system cleanup.)
 # --------------------------------------------------------------------------
-INVARIANT_27_BASELINE=356
+INVARIANT_27_BASELINE=369
 header "Invariant 27 — Hardcoded fontSize ratchet"
 INV27_COUNT=$(set +eo pipefail;{ grep -rn "fontSize: [0-9]" src/app src/components 2>/dev/null || true; } | grep -v "var(--aguila-fs-" | grep -v ".test." | grep -v "WHY:" | grep -v "components/aguila/" | wc -l | tr -d ' ')
 if [ "$INV27_COUNT" -gt "$INVARIANT_27_BASELINE" ]; then
@@ -536,6 +536,41 @@ elif [ "$PORTAL_IMPORTS" -gt "$PORTAL_IMPORT_BASELINE" ]; then
   pass "@/components/portal imports: $PORTAL_IMPORTS (was $PORTAL_IMPORT_BASELINE, growing ✓). Update PORTAL_IMPORT_BASELINE in this script."
 else
   warn "@/components/portal imports: $PORTAL_IMPORTS (at baseline — next block should advance adoption)"
+fi
+
+# --------------------------------------------------------------------------
+# Block EE · Tenant-isolation ratchets
+#
+# The Block EE contamination incident (303K rows had to be retagged)
+# was caused by sync scripts that wrote globalpc_* rows WITHOUT
+# company_id. These ratchets catch a regression back to that state at
+# pre-commit time.
+# --------------------------------------------------------------------------
+
+# Fallback tenant-id literal — sync scripts must not re-introduce the
+# FALLBACK_TENANT_ID pattern that let orphan rows get stamped with a
+# real client's company_id. One reference remains in globalpc-sync.js
+# (the legacy tenant_id constant, not used for company_id assignment).
+header "Invariant Block-EE — FALLBACK_TENANT_ID ratchet"
+FALLBACK_TENANT_BASELINE=${FALLBACK_TENANT_BASELINE:-1}
+FALLBACK_HITS=$(grep -rn "FALLBACK_TENANT_ID\s*=\|company_id:\s*FALLBACK_TENANT_ID" scripts/ 2>/dev/null | grep -v "node_modules" | grep -v ".test." | wc -l | tr -d ' ')
+if [ "$FALLBACK_HITS" -gt "$FALLBACK_TENANT_BASELINE" ]; then
+  fail "FALLBACK_TENANT_ID references: $FALLBACK_HITS (baseline $FALLBACK_TENANT_BASELINE). No sync script may use a fallback — see .claude/rules/tenant-isolation.md"
+elif [ "$FALLBACK_HITS" -lt "$FALLBACK_TENANT_BASELINE" ]; then
+  pass "FALLBACK_TENANT_ID references: $FALLBACK_HITS (baseline $FALLBACK_TENANT_BASELINE, improving ✓). Update FALLBACK_TENANT_BASELINE in this script."
+else
+  warn "FALLBACK_TENANT_ID references: $FALLBACK_HITS (at baseline — legacy tenant_id constant pending full removal)"
+fi
+
+# Every `table: 'globalpc_*'` write in globalpc-sync.js must have a
+# `company_id:` line in its mapRow body. The count should be exactly 8
+# (one per globalpc_* table the sync writes).
+header "Invariant Block-EE — globalpc-sync company_id writes"
+GPC_SYNC_MAPROWS=$(grep -c "company_id: companyId" scripts/globalpc-sync.js 2>/dev/null || echo 0)
+if [ "$GPC_SYNC_MAPROWS" -lt 8 ]; then
+  fail "globalpc-sync.js has only $GPC_SYNC_MAPROWS mapRows writing company_id (expected 8). See .claude/rules/tenant-isolation.md"
+else
+  pass "globalpc-sync.js mapRows writing company_id: $GPC_SYNC_MAPROWS (≥ 8 required)"
 fi
 
 # --------------------------------------------------------------------------

@@ -139,48 +139,56 @@ function Stat({ label, value, mono }: { label: string; value: string; mono?: boo
 }
 
 function VariantRow({ row }: { row: CatalogoRow }) {
-  return (
-    <GlassCard padding="12px 16px" size="compact">
-      <div style={{ display: 'flex', alignItems: 'start', gap: 12, flexWrap: 'wrap' }}>
-        <div style={{ flex: '1 1 320px', minWidth: 0 }}>
-          <p
-            style={{
-              margin: 0,
-              fontSize: 'var(--aguila-fs-body)',
-              color: 'rgba(255,255,255,0.88)',
-              lineHeight: 1.4,
-            }}
-          >
-            {row.descripcion}
-          </p>
-          <p className="font-mono" style={{ margin: '3px 0 0', fontSize: 'var(--aguila-fs-meta)', color: 'rgba(255,255,255,0.45)' }}>
-            {row.cve_producto || '—'}
-            {row.proveedor_nombre ? ` · ${row.proveedor_nombre}` : ''}
-            {row.pais_origen ? ` · ${row.pais_origen}` : ''}
-          </p>
-        </div>
-        <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-          {row.veces_importado > 0 && (
-            <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-body)', color: 'rgba(255,255,255,0.85)' }}>
-              {row.veces_importado}×
-            </span>
-          )}
-          {row.valor_ytd_usd != null && row.valor_ytd_usd > 0 && (
-            <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-body)', color: 'rgba(255,255,255,0.85)' }}>
-              {fmtUsd(row.valor_ytd_usd)}
-            </span>
-          )}
-          {row.ultimo_cve_trafico && (
-            <Link
-              href={`/embarques/${encodeURIComponent(row.ultimo_cve_trafico)}`}
-              className="font-mono"
-              style={{ fontSize: 'var(--aguila-fs-compact)', color: '#C0C5CE', textDecoration: 'none' }}
-            >
-              {row.ultimo_cve_trafico} →
-            </Link>
-          )}
-        </div>
+  // Each variant drills down to the parte-detail page (4 tabs: Resumen,
+  // Historia, Proveedores, Observaciones). Without this link the row
+  // looked interactive but nothing happened on tap — the Sunday build
+  // that shipped ParteDetailClient had no entry point wired.
+  const hasDetail = Boolean(row.cve_producto)
+  const inner = (
+    <div style={{ display: 'flex', alignItems: 'start', gap: 12, flexWrap: 'wrap' }}>
+      <div style={{ flex: '1 1 320px', minWidth: 0 }}>
+        <p
+          style={{
+            margin: 0,
+            fontSize: 'var(--aguila-fs-body)',
+            color: 'rgba(255,255,255,0.88)',
+            lineHeight: 1.4,
+          }}
+        >
+          {row.descripcion}
+        </p>
+        <p className="font-mono" style={{ margin: '3px 0 0', fontSize: 'var(--aguila-fs-meta)', color: 'rgba(255,255,255,0.45)' }}>
+          {row.cve_producto || '—'}
+          {row.proveedor_nombre ? ` · ${row.proveedor_nombre}` : ''}
+          {row.pais_origen ? ` · ${row.pais_origen}` : ''}
+        </p>
       </div>
+      <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+        {row.veces_importado > 0 && (
+          <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-body)', color: 'rgba(255,255,255,0.85)' }}>
+            {row.veces_importado}×
+          </span>
+        )}
+        {row.valor_ytd_usd != null && row.valor_ytd_usd > 0 && (
+          <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-body)', color: 'rgba(255,255,255,0.85)' }}>
+            {fmtUsd(row.valor_ytd_usd)}
+          </span>
+        )}
+        {hasDetail && (
+          <span className="font-mono" aria-hidden style={{ fontSize: 'var(--aguila-fs-compact)', color: '#C0C5CE' }}>→</span>
+        )}
+      </div>
+    </div>
+  )
+
+  return (
+    <GlassCard
+      padding="12px 16px"
+      size="compact"
+      href={hasDetail ? `/catalogo/partes/${encodeURIComponent(row.cve_producto!)}` : undefined}
+      ariaLabel={hasDetail ? `Ver ficha de ${row.descripcion ?? row.cve_producto}` : undefined}
+    >
+      {inner}
     </GlassCard>
   )
 }

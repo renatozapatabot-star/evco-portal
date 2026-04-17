@@ -24,7 +24,7 @@ const MAX_QUESTION_CHARS = 1000
 // with `is_fallback: true` so the UI can render a muted card instead of
 // the default answer bubble.
 const FALLBACK_ANSWER =
-  'El asistente CRUZ estará disponible muy pronto. Mientras tanto, tu operación sigue al corriente. ' +
+  'El asistente PORTAL estará disponible muy pronto. Mientras tanto, tu operación sigue al corriente. ' +
   'Para preguntas urgentes, contacta a tu agente aduanal.'
 
 function isUpstreamFailure(err: unknown): boolean {
@@ -49,33 +49,33 @@ const BASE_RULES = `Reglas:
 - Tono: profesional, cálido, confiable.`
 
 const ROLE_PROMPTS: Record<PortalRole, string> = {
-  operator: `Eres CRUZ, asistente de operaciones aduanales.
+  operator: `Eres PORTAL, asistente de operaciones aduanales.
 Ayudas a Claudia con embarques activos, estatus de pedimentos,
 y cadena factura→entrada→pedimento. Responde en español.
 
 ${BASE_RULES}`,
-  trafico: `Eres CRUZ, asistente de embarque.
+  trafico: `Eres PORTAL, asistente de embarque.
 Ayudas al equipo de embarque con activos en ruta, despachos,
 y seguimiento de embarques. Responde en español.
 
 ${BASE_RULES}`,
-  contabilidad: `Eres CRUZ, asistente de contabilidad aduanal.
+  contabilidad: `Eres PORTAL, asistente de contabilidad aduanal.
 Ayudas a Anabel con cuentas por cobrar, facturas emitidas,
 pagos recibidos, y exportación QB. Responde en español.
 
 ${BASE_RULES}`,
-  warehouse: `Eres CRUZ, asistente de almacén.
+  warehouse: `Eres PORTAL, asistente de almacén.
 Ayudas a Vicente con entradas, ubicaciones en bodega,
 recepción de mercancía, y despacho. Responde en español.
 
 ${BASE_RULES}`,
-  client: `Eres CRUZ, el asistente de inteligencia aduanal de Renato Zapata & Company (Patente 3596, Aduana 240 Nuevo Laredo).
+  client: `Eres PORTAL, el asistente de inteligencia aduanal de Renato Zapata & Company (Patente 3596, Aduana 240 Nuevo Laredo).
 
 ${BASE_RULES}`,
-  admin: `Eres CRUZ, el asistente de inteligencia aduanal de Renato Zapata & Company (Patente 3596, Aduana 240 Nuevo Laredo). Acceso multi-cliente de administración.
+  admin: `Eres PORTAL, el asistente de inteligencia aduanal de Renato Zapata & Company (Patente 3596, Aduana 240 Nuevo Laredo). Acceso multi-cliente de administración.
 
 ${BASE_RULES}`,
-  broker: `Eres CRUZ, el asistente de inteligencia aduanal de Renato Zapata & Company (Patente 3596, Aduana 240 Nuevo Laredo). Acceso de agente aduanal titular.
+  broker: `Eres PORTAL, el asistente de inteligencia aduanal de Renato Zapata & Company (Patente 3596, Aduana 240 Nuevo Laredo). Acceso de agente aduanal titular.
 
 ${BASE_RULES}`,
 }
@@ -88,7 +88,7 @@ const CLASSIFIER_PROMPT = `Clasifica el mensaje en UNA de estas etiquetas y resp
 estatus_trafico, pregunta_pedimento, duda_documento, pregunta_financiera, escalacion, saludo, otro`
 
 /**
- * CRUZ ask endpoint with live Supabase tool calls.
+ * PORTAL ask endpoint with live Supabase tool calls.
  * POST { question: string } → { answer: string }
  */
 export async function POST(req: NextRequest) {

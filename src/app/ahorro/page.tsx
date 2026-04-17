@@ -78,7 +78,7 @@ export default function AhorroPage() {
         Optimización de Costos
       </h1>
       <p style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-muted)', marginBottom: 24 }}>
-        Oportunidades de ahorro detectadas por CRUZ en cada operación
+        Oportunidades de ahorro detectadas por PORTAL en cada operación
       </p>
 
       {loading ? (

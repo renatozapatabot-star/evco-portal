@@ -333,7 +333,7 @@ export default function DraftReviewPage() {
         </div>
         <div style={{ textAlign: 'right' }}>
           <div style={{ fontSize: 36, fontWeight: 900, fontFamily: 'var(--font-mono)', color: tier.color }}>{draft.confidence}%</div>
-          <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--slate-400)' }}>confianza CRUZ</div>
+          <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--slate-400)' }}>confianza PORTAL</div>
         </div>
       </div>
 
@@ -376,7 +376,7 @@ export default function DraftReviewPage() {
           {/* Extraction metadata — what Sonnet found */}
           <div className="card" style={{ marginBottom: 16, padding: 16 }}>
             <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--slate-400)', marginBottom: 12 }}>
-              Datos extraídos por CRUZ
+              Datos extraídos por PORTAL
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12 }}>
               <div>

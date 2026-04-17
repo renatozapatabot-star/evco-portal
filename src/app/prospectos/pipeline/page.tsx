@@ -67,8 +67,8 @@ export default function PipelinePage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             message: newStatus === 'won'
-              ? `🎉 Nuevo cliente ganado: ${p.razon_social || p.rfc}\nEst. honorarios: ${fmtMXN(p.estimated_annual_fees_mxn)} MXN/año\n— CRUZ 🦀`
-              : `📞 Prospecto contactado: ${p.razon_social || p.rfc}\nScore: ${p.opportunity_score}/100\n— CRUZ 🦀`
+              ? `🎉 Nuevo cliente ganado: ${p.razon_social || p.rfc}\nEst. honorarios: ${fmtMXN(p.estimated_annual_fees_mxn)} MXN/año\n— PORTAL 🦀`
+              : `📞 Prospecto contactado: ${p.razon_social || p.rfc}\nScore: ${p.opportunity_score}/100\n— PORTAL 🦀`
           })
         }).catch((err: unknown) => console.error('[pipeline] telegram notify failed:', (err as Error).message))
       }

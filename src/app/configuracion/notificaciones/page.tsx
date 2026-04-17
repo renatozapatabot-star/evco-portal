@@ -13,7 +13,7 @@ const EVENT_TYPES = [
 ]
 
 const CHANNELS = [
-  { key: 'portal', label: 'CRUZ', icon: Bell },
+  { key: 'portal', label: 'PORTAL', icon: Bell },
   { key: 'email', label: 'Email', icon: Mail },
   { key: 'telegram', label: 'Telegram', icon: MessageCircle },
 ]
@@ -37,7 +37,7 @@ export default function NotificacionesPage() {
   return (
     <div style={{ maxWidth: 700, margin: '0 auto', padding: '24px 16px' }}>
       <h1 style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, color: '#E6EDF3', marginBottom: 4 }}>Notificaciones</h1>
-      <p style={{ fontSize: 'var(--aguila-fs-body)', color: '#64748b', marginBottom: 24 }}>Elige cómo y cuándo recibir alertas de CRUZ.</p>
+      <p style={{ fontSize: 'var(--aguila-fs-body)', color: '#64748b', marginBottom: 24 }}>Elige cómo y cuándo recibir alertas de PORTAL.</p>
 
       <div className="cc-card" style={{ padding: 24, borderRadius: 20 }}>
         {/* Header row */}

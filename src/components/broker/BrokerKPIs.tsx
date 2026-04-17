@@ -58,7 +58,7 @@ export function BrokerKPIs({ staffConfig, opsMetrics }: BrokerKPIsProps) {
           padding: 20, marginBottom: 32,
         }}>
           <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: T.textMuted, marginBottom: 12 }}>
-            Lo que CRUZ aprendió esta semana
+            Lo que PORTAL aprendió esta semana
           </div>
           {opsMetrics.recentLearnings.map((l, i) => (
             <div key={i} style={{

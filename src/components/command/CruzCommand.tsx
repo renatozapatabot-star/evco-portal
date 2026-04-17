@@ -25,9 +25,9 @@ import {
  *
  * Design notes:
  *   · Glass hero chemistry (rgba(0,0,0,0.4) + blur(20px) saturate(1.2)).
- *   · Cycling placeholder telegraphs the range of things CRUZ knows.
+ *   · Cycling placeholder telegraphs the range of things PORTAL knows.
  *   · Results dropdown opens with the --ease-brand curve.
- *   · Question-mark detection promotes "Ask CRUZ" to the top row.
+ *   · Question-mark detection promotes "Ask PORTAL" to the top row.
  *   · ⌘K / Ctrl+K focuses from anywhere on the page.
  *   · Esc blurs. ↑↓ navigates. Enter picks.
  *
@@ -63,7 +63,7 @@ const CYCLE_PLACEHOLDERS = [
   'Busca un SKU del Anexo 24…',
   'Busca una fracción arancelaria…',
   'Busca un proveedor…',
-  'Pregúntale a CRUZ cualquier cosa…',
+  'Pregúntale a PORTAL cualquier cosa…',
 ]
 
 const ICONS: Record<string, (p: { size: number }) => React.ReactElement> = {
@@ -228,7 +228,7 @@ export function CruzCommand({ mode = 'compact', placeholder, autoFocus = false }
       e.preventDefault()
       const row = rows[activeIdx]
       if (!row) {
-        // No row — if there's an ask intent or any text, treat as "ask CRUZ".
+        // No row — if there's an ask intent or any text, treat as "ask PORTAL".
         if (value.trim().length > 0) router.push(`/cruz?q=${encodeURIComponent(value.trim())}`)
         return
       }
@@ -292,7 +292,7 @@ export function CruzCommand({ mode = 'compact', placeholder, autoFocus = false }
           onKeyDown={handleKey}
           autoComplete="off"
           spellCheck={false}
-          aria-label="Buscar en CRUZ"
+          aria-label="Buscar en PORTAL"
           aria-controls="cruz-command-results"
           aria-expanded={showDropdown}
           style={{
@@ -421,7 +421,7 @@ export function CruzCommand({ mode = 'compact', placeholder, autoFocus = false }
                       fontSize: 13, fontWeight: 600, color: '#E6EDF3',
                       overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                     }}>
-                      Preguntarle a CRUZ sobre &ldquo;{value.trim()}&rdquo;
+                      Preguntarle a PORTAL sobre &ldquo;{value.trim()}&rdquo;
                     </div>
                     <div style={{ fontSize: 11, color: 'rgba(148,163,184,0.75)', marginTop: 2 }}>
                       El asistente responde con tus datos reales

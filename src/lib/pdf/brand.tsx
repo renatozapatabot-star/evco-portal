@@ -131,7 +131,7 @@ export function AguilaPdfHeader({
           </Svg>
         )}
         <View style={hideEagle ? undefined : headerStyles.wordmark}>
-          <Text style={headerStyles.brandName}>CRUZ</Text>
+          <Text style={headerStyles.brandName}>PORTAL</Text>
           <Text style={headerStyles.brandSubtitle}>
             Inteligencia aduanal · Patente 3596
           </Text>
@@ -152,7 +152,7 @@ interface FooterProps {
 }
 
 export function AguilaPdfFooter({
-  label = 'CRUZ · Patente 3596 · Aduana 240 Nuevo Laredo',
+  label = 'PORTAL · Patente 3596 · Aduana 240 Nuevo Laredo',
 }: FooterProps) {
   return (
     <View style={footerStyles.footer} fixed>

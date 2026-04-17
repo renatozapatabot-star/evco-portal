@@ -65,7 +65,7 @@ export function FallbackLink({
               lineHeight: 1.4,
             }}
           >
-            {message ?? `Datos incompletos en CRUZ — consulta ${label} para detalles.`}
+            {message ?? `Datos incompletos en PORTAL — consulta ${label} para detalles.`}
           </div>
         </div>
         <Link

@@ -23,7 +23,7 @@ export interface AsistenteButtonProps {
   firstMessage?: string
   /** Route override. Default: `/mensajeria`. */
   href?: string
-  /** Visible label on the button. Default: 'Asistente CRUZ'. */
+  /** Visible label on the button. Default: 'Asistente PORTAL'. */
   label?: string
 }
 
@@ -39,7 +39,7 @@ export function AsistenteButton({
   roleTag,
   firstMessage,
   href = '/mensajeria',
-  label = 'Asistente CRUZ',
+  label = 'Asistente PORTAL',
 }: AsistenteButtonProps) {
   const hello = firstMessage ?? DEFAULT_HELLO[roleTag]
   const params = new URLSearchParams({ ctx: roleTag, hello })

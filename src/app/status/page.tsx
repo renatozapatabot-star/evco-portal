@@ -20,13 +20,13 @@ export default async function StatusPage() {
 
   // Client-friendly label mapping — hide internal service names
   const friendlyName: Record<string, string> = {
-    'Portal CRUZ': 'CRUZ Web',
+    'Portal PORTAL': 'PORTAL Web',
     'Base de Datos': 'Sincronización de Datos',
     'GlobalPC MySQL': 'Sincronización de Datos',
     'Supabase': 'Sincronización de Datos',
-    'ADUANA Intelligence': 'CRUZ',
+    'ADUANA Intelligence': 'PORTAL',
     'Telegram Bot': 'Notificaciones',
-    'Ollama': 'CRUZ',
+    'Ollama': 'PORTAL',
   }
 
   // If no integration_health data, show defaults
@@ -37,9 +37,9 @@ export default async function StatusPage() {
         detail: i.status === 'healthy' ? 'Activo' : 'Sin conexión',
       }))
     : [
-        { name: 'CRUZ Web', status: 'operational', detail: 'Activo' },
+        { name: 'PORTAL Web', status: 'operational', detail: 'Activo' },
         { name: 'Sincronización de Datos', status: 'operational', detail: 'Activo' },
-        { name: 'CRUZ', status: 'operational', detail: 'Activo' },
+        { name: 'PORTAL', status: 'operational', detail: 'Activo' },
       ]
 
   const cfg: Record<string, { color: string; bg: string; label: string; dot: string }> = {
@@ -59,7 +59,7 @@ export default async function StatusPage() {
           <AguilaMark size={40} />
           <div>
             <h1 style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, margin: 0 }}>Estado del Sistema</h1>
-            <p style={{ color: '#666', fontSize: 'var(--aguila-fs-compact)', margin: 0 }}>CRUZ Intelligence Platform</p>
+            <p style={{ color: '#666', fontSize: 'var(--aguila-fs-compact)', margin: 0 }}>PORTAL Intelligence Platform</p>
           </div>
         </div>
 
@@ -93,7 +93,7 @@ export default async function StatusPage() {
         </div>
 
         <div style={{ textAlign: 'center', marginTop: 24, color: '#666', fontSize: 'var(--aguila-fs-meta)' }}>
-          <p>CRUZ Intelligence Platform &middot; Patente 3596 &middot; Aduana 240 Nuevo Laredo</p>
+          <p>PORTAL Intelligence Platform &middot; Patente 3596 &middot; Aduana 240 Nuevo Laredo</p>
           <p style={{ marginTop: 4 }}>Auto-refresh: every 60 seconds</p>
         </div>
       </div>

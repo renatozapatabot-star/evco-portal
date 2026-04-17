@@ -47,7 +47,7 @@ export async function generateMetadata(
   const t = await fetchPreview(id)
 
   if (!t) {
-    return { title: `Embarque · CRUZ` }
+    return { title: `Embarque · PORTAL` }
   }
 
   const desc = [
@@ -57,12 +57,12 @@ export async function generateMetadata(
   ].filter(Boolean).join(' · ')
 
   return {
-    title: `Embarque ${id} · CRUZ`,
+    title: `Embarque ${id} · PORTAL`,
     description: desc,
     openGraph: {
-      title: `Embarque ${id} · CRUZ`,
+      title: `Embarque ${id} · PORTAL`,
       description: desc,
-      siteName: 'CRUZ · Renato Zapata & Co.',
+      siteName: 'PORTAL · Renato Zapata & Co.',
       type: 'website',
     },
   }
@@ -124,7 +124,7 @@ export default async function SharePage(
             textTransform: 'uppercase',
             marginBottom: 4,
           }}>
-            CRUZ
+            PORTAL
           </div>
           <div style={{
             fontSize: 'var(--aguila-fs-compact)',

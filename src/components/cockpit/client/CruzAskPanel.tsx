@@ -34,7 +34,7 @@ export function AduanaAskPanel() {
     } catch {
       // Network failure — same calm muted card contract as upstream 5xx.
       setAnswer(
-        'El asistente CRUZ estará disponible muy pronto. Mientras tanto, tu operación sigue al corriente. ' +
+        'El asistente PORTAL estará disponible muy pronto. Mientras tanto, tu operación sigue al corriente. ' +
         'Para preguntas urgentes, contacta a tu agente aduanal.'
       )
       setIsFallback(true)
@@ -54,7 +54,7 @@ export function AduanaAskPanel() {
         fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, textTransform: 'uppercase',
         letterSpacing: '0.05em', color: '#6E7681', marginBottom: 12,
       }}>
-        Pregúntale a CRUZ
+        Pregúntale a PORTAL
       </div>
 
       {/* Example prompts */}

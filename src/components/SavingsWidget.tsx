@@ -81,7 +81,7 @@ export function SavingsWidget() {
             if (savings) {
               try { setData(JSON.parse(savings.description)) } catch (e) { console.error('[savings-widget] parse failed:', (e as Error).message) }
             }
-          }).catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
+          }).catch((err: unknown) => { console.error("[PORTAL]", (err as Error)?.message || err) })
       }
     })
   }, [])
@@ -98,7 +98,7 @@ export function SavingsWidget() {
       <div style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 700,
         textTransform: 'uppercase', letterSpacing: '0.1em',
         color: 'var(--status-green, #22c55e)', marginBottom: 8 }}>
-        Ahorro con CRUZ — {data.period}
+        Ahorro con PORTAL — {data.period}
       </div>
 
       <div className="mono" style={{ fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 800,

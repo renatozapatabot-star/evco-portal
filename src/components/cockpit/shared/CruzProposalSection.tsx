@@ -46,7 +46,7 @@ export function AduanaProposalSection({ proposal, subjectLabel, onApprove, onRej
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={{ fontSize: 'var(--aguila-fs-headline)', color: '#16A34A' }}>✓</span>
-          <span style={{ fontSize: 15, fontWeight: 600, color: '#16A34A' }}>Aprobado — CRUZ avanza</span>
+          <span style={{ fontSize: 15, fontWeight: 600, color: '#16A34A' }}>Aprobado — PORTAL avanza</span>
         </div>
       </div>
     )
@@ -59,7 +59,7 @@ export function AduanaProposalSection({ proposal, subjectLabel, onApprove, onRej
         border: '1px solid rgba(220,38,38,0.2)', marginBottom: 16,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ fontSize: 15, fontWeight: 600, color: '#DC2626' }}>Rechazado — CRUZ aprende de esto</span>
+          <span style={{ fontSize: 15, fontWeight: 600, color: '#DC2626' }}>Rechazado — PORTAL aprende de esto</span>
         </div>
       </div>
     )
@@ -106,7 +106,7 @@ export function AduanaProposalSection({ proposal, subjectLabel, onApprove, onRej
           fontSize: 'var(--aguila-fs-label)', fontWeight: 700, textTransform: 'uppercase',
           letterSpacing: '0.08em', color: '#E8EAED', marginBottom: 12,
         }}>
-          CRUZ propone
+          PORTAL propone
         </div>
 
         {/* Proposal headline */}

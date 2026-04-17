@@ -20,7 +20,7 @@ export function ValueSummary({ pedimentosThisMonth, daysSinceRojo, totalClassifi
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
         <Brain size={14} style={{ color: '#C0C5CE', flexShrink: 0 }} />
         <span style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#64748b' }}>
-          CRUZ trabaja para ti
+          PORTAL trabaja para ti
         </span>
       </div>
 

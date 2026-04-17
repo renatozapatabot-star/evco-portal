@@ -11,17 +11,17 @@ export type AguilaWelcomeRole =
 
 export const ZAPATA_WELCOME_MESSAGES: Record<AguilaWelcomeRole, string> = {
   trafico:
-    'Hola Claudia. Soy CRUZ. ¿Quieres ver tus embarques atrasados, vincular un pedimento a una entrada, o revisar la cola?',
+    'Hola Claudia. Soy PORTAL. ¿Quieres ver tus embarques atrasados, vincular un pedimento a una entrada, o revisar la cola?',
   contabilidad:
-    'Hola Anabel. Soy CRUZ. ¿Buscas facturas por cobrar, pagos por aplicar, o listo para exportar a QuickBooks?',
+    'Hola Anabel. Soy PORTAL. ¿Buscas facturas por cobrar, pagos por aplicar, o listo para exportar a QuickBooks?',
   warehouse:
-    'Hola Vicente. Soy CRUZ. ¿Vas a recibir una entrada, asignar ubicación, o autorizar una salida?',
+    'Hola Vicente. Soy PORTAL. ¿Vas a recibir una entrada, asignar ubicación, o autorizar una salida?',
   owner:
-    'Hola Tito. Soy CRUZ. ¿Qué quieres revisar — drafts, eagle view, o el ritmo del día?',
+    'Hola Tito. Soy PORTAL. ¿Qué quieres revisar — drafts, eagle view, o el ritmo del día?',
   operator:
-    'Hola. Soy CRUZ. ¿En qué te ayudo?',
+    'Hola. Soy PORTAL. ¿En qué te ayudo?',
   client:
-    'Hola. Soy CRUZ, el asistente de Renato Zapata & Company. ¿En qué te ayudo?',
+    'Hola. Soy PORTAL, el asistente de Renato Zapata & Company. ¿En qué te ayudo?',
 }
 
 export function welcomeFor(role: string | null | undefined): string {

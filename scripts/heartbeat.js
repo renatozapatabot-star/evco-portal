@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 // ============================================================
-// CRUZ Heartbeat Monitor v2 — 2026-04-02
+// PORTAL Heartbeat Monitor v2 — 2026-04-02
 // Runs via CRONTAB every 15 minutes (NOT pm2)
 // ============================================================
 
@@ -117,7 +117,7 @@ async function main() {
   const now = new Date();
   const ts = now.toISOString();
   const hour = now.getHours();
-  console.log(`[${ts}] CRUZ Heartbeat running...`);
+  console.log(`[${ts}] PORTAL Heartbeat running...`);
 
   const [pm2, supa, vercel, sync] = await Promise.all([
     checkPm2(), checkSupabase(), checkVercel(), checkSync()
@@ -161,7 +161,7 @@ async function main() {
     // Green checkmark only at 0/6/12/18
     if (hour === 0 || hour === 6 || hour === 12 || hour === 18) {
       await sendTelegram(
-        `✅ <b>CRUZ Heartbeat</b>\n\n` +
+        `✅ <b>PORTAL Heartbeat</b>\n\n` +
         `pm2: ${pm2.online}/${pm2.total} online\n` +
         `Supabase: ${supa.latency}ms · ${(supa.rowCount || 0).toLocaleString()} tráficos\n` +
         `Portal: ${vercel.latency}ms\n` +
@@ -175,7 +175,7 @@ async function main() {
     if (!vercel.ok) fails.push(`🔴 Portal: ${vercel.error || 'HTTP ' + vercel.status}`);
     if (!sync.ok) fails.push(`🔴 Sync: ${sync.error || sync.hoursSince + 'h stale'}`);
 
-    await sendTelegram(`🚨 <b>CRUZ Heartbeat — ALERT</b>\n\n${fails.join('\n')}\n\n<i>${ts}</i>`);
+    await sendTelegram(`🚨 <b>PORTAL Heartbeat — ALERT</b>\n\n${fails.join('\n')}\n\n<i>${ts}</i>`);
     console.log('🚨 Alert sent:', fails.join(' | '));
   }
 

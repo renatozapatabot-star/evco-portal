@@ -63,7 +63,7 @@ export function TopNav() {
     fetch(`/api/data?table=notifications&company_id=${companyId}&select=id&limit=1&read=false`)
       .then(r => r.json())
       .then(d => setUnreadCount(d.count ?? (d.data?.length ?? 0)))
-      .catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
+      .catch((err: unknown) => { console.error("[PORTAL]", (err as Error)?.message || err) })
   }, [companyId])
 
   // Launcher tray counts — fetched once per session, populates the red-dot
@@ -91,7 +91,7 @@ export function TopNav() {
           setSyncMins(mins)
           setSyncLabel(mins < 5 ? 'Ahora' : mins < 60 ? `${mins}m` : `${Math.floor(mins / 60)}h`)
         }
-      }).catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
+      }).catch((err: unknown) => { console.error("[PORTAL]", (err as Error)?.message || err) })
   }, [companyId])
 
   const isInternal = role === 'admin' || role === 'broker'
@@ -107,7 +107,7 @@ export function TopNav() {
             display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px',
           }}
         >
-          <Link href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }} aria-label="CRUZ">
+          <Link href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }} aria-label="PORTAL">
             <AguilaMark size={28} />
           </Link>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>

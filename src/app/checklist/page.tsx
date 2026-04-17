@@ -50,7 +50,7 @@ export default async function ChecklistPage() {
         <p style={{ fontSize: 'var(--aguila-fs-body)', color: TEXT_SECONDARY, marginTop: 8, lineHeight: 1.5 }}>
           61 tipos de documento · validación automática por régimen aduanal.
           La pantalla completa del checklist se libera en un próximo build;
-          mientras tanto el Asistente CRUZ ya puede correr el checklist por
+          mientras tanto el Asistente PORTAL ya puede correr el checklist por
           embarque.
         </p>
         <div style={{ display: 'flex', gap: 12, marginTop: 24, flexWrap: 'wrap' }}>

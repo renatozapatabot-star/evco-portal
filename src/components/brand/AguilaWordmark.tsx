@@ -1,6 +1,6 @@
-// AguilaWordmark — inline SVG "CRUZ" wordmark (April 2026 rebrand)
-// Filename preserved for import stability; renders the new CRUZ brand.
-// Gold gradient for identity surfaces; silver tones kept for chrome contexts.
+// AguilaWordmark — inline SVG "PORTAL" wordmark (Block DD · 2026-04-17).
+// Filename preserved for import stability; renders the new PORTAL brand
+// in Instrument Serif per the DESIGN_HANDOFF spec.
 
 import type { CSSProperties } from 'react'
 
@@ -14,21 +14,21 @@ export interface AguilaWordmarkProps {
   'aria-label'?: string
 }
 
-const WORDMARK_TEXT = 'CRUZ'
+const WORDMARK_TEXT = 'PORTAL'
 
 export function AguilaWordmark({
   size = 24,
   tone = 'gold',
   className,
   style,
-  'aria-label': ariaLabel = 'CRUZ',
+  'aria-label': ariaLabel = 'PORTAL',
 }: AguilaWordmarkProps) {
   const gradId = `zapata-wordmark-${tone}`
   const fill =
     tone === 'silver-bright' ? '#E8EAED' : `url(#${gradId})`
-  // Aspect: "CRUZ" is 9 chars (incl. space) at fontSize 28, ls 6
-  // → ~260 wide, 40 tall → ratio 6.5
-  const viewW = 260
+  // "PORTAL" in Instrument Serif · letter-spacing 0.24em (hero spec) ·
+  // viewBox sized for 6-char wordmark at fontSize 28.
+  const viewW = 300
   const viewH = 40
   const width = Math.round(size * (viewW / viewH))
 
@@ -69,10 +69,10 @@ export function AguilaWordmark({
         x={viewW / 2}
         y="30"
         textAnchor="middle"
-        fontFamily="'Inter', 'Helvetica Neue', Arial, sans-serif"
-        fontSize="26"
+        fontFamily="var(--font-instrument-serif), 'Instrument Serif', 'Times New Roman', serif"
+        fontSize="28"
         fontWeight="400"
-        letterSpacing="5"
+        letterSpacing="6.7"
         fill={fill}
       >
         {WORDMARK_TEXT}

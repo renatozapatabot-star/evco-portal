@@ -53,7 +53,7 @@ export function AguilaAutonomoPanel({ decisions, decisions30d, decisionsAllTime,
           fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, textTransform: 'uppercase',
           letterSpacing: '0.05em', color: '#6E7681',
         }}>
-          CRUZ Autónomo
+          PORTAL Autónomo
         </span>
         <p style={{ fontSize: 'var(--aguila-fs-body)', color: '#8B949E', margin: '4px 0 0' }}>
           {decisions.total > 0

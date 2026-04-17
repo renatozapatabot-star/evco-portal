@@ -76,7 +76,7 @@ export function computeAchievements(
     id: 'primer_despacho',
     icon: '🚀',
     title: 'Primer despacho',
-    description: 'Primer embarque despachado con CRUZ',
+    description: 'Primer embarque despachado con PORTAL',
     earned: !!firstCrossing,
     earnedDate: firstCrossing?.fecha_cruce || undefined,
     value: firstCrossing ? `Embarque ${firstCrossing.trafico}` : undefined,

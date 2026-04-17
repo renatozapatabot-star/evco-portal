@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * CRUZ Welcome Email System
+ * PORTAL Welcome Email System
  * Sends portal access credentials to all active clients
  */
 
@@ -30,15 +30,15 @@ async function tg(msg) {
 
 function buildWelcomeEmail(company) {
   return {
-    subject: `Bienvenido a CRUZ — Su portal aduanal está listo | ${company.name}`,
+    subject: `Bienvenido a PORTAL — Su portal aduanal está listo | ${company.name}`,
     body: `Estimado/a ${company.contact_name || 'Cliente'},
 
-Su portal de inteligencia aduanal CRUZ ya está activo.
+Su portal de inteligencia aduanal PORTAL ya está activo.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ACCESO AL PORTAL
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-URL: https://evco-portal.vercel.app
+URL: https://portal.renatozapata.com
 Contraseña: ${company.portal_password}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -46,7 +46,7 @@ QUÉ PUEDE HACER DESDE HOY
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 - Ver todos sus tráficos activos en tiempo real
 - Consultar documentos de cada embarque
-- Preguntarle a CRUZ AI sobre cualquier operación
+- Preguntarle a PORTAL AI sobre cualquier operación
 - Revisar su score de cumplimiento aduanal
 - Recibir el reporte semanal cada lunes a las 7 AM
 
@@ -54,11 +54,11 @@ QUÉ PUEDE HACER DESDE HOY
 IMPORTANTE — MVE (Manifestación de Valor)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 La obligatoriedad del formato E2 entra en vigor
-el 31 de marzo de 2026. CRUZ está monitoreando
+el 31 de marzo de 2026. PORTAL está monitoreando
 sus tráficos y le alertará sobre cualquier pendiente.
 
 Para soporte: ai@renatozapata.com
-Portal: evco-portal.vercel.app
+Portal: portal.renatozapata.com
 
 Atentamente,
 Renato Zapata III — Director General
@@ -95,7 +95,7 @@ async function sendViaGmail(to, subject, body) {
 }
 
 async function run() {
-  console.log(`📧 CRUZ Welcome Email System ${DRY_RUN ? '(DRY RUN)' : ''}`)
+  console.log(`📧 PORTAL Welcome Email System ${DRY_RUN ? '(DRY RUN)' : ''}`)
   console.log('═'.repeat(50))
 
   if (MONDAY_ONLY && new Date().getDay() !== 1) {
@@ -152,7 +152,7 @@ async function run() {
   }
 
   console.log(`\n✅ ${sent} sent, ${failed} failed (of ${companies.length} total)`)
-  await tg(`📧 <b>Welcome Emails</b>\n${sent}/${companies.length} enviados${DRY_RUN ? ' (DRY RUN)' : ''}\n— CRUZ 🦀`)
+  await tg(`📧 <b>Welcome Emails</b>\n${sent}/${companies.length} enviados${DRY_RUN ? ' (DRY RUN)' : ''}\n— PORTAL 🦀`)
 }
 
 run().catch(console.error)

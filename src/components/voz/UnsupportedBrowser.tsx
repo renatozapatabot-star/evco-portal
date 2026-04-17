@@ -51,7 +51,7 @@ export default function UnsupportedBrowser() {
           cursor: 'pointer',
         }}
       >
-        Ir al chat de CRUZ
+        Ir al chat de PORTAL
       </button>
     </div>
   )

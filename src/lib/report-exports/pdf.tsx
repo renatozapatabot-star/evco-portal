@@ -111,7 +111,7 @@ export async function buildPdf(
       <Page size="A4" orientation={orientation} style={styles.page}>
         <View style={styles.header} fixed>
           <View style={styles.brand}>
-            <Text style={styles.brandTitle}>CRUZ</Text>
+            <Text style={styles.brandTitle}>PORTAL</Text>
             <Text style={styles.brandSubtitle}>Renato Zapata &amp; Co.</Text>
           </View>
           <View style={styles.meta}>

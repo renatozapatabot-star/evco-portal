@@ -20,12 +20,12 @@ interface Props {
 }
 
 /**
- * Form field that renders pre-filled values in gold (CRUZ proposed)
+ * Form field that renders pre-filled values in gold (PORTAL proposed)
  * and turns white when the operator edits it (corrected).
  *
  * The reviewer thesis applied to forms:
  * Gold = "ADUANA filled this, just confirm"
- * White = "You changed it, CRUZ will learn"
+ * White = "You changed it, PORTAL will learn"
  */
 export function PrefillField({ label, name, prefill, type = 'text', placeholder, required, onChange }: Props) {
   const [value, setValue] = useState(prefill?.value || '')
@@ -147,7 +147,7 @@ export function ConfirmAllButton({
     }}>
       <div>
         <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: '#E8EAED' }}>
-          CRUZ pre-llenó {prefillCount} de {totalFields} campos ({pct}%)
+          PORTAL pre-llenó {prefillCount} de {totalFields} campos ({pct}%)
         </div>
         <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#8B949E', marginTop: 2 }}>
           Revisa los campos en dorado y confirma si todo es correcto

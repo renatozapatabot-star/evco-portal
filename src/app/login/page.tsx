@@ -105,7 +105,7 @@ function LoginContent() {
         {/* Wordmark-only lockup — Z monogram removed 2026-04-17 after
             Tito's review ("tira la Z"). Wordmark stands alone in silver;
             the tagline underneath carries the brand weight. */}
-        <p className="login-wordmark login-wordmark-hero" aria-label="CRUZ">CRUZ</p>
+        <p className="login-wordmark login-wordmark-hero" aria-label="PORTAL">PORTAL</p>
 
         {/* Tagline */}
         <p className="login-tagline">TOTAL VISIBILIDAD. SIN FRONTERAS.</p>
@@ -299,32 +299,30 @@ function LoginContent() {
         .login-wordmark {
           margin: 12px 0 18px;
           text-align: center;
-          font-size: 24px;
-          font-weight: 300;
-          letter-spacing: 0.3em;
-          /* Silver gradient — mirrors the monogram's highlight-to-shadow
-             pass, flattened horizontally so the wordmark reads as a
-             metallic nameplate. */
+          font-family: var(--font-instrument-serif), 'Instrument Serif', 'Times New Roman', serif;
+          font-size: 44px;
+          font-weight: 400;
+          font-style: normal;
+          letter-spacing: 0.24em;
+          /* PORTAL hero · editorial serif · silver gradient for nameplate read. */
           background: linear-gradient(135deg, #E8EAED 0%, #C0C5CE 50%, #7A7E86 100%);
           -webkit-background-clip: text;
           background-clip: text;
           -webkit-text-fill-color: transparent;
-          color: #C0C5CE; /* fallback for clients without background-clip */
+          color: #C0C5CE;
           text-transform: uppercase;
           line-height: 1;
         }
-        /* Hero variant — used when the wordmark stands alone on the login
-           surface (no Z monogram above it). Larger scale + breathing room
-           so the name holds the visual weight the monogram used to carry. */
+        /* Hero variant — PORTAL wordmark stands alone on login · Block DD. */
         .login-wordmark-hero {
-          font-size: 44px;
-          letter-spacing: 0.4em;
+          font-size: 72px;
+          letter-spacing: 0.24em;
           margin: 24px 0 28px;
-          filter: drop-shadow(0 0 28px rgba(192,197,206,0.22));
+          filter: drop-shadow(0 0 32px rgba(192,197,206,0.22));
         }
         @media (min-width: 720px) {
-          .login-wordmark { font-size: 32px; }
-          .login-wordmark-hero { font-size: 64px; letter-spacing: 0.45em; }
+          .login-wordmark { font-size: 56px; }
+          .login-wordmark-hero { font-size: 112px; letter-spacing: 0.24em; }
         }
         .login-tagline {
           font-size: 10px;

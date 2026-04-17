@@ -28,12 +28,12 @@ const supabase = createClient(
 // failure occurs (billing, rate limit, overloaded, timeout, unknown).
 // The `is_fallback: true` flag lets chat UIs render a muted card instead
 // of the default answer bubble. Never leak upstream error strings.
-const CRUZ_CHAT_FALLBACK =
-  'El asistente CRUZ estará disponible muy pronto. Mientras tanto, tu operación sigue al corriente. ' +
+const PORTAL_CHAT_FALLBACK =
+  'El asistente PORTAL estará disponible muy pronto. Mientras tanto, tu operación sigue al corriente. ' +
   'Para preguntas urgentes, contacta a tu agente aduanal.'
 
 function buildSystemPrompt(ctx: { clientName: string; companyId: string; clientClave: string; patente: string; aduana: string }): string {
-  return `Eres CRUZ, el sistema de inteligencia aduanal de Renato Zapata & Company, Laredo, Texas.
+  return `Eres PORTAL, el sistema de inteligencia aduanal de Renato Zapata & Company, Laredo, Texas.
 
 IDENTIDAD:
 - Hablas como un agente aduanal senior con 20 años de experiencia en Aduana ${ctx.aduana} Nuevo Laredo
@@ -76,7 +76,7 @@ Mal: "Here are the missing documents for your traffic entry Y4466:"
 Mal: "Lo siento, no puedo ayudar con eso."
 Mal: "Yo revisé el pedimento."
 
-NUNCA digas "I" o "me" — eres CRUZ. Sin frases de relleno. Sin respuestas genéricas cuando hay datos disponibles.
+NUNCA digas "I" o "me" — eres PORTAL. Sin frases de relleno. Sin respuestas genéricas cuando hay datos disponibles.
 SIEMPRE usa números específicos, sugiere siguiente acción, mantén respuestas concisas.
 Formato: USD como $X,XXX.XX, MXN como MX$X,XXX.XX, fechas como "28 mar 2026".
 Pedimentos SIEMPRE con espacios: "26 24 3596 6500247" — nunca "6500247" solo ni sin espacios.
@@ -92,35 +92,35 @@ ACCIONES (cuando el usuario pide que HAGAS algo, no solo que informes):
 
 EJEMPLO DE FLUJO DE ACCIÓN:
 Usuario: "Solicita el COVE a Milacron"
-CRUZ: "Vamos a generar un enlace de subida para Milacron y solicitar el COVE del embarque Y4503. ¿Procedo?"
+PORTAL: "Vamos a generar un enlace de subida para Milacron y solicitar el COVE del embarque Y4503. ¿Procedo?"
 Usuario: "Sí"
-CRUZ: [usa request_documents] "Listo. Enlace enviado. Le avisamos cuando suban el documento. 🦀"
+PORTAL: [usa request_documents] "Listo. Enlace enviado. Le avisamos cuando suban el documento. 🦀"
 
 EJEMPLOS DE RESPUESTAS CORRECTAS:
 
 Usuario: "¿Cuál es la fracción para polipropileno?"
-CRUZ: "Polipropileno en forma primaria se clasifica en 3902.10.01 (Cap. 39 — Plásticos). Si es en láminas: 3920.20.01. Confirmo con la herramienta de consulta."
+PORTAL: "Polipropileno en forma primaria se clasifica en 3902.10.01 (Cap. 39 — Plásticos). Si es en láminas: 3920.20.01. Confirmo con la herramienta de consulta."
 
 Usuario: "¿Necesito COVE para esta importación?"
-CRUZ: "Sí. El COVE (Comprobante de Valor Electrónico) es obligatorio para toda importación. Se genera en VUCEM con datos de la factura comercial, valor, y descripción de mercancía."
+PORTAL: "Sí. El COVE (Comprobante de Valor Electrónico) es obligatorio para toda importación. Se genera en VUCEM con datos de la factura comercial, valor, y descripción de mercancía."
 
 Usuario: "¿Cuánto IGI pago por fracción 3901.20.01?"
-CRUZ: "Si tu operación es régimen IMD con T-MEC y certificado de origen vigente: IGI = $0 (exento). Sin T-MEC: aplica la tasa general de la fracción según la TIGIE."
+PORTAL: "Si tu operación es régimen IMD con T-MEC y certificado de origen vigente: IGI = $0 (exento). Sin T-MEC: aplica la tasa general de la fracción según la TIGIE."
 
 Usuario: "¿Aplica T-MEC para polipropileno de USA?"
-CRUZ: "Cap. 39 (plásticos): aplica T-MEC si hay cambio de capítulo (CC) o VCR ≥ 60% método de transacción. El proveedor en USA debe proporcionar certificado de origen T-MEC."
+PORTAL: "Cap. 39 (plásticos): aplica T-MEC si hay cambio de capítulo (CC) o VCR ≥ 60% método de transacción. El proveedor en USA debe proporcionar certificado de origen T-MEC."
 
 Usuario: "¿Qué puente me recomiendas?"
-CRUZ: "World Trade Bridge es el más rápido para carga comercial. Cruces óptimos: 6-8 AM entre semana. Evita viernes 2-6 PM."
+PORTAL: "World Trade Bridge es el más rápido para carga comercial. Cruces óptimos: 6-8 AM entre semana. Evita viernes 2-6 PM."
 
 Usuario: "¿Qué es el MVE?"
-CRUZ: "La Manifestación de Valor en Aduana (formato E2) es obligatoria desde el 31 de marzo 2026. Incluye valor declarado, fracción, proveedor, incoterm. Multa por omisión: $1,610 a $7,190 MXN."
+PORTAL: "La Manifestación de Valor en Aduana (formato E2) es obligatoria desde el 31 de marzo 2026. Incluye valor declarado, fracción, proveedor, incoterm. Multa por omisión: $1,610 a $7,190 MXN."
 
 Usuario: "¿Cómo se calcula el IVA de importación?"
-CRUZ: "IVA = (valor_aduana + DTA + IGI) × 16%. La base es cascada — NUNCA es valor_factura × 16%."
+PORTAL: "IVA = (valor_aduana + DTA + IGI) × 16%. La base es cascada — NUNCA es valor_factura × 16%."
 
 Usuario: "¿Cuánto es el DTA?"
-CRUZ: "DTA régimen A1 (importación definitiva): 8 al millar sobre valor aduana MXN. IMMEX: cuota fija $408 MXN. Régimen temporal (ITE/ITR): exento."
+PORTAL: "DTA régimen A1 (importación definitiva): 8 al millar sobre valor aduana MXN. IMMEX: cuota fija $408 MXN. Régimen temporal (ITE/ITR): exento."
 
 `
 }
@@ -128,7 +128,7 @@ CRUZ: "DTA régimen A1 (importación definitiva): 8 al millar sobre valor aduana
 const TOOLS = [
   {
     name: 'knowledge_lookup',
-    description: 'Search CRUZ customs knowledge base for tariff classification, T-MEC rules of origin, DTA/IVA calculations, MVE requirements, bridge info, and NOMs. Use this FIRST before querying the database when user asks about regulations, classification, or compliance.',
+    description: 'Search PORTAL customs knowledge base for tariff classification, T-MEC rules of origin, DTA/IVA calculations, MVE requirements, bridge info, and NOMs. Use this FIRST before querying the database when user asks about regulations, classification, or compliance.',
     input_schema: {
       type: 'object' as const,
       properties: {
@@ -305,7 +305,7 @@ const TOOLS = [
   },
   {
     name: 'get_savings',
-    description: 'Calculate total value generated by CRUZ. T-MEC savings, penalties avoided.',
+    description: 'Calculate total value generated by PORTAL. T-MEC savings, penalties avoided.',
     input_schema: {
       type: 'object' as const,
       properties: {
@@ -394,7 +394,7 @@ const TOOLS = [
   },
   {
     name: 'get_memory',
-    description: 'What has CRUZ learned about this client? Patterns, preferences, seasonal behavior, crossing history.',
+    description: 'What has PORTAL learned about this client? Patterns, preferences, seasonal behavior, crossing history.',
     input_schema: { type: 'object' as const, properties: { company_id: { type: 'string' }, pattern_type: { type: 'string' } } }
   },
   {
@@ -461,7 +461,7 @@ const TOOLS = [
   },
   {
     name: 'query_relationships',
-    description: 'Query the CRUZ knowledge graph for relationships between entities. "How are supplier X and product Y connected?" "What does Milacron supply?" "Which products benefit from T-MEC?" Traverses the entire network of clients, suppliers, products, carriers, and regulations.',
+    description: 'Query the PORTAL knowledge graph for relationships between entities. "How are supplier X and product Y connected?" "What does Milacron supply?" "Which products benefit from T-MEC?" Traverses the entire network of clients, suppliers, products, carriers, and regulations.',
     input_schema: {
       type: 'object' as const,
       properties: {
@@ -516,7 +516,7 @@ const TOOLS = [
   },
   {
     name: 'query_network_intelligence',
-    description: 'Show how the CRUZ network improves this client. Aggregate crossing times, prediction accuracy, supplier count, reconocimiento rates — all from anonymized network data. Shows the network effect value.',
+    description: 'Show how the PORTAL network improves this client. Aggregate crossing times, prediction accuracy, supplier count, reconocimiento rates — all from anonymized network data. Shows the network effect value.',
     input_schema: { type: 'object' as const, properties: {} }
   },
   {
@@ -1400,7 +1400,7 @@ export async function POST(req: NextRequest) {
 
   // Check API key before proceeding
   if (!ANTHROPIC_API_KEY) {
-    return NextResponse.json({ message: CRUZ_CHAT_FALLBACK, is_fallback: true }, { status: 503 })
+    return NextResponse.json({ message: PORTAL_CHAT_FALLBACK, is_fallback: true }, { status: 503 })
   }
 
   const companyId = req.cookies.get('company_id')?.value ?? ''
@@ -1432,7 +1432,7 @@ export async function POST(req: NextRequest) {
     const rl = await rateLimitDB(rlKey, 20, 3600000)
     if (!rl.success) {
       return NextResponse.json({
-        message: 'Has hecho muchas preguntas en poco tiempo. CRUZ necesita un momento — intenta de nuevo en unos minutos.',
+        message: 'Has hecho muchas preguntas en poco tiempo. PORTAL necesita un momento — intenta de nuevo en unos minutos.',
         navigate: null,
       }, {
         status: 429,
@@ -1489,7 +1489,7 @@ export async function POST(req: NextRequest) {
     // is_fallback: true so the client can render a muted card.
     if (data.error || data.type === 'error') {
       console.error('[cruz-chat] Anthropic upstream error:', JSON.stringify(data).slice(0, 500))
-      return NextResponse.json({ message: CRUZ_CHAT_FALLBACK, navigate: null, is_fallback: true }, { status: 503 })
+      return NextResponse.json({ message: PORTAL_CHAT_FALLBACK, navigate: null, is_fallback: true }, { status: 503 })
     }
 
     // Handle tool use loop
@@ -1531,7 +1531,7 @@ export async function POST(req: NextRequest) {
       data = await response.json()
       if (data.error || data.type === 'error') {
         console.error('[cruz-chat] Anthropic tool-loop upstream error:', JSON.stringify(data).slice(0, 500))
-        return NextResponse.json({ message: CRUZ_CHAT_FALLBACK, navigate: null, is_fallback: true }, { status: 503 })
+        return NextResponse.json({ message: PORTAL_CHAT_FALLBACK, navigate: null, is_fallback: true }, { status: 503 })
       }
     }
 
@@ -1613,6 +1613,6 @@ export async function POST(req: NextRequest) {
     })
   } catch (err: unknown) {
     console.error('[cruz-chat] error:', err)
-    return NextResponse.json({ message: CRUZ_CHAT_FALLBACK, navigate: null, is_fallback: true }, { status: 500 })
+    return NextResponse.json({ message: PORTAL_CHAT_FALLBACK, navigate: null, is_fallback: true }, { status: 500 })
   }
 }

@@ -294,7 +294,7 @@ function CompletionCard() {
 }
 
 // ---------------------------------------------------------------------------
-// CRUZ Auto Actions Section
+// PORTAL Auto Actions Section
 // ---------------------------------------------------------------------------
 
 function CruzAutoSection({
@@ -310,7 +310,7 @@ function CruzAutoSection({
         <EmptyState
           icon="&#129302;"
           title="Sin acciones automáticas hoy"
-          description="CRUZ activará automatizaciones conforme aumente la confianza."
+          description="PORTAL activará automatizaciones conforme aumente la confianza."
         />
       </div>
     )
@@ -330,7 +330,7 @@ function CruzAutoSection({
         }}
       >
         <span style={{ fontSize: 'var(--aguila-fs-headline)' }}>&#9889;</span>
-        CRUZ ya hizo hoy:
+        PORTAL ya hizo hoy:
       </h2>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {autoActions.map((a) => (
@@ -547,7 +547,7 @@ export default function LaunchpadPage() {
         <EmptyState
           icon="&#129302;"
           title="Sin acciones pendientes"
-          description="CRUZ está aprendiendo. Las acciones aparecerán conforme el agente procese operaciones."
+          description="PORTAL está aprendiendo. Las acciones aparecerán conforme el agente procese operaciones."
         />
       )}
 
@@ -585,7 +585,7 @@ export default function LaunchpadPage() {
       {/* Divider */}
       <div style={{ height: 1, background: '#E8E5E0', margin: '32px 0' }} />
 
-      {/* CRUZ Auto Actions */}
+      {/* PORTAL Auto Actions */}
       {data && (
         <CruzAutoSection
           autoActions={data.auto_actions}

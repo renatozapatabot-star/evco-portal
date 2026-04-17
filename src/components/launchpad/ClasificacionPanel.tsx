@@ -63,7 +63,7 @@ export function ClasificacionPanel({ detail, onComplete, loading }: Props) {
         </div>
       )}
 
-      {/* CRUZ suggestion */}
+      {/* PORTAL suggestion */}
       <div
         style={{
           background: 'rgba(255,255,255,0.06)',
@@ -73,7 +73,7 @@ export function ClasificacionPanel({ detail, onComplete, loading }: Props) {
         }}
       >
         <div style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, color: '#9B9B9B', marginBottom: 8, textTransform: 'uppercase' }}>
-          CRUZ sugiere
+          PORTAL sugiere
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
           <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: '#1A1A1A' }}>

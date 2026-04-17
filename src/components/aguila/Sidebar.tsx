@@ -73,7 +73,7 @@ export default function Sidebar({
   portalType,
   clientName = '',
   clientInitials = '',
-  clientRole = 'CRUZ · Cliente',
+  clientRole = 'PORTAL · Cliente',
   companyName = 'Renato Zapata & Co.',
   patente = '3596',
   onLogout,
@@ -88,7 +88,7 @@ export default function Sidebar({
       {/* Logo */}
       <div className="sidebar-logo">
         <div className="sidebar-logo-inner">
-          <div className="sidebar-logo-text">CRUZ</div>
+          <div className="sidebar-logo-text">PORTAL</div>
         </div>
 
         {/* Client identity block */}

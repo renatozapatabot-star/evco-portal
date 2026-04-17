@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
 export const metadata = {
-  title: 'Generar auditoría · CRUZ',
+  title: 'Generar auditoría · PORTAL',
 }
 
 export default async function AuditoriaGenerarPage() {
@@ -38,7 +38,7 @@ export default async function AuditoriaGenerarPage() {
   return (
     <PageShell
       title="Generar auditoría semanal"
-      subtitle="Elige un cliente y una semana. CRUZ arma el PDF dark-theme con el resumen financiero, detalle por proveedor, remesas y fracciones."
+      subtitle="Elige un cliente y una semana. PORTAL arma el PDF dark-theme con el resumen financiero, detalle por proveedor, remesas y fracciones."
       systemStatus="healthy"
       liveTimestamp
     >

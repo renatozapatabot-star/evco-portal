@@ -39,7 +39,7 @@ export default function DemoPage() {
           </div>
           <div style={{ flex: 1, padding: '16px 12px', borderRadius: 10, background: 'rgba(22,163,74,0.06)', border: '1px solid rgba(22,163,74,0.15)' }}>
             <div style={{ fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 800, color: '#16A34A', fontFamily: 'var(--font-mono)' }}>2 min</div>
-            <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', marginTop: 4 }}>Con CRUZ</div>
+            <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', marginTop: 4 }}>Con PORTAL</div>
           </div>
         </div>
 

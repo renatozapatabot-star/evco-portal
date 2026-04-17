@@ -378,7 +378,7 @@ export default function ProveedorPage() {
   return (
     <div style={styles.page}>
       <div style={{ width: '100%', maxWidth: 780 }}>
-        {/* CRUZ brand header */}
+        {/* PORTAL brand header */}
         <div style={{ textAlign: 'center', marginBottom: 28, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
           <AguilaMark size={72} tone="silver" />
           <AguilaWordmark size={28} tone="silver" />

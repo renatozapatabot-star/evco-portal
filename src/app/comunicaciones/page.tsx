@@ -244,7 +244,7 @@ export default function ComunicacionesPage() {
               <button onClick={draftWithADUANA} disabled={drafting}
                 className="flex items-center gap-1.5 px-3 py-1 rounded-[4px] text-[11px] font-semibold"
                 style={{ background: 'var(--amber-100)', color: 'var(--amber-600)', border: '1px solid var(--amber-200)', cursor: 'pointer' }}>
-                {drafting ? 'Redactando...' : '🦀 Redactar con CRUZ'}
+                {drafting ? 'Redactando...' : '🦀 Redactar con PORTAL'}
               </button>
             </div>
             <textarea value={body} onChange={e => setBody(e.target.value)} rows={12}

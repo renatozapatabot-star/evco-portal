@@ -160,7 +160,7 @@ export default function UploadPage() {
               ¿Trabaja con otros importadores en México?
             </div>
             <div style={{ fontSize: 'var(--aguila-fs-compact)', color: '#94A3B8', marginBottom: 12 }}>
-              CRUZ puede simplificar su proceso con todos ellos.
+              PORTAL puede simplificar su proceso con todos ellos.
             </div>
             <ReferralForm />
           </div>

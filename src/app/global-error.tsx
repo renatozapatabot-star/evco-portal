@@ -30,7 +30,7 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
           gap: 16,
         }}>
           <div style={{ fontSize: 'var(--aguila-fs-title)', fontWeight: 800, letterSpacing: '-0.03em' }}>
-            CRUZ no se cargó
+            PORTAL no se cargó
           </div>
           <div style={{ fontSize: 'var(--aguila-fs-body)', color: '#94a3b8', lineHeight: 1.5 }}>
             Detectamos un problema inesperado. Tu sesión sigue activa.

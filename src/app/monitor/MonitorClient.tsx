@@ -16,6 +16,7 @@ import {
   TEXT_MUTED, TEXT_PRIMARY, TEXT_SECONDARY,
 } from '@/lib/design-system'
 import { FallbackLink, SectionHeader } from '@/components/aguila'
+import { renderNull } from '@/lib/ui/cell-renderers'
 
 export interface MonitorRow {
   trafico: string
@@ -250,9 +251,9 @@ export function MonitorClient({ initialRows, role, companyId, isInternal }: Prop
                 <div style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', fontWeight: 600 }}>
                   {r.trafico}
                 </div>
-                <div style={{ color: TEXT_SECONDARY, fontSize: 'var(--aguila-fs-compact)' }}>{r.company_id ?? '—'}</div>
+                <div style={{ color: TEXT_SECONDARY, fontSize: 'var(--aguila-fs-compact)' }}>{r.company_id ?? renderNull()}</div>
                 <div style={{ color: TEXT_SECONDARY, fontSize: 'var(--aguila-fs-compact)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {r.descripcion_mercancia ?? '—'}
+                  {r.descripcion_mercancia ?? renderNull()}
                 </div>
                 <div>
                   <span style={{
@@ -267,9 +268,9 @@ export function MonitorClient({ initialRows, role, companyId, isInternal }: Prop
                     {sem.label}
                   </span>
                 </div>
-                <div style={{ color: TEXT_SECONDARY, fontSize: 'var(--aguila-fs-compact)' }}>{r.estatus ?? '—'}</div>
+                <div style={{ color: TEXT_SECONDARY, fontSize: 'var(--aguila-fs-compact)' }}>{r.estatus ?? renderNull()}</div>
                 <div style={{ color: r.pedimento ? GREEN : TEXT_MUTED, fontSize: 'var(--aguila-fs-meta)' }}>
-                  {r.pedimento ? 'sí' : '—'}
+                  {r.pedimento ? 'sí' : renderNull()}
                 </div>
                 <div style={{ textAlign: 'right', color: TEXT_MUTED, fontSize: 'var(--aguila-fs-meta)', fontFamily: 'var(--font-jetbrains-mono), monospace' }}>
                   {elapsedSince(r.updated_at)}

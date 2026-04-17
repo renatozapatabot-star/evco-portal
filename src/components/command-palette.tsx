@@ -10,7 +10,7 @@ interface NavItem { id: string; label: string; sublabel: string; icon: React.Com
 
 const NAV_ITEMS: NavItem[] = [
   { id: 'dashboard',   label: 'Dashboard',     sublabel: 'Inicio',        icon: LayoutDashboard, href: '/',            category: 'Navegación' },
-  { id: 'cruz',        label: 'Asistente CRUZ', sublabel: 'Asistente inteligente', icon: MessageSquare, href: '__cruz_chat__',       category: 'Navegación' },
+  { id: 'cruz',        label: 'Asistente PORTAL', sublabel: 'Asistente inteligente', icon: MessageSquare, href: '__cruz_chat__',       category: 'Navegación' },
   { id: 'voz',         label: 'Modo Voz',      sublabel: 'Control por voz', icon: Mic,           href: '/voz',         category: 'Navegación' },
   { id: 'traficos',    label: 'Embarques',      sublabel: 'Operaciones',   icon: Truck,           href: '/embarques',    category: 'Navegación' },
   { id: 'entradas',    label: 'Entradas',       sublabel: 'Remesas bodega',icon: Package,         href: '/entradas',    category: 'Navegación' },
@@ -153,7 +153,7 @@ export function CommandPalette() {
   return (
     <>
       <div className="cmd-overlay" onClick={() => setOpen(false)} aria-hidden />
-      <div className="cmd-palette" role="dialog" aria-label="Buscar en CRUZ" aria-modal="true">
+      <div className="cmd-palette" role="dialog" aria-label="Buscar en PORTAL" aria-modal="true">
         <div className="cmd-search-row">
           <Search size={16} style={{ color: 'var(--n-400)', flexShrink: 0 }} />
           <input ref={inputRef} className="cmd-input" placeholder="Buscar embarque, pedimento, página..." value={query} onChange={e => { setQuery(e.target.value); setSelected(0) }} onKeyDown={handleKey} />

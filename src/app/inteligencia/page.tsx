@@ -115,7 +115,7 @@ export default function InteligenciaPage() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 24 }}>
         <KpiCard label="Operaciones totales" value={s.totalTraficos} icon={BarChart3} sub="desde 2024" />
         <KpiCard label="Cruces completados" value={s.totalCruzados} icon={TrendingUp} sub={`${s.totalTraficos > 0 ? Math.round(s.totalCruzados / s.totalTraficos * 100) : 0}% tasa de cruce`} />
-        <KpiCard label="Productos clasificados" value={s.totalClassified} icon={Brain} sub="por CRUZ" />
+        <KpiCard label="Productos clasificados" value={s.totalClassified} icon={Brain} sub="por PORTAL" />
         <KpiCard label="Confianza promedio" value={`${s.avgConfidence}%`} icon={Shield} sub="clasificación AI" />
       </div>
 
@@ -191,12 +191,12 @@ export default function InteligenciaPage() {
       <div className="cc-card" style={{ padding: 24, borderRadius: 20, marginBottom: 24 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
           <AlertTriangle size={16} style={{ color: '#C0C5CE', opacity: 0.7 }} />
-          <span style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#64748b' }}>Rendimiento CRUZ</span>
+          <span style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#64748b' }}>Rendimiento PORTAL</span>
         </div>
         <div style={{ fontSize: 'var(--aguila-fs-body)', color: '#94a3b8', lineHeight: 1.6 }}>
           {s.totalClassified > 0 ? (
             <>
-              CRUZ ha clasificado <strong style={{ color: '#E6EDF3' }}>{s.totalClassified.toLocaleString()}</strong> productos con una confianza promedio de{' '}
+              PORTAL ha clasificado <strong style={{ color: '#E6EDF3' }}>{s.totalClassified.toLocaleString()}</strong> productos con una confianza promedio de{' '}
               <strong style={{ color: '#C0C5CE' }}>{s.avgConfidence}%</strong>.
               {s.totalClassified > 100 && <> Esto representa un ahorro estimado de <strong style={{ color: '#E8EAED' }}>{Math.round(s.totalClassified * 3 / 60)} horas</strong> de trabajo manual.</>}
             </>

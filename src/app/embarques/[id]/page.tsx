@@ -248,9 +248,16 @@ export default async function TraficoDetailPage({
     const productMap = new Map<string, { descripcion: string | null; fraccion: string | null }>()
     if (productKeys.length > 0) {
       const cves = Array.from(new Set(partidaRows.map(p => p.cve_producto).filter((c): c is string => !!c)))
+      // Defense-in-depth: scope the productos enrichment query to this
+      // trafico's company_id. The input cves are already tenant-
+      // scoped (they came from partidas under a tenant-scoped trafico),
+      // but cve_producto values could theoretically collide across
+      // tenants and leak a description/fraccion from another client's
+      // identical key. Adding the eq filter closes that edge case.
       const { data: prods } = await supabase
         .from('globalpc_productos')
         .select('cve_producto, cve_cliente, descripcion, fraccion')
+        .eq('company_id', trafico.company_id ?? session.companyId)
         .in('cve_producto', cves)
         .limit(2000)
       for (const p of (prods ?? []) as Array<{

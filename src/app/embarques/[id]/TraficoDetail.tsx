@@ -28,6 +28,7 @@ import { PartidasTab } from './tabs/PartidasTab'
 import { CronologiaTab } from './tabs/CronologiaTab'
 import { NotasTab, type NotasTabHandle } from './tabs/NotasTab'
 import { ComunicacionTab } from './tabs/ComunicacionTab'
+import { PedimentoTab } from './tabs/PedimentoTab'
 import type { DocType } from '@/lib/doc-requirements'
 import type {
   AvailableUserLite,
@@ -59,18 +60,25 @@ interface TraficoDetailProps {
   chain: ChainNode[]
 }
 
-type TabId = 'documentos' | 'partidas' | 'cronologia' | 'notas' | 'comunicacion'
+type TabId = 'pedimento' | 'documentos' | 'mercancia' | 'cronologia' | 'notas' | 'comunicacion'
 
+// v3 · Pedimento leads (SAT-audit truth), Mercancía renamed from
+// Partidas (client-friendly term), others unchanged. Communication +
+// Notes stay as operator-facing tabs on the right.
 const TABS: Array<{ id: TabId; label: string }> = [
+  { id: 'pedimento', label: 'Pedimento' },
   { id: 'documentos', label: 'Documentos' },
-  { id: 'partidas', label: 'Partidas' },
+  { id: 'mercancia', label: 'Mercancía' },
   { id: 'cronologia', label: 'Cronología' },
   { id: 'notas', label: 'Notas' },
   { id: 'comunicacion', label: 'Comunicación' },
 ]
 
 export function TraficoDetail(props: TraficoDetailProps) {
-  const [active, setActive] = useState<TabId>('documentos')
+  // Default tab is Pedimento — it's the SAT-audit truth + the first
+  // thing Ursula wants to see. Documentos/Mercancía/etc. are one tap
+  // away and the timeline already sits above the tabs as context.
+  const [active, setActive] = useState<TabId>('pedimento')
   const track = useTrack()
   const notasRef = useRef<NotasTabHandle | null>(null)
 
@@ -206,7 +214,28 @@ export function TraficoDetail(props: TraficoDetailProps) {
   const proveedorName =
     (props.trafico.proveedores?.split(',')[0] || '').trim() || null
 
+  // Pedimento tab — pulls the fecha_pago from the chain's factura-paid
+  // node if it exists; otherwise surfaces "Pago pendiente" language.
+  // ChainNode uses status = 'linked' | 'missing' | 'pending' | 'error'
+  // + optional `date` field (not `timestamp`).
+  const pagoNode = props.chain.find((n) => n.kind === 'factura')
+  const pedimentoPaid = pagoNode?.status === 'linked' && !!pagoNode.date
+  const fechaPago = pagoNode?.date ?? null
+  const importeTotalUsd = typeof props.trafico.importe_total === 'number' && props.trafico.importe_total > 0
+    ? props.trafico.importe_total
+    : null
+
   const tabContent: Record<TabId, ReactNode> = {
+    pedimento: (
+      <PedimentoTab
+        traficoId={props.traficoId}
+        trafico={props.trafico}
+        fechaPago={fechaPago}
+        pedimentoPaid={pedimentoPaid}
+        missingDocsCount={props.missingDocs.length}
+        importeTotalUsd={importeTotalUsd}
+      />
+    ),
     documentos: (
       <DocumentosTab
         traficoId={props.traficoId}
@@ -218,7 +247,7 @@ export function TraficoDetail(props: TraficoDetailProps) {
         missingDocs={props.missingDocs}
       />
     ),
-    partidas: <PartidasTab traficoId={props.traficoId} partidas={props.partidas} />,
+    mercancia: <PartidasTab traficoId={props.traficoId} partidas={props.partidas} />,
     cronologia: (
       <CronologiaTab
         traficoId={props.traficoId}

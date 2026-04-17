@@ -13,11 +13,29 @@
 export const SUCCESS_RATE_MATURITY_DAYS = 14
 export const SUCCESS_RATE_MIN_SAMPLES = 10
 
-const CROSSED_ESTATUSES = new Set(['Cruzado', 'E1', 'Entregado'])
+/**
+ * A tráfico is "successful" when it reaches any terminal state
+ * downstream of SAT acceptance. Why this set:
+ *
+ *   Cruzado / E1 / Entregado   — physical crossing signals
+ *   Pedimento Pagado            — SAT accepted, payment cleared. The
+ *                                 broker's work is done; physical
+ *                                 crossing is logistics from there.
+ *   Desaduanado                 — alternate terminal used by some
+ *                                 clients' sync pipelines.
+ *
+ * Estatus strings lag behind fecha_cruce by up to a business day, so
+ * we also treat `fecha_cruce IS NOT NULL` as authoritative — whichever
+ * signal is present first wins.
+ */
+const SUCCESS_ESTATUSES = new Set([
+  'Cruzado', 'E1', 'Entregado', 'Pedimento Pagado', 'Desaduanado',
+])
 
 export interface SuccessRateRow {
   estatus: string | null
   fecha_llegada: string | null
+  fecha_cruce?: string | null
 }
 
 export interface SuccessRateOptions {
@@ -31,7 +49,12 @@ export interface SuccessRateOptions {
  * Return the broker-success rate as a whole-number percentage, or null
  * when the sample is too small / too young to be meaningful.
  *
- * Numerator: mature tráficos whose estatus is in CROSSED_ESTATUSES.
+ * Numerator: mature tráficos that reached a success milestone — either
+ *   `fecha_cruce` populated (physically crossed) or `estatus` in the
+ *   SUCCESS_ESTATUSES set (pedimento paid → broker's work complete).
+ *   Whichever signal lands first wins; this tolerates the ~business-
+ *   day lag between physical crossing and estatus-string flips.
+ *
  * Denominator: tráficos with a fecha_llegada older than `maturityDays`.
  *
  * Maturity floor prevents in-flight shipments from collapsing the
@@ -55,6 +78,9 @@ export function computeSuccessRate(
   })
   if (mature.length < minSamples) return null
 
-  const crossed = mature.filter((r) => CROSSED_ESTATUSES.has(r.estatus ?? ''))
+  const crossed = mature.filter(
+    (r) => (r.fecha_cruce != null && r.fecha_cruce !== '')
+      || SUCCESS_ESTATUSES.has(r.estatus ?? ''),
+  )
   return Math.round((crossed.length / mature.length) * 100)
 }

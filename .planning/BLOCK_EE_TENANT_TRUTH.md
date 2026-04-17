@@ -113,17 +113,32 @@ does NOT appear in any source 1-3 is contamination.
 4. Admin toggle on `/catalogo`: "Mostrar sin verificar" surfaces the
    cruft for inspection
 
-### Phase 6 · Destructive cleanup (snapshot-gated)
+### Phase 6 · Destructive cleanup — INTENTIONALLY DORMANT
 
-**Goal:** Physical deletion after a 24-48h soak.
+**Status:** `scripts/tenant-purge-stale-productos.js` built + dry-run
+verified (237,004 junk rows identified across 50 companies, all with
+null fraccion + PRV_ supplier codes). Script preserved as a tool.
 
-1. Pre-delete CSV export (redundant with Phase 4 snapshot)
-2. `scripts/tenant-purge.js` — destructive:
-   - `DELETE FROM globalpc_productos WHERE ownership_verified = false
-     AND company_id IN (SELECT company_id FROM companies WHERE active = true)`
-   - Idempotent — re-run purges any new cruft
-3. Re-run `data-integrity-check.js` — expect green
-4. Re-run `/api/health/data-integrity` — expect green
+**Why we do NOT run it routinely:** `globalpc-sync.js` re-inserts every
+row from MySQL `cu_cliente_proveedor_producto` on every cycle. Deletion
+is ephemeral — rows return within hours. The permanent fix is already
+in place:
+
+1. **Retag (Phase 4)** — tags every productos row with its true
+   `company_id` so tenant isolation is correct.
+2. **Query-time filter (`/catalogo`)** — `getActiveCveProductos()`
+   reads `globalpc_partidas.company_id='<client>'` and `.in()` filters
+   productos. Post-retag, this gates to the client's true verified set.
+
+A client will never see cross-tenant contamination in the cockpit even
+if the mirror table holds junk rows.
+
+**When to run the purge:**
+- One-time cleanup before a schema migration that rewrites productos
+- If the tenants monitor row counts become noise that drowns signal
+- Manual trigger: `node scripts/tenant-purge-stale-productos.js --dry-run`
+  first, review the CSV in `scripts/.purge-snapshots/`, then drop
+  `--dry-run` to execute.
 
 ### Phase 7 · Sync hardening (prevention)
 

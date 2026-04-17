@@ -12,6 +12,7 @@ import { fmtUSDCompact, fmtDate } from '@/lib/format-utils'
 import { ChainView, type ChainNode, type ChainNodeKind } from '@/components/aguila'
 import { ChainVincularModal } from '@/components/aguila/ChainVincularModal'
 import { PortalCard } from '@/components/portal/PortalCard'
+import { PortalButton } from '@/components/portal/PortalButton'
 import {
   PortalTheaterAnimation,
   actFromStatus,
@@ -295,11 +296,10 @@ export function TraficoDetail(props: TraficoDetailProps) {
         onEventosClick={() => switchTo('cronologia')}
       />
 
-      {/* 5-act theater — pedimento workflow from filing → archived.
-          Driven by props.trafico.estatus via actFromStatus(). Emerald
-          glow on the active act; silver on completed; ghost on upcoming.
-          Respects prefers-reduced-motion automatically via the shared
-          motion system in portal-components.css. */}
+      {/* 5-stage summary rail + cinematic theater launcher. The inline
+          rail gives the 11 PM executive quick certainty at a glance; the
+          "Ver flujo completo" button opens the full-viewport theater
+          (mounted globally in app/layout.tsx via PortalPedimentoTheater). */}
       <div style={{ margin: '16px 0' }}>
         <PortalCard tier="raised">
           <PortalTheaterAnimation
@@ -310,6 +310,19 @@ export function TraficoDetail(props: TraficoDetailProps) {
               exit: props.trafico.fecha_cruce ? fmtDate(props.trafico.fecha_cruce) : undefined,
             }}
           />
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: 20 }}>
+            <PortalButton
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                if (typeof window !== 'undefined' && typeof window.__portalOpenTheater === 'function') {
+                  window.__portalOpenTheater(props.trafico.pedimento ?? props.traficoId)
+                }
+              }}
+            >
+              Ver flujo completo →
+            </PortalButton>
+          </div>
         </PortalCard>
       </div>
 

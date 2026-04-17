@@ -54,3 +54,34 @@ export type { PortalListPageProps } from './PortalListPage'
 
 export { PortalTheaterAnimation, actFromStatus } from './PortalTheaterAnimation'
 export type { PortalTheaterAnimationProps, PedimentoAct } from './PortalTheaterAnimation'
+
+// Phase 1 (reference-faithful plan) — primitives ported from primitives.jsx
+export { PortalGlobe } from './PortalGlobe'
+export type { PortalGlobeProps } from './PortalGlobe'
+export { PortalWorldMesh } from './PortalWorldMesh'
+export type { PortalWorldMeshProps } from './PortalWorldMesh'
+export { PortalCruzMark } from './PortalCruzMark'
+export type { PortalCruzMarkProps } from './PortalCruzMark'
+
+// Phase 2 — TopBar / Greeting / AssistantFab / CommandPalette
+export { PortalTopBar } from './PortalTopBar'
+export type { PortalTopBarProps } from './PortalTopBar'
+export { PortalGreeting } from './PortalGreeting'
+export type { PortalGreetingProps } from './PortalGreeting'
+export { PortalAssistantFab } from './PortalAssistantFab'
+export type { PortalAssistantFabProps } from './PortalAssistantFab'
+export { PortalCommandPalette } from './PortalCommandPalette'
+export type { PortalCommandPaletteProps, PaletteSuggestion } from './PortalCommandPalette'
+
+// Phase 3 — Module card + bespoke vizzes
+export { PortalModuleCard } from './PortalModuleCard'
+export type { PortalModuleCardProps, ModuleBadge } from './PortalModuleCard'
+export * from './viz'
+
+// Phase 4 — Full dashboard composition (replaces CockpitInicio for client cockpits)
+export { PortalDashboard } from './PortalDashboard'
+export type { PortalDashboardProps, PortalDashboardRole } from './PortalDashboard'
+
+// Phase 5 — Full-viewport 5-act pedimento theater. Mount once in app/layout.tsx
+// and invoke from anywhere via window.__portalOpenTheater(pedimentoId).
+export { PortalPedimentoTheater } from './PortalPedimentoTheater'

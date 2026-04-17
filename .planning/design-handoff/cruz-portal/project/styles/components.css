@@ -1,0 +1,261 @@
+/* CRUZ shared component styles — reference these via class names */
+
+/* —— Responsive modules grid ———————————————————— */
+.cruz-modules-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; grid-auto-rows: 1fr; }
+.cruz-modules-grid > * { height: 100%; }
+@media (max-width: 960px) { .cruz-modules-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px) { .cruz-modules-grid { grid-template-columns: 1fr; gap: 12px; } }
+
+/* Numbers + metadata use JetBrains Mono globally */
+.cruz-num, .cruz-meta, .cruz-eyebrow, .cruz-label, .cruz-kbd,
+.cruz-badge, .cruz-ticker, table.cruz-table td.num, table.cruz-table .num {
+  font-family: var(--cruz-font-mono) !important;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Living pulse */
+@keyframes cruzPulse {
+  0%, 100% { opacity: 0.5; transform: scale(0.9); }
+  50%      { opacity: 1;   transform: scale(1.1); }
+}
+
+/* —— Buttons ———————————————————————————————— */
+.cruz-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  height: 40px; padding: 0 16px; border-radius: var(--cruz-r-2);
+  font-size: var(--cruz-fs-sm); font-weight: 500; letter-spacing: 0.02em;
+  transition: all var(--cruz-dur-2) var(--cruz-ease-out);
+  white-space: nowrap;
+}
+.cruz-btn--primary { background: var(--cruz-fg-1); color: var(--cruz-ink-0); box-shadow: var(--cruz-shadow-1); }
+.cruz-btn--primary:hover { background: var(--cruz-fg-2); transform: translateY(-1px); box-shadow: var(--cruz-shadow-2); }
+.cruz-btn--primary:active { transform: translateY(0); }
+
+.cruz-btn--ghost { color: var(--cruz-fg-2); border: 1px solid var(--cruz-line-2); background: transparent; }
+.cruz-btn--ghost:hover { border-color: var(--cruz-line-3); color: var(--cruz-fg-1); background: var(--cruz-ink-3); }
+
+.cruz-btn--accent { background: var(--cruz-green-2); color: var(--cruz-ink-0); box-shadow: 0 0 0 1px var(--cruz-green-3), 0 0 24px var(--cruz-green-glow); }
+.cruz-btn--accent:hover { background: var(--cruz-green-1); }
+
+.cruz-btn--sm { height: 28px; padding: 0 10px; font-size: var(--cruz-fs-xs); border-radius: var(--cruz-r-1); }
+.cruz-btn--lg { height: 52px; padding: 0 24px; font-size: var(--cruz-fs-md); border-radius: var(--cruz-r-3); }
+.cruz-btn--icon { width: 36px; padding: 0; }
+
+/* —— Badges ———————————————————————————————— */
+.cruz-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 22px; padding: 0 8px; border-radius: var(--cruz-r-pill);
+  font-family: var(--cruz-font-mono); font-size: var(--cruz-fs-micro);
+  font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase;
+  border: 1px solid var(--cruz-line-2); color: var(--cruz-fg-3);
+}
+.cruz-badge--live { color: var(--cruz-green-1); border-color: var(--cruz-green-5); background: color-mix(in oklch, var(--cruz-green-2) 8%, transparent); }
+.cruz-badge--info { color: var(--cruz-ice-1); border-color: color-mix(in oklch, var(--cruz-ice-3) 40%, transparent); background: color-mix(in oklch, var(--cruz-ice-2) 6%, transparent); }
+.cruz-badge--warn { color: var(--cruz-amber); border-color: color-mix(in oklch, var(--cruz-amber) 40%, transparent); background: color-mix(in oklch, var(--cruz-amber) 6%, transparent); }
+.cruz-badge--alert { color: var(--cruz-red); border-color: color-mix(in oklch, var(--cruz-red) 40%, transparent); background: color-mix(in oklch, var(--cruz-red) 6%, transparent); }
+
+/* —— Cards ———————————————————————————————— */
+.cruz-card {
+  background: var(--cruz-ink-1);
+  border: 1px solid var(--cruz-line-1);
+  border-radius: var(--cruz-r-4);
+  position: relative;
+  overflow: hidden;
+  transition: border-color var(--cruz-dur-2) var(--cruz-ease-out), transform var(--cruz-dur-2) var(--cruz-ease-out);
+}
+.cruz-card:hover { border-color: var(--cruz-line-2); }
+.cruz-card--raised { background: var(--cruz-ink-2); box-shadow: var(--cruz-shadow-2); }
+.cruz-card--interactive { cursor: pointer; }
+.cruz-card--interactive:hover { border-color: var(--cruz-line-3); transform: translateY(-1px); }
+.cruz-card--hero {
+  background: radial-gradient(ellipse at 30% 0%, color-mix(in oklch, var(--cruz-green-2) 6%, var(--cruz-ink-1)), var(--cruz-ink-1) 60%);
+}
+
+/* Card grid indicator rail */
+.cruz-card__rail {
+  position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
+  background: var(--cruz-green-2); opacity: 0; transition: opacity var(--cruz-dur-2);
+}
+.cruz-card--active .cruz-card__rail { opacity: 1; }
+
+/* —— Inputs ———————————————————————————————— */
+.cruz-input {
+  width: 100%; height: 48px; padding: 0 16px;
+  background: var(--cruz-ink-0); border: 1px solid var(--cruz-line-2); border-radius: var(--cruz-r-2);
+  color: var(--cruz-fg-1); font-family: var(--cruz-font-mono); font-size: var(--cruz-fs-md); letter-spacing: 0.1em;
+  transition: border-color var(--cruz-dur-2), box-shadow var(--cruz-dur-2);
+  outline: none;
+}
+.cruz-input:focus { border-color: var(--cruz-green-3); box-shadow: 0 0 0 4px var(--cruz-green-glow); }
+.cruz-input::placeholder { color: var(--cruz-fg-5); }
+
+.cruz-label {
+  display: block; font-family: var(--cruz-font-mono);
+  font-size: var(--cruz-fs-micro); letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--cruz-fg-4); margin-bottom: 10px;
+}
+
+/* —— Ticker ———————————————————————————————— */
+.cruz-ticker {
+  height: var(--cruz-ticker-h);
+  border-top: 1px solid var(--cruz-line-1);
+  border-bottom: 1px solid var(--cruz-line-1);
+  background: var(--cruz-ink-1);
+  overflow: hidden;
+  position: relative;
+  font-family: var(--cruz-font-mono);
+  font-size: var(--cruz-fs-tiny);
+  letter-spacing: 0.1em;
+}
+.cruz-ticker__track { display: flex; gap: 40px; align-items: center; height: 100%; white-space: nowrap; animation: cruz-ticker 80s linear infinite; padding-left: 100%; }
+.cruz-ticker__item { display: inline-flex; gap: 8px; align-items: center; color: var(--cruz-fg-3); }
+.cruz-ticker__item .tk-label { color: var(--cruz-fg-5); letter-spacing: 0.18em; }
+.cruz-ticker__item .tk-up { color: var(--cruz-green-2); }
+.cruz-ticker__item .tk-down { color: var(--cruz-red); }
+@keyframes cruz-ticker { to { transform: translateX(-100%); } }
+
+/* —— Hero metric ——————————————————————————— */
+.cruz-metric {
+  display: flex; flex-direction: column; gap: 8px;
+}
+.cruz-metric__label {
+  font-family: var(--cruz-font-mono); font-size: var(--cruz-fs-micro);
+  letter-spacing: 0.22em; text-transform: uppercase; color: var(--cruz-fg-4);
+}
+.cruz-metric__value {
+  font-family: var(--cruz-font-sans); font-weight: 500;
+  font-size: var(--cruz-fs-3xl); line-height: 1;
+  letter-spacing: -0.035em; color: var(--cruz-fg-1);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+.cruz-metric__value--display { font-family: var(--cruz-font-display); font-weight: 300; letter-spacing: -0.03em; }
+.cruz-metric__sub {
+  font-family: var(--cruz-font-mono); font-size: var(--cruz-fs-tiny);
+  letter-spacing: 0.08em; color: var(--cruz-fg-4);
+}
+
+/* —— Sparkline container ——————————————————————————— */
+.cruz-spark { width: 100%; height: 40px; display: block; }
+.cruz-spark__path { fill: none; stroke: var(--cruz-fg-3); stroke-width: 1.25; }
+.cruz-spark__path--accent { stroke: var(--cruz-green-2); }
+.cruz-spark__fill { fill: url(#cruz-spark-grad); opacity: 0.35; }
+
+/* —— Section header ——————————————————————————— */
+.cruz-section-title {
+  display: flex; align-items: baseline; justify-content: space-between;
+  padding: var(--cruz-s-4) 0 var(--cruz-s-3);
+  border-bottom: 1px solid var(--cruz-line-1);
+  margin-bottom: var(--cruz-s-6);
+}
+.cruz-section-title h2 {
+  font-family: var(--cruz-font-display); font-weight: 300;
+  font-size: var(--cruz-fs-xl); letter-spacing: -0.02em; color: var(--cruz-fg-1); margin: 0;
+}
+.cruz-section-title .eyebrow {
+  font-family: var(--cruz-font-mono); font-size: var(--cruz-fs-micro);
+  letter-spacing: 0.22em; text-transform: uppercase; color: var(--cruz-fg-4);
+}
+
+/* —— Eyebrow/meta text ——————————————————————————— */
+.cruz-eyebrow {
+  font-family: var(--cruz-font-mono); font-size: var(--cruz-fs-micro);
+  letter-spacing: 0.22em; text-transform: uppercase; color: var(--cruz-fg-4);
+}
+.cruz-meta {
+  font-family: var(--cruz-font-mono); font-size: var(--cruz-fs-tiny);
+  letter-spacing: 0.08em; color: var(--cruz-fg-4);
+}
+
+/* —— Keyboard key ——————————————————————————— */
+.cruz-kbd {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 20px; height: 20px; padding: 0 6px;
+  border: 1px solid var(--cruz-line-2); border-radius: var(--cruz-r-1);
+  background: var(--cruz-ink-2); color: var(--cruz-fg-3);
+  font-family: var(--cruz-font-mono); font-size: var(--cruz-fs-micro);
+}
+
+/* —— Divider ——————————————————————————— */
+.cruz-divider { height: 1px; background: var(--cruz-line-1); width: 100%; }
+.cruz-divider--v { width: 1px; background: var(--cruz-line-1); height: 100%; }
+
+/* —— Avatar ring ——————————————————————————— */
+.cruz-avatar {
+  width: 32px; height: 32px; border-radius: var(--cruz-r-pill);
+  background: linear-gradient(135deg, var(--cruz-green-3), var(--cruz-ice-3));
+  display: inline-flex; align-items: center; justify-content: center;
+  font-family: var(--cruz-font-mono); font-size: var(--cruz-fs-tiny);
+  color: var(--cruz-ink-0); font-weight: 600; letter-spacing: 0.1em;
+}
+
+/* —— Progress / status bar ——————————————————————————— */
+.cruz-progress { width: 100%; height: 2px; background: var(--cruz-line-1); border-radius: 999px; overflow: hidden; }
+.cruz-progress__fill { height: 100%; background: var(--cruz-green-2); box-shadow: 0 0 8px var(--cruz-green-glow); transition: width var(--cruz-dur-3) var(--cruz-ease-out); }
+
+/* —— Row / table ——————————————————————————— */
+.cruz-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: var(--cruz-fs-sm); }
+.cruz-table th {
+  text-align: left; padding: 12px 16px; font-weight: 500;
+  font-family: var(--cruz-font-mono); font-size: var(--cruz-fs-micro); letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--cruz-fg-4); border-bottom: 1px solid var(--cruz-line-1);
+}
+.cruz-table td { padding: 14px 16px; border-bottom: 1px solid var(--cruz-line-1); color: var(--cruz-fg-2); }
+.cruz-table tr:hover td { background: var(--cruz-ink-2); }
+.cruz-table .num { font-family: var(--cruz-font-mono); font-variant-numeric: tabular-nums; color: var(--cruz-fg-1); }
+
+/* —— Glow ring (focus indicator) ——————————————————— */
+.cruz-ring-glow { box-shadow: 0 0 0 1px var(--cruz-green-3), 0 0 24px var(--cruz-green-glow); }
+
+/* —— Unified motion system ———————————————————————— */
+/* Every interactive thing uses the same ease + timing */
+a, button, [role="button"], input, textarea, select,
+.cruz-card, .cruz-module, .cruz-badge, .cruz-tab, .cruz-row {
+  transition:
+    background-color var(--cruz-dur-2) var(--cruz-ease-out),
+    border-color     var(--cruz-dur-2) var(--cruz-ease-out),
+    color            var(--cruz-dur-2) var(--cruz-ease-out),
+    transform        var(--cruz-dur-2) var(--cruz-ease-out),
+    box-shadow       var(--cruz-dur-2) var(--cruz-ease-out),
+    opacity          var(--cruz-dur-2) var(--cruz-ease-out);
+}
+
+/* Focus-visible — one green ring, never browser default */
+*:focus { outline: none; }
+button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible, [tabindex]:focus-visible {
+  box-shadow: 0 0 0 2px var(--cruz-ink-0), 0 0 0 3px var(--cruz-green-3), 0 0 20px var(--cruz-green-glow);
+  border-radius: var(--cruz-r-1);
+}
+
+/* Row / list-item hover — subtle lift + rail */
+.cruz-row {
+  position: relative;
+  padding: 10px 12px;
+  border-radius: var(--cruz-r-2);
+  cursor: pointer;
+}
+.cruz-row::before {
+  content: ''; position: absolute; left: 0; top: 8px; bottom: 8px; width: 2px;
+  background: var(--cruz-green-2); border-radius: 2px;
+  opacity: 0; transform: scaleY(0.4); transform-origin: center;
+  transition: opacity var(--cruz-dur-2) var(--cruz-ease-out), transform var(--cruz-dur-2) var(--cruz-ease-out);
+}
+.cruz-row:hover { background: color-mix(in oklch, var(--cruz-ink-2) 60%, transparent); }
+.cruz-row:hover::before { opacity: 1; transform: scaleY(1); }
+
+/* Reveal-on-enter — shared class */
+@keyframes cruzReveal { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.cruz-reveal { animation: cruzReveal var(--cruz-dur-4) var(--cruz-ease-out) both; }
+.cruz-reveal-1 { animation-delay: 60ms; }
+.cruz-reveal-2 { animation-delay: 120ms; }
+.cruz-reveal-3 { animation-delay: 180ms; }
+.cruz-reveal-4 { animation-delay: 240ms; }
+.cruz-reveal-5 { animation-delay: 300ms; }
+
+/* Reduced-motion respect */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

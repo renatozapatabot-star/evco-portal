@@ -102,10 +102,25 @@ function LoginContent() {
       <div
         className={`login-container${mounted && !entering ? ' is-entered' : ''}${entering ? ' is-exiting' : ''}`}
       >
+        {/* Editorial eyebrow — reference handoff adds this above the
+            wordmark so PORTAL reads as a named system within a house of
+            operations, not a free-floating brand. Mono micro uppercase,
+            wide tracking, heavily muted so it's presence-not-noise. */}
+        <p className="login-eyebrow" aria-label="Un sistema de Renato Zapata & Co.">
+          — UN SISTEMA DE RENATO ZAPATA & CO.
+        </p>
+
         {/* Wordmark-only lockup — Z monogram removed 2026-04-17 after
             Tito's review ("tira la Z"). Wordmark stands alone in silver;
             the tagline underneath carries the brand weight. */}
         <p className="login-wordmark login-wordmark-hero" aria-label="PORTAL">PORTAL</p>
+
+        {/* Corridor subtitle — reference pattern. Emerald on the Mexican
+            side signals "live route" without decoration. */}
+        <p className="login-corridor">
+          Laredo TX <span aria-hidden>↔</span>{' '}
+          <span className="login-corridor-mx">Nuevo Laredo TAMPS</span>
+        </p>
 
         {/* Tagline */}
         <p className="login-tagline">TOTAL VISIBILIDAD. SIN FRONTERAS.</p>
@@ -331,6 +346,30 @@ function LoginContent() {
           text-transform: uppercase;
           margin: 0 0 16px;
           text-align: center;
+        }
+        .login-eyebrow {
+          font-family: var(--portal-font-mono, 'Geist Mono', monospace);
+          font-size: 10px;
+          letter-spacing: 0.28em;
+          color: rgba(122,126,134,0.55);
+          text-transform: uppercase;
+          margin: 0 0 14px;
+          text-align: center;
+          font-weight: 500;
+        }
+        .login-corridor {
+          font-family: var(--portal-font-sans, 'Geist', system-ui, sans-serif);
+          font-size: 13px;
+          letter-spacing: 0.08em;
+          color: rgba(192,197,206,0.72);
+          text-transform: none;
+          margin: 6px 0 18px;
+          text-align: center;
+          font-weight: 500;
+        }
+        .login-corridor-mx {
+          color: var(--portal-green-2, #58D18E);
+          text-shadow: 0 0 14px color-mix(in oklch, var(--portal-green-2, #58D18E) 30%, transparent);
         }
         /* Alive signal — chip that breathes to signal the portal is
            connected + awake. Matches PageShell's "Datos en vivo"

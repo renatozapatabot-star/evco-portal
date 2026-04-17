@@ -7,6 +7,7 @@ import { QueryProvider } from "@/components/QueryProvider"
 import { TelemetryProvider } from "@/components/TelemetryProvider"
 import { I18nProvider } from "@/lib/i18n/provider"
 import { parsePortalTheme, PORTAL_THEME_COOKIE } from "@/lib/portal/theme"
+import { PortalPedimentoTheater } from "@/components/portal"
 import "./globals.css"
 
 // PORTAL canonical typefaces (Block DD · 2026-04-17).
@@ -116,6 +117,9 @@ export default async function RootLayout({
             </DashboardShellClient>
           </I18nProvider>
         </QueryProvider>
+        {/* Mounted once globally so any component can call
+            window.__portalOpenTheater(pedimentoId) to trigger the 5-act overlay. */}
+        <PortalPedimentoTheater />
       <Analytics />
       </body>
     </html>

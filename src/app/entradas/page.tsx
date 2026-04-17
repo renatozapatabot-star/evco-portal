@@ -13,6 +13,7 @@ import { CalmEmptyState } from '@/components/cockpit/client/CalmEmptyState'
 import { fmtCarrier } from '@/lib/carrier-names'
 import { ErrorCard } from '@/components/ui/ErrorCard'
 import { useSessionCache } from '@/hooks/use-session-cache'
+import { useSupplierNames } from '@/hooks/use-supplier-names'
 import { parseMonthParam, recentMonths } from '@/lib/cockpit/month-window'
 import { MonthSelector } from '@/components/admin/MonthSelector'
 
@@ -60,9 +61,11 @@ function EntradasContent() {
   const { sort, toggleSort } = useSort('entradas', { column: 'fecha_llegada_mercancia', direction: 'desc' })
   const [page, setPage] = useState(0)
   const [transportMap, setTransportMap] = useState<Map<string, string>>(new Map())
-  const [supplierMap, setSupplierMap] = useState<Map<string, string>>(new Map())
   const [partidaDescMap, setPartidaDescMap] = useState<Map<string, string>>(new Map())
   const { getCached, setCache } = useSessionCache()
+  // Proveedor resolution lives in a shared hook so every surface uses the
+  // same PRV_#### → human name fallback (no raw codes ever reach the UI).
+  const supplierNames = useSupplierNames()
 
   useEffect(() => {
     const userRole = getCookieValue('user_role') ?? ''
@@ -119,16 +122,7 @@ function EntradasContent() {
         setPartidaDescMap(map)
       }).catch(() => {})
 
-    // Supplier names — NO company_id filter (table may not have this column)
-    fetch('/api/data?table=globalpc_proveedores&limit=5000')
-      .then(r => r.json()).then(d => {
-        const map = new Map<string, string>()
-        const arr = Array.isArray(d.data) ? d.data : []
-        arr.forEach((s: { cve_proveedor?: string; nombre?: string }) => {
-          if (s.cve_proveedor && s.nombre) map.set(s.cve_proveedor, s.nombre)
-        })
-        setSupplierMap(map)
-      }).catch(() => {})
+    // Supplier names are loaded + cached by useSupplierNames (session-wide).
   }, [monthWindow.monthStart, monthWindow.monthEnd])
 
   const filtered = useMemo(() => {
@@ -139,8 +133,7 @@ function EntradasContent() {
         (r.trafico ?? '').toLowerCase().includes(q) ||
         getDesc(r).toLowerCase().includes(q) ||
         (r.cve_entrada ?? '').toLowerCase().includes(q) ||
-        (r.cve_proveedor ?? '').toLowerCase().includes(q) ||
-        (supplierMap.get(r.cve_proveedor ?? '') ?? '').toLowerCase().includes(q)
+        supplierNames.resolve(r.cve_proveedor ?? '').toLowerCase().includes(q)
       )
     }
     return [...out].sort((a, b) => {
@@ -150,7 +143,8 @@ function EntradasContent() {
       const cmp = String(av).localeCompare(String(bv), 'es', { numeric: true })
       return sort.direction === 'asc' ? cmp : -cmp
     })
-  }, [rows, search, sort, supplierMap, partidaDescMap])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rows, search, sort, supplierNames.resolve, partidaDescMap])
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE)
   const paged = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
@@ -166,7 +160,9 @@ function EntradasContent() {
   const getProveedor = (r: EntradaRow): string => {
     const code = r.cve_proveedor ?? ''
     if (!code) return ''
-    return supplierMap.get(code) || code
+    const resolved = supplierNames.resolve(code)
+    // resolve() returns '—' for empty; treat that as "no proveedor".
+    return resolved === '—' ? '' : resolved
   }
 
   const getDesc = (r: EntradaRow): string =>

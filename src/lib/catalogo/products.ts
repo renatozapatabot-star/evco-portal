@@ -1,11 +1,22 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { resolveProveedorName } from '@/lib/proveedor-names'
 
 type AnyClient = SupabaseClient<any, any, any> // eslint-disable-line @typescript-eslint/no-explicit-any
+
+/** Source-of-truth provenance for a catalog row.
+ *  - 'anexo24_parts' = matched a current anexo24_parts row (SAT-filed truth).
+ *  - 'globalpc_productos' = only in the GlobalPC sync mirror. */
+export type SourceOfTruth = 'anexo24_parts' | 'globalpc_productos'
+
+/** Drift classification per row, surfaced as audit chips in the UI. */
+export type CatalogoDrift = 'none' | 'fraccion_mismatch' | 'description_mismatch' | 'only_in_globalpc'
 
 export interface CatalogoRow {
   id: string
   cve_producto: string | null
   descripcion: string
+  /** Canonical merchandise name — reflects anexo24_parts when available. */
+  merchandise: string
   fraccion: string | null
   fraccion_source: string | null
   fraccion_classified_at: string | null
@@ -16,6 +27,10 @@ export interface CatalogoRow {
   valor_ytd_usd: number | null
   ultimo_cve_trafico: string | null
   ultima_fecha_llegada: string | null
+  /** Where this row's canonical name + fracción came from. */
+  source_of_truth: SourceOfTruth
+  /** Relationship between anexo24_parts + globalpc_productos for this cve. */
+  drift: CatalogoDrift
 }
 
 interface RawProducto {
@@ -50,14 +65,24 @@ function toNumber(v: unknown): number {
   return 0
 }
 
+/** Canonical anexo24_parts overlay — maps cve_producto → Formato 53 truth. */
+export interface Anexo24Overlay {
+  merchandise: string
+  fraccion: string | null
+  umt: string | null
+  pais_origen: string | null
+}
+
 /**
- * Merge a batch of raw productos with a supplier-name map and a per-descripcion
- * aggregate (last-trafico + YTD totals). Exported pure so tests can exercise it.
+ * Merge a batch of raw productos with supplier-name map, partida aggregate,
+ * and the Formato 53 overlay. Drift classification + source_of_truth
+ * computed per row. Pure so tests can exercise it.
  */
 export function mergeCatalogoRows(
   productos: RawProducto[],
   proveedorMap: Map<string, string>,
   partidaAgg: Map<string, { count: number; valor: number; lastTrafico: string | null; lastFecha: string | null }>,
+  anexoOverlay: Map<string, Anexo24Overlay> = new Map(),
 ): CatalogoRow[] {
   return productos
     .filter((p) => (p.descripcion ?? '').trim().length > 0)
@@ -65,20 +90,44 @@ export function mergeCatalogoRows(
       const descripcion = (p.descripcion ?? '').trim()
       const key = descripcion.toUpperCase()
       const agg = partidaAgg.get(key)
+      const anexo = p.cve_producto ? anexoOverlay.get(p.cve_producto) : undefined
+
+      // Prefer the anexo24 overlay values for canonical display.
+      const merchandise = anexo?.merchandise ?? descripcion
+      const fraccionCanonical = anexo?.fraccion ?? p.fraccion
+      const paisCanonical = anexo?.pais_origen ?? p.pais_origen
+
+      // Source of truth + drift classification.
+      let sourceOfTruth: SourceOfTruth = 'globalpc_productos'
+      let drift: CatalogoDrift = 'only_in_globalpc'
+      if (anexo) {
+        sourceOfTruth = 'anexo24_parts'
+        drift = 'none'
+        if (p.fraccion && anexo.fraccion && p.fraccion !== anexo.fraccion) drift = 'fraccion_mismatch'
+        else if (descripcion && anexo.merchandise && descripcion !== anexo.merchandise) drift = 'description_mismatch'
+      }
+
       return {
         id: String(p.id),
         cve_producto: p.cve_producto,
         descripcion,
-        fraccion: p.fraccion,
+        merchandise,
+        fraccion: fraccionCanonical,
         fraccion_source: p.fraccion_source,
         fraccion_classified_at: p.fraccion_classified_at,
         cve_proveedor: p.cve_proveedor,
-        proveedor_nombre: p.cve_proveedor ? proveedorMap.get(p.cve_proveedor) ?? null : null,
-        pais_origen: p.pais_origen,
+        // Never surface raw PRV_#### codes — resolver coalesces to display.
+        proveedor_nombre: resolveProveedorName(
+          p.cve_proveedor,
+          p.cve_proveedor ? proveedorMap.get(p.cve_proveedor) : null,
+        ),
+        pais_origen: paisCanonical,
         veces_importado: agg?.count ?? 0,
         valor_ytd_usd: agg ? agg.valor : null,
         ultimo_cve_trafico: agg?.lastTrafico ?? null,
         ultima_fecha_llegada: agg?.lastFecha ?? null,
+        source_of_truth: sourceOfTruth,
+        drift,
       }
     })
 }
@@ -177,10 +226,25 @@ export function summarizeCatalogo(
   }
 }
 
+export type CatalogoSort = 'alfabetico' | 'mas_usado' | 'mas_reciente' | 'valor_ytd'
+export type CatalogoClassifiedFilter = 'all' | 'classified' | 'unclassified'
+export type CatalogoSourceFilter = 'all' | 'anexo24' | 'only_globalpc' | 'drift'
+
+export interface GetCatalogoOptions {
+  q?: string
+  limit?: number
+  activeOnly?: boolean
+  proveedor_id?: string
+  fraccion_prefix?: string
+  classified?: CatalogoClassifiedFilter
+  source_filter?: CatalogoSourceFilter
+  sort?: CatalogoSort
+}
+
 export async function getCatalogo(
   supabase: AnyClient,
   companyId: string,
-  opts: { q?: string; limit?: number; activeOnly?: boolean } = {},
+  opts: GetCatalogoOptions = {},
 ): Promise<CatalogoRow[]> {
   if (!companyId) return []
   const limit = Math.min(Math.max(opts.limit ?? 100, 1), 500)
@@ -221,6 +285,21 @@ export async function getCatalogo(
   if (q.length > 0) {
     const safe = q.replace(/[%_]/g, '')
     productoQuery = productoQuery.or(`descripcion.ilike.%${safe}%,fraccion.ilike.%${safe}%,cve_producto.ilike.%${safe}%`)
+  }
+
+  // Server-side filters — prefix-match on fraccion, proveedor equality,
+  // classified-or-not. Applied via PostgREST where possible.
+  if (opts.proveedor_id && opts.proveedor_id.trim().length > 0) {
+    productoQuery = productoQuery.eq('cve_proveedor', opts.proveedor_id.trim())
+  }
+  if (opts.fraccion_prefix && opts.fraccion_prefix.trim().length > 0) {
+    const safe = opts.fraccion_prefix.trim().replace(/[%_]/g, '')
+    productoQuery = productoQuery.ilike('fraccion', `${safe}%`)
+  }
+  if (opts.classified === 'classified') {
+    productoQuery = productoQuery.not('fraccion', 'is', null)
+  } else if (opts.classified === 'unclassified') {
+    productoQuery = productoQuery.is('fraccion', null)
   }
 
   const { data: rawProductos } = await productoQuery
@@ -270,5 +349,63 @@ export async function getCatalogo(
     partidaAgg.set(desc, prev)
   }
 
-  return mergeCatalogoRows(productos, proveedorMap, partidaAgg)
+  // Formato 53 overlay — when USE_ANEXO24_CANONICAL=true, fetch the
+  // current anexo24_parts rows for the resolved cve_productos and
+  // surface them as the source of truth + drift classification.
+  const anexoOverlay = new Map<string, Anexo24Overlay>()
+  const canonicalEnabled = (process.env.USE_ANEXO24_CANONICAL ?? '').toLowerCase() === 'true'
+  if (canonicalEnabled) {
+    const cves = productos.map((p) => p.cve_producto).filter((x): x is string => !!x)
+    for (let i = 0; i < cves.length; i += 1000) {
+      const batch = cves.slice(i, i + 1000)
+      const { data } = await supabase
+        .from('anexo24_parts')
+        .select('cve_producto, merchandise_name_official, fraccion_official, umt_official, pais_origen_official')
+        .eq('company_id', companyId)
+        .is('vigente_hasta', null)
+        .in('cve_producto', batch)
+      for (const r of (data ?? []) as Array<{ cve_producto: string | null; merchandise_name_official: string; fraccion_official: string | null; umt_official: string | null; pais_origen_official: string | null }>) {
+        if (r.cve_producto) {
+          anexoOverlay.set(r.cve_producto, {
+            merchandise: r.merchandise_name_official,
+            fraccion: r.fraccion_official,
+            umt: r.umt_official,
+            pais_origen: r.pais_origen_official,
+          })
+        }
+      }
+    }
+  }
+
+  let merged = mergeCatalogoRows(productos, proveedorMap, partidaAgg, anexoOverlay)
+
+  // Source-of-truth filter at the row level (post-merge, so the drift
+  // classification is already populated).
+  if (opts.source_filter === 'anexo24') {
+    merged = merged.filter((r) => r.source_of_truth === 'anexo24_parts')
+  } else if (opts.source_filter === 'only_globalpc') {
+    merged = merged.filter((r) => r.drift === 'only_in_globalpc')
+  } else if (opts.source_filter === 'drift') {
+    merged = merged.filter((r) => r.drift === 'fraccion_mismatch' || r.drift === 'description_mismatch')
+  }
+
+  // Sort (JS, post-merge) — Postgres sort already primed the slice by
+  // classified-at-desc + cve_producto-asc. This re-sorts the final set.
+  const sort = opts.sort ?? 'mas_reciente'
+  switch (sort) {
+    case 'alfabetico':
+      merged.sort((a, b) => a.merchandise.localeCompare(b.merchandise, 'es', { sensitivity: 'base' }))
+      break
+    case 'mas_usado':
+      merged.sort((a, b) => (b.veces_importado ?? 0) - (a.veces_importado ?? 0))
+      break
+    case 'valor_ytd':
+      merged.sort((a, b) => (Number(b.valor_ytd_usd) || 0) - (Number(a.valor_ytd_usd) || 0))
+      break
+    case 'mas_reciente':
+    default:
+      merged.sort((a, b) => (b.fraccion_classified_at ?? '').localeCompare(a.fraccion_classified_at ?? ''))
+  }
+
+  return merged
 }

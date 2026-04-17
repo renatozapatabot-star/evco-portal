@@ -14,6 +14,48 @@ interface Props {
   summary: CatalogoSummary
   query: string
   mode: 'partes' | 'fracciones'
+  /** % of rows whose canonical truth comes from anexo24_parts (Formato 53). */
+  coveragePct?: number
+  /** Rows with fracción or descripción mismatches between GlobalPC + Formato 53. */
+  driftCount?: number
+}
+
+/** Small visual chip per row — audit trust signal. */
+function SourceChip({ row }: { row: CatalogoRow }) {
+  if (row.drift === 'only_in_globalpc') {
+    return (
+      <span title="No aparece en el último Formato 53 · revisar si es SKU activo" style={{
+        display: 'inline-block', padding: '2px 7px', borderRadius: 6,
+        background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.32)',
+        color: '#FBBF24', fontSize: 'var(--aguila-fs-label, 10px)', fontWeight: 600, letterSpacing: '0.04em',
+      }}>Solo GlobalPC</span>
+    )
+  }
+  if (row.drift === 'fraccion_mismatch') {
+    return (
+      <span title={`Fracción en GlobalPC difiere del Formato 53 · canónica: ${row.fraccion}`} style={{
+        display: 'inline-block', padding: '2px 7px', borderRadius: 6,
+        background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.32)',
+        color: '#FCA5A5', fontSize: 'var(--aguila-fs-label, 10px)', fontWeight: 600, letterSpacing: '0.04em',
+      }}>Fracción no coincide</span>
+    )
+  }
+  if (row.drift === 'description_mismatch') {
+    return (
+      <span title={`Nombre en GlobalPC difiere del Formato 53 · canónico: ${row.merchandise}`} style={{
+        display: 'inline-block', padding: '2px 7px', borderRadius: 6,
+        background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.32)',
+        color: '#FBBF24', fontSize: 'var(--aguila-fs-label, 10px)', fontWeight: 600, letterSpacing: '0.04em',
+      }}>Nombre difiere</span>
+    )
+  }
+  return (
+    <span title="Respaldado por el Formato 53 oficial del SAT" style={{
+      display: 'inline-block', padding: '2px 7px', borderRadius: 6,
+      background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.32)',
+      color: '#86EFAC', fontSize: 'var(--aguila-fs-label, 10px)', fontWeight: 600, letterSpacing: '0.04em',
+    }}>Anexo 24 ✓</span>
+  )
 }
 
 function fmtUsd(n: number | null): string {
@@ -28,7 +70,7 @@ function fmtDate(iso: string | null): string {
   } catch { return '' }
 }
 
-export function CatalogoTable({ rows, groups, summary, query, mode }: Props) {
+export function CatalogoTable({ rows, groups, summary, query, mode, coveragePct, driftCount }: Props) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [search, setSearch] = useState(query)
@@ -53,16 +95,32 @@ export function CatalogoTable({ rows, groups, summary, query, mode }: Props) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      {/* Pre-audit consolidation summary. */}
+      {/* Pre-audit consolidation summary — now includes Formato 53 coverage. */}
       <GlassCard padding="14px 18px">
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 14 }}>
-          <SummaryStat label="Productos" value={summary.total_products.toLocaleString('es-MX')} />
+          <SummaryStat label="Partes activas" value={summary.total_products.toLocaleString('es-MX')} />
           <SummaryStat label="Fracciones" value={summary.fraccion_count.toLocaleString('es-MX')} />
           <SummaryStat
             label="Sin clasificar"
             value={summary.unclassified_count.toLocaleString('es-MX')}
             tone={summary.unclassified_count > 0 ? 'amber' : undefined}
           />
+          {coveragePct != null && (
+            <SummaryStat
+              label="Cobertura Formato 53"
+              value={`${coveragePct}%`}
+              tone={coveragePct < 80 ? 'amber' : undefined}
+              hint={coveragePct >= 95 ? 'respaldadas por SAT' : coveragePct >= 80 ? 'mayormente cubiertas' : 'subir Formato 53 más reciente'}
+            />
+          )}
+          {driftCount != null && driftCount > 0 && (
+            <SummaryStat
+              label="Con drift"
+              value={driftCount.toLocaleString('es-MX')}
+              tone="amber"
+              hint="diferencia GlobalPC vs SAT"
+            />
+          )}
           <SummaryStat
             label="A consolidar"
             value={summary.consolidation_candidates.toLocaleString('es-MX')}
@@ -243,21 +301,26 @@ function CatalogoRowCard({ row }: { row: CatalogoRow }) {
       >
         <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div>
-            <p
-              style={{
-                margin: 0,
-                fontSize: 'var(--aguila-fs-section)',
-                fontWeight: 600,
-                color: 'rgba(255,255,255,0.92)',
-                lineHeight: 1.35,
-                overflow: 'hidden',
-                display: '-webkit-box',
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: 'vertical',
-              }}
-            >
-              {row.descripcion}
-            </p>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: 'var(--aguila-fs-section)',
+                  fontWeight: 600,
+                  color: 'rgba(255,255,255,0.92)',
+                  lineHeight: 1.35,
+                  overflow: 'hidden',
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical',
+                  flex: 1,
+                  minWidth: 0,
+                }}
+              >
+                {row.merchandise || row.descripcion}
+              </p>
+              <SourceChip row={row} />
+            </div>
             {row.cve_producto && (
               <p
                 className="font-mono"

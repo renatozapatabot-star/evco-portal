@@ -13,7 +13,15 @@ export const dynamic = 'force-dynamic'
 export const revalidate = 60
 
 interface CatalogoPageProps {
-  searchParams: Promise<{ q?: string; view?: string }>
+  searchParams: Promise<{
+    q?: string
+    view?: string
+    proveedor?: string
+    fraccion?: string
+    estado?: 'all' | 'classified' | 'unclassified'
+    fuente?: 'all' | 'anexo24' | 'only_globalpc' | 'drift'
+    orden?: 'alfabetico' | 'mas_usado' | 'mas_reciente' | 'valor_ytd'
+  }>
 }
 
 export default async function CatalogoPage({ searchParams }: CatalogoPageProps) {
@@ -22,20 +30,41 @@ export default async function CatalogoPage({ searchParams }: CatalogoPageProps) 
   const session = await verifySession(token)
   if (!session) redirect('/login')
 
-  const { q, view } = await searchParams
+  const sp = await searchParams
   const supabase = createServerClient()
-  const rows = await getCatalogo(supabase, session.companyId, { q, limit: 500 })
+  const rows = await getCatalogo(supabase, session.companyId, {
+    q: sp.q,
+    limit: 500,
+    proveedor_id: sp.proveedor,
+    fraccion_prefix: sp.fraccion,
+    classified: sp.estado,
+    source_filter: sp.fuente,
+    sort: sp.orden,
+  })
   const groups = groupCatalogoByFraccion(rows)
   const summary = summarizeCatalogo(rows, groups)
-  const mode: 'partes' | 'fracciones' = view === 'partes' ? 'partes' : 'fracciones'
+  const mode: 'partes' | 'fracciones' = sp.view === 'partes' ? 'partes' : 'fracciones'
+
+  // Coverage stats for the merged KPI strip — Formato 53 backed vs GlobalPC-only.
+  const anexoCovered = rows.filter((r) => r.source_of_truth === 'anexo24_parts').length
+  const coveragePct = rows.length > 0 ? Math.round((anexoCovered / rows.length) * 100) : 0
+  const driftCount = rows.filter((r) => r.drift === 'fraccion_mismatch' || r.drift === 'description_mismatch').length
 
   return (
     <PageShell
       title="Catálogo"
-      subtitle="Productos agrupados por fracción arancelaria · proveedores y consolidación de un vistazo"
+      subtitle="Partes de EVCO, proveedores y cobertura del Formato 53 — fuente SAT autoritativa."
       maxWidth={1100}
     >
-      <CatalogoTable rows={rows} groups={groups} summary={summary} query={q ?? ''} mode={mode} />
+      <CatalogoTable
+        rows={rows}
+        groups={groups}
+        summary={summary}
+        query={sp.q ?? ''}
+        mode={mode}
+        coveragePct={coveragePct}
+        driftCount={driftCount}
+      />
     </PageShell>
   )
 }

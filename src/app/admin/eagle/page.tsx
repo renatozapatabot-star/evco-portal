@@ -378,9 +378,10 @@ async function renderEagle(opName: string, rawMonth: string | null) {
       series: entradasSeries,
       microStatus: `${entradasMesCount} recibida${entradasMesCount === 1 ? '' : 's'} en ${monthShort}`,
     },
-    reportes: {
+    anexo24: {
       count: null,
       series: clasificacionesSeries,
+      microStatus: 'Control de inventario IMMEX multi-cliente',
     },
   }
 

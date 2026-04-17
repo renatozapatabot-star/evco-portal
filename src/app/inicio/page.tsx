@@ -273,13 +273,25 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
     ? `(+${compactK(expedientesCount)} en histórico)`
     : undefined
 
+  // Anexo 24 nav count — SKUs used this month (invariant #24: live
+  // metric in the headline slot, lifetime total as microcopy footnote).
+  // catalogoMesCount already tracks this-month classifications; we
+  // surface the lifetime total as the historicMicrocopy so Anexo 24
+  // reads the same weight-sense as Catálogo.
+  const anexo24MicroStatus = catalogoCount > 0
+    ? `${catalogoCount.toLocaleString('es-MX')} SKU${catalogoCount === 1 ? '' : 's'} en tu Anexo 24`
+    : 'Anexo 24 aparecerá cuando clasifiquemos tus productos'
+  const anexo24HistoricMicrocopy = catalogoMesCount > 0
+    ? `(${catalogoMesCount} clasificado${catalogoMesCount === 1 ? '' : 's'} este mes)`
+    : undefined
+
   const navCounts: NavCounts = {
     traficos:        { count: activeTraficosCount,    series: activosSeries,          microStatus: `${cruzadosLast7Count} cruzaron esta semana` },
     pedimentos:      { count: pedimentosMesCount,     series: pedimentosListosSeries, microStatus: daysSinceLastCruce != null ? `Último cruce hace ${daysSinceLastCruce} día${daysSinceLastCruce === 1 ? '' : 's'}` : 'Sin cruces recientes' },
     expedientes:     { count: expedientesMesCount,    series: expedientesSeries,      microStatus: expedientesMicroStatus, historicMicrocopy: expedientesHistoricMicrocopy },
     catalogo:        { count: catalogoMesCount,       series: [],                     microStatus: catalogoMicroStatus,    historicMicrocopy: catalogoHistoricMicrocopy },
     entradas:        { count: entradasSemanaCount,    series: entradasSeries,         microStatus: `${entradasSemanaCount} recibida${entradasSemanaCount === 1 ? '' : 's'} esta semana` },
-    reportes:        { count: null,                   series: clasificacionesSeries },
+    anexo24:         { count: catalogoCount,          series: clasificacionesSeries,  microStatus: anexo24MicroStatus,     historicMicrocopy: anexo24HistoricMicrocopy },
   }
   // Sad-zero replacement on the Pedimentos nav card happens AFTER
   // heroBuild is computed — see below, once lastPedimentoIso is known.

@@ -165,9 +165,14 @@ caused a real regression, a compliance risk, or a silent failure in production.
 
 29. **Six cockpit nav cards, locked across `/inicio`, `/operador/inicio`,
     `/admin/eagle`.** The six are **Embarques, Pedimentos, Expedientes,
-    Catálogo, Entradas, Reportes** (Reportes replaced Clasificaciones on
-    2026-04-15 per Tito + Renato IV audit — Clasificaciones folded into
-    the Asistente/Clasificador surface). Order, labels, icons, and
+    Catálogo, Entradas, Anexo 24** (tile #6 promoted from "Reportes" to
+    "Anexo 24" on 2026-04-18 per Renato IV founder sign-off — Anexo 24
+    is the SAT-audit truth document for IMMEX and the canonical product
+    reference; legacy `/reportes/**` sub-routes stay alive behind the
+    client-role redirect for back-compat. Prior promotion: Reportes
+    replaced Clasificaciones on 2026-04-15 per Tito + Renato IV audit —
+    Clasificaciones folded into the Asistente/Clasificador surface).
+    Order, labels, icons, and
     descriptions are defined once in `src/lib/cockpit/nav-tiles.ts`
     (`UNIFIED_NAV_TILES`). Role decides what *data* populates each card;
     role does not decide which cards appear. Adding a 7th tile or

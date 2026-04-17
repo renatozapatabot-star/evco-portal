@@ -261,9 +261,12 @@ async function loadOperatorCockpit(opId: string, opName: string, month: string) 
       series: entradasSeries,
       microStatus: `${entradas7dCount} recibida${entradas7dCount === 1 ? '' : 's'} esta semana`,
     },
-    reportes: {
-      count: null,
+    anexo24: {
+      count: clasificacionesTotalCount,
       series: clasificacionesSeries,
+      microStatus: clasificacionesTotalCount > 0
+        ? `${clasificacionesTotalCount.toLocaleString('es-MX')} SKUs en Anexo 24`
+        : 'Anexo 24 se llena con clasificaciones',
     },
   }
 

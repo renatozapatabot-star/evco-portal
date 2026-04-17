@@ -1,11 +1,18 @@
-import { Truck, FileText, FolderOpen, Book, Package, BarChart3 } from 'lucide-react'
+import { Truck, FileText, FolderOpen, Book, Package, BarChart3, ClipboardList } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
 /**
  * UI nav-tile union. The six canonical tiles are locked by invariant 29
- * (must be in UNIFIED_NAV_TILES, unchanged without Tito + Renato IV sign-off).
- * Role-specific cockpits (trafico/bodega/contabilidad) populate extra counts
- * via these additional keys — they are not rendered as top-level nav.
+ * (must be in UNIFIED_NAV_TILES, unchanged without Renato IV founder
+ * sign-off — Tito advisory on business-side implications).
+ *
+ * Role-specific cockpits (trafico/bodega/contabilidad) populate extra
+ * counts via additional keys below — these are NOT rendered as top-level
+ * nav; they're extension slots for role-filtered counters.
+ *
+ * `reportes` key remains in the union for back-compat (old routes, old
+ * role-filter code). The nav tile itself now renders as "Anexo 24" and
+ * points at /anexo-24 — approved 2026-04-18 by Renato IV.
  */
 export type NavTileKey =
   | 'traficos'
@@ -13,6 +20,7 @@ export type NavTileKey =
   | 'expedientes'
   | 'catalogo'
   | 'entradas'
+  | 'anexo24'
   | 'reportes'
   | 'clasificaciones'
   | 'facturas'
@@ -28,23 +36,36 @@ export interface NavTileDef {
 }
 
 /**
- * CRUZ v7 — the six cockpit nav tiles, locked.
+ * CRUZ v8 — the six cockpit nav tiles, locked.
  *
  * Identical order, labels, icons, descriptions across /inicio,
  * /operador/inicio, and /admin/eagle. Role decides what data
  * populates each card; role does NOT decide which cards appear.
  *
- * Changing this list requires Tito + Renato IV sign-off
- * (core-invariants rule 29).
+ * Changing this list requires Renato IV founder sign-off (Tito advisory
+ * on business-side implications) per core-invariants rule 29.
+ *
+ * 2026-04-18 — tile #6 promoted from "Reportes" to "Anexo 24".
+ * Anexo 24 (Formato 53 from GlobalPC.net) is the SAT-audit truth
+ * document for IMMEX and the canonical product reference for every
+ * merchandise name + part number + fraction rendered in CRUZ. Legacy
+ * /reportes/** routes stay alive behind a 308 redirect for back-compat.
+ *
+ * BarChart3 import kept for back-compat references elsewhere; the tile
+ * now ships with ClipboardList (inventory-control semantics).
  */
 export const UNIFIED_NAV_TILES: readonly NavTileDef[] = [
-  { key: 'traficos',    href: '/embarques',   label: 'Embarques',    icon: Truck,      description: 'Operaciones activas' },
-  { key: 'pedimentos',  href: '/pedimentos',  label: 'Pedimentos',   icon: FileText,   description: 'Declaraciones aduanales' },
-  { key: 'expedientes', href: '/expedientes', label: 'Expedientes',  icon: FolderOpen, description: 'Documentos por operación' },
-  { key: 'catalogo',    href: '/catalogo',    label: 'Catálogo',     icon: Book,       description: 'Partes e historial' },
-  { key: 'entradas',    href: '/entradas',    label: 'Entradas',     icon: Package,    description: 'Control de almacén' },
-  { key: 'reportes',    href: '/reportes',    label: 'Reportes',     icon: BarChart3,  description: 'Analítica y descargas' },
+  { key: 'traficos',    href: '/embarques',   label: 'Embarques',    icon: Truck,          description: 'Operaciones activas' },
+  { key: 'pedimentos',  href: '/pedimentos',  label: 'Pedimentos',   icon: FileText,       description: 'Declaraciones aduanales' },
+  { key: 'expedientes', href: '/expedientes', label: 'Expedientes',  icon: FolderOpen,     description: 'Documentos por operación' },
+  { key: 'catalogo',    href: '/catalogo',    label: 'Catálogo',     icon: Book,           description: 'Partes e historial' },
+  { key: 'entradas',    href: '/entradas',    label: 'Entradas',     icon: Package,        description: 'Control de almacén' },
+  { key: 'anexo24',     href: '/anexo-24',    label: 'Anexo 24',     icon: ClipboardList,  description: 'Control de inventario IMMEX' },
 ] as const
+
+// Suppress unused-import warning — BarChart3 is retained for downstream
+// consumers that still reference it (legacy components, operator extras).
+void BarChart3
 
 export interface NavCellData {
   count: number | null
@@ -69,5 +90,8 @@ export const EMPTY_NAV_COUNTS: NavCounts = {
   expedientes: { count: null, series: [] },
   catalogo:    { count: null, series: [] },
   entradas:    { count: null, series: [] },
+  anexo24:     { count: null, series: [] },
+  // Kept for back-compat — legacy consumers still pass `reportes` counts
+  // through NavCounts even though the tile no longer renders. Safe no-op.
   reportes:    { count: null, series: [] },
 }

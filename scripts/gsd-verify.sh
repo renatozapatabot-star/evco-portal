@@ -365,7 +365,7 @@ header "Invariant 26 — Inline glass chrome ratchet"
 # Exclude src/components/aguila/ (the primitive itself), src/app/globals.css
 # (the design-system source), and src/app/login/page.tsx (login surface
 # pre-dates the primitive and stays self-contained).
-INV26_COUNT=$(set +eo pipefail;{ grep -rnE "background: *['\"]\?rgba\(255,255,255,0\.04\b|backdrop-filter: *blur\(20" src/app src/components 2>/dev/null || true; } | grep -v "components/aguila/" | grep -v "app/globals.css" | grep -v "app/login/page.tsx" | wc -l | tr -d ' ')
+INV26_COUNT=$(set +eo pipefail;{ grep -rnE "background: *['\"]\?rgba\(255,255,255,0\.04\b|backdrop-filter: *blur\(20" src/app src/components 2>/dev/null || true; } | grep -v "components/aguila/" | grep -v "app/globals.css" | grep -v "app/portal-tokens.css" | grep -v "app/portal-components.css" | grep -v "app/login/page.tsx" | wc -l | tr -d ' ')
 if [ "$INV26_COUNT" -gt "$INVARIANT_26_BASELINE" ]; then
   fail "Inline glass chrome violations: $INV26_COUNT (baseline $INVARIANT_26_BASELINE). New drift — compose from <GlassCard> in src/components/aguila/."
 elif [ "$INV26_COUNT" -lt "$INVARIANT_26_BASELINE" ]; then

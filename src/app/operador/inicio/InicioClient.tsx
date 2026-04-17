@@ -19,6 +19,7 @@ import {
   type CockpitHeroKPI,
   type ActividadStripItem,
 } from '@/components/aguila'
+import { PortalDashboard } from '@/components/portal'
 import { ActiveTraficos } from './ActiveTraficos'
 import { RoleKPIBanner } from '@/components/RoleKPIBanner'
 import type { NavCounts } from '@/lib/cockpit/nav-tiles'
@@ -215,26 +216,43 @@ export function InicioClient(props: Props) {
   const capabilityCounts: CapabilityCounts = {}
   const capabilitySlot = <CapabilityCardGrid counts={capabilityCounts} />
 
+  const firstName = props.operatorName.split(/\s+/)[0] || props.operatorName || 'Operador'
+
   return (
-    <CockpitInicio
-      role="operator"
-      name={props.operatorName}
-      heroKPIs={heroKPIs}
-      navCounts={props.navCounts}
-      estadoSections={estadoSections}
-      actividadSlot={actividadSlot}
-      actividadStripSlot={actividadStripSlot}
-      capabilitySlot={capabilitySlot}
-      systemStatus={props.systemStatus}
-      summaryLine={props.summaryLine}
-      pulseSignal={props.pulseSignal}
-      month={props.month}
-      metaPills={[
-        { label: 'ACTIVOS', value: props.kpis.activos, tone: 'silver' },
-        { label: 'PENDIENTES', value: props.kpis.pendientes, tone: props.kpis.pendientes > 3 ? 'warning' : 'silver' },
-        { label: 'ENTRADAS HOY', value: props.kpis.entradasHoy, tone: 'silver' },
-      ]}
-    />
+    <>
+      {/* Reference PORTAL top band — TopBar · Greeting · 6 module cards
+          · AssistantFab · Cmd+K palette. Operator-tinted summary +
+          operator-wide navCounts. All existing operator content
+          (estadoSections, actividadSlot, capabilitySlot) stays below
+          via the legacy CockpitInicio so no data is lost. */}
+      <PortalDashboard
+        role="operator"
+        greetingName={firstName}
+        summary={props.summaryLine}
+        navCounts={props.navCounts}
+        month={props.month}
+        extraRow={
+          <CockpitInicio
+            role="operator"
+            name={props.operatorName}
+            heroKPIs={heroKPIs}
+            navCounts={props.navCounts}
+            estadoSections={estadoSections}
+            actividadSlot={actividadSlot}
+            actividadStripSlot={actividadStripSlot}
+            capabilitySlot={capabilitySlot}
+            systemStatus={props.systemStatus}
+            pulseSignal={props.pulseSignal}
+            month={props.month}
+            metaPills={[
+              { label: 'ACTIVOS', value: props.kpis.activos, tone: 'silver' },
+              { label: 'PENDIENTES', value: props.kpis.pendientes, tone: props.kpis.pendientes > 3 ? 'warning' : 'silver' },
+              { label: 'ENTRADAS HOY', value: props.kpis.entradasHoy, tone: 'silver' },
+            ]}
+          />
+        }
+      />
+    </>
   )
 }
 

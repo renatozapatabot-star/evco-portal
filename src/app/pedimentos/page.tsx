@@ -207,6 +207,12 @@ function PedimentosContent() {
   const totalPages = Math.ceil(groups.length / PAGE_SIZE)
   const paged = groups.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
 
+  // USD sync is asynchronous — aduanet_facturas lands ~24h after the cross.
+  // When none of the in-window groups has an importe, hide the column
+  // entirely so the page doesn't read as "broken column with every row
+  // showing —". A calm banner above the table explains the sync cadence.
+  const hasUSDValues = groups.some((g) => g.importe > 0)
+
   const getDesc = (g: PedGroup) => {
     const partidaDesc = partidaDescMap.get(g.trafico)
     if (partidaDesc) return fmtDesc(partidaDesc)
@@ -239,6 +245,23 @@ function PedimentosContent() {
             />
           </div>
         </div>
+
+        {!loading && groups.length > 0 && !hasUSDValues && (
+          <div
+            role="status"
+            style={{
+              margin: '0 16px 12px',
+              padding: '10px 14px',
+              fontSize: 'var(--aguila-fs-meta)',
+              color: 'var(--text-muted)',
+              background: 'rgba(148,163,184,0.08)',
+              border: '1px solid rgba(148,163,184,0.18)',
+              borderRadius: 8,
+            }}
+          >
+            Los valores en USD se sincronizan el día siguiente del cruce.
+          </div>
+        )}
 
         {/* Loading */}
         {loading && (
@@ -289,9 +312,11 @@ function PedimentosContent() {
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>{g.fecha ? fmtDate(g.fecha) : ''}</span>
-                  <span style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 120 }}>
-                    {g.importe > 0 ? fmtUSD(g.importe) : '—'}
-                  </span>
+                  {hasUSDValues && (
+                    <span style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 120 }}>
+                      {g.importe > 0 ? fmtUSD(g.importe) : ''}
+                    </span>
+                  )}
                 </div>
                 <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)', marginTop: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {getDesc(g) || '—'}
@@ -312,7 +337,9 @@ function PedimentosContent() {
                   <th style={{ cursor: 'pointer', width: 110 }} onClick={() => toggleSort('fecha')}>Fecha<SortArrow col="fecha" sort={sort} /></th>
                   <th>Mercancía</th>
                   <th style={{ width: 100, cursor: 'pointer' }} onClick={() => toggleSort('regimen')}>Régimen<SortArrow col="regimen" sort={sort} /></th>
-                  <th style={{ textAlign: 'right', cursor: 'pointer', width: 130 }} onClick={() => toggleSort('importe')}>Valor USD<SortArrow col="importe" sort={sort} /></th>
+                  {hasUSDValues && (
+                    <th style={{ textAlign: 'right', cursor: 'pointer', width: 130 }} onClick={() => toggleSort('importe')}>Valor USD<SortArrow col="importe" sort={sort} /></th>
+                  )}
                   <th style={{ width: 50, textAlign: 'center' }}>PDF</th>
                 </tr>
               </thead>
@@ -361,9 +388,11 @@ function PedimentosContent() {
                       {g.regimen || '—'}
                       {g.tmec && <span style={{ marginLeft: 6, fontSize: 'var(--aguila-fs-meta)', color: 'var(--success)', fontWeight: 600 }}>T-MEC</span>}
                     </td>
-                    <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body)', color: 'var(--text-primary)', fontWeight: 600 }}>
-                      {g.importe > 0 ? `${fmtUSD(g.importe)}` : '—'}
-                    </td>
+                    {hasUSDValues && (
+                      <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body)', color: 'var(--text-primary)', fontWeight: 600 }}>
+                        {g.importe > 0 ? `${fmtUSD(g.importe)}` : ''}
+                      </td>
+                    )}
                     <td style={{ textAlign: 'center' }}>
                       <button
                         onClick={(e) => {

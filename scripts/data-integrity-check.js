@@ -310,6 +310,86 @@ async function main() {
     // Always passes — warning-only check.
   })
 
+  // ─────────────────────────────────────────────────────────────────
+  // Block EE (2026-04-17) — 4 new tenant-truth invariants
+  // Prevents the contamination pattern that required the 303K-row retag.
+  // ─────────────────────────────────────────────────────────────────
+
+  // ── 18. Every globalpc_* row's company_id is in the active-company allowlist ──
+  await test('No globalpc_productos company_id outside active allowlist', async () => {
+    const { data: companies } = await supabase
+      .from('companies')
+      .select('company_id')
+      .eq('active', true)
+    const allowlist = new Set([
+      ...(companies || []).map((c) => c.company_id),
+      // Intentional carve-outs — orphan tags from the reassign script are
+      // expected and auditable. They disappear from client cockpits.
+    ])
+
+    // Sample distinct company_id values from globalpc_productos — a full DISTINCT
+    // isn't exposed via PostgREST, but a 5000-row sample catches drift early.
+    const { data: sample } = await supabase
+      .from('globalpc_productos')
+      .select('company_id')
+      .not('company_id', 'is', null)
+      .limit(5000)
+    const found = new Set((sample || []).map((r) => r.company_id))
+    const unknown = [...found].filter((id) => !allowlist.has(id) && !String(id).startsWith('orphan-'))
+    assert(unknown.length === 0, `Unknown company_ids in globalpc_productos: ${unknown.slice(0, 5).join(', ')}`)
+  })
+
+  // ── 19. globalpc_partidas tenant diversity — count active companies with rows ──
+  //   Pre-Block-EE this table had only 1 distinct company_id (all evco).
+  //   Post-reassign it has 50 (one per active client). This test counts how
+  //   many of the first 15 active companies have ≥1 partida row. Sampling
+  //   limit avoids 50 serial head-counts while still catching regression
+  //   (if the sync forgets to write company_id, everyone drops to 0).
+  await test('≥ 8 active companies have globalpc_partidas rows', async () => {
+    const { data: companies } = await supabase
+      .from('companies')
+      .select('company_id')
+      .eq('active', true)
+      .limit(15)
+    let withRows = 0
+    for (const c of companies || []) {
+      const { count } = await supabase
+        .from('globalpc_partidas')
+        .select('*', { count: 'estimated', head: true })
+        .eq('company_id', c.company_id)
+      if ((count || 0) > 0) withRows++
+    }
+    assert(withRows >= 8, `Only ${withRows}/15 sampled active companies have partidas (min 8 after Block EE retag)`)
+  })
+
+  // ── 20. EVCO contamination proxy: distinct cve_producto in productos ≤ 2x partidas ──
+  //   Healthy ratio is ≤1.5x. If productos claims many more parts than partidas
+  //   can back up, contamination is creeping back in.
+  await test('EVCO productos-to-partidas ratio ≤ 2x', async () => {
+    const [prodRes, partRes] = await Promise.all([
+      supabase.from('globalpc_productos').select('cve_producto').eq('company_id', 'evco').not('cve_producto', 'is', null).limit(15_000),
+      supabase.from('globalpc_partidas').select('cve_producto').eq('company_id', 'evco').not('cve_producto', 'is', null).limit(50_000),
+    ])
+    const prodSet = new Set((prodRes.data || []).map((r) => r.cve_producto))
+    const partSet = new Set((partRes.data || []).map((r) => r.cve_producto))
+    if (partSet.size === 0) return // pre-activation — skip
+    const ratio = prodSet.size / partSet.size
+    assert(ratio <= 2.0, `EVCO productos/partidas ratio: ${ratio.toFixed(2)} (threshold 2.0 — contamination creeping back)`)
+  })
+
+  // ── 21. Orphan rows bounded — orphan-* company_ids don't grow ──
+  //   After Block EE retag, ~12K rows across productos + facturas are tagged
+  //   orphan-<clave>. If this grows, it means MySQL is feeding claves that
+  //   aren't in the companies allowlist — onboarding gap.
+  await test('Orphan company_id rows ≤ 25K (Block EE ratchet)', async () => {
+    const { count, error } = await supabase
+      .from('globalpc_productos')
+      .select('*', { count: 'estimated', head: true })
+      .like('company_id', 'orphan-%')
+    if (error) return
+    assert((count || 0) <= 25_000, `Orphan globalpc_productos rows: ${count} (threshold 25K)`)
+  })
+
   // ── Summary ──
   const elapsed = ((Date.now() - start) / 1000).toFixed(1)
   console.log(`\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━`)

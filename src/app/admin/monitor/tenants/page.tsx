@@ -1,0 +1,210 @@
+/**
+ * PORTAL · /admin/monitor/tenants — per-tenant row-count dashboard.
+ *
+ * Block EE · Phase 8. Admin/broker-only. For every active company,
+ * counts rows across every globalpc_* + operational table so drift
+ * from the Block EE baseline becomes visible within minutes.
+ *
+ * Also counts orphan-* company_ids surfaced by the tenant reassignment
+ * script. If a row shows up here with an unknown clave, onboarding
+ * missed a mapping.
+ *
+ * Server component · revalidates every 60s.
+ */
+
+import { cookies } from 'next/headers'
+import { redirect } from 'next/navigation'
+import { verifySession } from '@/lib/session'
+import { createServerClient } from '@/lib/supabase-server'
+import { PageShell, GlassCard } from '@/components/aguila'
+
+export const dynamic = 'force-dynamic'
+export const revalidate = 60
+
+type Row = {
+  company_id: string
+  name: string | null
+  clave_cliente: string | null
+  active: boolean
+  productos: number
+  partidas: number
+  facturas: number
+  proveedores: number
+  traficos: number
+  entradas: number
+}
+
+async function countFor(
+  supabase: ReturnType<typeof createServerClient>,
+  table: string,
+  companyId: string,
+): Promise<number> {
+  try {
+    const { count } = await supabase
+      .from(table)
+      .select('*', { count: 'estimated', head: true })
+      .eq('company_id', companyId)
+    return count ?? 0
+  } catch {
+    return 0
+  }
+}
+
+async function orphanCount(
+  supabase: ReturnType<typeof createServerClient>,
+  table: string,
+): Promise<number> {
+  try {
+    const { count } = await supabase
+      .from(table)
+      .select('*', { count: 'estimated', head: true })
+      .like('company_id', 'orphan-%')
+    return count ?? 0
+  } catch {
+    return 0
+  }
+}
+
+export default async function TenantsMonitorPage() {
+  const cookieStore = await cookies()
+  const session = await verifySession(cookieStore.get('portal_session')?.value ?? '')
+  if (!session) redirect('/login')
+  if (session.role !== 'admin' && session.role !== 'broker') redirect('/')
+
+  const supabase = createServerClient()
+
+  const { data: companies } = await supabase
+    .from('companies')
+    .select('company_id, name, clave_cliente, active')
+    .eq('active', true)
+    .order('company_id')
+
+  const rows: Row[] = []
+  for (const c of companies ?? []) {
+    const [productos, partidas, facturas, proveedores, traficos, entradas] = await Promise.all([
+      countFor(supabase, 'globalpc_productos', c.company_id),
+      countFor(supabase, 'globalpc_partidas', c.company_id),
+      countFor(supabase, 'globalpc_facturas', c.company_id),
+      countFor(supabase, 'globalpc_proveedores', c.company_id),
+      countFor(supabase, 'traficos', c.company_id),
+      countFor(supabase, 'entradas', c.company_id),
+    ])
+    rows.push({
+      company_id: c.company_id,
+      name: c.name,
+      clave_cliente: c.clave_cliente,
+      active: c.active,
+      productos, partidas, facturas, proveedores, traficos, entradas,
+    })
+  }
+
+  const [orphanProductos, orphanPartidas, orphanFacturas] = await Promise.all([
+    orphanCount(supabase, 'globalpc_productos'),
+    orphanCount(supabase, 'globalpc_partidas'),
+    orphanCount(supabase, 'globalpc_facturas'),
+  ])
+
+  const totals = rows.reduce(
+    (acc, r) => ({
+      productos: acc.productos + r.productos,
+      partidas: acc.partidas + r.partidas,
+      facturas: acc.facturas + r.facturas,
+      proveedores: acc.proveedores + r.proveedores,
+      traficos: acc.traficos + r.traficos,
+      entradas: acc.entradas + r.entradas,
+    }),
+    { productos: 0, partidas: 0, facturas: 0, proveedores: 0, traficos: 0, entradas: 0 },
+  )
+
+  const fmt = (n: number) => n.toLocaleString('es-MX')
+
+  return (
+    <PageShell
+      title="Tenants monitor"
+      subtitle="Filas por cliente en cada tabla globalpc_* · detecta drift de company_id post-Block-EE"
+      maxWidth={1200}
+    >
+      <GlassCard tier="hero" style={{ marginBottom: 16 }}>
+        <h2 className="portal-eyebrow" style={{ color: 'var(--portal-fg-3)', marginBottom: 12 }}>
+          Totales · {rows.length} clientes activos
+        </h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12 }}>
+          {[
+            { label: 'Productos', value: totals.productos },
+            { label: 'Partidas', value: totals.partidas },
+            { label: 'Facturas', value: totals.facturas },
+            { label: 'Proveedores', value: totals.proveedores },
+            { label: 'Tráficos', value: totals.traficos },
+            { label: 'Entradas', value: totals.entradas },
+          ].map((t) => (
+            <div key={t.label} style={{ padding: 10 }}>
+              <div className="portal-eyebrow" style={{ color: 'var(--portal-fg-4)' }}>{t.label}</div>
+              <div className="portal-num" style={{ fontSize: 20, fontWeight: 500 }}>{fmt(t.value)}</div>
+            </div>
+          ))}
+        </div>
+      </GlassCard>
+
+      {(orphanProductos + orphanPartidas + orphanFacturas) > 0 && (
+        <GlassCard tier="hero" style={{ marginBottom: 16, borderLeft: '3px solid var(--portal-amber, #fbbf24)' }}>
+          <h2 className="portal-eyebrow" style={{ color: 'var(--portal-amber, #fbbf24)', marginBottom: 12 }}>
+            Orphan rows · onboarding gaps
+          </h2>
+          <p style={{ color: 'var(--portal-fg-3)', fontSize: 13, margin: '0 0 12px' }}>
+            Rows con <code>company_id</code> empezando en <code>orphan-</code> — su <code>cve_cliente</code> no está en la tabla <code>companies</code>.
+            No aparecen en ningún cockpit de cliente pero permanecen auditables.
+          </p>
+          <table className="portal-table" style={{ width: '100%' }}>
+            <thead>
+              <tr>
+                <th style={{ textAlign: 'left' }}>Tabla</th>
+                <th className="num" style={{ textAlign: 'right' }}>Rows</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>globalpc_productos</td><td className="num">{fmt(orphanProductos)}</td></tr>
+              <tr><td>globalpc_partidas</td><td className="num">{fmt(orphanPartidas)}</td></tr>
+              <tr><td>globalpc_facturas</td><td className="num">{fmt(orphanFacturas)}</td></tr>
+            </tbody>
+          </table>
+        </GlassCard>
+      )}
+
+      <GlassCard tier="hero">
+        <h2 className="portal-eyebrow" style={{ color: 'var(--portal-fg-3)', marginBottom: 12 }}>
+          Por cliente
+        </h2>
+        <div style={{ overflowX: 'auto' }}>
+          <table className="portal-table" style={{ width: '100%', minWidth: 900 }}>
+            <thead>
+              <tr>
+                <th style={{ textAlign: 'left' }}>company_id</th>
+                <th style={{ textAlign: 'left' }}>clave</th>
+                <th className="num" style={{ textAlign: 'right' }}>productos</th>
+                <th className="num" style={{ textAlign: 'right' }}>partidas</th>
+                <th className="num" style={{ textAlign: 'right' }}>facturas</th>
+                <th className="num" style={{ textAlign: 'right' }}>proveedores</th>
+                <th className="num" style={{ textAlign: 'right' }}>tráficos</th>
+                <th className="num" style={{ textAlign: 'right' }}>entradas</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((r) => (
+                <tr key={r.company_id}>
+                  <td style={{ fontFamily: 'var(--portal-font-mono)', color: 'var(--portal-fg-2)' }}>{r.company_id}</td>
+                  <td style={{ fontFamily: 'var(--portal-font-mono)', color: 'var(--portal-fg-4)' }}>{r.clave_cliente ?? '—'}</td>
+                  <td className="num">{fmt(r.productos)}</td>
+                  <td className="num">{fmt(r.partidas)}</td>
+                  <td className="num">{fmt(r.facturas)}</td>
+                  <td className="num">{fmt(r.proveedores)}</td>
+                  <td className="num">{fmt(r.traficos)}</td>
+                  <td className="num">{fmt(r.entradas)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </GlassCard>
+    </PageShell>
+  )
+}

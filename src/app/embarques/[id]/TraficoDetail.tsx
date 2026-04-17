@@ -2,21 +2,20 @@
 
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import {
-  ACCENT_SILVER,
-  BG_CARD,
-  BORDER,
-  GLASS_BLUR,
-  GLASS_SHADOW,
   GOLD,
   GREEN,
   RED,
-  TEXT_MUTED,
   TEXT_PRIMARY,
 } from '@/lib/design-system'
 import { useTrack } from '@/lib/telemetry/useTrack'
-import { fmtUSDCompact } from '@/lib/format-utils'
+import { fmtUSDCompact, fmtDate } from '@/lib/format-utils'
 import { ChainView, type ChainNode, type ChainNodeKind } from '@/components/aguila'
 import { ChainVincularModal } from '@/components/aguila/ChainVincularModal'
+import { PortalCard } from '@/components/portal/PortalCard'
+import {
+  PortalTheaterAnimation,
+  actFromStatus,
+} from '@/components/portal/PortalTheaterAnimation'
 import { translateEstatus } from '@/lib/estatus-translator'
 import { PageOpenTracker } from './PageOpenTracker'
 import { Header } from './Header'
@@ -200,7 +199,7 @@ export function TraficoDetail(props: TraficoDetailProps) {
       label: 'Eventos',
       value: String(props.events.length),
       mono: true,
-      color: ACCENT_SILVER,
+      color: 'var(--portal-fg-3)',
       clickable: true,
       hint: props.events.length === 0 ? 'Ninguno aún' : null,
     },
@@ -296,6 +295,24 @@ export function TraficoDetail(props: TraficoDetailProps) {
         onEventosClick={() => switchTo('cronologia')}
       />
 
+      {/* 5-act theater — pedimento workflow from filing → archived.
+          Driven by props.trafico.estatus via actFromStatus(). Emerald
+          glow on the active act; silver on completed; ghost on upcoming.
+          Respects prefers-reduced-motion automatically via the shared
+          motion system in portal-components.css. */}
+      <div style={{ margin: '16px 0' }}>
+        <PortalCard tier="raised">
+          <PortalTheaterAnimation
+            act={actFromStatus(props.trafico.estatus)}
+            timestamps={{
+              filing: props.trafico.created_at ? fmtDate(props.trafico.created_at) : undefined,
+              clearance: estadoEvent?.created_at ? fmtDate(estadoEvent.created_at) : undefined,
+              exit: props.trafico.fecha_cruce ? fmtDate(props.trafico.fecha_cruce) : undefined,
+            }}
+          />
+        </PortalCard>
+      </div>
+
       <div
         className="trafico-main-grid"
         style={{
@@ -321,17 +338,7 @@ export function TraficoDetail(props: TraficoDetailProps) {
               if (typeof window !== 'undefined') window.location.reload()
             }}
           />
-          <div
-            style={{
-              background: BG_CARD,
-              backdropFilter: `blur(${GLASS_BLUR})`,
-              WebkitBackdropFilter: `blur(${GLASS_BLUR})`,
-              border: `1px solid ${BORDER}`,
-              borderRadius: 20,
-              boxShadow: GLASS_SHADOW,
-              overflow: 'hidden',
-            }}
-          >
+          <PortalCard padding={0}>
             <div
               role="tablist"
               aria-label="Secciones del embarque"
@@ -340,7 +347,7 @@ export function TraficoDetail(props: TraficoDetailProps) {
                 display: 'flex',
                 gap: 4,
                 padding: '8px 12px 0',
-                borderBottom: `1px solid ${BORDER}`,
+                borderBottom: '1px solid var(--portal-line-1)',
                 overflowX: 'auto',
               }}
             >
@@ -359,15 +366,18 @@ export function TraficoDetail(props: TraficoDetailProps) {
                       background: 'transparent',
                       border: 'none',
                       borderBottom: selected
-                        ? `2px solid ${ACCENT_SILVER}`
+                        ? '2px solid var(--portal-green-2)'
                         : '2px solid transparent',
-                      color: selected ? TEXT_PRIMARY : TEXT_MUTED,
-                      fontSize: 'var(--aguila-fs-body)',
+                      color: selected ? 'var(--portal-fg-1)' : 'var(--portal-fg-4)',
+                      fontFamily: 'var(--portal-font-mono)',
+                      fontSize: 'var(--portal-fs-micro)',
+                      letterSpacing: '0.18em',
+                      textTransform: 'uppercase',
                       fontWeight: selected ? 700 : 500,
-                      letterSpacing: '0.02em',
                       cursor: 'pointer',
                       whiteSpace: 'nowrap',
                       flexShrink: 0,
+                      transition: 'color var(--portal-dur-2) var(--portal-ease-out), border-color var(--portal-dur-2) var(--portal-ease-out)',
                     }}
                   >
                     {t.label}
@@ -378,7 +388,7 @@ export function TraficoDetail(props: TraficoDetailProps) {
             <div role="tabpanel" style={{ padding: 20 }}>
               {tabContent[active]}
             </div>
-          </div>
+          </PortalCard>
         </div>
 
         <RightRail
@@ -411,7 +421,7 @@ export function TraficoDetail(props: TraficoDetailProps) {
           textAlign: 'center',
           padding: '20px 0',
           fontSize: 'var(--aguila-fs-meta)',
-          color: TEXT_MUTED,
+          color: 'var(--portal-fg-4)',
         }}
       >
         Renato Zapata &amp; Company · Patente 3596 · Aduana 240

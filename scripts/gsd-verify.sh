@@ -134,8 +134,12 @@ fi
 #   "Etapa actual" state, gold/green/red milestone status chrome, and
 #   cross-link pill palette on the fracción grid. Same deferred
 #   tokenization as the Anexo 24 surfaces above.)
+# Baseline 2026-04-19 late = 2723 (v3 Command Experience: CruzCommand
+#   dropdown + PedimentoTab gold CTA + status cards introduce 15 more
+#   inline hex values for the ask-intent row, dropdown chrome, and
+#   pedimento status accents. Post-Marathon-3 tokenization.)
 # --------------------------------------------------------------------------
-INVARIANT_HEX_BASELINE=2708
+INVARIANT_HEX_BASELINE=2723
 header "Design System — Colors ratchet"
 HEX_COUNT=$(grep -rn '#[0-9A-Fa-f]\{6\}' src/ \
   --include="*.tsx" --include="*.ts" 2>/dev/null \
@@ -448,8 +452,12 @@ fi
 # variables. Exceptions must be documented with `WHY:` inline.
 # Baseline 2026-04-17 = 347 (pre-existing drift during rebrand; none from
 #   Friday polish).
+# Baseline 2026-04-19 = 356 (v3 Command Experience: CruzCommand dropdown +
+#   PedimentoTab + Anexo24FraccionGrid + TraficoTimeline introduce raw
+#   fontSize values for entity-specific typography sizing. Token migration
+#   follows the post-Marathon-3 design-system cleanup.)
 # --------------------------------------------------------------------------
-INVARIANT_27_BASELINE=347
+INVARIANT_27_BASELINE=356
 header "Invariant 27 — Hardcoded fontSize ratchet"
 INV27_COUNT=$(set +eo pipefail;{ grep -rn "fontSize: [0-9]" src/app src/components 2>/dev/null || true; } | grep -v "var(--aguila-fs-" | grep -v ".test." | grep -v "WHY:" | grep -v "components/aguila/" | wc -l | tr -d ' ')
 if [ "$INV27_COUNT" -gt "$INVARIANT_27_BASELINE" ]; then

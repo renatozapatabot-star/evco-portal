@@ -308,6 +308,39 @@ module.exports = {
       error_file: '/tmp/mensajeria-email-fallback-error.log',
       out_file: '/tmp/mensajeria-email-fallback-out.log',
       log_date_format: 'YYYY-MM-DD HH:mm:ss', max_size: '10M',
+    },
+    {
+      name: 'wsdl-anexo24-pull',
+      script: 'scripts/wsdl-anexo24-pull.js',
+      cwd,
+      cron_restart: '15 2 * * *',     // 02:15 CST nightly, after globalpc-sync
+      autorestart: false, watch: false, max_memory_restart: '512M',
+      env: { NODE_ENV: 'production' },
+      error_file: '/tmp/wsdl-anexo24-pull-error.log',
+      out_file: '/tmp/wsdl-anexo24-pull-out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss', max_size: '10M',
+    },
+    {
+      name: 'backfill-proveedor-rfc',
+      script: 'scripts/backfill-proveedor-rfc.js',
+      cwd,
+      cron_restart: '0 3 * * 0',      // Sunday 03:00 CST
+      autorestart: false, watch: false, max_memory_restart: '256M',
+      env: { NODE_ENV: 'production' },
+      error_file: '/tmp/backfill-proveedor-rfc-error.log',
+      out_file: '/tmp/backfill-proveedor-rfc-out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss', max_size: '10M',
+    },
+    {
+      name: 'backfill-transporte',
+      script: 'scripts/backfill-transporte.js',
+      cwd,
+      cron_restart: '30 3 * * 0',     // Sunday 03:30 CST
+      autorestart: false, watch: false, max_memory_restart: '256M',
+      env: { NODE_ENV: 'production' },
+      error_file: '/tmp/backfill-transporte-error.log',
+      out_file: '/tmp/backfill-transporte-out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss', max_size: '10M',
     }
   ]
 }

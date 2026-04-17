@@ -138,8 +138,11 @@ fi
 #   dropdown + PedimentoTab gold CTA + status cards introduce 15 more
 #   inline hex values for the ask-intent row, dropdown chrome, and
 #   pedimento status accents. Post-Marathon-3 tokenization.)
+# Baseline 2026-04-19 v3.1 = 2724 (dashboard liveness pill — one new
+#   #22C55E in PageShell's breathing "Datos en vivo" badge. Keep-
+#   consistent-with-global-green rationale documented inline.)
 # --------------------------------------------------------------------------
-INVARIANT_HEX_BASELINE=2723
+INVARIANT_HEX_BASELINE=2724
 header "Design System — Colors ratchet"
 HEX_COUNT=$(grep -rn '#[0-9A-Fa-f]\{6\}' src/ \
   --include="*.tsx" --include="*.ts" 2>/dev/null \

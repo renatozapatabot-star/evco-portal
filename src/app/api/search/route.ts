@@ -4,6 +4,7 @@ import { PORTAL_DATE_FROM } from '@/lib/data'
 import { verifySession } from '@/lib/session'
 import { sanitizeIlike } from '@/lib/sanitize'
 import { resolveProveedorName } from '@/lib/proveedor-names'
+import { getActiveCveProductos, activeCvesArray } from '@/lib/anexo24/active-parts'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -108,6 +109,17 @@ export async function GET(request: NextRequest) {
   }
 
   const safe = sanitizeIlike(q)
+
+  // Active-parts narrow for client searches — only SKUs this client
+  // has actually imported. Internal roles (broker/admin) search the
+  // full mirror per invariant #31. Fresh tenants with zero partidas
+  // get no productos/partidas results (the traficos/entradas/facturas
+  // queries still run and can surface early-stage data).
+  const activeList = isInternal
+    ? []
+    : activeCvesArray(await getActiveCveProductos(supabase, companyId))
+  const clientHasActive = activeList.length > 0
+
   const [trafRes, entRes, factRes, prodRes, provRes, partRes] = await Promise.all([
     // Invariant 31 — admin/broker (isInternal) sees all tenants. companyId is
     // '' for those roles, so .eq('company_id', '') would return zero rows.
@@ -146,22 +158,24 @@ export async function GET(request: NextRequest) {
           .or(`pedimento.ilike.%${safe}%,proveedor.ilike.%${safe}%,referencia.ilike.%${safe}%,num_factura.ilike.%${safe}%`)
           .limit(10)
     ),
-    // Products — client-scoped for non-internal sessions.
-    // Invariant 13 + 14: a client user must never see a SKU from a
-    // different tenant's catalog. Audit 2026-04-19 caught these three
-    // queries (productos, proveedores, partidas) running un-scoped;
-    // fix gates each one on isInternal the same way traficos +
-    // entradas + aduanet_facturas above do.
+    // Products — client-scoped for non-internal sessions + further
+    // narrowed to the active-parts set so clients only see SKUs
+    // they've actually imported. Invariant 13 + 14: never leak cross-
+    // tenant; v3.1 adds "don't show parts this client doesn't use."
+    // Internal roles bypass both filters per invariant #31.
     (isInternal
       ? supabase.from('globalpc_productos')
           .select('id, descripcion, fraccion, cve_producto')
           .or(`descripcion.ilike.%${safe}%,fraccion.ilike.%${safe}%,cve_producto.ilike.%${safe}%`)
           .limit(8)
-      : supabase.from('globalpc_productos')
-          .select('id, descripcion, fraccion, cve_producto')
-          .eq('company_id', companyId)
-          .or(`descripcion.ilike.%${safe}%,fraccion.ilike.%${safe}%,cve_producto.ilike.%${safe}%`)
-          .limit(8)
+      : clientHasActive
+        ? supabase.from('globalpc_productos')
+            .select('id, descripcion, fraccion, cve_producto')
+            .eq('company_id', companyId)
+            .in('cve_producto', activeList)
+            .or(`descripcion.ilike.%${safe}%,fraccion.ilike.%${safe}%,cve_producto.ilike.%${safe}%`)
+            .limit(8)
+        : supabase.from('globalpc_productos').select('id, descripcion, fraccion, cve_producto').eq('company_id', companyId).limit(0)
     ),
     // Suppliers — client-scoped.
     (isInternal

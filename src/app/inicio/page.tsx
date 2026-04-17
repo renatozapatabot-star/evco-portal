@@ -19,6 +19,7 @@ import { getClienteActivity } from '@/lib/cliente/activity'
 import { bucketDailySeries, daysAgo } from '@/lib/cockpit/fetch'
 import { softCount, softData, softFirst } from '@/lib/cockpit/safe-query'
 import { getLatestCrossing } from '@/lib/queries/latest-crossing'
+import { getActiveCveProductos } from '@/lib/anexo24/active-parts'
 import { CockpitErrorCard, CockpitSkeleton, type CockpitHeroKPI, type ActividadStripItem } from '@/components/aguila'
 import { InicioClientShell } from './InicioClientShell'
 import type { ActiveShipment } from '@/components/cockpit/client/ActiveShipmentTimeline'
@@ -273,17 +274,23 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
     ? `(+${compactK(expedientesCount)} en histórico)`
     : undefined
 
-  // Anexo 24 nav count — SKUs used this month (invariant #24: live
-  // metric in the headline slot, lifetime total as microcopy footnote).
-  // catalogoMesCount already tracks this-month classifications; we
-  // surface the lifetime total as the historicMicrocopy so Anexo 24
-  // reads the same weight-sense as Catálogo.
-  const anexo24MicroStatus = catalogoCount > 0
-    ? `${catalogoCount.toLocaleString('es-MX')} SKU${catalogoCount === 1 ? '' : 's'} en tu Anexo 24`
-    : 'Anexo 24 aparecerá cuando clasifiquemos tus productos'
-  const anexo24HistoricMicrocopy = catalogoMesCount > 0
-    ? `(${catalogoMesCount} clasificado${catalogoMesCount === 1 ? '' : 's'} este mes)`
-    : undefined
+  // Anexo 24 nav count — ACTIVE SKUs only (parts with at least one
+  // partida for this company). globalpc_productos carries 148K rows
+  // for EVCO but only ~693 have been actually imported; surfacing
+  // the full mirror on the home screen was exactly the noise Renato
+  // flagged 2026-04-19. Active count aligns with what the /anexo-24
+  // surface now shows post-filter, so the tile number and the
+  // destination page agree.
+  const activeCves = await getActiveCveProductos(supabase, companyId)
+  const activeSkuCount = activeCves.cves.size
+  const anexo24MicroStatus = activeSkuCount > 0
+    ? `${activeSkuCount.toLocaleString('es-MX')} SKU${activeSkuCount === 1 ? '' : 's'} en tu Anexo 24`
+    : 'Anexo 24 aparecerá cuando empieces a importar'
+  const anexo24HistoricMicrocopy = catalogoCount > activeSkuCount && catalogoCount > 0
+    ? `(${compactK(catalogoCount - activeSkuCount)} más en el catálogo histórico)`
+    : catalogoMesCount > 0
+      ? `(${catalogoMesCount} clasificado${catalogoMesCount === 1 ? '' : 's'} este mes)`
+      : undefined
 
   const navCounts: NavCounts = {
     traficos:        { count: activeTraficosCount,    series: activosSeries,          microStatus: `${cruzadosLast7Count} cruzaron esta semana` },
@@ -291,7 +298,7 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
     expedientes:     { count: expedientesMesCount,    series: expedientesSeries,      microStatus: expedientesMicroStatus, historicMicrocopy: expedientesHistoricMicrocopy },
     catalogo:        { count: catalogoMesCount,       series: [],                     microStatus: catalogoMicroStatus,    historicMicrocopy: catalogoHistoricMicrocopy },
     entradas:        { count: entradasSemanaCount,    series: entradasSeries,         microStatus: `${entradasSemanaCount} recibida${entradasSemanaCount === 1 ? '' : 's'} esta semana` },
-    anexo24:         { count: catalogoCount,          series: clasificacionesSeries,  microStatus: anexo24MicroStatus,     historicMicrocopy: anexo24HistoricMicrocopy },
+    anexo24:         { count: activeSkuCount,         series: clasificacionesSeries,  microStatus: anexo24MicroStatus,     historicMicrocopy: anexo24HistoricMicrocopy },
   }
   // Sad-zero replacement on the Pedimentos nav card happens AFTER
   // heroBuild is computed — see below, once lastPedimentoIso is known.

@@ -15,6 +15,7 @@ import { createClient } from '@supabase/supabase-js'
 import { verifySession } from '@/lib/session'
 import { formatFraccion } from '@/lib/format/fraccion'
 import { resolveProveedorName } from '@/lib/proveedor-names'
+import { getActiveCveProductos, activeCvesArray } from '@/lib/anexo24/active-parts'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -52,12 +53,21 @@ export async function GET(req: NextRequest) {
     )
   }
 
-  const { data: productos, error: prodErr } = await supabase
+  // CSV mirrors the /anexo-24 surface contract: only parts this
+  // company has actually imported (has at least one partida for).
+  // Exports SAT-truth inventory, not the sync mirror's long tail.
+  const active = await getActiveCveProductos(supabase, companyId)
+  const activeList = activeCvesArray(active)
+
+  let productosQuery = supabase
     .from('globalpc_productos')
     .select('cve_producto, descripcion, fraccion, pais_origen, umt, cve_proveedor')
     .eq('company_id', companyId)
     .order('cve_producto', { ascending: true })
     .limit(10_000)
+  if (activeList.length > 0) productosQuery = productosQuery.in('cve_producto', activeList)
+
+  const { data: productos, error: prodErr } = await productosQuery
 
   if (prodErr) {
     console.error('[anexo-24/csv] productos fetch:', prodErr.message)

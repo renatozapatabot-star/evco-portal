@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { loadAnexo24Overlay, isAnexo24CanonicalEnabled } from '@/lib/reference/anexo24'
+import { getActiveCveProductos, activeCvesArray } from './active-parts'
 
 type AnyClient = SupabaseClient<any, any, any> // eslint-disable-line @typescript-eslint/no-explicit-any
 
@@ -106,9 +107,17 @@ export async function getAnexoByFraccion(
   const limit = Math.min(Math.max(opts.limit ?? 2000, 1), 5000)
   const q = (opts.q ?? '').trim()
 
-  // Unscoped SKU fetch — only classified rows, capped at 2000. With
-  // 693 used-in-24-months for EVCO (per CLAUDE.md), this covers most
-  // clients' active fraction set without materialized views.
+  // Active-parts filter — same contract as the SKU snapshot. Only
+  // parts this company has actually imported feed the fracción
+  // grouping. Without this, fracciones would contain noise SKUs that
+  // drag down the primary_description picker and inflate sku_count.
+  const active = await getActiveCveProductos(supabase, companyId)
+  const activeList = activeCvesArray(active)
+  const hasActive = activeList.length > 0
+
+  // Classified-only SKU fetch, capped at 2000. With 693 used-in-24-months
+  // for EVCO (per CLAUDE.md), this covers most clients' active fraction
+  // set without materialized views.
   let productoQuery = supabase
     .from('globalpc_productos')
     .select('id, cve_producto, descripcion, fraccion, cve_proveedor, pais_origen')
@@ -117,6 +126,7 @@ export async function getAnexoByFraccion(
     .order('fraccion_classified_at', { ascending: false, nullsFirst: false })
     .order('cve_producto', { ascending: true })
     .limit(limit)
+  if (hasActive) productoQuery = productoQuery.in('cve_producto', activeList)
 
   if (q.length > 0) {
     const safe = q.replace(/[%_]/g, '')
@@ -127,16 +137,12 @@ export async function getAnexoByFraccion(
 
   const [productosRes, totalInScopeRes, unclassifiedRes] = await Promise.all([
     productoQuery,
-    supabase
-      .from('globalpc_productos')
-      .select('id', { count: 'exact', head: true })
-      .eq('company_id', companyId)
-      .not('fraccion', 'is', null),
-    supabase
-      .from('globalpc_productos')
-      .select('id', { count: 'exact', head: true })
-      .eq('company_id', companyId)
-      .is('fraccion', null),
+    hasActive
+      ? supabase.from('globalpc_productos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).in('cve_producto', activeList).not('fraccion', 'is', null)
+      : supabase.from('globalpc_productos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).not('fraccion', 'is', null).limit(0),
+    hasActive
+      ? supabase.from('globalpc_productos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).in('cve_producto', activeList).is('fraccion', null)
+      : supabase.from('globalpc_productos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).is('fraccion', null).limit(0),
   ])
 
   const productos = (productosRes.data ?? []) as Array<{

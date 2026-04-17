@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { loadAnexo24Overlay, resolveMerchName, resolveFraction, isAnexo24CanonicalEnabled } from '@/lib/reference/anexo24'
+import { getActiveCveProductos, activeCvesArray } from './active-parts'
 
 type AnyClient = SupabaseClient<any, any, any> // eslint-disable-line @typescript-eslint/no-explicit-any
 
@@ -135,6 +136,15 @@ export async function getAnexoSnapshot(
   const limit = Math.min(Math.max(opts.limit ?? 200, 1), 500)
   const q = (opts.q ?? '').trim()
 
+  // Active-parts filter: the catalog should show ONLY parts this client
+  // has actually imported (has at least one partida for). globalpc_productos
+  // carries 148K rows for EVCO but only 693 are ever imported — we
+  // hide the 147K+ noise so the audit view reads as the client's real
+  // inventory, not the sync's full mirror.
+  const active = await getActiveCveProductos(supabase, companyId)
+  const activeList = activeCvesArray(active)
+  const hasActive = activeList.length > 0
+
   // Base SKU query — mirrors the catalog's deterministic ordering so
   // /anexo-24 and /catalogo show the same slice when a client flips
   // between them during an audit.
@@ -145,6 +155,7 @@ export async function getAnexoSnapshot(
     .order('fraccion_classified_at', { ascending: false, nullsFirst: false })
     .order('cve_producto', { ascending: true })
     .limit(limit)
+  if (hasActive) productoQuery = productoQuery.in('cve_producto', activeList)
 
   if (q.length > 0) {
     const safe = q.replace(/[%_]/g, '')
@@ -157,29 +168,23 @@ export async function getAnexoSnapshot(
   //   (a) SKU slice for display
   //   (b) full-count queries for headline KPIs (not slice-capped)
   //   (c) recent Anexo 24 exports from storage metadata (if present)
+  // All counts honor the active-parts filter so the KPI strip reflects
+  // reality ("123 SKUs en tu Anexo 24" means actually-imported SKUs,
+  // not the 148K sync mirror).
   const [productosRes, totalRes, classifiedRes, fraccionesRes, proveedoresRes] = await Promise.all([
     productoQuery,
-    supabase
-      .from('globalpc_productos')
-      .select('id', { count: 'exact', head: true })
-      .eq('company_id', companyId),
-    supabase
-      .from('globalpc_productos')
-      .select('id', { count: 'exact', head: true })
-      .eq('company_id', companyId)
-      .not('fraccion', 'is', null),
-    supabase
-      .from('globalpc_productos')
-      .select('fraccion')
-      .eq('company_id', companyId)
-      .not('fraccion', 'is', null)
-      .limit(10000),
-    supabase
-      .from('globalpc_productos')
-      .select('cve_proveedor')
-      .eq('company_id', companyId)
-      .not('cve_proveedor', 'is', null)
-      .limit(10000),
+    hasActive
+      ? supabase.from('globalpc_productos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).in('cve_producto', activeList)
+      : supabase.from('globalpc_productos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).limit(0),
+    hasActive
+      ? supabase.from('globalpc_productos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).in('cve_producto', activeList).not('fraccion', 'is', null)
+      : supabase.from('globalpc_productos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).not('fraccion', 'is', null).limit(0),
+    hasActive
+      ? supabase.from('globalpc_productos').select('fraccion').eq('company_id', companyId).in('cve_producto', activeList).not('fraccion', 'is', null).limit(10000)
+      : supabase.from('globalpc_productos').select('fraccion').eq('company_id', companyId).not('fraccion', 'is', null).limit(0),
+    hasActive
+      ? supabase.from('globalpc_productos').select('cve_proveedor').eq('company_id', companyId).in('cve_producto', activeList).not('cve_proveedor', 'is', null).limit(10000)
+      : supabase.from('globalpc_productos').select('cve_proveedor').eq('company_id', companyId).not('cve_proveedor', 'is', null).limit(0),
   ])
 
   const productos = (productosRes.data ?? []) as Array<{

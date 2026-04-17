@@ -42,9 +42,9 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   if (!SAAI_CONFIG.nua_user) {
-    return NextResponse.json({ error: 'SAAI not configured — NUA credentials required' }, { status: 503 })
+    return NextResponse.json({ error: 'service_unavailable' }, { status: 503 })
   }
   const body = await request.json()
-  // Future: implement SAAI transmission
-  return NextResponse.json({ status: 'stub', message: 'SAAI transmission not yet implemented', received: body })
+  // Future: implement government-transmission path
+  return NextResponse.json({ status: 'stub', received: body })
 }

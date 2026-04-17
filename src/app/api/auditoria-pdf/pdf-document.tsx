@@ -139,8 +139,8 @@ export function AuditoriaPDF({ data }: { data: AuditData }) {
             <Text style={s.bannerLabel}>AVISO</Text>
             <Text style={s.bannerText}>
               {d.missingPagoCount} embarque{d.missingPagoCount === 1 ? '' : 's'} con estatus
-              {' '}Pedimento Pagado sin fecha_pago — no aparecen en este período. Fuente:
-              {' '}pipeline GlobalPC. Pendiente actualizar.
+              {' '}Pedimento Pagado sin fecha_pago — no aparecen en este período.
+              {' '}Pendiente actualizar.
             </Text>
           </View>
         ) : null}

@@ -111,16 +111,33 @@ function EntradasContent() {
         setTransportMap(transMap)
       }).catch(() => {})
 
-    // GlobalPC partida descriptions for enrichment
-    fetch('/api/data?table=globalpc_partidas&select=cve_trafico,descripcion&limit=10000')
-      .then(r => r.json()).then(d => {
-        const map = new Map<string, string>()
+    // Partes-derived descriptions for enrichment — this used to
+    // query globalpc_partidas for cve_trafico+descripcion, but
+    // neither column exists on that table. Replaced with the
+    // canonical 3-hop batch endpoint (facturas → partidas → productos).
+    fetch('/api/data?table=traficos&select=trafico&limit=5000')
+      .then(r => r.json())
+      .then(d => {
         const arr = Array.isArray(d.data) ? d.data : []
-        arr.forEach((p: { cve_trafico?: string; descripcion?: string }) => {
-          if (p.cve_trafico && p.descripcion && !map.has(p.cve_trafico)) map.set(p.cve_trafico, p.descripcion)
-        })
-        setPartidaDescMap(map)
-      }).catch(() => {})
+        const ids = arr
+          .map((t: { trafico?: string }) => t.trafico)
+          .filter((t: string | undefined): t is string => !!t)
+          .slice(0, 500)
+        if (ids.length === 0) return
+        return fetch(`/api/embarques/partes-description?traficos=${encodeURIComponent(ids.join(','))}`)
+      })
+      .then(r => r && r.ok ? r.json() : null)
+      .then(body => {
+        if (!body?.data) return
+        const next = new Map<string, string>()
+        for (const [trafico, payload] of Object.entries(body.data as Record<string, { descriptions: string[]; count: number }>)) {
+          if (payload.descriptions.length > 0) {
+            next.set(trafico, payload.descriptions.join(' · '))
+          }
+        }
+        setPartidaDescMap(next)
+      })
+      .catch(() => {})
 
     // Supplier names are loaded + cached by useSupplierNames (session-wide).
   }, [monthWindow.monthStart, monthWindow.monthEnd])
@@ -206,7 +223,7 @@ function EntradasContent() {
           <div className="toolbar-search" style={{ minHeight: 60 }}>
             <Search size={12} style={{ color: 'var(--slate-400)', flexShrink: 0 }} />
             <input
-              placeholder="Entrada, embarque, proveedor, descripción..."
+              placeholder="Entrada, tráfico, proveedor, descripción..."
               value={search}
               onChange={e => { setSearch(e.target.value); setPage(0) }}
               aria-label="Buscar entradas"
@@ -289,7 +306,7 @@ function EntradasContent() {
                     {r.trafico ? (
                       <Link href={`/embarques/${encodeURIComponent(r.trafico)}`} style={{ color: '#C0C5CE', textDecoration: 'none' }}>{r.trafico}</Link>
                     ) : (
-                      <span style={{ color: 'var(--text-muted)' }}>—</span>
+                      <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>pendiente</span>
                     )}
                     {transporte && <span>{transporte}</span>}
                     {(r.cantidad_bultos ?? 0) > 0 && <span>{r.cantidad_bultos} bto{r.cantidad_bultos !== 1 ? 's' : ''}</span>}
@@ -312,7 +329,7 @@ function EntradasContent() {
                   <th style={{ cursor: 'pointer', width: 110 }} onClick={() => toggleSort('cve_entrada')}>Entrada<SortArrow col="cve_entrada" sort={sort} /></th>
                   <th style={{ width: 160 }}>Proveedor</th>
                   <th style={{ minWidth: 160 }}>Descripción</th>
-                  <th style={{ width: 130 }}>Embarque</th>
+                  <th style={{ width: 130 }}>Tráfico</th>
                   <th style={{ width: 120 }}>Transporte US</th>
                   <th style={{ textAlign: 'right', cursor: 'pointer', width: 70 }} onClick={() => toggleSort('cantidad_bultos')}>Bultos<SortArrow col="cantidad_bultos" sort={sort} /></th>
                   <th style={{ textAlign: 'right', cursor: 'pointer', width: 90 }} onClick={() => toggleSort('peso_bruto')}>Peso (kg)<SortArrow col="peso_bruto" sort={sort} /></th>
@@ -342,7 +359,7 @@ function EntradasContent() {
                           {r.trafico}
                         </Link>
                       ) : (
-                        <span style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-muted)' }}>—</span>
+                        <span style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-muted)', fontStyle: 'italic' }}>pendiente</span>
                       )}
                     </td>
                     <td style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-secondary)' }}>

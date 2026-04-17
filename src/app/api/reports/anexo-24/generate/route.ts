@@ -31,6 +31,8 @@ import { logDecision } from '@/lib/decision-logger'
 import { PATENTE, ADUANA } from '@/lib/client-config'
 import { cleanCompanyDisplayName } from '@/lib/format/company-name'
 import { getActiveCveProductos, activeCvesArray } from '@/lib/anexo24/active-parts'
+import { resolveProveedorName } from '@/lib/proveedor-names'
+import { formatPedimento } from '@/lib/format/pedimento'
 import {
   generateAnexo24,
   buildAnexo24StoragePath,
@@ -83,11 +85,21 @@ interface PartidaRaw {
   precio_unitario: number | null
   peso: number | null
   pais_origen: string | null
+  marca: string | null
+  modelo: string | null
+  serie: string | null
+  numero_item: number | null
 }
 
-interface FacturaLink {
+interface FacturaEnriched {
   cve_trafico: string | null
   folio: number | null
+  numero: string | null
+  fecha_facturacion: string | null
+  valor_comercial: number | null
+  moneda: string | null
+  incoterm: string | null
+  cve_proveedor: string | null
 }
 
 interface TraficoLite {
@@ -98,11 +110,22 @@ interface TraficoLite {
   proveedores: string | null
   regimen: string | null
   pais_procedencia: string | null
+  aduana: string | null
+  tipo_cambio: number | null
+  peso_bruto: number | null
+  importe_total: number | null
 }
 
 interface ProductoEnrichment {
   descripcion: string | null
   fraccion: string | null
+  umt: string | null
+  nico: string | null
+}
+
+interface ProveedorEnrichment {
+  nombre: string | null
+  rfc: string | null
 }
 
 /** Chunk an array into batches of `size` — PostgREST `.in()` clauses
@@ -161,14 +184,18 @@ async function buildFormato53(request: NextRequest, overrides?: { dateFrom?: str
   const activeSet = new Set(activeList)
   const hasActiveFilter = activeList.length > 0
 
-  // --- Step 1: tráficos in window --------------------------------------
+  // --- Step 1: tráficos in window (pedimento-only filter) -------------
+  // "Only Anexo 24" means only partidas that have a pedimento assigned
+  // in the target window. This is the Formato 53 contract — no catalog
+  // rows, only pedimento-bearing merchandise.
   let traficoQ = supabase
     .from('traficos')
-    .select('trafico, pedimento, fecha_pago, fecha_llegada, proveedores, regimen, pais_procedencia')
+    .select('trafico, pedimento, fecha_pago, fecha_llegada, proveedores, regimen, pais_procedencia, aduana, tipo_cambio, peso_bruto, importe_total')
     .eq('company_id', companyId)
+    .not('pedimento', 'is', null)
     .limit(5000)
-  if (dateFrom) traficoQ = traficoQ.gte('fecha_llegada', dateFrom)
-  if (dateTo) traficoQ = traficoQ.lte('fecha_llegada', dateTo)
+  if (dateFrom) traficoQ = traficoQ.gte('fecha_pago', dateFrom)
+  if (dateTo) traficoQ = traficoQ.lte('fecha_pago', dateTo)
 
   const traficoRes = await traficoQ
   if (traficoRes.error) {
@@ -179,35 +206,37 @@ async function buildFormato53(request: NextRequest, overrides?: { dateFrom?: str
   const traficoMap = new Map<string, TraficoLite>()
   for (const t of traficos) traficoMap.set(t.trafico, t)
 
-  // --- Step 2: facturas → folios (chunked .in() lookup) ---------------
-  const facturaChunks = chunk(traficoIds, 1000)
-  const facturas: FacturaLink[] = []
-  for (const batch of facturaChunks) {
+  // --- Step 2: facturas — enriched (numero, fecha, moneda, incoterm, cve_proveedor)
+  const facturas: FacturaEnriched[] = []
+  for (const batch of chunk(traficoIds, 1000)) {
     if (batch.length === 0) continue
     const res = await supabase
       .from('globalpc_facturas')
-      .select('cve_trafico, folio')
+      .select('cve_trafico, folio, numero, fecha_facturacion, valor_comercial, moneda, incoterm, cve_proveedor')
       .eq('company_id', companyId)
       .in('cve_trafico', batch)
     if (res.error) {
       return { ok: false, error: { status: 500, code: 'DATA_ERROR', message: `Error consultando facturas: ${res.error.message}` } }
     }
-    for (const r of (res.data ?? []) as FacturaLink[]) facturas.push(r)
+    for (const r of (res.data ?? []) as FacturaEnriched[]) facturas.push(r)
   }
+  const folioToFactura = new Map<number, FacturaEnriched>()
   const folioToTrafico = new Map<number, string>()
   for (const f of facturas) {
-    if (f.folio != null && f.cve_trafico) folioToTrafico.set(f.folio, f.cve_trafico)
+    if (f.folio != null && f.cve_trafico) {
+      folioToTrafico.set(f.folio, f.cve_trafico)
+      folioToFactura.set(f.folio, f)
+    }
   }
   const folios = Array.from(folioToTrafico.keys())
 
-  // --- Step 3: partidas by folio (chunked) -----------------------------
+  // --- Step 3: partidas — enriched (marca, modelo, serie, item seq) ---
   const partidas: PartidaRaw[] = []
-  const partidaChunks = chunk(folios, 1000)
-  for (const batch of partidaChunks) {
+  for (const batch of chunk(folios, 1000)) {
     if (batch.length === 0) continue
     const res = await supabase
       .from('globalpc_partidas')
-      .select('id, folio, cve_producto, cve_cliente, cantidad, precio_unitario, peso, pais_origen')
+      .select('id, folio, cve_producto, cve_cliente, cantidad, precio_unitario, peso, pais_origen, marca, modelo, serie, numero_item')
       .eq('company_id', companyId)
       .in('folio', batch)
       .limit(DEFAULT_PARTIDAS_LIMIT)
@@ -217,65 +246,138 @@ async function buildFormato53(request: NextRequest, overrides?: { dateFrom?: str
     for (const r of (res.data ?? []) as PartidaRaw[]) partidas.push(r)
   }
 
-  // --- Step 4: productos enrichment (descripcion, fraccion) ------------
+  // --- Step 4: productos enrichment (descripcion, fraccion, umt, nico)
   const cvesNeeded = Array.from(new Set(partidas.map((p) => p.cve_producto).filter((x): x is string => !!x)))
   const productMap = new Map<string, ProductoEnrichment>()
-  const productChunks = chunk(cvesNeeded, 1000)
-  for (const batch of productChunks) {
+  for (const batch of chunk(cvesNeeded, 1000)) {
     if (batch.length === 0) continue
     const res = await supabase
       .from('globalpc_productos')
-      .select('cve_producto, descripcion, fraccion')
+      .select('cve_producto, descripcion, fraccion, umt, nico')
       .eq('company_id', companyId)
       .in('cve_producto', batch)
     if (res.error) {
       return { ok: false, error: { status: 500, code: 'DATA_ERROR', message: `Error consultando productos: ${res.error.message}` } }
     }
-    for (const p of (res.data ?? []) as Array<{ cve_producto: string | null; descripcion: string | null; fraccion: string | null }>) {
-      if (p.cve_producto) productMap.set(p.cve_producto, { descripcion: p.descripcion, fraccion: p.fraccion })
+    for (const p of (res.data ?? []) as Array<{ cve_producto: string | null; descripcion: string | null; fraccion: string | null; umt: string | null; nico: string | null }>) {
+      if (p.cve_producto) productMap.set(p.cve_producto, { descripcion: p.descripcion, fraccion: p.fraccion, umt: p.umt, nico: p.nico })
     }
   }
 
-  // --- Assembly -------------------------------------------------------
+  // --- Step 5: proveedores — resolve names + Tax ID/RFC ----------------
+  const cveProveedoresNeeded = Array.from(new Set(facturas.map((f) => f.cve_proveedor).filter((x): x is string => !!x)))
+  const proveedorMap = new Map<string, ProveedorEnrichment>()
+  for (const batch of chunk(cveProveedoresNeeded, 1000)) {
+    if (batch.length === 0) continue
+    const res = await supabase
+      .from('globalpc_proveedores')
+      .select('cve_proveedor, nombre, rfc')
+      .eq('company_id', companyId)
+      .in('cve_proveedor', batch)
+    if (res.error) {
+      return { ok: false, error: { status: 500, code: 'DATA_ERROR', message: `Error consultando proveedores: ${res.error.message}` } }
+    }
+    for (const p of (res.data ?? []) as Array<{ cve_proveedor: string | null; nombre: string | null; rfc: string | null }>) {
+      if (p.cve_proveedor) proveedorMap.set(p.cve_proveedor, { nombre: p.nombre, rfc: p.rfc })
+    }
+  }
+
+  // --- Assembly — 41-column Formato 53 shape --------------------------
+  // Date helpers: Formato 53 renders dates DD/MM/YYYY. Pedimento numbers
+  // render in SAT canonical form (`26 24 3596 6500441`).
+  const fmtDate = (iso: string | null): string | null => {
+    if (!iso) return null
+    const d = new Date(iso)
+    if (Number.isNaN(d.getTime())) return null
+    const dd = String(d.getUTCDate()).padStart(2, '0')
+    const mm = String(d.getUTCMonth() + 1).padStart(2, '0')
+    const yy = d.getUTCFullYear()
+    return `${dd}/${mm}/${yy}`
+  }
+  const yearOf = (iso: string | null): string | null => {
+    if (!iso) return null
+    const d = new Date(iso)
+    return Number.isNaN(d.getTime()) ? null : String(d.getUTCFullYear())
+  }
+  const splitPedimento = (ped: string | null): { clave: string | null; numero: string | null } => {
+    if (!ped) return { clave: null, numero: null }
+    // SAT pedimento is `DD AD PPPP SSSSSSS`. The "clave" is the 2-letter
+    // pedimento-type code (A1, A3, IMD, ITE, etc.) which lives on the
+    // trafico.regimen field for us. Return the full 15-digit number here.
+    return { clave: null, numero: formatPedimento(ped) ?? ped }
+  }
+
   const rows: Anexo24Row[] = []
-  let seq = 0
   for (const p of partidas) {
     if (p.folio == null) continue
     const traficoId = folioToTrafico.get(p.folio)
     if (!traficoId) continue
     const t = traficoMap.get(traficoId)
     if (!t) continue
-    // Apply the active-parts filter at assembly time (same slice as
-    // the /anexo-24 page). Falling through the entire set is still
-    // acceptable for first-load tenants who have no active cache yet.
+    // Active-parts filter — same slice as /anexo-24 page so on-screen
+    // SKU count matches the export row count.
     if (hasActiveFilter && p.cve_producto && !activeSet.has(p.cve_producto)) continue
 
-    const fecha = t.fecha_pago ?? t.fecha_llegada ?? null
-    if (dateFrom && fecha && fecha < dateFrom) continue
-    if (dateTo && fecha && fecha > dateTo) continue
-
     const enr = p.cve_producto ? productMap.get(p.cve_producto) : undefined
+    const factura = folioToFactura.get(p.folio)
+    const proveedorRow = factura?.cve_proveedor ? proveedorMap.get(factura.cve_proveedor) : undefined
+
     const cantidad = typeof p.cantidad === 'number' ? p.cantidad : (p.cantidad != null ? Number(p.cantidad) : null)
     const precio = typeof p.precio_unitario === 'number' ? p.precio_unitario : (p.precio_unitario != null ? Number(p.precio_unitario) : null)
     const valorUsd = cantidad != null && precio != null && Number.isFinite(cantidad * precio)
       ? Math.round(cantidad * precio * 100) / 100
       : null
+    const tc = t.tipo_cambio != null && Number.isFinite(Number(t.tipo_cambio)) ? Number(t.tipo_cambio) : null
+    const valorComercial = valorUsd != null && tc != null ? Math.round(valorUsd * tc * 100) / 100 : null
+    const tmec = isTmec(t.regimen)
+    const pedimentoInfo = splitPedimento(t.pedimento)
 
-    seq++
     rows.push({
-      consecutivo: seq,
-      pedimento: t.pedimento,
-      fecha,
-      trafico: t.trafico,
+      annio_fecha_pago: yearOf(t.fecha_pago),
+      aduana: t.aduana ?? null,
+      clave_pedimento: t.regimen ?? null, // regimen = pedimento clave (A1/IMD/ITE/etc.)
+      fecha_pago: fmtDate(t.fecha_pago),
+      proveedor: resolveProveedorName(
+        factura?.cve_proveedor ?? null,
+        proveedorRow?.nombre ?? t.proveedores ?? null,
+      ),
+      tax_id: proveedorRow?.rfc ?? null,
+      factura: factura?.numero ?? null,
+      fecha_factura: fmtDate(factura?.fecha_facturacion ?? null),
       fraccion: enr?.fraccion ?? null,
-      descripcion: enr?.descripcion ?? null,
-      cantidad,
-      umc: null, // UMC not on partidas; resolved via pedimento PDF in Phase 3
-      valor_usd: valorUsd,
-      proveedor: t.proveedores,
-      pais_origen: p.pais_origen ?? t.pais_procedencia,
-      regimen: t.regimen,
-      tmec: isTmec(t.regimen),
+      numero_parte: p.cve_producto ?? null,
+      clave_insumo: p.cve_producto ?? null,
+      origen: p.pais_origen ?? t.pais_procedencia ?? null,
+      tratado: tmec ? 'SI' : 'No',
+      cantidad_umc: cantidad,
+      umc: enr?.umt ?? null,
+      valor_aduana: valorComercial,
+      valor_comercial: valorComercial,
+      tigi: null,        // pedimento-XML only
+      fp_igi: null,      // pedimento-XML only
+      fp_iva: null,      // pedimento-XML only
+      fp_ieps: null,     // pedimento-XML only
+      tipo_cambio: tc,
+      iva: null,         // requires valor_aduana + DTA + IGI — pedimento-XML only
+      secuencia: typeof p.numero_item === 'number' ? p.numero_item : null,
+      remesa: null,      // pedimento-XML only
+      marca: p.marca ?? null,
+      modelo: p.modelo ?? null,
+      serie: p.serie ?? null,
+      numero_pedimento: pedimentoInfo.numero,
+      cantidad_umt: cantidad,  // same as UMC until pedimento-XML split lands
+      unidad_umt: enr?.umt ?? null,
+      valor_dolar: valorUsd,
+      incoterm: factura?.incoterm ?? null,
+      factor_conversion: 1,
+      fecha_presentacion: fmtDate(t.fecha_llegada),
+      consignatario: null,         // pedimento-XML only
+      destinatario: null,          // pedimento-XML only
+      vinculacion: null,           // pedimento-XML only
+      metodo_valoracion: null,     // pedimento-XML only
+      peso_bruto: p.peso ?? null,
+      pais_origen: p.pais_origen ?? t.pais_procedencia ?? null,
+      tmec,
     })
   }
 

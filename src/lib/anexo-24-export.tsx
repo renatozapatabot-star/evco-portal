@@ -1,15 +1,17 @@
-// PLACEHOLDER Anexo 24 column structure. Verify against GlobalPC output before official use.
+// CRUZ · Anexo 24 / Formato 53 export — matches the canonical GlobalPC
+// Formato 53 XLSX column structure (41 columns as shipped to SAT).
 //
-// CRUZ · Block 10 — Anexo 24 Export (structure only).
-// Pure function: no I/O. Produces BOTH a PDF and an Excel Buffer from a
-// single input shape. API route (`/api/reports/anexo-24/generate`) is the
-// only place where storage + operational_decisions writes happen — that
-// keeps this module hot-swappable when a real GlobalPC Anexo 24 sample is
-// in hand.
+// Reference file: the 2026-04-02 EVCO Formato 53 pull at
+// /Users/renatozapataandcompany/Downloads/Anexo 24_02042026 (1).xlsx
+// — column names + order copied verbatim from that file's
+// sharedStrings.xml so the CRUZ export is byte-compatible with a
+// SAT auditor's mental model.
 //
-// Shared CRUZ PDF header: Block 16 extracts `AguilaPdfHeader` into
-// `src/lib/pdf/brand.tsx`. Until then, the header is inline-copied from
-// Block 5 (`src/lib/classification-pdf.tsx`) and will be DRY'd in B16.
+// Not every column has source data today. Pedimento-XML-only fields
+// (Secuencia, Remesa, Vinculación, Método de Valoración, FP IGI/IVA/IEPS,
+// TIGI, Consignatario, Destinatario) render as empty strings —
+// Formato 53 tolerates these as blanks; SAT populates them when the
+// actual pedimento XML is pulled. Phase 3 ingest fills these in.
 
 import React from 'react'
 import * as XLSX from 'xlsx'
@@ -23,39 +25,64 @@ import {
 } from '@react-pdf/renderer'
 import { AguilaPdfHeader, AguilaPdfFooter } from '@/lib/pdf/brand'
 
-// ---------------------------------------------------------------------------
-// Silver palette — mirrors Block 5. Shared brand tokens now live in
-// src/lib/pdf/brand.tsx; locals here are used only by the Anexo 24-specific
-// table/banner styles below.
-// ---------------------------------------------------------------------------
 const SILVER = '#C0C5CE'
 const SILVER_BRIGHT = '#E8EAED'
 const TEXT_MUTED = '#6B7280'
 const TEXT_PRIMARY = '#111827'
 const BORDER = '#E5E7EB'
 const ZEBRA = '#F9FAFB'
-const AMBER_BG = '#FEF3C7'
-const AMBER_BORDER = '#F59E0B'
-const AMBER_TEXT = '#92400E'
 
 // ---------------------------------------------------------------------------
-// Types
+// Types — match the 41-column Formato 53 shape.
 // ---------------------------------------------------------------------------
 
 export interface Anexo24Row {
-  consecutivo: number
-  pedimento: string | null
-  fecha: string | null // ISO yyyy-mm-dd; PDF renders as-is, caller formats
-  trafico: string | null
-  fraccion: string | null
-  descripcion: string | null
-  cantidad: number | null
-  umc: string | null
-  valor_usd: number | null
-  proveedor: string | null
-  pais_origen: string | null
-  regimen: string | null
-  tmec: boolean
+  // Primary (always populated when data exists)
+  annio_fecha_pago: string | null          // "AnnioFechaPago" — 4-digit year
+  aduana: string | null                    // "Aduana"
+  clave_pedimento: string | null           // "Clave" (clave de pedimento)
+  fecha_pago: string | null                // "Fecha de pago" — DD/MM/YYYY
+  proveedor: string | null                 // "Proveedor" — resolved name
+  tax_id: string | null                    // "Tax ID/RFC"
+  factura: string | null                   // "Factura" — invoice number
+  fecha_factura: string | null             // "Fecha de factura" — DD/MM/YYYY
+  fraccion: string | null                  // "Fracción" — XXXX.XX.XX
+  numero_parte: string | null              // "Número de Parte" — cve_producto
+  clave_insumo: string | null              // "Clave de Insumo" — usually numero_parte
+  origen: string | null                    // "Origen" — country ISO
+  tratado: string | null                   // "Tratado" — USMCA eligibility flag
+  cantidad_umc: number | null              // "Cantidad UMComercial"
+  umc: string | null                       // "UMComercial"
+  valor_aduana: number | null              // "Valor aduana" (MXN)
+  valor_comercial: number | null           // "Valor comercial" (MXN)
+  tigi: string | null                      // "TIGI" — pedimento-only, nullable
+  fp_igi: string | null                    // "FP IGI"
+  fp_iva: string | null                    // "FP IVA"
+  fp_ieps: string | null                   // "FP IEPS"
+  tipo_cambio: number | null               // "Tipo de cambio"
+  iva: number | null                       // "IVA"
+  secuencia: number | null                 // "Secuencia" — position in pedimento
+  remesa: string | null                    // "Remesa"
+  marca: string | null                     // "Marca"
+  modelo: string | null                    // "Modelo"
+  serie: string | null                     // "Serie"
+  numero_pedimento: string | null          // "Número de Pedimento" — full 15-digit
+  cantidad_umt: number | null              // "Cantidad UMT"
+  unidad_umt: string | null                // "Unidad UMT"
+  valor_dolar: number | null               // "Valor Dólar" (USD)
+  incoterm: string | null                  // "INCOTERM"
+  factor_conversion: number | null         // "Factor de Conversión"
+  fecha_presentacion: string | null        // "Fecha de Presentación"
+  consignatario: string | null             // "Consignatario"
+  destinatario: string | null              // "Destinatario"
+  vinculacion: string | null               // "Vinculación"
+  metodo_valoracion: string | null         // "Método de Valoración"
+  peso_bruto: number | null                // "Peso bruto (kgs.)"
+  pais_origen: string | null               // "País de Origen"
+
+  // Internal only (not in the 41-col export — used by caller enrichment)
+  consecutivo?: number
+  tmec?: boolean
 }
 
 export interface Anexo24Meta {
@@ -63,7 +90,7 @@ export interface Anexo24Meta {
   cliente_nombre: string
   date_from: string | null
   date_to: string | null
-  generado_en: string // ISO
+  generado_en: string
   generado_por: string
   patente: string
   aduana: string
@@ -74,66 +101,99 @@ export interface Anexo24Data {
   rows: Anexo24Row[]
 }
 
-// Column set — PLACEHOLDER. Verify against real GlobalPC Anexo 24 before use.
+// ---------------------------------------------------------------------------
+// Column definitions — order, label, width matched to Formato 53.
+// ---------------------------------------------------------------------------
+
+type ColumnKey = keyof Anexo24Row
+
 export interface Anexo24Column {
-  key: keyof Anexo24Row
-  label: string // es-MX
-  width: string // PDF width %
-  xlsxWidth: number // Excel column width (chars)
+  key: ColumnKey
+  label: string
+  xlsxWidth: number
+  pdfWidth?: string   // only a subset rendered in the PDF
   align?: 'left' | 'right'
+  pdfInclude?: boolean
 }
 
 export const ANEXO_24_COLUMNS: readonly Anexo24Column[] = [
-  { key: 'consecutivo', label: 'No.', width: '4%', xlsxWidth: 6, align: 'right' },
-  { key: 'pedimento', label: 'Pedimento', width: '12%', xlsxWidth: 20 },
-  { key: 'fecha', label: 'Fecha', width: '8%', xlsxWidth: 12 },
-  { key: 'trafico', label: 'Embarque', width: '8%', xlsxWidth: 14 },
-  { key: 'fraccion', label: 'Fracción', width: '8%', xlsxWidth: 12 },
-  { key: 'descripcion', label: 'Descripción', width: '20%', xlsxWidth: 40 },
-  { key: 'cantidad', label: 'Cantidad', width: '7%', xlsxWidth: 12, align: 'right' },
-  { key: 'umc', label: 'UMC', width: '4%', xlsxWidth: 8 },
-  { key: 'valor_usd', label: 'Valor USD', width: '8%', xlsxWidth: 14, align: 'right' },
-  { key: 'proveedor', label: 'Proveedor', width: '9%', xlsxWidth: 22 },
-  { key: 'pais_origen', label: 'País', width: '5%', xlsxWidth: 8 },
-  { key: 'regimen', label: 'Régimen', width: '5%', xlsxWidth: 10 },
-  { key: 'tmec', label: 'T-MEC', width: '4%', xlsxWidth: 8 },
+  { key: 'annio_fecha_pago',   label: 'AnnioFechaPago',        xlsxWidth: 10, align: 'right' },
+  { key: 'aduana',             label: 'Aduana',                xlsxWidth: 8,  pdfInclude: true, pdfWidth: '5%' },
+  { key: 'clave_pedimento',    label: 'Clave',                 xlsxWidth: 8,  pdfInclude: true, pdfWidth: '4%' },
+  { key: 'fecha_pago',         label: 'Fecha de pago',         xlsxWidth: 14, pdfInclude: true, pdfWidth: '8%' },
+  { key: 'proveedor',          label: 'Proveedor',             xlsxWidth: 34, pdfInclude: true, pdfWidth: '16%' },
+  { key: 'tax_id',             label: 'Tax ID/RFC',            xlsxWidth: 16 },
+  { key: 'factura',            label: 'Factura',               xlsxWidth: 20, pdfInclude: true, pdfWidth: '10%' },
+  { key: 'fecha_factura',      label: 'Fecha de factura',      xlsxWidth: 14 },
+  { key: 'fraccion',           label: 'Fracción',              xlsxWidth: 12, pdfInclude: true, pdfWidth: '7%' },
+  { key: 'numero_parte',       label: 'Número de Parte',       xlsxWidth: 18, pdfInclude: true, pdfWidth: '10%' },
+  { key: 'clave_insumo',       label: 'Clave de Insumo',       xlsxWidth: 18 },
+  { key: 'origen',             label: 'Origen',                xlsxWidth: 8 },
+  { key: 'tratado',            label: 'Tratado',               xlsxWidth: 8 },
+  { key: 'cantidad_umc',       label: 'Cantidad UMComercial',  xlsxWidth: 14, align: 'right', pdfInclude: true, pdfWidth: '6%' },
+  { key: 'umc',                label: 'UMComercial',           xlsxWidth: 10, pdfInclude: true, pdfWidth: '4%' },
+  { key: 'valor_aduana',       label: 'Valor aduana',          xlsxWidth: 14, align: 'right' },
+  { key: 'valor_comercial',    label: 'Valor comercial',       xlsxWidth: 14, align: 'right' },
+  { key: 'tigi',               label: 'TIGI',                  xlsxWidth: 8 },
+  { key: 'fp_igi',             label: 'FP IGI',                xlsxWidth: 8 },
+  { key: 'fp_iva',             label: 'FP IVA',                xlsxWidth: 8 },
+  { key: 'fp_ieps',            label: 'FP IEPS',               xlsxWidth: 8 },
+  { key: 'tipo_cambio',        label: 'Tipo de cambio',        xlsxWidth: 10, align: 'right' },
+  { key: 'iva',                label: 'IVA',                   xlsxWidth: 10, align: 'right' },
+  { key: 'secuencia',          label: 'Secuencia',             xlsxWidth: 8, align: 'right' },
+  { key: 'remesa',             label: 'Remesa',                xlsxWidth: 10 },
+  { key: 'marca',              label: 'Marca',                 xlsxWidth: 12 },
+  { key: 'modelo',             label: 'Modelo',                xlsxWidth: 14 },
+  { key: 'serie',              label: 'Serie',                 xlsxWidth: 16 },
+  { key: 'numero_pedimento',   label: 'Número de Pedimento',   xlsxWidth: 20, pdfInclude: true, pdfWidth: '10%' },
+  { key: 'cantidad_umt',       label: 'Cantidad UMT',          xlsxWidth: 12, align: 'right' },
+  { key: 'unidad_umt',         label: 'Unidad UMT',            xlsxWidth: 10 },
+  { key: 'valor_dolar',        label: 'Valor Dólar',           xlsxWidth: 14, align: 'right', pdfInclude: true, pdfWidth: '7%' },
+  { key: 'incoterm',           label: 'INCOTERM',              xlsxWidth: 10 },
+  { key: 'factor_conversion',  label: 'Factor de Conversión',  xlsxWidth: 10, align: 'right' },
+  { key: 'fecha_presentacion', label: 'Fecha de Presentación', xlsxWidth: 14 },
+  { key: 'consignatario',      label: 'Consignatario',         xlsxWidth: 22 },
+  { key: 'destinatario',       label: 'Destinatario',          xlsxWidth: 22 },
+  { key: 'vinculacion',        label: 'Vinculación',           xlsxWidth: 10 },
+  { key: 'metodo_valoracion',  label: 'Método de Valoración',  xlsxWidth: 14 },
+  { key: 'peso_bruto',         label: 'Peso bruto (kgs.)',     xlsxWidth: 12, align: 'right' },
+  { key: 'pais_origen',        label: 'País de Origen',        xlsxWidth: 8,  pdfInclude: true, pdfWidth: '5%' },
 ] as const
 
-export const PLACEHOLDER_NOTICE_ES =
-  'Formato Anexo 24 pendiente verificación — comparar contra muestra de GlobalPC antes de uso oficial.'
-
 // ---------------------------------------------------------------------------
-// Excel
+// Excel rendering
 // ---------------------------------------------------------------------------
 
-function formatCellForXlsx(row: Anexo24Row, col: Anexo24Column): string | number {
+function cellForXlsx(row: Anexo24Row, col: Anexo24Column): string | number {
   const v = row[col.key]
   if (v == null) return ''
-  if (col.key === 'tmec') return (v as boolean) ? 'Sí' : 'No'
   if (typeof v === 'number') return v
+  if (typeof v === 'boolean') return v ? 'Sí' : 'No'
   return String(v)
 }
 
 function buildXlsxBuffer(data: Anexo24Data): Buffer {
-  const header = ANEXO_24_COLUMNS.map(c => c.label)
-  const body = data.rows.map(r => ANEXO_24_COLUMNS.map(c => formatCellForXlsx(r, c)))
+  const header = ANEXO_24_COLUMNS.map((c) => c.label)
+  const body = data.rows.map((r) => ANEXO_24_COLUMNS.map((c) => cellForXlsx(r, c)))
 
-  // Insert meta block rows above the table so operators see the same
-  // context in both artifacts.
-  const metaRows: (string | number)[][] = [
-    ['CRUZ · Anexo 24 (placeholder)'],
-    [PLACEHOLDER_NOTICE_ES],
-    ['Cliente', data.meta.cliente_nombre],
-    ['Patente', data.meta.patente, 'Aduana', data.meta.aduana],
-    ['Periodo', data.meta.date_from ?? '—', 'a', data.meta.date_to ?? '—'],
-    ['Generado', data.meta.generado_en, 'por', data.meta.generado_por],
-    [],
+  // Header block — mirrors the real Formato 53 file which starts with a
+  // two-row identity block ("Anexo 24" / client legal name) above the
+  // table. SAT auditors expect this shape.
+  const headerBlock: (string | number)[][] = [
+    ['Anexo 24'],
+    [data.meta.cliente_nombre],
+    [], // spacer
+    header,
   ]
 
-  const aoa: (string | number)[][] = [...metaRows, header, ...body]
+  const aoa: (string | number)[][] = [...headerBlock, ...body]
   const ws = XLSX.utils.aoa_to_sheet(aoa)
+  ws['!cols'] = ANEXO_24_COLUMNS.map((c) => ({ wch: c.xlsxWidth }))
 
-  ws['!cols'] = ANEXO_24_COLUMNS.map(c => ({ wch: c.xlsxWidth }))
+  // Merge the title row across the full 41-column width.
+  if (!ws['!merges']) ws['!merges'] = []
+  ws['!merges'].push({ s: { r: 0, c: 0 }, e: { r: 0, c: ANEXO_24_COLUMNS.length - 1 } })
+  ws['!merges'].push({ s: { r: 1, c: 0 }, e: { r: 1, c: ANEXO_24_COLUMNS.length - 1 } })
 
   const wb = XLSX.utils.book_new()
   XLSX.utils.book_append_sheet(wb, ws, 'Anexo 24')
@@ -141,27 +201,18 @@ function buildXlsxBuffer(data: Anexo24Data): Buffer {
 }
 
 // ---------------------------------------------------------------------------
-// PDF
+// PDF rendering — a lighter projection showing the 12 columns most useful
+// for a printed audit walkthrough. The XLSX is the full 41-column truth.
 // ---------------------------------------------------------------------------
 
 const styles = StyleSheet.create({
   page: {
-    padding: 28,
-    paddingBottom: 56,
-    fontSize: 7.5,
+    padding: 24,
+    paddingBottom: 48,
+    fontSize: 7,
     fontFamily: 'Helvetica',
     color: TEXT_PRIMARY,
   },
-  banner: {
-    marginBottom: 10,
-    padding: 6,
-    borderWidth: 0.5,
-    borderColor: AMBER_BORDER,
-    backgroundColor: AMBER_BG,
-    borderRadius: 2,
-  },
-  bannerText: { fontSize: 8, color: AMBER_TEXT },
-
   metaBlock: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -173,13 +224,12 @@ const styles = StyleSheet.create({
   },
   metaItem: { width: '33%', marginBottom: 3 },
   metaLabel: {
-    fontSize: 7,
+    fontSize: 6.5,
     color: TEXT_MUTED,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
-  metaValue: { fontSize: 9, color: TEXT_PRIMARY, marginTop: 1 },
-
+  metaValue: { fontSize: 8.5, color: TEXT_PRIMARY, marginTop: 1 },
   table: { borderWidth: 1, borderColor: BORDER, marginBottom: 8 },
   thead: {
     flexDirection: 'row',
@@ -189,7 +239,7 @@ const styles = StyleSheet.create({
   },
   th: {
     padding: 3,
-    fontSize: 6.5,
+    fontSize: 6,
     fontFamily: 'Helvetica-Bold',
     color: TEXT_PRIMARY,
     textTransform: 'uppercase',
@@ -201,17 +251,18 @@ const styles = StyleSheet.create({
     borderBottomColor: BORDER,
   },
   rowZ: { backgroundColor: ZEBRA },
-  td: { padding: 3, fontSize: 7, color: TEXT_PRIMARY },
+  td: { padding: 3, fontSize: 6.5, color: TEXT_PRIMARY },
+  spacer: { fontSize: 7, color: TEXT_MUTED, marginBottom: 8 },
 })
 
-function MetaBlock({ meta }: { meta: Anexo24Meta }) {
+function MetaBlock({ meta, rowCount }: { meta: Anexo24Meta; rowCount: number }) {
   const items: Array<[string, string]> = [
     ['Cliente', meta.cliente_nombre],
     ['Patente', meta.patente],
     ['Aduana', meta.aduana],
     ['Periodo desde', meta.date_from ?? '—'],
     ['Periodo hasta', meta.date_to ?? '—'],
-    ['Generado por', meta.generado_por],
+    ['Partidas', String(rowCount)],
   ]
   return (
     <View style={styles.metaBlock}>
@@ -228,25 +279,27 @@ function MetaBlock({ meta }: { meta: Anexo24Meta }) {
 function formatCellForPdf(row: Anexo24Row, col: Anexo24Column): string {
   const v = row[col.key]
   if (v == null) return '—'
-  if (col.key === 'tmec') return (v as boolean) ? 'Sí' : 'No'
-  if (col.key === 'valor_usd' && typeof v === 'number') {
-    return v.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-  }
-  if (col.key === 'cantidad' && typeof v === 'number') {
+  if (typeof v === 'boolean') return v ? 'Sí' : 'No'
+  if (typeof v === 'number') {
+    if (col.key === 'valor_dolar' || col.key === 'valor_aduana' || col.key === 'valor_comercial' || col.key === 'iva') {
+      return v.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    }
     return v.toLocaleString('es-MX')
   }
-  if (typeof v === 'string' && v.length > 40) return v.slice(0, 39) + '…'
-  return String(v)
+  const str = String(v)
+  if (str.length > 40) return str.slice(0, 39) + '…'
+  return str
 }
 
-function RowsTable({ rows }: { rows: readonly Anexo24Row[] }) {
+function PdfTable({ rows }: { rows: readonly Anexo24Row[] }) {
+  const pdfCols = ANEXO_24_COLUMNS.filter((c) => c.pdfInclude)
   return (
     <View style={styles.table}>
       <View style={styles.thead} fixed>
-        {ANEXO_24_COLUMNS.map(c => (
+        {pdfCols.map((c) => (
           <Text
             key={c.key}
-            style={[styles.th, { width: c.width, textAlign: c.align ?? 'left' }]}
+            style={[styles.th, { width: c.pdfWidth ?? '8%', textAlign: c.align ?? 'left' }]}
           >
             {c.label}
           </Text>
@@ -254,10 +307,10 @@ function RowsTable({ rows }: { rows: readonly Anexo24Row[] }) {
       </View>
       {rows.map((r, i) => (
         <View key={i} style={[styles.row, i % 2 === 1 ? styles.rowZ : {}]}>
-          {ANEXO_24_COLUMNS.map(c => (
+          {pdfCols.map((c) => (
             <Text
               key={c.key}
-              style={[styles.td, { width: c.width, textAlign: c.align ?? 'left' }]}
+              style={[styles.td, { width: c.pdfWidth ?? '8%', textAlign: c.align ?? 'left' }]}
             >
               {formatCellForPdf(r, c)}
             </Text>
@@ -271,18 +324,18 @@ function RowsTable({ rows }: { rows: readonly Anexo24Row[] }) {
 function Anexo24Document({ data }: { data: Anexo24Data }) {
   return (
     <Document>
-      <Page size="A4" orientation="landscape" style={styles.page}>
+      <Page size="LEGAL" orientation="landscape" style={styles.page}>
         <AguilaPdfHeader
           title="ANEXO 24 · FORMATO 53"
           subtitle={`Generado ${data.meta.generado_en}`}
           gradientId="silverGradAnx"
           hideEagle
         />
-        <View style={styles.banner}>
-          <Text style={styles.bannerText}>{PLACEHOLDER_NOTICE_ES}</Text>
-        </View>
-        <MetaBlock meta={data.meta} />
-        <RowsTable rows={data.rows} />
+        <MetaBlock meta={data.meta} rowCount={data.rows.length} />
+        <Text style={styles.spacer}>
+          Proyección de 12 columnas — el archivo XLSX adjunto contiene las 41 columnas completas del Formato 53.
+        </Text>
+        <PdfTable rows={data.rows} />
         <AguilaPdfFooter />
       </Page>
     </Document>
@@ -297,10 +350,6 @@ async function buildPdfBuffer(data: Anexo24Data): Promise<Buffer> {
 // Public API
 // ---------------------------------------------------------------------------
 
-/**
- * Storage path convention. Both artifacts land under the same tenant+timestamp
- * prefix so they travel together in audits.
- */
 export function buildAnexo24StoragePath(params: {
   companyId: string
   timestamp?: number
@@ -308,7 +357,7 @@ export function buildAnexo24StoragePath(params: {
 }): string {
   const ts = params.timestamp ?? Date.now()
   const ext = params.kind === 'pdf' ? 'pdf' : 'xlsx'
-  return `${params.companyId}/${ts}_anexo24_placeholder.${ext}`
+  return `${params.companyId}/${ts}_anexo24.${ext}`
 }
 
 export async function generateAnexo24(

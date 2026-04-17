@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { loadAnexo24Overlay, resolveMerchName, resolveFraction, isAnexo24CanonicalEnabled } from '@/lib/reference/anexo24'
 import { getActiveCveProductos, activeCvesArray } from './active-parts'
+import { resolveProveedorName } from '@/lib/proveedor-names'
 
 type AnyClient = SupabaseClient<any, any, any> // eslint-disable-line @typescript-eslint/no-explicit-any
 
@@ -281,7 +282,13 @@ export async function getAnexoSnapshot(
       fraccion_source: canonical ? 'anexo24' : p.fraccion_source,
       fraccion_classified_at: p.fraccion_classified_at,
       cve_proveedor: p.cve_proveedor,
-      proveedor_nombre: p.cve_proveedor ? proveedorMap.get(p.cve_proveedor) ?? null : null,
+      // Never surface raw PRV_#### codes — coalesce through the canonical
+      // helper. Falls back to "Proveedor 526" style or "pendiente de
+      // identificar" if no human name is available.
+      proveedor_nombre: resolveProveedorName(
+        p.cve_proveedor,
+        p.cve_proveedor ? proveedorMap.get(p.cve_proveedor) : null,
+      ),
       pais_origen: canonical?.pais_origen_official ?? p.pais_origen,
       umt: canonical?.umt_official ?? p.umt,
       veces_importado: agg?.count ?? 0,

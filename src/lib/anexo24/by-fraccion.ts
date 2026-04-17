@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { loadAnexo24Overlay, isAnexo24CanonicalEnabled } from '@/lib/reference/anexo24'
 import { getActiveCveProductos, activeCvesArray } from './active-parts'
+import { resolveProveedorName } from '@/lib/proveedor-names'
 
 type AnyClient = SupabaseClient<any, any, any> // eslint-disable-line @typescript-eslint/no-explicit-any
 
@@ -243,7 +244,12 @@ export async function getAnexoByFraccion(
     const resolvedFraccion = canonical?.fraccion_official ?? p.fraccion ?? ''
     if (!resolvedFraccion) continue
     const resolvedDesc = canonical?.merchandise_name_official ?? p.descripcion ?? ''
-    const proveedorName = p.cve_proveedor ? proveedorMap.get(p.cve_proveedor) ?? null : null
+    // Never surface raw PRV_#### codes — route every proveedor through
+    // the canonical name resolver.
+    const proveedorName = resolveProveedorName(
+      p.cve_proveedor,
+      p.cve_proveedor ? proveedorMap.get(p.cve_proveedor) : null,
+    )
     const agg = cve ? aggByCve.get(cve) : undefined
 
     const gp = byFrac.get(resolvedFraccion) ?? {

@@ -55,7 +55,7 @@ export interface NavTileDef {
  * now ships with ClipboardList (inventory-control semantics).
  */
 export const UNIFIED_NAV_TILES: readonly NavTileDef[] = [
-  { key: 'traficos',    href: '/embarques',   label: 'Embarques',    icon: Truck,          description: 'Operaciones activas' },
+  { key: 'traficos',    href: '/embarques',   label: 'Tráficos',     icon: Truck,          description: 'Operaciones activas' },
   { key: 'pedimentos',  href: '/pedimentos',  label: 'Pedimentos',   icon: FileText,       description: 'Declaraciones aduanales' },
   { key: 'expedientes', href: '/expedientes', label: 'Expedientes',  icon: FolderOpen,     description: 'Documentos por operación' },
   { key: 'catalogo',    href: '/catalogo',    label: 'Catálogo',     icon: Book,           description: 'Partes e historial' },

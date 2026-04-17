@@ -139,6 +139,9 @@ function TraficosContent() {
   // partidaDescMap removed — see comment near former query at line ~221
   const [gpcFacturasMap, setGpcFacturasMap] = useState<Map<string, { cve_proveedor: string; numero: string; valor_comercial: number }>>(new Map())
   const [proveedorMap, setProveedorMap] = useState<Map<string, string>>(new Map())
+  // Partes-based descriptions: trafico → joined product descriptions from
+  // partidas → productos. Populated after the main row fetch lands.
+  const [partesDescMap, setPartesDescMap] = useState<Map<string, string>>(new Map())
 
   const [companyId, setCompanyId] = useState('')
   const [clientClave, setClientClave] = useState('')
@@ -180,10 +183,35 @@ function TraficosContent() {
         const arr = Array.isArray(d.data ?? d) ? (d.data ?? d) : []
         setRows(arr)
         setCache(cacheKey, arr)
+
+        // Enrich with partes-derived descriptions — one batched call
+        // to the new endpoint. Descripcion_mercancia on traficos is
+        // usually a generic summary; the partes chain gives the actual
+        // merchandise the client recognizes. Falls back silently if
+        // the endpoint errors.
+        const traficoIds = arr
+          .map((r: { trafico?: string }) => r.trafico)
+          .filter((t: string | undefined): t is string => typeof t === 'string' && t.length > 0)
+          .slice(0, 500)
+        if (traficoIds.length > 0) {
+          fetch(`/api/embarques/partes-description?traficos=${encodeURIComponent(traficoIds.join(','))}`)
+            .then(r => r.ok ? r.json() : null)
+            .then(body => {
+              if (!body?.data) return
+              const next = new Map<string, string>()
+              for (const [trafico, payload] of Object.entries(body.data as Record<string, { descriptions: string[]; count: number }>)) {
+                if (payload.descriptions.length > 0) {
+                  next.set(trafico, payload.descriptions.join(' · '))
+                }
+              }
+              setPartesDescMap(next)
+            })
+            .catch(() => { /* silent — description falls back to descripcion_mercancia */ })
+        }
       })
       .catch(err => {
         if (err.message === 'session_expired') { window.location.href = '/login'; return }
-        setFetchError('Error cargando embarques. Reintentar.')
+        setFetchError('Error cargando tráficos. Reintentar.')
       })
       .finally(() => setLoading(false))
 
@@ -317,6 +345,12 @@ function TraficosContent() {
   }
 
   const getDesc = (r: TraficoRow): string => {
+    // Partes-first: the joined product descriptions from partidas →
+    // productos are what the client recognizes. Falls back to
+    // trafico.descripcion_mercancia (usually generic) and finally
+    // factura.descripcion if both are empty.
+    const partes = partesDescMap.get(r.trafico)
+    if (partes) return partes
     if (r.descripcion_mercancia) return r.descripcion_mercancia
     const fac = facturasMap.get(r.trafico)
     return fac?.descripcion || ''
@@ -368,7 +402,7 @@ function TraficosContent() {
           fontSize: 22, fontWeight: 800, color: '#E6EDF3',
           letterSpacing: '-0.02em', margin: 0,
         }}>
-          Embarques
+          Tráficos
         </h1>
       </div>
 
@@ -393,7 +427,7 @@ function TraficosContent() {
           <div className="toolbar-search" style={{ minHeight: 60 }}>
             <Search size={12} style={{ color: 'var(--slate-400)', flexShrink: 0 }} />
             <input
-              placeholder="Embarque, pedimento, proveedor, factura..."
+              placeholder="Tráfico, pedimento, proveedor, factura..."
               value={searchInput}
               onChange={e => setSearchInput(e.target.value)}
               aria-label="Buscar embarques"
@@ -484,7 +518,7 @@ function TraficosContent() {
             <table className="aguila-table" aria-label="Lista de embarques" style={{ minWidth: 720 }}>
               <thead>
                 <tr>
-                  <th scope="col" style={{ width: 150, cursor: 'pointer' }} onClick={() => toggleSort('trafico')}>Clave de Embarque<SortArrow col="trafico" sort={sort} /></th>
+                  <th scope="col" style={{ width: 150, cursor: 'pointer' }} onClick={() => toggleSort('trafico')}>Clave de Tráfico<SortArrow col="trafico" sort={sort} /></th>
                   <th scope="col" style={{ minWidth: 220 }}>Descripción</th>
                   <th scope="col" style={{ width: 140 }}>Pedimento</th>
                   <th scope="col" style={{ width: 110 }}>Fecha Cruce</th>

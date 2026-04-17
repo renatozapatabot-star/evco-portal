@@ -3,12 +3,11 @@
 import { useEffect, useState } from 'react'
 import { KPITile } from '@/components/aguila/KPITile'
 import type { ReportesKpis } from '@/lib/reportes/kpis'
-
-function fmtUSDCompact(n: number): string {
-  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`
-  if (n >= 1_000) return `$${(n / 1_000).toFixed(0)}K`
-  return `$${n.toFixed(0)}`
-}
+// Canonical compact formatter lives in lib/format-utils — appends "USD"
+// suffix so every financial KPI surface is unambiguous about currency.
+// The local copy that used to live in this file stripped the suffix,
+// making "Valor importado $30.0M" read as MXN to clients (invariant #10).
+import { fmtUSDCompact } from '@/lib/format-utils'
 
 /**
  * Six-tile KPI strip rendered above the report builder. Mirrors the totals
@@ -53,7 +52,11 @@ export function ReportesKpiStrip() {
     'Operaciones totales',
     'Valor importado',
     'Despacho rápido',
-    'Tasa de éxito',
+    // "Tasa de éxito" read as a broker quality score, which it isn't —
+    // the underlying metric is cruzados ÷ total (completed in window).
+    // Relabel so a 33% reading on a month with lots of in-flight
+    // shipments doesn't imply "we failed 67% of pedimentos".
+    '% Cruzados en ventana',
     'Cumplimiento T-MEC',
     'Pedimentos asignados',
   ]

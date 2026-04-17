@@ -165,17 +165,21 @@ export async function GET(request: NextRequest) {
     )
   }
 
-  const readings = await Promise.all(TABLES.map((t) => probeTable(tenant, t)))
-  const verdict: Health = readings.reduce<Health>(
-    (acc, r) => worst(acc, r.health),
-    'green',
-  )
+  const [readings, syncTypes] = await Promise.all([
+    Promise.all(TABLES.map((t) => probeTable(tenant, t))),
+    probeSyncTypes(),
+  ])
+
+  const tableVerdict: Health = readings.reduce<Health>((acc, r) => worst(acc, r.health), 'green')
+  const syncVerdict: Health = syncTypes.reduce<Health>((acc, s) => worst(acc, s.health), 'green')
+  const verdict: Health = worst(tableVerdict, syncVerdict)
 
   return NextResponse.json(
     {
       tenant,
       generated_at: new Date().toISOString(),
       tables: readings,
+      sync_types: syncTypes,
       verdict,
     },
     {
@@ -183,4 +187,65 @@ export async function GET(request: NextRequest) {
       headers: { 'Cache-Control': 'no-store, private' },
     },
   )
+}
+
+interface SyncTypeReading {
+  sync_type: string
+  last_success_at: string | null
+  minutes_ago: number | null
+  failed_since_last_success: number
+  health: Health
+}
+
+async function probeSyncTypes(): Promise<SyncTypeReading[]> {
+  try {
+    const { data } = await supabase
+      .from('sync_log')
+      .select('sync_type, status, started_at, completed_at')
+      .order('started_at', { ascending: false })
+      .limit(1000)
+    if (!data) return []
+
+    const bySyncType = new Map<string, Array<{ status: string | null; completed_at: string | null; started_at: string | null }>>()
+    for (const row of data as Array<{ sync_type: string | null; status: string | null; completed_at: string | null; started_at: string | null }>) {
+      if (!row.sync_type) continue
+      const arr = bySyncType.get(row.sync_type) ?? []
+      arr.push(row)
+      bySyncType.set(row.sync_type, arr)
+    }
+
+    const out: SyncTypeReading[] = []
+    for (const [syncType, rows] of bySyncType) {
+      const lastSuccess = rows.find((r) => r.status === 'success' && r.completed_at)
+      const minutesAgo = lastSuccess?.completed_at
+        ? Math.max(0, Math.floor((Date.now() - new Date(lastSuccess.completed_at).getTime()) / 60_000))
+        : null
+      let failedSince = 0
+      for (const r of rows) {
+        if (r.status === 'success') break
+        if (r.status === 'failed' || r.status === 'error') failedSince++
+      }
+      let health: Health = 'unknown' as unknown as Health
+      if (minutesAgo == null) {
+        // Never succeeded — treat as red.
+        health = 'red'
+      } else if (minutesAgo <= 60 * 6) {
+        health = 'green'
+      } else if (minutesAgo <= 60 * 24) {
+        health = 'amber'
+      } else {
+        health = 'red'
+      }
+      out.push({
+        sync_type: syncType,
+        last_success_at: lastSuccess?.completed_at ?? null,
+        minutes_ago: minutesAgo,
+        failed_since_last_success: failedSince,
+        health,
+      })
+    }
+    return out.sort((a, b) => a.sync_type.localeCompare(b.sync_type))
+  } catch {
+    return []
+  }
 }

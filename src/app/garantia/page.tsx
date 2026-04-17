@@ -5,9 +5,9 @@ import Link from 'next/link'
 import { useIsMobile } from '@/hooks/use-mobile'
 
 /**
- * /garantia — The CRUZ Guarantee (BUILD 160)
+ * /garantia — The PORTAL Guarantee (BUILD 160)
  * Nobody else guarantees customs clearance.
- * CRUZ guarantees it because the system prevents failures.
+ * PORTAL guarantees it because the system prevents failures.
  */
 export default function GarantiaPage() {
   const isMobile = useIsMobile()
@@ -22,7 +22,7 @@ export default function GarantiaPage() {
       icon: <Shield size={28} style={{ color: 'var(--success)' }} />,
       title: 'Cero multas por errores',
       detail: 'O cubrimos la penalización',
-      proof: 'Validación automática pre-despacho con CRUZ',
+      proof: 'Validación automática pre-despacho con PORTAL',
     },
     {
       icon: <FileText size={28} style={{ color: 'var(--info)' }} />,
@@ -41,7 +41,7 @@ export default function GarantiaPage() {
             <Award size={32} style={{ color: 'var(--gold)' }} />
           </div>
           <h1 style={{ fontSize: isMobile ? 24 : 32, fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1.2, margin: '0 0 12px' }}>
-            Garantía CRUZ
+            Garantía PORTAL
           </h1>
           <p style={{ fontSize: 'var(--aguila-fs-body-lg)', color: 'var(--text-secondary)', lineHeight: 1.6, maxWidth: 480, margin: '0 auto' }}>
             Respaldada por 80 años de operación y datos verificados de Patente 3596.

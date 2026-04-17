@@ -1,0 +1,3726 @@
+{
+  "generated_at": "2026-04-17T21:54:47.964Z",
+  "companies_total": 307,
+  "companies_active": 51,
+  "tables": {
+    "traficos": {
+      "total_rows": 32376,
+      "distinct_company_ids": 21,
+      "orphan_company_ids": []
+    },
+    "entradas": {
+      "total_rows": 64785,
+      "distinct_company_ids": 4,
+      "orphan_company_ids": []
+    },
+    "expediente_documentos": {
+      "total_rows": 307974,
+      "distinct_company_ids": 5,
+      "orphan_company_ids": [
+        "0405",
+        "0535",
+        "0543",
+        "0626",
+        "0627"
+      ]
+    },
+    "globalpc_productos": {
+      "total_rows": 748922,
+      "distinct_company_ids": 1,
+      "orphan_company_ids": []
+    },
+    "globalpc_partidas": {
+      "total_rows": 290597,
+      "distinct_company_ids": 1,
+      "orphan_company_ids": []
+    },
+    "globalpc_facturas": {
+      "total_rows": 64447,
+      "distinct_company_ids": 4,
+      "orphan_company_ids": []
+    },
+    "globalpc_eventos": {
+      "total_rows": 196611,
+      "distinct_company_ids": 36,
+      "orphan_company_ids": [
+        "8979",
+        "3423",
+        "7073"
+      ]
+    },
+    "globalpc_proveedores": {
+      "total_rows": 1972,
+      "distinct_company_ids": 48,
+      "orphan_company_ids": []
+    },
+    "anexo24_partidas": {
+      "total_rows": 1793,
+      "distinct_company_ids": 1,
+      "orphan_company_ids": []
+    }
+  },
+  "per_company": {
+    "aceros-termicos": {
+      "name": "INTERNACIONAL DE ACEROS TERMICOS S.A. DE C.V.",
+      "clave_cliente": "5967",
+      "tables": {
+        "traficos": {
+          "count": 242
+        },
+        "entradas": {
+          "count": 457
+        },
+        "expediente_documentos": {
+          "count": 0
+        },
+        "globalpc_productos": {
+          "count": 1847
+        },
+        "globalpc_partidas": {
+          "count": 1230
+        },
+        "globalpc_facturas": {
+          "count": 536
+        },
+        "globalpc_eventos": {
+          "count": 2274
+        },
+        "globalpc_proveedores": {
+          "count": 8
+        },
+        "anexo24_partidas": {
+          "count": 0
+        }
+      },
+      "truth": {
+        "anexo24_count": 0,
+        "partidas_count": 238,
+        "facturas_parts_count": 238,
+        "truth_set_count": 238,
+        "claimed_count": 243,
+        "contamination_count": 6,
+        "contamination_pct": 2.4691358024691357,
+        "sample_contamination": [
+          "DPSS-400-400-10",
+          "PENDIENTE",
+          "PF-125X-250",
+          "RA1-125-5000-310",
+          "RA35-.1375-4.750-310",
+          "RA35.375-2.250-304"
+        ],
+        "sample_truth": [
+          "092-0005-04",
+          "092-0005-14",
+          "102-0101-03",
+          "102-0101-13",
+          "102-0219-01",
+          "102-0401-01",
+          "3003.020X.500XRDM",
+          "3003.500X.020XRDM",
+          "304.062XCOIL",
+          "304.125X.250XCOIL"
+        ]
+      }
+    },
+    "alimentos-san-fabian": {
+      "name": "ALIMENTOS Y PRODUCTOS CINEGETICOS SAN FABIAN",
+      "clave_cliente": "1787",
+      "tables": {
+        "traficos": {
+          "count": 145
+        },
+        "entradas": {
+          "count": 152
+        },
+        "expediente_documentos": {
+          "count": 0
+        },
+        "globalpc_productos": {
+          "count": 293
+        },
+        "globalpc_partidas": {
+          "count": 258
+        },
+        "globalpc_facturas": {
+          "count": 154
+        },
+        "globalpc_eventos": {
+          "count": 505
+        },
+        "globalpc_proveedores": {
+          "count": 6
+        },
+        "anexo24_partidas": {
+          "count": 0
+        }
+      },
+      "truth": {
+        "anexo24_count": 0,
+        "partidas_count": 15,
+        "facturas_parts_count": 15,
+        "truth_set_count": 15,
+        "claimed_count": 24,
+        "contamination_count": 9,
+        "contamination_pct": 37.5,
+        "sample_contamination": [
+          "45005",
+          "8402",
+          "ALIMENTO PARA VENADO",
+          "LAVADORA",
+          "MALLA",
+          "MONSTER",
+          "PORTONES",
+          "T-POSTS",
+          "TIPMANN"
+        ],
+        "sample_truth": [
+          "12312",
+          "BOMBA SUMERGIBLE",
+          "CONMUTADOR",
+          "CORRAL COMPLETO",
+          "DEER BLINDS",
+          "DEER FEEDERS",
+          "GRATE",
+          "MAQ. NIVELADORA",
+          "PELLET",
+          "PODADORAS DE CESPED"
+        ]
+      }
+    },
+    "becomar": {
+      "name": "BECOMAR DE MEXICO S. DE R.L. DE C.V.",
+      "clave_cliente": "1648",
+      "tables": {
+        "traficos": {
+          "count": 147
+        },
+        "entradas": {
+          "count": 164
+        },
+        "expediente_documentos": {
+          "count": 0
+        },
+        "globalpc_productos": {
+          "count": 1373
+        },
+        "globalpc_partidas": {
+          "count": 1085
+        },
+        "globalpc_facturas": {
+          "count": 176
+        },
+        "globalpc_eventos": {
+          "count": 1520
+        },
+        "globalpc_proveedores": {
+          "count": 12
+        },
+        "anexo24_partidas": {
+          "count": 0
+        }
+      },
+      "truth": {
+        "anexo24_count": 0,
+        "partidas_count": 142,
+        "facturas_parts_count": 142,
+        "truth_set_count": 142,
+        "claimed_count": 148,
+        "contamination_count": 6,
+        "contamination_pct": 4.054054054054054,
+        "sample_contamination": [
+          "FBD 220",
+          "FBO 075",
+          "FBV 110",
+          "MET",
+          "MLV-3",
+          "P25XTP075-CCW"
+        ],
+        "sample_truth": [
+          "2448NC",
+          "5A547C",
+          "5A557C",
+          "5A567C",
+          "5A577C",
+          "ACID/CORROSIVE STORAGE 44 GAL",
+          "ADHESIVE",
+          "BLENDED GRAIN COUNTERTOP",
+          "BLUESKING ROOF HIGH",
+          "BLUESKING VP160-SA"
+        ]
+      }
+    },
+    "bekaert": {
+      "name": "BEKAERT TRADE MEXICO S.DE R.L.DE C.V.",
+      "clave_cliente": "9085",
+      "tables": {
+        "traficos": {
+          "count": 431
+        },
+        "entradas": {
+          "count": 483
+        },
+        "expediente_documentos": {
+          "count": 0
+        },
+        "globalpc_productos": {
+          "count": 2871
+        },
+        "globalpc_partidas": {
+          "count": 1017
+        },
+        "globalpc_facturas": {
+          "count": 700
+        },
+        "globalpc_eventos": {
+          "count": 3487
+        },
+        "globalpc_proveedores": {
+          "count": 20
+        },
+        "anexo24_partidas": {
+          "count": 0
+        }
+      },
+      "truth": {
+        "anexo24_count": 0,
+        "partidas_count": 161,
+        "facturas_parts_count": 161,
+        "truth_set_count": 161,
+        "claimed_count": 246,
+        "contamination_count": 85,
+        "contamination_pct": 34.552845528455286,
+        "sample_contamination": [
+          ".1378",
+          "0010",
+          "1018-3.0",
+          "1047/6 CL",
+          "113089",
+          "118366",
+          "118373",
+          "12 1/2 GAUGE X 14",
+          "121634",
+          "122024",
+          "122670",
+          "123023",
+          "123027",
+          "123217",
+          "128028",
+          "133657",
+          "133658",
+          "138461",
+          "138837",
+          "139133"
+        ],
+        "sample_truth": [
+          ".055",
+          "004742",
+          "119171",
+          "121460",
+          "121510",
+          "121514",
+          "121575",
+          "121586",
+          "121602",
+          "121627"
+        ]
+      }
+    },
+    "beumer": {
+      "name": "BEUMER DE MEXICO S. DE R.L. DE C.V.",
+      "clave_cliente": "1519",
+      "tables": {
+        "traficos": {
+          "count": 169
+        },
+        "entradas": {
+          "count": 174
+        },
+        "expediente_documentos": {
+          "count": 0
+        },
+        "globalpc_productos": {
+          "count": 810
+        },
+        "globalpc_partidas": {
+          "count": 690
+        },
+        "globalpc_facturas": {
+          "count": 194
+        },
+        "globalpc_eventos": {
+          "count": 2032
+        },
+        "globalpc_proveedores": {
+          "count": 6
+        },
+        "anexo24_partidas": {
+          "count": 0
+        }
+      },
+      "truth": {
+        "anexo24_count": 0,
+        "partidas_count": 101,
+        "facturas_parts_count": 101,
+        "truth_set_count": 101,
+        "claimed_count": 106,
+        "contamination_count": 5,
+        "contamination_pct": 4.716981132075472,
+        "sample_contamination": [
+          "BANDAS PARA TRANSPORTADOR",
+          "PARTES PARA TRANSPORTADORES ENSAMBLES",
+          "POWER CURVE",
+          "SISTEMA DE TRANSPORTADOR COMBINADO BANDA Y RODILLO",
+          "TORNILLOS DE ACERO"
+        ],
+        "sample_truth": [
+          "72458",
+          "ALTAVOCES",
+          "ATTACHMENT STRAP",
+          "BANDA",
+          "BANDA DE HULE",
+          "BANDAS",
+          "BANDAS DE HULE",
+          "BANDAS PARA TRANSMISION",
+          "BANDAS TRANSPORTADORAS",
+          "BANDAS TRANSPORTADORAS."
+        ]
+      }
+    },
+    "cable-proveedora": {
+      "name": "CABLE PROVEEDORA S.A.",
+      "clave_cliente": "2108",
+      "tables": {
+        "traficos": {
+          "count": 830
+        },
+        "entradas": {
+          "count": 885
+        },
+        "expediente_documentos": {
+          "count": 0
+        },
+        "globalpc_productos": {
+          "count": 11409
+        },
+        "globalpc_partidas": {
+          "count": 5008
+        },
+        "globalpc_facturas": {
+          "count": 988
+        },
+        "globalpc_eventos": {
+          "count": 4293
+        },
+        "globalpc_proveedores": {
+          "count": 26
+        },
+        "anexo24_partidas": {
+          "count": 0
+        }
+      },
+      "truth": {
+        "anexo24_count": 0,
+        "partidas_count": 451,
+        "facturas_parts_count": 451,
+        "truth_set_count": 451,
+        "claimed_count": 646,
+        "contamination_count": 195,
+        "contamination_pct": 30.185758513931887,
+        "sample_contamination": [
+          "0048LA8WM12NS",
+          "006S60VO1GY521PVE5R1",
+          "102-SS07-210000000",
+          "104-SS07-210010000",
+          "109-S801-10002BKLG",
+          "1230G4",
+          "14403",
+          "14907",
+          "201SS",
+          "21500",
+          "28900",
+          "300VMF-2",
+          "32010",
+          "32210",
+          "34642",
+          "35440",
+          "36175-1",
+          "36700",
+          "37023",
+          "371708"
+        ],
+        "sample_truth": [
+          "006E77V008BK0010000R1",
+          "1122G21033213000",
+          "1152G21033113000",
+          "1220",
+          "12500",
+          "1329",
+          "1329-CHAPARRAL",
+          "16710",
+          "31910",
+          "32110"
+        ]
+      }
+    },
+    "calfer": {
+      "name": "CALFER DE MEXICO S.A. DE C.V.",
+      "clave_cliente": "1760",
+      "tables": {
+        "traficos": {
+          "count": 408
+        },
+        "entradas": {
+          "count": 4978
+        },
+        "expediente_documentos": {
+          "count": 0
+        },
+        "globalpc_productos": {
+          "count": 56544
+        },
+        "globalpc_partidas": {
+          "count": 14104
+        },
+        "globalpc_facturas": {
+          "count": 6095
+        },
+        "globalpc_eventos": {
+          "count": 2805
+        },
+        "globalpc_proveedores": {
+          "count": 43
+        },
+        "anexo24_partidas": {
+          "count": 0
+        }
+      },
+      "truth": {
+        "anexo24_count": 0,
+        "partidas_count": 2721,
+        "facturas_parts_count": 2721,
+        "truth_set_count": 2721,
+        "claimed_count": 4030,
+        "contamination_count": 1310,
+        "contamination_pct": 32.50620347394541,
+        "sample_contamination": [
+          ".5\" CV VLV",
+          ".75 CV VLV",
+          "0000",
+          "0007-1598",
+          "0007-1600",
+          "0007-1645",
+          "001-0021",
+          "001-0109",
+          "0010-5033",
+          "0011-0109",
+          "0012-0265",
+          "0012-7043",
+          "0013-7021",
+          "0019-7061",
+          "0019-8004",
+          "0019-8040",
+          "0019-8041",
+          "0019-8105",
+          "0021-0074",
+          "0021-0075"
+        ],
+        "sample_truth": [
+          ".5CV",
+          ".75 8700",
+          ".75CV",
+          "0001-7684",
+          "0003-6170",
+          "0005-5134",
+          "0007-1644",
+          "0007-1650",
+          "0007-1655",
+          "0007-1700"
+        ]
+      }
+    },
+    "camisas-manchester": {
+      "name": "FABRICA DE CAMISAS MANCHESTER S.A. DE C.V.",
+      "clave_cliente": "4180",
+      "tables": {
+        "traficos": {
+          "count": 578
+        },
+        "entradas": {
+          "count": 1486
+        },
+        "expediente_documentos": {
+          "count": 0
+        },
+        "globalpc_productos": {
+          "count": 368
+        },
+        "globalpc_partidas": {
+          "count": 59
+        },
+        "globalpc_facturas": {
+          "count": 589
+        },
+        "globalpc_eventos": {
+          "count": 2182
+        },
+        "globalpc_proveedores": {
+          "count": 38
+        },
+        "anexo24_partidas": {
+          "count": 0
+        }
+      },
+      "truth": {
+        "anexo24_count": 0,
+        "partidas_count": 9,
+        "facturas_parts_count": 9,
+        "truth_set_count": 9,
+        "claimed_count": 168,
+        "contamination_count": 159,
+        "contamination_pct": 94.64285714285714,
+        "sample_contamination": [
+          "0041801",
+          "0042872",
+          "0043442",
+          "0047058",
+          "0093632",
+          "0303050302003",
+          "051.355/6",
+          "06/32",
+          "112690",
+          "115162",
+          "12501",
+          "136X72",
+          "14/32",
+          "17OL 067000/074072",
+          "210403",
+          "212-012-007-0",
+          "2130",
+          "213486",
+          "224-020-071-0.",
+          "233.967/9"
+        ],
+        "sample_truth": [
+          "257-020-060-0",
+          "634-022",
+          "700-094-001-0",
+          "CAMISA HOMBRE POLIESTER",
+          "CAMISAS BOYS",
+          "CAMISAS HOMBRE",
+          "MUESTRAS",
+          "MUESTRAS PARA NINOS",
+          "SC040035"
+        ]
+      }
+    },
+    "castores": {
+      "name": "COOPERATIVA DE CONSUMIDORES REFACCIONARIA CASTORES SC",
+      "clave_cliente": "5913",
+      "tables": {
+        "traficos": {
+          "count": 1660
+        },
+        "entradas": {
+          "count": 1719
+        },
+        "expediente_documentos": {
+          "count": 0
+        },
+        "globalpc_productos": {
+          "count": 1673
+        },
+        "globalpc_partidas": {
+          "count": 1550
+        },
+        "globalpc_facturas": {
+          "count": 1622
+        },
+        "globalpc_eventos": {
+          "count": 16509
+        },
+        "globalpc_proveedores": {
+          "count": 4
+        },
+        "anexo24_partidas": {
+          "count": 0
+        }
+      },
+      "truth": {
+        "anexo24_count": 0,
+        "partidas_count": 33,
+        "facturas_parts_count": 33,
+        "truth_set_count": 33,
+        "claimed_count": 36,
+        "contamination_count": 3,
+        "contamination_pct": 8.333333333333332,
+        "sample_contamination": [
+          "FALDON",
+          "P-1077WHSHWS",
+          "SEMIREMOLQUE TIPO CAJA NUEVA"
+        ],
+        "sample_truth": [
+          "01-6500-0-164",
+          "01-6650-0-113",
+          "01-6650-0-179",
+          "01-6650-0-194",
+          "03-6650-0-310",
+          "03-6650-0-510",
+          "AR700SS",
+          "FLATBED",
+          "FRONT DOOR VENTS",
+          "JUEGO PARTE (ENSAMBLE)"
+        ]
+      }
+    },
+    "cinetica": {
+      "name": "CINETICA QUIMICA S.A. DE C.V.",
+      "clave_cliente": "3360",
+      "tables": {
+        "traficos": {
+          "count": 311
+        },
+        "entradas": {
+          "count": 322
+        },
+        "expediente_documentos": {
+          "count": 0
+        },
+        "globalpc_productos": {
+          "count": 726
+        },
+        "globalpc_partidas": {
+          "count": 428
+        },
+        "globalpc_facturas": {
+          "count": 326
+        },
+        "globalpc_eventos": {
+          "count": 1848
+        },
+        "globalpc_proveedores": {
+          "count": 19
+        },
+        "anexo24_partidas": {
+          "count": 0
+        }
+      },
+      "truth": {
+        "anexo24_count": 0,
+        "partidas_count": 38,
+        "facturas_parts_count": 38,
+        "truth_set_count": 38,
+        "claimed_count": 92,
+        "contamination_count": 54,
+        "contamination_pct": 58.69565217391305,
+        "sample_contamination": [
+          "ACIDO ACRILICO",
+          "AQUA FLOW PUMP",
+          "BH-304",
+          "BIOBROM",
+          "CD-201",
+          "CD-208",
+          "CG-8",
+          "CONDUCTIVITY, NUEVO",
+          "CONDUCTIVITY, USADO",
+          "DRUM, 15 GAL",
+          "FBS CM-05",
+          "FBS CM-062",
+          "FBS CM-51",
+          "FBS CM-52",
+          "FBS OL-602",
+          "FBS RO",
+          "FBS-015",
+          "FBS-020",
+          "FBS-035",
+          "FBS-05"
+        ],
+        "sample_truth": [
+          "100730",
+          "25000112-4",
+          "25000254",
+          "25000263",
+          "2517",
+          "61000122",
+          "70954",
+          "70993",
+          "71002",
+          "73646"
+        ]
+      }
+    },
+    "cmae": {
+      "name": "COMPANIA MANUFACTURERA DE ARTEFACTOS ELECTRICOS S.A DE",
+      "clave_cliente": "2481",
+      "tables": {
+        "traficos": {
+          "count": 362
+        },
+        "entradas": {
+          "count": 389
+        },
+        "expediente_documentos": {
+          "count": 0
+        },
+        "globalpc_productos": {
+          "count": 8563
+        },
+        "globalpc_partidas": {
+          "count": 1831
+        },
+        "globalpc_facturas": {
+          "count": 522
+        },
+        "globalpc_eventos": {
+          "count": 3375
+        },
+        "globalpc_proveedores": {
+          "count": 72
+        },
+        "anexo24_partidas": {
+          "count": 0
+        }
+      },
+      "truth": {
+        "anexo24_count": 0,
+        "partidas_count": 488,
+        "facturas_parts_count": 488,
+        "truth_set_count": 488,
+        "claimed_count": 1267,
+        "contamination_count": 779,
+        "contamination_pct": 61.48382004735596,
+        "sample_contamination": [
+          ".10C20H338",
+          ".10C25H338",
+          ".10C30H334",
+          ".10C35H334",
+          ".10C35H338",
+          ".10C40H338",
+          ".10CNFH4",
+          ".10CNFH4/934",
+          ".10CNFHB/934",
+          ".10CNFHE/934",
+          ".10NLOC/127",
+          ".10NLOC4",
+          ".10NLOC4/127",
+          ".12C100H334",
+          ".12C20H334",
+          ".12C20H338",
+          ".12C30H334",
+          ".12C35H338",
+          ".12C90H334",
+          ".12CNFH4/934"
+        ],
+        "sample_truth": [
+          "#6022 SHEAR BLADES",
+          "#BL446 LEAF CHAIN",
+          "0001V1",
+          "02012-01 DISH KNIFE",
+          "021238 SCR CAP",
+          "046908 PIN SPRING",
+          "0750D0203 MINI CYLINDER-PINCH",
+          "11BA1010203",
+          "11BA1010205 25KVA G BUASY WET",
+          "11BA1030202"
+        ]
+      }
+    },
+    "demo-plastics": {
+      "name": "DEMO PLASTICS S.A. DE C.V.",
+      "clave_cliente": "DEMO",
+      "tables": {
+        "traficos": {
+          "count": 50
+        },
+        "entradas": {
+          "count": 30
+        },
+        "expediente_documentos": {
+          "count": 60
+        },
+        "globalpc_productos": {
+          "count": 0
+        },
+        "globalpc_partidas": {
+          "count": 0
+        },
+        "globalpc_facturas": {
+          "count": 0
+        },
+        "globalpc_eventos": {
+          "count": 0
+        },
+        "globalpc_proveedores": {
+          "count": 0
+        },
+        "anexo24_partidas": {
+          "count": 0
+        }
+      },
+      "truth": {
+        "anexo24_count": 0,
+        "partidas_count": 0,
+        "facturas_parts_count": 0,
+        "truth_set_count": 0,
+        "claimed_count": 0,
+        "contamination_count": 0,
+        "contamination_pct": 0,
+        "sample_contamination": [],
+        "sample_truth": []
+      }
+    },
+    "dist-parra": {
+      "name": "DISTRIBUIDORA PARRA DE MONTERREY SA DE CV",
+      "clave_cliente": "9393",
+      "tables": {
+        "traficos": {
+          "count": 334
+        },
+        "entradas": {
+          "count": 618
+        },
+        "expediente_documentos": {
+          "count": 0
+        },
+        "globalpc_productos": {
+          "count": 10085
+        },
+        "globalpc_partidas": {
+          "count": 4204
+        },
+        "globalpc_facturas": {
+          "count": 694
+        },
+        "globalpc_eventos": {
+          "count": 2759
+        },
+        "globalpc_proveedores": {
+          "count": 90
+        },
+        "anexo24_partidas": {
+          "count": 0
+        }
+      },
+      "truth": {
+        "anexo24_count": 0,
+        "partidas_count": 783,
+        "facturas_parts_count": 783,
+        "truth_set_count": 783,
+        "claimed_count": 1104,
+        "contamination_count": 321,
+        "contamination_pct": 29.076086956521742,
+        "sample_contamination": [
+          "00154",
+          "01000BK",
+          "01000CL25",
+          "03493WH26",
+          "03494AL25",
+          "03628CL12",
+          "1",
+          "1 LT ALUMINUM CUP",
+          "1000151",
+          "1000157",
+          "100019",
+          "100021",
+          "10002201",
+          "100027",
+          "100038",
+          "100053",
+          "100056",
+          "1000635",
+          "100151-01",
+          "10015101"
+        ],
+        "sample_truth": [
+          "(14303)",
+          "(LE0366)",
+          "00154/01",
+          "00172/01",
+          "010/01",
+          "01000BK12",
+          "01000CL12",
+          "01000RD12",
+          "01011",
+          "01011BK48"
+        ]
+      }
+    },
+    "embajada1": {
+      "name": "EMBAJADA DE LOS ESTADOS UNIDOS DE NORTEAMERICA",
+      "clave_cliente": "3187",
+      "tables": {
+        "traficos": {
+          "count": 1987
+        },
+        "entradas": {
+          "count": 4926
+        },
+        "expediente_documentos": {
+          "count": 0
+        },
+        "globalpc_productos": {
+          "count": 13755
+        },
+        "globalpc_partidas": {
+          "count": 7846
+        },
+        "globalpc_facturas": {
+          "count": 2342
+        },
+        "globalpc_eventos": {
+          "count": 14398
+        },
+        "globalpc_proveedores": {
+          "count": 3
+        },
+        "anexo24_partidas": {
+          "count": 0
+        }
+      },
+      "truth": {
+        "anexo24_count": 0,
+        "partidas_count": 2204,
+        "facturas_parts_count": 2204,
+        "truth_set_count": 2204,
+        "claimed_count": 6182,
+        "contamination_count": 3985,
+        "contamination_pct": 64.4613393723714,
+        "sample_contamination": [
+          "0912-0450--4",
+          "1/2",
+          "10264598",
+          "12 TAPING KNIFE",
+          "1RF46",
+          "2230-0150-0",
+          "2230-0150-1",
+          "236993",
+          "2440-0020",
+          "28W T5",
+          "2HNW8",
+          "2HNX1",
+          "2HNX6",
+          "3/4",
+          "30 X 50 YD VELLUMX",
+          "310 CORDLESS",
+          "350T125-20GA.033",
+          "3A920",
+          "3M TAPE",
+          "3VE57"
+        ],
+        "sample_truth": [
+          "02030-01962",
+          "02030-02453",
+          "02030-02471",
+          "02030-02594",
+          "02030-02605",
+          "02030-02622",
+          "02030-02644",
+          "410SS",
+          "ABRAZADERA DE ACERO",
+          "ABRAZADERAS"
+        ]
+      }
+    },
+    "embajada2": {
+      "name": "LA EMBAJADA DE LOS ESTADOS UNIDOS DE NORTEAMERICA",
+      "clave_cliente": "3186",
+      "tables": {
+        "traficos": {
+          "count": 1800
+        },
+        "entradas": {
+          "count": 3609
+        },
+        "expediente_documentos": {
+          "count": 0
+        },
+        "globalpc_productos": {
+          "count": 12782
+        },
+        "globalpc_partidas": {
+          "count": 7381
+        },
+        "globalpc_facturas": {
+          "count": 1809
+        },
+        "globalpc_eventos": {
+          "count": 17
+        },
+        "globalpc_proveedores": {
+          "count": 11
+        },
+        "anexo24_partidas": {
+          "count": 0
+        }
+      },
+      "truth": {
+        "anexo24_count": 0,
+        "partidas_count": 2949,
+        "facturas_parts_count": 2949,
+        "truth_set_count": 2949,
+        "claimed_count": 3002,
+        "contamination_count": 53,
+        "contamination_pct": 1.765489673550966,
+        "sample_contamination": [
+          "0RRUL1142D",
+          "A19 LAMPS 100 WATT",
+          "ACIDO SULFURICO",
+          "AJAS DE CONEXION",
+          "ALPHA BATTERY ENCLOSURE",
+          "BANET CONTROL BOX",
+          "BATTERY RACK",
+          "CAP",
+          "CHAIN LINK FENCE",
+          "CONTACO MAGNETICO",
+          "COPPER COUPLING",
+          "COPPER ELL",
+          "COPPER MALE ADAPTER",
+          "CUCHILLA DIAMANTADO",
+          "EQUIPO DE PRUEBAS",
+          "ESTACIONES DE TRABAJO",
+          "EXPOXY CARTRIDGE",
+          "EXT6",
+          "FIRE PUMP",
+          "FLANGE"
+        ],
+        "sample_truth": [
+          "(FIXTURE)",
+          "0912-0450--4",
+          "1/2",
+          "10002",
+          "100A/ECONOMY/130V",
+          "10264598",
+          "102DC",
+          "11/2 FW WASHER",
+          "11/2 NC HEX NUT",
+          "115PLUSF20"
+        ]
+      }
+    },
+    "embajada3": {
+      "name": "EMBAJADA DE LOS ESTADOS UNIDOS DE NORTEAMERICA",
+      "clave_cliente": "3185",
+      "tables": {
+        "traficos": {
+          "count": 963
+        },
+        "entradas": {
+          "count": 1283
+        },
+        "expediente_documentos": {
+          "count": 0
+        },
+        "globalpc_productos": {
+          "count": 14704
+        },
+        "globalpc_partidas": {
+          "count": 10946
+        },
+        "globalpc_facturas": {
+          "count": 1001
+        },
+        "globalpc_eventos": {
+          "count": 6272
+        },
+        "globalpc_proveedores": {
+          "count": 2
+        },
+        "anexo24_partidas": {
+          "count": 0
+        }
+      },
+      "truth": {
+        "anexo24_count": 0,
+        "partidas_count": 3416,
+        "facturas_parts_count": 3416,
+        "truth_set_count": 3416,
+        "claimed_count": 5038,
+        "contamination_count": 1625,
+        "contamination_pct": 32.25486304088924,
+        "sample_contamination": [
+          "0912-0450--4",
+          "1/2",
+          "10264598",
+          "12 TAPING KNIFE",
+          "1RF46",
+          "2230-0150-0",
+          "2230-0150-1",
+          "236993",
+          "2440-0020",
+          "28W T5",
+          "2HNW8",
+          "2HNX1",
+          "2HNX6",
+          "3/4",
+          "30 X 50 YD VELLUMX",
+          "310 CORDLESS",
+          "350T125-20GA.033",
+          "3A920",
+          "3M TAPE",
+          "3VE57"
+        ],
+        "sample_truth": [
+          "6KY32",
+          "ABRASIVE DISCS",
+          "ABRASIVOS EN PAPEL (LIJAS)",
+          "ABRASIVOS EN PAPEL CARTON",
+          "ABRASIVOS EN PAPEL(LIJAS)",
+          "ABRAZADERA DE ACERO",
+          "ABRAZADERAS",
+          "ABRAZADERAS DE ACERO",
+          "ABRAZADERAS DE ACERO PARA REJILLAS",
+          "ABRAZADERAS DE ACERO PARA TUBOS"
+        ]
+      }
+    },
+    "empaques-litograficos": {
+      "name": "EMPAQUES Y ACABADOS LITOGRAFICOS S.A. DE C.V.",
+      "clave_cliente": "3323",
+      "tables": {
+        "traficos": {
+          "count": 197
+        },
+        "entradas": {
+          "count": 208
+        },
+        "expediente_documentos": {
+          "count": 932
+        },
+        "globalpc_productos": {
+          "count": 1223
+        },
+        "globalpc_partidas": {
+          "count": 1056
+        },
+        "globalpc_facturas": {
+          "count": 202
+        },
+        "globalpc_eventos": {
+          "count": 2195
+        },
+        "globalpc_proveedores": {
+          "count": 14
+        },
+        "anexo24_partidas": {
+          "count": 0
+        }
+      },
+      "truth": {
+        "anexo24_count": 0,
+        "partidas_count": 33,
+        "facturas_parts_count": 33,
+        "truth_set_count": 33,
+        "claimed_count": 152,
+        "contamination_count": 120,
+        "contamination_pct": 78.94736842105263,
+        "sample_contamination": [
+          "156 PALLET TRUCK",
+          "190/0321L",
+          "279",
+          "33B",
+          "3500658030",
+          "4-COLOR 0FFSET PRINT",
+          "48101399",
+          "604",
+          "63A",
+          "68B",
+          "A700",
+          "ACONDICIONADORES",
+          "AIR COMPRESSOR",
+          "AIRE ACONDICIONADO",
+          "ALICATES",
+          "APARATO CULTURA",
+          "ASIENTOS",
+          "BATERIAS",
+          "BF1000S",
+          "BIDSPOTTER"
+        ],
+        "sample_truth": [
+          "01500000004",
+          "ANAQUELES DE METAL",
+          "BBUNC",
+          "CARRETILLAS DE MANO",
+          "COMPRESORES",
+          "COMPUTADORA",
+          "CONWAY GRIPPER",
+          "CUP P1S",
+          "CUP P2S",
+          "CUPSTOCK"
+        ]
+      }
+    },
+    "equipos-dd": {
+      "name": "EQUIPOS Y MANTENIMIENTO D & D S.A. DE C.V.",
+      "clave_cliente": "4181",
+      "tables": {
+        "traficos": {
+          "count": 156
+        },
+        "entradas": {
+          "count": 693
+        },
+        "expediente_documentos": {
+          "count": 0
+        },
+        "globalpc_productos": {
+          "count": 13630
+        },
+        "globalpc_partidas": {
+          "count": 8766
+        },
+        "globalpc_facturas": {
+          "count": 995
+        },
+        "globalpc_eventos": {
+          "count": 679
+        },
+        "globalpc_proveedores": {
+          "count": 14
+        },
+        "anexo24_partidas": {
+          "count": 0
+        }
+      },
+      "truth": {
+        "anexo24_count": 0,
+        "partidas_count": 1100,
+        "facturas_parts_count": 1100,
+        "truth_set_count": 1100,
+        "claimed_count": 1267,
+        "contamination_count": 172,
+        "contamination_pct": 13.575374901341753,
+        "sample_contamination": [
+          "188179",
+          "1989",
+          "3200",
+          "3210",
+          "3211",
+          "3486106",
+          "3486110",
+          "36333",
+          "36909",
+          "38089499",
+          "381109LG",
+          "40020",
+          "40021",
+          "40050",
+          "41198",
+          "41506",
+          "41872",
+          "45850",
+          "49201",
+          "49202"
+        ],
+        "sample_truth": [
+          "10852",
+          "10CWNR133",
+          "1777191",
+          "1779636",
+          "1779699",
+          "1779700",
+          "1779731",
+          "1779738",
+          "1779740",
+          "1779741"
+        ]
+      }
+    },
+    "evco": {
+      "name": "EVCO PLASTICS DE MEXICO,S.DE R.L.DE C.V.",
+      "clave_cliente": "9254",
+      "tables": {
+        "traficos": {
+          "count": 3448
+        },
+        "entradas": {
+          "count": 20843
+        },
+        "expediente_documentos": {
+          "count": 214124
+        },
+        "globalpc_productos": {
+          "count": 149710
+        },
+        "globalpc_partidas": {
+          "count": 22599
+        },
+        "globalpc_facturas": {
+          "count": 14058
+        },
+        "globalpc_eventos": {
+          "count": 38437
+        },
+        "globalpc_proveedores": {
+          "count": 449
+        },
+        "anexo24_partidas": {
+          "count": 1793
+        }
+      },
+      "truth": {
+        "anexo24_count": 119,
+        "partidas_count": 4551,
+        "facturas_parts_count": 4551,
+        "truth_set_count": 4575,
+        "claimed_count": 6131,
+        "contamination_count": 1599,
+        "contamination_pct": 26.08057413146306,
+        "sample_contamination": [
+          "(007) .6CNNMS/985 INSERT LOCK NUT",
+          "#27 GLASS CLOTH ELECTRICAL TAPE",
+          "0-RING",
+          "001223010",
+          "001223011",
+          "0012930101",
+          "0013790001",
+          "0013800306",
+          "00142 ELECTRONIC",
+          "0022930130",
+          "0032930131",
+          "0038-00058A",
+          "0038-00058A ASS",
+          "0038-00104A",
+          "0038-00104A SS",
+          "003E32732",
+          "003E32732-1",
+          "003E32732C21",
+          "00417644",
+          "00429630134"
+        ],
+        "sample_truth": [
+          "071017",
+          "3800735",
+          "BSG200",
+          "3800513",
+          "80118",
+          "012023-MTY",
+          "002016",
+          "042133",
+          "083451",
+          "083113"
+        ]
+      }
+    },
+    "expoimpo": {
+      "name": "EXPOIMPO RB S.A. DE C.V.",
+      "clave_cliente": "4170",
+      "tables": {
+        "traficos": {
+          "count": 158
+        },
+        "entradas": {
+          "count": 189
+        },
+        "expediente_documentos": {
+          "count": 0
+        },
+        "globalpc_productos": {
+          "count": 42689
+        },
+        "globalpc_partidas": {
+          "count": 5715
+        },
+        "globalpc_facturas": {
+          "count": 2135
+        },
+        "globalpc_eventos": {
+          "count": 121
+        },
+        "globalpc_proveedores": {
+          "count": 112
+        },
+        "anexo24_partidas": {
+          "count": 0
+        }
+      },
+      "truth": {
+        "anexo24_count": 0,
+        "partidas_count": 972,
+        "facturas_parts_count": 972,
+        "truth_set_count": 972,
+        "claimed_count": 1274,
+        "contamination_count": 302,
+        "contamination_pct": 23.704866562009418,
+        "sample_contamination": [
+          "*CASINGS",
+          "1011-030",
+          "1014-006T-HB-K",
+          "1016-030T-141495",
+          "10181",
+          "10183",
+          "10188-STB",
+          "10190",
+          "10190-DSR",
+          "10215",
+          "10215-CNT",
+          "10247-DNT",
+          "10259-OCT",
+          "10260-BFT",
+          "10286",
+          "10291-OCT",
+          "10300-ETA",
+          "10309-OCT",
+          "10325-CTB",
+          "10332-DNT"
+        ],
+        "sample_truth": [
+          "08BOX-K",
+          "1006-005T",
+          "1006-005T.168697",
+          "1006-006T",
+          "1007-005T",
+          "1011-030T",
+          "1011-031T",
+          "1013-061T-HQ",
+          "1013-062T-PQ",
+          "1013-066T-HB-K"
+        ]
+      }
+    },
+    "faurecia": {
+      "name": "FAURECIA SISTEMAS AUTOMOTRICES DE MEXICO S DE RL DE CV",
+      "clave_cliente": "4275",
+      "tables": {
+        "traficos": {
+          "count": 540
+        },
+        "entradas": {
+          "count": 549
+        },
+        "expediente_documentos": {
+          "count": 561
+        },
+        "globalpc_productos": {
+          "count": 2097
+        },
+        "globalpc_partidas": {
+          "count": 1937
+        },
+        "globalpc_facturas": {
+          "count": 551
+        },
+        "globalpc_eventos": {
+          "count": 3277
+        },
+        "globalpc_proveedores": {
+          "count": 1
+        },
+        "anexo24_partidas": {
+          "count": 0
+        }
+      },
+      "truth": {
+        "anexo24_count": 0,
+        "partidas_count": 20,
+        "facturas_parts_count": 20,
+        "truth_set_count": 20,
+        "claimed_count": 23,
+        "contamination_count": 5,
+        "contamination_pct": 21.73913043478261,
+        "sample_contamination": [
+          "EJEMPLO",
+          "EMPTY PLASTIC BIN",
+          "ESTRUCTURA",
+          "PALETAS",
+          "PALLET"
+        ],
+        "sample_truth": [
+          "AP PALLET",
+          "AP PALLET (AL)",
+          "BASES",
+          "BUCKHORN",
+          "CAJA Y TAPAS",
+          "CAJAS",
+          "CAJAS DE PLASTICO",
+          "CAJAS Y TAPAS",
+          "CORREDERAS",
+          "FRM COMP"
+        ]
+      }
+    },
+    "ferretera-mims": {
+      "name": "DISTRIBUIDORA FERRETERA MIMS S.A. DE C.V.",
+      "clave_cliente": "3020",
+      "tables": {
+        "traficos": {
+          "count": 740
+        },
+        "entradas": {
+          "count": 1605
+        },
+        "expediente_documentos": {
+          "count": 3501
+        },
+        "globalpc_productos": {
+          "count": 63983
+        },
+        "globalpc_partidas": {
+          "count": 25369
+        },
+        "globalpc_facturas": {
+          "count": 1931
+        },
+        "globalpc_eventos": {
+          "count": 4732
+        },
+        "globalpc_proveedores": {
+          "count": 234
+        },
+        "anexo24_partidas": {
+          "count": 0
+        }
+      },
+      "truth": {
+        "anexo24_count": 0,
+        "partidas_count": 2211,
+        "facturas_parts_count": 2211,
+        "truth_set_count": 2211,
+        "claimed_count": 3050,
+        "contamination_count": 847,
+        "contamination_pct": 27.77049180327869,
+        "sample_contamination": [
+          "0050316023",
+          "1/16 27",
+          "1/8 27 NPT",
+          "100H-1-OL",
+          "1030A",
+          "1040A",
+          "11-516G7",
+          "113-23B",
+          "11749/10",
+          "119-01",
+          "13135",
+          "14X4 IN SOFT HANDLE",
+          "19600",
+          "2-059-016",
+          "2-059-017",
+          "2007",
+          "200PP",
+          "202-1/2",
+          "202-1001",
+          "202-5148#"
+        ],
+        "sample_truth": [
+          "#1 CHAIN BREAKERS&",
+          "#2 CHAIN BREAKERS",
+          "#3 CHAIN BREAKERS",
+          "000350",
+          "000351",
+          "000352",
+          "000353",
+          "000354",
+          "000355",
+          "000358"
+        ]
+      }
+    },
+    "g-traders": {
+      "name": "G-TRADERS GROUP S.A. DE C.V.",
+      "clave_cliente": "0101",
+      "tables": {
+        "traficos": {
+          "count": 326
+        },
+        "entradas": {
+          "count": 399
+        },
+        "expediente_documentos": {
+          "count": 1345
+        },
+        "globalpc_productos": {
+          "count": 9586
+        },
+        "globalpc_partidas": {
+          "count": 8466
+        },
+        "globalpc_facturas": {
+          "count": 434
+        },
+        "globalpc_eventos": {
+          "count": 2169
+        },
+        "globalpc_proveedores": {
+          "count": 12
+        },
+        "anexo24_partidas": {
+          "count": 0
+        }
+      },
+      "truth": {
+        "anexo24_count": 0,
+        "partidas_count": 930,
+        "facturas_parts_count": 930,
+        "truth_set_count": 930,
+        "claimed_count": 948,
+        "contamination_count": 18,
+        "contamination_pct": 1.89873417721519,
+        "sample_contamination": [
+          "1571B",
+          "20881",
+          "210602",
+          "21515",
+          "21701",
+          "21993",
+          "31560",
+          "39241001",
+          "39269099",
+          "4",
+          "ATI120",
+          "B180SC",
+          "DOT",
+          "DSPI",
+          "EFG120-CD",
+          "GRFT1C/F-SP",
+          "PLACE HOLDER",
+          "S115S"
+        ],
+        "sample_truth": [
+          "008-140701",
+          "01200X0",
+          "10110",
+          "10130",
+          "10131",
+          "10140",
+          "10141",
+          "10160",
+          "10180",
+          "10210"
+        ]
+      }
+    },
+    "galia-textil": {
+      "name": "GALIA TEXTIL S.A. DE C.V.",
+      "clave_cliente": "4899",
+      "tables": {
+        "traficos": {
+          "count": 162
+        },
+        "entradas": {
+          "count": 182
+        },
+        "expediente_documentos": {
+          "count": 0
+        },
+        "globalpc_productos": {
+          "count": 1648
+        },
+        "globalpc_partidas": {
+          "count": 257
+        },
+        "globalpc_facturas": {
+          "count": 186
+        },
+        "globalpc_eventos": {
+          "count": 153
+        },
+        "globalpc_proveedores": {
+          "count": 29
+        },
+        "anexo24_partidas": {
+          "count": 0
+        }
+      },
+      "truth": {
+        "anexo24_count": 0,
+        "partidas_count": 97,
+        "facturas_parts_count": 97,
+        "truth_set_count": 97,
+        "claimed_count": 156,
+        "contamination_count": 59,
+        "contamination_pct": 37.82051282051282,
+        "sample_contamination": [
+          "026580B",
+          "026580C",
+          "08856001",
+          "106890B BAG",
+          "10850001",
+          "109659A",
+          "109828A",
+          "110990B",
+          "112570A",
+          "112570A EVA/NYLON",
+          "12322",
+          "573-03 LONG THIGH",
+          "7131-0218-R1010-4-01",
+          "ART SET UP CLICHE",
+          "ART SET UP FOR CLICH",
+          "ARTWORK",
+          "B12022419 MERGE",
+          "B12022446 MERGE",
+          "B12027013 MERGE",
+          "B12101450 MERGE"
+        ],
+        "sample_truth": [
+          "026580D",
+          "106797B",
+          "106797B BAG",
+          "109653A",
+          "109659B PPG-030",
+          "109828C",
+          "109835A",
+          "110990A EVA/NYLON",
+          "110990C",
+          "110990C EVA/NYLON"
+        ]
+      }
+    },
+    "garlock": {
+      "name": "GARLOCK DE MEXICO S.A. DE C.V.",
+      "clave_cliente": "5020",
+      "tables": {
+        "traficos": {
+          "count": 3037
+        },
+        "entradas": {
+          "count": 3613
+        },
+        "expediente_documentos": {
+          "count": 0
+        },
+        "globalpc_productos": {
+          "count": 60438
+        },
+        "globalpc_partidas": {
+          "count": 17097
+        },
+        "globalpc_facturas": {
+          "count": 3953
+        },
+        "globalpc_eventos": {
+          "count": 2707
+        },
+        "globalpc_proveedores": {
+          "count": 87
+        },
+        "anexo24_partidas": {
+          "count": 0
+        }
+      },
+      "truth": {
+        "anexo24_count": 0,
+        "partidas_count": 1394,
+        "facturas_parts_count": 1394,
+        "truth_set_count": 1394,
+        "claimed_count": 2381,
+        "contamination_count": 987,
+        "contamination_pct": 41.453170936581266,
+        "sample_contamination": [
+          "#141",
+          "#325 MESH BENTONITE",
+          "#777-5",
+          "00-006-061",
+          "000-095-689",
+          "000-095-690",
+          "000-095-691",
+          "000070020999",
+          "001",
+          "002",
+          "00425",
+          "0127-A",
+          "0130707",
+          "01340",
+          "013484009",
+          "013484075",
+          "013564009",
+          "013727097",
+          "01373",
+          "013730143"
+        ],
+        "sample_truth": [
+          "#325",
+          "00-0001-039",
+          "00-0003-020",
+          "00-0006-061",
+          "00-0006-073",
+          "00-01-02-13",
+          "00-01-02-18",
+          "00-01-02-20",
+          "00-01-02-24",
+          "00-01-02-35"
+        ]
+      }
+    },
+    "gostech": {
+      "name": "GOSTECH S.A. DE C.V.",
+      "clave_cliente": "5081",
+      "tables": {
+        "traficos": {
+          "count": 226
+        },
+        "entradas": {
+          "count": 293
+        },
+        "expediente_documentos": {
+          "count": 0
+        },
+        "globalpc_productos": {
+          "count": 7040
+        },
+        "globalpc_partidas": {
+          "count": 5085
+        },
+        "globalpc_facturas": {
+          "count": 280
+        },
+        "globalpc_eventos": {
+          "count": 1488
+        },
+        "globalpc_proveedores": {
+          "count": 37
+        },
+        "anexo24_partidas": {
+          "count": 0
+        }
+      },
+      "truth": {
+        "anexo24_count": 0,
+        "partidas_count": 223,
+        "facturas_parts_count": 223,
+        "truth_set_count": 223,
+        "claimed_count": 737,
+        "contamination_count": 514,
+        "contamination_pct": 69.74219810040707,
+        "sample_contamination": [
+          ".014 C1S SBS 23\"",
+          ".014 SBS",
+          ".146",
+          "#40 100YD",
+          "#5 100 YD",
+          "#75",
+          "#9 100 YD",
+          "00194015",
+          "01",
+          "0240",
+          "0260",
+          "0300",
+          "0380",
+          "0600",
+          "0680",
+          "0940",
+          "1 20",
+          "1/1/4 250 YD",
+          "1/4 3/18",
+          "1/4 3/8"
+        ],
+        "sample_truth": [
+          ".136",
+          "0033230",
+          "006403",
+          "033120",
+          "033169",
+          "033194",
+          "061708",
+          "06213",
+          "11001",
+          "11002"
+        ]
+      }
+    },
+    "grupo-pelayo": {
+      "name": "GRUPO PELAYO S.A. DE C.V.",
+      "clave_cliente": "1934",
+      "tables": {
+        "traficos": {
+          "count": 742
+        },
+        "entradas": {
+          "count": 775
+        },
+        "expediente_documentos": {
+          "count": 0
+        },
+        "globalpc_productos": {
+          "count": 8038
+        },
+        "globalpc_partidas": {
+          "count": 2596
+        },
+        "globalpc_facturas": {
+          "count": 1274
+        },
+        "globalpc_eventos": {
+          "count": 2504
+        },
+        "globalpc_proveedores": {
+          "count": 22
+        },
+        "anexo24_partidas": {
+          "count": 0
+        }
+      },
+      "truth": {
+        "anexo24_count": 0,
+        "partidas_count": 120,
+        "facturas_parts_count": 120,
+        "truth_set_count": 120,
+        "claimed_count": 478,
+        "contamination_count": 358,
+        "contamination_pct": 74.89539748953975,
+        "sample_contamination": [
+          ".10C20H338",
+          ".10C25H338",
+          ".10C30H334",
+          ".10C35H334",
+          ".10C35H338",
+          ".10C40H338",
+          ".10CNFH4",
+          ".10CNFH4/934",
+          ".10CNFHB/934",
+          ".10CNFHE/934",
+          ".10NLOC/127",
+          ".10NLOC4",
+          ".10NLOC4/127",
+          ".12C100H334",
+          ".12C20H334",
+          ".12C20H338",
+          ".12C30H334",
+          ".12C35H338",
+          ".12C90H334",
+          ".12CNFH4/934"
+        ],
+        "sample_truth": [
+          "11BA1000201",
+          "11BA1010203",
+          "11BA1030202",
+          "11BA1030203",
+          "11BA1330201 BUSHING",
+          "11BA1410201",
+          "11BE1010204",
+          "11BE1010700",
+          "11BG1010204",
+          "11HG1320302"
+        ]
+      }
+    },
+    "grupo-requena": {
+      "name": "GRUPO REQUENA S.A. DE C.V.",
+      "clave_cliente": "5155",
+      "tables": {
+        "traficos": {
+          "count": 214
+        },
+        "entradas": {
+          "count": 296
+        },
+        "expediente_documentos": {
+          "count": 1150
+        },
+        "globalpc_productos": {
+          "count": 899
+        },
+        "globalpc_partidas": {
+          "count": 586
+        },
+        "globalpc_facturas": {
+          "count": 283
+        },
+        "globalpc_eventos": {
+          "count": 1986
+        },
+        "globalpc_proveedores": {
+          "count": 56
+        },
+        "anexo24_partidas": {
+          "count": 0
+        }
+      },
+      "truth": {
+        "anexo24_count": 0,
+        "partidas_count": 295,
+        "facturas_parts_count": 295,
+        "truth_set_count": 295,
+        "claimed_count": 305,
+        "contamination_count": 13,
+        "contamination_pct": 4.2622950819672125,
+        "sample_contamination": [
+          "0100",
+          "2000",
+          "200T 3M SENSORY KIT",
+          "698 MEDIUM  WATER WALKING ASSI",
+          "APARATO PARA TERAPIA",
+          "AROMA MOUSE DIFFUSER WITH CORD",
+          "BLUE CHASING ROPE LIGHT KIT",
+          "MOBILE PODAITRY WHIRLPOOL",
+          "OPT MASSAGE 15",
+          "OPT VIDEO 500/500I",
+          "RED CHASING LED ROPE LIGHT KIT",
+          "SH-LOGOCHEST",
+          "STAR CARPET WITH LIGHT SOURCE"
+        ],
+        "sample_truth": [
+          "002-LE125B",
+          "00653814037085",
+          "01884",
+          "01885",
+          "01886",
+          "01887",
+          "03-13900",
+          "03-CHM8058",
+          "03-E1004",
+          "03-FER-STRET"
+        ]
+      }
+    },
+    "hilos-iris": {
+      "name": "HILOS IRIS S.A. DE C.V",
+      "clave_cliente": "5343",
+      "tables": {
+        "traficos": {
+          "count": 277
+        },
+        "entradas": {
+          "count": 343
+        },
+        "expediente_documentos": {
+          "count": 1571
+        },
+        "globalpc_productos": {
+          "count": 1173
+        },
+        "globalpc_partidas": {
+          "count": 735
+        },
+        "globalpc_facturas": {
+          "count": 298
+        },
+        "globalpc_eventos": {
+          "count": 2785
+        },
+        "globalpc_proveedores": {
+          "count": 27
+        },
+        "anexo24_partidas": {
+          "count": 0
+        }
+      },
+      "truth": {
+        "anexo24_count": 0,
+        "partidas_count": 109,
+        "facturas_parts_count": 109,
+        "truth_set_count": 109,
+        "claimed_count": 300,
+        "contamination_count": 191,
+        "contamination_pct": 63.66666666666667,
+        "sample_contamination": [
+          "016509",
+          "0207241",
+          "1/10 D'TEX/48",
+          "1/10 D'TEX/48 FILAME",
+          "1/110 D' TEX/48",
+          "1/167 D'TEX /48",
+          "1/32 D'TEX/48",
+          "1/67 D' TEX/48 FILAM",
+          "1/67 D'48",
+          "1/83 D' TEX/36",
+          "1/83 D'TEX/36 FILIME",
+          "100 % POLIERTER",
+          "100 % SPUN POLYESTER",
+          "100 POLIESTER",
+          "100% SPUN POLYESTER",
+          "100%POLIESTER",
+          "1013",
+          "1014",
+          "102261103",
+          "106010228"
+        ],
+        "sample_truth": [
+          "1/83 D' TEX/36 FILAMENT",
+          "10036230",
+          "10036231",
+          "10674",
+          "1111",
+          "1124",
+          "120385",
+          "120386",
+          "120387",
+          "120388"
+        ]
+      }
+    },
+    "instrumentos-medicos": {
+      "name": "INSTRUMENTOS MEDICOS INTERNACIONALES S.A DE C.V",
+      "clave_cliente": "3066",
+      "tables": {
+        "traficos": {
+          "count": 209
+        },
+        "entradas": {
+          "count": 379
+        },
+        "expediente_documentos": {
+          "count": 0
+        },
+        "globalpc_productos": {
+          "count": 3944
+        },
+        "globalpc_partidas": {
+          "count": 3681
+        },
+        "globalpc_facturas": {
+          "count": 456
+        },
+        "globalpc_eventos": {
+          "count": 2372
+        },
+        "globalpc_proveedores": {
+          "count": 11
+        },
+        "anexo24_partidas": {
+          "count": 0
+        }
+      },
+      "truth": {
+        "anexo24_count": 0,
+        "partidas_count": 158,
+        "facturas_parts_count": 158,
+        "truth_set_count": 158,
+        "claimed_count": 167,
+        "contamination_count": 9,
+        "contamination_pct": 5.389221556886228,
+        "sample_contamination": [
+          "281300-50 MEPILEX BORDER LITE",
+          "281500-50 MEPILEX BORDER LITE",
+          "282050-50 MEPILEX BORDER SACRUM",
+          "295200-50 MEPILEX BORDER",
+          "295400-50 MEPILEX BORDER",
+          "83030-001 APOSITO ADHESIVO PARA  CUBRIR",
+          "83032-001 APOSITO ADHESIVO PARA CUBRIR",
+          "APOSITO ADHESIVO",
+          "PDC008"
+        ],
+        "sample_truth": [
+          "2434-03",
+          "2436-03",
+          "2436-03 TUBIFAST 2-WAY STRECH",
+          "2438-03",
+          "2438-03 TUBIFAST 2-WAY STRECH",
+          "252200-01",
+          "252200-01 MELGISORB PLUS",
+          "252500-01",
+          "281000-02",
+          "281200-50"
+        ]
+      }
+    },
+    "lvm-nucleo": {
+      "name": "LVM NUCLEO S DE RL DE CV",
+      "clave_cliente": "3576",
+      "tables": {
+        "traficos": {
+          "count": 216
+        },
+        "entradas": {
+          "count": 225
+        },
+        "expediente_documentos": {
+          "count": 0
+        },
+        "globalpc_productos": {
+          "count": 413
+        },
+        "globalpc_partidas": {
+          "count": 319
+        },
+        "globalpc_facturas": {
+          "count": 243
+        },
+        "globalpc_eventos": {
+          "count": 960
+        },
+        "globalpc_proveedores": {
+          "count": 12
+        },
+        "anexo24_partidas": {
+          "count": 0
+        }
+      },
+      "truth": {
+        "anexo24_count": 0,
+        "partidas_count": 91,
+        "facturas_parts_count": 91,
+        "truth_set_count": 91,
+        "claimed_count": 94,
+        "contamination_count": 3,
+        "contamination_pct": 3.1914893617021276,
+        "sample_contamination": [
+          "MANUFACTURA DE METAL",
+          "SOLA TRANSORMER",
+          "YAR/PORTABLE STEEL YARDRAMP"
+        ],
+        "sample_truth": [
+          "2 TON GANTRY CRANE",
+          "2 TON HSI",
+          "3 PHASE TRANSFORMER",
+          "47634 OHEPOWELD 17634-A",
+          "57634 OHEPOWELD 17634-B",
+          "6.7 SA1M 5 PLY PRESPOOL",
+          "6.70",
+          "6.70 TRANSFORMER CORE",
+          "8.40 5 PLY TRANSFORMER",
+          "AC POWER SUPPLY W/CABLES"
+        ]
+      }
+    },
+    "mafesa": {
+      "name": "MANUFACTURERA FEDERAL ELECTRICA S.DE RL DE CV",
+      "clave_cliente": "4598",
+      "tables": {
+        "traficos": {
+          "count": 776
+        },
+        "entradas": {
+          "count": 1155
+        },
+        "expediente_documentos": {
+          "count": 2238
+        },
+        "globalpc_productos": {
+          "count": 5567
+        },
+        "globalpc_partidas": {
+          "count": 6287
+        },
+        "globalpc_facturas": {
+          "count": 1257
+        },
+        "globalpc_eventos": {
+          "count": 0
+        },
+        "globalpc_proveedores": {
+          "count": 32
+        },
+        "anexo24_partidas": {
+          "count": 0
+        }
+      },
+      "truth": {
+        "anexo24_count": 0,
+        "partidas_count": 1250,
+        "facturas_parts_count": 1250,
+        "truth_set_count": 1250,
+        "claimed_count": 1681,
+        "contamination_count": 432,
+        "contamination_pct": 25.698988697204044,
+        "sample_contamination": [
+          "#14 CRIMP LUG",
+          "#18:94/0350",
+          "#3:95/0228/00",
+          "#30:0019",
+          "#30:60/0019/89",
+          "01063 VALVE V DISCH",
+          "02/0709-00/50 VALVE",
+          "1/4 X 3 BOLTS 84-121",
+          "10\" LEAD ASSY",
+          "10249A",
+          "103-027",
+          "14A9113-0010 JUMPER",
+          "15ML NMX FORMED",
+          "1890200",
+          "18A8760-0001 CORE",
+          "18A8761-0001 CORE",
+          "19E376 SANDING DISC",
+          "2070-1B",
+          "2080-7B-2",
+          "2080-8"
+        ],
+        "sample_truth": [
+          "#11:01/0092/89",
+          "#12:95/0851/87",
+          "#18:94/0350-2/50",
+          "#19 O RING",
+          "#3:95/0228",
+          "#30:60/0019",
+          "#5:01/0055/89",
+          "0.5THOIST/M154",
+          "0.5THOIST/M155",
+          "01/0013/98"
+        ]
+      }
+    },
+    "maniphor": {
+      "name": "MANIPHOR S.A. DE C.V.",
+      "clave_cliente": "8102",
+      "tables": {
+        "traficos": {
+          "count": 387
+        },
+        "entradas": {
+          "count": 402
+        },
+        "expediente_documentos": {
+          "count": 908
+        },
+        "globalpc_productos": {
+          "count": 3370
+        },
+        "globalpc_partidas": {
+          "count": 1899
+        },
+        "globalpc_facturas": {
+          "count": 424
+        },
+        "globalpc_eventos": {
+          "count": 3913
+        },
+        "globalpc_proveedores": {
+          "count": 71
+        },
+        "anexo24_partidas": {
+          "count": 0
+        }
+      },
+      "truth": {
+        "anexo24_count": 0,
+        "partidas_count": 36,
+        "facturas_parts_count": 36,
+        "truth_set_count": 36,
+        "claimed_count": 829,
+        "contamination_count": 793,
+        "contamination_pct": 95.6574185765983,
+        "sample_contamination": [
+          ".014 C1S SBS 23\"",
+          ".014 SBS",
+          ".017",
+          ".12C1SSBS",
+          ".136",
+          ".146",
+          ".21SUS",
+          "#40 100YD",
+          "#5 100 YD",
+          "#75",
+          "#9 100 YD",
+          "00194015",
+          "0033230",
+          "00400",
+          "006403",
+          "01",
+          "0240",
+          "0260",
+          "0300",
+          "0308-AY-0308-A"
+        ],
+        "sample_truth": [
+          "(CRB)",
+          "(SBS)",
+          "(URB)",
+          "BAG KRAFT",
+          "BL",
+          "BLEACH KRAFT",
+          "BLEACHED BAG",
+          "BLEACHED WET",
+          "CARRIER PAPERBOARD",
+          "CARRIER UNCOATED PAPERBOARD"
+        ]
+      }
+    },
+    "maquinaria-pacifico": {
+      "name": "MAQUINARIA DEL PACIFICO S.A. DE C.V.",
+      "clave_cliente": "6460",
+      "tables": {
+        "traficos": {
+          "count": 300
+        },
+        "entradas": {
+          "count": 627
+        },
+        "expediente_documentos": {
+          "count": 1899
+        },
+        "globalpc_productos": {
+          "count": 60488
+        },
+        "globalpc_partidas": {
+          "count": 16913
+        },
+        "globalpc_facturas": {
+          "count": 720
+        },
+        "globalpc_eventos": {
+          "count": 2412
+        },
+        "globalpc_proveedores": {
+          "count": 25
+        },
+        "anexo24_partidas": {
+          "count": 0
+        }
+      },
+      "truth": {
+        "anexo24_count": 0,
+        "partidas_count": 4522,
+        "facturas_parts_count": 4522,
+        "truth_set_count": 4522,
+        "claimed_count": 7586,
+        "contamination_count": 3065,
+        "contamination_pct": 40.40337463749012,
+        "sample_contamination": [
+          "0001119853",
+          "0001185970",
+          "0001945168",
+          "0002381136",
+          "0025X6-10",
+          "0025X7",
+          "0025X7-10",
+          "0025X7MA",
+          "0031X4",
+          "0031X4MA",
+          "0031X9",
+          "009439",
+          "009X10",
+          "009X10MA",
+          "009X39",
+          "009X39-10",
+          "009X39MA",
+          "009X51",
+          "01000",
+          "01002"
+        ],
+        "sample_truth": [
+          "000335-",
+          "0003680608",
+          "020378",
+          "020379",
+          "020740",
+          "020741",
+          "030466",
+          "030468",
+          "030471",
+          "030614"
+        ]
+      }
+    },
+    "mercatrup": {
+      "name": "MERCATRUP.COM S. DE R.L. DE C.V.",
+      "clave_cliente": "7316",
+      "tables": {
+        "traficos": {
+          "count": 161
+        },
+        "entradas": {
+          "count": 178
+        },
+        "expediente_documentos": {
+          "count": 0
+        },
+        "globalpc_productos": {
+          "count": 406
+        },
+        "globalpc_partidas": {
+          "count": 280
+        },
+        "globalpc_facturas": {
+          "count": 164
+        },
+        "globalpc_eventos": {
+          "count": 1678
+        },
+        "globalpc_proveedores": {
+          "count": 15
+        },
+        "anexo24_partidas": {
+          "count": 0
+        }
+      },
+      "truth": {
+        "anexo24_count": 0,
+        "partidas_count": 74,
+        "facturas_parts_count": 74,
+        "truth_set_count": 74,
+        "claimed_count": 86,
+        "contamination_count": 12,
+        "contamination_pct": 13.953488372093023,
+        "sample_contamination": [
+          "3M1012566",
+          "AERO SAVER",
+          "BUJES PARA SUSPENSION",
+          "CORNER PANEL",
+          "DONAS",
+          "FRONT RAIL",
+          "GANCHO",
+          "LOWER RAIL",
+          "PRESSURE GUARD SYSTEM",
+          "REEFER",
+          "REMACHES DE BRONCE",
+          "SPLICE PLATE"
+        ],
+        "sample_truth": [
+          "01-2170-0-040",
+          "02-7115-0-048",
+          "03-1510-0-007",
+          "03-1510-0-008",
+          "03-6009-0-029",
+          "03-6009-0-030",
+          "03-6009-0-031",
+          "04-4150-0-012",
+          "12721212",
+          "1308161"
+        ]
+      }
+    },
+    "papeles-bolsas": {
+      "name": "PAPELES Y BOLSAS ECOLOGICAS S.A. DE C.V.",
+      "clave_cliente": "7110",
+      "tables": {
+        "traficos": {
+          "count": 183
+        },
+        "entradas": {
+          "count": 324
+        },
+        "expediente_documentos": {
+          "count": 0
+        },
+        "globalpc_productos": {
+          "count": 2446
+        },
+        "globalpc_partidas": {
+          "count": 1676
+        },
+        "globalpc_facturas": {
+          "count": 353
+        },
+        "globalpc_eventos": {
+          "count": 2392
+        },
+        "globalpc_proveedores": {
+          "count": 17
+        },
+        "anexo24_partidas": {
+          "count": 0
+        }
+      },
+      "truth": {
+        "anexo24_count": 0,
+        "partidas_count": 279,
+        "facturas_parts_count": 279,
+        "truth_set_count": 279,
+        "claimed_count": 349,
+        "contamination_count": 70,
+        "contamination_pct": 20.057306590257877,
+        "sample_contamination": [
+          "33809",
+          "BOLSAS DE PLASTICO",
+          "C09NK1",
+          "C10NK1",
+          "CN-1HOL",
+          "CN-6HOL",
+          "CW-1-XMAS",
+          "CW-1GRN",
+          "CW-6-XMAS",
+          "CW-6GRN",
+          "CW-6L",
+          "FO 78936",
+          "FO 80462",
+          "FO 80571",
+          "FO 80618",
+          "FO 80762",
+          "FO 81144",
+          "FO 81234",
+          "FO 81285",
+          "FO 81302"
+        ],
+        "sample_truth": [
+          "054012",
+          "057800",
+          "057850",
+          "057950",
+          "116008",
+          "116030",
+          "1260",
+          "1260-CB",
+          "1270-CB",
+          "1280-CB"
+        ]
+      }
+    },
+    "plasticos-ing": {
+      "name": "PLASTICOS DE INGENIERIA TECNOQUIM SA DE CV",
+      "clave_cliente": "7324",
+      "tables": {
+        "traficos": {
+          "count": 178
+        },
+        "entradas": {
+          "count": 289
+        },
+        "expediente_documentos": {
+          "count": 0
+        },
+        "globalpc_productos": {
+          "count": 1548
+        },
+        "globalpc_partidas": {
+          "count": 1230
+        },
+        "globalpc_facturas": {
+          "count": 523
+        },
+        "globalpc_eventos": {
+          "count": 1088
+        },
+        "globalpc_proveedores": {
+          "count": 14
+        },
+        "anexo24_partidas": {
+          "count": 0
+        }
+      },
+      "truth": {
+        "anexo24_count": 0,
+        "partidas_count": 92,
+        "facturas_parts_count": 92,
+        "truth_set_count": 92,
+        "claimed_count": 109,
+        "contamination_count": 17,
+        "contamination_pct": 15.59633027522936,
+        "sample_contamination": [
+          "C ACETAL NATURAL",
+          "POLYSTONE BLK",
+          "POLYSTONE CUT-RITE",
+          "POLYSTONE CUT-RITE 5",
+          "POLYSTONE M NAT",
+          "POLYSTONE NATURAL",
+          "POLYSTONE P HOM NATU",
+          "RCNYVNOPMOS07500",
+          "SCNYVNOPMOS250048096",
+          "SEULVNATNOA0750DROP SUSTA PEI",
+          "SPUHVNATNOA012548120 POLYSTONE M",
+          "SPUHVNATNOA012548120 POLYSTONE M MATURAL",
+          "SUSTAMID 6G NYLON",
+          "SUSTAMID NYLON MOS2",
+          "SUSTARIN BLACK",
+          "SUSTARIN C ACETAL BL",
+          "SUSTARIN DIA X LONG"
+        ],
+        "sample_truth": [
+          "1162600916497",
+          "1162607916497",
+          "2502106",
+          "3034200116AW4",
+          "3036200016HUE",
+          "3036200516UPG",
+          "3502033",
+          "3502036",
+          "3502063 CBC-5-2 BLACK",
+          "3502066"
+        ]
+      }
+    },
+    "plasticos-villagar": {
+      "name": "PLASTICOS VILLAGAR S.A. DE C.V.",
+      "clave_cliente": "7331",
+      "tables": {
+        "traficos": {
+          "count": 278
+        },
+        "entradas": {
+          "count": 374
+        },
+        "expediente_documentos": {
+          "count": 0
+        },
+        "globalpc_productos": {
+          "count": 1098
+        },
+        "globalpc_partidas": {
+          "count": 764
+        },
+        "globalpc_facturas": {
+          "count": 399
+        },
+        "globalpc_eventos": {
+          "count": 2228
+        },
+        "globalpc_proveedores": {
+          "count": 20
+        },
+        "anexo24_partidas": {
+          "count": 0
+        }
+      },
+      "truth": {
+        "anexo24_count": 0,
+        "partidas_count": 213,
+        "facturas_parts_count": 213,
+        "truth_set_count": 213,
+        "claimed_count": 291,
+        "contamination_count": 78,
+        "contamination_pct": 26.804123711340207,
+        "sample_contamination": [
+          "112204",
+          "113498",
+          "115733",
+          "115950",
+          "115968",
+          "115970",
+          "116426",
+          "126653",
+          "141299",
+          "142123M",
+          "146536",
+          "150010",
+          "150400",
+          "150454",
+          "150605",
+          "151015",
+          "151067",
+          "152225",
+          "152226",
+          "153377"
+        ],
+        "sample_truth": [
+          "109FB7",
+          "109N70",
+          "110234",
+          "110243",
+          "110790",
+          "114791",
+          "114905",
+          "115680",
+          "115716",
+          "115902"
+        ]
+      }
+    },
+    "preciomex": {
+      "name": "PRECIOMEX S.A. DE C.V.",
+      "clave_cliente": "7759",
+      "tables": {
+        "traficos": {
+          "count": 203
+        },
+        "entradas": {
+          "count": 492
+        },
+        "expediente_documentos": {
+          "count": 0
+        },
+        "globalpc_productos": {
+          "count": 3695
+        },
+        "globalpc_partidas": {
+          "count": 1860
+        },
+        "globalpc_facturas": {
+          "count": 862
+        },
+        "globalpc_eventos": {
+          "count": 1599
+        },
+        "globalpc_proveedores": {
+          "count": 21
+        },
+        "anexo24_partidas": {
+          "count": 0
+        }
+      },
+      "truth": {
+        "anexo24_count": 0,
+        "partidas_count": 187,
+        "facturas_parts_count": 187,
+        "truth_set_count": 187,
+        "claimed_count": 255,
+        "contamination_count": 68,
+        "contamination_pct": 26.666666666666668,
+        "sample_contamination": [
+          "1",
+          "106-80006",
+          "106-90136",
+          "109-70013",
+          "109-70041",
+          "109-70047",
+          "109-72007-2",
+          "109-72121",
+          "3000SA2",
+          "306-7305 5H",
+          "306-80037",
+          "306-80054",
+          "306-80056",
+          "306-80061",
+          "306-80095",
+          "306-80119",
+          "306-90207",
+          "30680049",
+          "309-70219",
+          "30971557"
+        ],
+        "sample_truth": [
+          "016111/16X1X100",
+          "016111/16X2X100",
+          "016111/8X1X100",
+          "016111/8X2X100",
+          "0271118HT",
+          "0272213PTA130-1",
+          "0472318HT",
+          "1006",
+          "103-70036",
+          "103-80224"
+        ]
+      }
+    },
+    "promotora-mexicana": {
+      "name": "PROMOTORA MEXICANA S.A. DE C.V.",
+      "clave_cliente": "7557",
+      "tables": {
+        "traficos": {
+          "count": 149
+        },
+        "entradas": {
+          "count": 214
+        },
+        "expediente_documentos": {
+          "count": 0
+        },
+        "globalpc_productos": {
+          "count": 5317
+        },
+        "globalpc_partidas": {
+          "count": 3206
+        },
+        "globalpc_facturas": {
+          "count": 237
+        },
+        "globalpc_eventos": {
+          "count": 1167
+        },
+        "globalpc_proveedores": {
+          "count": 17
+        },
+        "anexo24_partidas": {
+          "count": 0
+        }
+      },
+      "truth": {
+        "anexo24_count": 0,
+        "partidas_count": 222,
+        "facturas_parts_count": 222,
+        "truth_set_count": 222,
+        "claimed_count": 531,
+        "contamination_count": 309,
+        "contamination_pct": 58.19209039548022,
+        "sample_contamination": [
+          ".0625",
+          ".0720\" SQUARE OIL TE",
+          ".0920",
+          ".0990",
+          ".1560",
+          ".2070\"",
+          ".2500\"",
+          ".3930\"",
+          ".5000\"",
+          "02216",
+          "02231",
+          "02247",
+          "02255",
+          "02275",
+          "02276",
+          "02277",
+          "02287",
+          "02288",
+          "02289",
+          "02290"
+        ],
+        "sample_truth": [
+          ".1205",
+          ".1250",
+          ".1920",
+          "018300",
+          "040-1001",
+          "0M101",
+          "21-04",
+          "21-05",
+          "21-06",
+          "21-07"
+        ]
+      }
+    },
+    "pti-dos": {
+      "name": "PTI DOS DIVERSIFIED OUTSOURCING SOLUTIONS S. DE R.L DE C.V",
+      "clave_cliente": "0627",
+      "tables": {
+        "traficos": {
+          "count": 1077
+        },
+        "entradas": {
+          "count": 1276
+        },
+        "expediente_documentos": {
+          "count": 0
+        },
+        "globalpc_productos": {
+          "count": 2022
+        },
+        "globalpc_partidas": {
+          "count": 2015
+        },
+        "globalpc_facturas": {
+          "count": 1207
+        },
+        "globalpc_eventos": {
+          "count": 5872
+        },
+        "globalpc_proveedores": {
+          "count": 27
+        },
+        "anexo24_partidas": {
+          "count": 0
+        }
+      },
+      "truth": {
+        "anexo24_count": 0,
+        "partidas_count": 427,
+        "facturas_parts_count": 427,
+        "truth_set_count": 427,
+        "claimed_count": 461,
+        "contamination_count": 34,
+        "contamination_pct": 7.37527114967462,
+        "sample_contamination": [
+          "312X-1",
+          "6261K184 SINGLE STRAND ROLLER CHAIN",
+          "6261K214 SINGLE STRAND ROLLER CHAIN",
+          "6261K274 SINGLE STRAND ROLLER CHAIN",
+          "79001-04 O RING",
+          "79001-29 O RING",
+          "AIR CAP 79153-65R-1",
+          "BRAKE PISTON",
+          "CAUCHO",
+          "COMPUTERS SYX VENTURE",
+          "CONVEYOR COMPONENTS ATTACH",
+          "CONVEYOR COMPONENTS LUBRICAN W",
+          "CONVEYOR COMPONENTS STEEL",
+          "FERROUS ZERO PLATE",
+          "FLUID TIP 79140-02",
+          "PAINT BOOTH 2",
+          "PAINT EQUIPMENT RECIPROCATOR",
+          "PAINT EQUIPMENT STEEL STAND",
+          "PAINTING LINE DISASSEMBLED",
+          "SP-100-507K AIR CAP"
+        ],
+        "sample_truth": [
+          "000-094-002 NEEDLE",
+          "000-161-112 SCREW",
+          "100 MESH FILTER PACK",
+          "100049-1 IGNITER",
+          "101010818 SWITCH",
+          "101010819 SWITCH",
+          "1040 TRANSFER PUMP",
+          "104361 KIT ORINGS",
+          "12178 TRANSFORMER",
+          "12746 SCANNER (SENSOR FOR BURN"
+        ]
+      }
+    },
+    "pti-qcs": {
+      "name": "PTI QCS S. DE R.L DE C.V",
+      "clave_cliente": "0626",
+      "tables": {
+        "traficos": {
+          "count": 172
+        },
+        "entradas": {
+          "count": 177
+        },
+        "expediente_documentos": {
+          "count": 0
+        },
+        "globalpc_productos": {
+          "count": 554
+        },
+        "globalpc_partidas": {
+          "count": 401
+        },
+        "globalpc_facturas": {
+          "count": 241
+        },
+        "globalpc_eventos": {
+          "count": 948
+        },
+        "globalpc_proveedores": {
+          "count": 17
+        },
+        "anexo24_partidas": {
+          "count": 0
+        }
+      },
+      "truth": {
+        "anexo24_count": 0,
+        "partidas_count": 143,
+        "facturas_parts_count": 143,
+        "truth_set_count": 143,
+        "claimed_count": 149,
+        "contamination_count": 6,
+        "contamination_pct": 4.026845637583892,
+        "sample_contamination": [
+          "860X-1 EXTRUSION LINEAL",
+          "CENTRAL BEARING",
+          "HYDRAULIC BEND BASE/FRAME SB-5",
+          "SILICONE CAP/PLUG",
+          "SLEEVES",
+          "SLIP YOKE"
+        ],
+        "sample_truth": [
+          "05-1340-515228 SENOGUARD",
+          "091611-1013406-001 HYD PUMP",
+          "18020 3010 NG ALUMINUM SHIM W/RUBBER",
+          "19-1341-515231 SENOGUARD",
+          "30002002K ALUMINUM",
+          "312X-1-D",
+          "312X-2",
+          "4 POST PRESS #1",
+          "4 POST PRESS #2",
+          "4213-2231 PLASTIC FRAMES"
+        ]
+      }
+    },
+    "sercom": {
+      "name": "SERCOM INTERNACIONAL S.A. DE C.V.",
+      "clave_cliente": "3838",
+      "tables": {
+        "traficos": {
+          "count": 222
+        },
+        "entradas": {
+          "count": 268
+        },
+        "expediente_documentos": {
+          "count": 0
+        },
+        "globalpc_productos": {
+          "count": 2322
+        },
+        "globalpc_partidas": {
+          "count": 840
+        },
+        "globalpc_facturas": {
+          "count": 240
+        },
+        "globalpc_eventos": {
+          "count": 769
+        },
+        "globalpc_proveedores": {
+          "count": 9
+        },
+        "anexo24_partidas": {
+          "count": 0
+        }
+      },
+      "truth": {
+        "anexo24_count": 0,
+        "partidas_count": 434,
+        "facturas_parts_count": 434,
+        "truth_set_count": 434,
+        "claimed_count": 2017,
+        "contamination_count": 1589,
+        "contamination_pct": 78.78036688150719,
+        "sample_contamination": [
+          "(PR) SIDE CHANNEL-SU",
+          "`LIBROS",
+          "016514",
+          "058-81-79167",
+          "0813-700-09",
+          "10-5898903",
+          "100019",
+          "100030",
+          "100157",
+          "100403",
+          "100421",
+          "100447",
+          "100448",
+          "100488",
+          "100712",
+          "100822",
+          "100823",
+          "100868",
+          "100898",
+          "101035"
+        ],
+        "sample_truth": [
+          "10047",
+          "10739L",
+          "10801",
+          "10888",
+          "12910",
+          "130R0072CH",
+          "136DK",
+          "14112",
+          "14119",
+          "14767"
+        ]
+      }
+    },
+    "stempro": {
+      "name": "STEMPRO DE MEXICO S. DE R.L. DE C.V.",
+      "clave_cliente": "8399",
+      "tables": {
+        "traficos": {
+          "count": 779
+        },
+        "entradas": {
+          "count": 1419
+        },
+        "expediente_documentos": {
+          "count": 0
+        },
+        "globalpc_productos": {
+          "count": 25913
+        },
+        "globalpc_partidas": {
+          "count": 18530
+        },
+        "globalpc_facturas": {
+          "count": 981
+        },
+        "globalpc_eventos": {
+          "count": 1979
+        },
+        "globalpc_proveedores": {
+          "count": 8
+        },
+        "anexo24_partidas": {
+          "count": 0
+        }
+      },
+      "truth": {
+        "anexo24_count": 0,
+        "partidas_count": 1008,
+        "facturas_parts_count": 1008,
+        "truth_set_count": 1008,
+        "claimed_count": 1174,
+        "contamination_count": 166,
+        "contamination_pct": 14.139693356047701,
+        "sample_contamination": [
+          "0011832102",
+          "001851047",
+          "0115001380",
+          "011502901",
+          "011503001",
+          "011504501",
+          "0115515360",
+          "0115713103",
+          "011610190",
+          "011610690",
+          "011611380",
+          "011611920",
+          "011612810",
+          "011613801",
+          "011613901",
+          "011614101",
+          "011614401",
+          "011614501",
+          "011614601",
+          "011614801"
+        ],
+        "sample_truth": [
+          "011020004",
+          "011025001",
+          "011025003",
+          "011030001",
+          "011030002",
+          "011030003",
+          "011030004",
+          "011030005",
+          "011030006",
+          "011030008"
+        ]
+      }
+    },
+    "tork-electro": {
+      "name": "TORK ELECTRO SISTEMAS SA DE CV",
+      "clave_cliente": "8503",
+      "tables": {
+        "traficos": {
+          "count": 607
+        },
+        "entradas": {
+          "count": 2622
+        },
+        "expediente_documentos": {
+          "count": 0
+        },
+        "globalpc_productos": {
+          "count": 11633
+        },
+        "globalpc_partidas": {
+          "count": 10529
+        },
+        "globalpc_facturas": {
+          "count": 3334
+        },
+        "globalpc_eventos": {
+          "count": 4122
+        },
+        "globalpc_proveedores": {
+          "count": 127
+        },
+        "anexo24_partidas": {
+          "count": 0
+        }
+      },
+      "truth": {
+        "anexo24_count": 0,
+        "partidas_count": 1149,
+        "facturas_parts_count": 1149,
+        "truth_set_count": 1149,
+        "claimed_count": 1165,
+        "contamination_count": 26,
+        "contamination_pct": 2.2317596566523603,
+        "sample_contamination": [
+          "10218",
+          "10219",
+          "10344",
+          "10396",
+          "140492",
+          "2100",
+          "441452601",
+          "73514-R",
+          "871591",
+          "900006-37",
+          "900006-39",
+          "9003-7",
+          "A530MMHW",
+          "ALAMBRE REVESTIDO",
+          "CF14JIM00",
+          "CF18JT36K0",
+          "ECQ-E6224KF",
+          "FLE-TORK",
+          "GOLD HOLOGRAM LABEL",
+          "NJM2903D"
+        ],
+        "sample_truth": [
+          "-12",
+          "02-002-KIT",
+          "02311-000-1000",
+          "02311-002-1000",
+          "03311-000-1248",
+          "04300-005-1012",
+          "10-ERA-6AEB1543CVT-ND",
+          "10009",
+          "10032",
+          "10034"
+        ]
+      }
+    },
+    "tracusa": {
+      "name": "TRACUSA LA RUTA DEL SOL SA DE CV",
+      "clave_cliente": "8704",
+      "tables": {
+        "traficos": {
+          "count": 417
+        },
+        "entradas": {
+          "count": 421
+        },
+        "expediente_documentos": {
+          "count": 0
+        },
+        "globalpc_productos": {
+          "count": 432
+        },
+        "globalpc_partidas": {
+          "count": 427
+        },
+        "globalpc_facturas": {
+          "count": 427
+        },
+        "globalpc_eventos": {
+          "count": 4070
+        },
+        "globalpc_proveedores": {
+          "count": 3
+        },
+        "anexo24_partidas": {
+          "count": 0
+        }
+      },
+      "truth": {
+        "anexo24_count": 0,
+        "partidas_count": 3,
+        "facturas_parts_count": 3,
+        "truth_set_count": 3,
+        "claimed_count": 3,
+        "contamination_count": 0,
+        "contamination_pct": 0,
+        "sample_contamination": [],
+        "sample_truth": [
+          "OAK FLOORING",
+          "SEMIREMOLQUE",
+          "SEMIREMORLQUE  REFRIGERADO"
+        ]
+      }
+    },
+    "ts-san-pedro": {
+      "name": "TS DE SAN PEDRO INDUSTRIES S. DE R.L. DE C.V.",
+      "clave_cliente": "8225",
+      "tables": {
+        "traficos": {
+          "count": 175
+        },
+        "entradas": {
+          "count": 228
+        },
+        "expediente_documentos": {
+          "count": 896
+        },
+        "globalpc_productos": {
+          "count": 2896
+        },
+        "globalpc_partidas": {
+          "count": 3119
+        },
+        "globalpc_facturas": {
+          "count": 305
+        },
+        "globalpc_eventos": {
+          "count": 1638
+        },
+        "globalpc_proveedores": {
+          "count": 1
+        },
+        "anexo24_partidas": {
+          "count": 0
+        }
+      },
+      "truth": {
+        "anexo24_count": 0,
+        "partidas_count": 121,
+        "facturas_parts_count": 121,
+        "truth_set_count": 121,
+        "claimed_count": 121,
+        "contamination_count": 1,
+        "contamination_pct": 0.8264462809917356,
+        "sample_contamination": [
+          "CAJAS DE CARTON BIG PACK"
+        ],
+        "sample_truth": [
+          "10006405",
+          "10010254",
+          "30035359",
+          "30038512",
+          "30038518",
+          "30038519",
+          "30038521",
+          "30038523",
+          "30038525",
+          "30038530"
+        ]
+      }
+    },
+    "vollrath": {
+      "name": "VOLLRATH DE MEXICO S DE R.L. DE C.V.",
+      "clave_cliente": "9089",
+      "tables": {
+        "traficos": {
+          "count": 543
+        },
+        "entradas": {
+          "count": 594
+        },
+        "expediente_documentos": {
+          "count": 0
+        },
+        "globalpc_productos": {
+          "count": 78412
+        },
+        "globalpc_partidas": {
+          "count": 54913
+        },
+        "globalpc_facturas": {
+          "count": 615
+        },
+        "globalpc_eventos": {
+          "count": 4784
+        },
+        "globalpc_proveedores": {
+          "count": 11
+        },
+        "anexo24_partidas": {
+          "count": 0
+        }
+      },
+      "truth": {
+        "anexo24_count": 0,
+        "partidas_count": 4709,
+        "facturas_parts_count": 4709,
+        "truth_set_count": 4709,
+        "claimed_count": 5490,
+        "contamination_count": 783,
+        "contamination_pct": 14.262295081967213,
+        "sample_contamination": [
+          "005027-5",
+          "005028-5",
+          "005029-5",
+          "005030-5",
+          "07312",
+          "07411",
+          "08102-1",
+          "08260-1",
+          "08282-1",
+          "08320-1",
+          "08330-1",
+          "08351-1",
+          "08355-1",
+          "08356-1",
+          "10951-4",
+          "10953-4",
+          "10954-4",
+          "1277400",
+          "15006",
+          "15072"
+        ],
+        "sample_truth": [
+          "014487-5",
+          "014488-5",
+          "0231-309I2F",
+          "0231-38I2",
+          "0431-309I2F",
+          "0431-30PI2F",
+          "0643N",
+          "0644N",
+          "0646N",
+          "0652"
+        ]
+      }
+    },
+    "whitehall": {
+      "name": "WHITEHALL INDUSTRIES DE MEXICO S DE RL. DE CV.",
+      "clave_cliente": "9042",
+      "tables": {
+        "traficos": {
+          "count": 151
+        },
+        "entradas": {
+          "count": 157
+        },
+        "expediente_documentos": {
+          "count": 0
+        },
+        "globalpc_productos": {
+          "count": 1348
+        },
+        "globalpc_partidas": {
+          "count": 1075
+        },
+        "globalpc_facturas": {
+          "count": 191
+        },
+        "globalpc_eventos": {
+          "count": 0
+        },
+        "globalpc_proveedores": {
+          "count": 3
+        },
+        "anexo24_partidas": {
+          "count": 0
+        }
+      },
+      "truth": {
+        "anexo24_count": 0,
+        "partidas_count": 293,
+        "facturas_parts_count": 293,
+        "truth_set_count": 293,
+        "claimed_count": 316,
+        "contamination_count": 23,
+        "contamination_pct": 7.2784810126582276,
+        "sample_contamination": [
+          "504 CBORE",
+          "551-625",
+          "551/625",
+          "ALLEN WRENCH SET",
+          "BEND DIE",
+          "CMM FIXTURE LH",
+          "CMM FIXTURE RH",
+          "DEBURR & DRILL MACHINE",
+          "DEBURR & DRILL MACHINE.",
+          "DIE CUTTER STATION",
+          "EFECTOR SENSOR",
+          "ELECTRICAL PNEUMATIC VALVE",
+          "ENSAMBLE",
+          "FILTRO DE ACIETE",
+          "FILTROS DE ACEITE",
+          "HIDRAULIC POWER UNIT",
+          "INSERTOS",
+          "LLAVE DE MANO AJUSTABLE",
+          "MILL CUTTER",
+          "P-24 AUTOLOADER-LH"
+        ],
+        "sample_truth": [
+          "(ENSAMBLE) PARTES PARA MAQUINA",
+          "0013-P-36 HYDRAULIC PRESS",
+          "0015 ROTARY DRAIN",
+          "0020 551/625 BENDER",
+          "0026 F-2403",
+          "0027 F-2536 504 TOX",
+          "0035 HYDRAULIC PUMP",
+          "0036 551/625 2-STAGE",
+          "003654 SPRING",
+          "0037 504 PUNCH DIE"
+        ]
+      }
+    },
+    "worldtech": {
+      "name": "WORLDTECH S.A. DE C.V.",
+      "clave_cliente": "9045",
+      "tables": {
+        "traficos": {
+          "count": 832
+        },
+        "entradas": {
+          "count": 885
+        },
+        "expediente_documentos": {
+          "count": 149
+        },
+        "globalpc_productos": {
+          "count": 2347
+        },
+        "globalpc_partidas": {
+          "count": 1918
+        },
+        "globalpc_facturas": {
+          "count": 959
+        },
+        "globalpc_eventos": {
+          "count": 3152
+        },
+        "globalpc_proveedores": {
+          "count": 45
+        },
+        "anexo24_partidas": {
+          "count": 0
+        }
+      },
+      "truth": {
+        "anexo24_count": 0,
+        "partidas_count": 75,
+        "facturas_parts_count": 75,
+        "truth_set_count": 75,
+        "claimed_count": 169,
+        "contamination_count": 94,
+        "contamination_pct": 55.62130177514793,
+        "sample_contamination": [
+          ".014 SBS",
+          ".017",
+          ".12C1SSBS",
+          ".21SUS",
+          "00400",
+          "0308-AY-0308-A",
+          "10983",
+          "13-325-0-04-00",
+          "1986",
+          "2086",
+          "21879",
+          "2360",
+          "26237",
+          "42.625",
+          "50#BL21.50",
+          "60#BL",
+          "60#NK",
+          "70#BWS",
+          "70#NK36",
+          "80.11B30-2097"
+        ],
+        "sample_truth": [
+          "10282",
+          "120630002",
+          "2092869",
+          "352538035",
+          "362291190994",
+          "ADHESIVO",
+          "AIR COND",
+          "APARATO",
+          "BLEACH MG",
+          "BLEACHED KRAFT"
+        ]
+      }
+    },
+    "yates": {
+      "name": "YATES CONSTRUCTION MEXICO S DE RL DE CV",
+      "clave_cliente": "9144",
+      "tables": {
+        "traficos": {
+          "count": 283
+        },
+        "entradas": {
+          "count": 489
+        },
+        "expediente_documentos": {
+          "count": 0
+        },
+        "globalpc_productos": {
+          "count": 2921
+        },
+        "globalpc_partidas": {
+          "count": 988
+        },
+        "globalpc_facturas": {
+          "count": 373
+        },
+        "globalpc_eventos": {
+          "count": 11
+        },
+        "globalpc_proveedores": {
+          "count": 12
+        },
+        "anexo24_partidas": {
+          "count": 0
+        }
+      },
+      "truth": {
+        "anexo24_count": 0,
+        "partidas_count": 369,
+        "facturas_parts_count": 369,
+        "truth_set_count": 369,
+        "claimed_count": 1178,
+        "contamination_count": 810,
+        "contamination_pct": 68.76061120543294,
+        "sample_contamination": [
+          "(FIXTURE)",
+          "0912-0450--4",
+          "1/2",
+          "10002",
+          "100A/ECONOMY/130V",
+          "10264598",
+          "102DC",
+          "115PLUSF20",
+          "12 TAPING KNIFE",
+          "130C-3/4",
+          "1700",
+          "1RF46",
+          "2230-0150-0",
+          "2230-0150-1",
+          "236993",
+          "2440-0020",
+          "2HNW8",
+          "2HNX1",
+          "2HNX6",
+          "3/4"
+        ],
+        "sample_truth": [
+          "549900",
+          "A6MB-12-144",
+          "A6MB-18-144",
+          "A6MB-24-144",
+          "ABRAZADERAS",
+          "ABRAZADERAS DE ACERO",
+          "ABRAZADERAS DE ACERO.",
+          "ABRAZADERAS VERTICALES",
+          "ABRAZADERAS.",
+          "ACCESORIO DE TUBERIA"
+        ]
+      }
+    }
+  },
+  "orphans": {
+    "expediente_documentos": [
+      "0405",
+      "0535",
+      "0543",
+      "0626",
+      "0627"
+    ],
+    "globalpc_eventos": [
+      "8979",
+      "3423",
+      "7073"
+    ]
+  }
+}

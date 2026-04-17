@@ -242,7 +242,8 @@ async function run() {
         valor_comercial: r.valor, flete: r.flete, seguros: r.seguros,
         embalajes: r.embalajes, incrementables: r.incrementables,
         deducibles: r.deducibles, cove_vucem: r.cove,
-        tenant_id: tenantId, updated_at: new Date().toISOString(),
+        tenant_id: tenantId, company_id: companyId,  // Block EE
+        updated_at: new Date().toISOString(),
       }),
     })
     if (ok3 === false) {
@@ -268,6 +269,7 @@ async function run() {
         precio_unitario: r.precio, cantidad: r.cantidad, peso: r.peso,
         pais_origen: r.pais, marca: r.marca, modelo: r.modelo, serie: r.serie,
         tenant_id: tenantId,
+        company_id: companyId,  // Block EE — every globalpc_* row owns its tenant.
       }),
     })
 
@@ -285,7 +287,7 @@ async function run() {
         consecutivo: r.consecutivo, cve_trafico: r.cve_trafico,
         consecutivo_evento: r.consecutivo_evento, fecha: r.fecha,
         comentarios: r.comentarios, registrado_por: r.registrado_por,
-        remesa: r.remesa, tenant_id: tenantId,
+        remesa: r.remesa, tenant_id: tenantId, company_id: companyId,  // Block EE
       }),
     })
 
@@ -305,6 +307,7 @@ async function run() {
         numero_caja: r.numero_caja, cve_contenedor: r.cve_contenedor,
         placas: r.placas, sello1: r.sello1, sello2: r.sello2,
         pais_transporte: r.pais_transporte, tenant_id: tenantId,
+        company_id: companyId,  // Block EE
       }),
     })
 
@@ -330,6 +333,7 @@ async function run() {
         num_caja: r.num_caja, sellos: (r.sellos || '').trim(),
         cve_transfer: r.cve_transfer, cve_aduana: r.cve_aduana,
         num_patente: r.num_patente, tenant_id: tenantId,
+        company_id: companyId,  // Block EE
       }),
     })
 
@@ -352,6 +356,7 @@ async function run() {
         pais: r.pais, ciudad: r.ciudad, calle: r.calle,
         contacto: r.contacto, email_contacto: r.email,
         telefono: r.telefono, tenant_id: tenantId,
+        company_id: companyId,  // Block EE
       }),
     })
 
@@ -374,6 +379,7 @@ async function run() {
         fraccion: r.fraccion, umt: r.umt,
         pais_origen: r.pais_origen, marca: r.marca,
         precio_unitario: r.precio, tenant_id: tenantId,
+        company_id: companyId,  // Block EE — every globalpc_* row owns its tenant.
       }),
     })
 
@@ -394,6 +400,7 @@ async function run() {
         consecutivo: r.consecutivo, cve_entrada: r.cve_entrada,
         cve_bulto: r.cve_bulto, cantidad: r.cantidad,
         descripcion: r.descripcion, tenant_id: tenantId,
+        company_id: companyId,  // Block EE
       }),
     })
 

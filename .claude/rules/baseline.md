@@ -216,3 +216,7 @@ ratchet only goes forward.
 *Signed at the repo layer — enforced by tests, verified by commits,
 witnessed by `git log` on branch `overnight/ursula-ready`.*
 *Patente 3596 · Aduana 240 · Laredo, Texas · Est. 1941*
+
+---
+
+**Superseded by:** [`baseline-2026-04-17.md`](./baseline-2026-04-17.md) — see ratchet protocol.

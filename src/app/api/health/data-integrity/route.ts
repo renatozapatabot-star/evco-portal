@@ -65,7 +65,7 @@ async function probeTable(tenant: string, probe: TableProbe): Promise<TableReadi
     // Lifetime count first — if zero, table is red regardless of window.
     const { count: totalCount, error: totalErr } = await supabase
       .from(probe.name)
-      .select('*', { count: 'exact', head: true })
+      .select('*', { count: 'estimated', head: true })
       .eq('company_id', tenant)
 
     if (totalErr) {
@@ -107,7 +107,7 @@ async function probeTable(tenant: string, probe: TableProbe): Promise<TableReadi
     const sinceIso = new Date(Date.now() - probe.windowDays * 86_400_000).toISOString()
     const { count: windowCount, error: windowErr } = await supabase
       .from(probe.name)
-      .select('*', { count: 'exact', head: true })
+      .select('*', { count: 'estimated', head: true })
       .eq('company_id', tenant)
       .gte(probe.windowColumn, sinceIso)
 

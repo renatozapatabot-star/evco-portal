@@ -14,17 +14,94 @@ const supabase = createClient(
 export const dynamic = 'force-dynamic'
 export const maxDuration = 30
 
+// Calm bilingual sync-delay responder. Browser taps (Accept: text/html)
+// get a branded Spanish page; fetch/XHR clients get sanitized JSON with
+// no internal system names. Never leaks "GlobalPC", "Supabase", etc.
+function syncDelayResponse(request: NextRequest, status: 404 | 422): NextResponse {
+  const accept = request.headers.get('accept') ?? ''
+  const wantsHtml = accept.includes('text/html')
+  const title = status === 404 ? 'Embarque no encontrado' : 'Aún sincronizando este pedimento'
+  const message = status === 404
+    ? 'No encontramos este embarque en tu cuenta. Puede ser que aún no esté sincronizado o que el número sea distinto.'
+    : 'Estamos sincronizando la factura de este pedimento. Por favor intenta en unos minutos.'
+
+  if (wantsHtml) {
+    const html = `<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>${title} · CRUZ</title>
+  <style>
+    :root { color-scheme: dark; }
+    html, body { margin: 0; padding: 0; background: #05070B; color: #E6EDF3;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif; }
+    .wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+    .card { max-width: 480px; width: 100%; background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 32px;
+      backdrop-filter: blur(20px); box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
+    h1 { margin: 0 0 12px; font-size: 20px; font-weight: 600; letter-spacing: -0.01em; color: #E6EDF3; }
+    p { margin: 0 0 16px; font-size: 14px; line-height: 1.55; color: rgba(230,237,243,0.82); }
+    .meta { font-size: 12px; color: rgba(148,163,184,0.8); margin-top: 16px; }
+    .meta a { color: #C9A84C; text-decoration: none; }
+    .actions { display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap; }
+    button { min-height: 60px; padding: 0 22px; font-size: 14px; font-weight: 600;
+      border-radius: 12px; border: 1px solid rgba(201,168,76,0.3); background: rgba(201,168,76,0.12);
+      color: #E6EDF3; cursor: pointer; }
+    .foot { margin-top: 20px; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+      color: rgba(122,126,134,0.55); font-family: ui-monospace, 'JetBrains Mono', monospace; }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="card" role="status" aria-live="polite">
+      <h1>${title}</h1>
+      <p>${message}</p>
+      <p class="meta">Si persiste, contáctanos por WhatsApp al <a href="https://wa.me/18005551941">+1 (800) 555-1941</a>
+        o por correo a <a href="mailto:soporte@renatozapata.com">soporte@renatozapata.com</a>.</p>
+      <div class="actions">
+        <button type="button" onclick="history.back()">Volver</button>
+      </div>
+      <div class="foot">Patente 3596 · Aduana 240 · Laredo TX · Est. 1941</div>
+    </section>
+  </main>
+</body>
+</html>`
+    return new NextResponse(html, {
+      status,
+      headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' },
+    })
+  }
+
+  return NextResponse.json(
+    {
+      error: status === 404 ? 'not_found' : 'sync_in_progress',
+      message,
+      retry_suggested: status === 422,
+    },
+    { status, headers: { 'Cache-Control': 'no-store' } }
+  )
+}
+
+function unauthorizedResponse(request: NextRequest): NextResponse {
+  const accept = request.headers.get('accept') ?? ''
+  if (accept.includes('text/html')) {
+    return NextResponse.redirect(new URL('/login', request.url))
+  }
+  return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+}
+
 export async function GET(request: NextRequest) {
   const sessionToken = request.cookies.get('portal_session')?.value ?? ''
   const session = await verifySession(sessionToken)
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!session) return unauthorizedResponse(request)
 
   const companyId = request.cookies.get('company_id')?.value ?? ''
   const clientClave = request.cookies.get('company_clave')?.value ?? ''
   const clientName = decodeURIComponent(request.cookies.get('company_name')?.value ?? 'Cliente')
 
   const traficoId = request.nextUrl.searchParams.get('trafico')
-  if (!traficoId) return NextResponse.json({ error: 'Missing trafico param' }, { status: 400 })
+  if (!traficoId) return syncDelayResponse(request, 404)
 
   const { data: trafico } = await supabase
     .from('traficos')
@@ -33,9 +110,9 @@ export async function GET(request: NextRequest) {
     .eq('company_id', companyId)
     .single()
 
-  if (!trafico) return NextResponse.json({ error: 'Embarque no encontrado' }, { status: 404 })
+  if (!trafico) return syncDelayResponse(request, 404)
 
-  // Primary: commercial invoices from GlobalPC (full history).
+  // Primary: commercial invoices mirrored from the upstream broker system.
   const { data: globalFacturas } = await supabase
     .from('globalpc_facturas')
     .select('folio, cve_proveedor, cve_cliente, numero, moneda, valor_comercial, fecha_facturacion, flete, seguros, embalajes, incrementables, incoterm')
@@ -44,7 +121,7 @@ export async function GET(request: NextRequest) {
     .limit(100)
 
   // Secondary: CBP payment data (last ~30 days only, by pedimento number).
-  // We join by pedimento here — referencia is the GlobalPC-style code, pedimento
+  // We join by pedimento here — referencia is the upstream code, pedimento
   // is the canonical CBP key and is what aduanet-puppeteer-scraper writes.
   const { data: cbpFacturas } = trafico.pedimento
     ? await supabase
@@ -56,10 +133,7 @@ export async function GET(request: NextRequest) {
     : { data: null }
 
   if ((!globalFacturas || globalFacturas.length === 0) && (!cbpFacturas || cbpFacturas.length === 0)) {
-    return NextResponse.json(
-      { error: `Sin facturas sincronizadas para embarque ${traficoId}. Verificar sync GlobalPC.` },
-      { status: 422 }
-    )
+    return syncDelayResponse(request, 422)
   }
 
   const gfArr = globalFacturas ?? []

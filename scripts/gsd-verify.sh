@@ -141,8 +141,12 @@ fi
 # Baseline 2026-04-19 v3.1 = 2724 (dashboard liveness pill — one new
 #   #22C55E in PageShell's breathing "Datos en vivo" badge. Keep-
 #   consistent-with-global-green rationale documented inline.)
+# Baseline 2026-04-20 = 2728 (login alive pill + AguilaLivePill
+#   component used in TopBar + the warning/error tones for future
+#   degraded states. All variants of the same canonical green signal;
+#   tokenization deferred with the rest of the v3 chrome.)
 # --------------------------------------------------------------------------
-INVARIANT_HEX_BASELINE=2724
+INVARIANT_HEX_BASELINE=2728
 header "Design System — Colors ratchet"
 HEX_COUNT=$(grep -rn '#[0-9A-Fa-f]\{6\}' src/ \
   --include="*.tsx" --include="*.ts" 2>/dev/null \

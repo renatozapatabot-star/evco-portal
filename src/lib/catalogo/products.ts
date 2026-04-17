@@ -186,11 +186,18 @@ export async function getCatalogo(
   const limit = Math.min(Math.max(opts.limit ?? 100, 1), 500)
   const q = (opts.q ?? '').trim()
 
+  // Deterministic ordering: primary key = classified-at desc (brings newly
+  // classified parts to the top), secondary = cve_producto asc (tiebreaker
+  // for batch-classified rows that share a timestamp). Without the
+  // secondary, Supabase returns batch rows in insertion order, which
+  // varies across requests and made Catálogo KPIs shift 487→500→475 on
+  // consecutive refreshes (audit 2026-04-17).
   let productoQuery = supabase
     .from('globalpc_productos')
     .select('id, cve_producto, descripcion, fraccion, fraccion_source, fraccion_classified_at, cve_proveedor, pais_origen')
     .eq('company_id', companyId)
     .order('fraccion_classified_at', { ascending: false, nullsFirst: false })
+    .order('cve_producto', { ascending: true })
     .limit(limit)
 
   if (q.length > 0) {

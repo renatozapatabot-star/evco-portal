@@ -5,8 +5,11 @@ import { createServerClient } from '@/lib/supabase-server'
 import { getCatalogo, groupCatalogoByFraccion, summarizeCatalogo } from '@/lib/catalogo/products'
 import { CatalogoTable } from './_components/CatalogoTable'
 
+// 60 s revalidate smooths the 500-row slice so Ursula doesn't see KPIs
+// fluctuate on rapid refresh. Still force-dynamic at the page level —
+// the ISR window is a safety net for KPI stability, not a cache-replace.
 export const dynamic = 'force-dynamic'
-export const revalidate = 0
+export const revalidate = 60
 
 interface CatalogoPageProps {
   searchParams: Promise<{ q?: string; view?: string }>

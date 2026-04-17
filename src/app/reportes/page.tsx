@@ -1,8 +1,19 @@
 /**
- * /reportes — the V1 builder is the only surface.
- * Legacy chart view removed in marathon batch 1.
+ * /reportes — legacy surface (2026-04-18 deprecation).
+ *
+ * The canonical client experience moved to /anexo-24 when Anexo 24
+ * was promoted to primary nav. This route now:
+ *   - Redirects CLIENT sessions to /anexo-24 (Ursula's path)
+ *   - Preserves the report builder for broker/admin sessions because
+ *     internal operators still use the consolidation + multi-cliente
+ *     reports which haven't moved yet.
+ *
+ * Legacy sub-routes (/reportes/anexo-24, /reportes/consolidacion,
+ * /reportes/multi-cliente, /reportes/nuevo, /reportes/[id]) stay alive
+ * with their original behavior — deep links from emails keep working.
  */
 import { cookies } from 'next/headers'
+import { redirect } from 'next/navigation'
 import { verifySession } from '@/lib/session'
 import { ReportBuilderPage } from './ReportBuilderPage'
 import { ReportesKpiStrip } from './ReportesKpiStrip'
@@ -17,6 +28,9 @@ export default async function Page() {
   const token = cookieStore.get('portal_session')?.value ?? ''
   const session = await verifySession(token)
   const isInternal = session?.role === 'admin' || session?.role === 'broker'
+
+  // Clients land on /anexo-24 — the new canonical surface.
+  if (session?.role === 'client') redirect('/anexo-24')
 
   return (
     <div style={{ background: BG_DEEP, minHeight: '100vh', padding: '24px 24px 48px' }}>

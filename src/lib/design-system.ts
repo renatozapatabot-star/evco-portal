@@ -62,8 +62,27 @@ export const BG_SURFACE = 'rgba(255,255,255,0.03)'
 export const BORDER = 'rgba(255,255,255,0.08)'
 
 // ── Glass system ──
+// April 2026 theme pass: backdrop saturate(1.2) added as a whisper of
+// chroma boost on bleed-through — the single trick that separates a
+// translucent div from a real glass panel. visionOS + Vercel dashboard
+// lean on this. GLASS_BLUR kept for back-compat (consumers still pass
+// it directly into blur(...)); new code should use GLASS_FILTER which
+// composes blur + saturate together.
 export const GLASS_BLUR = '20px'
-export const GLASS_SHADOW = '0 10px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)'
+export const GLASS_SATURATE = '1.2'
+export const GLASS_FILTER = `blur(${GLASS_BLUR}) saturate(${GLASS_SATURATE})`
+// Inset edge-lighting bumped from 0.05 → 0.07. Reads as "top-lit brushed
+// metal" rather than "flat translucent rectangle." 2026 theme canonical.
+export const GLASS_SHADOW = '0 10px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.07)'
+
+// ── Motion tokens (April 2026 — canonical cadence) ──
+// Single brand ease used by every hover, focus fade, and card reveal so
+// the platform breathes on one curve. Durations cover the three
+// interaction tiers: fast (hover/tap), base (panel open), slow (page).
+export const EASE_BRAND = 'cubic-bezier(0.22, 1, 0.36, 1)'
+export const DUR_FAST = '150ms'
+export const DUR_BASE = '250ms'
+export const DUR_SLOW = '400ms'
 
 // ── V1 Glass tiers (April 2026) ──
 // Login is the visual North Star. Cockpit glass now matches login's weightier
@@ -79,12 +98,19 @@ export const GLASS_TERTIARY = 'rgba(0,0,0,0.12)'
 export const BORDER_SILVER = 'rgba(192,197,206,0.18)'
 export const BORDER_SILVER_HOVER = 'rgba(192,197,206,0.4)'
 
-/** Login-parity shadow: weighty drop + silver halo accent */
+/** Login-parity shadow: weighty drop + silver halo + top-lit edge.
+ *  April 2026 theme pass adds the inset 0 1px 0 rgba(255,255,255,0.07)
+ *  so hero cards catch ambient light on the top edge like brushed
+ *  metal. The login screen was already doing this; cockpit now matches. */
 export const SHADOW_HERO =
-  '0 10px 30px rgba(0,0,0,0.6), 0 0 20px rgba(192,197,206,0.08)'
-/** Hover lift: brighter halo, deeper drop */
+  '0 10px 30px rgba(0,0,0,0.6), 0 0 20px rgba(192,197,206,0.08), inset 0 1px 0 rgba(255,255,255,0.07)'
+/** Hover lift: brighter halo, deeper drop, brighter top edge.
+ *  Drop blur 40px → 48px + alpha 0.7 → 0.75 so lifted cards land
+ *  with visible weight. Inset 0.14 → 0.11 (corrected: always dimmer
+ *  than base so the edge catch stays subtle, not competing with the
+ *  halo glow). */
 export const SHADOW_HERO_HOVER =
-  '0 14px 40px rgba(0,0,0,0.7), 0 0 28px rgba(192,197,206,0.14)'
+  '0 14px 48px rgba(0,0,0,0.75), 0 0 32px rgba(192,197,206,0.16), inset 0 1px 0 rgba(255,255,255,0.11)'
 
 // ── Atmospheric layers (mirror login's topo + halo + aura) ──
 export const ATMOSPHERE_HALO =

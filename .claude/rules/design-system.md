@@ -37,28 +37,81 @@ Text muted:           #64748b
 - **Red** = alerts, risks, urgent
 - Never use cyan for decoration. Every glow means "data is flowing."
 
-## Glass Card System
+## Glass Card System (April 2026 canonical — consume via `<GlassCard>`)
+
+Every authenticated glass surface composes from `<GlassCard>`. Inline
+glass definitions outside `src/components/aguila/` violate core-invariant
+rule 26. The chemistry below documents what the primitive ships — do
+not re-derive it elsewhere.
 
 ```css
-backdrop-filter: blur(20px);
-background: rgba(255,255,255,0.04);
-border: 1px solid rgba(255,255,255,0.08);
+/* Hero tier — KPI tiles, primary nav cards, asistente launcher */
+backdrop-filter: blur(20px) saturate(1.2);  /* GLASS_FILTER token */
+background: rgba(0,0,0,0.4);                 /* GLASS_HERO token */
+border: 1px solid rgba(192,197,206,0.18);    /* BORDER_SILVER */
 box-shadow:
-  0 10px 30px rgba(0,0,0,0.4),
-  inset 0 1px 0 rgba(255,255,255,0.05),
-  0 0 1px rgba(0,229,255,0.12);  /* subtle cyan idle glow */
+  0 10px 30px rgba(0,0,0,0.6),
+  0 0 20px rgba(192,197,206,0.08),
+  inset 0 1px 0 rgba(255,255,255,0.07);     /* top-lit edge */
 border-radius: 20px;
 ```
 
-**Hover state:**
+**Hero-tier cards also carry a 180deg light overlay** (2.5% white at top,
+transparent by 40% card height). Rendered by `<GlassCard tier="hero">`
+as an absolutely-positioned `::before`-style div — simulates ambient
+light on the top edge of a physical panel. Do not add decorative
+gradients elsewhere; the hero overlay is the only one.
+
+**Hover state** (via `<GlassCard href=...>`):
 ```css
-background: rgba(255,255,255,0.06);
+border-color: rgba(192,197,206,0.4);
 box-shadow:
-  0 12px 40px rgba(0,0,0,0.5),
-  inset 0 1px 0 rgba(255,255,255,0.08),
-  0 0 30px rgba(0,229,255,0.18);
-border-color: rgba(0,229,255,0.2);
+  0 14px 48px rgba(0,0,0,0.75),
+  0 0 32px rgba(192,197,206,0.16),
+  inset 0 1px 0 rgba(255,255,255,0.11);
+transform: translateY(-2px);
+transition: all 150ms cubic-bezier(0.22, 1, 0.36, 1);  /* --ease-brand */
 ```
+
+**Active state** (tap/press acknowledgment):
+```css
+transform: translateY(0) scale(0.995);
+transition-duration: 80ms;
+```
+
+### Canonical token exports (`src/lib/design-system.ts`)
+
+```ts
+GLASS_BLUR       = '20px'
+GLASS_SATURATE   = '1.2'
+GLASS_FILTER     = 'blur(20px) saturate(1.2)'   // use this
+GLASS_HERO       = 'rgba(0,0,0,0.4)'
+GLASS_SECONDARY  = 'rgba(0,0,0,0.25)'
+GLASS_TERTIARY   = 'rgba(0,0,0,0.12)'
+SHADOW_HERO       // base + halo + top-lit edge
+SHADOW_HERO_HOVER // deeper drop + brighter halo + brighter edge
+EASE_BRAND       = 'cubic-bezier(0.22, 1, 0.36, 1)'
+DUR_FAST         = '150ms'
+DUR_BASE         = '250ms'
+DUR_SLOW         = '400ms'
+```
+
+### Theme calibration — "right amount of too much"
+
+The 2026 theme pass calibrated every dial one step back from where
+"premium" becomes "loud." The rejected alternatives are documented
+so re-tuning doesn't drift into gaudy:
+
+| Dial | Canonical | Rejected |
+|---|---|---|
+| Top-lit inset | `0.07` | `0.10` (over-bright, loses material) |
+| Elevated inset | `0.11` | `0.15` (competes with halo) |
+| Backdrop saturate | `1.2` | `1.5` (breaks monochrome) |
+| Hero lift | `-3px` nav / `-2px` card | `-6px` (jumps off surface) |
+| Active scale | `0.98` button / `0.995` card | `0.95` (feels depressed) |
+| Reveal stagger | `80ms` steps | `40ms` (imperceptible) / `200ms` (slow) |
+| Top-lit gradient | `2.5%` → transparent | `5%` (visible stripe, not light) |
+| Shimmer stops | `2% / 6% / 2%` whites | solid greys (color shift, not light) |
 
 ## NO opaque card backgrounds on authenticated pages.
 `#222222`, `#1A1A1A`, `#1a2338` are BANNED. Use `rgba(255,255,255,0.04)` or CSS var.

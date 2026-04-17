@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import type { LucideIcon } from 'lucide-react'
 import { Sparkline, type SparklineTone } from '@/components/aguila'
+import { GLASS_FILTER } from '@/lib/design-system'
 
 interface Props {
   href: string
@@ -39,8 +40,8 @@ export function SmartNavCard({ href, label, icon: Icon, description, count, coun
         className="smart-nav-card"
         style={{
           background: 'rgba(0,0,0,0.4)',
-          backdropFilter: 'blur(20px) saturate(1.2)',
-          WebkitBackdropFilter: 'blur(20px) saturate(1.2)',
+          backdropFilter: GLASS_FILTER,
+          WebkitBackdropFilter: GLASS_FILTER,
           border: '1px solid rgba(192,197,206,0.18)',
           borderRadius: 20,
           padding: '16px 20px',

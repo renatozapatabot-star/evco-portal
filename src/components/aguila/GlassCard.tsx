@@ -4,8 +4,9 @@ import Link from 'next/link'
 import type { CSSProperties, ReactNode } from 'react'
 import {
   BG_ELEVATED, BORDER_HAIRLINE, BORDER_SILVER, BORDER_SILVER_HOVER,
-  GLASS_BLUR, GLASS_HERO, GLASS_SECONDARY, GLASS_TERTIARY,
+  GLASS_FILTER, GLASS_HERO, GLASS_SECONDARY, GLASS_TERTIARY,
   GLASS_SHADOW, SHADOW_HERO, SHADOW_HERO_HOVER, GLOW_SILVER,
+  EASE_BRAND, DUR_FAST,
   TEXT_PRIMARY,
 } from '@/lib/design-system'
 import { SeverityRibbon, type SeverityTone } from './SeverityRibbon'
@@ -85,19 +86,18 @@ export function GlassCard({
         position: 'relative',
         overflow: 'hidden',
         background: TIER_BG[tier],
-        /* saturate(1.2) on the backdrop adds a whisper of chroma to
-           whatever bleeds through — content underneath reads slightly
-           richer without shifting monochrome discipline. 2026-premium
-           platforms (visionOS, Vercel dashboard) lean on this trick. */
-        backdropFilter: `blur(${GLASS_BLUR}) saturate(1.2)`,
-        WebkitBackdropFilter: `blur(${GLASS_BLUR}) saturate(1.2)`,
+        /* GLASS_FILTER composes blur + saturate(1.2) — canonical.
+           saturate adds a whisper of chroma to bleed-through so glass
+           reads as material instead of translucent rectangle. */
+        backdropFilter: GLASS_FILTER,
+        WebkitBackdropFilter: GLASS_FILTER,
         border: `1px solid ${TIER_BORDER[tier]}`,
         borderRadius: radiusVar,
         padding: pad,
         boxShadow: TIER_SHADOW[tier],
         color: TEXT_PRIMARY,
         gridColumn: span === 2 ? 'span 2' : undefined,
-        transition: enableHover ? 'background var(--dur-fast, 150ms) var(--ease-brand, cubic-bezier(0.22, 1, 0.36, 1)), box-shadow var(--dur-fast, 150ms) var(--ease-brand, cubic-bezier(0.22, 1, 0.36, 1)), border-color var(--dur-fast, 150ms) ease, transform var(--dur-fast, 150ms) var(--ease-brand, cubic-bezier(0.22, 1, 0.36, 1))' : undefined,
+        transition: enableHover ? `background ${DUR_FAST} ${EASE_BRAND}, box-shadow ${DUR_FAST} ${EASE_BRAND}, border-color ${DUR_FAST} ease, transform ${DUR_FAST} ${EASE_BRAND}` : undefined,
         cursor: href ? 'pointer' : 'default',
         ...style,
       }}

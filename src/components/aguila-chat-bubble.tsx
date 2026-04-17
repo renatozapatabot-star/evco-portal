@@ -50,10 +50,12 @@ export function AguilaChatBubble() {
 
   // Listen for global open event (from shortcuts, command palette, FAB, etc.)
   // On mobile, navigate to full /cruz page instead of opening overlay
+  // (the overlay would crowd the mobile viewport; /cruz is a full chat
+  // surface). Pre-rebrand this routed to /aduana which no longer exists.
   useEffect(() => {
     const handleOpen = () => {
       if (isMobile) {
-        router.push('/aduana')
+        router.push('/cruz')
         return
       }
       setOpen(true)
@@ -236,6 +238,12 @@ export function AguilaChatBubble() {
   ]
 
   const handleOpen = () => {
+    // Match the global event-listener behavior: mobile taps route to
+    // the full /cruz surface; desktop taps open the inline panel.
+    if (isMobile) {
+      router.push('/cruz')
+      return
+    }
     setOpen(true)
     setHasUnread(false)
   }
@@ -480,8 +488,10 @@ export function AguilaChatBubble() {
         </div>
       )}
 
-      {/* Collapsed bubble — hidden on mobile (Z tab in bottom nav replaces it) */}
-      {!open && !isMobile && (
+      {/* Collapsed bubble — visible on every authenticated surface.
+          Desktop taps open the inline panel; mobile taps route to /cruz
+          (handled by the cruz:open-chat listener above). */}
+      {!open && (
         <button
           onClick={handleOpen}
           aria-label="Abrir Asistente CRUZ"

@@ -245,8 +245,12 @@ export default function DashboardShellClient({ children }: Props) {
         </div>
       )}
 
-      {/* Floating ADUANA AI chat bubble — desktop only (mobile uses TopBar AI link) */}
-      {!isMobile && <AguilaChatBubble />}
+      {/* Floating Asistente CRUZ chat bubble — mounted on every
+          authenticated page, both desktop and mobile. Desktop taps open
+          an inline panel; mobile taps route to /cruz full-screen. The
+          component owns its own FAB rendering; DashboardShellClient just
+          mounts it inside the authenticated shell. */}
+      <AguilaChatBubble />
 
       {/* Welcome overlay removed — the launchpad IS the welcome */}
 

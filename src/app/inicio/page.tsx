@@ -18,6 +18,7 @@ import {
 import { getClienteActivity } from '@/lib/cliente/activity'
 import { bucketDailySeries, daysAgo } from '@/lib/cockpit/fetch'
 import { softCount, softData, softFirst } from '@/lib/cockpit/safe-query'
+import { getLatestCrossing } from '@/lib/queries/latest-crossing'
 import { CockpitErrorCard, CockpitSkeleton, type CockpitHeroKPI, type ActividadStripItem } from '@/components/aguila'
 import { InicioClientShell } from './InicioClientShell'
 import type { ActiveShipment } from '@/components/cockpit/client/ActiveShipmentTimeline'
@@ -133,6 +134,7 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
     documentos,
     activeTraficosCount,
     pedimentosListosCount,
+    pedimentosMesCount,
     cruzadosMesCount,
     cruzadosLast7Count,
     entradasSemanaCount,
@@ -160,6 +162,13 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
     // never populated fecha_cruce. Without recency, EVCO has 900 hits but
     // only 18 represent real "waiting to cross right now."
     softCount(supabase.from('traficos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).eq('estatus', 'Pedimento Pagado').is('fecha_cruce', null).gte('fecha_llegada', ninetyDaysAgoIso)),
+    // Pedimentos nav-card count: mirrors the /pedimentos list-view filter
+    // (pedimento set AND fecha_llegada within current month). Before this
+    // helper the nav-card showed `pedimentosListosCount` ("awaiting cruce")
+    // while the list showed every pedimento this month — so the nav-card
+    // read "0" on pages with data. The hero KPI still uses the listos
+    // count for the "Próximo cruce" signal.
+    softCount(supabase.from('traficos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).not('pedimento', 'is', null).gte('fecha_llegada', monthStartIso)),
     // Cruces este mes: real fecha_cruce >= start-of-month.
     softCount(supabase.from('traficos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).gte('fecha_cruce', monthStartIso)),
     // Cruces last 7d for nav microStatus.
@@ -191,7 +200,9 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
     softData<{ fecha_cruce: string }>(
       supabase.from('traficos').select('fecha_cruce').eq('company_id', companyId).gte('fecha_cruce', fourteenDaysAgoIso).limit(2000)
     ),
-    softFirst<{ fecha_cruce: string }>(supabase.from('traficos').select('fecha_cruce').eq('company_id', companyId).not('fecha_cruce', 'is', null).order('fecha_cruce', { ascending: false }).limit(1)),
+    // Último cruce — canonical helper, same source as WorkflowCard topbar
+    // and hero "Último cruce" KPI. Collapsed from two divergent queries.
+    withFallbackTimeout(getLatestCrossing(supabase, companyId), 3000, null),
     withFallbackTimeout(fetchClientMensajeriaFeed(supabase, companyId, 10), 3000, []),
     withFallbackTimeout(getClienteActivity(supabase, companyId, 12), 3000, []),
   ])
@@ -264,7 +275,7 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
 
   const navCounts: NavCounts = {
     traficos:        { count: activeTraficosCount,    series: activosSeries,          microStatus: `${cruzadosLast7Count} cruzaron esta semana` },
-    pedimentos:      { count: pedimentosListosCount,  series: pedimentosListosSeries, microStatus: daysSinceLastCruce != null ? `Último cruce hace ${daysSinceLastCruce} día${daysSinceLastCruce === 1 ? '' : 's'}` : 'Sin cruces recientes' },
+    pedimentos:      { count: pedimentosMesCount,     series: pedimentosListosSeries, microStatus: daysSinceLastCruce != null ? `Último cruce hace ${daysSinceLastCruce} día${daysSinceLastCruce === 1 ? '' : 's'}` : 'Sin cruces recientes' },
     expedientes:     { count: expedientesMesCount,    series: expedientesSeries,      microStatus: expedientesMicroStatus, historicMicrocopy: expedientesHistoricMicrocopy },
     catalogo:        { count: catalogoMesCount,       series: [],                     microStatus: catalogoMicroStatus,    historicMicrocopy: catalogoHistoricMicrocopy },
     entradas:        { count: entradasSemanaCount,    series: entradasSeries,         microStatus: `${entradasSemanaCount} recibida${entradasSemanaCount === 1 ? '' : 's'} esta semana` },
@@ -275,14 +286,13 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
 
   // Dynamic zero-state — when no active tráficos, show the most-recent
   // crossed embarque instead of a blank "nothing happening" line.
-  const { data: lastCruzadoRow } = await supabase
-    .from('traficos')
-    .select('trafico, fecha_cruce, updated_at')
-    .eq('company_id', companyId)
-    .eq('estatus', 'Cruzado')
-    .order('fecha_cruce', { ascending: false, nullsFirst: false })
-    .limit(1)
-    .maybeSingle()
+  // Reuses the canonical lastCruce result so the hero "Último cruce"
+  // KPI and the nav-card "hace N días" microstatus agree on the same
+  // trafico + fecha. The older .eq('estatus', 'Cruzado') query drifted
+  // when data used 'E1' or 'Entregado' instead.
+  const lastCruzadoRow = lastCruce
+    ? { trafico: lastCruce.trafico, fecha_cruce: lastCruce.fecha_cruce }
+    : null
 
   // Most-imminent tráfico for the "Próximo cruce" hero KPI + modal. Uses
   // actual estatus values (Cruzado/E1 are terminal; Pedimento Pagado +
@@ -327,7 +337,7 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
     label: imminentShipment ? 'Próximo cruce' : 'Último cruce',
     value: imminentShipment
       ? formatCruceDate(imminentShipment.fechaLlegada)
-      : formatCruceDate(lastCruzadoRow ? (lastCruzadoRow as { fecha_cruce: string | null }).fecha_cruce ?? null : null),
+      : formatCruceDate(lastCruzadoRow?.fecha_cruce ?? null),
     series: activosSeries,
     tone: 'silver',
     ariaLabel: imminentShipment ? 'Ver línea de tiempo del próximo embarque' : undefined,
@@ -410,7 +420,7 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
     activeCount,
     standardTiles: standardHeroKPIs,
     daysSinceLastIncident,
-    lastCruceIso: (lastCruzadoRow as { fecha_cruce: string | null } | null)?.fecha_cruce ?? null,
+    lastCruceIso: lastCruzadoRow?.fecha_cruce ?? null,
     crucesThisMonth: cruzadosMesCount,
     tmecYtdUsd,
     lastPedimentoIso,
@@ -465,7 +475,7 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
   const computedSummary = activeTraficos.length > 0
     ? `${activeTraficos.length} embarque${activeTraficos.length === 1 ? '' : 's'} en tránsito · Patente en movimiento`
     : lastCruzadoRow
-      ? `Último embarque · ${(lastCruzadoRow as { trafico: string }).trafico} · cruzó ${daysAgoLabel((lastCruzadoRow as { fecha_cruce: string | null }).fecha_cruce ?? (lastCruzadoRow as { updated_at: string | null }).updated_at)}`
+      ? `Último embarque · ${lastCruzadoRow.trafico} · cruzó ${daysAgoLabel(lastCruzadoRow.fecha_cruce)}`
       : 'Sin embarques activos. Tus próximas operaciones aparecerán aquí.'
   const summaryLine = heroBuild.summaryLine ?? computedSummary
 

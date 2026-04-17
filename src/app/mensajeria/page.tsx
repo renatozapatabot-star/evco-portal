@@ -13,17 +13,27 @@ import {
   isInternalRole,
 } from '@/lib/mensajeria/constants'
 import { MensajeriaClient } from './MensajeriaClient'
+import { CalmEmptyState } from '@/components/cockpit/client/CalmEmptyState'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
+function MensajeriaProximamente() {
+  return (
+    <main className="aduana-dark" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+      <CalmEmptyState
+        icon="document"
+        title="Próximamente disponible"
+        message="La mensajería estará disponible pronto. Mientras tanto, continúa con tu operación — tu equipo te mantendrá al día."
+        action={{ label: 'Volver al inicio', href: '/inicio' }}
+      />
+    </main>
+  )
+}
+
 export default async function MensajeriaPage() {
   if (!isMensajeriaEnabled()) {
-    return (
-      <main style={{ padding: 48, color: '#94a3b8', textAlign: 'center' }}>
-        Chat no está activo.
-      </main>
-    )
+    return <MensajeriaProximamente />
   }
 
   const cookieStore = await cookies()
@@ -32,7 +42,7 @@ export default async function MensajeriaPage() {
   if (!session) redirect('/login')
 
   if (!isInternalRole(session.role) && process.env.NEXT_PUBLIC_MENSAJERIA_CLIENT !== 'true') {
-    redirect('/')
+    return <MensajeriaProximamente />
   }
 
   const operatorName = cookieStore.get('operator_name')?.value?.trim() || 'Operador'

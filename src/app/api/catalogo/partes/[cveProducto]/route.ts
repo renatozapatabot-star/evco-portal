@@ -13,6 +13,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { verifySession } from '@/lib/session'
 import { formatFraccion } from '@/lib/format/fraccion'
+import { resolveProveedorName } from '@/lib/proveedor-names'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -161,7 +162,7 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ cveProducto
       const s = proveedorStats.get(clave)!
       return {
         clave,
-        nombre: nameByClave.get(clave) || null,
+        nombre: resolveProveedorName(clave, nameByClave.get(clave) ?? null),
         uses: s.uses,
         avg_price: s.priceN > 0 ? Math.round((s.priceSum / s.priceN) * 100) / 100 : null,
         last_use: s.last,

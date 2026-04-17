@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { PORTAL_DATE_FROM } from '@/lib/data'
 import { verifySession } from '@/lib/session'
 import { sanitizeIlike } from '@/lib/sanitize'
+import { resolveProveedorName } from '@/lib/proveedor-names'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -184,9 +185,12 @@ export async function GET(request: NextRequest) {
       date: null, view: 'fracciones',
     })),
     ...(provRes.data || []).map(s => ({
-      type: 'proveedor', id: s.cve_proveedor, title: s.nombre || s.cve_proveedor,
-      sub: s.id_fiscal || s.cve_proveedor,
-      date: null, view: 'proveedores',
+      type: 'proveedor',
+      id: s.cve_proveedor,
+      title: resolveProveedorName(s.cve_proveedor, s.nombre),
+      sub: s.id_fiscal || resolveProveedorName(s.cve_proveedor, s.nombre),
+      date: null,
+      view: 'proveedores',
     })),
     ...(partRes.data || []).map(pt => ({
       type: 'partida', id: pt.cve_trafico || String(pt.id), title: pt.cve_trafico || `Partida ${pt.id}`,

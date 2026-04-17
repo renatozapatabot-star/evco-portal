@@ -4,6 +4,7 @@ import { loadPdfRenderer } from '@/lib/pdf/lazy'
 import { PATENTE, ADUANA } from '@/lib/client-config'
 import { verifySession } from '@/lib/session'
 import { getDTARates, getExchangeRate } from '@/lib/rates'
+import { resolveProveedorName } from '@/lib/proveedor-names'
 import { PedimentoPDF } from './pdf-document'
 
 const supabase = createClient(
@@ -139,10 +140,12 @@ export async function GET(request: NextRequest) {
   const gfArr = globalFacturas ?? []
   const cbpArr = cbpFacturas ?? []
 
-  // Proveedor display name: globalpc_proveedores (cve_proveedor, cve_cliente) → nombre.
-  // Fall back to cve_proveedor code, then aduanet-scraped string, then '—'.
-  let proveedorDisplay = ''
-  const proveedorCve = gfArr[0]?.cve_proveedor
+  // Proveedor display name: resolveProveedorName() guarantees a human
+  // string (no raw PRV_#### codes leak into the PDF). Prefer the
+  // globalpc_proveedores lookup; fall back to the aduanet-scraped name,
+  // then the coalesced placeholder.
+  const proveedorCve = gfArr[0]?.cve_proveedor ?? null
+  let proveedorCanonical: string | null = null
   if (proveedorCve) {
     const { data: prov } = await supabase
       .from('globalpc_proveedores')
@@ -150,9 +153,12 @@ export async function GET(request: NextRequest) {
       .eq('cve_proveedor', proveedorCve)
       .eq('cve_cliente', clientClave)
       .maybeSingle()
-    proveedorDisplay = prov?.nombre || prov?.alias || proveedorCve
+    proveedorCanonical = prov?.nombre || prov?.alias || null
   }
-  if (!proveedorDisplay && cbpArr[0]?.proveedor) proveedorDisplay = String(cbpArr[0].proveedor)
+  if (!proveedorCanonical && cbpArr[0]?.proveedor) {
+    proveedorCanonical = String(cbpArr[0].proveedor)
+  }
+  const proveedorDisplay = resolveProveedorName(proveedorCve, proveedorCanonical)
 
   // Partidas: join globalpc_partidas.folio ∈ facturas.folio[].
   const folios = gfArr.map(f => f.folio).filter(Boolean)
@@ -262,7 +268,7 @@ export async function GET(request: NextRequest) {
       fechaPago: trafico.fecha_pago,
       fechaLlegada: trafico.fecha_llegada,
       regimen: trafico.regimen,
-      proveedor: proveedorDisplay || '—',
+      proveedor: proveedorDisplay,
       descripcion: trafico.descripcion_mercancia || '',
       valorUSD,
       dta,

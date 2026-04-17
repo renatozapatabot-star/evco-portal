@@ -13,14 +13,14 @@ import { ChainView, type ChainNode, type ChainNodeKind } from '@/components/agui
 import { ChainVincularModal } from '@/components/aguila/ChainVincularModal'
 import { PortalCard } from '@/components/portal/PortalCard'
 import { PortalButton } from '@/components/portal/PortalButton'
+import { PortalDetailHero, type DetailHeroStage } from '@/components/portal/PortalDetailHero'
 import {
   PortalTheaterAnimation,
   actFromStatus,
 } from '@/components/portal/PortalTheaterAnimation'
+import { formatPedimento } from '@/lib/format/pedimento'
 import { translateEstatus } from '@/lib/estatus-translator'
 import { PageOpenTracker } from './PageOpenTracker'
-import { Header } from './Header'
-import { HeroStrip, type HeroTileSpec } from './HeroStrip'
 import { BelowFold } from './BelowFold'
 import { RightRail } from './RightRail'
 import { DocumentosTab } from './tabs/DocumentosTab'
@@ -159,53 +159,6 @@ export function TraficoDetail(props: TraficoDetailProps) {
   const estadoActualValue = estadoEvent?.display_name_es
     ?? (props.trafico.estatus ? translateEstatus(props.trafico.estatus).label : 'Sin estatus')
 
-  const heroTiles: HeroTileSpec[] = [
-    {
-      id: 'estado',
-      label: 'Estado actual',
-      value: estadoActualValue,
-    },
-    {
-      id: 'dias',
-      label: 'Días activos',
-      value: daysActive !== null ? String(daysActive) : '—',
-      mono: true,
-      color: daysColor,
-    },
-    {
-      id: 'documentos',
-      label: 'Documentos',
-      value:
-        props.requiredDocsCount > 0
-          ? `${props.uploadedRequiredCount} / ${props.requiredDocsCount}`
-          : String(props.docs.length),
-      mono: true,
-      color: docsColor,
-    },
-    {
-      id: 'valor',
-      label: 'Valor declarado',
-      value: valor > 0 ? fmtUSDCompact(valor) : '—',
-      mono: true,
-      color: GOLD,
-    },
-    {
-      id: 'partidas',
-      label: 'Partidas',
-      value: String(props.partidas.length),
-      mono: true,
-    },
-    {
-      id: 'eventos',
-      label: 'Eventos',
-      value: String(props.events.length),
-      mono: true,
-      color: 'var(--portal-fg-3)',
-      clickable: true,
-      hint: props.events.length === 0 ? 'Ninguno aún' : null,
-    },
-  ]
-
   const expedientePct =
     props.requiredDocsCount > 0
       ? Math.round((props.uploadedRequiredCount / props.requiredDocsCount) * 100)
@@ -275,56 +228,100 @@ export function TraficoDetail(props: TraficoDetailProps) {
   }
 
   return (
-    <div style={{ padding: '8px 0', maxWidth: 1400, margin: '0 auto' }}>
-      {/* TraficoQuickActions chip strip retired 2026-04-15 per audit —
-          Pedimento/DODA/Carta Porte are reachable from the detail tabs + chain. */}
+    <div style={{ maxWidth: 1400, margin: '0 auto' }}>
+      <PortalDetailHero
+        eyebrow={`PEDIMENTO · ${(props.trafico.tipo_operacion ?? 'A1').toUpperCase()} · ${props.clientName.toUpperCase()}`}
+        numberPrefix={(() => {
+          const ped = props.trafico.pedimento
+          if (!ped) return `${props.trafico.patente ?? '3596'}-`
+          // Split on the last dash so the serial tail becomes the emerald suffix.
+          const segments = ped.split(' ')
+          if (segments.length >= 2) {
+            return segments.slice(0, -1).join(' ') + ' '
+          }
+          return ped.slice(0, Math.max(0, ped.length - 7))
+        })()}
+        numberSuffix={(() => {
+          const ped = props.trafico.pedimento
+          if (!ped) return props.trafico.trafico
+          const segments = ped.split(' ')
+          if (segments.length >= 2) return segments[segments.length - 1]
+          return ped.slice(-7)
+        })()}
+        stages={(() => {
+          const act = actFromStatus(props.trafico.estatus)
+          const order: Array<{ id: string; label: string; aligned: 'filing'|'acceptance'|'clearance'|'exit'|'archived' }> = [
+            { id: 'creacion',    label: 'Creación',    aligned: 'filing'     },
+            { id: 'validacion',  label: 'Validación',  aligned: 'acceptance' },
+            { id: 'pago',        label: 'Pago',        aligned: 'acceptance' },
+            { id: 'firma',       label: 'Firma',       aligned: 'clearance'  },
+            { id: 'liberacion',  label: 'Liberación',  aligned: 'exit'       },
+          ]
+          const rank = ['filing', 'acceptance', 'clearance', 'exit', 'archived']
+          const currentRank = rank.indexOf(act)
+          return order.map((stage): DetailHeroStage => {
+            const stageRank = rank.indexOf(stage.aligned)
+            if (stageRank < currentRank) return { id: stage.id, label: stage.label, status: 'done' }
+            if (stageRank === currentRank) return { id: stage.id, label: stage.label, status: 'active' }
+            return { id: stage.id, label: stage.label, status: 'upcoming' }
+          })
+        })()}
+        badges={(() => {
+          const out: Array<{ tone?: 'live'|'info'|'warn'|'alert'|'neutral'; label: string }> = []
+          if (props.trafico.estatus === 'Cruzado' || props.trafico.estatus === 'E1' || props.trafico.estatus === 'Entregado') {
+            out.push({ tone: 'live', label: 'LIBERADO · SEMÁFORO VERDE' })
+          } else {
+            out.push({ tone: 'info', label: estadoActualValue.toUpperCase() })
+          }
+          out.push({ tone: 'info', label: 'IMMEX VIGENTE' })
+          out.push({ tone: 'neutral', label: `${(props.trafico.tipo_operacion ?? 'A1').toUpperCase()} · DEFINITIVO` })
+          out.push({ tone: 'neutral', label: 'T-MEC' })
+          return out
+        })()}
+        stats={[
+          {
+            label: 'VALOR ADUANA',
+            value: valor > 0 ? fmtUSDCompact(valor) : '—',
+            sub: valor > 0 ? 'USD declarado' : 'Pendiente',
+          },
+          {
+            label: 'DOCUMENTOS',
+            value:
+              props.requiredDocsCount > 0
+                ? `${props.uploadedRequiredCount} / ${props.requiredDocsCount}`
+                : String(props.docs.length),
+            sub: props.missingDocs.length > 0 ? `${props.missingDocs.length} por subir` : 'al corriente',
+          },
+          {
+            label: 'PARTIDAS',
+            value: String(props.partidas.length),
+            sub: props.partidas.length > 0 ? 'todas clasificadas' : 'sin partidas',
+          },
+          {
+            label: 'DÍAS ACTIVOS',
+            value: daysActive !== null ? String(daysActive) : '—',
+            sub: daysActive === null ? '—' : daysActive > 14 ? 'revisar' : 'en curso',
+          },
+        ]}
+        backHref="/embarques"
+        breadcrumb={['DASHBOARD', 'EMBARQUES', props.trafico.trafico]}
+        onOpenTheater={() => {
+          if (typeof window !== 'undefined' && typeof window.__portalOpenTheater === 'function') {
+            window.__portalOpenTheater(props.trafico.pedimento ?? props.traficoId)
+          }
+        }}
+        topbarActions={
+          <PortalButton
+            variant="ghost"
+            size="sm"
+            href={`/embarques/${encodeURIComponent(props.trafico.trafico)}/pedimento`}
+          >
+            Pedimento completo →
+          </PortalButton>
+        }
+      />
+
       <PageOpenTracker traficoId={props.traficoId} />
-
-      <Header
-        traficoNumber={props.trafico.trafico}
-        cliente={props.clientName}
-        patente={props.trafico.patente}
-        aduana={props.trafico.aduana}
-        tipoOperacion={props.trafico.tipo_operacion}
-        events={props.events}
-        createdAt={props.trafico.created_at}
-      />
-
-      <HeroStrip
-        traficoId={props.traficoId}
-        tiles={heroTiles}
-        onEventosClick={() => switchTo('cronologia')}
-      />
-
-      {/* 5-stage summary rail + cinematic theater launcher. The inline
-          rail gives the 11 PM executive quick certainty at a glance; the
-          "Ver flujo completo" button opens the full-viewport theater
-          (mounted globally in app/layout.tsx via PortalPedimentoTheater). */}
-      <div style={{ margin: '16px 0' }}>
-        <PortalCard tier="raised">
-          <PortalTheaterAnimation
-            act={actFromStatus(props.trafico.estatus)}
-            timestamps={{
-              filing: props.trafico.created_at ? fmtDate(props.trafico.created_at) : undefined,
-              clearance: estadoEvent?.created_at ? fmtDate(estadoEvent.created_at) : undefined,
-              exit: props.trafico.fecha_cruce ? fmtDate(props.trafico.fecha_cruce) : undefined,
-            }}
-          />
-          <div style={{ display: 'flex', justifyContent: 'center', marginTop: 20 }}>
-            <PortalButton
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                if (typeof window !== 'undefined' && typeof window.__portalOpenTheater === 'function') {
-                  window.__portalOpenTheater(props.trafico.pedimento ?? props.traficoId)
-                }
-              }}
-            >
-              Ver flujo completo →
-            </PortalButton>
-          </div>
-        </PortalCard>
-      </div>
 
       <div
         className="trafico-main-grid"

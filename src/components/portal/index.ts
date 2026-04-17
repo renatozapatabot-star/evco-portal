@@ -90,3 +90,12 @@ export { PortalPedimentoTheater } from './PortalPedimentoTheater'
 export { PortalLoginBackgroundLineMap } from './login/PortalLoginBackgroundLineMap'
 export { PortalLoginLiveWire } from './login/PortalLoginLiveWire'
 export type { LiveWireItem } from './login/PortalLoginLiveWire'
+
+// Phase B — Pedimento detail hero (2px accent line · sticky topbar · giant mono number · 5-stage spine · 2×2 grid)
+export { PortalDetailHero } from './PortalDetailHero'
+export type {
+  PortalDetailHeroProps,
+  DetailHeroStage,
+  DetailHeroStat,
+  DetailHeroBadge,
+} from './PortalDetailHero'

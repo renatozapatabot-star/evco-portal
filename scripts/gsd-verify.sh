@@ -237,10 +237,34 @@ CRUD_FOUND=$(grep -rn 'CRUD' src/ \
   | grep -v 'node_modules' \
   || true)
 if [ -n "$CRUD_FOUND" ]; then
-  fail "\"CRUD\" found in codebase — CRUZ, never CRUD:"
+  fail "\"CRUD\" found in codebase — PORTAL, never CRUD:"
   echo "$CRUD_FOUND" | head -5
 else
   pass "No 'CRUD' string in codebase"
+fi
+
+# --------------------------------------------------------------------------
+# 11b. Block DD · CRUZ string ratchet (user-visible surfaces)
+# --------------------------------------------------------------------------
+# Block DD rebranded the platform to PORTAL. Client-visible \bCRUZ\b
+# tokens in JSX prose, string literals shown to users, aria-labels,
+# and titles are ratchet violations. Identifiers (CruzCommand, cruz-fab,
+# CRUZ_CHAT_FALLBACK), JSDoc comments, and real-world carrier business
+# names (AUTOEXPRESS CRUZ, TRANSPORTES JOSÉ CRUZ MACIAS) are excluded.
+header "Invariant Block-DD — CRUZ user-visible string ratchet"
+INVARIANT_CRUZ_BASELINE=${INVARIANT_CRUZ_BASELINE:-218}
+CRUZ_COUNT=$(grep -rn '\bCRUZ\b' src/app src/components \
+  --include="*.ts" --include="*.tsx" \
+  | grep -v 'node_modules' \
+  | grep -v '__tests__' \
+  | grep -v 'AUTOEXPRESS CRUZ\|JOSé CRUZ\|JOSÉ CRUZ' \
+  | wc -l | tr -d ' ')
+if [ "$CRUZ_COUNT" -gt "$INVARIANT_CRUZ_BASELINE" ]; then
+  fail "\bCRUZ\b surfaces: $CRUZ_COUNT (baseline $INVARIANT_CRUZ_BASELINE). New CRUZ strings on user-visible surfaces are banned — use PORTAL."
+elif [ "$CRUZ_COUNT" -lt "$INVARIANT_CRUZ_BASELINE" ]; then
+  pass "\bCRUZ\b surfaces: $CRUZ_COUNT (baseline $INVARIANT_CRUZ_BASELINE, improving ✓). Update INVARIANT_CRUZ_BASELINE."
+else
+  warn "\bCRUZ\b surfaces: $CRUZ_COUNT (at baseline, JSDoc comments acceptable)"
 fi
 
 # --------------------------------------------------------------------------

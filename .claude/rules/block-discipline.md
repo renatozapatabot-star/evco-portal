@@ -106,6 +106,38 @@ This list is the boot-up ritual every session runs, even implicitly.
 
 ---
 
+## Design-integrity clause (Block DD)
+
+The PORTAL design system (`.claude/rules/portal-design-system.md`) is the
+working floor for every new surface. Every polish block after DD enforces:
+
+- **Tokens over hex.** Every color, space, radius, shadow, duration, or
+  font-size on new/migrated surfaces routes through `--portal-*` vars.
+  Legacy `--aguila-*` references stay alive via the alias layer; don't
+  add new ones.
+- **Emerald discipline.** `--portal-green-*` is reserved for "live / healthy"
+  signals. No emerald on hovers, decorative borders, or success toasts.
+- **Numbers are mono.** Every KPI / timestamp / ID / fraction / pedimento
+  wraps in `.portal-num` or `.portal-tabular` (both = Geist Mono + tabular-nums).
+- **Null discipline.** Every render site that could emit an empty cell routes
+  through `src/lib/ui/cell-renderers.tsx` (`renderNull`, `renderPending`,
+  `renderCurrency`, `renderPedimento`, `renderFraccion`, etc.). Raw
+  `|| '—'` / `?? '—'` / `|| 'N/A'` are ratchet violations on new code.
+- **Freshness discipline.** Every authenticated trust surface carries a
+  freshness signal — either `<FreshnessBanner />` or the inline
+  "Sincronizado hace N min" microcopy. Never a stale number without a
+  truthful freshness cue (see `.claude/rules/sync-contract.md`).
+- **Focus-glow.** Every interactive element receives the emerald focus
+  ring (`box-shadow: 0 0 0 2px var(--portal-ink-0), 0 0 0 3px var(--portal-green-3)`
+  on `:focus-visible`) either directly or by composing a `.portal-btn`
+  / `.portal-input` primitive.
+
+Verification on ship: `bash scripts/gsd-verify.sh --ratchets-only` — no
+regressions on the hex ratchet, the `fontSize: N` ratchet, or the
+CRUZ-string ratchet (added in Block DD).
+
+---
+
 ## The "no deferrals" clause
 
 Starting Block CC, the user's directive is binding:

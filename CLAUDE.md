@@ -1,11 +1,14 @@
-# CRUZ — Cross-Border Intelligence Platform
+# PORTAL — Cross-Border Intelligence Platform
 ## Principal Engineer Constitution + Execution Rules
 ### Renato Zapata & Company · Patente 3596 · Aduana 240 · Laredo TX · Est. 1941
 
-> **Brand lineage:** CRUZ (pre-April 2026) → ADUANA → AGUILA → ZAPATA AI → **CRUZ** (current, April 16 2026 — reverted).
-> Wordmark: "CRUZ" in the established palette. Internal component/CSS
-> namespaces (`AguilaMark`, `.aguila-canvas`, `--aguila-fs-*`) are
-> preserved for code stability — they're identifiers, not brand surfaces.
+> **Brand lineage:** CRUZ (pre-April 2026) → ADUANA → AGUILA → ZAPATA AI → CRUZ
+> (April 16 2026) → **PORTAL** (April 17 2026 — final, Block DD marathon).
+> Wordmark: "PORTAL" in Instrument Serif, letter-spacing 0.24em. Internal
+> component/CSS namespaces (`AguilaMark`, `.aguila-canvas`, `--aguila-fs-*`)
+> stay put — they're identifiers, not brand surfaces. The Phase 1 legacy
+> alias layer in `src/app/portal-tokens.css` maps every `--aguila-*` token to
+> its `--portal-*` equivalent so no consumer has to migrate at once.
 
 > "Built by two people. For a border their family has crossed since 1941."
 
@@ -18,10 +21,11 @@ and get smarter every session. Every decision is evaluated against one question:
 
 ## IDENTITY
 
-**Platform:** CRUZ — Cross-Border Intelligence. Never "CRUD." Never "Portal." Never "ZAPATA AI" or "AGUILA" in rendered UI text.
+**Platform:** PORTAL — Cross-Border Intelligence. Never "CRUD." Never "CRUZ" / "ZAPATA AI" / "AGUILA" in rendered UI text after 2026-04-17.
 Search for "CRUD" before every deploy: `grep -r "CRUD" src/` → zero matches required.
-Search for stale brand: `grep -rn "ZAPATA AI\|AGUILA" src/app src/components` → matches acceptable only in comments,
-component/type/identifier names (`AguilaMark`, `AguilaCtx`, `.aguila-canvas`), never in user-visible strings.
+Search for stale brand: `grep -rn "\\bCRUZ\\b\\|ZAPATA AI\\|AGUILA" src/app src/components` → matches acceptable only in
+JSDoc headers, identifiers (`AguilaMark`, `AguilaCtx`, `.aguila-canvas`, `CruzCommand`, `cruz-fab`, `CRUZ_*` constants),
+and real-world carrier business names (`AUTOEXPRESS CRUZ`, `TRANSPORTES JOSÉ CRUZ MACIAS`). Never in user-visible strings.
 
 **Tagline:** TOTAL VISIBILITY · ZERO BORDERS / Total visibilidad. Sin fronteras.
 
@@ -47,8 +51,12 @@ Run white-label dry-run (find every hardcoded "9254") BEFORE promising anything.
 ```
 Branch:         overnight/ursula-ready
 Last commit:    9d169c2 docs(baseline): refresh after anexo24_partidas resolver fix + env flag flip
-Rating:         10/10 — Block CC shipped: Formato 53 ingest + Catálogo redesign + Anexo 24 slim + Mercancía vocab + Transporte fallback + sync hardening + block-discipline codified
-Tests:          586/586 green · typecheck clean · build clean · ratchets improving (hex 2722/2728)
+Rating:         Block DD IN PROGRESS — PORTAL rebrand + design-system baseline +
+                legacy alias layer shipped (Phase 1, 2, 5, partial 6). Phase 3
+                (screen migration), 4 (sync retrofit), 7 (ship) pending.
+Tests:          586 prior + 51 new (36 cell-renderers + 15 portal/theme) = 637
+                target surfaces green. Full suite not yet re-run this block.
+                Typecheck clean throughout. Ratchets not yet rebaselined.
 Deploy:         LIVE — portal.renatozapata.com + evco-portal.vercel.app
                 last prod push 2026-04-17 after Block CC ship (eca0c2a)
 Supabase:       8 globalpc_* + 4 econta_* + anexo24_partidas (1793 EVCO rows live) +
@@ -62,11 +70,21 @@ Vercel env:     USE_ANEXO24_CANONICAL=true (Block CC · 2026-04-17) —
                 coincide / Nombre difiere) per row.
                 All other env vars stable.
                 ⚠ ANTHROPIC credit topup still needed for CRUZ AI.
-Active focus:   Ursula credential hand-off is on deck. Block CC closed
-                every usability gap flagged in the 2026-04-17 audit —
-                Catálogo is the high-utility surface, Anexo 24 is the
-                pure Formato 53 report, vocabulary normalized to Mercancía,
-                Transporte US has multi-source derivation + pendiente fallback.
+Active focus:   Block DD marathon (2026-04-17). PORTAL rebrand + design-system
+                baseline + no-null-stages discipline. Landed so far:
+                · src/app/portal-tokens.css (OKLCH tokens + legacy alias layer)
+                · src/app/portal-components.css (.portal-btn/card/badge/table/ticker/metric)
+                · src/lib/portal/theme.ts + /api/portal/theme + ThemeSwitcher
+                · layout.tsx wires fonts + portal-grain + cookie → data attrs
+                · AguilaWordmark = "PORTAL" in Instrument Serif 0.24em
+                · Login hero, manifest, apple title, welcome email → PORTAL
+                · Cockpits (client/operator/admin) + AI system prompts → "Eres PORTAL"
+                · src/lib/ui/cell-renderers.tsx (11 helpers · 36 tests green)
+                · .claude/rules/portal-design-system.md + block-discipline extension
+                Remaining: Phase 3 screen migration (ticker/hero/modules on /inicio,
+                theater animation on /embarques/[id]), Phase 4 sync retrofit
+                (~50 scripts), Phase 5 freshness-banner wiring on more surfaces,
+                Phase 7 ship.
 Ship command:   `npm run ship` runs six gates including block-audit.sh
                 (plan completeness gate). Baseline auto-writes on green.
 Discipline:     .claude/rules/block-discipline.md codifies the six-gate

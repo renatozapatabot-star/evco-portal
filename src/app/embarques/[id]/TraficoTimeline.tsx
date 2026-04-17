@@ -1,217 +1,50 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import {
   FileText, Truck, Package, CreditCard, Flag, FileCheck, ClipboardList, Circle,
-  CheckCircle2, Clock, AlertTriangle,
+  CheckCircle2, Clock, AlertTriangle, X,
 } from 'lucide-react'
-import type { ReactNode } from 'react'
+import {
+  computeMilestones,
+  formatRelative,
+  formatAbsolute,
+  formatCompactDate,
+  type Milestone,
+  type MilestoneIcon,
+  type MilestoneStatus,
+  type TimelineInput,
+} from './timeline-logic'
+import { TraficoTimelineVertical } from './TraficoTimelineVertical'
 
 /**
- * Trafico timeline — the cinematic vertical status rail for an embarque
- * detail. Designed for the current state where documentary uploads are
- * sparse: the timeline IS the detail, not a sub-section.
+ * Trafico timeline — HORIZONTAL one-screen rail (default renderer).
  *
- * Each milestone is one of four statuses:
- *   · completed — real fecha, silver/green dot, solid rail above
- *   · active    — current stage, gold pulsing dot, gold rail below
- *   · pending   — future, muted dot, dashed rail
- *   · blocked   — red dot (e.g. semaforo rojo)
+ * Seven milestones laid out side-to-side on 393px mobile so the whole
+ * embarque progress fits one screen. Tap a node → bottom-sheet drawer
+ * opens with the same detail the vertical cards showed inline.
  *
- * Milestones are computed from the data the page already fetched:
- *   · Creación — trafico.created_at
- *   · En ruta — when entradas.fecha_ingreso exists
- *   · Recibido en bodega — entradas.fecha_llegada_mercancia
- *   · Documentación — when expediente docs count > 0
- *   · Pedimento pagado — trafico.pedimento + fecha_pago (from factura)
- *   · Cruzado — trafico.fecha_cruce
- *   · Factura emitida — deferred to future (no column today)
+ * Rollback: set `NEXT_PUBLIC_TIMELINE_HORIZONTAL='0'` to delegate to the
+ * vertical fallback without a code change.
  *
- * Cross-linking: each milestone links to the specific entity that
- * realized it (entrada detail, pedimento PDF, embarque list filtered
- * by that trafico, etc).
+ * All milestone logic lives in `./timeline-logic.ts` — this file is
+ * render + interaction only.
  */
 
-export type MilestoneStatus = 'completed' | 'active' | 'pending' | 'blocked'
+export type { Milestone, MilestoneStatus, TimelineInput }
+export { computeMilestones }
 
-export interface Milestone {
-  key: string
-  label: string
-  icon: 'create' | 'route' | 'warehouse' | 'docs' | 'payment' | 'cross' | 'invoice'
-  status: MilestoneStatus
-  /** Absolute ISO timestamp for completed/active; may be null for pending. */
-  timestamp_iso: string | null
-  /** Secondary line — date, entity id, actor. */
-  sub?: string
-  /** Optional link to the realizing entity (pedimento PDF, entrada, etc). */
-  href?: string
-  /** Optional small chip rendered inline. */
-  accessory?: ReactNode
+const HORIZONTAL_ENABLED =
+  (process.env.NEXT_PUBLIC_TIMELINE_HORIZONTAL ?? '1') !== '0'
+
+export function TraficoTimeline({ input }: { input: TimelineInput }) {
+  if (!HORIZONTAL_ENABLED) return <TraficoTimelineVertical input={input} />
+  return <TraficoTimelineHorizontal input={input} />
 }
 
-export interface TimelineInput {
-  trafico_id: string
-  created_at: string | null
-  fecha_llegada: string | null
-  fecha_cruce: string | null
-  pedimento_number: string | null
-  estatus: string | null
-  semaforo: number | null
-  entradas: Array<{ fecha_ingreso: string | null; fecha_llegada_mercancia: string | null }>
-  docs_count: number
-  required_docs_count: number
-  uploaded_required_count: number
-  facturas: Array<{ fecha_pago: string | null }>
-}
-
-export function computeMilestones(input: TimelineInput): Milestone[] {
-  const earliestEntradaIngreso = pickEarliest(input.entradas.map((e) => e.fecha_ingreso))
-  const earliestRecepcion = pickEarliest(input.entradas.map((e) => e.fecha_llegada_mercancia))
-  const earliestFacturaPago = pickEarliest(input.facturas.map((f) => f.fecha_pago))
-  const docsActive = input.uploaded_required_count > 0 || input.docs_count > 0
-  const docsComplete = input.required_docs_count > 0 && input.uploaded_required_count >= input.required_docs_count
-  const pedimentoPaid = !!input.pedimento_number && !!earliestFacturaPago
-  const crossed = !!input.fecha_cruce
-  const blocked = input.semaforo === 2 // rojo
-  const estatusLower = (input.estatus ?? '').toLowerCase()
-  const enProceso = /proceso|ruta|transito/.test(estatusLower) && !crossed
-
-  // Find the "active" stage — the first non-completed one. Any earlier
-  // milestone with data is completed; the first without data is active.
-  const raw: Array<{ key: string; label: string; icon: Milestone['icon']; ts: string | null; sub?: string; href?: string }> = [
-    {
-      key: 'created',
-      label: 'Creación del embarque',
-      icon: 'create',
-      ts: input.created_at,
-      sub: input.trafico_id ? `Embarque ${input.trafico_id}` : undefined,
-    },
-    {
-      key: 'route',
-      label: 'En ruta hacia frontera',
-      icon: 'route',
-      ts: earliestEntradaIngreso ?? (earliestRecepcion ? null : (enProceso ? input.created_at : null)),
-      sub: earliestEntradaIngreso ? 'Transportista en movimiento' : 'Pendiente de registrar ingreso',
-    },
-    {
-      key: 'warehouse',
-      label: 'Mercancía recibida',
-      icon: 'warehouse',
-      ts: earliestRecepcion,
-      sub: earliestRecepcion ? `Registrada en bodega` : 'Pendiente de recepción en almacén',
-      href: `/entradas?trafico=${encodeURIComponent(input.trafico_id)}`,
-    },
-    {
-      key: 'docs',
-      label: 'Documentación',
-      icon: 'docs',
-      ts: docsComplete ? (earliestRecepcion ?? input.created_at) : null,
-      sub: input.required_docs_count === 0
-        ? 'Documentos opcionales'
-        : docsComplete
-          ? `${input.uploaded_required_count} de ${input.required_docs_count} documentos requeridos`
-          : docsActive
-            ? `${input.uploaded_required_count} de ${input.required_docs_count} subidos · faltan ${input.required_docs_count - input.uploaded_required_count}`
-            : `${input.required_docs_count} documentos requeridos · subida pendiente`,
-      href: `/expedientes?trafico=${encodeURIComponent(input.trafico_id)}`,
-    },
-    {
-      key: 'pedimento',
-      label: 'Pedimento pagado',
-      icon: 'payment',
-      ts: pedimentoPaid ? earliestFacturaPago : null,
-      sub: input.pedimento_number
-        ? pedimentoPaid
-          ? `Pedimento ${input.pedimento_number}`
-          : `Pedimento ${input.pedimento_number} · pago pendiente`
-        : 'Pedimento pendiente de asignar',
-      href: `/api/pedimento-pdf?trafico=${encodeURIComponent(input.trafico_id)}`,
-    },
-    {
-      key: 'cross',
-      label: 'Cruce de frontera',
-      icon: 'cross',
-      ts: input.fecha_cruce,
-      sub: crossed
-        ? (input.semaforo === 0 ? 'Semáforo verde · liberado' : input.semaforo === 1 ? 'Semáforo amarillo · revisión' : input.semaforo === 2 ? 'Semáforo rojo · retenido' : 'Cruzado')
-        : 'Pendiente de cruzar',
-    },
-    {
-      key: 'invoice',
-      label: 'Factura emitida',
-      icon: 'invoice',
-      ts: null,
-      sub: 'Se genera al cerrar la operación',
-    },
-  ]
-
-  // Resolve statuses: first without ts becomes active, earlier completed,
-  // later pending. Blocked overrides active when semáforo rojo.
-  let activeAssigned = false
-  const milestones: Milestone[] = raw.map((m) => {
-    let status: MilestoneStatus
-    if (m.ts) {
-      status = 'completed'
-    } else if (!activeAssigned) {
-      status = blocked && m.key === 'cross' ? 'blocked' : 'active'
-      activeAssigned = true
-    } else {
-      status = 'pending'
-    }
-    return {
-      key: m.key,
-      label: m.label,
-      icon: m.icon,
-      status,
-      timestamp_iso: m.ts,
-      sub: m.sub,
-      href: status === 'completed' || status === 'active' ? m.href : undefined,
-    }
-  })
-
-  return milestones
-}
-
-function pickEarliest(values: Array<string | null>): string | null {
-  const valid = values.filter((v): v is string => !!v)
-  if (valid.length === 0) return null
-  return valid.sort()[0] ?? null
-}
-
-function formatRelative(iso: string): string {
-  const then = new Date(iso).getTime()
-  if (Number.isNaN(then)) return ''
-  const diffMs = Date.now() - then
-  const days = Math.floor(diffMs / 86_400_000)
-  if (days < 0) {
-    const ahead = Math.abs(days)
-    if (ahead < 1) return 'próximamente'
-    if (ahead === 1) return 'en 1 día'
-    return `en ${ahead} días`
-  }
-  if (days < 1) return 'hoy'
-  if (days === 1) return 'ayer'
-  if (days < 30) return `hace ${days} días`
-  const months = Math.floor(days / 30)
-  if (months === 1) return 'hace 1 mes'
-  return `hace ${months} meses`
-}
-
-function formatAbsolute(iso: string): string {
-  try {
-    return new Date(iso).toLocaleDateString('es-MX', {
-      timeZone: 'America/Chicago',
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    })
-  } catch {
-    return ''
-  }
-}
-
-function IconFor({ icon }: { icon: Milestone['icon'] }) {
-  const common = { size: 18, strokeWidth: 1.8 } as const
+function IconFor({ icon, size = 16 }: { icon: MilestoneIcon; size?: number }) {
+  const common = { size, strokeWidth: 1.8 } as const
   switch (icon) {
     case 'create':    return <FileText {...common} />
     case 'route':     return <Truck {...common} />
@@ -224,209 +57,374 @@ function IconFor({ icon }: { icon: Milestone['icon'] }) {
   }
 }
 
-function StatusIcon({ status }: { status: MilestoneStatus }) {
-  if (status === 'completed') return <CheckCircle2 size={14} strokeWidth={2} color="#86EFAC" />
-  if (status === 'active') return <Clock size={14} strokeWidth={2} color="#F4D47A" className="aguila-pulse" />
-  if (status === 'blocked') return <AlertTriangle size={14} strokeWidth={2} color="#FCA5A5" />
-  return <Circle size={14} strokeWidth={1.8} color="rgba(148,163,184,0.5)" />
+function StatusIcon({ status, size = 12 }: { status: MilestoneStatus; size?: number }) {
+  if (status === 'completed') return <CheckCircle2 size={size} strokeWidth={2} color="#86EFAC" />
+  if (status === 'active') return <Clock size={size} strokeWidth={2} color="#F4D47A" className="aguila-pulse" />
+  if (status === 'blocked') return <AlertTriangle size={size} strokeWidth={2} color="#FCA5A5" />
+  return <Circle size={size} strokeWidth={1.8} color="rgba(148,163,184,0.5)" />
 }
 
-export function TraficoTimeline({ input }: { input: TimelineInput }) {
+function nodeColors(status: MilestoneStatus) {
+  if (status === 'completed') return {
+    bg: 'rgba(34,197,94,0.12)',
+    border: 'rgba(34,197,94,0.32)',
+    color: '#86EFAC',
+    shadow: '0 0 14px rgba(34,197,94,0.16), inset 0 1px 0 rgba(255,255,255,0.06)',
+  }
+  if (status === 'active') return {
+    bg: 'rgba(201,167,74,0.16)',
+    border: 'rgba(201,167,74,0.5)',
+    color: '#F4D47A',
+    shadow: '0 0 20px rgba(201,167,74,0.3), inset 0 1px 0 rgba(255,255,255,0.08)',
+  }
+  if (status === 'blocked') return {
+    bg: 'rgba(239,68,68,0.14)',
+    border: 'rgba(239,68,68,0.38)',
+    color: '#FCA5A5',
+    shadow: 'inset 0 1px 0 rgba(255,255,255,0.05)',
+  }
+  return {
+    bg: 'rgba(192,197,206,0.06)',
+    border: 'rgba(192,197,206,0.16)',
+    color: 'rgba(192,197,206,0.6)',
+    shadow: 'inset 0 1px 0 rgba(255,255,255,0.04)',
+  }
+}
+
+function connectorColor(fromStatus: MilestoneStatus, toStatus: MilestoneStatus): string {
+  if (fromStatus === 'completed' && (toStatus === 'completed' || toStatus === 'active' || toStatus === 'blocked')) {
+    return 'rgba(192,197,206,0.38)'
+  }
+  if (fromStatus === 'completed' && toStatus === 'pending') {
+    return 'linear-gradient(90deg, rgba(192,197,206,0.38) 0%, rgba(192,197,206,0.12) 100%)'
+  }
+  return 'rgba(192,197,206,0.12)'
+}
+
+function TraficoTimelineHorizontal({ input }: { input: TimelineInput }) {
   const milestones = computeMilestones(input)
+  const [activeIdx, setActiveIdx] = useState<number | null>(null)
+  const selected = activeIdx != null ? milestones[activeIdx] : null
 
   return (
     <section
       aria-label="Línea de tiempo del embarque"
+      data-testid="trafico-timeline-horizontal"
       style={{
         position: 'relative',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 0,
-        padding: '20px 0',
+        width: '100%',
+        padding: '18px 0 8px',
       }}
     >
-      {milestones.map((m, i) => {
-        const isLast = i === milestones.length - 1
-        const isFirst = i === 0
-        const prev = milestones[i - 1]
-        // Rail color between this node and the previous one reflects
-        // whether progress has reached this point. Completed→completed
-        // = silver solid. Completed→active = gold solid. Everything
-        // after active = dashed silver-muted.
-        const railAbove =
-          isFirst
-            ? 'transparent'
-            : prev?.status === 'completed' && (m.status === 'completed' || m.status === 'active' || m.status === 'blocked')
-              ? 'linear-gradient(180deg, rgba(192,197,206,0.35) 0%, rgba(192,197,206,0.35) 100%)'
-              : 'rgba(192,197,206,0.12)'
-        const railBelow =
-          isLast
-            ? 'transparent'
-            : m.status === 'completed'
-              ? 'linear-gradient(180deg, rgba(192,197,206,0.35) 0%, rgba(192,197,206,0.35) 100%)'
-              : m.status === 'active'
-                ? 'linear-gradient(180deg, rgba(201,167,74,0.55) 0%, rgba(192,197,206,0.12) 100%)'
-                : 'rgba(192,197,206,0.12)'
+      <div
+        className="trafico-timeline-rail"
+        style={{
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'flex-start',
+          justifyContent: 'space-between',
+          gap: 2,
+          width: '100%',
+          padding: '0 4px',
+          boxSizing: 'border-box',
+        }}
+      >
+        {milestones.map((m, i) => {
+          const isLast = i === milestones.length - 1
+          const next = milestones[i + 1]
+          const colors = nodeColors(m.status)
+          return (
+            <div
+              key={m.key}
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                flex: 1,
+                minWidth: 0,
+                position: 'relative',
+              }}
+            >
+              {/* Connector to next node — absolutely positioned at node
+                  vertical center, extending to the right edge of this
+                  column (covers the gap + bleeds into next column). */}
+              {!isLast && next && (
+                <div
+                  aria-hidden
+                  style={{
+                    position: 'absolute',
+                    top: 18,
+                    left: '50%',
+                    right: '-50%',
+                    height: 2,
+                    background: connectorColor(m.status, next.status),
+                    zIndex: 0,
+                  }}
+                />
+              )}
 
-        return (
-          <div key={m.key} style={{ position: 'relative', display: 'flex', gap: 18, alignItems: 'stretch', minHeight: 92 }}>
-            {/* Rail column */}
-            <div style={{ width: 42, flexShrink: 0, position: 'relative', display: 'flex', justifyContent: 'center' }}>
-              <div style={{ position: 'absolute', top: 0, bottom: '50%', width: 2, background: railAbove }} aria-hidden />
-              <div style={{ position: 'absolute', top: '50%', bottom: 0, width: 2, background: railBelow }} aria-hidden />
-              <div
+              <button
+                type="button"
+                onClick={() => setActiveIdx(i)}
+                aria-label={`${m.label} — ${m.status === 'completed' ? 'completado' : m.status === 'active' ? 'etapa actual' : m.status === 'blocked' ? 'retenido' : 'pendiente'}`}
+                aria-current={m.status === 'active' ? 'step' : undefined}
                 style={{
-                  position: 'absolute',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  width: 42, height: 42,
+                  width: 36,
+                  height: 36,
                   borderRadius: 999,
-                  background: m.status === 'completed'
-                    ? 'rgba(34,197,94,0.12)'
-                    : m.status === 'active'
-                      ? 'rgba(201,167,74,0.16)'
-                      : m.status === 'blocked'
-                        ? 'rgba(239,68,68,0.14)'
-                        : 'rgba(192,197,206,0.06)',
-                  border: `1px solid ${
-                    m.status === 'completed'
-                      ? 'rgba(34,197,94,0.32)'
-                      : m.status === 'active'
-                        ? 'rgba(201,167,74,0.5)'
-                        : m.status === 'blocked'
-                          ? 'rgba(239,68,68,0.38)'
-                          : 'rgba(192,197,206,0.16)'
-                  }`,
-                  color: m.status === 'completed'
-                    ? '#86EFAC'
-                    : m.status === 'active'
-                      ? '#F4D47A'
-                      : m.status === 'blocked'
-                        ? '#FCA5A5'
-                        : 'rgba(192,197,206,0.6)',
+                  background: colors.bg,
+                  border: `1px solid ${colors.border}`,
+                  color: colors.color,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  boxShadow: m.status === 'active'
-                    ? '0 0 24px rgba(201,167,74,0.3), inset 0 1px 0 rgba(255,255,255,0.08)'
-                    : m.status === 'completed'
-                      ? '0 0 14px rgba(34,197,94,0.16), inset 0 1px 0 rgba(255,255,255,0.06)'
-                      : 'inset 0 1px 0 rgba(255,255,255,0.04)',
+                  boxShadow: colors.shadow,
+                  padding: 0,
+                  cursor: 'pointer',
+                  position: 'relative',
                   zIndex: 1,
+                  transition: 'transform var(--dur-fast, 150ms) ease, box-shadow var(--dur-fast, 150ms) ease',
                 }}
-                aria-hidden
+                className={m.status === 'active' ? 'aguila-dot-pulse' : undefined}
+                onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-1px)' }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)' }}
               >
                 <IconFor icon={m.icon} />
-              </div>
-            </div>
+              </button>
 
-            {/* Card column */}
-            <div
-              style={{
-                flex: 1,
-                minWidth: 0,
-                padding: '12px 0',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-              }}
-            >
-              <TimelineCard milestone={m} />
+              <span
+                style={{
+                  marginTop: 8,
+                  fontSize: 10,
+                  fontWeight: 600,
+                  letterSpacing: '0.02em',
+                  color: m.status === 'pending'
+                    ? 'rgba(192,197,206,0.55)'
+                    : m.status === 'active'
+                      ? '#F4D47A'
+                      : '#E6EDF3',
+                  textAlign: 'center',
+                  lineHeight: 1.2,
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  maxWidth: '100%',
+                }}
+              >
+                {m.labelShort ?? m.label}
+              </span>
+
+              <span
+                style={{
+                  marginTop: 2,
+                  fontSize: 9,
+                  fontFamily: 'var(--font-mono)',
+                  color: 'rgba(148,163,184,0.7)',
+                  letterSpacing: '0.02em',
+                  whiteSpace: 'nowrap',
+                  textAlign: 'center',
+                }}
+              >
+                {m.timestamp_iso ? formatCompactDate(m.timestamp_iso) : '—'}
+              </span>
             </div>
-          </div>
-        )
-      })}
+          )
+        })}
+      </div>
+
+      {/* Bottom-sheet drawer — shows the full detail when a node is tapped. */}
+      {selected && (
+        <MilestoneDrawer milestone={selected} onClose={() => setActiveIdx(null)} />
+      )}
+
+      <style jsx>{`
+        .trafico-timeline-rail { container-type: inline-size; }
+        @container (max-width: 380px) {
+          .trafico-timeline-rail { gap: 0; }
+        }
+      `}</style>
     </section>
   )
 }
 
-function TimelineCard({ milestone }: { milestone: Milestone }) {
-  const body = (
-    <div
-      style={{
-        padding: '14px 18px',
-        borderRadius: 14,
-        background: milestone.status === 'active'
-          ? 'rgba(201,167,74,0.06)'
-          : milestone.status === 'blocked'
-            ? 'rgba(239,68,68,0.06)'
-            : 'rgba(0,0,0,0.28)',
-        border: `1px solid ${
-          milestone.status === 'active'
-            ? 'rgba(201,167,74,0.3)'
-            : milestone.status === 'blocked'
-              ? 'rgba(239,68,68,0.3)'
-              : milestone.status === 'completed'
-                ? 'rgba(34,197,94,0.18)'
-                : 'rgba(192,197,206,0.1)'
-        }`,
-        transition: 'border-color var(--dur-fast, 150ms) ease, background var(--dur-fast, 150ms) ease, transform var(--dur-fast, 150ms) ease',
-        boxShadow: milestone.status === 'active'
-          ? 'inset 0 1px 0 rgba(255,255,255,0.06), 0 8px 20px rgba(0,0,0,0.4)'
-          : 'inset 0 1px 0 rgba(255,255,255,0.04)',
-      }}
-    >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, flexWrap: 'wrap' }}>
-        <span
+function MilestoneDrawer({ milestone, onClose }: { milestone: Milestone; onClose: () => void }) {
+  const colors = nodeColors(milestone.status)
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        onClick={onClose}
+        aria-hidden
+        style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0,0,0,0.5)',
+          zIndex: 40,
+          animation: 'fade-in 200ms ease',
+        }}
+      />
+      {/* Sheet */}
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={milestone.label}
+        style={{
+          position: 'fixed',
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: 41,
+          background: 'rgba(10,10,12,0.98)',
+          backdropFilter: 'blur(20px)',
+          borderTop: `1px solid ${colors.border}`,
+          borderTopLeftRadius: 20,
+          borderTopRightRadius: 20,
+          padding: '16px 18px 28px',
+          boxShadow: '0 -12px 40px rgba(0,0,0,0.6)',
+          animation: 'slide-up 240ms var(--ease-brand, cubic-bezier(0.22, 1, 0.36, 1))',
+        }}
+      >
+        {/* Grab handle */}
+        <div
+          aria-hidden
           style={{
-            fontSize: 'var(--aguila-fs-section, 15px)',
-            fontWeight: 600,
-            color: milestone.status === 'pending' ? 'rgba(205,214,224,0.72)' : '#E6EDF3',
+            width: 36,
+            height: 4,
+            borderRadius: 2,
+            background: 'rgba(192,197,206,0.25)',
+            margin: '0 auto 12px',
           }}
-        >
-          {milestone.label}
-        </span>
-        <StatusIcon status={milestone.status} />
-        {milestone.timestamp_iso && (
+        />
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
           <span
-            title={formatAbsolute(milestone.timestamp_iso)}
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: 999,
+              background: colors.bg,
+              border: `1px solid ${colors.border}`,
+              color: colors.color,
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+            }}
+          >
+            <IconFor icon={milestone.icon} size={18} />
+          </span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div
+              style={{
+                fontSize: 'var(--aguila-fs-section, 15px)',
+                fontWeight: 700,
+                color: '#E6EDF3',
+                letterSpacing: '-0.01em',
+              }}
+            >
+              {milestone.label}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
+              <StatusIcon status={milestone.status} size={12} />
+              <span
+                style={{
+                  fontSize: 11,
+                  letterSpacing: '0.06em',
+                  textTransform: 'uppercase',
+                  color: milestone.status === 'active' ? '#F4D47A' : 'rgba(192,197,206,0.7)',
+                  fontWeight: 600,
+                }}
+              >
+                {milestone.status === 'completed' ? 'Completado'
+                  : milestone.status === 'active' ? 'Etapa actual'
+                  : milestone.status === 'blocked' ? 'Retenido'
+                  : 'Pendiente'}
+              </span>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Cerrar"
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: 10,
+              background: 'rgba(192,197,206,0.08)',
+              border: 'none',
+              color: 'rgba(192,197,206,0.8)',
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+            }}
+          >
+            <X size={18} strokeWidth={2} />
+          </button>
+        </div>
+
+        {milestone.timestamp_iso && (
+          <div
             style={{
               fontFamily: 'var(--font-mono)',
-              fontSize: 'var(--aguila-fs-meta, 11px)',
-              color: 'rgba(148,163,184,0.8)',
-              marginLeft: 'auto',
+              fontSize: 12,
+              color: 'rgba(148,163,184,0.85)',
+              marginTop: 4,
+              marginBottom: 10,
             }}
           >
             {formatRelative(milestone.timestamp_iso)} · {formatAbsolute(milestone.timestamp_iso)}
-          </span>
+          </div>
+        )}
+
+        {milestone.sub && (
+          <div
+            style={{
+              fontSize: 'var(--aguila-fs-body, 13px)',
+              color: 'rgba(205,214,224,0.88)',
+              lineHeight: 1.55,
+              marginBottom: 14,
+            }}
+          >
+            {milestone.sub}
+          </div>
+        )}
+
+        {milestone.href && (
+          <Link
+            href={milestone.href}
+            onClick={onClose}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: '10px 16px',
+              borderRadius: 12,
+              background: 'linear-gradient(135deg, #F4D47A 0%, #C9A74A 50%, #8F7628 100%)',
+              color: '#0A0A0C',
+              fontSize: 13,
+              fontWeight: 700,
+              letterSpacing: '0.02em',
+              textDecoration: 'none',
+              minHeight: 44,
+            }}
+          >
+            Abrir detalle →
+          </Link>
         )}
       </div>
-      {milestone.sub && (
-        <div
-          style={{
-            fontSize: 'var(--aguila-fs-body, 13px)',
-            color: milestone.status === 'pending' ? 'rgba(148,163,184,0.68)' : 'rgba(205,214,224,0.85)',
-            lineHeight: 1.5,
-          }}
-        >
-          {milestone.sub}
-        </div>
-      )}
-      {milestone.status === 'active' && (
-        <div
-          style={{
-            marginTop: 8,
-            fontSize: 'var(--aguila-fs-meta, 11px)',
-            color: '#F4D47A',
-            letterSpacing: '0.08em',
-            textTransform: 'uppercase',
-            fontWeight: 700,
-          }}
-        >
-          Etapa actual
-        </div>
-      )}
-    </div>
-  )
 
-  if (!milestone.href) return body
-  return (
-    <Link
-      href={milestone.href}
-      style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}
-      aria-label={`Abrir ${milestone.label}`}
-    >
-      {body}
-    </Link>
+      <style jsx>{`
+        @keyframes slide-up {
+          from { transform: translateY(100%); }
+          to { transform: translateY(0); }
+        }
+        @keyframes fade-in {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+      `}</style>
+    </>
   )
 }

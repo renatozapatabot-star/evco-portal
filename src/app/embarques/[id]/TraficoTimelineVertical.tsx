@@ -9,6 +9,10 @@ import {
   computeMilestones,
   formatRelative,
   formatAbsolute,
+  STATUS_GREEN,
+  STATUS_GOLD,
+  STATUS_RED,
+  PRIMARY_TEXT,
   type Milestone,
   type MilestoneIcon,
   type MilestoneStatus,
@@ -42,9 +46,9 @@ function IconFor({ icon }: { icon: MilestoneIcon }) {
 }
 
 function StatusIcon({ status }: { status: MilestoneStatus }) {
-  if (status === 'completed') return <CheckCircle2 size={14} strokeWidth={2} color="#86EFAC" />
-  if (status === 'active') return <Clock size={14} strokeWidth={2} color="#F4D47A" className="aguila-pulse" />
-  if (status === 'blocked') return <AlertTriangle size={14} strokeWidth={2} color="#FCA5A5" />
+  if (status === 'completed') return <CheckCircle2 size={14} strokeWidth={2} color={STATUS_GREEN} />
+  if (status === 'active') return <Clock size={14} strokeWidth={2} color={STATUS_GOLD} className="aguila-pulse" />
+  if (status === 'blocked') return <AlertTriangle size={14} strokeWidth={2} color={STATUS_RED} />
   return <Circle size={14} strokeWidth={1.8} color="rgba(148,163,184,0.5)" />
 }
 
@@ -110,11 +114,11 @@ export function TraficoTimelineVertical({ input }: { input: TimelineInput }) {
                           : 'rgba(192,197,206,0.16)'
                   }`,
                   color: m.status === 'completed'
-                    ? '#86EFAC'
+                    ? STATUS_GREEN
                     : m.status === 'active'
-                      ? '#F4D47A'
+                      ? STATUS_GOLD
                       : m.status === 'blocked'
-                        ? '#FCA5A5'
+                        ? STATUS_RED
                         : 'rgba(192,197,206,0.6)',
                   display: 'flex',
                   alignItems: 'center',
@@ -182,7 +186,7 @@ function TimelineCard({ milestone }: { milestone: Milestone }) {
           style={{
             fontSize: 'var(--aguila-fs-section, 15px)',
             fontWeight: 600,
-            color: milestone.status === 'pending' ? 'rgba(205,214,224,0.72)' : '#E6EDF3',
+            color: milestone.status === 'pending' ? 'rgba(205,214,224,0.72)' : PRIMARY_TEXT,
           }}
         >
           {milestone.label}
@@ -218,7 +222,7 @@ function TimelineCard({ milestone }: { milestone: Milestone }) {
           style={{
             marginTop: 8,
             fontSize: 'var(--aguila-fs-meta, 11px)',
-            color: '#F4D47A',
+            color: STATUS_GOLD,
             letterSpacing: '0.08em',
             textTransform: 'uppercase',
             fontWeight: 700,

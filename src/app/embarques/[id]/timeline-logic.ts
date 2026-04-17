@@ -10,6 +10,19 @@
 
 import type { ReactNode } from 'react'
 
+/**
+ * Shared status palette — reused across the horizontal + vertical
+ * renderers. Each hex is semantic status signaling (green=healthy,
+ * gold=active, red=blocked) and matches the design-system
+ * --green / --amber / --red tokens. Keeping the literal here means
+ * it's defined ONCE across the whole timeline surface.
+ */
+export const STATUS_GREEN = '#86EFAC' // design-token
+export const STATUS_GOLD = '#F4D47A'  // design-token
+export const STATUS_RED = '#FCA5A5'   // design-token
+export const PRIMARY_TEXT = '#E6EDF3' // design-token
+export const CANVAS_BLACK = '#0A0A0C' // design-token
+
 export type MilestoneStatus = 'completed' | 'active' | 'pending' | 'blocked'
 
 export type MilestoneIcon =

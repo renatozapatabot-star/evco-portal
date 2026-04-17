@@ -618,7 +618,7 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
                 background: 'rgba(251,191,36,0.08)',
                 border: '1px solid rgba(251,191,36,0.28)',
                 color: '#FBBF24',
-                fontSize: 12,
+                fontSize: 12, // WHY: partial-data banner — sub-header warning, between meta (11) and body (13).
                 fontWeight: 500,
                 letterSpacing: '0.01em',
                 lineHeight: 1.45,

@@ -11,6 +11,11 @@ import {
   formatRelative,
   formatAbsolute,
   formatCompactDate,
+  STATUS_GREEN,
+  STATUS_GOLD,
+  STATUS_RED,
+  PRIMARY_TEXT,
+  CANVAS_BLACK,
   type Milestone,
   type MilestoneIcon,
   type MilestoneStatus,
@@ -38,6 +43,7 @@ export { computeMilestones }
 const HORIZONTAL_ENABLED =
   (process.env.NEXT_PUBLIC_TIMELINE_HORIZONTAL ?? '1') !== '0'
 
+
 export function TraficoTimeline({ input }: { input: TimelineInput }) {
   if (!HORIZONTAL_ENABLED) return <TraficoTimelineVertical input={input} />
   return <TraficoTimelineHorizontal input={input} />
@@ -58,9 +64,9 @@ function IconFor({ icon, size = 16 }: { icon: MilestoneIcon; size?: number }) {
 }
 
 function StatusIcon({ status, size = 12 }: { status: MilestoneStatus; size?: number }) {
-  if (status === 'completed') return <CheckCircle2 size={size} strokeWidth={2} color="#86EFAC" />
-  if (status === 'active') return <Clock size={size} strokeWidth={2} color="#F4D47A" className="aguila-pulse" />
-  if (status === 'blocked') return <AlertTriangle size={size} strokeWidth={2} color="#FCA5A5" />
+  if (status === 'completed') return <CheckCircle2 size={size} strokeWidth={2} color={STATUS_GREEN} />
+  if (status === 'active') return <Clock size={size} strokeWidth={2} color={STATUS_GOLD} className="aguila-pulse" />
+  if (status === 'blocked') return <AlertTriangle size={size} strokeWidth={2} color={STATUS_RED} />
   return <Circle size={size} strokeWidth={1.8} color="rgba(148,163,184,0.5)" />
 }
 
@@ -68,19 +74,19 @@ function nodeColors(status: MilestoneStatus) {
   if (status === 'completed') return {
     bg: 'rgba(34,197,94,0.12)',
     border: 'rgba(34,197,94,0.32)',
-    color: '#86EFAC',
+    color: STATUS_GREEN,
     shadow: '0 0 14px rgba(34,197,94,0.16), inset 0 1px 0 rgba(255,255,255,0.06)',
   }
   if (status === 'active') return {
     bg: 'rgba(201,167,74,0.16)',
     border: 'rgba(201,167,74,0.5)',
-    color: '#F4D47A',
+    color: STATUS_GOLD,
     shadow: '0 0 20px rgba(201,167,74,0.3), inset 0 1px 0 rgba(255,255,255,0.08)',
   }
   if (status === 'blocked') return {
     bg: 'rgba(239,68,68,0.14)',
     border: 'rgba(239,68,68,0.38)',
-    color: '#FCA5A5',
+    color: STATUS_RED,
     shadow: 'inset 0 1px 0 rgba(255,255,255,0.05)',
   }
   return {
@@ -195,14 +201,15 @@ function TraficoTimelineHorizontal({ input }: { input: TimelineInput }) {
               <span
                 style={{
                   marginTop: 8,
-                  fontSize: 10,
+                  // Label tier — matches design-system --aguila-fs-label.
+                  fontSize: 'var(--aguila-fs-label, 10px)',
                   fontWeight: 600,
                   letterSpacing: '0.02em',
                   color: m.status === 'pending'
                     ? 'rgba(192,197,206,0.55)'
                     : m.status === 'active'
-                      ? '#F4D47A'
-                      : '#E6EDF3',
+                      ? STATUS_GOLD
+                      : PRIMARY_TEXT,
                   textAlign: 'center',
                   lineHeight: 1.2,
                   whiteSpace: 'nowrap',
@@ -217,7 +224,7 @@ function TraficoTimelineHorizontal({ input }: { input: TimelineInput }) {
               <span
                 style={{
                   marginTop: 2,
-                  fontSize: 9,
+                  fontSize: 9, // WHY: 9px sits under --aguila-fs-meta (11px) — date is subordinate to label.
                   fontFamily: 'var(--font-mono)',
                   color: 'rgba(148,163,184,0.7)',
                   letterSpacing: '0.02em',
@@ -318,7 +325,7 @@ function MilestoneDrawer({ milestone, onClose }: { milestone: Milestone; onClose
               style={{
                 fontSize: 'var(--aguila-fs-section, 15px)',
                 fontWeight: 700,
-                color: '#E6EDF3',
+                color: PRIMARY_TEXT,
                 letterSpacing: '-0.01em',
               }}
             >
@@ -328,10 +335,10 @@ function MilestoneDrawer({ milestone, onClose }: { milestone: Milestone; onClose
               <StatusIcon status={milestone.status} size={12} />
               <span
                 style={{
-                  fontSize: 11,
+                  fontSize: 'var(--aguila-fs-meta, 11px)',
                   letterSpacing: '0.06em',
                   textTransform: 'uppercase',
-                  color: milestone.status === 'active' ? '#F4D47A' : 'rgba(192,197,206,0.7)',
+                  color: milestone.status === 'active' ? STATUS_GOLD : 'rgba(192,197,206,0.7)',
                   fontWeight: 600,
                 }}
               >
@@ -368,7 +375,7 @@ function MilestoneDrawer({ milestone, onClose }: { milestone: Milestone; onClose
           <div
             style={{
               fontFamily: 'var(--font-mono)',
-              fontSize: 12,
+              fontSize: 12, // WHY: drawer timestamp sits between --aguila-fs-meta and --aguila-fs-body.
               color: 'rgba(148,163,184,0.85)',
               marginTop: 4,
               marginBottom: 10,
@@ -401,9 +408,9 @@ function MilestoneDrawer({ milestone, onClose }: { milestone: Milestone; onClose
               gap: 6,
               padding: '10px 16px',
               borderRadius: 12,
-              background: 'linear-gradient(135deg, #F4D47A 0%, #C9A74A 50%, #8F7628 100%)',
-              color: '#0A0A0C',
-              fontSize: 13,
+              background: 'linear-gradient(135deg, #F4D47A 0%, #C9A74A 50%, #8F7628 100%)', // design-token — canonical silver/gold CTA gradient
+              color: CANVAS_BLACK,
+              fontSize: 'var(--aguila-fs-body, 13px)',
               fontWeight: 700,
               letterSpacing: '0.02em',
               textDecoration: 'none',

@@ -66,6 +66,13 @@ if [ -x scripts/gsd-verify.sh ]; then
 else
   echo "    ⚠️  gsd-verify.sh not executable, skipped"
 fi
+echo "  · block-audit (plan completeness)"
+bash scripts/block-audit.sh > /tmp/cruz-ship-blockaudit.log 2>&1 || {
+  cat /tmp/cruz-ship-blockaudit.log
+  echo "  ❌ plan has deferred items outside approved sections"
+  exit 1
+}
+echo "    ✅"
 
 # ── Gate 2: data-integrity smoke ────────────────────────────
 echo ""

@@ -41,3 +41,11 @@ Each rule includes a source annotation AND a machine-checkable verify line.
 - Drafts must track escalation_level. No draft sits pending > 8 hours without escalation flag.
   verify: Grep("escalation_level", path="src/") → 1+ matches in drafts-related components and queries
   [source: escalation chain skill — single point of failure on Tito availability]
+
+- Every substantial polish cycle follows `.claude/rules/block-discipline.md` — six gates: scope, explore, implement, tests, ratchets, ship. Skipping a gate is a regression.
+  verify: File(".claude/rules/block-discipline.md") exists + `npm run ship` runs `scripts/block-audit.sh` inside gate 1
+  [source: Block CC — Renato's "always gets done like this" directive]
+
+- "No deferrals" is binding. Code paths, PM2 crons, env-gated stubs all ship together — not split across blocks. Only exception: explicit user approval via AskUserQuestion → move to an "Out of scope" heading in the plan.
+  verify: `scripts/block-audit.sh` fails the ship if unchecked TODOs or "- [ ]" items sit outside approved headings
+  [source: Block CC directive · enforced at the tool level]

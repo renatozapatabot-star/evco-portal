@@ -180,11 +180,28 @@ export function summarizeCatalogo(
 export async function getCatalogo(
   supabase: AnyClient,
   companyId: string,
-  opts: { q?: string; limit?: number } = {},
+  opts: { q?: string; limit?: number; activeOnly?: boolean } = {},
 ): Promise<CatalogoRow[]> {
   if (!companyId) return []
   const limit = Math.min(Math.max(opts.limit ?? 100, 1), 500)
   const q = (opts.q ?? '').trim()
+  // activeOnly defaults to true — the catalog surface should match the
+  // Anexo 24 surface's contract ("parts this client has actually
+  // imported"). Internal tooling that explicitly wants the full mirror
+  // can opt out with activeOnly: false.
+  const activeOnly = opts.activeOnly ?? true
+
+  let activeList: string[] = []
+  if (activeOnly) {
+    // Dynamic import to avoid a compile-time cycle between
+    // lib/catalogo/products.ts and lib/anexo24/active-parts.ts (both
+    // sit close enough in the module graph that static import
+    // circled). Loaded once at first call, cached by the bundler.
+    const { getActiveCveProductos, activeCvesArray } = await import('@/lib/anexo24/active-parts')
+    const set = await getActiveCveProductos(supabase, companyId)
+    activeList = activeCvesArray(set)
+    if (activeList.length === 0) return []
+  }
 
   // Deterministic ordering: primary key = classified-at desc (brings newly
   // classified parts to the top), secondary = cve_producto asc (tiebreaker
@@ -199,6 +216,7 @@ export async function getCatalogo(
     .order('fraccion_classified_at', { ascending: false, nullsFirst: false })
     .order('cve_producto', { ascending: true })
     .limit(limit)
+  if (activeList.length > 0) productoQuery = productoQuery.in('cve_producto', activeList)
 
   if (q.length > 0) {
     const safe = q.replace(/[%_]/g, '')

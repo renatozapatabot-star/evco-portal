@@ -2,10 +2,7 @@
 
 import type { ReactNode } from 'react'
 import { Activity } from 'lucide-react'
-import {
-  BG_CARD, BORDER, GLASS_BLUR, GLASS_SHADOW,
-  TEXT_MUTED, ACCENT_SILVER, GREEN,
-} from '@/lib/design-system'
+import { ACCENT_SILVER } from '@/lib/design-system'
 import { PageShell } from './PageShell'
 import { KPITile } from './KPITile'
 import { TimelineFeed, type TimelineItem } from './TimelineFeed'
@@ -14,6 +11,7 @@ import { NavCardGrid, type NavCardGridItem } from '@/components/NavCardGrid'
 import { UNIFIED_NAV_TILES, type NavCounts, type NavTileKey } from '@/lib/cockpit/nav-tiles'
 import { CockpitBanner, type CockpitRole } from './CockpitBanner'
 import { cleanCompanyDisplayName } from '@/lib/format/company-name'
+import { PortalCard } from '@/components/portal/PortalCard'
 
 type SystemStatus = 'healthy' | 'warning' | 'critical'
 
@@ -231,37 +229,23 @@ export function CockpitInicio({
           {estadoSections}
         </div>
         <aside>
-          <section style={{
-            background: BG_CARD,
-            backdropFilter: `blur(${GLASS_BLUR})`,
-            WebkitBackdropFilter: `blur(${GLASS_BLUR})`,
-            border: `1px solid ${BORDER}`,
-            borderRadius: 'var(--aguila-radius-card, 20px)',
-            boxShadow: GLASS_SHADOW,
-            padding: '16px 20px',
-          }}>
+          <PortalCard padding={'16px 20px'}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
               <Activity size={14} color={ACCENT_SILVER} />
-              <span style={{
-                fontSize: 'var(--aguila-fs-label, 10px)',
-                fontWeight: 700,
-                textTransform: 'uppercase',
-                letterSpacing: 'var(--aguila-ls-label, 0.08em)',
-                color: TEXT_MUTED,
-              }}>
+              <span
+                className="portal-eyebrow"
+                style={{ letterSpacing: '0.18em' }}
+              >
                 Actividad reciente
               </span>
               {actividad && actividad.length > 0 && (
-                <span aria-hidden style={{
-                  width: 6, height: 6, borderRadius: '50%',
-                  background: GREEN, boxShadow: `0 0 6px ${GREEN}`, marginLeft: 4,
-                }} />
+                <span aria-hidden className="portal-pulse" style={{ marginLeft: 4 }} />
               )}
             </div>
             {actividadSlot ?? (
               <TimelineFeed items={actividad ?? []} max={8} emptyLabel={actividadEmptyLabel} />
             )}
-          </section>
+          </PortalCard>
         </aside>
       </div>
       )}

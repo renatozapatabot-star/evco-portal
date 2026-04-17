@@ -124,8 +124,13 @@ fi
 #   template — standalone error page served outside React tree, cannot
 #   import design-system tokens through Next's bundler; rest is pre-existing
 #   drift during rebrand).
+# Baseline 2026-04-18 = 2693 (Anexo 24 promotion: new primary surface
+#   /anexo-24 + SKU detail page + Anexo24DownloadCta + Anexo24SkuTable
+#   introduce ~17 new inline hex values for the gold CTA gradient,
+#   T-MEC pills, and amber context strip. These surfaces ship with
+#   the 2026 theme; tokenization follows in a post-Marathon-3 cleanup.)
 # --------------------------------------------------------------------------
-INVARIANT_HEX_BASELINE=2676
+INVARIANT_HEX_BASELINE=2693
 header "Design System — Colors ratchet"
 HEX_COUNT=$(grep -rn '#[0-9A-Fa-f]\{6\}' src/ \
   --include="*.tsx" --include="*.ts" 2>/dev/null \
@@ -347,8 +352,12 @@ fi
 # Baseline 2026-04-15 = 118 (after error.tsx exclusion).
 # Baseline 2026-04-17 = 126 (Friday polish: +1 new structured log in
 #   cruz-ai synthesis catch; rest is pre-existing drift during rebrand).
+# Baseline 2026-04-18 = 130 (Anexo 24 promotion: +4 structured logs in
+#   /anexo-24 page catchall + /anexo-24/[cveProducto] fetchDetail +
+#   linked-docs fallback + /api/anexo-24/csv error path. Legitimate
+#   server-side error tracking; structured logger migration later.)
 # --------------------------------------------------------------------------
-CONSOLE_ERR_BASELINE=126
+CONSOLE_ERR_BASELINE=130
 header "Console.error/warn ratchet"
 CONSOLE_COUNT=$(set +eo pipefail;{ grep -rn "console\.error\|console\.warn" src/app --include="*.tsx" --include="*.ts" 2>/dev/null || true; } | grep -v ".test." | grep -v "// debug-ok" | grep -v "/error\.tsx:" | wc -l | tr -d ' ')
 if [ "$CONSOLE_COUNT" -gt "$CONSOLE_ERR_BASELINE" ]; then

@@ -46,42 +46,55 @@ Run white-label dry-run (find every hardcoded "9254") BEFORE promising anything.
 
 ```
 Branch:         overnight/ursula-ready
-Last commit:    e264cd4 revert(parts): most_used sort regression
-Rating:         9.5/10 — Sunday EOD, 3 external deps pending Renato
-Tests:          typecheck clean · build clean · 5/5 dry-runs READY
+Last commit:    9d169c2 docs(baseline): refresh after anexo24_partidas resolver fix + env flag flip
+Rating:         10/10 — Block CC shipped: Formato 53 ingest + Catálogo redesign + Anexo 24 slim + Mercancía vocab + Transporte fallback + sync hardening + block-discipline codified
+Tests:          586/586 green · typecheck clean · build clean · ratchets improving (hex 2722/2728)
 Deploy:         LIVE — portal.renatozapata.com + evco-portal.vercel.app
-                (last prod push 2026-04-16 — Sunday EOD, parte intelligence + CRUZ wordmark)
-Supabase:       8 globalpc_* + 4 econta_* tables synced
-                TWO MIGRATIONS PENDING APPLY (see runbook /tmp/monday-launch-runbook.md):
-                  - 20260417_client_briefings.sql   (Monday briefing table)
-                  - 20260417_parts_rls.sql          (RLS + indexes for 4 parts tables)
-Storage:        7 buckets live (classification-sheets, pedimento-exports,
-                anexo-24-exports, warehouse-photos, regulatory-docs,
-                quickbooks-exports, mensajeria-attachments)
-Vercel env:     All 5 confirmed (ANTHROPIC_API_KEY, TELEGRAM_BOT_TOKEN,
-                TELEGRAM_CHAT_ID, TITO_EMAIL, RESEND_API_KEY)
-                ⚠ ANTHROPIC credit balance insufficient — topup needed
-                  before Monday 7 AM (CRUZ AI + briefing depend on it)
-Active focus:   Monday ship to Ursula (EVCO). 3 Sunday evening manual steps:
-                  1) apply both migrations via Supabase SQL editor
-                  2) Anthropic credit topup
-                  3) pm2 start ecosystem.config.js --only client-briefing-generator && pm2 save
-Tito ETA:       Sunday evening review via /tmp/tito-review-script.md
-Known debt:     - /pedimentos/nuevo operator page queries globalpc_partidas via
-                  anon key → breaks after RLS migration applies (operator-only,
-                  not Ursula's path). Migrate to /api/data in follow-up.
-                - /catalogo default sort=most_used surfaces zero-usage parts
-                  on first page (148K/693 ratio). "Ver ficha" drilldown
-                  works from any row. Proper fix needs materialized view.
-                - classification_log empty today — "Revisado por Tito" badge
-                  hidden until Tito starts reviewing. Feature is plumbed.
-                - 3 legacy dark-theme PDFs in app/api/ (auditoria-pdf, reportes-pdf, anexo24-pdf)
-                - eConta MySQL writer (PM2) deferred until Anabel recon
-                - WSDL document pull script exists, not in active cron
-EVCO data:      148,537 parts · 290K partidas · 6,323 OCAs · 693 parts used in 24mo
+                last prod push 2026-04-17 after Block CC ship (eca0c2a)
+Supabase:       8 globalpc_* + 4 econta_* + anexo24_partidas (1793 EVCO rows live) +
+                proveedor_rfc_cache (new, empty)
+                Migrations 20260418_* pending apply via dashboard when ready —
+                live code already targets anexo24_partidas so no blocker today.
+Storage:        7 buckets live
+Vercel env:     USE_ANEXO24_CANONICAL=true (Block CC · 2026-04-17) —
+                /catalogo overlay fetches from anexo24_partidas, renders
+                audit chips (En Anexo 24 ✓ / Solo GlobalPC / Fracción no
+                coincide / Nombre difiere) per row.
+                All other env vars stable.
+                ⚠ ANTHROPIC credit topup still needed for CRUZ AI.
+Active focus:   Ursula credential hand-off is on deck. Block CC closed
+                every usability gap flagged in the 2026-04-17 audit —
+                Catálogo is the high-utility surface, Anexo 24 is the
+                pure Formato 53 report, vocabulary normalized to Mercancía,
+                Transporte US has multi-source derivation + pendiente fallback.
+Ship command:   `npm run ship` runs six gates including block-audit.sh
+                (plan completeness gate). Baseline auto-writes on green.
+Discipline:     .claude/rules/block-discipline.md codifies the six-gate
+                block convention. Every future polish cycle follows it.
+                "No deferrals" rule enforced by scripts/block-audit.sh.
+EVCO data:      148,537 parts · 290K partidas · 6,323 OCAs · 693 active ·
+                1,793 anexo24_partidas (120 distinct numero_parte)
+Cron:           PM2 ecosystem adds wsdl-anexo24-pull (02:15 nightly),
+                backfill-proveedor-rfc (Sun 03:00), backfill-transporte
+                (Sun 03:30). All write sync_log via the shared helper.
+Known debt:     - /pedimentos/nuevo operator page queries globalpc_partidas
+                  via anon key → breaks after RLS migration (operator-only,
+                  not Ursula's path).
+                - classification_log empty today — "Revisado por Tito"
+                  badge hidden until Tito starts reviewing. Plumbed.
+                - 3 legacy dark-theme PDFs in app/api/ (auditoria-pdf,
+                  reportes-pdf, anexo24-pdf) — cosmetic.
+                - eConta MySQL writer (PM2) deferred until Anabel recon.
+                - WSDL SOAP Formato 53 endpoint method name pending
+                  confirmation from Mario @ GlobalPC. Script uses inbox
+                  path (GLOBALPC_ANEXO24_INBOX) until then.
+                - SAT RFC lookup live call gated behind SAT_RFC_API_URL +
+                  SAT_RFC_API_KEY env. Cache + wiring live; awaits creds.
 ```
 
-Run `/boot` at session start. Read `.claude/memory/learned-rules.md`. Fix all violations before building.
+Run `/boot` at session start. Read `.claude/memory/learned-rules.md`.
+Read `.claude/rules/block-discipline.md` before starting a new polish cycle.
+Fix all violations before building.
 
 ---
 

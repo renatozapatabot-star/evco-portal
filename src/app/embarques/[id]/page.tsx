@@ -5,6 +5,7 @@ import { verifySession } from '@/lib/session'
 import { getRequiredDocs, type DocType } from '@/lib/doc-requirements'
 import type { Category } from '@/lib/events-catalog'
 import { TraficoDetail } from './TraficoDetail'
+import { TraficoTimeline, type TimelineInput } from './TraficoTimeline'
 import { buildChain, type FacturaRow as ChainFacturaRow, type EntradaRow as ChainEntradaRow, type PedimentoRow as ChainPedimentoRow } from './buildChain'
 import type {
   AvailableUserLite,
@@ -356,24 +357,64 @@ export default async function TraficoDetailPage({
     traficoPedimentoNumber: trafico.pedimento ?? null,
   })
 
+  // Timeline input — reuses the data the page already fetched so the
+  // timeline is cheap to render. Each milestone's ts/href derives from
+  // the same source-of-truth columns the legacy chain + hero strip use.
+  const timelineInput: TimelineInput = {
+    trafico_id: traficoId,
+    created_at: trafico.created_at ?? null,
+    fecha_llegada: trafico.fecha_llegada ?? null,
+    fecha_cruce: trafico.fecha_cruce ?? null,
+    pedimento_number: trafico.pedimento ?? null,
+    estatus: trafico.estatus ?? null,
+    // semaforo column is text in some legacy rows, integer in newer —
+    // coerce to number for the timeline component which expects 0/1/2/null.
+    semaforo: (() => {
+      const raw = trafico.semaforo
+      if (raw == null) return null
+      const n = typeof raw === 'number' ? raw : Number.parseInt(String(raw), 10)
+      return Number.isFinite(n) ? n : null
+    })(),
+    entradas: entradasChainRows.map((e) => ({
+      fecha_ingreso: e.fecha_ingreso ?? null,
+      fecha_llegada_mercancia: e.fecha_llegada_mercancia ?? null,
+    })),
+    docs_count: docs.length,
+    required_docs_count: requiredDocs.length,
+    uploaded_required_count: uploadedRequiredCount,
+    facturas: facturasChainRows,
+  }
+
   return (
-    <TraficoDetail
-      traficoId={traficoId}
-      trafico={trafico}
-      events={events}
-      docs={docs}
-      partidas={partidas}
-      notes={notes}
-      availableUsers={availableUsers}
-      clientName={clientName}
-      clientRfc={clientRfc}
-      isInternal={isInternal}
-      role={session.role}
-      currentUserId={currentUserId}
-      missingDocs={missingDocs}
-      requiredDocsCount={requiredDocs.length}
-      uploadedRequiredCount={uploadedRequiredCount}
-      chain={chain}
-    />
+    <div>
+      {/* Timeline — renders above the detail shell so the cinematic
+          vertical status rail is the primary UX. The legacy hero +
+          below-fold sections remain untouched underneath for deep data
+          (partidas, notas, events log). When document uploads ramp up
+          post-Marathon 3, the timeline absorbs more context without
+          needing layout changes. */}
+      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '12px 16px 0' }}>
+        <TraficoTimeline input={timelineInput} />
+      </div>
+
+      <TraficoDetail
+        traficoId={traficoId}
+        trafico={trafico}
+        events={events}
+        docs={docs}
+        partidas={partidas}
+        notes={notes}
+        availableUsers={availableUsers}
+        clientName={clientName}
+        clientRfc={clientRfc}
+        isInternal={isInternal}
+        role={session.role}
+        currentUserId={currentUserId}
+        missingDocs={missingDocs}
+        requiredDocsCount={requiredDocs.length}
+        uploadedRequiredCount={uploadedRequiredCount}
+        chain={chain}
+      />
+    </div>
   )
 }

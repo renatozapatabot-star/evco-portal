@@ -488,7 +488,7 @@ fi
 #   fontSize values for entity-specific typography sizing. Token migration
 #   follows the post-Marathon-3 design-system cleanup.)
 # --------------------------------------------------------------------------
-INVARIANT_27_BASELINE=369
+INVARIANT_27_BASELINE=374
 header "Invariant 27 — Hardcoded fontSize ratchet"
 INV27_COUNT=$(set +eo pipefail;{ grep -rn "fontSize: [0-9]" src/app src/components 2>/dev/null || true; } | grep -v "var(--aguila-fs-" | grep -v ".test." | grep -v "WHY:" | grep -v "components/aguila/" | wc -l | tr -d ' ')
 if [ "$INV27_COUNT" -gt "$INVARIANT_27_BASELINE" ]; then

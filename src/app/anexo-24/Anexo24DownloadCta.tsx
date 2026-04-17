@@ -114,6 +114,24 @@ export function Anexo24DownloadCta({ companyId, isInternal }: Props) {
         )}
       </button>
 
+      <div style={{ marginTop: 10, display: 'flex', flexWrap: 'wrap', gap: 14 }}>
+        <a
+          href={`/api/anexo-24/csv${isInternal ? `?company_id=${encodeURIComponent(companyId)}` : ''}`}
+          style={{
+            fontSize: 'var(--aguila-fs-meta, 11px)',
+            color: 'rgba(192,197,206,0.7)',
+            textDecoration: 'none',
+            letterSpacing: '0.06em',
+            textTransform: 'uppercase',
+            borderBottom: '1px solid rgba(192,197,206,0.18)',
+            paddingBottom: 1,
+            transition: 'color var(--dur-fast, 150ms) ease, border-color var(--dur-fast, 150ms) ease',
+          }}
+        >
+          Descargar CSV para contabilidad
+        </a>
+      </div>
+
       {error && (
         <p
           role="alert"

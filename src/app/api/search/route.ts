@@ -180,9 +180,18 @@ export async function GET(request: NextRequest) {
       date: f.fecha_pago, view: 'pedimentos',
     })),
     ...(prodRes.data || []).map(p => ({
-      type: 'producto', id: String(p.id), title: p.cve_producto || String(p.id),
+      // Results carry an `anexo24` type tag + an `href` that lands on
+      // /anexo-24/[cveProducto] — the canonical SKU detail surface
+      // after the 2026-04-18 nav promotion. Consumers that render by
+      // `type` can theme these rows with the ClipboardList icon; those
+      // that read `href` just navigate. Both work.
+      type: 'anexo24',
+      id: String(p.id),
+      title: p.cve_producto || String(p.id),
       sub: `${p.descripcion?.substring(0, 40) || ''} · ${p.fraccion || 'Sin fracción'}`,
-      date: null, view: 'fracciones',
+      date: null,
+      view: 'anexo24',
+      href: p.cve_producto ? `/anexo-24/${encodeURIComponent(p.cve_producto)}` : undefined,
     })),
     ...(provRes.data || []).map(s => ({
       type: 'proveedor',

@@ -54,6 +54,7 @@ const { google } = require('googleapis')
 const { createClient } = require('@supabase/supabase-js')
 const { PDFParse } = require('pdf-parse')
 const { getAllRates } = require('./lib/rates')
+const { withSyncLog } = require('./lib/sync-log')
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -1172,7 +1173,7 @@ async function run() {
   }
 }
 
-run().catch(async err => {
+withSyncLog(supabase, { sync_type: 'email_intake', company_id: null }, run).catch(async err => {
   console.error('Fatal:', err.message)
   await sendTelegram(`🔴 <b>${SCRIPT_NAME} FAILED</b>\n${err.message}`)
   await supabase.from('heartbeat_log').insert({

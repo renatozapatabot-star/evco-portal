@@ -18,6 +18,7 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY,
 )
+const { withSyncLog } = require('./lib/sync-log')
 
 const TG = process.env.TELEGRAM_BOT_TOKEN
 const CHAT = process.env.TELEGRAM_CHAT_ID || '-5085543275'
@@ -121,4 +122,4 @@ async function run() {
   }
 }
 
-run().catch((e) => { console.error(e); process.exit(1) })
+withSyncLog(supabase, { sync_type: 'backfill_transporte', company_id: null }, run).catch((e) => { console.error(e); process.exit(1) })

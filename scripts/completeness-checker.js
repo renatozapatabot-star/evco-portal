@@ -22,6 +22,7 @@ const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN
 const TELEGRAM_CHAT = process.env.TELEGRAM_CHAT_ID || '-5085543275'
 
 const { emitEvent } = require('./lib/workflow-emitter')
+const { withSyncLog } = require('./lib/sync-log')
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -338,9 +339,9 @@ async function run() {
   }
 }
 
-run().catch(async (err) => {
+withSyncLog(supabase, { sync_type: 'completeness_checker', company_id: null }, run).catch(async (err) => {
   console.error('Fatal error:', err)
   await logPipeline('fatal', 'error', { error: err.message })
-  await tg(`🔴 <b>${SCRIPT_NAME} FAILED</b>\n${err.message}\n— CRUZ 🦀`)
+  await tg(`🔴 <b>${SCRIPT_NAME} FAILED</b>\n${err.message}\n— PORTAL 🦀`)
   process.exit(1)
 })

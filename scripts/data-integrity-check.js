@@ -174,6 +174,117 @@ async function main() {
     }
   }
 
+  // ─────────────────────────────────────────────────────────────────
+  // Block DD (2026-04-17) — 8 new invariants
+  // ─────────────────────────────────────────────────────────────────
+
+  // ── 10. Every pedimento has a matching trafico (orphan check) ──
+  await test('No orphan pedimentos (pedimento with missing trafico)', async () => {
+    const { count: orphanCount, error } = await supabase
+      .from('pedimentos')
+      .select('*', { count: 'estimated', head: true })
+      .is('trafico', null)
+    if (error && error.code !== '42P01') throw new Error(`pedimentos probe: ${error.message}`)
+    assert((orphanCount || 0) < 20, `Orphan pedimentos (null trafico): ${orphanCount} (threshold 20)`)
+  })
+
+  // ── 11. anexo24_partidas.numero_parte populated > 80% ──
+  await test('anexo24_partidas.numero_parte population > 80%', async () => {
+    const { count: total, error: e1 } = await supabase
+      .from('anexo24_partidas')
+      .select('*', { count: 'estimated', head: true })
+    if (e1 && e1.code === '42P01') return // table absent in this env → skip
+    if (e1) throw new Error(`anexo24_partidas total: ${e1.message}`)
+    if (!total) return // empty tenant → skip
+    const { count: withPart } = await supabase
+      .from('anexo24_partidas')
+      .select('*', { count: 'estimated', head: true })
+      .not('numero_parte', 'is', null)
+    const pct = ((withPart || 0) / total) * 100
+    assert(pct >= 80, `numero_parte coverage: ${pct.toFixed(1)}% (threshold 80%)`)
+  })
+
+  // ── 12. globalpc_proveedores coverage hasn't dropped ──
+  await test('globalpc_proveedores row count > 0', async () => {
+    const { count, error } = await supabase
+      .from('globalpc_proveedores')
+      .select('*', { count: 'estimated', head: true })
+    if (error && error.code === '42P01') return
+    if (error) throw new Error(error.message)
+    assert((count || 0) > 0, `globalpc_proveedores empty — supplier resolution broken`)
+  })
+
+  // ── 13. Zero orphan expediente_documents (doc without trafico) ──
+  await test('No orphan expediente_documentos (null trafico_id)', async () => {
+    const { count } = await supabase
+      .from('expediente_documentos')
+      .select('*', { count: 'estimated', head: true })
+      .is('trafico_id', null)
+      .gte('uploaded_at', new Date(Date.now() - 90 * 86_400_000).toISOString())
+    assert((count || 0) < 100, `Orphan expediente docs (null trafico_id, last 90d): ${count} (threshold 100)`)
+  })
+
+  // ── 14. sync_log failure rate ≤ 5% over last 7 days ──
+  await test('sync_log failure rate ≤ 5% (last 7d)', async () => {
+    const since = new Date(Date.now() - 7 * 86_400_000).toISOString()
+    const { count: total } = await supabase
+      .from('sync_log')
+      .select('*', { count: 'estimated', head: true })
+      .gte('started_at', since)
+    if (!total || total < 10) return // not enough signal → skip
+    const { count: failed } = await supabase
+      .from('sync_log')
+      .select('*', { count: 'estimated', head: true })
+      .gte('started_at', since)
+      .in('status', ['failed', 'error'])
+    const pct = ((failed || 0) / total) * 100
+    assert(pct <= 5, `sync_log failure rate: ${pct.toFixed(1)}% (threshold 5%)`)
+  })
+
+  // ── 15. Every active company has at least one tráfico in the last 2 years ──
+  await test('Active companies have > 0 traficos (2y window)', async () => {
+    const { data: activeCompanies } = await supabase
+      .from('companies')
+      .select('company_id')
+      .eq('active', true)
+    if (!activeCompanies || activeCompanies.length === 0) return
+    const since = new Date(Date.now() - 730 * 86_400_000).toISOString()
+    let silent = 0
+    for (const c of activeCompanies) {
+      const { count } = await supabase
+        .from('traficos')
+        .select('*', { count: 'estimated', head: true })
+        .eq('company_id', c.company_id)
+        .gte('fecha_llegada', since)
+      if ((count || 0) === 0) silent++
+    }
+    // Allow up to half to be silent (historical / migrated tenants without recent activity)
+    assert(silent <= Math.ceil(activeCompanies.length / 2), `${silent}/${activeCompanies.length} active companies have 0 traficos in 2y`)
+  })
+
+  // ── 16. system_config rate entries fresh (valid_to ≥ today) ──
+  await test('system_config rates not expired', async () => {
+    const today = new Date().toISOString().split('T')[0]
+    const { data } = await supabase
+      .from('system_config')
+      .select('key, valid_to')
+      .in('key', ['banxico_exchange_rate', 'dta_rates'])
+    const expired = (data || []).filter((r) => r.valid_to && r.valid_to < today)
+    assert(expired.length === 0, `Expired system_config: ${expired.map((r) => r.key).join(', ')}`)
+  })
+
+  // ── 17. audit_log writes in last 7d (cockpit activity surface alive) ──
+  await test('audit_log has writes in last 7 days', async () => {
+    const since = new Date(Date.now() - 7 * 86_400_000).toISOString()
+    const { count, error } = await supabase
+      .from('audit_log')
+      .select('*', { count: 'estimated', head: true })
+      .gte('created_at', since)
+    if (error && error.code === '42P01') return
+    if (error) throw new Error(error.message)
+    assert((count || 0) > 0, `audit_log has 0 rows in last 7d — activity strip will look dead`)
+  })
+
   // ── Summary ──
   const elapsed = ((Date.now() - start) / 1000).toFixed(1)
   console.log(`\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━`)

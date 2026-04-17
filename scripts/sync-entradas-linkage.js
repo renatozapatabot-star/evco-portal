@@ -16,6 +16,7 @@ require('dotenv').config({ path: path.join(__dirname, '..', '.env.local') })
 
 const { createClient } = require('@supabase/supabase-js')
 const mysql = require('mysql2/promise')
+const { withSyncLog } = require('./lib/sync-log')
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -341,7 +342,7 @@ async function run() {
   }
 }
 
-run().catch(async err => {
+withSyncLog(supabase, { sync_type: 'entradas_linkage', company_id: null }, run).catch(async err => {
   console.error('❌ Fatal:', err.message)
   await sendTG(`🔴 <b>Entradas Linkage FAILED</b>\n${err.message}`)
   process.exit(1)

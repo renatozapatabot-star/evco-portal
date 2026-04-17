@@ -8,6 +8,7 @@
 require('dotenv').config({ path: require('path').join(__dirname, '..', '.env.local') })
 const { createClient } = require('@supabase/supabase-js')
 const mysql = require('mysql2/promise')
+const { withSyncLog } = require('./lib/sync-log')
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -270,4 +271,4 @@ async function run() {
   })
 }
 
-run().catch(console.error)
+withSyncLog(supabase, { sync_type: 'globalpc_delta', company_id: null }, run).catch(console.error)

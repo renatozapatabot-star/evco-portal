@@ -24,6 +24,7 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 )
+const { withSyncLog } = require('./lib/sync-log')
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -251,7 +252,7 @@ async function run() {
   }
 }
 
-run().catch(async err => {
+withSyncLog(supabase, { sync_type: 'auto_invoice', company_id: null }, run).catch(async err => {
   console.error('Fatal:', err.message)
   await sendTelegram(`🔴 <b>${SCRIPT_NAME} FAILED</b>\n${err.message}`)
   await supabase.from('heartbeat_log').insert({

@@ -29,6 +29,7 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 )
+const { withSyncLog } = require('./lib/sync-log')
 
 // ─── Helpers ────────────────────────────────────────────────
 
@@ -274,9 +275,9 @@ async function run() {
   }, durationMs)
 }
 
-run().catch(async (err) => {
+withSyncLog(supabase, { sync_type: 'risk_scorer', company_id: 'evco' }, run).catch(async (err) => {
   console.error('Fatal error:', err)
   await logPipeline('fatal', 'error', { error: err.message })
-  await tg(`🔴 <b>${SCRIPT_NAME} FAILED</b>\n${err.message}\n— CRUZ 🦀`)
+  await tg(`🔴 <b>${SCRIPT_NAME} FAILED</b>\n${err.message}\n— PORTAL 🦀`)
   process.exit(1)
 })

@@ -43,6 +43,7 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 )
+const { withSyncLog } = require('./lib/sync-log')
 
 // Clients to monitor — add new clients here as onboarded
 const CLIENTS = ['evco']
@@ -559,9 +560,9 @@ async function run() {
   }
 }
 
-run().catch(async (err) => {
+withSyncLog(supabase, { sync_type: 'anomaly_detector', company_id: null }, run).catch(async (err) => {
   console.error('Fatal:', err)
   await logPipeline('fatal', 'error', { error: err.message })
-  await sendTelegram(`🔴 <b>${SCRIPT_NAME} FATAL</b>: ${err.message}\n— CRUZ 🦀`)
+  await sendTelegram(`🔴 <b>${SCRIPT_NAME} FATAL</b>: ${err.message}\n— PORTAL 🦀`)
   process.exit(1)
 })

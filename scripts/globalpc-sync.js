@@ -5,6 +5,7 @@ const fs = require('fs')
 const path = require('path')
 require('dotenv').config({ path: '.env.local' })
 const { fetchAll } = require('./lib/paginate')
+const { withSyncLog } = require('./lib/sync-log')
 
 // ─── Config ───
 const supabase = createClient(
@@ -882,7 +883,7 @@ async function run() {
   console.log(`📄 Sync completo · ${totalMin} min · MySQL ✅ · eConta ✅ · WSDL ✅ · TIGIE ✅`)
 }
 
-run().catch(err => {
+withSyncLog(supabase, { sync_type: 'globalpc', company_id: null }, run).catch(err => {
   console.error('Fatal error:', err)
   process.exit(1)
 })

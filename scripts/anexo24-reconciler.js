@@ -10,6 +10,7 @@
 const path = require('path')
 require('dotenv').config({ path: path.resolve(__dirname, '..', '.env.local') })
 const { createClient } = require('@supabase/supabase-js')
+const { withSyncLog } = require('./lib/sync-log')
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -164,4 +165,4 @@ async function main() {
   process.exit(0)
 }
 
-main().catch(err => { console.error('Fatal:', err.message); process.exit(1) })
+withSyncLog(supabase, { sync_type: 'anexo24_reconciler', company_id: null }, main).catch(err => { console.error('Fatal:', err.message); process.exit(1) })

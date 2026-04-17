@@ -5,6 +5,7 @@ const mysql = require('mysql2/promise')
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
 const { safeUpsert } = require('./lib/safe-write')
+const { withSyncLog } = require('./lib/sync-log')
 const TG = process.env.TELEGRAM_BOT_TOKEN
 const CHAT = '-5085543275'
 async function tg(msg) { if (!TG) return; await fetch(`https://api.telegram.org/bot${TG}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: CHAT, text: msg, parse_mode: 'HTML' }) }).catch(() => {}) }
@@ -25,7 +26,7 @@ async function run() {
   const [countRes] = await conn.execute('SELECT COUNT(*) as c FROM cb_factura')
   const totalRows = countRes[0].c
   console.log(`Total in GlobalPC: ${totalRows.toLocaleString()}`)
-  await tg(`📄 <b>Facturas full upsert</b>\n${totalRows.toLocaleString()} registros\n— CRUZ 🦀`)
+  await tg(`📄 <b>Facturas full upsert</b>\n${totalRows.toLocaleString()} registros\n— PORTAL 🦀`)
 
   const BATCH = 5000
   let offset = 0, total = 0
@@ -72,7 +73,8 @@ async function run() {
   await conn.end()
   const { count } = await supabase.from('globalpc_facturas').select('*', { count: 'exact', head: true })
   console.log(`\n✅ Done. Supabase now: ${(count || 0).toLocaleString()} rows`)
-  await tg(`✅ <b>Facturas complete</b>\n${(count || 0).toLocaleString()} en Supabase\n— CRUZ 🦀`)
+  await tg(`✅ <b>Facturas complete</b>\n${(count || 0).toLocaleString()} en Supabase\n— PORTAL 🦀`)
+  return { rows_synced: total }
 }
 
-run().catch(e => { console.error(e); process.exit(1) })
+withSyncLog(supabase, { sync_type: 'globalpc_facturas_full', company_id: null }, run).catch(e => { console.error(e); process.exit(1) })

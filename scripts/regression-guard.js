@@ -19,6 +19,7 @@
 const { createClient } = require('@supabase/supabase-js')
 const path = require('path')
 require('dotenv').config({ path: path.join(__dirname, '..', '.env.local') })
+const { withSyncLog } = require('./lib/sync-log')
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -255,10 +256,10 @@ async function runGuard() {
   await visualRegressionCheck()
 }
 
-runGuard().catch(async (err) => {
+withSyncLog(supabase, { sync_type: 'regression_guard', company_id: null }, runGuard).catch(async (err) => {
   console.error('Fatal regression guard error:', err)
   try {
-    await sendTelegram(`\uD83D\uDD34 <b>${SCRIPT_NAME} FATAL</b>\n${err.message}\n\u2014 CRUZ \uD83E\uDD80`)
+    await sendTelegram(`\uD83D\uDD34 <b>${SCRIPT_NAME} FATAL</b>\n${err.message}\n\u2014 PORTAL \uD83E\uDD80`)
     await supabase.from('regression_guard_log').insert({
       table_name: '_fatal',
       row_count: 0,

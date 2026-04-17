@@ -16,6 +16,7 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 )
+const { withSyncLog } = require('./lib/sync-log')
 
 const { llmCall } = require('./lib/llm')
 const { emitEvent } = require('./lib/workflow-emitter')
@@ -698,4 +699,4 @@ if (process.argv.includes('--test-normalize')) {
   process.exit(failed > 0 ? 1 : 0)
 }
 
-main().catch(err => { console.error('Fatal:', err.message); process.exit(1) })
+withSyncLog(supabase, { sync_type: 'auto_classifier', company_id: null }, main).catch(err => { console.error('Fatal:', err.message); process.exit(1) })

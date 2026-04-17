@@ -8,6 +8,7 @@ const { createClient } = require('@supabase/supabase-js')
 const mysql = require('mysql2/promise')
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
+const { withSyncLog } = require('./lib/sync-log')
 const TG = process.env.TELEGRAM_BOT_TOKEN
 const CHAT = '-5085543275'
 async function tg(msg) { if (!TG) return; await fetch(`https://api.telegram.org/bot${TG}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: CHAT, text: msg, parse_mode: 'HTML' }) }).catch(() => {}) }
@@ -104,7 +105,8 @@ async function run() {
   await new Promise(r => setTimeout(r, 3000))
   const { count: after } = await supabase.from('globalpc_productos').select('*', { count: 'exact', head: true })
   console.log(`\n✅ Done. Inserted: ${inserted.toLocaleString()} · Errors: ${errors} · Supabase total: ${(after || 0).toLocaleString()}`)
-  await tg(`✅ <b>Productos complete</b>\n${(after || 0).toLocaleString()} rows in Supabase\n— CRUZ 🦀`)
+  await tg(`✅ <b>Productos complete</b>\n${(after || 0).toLocaleString()} rows in Supabase\n— PORTAL 🦀`)
+  return { rows_synced: inserted }
 }
 
-run().catch(e => { console.error(e); process.exit(1) })
+withSyncLog(supabase, { sync_type: 'globalpc_productos_full', company_id: null }, run).catch(e => { console.error(e); process.exit(1) })

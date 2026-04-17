@@ -53,6 +53,13 @@ const TABLES: TableProbe[] = [
   { name: 'entradas',              windowColumn: 'fecha_llegada_mercancia', windowDays: 365 },
   { name: 'expediente_documentos', windowColumn: 'uploaded_at',             windowDays: 365 },
   { name: 'globalpc_productos',    windowColumn: null,                      windowDays: 0 },
+  // Block DD Phase 4.3 — widen the probe to the four tables that feed
+  // client-visible KPIs so /api/health catches upstream drift before it
+  // lands on Ursula's cockpit.
+  { name: 'pedimentos',            windowColumn: 'created_at',              windowDays: 365 },
+  { name: 'globalpc_facturas',     windowColumn: 'fecha_facturacion',       windowDays: 365 },
+  { name: 'globalpc_partidas',     windowColumn: null,                      windowDays: 0 },
+  { name: 'aduanet_facturas',      windowColumn: 'fecha',                   windowDays: 365 },
 ]
 
 function worst(a: Health, b: Health): Health {

@@ -14,6 +14,7 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 )
+const { withSyncLog } = require('./lib/sync-log')
 
 const DRY_RUN = process.argv.includes('--dry-run')
 const TELEGRAM_CHAT = '-5085543275'
@@ -127,4 +128,4 @@ async function main() {
   process.exit(0)
 }
 
-main().catch(err => { console.error('Fatal:', err.message); process.exit(1) })
+withSyncLog(supabase, { sync_type: 'autonomy_tracker', company_id: null }, main).catch(err => { console.error('Fatal:', err.message); process.exit(1) })

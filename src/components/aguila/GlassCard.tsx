@@ -85,37 +85,65 @@ export function GlassCard({
         position: 'relative',
         overflow: 'hidden',
         background: TIER_BG[tier],
-        backdropFilter: `blur(${GLASS_BLUR})`,
-        WebkitBackdropFilter: `blur(${GLASS_BLUR})`,
+        /* saturate(1.2) on the backdrop adds a whisper of chroma to
+           whatever bleeds through — content underneath reads slightly
+           richer without shifting monochrome discipline. 2026-premium
+           platforms (visionOS, Vercel dashboard) lean on this trick. */
+        backdropFilter: `blur(${GLASS_BLUR}) saturate(1.2)`,
+        WebkitBackdropFilter: `blur(${GLASS_BLUR}) saturate(1.2)`,
         border: `1px solid ${TIER_BORDER[tier]}`,
         borderRadius: radiusVar,
         padding: pad,
         boxShadow: TIER_SHADOW[tier],
         color: TEXT_PRIMARY,
         gridColumn: span === 2 ? 'span 2' : undefined,
-        transition: enableHover ? 'background 160ms ease, box-shadow 160ms ease, border-color 160ms ease, transform 160ms ease' : undefined,
+        transition: enableHover ? 'background var(--dur-fast, 150ms) var(--ease-brand, cubic-bezier(0.22, 1, 0.36, 1)), box-shadow var(--dur-fast, 150ms) var(--ease-brand, cubic-bezier(0.22, 1, 0.36, 1)), border-color var(--dur-fast, 150ms) ease, transform var(--dur-fast, 150ms) var(--ease-brand, cubic-bezier(0.22, 1, 0.36, 1))' : undefined,
         cursor: href ? 'pointer' : 'default',
         ...style,
       }}
     >
+      {/* Top-lit gradient overlay — hero tier only. Simulates ambient
+          light catching the top edge of a physical panel. Sits behind
+          content (zIndex 0, children lift above via stacking context).
+          1.5% alpha at top, faded by 40% of card height — invisible as
+          a feature, load-bearing for "feels premium". */}
+      {tier === 'hero' && (
+        <div
+          aria-hidden
+          style={{
+            position: 'absolute',
+            inset: 0,
+            pointerEvents: 'none',
+            background: 'linear-gradient(180deg, rgba(255,255,255,0.025) 0%, transparent 40%)',
+            borderRadius: 'inherit',
+          }}
+        />
+      )}
       {severity ? <SeverityRibbon tone={severity} /> : null}
-      {children}
+      <div style={{ position: 'relative', zIndex: 1 }}>
+        {children}
+      </div>
       <style jsx>{`
         .aguila-glass-card--hover:hover {
           border-color: ${BORDER_SILVER_HOVER};
           box-shadow: ${SHADOW_HERO_HOVER};
-          transform: translateY(-1px);
+          transform: translateY(-2px);
+        }
+        .aguila-glass-card--hover:active {
+          transform: translateY(0) scale(0.995);
+          transition-duration: 80ms;
         }
         .aguila-glass-card--ghost.aguila-glass-card--hover:hover {
           background: rgba(255,255,255,0.06);
           box-shadow:
-            0 12px 40px rgba(0,0,0,0.5),
-            inset 0 1px 0 rgba(255,255,255,0.08),
-            0 0 30px ${GLOW_SILVER};
+            0 14px 48px rgba(0,0,0,0.55),
+            inset 0 1px 0 rgba(255,255,255,0.11),
+            0 0 36px ${GLOW_SILVER};
         }
         @media (prefers-reduced-motion: reduce) {
           .aguila-glass-card { transition: none; }
-          .aguila-glass-card--hover:hover { transform: none; }
+          .aguila-glass-card--hover:hover,
+          .aguila-glass-card--hover:active { transform: none; }
         }
       `}</style>
     </div>

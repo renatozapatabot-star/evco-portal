@@ -110,6 +110,16 @@ function LoginContent() {
         {/* Tagline */}
         <p className="login-tagline">TOTAL VISIBILIDAD. SIN FRONTERAS.</p>
 
+        {/* Alive signal — matches the cockpit's "Datos en vivo" pill so
+            Ursula's first glance at the portal telegraphs "this is a
+            live system, it's awake and waiting for me." Green dot
+            breathes via .aguila-dot-pulse (gated by
+            prefers-reduced-motion in globals.css). */}
+        <div className="login-alive" role="status" aria-label="Sistema en línea">
+          <span aria-hidden className="login-alive-dot aguila-dot-pulse" />
+          <span className="login-alive-text">Sistema en línea · Patente 3596</span>
+        </div>
+
         {/* Active session banner */}
         {session && (
           <div className="login-session-card">
@@ -245,6 +255,7 @@ function LoginContent() {
         .login-eagle,
         .login-wordmark,
         .login-tagline,
+        .login-alive,
         .login-session-card,
         .login-card,
         .login-footer {
@@ -259,12 +270,15 @@ function LoginContent() {
         .login-container.is-entered .login-tagline {
           animation: aguilaFade 500ms cubic-bezier(.2,0,0,1) 340ms both;
         }
+        .login-container.is-entered .login-alive {
+          animation: aguilaFade 500ms cubic-bezier(.2,0,0,1) 420ms both;
+        }
         .login-container.is-entered .login-session-card,
         .login-container.is-entered .login-card {
-          animation: aguilaRiseCard 600ms cubic-bezier(.2,0,0,1) 480ms both;
+          animation: aguilaRiseCard 600ms cubic-bezier(.2,0,0,1) 520ms both;
         }
         .login-container.is-entered .login-footer {
-          animation: aguilaFade 500ms cubic-bezier(.2,0,0,1) 640ms both;
+          animation: aguilaFade 500ms cubic-bezier(.2,0,0,1) 680ms both;
         }
         @keyframes aguilaRise {
           from { opacity: 0; transform: translateY(8px) scale(0.96); }
@@ -317,8 +331,40 @@ function LoginContent() {
           letter-spacing: 0.3em;
           color: #7A7E86;
           text-transform: uppercase;
-          margin: 0 0 32px;
+          margin: 0 0 16px;
           text-align: center;
+        }
+        /* Alive signal — chip that breathes to signal the portal is
+           connected + awake. Matches PageShell's "Datos en vivo"
+           treatment so the theme reads consistent from login through
+           every authenticated surface. */
+        .login-alive {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 5px 12px;
+          margin: 0 auto 28px;
+          border-radius: 999px;
+          background: rgba(34,197,94,0.08);
+          border: 1px solid rgba(34,197,94,0.22);
+          font-size: 10px;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          font-weight: 600;
+          color: rgba(134,239,172,0.88);
+          font-family: var(--font-jetbrains-mono, monospace);
+        }
+        .login-alive-dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: #22C55E;
+          box-shadow: 0 0 10px rgba(34,197,94,0.5);
+          flex-shrink: 0;
+        }
+        .login-alive-text {
+          display: inline-block;
+          line-height: 1;
         }
         .login-session-card {
           width: 100%;
